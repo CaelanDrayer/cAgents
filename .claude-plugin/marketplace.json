@@ -1,46 +1,23 @@
 {
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "cagents-marketplace",
   "description": "cAgents plugin marketplace - Universal multi-domain agent system",
   "owner": {
     "name": "CaelanDrayer",
-    "url": "https://github.com/CaelanDrayer"
+    "email": "support@cagents.dev"
   },
   "plugins": [
     {
       "name": "cagents",
-      "source": "./",
-      "version": "4.0.0",
       "description": "Universal multi-domain agent system for Claude Code. Software engineering, creative writing, business operations, and more through specialized autonomous agent teams featuring 46 agents (3 core + 43 software), Intelligence Layer for proactive issue detection, QA Layer with 9 review agents, Executive Leadership (CEO, CTO, CFO, COO, VP Engineering), and comprehensive workflow orchestration",
-      "category": "workflows",
+      "version": "4.0.0",
       "author": {
         "name": "CaelanDrayer",
-        "url": "https://github.com/CaelanDrayer"
+        "email": "support@cagents.dev"
       },
+      "source": "./",
+      "category": "workflows",
       "homepage": "https://github.com/CaelanDrayer/cAgents",
-      "repository": "https://github.com/CaelanDrayer/cAgents",
-      "license": "MIT",
-      "keywords": [
-        "agents",
-        "ai",
-        "automation",
-        "orchestration",
-        "multi-domain",
-        "software-engineering",
-        "creative-writing",
-        "business-operations",
-        "claude-code",
-        "plugin",
-        "workflow",
-        "autonomous",
-        "enterprise-grade",
-        "team-collaboration",
-        "code-review",
-        "testing",
-        "architecture",
-        "intelligence-layer",
-        "quality-assurance",
-        "proactive-prevention"
-      ],
       "strict": false
     }
   ]
