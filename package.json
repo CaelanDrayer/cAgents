@@ -1,0 +1,54 @@
+{
+  "name": "cagents",
+  "version": "4.0.0",
+  "description": "cAgents multi-domain agent system - universal AI agent orchestration for software engineering, creative writing, business operations, and more",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "sh core/memory/init-memory.sh",
+    "test": "echo \"Tests coming in Phase 2\" && exit 0",
+    "lint": "echo \"Linting coming in Phase 2\" && exit 0"
+  },
+  "workspaces": [
+    "core",
+    "software",
+    "creative",
+    "sales",
+    "marketing",
+    "finance",
+    "operations",
+    "support",
+    "hr",
+    "legal"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CaelanDrayer/cAgents.git"
+  },
+  "keywords": [
+    "agents",
+    "ai",
+    "automation",
+    "orchestration",
+    "multi-domain",
+    "software-engineering",
+    "creative-writing",
+    "business-operations",
+    "claude-code",
+    "plugin"
+  ],
+  "author": {
+    "name": "CaelanDrayer",
+    "url": "https://github.com/CaelanDrayer"
+  },
+  "license": "MIT",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/CaelanDrayer/cAgents/issues"
+  },
+  "homepage": "https://github.com/CaelanDrayer/cAgents#readme",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

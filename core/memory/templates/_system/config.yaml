@@ -1,0 +1,90 @@
+# Agent Memory System Configuration Template
+# Used by init-memory.sh to create Agent_Memory/_system/config.yaml
+# Version: 4.0.0
+
+config:
+  version: "4.0.0"
+  name: "cAgents Multi-Domain System"
+
+  # Multi-domain configuration
+  domains:
+    active:
+      - core
+      - software
+      # Add domains as they are installed:
+      # - creative
+      # - sales
+      # - marketing
+      # etc.
+
+    routing:
+      strategy: hybrid  # direct for clear requests, vote for ambiguous
+      vote_threshold: 0.7  # Confidence needed to win without voting
+
+  # Memory settings
+  memory:
+    base_path: "Agent_Memory"
+    archive_after_days: 30
+    prune_low_confidence_after_days: 90
+    low_confidence_threshold: 0.3
+
+  # Communication settings
+  communication:
+    inbox_poll_interval: "1s"
+    message_timeout: "5m"
+    broadcast_read_timeout: "1h"
+    max_escalation_levels: 4
+
+  # Collaboration settings
+  collaboration:
+    consultation_timeout: "5m"
+    review_timeout: "15m"
+    delegation_acknowledgement_timeout: "2m"
+
+  # Validation settings
+  validation:
+    require_tests: true
+    min_coverage_threshold: 80
+    require_security_review_for:
+      - "auth"
+      - "password"
+      - "token"
+      - "credential"
+      - "secret"
+
+  # Complexity tiers (shared across all domains)
+  tiers:
+    0:
+      name: "trivial"
+      approach: "direct_answer"
+      agents: []
+    1:
+      name: "simple"
+      approach: "execute_validate"
+      agents: ["executor"]
+    2:
+      name: "moderate"
+      approach: "plan_execute_validate"
+      agents: ["planner", "executor", "validator"]
+    3:
+      name: "complex"
+      approach: "parallel_execution"
+      agents: ["planner", "executor", "validator", "tech-lead"]
+    4:
+      name: "expert"
+      approach: "full_orchestration_hitl"
+      agents: ["planner", "executor", "validator", "tech-lead", "architect", "hitl"]
+
+  # Learning settings
+  learning:
+    enabled: true
+    calibration_update_frequency: "on_instruction_complete"
+    min_samples_for_confidence: 5
+    confidence_decay_rate: 0.1
+
+  # Observability
+  observability:
+    log_all_decisions: true
+    log_all_communication: true
+    metrics_aggregation_frequency: "hourly"
+    event_retention_days: 90

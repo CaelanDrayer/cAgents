@@ -1,0 +1,85 @@
+{
+  "name": "@cagents/software",
+  "version": "4.0.0",
+  "description": "cAgents Software - Software engineering domain plugin with 46 specialized agents for autonomous software development. Includes workflow, intelligence, QA, executive, and team agents.",
+  "author": {
+    "name": "CaelanDrayer",
+    "url": "https://github.com/CaelanDrayer"
+  },
+  "homepage": "https://github.com/CaelanDrayer/cAgents",
+  "repository": "https://github.com/CaelanDrayer/cAgents",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "software-engineering",
+    "automation",
+    "code-review",
+    "testing",
+    "devops",
+    "architecture",
+    "workflow",
+    "orchestration",
+    "claude-code",
+    "plugin"
+  ],
+  "commands": [
+    "./commands/designer.md",
+    "./commands/reviewer.md",
+    "./commands/plugins.md"
+  ],
+  "agents": [
+    "./agents/router.md",
+    "./agents/planner.md",
+    "./agents/executor.md",
+    "./agents/validator.md",
+    "./agents/self-correct.md",
+    "./agents/pattern-recognition.md",
+    "./agents/risk-assessment.md",
+    "./agents/dependency-analyzer.md",
+    "./agents/learning-coordinator.md",
+    "./agents/predictive-analyst.md",
+    "./agents/architecture-reviewer.md",
+    "./agents/code-standards-auditor.md",
+    "./agents/security-analyst.md",
+    "./agents/qa-compliance-officer.md",
+    "./agents/performance-analyzer.md",
+    "./agents/test-coverage-validator.md",
+    "./agents/documentation-reviewer.md",
+    "./agents/dependency-auditor.md",
+    "./agents/accessibility-checker.md",
+    "./agents/ceo.md",
+    "./agents/cto.md",
+    "./agents/cfo.md",
+    "./agents/coo.md",
+    "./agents/vp-engineering.md",
+    "./agents/product-owner.md",
+    "./agents/stakeholder-rep.md",
+    "./agents/finance-manager.md",
+    "./agents/compliance.md",
+    "./agents/tech-lead.md",
+    "./agents/sysadmin.md",
+    "./agents/devops.md",
+    "./agents/it-support.md",
+    "./agents/architect.md",
+    "./agents/senior-developer.md",
+    "./agents/dba.md",
+    "./agents/data-analyst.md",
+    "./agents/ux-designer.md",
+    "./agents/qa-lead.md",
+    "./agents/security-specialist.md",
+    "./agents/frontend-developer.md",
+    "./agents/backend-developer.md",
+    "./agents/scribe.md",
+    "./agents/reviewer.md"
+  ],
+  "skills": [
+    "./skills/trigger",
+    "./skills/reviewer"
+  ],
+  "dependencies": [
+    "@cagents/core"
+  ],
+  "peerDependencies": [
+    "@cagents/core@^4.0.0"
+  ]
+}
