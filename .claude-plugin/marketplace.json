@@ -1,99 +1,47 @@
 {
-  "name": "cagents",
-  "displayName": "cAgents",
-  "version": "4.0.0",
-  "description": "Universal multi-domain agent system for Claude Code. Software engineering, creative writing, business operations, and more through specialized autonomous agent teams.",
-  "author": {
+  "name": "cagents-marketplace",
+  "description": "cAgents plugin marketplace - Universal multi-domain agent system",
+  "owner": {
     "name": "CaelanDrayer",
     "url": "https://github.com/CaelanDrayer"
   },
-  "repository": {
-    "type": "github",
-    "url": "https://github.com/CaelanDrayer/cAgents"
-  },
-  "homepage": "https://github.com/CaelanDrayer/cAgents#readme",
-  "license": "MIT",
-  "keywords": [
-    "agents",
-    "ai",
-    "automation",
-    "orchestration",
-    "multi-domain",
-    "software-engineering",
-    "creative-writing",
-    "business-operations",
-    "claude-code",
-    "plugin",
-    "workflow",
-    "autonomous",
-    "enterprise-grade",
-    "team-collaboration",
-    "code-review",
-    "testing",
-    "architecture"
-  ],
-  "categories": [
-    "Development",
-    "Productivity",
-    "AI Assistants",
-    "Automation"
-  ],
-  "icon": "🤖",
-  "screenshots": [],
-  "readme": "README.md",
-  "changelog": "RELEASE-NOTES-v4.0.0.md",
-  "minClaudeCodeVersion": "1.0.0",
-  "bundledDomains": [
-    "@cagents/core",
-    "@cagents/software"
-  ],
-  "features": [
-    "46 specialized agents for autonomous software engineering",
-    "Universal /trigger command for any task type",
-    "Multi-domain architecture (Core + Software + future domains)",
-    "File-based Agent_Memory system for stateful collaboration",
-    "Automatic complexity classification (tier 0-4)",
-    "Team-based agent collaboration patterns",
-    "Intelligence Layer for proactive issue detection",
-    "QA Layer with 9 specialized review agents",
-    "Executive leadership agents (CEO, CTO, CFO, COO, VP Engineering)",
-    "Interactive design assistant (/designer)",
-    "Comprehensive code review (/reviewer)",
-    "Progress tracking with TodoWrite integration"
-  ],
-  "installation": {
-    "command": "claude /plugin install cagents",
-    "requirements": [
-      "Node.js >= 16.0.0",
-      "Git"
-    ]
-  },
-  "quickStart": {
-    "description": "Get started with cAgents in seconds",
-    "steps": [
-      "Install: `claude /plugin install cagents`",
-      "Start a workflow: `/trigger <your task>`",
-      "Try the designer: `/designer`",
-      "Review your code: `/reviewer`",
-      "List all agents: `/plugins`"
-    ]
-  },
-  "documentation": {
-    "gettingStarted": "https://github.com/CaelanDrayer/cAgents#quick-start",
-    "architecture": "https://github.com/CaelanDrayer/cAgents#architecture",
-    "agents": "https://github.com/CaelanDrayer/cAgents#domain-plugins",
-    "commands": "https://github.com/CaelanDrayer/cAgents#available-slash-commands"
-  },
-  "support": {
-    "issues": "https://github.com/CaelanDrayer/cAgents/issues",
-    "discussions": "https://github.com/CaelanDrayer/cAgents/discussions",
-    "documentation": "https://github.com/CaelanDrayer/cAgents#readme"
-  },
-  "ratings": {
-    "average": 0,
-    "count": 0
-  },
-  "downloads": 0,
-  "publishedAt": "2026-01-06T02:30:00Z",
-  "updatedAt": "2026-01-06T02:30:00Z"
+  "plugins": [
+    {
+      "name": "cagents",
+      "source": "./",
+      "version": "4.0.0",
+      "description": "Universal multi-domain agent system for Claude Code. Software engineering, creative writing, business operations, and more through specialized autonomous agent teams featuring 46 agents (3 core + 43 software), Intelligence Layer for proactive issue detection, QA Layer with 9 review agents, Executive Leadership (CEO, CTO, CFO, COO, VP Engineering), and comprehensive workflow orchestration",
+      "category": "workflows",
+      "author": {
+        "name": "CaelanDrayer",
+        "url": "https://github.com/CaelanDrayer"
+      },
+      "homepage": "https://github.com/CaelanDrayer/cAgents",
+      "repository": "https://github.com/CaelanDrayer/cAgents",
+      "license": "MIT",
+      "keywords": [
+        "agents",
+        "ai",
+        "automation",
+        "orchestration",
+        "multi-domain",
+        "software-engineering",
+        "creative-writing",
+        "business-operations",
+        "claude-code",
+        "plugin",
+        "workflow",
+        "autonomous",
+        "enterprise-grade",
+        "team-collaboration",
+        "code-review",
+        "testing",
+        "architecture",
+        "intelligence-layer",
+        "quality-assurance",
+        "proactive-prevention"
+      ],
+      "strict": false
+    }
+  ]
 }
