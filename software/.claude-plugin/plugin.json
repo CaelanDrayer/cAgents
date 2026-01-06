@@ -24,8 +24,7 @@
   ],
   "commands": [
     "./commands/designer.md",
-    "./commands/reviewer.md",
-    "./commands/plugins.md"
+    "./commands/reviewer.md"
   ],
   "agents": [
     "./agents/router.md",
