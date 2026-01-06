@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "Universal multi-domain agent system for Claude Code with 49 specialized agents across software engineering, creative writing, and business operations domains featuring Intelligence Layer, QA Layer, Executive Leadership, and comprehensive workflow orchestration",
   "author": {
     "name": "CaelanDrayer",

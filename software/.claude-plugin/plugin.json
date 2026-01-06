@@ -1,6 +1,6 @@
 {
   "name": "@cagents/software",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "cAgents Software - Software engineering domain plugin with 46 specialized agents for autonomous software development. Includes workflow, intelligence, QA, executive, and team agents.",
   "author": {
     "name": "CaelanDrayer",
@@ -79,6 +79,6 @@
     "@cagents/core"
   ],
   "peerDependencies": [
-    "@cagents/core@^4.0.0"
+    "@cagents/core@^4.1.0"
   ]
 }

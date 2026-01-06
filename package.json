@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "cAgents multi-domain agent system - universal AI agent orchestration for software engineering, creative writing, business operations, and more",
   "main": "index.js",
   "scripts": {

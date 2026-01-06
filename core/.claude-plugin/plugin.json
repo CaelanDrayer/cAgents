@@ -1,6 +1,6 @@
 {
   "name": "@cagents/core",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "cAgents Core - Shared infrastructure for all cAgents domain plugins. Provides unified Trigger, Orchestrator, and HITL agents, plus Agent_Memory initialization system.",
   "author": {
     "name": "CaelanDrayer",
