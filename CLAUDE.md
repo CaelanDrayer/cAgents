@@ -99,23 +99,20 @@ claude /plugin install @cagents/creative  # Coming Phase 2
 
 # Local development
 cd cAgents
-npm install  # Runs postinstall script to initialize Agent_Memory
+npm install
 claude --plugin-dir .
 ```
 
 ### First Run Initialization
 
-On first install, `npm install` automatically runs `core/memory/init-memory.sh` which creates:
+On first install, `npm install` automatically initializes the Agent_Memory structure, creating:
 - `Agent_Memory/_system/` with registry.yaml, config.yaml, agent_status.yaml
 - `Agent_Memory/_archive/` for completed workflows
 - `Agent_Memory/_knowledge/` with semantic/, procedural/, calibration/ folders
 - `Agent_Memory/_communication/inbox/` with per-agent folders
 - `Agent_Memory/_communication/broadcast/` for system announcements
 
-If initialization fails or Agent_Memory is missing:
-```bash
-sh core/memory/init-memory.sh
-```
+The Agent_Memory folder structure is created automatically when needed by the workflow agents.
 
 ### Available Slash Commands
 ```bash
@@ -133,9 +130,6 @@ cAgents/
 │   ├── .claude-plugin/      # Core plugin manifest
 │   ├── agents/              # trigger.md, orchestrator.md, hitl.md
 │   ├── commands/            # /trigger command
-│   ├── memory/              # Agent_Memory initialization scripts
-│   │   ├── init-memory.sh
-│   │   └── templates/       # Memory folder templates
 │   └── package.json
 │
 ├── software/                # @cagents/software - Software engineering domain
@@ -238,7 +232,6 @@ TodoWrite({
 ### Core Domain
 - Core agents: `core/agents/*.md`
 - Core commands: `core/commands/*.md`
-- Memory initialization: `core/memory/init-memory.sh`
 - Core plugin manifest: `core/.claude-plugin/plugin.json`
 
 ### Software Domain
@@ -286,7 +279,7 @@ The root `.claude-plugin/plugin.json` aggregates all domains:
 ```json
 {
   "name": "cagents",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "Universal multi-domain agent system",
   "bundledDomains": ["@cagents/core", "@cagents/software"],
   "commands": [
@@ -298,10 +291,7 @@ The root `.claude-plugin/plugin.json` aggregates all domains:
     "./core/agents/trigger.md",
     "./software/agents/router.md",
     // ... all agents from all domains
-  ],
-  "scripts": {
-    "postinstall": "sh core/memory/init-memory.sh"
-  }
+  ]
 }
 ```
 
@@ -323,7 +313,7 @@ claude --plugin-dir .
 
 ---
 
-**Version**: 4.0.0
+**Version**: 4.1.0
 **Total Agents**: 46 (3 core + 43 software)
 **Architecture**: Multi-domain (Core + Domains)
 **Dependencies**: None (file-based, self-contained)
