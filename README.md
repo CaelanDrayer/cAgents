@@ -41,30 +41,9 @@ cAgents/
 
 ### From Claude Code Marketplace (Recommended)
 
-```bash
-claude /plugin install cagents
-```
+/plugin CaelanDrayer/cAgents
 
 This installs both Core and Software domains by default.
-
-### Individual Domain Plugins
-
-```bash
-# Install core (required by all domains)
-claude /plugin install @cagents/core
-
-# Install specific domains
-claude /plugin install @cagents/software
-claude /plugin install @cagents/creative  # Coming Phase 2
-```
-
-### Local Development
-
-```bash
-cd cAgents
-npm install
-claude --plugin-dir .
-```
 
 ## Quick Start
 
