@@ -119,10 +119,6 @@ Shared infrastructure for all domains:
 **Craft**: Writer, Dialogue Specialist, Style Editor
 **Quality**: Continuity Checker, Pacing Analyst, Emotion Tracker
 
-## Contributing
-
-Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
 ## License
 
 MIT License - See [LICENSE](LICENSE) for details.
