@@ -9,7 +9,7 @@ cAgents transforms AI-assisted work across any domain - software engineering, cr
 cAgents is a modular ecosystem where you install domain plugins based on your needs:
 
 - **Software engineers** get `@cagents/software` (46 specialized agents)
-- **Business teams** get `@cagents/business` (18 agents for strategy, operations, sales, project management)
+- **Business teams** get `@cagents/business` (23 agents for strategy, operations, sales, project management, forecasting)
 - **Writers** get `@cagents/creative` (coming Phase 2: agents for novels, stories, worldbuilding)
 - **Future domains**: Sales, Marketing, Finance, Operations, Support, HR, Legal
 
@@ -22,14 +22,13 @@ cAgents/
 +-- core/           # @cagents/core - Required foundation
 |   +-- agents/     # Trigger, Orchestrator, HITL
 |   +-- memory/     # Agent_Memory system
-|   +-- commands/   # /trigger command
+|   +-- commands/   # /trigger, /designer, /reviewer
 |
 +-- software/       # @cagents/software - Software engineering
-|   +-- agents/     # 46 specialized agents
-|   +-- commands/   # /designer, /reviewer
+|   +-- agents/     # 46 specialized agents (5 workflow + 41 team)
 |
 +-- business/       # @cagents/business - Business operations
-|   +-- agents/     # 18 specialized agents
+|   +-- agents/     # 23 specialized agents (5 workflow + 18 team)
 |
 +-- creative/       # @cagents/creative - Creative writing (Phase 2)
 +-- sales/          # @cagents/sales - Sales strategy (Future)
@@ -57,9 +56,9 @@ This installs both Core and Software domains by default.
 /trigger Write a novel about space pirates
 /trigger Create Q4 sales forecast
 
-# Domain-specific commands (software)
-/designer   # Interactive design assistant
-/reviewer   # Comprehensive code review
+# Universal commands (work across all domains)
+/designer   # Interactive design assistant (for any domain)
+/reviewer   # Comprehensive review (code, documents, strategies)
 ```
 
 ## Core Concepts
@@ -101,6 +100,7 @@ Shared infrastructure for all domains:
 - **Trigger** - Entry point, intent detection, domain routing
 - **Orchestrator** - Phase management (planning -> executing -> validating)
 - **HITL** - Human-in-the-loop escalation for complex decisions
+- **Universal Commands**: /trigger, /designer, /reviewer (work across all domains)
 
 ### @cagents/software (Default)
 
@@ -112,6 +112,18 @@ Shared infrastructure for all domains:
 **Development**: Frontend, Backend, QA, Security, DevOps, DBA
 **Intelligence**: Pattern Recognition, Risk Assessment, Dependency Analyzer
 **QA Layer**: Architecture Reviewer, Code Standards Auditor, Security Analyst
+
+### @cagents/business (Fully Functional)
+
+23 specialized business operations agents:
+
+**Workflow**: Router, Planner, Executor, Validator, Self-Correct
+**Executive**: CSO (Chief Strategy Officer)
+**Strategic Management**: Business Development Manager, Market Analyst
+**Operations**: Operations Manager, Process Improvement, Supply Chain, Quality Manager
+**Project & Change**: Project Manager, Program Manager, Change Manager, Business Analyst
+**Customer & Sales**: Customer Success Manager, Account Manager, Sales Operations Manager
+**Specialized**: Risk Manager, Compliance Manager, Procurement Specialist, Facilities Manager
 
 ### @cagents/creative (Phase 2)
 
@@ -128,6 +140,7 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ## Version History
 
+- **4.1.0** - Complete business domain (23 agents: 5 workflow + 18 team), universal commands moved to core, 72 total agents
 - **4.0.0** - cAgents multi-domain architecture (Phase 1: Core + Software)
 - **3.0.x** - agent-design plugin (software engineering only)
 

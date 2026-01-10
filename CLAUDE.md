@@ -7,9 +7,9 @@ This file provides guidance to Claude Code when working with code in this reposi
 **cAgents** (Caelan's Agents) is a universal multi-domain agent system for Claude Code. It provides specialized autonomous agent teams that collaborate through a file-based memory system to execute complex tasks across any domain - software engineering, creative writing, business operations, and beyond.
 
 The system features a **modular multi-domain architecture**:
-- **@cagents/core** - Universal infrastructure (Trigger, Orchestrator, HITL, Agent_Memory)
-- **@cagents/software** - 46 software engineering agents (default installation)
-- **@cagents/business** - 18 business operations agents (strategic, operations, project management, sales, specialized)
+- **@cagents/core** - Universal infrastructure (Trigger, Orchestrator, HITL, Agent_Memory, universal commands)
+- **@cagents/software** - 46 software engineering agents (5 workflow + 41 team)
+- **@cagents/business** - 23 business operations agents (5 workflow + 18 team) - FULLY FUNCTIONAL
 - **@cagents/creative** - Creative writing agents (Phase 2)
 - Future domains: Sales, Marketing, Finance, Operations, Support, HR, Legal
 
@@ -50,6 +50,25 @@ The system features a **modular multi-domain architecture**:
 
 **QA Layer** (9 agents)
 - architecture-reviewer, code-standards-auditor, security-analyst, qa-compliance-officer, performance-analyzer, test-coverage-validator, documentation-reviewer, dependency-auditor, accessibility-checker
+
+### Business Operations Domain (@cagents/business)
+
+**Workflow Agents** (5 agents in business/)
+- `router` - Business complexity classification (tier 0-4) and template matching (forecast, strategic_plan, market_analysis, process_design)
+- `planner` - Business task decomposition with quarterly/fiscal timelines and stakeholder coordination
+- `executor` - Business team coordination and deliverable aggregation (reports, forecasts, strategies, budgets)
+- `validator` - Business deliverable quality gate (completeness, data quality, format compliance, stakeholder approvals)
+- `self-correct` - Adaptive recovery for business deliverables (add content, document assumptions, cite sources)
+
+**Executive Leadership** (1 agent)
+- `cso` - Chief Strategy Officer: strategic planning, competitive positioning, market analysis
+
+**Business Team Agents** (18 agents)
+- Strategic Management: business-development-manager, market-analyst
+- Operations: operations-manager, process-improvement-specialist, supply-chain-manager, quality-manager-business
+- Project & Change: project-manager, program-manager, change-manager, business-analyst
+- Customer & Sales: customer-success-manager, account-manager, sales-operations-manager
+- Specialized Functions: risk-manager, compliance-manager-business, procurement-specialist, facilities-manager
 
 ### Agent Memory System
 
@@ -111,8 +130,8 @@ The Agent_Memory folder structure is created automatically when needed by the wo
 ### Available Slash Commands
 ```bash
 /trigger <task>           # Universal entry point - auto-routes to appropriate domain
-/designer                 # Interactive design assistant (software domain)
-/reviewer [path]          # Comprehensive code review (software domain)
+/designer                 # Interactive design assistant (works across all domains)
+/reviewer [path]          # Comprehensive review (code, documents, strategies - all domains)
 ```
 
 ## Directory Structure
@@ -122,19 +141,17 @@ cAgents/
 ├── core/                    # @cagents/core - Required foundation
 │   ├── .claude-plugin/      # Core plugin manifest
 │   ├── agents/              # trigger.md, orchestrator.md, hitl.md
-│   ├── commands/            # /trigger command
-│   └── package.json
+│   ├── commands/            # /trigger, /designer, /reviewer (universal commands)
+│   └── memory/              # Agent_Memory templates
 │
 ├── software/                # @cagents/software - Software engineering domain
 │   ├── .claude-plugin/      # Software domain plugin manifest
-│   ├── agents/              # 46 specialized agents
-│   ├── commands/            # /designer, /reviewer
-│   ├── skills/              # trigger/, reviewer/
-│   └── package.json
+│   ├── agents/              # 46 specialized agents (5 workflow + 41 team)
+│   └── skills/              # trigger/, reviewer/
 │
 ├── business/                # @cagents/business - Business operations domain
 │   ├── .claude-plugin/      # Business domain plugin manifest
-│   ├── agents/              # 18 specialized agents
+│   ├── agents/              # 23 specialized agents (5 workflow + 18 team)
 │   └── package.json
 │
 ├── creative/                # @cagents/creative - Coming Phase 2
@@ -309,7 +326,7 @@ claude --plugin-dir .
 ---
 
 **Version**: 4.1.0
-**Total Agents**: 67 (3 core + 46 software + 18 business)
+**Total Agents**: 72 (3 core + 46 software + 23 business)
 **Architecture**: Multi-domain (Core + Domains)
 **Dependencies**: None (file-based, self-contained)
 **Primary Domains**: Software Engineering (@cagents/software), Business Operations (@cagents/business)
