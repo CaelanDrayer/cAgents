@@ -143,15 +143,17 @@ This agent handles requests for ANY installed domain:
 
 | Domain | Keywords | Examples |
 |--------|----------|----------|
-| `software` | code, fix, bug, implement, api, database, test, refactor, deploy | "Fix the login bug", "Add dark mode" |
-| `creative` | story, novel, character, write, worldbuild, plot, scene, chapter | "Write a novel about...", "Create a character" |
-| `sales` | sales, forecast, pipeline, revenue, deal, prospect, quota | "Q4 sales forecast", "Pipeline analysis" |
-| `marketing` | campaign, launch, content, social, brand, growth, SEO | "Plan product launch", "Design campaign" |
-| `finance` | budget, expense, revenue, accounting, ROI, P&L, cashflow | "Create budget report", "Analyze expenses" |
-| `operations` | process, workflow, efficiency, optimize, project, timeline | "Optimize deployment process" |
-| `support` | customer, ticket, satisfaction, retention, support, help | "Improve ticket response time" |
-| `hr` | recruit, onboard, org, team, culture, performance | "Design onboarding process" |
-| `legal` | contract, compliance, IP, terms, policy, regulatory | "Review contract terms" |
+| `software` | code, fix, bug, implement, api, database, test, refactor, deploy, framework, library, function, class, endpoint | "Fix the login bug", "Add dark mode", "Refactor auth service" |
+| `business` | business, market analysis, competitive, SWOT, strategy, business development, partnerships, vendor, customer, stakeholder | "Analyze market trends", "Develop partnership strategy", "Create competitive analysis" |
+| `planning` | strategic plan, roadmap, OKR, project plan, initiative, milestone, goals, objectives, planning, sprint, agile, Scrum, Kanban | "Create strategic plan", "Develop Q2 OKRs", "Plan product roadmap" |
+| `sales` | sales, forecast, pipeline, revenue, deal, prospect, quota, territory, CRM, win rate, conversion, funnel, lead, opportunity, commission | "Create Q4 sales forecast", "Analyze pipeline health", "Optimize territory planning" |
+| `marketing` | campaign, launch, content, social, brand, growth, SEO, demand generation, email, events, PR, advertising, messaging, audience | "Plan product launch", "Design email campaign", "Create brand strategy" |
+| `finance` | budget, expense, revenue, accounting, ROI, P&L, cashflow, financial, FP&A, treasury, audit, payroll, tax, GAAP, balance sheet | "Create Q1 budget", "Analyze burn rate", "Build financial model" |
+| `operations` | process, workflow, efficiency, optimize, supply chain, procurement, inventory, logistics, capacity, quality, facilities, vendor management | "Optimize deployment process", "Streamline procurement", "Design quality framework" |
+| `hr` | recruit, onboard, hiring, talent, compensation, benefits, performance, culture, engagement, diversity, learning, development, workforce planning | "Design onboarding process", "Create compensation plan", "Develop talent strategy" |
+| `legal` | contract, compliance, IP, intellectual property, terms, policy, regulatory, litigation, privacy, GDPR, corporate law, employment law | "Review contract terms", "Assess GDPR compliance", "Draft privacy policy" |
+| `support` | customer support, ticket, help desk, satisfaction, retention, knowledge base, escalation, SLA, technical support, troubleshooting | "Improve ticket response time", "Design escalation workflow", "Build knowledge base" |
+| `creative` | story, novel, character, write, worldbuild, plot, scene, chapter, narrative, fiction, prose, dialogue, arc, theme | "Write a novel about...", "Create a character arc", "Design a fantasy world" |
 
 ## Intent Classification Reference
 

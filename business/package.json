@@ -1,6 +1,6 @@
 {
   "name": "@cagents/business",
-  "version": "4.1.0",
+  "version": "5.0.0",
   "description": "cAgents Business - Business operations domain plugin with 18 specialized agents for strategic management, operations, project management, customer success, and specialized business functions",
   "author": {
     "name": "CaelanDrayer",

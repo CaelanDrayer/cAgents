@@ -1,0 +1,29 @@
+{
+  "name": "@cagents/finance",
+  "version": "5.0.0",
+  "description": "Finance domain - Financial planning & analysis, accounting, budgeting, and treasury management",
+  "agents": [
+    "./agents/router.md",
+    "./agents/planner.md",
+    "./agents/executor.md",
+    "./agents/validator.md",
+    "./agents/self-correct.md",
+    "./agents/cfo.md",
+    "./agents/financial-controller.md",
+    "./agents/fp-and-a-manager.md",
+    "./agents/accounting-manager.md",
+    "./agents/treasury-manager.md",
+    "./agents/financial-analyst.md",
+    "./agents/budget-analyst.md",
+    "./agents/cost-analyst.md",
+    "./agents/credit-analyst.md",
+    "./agents/financial-auditor.md",
+    "./agents/tax-specialist.md",
+    "./agents/revenue-recognition-specialist.md",
+    "./agents/accounts-payable-specialist.md",
+    "./agents/accounts-receivable-specialist.md",
+    "./agents/payroll-specialist.md",
+    "./agents/investor-relations-manager.md",
+    "./agents/financial-systems-analyst.md"
+  ]
+}

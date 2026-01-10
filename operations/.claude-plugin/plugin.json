@@ -1,0 +1,27 @@
+{
+  "name": "@cagents/operations",
+  "version": "5.0.0",
+  "description": "Operations domain - Process improvement, supply chain, capacity planning, and operational excellence",
+  "agents": [
+    "./agents/router.md",
+    "./agents/planner.md",
+    "./agents/executor.md",
+    "./agents/validator.md",
+    "./agents/self-correct.md",
+    "./agents/coo.md",
+    "./agents/operations-strategist.md",
+    "./agents/operations-manager.md",
+    "./agents/process-improvement-specialist.md",
+    "./agents/continuous-improvement-manager.md",
+    "./agents/supply-chain-manager.md",
+    "./agents/procurement-specialist.md",
+    "./agents/vendor-manager.md",
+    "./agents/inventory-manager.md",
+    "./agents/logistics-coordinator.md",
+    "./agents/capacity-planner.md",
+    "./agents/quality-manager.md",
+    "./agents/facilities-manager.md",
+    "./agents/business-continuity-planner.md",
+    "./agents/operations-analyst.md"
+  ]
+}

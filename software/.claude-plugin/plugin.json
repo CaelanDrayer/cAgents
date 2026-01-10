@@ -1,7 +1,7 @@
 {
   "name": "@cagents/software",
-  "version": "4.1.0",
-  "description": "cAgents Software - Software engineering domain plugin with 46 specialized agents (5 workflow + 5 intelligence + 9 QA + 5 executive + 22 team) for autonomous software development. Complete workflow orchestration from planning to validation.",
+  "version": "5.0.0",
+  "description": "cAgents Software - Software engineering domain plugin with 52 specialized agents (5 workflow + 1 engineering manager + 6 domain leads + 5 intelligence + 9 QA + 5 executive + 21 team) for autonomous software development. Orchestration V2 with realistic organizational hierarchy.",
   "author": {
     "name": "CaelanDrayer",
     "url": "https://github.com/CaelanDrayer"
@@ -29,6 +29,12 @@
     "./agents/executor.md",
     "./agents/validator.md",
     "./agents/self-correct.md",
+    "./agents/engineering-manager.md",
+    "./agents/frontend-lead.md",
+    "./agents/backend-lead.md",
+    "./agents/devops-lead.md",
+    "./agents/data-lead.md",
+    "./agents/security-lead.md",
     "./agents/pattern-recognition.md",
     "./agents/risk-assessment.md",
     "./agents/dependency-analyzer.md",

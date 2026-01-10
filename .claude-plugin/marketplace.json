@@ -9,8 +9,8 @@
   "plugins": [
     {
       "name": "cagents",
-      "description": "Universal multi-domain agent system for Claude Code with 72 specialized agents across software engineering and business operations domains. Features complete workflow orchestration (router, planner, executor, validator, self-correct), Intelligence Layer for proactive issue detection, QA Layer with 9 review agents, Executive Leadership teams (software: CEO/CTO/CFO/COO/VP Engineering, business: CSO), and comprehensive multi-domain architecture. Software domain (46 agents) handles code development, testing, architecture. Business domain (23 agents) handles strategic planning, forecasting, market analysis, operations management. Universal /designer and /reviewer commands work across all domains.",
-      "version": "4.1.0",
+      "description": "Universal multi-domain agent system for Claude Code with 278 specialized agents across 12 domains. Orchestration V2 features realistic organizational hierarchy (Engineering Manager → Tech Lead → 6 Domain Leads → Individual Contributors), two-phase planning (strategic → tactical), intelligent skill-based assignment, 4 communication protocols (delegation, broadcast, handoff, standup), 10-state task lifecycle, and capacity management. Software domain (52 agents with V2) includes Engineering Manager + 6 Domain Leads (Frontend, Backend, QA, DevOps, Data, Security). 12 complete domains: software, business, creative, planning, sales, marketing, finance, operations, hr, legal, support. Features Intelligence Layer, QA Layer, Executive Leadership, and comprehensive workflow orchestration. Universal /trigger, /designer, /reviewer commands work across all domains.",
+      "version": "5.0.0",
       "author": {
         "name": "CaelanDrayer",
         "email": "support@cagents.dev"

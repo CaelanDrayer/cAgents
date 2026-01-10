@@ -1,0 +1,56 @@
+{
+  "name": "@cagents/planning",
+  "version": "5.0.0",
+  "description": "cAgents Planning - Planning domain plugin with 22 specialized agents (5 workflow + 1 executive + 16 planning team) for strategic planning, project planning, roadmapping, OKR planning, and planning governance.",
+  "author": {
+    "name": "CaelanDrayer",
+    "url": "https://github.com/CaelanDrayer"
+  },
+  "homepage": "https://github.com/CaelanDrayer/cAgents",
+  "repository": "https://github.com/CaelanDrayer/cAgents",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "planning",
+    "strategic-planning",
+    "project-planning",
+    "okr",
+    "roadmapping",
+    "agile-planning",
+    "program-management",
+    "claude-code",
+    "plugin"
+  ],
+  "commands": [],
+  "agents": [
+    "./agents/router.md",
+    "./agents/planner.md",
+    "./agents/executor.md",
+    "./agents/validator.md",
+    "./agents/self-correct.md",
+    "./agents/cpo.md",
+    "./agents/strategic-planner.md",
+    "./agents/planning-operations-manager.md",
+    "./agents/program-manager.md",
+    "./agents/project-manager.md",
+    "./agents/agile-coach.md",
+    "./agents/portfolio-manager.md",
+    "./agents/roadmap-planner.md",
+    "./agents/okr-specialist.md",
+    "./agents/change-management-planner.md",
+    "./agents/resource-planner.md",
+    "./agents/risk-dependency-planner.md",
+    "./agents/business-analyst-planning.md",
+    "./agents/planning-analyst.md",
+    "./agents/market-research-analyst-planning.md",
+    "./agents/scenario-planner.md",
+    "./agents/planning-facilitator.md"
+  ],
+  "skills": [],
+  "dependencies": [
+    "@cagents/core"
+  ],
+  "peerDependencies": [
+    "@cagents/core@^4.1.0"
+  ]
+}

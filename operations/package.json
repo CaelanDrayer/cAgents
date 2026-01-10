@@ -1,0 +1,8 @@
+{
+  "name": "@cagents/operations",
+  "version": "5.0.0",
+  "description": "Operations domain for process optimization and supply chain management",
+  "keywords": ["operations", "process", "supply chain", "logistics", "efficiency"],
+  "author": "CaelanDrayer",
+  "license": "MIT"
+}

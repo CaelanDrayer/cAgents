@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "4.1.0",
-  "description": "Universal multi-domain agent system with 72 specialized agents for Claude Code. Complete workflow orchestration across software engineering (46 agents), business operations (23 agents), and future creative domains. Features Intelligence Layer, QA Layer, Executive Leadership, and autonomous agent collaboration.",
+  "version": "5.0.0",
+  "description": "Universal multi-domain agent system with 278 specialized agents for Claude Code. Orchestration V2 with realistic organizational hierarchy (EM → TL → Domain Leads → ICs), two-phase planning, intelligent assignment, and 4 communication protocols. 12 domains: software (52 with V2), business (23), creative (23), planning (22), sales (23), marketing (27), finance (22), operations (20), hr (24), legal (19), support (23).",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Tests coming in Phase 2\" && exit 0",
@@ -11,6 +11,7 @@
     "core",
     "software",
     "business",
+    "planning",
     "creative",
     "sales",
     "marketing",

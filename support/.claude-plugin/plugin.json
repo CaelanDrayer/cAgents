@@ -1,0 +1,30 @@
+{
+  "name": "@cagents/support",
+  "version": "5.0.0",
+  "description": "Customer Support domain - Customer service, technical support, knowledge management, and customer success",
+  "agents": [
+    "./agents/router.md",
+    "./agents/planner.md",
+    "./agents/executor.md",
+    "./agents/validator.md",
+    "./agents/self-correct.md",
+    "./agents/vp-customer-support.md",
+    "./agents/support-manager.md",
+    "./agents/support-operations-manager.md",
+    "./agents/customer-success-manager.md",
+    "./agents/account-manager.md",
+    "./agents/customer-advocacy-manager.md",
+    "./agents/escalation-manager.md",
+    "./agents/customer-support-rep.md",
+    "./agents/technical-support-engineer.md",
+    "./agents/chat-support-specialist.md",
+    "./agents/support-analyst.md",
+    "./agents/support-quality-analyst.md",
+    "./agents/knowledge-base-manager.md",
+    "./agents/customer-education-specialist.md",
+    "./agents/support-trainer.md",
+    "./agents/technical-writer.md",
+    "./agents/community-manager.md",
+    "./agents/sales-operations-manager.md"
+  ]
+}

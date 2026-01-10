@@ -1,0 +1,20 @@
+{
+  "name": "@cagents/planning",
+  "version": "5.0.0",
+  "description": "Planning domain for strategic planning, project planning, roadmapping, and implementation design",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "planning",
+    "strategic-planning",
+    "project-management",
+    "roadmapping",
+    "okr",
+    "agile",
+    "program-management"
+  ],
+  "author": "cAgents",
+  "license": "MIT"
+}

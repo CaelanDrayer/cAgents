@@ -1,0 +1,254 @@
+# Communication Protocols - Orchestration V2
+
+# Protocol 1: Delegation (Inbox-based task assignment)
+delegation_protocol:
+  description: "Hierarchical task assignment down the org chart"
+  hierarchy: "EM → TL → Domain Lead → IC"
+  
+  template:
+    type: delegation
+    from: "{sender_role}"
+    to: "{recipient_role}"
+    timestamp: "{ISO8601}"
+    instruction_id: "{inst_id}"
+    priority: "critical | high | normal | low"
+    
+    message: "Human-readable delegation message"
+    
+    delegation:
+      task_id: "{task_id}"
+      strategic_tasks: ["{st_ids}"]
+      scope: "Detailed scope description"
+      
+      authority:
+        decision_making: "autonomous | review_required | consult_required"
+        escalation_path: "{who to escalate to}"
+      
+      resources:
+        team_members: ["{ic_ids}"]
+        tools_access: ["{tool_names}"]
+      
+      success_criteria:
+        - "Criterion 1"
+        - "Criterion 2"
+      
+      constraints:
+        - "Constraint 1"
+      
+      deadline: "{ISO8601}"
+      estimated_effort: "{hours or days}"
+    
+    context:
+      why_this_matters: "Business context"
+      related_work: []
+      risks: []
+    
+    acknowledgement_required: true
+    response_deadline: "{ISO8601}"
+  
+  storage_location: "_communication/inbox/{recipient}/"
+  file_naming: "delegation_{timestamp}.yaml"
+
+# Protocol 2: Broadcast (Team announcements)
+broadcast_protocol:
+  description: "One-to-many announcements for team coordination"
+  
+  channels:
+    - all
+    - domain-leads
+    - tech-leads
+    - backend-team
+    - frontend-team
+    - qa-team
+    - devops-team
+    - data-team
+    - security-team
+  
+  template:
+    type: broadcast
+    from: "{sender_role}"
+    to: "{channel}"
+    timestamp: "{ISO8601}"
+    announcement_type: "priority_change | resource_shift | milestone | blocker | celebration"
+    priority: "critical | high | normal | info"
+    
+    subject: "Brief subject line"
+    message: "Full announcement message"
+    
+    impact:
+      affected_instructions: ["{inst_ids}"]
+      affected_domains: ["{domains}"]
+      action_required: true/false
+    
+    action_items:
+      - role: "{role}"
+        action: "What they need to do"
+        deadline: "{ISO8601}"
+    
+    context:
+      reason: "Why this announcement"
+      background: "Additional context"
+  
+  storage_location: "_communication/broadcast/{channel}/"
+  file_naming: "announcement_{timestamp}.yaml"
+
+# Protocol 3: Handoff (Cross-domain transitions)
+handoff_protocol:
+  description: "Structured handoff between domains with checklists"
+  
+  template:
+    type: handoff
+    from_domain: "{domain}"
+    from_task: "{task_id}"
+    to_domain: "{domain}"
+    to_task: "{task_id}"
+    timestamp: "{ISO8601}"
+    instruction_id: "{inst_id}"
+    
+    handoff_summary: "Brief description of what's being handed off"
+    
+    artifacts:
+      - name: "Artifact name"
+        type: "documentation | code | deployment | data | api_contract"
+        location: "{path or URL}"
+        status: "complete | in_progress | incomplete"
+        notes: "Any relevant notes"
+    
+    handoff_checklist:
+      - item: "Checklist item"
+        status: "complete | incomplete"
+        verified_by: "{role}"
+    
+    acceptance:
+      downstream_lead: "{domain-lead}"
+      acknowledged: false
+      acknowledged_at: null
+      ready_to_integrate: false
+      questions_or_concerns: ""
+    
+    handoff_meeting:
+      scheduled: true/false
+      datetime: "{ISO8601}"
+      attendees: ["{roles}"]
+      agenda: []
+  
+  storage_location: "_communication/handoffs/"
+  file_naming: "{from_domain}_to_{to_domain}_{timestamp}.yaml"
+  
+  workflow:
+    - step: "Upstream prepares handoff package"
+    - step: "Notification to downstream and Tech Lead"
+    - step: "Downstream reviews and asks questions"
+    - step: "Handoff meeting (if complex)"
+    - step: "Downstream acknowledges and confirms readiness"
+    - step: "Upstream task COMPLETED, downstream starts"
+
+# Protocol 4: Standup (Progress reports)
+standup_protocol:
+  description: "Hierarchical progress reporting up the org chart"
+  hierarchy: "IC → Domain Lead → Tech Lead → Engineering Manager"
+  
+  ic_to_domain_lead_template:
+    type: progress_report
+    from: "{ic}"
+    to: "{domain-lead}"
+    date: "{YYYY-MM-DD}"
+    instruction_id: "{inst_id}"
+    
+    my_tasks:
+      - task_id: "{task_id}"
+        status: "completed | in_progress | blocked"
+        progress: "{percentage}"
+        time_spent: "{hours}"
+        estimated_remaining: "{hours}"
+        notes: "Progress notes"
+    
+    blockers: []
+    help_needed: null
+    accomplishments: []
+    next_up: []
+  
+  domain_lead_to_tech_lead_template:
+    type: progress_report
+    from: "{domain-lead}"
+    to: "tech-lead"
+    date: "{YYYY-MM-DD}"
+    instruction_id: "{inst_id}"
+    
+    team_summary:
+      total_tactical_tasks: 0
+      completed: 0
+      in_progress: 0
+      under_review: 0
+      blocked: 0
+      not_started: 0
+    
+    strategic_progress:
+      - st_id: "{id}"
+        description: ""
+        progress: "{percentage}"
+        status: "on_track | at_risk | blocked"
+        estimated_completion: "{date}"
+    
+    team_capacity:
+      - ic: "{ic_id}"
+        utilization: "{percentage}"
+        current_tasks: []
+        availability: ""
+    
+    blockers: []
+    handoffs: []
+    accomplishments: []
+    risks: []
+    next_steps: []
+  
+  tech_lead_to_em_template:
+    type: progress_report
+    from: "tech-lead"
+    to: "engineering-manager"
+    week: "{YYYY_week_NN}"
+    instructions: ["{inst_ids}"]
+    
+    executive_summary: "Brief summary"
+    
+    instruction_progress:
+      - inst_id: "{id}"
+        objective: ""
+        tier: 0
+        progress: "{percentage}"
+        status: "on_track | at_risk | blocked"
+        estimated_completion: "{date}"
+        domains_involved: {}
+        milestones_this_week: []
+        risks: ""
+    
+    capacity_overview:
+      total_capacity: "{hours/day}"
+      utilized_capacity: "{hours/day}"
+      available_capacity: "{hours/day}"
+      domain_breakdown: {}
+    
+    critical_path_status: {}
+    blockers: []
+    escalations_this_week: 0
+    team_highlights: []
+    next_week_focus: []
+    risks_and_concerns: []
+  
+  storage_location: "_communication/reports/daily/ or /weekly/"
+  file_naming: "{from}_{to}_{date}.yaml"
+  
+  frequency:
+    ic_to_domain_lead: daily
+    domain_lead_to_tech_lead: daily
+    tech_lead_to_em: weekly
+
+communication_best_practices:
+  - "Use Delegation for task assignments"
+  - "Use Broadcast for team-wide announcements"
+  - "Use Handoff for cross-domain transitions"
+  - "Use Standup for progress updates"
+  - "Keep messages concise and actionable"
+  - "Always include context and rationale"
+  - "Set clear deadlines and expectations"
+  - "Track acknowledgements for critical communications"

@@ -1,0 +1,57 @@
+{
+  "name": "@cagents/creative",
+  "version": "5.0.0",
+  "description": "cAgents Creative - Creative writing domain plugin with 23 specialized agents (5 workflow + 1 executive + 17 creative team) for autonomous creative content generation. Complete workflow orchestration for novels, stories, characters, and worldbuilding.",
+  "author": {
+    "name": "CaelanDrayer",
+    "url": "https://github.com/CaelanDrayer"
+  },
+  "homepage": "https://github.com/CaelanDrayer/cAgents",
+  "repository": "https://github.com/CaelanDrayer/cAgents",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "creative-writing",
+    "storytelling",
+    "novel-writing",
+    "worldbuilding",
+    "character-development",
+    "workflow",
+    "orchestration",
+    "claude-code",
+    "plugin"
+  ],
+  "commands": [],
+  "agents": [
+    "./agents/router.md",
+    "./agents/planner.md",
+    "./agents/executor.md",
+    "./agents/validator.md",
+    "./agents/self-correct.md",
+    "./agents/cco.md",
+    "./agents/story-architect.md",
+    "./agents/character-designer.md",
+    "./agents/worldbuilder.md",
+    "./agents/prose-stylist.md",
+    "./agents/editor.md",
+    "./agents/dialogue-specialist.md",
+    "./agents/narrative-designer.md",
+    "./agents/character-psychologist.md",
+    "./agents/lore-keeper.md",
+    "./agents/setting-designer.md",
+    "./agents/copy-editor.md",
+    "./agents/continuity-checker.md",
+    "./agents/research-specialist.md",
+    "./agents/sensitivity-reader.md",
+    "./agents/plot-developer.md",
+    "./agents/fantasy-specialist.md",
+    "./agents/scifi-specialist.md"
+  ],
+  "skills": [],
+  "dependencies": [
+    "@cagents/core"
+  ],
+  "peerDependencies": [
+    "@cagents/core@^4.1.0"
+  ]
+}

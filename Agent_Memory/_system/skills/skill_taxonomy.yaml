@@ -1,0 +1,70 @@
+# Skill Taxonomy for Assignment Algorithms
+
+skill_categories:
+  programming_languages:
+    - python
+    - javascript
+    - typescript
+    - go
+    - rust
+    - java
+    - csharp
+
+  frameworks:
+    - react
+    - vue
+    - angular
+    - nodejs
+    - express
+    - django
+    - flask
+    - nextjs
+
+  databases:
+    - postgresql
+    - mysql
+    - mongodb
+    - redis
+    - elasticsearch
+
+  infrastructure:
+    - docker
+    - kubernetes
+    - terraform
+    - aws
+    - gcp
+    - azure
+
+  security:
+    - authentication
+    - authorization
+    - cryptography
+    - penetration_testing
+    - owasp
+
+  testing:
+    - unit_testing
+    - integration_testing
+    - e2e_testing
+    - performance_testing
+
+  domains:
+    - frontend
+    - backend
+    - devops
+    - data
+    - security
+    - qa
+
+skill_levels:
+  beginner: 1
+  intermediate: 2
+  advanced: 3
+  expert: 4
+
+assignment_weights:
+  skill_match: 0.40
+  workload_availability: 0.25
+  complexity_fit: 0.20
+  learning_opportunity: 0.10
+  recent_performance: 0.05

@@ -1,0 +1,8 @@
+{
+  "name": "@cagents/legal",
+  "version": "5.0.0",
+  "description": "Legal domain for compliance and contract management",
+  "keywords": ["legal", "compliance", "contracts", "IP", "regulatory"],
+  "author": "CaelanDrayer",
+  "license": "MIT"
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@cagents/legal",
+  "version": "5.0.0",
+  "description": "Legal domain - Contracts, compliance, intellectual property, and regulatory affairs",
+  "agents": [
+    "./agents/router.md",
+    "./agents/planner.md",
+    "./agents/executor.md",
+    "./agents/validator.md",
+    "./agents/self-correct.md",
+    "./agents/general-counsel.md",
+    "./agents/corporate-counsel.md",
+    "./agents/contracts-manager.md",
+    "./agents/ip-attorney.md",
+    "./agents/employment-attorney.md",
+    "./agents/litigation-manager.md",
+    "./agents/compliance-manager.md",
+    "./agents/risk-and-compliance-manager.md",
+    "./agents/privacy-officer.md",
+    "./agents/ethics-and-compliance-officer.md",
+    "./agents/regulatory-affairs-specialist.md",
+    "./agents/legal-operations-manager.md",
+    "./agents/paralegal.md",
+    "./agents/legal-analyst.md"
+  ]
+}

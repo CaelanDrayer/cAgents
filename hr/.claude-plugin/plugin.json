@@ -1,0 +1,31 @@
+{
+  "name": "@cagents/hr",
+  "version": "5.0.0",
+  "description": "Human Resources domain - Talent acquisition, employee relations, benefits, and organizational development",
+  "agents": [
+    "./agents/router.md",
+    "./agents/planner.md",
+    "./agents/executor.md",
+    "./agents/validator.md",
+    "./agents/self-correct.md",
+    "./agents/chro.md",
+    "./agents/talent-acquisition-manager.md",
+    "./agents/hr-business-partner.md",
+    "./agents/hr-operations-manager.md",
+    "./agents/learning-and-development-manager.md",
+    "./agents/compensation-analyst.md",
+    "./agents/benefits-administrator.md",
+    "./agents/recruiter.md",
+    "./agents/recruiting-coordinator.md",
+    "./agents/onboarding-specialist.md",
+    "./agents/employee-relations-specialist.md",
+    "./agents/performance-management-specialist.md",
+    "./agents/organizational-development-specialist.md",
+    "./agents/culture-and-engagement-manager.md",
+    "./agents/diversity-and-inclusion-manager.md",
+    "./agents/workforce-planning-analyst.md",
+    "./agents/hr-analyst.md",
+    "./agents/hris-administrator.md",
+    "./agents/hr-compliance-specialist.md"
+  ]
+}

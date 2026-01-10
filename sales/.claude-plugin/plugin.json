@@ -1,0 +1,30 @@
+{
+  "name": "@cagents/sales",
+  "version": "5.0.0",
+  "description": "Sales domain - Revenue generation, pipeline management, forecasting, and sales operations",
+  "agents": [
+    "./agents/router.md",
+    "./agents/planner.md",
+    "./agents/executor.md",
+    "./agents/validator.md",
+    "./agents/self-correct.md",
+    "./agents/cro.md",
+    "./agents/sales-engineer.md",
+    "./agents/account-executive.md",
+    "./agents/sales-development-rep.md",
+    "./agents/inside-sales-rep.md",
+    "./agents/customer-success-manager.md",
+    "./agents/account-manager.md",
+    "./agents/sales-operations-manager.md",
+    "./agents/revenue-operations-manager.md",
+    "./agents/sales-enablement-specialist.md",
+    "./agents/channel-partner-manager.md",
+    "./agents/territory-manager.md",
+    "./agents/sales-analyst.md",
+    "./agents/proposal-specialist.md",
+    "./agents/pricing-analyst.md",
+    "./agents/sales-trainer.md",
+    "./agents/competitive-intelligence-analyst.md",
+    "./agents/sales-strategist.md"
+  ]
+}
