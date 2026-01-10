@@ -1,0 +1,633 @@
+# Performance Tracking System - cAgents V6.2.1
+# Comprehensive metrics, analytics, and optimization recommendations
+
+version: "6.2.1"
+description: "Real-time performance monitoring, analytics, and continuous improvement system"
+
+# ==============================================================================
+# METRICS COLLECTION
+# ==============================================================================
+
+metrics_collection:
+  heartbeat_metrics:
+    location: "Agent_Memory/{instruction_id}/heartbeats/{agent}_{task_id}.yaml"
+    frequency: "every 2 minutes while agent active"
+    schema:
+      agent_name: "string"
+      task_id: "string"
+      timestamp: "ISO8601"
+      status: "starting | in_progress | blocked | completed | failed"
+      progress_percentage: "0-100"
+      current_activity: "string"
+      estimated_completion: "ISO8601"
+      resource_utilization:
+        cpu_percentage: "0-100"
+        memory_mb: "number"
+        active_tools: ["tool_name"]
+      blockers: []
+      questions: []
+
+  task_metrics:
+    location: "Agent_Memory/{instruction_id}/telemetry/tasks/{task_id}.yaml"
+    captured_at: "task completion"
+    schema:
+      task_id: "string"
+      instruction_id: "string"
+      assigned_agent: "string"
+      domain: "string"
+      priority: "string"
+
+      timing:
+        created_at: "ISO8601"
+        queued_at: "ISO8601"
+        started_at: "ISO8601"
+        completed_at: "ISO8601"
+
+        wait_time_seconds: "number"
+        execution_time_seconds: "number"
+        total_time_seconds: "number"
+
+        estimated_duration_seconds: "number"
+        actual_vs_estimate_ratio: "number"
+
+      execution:
+        status: "completed | failed | cancelled"
+        retry_count: "number"
+        errors: []
+
+      dependencies:
+        hard_dependencies: ["task_id"]
+        dependency_wait_time_seconds: "number"
+        blocking_for_tasks: ["task_id"]
+
+      outputs:
+        artifacts_count: "number"
+        total_size_bytes: "number"
+        manifest_path: "string"
+
+      quality:
+        acceptance_criteria_met: "boolean"
+        test_coverage: "0.0-1.0"
+        security_scan_result: "pass | fail | warning"
+        code_review_score: "0-100"
+
+  agent_metrics:
+    location: "Agent_Memory/_system/capacity/agents/{agent_name}/metrics.yaml"
+    aggregated: "real-time across all instructions"
+    schema:
+      agent_name: "string"
+      agent_type: "string"
+      domain: "string"
+
+      capacity:
+        max_concurrent_tasks: "number"
+        current_task_count: "number"
+        utilization_percentage: "0-100"
+        queue_depth: "number"
+
+      performance:
+        total_tasks_completed: "number"
+        total_tasks_failed: "number"
+        success_rate: "0.0-1.0"
+
+        average_task_duration_seconds: "number"
+        median_task_duration_seconds: "number"
+        p95_task_duration_seconds: "number"
+
+        average_wait_time_seconds: "number"
+        throughput_tasks_per_hour: "number"
+
+      quality:
+        average_test_coverage: "0.0-1.0"
+        average_review_score: "0-100"
+        security_issues_found: "number"
+        rework_rate: "0.0-1.0"
+
+      reliability:
+        timeout_count: "number"
+        crash_count: "number"
+        escalation_count: "number"
+        mean_time_between_failures_hours: "number"
+
+  instruction_metrics:
+    location: "Agent_Memory/{instruction_id}/metrics/instruction_summary.yaml"
+    captured_at: "instruction completion"
+    schema:
+      instruction_id: "string"
+      domain: "string"
+      tier: "0-4"
+      execution_mode: "sequential | pipeline | swarm | mesh"
+
+      timing:
+        created_at: "ISO8601"
+        started_at: "ISO8601"
+        completed_at: "ISO8601"
+        total_duration_seconds: "number"
+
+      tasks:
+        total_tasks: "number"
+        completed_tasks: "number"
+        failed_tasks: "number"
+        cancelled_tasks: "number"
+
+      parallelism:
+        max_concurrent_agents: "number"
+        average_concurrent_agents: "number"
+        parallelism_efficiency: "0.0-1.0"
+        critical_path_duration_seconds: "number"
+        critical_path_percentage: "0.0-1.0"
+
+      agents:
+        total_agents_used: "number"
+        unique_agent_types: "number"
+        agent_utilization_map: {}
+
+      quality:
+        overall_success_rate: "0.0-1.0"
+        average_test_coverage: "0.0-1.0"
+        security_issues_found: "number"
+        average_review_score: "0-100"
+
+      cost:
+        total_agent_hours: "number"
+        estimated_compute_cost_usd: "number"
+
+# ==============================================================================
+# REAL-TIME DASHBOARDS
+# ==============================================================================
+
+dashboards:
+  execution_dashboard:
+    location: "Agent_Memory/{instruction_id}/dashboard.yaml"
+    update_frequency: "every 30 seconds"
+    displays:
+      overview:
+        instruction_id: "string"
+        status: "planning | executing | validating | complete"
+        progress_percentage: "0-100"
+        estimated_completion: "ISO8601"
+        elapsed_time: "duration"
+
+      task_status:
+        total_tasks: "number"
+        pending_tasks: "number"
+        queued_tasks: "number"
+        in_progress_tasks: "number"
+        blocked_tasks: "number"
+        completed_tasks: "number"
+        failed_tasks: "number"
+
+      agent_status:
+        active_agents: "number"
+        idle_agents: "number"
+        overloaded_agents: ["agent_name"]
+        stalled_agents: ["agent_name"]
+        average_utilization: "0-100"
+
+      queue_status:
+        global_queue_depth: "number"
+        domain_queue_depths: {}
+        longest_wait_time: "duration"
+        tasks_waiting_on_dependencies: "number"
+
+      performance:
+        tasks_per_hour: "number"
+        average_task_duration: "duration"
+        parallelism_efficiency: "0-100"
+        bottleneck_agents: ["agent_name"]
+
+      issues:
+        active_blockers: "number"
+        escalations: "number"
+        retries_in_progress: "number"
+        warnings: []
+
+  agent_utilization_heatmap:
+    location: "Agent_Memory/{instruction_id}/dashboards/agent_heatmap.yaml"
+    format: "2D matrix of agents × time"
+    granularity: "5 minute intervals"
+    schema:
+      time_slots: ["timestamp"]
+      agents: ["agent_name"]
+      utilization_matrix: [[0-100]]  # agents × time_slots
+      color_scale:
+        0-20: "idle"
+        21-50: "low"
+        51-80: "optimal"
+        81-95: "high"
+        96-100: "saturated"
+
+  dependency_graph_visualization:
+    location: "Agent_Memory/{instruction_id}/dashboards/dependency_graph.yaml"
+    format: "directed acyclic graph"
+    updates: "on task completion"
+    schema:
+      nodes:
+        - task_id: "string"
+          status: "pending | in_progress | completed | failed"
+          duration: "seconds"
+          agent: "string"
+          on_critical_path: "boolean"
+
+      edges:
+        - from_task: "string"
+          to_task: "string"
+          dependency_type: "hard | soft | data"
+
+      critical_path:
+        tasks: ["task_id"]
+        total_duration: "seconds"
+
+      visualization_hints:
+        layout: "hierarchical"
+        color_by: "status"
+        size_by: "duration"
+
+  bottleneck_identification:
+    location: "Agent_Memory/{instruction_id}/dashboards/bottlenecks.yaml"
+    algorithm: "critical_path_analysis + queue_depth + agent_utilization"
+    updates: "every 2 minutes"
+    schema:
+      bottleneck_tasks:
+        - task_id: "string"
+          reason: "long_duration | blocking_many | resource_contention"
+          impact_tasks_blocked: "number"
+          estimated_delay: "seconds"
+          recommendation: "string"
+
+      bottleneck_agents:
+        - agent_name: "string"
+          reason: "overloaded | slow_performance | high_failure_rate"
+          queue_depth: "number"
+          utilization: "0-100"
+          recommendation: "string"
+
+      bottleneck_dependencies:
+        - dependency: "{task_a} -> {task_b}"
+          reason: "critical_path | long_wait | circular"
+          impact: "string"
+          recommendation: "string"
+
+# ==============================================================================
+# ANALYTICS & INSIGHTS
+# ==============================================================================
+
+analytics:
+  performance_analysis:
+    location: "Agent_Memory/{instruction_id}/analytics/performance_report.yaml"
+    generated_at: "instruction completion"
+    sections:
+      execution_summary:
+        mode: "sequential | pipeline | swarm | mesh"
+        total_tasks: "number"
+        total_duration: "seconds"
+        parallel_efficiency: "0.0-1.0"
+        speedup_vs_sequential: "number"
+
+      agent_performance:
+        agent_name:
+          tasks_completed: "number"
+          average_duration: "seconds"
+          utilization: "0-100"
+          success_rate: "0.0-1.0"
+          quality_score: "0-100"
+
+      wave_analysis:
+        wave_1:
+          task_count: "number"
+          parallel_count: "number"
+          duration: "seconds"
+          efficiency: "0.0-1.0"
+
+      critical_path_analysis:
+        tasks: ["task_id"]
+        total_duration: "seconds"
+        percentage_of_total: "0-100"
+        bottlenecks: []
+
+      optimization_opportunities:
+        - opportunity: "Parallelize wave 3 (currently sequential)"
+          potential_savings: "45 minutes"
+          implementation: "Add work_stealing for dba agents"
+
+        - opportunity: "Reduce frontend-developer queue depth"
+          potential_savings: "20 minutes"
+          implementation: "Spawn additional frontend-developer instance"
+
+  trend_analysis:
+    location: "Agent_Memory/_system/analytics/trends.yaml"
+    aggregated_across: "all instructions in last 30 days"
+    metrics:
+      instruction_trends:
+        daily_instruction_count: "time series"
+        average_instruction_duration: "time series"
+        instruction_success_rate: "time series"
+        average_tier: "time series"
+
+      agent_trends:
+        agent_utilization: "time series per agent"
+        agent_throughput: "time series per agent"
+        agent_quality: "time series per agent"
+
+      domain_trends:
+        tasks_per_domain: "time series per domain"
+        success_rate_per_domain: "time series per domain"
+
+      performance_trends:
+        average_parallelism_efficiency: "time series"
+        average_speedup: "time series"
+        bottleneck_frequency: "time series"
+
+  predictive_analytics:
+    location: "Agent_Memory/_system/analytics/predictions.yaml"
+    models:
+      task_duration_predictor:
+        input_features:
+          - task_type
+          - domain
+          - agent_type
+          - tier
+          - dependency_count
+        output: "predicted_duration_seconds"
+        accuracy: "mean_absolute_error: X seconds"
+
+      bottleneck_predictor:
+        input_features:
+          - task_graph_structure
+          - agent_capacity
+          - queue_depths
+        output: "predicted_bottlenecks"
+        accuracy: "precision: X%, recall: Y%"
+
+      failure_predictor:
+        input_features:
+          - agent_history
+          - task_complexity
+          - dependency_failures
+        output: "failure_probability"
+        accuracy: "ROC AUC: X"
+
+# ==============================================================================
+# OPTIMIZATION RECOMMENDATIONS
+# ==============================================================================
+
+optimization_engine:
+  rule_based_recommendations:
+    high_queue_depth:
+      condition: "agent.queue_depth > 5"
+      recommendation:
+        type: "spawn_additional_instance"
+        priority: "high"
+        expected_impact: "Reduce wait time by 50%"
+
+    low_utilization:
+      condition: "agent.utilization < 20% for > 10 minutes"
+      recommendation:
+        type: "enable_work_stealing"
+        priority: "medium"
+        expected_impact: "Improve resource efficiency by 30%"
+
+    sequential_when_parallel_possible:
+      condition: "wave has >3 tasks with no interdependencies"
+      recommendation:
+        type: "parallelize_wave"
+        priority: "high"
+        expected_impact: "Reduce wave duration by 70%"
+
+    critical_path_bottleneck:
+      condition: "single task on critical path > 30% of total time"
+      recommendation:
+        type: "optimize_task_or_split"
+        priority: "critical"
+        expected_impact: "Reduce total duration by 20%+"
+
+    high_retry_rate:
+      condition: "agent.retry_rate > 20%"
+      recommendation:
+        type: "investigate_reliability"
+        priority: "high"
+        expected_impact: "Improve success rate and reduce wasted work"
+
+  ml_based_recommendations:
+    enabled: false  # Experimental
+    models:
+      optimal_parallelism:
+        description: "Predict optimal max_concurrent for instruction"
+        features: ["tier", "task_count", "independence_score"]
+        output: "recommended_max_concurrent"
+
+      agent_assignment:
+        description: "Recommend best agent for task"
+        features: ["task_type", "domain", "agent_history"]
+        output: "recommended_agent + confidence"
+
+      scheduling_optimization:
+        description: "Optimize task scheduling order"
+        features: ["dependency_graph", "agent_capacity", "priorities"]
+        output: "optimized_schedule"
+
+# ==============================================================================
+# ALERTS & NOTIFICATIONS
+# ==============================================================================
+
+alerting:
+  alert_rules:
+    execution_stalled:
+      condition: "no progress for > 15 minutes"
+      severity: "critical"
+      action: "escalate_to_orchestrator"
+      notification: "Agent_Memory/{instruction_id}/alerts/stalled.yaml"
+
+    agent_failure_spike:
+      condition: "agent_failure_rate > 30% in last hour"
+      severity: "high"
+      action: "investigate_and_report"
+      notification: "Agent_Memory/_system/alerts/agent_failures_{agent}.yaml"
+
+    queue_depth_warning:
+      condition: "queue_depth > 10"
+      severity: "medium"
+      action: "trigger_scaling"
+      notification: "Agent_Memory/_system/alerts/queue_depth.yaml"
+
+    dependency_deadlock:
+      condition: "task waiting on dependency > 4 hours"
+      severity: "high"
+      action: "escalate_to_planner"
+      notification: "Agent_Memory/{instruction_id}/alerts/deadlock.yaml"
+
+    performance_degradation:
+      condition: "throughput < 50% of historical average"
+      severity: "medium"
+      action: "run_diagnostics"
+      notification: "Agent_Memory/_system/alerts/performance.yaml"
+
+  alert_channels:
+    file_based:
+      enabled: true
+      location: "Agent_Memory/{instruction_id}/alerts/"
+
+    human_notification:
+      enabled: true
+      for_severities: ["critical", "high"]
+      method: "hitl_escalation"
+
+# ==============================================================================
+# CONTINUOUS IMPROVEMENT
+# ==============================================================================
+
+continuous_improvement:
+  learning_loop:
+    after_each_instruction:
+      - "Analyze performance metrics"
+      - "Identify optimization opportunities"
+      - "Update agent capacity estimates"
+      - "Refine task duration predictions"
+      - "Document lessons learned"
+
+    after_each_week:
+      - "Aggregate instruction metrics"
+      - "Identify trends and patterns"
+      - "Update recommendation models"
+      - "Generate performance reports"
+      - "Share insights with system"
+
+  calibration_data:
+    location: "Agent_Memory/_knowledge/calibration/"
+    captures:
+      agent_performance:
+        "{agent_name}":
+          average_duration_by_task_type: {}
+          success_rate_by_complexity: {}
+          optimal_queue_depth: "number"
+
+      task_duration_estimates:
+        "{domain}_{task_type}":
+          p50_duration: "seconds"
+          p95_duration: "seconds"
+          factors: ["complexity", "dependencies"]
+
+      parallelism_efficiency:
+        by_tier:
+          tier_1: 0.2
+          tier_2: 0.6
+          tier_3: 0.85
+          tier_4: 0.75
+
+      bottleneck_patterns:
+        common_bottlenecks:
+          - pattern: "dba agent always bottleneck"
+            frequency: 0.7
+            mitigation: "Spawn 2 dba instances for tier 3+"
+
+# ==============================================================================
+# REPORTING
+# ==============================================================================
+
+reporting:
+  instruction_report:
+    template: "Agent_Memory/_system/templates/instruction_report.md"
+    generated_at: "instruction completion"
+    sections:
+      - executive_summary
+      - performance_metrics
+      - agent_utilization
+      - bottleneck_analysis
+      - quality_metrics
+      - optimization_recommendations
+
+  weekly_report:
+    template: "Agent_Memory/_system/templates/weekly_report.md"
+    generated_at: "end of week"
+    sections:
+      - instructions_completed
+      - performance_trends
+      - agent_performance_rankings
+      - system_health
+      - improvement_initiatives
+
+  agent_scorecard:
+    template: "Agent_Memory/_system/templates/agent_scorecard.md"
+    generated_for: "each agent"
+    update_frequency: "weekly"
+    sections:
+      - performance_summary
+      - tasks_completed
+      - success_rate
+      - quality_metrics
+      - areas_for_improvement
+
+# ==============================================================================
+# VISUALIZATION
+# ==============================================================================
+
+visualization:
+  chart_types:
+    task_timeline:
+      type: "gantt_chart"
+      shows: "task execution timeline"
+      highlights: "critical path, parallelism, bottlenecks"
+
+    agent_utilization_heatmap:
+      type: "heatmap"
+      x_axis: "time"
+      y_axis: "agents"
+      color: "utilization percentage"
+
+    dependency_graph:
+      type: "directed_graph"
+      nodes: "tasks"
+      edges: "dependencies"
+      colors: "status"
+
+    throughput_chart:
+      type: "line_chart"
+      x_axis: "time"
+      y_axis: "tasks completed per hour"
+
+    queue_depth_chart:
+      type: "area_chart"
+      x_axis: "time"
+      y_axis: "queue depth"
+      series: ["global", "per_domain"]
+
+# ==============================================================================
+# API (File-Based)
+# ==============================================================================
+
+api:
+  query_metrics:
+    location: "Agent_Memory/{instruction_id}/queries/"
+    supported_queries:
+      - "get_task_metrics(task_id)"
+      - "get_agent_metrics(agent_name)"
+      - "get_instruction_summary(instruction_id)"
+      - "get_bottlenecks(instruction_id)"
+      - "get_recommendations(instruction_id)"
+
+  export_formats:
+    - yaml
+    - json
+    - markdown
+    - csv
+
+# ==============================================================================
+# CONFIGURATION
+# ==============================================================================
+
+configuration:
+  metrics_retention:
+    heartbeats: "7 days"
+    task_metrics: "90 days"
+    agent_metrics: "1 year"
+    instruction_metrics: "1 year"
+    alerts: "30 days"
+
+  sampling:
+    heartbeat_sampling: 1.0  # 100% capture
+    event_sampling: 1.0
+
+  storage_optimization:
+    compression: true
+    archival: true
+    archive_after: "90 days"

@@ -1,0 +1,639 @@
+# Task Queue Manager - cAgents V6.2.1
+# Advanced queue management for massive parallel task distribution
+
+version: "6.2.1"
+description: "Intelligent task queue system with dependency resolution, priority scheduling, and load balancing"
+
+# ==============================================================================
+# QUEUE ARCHITECTURE
+# ==============================================================================
+
+queue_hierarchy:
+  global_queue:
+    path: "Agent_Memory/{instruction_id}/queues/global/"
+    description: "Master queue for entire instruction workflow"
+    responsibilities:
+      - "Accept new tasks from planners"
+      - "Route tasks to appropriate domain queues"
+      - "Track global metrics and status"
+      - "Enforce global resource limits"
+
+  domain_queues:
+    path: "Agent_Memory/{instruction_id}/queues/domains/{domain}/"
+    description: "Per-domain task queues"
+    domains:
+      software: "Software engineering tasks"
+      creative: "Creative writing tasks"
+      business: "Business process tasks"
+      planning: "Planning and strategy tasks"
+      sales: "Sales and revenue tasks"
+      marketing: "Marketing campaign tasks"
+      finance: "Financial analysis tasks"
+      operations: "Operations optimization tasks"
+      hr: "Human resources tasks"
+      legal: "Legal compliance tasks"
+      support: "Customer support tasks"
+    responsibilities:
+      - "Accept tasks routed from global queue"
+      - "Route tasks to specific agent queues"
+      - "Track domain-level metrics"
+      - "Balance load across domain agents"
+
+  agent_queues:
+    path: "Agent_Memory/{instruction_id}/queues/agents/{agent_name}/"
+    description: "Per-agent work queues"
+    responsibilities:
+      - "Accept tasks assigned to specific agent"
+      - "Maintain FIFO order within priority"
+      - "Track agent capacity and utilization"
+      - "Support work stealing"
+
+  dependency_waiting_queue:
+    path: "Agent_Memory/{instruction_id}/queues/waiting_on_dependencies/"
+    description: "Tasks blocked on dependencies"
+    responsibilities:
+      - "Hold tasks until dependencies complete"
+      - "Monitor dependency completion events"
+      - "Auto-promote tasks when dependencies clear"
+      - "Detect circular dependencies"
+
+  retry_queue:
+    path: "Agent_Memory/{instruction_id}/queues/retry/"
+    description: "Failed tasks awaiting retry"
+    responsibilities:
+      - "Hold failed tasks during backoff period"
+      - "Track retry count and backoff duration"
+      - "Re-queue tasks after backoff expires"
+      - "Escalate after max retries exceeded"
+
+# ==============================================================================
+# TASK SCHEMA
+# ==============================================================================
+
+task_schema:
+  task_id:
+    type: "string"
+    format: "task_{YYYYMMDD}_{instruction_seq}_{task_seq}"
+    example: "task_20260110_001_042"
+
+  instruction_id:
+    type: "string"
+    description: "Parent instruction this task belongs to"
+
+  parent_task_id:
+    type: "string"
+    nullable: true
+    description: "Parent task if this is a subtask"
+
+  task_type:
+    type: "enum"
+    values:
+      - architecture_design
+      - implementation
+      - testing
+      - code_review
+      - security_audit
+      - performance_optimization
+      - documentation
+      - deployment
+      - monitoring
+      - analysis
+      - planning
+      - coordination
+
+  domain:
+    type: "enum"
+    values: ["software", "creative", "business", "planning", "sales", "marketing", "finance", "operations", "hr", "legal", "support"]
+
+  assigned_agent:
+    type: "string"
+    description: "Agent responsible for executing this task"
+
+  priority:
+    type: "enum"
+    values: ["critical", "high", "normal", "low"]
+    default: "normal"
+
+  status:
+    type: "enum"
+    values:
+      - pending            # Created, not yet assigned
+      - queued             # In agent queue, waiting to start
+      - in_progress        # Agent actively working
+      - blocked            # Waiting on dependency or blocker
+      - under_review       # Awaiting review/approval
+      - completed          # Successfully finished
+      - failed             # Failed, may retry
+      - cancelled          # Cancelled by user or system
+
+  description:
+    type: "string"
+    description: "Human-readable task description"
+
+  detailed_prompt:
+    type: "string"
+    description: "Full prompt for assigned agent"
+
+  acceptance_criteria:
+    type: "array"
+    items:
+      type: "string"
+    description: "List of criteria that must be met for completion"
+
+  dependencies:
+    type: "object"
+    properties:
+      hard_dependencies:
+        type: "array"
+        items:
+          task_id: "string"
+          reason: "string"
+        description: "Tasks that must complete before this can start"
+
+      soft_dependencies:
+        type: "array"
+        items:
+          task_id: "string"
+          reason: "string"
+        description: "Tasks that should complete first but not blocking"
+
+      data_dependencies:
+        type: "array"
+        items:
+          task_id: "string"
+          artifact_path: "string"
+        description: "Tasks whose output artifacts are needed"
+
+  estimated_duration:
+    type: "string"
+    format: "ISO8601 duration"
+    example: "PT2H30M"
+
+  actual_start_time:
+    type: "string"
+    format: "ISO8601"
+    nullable: true
+
+  actual_end_time:
+    type: "string"
+    format: "ISO8601"
+    nullable: true
+
+  retry_count:
+    type: "integer"
+    default: 0
+
+  max_retries:
+    type: "integer"
+    default: 3
+
+  output_path:
+    type: "string"
+    description: "Where agent should write results"
+
+  tags:
+    type: "array"
+    items:
+      type: "string"
+    description: "Metadata tags for filtering/grouping"
+
+# ==============================================================================
+# TASK LIFECYCLE
+# ==============================================================================
+
+task_lifecycle:
+  creation:
+    action: "Task created by planner or parent agent"
+    initial_status: "pending"
+    location: "Agent_Memory/{instruction_id}/tasks/pending/{task_id}.yaml"
+    next_steps:
+      - "Add to global queue"
+      - "Resolve dependencies"
+      - "Route to appropriate domain queue"
+
+  queueing:
+    action: "Task enters agent queue"
+    status: "queued"
+    location: "Agent_Memory/{instruction_id}/queues/agents/{agent_name}/{task_id}.yaml"
+    next_steps:
+      - "Wait for agent capacity"
+      - "Agent picks up task based on priority"
+
+  execution:
+    action: "Agent starts working on task"
+    status: "in_progress"
+    location: "Agent_Memory/{instruction_id}/tasks/in_progress/{task_id}.yaml"
+    next_steps:
+      - "Agent sends heartbeats every 2 minutes"
+      - "Monitor for completion or blocking"
+
+  blocking:
+    action: "Task encounters blocker"
+    status: "blocked"
+    location: "Agent_Memory/{instruction_id}/tasks/blocked/{task_id}.yaml"
+    next_steps:
+      - "Agent attempts self-resolution"
+      - "Escalate if unresolved after 15 minutes"
+
+  completion:
+    action: "Task successfully finished"
+    status: "completed"
+    location: "Agent_Memory/{instruction_id}/tasks/completed/{task_id}.yaml"
+    next_steps:
+      - "Agent writes output artifacts"
+      - "Unblock dependent tasks"
+      - "Update metrics"
+
+  failure:
+    action: "Task failed to complete"
+    status: "failed"
+    location: "Agent_Memory/{instruction_id}/tasks/failed/{task_id}.yaml"
+    next_steps:
+      - "If retry_count < max_retries: add to retry queue"
+      - "Else: escalate to parent agent"
+
+# ==============================================================================
+# PRIORITY SCHEDULING
+# ==============================================================================
+
+priority_scheduling:
+  priority_levels:
+    critical:
+      weight: 1000
+      description: "System-critical or blocker-resolution tasks"
+      sla: "Start within 5 minutes"
+      preemption: true
+
+    high:
+      weight: 100
+      description: "Important tasks on critical path"
+      sla: "Start within 30 minutes"
+      preemption: false
+
+    normal:
+      weight: 10
+      description: "Standard tasks"
+      sla: "Start within 2 hours"
+      preemption: false
+
+    low:
+      weight: 1
+      description: "Nice-to-have or background tasks"
+      sla: "Start within 24 hours"
+      preemption: false
+
+  priority_boost:
+    age_based_boost:
+      enabled: true
+      boost_rate: "+1 priority level per 4 hours in queue"
+      max_boost: "Can boost from low to high, but not to critical"
+
+    dependency_boost:
+      enabled: true
+      description: "Boost priority if high-priority tasks depend on this"
+
+  scheduling_algorithm:
+    type: "weighted_priority_queue"
+    tie_breaker: "fifo"
+    considerations:
+      - priority_weight
+      - task_age
+      - dependency_urgency
+      - agent_specialization_match
+
+# ==============================================================================
+# DEPENDENCY RESOLUTION
+# ==============================================================================
+
+dependency_resolution:
+  dependency_tracking:
+    forward_dependencies:
+      description: "Tasks this task depends on"
+      location: "task.dependencies.hard_dependencies"
+
+    reverse_dependencies:
+      description: "Tasks that depend on this task"
+      location: "Agent_Memory/{instruction_id}/dependency_graph/reverse/{task_id}.yaml"
+
+  dependency_graph:
+    location: "Agent_Memory/{instruction_id}/graphs/dependencies.yaml"
+    format: "adjacency_list"
+    updates: "real-time as tasks complete"
+
+  blocking_logic:
+    rule: "Task cannot start if ANY hard dependency incomplete"
+    check_frequency: "every 30 seconds"
+    auto_promotion: true
+
+  dependency_completion_event:
+    trigger: "When task completes"
+    actions:
+      - "Find all tasks with this as dependency"
+      - "Check if all their dependencies now met"
+      - "If yes, promote from waiting queue to ready queue"
+      - "Notify agents of newly ready tasks"
+
+  circular_dependency_detection:
+    algorithm: "depth_first_search_cycle_detection"
+    check_frequency: "on task creation"
+    resolution: "escalate_to_planner"
+
+  missing_dependency_handling:
+    detection: "Task references non-existent dependency"
+    action: "escalate_immediately"
+
+# ==============================================================================
+# LOAD BALANCING
+# ==============================================================================
+
+load_balancing:
+  agent_capacity_tracking:
+    location: "Agent_Memory/_system/capacity/agents/{agent_name}.yaml"
+    fields:
+      max_concurrent_tasks: "From parallel_execution_framework.yaml"
+      current_task_count: "Real-time count"
+      utilization_percentage: "current / max"
+      queue_depth: "Tasks in agent queue"
+      average_task_duration: "Historical average"
+
+  load_balancing_strategies:
+    least_loaded:
+      description: "Assign to agent with lowest utilization"
+      metric: "utilization_percentage"
+
+    shortest_queue:
+      description: "Assign to agent with shortest queue"
+      metric: "queue_depth"
+
+    fastest_completion:
+      description: "Assign to agent with fastest average completion"
+      metric: "average_task_duration"
+
+    skill_match:
+      description: "Prefer agent with best skill match, then load balance"
+      primary_metric: "skill_match_score"
+      secondary_metric: "utilization_percentage"
+
+  dynamic_routing:
+    enabled: true
+    re_evaluation_interval: "2 minutes"
+    migration_threshold: "20% utilization imbalance"
+
+  work_stealing:
+    enabled: true
+    steal_from: "most_loaded"
+    steal_to: "idle_agents"
+    steal_criteria:
+      - "Donor has >5 tasks in queue"
+      - "Thief has been idle >5 minutes"
+      - "Task is not yet started"
+      - "Thief has required skills"
+    coordination: "Agent_Memory/_communication/work_stealing/"
+
+# ==============================================================================
+# QUEUE OPERATIONS
+# ==============================================================================
+
+queue_operations:
+  enqueue:
+    operation: "Add task to queue"
+    steps:
+      - "Validate task schema"
+      - "Check dependencies"
+      - "If dependencies unmet: add to waiting queue"
+      - "Else: add to appropriate agent queue based on priority"
+      - "Update queue metrics"
+
+  dequeue:
+    operation: "Agent picks up next task"
+    steps:
+      - "Check agent capacity available"
+      - "Get highest priority task from queue"
+      - "Verify dependencies still met"
+      - "Assign to agent"
+      - "Move task to in_progress"
+      - "Update queue metrics"
+
+  requeue:
+    operation: "Return task to queue (e.g. after failure)"
+    steps:
+      - "Increment retry_count"
+      - "If retry_count < max_retries: add to retry queue with backoff"
+      - "Else: mark as failed and escalate"
+
+  promote:
+    operation: "Move task from waiting queue to ready queue"
+    trigger: "Dependencies completed"
+    steps:
+      - "Verify all hard dependencies met"
+      - "Remove from waiting queue"
+      - "Add to appropriate agent queue"
+      - "Notify agent of new ready task"
+
+  cancel:
+    operation: "Remove task from queue"
+    steps:
+      - "Mark task as cancelled"
+      - "Remove from all queues"
+      - "Unblock dependent tasks (optional)"
+      - "Update metrics"
+
+# ==============================================================================
+# QUEUE MONITORING
+# ==============================================================================
+
+queue_monitoring:
+  metrics:
+    per_queue:
+      - queue_name
+      - total_tasks
+      - pending_tasks
+      - in_progress_tasks
+      - completed_tasks
+      - failed_tasks
+      - average_wait_time
+      - average_execution_time
+      - throughput_per_hour
+
+    per_agent:
+      - agent_name
+      - max_capacity
+      - current_utilization
+      - queue_depth
+      - tasks_completed_today
+      - average_task_duration
+      - success_rate
+
+  dashboards:
+    real_time_queue_dashboard:
+      location: "Agent_Memory/{instruction_id}/dashboards/queue_status.yaml"
+      update_frequency: "every 30 seconds"
+      visualizations:
+        - queue_depth_chart
+        - agent_utilization_heatmap
+        - task_flow_diagram
+        - bottleneck_identification
+
+    historical_analytics:
+      location: "Agent_Memory/{instruction_id}/analytics/queue_history.yaml"
+      metrics:
+        - throughput_trends
+        - wait_time_trends
+        - agent_productivity_trends
+        - task_success_rates
+
+  alerts:
+    high_queue_depth:
+      threshold: ">20 tasks in single agent queue"
+      action: "Trigger load rebalancing"
+
+    long_wait_time:
+      threshold: ">1 hour average wait time"
+      action: "Spawn additional agent instances"
+
+    agent_starvation:
+      threshold: "Agent idle >10 minutes while global queue non-empty"
+      action: "Investigate routing logic"
+
+    dependency_deadlock:
+      threshold: "Task in waiting queue >4 hours"
+      action: "Escalate to planner for dependency resolution"
+
+# ==============================================================================
+# RETRY LOGIC
+# ==============================================================================
+
+retry_logic:
+  backoff_strategy:
+    type: "exponential_backoff"
+    base_delay: "1 minute"
+    multiplier: 2
+    max_delay: "30 minutes"
+    jitter: true
+
+  retry_schedule:
+    attempt_1: "after 1 minute"
+    attempt_2: "after 2 minutes"
+    attempt_3: "after 4 minutes"
+    max_attempts: 3
+
+  retry_conditions:
+    always_retry:
+      - "transient_network_error"
+      - "rate_limit_exceeded"
+      - "resource_temporarily_unavailable"
+
+    never_retry:
+      - "invalid_task_definition"
+      - "insufficient_permissions"
+      - "agent_not_found"
+
+    conditional_retry:
+      - "task_timeout": "Retry with increased timeout"
+      - "dependency_failure": "Retry after dependency fixed"
+
+  escalation_after_exhaustion:
+    action: "Notify parent agent"
+    location: "Agent_Memory/{instruction_id}/escalations/"
+    include:
+      - task_details
+      - all_retry_attempts
+      - error_messages
+      - suggested_resolution
+
+# ==============================================================================
+# PERFORMANCE OPTIMIZATIONS
+# ==============================================================================
+
+performance_optimizations:
+  queue_indexing:
+    enabled: true
+    indexes:
+      - priority
+      - domain
+      - assigned_agent
+      - status
+      - dependencies
+
+  batch_processing:
+    enabled: true
+    batch_size: 10
+    description: "Process multiple queue operations in batch"
+
+  caching:
+    dependency_graph_cache:
+      ttl: "5 minutes"
+      invalidation: "on task completion"
+
+    agent_capacity_cache:
+      ttl: "1 minute"
+      invalidation: "on capacity change"
+
+  lazy_dependency_evaluation:
+    enabled: true
+    description: "Only check dependencies when task about to execute"
+
+# ==============================================================================
+# EXAMPLE WORKFLOWS
+# ==============================================================================
+
+examples:
+  example_1_sequential_pipeline:
+    description: "3 tasks in strict sequence"
+    tasks:
+      - task_id: "task_001"
+        description: "Design API"
+        dependencies: []
+
+      - task_id: "task_002"
+        description: "Implement API"
+        dependencies:
+          hard_dependencies:
+            - task_id: "task_001"
+
+      - task_id: "task_003"
+        description: "Test API"
+        dependencies:
+          hard_dependencies:
+            - task_id: "task_002"
+
+    workflow:
+      - "task_001 enters architect queue, starts immediately"
+      - "task_002 and task_003 enter waiting queue"
+      - "When task_001 completes, task_002 promoted to backend-developer queue"
+      - "When task_002 completes, task_003 promoted to qa-lead queue"
+
+  example_2_parallel_fan_out:
+    description: "10 independent tasks execute in parallel"
+    tasks:
+      - task_id: "task_010-019"
+        description: "Refactor 10 files"
+        dependencies: []
+
+    workflow:
+      - "All 10 tasks enter respective developer queues immediately"
+      - "Agents pick up tasks based on capacity"
+      - "All execute in parallel"
+      - "Parent aggregates results as each completes"
+
+  example_3_complex_dag:
+    description: "Diamond dependency pattern"
+    tasks:
+      - task_id: "A"
+        dependencies: []
+
+      - task_id: "B"
+        dependencies: ["A"]
+
+      - task_id: "C"
+        dependencies: ["A"]
+
+      - task_id: "D"
+        dependencies: ["B", "C"]
+
+    workflow:
+      - "A starts immediately"
+      - "B and C wait for A"
+      - "When A completes, B and C promoted and execute in parallel"
+      - "D waits for both B and C"
+      - "When both B and C complete, D promoted and executes"

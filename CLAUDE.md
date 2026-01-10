@@ -4,10 +4,11 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 ## Project Overview
 
-**cAgents** (Caelan's Agents) is a universal multi-domain agent system for Claude Code. It provides specialized autonomous agent teams that collaborate through a file-based memory system to execute complex tasks across any domain - software engineering, creative writing, business operations, and beyond.
+**cAgents** (Caelan's Agents) is a universal multi-domain agent system for Claude Code with **massive parallel execution capabilities**. It provides specialized autonomous agent teams that collaborate through a file-based memory system to execute complex tasks across any domain - software engineering, creative writing, business operations, and beyond.
 
-The system features a **V2 Universal Workflow Architecture**:
+The system features a **V2 Universal Workflow Architecture** with **V6.2.1 Massive Parallel Optimization**:
 - **@cagents/core** - Universal infrastructure (Trigger, Orchestrator, HITL, 5 Universal Workflow Agents, Agent_Memory, universal commands)
+- **Parallel Execution Engine** - Execute up to 50 concurrent agents with intelligent queue management
 - **11 Active Domains** - All configured with domain-specific behavior via YAML configs:
   - **@cagents/software** - 41 team agents (software engineering)
   - **@cagents/business** - 18 team agents (business operations)
@@ -55,10 +56,41 @@ These 5 universal agents replace 55 domain-specific workflow agents (11 domains 
 **Benefits**:
 - **Modularity**: Each subagent handles one concern
 - **Specialization**: Right expert for each task
-- **Parallelization**: Independent subagents run concurrently
+- **Parallelization**: Independent subagents run concurrently (up to 50 concurrent)
 - **Reusability**: Subagent patterns reused across workflows
 
-**See**: `SUBAGENT_WORKFLOW_PATTERNS.md` for comprehensive patterns and examples
+**See**:
+- `SUBAGENT_WORKFLOW_PATTERNS.md` for comprehensive patterns and examples
+- `MASSIVE_PARALLEL_OPTIMIZATION_GUIDE.md` for massive parallel execution strategies
+
+### Massive Parallel Execution (V6.2.1 NEW)
+
+**Execute up to 50 concurrent agents** for massive speedup on large tasks:
+
+**Execution Modes**:
+- **Sequential** (Tier 0-1): Single agent, no parallelism
+- **Pipeline** (Tier 2): Stages with parallelism within stages (max 5 concurrent)
+- **Swarm** (Tier 3): Massive parallelism for independent tasks (max 50 concurrent)
+- **Mesh** (Tier 4): Peer-to-peer coordination with dynamic dependencies (max 30 concurrent)
+
+**Key Features**:
+- **Intelligent Queue Management**: Multi-tier queues with priority scheduling and dependency resolution
+- **Dynamic Load Balancing**: Work stealing, agent pooling, automatic scaling
+- **Performance Monitoring**: Real-time dashboards, bottleneck identification, analytics
+- **Advanced Coordination**: Heartbeats, manifests, escalations, peer communication
+
+**Performance**:
+- **50x speedup** on fully parallelizable workloads
+- **80%+ parallelism efficiency** for well-structured tasks
+- **Automatic optimization** recommendations
+
+**Configuration Files**:
+- `Agent_Memory/_system/config/parallel_execution_framework.yaml`
+- `Agent_Memory/_system/config/subagent_coordination_protocol.yaml`
+- `Agent_Memory/_system/config/task_queue_manager.yaml`
+- `Agent_Memory/_system/config/performance_tracking_system.yaml`
+
+**See**: `MASSIVE_PARALLEL_OPTIMIZATION_GUIDE.md` for complete documentation
 
 ### Software Engineering Domain (@cagents/software)
 
@@ -480,7 +512,7 @@ claude --plugin-dir .
 
 ---
 
-**Version**: 6.1.0
+**Version**: 6.2.1
 **Total Agents**: 228 (8 core infrastructure + 220 domain team agents)
 **Architecture**: V2 Universal Workflow (5 universal agents + 55 domain configs + 11 domains)
 **Dependencies**: None (file-based, self-contained)

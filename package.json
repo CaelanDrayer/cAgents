@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "6.1.0",
+  "version": "6.2.1",
   "description": "Universal multi-domain agent system with 228 specialized agents for Claude Code. V2 Universal Workflow Architecture with 5 universal workflow agents working across all 11 domains via YAML configuration. 8 core infrastructure + 220 domain experts. Supports recursive workflows, configuration-driven behavior, and multi-domain coordination. Domains: software (41), business (18), creative (17), planning (16), sales (17), marketing (21), finance (16), operations (15), hr (19), legal (14), support (15).",
   "main": "index.js",
   "scripts": {

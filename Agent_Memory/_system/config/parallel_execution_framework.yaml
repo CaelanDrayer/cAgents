@@ -1,0 +1,471 @@
+# Parallel Execution Framework - cAgents V6.2.1
+# Enables massive parallel task distribution across agents
+
+version: "6.2.1"
+description: "Framework for distributing large tasks across numerous parallel agents"
+
+# ==============================================================================
+# PARALLEL EXECUTION ARCHITECTURE
+# ==============================================================================
+
+execution_modes:
+  sequential:
+    description: "Tasks execute one after another (default for simple workflows)"
+    use_when:
+      - "Tasks have strict dependencies"
+      - "Resource constraints require serialization"
+      - "Tier 0-1 tasks"
+    max_concurrent: 1
+
+  pipeline:
+    description: "Tasks execute in stages with parallelism within stages"
+    use_when:
+      - "Tasks group into distinct phases"
+      - "Dependencies exist between phases but not within"
+      - "Tier 2 tasks"
+    max_concurrent_per_stage: 5
+
+  swarm:
+    description: "Massive parallel execution with dynamic agent spawning"
+    use_when:
+      - "Tasks are mostly independent"
+      - "Large workloads need fast completion"
+      - "Tier 3-4 tasks"
+    max_concurrent: 50
+    dynamic_scaling: true
+
+  mesh:
+    description: "Peer-to-peer agent collaboration with dynamic dependencies"
+    use_when:
+      - "Complex interdependencies emerge during execution"
+      - "Agents need to coordinate directly"
+      - "Tier 4 expert tasks"
+    max_concurrent: 30
+    peer_communication: true
+
+# ==============================================================================
+# TASK QUEUE ARCHITECTURE
+# ==============================================================================
+
+task_queues:
+  global_queue:
+    location: "Agent_Memory/{instruction_id}/queues/global/"
+    description: "Master queue for all tasks in instruction"
+    priorities: ["critical", "high", "normal", "low"]
+    fifo_within_priority: true
+
+  domain_queues:
+    location: "Agent_Memory/{instruction_id}/queues/domains/{domain}/"
+    description: "Per-domain task queues for specialized work"
+    domains:
+      - software
+      - creative
+      - business
+      - planning
+      - sales
+      - marketing
+      - finance
+      - operations
+      - hr
+      - legal
+      - support
+
+  agent_queues:
+    location: "Agent_Memory/{instruction_id}/queues/agents/{agent_name}/"
+    description: "Per-agent work queues for assigned tasks"
+    capacity_tracking: true
+    max_queue_depth: 10
+
+  dependency_queues:
+    location: "Agent_Memory/{instruction_id}/queues/waiting_on/"
+    description: "Tasks waiting for dependencies to complete"
+    auto_promote: true
+    check_interval: "30 seconds"
+
+# ==============================================================================
+# AGENT CAPACITY MANAGEMENT
+# ==============================================================================
+
+capacity_model:
+  agent_slots:
+    description: "Concurrent task slots per agent type"
+
+    # Executive leadership - strategic oversight
+    executives:
+      ceo: 3
+      cto: 5
+      cfo: 5
+      coo: 5
+      chro: 5
+      cro: 5
+      cmo: 5
+
+    # Orchestration agents - high parallelism
+    orchestrators:
+      orchestrator: 20
+      universal-router: 15
+      universal-planner: 15
+      universal-executor: 50
+      universal-validator: 20
+      universal-self-correct: 10
+
+    # Lead agents - moderate parallelism
+    leads:
+      tech-lead: 10
+      frontend-lead: 8
+      backend-lead: 8
+      devops-lead: 6
+      qa-lead: 8
+      security-lead: 6
+      data-lead: 6
+
+    # Individual contributors - focused work
+    specialists:
+      architect: 3
+      senior-developer: 5
+      frontend-developer: 5
+      backend-developer: 5
+      dba: 4
+      devops: 5
+      security-specialist: 4
+      qa-engineer: 5
+      data-analyst: 4
+      ux-designer: 3
+
+  scaling_strategy:
+    dynamic_spawning:
+      enabled: true
+      spawn_threshold: 0.8  # Spawn new agent when 80% capacity
+      max_instances_per_agent: 5
+      cooldown_period: "5 minutes"
+
+    load_balancing:
+      algorithm: "least_loaded"
+      rebalance_interval: "2 minutes"
+      migration_enabled: true
+
+# ==============================================================================
+# DEPENDENCY MANAGEMENT
+# ==============================================================================
+
+dependency_system:
+  dependency_types:
+    hard:
+      description: "Task B cannot start until task A completes"
+      blocking: true
+      example: "Backend API must exist before frontend can call it"
+
+    soft:
+      description: "Task B prefers task A complete but can start without it"
+      blocking: false
+      example: "Tests can start before full implementation done"
+
+    data:
+      description: "Task B needs output artifacts from task A"
+      blocking: true
+      artifact_tracking: true
+      example: "Deploy needs build artifacts from build task"
+
+    coordination:
+      description: "Tasks must synchronize at certain checkpoints"
+      blocking: false
+      sync_points: true
+      example: "Frontend and backend sync on API contract"
+
+  dependency_graph:
+    location: "Agent_Memory/{instruction_id}/graphs/dependencies.yaml"
+    format: "adjacency_list"
+    cycle_detection: true
+    critical_path_analysis: true
+
+  dependency_resolution:
+    auto_unblock:
+      enabled: true
+      check_interval: "30 seconds"
+      promotion_strategy: "priority_boost"
+
+    circular_dependency_handling:
+      detection: "immediate"
+      resolution: "escalate_to_planner"
+      max_iterations: 3
+
+# ==============================================================================
+# INTER-AGENT COMMUNICATION CHANNELS
+# ==============================================================================
+
+communication_channels:
+  task_assignment:
+    protocol: "delegation"
+    location: "Agent_Memory/_communication/inbox/{agent_name}/"
+    acknowledgement_required: true
+    timeout: "5 minutes"
+
+  status_updates:
+    protocol: "heartbeat"
+    location: "Agent_Memory/{instruction_id}/heartbeats/{agent_name}/"
+    frequency: "every 2 minutes while working"
+    stale_threshold: "10 minutes"
+
+  peer_coordination:
+    protocol: "peer_message"
+    location: "Agent_Memory/{instruction_id}/peer_messages/{from}_{to}/"
+    use_cases:
+      - "API contract negotiation"
+      - "Shared resource coordination"
+      - "Handoff preparation"
+
+  broadcast_announcements:
+    protocol: "broadcast"
+    location: "Agent_Memory/_communication/broadcast/{channel}/"
+    channels:
+      - all
+      - domain_leads
+      - instruction_team
+      - qa_team
+
+  result_publishing:
+    protocol: "artifact_ready"
+    location: "Agent_Memory/{instruction_id}/outputs/{task_id}/"
+    notification_mechanism: "dependency_queue_promotion"
+
+  escalations:
+    protocol: "escalation"
+    location: "Agent_Memory/{instruction_id}/escalations/"
+    sla:
+      response_time: "15 minutes"
+      resolution_time: "2 hours"
+
+# ==============================================================================
+# WORK STEALING & LOAD BALANCING
+# ==============================================================================
+
+work_stealing:
+  enabled: true
+  description: "Idle agents can steal work from overloaded agents"
+
+  eligibility:
+    min_idle_time: "5 minutes"
+    skill_match_required: true
+    domain_match_preferred: true
+
+  stealing_strategy:
+    target_selection: "most_loaded"
+    task_selection: "lowest_priority_first"
+    steal_percentage: 0.3  # Steal up to 30% of target's queue
+
+  coordination:
+    notification_required: true
+    original_agent_veto: true
+    veto_timeout: "2 minutes"
+
+# ==============================================================================
+# AGENT COORDINATION PATTERNS
+# ==============================================================================
+
+coordination_patterns:
+  fan_out_fan_in:
+    description: "One agent spawns many parallel subagents, then aggregates results"
+    example: "Universal-executor spawns 10 developers, aggregates their work"
+    stages:
+      - decompose: "Break task into parallel subtasks"
+      - spawn: "Launch subagents for each subtask"
+      - monitor: "Track progress via heartbeats"
+      - aggregate: "Collect and synthesize results"
+    max_fanout: 20
+
+  pipeline_stages:
+    description: "Work flows through sequential stages, each stage parallelizes"
+    example: "Design (3 agents) → Implement (10 agents) → Test (5 agents)"
+    stages:
+      - barrier_synchronization: true
+      - stage_handoff: "explicit"
+      - rollback_capability: true
+
+  peer_collaboration:
+    description: "Agents work together on shared deliverable"
+    example: "Frontend + Backend collaborate on API contract"
+    coordination:
+      - shared_workspace: "Agent_Memory/{instruction_id}/shared/{team_id}/"
+      - sync_frequency: "every 30 minutes"
+      - conflict_resolution: "last_write_wins"
+
+  hierarchical_delegation:
+    description: "Lead delegates to specialists, specialists may further delegate"
+    example: "Tech-lead → Backend-lead → Backend-developers"
+    depth_limit: 4
+    delegation_chain_tracking: true
+
+# ==============================================================================
+# PROGRESS TRACKING & OBSERVABILITY
+# ==============================================================================
+
+observability:
+  agent_heartbeats:
+    location: "Agent_Memory/{instruction_id}/heartbeats/"
+    frequency: "every 2 minutes"
+    fields:
+      - agent_name
+      - current_task_id
+      - progress_percentage
+      - estimated_completion
+      - blockers
+      - resource_utilization
+
+  task_telemetry:
+    location: "Agent_Memory/{instruction_id}/telemetry/tasks/"
+    metrics:
+      - task_start_time
+      - task_end_time
+      - actual_vs_estimated_duration
+      - agent_assignments
+      - dependency_wait_time
+      - retry_count
+
+  workflow_metrics:
+    location: "Agent_Memory/{instruction_id}/metrics/workflow.yaml"
+    aggregations:
+      - total_tasks
+      - completed_tasks
+      - failed_tasks
+      - average_task_duration
+      - parallel_efficiency
+      - bottleneck_analysis
+
+  performance_dashboard:
+    location: "Agent_Memory/{instruction_id}/dashboard.yaml"
+    real_time_updates: true
+    visualizations:
+      - agent_utilization_heatmap
+      - task_dependency_graph
+      - critical_path_timeline
+      - bottleneck_identification
+
+# ==============================================================================
+# ERROR HANDLING & RESILIENCE
+# ==============================================================================
+
+resilience:
+  task_retry_policy:
+    max_retries: 3
+    backoff_strategy: "exponential"
+    retry_delays: ["1 minute", "5 minutes", "15 minutes"]
+
+  agent_failure_handling:
+    detection: "heartbeat_timeout"
+    timeout: "10 minutes"
+    recovery:
+      - reassign_tasks: true
+      - preserve_state: true
+      - notify_lead: true
+
+  cascading_failure_prevention:
+    circuit_breaker:
+      enabled: true
+      failure_threshold: 5
+      timeout: "5 minutes"
+      half_open_requests: 2
+
+  rollback_capability:
+    checkpoint_frequency: "after each major phase"
+    checkpoint_location: "Agent_Memory/{instruction_id}/checkpoints/"
+    rollback_triggers:
+      - "critical_validation_failure"
+      - "manual_request"
+      - "cascading_failures"
+
+# ==============================================================================
+# OPTIMIZATION STRATEGIES
+# ==============================================================================
+
+optimizations:
+  task_batching:
+    enabled: true
+    batch_size: 5
+    batch_criteria: "same_agent_type AND same_domain"
+
+  speculative_execution:
+    enabled: false  # Experimental
+    confidence_threshold: 0.8
+    description: "Start tasks before dependencies complete if confident"
+
+  result_caching:
+    enabled: true
+    cache_location: "Agent_Memory/_system/cache/"
+    ttl: "24 hours"
+    cache_key: "task_type + input_hash"
+
+  agent_warming:
+    enabled: true
+    description: "Pre-spawn agents before tasks arrive"
+    warm_pool_size: 5
+    agent_types: ["backend-developer", "frontend-developer", "qa-engineer"]
+
+# ==============================================================================
+# USAGE EXAMPLES
+# ==============================================================================
+
+examples:
+  massive_refactor:
+    description: "Refactor 50 files across frontend and backend"
+    mode: "swarm"
+    strategy:
+      - "Universal-executor spawns 25 agents (fan-out)"
+      - "Each agent refactors 2 files in parallel"
+      - "QA-lead validates all changes (fan-in)"
+      - "Reviewer runs comprehensive review"
+    expected_speedup: "25x vs sequential"
+
+  full_stack_feature:
+    description: "Implement feature touching frontend, backend, database, tests"
+    mode: "pipeline"
+    strategy:
+      - "Stage 1: Architect designs (1 agent)"
+      - "Stage 2: Parallel implementation (3 agents)"
+      - "  - Frontend-developer builds UI"
+      - "  - Backend-developer builds API"
+      - "  - DBA designs schema"
+      - "Stage 3: Integration (2 agents)"
+      - "  - Frontend + Backend sync on contract"
+      - "Stage 4: Testing (3 agents)"
+      - "  - Unit, integration, e2e tests"
+    expected_speedup: "8x vs sequential"
+
+  novel_writing:
+    description: "Write 10-chapter novel"
+    mode: "swarm"
+    strategy:
+      - "Story-architect designs overall plot"
+      - "10 prose-stylists write chapters in parallel"
+      - "Editor reviews all chapters"
+      - "Continuity-checker validates consistency"
+    expected_speedup: "10x vs sequential"
+
+# ==============================================================================
+# CONFIGURATION
+# ==============================================================================
+
+configuration:
+  max_global_agents: 100
+  max_agents_per_instruction: 50
+  max_concurrent_instructions: 10
+
+  scaling_triggers:
+    scale_up:
+      - "queue_depth > 10"
+      - "avg_wait_time > 5 minutes"
+      - "agent_utilization > 80%"
+    scale_down:
+      - "queue_depth < 3"
+      - "agent_utilization < 20%"
+      - "idle_time > 10 minutes"
+
+  resource_limits:
+    memory_per_agent: "500MB"
+    cpu_per_agent: "1 core"
+    max_task_duration: "4 hours"
+
+  quality_gates:
+    enforce_code_review: true
+    minimum_test_coverage: 0.8
+    security_scan_required: true
+    performance_validation: true

@@ -1,0 +1,618 @@
+# Subagent Coordination Protocol - cAgents V6.2.1
+# Standards for parent-subagent interaction and massive parallel coordination
+
+version: "6.2.1"
+description: "Comprehensive protocol for coordinating subagent spawning, communication, and result aggregation"
+
+# ==============================================================================
+# SUBAGENT SPAWNING STANDARDS
+# ==============================================================================
+
+spawning_protocol:
+  when_to_spawn:
+    always_spawn:
+      - "Task requires specialized expertise outside parent's domain"
+      - "Multiple independent subtasks can execute in parallel"
+      - "Quality assurance requires dedicated review agent"
+      - "Task complexity exceeds parent's scope"
+      - "Modular decomposition improves maintainability"
+
+    never_spawn:
+      - "Task is trivial and within parent's core competency"
+      - "Spawning overhead exceeds task execution time"
+      - "No specialized subagent exists for the task"
+      - "Parent is a leaf agent (individual contributor)"
+
+  spawning_patterns:
+    single_subagent:
+      syntax: |
+        Task(
+          subagent_type="{agent_name}",
+          description="{3-5 word description}",
+          prompt="""
+            ## Task
+            {Specific, actionable task description}
+
+            ## Context
+            Instruction ID: {instruction_id}
+            Parent task: {parent_task_id}
+            Domain: {domain}
+
+            ## Inputs
+            {Structured input data or artifact references}
+
+            ## Acceptance Criteria
+            - {Criterion 1}
+            - {Criterion 2}
+
+            ## Outputs
+            Write results to: Agent_Memory/{instruction_id}/outputs/{task_id}/
+
+            ## Dependencies
+            - Depends on: {task_ids}
+            - Blocks: {task_ids}
+
+            ## Communication
+            - Report progress via heartbeat to: {parent_agent}
+            - Escalate blockers to: {escalation_path}
+          """
+        )
+
+    sequential_chain:
+      description: "Spawn subagents in sequence, each using previous outputs"
+      syntax: |
+        # Step 1
+        result_1 = Task(subagent_type="architect", prompt="Design API schema")
+
+        # Step 2 (uses result_1)
+        result_2 = Task(
+          subagent_type="backend-developer",
+          prompt=f"Implement API using schema from {result_1.output_path}"
+        )
+
+        # Step 3 (uses result_2)
+        result_3 = Task(
+          subagent_type="qa-lead",
+          prompt=f"Create tests for API at {result_2.output_path}"
+        )
+
+    parallel_swarm:
+      description: "Spawn multiple independent subagents simultaneously"
+      syntax: |
+        # Spawn all in single message for true parallelism
+        results = [
+          Task(subagent_type="frontend-developer", prompt="Build UI"),
+          Task(subagent_type="backend-developer", prompt="Build API"),
+          Task(subagent_type="dba", prompt="Design schema"),
+          Task(subagent_type="devops", prompt="Setup infrastructure")
+        ]
+
+        # Aggregate results after all complete
+        aggregate_outputs(results)
+
+      max_parallel: 20
+      use_when:
+        - "Subtasks are independent"
+        - "No data dependencies between subtasks"
+        - "Need maximum speed"
+
+    conditional_spawning:
+      description: "Spawn different subagents based on runtime conditions"
+      syntax: |
+        if performance_issue_detected:
+          Task(subagent_type="performance-analyzer", prompt="Profile bottlenecks")
+        elif security_issue_detected:
+          Task(subagent_type="security-analyst", prompt="Audit vulnerabilities")
+        else:
+          Task(subagent_type="code-standards-auditor", prompt="Check style")
+
+    recursive_delegation:
+      description: "Subagents can spawn their own subagents"
+      max_depth: 4
+      syntax: |
+        # Level 1: Orchestrator spawns Tech-Lead
+        Task(subagent_type="tech-lead", prompt="Coordinate feature development")
+
+        # Level 2: Tech-Lead spawns Backend-Lead
+        Task(subagent_type="backend-lead", prompt="Coordinate API implementation")
+
+        # Level 3: Backend-Lead spawns Backend-Developers
+        Task(subagent_type="backend-developer", prompt="Implement endpoint")
+
+        # Level 4: Backend-Developer spawns Security-Specialist
+        Task(subagent_type="security-specialist", prompt="Review auth logic")
+
+# ==============================================================================
+# PARENT-SUBAGENT COMMUNICATION
+# ==============================================================================
+
+parent_subagent_protocol:
+  task_assignment:
+    format: "delegation"
+    location: "Agent_Memory/_communication/inbox/{subagent_name}/"
+    required_fields:
+      - parent_agent
+      - parent_task_id
+      - instruction_id
+      - task_id
+      - task_description
+      - acceptance_criteria
+      - output_location
+      - escalation_path
+      - priority
+      - estimated_duration
+
+  progress_reporting:
+    format: "heartbeat"
+    location: "Agent_Memory/{instruction_id}/heartbeats/{subagent_name}/"
+    frequency: "every 2 minutes while in_progress"
+    fields:
+      - subagent_name
+      - task_id
+      - status: "starting | in_progress | blocked | completed | failed"
+      - progress_percentage: 0-100
+      - current_activity: "Brief description of current work"
+      - estimated_completion: "ISO8601 timestamp"
+      - blockers: ["List of blocking issues"]
+      - questions: ["List of questions for parent"]
+
+  result_delivery:
+    format: "artifact_manifest"
+    location: "Agent_Memory/{instruction_id}/outputs/{task_id}/"
+    manifest_file: "manifest.yaml"
+    manifest_schema:
+      task_id: "{task_id}"
+      subagent: "{agent_name}"
+      parent_task: "{parent_task_id}"
+      status: "completed | partial | failed"
+      completion_timestamp: "{ISO8601}"
+
+      artifacts:
+        - name: "{artifact_name}"
+          type: "code | documentation | data | config | report"
+          path: "{relative_path}"
+          size_bytes: 0
+          checksum: "{sha256}"
+          description: "{what this artifact contains}"
+
+      acceptance_criteria_met:
+        - criterion: "{criterion_text}"
+          met: true/false
+          evidence: "{path_to_evidence or explanation}"
+
+      quality_metrics:
+        test_coverage: 0.0-1.0
+        security_scan: "pass | fail | warning"
+        performance_validation: "pass | fail"
+        code_review_score: 0-100
+
+      issues_found: []
+      follow_up_tasks: []
+
+      subagent_notes: |
+        Any important context or decisions made during execution
+
+  escalation_protocol:
+    trigger_conditions:
+      - "Blocker encountered that subagent cannot resolve"
+      - "Ambiguous requirements need clarification"
+      - "Discovered dependency not in original plan"
+      - "Estimated duration exceeded by 2x"
+      - "Quality gate failure requiring parent decision"
+
+    escalation_format:
+      location: "Agent_Memory/{instruction_id}/escalations/"
+      schema:
+        escalation_id: "{esc_id}"
+        from_agent: "{subagent_name}"
+        to_agent: "{parent_agent}"
+        task_id: "{task_id}"
+        timestamp: "{ISO8601}"
+        severity: "blocker | high | medium | low"
+
+        issue_description: |
+          Clear description of the issue
+
+        impact:
+          - "Cannot proceed with task X"
+          - "May delay completion by Y"
+
+        options_considered:
+          - option: "{description}"
+            pros: []
+            cons: []
+            recommendation: false
+
+        requested_decision: |
+          What decision or action do you need from parent?
+
+        sla: "Response needed within X minutes/hours"
+
+# ==============================================================================
+# SUBAGENT LIFECYCLE MANAGEMENT
+# ==============================================================================
+
+lifecycle:
+  initialization:
+    steps:
+      - "Receive task assignment from parent"
+      - "Acknowledge assignment within 1 minute"
+      - "Read context from Agent_Memory"
+      - "Verify dependencies are met"
+      - "Write initial heartbeat"
+      - "Transition task to IN_PROGRESS"
+
+  execution:
+    checkpoints:
+      - 25%: "Send progress update to parent"
+      - 50%: "Send progress update to parent"
+      - 75%: "Send progress update to parent"
+
+    heartbeat_maintenance:
+      frequency: "every 2 minutes"
+      timeout: "10 minutes without heartbeat = agent failure"
+
+    blocking_handling:
+      immediate_action:
+        - "Write blocker to heartbeat"
+        - "Transition task to BLOCKED state"
+        - "Attempt self-resolution for 15 minutes"
+        - "If unresolved, escalate to parent"
+
+  completion:
+    steps:
+      - "Validate acceptance criteria met"
+      - "Run self-checks (tests, linting, etc.)"
+      - "Write artifacts to output location"
+      - "Create manifest.yaml"
+      - "Write final heartbeat with completion status"
+      - "Transition task to COMPLETED"
+      - "Notify parent via artifact_ready message"
+
+  failure_handling:
+    steps:
+      - "Log failure reason"
+      - "Preserve partial outputs"
+      - "Write failure manifest"
+      - "Escalate to parent immediately"
+      - "Suggest recovery options"
+
+# ==============================================================================
+# PEER SUBAGENT COORDINATION
+# ==============================================================================
+
+peer_coordination:
+  when_needed:
+    - "Multiple subagents working on shared deliverable"
+    - "API contracts need negotiation between frontend and backend"
+    - "Handoff required between domain specialists"
+
+  shared_workspace:
+    location: "Agent_Memory/{instruction_id}/shared/{team_id}/"
+    contents:
+      - shared_context.yaml
+      - api_contracts.yaml
+      - shared_decisions.yaml
+      - sync_log.yaml
+
+  synchronization_points:
+    api_contract_negotiation:
+      participants: ["frontend-developer", "backend-developer"]
+      process:
+        - "Backend proposes API schema"
+        - "Frontend reviews and suggests changes"
+        - "Both agree on final contract"
+        - "Contract locked in shared workspace"
+
+    integration_handoff:
+      participants: ["{upstream_agent}", "{downstream_agent}"]
+      process:
+        - "Upstream signals handoff ready"
+        - "Downstream reviews artifacts"
+        - "Downstream asks questions if needed"
+        - "Downstream acknowledges handoff"
+        - "Upstream marks task complete"
+
+  conflict_resolution:
+    strategy: "escalate_to_common_parent"
+    timeout: "30 minutes"
+    common_parent_determines: "final decision"
+
+# ==============================================================================
+# RESULT AGGREGATION PATTERNS
+# ==============================================================================
+
+aggregation_patterns:
+  fan_in:
+    description: "Parent collects results from N parallel subagents"
+    process:
+      - "Parent spawns N subagents"
+      - "Parent monitors heartbeats"
+      - "As each completes, parent reads manifest"
+      - "Once all complete, parent synthesizes results"
+
+    synthesis_strategies:
+      concatenate:
+        use_when: "Output is linear (chapters, modules, etc.)"
+        method: "Combine outputs in order"
+
+      merge:
+        use_when: "Outputs need integration (code modules)"
+        method: "Integrate outputs, resolve conflicts"
+
+      aggregate_metrics:
+        use_when: "Outputs are metrics/data"
+        method: "Sum, average, or roll up metrics"
+
+      comprehensive_report:
+        use_when: "Outputs are review/analysis results"
+        method: "Create summary with links to detailed findings"
+
+  hierarchical_rollup:
+    description: "Multi-level aggregation up the subagent tree"
+    process:
+      - "Leaf agents complete work"
+      - "Mid-level agents aggregate leaf results"
+      - "Top-level agent aggregates mid-level results"
+
+    example: |
+      Tech-Lead
+        ├── Frontend-Lead (aggregates 3 frontend devs)
+        ├── Backend-Lead (aggregates 4 backend devs)
+        └── DevOps-Lead (aggregates 2 devops engineers)
+
+# ==============================================================================
+# SUBAGENT SPECIALIZATION MATRIX
+# ==============================================================================
+
+specialization_matrix:
+  description: "Which subagent to spawn for which task type"
+
+  task_type_routing:
+    architecture_design:
+      subagent: "architect"
+      parallel: false
+      estimated_duration: "2-4 hours"
+
+    api_implementation:
+      subagent: "backend-developer"
+      parallel: true
+      max_parallel: 10
+      estimated_duration: "1-2 hours per endpoint"
+
+    ui_implementation:
+      subagent: "frontend-developer"
+      parallel: true
+      max_parallel: 10
+      estimated_duration: "1-2 hours per component"
+
+    database_design:
+      subagent: "dba"
+      parallel: false
+      estimated_duration: "2-4 hours"
+
+    security_review:
+      subagent: "security-analyst"
+      parallel: false
+      estimated_duration: "2-3 hours"
+
+    performance_optimization:
+      subagent: "performance-analyzer"
+      parallel: true
+      max_parallel: 5
+      estimated_duration: "1-2 hours per bottleneck"
+
+    test_creation:
+      subagent: "qa-lead"
+      parallel: true
+      max_parallel: 8
+      estimated_duration: "30 minutes per test suite"
+
+    documentation:
+      subagent: "scribe"
+      parallel: true
+      max_parallel: 5
+      estimated_duration: "1 hour per document"
+
+    code_review:
+      subagent: "reviewer"
+      parallel: false
+      estimated_duration: "1-2 hours"
+
+    deployment:
+      subagent: "devops"
+      parallel: false
+      estimated_duration: "1-2 hours"
+
+# ==============================================================================
+# PERFORMANCE OPTIMIZATION PATTERNS
+# ==============================================================================
+
+performance_patterns:
+  batch_spawning:
+    description: "Spawn multiple subagents in single Claude Code invocation"
+    benefit: "Reduces overhead, enables true parallelism"
+    example: |
+      # GOOD: All spawn in parallel
+      Task(subagent_type="dev-1", prompt="Task 1")
+      Task(subagent_type="dev-2", prompt="Task 2")
+      Task(subagent_type="dev-3", prompt="Task 3")
+
+      # BAD: Sequential, much slower
+      Task(subagent_type="dev-1", prompt="Task 1")
+      # Wait
+      Task(subagent_type="dev-2", prompt="Task 2")
+      # Wait
+      Task(subagent_type="dev-3", prompt="Task 3")
+
+  result_streaming:
+    description: "Parent starts aggregation before all subagents complete"
+    use_when: "Some results available early and can be processed"
+    benefit: "Reduces total latency"
+
+  speculative_spawning:
+    description: "Spawn subagent before dependencies fully met (if high confidence)"
+    risk: "May waste work if dependency fails"
+    confidence_threshold: 0.9
+
+  agent_pooling:
+    description: "Maintain warm pool of common subagent types"
+    benefit: "Reduces cold start latency"
+    pool_size: 5
+    agent_types:
+      - backend-developer
+      - frontend-developer
+      - qa-engineer
+
+# ==============================================================================
+# QUALITY & VALIDATION
+# ==============================================================================
+
+quality_gates:
+  subagent_output_validation:
+    required_checks:
+      - "Manifest exists and is valid YAML"
+      - "All declared artifacts exist at specified paths"
+      - "Acceptance criteria marked as met"
+      - "No unresolved blockers"
+
+    optional_checks:
+      - "Test coverage meets threshold"
+      - "Security scan passed"
+      - "Performance benchmarks met"
+      - "Code review approved"
+
+  parent_validation_responsibilities:
+    - "Verify subagent completed task correctly"
+    - "Check outputs meet parent's needs"
+    - "Ensure quality standards maintained"
+    - "Request rework if needed"
+
+  rework_protocol:
+    trigger: "Parent determines output inadequate"
+    process:
+      - "Parent provides specific feedback"
+      - "Subagent revises work"
+      - "Parent re-validates"
+    max_iterations: 3
+
+# ==============================================================================
+# MONITORING & DEBUGGING
+# ==============================================================================
+
+observability:
+  subagent_dashboard:
+    location: "Agent_Memory/{instruction_id}/subagent_dashboard.yaml"
+    real_time_updates: true
+    metrics:
+      - total_subagents_spawned
+      - active_subagents
+      - completed_subagents
+      - failed_subagents
+      - average_completion_time
+      - parallel_efficiency
+
+  trace_logging:
+    location: "Agent_Memory/{instruction_id}/traces/{task_id}.yaml"
+    captures:
+      - spawn_timestamp
+      - parent_agent
+      - subagent_type
+      - task_id
+      - dependencies
+      - heartbeat_log
+      - completion_timestamp
+      - artifacts_produced
+
+  bottleneck_detection:
+    algorithm: "critical_path_analysis"
+    identifies:
+      - "Which subagent taking longest"
+      - "Which dependencies causing delays"
+      - "Which agents underutilized"
+
+# ==============================================================================
+# BEST PRACTICES
+# ==============================================================================
+
+best_practices:
+  do:
+    - "Always use specific subagent types, not generic 'agent'"
+    - "Spawn parallel subagents in single message for true parallelism"
+    - "Provide clear acceptance criteria to each subagent"
+    - "Monitor heartbeats to detect failures early"
+    - "Aggregate results systematically with explicit synthesis strategy"
+    - "Use escalation protocol when blocked"
+    - "Write comprehensive manifests upon completion"
+
+  dont:
+    - "Don't spawn subagents for trivial tasks parent can do"
+    - "Don't spawn subagents sequentially when they can run parallel"
+    - "Don't forget to aggregate results after fan-out"
+    - "Don't ignore heartbeat timeouts"
+    - "Don't let subagents block indefinitely without escalating"
+    - "Don't spawn infinite recursion (max depth 4)"
+
+# ==============================================================================
+# EXAMPLES
+# ==============================================================================
+
+examples:
+  example_1_simple_delegation:
+    parent: "tech-lead"
+    task: "Implement user authentication"
+    subagent_workflow: |
+      # Sequential chain
+      Task(
+        subagent_type="architect",
+        prompt="Design authentication architecture"
+      )
+      # Wait for design
+      Task(
+        subagent_type="backend-developer",
+        prompt="Implement auth API using design"
+      )
+      # Wait for API
+      Task(
+        subagent_type="security-specialist",
+        prompt="Review auth implementation for vulnerabilities"
+      )
+
+  example_2_massive_parallel:
+    parent: "universal-executor"
+    task: "Refactor 30 files for new coding standards"
+    subagent_workflow: |
+      # Spawn 15 developers in parallel (2 files each)
+      for i in range(15):
+        Task(
+          subagent_type="senior-developer",
+          prompt=f"Refactor files {file_pairs[i]}"
+        )
+      # All execute in parallel
+      # Aggregate results after all complete
+
+  example_3_hierarchical_coordination:
+    parent: "tech-lead"
+    task: "Build full-stack e-commerce feature"
+    subagent_workflow: |
+      # Spawn 3 lead agents in parallel
+      Task(subagent_type="frontend-lead", prompt="""
+        Coordinate UI implementation
+        - Spawn 3 frontend-developers for components
+        - Aggregate and integrate their work
+      """)
+
+      Task(subagent_type="backend-lead", prompt="""
+        Coordinate API implementation
+        - Spawn 4 backend-developers for endpoints
+        - Spawn 1 dba for schema
+        - Aggregate and integrate their work
+      """)
+
+      Task(subagent_type="qa-lead", prompt="""
+        Coordinate testing
+        - Spawn 3 qa-engineers for test suites
+        - Aggregate coverage reports
+      """)
+
+      # Tech-lead aggregates from all 3 leads
