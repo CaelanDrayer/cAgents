@@ -22,7 +22,9 @@
     "multi-domain"
   ],
   "commands": [
-    "./commands/trigger.md"
+    "./commands/trigger.md",
+    "./commands/designer.md",
+    "./commands/reviewer.md"
   ],
   "agents": [
     "./agents/trigger.md",
@@ -31,8 +33,5 @@
   ],
   "skills": [],
   "dependencies": [],
-  "peerDependencies": [],
-  "scripts": {
-    "postinstall": "sh memory/init-memory.sh"
-  }
+  "peerDependencies": []
 }

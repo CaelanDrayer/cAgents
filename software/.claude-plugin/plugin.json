@@ -22,10 +22,7 @@
     "claude-code",
     "plugin"
   ],
-  "commands": [
-    "./commands/designer.md",
-    "./commands/reviewer.md"
-  ],
+  "commands": [],
   "agents": [
     "./agents/router.md",
     "./agents/planner.md",

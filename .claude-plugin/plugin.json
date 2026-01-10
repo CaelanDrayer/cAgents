@@ -27,8 +27,8 @@
   ],
   "commands": [
     "./core/commands/trigger.md",
-    "./software/commands/designer.md",
-    "./software/commands/reviewer.md"
+    "./core/commands/designer.md",
+    "./core/commands/reviewer.md"
   ],
   "agents": [
     "./core/agents/trigger.md",
