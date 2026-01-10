@@ -1,7 +1,7 @@
 {
   "name": "@cagents/software",
   "version": "4.1.0",
-  "description": "cAgents Software - Software engineering domain plugin with 46 specialized agents for autonomous software development. Includes workflow, intelligence, QA, executive, and team agents.",
+  "description": "cAgents Software - Software engineering domain plugin with 46 specialized agents (5 workflow + 5 intelligence + 9 QA + 5 executive + 22 team) for autonomous software development. Complete workflow orchestration from planning to validation.",
   "author": {
     "name": "CaelanDrayer",
     "url": "https://github.com/CaelanDrayer"

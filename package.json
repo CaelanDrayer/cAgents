@@ -1,7 +1,7 @@
 {
   "name": "cagents",
   "version": "4.1.0",
-  "description": "cAgents multi-domain agent system - universal AI agent orchestration for software engineering, creative writing, business operations, and more",
+  "description": "Universal multi-domain agent system with 72 specialized agents for Claude Code. Complete workflow orchestration across software engineering (46 agents), business operations (23 agents), and future creative domains. Features Intelligence Layer, QA Layer, Executive Leadership, and autonomous agent collaboration.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Tests coming in Phase 2\" && exit 0",

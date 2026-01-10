@@ -15,6 +15,7 @@
     "orchestration",
     "automation",
     "software-engineering",
+    "business-operations",
     "multi-agent",
     "autonomous",
     "multi-domain",
@@ -23,7 +24,9 @@
     "code-review",
     "enterprise-grade",
     "executive-leadership",
-    "universal-system"
+    "universal-system",
+    "strategic-planning",
+    "forecasting"
   ],
   "commands": [
     "./core/commands/trigger.md",
