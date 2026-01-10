@@ -9,8 +9,8 @@
   "plugins": [
     {
       "name": "cagents",
-      "description": "Universal multi-domain agent system for Claude Code with 278 specialized agents across 12 domains. Orchestration V2 features realistic organizational hierarchy (Engineering Manager → Tech Lead → 6 Domain Leads → Individual Contributors), two-phase planning (strategic → tactical), intelligent skill-based assignment, 4 communication protocols (delegation, broadcast, handoff, standup), 10-state task lifecycle, and capacity management. Software domain (52 agents with V2) includes Engineering Manager + 6 Domain Leads (Frontend, Backend, QA, DevOps, Data, Security). 12 complete domains: software, business, creative, planning, sales, marketing, finance, operations, hr, legal, support. Features Intelligence Layer, QA Layer, Executive Leadership, and comprehensive workflow orchestration. Universal /trigger, /designer, /reviewer commands work across all domains.",
-      "version": "5.0.0",
+      "description": "Universal multi-domain agent system for Claude Code with 228 specialized agents across 11 domains. V2 Universal Workflow Architecture with 5 universal workflow agents working across all domains via YAML configuration (streamlined from 283 agents, -19.4% optimization). 8 core infrastructure agents + 220 domain experts. Supports recursive workflows, configuration-driven behavior, and multi-domain coordination. Complete domains: software (41 agents), business (18), creative (17), planning (16), sales (17), marketing (21), finance (16), operations (15), hr (19), legal (14), support (15). Features Intelligence Layer, QA Layer, Executive Leadership, and comprehensive workflow orchestration. Universal /trigger, /designer, /reviewer commands work across all domains.",
+      "version": "6.1.0",
       "author": {
         "name": "CaelanDrayer",
         "email": "support@cagents.dev"
