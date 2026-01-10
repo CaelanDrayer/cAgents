@@ -33,11 +33,32 @@ The system features a **V2 Universal Workflow Architecture**:
 **Universal Workflow Agents** (5 agents in core/) - NEW in V2
 - `universal-router` - Tier classification (0-4) across ALL domains via config
 - `universal-planner` - Task decomposition across ALL domains via config
-- `universal-executor` - Team coordination across ALL domains via config
+- `universal-executor` - **Team coordination via specialized subagent spawning** across ALL domains via config
 - `universal-validator` - Quality gates across ALL domains via config
 - `universal-self-correct` - Adaptive recovery across ALL domains via config
 
 These 5 universal agents replace 55 domain-specific workflow agents (11 domains × 5 agents) through configuration-driven behavior. Domain-specific logic is defined in `Agent_Memory/_system/domains/{domain}/*.yaml` files.
+
+### Subagent-Oriented Workflow Pattern
+
+**cAgents uses a subagent spawning architecture**: Agents delegate to specialized subagents rather than executing tasks directly.
+
+**Pattern**: "Use the {subagent-name} subagent to {specific task}"
+
+**Examples**:
+- **Use the code-reviewer subagent** to find performance issues
+- **Then use the optimizer subagent** to fix them
+- **Use the architect subagent** to design the API schema
+- **Then use the backend-developer subagent** to implement the endpoints
+- **Finally use the qa-lead subagent** to create integration tests
+
+**Benefits**:
+- **Modularity**: Each subagent handles one concern
+- **Specialization**: Right expert for each task
+- **Parallelization**: Independent subagents run concurrently
+- **Reusability**: Subagent patterns reused across workflows
+
+**See**: `SUBAGENT_WORKFLOW_PATTERNS.md` for comprehensive patterns and examples
 
 ### Software Engineering Domain (@cagents/software)
 

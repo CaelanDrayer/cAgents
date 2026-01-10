@@ -150,36 +150,191 @@ handoff:
 - HITL approvals at key decision points
 - Cross-domain coordination enabled
 
-## Agent Invocation Using Task Tool
+## Subagent Spawning Strategy
 
-For each task in the plan, invoke the assigned agent:
+**Core Philosophy**: For each task, **spawn a specialized subagent** rather than executing directly.
 
-**Single Agent (Synchronous)**:
-```
-Use Task tool with:
-- subagent_type: agent name from plan
-- description: task name
-- prompt: Full task context including description, acceptance criteria, expected outputs
+### Single Subagent (Synchronous)
 
-Wait for completion, capture output
+**Pattern**: Use the {subagent-name} subagent to {specific task}
+
+```markdown
+Task assigned: "Implement user authentication API"
+Assigned agent: backend-developer
+
+Action: Use the backend-developer subagent to implement the authentication API
+
+Task(
+  subagent_type="backend-developer",
+  description="Implement authentication API",
+  prompt="""
+    Implement user authentication API with:
+    - POST /auth/login endpoint
+    - POST /auth/register endpoint
+    - JWT token generation
+    - Password hashing with bcrypt
+
+    Acceptance criteria:
+    - All endpoints return proper status codes
+    - Passwords hashed with bcrypt (cost: 12)
+    - JWT tokens signed with HS256
+    - Unit tests with 90%+ coverage
+
+    Output to: Agent_Memory/{instruction_id}/outputs/partial/task_auth_api/
+  """
+)
 ```
 
-**Multiple Agents (Parallel)**:
-```
-For tier 3-4, launch multiple agents in background:
-- Use Task tool with run_in_background: true
-- Launch all wave tasks concurrently
-- Use TaskOutput to wait for all to complete
-- Aggregate results
+### Multiple Subagents (Parallel)
+
+**Pattern**: Spawn in parallel: {subagent-A}, {subagent-B}, {subagent-C}
+
+```markdown
+Wave 2 tasks (can run in parallel):
+- task_2: Implement backend API (backend-developer)
+- task_3: Implement frontend UI (frontend-developer)
+- task_4: Design database schema (dba)
+
+Action: Spawn three subagents in parallel
+
+// Launch all three simultaneously
+Task(subagent_type="backend-developer", run_in_background=true, prompt="...")
+Task(subagent_type="frontend-developer", run_in_background=true, prompt="...")
+Task(subagent_type="dba", run_in_background=true, prompt="...")
+
+// Wait for all to complete
+Wait for all background tasks to finish
+Aggregate results from all three subagents
 ```
 
-**Cross-Domain Agent**:
+### Sequential Subagents (Dependencies)
+
+**Pattern**: First use {subagent-A}, then use {subagent-B}
+
+```markdown
+Task chain with dependencies:
+- task_1: Design architecture (architect)
+- task_2: Implement based on design (backend-developer)  [depends: task_1]
+- task_3: Test implementation (qa-lead)  [depends: task_2]
+
+Action: Spawn subagents sequentially
+
+// Step 1
+Use the architect subagent to design the authentication architecture
+Task(subagent_type="architect", prompt="Design OAuth2 architecture...")
+Wait for completion
+
+// Step 2 (uses Step 1 outputs)
+Use the backend-developer subagent to implement the architecture
+Task(subagent_type="backend-developer", prompt="Implement based on design in outputs/partial/task_1/...")
+Wait for completion
+
+// Step 3 (uses Step 2 outputs)
+Use the qa-lead subagent to create comprehensive tests
+Task(subagent_type="qa-lead", prompt="Test implementation in outputs/partial/task_2/...")
 ```
-For agents from other domains:
-- Use subagent_type: "{domain}:{agent-name}"
-- Example: "business:process-improvement-specialist"
-- Verify domain is installed
-- Handle cross-domain failures gracefully
+
+### Cross-Domain Subagents
+
+**Pattern**: Use the {domain}:{subagent} subagent for {cross-domain task}
+
+```markdown
+Task requires different domain:
+- task_5: "Calculate ROI for automation project" (assigned: financial-analyst)
+
+Current domain: business
+Target domain: finance
+
+Action: Use the finance:financial-analyst subagent for financial analysis
+
+Task(
+  subagent_type="finance:financial-analyst",
+  description="ROI analysis for automation",
+  prompt="""
+    Calculate ROI for employee onboarding automation:
+    - Current cost: $2,000/month in manual processing
+    - Automation cost: $500 one-time + $100/month
+    - 3-year time horizon
+
+    Deliverables:
+    - ROI calculation
+    - Payback period
+    - NPV analysis
+    - Sensitivity analysis
+
+    Context from parent domain (business):
+    - See Agent_Memory/{instruction_id}/workflow/parent_context/
+  """
+)
+```
+
+### Conditional Subagent Spawning
+
+**Pattern**: If {condition}, use {subagent-X}, otherwise use {subagent-Y}
+
+```markdown
+Task: "Optimize slow endpoint"
+Decision point: Determine bottleneck type
+
+// First, use performance-analyzer to identify bottleneck
+bottleneck = Task(subagent_type="performance-analyzer", prompt="Profile /api/users endpoint")
+
+// Then spawn appropriate specialist subagent
+if bottleneck.type == "database":
+    Use the dba subagent to optimize database queries
+    Task(subagent_type="dba", prompt="Optimize queries for /api/users...")
+
+elif bottleneck.type == "algorithm":
+    Use the senior-developer subagent to refactor algorithm
+    Task(subagent_type="senior-developer", prompt="Optimize algorithm in /api/users...")
+
+elif bottleneck.type == "network":
+    Use the devops subagent to optimize network configuration
+    Task(subagent_type="devops", prompt="Optimize network for /api/users...")
+```
+
+## Agent Invocation Pattern (Using Task Tool)
+
+For every task execution:
+
+```python
+# 1. Read task details
+task = read_task_from_plan(task_id)
+
+# 2. Prepare subagent context
+subagent_prompt = f"""
+Execute task: {task['description']}
+
+Context:
+{task['context']}
+
+Acceptance criteria:
+{task['acceptance_criteria']}
+
+Dependencies (completed tasks to reference):
+{list_dependency_outputs(task['depends_on'])}
+
+Output location:
+Agent_Memory/{instruction_id}/outputs/partial/{task_id}/
+
+Expected deliverables:
+{task['deliverables']}
+"""
+
+# 3. Spawn the specialized subagent
+Use the {task['assigned_agent']} subagent to {task['description']}
+
+result = Task(
+    subagent_type=task['assigned_agent'],
+    description=task['name'],
+    prompt=subagent_prompt
+)
+
+# 4. Validate subagent produced expected outputs
+verify_outputs_exist(task_id, task['deliverables'])
+
+# 5. Update task status
+mark_task_completed(task_id, result)
 ```
 
 ## Dependency Management
