@@ -1,9 +1,10 @@
 {
   "name": "cagents",
-  "version": "6.1.0",
-  "description": "Universal multi-domain agent system for Claude Code with V2 Universal Workflow Architecture. 5 universal workflow agents work across 11 domains via YAML configuration. 228 specialized agents: 8 core infrastructure + 220 domain experts. Supports recursive workflows, configuration-driven behavior, multi-domain coordination. Domains: software, business, creative, planning, sales, marketing, finance, operations, hr, legal, support.",
+  "version": "6.2.1",
+  "description": "Universal multi-domain agent system for Claude Code with V2 Universal Workflow Architecture + Massive Parallel Execution (V6.2.1). Execute up to 50 concurrent agents with intelligent queue management, dynamic load balancing, and real-time monitoring. 5 universal workflow agents work across 11 domains via YAML configuration. 231 specialized agents: 8 core infrastructure + 223 domain experts. Features: recursive workflows, configuration-driven behavior, subagent coordination protocol, performance tracking system. Domains: software (45 agents), business (18), creative (18), planning (17), sales (18), marketing (22), finance (17), operations (15), hr (19), legal (14), support (18). Universal /trigger, /designer, /reviewer, /optimize commands.",
   "author": {
     "name": "CaelanDrayer",
+    "email": "caelan@caelandrayer.ca",
     "url": "https://github.com/CaelanDrayer"
   },
   "homepage": "https://github.com/CaelanDrayer/cAgents",
@@ -127,8 +128,8 @@
     "./creative/agents/research-specialist.md",
     "./creative/agents/sensitivity-reader.md",
     "./creative/agents/plot-developer.md",
-    "./creative/agents/fantasy-specialist.md",
-    "./creative/agents/scifi-specialist.md",
+    "./creative/agents/genre-specialist-fantasy.md",
+    "./creative/agents/genre-specialist-scifi.md",
     "./planning/agents/cpo.md",
     "./planning/agents/strategic-planner.md",
     "./planning/agents/planning-operations-manager.md",

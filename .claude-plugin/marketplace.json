@@ -4,16 +4,16 @@
   "description": "cAgents plugin marketplace - Universal multi-domain agent system",
   "owner": {
     "name": "CaelanDrayer",
-    "email": "support@cagents.dev"
+    "email": "caelan@caelandrayer.ca"
   },
   "plugins": [
     {
       "name": "cagents",
-      "description": "Universal multi-domain agent system for Claude Code with 228 specialized agents across 11 domains. V2 Universal Workflow Architecture with 5 universal workflow agents working across all domains via YAML configuration (streamlined from 283 agents, -19.4% optimization). 8 core infrastructure agents + 220 domain experts. Supports recursive workflows, configuration-driven behavior, and multi-domain coordination. Complete domains: software (41 agents), business (18), creative (17), planning (16), sales (17), marketing (21), finance (16), operations (15), hr (19), legal (14), support (15). Features Intelligence Layer, QA Layer, Executive Leadership, and comprehensive workflow orchestration. Universal /trigger, /designer, /reviewer commands work across all domains.",
-      "version": "6.1.0",
+      "description": "Universal multi-domain agent system for Claude Code with 231 specialized agents across 11 domains. V6.2.1 features Massive Parallel Execution: execute up to 50 concurrent agents with intelligent queue management, dynamic load balancing, work stealing, and real-time monitoring. V2 Universal Workflow Architecture with 5 universal workflow agents working across all domains via YAML configuration. 8 core infrastructure agents + 223 domain experts. Features: recursive workflows, configuration-driven behavior, subagent coordination protocol, performance tracking system, 4 execution modes (Sequential, Pipeline, Swarm, Mesh). Complete domains: software (45 agents), business (18), creative (18), planning (17), sales (18), marketing (22), finance (17), operations (15), hr (19), legal (14), support (18). Intelligence Layer, QA Layer, Executive Leadership. Universal /trigger, /designer, /reviewer, /optimize commands.",
+      "version": "6.2.1",
       "author": {
         "name": "CaelanDrayer",
-        "email": "support@cagents.dev"
+        "email": "caelan@caelandrayer.ca"
       },
       "source": "./",
       "category": "workflows",
