@@ -72,11 +72,13 @@
     "./agents/frontend-developer.md",
     "./agents/backend-developer.md",
     "./agents/scribe.md",
-    "./agents/reviewer.md"
+    "./agents/reviewer.md",
+    "./agents/optimizer.md"
   ],
   "skills": [
     "./skills/trigger",
-    "./skills/reviewer"
+    "./skills/reviewer",
+    "./skills/optimizer"
   ],
   "dependencies": [
     "@cagents/core"

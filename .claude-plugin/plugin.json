@@ -36,7 +36,8 @@
   "commands": [
     "./core/commands/trigger.md",
     "./core/commands/designer.md",
-    "./core/commands/reviewer.md"
+    "./core/commands/reviewer.md",
+    "./software/commands/optimize.md"
   ],
   "agents": [
     "./core/agents/trigger.md",
@@ -91,6 +92,7 @@
     "./software/agents/backend-developer.md",
     "./software/agents/scribe.md",
     "./software/agents/reviewer.md",
+    "./software/agents/optimizer.md",
     "./business/agents/cso.md",
     "./business/agents/business-development-manager.md",
     "./business/agents/market-analyst.md",
@@ -270,6 +272,7 @@
   ],
   "skills": [
     "./software/skills/trigger",
-    "./software/skills/reviewer"
+    "./software/skills/reviewer",
+    "./software/skills/optimizer"
   ]
 }
