@@ -61,18 +61,12 @@ cAgents V2.0/
 
 ### V2 Universal Workflow Architecture
 
-**NEW in v6.0.0**: Configuration-driven universal agents replace domain-specific workflow agents.
-
-**Before V2** (55 workflow agents):
-- Each domain had its own router, planner, executor, validator, self-correct agents
-- 11 domains × 5 workflow agents = 55 agents with duplicated logic
-- Adding new domains required writing 5 new agent files
-
-**With V2** (5 universal agents):
+**V2 Architecture** (5 universal workflow agents):
 - 5 universal workflow agents work across ALL domains via YAML configuration
 - Domain behavior defined in `Agent_Memory/_system/domains/{domain}/*.yaml` files
 - Adding new domains only requires creating 5 config files, no code changes
 - Consistent workflow logic across all domains
+- Streamlined from 283 agents to 228 agents (-19.4%) by replacing domain-specific workflow agents
 
 **Universal Agent Delegation**:
 ```

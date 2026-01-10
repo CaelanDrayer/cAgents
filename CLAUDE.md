@@ -9,7 +9,7 @@ This file provides guidance to Claude Code when working with code in this reposi
 The system features a **V2 Universal Workflow Architecture**:
 - **@cagents/core** - Universal infrastructure (Trigger, Orchestrator, HITL, 5 Universal Workflow Agents, Agent_Memory, universal commands)
 - **11 Active Domains** - All configured with domain-specific behavior via YAML configs:
-  - **@cagents/software** - 46 team agents (software engineering)
+  - **@cagents/software** - 41 team agents (software engineering)
   - **@cagents/business** - 18 team agents (business operations)
   - **@cagents/creative** - 17 team agents (creative writing)
   - **@cagents/planning** - 16 team agents (strategic planning)
@@ -64,8 +64,6 @@ These 5 universal agents replace 55 domain-specific workflow agents (11 domains 
 
 **Workflow**: Handled by universal workflow agents + software domain configs in `Agent_Memory/_system/domains/software/`
 
-_Note: Domain-specific workflow agents (router.md, planner.md, executor.md, validator.md, self-correct.md) are deprecated in V2. The universal workflow agents now load configuration from `Agent_Memory/_system/domains/software/*.yaml` to provide domain-specific behavior._
-
 **Executive Leadership** (5 agents)
 - `ceo` - Strategic vision, stakeholder management, executive decisions
 - `cto` - Technology strategy, innovation, technical architecture
@@ -89,8 +87,6 @@ _Note: Domain-specific workflow agents (router.md, planner.md, executor.md, vali
 ### Business Operations Domain (@cagents/business)
 
 **Workflow**: Handled by universal workflow agents + business domain configs in `Agent_Memory/_system/domains/business/`
-
-_Note: Domain-specific workflow agents are deprecated in V2. Universal agents load configs for business-specific templates (forecast, strategic_plan, market_analysis, process_design), timelines, quality gates, and correction strategies._
 
 **Executive Leadership** (1 agent)
 - `cso` - Chief Strategy Officer: strategic planning, competitive positioning, market analysis
@@ -484,8 +480,8 @@ claude --plugin-dir .
 
 ---
 
-**Version**: 6.0.0
-**Total Agents**: 283 (8 core infrastructure + 275 domain team agents)
+**Version**: 6.1.0
+**Total Agents**: 228 (8 core infrastructure + 220 domain team agents)
 **Architecture**: V2 Universal Workflow (5 universal agents + 55 domain configs + 11 domains)
 **Dependencies**: None (file-based, self-contained)
 **Active Domains**: All 11 domains fully configured (software, business, creative, planning, sales, marketing, finance, operations, hr, legal, support)
