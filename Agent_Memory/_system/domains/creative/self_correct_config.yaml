@@ -1,0 +1,685 @@
+# Creative Domain Self-Correct Configuration
+# Adaptive recovery strategies for creative writing issues
+
+domain: creative
+version: 1.0
+description: "Self-correction strategies for creative writing, storytelling, and narrative deliverables"
+
+# Correction Strategies
+# How to fix common creative writing issues
+
+correction_strategies:
+  grammar_spelling_errors:
+    description: "Grammar, spelling, or punctuation errors"
+    fixable: true
+    agent_to_invoke: "copy-editor"
+    estimated_time: "10-20 minutes"
+    max_retries: 1
+    steps:
+      - "Run spell check and identify all errors"
+      - "Correct spelling mistakes"
+      - "Fix grammatical errors"
+      - "Correct punctuation"
+      - "Verify all corrections made"
+    acceptance_criteria:
+      - "No spelling errors remain"
+      - "Grammar correct throughout"
+      - "Punctuation properly used"
+      - "Formatting consistent"
+
+  plot_holes_found:
+    description: "Plot holes or logical inconsistencies in story"
+    fixable: true
+    agent_to_invoke: "plot-developer"
+    estimated_time: "30-60 minutes"
+    max_retries: 2
+    steps:
+      - "Identify all plot holes from validation report"
+      - "For each plot hole:"
+      - "  - Analyze what's missing or inconsistent"
+      - "  - Design solution that fits story logic"
+      - "  - Write necessary scenes or revisions to fill hole"
+      - "Verify continuity after fixes"
+    acceptance_criteria:
+      - "All plot holes addressed"
+      - "Solutions feel natural, not forced"
+      - "Story logic now coherent"
+      - "No new plot holes introduced"
+
+  character_inconsistencies:
+    description: "Character acting inconsistently with established personality"
+    fixable: true
+    agent_to_invoke: "continuity-checker"
+    estimated_time: "20-40 minutes"
+    max_retries: 2
+    steps:
+      - "Identify all character inconsistencies"
+      - "Review character profile for established traits"
+      - "For each inconsistency:"
+      - "  - Determine if character or scene needs fixing"
+      - "  - If character profile wrong, update it"
+      - "  - If scene wrong, revise character's actions/dialogue"
+      - "Verify character now consistent throughout"
+    acceptance_criteria:
+      - "All inconsistencies resolved"
+      - "Character acts according to established personality"
+      - "Character voice maintained"
+      - "Character profile accurate"
+
+  pacing_issues:
+    description: "Story pacing too fast, too slow, or uneven"
+    fixable: true
+    agent_to_invoke: "editor"
+    estimated_time: "30-60 minutes"
+    max_retries: 2
+    steps:
+      - "Identify where pacing drags or rushes"
+      - "For slow pacing:"
+      - "  - Trim unnecessary description or exposition"
+      - "  - Tighten dialogue"
+      - "  - Cut scenes that don't advance plot/character"
+      - "For rushed pacing:"
+      - "  - Add sensory details and atmosphere"
+      - "  - Expand emotional moments"
+      - "  - Add scene beats for crucial developments"
+      - "Verify pacing now appropriate"
+    acceptance_criteria:
+      - "Pacing maintains reader engagement"
+      - "Balance of action and rest"
+      - "Emotional moments given space"
+      - "No dragging or rushing feeling"
+
+  weak_prose:
+    description: "Prose quality below professional standard"
+    fixable: true
+    agent_to_invoke: "prose-stylist"
+    estimated_time: "40-90 minutes"
+    max_retries: 2
+    steps:
+      - "Identify weak prose passages"
+      - "Replace telling with showing"
+      - "Add vivid sensory details"
+      - "Vary sentence structure and rhythm"
+      - "Eliminate clichés and purple prose"
+      - "Tighten weak verbs and vague language"
+      - "Enhance imagery and metaphor where appropriate"
+    acceptance_criteria:
+      - "Prose engages reader"
+      - "Vivid sensory details present"
+      - "Show don't tell principle applied"
+      - "No clichés or purple prose"
+      - "Professional quality throughout"
+
+  dialogue_unnatural:
+    description: "Dialogue sounds stilted or inauthentic"
+    fixable: true
+    agent_to_invoke: "dialogue-specialist"
+    estimated_time: "20-40 minutes"
+    max_retries: 2
+    steps:
+      - "Identify all problematic dialogue"
+      - "For each dialogue exchange:"
+      - "  - Rewrite to sound natural and conversational"
+      - "  - Ensure character voice distinct"
+      - "  - Add subtext where appropriate"
+      - "  - Remove exposition dumps"
+      - "  - Use contractions and natural speech patterns"
+      - "Read dialogue aloud to verify authenticity"
+    acceptance_criteria:
+      - "Dialogue sounds natural when read aloud"
+      - "Each character has distinct voice"
+      - "Subtext present where appropriate"
+      - "No on-the-nose exposition"
+      - "Speech patterns authentic"
+
+  missing_sensory_details:
+    description: "Scenes lack vivid sensory description"
+    fixable: true
+    agent_to_invoke: "prose-stylist"
+    estimated_time: "20-30 minutes"
+    max_retries: 2
+    steps:
+      - "Identify scenes lacking sensory detail"
+      - "For each scene, add:"
+      - "  - Visual details (what characters see)"
+      - "  - Sounds (ambient and specific)"
+      - "  - Smells and tastes (where relevant)"
+      - "  - Tactile sensations (temperature, texture)"
+      - "  - Emotional atmosphere"
+      - "Balance detail with pace (don't info-dump)"
+    acceptance_criteria:
+      - "Multiple senses engaged in each scene"
+      - "Sensory details enhance atmosphere"
+      - "Reader can visualize scenes clearly"
+      - "Details balanced, not overwhelming"
+
+  character_voices_similar:
+    description: "Multiple characters sound the same"
+    fixable: true
+    agent_to_invoke: "dialogue-specialist"
+    estimated_time: "30-50 minutes"
+    max_retries: 2
+    steps:
+      - "Review all major characters' dialogue"
+      - "For each character, define unique voice elements:"
+      - "  - Vocabulary level and word choice"
+      - "  - Sentence structure (short/long, simple/complex)"
+      - "  - Speech mannerisms or catchphrases"
+      - "  - Formality level"
+      - "  - Emotional expression style"
+      - "Revise dialogue to reflect distinct voices"
+      - "Verify each character recognizable by dialogue alone"
+    acceptance_criteria:
+      - "Each major character has distinct voice"
+      - "Characters recognizable by speech patterns"
+      - "Voice reflects personality and background"
+      - "No two characters sound identical"
+
+  incomplete_worldbuilding:
+    description: "Worldbuilding elements undefined or underdeveloped"
+    fixable: true
+    agent_to_invoke: "worldbuilder"
+    estimated_time: "40-80 minutes"
+    max_retries: 2
+    steps:
+      - "Identify missing or underdeveloped world elements"
+      - "For each missing element:"
+      - "  - Define core concept and rules"
+      - "  - Establish limitations and consistency"
+      - "  - Integrate with existing world"
+      - "  - Document in world bible"
+      - "Verify world now complete for story needs"
+    acceptance_criteria:
+      - "All necessary world elements defined"
+      - "World internally consistent"
+      - "Rules and limitations clear"
+      - "World documented"
+
+  timeline_errors:
+    description: "Events occur in illogical sequence or timing impossible"
+    fixable: true
+    agent_to_invoke: "continuity-checker"
+    estimated_time: "30-45 minutes"
+    max_retries: 2
+    steps:
+      - "Create timeline of all story events"
+      - "Identify impossible or illogical sequences"
+      - "For each error:"
+      - "  - Determine correct timing"
+      - "  - Adjust scene or chapter placement"
+      - "  - Revise text to reflect corrected timeline"
+      - "Verify timeline now coherent"
+    acceptance_criteria:
+      - "All events in logical sequence"
+      - "Timing of events realistic"
+      - "No impossible travel times or age issues"
+      - "Timeline documented"
+
+  weak_character_development:
+    description: "Characters feel flat or one-dimensional"
+    fixable: true
+    agent_to_invoke: "character-psychologist"
+    estimated_time: "40-70 minutes"
+    max_retries: 2
+    steps:
+      - "Identify flat or underdeveloped characters"
+      - "For each character:"
+      - "  - Define deeper motivations beyond surface goals"
+      - "  - Add internal conflicts and contradictions"
+      - "  - Develop backstory that shapes present behavior"
+      - "  - Define fears, desires, flaws"
+      - "  - Create character arc if lacking"
+      - "Revise scenes to show deeper character"
+    acceptance_criteria:
+      - "Characters multi-dimensional"
+      - "Internal conflicts present"
+      - "Motivations complex and believable"
+      - "Characters feel real, not stereotyped"
+    fallback_if_unfixable:
+      reason: "Character fundamentally flawed in concept"
+      escalation: "HITL - may need character redesign"
+
+  missing_story_elements:
+    description: "Required scenes, chapters, or plot points missing"
+    fixable: true
+    agent_to_invoke: "prose-stylist"
+    estimated_time: "60-120 minutes per missing element"
+    max_retries: 2
+    steps:
+      - "Identify all missing elements from plan"
+      - "For each missing element:"
+      - "  - Review outline/plan for requirements"
+      - "  - Write missing scene or chapter"
+      - "  - Integrate with existing narrative"
+      - "  - Ensure smooth transitions"
+      - "Verify all elements now present"
+    acceptance_criteria:
+      - "All planned elements written"
+      - "New elements integrate smoothly"
+      - "Story now complete per outline"
+
+  world_rules_violated:
+    description: "Magic/tech/world rules applied inconsistently"
+    fixable: true
+    agent_to_invoke: "worldbuilder"
+    estimated_time: "30-50 minutes"
+    max_retries: 2
+    steps:
+      - "Identify all rule violations"
+      - "Review established world rules"
+      - "For each violation:"
+      - "  - Determine if rule or instance needs fixing"
+      - "  - If rule wrong, revise world bible"
+      - "  - If instance wrong, revise scene to follow rules"
+      - "Verify consistency throughout"
+    acceptance_criteria:
+      - "World rules applied consistently"
+      - "No magic/tech breaking established limits"
+      - "World bible accurate"
+      - "Story logic sound"
+
+  weak_transitions:
+    description: "Jarring scene or chapter transitions"
+    fixable: true
+    agent_to_invoke: "narrative-designer"
+    estimated_time: "20-35 minutes"
+    max_retries: 2
+    steps:
+      - "Identify all jarring transitions"
+      - "For each transition:"
+      - "  - Add transitional sentence or paragraph"
+      - "  - Establish time/place shift clearly"
+      - "  - Create narrative bridge between scenes"
+      - "  - Maintain flow and momentum"
+      - "Verify transitions now smooth"
+    acceptance_criteria:
+      - "All transitions flow naturally"
+      - "Time/place shifts clear"
+      - "Narrative continuity maintained"
+      - "Reader not confused or jarred"
+
+  unclear_story_structure:
+    description: "Story lacks clear structural foundation"
+    fixable: true
+    agent_to_invoke: "story-architect"
+    estimated_time: "60-90 minutes"
+    max_retries: 2
+    steps:
+      - "Analyze existing story for structure"
+      - "Identify missing structural elements"
+      - "Determine appropriate structure (three-act, hero's journey, etc.)"
+      - "Revise or add scenes to complete structure"
+      - "Ensure all structural beats present"
+      - "Verify story now follows coherent structure"
+    acceptance_criteria:
+      - "Clear story structure evident"
+      - "All major structural beats present"
+      - "Story arc satisfying"
+      - "Structure appropriate for genre/type"
+
+  word_count_too_short:
+    description: "Deliverable below target word count"
+    fixable: true
+    agent_to_invoke: "prose-stylist"
+    estimated_time: "varies by shortfall"
+    max_retries: 2
+    steps:
+      - "Identify how many words needed"
+      - "Determine where to add content:"
+      - "  - Expand thin scenes with more detail"
+      - "  - Add missing scenes from outline"
+      - "  - Deepen character moments"
+      - "  - Add sensory description"
+      - "  - Develop subplots further"
+      - "Ensure added content serves story, not just padding"
+    acceptance_criteria:
+      - "Word count meets target"
+      - "Added content enhances story"
+      - "No obvious padding"
+      - "Story feels complete"
+
+  word_count_too_long:
+    description: "Deliverable significantly exceeds target"
+    fixable: true
+    agent_to_invoke: "editor"
+    estimated_time: "varies by overage"
+    max_retries: 2
+    steps:
+      - "Identify how many words to cut"
+      - "Tighten prose throughout (remove unnecessary words)"
+      - "Cut or combine scenes that don't serve story"
+      - "Remove redundant description or exposition"
+      - "Move non-essential content to appendix or cut"
+      - "Preserve all essential plot and character elements"
+    acceptance_criteria:
+      - "Word count within target range"
+      - "Essential content preserved"
+      - "Prose tighter and more effective"
+      - "No feeling of important content missing"
+
+  fundamental_plot_broken:
+    description: "Core plot doesn't work at fundamental level"
+    fixable: false
+    escalation: "HITL - requires creative direction and possible replanning"
+    blocking_reason: "Surface fixes won't solve fundamental story problems"
+    steps:
+      - "Document why plot isn't working"
+      - "Identify fundamental issues (stakes too low, conflict unclear, logic broken)"
+      - "Present to HITL with analysis"
+      - "Wait for creative direction on how to fix"
+      - "May require significant rewriting or new outline"
+
+  characters_lack_depth_after_revision:
+    description: "Characters still flat despite revision attempts"
+    fixable: false
+    escalation: "HITL - may need character redesign or different approach"
+    blocking_reason: "Revisions not improving character depth sufficiently"
+    steps:
+      - "Document why characters aren't working"
+      - "Show revision attempts made"
+      - "Present to HITL for creative direction"
+      - "May need fundamental character redesign"
+
+  tone_or_voice_unclear:
+    description: "Story tone or narrative voice inconsistent or unclear"
+    fixable: false
+    escalation: "HITL - requires creative direction on intended tone/voice"
+    blocking_reason: "Tone and voice are fundamental creative decisions"
+    steps:
+      - "Document tone/voice inconsistencies"
+      - "Present examples to HITL"
+      - "Wait for creative direction on target tone/voice"
+      - "Revise with clear direction"
+
+  story_lacks_conflict_or_stakes:
+    description: "Story has no clear conflict or stakes too low"
+    fixable: false
+    escalation: "HITL - fundamental story issue requiring creative direction"
+    blocking_reason: "Conflict and stakes are foundational story elements"
+    steps:
+      - "Document lack of conflict or weak stakes"
+      - "Present to HITL with analysis"
+      - "Wait for creative direction on adding conflict/raising stakes"
+      - "May require significant plot revision"
+
+# Fixability Criteria
+# How to determine if creative issue can be self-corrected
+
+fixability_criteria:
+  FIXABLE:
+    conditions:
+      - type: "technical_errors"
+        fixable: true
+        examples: ["grammar", "spelling", "formatting"]
+        reason: "Mechanical fixes with clear right/wrong answers"
+
+      - type: "continuity_errors"
+        fixable: true
+        examples: ["plot holes", "timeline errors", "character inconsistencies"]
+        reason: "Can be fixed by aligning with established facts"
+
+      - type: "craft_issues"
+        fixable: true
+        examples: ["weak prose", "pacing problems", "flat dialogue"]
+        reason: "Writing craft can be improved with skilled revision"
+        caveat: "Must have clear direction on what 'better' looks like"
+
+      - type: "incomplete_elements"
+        fixable: true
+        examples: ["missing scenes", "underdeveloped characters", "thin worldbuilding"]
+        reason: "Can add missing content following outline/plan"
+        caveat: "Must have plan or clear requirements to follow"
+
+      - type: "quality_polish"
+        fixable: true
+        examples: ["word count issues", "transitions", "sensory details"]
+        reason: "Can enhance quality with focused revision"
+
+  NOT_FIXABLE:
+    conditions:
+      - type: "fundamental_story_issues"
+        fixable: false
+        examples: ["plot doesn't work", "no conflict", "stakes too low"]
+        reason: "Requires creative judgment and possibly replanning"
+        escalation: "HITL for creative direction"
+
+      - type: "unclear_creative_vision"
+        fixable: false
+        examples: ["tone unclear", "voice inconsistent", "genre confused"]
+        reason: "Creative vision is fundamental decision requiring human input"
+        escalation: "HITL to clarify creative direction"
+
+      - type: "characters_fundamentally_flawed"
+        fixable: false
+        examples: ["characters lack depth despite revision", "motivations unconvincing"]
+        reason: "May need character redesign, not just revision"
+        escalation: "HITL for character development direction"
+
+      - type: "creative_block"
+        fixable: false
+        examples: ["story stuck", "can't find right approach", "multiple attempts failed"]
+        reason: "Agent stuck, needs human creative input"
+        escalation: "HITL for creative breakthrough"
+
+# Retry Limits
+# How many times to attempt self-correction before escalating
+
+retry_limits:
+  global_max_retries: 3
+  per_issue_max_retries: 2
+
+  tier_specific:
+    tier_1: 2  # Simple creative tasks
+    tier_2: 3  # Moderate creative tasks
+    tier_3: 3  # Complex creative tasks
+    tier_4: 2  # Major creative works - fewer retries, escalate sooner
+
+  issue_specific:
+    technical_errors: 1  # Should fix on first try
+    continuity_errors: 2  # May need careful checking
+    prose_quality: 2  # May need iteration
+    character_development: 2  # Can be tricky
+    plot_issues: 2  # Sometimes need rethinking
+    fundamental_issues: 0  # Don't retry, escalate immediately
+
+  escalation_thresholds:
+    same_issue_recurring: "If same issue persists after 2 fixes, escalate to HITL"
+    no_improvement: "If validation score doesn't improve, escalate"
+    creative_stuck: "If agent reports being stuck, escalate immediately"
+
+# Self-Correction Workflow
+
+self_correction_workflow:
+  steps:
+    - step: 1
+      name: "Load validation report"
+      action: "Read validation_report.yaml to understand all issues"
+
+    - step: 2
+      name: "Check retry count"
+      action: "Verify retry count < max_retries, else escalate to HITL"
+
+    - step: 3
+      name: "Classify issues by fixability"
+      action: "Separate FIXABLE (craft/technical) from BLOCKED (fundamental) issues"
+
+    - step: 4
+      name: "Assess fundamental issues"
+      action: "If fundamental story issues found (plot broken, no conflict), escalate to HITL immediately"
+
+    - step: 5
+      name: "Prioritize fixable issues"
+      action: "Fix critical issues first (continuity, completeness), then craft issues (prose, dialogue)"
+
+    - step: 6
+      name: "Execute fixes"
+      action: "Invoke appropriate creative agent for each fixable issue using Task tool"
+
+    - step: 7
+      name: "Update deliverable"
+      action: "Agent makes creative revisions to outputs in Agent_Memory"
+
+    - step: 8
+      name: "Re-validate"
+      action: "Invoke universal-validator using Task tool to check if issues resolved"
+
+    - step: 9
+      name: "Check progress"
+      action: "Compare new validation report to previous - did quality improve?"
+
+    - step: 10
+      name: "Decide next action"
+      action: |
+        If PASS: Mark complete
+        If FIXABLE with retries remaining: Retry (go to step 1)
+        If BLOCKED or max retries reached: Escalate to HITL
+        If no improvement after retry: Escalate to HITL
+
+# Learning from Corrections
+# Track which creative strategies work best
+
+learning_tracking:
+  strategy_effectiveness:
+    grammar_spelling_errors:
+      total_attempts: 0
+      successful_fixes: 0
+      success_rate: 0.0
+      avg_fix_time_minutes: 0
+
+    plot_holes_found:
+      total_attempts: 0
+      successful_fixes: 0
+      success_rate: 0.0
+      avg_fix_time_minutes: 0
+
+    character_inconsistencies:
+      total_attempts: 0
+      successful_fixes: 0
+      success_rate: 0.0
+      avg_fix_time_minutes: 0
+
+    pacing_issues:
+      total_attempts: 0
+      successful_fixes: 0
+      success_rate: 0.0
+      avg_fix_time_minutes: 0
+
+    weak_prose:
+      total_attempts: 0
+      successful_fixes: 0
+      success_rate: 0.0
+      avg_fix_time_minutes: 0
+
+  common_patterns:
+    - pattern: "Technical errors almost always fixed on first retry"
+      observation: "copy-editor very reliable for grammar/spelling"
+
+    - pattern: "Prose quality usually improved in 1-2 passes"
+      observation: "prose-stylist effective at enhancing writing quality"
+
+    - pattern: "Plot holes sometimes require multiple attempts"
+      observation: "Complex plot issues may need careful unraveling"
+
+    - pattern: "Fundamental issues rarely fixable without HITL"
+      observation: "Story stuck at conceptual level needs creative direction"
+
+  escalation_patterns:
+    - pattern: "Fundamental plot issues always escalate"
+      observation: "Correctly identified as requiring creative judgment"
+
+    - pattern: "Tone/voice issues escalate when unclear"
+      observation: "Creative vision is human decision"
+
+    - pattern: "Character depth issues sometimes fixable, sometimes not"
+      observation: "Depends on whether issue is craft or concept"
+
+# Domain-Specific Self-Correction Notes
+
+self_correction_notes: |
+  Creative domain self-correction considerations:
+
+  **Most Common Fixable Issues**:
+  1. Grammar and spelling (FIXABLE - copy-editor)
+  2. Plot holes and continuity (FIXABLE - continuity-checker + plot-developer)
+  3. Weak prose quality (FIXABLE - prose-stylist)
+  4. Pacing problems (FIXABLE - editor)
+  5. Dialogue issues (FIXABLE - dialogue-specialist)
+  6. Missing sensory details (FIXABLE - prose-stylist)
+  7. Character inconsistencies (FIXABLE - continuity-checker)
+
+  **Most Common Blocking Issues**:
+  1. Fundamental plot doesn't work (BLOCKED - needs creative direction)
+  2. Characters lack depth despite revision (BLOCKED - may need redesign)
+  3. Tone or voice unclear/inconsistent (BLOCKED - creative decision)
+  4. Story lacks conflict or stakes (BLOCKED - fundamental story issue)
+  5. Creative block or stuck (BLOCKED - needs human creative input)
+
+  **Agent Assignment for Creative Fixes**:
+  - copy-editor: All technical errors (grammar, spelling, formatting)
+  - prose-stylist: Prose quality, sensory details, missing content
+  - dialogue-specialist: Dialogue quality, character voices
+  - editor: Pacing, structure, developmental issues
+  - plot-developer: Plot holes, story logic
+  - continuity-checker: Continuity, consistency, timeline
+  - character-psychologist: Character depth, motivation
+  - worldbuilder: World consistency, rules
+  - story-architect: Story structure, plot issues
+  - cco: Only for tier 4 strategic creative decisions (rare)
+
+  **Retry Strategy for Creative Work**:
+  - First retry: Focus on most critical creative issues
+  - Second retry: Polish and refinement
+  - Third retry: Final pass (if needed)
+  - If no improvement after retry, likely fundamental issue - escalate
+
+  **Creative Improvement Indicators**:
+  - Prose more engaging and vivid
+  - Plot holes filled logically
+  - Characters more consistent and dimensional
+  - Pacing more balanced
+  - Technical errors eliminated
+  - Reader engagement increased
+
+  **When Revision Isn't Improving Quality**:
+  - Same issues recurring = may be fundamental problem
+  - Quality score not rising = approach not working
+  - Agent reports difficulty = creative block
+  - All indicate need for HITL creative direction
+
+  **Craft vs Concept Issues**:
+  - Craft issues (how story is written): Usually FIXABLE
+  - Concept issues (what story is about): Often require HITL
+  - Surface polish can't fix deep story problems
+  - Recognize when escalation needed
+
+  **Creative Self-Correction Best Practices**:
+  - Focus on fixable craft issues first
+  - Escalate fundamental issues immediately (don't waste retries)
+  - Trust creative specialist agents' expertise
+  - Allow for iteration - creative work rarely perfect first try
+  - Monitor progress - if stuck, escalate rather than spinning
+
+  **Avoiding Over-Correction**:
+  - Don't lose original creative vision in revision
+  - Preserve what's working while fixing what isn't
+  - Balance polish with maintaining authentic voice
+  - "Good enough" for tier 1-2, "excellent" for tier 3-4
+
+  **Genre-Specific Considerations**:
+  - Fantasy: World consistency critical, lore continuity
+  - Sci-Fi: Logic and plausibility important
+  - Mystery: Plot logic and fair clue placement essential
+  - Romance: Emotional authenticity and satisfying arc
+  - Literary: Thematic depth and prose quality paramount
+
+  **When to Invoke CCO**:
+  - Tier 4 only and only for major creative direction
+  - Not for craft issues (that's specialists' job)
+  - Not for technical fixes (that's copy-editor)
+  - Only when strategic creative decision needed
+
+  **Handling Creative Blocks**:
+  - If agent reports being stuck, escalate to HITL
+  - Creative blocks are normal, not failures
+  - Human creative input can unlock stuck story
+  - Don't force agent to keep trying when stuck

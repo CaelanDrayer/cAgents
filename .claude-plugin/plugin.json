@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "5.0.0",
-  "description": "Universal multi-domain agent system for Claude Code with 278 specialized agents across 12 domains. Orchestration V2 with realistic organizational hierarchy (EM → TL → Domain Leads → ICs), two-phase planning, intelligent assignment, and 4 communication protocols. Software domain features 52 agents including 6 Domain Leads (Frontend, Backend, QA, DevOps, Data, Security) and Engineering Manager.",
+  "version": "6.0.0",
+  "description": "Universal multi-domain agent system for Claude Code with V2 Universal Workflow Architecture. 5 universal workflow agents (router, planner, executor, validator, self-correct) work across ALL 11 domains via configuration. Includes 283 total agents: 8 core infrastructure + 275 domain specialists. Supports recursive workflows, configuration-driven behavior, and multi-domain coordination. Active domains: software, business, creative, planning, sales, marketing, finance, operations, hr, legal, support.",
   "author": {
     "name": "CaelanDrayer",
     "url": "https://github.com/CaelanDrayer"
@@ -27,7 +27,11 @@
     "executive-leadership",
     "universal-system",
     "strategic-planning",
-    "forecasting"
+    "forecasting",
+    "v2",
+    "universal-workflow",
+    "recursive-workflows",
+    "configuration-driven"
   ],
   "commands": [
     "./core/commands/trigger.md",
@@ -38,6 +42,11 @@
     "./core/agents/trigger.md",
     "./core/agents/orchestrator.md",
     "./core/agents/hitl.md",
+    "./core/agents/universal-router.md",
+    "./core/agents/universal-planner.md",
+    "./core/agents/universal-executor.md",
+    "./core/agents/universal-validator.md",
+    "./core/agents/universal-self-correct.md",
     "./software/agents/router.md",
     "./software/agents/planner.md",
     "./software/agents/executor.md",

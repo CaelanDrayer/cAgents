@@ -1,7 +1,7 @@
 {
   "name": "@cagents/core",
-  "version": "5.0.0",
-  "description": "cAgents Core - Shared infrastructure for all cAgents domain plugins. Provides unified Trigger, Orchestrator, and HITL agents, universal commands (/trigger, /designer, /reviewer), and Agent_Memory system.",
+  "version": "6.0.0",
+  "description": "cAgents Core V2 - Universal Workflow Architecture. Provides unified Trigger, Orchestrator, HITL, and 5 universal workflow agents (router, planner, executor, validator, self-correct) that work across ALL domains via configuration. Includes universal commands and Agent_Memory system with 55 domain configs across 11 domains.",
   "author": {
     "name": "CaelanDrayer",
     "url": "https://github.com/CaelanDrayer"
@@ -16,10 +16,13 @@
     "orchestration",
     "trigger",
     "hitl",
+    "universal-workflow",
     "agent-memory",
     "claude-code",
     "plugin",
-    "multi-domain"
+    "multi-domain",
+    "recursive-workflows",
+    "v2"
   ],
   "commands": [
     "./commands/trigger.md",
@@ -29,7 +32,12 @@
   "agents": [
     "./agents/trigger.md",
     "./agents/orchestrator.md",
-    "./agents/hitl.md"
+    "./agents/hitl.md",
+    "./agents/universal-router.md",
+    "./agents/universal-planner.md",
+    "./agents/universal-executor.md",
+    "./agents/universal-validator.md",
+    "./agents/universal-self-correct.md"
   ],
   "skills": [],
   "dependencies": [],

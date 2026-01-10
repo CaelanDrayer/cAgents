@@ -1,0 +1,576 @@
+# Software Domain Validator Configuration
+# Quality validation and acceptance criteria checking for software engineering
+
+domain: software
+version: 1.0
+description: "Quality gates and validation rules for software development outputs"
+
+# Quality Gates
+# Required checks before marking outputs as PASS
+
+quality_gates:
+  completeness:
+    description: "All required components and deliverables present"
+    severity: critical
+    checks:
+      - name: "All planned tasks completed"
+        type: "workflow"
+        validation_method: "Check tasks/completed/ count matches plan.yaml"
+        pass_criteria: "All tasks in plan.yaml moved to completed/"
+
+      - name: "All code files present"
+        type: "deliverable"
+        validation_method: "Verify files mentioned in plan exist in codebase"
+        pass_criteria: "All files_to_create and files_to_modify exist"
+
+      - name: "All outputs generated"
+        type: "deliverable"
+        validation_method: "Check outputs/final/ contains expected artifacts"
+        pass_criteria: "Expected outputs exist and non-empty"
+
+      - name: "Documentation updated"
+        type: "deliverable"
+        validation_method: "Verify README, API docs, or inline docs updated"
+        pass_criteria: "Documentation reflects changes made"
+
+  code_quality:
+    description: "Code meets quality and style standards"
+    severity: major
+    checks:
+      - name: "All tests passing"
+        type: "automated"
+        validation_method: "Run test suite, check exit code"
+        pass_criteria: "Exit code 0, no test failures"
+        command: "pytest tests/ OR npm test"
+
+      - name: "Code coverage adequate"
+        type: "automated"
+        validation_method: "Check test coverage percentage"
+        pass_criteria: "Coverage >= 80% for modified code"
+        command: "pytest --cov OR npm run coverage"
+
+      - name: "No critical code smells"
+        type: "static_analysis"
+        validation_method: "Run linter/static analyzer"
+        pass_criteria: "No critical or high severity issues"
+        command: "pylint OR eslint OR similar"
+
+      - name: "Code follows style guide"
+        type: "formatting"
+        validation_method: "Run code formatter check"
+        pass_criteria: "No formatting violations"
+        command: "black --check OR prettier --check"
+
+      - name: "No obvious bugs or errors"
+        type: "manual_review"
+        validation_method: "Quick code review for obvious issues"
+        pass_criteria: "No syntax errors, logic errors, or obvious bugs"
+
+  security:
+    description: "Security standards met, no critical vulnerabilities"
+    severity: critical
+    checks:
+      - name: "No critical security vulnerabilities"
+        type: "security_scan"
+        validation_method: "Run security scanner (bandit, snyk, etc.)"
+        pass_criteria: "No critical or high severity vulnerabilities"
+        command: "bandit -r . OR snyk test"
+
+      - name: "Input validation implemented"
+        type: "code_review"
+        validation_method: "Verify user input is validated"
+        pass_criteria: "All user input validated and sanitized"
+
+      - name: "Authentication properly enforced"
+        type: "code_review"
+        validation_method: "Check auth middleware applied to protected routes"
+        pass_criteria: "Auth checks present where required"
+
+      - name: "No hardcoded secrets"
+        type: "pattern_scan"
+        validation_method: "Scan for API keys, passwords in code"
+        pass_criteria: "No secrets in code, use environment variables"
+        pattern: "(?i)(api[_-]?key|password|secret|token)\\s*=\\s*['\\\"]"
+
+  performance:
+    description: "Performance within acceptable limits"
+    severity: major
+    checks:
+      - name: "No performance regressions"
+        type: "benchmark"
+        validation_method: "Compare performance metrics before/after"
+        pass_criteria: "Response time <= baseline + 10%"
+
+      - name: "Resource usage acceptable"
+        type: "profiling"
+        validation_method: "Check CPU/memory usage under load"
+        pass_criteria: "CPU < 80%, Memory < 90% under normal load"
+
+      - name: "Database queries optimized"
+        type: "query_analysis"
+        validation_method: "Check for N+1 queries, missing indexes"
+        pass_criteria: "No obvious query performance issues"
+
+  functionality:
+    description: "Code implements specified functionality correctly"
+    severity: critical
+    checks:
+      - name: "Acceptance criteria met"
+        type: "acceptance_testing"
+        validation_method: "Verify each criterion from plan"
+        pass_criteria: "All acceptance criteria in plan satisfied"
+
+      - name: "Manual testing passed"
+        type: "manual_testing"
+        validation_method: "Manual smoke testing of key workflows"
+        pass_criteria: "Core functionality works as expected"
+
+      - name: "No regressions introduced"
+        type: "regression_testing"
+        validation_method: "All existing tests still pass"
+        pass_criteria: "No previously passing tests now fail"
+
+# Validation Rules
+# Specific validation logic for different artifact types
+
+validation_rules:
+  code_changes:
+    required_checks:
+      - tests_passing
+      - code_coverage
+      - no_critical_vulnerabilities
+      - style_guide_followed
+
+    quality_criteria:
+      - "Code is readable and maintainable"
+      - "Functions are small and focused (< 50 lines)"
+      - "Appropriate error handling present"
+      - "No duplicate code"
+
+    validation_method: "Automated tests + static analysis + code review"
+
+  api_endpoint:
+    required_checks:
+      - endpoint_responds
+      - correct_status_codes
+      - valid_response_format
+      - authentication_enforced
+      - input_validation
+      - rate_limiting
+
+    quality_criteria:
+      - "API follows REST/GraphQL conventions"
+      - "Proper HTTP status codes used"
+      - "Request/response documented"
+      - "Error messages are helpful"
+
+    validation_method: "Integration tests + API testing + security scan"
+
+  database_migration:
+    required_checks:
+      - migration_reversible
+      - no_data_loss
+      - migration_tested
+      - indexes_added_appropriately
+      - backward_compatible
+
+    quality_criteria:
+      - "Migration is idempotent"
+      - "Performance impact minimal"
+      - "Rollback procedure documented"
+
+    validation_method: "Test migration on copy of prod data + DBA review"
+
+  frontend_component:
+    required_checks:
+      - component_renders
+      - responsive_design
+      - accessibility_compliant
+      - browser_compatibility
+      - no_console_errors
+
+    quality_criteria:
+      - "Component is reusable"
+      - "Props are well-defined"
+      - "State management appropriate"
+      - "Loading and error states handled"
+
+    validation_method: "Unit tests + visual regression + accessibility scan"
+
+  documentation:
+    required_checks:
+      - completeness
+      - accuracy
+      - formatting_correct
+      - examples_provided
+      - no_broken_links
+
+    quality_criteria:
+      - "Clear and concise writing"
+      - "Appropriate level of detail"
+      - "Code examples are correct"
+      - "Up to date with current code"
+
+    validation_method: "Manual review + link checker"
+
+  deployment:
+    required_checks:
+      - deployment_successful
+      - zero_downtime_achieved
+      - smoke_tests_passed
+      - rollback_tested
+      - monitoring_configured
+
+    quality_criteria:
+      - "Deployment documented in runbook"
+      - "Health checks passing"
+      - "Logs are clean"
+      - "Metrics look normal"
+
+    validation_method: "Deployment automation + post-deploy validation"
+
+# Classification Logic
+# How to classify validation results as PASS, FIXABLE, or BLOCKED
+
+classification:
+  PASS:
+    description: "All critical and major quality gates passed, ready for completion"
+
+    criteria:
+      all_critical_passed: true
+      all_major_passed: true
+      minor_issues_count: "<= 3"
+      no_regressions: true
+
+    required_checks:
+      - "All tests passing"
+      - "No critical security vulnerabilities"
+      - "All acceptance criteria met"
+      - "Code quality meets standards"
+
+    action: "Mark instruction as completed, archive to _archive/"
+
+    success_indicators:
+      - "Exit code 0 from all automated checks"
+      - "Code review approved"
+      - "Security scan passed"
+      - "Performance within limits"
+
+  FIXABLE:
+    description: "Issues found that can be automatically corrected"
+
+    criteria:
+      critical_failed: false
+      fixable_issues_present: true
+      estimated_fix_time: "<= 30 minutes"
+      fix_method_known: true
+
+    fixable_issue_types:
+      - "Formatting errors (auto-fixable)"
+      - "Missing documentation sections"
+      - "Minor test failures (clear fix)"
+      - "Code style violations (auto-fixable)"
+      - "Missing type annotations"
+      - "Incomplete error handling (pattern-based fix)"
+
+    action: "Hand off to universal-self-correct agent for automated fixes"
+
+    fix_patterns:
+      formatting: "Run code formatter (black, prettier)"
+      linting: "Apply auto-fixes from linter"
+      documentation: "Generate missing sections from code"
+      types: "Add type hints based on usage"
+
+  BLOCKED:
+    description: "Critical issues requiring human intervention"
+
+    criteria:
+      critical_failed: true
+      OR:
+        - fixable_issues_count: "> 5"
+        - estimated_fix_time: "> 2 hours"
+        - unclear_requirements: true
+        - fundamental_issue: true
+
+    blocking_issue_types:
+      - "All tests failing (fundamental issue)"
+      - "Critical security vulnerabilities"
+      - "Performance degradation > 50%"
+      - "Data loss or corruption"
+      - "Requirement misunderstanding"
+      - "Technical impossibility discovered"
+      - "Architectural problems"
+
+    action: "Escalate to HITL with detailed blocker report"
+
+    escalation_info:
+      - "List all failed quality gates"
+      - "Describe blocking issues"
+      - "Suggest possible resolution paths"
+      - "Identify which specialist needed (architect, security, etc.)"
+
+# Acceptance Criteria Checking
+# How to verify acceptance criteria from the plan
+
+acceptance_criteria_checking:
+  source: "workflow/plan.yaml → tasks[].specification.acceptance_criteria"
+
+  check_process:
+    - step: "Load all acceptance criteria from plan"
+    - step: "For each criterion, determine check method"
+    - step: "Execute check (automated test, manual verification, etc.)"
+    - step: "Mark criterion as met/not met"
+    - step: "Aggregate results"
+
+  check_methods:
+    automated_test:
+      method: "Run specified test, check exit code"
+      example: "pytest tests/test_feature.py::test_returns_200"
+
+    pattern_match:
+      method: "Check output matches expected pattern"
+      example: "Response contains 'user_id' and 'email' fields"
+
+    file_exists:
+      method: "Verify file created or modified"
+      example: "tests/test_auth.py exists and has content"
+
+    manual_verification:
+      method: "Human review (tier 4 or complex criteria)"
+      example: "UX designer confirms UI meets design standards"
+
+  partial_acceptance:
+    allowed: false
+    policy: "ALL criteria must be met for PASS classification"
+    rationale: "Partial completion risks incomplete features"
+
+# Quality Metrics
+# Track validation outcomes over time
+
+quality_metrics:
+  track:
+    total_validations: 0
+    pass_count: 0
+    pass_rate: 0.0
+    fixable_count: 0
+    fixable_rate: 0.0
+    blocked_count: 0
+    blocked_rate: 0.0
+    average_validation_time: "0 minutes"
+
+    common_failures:
+      - issue: "Test failures"
+        count: 0
+      - issue: "Code coverage below 80%"
+        count: 0
+      - issue: "Security vulnerabilities"
+        count: 0
+      - issue: "Performance regression"
+        count: 0
+
+  thresholds:
+    pass_rate_target: ">= 80%"
+    fixable_rate_acceptable: "<= 15%"
+    blocked_rate_acceptable: "<= 5%"
+
+  alerts:
+    - condition: "pass_rate < 70%"
+      action: "Alert engineering-manager, review planning process"
+    - condition: "blocked_rate > 10%"
+      action: "Alert tech-lead, investigate systemic issues"
+    - condition: "security_failures > 2 in row"
+      action: "Alert security-lead, review security practices"
+
+# Validation Report Format
+# Structure of validation reports written to Agent_Memory
+
+validation_report:
+  location: "Agent_Memory/{instruction_id}/outputs/final/validation_report.yaml"
+
+  format: |
+    validation_id: validation_{instruction_id}_{timestamp}
+    timestamp: {ISO8601}
+    validator: universal-validator
+    domain: software
+    instruction_id: {inst_id}
+
+    classification: PASS|FIXABLE|BLOCKED
+    confidence: 0.0-1.0
+
+    summary:
+      total_quality_gates: 5
+      passed_gates: 4
+      failed_gates: 1
+      critical_failures: 0
+      major_failures: 1
+      minor_failures: 0
+
+    quality_gate_results:
+      completeness:
+        status: PASS
+        checks_passed: 4/4
+        details: "All planned tasks completed, all files present"
+
+      code_quality:
+        status: FAIL
+        checks_passed: 4/5
+        failed_checks:
+          - "Code coverage: 75% (target: 80%)"
+        details: "Test coverage slightly below target"
+
+      security:
+        status: PASS
+        checks_passed: 4/4
+        details: "No security vulnerabilities detected"
+
+      performance:
+        status: PASS
+        checks_passed: 3/3
+        details: "Performance within acceptable limits"
+
+      functionality:
+        status: PASS
+        checks_passed: 3/3
+        details: "All acceptance criteria met"
+
+    issues_found:
+      critical: []
+      major:
+        - issue: "Test coverage 75%, target 80%"
+          affected: "src/api/auth.py"
+          fixable: true
+          fix_method: "Add 3-4 more test cases"
+          estimated_fix_time: "20 minutes"
+      minor: []
+
+    acceptance_criteria_status:
+      total: 8
+      met: 8
+      not_met: 0
+      criteria:
+        - "Endpoint returns 200 with JWT": MET
+        - "Endpoint returns 401 on invalid creds": MET
+        - "JWT contains user_id, email, role": MET
+        - "JWT expires after 24 hours": MET
+        - "Rate limiting enforced": MET
+        - "All tests pass": MET
+        - "100% coverage": NOT MET (75%)
+        - "Security review passed": MET
+
+    automated_check_results:
+      tests:
+        command: "pytest tests/"
+        exit_code: 0
+        output: "45 passed in 2.3s"
+
+      coverage:
+        command: "pytest --cov"
+        coverage_percentage: 75
+        target: 80
+
+      security:
+        command: "bandit -r src/"
+        vulnerabilities_found: 0
+
+      linting:
+        command: "pylint src/"
+        score: 9.2
+        issues: 3 minor
+
+    recommendations:
+      - "Add test coverage for edge cases in auth.py"
+      - "Consider adding integration tests for auth flow"
+      - "Minor linting issues can be auto-fixed"
+
+    next_action:
+      classification: FIXABLE
+      action: "Send to self-correct agent"
+      reason: "Test coverage fixable issue, estimated 20 minutes"
+
+# Domain-Specific Validation Checks
+# Additional checks specific to software development
+
+domain_specific_checks:
+  build_succeeds:
+    description: "Project builds without errors"
+    severity: critical
+    command: "npm run build OR python setup.py build"
+    pass_criteria: "Exit code 0, no build errors"
+
+  dependencies_up_to_date:
+    description: "No critical dependency vulnerabilities"
+    severity: major
+    command: "npm audit OR pip-audit"
+    pass_criteria: "No critical or high vulnerabilities in dependencies"
+
+  api_contract_valid:
+    description: "API contracts validated (OpenAPI, GraphQL schema)"
+    severity: major
+    method: "Validate API spec against implementation"
+    pass_criteria: "Spec matches implementation"
+
+  database_migration_safe:
+    description: "Database migrations are safe and reversible"
+    severity: critical
+    method: "Review migration, test on copy of production data"
+    pass_criteria: "Migration succeeds, rollback works, no data loss"
+
+  frontend_accessible:
+    description: "Frontend meets WCAG accessibility standards"
+    severity: major
+    command: "axe-core OR pa11y"
+    pass_criteria: "No critical accessibility violations"
+
+  ci_pipeline_passes:
+    description: "CI/CD pipeline completes successfully"
+    severity: critical
+    method: "Check CI/CD system status"
+    pass_criteria: "All CI checks green"
+
+# Domain-Specific Notes
+domain_notes: |
+  Software domain validation considerations:
+
+  **Automated Checks Priority**:
+  1. Tests (must pass)
+  2. Security scan (no critical vulns)
+  3. Coverage (>= 80%)
+  4. Linting (no critical issues)
+  5. Build (must succeed)
+
+  **Manual Checks When Needed**:
+  - UX/UI changes → UX designer review
+  - Architecture changes → Architect review
+  - Security-sensitive → Security specialist review
+  - Performance-critical → Load testing
+
+  **Common Pass Scenarios**:
+  - All tests green, coverage good, no security issues
+  - Minor linting issues (auto-fixable)
+  - Documentation complete
+
+  **Common Fixable Scenarios**:
+  - Coverage slightly below target (< 5% gap)
+  - Formatting errors (auto-fixable)
+  - Missing documentation sections
+  - Minor linting issues
+
+  **Common Blocked Scenarios**:
+  - Tests failing (fundamental issue)
+  - Critical security vulnerabilities
+  - Major performance regression (> 50%)
+  - Requirement misunderstood
+
+  **Best Practices**:
+  - Always run automated checks first (fast feedback)
+  - Check acceptance criteria against plan
+  - Look for regressions (existing tests still pass)
+  - Verify security for auth/permissions changes
+  - Check performance for hot-path changes
+  - Validate documentation updated
+
+  **Red Flags** (instant BLOCKED):
+  - All tests failing
+  - Critical security vulnerability
+  - Data loss or corruption
+  - Production outage caused

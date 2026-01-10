@@ -1,0 +1,206 @@
+# Domain Self-Correct Configuration Template
+# Copy this file to: Agent_Memory/_system/domains/{domain_name}/self_correct_config.yaml
+# Replace all {DOMAIN_NAME} placeholders with your domain name
+
+domain: {DOMAIN_NAME}
+version: 1.0
+description: "Automated correction strategies for {DOMAIN_NAME} domain issues"
+
+# Correction Strategies
+# How to fix different types of issues automatically
+
+correction_strategies:
+  # Format:
+  # issue_type:
+  #   description: "What this issue is"
+  #   detection: "How to detect this issue"
+  #   fix_method: "How to fix it"
+  #   agent_to_invoke: "Which agent can fix this" (optional)
+  #   estimated_time: "How long the fix takes"
+  #   max_retries: number
+
+  missing_sections:
+    description: "Required sections or content missing from deliverable"
+    detection: "Validation report shows incomplete sections"
+    fix_method: "Identify missing sections, invoke appropriate agent to create them"
+    agent_to_invoke: "domain-specialist"
+    estimated_time: "10-20 minutes"
+    max_retries: 2
+
+    steps:
+      - "Parse validation report for missing sections"
+      - "Create task to generate missing content"
+      - "Invoke agent with specific section requirements"
+      - "Aggregate new content with existing"
+      - "Re-validate"
+
+  formatting_errors:
+    description: "Formatting inconsistencies or errors"
+    detection: "Validation report shows formatting issues"
+    fix_method: "Apply formatting standards automatically"
+    agent_to_invoke: null  # Can fix directly
+    estimated_time: "5 minutes"
+    max_retries: 1
+
+    steps:
+      - "Identify formatting issues from validation report"
+      - "Apply domain formatting standards"
+      - "Re-validate formatting"
+
+  quality_issues:
+    description: "Content quality below standards"
+    detection: "Validation report shows quality concerns"
+    fix_method: "Invoke domain expert for review and improvement"
+    agent_to_invoke: "domain-specialist"
+    estimated_time: "15-30 minutes"
+    max_retries: 2
+
+    steps:
+      - "Extract quality issues from validation report"
+      - "Create improvement task with specific criteria"
+      - "Invoke domain expert to enhance quality"
+      - "Re-validate quality"
+
+  incomplete_data:
+    description: "Data or analysis incomplete"
+    detection: "Missing data sources, citations, or analysis depth"
+    fix_method: "Request additional analysis or data gathering"
+    agent_to_invoke: "domain-analyst"
+    estimated_time: "20-40 minutes"
+    max_retries: 2
+
+    steps:
+      - "Identify data gaps from validation report"
+      - "Create data gathering task"
+      - "Invoke analyst to complete analysis"
+      - "Integrate additional data"
+      - "Re-validate completeness"
+
+# Fixable vs. Non-Fixable Issues
+# Criteria for determining if self-correct can handle an issue
+
+fixability_criteria:
+  fixable:
+    - issue_severity: ["minor", "major"]
+    - estimated_fix_time: "< 30 minutes"
+    - clear_fix_method: true
+    - agent_available: true
+    - retry_count: "< max_retries"
+
+  non_fixable:
+    - issue_severity: ["critical"]
+    - OR: estimated_fix_time: "> 1 hour"
+    - OR: unclear_requirements: true
+    - OR: fundamental_misunderstanding: true
+    - OR: retry_count: ">= max_retries"
+
+# Recursive Fix Workflows
+# When to create a child workflow for complex fixes
+
+recursive_fixes:
+  enabled: true
+
+  triggers:
+    - condition: "Fix estimated > 30 minutes"
+      action: "Create child workflow for fix"
+
+    - condition: "Multiple complex issues found"
+      action: "Create child workflow per issue category"
+
+    - condition: "Fix requires cross-domain coordination"
+      action: "Create cross-domain child workflow"
+
+  workflow_creation:
+    domain: "same as parent (usually)"
+    priority: "high"
+    parent_link: "Link to parent instruction"
+    completion_requirement: "Must complete before parent validation retry"
+
+# Agent Invocation Patterns
+# How to invoke agents for different correction types
+
+agent_invocation:
+  same_domain:
+    format: "agent_name"
+    example: "domain-specialist"
+    method: "Create delegation message in agent inbox"
+
+  cross_domain:
+    format: "{domain}:{agent_name}"
+    example: "software:backend-developer"
+    method: "Create cross-domain delegation message"
+
+  delegation_message:
+    type: "correction_request"
+    includes:
+      - validation_report
+      - specific_issues_to_fix
+      - acceptance_criteria
+      - deadline
+      - context_from_original_task
+
+# Retry Logic
+# How many times to retry fixes before escalating
+
+retry_limits:
+  per_issue_type:
+    missing_sections: 2
+    formatting_errors: 1
+    quality_issues: 2
+    incomplete_data: 2
+
+  total_correction_attempts: 3
+
+  escalation:
+    after_max_retries: "Escalate to HITL"
+    on_repeated_failure: "Mark as BLOCKED, do not retry indefinitely"
+
+# Learning from Corrections
+# Track correction patterns to improve future validation
+
+learning:
+  track_metrics:
+    - issue_type: "What types of issues are most common"
+    - fix_success_rate: "How often fixes work on first try"
+    - agent_effectiveness: "Which agents are best at fixing which issues"
+    - time_to_fix: "Average time for different fix types"
+
+  update_calibration:
+    frequency: "After every 10 corrections"
+    target: "Agent_Memory/_knowledge/calibration/self_correct.yaml"
+    metrics:
+      - common_issues
+      - effective_strategies
+      - agent_success_rates
+
+# Validation After Correction
+# How to re-validate after fixes applied
+
+re_validation:
+  method: "Invoke universal-validator with same criteria"
+
+  success_criteria:
+    - "All previously failed checks now pass"
+    - "No new issues introduced"
+    - "Overall classification improves"
+
+  outcomes:
+    - "PASS: Correction successful, mark complete"
+    - "FIXABLE: Some issues remain, retry if under limit"
+    - "BLOCKED: Correction failed, escalate to HITL"
+
+# Domain-Specific Correction Strategies
+# Add domain-specific fix patterns here
+
+domain_specific:
+  # Example (customize for your domain):
+  # domain_specific_issue:
+  #   description: "Issue specific to {DOMAIN_NAME}"
+  #   fix_method: "Domain-specific fix approach"
+
+# Domain-Specific Notes
+# Add any domain-specific self-correction considerations here
+
+domain_notes: |
+  Add domain-specific correction guidelines here.
+  Include common issues, proven fix strategies, or agent expertise for {DOMAIN_NAME}.

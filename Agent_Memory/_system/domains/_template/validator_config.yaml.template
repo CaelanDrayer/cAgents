@@ -1,0 +1,202 @@
+# Domain Validator Configuration Template
+# Copy this file to: Agent_Memory/_system/domains/{domain_name}/validator_config.yaml
+# Replace all {DOMAIN_NAME} placeholders with your domain name
+
+domain: {DOMAIN_NAME}
+version: 1.0
+description: "Quality validation and acceptance criteria checking for {DOMAIN_NAME} domain"
+
+# Quality Gates
+# Required checks before marking outputs as PASS
+
+quality_gates:
+  completeness:
+    description: "All required components present"
+    checks:
+      - name: "Required sections exist"
+        type: "structural"
+        severity: "critical"
+        validation_method: "check file/section existence"
+
+      - name: "All planned tasks completed"
+        type: "workflow"
+        severity: "critical"
+        validation_method: "check tasks/completed/ count matches plan"
+
+      - name: "All outputs generated"
+        type: "deliverable"
+        severity: "critical"
+        validation_method: "check outputs/final/ contains expected files"
+
+  quality:
+    description: "Outputs meet quality standards"
+    checks:
+      - name: "Content quality acceptable"
+        type: "qualitative"
+        severity: "major"
+        validation_method: "review for clarity, completeness, accuracy"
+
+      - name: "Formatting consistent"
+        type: "formatting"
+        severity: "minor"
+        validation_method: "check formatting standards applied"
+
+      - name: "No critical errors"
+        type: "error_check"
+        severity: "critical"
+        validation_method: "scan for obvious errors or issues"
+
+  compliance:
+    description: "Adheres to domain standards and policies"
+    checks:
+      - name: "Domain standards followed"
+        type: "standards"
+        severity: "major"
+        validation_method: "check against domain style guide"
+
+      - name: "Required approvals obtained"
+        type: "approval"
+        severity: "major"
+        validation_method: "verify stakeholder sign-offs if required"
+
+      - name: "Regulatory requirements met"
+        type: "regulatory"
+        severity: "critical"
+        validation_method: "check compliance with regulations"
+
+# Validation Rules
+# Specific validation logic for different artifact types
+
+validation_rules:
+  # Add domain-specific validation rules
+  # Format:
+  # artifact_type:
+  #   required_fields: [field1, field2, ...]
+  #   quality_criteria: [criterion1, criterion2, ...]
+  #   validation_method: "description"
+
+  example_artifact:
+    required_fields:
+      - title
+      - description
+      - content
+      - metadata
+
+    quality_criteria:
+      - "Clear and concise"
+      - "Factually accurate"
+      - "Meets stated objectives"
+
+    validation_method: "Check all required fields present, review quality criteria"
+
+# Classification Logic
+# How to classify validation results as PASS, FIXABLE, or BLOCKED
+
+classification:
+  PASS:
+    description: "All quality gates passed, ready for completion"
+    criteria:
+      - all_critical_checks_passed: true
+      - all_major_checks_passed: true
+      - minor_issues_count: "< 3"
+    action: "Mark instruction as completed"
+
+  FIXABLE:
+    description: "Issues found but can be automatically corrected"
+    criteria:
+      - critical_checks_failed: false
+      - fixable_issues_identified: true
+      - estimated_fix_time: "< 30 minutes"
+    action: "Hand off to self-correct agent"
+
+    fixable_issue_types:
+      - "Missing non-critical sections"
+      - "Formatting errors"
+      - "Minor quality issues"
+      - "Incomplete documentation"
+
+  BLOCKED:
+    description: "Critical issues requiring human intervention"
+    criteria:
+      - critical_checks_failed: true
+      - OR: fixable_issues_count: "> 5"
+      - OR: estimated_fix_time: "> 2 hours"
+    action: "Escalate to HITL"
+
+    blocking_issue_types:
+      - "Fundamental requirement misunderstood"
+      - "Technical impossibility discovered"
+      - "Critical quality failures"
+      - "Regulatory compliance violations"
+
+# Domain-Specific Checks
+# Add validation checks specific to this domain
+
+domain_specific_checks:
+  # Example (customize for your domain):
+  # domain_expertise_verified:
+  #   description: "Output demonstrates domain expertise"
+  #   severity: "major"
+  #   method: "Check for domain-specific terminology and concepts"
+
+# Validation Report Format
+# Structure of validation reports
+
+validation_report:
+  sections:
+    - summary:
+        - classification: "PASS|FIXABLE|BLOCKED"
+        - timestamp: "ISO 8601"
+        - validator: "agent name"
+
+    - quality_gate_results:
+        format: "list of gates with pass/fail status"
+
+    - issues_found:
+        format: "categorized list (critical, major, minor)"
+
+    - recommendations:
+        format: "suggested fixes or improvements"
+
+    - acceptance_criteria_status:
+        format: "checklist from plan with completion status"
+
+# Acceptance Criteria Mapping
+# How to check acceptance criteria from plan
+
+acceptance_criteria_checking:
+  source: "workflow/plan.yaml → tasks[].acceptance_criteria"
+
+  check_method:
+    - "Load acceptance criteria from each task"
+    - "Verify each criterion against outputs"
+    - "Mark as met/not met"
+    - "Aggregate into overall pass/fail"
+
+  partial_acceptance:
+    allowed: false
+    description: "All criteria must be met for PASS classification"
+
+# Quality Metrics
+# Track validation quality over time
+
+quality_metrics:
+  track:
+    - total_validations: 0
+    - pass_count: 0
+    - fixable_count: 0
+    - blocked_count: 0
+    - average_validation_time: "0 minutes"
+    - common_issues: []
+
+  thresholds:
+    pass_rate_target: "> 80%"
+    fixable_rate_acceptable: "< 15%"
+    blocked_rate_acceptable: "< 5%"
+
+# Domain-Specific Notes
+# Add any domain-specific validation considerations here
+
+domain_notes: |
+  Add domain-specific validation guidelines here.
+  Include quality standards, common issues, or validation best practices for {DOMAIN_NAME}.

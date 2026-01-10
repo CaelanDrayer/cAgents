@@ -6,30 +6,44 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 **cAgents** (Caelan's Agents) is a universal multi-domain agent system for Claude Code. It provides specialized autonomous agent teams that collaborate through a file-based memory system to execute complex tasks across any domain - software engineering, creative writing, business operations, and beyond.
 
-The system features a **modular multi-domain architecture**:
-- **@cagents/core** - Universal infrastructure (Trigger, Orchestrator, HITL, Agent_Memory, universal commands)
-- **@cagents/software** - 46 software engineering agents (5 workflow + 41 team)
-- **@cagents/business** - 23 business operations agents (5 workflow + 18 team) - FULLY FUNCTIONAL
-- **@cagents/creative** - Creative writing agents (Phase 2)
-- Future domains: Sales, Marketing, Finance, Operations, Support, HR, Legal
+The system features a **V2 Universal Workflow Architecture**:
+- **@cagents/core** - Universal infrastructure (Trigger, Orchestrator, HITL, 5 Universal Workflow Agents, Agent_Memory, universal commands)
+- **11 Active Domains** - All configured with domain-specific behavior via YAML configs:
+  - **@cagents/software** - 46 team agents (software engineering)
+  - **@cagents/business** - 18 team agents (business operations)
+  - **@cagents/creative** - 17 team agents (creative writing)
+  - **@cagents/planning** - 16 team agents (strategic planning)
+  - **@cagents/sales** - 17 team agents (sales strategy)
+  - **@cagents/marketing** - 21 team agents (marketing campaigns)
+  - **@cagents/finance** - 16 team agents (financial analysis)
+  - **@cagents/operations** - 15 team agents (process optimization)
+  - **@cagents/hr** - 19 team agents (human resources)
+  - **@cagents/legal** - 14 team agents (legal compliance)
+  - **@cagents/support** - 15 team agents (customer success)
 
 ## Core Architecture
 
 ### Universal Infrastructure (@cagents/core)
 
-**Core Workflow Agents** (3 agents in core/)
-- `trigger` - Universal entry point, intent detection, domain routing
-- `orchestrator` - Phase management (planning → executing → validating → complete)
+**Core Infrastructure Agents** (3 agents in core/)
+- `trigger` - Universal entry point, intent detection, domain routing, recursive workflow support
+- `orchestrator` - Phase management conductor (planning → executing → validating → complete)
 - `hitl` - Human-in-the-loop escalation for complex decisions
+
+**Universal Workflow Agents** (5 agents in core/) - NEW in V2
+- `universal-router` - Tier classification (0-4) across ALL domains via config
+- `universal-planner` - Task decomposition across ALL domains via config
+- `universal-executor` - Team coordination across ALL domains via config
+- `universal-validator` - Quality gates across ALL domains via config
+- `universal-self-correct` - Adaptive recovery across ALL domains via config
+
+These 5 universal agents replace 55 domain-specific workflow agents (11 domains × 5 agents) through configuration-driven behavior. Domain-specific logic is defined in `Agent_Memory/_system/domains/{domain}/*.yaml` files.
 
 ### Software Engineering Domain (@cagents/software)
 
-**Workflow Agents** (5 agents in software/)
-- `router` - Classifies complexity (tier 0-4) and assigns templates
-- `planner` - Decomposes tasks into executable subtasks
-- `executor` - Runs tasks using tools and produces outputs
-- `validator` - Quality gate that classifies results (PASS/FIXABLE/BLOCKED)
-- `self-correct` - Adaptive recovery using learned strategies
+**Workflow**: Handled by universal workflow agents + software domain configs in `Agent_Memory/_system/domains/software/`
+
+_Note: Domain-specific workflow agents (router.md, planner.md, executor.md, validator.md, self-correct.md) are deprecated in V2. The universal workflow agents now load configuration from `Agent_Memory/_system/domains/software/*.yaml` to provide domain-specific behavior._
 
 **Executive Leadership** (5 agents)
 - `ceo` - Strategic vision, stakeholder management, executive decisions
@@ -53,12 +67,9 @@ The system features a **modular multi-domain architecture**:
 
 ### Business Operations Domain (@cagents/business)
 
-**Workflow Agents** (5 agents in business/)
-- `router` - Business complexity classification (tier 0-4) and template matching (forecast, strategic_plan, market_analysis, process_design)
-- `planner` - Business task decomposition with quarterly/fiscal timelines and stakeholder coordination
-- `executor` - Business team coordination and deliverable aggregation (reports, forecasts, strategies, budgets)
-- `validator` - Business deliverable quality gate (completeness, data quality, format compliance, stakeholder approvals)
-- `self-correct` - Adaptive recovery for business deliverables (add content, document assumptions, cite sources)
+**Workflow**: Handled by universal workflow agents + business domain configs in `Agent_Memory/_system/domains/business/`
+
+_Note: Domain-specific workflow agents are deprecated in V2. Universal agents load configs for business-specific templates (forecast, strategic_plan, market_analysis, process_design), timelines, quality gates, and correction strategies._
 
 **Executive Leadership** (1 agent)
 - `cso` - Chief Strategy Officer: strategic planning, competitive positioning, market analysis
@@ -104,6 +115,81 @@ Agent_Memory/
 - Parallel-safe: Multiple instructions can run concurrently
 - Agent ownership: Each agent owns specific memory sections
 - Archival-first: Completed work automatically moves to `_archive/`
+
+### V2 Universal Workflow Architecture (NEW)
+
+**Configuration-Driven Domain Behavior**
+
+V2 replaces 55 domain-specific workflow agents with 5 universal agents that load domain behavior from YAML configuration files:
+
+```
+Agent_Memory/_system/domains/{domain}/
+├── router_config.yaml          # Tier classification + template matching
+├── planner_config.yaml         # Task patterns + agent assignments
+├── executor_config.yaml        # Coordination strategies + workflows
+├── validator_config.yaml       # Quality gates + pass criteria
+└── self_correct_config.yaml    # Correction strategies + fixes
+```
+
+**How Universal Agents Work**
+
+1. **Orchestrator** invokes universal agent via Task tool with domain context
+2. **Universal agent** loads config from `Agent_Memory/_system/domains/{domain}/{agent}_config.yaml`
+3. **Config drives behavior**: Tier classification, templates, agents, quality gates, etc.
+4. **Universal agent** executes using domain-specific patterns from config
+5. **Results** written to instruction folder, orchestrator continues phase progression
+
+**Example: Universal-Router Workflow**
+
+```
+Orchestrator → Task(universal-router, domain="software", request="Fix login bug")
+                   ↓
+Universal-Router reads: Agent_Memory/_system/domains/software/router_config.yaml
+                   ↓
+Config defines:
+  - tier_2_indicators: ["Fix bug"]
+  - template: "bug_fix"
+  - required_agents: 2-3
+                   ↓
+Universal-Router writes: Agent_Memory/{instruction_id}/workflow/routing.yaml
+                   ↓
+Orchestrator transitions to planning phase
+```
+
+**Recursive Workflows** (NEW in V2)
+
+Workflows can spawn child workflows for complex multi-component work:
+
+```
+Parent Workflow (Novel Writing)
+  ↓
+  Child Workflow 1 (Chapter 1) → Child Workflow 1a (Scene 1)
+  Child Workflow 2 (Chapter 2) → Child Workflow 2a (Scene 1)
+  Child Workflow 3 (Chapter 3)
+```
+
+**Safety Mechanisms**:
+- Maximum depth: 5 levels
+- Maximum children per parent: 20
+- Circular reference prevention
+- Parent-child result aggregation
+
+**Creating Child Workflows**:
+
+Universal-executor or other agents can invoke trigger to create child workflows:
+
+```markdown
+Use Task tool:
+- subagent_type: "trigger"
+- prompt: |
+    Create child workflow for parent instruction {parent_id}
+
+    Parent domain: creative
+    Child request: Write chapter 2 of the novel
+    Child domain: creative
+
+    This is a child workflow (depth 1)
+```
 
 ## Development Commands
 
@@ -186,24 +272,41 @@ capabilities: ["capability1", "capability2", "capability3"]
 Agent's system prompt and instructions here...
 ```
 
-## Workflow Execution Flow
+## Workflow Execution Flow (V2)
 
 ```
 User Request
   ↓
-Trigger (Core) → Domain Detection → Router → Planner → Executor (Team Agents) → Validator
-                                                                                      ↓
-                                                               PASS ← ← ← ← ← ← ← ←┘
-                                                                 ↓
-                                                              Complete
-
-                                                            FIXABLE
-                                                                 ↓
-                                                           Self-Correct → Retry
-
-                                                            BLOCKED
-                                                                 ↓
-                                                               HITL
+Trigger (Core) → Domain Detection → Orchestrator
+  ↓                                       ↓
+  Creates instruction folder         Phase: Routing
+                                          ↓
+                                     Universal-Router
+                                     (loads domain config)
+                                          ↓
+                                     Phase: Planning
+                                          ↓
+                                     Universal-Planner
+                                     (loads domain config)
+                                          ↓
+                                     Phase: Executing
+                                          ↓
+                                     Universal-Executor
+                                     (delegates to team agents)
+                                          ↓
+                                     Phase: Validating
+                                          ↓
+                                     Universal-Validator
+                                     (loads domain config)
+                                          ↓
+                                     ┌────┴────┐
+                                     │         │
+                                   PASS    FIXABLE    BLOCKED
+                                     │         │         │
+                                     ↓         ↓         ↓
+                                Complete  Self-Correct  HITL
+                                              ↓
+                                           Retry
 ```
 
 ## Complexity Tiers
@@ -269,23 +372,58 @@ TodoWrite({
 5. Add agent path to `{domain}/.claude-plugin/plugin.json` agents array
 6. Test locally: `claude --plugin-dir .`
 
-## Creating New Domains
+## Creating New Domains (V2)
 
 To add a new domain (e.g., @cagents/medical):
 
-1. Create domain folder: `medical/`
-2. Add structure:
+**Step 1: Create Domain Configuration Files** (5 configs - NO CODE REQUIRED)
+
+```bash
+mkdir -p Agent_Memory/_system/domains/medical
+```
+
+Create these 5 YAML configuration files in `Agent_Memory/_system/domains/medical/`:
+
+1. **router_config.yaml** - Tier classification + template matching
+2. **planner_config.yaml** - Task patterns + agent assignments
+3. **executor_config.yaml** - Coordination strategies + workflows
+4. **validator_config.yaml** - Quality gates + pass criteria
+5. **self_correct_config.yaml** - Correction strategies + fixes
+
+Use templates from `Agent_Memory/_system/domains/_template/` as starting point.
+
+**Step 2: Create Domain Team Agents** (agent files)
+
+```bash
+mkdir -p medical/agents
+```
+
+Create team agents in `medical/agents/`:
+- Executive: `medical-director.md`, etc.
+- Specialists: `surgeon.md`, `diagnostician.md`, etc.
+- Support: `nurse.md`, `pharmacist.md`, etc.
+
+_Note: Do NOT create workflow agents (router, planner, executor, validator, self-correct). Universal workflow agents handle all domains._
+
+**Step 3: Update Plugin Manifests**
+
+1. Create `medical/.claude-plugin/plugin.json`:
+   ```json
+   {
+     "name": "@cagents/medical",
+     "version": "1.0.0",
+     "agents": [
+       "./agents/medical-director.md",
+       "./agents/surgeon.md",
+       ...
+     ]
+   }
    ```
-   medical/
-   ├── .claude-plugin/plugin.json
-   ├── agents/
-   ├── commands/
-   ├── skills/
-   └── package.json
-   ```
+
+2. Update root `.claude-plugin/plugin.json` to include medical agent paths
 3. Update root `package.json` workspaces array
-4. Update root `.claude-plugin/plugin.json` to include domain paths
-5. Create domain-specific router in `medical/agents/router.md`
+
+**That's it!** The universal workflow agents will automatically load the medical domain configs and work with the medical team agents.
 
 ## Plugin Manifest Structure
 
@@ -325,8 +463,8 @@ claude --plugin-dir .
 
 ---
 
-**Version**: 4.1.0
-**Total Agents**: 72 (3 core + 46 software + 23 business)
-**Architecture**: Multi-domain (Core + Domains)
+**Version**: 6.0.0
+**Total Agents**: 283 (8 core infrastructure + 275 domain team agents)
+**Architecture**: V2 Universal Workflow (5 universal agents + 55 domain configs + 11 domains)
 **Dependencies**: None (file-based, self-contained)
-**Primary Domains**: Software Engineering (@cagents/software), Business Operations (@cagents/business)
+**Active Domains**: All 11 domains fully configured (software, business, creative, planning, sales, marketing, finance, operations, hr, legal, support)

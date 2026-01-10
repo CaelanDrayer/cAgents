@@ -1,0 +1,516 @@
+# Creative Domain Executor Configuration
+# Agent coordination and execution strategies for creative writing projects
+
+domain: creative
+version: 1.0
+description: "Execution coordination for creative writing, storytelling, and narrative development"
+
+# Agent Capabilities Registry
+# Maps creative agents to their executable capabilities
+
+agent_capabilities:
+  executive:
+    cco:
+      can_execute: [creative_vision, narrative_strategy, quality_review, artistic_guidance]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [creative_brief, vision_document, quality_assessment]
+      coordination_needs: very_high
+
+  story_structure:
+    story-architect:
+      can_execute: [plot_structure, story_outlines, beat_sheets, three_act_structure]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [plot_outline, beat_sheet, story_structure_document]
+      coordination_needs: medium
+
+    narrative-designer:
+      can_execute: [narrative_flow, pacing, chapter_structure, transitions]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [pacing_plan, chapter_breakdown, narrative_flow_document]
+      coordination_needs: medium
+
+    plot-developer:
+      can_execute: [plot_elaboration, subplots, twists, complications]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [detailed_plot, subplot_threads, twist_integration]
+      coordination_needs: low
+
+  character_development:
+    character-designer:
+      can_execute: [character_profiles, backstory, appearance, personality, voice]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [character_profile, character_bible, character_arc]
+      coordination_needs: medium
+
+    character-psychologist:
+      can_execute: [psychological_depth, motivation_analysis, trauma, emotional_complexity]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [psychology_profile, motivation_document, emotional_map]
+      coordination_needs: low
+
+  worldbuilding:
+    worldbuilder:
+      can_execute: [world_creation, magic_systems, cultures, geography, technology]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [world_bible, magic_system_doc, cultural_guide, world_map]
+      coordination_needs: high
+
+    setting-designer:
+      can_execute: [location_design, environment_description, atmosphere, sensory_details]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [location_description, setting_guide, environment_details]
+      coordination_needs: low
+
+    lore-keeper:
+      can_execute: [history_creation, mythology, timelines, backstory, continuity_tracking]
+      typical_tools: [Read, Grep, Write, TodoWrite]
+      output_formats: [history_document, timeline, mythology, lore_bible]
+      coordination_needs: medium
+
+  writing_execution:
+    prose-stylist:
+      can_execute: [scene_writing, prose_composition, descriptive_writing, narrative_prose]
+      typical_tools: [Read, Write, Edit, TodoWrite]
+      output_formats: [written_scene, chapter, prose_passage]
+      coordination_needs: low
+
+    dialogue-specialist:
+      can_execute: [dialogue_writing, character_voice, conversation_crafting, subtext]
+      typical_tools: [Read, Write, Edit, TodoWrite]
+      output_formats: [dialogue_scene, conversation, verbal_exchange]
+      coordination_needs: low
+
+  editing_and_polish:
+    editor:
+      can_execute: [developmental_editing, line_editing, structural_revision, pacing_improvement]
+      typical_tools: [Read, Edit, Write, TodoWrite]
+      output_formats: [edited_manuscript, revision_notes, improvement_recommendations]
+      coordination_needs: medium
+
+    copy-editor:
+      can_execute: [grammar_correction, spelling, punctuation, formatting, technical_polish]
+      typical_tools: [Read, Edit, Write, TodoWrite]
+      output_formats: [copyedited_manuscript, corrections_list]
+      coordination_needs: low
+
+  quality_and_consistency:
+    continuity-checker:
+      can_execute: [plot_hole_detection, consistency_checking, timeline_verification, logic_checking]
+      typical_tools: [Read, Grep, Write, TodoWrite]
+      output_formats: [continuity_report, inconsistency_list, fix_recommendations]
+      coordination_needs: low
+
+    sensitivity-reader:
+      can_execute: [representation_review, cultural_sensitivity, identity_authenticity, respectful_portrayal]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [sensitivity_report, representation_feedback, recommendations]
+      coordination_needs: medium
+
+  specialized:
+    research-specialist:
+      can_execute: [fact_checking, historical_research, scientific_plausibility, cultural_research]
+      typical_tools: [Read, WebSearch, WebFetch, Write, TodoWrite]
+      output_formats: [research_report, fact_check_results, source_list]
+      coordination_needs: low
+
+    genre-specialist-fantasy:
+      can_execute: [fantasy_conventions, fantasy_worldbuilding, trope_navigation]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [fantasy_guidance, trope_analysis, genre_recommendations]
+      coordination_needs: low
+
+    genre-specialist-scifi:
+      can_execute: [scifi_conventions, tech_speculation, hard_scifi_accuracy]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [scifi_guidance, tech_assessment, genre_recommendations]
+      coordination_needs: low
+
+# Execution Strategies
+# How to coordinate agents based on tier
+
+execution_strategies:
+  tier_0_direct_answer:
+    description: "No execution needed, router provides direct answer to creative question"
+    agent_count: 0
+    parallelization: false
+    coordination_overhead: none
+
+  tier_1_single_creative_task:
+    description: "Single agent completes simple creative task"
+    agent_count: 1
+    parallelization: false
+    typical_duration: "< 1 hour"
+    coordination_overhead: minimal
+    checkpoints: false
+    example_flow: "Invoke agent → Capture output → Validate"
+    common_tasks: ["Write dialogue", "Describe character", "Polish paragraph"]
+
+  tier_2_component_creation:
+    description: "2-3 agents create single story component"
+    agent_count: 2-3
+    parallelization: false
+    typical_duration: "1-4 hours"
+    coordination_overhead: low
+    checkpoints: true
+    checkpoint_frequency: "After each agent completes"
+    example_flow: "Plan → Write → Edit → Validate"
+    common_tasks: ["Write scene", "Develop character", "Design location", "Edit chapter"]
+
+  tier_3_multi_component_work:
+    description: "Multiple agents creating complex or multiple story elements"
+    agent_count: 3-5
+    parallelization: true
+    max_parallel_agents: 3
+    typical_duration: "4-12 hours"
+    coordination_overhead: medium
+    checkpoints: true
+    checkpoint_frequency: "After each wave"
+    example_flow: |
+      Wave 1: Character design + World design (parallel)
+      Checkpoint: Review combined work
+      Wave 2: Plot outline using character + world
+      Checkpoint: Review outline
+      Wave 3: Write chapters
+      Wave 4: Edit and polish
+    common_tasks: ["Multi-chapter arc", "Full character cast", "Complex world", "Manuscript edit"]
+
+  tier_4_full_creative_project:
+    description: "Large team creating substantial creative work (novel, series bible)"
+    agent_count: 5+
+    parallelization: true
+    max_parallel_agents: 5
+    typical_duration: "> 12 hours"
+    coordination_overhead: high
+    checkpoints: true
+    checkpoint_frequency: "After each major phase"
+    hitl_checkpoints: ["After outline", "Mid-manuscript", "Before final polish"]
+    example_flow: |
+      Phase 1: Foundation (Character + World + Plot parallel)
+      Checkpoint: Review all foundation work
+      Phase 2: Writing (Act 1 → Act 2 → Act 3 sequential)
+      Checkpoint: First draft complete
+      Phase 3: Revision (Developmental → Line → Copy sequential)
+      Checkpoint: Final manuscript review
+      Phase 4: Quality (Continuity + Sensitivity parallel)
+      Final Review: CCO approval
+    common_tasks: ["Full novel", "Series bible", "Complete universe"]
+
+# Creative-Specific Coordination Patterns
+
+coordination_patterns:
+  writing_workflow:
+    description: "Standard writing process: outline → draft → revise → polish"
+    pattern: |
+      1. story-architect creates outline
+      2. prose-stylist writes draft following outline
+      3. editor performs developmental edit
+      4. prose-stylist or editor does line edit
+      5. copy-editor final polish
+    variations:
+      discovery_writing: "Skip outline, write directly, restructure in editing"
+      iterative_drafting: "Multiple outline-write-edit cycles for sections"
+
+  character_world_parallel:
+    description: "Develop characters and world simultaneously"
+    pattern: |
+      1. Launch character-designer and worldbuilder in parallel
+      2. Wait for both to complete
+      3. Aggregate: ensure characters fit world and vice versa
+      4. Resolve any conflicts or integration issues
+      5. Hand integrated foundation to next phase (plotting or writing)
+    benefit: "Saves time on tier 3-4 projects"
+
+  collaborative_editing:
+    description: "Multiple editing passes by different specialists"
+    pattern: |
+      1. editor: developmental edit (structure, plot, character)
+      2. prose-stylist: line edit (prose quality)
+      3. dialogue-specialist: dialogue pass (if dialogue-heavy)
+      4. continuity-checker: consistency check
+      5. copy-editor: technical polish
+    note: "Must be sequential, order matters"
+
+  genre_consultation:
+    description: "Consult genre specialist for genre-specific guidance"
+    when: "Fantasy or sci-fi projects, or genre-specific concerns"
+    pattern: |
+      1. Identify genre-specific elements or concerns
+      2. Invoke genre-specialist-fantasy or genre-specialist-scifi
+      3. Get guidance on conventions, tropes, expectations
+      4. Apply guidance to worldbuilding, plotting, or writing
+      5. Continue with main creative work
+
+  sensitivity_review:
+    description: "Review work for respectful representation"
+    when: "Work includes diverse identities, cultures, or sensitive topics"
+    pattern: |
+      1. Complete draft of work
+      2. Invoke sensitivity-reader for review
+      3. Receive feedback on representation
+      4. Revise based on feedback (or escalate concerns to HITL)
+      5. Continue with final polish
+
+  research_integration:
+    description: "Research informs creative work"
+    when: "Historical fiction, hard sci-fi, or accuracy-critical work"
+    pattern: |
+      1. research-specialist gathers information
+      2. Creative agent (worldbuilder, prose-stylist, etc.) uses research
+      3. research-specialist fact-checks draft
+      4. Revise any inaccuracies
+      5. Continue with editing
+
+# Recursive Workflows
+# Creative workflows can spawn child workflows
+
+recursive_workflows:
+  enabled: true
+  max_depth: 5
+  max_children_per_parent: 20
+
+  common_use_cases:
+    novel_spawns_chapters:
+      description: "Novel writing spawns child workflow for each chapter or arc"
+      parent_domain: creative
+      parent_intent: write_full_novel
+      child_domain: creative
+      child_intents: [write_scene, write_novel_chapter_arc]
+      coordination: "Parent aggregates all chapters into full manuscript"
+
+    series_bible_spawns_elements:
+      description: "Series bible creation spawns worldbuilding, character, and plot workflows"
+      parent_domain: creative
+      parent_intent: create_series_bible
+      child_domain: creative
+      child_intents: [design_world, develop_character, outline_plot, create_lore]
+      coordination: "Parent aggregates all elements into comprehensive bible"
+
+    manuscript_edit_spawns_revisions:
+      description: "Manuscript edit identifies issues and spawns focused revision workflows"
+      parent_domain: creative
+      parent_intent: edit_manuscript
+      child_domain: creative
+      child_intents: [write_scene, develop_character, design_setting]
+      coordination: "Parent incorporates all revisions into edited manuscript"
+
+  recursive_api:
+    create_child: |
+      Use Task tool to invoke trigger agent:
+      - subagent_type: "trigger"
+      - description: "Spawn child workflow: {child_intent}"
+      - prompt: |
+          Create child workflow for parent instruction {parent_id}
+
+          Intent: {child_intent}
+          Domain: creative
+          Context from parent:
+            - Story world: {world_context}
+            - Characters: {character_context}
+            - Plot: {plot_context}
+            - Style: {style_guidelines}
+
+          This is a child workflow (depth {depth})
+          Parent will aggregate results
+
+    wait_for_children: |
+      Check Agent_Memory/{parent_id}/workflow/children.yaml for child statuses
+      Wait until all children reach "completed" or "blocked" status
+      If any child blocked, escalate to HITL
+      Aggregate outputs from Agent_Memory/{child_id}/outputs/final/
+
+      For creative work, aggregation often means:
+      - Combining chapters into full manuscript
+      - Integrating character profiles into character bible
+      - Merging worldbuilding elements into world bible
+
+    circular_reference_check: |
+      Before spawning child, check:
+      1. Current depth < max_depth
+      2. Child intent not in ancestor chain
+      3. Parent not already at max_children_per_parent
+      If any check fails, log warning and skip child creation
+
+# Cross-Domain Invocation
+# Creative workflows can invoke agents from other domains
+
+cross_domain_invocation:
+  enabled: true
+
+  supported_cross_domain_agents:
+    business_domain:
+      - market-analyst  # For analyzing book market, genre trends
+      - business-analyst  # For book business plans, publishing strategy
+
+    software_domain:
+      - ux-designer  # For interactive fiction or game narrative UI
+
+    marketing_domain:
+      - copywriter  # For book blurbs, marketing copy
+      - content-marketing-manager  # For author platform content
+
+  invocation_format:
+    syntax: "{domain}:{agent-name}"
+    examples:
+      - "business:market-analyst"
+      - "marketing:copywriter"
+
+  cross_domain_patterns:
+    creative_market_research:
+      description: "Analyze market for book genre and positioning"
+      creative_agents: [cco, story-architect]
+      business_agents: [business:market-analyst]
+      coordination: "Business analyzes market, creative adapts story to fit opportunity"
+
+    book_marketing:
+      description: "Create marketing materials for creative work"
+      creative_agents: [editor, prose-stylist]
+      marketing_agents: [marketing:copywriter]
+      coordination: "Creative provides manuscript/summary, marketing creates promotional copy"
+
+# Wave Execution
+# How to group creative tasks into parallel execution waves
+
+wave_execution:
+  rules:
+    - "Foundation tasks (character, world, plot) can often parallelize"
+    - "Writing tasks must follow foundation"
+    - "Editing phases must be sequential (dev → line → copy)"
+    - "Quality checks (continuity, sensitivity) can parallelize"
+
+  parallelization_limits:
+    tier_2: 2  # Max 2 agents in parallel
+    tier_3: 3  # Max 3 agents in parallel
+    tier_4: 5  # Max 5 agents in parallel
+
+  wave_coordination:
+    before_wave: "Ensure all creative context available for agents (world, characters, plot)"
+    during_wave: "Monitor progress, capture creative outputs"
+    after_wave: "Checkpoint - verify outputs integrate well, resolve conflicts"
+    on_failure: "If agent fails, attempt self-correction or invoke alternative agent"
+
+# Output Aggregation
+# How to combine creative outputs from multiple agents
+
+output_aggregation:
+  strategies:
+    combine_chapters:
+      description: "Merge multiple chapters into full manuscript"
+      typical_agents: [prose-stylist, narrative-designer]
+      output_format: "Continuous manuscript with proper chapter breaks"
+      aggregation_steps:
+        - "Collect all chapter files in order"
+        - "Verify chapter numbering and sequence"
+        - "Ensure narrative flow between chapters"
+        - "Add chapter headings and formatting"
+        - "Create single manuscript file"
+
+    integrate_worldbuilding:
+      description: "Combine world elements into world bible"
+      typical_agents: [worldbuilder, lore-keeper, setting-designer]
+      output_format: "Comprehensive world bible document"
+      aggregation_steps:
+        - "Collect all worldbuilding elements"
+        - "Organize by category (magic, geography, culture, history)"
+        - "Cross-reference related elements"
+        - "Resolve any contradictions"
+        - "Create master world bible"
+
+    compile_character_bible:
+      description: "Aggregate all character profiles into character bible"
+      typical_agents: [character-designer, character-psychologist, dialogue-specialist]
+      output_format: "Character bible with all profiles"
+      aggregation_steps:
+        - "Collect all character profiles"
+        - "Organize by role (protagonist, antagonist, supporting)"
+        - "Add relationship map"
+        - "Include character arcs"
+        - "Create comprehensive character bible"
+
+# Creative-Specific Execution Notes
+
+execution_notes: |
+  Creative domain execution considerations:
+
+  **Iteration is Expected**:
+  - Creative work is inherently iterative
+  - First draft focuses on completion, not perfection
+  - Revision is where quality emerges
+  - Multiple editing passes are normal, not failures
+  - Build revision time into estimates
+
+  **Creative Freedom Within Structure**:
+  - Outlines provide structure, not straitjacket
+  - Agents may deviate from plan if creative inspiration strikes
+  - This is expected and often produces better results
+  - Validate against intent, not rigid adherence to plan
+
+  **Quality Over Speed**:
+  - Creative work values quality over rapid completion
+  - Take time needed for proper development and polish
+  - Rushing produces inferior creative output
+  - Better to spend extra time than deliver subpar work
+
+  **Agent Collaboration Patterns**:
+  - Character and world often developed in parallel
+  - Plot follows character and world (needs foundation)
+  - Writing follows plot (needs structure)
+  - Editing follows writing (sequential phases)
+  - Quality checks follow editing (final verification)
+
+  **Word Count as Progress Metric**:
+  - Track word count for writing tasks
+  - Typical progress: 500-1000 words/hour first draft
+  - Editing speed: 2000-3000 words/hour
+  - Use word count to estimate completion time
+
+  **Genre-Specific Needs**:
+  - Fantasy: Almost always needs worldbuilder and lore-keeper
+  - Sci-Fi: Often needs research-specialist for plausibility
+  - Mystery: Needs plot-developer for clue placement and misdirection
+  - Romance: Needs character-psychologist for emotional depth
+  - Horror: Needs strong atmosphere (prose-stylist, setting-designer)
+
+  **Parallelization Opportunities**:
+  - Foundation phase: character + world + research in parallel
+  - Writing phase: Multiple scenes can parallelize (if independent)
+  - Quality phase: continuity + sensitivity in parallel
+  - Editing: Must be sequential (developmental → line → copy)
+
+  **Common Execution Patterns**:
+  - Short story: Outline → Write → Edit → Polish (2-3 agents, tier 2)
+  - Novel chapter: Outline → Write → Edit → Polish (3-4 agents, tier 2-3)
+  - Multi-chapter arc: Outline → Write all chapters → Edit arc → Polish (4-5 agents, tier 3)
+  - Full novel: Foundation → Write acts → Edit phases → Quality (8-12 agents, tier 4)
+
+  **Checkpoint Strategy**:
+  - After foundation: Ensure character/world/plot integrate
+  - Mid-writing: Check pacing and adherence to outline
+  - After first draft: Developmental edit before line editing
+  - Before final: Continuity and sensitivity checks
+
+  **When to Use CCO**:
+  - Only tier 4 projects with strategic creative decisions
+  - Final creative approval for major works
+  - Creative direction for complex multi-element projects
+  - Resolution of major creative conflicts
+  - NOT for day-to-day creative execution (that's specialist agents)
+
+  **Handling Creative Blocks**:
+  - If agent reports difficulty, try different approach
+  - Can invoke genre specialist for guidance
+  - Can spawn research child workflow for inspiration
+  - Can escalate to HITL for creative direction
+  - Creative blocks normal, not failures
+
+  **Output Organization**:
+  - Scenes: Individual files, combined later
+  - Chapters: Individual files with chapter numbering
+  - Full manuscript: Single aggregated file
+  - World bible: Organized by category (magic, geography, culture, etc.)
+  - Character bible: Organized by role (main, supporting, minor)
+
+  **Quality Expectations**:
+  - First draft: Coherence and completion, not perfection
+  - Second draft: Structure, character, plot solid
+  - Third draft: Prose quality professional
+  - Final draft: Technically flawless, ready for publication
