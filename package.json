@@ -4,13 +4,13 @@
   "description": "cAgents multi-domain agent system - universal AI agent orchestration for software engineering, creative writing, business operations, and more",
   "main": "index.js",
   "scripts": {
-    "postinstall": "sh core/memory/init-memory.sh",
     "test": "echo \"Tests coming in Phase 2\" && exit 0",
     "lint": "echo \"Linting coming in Phase 2\" && exit 0"
   },
   "workspaces": [
     "core",
     "software",
+    "business",
     "creative",
     "sales",
     "marketing",

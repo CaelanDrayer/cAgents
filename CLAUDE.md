@@ -9,6 +9,7 @@ This file provides guidance to Claude Code when working with code in this reposi
 The system features a **modular multi-domain architecture**:
 - **@cagents/core** - Universal infrastructure (Trigger, Orchestrator, HITL, Agent_Memory)
 - **@cagents/software** - 46 software engineering agents (default installation)
+- **@cagents/business** - 18 business operations agents (strategic, operations, project management, sales, specialized)
 - **@cagents/creative** - Creative writing agents (Phase 2)
 - Future domains: Sales, Marketing, Finance, Operations, Support, HR, Legal
 
@@ -103,23 +104,15 @@ npm install
 claude --plugin-dir .
 ```
 
-### First Run Initialization
+### Agent_Memory Initialization
 
-On first install, `npm install` automatically initializes the Agent_Memory structure, creating:
-- `Agent_Memory/_system/` with registry.yaml, config.yaml, agent_status.yaml
-- `Agent_Memory/_archive/` for completed workflows
-- `Agent_Memory/_knowledge/` with semantic/, procedural/, calibration/ folders
-- `Agent_Memory/_communication/inbox/` with per-agent folders
-- `Agent_Memory/_communication/broadcast/` for system announcements
-
-The Agent_Memory folder structure is created automatically when needed by the workflow agents.
+The Agent_Memory folder structure is created automatically when needed by the workflow agents. Skills and workflows handle initialization on first use.
 
 ### Available Slash Commands
 ```bash
 /trigger <task>           # Universal entry point - auto-routes to appropriate domain
 /designer                 # Interactive design assistant (software domain)
 /reviewer [path]          # Comprehensive code review (software domain)
-/plugins                  # List available agents across all domains
 ```
 
 ## Directory Structure
@@ -135,8 +128,13 @@ cAgents/
 ├── software/                # @cagents/software - Software engineering domain
 │   ├── .claude-plugin/      # Software domain plugin manifest
 │   ├── agents/              # 46 specialized agents
-│   ├── commands/            # /designer, /reviewer, /plugins
+│   ├── commands/            # /designer, /reviewer
 │   ├── skills/              # trigger/, reviewer/
+│   └── package.json
+│
+├── business/                # @cagents/business - Business operations domain
+│   ├── .claude-plugin/      # Business domain plugin manifest
+│   ├── agents/              # 18 specialized agents
 │   └── package.json
 │
 ├── creative/                # @cagents/creative - Coming Phase 2
@@ -302,9 +300,6 @@ The root `.claude-plugin/plugin.json` aggregates all domains:
 cd cAgents
 claude --plugin-dir .
 
-# Verify all agents load correctly
-/plugins
-
 # Test universal /trigger across domains
 /trigger Fix the bug in auth.py         # Routes to software domain
 /trigger Write a short story about AI    # Routes to creative domain (Phase 2)
@@ -314,7 +309,7 @@ claude --plugin-dir .
 ---
 
 **Version**: 4.1.0
-**Total Agents**: 46 (3 core + 43 software)
+**Total Agents**: 67 (3 core + 46 software + 18 business)
 **Architecture**: Multi-domain (Core + Domains)
 **Dependencies**: None (file-based, self-contained)
-**Primary Domain**: Software Engineering (@cagents/software)
+**Primary Domains**: Software Engineering (@cagents/software), Business Operations (@cagents/business)

@@ -1,0 +1,48 @@
+{
+  "name": "@cagents/business",
+  "version": "4.1.0",
+  "description": "cAgents Business - Business operations domain plugin with 23 specialized agents (5 workflow + 18 business team)",
+  "author": {
+    "name": "CaelanDrayer",
+    "url": "https://github.com/CaelanDrayer"
+  },
+  "homepage": "https://github.com/CaelanDrayer/cAgents",
+  "repository": "https://github.com/CaelanDrayer/cAgents",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "business-operations",
+    "strategic-management",
+    "operations",
+    "project-management",
+    "claude-code",
+    "plugin"
+  ],
+  "commands": [],
+  "agents": [
+    "./agents/router.md",
+    "./agents/planner.md",
+    "./agents/executor.md",
+    "./agents/validator.md",
+    "./agents/self-correct.md",
+    "./agents/cso.md",
+    "./agents/business-development-manager.md",
+    "./agents/market-analyst.md",
+    "./agents/operations-manager.md",
+    "./agents/process-improvement-specialist.md",
+    "./agents/supply-chain-manager.md",
+    "./agents/quality-manager-business.md",
+    "./agents/project-manager.md",
+    "./agents/program-manager.md",
+    "./agents/change-manager.md",
+    "./agents/business-analyst.md",
+    "./agents/customer-success-manager.md",
+    "./agents/account-manager.md",
+    "./agents/sales-operations-manager.md",
+    "./agents/risk-manager.md",
+    "./agents/compliance-manager-business.md",
+    "./agents/procurement-specialist.md",
+    "./agents/facilities-manager.md"
+  ],
+  "skills": []
+}

@@ -9,8 +9,9 @@ cAgents transforms AI-assisted work across any domain - software engineering, cr
 cAgents is a modular ecosystem where you install domain plugins based on your needs:
 
 - **Software engineers** get `@cagents/software` (46 specialized agents)
-- **Writers** get `@cagents/creative` (18 agents for novels, stories, worldbuilding)
-- **Business teams** get domain-specific plugins for Sales, Marketing, Finance, etc.
+- **Business teams** get `@cagents/business` (18 agents for strategy, operations, sales, project management)
+- **Writers** get `@cagents/creative` (coming Phase 2: agents for novels, stories, worldbuilding)
+- **Future domains**: Sales, Marketing, Finance, Operations, Support, HR, Legal
 
 All domains share the same core infrastructure and work together seamlessly.
 
@@ -25,7 +26,10 @@ cAgents/
 |
 +-- software/       # @cagents/software - Software engineering
 |   +-- agents/     # 46 specialized agents
-|   +-- commands/   # /designer, /reviewer, /plugins
+|   +-- commands/   # /designer, /reviewer
+|
++-- business/       # @cagents/business - Business operations
+|   +-- agents/     # 18 specialized agents
 |
 +-- creative/       # @cagents/creative - Creative writing (Phase 2)
 +-- sales/          # @cagents/sales - Sales strategy (Future)
@@ -56,7 +60,6 @@ This installs both Core and Software domains by default.
 # Domain-specific commands (software)
 /designer   # Interactive design assistant
 /reviewer   # Comprehensive code review
-/plugins    # List available agents
 ```
 
 ## Core Concepts

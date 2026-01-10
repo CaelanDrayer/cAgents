@@ -1,7 +1,7 @@
 {
   "name": "cagents",
   "version": "4.1.0",
-  "description": "Universal multi-domain agent system for Claude Code with 49 specialized agents across software engineering, creative writing, and business operations domains featuring Intelligence Layer, QA Layer, Executive Leadership, and comprehensive workflow orchestration",
+  "description": "Universal multi-domain agent system for Claude Code with 72 specialized agents across software engineering and business operations domains featuring Intelligence Layer, QA Layer, Executive Leadership, and comprehensive workflow orchestration",
   "author": {
     "name": "CaelanDrayer",
     "url": "https://github.com/CaelanDrayer"
@@ -76,7 +76,30 @@
     "./software/agents/frontend-developer.md",
     "./software/agents/backend-developer.md",
     "./software/agents/scribe.md",
-    "./software/agents/reviewer.md"
+    "./software/agents/reviewer.md",
+    "./business/agents/router.md",
+    "./business/agents/planner.md",
+    "./business/agents/executor.md",
+    "./business/agents/validator.md",
+    "./business/agents/self-correct.md",
+    "./business/agents/cso.md",
+    "./business/agents/business-development-manager.md",
+    "./business/agents/market-analyst.md",
+    "./business/agents/operations-manager.md",
+    "./business/agents/process-improvement-specialist.md",
+    "./business/agents/supply-chain-manager.md",
+    "./business/agents/quality-manager-business.md",
+    "./business/agents/project-manager.md",
+    "./business/agents/program-manager.md",
+    "./business/agents/change-manager.md",
+    "./business/agents/business-analyst.md",
+    "./business/agents/customer-success-manager.md",
+    "./business/agents/account-manager.md",
+    "./business/agents/sales-operations-manager.md",
+    "./business/agents/risk-manager.md",
+    "./business/agents/compliance-manager-business.md",
+    "./business/agents/procurement-specialist.md",
+    "./business/agents/facilities-manager.md"
   ],
   "skills": [
     "./software/skills/trigger",
