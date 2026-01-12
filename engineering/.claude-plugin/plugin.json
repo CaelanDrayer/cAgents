@@ -1,0 +1,22 @@
+{
+  "name": "cagents-engineering",
+  "version": "3.0.0",
+  "description": "Engineering domain (formerly software) for cAgents V3.0",
+  "domain": "engineering",
+  "tier": 3,
+  "dependencies": ["cagents-shared-capabilities"],
+  "agents": [
+    "./agents/*.md"
+  ],
+  "keywords": [
+    "engineering",
+    "software",
+    "development",
+    "architecture",
+    "frontend",
+    "backend",
+    "devops",
+    "security",
+    "qa"
+  ]
+}

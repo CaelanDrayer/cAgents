@@ -1,0 +1,21 @@
+{
+  "name": "cagents-people-culture",
+  "version": "3.0.0",
+  "description": "People and Culture domain (formerly HR) for cAgents V3.0",
+  "domain": "people-culture",
+  "tier": 3,
+  "dependencies": ["cagents-shared-capabilities"],
+  "agents": [
+    "./agents/*.md"
+  ],
+  "keywords": [
+    "people",
+    "culture",
+    "hr",
+    "talent",
+    "recruiting",
+    "onboarding",
+    "compensation",
+    "learning-development"
+  ]
+}

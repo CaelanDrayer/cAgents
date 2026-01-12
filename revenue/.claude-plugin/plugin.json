@@ -1,0 +1,21 @@
+{
+  "name": "cagents-revenue",
+  "version": "3.0.0",
+  "description": "Revenue domain (sales + marketing) for cAgents V3.0",
+  "domain": "revenue",
+  "tier": 3,
+  "dependencies": ["cagents-shared-capabilities"],
+  "agents": [
+    "./agents/sales/*.md",
+    "./agents/marketing/*.md"
+  ],
+  "keywords": [
+    "revenue",
+    "sales",
+    "marketing",
+    "campaigns",
+    "forecasting",
+    "demand-generation",
+    "GTM"
+  ]
+}

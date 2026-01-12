@@ -1,0 +1,20 @@
+{
+  "name": "cagents-customer-experience",
+  "version": "3.0.0",
+  "description": "Customer Experience domain (formerly support) for cAgents V3.0",
+  "domain": "customer-experience",
+  "tier": 3,
+  "dependencies": ["cagents-shared-capabilities"],
+  "agents": [
+    "./agents/*.md"
+  ],
+  "keywords": [
+    "customer-experience",
+    "CX",
+    "support",
+    "customer-success",
+    "escalations",
+    "knowledge-management",
+    "VOC"
+  ]
+}

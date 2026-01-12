@@ -1,0 +1,21 @@
+{
+  "name": "cagents-finance-operations",
+  "version": "3.0.0",
+  "description": "Finance and Operations domain for cAgents V3.0",
+  "domain": "finance-operations",
+  "tier": 3,
+  "dependencies": ["cagents-shared-capabilities"],
+  "agents": [
+    "./agents/finance/*.md",
+    "./agents/operations/*.md"
+  ],
+  "keywords": [
+    "finance",
+    "operations",
+    "budgeting",
+    "forecasting",
+    "supply-chain",
+    "FP&A",
+    "procurement"
+  ]
+}

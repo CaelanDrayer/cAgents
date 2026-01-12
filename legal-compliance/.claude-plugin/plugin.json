@@ -1,0 +1,20 @@
+{
+  "name": "cagents-legal-compliance",
+  "version": "3.0.0",
+  "description": "Legal and Compliance domain for cAgents V3.0",
+  "domain": "legal-compliance",
+  "tier": 3,
+  "dependencies": ["cagents-shared-capabilities"],
+  "agents": [
+    "./agents/*.md"
+  ],
+  "keywords": [
+    "legal",
+    "compliance",
+    "contracts",
+    "regulatory",
+    "IP",
+    "litigation",
+    "governance"
+  ]
+}

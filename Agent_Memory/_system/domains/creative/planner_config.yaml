@@ -1,622 +1,107 @@
-# Creative Domain Planner Configuration
-# Task decomposition and agent assignment for creative writing projects
-
+# Creative Domain Planner Configuration (V3.0)
 domain: creative
-version: 1.0
-description: "Planning and task decomposition for creative writing, storytelling, and narrative development"
-
-# Available Agents Registry
-# All agents available in creative domain with their capabilities
+version: 3.0
 
 available_agents:
-  executive:
-    - name: cco
-      full_name: Chief Creative Officer
-      capabilities: [creative_vision, narrative_strategy, artistic_direction, quality_oversight]
-      tier_access: [3, 4]
-      specializations: [story_vision, creative_excellence, narrative_leadership]
+  shared_leadership:
+    - shared:ceo
+    - shared:cpo
+  shared_planning:
+    - shared:strategic-planner
+    - shared:project-manager
+    - shared:roadmap-planner
+  shared_data:
+    - shared:market-research-analyst
+    - shared:data-analyst
+  shared_quality:
+    - shared:quality-manager
+    - shared:performance-analyst
+  shared_operations:
+    - shared:operations-manager
+    - shared:resource-planner
 
-  story_structure:
-    - name: story-architect
-      capabilities: [plot_structure, story_arcs, beat_sheets, narrative_design]
-      tier_access: [2, 3, 4]
-      specializations: [three_act_structure, heros_journey, plot_development]
-
-    - name: narrative-designer
-      capabilities: [narrative_flow, story_progression, pacing, transitions]
-      tier_access: [2, 3, 4]
-      specializations: [narrative_arc, story_flow, chapter_structure]
-
-    - name: plot-developer
-      capabilities: [plot_elaboration, twists, complications, plot_threads]
-      tier_access: [2, 3, 4]
-      specializations: [plot_complexity, subplot_weaving, plot_twists]
-
-  character_development:
-    - name: character-designer
-      capabilities: [character_creation, character_profiles, backstory, character_voice]
-      tier_access: [1, 2, 3, 4]
-      specializations: [protagonist_design, antagonist_design, supporting_characters]
-
-    - name: character-psychologist
-      capabilities: [psychological_depth, trauma, motivation, emotional_authenticity]
-      tier_access: [2, 3, 4]
-      specializations: [character_psychology, mental_states, emotional_complexity]
-
-  worldbuilding:
-    - name: worldbuilder
-      capabilities: [world_creation, magic_systems, cultures, geography, technology]
-      tier_access: [2, 3, 4]
-      specializations: [fantasy_worldbuilding, scifi_worldbuilding, magic_systems]
-
-    - name: setting-designer
-      capabilities: [location_design, environment_creation, scene_settings]
-      tier_access: [1, 2, 3, 4]
-      specializations: [location_detail, atmosphere, sensory_description]
-
-    - name: lore-keeper
-      capabilities: [history, mythology, timelines, backstory, continuity]
-      tier_access: [2, 3, 4]
-      specializations: [world_history, mythology_creation, continuity_tracking]
-
-  writing_execution:
-    - name: prose-stylist
-      capabilities: [prose_writing, scene_writing, descriptive_writing, narrative_prose]
-      tier_access: [1, 2, 3, 4]
-      specializations: [vivid_description, engaging_prose, literary_style]
-
-    - name: dialogue-specialist
-      capabilities: [dialogue_writing, character_voice, conversation_flow]
-      tier_access: [1, 2, 3, 4]
-      specializations: [authentic_dialogue, subtext, voice_distinction]
-
-  editing_and_polish:
-    - name: editor
-      capabilities: [developmental_editing, line_editing, manuscript_revision, pacing]
-      tier_access: [2, 3, 4]
-      specializations: [structural_editing, prose_polish, pacing_improvement]
-
-    - name: copy-editor
-      capabilities: [grammar, spelling, punctuation, formatting, technical_polish]
-      tier_access: [1, 2, 3, 4]
-      specializations: [copyediting, proofreading, technical_corrections]
-
-  quality_and_consistency:
-    - name: continuity-checker
-      capabilities: [plot_holes, inconsistencies, timeline_errors, logic_checks]
-      tier_access: [2, 3, 4]
-      specializations: [continuity_verification, consistency_checking]
-
-    - name: sensitivity-reader
-      capabilities: [cultural_representation, diverse_identities, respectful_portrayal]
-      tier_access: [2, 3, 4]
-      specializations: [diversity_review, cultural_authenticity, sensitivity_review]
-
-  specialized:
-    - name: research-specialist
-      capabilities: [fact_checking, historical_accuracy, scientific_plausibility, cultural_research]
-      tier_access: [2, 3, 4]
-      specializations: [research, fact_verification, authenticity_checking]
-
-    - name: genre-specialist-fantasy
-      capabilities: [fantasy_conventions, fantasy_worldbuilding, fantasy_tropes]
-      tier_access: [2, 3, 4]
-      specializations: [epic_fantasy, urban_fantasy, dark_fantasy]
-
-    - name: genre-specialist-scifi
-      capabilities: [scifi_conventions, tech_speculation, scifi_worldbuilding]
-      tier_access: [2, 3, 4]
-      specializations: [hard_scifi, space_opera, cyberpunk]
-
-# Task Patterns
-# Common creative task decomposition patterns
+  creative_specialists:
+    - cco: "Chief Creative Officer"
+    - creative-director: "Creative direction and vision"
+    - story-architect: "Plot structure and narrative design"
+    - narrative-designer: "Narrative flow and pacing"
+    - plot-developer: "Plot elaboration and twists"
+    - character-designer: "Character creation and development"
+    - character-psychologist: "Psychological depth and authenticity"
+    - worldbuilder: "Setting and worldbuilding"
+    - lore-master: "History, mythology, and lore"
+    - prose-stylist: "Writing and prose quality"
+    - dialogue-specialist: "Dialogue writing"
+    - editor: "Manuscript editing and improvement"
+    - continuity-checker: "Continuity and consistency"
+    - copy-editor: "Grammar, spelling, formatting"
+    - genre-specialist: "Genre-specific expertise"
 
 task_patterns:
-  write_scene:
-    description: "Write a single scene or chapter"
-    typical_tier: 2
+  write_novel:
+    tier_default: 4
     tasks:
-      - id: plan_scene_structure
+      - id: strategic_planning
+        agent: shared:strategic-planner
+        description: "Plan novel structure and timeline"
+      - id: outline_plot
         agent: story-architect
-        type: plan
-        dependencies: []
-        estimated_hours: 0.5
-        description: "Plan scene beats and structure"
-
-      - id: draft_scene
-        agent: prose-stylist
-        type: write
-        dependencies: [plan_scene_structure]
-        estimated_hours: 2
-        description: "Write scene prose with vivid description and engaging narrative"
-
-      - id: polish_dialogue
-        agent: dialogue-specialist
-        type: refine
-        dependencies: [draft_scene]
-        estimated_hours: 0.5
-        description: "Refine character dialogue for authenticity and voice"
-
-      - id: copyedit
-        agent: copy-editor
-        type: polish
-        dependencies: [polish_dialogue]
-        estimated_hours: 0.5
-        description: "Fix grammar, spelling, and formatting"
-
-  develop_character:
-    description: "Create and develop character(s)"
-    typical_tier: 2
-    tasks:
-      - id: design_character_profile
+      - id: develop_characters
         agent: character-designer
-        type: create
-        dependencies: []
-        estimated_hours: 1
-        description: "Create character profile with appearance, personality, backstory"
-
-      - id: develop_psychology
-        agent: character-psychologist
-        type: deepen
-        dependencies: [design_character_profile]
-        estimated_hours: 1
-        description: "Develop psychological depth, motivations, fears, desires"
-
-      - id: define_voice
-        agent: dialogue-specialist
-        type: define
-        dependencies: [design_character_profile, develop_psychology]
-        estimated_hours: 1
-        description: "Define character's unique voice and speech patterns"
-
-      - id: document_character
-        agent: character-designer
-        type: document
-        dependencies: [define_voice]
-        estimated_hours: 0.5
-        description: "Create comprehensive character document"
-
-  design_world:
-    description: "Worldbuilding for setting, magic, culture"
-    typical_tier: 2-3
-    tasks:
-      - id: define_world_scope
-        agent: worldbuilder
-        type: plan
-        dependencies: []
-        estimated_hours: 0.5
-        description: "Define scope and focus of worldbuilding"
-
-      - id: create_core_systems
-        agent: worldbuilder
-        type: create
-        dependencies: [define_world_scope]
-        estimated_hours: 2
-        description: "Create magic/tech systems, geography, cultures as needed"
-
-      - id: develop_history_lore
-        agent: lore-keeper
-        type: create
-        dependencies: [create_core_systems]
-        estimated_hours: 1.5
-        description: "Develop world history, mythology, and lore"
-
-      - id: design_key_locations
-        agent: setting-designer
-        type: create
-        dependencies: [create_core_systems]
-        estimated_hours: 1
-        description: "Design key locations in detail"
-
-      - id: document_world
-        agent: worldbuilder
-        type: document
-        dependencies: [develop_history_lore, design_key_locations]
-        estimated_hours: 1
-        description: "Create world bible with all worldbuilding details"
-
-  outline_plot:
-    description: "Plot structure and outline creation"
-    typical_tier: 2
-    tasks:
-      - id: identify_story_type
-        agent: story-architect
-        type: analyze
-        dependencies: []
-        estimated_hours: 0.5
-        description: "Identify story type and appropriate structure"
-
-      - id: create_beat_sheet
-        agent: story-architect
-        type: create
-        dependencies: [identify_story_type]
-        estimated_hours: 1.5
-        description: "Create beat sheet with major plot points"
-
-      - id: develop_plot_threads
-        agent: plot-developer
-        type: elaborate
-        dependencies: [create_beat_sheet]
-        estimated_hours: 2
-        description: "Develop main plot and subplots with complications"
-
-      - id: design_pacing
-        agent: narrative-designer
-        type: design
-        dependencies: [develop_plot_threads]
-        estimated_hours: 1
-        description: "Design narrative pacing and chapter structure"
-
-      - id: finalize_outline
-        agent: story-architect
-        type: finalize
-        dependencies: [design_pacing]
-        estimated_hours: 0.5
-        description: "Create final detailed outline"
-
-  edit_manuscript:
-    description: "Edit existing creative writing"
-    typical_tier: 2-3
-    tasks:
-      - id: initial_read
-        agent: editor
-        type: review
-        dependencies: []
-        estimated_hours: 2
-        description: "Read manuscript and identify issues"
-
-      - id: developmental_edit
-        agent: editor
-        type: edit
-        dependencies: [initial_read]
-        estimated_hours: 3
-        description: "Address structure, plot, character, and pacing issues"
-
-      - id: line_edit
-        agent: prose-stylist
-        type: edit
-        dependencies: [developmental_edit]
-        estimated_hours: 2
-        description: "Improve prose quality, flow, and style"
-
-      - id: copyedit
-        agent: copy-editor
-        type: polish
-        dependencies: [line_edit]
-        estimated_hours: 1
-        description: "Fix grammar, spelling, formatting"
-
-      - id: continuity_check
-        agent: continuity-checker
-        type: verify
-        dependencies: [copyedit]
-        estimated_hours: 1
-        description: "Check for plot holes and inconsistencies"
-
-  write_novel_chapter_arc:
-    description: "Write multi-chapter story arc"
-    typical_tier: 3
-    tasks:
-      - id: outline_arc
-        agent: story-architect
-        type: plan
-        dependencies: []
-        estimated_hours: 2
-        description: "Outline the story arc structure and beats"
-
-      - id: plan_chapters
-        agent: narrative-designer
-        type: plan
-        dependencies: [outline_arc]
-        estimated_hours: 1
-        description: "Break arc into chapters with purpose for each"
-
-      - id: write_chapters
-        agent: prose-stylist
-        type: write
-        dependencies: [plan_chapters]
-        estimated_hours: 8
-        description: "Write all chapters in arc with engaging prose"
-
-      - id: refine_dialogue
-        agent: dialogue-specialist
-        type: refine
-        dependencies: [write_chapters]
-        estimated_hours: 2
-        description: "Polish all dialogue across chapters"
-
-      - id: edit_for_pacing
-        agent: editor
-        type: edit
-        dependencies: [refine_dialogue]
-        estimated_hours: 2
-        description: "Edit arc for pacing and flow"
-
-      - id: continuity_check
-        agent: continuity-checker
-        type: verify
-        dependencies: [edit_for_pacing]
-        estimated_hours: 1
-        description: "Verify consistency across arc"
-
-      - id: copyedit
-        agent: copy-editor
-        type: polish
-        dependencies: [continuity_check]
-        estimated_hours: 1
-        description: "Final technical polish"
-
-  write_full_novel:
-    description: "Write complete novel from start to finish"
-    typical_tier: 4
-    tasks:
-      - id: develop_premise
-        agent: story-architect
-        type: create
-        dependencies: []
-        estimated_hours: 2
-        description: "Develop core premise and story concept"
-
-      - id: design_characters
-        agent: character-designer
-        type: create
-        dependencies: [develop_premise]
-        estimated_hours: 4
-        description: "Design all major and supporting characters"
-
       - id: build_world
         agent: worldbuilder
-        type: create
-        dependencies: [develop_premise]
-        estimated_hours: 4
-        description: "Create world with all necessary systems and details"
-
-      - id: outline_full_plot
-        agent: story-architect
-        type: create
-        dependencies: [design_characters, build_world]
-        estimated_hours: 4
-        description: "Create detailed outline for entire novel"
-
-      - id: write_act_one
+      - id: write_chapters
         agent: prose-stylist
-        type: write
-        dependencies: [outline_full_plot]
-        estimated_hours: 12
-        description: "Write Act 1 chapters"
-
-      - id: write_act_two
-        agent: prose-stylist
-        type: write
-        dependencies: [write_act_one]
-        estimated_hours: 16
-        description: "Write Act 2 chapters"
-
-      - id: write_act_three
-        agent: prose-stylist
-        type: write
-        dependencies: [write_act_two]
-        estimated_hours: 12
-        description: "Write Act 3 chapters"
-
-      - id: developmental_edit
+      - id: editorial_review
+        agent: shared:quality-manager
+      - id: final_edit
         agent: editor
-        type: edit
-        dependencies: [write_act_three]
-        estimated_hours: 8
-        description: "Developmental edit for structure, character, pacing"
 
-      - id: line_edit
+  write_story:
+    tier_default: 2
+    tasks:
+      - id: plan_story
+        agent: shared:project-manager
+      - id: outline
+        agent: story-architect
+      - id: write_draft
         agent: prose-stylist
-        type: edit
-        dependencies: [developmental_edit]
-        estimated_hours: 6
-        description: "Line edit for prose quality"
-
-      - id: copyedit
-        agent: copy-editor
-        type: polish
-        dependencies: [line_edit]
-        estimated_hours: 4
-        description: "Copyedit for technical correctness"
-
-      - id: continuity_check
-        agent: continuity-checker
-        type: verify
-        dependencies: [copyedit]
-        estimated_hours: 2
-        description: "Full manuscript continuity check"
-
-      - id: sensitivity_review
-        agent: sensitivity-reader
-        type: review
-        dependencies: [continuity_check]
-        estimated_hours: 3
-        hitl_approval: true
-        description: "Review for respectful representation"
-
-      - id: final_review
-        agent: cco
-        type: review
-        dependencies: [sensitivity_review]
-        estimated_hours: 2
-        hitl_approval: true
-        description: "CCO final creative review and approval"
-
-# Acceptance Criteria Templates
-# Default acceptance criteria for common patterns
-
-acceptance_templates:
-  write_scene:
-    - "Scene follows planned structure and beats"
-    - "Prose is engaging and vivid with strong sensory details"
-    - "Dialogue sounds authentic to characters"
-    - "Scene advances plot or develops character"
-    - "No grammar or spelling errors"
-    - "Meets target word count (if specified)"
+      - id: edit
+        agent: editor
+      - id: quality_check
+        agent: shared:quality-manager
 
   develop_character:
-    - "Character profile complete (appearance, personality, backstory)"
-    - "Psychological depth established (motivations, fears, desires, flaws)"
-    - "Character voice defined and distinct"
-    - "Character arc identified (if applicable)"
-    - "Character documented in character bible"
+    tier_default: 2
+    tasks:
+      - id: character_profile
+        agent: character-designer
+      - id: psychological_depth
+        agent: character-psychologist
+      - id: review
+        agent: shared:quality-manager
 
   design_world:
-    - "Core world systems defined (magic/tech, geography, culture)"
-    - "World rules and limitations clearly established"
-    - "History and lore developed to necessary depth"
-    - "Key locations designed in detail"
-    - "World bible created with all details"
-    - "World supports story without overwhelming it"
+    tier_default: 2
+    tasks:
+      - id: world_concept
+        agent: worldbuilder
+      - id: lore_development
+        agent: lore-master
+      - id: consistency_check
+        agent: continuity-checker
 
-  outline_plot:
-    - "Story structure appropriate for story type"
-    - "All major plot points identified"
-    - "Subplots integrated with main plot"
-    - "Pacing designed with tension and release"
-    - "Chapter breakdown created (if applicable)"
-    - "Outline provides clear roadmap for writing"
-
-  edit_manuscript:
-    - "All structural issues addressed (plot, character, pacing)"
-    - "Prose quality improved (clarity, flow, style)"
-    - "No grammar, spelling, or formatting errors"
-    - "Continuity errors fixed (plot holes, inconsistencies)"
-    - "Manuscript reads smoothly start to finish"
-
-  write_novel_chapter_arc:
-    - "Arc follows planned structure"
-    - "All chapters serve clear purpose in arc"
-    - "Pacing appropriate across arc"
-    - "Dialogue authentic throughout"
-    - "No continuity errors across chapters"
-    - "Arc ends satisfyingly (resolution or cliffhanger as intended)"
-    - "Technical polish complete"
-
-  write_full_novel:
-    - "Novel meets target word count (typically 50k-120k words)"
-    - "Complete three-act structure (or appropriate structure)"
-    - "All characters fully developed"
-    - "World consistently portrayed"
-    - "Plot threads resolved appropriately"
-    - "Pacing maintains reader engagement"
-    - "Prose quality professional throughout"
-    - "No technical errors (grammar, spelling, formatting)"
-    - "Continuity maintained across full manuscript"
-    - "CCO and sensitivity reader approval obtained"
-
-# Planning Heuristics
-# Domain-specific planning guidance
-
-planning_heuristics:
-  word_count_estimation:
-    rule: "Estimate task hours based on target word count"
-    guidelines:
-      flash_fiction: "1000 words = 1-2 hours"
-      short_story: "5000 words = 3-5 hours"
-      novelette: "15000 words = 8-12 hours"
-      novella: "35000 words = 16-24 hours"
-      novel: "80000 words = 40-60 hours"
-    note: "Includes writing, editing, and polish time"
-
-  iteration_expectation:
-    rule: "Creative work requires multiple drafts"
-    first_draft: "Focus on getting words down"
-    second_draft: "Major structural and character revisions"
-    third_draft: "Prose polish and refinement"
-    final_pass: "Technical copyedit"
-    note: "Build revision into plan, not a failure"
-
-  specialization_guidance:
-    rule: "Use specialized agents for their expertise"
-    when_to_use_cco: "Tier 4 only, high-level creative direction and final approval"
-    when_to_use_editor: "Any revision work, tier 2+"
-    when_to_use_prose_stylist: "Primary writing tasks, all tiers"
-    when_to_use_worldbuilder: "Any worldbuilding beyond simple location description"
-    when_to_use_character_psychologist: "Deep character work, tier 2+"
-
-  genre_considerations:
-    rule: "Some genres require specific agents"
-    fantasy: "Always use worldbuilder and often lore-keeper"
-    scifi: "Use worldbuilder and research-specialist for plausibility"
-    mystery: "Use plot-developer for clue placement and red herrings"
-    literary: "Use editor for nuanced prose and thematic depth"
-
-  parallelization_opportunities:
-    rule: "Identify tasks that can run concurrently"
-    independent: "Character development and worldbuilding can parallelize"
-    sequential: "Writing must follow outlining, editing must follow writing"
-    example: "Design characters + Build world (parallel) → Outline plot → Write scenes"
-
-# Domain-Specific Notes
+planning_strategies:
+  tier_2:
+    shared_agents: [shared:project-manager, shared:quality-manager]
+  tier_3:
+    shared_agents: [shared:strategic-planner, shared:project-manager, shared:quality-manager]
+  tier_4:
+    shared_agents: [shared:cpo, shared:strategic-planner, shared:project-manager, shared:quality-manager]
 
 domain_notes: |
-  Creative domain planning considerations:
-
-  **Iteration is Normal, Not Failure**:
-  - First draft is discovery, not perfection
-  - Expect 2-3 editing passes for quality work
-  - Revision is part of the creative process
-  - Build editing time into estimates
-
-  **Word Count Drives Estimates**:
-  - Use word count targets to estimate time
-  - Writing speed: ~500-1000 words/hour for first draft
-  - Editing speed: ~2000-3000 words/hour
-  - Prose quality affects speed (literary slower than genre)
-
-  **Agent Specialization Matters**:
-  - prose-stylist: Primary writing agent for scenes and chapters
-  - character-designer: Character creation and profiles
-  - worldbuilder: Any worldbuilding beyond simple locations
-  - editor: All revision work
-  - copy-editor: Final technical polish only
-  - cco: Tier 4 only, executive creative oversight
-
-  **Common Planning Patterns**:
-  - Outline → Write → Edit → Polish
-  - Character + World (parallel) → Plot → Write
-  - Write → Developmental Edit → Line Edit → Copyedit
-  - Research → Design → Write → Verify
-
-  **Genre-Specific Needs**:
-  - Fantasy: Worldbuilder + lore-keeper almost always needed
-  - Sci-Fi: Research-specialist for scientific plausibility
-  - Mystery: Plot-developer for clue placement
-  - Romance: Character-psychologist for emotional depth
-  - Horror: Atmosphere and tone critical (prose-stylist, setting-designer)
-
-  **Parallelization Strategies**:
-  - Character and world development can run in parallel
-  - Multiple scenes can be written in parallel (different prose-stylists)
-  - Editing phases must be sequential (developmental → line → copy)
-  - Research can parallelize with early planning
-
-  **Quality Gates**:
-  - First draft: Completion and coherence
-  - Developmental edit: Structure, character, plot
-  - Line edit: Prose quality and flow
-  - Copyedit: Technical correctness
-  - Continuity: Consistency and logic
-  - Sensitivity: Respectful representation
-
-  **Tier-Specific Approaches**:
-  - Tier 1: Single agent, simple task (write dialogue, describe scene)
-  - Tier 2: 2-3 agents, single component (scene, character, location)
-  - Tier 3: 3-5 agents, multiple components (arc, cast, world system)
-  - Tier 4: 5+ agents, full creative work (novel, series bible, universe)
-
-  **Timeline Considerations**:
-  - Short story: 1-3 days
-  - Novella: 1-2 weeks
-  - Novel: 4-8 weeks
-  - Series bible: 2-4 weeks
-  - These are active work time, not calendar time
-
-  **Creative vs Technical Balance**:
-  - Don't over-plan - leave room for creative discovery
-  - Outline provides structure, not straitjacket
-  - Characters may "take over" during writing (normal)
-  - Plot may evolve from outline (allow flexibility)
-  - Final product may differ from plan (expected in creative work)
+  **V3.0 Shared Agent Integration**:
+  - Use shared:project-manager for all story/novel planning
+  - Use shared:strategic-planner for series and complex projects
+  - Use shared:quality-manager for all editorial quality gates
+  - Use shared:cpo for tier-4 creative direction
