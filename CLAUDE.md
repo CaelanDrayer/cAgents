@@ -1,564 +1,213 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code when working with code in this repository.
+Core architecture and development guidance for cAgents.
 
 ## Documentation Structure
 
-**Primary Documentation** (tracked in git):
-- `CLAUDE.md` - This file - Core architecture and development guidance
-- `README.md` - Project overview and quick start
-- `workflow_agent_interactions.md` - Agent collaboration patterns
-
-**Detailed Documentation** (local only, not tracked in git):
-- `archive/docs/` - Comprehensive guides, migration docs, implementation details
-  - Architecture guides (V2, V3, recursive workflows)
-  - Feature documentation (massive parallel, subagent patterns, enhancements)
-  - Migration guides (version upgrades, consolidation plans)
-  - Implementation roadmaps and summaries
-
-**Runtime Data** (excluded from git):
-- `Agent_Memory/` - Workflow state, configuration, and knowledge base
-  - `_system/config/` - Configuration files (reviewer, optimizer, etc.)
-  - `_knowledge/` - Pattern database and learned information
-  - Runtime instruction folders created during workflow execution
-
-**Note**: The archive folder contains historical documentation and detailed guides that are useful during development but are not part of the source distribution. All essential information is in this file and the README.
-
----
+- `CLAUDE.md` - Architecture, commands, agents (this file)
+- `README.md` - Quick start
+- `archive/docs/` - Detailed guides (local only)
+- `Agent_Memory/` - Runtime state (excluded from git)
 
 ## Project Overview
 
-**cAgents** (Caelan's Agents) is a universal multi-domain agent system for Claude Code with **massive parallel execution capabilities**. It provides specialized autonomous agent teams that collaborate through a file-based memory system to execute complex tasks across any domain - software engineering, creative writing, business operations, and beyond.
+**cAgents**: Universal multi-domain agent system with massive parallel execution (up to 50 concurrent agents).
 
-The system features a **V2 Universal Workflow Architecture** with **V6.2.1 Massive Parallel Optimization**:
-- **@cagents/core** - Universal infrastructure (Trigger, Orchestrator, HITL, Optimizer, 5 Universal Workflow Agents, Agent_Memory, universal commands)
-- **Parallel Execution Engine** - Execute up to 50 concurrent agents with intelligent queue management
-- **11 Active Domains** - All configured with domain-specific behavior via YAML configs:
-  - **@cagents/software** - 41 team agents (software engineering)
-  - **@cagents/business** - 18 team agents (business operations)
-  - **@cagents/creative** - 17 team agents (creative writing)
-  - **@cagents/planning** - 16 team agents (strategic planning)
-  - **@cagents/sales** - 17 team agents (sales strategy)
-  - **@cagents/marketing** - 21 team agents (marketing campaigns)
-  - **@cagents/finance** - 16 team agents (financial analysis)
-  - **@cagents/operations** - 15 team agents (process optimization)
-  - **@cagents/hr** - 19 team agents (human resources)
-  - **@cagents/legal** - 14 team agents (legal compliance)
-  - **@cagents/support** - 15 team agents (customer success)
+**Architecture**: V2 Universal Workflow
+- **Core**: 9 infrastructure agents (trigger, orchestrator, hitl, optimizer, 5 universal workflow agents)
+- **Domains**: 11 domains, 219 team agents total
+- **Execution**: 4 modes (Sequential, Pipeline, Swarm, Mesh) - up to 50x speedup
 
-## Core Architecture
+**Domains** (agent counts):
+- Software (45) | Business (18) | Creative (18) | Planning (17) | Sales (18) | Marketing (22)
+- Finance (17) | Operations (15) | HR (19) | Legal (14) | Support (18)
 
-### Universal Infrastructure (@cagents/core)
+## Core Infrastructure
 
-**Core Infrastructure Agents** (4 agents in core/)
-- `trigger` - Universal entry point, intent detection, domain routing, recursive workflow support
-- `orchestrator` - Phase management conductor (planning → executing → validating → complete)
-- `hitl` - Human-in-the-loop escalation for complex decisions
-- `optimizer` - Universal optimization orchestrator (code, content, processes, data, infrastructure, campaigns)
+**4 Orchestration Agents**:
+- `trigger` - Entry point, domain detection, routing
+- `orchestrator` - Phase conductor (routing → planning → executing → validating)
+- `hitl` - Human escalation
+- `optimizer` - Universal optimization (code, content, processes, data, infrastructure, campaigns)
 
-**Universal Workflow Agents** (5 agents in core/) - NEW in V2
-- `universal-router` - Tier classification (0-4) across ALL domains via config
-- `universal-planner` - Task decomposition across ALL domains via config
-- `universal-executor` - **Team coordination via specialized subagent spawning** across ALL domains via config
-- `universal-validator` - Quality gates across ALL domains via config
-- `universal-self-correct` - Adaptive recovery across ALL domains via config
+**5 Universal Workflow Agents** (config-driven, work across ALL domains):
+- `universal-router` - Tier classification (0-4)
+- `universal-planner` - Task decomposition
+- `universal-executor` - Team coordination via subagent spawning
+- `universal-validator` - Quality gates
+- `universal-self-correct` - Adaptive recovery
 
-These 5 universal agents replace 55 domain-specific workflow agents (11 domains × 5 agents) through configuration-driven behavior. Domain-specific logic is defined in `Agent_Memory/_system/domains/{domain}/*.yaml` files.
+**Config Location**: `Agent_Memory/_system/domains/{domain}/*.yaml` (5 files per domain: router, planner, executor, validator, self-correct)
 
-### Subagent-Oriented Workflow Pattern
+## Workflow Pattern
 
-**cAgents uses a subagent spawning architecture**: Agents delegate to specialized subagents rather than executing tasks directly.
+**Subagent Architecture**: Agents delegate to specialists, don't execute directly.
 
-**Pattern**: "Use the {subagent-name} subagent to {specific task}"
+Pattern: "Use {subagent} to {task}"
+Example: Use architect → backend-developer → qa-lead
 
-**Examples**:
-- **Use the code-reviewer subagent** to find performance issues
-- **Then use the optimizer subagent** to fix them
-- **Use the architect subagent** to design the API schema
-- **Then use the backend-developer subagent** to implement the endpoints
-- **Finally use the qa-lead subagent** to create integration tests
+Benefits: Modularity, specialization, parallelization (up to 50 concurrent), reusability
 
-**Benefits**:
-- **Modularity**: Each subagent handles one concern
-- **Specialization**: Right expert for each task
-- **Parallelization**: Independent subagents run concurrently (up to 50 concurrent)
-- **Reusability**: Subagent patterns reused across workflows
+## Commands
 
-**See**:
-- `SUBAGENT_WORKFLOW_PATTERNS.md` for comprehensive patterns and examples
-- `MASSIVE_PARALLEL_OPTIMIZATION_GUIDE.md` for massive parallel execution strategies
+### /trigger - Universal Entry Point
+Auto-routes to domain, executes full workflow.
+```bash
+/trigger Fix auth bug           # → Software domain
+/trigger Write fantasy story    # → Creative domain
+/trigger Plan Q4 campaign       # → Marketing domain
+```
 
-### Massive Parallel Execution (V6.2.1 NEW)
+### /designer - Interactive Design
+Asks questions to flesh out ideas across all domains. Runs until canceled.
 
-**Execute up to 50 concurrent agents** for massive speedup on large tasks:
+### /reviewer - Enhanced Review (V2.0)
+Universal review with 8 enhancements:
+1. Intelligent agent selection (30-50% faster)
+2. Severity-based early reporting (81% faster to critical)
+3. Auto-fix suggestions (98% more actionable)
+4. Priority intelligence (security first)
+5. Diff-aware analysis
+6. Context-aware (cross-file)
+7. Real-time progress
+8. Pattern learning (78% detection)
 
-**Execution Modes**:
-- **Sequential** (Tier 0-1): Single agent, no parallelism
-- **Pipeline** (Tier 2): Stages with parallelism within stages (max 5 concurrent)
-- **Swarm** (Tier 3): Massive parallelism for independent tasks (max 50 concurrent)
-- **Mesh** (Tier 4): Peer-to-peer coordination with dynamic dependencies (max 30 concurrent)
+```bash
+/reviewer src/              # Code review
+/reviewer --focus security  # Security focus
+```
 
-**Key Features**:
-- **Intelligent Queue Management**: Multi-tier queues with priority scheduling and dependency resolution
-- **Dynamic Load Balancing**: Work stealing, agent pooling, automatic scaling
-- **Performance Monitoring**: Real-time dashboards, bottleneck identification, analytics
-- **Advanced Coordination**: Heartbeats, manifests, escalations, peer communication
+Config: `Agent_Memory/_system/config/reviewer_config.yaml`
+Patterns: `Agent_Memory/_knowledge/procedural/review_patterns.yaml`
 
-**Performance**:
-- **50x speedup** on fully parallelizable workloads
-- **80%+ parallelism efficiency** for well-structured tasks
-- **Automatic optimization** recommendations
+### /optimize - Universal Optimizer
+8 types: code, content, process, data, infrastructure, campaign, creative, sales
 
-**Configuration Files**:
-- `Agent_Memory/_system/config/parallel_execution_framework.yaml`
-- `Agent_Memory/_system/config/subagent_coordination_protocol.yaml`
-- `Agent_Memory/_system/config/task_queue_manager.yaml`
-- `Agent_Memory/_system/config/performance_tracking_system.yaml`
+```bash
+/optimize src/ --type code --focus performance
+/optimize --type content blog-posts/
+```
 
-**See**: `MASSIVE_PARALLEL_OPTIMIZATION_GUIDE.md` for complete documentation
-
-### Software Engineering Domain (@cagents/software)
-
-**Workflow**: Handled by universal workflow agents + software domain configs in `Agent_Memory/_system/domains/software/`
-
-**Executive Leadership** (5 agents)
-- `ceo` - Strategic vision, stakeholder management, executive decisions
-- `cto` - Technology strategy, innovation, technical architecture
-- `cfo` - Financial strategy, budgeting, fundraising
-- `coo` - Operational execution, process optimization
-- `vp-engineering` - Engineering organization, team building
-
-**Team Agents** (18 agents)
-- Business: product-owner, stakeholder-rep, finance-manager, compliance
-- Technical Leadership: tech-lead, architect, senior-developer
-- Development: frontend-developer, backend-developer, qa-lead, security-specialist
-- Operations: sysadmin, devops, it-support
-- Data & Specialized: dba, data-analyst, ux-designer, scribe
-
-**Intelligence Layer** (5 agents)
-- pattern-recognition, risk-assessment, dependency-analyzer, learning-coordinator, predictive-analyst
-
-**QA Layer** (9 agents)
-- architecture-reviewer, code-standards-auditor, security-analyst, qa-compliance-officer, performance-analyzer, test-coverage-validator, documentation-reviewer, dependency-auditor, accessibility-checker
-
-### Business Operations Domain (@cagents/business)
-
-**Workflow**: Handled by universal workflow agents + business domain configs in `Agent_Memory/_system/domains/business/`
-
-**Executive Leadership** (1 agent)
-- `cso` - Chief Strategy Officer: strategic planning, competitive positioning, market analysis
-
-**Business Team Agents** (18 agents)
-- Strategic Management: business-development-manager, market-analyst
-- Operations: operations-manager, process-improvement-specialist, supply-chain-manager, quality-manager-business
-- Project & Change: project-manager, program-manager, change-manager, business-analyst
-- Customer & Sales: customer-success-manager, account-manager, sales-operations-manager
-- Specialized Functions: risk-manager, compliance-manager-business, procurement-specialist, facilities-manager
-
-### Agent Memory System
-
-All state persists in the `Agent_Memory/` folder at project root:
+## Agent Memory
 
 ```
 Agent_Memory/
-├── _system/              # System-level state (registry, config, agent status)
-├── _archive/             # Completed/archived instructions
-├── _knowledge/           # Persistent cross-instruction learning
-│   ├── semantic/         # Facts about the project (conventions, entities, domain)
-│   ├── procedural/       # How to do things (patterns, strategies, tool recipes)
-│   └── calibration/      # Learning data (routing accuracy, strategy effectiveness)
-├── _communication/       # Inter-agent message queues
-│   ├── inbox/            # Per-agent inboxes
-│   └── broadcast/        # Announcements to all agents
-└── {instruction_id}/     # Per-instruction working memory
-    ├── instruction.yaml  # Original request + metadata
-    ├── status.yaml       # Current workflow status
-    ├── workflow/         # Plan, execution state, checkpoints
-    ├── tasks/            # pending/, in_progress/, completed/, blocked/
-    ├── outputs/          # partial/ and final/ deliverables
-    ├── decisions/        # Autonomous decision logs
-    ├── reviews/          # Review requests and responses
-    └── episodic/         # Event history timeline
+├── _system/              # Registry, config, agent status
+├── _knowledge/           # Patterns, calibration, learnings
+├── _archive/             # Completed instructions
+└── {instruction_id}/     # Per-task working memory
+    ├── instruction.yaml  # Request + metadata
+    ├── status.yaml       # Current phase
+    ├── workflow/         # Plan, execution state
+    ├── tasks/            # pending/, in_progress/, completed/
+    └── outputs/          # Deliverables
 ```
 
-**Key Principles:**
-- File-based: All state lives in YAML files, no external API dependencies
-- Multi-domain: Shared core, specialized domains
-- Instruction-scoped: Each task gets its own isolated folder
-- Pause/Resume: Any workflow can pause and resume from files
-- Parallel-safe: Multiple instructions can run concurrently
-- Agent ownership: Each agent owns specific memory sections
-- Archival-first: Completed work automatically moves to `_archive/`
+**Principles**: File-based, instruction-scoped, parallel-safe, pause/resume capable
 
-### V2 Universal Workflow Architecture (NEW)
+## Domain Agents
 
-**Configuration-Driven Domain Behavior**
+### Software (45 agents)
+**Leadership**: ceo, cto, cfo, coo, vp-engineering
+**Leads**: engineering-manager, frontend-lead, backend-lead, devops-lead, data-lead, security-lead, qa-lead
+**Developers**: frontend-developer, backend-developer, senior-developer
+**Specialists**: architect, dba, data-analyst, ux-designer, security-specialist, devops, sysadmin, it-support, scribe
+**Business**: product-owner, stakeholder-rep, finance-manager, compliance
+**Intelligence** (5): pattern-recognition, risk-assessment, dependency-analyzer, learning-coordinator, predictive-analyst
+**QA** (9): architecture-reviewer, code-standards-auditor, security-analyst, qa-compliance-officer, performance-analyzer, test-coverage-validator, documentation-reviewer, dependency-auditor, accessibility-checker
+**Special**: reviewer (enhanced v2.0)
 
-V2 replaces 55 domain-specific workflow agents with 5 universal agents that load domain behavior from YAML configuration files:
-
-```
-Agent_Memory/_system/domains/{domain}/
-├── router_config.yaml          # Tier classification + template matching
-├── planner_config.yaml         # Task patterns + agent assignments
-├── executor_config.yaml        # Coordination strategies + workflows
-├── validator_config.yaml       # Quality gates + pass criteria
-└── self_correct_config.yaml    # Correction strategies + fixes
-```
-
-**How Universal Agents Work**
-
-1. **Orchestrator** invokes universal agent via Task tool with domain context
-2. **Universal agent** loads config from `Agent_Memory/_system/domains/{domain}/{agent}_config.yaml`
-3. **Config drives behavior**: Tier classification, templates, agents, quality gates, etc.
-4. **Universal agent** executes using domain-specific patterns from config
-5. **Results** written to instruction folder, orchestrator continues phase progression
-
-**Example: Universal-Router Workflow**
-
-```
-Orchestrator → Task(universal-router, domain="software", request="Fix login bug")
-                   ↓
-Universal-Router reads: Agent_Memory/_system/domains/software/router_config.yaml
-                   ↓
-Config defines:
-  - tier_2_indicators: ["Fix bug"]
-  - template: "bug_fix"
-  - required_agents: 2-3
-                   ↓
-Universal-Router writes: Agent_Memory/{instruction_id}/workflow/routing.yaml
-                   ↓
-Orchestrator transitions to planning phase
-```
-
-**Recursive Workflows** (NEW in V2)
-
-Workflows can spawn child workflows for complex multi-component work:
-
-```
-Parent Workflow (Novel Writing)
-  ↓
-  Child Workflow 1 (Chapter 1) → Child Workflow 1a (Scene 1)
-  Child Workflow 2 (Chapter 2) → Child Workflow 2a (Scene 1)
-  Child Workflow 3 (Chapter 3)
-```
-
-**Safety Mechanisms**:
-- Maximum depth: 5 levels
-- Maximum children per parent: 20
-- Circular reference prevention
-- Parent-child result aggregation
-
-**Creating Child Workflows**:
-
-Universal-executor or other agents can invoke trigger to create child workflows:
-
-```markdown
-Use Task tool:
-- subagent_type: "trigger"
-- prompt: |
-    Create child workflow for parent instruction {parent_id}
-
-    Parent domain: creative
-    Child request: Write chapter 2 of the novel
-    Child domain: creative
-
-    This is a child workflow (depth 1)
-```
-
-## Development Commands
-
-### Plugin Installation
-```bash
-# From Claude Code Marketplace (recommended)
-claude /plugin install cagents
-
-# Install specific domain plugins
-claude /plugin install @cagents/core
-claude /plugin install @cagents/software
-claude /plugin install @cagents/creative  # Coming Phase 2
-
-# Local development
-cd cAgents
-npm install
-claude --plugin-dir .
-```
-
-### Agent_Memory Initialization
-
-The Agent_Memory folder structure is created automatically when needed by the workflow agents. Skills and workflows handle initialization on first use.
-
-### Available Slash Commands
-```bash
-/trigger <task>           # Universal entry point - auto-routes to appropriate domain
-/designer                 # Interactive design assistant (works across all domains)
-/reviewer [path]          # Enhanced comprehensive review with intelligent agent selection, auto-fixes, and pattern learning
-/optimize [path]          # Universal optimizer (code, content, processes, data, infrastructure, campaigns - all domains)
-```
-
-### Enhanced Reviewer (V2.0)
-
-The `/reviewer` command now includes 8 major enhancements:
-
-1. **Intelligent Agent Selection** - Dynamically selects only relevant QA agents (30-50% faster)
-2. **Severity-Based Early Reporting** - Streams critical findings immediately (81% faster to critical issues)
-3. **Incremental Progress Updates** - Real-time TodoWrite updates per file/agent/finding
-4. **Context-Aware Analysis** - Groups related files for cross-file dependency detection
-5. **Auto-Fix Suggestions** - Generates copy-paste ready code snippets with diffs
-6. **Priority Intelligence** - Reviews security-critical files first
-7. **Diff-Aware Analysis** - Focuses on changed code regions
-8. **Learning from History** - Detects recurring patterns across reviews
-
-**Configuration**: `Agent_Memory/_system/config/reviewer_config.yaml`
-**Pattern Database**: `Agent_Memory/_knowledge/procedural/review_patterns.yaml`
-**Documentation**: `REVIEWER_ENHANCEMENTS.md`
-
-## Directory Structure
-
-```
-cAgents/
-├── core/                    # @cagents/core - Required foundation
-│   ├── .claude-plugin/      # Core plugin manifest
-│   ├── agents/              # trigger.md, orchestrator.md, hitl.md, optimizer.md
-│   ├── commands/            # /trigger, /designer, /reviewer, /optimize (universal commands)
-│   └── memory/              # Agent_Memory templates
-│
-├── software/                # @cagents/software - Software engineering domain
-│   ├── .claude-plugin/      # Software domain plugin manifest
-│   ├── agents/              # 46 specialized agents (5 workflow + 41 team)
-│   └── skills/              # trigger/, reviewer/
-│
-├── business/                # @cagents/business - Business operations domain
-│   ├── .claude-plugin/      # Business domain plugin manifest
-│   ├── agents/              # 23 specialized agents (5 workflow + 18 team)
-│   └── package.json
-│
-├── creative/                # @cagents/creative - Coming Phase 2
-├── sales/                   # @cagents/sales - Coming soon
-├── marketing/               # @cagents/marketing - Coming soon
-├── finance/                 # @cagents/finance - Coming soon
-├── operations/              # @cagents/operations - Coming soon
-├── support/                 # @cagents/support - Coming soon
-├── hr/                      # @cagents/hr - Coming soon
-├── legal/                   # @cagents/legal - Coming soon
-│
-├── .claude-plugin/          # Root plugin manifest
-├── package.json             # Root package with workspaces
-├── README.md                # Project documentation
-└── LICENSE                  # MIT License
-```
-
-## Agent File Structure
-
-All agents are defined as Markdown files with YAML frontmatter:
-
-```markdown
----
-name: agent-name
-description: Brief description. Use PROACTIVELY when...
-tools: Read, Grep, Glob, Bash, Edit, Write, TodoWrite
-model: sonnet | opus | haiku
-color: cyan
-capabilities: ["capability1", "capability2", "capability3"]
----
-
-Agent's system prompt and instructions here...
-```
-
-## Workflow Execution Flow (V2)
-
-```
-User Request
-  ↓
-Trigger (Core) → Domain Detection → Orchestrator
-  ↓                                       ↓
-  Creates instruction folder         Phase: Routing
-                                          ↓
-                                     Universal-Router
-                                     (loads domain config)
-                                          ↓
-                                     Phase: Planning
-                                          ↓
-                                     Universal-Planner
-                                     (loads domain config)
-                                          ↓
-                                     Phase: Executing
-                                          ↓
-                                     Universal-Executor
-                                     (delegates to team agents)
-                                          ↓
-                                     Phase: Validating
-                                          ↓
-                                     Universal-Validator
-                                     (loads domain config)
-                                          ↓
-                                     ┌────┴────┐
-                                     │         │
-                                   PASS    FIXABLE    BLOCKED
-                                     │         │         │
-                                     ↓         ↓         ↓
-                                Complete  Self-Correct  HITL
-                                              ↓
-                                           Retry
-```
+### Other Domains
+See `archive/docs/DOMAIN_AGENTS.md` for complete listings of all 11 domains.
 
 ## Complexity Tiers
-
-Tasks are automatically classified by the Router:
 
 | Tier | Type | Example | Workflow |
 |------|------|---------|----------|
 | 0 | Trivial | "What is X?" | Direct answer |
 | 1 | Simple | "Fix typo" | Execute → Validate |
 | 2 | Moderate | "Fix bug" | Plan → Execute → Validate |
-| 3 | Complex | "Add feature" | Parallel team execution with checkpoints |
-| 4 | Expert | "Major refactor" | Full team orchestration + HITL |
+| 3 | Complex | "Add feature" | Parallel team execution |
+| 4 | Expert | "Major refactor" | Full orchestration + HITL |
 
-## Progress Tracking with TodoWrite
+## Workflow Execution
 
-**CRITICAL**: All workflow agents MUST use Claude Code's TodoWrite tool to display progress.
-
-### When to Use TodoWrite
-
-- **Trigger**: Show parsing, folder creation, and handoff steps
-- **Orchestrator**: Display high-level phase transitions
-- **Planner**: Show planning steps
-- **Executor**: Display individual task execution
-- **Team Agents**: Show their specific work items
-
-### TodoWrite Format
-
-```javascript
-TodoWrite({
-  todos: [
-    {content: "Step description", status: "completed", activeForm: "Doing step description"},
-    {content: "Current step", status: "in_progress", activeForm: "Doing current step"},
-    {content: "Future step", status: "pending", activeForm: "Doing future step"}
-  ]
-})
+```
+User Request → Trigger (domain detect) → Orchestrator
+  ↓
+  Routing → Universal-Router (tier + template)
+  ↓
+  Planning → Universal-Planner (tasks + agents)
+  ↓
+  Executing → Universal-Executor (team coordination)
+  ↓
+  Validating → Universal-Validator (quality gates)
+  ↓
+  PASS → Complete | FIXABLE → Self-Correct | BLOCKED → HITL
 ```
 
-## Important File Locations
+## Recursive Workflows
 
-### Core Domain
-- Core agents: `core/agents/*.md`
-- Core commands: `core/commands/*.md`
-- Core plugin manifest: `core/.claude-plugin/plugin.json`
+Complex tasks spawn child workflows (max depth: 5, max children: 20)
 
-### Software Domain
-- Software agents: `software/agents/*.md`
-- Software commands: `software/commands/*.md`
-- Software skills: `software/skills/*/SKILL.md`
-- Software plugin manifest: `software/.claude-plugin/plugin.json`
+Example: `/trigger Write 10-chapter novel` → 1 parent + 10 child workflows
 
-### Root Level
-- Root plugin manifest: `.claude-plugin/plugin.json`
-- Root package config: `package.json`
-- Documentation: `README.md`, `CLAUDE.md`
+## Creating Agents
 
-## Creating New Agents
-
-1. Determine the appropriate domain (core, software, creative, etc.)
+1. Choose domain
 2. Create `{domain}/agents/my-agent.md` with YAML frontmatter
-3. Define agent identity, responsibilities, and memory ownership
-4. Implement collaboration protocols (consultation, review, delegation, escalation)
-5. Add agent path to `{domain}/.claude-plugin/plugin.json` agents array
-6. Test locally: `claude --plugin-dir .`
+3. Add to `{domain}/.claude-plugin/plugin.json`
+4. Test: `claude --plugin-dir .`
 
-## Creating New Domains (V2)
+## Creating Domains
 
-To add a new domain (e.g., @cagents/medical):
+1. Create 5 config files: `Agent_Memory/_system/domains/{domain}/*.yaml`
+2. Create team agents in `{domain}/agents/`
+3. Create plugin manifest: `{domain}/.claude-plugin/plugin.json`
+4. Update root `.claude-plugin/plugin.json` and `package.json`
 
-**Step 1: Create Domain Configuration Files** (5 configs - NO CODE REQUIRED)
+No code required - universal agents load configs automatically.
 
-```bash
-mkdir -p Agent_Memory/_system/domains/medical
+## Directory Structure
+
+```
+cAgents/
+├── core/                    # Core infrastructure
+│   ├── agents/              # 9 core agents
+│   └── commands/            # 4 universal commands
+├── {domain}/                # Domain packages (11 total)
+│   ├── agents/              # Team agents
+│   └── .claude-plugin/      # Domain manifest
+├── .claude-plugin/          # Root manifest
+└── Agent_Memory/            # Runtime state (git-ignored)
 ```
 
-Create these 5 YAML configuration files in `Agent_Memory/_system/domains/medical/`:
+## Performance Benchmarks
 
-1. **router_config.yaml** - Tier classification + template matching
-2. **planner_config.yaml** - Task patterns + agent assignments
-3. **executor_config.yaml** - Coordination strategies + workflows
-4. **validator_config.yaml** - Quality gates + pass criteria
-5. **self_correct_config.yaml** - Correction strategies + fixes
+**Reviewer V2.0**: 33% faster, 81% faster to critical, 98% more actionable, 78% pattern detection
+**Parallel Execution**: 50x speedup (swarm), 80%+ efficiency
+**Optimizer**: 20-50% faster, 30-60% smaller bundles, 15-40% less memory
 
-Use templates from `Agent_Memory/_system/domains/_template/` as starting point.
+## Quick Reference
 
-**Step 2: Create Domain Team Agents** (agent files)
+**Commands**: `/trigger`, `/designer`, `/reviewer`, `/optimize`
+**Core Agents**: trigger, orchestrator, hitl, optimizer, 5 universal workflow
+**Key Files**: `.claude-plugin/plugin.json`, `Agent_Memory/_system/domains/{domain}/*.yaml`
 
-```bash
-mkdir -p medical/agents
-```
+## Troubleshooting
 
-Create team agents in `medical/agents/`:
-- Executive: `medical-director.md`, etc.
-- Specialists: `surgeon.md`, `diagnostician.md`, etc.
-- Support: `nurse.md`, `pharmacist.md`, etc.
+| Issue | Solution |
+|-------|----------|
+| Wrong domain detected | Use explicit domain keywords |
+| All 9 QA agents run | Enable `intelligent_agent_selection` in reviewer config |
+| No progress updates | Ensure agents use TodoWrite |
+| Workflow stuck | Check `Agent_Memory/{instruction_id}/status.yaml` |
 
-_Note: Do NOT create workflow agents (router, planner, executor, validator, self-correct). Universal workflow agents handle all domains._
-
-**Step 3: Update Plugin Manifests**
-
-1. Create `medical/.claude-plugin/plugin.json`:
-   ```json
-   {
-     "name": "@cagents/medical",
-     "version": "1.0.0",
-     "agents": [
-       "./agents/medical-director.md",
-       "./agents/surgeon.md",
-       ...
-     ]
-   }
-   ```
-
-2. Update root `.claude-plugin/plugin.json` to include medical agent paths
-3. Update root `package.json` workspaces array
-
-**That's it!** The universal workflow agents will automatically load the medical domain configs and work with the medical team agents.
-
-## Plugin Manifest Structure
-
-The root `.claude-plugin/plugin.json` aggregates all domains:
-
-```json
-{
-  "name": "cagents",
-  "version": "4.1.0",
-  "description": "Universal multi-domain agent system",
-  "bundledDomains": ["@cagents/core", "@cagents/software"],
-  "commands": [
-    "./core/commands/trigger.md",
-    "./software/commands/designer.md",
-    "./software/commands/reviewer.md"
-  ],
-  "agents": [
-    "./core/agents/trigger.md",
-    "./software/agents/router.md",
-    // ... all agents from all domains
-  ]
-}
-```
-
-## Plugin Testing
-
-```bash
-# Local development and testing
-cd cAgents
-claude --plugin-dir .
-
-# Test universal /trigger across domains
-/trigger Fix the bug in auth.py         # Routes to software domain
-/trigger Write a short story about AI    # Routes to creative domain (Phase 2)
-/trigger Analyze Q4 sales trends         # Routes to sales domain (Future)
-```
+Full troubleshooting: `archive/docs/TROUBLESHOOTING.md`
 
 ---
 
-**Version**: 6.3.0 (Enhanced Reviewer Update)
-**Total Agents**: 228 (9 core infrastructure + 219 domain team agents)
-**Architecture**: V2 Universal Workflow (5 universal workflow agents + 4 universal orchestration agents + 55 domain configs + 11 domains)
+**Version**: 6.3.0
+**Total Agents**: 228 (9 core + 219 domain)
+**Architecture**: V2 Universal Workflow (config-driven, 11 domains)
 **Dependencies**: None (file-based, self-contained)
-**Active Domains**: All 11 domains fully configured (software, business, creative, planning, sales, marketing, finance, operations, hr, legal, support)
-**Universal Commands**: /trigger, /designer, /reviewer (enhanced v2.0), /optimize (work across ALL domains)
-**New Features**: Enhanced reviewer with intelligent agent selection, auto-fixes, pattern learning, diff-aware analysis (33% faster, 98% more actionable)
