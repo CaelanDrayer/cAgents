@@ -42,6 +42,7 @@ Executes tasks across ANY installed domain:
 - Set all tasks to pending status
 - Create output directories: `outputs/partial/{task_id}/`
 - Initialize TodoWrite with all planned tasks
+- **Initialize context tracker**: Load context budgets from plan, set up monitoring
 
 ### 3. Build Execution Graph
 - Parse dependencies to create task graph
@@ -62,13 +63,15 @@ For each wave:
 ### 5. Execute Individual Task
 For each task:
 1. Wait for all dependencies to complete
-2. Prepare task context (description, acceptance criteria, dependency outputs)
-3. Invoke agent using Task tool with structured prompt
-4. Monitor agent progress
-5. Capture outputs to `outputs/partial/{task_id}/`
-6. Validate outputs exist
-7. Update task status (completed/failed)
-8. Update TodoWrite
+2. **Check context budget**: Verify task won't exceed remaining budget
+3. Prepare task context (description, acceptance criteria, dependency outputs)
+4. Invoke agent using Task tool with structured prompt + context limit
+5. **Monitor context usage**: Track tokens consumed during execution
+6. Capture outputs to `outputs/partial/{task_id}/`
+7. Validate outputs exist
+8. **Update context tracker**: Record actual tokens used vs budgeted
+9. Update task status (completed/failed)
+10. Update TodoWrite
 
 ### 6. Handle Errors
 - Increment retry count
@@ -76,6 +79,11 @@ For each task:
 - If max retries exceeded: mark failed
 - If critical task fails: escalate to HITL
 - If non-critical fails: document and continue
+- **If context budget exceeded**:
+  - Pause execution
+  - Split remaining tasks into smaller chunks
+  - Create child workflow if needed
+  - Escalate to HITL if cannot proceed
 
 ### 7. Aggregate Outputs
 - Collect all outputs from `outputs/partial/*/`
@@ -96,12 +104,12 @@ handoff:
 
 ## Execution Strategies by Tier
 
-| Tier | Tasks | Parallelism | Retries | Checkpoints |
-|------|-------|-------------|---------|-------------|
-| 1 | 1 | None | 1 | None |
-| 2 | 3-5 | None | 2 | None |
-| 3 | 5-10 | 3 agents | 2 | After waves |
-| 4 | 10+ | 5 agents | 3 | After critical tasks |
+| Tier | Tasks | Parallelism | Retries | Context Budget | Checkpoints |
+|------|-------|-------------|---------|----------------|-------------|
+| 1 | 1 | None | 1 | <15K tokens | None |
+| 2 | 3-5 | None | 2 | 15-50K tokens | None |
+| 3 | 5-10 | 3 agents | 2 | 50-100K tokens | After waves |
+| 4 | 10+ | 5 agents | 3 | 100-150K tokens | After critical tasks |
 
 ## Subagent Spawning Patterns
 
@@ -116,8 +124,14 @@ Task({
   Dependencies: {dependency_outputs}
   Acceptance Criteria: {criteria}
 
+  CONTEXT BUDGET: {task_context_budget} tokens
+  - Stay within this limit
+  - Monitor your token usage
+  - If approaching limit, focus on essentials
+  - Report actual usage in manifest.yaml
+
   Output to: Agent_Memory/{instruction_id}/outputs/partial/{task_id}/
-  Include manifest.yaml listing all artifacts.`
+  Include manifest.yaml with actual_context_used field.`
 })
 ```
 
@@ -208,6 +222,16 @@ outputs_by_task:
   task_1: [outputs/partial/task_1/architecture_design.md, ...]
   task_2: [outputs/partial/task_2/api_auth.py, ...]
 all_outputs: [all artifact paths...]
+
+context_tracking:
+  total_budget: 85000          # Planned budget
+  total_used: 78500            # Actual usage
+  budget_remaining: 6500       # Unused budget
+  efficiency: 92%              # Used/Budget ratio
+  per_task_usage:
+    task_1: {budgeted: 12000, actual: 11200}
+    task_2: {budgeted: 15000, actual: 14800}
+    # ...
 ```
 
 ## Checkpoints
@@ -240,10 +264,17 @@ all_outputs: [all artifact paths...]
 - Check for alternate paths
 - If no alternate: escalate to HITL
 
-**Timeout**:
-- If agent exceeds 2x estimated time
-- Check if making progress
-- If making progress: extend timeout by 50%
+**Context Budget Exceeded**:
+- If task approaches its context limit (90%)
+- Warn agent to wrap up essentials
+- If hard limit reached (100%): gracefully terminate
+- Mark task as partial completion
+- Determine if can continue or need to escalate
+
+**Unresponsive Agent**:
+- If agent not making progress
+- Check context usage (may be stuck in loop)
+- If making progress: allow to continue
 - If not responsive: kill agent, retry
 
 ## Recursive Workflows
@@ -274,23 +305,24 @@ When task needs to spawn child workflow:
 ## Example: Software Feature (Tier 3)
 
 ```
-Wave 1: [Design architecture] (1 task)
+Wave 1: [Design architecture] (1 task, 15K tokens)
   - Invoke architect
   - Checkpoint: Review design
 
-Wave 2: [Implement backend, Implement frontend] (2 parallel)
-  - Invoke backend-developer (background)
-  - Invoke frontend-developer (background)
+Wave 2: [Implement backend, Implement frontend] (2 parallel, 40K tokens)
+  - Invoke backend-developer (background, 22K budget)
+  - Invoke frontend-developer (background, 18K budget)
 
-Wave 3: [Integration tests] (1 task)
+Wave 3: [Integration tests] (1 task, 12K tokens)
   - Invoke qa-lead
   - Checkpoint: Tests must pass
 
-Wave 4: [Security review, Documentation] (2 parallel)
-  - Invoke security-specialist (background)
-  - Invoke scribe (background)
+Wave 4: [Security review, Documentation] (2 parallel, 18K tokens)
+  - Invoke security-specialist (background, 10K budget)
+  - Invoke scribe (background, 8K budget)
 
-Results: 7 tasks, 4 agents, 2 waves parallelized, 2 checkpoints, 7.2 hours
+Results: 7 tasks, 4 agents, 2 waves parallelized, 2 checkpoints
+Context: 85K tokens budgeted, 78.5K actual (92% efficiency), 6.5K buffer remaining
 ```
 
 ## Collaboration
@@ -302,6 +334,6 @@ Results: 7 tasks, 4 agents, 2 waves parallelized, 2 checkpoints, 7.2 hours
 
 ---
 
-**Version**: 2.0
+**Version**: 2.1 (Context-Aware)
 **Part of**: cAgents Universal Workflow Architecture V2
-**Lines**: 300 (vs 647 original = 54% reduction)
+**Lines**: 338 (vs 300 = context monitoring added)

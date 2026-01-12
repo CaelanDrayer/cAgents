@@ -25,29 +25,31 @@ domain: core
 - Assign agents from domain's available_agents registry
 - Define task dependencies (no circular refs)
 - Create measurable acceptance criteria
-- Estimate timeline (critical path)
+- **Calculate context budgets** (not time - uses token limits)
 - Write plan.yaml, hand to executor
 
 ## Workflow
 
 1. **Load config**: Read instruction.yaml, status.yaml (domain+tier), planner_config.yaml
 2. **Match pattern**: Look for intent in config's task_patterns (fix_bug, write_story, etc.)
-3. **Generate tasks**: Use pattern OR create custom (3-10 tasks, <2h each)
+3. **Generate tasks**: Use pattern OR create custom (3-10 tasks, stay within context budget)
 4. **Assign agents**: Match task type to agent capabilities from available_agents
 5. **Define dependencies**: Build dependency graph, ensure no cycles, identify parallel opportunities
 6. **Create criteria**: Load templates from config, customize per task + global
-7. **Estimate timeline**: Calculate critical path duration
+7. **Calculate context budget**: Estimate token usage per task, ensure total stays within limits
 8. **Write plan**: Create workflow/plan.yaml with all metadata
 9. **Hand off**: Update status.yaml to executing phase, signal universal-executor
 
 ## Planning by Tier
 
-| Tier | Tasks | Dependencies | Duration |
-|------|-------|--------------|----------|
-| **1** | 1 task | None | <30 min |
-| **2** | 3-5 tasks | Sequential | 1-4 hours |
-| **3** | 5-10 tasks | Parallel + sync points | 4-12 hours |
-| **4** | 10+ tasks | Complex, cross-domain, HITL approvals | 12+ hours |
+| Tier | Tasks | Dependencies | Context Budget |
+|------|-------|--------------|----------------|
+| **1** | 1 task | None | <15K tokens |
+| **2** | 3-5 tasks | Sequential | 15-50K tokens |
+| **3** | 5-10 tasks | Parallel + sync points | 50-100K tokens |
+| **4** | 10+ tasks | Complex, cross-domain, HITL approvals | 100-150K tokens |
+
+**Context Budget**: Estimated total tokens consumed across all tasks (reading files, writing code, analysis)
 
 ## Task Pattern Examples
 
@@ -76,9 +78,17 @@ intent: {intent}
 summary:
   total_tasks: {count}
   total_agents: {unique count}
-  estimated_hours: {critical path}
+  total_context_budget: {tokens}  # Total estimated token usage
+  context_per_task_avg: {tokens}  # Average per task
   critical_path: [task_1, task_3, task_5]
   parallel_opportunities: [[task_2, task_4]]
+
+context_management:
+  max_context_window: 200000      # Agent's max context (tokens)
+  reserved_for_system: 20000      # Reserved for system/overhead
+  available_for_tasks: 180000     # Available for task execution
+  budget_allocated: {tokens}      # Allocated across all tasks
+  buffer_remaining: {tokens}      # Safety buffer
 
 tasks:
   - id: task_1
@@ -87,7 +97,12 @@ tasks:
     type: analyze | design | modify | test | validate | execute
     description: "{What to do}"
     dependencies: []
-    estimated_hours: {hours}
+    context_budget: {tokens}       # Estimated context for this task
+    context_breakdown:
+      reading_files: {tokens}      # File reading estimate
+      analysis: {tokens}           # Analysis/processing
+      generation: {tokens}         # Code/content generation
+      validation: {tokens}         # Testing/validation
     acceptance_criteria:
       - "{Measurable criterion}"
     outputs_expected:
@@ -98,6 +113,7 @@ global_acceptance_criteria:
 
 constraints:
   - "{Instruction constraints}"
+  - "Stay within {tokens} total context budget"
 
 risks:
   - risk: "{Risk}"
@@ -170,39 +186,42 @@ From config's `available_agents` registry:
 ### Software: Fix Bug (Tier 2)
 ```
 Tasks: 5 (sequential)
-  1. Reproduce bug [senior-developer, 0.5h]
-  2. Diagnose root cause [senior-developer, 1h]
-  3. Implement fix [backend-developer, 1.5h]
-  4. Write tests [backend-developer, 0.5h]
-  5. Validate fix [senior-developer, 0.5h]
-Total: 4 hours (all sequential)
+  1. Reproduce bug [senior-developer, 5K tokens]
+  2. Diagnose root cause [senior-developer, 8K tokens]
+  3. Implement fix [backend-developer, 12K tokens]
+  4. Write tests [backend-developer, 6K tokens]
+  5. Validate fix [senior-developer, 4K tokens]
+Total: 35K tokens (within 50K budget for Tier 2)
+Buffer: 15K tokens remaining
 ```
 
 ### Business: Q4 Forecast (Tier 3)
 ```
 Tasks: 6 (mixed)
 Wave 1 (parallel):
-  1. Gather data [data-analyst, 2h]
-  2. Analyze trends [market-analyst, 3h]
+  1. Gather data [data-analyst, 15K tokens]
+  2. Analyze trends [market-analyst, 20K tokens]
 Wave 2:
-  3. Model scenarios [fp-and-a-manager, 4h]
+  3. Model scenarios [fp-and-a-manager, 25K tokens]
 Wave 3:
-  4. Document [business-analyst, 2h]
-  5. Present [fp-and-a-manager, 2h]
-  6. Approve [cfo, HITL]
-Total: 13 hours (critical path)
+  4. Document [business-analyst, 10K tokens]
+  5. Present [fp-and-a-manager, 8K tokens]
+  6. Approve [cfo, HITL, 2K tokens]
+Total: 80K tokens (within 100K budget for Tier 3)
+Buffer: 20K tokens remaining
 ```
 
 ### Creative: Short Story (Tier 2)
 ```
 Tasks: 6 (sequential)
-  1. Premise [story-architect, 1h]
-  2. Outline [story-architect, 1.5h]
-  3. Characters [character-designer, 1.5h]
-  4. Draft [prose-stylist, 3h]
-  5. Revise [editor, 2h]
-  6. Polish [copy-editor, 1h]
-Total: 10 hours
+  1. Premise [story-architect, 3K tokens]
+  2. Outline [story-architect, 5K tokens]
+  3. Characters [character-designer, 6K tokens]
+  4. Draft [prose-stylist, 20K tokens]
+  5. Revise [editor, 10K tokens]
+  6. Polish [copy-editor, 4K tokens]
+Total: 48K tokens (within 50K budget for Tier 2)
+Buffer: 2K tokens remaining
 ```
 
 ## Key Principles
@@ -212,11 +231,32 @@ Total: 10 hours
 - **Agent-aware**: Only assign agents that exist in domain
 - **Dependency-safe**: Never create circular dependencies
 - **Criteria-driven**: Every task gets measurable acceptance criteria
-- **Realistic estimates**: No padding, honest time estimates
+- **Context-aware**: Plan within context budget, not time estimates
 - **Parallel-conscious**: Identify parallelization opportunities
+
+## Context Budget Guidelines
+
+**Token Estimation Rules**:
+- Simple read (1-2 files, <500 lines): 2-5K tokens
+- Complex read (multiple files, >1K lines): 10-20K tokens
+- Analysis (code review, debugging): 5-15K tokens
+- Generation (write code, content): 8-25K tokens
+- Testing (run tests, validate): 3-8K tokens
+
+**Safety Buffers**:
+- Tier 1: 20% buffer (e.g., 12K planned, 15K budget)
+- Tier 2: 20% buffer (e.g., 40K planned, 50K budget)
+- Tier 3: 20% buffer (e.g., 80K planned, 100K budget)
+- Tier 4: 30% buffer (e.g., 105K planned, 150K budget)
+
+**When Budget Exceeded**:
+1. Split task into smaller subtasks
+2. Reduce scope (focus on essentials)
+3. Increase tier if complexity warrants it
+4. Recommend recursive workflow for complex tasks
 
 ---
 
-**Version**: 2.0
-**Lines**: 212 (vs 367 = 42% reduction)
+**Version**: 2.1 (Context-Aware)
+**Lines**: 244 (vs 212 = context tracking added)
 **Part of**: cAgents Universal Workflow Architecture V2

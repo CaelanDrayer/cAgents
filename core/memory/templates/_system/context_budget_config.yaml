@@ -1,0 +1,246 @@
+# Context Budget Configuration Template
+# Controls how agents monitor and manage their context window usage
+
+# Global Context Limits (tokens)
+context_limits:
+  max_context_window: 200000      # Maximum context window for agents
+  reserved_for_system: 20000      # Reserved for system prompts, tools, overhead
+  available_for_tasks: 180000     # Available for workflow execution
+  critical_threshold: 160000      # Warn when approaching this limit (90%)
+  hard_limit: 180000              # Stop execution at this limit (100%)
+
+# Tier-Based Context Budgets
+tier_budgets:
+  tier_0:
+    max_tokens: 5000              # Trivial questions
+    buffer_percent: 0             # No buffer needed
+
+  tier_1:
+    max_tokens: 15000             # Simple tasks (1 task)
+    buffer_percent: 20            # 20% safety buffer
+    recommended_allocation:
+      - task: 12000
+      - buffer: 3000
+
+  tier_2:
+    max_tokens: 50000             # Moderate tasks (3-5 tasks)
+    buffer_percent: 20            # 20% safety buffer
+    recommended_allocation:
+      - tasks: 40000
+      - buffer: 10000
+
+  tier_3:
+    max_tokens: 100000            # Complex tasks (5-10 tasks)
+    buffer_percent: 20            # 20% safety buffer
+    recommended_allocation:
+      - tasks: 80000
+      - buffer: 20000
+
+  tier_4:
+    max_tokens: 150000            # Expert tasks (10+ tasks)
+    buffer_percent: 30            # 30% safety buffer (more variability)
+    recommended_allocation:
+      - tasks: 105000
+      - buffer: 45000
+
+# Task Type Token Estimates
+# Used by planner to estimate context usage per task
+task_estimates:
+  # Reading operations
+  read_simple:                    # 1-2 files, <500 lines
+    min: 2000
+    max: 5000
+    typical: 3000
+
+  read_complex:                   # Multiple files, >1K lines
+    min: 10000
+    max: 20000
+    typical: 15000
+
+  read_massive:                   # Large codebase exploration
+    min: 20000
+    max: 40000
+    typical: 30000
+
+  # Analysis operations
+  analyze_code:                   # Code review, debugging
+    min: 5000
+    max: 15000
+    typical: 10000
+
+  analyze_data:                   # Data analysis, metrics
+    min: 8000
+    max: 20000
+    typical: 12000
+
+  analyze_business:               # Business analysis, strategy
+    min: 10000
+    max: 25000
+    typical: 15000
+
+  # Generation operations
+  generate_code:                  # Write code, APIs
+    min: 8000
+    max: 25000
+    typical: 15000
+
+  generate_content:               # Write docs, stories, content
+    min: 10000
+    max: 30000
+    typical: 20000
+
+  generate_design:                # Architecture, system design
+    min: 12000
+    max: 30000
+    typical: 20000
+
+  # Testing/Validation operations
+  test_simple:                    # Unit tests
+    min: 3000
+    max: 8000
+    typical: 5000
+
+  test_integration:               # Integration tests
+    min: 5000
+    max: 12000
+    typical: 8000
+
+  validate_quality:               # Quality checks, validation
+    min: 4000
+    max: 10000
+    typical: 6000
+
+# Context Monitoring Settings
+monitoring:
+  check_frequency: per_task       # When to check: per_task | per_wave | continuous
+  warn_at_percent: 90             # Warn when at 90% of budget
+  pause_at_percent: 95            # Pause for review at 95%
+  stop_at_percent: 100            # Hard stop at 100%
+
+  tracking_granularity: detailed  # detailed | summary | minimal
+
+  # What to track
+  track:
+    - total_tokens_used
+    - per_task_usage
+    - per_agent_usage
+    - reading_tokens
+    - generation_tokens
+    - overhead_tokens
+
+  # Reporting
+  report:
+    include_in_summary: true      # Include in output_summary.yaml
+    include_in_validation: true   # Include in validation report
+    log_per_task: true            # Log after each task completion
+
+# Budget Exceeded Handling
+budget_exceeded_handling:
+  strategy: adaptive              # adaptive | strict | permissive
+
+  adaptive:
+    # When approaching limit (90%)
+    at_warning:
+      - reduce_parallelism        # Reduce parallel agents
+      - prioritize_critical       # Focus on critical path
+      - skip_optional             # Skip optional tasks
+
+    # When at pause threshold (95%)
+    at_pause:
+      - review_remaining_tasks    # Assess what's left
+      - split_if_needed           # Split into child workflow
+      - escalate_if_complex       # Escalate to HITL if complex
+
+    # When at hard limit (100%)
+    at_limit:
+      - graceful_termination      # Finish current task
+      - save_partial_results      # Save what's been done
+      - create_continuation_plan  # Plan to continue later
+      - escalate_to_hitl          # Always escalate
+
+  strict:
+    # Stop immediately at any threshold
+    action: stop_and_escalate
+
+  permissive:
+    # Allow moderate overruns with warnings
+    max_overrun_percent: 10       # Allow up to 10% overrun
+    action: warn_and_continue
+
+# Context Optimization Strategies
+optimization:
+  enabled: true
+
+  strategies:
+    # Minimize file reading
+    - name: efficient_reading
+      description: "Read only necessary files, use targeted searches"
+      savings: 20-40%
+
+    # Reuse context
+    - name: context_reuse
+      description: "Share context between related tasks in same wave"
+      savings: 10-20%
+
+    # Incremental processing
+    - name: incremental_processing
+      description: "Process in chunks, clear context between waves"
+      savings: 15-30%
+
+    # Smart caching
+    - name: smart_caching
+      description: "Cache frequently accessed info in Agent_Memory"
+      savings: 10-15%
+
+# Recursive Workflow Context Handling
+recursive_workflows:
+  # Each child workflow gets fresh context
+  inherit_parent_context: false
+
+  # Maximum context per child
+  max_child_context: 100000       # Tier 3 equivalent
+
+  # If parent approaching limit, prefer child workflows
+  prefer_child_when_parent_at: 70%
+
+# Domain-Specific Overrides (optional)
+# Domains can override these defaults in their executor_config.yaml
+domain_overrides:
+  creative:
+    # Creative work often needs more generation context
+    task_estimates:
+      generate_content:
+        typical: 25000            # Higher than default 20000
+
+  software:
+    # Software often needs more reading context
+    task_estimates:
+      read_complex:
+        typical: 18000            # Higher than default 15000
+
+---
+# Usage Instructions
+
+# Planner Usage:
+# 1. Load this config
+# 2. Use tier_budgets[tier].max_tokens as total budget
+# 3. Use task_estimates to estimate per-task usage
+# 4. Ensure total_estimated + buffer < max_tokens
+# 5. Write context budgets into plan.yaml
+
+# Executor Usage:
+# 1. Load context_management from plan.yaml
+# 2. Initialize tracker with total budget
+# 3. Before each task: check remaining budget
+# 4. During task: monitor if possible
+# 5. After task: update tracker with actual usage
+# 6. If approaching limit: apply budget_exceeded_handling strategy
+# 7. Report final usage in output_summary.yaml
+
+# Example:
+# Tier 2 task with 4 tasks:
+#   - Task 1 (read_complex): 15K
+#   - Task 2 (analyze_code): 10K
+#   - Task 3 (generate_code): 12K
+#   - Task 4 (test_simple): 5K
+# Total: 42K + 8K buffer = 50K (within Tier 2 budget)
