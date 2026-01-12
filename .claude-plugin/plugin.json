@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "6.3.0",
-  "description": "Universal multi-domain agent system for Claude Code with V2 Universal Workflow Architecture + Enhanced Reviewer V2.0. Execute up to 50 concurrent agents with intelligent queue management. 228 specialized agents: 9 core infrastructure + 219 domain experts. NEW: Enhanced reviewer with intelligent agent selection (33% faster), auto-fix suggestions (98% more actionable), severity-based early reporting (81% faster to critical issues), pattern learning, diff-aware analysis, and context-aware review. Features: recursive workflows, configuration-driven behavior, massive parallel execution. Domains: software (45 agents), business (18), creative (18), planning (17), sales (18), marketing (22), finance (17), operations (15), hr (19), legal (14), support (18). Universal /trigger, /designer, /reviewer (enhanced), /optimize commands.",
+  "version": "6.5.0",
+  "description": "Universal multi-domain agent system for Claude Code with V2 Universal Workflow Architecture + Context Management + Task Consolidation + Enhanced Reviewer V2.0. Execute up to 50 concurrent agents with intelligent queue management. 229 specialized agents: 10 core infrastructure (including task-consolidator) + 219 domain experts. NEW IN 6.5: Context budget system (replaces time estimates), task consolidation for 40-88% context reduction per agent, intelligent splitting across 3-20x parallel agents. FEATURES: Enhanced reviewer (33% faster, 98% more actionable), recursive workflows, configuration-driven behavior, massive parallel execution. Domains: software (45), business (18), creative (18), planning (17), sales (18), marketing (22), finance (17), operations (15), hr (19), legal (14), support (18). Universal /trigger, /designer, /reviewer, /optimize commands.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",
@@ -50,6 +50,7 @@
     "./core/agents/universal-validator.md",
     "./core/agents/universal-self-correct.md",
     "./core/agents/optimizer.md",
+    "./core/agents/task-consolidator.md",
     "./software/agents/engineering-manager.md",
     "./software/agents/frontend-lead.md",
     "./software/agents/backend-lead.md",
