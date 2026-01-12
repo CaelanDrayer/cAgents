@@ -1,0 +1,433 @@
+# UNIVERSAL TASK COMPLETION PROTOCOL
+# Version 1.0
+# Applies to ALL domains: software, creative, business, marketing, sales, finance, operations, HR, legal, support
+
+protocol_name: "Mandatory Task Completion Protocol"
+version: "1.0"
+enforcement: MANDATORY
+scope: "All domains, all tiers, all agents"
+owner: "Universal Executor"
+enforced_by: ["universal-executor", "universal-validator", "orchestrator"]
+
+## CORE PRINCIPLE
+# A task is ONLY completed when 100% of acceptance criteria are met with verified evidence.
+# NO partial completion. NO "mostly done". NO "almost finished".
+
+completion_definition:
+  description: "A task is completed if and only if ALL of these conditions are true"
+
+  conditions:
+    all_acceptance_criteria_met:
+      requirement: "Every criterion from plan.yaml verified with concrete evidence"
+      verification: "Each criterion has status=MET and specific evidence"
+      no_exceptions: true
+
+    all_outputs_exist:
+      requirement: "Every required output file exists in the expected location"
+      verification: "File existence checked, not just assumed"
+      no_exceptions: true
+
+    output_quality_verified:
+      requirement: "Outputs are complete, production-quality, not placeholders or drafts"
+      checks:
+        - "Non-empty files"
+        - "No TODO/FIXME markers (unless explicitly allowed)"
+        - "No placeholder text like 'To be implemented'"
+        - "Ready for downstream consumption"
+      no_exceptions: true
+
+    dependencies_satisfied:
+      requirement: "If this task is a dependency for others, it provides everything needed"
+      verification: "Downstream tasks can start immediately with provided outputs"
+      no_exceptions: true
+
+    no_blockers_remain:
+      requirement: "All issues resolved, no pending work"
+      verification: "No known issues, errors, or incomplete work"
+      no_exceptions: true
+
+## VERIFICATION REQUIREMENTS
+
+verification_process:
+  description: "MANDATORY steps before marking any task as completed"
+
+  step_1_create_manifest:
+    location: "outputs/partial/{task_id}/manifest.yaml"
+    required_sections:
+      completion_verification:
+        description: "Map each acceptance criterion to verification evidence"
+        format:
+          criterion_id:
+            status: "MET or NOT_MET"
+            evidence: "Concrete, specific evidence (file path, test output, line numbers)"
+            verified_at: "ISO 8601 timestamp"
+        example: |
+          completion_verification:
+            criterion_1:
+              status: MET
+              evidence: "API endpoint implemented at src/api/auth.py:45-120, returns JWT token"
+              verified_at: "2026-01-12T10:30:00Z"
+            criterion_2:
+              status: MET
+              evidence: "Tests pass: 15/15 in test_auth.py, coverage 95%"
+              verified_at: "2026-01-12T10:35:00Z"
+
+      outputs_created:
+        description: "List all output files created by this task"
+        format: "Array of absolute or relative file paths"
+        verification: "Each file MUST be verified to exist"
+        example: |
+          outputs_created:
+            - outputs/partial/task_001/api.py
+            - outputs/partial/task_001/test_api.py
+            - outputs/partial/task_001/api_documentation.md
+
+      quality_checks_passed:
+        description: "Boolean indicating all quality checks passed"
+        requirement: "MUST be true to mark task completed"
+        checks:
+          - "Code compiles/runs without errors"
+          - "Tests pass (if applicable)"
+          - "Linting passes (if applicable)"
+          - "No obvious bugs or issues"
+        example: "quality_checks_passed: true"
+
+      actual_context_used:
+        description: "Actual tokens consumed during task execution"
+        purpose: "Track against budgeted context"
+        format: "Integer token count"
+        example: "actual_context_used: 12450"
+
+  step_2_verify_files:
+    action: "Check that every file in outputs_created actually exists"
+    method: "Use Read or file existence check"
+    failure_action: "If any file missing, keep task as in_progress"
+
+  step_3_verify_criteria:
+    action: "Check that every acceptance criterion has status=MET"
+    method: "Review completion_verification section"
+    failure_action: "If any criterion NOT_MET, keep task as in_progress"
+
+  step_4_verify_quality:
+    action: "Check that quality_checks_passed is true"
+    method: "Review quality checks section"
+    failure_action: "If false or missing, keep task as in_progress"
+
+## ENFORCEMENT RULES
+
+enforcement_rules:
+  rule_1_no_partial_completion:
+    statement: "A task is either FULLY completed or NOT completed"
+    explanation: "There is no intermediate state like 'mostly done' or '90% complete'"
+    allowed_statuses:
+      - "pending: Task not yet started"
+      - "in_progress: Task started but not all criteria met"
+      - "completed: ALL criteria met and verified"
+      - "failed: Task cannot be completed (after retries)"
+    prohibited_states:
+      - "mostly done"
+      - "90% complete"
+      - "almost finished"
+      - "just needs polish"
+    consequence: "If even ONE criterion unmet, status MUST be in_progress, not completed"
+
+  rule_2_evidence_required:
+    statement: "Every acceptance criterion MUST have concrete, specific evidence"
+    evidence_requirements:
+      specificity: "Must reference specific files, line numbers, test outputs, metrics"
+      verifiable: "Another agent could verify the evidence independently"
+      concrete: "Not generic statements"
+
+    acceptable_evidence_examples:
+      - "File exists at src/api/auth.py with 150 lines implementing JWT authentication"
+      - "Tests pass: pytest output shows 45/45 passed, 0 failed"
+      - "Performance benchmark shows 95th percentile latency under 100ms"
+      - "Database migration applied successfully, schema verified in production"
+
+    prohibited_evidence_examples:
+      - "Looks good"
+      - "Seems to work"
+      - "Probably correct"
+      - "Should be fine"
+      - "Appears complete"
+
+    consequence: "Evidence that's too generic causes validation failure"
+
+  rule_3_all_or_nothing:
+    statement: "Task marked completed ONLY when 100% of criteria met"
+    conditions:
+      if_any_criterion_not_met: "Task status = in_progress or failed"
+      if_any_output_missing: "Task status = in_progress or failed"
+      if_any_quality_check_fails: "Task status = in_progress or failed"
+      if_dependencies_not_satisfied: "Task status = in_progress or failed"
+    explanation: "Even 99% complete is NOT complete. Must be 100%."
+
+  rule_4_document_incomplete_work:
+    statement: "If task cannot be completed, document EXACTLY what's missing"
+
+    when_task_cannot_complete:
+      blocked: "External dependency or blocker prevents completion"
+      scope_too_large: "Task scope was underestimated, needs splitting"
+      requirements_unclear: "Acceptance criteria are ambiguous or conflicting"
+      time_constraint: "Context budget exhausted before completion"
+
+    required_actions:
+      - action: "Document what WAS completed"
+        location: "manifest.yaml with partial completion status"
+      - action: "Document what REMAINS to be done"
+        location: "manifest.yaml with outstanding_work section"
+      - action: "Choose appropriate resolution"
+        options:
+          retry: "If transient issue, increment retry count and try again"
+          split: "If too large, create new task for remaining work"
+          escalate: "If blocked, escalate to HITL with blocker details"
+          mark_failed: "If fundamentally cannot complete"
+      - action: "NEVER mark as completed with work remaining"
+        enforcement: "ABSOLUTE RULE"
+
+## SUBAGENT SPAWNING
+
+subagent_prompt_requirements:
+  description: "When executor spawns subagents, MUST include completion protocol in prompt"
+
+  required_sections:
+    acceptance_criteria:
+      header: "ACCEPTANCE CRITERIA (ALL MUST BE MET)"
+      content: "List all criteria from plan.yaml with explicit requirement: ALL must be met"
+
+    mandatory_requirements:
+      header: "MANDATORY COMPLETION REQUIREMENTS"
+      content: |
+        - Complete ALL acceptance criteria (not partial)
+        - Create ALL required outputs
+        - Verify outputs are complete and production-quality
+        - Include verification evidence in manifest.yaml
+        - Only signal completion when 100% done
+
+    required_output:
+      header: "REQUIRED OUTPUT"
+      content: |
+        Location: Agent_Memory/{instruction_id}/outputs/partial/{task_id}/
+
+        MUST include manifest.yaml with:
+        - actual_context_used: (integer)
+        - completion_verification: {criterion: {status, evidence, verified_at}}
+        - outputs_created: [list of file paths]
+        - quality_checks_passed: true/false
+        - outstanding_work: (if any remains)
+
+    completion_warning:
+      header: "CRITICAL WARNING"
+      content: |
+        DO NOT mark work as done if any criterion is unmet.
+        DO NOT mark work as done if any output is missing.
+        Document what's incomplete and why if you cannot finish.
+        Only mark as completed when 100% of criteria are met.
+
+  prompt_template: |
+    {Task description and context}
+
+    ACCEPTANCE CRITERIA (ALL MUST BE MET):
+    {List each criterion from plan}
+
+    MANDATORY COMPLETION REQUIREMENTS:
+    - Complete ALL acceptance criteria (not partial)
+    - Create ALL required outputs
+    - Verify outputs are complete and production-quality
+    - Include verification evidence in manifest.yaml
+    - Only signal completion when 100% done
+
+    CONTEXT BUDGET: {budget} tokens
+    - Stay within this limit
+    - Monitor your token usage
+    - Report actual usage in manifest.yaml
+
+    Output to: Agent_Memory/{instruction_id}/outputs/partial/{task_id}/
+
+    REQUIRED OUTPUT:
+    - manifest.yaml with:
+      - actual_context_used field
+      - completion_verification: {criterion: status, evidence}
+      - outputs_created: [list of files]
+      - quality_checks_passed: true/false
+
+    DO NOT mark work as done if any criterion is unmet.
+    Document what's incomplete and why if you cannot finish.
+
+## VALIDATOR INTEGRATION
+
+validator_checks:
+  description: "How universal-validator enforces this protocol"
+
+  step_1_verify_manifests_exist:
+    check: "Every completed task has manifest.yaml"
+    location: "outputs/partial/{task_id}/manifest.yaml"
+    failure: "If missing, mark validation as BLOCKED, escalate to HITL"
+
+  step_2_verify_completion_sections:
+    check: "Every manifest has completion_verification section"
+    requirement: "Section must exist and be populated"
+    failure: "If missing, mark validation as BLOCKED"
+
+  step_3_verify_criteria_met:
+    check: "Every criterion has status=MET with evidence"
+    requirement: "All criteria must be MET, none can be NOT_MET"
+    failure: "If any NOT_MET, mark validation as BLOCKED"
+
+  step_4_verify_files_exist:
+    check: "Every file in outputs_created actually exists"
+    method: "Use Read tool or file existence check"
+    failure: "If any missing, mark validation as BLOCKED"
+
+  step_5_verify_quality_passed:
+    check: "quality_checks_passed is true"
+    requirement: "Boolean must be true"
+    failure: "If false or missing, mark validation as BLOCKED"
+
+  escalation_on_failure:
+    action: "If any verification check fails, escalate to HITL"
+    reason: "Executor did not properly verify task completion"
+    include_in_report:
+      - "Which tasks failed verification"
+      - "Which specific checks failed"
+      - "What evidence was missing or insufficient"
+
+## ORCHESTRATOR INTEGRATION
+
+orchestrator_checks:
+  description: "How orchestrator enforces protocol during phase transitions"
+
+  before_executing_to_validating:
+    check_1: "All planned tasks are in tasks/completed/"
+    check_2: "All completed tasks have manifest.yaml with verification"
+    check_3: "output_summary.yaml exists and lists all outputs"
+    check_4: "No tasks remain in tasks/pending/ or tasks/in_progress/"
+
+    failure_action: "DO NOT transition to validating phase"
+    escalation: "Escalate to HITL with specific failures documented"
+
+## QUALITY GATES
+
+quality_checklist:
+  description: "Checklist executor must verify before marking task completed"
+
+  checklist_items:
+    - item: "All acceptance criteria met with evidence"
+      verification: "Review completion_verification in manifest"
+      critical: true
+
+    - item: "All required outputs exist and are non-empty"
+      verification: "Check each file in outputs_created"
+      critical: true
+
+    - item: "Outputs are production-quality (not drafts/placeholders)"
+      verification: "Spot-check content, no TODO/FIXME unless allowed"
+      critical: true
+
+    - item: "Downstream dependencies will have what they need"
+      verification: "Review plan to see what other tasks depend on this"
+      critical: true
+
+    - item: "Tests pass (if applicable)"
+      verification: "Run tests, check exit code"
+      critical: false
+
+    - item: "No TODO/FIXME comments in deliverables"
+      verification: "Grep for TODO/FIXME in outputs"
+      critical: false
+
+    - item: "Documentation updated (if required by criteria)"
+      verification: "Check acceptance criteria for doc requirements"
+      critical: false
+
+## HANDLING INCOMPLETE TASKS
+
+incomplete_task_handling:
+  assessment:
+    - check: "Why is task incomplete?"
+      reasons:
+        blocker: "External dependency or issue blocking progress"
+        scope_large: "Task larger than estimated"
+        requirements_unclear: "Criteria ambiguous or conflicting"
+        context_exhausted: "Ran out of context budget"
+        dependency_failed: "Upstream task failed or incomplete"
+
+  resolution_strategies:
+    retry:
+      when: "Transient issue, likely to succeed on retry"
+      action: "Increment retry count, clear transient errors, try again"
+      limit: "Max 2-3 retries per task"
+
+    split:
+      when: "Task scope too large for single execution"
+      action: "Create new task for remaining work, mark current as partial"
+      process:
+        - "Document what was completed"
+        - "Create new task with remaining criteria"
+        - "Update dependencies"
+        - "Mark original task as completed (for completed portion) or failed"
+
+    escalate:
+      when: "Blocked by external issue or cannot proceed"
+      action: "Escalate to HITL with blocker details"
+      include:
+        - "What was attempted"
+        - "What's blocking completion"
+        - "What's needed to unblock"
+
+    mark_failed:
+      when: "Fundamentally cannot complete (even with retries)"
+      action: "Mark task as failed, document reason"
+      consequence: "Workflow will fail validation, escalate to HITL"
+
+## CONSEQUENCES OF VIOLATIONS
+
+violation_consequences:
+  incomplete_marked_as_complete:
+    detection: "Validator finds missing criteria or outputs"
+    consequence: "Validation fails (FIXABLE or BLOCKED)"
+    cost: "Self-correct or HITL intervention needed, wasted time"
+
+  missing_verification_evidence:
+    detection: "Validator finds generic or missing evidence"
+    consequence: "Cannot verify completion, validation BLOCKED"
+    cost: "Must redo verification, delays workflow"
+
+  partial_completion_accepted:
+    detection: "Downstream tasks fail due to missing inputs"
+    consequence: "Cascade of failures in dependent tasks"
+    cost: "Multiple tasks must be redone"
+
+## BENEFITS
+
+protocol_benefits:
+  quality_assurance: "Ensures all work is actually complete before proceeding"
+  reduced_rework: "Catches incomplete work early, before downstream impact"
+  clear_standards: "Removes ambiguity about what 'done' means"
+  audit_trail: "Verification records provide clear evidence of completion"
+  predictable_outcomes: "Workflows complete reliably or fail cleanly"
+
+---
+
+# PROTOCOL SUMMARY
+
+## For Executors:
+1. Before marking ANY task completed, verify ALL criteria with evidence
+2. Create manifest.yaml with completion_verification for EVERY task
+3. Include concrete evidence (files, test outputs, metrics) not generic "looks good"
+4. Verify all outputs actually exist before marking complete
+5. Never mark as completed if ANY work remains - 100% or in_progress
+
+## For Validators:
+1. Check ALL completed tasks have manifest.yaml with verification
+2. Verify every criterion has status=MET with specific evidence
+3. Verify all files in outputs_created actually exist
+4. If any verification fails, mark BLOCKED and escalate to HITL
+
+## For Orchestrator:
+1. Before executing → validating transition, verify all manifests exist
+2. Verify all tasks have completion_verification
+3. If verification missing, DO NOT transition, escalate to HITL
+
+## The Golden Rule:
+**100% completion with verified evidence, or it's not complete.**

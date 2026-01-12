@@ -484,9 +484,86 @@ delegation_message:
       autonomy_level: 1.0  # Can make implementation decisions
       requires_approval: false  # Unless tier 4
 
+# MANDATORY TASK COMPLETION PROTOCOL
+# ALL executors MUST follow this protocol - it is NON-NEGOTIABLE
+
+task_completion_protocol:
+  version: "1.0"
+  enforcement: MANDATORY
+
+  completion_definition:
+    description: "A task is completed if and only if ALL conditions are met"
+    required_conditions:
+      - all_acceptance_criteria_met: "Every criterion verified with concrete evidence"
+      - all_outputs_exist: "Every required output file exists in expected location"
+      - output_quality_verified: "Outputs complete, not empty or placeholder"
+      - dependencies_satisfied: "Downstream tasks have everything they need"
+      - no_blockers_remain: "All issues resolved, no pending work"
+
+  verification_requirements:
+    description: "Before marking task completed, executor MUST create verification record"
+    required_in_manifest:
+      - completion_verification:
+          format: "Map of criterion → {status: MET/NOT_MET, evidence: string, verified_at: timestamp}"
+          example: |
+            completion_verification:
+              criterion_1:
+                status: MET
+                evidence: "File exists at outputs/partial/task_001/api.py with 150 lines"
+                verified_at: "2026-01-12T10:30:00Z"
+      - outputs_created:
+          format: "List of all output file paths created"
+          verification: "Each file MUST actually exist"
+      - quality_checks_passed:
+          format: "Boolean indicating all quality checks passed"
+          requirement: "MUST be true to mark task completed"
+      - actual_context_used:
+          format: "Number of tokens consumed"
+          purpose: "Track context usage against budget"
+
+  enforcement_rules:
+    rule_1_no_partial_completion:
+      statement: "A task is either FULLY completed or NOT completed"
+      prohibited: ["mostly done", "90% complete", "almost finished"]
+      allowed_statuses: ["pending", "in_progress", "completed", "failed"]
+
+    rule_2_evidence_required:
+      statement: "Every acceptance criterion MUST have concrete evidence"
+      evidence_must_be: "Specific (file path, line numbers, test output, etc.)"
+      prohibited_evidence: ["looks good", "seems correct", "probably works"]
+
+    rule_3_all_or_nothing:
+      statement: "Task marked completed ONLY when 100% of criteria met"
+      conditions:
+        - if_any_criterion_not_met: "status = in_progress or failed"
+        - if_any_output_missing: "status = in_progress or failed"
+        - if_any_quality_check_fails: "status = in_progress or failed"
+
+    rule_4_document_incomplete_work:
+      statement: "If task cannot be completed, document EXACTLY what's missing"
+      actions:
+        - "Create new task for remaining work"
+        - "Update plan if requirements changed"
+        - "NEVER mark as completed with work remaining"
+
+  subagent_prompt_requirements:
+    description: "When spawning subagents, MUST include completion protocol in prompt"
+    required_sections:
+      - "ACCEPTANCE CRITERIA (ALL MUST BE MET)"
+      - "MANDATORY COMPLETION REQUIREMENTS"
+      - "REQUIRED OUTPUT (manifest.yaml with verification)"
+      - "DO NOT mark work as done if any criterion is unmet"
+
 # Domain-Specific Notes
 domain_notes: |
   Software domain execution considerations:
+
+  **CRITICAL: Task Completion Protocol**:
+  - Before marking ANY task completed, verify ALL acceptance criteria
+  - Create manifest.yaml with completion_verification for EVERY task
+  - Include concrete evidence for each criterion (not generic "looks good")
+  - Verify all output files actually exist before marking complete
+  - Never mark tasks as "mostly done" - 100% completion or in_progress
 
   **Agent Selection**:
   - Use assigned_agent from plan when specified (planner/tech-lead made decision)

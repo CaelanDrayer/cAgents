@@ -68,10 +68,14 @@ For each task:
 4. Invoke agent using Task tool with structured prompt + context limit
 5. **Monitor context usage**: Track tokens consumed during execution
 6. Capture outputs to `outputs/partial/{task_id}/`
-7. Validate outputs exist
+7. **MANDATORY COMPLETION CHECK**: Verify ALL acceptance criteria met:
+   - All required outputs exist in expected locations
+   - Each acceptance criterion explicitly verified with evidence
+   - Task marked completed ONLY if 100% of criteria met
+   - If ANY criterion not met: Task remains in_progress, retry or escalate
 8. **Update context tracker**: Record actual tokens used vs budgeted
-9. Update task status (completed/failed)
-10. Update TodoWrite
+9. Update task status (completed/failed) - completed ONLY if step 7 passes
+10. Update TodoWrite - mark completed ONLY if step 7 passes
 
 ### 6. Handle Errors
 - Increment retry count
@@ -102,6 +106,126 @@ handoff:
   message: "All {count} tasks completed successfully"
 ```
 
+## MANDATORY COMPLETION PROTOCOL
+
+**CRITICAL**: Tasks MUST be fully completed before marking as done. This protocol is NON-NEGOTIABLE.
+
+### Completion Definition
+
+A task is considered **COMPLETED** if and only if ALL of the following are true:
+
+1. **All acceptance criteria met** - Every criterion from plan.yaml verified with concrete evidence
+2. **All outputs exist** - Every required output file exists in the expected location
+3. **Output quality verified** - Outputs are complete, not empty or placeholder
+4. **Dependencies satisfied** - If this task is a dependency for others, it provides everything needed
+5. **No blockers remain** - All issues resolved, no pending work
+
+### Verification Process (MANDATORY)
+
+Before marking ANY task as completed, the executor MUST:
+
+```yaml
+# For each task, create verification record
+verification:
+  task_id: task_001
+  acceptance_criteria_check:
+    criterion_1:
+      status: MET
+      evidence: "File exists at outputs/partial/task_001/api.py with 150 lines"
+      verified_at: "2026-01-12T10:30:00Z"
+    criterion_2:
+      status: MET
+      evidence: "Tests pass: 45/45 in test run log"
+      verified_at: "2026-01-12T10:35:00Z"
+
+  outputs_check:
+    - path: outputs/partial/task_001/api.py
+      exists: true
+      size: 4500 bytes
+      non_empty: true
+    - path: outputs/partial/task_001/test_api.py
+      exists: true
+      size: 2200 bytes
+      non_empty: true
+
+  quality_check:
+    outputs_complete: true
+    no_placeholders: true
+    ready_for_integration: true
+
+  overall_status: VERIFIED_COMPLETE
+```
+
+### Enforcement Rules
+
+**Rule 1: No Partial Completion**
+- A task is either FULLY completed or NOT completed
+- Never mark a task as "mostly done" or "90% complete"
+- Status must be: pending → in_progress → completed (or failed)
+
+**Rule 2: Evidence Required**
+- Every acceptance criterion MUST have concrete evidence
+- Evidence MUST be specific (file path, line numbers, test output, etc.)
+- No generic statements like "looks good" or "seems correct"
+
+**Rule 3: All or Nothing**
+- If ANY acceptance criterion is not met: Task status = in_progress or failed
+- If ANY required output is missing: Task status = in_progress or failed
+- Task status = completed ONLY when 100% criteria met
+
+**Rule 4: Document Incomplete Work**
+- If task cannot be completed, document EXACTLY what's missing
+- Create new task for remaining work (don't leave it dangling)
+- Update plan if requirements changed during execution
+
+### Handling Incomplete Tasks
+
+**If task cannot be completed:**
+
+1. **Assess reason**: blocker, insufficient time, missing dependency, requirements unclear
+2. **Document state**: Record what WAS completed, what remains
+3. **Choose action**:
+   - **Retry** (if transient issue, within retry limit)
+   - **Split task** (if scope too large, create new task for remainder)
+   - **Escalate** (if blocked, needs HITL)
+   - **Mark failed** (if fundamentally cannot complete)
+4. **Never mark as completed** if any work remains
+
+### Quality Gates Before Completion
+
+Before marking task completed, verify:
+
+- [ ] All acceptance criteria met with evidence
+- [ ] All required outputs exist and are non-empty
+- [ ] Outputs are production-quality (not drafts/placeholders)
+- [ ] Any downstream dependencies will have what they need
+- [ ] Tests pass (if applicable)
+- [ ] No TODO/FIXME comments in deliverables (unless explicitly allowed)
+- [ ] Documentation updated (if required by criteria)
+
+### Integration with Validation
+
+**Two-Level Verification**:
+1. **Executor verification** (this protocol): Per-task acceptance criteria
+2. **Validator verification**: Overall workflow quality gates
+
+Executor ensures each task is individually complete.
+Validator ensures all tasks together meet workflow goals.
+
+### Consequences of Violations
+
+**If executor marks incomplete task as completed:**
+- Validator will detect missing criteria
+- Workflow will fail validation (FIXABLE or BLOCKED)
+- Self-correct or HITL will need to intervene
+- Wasted time and resources
+
+**Prevention is mandatory:**
+- Verify completion BEFORE updating task status
+- Verify completion BEFORE moving task to completed/
+- Verify completion BEFORE updating TodoWrite
+- Verify completion BEFORE handoff to validator
+
 ## Execution Strategies by Tier
 
 | Tier | Tasks | Parallelism | Retries | Context Budget | Checkpoints |
@@ -122,7 +246,16 @@ Task({
 
   Context: {instruction_id}, Domain: {domain}, Task ID: {task_id}
   Dependencies: {dependency_outputs}
-  Acceptance Criteria: {criteria}
+
+  ACCEPTANCE CRITERIA (ALL MUST BE MET):
+  {criteria}
+
+  MANDATORY COMPLETION REQUIREMENTS:
+  - Complete ALL acceptance criteria (not partial)
+  - Create ALL required outputs
+  - Verify outputs are complete and production-quality
+  - Include verification evidence in manifest.yaml
+  - Only signal completion when 100% done
 
   CONTEXT BUDGET: {task_context_budget} tokens
   - Stay within this limit
@@ -131,7 +264,16 @@ Task({
   - Report actual usage in manifest.yaml
 
   Output to: Agent_Memory/{instruction_id}/outputs/partial/{task_id}/
-  Include manifest.yaml with actual_context_used field.`
+
+  REQUIRED OUTPUT:
+  - manifest.yaml with:
+    - actual_context_used field
+    - completion_verification: {criterion: status, evidence}
+    - outputs_created: [list of files]
+    - quality_checks_passed: true/false
+
+  DO NOT mark work as done if any criterion is unmet.
+  Document what's incomplete and why if you cannot finish.`
 })
 ```
 

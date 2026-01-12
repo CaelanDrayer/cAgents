@@ -147,9 +147,24 @@ Use Task tool:
 ### Phase Completion Detection
 - **Routing**: routing_decision.yaml exists
 - **Planning**: plan.yaml exists, tasks created in pending/
-- **Executing**: all tasks in completed/, outputs aggregated
+- **Executing**: all tasks in completed/, outputs aggregated, **ALL TASK MANIFESTS VERIFIED**
 - **Validating**: validation_result set in status.yaml
 - **Correcting**: correction result recorded
+
+### MANDATORY: Execution Phase Completion Check
+
+Before transitioning from executing → validating, orchestrator MUST verify:
+
+1. **All tasks marked completed**: Check `tasks/completed/` contains all planned tasks
+2. **All task manifests exist**: Each completed task has `outputs/partial/{task_id}/manifest.yaml`
+3. **Verification records present**: Each manifest has `completion_verification` section
+4. **Output summary complete**: `outputs/output_summary.yaml` exists and lists all task outputs
+
+**If any check fails:**
+- DO NOT transition to validating
+- Mark phase as incomplete
+- Escalate to HITL with specific failures
+- Document which tasks lack verification
 
 ### Checkpoint Creation
 Create before major transitions:

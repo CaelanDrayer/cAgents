@@ -29,17 +29,65 @@ domain: core
 ## Workflow
 
 1. **Load artifacts**: instruction.yaml, plan.yaml, execution_state.yaml, outputs/partial/*, validator_config.yaml
-2. **Run quality gates**: Execute checks from domain config, record pass/fail
-3. **Check acceptance criteria**: Verify each criterion with evidence
-4. **Run automated checks**: Tests, linting, security scans per domain config
-5. **Aggregate results**: Count failures by severity (critical/major/minor)
-6. **Classify outcome**: Apply PASS/FIXABLE/BLOCKED logic from config
-7. **Generate report**: Write validation_report.yaml with classification + evidence
-8. **Hand off**: Update status.yaml, route to next agent (self-correct/complete/HITL)
+2. **VERIFY TASK COMPLETION**: Check that ALL tasks marked completed have verification records
+   - Read each task's manifest.yaml
+   - Verify completion_verification exists with evidence
+   - Verify all outputs_created actually exist
+   - If any task lacks verification: FAIL validation immediately
+3. **Run quality gates**: Execute checks from domain config, record pass/fail
+4. **Check acceptance criteria**: Verify each criterion with evidence from BOTH plan AND task manifests
+5. **Run automated checks**: Tests, linting, security scans per domain config
+6. **Aggregate results**: Count failures by severity (critical/major/minor)
+7. **Classify outcome**: Apply PASS/FIXABLE/BLOCKED logic from config
+8. **Generate report**: Write validation_report.yaml with classification + evidence
+9. **Hand off**: Update status.yaml, route to next agent (self-correct/complete/HITL)
+
+## Task Completion Verification (MANDATORY FIRST STEP)
+
+Before running any quality gates, validator MUST verify that tasks were properly completed:
+
+### Verification Steps
+
+1. **Load execution state**: Read `workflow/execution_state.yaml` for all completed tasks
+2. **For each completed task**:
+   - Check `outputs/partial/{task_id}/manifest.yaml` exists
+   - Verify manifest contains `completion_verification` section
+   - Verify each acceptance criterion has status (MET/NOT_MET) and evidence
+   - Verify all files in `outputs_created` list actually exist
+   - Verify quality_checks_passed is true
+
+3. **Fail-fast conditions** (mark as BLOCKED):
+   - Any completed task missing manifest.yaml
+   - Any manifest missing completion_verification
+   - Any criterion marked NOT_MET but task marked completed
+   - Any file in outputs_created doesn't exist
+   - quality_checks_passed is false or missing
+
+4. **Document verification failures**:
+```yaml
+verification_failures:
+  - task_id: task_003
+    issue: "Missing completion_verification in manifest"
+    severity: CRITICAL
+    action: "Task improperly marked as completed"
+  - task_id: task_005
+    issue: "Output file api.py listed but doesn't exist"
+    severity: CRITICAL
+    action: "Incomplete task marked as completed"
+```
+
+### Integration with Quality Gates
+
+If task completion verification fails:
+- Skip remaining quality gates
+- Classify as BLOCKED
+- Escalate to HITL with verification failure report
+- Report must explain: executor did not properly verify task completion
 
 ## Quality Gates (Config-Driven)
 
 ### Universal Gates (All Domains)
+- **Task Completion Verification** (Critical): All tasks properly verified before marked complete
 - **Completeness** (Critical): All tasks done, outputs exist
 - **Functionality** (Critical): Acceptance criteria met, no regressions
 

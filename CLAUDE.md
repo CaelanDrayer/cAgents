@@ -48,6 +48,26 @@ Example: Use architect → backend-developer → qa-lead
 
 Benefits: Modularity, specialization, parallelization (up to 50 concurrent), reusability
 
+## Task Completion Protocol
+
+**MANDATORY**: All tasks must be fully completed before marking as done.
+
+**Core Rule**: 100% completion with verified evidence, or it's not complete.
+
+Protocol enforced by:
+- universal-executor: Verifies ALL acceptance criteria before marking complete
+- universal-validator: Checks verification records in task manifests
+- orchestrator: Validates all tasks have verification before phase transitions
+
+**Key Requirements**:
+1. All acceptance criteria met with concrete evidence
+2. All outputs exist and are production-quality
+3. manifest.yaml with completion_verification for every task
+4. Evidence must be specific (file paths, test outputs, metrics)
+5. NO partial completion - 100% or in_progress
+
+Full protocol: `Agent_Memory/_system/task_completion_protocol.yaml`
+
 ## Commands
 
 ### /trigger - Universal Entry Point
@@ -192,7 +212,11 @@ cAgents/
 
 **Commands**: `/trigger`, `/designer`, `/reviewer`, `/optimize`
 **Core Agents**: trigger, orchestrator, hitl, optimizer, 5 universal workflow
-**Key Files**: `.claude-plugin/plugin.json`, `Agent_Memory/_system/domains/{domain}/*.yaml`
+**Key Files**:
+- `.claude-plugin/plugin.json` - Plugin manifest
+- `Agent_Memory/_system/domains/{domain}/*.yaml` - Domain configs
+- `Agent_Memory/_system/task_completion_protocol.yaml` - Mandatory completion rules
+**Critical Rule**: 100% task completion with verified evidence required
 
 ## Troubleshooting
 
