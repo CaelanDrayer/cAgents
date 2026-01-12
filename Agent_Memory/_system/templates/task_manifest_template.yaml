@@ -1,0 +1,106 @@
+# Task Completion Manifest Template
+# Version 1.0
+# This file MUST be created by every agent for every task
+
+# Basic Metadata
+task_id: task_001
+task_name: "Implement authentication API"
+agent: backend-developer
+completed_at: "2026-01-12T10:35:00Z"
+
+# Context Usage Tracking
+actual_context_used: 12450  # Total tokens consumed during task execution
+
+# MANDATORY: Completion Verification
+# For EACH acceptance criterion from plan.yaml, provide verification
+completion_verification:
+  criterion_1:
+    description: "API endpoint implemented at /api/auth/login"
+    status: MET  # MET or NOT_MET
+    evidence: "File exists at src/api/auth.py:45-120, implements POST /api/auth/login endpoint, returns JWT token on success"
+    verified_at: "2026-01-12T10:30:00Z"
+
+  criterion_2:
+    description: "JWT token generation with 1-hour expiry"
+    status: MET
+    evidence: "JWT service implemented in src/services/jwt.py:15-45, uses HS256 algorithm, sets exp claim to 3600 seconds"
+    verified_at: "2026-01-12T10:32:00Z"
+
+  criterion_3:
+    description: "Unit tests with 80%+ coverage"
+    status: MET
+    evidence: "Tests pass: pytest shows 15/15 passed in test_auth.py, coverage report shows 92% coverage for auth.py"
+    verified_at: "2026-01-12T10:35:00Z"
+
+# MANDATORY: Outputs Created
+# List ALL files created or modified by this task
+outputs_created:
+  - src/api/auth.py          # Main implementation
+  - src/services/jwt.py      # JWT token service
+  - tests/test_auth.py       # Unit tests
+  - docs/api/auth.md         # API documentation
+
+# MANDATORY: Quality Checks
+# Boolean indicating if all quality checks passed
+quality_checks_passed: true
+
+quality_checks_detail:
+  code_runs_without_errors: true
+  tests_pass: true
+  linting_passes: true
+  no_obvious_bugs: true
+  ready_for_integration: true
+
+# Optional: Outstanding Work (only if task NOT fully complete)
+outstanding_work:
+  items: []  # List any remaining work if task couldn't be completed
+  reason: ""  # Why task is incomplete (if applicable)
+
+# Optional: Issues Encountered
+issues_encountered:
+  - issue: "None"
+    severity: N/A
+    resolved: true
+
+# Optional: Dependencies Satisfied
+# If other tasks depend on this one, confirm what you're providing
+dependencies_satisfied:
+  provides:
+    - "Authenticated user JWT token"
+    - "Login endpoint for frontend integration"
+    - "JWT validation middleware"
+  ready_for_downstream: true
+
+---
+
+# EXAMPLES OF GOOD EVIDENCE
+
+## Good Evidence Examples:
+- "File exists at src/api/auth.py with 150 lines implementing OAuth2 flow"
+- "Tests pass: npm test shows 45/45 passed, 0 failed, exit code 0"
+- "Performance benchmark: 95th percentile latency 85ms (target <100ms)"
+- "Database migration applied successfully: SELECT count(*) FROM users returns 0"
+- "Security scan: no vulnerabilities found by npm audit"
+
+## Bad Evidence Examples (DO NOT USE):
+- "Looks good"
+- "Seems to work"
+- "Probably correct"
+- "Should be fine"
+- "Code appears complete"
+- "Tests seem to pass"
+
+---
+
+# COMPLETION CHECKLIST
+
+Before marking task as completed, verify:
+- [ ] ALL acceptance criteria have status=MET
+- [ ] EACH criterion has specific evidence (not generic)
+- [ ] ALL files in outputs_created actually exist
+- [ ] quality_checks_passed is true
+- [ ] actual_context_used is recorded
+- [ ] No outstanding_work items remain
+
+If ANY checklist item is unchecked, task is NOT complete.
+Keep status as in_progress and document what's missing.

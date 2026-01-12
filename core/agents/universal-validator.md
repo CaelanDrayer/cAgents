@@ -56,14 +56,30 @@ Before running any quality gates, validator MUST verify that tasks were properly
    - Verify all files in `outputs_created` list actually exist
    - Verify quality_checks_passed is true
 
-3. **Fail-fast conditions** (mark as BLOCKED):
-   - Any completed task missing manifest.yaml
-   - Any manifest missing completion_verification
-   - Any criterion marked NOT_MET but task marked completed
-   - Any file in outputs_created doesn't exist
-   - quality_checks_passed is false or missing
+3. **Verification severity levels**:
+   - **CRITICAL** (mark as BLOCKED, escalate to HITL):
+     - Any criterion marked NOT_MET but task marked completed
+     - quality_checks_passed is false
+     - More than 50% of criteria lack evidence
 
-4. **Document verification failures**:
+   - **MAJOR** (mark as FIXABLE, attempt recovery):
+     - Task missing manifest.yaml but outputs exist
+     - Manifest missing completion_verification but has outputs_created
+     - Generic evidence ("looks good") but work appears complete
+     - Minor formatting issues in manifest
+
+   - **MINOR** (mark as FIXABLE, self-correct):
+     - quality_checks_passed missing (assume true if tests pass)
+     - actual_context_used missing
+     - Timestamp formatting issues
+
+4. **Recovery for missing manifests** (FIXABLE cases):
+   - If task outputs exist and appear complete, generate manifest from available evidence
+   - Check if tests pass, files exist, quality looks good
+   - Create synthetic manifest with available information
+   - Mark as FIXABLE to allow self-correct to formalize manifest
+
+5. **Document verification failures**:
 ```yaml
 verification_failures:
   - task_id: task_003
@@ -78,11 +94,18 @@ verification_failures:
 
 ### Integration with Quality Gates
 
-If task completion verification fails:
+**Critical verification failures**:
 - Skip remaining quality gates
 - Classify as BLOCKED
 - Escalate to HITL with verification failure report
-- Report must explain: executor did not properly verify task completion
+
+**Major/Minor verification failures**:
+- Continue to quality gates to assess work quality
+- If work is actually complete, classify as FIXABLE
+- Self-correct can generate proper manifest
+- Only escalate if work itself is incomplete
+
+**This prevents false failures** where work is done but manifest is missing/incomplete.
 
 ## Quality Gates (Config-Driven)
 

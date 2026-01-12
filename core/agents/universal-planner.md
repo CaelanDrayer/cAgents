@@ -36,20 +36,22 @@ domain: core
 4. **Assign agents**: Match task type to agent capabilities from available_agents
 5. **Define dependencies**: Build dependency graph, ensure no cycles, identify parallel opportunities
 6. **Create criteria**: Load templates from config, customize per task + global
-7. **Calculate context budget**: Estimate token usage per task, ensure total stays within limits
-8. **Write plan**: Create workflow/plan.yaml with all metadata
-9. **Hand off**: Update status.yaml to executing phase, signal universal-executor
+7. **Add verification requirement**: EVERY task MUST include criterion for manifest.yaml creation
+8. **Calculate context budget**: Estimate token usage per task + 2K verification overhead per task
+9. **Write plan**: Create workflow/plan.yaml with all metadata including verification requirements
+10. **Hand off**: Update status.yaml to executing phase, signal universal-executor
 
 ## Planning by Tier
 
-| Tier | Tasks | Dependencies | Context Budget |
-|------|-------|--------------|----------------|
-| **1** | 1 task | None | <15K tokens |
-| **2** | 3-5 tasks | Sequential | 15-50K tokens |
-| **3** | 5-10 tasks | Parallel + sync points | 50-100K tokens |
-| **4** | 10+ tasks | Complex, cross-domain, HITL approvals | 100-150K tokens |
+| Tier | Tasks | Dependencies | Base Context Budget | + Verification Overhead | Total Budget |
+|------|-------|--------------|---------------------|------------------------|--------------|
+| **1** | 1 task | None | <13K tokens | +2K | <15K tokens |
+| **2** | 3-5 tasks | Sequential | 15-45K tokens | +5-10K | 20-55K tokens |
+| **3** | 5-10 tasks | Parallel + sync points | 50-90K tokens | +10-20K | 60-110K tokens |
+| **4** | 10+ tasks | Complex, cross-domain, HITL approvals | 100-130K tokens | +20-30K | 120-160K tokens |
 
 **Context Budget**: Estimated total tokens consumed across all tasks (reading files, writing code, analysis)
+**Verification Overhead**: 2K tokens per task for manifest creation and verification (MANDATORY)
 
 ## Task Pattern Examples
 
@@ -113,8 +115,10 @@ tasks:
 
     acceptance_criteria:
       - "{Measurable criterion}"
+      - "MANDATORY: Task manifest created at outputs/partial/{task_id}/manifest.yaml with completion verification"
     outputs_expected:
       - "path/to/output.ext"
+      - "outputs/partial/{task_id}/manifest.yaml"  # MANDATORY for ALL tasks
 
 global_acceptance_criteria:
   - "{Overall success criterion}"
@@ -128,6 +132,60 @@ risks:
     mitigation: "{How to mitigate}"
     probability: low | medium | high
     impact: low | medium | high | critical
+```
+
+## MANDATORY VERIFICATION REQUIREMENTS
+
+**CRITICAL**: Every task plan MUST include verification requirements for the completion protocol.
+
+### Required for Every Task
+
+1. **Manifest Acceptance Criterion** (add to EVERY task):
+   ```yaml
+   acceptance_criteria:
+     - "Task manifest created at outputs/partial/{task_id}/manifest.yaml with completion verification for all criteria"
+   ```
+
+2. **Manifest Output** (add to EVERY task):
+   ```yaml
+   outputs_expected:
+     - "outputs/partial/{task_id}/manifest.yaml"
+   ```
+
+3. **Context Budget Adjustment**:
+   - Add 2,000 tokens per task for verification overhead
+   - This covers manifest creation, file verification, evidence documentation
+
+4. **Template Reference** (include in task description):
+   ```
+   Use template: Agent_Memory/_system/templates/task_manifest_template.yaml
+   ```
+
+### Why This Matters
+
+- **Executor enforcement**: Executor checks manifest exists before marking task complete
+- **Validator enforcement**: Validator verifies manifest has proper structure
+- **Orchestrator enforcement**: Orchestrator checks all manifests before phase transition
+
+**If planner doesn't include manifest requirement, ALL tasks will fail validation.**
+
+### Verification-Aware Planning Example
+
+```yaml
+tasks:
+  - id: task_001
+    name: "Implement authentication API"
+    agent: backend-developer
+    context_budget: 14000  # 12K base + 2K verification
+    acceptance_criteria:
+      - "POST /api/auth/login endpoint implemented and functional"
+      - "JWT tokens generated with 1-hour expiry"
+      - "Unit tests with 80%+ coverage"
+      - "MANDATORY: Task manifest created at outputs/partial/task_001/manifest.yaml with completion verification"
+    outputs_expected:
+      - "src/api/auth.py"
+      - "tests/test_auth.py"
+      - "outputs/partial/task_001/manifest.yaml"  # REQUIRED
 ```
 
 ## Acceptance Criteria Guidelines

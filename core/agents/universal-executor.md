@@ -266,11 +266,20 @@ Task({
   Output to: Agent_Memory/{instruction_id}/outputs/partial/{task_id}/
 
   REQUIRED OUTPUT:
-  - manifest.yaml with:
-    - actual_context_used field
-    - completion_verification: {criterion: status, evidence}
-    - outputs_created: [list of files]
-    - quality_checks_passed: true/false
+  - manifest.yaml following this template:
+    Agent_Memory/_system/templates/task_manifest_template.yaml
+
+  Required sections in manifest.yaml:
+    - actual_context_used: (integer token count)
+    - completion_verification:
+        {criterion_id}:
+          status: MET | NOT_MET
+          evidence: "Concrete specific evidence"
+          verified_at: "ISO 8601 timestamp"
+    - outputs_created: [list of all files created/modified]
+    - quality_checks_passed: true | false
+
+  See template for examples of GOOD vs BAD evidence.
 
   DO NOT mark work as done if any criterion is unmet.
   Document what's incomplete and why if you cannot finish.`

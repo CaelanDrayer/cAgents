@@ -66,7 +66,11 @@ Protocol enforced by:
 4. Evidence must be specific (file paths, test outputs, metrics)
 5. NO partial completion - 100% or in_progress
 
-Full protocol: `Agent_Memory/_system/task_completion_protocol.yaml`
+**Files**:
+- Protocol: `Agent_Memory/_system/task_completion_protocol.yaml`
+- Template: `Agent_Memory/_system/templates/task_manifest_template.yaml`
+
+**Context Overhead**: Add 2K tokens per task for verification (included in planning)
 
 ## Commands
 
