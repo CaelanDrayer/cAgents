@@ -1,7 +1,7 @@
 {
   "name": "@cagents/core",
-  "version": "6.3.0",
-  "description": "cAgents Core V2 - Universal Workflow Architecture + Enhanced Reviewer V2.0. Provides unified Trigger, Orchestrator, HITL, Optimizer, and 5 universal workflow agents that work across ALL domains via configuration. NEW: Enhanced reviewer with intelligent agent selection (33% faster), auto-fix generation (98% more actionable), pattern learning, and diff-aware analysis. Includes universal commands and Agent_Memory system with 55 domain configs across 11 domains.",
+  "version": "6.5.0",
+  "description": "cAgents Core V2 - Universal Workflow Architecture + Context Management + Enhanced Reviewer V2.0. Provides unified Trigger, Orchestrator, HITL, Optimizer, Task-Consolidator, and 5 universal workflow agents that work across ALL domains via configuration. NEW: Context budget system (replaces time estimates), task consolidation for 40-60% context reduction, intelligent agent selection (33% faster), auto-fix generation (98% more actionable), pattern learning, and diff-aware analysis. Includes universal commands and Agent_Memory system with 55 domain configs across 11 domains.",
   "author": {
     "name": "CaelanDrayer",
     "url": "https://github.com/CaelanDrayer"
@@ -39,7 +39,8 @@
     "./agents/universal-executor.md",
     "./agents/universal-validator.md",
     "./agents/universal-self-correct.md",
-    "./agents/optimizer.md"
+    "./agents/optimizer.md",
+    "./agents/task-consolidator.md"
   ],
   "skills": [],
   "dependencies": [],

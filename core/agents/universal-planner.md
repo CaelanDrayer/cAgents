@@ -103,6 +103,14 @@ tasks:
       analysis: {tokens}           # Analysis/processing
       generation: {tokens}         # Code/content generation
       validation: {tokens}         # Testing/validation
+
+    # Task Consolidation (for large tasks >15K)
+    consolidation:
+      enabled: false               # Set true for tasks >15K
+      strategy: null               # file_based | function_based | operation_based | chapter_based | data_based
+      estimated_micro_tasks: 0     # Number of micro-tasks
+      consolidation_budget: 0      # Budget for consolidation phase
+
     acceptance_criteria:
       - "{Measurable criterion}"
     outputs_expected:
@@ -243,6 +251,11 @@ Buffer: 2K tokens remaining
 - Generation (write code, content): 8-25K tokens
 - Testing (run tests, validate): 3-8K tokens
 
+**Task Consolidation Threshold**:
+- Tasks >15K tokens → Consider splitting via task-consolidator
+- Tasks >25K tokens → Strongly recommend task-consolidator
+- Tasks >40K tokens → Mandatory task-consolidator or recursive workflow
+
 **Safety Buffers**:
 - Tier 1: 20% buffer (e.g., 12K planned, 15K budget)
 - Tier 2: 20% buffer (e.g., 40K planned, 50K budget)
@@ -250,13 +263,70 @@ Buffer: 2K tokens remaining
 - Tier 4: 30% buffer (e.g., 105K planned, 150K budget)
 
 **When Budget Exceeded**:
-1. Split task into smaller subtasks
-2. Reduce scope (focus on essentials)
-3. Increase tier if complexity warrants it
-4. Recommend recursive workflow for complex tasks
+1. Use task-consolidator for tasks >15K (splits into micro-tasks)
+2. Split task into smaller subtasks manually if simpler
+3. Reduce scope (focus on essentials)
+4. Increase tier if complexity warrants it
+5. Recommend recursive workflow for very complex tasks (>150K total)
+
+## Task Consolidation in Planning
+
+**When to Enable**:
+
+```python
+if task.context_budget > 15000:
+    # Analyze if decomposable
+    if is_decomposable(task):
+        task.consolidation.enabled = true
+        task.consolidation.strategy = select_strategy(task)
+        task.agent = "task-consolidator"
+
+        # Adjust budget
+        micro_task_count = estimate_micro_tasks(task)
+        avg_micro_budget = task.context_budget / micro_task_count
+        consolidation_budget = estimate_consolidation(task)
+
+        task.context_budget = (avg_micro_budget * micro_task_count) + consolidation_budget
+```
+
+**Decomposability Check**:
+
+```
+Decomposable if:
+- Multiple files (file_based)
+- Multiple functions (function_based)
+- Multiple operations (operation_based)
+- Multiple sections (chapter_based)
+- Multiple data chunks (data_based)
+
+Not decomposable if:
+- Single atomic operation
+- Tightly coupled steps
+- Sequential dependencies
+```
+
+**Example Plan with Consolidation**:
+
+```yaml
+tasks:
+  - id: task_3
+    name: "Refactor authentication module"
+    agent: task-consolidator
+    type: modify
+    context_budget: 32000  # Increased from 25K for consolidation
+    consolidation:
+      enabled: true
+      strategy: file_based
+      estimated_micro_tasks: 6
+      consolidation_budget: 8000
+    acceptance_criteria:
+      - "All 6 auth files refactored"
+      - "Integration tests pass"
+      - "No security regressions"
+```
 
 ---
 
-**Version**: 2.1 (Context-Aware)
-**Lines**: 244 (vs 212 = context tracking added)
+**Version**: 2.2 (Context-Aware + Task Consolidation)
+**Lines**: 296 (vs 244 = task consolidation added)
 **Part of**: cAgents Universal Workflow Architecture V2
