@@ -73,6 +73,12 @@ For each task:
    - Each acceptance criterion explicitly verified with evidence
    - Task marked completed ONLY if 100% of criteria met
    - If ANY criterion not met: Task remains in_progress, retry or escalate
+   - **AUTOMATED ENFORCEMENT (NEW)**: Run validation script:
+     ```bash
+     python Agent_Memory/_system/scripts/validate_manifest.py {instruction_id} {task_id}
+     ```
+     Exit codes: 0=valid, 1=invalid, 2=error
+     If exit code != 0: BLOCK completion, keep task in_progress
 8. **Update context tracker**: Record actual tokens used vs budgeted
 9. Update task status (completed/failed) - completed ONLY if step 7 passes
 10. Update TodoWrite - mark completed ONLY if step 7 passes
@@ -83,11 +89,13 @@ For each task:
 - If max retries exceeded: mark failed
 - If critical task fails: escalate to HITL
 - If non-critical fails: document and continue
-- **If context budget exceeded**:
-  - Pause execution
-  - Split remaining tasks into smaller chunks
-  - Create child workflow if needed
-  - Escalate to HITL if cannot proceed
+- **If context budget exceeded** (NEW: See protocol):
+  - **Protocol**: `Agent_Memory/_system/context_exhaustion_protocol.yaml`
+  - **70% (Yellow Zone)**: Create checkpoint, warn agent to focus on essentials
+  - **90% (Orange Zone)**: Create critical checkpoint, prepare for graceful termination
+  - **100% (Red Zone)**: Gracefully terminate, save all state, create continuation task
+  - **Continuation**: New task spawned automatically with checkpoint context
+  - **Max continuations**: 5 (then escalate to HITL for task decomposition)
 
 ### 7. Aggregate Outputs
 - Collect all outputs from `outputs/partial/*/`

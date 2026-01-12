@@ -160,11 +160,23 @@ Before transitioning from executing → validating, orchestrator MUST verify:
 3. **Verification records present**: Each manifest has `completion_verification` section
 4. **Output summary complete**: `outputs/output_summary.yaml` exists and lists all task outputs
 
-**If any check fails:**
+**AUTOMATED ENFORCEMENT (NEW):**
+Run verification script before transition:
+```bash
+python Agent_Memory/_system/scripts/verify_phase_transition.py {instruction_id}
+```
+
+Exit codes:
+- 0: All checks passed, safe to transition
+- 1: Verification failures, BLOCK transition
+- 2: Script error, BLOCK transition
+
+**If verification fails (exit code 1 or 2):**
 - DO NOT transition to validating
 - Mark phase as incomplete
-- Escalate to HITL with specific failures
+- Escalate to HITL with verification script output
 - Document which tasks lack verification
+- Provide path to fix: complete missing verifications
 
 ### Checkpoint Creation
 Create before major transitions:

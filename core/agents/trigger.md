@@ -41,7 +41,13 @@ version: 2.0
 9. **Write files**: instruction.yaml (with domain), status.yaml
 10. **Hand off**: Invoke orchestrator via Task tool with instruction context
 
-## Domain Detection
+## Domain Detection with Confidence Scoring
+
+**NEW**: Uses confidence scoring system to handle ambiguous requests.
+
+**Confidence Scoring System**: `Agent_Memory/_system/domain_confidence_scoring.yaml`
+
+### Basic Domain Keywords
 
 | Domain | Keywords | Example |
 |--------|----------|---------|
@@ -56,6 +62,27 @@ version: 2.0
 | `hr` | recruit, onboard, talent, compensation, culture | "Design onboarding" |
 | `legal` | contract, compliance, IP, policy, regulatory | "Review contract terms" |
 | `support` | customer support, ticket, help desk, SLA | "Improve ticket response" |
+
+### Confidence-Based Routing
+
+**Confidence Thresholds**:
+- **≥ 0.8**: Route to domain confidently
+- **0.7-0.8**: Route to domain with monitoring/logging
+- **0.5-0.7**: Escalate to HITL with top 3 candidates
+- **< 0.5**: Escalate to HITL - unable to determine domain
+
+**Multi-Domain Detection**:
+- If 2+ domains score > 0.6, treat as multi-domain request
+- Create parent workflow with child workflows per domain
+- Example: "Implement GDPR compliance" → software + legal + business
+
+**Detection Process**:
+1. Calculate confidence score for each domain
+2. Sort domains by score (descending)
+3. Check if multi-domain (multiple domains > 0.6)
+4. If single domain: apply confidence thresholds
+5. If multi-domain: create parent workflow with children
+6. If low confidence: escalate to HITL with candidates
 
 ## Intent Classification
 
@@ -101,7 +128,8 @@ When invoked by executor/orchestrator to create child:
 
 ### Safety Limits
 - **Max depth**: 5 levels
-- **Max children per parent**: 20
+- **Max children per parent**: 100 (increased from 20 to support large workflows)
+- **Batch size**: 20 (children processed in batches to avoid overwhelming system)
 - **Circular reference detection**: Prevent A→B→A cycles
 
 ## Instruction File Format

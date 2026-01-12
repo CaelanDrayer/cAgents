@@ -348,8 +348,10 @@ recursive_workflows:
 
   limits:
     max_depth: 5  # Maximum recursion levels
-    max_children_per_parent: 20  # Max child workflows from one parent
+    max_children_per_parent: 100  # Max child workflows from one parent (increased from 20)
+    batch_size: 20  # Process children in batches to avoid overwhelming system
     circular_reference_check: true  # Prevent circular workflows
+    batching_enabled: true  # When children > batch_size, process in sequential waves
 
   parent_tracking:
     location: "Agent_Memory/{parent_id}/children/"
