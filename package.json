@@ -1,55 +1,47 @@
 {
   "name": "cagents",
-  "version": "6.6.0",
-  "description": "Universal multi-domain agent system with 229 specialized agents for Claude Code. V2 Universal Workflow Architecture with context management + task consolidation. 10 core infrastructure (including task-consolidator) + 219 domain experts. NEW: Context budget system (replaces time estimates), task consolidation for 40-88% context reduction, intelligent splitting across agents. Features: recursive workflows, configuration-driven behavior, massive parallel execution (up to 50 agents). Domains: software (45), business (18), creative (18), planning (17), sales (18), marketing (22), finance (17), operations (15), hr (19), legal (14), support (18).",
+  "version": "5.0.0",
+  "description": "Universal multi-domain agent system with controller-centric architecture and question-based delegation",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Tests coming in Phase 2\" && exit 0",
-    "lint": "echo \"Linting coming in Phase 2\" && exit 0"
-  },
-  "workspaces": [
-    "core",
-    "software",
-    "business",
-    "planning",
-    "creative",
-    "sales",
-    "marketing",
-    "finance",
-    "operations",
-    "support",
-    "hr",
-    "legal"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CaelanDrayer/cAgents.git"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "agents",
     "ai",
     "automation",
+    "controller-centric",
+    "question-based-delegation",
     "orchestration",
-    "multi-domain",
-    "software-engineering",
-    "creative-writing",
-    "business-operations",
-    "claude-code",
-    "plugin"
+    "workflow",
+    "multi-domain"
   ],
-  "author": {
-    "name": "CaelanDrayer",
-    "url": "https://github.com/CaelanDrayer"
-  },
+  "author": "PathingIT",
   "license": "MIT",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/CaelanDrayer/cAgents/issues"
+  "architecture": "V5.0 Controller-Centric",
+  "agents": {
+    "total": 229,
+    "core": 10,
+    "controller": 50,
+    "execution": 150,
+    "support": 19
   },
-  "homepage": "https://github.com/CaelanDrayer/cAgents#readme",
-  "engines": {
-    "node": ">=16.0.0"
-  },
-  "dependencies": {},
-  "devDependencies": {}
+  "domains": [
+    "engineering",
+    "revenue",
+    "creative",
+    "finance-operations",
+    "people-culture",
+    "customer-experience",
+    "legal-compliance",
+    "shared"
+  ],
+  "features": {
+    "controller_coordination": true,
+    "question_based_delegation": true,
+    "objective_driven_planning": true,
+    "parallel_execution": true,
+    "max_concurrent_agents": 50
+  }
 }

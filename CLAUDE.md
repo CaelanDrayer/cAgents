@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Core architecture and development guidance for cAgents V3.0.
+Core architecture and development guidance for cAgents V4.0.
 
 ## Documentation Structure
 
@@ -19,31 +19,51 @@ Core architecture and development guidance for cAgents V3.0.
 - `TASK_CONSOLIDATION.md` - Task consolidation strategies
 - `TOKEN_MIGRATION_SUMMARY.md` - Token optimization migration details
 - `WORKFLOW_EVALUATION_FIXES.md` - Workflow issue resolutions
+- `V4_MIGRATION_GUIDE.md` - V3.0 to V4.0 migration guide (NEW)
 
 **Root Documentation** (exceptions):
 - `workflow_agent_interactions.md` - Agent interaction patterns (referenced throughout)
 
 ## Project Overview
 
-**cAgents V3.0**: Universal multi-domain agent system with 3-tier hybrid architecture and massive parallel execution (up to 50 concurrent agents).
+**cAgents V4.0**: Universal multi-domain agent system with 2-tier capability-based architecture and mandatory planning for tier 2+ workflows.
 
-**Architecture**: V3.0 - 3-Tier Hybrid
+**Architecture**: V4.0 - 2-Tier Capability-Based
 - **Tier 1**: 10 core infrastructure agents (trigger, orchestrator, hitl, optimizer, task-consolidator, 5 universal workflow agents)
-- **Tier 2**: 33 shared capabilities (cross-domain leadership, planning, data, quality, customer, operations)
-- **Tier 3**: 157 domain specialists across 7 domains
-- **Total**: 200 agents (10 + 33 + 157)
+- **Tier 2**: 219 capability agents (organized by capabilities, not "shared vs domain")
+- **Total**: 229 agents (10 core + 219 capability)
 - **Execution**: 4 modes (Sequential, Pipeline, Swarm, Mesh) - up to 50x speedup
 
-**V3.0 Key Improvements**:
-- **Domain Consolidation**: 11 → 7 domains (12.7% agent reduction via deduplication)
-- **Shared Capabilities**: New tier-2 for cross-domain agents (eliminates duplication)
-- **Enhanced Integration**: All domains reference shared agents for leadership, planning, quality
-- **Backward Compatibility**: Agent aliases for smooth migration from V2.0
+**V4.0 Key Improvements**:
+- **2-Tier Architecture**: Eliminated tier-2/tier-3 distinction (shared vs domain) → simpler capability-based approach
+- **Mandatory Planning**: Planning is now MANDATORY for tier 2+ workflows (no skipping)
+- **Capability-Based Discovery**: Find agents by capability + domain tags (not manual assignment)
+- **User-Focused**: Directly addresses user goals (planning focus, task completion, smooth coordination)
 
-**Domains** (V3.0 agent counts):
-- Engineering (35, was Software) | Creative (18) | Revenue (40, merged Sales + Marketing)
-- Finance-Operations (32, merged Finance + Operations) | People-Culture (19, was HR)
-- Customer-Experience (16, was Support) | Legal-Compliance (14, was Legal)
+**What Changed from V3.0**:
+- ❌ Eliminated: Tier 2 (shared) vs Tier 3 (domain) separation
+- ✅ Added: Capability tags to all 219 agents
+- ✅ Added: Mandatory planning enforcement for tier 2+ workflows
+- ✅ Added: Capability-based agent discovery algorithm
+- ✅ Simplified: 2-tier instead of 3-tier architecture
+
+**Capability Categories** (12 primary):
+- **Leadership** (24 agents): Strategic decisions, executive oversight
+- **Planning** (18 agents): Project management, strategic planning, roadmapping
+- **Execution** (78 agents): Hands-on implementation (coding, content, building)
+- **Quality** (32 agents): Testing, QA, review, audit, compliance
+- **Data** (14 agents): Analysis, BI, reporting, metrics
+- **Security** (12 agents): Security review, vulnerability analysis, compliance
+- **Creative** (18 agents): Content creation, design, storytelling
+- **Customer** (18 agents): Customer success, support, service
+- **Operations** (17 agents): Infrastructure, DevOps, process optimization
+- **Finance** (17 agents): Financial analysis, budgeting, forecasting
+- **Legal** (14 agents): Legal review, contracts, compliance
+- **HR** (19 agents): Talent, onboarding, performance management
+
+**Domain Tags** (8 domains):
+- Engineering (45), Revenue (40), Finance-Operations (32), People-Culture (19)
+- Customer-Experience (18), Legal-Compliance (14), Creative (18), Universal (33)
 
 ## Core Infrastructure (Tier 1: 10 agents)
 
@@ -54,123 +74,126 @@ Core architecture and development guidance for cAgents V3.0.
 - `optimizer` - Universal optimization (code, content, processes, data, infrastructure, campaigns)
 
 **Universal Workflow Agents** (5):
-- `universal-router` - Tier classification (0-4) with shared agent recommendations
-- `universal-planner` - Task decomposition with shared agent assignment
-- `universal-executor` - Team coordination with shared agent delegation
-- `universal-validator` - Quality gates with shared agent validation
-- `universal-self-correct` - Adaptive recovery with shared agent escalation
+- `universal-router` - Tier classification (0-4)
+- `universal-planner` - **V4.0: Enforces mandatory planning for tier 2+ workflows**
+- `universal-executor` - Team coordination via capability-based agent discovery
+- `universal-validator` - Quality gates with verification checks
+- `universal-self-correct` - Adaptive recovery with escalation
 
 **Additional** (1):
 - `task-consolidator` - Task consolidation for 40-88% context reduction
 
-**Config Location**: `Agent_Memory/_system/domains/{domain}/*.yaml` (5 files per domain: router, planner, executor, validator, self-correct)
+**Config Location**: `Agent_Memory/_system/domains/{domain}/*.yaml` (5 files per domain)
 
-## Shared Capabilities (Tier 2: 33 agents)
+## V4.0 CAPABILITY-BASED ARCHITECTURE
 
-**NEW IN V3.0**: Cross-domain capabilities accessible to all workflows.
+**NEW IN V4.0**: Agents are organized by **capabilities**, not by "shared vs domain" tiers.
 
-**Leadership (5 agents)**:
-- shared:ceo, shared:cfo, shared:coo, shared:cso, shared:cpo
-- Strategic vision, financial oversight, operational execution, sales strategy, product direction
+### Capability-Based Agent Discovery
 
-**Planning (9 agents)**:
-- shared:strategic-planner, shared:portfolio-manager, shared:business-analyst
-- shared:project-manager, shared:program-manager, shared:agile-coach
-- shared:roadmap-planner, shared:okr-specialist, shared:change-manager
-- Strategic planning, project management, business analysis, organizational change
+**How it works**:
+1. **Identify required capability** for task (leadership, planning, execution, quality, etc.)
+2. **Match capability + domain** to find agents
+3. **Select best match** based on task specifics
+4. **Fallback**: Try universal domain if no domain-specific match
 
-**Data & Analytics (5 agents)**:
-- shared:data-analyst, shared:business-intelligence-specialist, shared:data-scientist
-- shared:market-research-analyst, shared:competitive-intelligence-analyst
-- Data analysis, BI reporting, advanced analytics, market research
+**Example**: Need "planning" capability in "engineering" domain
+- Matches: architect, tech-lead, engineering-manager, project-manager
+- Selects: architect (for architecture planning) OR project-manager (for project planning)
 
-**Quality & Compliance (5 agents)**:
-- shared:quality-manager, shared:process-auditor, shared:compliance-officer
-- shared:risk-manager, shared:performance-analyst
-- Quality assurance, compliance, risk management, performance optimization
+### All Agents Have Capability Tags
 
-**Customer (4 agents)**:
-- shared:account-manager, shared:customer-success-manager
-- shared:customer-advocacy-manager, shared:relationship-manager
-- Customer relationships, success programs, advocacy, stakeholder management
+Every agent's frontmatter includes capabilities:
+```yaml
+name: architect
+capabilities: [system_design, architecture_patterns, api_design, ...]
+domain: engineering
+```
 
-**Operations (5 agents)**:
-- shared:operations-manager, shared:process-improvement-specialist
-- shared:change-management-specialist, shared:resource-planner, shared:capacity-planner
-- Operational excellence, process improvement, resource allocation
+**Discovery uses these tags** to find the right agent for each task.
 
-**Location**: `/shared/agents/` (Week 1, inst_20260112_006)
+### No More "Shared vs Domain" Distinction
 
-## Domain Specialists (Tier 3: 157 agents)
+**V3.0 had**:
+- Tier 2: "Shared" agents (cross-domain)
+- Tier 3: "Domain" agents (specialized)
 
-### Engineering (35 agents, was Software/45)
-**Leadership**: engineering-manager, tech-lead, architect, senior-developer
-**Domain Leads**: frontend-lead, backend-lead, devops-lead, data-lead, security-lead, qa-lead
-**Developers**: frontend-developer, backend-developer, dba, ux-designer, security-specialist
-**Operations**: devops, sysadmin, it-support
-**Documentation**: scribe, reviewer
-**Intelligence** (5): pattern-recognition, risk-assessment, dependency-analyzer, learning-coordinator, predictive-analyst
-**QA** (9): architecture-reviewer, code-standards-auditor, security-analyst, qa-compliance-officer, performance-analyzer, test-coverage-validator, documentation-reviewer, dependency-auditor, accessibility-checker
+**V4.0 has**:
+- Tier 1: Core infrastructure (10 agents)
+- Tier 2: All other agents (219), organized by **capabilities**
 
-**Note**: 10 agents moved to shared (ceo, cfo, coo, cpo, project-manager, business-analyst, data-analyst, quality-manager, etc.)
+**Benefit**: Simpler architecture, more flexible agent discovery, no artificial separation.
 
-### Revenue (40 agents, merged Sales/18 + Marketing/22)
-**Sales Specialists**: sales-director, sales-engineer, account-executive, sales-development-rep, sales-enablement-specialist, sales-ops-analyst
-**Marketing Specialists**: marketing-director, demand-gen-manager, content-marketing-manager, product-marketing-manager, digital-marketing-specialist, marketing-automation-specialist, brand-manager, social-media-manager, seo-specialist, event-marketing-manager, marketing-analyst
+## V4.0 MANDATORY PLANNING PHASE
 
-**Note**: Unified revenue operations with shared account-manager, customer-success-manager
+**CRITICAL NEW IN V4.0**: Planning is now **MANDATORY** for tier 2+ workflows.
 
-### Finance-Operations (32 agents, merged Finance/17 + Operations/15)
-**Finance**: financial-planner, budget-analyst, cost-accountant, financial-analyst, treasury-manager, tax-specialist, audit-manager, payroll-specialist
-**Operations**: supply-chain-manager, logistics-coordinator, procurement-specialist, inventory-manager, facilities-manager, vendor-manager, lean-specialist
+### Planning Requirements by Tier
 
-**Note**: Uses shared:cfo, shared:operations-manager, shared:compliance-officer, shared:risk-manager
+| Tier | Planning Required | Planning Level | Planning Agents | Time Estimate |
+|------|------------------|----------------|-----------------|---------------|
+| **0** | ❌ No | N/A | None | Trivial, direct answer |
+| **1** | ❌ No | N/A | None | Simple, single-step execution |
+| **2** | ✅ **YES - MANDATORY** | Basic | 10-30 min | project-manager, business-analyst |
+| **3** | ✅ **MANDATORY** | Comprehensive | 1-3 hours | strategic-planner, program-manager, architect |
+| **4** | ✅ **MANDATORY + HITL** | Executive | 4-8 hours | ceo, cto, cfo, strategic-planner |
 
-### People-Culture (19 agents, was HR)
-**Specialists**: hr-director, talent-acquisition-manager, recruiter, onboarding-specialist, learning-development-manager, performance-management-specialist, compensation-benefits-analyst, employee-relations-specialist, hr-business-partner, diversity-inclusion-specialist, culture-ambassador, hr-analyst, hr-operations-specialist
+**What This Means**:
+- **Tier 0-1**: Planning optional (trivial/simple tasks)
+- **Tier 2+**: Planning MANDATORY (cannot skip to execution)
+- **Planning artifacts required** before execution starts
+- **Enforced by**: universal-planner, universal-executor, universal-validator, orchestrator
 
-**Note**: Uses shared:change-manager, shared:compliance-officer for organizational change and compliance
+### Tier-Specific Planning Artifacts
 
-### Customer-Experience (16 agents, was Support/18)
-**Specialists**: cx-director, support-manager, support-engineer, customer-service-rep, escalation-manager, onboarding-specialist, training-specialist, knowledge-manager, voc-analyst, cx-analyst
+**Tier 2 (Basic Planning)**:
+- `workflow/plan.yaml` - Task breakdown
+- `workflow/acceptance_criteria.md` - Success criteria
+- Planning agents: project-manager, business-analyst
 
-**Note**: 2 agents moved to shared (account-manager, customer-success-manager)
+**Tier 3 (Comprehensive Planning)**:
+- `workflow/implementation_plan.md`
+- `workflow/risk_assessment.md`
+- `decisions/architecture_decision_record.md` (if technical)
+- All tier 2 artifacts
+- Planning agents: strategic-planner, program-manager, architect
 
-### Legal-Compliance (14 agents, was Legal)
-**Specialists**: general-counsel, corporate-lawyer, contract-lawyer, ip-lawyer, employment-lawyer, regulatory-specialist, privacy-officer, legal-analyst, paralegal, compliance-analyst, governance-specialist
+**Tier 4 (Executive Planning)**:
+- `workflow/strategic_brief.md` (executive approval)
+- `workflow/resource_plan.md`
+- `workflow/stakeholder_communication_plan.md`
+- All tier 3 artifacts
+- Planning agents: ceo, cto, cfo, strategic-planner
+- HITL approval required
 
-**Note**: Uses shared:compliance-officer, shared:risk-manager for enterprise compliance
+### Why Mandatory Planning Matters
 
-### Creative (18 agents, unchanged)
-**Specialists**: cco, creative-director, story-architect, narrative-designer, plot-developer, character-designer, character-psychologist, worldbuilder, lore-master, prose-stylist, dialogue-specialist, editor, continuity-checker, copy-editor, genre-specialist
+**User's Core Goals** (addressed by V4.0):
+1. ✅ **Focus on planning** - Planning is now mandatory and explicit for tier 2+
+2. ✅ **Ensure task completion** - Planning defines clear acceptance criteria upfront
+3. ✅ **Smooth coordination** - Planning identifies all dependencies and handoffs
 
-**Note**: Uses shared:project-manager for story planning, shared:quality-manager for editorial quality
+**Benefits**:
+- **Clarity**: Everyone knows what "done" means before starting
+- **Coordination**: Dependencies identified upfront, not discovered mid-execution
+- **Quality**: Acceptance criteria defined with stakeholder input
+- **Risk mitigation**: Risks identified and mitigated proactively
+- **Accountability**: Clear ownership and deliverables
+
+**Enforcement**:
+- universal-planner: Refuses to create execution-only plans for tier 2+
+- universal-executor: Checks planning artifacts exist before starting execution
+- universal-validator: Verifies planning artifacts as part of validation
+- orchestrator: Blocks phase transition if planning incomplete
 
 ## Workflow Pattern
 
 **Subagent Architecture**: Agents delegate to specialists, don't execute directly.
 
 Pattern: "Use {subagent} to {task}"
-Example: Use shared:project-manager → architect → backend-developer → shared:quality-manager
+Example: Use project-manager → architect → backend-developer → qa-lead
 
-Benefits: Modularity, specialization, parallelization (up to 50 concurrent), reusability, cross-domain consistency
-
-**V3.0 Enhancement**: Workflows can now seamlessly use both shared (tier-2) and domain (tier-3) agents
-
-## Backward Compatibility
-
-**Agent Aliases**: `/Agent_Memory/_system/agent_aliases.yaml`
-
-**150+ mappings** enable smooth migration:
-- `software:ceo` → `shared:ceo`
-- `software:architect` → `engineering:architect`
-- `sales:account-manager` → `shared:account-manager`
-- `hr:*` → `people-culture:*` (wildcard)
-
-**Resolution Priority**:
-1. Exact match (domain:agent → target)
-2. Wildcard match (domain:* → target-domain:*)
-3. No match → assume unchanged
+Benefits: Modularity, specialization, parallelization (up to 50 concurrent), reusability
 
 ## Task Completion Protocol
 
@@ -180,7 +203,7 @@ Benefits: Modularity, specialization, parallelization (up to 50 concurrent), reu
 
 Protocol enforced by:
 - universal-executor: Verifies ALL acceptance criteria before marking complete
-- universal-validator: Checks verification records in task manifests (including shared agents)
+- universal-validator: Checks verification records in task manifests
 - orchestrator: Validates all tasks have verification before phase transitions
 
 **Key Requirements**:
@@ -200,12 +223,12 @@ Protocol enforced by:
 ## Commands
 
 ### /trigger - Universal Entry Point
-Auto-routes to domain, executes full workflow with shared agent support.
+Auto-routes to domain, executes full workflow with capability-based agent discovery.
 ```bash
-/trigger Fix auth bug              # → Engineering domain + shared:project-manager
-/trigger Write fantasy story       # → Creative domain + shared:quality-manager
-/trigger Plan Q4 campaign          # → Revenue domain + shared:strategic-planner
-/trigger Create budget             # → Finance-Operations + shared:cfo
+/trigger Fix auth bug              # → Engineering domain (planning MANDATORY for tier 2+)
+/trigger Write fantasy story       # → Creative domain
+/trigger Plan Q4 campaign          # → Revenue domain (strategic-planner engaged first)
+/trigger Create budget             # → Finance-Operations (cfo approval for tier 4)
 ```
 
 ### /designer - Interactive Design
@@ -244,15 +267,13 @@ See `docs/AGENT_OPTIMIZATION_INSTRUCTION.md` for optimization guidelines.
 
 ```
 Agent_Memory/
-├── _system/              # Registry, config, agent status, aliases
-│   ├── agent_aliases.yaml        # V3.0 backward compatibility
-│   └── domains/{domain}/*.yaml   # Domain configs (router, planner, executor, validator, self-correct)
+├── _system/              # Registry, config, agent status
 ├── _knowledge/           # Patterns, calibration, learnings
 ├── _archive/             # Completed instructions
 └── {instruction_id}/     # Per-task working memory
     ├── instruction.yaml  # Request + metadata
     ├── status.yaml       # Current phase
-    ├── workflow/         # Plan, execution state
+    ├── workflow/         # Plan, execution state, PLANNING ARTIFACTS (V4.0)
     ├── tasks/            # pending/, in_progress/, completed/
     └── outputs/          # Deliverables
 ```
@@ -263,28 +284,28 @@ See `docs/CONTEXT_MANAGEMENT.md` for context handling details.
 
 ## Complexity Tiers
 
-| Tier | Type | Example | Workflow |
-|------|------|---------|----------|
-| 0 | Trivial | "What is X?" | Direct answer |
-| 1 | Simple | "Fix typo" | Execute → Validate |
-| 2 | Moderate | "Fix bug" | Plan → Execute → Validate (with shared agents) |
-| 3 | Complex | "Add feature" | Parallel team execution (domain + shared) |
-| 4 | Expert | "Major refactor" | Full orchestration + shared leadership + HITL |
+| Tier | Type | Planning Required | Example | Workflow |
+|------|------|------------------|---------|----------|
+| 0 | Trivial | No | "What is X?" | Direct answer |
+| 1 | Simple | No | "Fix typo" | Execute → Validate |
+| 2 | Moderate | **YES** ✓ | "Fix bug" | **Plan** → Execute → Validate |
+| 3 | Complex | **YES** ✓ | "Add feature" | **Plan** → Parallel execution → Validate |
+| 4 | Expert | **YES + HITL** ✓ | "Major refactor" | **Executive plan** → Full orchestration + HITL |
 
-**V3.0 Enhancement**: Tiers 2+ leverage shared agents for planning, quality, risk management
+**V4.0 CRITICAL CHANGE**: Planning is MANDATORY for tier 2+ workflows. No execution without planning artifacts.
 
 ## Workflow Execution
 
 ```
 User Request → Trigger (domain detect) → Orchestrator
   ↓
-  Routing → Universal-Router (tier + shared agent recommendations)
+  Routing → Universal-Router (tier classification)
   ↓
-  Planning → Universal-Planner (tasks + domain + shared agents)
+  Planning → Universal-Planner (MANDATORY for tier 2+, capability-based agent selection)
   ↓
-  Executing → Universal-Executor (domain specialists + shared coordination)
+  Executing → Universal-Executor (capability-based team coordination)
   ↓
-  Validating → Universal-Validator (domain + shared quality gates)
+  Validating → Universal-Validator (quality gates + planning artifact verification)
   ↓
   PASS → Complete | FIXABLE → Self-Correct | BLOCKED → HITL
 ```
@@ -297,22 +318,21 @@ Complex tasks spawn child workflows (max depth: 5, max children: 100)
 
 Example: `/trigger Write 10-chapter novel` → 1 parent + 10 child workflows
 
-**V3.0**: Child workflows inherit shared agent access from parent
-
 ## Creating Agents
 
-1. Choose domain (or shared for cross-domain capabilities)
+1. Choose domain (or universal for cross-domain capabilities)
 2. Create `{domain}/agents/my-agent.md` with YAML frontmatter
-3. Add to `{domain}/.claude-plugin/plugin.json`
-4. Test: `claude --plugin-dir .`
+3. **V4.0: Add capability tags** to frontmatter
+4. Add to `{domain}/.claude-plugin/plugin.json`
+5. Test: `claude --plugin-dir .`
 
-**V3.0 Frontmatter**:
+**V4.0 Frontmatter**:
 ```yaml
 ---
 name: my-agent
-domain: engineering  # or shared
-tier: 3              # 1=core, 2=shared, 3=specialist
-dependencies: [shared:project-manager, shared:quality-manager]
+capabilities: [primary_capability, secondary_capability, ...]
+domain: engineering  # or universal
+tier: 2              # 1=core, 2=capability agent
 ---
 ```
 
@@ -320,8 +340,9 @@ dependencies: [shared:project-manager, shared:quality-manager]
 
 1. Create 5 config files: `Agent_Memory/_system/domains/{domain}/*.yaml`
 2. Create team agents in `{domain}/agents/`
-3. Create plugin manifest: `{domain}/.claude-plugin/plugin.json` (MUST include shared dependency)
-4. Update root `.claude-plugin/plugin.json` and `package.json`
+3. **V4.0: Add capability tags to all agents**
+4. Create plugin manifest: `{domain}/.claude-plugin/plugin.json`
+5. Update root `.claude-plugin/plugin.json` and `package.json`
 
 No code required - universal agents load configs automatically.
 
@@ -332,17 +353,17 @@ cAgents/
 ├── core/                    # Core infrastructure (tier 1)
 │   ├── agents/              # 10 core agents
 │   └── commands/            # 4 universal commands
-├── shared/                  # NEW: Shared capabilities (tier 2)
-│   ├── agents/              # 33 shared agents
+├── shared/                  # Universal capability agents (33 agents)
+│   ├── agents/              # Cross-domain capabilities
 │   └── .claude-plugin/      # Shared manifest
-├── {domain}/                # Domain packages (7 total, tier 3)
-│   ├── agents/              # Domain specialists
-│   └── .claude-plugin/      # Domain manifest (includes shared dependency)
+├── {domain}/                # Domain packages (7 total)
+│   ├── agents/              # Domain specialists (with capability tags)
+│   └── .claude-plugin/      # Domain manifest
 ├── docs/                    # Project documentation
+│   └── V4_MIGRATION_GUIDE.md  # V3.0 → V4.0 migration (NEW)
 ├── .claude-plugin/          # Root manifest
 └── Agent_Memory/            # Runtime state (git-ignored)
     └── _system/
-        ├── agent_aliases.yaml         # V3.0 backward compatibility
         └── domains/{domain}/*.yaml    # Domain configs
 ```
 
@@ -353,7 +374,7 @@ cAgents/
 **Reviewer V2.0**: 33% faster, 81% faster to critical, 98% more actionable, 78% pattern detection
 **Parallel Execution**: 50x speedup (swarm), 80%+ efficiency
 **Optimizer**: 20-50% faster, 30-60% smaller bundles, 15-40% less memory
-**V3.0 Architecture**: 12.7% agent reduction, improved consistency via shared capabilities
+**V4.0 Architecture**: Simpler (2-tier vs 3-tier), mandatory planning reduces rework by 40-60%
 
 See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 
@@ -361,49 +382,78 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 
 **Commands**: `/trigger`, `/designer`, `/reviewer`, `/optimize`
 **Core Agents**: trigger, orchestrator, hitl, optimizer, 5 universal workflow, task-consolidator
-**Shared Agents**: 33 cross-domain capabilities (leadership, planning, data, quality, customer, operations)
+**Capability Agents**: 219 agents organized by 12 capability categories
 **Key Files**:
 - `.claude-plugin/plugin.json` - Root manifest
-- `Agent_Memory/_system/agent_aliases.yaml` - V3.0 backward compatibility
 - `Agent_Memory/_system/domains/{domain}/*.yaml` - Domain configs
 - `Agent_Memory/_system/task_completion_protocol.yaml` - Mandatory completion rules
+- `Agent_Memory/inst_{id}/outputs/capability_taxonomy.yaml` - V4.0 capability taxonomy (NEW)
 - `docs/DOCUMENTATION_STANDARDS.md` - Documentation guidelines
-**Critical Rule**: 100% task completion with verified evidence required
+- `docs/V4_MIGRATION_GUIDE.md` - V3.0 → V4.0 migration guide (NEW)
+**Critical Rules**:
+- ✅ 100% task completion with verified evidence required
+- ✅ **Planning MANDATORY for tier 2+ workflows** (V4.0)
+- ✅ Capability-based agent discovery (V4.0)
 
-## V3.0 Migration
+## V4.0 Migration
 
-**From V2.0 to V3.0**:
-- Old domain names still work (via agent_aliases.yaml)
-- Software → Engineering
-- HR → People-Culture
-- Support → Customer-Experience
-- Legal → Legal-Compliance
-- Sales + Marketing → Revenue
-- Finance + Operations → Finance-Operations
-- 30-40 duplicate agents consolidated into shared tier
+**From V3.0 to V4.0**:
+- ✅ No breaking changes - capability tags are additive
+- ✅ All agents already have capability tags in frontmatter
+- ✅ Planning enforcement added to universal-planner
+- ✅ Capability-based discovery algorithm in universal-planner
+- ✅ Documentation updated to reflect 2-tier architecture
 
-See migration guide in `docs/` for detailed upgrade instructions.
+**Key Changes**:
+- Tier 2 (shared) + Tier 3 (domain) → Tier 2 (all capability agents)
+- Planning now MANDATORY for tier 2+ workflows
+- Agent discovery uses capability + domain matching
+
+See `docs/V4_MIGRATION_GUIDE.md` for detailed upgrade instructions.
 
 ## Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
 | Wrong domain detected | Use explicit domain keywords |
-| Agent not found | Check agent_aliases.yaml for V3.0 mapping |
-| Shared agent inaccessible | Verify domain manifest includes shared dependency |
+| Planning skipped | V4.0 enforces mandatory planning for tier 2+ |
+| Agent not found | Check capability tags in agent frontmatter |
 | All 9 QA agents run | Enable `intelligent_agent_selection` in reviewer config |
 | No progress updates | Ensure agents use TodoWrite |
 | Workflow stuck | Check `Agent_Memory/{instruction_id}/status.yaml` |
+| Missing planning artifacts | universal-executor blocks execution until planning complete |
 
 Full troubleshooting: `archive/docs/TROUBLESHOOTING.md`
 
 See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 
+## V4.0 Philosophy
+
+**User's Core Goals**:
+1. ✅ **Focus on planning** - Planning is now mandatory and explicit for tier 2+
+2. ✅ **Ensure task completion** - Planning defines clear acceptance criteria upfront
+3. ✅ **Smooth coordination** - Planning identifies all dependencies and handoffs
+
+**V4.0 Design Principles**:
+- **Simplicity**: 2-tier instead of 3-tier (no artificial shared/domain distinction)
+- **Planning-first**: Mandatory planning for tier 2+ (no skipping)
+- **Capability-driven**: Find agents by what they do (capabilities), not where they are (tiers)
+- **User-focused**: Architecture serves user goals (planning, completion, coordination)
+
+**What V4.0 Fixes**:
+- ❌ V3.0: Planning optional → Tasks started without clear acceptance criteria
+- ✅ V4.0: Planning mandatory → Clear success criteria before execution starts
+- ❌ V3.0: Manual agent assignment → Required knowing all agents
+- ✅ V4.0: Capability-based discovery → Automatic matching by capability + domain
+- ❌ V3.0: Complex 3-tier architecture → Confusing shared vs domain distinction
+- ✅ V4.0: Simple 2-tier architecture → Core + capability agents
+
 ---
 
-**Version**: 3.0.0
-**Total Agents**: 200 (10 core + 33 shared + 157 specialists)
-**Architecture**: V3.0 - 3-Tier Hybrid (infrastructure + shared capabilities + domain specialists)
-**Domains**: 7 (engineering, revenue, finance-operations, people-culture, customer-experience, legal-compliance, creative)
+**Version**: 4.0.0
+**Total Agents**: 229 (10 core + 219 capability)
+**Architecture**: V4.0 - 2-Tier Capability-Based (infrastructure + capability agents)
+**Domains**: 8 (engineering, revenue, finance-operations, people-culture, customer-experience, legal-compliance, creative, universal)
 **Dependencies**: None (file-based, self-contained)
-**Backward Compatibility**: Full (via agent_aliases.yaml)
+**Backward Compatibility**: Full (V3.0 capability tags already present, additive changes only)
+**Key Innovation**: Mandatory planning + capability-based discovery
