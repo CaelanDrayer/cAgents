@@ -1,69 +1,70 @@
-# 10-State Task Lifecycle State Machine - Orchestration V2
+# 10-State Task Lifecycle State Machine - Orchestration V3 (Token-Based)
+# Eliminates all time-based SLA targets, replaces with token-based thresholds
 
 states:
   PENDING:
     description: "Task created, not yet assigned"
     next_states: [IN_PLANNING, ASSIGNED, CANCELLED]
     owner: planner
-    sla_target: "< 2 hours (tier 1-2), < 8 hours (tier 3-4)"
-    
+    sla_target: "token_budget_threshold: 50K tokens (tier 1-2), 200K tokens (tier 3-4)"
+
   IN_PLANNING:
     description: "Domain Lead breaking strategic task into tactical tasks"
     next_states: [ASSIGNED, CANCELLED]
     owner: domain_lead
     applicable_to: [tier_3, tier_4]
-    sla_target: "< 1 day"
-    
+    sla_target: "token_budget_threshold: 30K planning tokens"
+
   ASSIGNED:
     description: "Task assigned to IC, not started"
     next_states: [IN_PROGRESS, CANCELLED, BLOCKED]
     owner: domain_lead
-    sla_target: "< 4 hours"
-    
+    sla_target: "token_budget_threshold: 20K tokens (coordination overhead)"
+
   IN_PROGRESS:
     description: "IC actively working"
     next_states: [UNDER_REVIEW, BLOCKED, COMPLETED]
     owner: ic
-    requires_heartbeat: every_4_hours
-    sla_target: "per task estimate"
-    
+    requires_heartbeat: every_50K_tokens
+    sla_target: "task.token_budget"
+
   BLOCKED:
     description: "IC cannot proceed"
     next_states: [ESCALATED, IN_PROGRESS, CANCELLED]
     owner: ic
-    auto_escalate_after: "4 hours"
-    sla_target: "< 2 hours"
-    
+    auto_escalate_after: "50K tokens consumed without progress"
+    sla_target: "token_budget_threshold: 10K tokens (resolution)"
+
   ESCALATED:
     description: "Blocker escalated to Domain Lead"
     next_states: [IN_PROGRESS, CANCELLED]
     owner: domain_lead
-    sla_target: "< 8 hours"
-    
+    sla_target: "token_budget_threshold: 30K tokens (investigation + resolution)"
+
   UNDER_REVIEW:
     description: "Peer code review"
     next_states: [DOMAIN_REVIEW, IN_PROGRESS]
     owner: peer_ic
-    sla_target: "< 4 hours"
-    
+    sla_target: "token_budget_threshold: 15% of task token budget"
+
   DOMAIN_REVIEW:
     description: "Domain Lead final approval"
     next_states: [READY_FOR_HANDOFF, COMPLETED, IN_PROGRESS]
     owner: domain_lead
-    sla_target: "< 8 hours"
-    
+    sla_target: "token_budget_threshold: 20% of task token budget"
+
   READY_FOR_HANDOFF:
     description: "Approved, waiting for cross-domain handoff"
     next_states: [COMPLETED]
     owner: domain_lead
     applicable_to: [tier_2, tier_3, tier_4]
-    sla_target: "< 1 day"
-    
+    sla_target: "token_budget_threshold: 10K tokens (coordination)"
+
   COMPLETED:
     description: "Task fully done"
     next_states: []
     terminal: true
-    
+
   CANCELLED:
     description: "Task cancelled"
     next_states: []
@@ -74,89 +75,130 @@ transition_rules:
   PENDING_to_IN_PLANNING:
     condition: "tier >= 3 AND task.type == 'strategic'"
     actor: orchestrator
-    
+
   PENDING_to_ASSIGNED:
     condition: "tier <= 2 OR task.type == 'tactical'"
     actor: domain_lead
-    
+
   ASSIGNED_to_IN_PROGRESS:
-    condition: "IC has capacity AND dependencies met"
+    condition: "IC has token capacity AND dependencies met"
     actor: ic
-    
+
   IN_PROGRESS_to_BLOCKED:
     condition: "IC encounters blocker"
     actor: ic
-    auto_escalate: "after 4 hours"
-    
+    auto_escalate: "after consuming 50K tokens without progress"
+
   BLOCKED_to_ESCALATED:
     condition: "IC escalates OR auto-escalation triggered"
     actor: ic_or_system
-    
+
   IN_PROGRESS_to_UNDER_REVIEW:
     condition: "IC completes work AND basic quality check passed"
     actor: ic
-    
+
   UNDER_REVIEW_to_IN_PROGRESS:
     condition: "Peer requests changes"
     actor: peer_ic
-    
+
   UNDER_REVIEW_to_DOMAIN_REVIEW:
     condition: "Peer approves"
     actor: peer_ic
-    
+
   DOMAIN_REVIEW_to_IN_PROGRESS:
     condition: "Domain Lead requests changes"
     actor: domain_lead
-    
+
   DOMAIN_REVIEW_to_READY_FOR_HANDOFF:
     condition: "Domain Lead approves AND cross-domain dependency exists"
     actor: domain_lead
-    
+
   DOMAIN_REVIEW_to_COMPLETED:
     condition: "Domain Lead approves AND no cross-domain dependency"
     actor: domain_lead
-    
+
   READY_FOR_HANDOFF_to_COMPLETED:
     condition: "Downstream domain acknowledges"
     actor: downstream_domain_lead
 
 sla_escalation_rules:
   PENDING:
-    warning_threshold: "2x target"
-    escalation_threshold: "4x target"
+    warning_threshold: "2x token_budget_threshold"
+    escalation_threshold: "4x token_budget_threshold"
     escalate_to: engineering_manager
-    
+    measurement: "tokens consumed in queue without assignment"
+
   IN_PLANNING:
-    warning_threshold: "1.5 days"
-    escalation_threshold: "2 days"
+    warning_threshold: "45K planning tokens"
+    escalation_threshold: "60K planning tokens"
     escalate_to: tech_lead
-    
+    measurement: "tokens consumed in planning phase"
+
   ASSIGNED:
-    warning_threshold: "8 hours"
-    escalation_threshold: "24 hours"
+    warning_threshold: "30K coordination tokens"
+    escalation_threshold: "50K coordination tokens"
     escalate_to: domain_lead
-    
+    measurement: "tokens consumed waiting to start"
+
   IN_PROGRESS:
-    warning_threshold: "1.5x estimated_effort"
-    escalation_threshold: "2x estimated_effort"
+    warning_threshold: "1.5x task.token_budget"
+    escalation_threshold: "2.0x task.token_budget"
     escalate_to: domain_lead
-    
+    measurement: "actual_tokens_used vs token_budget"
+
   BLOCKED:
-    warning_threshold: "4 hours"
-    escalation_threshold: "8 hours"
+    warning_threshold: "50K tokens consumed while blocked"
+    escalation_threshold: "100K tokens consumed while blocked"
     escalate_to: tech_lead
-    
+    measurement: "tokens consumed attempting resolution"
+
   UNDER_REVIEW:
-    warning_threshold: "8 hours"
-    escalation_threshold: "24 hours"
+    warning_threshold: "20% of task token_budget"
+    escalation_threshold: "30% of task token_budget"
     escalate_to: domain_lead
-    
+    measurement: "tokens consumed in review"
+
   DOMAIN_REVIEW:
-    warning_threshold: "16 hours"
-    escalation_threshold: "48 hours"
+    warning_threshold: "30% of task token_budget"
+    escalation_threshold: "40% of task token_budget"
     escalate_to: tech_lead
-    
+    measurement: "tokens consumed in domain review"
+
   READY_FOR_HANDOFF:
-    warning_threshold: "2 days"
-    escalation_threshold: "3 days"
+    warning_threshold: "20K coordination tokens"
+    escalation_threshold: "40K coordination tokens"
     escalate_to: tech_lead
+    measurement: "tokens consumed waiting for handoff"
+
+# ==============================================================================
+# NOTES ON TOKEN-BASED MEASUREMENT
+# ==============================================================================
+
+notes:
+  migration_from_time:
+    description: "All time-based SLAs replaced with token-based thresholds"
+    rationale: "Tokens measure actual computational work, not elapsed time"
+    benefits:
+      - "Environment-independent (no variance from system load)"
+      - "Directly measures task complexity and effort"
+      - "Enables precise cost tracking and optimization"
+      - "More objective than time-based measurements"
+
+  token_budget_thresholds:
+    description: "SLA thresholds based on reasonable token consumption"
+    examples:
+      - "PENDING: Should assign within 50K-200K tokens of other work"
+      - "IN_PROGRESS: Should complete within budgeted tokens"
+      - "UNDER_REVIEW: Should review within 15% of implementation tokens"
+      - "BLOCKED: Should resolve within 50K tokens of investigation"
+
+  escalation_triggers:
+    description: "Escalate when token consumption exceeds reasonable limits"
+    measurement: "Track tokens_consumed_in_state for each task state"
+    warning_action: "Alert domain lead when approaching threshold"
+    escalation_action: "Escalate to tech lead when exceeding threshold"
+
+  heartbeat_frequency:
+    old: "every_4_hours"
+    new: "every_50K_tokens processed"
+    rationale: "Token-based heartbeats reflect actual progress, not time elapsed"

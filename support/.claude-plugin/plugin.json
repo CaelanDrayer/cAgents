@@ -1,13 +1,26 @@
 {
   "name": "@cagents/support",
-  "version": "5.0.0",
-  "description": "Customer Support domain - Customer service, technical support, knowledge management, and customer success",
+  "version": "6.6.0",
+  "description": "cAgents Support - Customer Support domain plugin with 18 specialized agents for customer service, technical support, knowledge management, and customer success.",
+  "author": {
+    "name": "CaelanDrayer",
+    "email": "caelan@caelandrayer.ca",
+    "url": "https://github.com/CaelanDrayer"
+  },
+  "homepage": "https://github.com/CaelanDrayer/cAgents",
+  "repository": "https://github.com/CaelanDrayer/cAgents",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "customer-support",
+    "technical-support",
+    "knowledge-management",
+    "customer-success",
+    "claude-code",
+    "plugin"
+  ],
+  "commands": [],
   "agents": [
-    "./agents/router.md",
-    "./agents/planner.md",
-    "./agents/executor.md",
-    "./agents/validator.md",
-    "./agents/self-correct.md",
     "./agents/vp-customer-support.md",
     "./agents/support-manager.md",
     "./agents/support-operations-manager.md",
@@ -26,5 +39,6 @@
     "./agents/technical-writer.md",
     "./agents/community-manager.md",
     "./agents/sales-operations-manager.md"
-  ]
+  ],
+  "skills": []
 }

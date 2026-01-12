@@ -1,13 +1,27 @@
 {
   "name": "@cagents/finance",
-  "version": "5.0.0",
-  "description": "Finance domain - Financial planning & analysis, accounting, budgeting, and treasury management",
+  "version": "6.6.0",
+  "description": "cAgents Finance - Finance domain plugin with 17 specialized agents for financial planning & analysis, accounting, budgeting, and treasury management.",
+  "author": {
+    "name": "CaelanDrayer",
+    "email": "caelan@caelandrayer.ca",
+    "url": "https://github.com/CaelanDrayer"
+  },
+  "homepage": "https://github.com/CaelanDrayer/cAgents",
+  "repository": "https://github.com/CaelanDrayer/cAgents",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "finance",
+    "financial-planning",
+    "accounting",
+    "budgeting",
+    "treasury-management",
+    "claude-code",
+    "plugin"
+  ],
+  "commands": [],
   "agents": [
-    "./agents/router.md",
-    "./agents/planner.md",
-    "./agents/executor.md",
-    "./agents/validator.md",
-    "./agents/self-correct.md",
     "./agents/cfo.md",
     "./agents/financial-controller.md",
     "./agents/fp-and-a-manager.md",
@@ -25,5 +39,6 @@
     "./agents/payroll-specialist.md",
     "./agents/investor-relations-manager.md",
     "./agents/financial-systems-analyst.md"
-  ]
+  ],
+  "skills": []
 }

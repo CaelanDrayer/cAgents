@@ -1,13 +1,27 @@
 {
   "name": "@cagents/operations",
-  "version": "5.0.0",
-  "description": "Operations domain - Process improvement, supply chain, capacity planning, and operational excellence",
+  "version": "6.6.0",
+  "description": "cAgents Operations - Operations domain plugin with 15 specialized agents for process improvement, supply chain, capacity planning, and operational excellence.",
+  "author": {
+    "name": "CaelanDrayer",
+    "email": "caelan@caelandrayer.ca",
+    "url": "https://github.com/CaelanDrayer"
+  },
+  "homepage": "https://github.com/CaelanDrayer/cAgents",
+  "repository": "https://github.com/CaelanDrayer/cAgents",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "operations",
+    "process-improvement",
+    "supply-chain",
+    "capacity-planning",
+    "operational-excellence",
+    "claude-code",
+    "plugin"
+  ],
+  "commands": [],
   "agents": [
-    "./agents/router.md",
-    "./agents/planner.md",
-    "./agents/executor.md",
-    "./agents/validator.md",
-    "./agents/self-correct.md",
     "./agents/coo.md",
     "./agents/operations-strategist.md",
     "./agents/operations-manager.md",
@@ -23,5 +37,6 @@
     "./agents/facilities-manager.md",
     "./agents/business-continuity-planner.md",
     "./agents/operations-analyst.md"
-  ]
+  ],
+  "skills": []
 }

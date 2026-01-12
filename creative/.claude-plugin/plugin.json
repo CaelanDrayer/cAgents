@@ -1,9 +1,10 @@
 {
   "name": "@cagents/creative",
-  "version": "5.0.0",
-  "description": "cAgents Creative - Creative writing domain plugin with 23 specialized agents (5 workflow + 1 executive + 17 creative team) for autonomous creative content generation. Complete workflow orchestration for novels, stories, characters, and worldbuilding.",
+  "version": "6.6.0",
+  "description": "cAgents Creative - Creative writing domain plugin with 18 specialized agents for autonomous creative content generation. Complete workflow orchestration for novels, stories, characters, and worldbuilding.",
   "author": {
     "name": "CaelanDrayer",
+    "email": "caelan@caelandrayer.ca",
     "url": "https://github.com/CaelanDrayer"
   },
   "homepage": "https://github.com/CaelanDrayer/cAgents",
@@ -23,11 +24,6 @@
   ],
   "commands": [],
   "agents": [
-    "./agents/router.md",
-    "./agents/planner.md",
-    "./agents/executor.md",
-    "./agents/validator.md",
-    "./agents/self-correct.md",
     "./agents/cco.md",
     "./agents/story-architect.md",
     "./agents/character-designer.md",
@@ -44,14 +40,8 @@
     "./agents/research-specialist.md",
     "./agents/sensitivity-reader.md",
     "./agents/plot-developer.md",
-    "./agents/fantasy-specialist.md",
-    "./agents/scifi-specialist.md"
+    "./agents/genre-specialist-fantasy.md",
+    "./agents/genre-specialist-scifi.md"
   ],
-  "skills": [],
-  "dependencies": [
-    "@cagents/core"
-  ],
-  "peerDependencies": [
-    "@cagents/core@^4.1.0"
-  ]
+  "skills": []
 }

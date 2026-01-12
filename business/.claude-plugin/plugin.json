@@ -1,9 +1,10 @@
 {
   "name": "@cagents/business",
-  "version": "5.0.0",
-  "description": "cAgents Business - Business operations domain plugin with 23 specialized agents (5 workflow + 18 business team) for strategic planning, forecasting, market analysis, operations management, and project execution.",
+  "version": "6.6.0",
+  "description": "cAgents Business - Business operations domain plugin with 18 specialized agents for strategic planning, forecasting, market analysis, operations management, and project execution.",
   "author": {
     "name": "CaelanDrayer",
+    "email": "caelan@caelandrayer.ca",
     "url": "https://github.com/CaelanDrayer"
   },
   "homepage": "https://github.com/CaelanDrayer/cAgents",
@@ -20,11 +21,6 @@
   ],
   "commands": [],
   "agents": [
-    "./agents/router.md",
-    "./agents/planner.md",
-    "./agents/executor.md",
-    "./agents/validator.md",
-    "./agents/self-correct.md",
     "./agents/cso.md",
     "./agents/business-development-manager.md",
     "./agents/market-analyst.md",
@@ -44,11 +40,5 @@
     "./agents/procurement-specialist.md",
     "./agents/facilities-manager.md"
   ],
-  "skills": [],
-  "dependencies": [
-    "@cagents/core"
-  ],
-  "peerDependencies": [
-    "@cagents/core@^4.1.0"
-  ]
+  "skills": []
 }

@@ -1,9 +1,9 @@
 # UNIVERSAL TASK COMPLETION PROTOCOL
-# Version 1.0
+# Version 2.0 - Token-Based Metrics
 # Applies to ALL domains: software, creative, business, marketing, sales, finance, operations, HR, legal, support
 
 protocol_name: "Mandatory Task Completion Protocol"
-version: "1.0"
+version: "2.0"
 enforcement: MANDATORY
 scope: "All domains, all tiers, all agents"
 owner: "Universal Executor"
@@ -45,6 +45,11 @@ completion_definition:
       requirement: "All issues resolved, no pending work"
       verification: "No known issues, errors, or incomplete work"
       no_exceptions: true
+
+    token_budget_respected:
+      requirement: "Task completed within reasonable token budget (< 2x planned)"
+      verification: "actual_tokens_used documented and reasonable"
+      escalation: "If > 2x budget, investigate inefficiency"
 
 ## VERIFICATION REQUIREMENTS
 
@@ -92,11 +97,47 @@ verification_process:
           - "No obvious bugs or issues"
         example: "quality_checks_passed: true"
 
-      actual_context_used:
-        description: "Actual tokens consumed during task execution"
-        purpose: "Track against budgeted context"
-        format: "Integer token count"
-        example: "actual_context_used: 12450"
+      token_metrics:
+        description: "MANDATORY token usage tracking"
+        required_fields:
+          actual_tokens_used:
+            type: "integer"
+            description: "Actual tokens consumed during task execution"
+            requirement: "MUST be provided for every completed task"
+            example: "actual_tokens_used: 12450"
+
+          token_budget:
+            type: "integer"
+            description: "Budgeted tokens for this task"
+            example: "token_budget: 15000"
+
+          token_efficiency:
+            type: "float"
+            description: "Ratio of actual to budgeted (actual / budget)"
+            calculation: "actual_tokens_used / token_budget"
+            target: "< 1.10 (within 10% of budget)"
+            example: "token_efficiency: 0.83"
+
+          token_complexity_score:
+            type: "integer"
+            description: "Difficulty rating (1-10) based on token requirements"
+            calculation: "Based on token_based_metrics_system.yaml scoring"
+            example: "token_complexity_score: 6"
+
+          token_breakdown:
+            type: "object"
+            description: "Optional detailed breakdown of token usage"
+            fields:
+              context_loading: "Tokens for reading/understanding context"
+              analysis: "Tokens for analysis/planning"
+              generation: "Tokens for code/content generation"
+              validation: "Tokens for testing/verification"
+            example: |
+              token_breakdown:
+                context_loading: 3000
+                analysis: 2500
+                generation: 5000
+                validation: 1950
 
   step_2_verify_files:
     action: "Check that every file in outputs_created actually exists"
@@ -112,6 +153,12 @@ verification_process:
     action: "Check that quality_checks_passed is true"
     method: "Review quality checks section"
     failure_action: "If false or missing, keep task as in_progress"
+
+  step_5_verify_token_usage:
+    action: "Check that actual_tokens_used is documented"
+    method: "Review token_metrics section"
+    failure_action: "If missing, keep task as in_progress"
+    warning: "If token_efficiency > 1.5, flag for review"
 
 ## ENFORCEMENT RULES
 
@@ -160,6 +207,7 @@ enforcement_rules:
       if_any_output_missing: "Task status = in_progress or failed"
       if_any_quality_check_fails: "Task status = in_progress or failed"
       if_dependencies_not_satisfied: "Task status = in_progress or failed"
+      if_token_usage_missing: "Task status = in_progress (cannot validate without metrics)"
     explanation: "Even 99% complete is NOT complete. Must be 100%."
 
   rule_4_document_incomplete_work:
@@ -169,13 +217,15 @@ enforcement_rules:
       blocked: "External dependency or blocker prevents completion"
       scope_too_large: "Task scope was underestimated, needs splitting"
       requirements_unclear: "Acceptance criteria are ambiguous or conflicting"
-      time_constraint: "Context budget exhausted before completion"
+      token_budget_exhausted: "Exceeded reasonable token budget (> 2x planned)"
 
     required_actions:
       - action: "Document what WAS completed"
         location: "manifest.yaml with partial completion status"
       - action: "Document what REMAINS to be done"
         location: "manifest.yaml with outstanding_work section"
+      - action: "Document actual token usage even if incomplete"
+        location: "manifest.yaml with token_metrics section"
       - action: "Choose appropriate resolution"
         options:
           retry: "If transient issue, increment retry count and try again"
@@ -202,6 +252,7 @@ subagent_prompt_requirements:
         - Create ALL required outputs
         - Verify outputs are complete and production-quality
         - Include verification evidence in manifest.yaml
+        - Document token usage in manifest.yaml
         - Only signal completion when 100% done
 
     required_output:
@@ -210,17 +261,34 @@ subagent_prompt_requirements:
         Location: Agent_Memory/{instruction_id}/outputs/partial/{task_id}/
 
         MUST include manifest.yaml with:
-        - actual_context_used: (integer)
+        - token_metrics:
+            - actual_tokens_used: (integer)
+            - token_budget: (integer)
+            - token_efficiency: (float)
+            - token_complexity_score: (1-10)
         - completion_verification: {criterion: {status, evidence, verified_at}}
         - outputs_created: [list of file paths]
         - quality_checks_passed: true/false
         - outstanding_work: (if any remains)
+
+    token_budget_notice:
+      header: "TOKEN BUDGET"
+      content: |
+        Token Budget: {budget} tokens
+        - This is an estimate based on task complexity
+        - Stay within reasonable limits (< 2x budget)
+        - Report actual usage in manifest.yaml
+        - If approaching 2x budget, consider:
+          - Simplifying approach
+          - Splitting into subtasks
+          - Escalating for guidance
 
     completion_warning:
       header: "CRITICAL WARNING"
       content: |
         DO NOT mark work as done if any criterion is unmet.
         DO NOT mark work as done if any output is missing.
+        DO NOT mark work as done without documenting token usage.
         Document what's incomplete and why if you cannot finish.
         Only mark as completed when 100% of criteria are met.
 
@@ -235,23 +303,30 @@ subagent_prompt_requirements:
     - Create ALL required outputs
     - Verify outputs are complete and production-quality
     - Include verification evidence in manifest.yaml
+    - Document token usage accurately
     - Only signal completion when 100% done
 
-    CONTEXT BUDGET: {budget} tokens
-    - Stay within this limit
-    - Monitor your token usage
+    TOKEN BUDGET: {budget} tokens
+    - Estimated based on task complexity
+    - Stay within reasonable limits (< 2x)
     - Report actual usage in manifest.yaml
+    - Monitor your token consumption
 
     Output to: Agent_Memory/{instruction_id}/outputs/partial/{task_id}/
 
     REQUIRED OUTPUT:
     - manifest.yaml with:
-      - actual_context_used field
+      - token_metrics:
+          - actual_tokens_used: (integer, REQUIRED)
+          - token_budget: (integer)
+          - token_efficiency: (float)
+          - token_complexity_score: (1-10)
       - completion_verification: {criterion: status, evidence}
       - outputs_created: [list of files]
       - quality_checks_passed: true/false
 
     DO NOT mark work as done if any criterion is unmet.
+    DO NOT mark work as done without token usage documentation.
     Document what's incomplete and why if you cannot finish.
 
 ## VALIDATOR INTEGRATION
@@ -284,6 +359,16 @@ validator_checks:
     requirement: "Boolean must be true"
     failure: "If false or missing, mark validation as BLOCKED"
 
+  step_6_verify_token_metrics:
+    check: "token_metrics section exists and is complete"
+    required_fields:
+      - "actual_tokens_used (integer, > 0)"
+      - "token_budget (integer, > 0)"
+      - "token_efficiency (float)"
+      - "token_complexity_score (1-10)"
+    failure: "If any field missing, mark validation as BLOCKED"
+    warning: "If token_efficiency > 1.5, flag for efficiency review"
+
   escalation_on_failure:
     action: "If any verification check fails, escalate to HITL"
     reason: "Executor did not properly verify task completion"
@@ -291,6 +376,7 @@ validator_checks:
       - "Which tasks failed verification"
       - "Which specific checks failed"
       - "What evidence was missing or insufficient"
+      - "Token efficiency concerns (if applicable)"
 
 ## ORCHESTRATOR INTEGRATION
 
@@ -300,8 +386,9 @@ orchestrator_checks:
   before_executing_to_validating:
     check_1: "All planned tasks are in tasks/completed/"
     check_2: "All completed tasks have manifest.yaml with verification"
-    check_3: "output_summary.yaml exists and lists all outputs"
-    check_4: "No tasks remain in tasks/pending/ or tasks/in_progress/"
+    check_3: "All manifests include token_metrics with actual_tokens_used"
+    check_4: "output_summary.yaml exists and lists all outputs"
+    check_5: "No tasks remain in tasks/pending/ or tasks/in_progress/"
 
     failure_action: "DO NOT transition to validating phase"
     escalation: "Escalate to HITL with specific failures documented"
@@ -323,6 +410,14 @@ quality_checklist:
     - item: "Outputs are production-quality (not drafts/placeholders)"
       verification: "Spot-check content, no TODO/FIXME unless allowed"
       critical: true
+
+    - item: "Token usage documented accurately"
+      verification: "Check token_metrics section in manifest"
+      critical: true
+
+    - item: "Token efficiency reasonable (< 1.5x budget)"
+      verification: "Calculate token_efficiency ratio"
+      critical: false
 
     - item: "Downstream dependencies will have what they need"
       verification: "Review plan to see what other tasks depend on this"
@@ -349,7 +444,7 @@ incomplete_task_handling:
         blocker: "External dependency or issue blocking progress"
         scope_large: "Task larger than estimated"
         requirements_unclear: "Criteria ambiguous or conflicting"
-        context_exhausted: "Ran out of context budget"
+        token_budget_exceeded: "Consumed > 2x planned tokens"
         dependency_failed: "Upstream task failed or incomplete"
 
   resolution_strategies:
@@ -363,7 +458,9 @@ incomplete_task_handling:
       action: "Create new task for remaining work, mark current as partial"
       process:
         - "Document what was completed"
+        - "Document tokens consumed so far"
         - "Create new task with remaining criteria"
+        - "Adjust token budgets for split tasks"
         - "Update dependencies"
         - "Mark original task as completed (for completed portion) or failed"
 
@@ -373,6 +470,7 @@ incomplete_task_handling:
       include:
         - "What was attempted"
         - "What's blocking completion"
+        - "Tokens consumed so far"
         - "What's needed to unblock"
 
     mark_failed:
@@ -386,17 +484,22 @@ violation_consequences:
   incomplete_marked_as_complete:
     detection: "Validator finds missing criteria or outputs"
     consequence: "Validation fails (FIXABLE or BLOCKED)"
-    cost: "Self-correct or HITL intervention needed, wasted time"
+    cost: "Self-correct or HITL intervention needed, wasted tokens"
 
   missing_verification_evidence:
     detection: "Validator finds generic or missing evidence"
     consequence: "Cannot verify completion, validation BLOCKED"
-    cost: "Must redo verification, delays workflow"
+    cost: "Must redo verification, wasted tokens and effort"
+
+  missing_token_metrics:
+    detection: "Validator finds missing actual_tokens_used"
+    consequence: "Cannot track performance, validation BLOCKED"
+    cost: "Cannot optimize future token budgets, lost calibration data"
 
   partial_completion_accepted:
     detection: "Downstream tasks fail due to missing inputs"
     consequence: "Cascade of failures in dependent tasks"
-    cost: "Multiple tasks must be redone"
+    cost: "Multiple tasks must be redone, significant token waste"
 
 ## BENEFITS
 
@@ -406,6 +509,8 @@ protocol_benefits:
   clear_standards: "Removes ambiguity about what 'done' means"
   audit_trail: "Verification records provide clear evidence of completion"
   predictable_outcomes: "Workflows complete reliably or fail cleanly"
+  token_efficiency: "Tracks token usage for optimization and cost management"
+  calibration_data: "Builds historical data for better future estimates"
 
 ---
 
@@ -415,19 +520,25 @@ protocol_benefits:
 1. Before marking ANY task completed, verify ALL criteria with evidence
 2. Create manifest.yaml with completion_verification for EVERY task
 3. Include concrete evidence (files, test outputs, metrics) not generic "looks good"
-4. Verify all outputs actually exist before marking complete
-5. Never mark as completed if ANY work remains - 100% or in_progress
+4. **MANDATORY: Document actual_tokens_used in token_metrics section**
+5. Verify all outputs actually exist before marking complete
+6. Never mark as completed if ANY work remains - 100% or in_progress
+7. Track and report token efficiency for continuous improvement
 
 ## For Validators:
 1. Check ALL completed tasks have manifest.yaml with verification
 2. Verify every criterion has status=MET with specific evidence
 3. Verify all files in outputs_created actually exist
-4. If any verification fails, mark BLOCKED and escalate to HITL
+4. **NEW: Verify token_metrics section exists with actual_tokens_used**
+5. If any verification fails, mark BLOCKED and escalate to HITL
+6. Flag tasks with token_efficiency > 1.5 for review
 
 ## For Orchestrator:
 1. Before executing → validating transition, verify all manifests exist
 2. Verify all tasks have completion_verification
-3. If verification missing, DO NOT transition, escalate to HITL
+3. **NEW: Verify all tasks have token_metrics with actual usage**
+4. If verification missing, DO NOT transition, escalate to HITL
 
-## The Golden Rule:
+## The Golden Rules:
 **100% completion with verified evidence, or it's not complete.**
+**Token usage MUST be documented for every completed task.**

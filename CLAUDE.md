@@ -6,8 +6,22 @@ Core architecture and development guidance for cAgents.
 
 - `CLAUDE.md` - Architecture, commands, agents (this file)
 - `README.md` - Quick start
-- `archive/docs/` - Detailed guides (local only)
+- `docs/` - Project documentation (implementation guides, summaries, standards)
+- `archive/docs/` - Historical documentation (local only)
 - `Agent_Memory/` - Runtime state (excluded from git)
+
+**Project Documentation** (in `docs/`):
+- `AGENT_OPTIMIZATION_INSTRUCTION.md` - Agent optimization guidelines
+- `CONTEXT_MANAGEMENT.md` - Context handling and token management
+- `DOCUMENTATION_STANDARDS.md` - Documentation best practices
+- `OPTIMIZATION_PROGRESS.md` - Optimization tracking and progress
+- `TASK_COMPLETION_ENFORCEMENT_SUMMARY.md` - Task completion protocol summary
+- `TASK_CONSOLIDATION.md` - Task consolidation strategies
+- `TOKEN_MIGRATION_SUMMARY.md` - Token optimization migration details
+- `WORKFLOW_EVALUATION_FIXES.md` - Workflow issue resolutions
+
+**Root Documentation** (exceptions):
+- `workflow_agent_interactions.md` - Agent interaction patterns (referenced throughout)
 
 ## Project Overview
 
@@ -69,6 +83,7 @@ Protocol enforced by:
 **Files**:
 - Protocol: `Agent_Memory/_system/task_completion_protocol.yaml`
 - Template: `Agent_Memory/_system/templates/task_manifest_template.yaml`
+- Summary: `docs/TASK_COMPLETION_ENFORCEMENT_SUMMARY.md`
 
 **Context Overhead**: Add 2K tokens per task for verification (included in planning)
 
@@ -112,6 +127,8 @@ Patterns: `Agent_Memory/_knowledge/procedural/review_patterns.yaml`
 /optimize --type content blog-posts/
 ```
 
+See `docs/AGENT_OPTIMIZATION_INSTRUCTION.md` for optimization guidelines.
+
 ## Agent Memory
 
 ```
@@ -128,6 +145,8 @@ Agent_Memory/
 ```
 
 **Principles**: File-based, instruction-scoped, parallel-safe, pause/resume capable
+
+See `docs/CONTEXT_MANAGEMENT.md` for context handling details.
 
 ## Domain Agents
 
@@ -170,6 +189,8 @@ User Request → Trigger (domain detect) → Orchestrator
   PASS → Complete | FIXABLE → Self-Correct | BLOCKED → HITL
 ```
 
+See `workflow_agent_interactions.md` for detailed agent interaction patterns.
+
 ## Recursive Workflows
 
 Complex tasks spawn child workflows (max depth: 5, max children: 20)
@@ -202,15 +223,20 @@ cAgents/
 ├── {domain}/                # Domain packages (11 total)
 │   ├── agents/              # Team agents
 │   └── .claude-plugin/      # Domain manifest
+├── docs/                    # Project documentation
 ├── .claude-plugin/          # Root manifest
 └── Agent_Memory/            # Runtime state (git-ignored)
 ```
+
+**Root Directory Policy**: Only CLAUDE.md, README.md, and workflow_agent_interactions.md should exist in the root. All other documentation belongs in `docs/` or `archive/docs/`.
 
 ## Performance Benchmarks
 
 **Reviewer V2.0**: 33% faster, 81% faster to critical, 98% more actionable, 78% pattern detection
 **Parallel Execution**: 50x speedup (swarm), 80%+ efficiency
 **Optimizer**: 20-50% faster, 30-60% smaller bundles, 15-40% less memory
+
+See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 
 ## Quick Reference
 
@@ -220,6 +246,7 @@ cAgents/
 - `.claude-plugin/plugin.json` - Plugin manifest
 - `Agent_Memory/_system/domains/{domain}/*.yaml` - Domain configs
 - `Agent_Memory/_system/task_completion_protocol.yaml` - Mandatory completion rules
+- `docs/DOCUMENTATION_STANDARDS.md` - Documentation guidelines
 **Critical Rule**: 100% task completion with verified evidence required
 
 ## Troubleshooting
@@ -233,9 +260,11 @@ cAgents/
 
 Full troubleshooting: `archive/docs/TROUBLESHOOTING.md`
 
+See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
+
 ---
 
-**Version**: 6.3.0
+**Version**: 6.6.0
 **Total Agents**: 228 (9 core + 219 domain)
 **Architecture**: V2 Universal Workflow (config-driven, 11 domains)
 **Dependencies**: None (file-based, self-contained)

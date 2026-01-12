@@ -1,9 +1,10 @@
 {
   "name": "@cagents/software",
-  "version": "5.0.0",
-  "description": "cAgents Software - Software engineering domain plugin with 52 specialized agents (5 workflow + 1 engineering manager + 6 domain leads + 5 intelligence + 9 QA + 5 executive + 21 team) for autonomous software development. Orchestration V2 with realistic organizational hierarchy.",
+  "version": "6.6.0",
+  "description": "cAgents Software - Software engineering domain plugin with 45 specialized agents for autonomous software development. Includes engineering manager, 6 domain leads, 5 intelligence agents, 9 QA agents, 5 executive agents, and 19 team members. Orchestration V2 with realistic organizational hierarchy.",
   "author": {
     "name": "CaelanDrayer",
+    "email": "caelan@caelandrayer.ca",
     "url": "https://github.com/CaelanDrayer"
   },
   "homepage": "https://github.com/CaelanDrayer/cAgents",
@@ -24,11 +25,6 @@
   ],
   "commands": [],
   "agents": [
-    "./agents/router.md",
-    "./agents/planner.md",
-    "./agents/executor.md",
-    "./agents/validator.md",
-    "./agents/self-correct.md",
     "./agents/engineering-manager.md",
     "./agents/frontend-lead.md",
     "./agents/backend-lead.md",
@@ -72,18 +68,10 @@
     "./agents/frontend-developer.md",
     "./agents/backend-developer.md",
     "./agents/scribe.md",
-    "./agents/reviewer.md",
-    "./agents/optimizer.md"
+    "./agents/reviewer.md"
   ],
   "skills": [
     "./skills/trigger",
-    "./skills/reviewer",
-    "./skills/optimizer"
-  ],
-  "dependencies": [
-    "@cagents/core"
-  ],
-  "peerDependencies": [
-    "@cagents/core@^4.1.0"
+    "./skills/reviewer"
   ]
 }

@@ -1,13 +1,27 @@
 {
   "name": "@cagents/hr",
-  "version": "5.0.0",
-  "description": "Human Resources domain - Talent acquisition, employee relations, benefits, and organizational development",
+  "version": "6.6.0",
+  "description": "cAgents HR - Human Resources domain plugin with 19 specialized agents for talent acquisition, employee relations, benefits, and organizational development.",
+  "author": {
+    "name": "CaelanDrayer",
+    "email": "caelan@caelandrayer.ca",
+    "url": "https://github.com/CaelanDrayer"
+  },
+  "homepage": "https://github.com/CaelanDrayer/cAgents",
+  "repository": "https://github.com/CaelanDrayer/cAgents",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "human-resources",
+    "talent-acquisition",
+    "employee-relations",
+    "benefits",
+    "organizational-development",
+    "claude-code",
+    "plugin"
+  ],
+  "commands": [],
   "agents": [
-    "./agents/router.md",
-    "./agents/planner.md",
-    "./agents/executor.md",
-    "./agents/validator.md",
-    "./agents/self-correct.md",
     "./agents/chro.md",
     "./agents/talent-acquisition-manager.md",
     "./agents/hr-business-partner.md",
@@ -27,5 +41,6 @@
     "./agents/hr-analyst.md",
     "./agents/hris-administrator.md",
     "./agents/hr-compliance-specialist.md"
-  ]
+  ],
+  "skills": []
 }

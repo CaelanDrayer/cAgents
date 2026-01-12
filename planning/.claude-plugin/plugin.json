@@ -1,9 +1,10 @@
 {
   "name": "@cagents/planning",
-  "version": "5.0.0",
-  "description": "cAgents Planning - Planning domain plugin with 22 specialized agents (5 workflow + 1 executive + 16 planning team) for strategic planning, project planning, roadmapping, OKR planning, and planning governance.",
+  "version": "6.6.0",
+  "description": "cAgents Planning - Planning domain plugin with 17 specialized agents for strategic planning, project planning, roadmapping, OKR planning, and planning governance.",
   "author": {
     "name": "CaelanDrayer",
+    "email": "caelan@caelandrayer.ca",
     "url": "https://github.com/CaelanDrayer"
   },
   "homepage": "https://github.com/CaelanDrayer/cAgents",
@@ -23,11 +24,6 @@
   ],
   "commands": [],
   "agents": [
-    "./agents/router.md",
-    "./agents/planner.md",
-    "./agents/executor.md",
-    "./agents/validator.md",
-    "./agents/self-correct.md",
     "./agents/cpo.md",
     "./agents/strategic-planner.md",
     "./agents/planning-operations-manager.md",
@@ -46,11 +42,5 @@
     "./agents/scenario-planner.md",
     "./agents/planning-facilitator.md"
   ],
-  "skills": [],
-  "dependencies": [
-    "@cagents/core"
-  ],
-  "peerDependencies": [
-    "@cagents/core@^4.1.0"
-  ]
+  "skills": []
 }

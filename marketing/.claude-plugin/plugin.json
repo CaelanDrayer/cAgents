@@ -1,13 +1,27 @@
 {
   "name": "@cagents/marketing",
-  "version": "5.0.0",
-  "description": "Marketing domain - Brand management, content marketing, demand generation, and growth strategies",
+  "version": "6.6.0",
+  "description": "cAgents Marketing - Marketing domain plugin with 22 specialized agents for brand management, content marketing, demand generation, and growth strategies.",
+  "author": {
+    "name": "CaelanDrayer",
+    "email": "caelan@caelandrayer.ca",
+    "url": "https://github.com/CaelanDrayer"
+  },
+  "homepage": "https://github.com/CaelanDrayer/cAgents",
+  "repository": "https://github.com/CaelanDrayer/cAgents",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "marketing",
+    "brand-management",
+    "content-marketing",
+    "demand-generation",
+    "growth-strategies",
+    "claude-code",
+    "plugin"
+  ],
+  "commands": [],
   "agents": [
-    "./agents/router.md",
-    "./agents/planner.md",
-    "./agents/executor.md",
-    "./agents/validator.md",
-    "./agents/self-correct.md",
     "./agents/cmo.md",
     "./agents/marketing-strategist.md",
     "./agents/brand-manager.md",
@@ -30,5 +44,6 @@
     "./agents/events-manager.md",
     "./agents/pr-specialist.md",
     "./agents/influencer-marketing-specialist.md"
-  ]
+  ],
+  "skills": []
 }

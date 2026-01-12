@@ -1,13 +1,27 @@
 {
   "name": "@cagents/sales",
-  "version": "5.0.0",
-  "description": "Sales domain - Revenue generation, pipeline management, forecasting, and sales operations",
+  "version": "6.6.0",
+  "description": "cAgents Sales - Sales domain plugin with 18 specialized agents for revenue generation, pipeline management, forecasting, and sales operations.",
+  "author": {
+    "name": "CaelanDrayer",
+    "email": "caelan@caelandrayer.ca",
+    "url": "https://github.com/CaelanDrayer"
+  },
+  "homepage": "https://github.com/CaelanDrayer/cAgents",
+  "repository": "https://github.com/CaelanDrayer/cAgents",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "sales",
+    "revenue-generation",
+    "pipeline-management",
+    "forecasting",
+    "sales-operations",
+    "claude-code",
+    "plugin"
+  ],
+  "commands": [],
   "agents": [
-    "./agents/router.md",
-    "./agents/planner.md",
-    "./agents/executor.md",
-    "./agents/validator.md",
-    "./agents/self-correct.md",
     "./agents/cro.md",
     "./agents/sales-engineer.md",
     "./agents/account-executive.md",
@@ -26,5 +40,6 @@
     "./agents/sales-trainer.md",
     "./agents/competitive-intelligence-analyst.md",
     "./agents/sales-strategist.md"
-  ]
+  ],
+  "skills": []
 }

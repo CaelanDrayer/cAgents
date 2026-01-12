@@ -1,17 +1,37 @@
-# Performance Tracking System - cAgents V6.2.1
-# Comprehensive metrics, analytics, and optimization recommendations
+# Performance Tracking System - cAgents V6.6.1
+# Token-based metrics, analytics, and optimization recommendations
+# ELIMINATES ALL TIME-BASED MEASUREMENTS
 
-version: "6.2.1"
-description: "Real-time performance monitoring, analytics, and continuous improvement system"
+version: "6.6.1"
+description: "Real-time token-based performance monitoring, analytics, and continuous improvement system"
 
 # ==============================================================================
-# METRICS COLLECTION
+# CORE CHANGES FROM V6.2.1
+# ==============================================================================
+
+migration_notes:
+  version_6_6_1_changes:
+    - "Eliminated ALL time-based measurements (duration, wait_time, execution_time, etc.)"
+    - "Replaced with token consumption metrics"
+    - "Task length measured in tokens, not time"
+    - "Task difficulty measured by token complexity score (1-10)"
+    - "Agent performance tracked by token efficiency"
+    - "Queue management based on token budgets"
+    - "SLAs based on token thresholds, not time limits"
+
+  backward_compatibility:
+    status: "Time-based fields deprecated but retained for 1 version"
+    deprecation_warnings: "Logged when time-based fields accessed"
+    removal_date: "Version 7.0"
+
+# ==============================================================================
+# METRICS COLLECTION (TOKEN-BASED)
 # ==============================================================================
 
 metrics_collection:
   heartbeat_metrics:
     location: "Agent_Memory/{instruction_id}/heartbeats/{agent}_{task_id}.yaml"
-    frequency: "every 2 minutes while agent active"
+    frequency: "every 50K tokens processed or 5 minutes (whichever first)"
     schema:
       agent_name: "string"
       task_id: "string"
@@ -19,10 +39,12 @@ metrics_collection:
       status: "starting | in_progress | blocked | completed | failed"
       progress_percentage: "0-100"
       current_activity: "string"
-      estimated_completion: "ISO8601"
+      token_metrics:
+        tokens_consumed_so_far: "integer"
+        tokens_remaining_estimate: "integer"
+        token_efficiency_current: "float"
       resource_utilization:
-        cpu_percentage: "0-100"
-        memory_mb: "number"
+        tokens_in_context: "number"
         active_tools: ["tool_name"]
       blockers: []
       questions: []
@@ -37,18 +59,16 @@ metrics_collection:
       domain: "string"
       priority: "string"
 
-      timing:
-        created_at: "ISO8601"
-        queued_at: "ISO8601"
-        started_at: "ISO8601"
-        completed_at: "ISO8601"
-
-        wait_time_seconds: "number"
-        execution_time_seconds: "number"
-        total_time_seconds: "number"
-
-        estimated_duration_seconds: "number"
-        actual_vs_estimate_ratio: "number"
+      token_metrics:
+        token_budget: "integer"
+        actual_tokens_used: "integer"
+        token_efficiency: "float (actual / budget)"
+        token_complexity_score: "1-10"
+        token_breakdown:
+          context_loading: "integer"
+          analysis: "integer"
+          generation: "integer"
+          validation: "integer"
 
       execution:
         status: "completed | failed | cancelled"
@@ -57,7 +77,7 @@ metrics_collection:
 
       dependencies:
         hard_dependencies: ["task_id"]
-        dependency_wait_time_seconds: "number"
+        tokens_spent_waiting: "integer (context loaded while waiting)"
         blocking_for_tasks: ["task_id"]
 
       outputs:
@@ -80,22 +100,24 @@ metrics_collection:
       domain: "string"
 
       capacity:
-        max_concurrent_tasks: "number"
-        current_task_count: "number"
-        utilization_percentage: "0-100"
-        queue_depth: "number"
+        max_concurrent_tokens: "integer"
+        current_token_load: "integer"
+        utilization_percentage: "0-100 (current_load / max_concurrent)"
+        queue_token_depth: "integer (total tokens in queue)"
 
       performance:
         total_tasks_completed: "number"
         total_tasks_failed: "number"
         success_rate: "0.0-1.0"
 
-        average_task_duration_seconds: "number"
-        median_task_duration_seconds: "number"
-        p95_task_duration_seconds: "number"
+        total_tokens_consumed: "integer"
+        average_tokens_per_task: "integer"
+        median_tokens_per_task: "integer"
+        p95_tokens_per_task: "integer"
 
-        average_wait_time_seconds: "number"
-        throughput_tasks_per_hour: "number"
+        average_token_efficiency: "float"
+        average_complexity_score: "1-10"
+        tokens_per_complexity_point: "integer"
 
       quality:
         average_test_coverage: "0.0-1.0"
@@ -107,7 +129,7 @@ metrics_collection:
         timeout_count: "number"
         crash_count: "number"
         escalation_count: "number"
-        mean_time_between_failures_hours: "number"
+        token_budget_overruns: "number (tasks exceeding 2x budget)"
 
   instruction_metrics:
     location: "Agent_Memory/{instruction_id}/metrics/instruction_summary.yaml"
@@ -118,11 +140,23 @@ metrics_collection:
       tier: "0-4"
       execution_mode: "sequential | pipeline | swarm | mesh"
 
-      timing:
-        created_at: "ISO8601"
-        started_at: "ISO8601"
-        completed_at: "ISO8601"
-        total_duration_seconds: "number"
+      token_metrics:
+        total_token_budget: "integer"
+        actual_tokens_consumed: "integer"
+        token_efficiency: "float"
+        average_task_complexity: "1-10"
+        complexity_distribution:
+          tier_0: "count"
+          tier_1: "count"
+          tier_2: "count"
+          tier_3: "count"
+          tier_4: "count"
+        tokens_by_tier:
+          tier_0: "integer"
+          tier_1: "integer"
+          tier_2: "integer"
+          tier_3: "integer"
+          tier_4: "integer"
 
       tasks:
         total_tasks: "number"
@@ -134,13 +168,13 @@ metrics_collection:
         max_concurrent_agents: "number"
         average_concurrent_agents: "number"
         parallelism_efficiency: "0.0-1.0"
-        critical_path_duration_seconds: "number"
-        critical_path_percentage: "0.0-1.0"
+        coordination_overhead_tokens: "integer"
+        coordination_percentage: "0-100"
 
       agents:
         total_agents_used: "number"
         unique_agent_types: "number"
-        agent_utilization_map: {}
+        agent_token_consumption_map: {}
 
       quality:
         overall_success_rate: "0.0-1.0"
@@ -149,24 +183,25 @@ metrics_collection:
         average_review_score: "0-100"
 
       cost:
-        total_agent_hours: "number"
-        estimated_compute_cost_usd: "number"
+        total_tokens: "integer"
+        estimated_cost_usd: "float (based on token pricing)"
 
 # ==============================================================================
-# REAL-TIME DASHBOARDS
+# REAL-TIME DASHBOARDS (TOKEN-BASED)
 # ==============================================================================
 
 dashboards:
   execution_dashboard:
     location: "Agent_Memory/{instruction_id}/dashboard.yaml"
-    update_frequency: "every 30 seconds"
+    update_frequency: "every 100K tokens processed or 2 minutes"
     displays:
       overview:
         instruction_id: "string"
         status: "planning | executing | validating | complete"
         progress_percentage: "0-100"
-        estimated_completion: "ISO8601"
-        elapsed_time: "duration"
+        token_budget: "integer"
+        tokens_consumed: "integer"
+        token_efficiency_current: "float"
 
       task_status:
         total_tasks: "number"
@@ -180,36 +215,37 @@ dashboards:
       agent_status:
         active_agents: "number"
         idle_agents: "number"
-        overloaded_agents: ["agent_name"]
-        stalled_agents: ["agent_name"]
+        overloaded_agents: ["agent_name (token_load > 80%)"]
+        stalled_agents: ["agent_name (no progress in tokens)"]
         average_utilization: "0-100"
 
       queue_status:
-        global_queue_depth: "number"
-        domain_queue_depths: {}
-        longest_wait_time: "duration"
+        global_queue_token_depth: "integer"
+        domain_queue_token_depths: {}
+        largest_queued_task_tokens: "integer"
         tasks_waiting_on_dependencies: "number"
 
       performance:
-        tasks_per_hour: "number"
-        average_task_duration: "duration"
-        parallelism_efficiency: "0-100"
+        tokens_processed_per_period: "integer"
+        average_task_complexity: "1-10"
+        token_efficiency_aggregate: "float"
         bottleneck_agents: ["agent_name"]
 
       issues:
         active_blockers: "number"
         escalations: "number"
         retries_in_progress: "number"
+        token_budget_overruns: "number"
         warnings: []
 
   agent_utilization_heatmap:
     location: "Agent_Memory/{instruction_id}/dashboards/agent_heatmap.yaml"
-    format: "2D matrix of agents × time"
-    granularity: "5 minute intervals"
+    format: "2D matrix of agents × token consumption buckets"
+    granularity: "50K token intervals"
     schema:
-      time_slots: ["timestamp"]
+      token_buckets: ["0-50K", "50K-100K", "100K-150K", ...]
       agents: ["agent_name"]
-      utilization_matrix: [[0-100]]  # agents × time_slots
+      utilization_matrix: [[0-100]]  # agents × token_buckets
       color_scale:
         0-20: "idle"
         21-50: "low"
@@ -225,7 +261,8 @@ dashboards:
       nodes:
         - task_id: "string"
           status: "pending | in_progress | completed | failed"
-          duration: "seconds"
+          token_budget: "integer"
+          actual_tokens: "integer"
           agent: "string"
           on_critical_path: "boolean"
 
@@ -236,40 +273,41 @@ dashboards:
 
       critical_path:
         tasks: ["task_id"]
-        total_duration: "seconds"
+        total_tokens: "integer"
+        percentage_of_budget: "0-100"
 
       visualization_hints:
         layout: "hierarchical"
         color_by: "status"
-        size_by: "duration"
+        size_by: "token_budget"
 
   bottleneck_identification:
     location: "Agent_Memory/{instruction_id}/dashboards/bottlenecks.yaml"
-    algorithm: "critical_path_analysis + queue_depth + agent_utilization"
-    updates: "every 2 minutes"
+    algorithm: "critical_path_analysis + token_queue_depth + agent_utilization"
+    updates: "every 100K tokens processed"
     schema:
       bottleneck_tasks:
         - task_id: "string"
-          reason: "long_duration | blocking_many | resource_contention"
+          reason: "high_token_budget | blocking_many | resource_contention"
           impact_tasks_blocked: "number"
-          estimated_delay: "seconds"
+          estimated_token_delay: "integer"
           recommendation: "string"
 
       bottleneck_agents:
         - agent_name: "string"
-          reason: "overloaded | slow_performance | high_failure_rate"
-          queue_depth: "number"
+          reason: "overloaded | low_efficiency | high_failure_rate"
+          queue_token_depth: "integer"
           utilization: "0-100"
           recommendation: "string"
 
       bottleneck_dependencies:
         - dependency: "{task_a} -> {task_b}"
-          reason: "critical_path | long_wait | circular"
+          reason: "critical_path | high_token_cost | circular"
           impact: "string"
           recommendation: "string"
 
 # ==============================================================================
-# ANALYTICS & INSIGHTS
+# ANALYTICS & INSIGHTS (TOKEN-BASED)
 # ==============================================================================
 
 analytics:
@@ -280,38 +318,43 @@ analytics:
       execution_summary:
         mode: "sequential | pipeline | swarm | mesh"
         total_tasks: "number"
-        total_duration: "seconds"
+        total_token_budget: "integer"
+        actual_tokens_consumed: "integer"
+        token_efficiency: "float"
         parallel_efficiency: "0.0-1.0"
-        speedup_vs_sequential: "number"
+        token_savings_vs_sequential: "integer"
 
       agent_performance:
         agent_name:
           tasks_completed: "number"
-          average_duration: "seconds"
+          tokens_consumed: "integer"
+          average_tokens_per_task: "integer"
           utilization: "0-100"
           success_rate: "0.0-1.0"
+          token_efficiency: "float"
+          average_complexity_handled: "1-10"
           quality_score: "0-100"
 
       wave_analysis:
         wave_1:
           task_count: "number"
           parallel_count: "number"
-          duration: "seconds"
+          total_tokens: "integer"
           efficiency: "0.0-1.0"
 
       critical_path_analysis:
         tasks: ["task_id"]
-        total_duration: "seconds"
+        total_tokens: "integer"
         percentage_of_total: "0-100"
         bottlenecks: []
 
       optimization_opportunities:
         - opportunity: "Parallelize wave 3 (currently sequential)"
-          potential_savings: "45 minutes"
+          potential_token_savings: "45000"
           implementation: "Add work_stealing for dba agents"
 
-        - opportunity: "Reduce frontend-developer queue depth"
-          potential_savings: "20 minutes"
+        - opportunity: "Reduce frontend-developer queue token depth"
+          potential_token_savings: "20000"
           implementation: "Spawn additional frontend-developer instance"
 
   trend_analysis:
@@ -320,68 +363,79 @@ analytics:
     metrics:
       instruction_trends:
         daily_instruction_count: "time series"
-        average_instruction_duration: "time series"
+        average_tokens_per_instruction: "time series"
         instruction_success_rate: "time series"
         average_tier: "time series"
 
       agent_trends:
-        agent_utilization: "time series per agent"
-        agent_throughput: "time series per agent"
+        agent_token_consumption: "time series per agent"
+        agent_efficiency: "time series per agent"
         agent_quality: "time series per agent"
 
       domain_trends:
-        tasks_per_domain: "time series per domain"
+        tokens_per_domain: "time series per domain"
         success_rate_per_domain: "time series per domain"
 
       performance_trends:
-        average_parallelism_efficiency: "time series"
-        average_speedup: "time series"
+        average_token_efficiency: "time series"
+        average_complexity_score: "time series"
         bottleneck_frequency: "time series"
 
   predictive_analytics:
     location: "Agent_Memory/_system/analytics/predictions.yaml"
     models:
-      task_duration_predictor:
+      token_budget_predictor:
         input_features:
           - task_type
           - domain
           - agent_type
           - tier
           - dependency_count
-        output: "predicted_duration_seconds"
-        accuracy: "mean_absolute_error: X seconds"
+          - file_count
+          - context_size
+        output: "predicted_token_budget"
+        accuracy: "mean_absolute_error: X tokens"
+
+      complexity_predictor:
+        input_features:
+          - task_description_length
+          - domain
+          - tier
+          - dependency_count
+        output: "predicted_complexity_score (1-10)"
+        accuracy: "MAE: X points"
 
       bottleneck_predictor:
         input_features:
           - task_graph_structure
           - agent_capacity
-          - queue_depths
+          - queue_token_depths
         output: "predicted_bottlenecks"
         accuracy: "precision: X%, recall: Y%"
 
-      failure_predictor:
+      efficiency_predictor:
         input_features:
           - agent_history
           - task_complexity
-          - dependency_failures
-        output: "failure_probability"
-        accuracy: "ROC AUC: X"
+          - context_size
+        output: "predicted_token_efficiency"
+        accuracy: "MAE: X%"
 
 # ==============================================================================
-# OPTIMIZATION RECOMMENDATIONS
+# OPTIMIZATION RECOMMENDATIONS (TOKEN-BASED)
 # ==============================================================================
 
 optimization_engine:
   rule_based_recommendations:
-    high_queue_depth:
-      condition: "agent.queue_depth > 5"
+    high_queue_token_depth:
+      condition: "agent.queue_token_depth > 200K"
       recommendation:
         type: "spawn_additional_instance"
         priority: "high"
-        expected_impact: "Reduce wait time by 50%"
+        expected_impact: "Reduce token queue by 50%"
 
-    low_utilization:
-      condition: "agent.utilization < 20% for > 10 minutes"
+    low_token_utilization:
+      condition: "agent.token_utilization < 20% for > 100K token period"
       recommendation:
         type: "enable_work_stealing"
         priority: "medium"
@@ -392,72 +446,85 @@ optimization_engine:
       recommendation:
         type: "parallelize_wave"
         priority: "high"
-        expected_impact: "Reduce wave duration by 70%"
+        expected_impact: "Reduce token consumption overhead by 15%"
 
-    critical_path_bottleneck:
-      condition: "single task on critical path > 30% of total time"
+    critical_path_token_bottleneck:
+      condition: "single task on critical path > 30% of total tokens"
       recommendation:
         type: "optimize_task_or_split"
         priority: "critical"
-        expected_impact: "Reduce total duration by 20%+"
+        expected_impact: "Reduce total tokens by 20%+"
 
-    high_retry_rate:
-      condition: "agent.retry_rate > 20%"
+    high_token_inefficiency:
+      condition: "agent.token_efficiency > 1.30"
       recommendation:
-        type: "investigate_reliability"
+        type: "investigate_efficiency"
         priority: "high"
-        expected_impact: "Improve success rate and reduce wasted work"
+        expected_impact: "Improve token usage efficiency, reduce costs"
+
+    token_budget_overruns:
+      condition: "task.actual_tokens > task.budget * 2.0"
+      recommendation:
+        type: "split_task_or_improve_estimation"
+        priority: "high"
+        expected_impact: "Better resource allocation, fewer overruns"
 
   ml_based_recommendations:
     enabled: false  # Experimental
     models:
-      optimal_parallelism:
-        description: "Predict optimal max_concurrent for instruction"
-        features: ["tier", "task_count", "independence_score"]
-        output: "recommended_max_concurrent"
+      optimal_token_allocation:
+        description: "Predict optimal token budget distribution"
+        features: ["tier", "task_count", "independence_score", "domain"]
+        output: "recommended_token_allocation_map"
 
       agent_assignment:
-        description: "Recommend best agent for task"
-        features: ["task_type", "domain", "agent_history"]
+        description: "Recommend best agent for task based on efficiency"
+        features: ["task_type", "domain", "agent_token_history", "complexity"]
         output: "recommended_agent + confidence"
 
       scheduling_optimization:
-        description: "Optimize task scheduling order"
-        features: ["dependency_graph", "agent_capacity", "priorities"]
+        description: "Optimize task scheduling order for token efficiency"
+        features: ["dependency_graph", "agent_capacity", "priorities", "token_budgets"]
         output: "optimized_schedule"
 
 # ==============================================================================
-# ALERTS & NOTIFICATIONS
+# ALERTS & NOTIFICATIONS (TOKEN-BASED)
 # ==============================================================================
 
 alerting:
   alert_rules:
     execution_stalled:
-      condition: "no progress for > 15 minutes"
+      condition: "no token progress for > 100K tokens worth of work time"
       severity: "critical"
       action: "escalate_to_orchestrator"
       notification: "Agent_Memory/{instruction_id}/alerts/stalled.yaml"
 
-    agent_failure_spike:
-      condition: "agent_failure_rate > 30% in last hour"
+    agent_token_inefficiency_spike:
+      condition: "agent_token_efficiency > 1.50 for multiple tasks"
       severity: "high"
       action: "investigate_and_report"
-      notification: "Agent_Memory/_system/alerts/agent_failures_{agent}.yaml"
+      notification: "Agent_Memory/_system/alerts/agent_inefficiency_{agent}.yaml"
 
-    queue_depth_warning:
-      condition: "queue_depth > 10"
+    queue_token_depth_warning:
+      condition: "queue_token_depth > 500K"
       severity: "medium"
       action: "trigger_scaling"
       notification: "Agent_Memory/_system/alerts/queue_depth.yaml"
 
     dependency_deadlock:
-      condition: "task waiting on dependency > 4 hours"
+      condition: "task waiting on dependency with no token progress"
       severity: "high"
       action: "escalate_to_planner"
       notification: "Agent_Memory/{instruction_id}/alerts/deadlock.yaml"
 
+    token_budget_exhaustion:
+      condition: "instruction approaching token budget limit"
+      severity: "high"
+      action: "notify_user_and_optimize"
+      notification: "Agent_Memory/{instruction_id}/alerts/budget_exhaustion.yaml"
+
     performance_degradation:
-      condition: "throughput < 50% of historical average"
+      condition: "token_efficiency > 1.50 (50% worse than expected)"
       severity: "medium"
       action: "run_diagnostics"
       notification: "Agent_Memory/_system/alerts/performance.yaml"
@@ -473,23 +540,23 @@ alerting:
       method: "hitl_escalation"
 
 # ==============================================================================
-# CONTINUOUS IMPROVEMENT
+# CONTINUOUS IMPROVEMENT (TOKEN-BASED)
 # ==============================================================================
 
 continuous_improvement:
   learning_loop:
     after_each_instruction:
-      - "Analyze performance metrics"
-      - "Identify optimization opportunities"
-      - "Update agent capacity estimates"
-      - "Refine task duration predictions"
+      - "Analyze token consumption metrics"
+      - "Identify token optimization opportunities"
+      - "Update agent token capacity estimates"
+      - "Refine task token budget predictions"
       - "Document lessons learned"
 
     after_each_week:
-      - "Aggregate instruction metrics"
-      - "Identify trends and patterns"
-      - "Update recommendation models"
-      - "Generate performance reports"
+      - "Aggregate token metrics across instructions"
+      - "Identify trends and patterns in token usage"
+      - "Update token budget recommendation models"
+      - "Generate token efficiency reports"
       - "Share insights with system"
 
   calibration_data:
@@ -497,31 +564,34 @@ continuous_improvement:
     captures:
       agent_performance:
         "{agent_name}":
-          average_duration_by_task_type: {}
-          success_rate_by_complexity: {}
-          optimal_queue_depth: "number"
+          average_tokens_by_task_type: {}
+          token_efficiency_by_complexity: {}
+          optimal_token_queue_depth: "integer"
+          specialization_token_efficiency: {}
 
-      task_duration_estimates:
+      task_token_estimates:
         "{domain}_{task_type}":
-          p50_duration: "seconds"
-          p95_duration: "seconds"
-          factors: ["complexity", "dependencies"]
+          p50_tokens: "integer"
+          p90_tokens: "integer"
+          p99_tokens: "integer"
+          factors: ["complexity", "dependencies", "context_size"]
+          recommended_budget: "p90_tokens * 1.1"
 
-      parallelism_efficiency:
+      token_efficiency_patterns:
         by_tier:
-          tier_1: 0.2
-          tier_2: 0.6
-          tier_3: 0.85
-          tier_4: 0.75
+          tier_1: 0.85
+          tier_2: 0.92
+          tier_3: 0.88
+          tier_4: 0.82
 
       bottleneck_patterns:
         common_bottlenecks:
-          - pattern: "dba agent always bottleneck"
+          - pattern: "dba agent always has high token queue depth"
             frequency: 0.7
-            mitigation: "Spawn 2 dba instances for tier 3+"
+            mitigation: "Spawn 2 dba instances for tier 3+, allocate 150K tokens each"
 
 # ==============================================================================
-# REPORTING
+# REPORTING (TOKEN-BASED)
 # ==============================================================================
 
 reporting:
@@ -530,20 +600,23 @@ reporting:
     generated_at: "instruction completion"
     sections:
       - executive_summary
-      - performance_metrics
-      - agent_utilization
+      - token_consumption_metrics
+      - agent_token_utilization
+      - token_efficiency_analysis
       - bottleneck_analysis
       - quality_metrics
       - optimization_recommendations
+      - cost_summary
 
   weekly_report:
     template: "Agent_Memory/_system/templates/weekly_report.md"
     generated_at: "end of week"
     sections:
       - instructions_completed
-      - performance_trends
-      - agent_performance_rankings
+      - token_consumption_trends
+      - agent_efficiency_rankings
       - system_health
+      - cost_analysis
       - improvement_initiatives
 
   agent_scorecard:
@@ -553,63 +626,51 @@ reporting:
     sections:
       - performance_summary
       - tasks_completed
+      - tokens_consumed
+      - token_efficiency
       - success_rate
+      - average_complexity_handled
       - quality_metrics
       - areas_for_improvement
 
 # ==============================================================================
-# VISUALIZATION
+# VISUALIZATION (TOKEN-BASED)
 # ==============================================================================
 
 visualization:
   chart_types:
-    task_timeline:
-      type: "gantt_chart"
-      shows: "task execution timeline"
-      highlights: "critical path, parallelism, bottlenecks"
+    token_flow_diagram:
+      type: "sankey_diagram"
+      shows: "token flow through workflow"
+      left: "tasks"
+      middle: "agents"
+      right: "outputs"
+      width: "proportional to tokens consumed"
 
-    agent_utilization_heatmap:
+    task_complexity_distribution:
+      type: "histogram"
+      x_axis: "complexity score (1-10)"
+      y_axis: "number of tasks"
+      color: "by domain"
+
+    agent_token_efficiency_heatmap:
       type: "heatmap"
-      x_axis: "time"
+      x_axis: "task types"
       y_axis: "agents"
-      color: "utilization percentage"
+      color: "token efficiency (green = efficient, red = inefficient)"
 
-    dependency_graph:
+    token_consumption_timeline:
+      type: "area_chart"
+      x_axis: "token buckets (0-50K, 50K-100K, etc.)"
+      y_axis: "tokens consumed"
+      stacked_by: "agent"
+
+    dependency_graph_with_tokens:
       type: "directed_graph"
       nodes: "tasks"
       edges: "dependencies"
-      colors: "status"
-
-    throughput_chart:
-      type: "line_chart"
-      x_axis: "time"
-      y_axis: "tasks completed per hour"
-
-    queue_depth_chart:
-      type: "area_chart"
-      x_axis: "time"
-      y_axis: "queue depth"
-      series: ["global", "per_domain"]
-
-# ==============================================================================
-# API (File-Based)
-# ==============================================================================
-
-api:
-  query_metrics:
-    location: "Agent_Memory/{instruction_id}/queries/"
-    supported_queries:
-      - "get_task_metrics(task_id)"
-      - "get_agent_metrics(agent_name)"
-      - "get_instruction_summary(instruction_id)"
-      - "get_bottlenecks(instruction_id)"
-      - "get_recommendations(instruction_id)"
-
-  export_formats:
-    - yaml
-    - json
-    - markdown
-    - csv
+      node_size: "proportional to token budget"
+      node_color: "by status"
 
 # ==============================================================================
 # CONFIGURATION
@@ -617,7 +678,7 @@ api:
 
 configuration:
   metrics_retention:
-    heartbeats: "7 days"
+    heartbeats: "last 1M tokens worth of work"
     task_metrics: "90 days"
     agent_metrics: "1 year"
     instruction_metrics: "1 year"
@@ -631,3 +692,54 @@ configuration:
     compression: true
     archival: true
     archive_after: "90 days"
+
+# ==============================================================================
+# API (File-Based)
+# ==============================================================================
+
+api:
+  query_metrics:
+    location: "Agent_Memory/{instruction_id}/queries/"
+    supported_queries:
+      - "get_task_token_metrics(task_id)"
+      - "get_agent_token_metrics(agent_name)"
+      - "get_instruction_token_summary(instruction_id)"
+      - "get_token_bottlenecks(instruction_id)"
+      - "get_token_recommendations(instruction_id)"
+      - "get_token_efficiency_report(agent_name)"
+
+  export_formats:
+    - yaml
+    - json
+    - markdown
+    - csv
+
+---
+
+# MIGRATION SUMMARY
+
+**Removed Time-Based Metrics**:
+- duration_seconds
+- wait_time_seconds
+- execution_time_seconds
+- estimated_duration
+- SLA time targets (hours, days)
+- throughput_tasks_per_hour
+- average_task_duration
+
+**Replaced With Token-Based Metrics**:
+- token_budget
+- actual_tokens_used
+- token_efficiency
+- token_complexity_score (1-10)
+- queue_token_depth
+- tokens_consumed_per_period
+- average_tokens_per_task
+- token_utilization_percentage
+
+**Benefits**:
+- Objective, reproducible measurements
+- Directly tied to computational cost
+- Environment-independent
+- Enables precise optimization
+- Better reflects true task difficulty
