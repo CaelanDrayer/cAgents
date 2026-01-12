@@ -1,200 +1,428 @@
-# Agent Interaction Workflows
-## Organizational Orchestration Model
+# Workflow Agent Interactions
 
-> **Architecture Design**: Design a multi-tenant SaaS platform with real-time collaboration
-> **Security Review**: Comprehensive security audit of 127 source files
+How cAgents executes tasks across 11 domains using universal workflows.
 
 ---
 
-## Quick Summary: Agent Flow
+## Core Concept
 
-### Architecture Design (13 Steps)
-1. **Trigger** → detects domain, creates workspace
-   - *Like: Project Intake Office receiving and categorizing requests*
+**One workflow architecture, multiple domains.** The same 5 universal agents handle software, creative, business, marketing, sales, finance, operations, planning, HR, legal, and support—by loading domain-specific configurations.
 
-2. **Router** → classifies complexity (Tier 4)
-   - *Like: Project Manager determining scope and assigning project tier*
+## The Universal Workflow
 
-3. **Planner** → consults **pattern-recognition** + **risk-assessment**, decomposes to 10 tasks
-   - *Like: Program Manager consulting Architecture Practice and Risk Management, creating work breakdown structure*
+Every task flows through the same pipeline:
 
-4. **Executor** → invokes **product-owner** (requirements)
-   - *Like: Delivery Manager engaging Product Management for business requirements*
-
-5. **Executor** → invokes **CTO** (strategic constraints)
-   - *Like: Delivery Manager escalating to C-suite for strategic direction and budget approval*
-
-6. **Executor** → invokes **architect** (consults **pattern-recognition** + **dependency-analyzer**, designs architecture)
-   - *Like: Delivery Manager assigning Enterprise Architecture team who consults Architecture Practice and Technical Planning*
-
-7. **Executor** → parallel: **security-analyst** + **devops** + **cfo** + **performance-analyzer** (reviews)
-   - *Like: Delivery Manager coordinating cross-functional review teams (InfoSec, Infrastructure, Finance, Performance Engineering) working concurrently*
-
-8. **Executor** → invokes **scribe** (documentation)
-   - *Like: Delivery Manager engaging Technical Writers to consolidate all outputs into formal documentation*
-
-9. **Executor** → invokes **ceo** (approval, may escalate to **HITL**)
-   - *Like: Delivery Manager presenting to CEO for executive approval, potentially escalating to Board/Steering Committee*
-
-10. **Validator** → validates all outputs
-    - *Like: QA Team conducting acceptance testing against success criteria*
-
-11. **Validator** → parallel: **architecture-reviewer** + **security-analyst** + **documentation-reviewer** (QA)
-    - *Like: QA Team engaging independent review boards (Architecture Review Board, Security Audit, Documentation Standards) for final sign-off*
-
-12. **Validator** → classifies PASS
-    - *Like: QA Team certifying deliverables meet quality standards*
-
-13. **Orchestrator** → archives, extracts learnings
-    - *Like: PMO archiving project artifacts and extracting lessons learned for organizational knowledge base*
-
-### Security Review (3 Steps)
-1. **Reviewer Command** → detects CODE type, creates workspace
-   - *Like: Security Operations Center (SOC) receiving audit request and initializing assessment*
-
-2. **Reviewer Agent** → parallel: **security-analyst** + **security-specialist** + **dependency-auditor** + **qa-compliance-officer** + **code-standards-auditor** (concurrent audits)
-   - *Like: SOC Coordinator deploying 5 specialist teams (Application Security, Authentication/Identity, Supply Chain Security, Compliance, Secure Coding) to conduct simultaneous assessments*
-
-3. **Reviewer Agent** → aggregates findings, generates report
-   - *Like: SOC Coordinator consolidating all team findings, deduplicating, prioritizing by severity, and generating executive security report*
-
----
-
-## Architecture Design Workflow
-### Like a Strategic Initiative in an Enterprise
-
-**Think of this like launching a major enterprise initiative:** A stakeholder requests a strategic platform architecture. The request flows through intake (Trigger), gets scoped by a project manager (Router), is broken down by a program manager (Planner), coordinated by a delivery manager (Executor) who assembles cross-functional teams, validated by quality assurance (Validator), and archived by the PMO (Orchestrator).
-
-#### Orchestration Layers
-
-1. **Trigger** *(Intake/Project Intake Office)*
-   - Receives request: "Design multi-tenant SaaS architecture with real-time collaboration"
-   - Detects domain: SOFTWARE
-   - Creates project workspace → routes to **Router**
-
-2. **Router** *(Project Manager / Scoping Lead)*
-   - Analyzes complexity: multi-tenancy, real-time, compliance requirements
-   - Classifies as Tier 4 (Expert) - requires executive oversight
-   - Selects "architecture-design-tier4" template → hands off to **Planner**
-
-3. **Planner** *(Program Manager / Work Breakdown Lead)*
-   - Consults advisory teams:
-     - **pattern-recognition** *(Architecture Practice)* → suggests proven multi-tenant patterns
-     - **risk-assessment** *(Risk Management Office)* → identifies tenant isolation risks, cost overruns
-   - Decomposes into 10 work packages with dependencies → hands off to **Executor**
-
-#### Execution Teams (Coordinated by Executor)
-
-4. **Executor** *(Delivery Manager / Team Coordinator)* invokes **product-owner** *(Product Management)*
-   - Gathers business requirements: tenant volumes, compliance needs (GDPR, SOC2)
-
-5. **Executor** invokes **CTO** *(Chief Technology Officer / Executive Leadership)*
-   - Defines strategic constraints: tech stack (Node.js, PostgreSQL), budget ($50K/month), timeline (6 months)
-
-6. **Executor** invokes **architect** *(Enterprise Architecture Team)*
-   - Designs system architecture: shared DB with row-level security, Redis pub/sub for real-time
-   - Consults **pattern-recognition** *(Architecture Practice)* → receives proven patterns
-   - Consults **dependency-analyzer** *(Technical Planning)* → receives dependency maps
-
-7. **Executor** invokes specialist teams **in parallel** *(Cross-Functional Review)*:
-   - **security-analyst** *(Information Security Team)* → reviews design, flags missing encryption and audit logging
-   - **devops** *(Infrastructure/DevOps Team)* → designs AWS infrastructure (ECS Fargate, RDS, ElastiCache)
-   - **cfo** *(Chief Financial Officer / Finance)* → projects costs: $12.5K → $48K monthly with scaling
-   - **performance-analyzer** *(Performance Engineering Team)* → defines optimization strategies (caching, CDN)
-
-8. **Executor** invokes **scribe** *(Technical Documentation Team)*
-   - Consolidates all outputs into Architecture Decision Records (ADRs), diagrams, deployment guides
-
-9. **Executor** invokes **ceo** *(Chief Executive Officer / Executive Approval)*
-   - Reviews strategic investment, grants approval with conditions
-   - May escalate to **HITL** *(Board/Steering Committee)* for critical decisions
-
-#### Quality Assurance Layer
-
-10. **Executor** hands off to **Validator** *(Quality Assurance / Audit Team)*
-
-11. **Validator** conducts independent reviews, invokes **in parallel**:
-    - **architecture-reviewer** *(Architecture Review Board)* → validates design quality
-    - **security-analyst** *(Security Audit Team)* → independent security assessment
-    - **documentation-reviewer** *(Documentation Standards Team)* → validates completeness
-
-12. **Validator** classifies result: PASS with follow-up actions → hands off to **Orchestrator**
-
-#### Knowledge Management
-
-13. **Orchestrator** *(PMO / Knowledge Management Office)*
-    - Archives complete project workspace
-    - Extracts learnings to organizational knowledge base (patterns, processes, calibration data)
-
-**Outcome**: Production-ready architecture design with security validation, cost projections, executive approval, and comprehensive documentation.
+```
+User Request
+    ↓
+┌─────────────────────────────────────────────────────┐
+│ TRIGGER (Core Infrastructure)                       │
+│ • Parse request & detect domain                     │
+│ • Create instruction workspace                      │
+│ • Initialize Agent_Memory/{instruction_id}/         │
+└─────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────┐
+│ UNIVERSAL-ROUTER (Config-Driven)                    │
+│ • Load domain config: {domain}/router.yaml          │
+│ • Classify complexity: Tier 0-4                     │
+│ • Select task template or create custom             │
+└─────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────┐
+│ UNIVERSAL-PLANNER (Config-Driven)                   │
+│ • Load domain config: {domain}/planner.yaml         │
+│ • Decompose into domain-appropriate tasks           │
+│ • Assign to domain team agents                      │
+│ • Define acceptance criteria                        │
+└─────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────┐
+│ UNIVERSAL-EXECUTOR (Config-Driven)                  │
+│ • Load domain config: {domain}/executor.yaml        │
+│ • Spawn team agents via Task tool                   │
+│ • Execute tasks in dependency order                 │
+│ • Up to 50 agents in parallel                       │
+└─────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────┐
+│ UNIVERSAL-VALIDATOR (Config-Driven)                 │
+│ • Load domain config: {domain}/validator.yaml       │
+│ • Check acceptance criteria                         │
+│ • Run domain-specific quality gates                 │
+│ • Result: PASS | FIXABLE | BLOCKED                  │
+└─────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────┐
+│ UNIVERSAL-SELF-CORRECT (If FIXABLE)                 │
+│ • Load domain config: {domain}/self-correct.yaml    │
+│ • Attempt automated fixes                           │
+│ • Re-run validator                                  │
+└─────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────┐
+│ HITL (If BLOCKED) | ORCHESTRATOR (If PASS)          │
+│ • HITL: Escalate to human decision-maker            │
+│ • Orchestrator: Archive & extract learnings         │
+└─────────────────────────────────────────────────────┘
+    ↓
+Complete
+```
 
 ---
 
-## Security Review Workflow
-### Like a Rapid Security Audit
+## How It Works: Three Examples
 
-**Think of this like a rapid security audit:** A department requests a security review of their codebase. Instead of routing through multiple management layers, the request goes directly to the Security Operations Center (reviewer agent) which immediately deploys five specialist teams in parallel to conduct concurrent assessments and aggregate findings.
+### Example 1: Software - Fix Authentication Bug (Tier 2)
 
-#### Flat Coordination Model
+**User Request**: "Fix the login bug where users can't authenticate"
 
-1. **Reviewer Command** *(Security Operations Center / SOC Manager)*
-   - Receives request: "Audit src/ directory with security focus"
-   - Detects review type: CODE (127 files, 15K lines)
-   - Creates audit workspace → directly invokes **reviewer agent**
+**Domain**: Software
+**Tier**: 2 (Moderate)
 
-2. **Reviewer Agent** *(Security Audit Coordinator)* analyzes scope, deploys specialist teams **in parallel**:
-   - **security-analyst** *(Application Security Team)* → finds 2 CRITICAL (hardcoded JWT secret, SQL injection), 2 HIGH (missing auth, XSS), 2 MEDIUM (weak crypto, insecure randomness)
-   - **security-specialist** *(Authentication/Identity Team)* → finds missing rate limiting, permissive CORS, missing security headers
-   - **dependency-auditor** *(Supply Chain Security Team)* → identifies 3 vulnerable dependencies (lodash CVE-2020-8203, axios CVE-2021-3749)
-   - **qa-compliance-officer** *(Compliance/Regulatory Team)* → flags missing audit logging (SOC2 violation), insufficient error handling
-   - **code-standards-auditor** *(Secure Coding Standards Team)* → identifies missing input validation
+**Flow**:
 
-3. **Reviewer Agent** *(Security Audit Coordinator)*
-   - Receives all findings simultaneously
-   - Aggregates (removes duplicates, classifies by severity: 2 critical, 4 high, 6 medium, 3 low)
-   - Generates executive security report with remediation roadmap (~3.5 days effort)
-   - Returns directly to requester → no additional approval layers
+1. **Trigger** → Detects "software" domain, creates `inst_20260112_001/`
+2. **Universal-Router** → Loads `software/router.yaml`, classifies Tier 2
+3. **Universal-Planner** → Loads `software/planner.yaml`, creates tasks:
+   - Investigate auth flow
+   - Identify bug root cause
+   - Implement fix
+   - Write tests
+   - Run test suite
+4. **Universal-Executor** → Loads `software/executor.yaml`, spawns:
+   - `backend-developer` → Investigates, finds JWT validation error
+   - `backend-developer` → Fixes token validation logic
+   - `backend-developer` → Writes unit tests
+   - `qa-lead` → Runs full test suite (parallel)
+5. **Universal-Validator** → Loads `software/validator.yaml`:
+   - ✓ Bug fixed
+   - ✓ Tests passing (98% coverage)
+   - ✓ No security regressions
+   - **Result**: PASS
+6. **Orchestrator** → Archives to `Agent_Memory/_archive/`, extracts learnings
 
-**Outcome**: Comprehensive security assessment with 15 prioritized findings, immediate action items (45 min to fix critical issues), and compliance impact analysis.
-
----
-
-## Organizational Comparison
-
-### Architecture Design: Strategic Program Model
-**Layers**: 13 steps across 6 organizational layers
-- **Intake** (Trigger) → **Scoping** (Router) → **Planning** (Planner) → **Execution** (Executor coordinating 12 specialists) → **QA** (Validator) → **PMO** (Orchestrator)
-- **Teams**: Product, Executive (CTO, CEO, CFO), Technical (Architect, DevOps), Specialized (Security, Performance, Documentation), QA (3 review teams)
-- **Model**: Like launching a strategic enterprise initiative with executive oversight, cross-functional teams, and formal approval gates
-- **Duration**: ~45 minutes
-- **Coordination**: Sequential with selective parallelism at execution and QA layers
-
-### Security Review: Tactical Ops Model
-**Layers**: 3 steps, single coordination layer
-- **SOC Manager** (Reviewer Agent) → **5 Parallel Security Teams** → **Consolidated Report**
-- **Teams**: Application Security, Authentication, Supply Chain, Compliance, Secure Coding
-- **Model**: Like a rapid security audit where SOC directly deploys specialist teams, no management layers or approvals
-- **Duration**: ~12 minutes
-- **Coordination**: Flat parallel execution, autonomous completion
-
-### When to Use Each Model
-
-**Strategic/Hierarchical** (Architecture Design):
-- Foundational decisions with long-term impact
-- Requires executive alignment and budget approval
-- Multiple stakeholder groups (business, technical, financial)
-- Need for formal documentation and audit trails
-- Cross-functional coordination across departments
-
-**Tactical/Flat** (Security Review):
-- Rapid assessment of current state
-- Specialist work requiring deep expertise
-- Time-sensitive findings requiring immediate action
-- No approvals needed, purely technical analysis
-- Autonomous team execution with consolidated reporting
+**Agents Used**: backend-developer (3 tasks), qa-lead (1 task)
+**Duration**: ~8 minutes
+**Output**: Fixed code, passing tests, validation report
 
 ---
 
-## Key Insight
+### Example 2: Creative - Write Novel Chapter (Tier 3)
 
-cAgents orchestrates like an **adaptive organization**: strategic initiatives flow through formal program management (Trigger → Router → Planner → Executor → Validator → Orchestrator), while tactical operations deploy specialist teams directly (Reviewer → 5 Parallel Teams → Report). The architecture mirrors how high-performing organizations balance structure for strategic work with agility for operational execution.
+**User Request**: "Write Chapter 3 where the protagonist discovers the hidden truth"
+
+**Domain**: Creative
+**Tier**: 3 (Complex)
+
+**Flow**:
+
+1. **Trigger** → Detects "creative" domain, creates `inst_20260112_002/`
+2. **Universal-Router** → Loads `creative/router.yaml`, classifies Tier 3
+3. **Universal-Planner** → Loads `creative/planner.yaml`, creates tasks:
+   - Review story arc and character state
+   - Design revelation scene
+   - Write chapter draft
+   - Edit for pacing and emotion
+   - Continuity check
+4. **Universal-Executor** → Loads `creative/executor.yaml`, spawns:
+   - `story-architect` → Reviews arc, designs revelation (sequential)
+   - `prose-stylist` → Writes 3,500-word draft (sequential)
+   - `editor` → Refines pacing, dialogue, tension (sequential)
+   - `continuity-checker` → Validates timeline, character consistency (parallel)
+5. **Universal-Validator** → Loads `creative/validator.yaml`:
+   - ✓ Advances plot meaningfully
+   - ✓ Character voice consistent
+   - ✓ No continuity errors
+   - ✓ Emotional impact achieved
+   - **Result**: PASS
+6. **Orchestrator** → Archives chapter, updates story knowledge base
+
+**Agents Used**: story-architect, prose-stylist, editor, continuity-checker
+**Duration**: ~25 minutes
+**Output**: Polished chapter (3,500 words), continuity report
+
+---
+
+### Example 3: Marketing - Q1 Campaign Plan (Tier 4)
+
+**User Request**: "Design comprehensive Q1 product launch campaign with multi-channel strategy"
+
+**Domain**: Marketing
+**Tier**: 4 (Expert - requires leadership oversight)
+
+**Flow**:
+
+1. **Trigger** → Detects "marketing" domain, creates `inst_20260112_003/`
+2. **Universal-Router** → Loads `marketing/router.yaml`, classifies Tier 4
+3. **Universal-Planner** → Loads `marketing/planner.yaml`, consults intelligence:
+   - `predictive-analyst` → Forecasts campaign performance (parallel)
+   - `risk-assessment` → Identifies budget, timing, competitive risks (parallel)
+   - Creates 15 tasks across strategy, creative, media, analytics
+4. **Universal-Executor** → Loads `marketing/executor.yaml`, spawns in waves:
+   - **Wave 1** (Leadership):
+     - `cmo` → Defines strategic positioning, budget ($250K), goals
+     - `product-marketing-manager` → Develops messaging framework
+   - **Wave 2** (Planning - Parallel):
+     - `marketing-strategist` → Multi-channel strategy
+     - `demand-generation-manager` → Lead gen plan
+     - `content-marketing-manager` → Content calendar
+     - `digital-marketing-manager` → Paid media plan
+   - **Wave 3** (Execution - Parallel):
+     - `creative-director` → Campaign creative concepts
+     - `copywriter` → Ad copy, landing pages
+     - `email-marketing-specialist` → Email sequences
+     - `social-media-manager` → Social content plan
+     - `events-manager` → Launch event design
+   - **Wave 4** (Analytics):
+     - `marketing-analyst` → Tracking dashboards, attribution model
+5. **Universal-Validator** → Loads `marketing/validator.yaml`, spawns QA:
+   - `marketing-operations-manager` → Reviews feasibility, tech stack (parallel)
+   - `brand-manager` → Validates brand consistency (parallel)
+   - `marketing-data-analyst` → Validates metrics framework (parallel)
+   - **Result**: FIXABLE (budget exceeds approval threshold)
+6. **Universal-Self-Correct** → Loads `marketing/self-correct.yaml`:
+   - Re-engages `cmo` → Optimizes budget to $225K, adjusts paid media
+   - Re-runs validator → **Result**: PASS with CMO approval
+7. **HITL** → Escalates final approval to human (Tier 4 requirement)
+8. **Orchestrator** → Archives complete campaign plan, updates marketing patterns
+
+**Agents Used**: 14 agents (1 leadership, 3 planning, 5 execution, 2 creative, 3 QA)
+**Duration**: ~45 minutes
+**Output**: Complete campaign plan, creative brief, media plan, content calendar, tracking framework, budget breakdown
+
+---
+
+## Key Principles
+
+### 1. Config-Driven Domain Adaptation
+
+Universal agents load domain-specific configs:
+
+```
+Agent_Memory/_system/domains/
+├── software/
+│   ├── router.yaml      # Tier rules: "bug fix" → Tier 1-2
+│   ├── planner.yaml     # Task templates: test-driven workflow
+│   ├── executor.yaml    # Team: backend-dev, frontend-dev, qa
+│   ├── validator.yaml   # Gates: tests pass, no regressions
+│   └── self-correct.yaml
+├── creative/
+│   ├── router.yaml      # Tier rules: "write chapter" → Tier 2-3
+│   ├── planner.yaml     # Task templates: draft → edit → polish
+│   ├── executor.yaml    # Team: prose-stylist, editor, continuity
+│   ├── validator.yaml   # Gates: plot coherent, voice consistent
+│   └── self-correct.yaml
+└── marketing/
+    ├── router.yaml      # Tier rules: "campaign" → Tier 3-4
+    ├── planner.yaml     # Task templates: strategy → creative → media
+    ├── executor.yaml    # Team: CMO, strategist, creative, media
+    ├── validator.yaml   # Gates: on-brand, feasible, measurable
+    └── self-correct.yaml
+```
+
+### 2. Subagent Spawning Pattern
+
+Executors **never execute directly**—they spawn specialists:
+
+```python
+# Universal-Executor reads executor.yaml for domain
+config = load_config(f"{domain}/executor.yaml")
+
+for task in pending_tasks:
+    agent = config.get_agent_for_task(task.type)
+    result = spawn_agent(agent, task)  # Uses Task tool
+```
+
+Benefits:
+- **Modularity**: Swap agents without changing workflow
+- **Parallelization**: Up to 50 concurrent agents
+- **Specialization**: Right expert for each task
+- **Reusability**: Same agents across workflows
+
+### 3. Complexity Tiers
+
+| Tier | Type | Example | Workflow |
+|------|------|---------|----------|
+| 0 | Trivial | "What is X?" | Direct answer, no workflow |
+| 1 | Simple | "Fix typo" | Execute → Validate |
+| 2 | Moderate | "Fix bug", "Write chapter" | Plan → Execute → Validate |
+| 3 | Complex | "Add feature", "Campaign plan" | Plan → Parallel execution → Validate |
+| 4 | Expert | "Architecture design", "Major launch" | Full orchestration + HITL approval |
+
+### 4. Validation Outcomes
+
+| Outcome | Meaning | Next Step |
+|---------|---------|-----------|
+| **PASS** | Meets all criteria | Complete |
+| **FIXABLE** | Issues can be auto-corrected | Self-Correct → Re-validate |
+| **BLOCKED** | Requires human decision | HITL escalation |
+
+---
+
+## Special Workflows
+
+### Reviewer (Enhanced Code Review)
+
+**Shortcut**: Bypasses trigger/router, directly spawns QA agents.
+
+```
+/reviewer src/ --focus security
+    ↓
+┌─────────────────────────────────────────────────────┐
+│ REVIEWER AGENT (Intelligent Selection)              │
+│ • Analyzes codebase (127 files, 15K lines)          │
+│ • Selects relevant QA agents (not all 9)            │
+│ • Spawns in parallel:                               │
+│   - security-analyst                                │
+│   - code-standards-auditor                          │
+│   - dependency-auditor                              │
+│   - performance-analyzer                            │
+└─────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────┐
+│ AGGREGATION                                         │
+│ • Deduplicates findings                             │
+│ • Prioritizes by severity (CRITICAL → LOW)          │
+│ • Generates actionable report                       │
+└─────────────────────────────────────────────────────┘
+```
+
+**Duration**: ~12 minutes (vs. ~45 for full workflow)
+**Use Case**: Tactical review without strategic planning overhead
+
+### Optimizer (Universal Optimization)
+
+**Shortcut**: Direct optimization without full workflow.
+
+```
+/optimize src/ --type code --focus performance
+    ↓
+┌─────────────────────────────────────────────────────┐
+│ OPTIMIZER AGENT                                     │
+│ 1. Baseline measurement                             │
+│ 2. Multi-dimensional analysis (8 types)             │
+│ 3. Auto-apply safe optimizations                    │
+│ 4. Re-measure impact                                │
+│ 5. Generate report                                  │
+└─────────────────────────────────────────────────────┘
+```
+
+**Types**: code, content, process, data, infrastructure, campaign, creative, sales
+**Duration**: ~15 minutes
+**Use Case**: Focused optimization without planning/validation overhead
+
+---
+
+## Intelligence Layer (Proactive Agents)
+
+Five agents provide predictive insights to Router/Planner:
+
+| Agent | Function | When Used |
+|-------|----------|-----------|
+| **pattern-recognition** | Identifies recurring patterns, suggests proven solutions | Planning phase (all tiers) |
+| **risk-assessment** | Predicts failure points, security risks, bottlenecks | Planning phase (Tier 2-4) |
+| **dependency-analyzer** | Maps dependencies, optimizes execution order | Planning phase (Tier 3-4) |
+| **predictive-analyst** | Forecasts issues using historical data | Planning phase (Tier 3-4) |
+| **learning-coordinator** | Tracks outcomes, updates calibration | Post-completion (all tiers) |
+
+**Usage Pattern**:
+```
+Planner → Consults pattern-recognition + risk-assessment
+       → Incorporates insights into task plan
+       → Better upfront planning, fewer mid-flight corrections
+```
+
+---
+
+## QA Layer (9 Specialized Agents)
+
+Validator can spawn domain-specific QA agents:
+
+| Agent | Focus | Typical Domains |
+|-------|-------|-----------------|
+| architecture-reviewer | System design, patterns | Software, Data |
+| code-standards-auditor | Style, conventions | Software |
+| security-analyst | Vulnerabilities, OWASP | Software, Finance, Legal |
+| qa-compliance-officer | Regulatory compliance | Finance, HR, Legal |
+| performance-analyzer | Speed, memory, scalability | Software, Marketing |
+| test-coverage-validator | Test gaps | Software |
+| documentation-reviewer | Doc completeness | All domains |
+| dependency-auditor | Supply chain risks | Software, Operations |
+| accessibility-checker | WCAG compliance | Software, Marketing |
+
+**Intelligent Selection**: Reviewer only spawns relevant agents (30-50% faster).
+
+---
+
+## Execution Modes
+
+| Mode | Description | Use Case | Max Agents |
+|------|-------------|----------|------------|
+| **Sequential** | One task at a time | Dependencies, low complexity | 1 |
+| **Pipeline** | Streaming execution | Moderate dependencies | 5-10 |
+| **Swarm** | Fully parallel | Independent tasks, high volume | 50 |
+| **Mesh** | Hybrid parallel + coordination | Complex workflows | 20-30 |
+
+**Auto-Selected**: Executor chooses mode based on task dependencies and tier.
+
+---
+
+## Agent Memory Structure
+
+Every workflow creates persistent state:
+
+```
+Agent_Memory/
+├── _system/              # Infrastructure
+│   ├── registry.yaml     # All active instructions
+│   ├── domains/          # Domain configs (5 files × 11 domains)
+│   └── config/           # Reviewer, optimizer configs
+├── _knowledge/           # Learning layer
+│   ├── patterns/         # Proven solutions
+│   ├── calibration/      # Historical accuracy
+│   └── learnings/        # Extracted insights
+├── _archive/             # Completed workflows
+└── inst_20260112_001/    # Active instruction
+    ├── instruction.yaml  # Original request
+    ├── status.yaml       # Current phase
+    ├── workflow/
+    │   └── plan.yaml     # Task breakdown
+    ├── tasks/
+    │   ├── pending/
+    │   ├── in_progress/
+    │   └── completed/
+    ├── decisions/
+    │   └── router.yaml   # Tier classification
+    └── outputs/
+        └── final/        # Deliverables
+```
+
+**Pause/Resume**: Any workflow can stop and restart from Agent_Memory state.
+
+---
+
+## Performance
+
+| Metric | Result | Context |
+|--------|--------|---------|
+| **Parallel Execution** | 50x speedup | Swarm mode vs. sequential |
+| **Context Reduction** | 30-50% | Agent optimization (v6.4.0) |
+| **Reviewer Speed** | 81% faster | Critical findings (intelligent selection) |
+| **Actionable Findings** | 98% improvement | Auto-fix suggestions |
+| **Pattern Detection** | 78% accuracy | Cross-workflow learning |
+
+---
+
+## Summary
+
+**cAgents = One universal workflow × 11 domain configs × 228 specialized agents**
+
+- **Universal**: Same 5 workflow agents handle all domains
+- **Config-Driven**: Domains customize via YAML, not code
+- **Subagent Pattern**: Executors spawn specialists, don't execute
+- **Scalable**: Up to 50 concurrent agents
+- **Intelligent**: Predictive insights, auto-correction, learning
+- **Persistent**: Full state in Agent_Memory for pause/resume
+
+**Result**: Any request, any domain, fully automated end-to-end execution.
