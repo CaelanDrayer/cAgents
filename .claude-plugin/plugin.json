@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "6.5.0",
+  "version": "6.6.0",
   "description": "Universal multi-domain agent system for Claude Code with V2 Universal Workflow Architecture + Context Management + Task Consolidation + Enhanced Reviewer V2.0. Execute up to 50 concurrent agents with intelligent queue management. 229 specialized agents: 10 core infrastructure (including task-consolidator) + 219 domain experts. NEW IN 6.5: Context budget system (replaces time estimates), task consolidation for 40-88% context reduction per agent, intelligent splitting across 3-20x parallel agents. FEATURES: Enhanced reviewer (33% faster, 98% more actionable), recursive workflows, configuration-driven behavior, massive parallel execution. Domains: software (45), business (18), creative (18), planning (17), sales (18), marketing (22), finance (17), operations (15), hr (19), legal (14), support (18). Universal /trigger, /designer, /reviewer, /optimize commands.",
   "author": {
     "name": "CaelanDrayer",
