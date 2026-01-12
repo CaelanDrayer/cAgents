@@ -39,15 +39,11 @@ coverage/
 playwright-report/
 playwright/.cache/
 
-# Agent Memory runtime data (keep structure, ignore generated content)
-# Note: Agent_Memory is at PROJECT ROOT, not inside cAgents/
-# These patterns apply when cAgents is the root of a project
-Agent_Memory/inst_*/
-Agent_Memory/_archive/inst_*/
-Agent_Memory/_communication/inbox/*/msg_*.yaml
-Agent_Memory/_communication/broadcast/*.yaml
-Agent_Memory/_knowledge/calibration/*.yaml
-!Agent_Memory/_knowledge/calibration/.gitkeep
+# Agent Memory - Exclude entire directory (runtime data, not part of source)
+Agent_Memory/
+
+# Archive - Documentation archive (not part of source control)
+archive/
 
 # Domain-specific ignores
 # Each domain plugin may have additional ignores

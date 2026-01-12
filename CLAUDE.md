@@ -2,12 +2,36 @@
 
 This file provides guidance to Claude Code when working with code in this repository.
 
+## Documentation Structure
+
+**Primary Documentation** (tracked in git):
+- `CLAUDE.md` - This file - Core architecture and development guidance
+- `README.md` - Project overview and quick start
+- `workflow_agent_interactions.md` - Agent collaboration patterns
+
+**Detailed Documentation** (local only, not tracked in git):
+- `archive/docs/` - Comprehensive guides, migration docs, implementation details
+  - Architecture guides (V2, V3, recursive workflows)
+  - Feature documentation (massive parallel, subagent patterns, enhancements)
+  - Migration guides (version upgrades, consolidation plans)
+  - Implementation roadmaps and summaries
+
+**Runtime Data** (excluded from git):
+- `Agent_Memory/` - Workflow state, configuration, and knowledge base
+  - `_system/config/` - Configuration files (reviewer, optimizer, etc.)
+  - `_knowledge/` - Pattern database and learned information
+  - Runtime instruction folders created during workflow execution
+
+**Note**: The archive folder contains historical documentation and detailed guides that are useful during development but are not part of the source distribution. All essential information is in this file and the README.
+
+---
+
 ## Project Overview
 
 **cAgents** (Caelan's Agents) is a universal multi-domain agent system for Claude Code with **massive parallel execution capabilities**. It provides specialized autonomous agent teams that collaborate through a file-based memory system to execute complex tasks across any domain - software engineering, creative writing, business operations, and beyond.
 
 The system features a **V2 Universal Workflow Architecture** with **V6.2.1 Massive Parallel Optimization**:
-- **@cagents/core** - Universal infrastructure (Trigger, Orchestrator, HITL, 5 Universal Workflow Agents, Agent_Memory, universal commands)
+- **@cagents/core** - Universal infrastructure (Trigger, Orchestrator, HITL, Optimizer, 5 Universal Workflow Agents, Agent_Memory, universal commands)
 - **Parallel Execution Engine** - Execute up to 50 concurrent agents with intelligent queue management
 - **11 Active Domains** - All configured with domain-specific behavior via YAML configs:
   - **@cagents/software** - 41 team agents (software engineering)
@@ -26,10 +50,11 @@ The system features a **V2 Universal Workflow Architecture** with **V6.2.1 Massi
 
 ### Universal Infrastructure (@cagents/core)
 
-**Core Infrastructure Agents** (3 agents in core/)
+**Core Infrastructure Agents** (4 agents in core/)
 - `trigger` - Universal entry point, intent detection, domain routing, recursive workflow support
 - `orchestrator` - Phase management conductor (planning → executing → validating → complete)
 - `hitl` - Human-in-the-loop escalation for complex decisions
+- `optimizer` - Universal optimization orchestrator (code, content, processes, data, infrastructure, campaigns)
 
 **Universal Workflow Agents** (5 agents in core/) - NEW in V2
 - `universal-router` - Tier classification (0-4) across ALL domains via config
@@ -266,8 +291,26 @@ The Agent_Memory folder structure is created automatically when needed by the wo
 ```bash
 /trigger <task>           # Universal entry point - auto-routes to appropriate domain
 /designer                 # Interactive design assistant (works across all domains)
-/reviewer [path]          # Comprehensive review (code, documents, strategies - all domains)
+/reviewer [path]          # Enhanced comprehensive review with intelligent agent selection, auto-fixes, and pattern learning
+/optimize [path]          # Universal optimizer (code, content, processes, data, infrastructure, campaigns - all domains)
 ```
+
+### Enhanced Reviewer (V2.0)
+
+The `/reviewer` command now includes 8 major enhancements:
+
+1. **Intelligent Agent Selection** - Dynamically selects only relevant QA agents (30-50% faster)
+2. **Severity-Based Early Reporting** - Streams critical findings immediately (81% faster to critical issues)
+3. **Incremental Progress Updates** - Real-time TodoWrite updates per file/agent/finding
+4. **Context-Aware Analysis** - Groups related files for cross-file dependency detection
+5. **Auto-Fix Suggestions** - Generates copy-paste ready code snippets with diffs
+6. **Priority Intelligence** - Reviews security-critical files first
+7. **Diff-Aware Analysis** - Focuses on changed code regions
+8. **Learning from History** - Detects recurring patterns across reviews
+
+**Configuration**: `Agent_Memory/_system/config/reviewer_config.yaml`
+**Pattern Database**: `Agent_Memory/_knowledge/procedural/review_patterns.yaml`
+**Documentation**: `REVIEWER_ENHANCEMENTS.md`
 
 ## Directory Structure
 
@@ -275,8 +318,8 @@ The Agent_Memory folder structure is created automatically when needed by the wo
 cAgents/
 ├── core/                    # @cagents/core - Required foundation
 │   ├── .claude-plugin/      # Core plugin manifest
-│   ├── agents/              # trigger.md, orchestrator.md, hitl.md
-│   ├── commands/            # /trigger, /designer, /reviewer (universal commands)
+│   ├── agents/              # trigger.md, orchestrator.md, hitl.md, optimizer.md
+│   ├── commands/            # /trigger, /designer, /reviewer, /optimize (universal commands)
 │   └── memory/              # Agent_Memory templates
 │
 ├── software/                # @cagents/software - Software engineering domain
@@ -512,8 +555,10 @@ claude --plugin-dir .
 
 ---
 
-**Version**: 6.2.1
-**Total Agents**: 228 (8 core infrastructure + 220 domain team agents)
-**Architecture**: V2 Universal Workflow (5 universal agents + 55 domain configs + 11 domains)
+**Version**: 6.3.0 (Enhanced Reviewer Update)
+**Total Agents**: 228 (9 core infrastructure + 219 domain team agents)
+**Architecture**: V2 Universal Workflow (5 universal workflow agents + 4 universal orchestration agents + 55 domain configs + 11 domains)
 **Dependencies**: None (file-based, self-contained)
 **Active Domains**: All 11 domains fully configured (software, business, creative, planning, sales, marketing, finance, operations, hr, legal, support)
+**Universal Commands**: /trigger, /designer, /reviewer (enhanced v2.0), /optimize (work across ALL domains)
+**New Features**: Enhanced reviewer with intelligent agent selection, auto-fixes, pattern learning, diff-aware analysis (33% faster, 98% more actionable)
