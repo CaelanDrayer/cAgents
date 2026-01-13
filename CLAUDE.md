@@ -391,15 +391,68 @@ Universal review with 8 enhancements:
 Config: `Agent_Memory/_system/config/reviewer_config.yaml`
 Patterns: `Agent_Memory/_knowledge/procedural/review_patterns.yaml`
 
-### /optimize - Universal Optimizer
-8 types: code, content, process, data, infrastructure, campaign, creative, sales
+### /optimize - Universal Optimizer (V6.8)
+**NEW V6.8**: Trigger-style workflow with controller-centric coordination, zero-arg invocation, auto-detection.
 
+**5-Phase Workflow**: detection → analysis → planning → execution → validation
+- Creates instruction folder (`inst_{id}`) for each optimization
+- Uses controller-centric coordination with question-based delegation
+- Supports 8 optimization types: code, content, process, data, infrastructure, campaign, creative, sales
+
+**Simplified Invocation**:
 ```bash
-/optimize src/ --type code --focus performance
-/optimize --type content blog-posts/
+/optimize                              # Zero-arg: Auto-detect everything
+/optimize "Make the app faster"        # Natural language goal
+/optimize --auto                       # Comprehensive project scan
+/optimize src/ --type code             # Specific target (backward compatible)
+/optimize --continuous --interval 1d   # Background monitoring (NEW)
 ```
 
-See `docs/AGENT_OPTIMIZATION_INSTRUCTION.md` for optimization guidelines.
+**V6.8 Key Features**:
+- ✅ **Zero-arg invocation** - Auto-detect optimization targets from context
+- ✅ **Natural language goals** - "Make it faster" → performance optimization
+- ✅ **Instruction-based** - Full `inst_{id}` folder with workflow tracking
+- ✅ **Controller coordination** - Question-based delegation to specialists
+- ✅ **60+ detection patterns** - Comprehensive auto-scan across all types
+- ✅ **Continuous mode** - Background optimization monitoring
+- ✅ **Before/after metrics** - Comprehensive impact measurement
+
+**Configuration**:
+- Intent patterns: `Agent_Memory/_system/optimize/intent_patterns.yaml`
+- Scan patterns: `Agent_Memory/_system/optimize/scan_patterns.yaml`
+- Plan template: `Agent_Memory/_system/templates/optimization_plan.yaml`
+
+**Example Workflow**:
+```
+$ /optimize
+
+Detection Phase:
+  - Found 23 optimization opportunities
+  - Classified: code (12), process (8), content (3)
+  - Complexity tier: 3 (requires controller)
+
+Analysis Phase:
+  - Baseline metrics measured
+  - High-priority opportunities: 8
+  - Estimated impact: 30-50% improvement
+
+Planning Phase:
+  - Controller: engineering-manager
+  - Objectives: 3 defined
+  - Approach: question-based delegation
+
+Execution Phase:
+  ✓ Code-split components (bundle -36%)
+  ✓ Optimize images (FCP -50%)
+  ✓ Fix N+1 queries (query -99%)
+
+Validation Phase:
+  ✓ All tests passing
+  ✓ 18 optimizations applied
+  ✓ 5 risky pending approval
+```
+
+See `core/commands/optimize.md` for detailed workflow documentation.
 
 ## Agent Memory
 
