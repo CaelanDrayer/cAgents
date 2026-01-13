@@ -21,27 +21,5 @@
     "controller",
     "execution",
     "v7.0"
-  ],
-  "skills": [
-    {
-      "name": "cagents:creative:storytelling",
-      "description": "Story architecture, plot development, narrative structure"
-    },
-    {
-      "name": "cagents:creative:characters",
-      "description": "Character development, personality, arcs, relationships"
-    },
-    {
-      "name": "cagents:creative:worldbuilding",
-      "description": "World creation, setting design, lore development"
-    },
-    {
-      "name": "cagents:creative:writing",
-      "description": "Prose writing, dialogue, scene composition, editing"
-    },
-    {
-      "name": "cagents:creative:coordination",
-      "description": "Creative direction and writing project coordination"
-    }
   ]
 }

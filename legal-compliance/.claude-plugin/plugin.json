@@ -20,27 +20,5 @@
     "controller",
     "execution",
     "v7.0"
-  ],
-  "skills": [
-    {
-      "name": "cagents:legal:contracts",
-      "description": "Contract drafting, review, negotiation, and management"
-    },
-    {
-      "name": "cagents:legal:compliance",
-      "description": "Regulatory compliance, governance, audit, and risk management"
-    },
-    {
-      "name": "cagents:legal:ip",
-      "description": "Intellectual property protection, patents, trademarks, copyright"
-    },
-    {
-      "name": "cagents:legal:litigation",
-      "description": "Litigation support, dispute resolution, legal research"
-    },
-    {
-      "name": "cagents:legal-compliance:coordination",
-      "description": "Legal leadership and compliance coordination"
-    }
   ]
 }

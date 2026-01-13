@@ -58,31 +58,5 @@
     "controller",
     "execution",
     "v7.0"
-  ],
-  "skills": [
-    {
-      "name": "cagents:shared:leadership",
-      "description": "Executive leadership and strategic direction (CEO, CFO, COO, CTO, CRO, CSO, CPO, CCO)"
-    },
-    {
-      "name": "cagents:shared:planning",
-      "description": "Strategic and tactical planning capabilities (portfolio, project, program, OKR, roadmap)"
-    },
-    {
-      "name": "cagents:shared:data",
-      "description": "Data analytics and business intelligence (data-analyst, data-scientist, BI specialist)"
-    },
-    {
-      "name": "cagents:shared:quality",
-      "description": "Quality assurance, compliance, and risk management"
-    },
-    {
-      "name": "cagents:shared:customer",
-      "description": "Customer relations and account management"
-    },
-    {
-      "name": "cagents:shared:operations",
-      "description": "Operations management and process improvement"
-    }
   ]
 }

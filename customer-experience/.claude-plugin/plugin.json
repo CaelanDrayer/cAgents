@@ -20,27 +20,5 @@
     "controller",
     "execution",
     "v7.0"
-  ],
-  "skills": [
-    {
-      "name": "cagents:cx:support",
-      "description": "Customer support, helpdesk, ticket management, escalations"
-    },
-    {
-      "name": "cagents:cx:success",
-      "description": "Customer success, onboarding, adoption, retention"
-    },
-    {
-      "name": "cagents:cx:optimization",
-      "description": "Experience optimization, journey mapping, CX analytics"
-    },
-    {
-      "name": "cagents:cx:knowledge",
-      "description": "Knowledge management, documentation, self-service"
-    },
-    {
-      "name": "cagents:cx:coordination",
-      "description": "CX leadership and customer operations coordination"
-    }
   ]
 }

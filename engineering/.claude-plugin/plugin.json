@@ -21,31 +21,5 @@
     "controller",
     "execution",
     "v7.0"
-  ],
-  "skills": [
-    {
-      "name": "cagents:engineering:development",
-      "description": "Software development across frontend, backend, mobile, and full-stack"
-    },
-    {
-      "name": "cagents:engineering:architecture",
-      "description": "System architecture, design patterns, technical strategy"
-    },
-    {
-      "name": "cagents:engineering:devops",
-      "description": "DevOps, CI/CD, infrastructure, deployment automation"
-    },
-    {
-      "name": "cagents:engineering:security",
-      "description": "Security engineering, vulnerability assessment, compliance"
-    },
-    {
-      "name": "cagents:engineering:qa",
-      "description": "Quality assurance, testing strategy, test automation"
-    },
-    {
-      "name": "cagents:engineering:coordination",
-      "description": "Engineering management and technical leadership"
-    }
   ]
 }

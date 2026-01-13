@@ -22,27 +22,5 @@
     "controller",
     "execution",
     "v7.0"
-  ],
-  "skills": [
-    {
-      "name": "cagents:revenue:sales",
-      "description": "Sales strategy, pipeline management, forecasting, sales operations"
-    },
-    {
-      "name": "cagents:revenue:marketing",
-      "description": "Marketing strategy, campaigns, demand generation, content marketing"
-    },
-    {
-      "name": "cagents:revenue:gtm",
-      "description": "Go-to-market strategy, product launches, market positioning"
-    },
-    {
-      "name": "cagents:revenue:operations",
-      "description": "Revenue operations, CRM management, analytics"
-    },
-    {
-      "name": "cagents:revenue:coordination",
-      "description": "Revenue leadership and cross-functional coordination"
-    }
   ]
 }

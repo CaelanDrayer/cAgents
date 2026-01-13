@@ -51,31 +51,5 @@
     "./core/agents/universal-self-correct.md",
     "./core/agents/optimizer.md",
     "./core/agents/task-consolidator.md"
-  ],
-  "skills": [
-    {
-      "name": "cagents:trigger",
-      "description": "Universal entry point for all workflows - auto-detects domain, classifies complexity, routes to appropriate agents"
-    },
-    {
-      "name": "cagents:designer",
-      "description": "Interactive design mode - asks questions to flesh out ideas across all domains"
-    },
-    {
-      "name": "cagents:reviewer",
-      "description": "Enhanced universal review with intelligent agent selection, auto-fix suggestions, pattern learning"
-    },
-    {
-      "name": "cagents:optimizer",
-      "description": "Universal optimizer for code, content, processes, data, infrastructure, campaigns, creative, sales"
-    },
-    {
-      "name": "cagents:orchestrator",
-      "description": "Phase conductor managing routing → planning → coordinating → executing → validating"
-    },
-    {
-      "name": "cagents:controller-coordination",
-      "description": "Question-based delegation and synthesis - controllers ask questions, synthesize answers, coordinate implementation"
-    }
   ]
 }

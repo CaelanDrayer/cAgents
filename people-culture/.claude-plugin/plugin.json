@@ -20,27 +20,5 @@
     "controller",
     "execution",
     "v7.0"
-  ],
-  "skills": [
-    {
-      "name": "cagents:people:talent",
-      "description": "Talent acquisition, recruiting, and onboarding"
-    },
-    {
-      "name": "cagents:people:development",
-      "description": "Learning and development, career growth, performance management"
-    },
-    {
-      "name": "cagents:people:compensation",
-      "description": "Compensation planning, benefits, total rewards"
-    },
-    {
-      "name": "cagents:culture:building",
-      "description": "Culture development, employee engagement, DEI initiatives"
-    },
-    {
-      "name": "cagents:people-culture:coordination",
-      "description": "HR leadership and people operations coordination"
-    }
   ]
 }
