@@ -1,6 +1,6 @@
 {
   "name": "@cagents/core",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "description": "cAgents Core V7.0 - Controller-Centric Question-Based Delegation Architecture. Provides unified Trigger, Orchestrator, HITL, Optimizer, Task-Consolidator, and 5 universal workflow agents that work across ALL domains via configuration. NEW IN V7.0: Coordinating phase with question-based delegation, objective-driven planning (WHAT), controller expertise (HOW), synthesis-driven implementation. Enhanced Reviewer V2.0 with intelligent agent selection (33% faster), auto-fix generation (98% more actionable), pattern learning, diff-aware analysis. Context budget system with task consolidation for 40-60% context reduction. Includes universal commands and Agent_Memory system with domain configurations.",
   "author": {
     "name": "CaelanDrayer",

@@ -1,6 +1,6 @@
 {
   "name": "cagents-finance-operations",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "description": "Finance-Operations domain for cAgents V7.0 - Financial planning & analysis, accounting, operations management, supply chain, and business operations. 32 tier-2 controller and tier-3 execution agents including CFO, FP&A managers, financial analysts, operations directors, supply-chain managers, and more. Supports question-based delegation for finance and operations workflows with controller coordination.",
   "domain": "finance-operations",
   "tier": 3,

@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "description": "Universal multi-domain agent system with controller-centric question-based delegation architecture",
   "type": "module",
   "main": "index.js",

@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "description": "cAgents V7.0 - Universal multi-domain agent system with controller-centric question-based delegation architecture. 230 agents: 11 core infrastructure + 33 shared tier-2 capabilities + 186 domain specialists across 7 domains. NEW IN V7.0: Controller coordination phase with question-based delegation, objective-driven planning (WHAT vs HOW), synthesis-driven implementation, adaptive expert coordination. Enhanced Reviewer V2.0 with intelligent agent selection (33% faster), auto-fix generation (98% more actionable), pattern learning. Universal workflow agents work across all domains via YAML configuration. Up to 50x parallel execution with swarm/mesh modes. Universal /trigger, /designer, /reviewer, /optimize commands.",
   "author": {
     "name": "CaelanDrayer",

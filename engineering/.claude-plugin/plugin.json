@@ -1,6 +1,6 @@
 {
   "name": "cagents-engineering",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "description": "Engineering domain for cAgents V7.0 - Software development, architecture, DevOps, security, and QA specialists. 45 tier-2 controller and tier-3 execution agents including engineering-manager, architect, tech-lead, frontend/backend developers, DevOps engineers, security specialists, QA leads, and more. Supports question-based delegation for engineering workflows with controller coordination.",
   "domain": "engineering",
   "tier": 3,

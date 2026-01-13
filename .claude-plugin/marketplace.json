@@ -10,7 +10,7 @@
     {
       "name": "cagents",
       "description": "Universal multi-domain agent system for Claude Code with 230 specialized agents across 8 domains. V7.0.0 NEW: Controller-Centric Question-Based Delegation Architecture - Controllers coordinate work through expert Q&A, synthesize solutions, and manage implementation. Objective-driven planning (WHAT) with controller expertise (HOW). 4-tier architecture: 11 core infrastructure + 33 shared capabilities + 186 domain specialists. Enhanced coordination phase between planning and execution. Universal workflow agents work across all domains via YAML configuration. Features: question-based delegation, controller synthesis, massive parallel execution (up to 50 agents), recursive workflows, configuration-driven behavior, 4 execution modes (Sequential, Pipeline, Swarm, Mesh). Domains: engineering (45), revenue (40), finance-operations (32), people-culture (19), customer-experience (18), legal-compliance (14), creative (18), shared (33). Universal /trigger, /designer, /reviewer, /optimize commands with Enhanced Reviewer V2.0 (intelligent agent selection 33% faster, auto-fix suggestions 98% more actionable, pattern learning).",
-      "version": "7.0.0",
+      "version": "7.0.1",
       "author": {
         "name": "CaelanDrayer",
         "email": "caelan@caelandrayer.ca"
