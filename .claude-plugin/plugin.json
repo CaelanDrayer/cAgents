@@ -52,16 +52,6 @@
     "./core/agents/optimizer.md",
     "./core/agents/task-consolidator.md"
   ],
-  "dependencies": [
-    "cagents-shared-capabilities",
-    "cagents-engineering",
-    "cagents-revenue",
-    "cagents-finance-operations",
-    "cagents-people-culture",
-    "cagents-customer-experience",
-    "cagents-legal-compliance",
-    "cagents-creative"
-  ],
   "skills": [
     {
       "name": "cagents:trigger",
