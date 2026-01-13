@@ -1,5 +1,6 @@
 ---
 name: talent-acquisition-manager
+tier: execution
 description: Strategic recruitment leader. Use for recruiting strategy, pipeline management, and talent market insights.
 tools: Read, Write, Grep, Glob, TodoWrite
 model: sonnet

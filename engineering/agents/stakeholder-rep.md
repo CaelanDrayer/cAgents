@@ -1,5 +1,6 @@
 ---
 name: stakeholder-rep
+tier: execution
 description: Business stakeholder representative who gathers requirements, validates solutions meet business needs, and ensures stakeholder alignment. Use PROACTIVELY for requirements gathering, business validation, and stakeholder communication.
 model: sonnet
 color: cyan

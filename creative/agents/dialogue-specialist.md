@@ -1,5 +1,6 @@
 ---
 name: dialogue-specialist
+tier: execution
 description: Dialogue writing and conversation specialist. Crafts authentic character dialogue, conversation flow, and verbal exchanges. Use for dialogue-heavy scenes, character conversations, and speech refinement.
 capabilities: ["dialogue_writing", "conversation_flow", "character_voice_dialogue", "subtext", "dialogue_tags", "natural_speech", "conflict_dialogue", "verbal_exchanges"]
 tools: Read, Grep, Glob, Write, Edit, Bash, TodoWrite

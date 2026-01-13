@@ -1,5 +1,6 @@
 ---
 name: security-specialist
+tier: execution
 description: Security expert for vulnerability assessment and secure coding. Use PROACTIVELY when code touches auth, credentials, user input, or sensitive data.
 model: sonnet
 color: bright_white

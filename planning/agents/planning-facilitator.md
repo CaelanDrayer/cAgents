@@ -1,5 +1,6 @@
 ---
 name: planning-facilitator
+tier: execution
 description: Planning workshop and meeting facilitation specialist. Facilitates strategic planning sessions, builds consensus, manages group dynamics, captures outcomes. Use for planning facilitation.
 capabilities: ["workshop_facilitation", "consensus_building", "meeting_management", "group_dynamics", "stakeholder_alignment", "outcome_capture", "facilitation_techniques"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

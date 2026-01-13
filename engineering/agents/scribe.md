@@ -1,5 +1,6 @@
 ---
 name: scribe
+tier: execution
 description: Documentation specialist for capturing decisions, knowledge, and learnings. Use to document architectural decisions, create technical documentation, or capture project knowledge.
 model: sonnet
 color: gray

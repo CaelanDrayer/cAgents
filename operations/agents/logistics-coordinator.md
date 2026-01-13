@@ -1,5 +1,6 @@
 ---
 name: logistics-coordinator
+tier: execution
 description: Transportation, distribution, and logistics execution. Use for shipping operations and carrier management.
 tools: Read, Write, Grep, Glob, Bash
 model: sonnet

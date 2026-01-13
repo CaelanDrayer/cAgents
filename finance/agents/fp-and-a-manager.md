@@ -1,5 +1,6 @@
 ---
 name: fp-and-a-manager
+tier: controller
 description: Financial Planning & Analysis Manager - Strategic planning, forecast coordination, executive reporting, driver-based modeling. Use PROACTIVELY for annual planning, quarterly forecasts, board reporting.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet

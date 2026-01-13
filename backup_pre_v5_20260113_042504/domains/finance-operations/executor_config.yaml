@@ -1,0 +1,45 @@
+# Finance-Operations Domain Executor Configuration (V3.0)
+domain: finance-operations
+version: 3.0
+
+shared_agent_delegation:
+  financial_strategy:
+    when: "Tier 4 M&A, enterprise transformation"
+    delegate_to: [shared:ceo, shared:cfo, shared:coo, shared:strategic-planner]
+
+  operational_excellence:
+    when: "Tier 3+ process transformation, supply chain design"
+    delegate_to: [shared:operations-manager, shared:process-improvement-specialist]
+
+  compliance_risk:
+    when: "All tiers requiring compliance/risk assessment"
+    delegate_to: [shared:compliance-officer, shared:risk-manager, shared:process-auditor]
+
+  financial_analytics:
+    when: "Budgeting, forecasting, FP&A"
+    delegate_to: [shared:data-analyst, shared:business-intelligence-specialist]
+
+team_composition:
+  tier_1:
+    core_team: [budget-analyst, cost-accountant]
+    shared_agents: []
+
+  tier_2:
+    core_team: [financial-planner, supply-chain-manager, procurement-specialist]
+    shared_agents: [shared:data-analyst, shared:operations-manager, shared:process-auditor]
+
+  tier_3:
+    core_team: [financial-planner, supply-chain-manager, lean-specialist, audit-manager]
+    shared_agents: [shared:strategic-planner, shared:cfo, shared:operations-manager, shared:process-improvement-specialist]
+
+  tier_4:
+    core_team: [full-finance-operations-team]
+    shared_agents: [shared:ceo, shared:cfo, shared:coo, shared:strategic-planner, shared:risk-manager, shared:change-manager]
+
+execution_modes:
+  sequential:
+    use_when: "Budget creation, single process optimization"
+  pipeline:
+    use_when: "FP&A cycles, quarterly planning"
+  mesh:
+    use_when: "Enterprise transformation, M&A integration"

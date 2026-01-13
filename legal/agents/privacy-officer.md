@@ -1,5 +1,6 @@
 ---
 name: privacy-officer
+tier: execution
 description: Data privacy and protection specialist. Use PROACTIVELY for GDPR, CCPA, privacy policies, data protection agreements, and privacy program management.
 tools: Read, Write, Grep, Glob, TodoWrite
 model: sonnet

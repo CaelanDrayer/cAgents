@@ -1,5 +1,6 @@
 ---
 name: recruiter
+tier: execution
 description: Full-cycle recruiter. Use for candidate sourcing, screening, engagement, and offer negotiation.
 tools: Read, Write, Grep, Bash, TodoWrite
 model: sonnet

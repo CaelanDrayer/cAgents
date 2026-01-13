@@ -1,5 +1,6 @@
 ---
 name: narrative-designer
+tier: execution
 description: Narrative flow and story progression specialist. Designs narrative arc, story flow, chapter transitions, and overall story progression. Use for narrative structure and flow tasks.
 capabilities: ["narrative_arc", "story_flow", "chapter_progression", "transitions", "narrative_cohesion", "story_rhythm", "episodic_structure", "serial_narrative"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

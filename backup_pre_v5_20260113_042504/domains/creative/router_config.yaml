@@ -1,0 +1,435 @@
+# Creative Domain Router Configuration (V3.0)
+# Complexity classification and template matching for creative writing tasks
+
+domain: creative
+version: 3.0
+description: "Tier classification and routing for creative writing, storytelling, and narrative development tasks"
+
+# Tier 2 Shared Agents
+tier2_shared_agents:
+  leadership:
+    - shared:ceo
+    - shared:cpo
+  planning:
+    - shared:strategic-planner
+    - shared:project-manager
+    - shared:roadmap-planner
+  data:
+    - shared:market-research-analyst
+    - shared:data-analyst
+  quality:
+    - shared:quality-manager
+    - shared:performance-analyst
+  operations:
+    - shared:operations-manager
+    - shared:resource-planner
+
+# Tier Classification Rules
+# How to assign tiers 0-4 for creative domain tasks
+
+tier_classification:
+  tier_0_indicators:
+    - "Question about writing technique or concept"
+    - "Explanation request about storytelling"
+    - "How to approach a creative challenge"
+    keywords: [what, how, explain, define, technique, approach]
+    examples:
+      - "What is the hero's journey?"
+      - "How do I show not tell?"
+      - "Explain three-act structure"
+
+  tier_1_indicators:
+    - "Minor edit or polish"
+    - "Single character detail"
+    - "Small worldbuilding element"
+    - "Quick scene revision"
+    scope: single_element
+    time_estimate: "< 30 minutes"
+    examples:
+      - "Fix grammar in this paragraph"
+      - "Give this character blue eyes instead of brown"
+      - "Add a mountain range to the map"
+      - "Make this dialogue more natural"
+
+  tier_2_indicators:
+    - "Single scene or chapter"
+    - "One character development"
+    - "Single location design"
+    - "Specific subplot or arc"
+    scope: single_component
+    time_estimate: "1-4 hours"
+    required_agents: 1-2
+    shared_agent_candidates: [shared:project-manager, shared:quality-manager]
+    examples:
+      - "Write the tavern scene where they meet"
+      - "Develop the antagonist's backstory"
+      - "Design the magic academy setting"
+      - "Edit this chapter for pacing"
+
+  tier_3_indicators:
+    - "Multi-chapter story arc"
+    - "Full character cast development"
+    - "Complex worldbuilding system"
+    - "Major manuscript revision"
+    - "Multiple coordinated elements"
+    scope: multi_component
+    time_estimate: "4-12 hours"
+    required_agents: 3-5
+    shared_agent_usage: [shared:strategic-planner, shared:project-manager, shared:quality-manager]
+    examples:
+      - "Write the 5-chapter betrayal arc"
+      - "Develop all main and supporting characters"
+      - "Design complete magic system with rules"
+      - "Developmental edit for this manuscript"
+
+  tier_4_indicators:
+    - "Full novel or novella"
+    - "Complete series bible"
+    - "Entire fictional universe"
+    - "Major multi-book project"
+    - "Comprehensive worldbuilding"
+    scope: large_scale_creative_work
+    time_estimate: "> 12 hours"
+    required_agents: 5+
+    multiple_phases: true
+    shared_agent_required: [shared:cpo, shared:strategic-planner, shared:project-manager, shared:quality-manager]
+    examples:
+      - "Write a 80,000-word fantasy novel"
+      - "Create series bible for epic fantasy trilogy"
+      - "Design entire sci-fi universe with cultures, tech, history"
+      - "Write and edit complete manuscript start to finish"
+
+# Task Templates
+# Common creative task patterns with default tiers
+
+templates:
+  write_scene:
+    description: "Write a single scene or chapter"
+    default_tier: 2
+    keywords: [write, scene, chapter, draft, compose]
+    required_entities: [scene_description, characters, setting]
+    optional_entities: [pov, tone, word_count]
+    shared_agents: [shared:quality-manager]
+    scope_adjustments:
+      - condition: "Multiple POV characters"
+        adjustment: +1
+      - condition: "Complex action or emotion"
+        adjustment: +1
+      - condition: "Simple dialogue scene"
+        adjustment: 0
+    examples:
+      - "Write the opening scene in the throne room"
+      - "Draft chapter 5 where they discover the truth"
+      - "Compose the climactic battle scene"
+
+  develop_character:
+    description: "Create or develop character(s)"
+    default_tier: 2
+    keywords: [character, protagonist, antagonist, backstory, personality, arc]
+    required_entities: [character_role]
+    optional_entities: [character_count, depth_level]
+    shared_agents: [shared:quality-manager]
+    scope_adjustments:
+      - condition: "Full cast (5+ characters)"
+        adjustment: +1
+      - condition: "Deep psychological development"
+        adjustment: +1
+      - condition: "Single character profile"
+        adjustment: 0
+    examples:
+      - "Develop the protagonist's character arc"
+      - "Create backstory for the mentor character"
+      - "Design full cast for fantasy adventure"
+
+  design_world:
+    description: "Worldbuilding for setting, magic, culture, etc."
+    default_tier: 2
+    keywords: [world, setting, magic, culture, history, geography]
+    required_entities: [world_element]
+    optional_entities: [scope, genre]
+    shared_agents: [shared:strategic-planner, shared:quality-manager]
+    scope_adjustments:
+      - condition: "Entire universe or planet"
+        adjustment: +1
+      - condition: "Complex system (magic, tech, society)"
+        adjustment: +1
+      - condition: "Single location"
+        adjustment: 0
+    examples:
+      - "Design the magic system for this fantasy world"
+      - "Create the culture and customs of the elf kingdom"
+      - "Build the geography and climate of the continent"
+
+  outline_plot:
+    description: "Plot structure, outline, beat sheet creation"
+    default_tier: 2
+    keywords: [plot, outline, structure, beats, arc, story]
+    required_entities: [story_scope]
+    optional_entities: [length, acts]
+    shared_agents: [shared:project-manager, shared:strategic-planner]
+    scope_adjustments:
+      - condition: "Full novel outline"
+        adjustment: +1
+      - condition: "Multi-book series"
+        adjustment: +2
+      - condition: "Single story or chapter"
+        adjustment: 0
+    examples:
+      - "Outline the three-act structure for this story"
+      - "Create beat sheet for mystery novel"
+      - "Design plot structure for fantasy trilogy"
+
+  edit_manuscript:
+    description: "Edit existing creative writing"
+    default_tier: 2
+    keywords: [edit, revise, polish, improve, fix, rewrite]
+    required_entities: [edit_type, manuscript]
+    optional_entities: [length, issues]
+    shared_agents: [shared:quality-manager]
+    scope_adjustments:
+      - condition: "Developmental edit (structure, plot, character)"
+        adjustment: +1
+      - condition: "Full manuscript edit"
+        adjustment: +1
+      - condition: "Copyedit only (grammar, spelling)"
+        adjustment: 0
+    examples:
+      - "Developmental edit for pacing issues"
+      - "Line edit this chapter for prose quality"
+      - "Copyedit manuscript for grammar and typos"
+
+  write_dialogue:
+    description: "Write or improve character dialogue"
+    default_tier: 1
+    keywords: [dialogue, conversation, speech, talk]
+    required_entities: [characters, context]
+    optional_entities: [tone, conflict]
+    scope_adjustments:
+      - condition: "Complex multi-character conversation"
+        adjustment: +1
+      - condition: "Emotionally charged or confrontational"
+        adjustment: +1
+      - condition: "Simple two-person exchange"
+        adjustment: 0
+    examples:
+      - "Write dialogue for the argument scene"
+      - "Improve this conversation to show tension"
+      - "Create witty banter between protagonists"
+
+  develop_subplot:
+    description: "Create or develop subplot or arc"
+    default_tier: 2
+    keywords: [subplot, arc, thread, secondary]
+    required_entities: [subplot_focus]
+    optional_entities: [characters, length]
+    shared_agents: [shared:project-manager]
+    scope_adjustments:
+      - condition: "Multiple interwoven subplots"
+        adjustment: +1
+      - condition: "Subplot spans full novel"
+        adjustment: +1
+      - condition: "Short contained subplot"
+        adjustment: 0
+    examples:
+      - "Develop romance subplot between side characters"
+      - "Create mystery subplot that resolves in act 2"
+      - "Design character growth arc for protagonist"
+
+  create_lore:
+    description: "History, mythology, legends, backstory"
+    default_tier: 2
+    keywords: [lore, history, mythology, legend, backstory, past]
+    required_entities: [lore_topic]
+    optional_entities: [time_span, depth]
+    shared_agents: [shared:strategic-planner]
+    scope_adjustments:
+      - condition: "Entire world history (thousands of years)"
+        adjustment: +1
+      - condition: "Complex mythology system"
+        adjustment: +1
+      - condition: "Single historical event"
+        adjustment: 0
+    examples:
+      - "Create the ancient war that shaped this world"
+      - "Design pantheon of gods and their mythology"
+      - "Write backstory for the fallen kingdom"
+
+  design_setting:
+    description: "Specific location or environment design"
+    default_tier: 1
+    keywords: [location, place, setting, environment, city, building]
+    required_entities: [location_type]
+    optional_entities: [atmosphere, purpose]
+    scope_adjustments:
+      - condition: "Multiple interconnected locations"
+        adjustment: +1
+      - condition: "Detailed map and geography"
+        adjustment: +1
+      - condition: "Single room or building"
+        adjustment: 0
+    examples:
+      - "Design the wizard's tower in detail"
+      - "Create the capital city with districts"
+      - "Describe the haunted forest setting"
+
+  write_description:
+    description: "Descriptive prose for scene, character, setting"
+    default_tier: 1
+    keywords: [describe, description, appearance, atmosphere]
+    required_entities: [subject]
+    optional_entities: [style, length]
+    scope_adjustments:
+      - condition: "Multiple elements to describe"
+        adjustment: +1
+      - condition: "Very specific style requirements"
+        adjustment: +1
+      - condition: "Single element description"
+        adjustment: 0
+    examples:
+      - "Describe the protagonist's appearance"
+      - "Write atmospheric description of the dungeon"
+      - "Describe the battle aftermath scene"
+
+  continuity_check:
+    description: "Check for plot holes, inconsistencies, continuity errors"
+    default_tier: 2
+    keywords: [continuity, consistency, plot hole, error, contradiction]
+    required_entities: [manuscript]
+    optional_entities: [scope]
+    shared_agents: [shared:quality-manager]
+    scope_adjustments:
+      - condition: "Full novel or series"
+        adjustment: +1
+      - condition: "Multi-book series"
+        adjustment: +2
+      - condition: "Single chapter or scene"
+        adjustment: 0
+    examples:
+      - "Check manuscript for continuity errors"
+      - "Find plot holes in this story arc"
+      - "Verify character consistency across trilogy"
+
+# Scope Adjustment Rules
+# Additional factors that increase/decrease tier
+
+scope_adjustments:
+  increase_tier:
+    - indicator: "Multiple genres blended"
+      adjustment: +1
+    - indicator: "Complex narrative structure (non-linear, multiple POVs)"
+      adjustment: +1
+    - indicator: "Extensive research required"
+      adjustment: +1
+    - indicator: "Multiple story threads to coordinate"
+      adjustment: +1
+    - indicator: "Full manuscript length (50k+ words)"
+      adjustment: +1
+    - indicator: "Series-level coordination needed"
+      adjustment: +1
+
+  decrease_tier:
+    - indicator: "Template or existing example available"
+      adjustment: -1
+    - indicator: "Simple linear narrative"
+      adjustment: 0
+    - indicator: "Short form (flash fiction, microfiction)"
+      adjustment: -1
+    - indicator: "Single POV, single timeline"
+      adjustment: 0
+
+# Calibration Tracking
+# Historical accuracy of tier assignments
+
+calibration:
+  total_routed: 0
+  tier_accuracy:
+    tier_0: {assigned: 0, correct: 0, over: 0, under: 0, accuracy: 0.0}
+    tier_1: {assigned: 0, correct: 0, over: 0, under: 0, accuracy: 0.0}
+    tier_2: {assigned: 0, correct: 0, over: 0, under: 0, accuracy: 0.0}
+    tier_3: {assigned: 0, correct: 0, over: 0, under: 0, accuracy: 0.0}
+    tier_4: {assigned: 0, correct: 0, over: 0, under: 0, accuracy: 0.0}
+
+  template_accuracy:
+    write_scene: {used: 0, success: 0, accuracy: 0.0}
+    develop_character: {used: 0, success: 0, accuracy: 0.0}
+    design_world: {used: 0, success: 0, accuracy: 0.0}
+    outline_plot: {used: 0, success: 0, accuracy: 0.0}
+    edit_manuscript: {used: 0, success: 0, accuracy: 0.0}
+    write_dialogue: {used: 0, success: 0, accuracy: 0.0}
+    develop_subplot: {used: 0, success: 0, accuracy: 0.0}
+    create_lore: {used: 0, success: 0, accuracy: 0.0}
+    design_setting: {used: 0, success: 0, accuracy: 0.0}
+    write_description: {used: 0, success: 0, accuracy: 0.0}
+    continuity_check: {used: 0, success: 0, accuracy: 0.0}
+
+  common_patterns:
+    - pattern: "Single scenes typically tier 1-2"
+      observation: "Length and complexity drive tier"
+    - pattern: "Character development tier 2-3"
+      observation: "Depth and number of characters key factors"
+    - pattern: "Worldbuilding tier 2-3"
+      observation: "Scope of world element determines tier"
+    - pattern: "Edits tier 1-3"
+      observation: "Edit type (copy vs developmental) drives tier"
+
+# Domain-Specific Notes
+
+domain_notes: |
+  Creative domain routing considerations (V3.0):
+
+  **Shared Agent Integration**:
+  - Tier 2+: Use shared:project-manager for story planning and pacing
+  - Tier 3+: Leverage shared:strategic-planner for series planning
+  - Tier 4: Require shared:cpo for major creative direction decisions
+  - All tiers: Use shared:quality-manager for editorial quality gates
+
+  **Word Count as Scope Indicator**:
+  - Flash fiction (<1000 words): Usually tier 1-2
+  - Short story (1000-7500 words): Usually tier 2
+  - Novelette (7500-20k words): Usually tier 2-3
+  - Novella (20k-50k words): Usually tier 3
+  - Novel (50k-120k words): Usually tier 3-4
+  - Epic novel (120k+ words): Usually tier 4
+
+  **Edit Types**:
+  - Copyedit (grammar, spelling): Tier 1
+  - Line edit (prose quality, flow): Tier 2
+  - Developmental edit (structure, plot, character): Tier 3
+  - Full manuscript edit: Add +1 tier
+
+  **Genre Complexity**:
+  - Literary fiction: May require tier +1 (nuanced prose)
+  - Fantasy/Sci-Fi: Often tier +1 (worldbuilding needed)
+  - Mystery/Thriller: Tier +1 (plot complexity, clues)
+  - Romance: Usually standard tier (character-focused)
+  - Horror: Standard tier, unless psychological depth needed
+
+  **Common Tier Mistakes**:
+  - Under-tiering worldbuilding (assign tier 2 minimum)
+  - Over-tiering simple scenes (tier 2 usually sufficient)
+  - Missing multi-POV complexity (requires tier increase)
+  - Underestimating full novel scope (minimum tier 3)
+
+  **Creative Domain Velocity**:
+  - Creative writing is iterative by nature
+  - Multiple drafts and revisions expected
+  - Quality over speed for creative work
+  - "Done" is subjective - may need human judgment
+  - Word count provides objective completion criterion
+
+  **Coordination Complexity**:
+  - Series work requires continuity tracking across books
+  - Multi-POV requires character voice consistency
+  - Non-linear narrative increases coordination overhead
+  - Ensemble casts need character interaction coordination
+
+  **Agent Specialization Hints**:
+  - prose-stylist: Actual writing (scenes, chapters, descriptions)
+  - character-designer: Character creation and development
+  - worldbuilder: Settings, magic systems, cultures
+  - story-architect: Plot structure, outlines, beats
+  - editor: Manuscript revision and improvement
+  - dialogue-specialist: Character conversations
+  - continuity-checker: Plot holes, consistency errors
+  - copy-editor: Grammar, spelling, formatting
+  - cco: High-level creative direction (tier 4 only)

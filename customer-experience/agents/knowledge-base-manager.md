@@ -1,5 +1,6 @@
 ---
 name: knowledge-base-manager
+tier: execution
 description: Knowledge base strategist and content curator. Use when building self-service content, organizing documentation, or improving discoverability.
 tools: Read, Grep, Glob, Write
 model: sonnet

@@ -1,5 +1,6 @@
 ---
 name: financial-auditor
+tier: execution
 description: Internal audit, control testing, SOX compliance, audit findings. Use PROACTIVELY for control testing, audit planning, compliance reviews.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet

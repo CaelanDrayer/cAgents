@@ -1,0 +1,48 @@
+# Creative Domain Validator Configuration (V3.0)
+domain: creative
+version: 3.0
+
+shared_quality_gates:
+  editorial_quality:
+    validator: shared:quality-manager
+    when: "All tiers"
+    criteria:
+      - "Editorial standards met"
+      - "Writing quality excellent"
+      - "No plot holes or inconsistencies"
+
+  creative_direction:
+    validator: shared:cpo
+    when: "Tier 4 novels, series"
+    criteria:
+      - "Creative vision aligned"
+      - "Brand/style consistent"
+      - "Strategic goals met"
+
+domain_quality_checks:
+  manuscript_review:
+    validators: [editor, continuity-checker]
+    criteria:
+      - "Grammar and spelling correct"
+      - "Pacing appropriate"
+      - "Continuity maintained"
+
+  story_validation:
+    validators: [story-architect, character-designer]
+    criteria:
+      - "Plot structure sound"
+      - "Character arcs complete"
+      - "Narrative coherent"
+
+validation_workflow:
+  tier_1:
+    gates: [manuscript_review]
+  tier_2:
+    gates: [manuscript_review, editorial_quality]
+    shared_agents: [shared:quality-manager]
+  tier_3:
+    gates: [story_validation, manuscript_review, editorial_quality]
+    shared_agents: [shared:quality-manager]
+  tier_4:
+    gates: [all_gates, creative_direction]
+    shared_agents: [shared:quality-manager, shared:cpo]

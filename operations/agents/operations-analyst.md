@@ -1,5 +1,6 @@
 ---
 name: operations-analyst
+tier: execution
 description: Operations data analysis and performance reporting. Use for metrics, analysis, and operational insights.
 tools: Read, Write, Grep, Glob, Bash
 model: sonnet

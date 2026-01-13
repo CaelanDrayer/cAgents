@@ -1,5 +1,6 @@
 ---
 name: portfolio-manager
+tier: execution
 description: Portfolio planning and optimization specialist. Prioritizes initiatives across portfolio, optimizes resource allocation, maximizes portfolio value. Use for portfolio-level planning and optimization.
 capabilities: ["portfolio_planning", "initiative_prioritization", "resource_optimization", "portfolio_analysis", "value_maximization", "capacity_planning", "portfolio_governance"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

@@ -1,5 +1,6 @@
 ---
 name: support-quality-analyst
+tier: execution
 description: Support quality assurance and coaching specialist. Use when reviewing ticket quality, identifying coaching needs, or improving support standards.
 tools: Read, Grep, Glob, Write
 model: sonnet

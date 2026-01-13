@@ -1,5 +1,6 @@
 ---
 name: ceo
+tier: controller
 description: Chief Executive Officer providing strategic vision and company direction. Use PROACTIVELY for strategic decisions and major initiatives.
 model: opus
 color: purple

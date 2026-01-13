@@ -1,5 +1,6 @@
 ---
 name: employee-relations-specialist
+tier: execution
 description: Workplace conflict resolution and employee advocacy expert. Use PROACTIVELY for investigations, conflict mediation, policy interpretation, and retention conversations.
 tools: Read, Write, Grep, TodoWrite
 model: sonnet

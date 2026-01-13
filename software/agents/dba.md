@@ -1,5 +1,6 @@
 ---
 name: dba
+tier: execution
 description: Database administrator specializing in database design, optimization, performance tuning, and data integrity. Use PROACTIVELY for schema changes, query optimization, database migrations, backup/recovery, and data security.
 model: sonnet
 color: bright_cyan

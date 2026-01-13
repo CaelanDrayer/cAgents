@@ -1,5 +1,6 @@
 ---
 name: hr-compliance-specialist
+tier: execution
 description: Employment law and regulatory compliance expert. Use PROACTIVELY for legal compliance, policy development, audit readiness, and risk mitigation.
 tools: Read, Write, Grep, TodoWrite
 model: sonnet

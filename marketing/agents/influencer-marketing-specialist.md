@@ -1,5 +1,6 @@
 ---
 name: influencer-marketing-specialist
+tier: execution
 description: Influencer marketing and creator partnerships specialist. Use when influencer campaigns, creator collaborations, ambassador programs, or influencer ROI tracking needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

@@ -1,5 +1,6 @@
 ---
 name: tax-specialist
+tier: execution
 description: Tax planning, compliance, filing, credits and deductions optimization. Use PROACTIVELY for tax returns, tax provision, tax strategy, tax audits.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet

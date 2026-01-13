@@ -1,5 +1,6 @@
 ---
 name: onboarding-specialist
+tier: execution
 description: New hire integration expert managing pre-boarding, orientation, and 90-day ramp. Use PROACTIVELY for onboarding programs, new hire experience, and early retention.
 tools: Read, Write, Bash, TodoWrite
 model: sonnet

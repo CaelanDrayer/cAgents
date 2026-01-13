@@ -1,5 +1,6 @@
 ---
 name: frontend-lead
+tier: controller
 description: Frontend domain manager for tactical planning, team coordination, and code review. Use PROACTIVELY for tier 3-4 instructions requiring frontend work breakdown, task assignment, or frontend team management.
 model: sonnet
 color: bright_cyan

@@ -1,0 +1,42 @@
+# Revenue Domain Validator Configuration (V3.0)
+domain: revenue
+version: 3.0
+
+shared_quality_gates:
+  business_validation:
+    validator: shared:business-analyst
+    when: "Tier 3+ strategies, launches"
+    criteria:
+      - "Business objectives met"
+      - "ROI projections validated"
+      - "Market fit confirmed"
+
+  quality_assurance:
+    validator: shared:quality-manager
+    when: "All tiers"
+    criteria:
+      - "Quality standards met"
+      - "Deliverables complete"
+
+  data_validation:
+    validator: shared:data-analyst
+    when: "Forecasts, analytics, metrics"
+    criteria:
+      - "Data accuracy verified"
+      - "Methodologies sound"
+      - "Insights actionable"
+
+  customer_validation:
+    validator: shared:customer-success-manager
+    when: "Customer-facing initiatives"
+    criteria:
+      - "Customer impact positive"
+      - "Feedback incorporated"
+
+validation_workflow:
+  tier_2:
+    shared_agents: [shared:quality-manager, shared:data-analyst]
+  tier_3:
+    shared_agents: [shared:business-analyst, shared:quality-manager, shared:data-analyst, shared:customer-success-manager]
+  tier_4:
+    shared_agents: [shared:ceo, shared:cfo, shared:cso, shared:business-analyst, shared:quality-manager]

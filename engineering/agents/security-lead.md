@@ -1,5 +1,6 @@
 ---
 name: security-lead
+tier: controller
 description: Security domain manager for threat modeling, security reviews, and penetration testing. Use PROACTIVELY for tier 3-4 instructions touching authentication, authorization, sensitive data, or public APIs requiring security oversight.
 model: sonnet
 color: bright_red

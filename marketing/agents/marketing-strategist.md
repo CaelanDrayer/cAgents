@@ -1,5 +1,6 @@
 ---
 name: marketing-strategist
+tier: controller
 description: Marketing strategy and planning specialist. Use when marketing strategy development, competitive analysis, market research, or strategic planning needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

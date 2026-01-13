@@ -1,5 +1,6 @@
 ---
 name: senior-developer
+tier: execution
 description: Skilled engineer for complex implementation, code review, and mentoring. Use PROACTIVELY for complex features, refactoring, or when code review expertise is needed.
 model: sonnet
 color: bright_green

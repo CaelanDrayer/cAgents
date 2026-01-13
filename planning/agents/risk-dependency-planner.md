@@ -1,5 +1,6 @@
 ---
 name: risk-dependency-planner
+tier: execution
 description: Risk and dependency planning specialist. Identifies risks, assesses impact and probability, develops mitigation strategies, maps cross-project dependencies. Use for risk and dependency management.
 capabilities: ["risk_identification", "risk_assessment", "mitigation_planning", "dependency_mapping", "critical_path_analysis", "risk_monitoring", "contingency_planning"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

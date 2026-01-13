@@ -1,5 +1,6 @@
 ---
 name: sales-trainer
+tier: execution
 description: Develop sales talent through coaching and training. Use for onboarding delivery, skills development, coaching programs, and performance improvement.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

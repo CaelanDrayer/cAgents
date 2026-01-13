@@ -1,5 +1,6 @@
 ---
 name: brand-manager
+tier: execution
 description: Brand strategy and identity specialist. Use when brand positioning, visual identity, brand guidelines, or brand health initiatives needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

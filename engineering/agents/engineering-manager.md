@@ -1,5 +1,6 @@
 ---
 name: engineering-manager
+tier: controller
 description: Strategic engineering oversight, risk assessment, and go/no-go decisions. Use PROACTIVELY for tier 3-4 strategic plan reviews, multi-instruction priority conflicts, or critical risk assessment.
 model: opus
 color: bright_white

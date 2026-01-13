@@ -1,5 +1,6 @@
 ---
 name: character-psychologist
+tier: execution
 description: Character psychology and depth specialist. Develops deep psychological profiles, trauma, mental states, and emotional authenticity. Use for complex character psychology and emotional depth.
 capabilities: ["psychological_profiling", "trauma_development", "mental_states", "emotional_authenticity", "behavioral_psychology", "character_depth", "psychological_realism", "internal_conflict"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

@@ -1,5 +1,6 @@
 ---
 name: risk-and-compliance-manager
+tier: execution
 description: Enterprise risk and compliance specialist. Use PROACTIVELY for risk assessment, compliance frameworks, and integrated risk management across legal and regulatory domains.
 tools: Read, Write, Grep, Glob, TodoWrite
 model: sonnet

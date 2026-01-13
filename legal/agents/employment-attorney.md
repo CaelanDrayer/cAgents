@@ -1,5 +1,6 @@
 ---
 name: employment-attorney
+tier: execution
 description: Employment and labor law specialist. Use PROACTIVELY for employment agreements, workplace policies, employee relations, and labor compliance.
 tools: Read, Write, Grep, Glob, TodoWrite
 model: sonnet

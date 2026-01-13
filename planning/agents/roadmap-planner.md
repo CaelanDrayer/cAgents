@@ -1,5 +1,6 @@
 ---
 name: roadmap-planner
+tier: execution
 description: Product and technology roadmap specialist. Creates strategic roadmaps, prioritizes features, manages dependencies, aligns roadmap to strategy. Use for roadmap planning and communication.
 capabilities: ["roadmap_planning", "feature_prioritization", "dependency_mapping", "roadmap_communication", "now_next_later", "theme_planning", "timeline_visualization"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

@@ -1,5 +1,6 @@
 ---
 name: demand-generation-manager
+tier: execution
 description: Demand generation and pipeline creation specialist. Use when lead generation campaigns, nurture programs, funnel optimization, or pipeline acceleration initiatives needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

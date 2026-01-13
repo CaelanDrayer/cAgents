@@ -1,5 +1,6 @@
 ---
 name: coo
+tier: execution
 description: Chief Operating Officer for operational execution and process optimization. Use PROACTIVELY for operational decisions and efficiency.
 model: opus
 color: orange

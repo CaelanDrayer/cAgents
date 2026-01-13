@@ -1,5 +1,6 @@
 ---
 name: learning-and-development-manager
+tier: execution
 description: Employee growth and skills development leader. Use PROACTIVELY for training programs, career development, and organizational learning initiatives.
 tools: Read, Write, Grep, TodoWrite
 model: sonnet

@@ -1,5 +1,6 @@
 ---
 name: quality-manager
+tier: execution
 description: Quality management systems and continuous improvement. Use for quality planning and control.
 tools: Read, Write, Grep, Glob
 model: sonnet

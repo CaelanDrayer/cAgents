@@ -1,5 +1,6 @@
 ---
 name: technical-support-engineer
+tier: execution
 description: Advanced technical troubleshooter for complex customer issues. Use when deep investigation, system debugging, or engineering coordination is required.
 tools: Read, Grep, Glob, Bash, Write
 model: sonnet

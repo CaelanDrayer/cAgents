@@ -1,5 +1,6 @@
 ---
 name: risk-manager
+tier: execution
 description: Enterprise risk management and business continuity. Use for risk identification and crisis management.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

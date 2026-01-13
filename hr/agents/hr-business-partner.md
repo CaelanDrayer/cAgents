@@ -1,5 +1,6 @@
 ---
 name: hr-business-partner
+tier: execution
 description: Strategic HR advisor embedded with business units. Use PROACTIVELY for organizational planning, talent strategy, change management, and people consulting.
 tools: Read, Write, Grep, TodoWrite
 model: sonnet

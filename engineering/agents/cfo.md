@@ -1,5 +1,6 @@
 ---
 name: cfo
+tier: controller
 description: Chief Financial Officer for financial strategy and fundraising. Use PROACTIVELY for financial decisions and budget approvals.
 model: opus
 color: green

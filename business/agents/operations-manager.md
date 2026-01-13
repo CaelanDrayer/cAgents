@@ -1,5 +1,6 @@
 ---
 name: operations-manager
+tier: controller
 description: Operations optimization, process management, and operational excellence. Use for operational decisions and process improvements.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

@@ -1,5 +1,6 @@
 ---
 name: research-specialist
+tier: execution
 description: Research and fact-checking specialist. Conducts research for historical accuracy, scientific plausibility, cultural authenticity, and factual correctness. Use for research-intensive creative work.
 capabilities: ["research", "fact_checking", "historical_accuracy", "scientific_plausibility", "cultural_authenticity", "subject_matter_expertise", "source_verification", "accuracy_validation"]
 tools: Read, Grep, Glob, Write, Bash, WebSearch, WebFetch, TodoWrite

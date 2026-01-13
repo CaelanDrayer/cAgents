@@ -1,5 +1,6 @@
 ---
 name: financial-analyst
+tier: execution
 description: General financial analysis, metric calculation, trend analysis, ad-hoc financial reporting. Use PROACTIVELY for ROI analysis, profitability studies, KPI dashboards.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet

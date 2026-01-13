@@ -1,5 +1,6 @@
 ---
 name: legal-analyst
+tier: execution
 description: Legal data and analytics specialist. Use PROACTIVELY for legal metrics, spend analysis, risk quantification, and data-driven legal insights.
 tools: Read, Write, Grep, Glob, TodoWrite
 model: sonnet

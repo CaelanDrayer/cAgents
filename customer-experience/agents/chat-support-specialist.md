@@ -1,5 +1,6 @@
 ---
 name: chat-support-specialist
+tier: execution
 description: Real-time chat support expert. Use when handling live chat, managing multiple conversations, or providing instant support.
 tools: Read, Grep, Glob, Write
 model: sonnet

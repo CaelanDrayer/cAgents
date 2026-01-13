@@ -1,5 +1,6 @@
 ---
 name: account-manager
+tier: execution
 description: Strategic account management and revenue growth. Use for upsells, renewals, and executive relationships.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

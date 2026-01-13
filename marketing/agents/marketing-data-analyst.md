@@ -1,5 +1,6 @@
 ---
 name: marketing-data-analyst
+tier: execution
 description: Marketing data science and advanced analytics specialist. Use when predictive modeling, customer segmentation, marketing mix modeling, or data science initiatives needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

@@ -1,5 +1,6 @@
 ---
 name: continuous-improvement-manager
+tier: execution
 description: Continuous improvement culture and program management. Use for kaizen, lean programs, and improvement initiatives.
 tools: Read, Write, Grep, Glob
 model: sonnet

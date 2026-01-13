@@ -1,5 +1,6 @@
 ---
 name: facilities-manager
+tier: execution
 description: Facilities operations, space planning, and workplace services. Use for office operations and facility maintenance.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

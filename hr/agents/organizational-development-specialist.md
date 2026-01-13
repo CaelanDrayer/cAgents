@@ -1,5 +1,6 @@
 ---
 name: organizational-development-specialist
+tier: execution
 description: Org design and change management expert. Use PROACTIVELY for restructuring, team effectiveness, and organizational transformation.
 tools: Read, Write, Grep, TodoWrite
 model: sonnet

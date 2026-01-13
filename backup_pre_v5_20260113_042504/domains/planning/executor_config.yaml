@@ -1,0 +1,133 @@
+# Planning Domain Executor Configuration
+# Agent coordination and execution strategies for planning projects
+
+domain: planning
+version: 1.0
+description: "Execution coordination for strategic planning, project planning, and roadmapping"
+
+# Agent Capabilities Registry
+
+agent_capabilities:
+  executive:
+    cpo:
+      can_execute: [strategic_oversight, planning_excellence, executive_alignment]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [strategic_plan, planning_guidance, executive_summary]
+      coordination_needs: very_high
+
+  strategic:
+    strategic-planner:
+      can_execute: [strategic_analysis, vision_development, multi_year_roadmaps]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [strategic_plan, vision_document, strategic_roadmap]
+      coordination_needs: high
+
+    scenario-planner:
+      can_execute: [scenario_development, uncertainty_analysis, contingency_planning]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [scenario_document, contingency_plan]
+      coordination_needs: medium
+
+  operational:
+    roadmap-planner:
+      can_execute: [roadmap_creation, milestone_planning, timeline_visualization]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [roadmap, timeline, gantt_chart]
+      coordination_needs: medium
+
+    okr-specialist:
+      can_execute: [okr_setting, goal_definition, progress_tracking]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [okr_document, tracking_plan]
+      coordination_needs: medium
+
+    project-manager:
+      can_execute: [project_planning, timeline_creation, stakeholder_management]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [project_plan, gantt_chart, status_report]
+      coordination_needs: high
+
+# Execution Strategies
+
+execution_strategies:
+  tier_1_single_task:
+    description: "Single planning task"
+    agent_count: 1
+    parallelization: false
+    typical_duration: "< 1 hour"
+
+  tier_2_component_planning:
+    description: "Single plan creation (project, OKR, roadmap)"
+    agent_count: 2-3
+    parallelization: false
+    typical_duration: "1-4 hours"
+
+  tier_3_strategic_planning:
+    description: "Complex multi-component planning"
+    agent_count: 3-5
+    parallelization: true
+    max_parallel_agents: 3
+    typical_duration: "4-12 hours"
+
+  tier_4_enterprise_planning:
+    description: "Enterprise-wide strategic planning"
+    agent_count: 5+
+    parallelization: true
+    max_parallel_agents: 5
+    typical_duration: "> 12 hours"
+
+# Coordination Patterns
+
+coordination_patterns:
+  facilitated_planning:
+    description: "Facilitated planning sessions with stakeholders"
+    when: "tier >= 3"
+    pattern: |
+      1. planning-facilitator prepares session
+      2. Pause for HITL stakeholder session
+      3. planning-facilitator captures outcomes
+      4. Specialists create plans based on outcomes
+
+  portfolio_optimization:
+    description: "Prioritize and optimize portfolio of initiatives"
+    pattern: |
+      1. portfolio-manager gathers all initiatives
+      2. business-analyst-planning analyzes value and effort
+      3. portfolio-manager prioritizes
+      4. resource-planner validates capacity
+      5. roadmap-planner creates timeline
+
+# Recursive Workflows
+
+recursive_workflows:
+  enabled: true
+  max_depth: 5
+  max_children_per_parent: 20
+
+  common_use_cases:
+    strategic_plan_spawns_roadmaps:
+      description: "Strategic plan creates child roadmap workflows"
+      parent_domain: planning
+      parent_intent: strategic_plan
+      child_domain: planning
+      child_intents: [create_roadmap, create_project_plan]
+
+# Cross-Domain Invocation
+
+cross_domain_invocation:
+  enabled: true
+  supported_cross_domain_agents:
+    business_domain:
+      - business-analyst
+      - market-analyst
+    software_domain:
+      - architect
+      - tech-lead
+
+domain_notes: |
+  Planning domain execution:
+  
+  - Facilitation critical for strategic planning
+  - Stakeholder involvement increases with tier
+  - Portfolio planning requires cross-initiative optimization
+  - Resource planning validates feasibility

@@ -1,5 +1,6 @@
 ---
 name: field-marketing-manager
+tier: execution
 description: Regional and field marketing specialist. Use when regional campaigns, local events, sales territory support, or geographic expansion needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

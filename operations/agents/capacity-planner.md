@@ -1,5 +1,6 @@
 ---
 name: capacity-planner
+tier: execution
 description: Capacity planning, demand forecasting, and resource optimization. Use for capacity analysis and expansion planning.
 tools: Read, Write, Grep, Glob
 model: sonnet

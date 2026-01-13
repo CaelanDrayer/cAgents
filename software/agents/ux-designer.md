@@ -1,5 +1,6 @@
 ---
 name: ux-designer
+tier: execution
 description: UX/UI designer specializing in user research, interface design, design systems, and usability testing. Use PROACTIVELY for interface design, user flows, design systems, accessibility, and user experience improvements.
 model: sonnet
 color: magenta

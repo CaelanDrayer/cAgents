@@ -1,5 +1,6 @@
 ---
 name: finance-manager
+tier: execution
 description: Financial oversight specialist managing IT budgets, costs, ROI analysis, and resource allocation decisions. Use PROACTIVELY for budget decisions, cost assessments, vendor contracts, and financial planning.
 model: sonnet
 color: green

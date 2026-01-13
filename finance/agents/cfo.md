@@ -1,5 +1,6 @@
 ---
 name: cfo
+tier: controller
 description: Chief Financial Officer - Strategic financial leadership, capital allocation, investor relations, financial risk management. Use PROACTIVELY for tier 4 finance initiatives, M&A, fundraising, board reporting.
 tools: Read, Write, Grep, Glob, Edit
 model: opus

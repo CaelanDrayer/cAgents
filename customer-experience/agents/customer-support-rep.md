@@ -1,5 +1,6 @@
 ---
 name: customer-support-rep
+tier: execution
 description: Front-line support agent handling general customer inquiries. Use PROACTIVELY when answering customer questions, troubleshooting common issues, or providing product guidance.
 tools: Read, Grep, Glob, Write
 model: sonnet

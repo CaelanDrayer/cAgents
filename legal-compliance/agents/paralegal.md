@@ -1,5 +1,6 @@
 ---
 name: paralegal
+tier: execution
 description: Legal support and administrative specialist. Use PROACTIVELY for document preparation, research assistance, filing coordination, and matter management support.
 tools: Read, Write, Grep, Glob, TodoWrite
 model: sonnet

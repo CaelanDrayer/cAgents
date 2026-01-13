@@ -1,5 +1,6 @@
 ---
 name: hr-analyst
+tier: execution
 description: HR data analysis and insights specialist. Use PROACTIVELY for people analytics, HR reporting, dashboard design, and data-driven insights.
 tools: Read, Write, Grep, Bash, TodoWrite
 model: sonnet

@@ -1,0 +1,86 @@
+# People-Culture Domain Planner Configuration (V3.0)
+domain: people-culture
+version: 3.0
+
+available_agents:
+  shared_leadership:
+    - shared:ceo
+    - shared:coo
+  shared_planning:
+    - shared:strategic-planner
+    - shared:business-analyst
+    - shared:project-manager
+    - shared:program-manager
+    - shared:okr-specialist
+    - shared:change-manager
+  shared_data:
+    - shared:data-analyst
+    - shared:business-intelligence-specialist
+    - shared:market-research-analyst
+  shared_quality:
+    - shared:quality-manager
+    - shared:compliance-officer
+    - shared:risk-manager
+    - shared:performance-analyst
+  shared_operations:
+    - shared:operations-manager
+    - shared:process-improvement-specialist
+    - shared:change-management-specialist
+    - shared:resource-planner
+    - shared:capacity-planner
+
+  people_culture_specialists:
+    - hr-director: "HR strategy and leadership"
+    - talent-acquisition-manager: "Recruiting strategy"
+    - recruiter: "Sourcing and hiring"
+    - onboarding-specialist: "Employee onboarding"
+    - learning-development-manager: "L&D programs"
+    - performance-management-specialist: "Performance reviews"
+    - compensation-benefits-analyst: "Comp and benefits"
+    - employee-relations-specialist: "Employee relations"
+    - hr-business-partner: "HR support to business"
+    - diversity-inclusion-specialist: "D&I initiatives"
+    - culture-ambassador: "Culture programs"
+    - hr-analyst: "HR analytics"
+    - hr-operations-specialist: "HR operations"
+
+task_patterns:
+  hiring_plan:
+    tier_default: 2
+    tasks:
+      - id: workforce_analysis
+        agent: shared:capacity-planner
+      - id: budget_planning
+        agent: shared:business-analyst
+      - id: create_plan
+        agent: talent-acquisition-manager
+      - id: review
+        agent: shared:quality-manager
+
+  compensation_analysis:
+    tier_default: 2
+    tasks:
+      - id: market_research
+        agent: shared:market-research-analyst
+      - id: data_analysis
+        agent: shared:data-analyst
+      - id: comp_design
+        agent: compensation-benefits-analyst
+
+  talent_strategy:
+    tier_default: 3
+    tasks:
+      - id: strategic_assessment
+        agent: shared:strategic-planner
+      - id: talent_planning
+        agent: hr-director
+      - id: implementation_plan
+        agent: shared:project-manager
+
+planning_strategies:
+  tier_2:
+    shared_agents: [shared:project-manager, shared:data-analyst, shared:compliance-officer]
+  tier_3:
+    shared_agents: [shared:strategic-planner, shared:coo, shared:change-manager, shared:data-analyst]
+  tier_4:
+    shared_agents: [shared:ceo, shared:coo, shared:strategic-planner, shared:change-manager]

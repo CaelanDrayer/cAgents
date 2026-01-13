@@ -1,5 +1,6 @@
 ---
 name: contracts-manager
+tier: execution
 description: Contract drafting, negotiation, and lifecycle management specialist. Use PROACTIVELY for contract review, redlining, risk assessment, and vendor agreements.
 tools: Read, Write, Edit, Grep, Glob, TodoWrite
 model: sonnet

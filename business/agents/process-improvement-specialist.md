@@ -1,5 +1,6 @@
 ---
 name: process-improvement-specialist
+tier: execution
 description: Process analysis, optimization, and continuous improvement. Use for identifying inefficiencies and waste reduction.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

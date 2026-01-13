@@ -1,5 +1,6 @@
 ---
 name: sales-operations-manager
+tier: execution
 description: Sales operations and support system specialist (shared from sales domain). Use PROACTIVELY when optimizing support-sales handoffs, implementing CRM systems, or analyzing customer data.
 tools: Read, Grep, Glob, Bash, Write
 model: sonnet

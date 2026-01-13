@@ -1,5 +1,6 @@
 ---
 name: escalation-manager
+tier: execution
 description: Critical incident commander and escalation specialist. Use when managing critical incidents, coordinating war rooms, or handling high-priority escalations.
 tools: Read, Grep, Glob, Bash, Write
 model: opus

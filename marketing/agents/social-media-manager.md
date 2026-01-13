@@ -1,5 +1,6 @@
 ---
 name: social-media-manager
+tier: execution
 description: Social media strategy and community management specialist. Use when social strategy, content calendars, community engagement, or social campaigns needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

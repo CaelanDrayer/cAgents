@@ -1,0 +1,50 @@
+# Creative Domain Self-Correct Configuration (V3.0)
+domain: creative
+version: 3.0
+
+shared_recovery_strategies:
+  creative_direction:
+    when: "Creative vision misalignment"
+    escalate_to: [shared:cpo]
+    strategy: "Realign with creative vision"
+
+  quality_intervention:
+    when: "Editorial quality failures"
+    escalate_to: [shared:quality-manager]
+    strategy: "Comprehensive editorial review and revision"
+
+error_patterns:
+  plot_holes:
+    detection: "Continuity checker finds plot inconsistencies"
+    severity: medium
+    fixable: true
+    recovery_agent: story-architect
+    shared_oversight: shared:quality-manager
+    max_attempts: 2
+
+  character_inconsistency:
+    detection: "Character behavior inconsistent"
+    severity: medium
+    fixable: true
+    recovery_agent: character-designer
+    shared_oversight: shared:quality-manager
+    max_attempts: 2
+
+  prose_quality:
+    detection: "Prose quality below standards"
+    severity: medium
+    fixable: true
+    recovery_agent: editor
+    shared_oversight: shared:quality-manager
+    max_attempts: 3
+
+correction_workflow:
+  1_detect:
+    agents: [editor, continuity-checker, shared:quality-manager]
+  2_analyze:
+    agents: [story-architect, character-designer]
+  3_fix:
+    agents: [prose-stylist, editor]
+    oversight: shared:quality-manager
+  4_validate:
+    agents: [editor, shared:quality-manager]

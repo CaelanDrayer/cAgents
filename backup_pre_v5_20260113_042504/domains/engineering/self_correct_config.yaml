@@ -1,0 +1,90 @@
+# Engineering Domain Self-Correct Configuration (V3.0)
+domain: engineering
+version: 3.0
+
+# Shared Agent Recovery Strategies (V3.0)
+shared_recovery_strategies:
+  strategic_escalation:
+    when: "Tier 4 blockers, architectural decisions"
+    escalate_to: [shared:strategic-planner, shared:ceo]
+    strategy: "Escalate to strategic leadership for decision"
+
+  risk_mitigation:
+    when: "High-risk failures, security incidents"
+    escalate_to: [shared:risk-manager]
+    strategy: "Assess risk, implement mitigation, rollback if needed"
+
+  resource_reallocation:
+    when: "Resource constraints, capacity issues"
+    escalate_to: [shared:resource-planner, shared:capacity-planner]
+    strategy: "Reallocate resources, adjust timeline"
+
+  quality_intervention:
+    when: "Quality gate failures"
+    escalate_to: [shared:quality-manager]
+    strategy: "Root cause analysis, corrective action plan"
+
+# Error Patterns and Recovery
+error_patterns:
+  test_failures:
+    detection: "Tests failing after implementation"
+    severity: medium
+    fixable: true
+    recovery_agent: senior-developer
+    shared_oversight: shared:quality-manager
+    max_attempts: 3
+
+  security_vulnerabilities:
+    detection: "Security scan failures"
+    severity: critical
+    fixable: true
+    recovery_agent: security-specialist
+    shared_oversight: [shared:risk-manager, shared:compliance-officer]
+    max_attempts: 2
+    escalation: "If unfixable, escalate to shared:risk-manager"
+
+  performance_degradation:
+    detection: "Performance benchmarks not met"
+    severity: high
+    fixable: true
+    recovery_agent: senior-developer
+    shared_oversight: shared:performance-analyst
+    max_attempts: 3
+
+  integration_failures:
+    detection: "System integration issues"
+    severity: high
+    fixable: true
+    recovery_agent: architect
+    shared_oversight: shared:risk-manager
+    max_attempts: 2
+
+# Self-Correction Workflow
+correction_workflow:
+  1_detect:
+    action: "Identify failure through validation"
+    agents: [validator, shared:quality-manager]
+
+  2_analyze:
+    action: "Root cause analysis"
+    agents: [domain-specialist, shared:data-analyst]
+
+  3_decide:
+    action: "Determine if fixable"
+    decision_tree:
+      - fixable: "Proceed to fix"
+      - unfixable: "Escalate to HITL"
+      - uncertain: "Escalate to shared:risk-manager"
+
+  4_fix:
+    action: "Implement correction"
+    agents: [domain-specialist]
+    oversight: [shared:quality-manager]
+
+  5_validate:
+    action: "Re-validate after fix"
+    agents: [validator, shared:quality-manager]
+
+  6_document:
+    action: "Document issue and resolution"
+    agents: [scribe]

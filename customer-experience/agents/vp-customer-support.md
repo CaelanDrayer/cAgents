@@ -1,5 +1,6 @@
 ---
 name: vp-customer-support
+tier: execution
 description: VP of Customer Support - executive leadership for support strategy and customer experience. Use PROACTIVELY when strategic support decisions, major escalations, or customer experience initiatives require executive oversight.
 tools: Read, Grep, Glob, Write
 model: opus

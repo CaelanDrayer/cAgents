@@ -1,5 +1,6 @@
 ---
 name: competitive-intelligence-analyst
+tier: execution
 description: Track competitors and create battle cards. Use for competitive analysis, win/loss intelligence, and sales enablement.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

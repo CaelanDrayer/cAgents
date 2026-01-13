@@ -1,6 +1,6 @@
-# Creative Domain Planner Configuration (V3.0)
+# Creative Domain Planner Configuration (V5.0)
 domain: creative
-version: 3.0
+version: 5.0
 
 available_agents:
   shared_leadership:
@@ -100,7 +100,7 @@ planning_strategies:
     shared_agents: [shared:cpo, shared:strategic-planner, shared:project-manager, shared:quality-manager]
 
 domain_notes: |
-  **V3.0 Shared Agent Integration**:
+  **V5.0 Shared Agent Integration**:
   - Use shared:project-manager for all story/novel planning
   - Use shared:strategic-planner for series and complex projects
   - Use shared:quality-manager for all editorial quality gates

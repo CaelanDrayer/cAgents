@@ -1,5 +1,6 @@
 ---
 name: content-marketing-manager
+tier: execution
 description: Content strategy and production specialist. Use when content planning, editorial calendars, content creation, or distribution initiatives needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

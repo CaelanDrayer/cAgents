@@ -1,5 +1,6 @@
 ---
 name: strategic-planner
+tier: controller
 description: Long-term strategic planning specialist. Facilitates strategic planning, develops frameworks, defines objectives, creates multi-year roadmaps. Use for vision development, strategic analysis, and long-term planning.
 capabilities: ["strategic_planning", "scenario_planning", "competitive_analysis", "swot_analysis", "strategic_frameworks", "vision_development", "long_term_roadmapping", "pestle_analysis", "balanced_scorecard"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

@@ -1,5 +1,6 @@
 ---
 name: coo
+tier: execution
 description: Chief Operating Officer - operational excellence and execution leadership. Use for tier 4 operations transformations.
 tools: Read, Write, Grep, Glob
 model: opus

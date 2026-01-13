@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Core architecture and development guidance for cAgents V4.0.
+Core architecture and development guidance for cAgents V5.0.
 
 ## Documentation Structure
 
@@ -19,47 +19,48 @@ Core architecture and development guidance for cAgents V4.0.
 - `TASK_CONSOLIDATION.md` - Task consolidation strategies
 - `TOKEN_MIGRATION_SUMMARY.md` - Token optimization migration details
 - `WORKFLOW_EVALUATION_FIXES.md` - Workflow issue resolutions
-- `V4_MIGRATION_GUIDE.md` - V3.0 to V4.0 migration guide (NEW)
+- `V5_ARCHITECTURE.md` - V5.0 architecture design (NEW)
+- `V5_MIGRATION_GUIDE.md` - V4.0 to V5.0 migration guide (NEW)
+- `V5_WORKFLOW_EXAMPLES.md` - Tier 2, 3, 4 reference implementations (NEW)
 
 **Root Documentation** (exceptions):
 - `workflow_agent_interactions.md` - Agent interaction patterns (referenced throughout)
 
 ## Project Overview
 
-**cAgents V4.0**: Universal multi-domain agent system with 2-tier capability-based architecture and mandatory planning for tier 2+ workflows.
+**cAgents V5.0**: Universal multi-domain agent system with 4-tier controller-centric architecture and question-based delegation.
 
-**Architecture**: V4.0 - 2-Tier Capability-Based
+**Architecture**: V5.0 - Controller-Centric Question-Based Delegation
 - **Tier 1**: 10 core infrastructure agents (trigger, orchestrator, hitl, optimizer, task-consolidator, 5 universal workflow agents)
-- **Tier 2**: 219 capability agents (organized by capabilities, not "shared vs domain")
-- **Total**: 229 agents (10 core + 219 capability)
+- **Tier 2**: ~50 controller agents (coordinate work via question-based delegation)
+- **Tier 3**: ~150 execution agents (answer questions and implement solutions)
+- **Tier 4**: ~19 support agents (foundational services)
+- **Total**: 229 agents
 - **Execution**: 4 modes (Sequential, Pipeline, Swarm, Mesh) - up to 50x speedup
 
-**V4.0 Key Improvements**:
-- **2-Tier Architecture**: Eliminated tier-2/tier-3 distinction (shared vs domain) → simpler capability-based approach
-- **Mandatory Planning**: Planning is now MANDATORY for tier 2+ workflows (no skipping)
-- **Capability-Based Discovery**: Find agents by capability + domain tags (not manual assignment)
-- **User-Focused**: Directly addresses user goals (planning focus, task completion, smooth coordination)
+**V5.0 Key Improvements**:
+- **Controller-Centric**: Controllers coordinate execution, not planners or executors
+- **Question-Based Delegation**: Controllers ask questions to specialists, synthesize answers, coordinate implementation
+- **Objective-Driven Planning**: Plan defines WHAT (objectives), controllers determine HOW (questions + synthesis)
+- **Simpler Planning**: High-level objectives instead of detailed task lists
+- **Expert-Driven**: Controllers use domain expertise to break down work adaptively
 
-**What Changed from V3.0**:
-- ❌ Eliminated: Tier 2 (shared) vs Tier 3 (domain) separation
-- ✅ Added: Capability tags to all 219 agents
-- ✅ Added: Mandatory planning enforcement for tier 2+ workflows
-- ✅ Added: Capability-based agent discovery algorithm
-- ✅ Simplified: 2-tier instead of 3-tier architecture
+**What Changed from V4.0**:
+- ❌ Eliminated: Detailed task lists in planning phase
+- ❌ Eliminated: Capability tags (replaced with tier designation)
+- ❌ Eliminated: Direct agent assignment by planner
+- ✅ Added: Coordinating phase between planning and executing
+- ✅ Added: Controller tier (tier 2) for coordination
+- ✅ Added: Question-based delegation pattern
+- ✅ Added: Objective-driven planning
+- ✅ Changed: Executor monitors controllers, not execution agents
+- ✅ Simplified: 4-tier architecture (core, controller, execution, support)
 
-**Capability Categories** (12 primary):
-- **Leadership** (24 agents): Strategic decisions, executive oversight
-- **Planning** (18 agents): Project management, strategic planning, roadmapping
-- **Execution** (78 agents): Hands-on implementation (coding, content, building)
-- **Quality** (32 agents): Testing, QA, review, audit, compliance
-- **Data** (14 agents): Analysis, BI, reporting, metrics
-- **Security** (12 agents): Security review, vulnerability analysis, compliance
-- **Creative** (18 agents): Content creation, design, storytelling
-- **Customer** (18 agents): Customer success, support, service
-- **Operations** (17 agents): Infrastructure, DevOps, process optimization
-- **Finance** (17 agents): Financial analysis, budgeting, forecasting
-- **Legal** (14 agents): Legal review, contracts, compliance
-- **HR** (19 agents): Talent, onboarding, performance management
+**Agent Distribution** (4 tiers):
+- **Core Infrastructure** (10): Workflow orchestration
+- **Controllers** (~50): Coordination via question-based delegation
+- **Execution** (~150): Specialist work (answer questions, implement solutions)
+- **Support** (~19): Foundational services
 
 **Domain Tags** (8 domains):
 - Engineering (45), Revenue (40), Finance-Operations (32), People-Culture (19)
@@ -69,131 +70,267 @@ Core architecture and development guidance for cAgents V4.0.
 
 **Orchestration Agents** (4):
 - `trigger` - Entry point, domain detection, routing
-- `orchestrator` - Phase conductor (routing → planning → executing → validating)
+- `orchestrator` - Phase conductor (routing → planning → **coordinating** → executing → validating)
 - `hitl` - Human escalation for tier-4 decisions
 - `optimizer` - Universal optimization (code, content, processes, data, infrastructure, campaigns)
 
 **Universal Workflow Agents** (5):
-- `universal-router` - Tier classification (0-4)
-- `universal-planner` - **V4.0: Enforces mandatory planning for tier 2+ workflows**
-- `universal-executor` - Team coordination via capability-based agent discovery
-- `universal-validator` - Quality gates with verification checks
-- `universal-self-correct` - Adaptive recovery with escalation
+- `universal-router` - Tier classification (0-4), sets requires_controller flag
+- `universal-planner` - **V5.0: Creates objectives + selects controllers** (not detailed tasks)
+- `universal-executor` - **V5.0: Monitors controllers** (not execution agents)
+- `universal-validator` - Quality gates with **V5.0: coordination validation**
+- `universal-self-correct` - Adaptive recovery with **V5.0: coordination corrections**
 
 **Additional** (1):
 - `task-consolidator` - Task consolidation for 40-88% context reduction
 
 **Config Location**: `Agent_Memory/_system/domains/{domain}/*.yaml` (5 files per domain)
 
-## V4.0 CAPABILITY-BASED ARCHITECTURE
+## V5.0 CONTROLLER-CENTRIC ARCHITECTURE
 
-**NEW IN V4.0**: Agents are organized by **capabilities**, not by "shared vs domain" tiers.
+**NEW IN V5.0**: Controllers are the coordination hub between planning and execution.
 
-### Capability-Based Agent Discovery
+### Controller-Centric Pattern
 
-**How it works**:
-1. **Identify required capability** for task (leadership, planning, execution, quality, etc.)
-2. **Match capability + domain** to find agents
-3. **Select best match** based on task specifics
-4. **Fallback**: Try universal domain if no domain-specific match
+**Controllers coordinate work through question-based delegation:**
 
-**Example**: Need "planning" capability in "engineering" domain
-- Matches: architect, tech-lead, engineering-manager, project-manager
-- Selects: architect (for architecture planning) OR project-manager (for project planning)
+```
+V4.0 (Previous):
+Planner → Detailed Tasks → Executor → Team Agents
 
-### All Agents Have Capability Tags
-
-Every agent's frontmatter includes capabilities:
-```yaml
-name: architect
-capabilities: [system_design, architecture_patterns, api_design, ...]
-domain: engineering
+V5.0 (Current):
+Planner → Objectives → Controller → Questions → Execution Agents → Answers → Controller → Synthesized Solution → Implementation
 ```
 
-**Discovery uses these tags** to find the right agent for each task.
+**Core Concept**: Controllers use domain expertise to break down objectives into specific questions, delegate to specialists, synthesize answers, and coordinate implementation.
 
-### No More "Shared vs Domain" Distinction
+### Question-Based Delegation
 
-**V3.0 had**:
-- Tier 2: "Shared" agents (cross-domain)
-- Tier 3: "Domain" agents (specialized)
+**How it works**:
+1. **Planner defines objectives** (high-level goals like "Implement OAuth2 authentication")
+2. **Planner selects controller** (e.g., engineering-manager for engineering work)
+3. **Controller receives objectives** from plan.yaml
+4. **Controller breaks into questions** (specific, answerable queries to specialists)
+5. **Controller delegates questions** to execution agents (backend-developer, architect, qa-lead, etc.)
+6. **Execution agents answer** with their expertise
+7. **Controller synthesizes answers** into coherent solution
+8. **Controller coordinates implementation** by assigning tasks to execution agents
+9. **Executor monitors controller** progress via coordination_log.yaml
 
-**V4.0 has**:
-- Tier 1: Core infrastructure (10 agents)
-- Tier 2: All other agents (219), organized by **capabilities**
+**Key Principles**:
+- **Controllers ask, not assign**: Controllers ask "What is the current auth implementation?" not "Analyze current auth"
+- **Execution agents answer**: Specialists provide expert answers to specific questions
+- **Synthesis drives implementation**: Controllers synthesize answers into implementation plan
+- **Adaptive coordination**: Controllers can ask follow-up questions based on answers received
 
-**Benefit**: Simpler architecture, more flexible agent discovery, no artificial separation.
+### Agent Tiers
 
-## V4.0 MANDATORY PLANNING PHASE
+| Tier | Role | Count | Purpose | Examples |
+|------|------|-------|---------|----------|
+| **1: Core** | Infrastructure | 10 | Workflow orchestration | orchestrator, planner, executor, validator |
+| **2: Controller** | Coordination | ~50 | Question-based delegation and synthesis | engineering-manager, architect, cto, campaign-manager |
+| **3: Execution** | Specialists | ~150 | Answer questions and execute tasks | backend-developer, copywriter, financial-analyst |
+| **4: Support** | Operations | ~19 | Foundational services | scribe, data-extractor, etc. |
 
-**CRITICAL NEW IN V4.0**: Planning is now **MANDATORY** for tier 2+ workflows.
+### Controller Selection
 
-### Planning Requirements by Tier
+**Controllers are selected by domain and coordination style:**
 
-| Tier | Planning Required | Planning Level | Planning Agents | Time Estimate |
-|------|------------------|----------------|-----------------|---------------|
-| **0** | ❌ No | N/A | None | Trivial, direct answer |
-| **1** | ❌ No | N/A | None | Simple, single-step execution |
-| **2** | ✅ **YES - MANDATORY** | Basic | 10-30 min | project-manager, business-analyst |
-| **3** | ✅ **MANDATORY** | Comprehensive | 1-3 hours | strategic-planner, program-manager, architect |
-| **4** | ✅ **MANDATORY + HITL** | Executive | 4-8 hours | ceo, cto, cfo, strategic-planner |
+**Engineering Domain**:
+- **Tier 2**: engineering-manager (moderate complexity), architect (system design)
+- **Tier 3**: engineering-manager + architect + security-specialist (comprehensive)
+- **Tier 4**: cto + engineering-manager + architect (executive oversight)
 
-**What This Means**:
-- **Tier 0-1**: Planning optional (trivial/simple tasks)
-- **Tier 2+**: Planning MANDATORY (cannot skip to execution)
-- **Planning artifacts required** before execution starts
-- **Enforced by**: universal-planner, universal-executor, universal-validator, orchestrator
+**Revenue Domain**:
+- **Tier 2**: campaign-manager (moderate), sales-strategist (sales focus)
+- **Tier 3**: marketing-strategist + campaign-manager + copywriter
+- **Tier 4**: cro + marketing-strategist + sales-strategist
 
-### Tier-Specific Planning Artifacts
+**Creative Domain**:
+- **Tier 2**: editor (moderate), story-architect (complex narratives)
+- **Tier 3**: creative-director + story-architect + character-developer
+- **Tier 4**: cco + creative-director + story-architect
 
-**Tier 2 (Basic Planning)**:
-- `workflow/plan.yaml` - Task breakdown
-- `workflow/acceptance_criteria.md` - Success criteria
-- Planning agents: project-manager, business-analyst
+**Discovery**: Planner loads `planner_config.yaml` → `controller_catalog` section → matches tier + domain
 
-**Tier 3 (Comprehensive Planning)**:
-- `workflow/implementation_plan.md`
-- `workflow/risk_assessment.md`
-- `decisions/architecture_decision_record.md` (if technical)
-- All tier 2 artifacts
-- Planning agents: strategic-planner, program-manager, architect
+## V5.0 COORDINATING PHASE
 
-**Tier 4 (Executive Planning)**:
-- `workflow/strategic_brief.md` (executive approval)
-- `workflow/resource_plan.md`
-- `workflow/stakeholder_communication_plan.md`
-- All tier 3 artifacts
-- Planning agents: ceo, cto, cfo, strategic-planner
-- HITL approval required
+**CRITICAL NEW IN V5.0**: Coordinating phase sits between planning and executing.
 
-### Why Mandatory Planning Matters
+### Workflow Phases
 
-**User's Core Goals** (addressed by V4.0):
-1. ✅ **Focus on planning** - Planning is now mandatory and explicit for tier 2+
-2. ✅ **Ensure task completion** - Planning defines clear acceptance criteria upfront
-3. ✅ **Smooth coordination** - Planning identifies all dependencies and handoffs
+```
+routing → planning → coordinating → executing → validating
+   ↓          ↓           ↓            ↓           ↓
+  Router   Planner   Controller   Executor   Validator
+(tier 0-4) (objectives) (questions) (monitor) (quality)
+```
 
-**Benefits**:
-- **Clarity**: Everyone knows what "done" means before starting
-- **Coordination**: Dependencies identified upfront, not discovered mid-execution
-- **Quality**: Acceptance criteria defined with stakeholder input
-- **Risk mitigation**: Risks identified and mitigated proactively
-- **Accountability**: Clear ownership and deliverables
+**NEW Phase**: **Coordinating**
+- Orchestrator spawns controller from plan.yaml
+- Controller breaks objectives into questions
+- Controller delegates to execution agents
+- Controller synthesizes answers
+- Controller coordinates implementation
+- Controller writes coordination_log.yaml
+- Orchestrator detects completion (coordination_log exists with completed status)
 
-**Enforcement**:
-- universal-planner: Refuses to create execution-only plans for tier 2+
-- universal-executor: Checks planning artifacts exist before starting execution
-- universal-validator: Verifies planning artifacts as part of validation
-- orchestrator: Blocks phase transition if planning incomplete
+### Coordinating Phase Workflow
+
+1. **Orchestrator spawns controller** using Task tool with plan.yaml context
+2. **Controller analyzes objectives** and creates question list
+3. **Controller delegates questions** to execution agents (one question per agent)
+4. **Execution agents answer** with expertise and context
+5. **Controller synthesizes** all answers into coherent solution
+6. **Controller creates implementation tasks** from synthesized solution
+7. **Controller coordinates execution** by assigning tasks to execution agents
+8. **Controller writes coordination_log.yaml** with all Q&A exchanges, synthesis, and tasks
+9. **Orchestrator detects completion** when coordination_log.yaml has `status: completed`
+
+**Key File**: `Agent_Memory/{instruction_id}/workflow/coordination_log.yaml`
+
+### Coordination Log Structure
+
+```yaml
+# coordination_log.yaml
+controller: engineering:engineering-manager
+objectives: [...]
+questions_asked:
+  - question: "What is current auth implementation?"
+    delegated_to: backend-developer
+    answer: "Current implementation uses passport-local..."
+  - question: "What OAuth2 library should we use?"
+    delegated_to: architect
+    answer: "Recommend passport-oauth2 for consistency..."
+
+synthesized_solution:
+  approach: "Add passport-oauth2 alongside passport-local"
+  rationale: "Maintains backward compatibility while adding OAuth2"
+  implementation_steps: [10 concrete steps]
+  risks: ["Token storage security", "Migration complexity"]
+
+implementation_tasks:
+  - task_id: task_001
+    name: "Implement OAuth2 endpoints"
+    assigned_to: backend-developer
+    acceptance_criteria: [...]
+    status: completed
+
+status: completed
+```
+
+## Complexity Tiers
+
+| Tier | Type | Coordination | Example | Workflow |
+|------|------|--------------|---------|----------|
+| 0 | Trivial | None | "What is X?" | routing → answer |
+| 1 | Simple | None | "Fix typo" | routing → planning → executing → validating |
+| 2 | Moderate | 1 controller | "Fix bug" | routing → planning → **coordinating** → executing → validating |
+| 3 | Complex | 1 primary + 1-2 supporting | "Add feature" | routing → planning → **coordinating** → executing → validating |
+| 4 | Expert | 1 executive + 1 primary + 2-4 supporting | "Major refactor" | routing → planning → **coordinating** → executing → validating + HITL |
+
+**V5.0 CRITICAL CHANGE**: Tier 2+ workflows include coordinating phase with controllers using question-based delegation.
+
+### Coordination Patterns by Tier
+
+**Tier 0-1**: No controllers (direct answer or simple execution)
+
+**Tier 2**: 1 primary controller
+- Example: "Fix authentication bug"
+- Controller: engineering-manager
+- Pattern: Ask questions → synthesize → coordinate implementation
+
+**Tier 3**: 1 primary + 1-2 supporting controllers
+- Example: "Implement OAuth2 system"
+- Primary: engineering-manager (coordination)
+- Supporting: architect (design), security-specialist (security review)
+- Pattern: Multi-controller coordination with synthesis
+
+**Tier 4**: 1 executive + 1 primary + 2-4 supporting + HITL
+- Example: "Migrate to microservices architecture"
+- Executive: cto (strategic oversight)
+- Primary: engineering-manager (day-to-day coordination)
+- Supporting: architect, devops-lead, security-specialist, qa-lead
+- Pattern: Executive oversight + multi-controller + HITL approval
+
+## Workflow Execution
+
+```
+User Request → Trigger (domain detect) → Orchestrator
+  ↓
+  Routing → Universal-Router (tier classification, requires_controller flag)
+  ↓
+  Planning → Universal-Planner (objectives + controller selection)
+  ↓
+  Coordinating → Controller (question-based delegation, synthesis, coordination_log)
+  ↓
+  Executing → Universal-Executor (monitor controller progress)
+  ↓
+  Validating → Universal-Validator (coordination quality + output quality)
+  ↓
+  PASS → Complete | FIXABLE → Self-Correct | BLOCKED → HITL
+```
+
+See `workflow_agent_interactions.md` for detailed agent interaction patterns.
+
+## Objective-Based Planning
+
+**V5.0 Planning**: Define WHAT needs to be done, let controllers determine HOW.
+
+### Plan Structure (V5.0)
+
+```yaml
+# plan.yaml (V5.0)
+objectives:
+  - "Implement OAuth2 authentication for API"
+  - "Maintain backward compatibility with existing auth"
+  - "Follow OAuth2 best practices and security standards"
+
+success_criteria:
+  - "OAuth2 endpoints functional and tested"
+  - "Existing passport-local auth continues to work"
+  - "Security audit passes with no critical issues"
+
+controller_assignment:
+  primary: engineering:engineering-manager
+  supporting:
+    - engineering:architect
+    - engineering:security-specialist
+
+coordination_approach: question_based
+estimated_questions: 8-12
+estimated_duration: 3-5 hours
+```
+
+**Contrast with V4.0**:
+```yaml
+# plan.yaml (V4.0 - OLD)
+tasks:
+  - id: task_001
+    name: "Design OAuth2 architecture"
+    agent: architect
+    dependencies: []
+  - id: task_002
+    name: "Implement OAuth2 endpoints"
+    agent: backend-developer
+    dependencies: [task_001]
+  # ... 10 more detailed tasks
+```
+
+**V5.0 Benefits**:
+- **Simpler planning**: Define objectives, not task breakdowns
+- **Expert-driven**: Controller uses domain expertise to determine HOW
+- **Adaptive**: Controller adjusts questions based on answers received
+- **Flexible**: Not locked into predetermined task list
 
 ## Workflow Pattern
 
 **Subagent Architecture**: Agents delegate to specialists, don't execute directly.
 
 Pattern: "Use {subagent} to {task}"
-Example: Use project-manager → architect → backend-developer → qa-lead
+Example (V5.0): Controller → backend-developer (question) → architect (question) → synthesis → backend-developer (implementation)
 
-Benefits: Modularity, specialization, parallelization (up to 50 concurrent), reusability
+Benefits: Modularity, specialization, parallelization (up to 50 concurrent), reusability, expert coordination
 
 ## Task Completion Protocol
 
@@ -202,33 +339,34 @@ Benefits: Modularity, specialization, parallelization (up to 50 concurrent), reu
 **Core Rule**: 100% completion with verified evidence, or it's not complete.
 
 Protocol enforced by:
-- universal-executor: Verifies ALL acceptance criteria before marking complete
-- universal-validator: Checks verification records in task manifests
-- orchestrator: Validates all tasks have verification before phase transitions
+- Controllers: Verify ALL acceptance criteria in coordination_log before marking complete
+- universal-executor: Verifies coordination_log completeness before phase transition
+- universal-validator: Checks coordination quality + output quality
+- orchestrator: Validates coordination_log exists and is complete before phase transitions
 
 **Key Requirements**:
-1. All acceptance criteria met with concrete evidence
+1. All objectives met with concrete evidence
 2. All outputs exist and are production-quality
-3. manifest.yaml with completion_verification for every task
+3. coordination_log.yaml with all Q&A exchanges, synthesis, and completed tasks
 4. Evidence must be specific (file paths, test outputs, metrics)
 5. NO partial completion - 100% or in_progress
 
 **Files**:
 - Protocol: `Agent_Memory/_system/task_completion_protocol.yaml`
-- Template: `Agent_Memory/_system/templates/task_manifest_template.yaml`
+- Coordination: `Agent_Memory/{instruction_id}/workflow/coordination_log.yaml`
 - Summary: `docs/TASK_COMPLETION_ENFORCEMENT_SUMMARY.md`
 
-**Context Overhead**: Add 2K tokens per task for verification (included in planning)
+**Context Overhead**: Add 3K tokens per coordination cycle for Q&A tracking (included in planning)
 
 ## Commands
 
 ### /trigger - Universal Entry Point
-Auto-routes to domain, executes full workflow with capability-based agent discovery.
+Auto-routes to domain, executes full workflow with controller-centric coordination.
 ```bash
-/trigger Fix auth bug              # → Engineering domain (planning MANDATORY for tier 2+)
-/trigger Write fantasy story       # → Creative domain
-/trigger Plan Q4 campaign          # → Revenue domain (strategic-planner engaged first)
-/trigger Create budget             # → Finance-Operations (cfo approval for tier 4)
+/trigger Fix auth bug              # → Engineering domain (tier 2: engineering-manager controller)
+/trigger Write fantasy story       # → Creative domain (tier 2: story-architect controller)
+/trigger Plan Q4 campaign          # → Revenue domain (tier 3: marketing-strategist + campaign-manager)
+/trigger Create budget             # → Finance-Operations (tier 4: cfo + fp-and-a-manager)
 ```
 
 ### /designer - Interactive Design
@@ -273,44 +411,19 @@ Agent_Memory/
 └── {instruction_id}/     # Per-task working memory
     ├── instruction.yaml  # Request + metadata
     ├── status.yaml       # Current phase
-    ├── workflow/         # Plan, execution state, PLANNING ARTIFACTS (V4.0)
+    ├── workflow/         # Plan, coordination_log, execution state (V5.0)
     ├── tasks/            # pending/, in_progress/, completed/
     └── outputs/          # Deliverables
 ```
 
+**V5.0 Key Files**:
+- `workflow/plan.yaml` - Objectives + controller assignment (not tasks)
+- `workflow/coordination_log.yaml` - Q&A exchanges, synthesis, implementation tasks (NEW V5.0)
+- `workflow/execution_summary.yaml` - Aggregated outputs from controller
+
 **Principles**: File-based, instruction-scoped, parallel-safe, pause/resume capable
 
 See `docs/CONTEXT_MANAGEMENT.md` for context handling details.
-
-## Complexity Tiers
-
-| Tier | Type | Planning Required | Example | Workflow |
-|------|------|------------------|---------|----------|
-| 0 | Trivial | No | "What is X?" | Direct answer |
-| 1 | Simple | No | "Fix typo" | Execute → Validate |
-| 2 | Moderate | **YES** ✓ | "Fix bug" | **Plan** → Execute → Validate |
-| 3 | Complex | **YES** ✓ | "Add feature" | **Plan** → Parallel execution → Validate |
-| 4 | Expert | **YES + HITL** ✓ | "Major refactor" | **Executive plan** → Full orchestration + HITL |
-
-**V4.0 CRITICAL CHANGE**: Planning is MANDATORY for tier 2+ workflows. No execution without planning artifacts.
-
-## Workflow Execution
-
-```
-User Request → Trigger (domain detect) → Orchestrator
-  ↓
-  Routing → Universal-Router (tier classification)
-  ↓
-  Planning → Universal-Planner (MANDATORY for tier 2+, capability-based agent selection)
-  ↓
-  Executing → Universal-Executor (capability-based team coordination)
-  ↓
-  Validating → Universal-Validator (quality gates + planning artifact verification)
-  ↓
-  PASS → Complete | FIXABLE → Self-Correct | BLOCKED → HITL
-```
-
-See `workflow_agent_interactions.md` for detailed agent interaction patterns.
 
 ## Recursive Workflows
 
@@ -318,31 +431,47 @@ Complex tasks spawn child workflows (max depth: 5, max children: 100)
 
 Example: `/trigger Write 10-chapter novel` → 1 parent + 10 child workflows
 
+Each child workflow follows V5.0 pattern (objectives → controller → questions → synthesis → implementation)
+
 ## Creating Agents
 
-1. Choose domain (or universal for cross-domain capabilities)
+1. Choose tier (controller or execution) and domain
 2. Create `{domain}/agents/my-agent.md` with YAML frontmatter
-3. **V4.0: Add capability tags** to frontmatter
+3. **V5.0: Add tier field** to frontmatter
 4. Add to `{domain}/.claude-plugin/plugin.json`
 5. Test: `claude --plugin-dir .`
 
-**V4.0 Frontmatter**:
+**V5.0 Frontmatter (Controller)**:
 ```yaml
 ---
-name: my-agent
-capabilities: [primary_capability, secondary_capability, ...]
-domain: engineering  # or universal
-tier: 2              # 1=core, 2=capability agent
+name: engineering-manager
+tier: controller
+domain: engineering
+coordination_style: question_based
+question_limit: 15
+typical_questions: ["What is current implementation?", "What are constraints?", ...]
+---
+```
+
+**V5.0 Frontmatter (Execution)**:
+```yaml
+---
+name: backend-developer
+tier: execution
+domain: engineering
+answers_questions: ["implementation details", "technical constraints", ...]
+executes_tasks: ["implement endpoints", "write tests", ...]
 ---
 ```
 
 ## Creating Domains
 
 1. Create 5 config files: `Agent_Memory/_system/domains/{domain}/*.yaml`
-2. Create team agents in `{domain}/agents/`
-3. **V4.0: Add capability tags to all agents**
-4. Create plugin manifest: `{domain}/.claude-plugin/plugin.json`
-5. Update root `.claude-plugin/plugin.json` and `package.json`
+2. **V5.0: Create controller_catalog** in `planner_config.yaml`
+3. Create controller agents in `{domain}/agents/` with tier: controller
+4. Create execution agents in `{domain}/agents/` with tier: execution
+5. Create plugin manifest: `{domain}/.claude-plugin/plugin.json`
+6. Update root `.claude-plugin/plugin.json` and `package.json`
 
 No code required - universal agents load configs automatically.
 
@@ -353,14 +482,16 @@ cAgents/
 ├── core/                    # Core infrastructure (tier 1)
 │   ├── agents/              # 10 core agents
 │   └── commands/            # 4 universal commands
-├── shared/                  # Universal capability agents (33 agents)
-│   ├── agents/              # Cross-domain capabilities
+├── shared/                  # Universal agents (tier 2-3)
+│   ├── agents/              # Controllers + execution agents
 │   └── .claude-plugin/      # Shared manifest
 ├── {domain}/                # Domain packages (7 total)
-│   ├── agents/              # Domain specialists (with capability tags)
+│   ├── agents/              # Domain controllers + execution agents
 │   └── .claude-plugin/      # Domain manifest
 ├── docs/                    # Project documentation
-│   └── V4_MIGRATION_GUIDE.md  # V3.0 → V4.0 migration (NEW)
+│   ├── V5_ARCHITECTURE.md   # V5.0 architecture design (NEW)
+│   ├── V5_MIGRATION_GUIDE.md # V4.0 → V5.0 migration (NEW)
+│   └── V5_WORKFLOW_EXAMPLES.md # Tier 2, 3, 4 examples (NEW)
 ├── .claude-plugin/          # Root manifest
 └── Agent_Memory/            # Runtime state (git-ignored)
     └── _system/
@@ -371,10 +502,10 @@ cAgents/
 
 ## Performance Benchmarks
 
+**V5.0 Controller Pattern**: 30-40% simpler planning (objectives vs tasks), 20-30% fewer tokens (no detailed task lists)
 **Reviewer V2.0**: 33% faster, 81% faster to critical, 98% more actionable, 78% pattern detection
 **Parallel Execution**: 50x speedup (swarm), 80%+ efficiency
 **Optimizer**: 20-50% faster, 30-60% smaller bundles, 15-40% less memory
-**V4.0 Architecture**: Simpler (2-tier vs 3-tier), mandatory planning reduces rework by 40-60%
 
 See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 
@@ -382,78 +513,91 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 
 **Commands**: `/trigger`, `/designer`, `/reviewer`, `/optimize`
 **Core Agents**: trigger, orchestrator, hitl, optimizer, 5 universal workflow, task-consolidator
-**Capability Agents**: 219 agents organized by 12 capability categories
+**Controller Agents**: ~50 agents for coordination (engineering-manager, architect, cto, campaign-manager, etc.)
+**Execution Agents**: ~150 agents for specialist work (backend-developer, copywriter, financial-analyst, etc.)
 **Key Files**:
 - `.claude-plugin/plugin.json` - Root manifest
-- `Agent_Memory/_system/domains/{domain}/*.yaml` - Domain configs
+- `Agent_Memory/_system/domains/{domain}/*.yaml` - Domain configs (including controller_catalog)
 - `Agent_Memory/_system/task_completion_protocol.yaml` - Mandatory completion rules
-- `Agent_Memory/inst_{id}/outputs/capability_taxonomy.yaml` - V4.0 capability taxonomy (NEW)
+- `Agent_Memory/inst_{id}/workflow/coordination_log.yaml` - V5.0 coordination tracking (NEW)
+- `docs/V5_ARCHITECTURE.md` - V5.0 architecture design (NEW)
+- `docs/V5_MIGRATION_GUIDE.md` - V4.0 → V5.0 migration guide (NEW)
+- `docs/V5_WORKFLOW_EXAMPLES.md` - Reference implementations (NEW)
 - `docs/DOCUMENTATION_STANDARDS.md` - Documentation guidelines
-- `docs/V4_MIGRATION_GUIDE.md` - V3.0 → V4.0 migration guide (NEW)
 **Critical Rules**:
 - ✅ 100% task completion with verified evidence required
-- ✅ **Planning MANDATORY for tier 2+ workflows** (V4.0)
-- ✅ Capability-based agent discovery (V4.0)
+- ✅ **Coordinating phase MANDATORY for tier 2+ workflows** (V5.0)
+- ✅ Controllers use question-based delegation (V5.0)
+- ✅ Objectives in plan, tasks in coordination_log (V5.0)
 
-## V4.0 Migration
+## V5.0 Migration
 
-**From V3.0 to V4.0**:
-- ✅ No breaking changes - capability tags are additive
-- ✅ All agents already have capability tags in frontmatter
-- ✅ Planning enforcement added to universal-planner
-- ✅ Capability-based discovery algorithm in universal-planner
-- ✅ Documentation updated to reflect 2-tier architecture
+**From V4.0 to V5.0**:
+- ✅ All 229 agents migrated with tier field (controller, execution, or support)
+- ✅ All 18 domain configs updated with controller_catalog sections
+- ✅ Planning changed from task-based to objective-based
+- ✅ Coordinating phase added to workflow
+- ✅ Executor changed from team manager to controller monitor
+- ✅ Validator enhanced with coordination quality checks
 
 **Key Changes**:
-- Tier 2 (shared) + Tier 3 (domain) → Tier 2 (all capability agents)
-- Planning now MANDATORY for tier 2+ workflows
-- Agent discovery uses capability + domain matching
+- Tier 1 (core) remains
+- Tier 2 (capability agents) → Tier 2 (controllers) + Tier 3 (execution)
+- Capability tags → tier field (controller, execution, support)
+- Detailed tasks → objectives + question-based delegation
+- Team coordination → controller coordination
 
-See `docs/V4_MIGRATION_GUIDE.md` for detailed upgrade instructions.
+See `docs/V5_MIGRATION_GUIDE.md` for detailed upgrade instructions.
 
 ## Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
 | Wrong domain detected | Use explicit domain keywords |
-| Planning skipped | V4.0 enforces mandatory planning for tier 2+ |
-| Agent not found | Check capability tags in agent frontmatter |
+| No controller selected | Check planner_config.yaml has controller_catalog section |
+| coordination_log missing | Check controller completed coordinating phase |
+| Agent not found | Check agent has tier field in frontmatter |
 | All 9 QA agents run | Enable `intelligent_agent_selection` in reviewer config |
 | No progress updates | Ensure agents use TodoWrite |
-| Workflow stuck | Check `Agent_Memory/{instruction_id}/status.yaml` |
-| Missing planning artifacts | universal-executor blocks execution until planning complete |
+| Workflow stuck in coordinating | Check controller is asking questions and synthesizing |
+| Missing coordination_log | Controller didn't complete - check controller logs |
 
 Full troubleshooting: `archive/docs/TROUBLESHOOTING.md`
 
 See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 
-## V4.0 Philosophy
+## V5.0 Philosophy
 
-**User's Core Goals**:
-1. ✅ **Focus on planning** - Planning is now mandatory and explicit for tier 2+
-2. ✅ **Ensure task completion** - Planning defines clear acceptance criteria upfront
-3. ✅ **Smooth coordination** - Planning identifies all dependencies and handoffs
+**V5.0 Design Principles**:
+- **Controller-Centric**: Controllers coordinate work, not planners or executors
+- **Question-Based**: Controllers ask questions to specialists, not assign predetermined tasks
+- **Objective-Driven**: Plan defines WHAT (objectives), controllers determine HOW (questions + synthesis)
+- **Expert-Driven**: Controllers use domain expertise to break down work adaptively
+- **Simpler Planning**: High-level objectives instead of detailed task lists
+- **Adaptive Coordination**: Controllers adjust based on answers received
 
-**V4.0 Design Principles**:
-- **Simplicity**: 2-tier instead of 3-tier (no artificial shared/domain distinction)
-- **Planning-first**: Mandatory planning for tier 2+ (no skipping)
-- **Capability-driven**: Find agents by what they do (capabilities), not where they are (tiers)
-- **User-focused**: Architecture serves user goals (planning, completion, coordination)
+**What V5.0 Fixes**:
+- ❌ V4.0: Detailed task lists upfront → Planning overhead high, inflexible
+- ✅ V5.0: Objectives upfront → Simpler planning, adaptive execution
+- ❌ V4.0: Planner assigns agents → Required knowing all agents upfront
+- ✅ V5.0: Controller delegates → Expert-driven question-based delegation
+- ❌ V4.0: Executor manages team → Complex coordination logic
+- ✅ V5.0: Controller coordinates → Domain expert handles coordination
+- ❌ V4.0: Rigid task list → Cannot adapt to discoveries
+- ✅ V5.0: Question-based → Adapts to answers received
 
-**What V4.0 Fixes**:
-- ❌ V3.0: Planning optional → Tasks started without clear acceptance criteria
-- ✅ V4.0: Planning mandatory → Clear success criteria before execution starts
-- ❌ V3.0: Manual agent assignment → Required knowing all agents
-- ✅ V4.0: Capability-based discovery → Automatic matching by capability + domain
-- ❌ V3.0: Complex 3-tier architecture → Confusing shared vs domain distinction
-- ✅ V4.0: Simple 2-tier architecture → Core + capability agents
+**User Benefits**:
+1. ✅ **Simpler planning** - Define objectives, not task breakdowns
+2. ✅ **Expert-driven execution** - Controllers use domain expertise
+3. ✅ **Adaptive coordination** - Adjust based on what's discovered
+4. ✅ **Clear separation** - WHAT (planner) vs HOW (controller) vs WHEN (executor)
 
 ---
 
-**Version**: 4.0.0
-**Total Agents**: 229 (10 core + 219 capability)
-**Architecture**: V4.0 - 2-Tier Capability-Based (infrastructure + capability agents)
+**Version**: 5.0.0
+**Total Agents**: 229 (10 core + ~50 controller + ~150 execution + ~19 support)
+**Architecture**: V5.0 - Controller-Centric Question-Based Delegation
 **Domains**: 8 (engineering, revenue, finance-operations, people-culture, customer-experience, legal-compliance, creative, universal)
 **Dependencies**: None (file-based, self-contained)
-**Backward Compatibility**: Full (V3.0 capability tags already present, additive changes only)
-**Key Innovation**: Mandatory planning + capability-based discovery
+**Backward Compatibility**: Breaking changes from V4.0 (requires migration)
+**Key Innovation**: Controller-centric coordination with question-based delegation

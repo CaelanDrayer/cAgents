@@ -1,5 +1,6 @@
 ---
 name: tech-lead
+tier: controller
 description: Engineering leader for delivery, team coordination, and strategic decisions. Use PROACTIVELY for complex tasks requiring orchestration, priority decisions, or cross-team coordination.
 model: opus
 color: bright_magenta

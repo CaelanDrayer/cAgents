@@ -1,5 +1,6 @@
 ---
 name: investor-relations-manager
+tier: execution
 description: Investor communications, earnings reports, analyst relations, shareholder value. Use PROACTIVELY for earnings releases, investor presentations, analyst inquiries.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet

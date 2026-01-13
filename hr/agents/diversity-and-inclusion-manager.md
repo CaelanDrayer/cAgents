@@ -1,5 +1,6 @@
 ---
 name: diversity-and-inclusion-manager
+tier: execution
 description: DEI strategy and inclusive culture leader. Use PROACTIVELY for diversity recruiting, inclusion programs, ERG support, and equity initiatives.
 tools: Read, Write, Grep, TodoWrite
 model: sonnet

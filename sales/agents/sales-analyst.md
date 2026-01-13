@@ -1,5 +1,6 @@
 ---
 name: sales-analyst
+tier: execution
 description: Provide data-driven sales insights. Use for pipeline analytics, forecast modeling, performance analysis, and trend identification.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

@@ -1,0 +1,633 @@
+# Software Domain Planner Configuration
+# Task decomposition and planning rules for software engineering domain
+
+domain: software
+version: 1.0
+description: "Planning patterns and task decomposition for software development workflows"
+
+# Available Agents
+# All agents available in software domain for task assignment
+
+available_agents:
+  # Executive Leadership
+  - ceo: "Strategic vision and stakeholder management"
+  - cto: "Technology strategy and innovation"
+  - cfo: "Financial strategy and budgeting"
+  - coo: "Operational execution and process optimization"
+  - vp-engineering: "Engineering organization and team building"
+
+  # Business & Product
+  - product-owner: "Product vision and feature prioritization"
+  - stakeholder-rep: "Requirements and business validation"
+  - finance-manager: "IT budget and ROI analysis"
+  - compliance: "Regulatory and compliance requirements"
+
+  # Technical Leadership
+  - engineering-manager: "Strategic oversight and risk assessment"
+  - tech-lead: "Delivery coordination and priority decisions"
+  - architect: "System design and architecture decisions"
+  - senior-developer: "Complex implementation and code review"
+
+  # Domain Leads
+  - frontend-lead: "Frontend planning and team coordination"
+  - backend-lead: "Backend planning and team coordination"
+  - devops-lead: "Infrastructure and deployment coordination"
+  - data-lead: "Database and data pipeline coordination"
+  - security-lead: "Security planning and team coordination"
+  - qa-lead: "Testing strategy and quality coordination"
+
+  # Development Team
+  - frontend-developer: "UI/UX implementation"
+  - backend-developer: "API and server-side logic"
+  - dba: "Database design and optimization"
+  - data-analyst: "Data pipelines and analytics"
+  - ux-designer: "User experience and interface design"
+  - security-specialist: "Security implementation and auditing"
+
+  # Operations & Support
+  - sysadmin: "Infrastructure and production systems"
+  - devops: "CI/CD and infrastructure automation"
+  - it-support: "User support and troubleshooting"
+
+  # Documentation & Quality
+  - scribe: "Documentation and knowledge capture"
+  - reviewer: "Code review orchestration"
+
+  # Intelligence Layer (tier 3-4)
+  - pattern-recognition: "Identify recurring issues"
+  - risk-assessment: "Analyze risks and bottlenecks"
+  - dependency-analyzer: "Map task dependencies"
+  - learning-coordinator: "Track outcomes and learnings"
+  - predictive-analyst: "Forecast potential issues"
+
+  # QA Layer (tier 3-4)
+  - architecture-reviewer: "Architecture and design validation"
+  - code-standards-auditor: "Code style and conventions"
+  - security-analyst: "Security vulnerability scanning"
+  - qa-compliance-officer: "Regulatory compliance"
+  - performance-analyzer: "Performance bottleneck detection"
+  - test-coverage-validator: "Test coverage validation"
+  - documentation-reviewer: "Documentation completeness"
+  - dependency-auditor: "Dependency vulnerability checking"
+  - accessibility-checker: "WCAG compliance validation"
+
+# Task Patterns
+# Predefined task decomposition patterns for common software workflows
+
+task_patterns:
+  fix_bug:
+    description: "Standard bug fix workflow"
+    triggers: [fix, bug, error, broken, issue]
+    tier_default: 2
+
+    tasks:
+      - id: reproduce_bug
+        description: "Reproduce the bug and understand the failure scenario"
+        agent: senior-developer
+        type: analyze
+        dependencies: []
+        estimated_effort: "15-30 minutes"
+
+      - id: diagnose_root_cause
+        description: "Identify root cause through debugging and code analysis"
+        agent: senior-developer
+        type: analyze
+        dependencies: [reproduce_bug]
+        estimated_effort: "30-60 minutes"
+
+      - id: implement_fix
+        description: "Implement the fix for {issue}"
+        agent: backend-developer  # or frontend-developer based on context
+        type: modify
+        dependencies: [diagnose_root_cause]
+        estimated_effort: "30-90 minutes"
+
+      - id: write_tests
+        description: "Add regression tests to prevent bug from recurring"
+        agent: backend-developer
+        type: test
+        dependencies: [implement_fix]
+        estimated_effort: "20-40 minutes"
+
+      - id: validate_fix
+        description: "Verify fix works and all tests pass"
+        agent: senior-developer
+        type: validate
+        dependencies: [write_tests]
+        estimated_effort: "10-20 minutes"
+
+    acceptance_criteria:
+      - "Bug no longer reproduces"
+      - "Root cause identified and documented"
+      - "Fix implemented without breaking existing functionality"
+      - "Regression tests added and passing"
+      - "All existing tests still pass"
+      - "Code reviewed and approved"
+
+  implement_feature:
+    description: "New feature implementation with full lifecycle"
+    triggers: [add, implement, create, feature, new, build]
+    tier_default: 3
+
+    tasks:
+      - id: design_feature
+        description: "Design {feature_name} architecture and data model"
+        agent: architect
+        type: analyze
+        dependencies: []
+        estimated_effort: "1-2 hours"
+
+      - id: create_api_endpoints
+        description: "Implement backend API endpoints for {feature_name}"
+        agent: backend-developer
+        type: create
+        dependencies: [design_feature]
+        estimated_effort: "2-4 hours"
+
+      - id: create_frontend_ui
+        description: "Implement frontend UI components for {feature_name}"
+        agent: frontend-developer
+        type: create
+        dependencies: [design_feature]
+        estimated_effort: "2-4 hours"
+
+      - id: integrate_components
+        description: "Integrate frontend and backend components"
+        agent: senior-developer
+        type: modify
+        dependencies: [create_api_endpoints, create_frontend_ui]
+        estimated_effort: "1-2 hours"
+
+      - id: write_comprehensive_tests
+        description: "Write unit, integration, and E2E tests"
+        agent: backend-developer
+        type: test
+        dependencies: [integrate_components]
+        estimated_effort: "2-3 hours"
+
+      - id: security_review
+        description: "Security review of {feature_name}"
+        agent: security-specialist
+        type: validate
+        dependencies: [write_comprehensive_tests]
+        estimated_effort: "30-60 minutes"
+
+      - id: update_documentation
+        description: "Update API docs and user documentation"
+        agent: scribe
+        type: create
+        dependencies: [security_review]
+        estimated_effort: "30-60 minutes"
+
+    acceptance_criteria:
+      - "Feature design approved by architect"
+      - "Backend API implemented and tested"
+      - "Frontend UI implemented and responsive"
+      - "Integration complete and working"
+      - "All tests passing (unit, integration, E2E)"
+      - "Security review passed with no critical issues"
+      - "Documentation updated (API docs, user guides)"
+      - "Code reviewed and approved"
+
+  refactor_code:
+    description: "Code refactoring without behavior change"
+    triggers: [refactor, improve, clean, optimize]
+    tier_default: 2
+
+    tasks:
+      - id: analyze_current_code
+        description: "Analyze current {target_module} implementation"
+        agent: architect
+        type: analyze
+        dependencies: []
+        estimated_effort: "30-60 minutes"
+
+      - id: design_refactoring
+        description: "Design refactored structure and migration path"
+        agent: architect
+        type: analyze
+        dependencies: [analyze_current_code]
+        estimated_effort: "30-60 minutes"
+
+      - id: refactor_implementation
+        description: "Implement refactored {target_module}"
+        agent: senior-developer
+        type: modify
+        dependencies: [design_refactoring]
+        estimated_effort: "2-4 hours"
+
+      - id: verify_behavior_unchanged
+        description: "Verify all existing tests still pass"
+        agent: senior-developer
+        type: validate
+        dependencies: [refactor_implementation]
+        estimated_effort: "15-30 minutes"
+
+      - id: update_related_code
+        description: "Update code that depends on refactored module"
+        agent: backend-developer
+        type: modify
+        dependencies: [verify_behavior_unchanged]
+        estimated_effort: "1-2 hours"
+
+    acceptance_criteria:
+      - "Code quality improved (readability, maintainability)"
+      - "No behavior changes (all existing tests pass)"
+      - "Performance same or better"
+      - "All dependencies updated"
+      - "Code reviewed and approved"
+
+  write_tests:
+    description: "Add or improve test coverage"
+    triggers: [test, coverage, spec, validate]
+    tier_default: 2
+
+    tasks:
+      - id: analyze_coverage_gaps
+        description: "Identify untested code and edge cases"
+        agent: senior-developer
+        type: analyze
+        dependencies: []
+        estimated_effort: "20-30 minutes"
+
+      - id: write_unit_tests
+        description: "Write unit tests for {target_code}"
+        agent: backend-developer
+        type: test
+        dependencies: [analyze_coverage_gaps]
+        estimated_effort: "1-2 hours"
+
+      - id: write_integration_tests
+        description: "Write integration tests for {target_code}"
+        agent: backend-developer
+        type: test
+        dependencies: [analyze_coverage_gaps]
+        estimated_effort: "1-2 hours"
+
+      - id: verify_coverage_improved
+        description: "Verify test coverage meets target (80%+)"
+        agent: senior-developer
+        type: validate
+        dependencies: [write_unit_tests, write_integration_tests]
+        estimated_effort: "15 minutes"
+
+    acceptance_criteria:
+      - "Test coverage >= 80% for target code"
+      - "All edge cases covered"
+      - "All tests passing"
+      - "Tests are maintainable and well-documented"
+
+  deployment:
+    description: "Deploy code to target environment"
+    triggers: [deploy, release, ship]
+    tier_default: 2
+
+    tasks:
+      - id: pre_deployment_checks
+        description: "Verify all tests pass, builds succeed"
+        agent: devops
+        type: validate
+        dependencies: []
+        estimated_effort: "15-30 minutes"
+
+      - id: create_deployment_plan
+        description: "Create deployment plan for {deployment_target}"
+        agent: devops
+        type: analyze
+        dependencies: [pre_deployment_checks]
+        estimated_effort: "30 minutes"
+
+      - id: execute_deployment
+        description: "Execute deployment to {deployment_target}"
+        agent: devops
+        type: create
+        dependencies: [create_deployment_plan]
+        estimated_effort: "30-60 minutes"
+
+      - id: post_deployment_validation
+        description: "Verify deployment successful, run smoke tests"
+        agent: devops
+        type: validate
+        dependencies: [execute_deployment]
+        estimated_effort: "20-30 minutes"
+
+      - id: monitor_production
+        description: "Monitor production metrics and logs"
+        agent: sysadmin
+        type: validate
+        dependencies: [post_deployment_validation]
+        estimated_effort: "ongoing"
+
+    acceptance_criteria:
+      - "All pre-deployment checks pass"
+      - "Deployment plan reviewed and approved"
+      - "Deployment successful with zero downtime"
+      - "Post-deployment smoke tests pass"
+      - "Production metrics normal"
+      - "Rollback plan documented and tested"
+
+  security_audit:
+    description: "Security assessment and vulnerability scanning"
+    triggers: [security, audit, vulnerability]
+    tier_default: 2
+
+    tasks:
+      - id: threat_modeling
+        description: "Identify potential security threats for {target_system}"
+        agent: security-specialist
+        type: analyze
+        dependencies: []
+        estimated_effort: "1-2 hours"
+
+      - id: vulnerability_scan
+        description: "Run automated security scans"
+        agent: security-analyst
+        type: validate
+        dependencies: [threat_modeling]
+        estimated_effort: "30 minutes"
+
+      - id: manual_security_review
+        description: "Manual code review for security issues"
+        agent: security-specialist
+        type: validate
+        dependencies: [vulnerability_scan]
+        estimated_effort: "2-3 hours"
+
+      - id: fix_critical_issues
+        description: "Fix any critical security vulnerabilities found"
+        agent: senior-developer
+        type: modify
+        dependencies: [manual_security_review]
+        estimated_effort: "varies"
+
+      - id: document_findings
+        description: "Document security findings and remediations"
+        agent: security-specialist
+        type: create
+        dependencies: [fix_critical_issues]
+        estimated_effort: "30-60 minutes"
+
+    acceptance_criteria:
+      - "Threat model documented"
+      - "No critical or high severity vulnerabilities"
+      - "Security scan results documented"
+      - "All findings addressed or accepted risk"
+      - "Security review report complete"
+
+# Task Types
+# Definitions for different types of tasks in software development
+
+task_types:
+  create:
+    description: "Create new code, files, or components"
+    typical_agents: [backend-developer, frontend-developer, devops]
+    typical_tools: [Write, Bash]
+
+  modify:
+    description: "Modify existing code or files"
+    typical_agents: [senior-developer, backend-developer, frontend-developer]
+    typical_tools: [Edit, Read, Bash]
+
+  analyze:
+    description: "Analyze code, design systems, or investigate issues"
+    typical_agents: [architect, senior-developer, security-specialist]
+    typical_tools: [Read, Grep, Glob]
+
+  validate:
+    description: "Test, review, or verify code meets requirements"
+    typical_agents: [senior-developer, security-specialist, qa-lead]
+    typical_tools: [Bash, Read]
+
+  test:
+    description: "Write or run tests"
+    typical_agents: [backend-developer, frontend-developer]
+    typical_tools: [Write, Bash]
+
+# Acceptance Criteria Templates
+# Reusable acceptance criteria patterns for software tasks
+
+acceptance_templates:
+  code_complete:
+    - "Code implements specified functionality"
+    - "All tests passing (unit, integration)"
+    - "Code follows project conventions and style guide"
+    - "No critical code smells or technical debt introduced"
+    - "Code reviewed and approved by senior developer"
+    - "Documentation updated (inline comments, API docs)"
+
+  security_validated:
+    - "No critical or high security vulnerabilities"
+    - "Input validation implemented"
+    - "Authentication/authorization properly enforced"
+    - "Sensitive data properly encrypted/protected"
+    - "Security review passed"
+
+  performance_acceptable:
+    - "Response times within acceptable limits"
+    - "No performance regressions introduced"
+    - "Resource usage (CPU, memory) acceptable"
+    - "Load testing passed (if applicable)"
+
+  deployment_ready:
+    - "All tests passing in staging environment"
+    - "Database migrations tested"
+    - "Rollback procedure documented and tested"
+    - "Monitoring and alerts configured"
+    - "Documentation updated (deployment guide, runbook)"
+
+# Dependency Patterns
+# Common dependency relationships in software tasks
+
+dependency_patterns:
+  sequential:
+    description: "Tasks must execute in strict order"
+    pattern: "Design → Implement → Test → Deploy"
+    example: "Architecture design must complete before implementation starts"
+
+  parallel:
+    description: "Tasks can execute concurrently"
+    pattern: "Frontend + Backend development can happen simultaneously"
+    example: "UI and API development after design is complete"
+
+  convergent:
+    description: "Multiple tasks feed into one integration task"
+    pattern: "[Frontend, Backend, Database] → Integration → Testing"
+    example: "All components must be ready before integration testing"
+
+  fan_out_fan_in:
+    description: "One task spawns multiple, which then converge"
+    pattern: "Design → [Feature A, Feature B, Feature C] → Integration"
+    example: "Architecture design enables parallel feature development"
+
+# Planning Strategies by Tier
+# How planning depth and detail varies by complexity
+
+planning_strategies:
+  tier_0:
+    planning_depth: none
+    task_count: 0
+    planning_time: "N/A"
+    description: "No planning phase for tier 0 questions"
+    approach: "Direct answer without task creation"
+
+  tier_1:
+    planning_depth: minimal
+    task_count: 1-2
+    planning_time: "< 30 seconds"
+    description: "Minimal planning, simple task list"
+    approach: "Create 1-2 simple tasks with clear acceptance criteria"
+    typical_tasks:
+      - "Execute single action (fix typo, update config)"
+      - "Validate result"
+
+  tier_2:
+    planning_depth: standard
+    task_count: 3-8
+    planning_time: "1-3 minutes"
+    description: "Full breakdown with dependencies and acceptance criteria"
+    approach: "Apply task pattern template, customize for specific request"
+    typical_tasks:
+      - "Analyze/design"
+      - "Implement changes"
+      - "Write tests"
+      - "Validate and review"
+    consultation: "Optional: Consult architect for design decisions"
+
+  tier_3:
+    planning_depth: deep
+    task_count: 5-15
+    planning_time: "3-7 minutes"
+    description: "Parallel streams, specialist consultation, architecture review"
+    approach: "Multi-stream planning with parallel execution groups"
+    typical_tasks:
+      - "Architecture design (with architect consultation)"
+      - "Parallel implementation streams (frontend + backend)"
+      - "Integration and testing"
+      - "Security and performance review"
+      - "Documentation and deployment"
+    consultation: "Required: Architect for design, domain leads for coordination"
+    checkpoints:
+      - "After design approval"
+      - "After parallel streams complete"
+      - "After integration testing"
+
+  tier_4:
+    planning_depth: expert
+    task_count: 10-30+
+    planning_time: "5-10 minutes"
+    description: "Multi-phase, reviews, risk analysis, HITL consultation"
+    approach: "Strategic planning with phases, milestones, and HITL checkpoints"
+    typical_phases:
+      - "Phase 1: Discovery and design"
+      - "Phase 2: Implementation"
+      - "Phase 3: Testing and validation"
+      - "Phase 4: Deployment and monitoring"
+    consultation: "Required: CTO/VP-Engineering for strategy, multiple specialists"
+    checkpoints:
+      - "After each phase completion"
+      - "Before critical decisions (HITL)"
+      - "Before production deployment"
+    risk_analysis: "Required: Identify and mitigate risks for each phase"
+    contingency: "Required: Rollback and recovery plans"
+
+# Agent Assignment Guidelines
+# How to match tasks to appropriate agents based on requirements
+
+agent_assignment:
+  by_complexity:
+    simple:
+      agents: [backend-developer, frontend-developer]
+      rationale: "Standard development tasks"
+
+    moderate:
+      agents: [senior-developer, architect]
+      rationale: "Requires experience and design thinking"
+
+    complex:
+      agents: [architect, tech-lead, domain-leads]
+      rationale: "Requires architectural oversight and coordination"
+
+  by_domain:
+    frontend:
+      agents: [frontend-developer, frontend-lead, ux-designer]
+      scope: "UI, UX, client-side logic"
+
+    backend:
+      agents: [backend-developer, backend-lead, dba]
+      scope: "API, server-side logic, database"
+
+    infrastructure:
+      agents: [devops, devops-lead, sysadmin]
+      scope: "CI/CD, deployment, infrastructure"
+
+    security:
+      agents: [security-specialist, security-lead, security-analyst]
+      scope: "Security, authentication, vulnerability scanning"
+
+    data:
+      agents: [data-analyst, data-lead, dba]
+      scope: "Data pipelines, analytics, database design"
+
+    quality:
+      agents: [qa-lead, reviewer, code-standards-auditor]
+      scope: "Testing, code review, quality assurance"
+
+  by_task_type:
+    design:
+      primary: architect
+      secondary: [senior-developer, domain-leads]
+
+    implementation:
+      primary: [backend-developer, frontend-developer]
+      secondary: senior-developer
+
+    review:
+      primary: [senior-developer, security-specialist]
+      secondary: [code-standards-auditor, architecture-reviewer]
+
+    testing:
+      primary: [backend-developer, frontend-developer]
+      secondary: qa-lead
+
+    deployment:
+      primary: devops
+      secondary: [sysadmin, devops-lead]
+
+# Domain-Specific Notes
+domain_notes: |
+  Software domain planning considerations:
+
+  **Task Granularity**:
+  - Tier 1-2: Tasks should be completable in < 2 hours each
+  - Tier 3-4: Tasks can be 2-4 hours but must have clear milestones
+
+  **Agent Selection**:
+  - Prefer specialists for their domain (backend-developer for API tasks)
+  - Use senior-developer or architect for complex or cross-cutting concerns
+  - Engage domain leads for tier 3-4 coordination
+
+  **Parallel Execution**:
+  - Frontend and backend work can often proceed in parallel after design
+  - Multiple features can be developed concurrently
+  - Testing can start before all development complete (continuous testing)
+
+  **Critical Paths**:
+  - Database schema changes often on critical path (blocks other work)
+  - Architecture decisions block implementation
+  - Integration testing blocks deployment
+
+  **Common Mistakes**:
+  - Forgetting to add tests as separate task
+  - Not allocating time for code review
+  - Under-estimating integration complexity
+  - Missing security review for auth/sensitive features
+  - Forgetting documentation updates
+
+  **Best Practices**:
+  - Always include "write tests" as explicit task
+  - Add security review for any auth, permissions, or sensitive data
+  - Include documentation updates in plan
+  - Break large tasks into smaller subtasks (< 2 hour each)
+  - Identify parallel execution opportunities
+  - Define clear acceptance criteria for each task
+  - Specify which agent should handle each task

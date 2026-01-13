@@ -1,5 +1,6 @@
 ---
 name: procurement-specialist
+tier: execution
 description: Strategic sourcing, vendor management, and contract negotiation. Use for sourcing decisions and cost optimization.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

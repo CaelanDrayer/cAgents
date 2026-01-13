@@ -1,0 +1,44 @@
+# People-Culture Domain Self-Correct Configuration (V3.0)
+domain: people-culture
+version: 3.0
+
+shared_recovery_strategies:
+  compliance_intervention:
+    when: "HR compliance violations"
+    escalate_to: [shared:compliance-officer, shared:risk-manager]
+    strategy: "Immediate compliance remediation"
+
+  change_management:
+    when: "Organizational resistance, change failures"
+    escalate_to: [shared:change-manager]
+    strategy: "Change management intervention"
+
+  strategic_escalation:
+    when: "Talent strategy failures"
+    escalate_to: [shared:coo, shared:strategic-planner]
+    strategy: "Strategic talent approach revision"
+
+error_patterns:
+  hiring_delays:
+    detection: "Hiring timeline significantly delayed"
+    severity: medium
+    fixable: true
+    recovery_agent: talent-acquisition-manager
+    shared_oversight: [shared:resource-planner, shared:quality-manager]
+    max_attempts: 2
+
+  compliance_risk:
+    detection: "HR compliance issues identified"
+    severity: critical
+    fixable: true
+    recovery_agent: hr-business-partner
+    shared_oversight: [shared:compliance-officer, shared:risk-manager]
+    max_attempts: 1
+
+  retention_issues:
+    detection: "Turnover above targets"
+    severity: high
+    fixable: true
+    recovery_agent: hr-director
+    shared_oversight: [shared:data-analyst, shared:change-manager]
+    max_attempts: 2

@@ -1,0 +1,566 @@
+# Software Domain Self-Correct Configuration
+# Automated correction strategies for software development issues
+
+domain: software
+version: 1.0
+description: "Automated fix strategies for common software development validation failures"
+
+# Correction Strategies
+# How to fix different types of software development issues
+
+correction_strategies:
+  test_coverage_low:
+    description: "Test coverage below target (< 80%)"
+    detection: "Coverage report shows < 80% for modified code"
+    severity: major
+    fixable: true
+
+    fix_method: "Generate additional test cases for uncovered code paths"
+    agent_to_invoke: "backend-developer"
+    estimated_time: "15-30 minutes"
+    max_retries: 2
+
+    steps:
+      - "Identify uncovered code paths from coverage report"
+      - "Generate test cases for each uncovered branch/function"
+      - "Write tests focusing on edge cases"
+      - "Run coverage again to verify improvement"
+      - "Ensure coverage >= 80%"
+
+    success_criteria:
+      - "Coverage >= 80% for all modified files"
+      - "New tests pass"
+      - "No regressions in existing tests"
+
+  test_failures:
+    description: "Some tests failing (< 10% of total tests)"
+    detection: "Test run shows failures but < 10% failure rate"
+    severity: major
+    fixable: true
+
+    fix_method: "Analyze failures, fix obvious issues"
+    agent_to_invoke: "senior-developer"
+    estimated_time: "30-60 minutes"
+    max_retries: 2
+
+    steps:
+      - "Parse test output to identify failed tests"
+      - "Analyze failure messages and stack traces"
+      - "For each failure, determine root cause"
+      - "Apply fix (code change or test update)"
+      - "Re-run tests to verify"
+
+    success_criteria:
+      - "All tests passing"
+      - "No new test failures introduced"
+
+    non_fixable_if:
+      - "Failure rate > 10% (fundamental issue)"
+      - "Failure reason unclear"
+      - "Requires architecture change"
+
+  linting_errors:
+    description: "Code style or linting violations"
+    detection: "Linter reports errors or warnings"
+    severity: minor
+    fixable: true
+
+    fix_method: "Apply auto-fixes from linter"
+    agent_to_invoke: null  # Can fix directly
+    estimated_time: "5 minutes"
+    max_retries: 1
+
+    steps:
+      - "Run linter with auto-fix flag"
+      - "Review auto-applied changes"
+      - "Re-run linter to verify"
+
+    commands:
+      python: "black . && pylint --fix ."
+      javascript: "eslint --fix . && prettier --write ."
+      typescript: "eslint --fix . && prettier --write ."
+
+    success_criteria:
+      - "No linting errors remaining"
+      - "Code still passes tests after formatting"
+
+  formatting_errors:
+    description: "Code formatting violations"
+    detection: "Formatter check fails"
+    severity: minor
+    fixable: true
+
+    fix_method: "Apply code formatter"
+    agent_to_invoke: null  # Can fix directly
+    estimated_time: "2 minutes"
+    max_retries: 1
+
+    steps:
+      - "Run code formatter"
+      - "Verify formatting applied correctly"
+
+    commands:
+      python: "black ."
+      javascript: "prettier --write ."
+      typescript: "prettier --write ."
+      go: "go fmt ./..."
+
+    success_criteria:
+      - "Formatter check passes"
+
+  missing_documentation:
+    description: "Documentation incomplete or missing"
+    detection: "Documentation validator finds missing sections"
+    severity: minor
+    fixable: true
+
+    fix_method: "Generate missing documentation from code"
+    agent_to_invoke: "scribe"
+    estimated_time: "20-30 minutes"
+    max_retries: 2
+
+    steps:
+      - "Identify which documentation is missing (API docs, README, etc.)"
+      - "Extract information from code (docstrings, comments, signatures)"
+      - "Generate missing documentation sections"
+      - "Review for accuracy and completeness"
+
+    success_criteria:
+      - "All required documentation sections present"
+      - "Documentation accurate and helpful"
+      - "Examples included where appropriate"
+
+  security_minor_issues:
+    description: "Low/medium severity security issues"
+    detection: "Security scan finds non-critical vulnerabilities"
+    severity: major
+    fixable: true
+
+    fix_method: "Apply security fixes for known patterns"
+    agent_to_invoke: "security-specialist"
+    estimated_time: "30-60 minutes"
+    max_retries: 2
+
+    fixable_patterns:
+      - "Hardcoded secrets → Move to environment variables"
+      - "Missing input validation → Add validation"
+      - "Weak password hashing → Use bcrypt/argon2"
+      - "Missing HTTPS enforcement → Add middleware"
+      - "Vulnerable dependency → Update dependency"
+
+    steps:
+      - "Identify security issue type"
+      - "Apply appropriate fix pattern"
+      - "Re-run security scan"
+      - "Verify issue resolved"
+
+    success_criteria:
+      - "No low/medium severity issues remaining"
+      - "No new vulnerabilities introduced"
+
+    non_fixable_if:
+      - "Critical or high severity vulnerability"
+      - "Requires architectural change"
+      - "Affects authentication/authorization core logic"
+
+  dependency_vulnerabilities:
+    description: "Vulnerable dependencies (non-critical)"
+    detection: "Dependency scanner finds low/medium vulnerabilities"
+    severity: major
+    fixable: true
+
+    fix_method: "Update vulnerable dependencies"
+    agent_to_invoke: "senior-developer"
+    estimated_time: "20-40 minutes"
+    max_retries: 2
+
+    steps:
+      - "Identify vulnerable dependencies and versions"
+      - "Check for available updates that fix vulnerabilities"
+      - "Update dependencies (package.json, requirements.txt, etc.)"
+      - "Run tests to ensure no breaking changes"
+      - "Re-scan dependencies"
+
+    commands:
+      npm: "npm audit fix"
+      python: "pip install --upgrade {package}"
+
+    success_criteria:
+      - "No critical/high vulnerabilities in dependencies"
+      - "All tests still passing after updates"
+
+    non_fixable_if:
+      - "Update causes breaking changes"
+      - "No fix available for vulnerability"
+      - "Dependency too old, requires major version upgrade"
+
+  performance_minor_regression:
+    description: "Small performance regression (< 20%)"
+    detection: "Performance metrics show slight degradation"
+    severity: major
+    fixable: sometimes
+
+    fix_method: "Identify and optimize performance bottleneck"
+    agent_to_invoke: "senior-developer"
+    estimated_time: "1-2 hours"
+    max_retries: 1
+
+    steps:
+      - "Run performance profiler to identify bottleneck"
+      - "Review code changes for obvious performance issues"
+      - "Apply common optimizations (caching, indexing, etc.)"
+      - "Re-run performance tests"
+      - "Verify regression eliminated"
+
+    common_fixes:
+      - "Add database index"
+      - "Add caching layer"
+      - "Optimize loop/algorithm"
+      - "Lazy load resources"
+      - "Use connection pooling"
+
+    success_criteria:
+      - "Performance within 5% of baseline"
+      - "No new bottlenecks introduced"
+
+    non_fixable_if:
+      - "Regression > 20% (fundamental issue)"
+      - "Optimization requires architecture change"
+      - "Trade-off between features and performance"
+
+  missing_error_handling:
+    description: "Error handling incomplete or missing"
+    detection: "Code review identifies missing try/catch or error checks"
+    severity: major
+    fixable: true
+
+    fix_method: "Add error handling for identified code paths"
+    agent_to_invoke: "backend-developer"
+    estimated_time: "20-40 minutes"
+    max_retries: 2
+
+    steps:
+      - "Identify functions/code paths missing error handling"
+      - "Add appropriate error handling (try/catch, error returns, etc.)"
+      - "Add tests for error scenarios"
+      - "Verify errors handled gracefully"
+
+    patterns:
+      api_calls: "Wrap in try/catch, return error response"
+      database: "Handle connection errors, query errors"
+      file_operations: "Handle file not found, permission errors"
+      external_services: "Handle timeout, network errors"
+
+    success_criteria:
+      - "All error paths have handling"
+      - "Tests cover error scenarios"
+      - "Errors logged appropriately"
+
+  api_contract_mismatch:
+    description: "API response doesn't match documented contract"
+    detection: "API validator finds schema mismatch"
+    severity: major
+    fixable: true
+
+    fix_method: "Update code or documentation to match"
+    agent_to_invoke: "backend-developer"
+    estimated_time: "15-30 minutes"
+    max_retries: 2
+
+    steps:
+      - "Compare actual response with documented schema"
+      - "Determine if code or docs should change"
+      - "Apply fix (update code to match docs, or update docs to match code)"
+      - "Re-validate API contract"
+
+    success_criteria:
+      - "API response matches documented schema"
+      - "All required fields present"
+      - "Types match documentation"
+
+# Fixable vs. Non-Fixable Criteria
+# Determining if self-correct can handle an issue
+
+fixability_criteria:
+  fixable:
+    conditions:
+      - issue_severity: ["minor", "major"]
+      - estimated_fix_time: "< 2 hours"
+      - clear_fix_pattern: true
+      - appropriate_agent_available: true
+      - retry_count: "< max_retries"
+      - no_architectural_changes_needed: true
+
+    typical_fixable_issues:
+      - "Test coverage gaps (< 10% below target)"
+      - "Minor test failures (< 10% of tests)"
+      - "Formatting/linting errors"
+      - "Missing documentation sections"
+      - "Low/medium security issues with known fixes"
+      - "Minor dependency vulnerabilities"
+      - "Missing error handling (isolated)"
+
+  non_fixable:
+    conditions:
+      - issue_severity: ["critical"]
+      - OR: estimated_fix_time: "> 2 hours"
+      - OR: unclear_fix_method: true
+      - OR: requires_architectural_change: true
+      - OR: retry_count: ">= max_retries"
+      - OR: fundamental_misunderstanding: true
+
+    typical_non_fixable_issues:
+      - "All tests failing (> 50%)"
+      - "Critical security vulnerabilities"
+      - "Major performance regression (> 20%)"
+      - "Requirement misunderstood"
+      - "Architecture needs redesign"
+      - "Data loss or corruption"
+      - "Breaking API changes needed"
+
+# Recursive Fix Workflows
+# When to create child workflows for complex fixes
+
+recursive_fixes:
+  enabled: true
+
+  triggers:
+    complex_fix:
+      condition: "Estimated fix time > 1 hour"
+      action: "Create child workflow for fix"
+      example: "Performance optimization requires profiling + multiple fixes"
+
+    multiple_issues:
+      condition: "> 3 distinct fixable issues"
+      action: "Create child workflow per issue category"
+      example: "Test failures + coverage + documentation → 3 child workflows"
+
+    cross_domain_fix:
+      condition: "Fix requires expertise from multiple domains"
+      action: "Create cross-domain child workflow"
+      example: "API issue requires backend + frontend changes"
+
+  workflow_creation:
+    domain: "software (same as parent)"
+    priority: "high"
+    parent_link: "Links to parent instruction"
+    completion_requirement: "Must complete before parent re-validation"
+
+# Agent Invocation for Fixes
+# How to invoke agents to perform corrections
+
+agent_invocation:
+  delegation_format:
+    type: "correction_request"
+    location: "Agent_Memory/_communication/inbox/{agent_name}/"
+    filename: "{instruction_id}_correction_{timestamp}.yaml"
+
+  message_content: |
+    type: correction_request
+    from: universal-self-correct
+    to: {agent_name}
+    timestamp: {ISO8601}
+    instruction_id: {inst_id}
+
+    issue_type: {issue_type}
+    severity: major|minor|critical
+
+    problem_description: |
+      {Detailed description of what's wrong}
+
+    fix_required: |
+      {What needs to be fixed}
+
+    validation_report:
+      {Include relevant parts of validation report}
+
+    acceptance_criteria:
+      - {Criteria for fix to be considered successful}
+
+    estimated_effort: "X minutes"
+    deadline: {optional}
+    priority: high  # Corrections are usually high priority
+
+    context:
+      original_task_path: "Agent_Memory/{inst_id}/tasks/completed/{task_id}.yaml"
+      outputs_path: "Agent_Memory/{inst_id}/outputs/"
+
+  common_invocations:
+    test_fixes: "senior-developer OR backend-developer"
+    documentation: "scribe"
+    security: "security-specialist"
+    performance: "senior-developer OR architect"
+    formatting: "self (direct fix)"
+
+# Retry Logic
+# How many times to retry fixes before escalating
+
+retry_limits:
+  per_issue_type:
+    test_coverage: 2
+    test_failures: 2
+    linting: 1
+    formatting: 1
+    documentation: 2
+    security_minor: 2
+    dependencies: 2
+    performance: 1
+    error_handling: 2
+
+  total_correction_attempts: 3  # Max total attempts across all issues
+
+  escalation:
+    after_max_retries: "Escalate to HITL with correction history"
+    on_repeated_same_failure: "Don't retry same fix method, escalate"
+    on_new_issues_introduced: "Rollback fix, escalate"
+
+  backoff_strategy:
+    first_retry: "Immediate"
+    second_retry: "After 5 minutes"
+    third_retry: "Escalate instead"
+
+# Learning from Corrections
+# Track correction outcomes to improve future validation
+
+learning:
+  track_metrics:
+    - issue_type: "Which types of issues most common"
+    - fix_success_rate: "How often fixes work on first try"
+    - agent_effectiveness: "Which agents best at fixing which issues"
+    - time_to_fix: "Average time for different fix types"
+    - retry_frequency: "How often retries needed"
+    - escalation_rate: "How often fixes escalate to HITL"
+
+  update_calibration:
+    frequency: "After every 10 corrections"
+    target: "Agent_Memory/_knowledge/calibration/self_correct_software.yaml"
+
+    metrics_to_track:
+      common_fixable_issues:
+        - "Test coverage gaps: 85% success rate, avg 20min"
+        - "Linting errors: 98% success rate, avg 3min"
+        - "Missing docs: 75% success rate, avg 25min"
+
+      effective_agents:
+        - "senior-developer: Best for test fixes, performance"
+        - "scribe: Best for documentation"
+        - "security-specialist: Best for security fixes"
+
+      common_escalations:
+        - "Fundamental test failures → Always escalate"
+        - "Critical security → Always escalate"
+        - "Architecture changes → Always escalate"
+
+# Re-Validation After Correction
+# How to verify fixes worked
+
+re_validation:
+  method: "Invoke universal-validator with same criteria"
+  wait_time: "After correction agent completes"
+
+  success_criteria:
+    - "Previously failed checks now pass"
+    - "No new issues introduced"
+    - "Overall classification improved (FIXABLE → PASS)"
+
+  possible_outcomes:
+    PASS:
+      description: "Correction successful"
+      action: "Mark instruction complete, archive"
+      celebration: "Log successful correction for learning"
+
+    FIXABLE:
+      description: "Some issues remain, but different ones"
+      action: "Retry if under limit, else escalate"
+      analysis: "Determine if new issues or same issues"
+
+    BLOCKED:
+      description: "Correction failed or made things worse"
+      action: "Escalate to HITL immediately"
+      rollback: "Consider rolling back correction if made things worse"
+
+# Domain-Specific Correction Strategies
+# Software-specific fix patterns
+
+domain_specific_patterns:
+  add_database_index:
+    trigger: "Slow query performance"
+    fix: "Add index to frequently queried columns"
+    validation: "Re-run query, verify improved performance"
+
+  add_caching:
+    trigger: "Repeated expensive computations"
+    fix: "Add caching layer (Redis, in-memory)"
+    validation: "Verify cache hit rate > 80%"
+
+  fix_n_plus_1_query:
+    trigger: "Too many database queries"
+    fix: "Use eager loading / joins"
+    validation: "Verify query count reduced"
+
+  add_input_validation:
+    trigger: "Missing input validation"
+    fix: "Add validation using validation library"
+    validation: "Test with invalid inputs, verify rejection"
+
+  update_deprecated_api:
+    trigger: "Using deprecated API"
+    fix: "Replace with recommended alternative"
+    validation: "No deprecation warnings, tests pass"
+
+  fix_memory_leak:
+    trigger: "Memory usage grows over time"
+    fix: "Identify and fix resource cleanup"
+    validation: "Memory usage stable over time"
+
+# Domain-Specific Notes
+domain_notes: |
+  Software domain self-correction considerations:
+
+  **Auto-Fixable Issues** (high success rate):
+  - Formatting errors (>95% success)
+  - Linting issues (>90% success)
+  - Minor test coverage gaps (<5% below target)
+  - Missing documentation sections
+  - Simple dependency updates
+
+  **Sometimes Fixable** (60-80% success):
+  - Test failures (depends on complexity)
+  - Security issues (depends on severity)
+  - Performance regressions (depends on cause)
+  - API contract mismatches
+
+  **Rarely Fixable** (<30% success, escalate):
+  - Fundamental test failures (>50% failing)
+  - Critical security vulnerabilities
+  - Major performance regressions (>20%)
+  - Architecture issues
+  - Requirement misunderstandings
+
+  **Correction Priorities**:
+  1. Fix critical issues first (security, data loss)
+  2. Fix blockers (tests, build failures)
+  3. Fix quality issues (coverage, linting)
+  4. Fix minor issues (documentation, formatting)
+
+  **When to Escalate Immediately**:
+  - Critical security vulnerability found
+  - Data loss or corruption detected
+  - All tests failing
+  - Production system affected
+  - Correction attempt made things worse
+
+  **Best Practices**:
+  - Always re-validate after correction
+  - Track what fixes work (learn over time)
+  - Don't retry same failed fix
+  - Escalate quickly if unclear
+  - Document all correction attempts
+  - Roll back if correction introduces new issues
+
+  **Common Mistakes**:
+  - Trying to fix unclear issues (escalate instead)
+  - Too many retry attempts (escalate after 2-3)
+  - Not re-validating after fix
+  - Fixing symptoms instead of root cause
+  - Introducing new issues while fixing old ones

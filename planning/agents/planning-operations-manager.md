@@ -1,5 +1,6 @@
 ---
 name: planning-operations-manager
+tier: execution
 description: Planning process and operations specialist. Optimizes planning processes, develops templates, manages tools, coordinates planning governance. Use for planning process improvements and operational excellence.
 capabilities: ["process_optimization", "template_development", "tool_management", "calendar_coordination", "metrics_tracking", "review_facilitation", "governance_management", "planning_operations"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

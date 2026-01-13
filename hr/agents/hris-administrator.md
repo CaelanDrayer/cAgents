@@ -1,5 +1,6 @@
 ---
 name: hris-administrator
+tier: execution
 description: HR systems administration and data management specialist. Use PROACTIVELY for HRIS configuration, user management, data integrity, and system integrations.
 tools: Read, Write, Grep, Bash, TodoWrite
 model: haiku

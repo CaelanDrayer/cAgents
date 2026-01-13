@@ -1,0 +1,467 @@
+# Business Domain Executor Configuration
+# Agent coordination and execution strategies for business operations
+
+domain: business
+version: 1.0
+description: "Execution coordination for business operations, strategy, and analysis"
+
+# Agent Capabilities Registry
+# Maps agents to their executable capabilities and tool usage
+
+agent_capabilities:
+  executive:
+    cso:
+      can_execute: [strategic_analysis, vision_setting, executive_decisions, board_presentations]
+      typical_tools: [Read, Grep, Write, TodoWrite]
+      output_formats: [strategy_document, executive_memo, board_deck]
+      coordination_needs: high  # Requires stakeholder alignment
+
+  strategic_management:
+    business-development-manager:
+      can_execute: [partnership_outreach, deal_analysis, relationship_management]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [partnership_proposal, deal_memo, relationship_plan]
+      coordination_needs: medium
+
+    market-analyst:
+      can_execute: [market_research, competitive_analysis, trend_forecasting, data_collection]
+      typical_tools: [Read, Grep, WebSearch, WebFetch, Write, TodoWrite]
+      output_formats: [market_report, competitor_analysis, trend_analysis]
+      coordination_needs: low
+
+  operations:
+    operations-manager:
+      can_execute: [process_coordination, operational_planning, team_management]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [ops_plan, process_diagram, coordination_memo]
+      coordination_needs: high
+
+    process-improvement-specialist:
+      can_execute: [process_mapping, gap_analysis, optimization_design, lean_implementation]
+      typical_tools: [Read, Grep, Write, TodoWrite]
+      output_formats: [process_map, gap_analysis, improvement_plan]
+      coordination_needs: medium
+
+    supply-chain-manager:
+      can_execute: [supply_chain_design, logistics_planning, inventory_optimization]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [supply_chain_plan, logistics_strategy, inventory_model]
+      coordination_needs: medium
+
+    quality-manager-business:
+      can_execute: [quality_audits, standards_compliance, improvement_programs]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [audit_report, compliance_checklist, quality_plan]
+      coordination_needs: medium
+
+  project_and_change:
+    project-manager:
+      can_execute: [project_planning, timeline_management, stakeholder_coordination, risk_tracking]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [project_plan, gantt_chart, status_report]
+      coordination_needs: high
+
+    program-manager:
+      can_execute: [program_coordination, portfolio_management, benefits_tracking]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [program_plan, portfolio_status, benefits_report]
+      coordination_needs: very_high
+
+    change-manager:
+      can_execute: [change_planning, stakeholder_engagement, adoption_strategy, resistance_management]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [change_plan, stakeholder_map, communication_plan]
+      coordination_needs: very_high
+
+    business-analyst:
+      can_execute: [requirements_gathering, process_analysis, documentation, modeling, presentations]
+      typical_tools: [Read, Grep, Write, TodoWrite]
+      output_formats: [requirements_doc, process_map, business_case, presentation]
+      coordination_needs: medium
+
+  customer_and_sales:
+    customer-success-manager:
+      can_execute: [customer_health_analysis, retention_planning, expansion_strategy]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [customer_health_report, retention_plan, expansion_strategy]
+      coordination_needs: medium
+
+    account-manager:
+      can_execute: [account_planning, contract_management, relationship_building]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [account_plan, contract_summary, relationship_map]
+      coordination_needs: medium
+
+    sales-operations-manager:
+      can_execute: [pipeline_analysis, CRM_management, sales_forecasting, process_optimization]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [pipeline_report, sales_forecast, process_doc]
+      coordination_needs: medium
+
+  specialized_functions:
+    risk-manager:
+      can_execute: [risk_assessment, mitigation_planning, controls_design, monitoring]
+      typical_tools: [Read, Grep, Write, TodoWrite]
+      output_formats: [risk_register, mitigation_plan, control_framework]
+      coordination_needs: medium
+
+    compliance-manager-business:
+      can_execute: [compliance_assessment, audit_preparation, policy_development, training]
+      typical_tools: [Read, Grep, Write, TodoWrite]
+      output_formats: [compliance_report, audit_package, policy_document]
+      coordination_needs: medium
+
+    procurement-specialist:
+      can_execute: [vendor_evaluation, RFP_management, contract_negotiation, sourcing]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [vendor_scorecard, RFP_document, contract_summary]
+      coordination_needs: medium
+
+    facilities-manager:
+      can_execute: [space_planning, facility_operations, asset_management]
+      typical_tools: [Read, Write, TodoWrite]
+      output_formats: [facility_plan, space_design, asset_inventory]
+      coordination_needs: low
+
+# Execution Strategies
+# How to coordinate agents based on tier
+
+execution_strategies:
+  tier_0_direct_answer:
+    description: "No execution needed, router provides direct answer"
+    agent_count: 0
+    parallelization: false
+    coordination_overhead: none
+
+  tier_1_single_agent:
+    description: "Single agent completes simple task"
+    agent_count: 1
+    parallelization: false
+    typical_duration: "< 30 minutes"
+    coordination_overhead: minimal
+    checkpoints: false
+    example_flow: "Invoke agent → Capture output → Validate"
+
+  tier_2_sequential_execution:
+    description: "2-3 agents work sequentially with hand-offs"
+    agent_count: 2-3
+    parallelization: false
+    typical_duration: "1-4 hours"
+    coordination_overhead: low
+    checkpoints: true
+    checkpoint_frequency: "After each agent completes"
+    example_flow: "Agent A → Output → Agent B → Output → Validate"
+
+  tier_3_team_coordination:
+    description: "Multiple agents with some parallel work"
+    agent_count: 3-5
+    parallelization: true
+    max_parallel_agents: 3
+    typical_duration: "4-12 hours"
+    coordination_overhead: medium
+    checkpoints: true
+    checkpoint_frequency: "After each wave"
+    stakeholder_touchpoints: ["After research phase", "After draft deliverable"]
+    example_flow: |
+      Wave 1: Agent A + Agent B (parallel) → Outputs
+      Checkpoint: Review combined outputs
+      Wave 2: Agent C uses outputs → Final deliverable
+      Stakeholder Review
+
+  tier_4_full_orchestration:
+    description: "Large team with complex dependencies and multiple HITL points"
+    agent_count: 5+
+    parallelization: true
+    max_parallel_agents: 5
+    typical_duration: "> 12 hours"
+    coordination_overhead: high
+    checkpoints: true
+    checkpoint_frequency: "After each phase"
+    stakeholder_touchpoints: ["After current state analysis", "After draft strategy", "Final approval"]
+    hitl_approvals: ["Strategic direction", "Budget allocation", "Final deliverable"]
+    example_flow: |
+      Phase 1: Research (3 agents parallel) → Combined analysis
+      HITL Checkpoint: Review analysis, confirm direction
+      Phase 2: Strategy Design (2 agents sequential) → Draft strategy
+      HITL Checkpoint: Review strategy, provide feedback
+      Phase 3: Documentation (1-2 agents) → Final deliverable
+      HITL Approval: Executive sign-off
+
+# Business-Specific Coordination Patterns
+
+coordination_patterns:
+  stakeholder_meeting:
+    description: "Coordinate async stakeholder input collection"
+    when: "tier >= 3 OR cross_functional = true"
+    pattern: |
+      1. Agent prepares questions/materials
+      2. Pause workflow, escalate to HITL for stakeholder meeting
+      3. HITL captures meeting outcomes
+      4. Agent continues with stakeholder input
+
+  data_gathering:
+    description: "Collect data from multiple sources before analysis"
+    pattern: |
+      1. Launch multiple research agents in parallel (market-analyst, business-analyst)
+      2. Each agent gathers data from assigned sources
+      3. Aggregate data into unified dataset
+      4. Hand off to analysis agent
+
+  iterative_refinement:
+    description: "Multiple review cycles with stakeholder feedback"
+    when: "Executive presentations, strategic plans, board materials"
+    pattern: |
+      1. Agent creates draft
+      2. HITL review and feedback
+      3. Agent incorporates feedback
+      4. Repeat until approved
+    max_iterations: 3
+
+  cross_functional_alignment:
+    description: "Coordinate input from multiple departments"
+    when: "tier >= 3 AND affects multiple departments"
+    pattern: |
+      1. Identify all affected departments
+      2. Launch agents to gather requirements from each
+      3. Consolidate and identify conflicts
+      4. HITL to resolve conflicts
+      5. Create unified deliverable
+
+  executive_approval:
+    description: "Multi-level approval chain"
+    when: "tier 4 OR budget > $1M OR strategic decisions"
+    pattern: |
+      1. Complete deliverable
+      2. Department head review (HITL)
+      3. Incorporate feedback
+      4. C-level review (HITL)
+      5. Incorporate feedback
+      6. Final approval (HITL)
+
+# Recursive Workflows
+# Business workflows can spawn child workflows
+
+recursive_workflows:
+  enabled: true
+  max_depth: 5
+  max_children_per_parent: 20
+
+  common_use_cases:
+    strategic_plan_spawns_projects:
+      description: "Strategic plan creates child workflows for each initiative"
+      parent_domain: business
+      parent_intent: strategic_plan
+      child_domain: business
+      child_intents: [process_design, budget_creation, market_analysis]
+      coordination: "Parent waits for all children, aggregates results"
+
+    market_analysis_spawns_research:
+      description: "Market analysis spawns focused research for each segment"
+      parent_domain: business
+      parent_intent: market_analysis
+      child_domain: business
+      child_intents: [data_analysis, stakeholder_communication]
+
+    process_design_spawns_implementation:
+      description: "Process design triggers implementation projects"
+      parent_domain: business
+      parent_intent: process_design
+      child_domain: business | software  # Cross-domain
+      child_intents: [business:change_management, software:implement_feature]
+      coordination: "Parent monitors children, escalates blockers"
+
+  recursive_api:
+    create_child: |
+      Use Task tool to invoke trigger agent:
+      - subagent_type: "trigger"
+      - description: "Spawn child workflow: {child_intent}"
+      - prompt: |
+          Create child workflow for parent instruction {parent_id}
+
+          Intent: {child_intent}
+          Domain: {child_domain}
+          Context from parent: {relevant_context}
+
+          This is a child workflow (depth {depth})
+          Parent will aggregate results
+
+    wait_for_children: |
+      Check Agent_Memory/{parent_id}/workflow/children.yaml for child statuses
+      Wait until all children reach "completed" or "blocked" status
+      If any child blocked, escalate to HITL
+      Aggregate outputs from Agent_Memory/{child_id}/outputs/final/
+
+    circular_reference_check: |
+      Before spawning child, check:
+      1. Current depth < max_depth
+      2. Child intent not in ancestor chain (prevents cycles)
+      3. Parent not already at max_children_per_parent
+      If any check fails, log warning and skip child creation
+
+# Cross-Domain Invocation
+# Business workflows can invoke agents from other domains
+
+cross_domain_invocation:
+  enabled: true
+
+  supported_cross_domain_agents:
+    software_domain:
+      - senior-developer  # For technical feasibility analysis
+      - architect  # For system design in process automation
+      - data-analyst  # For data pipeline analysis
+      - ux-designer  # For user experience design
+
+    creative_domain:
+      - copywriter  # For marketing materials
+      - editor  # For polishing executive communications
+
+    finance_domain:
+      - financial-analyst  # For financial modeling
+      - budget-analyst  # For budget analysis
+
+    hr_domain:
+      - hr-business-partner  # For workforce planning
+      - compensation-analyst  # For compensation analysis
+
+  invocation_format:
+    syntax: "{domain}:{agent-name}"
+    examples:
+      - "software:senior-developer"
+      - "creative:copywriter"
+      - "finance:financial-analyst"
+
+  cross_domain_patterns:
+    business_process_automation:
+      description: "Business process design needs software implementation assessment"
+      business_agents: [process-improvement-specialist, operations-manager]
+      software_agents: [software:architect, software:senior-developer]
+      coordination: "Business designs process, software assesses technical feasibility"
+
+    strategic_communication:
+      description: "Strategic plan needs polished executive communication"
+      business_agents: [cso, business-analyst]
+      creative_agents: [creative:copywriter, creative:editor]
+      coordination: "Business creates strategy, creative polishes presentation"
+
+    financial_business_case:
+      description: "Business case needs detailed financial modeling"
+      business_agents: [business-analyst, market-analyst]
+      finance_agents: [finance:financial-analyst, finance:budget-analyst]
+      coordination: "Business provides assumptions, finance builds models"
+
+# Wave Execution
+# How to group tasks into parallel execution waves
+
+wave_execution:
+  rules:
+    - "Tasks with no dependencies can execute in wave 1"
+    - "Tasks depending only on wave N can execute in wave N+1"
+    - "Tasks with dependencies in multiple waves wait for highest wave"
+    - "HITL tasks always execute alone (create dedicated wave)"
+
+  parallelization_limits:
+    tier_2: 2  # Max 2 agents in parallel
+    tier_3: 3  # Max 3 agents in parallel
+    tier_4: 5  # Max 5 agents in parallel
+
+  wave_coordination:
+    before_wave: "Ensure all prerequisites met, prepare context for all agents"
+    during_wave: "Monitor progress, capture intermediate outputs"
+    after_wave: "Checkpoint - verify all wave tasks completed, aggregate outputs"
+    on_failure: "If any task fails, pause wave, attempt self-correction, escalate if needed"
+
+# Output Aggregation
+# How to combine outputs from multiple agents
+
+output_aggregation:
+  strategies:
+    consolidate_research:
+      description: "Combine research from multiple analysts into unified findings"
+      typical_agents: [market-analyst, business-analyst]
+      output_format: "Unified research report with combined insights"
+      aggregation_steps:
+        - "Collect all research outputs"
+        - "Identify common themes and contradictions"
+        - "Create synthesis section"
+        - "Compile all sources"
+
+    merge_stakeholder_input:
+      description: "Combine requirements from multiple departments"
+      typical_agents: [business-analyst, project-manager]
+      output_format: "Consolidated requirements document"
+      aggregation_steps:
+        - "Collect all stakeholder input"
+        - "Identify overlaps and conflicts"
+        - "Prioritize requirements"
+        - "Create unified requirements list"
+
+    synthesize_strategy:
+      description: "Combine analysis into cohesive strategic plan"
+      typical_agents: [cso, market-analyst, business-analyst]
+      output_format: "Strategic plan document"
+      aggregation_steps:
+        - "Review all analysis components"
+        - "Synthesize key insights"
+        - "Define strategic objectives"
+        - "Create implementation roadmap"
+
+# Business-Specific Execution Notes
+
+execution_notes: |
+  Business domain execution considerations:
+
+  **Stakeholder Coordination is Time-Intensive**:
+  - Budget extra time for stakeholder availability
+  - HITL checkpoints more frequent than software domain
+  - Async coordination often necessary (stakeholders in meetings)
+
+  **Data Quality is Critical**:
+  - All data sources must be cited
+  - Financial data requires validation before use
+  - Missing data can block entire workflow
+  - Allocate time for data gathering at start
+
+  **Deliverable Formatting Matters**:
+  - Executive presentations must follow corporate templates
+  - Excel models must be interactive and documented
+  - All assumptions must be clearly stated
+  - Professional polish expected (typos can derail approval)
+
+  **Approval Chains Add Latency**:
+  - Department head approval: +1-2 days
+  - C-level approval: +2-5 days
+  - Board approval: +1-4 weeks
+  - Plan for approval time in tier 3-4 estimates
+
+  **Cross-Functional Work is Common**:
+  - Many business tasks affect multiple departments
+  - Coordination overhead higher than single-department work
+  - Conflict resolution often requires HITL
+  - Clear communication critical
+
+  **Business Cycles Matter**:
+  - Quarterly planning: Rush at quarter-end
+  - Annual planning: Intense in Q4
+  - Budget season: All finance resources busy
+  - Strategic planning: Best done off-cycle
+
+  **Iteration is Expected**:
+  - First draft rarely approved as-is
+  - Plan for 2-3 revision cycles on tier 3-4 deliverables
+  - Feedback loops are normal, not failures
+  - Incorporate learnings into next iteration
+
+  **Common Execution Patterns**:
+  - Research-heavy tasks: Parallel research → Aggregate → Analysis
+  - Planning tasks: Current state → Gap analysis → Future state → Roadmap
+  - Financial tasks: Gather data → Model → Validate → Present
+  - Process tasks: Document current → Identify gaps → Design new → Validate → Implement
+
+  **Agent Selection Best Practices**:
+  - Use market-analyst for external/market research
+  - Use business-analyst for internal analysis and documentation
+  - Use cso only for tier 3-4 strategic decisions
+  - Use project-manager for coordination-heavy work
+  - Use change-manager when stakeholder adoption critical
+  - Use risk-manager when uncertainty high
+  - Use compliance-manager when regulatory implications exist

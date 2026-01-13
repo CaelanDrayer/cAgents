@@ -1,5 +1,6 @@
 ---
 name: procurement-specialist
+tier: execution
 description: Procurement process design and sourcing execution. Use for RFP/RFQ processes and contract management.
 tools: Read, Write, Grep, Glob
 model: sonnet

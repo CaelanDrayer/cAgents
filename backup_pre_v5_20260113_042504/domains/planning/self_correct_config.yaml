@@ -1,0 +1,157 @@
+# Planning Domain Self-Correct Configuration
+# Adaptive recovery strategies for planning deliverable issues
+
+domain: planning
+version: 1.0
+description: "Self-correction strategies for strategic planning, project planning, and roadmapping deliverables"
+
+# Correction Strategies
+
+correction_strategies:
+  missing_components:
+    description: "Required planning components missing"
+    fixable: true
+    agent_to_invoke: "project-manager"
+    estimated_time: "20-40 minutes"
+    max_retries: 2
+    steps:
+      - "Identify missing components"
+      - "Add each missing section"
+      - "Ensure completeness"
+    acceptance_criteria:
+      - "All required components present"
+
+  timeline_unrealistic:
+    description: "Timeline not achievable given dependencies and capacity"
+    fixable: true
+    agent_to_invoke: "project-manager"
+    estimated_time: "30-45 minutes"
+    max_retries: 2
+    steps:
+      - "Analyze timeline against dependencies"
+      - "Check resource capacity"
+      - "Adjust timeline or scope"
+      - "Validate revised timeline"
+    acceptance_criteria:
+      - "Timeline realistic and achievable"
+      - "Dependencies accounted for"
+      - "Resource capacity sufficient"
+
+  resource_infeasibility:
+    description: "Resource requirements exceed available capacity"
+    fixable: true
+    agent_to_invoke: "resource-planner"
+    estimated_time: "30-50 minutes"
+    max_retries: 2
+    steps:
+      - "Analyze capacity gap"
+      - "Options: hire, outsource, descope, extend timeline"
+      - "Create resource acquisition plan if needed"
+      - "Adjust plan to match capacity"
+    acceptance_criteria:
+      - "Resource plan feasible"
+      - "Acquisition plan if needed"
+      - "Capacity validated"
+
+  misalignment_with_strategy:
+    description: "Plan doesn't align with organizational strategy"
+    fixable: true
+    agent_to_invoke: "strategic-planner"
+    estimated_time: "40-60 minutes"
+    max_retries: 2
+    steps:
+      - "Review organizational strategy"
+      - "Identify misalignment points"
+      - "Revise plan to align"
+      - "Validate alignment"
+    acceptance_criteria:
+      - "Plan aligns with strategy"
+      - "Alignment explicitly documented"
+
+  dependencies_unmapped:
+    description: "Dependencies between initiatives not identified"
+    fixable: true
+    agent_to_invoke: "risk-dependency-planner"
+    estimated_time: "30-45 minutes"
+    max_retries: 2
+    steps:
+      - "Identify all initiatives/tasks"
+      - "Map dependencies between them"
+      - "Adjust sequencing if needed"
+      - "Document dependency map"
+    acceptance_criteria:
+      - "All dependencies mapped"
+      - "Sequencing accounts for dependencies"
+      - "Dependency visualization created"
+
+  okrs_not_measurable:
+    description: "Key results lack specific metrics"
+    fixable: true
+    agent_to_invoke: "okr-specialist"
+    estimated_time: "20-30 minutes"
+    max_retries: 2
+    steps:
+      - "Identify vague key results"
+      - "Define specific metrics for each"
+      - "Set baseline and target values"
+      - "Ensure measurability"
+    acceptance_criteria:
+      - "All key results have metrics"
+      - "Baselines and targets defined"
+      - "Progress trackable"
+
+  stakeholder_approval_missing:
+    description: "Required stakeholder sign-off not obtained"
+    fixable: false
+    escalation: "HITL - coordinate stakeholder approval process"
+    blocking_reason: "Cannot proceed without stakeholder approval"
+
+  fundamental_infeasibility:
+    description: "Plan fundamentally impossible given constraints"
+    fixable: false
+    escalation: "HITL - requires strategic decision on constraints or scope"
+    blocking_reason: "No feasible solution within current constraints"
+
+# Fixability Criteria
+
+fixability_criteria:
+  FIXABLE:
+    conditions:
+      - type: "incomplete"
+        fixable: true
+        examples: ["missing sections", "insufficient detail"]
+      - type: "infeasible"
+        fixable: true
+        examples: ["timeline too aggressive", "resources insufficient"]
+        caveat: "Only if adjustments possible within plan scope"
+      - type: "misalignment"
+        fixable: true
+        examples: ["doesn't align with strategy", "OKRs misaligned"]
+
+  NOT_FIXABLE:
+    conditions:
+      - type: "approval_required"
+        fixable: false
+        examples: ["stakeholder sign-off needed"]
+      - type: "fundamental_infeasibility"
+        fixable: false
+        examples: ["impossible given immovable constraints"]
+
+# Retry Limits
+
+retry_limits:
+  global_max_retries: 3
+  per_issue_max_retries: 2
+  tier_specific:
+    tier_1: 2
+    tier_2: 3
+    tier_3: 3
+    tier_4: 2
+
+domain_notes: |
+  Planning self-correction:
+  
+  - Most planning issues are fixable with adjustments
+  - Resource and timeline issues often require trade-offs
+  - Stakeholder approval is blocking event
+  - Fundamental infeasibility requires strategic decision

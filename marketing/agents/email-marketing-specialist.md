@@ -1,5 +1,6 @@
 ---
 name: email-marketing-specialist
+tier: execution
 description: Email marketing and automation specialist. Use when email campaigns, nurture sequences, segmentation, or email optimization needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

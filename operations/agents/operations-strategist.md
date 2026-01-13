@@ -1,5 +1,6 @@
 ---
 name: operations-strategist
+tier: execution
 description: Operations strategy development and transformation leadership. Use for strategic operations planning and capability building.
 tools: Read, Write, Grep, Glob
 model: opus

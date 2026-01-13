@@ -1,5 +1,6 @@
 ---
 name: cost-analyst
+tier: execution
 description: Cost allocation, profitability analysis, product costing, margin analysis. Use PROACTIVELY for product profitability, cost reduction initiatives, pricing support.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet

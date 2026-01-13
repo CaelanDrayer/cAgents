@@ -1,0 +1,41 @@
+# Legal-Compliance Domain Executor Configuration (V3.0)
+domain: legal-compliance
+version: 3.0
+
+shared_agent_delegation:
+  strategic_legal:
+    when: "Tier 4 M&A, major regulatory transformation"
+    delegate_to: [shared:ceo, shared:cfo, shared:strategic-planner]
+
+  risk_compliance:
+    when: "All tiers requiring risk/compliance assessment"
+    delegate_to: [shared:risk-manager, shared:compliance-officer]
+
+  process_audit:
+    when: "Compliance programs, governance frameworks"
+    delegate_to: [shared:process-auditor]
+
+team_composition:
+  tier_1:
+    core_team: [paralegal, legal-analyst]
+    shared_agents: []
+
+  tier_2:
+    core_team: [contract-lawyer, privacy-officer, compliance-analyst]
+    shared_agents: [shared:risk-manager, shared:compliance-officer]
+
+  tier_3:
+    core_team: [general-counsel, regulatory-specialist, governance-specialist]
+    shared_agents: [shared:strategic-planner, shared:risk-manager, shared:compliance-officer]
+
+  tier_4:
+    core_team: [general-counsel, full-legal-team]
+    shared_agents: [shared:ceo, shared:cfo, shared:strategic-planner, shared:risk-manager, shared:compliance-officer]
+
+execution_modes:
+  sequential:
+    use_when: "Contract review, single compliance assessment"
+  pipeline:
+    use_when: "Compliance program rollout"
+  mesh:
+    use_when: "M&A due diligence, enterprise governance"

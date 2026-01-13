@@ -1,0 +1,460 @@
+# Business Domain Planner Configuration
+# Task decomposition and agent assignment for business operations
+
+domain: business
+version: 1.0
+description: "Planning and task decomposition for business operations, strategy, and analysis"
+
+# Available Agents Registry
+# All agents available in business domain with their capabilities
+
+available_agents:
+  executive:
+    - name: cso
+      full_name: Chief Strategy Officer
+      capabilities: [strategic_planning, competitive_analysis, market_positioning, vision_setting]
+      tier_access: [3, 4]
+      specializations: [corporate_strategy, market_strategy, competitive_intelligence]
+
+  strategic_management:
+    - name: business-development-manager
+      capabilities: [partnership_development, deal_sourcing, relationship_management]
+      tier_access: [2, 3, 4]
+      specializations: [partnerships, alliances, business_expansion]
+
+    - name: market-analyst
+      capabilities: [market_research, competitive_analysis, trend_identification]
+      tier_access: [1, 2, 3, 4]
+      specializations: [market_sizing, competitor_analysis, trend_forecasting]
+
+  operations:
+    - name: operations-manager
+      capabilities: [operations_planning, execution_management, coordination]
+      tier_access: [2, 3, 4]
+      specializations: [operational_planning, process_execution]
+
+    - name: process-improvement-specialist
+      capabilities: [process_analysis, optimization, redesign]
+      tier_access: [2, 3, 4]
+      specializations: [lean, six_sigma, process_mapping]
+
+    - name: supply-chain-manager
+      capabilities: [supply_chain_optimization, logistics, inventory_management]
+      tier_access: [2, 3, 4]
+      specializations: [sourcing, distribution, network_design]
+
+    - name: quality-manager-business
+      capabilities: [quality_assurance, standards_compliance, continuous_improvement]
+      tier_access: [2, 3, 4]
+      specializations: [quality_systems, ISO_compliance, improvement_programs]
+
+  project_and_change:
+    - name: project-manager
+      capabilities: [project_planning, execution, tracking, stakeholder_management]
+      tier_access: [1, 2, 3, 4]
+      specializations: [project_delivery, timeline_management, resource_planning]
+
+    - name: program-manager
+      capabilities: [program_coordination, multi_project_management, benefits_realization]
+      tier_access: [3, 4]
+      specializations: [program_governance, portfolio_management]
+
+    - name: change-manager
+      capabilities: [change_planning, stakeholder_engagement, adoption_strategy]
+      tier_access: [2, 3, 4]
+      specializations: [organizational_change, transformation, adoption]
+
+    - name: business-analyst
+      capabilities: [requirements_gathering, process_analysis, documentation]
+      tier_access: [1, 2, 3, 4]
+      specializations: [requirements, process_mapping, stakeholder_interviews]
+
+  customer_and_sales:
+    - name: customer-success-manager
+      capabilities: [customer_relationship, retention, expansion]
+      tier_access: [2, 3]
+      specializations: [customer_health, renewal_strategy, expansion_planning]
+
+    - name: account-manager
+      capabilities: [account_management, relationship_building, contract_management]
+      tier_access: [2, 3]
+      specializations: [client_management, negotiation, renewals]
+
+    - name: sales-operations-manager
+      capabilities: [sales_operations, CRM_management, sales_analytics]
+      tier_access: [2, 3]
+      specializations: [sales_process, pipeline_management, forecasting]
+
+  specialized_functions:
+    - name: risk-manager
+      capabilities: [risk_assessment, mitigation_planning, compliance_monitoring]
+      tier_access: [2, 3, 4]
+      specializations: [enterprise_risk, risk_frameworks, controls]
+
+    - name: compliance-manager-business
+      capabilities: [regulatory_compliance, audit_preparation, policy_enforcement]
+      tier_access: [2, 3, 4]
+      specializations: [regulatory_frameworks, audit_management, policies]
+
+    - name: procurement-specialist
+      capabilities: [vendor_selection, contract_negotiation, sourcing]
+      tier_access: [2, 3]
+      specializations: [RFP_management, vendor_evaluation, procurement_process]
+
+    - name: facilities-manager
+      capabilities: [facilities_planning, space_management, asset_management]
+      tier_access: [2, 3]
+      specializations: [workspace_planning, facility_operations]
+
+# Task Patterns
+# Common business task decomposition patterns
+
+task_patterns:
+  create_forecast:
+    description: "Financial or business metric forecasting"
+    typical_tier: 2-3
+    tasks:
+      - id: gather_historical_data
+        agent: market-analyst
+        type: research
+        dependencies: []
+        estimated_hours: 2
+        description: "Collect historical data for forecasting period"
+
+      - id: analyze_trends
+        agent: market-analyst
+        type: analyze
+        dependencies: [gather_historical_data]
+        estimated_hours: 2
+        description: "Identify trends and patterns in historical data"
+
+      - id: model_scenarios
+        agent: business-analyst
+        type: model
+        dependencies: [analyze_trends]
+        estimated_hours: 3
+        description: "Create forecast models with multiple scenarios"
+
+      - id: document_assumptions
+        agent: business-analyst
+        type: document
+        dependencies: [model_scenarios]
+        estimated_hours: 1
+        description: "Document all assumptions and data sources"
+
+      - id: create_presentation
+        agent: business-analyst
+        type: report
+        dependencies: [document_assumptions]
+        estimated_hours: 2
+        description: "Create executive presentation of forecast"
+
+  strategic_plan:
+    description: "Strategic planning and roadmap creation"
+    typical_tier: 3
+    tasks:
+      - id: analyze_current_state
+        agent: cso
+        type: analyze
+        dependencies: []
+        estimated_hours: 3
+        description: "Analyze current market position and capabilities"
+
+      - id: research_market
+        agent: market-analyst
+        type: research
+        dependencies: [analyze_current_state]
+        estimated_hours: 3
+        description: "Research market trends and competitive landscape"
+
+      - id: define_strategy
+        agent: cso
+        type: design
+        dependencies: [research_market]
+        estimated_hours: 4
+        description: "Define strategic direction and objectives"
+
+      - id: create_roadmap
+        agent: business-analyst
+        type: plan
+        dependencies: [define_strategy]
+        estimated_hours: 3
+        description: "Create detailed implementation roadmap"
+
+      - id: stakeholder_review
+        agent: cso
+        type: review
+        dependencies: [create_roadmap]
+        estimated_hours: 2
+        hitl_approval: true
+        description: "Present to executives for approval"
+
+  market_analysis:
+    description: "Market research and competitive analysis"
+    typical_tier: 2
+    tasks:
+      - id: define_scope
+        agent: market-analyst
+        type: plan
+        dependencies: []
+        estimated_hours: 1
+        description: "Define research scope and questions"
+
+      - id: gather_data
+        agent: market-analyst
+        type: research
+        dependencies: [define_scope]
+        estimated_hours: 3
+        description: "Collect market data and competitive intelligence"
+
+      - id: analyze_data
+        agent: market-analyst
+        type: analyze
+        dependencies: [gather_data]
+        estimated_hours: 3
+        description: "Analyze market trends and competitive positioning"
+
+      - id: create_report
+        agent: business-analyst
+        type: report
+        dependencies: [analyze_data]
+        estimated_hours: 2
+        description: "Create comprehensive market analysis report"
+
+  process_design:
+    description: "Business process design or redesign"
+    typical_tier: 2-3
+    tasks:
+      - id: document_current_process
+        agent: process-improvement-specialist
+        type: analyze
+        dependencies: []
+        estimated_hours: 2
+        description: "Document current state process"
+
+      - id: identify_gaps
+        agent: process-improvement-specialist
+        type: analyze
+        dependencies: [document_current_process]
+        estimated_hours: 2
+        description: "Identify inefficiencies and improvement opportunities"
+
+      - id: design_improved_process
+        agent: process-improvement-specialist
+        type: design
+        dependencies: [identify_gaps]
+        estimated_hours: 3
+        description: "Design optimized process"
+
+      - id: validate_with_stakeholders
+        agent: change-manager
+        type: validate
+        dependencies: [design_improved_process]
+        estimated_hours: 2
+        description: "Validate new process with key stakeholders"
+
+      - id: create_documentation
+        agent: business-analyst
+        type: document
+        dependencies: [validate_with_stakeholders]
+        estimated_hours: 2
+        description: "Create process documentation and training materials"
+
+  budget_creation:
+    description: "Budget planning and allocation"
+    typical_tier: 2
+    tasks:
+      - id: gather_requirements
+        agent: business-analyst
+        type: research
+        dependencies: []
+        estimated_hours: 2
+        description: "Gather budget requirements from stakeholders"
+
+      - id: analyze_historical_spend
+        agent: business-analyst
+        type: analyze
+        dependencies: [gather_requirements]
+        estimated_hours: 2
+        description: "Analyze previous budget and actual spend"
+
+      - id: create_budget_model
+        agent: business-analyst
+        type: model
+        dependencies: [analyze_historical_spend]
+        estimated_hours: 3
+        description: "Create budget allocation model"
+
+      - id: review_and_adjust
+        agent: operations-manager
+        type: review
+        dependencies: [create_budget_model]
+        estimated_hours: 2
+        description: "Review budget with department heads"
+
+      - id: finalize_budget
+        agent: business-analyst
+        type: finalize
+        dependencies: [review_and_adjust]
+        estimated_hours: 1
+        description: "Finalize budget and create presentation"
+
+  risk_assessment:
+    description: "Risk identification and mitigation planning"
+    typical_tier: 2
+    tasks:
+      - id: identify_risks
+        agent: risk-manager
+        type: analyze
+        dependencies: []
+        estimated_hours: 2
+        description: "Identify potential risks and threats"
+
+      - id: assess_impact
+        agent: risk-manager
+        type: analyze
+        dependencies: [identify_risks]
+        estimated_hours: 2
+        description: "Assess likelihood and impact of each risk"
+
+      - id: develop_mitigation
+        agent: risk-manager
+        type: plan
+        dependencies: [assess_impact]
+        estimated_hours: 3
+        description: "Develop mitigation strategies for high-priority risks"
+
+      - id: create_risk_register
+        agent: risk-manager
+        type: document
+        dependencies: [develop_mitigation]
+        estimated_hours: 1
+        description: "Create risk register and monitoring plan"
+
+# Acceptance Criteria Templates
+# Default acceptance criteria for common patterns
+
+acceptance_templates:
+  create_forecast:
+    - "Forecast includes minimum 3 scenarios (optimistic, realistic, pessimistic)"
+    - "All assumptions documented with data sources"
+    - "Historical data covers minimum required period"
+    - "Forecast methodology clearly explained"
+    - "Executive presentation created"
+
+  strategic_plan:
+    - "Current state analysis complete and documented"
+    - "Strategic objectives clearly defined and measurable"
+    - "Implementation roadmap includes timeline and milestones"
+    - "Resource requirements identified"
+    - "Executive stakeholder approval obtained"
+
+  market_analysis:
+    - "Research scope clearly defined"
+    - "Market size and trends quantified"
+    - "Competitive landscape mapped"
+    - "Key insights and recommendations provided"
+    - "All data sources cited"
+
+  process_design:
+    - "Current process documented with process map"
+    - "Improvement opportunities identified and prioritized"
+    - "New process design created with workflow diagram"
+    - "Stakeholder feedback incorporated"
+    - "Implementation plan and documentation complete"
+
+  budget_creation:
+    - "Budget requirements gathered from all stakeholders"
+    - "Historical spend analyzed and documented"
+    - "Budget allocations justified with business rationale"
+    - "Budget model interactive and adjustable"
+    - "Department head approvals obtained"
+
+  risk_assessment:
+    - "All major risks identified and catalogued"
+    - "Risk likelihood and impact assessed using standard framework"
+    - "Mitigation strategies defined for high-priority risks"
+    - "Risk register created with ownership assigned"
+    - "Monitoring plan established"
+
+# Planning Heuristics
+# Domain-specific planning guidance
+
+planning_heuristics:
+  stakeholder_coordination:
+    rule: "Add stakeholder coordination task for tier 3+"
+    reason: "Business work heavily dependent on stakeholder input"
+    when: "tier >= 3 OR multiple_departments"
+
+  approval_requirements:
+    rule: "Include HITL approval tasks for financial/strategic decisions"
+    thresholds:
+      - "Budget > $100K: Department head approval"
+      - "Budget > $1M: CFO approval"
+      - "Strategic plans: C-level approval"
+      - "Major process changes: Affected department heads"
+
+  data_quality:
+    rule: "Include data validation tasks when accuracy is critical"
+    when: "financial_forecasts OR compliance_reporting OR executive_presentations"
+
+  time_horizons:
+    quarterly_planning:
+      typical_duration: "1-2 weeks"
+      coordination_overhead: "moderate"
+    annual_planning:
+      typical_duration: "3-4 weeks"
+      coordination_overhead: "high"
+    multi_year_strategy:
+      typical_duration: "6-8 weeks"
+      coordination_overhead: "very high"
+
+  cross_functional:
+    rule: "Add coordination checkpoints when multiple departments involved"
+    checkpoint_frequency: "After each major phase"
+
+# Domain-Specific Notes
+
+domain_notes: |
+  Business domain planning considerations:
+
+  **Stakeholder Coordination is Critical**:
+  - Business tasks require more stakeholder coordination than software
+  - Add explicit coordination and review tasks
+  - HITL approvals common for tier 3-4
+
+  **Data Quality Gates**:
+  - All data must be sourced and cited
+  - Financial data requires extra validation
+  - Missing sources can block validation
+
+  **Executive Time is Scarce**:
+  - Limit C-level agent time to tier 3-4
+  - Use business-analyst or market-analyst for tier 1-2
+  - Executive review should be final step, not intermediate
+
+  **Common Planning Patterns**:
+  - Research → Analysis → Design → Review → Approval
+  - Gather → Analyze → Model → Validate → Present
+  - Document Current → Identify Gaps → Design New → Validate → Implement
+
+  **Timeline Considerations**:
+  - Quarterly work: 1-2 weeks typical
+  - Annual planning: 3-4 weeks typical
+  - Strategic initiatives: 6-8 weeks typical
+  - Add buffer for stakeholder availability
+
+  **Agent Assignment Best Practices**:
+  - market-analyst: Research, competitive analysis, trends
+  - business-analyst: Documentation, modeling, requirements
+  - cso: Strategic decisions, high-level direction (tier 3-4 only)
+  - process-improvement-specialist: Process design and optimization
+  - risk-manager: Risk assessment and mitigation
+  - project-manager: Execution coordination
+  - change-manager: Stakeholder engagement and adoption
+
+  **Deliverable Formats**:
+  - Excel models must be interactive and well-documented
+  - PowerPoint presentations follow corporate template
+  - Word documents include table of contents and executive summary
+  - All deliverables include data sources and assumptions

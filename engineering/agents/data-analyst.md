@@ -1,5 +1,6 @@
 ---
 name: data-analyst
+tier: execution
 description: Data analyst and engineer specializing in data pipelines, ETL processes, analytics, and business intelligence. Use PROACTIVELY for data pipeline design, reporting, analytics queries, data quality, and BI dashboard creation.
 model: sonnet
 color: bright_green

@@ -1,5 +1,6 @@
 ---
 name: plot-developer
+tier: execution
 description: Plot refinement and development specialist. Takes plot outlines and develops them into detailed plot threads with twists, turns, and satisfying progression. Use for plot elaboration and complication.
 capabilities: ["plot_refinement", "twist_development", "complication_design", "subplot_weaving", "plot_thread_development", "causality_strengthening", "plot_escalation", "red_herring_creation"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

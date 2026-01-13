@@ -1,5 +1,6 @@
 ---
 name: cmo
+tier: execution
 description: Chief Marketing Officer providing marketing strategy, brand leadership, and growth acceleration. Use when strategic marketing decisions, brand direction, or demand generation strategy needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: opus

@@ -1,5 +1,6 @@
 ---
 name: litigation-manager
+tier: execution
 description: Litigation and dispute resolution specialist. Use PROACTIVELY for lawsuit management, discovery, settlement negotiations, and trial strategy.
 tools: Read, Write, Grep, Glob, TodoWrite
 model: sonnet

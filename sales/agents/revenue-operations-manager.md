@@ -1,5 +1,6 @@
 ---
 name: revenue-operations-manager
+tier: execution
 description: Align revenue processes and systems across sales, marketing, and CS. Use for cross-functional operations, systems integration, and analytics.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

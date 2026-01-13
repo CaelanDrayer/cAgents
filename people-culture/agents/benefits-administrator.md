@@ -1,5 +1,6 @@
 ---
 name: benefits-administrator
+tier: execution
 description: Benefits program manager for health insurance, retirement, and employee perks. Use PROACTIVELY for benefits enrollment, vendor management, and employee benefits education.
 tools: Read, Write, Bash, TodoWrite
 model: haiku

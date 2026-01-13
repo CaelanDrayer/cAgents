@@ -1,5 +1,6 @@
 ---
 name: cso
+tier: execution
 description: Chief Strategy Officer providing strategic vision and competitive positioning. Use for strategic decisions and market opportunities.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: opus

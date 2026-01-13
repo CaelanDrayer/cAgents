@@ -1,5 +1,6 @@
 ---
 name: editor
+tier: controller
 description: Creative editing and revision specialist. Performs structural edits, prose polish, pacing improvements. Use for editing and manuscript refinement.
 tools: Read, Grep, Glob, Write, Edit, Bash, TodoWrite
 model: opus

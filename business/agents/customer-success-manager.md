@@ -1,5 +1,6 @@
 ---
 name: customer-success-manager
+tier: execution
 description: Customer onboarding, adoption, retention, and expansion. Use for customer health monitoring and churn prevention.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

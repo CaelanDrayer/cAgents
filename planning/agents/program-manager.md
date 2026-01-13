@@ -1,5 +1,6 @@
 ---
 name: program-manager
+tier: controller
 description: Program planning and coordination specialist. Manages large-scale programs, coordinates multiple projects, tracks benefits realization. Use for multi-project initiatives and program-level planning.
 capabilities: ["program_planning", "multi_project_coordination", "stakeholder_management", "risk_management", "benefits_tracking", "program_governance", "portfolio_management"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

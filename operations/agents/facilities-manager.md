@@ -1,5 +1,6 @@
 ---
 name: facilities-manager
+tier: execution
 description: Facilities planning, layout design, and asset management. Use for facility optimization and space planning.
 tools: Read, Write, Grep, Glob
 model: sonnet

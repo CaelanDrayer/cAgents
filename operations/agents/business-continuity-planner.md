@@ -1,5 +1,6 @@
 ---
 name: business-continuity-planner
+tier: execution
 description: Business continuity and disaster recovery planning. Use for resilience planning and crisis preparedness.
 tools: Read, Write, Grep, Glob
 model: sonnet

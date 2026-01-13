@@ -1,5 +1,6 @@
 ---
 name: product-owner
+tier: controller
 description: Product strategist who defines vision, prioritizes features, and makes scope decisions. Use PROACTIVELY for feature planning, priority conflicts, scope decisions, and business value assessments.
 model: opus
 color: bright_blue

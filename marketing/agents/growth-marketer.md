@@ -1,5 +1,6 @@
 ---
 name: growth-marketer
+tier: execution
 description: Growth hacking and experimentation specialist. Use when growth experiments, funnel optimization, viral loops, or rapid testing initiatives needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

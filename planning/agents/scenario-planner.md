@@ -1,5 +1,6 @@
 ---
 name: scenario-planner
+tier: execution
 description: Scenario planning and strategic foresight specialist. Develops future scenarios, identifies uncertainties, creates contingency plans, stress-tests strategies. Use for scenario planning and resilience.
 capabilities: ["scenario_development", "strategic_foresight", "uncertainty_analysis", "contingency_planning", "strategy_stress_testing", "resilience_planning", "future_casting"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

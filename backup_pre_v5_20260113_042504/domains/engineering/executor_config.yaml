@@ -1,0 +1,121 @@
+# Engineering Domain Executor Configuration (V3.0)
+# Team coordination and shared agent delegation patterns
+
+domain: engineering
+version: 3.0
+description: "Execution patterns with shared agent delegation for engineering domain"
+
+# Shared Agent Delegation Patterns (V3.0)
+shared_agent_delegation:
+  strategic_decisions:
+    when: "Tier 4 tasks, architectural changes, organizational impact"
+    delegate_to: [shared:ceo, shared:cfo, shared:coo, shared:strategic-planner]
+    coordination: "Executive alignment required before proceeding"
+
+  project_coordination:
+    when: "Tier 2+ tasks with multiple teams or parallel streams"
+    delegate_to: [shared:project-manager, shared:program-manager]
+    coordination: "Manage timeline, dependencies, and resource allocation"
+
+  business_requirements:
+    when: "Tier 3+ features, user-facing changes, business impact"
+    delegate_to: [shared:business-analyst]
+    coordination: "Validate business requirements and acceptance criteria"
+
+  quality_gates:
+    when: "All tiers requiring quality validation"
+    delegate_to: [shared:quality-manager, shared:process-auditor]
+    coordination: "Quality checkpoints before phase transitions"
+
+  risk_assessment:
+    when: "Tier 3+ tasks, security-sensitive, production changes"
+    delegate_to: [shared:risk-manager]
+    coordination: "Risk analysis and mitigation strategies"
+
+  data_analytics:
+    when: "Performance optimization, metrics analysis, forecasting"
+    delegate_to: [shared:data-analyst, shared:business-intelligence-specialist]
+    coordination: "Data-driven insights and recommendations"
+
+# Team Composition Rules (V3.0)
+team_composition:
+  tier_1:
+    core_team: [backend-developer, frontend-developer]
+    shared_agents: []
+    coordination: "Minimal, single agent execution"
+
+  tier_2:
+    core_team: [senior-developer, backend-developer, frontend-developer]
+    shared_agents: [shared:project-manager, shared:quality-manager]
+    coordination: "Standard project workflow with quality gates"
+
+  tier_3:
+    core_team: [architect, senior-developer, domain-leads, specialists]
+    shared_agents: [shared:project-manager, shared:business-analyst, shared:quality-manager, shared:data-analyst]
+    coordination: "Multi-stream parallel execution with shared agent support"
+
+  tier_4:
+    core_team: [engineering-manager, architect, domain-leads, full-team]
+    shared_agents: [shared:ceo, shared:cfo, shared:coo, shared:strategic-planner, shared:risk-manager, shared:change-manager, shared:quality-manager]
+    coordination: "Full orchestration with executive oversight and HITL checkpoints"
+
+# Execution Modes
+execution_modes:
+  sequential:
+    description: "Tasks execute one after another"
+    use_when: "Strong dependencies, tier 1-2 simple workflows"
+
+  pipeline:
+    description: "Overlapping execution with handoffs"
+    use_when: "Tier 2-3 with clear stages (design → implement → test)"
+
+  swarm:
+    description: "Parallel independent tasks"
+    use_when: "Tier 3 multiple independent features or bug fixes"
+    shared_coordination: [shared:project-manager, shared:quality-manager]
+
+  mesh:
+    description: "Complex parallel with cross-dependencies"
+    use_when: "Tier 4 large-scale transformations"
+    shared_coordination: [shared:program-manager, shared:strategic-planner, shared:risk-manager]
+
+# Coordination Patterns (V3.0)
+coordination_patterns:
+  multi_tier_coordination:
+    description: "Coordinate domain specialists (tier 3) with shared capabilities (tier 2)"
+    pattern: |
+      1. shared:project-manager creates execution plan
+      2. shared:business-analyst validates requirements
+      3. Domain specialists execute technical work
+      4. shared:quality-manager validates deliverables
+      5. shared:risk-manager assesses deployment readiness
+
+  cross_domain_execution:
+    description: "Execute tasks requiring multiple domain specialists"
+    pattern: |
+      1. shared:program-manager coordinates cross-domain effort
+      2. Each domain lead manages their team's execution
+      3. shared:project-manager tracks overall progress
+      4. shared:quality-manager validates integration points
+
+  escalation_protocol:
+    description: "Escalate blockers to appropriate shared agents"
+    pattern: |
+      - Technical blocker → architect, engineering-manager
+      - Resource constraint → shared:resource-planner
+      - Business decision needed → shared:business-analyst
+      - Risk identified → shared:risk-manager
+      - Strategic decision → shared:strategic-planner, shared:ceo
+
+domain_notes: |
+  **V3.0 Execution with Shared Agents**:
+
+  - Always delegate project coordination to shared:project-manager for tier 2+
+  - Engage shared:quality-manager for all quality gates
+  - Use shared:risk-manager for security, production, or high-impact changes
+  - Leverage shared:data-analyst for performance and metrics work
+  - Escalate to shared:strategic-planner for tier 4 architectural decisions
+
+  **Parallel Execution**: Frontend and backend can proceed in parallel
+  **Critical Path**: Database changes often block other work
+  **Quality Gates**: shared:quality-manager validates before deployment

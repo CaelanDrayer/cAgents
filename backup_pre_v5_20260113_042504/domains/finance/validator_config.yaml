@@ -1,0 +1,16 @@
+# Domain Validator Configuration
+domain: finance
+version: 1.0
+
+quality_gates:
+  completeness:
+    severity: critical
+    checks:
+      - name: "Complete"
+        pass_criteria: "All components present"
+        fixable: true
+
+classification:
+  PASS: {all_critical_passed: true}
+  FIXABLE: {any_critical_failed: true, fixable: true}
+  BLOCKED: {approval_required: true}

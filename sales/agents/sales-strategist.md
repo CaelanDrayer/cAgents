@@ -1,5 +1,6 @@
 ---
 name: sales-strategist
+tier: controller
 description: Develop data-driven sales strategies. Use for GTM strategy, market segmentation, competitive positioning, and sales model design.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

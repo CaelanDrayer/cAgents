@@ -1,0 +1,44 @@
+# Customer-Experience Domain Self-Correct Configuration (V3.0)
+domain: customer-experience
+version: 3.0
+
+shared_recovery_strategies:
+  customer_recovery:
+    when: "Customer satisfaction declining"
+    escalate_to: [shared:customer-success-manager, shared:account-manager]
+    strategy: "Customer relationship recovery plan"
+
+  quality_intervention:
+    when: "Service quality failures"
+    escalate_to: [shared:quality-manager]
+    strategy: "Service quality improvement plan"
+
+  operational_recovery:
+    when: "Support process breakdowns"
+    escalate_to: [shared:operations-manager, shared:process-improvement-specialist]
+    strategy: "Emergency process stabilization"
+
+error_patterns:
+  escalation_failure:
+    detection: "Escalated issue not resolved timely"
+    severity: critical
+    fixable: true
+    recovery_agent: escalation-manager
+    shared_oversight: [shared:customer-success-manager, shared:quality-manager]
+    max_attempts: 1
+
+  satisfaction_decline:
+    detection: "CSAT/NPS scores declining"
+    severity: high
+    fixable: true
+    recovery_agent: cx-director
+    shared_oversight: [shared:data-analyst, shared:customer-success-manager]
+    max_attempts: 2
+
+  sla_breach:
+    detection: "Response time SLAs breached"
+    severity: high
+    fixable: true
+    recovery_agent: support-manager
+    shared_oversight: [shared:operations-manager, shared:quality-manager]
+    max_attempts: 2

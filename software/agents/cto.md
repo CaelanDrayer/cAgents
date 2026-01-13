@@ -1,5 +1,6 @@
 ---
 name: cto
+tier: controller
 description: Chief Technology Officer for technology strategy and innovation. Use PROACTIVELY for technical architecture and engineering excellence.
 model: opus
 color: bright_blue

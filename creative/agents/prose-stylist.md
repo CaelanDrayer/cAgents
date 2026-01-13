@@ -1,5 +1,6 @@
 ---
 name: prose-stylist
+tier: execution
 description: Prose writing specialist. Writes chapters, scenes, passages with engaging prose and appropriate style. Use for writing story content and prose composition.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: opus

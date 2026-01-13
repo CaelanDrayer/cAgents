@@ -1,5 +1,6 @@
 ---
 name: corporate-counsel
+tier: execution
 description: Corporate law and governance specialist. Use PROACTIVELY for entity formation, M&A transactions, securities compliance, and corporate governance matters.
 tools: Read, Write, Grep, Glob, TodoWrite
 model: sonnet

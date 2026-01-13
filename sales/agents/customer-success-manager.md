@@ -1,5 +1,6 @@
 ---
 name: customer-success-manager
+tier: execution
 description: Drive retention and expansion. Use for onboarding, adoption, renewals, upsell/cross-sell, and churn prevention.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

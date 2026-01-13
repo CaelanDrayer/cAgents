@@ -1,5 +1,6 @@
 ---
 name: frontend-developer
+tier: execution
 description: UI/UX specialist for components, styling, and client-side code. Use for frontend features, React/Vue/Angular components, responsive design, and accessibility.
 model: sonnet
 color: bright_cyan

@@ -1,5 +1,6 @@
 ---
 name: chro
+tier: controller
 description: Chief Human Resources Officer - Strategic people vision, talent strategy, and organizational culture. Use PROACTIVELY for workforce planning, organizational design, executive talent decisions, and major HR transformations.
 tools: Read, Write, Grep, Glob, TodoWrite
 model: opus

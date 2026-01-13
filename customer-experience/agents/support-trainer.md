@@ -1,5 +1,6 @@
 ---
 name: support-trainer
+tier: execution
 description: Support team training and development specialist. Use when onboarding new agents, delivering training, or building team capabilities.
 tools: Read, Grep, Glob, Write
 model: sonnet

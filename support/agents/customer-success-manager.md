@@ -1,5 +1,6 @@
 ---
 name: customer-success-manager
+tier: execution
 description: Strategic customer relationship manager focused on adoption and retention. Use when managing customer relationships, driving adoption, or preventing churn.
 tools: Read, Grep, Glob, Write
 model: sonnet

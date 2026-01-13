@@ -1,5 +1,6 @@
 ---
 name: process-improvement-specialist
+tier: execution
 description: Process optimization and continuous improvement expert. Use for process analysis and redesign.
 tools: Read, Write, Grep, Glob
 model: sonnet

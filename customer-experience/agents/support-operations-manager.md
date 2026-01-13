@@ -1,5 +1,6 @@
 ---
 name: support-operations-manager
+tier: controller
 description: Support operations and process optimization leader. Use when improving workflows, implementing tools, or driving efficiency.
 tools: Read, Grep, Glob, Bash, Write
 model: sonnet

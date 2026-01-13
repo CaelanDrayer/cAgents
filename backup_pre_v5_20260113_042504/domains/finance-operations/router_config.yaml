@@ -1,0 +1,155 @@
+# Finance-Operations Domain Router Configuration (V3.0)
+# Complexity classification for finance and operations (merged)
+
+domain: finance-operations
+version: 3.0
+description: "Tier classification for finance and operations tasks (budgeting, forecasting, process optimization, supply chain)"
+
+# Tier 2 Shared Agents
+tier2_shared_agents:
+  leadership:
+    - shared:ceo
+    - shared:cfo
+    - shared:coo
+  planning:
+    - shared:strategic-planner
+    - shared:portfolio-manager
+    - shared:business-analyst
+    - shared:project-manager
+    - shared:program-manager
+  data:
+    - shared:data-analyst
+    - shared:business-intelligence-specialist
+    - shared:data-scientist
+  quality:
+    - shared:quality-manager
+    - shared:process-auditor
+    - shared:compliance-officer
+    - shared:risk-manager
+    - shared:performance-analyst
+  operations:
+    - shared:operations-manager
+    - shared:process-improvement-specialist
+    - shared:change-management-specialist
+    - shared:resource-planner
+    - shared:capacity-planner
+
+# Tier Classification Rules
+tier_classification:
+  tier_0:
+    description: "Simple questions about finance or operations"
+    keywords: [question, what, how, why, explain, define]
+    examples:
+      - "What is EBITDA?"
+      - "Explain supply chain management"
+      - "What is process optimization?"
+
+  tier_1:
+    description: "Simple finance/operations tasks (single report, update, calculation)"
+    keywords: [simple, quick, update, calculate, single]
+    scope_indicators:
+      single_item: true
+      single_agent: true
+      estimated_time: "< 30 minutes"
+    examples:
+      - "Calculate ROI for project"
+      - "Update budget spreadsheet"
+      - "Generate expense report"
+
+  tier_2:
+    description: "Moderate finance/operations tasks (budgets, forecasts, process improvements)"
+    keywords: [budget, forecast, optimize, improve, analyze, audit]
+    scope_indicators:
+      multiple_items: "2-5"
+      standard_analysis: true
+      estimated_time: "1-4 hours"
+      shared_agent_candidates: [shared:data-analyst, shared:operations-manager, shared:process-auditor]
+    examples:
+      - "Create quarterly budget"
+      - "Build financial forecast"
+      - "Optimize warehouse workflow"
+
+  tier_3:
+    description: "Complex finance/operations initiatives (FP&A, supply chain design, operational transformation)"
+    keywords: [fpa, supply chain, transformation, strategic, comprehensive, design]
+    scope_indicators:
+      cross_functional: true
+      multiple_systems: true
+      estimated_time: "4-16 hours"
+      shared_agent_usage: [shared:strategic-planner, shared:cfo, shared:operations-manager, shared:process-improvement-specialist, shared:data-analyst]
+    examples:
+      - "Design FP&A process"
+      - "Optimize supply chain network"
+      - "Transform procurement operations"
+
+  tier_4:
+    description: "Strategic finance/operations transformation (M&A, enterprise transformation, system-wide redesign)"
+    keywords: [merger, acquisition, transformation, enterprise, system-wide, strategic planning]
+    scope_indicators:
+      organizational_impact: true
+      strategic_importance: true
+      estimated_time: "days to weeks"
+      shared_agent_required: [shared:ceo, shared:cfo, shared:coo, shared:strategic-planner, shared:risk-manager]
+    examples:
+      - "Plan merger integration"
+      - "Design enterprise resource planning system"
+      - "Transform financial operations"
+
+templates:
+  create_budget:
+    default_tier: 2
+    keywords: [budget, budgeting, financial plan]
+    required_entities: [timeframe, departments]
+    shared_agents: [shared:cfo, shared:data-analyst, shared:business-analyst]
+
+  financial_forecast:
+    default_tier: 2
+    keywords: [forecast, projection, financial model]
+    required_entities: [timeframe, scenarios]
+    shared_agents: [shared:cfo, shared:data-analyst, shared:business-intelligence-specialist]
+
+  process_optimization:
+    default_tier: 2
+    keywords: [optimize, improve, efficiency, streamline]
+    required_entities: [process_name, objectives]
+    shared_agents: [shared:operations-manager, shared:process-improvement-specialist, shared:quality-manager]
+
+  supply_chain_design:
+    default_tier: 3
+    keywords: [supply chain, logistics, distribution, inventory]
+    required_entities: [scope, objectives]
+    shared_agents: [shared:operations-manager, shared:strategic-planner, shared:data-analyst]
+
+  operational_transformation:
+    default_tier: 4
+    keywords: [transformation, redesign, overhaul]
+    required_entities: [scope, objectives, timeline]
+    shared_agents: [shared:ceo, shared:coo, shared:strategic-planner, shared:change-management-specialist]
+
+scope_adjustments:
+  increase_tier:
+    - condition: "multiple_departments"
+      adjustment: +1
+    - condition: "regulatory_requirements"
+      adjustment: +1
+    - condition: "system_integration"
+      adjustment: +1
+
+  decrease_tier:
+    - condition: "single_department"
+      adjustment: -1
+    - condition: "standard_methodology"
+      adjustment: -1
+
+domain_notes: |
+  Finance-Operations domain routing considerations (V3.0):
+
+  **Shared Agent Integration**:
+  - Tier 2+: Use shared:cfo for financial decisions, shared:operations-manager for operational
+  - Tier 2+: Leverage shared:data-analyst for all forecasting and analysis
+  - Tier 3+: Engage shared:strategic-planner for transformational initiatives
+  - Tier 4: Require shared:ceo, shared:cfo, shared:coo for strategic decisions
+
+  **Finance + Operations Synergy**: Integrated view of financial and operational performance
+  **Compliance Focus**: Always engage shared:compliance-officer and shared:risk-manager
+  **Process-Driven**: Use shared:process-auditor and shared:quality-manager for all improvements

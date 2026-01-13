@@ -1,5 +1,6 @@
 ---
 name: sysadmin
+tier: execution
 description: Infrastructure and operations specialist managing deployments, monitoring, and production systems. Use PROACTIVELY for production issues, deployments, infrastructure decisions, and operational concerns.
 model: sonnet
 color: bright_yellow

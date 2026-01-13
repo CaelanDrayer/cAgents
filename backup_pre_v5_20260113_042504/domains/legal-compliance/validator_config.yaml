@@ -1,0 +1,36 @@
+# Legal-Compliance Domain Validator Configuration (V3.0)
+domain: legal-compliance
+version: 3.0
+
+shared_quality_gates:
+  legal_review:
+    validator: general-counsel
+    when: "All significant legal matters"
+    criteria:
+      - "Legal risks assessed"
+      - "Advice documented"
+      - "Approvals obtained"
+
+  compliance_validation:
+    validator: shared:compliance-officer
+    when: "All compliance programs"
+    criteria:
+      - "Regulatory requirements met"
+      - "Compliance controls effective"
+      - "Monitoring in place"
+
+  risk_assessment:
+    validator: shared:risk-manager
+    when: "All legal matters"
+    criteria:
+      - "Risks identified and quantified"
+      - "Mitigation strategies defined"
+      - "Insurance/indemnity addressed"
+
+validation_workflow:
+  tier_2:
+    shared_agents: [shared:risk-manager, shared:compliance-officer]
+  tier_3:
+    shared_agents: [shared:risk-manager, shared:compliance-officer, shared:process-auditor]
+  tier_4:
+    shared_agents: [shared:ceo, shared:cfo, shared:risk-manager, shared:compliance-officer]

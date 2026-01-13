@@ -1,5 +1,6 @@
 ---
 name: performance-management-specialist
+tier: execution
 description: Performance review cycle and goal-setting framework expert. Use PROACTIVELY for performance reviews, calibration, goal frameworks, and development planning.
 tools: Read, Write, Grep, TodoWrite
 model: sonnet

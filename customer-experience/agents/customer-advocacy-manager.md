@@ -1,5 +1,6 @@
 ---
 name: customer-advocacy-manager
+tier: execution
 description: Customer voice champion and advocacy program leader. Use when building advocacy programs, collecting feedback, or amplifying customer stories.
 tools: Read, Grep, Glob, Write
 model: sonnet

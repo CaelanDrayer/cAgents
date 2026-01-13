@@ -1,0 +1,160 @@
+# Revenue Domain Router Configuration (V3.0)
+# Complexity classification for revenue operations (merged sales + marketing)
+
+domain: revenue
+version: 3.0
+description: "Tier classification for revenue tasks (sales, marketing, campaigns, forecasting, pipeline management)"
+
+# Tier 2 Shared Agents
+tier2_shared_agents:
+  leadership:
+    - shared:ceo
+    - shared:cfo
+    - shared:cso
+  planning:
+    - shared:strategic-planner
+    - shared:portfolio-manager
+    - shared:business-analyst
+    - shared:project-manager
+    - shared:program-manager
+    - shared:roadmap-planner
+    - shared:okr-specialist
+  data:
+    - shared:data-analyst
+    - shared:business-intelligence-specialist
+    - shared:data-scientist
+    - shared:market-research-analyst
+    - shared:competitive-intelligence-analyst
+  quality:
+    - shared:quality-manager
+    - shared:performance-analyst
+  customer:
+    - shared:account-manager
+    - shared:customer-success-manager
+    - shared:customer-advocacy-manager
+    - shared:relationship-manager
+  operations:
+    - shared:operations-manager
+    - shared:resource-planner
+    - shared:capacity-planner
+
+# Tier Classification Rules
+tier_classification:
+  tier_0:
+    description: "Simple questions about sales, marketing, or revenue operations"
+    keywords: [question, what, how, why, explain, define]
+    examples:
+      - "What is customer lifetime value?"
+      - "Explain sales pipeline stages"
+      - "What is demand generation?"
+
+  tier_1:
+    description: "Simple revenue tasks (single email, post, or report)"
+    keywords: [simple, quick, single, one, update]
+    scope_indicators:
+      single_asset: true
+      single_agent: true
+      estimated_time: "< 30 minutes"
+    examples:
+      - "Write sales follow-up email"
+      - "Create social media post"
+      - "Update CRM record"
+
+  tier_2:
+    description: "Moderate revenue tasks (campaigns, forecasts, account plans)"
+    keywords: [campaign, forecast, plan, strategy, content, nurture]
+    scope_indicators:
+      multiple_assets: "2-5"
+      multiple_channels: "1-2"
+      estimated_time: "1-4 hours"
+      shared_agent_candidates: [shared:project-manager, shared:data-analyst, shared:account-manager]
+    examples:
+      - "Create email nurture campaign"
+      - "Build monthly sales forecast"
+      - "Design account expansion plan"
+
+  tier_3:
+    description: "Complex revenue initiatives (product launches, demand gen, territory planning)"
+    keywords: [launch, demand, territory, program, comprehensive, full, integrated]
+    scope_indicators:
+      multiple_teams: true
+      cross_functional: true
+      parallel_execution: true
+      estimated_time: "4-16 hours"
+      shared_agent_usage: [shared:strategic-planner, shared:project-manager, shared:data-analyst, shared:account-manager, shared:market-research-analyst]
+    examples:
+      - "Plan product launch campaign"
+      - "Design demand generation program"
+      - "Build territory and quota plans"
+
+  tier_4:
+    description: "Strategic revenue transformation (GTM strategy, market expansion, revenue operations overhaul)"
+    keywords: [strategy, transformation, expansion, market entry, gtm, go-to-market]
+    scope_indicators:
+      strategic_impact: true
+      organizational_change: true
+      estimated_time: "days to weeks"
+      shared_agent_required: [shared:ceo, shared:cfo, shared:cso, shared:strategic-planner, shared:business-analyst]
+    examples:
+      - "Design go-to-market strategy"
+      - "Plan international market expansion"
+      - "Transform revenue operations model"
+
+templates:
+  sales_forecast:
+    default_tier: 2
+    keywords: [forecast, pipeline, projection, revenue]
+    required_entities: [timeframe, segments]
+    shared_agents: [shared:data-analyst, shared:business-intelligence-specialist]
+
+  marketing_campaign:
+    default_tier: 2
+    keywords: [campaign, marketing, promotion, launch]
+    required_entities: [campaign_type, channels, audience]
+    shared_agents: [shared:project-manager, shared:market-research-analyst]
+
+  account_plan:
+    default_tier: 2
+    keywords: [account, plan, expansion, upsell]
+    required_entities: [account_name, objectives]
+    shared_agents: [shared:account-manager, shared:data-analyst]
+
+  product_launch:
+    default_tier: 3
+    keywords: [launch, product launch, gtm, go-to-market]
+    required_entities: [product, launch_date, target_market]
+    shared_agents: [shared:strategic-planner, shared:project-manager, shared:market-research-analyst]
+
+  revenue_strategy:
+    default_tier: 4
+    keywords: [strategy, revenue strategy, growth strategy]
+    required_entities: [objectives, timeframe]
+    shared_agents: [shared:ceo, shared:cfo, shared:cso, shared:strategic-planner]
+
+scope_adjustments:
+  increase_tier:
+    - condition: "multiple_channels"
+      adjustment: +1
+    - condition: "cross_functional"
+      adjustment: +1
+    - condition: "new_market"
+      adjustment: +1
+
+  decrease_tier:
+    - condition: "single_channel"
+      adjustment: -1
+    - condition: "established_process"
+      adjustment: -1
+
+domain_notes: |
+  Revenue domain routing considerations (V3.0):
+
+  **Shared Agent Integration**:
+  - Tier 2+: Use shared:account-manager for customer relationships
+  - Tier 2+: Leverage shared:data-analyst for forecasting and analytics
+  - Tier 3+: Engage shared:strategic-planner for campaigns and launches
+  - Tier 4: Require shared:ceo, shared:cfo, shared:cso for strategic decisions
+
+  **Sales + Marketing Synergy**: Unified revenue approach increases effectiveness
+  **Data-Driven**: All forecasts and campaigns should use shared:data-analyst
+  **Customer-Centric**: Leverage shared:account-manager and shared:customer-success-manager

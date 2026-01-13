@@ -1,5 +1,6 @@
 ---
 name: copywriter
+tier: execution
 description: Marketing copywriting specialist. Use when ad copy, website copy, email copy, long-form content, or messaging development needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

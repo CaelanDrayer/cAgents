@@ -1,0 +1,23 @@
+# Domain Planner Configuration
+domain: support
+version: 1.0
+
+available_agents:
+  managers: []
+  specialists: []
+
+task_patterns:
+  standard:
+    typical_tier: 2
+    tasks:
+      - id: analyze
+        agent: analyst
+        type: analyze
+      - id: execute
+        agent: specialist
+        type: execute
+
+acceptance_templates:
+  standard:
+    - "Work complete"
+    - "Quality validated"

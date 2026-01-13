@@ -1,5 +1,6 @@
 ---
 name: business-development-manager
+tier: execution
 description: Strategic partnership development and business expansion. Use for partnership opportunities and strategic alliances.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

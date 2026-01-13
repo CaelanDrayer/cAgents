@@ -1,5 +1,6 @@
 ---
 name: market-analyst
+tier: execution
 description: Market research, competitive intelligence, and trend analysis. Use for market insights and opportunity identification.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

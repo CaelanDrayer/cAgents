@@ -1,5 +1,6 @@
 ---
 name: proposal-specialist
+tier: execution
 description: Create compelling proposals and RFP responses. Use for RFP/RFI responses, proposal writing, SOW development, and bid coordination.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

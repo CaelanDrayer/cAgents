@@ -1,5 +1,6 @@
 ---
 name: sales-development-rep
+tier: execution
 description: Generate qualified pipeline through outbound prospecting. Use for cold outreach, lead qualification, and meeting generation.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

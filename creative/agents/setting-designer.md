@@ -1,5 +1,6 @@
 ---
 name: setting-designer
+tier: execution
 description: Specific setting and location design specialist. Creates detailed locations, environments, and scene settings. Use for location-specific worldbuilding and setting details.
 capabilities: ["location_design", "environment_creation", "scene_settings", "architectural_detail", "atmosphere", "sensory_setting", "location_mapping", "setting_description"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

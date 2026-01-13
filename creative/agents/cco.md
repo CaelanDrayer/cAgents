@@ -1,5 +1,6 @@
 ---
 name: cco
+tier: controller
 description: Chief Creative Officer providing creative vision, narrative strategy, artistic direction. Use for tier 3-4 creative projects and major creative decisions.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 model: opus

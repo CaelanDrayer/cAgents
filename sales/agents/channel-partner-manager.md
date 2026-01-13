@@ -1,5 +1,6 @@
 ---
 name: channel-partner-manager
+tier: execution
 description: Build partner ecosystem and drive indirect revenue. Use for partner recruitment, enablement, and co-selling.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

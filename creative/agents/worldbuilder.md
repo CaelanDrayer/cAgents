@@ -1,5 +1,6 @@
 ---
 name: worldbuilder
+tier: execution
 description: World building specialist. Creates worlds, magic systems, cultures, geography, technology. Use for world creation and setting design.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: opus

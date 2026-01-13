@@ -1,5 +1,6 @@
 ---
 name: sales-operations-manager
+tier: execution
 description: Manage sales infrastructure and processes. Use for CRM administration, territory design, quota allocation, and process optimization.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

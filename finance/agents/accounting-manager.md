@@ -1,5 +1,6 @@
 ---
 name: accounting-manager
+tier: execution
 description: General ledger management, financial reporting, accounting policy, close coordination. Use PROACTIVELY for financial statements, month-end close, accounting policy questions.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet

@@ -1,0 +1,112 @@
+# People-Culture Domain Router Configuration (V3.0)
+# Complexity classification for people and culture (formerly hr)
+
+domain: people-culture
+version: 3.0
+description: "Tier classification for people and culture tasks (recruiting, onboarding, development, culture, compensation)"
+
+# Tier 2 Shared Agents
+tier2_shared_agents:
+  leadership:
+    - shared:ceo
+    - shared:coo
+  planning:
+    - shared:strategic-planner
+    - shared:business-analyst
+    - shared:project-manager
+    - shared:program-manager
+    - shared:okr-specialist
+    - shared:change-manager
+  data:
+    - shared:data-analyst
+    - shared:business-intelligence-specialist
+    - shared:market-research-analyst
+  quality:
+    - shared:quality-manager
+    - shared:compliance-officer
+    - shared:risk-manager
+    - shared:performance-analyst
+  operations:
+    - shared:operations-manager
+    - shared:process-improvement-specialist
+    - shared:change-management-specialist
+    - shared:resource-planner
+    - shared:capacity-planner
+
+# Tier Classification Rules
+tier_classification:
+  tier_0:
+    description: "Simple questions about HR, talent, or culture"
+    keywords: [question, what, how, why, explain, define]
+    examples:
+      - "What is a competency model?"
+      - "Explain performance review process"
+
+  tier_1:
+    description: "Simple HR tasks (single job post, email, document)"
+    scope_indicators:
+      single_item: true
+      estimated_time: "< 30 minutes"
+    examples:
+      - "Update job description"
+      - "Draft onboarding email"
+
+  tier_2:
+    description: "Moderate HR tasks (hiring plan, training program, comp analysis)"
+    scope_indicators:
+      multiple_items: "2-5"
+      estimated_time: "1-4 hours"
+      shared_agent_candidates: [shared:project-manager, shared:data-analyst, shared:compliance-officer]
+    examples:
+      - "Create hiring plan for Q1"
+      - "Design onboarding program"
+      - "Conduct compensation analysis"
+
+  tier_3:
+    description: "Complex HR initiatives (talent strategy, culture transformation, organizational design)"
+    scope_indicators:
+      cross_functional: true
+      estimated_time: "4-16 hours"
+      shared_agent_usage: [shared:strategic-planner, shared:coo, shared:change-manager, shared:data-analyst]
+    examples:
+      - "Design talent acquisition strategy"
+      - "Plan culture transformation"
+      - "Redesign organizational structure"
+
+  tier_4:
+    description: "Strategic people/culture transformation (workforce planning, M&A integration, enterprise culture)"
+    scope_indicators:
+      organizational_impact: true
+      estimated_time: "days to weeks"
+      shared_agent_required: [shared:ceo, shared:coo, shared:strategic-planner, shared:change-manager]
+    examples:
+      - "Enterprise workforce planning"
+      - "M&A talent integration"
+      - "Transform company culture"
+
+templates:
+  hiring_plan:
+    default_tier: 2
+    shared_agents: [shared:resource-planner, shared:capacity-planner, shared:business-analyst]
+
+  compensation_analysis:
+    default_tier: 2
+    shared_agents: [shared:data-analyst, shared:business-intelligence-specialist]
+
+  talent_strategy:
+    default_tier: 3
+    shared_agents: [shared:strategic-planner, shared:coo, shared:data-analyst]
+
+  culture_transformation:
+    default_tier: 4
+    shared_agents: [shared:ceo, shared:coo, shared:strategic-planner, shared:change-manager]
+
+domain_notes: |
+  People-Culture domain routing considerations (V3.0):
+
+  **Shared Agent Integration**:
+  - Tier 2+: Use shared:data-analyst for compensation and workforce analytics
+  - Tier 3+: Leverage shared:strategic-planner for talent strategy
+  - Tier 3+: Engage shared:change-manager for all transformation initiatives
+  - Tier 4: Require shared:ceo, shared:coo for strategic decisions
+  - All compliance: Use shared:compliance-officer

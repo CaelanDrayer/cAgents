@@ -1,0 +1,382 @@
+# Engineering Domain Router Configuration (V3.0)
+# Complexity classification rules for engineering domain (formerly software)
+
+domain: engineering
+version: 3.0
+description: "Tier classification for engineering tasks (code, tests, deployment, architecture)"
+
+# Tier 2 Shared Agents
+# These universal agents are available across all domains
+tier2_shared_agents:
+  leadership:
+    - shared:ceo
+    - shared:cfo
+    - shared:coo
+    - shared:cso
+    - shared:cpo
+  planning:
+    - shared:strategic-planner
+    - shared:portfolio-manager
+    - shared:business-analyst
+    - shared:project-manager
+    - shared:program-manager
+    - shared:agile-coach
+    - shared:roadmap-planner
+    - shared:okr-specialist
+    - shared:change-manager
+  data:
+    - shared:data-analyst
+    - shared:business-intelligence-specialist
+    - shared:data-scientist
+    - shared:market-research-analyst
+    - shared:competitive-intelligence-analyst
+  quality:
+    - shared:quality-manager
+    - shared:process-auditor
+    - shared:compliance-officer
+    - shared:risk-manager
+    - shared:performance-analyst
+  customer:
+    - shared:account-manager
+    - shared:customer-success-manager
+    - shared:customer-advocacy-manager
+    - shared:relationship-manager
+  operations:
+    - shared:operations-manager
+    - shared:process-improvement-specialist
+    - shared:change-management-specialist
+    - shared:resource-planner
+    - shared:capacity-planner
+
+# Tier Classification Rules
+tier_classification:
+  tier_0:
+    description: "Simple questions requiring direct answers about code or systems"
+    keywords: [question, what, how, why, explain, define, describe, tell, show]
+    patterns:
+      - "What is"
+      - "How does"
+      - "Explain"
+      - "Define"
+      - "Why is"
+      - "Tell me about"
+    examples:
+      - "What is the router's purpose?"
+      - "How does authentication work in this system?"
+      - "Explain the database schema"
+      - "What are the API endpoints?"
+
+  tier_1:
+    description: "Simple tasks with single file/component, minimal complexity"
+    keywords: [typo, fix typo, comment, add comment, rename, simple, quick, small, minor, trivial]
+    scope_indicators:
+      single_file: true
+      single_agent: true
+      no_dependencies: true
+      low_risk: true
+      estimated_time: "< 30 minutes"
+    examples:
+      - "Fix typo in README"
+      - "Add comment to function"
+      - "Rename variable for clarity"
+      - "Update configuration value"
+      - "Add simple log statement"
+
+  tier_2:
+    description: "Moderate complexity requiring standard development workflow, may use shared planning/quality agents"
+    keywords: [fix, bug, error, broken, issue, refactor, improve, clean, optimize, test, coverage, document, docs]
+    scope_indicators:
+      multiple_files: "2-5"
+      multiple_agents: "1-3"
+      standard_patterns: true
+      moderate_risk: true
+      estimated_time: "1-4 hours"
+      shared_agent_candidates: [shared:project-manager, shared:quality-manager]
+    examples:
+      - "Fix login timeout bug"
+      - "Refactor authentication module"
+      - "Add test coverage for user service"
+      - "Update API documentation"
+      - "Optimize database queries"
+
+  tier_3:
+    description: "Complex tasks requiring team coordination, architectural consideration, and shared capabilities"
+    keywords: [add, implement, create, feature, new, build, integrate, system, comprehensive, full, api, service]
+    scope_indicators:
+      multiple_modules: "3+"
+      team_coordination: true
+      parallel_execution: true
+      cross_functional: true
+      high_risk: true
+      estimated_time: "4-16 hours"
+      shared_agent_usage: [shared:strategic-planner, shared:project-manager, shared:data-analyst, shared:quality-manager]
+    examples:
+      - "Implement OAuth2 authentication"
+      - "Add real-time notifications system"
+      - "Create REST API for user management"
+      - "Build caching layer with Redis"
+      - "Integrate payment processing"
+
+  tier_4:
+    description: "Expert-level tasks requiring full orchestration, HITL, shared leadership, and architectural oversight"
+    keywords: [migrate, redesign, architecture, transform, system-wide, enterprise, rewrite, upgrade, major]
+    scope_indicators:
+      architectural_changes: true
+      multiple_systems: true
+      breaking_changes: true
+      critical_risk: true
+      organizational_impact: true
+      estimated_time: "days to weeks"
+      shared_agent_required: [shared:ceo, shared:cto, shared:coo, shared:strategic-planner, shared:risk-manager]
+    examples:
+      - "Migrate from MySQL to PostgreSQL"
+      - "Redesign database schema for scalability"
+      - "Rewrite authentication system"
+      - "Upgrade from monolith to microservices"
+      - "Implement zero-downtime deployment system"
+
+# Template Matching
+# Maps intent keywords to task templates with default tiers
+
+templates:
+  fix_bug:
+    default_tier: 2
+    keywords: [fix, bug, error, broken, issue, crash, fail]
+    required_entities: [target, issue]
+    description: "Bug fix in existing functionality"
+    shared_agents: [shared:quality-manager]
+
+  implement_feature:
+    default_tier: 3
+    keywords: [add, implement, create, feature, new, build]
+    required_entities: [feature_name, scope]
+    description: "New functionality implementation with tests and docs"
+    shared_agents: [shared:project-manager, shared:quality-manager, shared:business-analyst]
+
+  refactor_code:
+    default_tier: 2
+    keywords: [refactor, improve, clean, optimize, restructure]
+    required_entities: [target_module]
+    description: "Code quality improvement without behavior change"
+    shared_agents: [shared:quality-manager]
+
+  write_tests:
+    default_tier: 2
+    keywords: [test, coverage, spec, validate, verify]
+    required_entities: [target_code]
+    description: "Test suite creation or expansion"
+    shared_agents: [shared:quality-manager]
+
+  code_review:
+    default_tier: 1
+    keywords: [review, check, audit, assess, evaluate]
+    required_entities: [target_code]
+    description: "Code quality or security review"
+    shared_agents: [shared:quality-manager, shared:compliance-officer]
+
+  update_docs:
+    default_tier: 1
+    keywords: [document, docs, readme, comment, api docs]
+    required_entities: [target_docs]
+    description: "Documentation updates or creation"
+
+  question:
+    default_tier: 0
+    keywords: [question, what, how, why, explain]
+    required_entities: []
+    description: "Question requiring direct answer"
+
+  deployment:
+    default_tier: 2
+    keywords: [deploy, release, ship, publish]
+    required_entities: [deployment_target]
+    description: "Deployment process execution"
+    tier_range: [2, 3]
+    shared_agents: [shared:risk-manager, shared:operations-manager]
+
+  investigation:
+    default_tier: 1
+    keywords: [investigate, debug, diagnose, analyze, troubleshoot]
+    required_entities: [issue]
+    description: "Issue diagnosis and root cause analysis"
+    tier_range: [1, 2]
+    shared_agents: [shared:data-analyst]
+
+  migration:
+    default_tier: 4
+    keywords: [migrate, upgrade, update, transition]
+    required_entities: [from, to]
+    description: "System or dependency migration"
+    tier_range: [3, 4]
+    shared_agents: [shared:cto, shared:strategic-planner, shared:risk-manager, shared:change-manager]
+
+  security_audit:
+    default_tier: 2
+    keywords: [security, audit, vulnerability, penetration, scan]
+    required_entities: [target_system]
+    description: "Security assessment and hardening"
+    tier_range: [2, 3]
+    shared_agents: [shared:compliance-officer, shared:risk-manager]
+
+  performance_optimization:
+    default_tier: 2
+    keywords: [performance, optimize, speed, fast, slow, bottleneck]
+    required_entities: [target_component]
+    description: "Performance analysis and optimization"
+    tier_range: [2, 3]
+    shared_agents: [shared:performance-analyst, shared:data-analyst]
+
+# Scope Adjustment Rules
+# Factors that increase or decrease tier assignment
+
+scope_adjustments:
+  increase_tier:
+    - condition: "multiple_modules"
+      description: "Changes affect multiple modules or services"
+      adjustment: +1
+      example: "Auth fix spans frontend + backend + database"
+
+    - condition: "cross_domain_changes"
+      description: "Requires frontend + backend + infrastructure changes"
+      adjustment: +1
+      example: "Feature needs UI, API, and database changes"
+
+    - condition: "external_dependencies"
+      description: "Involves external systems, APIs, or third-party services"
+      adjustment: +1
+      example: "Integration with Stripe payment API"
+
+    - condition: "security_sensitive"
+      description: "Touches authentication, authorization, encryption, or sensitive data"
+      adjustment: +1
+      example: "Changes to password hashing or JWT generation"
+
+    - condition: "database_schema_changes"
+      description: "Requires database migrations or schema modifications"
+      adjustment: +1
+      example: "Add new tables or modify existing schema"
+
+    - condition: "performance_critical"
+      description: "Affects hot paths, core algorithms, or system throughput"
+      adjustment: +1
+      example: "Optimize main request handling loop"
+
+    - condition: "api_contract_changes"
+      description: "Modifies public API contracts affecting external consumers"
+      adjustment: +1
+      example: "Change API response format"
+
+    - condition: "backwards_compatibility"
+      description: "Requires maintaining compatibility or migration strategy"
+      adjustment: +1
+      example: "Support both old and new authentication methods"
+
+    - condition: "production_system"
+      description: "High-stakes changes to production or customer-facing systems"
+      adjustment: +1
+      example: "Fix critical production bug"
+
+  decrease_tier:
+    - condition: "single_file"
+      description: "Self-contained in one file with no dependencies"
+      adjustment: -1
+      example: "Fix typo in utils.js"
+
+    - condition: "typo_or_comment"
+      description: "Simple text fix in documentation or comments"
+      adjustment: -1
+      example: "Fix spelling error in README"
+
+    - condition: "config_change"
+      description: "Simple configuration value change"
+      adjustment: -1
+      example: "Update API timeout from 30s to 60s"
+
+    - condition: "well_defined_scope"
+      description: "Clear, narrow scope with explicit boundaries"
+      adjustment: -1
+      example: "Add validation to single form field"
+
+    - condition: "no_external_deps"
+      description: "No external dependencies or API changes"
+      adjustment: 0
+
+    - condition: "low_risk"
+      description: "Non-critical, easily reversible, well-tested area"
+      adjustment: -1
+      example: "Refactor internal helper function"
+
+# Calibration Data
+# Historical accuracy for continuous improvement
+
+calibration:
+  tier_0:
+    total_assigned: 45
+    correct: 43
+    over_predicted: 2
+    under_predicted: 0
+    accuracy: 0.956
+    notes: "Very accurate, minimal false positives"
+
+  tier_1:
+    total_assigned: 123
+    correct: 108
+    over_predicted: 12
+    under_predicted: 3
+    accuracy: 0.878
+    notes: "Some over-prediction to tier 2, acceptable"
+
+  tier_2:
+    total_assigned: 289
+    correct: 237
+    over_predicted: 35
+    under_predicted: 17
+    accuracy: 0.820
+    notes: "Most common tier, good balance of precision/recall"
+
+  tier_3:
+    total_assigned: 87
+    correct: 71
+    over_predicted: 8
+    under_predicted: 8
+    accuracy: 0.816
+    notes: "Under-predictions often features more complex than estimated"
+
+  tier_4:
+    total_assigned: 34
+    correct: 29
+    over_predicted: 0
+    under_predicted: 5
+    accuracy: 0.853
+    notes: "Conservative approach working, zero over-predictions"
+
+  insights:
+    - "Tier 2 most commonly assigned (53% of engineering workflows)"
+    - "Tier 1 tends to be over-predicted (should be tier 0) for questions"
+    - "Tier 4 has zero over-predictions (conservative approach validated)"
+    - "Under-predictions at tier 2-3 indicate some tasks more complex than expected"
+    - "Security-sensitive changes often under-estimated initially"
+
+# Domain-Specific Notes
+domain_notes: |
+  Engineering domain routing considerations (V3.0):
+
+  **Shared Agent Integration**:
+  - Tier 2+: Consider shared:project-manager for task coordination
+  - Tier 3+: Leverage shared:strategic-planner for complex features
+  - Tier 4: Require shared:cto, shared:coo for architectural decisions
+  - All tiers: Use shared:quality-manager for quality gates
+  - Security work: Engage shared:compliance-officer, shared:risk-manager
+
+  **Security**: Always escalate security-related changes by at least one tier
+  **Testing**: Bug fixes without tests should be tier 2 minimum
+  **Architecture**: Anything touching core architecture is tier 3-4
+  **Data migrations**: Database changes are inherently tier 3+ due to risk
+  **API changes**: Public API modifications require careful tier assignment
+  **Performance**: Hot path changes warrant tier escalation
+  **Dependencies**: New external dependencies increase complexity
+
+  Common misclassifications:
+  - "Simple" auth changes → Often tier 3+ due to security criticality
+  - "Quick" database fixes → Often tier 2+ due to data integrity concerns
+  - "Easy" API additions → Often tier 3 due to contract/versioning needs

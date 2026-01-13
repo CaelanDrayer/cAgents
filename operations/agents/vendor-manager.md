@@ -1,5 +1,6 @@
 ---
 name: vendor-manager
+tier: execution
 description: Vendor relationship management and performance monitoring. Use for supplier partnerships and scorecards.
 tools: Read, Write, Grep, Glob
 model: sonnet

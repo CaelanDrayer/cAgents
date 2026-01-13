@@ -1,5 +1,6 @@
 ---
 name: technical-writer
+tier: execution
 description: Documentation specialist. Use when writing help content, API docs, or technical guides.
 tools: Read, Grep, Glob, Edit, Write
 model: sonnet

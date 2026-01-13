@@ -1,5 +1,6 @@
 ---
 name: it-support
+tier: execution
 description: IT support specialist managing user assistance, troubleshooting, and incident tickets. Use PROACTIVELY for user issues, access problems, hardware/software support, and help desk coordination.
 model: sonnet
 color: yellow

@@ -1,5 +1,6 @@
 ---
 name: support-manager
+tier: execution
 description: Support team leader managing daily operations and agent performance. Use PROACTIVELY when team coordination, performance management, or operational decisions are needed.
 tools: Read, Grep, Glob, Write
 model: sonnet

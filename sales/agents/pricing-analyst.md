@@ -1,5 +1,6 @@
 ---
 name: pricing-analyst
+tier: execution
 description: Optimize pricing and deal profitability. Use for pricing analysis, discount optimization, packaging design, and deal desk support.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

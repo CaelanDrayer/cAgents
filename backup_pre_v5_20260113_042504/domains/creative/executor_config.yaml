@@ -1,0 +1,48 @@
+# Creative Domain Executor Configuration (V3.0)
+domain: creative
+version: 3.0
+
+shared_agent_delegation:
+  creative_direction:
+    when: "Tier 4 novels, series planning"
+    delegate_to: [shared:cpo, shared:strategic-planner]
+
+  project_management:
+    when: "Tier 2+ story/novel coordination"
+    delegate_to: [shared:project-manager]
+
+  quality_oversight:
+    when: "All tiers requiring editorial quality"
+    delegate_to: [shared:quality-manager]
+
+team_composition:
+  tier_1:
+    core_team: [prose-stylist, editor]
+    shared_agents: []
+
+  tier_2:
+    core_team: [story-architect, prose-stylist, editor]
+    shared_agents: [shared:project-manager, shared:quality-manager]
+
+  tier_3:
+    core_team: [story-architect, character-designer, worldbuilder, prose-stylist, editor]
+    shared_agents: [shared:strategic-planner, shared:project-manager, shared:quality-manager]
+
+  tier_4:
+    core_team: [cco, story-architect, character-designer, worldbuilder, prose-stylist, editor, continuity-checker]
+    shared_agents: [shared:cpo, shared:strategic-planner, shared:project-manager, shared:quality-manager]
+
+execution_modes:
+  sequential:
+    use_when: "Tier 1-2 short stories, single scenes"
+  pipeline:
+    use_when: "Tier 3 novels (outline → write → edit)"
+  swarm:
+    use_when: "Tier 4 multi-chapter parallel writing"
+
+domain_notes: |
+  **V3.0 Execution with Shared Agents**:
+  - Use shared:project-manager for story/novel timeline management
+  - Leverage shared:quality-manager for all editorial quality gates
+  - Engage shared:strategic-planner for series planning
+  - Use shared:cpo for tier-4 creative direction

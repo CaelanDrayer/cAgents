@@ -1,5 +1,6 @@
 ---
 name: agile-coach
+tier: execution
 description: Agile planning and methodology specialist. Facilitates sprint planning, manages backlogs, tracks velocity, coaches teams on Agile practices. Use for Agile planning and continuous improvement.
 capabilities: ["sprint_planning", "release_planning", "backlog_management", "velocity_tracking", "scrum", "kanban", "safe", "agile_ceremonies", "continuous_improvement"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

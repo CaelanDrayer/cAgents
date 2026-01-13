@@ -1,0 +1,105 @@
+# Legal-Compliance Domain Router Configuration (V3.0)
+# Complexity classification for legal and compliance (formerly legal)
+
+domain: legal-compliance
+version: 3.0
+description: "Tier classification for legal and compliance tasks (contracts, regulatory, IP, litigation, governance)"
+
+# Tier 2 Shared Agents
+tier2_shared_agents:
+  leadership:
+    - shared:ceo
+    - shared:cfo
+  planning:
+    - shared:strategic-planner
+    - shared:business-analyst
+    - shared:project-manager
+  data:
+    - shared:data-analyst
+    - shared:business-intelligence-specialist
+  quality:
+    - shared:quality-manager
+    - shared:process-auditor
+    - shared:compliance-officer
+    - shared:risk-manager
+  operations:
+    - shared:operations-manager
+    - shared:change-management-specialist
+
+# Tier Classification Rules
+tier_classification:
+  tier_0:
+    description: "Simple questions about legal or compliance topics"
+    keywords: [question, what, how, why, explain, define]
+    examples:
+      - "What is GDPR?"
+      - "Explain contract types"
+
+  tier_1:
+    description: "Simple legal tasks (review single doc, update policy)"
+    scope_indicators:
+      single_document: true
+      estimated_time: "< 30 minutes"
+    examples:
+      - "Review NDA"
+      - "Update privacy policy"
+
+  tier_2:
+    description: "Moderate legal tasks (contract negotiation, compliance assessment, policy development)"
+    scope_indicators:
+      multiple_documents: "2-5"
+      estimated_time: "1-4 hours"
+      shared_agent_candidates: [shared:risk-manager, shared:compliance-officer, shared:business-analyst]
+    examples:
+      - "Negotiate vendor contract"
+      - "Conduct compliance assessment"
+      - "Develop data privacy policy"
+
+  tier_3:
+    description: "Complex legal initiatives (regulatory compliance program, IP strategy, litigation management)"
+    scope_indicators:
+      cross_functional: true
+      estimated_time: "4-16 hours"
+      shared_agent_usage: [shared:strategic-planner, shared:risk-manager, shared:compliance-officer]
+    examples:
+      - "Design GDPR compliance program"
+      - "Develop IP protection strategy"
+      - "Manage complex litigation"
+
+  tier_4:
+    description: "Strategic legal transformation (M&A, major regulatory change, enterprise governance)"
+    scope_indicators:
+      organizational_impact: true
+      estimated_time: "days to weeks"
+      shared_agent_required: [shared:ceo, shared:cfo, shared:strategic-planner, shared:risk-manager]
+    examples:
+      - "M&A legal due diligence"
+      - "Enterprise governance framework"
+      - "Major regulatory transformation"
+
+templates:
+  contract_review:
+    default_tier: 2
+    shared_agents: [shared:risk-manager, shared:compliance-officer]
+
+  compliance_program:
+    default_tier: 3
+    shared_agents: [shared:compliance-officer, shared:risk-manager, shared:strategic-planner]
+
+  litigation_management:
+    default_tier: 3
+    shared_agents: [shared:risk-manager, shared:cfo]
+
+  regulatory_transformation:
+    default_tier: 4
+    shared_agents: [shared:ceo, shared:cfo, shared:strategic-planner, shared:risk-manager, shared:compliance-officer]
+
+domain_notes: |
+  Legal-Compliance domain routing considerations (V3.0):
+
+  **Shared Agent Integration**:
+  - All tiers: Use shared:compliance-officer for compliance matters
+  - All tiers: Use shared:risk-manager for risk assessment
+  - Tier 3+: Leverage shared:strategic-planner for programs
+  - Tier 4: Require shared:ceo, shared:cfo for strategic decisions
+  - Critical: Always assess organizational and financial risk

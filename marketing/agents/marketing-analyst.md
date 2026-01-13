@@ -1,5 +1,6 @@
 ---
 name: marketing-analyst
+tier: execution
 description: Marketing analytics and performance tracking specialist. Use when campaign measurement, attribution, dashboards, or data-driven insights needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

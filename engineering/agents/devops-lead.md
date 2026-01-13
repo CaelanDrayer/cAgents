@@ -1,5 +1,6 @@
 ---
 name: devops-lead
+tier: controller
 description: DevOps domain manager for infrastructure, CI/CD, and deployment coordination. Use PROACTIVELY for tier 3-4 instructions requiring infrastructure provisioning, deployment automation, monitoring setup, or DevOps team management.
 model: sonnet
 color: bright_magenta

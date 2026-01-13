@@ -1,5 +1,6 @@
 ---
 name: marketing-operations-manager
+tier: execution
 description: Marketing operations and technology specialist. Use when marketing automation, lead management, campaign operations, or martech stack optimization needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

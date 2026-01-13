@@ -1,5 +1,6 @@
 ---
 name: okr-specialist
+tier: execution
 description: OKR planning and implementation expert. Facilitates OKR setting, defines objectives and key results, tracks progress, coaches teams on OKR methodology. Use for OKR planning and tracking.
 capabilities: ["okr_planning", "objective_setting", "key_result_definition", "okr_cascading", "okr_tracking", "okr_coaching", "okr_grading", "okr_methodology"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

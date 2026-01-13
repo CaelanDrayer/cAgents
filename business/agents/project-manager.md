@@ -1,5 +1,6 @@
 ---
 name: project-manager
+tier: controller
 description: Project planning, execution, and delivery. Use for project management and stakeholder coordination.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

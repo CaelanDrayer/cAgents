@@ -1,5 +1,6 @@
 ---
 name: compliance-manager-business
+tier: execution
 description: Regulatory compliance, policy enforcement, and audit management. Use for compliance assessments and audit preparation.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

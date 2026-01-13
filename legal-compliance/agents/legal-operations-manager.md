@@ -1,5 +1,6 @@
 ---
 name: legal-operations-manager
+tier: controller
 description: Legal department operations and efficiency specialist. Use PROACTIVELY for legal spend management, process improvement, technology implementation, and vendor management.
 tools: Read, Write, Grep, Glob, TodoWrite
 model: sonnet

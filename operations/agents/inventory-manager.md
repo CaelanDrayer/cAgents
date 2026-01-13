@@ -1,5 +1,6 @@
 ---
 name: inventory-manager
+tier: execution
 description: Inventory optimization and stock management. Use for inventory strategy and stocking policies.
 tools: Read, Write, Grep, Glob, Bash
 model: sonnet

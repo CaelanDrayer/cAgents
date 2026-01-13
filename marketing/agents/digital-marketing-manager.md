@@ -1,5 +1,6 @@
 ---
 name: digital-marketing-manager
+tier: execution
 description: Digital marketing and paid acquisition specialist. Use when paid campaigns, digital channel strategy, conversion optimization, or performance marketing needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

@@ -1,5 +1,6 @@
 ---
 name: change-manager
+tier: controller
 description: Organizational change management using ADKAR, Kotter, or Prosci. Use for transformation initiatives and adoption planning.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

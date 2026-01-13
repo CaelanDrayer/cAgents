@@ -1,5 +1,6 @@
 ---
 name: customer-education-specialist
+tier: execution
 description: Customer training and education program developer. Use when creating training, webinars, or certification programs.
 tools: Read, Grep, Glob, Write
 model: sonnet

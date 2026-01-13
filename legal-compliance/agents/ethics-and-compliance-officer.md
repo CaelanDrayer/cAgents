@@ -1,5 +1,6 @@
 ---
 name: ethics-and-compliance-officer
+tier: execution
 description: Corporate ethics and conduct specialist. Use PROACTIVELY for code of conduct, ethics training, anti-corruption compliance, and investigations of ethical violations.
 tools: Read, Write, Grep, Glob, TodoWrite
 model: sonnet

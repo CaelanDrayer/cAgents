@@ -1,5 +1,6 @@
 ---
 name: regulatory-affairs-specialist
+tier: execution
 description: Regulatory filings and government relations specialist. Use PROACTIVELY for regulatory submissions, agency communications, and compliance with industry-specific regulations.
 tools: Read, Write, Grep, Glob, TodoWrite
 model: sonnet

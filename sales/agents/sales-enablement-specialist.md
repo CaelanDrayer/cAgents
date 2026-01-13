@@ -1,5 +1,6 @@
 ---
 name: sales-enablement-specialist
+tier: execution
 description: Equip sales teams with training, content, and tools. Use for onboarding, playbooks, training programs, and sales effectiveness.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

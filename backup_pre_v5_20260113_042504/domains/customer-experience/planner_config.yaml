@@ -1,0 +1,83 @@
+# Customer-Experience Domain Planner Configuration (V3.0)
+domain: customer-experience
+version: 3.0
+
+available_agents:
+  shared_leadership:
+    - shared:ceo
+    - shared:cso
+  shared_planning:
+    - shared:strategic-planner
+    - shared:business-analyst
+    - shared:project-manager
+    - shared:okr-specialist
+  shared_data:
+    - shared:data-analyst
+    - shared:business-intelligence-specialist
+  shared_quality:
+    - shared:quality-manager
+    - shared:performance-analyst
+  shared_customer:
+    - shared:account-manager
+    - shared:customer-success-manager
+    - shared:customer-advocacy-manager
+    - shared:relationship-manager
+  shared_operations:
+    - shared:operations-manager
+    - shared:process-improvement-specialist
+    - shared:resource-planner
+
+  customer_experience_specialists:
+    - cx-director: "CX strategy and leadership"
+    - support-manager: "Support team management"
+    - support-engineer: "Technical support"
+    - customer-service-rep: "Customer service"
+    - escalation-manager: "Escalation handling"
+    - onboarding-specialist: "Customer onboarding"
+    - training-specialist: "Customer training"
+    - knowledge-manager: "Knowledge base management"
+    - voc-analyst: "Voice of customer analysis"
+    - cx-analyst: "CX metrics and analytics"
+
+task_patterns:
+  escalation_handling:
+    tier_default: 2
+    tasks:
+      - id: assess_situation
+        agent: shared:account-manager
+      - id: technical_resolution
+        agent: support-engineer
+      - id: customer_communication
+        agent: shared:customer-success-manager
+
+  success_program:
+    tier_default: 3
+    tasks:
+      - id: strategic_planning
+        agent: shared:strategic-planner
+      - id: data_analysis
+        agent: shared:data-analyst
+      - id: program_design
+        agent: shared:customer-success-manager
+      - id: implementation
+        agent: shared:project-manager
+
+  cx_strategy:
+    tier_default: 4
+    tasks:
+      - id: strategic_vision
+        agent: shared:ceo
+      - id: voc_research
+        agent: voc-analyst
+      - id: strategy_design
+        agent: shared:strategic-planner
+      - id: transformation_plan
+        agent: shared:customer-success-manager
+
+planning_strategies:
+  tier_2:
+    shared_agents: [shared:customer-success-manager, shared:account-manager, shared:data-analyst]
+  tier_3:
+    shared_agents: [shared:strategic-planner, shared:customer-success-manager, shared:data-analyst, shared:quality-manager]
+  tier_4:
+    shared_agents: [shared:ceo, shared:cso, shared:strategic-planner, shared:customer-success-manager, shared:data-analyst]

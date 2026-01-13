@@ -1,5 +1,6 @@
 ---
 name: backend-developer
+tier: execution
 description: Backend specialist for APIs, databases, and server-side logic. Use for REST/GraphQL endpoints, database operations, and backend services.
 model: sonnet
 color: bright_yellow

@@ -1,5 +1,6 @@
 ---
 name: continuity-checker
+tier: execution
 description: Continuity and consistency verification specialist. Checks for plot holes, character inconsistencies, timeline errors, and logic breaks. Use for continuity verification tasks.
 capabilities: ["continuity_verification", "plot_hole_detection", "timeline_checking", "character_consistency", "logic_verification", "contradiction_finding", "canon_compliance", "consistency_analysis"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

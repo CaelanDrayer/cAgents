@@ -1,5 +1,6 @@
 ---
 name: compliance-manager
+tier: execution
 description: Regulatory compliance and audit specialist. Use PROACTIVELY for compliance assessments, audit preparation, and regulatory program management.
 tools: Read, Write, Grep, Glob, TodoWrite
 model: sonnet

@@ -1,5 +1,6 @@
 ---
 name: hr-operations-manager
+tier: execution
 description: HR systems and process excellence leader. Use PROACTIVELY for HRIS management, process optimization, and operational efficiency.
 tools: Read, Write, Grep, Bash, TodoWrite
 model: sonnet

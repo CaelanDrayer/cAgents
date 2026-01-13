@@ -1,5 +1,6 @@
 ---
 name: copy-editor
+tier: execution
 description: Copyediting and technical polish specialist. Fixes grammar, spelling, punctuation, formatting, and technical prose issues. Use for final polish and technical correction.
 capabilities: ["copyediting", "grammar_correction", "spelling_fixes", "punctuation", "formatting", "style_guide_adherence", "technical_polish", "proofreading"]
 tools: Read, Grep, Glob, Write, Edit, Bash, TodoWrite

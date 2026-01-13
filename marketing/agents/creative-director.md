@@ -1,5 +1,6 @@
 ---
 name: creative-director
+tier: controller
 description: Creative strategy and visual design leader. Use when creative direction, visual campaigns, brand design, or creative quality oversight needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

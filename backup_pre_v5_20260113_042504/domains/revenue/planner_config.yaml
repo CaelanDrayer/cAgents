@@ -1,0 +1,99 @@
+# Revenue Domain Planner Configuration (V3.0)
+domain: revenue
+version: 3.0
+
+available_agents:
+  shared_leadership:
+    - shared:ceo
+    - shared:cfo
+    - shared:cso
+  shared_planning:
+    - shared:strategic-planner
+    - shared:portfolio-manager
+    - shared:business-analyst
+    - shared:project-manager
+    - shared:program-manager
+    - shared:roadmap-planner
+    - shared:okr-specialist
+  shared_data:
+    - shared:data-analyst
+    - shared:business-intelligence-specialist
+    - shared:data-scientist
+    - shared:market-research-analyst
+    - shared:competitive-intelligence-analyst
+  shared_quality:
+    - shared:quality-manager
+    - shared:performance-analyst
+  shared_customer:
+    - shared:account-manager
+    - shared:customer-success-manager
+    - shared:customer-advocacy-manager
+    - shared:relationship-manager
+  shared_operations:
+    - shared:operations-manager
+    - shared:resource-planner
+    - shared:capacity-planner
+
+  revenue_specialists:
+    # Sales specialists
+    - sales-director: "Sales strategy and leadership"
+    - sales-engineer: "Technical sales support"
+    - account-executive: "Deal execution"
+    - sales-development-rep: "Lead generation"
+    - sales-enablement-specialist: "Sales training and tools"
+    - sales-ops-analyst: "Sales operations"
+    # Marketing specialists
+    - marketing-director: "Marketing strategy"
+    - demand-gen-manager: "Demand generation"
+    - content-marketing-manager: "Content strategy"
+    - product-marketing-manager: "Product marketing"
+    - digital-marketing-specialist: "Digital campaigns"
+    - marketing-automation-specialist: "Marketing automation"
+    - brand-manager: "Brand strategy"
+    - social-media-manager: "Social media"
+    - seo-specialist: "SEO and organic growth"
+    - event-marketing-manager: "Events and conferences"
+    - marketing-analyst: "Marketing analytics"
+
+task_patterns:
+  sales_forecast:
+    tier_default: 2
+    tasks:
+      - id: data_collection
+        agent: shared:data-analyst
+      - id: build_forecast
+        agent: sales-ops-analyst
+      - id: review
+        agent: shared:quality-manager
+
+  marketing_campaign:
+    tier_default: 2
+    tasks:
+      - id: market_research
+        agent: shared:market-research-analyst
+      - id: project_plan
+        agent: shared:project-manager
+      - id: create_campaign
+        agent: demand-gen-manager
+      - id: execute
+        agent: digital-marketing-specialist
+
+  product_launch:
+    tier_default: 3
+    tasks:
+      - id: strategic_plan
+        agent: shared:strategic-planner
+      - id: gtm_strategy
+        agent: product-marketing-manager
+      - id: sales_enablement
+        agent: sales-enablement-specialist
+      - id: marketing_execution
+        agent: marketing-director
+
+planning_strategies:
+  tier_2:
+    shared_agents: [shared:project-manager, shared:data-analyst, shared:account-manager]
+  tier_3:
+    shared_agents: [shared:strategic-planner, shared:project-manager, shared:market-research-analyst, shared:account-manager]
+  tier_4:
+    shared_agents: [shared:ceo, shared:cfo, shared:cso, shared:strategic-planner, shared:business-analyst]

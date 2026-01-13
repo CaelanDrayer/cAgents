@@ -1,5 +1,6 @@
 ---
 name: product-marketing-manager
+tier: controller
 description: Product positioning, messaging, and launch specialist. Use when product launches, competitive positioning, sales enablement, or go-to-market strategy needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

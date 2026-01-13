@@ -1,5 +1,6 @@
 ---
 name: recruiting-coordinator
+tier: execution
 description: Interview logistics specialist managing scheduling, candidate communications, and recruiting operations. Use PROACTIVELY for interview coordination, candidate experience, and recruiting process efficiency.
 tools: Read, Write, Bash, TodoWrite
 model: haiku

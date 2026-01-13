@@ -1,5 +1,6 @@
 ---
 name: ip-attorney
+tier: execution
 description: Intellectual property specialist for patents, trademarks, copyrights, and trade secrets. Use PROACTIVELY for IP protection, licensing, and portfolio management.
 tools: Read, Write, Grep, Glob, TodoWrite
 model: sonnet

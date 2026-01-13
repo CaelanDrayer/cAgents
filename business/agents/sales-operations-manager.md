@@ -1,5 +1,6 @@
 ---
 name: sales-operations-manager
+tier: execution
 description: Sales process optimization and forecasting. Use for sales analytics and territory planning.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

@@ -1,5 +1,6 @@
 ---
 name: account-executive
+tier: execution
 description: Close deals and negotiate contracts. Use for opportunity management, deal strategy, and quota attainment.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

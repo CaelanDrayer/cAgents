@@ -1,5 +1,6 @@
 ---
 name: pr-specialist
+tier: execution
 description: Public relations and media specialist. Use when PR strategy, media relations, press releases, thought leadership, or reputation management needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

@@ -1,5 +1,6 @@
 ---
 name: business-analyst-planning
+tier: execution
 description: Business analysis and requirements planning specialist. Gathers requirements, conducts gap analysis, defines acceptance criteria, validates business needs. Use for requirements gathering and analysis.
 capabilities: ["requirements_gathering", "gap_analysis", "acceptance_criteria", "stakeholder_interviews", "process_analysis", "business_case_development", "feasibility_analysis"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

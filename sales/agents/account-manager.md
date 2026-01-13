@@ -1,5 +1,6 @@
 ---
 name: account-manager
+tier: execution
 description: Grow revenue from existing accounts. Use for upsell/cross-sell, renewals, and strategic account management.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

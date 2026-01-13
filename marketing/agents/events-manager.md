@@ -1,5 +1,6 @@
 ---
 name: events-manager
+tier: execution
 description: Event marketing and execution specialist. Use when conferences, trade shows, webinars, field events, or customer events needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

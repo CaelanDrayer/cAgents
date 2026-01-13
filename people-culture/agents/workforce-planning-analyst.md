@@ -1,5 +1,6 @@
 ---
 name: workforce-planning-analyst
+tier: execution
 description: Strategic headcount forecasting and capacity planning specialist. Use PROACTIVELY for workforce modeling, hiring plans, and org capacity analysis.
 tools: Read, Write, Grep, Bash, TodoWrite
 model: sonnet

@@ -1,5 +1,6 @@
 ---
 name: culture-and-engagement-manager
+tier: execution
 description: Employee experience and culture champion. Use PROACTIVELY for engagement programs, culture initiatives, recognition systems, and employee satisfaction.
 tools: Read, Write, Grep, TodoWrite
 model: sonnet

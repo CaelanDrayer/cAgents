@@ -1,5 +1,6 @@
 ---
 name: sales-engineer
+tier: execution
 description: Provide technical pre-sales expertise. Use for technical discovery, solution design, demos, POCs, and technical validation.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

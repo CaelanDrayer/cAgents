@@ -1,5 +1,6 @@
 ---
 name: resource-planner
+tier: execution
 description: Resource allocation and capacity planning specialist. Plans resource allocation, forecasts capacity needs, optimizes resource utilization, resolves resource conflicts. Use for resource planning.
 capabilities: ["resource_allocation", "capacity_planning", "resource_forecasting", "utilization_optimization", "conflict_resolution", "skills_mapping", "resource_scheduling"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

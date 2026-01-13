@@ -1,5 +1,6 @@
 ---
 name: backend-lead
+tier: controller
 description: Backend domain manager for tactical planning, team coordination, and code review. Use PROACTIVELY for tier 3-4 instructions requiring backend work breakdown, API design, database work, or backend team management.
 model: sonnet
 color: bright_green

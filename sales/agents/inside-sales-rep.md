@@ -1,5 +1,6 @@
 ---
 name: inside-sales-rep
+tier: execution
 description: High-velocity inbound sales and trial conversion. Use for SMB deals, product-led growth, and trial-to-paid conversion.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

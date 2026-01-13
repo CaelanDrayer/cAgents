@@ -1,5 +1,6 @@
 ---
 name: compensation-analyst
+tier: execution
 description: Compensation strategy and equity modeling specialist. Use PROACTIVELY for salary benchmarking, pay equity analysis, and offer package design.
 tools: Read, Write, Grep, Bash, TodoWrite
 model: sonnet

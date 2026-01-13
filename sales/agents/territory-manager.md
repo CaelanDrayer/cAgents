@@ -1,5 +1,6 @@
 ---
 name: territory-manager
+tier: execution
 description: Manage regional sales teams and territories. Use for territory planning, team coaching, pipeline management, and regional performance.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

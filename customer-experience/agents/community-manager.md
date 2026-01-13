@@ -1,5 +1,6 @@
 ---
 name: community-manager
+tier: execution
 description: Customer community builder and engagement specialist. Use PROACTIVELY when building user communities, moderating forums, or fostering peer-to-peer support.
 tools: Read, Grep, Glob, Write
 model: sonnet

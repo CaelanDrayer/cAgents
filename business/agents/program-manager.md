@@ -1,5 +1,6 @@
 ---
 name: program-manager
+tier: controller
 description: Multi-project portfolio management and strategic alignment. Use for portfolio oversight and program strategy.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

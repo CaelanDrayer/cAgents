@@ -1,5 +1,6 @@
 ---
 name: seo-specialist
+tier: execution
 description: SEO strategy and optimization specialist. Use when keyword research, on-page optimization, technical SEO, or organic search growth needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

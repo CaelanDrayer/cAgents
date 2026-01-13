@@ -1,5 +1,6 @@
 ---
 name: operations-manager
+tier: controller
 description: Day-to-day operations oversight and execution management. Use for operational planning and coordination.
 tools: Read, Write, Grep, Glob, Bash
 model: sonnet

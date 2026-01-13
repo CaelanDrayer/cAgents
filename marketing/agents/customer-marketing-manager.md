@@ -1,5 +1,6 @@
 ---
 name: customer-marketing-manager
+tier: execution
 description: Customer retention and expansion specialist. Use when customer engagement, upsell/cross-sell campaigns, advocacy programs, or customer lifecycle marketing needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

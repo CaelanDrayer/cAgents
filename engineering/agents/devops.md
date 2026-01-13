@@ -1,5 +1,6 @@
 ---
 name: devops
+tier: execution
 description: DevOps engineer specializing in CI/CD pipelines, infrastructure automation, and release engineering. Use PROACTIVELY for deployment automation, infrastructure as code, build pipelines, and development environment setup.
 model: sonnet
 color: bright_magenta

@@ -1,5 +1,6 @@
 ---
 name: qa-lead
+tier: controller
 description: QA domain manager for tactical test planning, team coordination, and quality assurance. Use PROACTIVELY for tier 3-4 instructions requiring test strategy, QA team management, or comprehensive quality validation.
 model: sonnet
 color: bright_red

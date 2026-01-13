@@ -1,5 +1,6 @@
 ---
 name: quality-manager-business
+tier: execution
 description: Quality management, process improvement, and standards compliance. Use for quality assurance and continuous improvement.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

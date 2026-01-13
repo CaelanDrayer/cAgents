@@ -1,5 +1,6 @@
 ---
 name: market-research-analyst-planning
+tier: execution
 description: Market research and competitive intelligence specialist for planning. Conducts market analysis, competitive research, trend forecasting. Use for market intelligence in strategic planning.
 capabilities: ["market_research", "competitive_analysis", "trend_forecasting", "industry_analysis", "customer_insights", "market_sizing", "competitor_intelligence"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

@@ -1,0 +1,36 @@
+# People-Culture Domain Validator Configuration (V3.0)
+domain: people-culture
+version: 3.0
+
+shared_quality_gates:
+  compliance_validation:
+    validator: shared:compliance-officer
+    when: "All HR initiatives"
+    criteria:
+      - "Employment law compliance"
+      - "EEOC compliance verified"
+      - "Privacy requirements met"
+
+  quality_assurance:
+    validator: shared:quality-manager
+    when: "All tiers"
+    criteria:
+      - "HR standards met"
+      - "Documentation complete"
+      - "Best practices followed"
+
+  data_validation:
+    validator: shared:data-analyst
+    when: "Compensation, workforce analytics"
+    criteria:
+      - "Data accuracy verified"
+      - "Market benchmarks validated"
+      - "Analysis methodology sound"
+
+validation_workflow:
+  tier_2:
+    shared_agents: [shared:quality-manager, shared:data-analyst, shared:compliance-officer]
+  tier_3:
+    shared_agents: [shared:coo, shared:quality-manager, shared:compliance-officer, shared:change-manager]
+  tier_4:
+    shared_agents: [shared:ceo, shared:coo, shared:quality-manager, shared:compliance-officer]

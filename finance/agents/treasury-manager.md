@@ -1,5 +1,6 @@
 ---
 name: treasury-manager
+tier: execution
 description: Cash management, liquidity planning, banking relationships, foreign exchange. Use PROACTIVELY for cash flow forecasts, debt management, investment decisions.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet

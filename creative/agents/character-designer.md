@@ -1,5 +1,6 @@
 ---
 name: character-designer
+tier: execution
 description: Character development and design specialist. Creates character profiles, backstories, motivations, flaws, arcs, and voice. Use for character creation, development, and characterization tasks.
 capabilities: ["character_creation", "backstory_development", "motivation_design", "character_arcs", "character_voice", "personality_design", "character_relationships", "character_flaws"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

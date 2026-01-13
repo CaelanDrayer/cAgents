@@ -1,5 +1,6 @@
 ---
 name: account-manager
+tier: execution
 description: Account management and relationship specialist (shared from business domain). Use PROACTIVELY when managing customer accounts, contract negotiations, or relationship building.
 tools: Read, Grep, Glob, Write
 model: sonnet

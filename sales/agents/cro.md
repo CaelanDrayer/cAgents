@@ -1,5 +1,6 @@
 ---
 name: cro
+tier: controller
 description: Executive revenue strategy and sales leadership. Use for revenue strategies, GTM planning, tier 3-4 decisions, and cross-functional alignment.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 model: opus

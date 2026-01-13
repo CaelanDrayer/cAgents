@@ -1,5 +1,6 @@
 ---
 name: planning-analyst
+tier: execution
 description: Planning data analysis and insights specialist. Analyzes planning metrics, forecasts trends, provides planning insights, tracks KPIs. Use for planning analytics and reporting.
 capabilities: ["metrics_analysis", "trend_forecasting", "planning_insights", "kpi_tracking", "dashboard_creation", "data_visualization", "performance_reporting"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

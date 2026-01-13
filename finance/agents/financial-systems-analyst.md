@@ -1,5 +1,6 @@
 ---
 name: financial-systems-analyst
+tier: execution
 description: ERP systems, reporting tools, data integration, system optimization. Use PROACTIVELY for system implementations, reporting automation, data integration.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet

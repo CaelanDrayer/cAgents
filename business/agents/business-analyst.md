@@ -1,5 +1,6 @@
 ---
 name: business-analyst
+tier: controller
 description: Requirements gathering, process analysis, and solution design. Use for requirements definition and stakeholder interviews.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

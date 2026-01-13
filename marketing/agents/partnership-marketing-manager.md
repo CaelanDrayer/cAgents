@@ -1,5 +1,6 @@
 ---
 name: partnership-marketing-manager
+tier: execution
 description: Partner and channel marketing specialist. Use when co-marketing, channel partner enablement, alliance marketing, or partnership campaigns needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

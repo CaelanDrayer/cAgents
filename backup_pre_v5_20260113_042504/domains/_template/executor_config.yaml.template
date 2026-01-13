@@ -1,0 +1,173 @@
+# Domain Executor Configuration Template
+# Copy this file to: Agent_Memory/_system/domains/{domain_name}/executor_config.yaml
+# Replace all {DOMAIN_NAME} placeholders with your domain name
+
+domain: {DOMAIN_NAME}
+version: 1.0
+description: "Execution coordination and agent invocation rules for {DOMAIN_NAME} domain"
+
+# Agent Capabilities
+# Defines what each agent in this domain can do
+
+agent_capabilities:
+  # Format:
+  # agent_name:
+  #   specializations: [list of specializations]
+  #   tools: [list of tools they use]
+  #   workload_capacity: low|medium|high
+  #   typical_tasks: [types of tasks they handle]
+
+  # Example (replace with actual domain agents):
+  # domain-specialist:
+  #   specializations: [domain_expertise, artifact_creation]
+  #   tools: [Read, Write, Edit, Bash]
+  #   workload_capacity: high
+  #   typical_tasks: [create, modify, implement]
+
+# Execution Strategies
+# How tasks are executed based on complexity and type
+
+execution_strategies:
+  direct_execution:
+    description: "Executor handles task directly with tools"
+    when_to_use:
+      - tier: [1]
+      - task_type: [simple_create, simple_modify]
+      - no_domain_expertise_required: true
+    tools_available: [Read, Write, Edit, Grep, Glob, Bash]
+
+  single_agent_delegation:
+    description: "Delegate to one specialist agent"
+    when_to_use:
+      - tier: [2]
+      - task_type: [analyze, create, modify]
+      - domain_expertise_required: true
+    delegation_format: "inbox message to assigned agent"
+
+  team_coordination:
+    description: "Coordinate multiple agents working in parallel"
+    when_to_use:
+      - tier: [3, 4]
+      - multiple_tasks_parallel: true
+      - cross_functional_required: true
+    coordination_format: "orchestrated through domain lead"
+
+# Output Aggregation Rules
+# How to combine outputs from multiple tasks
+
+output_aggregation:
+  single_output:
+    description: "One primary deliverable"
+    aggregation_method: "combine into single document"
+    output_location: "outputs/final/{primary_artifact}"
+
+  multi_output:
+    description: "Multiple distinct deliverables"
+    aggregation_method: "organize by type in folders"
+    output_location: "outputs/final/{artifact_type}/"
+
+  hierarchical_output:
+    description: "Structured multi-level outputs"
+    aggregation_method: "create index with references"
+    output_location: "outputs/final/index.md + subdirectories"
+
+# Cross-Domain Invocation
+# How to invoke agents from other domains
+
+cross_domain:
+  enabled: true
+  format: "{domain}:{agent_name}"
+
+  examples:
+    - description: "Invoke software domain agent from {DOMAIN_NAME}"
+      invocation: "software:backend-developer"
+      use_case: "Technical implementation needed"
+
+    - description: "Invoke business domain agent from {DOMAIN_NAME}"
+      invocation: "business:market-analyst"
+      use_case: "Market analysis needed"
+
+  resolution_rules:
+    - "Check agent registry for domain:agent mapping"
+    - "Verify agent exists in target domain"
+    - "Create cross-domain delegation message"
+    - "Monitor completion in other domain"
+
+# Recursive Workflow Triggering
+# When and how to create child workflows
+
+recursive_workflows:
+  enabled: true
+
+  triggers:
+    - condition: "Task too large for single workflow"
+      action: "Split into child workflows"
+      example: "Novel writing → 10 chapter workflows"
+
+    - condition: "Cross-domain coordination needed"
+      action: "Create child workflow in other domain"
+      example: "GDPR compliance → software + business + legal children"
+
+    - condition: "Iterative refinement required"
+      action: "Create refinement workflow"
+      example: "Initial draft → review → refinement workflow"
+
+  api:
+    function: create_child_instruction
+    parameters:
+      - parent_instruction_id
+      - raw_input
+      - domain
+      - priority
+      - metadata
+
+  limits:
+    max_depth: 5
+    max_children_per_parent: 20
+    circular_reference_check: true
+
+# Timeout and Monitoring
+# How long to wait for agents and how to monitor progress
+
+timeouts:
+  agent_response:
+    default: "30 minutes"
+    tier_1: "15 minutes"
+    tier_2: "30 minutes"
+    tier_3: "60 minutes"
+    tier_4: "2 hours"
+
+  workflow_total:
+    tier_1: "1 hour"
+    tier_2: "4 hours"
+    tier_3: "8 hours"
+    tier_4: "1 week"
+
+monitoring:
+  progress_check_interval: "5 minutes"
+  status_reporting: "After each task completion"
+  blocker_detection: "Immediate"
+  escalation_threshold: "After 2 failed retry attempts"
+
+# Error Handling
+# How to handle different types of execution errors
+
+error_handling:
+  agent_timeout:
+    action: "Send reminder → escalate to domain lead after 2nd timeout"
+
+  task_blocked:
+    action: "Move to tasks/blocked/ → escalate to domain lead"
+
+  agent_error:
+    action: "Retry once → escalate if fails again"
+
+  missing_dependency:
+    action: "Check if dependency completed → wait or escalate"
+
+# Domain-Specific Notes
+# Add any domain-specific execution considerations here
+
+domain_notes: |
+  Add domain-specific execution guidelines here.
+  Include typical execution patterns, tools usage, or coordination approaches for {DOMAIN_NAME}.

@@ -1,5 +1,6 @@
 ---
 name: support-analyst
+tier: execution
 description: Support data analyst and insights specialist. Use when analyzing metrics, identifying trends, or generating performance reports.
 tools: Read, Grep, Glob, Bash, Write
 model: sonnet

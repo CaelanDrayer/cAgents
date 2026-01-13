@@ -1,5 +1,6 @@
 ---
 name: supply-chain-manager
+tier: controller
 description: End-to-end supply chain optimization and network design. Use for supply chain strategy and planning.
 tools: Read, Write, Grep, Glob
 model: sonnet

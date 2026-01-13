@@ -1,5 +1,6 @@
 ---
 name: supply-chain-manager
+tier: controller
 description: End-to-end supply chain optimization and inventory management. Use for supply chain issues and inventory optimization.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

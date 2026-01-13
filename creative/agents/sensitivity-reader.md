@@ -1,5 +1,6 @@
 ---
 name: sensitivity-reader
+tier: execution
 description: Cultural sensitivity and representation specialist. Reviews work for respectful, accurate representation of diverse identities and experiences. Use for diversity and sensitivity review tasks.
 capabilities: ["sensitivity_reading", "representation_review", "cultural_accuracy", "stereotype_identification", "authenticity_verification", "respectful_portrayal", "diversity_assessment", "harmful_content_flagging"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

@@ -1,0 +1,47 @@
+# Customer-Experience Domain Executor Configuration (V3.0)
+domain: customer-experience
+version: 3.0
+
+shared_agent_delegation:
+  cx_strategy:
+    when: "Tier 4 enterprise CX transformation"
+    delegate_to: [shared:ceo, shared:cso, shared:strategic-planner]
+
+  customer_success:
+    when: "All tiers with customer engagement"
+    delegate_to: [shared:customer-success-manager, shared:account-manager]
+
+  cx_analytics:
+    when: "VOC analysis, metrics, satisfaction tracking"
+    delegate_to: [shared:data-analyst, shared:business-intelligence-specialist]
+
+  process_optimization:
+    when: "Tier 3+ support transformation, workflow optimization"
+    delegate_to: [shared:operations-manager, shared:process-improvement-specialist]
+
+team_composition:
+  tier_1:
+    core_team: [customer-service-rep, support-engineer]
+    shared_agents: []
+
+  tier_2:
+    core_team: [support-manager, escalation-manager, onboarding-specialist]
+    shared_agents: [shared:account-manager, shared:customer-success-manager]
+
+  tier_3:
+    core_team: [cx-director, support-manager, voc-analyst, training-specialist]
+    shared_agents: [shared:strategic-planner, shared:customer-success-manager, shared:data-analyst, shared:quality-manager]
+
+  tier_4:
+    core_team: [cx-director, full-cx-team]
+    shared_agents: [shared:ceo, shared:cso, shared:strategic-planner, shared:customer-success-manager, shared:data-analyst]
+
+execution_modes:
+  sequential:
+    use_when: "Single ticket, simple escalation"
+  pipeline:
+    use_when: "Customer onboarding, training programs"
+  swarm:
+    use_when: "High-volume support, multiple escalations"
+  mesh:
+    use_when: "CX transformation, platform migration"
