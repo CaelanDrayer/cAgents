@@ -1,7 +1,7 @@
 {
   "name": "cagents-engineering",
-  "version": "3.0.0",
-  "description": "Engineering domain (formerly software) for cAgents V3.0",
+  "version": "7.0.0",
+  "description": "Engineering domain for cAgents V7.0 - Software development, architecture, DevOps, security, and QA specialists. 45 tier-2 controller and tier-3 execution agents including engineering-manager, architect, tech-lead, frontend/backend developers, DevOps engineers, security specialists, QA leads, and more. Supports question-based delegation for engineering workflows with controller coordination.",
   "domain": "engineering",
   "tier": 3,
   "dependencies": ["cagents-shared-capabilities"],
@@ -17,6 +17,36 @@
     "backend",
     "devops",
     "security",
-    "qa"
+    "qa",
+    "testing",
+    "controller",
+    "execution",
+    "v7.0"
+  ],
+  "skills": [
+    {
+      "name": "cagents:engineering:development",
+      "description": "Software development across frontend, backend, mobile, and full-stack"
+    },
+    {
+      "name": "cagents:engineering:architecture",
+      "description": "System architecture, design patterns, technical strategy"
+    },
+    {
+      "name": "cagents:engineering:devops",
+      "description": "DevOps, CI/CD, infrastructure, deployment automation"
+    },
+    {
+      "name": "cagents:engineering:security",
+      "description": "Security engineering, vulnerability assessment, compliance"
+    },
+    {
+      "name": "cagents:engineering:qa",
+      "description": "Quality assurance, testing strategy, test automation"
+    },
+    {
+      "name": "cagents:engineering:coordination",
+      "description": "Engineering management and technical leadership"
+    }
   ]
 }

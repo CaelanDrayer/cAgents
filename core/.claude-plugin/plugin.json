@@ -1,7 +1,7 @@
 {
   "name": "@cagents/core",
-  "version": "6.6.0",
-  "description": "cAgents Core V2 - Universal Workflow Architecture + Context Management + Enhanced Reviewer V2.0. Provides unified Trigger, Orchestrator, HITL, Optimizer, Task-Consolidator, and 5 universal workflow agents that work across ALL domains via configuration. NEW: Context budget system (replaces time estimates), task consolidation for 40-60% context reduction, intelligent agent selection (33% faster), auto-fix generation (98% more actionable), pattern learning, and diff-aware analysis. Includes universal commands and Agent_Memory system with 55 domain configs across 11 domains.",
+  "version": "7.0.0",
+  "description": "cAgents Core V7.0 - Controller-Centric Question-Based Delegation Architecture. Provides unified Trigger, Orchestrator, HITL, Optimizer, Task-Consolidator, and 5 universal workflow agents that work across ALL domains via configuration. NEW IN V7.0: Coordinating phase with question-based delegation, objective-driven planning (WHAT), controller expertise (HOW), synthesis-driven implementation. Enhanced Reviewer V2.0 with intelligent agent selection (33% faster), auto-fix generation (98% more actionable), pattern learning, diff-aware analysis. Context budget system with task consolidation for 40-60% context reduction. Includes universal commands and Agent_Memory system with domain configurations.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",
@@ -23,7 +23,9 @@
     "plugin",
     "multi-domain",
     "recursive-workflows",
-    "v2"
+    "controller-centric",
+    "question-based-delegation",
+    "v7.0"
   ],
   "commands": [
     "./commands/trigger.md",
@@ -38,10 +40,32 @@
     "./agents/universal-router.md",
     "./agents/universal-planner.md",
     "./agents/universal-executor.md",
+    "./agents/universal-executor-enhanced.md",
     "./agents/universal-validator.md",
     "./agents/universal-self-correct.md",
     "./agents/optimizer.md",
     "./agents/task-consolidator.md"
   ],
-  "skills": []
+  "skills": [
+    {
+      "name": "cagents:trigger",
+      "description": "Universal workflow entry point with domain detection and routing"
+    },
+    {
+      "name": "cagents:orchestrator",
+      "description": "Phase conductor for routing → planning → coordinating → executing → validating"
+    },
+    {
+      "name": "cagents:coordinator",
+      "description": "Question-based delegation and answer synthesis for controller agents"
+    },
+    {
+      "name": "cagents:optimizer",
+      "description": "Universal optimization across code, content, processes, data, infrastructure"
+    },
+    {
+      "name": "cagents:reviewer",
+      "description": "Enhanced review with intelligent selection and auto-fix generation"
+    }
+  ]
 }

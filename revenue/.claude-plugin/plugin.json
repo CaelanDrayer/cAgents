@@ -1,7 +1,7 @@
 {
   "name": "cagents-revenue",
-  "version": "3.0.0",
-  "description": "Revenue domain (sales + marketing) for cAgents V3.0",
+  "version": "7.0.0",
+  "description": "Revenue domain (sales + marketing) for cAgents V7.0 - Go-to-market strategy, sales operations, marketing campaigns, demand generation, and revenue operations. 40 tier-2 controller and tier-3 execution agents including CRO, sales-strategist, marketing-strategist, campaign-manager, sales-engineers, demand-generation specialists, copywriters, and more. Supports question-based delegation for revenue workflows with controller coordination.",
   "domain": "revenue",
   "tier": 3,
   "dependencies": ["cagents-shared-capabilities"],
@@ -16,6 +16,34 @@
     "campaigns",
     "forecasting",
     "demand-generation",
-    "GTM"
+    "GTM",
+    "go-to-market",
+    "sales-ops",
+    "marketing-ops",
+    "controller",
+    "execution",
+    "v7.0"
+  ],
+  "skills": [
+    {
+      "name": "cagents:revenue:sales",
+      "description": "Sales strategy, pipeline management, forecasting, sales operations"
+    },
+    {
+      "name": "cagents:revenue:marketing",
+      "description": "Marketing strategy, campaigns, demand generation, content marketing"
+    },
+    {
+      "name": "cagents:revenue:gtm",
+      "description": "Go-to-market strategy, product launches, market positioning"
+    },
+    {
+      "name": "cagents:revenue:operations",
+      "description": "Revenue operations, CRM management, analytics"
+    },
+    {
+      "name": "cagents:revenue:coordination",
+      "description": "Revenue leadership and cross-functional coordination"
+    }
   ]
 }

@@ -57,3 +57,7 @@ finance/outputs/reports/
 # Reference files
 reference/
 documentation/temp/
+
+# Local memory (personal preferences)
+CLAUDE.local.md
+*.local.md

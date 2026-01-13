@@ -1,7 +1,7 @@
 {
   "name": "cagents-finance-operations",
-  "version": "3.0.0",
-  "description": "Finance and Operations domain for cAgents V3.0",
+  "version": "7.0.0",
+  "description": "Finance-Operations domain for cAgents V7.0 - Financial planning & analysis, accounting, operations management, supply chain, and business operations. 32 tier-2 controller and tier-3 execution agents including CFO, FP&A managers, financial analysts, operations directors, supply-chain managers, and more. Supports question-based delegation for finance and operations workflows with controller coordination.",
   "domain": "finance-operations",
   "tier": 3,
   "dependencies": ["cagents-shared-capabilities"],
@@ -12,10 +12,38 @@
   "keywords": [
     "finance",
     "operations",
+    "fpa",
+    "accounting",
     "budgeting",
     "forecasting",
     "supply-chain",
-    "FP&A",
-    "procurement"
+    "procurement",
+    "inventory",
+    "business-operations",
+    "controller",
+    "execution",
+    "v7.0"
+  ],
+  "skills": [
+    {
+      "name": "cagents:finance:planning",
+      "description": "Financial planning, analysis, budgeting, and forecasting"
+    },
+    {
+      "name": "cagents:finance:accounting",
+      "description": "Accounting, financial reporting, audit, and compliance"
+    },
+    {
+      "name": "cagents:operations:management",
+      "description": "Operations management, process optimization, efficiency"
+    },
+    {
+      "name": "cagents:operations:supply-chain",
+      "description": "Supply chain management, procurement, logistics"
+    },
+    {
+      "name": "cagents:finance-operations:coordination",
+      "description": "Finance and operations leadership and coordination"
+    }
   ]
 }

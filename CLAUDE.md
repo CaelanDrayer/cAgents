@@ -26,6 +26,245 @@ Core architecture and development guidance for cAgents V5.0.
 **Root Documentation** (exceptions):
 - `workflow_agent_interactions.md` - Agent interaction patterns (referenced throughout)
 
+## Memory Management
+
+**Claude Code Memory Hierarchy**: cAgents leverages Claude Code's 5-tier memory system for flexible, scalable configuration.
+
+### Memory Types
+
+| Memory Type | Location | Purpose | Shared With | Use in cAgents |
+|-------------|----------|---------|-------------|----------------|
+| **Enterprise** | `/Library/Application Support/ClaudeCode/CLAUDE.md` (macOS)<br>`/etc/claude-code/CLAUDE.md` (Linux)<br>`C:\Program Files\ClaudeCode\CLAUDE.md` (Windows) | Organization-wide standards | All users | Company coding standards, security policies, compliance |
+| **Project** | `./CLAUDE.md` | Team-shared instructions | Team via git | Architecture, workflow, commands (this file) |
+| **Project Rules** | `./.claude/rules/*.md` | Modular topic-specific rules | Team via git | Domain-specific guidelines, agent patterns |
+| **User** | `~/.claude/CLAUDE.md` | Personal preferences (all projects) | Just you | Code style, personal shortcuts |
+| **Project Local** | `./CLAUDE.local.md` | Personal project preferences | Just you | Local URLs, test data, dev preferences |
+
+**Loading Order**: Enterprise → User → Project → Project Rules → Project Local (later = higher priority)
+
+### Project Rules Structure
+
+**Modular Rules** (`.claude/rules/`): Organize instructions into focused topic files instead of one large CLAUDE.md.
+
+```
+cAgents/
+├── .claude/
+│   ├── CLAUDE.md                    # This file (main project memory)
+│   └── rules/
+│       ├── core/
+│       │   ├── orchestration.md     # Workflow orchestration patterns
+│       │   ├── controllers.md       # Controller coordination guidelines
+│       │   └── execution.md         # Execution agent patterns
+│       ├── domains/
+│       │   ├── engineering.md       # Engineering domain specifics
+│       │   ├── revenue.md           # Revenue domain specifics
+│       │   └── creative.md          # Creative domain specifics
+│       ├── memory/
+│       │   ├── agent-memory.md      # Agent_Memory/ structure and usage
+│       │   └── context-mgmt.md      # Context handling best practices
+│       └── quality/
+│           ├── testing.md           # Testing conventions
+│           ├── validation.md        # Validation requirements
+│           └── completion.md        # Task completion protocol
+└── CLAUDE.local.md                  # Your local preferences (git-ignored)
+```
+
+**Path-Specific Rules**: Rules can apply conditionally using YAML frontmatter:
+
+```markdown
+---
+paths:
+  - "core/agents/**/*.md"
+  - "shared/agents/**/*.md"
+---
+
+# Agent Development Rules
+
+- All agents MUST have YAML frontmatter with tier field
+- Controllers use question-based delegation pattern
+- Execution agents answer questions and execute tasks
+```
+
+**Glob Patterns Supported**:
+- `**/*.md` - All markdown files recursively
+- `core/**/*` - All files under core/
+- `*.{ts,js}` - TypeScript or JavaScript files
+- `{core,shared}/agents/*.md` - Agent files in core or shared
+
+### Memory Import Syntax
+
+**Import Additional Files**: Use `@path/to/file` syntax to include external content:
+
+```markdown
+# cAgents V5.0 Architecture
+
+See @docs/V5_ARCHITECTURE.md for detailed architecture design.
+
+## Workflow Patterns
+@workflow_agent_interactions.md
+
+## Domain Configurations
+- Engineering: @Agent_Memory/_system/domains/engineering/planner_config.yaml
+- Revenue: @Agent_Memory/_system/domains/revenue/planner_config.yaml
+
+## Personal Preferences
+@~/.claude/my-cagents-preferences.md
+```
+
+**Import Features**:
+- Supports both relative and absolute paths
+- Home directory imports: `@~/.claude/file.md`
+- Recursive imports (max depth: 5)
+- Not evaluated in code spans or code blocks: `@package.json`
+- View loaded files: `/memory` command
+
+### Local Project Memory
+
+**CLAUDE.local.md**: Personal project-specific preferences (auto-ignored by git):
+
+```markdown
+# My cAgents Development Preferences
+
+## Local Environment
+- Dev server: http://localhost:3000
+- Test API: http://localhost:8080
+- Claude Code server: http://localhost:52125
+
+## Personal Shortcuts
+- Use `pnpm` instead of `npm`
+- Prefer functional components over class components
+- Use Jest for unit tests, Playwright for E2E
+
+## Test Data
+- Test instruction: inst_20260113_001
+- Test domain: engineering
+- Test controller: engineering-manager
+```
+
+**Add to .gitignore**:
+```
+# Local memory (personal preferences)
+CLAUDE.local.md
+*.local.md
+```
+
+### User-Level Memory
+
+**~/.claude/CLAUDE.md**: Personal preferences for ALL projects:
+
+```markdown
+# My Global Claude Preferences
+
+## Code Style
+- Use 2-space indentation
+- Prefer const over let
+- Always use semicolons
+- Use single quotes for strings
+
+## Git Workflow
+- Always create feature branches
+- Commit messages: type(scope): message
+- Never force push to main
+
+## Tool Preferences
+- Use pnpm for package management
+- Prefer Playwright over Cypress
+- Use ESLint + Prettier
+```
+
+**User-Level Rules** (`~/.claude/rules/`):
+```
+~/.claude/rules/
+├── coding-style.md       # Your coding preferences
+├── git-workflow.md       # Your git conventions
+└── tool-preferences.md   # Your tool choices
+```
+
+### Memory Commands
+
+**Interactive Memory Management**:
+
+```bash
+/memory                    # View all loaded memory files
+/memory edit               # Open project CLAUDE.md in editor
+/memory edit --user        # Open ~/.claude/CLAUDE.md
+/memory edit --local       # Open CLAUDE.local.md
+```
+
+**Bootstrap Project Memory**:
+```bash
+/init                      # Create initial CLAUDE.md for project
+```
+
+### Memory Best Practices
+
+**1. Be Specific**:
+- Good: "Use 2-space indentation for TypeScript files"
+- Bad: "Format code properly"
+
+**2. Use Structure**:
+- Format as bullet points under descriptive headings
+- Group related memories logically
+- Use markdown sections for organization
+
+**3. Review Periodically**:
+- Update memories as project evolves
+- Remove outdated instructions
+- Keep memories current and relevant
+
+**4. Choose Right Location**:
+- **Enterprise**: Company-wide policies (security, compliance)
+- **Project**: Team-shared architecture and workflows
+- **Project Rules**: Modular topic-specific guidelines
+- **User**: Personal preferences across all projects
+- **Project Local**: Personal project-specific preferences
+
+**5. Modular Organization**:
+- Split large CLAUDE.md into focused rule files
+- Use descriptive filenames (testing.md, api-design.md)
+- Use path-specific rules sparingly (only when truly conditional)
+- Organize with subdirectories (frontend/, backend/, quality/)
+
+**6. Memory for cAgents**:
+- Document frequently used commands (build, test, lint)
+- Include domain-specific patterns and conventions
+- Add controller question patterns and delegation strategies
+- Document Agent_Memory/ structure and file locations
+- Include task completion protocol requirements
+
+### Memory Discovery
+
+**Recursive Lookup**: Claude Code searches for CLAUDE.md files starting from cwd up to root:
+
+```
+/home/user/projects/cAgents/core/agents/  ← Start here
+  ↓ Search up
+/home/user/projects/cAgents/core/         ← Finds core/CLAUDE.md (if exists)
+  ↓
+/home/user/projects/cAgents/              ← Finds ./CLAUDE.md (main project memory)
+  ↓
+/home/user/projects/                      ← Continues searching
+  ↓
+/home/user/                               ← Finds ~/.claude/CLAUDE.md
+```
+
+**Subtree Discovery**: CLAUDE.md files in subdirectories are loaded only when Claude reads files in those subtrees.
+
+### cAgents Memory Strategy
+
+**Current Implementation**:
+- Main project memory: `./CLAUDE.md` (this file)
+- Agent patterns: `workflow_agent_interactions.md` (root-level exception)
+- Domain configs: `Agent_Memory/_system/domains/{domain}/*.yaml`
+- Runtime state: `Agent_Memory/` (git-ignored)
+
+**Recommended Enhancements**:
+1. Create `.claude/rules/` structure for modular organization
+2. Add `CLAUDE.local.md` to .gitignore for personal preferences
+3. Use imports for large documentation (architecture, patterns)
+4. Create domain-specific rules with path filtering
+5. Document memory structure in onboarding guides
+
 ## Project Overview
 
 **cAgents V5.0**: Universal multi-domain agent system with 4-tier controller-centric architecture and question-based delegation.
@@ -454,6 +693,21 @@ Validation Phase:
 
 See `core/commands/optimize.md` for detailed workflow documentation.
 
+### /memory - Memory Management (NEW)
+Interactive memory management and viewing:
+```bash
+/memory                    # View all loaded memory files
+/memory edit               # Open project CLAUDE.md in editor
+/memory edit --user        # Open ~/.claude/CLAUDE.md
+/memory edit --local       # Open CLAUDE.local.md
+```
+
+### /init - Bootstrap Project Memory (NEW)
+Create initial CLAUDE.md for new projects:
+```bash
+/init                      # Create CLAUDE.md with project structure
+```
+
 ## Agent Memory
 
 ```
@@ -545,6 +799,9 @@ cAgents/
 │   ├── V5_ARCHITECTURE.md   # V5.0 architecture design (NEW)
 │   ├── V5_MIGRATION_GUIDE.md # V4.0 → V5.0 migration (NEW)
 │   └── V5_WORKFLOW_EXAMPLES.md # Tier 2, 3, 4 examples (NEW)
+├── .claude/                 # Memory system (NEW)
+│   ├── CLAUDE.md            # Main project memory (symlink to root)
+│   └── rules/               # Modular rules (NEW - planned)
 ├── .claude-plugin/          # Root manifest
 └── Agent_Memory/            # Runtime state (git-ignored)
     └── _system/
@@ -564,12 +821,16 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 
 ## Quick Reference
 
-**Commands**: `/trigger`, `/designer`, `/reviewer`, `/optimize`
+**Commands**: `/trigger`, `/designer`, `/reviewer`, `/optimize`, `/memory`, `/init`
 **Core Agents**: trigger, orchestrator, hitl, optimizer, 5 universal workflow, task-consolidator
 **Controller Agents**: ~50 agents for coordination (engineering-manager, architect, cto, campaign-manager, etc.)
 **Execution Agents**: ~150 agents for specialist work (backend-developer, copywriter, financial-analyst, etc.)
 **Key Files**:
 - `.claude-plugin/plugin.json` - Root manifest
+- `CLAUDE.md` - Main project memory (this file)
+- `.claude/rules/*.md` - Modular rules (planned)
+- `CLAUDE.local.md` - Personal project preferences (git-ignored)
+- `~/.claude/CLAUDE.md` - Personal global preferences
 - `Agent_Memory/_system/domains/{domain}/*.yaml` - Domain configs (including controller_catalog)
 - `Agent_Memory/_system/task_completion_protocol.yaml` - Mandatory completion rules
 - `Agent_Memory/inst_{id}/workflow/coordination_log.yaml` - V5.0 coordination tracking (NEW)
@@ -614,6 +875,8 @@ See `docs/V5_MIGRATION_GUIDE.md` for detailed upgrade instructions.
 | No progress updates | Ensure agents use TodoWrite |
 | Workflow stuck in coordinating | Check controller is asking questions and synthesizing |
 | Missing coordination_log | Controller didn't complete - check controller logs |
+| Memory not loading | Run `/memory` to view loaded files, check file locations |
+| Local preferences not applied | Ensure CLAUDE.local.md in .gitignore, check loading order |
 
 Full troubleshooting: `archive/docs/TROUBLESHOOTING.md`
 

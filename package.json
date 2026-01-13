@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "5.0.0",
-  "description": "Universal multi-domain agent system with controller-centric architecture and question-based delegation",
+  "version": "7.0.0",
+  "description": "Universal multi-domain agent system with controller-centric question-based delegation architecture",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -15,17 +15,26 @@
     "question-based-delegation",
     "orchestration",
     "workflow",
-    "multi-domain"
+    "multi-domain",
+    "v7.0"
   ],
-  "author": "PathingIT",
+  "author": "CaelanDrayer",
   "license": "MIT",
-  "architecture": "V5.0 Controller-Centric",
+  "architecture": "V7.0 Controller-Centric Question-Based Delegation",
   "agents": {
-    "total": 229,
-    "core": 10,
-    "controller": 50,
-    "execution": 150,
-    "support": 19
+    "total": 230,
+    "core": 11,
+    "shared": 33,
+    "domain_specialists": 186,
+    "breakdown": {
+      "engineering": 45,
+      "revenue": 40,
+      "finance_operations": 32,
+      "people_culture": 19,
+      "customer_experience": 18,
+      "legal_compliance": 14,
+      "creative": 18
+    }
   },
   "domains": [
     "engineering",
@@ -41,7 +50,12 @@
     "controller_coordination": true,
     "question_based_delegation": true,
     "objective_driven_planning": true,
+    "synthesis_driven_implementation": true,
     "parallel_execution": true,
-    "max_concurrent_agents": 50
+    "max_concurrent_agents": 50,
+    "enhanced_reviewer_v2": true,
+    "intelligent_agent_selection": true,
+    "auto_fix_generation": true,
+    "pattern_learning": true
   }
 }

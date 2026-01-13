@@ -1,7 +1,7 @@
 {
   "name": "cagents-customer-experience",
-  "version": "3.0.0",
-  "description": "Customer Experience domain (formerly support) for cAgents V3.0",
+  "version": "7.0.0",
+  "description": "Customer Experience domain for cAgents V7.0 - Customer support, success management, experience optimization, and voice of customer programs. 18 tier-2 controller and tier-3 execution agents including CX directors, support managers, customer success leads, escalation specialists, knowledge managers, and more. Supports question-based delegation for customer experience workflows with controller coordination.",
   "domain": "customer-experience",
   "tier": 3,
   "dependencies": ["cagents-shared-capabilities"],
@@ -15,6 +15,33 @@
     "customer-success",
     "escalations",
     "knowledge-management",
-    "VOC"
+    "VOC",
+    "voice-of-customer",
+    "helpdesk",
+    "controller",
+    "execution",
+    "v7.0"
+  ],
+  "skills": [
+    {
+      "name": "cagents:cx:support",
+      "description": "Customer support, helpdesk, ticket management, escalations"
+    },
+    {
+      "name": "cagents:cx:success",
+      "description": "Customer success, onboarding, adoption, retention"
+    },
+    {
+      "name": "cagents:cx:optimization",
+      "description": "Experience optimization, journey mapping, CX analytics"
+    },
+    {
+      "name": "cagents:cx:knowledge",
+      "description": "Knowledge management, documentation, self-service"
+    },
+    {
+      "name": "cagents:cx:coordination",
+      "description": "CX leadership and customer operations coordination"
+    }
   ]
 }

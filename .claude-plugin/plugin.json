@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "3.0.0",
-  "description": "cAgents V3.0 - Universal multi-domain agent system with 3-tier hybrid architecture. 200 agents: 10 core infrastructure + 33 shared tier-2 capabilities + 157 domain specialists across 7 domains. NEW IN V3.0: Shared capability tier for cross-domain agents (leadership, planning, data, quality, customer, operations). Domain consolidation from 11 → 7 (engineering, revenue, finance-operations, people-culture, customer-experience, legal-compliance, creative). Up to 50x parallel execution with swarm/mesh modes. Universal /trigger, /designer, /reviewer, /optimize commands.",
+  "version": "7.0.0",
+  "description": "cAgents V7.0 - Universal multi-domain agent system with controller-centric question-based delegation architecture. 230 agents: 11 core infrastructure + 33 shared tier-2 capabilities + 186 domain specialists across 7 domains. NEW IN V7.0: Controller coordination phase with question-based delegation, objective-driven planning (WHAT vs HOW), synthesis-driven implementation, adaptive expert coordination. Enhanced Reviewer V2.0 with intelligent agent selection (33% faster), auto-fix generation (98% more actionable), pattern learning. Universal workflow agents work across all domains via YAML configuration. Up to 50x parallel execution with swarm/mesh modes. Universal /trigger, /designer, /reviewer, /optimize commands.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",
@@ -18,22 +18,20 @@
     "multi-agent",
     "autonomous",
     "multi-domain",
-    "v3.0",
-    "3-tier",
-    "shared-capabilities",
+    "v7.0",
+    "controller-centric",
+    "question-based-delegation",
     "universal-workflow",
     "recursive-workflows",
     "configuration-driven",
     "engineering",
     "revenue",
-    "finance",
-    "operations",
-    "people",
-    "culture",
+    "finance-operations",
+    "people-culture",
     "customer-experience",
-    "legal",
-    "compliance",
-    "creative"
+    "legal-compliance",
+    "creative",
+    "shared-capabilities"
   ],
   "commands": [
     "./core/commands/trigger.md",
@@ -48,6 +46,7 @@
     "./core/agents/universal-router.md",
     "./core/agents/universal-planner.md",
     "./core/agents/universal-executor.md",
+    "./core/agents/universal-executor-enhanced.md",
     "./core/agents/universal-validator.md",
     "./core/agents/universal-self-correct.md",
     "./core/agents/optimizer.md",
@@ -63,5 +62,30 @@
     "cagents-legal-compliance",
     "cagents-creative"
   ],
-  "skills": []
+  "skills": [
+    {
+      "name": "cagents:trigger",
+      "description": "Universal entry point for all workflows - auto-detects domain, classifies complexity, routes to appropriate agents"
+    },
+    {
+      "name": "cagents:designer",
+      "description": "Interactive design mode - asks questions to flesh out ideas across all domains"
+    },
+    {
+      "name": "cagents:reviewer",
+      "description": "Enhanced universal review with intelligent agent selection, auto-fix suggestions, pattern learning"
+    },
+    {
+      "name": "cagents:optimizer",
+      "description": "Universal optimizer for code, content, processes, data, infrastructure, campaigns, creative, sales"
+    },
+    {
+      "name": "cagents:orchestrator",
+      "description": "Phase conductor managing routing → planning → coordinating → executing → validating"
+    },
+    {
+      "name": "cagents:controller-coordination",
+      "description": "Question-based delegation and synthesis - controllers ask questions, synthesize answers, coordinate implementation"
+    }
+  ]
 }
