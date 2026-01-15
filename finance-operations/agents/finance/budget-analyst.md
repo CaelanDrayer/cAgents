@@ -1,5 +1,6 @@
 ---
 name: budget-analyst
+tier: execution
 description: Budget preparation, variance analysis, budget tracking, departmental budget support. Use PROACTIVELY for budget cycles, variance reports, budget adjustments.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet

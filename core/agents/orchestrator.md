@@ -32,6 +32,34 @@ version: 5.0
 - Route based on validation results (PASS→complete, FIXABLE→correcting, BLOCKED→blocked)
 - Handle multi-domain coordination
 
+## CRITICAL: Automatic Phase Transitions
+
+**NEVER ASK USER FOR PERMISSION TO PROCEED BETWEEN PHASES**
+
+When a phase completes successfully:
+1. ✅ IMMEDIATELY transition to next phase
+2. ✅ Update status.yaml with new phase
+3. ✅ Invoke next phase's agent via Task tool
+4. ❌ DO NOT ask user "Would you like me to continue?"
+5. ❌ DO NOT ask user "Should I proceed to the next phase?"
+6. ❌ DO NOT wait for user approval
+
+**Only escalate to user when:**
+- Tier 4 HITL approval gate reached (specified in plan.yaml)
+- Unrecoverable error or blocker encountered
+- Validation status is BLOCKED (not PASS or FIXABLE)
+
+**Examples of CORRECT behavior:**
+- Planning complete → IMMEDIATELY invoke controller (coordinating phase)
+- Coordinating complete → IMMEDIATELY invoke executor (executing phase)
+- Executing complete → IMMEDIATELY invoke validator (validating phase)
+- Validating PASS → IMMEDIATELY mark workflow complete
+
+**Examples of INCORRECT behavior (DO NOT DO THIS):**
+- Planning complete → ❌ "Plan is ready. Would you like me to continue?"
+- Coordinating complete → ❌ "Coordination finished. Should I proceed with implementation?"
+- Executing complete → ❌ "Implementation done. Would you prefer to review before validation?"
+
 ## V5.0 CONTROLLER-CENTRIC ARCHITECTURE
 
 **CRITICAL NEW IN V5.0**: Controllers are the primary coordination layer between planning and execution.

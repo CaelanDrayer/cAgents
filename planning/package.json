@@ -1,6 +1,6 @@
 {
   "name": "@cagents/planning",
-  "version": "5.0.0",
+  "version": "7.0.1",
   "description": "Planning domain for strategic planning, project planning, roadmapping, and implementation design",
   "main": "index.js",
   "scripts": {

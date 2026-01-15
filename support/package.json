@@ -1,6 +1,6 @@
 {
   "name": "@cagents/support",
-  "version": "5.0.0",
+  "version": "7.0.1",
   "description": "Support domain for customer success and technical support",
   "keywords": ["support", "customer success", "help desk", "troubleshooting", "CSAT"],
   "author": "CaelanDrayer",

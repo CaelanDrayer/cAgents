@@ -1,5 +1,6 @@
 ---
 name: credit-analyst
+tier: execution
 description: Credit assessment, risk evaluation, collection strategy, credit policy. Use PROACTIVELY for credit decisions, customer risk analysis, credit limit reviews.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet

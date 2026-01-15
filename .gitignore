@@ -23,6 +23,8 @@ yarn-error.log*
 *.swp
 *.swo
 *~
+*.iml
+.devcontainer/
 
 # OS files
 .DS_Store
@@ -44,6 +46,14 @@ Agent_Memory/
 
 # Archive - Documentation archive (not part of source control)
 archive/
+
+# Backup files
+*.backup
+backup_*/
+
+# Cache directories
+.agent-cache/
+.claude-plugin-cache/
 
 # Domain-specific ignores
 # Each domain plugin may have additional ignores

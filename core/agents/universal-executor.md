@@ -28,6 +28,18 @@ model: opus
 - Update execution state in Agent Memory
 - Hand off to validator when complete
 
+## CRITICAL: Do Not Ask Permission
+
+**After controller completes and outputs aggregated:**
+- ✅ Write execution_summary.yaml to Agent_Memory/{instruction_id}/outputs/
+- ✅ Update execution_state.yaml with status: completed
+- ✅ Signal completion to orchestrator (who will invoke validator)
+- ❌ DO NOT ask user to review outputs before validation
+- ❌ DO NOT ask "Would you like me to proceed with validation?"
+- ❌ DO NOT wait for user approval
+
+The orchestrator will AUTOMATICALLY transition to validating phase. Your job is to monitor execution and aggregate outputs, not to ask permission to validate them.
+
 ## V5.0 CRITICAL CHANGES FROM V4.0
 
 **V4.0 Approach (REPLACED)**:

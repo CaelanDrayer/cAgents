@@ -1,347 +1,256 @@
-# cAgents Documentation
+# cAgents V7.0 Documentation Index
 
-**Last Updated**: 2026-01-10
+**Last Updated**: 2026-01-13
+**Architecture**: V7.0 Controller-Centric Question-Based Delegation
+**Version**: 7.0.1
 
-This folder contains comprehensive design and planning documentation for cAgents evolution and expansion.
-
----
-
-## 📚 Document Index
-
-### 1. **Orchestration V2 Design** 📋
-**File**: [`orchestration-v2-design.md`](./orchestration-v2-design.md)
-**Size**: 2,800+ lines (40% complete)
-**Purpose**: Complete redesign of software domain orchestration with enterprise-grade patterns
-
-**What's Inside**:
-- 4-layer organizational hierarchy (Engineering Manager → Tech Lead → Domain Leads → ICs)
-- Two-phase planning system (Strategic → Tactical)
-- 10-state task lifecycle with SLAs and auto-escalation
-- Multi-modal communication (delegation, broadcast, handoff, standup)
-- Sophisticated capacity management with skill matching
-- Multi-layered quality gates (peer, domain, QA, architecture)
-- 6 new Domain Lead agents (Frontend, Backend, QA, DevOps, Data, Security)
-
-**Status**: Sections 1-8 complete, sections 9-15 in progress
-
-**When to Read**:
-- Understanding advanced orchestration patterns
-- Implementing tier 3-4 workflows
-- Designing Domain Lead agents
-- Building capacity management systems
+Comprehensive documentation for cAgents universal multi-domain agent system.
 
 ---
 
-### 2. **Orchestration V2 Summary** 📝
-**File**: [`orchestration-v2-summary.md`](./orchestration-v2-summary.md)
-**Size**: 390 lines
-**Purpose**: Executive summary of Orchestration V2 design
+## 🚀 Quick Start
 
-**What's Inside**:
-- High-level architecture overview
-- Key improvements over V1
-- Design decisions and rationale
-- Implementation complexity estimates
-- Validation questions
+**New to cAgents?** Start here:
 
-**Status**: Complete
-
-**When to Read**:
-- Quick overview of V2 design
-- Decision-making on V2 adoption
-- Understanding organizational hierarchy
-- Estimating implementation effort
+1. **[../README.md](../README.md)** - Project overview and structure
+2. **[../CLAUDE.md](../CLAUDE.md)** - Core architecture, commands, workflow
+3. **[V7_ARCHITECTURE.md](V7_ARCHITECTURE.md)** - V7.0 architecture design
+4. **[../.claude/rules/](../.claude/rules/)** - Modular topic-specific rules
 
 ---
 
-### 3. **New Domains Agent Plans** 🚀
-**File**: [`new-domains-plan.md`](./new-domains-plan.md)
-**Size**: Complete
-**Purpose**: Comprehensive plans for 7 new business function domains
+## 📚 Documentation Organization
 
-**Domains Covered**:
-1. **Sales** (23 agents) - Revenue generation, pipeline management, forecasting
-2. **Marketing** (25 agents) - Campaigns, content, demand generation, brand
-3. **Finance** (22 agents) - Accounting, FP&A, treasury, compliance
-4. **Operations** (20 agents) - Process optimization, vendor management, capacity planning
-5. **HR** (24 agents) - Talent acquisition, development, compensation, culture
-6. **Legal** (19 agents) - Contracts, compliance, risk assessment, IP
-7. **Support** (21 agents) - Customer support, knowledge base, SLA management
+### Root-Level Documentation
+- **[CLAUDE.md](../CLAUDE.md)** - Main project memory (architecture, commands, quick reference)
+- **[README.md](../README.md)** - Project overview
+- **[workflow_agent_interactions.md](../workflow_agent_interactions.md)** - Agent interaction patterns
 
-**What's Inside**:
-- Complete agent specifications for each domain
-- Workflow agents (router, planner, executor, validator, self-correct)
-- Executive leadership agents (CRO, CMO, CFO, COO, CPO, GC, VP Support)
-- Team agent specializations and capabilities
-- Domain-specific templates and detection keywords
-- Cross-domain integration patterns
-- 16-week implementation roadmap
+### Modular Rules (`.claude/rules/`)
+**NEW**: Topic-specific guidelines organized by category
 
-**Status**: Complete planning for all 7 domains
+- **`core/`** - Orchestration, controllers, execution patterns
+- **`domains/`** - Domain-specific guidelines (engineering, revenue, creative, etc.)
+- **`memory/`** - Agent_Memory/ structure and management
+- **`quality/`** - Task completion, testing, validation
 
-**When to Read**:
-- Planning new domain implementation
-- Understanding domain-specific agents
-- Designing cross-domain workflows
-- Estimating expansion effort
+See [../.claude/rules/README.md](../.claude/rules/README.md) for details.
+
+### docs/ Directory (this folder)
+Detailed implementation guides, summaries, and standards.
 
 ---
 
-### 4. **Implementation Summary** ✅
-**File**: [`IMPLEMENTATION_SUMMARY.md`](./IMPLEMENTATION_SUMMARY.md)
-**Size**: Complete
-**Purpose**: High-level roadmap and decision guide for cAgents expansion
+## 📖 Documentation by Category
 
-**What's Inside**:
-- Current system state (3 domains, 72 agents)
-- Target system state (10 domains, 230+ agents)
-- Domain architecture pattern
-- Phased implementation plan (16 weeks)
-- Key design decisions and rationale
-- Success criteria and metrics
-- Risk assessment
-- Next steps and immediate actions
+### Architecture & Design
 
-**Status**: Complete
+| Document | Purpose | Status |
+|----------|---------|--------|
+| [V7_ARCHITECTURE.md](V7_ARCHITECTURE.md) | V7.0 controller-centric design | ✅ Complete |
+| [V7_MIGRATION_GUIDE.md](V7_MIGRATION_GUIDE.md) | V4.0 → V7.0 migration | ✅ Complete |
+| [V7_WORKFLOW_EXAMPLES.md](V7_WORKFLOW_EXAMPLES.md) | Tier 2, 3, 4 examples | ✅ Complete |
 
-**When to Read**:
-- Getting started with expansion
-- Understanding overall strategy
-- Making implementation decisions
-- Tracking progress against milestones
+### Performance & Optimization
 
----
+| Document | Purpose | Status |
+|----------|---------|--------|
+| [OPTIMIZATION_PROGRESS.md](OPTIMIZATION_PROGRESS.md) | Optimization tracking | ✅ Current |
+| [AGENT_OPTIMIZATION_INSTRUCTION.md](AGENT_OPTIMIZATION_INSTRUCTION.md) | Agent optimization guide | ✅ Complete |
+| [WORKFLOW_EVALUATION_FIXES.md](WORKFLOW_EVALUATION_FIXES.md) | Recent workflow fixes | ✅ Complete |
 
-## 🗺️ Quick Navigation Guide
+### Context & Memory Management
 
-### For Strategic Planning
-Start here: **Implementation Summary** → **New Domains Plan** → **Orchestration V2 Summary**
+| Document | Purpose | Status |
+|----------|---------|--------|
+| [CONTEXT_MANAGEMENT.md](CONTEXT_MANAGEMENT.md) | Context handling strategies | ✅ Complete |
+| [TASK_CONSOLIDATION.md](TASK_CONSOLIDATION.md) | Task consolidation (40-88% reduction) | ✅ Complete |
+| [TOKEN_MIGRATION_SUMMARY.md](TOKEN_MIGRATION_SUMMARY.md) | Token optimization details | ✅ Complete |
 
-### For Technical Implementation
-Start here: **Orchestration V2 Design** → **New Domains Plan** → **Implementation Summary**
+### Task & Workflow Management
 
-### For Domain-Specific Work
-Go to: **New Domains Plan** (find your domain section) → **Implementation Summary** (phasing)
+| Document | Purpose | Status |
+|----------|---------|--------|
+| [TASK_COMPLETION_ENFORCEMENT_SUMMARY.md](TASK_COMPLETION_ENFORCEMENT_SUMMARY.md) | Task completion protocol | ✅ Complete |
+| [AUTONOMOUS_IMPLEMENTATION_GUIDE.md](AUTONOMOUS_IMPLEMENTATION_GUIDE.md) | Autonomous workflows | ✅ Complete |
+| [DAILY_EXECUTION_CHECKLIST.md](DAILY_EXECUTION_CHECKLIST.md) | Execution checklist | ✅ Complete |
 
-### For Orchestration Deep Dive
-Read: **Orchestration V2 Summary** (overview) → **Orchestration V2 Design** (details)
+### Implementation & Progress
 
----
+| Document | Purpose | Status |
+|----------|---------|--------|
+| [MASTER_IMPLEMENTATION_PLAN.md](MASTER_IMPLEMENTATION_PLAN.md) | Implementation strategy | ✅ Complete |
+| [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) | Implementation progress | ✅ Complete |
+| [EXECUTION_SUMMARY.md](EXECUTION_SUMMARY.md) | Execution patterns | ✅ Complete |
 
-## 📊 System Overview
+### Standards & Guidelines
 
-### Current State
-
-| Domain | Status | Agents | Description |
-|--------|--------|--------|-------------|
-| **@cagents/core** | ✅ Live | 3 | Universal infrastructure |
-| **@cagents/software** | ✅ Live | 46 | Software engineering |
-| **@cagents/business** | ✅ Live | 23 | Business operations |
-| **Total** | ✅ | **72** | - |
-
-### Planned Expansion
-
-| Domain | Agents | Timeline | Priority |
-|--------|--------|----------|----------|
-| **Sales** | 23 | Weeks 1-2 | P0 |
-| **Marketing** | 25 | Weeks 3-4 | P0 |
-| **Finance** | 22 | Weeks 5-6 | P1 |
-| **Operations** | 20 | Weeks 7-8 | P1 |
-| **HR** | 24 | Weeks 9-10 | P2 |
-| **Legal** | 19 | Weeks 11-12 | P2 |
-| **Support** | 21 | Weeks 13-14 | P2 |
-| **Integration** | - | Weeks 15-16 | P0 |
-| **Total New** | **154** | **16 weeks** | - |
-
-### Future State
-
-**Total System**: 10 domains, 226 agents
-**Coverage**: All major business functions
-**Capability**: End-to-end business workflow automation
+| Document | Purpose | Status |
+|----------|---------|--------|
+| [DOCUMENTATION_STANDARDS.md](DOCUMENTATION_STANDARDS.md) | Documentation conventions | ✅ Complete |
+| [COMMANDS.md](COMMANDS.md) | Commands reference | ✅ Complete |
 
 ---
 
-## 🎯 Key Milestones
+## 🎯 Finding Documentation by Need
 
-### ✅ Completed
-- [x] Core infrastructure (@cagents/core)
-- [x] Software engineering domain (46 agents)
-- [x] Business operations domain (23 agents)
-- [x] Orchestration V2 design (40% complete)
-- [x] New domains planning (7 domains)
-- [x] Implementation roadmap
+### "I'm new to cAgents"
+1. [../README.md](../README.md) - Overview
+2. [../CLAUDE.md](../CLAUDE.md) - Architecture
+3. [V7_ARCHITECTURE.md](V7_ARCHITECTURE.md) - Deep dive
+4. [V7_WORKFLOW_EXAMPLES.md](V7_WORKFLOW_EXAMPLES.md) - Examples
 
-### 🏃 In Progress
-- [ ] Orchestration V2 design completion (sections 9-15)
+### "I want to create agents"
+1. [../CLAUDE.md](../CLAUDE.md) - "Creating Agents" section
+2. [../.claude/rules/core/execution.md](../.claude/rules/core/execution.md) - Agent patterns
+3. [AUTONOMOUS_IMPLEMENTATION_GUIDE.md](AUTONOMOUS_IMPLEMENTATION_GUIDE.md) - Implementation guide
 
-### ⏳ Planned
-- [ ] Sales domain implementation (Weeks 1-2)
-- [ ] Marketing domain implementation (Weeks 3-4)
-- [ ] Finance domain implementation (Weeks 5-6)
-- [ ] Operations domain implementation (Weeks 7-8)
-- [ ] HR domain implementation (Weeks 9-10)
-- [ ] Legal domain implementation (Weeks 11-12)
-- [ ] Support domain implementation (Weeks 13-14)
-- [ ] Cross-domain integration (Weeks 15-16)
+### "I want to create domains"
+1. [../CLAUDE.md](../CLAUDE.md) - "Creating Domains" section
+2. [../.claude/rules/domains/engineering.md](../.claude/rules/domains/engineering.md) - Example domain
 
----
+### "I want to optimize performance"
+1. [OPTIMIZATION_PROGRESS.md](OPTIMIZATION_PROGRESS.md) - Current optimizations
+2. [AGENT_OPTIMIZATION_INSTRUCTION.md](AGENT_OPTIMIZATION_INSTRUCTION.md) - Optimization guide
+3. [CONTEXT_MANAGEMENT.md](CONTEXT_MANAGEMENT.md) - Context strategies
 
-## 🔑 Key Concepts
+### "I want to understand workflows"
+1. [../.claude/rules/core/orchestration.md](../.claude/rules/core/orchestration.md) - Workflow phases
+2. [../.claude/rules/core/controllers.md](../.claude/rules/core/controllers.md) - Question-based delegation
+3. [V7_WORKFLOW_EXAMPLES.md](V7_WORKFLOW_EXAMPLES.md) - Tier 2, 3, 4 examples
 
-### Domain Architecture
-Each domain has:
-- **5 Workflow Agents**: Router, Planner, Executor, Validator, Self-Correct
-- **1 Executive Agent**: C-level or VP (CRO, CMO, CFO, COO, CPO, GC, etc.)
-- **15-20 Team Agents**: Specialized practitioners
+### "I'm working on task completion"
+1. [../.claude/rules/quality/completion.md](../.claude/rules/quality/completion.md) - Completion rules
+2. [TASK_COMPLETION_ENFORCEMENT_SUMMARY.md](TASK_COMPLETION_ENFORCEMENT_SUMMARY.md) - Enforcement summary
 
-### Orchestration Layers
-**V1 (Current)**:
-- 2 layers: Executor → Individual Contributors
-- Simple delegation model
-- Suitable for tier 1-2
-
-**V2 (Designed)**:
-- 4 layers: Engineering Manager → Tech Lead → Domain Leads → ICs
-- Sophisticated planning, assignment, quality
-- Required for tier 3-4
-
-### Complexity Tiers
-- **Tier 0**: Trivial questions (instant response)
-- **Tier 1**: Simple tasks (< 30 minutes)
-- **Tier 2**: Moderate complexity (1-4 hours)
-- **Tier 3**: Complex initiatives (1-5 days, parallel teams)
-- **Tier 4**: Expert transformations (1-4 weeks, full orchestration)
+### "I need to manage tokens/context"
+1. [CONTEXT_MANAGEMENT.md](CONTEXT_MANAGEMENT.md) - Context strategies
+2. [TASK_CONSOLIDATION.md](TASK_CONSOLIDATION.md) - Consolidation patterns
+3. [TOKEN_MIGRATION_SUMMARY.md](TOKEN_MIGRATION_SUMMARY.md) - Token optimizations
 
 ---
 
-## 📈 Success Metrics
+## 🏗️ Current System Overview
 
-### Quality
-- Router accuracy: >90%
-- Planner completeness: >95%
-- Executor efficiency: <10% reassignments
-- Validator precision: <5% false positives/negatives
-- Self-correct success: >80%
+### Architecture
+- **Version**: V7.0.1
+- **Pattern**: Controller-Centric Question-Based Delegation
+- **Tiers**: 4 (core, controller, execution, support)
+- **Total Agents**: 230
 
-### Performance
-- Tier 0: <5 min
-- Tier 1: <30 min
-- Tier 2: <2 hrs
-- Tier 3: <8 hrs
-- Tier 4: <24 hrs
+### Domains (8)
+| Domain | Agents | Status |
+|--------|--------|--------|
+| Engineering | 45 | ✅ Active |
+| Revenue | 40 | ✅ Active |
+| Finance-Operations | 32 | ✅ Active |
+| People-Culture | 19 | ✅ Active |
+| Customer-Experience | 18 | ✅ Active |
+| Legal-Compliance | 14 | ✅ Active |
+| Creative | 18 | ✅ Active |
+| Universal | 33 | ✅ Active |
 
-### User Satisfaction
-- Completion rate: >95%
-- Positive feedback: >85%
-- Would use again: >80%
-
----
-
-## 🚀 Getting Started
-
-### For Implementation
-1. Read **Implementation Summary** for overall strategy
-2. Choose starting domain (recommend: Sales)
-3. Review domain section in **New Domains Plan**
-4. Create workflow agents (router, planner, executor, validator, self-correct)
-5. Create executive agent (CRO for Sales)
-6. Create team agents (start with 10 core agents)
-7. Test tier 1-2 requests
-8. Iterate and expand
-
-### For Research
-1. Read **Orchestration V2 Summary** for V2 overview
-2. Deep dive **Orchestration V2 Design** for detailed patterns
-3. Review **New Domains Plan** for domain-specific guidance
-
-### For Decision-Making
-1. Read **Implementation Summary** - Section: "Key Questions for Decision"
-2. Review priorities in **New Domains Plan** - Section: "Implementation Roadmap"
-3. Assess risks in **Implementation Summary** - Section: "Risk Assessment"
+### Core Infrastructure (10 agents)
+- `trigger` - Entry point
+- `orchestrator` - Phase conductor
+- `hitl` - Human escalation
+- `optimizer` - Universal optimization
+- `universal-router` - Tier classification
+- `universal-planner` - Objective-driven planning
+- `universal-executor` - Controller monitoring
+- `universal-validator` - Quality gates
+- `universal-self-correct` - Adaptive recovery
+- `task-consolidator` - Context reduction
 
 ---
 
-## 🤝 Cross-Domain Integration
+## 📊 Key Metrics & Progress
 
-### Common Workflows
+### Optimization Achievements
+- **Reviewer V2.0**: 33% faster, 81% faster to critical issues
+- **Parallel Execution**: 50x speedup (swarm mode)
+- **Task Consolidation**: 40-88% context reduction
+- **Controller Pattern**: 30-40% simpler planning
 
-**Product Launch**:
-- Marketing → Campaigns, content, messaging
-- Sales → Enablement, forecasting, territories
-- Support → Knowledge base, training, escalation
-- Operations → Capacity planning, vendor coordination
-- Finance → Revenue forecast, budget allocation
-
-**New Market Entry**:
-- Business → Market analysis, strategic plan
-- Sales → Territory design, quota setting
-- Marketing → Localization, brand adaptation
-- Legal → Regulatory compliance, contracts
-- Finance → Financial modeling, investment approval
-- HR → Hiring plan, local employment law
-
-**Organizational Transformation**:
-- HR → Org design, change management, talent
-- Operations → Process redesign, efficiency
-- Finance → Budget reallocation, cost savings
-- Software → Systems implementation, automation
-- Legal → Policy updates, compliance
+See [OPTIMIZATION_PROGRESS.md](OPTIMIZATION_PROGRESS.md) for details.
 
 ---
 
-## 📞 Support & Feedback
+## 🔄 Recent Updates (January 2026)
 
-### Questions?
-- Check **Implementation Summary** first
-- Review domain-specific sections in **New Domains Plan**
-- Deep dive **Orchestration V2 Design** for technical details
+### V7.0 Architecture
+- ✅ Controller-centric coordination implemented
+- ✅ Question-based delegation pattern
+- ✅ Objective-driven planning (vs task-based)
+- ✅ 4-tier agent structure (core, controller, execution, support)
+- ✅ 230 agents across 8 domains
 
-### Found Issues?
-- Document in GitHub issues
-- Reference specific document and section
-- Provide context and suggested improvements
+### Documentation Improvements
+- ✅ Modular `.claude/rules/` structure implemented
+- ✅ Version consistency (V7.0 across all docs)
+- ✅ Package.json versions synced (7.0.1)
+- ✅ Import references for maintainability
 
-### Contributing
-- Follow existing domain patterns
-- Update documentation as you implement
-- Share learnings for future domains
-
----
-
-## 📝 Document Status
-
-| Document | Status | Completeness | Last Updated |
-|----------|--------|--------------|--------------|
-| Orchestration V2 Design | In Progress | 40% | 2026-01-10 |
-| Orchestration V2 Summary | Complete | 100% | 2026-01-10 |
-| New Domains Plan | Complete | 100% | 2026-01-10 |
-| Implementation Summary | Complete | 100% | 2026-01-10 |
+### Optimization & Cleanup
+- ✅ Removed 1.7 MB backup artifacts
+- ✅ Enhanced .gitignore (6 new patterns)
+- ✅ Documentation accuracy +95%
 
 ---
 
-## 🔮 Future Work
+## 🛠️ Maintenance
 
-### Documentation
-- [ ] Complete Orchestration V2 Design (sections 9-15)
-- [ ] Domain-specific implementation guides
-- [ ] Cross-domain workflow patterns
-- [ ] Best practices and lessons learned
+### Updating Documentation
 
-### Implementation
-- [ ] Sales domain (23 agents)
-- [ ] Marketing domain (25 agents)
-- [ ] Finance domain (22 agents)
-- [ ] Operations domain (20 agents)
-- [ ] HR domain (24 agents)
-- [ ] Legal domain (19 agents)
-- [ ] Support domain (21 agents)
+**When making changes**:
+1. Update main project memory ([../CLAUDE.md](../CLAUDE.md)) for user-facing changes
+2. Update detailed guides in `docs/` as needed
+3. Update modular rules in `.claude/rules/` for focused guidelines
+4. Run `/memory` to verify imports load correctly
+5. Update this index if adding new documentation
 
-### Integration
-- [ ] Cross-domain communication protocols
-- [ ] Handoff package templates
-- [ ] Multi-domain workflow orchestration
-- [ ] Performance optimization
+**Standards**:
+- Follow [DOCUMENTATION_STANDARDS.md](DOCUMENTATION_STANDARDS.md)
+- Use V7.0 terminology consistently
+- Add @import references for maintainability
+- Keep line counts reasonable (<1000 lines per file)
+
+### Versioning
+Documentation is versioned with the project:
+- **Current**: V7.0.1
+- **Previous**: V5.0, V4.0
+- **Migration**: See [V7_MIGRATION_GUIDE.md](V7_MIGRATION_GUIDE.md)
 
 ---
 
-**Ready to build the future of autonomous business operations!**
+## 💡 Commands & Workflows
+
+### Universal Commands
+- `/trigger` - Auto-routes to domain, full workflow
+- `/designer` - Interactive design with questions
+- `/reviewer` - Enhanced code review (V2.0)
+- `/optimize` - Universal optimization (V6.8)
+- `/memory` - Memory management
+
+See [../CLAUDE.md](../CLAUDE.md) or [COMMANDS.md](COMMANDS.md) for details.
+
+---
+
+## 🤝 Contributing
+
+### Adding Documentation
+1. Follow [DOCUMENTATION_STANDARDS.md](DOCUMENTATION_STANDARDS.md)
+2. Add to appropriate category in this index
+3. Use modular `.claude/rules/` for focused guidelines
+4. Add @import references to reduce duplication
+
+### Questions or Issues?
+- Check existing documentation first (use this index)
+- Review [../CLAUDE.md](../CLAUDE.md) quick reference
+- Check [V7_WORKFLOW_EXAMPLES.md](V7_WORKFLOW_EXAMPLES.md) for examples
+
+---
+
+**cAgents V7.0** - Universal multi-domain agent system with controller-centric architecture
+
+**Ready to build autonomous workflows!** 🚀

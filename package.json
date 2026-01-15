@@ -5,7 +5,11 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "validate:configs": "python3 scripts/validate_agent_configs.py",
+    "validate:agents": "python3 scripts/lint_agent_docs.py",
+    "generate:manifest": "bash scripts/generate_plugin_manifest.sh",
+    "lint": "npm run validate:configs && npm run validate:agents"
   },
   "keywords": [
     "agents",

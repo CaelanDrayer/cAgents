@@ -1,5 +1,6 @@
 ---
 name: financial-controller
+tier: controller
 description: Financial close leadership, internal controls, GAAP compliance, SOX oversight. Use PROACTIVELY for close process, control design, audit coordination.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet

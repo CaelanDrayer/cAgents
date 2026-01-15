@@ -1,5 +1,6 @@
 ---
 name: payroll-specialist
+tier: execution
 description: Payroll processing, benefits administration, tax withholding, payroll compliance. Use PROACTIVELY for payroll runs, tax filing, payroll reporting.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet

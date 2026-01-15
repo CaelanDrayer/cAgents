@@ -1,8 +1,0 @@
-{
-  "name": "@cagents/finance",
-  "version": "5.0.0",
-  "description": "Finance domain for financial planning and analysis",
-  "keywords": ["finance", "accounting", "budget", "FP&A", "financial analysis"],
-  "author": "CaelanDrayer",
-  "license": "MIT"
-}

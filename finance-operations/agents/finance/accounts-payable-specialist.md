@@ -1,5 +1,6 @@
 ---
 name: accounts-payable-specialist
+tier: execution
 description: Vendor payments, expense processing, AP reconciliation, vendor management. Use PROACTIVELY for invoice processing, payment runs, vendor inquiries.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet

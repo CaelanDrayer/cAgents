@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Core architecture and development guidance for cAgents V5.0.
+Core architecture and development guidance for cAgents V7.0.
 
 ## Documentation Structure
 
@@ -12,6 +12,7 @@ Core architecture and development guidance for cAgents V5.0.
 
 **Project Documentation** (in `docs/`):
 - `AGENT_OPTIMIZATION_INSTRUCTION.md` - Agent optimization guidelines
+- `AUTOMATIC_WORKFLOW_PROGRESSION.md` - Automatic phase transition policy (CRITICAL)
 - `CONTEXT_MANAGEMENT.md` - Context handling and token management
 - `DOCUMENTATION_STANDARDS.md` - Documentation best practices
 - `OPTIMIZATION_PROGRESS.md` - Optimization tracking and progress
@@ -96,7 +97,7 @@ paths:
 **Import Additional Files**: Use `@path/to/file` syntax to include external content:
 
 ```markdown
-# cAgents V5.0 Architecture
+# cAgents V7.0 Architecture
 
 See @docs/V5_ARCHITECTURE.md for detailed architecture design.
 
@@ -267,9 +268,9 @@ CLAUDE.local.md
 
 ## Project Overview
 
-**cAgents V5.0**: Universal multi-domain agent system with 4-tier controller-centric architecture and question-based delegation.
+**cAgents V7.0**: Universal multi-domain agent system with 4-tier controller-centric architecture and question-based delegation.
 
-**Architecture**: V5.0 - Controller-Centric Question-Based Delegation
+**Architecture**: V7.0 - Controller-Centric Question-Based Delegation
 - **Tier 1**: 10 core infrastructure agents (trigger, orchestrator, hitl, optimizer, task-consolidator, 5 universal workflow agents)
 - **Tier 2**: ~50 controller agents (coordinate work via question-based delegation)
 - **Tier 3**: ~150 execution agents (answer questions and implement solutions)
@@ -277,7 +278,7 @@ CLAUDE.local.md
 - **Total**: 229 agents
 - **Execution**: 4 modes (Sequential, Pipeline, Swarm, Mesh) - up to 50x speedup
 
-**V5.0 Key Improvements**:
+**V7.0 Key Features**:
 - **Controller-Centric**: Controllers coordinate execution, not planners or executors
 - **Question-Based Delegation**: Controllers ask questions to specialists, synthesize answers, coordinate implementation
 - **Objective-Driven Planning**: Plan defines WHAT (objectives), controllers determine HOW (questions + synthesis)
@@ -305,6 +306,118 @@ CLAUDE.local.md
 - Engineering (45), Revenue (40), Finance-Operations (32), People-Culture (19)
 - Customer-Experience (18), Legal-Compliance (14), Creative (18), Universal (33)
 
+## CRITICAL: Automatic Workflow Progression
+
+**NEVER ASK FOR PERMISSION TO PROCEED WITH STANDARD WORKFLOW PHASES**
+
+Workflows MUST proceed automatically through phases without asking user for permission. This is a core design principle of cAgents.
+
+### When to Proceed Automatically (DO NOT ASK)
+
+**Phase Transitions** (routing → planning → coordinating → executing → validating):
+- ✅ ALWAYS proceed automatically when phase completes successfully
+- ✅ ALWAYS proceed to next phase without asking user
+- ✅ NEVER ask "Would you like me to continue with the next phase?"
+- ✅ NEVER ask "Would you prefer to review the requirements first?"
+- ✅ NEVER ask "Should I proceed with implementation?"
+
+**Planning → Coordinating**:
+- ✅ When plan.yaml is created → IMMEDIATELY transition to coordinating
+- ❌ DO NOT ask user to review plan before proceeding
+- ❌ DO NOT wait for user approval
+
+**Coordinating → Executing**:
+- ✅ When coordination_log.yaml is complete → IMMEDIATELY transition to executing
+- ❌ DO NOT ask user to review coordination before proceeding
+
+**Executing → Validating**:
+- ✅ When implementation complete → IMMEDIATELY transition to validating
+- ❌ DO NOT ask user to review outputs before validation
+
+**Validating → Complete**:
+- ✅ When validation passes → IMMEDIATELY mark workflow complete
+- ❌ DO NOT ask user to review validation results
+
+### When to Ask User (ONLY These Cases)
+
+**Tier 4 Workflows with HITL**:
+- ✅ ASK at designated HITL approval gates (specified in plan.yaml)
+- ✅ ASK for strategic decisions requiring human judgment
+- ✅ Example: "Architecture design complete. HITL approval required before implementation."
+
+**Errors and Blockers**:
+- ✅ ASK when workflow encounters unrecoverable error
+- ✅ ASK when blocker cannot be auto-resolved
+- ✅ Example: "Execution blocked: Missing API credentials. Please provide credentials."
+
+**Ambiguous Requirements**:
+- ✅ ASK when user request is unclear and cannot be inferred
+- ✅ ASK when multiple valid interpretations exist
+- ✅ Example: "Request unclear: Do you want OAuth2 for web app or mobile app?"
+
+**Validation Failures (BLOCKED)**:
+- ✅ ASK when validation fails with BLOCKED status (not FIXABLE)
+- ✅ Example: "Validation failed: Missing required API endpoint. Cannot auto-fix."
+
+### Implementation for All Agents
+
+**Orchestrator**:
+- Transition phases automatically when completion detected
+- DO NOT ask user between phases
+- Only escalate to HITL for tier 4 approval gates or blockers
+
+**Controllers**:
+- Complete coordination and write coordination_log.yaml
+- DO NOT ask user to review before proceeding
+- Signal completion to orchestrator automatically
+
+**Universal-Planner**:
+- Create plan.yaml and signal completion
+- DO NOT ask user to review plan
+- Orchestrator will automatically transition to coordinating
+
+**Universal-Executor**:
+- Monitor controller and aggregate outputs
+- DO NOT ask user to review outputs
+- Signal completion to orchestrator automatically
+
+**Universal-Validator**:
+- Run validation checks and determine PASS/FIXABLE/BLOCKED
+- Report results to orchestrator
+- DO NOT ask user unless status is BLOCKED
+
+### User Experience
+
+**User Request**: "Fix the authentication bug"
+
+**CORRECT Workflow** (automatic):
+```
+→ Routing complete (tier 2, engineering domain)
+→ Planning complete (objectives defined, controller selected)
+→ Coordinating complete (engineering-manager asked 5 questions, synthesized solution)
+→ Executing complete (bug fixed, tests added)
+→ Validating complete (all tests pass)
+→ Workflow complete! Authentication bug fixed.
+```
+
+**INCORRECT Workflow** (asks permission - DO NOT DO THIS):
+```
+→ Routing complete (tier 2, engineering domain)
+→ Planning complete (objectives defined, controller selected)
+❌ "The workflow is now ready to proceed with implementation. Would you like me to continue?"
+   ← USER GETS FRUSTRATED - this is WRONG
+```
+
+### Rationale
+
+Users invoke workflows because they want work DONE, not to be asked permission at every step. The workflow system is designed to:
+1. Execute autonomously through standard phases
+2. Only escalate when human judgment is truly needed
+3. Provide progress updates (via TodoWrite) without asking permission
+4. Complete work efficiently without user hand-holding
+
+**If requirements are clear, PROCEED. Do not ask.**
+
 ## Core Infrastructure (Tier 1: 10 agents)
 
 **Orchestration Agents** (4):
@@ -315,19 +428,21 @@ CLAUDE.local.md
 
 **Universal Workflow Agents** (5):
 - `universal-router` - Tier classification (0-4), sets requires_controller flag
-- `universal-planner` - **V5.0: Creates objectives + selects controllers** (not detailed tasks)
-- `universal-executor` - **V5.0: Monitors controllers** (not execution agents)
-- `universal-validator` - Quality gates with **V5.0: coordination validation**
-- `universal-self-correct` - Adaptive recovery with **V5.0: coordination corrections**
+- `universal-planner` - **V7.0: Creates objectives + selects controllers** (not detailed tasks)
+- `universal-executor` - **V7.0: Monitors controllers** (not execution agents)
+- `universal-validator` - Quality gates with **V7.0: coordination validation**
+- `universal-self-correct` - Adaptive recovery with **V7.0: coordination corrections**
 
 **Additional** (1):
 - `task-consolidator` - Task consolidation for 40-88% context reduction
 
 **Config Location**: `Agent_Memory/_system/domains/{domain}/*.yaml` (5 files per domain)
 
-## V5.0 CONTROLLER-CENTRIC ARCHITECTURE
+## V7.0 CONTROLLER-CENTRIC ARCHITECTURE
 
-**NEW IN V5.0**: Controllers are the coordination hub between planning and execution.
+**V7.0**: Controllers are the coordination hub between planning and execution.
+
+**Detailed Guidelines**: See @.claude/rules/core/controllers.md for question-based delegation patterns.
 
 ### Controller-Centric Pattern
 
@@ -337,7 +452,7 @@ CLAUDE.local.md
 V4.0 (Previous):
 Planner → Detailed Tasks → Executor → Team Agents
 
-V5.0 (Current):
+V7.0 (Current):
 Planner → Objectives → Controller → Questions → Execution Agents → Answers → Controller → Synthesized Solution → Implementation
 ```
 
@@ -392,9 +507,11 @@ Planner → Objectives → Controller → Questions → Execution Agents → Ans
 
 **Discovery**: Planner loads `planner_config.yaml` → `controller_catalog` section → matches tier + domain
 
-## V5.0 COORDINATING PHASE
+## V7.0 COORDINATING PHASE
 
-**CRITICAL NEW IN V5.0**: Coordinating phase sits between planning and executing.
+**CRITICAL IN V7.0**: Coordinating phase sits between planning and executing.
+
+**Workflow Patterns**: See @.claude/rules/core/orchestration.md for detailed phase documentation.
 
 ### Workflow Phases
 
@@ -468,7 +585,7 @@ status: completed
 | 3 | Complex | 1 primary + 1-2 supporting | "Add feature" | routing → planning → **coordinating** → executing → validating |
 | 4 | Expert | 1 executive + 1 primary + 2-4 supporting | "Major refactor" | routing → planning → **coordinating** → executing → validating + HITL |
 
-**V5.0 CRITICAL CHANGE**: Tier 2+ workflows include coordinating phase with controllers using question-based delegation.
+**V7.0 CRITICAL CHANGE**: Tier 2+ workflows include coordinating phase with controllers using question-based delegation.
 
 ### Coordination Patterns by Tier
 
@@ -514,12 +631,12 @@ See `workflow_agent_interactions.md` for detailed agent interaction patterns.
 
 ## Objective-Based Planning
 
-**V5.0 Planning**: Define WHAT needs to be done, let controllers determine HOW.
+**V7.0 Planning**: Define WHAT needs to be done, let controllers determine HOW.
 
-### Plan Structure (V5.0)
+### Plan Structure (V7.0)
 
 ```yaml
-# plan.yaml (V5.0)
+# plan.yaml (V7.0)
 objectives:
   - "Implement OAuth2 authentication for API"
   - "Maintain backward compatibility with existing auth"
@@ -556,7 +673,7 @@ tasks:
   # ... 10 more detailed tasks
 ```
 
-**V5.0 Benefits**:
+**V7.0 Benefits**:
 - **Simpler planning**: Define objectives, not task breakdowns
 - **Expert-driven**: Controller uses domain expertise to determine HOW
 - **Adaptive**: Controller adjusts questions based on answers received
@@ -567,7 +684,7 @@ tasks:
 **Subagent Architecture**: Agents delegate to specialists, don't execute directly.
 
 Pattern: "Use {subagent} to {task}"
-Example (V5.0): Controller → backend-developer (question) → architect (question) → synthesis → backend-developer (implementation)
+Example (V7.0): Controller → backend-developer (question) → architect (question) → synthesis → backend-developer (implementation)
 
 Benefits: Modularity, specialization, parallelization (up to 50 concurrent), reusability, expert coordination
 
@@ -576,6 +693,8 @@ Benefits: Modularity, specialization, parallelization (up to 50 concurrent), reu
 **MANDATORY**: All tasks must be fully completed before marking as done.
 
 **Core Rule**: 100% completion with verified evidence, or it's not complete.
+
+**Full Protocol**: See @.claude/rules/quality/completion.md for detailed requirements and enforcement points.
 
 Protocol enforced by:
 - Controllers: Verify ALL acceptance criteria in coordination_log before marking complete
@@ -710,6 +829,8 @@ Create initial CLAUDE.md for new projects:
 
 ## Agent Memory
 
+**Full Structure**: See @.claude/rules/memory/agent-memory.md for detailed memory organization.
+
 ```
 Agent_Memory/
 ├── _system/              # Registry, config, agent status
@@ -718,14 +839,14 @@ Agent_Memory/
 └── {instruction_id}/     # Per-task working memory
     ├── instruction.yaml  # Request + metadata
     ├── status.yaml       # Current phase
-    ├── workflow/         # Plan, coordination_log, execution state (V5.0)
+    ├── workflow/         # Plan, coordination_log, execution state (V7.0)
     ├── tasks/            # pending/, in_progress/, completed/
     └── outputs/          # Deliverables
 ```
 
-**V5.0 Key Files**:
+**V7.0 Key Files**:
 - `workflow/plan.yaml` - Objectives + controller assignment (not tasks)
-- `workflow/coordination_log.yaml` - Q&A exchanges, synthesis, implementation tasks (NEW V5.0)
+- `workflow/coordination_log.yaml` - Q&A exchanges, synthesis, implementation tasks (V7.0)
 - `workflow/execution_summary.yaml` - Aggregated outputs from controller
 
 **Principles**: File-based, instruction-scoped, parallel-safe, pause/resume capable
@@ -738,17 +859,19 @@ Complex tasks spawn child workflows (max depth: 5, max children: 100)
 
 Example: `/trigger Write 10-chapter novel` → 1 parent + 10 child workflows
 
-Each child workflow follows V5.0 pattern (objectives → controller → questions → synthesis → implementation)
+Each child workflow follows V7.0 pattern (objectives → controller → questions → synthesis → implementation)
 
 ## Creating Agents
 
+**Agent Patterns**: See @.claude/rules/core/execution.md for execution agent guidelines and frontmatter requirements.
+
 1. Choose tier (controller or execution) and domain
 2. Create `{domain}/agents/my-agent.md` with YAML frontmatter
-3. **V5.0: Add tier field** to frontmatter
+3. **V7.0: Add tier field** to frontmatter
 4. Add to `{domain}/.claude-plugin/plugin.json`
 5. Test: `claude --plugin-dir .`
 
-**V5.0 Frontmatter (Controller)**:
+**V7.0 Frontmatter (Controller)**:
 ```yaml
 ---
 name: engineering-manager
@@ -760,7 +883,7 @@ typical_questions: ["What is current implementation?", "What are constraints?", 
 ---
 ```
 
-**V5.0 Frontmatter (Execution)**:
+**V7.0 Frontmatter (Execution)**:
 ```yaml
 ---
 name: backend-developer
@@ -774,7 +897,7 @@ executes_tasks: ["implement endpoints", "write tests", ...]
 ## Creating Domains
 
 1. Create 5 config files: `Agent_Memory/_system/domains/{domain}/*.yaml`
-2. **V5.0: Create controller_catalog** in `planner_config.yaml`
+2. **V7.0: Create controller_catalog** in `planner_config.yaml`
 3. Create controller agents in `{domain}/agents/` with tier: controller
 4. Create execution agents in `{domain}/agents/` with tier: execution
 5. Create plugin manifest: `{domain}/.claude-plugin/plugin.json`
@@ -812,7 +935,7 @@ cAgents/
 
 ## Performance Benchmarks
 
-**V5.0 Controller Pattern**: 30-40% simpler planning (objectives vs tasks), 20-30% fewer tokens (no detailed task lists)
+**V7.0 Controller Pattern**: 30-40% simpler planning (objectives vs tasks), 20-30% fewer tokens (no detailed task lists)
 **Reviewer V2.0**: 33% faster, 81% faster to critical, 98% more actionable, 78% pattern detection
 **Parallel Execution**: 50x speedup (swarm), 80%+ efficiency
 **Optimizer**: 20-50% faster, 30-60% smaller bundles, 15-40% less memory
@@ -833,20 +956,20 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 - `~/.claude/CLAUDE.md` - Personal global preferences
 - `Agent_Memory/_system/domains/{domain}/*.yaml` - Domain configs (including controller_catalog)
 - `Agent_Memory/_system/task_completion_protocol.yaml` - Mandatory completion rules
-- `Agent_Memory/inst_{id}/workflow/coordination_log.yaml` - V5.0 coordination tracking (NEW)
+- `Agent_Memory/inst_{id}/workflow/coordination_log.yaml` - V7.0 coordination tracking
 - `docs/V5_ARCHITECTURE.md` - V5.0 architecture design (NEW)
 - `docs/V5_MIGRATION_GUIDE.md` - V4.0 → V5.0 migration guide (NEW)
 - `docs/V5_WORKFLOW_EXAMPLES.md` - Reference implementations (NEW)
 - `docs/DOCUMENTATION_STANDARDS.md` - Documentation guidelines
 **Critical Rules**:
 - ✅ 100% task completion with verified evidence required
-- ✅ **Coordinating phase MANDATORY for tier 2+ workflows** (V5.0)
-- ✅ Controllers use question-based delegation (V5.0)
-- ✅ Objectives in plan, tasks in coordination_log (V5.0)
+- ✅ **Coordinating phase MANDATORY for tier 2+ workflows** (V7.0)
+- ✅ Controllers use question-based delegation (V7.0)
+- ✅ Objectives in plan, tasks in coordination_log (V7.0)
 
-## V5.0 Migration
+## V7.0 Migration
 
-**From V4.0 to V5.0**:
+**From V4.0 to V7.0**:
 - ✅ All 229 agents migrated with tier field (controller, execution, or support)
 - ✅ All 18 domain configs updated with controller_catalog sections
 - ✅ Planning changed from task-based to objective-based
@@ -882,9 +1005,9 @@ Full troubleshooting: `archive/docs/TROUBLESHOOTING.md`
 
 See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 
-## V5.0 Philosophy
+## V7.0 Philosophy
 
-**V5.0 Design Principles**:
+**V7.0 Design Principles**:
 - **Controller-Centric**: Controllers coordinate work, not planners or executors
 - **Question-Based**: Controllers ask questions to specialists, not assign predetermined tasks
 - **Objective-Driven**: Plan defines WHAT (objectives), controllers determine HOW (questions + synthesis)
@@ -892,15 +1015,15 @@ See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 - **Simpler Planning**: High-level objectives instead of detailed task lists
 - **Adaptive Coordination**: Controllers adjust based on answers received
 
-**What V5.0 Fixes**:
+**What V7.0 Fixes from V4.0**:
 - ❌ V4.0: Detailed task lists upfront → Planning overhead high, inflexible
-- ✅ V5.0: Objectives upfront → Simpler planning, adaptive execution
+- ✅ V7.0: Objectives upfront → Simpler planning, adaptive execution
 - ❌ V4.0: Planner assigns agents → Required knowing all agents upfront
-- ✅ V5.0: Controller delegates → Expert-driven question-based delegation
+- ✅ V7.0: Controller delegates → Expert-driven question-based delegation
 - ❌ V4.0: Executor manages team → Complex coordination logic
-- ✅ V5.0: Controller coordinates → Domain expert handles coordination
+- ✅ V7.0: Controller coordinates → Domain expert handles coordination
 - ❌ V4.0: Rigid task list → Cannot adapt to discoveries
-- ✅ V5.0: Question-based → Adapts to answers received
+- ✅ V7.0: Question-based → Adapts to answers received
 
 **User Benefits**:
 1. ✅ **Simpler planning** - Define objectives, not task breakdowns
@@ -912,7 +1035,7 @@ See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 
 **Version**: 5.0.0
 **Total Agents**: 229 (10 core + ~50 controller + ~150 execution + ~19 support)
-**Architecture**: V5.0 - Controller-Centric Question-Based Delegation
+**Architecture**: V7.0 - Controller-Centric Question-Based Delegation
 **Domains**: 8 (engineering, revenue, finance-operations, people-culture, customer-experience, legal-compliance, creative, universal)
 **Dependencies**: None (file-based, self-contained)
 **Backward Compatibility**: Breaking changes from V4.0 (requires migration)

@@ -1,5 +1,6 @@
 ---
 name: revenue-recognition-specialist
+tier: execution
 description: Revenue accounting, ASC 606 compliance, contract analysis, deferred revenue. Use PROACTIVELY for revenue recognition, contract reviews, complex revenue arrangements.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet

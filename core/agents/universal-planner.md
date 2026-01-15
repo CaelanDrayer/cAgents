@@ -31,6 +31,17 @@ version: "5.0"
 - Set max questions per controller limit
 - Write plan.yaml, hand to controller via orchestrator
 
+## CRITICAL: Do Not Ask Permission
+
+**After creating plan.yaml:**
+- ✅ Write plan.yaml to Agent_Memory/{instruction_id}/workflow/
+- ✅ Signal completion to orchestrator (who will invoke controller)
+- ❌ DO NOT ask user to review plan before proceeding
+- ❌ DO NOT ask "Would you like me to continue with implementation?"
+- ❌ DO NOT wait for user approval
+
+The orchestrator will AUTOMATICALLY transition to coordinating phase. Your job is to create the plan, not to ask permission to execute it.
+
 ## V5.0 CRITICAL CHANGES FROM V4.0
 
 **V4.0 Approach (REPLACED)**:

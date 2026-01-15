@@ -15,16 +15,16 @@ cAgents is a modular ecosystem where you install domain plugins based on your ne
 
 All domains share the same core infrastructure and work together seamlessly.
 
-## Architecture (V2 Universal Workflow)
+## Architecture (V7.0 Controller-Centric)
 
 ```
-cAgents V2.0/
+cAgents V7.0/
 +-- core/                    # @cagents/core - Required foundation
 |   +-- agents/              # 8 core agents:
 |   |   +-- trigger.md       # Entry point + domain routing
 |   |   +-- orchestrator.md  # Phase management conductor
 |   |   +-- hitl.md          # Human escalation
-|   |   +-- universal-router.md      # ↓ V2 Universal Workflow Agents
+|   |   +-- universal-router.md      # ↓ V7.0 Universal Workflow Agents
 |   |   +-- universal-planner.md     # Work across ALL domains via
 |   |   +-- universal-executor.md    # configuration-driven behavior
 |   |   +-- universal-validator.md   # (replaces 55 domain-specific
@@ -59,9 +59,9 @@ cAgents V2.0/
 +-- support/        # @cagents/support - 15 team agents
 ```
 
-### V2 Universal Workflow Architecture
+### V7.0 Controller-Centric Architecture
 
-**V2 Architecture** (5 universal workflow agents):
+**V7.0 Architecture** (10 core infrastructure + controller-centric coordination):
 - 5 universal workflow agents work across ALL domains via YAML configuration
 - Domain behavior defined in `Agent_Memory/_system/domains/{domain}/*.yaml` files
 - Adding new domains only requires creating 5 config files, no code changes
@@ -85,7 +85,7 @@ User Request → Trigger (detect domain)
     Universal-Self-Correct (if needed)
 ```
 
-**Recursive Workflows** (NEW in V2):
+**Recursive Workflows** (V7.0):
 - Workflows can spawn child workflows (e.g., novel → chapters → scenes)
 - Maximum depth: 5 levels
 - Maximum children per parent: 20
@@ -155,7 +155,7 @@ Shared infrastructure for all domains (8 agents):
 - **Orchestrator** - Phase management conductor (planning → executing → validating)
 - **HITL** - Human-in-the-loop escalation for complex decisions
 
-**Universal Workflow Agents** (NEW in V2):
+**Universal Workflow Agents** (V7.0):
 - **Universal-Router** - Tier classification across all domains via config
 - **Universal-Planner** - Task decomposition across all domains via config
 - **Universal-Executor** - Team coordination across all domains via config
@@ -175,7 +175,7 @@ Shared infrastructure for all domains (8 agents):
 **Intelligence**: Pattern Recognition, Risk Assessment, Dependency Analyzer
 **QA Layer**: Architecture Reviewer, Code Standards Auditor, Security Analyst
 
-_Note: Domain-specific workflow agents (router, planner, executor, validator, self-correct) are deprecated in V2. Use universal workflow agents instead._
+_Note: Domain-specific workflow agents (router, planner, executor, validator, self-correct) are deprecated. Use universal workflow agents instead._
 
 ### @cagents/business (Fully Functional)
 
@@ -189,7 +189,7 @@ _Note: Domain-specific workflow agents (router, planner, executor, validator, se
 **Customer & Sales**: Customer Success Manager, Account Manager, Sales Operations Manager
 **Specialized**: Risk Manager, Compliance Manager, Procurement Specialist, Facilities Manager
 
-_Note: Domain-specific workflow agents (router, planner, executor, validator, self-correct) are deprecated in V2. Use universal workflow agents instead._
+_Note: Domain-specific workflow agents (router, planner, executor, validator, self-correct) are deprecated. Use universal workflow agents instead._
 
 ### @cagents/creative (Fully Configured)
 
@@ -202,7 +202,7 @@ _Note: Domain-specific workflow agents (router, planner, executor, validator, se
 **Craft**: Prose Stylist, Dialogue Specialist, Editor, Copy Editor
 **Quality**: Continuity Checker, Research Specialist, Sensitivity Reader
 
-_Note: Domain-specific workflow agents (router, planner, executor, validator, self-correct) are deprecated in V2. Use universal workflow agents instead._
+_Note: Domain-specific workflow agents (router, planner, executor, validator, self-correct) are deprecated. Use universal workflow agents instead._
 
 ## License
 
@@ -210,8 +210,9 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ## Version History
 
-- **6.0.0** - V2 Universal Workflow Architecture: 5 universal agents replace 55 domain-specific workflow agents via configuration. All 11 domains fully configured (283 total agents: 8 core + 275 domain team agents). Recursive workflows support. Configuration-driven domain behavior.
-- **5.0.0** - Orchestration V2 with realistic organizational hierarchy, 11 domains planned
+- **7.0.1** - Current version with V7.0 Controller-Centric Question-Based Delegation architecture. 230 agents across 8 domains with tier-based coordination.
+- **6.0.0** - Universal Workflow Architecture: 5 universal agents replace 55 domain-specific workflow agents via configuration. All 11 domains fully configured. Recursive workflows support.
+- **5.0.0** - Orchestration with realistic organizational hierarchy, 11 domains planned
 - **4.1.0** - Complete business domain (23 agents), universal commands moved to core, 72 total agents
 - **4.0.0** - cAgents multi-domain architecture (Phase 1: Core + Software)
 - **3.0.x** - agent-design plugin (software engineering only)

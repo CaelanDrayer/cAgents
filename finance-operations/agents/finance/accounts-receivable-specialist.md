@@ -1,5 +1,6 @@
 ---
 name: accounts-receivable-specialist
+tier: execution
 description: Customer invoicing, collections, AR reconciliation, cash application. Use PROACTIVELY for invoice generation, payment application, collection follow-up.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
