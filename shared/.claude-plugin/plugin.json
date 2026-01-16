@@ -1,6 +1,6 @@
 {
   "name": "cagents-shared-capabilities",
-  "version": "7.0.1",
+  "version": "7.0.2",
   "description": "Shared cross-domain capabilities for cAgents V7.0 - Leadership, Planning, Data, Quality, Customer, Operations. Universal tier-2 controller and execution agents accessible to all workflows. Includes 33 shared agents spanning executive leadership (CEO, CFO, COO, CTO, etc.), strategic planning (portfolio-manager, project-manager, okr-specialist), data & analytics (data-scientist, business-intelligence), quality & compliance (quality-manager, risk-manager), customer relations (account-manager, customer-success-manager), and operations (operations-manager, process-improvement-specialist).",
   "domain": "shared",
   "tier": 2,

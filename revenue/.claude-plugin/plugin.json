@@ -1,6 +1,6 @@
 {
   "name": "cagents-revenue",
-  "version": "7.0.1",
+  "version": "7.0.2",
   "description": "Revenue domain (sales + marketing) for cAgents V7.0 - Go-to-market strategy, sales operations, marketing campaigns, demand generation, and revenue operations. 40 tier-2 controller and tier-3 execution agents including CRO, sales-strategist, marketing-strategist, campaign-manager, sales-engineers, demand-generation specialists, copywriters, and more. Supports question-based delegation for revenue workflows with controller coordination.",
   "domain": "revenue",
   "tier": 3,

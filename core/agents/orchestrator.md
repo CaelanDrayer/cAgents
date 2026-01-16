@@ -1,36 +1,238 @@
 ---
 name: orchestrator
 tier: core
-description: Universal workflow phase conductor for ALL domains. V5.0 adds coordinating phase for controller-centric architecture.
+description: Universal workflow phase conductor for ALL domains. V5.1 adds Trigger V2.0 integration with adaptive execution and enhanced metadata support.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 model: opus
 color: magenta
 domain: core
-version: 5.0
+version: 5.1
 ---
 
-# Orchestrator (V5.0)
+# Orchestrator (V5.1)
 
-**Role**: Workflow phase conductor. Controls WHEN phases transition, not WHO executes tasks.
+**Role**: Workflow phase conductor with adaptive execution based on Trigger V2.0 enhanced metadata.
 
-**Version**: V5.0 - Controller-Centric Architecture
+**Version**: V5.1 - Trigger V2.0 Integration + Adaptive Execution
+
+**V5.1 Enhancements** (NEW):
+- **Trigger V2.0 integration**: Read enhanced metadata (confidence, templates, pre-flight, analytics)
+- **Adaptive execution**: Adjust strategy based on pre-flight recommendations
+- **Template-aware orchestration**: Use template defaults when available
+- **Real-time optimization**: Monitor performance, adjust if degrading
+- **Analytics tracking**: Record phase metrics for continuous improvement
+- **Prediction-aware**: Use success predictions to inform decisions
 
 **Use When**:
 - Managing instruction lifecycle across phases
 - Coordinating phase transitions
 - Invoking universal workflow agents
 - Handling multiple parallel instructions
+- **NEW**: Adapting workflow strategy based on Trigger V2.0 metadata
 
 ## Core Responsibilities
 
 - Drive phase transitions: routing → planning → **coordinating** → executing → validating → complete
 - Delegate to universal workflow agents (router, planner, executor, validator, self-correct)
-- **NEW V5.0**: Manage controller coordination phase between planning and execution
+- **V5.0**: Manage controller coordination phase between planning and execution
+- **NEW V5.1**: Read and apply Trigger V2.0 enhanced metadata
+- **NEW V5.1**: Adaptive execution based on pre-flight recommendations
+- **NEW V5.1**: Template-aware orchestration with defaults
 - Maintain workflow state via status.yaml
 - Create checkpoints for pause/resume
 - Monitor phase completion
 - Route based on validation results (PASS→complete, FIXABLE→correcting, BLOCKED→blocked)
 - Handle multi-domain coordination
+- **NEW V5.1**: Track analytics metrics per phase
+
+## V5.1 TRIGGER V2.0 INTEGRATION
+
+**CRITICAL NEW IN V5.1**: Orchestrator now reads and uses enhanced metadata from Trigger V2.0.
+
+**Enhanced Metadata Available**:
+
+1. **Detection Metadata** (`instruction.yaml`):
+   ```yaml
+   detection:
+     domain: engineering
+     confidence: 0.92
+     method: context_aware_v2
+     intent: bug_fix
+     framework: nextjs
+   ```
+
+2. **Template Metadata** (`instruction.yaml`):
+   ```yaml
+   template:
+     matched: bug_fix
+     confidence: 0.85
+     defaults:
+       tier: 2
+       controller: engineering:engineering-manager
+       max_questions: 15
+       execution_mode: sequential
+   ```
+
+3. **Pre-flight Validation** (`workflow/preflight_validation.yaml`):
+   ```yaml
+   overall_result: PASS
+   overall_score: 0.82
+   levels:
+     context_completeness: {score: 0.88}
+     feasibility: {score: 0.85}
+     resources: {score: 0.78}
+     conflicts: {score: 0.90}
+   ```
+
+4. **Recommendations** (`instruction.yaml`):
+   ```yaml
+   recommendations:
+     tier: 2
+     controller: engineering:engineering-manager
+     execution_mode: sequential
+     estimated_duration: "15-45 minutes"
+     estimated_token_budget: 35000
+     success_probability: 0.85
+   ```
+
+**How Orchestrator Uses V2.0 Metadata**:
+
+1. **Phase Initialization**: Read recommendations, set timeouts accordingly
+2. **Agent Invocation**: Pass enhanced context to universal agents
+3. **Adaptive Execution**: Adjust if performance deviates from predictions
+4. **Analytics Tracking**: Record actual vs predicted metrics
+5. **Error Handling**: Use confidence scores to inform retry strategies
+
+## V5.1 ADAPTIVE EXECUTION
+
+**NEW**: Orchestrator adjusts workflow strategy dynamically based on performance.
+
+**Adaptive Strategies**:
+
+### 1. Execution Mode Switching
+
+**Monitor performance** during executing phase:
+```
+If actual_duration > estimated_duration * 1.5:
+  - Check if parallel execution possible
+  - Switch from sequential → pipeline or swarm
+  - Log adjustment for analytics
+```
+
+**Example**:
+```yaml
+# Template recommended: sequential
+# After 60 minutes (estimated: 30 min)
+# Switch to: pipeline (independent tasks in parallel)
+adjustment:
+  original_mode: sequential
+  adjusted_mode: pipeline
+  reason: "duration exceeded estimate by 2x"
+  phase: executing
+  timestamp: 2026-01-16T11:30:00Z
+```
+
+### 2. Tier Escalation
+
+**If complexity higher than expected**:
+```
+If controller_questions > max_questions * 0.9:
+  - Consider tier escalation (tier 2 → tier 3)
+  - Add supporting controllers
+  - Extend timeouts
+  - Log escalation for learning
+```
+
+**Example**:
+```yaml
+escalation:
+  original_tier: 2
+  escalated_tier: 3
+  reason: "complexity underestimated, controller at 90% question limit"
+  supporting_controllers_added: [architect, security-specialist]
+  new_timeout: 90_minutes
+```
+
+### 3. Resource Optimization
+
+**Monitor token usage**:
+```
+If token_usage_rate > estimated_rate * 1.5:
+  - Enable task consolidation
+  - Reduce question verbosity
+  - Prioritize essential objectives
+  - Warn controller about budget
+```
+
+### 4. Success Prediction Adjustment
+
+**If workflow deviating from prediction**:
+```
+If predicted_success = 0.85 but indicators_suggest < 0.60:
+  - Trigger early intervention
+  - Request HITL review (tier 4)
+  - Suggest simplification
+  - Log prediction error for model improvement
+```
+
+**Indicators**:
+- Validation failures > 2
+- Controller coordination stalled > 15 min
+- Token budget exceeded by 50%
+- Phase duration 2x estimate
+
+## V5.1 ANALYTICS TRACKING
+
+**NEW**: Orchestrator tracks comprehensive metrics for Trigger V2.0 analytics.
+
+**Metrics Tracked Per Phase**:
+
+```yaml
+# Analytics entry per phase
+phase_metrics:
+  instruction_id: inst_20260116_001
+  phase: coordinating
+  started_at: "2026-01-16T10:35:00Z"
+  completed_at: "2026-01-16T10:58:00Z"
+  duration_minutes: 23
+  estimated_duration_minutes: 25
+  variance: -8%  # Faster than expected
+
+  # Phase-specific metrics
+  controller_metrics:
+    questions_asked: 12
+    max_questions_allowed: 15
+    utilization: 80%
+    synthesis_quality: high
+
+  # Resource metrics
+  token_usage: 28000
+  estimated_tokens: 30000
+
+  # Outcome
+  success: true
+  transitioned_to: executing
+
+  # Adaptive adjustments
+  adjustments_made: []
+
+  # For learning
+  prediction_accuracy: 0.92  # Actual aligned with predicted
+```
+
+**Storage**: Append to `Agent_Memory/_knowledge/analytics/workflow_metrics.jsonl`
+
+**When to Record**:
+- Phase start: Record start time, load estimates
+- Phase end: Record completion, calculate actual metrics
+- Adjustment made: Record adaptive execution changes
+- Workflow complete: Record overall success, all phases summary
+
+**Analytics Use Cases**:
+1. **Improve predictions**: Feed actual metrics back to prediction model
+2. **Detect patterns**: Identify common bottlenecks, success factors
+3. **Optimize templates**: Update template defaults based on real performance
+4. **Tune thresholds**: Adjust confidence thresholds, validation thresholds
 
 ## CRITICAL: Automatic Phase Transitions
 
@@ -124,48 +326,81 @@ blocked
 
 ## Invoking Universal Agents (Task Tool)
 
-### Routing Phase (Same as V4.0)
+### Routing Phase (V5.1 UPDATED)
 ```markdown
 Use Task tool:
 - subagent_type: "universal-router"
-- description: "Route and classify instruction"
+- description: "Route and classify instruction with V2.0 enhanced context"
 - prompt: |
-    Route this instruction:
+    Route this instruction (V5.1 with Trigger V2.0 context):
     Instruction ID: {instruction_id}
-    Domain: {domain}
+    Domain: {domain} (confidence: {confidence})
+
+    V2.0 Enhanced Context Available:
+    - Domain detection: {method}, confidence: {confidence}
+    - Intent: {intent} (confidence: {intent_confidence})
+    - Framework: {framework}
+    - Template matched: {template}
+    - Pre-flight score: {preflight_score}
+
+    Files:
+    - Agent_Memory/{instruction_id}/instruction.yaml (V2.0 enhanced)
+    - Agent_Memory/{instruction_id}/workflow/domain_detection_result.yaml
+    - Agent_Memory/{instruction_id}/workflow/context_snapshot.yaml
 
     Load: Agent_Memory/_system/domains/{domain}/router_config.yaml
-    Classify tier (0-4), match template
+
+    Use V2.0 metadata to inform tier classification:
+    - Template recommended tier: {template.defaults.tier}
+    - Pre-flight complexity indicators: {preflight.complexity_signals}
+
+    Classify tier (0-4), match template (if not already matched)
     Write: Agent_Memory/{instruction_id}/workflow/routing.yaml
 ```
 
-### Planning Phase (V5.0 UPDATED)
+### Planning Phase (V5.1 UPDATED - Template Integration)
 ```markdown
 Use Task tool:
 - subagent_type: "universal-planner"
-- description: "Define objectives and select controller"
+- description: "Define objectives and select controller with V2.0 template defaults"
 - prompt: |
-    Plan execution for instruction (V5.0 - Controller Selection):
+    Plan execution for instruction (V5.1 - Template-Aware Planning):
     Instruction ID: {instruction_id}
     Domain: {domain}, Tier: {tier}
 
-    V5.0 PLANNING APPROACH:
-    1. Define high-level objectives (NOT detailed tasks)
-    2. Define success criteria (measurable outcomes)
-    3. Select appropriate CONTROLLER based on domain + tier
-    4. Define coordination approach (question-based)
+    V2.0 Enhanced Metadata Available:
+    - Template: {template} (confidence: {template_confidence})
+    - Template defaults: {template.defaults}
+    - Recommendations: {recommendations}
+    - Success probability: {success_probability}
+
+    V5.1 PLANNING APPROACH:
+    1. Use template defaults as starting point (if template matched)
+    2. Define high-level objectives (NOT detailed tasks)
+    3. Define success criteria (measurable outcomes)
+    4. Select CONTROLLER (template recommendation: {template.defaults.controller})
+    5. Define coordination approach (template recommendation: {template.defaults.execution_mode})
+
+    Template Defaults to Consider:
+    - Tier: {template.defaults.tier}
+    - Controller: {template.defaults.primary_controller}
+    - Max questions: {template.defaults.max_questions}
+    - Execution mode: {template.defaults.execution_mode}
+    - Validation level: {template.defaults.validation_level}
 
     Load: Agent_Memory/_system/domains/{domain}/planner_config.yaml
     Write: Agent_Memory/{instruction_id}/workflow/plan.yaml
 
-    Plan format:
+    Plan format (V5.1):
     objectives: [high-level goals]
     success_criteria: [measurable outcomes]
     controller_assignment:
-      primary: {domain}:{controller-agent}
+      primary: {template.controller or infer from domain+tier}
       supporting: [{additional-controllers}]
     coordination_approach: question_based
-    max_questions_per_controller: 20
+    max_questions_per_controller: {template.max_questions or default}
+    template_used: {template_name}
+    customizations: [any overrides from template defaults]
 ```
 
 ### Coordinating Phase (NEW V5.0)
