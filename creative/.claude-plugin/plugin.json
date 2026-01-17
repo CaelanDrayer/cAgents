@@ -1,6 +1,6 @@
 {
   "name": "cagents-creative",
-  "version": "7.0.2",
+  "version": "7.0.3",
   "description": "Creative writing domain for cAgents V7.0 - Novel writing, storytelling, worldbuilding, character development, and narrative design. 18 tier-2 controller and tier-3 execution agents including creative directors, story architects, editors, character developers, worldbuilders, dialogue specialists, and more. Supports question-based delegation for creative writing workflows with controller coordination.",
   "domain": "creative",
   "tier": 3,
