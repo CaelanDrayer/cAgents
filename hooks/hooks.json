@@ -1,0 +1,121 @@
+{
+  "$schema": "./hooks-schema.json",
+  "version": "1.0.0",
+  "description": "cAgents lifecycle hooks registration",
+
+  "hooks": {
+    "session": {
+      "on_session_start": {
+        "enabled": true,
+        "handler": "hooks/session/on-session-start.sh",
+        "description": "Initialize session state, load context",
+        "timeout_ms": 5000
+      },
+      "on_session_end": {
+        "enabled": true,
+        "handler": "hooks/session/on-session-end.sh",
+        "description": "Cleanup session state, archive if needed",
+        "timeout_ms": 5000
+      }
+    },
+
+    "workflow": {
+      "on_workflow_start": {
+        "enabled": true,
+        "handler": "hooks/workflow/on-workflow-start.sh",
+        "description": "Initialize instruction folder, create status.yaml",
+        "timeout_ms": 5000
+      },
+      "on_workflow_complete": {
+        "enabled": true,
+        "handler": "hooks/workflow/on-workflow-complete.sh",
+        "description": "Archive instruction, cleanup temp files",
+        "timeout_ms": 10000
+      },
+      "on_workflow_fail": {
+        "enabled": true,
+        "handler": "hooks/workflow/on-workflow-fail.sh",
+        "description": "Log failure, notify if configured",
+        "timeout_ms": 5000
+      },
+      "stop_workflow": {
+        "enabled": true,
+        "handler": "hooks/workflow/stop-workflow.sh",
+        "description": "Ralph-style stop hook for graceful workflow termination",
+        "timeout_ms": 10000
+      }
+    },
+
+    "phase": {
+      "on_phase_start": {
+        "enabled": true,
+        "handler": "hooks/phase/on-phase-start.sh",
+        "description": "Log phase transition, update status.yaml",
+        "timeout_ms": 3000
+      },
+      "on_phase_complete": {
+        "enabled": true,
+        "handler": "hooks/phase/on-phase-complete.sh",
+        "description": "Validate phase outputs, prepare next phase",
+        "timeout_ms": 5000
+      },
+      "on_phase_fail": {
+        "enabled": true,
+        "handler": "hooks/phase/on-phase-fail.sh",
+        "description": "Handle phase failure, determine recovery",
+        "timeout_ms": 5000
+      }
+    },
+
+    "coordination": {
+      "on_question_asked": {
+        "enabled": false,
+        "handler": "hooks/coordination/on-question-asked.sh",
+        "description": "Log controller question delegation",
+        "timeout_ms": 2000
+      },
+      "on_answer_received": {
+        "enabled": false,
+        "handler": "hooks/coordination/on-answer-received.sh",
+        "description": "Log specialist answer, update coordination_log",
+        "timeout_ms": 2000
+      },
+      "on_synthesis_complete": {
+        "enabled": true,
+        "handler": "hooks/coordination/on-synthesis-complete.sh",
+        "description": "Validate synthesis quality before execution",
+        "timeout_ms": 5000
+      }
+    },
+
+    "hitl": {
+      "on_hitl_required": {
+        "enabled": true,
+        "handler": "hooks/hitl/on-hitl-required.sh",
+        "description": "Prepare HITL presentation, pause workflow",
+        "timeout_ms": 5000
+      },
+      "on_hitl_decision": {
+        "enabled": true,
+        "handler": "hooks/hitl/on-hitl-decision.sh",
+        "description": "Record decision, resume or modify workflow",
+        "timeout_ms": 5000
+      }
+    }
+  },
+
+  "global": {
+    "default_timeout_ms": 5000,
+    "max_retries": 2,
+    "retry_delay_ms": 1000,
+    "log_all_hooks": true,
+    "fail_on_hook_error": false
+  },
+
+  "contract": {
+    "input_format": "json",
+    "output_format": "json",
+    "required_output_fields": ["decision", "message"],
+    "valid_decisions": ["proceed", "block", "skip", "escalate", "fail"]
+  }
+}

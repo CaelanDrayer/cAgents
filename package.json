@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "7.0.2",
+  "version": "7.0.3",
   "description": "Universal multi-domain agent system with controller-centric question-based delegation architecture",
   "type": "module",
   "main": "index.js",
@@ -71,6 +71,11 @@
     "auto_fix_generation": true,
     "pattern_learning": true,
     "context_aware_detection": true,
-    "pre_flight_validation": true
+    "pre_flight_validation": true,
+    "bash_script_library": true,
+    "lifecycle_hooks": true,
+    "atomic_file_operations": true,
+    "markdown_frontmatter_state": true,
+    "ralph_loop_patterns": true
   }
 }

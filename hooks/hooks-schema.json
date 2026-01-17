@@ -1,0 +1,121 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "cAgents Hooks Configuration",
+  "description": "Schema for hooks.json configuration file",
+  "type": "object",
+
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of hooks configuration"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of hooks configuration"
+    },
+    "hooks": {
+      "type": "object",
+      "description": "Hook registrations organized by category",
+      "properties": {
+        "session": { "$ref": "#/definitions/hookCategory" },
+        "workflow": { "$ref": "#/definitions/hookCategory" },
+        "phase": { "$ref": "#/definitions/hookCategory" },
+        "coordination": { "$ref": "#/definitions/hookCategory" },
+        "hitl": { "$ref": "#/definitions/hookCategory" }
+      },
+      "additionalProperties": false
+    },
+    "global": {
+      "type": "object",
+      "description": "Global hook settings",
+      "properties": {
+        "default_timeout_ms": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 60000,
+          "default": 5000
+        },
+        "max_retries": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5,
+          "default": 2
+        },
+        "retry_delay_ms": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 10000,
+          "default": 1000
+        },
+        "log_all_hooks": {
+          "type": "boolean",
+          "default": true
+        },
+        "fail_on_hook_error": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "contract": {
+      "type": "object",
+      "description": "Hook input/output contract specification",
+      "properties": {
+        "input_format": {
+          "type": "string",
+          "enum": ["json", "yaml"],
+          "default": "json"
+        },
+        "output_format": {
+          "type": "string",
+          "enum": ["json", "yaml"],
+          "default": "json"
+        },
+        "required_output_fields": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "valid_decisions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["proceed", "block", "skip", "escalate", "fail"]
+          }
+        }
+      }
+    }
+  },
+
+  "required": ["version", "hooks"],
+
+  "definitions": {
+    "hookCategory": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/definitions/hookDefinition" }
+    },
+    "hookDefinition": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "handler": {
+          "type": "string",
+          "description": "Path to handler script relative to project root"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of hook purpose"
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 60000
+        }
+      },
+      "required": ["enabled", "handler"]
+    }
+  }
+}
