@@ -71,3 +71,6 @@ documentation/temp/
 # Local memory (personal preferences)
 CLAUDE.local.md
 *.local.md
+
+# Python virtual environment
+.venv/
