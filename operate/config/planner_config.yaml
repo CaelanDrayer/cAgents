@@ -1,37 +1,72 @@
 super_domain: operate
 description: Planning configuration for OPERATE super-domain
+
 controller_catalog:
   tier_2:
-  - &id001
-    name: operations-manager
-    domain: operate
-    coordination_style: question_based
-  - &id002
-    name: business-analyst
-    domain: operate
-    coordination_style: question_based
-  - &id003
-    name: change-manager
-    domain: operate
-    coordination_style: question_based
-  - &id004
-    name: supply-chain-manager
-    domain: operate
-    coordination_style: question_based
-  tier_3:
-    primary:
-    - *id001
-    - *id002
-    supporting:
-    - *id003
-    - *id004
+    - name: business-analyst
+      agent_path: operate/agents/business-analyst.md
+      coordination_style: question_based
+      typical_questions:
+        - "What are the current operational metrics?"
+        - "What are the efficiency bottlenecks?"
+        - "What are the compliance requirements?"
+      use_when:
+        - "Requirements gathering needed"
+        - "Process analysis required"
+        - "Solution design and business case"
+        - "Stakeholder alignment"
+      complexity: tier_2
+
+    - name: change-manager
+      agent_path: operate/agents/change-manager.md
+      coordination_style: question_based
+      typical_questions:
+        - "What are the current operational metrics?"
+        - "What are the efficiency bottlenecks?"
+        - "What are the compliance requirements?"
+      use_when:
+        - "Organizational change planning"
+        - "Transformation initiatives"
+        - "Adoption planning needed"
+        - "Resistance management"
+      complexity: tier_2
+
+    - name: operations-manager
+      agent_path: operate/agents/operations-manager.md
+      coordination_style: question_based
+      typical_questions:
+        - "What are the current operational metrics?"
+        - "What are the efficiency bottlenecks?"
+        - "What are the compliance requirements?"
+      use_when:
+        - "Operations optimization needed"
+        - "Process management required"
+        - "Operational excellence initiatives"
+        - "Resource allocation decisions"
+      complexity: tier_2
+
+    - name: supply-chain-manager
+      agent_path: operate/agents/supply-chain-manager.md
+      coordination_style: question_based
+      typical_questions:
+        - "What are the current operational metrics?"
+        - "What are the efficiency bottlenecks?"
+        - "What are the compliance requirements?"
+      use_when:
+        - "Supply chain optimization"
+        - "Inventory management needed"
+        - "Vendor management"
+        - "Logistics and distribution"
+      complexity: tier_2
+
 objectives_templates:
   default:
-  - Implement {feature} in operate domain
-  - Analyze {data} for operate operations
-  - Create {deliverable} for operate use case
+    - "Implement {feature} in operate domain"
+    - "Analyze {data} for operate operations"
+    - "Create {deliverable} for operate use case"
+
 success_criteria_patterns:
   default:
-  - All objectives met with verified evidence
-  - All outputs exist and are production-quality
-  - No regressions in existing functionality
+    - "All objectives met with verified evidence"
+    - "All outputs exist and are production-quality"
+    - "No regressions in existing functionality"

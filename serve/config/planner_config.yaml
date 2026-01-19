@@ -1,32 +1,59 @@
 super_domain: serve
 description: Planning configuration for SERVE super-domain
+
 controller_catalog:
   tier_2:
-  - &id001
-    name: support-operations-manager
-    domain: serve
-    coordination_style: question_based
-  - &id002
-    name: general-counsel
-    domain: serve
-    coordination_style: question_based
-  - &id003
-    name: legal-operations-manager
-    domain: serve
-    coordination_style: question_based
-  tier_3:
-    primary:
-    - *id001
-    - *id002
-    supporting:
-    - *id003
+    - name: legal-operations-manager
+      agent_path: serve/agents/legal-operations-manager.md
+      coordination_style: question_based
+      typical_questions:
+        - "What are the customer pain points?"
+        - "What are the service level requirements?"
+        - "What are the support/legal constraints?"
+      use_when:
+        - "Legal department operations"
+        - "Legal spend management"
+        - "Process improvement needed"
+        - "Vendor management required"
+      complexity: tier_2
+
+    - name: support-operations-manager
+      agent_path: serve/agents/support-operations-manager.md
+      coordination_style: question_based
+      typical_questions:
+        - "What are the customer pain points?"
+        - "What are the service level requirements?"
+        - "What are the support/legal constraints?"
+      use_when:
+        - "Support process optimization"
+        - "Tool implementation needed"
+        - "Workflow automation"
+        - "Operational efficiency improvement"
+      complexity: tier_2
+
+  tier_4:
+    - name: general-counsel
+      agent_path: serve/agents/general-counsel.md
+      coordination_style: question_based
+      typical_questions:
+        - "What are the customer pain points?"
+        - "What are the service level requirements?"
+        - "What are the support/legal constraints?"
+      use_when:
+        - "High-stakes legal decisions"
+        - "Executive legal counsel"
+        - "Organizational legal strategy"
+        - "Crisis management"
+      complexity: tier_4
+
 objectives_templates:
   default:
-  - Implement {feature} in serve domain
-  - Analyze {data} for serve operations
-  - Create {deliverable} for serve use case
+    - "Implement {feature} in serve domain"
+    - "Analyze {data} for serve operations"
+    - "Create {deliverable} for serve use case"
+
 success_criteria_patterns:
   default:
-  - All objectives met with verified evidence
-  - All outputs exist and are production-quality
-  - No regressions in existing functionality
+    - "All objectives met with verified evidence"
+    - "All outputs exist and are production-quality"
+    - "No regressions in existing functionality"

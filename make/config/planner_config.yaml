@@ -1,42 +1,312 @@
 super_domain: make
 description: Planning configuration for MAKE super-domain
+
 controller_catalog:
   tier_2:
-  - &id001
-    name: engineering-manager
-    domain: make
-    coordination_style: question_based
-  - &id002
-    name: architect
-    domain: make
-    coordination_style: question_based
-  - &id003
-    name: product-owner
-    domain: make
-    coordination_style: question_based
-  - &id004
-    name: tech-lead
-    domain: make
-    coordination_style: question_based
-  - &id005
-    name: backend-lead
-    domain: make
-    coordination_style: question_based
+    - name: architect
+      agent_path: make/agents/architect.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the current implementation of this feature?"
+        - "What are the technical constraints we need to consider?"
+        - "What are the key risks and dependencies?"
+      use_when:
+        - "System design questions"
+        - "Architectural decisions needed"
+        - "API design and pattern selection"
+        - "Technical approach evaluation"
+      complexity: tier_2
+
+    - name: backend-lead
+      agent_path: make/agents/backend-lead.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the current implementation of this feature?"
+        - "What are the technical constraints we need to consider?"
+        - "What are the key risks and dependencies?"
+      use_when:
+        - "Backend work breakdown needed"
+        - "API design leadership"
+        - "Database coordination"
+        - "Backend team management"
+      complexity: tier_2
+
+    - name: data-lead
+      agent_path: make/agents/data-lead.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the current implementation of this feature?"
+        - "What are the technical constraints we need to consider?"
+        - "What are the key risks and dependencies?"
+      use_when:
+        - "Database architecture needed"
+        - "Schema design and data modeling"
+        - "ETL pipeline design"
+        - "Data team management"
+      complexity: tier_2
+
+    - name: devops-lead
+      agent_path: make/agents/devops-lead.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the current implementation of this feature?"
+        - "What are the technical constraints we need to consider?"
+        - "What are the key risks and dependencies?"
+      use_when:
+        - "Infrastructure provisioning needed"
+        - "CI/CD pipeline management"
+        - "Deployment automation"
+        - "DevOps team coordination"
+      complexity: tier_2
+
+    - name: editor
+      agent_path: make/agents/editor.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the current implementation of this feature?"
+        - "What are the technical constraints we need to consider?"
+        - "What are the key risks and dependencies?"
+      use_when:
+        - "Creative editing needed"
+        - "Structural editing required"
+        - "Prose polish and refinement"
+        - "Manuscript improvement"
+      complexity: tier_2
+
+    - name: engineering-manager
+      agent_path: make/agents/engineering-manager.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the current implementation of this feature?"
+        - "What are the technical constraints we need to consider?"
+        - "What are the key risks and dependencies?"
+      use_when:
+        - "Strategic engineering oversight needed"
+        - "Risk assessment required"
+        - "Go/no-go decisions"
+        - "Multi-instruction prioritization"
+      complexity: tier_2
+
+    - name: frontend-lead
+      agent_path: make/agents/frontend-lead.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the current implementation of this feature?"
+        - "What are the technical constraints we need to consider?"
+        - "What are the key risks and dependencies?"
+      use_when:
+        - "Frontend work breakdown needed"
+        - "UI/UX strategy"
+        - "Frontend team management"
+        - "Client-side architecture"
+      complexity: tier_2
+
+    - name: product-owner
+      agent_path: make/agents/product-owner.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the current implementation of this feature?"
+        - "What are the technical constraints we need to consider?"
+        - "What are the key risks and dependencies?"
+      use_when:
+        - "Feature planning and prioritization"
+        - "Scope decisions needed"
+        - "Business value assessment"
+        - "Product strategy"
+      complexity: tier_2
+
+    - name: program-manager
+      agent_path: make/agents/program-manager.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the current implementation of this feature?"
+        - "What are the technical constraints we need to consider?"
+        - "What are the key risks and dependencies?"
+      use_when:
+        - "Multi-project programs"
+        - "Program-level coordination"
+        - "Benefits tracking needed"
+        - "Large-scale initiatives"
+      complexity: tier_2
+
+    - name: project-manager
+      agent_path: make/agents/project-manager.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the current implementation of this feature?"
+        - "What are the technical constraints we need to consider?"
+        - "What are the key risks and dependencies?"
+      use_when:
+        - "Individual project planning"
+        - "Scope definition needed"
+        - "Timeline and resource planning"
+        - "Project execution"
+      complexity: tier_2
+
+    - name: qa-lead
+      agent_path: make/agents/qa-lead.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the current implementation of this feature?"
+        - "What are the technical constraints we need to consider?"
+        - "What are the key risks and dependencies?"
+      use_when:
+        - "Test strategy needed"
+        - "QA team management"
+        - "Quality validation"
+        - "Comprehensive testing"
+      complexity: tier_2
+
+    - name: security-lead
+      agent_path: make/agents/security-lead.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the current implementation of this feature?"
+        - "What are the technical constraints we need to consider?"
+        - "What are the key risks and dependencies?"
+      use_when:
+        - "Security reviews needed"
+        - "Threat modeling required"
+        - "Authentication/authorization work"
+        - "Penetration testing"
+      complexity: tier_2
+
+    - name: story-architect
+      agent_path: make/agents/story-architect.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the current implementation of this feature?"
+        - "What are the technical constraints we need to consider?"
+        - "What are the key risks and dependencies?"
+      use_when:
+        - "Story structure design"
+        - "Plot outlines needed"
+        - "Narrative architecture"
+        - "Complex narratives"
+      complexity: tier_2
+
+    - name: strategic-planner
+      agent_path: make/agents/strategic-planner.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the current implementation of this feature?"
+        - "What are the technical constraints we need to consider?"
+        - "What are the key risks and dependencies?"
+      use_when:
+        - "Long-term strategic planning"
+        - "Vision development"
+        - "Strategic analysis needed"
+        - "Multi-year roadmapping"
+      complexity: tier_2
+
+    - name: tech-lead
+      agent_path: make/agents/tech-lead.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the current implementation of this feature?"
+        - "What are the technical constraints we need to consider?"
+        - "What are the key risks and dependencies?"
+      use_when:
+        - "Delivery leadership needed"
+        - "Team coordination required"
+        - "Strategic technical decisions"
+        - "Cross-team orchestration"
+      complexity: tier_2
+
   tier_3:
-    primary:
-    - *id001
-    - *id002
-    supporting:
-    - *id003
-    - *id004
-    - *id005
+    - name: cco
+      agent_path: make/agents/cco.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the current implementation of this feature?"
+        - "What are the technical constraints we need to consider?"
+        - "What are the key risks and dependencies?"
+      use_when:
+        - "Tier 3-4 creative projects"
+        - "Major creative decisions"
+        - "Creative vision needed"
+        - "Narrative strategy"
+      complexity: tier_3
+
+    - name: cpo
+      agent_path: make/agents/cpo.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the current implementation of this feature?"
+        - "What are the technical constraints we need to consider?"
+        - "What are the key risks and dependencies?"
+      use_when:
+        - "Strategic planning oversight"
+        - "Complex multi-domain planning"
+        - "Major organizational initiatives"
+        - "Planning methodology selection"
+      complexity: tier_3
+
+    - name: vp-engineering
+      agent_path: make/agents/vp-engineering.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the current implementation of this feature?"
+        - "What are the technical constraints we need to consider?"
+        - "What are the key risks and dependencies?"
+      use_when:
+        - "Engineering org management"
+        - "Team building needed"
+        - "Engineering strategy execution"
+        - "Delivery excellence"
+      complexity: tier_3
+
+  tier_4:
+    - name: ceo
+      agent_path: make/agents/ceo.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the current implementation of this feature?"
+        - "What are the technical constraints we need to consider?"
+        - "What are the key risks and dependencies?"
+      use_when:
+        - "Strategic vision and direction"
+        - "Major business decisions"
+        - "Company-wide priorities"
+        - "Executive escalations"
+      complexity: tier_4
+
+    - name: cfo
+      agent_path: make/agents/cfo.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the current implementation of this feature?"
+        - "What are the technical constraints we need to consider?"
+        - "What are the key risks and dependencies?"
+      use_when:
+        - "Financial strategy and planning"
+        - "Budget approvals needed"
+        - "Investment decisions"
+        - "Fundraising initiatives"
+      complexity: tier_4
+
+    - name: cto
+      agent_path: make/agents/cto.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the current implementation of this feature?"
+        - "What are the technical constraints we need to consider?"
+        - "What are the key risks and dependencies?"
+      use_when:
+        - "Technology strategy and vision"
+        - "Major architecture decisions"
+        - "Innovation initiatives"
+        - "Engineering excellence"
+      complexity: tier_4
+
 objectives_templates:
   default:
-  - Implement {feature} in make domain
-  - Analyze {data} for make operations
-  - Create {deliverable} for make use case
+    - "Implement {feature} in make domain"
+    - "Analyze {data} for make operations"
+    - "Create {deliverable} for make use case"
+
 success_criteria_patterns:
   default:
-  - All objectives met with verified evidence
-  - All outputs exist and are production-quality
-  - No regressions in existing functionality
+    - "All objectives met with verified evidence"
+    - "All outputs exist and are production-quality"
+    - "No regressions in existing functionality"

@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "7.0.4",
-  "description": "Universal multi-domain agent system with controller-centric question-based delegation architecture",
+  "version": "7.1.0",
+  "description": "Universal multi-domain agent system with controller-centric question-based delegation architecture. V7.1.0 cleanup release: 201 agents across 5 super-domains (Make, Grow, Operate, People, Serve) + Core + Shared infrastructure. Completed V7.0.3 consolidation by removing 358 legacy agents (64% reduction from 560 to 201). Streamlined from 22 domain directories to 7.",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -24,24 +24,25 @@
     "designer-v2",
     "optimizer-v7",
     "reviewer-v3",
-    "v7.0"
+    "super-domains",
+    "v7.1"
   ],
   "author": "CaelanDrayer",
   "license": "MIT",
   "architecture": "V7.0 Controller-Centric Question-Based Delegation",
   "agents": {
-    "total": 190,
+    "total": 201,
     "core": 10,
     "shared": 14,
     "breakdown": {
-      "make": 81,
-      "grow": 40,
-      "operate": 18,
+      "make": 80,
+      "grow": 37,
+      "operate": 13,
       "people": 19,
-      "serve": 32
+      "serve": 28
     },
-    "legacy_total": 229,
-    "deduplication": "53% reduction (403 → 190 unique agents)"
+    "v7.0.3_consolidation": "64% reduction (560 legacy agents → 201 production agents)",
+    "directory_consolidation": "70% reduction (22 directories → 7 directories)"
   },
   "super_domains": [
     "make",
@@ -49,16 +50,6 @@
     "operate",
     "people",
     "serve"
-  ],
-  "legacy_domains": [
-    "engineering",
-    "revenue",
-    "creative",
-    "finance-operations",
-    "people-culture",
-    "customer-experience",
-    "legal-compliance",
-    "universal"
   ],
   "features": {
     "controller_coordination": true,

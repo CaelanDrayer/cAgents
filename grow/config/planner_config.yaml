@@ -1,42 +1,87 @@
 super_domain: grow
 description: Planning configuration for GROW super-domain
+
 controller_catalog:
   tier_2:
-  - &id001
-    name: marketing-strategist
-    domain: grow
-    coordination_style: question_based
-  - &id002
-    name: sales-strategist
-    domain: grow
-    coordination_style: question_based
-  - &id003
-    name: product-marketing-manager
-    domain: grow
-    coordination_style: question_based
-  - &id004
-    name: creative-director
-    domain: grow
-    coordination_style: question_based
-  - &id005
-    name: cro
-    domain: grow
-    coordination_style: question_based
-  tier_3:
-    primary:
-    - *id001
-    - *id002
-    supporting:
-    - *id003
-    - *id004
-    - *id005
+    - name: creative-director
+      agent_path: grow/agents/creative-director.md
+      coordination_style: question_based
+      typical_questions:
+        - "What are the current campaign/sales metrics?"
+        - "What is the target audience and positioning?"
+        - "What are the conversion bottlenecks?"
+      use_when:
+        - "Creative strategy and concepts needed"
+        - "Campaign creative execution"
+        - "Visual design systems"
+        - "Brand identity development"
+      complexity: tier_2
+
+    - name: marketing-strategist
+      agent_path: grow/agents/marketing-strategist.md
+      coordination_style: question_based
+      typical_questions:
+        - "What are the current campaign/sales metrics?"
+        - "What is the target audience and positioning?"
+        - "What are the conversion bottlenecks?"
+      use_when:
+        - "Marketing strategy development"
+        - "Competitive analysis needed"
+        - "Market research required"
+        - "Positioning and differentiation"
+      complexity: tier_2
+
+    - name: product-marketing-manager
+      agent_path: grow/agents/product-marketing-manager.md
+      coordination_style: question_based
+      typical_questions:
+        - "What are the current campaign/sales metrics?"
+        - "What is the target audience and positioning?"
+        - "What are the conversion bottlenecks?"
+      use_when:
+        - "Product launch planning"
+        - "Product positioning and messaging"
+        - "Competitive battlecards needed"
+        - "Sales enablement content"
+      complexity: tier_2
+
+    - name: sales-strategist
+      agent_path: grow/agents/sales-strategist.md
+      coordination_style: question_based
+      typical_questions:
+        - "What are the current campaign/sales metrics?"
+        - "What is the target audience and positioning?"
+        - "What are the conversion bottlenecks?"
+      use_when:
+        - "GTM strategy design"
+        - "Market segmentation and ICP definition"
+        - "Competitive landscape analysis"
+        - "Sales model optimization"
+      complexity: tier_2
+
+  tier_4:
+    - name: cro
+      agent_path: grow/agents/cro.md
+      coordination_style: question_based
+      typical_questions:
+        - "What are the current campaign/sales metrics?"
+        - "What is the target audience and positioning?"
+        - "What are the conversion bottlenecks?"
+      use_when:
+        - "Executive revenue strategy"
+        - "GTM planning and execution"
+        - "Sales organization design"
+        - "Cross-functional alignment"
+      complexity: tier_4
+
 objectives_templates:
   default:
-  - Implement {feature} in grow domain
-  - Analyze {data} for grow operations
-  - Create {deliverable} for grow use case
+    - "Implement {feature} in grow domain"
+    - "Analyze {data} for grow operations"
+    - "Create {deliverable} for grow use case"
+
 success_criteria_patterns:
   default:
-  - All objectives met with verified evidence
-  - All outputs exist and are production-quality
-  - No regressions in existing functionality
+    - "All objectives met with verified evidence"
+    - "All outputs exist and are production-quality"
+    - "No regressions in existing functionality"

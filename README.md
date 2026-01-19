@@ -2,221 +2,234 @@
 
 **Universal Multi-Domain Agent System for Claude Code**
 
-cAgents transforms AI-assisted work across any domain - software engineering, creative writing, business operations, and beyond - through specialized agent teams that collaborate autonomously.
+V7.1.0 - Production-ready controller-centric architecture with 201 agents across 5 super-domains.
 
 ## Overview
 
-cAgents is a modular ecosystem where you install domain plugins based on your needs:
+cAgents transforms AI-assisted work across any domain through specialized agent teams that collaborate autonomously. From software engineering to marketing, operations to creative work - one unified system handles it all.
 
-- **Software engineers** get `@cagents/software` (46 specialized agents)
-- **Business teams** get `@cagents/business` (23 agents for strategy, operations, sales, project management, forecasting)
-- **Writers** get `@cagents/creative` (coming Phase 2: agents for novels, stories, worldbuilding)
-- **Future domains**: Sales, Marketing, Finance, Operations, Support, HR, Legal
+**V7.1.0 Release** (2026-01-19):
+- ✅ Completed V7.0.3 consolidation: 358 legacy agents removed (64% reduction from 560 to 201)
+- ✅ Streamlined architecture: 22 directories → 7 directories (70% reduction)
+- ✅ Production-ready: Clean, consolidated structure with 5 super-domains
+- ✅ Final count: 201 agents (10 core + 14 shared + 177 domain specialists)
 
-All domains share the same core infrastructure and work together seamlessly.
+## Architecture
 
-## Architecture (V7.0 Controller-Centric)
+**V7.0 Controller-Centric Question-Based Delegation**
+
+201 agents organized into:
+- **Core** (10): Infrastructure (trigger, orchestrator, hitl, optimizer, 5 universal workflow agents)
+- **Shared** (14): Cross-domain capabilities (leadership, planning, data, quality, customer, operations)
+- **Make** (80): Creation (engineering, creative, product, devops, qa)
+- **Grow** (37): Acquisition (marketing, sales, partnerships)
+- **Operate** (13): Operations (finance, operations, procurement)
+- **People** (19): Talent (HR, culture, talent acquisition)
+- **Serve** (28): Support & Governance (customer experience, legal, compliance, support)
 
 ```
-cAgents V7.0/
-+-- core/                    # @cagents/core - Required foundation
-|   +-- agents/              # 8 core agents:
-|   |   +-- trigger.md       # Entry point + domain routing
-|   |   +-- orchestrator.md  # Phase management conductor
-|   |   +-- hitl.md          # Human escalation
-|   |   +-- universal-router.md      # ↓ V7.0 Universal Workflow Agents
-|   |   +-- universal-planner.md     # Work across ALL domains via
-|   |   +-- universal-executor.md    # configuration-driven behavior
-|   |   +-- universal-validator.md   # (replaces 55 domain-specific
-|   |   +-- universal-self-correct.md # workflow agents)
-|   +-- memory/              # Agent_Memory system
-|   +-- commands/            # /trigger, /designer, /reviewer
-|
-+-- Agent_Memory/            # Configuration-driven domain behaviors
-|   +-- _system/domains/     # 55 domain configs (11 domains × 5 configs)
-|       +-- software/        # router, planner, executor, validator, self-correct configs
-|       +-- business/        # (configuration defines domain-specific behavior)
-|       +-- creative/
-|       +-- planning/
-|       +-- sales/
-|       +-- marketing/
-|       +-- finance/
-|       +-- operations/
-|       +-- hr/
-|       +-- legal/
-|       +-- support/
-|
-+-- software/       # @cagents/software - 46 team agents
-+-- business/       # @cagents/business - 18 team agents
-+-- creative/       # @cagents/creative - 17 team agents
-+-- planning/       # @cagents/planning - 16 team agents
-+-- sales/          # @cagents/sales - 17 team agents
-+-- marketing/      # @cagents/marketing - 21 team agents
-+-- finance/        # @cagents/finance - 16 team agents
-+-- operations/     # @cagents/operations - 15 team agents
-+-- hr/             # @cagents/hr - 19 team agents
-+-- legal/          # @cagents/legal - 14 team agents
-+-- support/        # @cagents/support - 15 team agents
+User Request → Trigger → Orchestrator
+    ↓
+Routing (classify tier 0-4)
+    ↓
+Planning (define objectives)
+    ↓
+Coordinating (controller questions → specialists answer → synthesis)
+    ↓
+Executing (implementation)
+    ↓
+Validating (quality gates) → Complete
 ```
 
-### V7.0 Controller-Centric Architecture
-
-**V7.0 Architecture** (10 core infrastructure + controller-centric coordination):
-- 5 universal workflow agents work across ALL domains via YAML configuration
-- Domain behavior defined in `Agent_Memory/_system/domains/{domain}/*.yaml` files
-- Adding new domains only requires creating 5 config files, no code changes
-- Consistent workflow logic across all domains
-- Streamlined from 283 agents to 228 agents (-19.4%) by replacing domain-specific workflow agents
-
-**Universal Agent Delegation**:
-```
-User Request → Trigger (detect domain)
-                  ↓
-            Orchestrator (phase management)
-                  ↓
-         Universal-Router (load domain config)
-                  ↓
-        Universal-Planner (load domain config)
-                  ↓
-       Universal-Executor (delegate to domain team agents)
-                  ↓
-       Universal-Validator (load domain config)
-                  ↓
-    Universal-Self-Correct (if needed)
-```
-
-**Recursive Workflows** (V7.0):
-- Workflows can spawn child workflows (e.g., novel → chapters → scenes)
-- Maximum depth: 5 levels
-- Maximum children per parent: 20
-- Circular reference prevention
-- Parent-child result aggregation
+**Key Innovation**: Controllers use question-based delegation to specialists, synthesize answers, and coordinate implementation. Planning defines WHAT (objectives), controllers determine HOW (questions + synthesis).
 
 ## Installation
 
-### From Claude Code Marketplace (Recommended)
+### From Claude Code Marketplace
 
+```bash
 /plugin CaelanDrayer/cAgents
+```
 
-This installs both Core and Software domains by default.
+This installs the complete system with all super-domains.
+
+### Manual Installation
+
+```bash
+git clone https://github.com/CaelanDrayer/cAgents.git
+cd cAgents
+```
+
+Then configure Claude Code to load the plugin directory.
 
 ## Quick Start
 
-```bash
-# Start any task with /trigger - routing happens automatically
-/trigger Fix the login timeout bug
-/trigger Write a novel about space pirates
-/trigger Create Q4 sales forecast
+### Universal /trigger Command
 
-# Universal commands (work across all domains)
-/designer   # Interactive design assistant (for any domain)
-/reviewer   # Comprehensive review (code, documents, strategies)
+One command handles ANY request type - routing happens automatically:
+
+```bash
+# Engineering work
+/trigger Fix the authentication bug
+
+# Creative writing
+/trigger Write a sci-fi short story about AI
+
+# Marketing
+/trigger Plan Q4 product launch campaign
+
+# Operations
+/trigger Create annual budget for 2027
+
+# HR/People
+/trigger Design onboarding program for engineers
+
+# Customer Support
+/trigger Create knowledge base article about refunds
 ```
 
-## Core Concepts
-
-### Unified /trigger Command
-
-One command handles ANY request type. The system automatically:
-1. Parses your request and identifies intent
-2. Routes to the appropriate domain (software, creative, etc.)
-3. Classifies complexity (tier 0-4)
-4. Orchestrates the right team of agents
-5. Delivers validated results
+The system automatically:
+1. Analyzes your request and identifies intent
+2. Routes to the appropriate super-domain (Make/Grow/Operate/People/Serve)
+3. Classifies complexity tier (0-4)
+4. Selects appropriate controllers and execution agents
+5. Orchestrates the workflow through all phases
+6. Delivers validated results
 
 ### Complexity Tiers
 
-| Tier | Type | Example | Approach |
-|------|------|---------|----------|
-| 0 | Trivial | "What is X?" | Direct answer |
-| 1 | Simple | "Fix typo" | Execute + Validate |
-| 2 | Moderate | "Fix bug" | Plan + Execute + Validate |
-| 3 | Complex | "Add feature" | Parallel team execution |
-| 4 | Expert | "Major refactor" | Full orchestration + HITL |
+| Tier | Type | Coordination | Example | Workflow |
+|------|------|--------------|---------|----------|
+| 0 | Trivial | None | "What is X?" | routing → answer |
+| 1 | Simple | None | "Fix typo" | routing → planning → executing → validating |
+| 2 | Moderate | 1 controller | "Fix bug" | routing → planning → **coordinating** → executing → validating |
+| 3 | Complex | 1 primary + 1-2 supporting | "Add feature" | routing → planning → **coordinating** → executing → validating |
+| 4 | Expert | 1 executive + 1 primary + 2-4 supporting + HITL | "Major refactor" | routing → planning → **coordinating** → executing → validating + HITL |
 
-### Agent_Memory System
+### Universal Commands
 
-All state persists in the `Agent_Memory/` folder at your project root:
+```bash
+/designer   # Interactive design assistant (works across all domains)
+/reviewer   # Comprehensive review (code, documents, strategies, campaigns)
+/optimize   # Universal optimizer (8 types: code, content, process, data, infrastructure, campaign, creative, sales)
+```
 
-- `_system/` - Registry, config, agent status
-- `_archive/` - Completed instructions
-- `_knowledge/` - Persistent learning across domains
-- `_communication/` - Inter-agent messaging
-- `{instruction_id}/` - Per-task working memory
+## Super-Domains
 
-## Domain Plugins
+### Make (Creation) - 80 agents
+Engineering, creative writing, product design, devops, QA
+- **Controllers**: engineering-manager, architect, creative-director, product-manager, cto, cco
+- **Execution**: backend-developer, frontend-developer, copywriter, story-architect, qa-lead, security-specialist
+- **Use cases**: Software development, creative content, product design, technical writing
 
-### @cagents/core (Required)
+### Grow (Acquisition) - 37 agents
+Marketing, sales, partnerships
+- **Controllers**: marketing-strategist, campaign-manager, sales-strategist, cro
+- **Execution**: content-strategist, copywriter, seo-specialist, sales-development-rep, account-executive
+- **Use cases**: Marketing campaigns, sales strategies, content marketing, SEO, demand generation
 
-Shared infrastructure for all domains (8 agents):
+### Operate (Operations) - 13 agents
+Finance, operations, procurement
+- **Controllers**: operations-manager, finance-manager, cfo, coo
+- **Execution**: financial-analyst, budget-analyst, procurement-specialist, supply-chain-manager
+- **Use cases**: Financial planning, budgeting, operations optimization, procurement
 
-**Core Agents**:
-- **Trigger** - Entry point, intent detection, domain routing, recursive workflow support
-- **Orchestrator** - Phase management conductor (planning → executing → validating)
-- **HITL** - Human-in-the-loop escalation for complex decisions
+### People (Talent) - 19 agents
+HR, talent acquisition, culture
+- **Controllers**: hr-manager, talent-acquisition-specialist, chro
+- **Execution**: recruiter, onboarding-specialist, culture-champion, learning-development-specialist
+- **Use cases**: Recruiting, onboarding, performance management, culture initiatives
 
-**Universal Workflow Agents** (V7.0):
-- **Universal-Router** - Tier classification across all domains via config
-- **Universal-Planner** - Task decomposition across all domains via config
-- **Universal-Executor** - Team coordination across all domains via config
-- **Universal-Validator** - Quality gates across all domains via config
-- **Universal-Self-Correct** - Adaptive recovery across all domains via config
+### Serve (Support & Governance) - 28 agents
+Customer experience, legal, compliance, support
+- **Controllers**: customer-success-manager, legal-counsel, compliance-officer, cx-director
+- **Execution**: support-specialist, technical-writer, compliance-analyst, legal-researcher
+- **Use cases**: Customer support, legal review, compliance audits, documentation
 
-**Universal Commands**: /trigger, /designer, /reviewer (work across all domains)
+## Core Features
 
-### @cagents/software (Default)
+### Controller-Centric Coordination
+Controllers ask questions to specialists, synthesize answers, coordinate implementation. No more rigid task lists - adaptive, expert-driven workflows.
 
-46 specialized software engineering team agents:
+### Objective-Driven Planning
+Plans define high-level objectives (WHAT), controllers determine implementation approach (HOW) through question-based delegation.
 
-**Workflow**: Handled by universal agents + software domain configs
-**Executive**: CEO, CTO, CFO, COO, VP Engineering
-**Leadership**: Tech Lead, Architect, Senior Developer
-**Development**: Frontend, Backend, QA, Security, DevOps, DBA
-**Intelligence**: Pattern Recognition, Risk Assessment, Dependency Analyzer
-**QA Layer**: Architecture Reviewer, Code Standards Auditor, Security Analyst
+### Universal Workflow Agents
+5 universal agents (router, planner, executor, validator, self-correct) work across ALL domains via YAML configuration. No domain-specific workflow code needed.
 
-_Note: Domain-specific workflow agents (router, planner, executor, validator, self-correct) are deprecated. Use universal workflow agents instead._
+### Parallel Execution
+Up to 50 concurrent agents with 4 execution modes (Sequential, Pipeline, Swarm, Mesh) for up to 50x speedup.
 
-### @cagents/business (Fully Functional)
+### Enhanced Commands (V7.0)
+- **Trigger V2.0**: 2-3x faster initialization, 90%+ domain accuracy, context-aware detection
+- **Designer V2.0**: Smart chunking, context discovery, adaptive questioning
+- **Optimizer V7.0**: Zero-arg invocation, auto-detection, 8 optimization types
+- **Reviewer V3.0**: 33% faster, 81% faster to critical issues, 98% more actionable suggestions
 
-18 specialized business operations team agents:
+### Ralph Loop-Inspired Bash Infrastructure
+6 library modules with 86 functions, 14 lifecycle hooks, atomic file operations, markdown frontmatter state management.
 
-**Workflow**: Handled by universal agents + business domain configs
-**Executive**: CSO (Chief Strategy Officer)
-**Strategic Management**: Business Development Manager, Market Analyst
-**Operations**: Operations Manager, Process Improvement, Supply Chain, Quality Manager
-**Project & Change**: Project Manager, Program Manager, Change Manager, Business Analyst
-**Customer & Sales**: Customer Success Manager, Account Manager, Sales Operations Manager
-**Specialized**: Risk Manager, Compliance Manager, Procurement Specialist, Facilities Manager
+## Agent_Memory System
 
-_Note: Domain-specific workflow agents (router, planner, executor, validator, self-correct) are deprecated. Use universal workflow agents instead._
+All state persists in `Agent_Memory/` at your project root:
 
-### @cagents/creative (Fully Configured)
+```
+Agent_Memory/
+├── _system/              # Registry, config, agent status
+├── _knowledge/           # Patterns, calibration, learnings
+├── _archive/             # Completed instructions
+└── {instruction_id}/     # Per-task working memory
+    ├── instruction.yaml  # Request + metadata
+    ├── status.yaml       # Current phase
+    ├── workflow/         # Plan, coordination_log, execution state
+    ├── tasks/            # pending/, in_progress/, completed/
+    └── outputs/          # Deliverables
+```
 
-17 creative writing team agents:
+File-based, instruction-scoped, parallel-safe, pause/resume capable.
 
-**Workflow**: Handled by universal agents + creative domain configs
-**Executive**: CCO (Chief Creative Officer)
-**Narrative**: Story Architect, Plot Developer, Narrative Designer
-**Characters & World**: Character Designer, Character Psychologist, Worldbuilder, Setting Designer, Lore Keeper
-**Craft**: Prose Stylist, Dialogue Specialist, Editor, Copy Editor
-**Quality**: Continuity Checker, Research Specialist, Sensitivity Reader
+## Documentation
 
-_Note: Domain-specific workflow agents (router, planner, executor, validator, self-correct) are deprecated. Use universal workflow agents instead._
+- **CLAUDE.md** - Complete architecture, commands, and agent reference (this is the main documentation)
+- **README.md** - Quick start guide (this file)
+- **docs/** - Implementation guides, standards, optimization tracking
+- **.claude/rules/** - Modular topic-specific rules (controllers, execution, memory, quality)
+
+## Performance
+
+**V7.0 Architecture**:
+- 30-40% simpler planning (objectives vs detailed tasks)
+- 20-30% fewer tokens (no detailed task lists)
+- Up to 50x speedup with parallel execution (swarm mode)
+
+**Enhanced Commands**:
+- Reviewer V3.0: 33% faster, 81% faster to critical issues
+- Optimizer V7.0: 20-50% faster code, 30-60% smaller bundles
+- Task consolidation: 40-88% context reduction
+
+**V7.1.0 Consolidation**:
+- 64% agent reduction (560 → 201)
+- 70% directory reduction (22 → 7)
+- Cleaner, more maintainable architecture
+
+## Version History
+
+- **V7.1.0** (2026-01-19) - Cleanup release: removed 358 legacy agents, streamlined to 7 directories, 201 production agents
+- **V7.0.3** - Introduced 5 super-domains (Make, Grow, Operate, People, Serve), consolidated 8 legacy domains
+- **V7.0.0** - Controller-centric architecture with question-based delegation, objective-driven planning
+- **V6.0.0** - Universal workflow agents replace domain-specific workflow agents via configuration
+- **V5.0.0** - Orchestration with realistic organizational hierarchy
+
+## Support
+
+- **Issues**: [GitHub Issues](https://github.com/CaelanDrayer/cAgents/issues)
+- **Documentation**: See CLAUDE.md for complete reference
+- **License**: MIT
 
 ## License
 
 MIT License - See [LICENSE](LICENSE) for details.
 
-## Version History
-
-- **7.0.1** - Current version with V7.0 Controller-Centric Question-Based Delegation architecture. 230 agents across 8 domains with tier-based coordination.
-- **6.0.0** - Universal Workflow Architecture: 5 universal agents replace 55 domain-specific workflow agents via configuration. All 11 domains fully configured. Recursive workflows support.
-- **5.0.0** - Orchestration with realistic organizational hierarchy, 11 domains planned
-- **4.1.0** - Complete business domain (23 agents), universal commands moved to core, 72 total agents
-- **4.0.0** - cAgents multi-domain architecture (Phase 1: Core + Software)
-- **3.0.x** - agent-design plugin (software engineering only)
-
 ---
 
-Built with Claude Code
+**Built with Claude Code** | **cAgents V7.1.0** | 201 agents across 5 super-domains

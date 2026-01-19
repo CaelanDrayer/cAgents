@@ -1,8 +1,9 @@
 {
   "name": "cagents-make",
-  "version": "7.0.4",
-  "description": "MAKE super-domain: Creation capability (engineering + creative + product)",
+  "version": "7.1.0",
+  "description": "MAKE super-domain: Creation capability (engineering + creative + product). 80 agents for software development, creative content, product design, devops, and QA. V7.1.0 cleanup release.",
   "super_domain": "make",
+  "agent_count": 80,
   "capabilities": ["engineering", "creative", "product", "devops", "qa"],
   "dependencies": [
     "cagents-core",

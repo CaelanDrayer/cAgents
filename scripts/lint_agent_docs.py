@@ -4,6 +4,8 @@ Agent Documentation Linter for cAgents V7.0
 
 Validates agent markdown files have proper YAML frontmatter with required fields.
 
+V7.1.0 Optimization: Added parallel processing with ThreadPoolExecutor.
+
 Required fields:
   - name: Agent identifier
   - tier: controller, execution, or support
@@ -20,6 +22,8 @@ import yaml
 from pathlib import Path
 from typing import Dict, List, Set, Tuple, Optional
 from dataclasses import dataclass
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
 
 # ANSI color codes
 RED = '\033[91m'
@@ -48,6 +52,8 @@ class AgentLinter:
         self.issues = []
         self.agents_checked = 0
         self.agents_valid = 0
+        # V7.1.0: Thread-safe counters and lock
+        self._lock = threading.Lock()
 
     def find_agent_files(self) -> List[Path]:
         """Find all agent markdown files in the project."""
@@ -74,14 +80,32 @@ class AgentLinter:
         return sorted(agent_files)
 
     def lint_all_agents(self) -> Tuple[int, int, int]:
-        """Lint all agent files. Returns (errors, warnings, valid)."""
+        """Lint all agent files with parallel processing. Returns (errors, warnings, valid)."""
 
         agent_files = self.find_agent_files()
 
-        print(f"{BLUE}Linting {len(agent_files)} agent files...{RESET}\n")
+        print(f"{BLUE}Linting {len(agent_files)} agent files (parallel)...{RESET}\n")
 
-        for agent_file in agent_files:
-            self.lint_agent(agent_file)
+        # V7.1.0: Use ThreadPoolExecutor for parallel linting
+        max_workers = min(32, (os.cpu_count() or 1) + 4)
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all lint tasks
+            futures = {executor.submit(self._lint_agent_safe, agent_file): agent_file
+                       for agent_file in agent_files}
+
+            # Collect results as they complete
+            for future in as_completed(futures):
+                agent_file = futures[future]
+                try:
+                    issues, is_valid = future.result()
+                    with self._lock:
+                        self.issues.extend(issues)
+                        self.agents_checked += 1
+                        if is_valid:
+                            self.agents_valid += 1
+                except Exception as e:
+                    print(f"{RED}Error linting {agent_file}: {e}{RESET}")
 
         return (
             len([i for i in self.issues if i.severity == 'error']),
@@ -89,11 +113,152 @@ class AgentLinter:
             self.agents_valid
         )
 
+    def _lint_agent_safe(self, agent_file: Path) -> Tuple[List[AgentIssue], bool]:
+        """Thread-safe agent linting that returns issues instead of modifying state."""
+        issues = []
+        is_valid = True
+
+        try:
+            with open(agent_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+        except Exception as e:
+            issues.append(AgentIssue(
+                file_path=agent_file,
+                severity='error',
+                issue_type='read_error',
+                message=f"Failed to read file: {e}"
+            ))
+            return issues, False
+
+        # Check for frontmatter
+        if not content.startswith('---\n'):
+            issues.append(AgentIssue(
+                file_path=agent_file,
+                severity='error',
+                issue_type='no_frontmatter',
+                message="Missing YAML frontmatter (must start with ---)"
+            ))
+            return issues, False
+
+        # Extract frontmatter
+        end_idx = content.find('\n---\n', 4)
+        if end_idx == -1:
+            issues.append(AgentIssue(
+                file_path=agent_file,
+                severity='error',
+                issue_type='invalid_frontmatter',
+                message="Frontmatter not properly closed (missing closing ---)"
+            ))
+            return issues, False
+
+        frontmatter_text = content[4:end_idx]
+
+        # Parse YAML
+        try:
+            frontmatter = yaml.safe_load(frontmatter_text)
+        except yaml.YAMLError as e:
+            issues.append(AgentIssue(
+                file_path=agent_file,
+                severity='error',
+                issue_type='invalid_yaml',
+                message=f"Invalid YAML: {e}"
+            ))
+            return issues, False
+
+        if not isinstance(frontmatter, dict):
+            issues.append(AgentIssue(
+                file_path=agent_file,
+                severity='error',
+                issue_type='invalid_frontmatter',
+                message="Frontmatter is not a dictionary"
+            ))
+            return issues, False
+
+        # Validate required fields
+        has_errors = False
+
+        for field in REQUIRED_FIELDS:
+            if field not in frontmatter:
+                issues.append(AgentIssue(
+                    file_path=agent_file,
+                    severity='error',
+                    issue_type='missing_field',
+                    message=f"Missing required field: {field}",
+                    field=field
+                ))
+                has_errors = True
+            elif not frontmatter[field]:
+                issues.append(AgentIssue(
+                    file_path=agent_file,
+                    severity='warning',
+                    issue_type='empty_field',
+                    message=f"Empty field: {field}",
+                    field=field
+                ))
+
+        # Validate field values
+        if 'tier' in frontmatter:
+            tier = frontmatter['tier']
+            if tier not in VALID_TIERS:
+                issues.append(AgentIssue(
+                    file_path=agent_file,
+                    severity='error',
+                    issue_type='invalid_tier',
+                    message=f"Invalid tier: '{tier}' (must be one of: {', '.join(VALID_TIERS)})",
+                    field='tier'
+                ))
+                has_errors = True
+
+        if 'model' in frontmatter:
+            model = frontmatter['model']
+            if model not in VALID_MODELS:
+                issues.append(AgentIssue(
+                    file_path=agent_file,
+                    severity='warning',
+                    issue_type='invalid_model',
+                    message=f"Invalid model: '{model}' (typically: {', '.join(VALID_MODELS)})",
+                    field='model'
+                ))
+
+        if 'tools' in frontmatter:
+            tools = frontmatter['tools']
+            if not isinstance(tools, list):
+                issues.append(AgentIssue(
+                    file_path=agent_file,
+                    severity='warning',
+                    issue_type='invalid_tools',
+                    message=f"tools should be a list, got: {type(tools).__name__}",
+                    field='tools'
+                ))
+            elif len(tools) == 0:
+                issues.append(AgentIssue(
+                    file_path=agent_file,
+                    severity='info',
+                    issue_type='no_tools',
+                    message="No tools specified (agent may not use any tools)",
+                    field='tools'
+                ))
+
+        # Check name matches filename
+        if 'name' in frontmatter:
+            expected_name = agent_file.stem
+            actual_name = frontmatter['name']
+            if actual_name != expected_name:
+                issues.append(AgentIssue(
+                    file_path=agent_file,
+                    severity='warning',
+                    issue_type='name_mismatch',
+                    message=f"Name mismatch: frontmatter '{actual_name}' != filename '{expected_name}'",
+                    field='name'
+                ))
+
+        is_valid = not has_errors
+        return issues, is_valid
+
     def lint_agent(self, agent_file: Path):
-        """Lint a single agent file."""
+        """Lint a single agent file (legacy sequential method)."""
 
         self.agents_checked += 1
-        relative_path = agent_file.relative_to(self.project_root)
 
         try:
             with open(agent_file, 'r', encoding='utf-8') as f:
@@ -209,10 +374,10 @@ class AgentLinter:
         infos = [i for i in self.issues if i.severity == 'info']
 
         print(f"Total agents checked: {self.agents_checked}")
-        print(f"{GREEN}✓ Valid agents: {self.agents_valid}{RESET}")
-        print(f"{RED}❌ Errors: {len(errors)}{RESET}")
-        print(f"{YELLOW}⚠  Warnings: {len(warnings)}{RESET}")
-        print(f"{BLUE}ℹ  Info: {len(infos)}{RESET}\n")
+        print(f"{GREEN}Valid agents: {self.agents_valid}{RESET}")
+        print(f"{RED}Errors: {len(errors)}{RESET}")
+        print(f"{YELLOW}Warnings: {len(warnings)}{RESET}")
+        print(f"{BLUE}Info: {len(infos)}{RESET}\n")
 
         # Group issues by file
         issues_by_file = {}
@@ -234,8 +399,8 @@ class AgentLinter:
 
                 for issue in file_issues:
                     color = RED if issue.severity == 'error' else YELLOW if issue.severity == 'warning' else BLUE
-                    icon = '❌' if issue.severity == 'error' else '⚠️' if issue.severity == 'warning' else 'ℹ️'
-                    print(f"  {color}{icon} {issue.message}{RESET}")
+                    icon = 'x' if issue.severity == 'error' else '!' if issue.severity == 'warning' else 'i'
+                    print(f"  {color}[{icon}] {issue.message}{RESET}")
 
                 print()
 
@@ -272,13 +437,13 @@ class AgentLinter:
 
         # Final status
         if errors:
-            print(f"{RED}❌ FAILED: {len(errors)} errors found{RESET}")
+            print(f"{RED}FAILED: {len(errors)} errors found{RESET}")
             return 1
         elif warnings:
-            print(f"{YELLOW}⚠️  PASSED with warnings ({len(warnings)} warnings){RESET}")
+            print(f"{YELLOW}PASSED with warnings ({len(warnings)} warnings){RESET}")
             return 0
         else:
-            print(f"{GREEN}✓ PASSED: All agents valid{RESET}")
+            print(f"{GREEN}PASSED: All agents valid{RESET}")
             return 0
 
     def generate_compliance_report(self, output_file: Path):
@@ -288,19 +453,21 @@ class AgentLinter:
         warnings = [i for i in self.issues if i.severity == 'warning']
         infos = [i for i in self.issues if i.severity == 'info']
 
+        compliance_rate = (self.agents_valid / self.agents_checked * 100) if self.agents_checked > 0 else 0
+
         report = f"""# Agent Documentation Compliance Report
 
-**Date**: {Path(__file__).stat().st_mtime}
+**Generated**: Auto-generated by lint_agent_docs.py V7.1.0
 **Total Agents**: {self.agents_checked}
 **Valid Agents**: {self.agents_valid}
-**Compliance Rate**: {(self.agents_valid / self.agents_checked * 100) if self.agents_checked > 0 else 0:.1f}%
+**Compliance Rate**: {compliance_rate:.1f}%
 
 ## Summary
 
-- ✓ Valid: {self.agents_valid}
-- ❌ Errors: {len(errors)}
-- ⚠️  Warnings: {len(warnings)}
-- ℹ️  Info: {len(infos)}
+- Valid: {self.agents_valid}
+- Errors: {len(errors)}
+- Warnings: {len(warnings)}
+- Info: {len(infos)}
 
 ## Issues by Type
 
@@ -353,8 +520,9 @@ class AgentLinter:
             report += "\n"
 
         # Write report
+        output_file.parent.mkdir(parents=True, exist_ok=True)
         output_file.write_text(report)
-        print(f"{GREEN}✓ Compliance report written to: {output_file.relative_to(self.project_root)}{RESET}")
+        print(f"{GREEN}Compliance report written to: {output_file.relative_to(self.project_root)}{RESET}")
 
 
 def main():
@@ -367,7 +535,7 @@ def main():
     script_path = Path(__file__).resolve()
     project_root = script_path.parent.parent
 
-    print(f"{BLUE}cAgents Agent Documentation Linter V7.0{RESET}")
+    print(f"{BLUE}cAgents Agent Documentation Linter V7.1.0{RESET}")
     print(f"Project root: {project_root}")
     if fix_mode:
         print(f"{YELLOW}Fix mode: ON (will auto-fix common issues){RESET}")

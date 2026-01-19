@@ -1,8 +1,0 @@
-{
-  "name": "@cagents/sales",
-  "version": "7.0.2",
-  "description": "Sales domain for revenue generation and pipeline management",
-  "keywords": ["sales", "revenue", "pipeline", "forecasting", "CRM"],
-  "author": "CaelanDrayer",
-  "license": "MIT"
-}

@@ -1,7 +1,7 @@
 {
   "name": "cagents-shared-capabilities",
-  "version": "7.0.4",
-  "description": "Shared cross-domain capabilities for cAgents V7.0.3 - Leadership, Planning, Data, Quality, Customer, Operations. Universal tier-2 controller and execution agents accessible to all workflows. V7.0.3: Enhanced with Ralph Loop-inspired bash infrastructure for robust script execution and lifecycle hooks. Includes 33 shared agents spanning executive leadership (CEO, CFO, COO, CTO, etc.), strategic planning (portfolio-manager, project-manager, okr-specialist), data & analytics (data-scientist, business-intelligence), quality & compliance (quality-manager, risk-manager), customer relations (account-manager, customer-success-manager), and operations (operations-manager, process-improvement-specialist).",
+  "version": "7.1.0",
+  "description": "Shared cross-domain capabilities for cAgents V7.1.0 - Leadership, Planning, Data, Quality, Customer, Operations. 14 universal tier-2 controller and execution agents accessible to all workflows across all 5 super-domains. V7.1.0 cleanup release. Includes executive leadership (CEO, CFO, COO, CTO, CRO, CPO, CSO, CCO), strategic planning (portfolio-manager, project-manager), data & analytics (data-scientist), quality & compliance (quality-manager, risk-manager), and operations (operations-manager).",
   "domain": "shared",
   "tier": 2,
   "agents": [

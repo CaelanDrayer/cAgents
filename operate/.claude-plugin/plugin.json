@@ -1,8 +1,9 @@
 {
   "name": "cagents-operate",
-  "version": "7.0.4",
-  "description": "OPERATE super-domain: Business operations capability (finance + operations)",
+  "version": "7.1.0",
+  "description": "OPERATE super-domain: Business operations capability (finance + operations). 13 agents for financial planning, budgeting, operations optimization, and procurement. V7.1.0 cleanup release.",
   "super_domain": "operate",
+  "agent_count": 13,
   "capabilities": ["finance", "finance-operations", "operations", "procurement", "revenue"],
   "dependencies": [
     "cagents-core",

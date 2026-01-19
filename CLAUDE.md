@@ -1,6 +1,30 @@
 # CLAUDE.md
 
-Core architecture and development guidance for cAgents V7.0.
+Core architecture and development guidance for cAgents V7.1.0.
+
+## Table of Contents
+
+- [Documentation Structure](#documentation-structure)
+- [Memory Management](#memory-management)
+- [Project Overview](#project-overview)
+- [CRITICAL: Automatic Workflow Progression](#critical-automatic-workflow-progression)
+- [Core Infrastructure](#core-infrastructure-tier-1-10-agents)
+- [V7.0 Controller-Centric Architecture](#v70-controller-centric-architecture)
+- [V7.0 Coordinating Phase](#v70-coordinating-phase)
+- [Complexity Tiers](#complexity-tiers)
+- [Workflow Execution](#workflow-execution)
+- [Objective-Based Planning](#objective-based-planning)
+- [Task Completion Protocol](#task-completion-protocol)
+- [Commands](#commands)
+- [Agent Memory](#agent-memory)
+- [Recursive Workflows](#recursive-workflows)
+- [Creating Agents](#creating-agents)
+- [Creating Domains](#creating-domains)
+- [Directory Structure](#directory-structure)
+- [Performance Benchmarks](#performance-benchmarks)
+- [Quick Reference](#quick-reference)
+- [V7.0 Migration](#v70-migration)
+- [Troubleshooting](#troubleshooting)
 
 ## Documentation Structure
 
@@ -57,9 +81,9 @@ cAgents/
 │       │   ├── controllers.md       # Controller coordination guidelines
 │       │   └── execution.md         # Execution agent patterns
 │       ├── domains/
-│       │   ├── engineering.md       # Engineering domain specifics
-│       │   ├── revenue.md           # Revenue domain specifics
-│       │   └── creative.md          # Creative domain specifics
+│       │   ├── make.md              # Make super-domain specifics
+│       │   ├── grow.md              # Grow super-domain specifics
+│       │   └── operate.md           # Operate super-domain specifics
 │       ├── memory/
 │       │   ├── agent-memory.md      # Agent_Memory/ structure and usage
 │       │   └── context-mgmt.md      # Context handling best practices
@@ -105,8 +129,9 @@ See @docs/V5_ARCHITECTURE.md for detailed architecture design.
 @workflow_agent_interactions.md
 
 ## Domain Configurations
-- Engineering: @Agent_Memory/_system/domains/engineering/planner_config.yaml
-- Revenue: @Agent_Memory/_system/domains/revenue/planner_config.yaml
+- Make: @Agent_Memory/_system/domains/make/planner_config.yaml
+- Grow: @Agent_Memory/_system/domains/grow/planner_config.yaml
+- Operate: @Agent_Memory/_system/domains/operate/planner_config.yaml
 
 ## Personal Preferences
 @~/.claude/my-cagents-preferences.md
@@ -138,7 +163,7 @@ See @docs/V5_ARCHITECTURE.md for detailed architecture design.
 
 ## Test Data
 - Test instruction: inst_20260113_001
-- Test domain: engineering
+- Test super-domain: make
 - Test controller: engineering-manager
 ```
 
@@ -268,14 +293,19 @@ CLAUDE.local.md
 
 ## Project Overview
 
-**cAgents V7.0**: Universal multi-domain agent system with 4-tier controller-centric architecture and question-based delegation.
+**cAgents V7.1.0**: Universal multi-domain agent system with 4-tier controller-centric architecture and question-based delegation.
+
+**V7.1.0 Release**: Cleanup release completing V7.0.3 consolidation
+- **Removed**: 358 legacy agents (64% reduction from 560 to 201)
+- **Streamlined**: 22 domain directories → 7 directories (70% reduction)
+- **Production-ready**: Clean, consolidated architecture with 5 super-domains
 
 **Architecture**: V7.0 - Controller-Centric Question-Based Delegation
 - **Tier 1**: 10 core infrastructure agents (trigger, orchestrator, hitl, optimizer, task-consolidator, 5 universal workflow agents)
-- **Tier 2**: ~50 controller agents (coordinate work via question-based delegation)
-- **Tier 3**: ~150 execution agents (answer questions and implement solutions)
-- **Tier 4**: ~19 support agents (foundational services)
-- **Total**: 229 agents
+- **Tier 2**: Controllers (coordinate work via question-based delegation)
+- **Tier 3**: Execution agents (answer questions and implement solutions)
+- **Tier 4**: Support agents (foundational services)
+- **Total**: 201 agents
 - **Execution**: 4 modes (Sequential, Pipeline, Swarm, Mesh) - up to 50x speedup
 
 **V7.0 Key Features**:
@@ -285,136 +315,40 @@ CLAUDE.local.md
 - **Simpler Planning**: High-level objectives instead of detailed task lists
 - **Expert-Driven**: Controllers use domain expertise to break down work adaptively
 
-**What Changed from V4.0**:
-- ❌ Eliminated: Detailed task lists in planning phase
-- ❌ Eliminated: Capability tags (replaced with tier designation)
-- ❌ Eliminated: Direct agent assignment by planner
-- ✅ Added: Coordinating phase between planning and executing
-- ✅ Added: Controller tier (tier 2) for coordination
-- ✅ Added: Question-based delegation pattern
-- ✅ Added: Objective-driven planning
-- ✅ Changed: Executor monitors controllers, not execution agents
-- ✅ Simplified: 4-tier architecture (core, controller, execution, support)
-
-**Agent Distribution** (4 tiers):
+**Agent Distribution**:
 - **Core Infrastructure** (10): Workflow orchestration
-- **Controllers** (~50): Coordination via question-based delegation
-- **Execution** (~150): Specialist work (answer questions, implement solutions)
-- **Support** (~19): Foundational services
+- **Shared** (14): Cross-domain capabilities (leadership, planning, data, quality)
+- **Make** (80): Creation capability (engineering, creative, product)
+- **Grow** (37): Acquisition capability (marketing, sales)
+- **Operate** (13): Operations capability (finance, operations)
+- **People** (19): Talent capability (HR, culture)
+- **Serve** (28): Support & governance (customer experience, legal, compliance)
 
-**Domain Tags** (8 domains):
-- Engineering (45), Revenue (40), Finance-Operations (32), People-Culture (19)
-- Customer-Experience (18), Legal-Compliance (14), Creative (18), Universal (33)
+**Super-Domains** (5 domains):
+- **Make**: Creation (engineering + creative + product)
+- **Grow**: Acquisition (marketing + sales)
+- **Operate**: Operations (finance + operations)
+- **People**: Talent (HR + culture)
+- **Serve**: Support & Governance (customer experience + legal + compliance)
 
 ## CRITICAL: Automatic Workflow Progression
 
-**NEVER ASK FOR PERMISSION TO PROCEED WITH STANDARD WORKFLOW PHASES**
+**Core Principle**: Workflows proceed automatically through phases (routing → planning → coordinating → executing → validating) WITHOUT asking permission. See `docs/AUTOMATIC_WORKFLOW_PROGRESSION.md` for full policy.
 
-Workflows MUST proceed automatically through phases without asking user for permission. This is a core design principle of cAgents.
+**AUTO-PROCEED** (Never Ask):
+- Phase transitions when complete
+- plan.yaml created → coordinating
+- coordination_log.yaml complete → executing
+- Implementation complete → validating
+- Validation PASS → complete
 
-### When to Proceed Automatically (DO NOT ASK)
+**ASK USER** (Only):
+- Tier 4 HITL gates (in plan.yaml)
+- Unrecoverable errors/blockers
+- Ambiguous requirements
+- Validation BLOCKED (not FIXABLE)
 
-**Phase Transitions** (routing → planning → coordinating → executing → validating):
-- ✅ ALWAYS proceed automatically when phase completes successfully
-- ✅ ALWAYS proceed to next phase without asking user
-- ✅ NEVER ask "Would you like me to continue with the next phase?"
-- ✅ NEVER ask "Would you prefer to review the requirements first?"
-- ✅ NEVER ask "Should I proceed with implementation?"
-
-**Planning → Coordinating**:
-- ✅ When plan.yaml is created → IMMEDIATELY transition to coordinating
-- ❌ DO NOT ask user to review plan before proceeding
-- ❌ DO NOT wait for user approval
-
-**Coordinating → Executing**:
-- ✅ When coordination_log.yaml is complete → IMMEDIATELY transition to executing
-- ❌ DO NOT ask user to review coordination before proceeding
-
-**Executing → Validating**:
-- ✅ When implementation complete → IMMEDIATELY transition to validating
-- ❌ DO NOT ask user to review outputs before validation
-
-**Validating → Complete**:
-- ✅ When validation passes → IMMEDIATELY mark workflow complete
-- ❌ DO NOT ask user to review validation results
-
-### When to Ask User (ONLY These Cases)
-
-**Tier 4 Workflows with HITL**:
-- ✅ ASK at designated HITL approval gates (specified in plan.yaml)
-- ✅ ASK for strategic decisions requiring human judgment
-- ✅ Example: "Architecture design complete. HITL approval required before implementation."
-
-**Errors and Blockers**:
-- ✅ ASK when workflow encounters unrecoverable error
-- ✅ ASK when blocker cannot be auto-resolved
-- ✅ Example: "Execution blocked: Missing API credentials. Please provide credentials."
-
-**Ambiguous Requirements**:
-- ✅ ASK when user request is unclear and cannot be inferred
-- ✅ ASK when multiple valid interpretations exist
-- ✅ Example: "Request unclear: Do you want OAuth2 for web app or mobile app?"
-
-**Validation Failures (BLOCKED)**:
-- ✅ ASK when validation fails with BLOCKED status (not FIXABLE)
-- ✅ Example: "Validation failed: Missing required API endpoint. Cannot auto-fix."
-
-### Implementation for All Agents
-
-**Orchestrator**:
-- Transition phases automatically when completion detected
-- DO NOT ask user between phases
-- Only escalate to HITL for tier 4 approval gates or blockers
-
-**Controllers**:
-- Complete coordination and write coordination_log.yaml
-- DO NOT ask user to review before proceeding
-- Signal completion to orchestrator automatically
-
-**Universal-Planner**:
-- Create plan.yaml and signal completion
-- DO NOT ask user to review plan
-- Orchestrator will automatically transition to coordinating
-
-**Universal-Executor**:
-- Monitor controller and aggregate outputs
-- DO NOT ask user to review outputs
-- Signal completion to orchestrator automatically
-
-**Universal-Validator**:
-- Run validation checks and determine PASS/FIXABLE/BLOCKED
-- Report results to orchestrator
-- DO NOT ask user unless status is BLOCKED
-
-### User Experience
-
-**User Request**: "Fix the authentication bug"
-
-**CORRECT Workflow** (automatic):
-```
-→ Routing complete (tier 2, engineering domain)
-→ Planning complete (objectives defined, controller selected)
-→ Coordinating complete (engineering-manager asked 5 questions, synthesized solution)
-→ Executing complete (bug fixed, tests added)
-→ Validating complete (all tests pass)
-→ Workflow complete! Authentication bug fixed.
-```
-
-**INCORRECT Workflow** (asks permission - DO NOT DO THIS):
-```
-→ Routing complete (tier 2, engineering domain)
-→ Planning complete (objectives defined, controller selected)
-❌ "The workflow is now ready to proceed with implementation. Would you like me to continue?"
-   ← USER GETS FRUSTRATED - this is WRONG
-```
-
-### Rationale
-
-Users invoke workflows because they want work DONE, not to be asked permission at every step. The workflow system is designed to:
-1. Execute autonomously through standard phases
-2. Only escalate when human judgment is truly needed
-3. Provide progress updates (via TodoWrite) without asking permission
-4. Complete work efficiently without user hand-holding
+**Agent Rules**: Orchestrator auto-transitions phases. Controllers signal completion via coordination_log.yaml. Planner/Executor/Validator report status, don't ask permission.
 
 **If requirements are clear, PROCEED. Do not ask.**
 
@@ -488,24 +422,34 @@ Planner → Objectives → Controller → Questions → Execution Agents → Ans
 
 ### Controller Selection
 
-**Controllers are selected by domain and coordination style:**
+**Controllers are selected by super-domain and coordination style:**
 
-**Engineering Domain**:
-- **Tier 2**: engineering-manager (moderate complexity), architect (system design)
-- **Tier 3**: engineering-manager + architect + security-specialist (comprehensive)
-- **Tier 4**: cto + engineering-manager + architect (executive oversight)
+**Make Domain** (Creation):
+- **Tier 2**: engineering-manager (moderate complexity), architect (system design), creative-director (creative work)
+- **Tier 3**: engineering-manager + architect + security-specialist (comprehensive engineering)
+- **Tier 4**: cto + engineering-manager + architect (executive oversight), cco + creative-director (creative oversight)
 
-**Revenue Domain**:
+**Grow Domain** (Acquisition):
 - **Tier 2**: campaign-manager (moderate), sales-strategist (sales focus)
-- **Tier 3**: marketing-strategist + campaign-manager + copywriter
+- **Tier 3**: marketing-strategist + campaign-manager + content-strategist
 - **Tier 4**: cro + marketing-strategist + sales-strategist
 
-**Creative Domain**:
-- **Tier 2**: editor (moderate), story-architect (complex narratives)
-- **Tier 3**: creative-director + story-architect + character-developer
-- **Tier 4**: cco + creative-director + story-architect
+**Operate Domain** (Operations):
+- **Tier 2**: operations-manager (moderate), finance-manager (financial operations)
+- **Tier 3**: cfo + operations-manager + compliance-officer
+- **Tier 4**: cfo + coo + operations-manager + risk-manager
 
-**Discovery**: Planner loads `planner_config.yaml` → `controller_catalog` section → matches tier + domain
+**People Domain** (Talent):
+- **Tier 2**: hr-manager (moderate), talent-acquisition-specialist
+- **Tier 3**: chro + hr-manager + culture-champion
+- **Tier 4**: chro + ceo + hr-manager + change-manager
+
+**Serve Domain** (Support & Governance):
+- **Tier 2**: customer-success-manager (moderate), legal-counsel
+- **Tier 3**: cx-director + customer-success-manager + legal-counsel
+- **Tier 4**: general-counsel + cx-director + compliance-director
+
+**Discovery**: Planner loads `planner_config.yaml` → `controller_catalog` section → matches tier + super-domain
 
 ## V7.0 COORDINATING PHASE
 
@@ -548,30 +492,11 @@ routing → planning → coordinating → executing → validating
 ### Coordination Log Structure
 
 ```yaml
-# coordination_log.yaml
-controller: engineering:engineering-manager
+controller: make:engineering-manager
 objectives: [...]
-questions_asked:
-  - question: "What is current auth implementation?"
-    delegated_to: backend-developer
-    answer: "Current implementation uses passport-local..."
-  - question: "What OAuth2 library should we use?"
-    delegated_to: architect
-    answer: "Recommend passport-oauth2 for consistency..."
-
-synthesized_solution:
-  approach: "Add passport-oauth2 alongside passport-local"
-  rationale: "Maintains backward compatibility while adding OAuth2"
-  implementation_steps: [10 concrete steps]
-  risks: ["Token storage security", "Migration complexity"]
-
-implementation_tasks:
-  - task_id: task_001
-    name: "Implement OAuth2 endpoints"
-    assigned_to: backend-developer
-    acceptance_criteria: [...]
-    status: completed
-
+questions_asked: [{question, delegated_to, answer}, ...]
+synthesized_solution: {approach, rationale, implementation_steps, risks}
+implementation_tasks: [{task_id, name, assigned_to, acceptance_criteria, status}, ...]
 status: completed
 ```
 
@@ -648,32 +573,17 @@ success_criteria:
   - "Security audit passes with no critical issues"
 
 controller_assignment:
-  primary: engineering:engineering-manager
+  primary: make:engineering-manager
   supporting:
-    - engineering:architect
-    - engineering:security-specialist
+    - make:architect
+    - make:security-specialist
 
 coordination_approach: question_based
 estimated_questions: 8-12
 estimated_duration: 3-5 hours
 ```
 
-**Contrast with V4.0**:
-```yaml
-# plan.yaml (V4.0 - OLD)
-tasks:
-  - id: task_001
-    name: "Design OAuth2 architecture"
-    agent: architect
-    dependencies: []
-  - id: task_002
-    name: "Implement OAuth2 endpoints"
-    agent: backend-developer
-    dependencies: [task_001]
-  # ... 10 more detailed tasks
-```
-
-**V7.0 Benefits**:
+**Key Differences from V4.0**:
 - **Simpler planning**: Define objectives, not task breakdowns
 - **Expert-driven**: Controller uses domain expertise to determine HOW
 - **Adaptive**: Controller adjusts questions based on answers received
@@ -690,41 +600,25 @@ Benefits: Modularity, specialization, parallelization (up to 50 concurrent), reu
 
 ## Task Completion Protocol
 
-**MANDATORY**: All tasks must be fully completed before marking as done.
+**MANDATORY**: 100% completion with verified evidence, or it's not complete. See @.claude/rules/quality/completion.md for full protocol.
 
-**Core Rule**: 100% completion with verified evidence, or it's not complete.
+**Enforced by**: Controllers (verify acceptance criteria), universal-executor (check coordination_log), universal-validator (quality gates), orchestrator (phase validation)
 
-**Full Protocol**: See @.claude/rules/quality/completion.md for detailed requirements and enforcement points.
+**Requirements**: All objectives met with evidence, outputs production-quality, coordination_log.yaml complete, specific evidence (file paths, metrics), no partial completion
 
-Protocol enforced by:
-- Controllers: Verify ALL acceptance criteria in coordination_log before marking complete
-- universal-executor: Verifies coordination_log completeness before phase transition
-- universal-validator: Checks coordination quality + output quality
-- orchestrator: Validates coordination_log exists and is complete before phase transitions
-
-**Key Requirements**:
-1. All objectives met with concrete evidence
-2. All outputs exist and are production-quality
-3. coordination_log.yaml with all Q&A exchanges, synthesis, and completed tasks
-4. Evidence must be specific (file paths, test outputs, metrics)
-5. NO partial completion - 100% or in_progress
-
-**Files**:
-- Protocol: `Agent_Memory/_system/task_completion_protocol.yaml`
-- Coordination: `Agent_Memory/{instruction_id}/workflow/coordination_log.yaml`
-- Summary: `docs/TASK_COMPLETION_ENFORCEMENT_SUMMARY.md`
-
-**Context Overhead**: Add 3K tokens per coordination cycle for Q&A tracking (included in planning)
+**Files**: `Agent_Memory/_system/task_completion_protocol.yaml`, `Agent_Memory/{instruction_id}/workflow/coordination_log.yaml`
 
 ## Commands
 
 ### /trigger - Universal Entry Point
-Auto-routes to domain, executes full workflow with controller-centric coordination.
+Auto-routes to super-domain, executes full workflow with controller-centric coordination.
 ```bash
-/trigger Fix auth bug              # → Engineering domain (tier 2: engineering-manager controller)
-/trigger Write fantasy story       # → Creative domain (tier 2: story-architect controller)
-/trigger Plan Q4 campaign          # → Revenue domain (tier 3: marketing-strategist + campaign-manager)
-/trigger Create budget             # → Finance-Operations (tier 4: cfo + fp-and-a-manager)
+/trigger Fix auth bug              # → Make domain (tier 2: engineering-manager controller)
+/trigger Write fantasy story       # → Make domain (tier 2: creative-director controller)
+/trigger Plan Q4 campaign          # → Grow domain (tier 3: marketing-strategist + campaign-manager)
+/trigger Create budget             # → Operate domain (tier 4: cfo + operations-manager)
+/trigger Hire software engineer    # → People domain (tier 3: hr-manager + talent-acquisition)
+/trigger Handle customer complaint # → Serve domain (tier 2: customer-success-manager)
 ```
 
 ### /designer - Interactive Design
@@ -750,67 +644,19 @@ Config: `Agent_Memory/_system/config/reviewer_config.yaml`
 Patterns: `Agent_Memory/_knowledge/procedural/review_patterns.yaml`
 
 ### /optimize - Universal Optimizer (V6.8)
-**NEW V6.8**: Trigger-style workflow with controller-centric coordination, zero-arg invocation, auto-detection.
+Trigger-style workflow with controller-centric coordination, supports 8 optimization types: code, content, process, data, infrastructure, campaign, creative, sales.
 
-**5-Phase Workflow**: detection → analysis → planning → execution → validation
-- Creates instruction folder (`inst_{id}`) for each optimization
-- Uses controller-centric coordination with question-based delegation
-- Supports 8 optimization types: code, content, process, data, infrastructure, campaign, creative, sales
-
-**Simplified Invocation**:
+**Usage**:
 ```bash
-/optimize                              # Zero-arg: Auto-detect everything
+/optimize                              # Auto-detect everything
 /optimize "Make the app faster"        # Natural language goal
-/optimize --auto                       # Comprehensive project scan
-/optimize src/ --type code             # Specific target (backward compatible)
-/optimize --continuous --interval 1d   # Background monitoring (NEW)
+/optimize src/ --type code             # Specific target
+/optimize --continuous --interval 1d   # Background monitoring
 ```
 
-**V6.8 Key Features**:
-- ✅ **Zero-arg invocation** - Auto-detect optimization targets from context
-- ✅ **Natural language goals** - "Make it faster" → performance optimization
-- ✅ **Instruction-based** - Full `inst_{id}` folder with workflow tracking
-- ✅ **Controller coordination** - Question-based delegation to specialists
-- ✅ **60+ detection patterns** - Comprehensive auto-scan across all types
-- ✅ **Continuous mode** - Background optimization monitoring
-- ✅ **Before/after metrics** - Comprehensive impact measurement
+**5-Phase Workflow**: detection → analysis → planning → execution → validation. Creates `inst_{id}` folder, uses controller coordination, measures before/after metrics.
 
-**Configuration**:
-- Intent patterns: `Agent_Memory/_system/optimize/intent_patterns.yaml`
-- Scan patterns: `Agent_Memory/_system/optimize/scan_patterns.yaml`
-- Plan template: `Agent_Memory/_system/templates/optimization_plan.yaml`
-
-**Example Workflow**:
-```
-$ /optimize
-
-Detection Phase:
-  - Found 23 optimization opportunities
-  - Classified: code (12), process (8), content (3)
-  - Complexity tier: 3 (requires controller)
-
-Analysis Phase:
-  - Baseline metrics measured
-  - High-priority opportunities: 8
-  - Estimated impact: 30-50% improvement
-
-Planning Phase:
-  - Controller: engineering-manager
-  - Objectives: 3 defined
-  - Approach: question-based delegation
-
-Execution Phase:
-  ✓ Code-split components (bundle -36%)
-  ✓ Optimize images (FCP -50%)
-  ✓ Fix N+1 queries (query -99%)
-
-Validation Phase:
-  ✓ All tests passing
-  ✓ 18 optimizations applied
-  ✓ 5 risky pending approval
-```
-
-See `core/commands/optimize.md` for detailed workflow documentation.
+See `core/commands/optimize.md` for detailed documentation.
 
 ### /memory - Memory Management (NEW)
 Interactive memory management and viewing:
@@ -876,7 +722,8 @@ Each child workflow follows V7.0 pattern (objectives → controller → question
 ---
 name: engineering-manager
 tier: controller
-domain: engineering
+domain: make
+super_domain: make
 coordination_style: question_based
 question_limit: 15
 typical_questions: ["What is current implementation?", "What are constraints?", ...]
@@ -888,7 +735,8 @@ typical_questions: ["What is current implementation?", "What are constraints?", 
 ---
 name: backend-developer
 tier: execution
-domain: engineering
+domain: make
+super_domain: make
 answers_questions: ["implementation details", "technical constraints", ...]
 executes_tasks: ["implement endpoints", "write tests", ...]
 ---
@@ -912,19 +760,31 @@ cAgents/
 ├── core/                    # Core infrastructure (tier 1)
 │   ├── agents/              # 10 core agents
 │   └── commands/            # 4 universal commands
-├── shared/                  # Universal agents (tier 2-3)
-│   ├── agents/              # Controllers + execution agents
+├── shared/                  # Shared cross-domain capabilities (14 agents)
+│   ├── agents/              # Leadership, planning, data, quality, customer, ops
 │   └── .claude-plugin/      # Shared manifest
-├── {domain}/                # Domain packages (7 total)
-│   ├── agents/              # Domain controllers + execution agents
-│   └── .claude-plugin/      # Domain manifest
+├── make/                    # MAKE super-domain (80 agents)
+│   ├── agents/              # Engineering, creative, product, devops, qa
+│   └── .claude-plugin/      # Make manifest
+├── grow/                    # GROW super-domain (37 agents)
+│   ├── agents/              # Marketing, sales, partnerships
+│   └── .claude-plugin/      # Grow manifest
+├── operate/                 # OPERATE super-domain (13 agents)
+│   ├── agents/              # Finance, operations, procurement
+│   └── .claude-plugin/      # Operate manifest
+├── people/                  # PEOPLE super-domain (19 agents)
+│   ├── agents/              # HR, talent, culture
+│   └── .claude-plugin/      # People manifest
+├── serve/                   # SERVE super-domain (28 agents)
+│   ├── agents/              # Customer experience, legal, compliance, support
+│   └── .claude-plugin/      # Serve manifest
 ├── docs/                    # Project documentation
-│   ├── V5_ARCHITECTURE.md   # V5.0 architecture design (NEW)
-│   ├── V5_MIGRATION_GUIDE.md # V4.0 → V5.0 migration (NEW)
-│   └── V5_WORKFLOW_EXAMPLES.md # Tier 2, 3, 4 examples (NEW)
-├── .claude/                 # Memory system (NEW)
+│   ├── V5_ARCHITECTURE.md   # V5.0 architecture design
+│   ├── V5_MIGRATION_GUIDE.md # V4.0 → V5.0 migration
+│   └── V5_WORKFLOW_EXAMPLES.md # Tier 2, 3, 4 examples
+├── .claude/                 # Memory system
 │   ├── CLAUDE.md            # Main project memory (symlink to root)
-│   └── rules/               # Modular rules (NEW - planned)
+│   └── rules/               # Modular rules
 ├── .claude-plugin/          # Root manifest
 └── Agent_Memory/            # Runtime state (git-ignored)
     └── _system/
@@ -944,40 +804,36 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 
 ## Quick Reference
 
-**Commands**: `/trigger`, `/designer`, `/reviewer`, `/optimize`, `/memory`, `/init`
-**Core Agents**: trigger, orchestrator, hitl, optimizer, 5 universal workflow, task-consolidator
-**Controller Agents**: ~50 agents for coordination (engineering-manager, architect, cto, campaign-manager, etc.)
-**Execution Agents**: ~150 agents for specialist work (backend-developer, copywriter, financial-analyst, etc.)
-**Key Files**:
-- `.claude-plugin/plugin.json` - Root manifest
-- `CLAUDE.md` - Main project memory (this file)
-- `.claude/rules/*.md` - Modular rules (planned)
-- `CLAUDE.local.md` - Personal project preferences (git-ignored)
-- `~/.claude/CLAUDE.md` - Personal global preferences
-- `Agent_Memory/_system/domains/{domain}/*.yaml` - Domain configs (including controller_catalog)
-- `Agent_Memory/_system/task_completion_protocol.yaml` - Mandatory completion rules
-- `Agent_Memory/inst_{id}/workflow/coordination_log.yaml` - V7.0 coordination tracking
-- `docs/V5_ARCHITECTURE.md` - V5.0 architecture design (NEW)
-- `docs/V5_MIGRATION_GUIDE.md` - V4.0 → V5.0 migration guide (NEW)
-- `docs/V5_WORKFLOW_EXAMPLES.md` - Reference implementations (NEW)
-- `docs/DOCUMENTATION_STANDARDS.md` - Documentation guidelines
-**Critical Rules**:
-- ✅ 100% task completion with verified evidence required
-- ✅ **Coordinating phase MANDATORY for tier 2+ workflows** (V7.0)
-- ✅ Controllers use question-based delegation (V7.0)
-- ✅ Objectives in plan, tasks in coordination_log (V7.0)
+**Commands**: `/trigger`, `/designer`, `/reviewer`, `/optimize`, `/memory`, `/init` | **Agents**: 201 total (10 core + 14 shared + 177 domain specialists across 5 super-domains)
+**Super-Domains**: Make (80), Grow (37), Operate (13), People (19), Serve (28)
+**Key Files**: `CLAUDE.md` (this file), `.claude/rules/*.md`, `Agent_Memory/_system/domains/{domain}/*.yaml`, `Agent_Memory/inst_{id}/workflow/coordination_log.yaml`
+**Critical**: 100% task completion required, coordinating phase mandatory (tier 2+), question-based delegation, objectives → plan, tasks → coordination_log
 
-## V7.0 Migration
+## Version History
 
-**From V4.0 to V7.0**:
-- ✅ All 229 agents migrated with tier field (controller, execution, or support)
-- ✅ All 18 domain configs updated with controller_catalog sections
+**V7.1.0** (Current - 2026-01-19):
+- ✅ Cleanup release completing V7.0.3 consolidation
+- ✅ Removed 358 legacy agents (64% reduction from 560 to 201)
+- ✅ Streamlined 22 domain directories → 7 directories (70% reduction)
+- ✅ Production-ready architecture with 5 super-domains
+- ✅ Final agent count: 201 (10 core + 14 shared + 177 domain specialists)
+- ✅ Super-domains: Make (80), Grow (37), Operate (13), People (19), Serve (28)
+
+**V7.0.3** (V7.0.3 Consolidation):
+- ✅ Introduced 5 super-domains (Make, Grow, Operate, People, Serve)
+- ✅ Consolidated 8 legacy domains into super-domain structure
+- ✅ Marked legacy domain directories for deletion
+- ✅ Agent deduplication and role consolidation
+
+**V7.0** (Controller-Centric Architecture):
+- ✅ All agents migrated with tier field (controller, execution, or support)
+- ✅ Domain configs updated with controller_catalog sections
 - ✅ Planning changed from task-based to objective-based
 - ✅ Coordinating phase added to workflow
 - ✅ Executor changed from team manager to controller monitor
 - ✅ Validator enhanced with coordination quality checks
 
-**Key Changes**:
+**Key Changes V4.0 → V7.0**:
 - Tier 1 (core) remains
 - Tier 2 (capability agents) → Tier 2 (controllers) + Tier 3 (execution)
 - Capability tags → tier field (controller, execution, support)
@@ -1005,38 +861,14 @@ Full troubleshooting: `archive/docs/TROUBLESHOOTING.md`
 
 See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 
-## V7.0 Philosophy
-
-**V7.0 Design Principles**:
-- **Controller-Centric**: Controllers coordinate work, not planners or executors
-- **Question-Based**: Controllers ask questions to specialists, not assign predetermined tasks
-- **Objective-Driven**: Plan defines WHAT (objectives), controllers determine HOW (questions + synthesis)
-- **Expert-Driven**: Controllers use domain expertise to break down work adaptively
-- **Simpler Planning**: High-level objectives instead of detailed task lists
-- **Adaptive Coordination**: Controllers adjust based on answers received
-
-**What V7.0 Fixes from V4.0**:
-- ❌ V4.0: Detailed task lists upfront → Planning overhead high, inflexible
-- ✅ V7.0: Objectives upfront → Simpler planning, adaptive execution
-- ❌ V4.0: Planner assigns agents → Required knowing all agents upfront
-- ✅ V7.0: Controller delegates → Expert-driven question-based delegation
-- ❌ V4.0: Executor manages team → Complex coordination logic
-- ✅ V7.0: Controller coordinates → Domain expert handles coordination
-- ❌ V4.0: Rigid task list → Cannot adapt to discoveries
-- ✅ V7.0: Question-based → Adapts to answers received
-
-**User Benefits**:
-1. ✅ **Simpler planning** - Define objectives, not task breakdowns
-2. ✅ **Expert-driven execution** - Controllers use domain expertise
-3. ✅ **Adaptive coordination** - Adjust based on what's discovered
-4. ✅ **Clear separation** - WHAT (planner) vs HOW (controller) vs WHEN (executor)
-
 ---
 
-**Version**: 5.0.0
-**Total Agents**: 229 (10 core + ~50 controller + ~150 execution + ~19 support)
+**Version**: 7.1.0 (Released: 2026-01-19)
+**Total Agents**: 201 (10 core + 14 shared + 177 domain specialists)
 **Architecture**: V7.0 - Controller-Centric Question-Based Delegation
-**Domains**: 8 (engineering, revenue, finance-operations, people-culture, customer-experience, legal-compliance, creative, universal)
+**Super-Domains**: 5 (Make, Grow, Operate, People, Serve)
+**Directories**: 7 (core, shared, make, grow, operate, people, serve)
+**Consolidation**: 64% agent reduction (560 → 201), 70% directory reduction (22 → 7)
 **Dependencies**: None (file-based, self-contained)
 **Backward Compatibility**: Breaking changes from V4.0 (requires migration)
 **Key Innovation**: Controller-centric coordination with question-based delegation
