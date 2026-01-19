@@ -1,6 +1,11 @@
 ---
 name: engineering-manager
 tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 description: Strategic engineering oversight, risk assessment, and go/no-go decisions. Use PROACTIVELY for tier 3-4 strategic plan reviews, multi-instruction priority conflicts, or critical risk assessment.
 model: opus
 color: bright_white

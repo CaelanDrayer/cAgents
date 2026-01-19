@@ -1,6 +1,6 @@
 ---
 name: orchestrator
-tier: core
+tier: infrastructure
 description: Universal workflow phase conductor for ALL domains. V5.1 adds Trigger V2.0 integration with adaptive execution and enhanced metadata support.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 model: opus

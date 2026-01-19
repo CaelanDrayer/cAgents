@@ -1,6 +1,11 @@
 ---
 name: strategic-planner
 tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 description: Long-term strategic planning specialist. Facilitates strategic planning, develops frameworks, defines objectives, creates multi-year roadmaps. Use for vision development, strategic analysis, and long-term planning.
 capabilities: ["strategic_planning", "scenario_planning", "competitive_analysis", "swot_analysis", "strategic_frameworks", "vision_development", "long_term_roadmapping", "pestle_analysis", "balanced_scorecard"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

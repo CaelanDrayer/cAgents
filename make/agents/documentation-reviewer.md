@@ -7,7 +7,7 @@ tools: Read, Grep, Glob, Bash
 model: sonnet
 color: gray
 layer: qa
-tier: cross-cutting
+tier: support
 ---
 
 # Documentation Reviewer Agent

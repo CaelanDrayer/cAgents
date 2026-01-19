@@ -1,10 +1,35 @@
 super_domain: make
 description: Planning configuration for MAKE super-domain
 controller_catalog:
-  tier_2: []
+  tier_2:
+  - &id001
+    name: engineering-manager
+    domain: make
+    coordination_style: question_based
+  - &id002
+    name: architect
+    domain: make
+    coordination_style: question_based
+  - &id003
+    name: product-owner
+    domain: make
+    coordination_style: question_based
+  - &id004
+    name: tech-lead
+    domain: make
+    coordination_style: question_based
+  - &id005
+    name: backend-lead
+    domain: make
+    coordination_style: question_based
   tier_3:
-    primary: []
-    supporting: []
+    primary:
+    - *id001
+    - *id002
+    supporting:
+    - *id003
+    - *id004
+    - *id005
 objectives_templates:
   default:
   - Implement {feature} in make domain

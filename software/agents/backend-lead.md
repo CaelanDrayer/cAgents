@@ -1,6 +1,11 @@
 ---
 name: backend-lead
 tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 description: Backend domain manager for tactical planning, team coordination, and code review. Use PROACTIVELY for tier 3-4 instructions requiring backend work breakdown, API design, database work, or backend team management.
 model: sonnet
 color: bright_green

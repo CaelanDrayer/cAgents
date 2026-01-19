@@ -6,7 +6,7 @@ tools: Read, Grep, Glob
 model: sonnet
 color: red
 layer: intelligence
-tier: cross-cutting
+tier: support
 ---
 
 # Risk Assessment Agent

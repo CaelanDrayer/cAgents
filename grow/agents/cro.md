@@ -2,6 +2,11 @@
 name: cro
 domain: grow
 tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What are the current campaign/sales metrics?"
+  - "What is the target audience and positioning?"
+  - "What are the conversion bottlenecks?"
 description: Executive revenue strategy and sales leadership. Use for revenue strategies, GTM planning, tier 3-4 decisions, and cross-functional alignment.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 model: opus

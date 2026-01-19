@@ -2,6 +2,11 @@
 name: change-manager
 domain: operate
 tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What are the current operational metrics?"
+  - "What are the efficiency bottlenecks?"
+  - "What are the compliance requirements?"
 description: Organizational change management using ADKAR, Kotter, or Prosci. Use for transformation initiatives and adoption planning.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

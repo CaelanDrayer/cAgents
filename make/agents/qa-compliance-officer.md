@@ -7,7 +7,7 @@ tools: Read, Grep, Glob, Bash
 model: sonnet
 color: darkblue
 layer: qa
-tier: cross-cutting
+tier: support
 ---
 
 # QA Compliance Officer Agent

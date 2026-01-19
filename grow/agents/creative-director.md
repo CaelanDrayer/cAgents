@@ -2,6 +2,11 @@
 name: creative-director
 domain: grow
 tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What are the current campaign/sales metrics?"
+  - "What is the target audience and positioning?"
+  - "What are the conversion bottlenecks?"
 description: Creative strategy and visual design leader. Use when creative direction, visual campaigns, brand design, or creative quality oversight needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

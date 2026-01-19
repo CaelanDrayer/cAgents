@@ -1,6 +1,11 @@
 ---
 name: tech-lead
 tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 description: Engineering leader for delivery, team coordination, and strategic decisions. Use PROACTIVELY for complex tasks requiring orchestration, priority decisions, or cross-team coordination.
 model: opus
 color: bright_magenta

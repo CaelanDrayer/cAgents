@@ -6,7 +6,7 @@ tools: Read, Grep, Glob, Bash
 model: sonnet
 color: red
 layer: qa
-tier: cross-cutting
+tier: support
 ---
 
 # Security Analyst Agent

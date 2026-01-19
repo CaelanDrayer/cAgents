@@ -6,7 +6,12 @@ tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 model: opus
 color: purple
 layer: executive
-tier: strategic
+tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 domain: make
 ---
 

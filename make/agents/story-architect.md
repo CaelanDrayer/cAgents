@@ -1,6 +1,11 @@
 ---
 name: story-architect
 tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 description: Story structure and plot design specialist. Creates plot outlines, narrative structures, story arcs, and plot development for creative projects. Use for plot design, story structure, and narrative architecture tasks.
 capabilities: ["plot_structure", "story_arcs", "narrative_design", "plot_outlines", "story_beats", "act_structure", "conflict_design", "plot_threads"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

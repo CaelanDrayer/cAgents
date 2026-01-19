@@ -1,5 +1,5 @@
 ---
-name: fantasy-specialist
+name: genre-specialist-fantasy
 tier: execution
 description: Fantasy genre specialist. Expert in fantasy conventions, tropes, worldbuilding, magic systems, and fantasy-specific storytelling. Use for fantasy genre projects.
 capabilities: ["fantasy_conventions", "magic_system_design", "fantasy_worldbuilding", "quest_narratives", "fantasy_creatures", "epic_scope", "fantasy_tropes", "chosen_one_arcs"]

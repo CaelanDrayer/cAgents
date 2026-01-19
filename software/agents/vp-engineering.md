@@ -1,6 +1,11 @@
 ---
 name: vp-engineering
 tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 description: VP of Engineering responsible for engineering organization management, team building, engineering culture, delivery excellence, and engineering operations. Use PROACTIVELY for engineering leadership, hiring decisions, team structure, and engineering strategy execution.
 model: opus
 color: cyan

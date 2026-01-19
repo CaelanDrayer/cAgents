@@ -3,7 +3,12 @@ name: process-auditor
 description: Process audit specialist. Use for process audits, compliance verification, process improvement identification, and audit reporting across ALL domains.
 model: sonnet
 color: green
-tier: 2
+tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 domain: shared
 capabilities: ["process_auditing", "compliance_verification", "control_testing", "audit_reporting", "process_assessment", "improvement_identification", "risk_identification"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

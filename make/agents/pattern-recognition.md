@@ -7,7 +7,7 @@ tools: Read, Grep, Glob
 model: sonnet
 color: purple
 layer: intelligence
-tier: cross-cutting
+tier: support
 ---
 
 # Pattern Recognition Agent

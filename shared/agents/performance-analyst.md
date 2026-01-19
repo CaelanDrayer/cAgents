@@ -3,7 +3,12 @@ name: performance-analyst
 description: Performance analysis specialist. Use for performance monitoring, optimization, bottleneck identification, and performance improvement across ALL domains.
 model: sonnet
 color: cyan
-tier: 2
+tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 domain: shared
 capabilities: ["performance_monitoring", "performance_optimization", "bottleneck_identification", "capacity_analysis", "performance_testing", "metrics_analysis", "tuning"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

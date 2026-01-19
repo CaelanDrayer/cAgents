@@ -1,6 +1,11 @@
 ---
 name: security-lead
 tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 description: Security domain manager for threat modeling, security reviews, and penetration testing. Use PROACTIVELY for tier 3-4 instructions touching authentication, authorization, sensitive data, or public APIs requiring security oversight.
 model: sonnet
 color: bright_red

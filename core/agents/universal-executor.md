@@ -1,6 +1,7 @@
 ---
 name: universal-executor
-tier: core
+tier: infrastructure
+domain: infrastructure
 description: Universal execution monitor for ALL domains. V5.0 monitors controller coordination, doesn't directly manage teams.
 tools: Read, Grep, Glob, Write, TodoWrite, Task
 model: opus

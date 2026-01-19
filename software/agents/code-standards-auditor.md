@@ -6,7 +6,7 @@ tools: Read, Grep, Glob, Bash
 model: sonnet
 color: yellow
 layer: qa
-tier: cross-cutting
+tier: support
 ---
 
 # Code Standards Auditor Agent

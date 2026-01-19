@@ -1,6 +1,6 @@
 ---
 name: universal-planner
-tier: core
+tier: infrastructure
 description: Universal objective definition agent for ALL domains. V5.0 focuses on controller selection and objective definition, not detailed task breakdown.
 tools: Read, Grep, Glob, Write, TodoWrite
 model: opus

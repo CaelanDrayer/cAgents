@@ -1,6 +1,7 @@
 ---
 name: optimizer
-tier: core
+tier: infrastructure
+domain: infrastructure
 description: Universal optimization orchestrator V7.0 with parallel execution, rollback capability, predictive analysis, and ML-ready pattern detection. Optimizes ANYTHING - code, content, processes, workflows, data pipelines.
 tools: Read, Grep, Glob, Write, Bash, Edit, TodoWrite, Task
 model: sonnet

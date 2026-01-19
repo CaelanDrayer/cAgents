@@ -3,7 +3,12 @@ name: capacity-planner
 description: Capacity planning specialist. Use for capacity analysis, demand forecasting, capacity modeling, scaling planning, and infrastructure capacity across ALL domains.
 model: sonnet
 color: blue
-tier: 2
+tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 domain: shared
 capabilities: ["capacity_analysis", "demand_forecasting", "capacity_modeling", "scaling_planning", "capacity_monitoring", "capacity_optimization", "growth_planning"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

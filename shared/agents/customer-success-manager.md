@@ -3,7 +3,12 @@ name: customer-success-manager
 description: Customer success specialist. Use for customer onboarding, adoption, success planning, health monitoring, and proactive customer support across ALL domains.
 model: sonnet
 color: blue
-tier: 2
+tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 domain: shared
 capabilities: ["customer_onboarding", "adoption_management", "success_planning", "health_monitoring", "proactive_support", "customer_training", "value_realization"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

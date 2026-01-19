@@ -3,7 +3,12 @@ name: market-research-analyst
 description: Market research specialist. Use for market analysis, customer research, industry analysis, market sizing, and insights generation across ALL domains.
 model: sonnet
 color: cyan
-tier: 2
+tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 domain: shared
 capabilities: ["market_research", "customer_research", "industry_analysis", "market_sizing", "survey_design", "focus_groups", "competitive_research", "trend_analysis"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

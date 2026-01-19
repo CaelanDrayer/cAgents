@@ -7,7 +7,7 @@ tools: Read, Grep, Glob
 model: sonnet
 color: blue
 layer: intelligence
-tier: cross-cutting
+tier: support
 ---
 
 # Dependency Analyzer Agent

@@ -7,7 +7,7 @@ tools: Read, Write
 model: sonnet
 color: green
 layer: intelligence
-tier: cross-cutting
+tier: support
 ---
 
 # Learning Coordinator Agent

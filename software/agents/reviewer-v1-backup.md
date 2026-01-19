@@ -6,7 +6,7 @@ tools: Read, Grep, Glob, Write, TodoWrite, Task
 model: sonnet
 color: magenta
 layer: workflow
-tier: orchestration
+tier: support
 ---
 
 # Reviewer Agent

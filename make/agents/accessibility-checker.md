@@ -7,7 +7,7 @@ tools: Read, Grep, Glob, Bash
 model: sonnet
 color: pink
 layer: qa
-tier: cross-cutting
+tier: support
 ---
 
 # Accessibility Checker Agent

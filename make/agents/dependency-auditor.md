@@ -7,7 +7,7 @@ tools: Read, Grep, Glob, Bash
 model: sonnet
 color: purple
 layer: qa
-tier: cross-cutting
+tier: support
 ---
 
 # Dependency Auditor Agent

@@ -2,6 +2,11 @@
 name: sales-strategist
 domain: grow
 tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What are the current campaign/sales metrics?"
+  - "What is the target audience and positioning?"
+  - "What are the conversion bottlenecks?"
 description: Develop data-driven sales strategies. Use for GTM strategy, market segmentation, competitive positioning, and sales model design.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

@@ -2,6 +2,11 @@
 name: legal-operations-manager
 domain: serve
 tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What are the customer pain points?"
+  - "What are the service level requirements?"
+  - "What are the support/legal constraints?"
 description: Legal department operations and efficiency specialist. Use PROACTIVELY for legal spend management, process improvement, technology implementation, and vendor management.
 tools: Read, Write, Grep, Glob, TodoWrite
 model: sonnet

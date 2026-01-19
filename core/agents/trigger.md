@@ -1,6 +1,6 @@
 ---
 name: trigger
-tier: core
+tier: infrastructure
 description: Universal entry point V2.0 with context-aware detection, confidence scoring, template matching, pre-flight validation, and workflow analytics
 tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 model: sonnet

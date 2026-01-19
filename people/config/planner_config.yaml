@@ -1,9 +1,14 @@
 super_domain: people
 description: Planning configuration for PEOPLE super-domain
 controller_catalog:
-  tier_2: []
+  tier_2:
+  - &id001
+    name: chro
+    domain: people
+    coordination_style: question_based
   tier_3:
-    primary: []
+    primary:
+    - *id001
     supporting: []
 objectives_templates:
   default:

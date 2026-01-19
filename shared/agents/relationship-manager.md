@@ -3,7 +3,12 @@ name: relationship-manager
 description: Relationship management specialist. Use for stakeholder relationship building, partner management, ecosystem relationships, and strategic relationship development across ALL domains.
 model: sonnet
 color: blue
-tier: 2
+tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 domain: shared
 capabilities: ["relationship_building", "stakeholder_management", "partner_management", "ecosystem_development", "strategic_relationships", "networking", "relationship_strategy"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

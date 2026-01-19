@@ -3,7 +3,12 @@ name: customer-advocacy-manager
 description: Customer advocacy specialist. Use for customer voice programs, reference management, case studies, testimonials, and customer community building across ALL domains.
 model: sonnet
 color: blue
-tier: 2
+tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 domain: shared
 capabilities: ["customer_advocacy", "reference_management", "case_study_development", "testimonial_collection", "customer_community", "voice_of_customer", "customer_marketing"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

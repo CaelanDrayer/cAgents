@@ -142,7 +142,7 @@ def test_grow_tier2_campaign(simulator):
         request="Plan Q1 social media campaign for product launch",
         expected_domain="grow",
         expected_tier=2,
-        expected_controller="campaign-manager"
+        expected_controller="marketing-strategist"
     )
 
     if result.phase == "not_started":
@@ -175,7 +175,7 @@ def test_operate_tier2_budget(simulator):
         request="Create annual budget for engineering team",
         expected_domain="operate",
         expected_tier=2,
-        expected_controller="fp-and-a-manager"
+        expected_controller="operations-manager"
     )
 
     if result.phase == "not_started":
@@ -191,7 +191,7 @@ def test_operate_tier2_expense_analysis(simulator):
         request="Analyze Q4 expenses and identify cost savings",
         expected_domain="operate",
         expected_tier=2,
-        expected_controller="fp-and-a-manager"
+        expected_controller="operations-manager"
     )
 
     if result.phase == "not_started":
@@ -207,7 +207,7 @@ def test_people_tier2_onboarding(simulator):
         request="Design onboarding process for remote engineers",
         expected_domain="people",
         expected_tier=2,
-        expected_controller="talent-manager"
+        expected_controller="chro"
     )
 
     if result.phase == "not_started":
@@ -223,7 +223,7 @@ def test_people_tier2_compensation(simulator):
         request="Create compensation framework for engineering roles",
         expected_domain="people",
         expected_tier=2,
-        expected_controller="talent-manager"
+        expected_controller="chro"
     )
 
     if result.phase == "not_started":
@@ -239,7 +239,7 @@ def test_serve_tier2_support_improvement(simulator):
         request="Improve customer support response time",
         expected_domain="serve",
         expected_tier=2,
-        expected_controller="customer-success-manager"
+        expected_controller="support-operations-manager"
     )
 
     if result.phase == "not_started":
@@ -255,7 +255,7 @@ def test_serve_tier2_contract_review(simulator):
         request="Review vendor contract for compliance",
         expected_domain="serve",
         expected_tier=2,
-        expected_controller="legal-counsel"
+        expected_controller="general-counsel"
     )
 
     if result.phase == "not_started":

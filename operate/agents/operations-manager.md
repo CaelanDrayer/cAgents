@@ -2,6 +2,11 @@
 name: operations-manager
 domain: operate
 tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What are the current operational metrics?"
+  - "What are the efficiency bottlenecks?"
+  - "What are the compliance requirements?"
 description: Operations optimization, process management, and operational excellence. Use for operational decisions and process improvements.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

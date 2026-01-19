@@ -7,7 +7,7 @@ tools: Read, Grep
 model: sonnet
 color: orange
 layer: intelligence
-tier: cross-cutting
+tier: support
 ---
 
 # Predictive Analyst Agent

@@ -1,6 +1,11 @@
 ---
 name: project-manager
 tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 description: Project planning and execution specialist. Defines scope, creates timelines, allocates resources, manages risks, tracks progress. Use for individual project planning and execution.
 capabilities: ["project_planning", "scope_definition", "timeline_planning", "resource_allocation", "risk_management", "status_reporting", "pmbok", "agile_hybrid", "wbs_creation"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

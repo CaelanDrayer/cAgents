@@ -3,7 +3,12 @@ name: competitive-intelligence-analyst
 description: Competitive intelligence specialist. Use for competitor analysis, competitive monitoring, win/loss analysis, and competitive positioning across ALL domains.
 model: sonnet
 color: cyan
-tier: 2
+tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 domain: shared
 capabilities: ["competitor_analysis", "competitive_monitoring", "win_loss_analysis", "competitive_positioning", "competitive_research", "battle_cards", "strategic_intelligence"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

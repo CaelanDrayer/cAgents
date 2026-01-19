@@ -3,7 +3,12 @@ name: compliance-officer
 description: Compliance specialist. Use for regulatory compliance, policy development, compliance monitoring, risk assessment, and compliance training across ALL domains.
 model: sonnet
 color: red
-tier: 2
+tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 domain: shared
 capabilities: ["regulatory_compliance", "policy_development", "compliance_monitoring", "risk_assessment", "compliance_training", "regulatory_reporting", "compliance_audits"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

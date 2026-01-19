@@ -2,6 +2,11 @@
 name: business-analyst
 domain: operate
 tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What are the current operational metrics?"
+  - "What are the efficiency bottlenecks?"
+  - "What are the compliance requirements?"
 description: Requirements gathering, process analysis, and solution design. Use for requirements definition and stakeholder interviews.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

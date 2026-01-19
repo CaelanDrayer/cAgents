@@ -2,6 +2,11 @@
 name: product-marketing-manager
 domain: grow
 tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What are the current campaign/sales metrics?"
+  - "What is the target audience and positioning?"
+  - "What are the conversion bottlenecks?"
 description: Product positioning, messaging, and launch specialist. Use when product launches, competitive positioning, sales enablement, or go-to-market strategy needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

@@ -6,7 +6,7 @@ tools: Read, Grep, Glob
 model: sonnet
 color: cyan
 layer: qa
-tier: cross-cutting
+tier: support
 ---
 
 # Architecture Reviewer Agent

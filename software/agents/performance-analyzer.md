@@ -6,7 +6,7 @@ tools: Read, Grep, Glob, Bash
 model: sonnet
 color: orange
 layer: qa
-tier: cross-cutting
+tier: support
 ---
 
 # Performance Analyzer Agent

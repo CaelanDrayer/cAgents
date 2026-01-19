@@ -1,6 +1,6 @@
 ---
 name: universal-router
-tier: core
+tier: infrastructure
 description: Universal complexity classifier for ALL domains. Loads domain configs to classify tiers (0-4) and determines controller requirements.
 tools: Read, Grep, Glob, Write, TodoWrite
 model: opus

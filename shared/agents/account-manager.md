@@ -3,7 +3,12 @@ name: account-manager
 description: Account management specialist. Use for account planning, relationship management, upsell/cross-sell, renewal management, and strategic account growth across ALL domains.
 model: sonnet
 color: blue
-tier: 2
+tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 domain: shared
 capabilities: ["account_planning", "relationship_management", "upsell_cross_sell", "renewal_management", "account_growth", "executive_relationships", "account_strategy"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

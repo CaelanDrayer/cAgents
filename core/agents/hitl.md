@@ -1,6 +1,6 @@
 ---
 name: hitl
-tier: core
+tier: infrastructure
 description: Unified Human-in-the-Loop escalation agent for ALL cAgents domains. Prepares context for human decision-makers, manages escalation workflow, and learns from human decisions for future automation. Handles escalations from software, creative, and all other domains.
 model: sonnet
 color: cyan

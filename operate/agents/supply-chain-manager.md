@@ -2,6 +2,11 @@
 name: supply-chain-manager
 domain: operate
 tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What are the current operational metrics?"
+  - "What are the efficiency bottlenecks?"
+  - "What are the compliance requirements?"
 description: End-to-end supply chain optimization and inventory management. Use for supply chain issues and inventory optimization.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

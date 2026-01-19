@@ -1,6 +1,11 @@
 ---
 name: supply-chain-manager
 tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 description: End-to-end supply chain optimization and inventory management. Use for supply chain issues and inventory optimization.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

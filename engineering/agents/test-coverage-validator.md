@@ -6,7 +6,7 @@ tools: Read, Grep, Glob, Bash
 model: sonnet
 color: green
 layer: qa
-tier: cross-cutting
+tier: support
 ---
 
 # Test Coverage Validator Agent

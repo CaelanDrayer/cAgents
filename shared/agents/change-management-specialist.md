@@ -3,7 +3,12 @@ name: change-management-specialist
 description: Change management execution specialist. Use for change implementation, training delivery, communication execution, and change support across ALL domains.
 model: sonnet
 color: orange
-tier: 2
+tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 domain: shared
 capabilities: ["change_implementation", "training_delivery", "communication_execution", "change_support", "change_monitoring", "resistance_handling", "change_reinforcement"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

@@ -1,6 +1,6 @@
 ---
 name: universal-validator
-tier: core
+tier: infrastructure
 description: Universal quality validator for ALL domains. V5.0 validates controller coordination and quality gates.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: opus

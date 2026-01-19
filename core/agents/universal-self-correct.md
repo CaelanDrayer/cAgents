@@ -1,6 +1,7 @@
 ---
 name: universal-self-correct
-tier: core
+tier: infrastructure
+domain: infrastructure
 description: Universal adaptive correction agent that automatically fixes validation failures, including V5.0 coordination issues. Works across ALL domains through configuration files.
 tools: Read, Grep, Glob, Write, TodoWrite, Task
 model: opus

@@ -1,6 +1,11 @@
 ---
 name: creative-director
 tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 description: Creative strategy and visual design leader. Use when creative direction, visual campaigns, brand design, or creative quality oversight needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

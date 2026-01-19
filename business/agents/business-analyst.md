@@ -1,6 +1,11 @@
 ---
 name: business-analyst
 tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 description: Requirements gathering, process analysis, and solution design. Use for requirements definition and stakeholder interviews.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

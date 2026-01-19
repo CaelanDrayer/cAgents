@@ -1,6 +1,11 @@
 ---
 name: product-marketing-manager
 tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 description: Product positioning, messaging, and launch specialist. Use when product launches, competitive positioning, sales enablement, or go-to-market strategy needed.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: sonnet

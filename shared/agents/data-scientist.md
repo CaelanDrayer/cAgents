@@ -3,7 +3,12 @@ name: data-scientist
 description: Data science specialist. Use for machine learning, predictive modeling, statistical analysis, data science projects, and advanced analytics across ALL domains.
 model: opus
 color: cyan
-tier: 2
+tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 domain: shared
 capabilities: ["machine_learning", "predictive_modeling", "statistical_analysis", "feature_engineering", "model_deployment", "a_b_testing", "causal_inference", "nlp", "computer_vision"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

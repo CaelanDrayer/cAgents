@@ -3,7 +3,12 @@ name: quality-manager
 description: Quality management specialist. Use for quality strategy, QA processes, quality standards, continuous improvement, and quality assurance across ALL domains.
 model: sonnet
 color: green
-tier: 2
+tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
 domain: shared
 capabilities: ["quality_management", "qa_processes", "quality_standards", "continuous_improvement", "quality_metrics", "root_cause_analysis", "quality_audits"]
 tools: Read, Grep, Glob, Write, Bash, TodoWrite

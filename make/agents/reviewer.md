@@ -7,7 +7,7 @@ tools: Read, Grep, Glob, Write, TodoWrite, Task, Bash
 model: sonnet
 color: magenta
 layer: workflow
-tier: orchestration
+tier: support
 version: 3.0
 ---
 

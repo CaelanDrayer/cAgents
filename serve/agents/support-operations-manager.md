@@ -2,6 +2,11 @@
 name: support-operations-manager
 domain: serve
 tier: controller
+coordination_style: question_based
+typical_questions:
+  - "What are the customer pain points?"
+  - "What are the service level requirements?"
+  - "What are the support/legal constraints?"
 description: Support operations and process optimization leader. Use when improving workflows, implementing tools, or driving efficiency.
 tools: Read, Grep, Glob, Bash, Write
 model: sonnet
