@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "7.0.3",
+  "version": "7.0.4",
   "description": "Universal multi-domain agent system with controller-centric question-based delegation architecture",
   "type": "module",
   "main": "index.js",
@@ -30,23 +30,27 @@
   "license": "MIT",
   "architecture": "V7.0 Controller-Centric Question-Based Delegation",
   "agents": {
-    "total": 229,
+    "total": 190,
     "core": 10,
-    "controllers": 50,
-    "execution": 150,
-    "support": 19,
+    "shared": 14,
     "breakdown": {
-      "engineering": 45,
-      "revenue": 40,
-      "finance_operations": 32,
-      "people_culture": 19,
-      "customer_experience": 18,
-      "legal_compliance": 14,
-      "creative": 18,
-      "universal": 33
-    }
+      "make": 81,
+      "grow": 40,
+      "operate": 18,
+      "people": 19,
+      "serve": 32
+    },
+    "legacy_total": 229,
+    "deduplication": "53% reduction (403 → 190 unique agents)"
   },
-  "domains": [
+  "super_domains": [
+    "make",
+    "grow",
+    "operate",
+    "people",
+    "serve"
+  ],
+  "legacy_domains": [
     "engineering",
     "revenue",
     "creative",

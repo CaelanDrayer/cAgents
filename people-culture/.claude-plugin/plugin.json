@@ -1,6 +1,6 @@
 {
   "name": "cagents-people-culture",
-  "version": "7.0.3",
+  "version": "7.0.4",
   "description": "People and Culture domain for cAgents V7.0 - Talent acquisition, employee development, compensation, culture building, and HR operations. 19 tier-2 controller and tier-3 execution agents including CHRO, talent acquisition leads, learning & development specialists, compensation analysts, culture managers, and more. Supports question-based delegation for people and culture workflows with controller coordination.",
   "domain": "people-culture",
   "tier": 3,

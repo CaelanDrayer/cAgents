@@ -1,6 +1,6 @@
 {
   "name": "cagents-make",
-  "version": "7.0.3",
+  "version": "7.0.4",
   "description": "MAKE super-domain: Creation capability (engineering + creative + product)",
   "super_domain": "make",
   "capabilities": ["engineering", "creative", "product", "devops", "qa"],

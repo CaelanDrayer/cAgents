@@ -1,6 +1,6 @@
 {
   "name": "cagents-grow",
-  "version": "7.0.3",
+  "version": "7.0.4",
   "description": "GROW super-domain: Customer acquisition capability (marketing + sales)",
   "super_domain": "grow",
   "capabilities": ["marketing", "sales", "partnerships"],

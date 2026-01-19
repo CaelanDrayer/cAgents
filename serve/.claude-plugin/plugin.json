@@ -1,6 +1,6 @@
 {
   "name": "cagents-serve",
-  "version": "7.0.3",
+  "version": "7.0.4",
   "description": "SERVE super-domain: Customer support & governance capability (support + legal)",
   "super_domain": "serve",
   "capabilities": ["customer-experience", "legal-compliance", "legal", "support"],

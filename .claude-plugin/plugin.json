@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "7.0.3",
+  "version": "7.0.4",
   "description": "cAgents V7.0.3 - Universal multi-domain agent system with controller-centric question-based delegation architecture. 229 agents: 10 core infrastructure + 50 controllers + 150 execution specialists + 19 support across 8 domains. NEW IN V7.0.3: Ralph Loop-inspired bash infrastructure (6 library modules with 86 functions, 14 lifecycle hooks, atomic file operations, markdown frontmatter state management, version checking). V7.0 ENHANCED COMMANDS: Trigger V2.0 (2-3x faster initialization, 90%+ domain accuracy, context-aware detection with 3-method weighted scoring, pre-flight validation with 4 levels, 13 workflow templates, interactive & dry-run modes, 50% fewer failures). Designer V2.0 (smart chunking, context discovery, adaptive questioning, continuous mode). Optimizer V7.0 (zero-arg invocation with auto-detection, natural language goals, instruction-based workflow, 8 optimization types, continuous monitoring). Reviewer V3.0 (33% faster with intelligent agent selection, 81% faster to critical issues, auto-fix suggestions 98% more actionable, pattern learning 78% detection). Controller-centric coordination: Controllers ask questions to specialists, synthesize answers, coordinate implementation. Objective-driven planning defines WHAT, controllers determine HOW. Universal workflow agents work across all domains via YAML configuration. Up to 50x parallel execution with swarm/mesh modes.",
   "author": {
     "name": "CaelanDrayer",

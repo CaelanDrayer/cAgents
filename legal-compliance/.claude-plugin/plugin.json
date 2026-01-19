@@ -1,6 +1,6 @@
 {
   "name": "cagents-legal-compliance",
-  "version": "7.0.3",
+  "version": "7.0.4",
   "description": "Legal and Compliance domain for cAgents V7.0 - Contract management, regulatory compliance, intellectual property, litigation support, and governance. 14 tier-2 controller and tier-3 execution agents including general counsel, contract specialists, compliance officers, IP attorneys, regulatory experts, and more. Supports question-based delegation for legal and compliance workflows with controller coordination.",
   "domain": "legal-compliance",
   "tier": 3,
