@@ -1,0 +1,13 @@
+{
+  "name": "cagents-people",
+  "version": "7.0.3",
+  "description": "PEOPLE super-domain: Talent & organization capability (people + hr)",
+  "super_domain": "people",
+  "capabilities": ["people", "people-culture", "hr", "talent"],
+  "dependencies": [
+    "cagents-core",
+    "cagents-shared"
+  ],
+  "config_location": "people/config/",
+  "agents_location": "people/agents/"
+}

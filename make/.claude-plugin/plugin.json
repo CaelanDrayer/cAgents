@@ -1,0 +1,13 @@
+{
+  "name": "cagents-make",
+  "version": "7.0.3",
+  "description": "MAKE super-domain: Creation capability (engineering + creative + product)",
+  "super_domain": "make",
+  "capabilities": ["engineering", "creative", "product", "devops", "qa"],
+  "dependencies": [
+    "cagents-core",
+    "cagents-shared"
+  ],
+  "config_location": "make/config/",
+  "agents_location": "make/agents/"
+}

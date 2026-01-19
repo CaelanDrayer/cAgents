@@ -1,0 +1,19 @@
+super_domain: make
+description: Validation rules for MAKE super-domain
+quality_gates:
+  coordination_quality:
+    required_sections:
+    - questions_asked
+    - synthesized_solution
+    - implementation_tasks
+    min_questions: 5
+    min_tasks: 3
+  output_quality:
+    required_checks:
+    - All objectives met
+    - All outputs exist
+    - Evidence provided
+  regression_checks:
+  - No breaking changes
+  - Existing tests pass
+  - No security vulnerabilities introduced

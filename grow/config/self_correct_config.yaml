@@ -1,0 +1,14 @@
+super_domain: grow
+description: Self-correction patterns for GROW super-domain
+recovery_patterns:
+  coordination_failures:
+  - failure: Insufficient questions asked
+    recovery: Ask follow-up questions to clarify
+  - failure: Synthesis lacks coherence
+    recovery: Re-synthesize with focus on consistency
+  execution_failures:
+  - failure: Task incomplete
+    recovery: Identify blocking issue and resolve
+  validation_failures:
+  - failure: Quality gate failed
+    recovery: Address specific failure and re-validate

@@ -1,0 +1,21 @@
+super_domain: grow
+description: Routing configuration for GROW super-domain
+tier_classification:
+  tier_0:
+    description: Trivial questions
+    time_estimate: < 5 minutes
+  tier_1:
+    description: Simple single-file changes
+    time_estimate: < 30 minutes
+  tier_2:
+    description: Moderate complexity, 1 controller
+    time_estimate: 1-4 hours
+  tier_3:
+    description: Complex, multiple controllers
+    time_estimate: 4-12 hours
+  tier_4:
+    description: Expert-level, HITL required
+    time_estimate: 1-3 days
+keywords:
+- grow
+complexity_indicators: []

@@ -1,0 +1,17 @@
+super_domain: people
+description: Planning configuration for PEOPLE super-domain
+controller_catalog:
+  tier_2: []
+  tier_3:
+    primary: []
+    supporting: []
+objectives_templates:
+  default:
+  - Implement {feature} in people domain
+  - Analyze {data} for people operations
+  - Create {deliverable} for people use case
+success_criteria_patterns:
+  default:
+  - All objectives met with verified evidence
+  - All outputs exist and are production-quality
+  - No regressions in existing functionality

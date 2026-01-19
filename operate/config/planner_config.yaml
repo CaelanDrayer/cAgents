@@ -1,0 +1,17 @@
+super_domain: operate
+description: Planning configuration for OPERATE super-domain
+controller_catalog:
+  tier_2: []
+  tier_3:
+    primary: []
+    supporting: []
+objectives_templates:
+  default:
+  - Implement {feature} in operate domain
+  - Analyze {data} for operate operations
+  - Create {deliverable} for operate use case
+success_criteria_patterns:
+  default:
+  - All objectives met with verified evidence
+  - All outputs exist and are production-quality
+  - No regressions in existing functionality

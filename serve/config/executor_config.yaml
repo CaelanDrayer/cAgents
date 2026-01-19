@@ -1,0 +1,15 @@
+super_domain: serve
+description: Execution monitoring for SERVE super-domain
+monitoring_patterns:
+  controller_tracking:
+    coordination_log_required: true
+    progress_indicators:
+    - questions_asked
+    - answers_received
+    - synthesis_complete
+    - tasks_created
+  completion_criteria:
+  - All questions answered
+  - Synthesis documented
+  - Tasks completed
+  - coordination_log.yaml exists

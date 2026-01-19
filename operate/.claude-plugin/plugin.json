@@ -1,0 +1,13 @@
+{
+  "name": "cagents-operate",
+  "version": "7.0.3",
+  "description": "OPERATE super-domain: Business operations capability (finance + operations)",
+  "super_domain": "operate",
+  "capabilities": ["finance", "finance-operations", "operations", "procurement", "revenue"],
+  "dependencies": [
+    "cagents-core",
+    "cagents-shared"
+  ],
+  "config_location": "operate/config/",
+  "agents_location": "operate/agents/"
+}

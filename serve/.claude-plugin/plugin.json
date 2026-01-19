@@ -1,0 +1,13 @@
+{
+  "name": "cagents-serve",
+  "version": "7.0.3",
+  "description": "SERVE super-domain: Customer support & governance capability (support + legal)",
+  "super_domain": "serve",
+  "capabilities": ["customer-experience", "legal-compliance", "legal", "support"],
+  "dependencies": [
+    "cagents-core",
+    "cagents-shared"
+  ],
+  "config_location": "serve/config/",
+  "agents_location": "serve/agents/"
+}
