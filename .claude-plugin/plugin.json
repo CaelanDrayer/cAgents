@@ -59,5 +59,6 @@
     "./core/agents/universal-self-correct.md",
     "./core/agents/optimizer.md",
     "./core/agents/task-consolidator.md"
-  ]
+  ],
+  "hooks": "./hooks/hooks.json"
 }
