@@ -1,6 +1,6 @@
 {
   "name": "@cagents/core",
-  "version": "7.1.0",
+  "version": "7.3.1",
   "description": "cAgents Core V7.1.0 - Controller-Centric Question-Based Delegation Architecture. V7.1.0 CLEANUP RELEASE: Completed V7.0.3 consolidation (358 legacy agents removed, 64% reduction to 201 agents). Provides unified Trigger V2.0, Orchestrator V5.1, HITL, Optimizer V7.0, Task-Consolidator, and 5 universal workflow agents that work across ALL 5 super-domains via configuration. Ralph Loop-inspired bash infrastructure (6 library modules with 86 functions, 14 lifecycle hooks, atomic file operations). ENHANCED COMMANDS: Trigger V2.0 (2-3x faster, 90%+ domain accuracy, context-aware detection). Designer V2.0 (smart chunking, adaptive questioning). Optimizer V7.0 (zero-arg invocation, 8 optimization types). Reviewer V3.0 (33% faster, 81% faster to critical issues, 98% more actionable). Coordinating phase with question-based delegation. Context budget system with task consolidation for 40-88% reduction. Includes universal commands and Agent_Memory system with super-domain configurations.",
   "author": {
     "name": "CaelanDrayer",

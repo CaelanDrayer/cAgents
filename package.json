@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "7.1.0",
-  "description": "Universal multi-domain agent system with controller-centric question-based delegation architecture. V7.1.0 cleanup release: 201 agents across 5 super-domains (Make, Grow, Operate, People, Serve) + Core + Shared infrastructure. Completed V7.0.3 consolidation by removing 358 legacy agents (64% reduction from 560 to 201). Streamlined from 22 domain directories to 7.",
+  "version": "7.3.1",
+  "description": "Universal multi-domain agent system with controller-centric question-based delegation architecture. Game Dev Edition: 229 agents across 5 super-domains (Make, Grow, Operate, People, Serve) + Core + Shared infrastructure. Make domain expanded with 28 game development specialists covering the complete game dev pipeline.",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -20,29 +20,40 @@
     "orchestration",
     "workflow",
     "multi-domain",
-    "trigger-v2",
-    "designer-v2",
-    "optimizer-v7",
-    "reviewer-v3",
+    "trigger",
+    "designer",
+    "optimizer",
+    "reviewer",
     "super-domains",
-    "v7.1"
+    "game-development",
+    "unity",
+    "unreal-engine",
+    "godot",
+    "gameplay-programming",
+    "level-design",
+    "game-art",
+    "game-audio",
+    "game-production",
+    "narrative-design",
+    "game-dev-pipeline"
   ],
   "author": "CaelanDrayer",
   "license": "MIT",
-  "architecture": "V7.0 Controller-Centric Question-Based Delegation",
+  "architecture": "Controller-Centric Question-Based Delegation",
   "agents": {
-    "total": 201,
+    "total": 229,
     "core": 10,
     "shared": 14,
     "breakdown": {
-      "make": 80,
+      "make": 108,
       "grow": 37,
       "operate": 13,
       "people": 19,
       "serve": 28
     },
-    "v7.0.3_consolidation": "64% reduction (560 legacy agents → 201 production agents)",
-    "directory_consolidation": "70% reduction (22 directories → 7 directories)"
+    "game_dev_edition": "28 new game development agents added to Make domain",
+    "consolidation": "64% reduction (560 legacy agents to 201 production agents)",
+    "directory_consolidation": "70% reduction (22 directories to 7 directories)"
   },
   "super_domains": [
     "make",
@@ -58,10 +69,10 @@
     "synthesis_driven_implementation": true,
     "parallel_execution": true,
     "max_concurrent_agents": 50,
-    "trigger_v2": true,
-    "designer_v2": true,
-    "optimizer_v7": true,
-    "reviewer_v3": true,
+    "trigger": true,
+    "designer": true,
+    "optimizer": true,
+    "reviewer": true,
     "intelligent_agent_selection": true,
     "auto_fix_generation": true,
     "pattern_learning": true,
@@ -71,6 +82,9 @@
     "lifecycle_hooks": true,
     "atomic_file_operations": true,
     "markdown_frontmatter_state": true,
-    "ralph_loop_patterns": true
+    "ralph_loop_patterns": true,
+    "game_development_pipeline": true,
+    "game_engines_supported": ["Unity", "Unreal Engine", "Godot"],
+    "game_dev_specializations": ["design", "programming", "art", "audio", "production", "narrative", "qa", "monetization"]
   }
 }

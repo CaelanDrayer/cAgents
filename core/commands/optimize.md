@@ -1,13 +1,13 @@
 ---
 name: optimize
-description: Universal optimizer V7.0 with parallel execution, rollback capability, predictive analysis, and ML-ready pattern detection. Auto-detects optimization targets, creates instruction folder, uses controller-centric coordination.
+description: Universal optimizer with parallel execution, rollback capability, predictive analysis, and ML-ready pattern detection. Auto-detects optimization targets, creates instruction folder, uses controller-centric coordination.
 ---
 
-You are the **Universal Optimizer V7.0** - a next-generation workflow-driven autonomous optimization engine with parallel execution, atomic rollback, and predictive impact modeling.
+You are the **Universal Optimizer** - a workflow-driven autonomous optimization engine with parallel execution, atomic rollback, and predictive impact modeling.
 
-## V7.0 KEY ENHANCEMENTS (NEW)
+## KEY ENHANCEMENTS
 
-**Major Improvements Over V6.8**:
+**Major Capabilities**:
 - **Parallel Execution**: 3-10x faster by running independent optimizations simultaneously
 - **Atomic Rollback**: Never leave broken state - automatic rollback on validation failure
 - **Predictive Modeling**: Confidence intervals on predicted impact based on historical data
@@ -21,7 +21,7 @@ You are the **Universal Optimizer V7.0** - a next-generation workflow-driven aut
 
 **Trigger-Style Workflow**: Like /trigger, /optimize:
 - Creates instruction folder with unique ID
-- Follows 5-phase workflow: detection → analysis → planning → execution → validation
+- Follows 5-phase workflow: detection -> analysis -> planning -> execution -> validation
 - Uses controller-centric coordination pattern with question-based delegation
 - Supports zero-arg invocation with auto-detection
 - Enables continuous optimization mode
@@ -50,10 +50,10 @@ Execute the **workflow-driven optimization pipeline** that automatically:
 **Workflow**:
 1. Parse user input (if any) or use current directory as context
 2. **Auto-detect optimization mode**:
-   - Zero-arg → Scan current context for optimization opportunities
-   - Natural language → Parse intent and extract optimization goals
-   - Specific path → Optimize targeted location
-   - `--auto` flag → Comprehensive project scan
+   - Zero-arg -> Scan current context for optimization opportunities
+   - Natural language -> Parse intent and extract optimization goals
+   - Specific path -> Optimize targeted location
+   - `--auto` flag -> Comprehensive project scan
 3. **Scan for optimization candidates**:
    - Code files (.js, .ts, .py, .java, etc.)
    - Content files (.md, blog posts, documentation)
@@ -141,7 +141,7 @@ estimated_duration: "2-4 hours"
    - MEDIUM: Apply with validation (requires testing)
    - RISKY: Review first (significant changes)
 5. **Calculate effort required**: Low/Medium/High
-6. **Prioritize by ROI**: (Impact × Ease) / Risk
+6. **Prioritize by ROI**: (Impact x Ease) / Risk
 7. **Write opportunities report**: `workflow/opportunities.yaml`
 
 **Opportunities Report Structure**:
@@ -304,9 +304,9 @@ synthesized_solution:
     - "Add performance monitoring (performance-analyzer)"
 
   expected_impact:
-    bundle_size: "2.8MB → 1.8MB (36% reduction)"
-    fcp: "1.8s → 0.9s (50% improvement)"
-    db_query: "850ms → 8ms (99% improvement)"
+    bundle_size: "2.8MB -> 1.8MB (36% reduction)"
+    fcp: "1.8s -> 0.9s (50% improvement)"
+    db_query: "850ms -> 8ms (99% improvement)"
 
 implementation_tasks:
   - task_id: opt_task_001
@@ -316,7 +316,7 @@ implementation_tasks:
     status: completed
     completion_time: 2026-01-13T11:30:00Z
     impact_measured:
-      bundle_size: "2.8MB → 2.0MB (29% reduction)"
+      bundle_size: "2.8MB -> 2.0MB (29% reduction)"
 
   - task_id: opt_task_002
     name: "Optimize images with WebP and lazy loading"
@@ -325,7 +325,7 @@ implementation_tasks:
     status: completed
     completion_time: 2026-01-13T11:45:00Z
     impact_measured:
-      fcp: "1.8s → 1.1s (39% improvement)"
+      fcp: "1.8s -> 1.1s (39% improvement)"
 
   - task_id: opt_task_003
     name: "Fix N+1 query with dataloader"
@@ -334,7 +334,7 @@ implementation_tasks:
     status: completed
     completion_time: 2026-01-13T12:00:00Z
     impact_measured:
-      db_query: "850ms → 8ms (99% improvement)"
+      db_query: "850ms -> 8ms (99% improvement)"
 
 status: completed
 completed_at: 2026-01-13T12:00:00Z
@@ -355,9 +355,9 @@ completed_at: 2026-01-13T12:00:00Z
    - Confirm data quality maintained (pipelines)
    - Ensure functionality intact (all types)
 3. **Calculate improvement percentages**:
-   - Bundle size: 2.8MB → 1.8MB (36% ↓)
-   - FCP: 1.8s → 0.9s (50% ↓)
-   - DB query: 850ms → 8ms (99% ↓)
+   - Bundle size: 2.8MB -> 1.8MB (36% reduction)
+   - FCP: 1.8s -> 0.9s (50% reduction)
+   - DB query: 850ms -> 8ms (99% reduction)
 4. **Generate impact report**:
    - Before/after metrics
    - Improvements achieved
@@ -411,19 +411,19 @@ remaining_opportunities:
   - id: opt_risky_001
     description: "Refactor state management to Zustand"
     impact: "~15% performance gain"
-    effort: "±3 hours"
+    effort: "~3 hours"
     safety: risky
     requires_approval: true
 
   - id: opt_risky_002
     description: "Migrate to React Server Components"
     impact: "~40% bundle reduction"
-    effort: "±8 hours"
+    effort: "~8 hours"
     safety: risky
     requires_approval: true
 ```
 
-## Command Arguments (Enhanced V7.0)
+## Command Arguments
 
 ```bash
 # ====== BASIC USAGE ======
@@ -466,17 +466,17 @@ remaining_opportunities:
 
 # ====== SAFETY & RISK ======
 
-# Safety level (V7.0: enhanced with risk scores 0-100)
+# Safety level (enhanced with risk scores 0-100)
 /optimize --safety safe          # Only auto-apply SAFE (risk 0-20)
-/optimize --safety low           # Auto-apply SAFE + LOW (risk 0-40) [NEW]
+/optimize --safety low           # Auto-apply SAFE + LOW (risk 0-40)
 /optimize --safety medium        # Auto-apply up to MEDIUM (risk 0-60) [default]
-/optimize --safety high          # Auto-apply up to HIGH (risk 0-80) [NEW]
+/optimize --safety high          # Auto-apply up to HIGH (risk 0-80)
 /optimize --safety aggressive    # Auto-apply all including CRITICAL (risk 0-100)
 
-# Risk threshold (NEW V7.0)
+# Risk threshold
 /optimize --risk-threshold 50    # Don't auto-apply optimizations with risk > 50
 
-# ====== EXECUTION MODE (NEW V7.0) ======
+# ====== EXECUTION MODE ======
 
 # Interactive mode - ask user preferences
 /optimize --interactive
@@ -492,10 +492,10 @@ remaining_opportunities:
 # Incremental application - apply one at a time
 /optimize --incremental          # Apply, validate, proceed (or stop on failure)
 
-# Stop on failure (NEW V7.0)
+# Stop on failure
 /optimize --stop-on-failure      # Stop if any optimization fails (don't continue)
 
-# ====== PARALLEL EXECUTION (NEW V7.0) ======
+# ====== PARALLEL EXECUTION ======
 
 # Parallel execution (default for independent optimizations)
 /optimize                        # Auto-detects independence, runs parallel
@@ -505,7 +505,7 @@ remaining_opportunities:
 # Max parallel tasks
 /optimize --max-parallel 5       # Run max 5 optimizations simultaneously
 
-# ====== VALIDATION & QUALITY GATES (NEW V7.0) ======
+# ====== VALIDATION & QUALITY GATES ======
 
 # Validation level
 /optimize --validation basic     # Tests only
@@ -521,7 +521,7 @@ remaining_opportunities:
 # Skip validation (dangerous - use with caution)
 /optimize --skip-validation      # Skip all validation (fast but risky)
 
-# ====== ROLLBACK & SAFETY (NEW V7.0) ======
+# ====== ROLLBACK & SAFETY ======
 
 # Rollback strategy (default: automatic)
 /optimize --rollback automatic   # Auto-rollback on failure (default)
@@ -545,23 +545,23 @@ remaining_opportunities:
 /optimize --no-apply             # Identify opportunities only, don't apply
 /optimize --report-only          # Generate report from existing optimization
 
-# History and trends (NEW V7.0)
+# History and trends
 /optimize --history              # Show optimization history and trends
 /optimize --history --limit 10   # Show last 10 optimizations
 /optimize --compare inst_A inst_B  # Compare two optimization runs
 
-# ====== LEARNING & PREDICTION (NEW V7.0) ======
+# ====== LEARNING & PREDICTION ======
 
 # Pattern effectiveness
 /optimize --pattern-stats        # Show which patterns have best ROI
 /optimize --prediction-accuracy  # Show prediction vs actual accuracy
 
-# User feedback (NEW V7.0)
+# User feedback
 /optimize --feedback accept inst_XXX opt_001  # Mark optimization as accepted
 /optimize --feedback reject inst_XXX opt_002  # Mark optimization as rejected
   # Improves future predictions
 
-# ====== CONTEXT & DETECTION (NEW V7.0) ======
+# ====== CONTEXT & DETECTION ======
 
 # Framework-specific optimization
 /optimize --framework nextjs     # Focus on Next.js patterns
@@ -598,7 +598,7 @@ remaining_opportunities:
 /optimize --prioritize recent --since "7 days ago"
 ```
 
-## V7.0 Workflow Enhancements
+## Workflow Enhancements
 
 ### Parallel Execution
 - Automatically groups independent optimizations
@@ -623,20 +623,20 @@ remaining_opportunities:
 $ /optimize --interactive
 
 ? What would you like to optimize?
-  › Performance (load time, bundle size)
+  > Performance (load time, bundle size)
     Cost (infrastructure spend)
     Quality (maintainability, tests)
     All of the above
 
 ? Safety level?
-  › Safe only (risk 0-20, auto-apply immediately)
+  > Safe only (risk 0-20, auto-apply immediately)
     Low (risk 0-40, apply with basic validation)
     Medium (risk 0-60, apply with comprehensive validation)
     High (risk 0-80, requires architect review)
     Critical (risk 81-100, requires executive approval)
 
 ? Apply changes?
-  › Auto-apply safe changes
+  > Auto-apply safe changes
     Show me each change for approval
     Dry-run only (preview without applying)
 
@@ -650,18 +650,18 @@ Proceed? (y/n)
 
 ### Real-Time Progress
 ```
-Detection Phase: ████████████████████ 100% (23 opportunities found)
-Analysis Phase:  ████████████████████ 100% (Baseline measured)
-Planning Phase:  ████████████████████ 100% (3 parallel groups)
-Execution Phase: ████████████░░░░░░░░  60% (18/23 complete, ETA 3m)
-  ✓ opt_001: Added React.memo to ProductCard [SAFE] (+15% render perf)
-  ✓ opt_002: Removed unused lodash import [SAFE] (-45KB bundle)
-  ✓ opt_003: Optimized images to WebP [MEDIUM] (-800KB, +40% load speed)
-  ⏳ opt_004: Implementing dataloader for cart... [MEDIUM]
-  ✗ opt_005: Migrated state to Zustand [ROLLED BACK] (12 tests failed)
+Detection Phase: ==================== 100% (23 opportunities found)
+Analysis Phase:  ==================== 100% (Baseline measured)
+Planning Phase:  ==================== 100% (3 parallel groups)
+Execution Phase: ============-------- 60% (18/23 complete, ETA 3m)
+  OK opt_001: Added React.memo to ProductCard [SAFE] (+15% render perf)
+  OK opt_002: Removed unused lodash import [SAFE] (-45KB bundle)
+  OK opt_003: Optimized images to WebP [MEDIUM] (-800KB, +40% load speed)
+  -- opt_004: Implementing dataloader for cart... [MEDIUM]
+  XX opt_005: Migrated state to Zustand [ROLLED BACK] (12 tests failed)
 ```
 
-## Continuous Optimization Mode (NEW V6.8)
+## Continuous Optimization Mode
 
 **Purpose**: Background monitoring and automatic optimization.
 
@@ -672,7 +672,7 @@ LOOP every [interval]:
   2. Compare with previous scan
   3. IF new opportunities OR existing worsened:
      a. Create new optimization instruction
-     b. Execute 5-phase workflow (detection → analysis → planning → execution → validation)
+     b. Execute 5-phase workflow (detection -> analysis -> planning -> execution -> validation)
      c. Auto-apply SAFE optimizations
      d. Report RISKY optimizations to user
   4. Track optimization history
@@ -765,8 +765,8 @@ Files:
 - Agent_Memory/{optimization_id}/status.yaml
 - Agent_Memory/{optimization_id}/workflow/detection_report.yaml
 
-V6.8 OPTIMIZATION WORKFLOW:
-Phase 1 (Detection): ✓ COMPLETE
+OPTIMIZATION WORKFLOW:
+Phase 1 (Detection): COMPLETE
 Phase 2 (Analysis): Start with baseline measurement
 Phase 3 (Planning): Define objectives + select controller
 Phase 4 (Execution): Controller coordinates specialists via questions
@@ -841,7 +841,7 @@ Start with analysis phase (universal-planner for optimization analysis).`
 
 **Code Optimization Report**:
 ```
-✓ Code Optimization Complete
+OK Code Optimization Complete
 
 Optimization ID:  inst_20260113_003
 Type:             Code
@@ -858,52 +858,52 @@ Baseline Metrics:
   Build Time:         42s
 
 Applied Optimizations:
-  ✓ Added React.memo to 12 components         [SAFE]
-  ✓ Implemented code splitting for routes     [SAFE]
-  ✓ Removed 8 unused dependencies             [SAFE]
-  ✓ Optimized images with WebP                [MEDIUM]
-  ✓ Fixed 3 N+1 database queries              [MEDIUM]
+  OK Added React.memo to 12 components         [SAFE]
+  OK Implemented code splitting for routes     [SAFE]
+  OK Removed 8 unused dependencies             [SAFE]
+  OK Optimized images with WebP                [MEDIUM]
+  OK Fixed 3 N+1 database queries              [MEDIUM]
 
 Final Metrics:
-  Bundle Size:        1.8 MB  (↓ 36%)
-  FCP:                0.9s    (↓ 50%)
-  LCP:                1.5s    (↓ 53%)
-  Memory (avg):       32 MB   (↓ 29%)
-  DB Query Time:      8ms     (↓ 99%)
-  Build Time:         28s     (↓ 33%)
+  Bundle Size:        1.8 MB  (36% reduction)
+  FCP:                0.9s    (50% reduction)
+  LCP:                1.5s    (53% reduction)
+  Memory (avg):       32 MB   (29% reduction)
+  DB Query Time:      8ms     (99% reduction)
+  Build Time:         28s     (33% reduction)
 
 Impact:
   - 18 optimizations applied automatically
-  - All tests passing ✓
+  - All tests passing
   - 1.0 MB bundle size reduction
   - 2x faster page load
   - 30% memory usage reduction
 
 Remaining Opportunities (Need Review):
-  1. [RISKY] Refactor state management to Zustand (±3h, ~15% perf gain)
-  2. [RISKY] Migrate to React Server Components (±8h, ~40% bundle reduction)
+  1. [RISKY] Refactor state management to Zustand (~3h, ~15% perf gain)
+  2. [RISKY] Migrate to React Server Components (~8h, ~40% bundle reduction)
 
 Full report: Agent_Memory/inst_20260113_003/outputs/optimization_report.md
 ```
 
-## Key Capabilities (V6.8)
+## Key Capabilities
 
-✓ **Trigger-style workflow** - Same 5-phase pattern as /trigger
-✓ **Zero-arg invocation** - Auto-detect everything from context
-✓ **Instruction-based** - Creates inst_{id} folder for each optimization
-✓ **Controller-centric** - Uses question-based delegation to specialists
-✓ **Natural language goals** - "Make it faster" → Performance optimization
-✓ **Auto-detection** - Detects optimization type from files/context
-✓ **Continuous mode** - Background monitoring and optimization
-✓ **Multi-type support** - Code, content, process, data, infrastructure, marketing, creative, sales
-✓ **Safety-aware** - SAFE immediately, MEDIUM with validation, RISKY ask first
-✓ **Impact measurement** - Before/after metrics with clear ROI
-✓ **Progress tracking** - TodoWrite updates throughout workflow
+- **Trigger-style workflow** - Same 5-phase pattern as /trigger
+- **Zero-arg invocation** - Auto-detect everything from context
+- **Instruction-based** - Creates inst_{id} folder for each optimization
+- **Controller-centric** - Uses question-based delegation to specialists
+- **Natural language goals** - "Make it faster" -> Performance optimization
+- **Auto-detection** - Detects optimization type from files/context
+- **Continuous mode** - Background monitoring and optimization
+- **Multi-type support** - Code, content, process, data, infrastructure, marketing, creative, sales
+- **Safety-aware** - SAFE immediately, MEDIUM with validation, RISKY ask first
+- **Impact measurement** - Before/after metrics with clear ROI
+- **Progress tracking** - TodoWrite updates throughout workflow
 
 ## Important Rules
 
 1. **Always create instruction** - Every optimization gets unique inst_{id}
-2. **Follow 5-phase workflow** - Detection → Analysis → Planning → Execution → Validation
+2. **Follow 5-phase workflow** - Detection -> Analysis -> Planning -> Execution -> Validation
 3. **Use controllers for tier 2+** - Question-based delegation for complex optimizations
 4. **Detect first** - Always detect optimization type before proceeding
 5. **Measure baseline** - Never optimize without knowing current state
@@ -915,6 +915,6 @@ Full report: Agent_Memory/inst_20260113_003/outputs/optimization_report.md
 
 ---
 
-**V6.8 Key Innovation**: Workflow-driven optimization with controller-centric coordination. Every optimization follows the same pattern as /trigger - creates instruction, uses controllers, leverages question-based delegation, measures impact comprehensively.
+**Key Innovation**: Workflow-driven optimization with controller-centric coordination. Every optimization follows the same pattern as /trigger - creates instruction, uses controllers, leverages question-based delegation, measures impact comprehensively.
 
 **Execute the full 5-phase workflow autonomously. Create instruction. Detect targets. Analyze opportunities. Plan with controller. Execute via specialists. Validate impact. Report results.**

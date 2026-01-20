@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Core architecture and development guidance for cAgents V7.1.0.
+Core architecture and development guidance for cAgents V7.3.0.
 
 ## Table of Contents
 
@@ -65,7 +65,7 @@ Core architecture and development guidance for cAgents V7.1.0.
 | **User** | `~/.claude/CLAUDE.md` | Personal preferences (all projects) | Just you | Code style, personal shortcuts |
 | **Project Local** | `./CLAUDE.local.md` | Personal project preferences | Just you | Local URLs, test data, dev preferences |
 
-**Loading Order**: Enterprise → User → Project → Project Rules → Project Local (later = higher priority)
+**Loading Order**: Enterprise -> User -> Project -> Project Rules -> Project Local (later = higher priority)
 
 ### Project Rules Structure
 
@@ -263,15 +263,15 @@ CLAUDE.local.md
 **Recursive Lookup**: Claude Code searches for CLAUDE.md files starting from cwd up to root:
 
 ```
-/home/user/projects/cAgents/core/agents/  ← Start here
-  ↓ Search up
-/home/user/projects/cAgents/core/         ← Finds core/CLAUDE.md (if exists)
-  ↓
-/home/user/projects/cAgents/              ← Finds ./CLAUDE.md (main project memory)
-  ↓
-/home/user/projects/                      ← Continues searching
-  ↓
-/home/user/                               ← Finds ~/.claude/CLAUDE.md
+/home/user/projects/cAgents/core/agents/  <- Start here
+  | Search up
+/home/user/projects/cAgents/core/         <- Finds core/CLAUDE.md (if exists)
+  |
+/home/user/projects/cAgents/              <- Finds ./CLAUDE.md (main project memory)
+  |
+/home/user/projects/                      <- Continues searching
+  |
+/home/user/                               <- Finds ~/.claude/CLAUDE.md
 ```
 
 **Subtree Discovery**: CLAUDE.md files in subdirectories are loaded only when Claude reads files in those subtrees.
@@ -293,19 +293,20 @@ CLAUDE.local.md
 
 ## Project Overview
 
-**cAgents V7.1.0**: Universal multi-domain agent system with 4-tier controller-centric architecture and question-based delegation.
+**cAgents V7.3.0**: Universal multi-domain agent system with 4-tier controller-centric architecture and question-based delegation. Game Dev Edition.
 
-**V7.1.0 Release**: Cleanup release completing V7.0.3 consolidation
-- **Removed**: 358 legacy agents (64% reduction from 560 to 201)
-- **Streamlined**: 22 domain directories → 7 directories (70% reduction)
-- **Production-ready**: Clean, consolidated architecture with 5 super-domains
+**V7.3.0 Release**: Game Development Edition
+- **NEW**: 28 game development specialist agents added to Make domain
+- **Make Domain**: 80 -> 108 agents (35% increase)
+- **Total Agents**: 201 -> 229 (14% increase)
+- **Game Dev Pipeline**: Full coverage from design to live ops
 
 **Architecture**: V7.0 - Controller-Centric Question-Based Delegation
 - **Tier 1**: 10 core infrastructure agents (trigger, orchestrator, hitl, optimizer, task-consolidator, 5 universal workflow agents)
 - **Tier 2**: Controllers (coordinate work via question-based delegation)
 - **Tier 3**: Execution agents (answer questions and implement solutions)
 - **Tier 4**: Support agents (foundational services)
-- **Total**: 201 agents
+- **Total**: 229 agents
 - **Execution**: 4 modes (Sequential, Pipeline, Swarm, Mesh) - up to 50x speedup
 
 **V7.0 Key Features**:
@@ -318,29 +319,37 @@ CLAUDE.local.md
 **Agent Distribution**:
 - **Core Infrastructure** (10): Workflow orchestration
 - **Shared** (14): Cross-domain capabilities (leadership, planning, data, quality)
-- **Make** (80): Creation capability (engineering, creative, product)
+- **Make** (108): Creation capability (engineering, creative, product, game development)
 - **Grow** (37): Acquisition capability (marketing, sales)
 - **Operate** (13): Operations capability (finance, operations)
 - **People** (19): Talent capability (HR, culture)
 - **Serve** (28): Support & governance (customer experience, legal, compliance)
 
 **Super-Domains** (5 domains):
-- **Make**: Creation (engineering + creative + product)
+- **Make**: Creation (engineering + creative + product + game development)
 - **Grow**: Acquisition (marketing + sales)
 - **Operate**: Operations (finance + operations)
 - **People**: Talent (HR + culture)
 - **Serve**: Support & Governance (customer experience + legal + compliance)
 
+**Game Development Agents** (28 new in V7.3.0):
+- **Core Development** (8): game-designer, level-designer, game-programmer, engine-developer, graphics-programmer, ai-programmer, network-programmer, tools-programmer
+- **Art & Animation** (6): concept-artist, 3d-modeler, texture-artist, animator, vfx-artist, ui-artist
+- **Audio** (3): sound-designer, music-composer, audio-programmer
+- **Design & Writing** (4): narrative-game-designer, quest-designer, economy-designer, game-writer
+- **Production & QA** (4): game-producer, technical-artist, qa-tester-games, localization-lead
+- **Specialized** (3): monetization-designer, live-ops-specialist, accessibility-game-designer
+
 ## CRITICAL: Automatic Workflow Progression
 
-**Core Principle**: Workflows proceed automatically through phases (routing → planning → coordinating → executing → validating) WITHOUT asking permission. See `docs/AUTOMATIC_WORKFLOW_PROGRESSION.md` for full policy.
+**Core Principle**: Workflows proceed automatically through phases (routing -> planning -> coordinating -> executing -> validating) WITHOUT asking permission. See `docs/AUTOMATIC_WORKFLOW_PROGRESSION.md` for full policy.
 
 **AUTO-PROCEED** (Never Ask):
 - Phase transitions when complete
-- plan.yaml created → coordinating
-- coordination_log.yaml complete → executing
-- Implementation complete → validating
-- Validation PASS → complete
+- plan.yaml created -> coordinating
+- coordination_log.yaml complete -> executing
+- Implementation complete -> validating
+- Validation PASS -> complete
 
 **ASK USER** (Only):
 - Tier 4 HITL gates (in plan.yaml)
@@ -356,7 +365,7 @@ CLAUDE.local.md
 
 **Orchestration Agents** (4):
 - `trigger` - Entry point, domain detection, routing
-- `orchestrator` - Phase conductor (routing → planning → **coordinating** → executing → validating)
+- `orchestrator` - Phase conductor (routing -> planning -> **coordinating** -> executing -> validating)
 - `hitl` - Human escalation for tier-4 decisions
 - `optimizer` - Universal optimization (code, content, processes, data, infrastructure, campaigns)
 
@@ -384,10 +393,10 @@ CLAUDE.local.md
 
 ```
 V4.0 (Previous):
-Planner → Detailed Tasks → Executor → Team Agents
+Planner -> Detailed Tasks -> Executor -> Team Agents
 
 V7.0 (Current):
-Planner → Objectives → Controller → Questions → Execution Agents → Answers → Controller → Synthesized Solution → Implementation
+Planner -> Objectives -> Controller -> Questions -> Execution Agents -> Answers -> Controller -> Synthesized Solution -> Implementation
 ```
 
 **Core Concept**: Controllers use domain expertise to break down objectives into specific questions, delegate to specialists, synthesize answers, and coordinate implementation.
@@ -416,8 +425,8 @@ Planner → Objectives → Controller → Questions → Execution Agents → Ans
 | Tier | Role | Count | Purpose | Examples |
 |------|------|-------|---------|----------|
 | **1: Core** | Infrastructure | 10 | Workflow orchestration | orchestrator, planner, executor, validator |
-| **2: Controller** | Coordination | ~50 | Question-based delegation and synthesis | engineering-manager, architect, cto, campaign-manager |
-| **3: Execution** | Specialists | ~150 | Answer questions and execute tasks | backend-developer, copywriter, financial-analyst |
+| **2: Controller** | Coordination | ~53 | Question-based delegation and synthesis | engineering-manager, architect, cto, campaign-manager, game-designer, game-producer |
+| **3: Execution** | Specialists | ~175 | Answer questions and execute tasks | backend-developer, copywriter, financial-analyst, level-designer, animator |
 | **4: Support** | Operations | ~19 | Foundational services | scribe, data-extractor, etc. |
 
 ### Controller Selection
@@ -425,7 +434,7 @@ Planner → Objectives → Controller → Questions → Execution Agents → Ans
 **Controllers are selected by super-domain and coordination style:**
 
 **Make Domain** (Creation):
-- **Tier 2**: engineering-manager (moderate complexity), architect (system design), creative-director (creative work)
+- **Tier 2**: engineering-manager (moderate complexity), architect (system design), creative-director (creative work), game-designer (game mechanics), game-producer (game production)
 - **Tier 3**: engineering-manager + architect + security-specialist (comprehensive engineering)
 - **Tier 4**: cto + engineering-manager + architect (executive oversight), cco + creative-director (creative oversight)
 
@@ -449,7 +458,7 @@ Planner → Objectives → Controller → Questions → Execution Agents → Ans
 - **Tier 3**: cx-director + customer-success-manager + legal-counsel
 - **Tier 4**: general-counsel + cx-director + compliance-director
 
-**Discovery**: Planner loads `planner_config.yaml` → `controller_catalog` section → matches tier + super-domain
+**Discovery**: Planner loads `planner_config.yaml` -> `controller_catalog` section -> matches tier + super-domain
 
 ## V7.0 COORDINATING PHASE
 
@@ -460,8 +469,8 @@ Planner → Objectives → Controller → Questions → Execution Agents → Ans
 ### Workflow Phases
 
 ```
-routing → planning → coordinating → executing → validating
-   ↓          ↓           ↓            ↓           ↓
+routing -> planning -> coordinating -> executing -> validating
+   |          |           |            |           |
   Router   Planner   Controller   Executor   Validator
 (tier 0-4) (objectives) (questions) (monitor) (quality)
 ```
@@ -504,11 +513,11 @@ status: completed
 
 | Tier | Type | Coordination | Example | Workflow |
 |------|------|--------------|---------|----------|
-| 0 | Trivial | None | "What is X?" | routing → answer |
-| 1 | Simple | None | "Fix typo" | routing → planning → executing → validating |
-| 2 | Moderate | 1 controller | "Fix bug" | routing → planning → **coordinating** → executing → validating |
-| 3 | Complex | 1 primary + 1-2 supporting | "Add feature" | routing → planning → **coordinating** → executing → validating |
-| 4 | Expert | 1 executive + 1 primary + 2-4 supporting | "Major refactor" | routing → planning → **coordinating** → executing → validating + HITL |
+| 0 | Trivial | None | "What is X?" | routing -> answer |
+| 1 | Simple | None | "Fix typo" | routing -> planning -> executing -> validating |
+| 2 | Moderate | 1 controller | "Fix bug" | routing -> planning -> **coordinating** -> executing -> validating |
+| 3 | Complex | 1 primary + 1-2 supporting | "Add feature" | routing -> planning -> **coordinating** -> executing -> validating |
+| 4 | Expert | 1 executive + 1 primary + 2-4 supporting | "Major refactor" | routing -> planning -> **coordinating** -> executing -> validating + HITL |
 
 **V7.0 CRITICAL CHANGE**: Tier 2+ workflows include coordinating phase with controllers using question-based delegation.
 
@@ -519,7 +528,7 @@ status: completed
 **Tier 2**: 1 primary controller
 - Example: "Fix authentication bug"
 - Controller: engineering-manager
-- Pattern: Ask questions → synthesize → coordinate implementation
+- Pattern: Ask questions -> synthesize -> coordinate implementation
 
 **Tier 3**: 1 primary + 1-2 supporting controllers
 - Example: "Implement OAuth2 system"
@@ -537,19 +546,19 @@ status: completed
 ## Workflow Execution
 
 ```
-User Request → Trigger (domain detect) → Orchestrator
-  ↓
-  Routing → Universal-Router (tier classification, requires_controller flag)
-  ↓
-  Planning → Universal-Planner (objectives + controller selection)
-  ↓
-  Coordinating → Controller (question-based delegation, synthesis, coordination_log)
-  ↓
-  Executing → Universal-Executor (monitor controller progress)
-  ↓
-  Validating → Universal-Validator (coordination quality + output quality)
-  ↓
-  PASS → Complete | FIXABLE → Self-Correct | BLOCKED → HITL
+User Request -> Trigger (domain detect) -> Orchestrator
+  |
+  Routing -> Universal-Router (tier classification, requires_controller flag)
+  |
+  Planning -> Universal-Planner (objectives + controller selection)
+  |
+  Coordinating -> Controller (question-based delegation, synthesis, coordination_log)
+  |
+  Executing -> Universal-Executor (monitor controller progress)
+  |
+  Validating -> Universal-Validator (coordination quality + output quality)
+  |
+  PASS -> Complete | FIXABLE -> Self-Correct | BLOCKED -> HITL
 ```
 
 See `workflow_agent_interactions.md` for detailed agent interaction patterns.
@@ -594,7 +603,7 @@ estimated_duration: 3-5 hours
 **Subagent Architecture**: Agents delegate to specialists, don't execute directly.
 
 Pattern: "Use {subagent} to {task}"
-Example (V7.0): Controller → backend-developer (question) → architect (question) → synthesis → backend-developer (implementation)
+Example (V7.0): Controller -> backend-developer (question) -> architect (question) -> synthesis -> backend-developer (implementation)
 
 Benefits: Modularity, specialization, parallelization (up to 50 concurrent), reusability, expert coordination
 
@@ -613,12 +622,13 @@ Benefits: Modularity, specialization, parallelization (up to 50 concurrent), reu
 ### /trigger - Universal Entry Point
 Auto-routes to super-domain, executes full workflow with controller-centric coordination.
 ```bash
-/trigger Fix auth bug              # → Make domain (tier 2: engineering-manager controller)
-/trigger Write fantasy story       # → Make domain (tier 2: creative-director controller)
-/trigger Plan Q4 campaign          # → Grow domain (tier 3: marketing-strategist + campaign-manager)
-/trigger Create budget             # → Operate domain (tier 4: cfo + operations-manager)
-/trigger Hire software engineer    # → People domain (tier 3: hr-manager + talent-acquisition)
-/trigger Handle customer complaint # → Serve domain (tier 2: customer-success-manager)
+/trigger Fix auth bug              # -> Make domain (tier 2: engineering-manager controller)
+/trigger Write fantasy story       # -> Make domain (tier 2: creative-director controller)
+/trigger Plan Q4 campaign          # -> Grow domain (tier 3: marketing-strategist + campaign-manager)
+/trigger Create budget             # -> Operate domain (tier 4: cfo + operations-manager)
+/trigger Hire software engineer    # -> People domain (tier 3: hr-manager + talent-acquisition)
+/trigger Handle customer complaint # -> Serve domain (tier 2: customer-success-manager)
+/trigger Design game mechanics     # -> Make domain (tier 2: game-designer controller)
 ```
 
 ### /designer - Interactive Design
@@ -654,7 +664,7 @@ Trigger-style workflow with controller-centric coordination, supports 8 optimiza
 /optimize --continuous --interval 1d   # Background monitoring
 ```
 
-**5-Phase Workflow**: detection → analysis → planning → execution → validation. Creates `inst_{id}` folder, uses controller coordination, measures before/after metrics.
+**5-Phase Workflow**: detection -> analysis -> planning -> execution -> validation. Creates `inst_{id}` folder, uses controller coordination, measures before/after metrics.
 
 See `core/commands/optimize.md` for detailed documentation.
 
@@ -703,9 +713,9 @@ See `docs/CONTEXT_MANAGEMENT.md` for context handling details.
 
 Complex tasks spawn child workflows (max depth: 5, max children: 100)
 
-Example: `/trigger Write 10-chapter novel` → 1 parent + 10 child workflows
+Example: `/trigger Write 10-chapter novel` -> 1 parent + 10 child workflows
 
-Each child workflow follows V7.0 pattern (objectives → controller → questions → synthesis → implementation)
+Each child workflow follows V7.0 pattern (objectives -> controller -> questions -> synthesis -> implementation)
 
 ## Creating Agents
 
@@ -763,8 +773,8 @@ cAgents/
 ├── shared/                  # Shared cross-domain capabilities (14 agents)
 │   ├── agents/              # Leadership, planning, data, quality, customer, ops
 │   └── .claude-plugin/      # Shared manifest
-├── make/                    # MAKE super-domain (80 agents)
-│   ├── agents/              # Engineering, creative, product, devops, qa
+├── make/                    # MAKE super-domain (108 agents)
+│   ├── agents/              # Engineering, creative, product, devops, qa, game development
 │   └── .claude-plugin/      # Make manifest
 ├── grow/                    # GROW super-domain (37 agents)
 │   ├── agents/              # Marketing, sales, partnerships
@@ -780,7 +790,7 @@ cAgents/
 │   └── .claude-plugin/      # Serve manifest
 ├── docs/                    # Project documentation
 │   ├── V5_ARCHITECTURE.md   # V5.0 architecture design
-│   ├── V5_MIGRATION_GUIDE.md # V4.0 → V5.0 migration
+│   ├── V5_MIGRATION_GUIDE.md # V4.0 -> V5.0 migration
 │   └── V5_WORKFLOW_EXAMPLES.md # Tier 2, 3, 4 examples
 ├── .claude/                 # Memory system
 │   ├── CLAUDE.md            # Main project memory (symlink to root)
@@ -804,41 +814,49 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 
 ## Quick Reference
 
-**Commands**: `/trigger`, `/designer`, `/reviewer`, `/optimize`, `/memory`, `/init` | **Agents**: 201 total (10 core + 14 shared + 177 domain specialists across 5 super-domains)
-**Super-Domains**: Make (80), Grow (37), Operate (13), People (19), Serve (28)
+**Commands**: `/trigger`, `/designer`, `/reviewer`, `/optimize`, `/memory`, `/init` | **Agents**: 229 total (10 core + 14 shared + 205 domain specialists across 5 super-domains)
+**Super-Domains**: Make (108), Grow (37), Operate (13), People (19), Serve (28)
 **Key Files**: `CLAUDE.md` (this file), `.claude/rules/*.md`, `Agent_Memory/_system/domains/{domain}/*.yaml`, `Agent_Memory/inst_{id}/workflow/coordination_log.yaml`
-**Critical**: 100% task completion required, coordinating phase mandatory (tier 2+), question-based delegation, objectives → plan, tasks → coordination_log
+**Critical**: 100% task completion required, coordinating phase mandatory (tier 2+), question-based delegation, objectives -> plan, tasks -> coordination_log
 
 ## Version History
 
-**V7.1.0** (Current - 2026-01-19):
-- ✅ Cleanup release completing V7.0.3 consolidation
-- ✅ Removed 358 legacy agents (64% reduction from 560 to 201)
-- ✅ Streamlined 22 domain directories → 7 directories (70% reduction)
-- ✅ Production-ready architecture with 5 super-domains
-- ✅ Final agent count: 201 (10 core + 14 shared + 177 domain specialists)
-- ✅ Super-domains: Make (80), Grow (37), Operate (13), People (19), Serve (28)
+**V7.3.0** (Current - 2026-01-19):
+- NEW: Game Development Edition - 28 game dev specialist agents
+- Make domain expanded: 80 -> 108 agents (35% increase)
+- Total agents: 201 -> 229 (14% increase)
+- Game dev pipeline coverage: design, programming, art, audio, production, live ops
+- New controllers: game-designer, game-producer, localization-lead
+- New execution agents: level-designer, game-programmer, engine-developer, graphics-programmer, ai-programmer, network-programmer, tools-programmer, concept-artist, 3d-modeler, texture-artist, animator, vfx-artist, ui-artist, sound-designer, music-composer, audio-programmer, narrative-game-designer, quest-designer, economy-designer, game-writer, technical-artist, qa-tester-games, monetization-designer, live-ops-specialist, accessibility-game-designer
+
+**V7.1.0** (2026-01-19):
+- Cleanup release completing V7.0.3 consolidation
+- Removed 358 legacy agents (64% reduction from 560 to 201)
+- Streamlined 22 domain directories -> 7 directories (70% reduction)
+- Production-ready architecture with 5 super-domains
+- Final agent count: 201 (10 core + 14 shared + 177 domain specialists)
+- Super-domains: Make (80), Grow (37), Operate (13), People (19), Serve (28)
 
 **V7.0.3** (V7.0.3 Consolidation):
-- ✅ Introduced 5 super-domains (Make, Grow, Operate, People, Serve)
-- ✅ Consolidated 8 legacy domains into super-domain structure
-- ✅ Marked legacy domain directories for deletion
-- ✅ Agent deduplication and role consolidation
+- Introduced 5 super-domains (Make, Grow, Operate, People, Serve)
+- Consolidated 8 legacy domains into super-domain structure
+- Marked legacy domain directories for deletion
+- Agent deduplication and role consolidation
 
 **V7.0** (Controller-Centric Architecture):
-- ✅ All agents migrated with tier field (controller, execution, or support)
-- ✅ Domain configs updated with controller_catalog sections
-- ✅ Planning changed from task-based to objective-based
-- ✅ Coordinating phase added to workflow
-- ✅ Executor changed from team manager to controller monitor
-- ✅ Validator enhanced with coordination quality checks
+- All agents migrated with tier field (controller, execution, or support)
+- Domain configs updated with controller_catalog sections
+- Planning changed from task-based to objective-based
+- Coordinating phase added to workflow
+- Executor changed from team manager to controller monitor
+- Validator enhanced with coordination quality checks
 
-**Key Changes V4.0 → V7.0**:
+**Key Changes V4.0 -> V7.0**:
 - Tier 1 (core) remains
-- Tier 2 (capability agents) → Tier 2 (controllers) + Tier 3 (execution)
-- Capability tags → tier field (controller, execution, support)
-- Detailed tasks → objectives + question-based delegation
-- Team coordination → controller coordination
+- Tier 2 (capability agents) -> Tier 2 (controllers) + Tier 3 (execution)
+- Capability tags -> tier field (controller, execution, support)
+- Detailed tasks -> objectives + question-based delegation
+- Team coordination -> controller coordination
 
 See `docs/V5_MIGRATION_GUIDE.md` for detailed upgrade instructions.
 
@@ -863,12 +881,12 @@ See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 
 ---
 
-**Version**: 7.1.0 (Released: 2026-01-19)
-**Total Agents**: 201 (10 core + 14 shared + 177 domain specialists)
+**Version**: 7.3.1 (Released: 2026-01-20)
+**Total Agents**: 229 (10 core + 14 shared + 205 domain specialists)
 **Architecture**: V7.0 - Controller-Centric Question-Based Delegation
 **Super-Domains**: 5 (Make, Grow, Operate, People, Serve)
 **Directories**: 7 (core, shared, make, grow, operate, people, serve)
-**Consolidation**: 64% agent reduction (560 → 201), 70% directory reduction (22 → 7)
+**Game Dev Edition**: 28 new game development agents in Make domain
 **Dependencies**: None (file-based, self-contained)
 **Backward Compatibility**: Breaking changes from V4.0 (requires migration)
 **Key Innovation**: Controller-centric coordination with question-based delegation

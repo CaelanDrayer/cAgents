@@ -2,26 +2,26 @@
 
 **Universal Multi-Domain Agent System for Claude Code**
 
-V7.1.0 - Production-ready controller-centric architecture with 201 agents across 5 super-domains.
+V7.3.0 - Production-ready controller-centric architecture with 229 agents across 5 super-domains. Game Dev Edition.
 
 ## Overview
 
 cAgents transforms AI-assisted work across any domain through specialized agent teams that collaborate autonomously. From software engineering to marketing, operations to creative work - one unified system handles it all.
 
-**V7.1.0 Release** (2026-01-19):
-- ✅ Completed V7.0.3 consolidation: 358 legacy agents removed (64% reduction from 560 to 201)
-- ✅ Streamlined architecture: 22 directories → 7 directories (70% reduction)
-- ✅ Production-ready: Clean, consolidated structure with 5 super-domains
-- ✅ Final count: 201 agents (10 core + 14 shared + 177 domain specialists)
+**V7.3.0 Release** (2026-01-19):
+- ✅ Game Development Edition: 28 new game dev agents added to Make domain
+- ✅ Expanded Make domain: 80 → 108 agents (35% increase)
+- ✅ Total agents: 201 → 229 (14% increase)
+- ✅ Complete game dev pipeline: design, programming, art, audio, production
 
 ## Architecture
 
 **V7.0 Controller-Centric Question-Based Delegation**
 
-201 agents organized into:
+229 agents organized into:
 - **Core** (10): Infrastructure (trigger, orchestrator, hitl, optimizer, 5 universal workflow agents)
 - **Shared** (14): Cross-domain capabilities (leadership, planning, data, quality, customer, operations)
-- **Make** (80): Creation (engineering, creative, product, devops, qa)
+- **Make** (108): Creation (engineering, creative, product, devops, qa, **game development**)
 - **Grow** (37): Acquisition (marketing, sales, partnerships)
 - **Operate** (13): Operations (finance, operations, procurement)
 - **People** (19): Talent (HR, culture, talent acquisition)
@@ -116,11 +116,11 @@ The system automatically:
 
 ## Super-Domains
 
-### Make (Creation) - 80 agents
-Engineering, creative writing, product design, devops, QA
-- **Controllers**: engineering-manager, architect, creative-director, product-manager, cto, cco
-- **Execution**: backend-developer, frontend-developer, copywriter, story-architect, qa-lead, security-specialist
-- **Use cases**: Software development, creative content, product design, technical writing
+### Make (Creation) - 108 agents
+Engineering, creative writing, product design, devops, QA, **game development**
+- **Controllers**: engineering-manager, architect, creative-director, product-manager, game-director, cto, cco
+- **Execution**: backend-developer, frontend-developer, copywriter, story-architect, gameplay-programmer, level-designer, game-artist, audio-engineer, qa-lead, security-specialist
+- **Use cases**: Software development, creative content, product design, technical writing, **game development (Unity, Unreal, Godot)**
 
 ### Grow (Acquisition) - 37 agents
 Marketing, sales, partnerships
@@ -207,13 +207,15 @@ File-based, instruction-scoped, parallel-safe, pause/resume capable.
 - Optimizer V7.0: 20-50% faster code, 30-60% smaller bundles
 - Task consolidation: 40-88% context reduction
 
-**V7.1.0 Consolidation**:
-- 64% agent reduction (560 → 201)
-- 70% directory reduction (22 → 7)
-- Cleaner, more maintainable architecture
+**V7.3.0 Game Dev Edition**:
+- 28 new game development agents (complete pipeline coverage)
+- Make domain expanded: 80 → 108 agents
+- Total agents: 229 (10 core + 14 shared + 205 domain specialists)
+- Game engines supported: Unity, Unreal Engine, Godot
 
 ## Version History
 
+- **V7.3.0** (2026-01-19) - Game Development Edition: 28 new game dev agents, Make domain expanded to 108 agents, total 229 agents
 - **V7.1.0** (2026-01-19) - Cleanup release: removed 358 legacy agents, streamlined to 7 directories, 201 production agents
 - **V7.0.3** - Introduced 5 super-domains (Make, Grow, Operate, People, Serve), consolidated 8 legacy domains
 - **V7.0.0** - Controller-centric architecture with question-based delegation, objective-driven planning
@@ -232,4 +234,4 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | **cAgents V7.1.0** | 201 agents across 5 super-domains
+**Built with Claude Code** | **cAgents V7.3.0 Game Dev Edition** | 229 agents across 5 super-domains
