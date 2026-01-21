@@ -45,7 +45,7 @@ main() {
 
     # Validate input
     if [[ -z "$instruction_id" || -z "$phase" ]]; then
-        json_build "decision" "skip" "message" "Missing instruction_id or phase"
+        json_build --decision "skip" "message" "Missing instruction_id or phase"
         exit 0
     fi
 
@@ -63,8 +63,8 @@ EOF
 
     # Return proceed to allow recovery logic
     json_build \
-        "decision" "proceed" \
-        "message" "Phase failure logged: $phase"
+        --decision "proceed" \
+        --message "Phase failure logged: $phase"
 }
 
 main "$@"

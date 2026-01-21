@@ -112,12 +112,9 @@ _log() {
     log_line="$log_line | context: $*"
   fi
 
-  # Output based on level
-  if [[ $level_num -ge $LOG_LEVEL_WARN ]]; then
-    echo "$log_line" >&2
-  else
-    echo "$log_line"
-  fi
+  # Output to stderr always (critical for hook compatibility)
+  # Hooks must only output JSON to stdout; all logs go to stderr
+  echo "$log_line" >&2
 
   # Write to file if configured
   if [[ -n "$CAGENTS_LOG_FILE" ]]; then
@@ -211,7 +208,8 @@ log_event() {
 
   json="$json}"
 
-  echo "$json"
+  # Write to stderr for hook compatibility (don't pollute stdout)
+  echo "$json" >&2
 
   if [[ -n "$CAGENTS_LOG_FILE" ]]; then
     echo "$json" >> "$CAGENTS_LOG_FILE"

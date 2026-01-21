@@ -41,7 +41,7 @@ main() {
 
     # Validate input
     if [[ -z "$instruction_id" ]]; then
-        json_build "decision" "skip" "message" "No instruction_id provided"
+        json_build --decision "skip" "message" "No instruction_id provided"
         exit 0
     fi
 
@@ -65,8 +65,8 @@ EOF
 
     # Return success
     json_build \
-        "decision" "proceed" \
-        "message" "Workflow initialized: $instruction_id"
+        --decision "proceed" \
+        --message "Workflow initialized: $instruction_id"
 }
 
 main "$@"

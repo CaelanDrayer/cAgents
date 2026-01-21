@@ -47,7 +47,7 @@ main() {
 
     # Validate input
     if [[ -z "$instruction_id" ]]; then
-        json_build "decision" "skip" "message" "No instruction_id provided"
+        json_build --decision "skip" "message" "No instruction_id provided"
         exit 0
     fi
 
@@ -86,8 +86,8 @@ EOF
 
     # Return hook decision
     json_build \
-        "decision" "$hook_decision" \
-        "message" "HITL decision recorded: $decision"
+        --decision "$hook_decision" \
+        --message "HITL decision recorded: $decision"
 }
 
 main "$@"

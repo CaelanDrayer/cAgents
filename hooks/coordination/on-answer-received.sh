@@ -45,7 +45,7 @@ main() {
 
     # Validate input
     if [[ -z "$instruction_id" ]]; then
-        json_build "decision" "skip" "message" "No instruction_id provided"
+        json_build --decision "skip" "message" "No instruction_id provided"
         exit 0
     fi
 
@@ -61,8 +61,8 @@ main() {
 
     # Return success
     json_build \
-        "decision" "proceed" \
-        "message" "Answer logged"
+        --decision "proceed" \
+        --message "Answer logged"
 }
 
 main "$@"

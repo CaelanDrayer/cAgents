@@ -61,10 +61,10 @@ This file tracks the current session state.
 EOF
     fi
 
-    # Return success
+    # Return success - MUST use --key value format for json_build
     json_build \
-        "decision" "proceed" \
-        "message" "Session initialized: $session_id"
+        --decision "proceed" \
+        --message "Session initialized: $session_id"
 }
 
 main "$@"

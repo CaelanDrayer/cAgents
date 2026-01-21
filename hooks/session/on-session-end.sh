@@ -50,10 +50,10 @@ main() {
         cp "$session_file" "$archive_dir/${session_id}.md" 2>/dev/null || true
     fi
 
-    # Return success
+    # Return success - MUST use --key value format for json_build
     json_build \
-        "decision" "proceed" \
-        "message" "Session ended: $session_id"
+        --decision "proceed" \
+        --message "Session ended: $session_id"
 }
 
 main "$@"

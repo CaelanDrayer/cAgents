@@ -43,7 +43,7 @@ main() {
 
     # Validate input
     if [[ -z "$instruction_id" || -z "$phase" ]]; then
-        json_build "decision" "skip" "message" "Missing instruction_id or phase"
+        json_build --decision "skip" "message" "Missing instruction_id or phase"
         exit 0
     fi
 
@@ -60,8 +60,8 @@ EOF
 
     # Return success
     json_build \
-        "decision" "proceed" \
-        "message" "Phase completed: $phase"
+        --decision "proceed" \
+        --message "Phase completed: $phase"
 }
 
 main "$@"
