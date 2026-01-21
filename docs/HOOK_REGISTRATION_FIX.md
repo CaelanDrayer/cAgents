@@ -1,6 +1,6 @@
 # Hook Registration Fix (2026-01-21)
 
-**STATUS: Hooks temporarily disabled in plugin.json due to validation errors**
+**STATUS: ✅ RESOLVED - Hooks now working with correct format**
 
 ## Problem
 
@@ -64,25 +64,89 @@ To restore full hook functionality:
 
 Alternatively, consider implementing a custom hook orchestration layer that uses Claude Code's supported events as triggers.
 
-## Update (2026-01-21 Evening)
+## Final Solution (2026-01-21 Evening)
 
-After attempting to register supported hook types, the plugin validation still failed with "hooks: Invalid input" error. Hooks section has been **temporarily removed** from plugin.json to allow the plugin to load.
+After comprehensive research and testing, hooks are now working correctly.
 
-**Current status**: Hooks disabled in plugin manifest. Hook scripts still exist in `hooks/` directory but are not registered.
+**Root cause**: Using invalid direct event-to-script mapping instead of proper matcher-based structure.
 
-**Next steps**:
-1. Investigate correct hook registration format for Claude Code plugins
-2. Test hook registration with minimal example
-3. Re-add hooks once correct format is determined
+**Solution**: Created `hooks/hooks.json` with correct format:
+- External file reference: `"hooks": "./hooks/hooks.json"` in plugin.json
+- Proper structure: Arrays of matcher+hooks objects for each event
+- Correct hook object format: `{type, command, timeout, description}` fields
+- Path resolution: Using `${CLAUDE_PLUGIN_ROOT}` variable for all script paths
+- Matcher patterns: Using where supported (e.g., "startup|resume" for SessionStart)
+
+**Working hooks registered**:
+1. SessionStart - Initialize session state
+2. SessionEnd - Cleanup session state
+3. SubagentStart - Initialize workflow
+4. SubagentStop - Finalize workflow
+5. Stop - Graceful termination
+6. PostToolUseFailure - Handle failures
 
 ## Files Changed
 
-- `.claude-plugin/plugin.json` - Hooks section removed (was causing validation errors)
+- `.claude-plugin/plugin.json` - Added `"hooks": "./hooks/hooks.json"` reference
+- `hooks/hooks.json` - Created with proper matcher-based structure (was removed, now recreated correctly)
 
-## Files Unchanged (For Reference)
+## Hook Configuration Example
 
-- `hooks/hooks.json` - Custom hook configuration (not used by Claude Code, kept for documentation)
-- Hook scripts in `hooks/session/` and `hooks/workflow/` - Retained, now called by supported events
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session/on-session-start.sh",
+            "timeout": 5000,
+            "description": "Initialize session state"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session/on-session-end.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+## Key Learnings
+
+**What DOESN'T work**:
+```json
+// ❌ Direct event-to-script mapping
+"hooks": {
+  "SessionStart": "hooks/session/on-session-start.sh"
+}
+```
+
+**What DOES work**:
+```json
+// ✅ Matcher-based array structure
+"hooks": {
+  "SessionStart": [{
+    "matcher": "startup|resume",
+    "hooks": [{"type": "command", "command": "..."}]
+  }]
+}
+```
+
+## Hook Scripts
+
+Hook scripts in `hooks/session/` and `hooks/workflow/` unchanged - they work correctly with the new registration format.
 
 ## Testing
 
