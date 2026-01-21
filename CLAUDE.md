@@ -8,13 +8,12 @@ Core architecture and development guidance for cAgents V7.4.0.
 - [Memory Management](#memory-management)
 - [Project Overview](#project-overview)
 - [CRITICAL: Automatic Workflow Progression](#critical-automatic-workflow-progression)
-- [Core Infrastructure](#core-infrastructure-tier-1-10-agents)
+- [Core Infrastructure](#core-infrastructure-tier-1-11-agents)
 - [V7.4 Aggressive Decomposition](#v74-aggressive-decomposition)
 - [V7.0 Controller-Centric Architecture](#v70-controller-centric-architecture)
 - [V7.0 Coordinating Phase](#v70-coordinating-phase)
 - [Complexity Tiers](#complexity-tiers)
 - [Workflow Execution](#workflow-execution)
-- [Aggressive Task Decomposition](#aggressive-task-decomposition)
 - [Task Completion Protocol](#task-completion-protocol)
 - [Commands](#commands)
 - [Agent Memory](#agent-memory)
@@ -641,46 +640,6 @@ User Request -> Trigger (domain detect) -> Orchestrator
 
 See `workflow_agent_interactions.md` for detailed agent interaction patterns.
 
-## Aggressive Task Decomposition
-
-**V7.4 Planning**: Aggressively decompose user requests into comprehensive work breakdowns.
-
-### Plan Structure (V7.4)
-
-```yaml
-# plan.yaml (V7.4)
-objectives:
-  - "Implement OAuth2 authentication for API"
-  - "Maintain backward compatibility with existing auth"
-  - "Ensure security best practices"
-  - "Provide comprehensive test coverage"
-
-success_criteria:
-  - "All 33 work items completed with acceptance criteria met"
-  - "Security review passes"
-  - "All existing tests continue to pass"
-
-controller_assignment:
-  primary: make:engineering-manager
-  supporting:
-    - make:architect
-    - make:security-specialist
-
-# V7.4: Reference to full decomposition
-decomposition:
-  total_work_items: 33
-  by_type: {understand: 5, design: 4, build: 12, verify: 8, document: 4}
-  implicit_requirements_discovered: 15
-  work_breakdown_file: workflow/decomposition.yaml
-```
-
-**Key V7.4 Changes**:
-- **Aggressive decomposition**: Break requests into 30+ work items
-- **Implicit discovery**: Find requirements user didn't mention
-- **Dependency mapping**: Identify critical path and parallel opportunities
-- **Work items with acceptance criteria**: Concrete, measurable tasks
-- **Controllers coordinate work items**: Not figure out what to do
-
 ## Workflow Pattern
 
 **Subagent Architecture**: Agents delegate to specialists, don't execute directly.
@@ -914,55 +873,24 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 
 ## Version History
 
-**V7.4.0** (Current - 2026-01-21):
-- NEW: Aggressive Decomposition Edition
-- NEW: Task decomposer agent for comprehensive work breakdowns
-- NEW: 5-level decomposition framework (request analysis → component extraction → implicit discovery → dependency mapping → work items)
-- ENHANCED: Universal planner V6.0 with aggressive decomposition
-- ENHANCED: Orchestrator V6.0 with decomposition-aware coordination
-- ENHANCED: Controllers receive full work item breakdown instead of figuring out tasks
-- Core infrastructure: 10 → 11 agents
-- Total agents: 229 → 230
-- Philosophy: Users state outcomes, system extrapolates ALL requirements
+**V7.4.0** (Current - 2026-01-21): Aggressive Decomposition Edition
+- Task decomposer agent + 5-level decomposition framework
+- Universal planner/orchestrator V6.0 with decomposition-aware coordination
+- Core: 11 agents | Total: 230 agents
 
-**V7.3.0** (2026-01-19):
-- Game Development Edition - 28 game dev specialist agents
-- Make domain expanded: 80 -> 108 agents (35% increase)
-- Total agents: 201 -> 229 (14% increase)
-- Game dev pipeline coverage: design, programming, art, audio, production, live ops
-- New controllers: game-designer, game-producer, localization-lead
-- New execution agents: level-designer, game-programmer, engine-developer, graphics-programmer, ai-programmer, network-programmer, tools-programmer, concept-artist, 3d-modeler, texture-artist, animator, vfx-artist, ui-artist, sound-designer, music-composer, audio-programmer, narrative-game-designer, quest-designer, economy-designer, game-writer, technical-artist, qa-tester-games, monetization-designer, live-ops-specialist, accessibility-game-designer
+**V7.3.0** (2026-01-19): Game Development Edition
+- 28 game dev specialists (design, programming, art, audio, production)
+- Make domain: 80 → 108 agents | Total: 229 agents
 
-**V7.1.0** (2026-01-19):
-- Cleanup release completing V7.0.3 consolidation
-- Removed 358 legacy agents (64% reduction from 560 to 201)
-- Streamlined 22 domain directories -> 7 directories (70% reduction)
-- Production-ready architecture with 5 super-domains
-- Final agent count: 201 (10 core + 14 shared + 177 domain specialists)
-- Super-domains: Make (80), Grow (37), Operate (13), People (19), Serve (28)
-
-**V7.0.3** (V7.0.3 Consolidation):
-- Introduced 5 super-domains (Make, Grow, Operate, People, Serve)
-- Consolidated 8 legacy domains into super-domain structure
-- Marked legacy domain directories for deletion
-- Agent deduplication and role consolidation
+**V7.1.0** (2026-01-19): Cleanup Release
+- Removed 358 legacy agents (64% reduction)
+- Streamlined to 7 directories with 5 super-domains
 
 **V7.0** (Controller-Centric Architecture):
-- All agents migrated with tier field (controller, execution, or support)
-- Domain configs updated with controller_catalog sections
-- Planning changed from task-based to objective-based
-- Coordinating phase added to workflow
-- Executor changed from team manager to controller monitor
-- Validator enhanced with coordination quality checks
+- Question-based delegation with coordinating phase
+- Objective-based planning (not task-based)
 
-**Key Changes V4.0 -> V7.0**:
-- Tier 1 (core) remains
-- Tier 2 (capability agents) -> Tier 2 (controllers) + Tier 3 (execution)
-- Capability tags -> tier field (controller, execution, support)
-- Detailed tasks -> objectives + question-based delegation
-- Team coordination -> controller coordination
-
-See `docs/V5_MIGRATION_GUIDE.md` for detailed upgrade instructions.
+See `docs/V5_MIGRATION_GUIDE.md` for V4.0 → V7.0 migration details.
 
 ## Troubleshooting
 

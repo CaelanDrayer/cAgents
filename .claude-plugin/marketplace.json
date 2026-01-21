@@ -10,7 +10,7 @@
     {
       "name": "cagents",
       "description": "Universal multi-domain agent system with 230 specialized agents across 5 super-domains. V7.4 Aggressive Decomposition Edition with comprehensive work breakdowns. Controller-centric question-based delegation architecture with parallel execution up to 50x speedup. Enhanced Claude Code hooks for safety and workflow tracking.",
-      "version": "7.4.1",
+      "version": "7.4.2",
       "author": {
         "name": "CaelanDrayer",
         "email": "caelan@caelandrayer.ca"

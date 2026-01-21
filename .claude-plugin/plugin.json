@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "7.4.1",
+  "version": "7.4.2",
   "description": "cAgents V7.4 Aggressive Decomposition Edition - Universal multi-domain agent system with 230 specialized agents. Features aggressive task decomposition that extrapolates ALL requirements from user requests. Controller-centric question-based delegation across 5 super-domains (Make, Grow, Operate, People, Serve). Enhanced commands: Run V2, Explore V2, Optimizer V7, Review V3. Features: parallel execution (50x speedup), recursive workflows, comprehensive work breakdowns, dependency mapping.",
   "author": {
     "name": "CaelanDrayer",
