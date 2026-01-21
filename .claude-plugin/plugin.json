@@ -60,12 +60,5 @@
     "./core/agents/universal-self-correct.md",
     "./core/agents/optimizer.md",
     "./core/agents/task-consolidator.md"
-  ],
-  "hooks": {
-    "SessionStart": "hooks/session/on-session-start.sh",
-    "SessionEnd": "hooks/session/on-session-end.sh",
-    "SubagentStart": "hooks/workflow/on-workflow-start.sh",
-    "SubagentStop": "hooks/workflow/on-workflow-complete.sh",
-    "Stop": "hooks/workflow/stop-workflow.sh"
-  }
+  ]
 }
