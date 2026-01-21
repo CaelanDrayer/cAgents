@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "7.3.1",
-  "description": "Universal multi-domain agent system with controller-centric question-based delegation architecture. Game Dev Edition: 229 agents across 5 super-domains (Make, Grow, Operate, People, Serve) + Core + Shared infrastructure. Make domain expanded with 28 game development specialists covering the complete game dev pipeline.",
+  "version": "7.4.1",
+  "description": "cAgents V7.4 Aggressive Decomposition Edition - Universal multi-domain agent system with 230 agents across 5 super-domains. Features aggressive task decomposition, controller-centric question-based delegation, enhanced Claude Code hooks for safety. Game dev specialists included.",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -41,8 +41,8 @@
   "license": "MIT",
   "architecture": "Controller-Centric Question-Based Delegation",
   "agents": {
-    "total": 229,
-    "core": 10,
+    "total": 230,
+    "core": 11,
     "shared": 14,
     "breakdown": {
       "make": 108,
