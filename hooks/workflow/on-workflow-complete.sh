@@ -1,73 +1,78 @@
 #!/bin/bash
-# cAgents Workflow Complete Hook
+# cAgents Workflow Complete Hook (SubagentStop)
 # Archive instruction, cleanup temp files
-# Version: 1.1.0
+# Version: 2.0.0
+#
+# Input (stdin): JSON from SubagentStop event
+# Output (stdout): JSON response
 
-# Use lenient error handling - hooks should not block Claude Code
 set -o pipefail
 
-# Source bootstrap (provides fallbacks if libraries unavailable)
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LIB_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")/scripts/lib"
+exec 3>&1
+exec 1>&2
 
-# shellcheck source=../../scripts/lib/hook-bootstrap.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LIB_DIR="${SCRIPT_DIR}/../../scripts/lib"
+
 if [[ -r "$LIB_DIR/hook-bootstrap.sh" ]]; then
     source "$LIB_DIR/hook-bootstrap.sh"
 else
-    # Minimal fallbacks if bootstrap itself is unavailable
     timestamp() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
-    log_info() { echo "[$(timestamp)] [INFO] $*" >&2; }
-    json_get() { echo "$1" | grep -oP "\"${2#.}\"\\s*:\\s*\"?\\K[^,\"}]+" 2>/dev/null | head -1; }
-    json_parse() { json_get "$@"; }
-    json_build() {
-        local out="{" first=true
-        while [[ $# -ge 2 ]]; do
-            local k="${1#--}" v="$2"; shift 2
-            [[ "$first" == "true" ]] && first=false || out="$out,"
-            [[ "$v" == "true" || "$v" == "false" ]] && out="$out\"$k\":$v" || out="$out\"$k\":\"$v\""
-        done
-        echo "$out}"
-    }
+    log_info() { echo "[$(timestamp)] [INFO] $*"; }
 fi
 
+readonly AGENT_MEMORY_DIR="Agent_Memory"
+
 main() {
-    # Read input from stdin
     local input
-    input="$(cat)" || input='{}'
-
-    # Parse input
-    local instruction_id
-    instruction_id="$(json_parse "$input" '.instruction_id')" || instruction_id=""
-
-    # Validate input
-    if [[ -z "$instruction_id" ]]; then
-        json_build --decision "skip" "message" "No instruction_id provided"
-        exit 0
+    if [[ -t 0 ]]; then
+        input='{}'
+    else
+        input="$(cat)" || input='{}'
     fi
 
-    # Log workflow completion
-    log_info "Workflow complete: $instruction_id"
-
-    # Update status.yaml
-    local status_file="Agent_Memory/$instruction_id/status.yaml"
-    if [[ -f "$status_file" ]]; then
-        cat >> "$status_file" <<EOF 2>/dev/null || true
-completed_at: "$(timestamp)"
-final_status: "success"
-EOF
+    local session_id cwd
+    if command -v jq &>/dev/null; then
+        session_id=$(echo "$input" | jq -r '.session_id // "unknown"')
+        cwd=$(echo "$input" | jq -r '.cwd // "."')
+    else
+        session_id="unknown"
+        cwd="."
     fi
 
-    # Archive to _archive directory
-    local archive_dir="Agent_Memory/_archive"
-    mkdir -p "$archive_dir" 2>/dev/null || true
-    if [[ -d "Agent_Memory/$instruction_id" ]]; then
-        cp -r "Agent_Memory/$instruction_id" "$archive_dir/" 2>/dev/null || true
+    log_info "Subagent/workflow complete"
+
+    # Check for active instruction to archive
+    local session_file="${cwd}/.claude/cagents-session.local.md"
+    if [[ -f "$session_file" ]]; then
+        local active_instruction
+        active_instruction=$(grep "^active_instruction:" "$session_file" 2>/dev/null | sed 's/active_instruction: *//' | tr -d '"')
+
+        if [[ -n "$active_instruction" && "$active_instruction" != "null" ]]; then
+            log_info "Completing workflow: $active_instruction"
+
+            # Update status.yaml
+            local status_file="${cwd}/${AGENT_MEMORY_DIR}/${active_instruction}/status.yaml"
+            if [[ -f "$status_file" ]]; then
+                {
+                    echo "completed_at: \"$(timestamp)\""
+                    echo "final_status: \"success\""
+                } >> "$status_file" 2>/dev/null || true
+            fi
+
+            # Archive to _archive directory
+            local archive_dir="${cwd}/${AGENT_MEMORY_DIR}/_archive"
+            local inst_dir="${cwd}/${AGENT_MEMORY_DIR}/${active_instruction}"
+            if [[ -d "$inst_dir" ]]; then
+                mkdir -p "$archive_dir" 2>/dev/null || true
+                cp -r "$inst_dir" "$archive_dir/" 2>/dev/null || true
+                log_info "Archived workflow to _archive"
+            fi
+        fi
     fi
 
-    # Return success
-    json_build \
-        --decision "proceed" \
-        --message "Workflow archived: $instruction_id"
+    echo '{"continue":true}' >&3
+    exit 0
 }
 
 main "$@"

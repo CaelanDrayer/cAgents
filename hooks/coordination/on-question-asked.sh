@@ -1,70 +1,76 @@
 #!/bin/bash
 # cAgents Question Asked Hook
 # Log controller question delegation
-# Version: 1.1.0
+# Version: 2.0.0
+#
+# Note: Called programmatically during V7.0 coordination phase
+#
+# Input: JSON with instruction_id, controller, question, delegated_to
+# Output: JSON response
 
-# Use lenient error handling - hooks should not block Claude Code
 set -o pipefail
 
-# Source bootstrap (provides fallbacks if libraries unavailable)
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LIB_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")/scripts/lib"
+exec 3>&1
+exec 1>&2
 
-# shellcheck source=../../scripts/lib/hook-bootstrap.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LIB_DIR="${SCRIPT_DIR}/../../scripts/lib"
+
 if [[ -r "$LIB_DIR/hook-bootstrap.sh" ]]; then
     source "$LIB_DIR/hook-bootstrap.sh"
 else
-    # Minimal fallbacks if bootstrap itself is unavailable
     timestamp() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
     log_debug() { :; }
-    json_get() { echo "$1" | grep -oP "\"${2#.}\"\\s*:\\s*\"?\\K[^,\"}]+" 2>/dev/null | head -1; }
-    json_parse() { json_get "$@"; }
-    json_build() {
-        local out="{" first=true
-        while [[ $# -ge 2 ]]; do
-            local k="${1#--}" v="$2"; shift 2
-            [[ "$first" == "true" ]] && first=false || out="$out,"
-            [[ "$v" == "true" || "$v" == "false" ]] && out="$out\"$k\":$v" || out="$out\"$k\":\"$v\""
-        done
-        echo "$out}"
-    }
 fi
 
+readonly AGENT_MEMORY_DIR="Agent_Memory"
+
 main() {
-    # Read input from stdin
     local input
-    input="$(cat)" || input='{}'
+    if [[ -t 0 ]]; then
+        input='{}'
+    else
+        input="$(cat)" || input='{}'
+    fi
 
-    # Parse input
-    local instruction_id
-    instruction_id="$(json_parse "$input" '.instruction_id')" || instruction_id=""
-    local controller
-    controller="$(json_parse "$input" '.controller')" || controller=""
-    local question
-    question="$(json_parse "$input" '.question')" || question=""
-    local delegated_to
-    delegated_to="$(json_parse "$input" '.delegated_to')" || delegated_to=""
+    local instruction_id controller question delegated_to cwd
+    if command -v jq &>/dev/null; then
+        instruction_id=$(echo "$input" | jq -r '.instruction_id // ""')
+        controller=$(echo "$input" | jq -r '.controller // ""')
+        question=$(echo "$input" | jq -r '.question // ""')
+        delegated_to=$(echo "$input" | jq -r '.delegated_to // ""')
+        cwd=$(echo "$input" | jq -r '.cwd // "."')
+    else
+        instruction_id=""
+        controller=""
+        question=""
+        delegated_to=""
+        cwd="."
+    fi
 
-    # Validate input
     if [[ -z "$instruction_id" ]]; then
-        json_build --decision "skip" "message" "No instruction_id provided"
+        echo '{"continue":true}' >&3
         exit 0
     fi
 
-    # Log question delegation
     log_debug "Question asked: $controller -> $delegated_to"
     log_debug "  Question: $question"
 
-    # Could append to coordination_log.yaml here in production
-    local coord_log="Agent_Memory/$instruction_id/workflow/coordination_log.yaml"
-    if [[ -f "$coord_log" ]]; then
-        echo "# Question asked at $(timestamp)" >> "$coord_log" 2>/dev/null || true
-    fi
+    # Append to coordination_log.yaml
+    local coord_log="${cwd}/${AGENT_MEMORY_DIR}/${instruction_id}/workflow/coordination_log.yaml"
+    local workflow_dir
+    workflow_dir=$(dirname "$coord_log")
+    mkdir -p "$workflow_dir" 2>/dev/null || true
 
-    # Return success
-    json_build \
-        --decision "proceed" \
-        --message "Question logged"
+    {
+        echo "# Question asked at $(timestamp)"
+        echo "# Controller: $controller"
+        echo "# Delegated to: $delegated_to"
+        echo "# Question: $question"
+    } >> "$coord_log" 2>/dev/null || true
+
+    echo '{"continue":true}' >&3
+    exit 0
 }
 
 main "$@"

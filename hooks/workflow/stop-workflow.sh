@@ -1,257 +1,83 @@
 #!/bin/bash
 # cAgents Stop Workflow Hook
-# Ralph-style stop hook for graceful workflow termination
-# Version: 1.1.0
+# Graceful workflow termination with cleanup
+# Version: 2.0.0
+#
+# Input (stdin): JSON with session_id, reason, cwd, etc.
+# Output (stdout): JSON response with continue flag
+# Exit 2 to block stop (force Claude to continue)
 
-# Use lenient error handling - hooks should not block Claude Code
 set -o pipefail
 
-# Source bootstrap (provides fallbacks if libraries unavailable)
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LIB_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")/scripts/lib"
+# ALL output goes to stderr except final JSON
+exec 3>&1
+exec 1>&2
 
-# shellcheck source=../../scripts/lib/hook-bootstrap.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LIB_DIR="${SCRIPT_DIR}/../../scripts/lib"
+
 if [[ -r "$LIB_DIR/hook-bootstrap.sh" ]]; then
     source "$LIB_DIR/hook-bootstrap.sh"
 else
-    # Minimal fallbacks if bootstrap itself is unavailable
     timestamp() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
-    log_info() { echo "[$(timestamp)] [INFO] $*" >&2; }
-    log_warn() { echo "[$(timestamp)] [WARN] $*" >&2; }
-    json_get() { echo "$1" | grep -oP "\"${2#.}\"\\s*:\\s*\"?\\K[^,\"}]+" 2>/dev/null | head -1; }
-    json_build() {
-        local out="{" first=true
-        while [[ $# -ge 2 ]]; do
-            local k="${1#--}" v="$2"; shift 2
-            [[ "$first" == "true" ]] && first=false || out="$out,"
-            [[ "$v" == "true" || "$v" == "false" ]] && out="$out\"$k\":$v" || out="$out\"$k\":\"$v\""
-        done
-        echo "$out}"
-    }
-    read_hook_input() { [[ -t 0 ]] && echo '{}' || cat; }
-    ensure_dir() { mkdir -p "$1" 2>/dev/null || true; }
-    update_frontmatter_field() { :; }
-    log_event() { :; }
-    log_debug() { :; }
+    log_info() { echo "[$(timestamp)] [INFO] $*"; }
+    log_warn() { echo "[$(timestamp)] [WARN] $*"; }
 fi
 
 # Configuration
-readonly AGENT_MEMORY_DIR="${CAGENTS_AGENT_MEMORY:-Agent_Memory}"
+readonly AGENT_MEMORY_DIR="Agent_Memory"
 
-#######################################
-# Hook Input Contract:
-# {
-#   "instruction_id": "inst_YYYYMMDD_HHMMSS",
-#   "reason": "user_requested|error|timeout|complete",
-#   "message": "Optional message",
-#   "force": false
-# }
-#
-# Hook Output Contract:
-# {
-#   "decision": "proceed|block|skip|escalate|fail",
-#   "message": "Human-readable message",
-#   "cleanup_performed": true,
-#   "archived": false
-# }
-#######################################
-
-#######################################
-# Read hook input from stdin
-# Outputs:
-#   JSON input to stdout
-#######################################
-read_hook_input() {
-  local input=""
-  while IFS= read -r line; do
-    input="$input$line"
-  done
-  echo "$input"
-}
-
-#######################################
-# Cleanup workflow state
-# Arguments:
-#   $1 - Instruction ID
-# Returns:
-#   0 on success
-#######################################
-cleanup_workflow_state() {
-  local instruction_id="$1"
-
-  log_info "Cleaning up workflow state: $instruction_id"
-
-  # Clear session state
-  if [[ -f ".claude/cagents-session.local.md" ]]; then
-    update_frontmatter_field ".claude/cagents-session.local.md" "active_instruction" "null"
-    update_frontmatter_field ".claude/cagents-session.local.md" "active_phase" "null"
-  fi
-
-  # Clear workflow state
-  local workflow_file=".claude/workflow/${instruction_id}.local.md"
-  if [[ -f "$workflow_file" ]]; then
-    update_frontmatter_field "$workflow_file" "status" "\"stopped\""
-    update_frontmatter_field "$workflow_file" "current_phase" "\"stopped\""
-    update_frontmatter_field "$workflow_file" "last_updated" "\"$(timestamp)\""
-  fi
-
-  log_debug "Workflow state cleaned up"
-}
-
-#######################################
-# Update instruction status
-# Arguments:
-#   $1 - Instruction ID
-#   $2 - Status (stopped|failed|completed)
-#   $3 - Reason
-# Returns:
-#   0 on success
-#######################################
-update_instruction_status() {
-  local instruction_id="$1"
-  local status="$2"
-  local reason="$3"
-  local status_file="$AGENT_MEMORY_DIR/$instruction_id/status.yaml"
-
-  if [[ ! -f "$status_file" ]]; then
-    log_warn "Status file not found: $status_file"
-    return 0
-  fi
-
-  log_info "Updating instruction status to: $status"
-
-  # Note: Full YAML manipulation would require Python/yq
-  # For now, we update the simple fields
-  local temp="${status_file}.tmp.$$"
-  local updated_at
-  updated_at=$(timestamp)
-
-  # Simple sed-based update for status field
-  sed "s/^status: .*/status: $status/" "$status_file" > "$temp"
-  mv "$temp" "$status_file"
-
-  log_debug "Status updated to $status (reason: $reason)"
-}
-
-#######################################
-# Archive workflow if configured
-# Arguments:
-#   $1 - Instruction ID
-# Returns:
-#   0 on success
-#######################################
-archive_workflow() {
-  local instruction_id="$1"
-  local src="$AGENT_MEMORY_DIR/$instruction_id"
-  local dst="$AGENT_MEMORY_DIR/_archive/$instruction_id"
-
-  if [[ ! -d "$src" ]]; then
-    log_warn "Instruction folder not found: $src"
-    return 0
-  fi
-
-  log_info "Archiving workflow: $instruction_id"
-
-  ensure_dir "$AGENT_MEMORY_DIR/_archive"
-  mv "$src" "$dst"
-
-  log_debug "Archived to $dst"
-}
-
-#######################################
-# Log workflow stop event
-# Arguments:
-#   $1 - Instruction ID
-#   $2 - Reason
-#   $3 - Status
-#######################################
-log_stop_event() {
-  local instruction_id="$1"
-  local reason="$2"
-  local status="$3"
-
-  log_event "workflow_stopped" \
-    "instruction_id=$instruction_id" \
-    "reason=$reason" \
-    "final_status=$status"
-}
-
-#######################################
-# Main hook function
-#######################################
 main() {
-  # Read input from stdin (or use test input)
-  local input
-  if [[ -t 0 ]]; then
-    # Interactive mode - use defaults for testing
-    input='{"instruction_id":"test","reason":"user_requested","message":"","force":false}'
-  else
-    input=$(read_hook_input)
-  fi
+    local input
+    if [[ -t 0 ]]; then
+        input='{"reason":"user_requested"}'
+    else
+        input="$(cat)" || input='{}'
+    fi
 
-  # Parse input
-  local instruction_id reason message force
-  instruction_id=$(json_get "$input" ".instruction_id")
-  reason=$(json_get "$input" ".reason")
-  message=$(json_get "$input" ".message")
-  force=$(json_get "$input" ".force")
+    local session_id reason cwd
+    if command -v jq &>/dev/null; then
+        session_id=$(echo "$input" | jq -r '.session_id // "unknown"')
+        reason=$(echo "$input" | jq -r '.reason // "unknown"')
+        cwd=$(echo "$input" | jq -r '.cwd // "."')
+    else
+        session_id="unknown"
+        reason="unknown"
+        cwd="."
+    fi
 
-  log_info "Stop hook invoked for: $instruction_id (reason: $reason)"
+    log_info "Stop hook invoked (reason: $reason)"
 
-  # Validate input
-  if [[ -z "$instruction_id" ]]; then
-    echo '{"decision":"fail","message":"Missing instruction_id","cleanup_performed":false,"archived":false}'
-    exit 1
-  fi
+    # Check for active workflow that shouldn't be stopped
+    local session_file="${cwd}/.claude/cagents-session.local.md"
+    if [[ -f "$session_file" ]]; then
+        local active_instruction
+        active_instruction=$(grep "^active_instruction:" "$session_file" 2>/dev/null | sed 's/active_instruction: *//' | tr -d '"')
 
-  # Determine final status based on reason
-  local final_status
-  case "$reason" in
-    complete)
-      final_status="completed"
-      ;;
-    error)
-      final_status="failed"
-      ;;
-    timeout)
-      final_status="timed_out"
-      ;;
-    user_requested)
-      final_status="stopped"
-      ;;
-    *)
-      final_status="stopped"
-      ;;
-  esac
+        if [[ -n "$active_instruction" && "$active_instruction" != "null" ]]; then
+            log_info "Active workflow found: $active_instruction"
 
-  # Perform cleanup
-  cleanup_workflow_state "$instruction_id"
-  update_instruction_status "$instruction_id" "$final_status" "$reason"
+            # Update status file if it exists
+            local status_file="${cwd}/${AGENT_MEMORY_DIR}/${active_instruction}/status.yaml"
+            if [[ -f "$status_file" ]]; then
+                local updated_at
+                updated_at=$(timestamp)
+                {
+                    echo "stopped_at: \"$updated_at\""
+                    echo "stop_reason: \"$reason\""
+                } >> "$status_file" 2>/dev/null || true
+                log_info "Updated status file"
+            fi
 
-  # Archive if completed successfully
-  local archived="false"
-  if [[ "$reason" == "complete" ]]; then
-    archive_workflow "$instruction_id"
-    archived="true"
-  fi
+            # Clear session state
+            sed -i 's/^active_instruction:.*/active_instruction: null/' "$session_file" 2>/dev/null || true
+            sed -i 's/^active_phase:.*/active_phase: null/' "$session_file" 2>/dev/null || true
+        fi
+    fi
 
-  # Log stop event
-  log_stop_event "$instruction_id" "$reason" "$final_status"
-
-  # Output decision
-  local output_message="Workflow $instruction_id stopped (reason: $reason, status: $final_status)"
-  if [[ -n "$message" ]]; then
-    output_message="$output_message - $message"
-  fi
-
-  json_build \
-    --decision "proceed" \
-    --message "$output_message" \
-    --cleanup_performed "true" \
-    --archived "$archived"
+    # Allow the stop to proceed
+    echo '{"continue":true}' >&3
+    exit 0
 }
 
-# Run if executed directly
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-  main "$@"
-fi
+main "$@"

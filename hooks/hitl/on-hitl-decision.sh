@@ -1,93 +1,85 @@
 #!/bin/bash
 # cAgents HITL Decision Hook
 # Record decision, resume or modify workflow
-# Version: 1.1.0
+# Version: 2.0.0
+#
+# Note: Called programmatically when user makes HITL decision
+#
+# Input: JSON with instruction_id, gate_name, decision, user_message
+# Output: JSON response
 
-# Use lenient error handling - hooks should not block Claude Code
 set -o pipefail
 
-# Source bootstrap (provides fallbacks if libraries unavailable)
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LIB_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")/scripts/lib"
+exec 3>&1
+exec 1>&2
 
-# shellcheck source=../../scripts/lib/hook-bootstrap.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LIB_DIR="${SCRIPT_DIR}/../../scripts/lib"
+
 if [[ -r "$LIB_DIR/hook-bootstrap.sh" ]]; then
     source "$LIB_DIR/hook-bootstrap.sh"
 else
-    # Minimal fallbacks if bootstrap itself is unavailable
     timestamp() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
-    log_info() { echo "[$(timestamp)] [INFO] $*" >&2; }
-    json_get() { echo "$1" | grep -oP "\"${2#.}\"\\s*:\\s*\"?\\K[^,\"}]+" 2>/dev/null | head -1; }
-    json_parse() { json_get "$@"; }
-    json_build() {
-        local out="{" first=true
-        while [[ $# -ge 2 ]]; do
-            local k="${1#--}" v="$2"; shift 2
-            [[ "$first" == "true" ]] && first=false || out="$out,"
-            [[ "$v" == "true" || "$v" == "false" ]] && out="$out\"$k\":$v" || out="$out\"$k\":\"$v\""
-        done
-        echo "$out}"
-    }
+    log_info() { echo "[$(timestamp)] [INFO] $*"; }
 fi
 
+readonly AGENT_MEMORY_DIR="Agent_Memory"
+
 main() {
-    # Read input from stdin
     local input
-    input="$(cat)" || input='{}'
+    if [[ -t 0 ]]; then
+        input='{}'
+    else
+        input="$(cat)" || input='{}'
+    fi
 
-    # Parse input
-    local instruction_id
-    instruction_id="$(json_parse "$input" '.instruction_id')" || instruction_id=""
-    local gate_name
-    gate_name="$(json_parse "$input" '.gate_name')" || gate_name=""
-    local decision
-    decision="$(json_parse "$input" '.decision')" || decision=""
-    local user_message
-    user_message="$(json_parse "$input" '.user_message')" || user_message=""
+    local instruction_id gate_name decision user_message cwd
+    if command -v jq &>/dev/null; then
+        instruction_id=$(echo "$input" | jq -r '.instruction_id // ""')
+        gate_name=$(echo "$input" | jq -r '.gate_name // ""')
+        decision=$(echo "$input" | jq -r '.decision // ""')
+        user_message=$(echo "$input" | jq -r '.user_message // ""')
+        cwd=$(echo "$input" | jq -r '.cwd // "."')
+    else
+        instruction_id=""
+        gate_name=""
+        decision=""
+        user_message=""
+        cwd="."
+    fi
 
-    # Validate input
     if [[ -z "$instruction_id" ]]; then
-        json_build --decision "skip" "message" "No instruction_id provided"
+        echo '{"continue":true}' >&3
         exit 0
     fi
 
-    # Log HITL decision
     log_info "HITL decision received: $instruction_id - Gate: $gate_name"
     log_info "  Decision: $decision"
     log_info "  Message: $user_message"
 
     # Update HITL decisions file
-    local hitl_file="Agent_Memory/$instruction_id/workflow/hitl_decisions.yaml"
+    local hitl_file="${cwd}/${AGENT_MEMORY_DIR}/${instruction_id}/workflow/hitl_decisions.yaml"
     if [[ -f "$hitl_file" ]]; then
-        cat >> "$hitl_file" <<EOF 2>/dev/null || true
-  decided_at: "$(timestamp)"
-  decision: "$decision"
-  user_message: "$user_message"
-  status: "resolved"
-EOF
+        {
+            echo "  decided_at: \"$(timestamp)\""
+            echo "  decision: \"$decision\""
+            echo "  user_message: \"$user_message\""
+            echo "  status: \"resolved\""
+        } >> "$hitl_file" 2>/dev/null || true
     fi
 
     # Update status to resumed
-    local status_file="Agent_Memory/$instruction_id/status.yaml"
+    local status_file="${cwd}/${AGENT_MEMORY_DIR}/${instruction_id}/status.yaml"
     if [[ -f "$status_file" ]]; then
-        cat >> "$status_file" <<EOF 2>/dev/null || true
-resumed_at: "$(timestamp)"
-hitl_decision: "$decision"
-EOF
+        {
+            echo "status: \"active\""
+            echo "resumed_at: \"$(timestamp)\""
+            echo "hitl_decision: \"$decision\""
+        } >> "$status_file" 2>/dev/null || true
     fi
 
-    # Determine hook decision based on user decision
-    local hook_decision="proceed"
-    if [[ "$decision" == "REJECTED" ]]; then
-        hook_decision="fail"
-    elif [[ "$decision" == "MORE INFO" ]]; then
-        hook_decision="escalate"
-    fi
-
-    # Return hook decision
-    json_build \
-        --decision "$hook_decision" \
-        --message "HITL decision recorded: $decision"
+    echo '{"continue":true}' >&3
+    exit 0
 }
 
 main "$@"

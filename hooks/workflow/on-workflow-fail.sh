@@ -1,69 +1,75 @@
 #!/bin/bash
 # cAgents Workflow Fail Hook
 # Log failure, notify if configured
-# Version: 1.1.0
+# Version: 2.0.0
+#
+# Note: Called programmatically by cAgents when workflows fail
+#
+# Input: JSON with instruction_id, error_message
+# Output: JSON response
 
-# Use lenient error handling - hooks should not block Claude Code
 set -o pipefail
 
-# Source bootstrap (provides fallbacks if libraries unavailable)
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LIB_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")/scripts/lib"
+exec 3>&1
+exec 1>&2
 
-# shellcheck source=../../scripts/lib/hook-bootstrap.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LIB_DIR="${SCRIPT_DIR}/../../scripts/lib"
+
 if [[ -r "$LIB_DIR/hook-bootstrap.sh" ]]; then
     source "$LIB_DIR/hook-bootstrap.sh"
 else
-    # Minimal fallbacks if bootstrap itself is unavailable
     timestamp() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
-    log_error() { echo "[$(timestamp)] [ERROR] $*" >&2; }
-    json_get() { echo "$1" | grep -oP "\"${2#.}\"\\s*:\\s*\"?\\K[^,\"}]+" 2>/dev/null | head -1; }
-    json_parse() { json_get "$@"; }
-    json_build() {
-        local out="{" first=true
-        while [[ $# -ge 2 ]]; do
-            local k="${1#--}" v="$2"; shift 2
-            [[ "$first" == "true" ]] && first=false || out="$out,"
-            [[ "$v" == "true" || "$v" == "false" ]] && out="$out\"$k\":$v" || out="$out\"$k\":\"$v\""
-        done
-        echo "$out}"
-    }
+    log_error() { echo "[$(timestamp)] [ERROR] $*"; }
 fi
 
+readonly AGENT_MEMORY_DIR="Agent_Memory"
+
 main() {
-    # Read input from stdin
     local input
-    input="$(cat)" || input='{}'
+    if [[ -t 0 ]]; then
+        input='{}'
+    else
+        input="$(cat)" || input='{}'
+    fi
 
-    # Parse input
-    local instruction_id
-    instruction_id="$(json_parse "$input" '.instruction_id')" || instruction_id=""
-    local error_message
-    error_message="$(json_parse "$input" '.error_message')" || error_message="Unknown error"
+    local instruction_id error_message cwd
+    if command -v jq &>/dev/null; then
+        instruction_id=$(echo "$input" | jq -r '.instruction_id // ""')
+        error_message=$(echo "$input" | jq -r '.error_message // "Unknown error"')
+        cwd=$(echo "$input" | jq -r '.cwd // "."')
+    else
+        instruction_id=""
+        error_message="Unknown error"
+        cwd="."
+    fi
 
-    # Validate input
     if [[ -z "$instruction_id" ]]; then
-        json_build --decision "skip" "message" "No instruction_id provided"
+        echo '{"continue":true}' >&3
         exit 0
     fi
 
-    # Log workflow failure
     log_error "Workflow failed: $instruction_id - $error_message"
 
     # Update status.yaml
-    local status_file="Agent_Memory/$instruction_id/status.yaml"
+    local status_file="${cwd}/${AGENT_MEMORY_DIR}/${instruction_id}/status.yaml"
     if [[ -f "$status_file" ]]; then
-        cat >> "$status_file" <<EOF 2>/dev/null || true
-failed_at: "$(timestamp)"
-final_status: "failed"
-error: "$error_message"
-EOF
+        {
+            echo "failed_at: \"$(timestamp)\""
+            echo "final_status: \"failed\""
+            echo "error: \"$error_message\""
+        } >> "$status_file" 2>/dev/null || true
     fi
 
-    # Return success (hook processed failure)
-    json_build \
-        --decision "proceed" \
-        --message "Workflow failure logged: $instruction_id"
+    # Clear session state
+    local session_file="${cwd}/.claude/cagents-session.local.md"
+    if [[ -f "$session_file" ]]; then
+        sed -i 's/^active_instruction:.*/active_instruction: null/' "$session_file" 2>/dev/null || true
+        sed -i 's/^active_phase:.*/active_phase: null/' "$session_file" 2>/dev/null || true
+    fi
+
+    echo '{"continue":true}' >&3
+    exit 0
 }
 
 main "$@"
