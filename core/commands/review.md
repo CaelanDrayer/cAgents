@@ -1,5 +1,5 @@
 ---
-name: reviewer
+name: review
 description: Universal comprehensive review tool with parallel execution, framework-specific patterns, enhanced auto-fix engine, quality gates, and interactive mode. Analyzes ANYTHING - code, docs, content, designs, processes.
 ---
 
@@ -60,9 +60,9 @@ Execute these phases with parallel execution, framework detection, and streaming
 5. **Detect framework** (if code review):
    - Check package.json, requirements.txt, composer.json, etc.
    - Detect: Next.js, React, Vue, Angular, Django, FastAPI, Express, Flask, Rails, Spring Boot, Laravel, .NET
-   - Load framework-specific patterns from `Agent_Memory/_system/review/framework_patterns.yaml`
+   - Load framework-specific patterns from `Agent_Memory/_system/commands/review/framework_patterns.yaml`
 6. Generate review ID: `review_{YYYYMMDD}_{HHMMSS}`
-7. Create review folder: `Agent_Memory/review_{id}/`
+7. Create review folder: `Agent_Memory/sessions/review_{YYYYMMDD_HHMMSS}/`
 8. **Context-aware analysis**:
    - If --git-hotspots: Analyze git log for frequently changed files
    - If --pr-context: Get diff against specified branch
@@ -327,111 +327,111 @@ Update TodoWrite:
 
 ```bash
 # ============== Basic Usage (Backward Compatible) ==============
-/reviewer                           # Auto-detect and review target
-/reviewer src/                      # Review specific path
-/reviewer src/auth/login.ts         # Review specific file
+/review                           # Auto-detect and review target
+/review src/                      # Review specific path
+/review src/auth/login.ts         # Review specific file
 
 # ============== Scope Filters ==============
-/reviewer --scope changed           # Only changed files (git diff)
-/reviewer --scope staged            # Only staged files
-/reviewer --scope all               # Full codebase (default)
+/review --scope changed           # Only changed files (git diff)
+/review --scope staged            # Only staged files
+/review --scope all               # Full codebase (default)
 
 # ============== Review Type ==============
-/reviewer --type code               # Force code review
-/reviewer --type documentation      # Force documentation review
-/reviewer --type content            # Force content review
-/reviewer --type design             # Force design review
-/reviewer --type process            # Force business process review
-/reviewer --type data               # Force data review
-/reviewer --type infrastructure     # Force infrastructure review
+/review --type code               # Force code review
+/review --type documentation      # Force documentation review
+/review --type content            # Force content review
+/review --type design             # Force design review
+/review --type process            # Force business process review
+/review --type data               # Force data review
+/review --type infrastructure     # Force infrastructure review
 
 # ============== Focus Areas ==============
-/reviewer --focus security          # Focus on security
-/reviewer --focus architecture      # Focus on architecture
-/reviewer --focus accessibility     # Focus on accessibility
-/reviewer --focus performance       # Focus on performance
-/reviewer --focus quality           # Focus on code quality
+/review --focus security          # Focus on security
+/review --focus architecture      # Focus on architecture
+/review --focus accessibility     # Focus on accessibility
+/review --focus performance       # Focus on performance
+/review --focus quality           # Focus on code quality
 
 # ============== Framework Detection ==============
-/reviewer --framework nextjs        # Force Next.js patterns
-/reviewer --framework react         # Force React patterns
-/reviewer --framework vue           # Force Vue patterns
-/reviewer --framework angular       # Force Angular patterns
-/reviewer --framework django        # Force Django patterns
-/reviewer --framework fastapi       # Force FastAPI patterns
-/reviewer --framework express       # Force Express patterns
-/reviewer --framework flask         # Force Flask patterns
-/reviewer --framework rails         # Force Rails patterns
-/reviewer --framework springboot    # Force Spring Boot patterns
-/reviewer --framework laravel       # Force Laravel patterns
-/reviewer --framework .net          # Force .NET patterns
-/reviewer --auto-detect-framework   # Auto-detect framework (default)
+/review --framework nextjs        # Force Next.js patterns
+/review --framework react         # Force React patterns
+/review --framework vue           # Force Vue patterns
+/review --framework angular       # Force Angular patterns
+/review --framework django        # Force Django patterns
+/review --framework fastapi       # Force FastAPI patterns
+/review --framework express       # Force Express patterns
+/review --framework flask         # Force Flask patterns
+/review --framework rails         # Force Rails patterns
+/review --framework springboot    # Force Spring Boot patterns
+/review --framework laravel       # Force Laravel patterns
+/review --framework .net          # Force .NET patterns
+/review --auto-detect-framework   # Auto-detect framework (default)
 
 # ============== Parallel Execution ==============
-/reviewer --parallel                # Enable parallel execution (default)
-/reviewer --parallel-limit 5        # Max 5 agents simultaneously
-/reviewer --sequential              # Disable parallel (debug mode)
+/review --parallel                # Enable parallel execution (default)
+/review --parallel-limit 5        # Max 5 agents simultaneously
+/review --sequential              # Disable parallel (debug mode)
 
 # ============== Auto-Fix Options ==============
-/reviewer --auto-fix                # Generate auto-fixes for all issues
-/reviewer --auto-fix safe           # Only safe auto-fixes
-/reviewer --auto-fix all            # All auto-fixes (including risky)
-/reviewer --apply-safe-fixes        # Auto-apply safe fixes without asking
-/reviewer --dry-run                 # Show what would be fixed (no changes)
+/review --auto-fix                # Generate auto-fixes for all issues
+/review --auto-fix safe           # Only safe auto-fixes
+/review --auto-fix all            # All auto-fixes (including risky)
+/review --apply-safe-fixes        # Auto-apply safe fixes without asking
+/review --dry-run                 # Show what would be fixed (no changes)
 
 # ============== Quality Gates ==============
-/reviewer --quality-gate strict     # Strict quality gates (block on any critical)
-/reviewer --quality-gate standard   # Standard gates (block on 3+ critical)
-/reviewer --quality-gate relaxed    # Relaxed gates (warn only)
-/reviewer --run-tests               # Run tests after auto-fix
-/reviewer --rollback-on-failure     # Auto-rollback if tests fail
+/review --quality-gate strict     # Strict quality gates (block on any critical)
+/review --quality-gate standard   # Standard gates (block on 3+ critical)
+/review --quality-gate relaxed    # Relaxed gates (warn only)
+/review --run-tests               # Run tests after auto-fix
+/review --rollback-on-failure     # Auto-rollback if tests fail
 
 # ============== Interactive Mode ==============
-/reviewer --interactive             # Ask user preferences before review
-/reviewer --stream                  # Stream results in real-time (default)
-/reviewer --no-stream               # Wait for all agents to complete
+/review --interactive             # Ask user preferences before review
+/review --stream                  # Stream results in real-time (default)
+/review --no-stream               # Wait for all agents to complete
 
 # ============== Confidence Thresholds ==============
-/reviewer --confidence 0.8          # Only report issues with 80%+ confidence
-/reviewer --min-confidence 0.5      # Minimum confidence threshold
-/reviewer --show-confidence         # Display confidence scores in report
+/review --confidence 0.8          # Only report issues with 80%+ confidence
+/review --min-confidence 0.5      # Minimum confidence threshold
+/review --show-confidence         # Display confidence scores in report
 
 # ============== Context-Aware ==============
-/reviewer --git-hotspots            # Prioritize frequently changed files
-/reviewer --pr-context main         # Review against main branch
-/reviewer --recent-changes 7d       # Focus on files changed in last 7 days
-/reviewer --critical-first          # Review security-critical files first (default)
+/review --git-hotspots            # Prioritize frequently changed files
+/review --pr-context main         # Review against main branch
+/review --recent-changes 7d       # Focus on files changed in last 7 days
+/review --critical-first          # Review security-critical files first (default)
 
 # ============== Output Options ==============
-/reviewer --output json             # JSON output
-/reviewer --output markdown         # Markdown report (default)
-/reviewer --output summary          # Executive summary only
-/reviewer --output detailed         # Detailed report with all findings
-/reviewer --save-report ./review.md # Save report to file
+/review --output json             # JSON output
+/review --output markdown         # Markdown report (default)
+/review --output summary          # Executive summary only
+/review --output detailed         # Detailed report with all findings
+/review --save-report ./review.md # Save report to file
 
 # ============== Pattern Learning ==============
-/reviewer --learn                   # Update pattern database from findings
-/reviewer --no-learn                # Don't update patterns
-/reviewer --pattern-stats           # Show pattern effectiveness statistics
+/review --learn                   # Update pattern database from findings
+/review --no-learn                # Don't update patterns
+/review --pattern-stats           # Show pattern effectiveness statistics
 
 # ============== Combined Examples ==============
 # Comprehensive security review with auto-fix
-/reviewer src/ --focus security --auto-fix safe --apply-safe-fixes --run-tests
+/review src/ --focus security --auto-fix safe --apply-safe-fixes --run-tests
 
 # Fast review of recent changes with parallel execution
-/reviewer --scope changed --parallel --stream --confidence 0.7
+/review --scope changed --parallel --stream --confidence 0.7
 
 # Framework-specific review with quality gates
-/reviewer --framework nextjs --quality-gate strict --run-tests --rollback-on-failure
+/review --framework nextjs --quality-gate strict --run-tests --rollback-on-failure
 
 # Interactive review with dry-run
-/reviewer --interactive --dry-run --show-confidence
+/review --interactive --dry-run --show-confidence
 
 # Git-aware review of hot spots
-/reviewer --git-hotspots --recent-changes 7d --critical-first
+/review --git-hotspots --recent-changes 7d --critical-first
 
 # Full review with detailed report
-/reviewer --parallel --auto-fix all --output detailed --save-report ./full-review.md
+/review --parallel --auto-fix all --output detailed --save-report ./full-review.md
 ```
 
 ## Agent Invocation
@@ -507,7 +507,7 @@ Critical Issues Require Immediate Action:
 2. [CRITICAL] SQL injection in src/api/users.ts:78
 ...
 
-Full report: Agent_Memory/review_20260105_143022/reports/final_report.md
+Full report: Agent_Memory/sessions/review_20260105_143022/reports/final_report.md
 ```
 
 ### Documentation Review Report
@@ -532,7 +532,7 @@ Critical Documentation Gaps:
 3. [CRITICAL] Error handling section incomplete
 ...
 
-Full report: Agent_Memory/review_20260105_143055/reports/final_report.md
+Full report: Agent_Memory/sessions/review_20260105_143055/reports/final_report.md
 ```
 
 ### Content Review Report
@@ -559,7 +559,7 @@ Recommendations:
 3. Fix passive voice in paragraphs 5, 8, 12
 ...
 
-Full report: Agent_Memory/review_20260105_144012/reports/final_report.md
+Full report: Agent_Memory/sessions/review_20260105_144012/reports/final_report.md
 ```
 
 ### Design Review Report
@@ -584,7 +584,7 @@ Critical Issues:
 3. [HIGH] Mobile layout breaks on screens <360px
 ...
 
-Full report: Agent_Memory/review_20260105_144130/reports/final_report.md
+Full report: Agent_Memory/sessions/review_20260105_144130/reports/final_report.md
 ```
 
 ### Business Process Review Report
@@ -610,7 +610,7 @@ Critical Issues:
 3. [HIGH] No rollback procedure if onboarding fails
 ...
 
-Full report: Agent_Memory/review_20260105_144245/reports/final_report.md
+Full report: Agent_Memory/sessions/review_20260105_144245/reports/final_report.md
 ```
 
 ---

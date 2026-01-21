@@ -64,28 +64,28 @@ Then configure Claude Code to load the plugin directory.
 
 ## Quick Start
 
-### Universal /trigger Command
+### Universal /run Command
 
 One command handles ANY request type - routing happens automatically:
 
 ```bash
 # Engineering work
-/trigger Fix the authentication bug
+/run Fix the authentication bug
 
 # Creative writing
-/trigger Write a sci-fi short story about AI
+/run Write a sci-fi short story about AI
 
 # Marketing
-/trigger Plan Q4 product launch campaign
+/run Plan Q4 product launch campaign
 
 # Operations
-/trigger Create annual budget for 2027
+/run Create annual budget for 2027
 
 # HR/People
-/trigger Design onboarding program for engineers
+/run Design onboarding program for engineers
 
 # Customer Support
-/trigger Create knowledge base article about refunds
+/run Create knowledge base article about refunds
 ```
 
 The system automatically:
@@ -109,8 +109,8 @@ The system automatically:
 ### Universal Commands
 
 ```bash
-/designer   # Interactive design assistant (works across all domains)
-/reviewer   # Comprehensive review (code, documents, strategies, campaigns)
+/explore    # Interactive discovery assistant (works across all domains)
+/review     # Comprehensive review (code, documents, strategies, campaigns)
 /optimize   # Universal optimizer (8 types: code, content, process, data, infrastructure, campaign, creative, sales)
 ```
 
@@ -161,10 +161,10 @@ Plans define high-level objectives (WHAT), controllers determine implementation 
 Up to 50 concurrent agents with 4 execution modes (Sequential, Pipeline, Swarm, Mesh) for up to 50x speedup.
 
 ### Enhanced Commands (V7.0)
-- **Trigger V2.0**: 2-3x faster initialization, 90%+ domain accuracy, context-aware detection
-- **Designer V2.0**: Smart chunking, context discovery, adaptive questioning
-- **Optimizer V7.0**: Zero-arg invocation, auto-detection, 8 optimization types
-- **Reviewer V3.0**: 33% faster, 81% faster to critical issues, 98% more actionable suggestions
+- **/run**: 2-3x faster initialization, 90%+ domain accuracy, context-aware detection
+- **/explore**: Smart chunking, context discovery, adaptive questioning
+- **/optimize**: Zero-arg invocation, auto-detection, 8 optimization types
+- **/review**: 33% faster, 81% faster to critical issues, 98% more actionable suggestions
 
 ### Ralph Loop-Inspired Bash Infrastructure
 6 library modules with 86 functions, 14 lifecycle hooks, atomic file operations, markdown frontmatter state management.

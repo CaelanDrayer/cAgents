@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "7.3.2",
-  "description": "cAgents V7.3 Game Dev Edition - Universal multi-domain agent system with 229 specialized agents (28 new game dev specialists). Controller-centric question-based delegation across 5 super-domains (Make, Grow, Operate, People, Serve). Enhanced commands: Trigger V2, Designer V2, Optimizer V7, Reviewer V3. Features: parallel execution (50x speedup), recursive workflows, bash library (86 functions), lifecycle hooks, objective-driven planning.",
+  "version": "7.4.0",
+  "description": "cAgents V7.4 Aggressive Decomposition Edition - Universal multi-domain agent system with 230 specialized agents. Features aggressive task decomposition that extrapolates ALL requirements from user requests. Controller-centric question-based delegation across 5 super-domains (Make, Grow, Operate, People, Serve). Enhanced commands: Run V2, Explore V2, Optimizer V7, Review V3. Features: parallel execution (50x speedup), recursive workflows, comprehensive work breakdowns, dependency mapping.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",
@@ -19,17 +19,20 @@
     "autonomous",
     "multi-domain",
     "super-domains",
-    "v7.3",
+    "v7.4",
+    "aggressive-decomposition",
+    "work-breakdown",
+    "dependency-mapping",
     "game-dev",
     "controller-centric",
     "question-based-delegation",
     "universal-workflow",
     "recursive-workflows",
     "configuration-driven",
-    "trigger-v2",
-    "designer-v2",
+    "run-v2",
+    "explore-v2",
     "optimizer-v7",
-    "reviewer-v3",
+    "review-v3",
     "context-aware",
     "pre-flight-validation",
     "bash-library",
@@ -44,9 +47,9 @@
     "serve"
   ],
   "commands": [
-    "./core/commands/trigger.md",
-    "./core/commands/designer.md",
-    "./core/commands/reviewer.md",
+    "./core/commands/run.md",
+    "./core/commands/explore.md",
+    "./core/commands/review.md",
     "./core/commands/optimize.md"
   ],
   "agents": [
@@ -59,7 +62,8 @@
     "./core/agents/universal-validator.md",
     "./core/agents/universal-self-correct.md",
     "./core/agents/optimizer.md",
-    "./core/agents/task-consolidator.md"
+    "./core/agents/task-consolidator.md",
+    "./core/agents/task-decomposer.md"
   ],
   "hooks": "./hooks/hooks.json"
 }

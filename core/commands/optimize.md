@@ -82,13 +82,15 @@ Execute the **workflow-driven optimization pipeline** that automatically:
    - Tier 2: Module-level optimization (1 controller)
    - Tier 3: System-level optimization (primary + supporting controllers)
    - Tier 4: Architectural optimization (executive oversight + HITL)
-6. **Generate optimization instruction ID**: `inst_YYYYMMDD_XXX`
-7. **Create instruction folder**: `Agent_Memory/{instruction_id}/`
+6. **Generate optimization session ID**: `optimize_{YYYYMMDD}_{HHMMSS}`
+7. **Create session folder**: `Agent_Memory/sessions/optimize_{YYYYMMDD_HHMMSS}/`
 8. **Write detection report**: `workflow/detection_report.yaml`
+
+**Config location**: `Agent_Memory/_system/commands/optimize/`
 
 **Detection Report Structure**:
 ```yaml
-optimization_id: inst_20260113_003
+optimization_id: optimize_20260113_100000
 detected_at: 2026-01-13T10:00:00Z
 invocation_mode: zero_arg  # or natural_language, specific_path, auto_scan
 
@@ -220,7 +222,7 @@ safe_auto_apply: 12
 
 **Plan Structure**:
 ```yaml
-optimization_id: inst_20260113_003
+optimization_id: optimize_20260113_100000
 plan_created_at: 2026-01-13T10:15:00Z
 
 objectives:
@@ -368,7 +370,7 @@ completed_at: 2026-01-13T12:00:00Z
 
 **Validation Report Structure**:
 ```yaml
-optimization_id: inst_20260113_003
+optimization_id: optimize_20260113_100000
 validated_at: 2026-01-13T12:15:00Z
 
 validation_result: PASS  # or FIXABLE, BLOCKED
@@ -557,8 +559,8 @@ remaining_opportunities:
 /optimize --prediction-accuracy  # Show prediction vs actual accuracy
 
 # User feedback
-/optimize --feedback accept inst_XXX opt_001  # Mark optimization as accepted
-/optimize --feedback reject inst_XXX opt_002  # Mark optimization as rejected
+/optimize --feedback accept optimize_XXX opt_001  # Mark optimization as accepted
+/optimize --feedback reject optimize_XXX opt_002  # Mark optimization as rejected
   # Improves future predictions
 
 # ====== CONTEXT & DETECTION ======
@@ -761,9 +763,9 @@ Optimization Type: {optimization_types}
 Complexity Tier: {tier}
 
 Files:
-- Agent_Memory/{optimization_id}/instruction.yaml
-- Agent_Memory/{optimization_id}/status.yaml
-- Agent_Memory/{optimization_id}/workflow/detection_report.yaml
+- Agent_Memory/sessions/{optimization_id}/instruction.yaml
+- Agent_Memory/sessions/{optimization_id}/status.yaml
+- Agent_Memory/sessions/{optimization_id}/workflow/detection_report.yaml
 
 OPTIMIZATION WORKFLOW:
 Phase 1 (Detection): COMPLETE
@@ -843,7 +845,7 @@ Start with analysis phase (universal-planner for optimization analysis).`
 ```
 OK Code Optimization Complete
 
-Optimization ID:  inst_20260113_003
+Optimization ID:  optimize_20260113_100000
 Type:             Code
 Target:           src/
 Safety Level:     medium
@@ -883,14 +885,14 @@ Remaining Opportunities (Need Review):
   1. [RISKY] Refactor state management to Zustand (~3h, ~15% perf gain)
   2. [RISKY] Migrate to React Server Components (~8h, ~40% bundle reduction)
 
-Full report: Agent_Memory/inst_20260113_003/outputs/optimization_report.md
+Full report: Agent_Memory/optimize_20260113_100000/outputs/optimization_report.md
 ```
 
 ## Key Capabilities
 
 - **Trigger-style workflow** - Same 5-phase pattern as /trigger
 - **Zero-arg invocation** - Auto-detect everything from context
-- **Instruction-based** - Creates inst_{id} folder for each optimization
+- **Instruction-based** - Creates optimize_{id} folder for each optimization
 - **Controller-centric** - Uses question-based delegation to specialists
 - **Natural language goals** - "Make it faster" -> Performance optimization
 - **Auto-detection** - Detects optimization type from files/context
@@ -902,7 +904,7 @@ Full report: Agent_Memory/inst_20260113_003/outputs/optimization_report.md
 
 ## Important Rules
 
-1. **Always create instruction** - Every optimization gets unique inst_{id}
+1. **Always create instruction** - Every optimization gets unique optimize_{id}
 2. **Follow 5-phase workflow** - Detection -> Analysis -> Planning -> Execution -> Validation
 3. **Use controllers for tier 2+** - Question-based delegation for complex optimizations
 4. **Detect first** - Always detect optimization type before proceeding

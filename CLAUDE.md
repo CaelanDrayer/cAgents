@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Core architecture and development guidance for cAgents V7.3.0.
+Core architecture and development guidance for cAgents V7.4.0.
 
 ## Table of Contents
 
@@ -9,11 +9,12 @@ Core architecture and development guidance for cAgents V7.3.0.
 - [Project Overview](#project-overview)
 - [CRITICAL: Automatic Workflow Progression](#critical-automatic-workflow-progression)
 - [Core Infrastructure](#core-infrastructure-tier-1-10-agents)
+- [V7.4 Aggressive Decomposition](#v74-aggressive-decomposition)
 - [V7.0 Controller-Centric Architecture](#v70-controller-centric-architecture)
 - [V7.0 Coordinating Phase](#v70-coordinating-phase)
 - [Complexity Tiers](#complexity-tiers)
 - [Workflow Execution](#workflow-execution)
-- [Objective-Based Planning](#objective-based-planning)
+- [Aggressive Task Decomposition](#aggressive-task-decomposition)
 - [Task Completion Protocol](#task-completion-protocol)
 - [Commands](#commands)
 - [Agent Memory](#agent-memory)
@@ -293,31 +294,34 @@ CLAUDE.local.md
 
 ## Project Overview
 
-**cAgents V7.3.0**: Universal multi-domain agent system with 4-tier controller-centric architecture and question-based delegation. Game Dev Edition.
+**cAgents V7.4.0**: Universal multi-domain agent system with aggressive task decomposition. When users say "I want X", the system extrapolates ALL requirements needed for success.
 
-**V7.3.0 Release**: Game Development Edition
-- **NEW**: 28 game development specialist agents added to Make domain
-- **Make Domain**: 80 -> 108 agents (35% increase)
-- **Total Agents**: 201 -> 229 (14% increase)
-- **Game Dev Pipeline**: Full coverage from design to live ops
+**V7.4.0 Release**: Aggressive Decomposition Edition
+- **NEW**: Task decomposer agent for comprehensive work breakdowns
+- **NEW**: 5-level decomposition framework (request analysis → component extraction → implicit discovery → dependency mapping → work items)
+- **ENHANCED**: Universal planner V6.0 with aggressive decomposition
+- **ENHANCED**: Orchestrator V6.0 with decomposition-aware coordination
+- **Core Infrastructure**: 10 → 11 agents (task-decomposer added)
+- **Total Agents**: 229 → 230
 
-**Architecture**: V7.0 - Controller-Centric Question-Based Delegation
-- **Tier 1**: 10 core infrastructure agents (trigger, orchestrator, hitl, optimizer, task-consolidator, 5 universal workflow agents)
-- **Tier 2**: Controllers (coordinate work via question-based delegation)
-- **Tier 3**: Execution agents (answer questions and implement solutions)
+**Architecture**: V7.4 - Aggressive Decomposition + Controller-Centric Coordination
+- **Tier 1**: 11 core infrastructure agents (trigger, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, 5 universal workflow agents)
+- **Tier 2**: Controllers (coordinate work items from decomposition)
+- **Tier 3**: Execution agents (implement work items)
 - **Tier 4**: Support agents (foundational services)
-- **Total**: 229 agents
+- **Total**: 230 agents
 - **Execution**: 4 modes (Sequential, Pipeline, Swarm, Mesh) - up to 50x speedup
 
-**V7.0 Key Features**:
-- **Controller-Centric**: Controllers coordinate execution, not planners or executors
-- **Question-Based Delegation**: Controllers ask questions to specialists, synthesize answers, coordinate implementation
-- **Objective-Driven Planning**: Plan defines WHAT (objectives), controllers determine HOW (questions + synthesis)
-- **Simpler Planning**: High-level objectives instead of detailed task lists
-- **Expert-Driven**: Controllers use domain expertise to break down work adaptively
+**V7.4 Key Features**:
+- **Aggressive Decomposition**: User says "add auth" → system generates 30+ work items with dependencies
+- **Implicit Requirement Discovery**: Discovers security, testing, documentation needs user didn't mention
+- **Dependency Mapping**: Identifies what must happen first, what can parallelize
+- **Work Item Generation**: Concrete tasks with acceptance criteria
+- **Controller-Centric**: Controllers coordinate decomposed work items
+- **Question-Based Delegation**: Controllers ask questions to clarify ambiguous items
 
 **Agent Distribution**:
-- **Core Infrastructure** (10): Workflow orchestration
+- **Core Infrastructure** (11): Workflow orchestration + decomposition
 - **Shared** (14): Cross-domain capabilities (leadership, planning, data, quality)
 - **Make** (108): Creation capability (engineering, creative, product, game development)
 - **Grow** (37): Acquisition capability (marketing, sales)
@@ -361,7 +365,7 @@ CLAUDE.local.md
 
 **If requirements are clear, PROCEED. Do not ask.**
 
-## Core Infrastructure (Tier 1: 10 agents)
+## Core Infrastructure (Tier 1: 11 agents)
 
 **Orchestration Agents** (4):
 - `trigger` - Entry point, domain detection, routing
@@ -371,15 +375,90 @@ CLAUDE.local.md
 
 **Universal Workflow Agents** (5):
 - `universal-router` - Tier classification (0-4), sets requires_controller flag
-- `universal-planner` - **V7.0: Creates objectives + selects controllers** (not detailed tasks)
+- `universal-planner` - **V7.4: Aggressive decomposition + controller selection** (generates comprehensive work breakdowns)
 - `universal-executor` - **V7.0: Monitors controllers** (not execution agents)
 - `universal-validator` - Quality gates with **V7.0: coordination validation**
 - `universal-self-correct` - Adaptive recovery with **V7.0: coordination corrections**
 
-**Additional** (1):
+**Additional** (2):
 - `task-consolidator` - Task consolidation for 40-88% context reduction
+- `task-decomposer` - **V7.4: Aggressive task decomposition** (extrapolates all requirements from user requests)
 
 **Config Location**: `Agent_Memory/_system/domains/{domain}/*.yaml` (5 files per domain)
+
+## V7.4 AGGRESSIVE DECOMPOSITION
+
+**V7.4**: When users say "I want X", the system autonomously figures out everything needed to produce X.
+
+**Philosophy**: Users state outcomes, not requirements. The planner's job is to unpack what they actually need.
+
+### The 5 Decomposition Levels
+
+```
+User Request: "Add authentication to my app"
+         ↓
+Level 1: Request Analysis
+         → Type: feature, Action: add, Subject: authentication
+         ↓
+Level 2: Component Extraction
+         → UNDERSTAND (5 items): analyze existing code, review constraints
+         → DESIGN (4 items): architecture, security, API contracts
+         → BUILD (12 items): backend, frontend, database
+         → VERIFY (8 items): unit tests, integration tests, security tests
+         → DOCUMENT (4 items): API docs, user guides, developer docs
+         ↓
+Level 3: Implicit Discovery
+         → Security: CSRF, rate limiting, secure cookies (user didn't mention)
+         → Testing: regression tests, penetration tests (user didn't mention)
+         → Infrastructure: env variables, migrations (user didn't mention)
+         ↓
+Level 4: Dependency Mapping
+         → Critical path: analyze → design → user_model → auth_service → tests → docs
+         → Parallel groups: [backend, frontend], [unit_tests, integration_tests]
+         ↓
+Level 5: Work Item Generation
+         → 33 work items with acceptance criteria
+         → Each item: ID, name, description, acceptance criteria, dependencies, effort
+```
+
+### Decomposition Output
+
+**decomposition.yaml** (written by planner):
+```yaml
+work_items:
+  - id: WI-001
+    name: "Analyze existing auth implementation"
+    type: understand
+    acceptance_criteria:
+      - "Existing auth code documented"
+      - "Gap analysis completed"
+    dependencies: []
+
+  - id: WI-002
+    name: "Design authentication architecture"
+    type: design
+    acceptance_criteria:
+      - "Auth flow diagram created"
+      - "Security measures specified"
+    dependencies: [WI-001]
+
+  # ... 31 more items
+
+dependency_graph:
+  critical_path: [WI-001, WI-002, WI-003, WI-007, WI-012, WI-016]
+  parallel_groups:
+    - [WI-003, WI-004]  # After design
+    - [WI-008, WI-009]  # After implementation
+```
+
+### Integration with Controllers
+
+Controllers receive the full decomposition and coordinate execution:
+
+1. **Review decomposition** - Understand work items and dependencies
+2. **Ask clarifying questions** - For ambiguous items only
+3. **Coordinate work items** - Assign to execution agents respecting dependencies
+4. **Track completion** - Verify acceptance criteria met
 
 ## V7.0 CONTROLLER-CENTRIC ARCHITECTURE
 
@@ -475,28 +554,27 @@ routing -> planning -> coordinating -> executing -> validating
 (tier 0-4) (objectives) (questions) (monitor) (quality)
 ```
 
-**NEW Phase**: **Coordinating**
-- Orchestrator spawns controller from plan.yaml
-- Controller breaks objectives into questions
-- Controller delegates to execution agents
-- Controller synthesizes answers
-- Controller coordinates implementation
+**Coordinating Phase** (V7.4 Updated):
+- Orchestrator spawns controller with plan.yaml + decomposition.yaml
+- Controller receives full work item breakdown from planner
+- Controller reviews decomposition and dependency graph
+- Controller asks clarifying questions for ambiguous items only
+- Controller coordinates work item execution respecting dependencies
 - Controller writes coordination_log.yaml
 - Orchestrator detects completion (coordination_log exists with completed status)
 
-### Coordinating Phase Workflow
+### Coordinating Phase Workflow (V7.4)
 
-1. **Orchestrator spawns controller** using Task tool with plan.yaml context
-2. **Controller analyzes objectives** and creates question list
-3. **Controller delegates questions** to execution agents (one question per agent)
-4. **Execution agents answer** with expertise and context
-5. **Controller synthesizes** all answers into coherent solution
-6. **Controller creates implementation tasks** from synthesized solution
-7. **Controller coordinates execution** by assigning tasks to execution agents
-8. **Controller writes coordination_log.yaml** with all Q&A exchanges, synthesis, and tasks
-9. **Orchestrator detects completion** when coordination_log.yaml has `status: completed`
+1. **Orchestrator spawns controller** with plan.yaml + decomposition.yaml context
+2. **Controller reviews decomposition** - understands work items, dependencies, acceptance criteria
+3. **Controller asks clarifying questions** - only for ambiguous items (not full breakdown)
+4. **Controller coordinates work items** - assigns to execution agents respecting dependency order
+5. **Execution agents implement** work items with acceptance criteria as guide
+6. **Controller tracks completion** - verifies acceptance criteria met for each item
+7. **Controller writes coordination_log.yaml** with work item progress and completion status
+8. **Orchestrator detects completion** when coordination_log.yaml has `status: completed`
 
-**Key File**: `Agent_Memory/{instruction_id}/workflow/coordination_log.yaml`
+**Key File**: `Agent_Memory/sessions/{session_id}/workflow/coordination_log.yaml`
 
 ### Coordination Log Structure
 
@@ -563,23 +641,24 @@ User Request -> Trigger (domain detect) -> Orchestrator
 
 See `workflow_agent_interactions.md` for detailed agent interaction patterns.
 
-## Objective-Based Planning
+## Aggressive Task Decomposition
 
-**V7.0 Planning**: Define WHAT needs to be done, let controllers determine HOW.
+**V7.4 Planning**: Aggressively decompose user requests into comprehensive work breakdowns.
 
-### Plan Structure (V7.0)
+### Plan Structure (V7.4)
 
 ```yaml
-# plan.yaml (V7.0)
+# plan.yaml (V7.4)
 objectives:
   - "Implement OAuth2 authentication for API"
   - "Maintain backward compatibility with existing auth"
-  - "Follow OAuth2 best practices and security standards"
+  - "Ensure security best practices"
+  - "Provide comprehensive test coverage"
 
 success_criteria:
-  - "OAuth2 endpoints functional and tested"
-  - "Existing passport-local auth continues to work"
-  - "Security audit passes with no critical issues"
+  - "All 33 work items completed with acceptance criteria met"
+  - "Security review passes"
+  - "All existing tests continue to pass"
 
 controller_assignment:
   primary: make:engineering-manager
@@ -587,16 +666,20 @@ controller_assignment:
     - make:architect
     - make:security-specialist
 
-coordination_approach: question_based
-estimated_questions: 8-12
-estimated_duration: 3-5 hours
+# V7.4: Reference to full decomposition
+decomposition:
+  total_work_items: 33
+  by_type: {understand: 5, design: 4, build: 12, verify: 8, document: 4}
+  implicit_requirements_discovered: 15
+  work_breakdown_file: workflow/decomposition.yaml
 ```
 
-**Key Differences from V4.0**:
-- **Simpler planning**: Define objectives, not task breakdowns
-- **Expert-driven**: Controller uses domain expertise to determine HOW
-- **Adaptive**: Controller adjusts questions based on answers received
-- **Flexible**: Not locked into predetermined task list
+**Key V7.4 Changes**:
+- **Aggressive decomposition**: Break requests into 30+ work items
+- **Implicit discovery**: Find requirements user didn't mention
+- **Dependency mapping**: Identify critical path and parallel opportunities
+- **Work items with acceptance criteria**: Concrete, measurable tasks
+- **Controllers coordinate work items**: Not figure out what to do
 
 ## Workflow Pattern
 
@@ -615,26 +698,26 @@ Benefits: Modularity, specialization, parallelization (up to 50 concurrent), reu
 
 **Requirements**: All objectives met with evidence, outputs production-quality, coordination_log.yaml complete, specific evidence (file paths, metrics), no partial completion
 
-**Files**: `Agent_Memory/_system/task_completion_protocol.yaml`, `Agent_Memory/{instruction_id}/workflow/coordination_log.yaml`
+**Files**: `Agent_Memory/_system/task_completion_protocol.yaml`, `Agent_Memory/sessions/{session_id}/workflow/coordination_log.yaml`
 
 ## Commands
 
-### /trigger - Universal Entry Point
+### /run - Universal Entry Point
 Auto-routes to super-domain, executes full workflow with controller-centric coordination.
 ```bash
-/trigger Fix auth bug              # -> Make domain (tier 2: engineering-manager controller)
-/trigger Write fantasy story       # -> Make domain (tier 2: creative-director controller)
-/trigger Plan Q4 campaign          # -> Grow domain (tier 3: marketing-strategist + campaign-manager)
-/trigger Create budget             # -> Operate domain (tier 4: cfo + operations-manager)
-/trigger Hire software engineer    # -> People domain (tier 3: hr-manager + talent-acquisition)
-/trigger Handle customer complaint # -> Serve domain (tier 2: customer-success-manager)
-/trigger Design game mechanics     # -> Make domain (tier 2: game-designer controller)
+/run Fix auth bug              # -> Make domain (tier 2: engineering-manager controller)
+/run Write fantasy story       # -> Make domain (tier 2: creative-director controller)
+/run Plan Q4 campaign          # -> Grow domain (tier 3: marketing-strategist + campaign-manager)
+/run Create budget             # -> Operate domain (tier 4: cfo + operations-manager)
+/run Hire software engineer    # -> People domain (tier 3: hr-manager + talent-acquisition)
+/run Handle customer complaint # -> Serve domain (tier 2: customer-success-manager)
+/run Design game mechanics     # -> Make domain (tier 2: game-designer controller)
 ```
 
-### /designer - Interactive Design
+### /explore - Interactive Discovery
 Asks questions to flesh out ideas across all domains. Runs until canceled.
 
-### /reviewer - Enhanced Review (V2.0)
+### /review - Enhanced Review (V2.0)
 Universal review with 8 enhancements:
 1. Intelligent agent selection (30-50% faster)
 2. Severity-based early reporting (81% faster to critical)
@@ -646,11 +729,11 @@ Universal review with 8 enhancements:
 8. Pattern learning (78% detection)
 
 ```bash
-/reviewer src/              # Code review
-/reviewer --focus security  # Security focus
+/review src/              # Code review
+/review --focus security  # Security focus
 ```
 
-Config: `Agent_Memory/_system/config/reviewer_config.yaml`
+Config: `Agent_Memory/_system/commands/review/`
 Patterns: `Agent_Memory/_knowledge/procedural/review_patterns.yaml`
 
 ### /optimize - Universal Optimizer (V6.8)
@@ -689,23 +772,32 @@ Create initial CLAUDE.md for new projects:
 
 ```
 Agent_Memory/
-├── _system/              # Registry, config, agent status
-├── _knowledge/           # Patterns, calibration, learnings
-├── _archive/             # Completed instructions
-└── {instruction_id}/     # Per-task working memory
-    ├── instruction.yaml  # Request + metadata
-    ├── status.yaml       # Current phase
-    ├── workflow/         # Plan, coordination_log, execution state (V7.0)
-    ├── tasks/            # pending/, in_progress/, completed/
-    └── outputs/          # Deliverables
+├── _system/                          # System-level configs
+│   ├── config/                       # Global configuration
+│   ├── commands/                     # Command-specific configs
+│   │   ├── run/                      # /run command configs
+│   │   ├── explore/                  # /explore command configs
+│   │   ├── review/                   # /review command configs
+│   │   └── optimize/                 # /optimize command configs
+│   └── domains/{domain}/             # Domain configs (5 files each)
+├── _knowledge/                       # Patterns, calibration, learnings
+├── _archive/                         # Completed sessions
+├── _communication/                   # Agent messaging
+└── sessions/                         # All command sessions (STANDARDIZED)
+    ├── run_{YYYYMMDD_HHMMSS}/        # /run workflow sessions
+    ├── explore_{YYYYMMDD_HHMMSS}/    # /explore design sessions
+    ├── review_{YYYYMMDD_HHMMSS}/     # /review sessions
+    └── optimize_{YYYYMMDD_HHMMSS}/   # /optimize sessions
 ```
 
-**V7.0 Key Files**:
+**Session ID Format**: `{command}_{YYYYMMDD}_{HHMMSS}` (consistent across all commands)
+
+**V7.0 Key Files** (per session):
 - `workflow/plan.yaml` - Objectives + controller assignment (not tasks)
 - `workflow/coordination_log.yaml` - Q&A exchanges, synthesis, implementation tasks (V7.0)
 - `workflow/execution_summary.yaml` - Aggregated outputs from controller
 
-**Principles**: File-based, instruction-scoped, parallel-safe, pause/resume capable
+**Principles**: File-based, session-scoped, parallel-safe, pause/resume capable, consistent naming
 
 See `docs/CONTEXT_MANAGEMENT.md` for context handling details.
 
@@ -713,7 +805,7 @@ See `docs/CONTEXT_MANAGEMENT.md` for context handling details.
 
 Complex tasks spawn child workflows (max depth: 5, max children: 100)
 
-Example: `/trigger Write 10-chapter novel` -> 1 parent + 10 child workflows
+Example: `/run Write 10-chapter novel` -> 1 parent + 10 child workflows
 
 Each child workflow follows V7.0 pattern (objectives -> controller -> questions -> synthesis -> implementation)
 
@@ -768,7 +860,7 @@ No code required - universal agents load configs automatically.
 ```
 cAgents/
 ├── core/                    # Core infrastructure (tier 1)
-│   ├── agents/              # 10 core agents
+│   ├── agents/              # 11 core agents
 │   └── commands/            # 4 universal commands
 ├── shared/                  # Shared cross-domain capabilities (14 agents)
 │   ├── agents/              # Leadership, planning, data, quality, customer, ops
@@ -805,6 +897,7 @@ cAgents/
 
 ## Performance Benchmarks
 
+**V7.4 Aggressive Decomposition**: Comprehensive work breakdowns (30+ items from simple request), implicit requirement discovery, dependency mapping
 **V7.0 Controller Pattern**: 30-40% simpler planning (objectives vs tasks), 20-30% fewer tokens (no detailed task lists)
 **Reviewer V2.0**: 33% faster, 81% faster to critical, 98% more actionable, 78% pattern detection
 **Parallel Execution**: 50x speedup (swarm), 80%+ efficiency
@@ -814,15 +907,26 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 
 ## Quick Reference
 
-**Commands**: `/trigger`, `/designer`, `/reviewer`, `/optimize`, `/memory`, `/init` | **Agents**: 229 total (10 core + 14 shared + 205 domain specialists across 5 super-domains)
+**Commands**: `/run`, `/explore`, `/review`, `/optimize`, `/memory`, `/init` | **Agents**: 230 total (11 core + 14 shared + 205 domain specialists across 5 super-domains)
 **Super-Domains**: Make (108), Grow (37), Operate (13), People (19), Serve (28)
-**Key Files**: `CLAUDE.md` (this file), `.claude/rules/*.md`, `Agent_Memory/_system/domains/{domain}/*.yaml`, `Agent_Memory/inst_{id}/workflow/coordination_log.yaml`
-**Critical**: 100% task completion required, coordinating phase mandatory (tier 2+), question-based delegation, objectives -> plan, tasks -> coordination_log
+**Key Files**: `CLAUDE.md` (this file), `.claude/rules/*.md`, `Agent_Memory/_system/domains/{domain}/*.yaml`, `Agent_Memory/sessions/{command}_{id}/workflow/decomposition.yaml`
+**Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+), work items with acceptance criteria, dependency-aware coordination
 
 ## Version History
 
-**V7.3.0** (Current - 2026-01-19):
-- NEW: Game Development Edition - 28 game dev specialist agents
+**V7.4.0** (Current - 2026-01-21):
+- NEW: Aggressive Decomposition Edition
+- NEW: Task decomposer agent for comprehensive work breakdowns
+- NEW: 5-level decomposition framework (request analysis → component extraction → implicit discovery → dependency mapping → work items)
+- ENHANCED: Universal planner V6.0 with aggressive decomposition
+- ENHANCED: Orchestrator V6.0 with decomposition-aware coordination
+- ENHANCED: Controllers receive full work item breakdown instead of figuring out tasks
+- Core infrastructure: 10 → 11 agents
+- Total agents: 229 → 230
+- Philosophy: Users state outcomes, system extrapolates ALL requirements
+
+**V7.3.0** (2026-01-19):
+- Game Development Edition - 28 game dev specialist agents
 - Make domain expanded: 80 -> 108 agents (35% increase)
 - Total agents: 201 -> 229 (14% increase)
 - Game dev pipeline coverage: design, programming, art, audio, production, live ops
@@ -881,12 +985,11 @@ See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 
 ---
 
-**Version**: 7.3.2 (Released: 2026-01-21)
-**Total Agents**: 229 (10 core + 14 shared + 205 domain specialists)
-**Architecture**: V7.0 - Controller-Centric Question-Based Delegation
+**Version**: 7.4.0 (Released: 2026-01-21)
+**Total Agents**: 230 (11 core + 14 shared + 205 domain specialists)
+**Architecture**: V7.4 - Aggressive Decomposition + Controller-Centric Coordination
 **Super-Domains**: 5 (Make, Grow, Operate, People, Serve)
 **Directories**: 7 (core, shared, make, grow, operate, people, serve)
-**Game Dev Edition**: 28 new game development agents in Make domain
+**Key Innovation**: Aggressive task decomposition - users state outcomes, system extrapolates all requirements
 **Dependencies**: None (file-based, self-contained)
 **Backward Compatibility**: Breaking changes from V4.0 (requires migration)
-**Key Innovation**: Controller-centric coordination with question-based delegation

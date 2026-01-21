@@ -1,6 +1,5 @@
 ---
-name: trigger
-version: "2.0"
+name: run
 description: Universal workflow engine entry point with enhanced flags, interactive mode, and dry-run capability. Delegates to trigger agent.
 ---
 
@@ -26,7 +25,7 @@ You are a minimal delegation layer that invokes the trigger agent to handle enha
 
 ## How It Works
 
-When the user runs `/trigger <request> [flags]`, this command:
+When the user runs `/run <request> [flags]`, this command:
 
 1. **Parse flags** from command arguments
 2. Creates initial TodoWrite entry to show progress
@@ -49,53 +48,53 @@ When the user runs `/trigger <request> [flags]`, this command:
 
 ### Basic Usage
 ```bash
-/trigger Fix the authentication bug
-/trigger Write a novel about space pirates
-/trigger Create Q4 sales forecast
+/run Fix the authentication bug
+/run Write a novel about space pirates
+/run Create Q4 sales forecast
 ```
 
 ### Enhanced Usage
 
 **Interactive Mode** (Recommended for first-time workflows):
 ```bash
-/trigger Fix authentication bug --interactive
+/run Fix authentication bug --interactive
 # Asks: domain confirmation, tier preference, controller selection, etc.
 ```
 
 **Dry-Run Mode** (Preview before executing):
 ```bash
-/trigger Implement OAuth2 system --dry-run
+/run Implement OAuth2 system --dry-run
 # Shows: domain, intent, template, estimated tier, duration, success probability
 # Does NOT execute workflow
 ```
 
 **Template-Based** (Use proven pattern):
 ```bash
-/trigger Create Q4 budget --template budget_creation
+/run Create Q4 budget --template budget_creation
 # Uses budget_creation template defaults
 ```
 
 **Domain Override** (When detection might be ambiguous):
 ```bash
-/trigger Analyze user behavior --domain engineering
+/run Analyze user behavior --domain engineering
 # Forces engineering domain instead of auto-detection
 ```
 
 **Tier Override** (When you know complexity):
 ```bash
-/trigger Refactor authentication module --tier 3
+/run Refactor authentication module --tier 3
 # Forces tier 3 (complex) instead of auto-classification
 ```
 
 **Skip Pre-flight** (Not recommended, use when blocked incorrectly):
 ```bash
-/trigger Emergency hotfix --skip-preflight
+/run Emergency hotfix --skip-preflight
 # Bypasses pre-flight validation (use with caution)
 ```
 
 **Combined Flags**:
 ```bash
-/trigger Add payment gateway --interactive --stream
+/run Add payment gateway --interactive --stream
 # Interactive mode + real-time progress updates
 ```
 
@@ -134,7 +133,7 @@ function extractFlagValue(str, flag) {
 
 **Example Parsing**:
 ```
-Input: "/trigger Fix auth bug --interactive --template bug_fix --stream"
+Input: "/run Fix auth bug --interactive --template bug_fix --stream"
 Output: {
   request: "Fix auth bug",
   interactive: true,
@@ -182,10 +181,13 @@ Task({
     10. Delegate to orchestrator with recommendations
 
     Config Files:
-    - Agent_Memory/_system/trigger/domain_detection.yaml
-    - Agent_Memory/_system/trigger/workflow_templates.yaml
-    - Agent_Memory/_system/trigger/preflight_validation.yaml
-    - Agent_Memory/_system/trigger/workflow_analytics.yaml
+    - Agent_Memory/_system/commands/run/domain_detection.yaml
+    - Agent_Memory/_system/commands/run/workflow_templates.yaml
+    - Agent_Memory/_system/commands/run/preflight_validation.yaml
+    - Agent_Memory/_system/commands/run/workflow_analytics.yaml
+
+    Session Folder:
+    - Agent_Memory/sessions/run_{YYYYMMDD_HHMMSS}/
 
     Keep user informed with TodoWrite at every step.
   `
@@ -230,7 +232,7 @@ The trigger agent (not this command) handles requests across ALL domains with en
 - **Rust**: Cargo
 - **Java**: Spring Boot (via pom.xml)
 
-See `core/agents/trigger.md` for complete domain detection logic and confidence scoring.
+See `core/agents/run.md` for complete domain detection logic and confidence scoring.
 
 ## TodoWrite Pattern
 
@@ -276,14 +278,14 @@ TodoWrite({
 
 | Flag | Type | Description | Default | Example |
 |------|------|-------------|---------|---------|
-| `--interactive` | Boolean | Enable interactive mode | false | `/trigger Fix bug --interactive` |
-| `--dry-run` | Boolean | Preview workflow without executing | false | `/trigger Add feature --dry-run` |
-| `--stream` | Boolean | Real-time progress updates | false | `/trigger Deploy app --stream` |
-| `--skip-preflight` | Boolean | Skip pre-flight validation | false | `/trigger Hotfix --skip-preflight` |
-| `--template <name>` | String | Use specific template | auto-match | `/trigger Budget --template budget_creation` |
-| `--domain <domain>` | String | Override domain detection | auto-detect | `/trigger Analyze --domain engineering` |
-| `--tier <N>` | Number | Override tier classification (0-4) | auto-classify | `/trigger Migrate --tier 4` |
-| `--confidence <N>` | Number | Set confidence threshold | 0.7 | `/trigger Request --confidence 0.6` |
+| `--interactive` | Boolean | Enable interactive mode | false | `/run Fix bug --interactive` |
+| `--dry-run` | Boolean | Preview workflow without executing | false | `/run Add feature --dry-run` |
+| `--stream` | Boolean | Real-time progress updates | false | `/run Deploy app --stream` |
+| `--skip-preflight` | Boolean | Skip pre-flight validation | false | `/run Hotfix --skip-preflight` |
+| `--template <name>` | String | Use specific template | auto-match | `/run Budget --template budget_creation` |
+| `--domain <domain>` | String | Override domain detection | auto-detect | `/run Analyze --domain engineering` |
+| `--tier <N>` | Number | Override tier classification (0-4) | auto-classify | `/run Migrate --tier 4` |
+| `--confidence <N>` | Number | Set confidence threshold | 0.7 | `/run Request --confidence 0.6` |
 
 **Available Templates** (13):
 - `bug_fix` - Bug fix workflow (tier 2, engineering)
@@ -305,13 +307,16 @@ TodoWrite({
 - Trigger agent handles detection, validation, and initialization
 - Orchestrator handles phase transitions with adaptive execution
 - Universal workflow agents (router, planner, executor, validator) handle execution
-- See `core/agents/trigger.md` and `core/agents/orchestrator.md` for complete logic
+- See `core/agents/run.md` and `core/agents/orchestrator.md` for complete logic
 
 **Configuration Files**:
-- `Agent_Memory/_system/trigger/domain_detection.yaml` - Detection rules
-- `Agent_Memory/_system/trigger/workflow_templates.yaml` - Template catalog
-- `Agent_Memory/_system/trigger/preflight_validation.yaml` - Validation framework
-- `Agent_Memory/_system/trigger/workflow_analytics.yaml` - Analytics config
+- `Agent_Memory/_system/commands/run/domain_detection.yaml` - Detection rules
+- `Agent_Memory/_system/commands/run/workflow_templates.yaml` - Template catalog
+- `Agent_Memory/_system/commands/run/preflight_validation.yaml` - Validation framework
+- `Agent_Memory/_system/commands/run/workflow_analytics.yaml` - Analytics config
+
+**Session Folder**:
+- `Agent_Memory/sessions/run_{YYYYMMDD_HHMMSS}/` - Per-workflow session data
 
 ---
 

@@ -1,27 +1,29 @@
 ---
 name: orchestrator
 tier: infrastructure
-description: Universal workflow phase conductor for ALL domains. V5.1 adds Trigger V2.0 integration with adaptive execution and enhanced metadata support.
+description: Universal workflow phase conductor for ALL domains. V6.0 integrates with aggressive task decomposition, providing comprehensive work breakdowns to controllers.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 model: opus
 color: magenta
 domain: core
-version: 5.1
+version: 6.0
 ---
 
-# Orchestrator (V5.1)
+# Orchestrator (V6.0)
 
-**Role**: Workflow phase conductor with adaptive execution based on Trigger V2.0 enhanced metadata.
+**Role**: Workflow phase conductor with aggressive task decomposition integration. Provides comprehensive work breakdowns to controllers.
 
-**Version**: V5.1 - Trigger V2.0 Integration + Adaptive Execution
+**Version**: V6.0 - Aggressive Decomposition Integration
 
-**V5.1 Enhancements** (NEW):
+**V6.0 Enhancements**:
+- **Aggressive decomposition integration**: Planning now produces comprehensive work breakdowns
+- **Decomposition-aware coordination**: Controllers receive full work item lists
+- **Dependency-driven execution**: Respect dependency graph from decomposition
 - **Trigger V2.0 integration**: Read enhanced metadata (confidence, templates, pre-flight, analytics)
 - **Adaptive execution**: Adjust strategy based on pre-flight recommendations
 - **Template-aware orchestration**: Use template defaults when available
 - **Real-time optimization**: Monitor performance, adjust if degrading
 - **Analytics tracking**: Record phase metrics for continuous improvement
-- **Prediction-aware**: Use success predictions to inform decisions
 
 **Use When**:
 - Managing instruction lifecycle across phases
@@ -403,44 +405,64 @@ Use Task tool:
     customizations: [any overrides from template defaults]
 ```
 
-### Coordinating Phase (NEW V5.0)
+### Coordinating Phase (V6.0 UPDATED - Decomposition Integration)
 ```markdown
 Use Task tool:
 - subagent_type: "{domain}:{controller-agent}"
-- description: "Coordinate work via question-based delegation"
+- description: "Coordinate work using comprehensive decomposition"
 - prompt: |
     You are the coordinating controller for this instruction.
 
     Instruction ID: {instruction_id}
     Domain: {domain}
 
+    V6.0 DECOMPOSITION AVAILABLE:
+    - Full work breakdown: Agent_Memory/{instruction_id}/workflow/decomposition.yaml
+    - Work items with acceptance criteria already defined
+    - Dependencies already mapped
+    - Implicit requirements already discovered
+
     Objectives: {from plan.yaml}
     Success Criteria: {from plan.yaml}
 
-    V5.0 CONTROLLER COORDINATION PATTERN:
+    Work Items: {from decomposition.yaml}
+    - Understand items: {count}
+    - Design items: {count}
+    - Build items: {count}
+    - Verify items: {count}
+    - Document items: {count}
 
-    1. BREAK INTO QUESTIONS
-       - Transform objectives into specific questions
-       - Questions like: "What is X?", "How should we Y?", "What are risks of Z?"
-       - Each question targets one specialist
+    Dependency Graph: {from decomposition.yaml}
+    - Critical path: {critical_path}
+    - Parallel groups: {parallel_groups}
 
-    2. DELEGATE QUESTIONS
-       - Spawn execution agents via Task tool
-       - One question per agent
-       - Collect answers with expertise
+    V6.0 CONTROLLER COORDINATION PATTERN:
 
-    3. SYNTHESIZE SOLUTION
-       - Aggregate answers into coherent approach
-       - Make decisions based on collective input
-       - Create implementation roadmap
+    1. REVIEW DECOMPOSITION
+       - Read decomposition.yaml for full work breakdown
+       - Understand the dependency graph
+       - Identify critical path and parallel opportunities
 
-    4. COORDINATE IMPLEMENTATION
-       - Break solution into concrete tasks
-       - Assign tasks to execution agents
-       - Monitor completion
+    2. ASK CLARIFYING QUESTIONS
+       - Use question-based delegation for ambiguous items
+       - Questions target specific work items
+       - Each question to appropriate specialist
+
+    3. COORDINATE WORK ITEMS
+       - Assign work items to execution agents
+       - Respect dependency order
+       - Parallelize where dependency graph allows
+       - Track acceptance criteria completion
+
+    4. MONITOR PROGRESS
+       - Track work item completion
+       - Verify acceptance criteria met
+       - Escalate blockers
        - Report to executor
 
-    Use question-based delegation pattern.
+    The decomposition provides comprehensive breakdown - your job is to
+    coordinate execution, not re-decompose.
+
     Write: Agent_Memory/{instruction_id}/workflow/coordination_log.yaml
 ```
 

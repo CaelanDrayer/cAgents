@@ -2,7 +2,7 @@
 
 Comprehensive reference for all cAgents universal commands.
 
-## /designer - Interactive Design Assistant (v6.7)
+## /explore - Interactive Discovery Assistant
 
 **Status**: Production-Ready (v6.7)
 **Domains**: All (Software, Creative, Business, Marketing, Product, etc.)
@@ -23,8 +23,8 @@ Universal interactive design assistant that helps transform vague ideas into wel
 ### Usage
 
 ```bash
-/designer                              # Start interactive design session
-/designer [initial idea]               # Start with context (e.g., "Build a todo app")
+/explore                              # Start interactive discovery session
+/explore [initial idea]               # Start with context (e.g., "Build a todo app")
 ```
 
 ### How It Works
@@ -80,7 +80,7 @@ Questions are grouped into logical topics:
 
 #### 2. Context Discovery (Software Projects)
 
-When you're designing software features, /designer automatically:
+When you're designing software features, /explore automatically:
 - Detects your programming language and framework
 - Finds key modules (auth, checkout, user management, etc.)
 - Identifies your tech stack (frontend, backend, database)
@@ -106,7 +106,7 @@ This makes questions **80% more specific and relevant**.
 
 #### 3. Answer Synthesis
 
-After each chunk (3-5 questions), /designer automatically synthesizes findings:
+After each chunk (3-5 questions), /explore automatically synthesizes findings:
 
 ```
 Based on our discussion about the core problem:
@@ -126,7 +126,7 @@ This ensures you're building on solid understanding before diving deeper.
 
 #### 4. Intelligent Expertise Adaptation
 
-/designer detects your expertise level from your answers and adapts questions accordingly:
+/explore detects your expertise level from your answers and adapts questions accordingly:
 
 **Beginner indicators**: Vague language, short answers, uncertainty, questions back
 **Expert indicators**: Technical jargon, detailed answers, certainty, trade-off discussions
@@ -149,10 +149,10 @@ Chunks unlock based on:
 
 ### Session Files
 
-When you run /designer, it creates a session with this structure:
+When you run /explore, it creates a session with this structure:
 
 ```
-Agent_Memory/designer_sessions/session_20260113_143022/
+Agent_Memory/explore_sessions/session_20260113_143022/
 ├── session.yaml              # Session metadata (v6.7 format)
 ├── qa_log.yaml               # All Q&A pairs organized by chunk
 ├── chunks.yaml               # Chunk progress tracking
@@ -166,7 +166,7 @@ Agent_Memory/designer_sessions/session_20260113_143022/
 
 Sessions are automatically saved and can be resumed later.
 
-### When to Use /designer
+### When to Use /explore
 
 **Perfect for**:
 - Fleshing out vague ideas before implementation
@@ -177,15 +177,15 @@ Sessions are automatically saved and can be resumed later.
 
 **Not ideal for**:
 - Quick questions (just ask directly)
-- Implementation (use /trigger after designing)
+- Implementation (use /run after exploring)
 - Simple tasks that don't need design phase
 
-### After Designing
+### After Exploring
 
-When you cancel /designer, you get options:
+When you cancel /explore, you get options:
 
 1. **Generate Design Document**: Comprehensive doc with all Q&A and syntheses
-2. **Start Implementation with /trigger**: Automatically formats session context into implementation request
+2. **Start Implementation with /run**: Automatically formats session context into implementation request
 3. **Continue Later**: Session is saved, resume anytime
 
 ### Design Document Generation
@@ -222,15 +222,15 @@ Claude: [Creates comprehensive document from session]
 - Implementation Plan (from chunk 4)
 - Risk & Mitigation (from chunk 5)
 
-### Integration with /trigger
+### Integration with /run
 
 Seamlessly transition from design to implementation:
 
 ```
-User: "Start implementation with /trigger"
+User: "Start implementation with /run"
 
 Claude: "I'll create an implementation workflow using all context from
-        your design session. This includes:
+        your discovery session. This includes:
 
         • Problem statement and requirements
         • Technical architecture decisions
@@ -241,10 +241,10 @@ Claude: "I'll create an implementation workflow using all context from
 
 User: "Yes"
 
-Claude: [Automatically invokes /trigger with comprehensive context]
+Claude: [Automatically invokes /run with comprehensive context]
 ```
 
-The /trigger workflow receives:
+The /run workflow receives:
 - All session context (Q&A + syntheses)
 - Discovered project context (if software)
 - Design decisions with reasoning
@@ -262,7 +262,7 @@ v6.7 fully supports old designer sessions (v6.6 and earlier):
 ### Example Session Flow
 
 ```
-User: /designer
+User: /explore
 
 Claude: "What are you trying to create or achieve?"
 
@@ -328,18 +328,18 @@ Claude: [Chunk 1 complete]
 ### Tips for Best Results
 
 1. **Be specific in first answer**: Helps with domain detection and context discovery
-2. **Don't rush**: /designer helps you think through edge cases and trade-offs
+2. **Don't rush**: /explore helps you think through edge cases and trade-offs
 3. **Ask follow-ups**: If a question isn't clear, ask for clarification
 4. **Use synthesis**: Review syntheses to ensure shared understanding
 5. **Cancel when ready**: No fixed endpoint, you control when to stop
 6. **Generate document**: Great for sharing with team or referencing later
-7. **Use with /trigger**: Design → Implement workflow is powerful
+7. **Use with /run**: Explore → Implement workflow is powerful
 
 ---
 
-## /trigger - Universal Entry Point
+## /run - Universal Entry Point
 
-**Status**: Production-Ready (v5.0)
+**Status**: Production-Ready
 **Domains**: All
 **Complexity**: Tier 0-4 (auto-detected)
 
@@ -350,11 +350,11 @@ Universal entry point that automatically routes requests to appropriate domain, 
 ### Usage
 
 ```bash
-/trigger [your request]                # Any task in any domain
-/trigger Fix auth bug                  # → Engineering domain (tier 2)
-/trigger Write fantasy story           # → Creative domain (tier 2)
-/trigger Plan Q4 campaign              # → Revenue domain (tier 3)
-/trigger Create budget                 # → Finance-Operations (tier 4)
+/run [your request]                # Any task in any domain
+/run Fix auth bug                  # → Engineering domain (tier 2)
+/run Write fantasy story           # → Creative domain (tier 2)
+/run Plan Q4 campaign              # → Revenue domain (tier 3)
+/run Create budget                 # → Finance-Operations (tier 4)
 ```
 
 ### Workflow Phases
@@ -365,13 +365,13 @@ Universal entry point that automatically routes requests to appropriate domain, 
 4. **Executing**: Execute implementation with controller coordination
 5. **Validating**: Ensure all success criteria met
 
-See CLAUDE.md for complete /trigger documentation.
+See CLAUDE.md for complete /run documentation.
 
 ---
 
-## /reviewer - Enhanced Review System (v2.0)
+## /review - Enhanced Review System
 
-**Status**: Production-Ready (v2.0)
+**Status**: Production-Ready
 **Domains**: Software, Docs, Content, Design, Process, Data, Infrastructure
 **Complexity**: Tier 1-2
 
@@ -382,19 +382,19 @@ Universal review system with intelligent agent selection, severity-based reporti
 ### Usage
 
 ```bash
-/reviewer                         # Review current directory
-/reviewer src/                    # Review specific path
-/reviewer --focus security        # Security-focused review
+/review                         # Review current directory
+/review src/                    # Review specific path
+/review --focus security        # Security-focused review
 ```
 
 ### Key Features
 
-- **30-50% faster** than v1.0 (intelligent agent selection)
+- **30-50% faster** (intelligent agent selection)
 - **81% faster** to critical issues (severity-based early reporting)
 - **98% more actionable** (auto-fix suggestions included)
 - **78% pattern detection** (learns from previous reviews)
 
-See CLAUDE.md for complete /reviewer documentation.
+See CLAUDE.md for complete /review documentation.
 
 ---
 
@@ -433,9 +433,9 @@ See CLAUDE.md for complete /optimize documentation.
 
 | Command | Purpose | Duration | Interaction | Output |
 |---------|---------|----------|-------------|--------|
-| **/designer** | Design & exploration | 10-30 min | Continuous Q&A | Design document + session |
-| **/trigger** | Implementation | Varies | Autonomous | Working implementation |
-| **/reviewer** | Quality review | 3-10 min | Autonomous | Issue report + fixes |
+| **/explore** | Discovery & exploration | 10-30 min | Continuous Q&A | Design document + session |
+| **/run** | Implementation | Varies | Autonomous | Working implementation |
+| **/review** | Quality review | 3-10 min | Autonomous | Issue report + fixes |
 | **/optimize** | Performance improvement | 5-15 min | Autonomous | Optimized code/content |
 
 ---
@@ -448,5 +448,5 @@ See CLAUDE.md for complete /optimize documentation.
 
 ---
 
-**Version**: 6.7.0 (/designer), 5.0.0 (other commands)
-**Last Updated**: 2026-01-13
+**Commands**: /run, /explore, /review, /optimize
+**Last Updated**: 2026-01-21
