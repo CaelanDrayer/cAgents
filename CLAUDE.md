@@ -881,7 +881,7 @@ See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 
 ---
 
-**Version**: 7.3.1 (Released: 2026-01-20)
+**Version**: 7.3.2 (Released: 2026-01-21)
 **Total Agents**: 229 (10 core + 14 shared + 205 domain specialists)
 **Architecture**: V7.0 - Controller-Centric Question-Based Delegation
 **Super-Domains**: 5 (Make, Grow, Operate, People, Serve)
