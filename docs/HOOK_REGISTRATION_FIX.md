@@ -1,5 +1,7 @@
 # Hook Registration Fix (2026-01-21)
 
+**STATUS: Hooks temporarily disabled in plugin.json due to validation errors**
+
 ## Problem
 
 The cAgents plugin was attempting to register custom hook types that aren't supported by Claude Code:
@@ -62,9 +64,20 @@ To restore full hook functionality:
 
 Alternatively, consider implementing a custom hook orchestration layer that uses Claude Code's supported events as triggers.
 
+## Update (2026-01-21 Evening)
+
+After attempting to register supported hook types, the plugin validation still failed with "hooks: Invalid input" error. Hooks section has been **temporarily removed** from plugin.json to allow the plugin to load.
+
+**Current status**: Hooks disabled in plugin manifest. Hook scripts still exist in `hooks/` directory but are not registered.
+
+**Next steps**:
+1. Investigate correct hook registration format for Claude Code plugins
+2. Test hook registration with minimal example
+3. Re-add hooks once correct format is determined
+
 ## Files Changed
 
-- `.claude-plugin/plugin.json` - Updated hooks registration to use supported events
+- `.claude-plugin/plugin.json` - Hooks section removed (was causing validation errors)
 
 ## Files Unchanged (For Reference)
 
