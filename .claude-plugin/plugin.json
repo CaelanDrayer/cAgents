@@ -1,7 +1,7 @@
 {
   "name": "cagents",
   "version": "7.3.2",
-  "description": "cAgents V7.1.0 - Universal multi-domain agent system with controller-centric question-based delegation architecture. V7.1.0 CLEANUP RELEASE: Completed V7.0.3 consolidation by removing 358 legacy agents (64% reduction from 560 to 201). Streamlined from 22 domain directories to 7. Production-ready architecture: 201 agents across 5 super-domains (Make, Grow, Operate, People, Serve) + Core + Shared infrastructure. V7.0 ENHANCED COMMANDS: Trigger V2.0 (2-3x faster initialization, 90%+ domain accuracy, context-aware detection, pre-flight validation, 13 workflow templates). Designer V2.0 (smart chunking, context discovery, adaptive questioning). Optimizer V7.0 (zero-arg invocation, auto-detection, 8 optimization types). Reviewer V3.0 (33% faster with intelligent agent selection, 81% faster to critical issues, auto-fix suggestions 98% more actionable). Ralph Loop-inspired bash infrastructure (6 library modules with 86 functions, 14 lifecycle hooks, atomic file operations). Controller-centric coordination with objective-driven planning. Up to 50x parallel execution with swarm/mesh modes.",
+  "description": "cAgents V7.3 Game Dev Edition - Universal multi-domain agent system with 229 specialized agents (28 new game dev specialists). Controller-centric question-based delegation across 5 super-domains (Make, Grow, Operate, People, Serve). Enhanced commands: Trigger V2, Designer V2, Optimizer V7, Reviewer V3. Features: parallel execution (50x speedup), recursive workflows, bash library (86 functions), lifecycle hooks, objective-driven planning.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",
@@ -19,7 +19,8 @@
     "autonomous",
     "multi-domain",
     "super-domains",
-    "v7.1",
+    "v7.3",
+    "game-dev",
     "controller-centric",
     "question-based-delegation",
     "universal-workflow",
@@ -34,7 +35,7 @@
     "bash-library",
     "lifecycle-hooks",
     "atomic-operations",
-    "ralph-loop-patterns",
+    "parallel-execution",
     "markdown-frontmatter",
     "make",
     "grow",
