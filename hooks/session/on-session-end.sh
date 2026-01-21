@@ -1,42 +1,59 @@
 #!/bin/bash
 # cAgents Session End Hook
 # Cleanup session state, archive if needed
-# Version: 1.0.0
+# Version: 1.1.0
 
-set -euo pipefail
+# Use lenient error handling - hooks should not block Claude Code
+set -o pipefail
 
-# Source libraries
+# Source bootstrap (provides fallbacks if libraries unavailable)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LIB_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")/scripts/lib"
 
-source "$LIB_DIR/core.sh"
-source "$LIB_DIR/json.sh"
-source "$LIB_DIR/logging.sh"
+# shellcheck source=../../scripts/lib/hook-bootstrap.sh
+if [[ -r "$LIB_DIR/hook-bootstrap.sh" ]]; then
+    source "$LIB_DIR/hook-bootstrap.sh"
+else
+    # Minimal fallbacks if bootstrap itself is unavailable
+    timestamp() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
+    log_info() { echo "[$(timestamp)] [INFO] $*" >&2; }
+    json_get() { echo "$1" | grep -oP "\"${2#.}\"\\s*:\\s*\"?\\K[^,\"}]+" 2>/dev/null | head -1; }
+    json_parse() { json_get "$@"; }
+    json_build() {
+        local out="{" first=true
+        while [[ $# -ge 2 ]]; do
+            local k="${1#--}" v="$2"; shift 2
+            [[ "$first" == "true" ]] && first=false || out="$out,"
+            [[ "$v" == "true" || "$v" == "false" ]] && out="$out\"$k\":$v" || out="$out\"$k\":\"$v\""
+        done
+        echo "$out}"
+    }
+fi
 
 main() {
-  # Read input from stdin
-  local input
-  input="$(cat)"
+    # Read input from stdin
+    local input
+    input="$(cat)" || input='{}'
 
-  # Parse input
-  local session_id
-  session_id="$(json_parse "$input" '.session_id')"
+    # Parse input
+    local session_id
+    session_id="$(json_parse "$input" '.session_id')" || session_id="unknown"
 
-  # Log session end
-  log_info "Session ending: $session_id"
+    # Log session end
+    log_info "Session ending: $session_id"
 
-  # Archive session file if it exists
-  local session_file=".claude/cagents-session.local.md"
-  if [[ -f "$session_file" ]]; then
-    local archive_dir=".claude/sessions"
-    mkdir -p "$archive_dir"
-    cp "$session_file" "$archive_dir/${session_id}.md" 2>/dev/null || true
-  fi
+    # Archive session file if it exists
+    local session_file=".claude/cagents-session.local.md"
+    if [[ -f "$session_file" ]]; then
+        local archive_dir=".claude/sessions"
+        mkdir -p "$archive_dir" 2>/dev/null || true
+        cp "$session_file" "$archive_dir/${session_id}.md" 2>/dev/null || true
+    fi
 
-  # Return success
-  json_build \
-    "decision" "proceed" \
-    "message" "Session ended: $session_id"
+    # Return success
+    json_build \
+        "decision" "proceed" \
+        "message" "Session ended: $session_id"
 }
 
 main "$@"

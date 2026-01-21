@@ -1,19 +1,39 @@
 #!/bin/bash
 # cAgents Stop Workflow Hook
 # Ralph-style stop hook for graceful workflow termination
-# Version: 1.0.0
+# Version: 1.1.0
 
-set -euo pipefail
+# Use lenient error handling - hooks should not block Claude Code
+set -o pipefail
 
-# Source libraries
+# Source bootstrap (provides fallbacks if libraries unavailable)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LIB_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")/scripts/lib"
 
-source "$LIB_DIR/core.sh"
-source "$LIB_DIR/files.sh"
-source "$LIB_DIR/state.sh"
-source "$LIB_DIR/logging.sh"
-source "$LIB_DIR/json.sh"
+# shellcheck source=../../scripts/lib/hook-bootstrap.sh
+if [[ -r "$LIB_DIR/hook-bootstrap.sh" ]]; then
+    source "$LIB_DIR/hook-bootstrap.sh"
+else
+    # Minimal fallbacks if bootstrap itself is unavailable
+    timestamp() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
+    log_info() { echo "[$(timestamp)] [INFO] $*" >&2; }
+    log_warn() { echo "[$(timestamp)] [WARN] $*" >&2; }
+    json_get() { echo "$1" | grep -oP "\"${2#.}\"\\s*:\\s*\"?\\K[^,\"}]+" 2>/dev/null | head -1; }
+    json_build() {
+        local out="{" first=true
+        while [[ $# -ge 2 ]]; do
+            local k="${1#--}" v="$2"; shift 2
+            [[ "$first" == "true" ]] && first=false || out="$out,"
+            [[ "$v" == "true" || "$v" == "false" ]] && out="$out\"$k\":$v" || out="$out\"$k\":\"$v\""
+        done
+        echo "$out}"
+    }
+    read_hook_input() { [[ -t 0 ]] && echo '{}' || cat; }
+    ensure_dir() { mkdir -p "$1" 2>/dev/null || true; }
+    update_frontmatter_field() { :; }
+    log_event() { :; }
+    log_debug() { :; }
+fi
 
 # Configuration
 readonly AGENT_MEMORY_DIR="${CAGENTS_AGENT_MEMORY:-Agent_Memory}"
