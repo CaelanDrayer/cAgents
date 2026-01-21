@@ -1,17 +1,23 @@
 {
-  "$schema": "https://anthropic.com/claude-code/hooks.schema.json",
-  "version": "1.0.0",
-  "description": "cAgents lifecycle hooks - V7.3.2 compatible with Claude Code validation",
   "hooks": {
     "SessionStart": [
       {
-        "matcher": "startup|resume",
+        "matcher": "startup",
         "hooks": [
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session/on-session-start.sh",
-            "timeout": 5000,
-            "description": "Initialize session state, load context"
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session/on-session-start.sh",
+            "timeout": 5
           }
         ]
       }
@@ -22,20 +28,7 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session/on-session-end.sh",
-            "timeout": 5000,
-            "description": "Cleanup session state, archive if needed"
-          }
-        ]
-      }
-    ],
-    "SubagentStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/workflow/on-workflow-start.sh",
-            "timeout": 5000,
-            "description": "Initialize workflow, create instruction folder"
+            "timeout": 5
           }
         ]
       }
@@ -46,8 +39,7 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/workflow/on-workflow-complete.sh",
-            "timeout": 5000,
-            "description": "Finalize workflow, archive results"
+            "timeout": 5
           }
         ]
       }
@@ -58,21 +50,7 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/workflow/stop-workflow.sh",
-            "timeout": 10000,
-            "description": "Graceful workflow termination (Ralph-inspired)"
-          }
-        ]
-      }
-    ],
-    "PostToolUseFailure": [
-      {
-        "matcher": ".*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/workflow/on-workflow-fail.sh",
-            "timeout": 5000,
-            "description": "Handle workflow failures and log errors"
+            "timeout": 10
           }
         ]
       }
