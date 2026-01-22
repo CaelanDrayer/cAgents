@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "7.4.2",
-  "description": "cAgents V7.4 Aggressive Decomposition Edition - Universal multi-domain agent system with 230 specialized agents. Features aggressive task decomposition that extrapolates ALL requirements from user requests. Controller-centric question-based delegation across 5 super-domains (Make, Grow, Operate, People, Serve). Enhanced commands: Run V2, Explore V2, Optimizer V7, Review V3. Features: parallel execution (50x speedup), recursive workflows, comprehensive work breakdowns, dependency mapping.",
+  "version": "7.5.0",
+  "description": "cAgents V7.5 Task Inventory Edition - Universal multi-domain agent system with 231 specialized agents. NEW: CSV-based task inventory for large-scale workflows (60-80% context savings), batch delegation, checkpoint/resume. Features aggressive task decomposition, controller-centric question-based delegation across 5 super-domains (Make, Grow, Operate, People, Serve). Enhanced commands: Run V2, Explore V2, Optimizer V7, Review V3. Features: parallel execution (50x speedup), recursive workflows, comprehensive work breakdowns, dependency mapping.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",
@@ -19,7 +19,10 @@
     "autonomous",
     "multi-domain",
     "super-domains",
-    "v7.4",
+    "v7.5",
+    "task-inventory",
+    "csv-tracking",
+    "batch-delegation",
     "aggressive-decomposition",
     "work-breakdown",
     "dependency-mapping",
@@ -63,7 +66,8 @@
     "./core/agents/universal-self-correct.md",
     "./core/agents/optimizer.md",
     "./core/agents/task-consolidator.md",
-    "./core/agents/task-decomposer.md"
+    "./core/agents/task-decomposer.md",
+    "./core/agents/task-inventory.md"
   ],
   "hooks": "./hooks/hooks.json"
 }

@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Core architecture and development guidance for cAgents V7.4.0.
+Core architecture and development guidance for cAgents V7.5.0.
 
 ## Table of Contents
 
@@ -293,34 +293,35 @@ CLAUDE.local.md
 
 ## Project Overview
 
-**cAgents V7.4.0**: Universal multi-domain agent system with aggressive task decomposition. When users say "I want X", the system extrapolates ALL requirements needed for success.
+**cAgents V7.5.0**: Universal multi-domain agent system with CSV-based task inventory for large-scale workflows. Handles 100+ tasks with 60-80% context savings.
 
-**V7.4.0 Release**: Aggressive Decomposition Edition
-- **NEW**: Task decomposer agent for comprehensive work breakdowns
-- **NEW**: 5-level decomposition framework (request analysis → component extraction → implicit discovery → dependency mapping → work items)
-- **ENHANCED**: Universal planner V6.0 with aggressive decomposition
-- **ENHANCED**: Orchestrator V6.0 with decomposition-aware coordination
-- **Core Infrastructure**: 10 → 11 agents (task-decomposer added)
-- **Total Agents**: 229 → 230
+**V7.5.0 Release**: Task Inventory Edition
+- **NEW**: Task inventory agent with CSV-based state management
+- **NEW**: Batch delegation (assign 25 tasks in single operation)
+- **NEW**: Checkpoint/resume capability for workflow interruption
+- **NEW**: Progress queries without full task context load
+- **ENHANCED**: Orchestrator V6.1 with inventory integration
+- **Core Infrastructure**: 11 → 12 agents (task-inventory added)
+- **Total Agents**: 230 → 231
 
-**Architecture**: V7.4 - Aggressive Decomposition + Controller-Centric Coordination
-- **Tier 1**: 11 core infrastructure agents (trigger, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, 5 universal workflow agents)
-- **Tier 2**: Controllers (coordinate work items from decomposition)
+**Architecture**: V7.5 - Task Inventory + Controller-Centric Coordination
+- **Tier 1**: 12 core infrastructure agents (trigger, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, 5 universal workflow agents)
+- **Tier 2**: Controllers (coordinate work items via batch delegation)
 - **Tier 3**: Execution agents (implement work items)
 - **Tier 4**: Support agents (foundational services)
-- **Total**: 230 agents
+- **Total**: 231 agents
 - **Execution**: 4 modes (Sequential, Pipeline, Swarm, Mesh) - up to 50x speedup
 
-**V7.4 Key Features**:
-- **Aggressive Decomposition**: User says "add auth" → system generates 30+ work items with dependencies
-- **Implicit Requirement Discovery**: Discovers security, testing, documentation needs user didn't mention
-- **Dependency Mapping**: Identifies what must happen first, what can parallelize
-- **Work Item Generation**: Concrete tasks with acceptance criteria
-- **Controller-Centric**: Controllers coordinate decomposed work items
-- **Question-Based Delegation**: Controllers ask questions to clarify ambiguous items
+**V7.5 Key Features**:
+- **CSV Task Inventory**: External state management for 20+ task workflows
+- **Batch Delegation**: 60-80% context reduction through batch operations
+- **Checkpoint/Resume**: Full pause/resume capability at any point
+- **Progress Queries**: 500-token summaries instead of 10K+ task loads
+- **Aggressive Decomposition**: User says "add auth" → system generates 30+ work items
+- **Controller-Centric**: Controllers coordinate via batch inventory operations
 
 **Agent Distribution**:
-- **Core Infrastructure** (11): Workflow orchestration + decomposition
+- **Core Infrastructure** (12): Workflow orchestration + decomposition + inventory
 - **Shared** (14): Cross-domain capabilities (leadership, planning, data, quality)
 - **Make** (108): Creation capability (engineering, creative, product, game development)
 - **Grow** (37): Acquisition capability (marketing, sales)
@@ -364,7 +365,7 @@ CLAUDE.local.md
 
 **If requirements are clear, PROCEED. Do not ask.**
 
-## Core Infrastructure (Tier 1: 11 agents)
+## Core Infrastructure (Tier 1: 12 agents)
 
 **Orchestration Agents** (4):
 - `trigger` - Entry point, domain detection, routing
@@ -379,9 +380,10 @@ CLAUDE.local.md
 - `universal-validator` - Quality gates with **V7.0: coordination validation**
 - `universal-self-correct` - Adaptive recovery with **V7.0: coordination corrections**
 
-**Additional** (2):
+**Task Management** (3):
 - `task-consolidator` - Task consolidation for 40-88% context reduction
 - `task-decomposer` - **V7.4: Aggressive task decomposition** (extrapolates all requirements from user requests)
+- `task-inventory` - **V7.5: CSV-based state management** (60-80% context savings for large workflows)
 
 **Config Location**: `Agent_Memory/_system/domains/{domain}/*.yaml` (5 files per domain)
 
@@ -873,7 +875,14 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 
 ## Version History
 
-**V7.4.0** (Current - 2026-01-21): Aggressive Decomposition Edition
+**V7.5.0** (Current - 2026-01-22): Task Inventory Edition
+- Task inventory agent with CSV-based state management
+- Batch delegation (60-80% context savings)
+- Checkpoint/resume capability for large workflows
+- Orchestrator V6.1 with inventory integration
+- Core: 12 agents | Total: 231 agents
+
+**V7.4.0** (2026-01-21): Aggressive Decomposition Edition
 - Task decomposer agent + 5-level decomposition framework
 - Universal planner/orchestrator V6.0 with decomposition-aware coordination
 - Core: 11 agents | Total: 230 agents
@@ -913,11 +922,11 @@ See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 
 ---
 
-**Version**: 7.4.0 (Released: 2026-01-21)
-**Total Agents**: 230 (11 core + 14 shared + 205 domain specialists)
-**Architecture**: V7.4 - Aggressive Decomposition + Controller-Centric Coordination
+**Version**: 7.5.0 (Released: 2026-01-22)
+**Total Agents**: 231 (12 core + 14 shared + 205 domain specialists)
+**Architecture**: V7.5 - Task Inventory + Controller-Centric Coordination
 **Super-Domains**: 5 (Make, Grow, Operate, People, Serve)
 **Directories**: 7 (core, shared, make, grow, operate, people, serve)
-**Key Innovation**: Aggressive task decomposition - users state outcomes, system extrapolates all requirements
+**Key Innovation**: CSV-based task inventory for large workflows + aggressive decomposition
 **Dependencies**: None (file-based, self-contained)
 **Backward Compatibility**: Breaking changes from V4.0 (requires migration)

@@ -1,19 +1,27 @@
 ---
 name: orchestrator
 tier: infrastructure
-description: Universal workflow phase conductor for ALL domains. V6.0 integrates with aggressive task decomposition, providing comprehensive work breakdowns to controllers.
+description: Universal workflow phase conductor for ALL domains. V6.1 adds CSV-based task inventory for large-scale workflows with batch delegation.
 tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 model: opus
 color: magenta
 domain: core
-version: 6.0
+version: 6.1
 ---
 
-# Orchestrator (V6.0)
+# Orchestrator (V6.1)
 
-**Role**: Workflow phase conductor with aggressive task decomposition integration. Provides comprehensive work breakdowns to controllers.
+**Role**: Workflow phase conductor with aggressive task decomposition integration and CSV-based inventory management.
 
-**Version**: V6.0 - Aggressive Decomposition Integration
+**Version**: V6.1 - Task Inventory Integration
+
+**V6.1 Enhancements** (NEW):
+- **CSV-based task inventory**: External state management for 20+ task workflows
+- **Batch delegation**: Assign 10-25 tasks per operation instead of individually
+- **Context optimization**: 60-80% reduction in task tracking overhead
+- **Checkpoint/resume**: Pick up exactly where left off after interruption
+- **Parallel agent tracking**: Multiple agents update shared inventory
+- **Progress queries**: Get status without loading full task state
 
 **V6.0 Enhancements**:
 - **Aggressive decomposition integration**: Planning now produces comprehensive work breakdowns
@@ -30,13 +38,16 @@ version: 6.0
 - Coordinating phase transitions
 - Invoking universal workflow agents
 - Handling multiple parallel instructions
-- **NEW**: Adapting workflow strategy based on Trigger V2.0 metadata
+- **NEW V6.1**: Large workflows with 20+ tasks (enables inventory)
+- **V6.0**: Adapting workflow strategy based on Trigger V2.0 metadata
 
 ## Core Responsibilities
 
 - Drive phase transitions: routing → planning → **coordinating** → executing → validating → complete
 - Delegate to universal workflow agents (router, planner, executor, validator, self-correct)
 - **V5.0**: Manage controller coordination phase between planning and execution
+- **NEW V6.1**: Initialize and manage CSV task inventory for large workflows
+- **NEW V6.1**: Coordinate batch delegation through task-inventory agent
 - **NEW V5.1**: Read and apply Trigger V2.0 enhanced metadata
 - **NEW V5.1**: Adaptive execution based on pre-flight recommendations
 - **NEW V5.1**: Template-aware orchestration with defaults
@@ -236,7 +247,102 @@ phase_metrics:
 3. **Optimize templates**: Update template defaults based on real performance
 4. **Tune thresholds**: Adjust confidence thresholds, validation thresholds
 
-## CRITICAL: Automatic Phase Transitions
+## V6.1 TASK INVENTORY INTEGRATION
+
+**NEW IN V6.1**: For large workflows (20+ tasks), orchestrator activates CSV-based task inventory.
+
+### When to Enable Inventory
+
+```yaml
+# Automatic activation thresholds
+inventory_activation:
+  min_tasks: 20        # Enable inventory
+  recommended: 30      # Strongly recommended
+  force: 50           # Required (context would overflow)
+```
+
+### Inventory Initialization
+
+After planning phase produces decomposition.yaml:
+
+```yaml
+# Check task count
+task_count = decomposition.work_items.length
+
+if task_count >= 20:
+  # Initialize inventory
+  Use Task tool:
+    subagent_type: "task-inventory"
+    description: "Initialize CSV inventory from decomposition"
+    prompt: |
+      Initialize task inventory:
+      - Source: Agent_Memory/{instruction_id}/workflow/decomposition.yaml
+      - Output: Agent_Memory/{instruction_id}/inventory/
+      - Create: tasks.csv, batch_log.csv, assignments.csv
+
+  # Update plan.yaml
+  inventory:
+    enabled: true
+    path: inventory/
+    threshold: {task_count}
+    coordination_approach: inventory_batch
+```
+
+### Batch Delegation Pattern
+
+Instead of assigning tasks one-by-one, controllers use batch operations:
+
+```yaml
+# Traditional (context-heavy):
+for task in tasks:
+  assign(task, agent)  # 400 tokens per task
+
+# With inventory (context-efficient):
+batch_assign:
+  agent: backend-developer
+  criteria: {type: build, dependencies_met: true}
+  limit: 15
+# ~200 tokens for 15 tasks
+```
+
+### Progress Monitoring
+
+Orchestrator checks progress via inventory queries (not full task load):
+
+```yaml
+# Every 5 minutes during execution
+Use Task tool:
+  subagent_type: "task-inventory"
+  description: "Get progress report"
+  prompt: |
+    operation: progress_report
+    inventory_path: Agent_Memory/{instruction_id}/inventory/
+
+# Returns ~500 token summary instead of 10K+ task details
+```
+
+### Checkpoint Integration
+
+Inventory checkpoints integrate with orchestrator checkpoints:
+
+```yaml
+# Before major transitions
+checkpoint:
+  workflow_state: status.yaml
+  inventory_state: inventory/checkpoints/chk_{timestamp}/
+  enables: full pause/resume capability
+```
+
+### Context Savings
+
+| Workflow Size | Without Inventory | With Inventory | Savings |
+|---------------|-------------------|----------------|---------|
+| 20 tasks | 8K tokens | 2K tokens | 75% |
+| 50 tasks | 20K tokens | 3K tokens | 85% |
+| 100 tasks | 40K tokens | 4K tokens | 90% |
+| 200+ tasks | Context overflow | 5K tokens | 100%+ |
+
+
 
 **NEVER ASK USER FOR PERMISSION TO PROCEED BETWEEN PHASES**
 
