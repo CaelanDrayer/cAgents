@@ -203,9 +203,10 @@ work_item_template:
   name: string  # Clear, action-oriented name
   type: understand | design | build | verify | document
   description: string  # What needs to be done
-  acceptance_criteria:  # How we know it's done
-    - criterion_1
-    - criterion_2
+  acceptance_criteria:  # How we know it's done (MUST include verification method)
+    - criterion: string  # What must be true
+      verification_method: string  # How to verify (file_exists, file_contains, test_result, scan_result, metric_check, output_exists, manual_review)
+      evidence_type: string  # What evidence to capture (file_path, test_output, metric, scan_output)
   dependencies:  # What must come first
     - work_item_id
   estimated_effort: small | medium | large
@@ -337,9 +338,15 @@ work_items:
     type: understand
     description: "Review codebase for any existing auth implementation"
     acceptance_criteria:
-      - "Document existing auth-related code"
-      - "Identify reusable components"
-      - "List gaps to fill"
+      - criterion: "Document existing auth-related code"
+        verification_method: output_exists
+        evidence_type: file_path  # outputs/auth_analysis.md
+      - criterion: "Identify reusable components"
+        verification_method: output_exists
+        evidence_type: file_path  # Section in analysis doc
+      - criterion: "List gaps to fill"
+        verification_method: output_exists
+        evidence_type: file_path  # Section in analysis doc
     dependencies: []
     estimated_effort: small
     skills_required: [code_analysis]
@@ -349,9 +356,15 @@ work_items:
     type: design
     description: "Create authentication architecture design"
     acceptance_criteria:
-      - "Auth flow diagram created"
-      - "Token/session strategy decided"
-      - "Security requirements documented"
+      - criterion: "Auth flow diagram created"
+        verification_method: output_exists
+        evidence_type: file_path  # outputs/auth_flow.md or .png
+      - criterion: "Token/session strategy decided"
+        verification_method: output_exists
+        evidence_type: file_path  # Section in design doc
+      - criterion: "Security requirements documented"
+        verification_method: output_exists
+        evidence_type: file_path  # Section in design doc
     dependencies: [work_001]
     estimated_effort: medium
     skills_required: [architecture, security]
@@ -361,9 +374,15 @@ work_items:
     type: build
     description: "Create or update user data model with auth fields"
     acceptance_criteria:
-      - "User model has password_hash field"
-      - "User model has auth metadata fields"
-      - "Database migration created"
+      - criterion: "User model has password_hash field"
+        verification_method: file_contains
+        evidence_type: file_path  # Grep: password_hash in models/user.*
+      - criterion: "User model has auth metadata fields"
+        verification_method: file_contains
+        evidence_type: file_path  # Grep: last_login, failed_attempts
+      - criterion: "Database migration created"
+        verification_method: file_exists
+        evidence_type: file_path  # migrations/*_user_auth.*
     dependencies: [work_002]
     estimated_effort: small
     skills_required: [backend, database]

@@ -18,9 +18,10 @@ Topic-specific rules organized for better maintainability.
 │   ├── agent-memory.md     # Agent_Memory/ structure
 │   └── context-mgmt.md     # Context handling best practices
 └── quality/        # Quality and completion
-    ├── testing.md          # Testing conventions
-    ├── validation.md       # Validation requirements
-    └── completion.md       # Task completion protocol
+    ├── testing.md              # Testing conventions
+    ├── validation.md           # Validation requirements
+    ├── completion.md           # Task completion protocol
+    └── validation-framework.md # End-to-end completion traceability
 ```
 
 ## Purpose
@@ -59,14 +60,15 @@ Import rules into CLAUDE.md or other docs:
 See @.claude/rules/core/orchestration.md for workflow patterns.
 ```
 
-## Current Rules (6 files)
+## Current Rules (7 files)
 
 1. **core/orchestration.md** - Workflow phases (routing → validating)
 2. **core/controllers.md** - Question-based delegation
 3. **core/execution.md** - Execution agent patterns
 4. **memory/agent-memory.md** - Agent_Memory/ structure
 5. **quality/completion.md** - Task completion protocol
-6. **domains/engineering.md** - Engineering domain guidelines
+6. **quality/validation-framework.md** - End-to-end completion traceability
+7. **domains/engineering.md** - Engineering domain guidelines
 
 ## Future Expansion
 

@@ -1,57 +1,123 @@
 # Task Completion Protocol
 
-**MANDATORY**: All tasks must be fully completed before marking as done.
+**MANDATORY**: All tasks must be fully completed with verified evidence before marking as done.
 
 ## Core Rule
 
 **100% completion with verified evidence, or it's not complete.**
 
+See `validation-framework.md` for the full traceability chain from planning to validation.
+
+## The Completion Chain
+
+```
+Planning Phase:
+  ├── Work items have acceptance_criteria
+  ├── Criteria have verification_method
+  └── Objectives have derived_from (links to work items)
+
+Coordination Phase:
+  ├── Controllers track work_item_status
+  ├── Evidence captured per criterion
+  └── completed_at/completed_by recorded
+
+Validation Phase:
+  ├── Verify each criterion using verification_method
+  ├── Check evidence chain exists
+  └── Confirm all derived_from work items complete
+```
+
 ## Enforcement Points
 
+### Decomposer/Planner
+- Every work item MUST have `acceptance_criteria`
+- Every criterion MUST have `verification_method`
+- Every objective MUST link to `derived_from` work items
+
 ### Controllers
-- Verify ALL acceptance criteria in coordination_log before marking complete
-- Provide concrete evidence for each objective met
-- No partial completion - 100% or in_progress
+- Track `work_item_status` in coordination_log.yaml
+- Capture `evidence` for each completed criterion (file paths, test results, metrics)
+- Mark `completed_at` and `completed_by` for every item
+- No partial completion - 100% with evidence or in_progress
 
-### universal-executor
+### Universal-Executor
 - Verifies coordination_log completeness before phase transition
-- Checks all tasks have `status: completed`
-- Validates evidence exists for each task
+- Checks all work items have `status: completed`
+- Validates evidence exists for each criterion
 
-### universal-validator
-- Checks coordination quality + output quality
-- Verifies no regressions
-- Validates all success criteria met
+### Universal-Validator
+- Verifies each objective's success criteria
+- Checks evidence chain (criterion → evidence → source)
+- Confirms all derived_from work items are complete
+- Classifies: PASS (all verified), FIXABLE (evidence missing), BLOCKED (work incomplete)
 
-### orchestrator
+### Orchestrator
 - Validates coordination_log exists and is complete
 - Checks phase transitions have evidence
 - Ensures no phase skipped
 
-## Requirements
+## Evidence Requirements
 
-1. **All objectives met** with concrete evidence
-2. **All outputs exist** and are production-quality
-3. **coordination_log.yaml** with all Q&A exchanges, synthesis, completed tasks
-4. **Evidence must be specific** (file paths, test outputs, metrics)
-5. **NO partial completion** - 100% or in_progress
+### Good Evidence (Specific, Verifiable)
+```yaml
+- criterion: "User model has password_hash"
+  evidence: "src/models/user.ts:15 - password_hash: string"
+  verification: file_contains
 
-## Evidence Examples
+- criterion: "Tests pass"
+  evidence: "pytest: 45/45 passed (0.8s)"
+  verification: test_result
 
-Good evidence:
-- ✅ "Tests passing: pytest output shows 45/45 passed"
-- ✅ "File created: src/auth/oauth2.ts (247 lines)"
-- ✅ "Metrics improved: Bundle 2.8MB → 1.8MB (-36%)"
+- criterion: "Bundle size reduced"
+  evidence: "2.8MB → 1.8MB (-36%)"
+  verification: metric_check
+```
 
-Bad evidence:
-- ❌ "Tests probably pass"
-- ❌ "File mostly done"
-- ❌ "Should be faster now"
+### Bad Evidence (Vague, Unverifiable)
+```yaml
+- "Tests probably pass"
+- "File mostly done"
+- "Should be faster now"
+- "I think it works"
+```
+
+## Verification Methods
+
+| Type | How Validator Checks | Example |
+|------|---------------------|---------|
+| `file_exists` | Check file at path | `migrations/20260122_auth.sql` |
+| `file_contains` | Grep for pattern | `password_hash in user.ts` |
+| `test_result` | Run test suite | `pytest auth/ - PASS` |
+| `scan_result` | Run scan tool | `npm audit - 0 critical` |
+| `metric_check` | Compare metric | `coverage: 85% > 80%` |
+| `output_exists` | Check output file | `outputs/design.md exists` |
+| `manual_review` | HITL verification | Tier 4 approval gate |
 
 ## Context Overhead
 
-Add 3K tokens per coordination cycle for Q&A tracking (included in planning).
+Add 3K tokens per coordination cycle for evidence tracking (included in planning budget).
+
+## Quick Reference
+
+**At Planning:**
+- [ ] Work items have acceptance_criteria
+- [ ] Criteria have verification_method
+- [ ] Objectives link to derived_from work items
+
+**At Coordination:**
+- [ ] work_item_status tracked in coordination_log
+- [ ] Evidence captured for each criterion
+- [ ] completed_at/completed_by recorded
+
+**At Validation:**
+- [ ] Every criterion verified using its method
+- [ ] Evidence chain confirmed
+- [ ] All derived_from work items complete
 
 ## Protocol Location
 
 `Agent_Memory/_system/task_completion_protocol.yaml`
+
+---
+
+**Part of**: cAgents Completion Validation Framework

@@ -266,46 +266,80 @@ Before running traditional quality gates, validator MUST verify coordination qua
 
 ## Acceptance Criteria Verification
 
-Criteria are objectives-based (not task-based).
+Criteria verification follows the completion validation framework (see `.claude/rules/quality/validation-framework.md`).
 
-1. **Load objectives from plan.yaml**:
-   ```yaml
-   objectives:
-     - objective_id: obj-1
-       description: "Fix authentication timeout bug"
-       success_criteria:
-         - "Bug no longer reproduces after 5 test runs"
-         - "Timeout increased to 30s (was 10s)"
-         - "Tests pass with new timeout"
-   ```
+### Two-Level Verification
 
-2. **Verify each success criterion**:
-   ```yaml
-   for each objective in plan.objectives:
-     for each criterion in objective.success_criteria:
-       # Check coordination_log.yaml for evidence
-       if criterion mentioned in synthesis:
-         evidence_from_synthesis = extract_evidence()
+**Level 1: Work Item Verification** (from decomposition.yaml)
+```yaml
+for each work_item in decomposition.work_items:
+  for each criterion in work_item.acceptance_criteria:
+    # Use specified verification method
+    evidence = verify_criterion(criterion.verification_method, criterion.evidence_type)
+    # Check coordination_log for captured evidence
+    captured_evidence = coordination_log.work_item_status[work_item.id].evidence[criterion]
+    # Validate evidence exists and matches
+    criterion_status = (evidence.found AND captured_evidence.verified)
+```
 
-       # Check outputs for concrete evidence
-       if automated_test_exists(criterion):
-         run_test()
-         criterion_met = (test_exit_code == 0)
+**Level 2: Objective Verification** (from plan.yaml)
+```yaml
+for each objective in plan.objectives:
+  # Check all derived_from work items are complete
+  for work_item_id in objective.derived_from:
+    if work_item_status[work_item_id] != completed:
+      objective_status = INCOMPLETE
 
-       # Check execution_summary.yaml
-       if criterion in execution_summary:
-         evidence_from_execution = execution_summary[criterion]
+  # Verify success criteria
+  for each criterion in objective.success_criteria:
+    evidence = verify_criterion(criterion.verification_method)
+    criterion_status = evidence.found
+```
 
-       # Aggregate evidence
-       criterion_status = aggregate_evidence()
-   ```
+### Verification Methods
 
-3. **Evidence Sources**:
-   - coordination_log.yaml synthesized_solution
-   - execution_summary.yaml
-   - outputs/ files
-   - Automated tests
-   - Manual verification artifacts (tier 4)
+| Method | How to Verify | Example |
+|--------|---------------|---------|
+| `file_exists` | Glob for file pattern | `Glob("migrations/*_auth.*")` |
+| `file_contains` | Grep for pattern | `Grep("password_hash", "models/user.*")` |
+| `test_result` | Run test command | `Bash("pytest auth/ -v")` |
+| `scan_result` | Run scan command | `Bash("npm audit --json")` |
+| `metric_check` | Compare metrics | Check coverage > threshold |
+| `output_exists` | Check output file | `Read("outputs/design.md")` |
+| `manual_review` | HITL verification | Tier 4 approval gate |
+
+### Evidence Chain Validation
+
+**Forward trace** (Work Item → Objective):
+```yaml
+# Verify that objective success_criteria are satisfied by work items
+for each objective in plan.objectives:
+  for each criterion in objective.success_criteria:
+    # Check derived_from work items have evidence
+    work_items = objective.derived_from
+    evidence_found = all([
+      coordination_log.work_item_status[wi].evidence
+      for wi in work_items
+    ])
+```
+
+**Backward trace** (Evidence → Work Item → Objective):
+```yaml
+# For each piece of evidence, trace to objective
+evidence_trace:
+  evidence: "src/models/user.ts:15 - password_hash: string"
+  work_item: WI-003
+  criterion: "User model has password_hash field"
+  objectives: [OBJ-1]  # Derived from WI-003
+```
+
+### Evidence Sources (Priority Order)
+
+1. **coordination_log.yaml** `work_item_status` section (primary)
+2. **outputs/** files (secondary)
+3. **Automated verification** using verification_method (validation-time)
+4. **execution_summary.yaml** (aggregated)
+5. **Manual verification** artifacts (tier 4 only)
 
 ---
 
