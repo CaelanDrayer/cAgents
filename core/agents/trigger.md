@@ -218,7 +218,9 @@ user_confirmation_required: false
 2. **Match intent keywords**:
    - bug_fix: [fix, bug, issue, error, broken]
    - feature: [add, implement, create, new, build]
-   - refactor: [refactor, improve, clean, optimize]
+   - refactor: [refactor, clean, optimize, restructure] (code-specific)
+   - content_editing: [improve wording, rewrite, rephrase, edit text, revise] (routes to creative/copywriter)
+   - content_creation: [write, story, novel, blog, article, copy]
    - question: [how, what, why, explain]
    - analysis: [analyze, review, assess, evaluate]
    - documentation: [document, write docs, readme]

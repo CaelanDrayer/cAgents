@@ -1,0 +1,511 @@
+# Domain Detection V2.0 Configuration
+# Enhanced context-aware domain detection with confidence scoring
+version: "2.0"
+created_at: "2026-01-16"
+description: "Context-aware domain detection with keyword, project structure, git history, and framework detection"
+
+# DETECTION METHODS (Weighted)
+detection_methods:
+  # Method 1: Keyword-Based Detection (30% weight)
+  keyword_based:
+    weight: 0.3
+    description: "Traditional keyword matching from user request"
+    patterns:
+      engineering:
+        keywords: [code, fix, bug, api, test, deploy, refactor, implement, build, debug, error, crash, feature, backend, frontend, database, server]
+        confidence_boost: 0.15
+
+      creative:
+        keywords: [story, novel, character, write, plot, chapter, scene, dialogue, narrative, worldbuilding, fiction, poem, prose, wording, rewrite, rephrase, copy, text improvement, edit text, revise, polish, copywriting, tone, phrasing]
+        confidence_boost: 0.15
+
+      revenue:
+        keywords: [sales, forecast, pipeline, revenue, deal, CRM, marketing, campaign, launch, content, brand, SEO, demand, conversion]
+        confidence_boost: 0.15
+
+      finance-operations:
+        keywords: [budget, expense, ROI, P&L, cashflow, FP&A, financial, cost, spending, profit, loss, accounting]
+        confidence_boost: 0.15
+
+      people-culture:
+        keywords: [recruit, onboard, talent, compensation, culture, HR, hiring, employee, team, performance, feedback]
+        confidence_boost: 0.15
+
+      customer-experience:
+        keywords: [customer, support, ticket, help desk, SLA, satisfaction, feedback, retention, churn, service]
+        confidence_boost: 0.15
+
+      legal-compliance:
+        keywords: [contract, compliance, IP, policy, regulatory, legal, GDPR, audit, risk, governance]
+        confidence_boost: 0.15
+
+      universal:
+        keywords: [analyze, report, document, review, plan, strategy, workflow, process]
+        confidence_boost: 0.10
+
+  # Method 2: Context-Based Detection (40% weight)
+  context_based:
+    weight: 0.4
+    description: "Project structure, files, and configuration analysis"
+
+    project_structure:
+      # Package managers and config files
+      - file: package.json
+        indicates: [engineering, product]
+        confidence_boost: 0.20
+        check_contents: true
+        patterns:
+          - keyword: '"react"'
+            framework: react
+            boost: 0.10
+          - keyword: '"next"'
+            framework: nextjs
+            boost: 0.10
+          - keyword: '"vue"'
+            framework: vue
+            boost: 0.10
+          - keyword: '"@angular"'
+            framework: angular
+            boost: 0.10
+
+      - file: requirements.txt
+        indicates: [engineering]
+        confidence_boost: 0.20
+        check_contents: true
+        patterns:
+          - keyword: django
+            framework: django
+            boost: 0.10
+          - keyword: fastapi
+            framework: fastapi
+            boost: 0.10
+          - keyword: flask
+            framework: flask
+            boost: 0.10
+
+      - file: composer.json
+        indicates: [engineering]
+        confidence_boost: 0.20
+        check_contents: true
+        patterns:
+          - keyword: laravel
+            framework: laravel
+            boost: 0.10
+
+      - file: pom.xml
+        indicates: [engineering]
+        confidence_boost: 0.20
+        framework: java_spring
+
+      - file: Gemfile
+        indicates: [engineering]
+        confidence_boost: 0.20
+        check_contents: true
+        patterns:
+          - keyword: rails
+            framework: rails
+            boost: 0.10
+
+      - file: go.mod
+        indicates: [engineering]
+        confidence_boost: 0.20
+        framework: golang
+
+      - file: Cargo.toml
+        indicates: [engineering]
+        confidence_boost: 0.20
+        framework: rust
+
+      # Documentation and content
+      - file: docs/
+        indicates: [universal, creative]
+        confidence_boost: 0.10
+
+      - pattern: "*.md"
+        count_threshold: 10
+        indicates: [creative, universal]
+        confidence_boost: 0.15
+
+      # Build and deployment
+      - file: Dockerfile
+        indicates: [engineering, finance-operations]
+        confidence_boost: 0.15
+
+      - file: docker-compose.yml
+        indicates: [engineering, finance-operations]
+        confidence_boost: 0.15
+
+      - file: terraform/
+        indicates: [engineering, finance-operations]
+        confidence_boost: 0.20
+
+      - file: .github/workflows/
+        indicates: [engineering]
+        confidence_boost: 0.15
+
+      # Marketing and sales
+      - file: campaigns/
+        indicates: [revenue]
+        confidence_boost: 0.20
+
+      - file: content/
+        indicates: [revenue, creative]
+        confidence_boost: 0.15
+
+      # Finance
+      - pattern: "*budget*.xlsx"
+        indicates: [finance-operations]
+        confidence_boost: 0.25
+
+      - pattern: "*forecast*.csv"
+        indicates: [finance-operations, revenue]
+        confidence_boost: 0.20
+
+    git_history:
+      enabled: true
+      recent_commits: 20
+      analysis:
+        - pattern: "fix.*auth"
+          indicates: engineering
+          confidence_boost: 0.15
+
+        - pattern: "add.*feature"
+          indicates: engineering
+          confidence_boost: 0.12
+
+        - pattern: "update.*docs"
+          indicates: [universal, creative]
+          confidence_boost: 0.10
+
+        - pattern: "campaign.*"
+          indicates: revenue
+          confidence_boost: 0.15
+
+        - pattern: "budget.*"
+          indicates: finance-operations
+          confidence_boost: 0.15
+
+        - pattern: "hire.*|onboard.*"
+          indicates: people-culture
+          confidence_boost: 0.15
+
+    file_type_distribution:
+      # Analyze file types in project
+      thresholds:
+        - types: [".js", ".ts", ".tsx", ".jsx"]
+          count_threshold: 10
+          indicates: engineering
+          confidence_boost: 0.20
+
+        - types: [".py"]
+          count_threshold: 5
+          indicates: engineering
+          confidence_boost: 0.20
+
+        - types: [".md", ".txt"]
+          count_threshold: 20
+          indicates: creative
+          confidence_boost: 0.15
+
+        - types: [".tf"]
+          count_threshold: 3
+          indicates: engineering
+          confidence_boost: 0.20
+
+  # Method 3: Framework Detection (30% weight)
+  framework_detection:
+    weight: 0.3
+    description: "Detect specific frameworks and technologies"
+
+    frameworks:
+      - name: nextjs
+        indicators:
+          - file: next.config.js
+          - file: next.config.mjs
+          - directory: app/
+          - directory: pages/
+        domains: [engineering, product]
+        confidence: 0.90
+        boost_if_found: 0.25
+
+      - name: react
+        indicators:
+          - package_keyword: '"react"'
+          - file_pattern: "*.jsx"
+          - file_pattern: "*.tsx"
+        domains: [engineering]
+        confidence: 0.85
+        boost_if_found: 0.20
+
+      - name: vue
+        indicators:
+          - package_keyword: '"vue"'
+          - file_pattern: "*.vue"
+        domains: [engineering]
+        confidence: 0.85
+        boost_if_found: 0.20
+
+      - name: angular
+        indicators:
+          - file: angular.json
+          - package_keyword: '"@angular"'
+        domains: [engineering]
+        confidence: 0.90
+        boost_if_found: 0.25
+
+      - name: django
+        indicators:
+          - file: manage.py
+          - file: settings.py
+          - package_keyword: django
+        domains: [engineering]
+        confidence: 0.90
+        boost_if_found: 0.25
+
+      - name: fastapi
+        indicators:
+          - package_keyword: fastapi
+          - file_pattern: "*main.py"
+        domains: [engineering]
+        confidence: 0.85
+        boost_if_found: 0.20
+
+      - name: flask
+        indicators:
+          - package_keyword: flask
+          - file_pattern: "app.py"
+        domains: [engineering]
+        confidence: 0.80
+        boost_if_found: 0.15
+
+      - name: express
+        indicators:
+          - package_keyword: '"express"'
+          - file_pattern: "*server.js"
+        domains: [engineering]
+        confidence: 0.80
+        boost_if_found: 0.15
+
+      - name: rails
+        indicators:
+          - file: Gemfile
+          - gem_keyword: rails
+          - file: config/routes.rb
+        domains: [engineering]
+        confidence: 0.90
+        boost_if_found: 0.25
+
+      - name: laravel
+        indicators:
+          - file: artisan
+          - file: composer.json
+          - composer_keyword: laravel
+        domains: [engineering]
+        confidence: 0.90
+        boost_if_found: 0.25
+
+# INTENT CLASSIFICATION
+intent_classification:
+  description: "Classify user intent beyond domain detection"
+
+  patterns:
+    - intent: bug_fix
+      keywords: [fix, bug, issue, error, broken, crash, fail, problem]
+      confidence: 0.85
+      typical_tier: 2
+      workflow_template: bug_fix
+
+    - intent: feature
+      keywords: [add, implement, create, new, build, develop]
+      confidence: 0.80
+      typical_tier: 3
+      workflow_template: feature_addition
+
+    - intent: refactor
+      keywords: [refactor, improve, clean, optimize, restructure, reorganize]
+      confidence: 0.75
+      typical_tier: 3
+      workflow_template: code_refactor
+
+    - intent: question
+      keywords: [how, what, why, explain, describe, tell me]
+      confidence: 0.90
+      typical_tier: 0
+      workflow_template: question_answer
+
+    - intent: analysis
+      keywords: [analyze, review, assess, evaluate, audit, examine]
+      confidence: 0.80
+      typical_tier: 2
+      workflow_template: analysis_request
+
+    - intent: documentation
+      keywords: [document, write docs, readme, guide, tutorial]
+      confidence: 0.85
+      typical_tier: 2
+      workflow_template: documentation_creation
+
+    - intent: content_creation
+      keywords: [write, story, novel, blog, article, content, copy]
+      confidence: 0.85
+      typical_tier: 2
+      workflow_template: content_creation
+
+    - intent: content_editing
+      keywords: [improve wording, update wording, rewrite, rephrase, better wording, edit text, revise text, polish text, make it sound, word it, change the wording, fix wording, improve the text, update the text, edit copy, revise copy, improve copy]
+      confidence: 0.85
+      typical_tier: 2
+      workflow_template: content_creation
+      notes: "Routes to creative domain with copywriter/editor specialists"
+
+    - intent: planning
+      keywords: [plan, strategy, roadmap, OKR, goals, objectives]
+      confidence: 0.80
+      typical_tier: 2
+      workflow_template: strategic_planning
+
+    - intent: testing
+      keywords: [test, coverage, spec, validate, verify]
+      confidence: 0.85
+      typical_tier: 2
+      workflow_template: testing_workflow
+
+# MULTI-DOMAIN DETECTION
+multi_domain:
+  description: "Detect when request spans multiple domains"
+  threshold: 0.6
+
+  patterns:
+    - keywords: [GDPR, compliance, implementation]
+      domains: [legal-compliance, engineering, people-culture]
+      confidence: 0.85
+
+    - keywords: [product launch, campaign]
+      domains: [revenue, engineering, creative]
+      confidence: 0.80
+
+    - keywords: [employee onboarding, system access]
+      domains: [people-culture, engineering]
+      confidence: 0.80
+
+    - keywords: [financial reporting, dashboard]
+      domains: [finance-operations, engineering]
+      confidence: 0.85
+
+    - keywords: [customer feedback, feature request]
+      domains: [customer-experience, engineering, product]
+      confidence: 0.80
+
+# CONFIDENCE THRESHOLDS
+confidence_thresholds:
+  auto_proceed: 0.7
+  ask_user: 0.7
+  suggest_alternatives: 0.5
+  escalate_to_hitl: 0.5
+
+  description: |
+    - >= 0.7: Auto-proceed with domain (high confidence)
+    - 0.5-0.7: Ask user to confirm domain with top 3 candidates
+    - < 0.5: Escalate to HITL (unable to determine domain confidently)
+
+# AMBIGUITY DETECTION
+ambiguity_detection:
+  enabled: true
+  description: "Detect ambiguous requests requiring user clarification"
+
+  triggers:
+    - multiple_domains_above_threshold: 0.6
+      action: present_alternatives
+
+    - highest_confidence_below: 0.7
+      action: ask_user_confirm
+
+    - conflicting_signals:
+        example: "keywords suggest engineering, project structure suggests creative"
+        action: ask_user_clarify
+
+  user_prompt_template: |
+    I detected multiple possible domains for your request:
+
+    {domain_1}: {confidence_1}% confidence
+    {domain_2}: {confidence_2}% confidence
+    {domain_3}: {confidence_3}% confidence
+
+    Which domain is most relevant?
+
+# HISTORICAL LEARNING
+historical_learning:
+  enabled: true
+  description: "Learn from past workflows to improve future detection"
+
+  tracking:
+    - track_user_corrections: true
+    - track_workflow_success: true
+    - track_tier_accuracy: true
+
+  adjustment:
+    - user_corrected_domain:
+        action: boost_actual_domain
+        boost_amount: 0.10
+        decay_rate: 0.95  # Decay boost over time
+
+    - workflow_failed:
+        action: reduce_domain_confidence
+        reduction: 0.05
+
+    - workflow_succeeded:
+        action: boost_domain_confidence
+        boost_amount: 0.02
+
+  storage:
+    file: Agent_Memory/_knowledge/calibration/domain_detection_history.yaml
+    max_entries: 1000
+    retention_days: 180
+
+# SCORING ALGORITHM
+scoring_algorithm:
+  description: "How to calculate final domain confidence score"
+
+  formula: |
+    final_score = (
+      keyword_score * keyword_weight +
+      context_score * context_weight +
+      framework_score * framework_weight
+    ) + historical_adjustment
+
+  weights:
+    keyword: 0.3
+    context: 0.4
+    framework: 0.3
+
+  normalization:
+    min: 0.0
+    max: 1.0
+
+  example:
+    request: "Fix authentication bug in Next.js app"
+    keyword_score: 0.80  # "fix", "bug", "auth" match engineering
+    context_score: 0.90  # next.config.js detected
+    framework_score: 0.90  # Next.js detected
+    historical_adjustment: 0.05  # Previous similar requests succeeded
+    final_score: (0.80*0.3 + 0.90*0.4 + 0.90*0.3) + 0.05 = 0.92
+    classification: engineering (high confidence)
+
+# VERSION HISTORY
+version_history:
+  - version: "1.0"
+    description: "Basic keyword-based detection"
+    date: "2025-12-01"
+
+  - version: "2.0"
+    description: "Context-aware detection with confidence scoring, framework detection, multi-domain support, historical learning"
+    date: "2026-01-16"
+    enhancements:
+      - Context-based detection (project structure, git history, file types)
+      - Framework-specific detection (Next.js, React, Django, etc.)
+      - Intent classification (bug fix, feature, refactor, etc.)
+      - Confidence scoring with thresholds
+      - Multi-domain workflow support
+      - Ambiguity detection and user clarification
+      - Historical learning from past workflows
+      - ML-ready structure for future enhancements
