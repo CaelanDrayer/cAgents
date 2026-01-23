@@ -6,14 +6,11 @@ tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 model: opus
 color: cyan
 domain: core
-version: 1.0
 ---
 
-# Task Inventory Manager (V1.0)
+# Task Inventory Manager
 
 **Role**: External state manager using CSV files to track large task inventories, enabling batch processing and context-efficient workflow execution.
-
-**Version**: 1.0 - CSV-Based Task Inventory
 
 **Key Benefits**:
 - **60-80% context reduction**: Task state lives in CSV, not conversation context

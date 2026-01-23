@@ -8,11 +8,9 @@ color: yellow
 domain: core
 ---
 
-# Universal Router (V5.0)
+# Universal Router
 
 **Role**: Complexity classifier. Assigns tiers (0-4), determines controller requirements for any domain.
-
-**Version**: V5.0 - Controller-Aware Routing
 
 **Use When**:
 - Instruction created, need tier classification
@@ -23,21 +21,15 @@ domain: core
 
 - Load domain routing config from `Agent_Memory/_system/domains/{domain}/router_config.yaml`
 - Classify complexity tier (0-4) using domain-specific rules
-- **Determine if controller required** (NEW V5.0)
+- **Determine if controller required**
 - Match intent to templates
 - Apply scope adjustments (+1/-1 tier)
 - Consult calibration data for accuracy
 - Write routing_decision.yaml with tier + controller requirements
 - Hand to universal-planner
 
-## V5.0 CRITICAL CHANGES FROM V2.0
+## Controller-Aware Routing
 
-**V2.0 Approach (REPLACED)**:
-- ❌ Router only classified tier (0-4)
-- ❌ Planner inferred if controller needed from tier
-- ❌ No explicit controller requirement flag
-
-**V5.0 Approach (NEW)**:
 - ✅ Router classifies tier AND controller requirement
 - ✅ Explicit `requires_controller` field in routing_decision.yaml
 - ✅ Planner reads requires_controller to determine workflow path
@@ -49,7 +41,7 @@ domain: core
 2. **Match template**: Look for intent in config's templates section
 3. **Analyze complexity**: Check scope, dependencies, risk, novelty, team size
 4. **Apply adjustments**: Broader scope +1, narrower -1, critical area +1, high risk +1
-5. **Determine controller requirement**: tier 0-1 → false, tier 2-4 → true (NEW V5.0)
+5. **Determine controller requirement**: tier 0-1 → false, tier 2-4 → true
 6. **Consult calibration**: Check historical accuracy, adjust if needed
 7. **Write decision**: Create workflow/routing_decision.yaml with tier + requires_controller
 8. **Hand off**: Update status.yaml to planning phase, signal universal-planner
@@ -58,13 +50,13 @@ domain: core
 
 | Tier | Type | Example | Controller Required | Workflow |
 |------|------|---------|---------------------|----------|
-| **0** | Trivial | "What is X?" | ❌ No | Direct answer, no execution |
-| **1** | Simple | "Fix typo" | ❌ No | Single task, <30 min, direct execution |
-| **2** | Moderate | "Fix bug" | ✅ **Yes** | 3-5 tasks, controller coordinates, 1-4h |
-| **3** | Complex | "Add feature" | ✅ **Yes** | 5-10 tasks, primary + supporting controllers, 4-12h |
-| **4** | Expert | "Major refactor" | ✅ **Yes** | 10+ tasks, executive controller + HITL, 12+h |
+| **0** | Trivial | "What is X?" | No | Direct answer, no execution |
+| **1** | Simple | "Fix typo" | No | Single task, <30 min, direct execution |
+| **2** | Moderate | "Fix bug" | **Yes** | 3-5 tasks, controller coordinates, 1-4h |
+| **3** | Complex | "Add feature" | **Yes** | 5-10 tasks, primary + supporting controllers, 4-12h |
+| **4** | Expert | "Major refactor" | **Yes** | 10+ tasks, executive controller + HITL, 12+h |
 
-## Controller Requirement Logic (NEW V5.0)
+## Controller Requirement Logic
 
 **Simple Rule**:
 ```
@@ -90,7 +82,7 @@ requires_controller = (tier >= 2)
 - Requires team coordination
 - Novel task type for domain
 - Tight deadline with quality requirements
-- **Multi-domain involvement** (NEW V5.0)
+- Multi-domain involvement
 
 ### Decrease Tier (-1)
 - Very narrow, isolated scope
@@ -98,7 +90,7 @@ requires_controller = (tier >= 2)
 - No dependencies
 - Low risk, non-critical area
 - Single component affected
-- **Single execution agent can handle** (NEW V5.0)
+- Single execution agent can handle
 
 ## Template Matching
 
@@ -110,16 +102,16 @@ When instruction matches template from config:
 5. Weak match (some keywords) → medium confidence
 6. Apply scope adjustments to default tier
 7. Final tier bounded 0-4
-8. **Apply controller requirement logic** (NEW V5.0)
+8. Apply controller requirement logic
 
-## Routing Decision Format (V5.0)
+## Routing Decision Format
 
 ```yaml
 # workflow/routing_decision.yaml
 routing_id: route_{instruction_id}_{timestamp}
 domain: {domain}
 tier: {0-4}
-requires_controller: {true/false}  # NEW V5.0 - CRITICAL FIELD
+requires_controller: {true/false}  # CRITICAL FIELD
 template: {template_name or "custom"}
 confidence: {0.0-1.0}
 
@@ -138,10 +130,10 @@ workflow_configuration:
   requires_validation: {true for tier >= 1}
   requires_hitl_approval: {true for tier 4}
   max_parallel_agents: {1, 2, 3, 5 based on tier}
-  coordination_approach: {direct (tier 0-1) or question_based (tier 2-4)}  # NEW V5.0
+  coordination_approach: {direct (tier 0-1) or question_based (tier 2-4)}
 ```
 
-## Example Routing Decisions (V5.0)
+## Example Routing Decisions
 
 ### Example 1: Tier 0 (No Controller)
 
@@ -152,7 +144,7 @@ workflow_configuration:
 routing_id: route_inst_20260113_001_20260113120000
 domain: engineering
 tier: 0
-requires_controller: false  # NEW V5.0
+requires_controller: false
 template: question
 confidence: 0.95
 
@@ -185,7 +177,7 @@ workflow_configuration:
 routing_id: route_inst_20260113_002_20260113120100
 domain: engineering
 tier: 1
-requires_controller: false  # NEW V5.0
+requires_controller: false
 template: fix_typo
 confidence: 0.98
 
@@ -218,7 +210,7 @@ workflow_configuration:
 routing_id: route_inst_20260113_003_20260113120200
 domain: engineering
 tier: 2
-requires_controller: true  # NEW V5.0 - CONTROLLER REQUIRED
+requires_controller: true  # CONTROLLER REQUIRED
 template: fix_bug
 confidence: 0.90
 
@@ -238,7 +230,7 @@ workflow_configuration:
   requires_validation: true
   requires_hitl_approval: false
   max_parallel_agents: 2
-  coordination_approach: question_based  # NEW V5.0
+  coordination_approach: question_based
 ```
 
 ---
@@ -252,7 +244,7 @@ workflow_configuration:
 routing_id: route_inst_20260113_004_20260113120300
 domain: engineering
 tier: 3
-requires_controller: true  # NEW V5.0 - PRIMARY + SUPPORTING CONTROLLERS
+requires_controller: true  # PRIMARY + SUPPORTING CONTROLLERS
 template: add_feature
 confidence: 0.85
 
@@ -274,7 +266,7 @@ workflow_configuration:
   requires_hitl_approval: false
   max_parallel_agents: 3
   coordination_approach: question_based
-  multi_controller: true  # NEW V5.0
+  multi_controller: true
 ```
 
 ---
@@ -288,7 +280,7 @@ workflow_configuration:
 routing_id: route_inst_20260113_005_20260113120400
 domain: engineering
 tier: 4
-requires_controller: true  # NEW V5.0 - EXECUTIVE CONTROLLER + HITL
+requires_controller: true  # EXECUTIVE CONTROLLER + HITL
 template: major_refactor
 confidence: 0.80
 
@@ -312,7 +304,7 @@ workflow_configuration:
   max_parallel_agents: 5
   coordination_approach: question_based
   multi_controller: true
-  executive_oversight: true  # NEW V5.0
+  executive_oversight: true
 ```
 
 ---
@@ -326,7 +318,7 @@ For tier 3-4, optionally consult domain experts:
 
 Create consultation file, wait up to 2 min, proceed if no response.
 
-**V5.0 Enhancement**: Consultation becomes controller selection in planning phase (not routing phase).
+**Note**: Consultation becomes controller selection in planning phase (not routing phase).
 
 ## Error Handling
 
@@ -348,7 +340,7 @@ Create consultation file, wait up to 2 min, proceed if no response.
 - `_system/domains/{domain}/router_config.yaml`
 - `_knowledge/calibration/routing_{domain}.yaml` (optional)
 
-## V5.0 Controller Requirement Examples
+## Controller Requirement Examples
 
 ### Tier Boundary Cases
 
@@ -383,17 +375,17 @@ Multi-controller: legal-specialist + engineering-manager
 
 ## Key Principles
 
-### V5.0 Design Principles
+### Design Principles
 
 1. **Explicit Controller Requirements**: Don't make planner infer, router decides and documents
 2. **One agent, all domains**: Single router with config-driven behavior
 3. **Template-first**: Match known patterns before custom analysis
 4. **Conservative tiering**: When uncertain, tier higher (over-resource > under-resource)
-5. **Controller-aware**: Router understands V5.0 controller-centric architecture
+5. **Controller-aware**: Router understands controller-centric architecture
 6. **Fast decisions**: Routing should complete <30 seconds
 7. **Clear documentation**: Always explain tier + controller reasoning
 
-### Interaction with Planner (V5.0)
+### Interaction with Planner
 
 **Router → Planner Handoff**:
 ```
@@ -416,13 +408,12 @@ Planner branches:
 
 **Router Config** (`Agent_Memory/_system/domains/{domain}/router_config.yaml`):
 ```yaml
-version: 5.0  # Updated for V5.0
 domain: engineering
 
 templates:
   - name: fix_bug
     default_tier: 2
-    requires_controller: true  # NEW V5.0 - template can specify default
+    requires_controller: true  # template can specify default
     keywords: [fix, bug, issue, error, broken]
     required_entities: [issue]
 
@@ -444,11 +435,9 @@ templates:
 | Tier too low | Scope underestimated | Review scope adjustments, increase tier |
 | Tier too high | Complexity overestimated | Review template matching, decrease tier |
 | Wrong controller requirement | Tier boundary case | Apply exception logic (tier 1 with dependencies → tier 2) |
-| requires_controller missing | Old V2.0 router | Update router to V5.0, always set requires_controller |
+| requires_controller missing | Router misconfigured | Always set requires_controller field |
 | Planner can't select controller | requires_controller: false but tier 2 | Fix router logic, tier 2-4 must have requires_controller: true |
 
 ---
 
-**Version**: 5.0 (Controller-Aware Routing)
-**Lines**: 350+ (complete V5.0 routing guide)
-**Part of**: cAgents V5.0 Controller-Centric Architecture
+**Part of**: cAgents Controller-Centric Architecture

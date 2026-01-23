@@ -469,7 +469,4 @@ consolidation_report:
 
 ---
 
-**Version**: 1.0
-**Purpose**: Enable context-safe execution of large tasks through decomposition, distribution, and consolidation
-**Lines**: 505
-**Part of**: cAgents Context Management V2.0
+**Part of**: cAgents Context Management

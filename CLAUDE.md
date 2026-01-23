@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Core architecture and development guidance for cAgents V7.5.0.
+Core architecture and development guidance for cAgents.
 
 ## Table of Contents
 
@@ -8,10 +8,10 @@ Core architecture and development guidance for cAgents V7.5.0.
 - [Memory Management](#memory-management)
 - [Project Overview](#project-overview)
 - [CRITICAL: Automatic Workflow Progression](#critical-automatic-workflow-progression)
-- [Core Infrastructure](#core-infrastructure-tier-1-11-agents)
-- [V7.4 Aggressive Decomposition](#v74-aggressive-decomposition)
-- [V7.0 Controller-Centric Architecture](#v70-controller-centric-architecture)
-- [V7.0 Coordinating Phase](#v70-coordinating-phase)
+- [Core Infrastructure](#core-infrastructure-tier-1-12-agents)
+- [Aggressive Decomposition](#aggressive-decomposition)
+- [Controller-Centric Architecture](#controller-centric-architecture)
+- [Coordinating Phase](#coordinating-phase)
 - [Complexity Tiers](#complexity-tiers)
 - [Workflow Execution](#workflow-execution)
 - [Task Completion Protocol](#task-completion-protocol)
@@ -23,7 +23,6 @@ Core architecture and development guidance for cAgents V7.5.0.
 - [Directory Structure](#directory-structure)
 - [Performance Benchmarks](#performance-benchmarks)
 - [Quick Reference](#quick-reference)
-- [V7.0 Migration](#v70-migration)
 - [Troubleshooting](#troubleshooting)
 
 ## Documentation Structure
@@ -44,9 +43,9 @@ Core architecture and development guidance for cAgents V7.5.0.
 - `TASK_CONSOLIDATION.md` - Task consolidation strategies
 - `TOKEN_MIGRATION_SUMMARY.md` - Token optimization migration details
 - `WORKFLOW_EVALUATION_FIXES.md` - Workflow issue resolutions
-- `V5_ARCHITECTURE.md` - V5.0 architecture design (NEW)
-- `V5_MIGRATION_GUIDE.md` - V4.0 to V5.0 migration guide (NEW)
-- `V5_WORKFLOW_EXAMPLES.md` - Tier 2, 3, 4 reference implementations (NEW)
+- `ARCHITECTURE.md` - Architecture design
+- `MIGRATION_GUIDE.md` - Migration guide
+- `WORKFLOW_EXAMPLES.md` - Tier 2, 3, 4 reference implementations
 
 **Root Documentation** (exceptions):
 - `workflow_agent_interactions.md` - Agent interaction patterns (referenced throughout)
@@ -121,9 +120,9 @@ paths:
 **Import Additional Files**: Use `@path/to/file` syntax to include external content:
 
 ```markdown
-# cAgents V7.0 Architecture
+# cAgents Architecture
 
-See @docs/V5_ARCHITECTURE.md for detailed architecture design.
+See @docs/ARCHITECTURE.md for detailed architecture design.
 
 ## Workflow Patterns
 @workflow_agent_interactions.md
@@ -293,32 +292,23 @@ CLAUDE.local.md
 
 ## Project Overview
 
-**cAgents V7.5.0**: Universal multi-domain agent system with CSV-based task inventory for large-scale workflows. Handles 100+ tasks with 60-80% context savings.
+**cAgents**: Universal multi-domain agent system with CSV-based task inventory for large-scale workflows. Handles 100+ tasks with 60-80% context savings.
 
-**V7.5.0 Release**: Task Inventory Edition
-- **NEW**: Task inventory agent with CSV-based state management
-- **NEW**: Batch delegation (assign 25 tasks in single operation)
-- **NEW**: Checkpoint/resume capability for workflow interruption
-- **NEW**: Progress queries without full task context load
-- **ENHANCED**: Orchestrator V6.1 with inventory integration
-- **Core Infrastructure**: 11 → 12 agents (task-inventory added)
-- **Total Agents**: 230 → 231
-
-**Architecture**: V7.5 - Task Inventory + Controller-Centric Coordination
-- **Tier 1**: 12 core infrastructure agents (trigger, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, 5 universal workflow agents)
-- **Tier 2**: Controllers (coordinate work items via batch delegation)
-- **Tier 3**: Execution agents (implement work items)
-- **Tier 4**: Support agents (foundational services)
-- **Total**: 231 agents
-- **Execution**: 4 modes (Sequential, Pipeline, Swarm, Mesh) - up to 50x speedup
-
-**V7.5 Key Features**:
+**Key Features**:
 - **CSV Task Inventory**: External state management for 20+ task workflows
 - **Batch Delegation**: 60-80% context reduction through batch operations
 - **Checkpoint/Resume**: Full pause/resume capability at any point
 - **Progress Queries**: 500-token summaries instead of 10K+ task loads
 - **Aggressive Decomposition**: User says "add auth" → system generates 30+ work items
 - **Controller-Centric**: Controllers coordinate via batch inventory operations
+
+**Architecture**: Controller-Centric Coordination with Task Inventory
+- **Tier 1**: 12 core infrastructure agents (trigger, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, 5 universal workflow agents)
+- **Tier 2**: Controllers (coordinate work items via batch delegation)
+- **Tier 3**: Execution agents (implement work items)
+- **Tier 4**: Support agents (foundational services)
+- **Total**: 231 agents
+- **Execution**: 4 modes (Sequential, Pipeline, Swarm, Mesh) - up to 50x speedup
 
 **Agent Distribution**:
 - **Core Infrastructure** (12): Workflow orchestration + decomposition + inventory
@@ -336,7 +326,7 @@ CLAUDE.local.md
 - **People**: Talent (HR + culture)
 - **Serve**: Support & Governance (customer experience + legal + compliance)
 
-**Game Development Agents** (28 new in V7.3.0):
+**Game Development Agents** (28):
 - **Core Development** (8): game-designer, level-designer, game-programmer, engine-developer, graphics-programmer, ai-programmer, network-programmer, tools-programmer
 - **Art & Animation** (6): concept-artist, 3d-modeler, texture-artist, animator, vfx-artist, ui-artist
 - **Audio** (3): sound-designer, music-composer, audio-programmer
@@ -375,21 +365,21 @@ CLAUDE.local.md
 
 **Universal Workflow Agents** (5):
 - `universal-router` - Tier classification (0-4), sets requires_controller flag
-- `universal-planner` - **V7.4: Aggressive decomposition + controller selection** (generates comprehensive work breakdowns)
-- `universal-executor` - **V7.0: Monitors controllers** (not execution agents)
-- `universal-validator` - Quality gates with **V7.0: coordination validation**
-- `universal-self-correct` - Adaptive recovery with **V7.0: coordination corrections**
+- `universal-planner` - Aggressive decomposition + controller selection (generates comprehensive work breakdowns)
+- `universal-executor` - Monitors controllers (not execution agents)
+- `universal-validator` - Quality gates with coordination validation
+- `universal-self-correct` - Adaptive recovery with coordination corrections
 
 **Task Management** (3):
 - `task-consolidator` - Task consolidation for 40-88% context reduction
-- `task-decomposer` - **V7.4: Aggressive task decomposition** (extrapolates all requirements from user requests)
-- `task-inventory` - **V7.5: CSV-based state management** (60-80% context savings for large workflows)
+- `task-decomposer` - Aggressive task decomposition (extrapolates all requirements from user requests)
+- `task-inventory` - CSV-based state management (60-80% context savings for large workflows)
 
 **Config Location**: `Agent_Memory/_system/domains/{domain}/*.yaml` (5 files per domain)
 
-## V7.4 AGGRESSIVE DECOMPOSITION
+## Aggressive Decomposition
 
-**V7.4**: When users say "I want X", the system autonomously figures out everything needed to produce X.
+When users say "I want X", the system autonomously figures out everything needed to produce X.
 
 **Philosophy**: Users state outcomes, not requirements. The planner's job is to unpack what they actually need.
 
@@ -461,9 +451,9 @@ Controllers receive the full decomposition and coordinate execution:
 3. **Coordinate work items** - Assign to execution agents respecting dependencies
 4. **Track completion** - Verify acceptance criteria met
 
-## V7.0 CONTROLLER-CENTRIC ARCHITECTURE
+## Controller-Centric Architecture
 
-**V7.0**: Controllers are the coordination hub between planning and execution.
+Controllers are the coordination hub between planning and execution.
 
 **Detailed Guidelines**: See @.claude/rules/core/controllers.md for question-based delegation patterns.
 
@@ -472,10 +462,10 @@ Controllers receive the full decomposition and coordinate execution:
 **Controllers coordinate work through question-based delegation:**
 
 ```
-V4.0 (Previous):
+Previous Pattern:
 Planner -> Detailed Tasks -> Executor -> Team Agents
 
-V7.0 (Current):
+Current Pattern:
 Planner -> Objectives -> Controller -> Questions -> Execution Agents -> Answers -> Controller -> Synthesized Solution -> Implementation
 ```
 
@@ -504,7 +494,7 @@ Planner -> Objectives -> Controller -> Questions -> Execution Agents -> Answers 
 
 | Tier | Role | Count | Purpose | Examples |
 |------|------|-------|---------|----------|
-| **1: Core** | Infrastructure | 10 | Workflow orchestration | orchestrator, planner, executor, validator |
+| **1: Core** | Infrastructure | 12 | Workflow orchestration | orchestrator, planner, executor, validator |
 | **2: Controller** | Coordination | ~53 | Question-based delegation and synthesis | engineering-manager, architect, cto, campaign-manager, game-designer, game-producer |
 | **3: Execution** | Specialists | ~175 | Answer questions and execute tasks | backend-developer, copywriter, financial-analyst, level-designer, animator |
 | **4: Support** | Operations | ~19 | Foundational services | scribe, data-extractor, etc. |
@@ -540,9 +530,9 @@ Planner -> Objectives -> Controller -> Questions -> Execution Agents -> Answers 
 
 **Discovery**: Planner loads `planner_config.yaml` -> `controller_catalog` section -> matches tier + super-domain
 
-## V7.0 COORDINATING PHASE
+## Coordinating Phase
 
-**CRITICAL IN V7.0**: Coordinating phase sits between planning and executing.
+**CRITICAL**: Coordinating phase sits between planning and executing.
 
 **Workflow Patterns**: See @.claude/rules/core/orchestration.md for detailed phase documentation.
 
@@ -555,7 +545,7 @@ routing -> planning -> coordinating -> executing -> validating
 (tier 0-4) (objectives) (questions) (monitor) (quality)
 ```
 
-**Coordinating Phase** (V7.4 Updated):
+**Coordinating Phase**:
 - Orchestrator spawns controller with plan.yaml + decomposition.yaml
 - Controller receives full work item breakdown from planner
 - Controller reviews decomposition and dependency graph
@@ -564,7 +554,7 @@ routing -> planning -> coordinating -> executing -> validating
 - Controller writes coordination_log.yaml
 - Orchestrator detects completion (coordination_log exists with completed status)
 
-### Coordinating Phase Workflow (V7.4)
+### Coordinating Phase Workflow
 
 1. **Orchestrator spawns controller** with plan.yaml + decomposition.yaml context
 2. **Controller reviews decomposition** - understands work items, dependencies, acceptance criteria
@@ -598,7 +588,7 @@ status: completed
 | 3 | Complex | 1 primary + 1-2 supporting | "Add feature" | routing -> planning -> **coordinating** -> executing -> validating |
 | 4 | Expert | 1 executive + 1 primary + 2-4 supporting | "Major refactor" | routing -> planning -> **coordinating** -> executing -> validating + HITL |
 
-**V7.0 CRITICAL CHANGE**: Tier 2+ workflows include coordinating phase with controllers using question-based delegation.
+**CRITICAL**: Tier 2+ workflows include coordinating phase with controllers using question-based delegation.
 
 ### Coordination Patterns by Tier
 
@@ -647,7 +637,7 @@ See `workflow_agent_interactions.md` for detailed agent interaction patterns.
 **Subagent Architecture**: Agents delegate to specialists, don't execute directly.
 
 Pattern: "Use {subagent} to {task}"
-Example (V7.0): Controller -> backend-developer (question) -> architect (question) -> synthesis -> backend-developer (implementation)
+Example: Controller -> backend-developer (question) -> architect (question) -> synthesis -> backend-developer (implementation)
 
 Benefits: Modularity, specialization, parallelization (up to 50 concurrent), reusability, expert coordination
 
@@ -678,7 +668,7 @@ Auto-routes to super-domain, executes full workflow with controller-centric coor
 ### /explore - Interactive Discovery
 Asks questions to flesh out ideas across all domains. Runs until canceled.
 
-### /review - Enhanced Review (V2.0)
+### /review - Enhanced Review
 Universal review with 8 enhancements:
 1. Intelligent agent selection (30-50% faster)
 2. Severity-based early reporting (81% faster to critical)
@@ -697,7 +687,7 @@ Universal review with 8 enhancements:
 Config: `Agent_Memory/_system/commands/review/`
 Patterns: `Agent_Memory/_knowledge/procedural/review_patterns.yaml`
 
-### /optimize - Universal Optimizer (V6.8)
+### /optimize - Universal Optimizer
 Trigger-style workflow with controller-centric coordination, supports 8 optimization types: code, content, process, data, infrastructure, campaign, creative, sales.
 
 **Usage**:
@@ -712,7 +702,7 @@ Trigger-style workflow with controller-centric coordination, supports 8 optimiza
 
 See `core/commands/optimize.md` for detailed documentation.
 
-### /memory - Memory Management (NEW)
+### /memory - Memory Management
 Interactive memory management and viewing:
 ```bash
 /memory                    # View all loaded memory files
@@ -721,7 +711,7 @@ Interactive memory management and viewing:
 /memory edit --local       # Open CLAUDE.local.md
 ```
 
-### /init - Bootstrap Project Memory (NEW)
+### /init - Bootstrap Project Memory
 Create initial CLAUDE.md for new projects:
 ```bash
 /init                      # Create CLAUDE.md with project structure
@@ -753,9 +743,9 @@ Agent_Memory/
 
 **Session ID Format**: `{command}_{YYYYMMDD}_{HHMMSS}` (consistent across all commands)
 
-**V7.0 Key Files** (per session):
+**Key Files** (per session):
 - `workflow/plan.yaml` - Objectives + controller assignment (not tasks)
-- `workflow/coordination_log.yaml` - Q&A exchanges, synthesis, implementation tasks (V7.0)
+- `workflow/coordination_log.yaml` - Q&A exchanges, synthesis, implementation tasks
 - `workflow/execution_summary.yaml` - Aggregated outputs from controller
 
 **Principles**: File-based, session-scoped, parallel-safe, pause/resume capable, consistent naming
@@ -768,7 +758,7 @@ Complex tasks spawn child workflows (max depth: 5, max children: 100)
 
 Example: `/run Write 10-chapter novel` -> 1 parent + 10 child workflows
 
-Each child workflow follows V7.0 pattern (objectives -> controller -> questions -> synthesis -> implementation)
+Each child workflow follows the pattern (objectives -> controller -> questions -> synthesis -> implementation)
 
 ## Creating Agents
 
@@ -776,11 +766,11 @@ Each child workflow follows V7.0 pattern (objectives -> controller -> questions 
 
 1. Choose tier (controller or execution) and domain
 2. Create `{domain}/agents/my-agent.md` with YAML frontmatter
-3. **V7.0: Add tier field** to frontmatter
+3. Add tier field to frontmatter
 4. Add to `{domain}/.claude-plugin/plugin.json`
 5. Test: `claude --plugin-dir .`
 
-**V7.0 Frontmatter (Controller)**:
+**Frontmatter (Controller)**:
 ```yaml
 ---
 name: engineering-manager
@@ -793,7 +783,7 @@ typical_questions: ["What is current implementation?", "What are constraints?", 
 ---
 ```
 
-**V7.0 Frontmatter (Execution)**:
+**Frontmatter (Execution)**:
 ```yaml
 ---
 name: backend-developer
@@ -808,7 +798,7 @@ executes_tasks: ["implement endpoints", "write tests", ...]
 ## Creating Domains
 
 1. Create 5 config files: `Agent_Memory/_system/domains/{domain}/*.yaml`
-2. **V7.0: Create controller_catalog** in `planner_config.yaml`
+2. Create controller_catalog in `planner_config.yaml`
 3. Create controller agents in `{domain}/agents/` with tier: controller
 4. Create execution agents in `{domain}/agents/` with tier: execution
 5. Create plugin manifest: `{domain}/.claude-plugin/plugin.json`
@@ -821,7 +811,7 @@ No code required - universal agents load configs automatically.
 ```
 cAgents/
 ├── core/                    # Core infrastructure (tier 1)
-│   ├── agents/              # 11 core agents
+│   ├── agents/              # 12 core agents
 │   └── commands/            # 4 universal commands
 ├── shared/                  # Shared cross-domain capabilities (14 agents)
 │   ├── agents/              # Leadership, planning, data, quality, customer, ops
@@ -842,9 +832,9 @@ cAgents/
 │   ├── agents/              # Customer experience, legal, compliance, support
 │   └── .claude-plugin/      # Serve manifest
 ├── docs/                    # Project documentation
-│   ├── V5_ARCHITECTURE.md   # V5.0 architecture design
-│   ├── V5_MIGRATION_GUIDE.md # V4.0 -> V5.0 migration
-│   └── V5_WORKFLOW_EXAMPLES.md # Tier 2, 3, 4 examples
+│   ├── ARCHITECTURE.md      # Architecture design
+│   ├── MIGRATION_GUIDE.md   # Migration guide
+│   └── WORKFLOW_EXAMPLES.md # Tier 2, 3, 4 examples
 ├── .claude/                 # Memory system
 │   ├── CLAUDE.md            # Main project memory (symlink to root)
 │   └── rules/               # Modular rules
@@ -858,48 +848,21 @@ cAgents/
 
 ## Performance Benchmarks
 
-**V7.4 Aggressive Decomposition**: Comprehensive work breakdowns (30+ items from simple request), implicit requirement discovery, dependency mapping
-**V7.0 Controller Pattern**: 30-40% simpler planning (objectives vs tasks), 20-30% fewer tokens (no detailed task lists)
-**Reviewer V2.0**: 33% faster, 81% faster to critical, 98% more actionable, 78% pattern detection
+**Aggressive Decomposition**: Comprehensive work breakdowns (30+ items from simple request), implicit requirement discovery, dependency mapping
+**Controller Pattern**: 30-40% simpler planning (objectives vs tasks), 20-30% fewer tokens (no detailed task lists)
+**Reviewer**: 33% faster, 81% faster to critical, 98% more actionable, 78% pattern detection
 **Parallel Execution**: 50x speedup (swarm), 80%+ efficiency
 **Optimizer**: 20-50% faster, 30-60% smaller bundles, 15-40% less memory
+**Task Inventory**: 60-80% context savings for 20+ task workflows
 
 See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 
 ## Quick Reference
 
-**Commands**: `/run`, `/explore`, `/review`, `/optimize`, `/memory`, `/init` | **Agents**: 230 total (11 core + 14 shared + 205 domain specialists across 5 super-domains)
+**Commands**: `/run`, `/explore`, `/review`, `/optimize`, `/memory`, `/init` | **Agents**: 231 total (12 core + 14 shared + 205 domain specialists across 5 super-domains)
 **Super-Domains**: Make (108), Grow (37), Operate (13), People (19), Serve (28)
 **Key Files**: `CLAUDE.md` (this file), `.claude/rules/*.md`, `Agent_Memory/_system/domains/{domain}/*.yaml`, `Agent_Memory/sessions/{command}_{id}/workflow/decomposition.yaml`
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+), work items with acceptance criteria, dependency-aware coordination
-
-## Version History
-
-**V7.5.0** (Current - 2026-01-22): Task Inventory Edition
-- Task inventory agent with CSV-based state management
-- Batch delegation (60-80% context savings)
-- Checkpoint/resume capability for large workflows
-- Orchestrator V6.1 with inventory integration
-- Core: 12 agents | Total: 231 agents
-
-**V7.4.0** (2026-01-21): Aggressive Decomposition Edition
-- Task decomposer agent + 5-level decomposition framework
-- Universal planner/orchestrator V6.0 with decomposition-aware coordination
-- Core: 11 agents | Total: 230 agents
-
-**V7.3.0** (2026-01-19): Game Development Edition
-- 28 game dev specialists (design, programming, art, audio, production)
-- Make domain: 80 → 108 agents | Total: 229 agents
-
-**V7.1.0** (2026-01-19): Cleanup Release
-- Removed 358 legacy agents (64% reduction)
-- Streamlined to 7 directories with 5 super-domains
-
-**V7.0** (Controller-Centric Architecture):
-- Question-based delegation with coordinating phase
-- Objective-based planning (not task-based)
-
-See `docs/V5_MIGRATION_GUIDE.md` for V4.0 → V7.0 migration details.
 
 ## Troubleshooting
 
@@ -922,11 +885,9 @@ See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 
 ---
 
-**Version**: 7.5.0 (Released: 2026-01-22)
 **Total Agents**: 231 (12 core + 14 shared + 205 domain specialists)
-**Architecture**: V7.5 - Task Inventory + Controller-Centric Coordination
+**Architecture**: Controller-Centric Coordination with Task Inventory
 **Super-Domains**: 5 (Make, Grow, Operate, People, Serve)
 **Directories**: 7 (core, shared, make, grow, operate, people, serve)
 **Key Innovation**: CSV-based task inventory for large workflows + aggressive decomposition
 **Dependencies**: None (file-based, self-contained)
-**Backward Compatibility**: Breaking changes from V4.0 (requires migration)

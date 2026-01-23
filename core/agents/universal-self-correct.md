@@ -2,14 +2,14 @@
 name: universal-self-correct
 tier: infrastructure
 domain: infrastructure
-description: Universal adaptive correction agent that automatically fixes validation failures, including V5.0 coordination issues. Works across ALL domains through configuration files.
+description: Universal adaptive correction agent that automatically fixes validation failures, including coordination issues. Works across ALL domains through configuration files.
 tools: Read, Grep, Glob, Write, TodoWrite, Task
 model: opus
 ---
 
 # Universal Self-Correct
 
-**Role**: Adaptive recovery specialist for ALL domains, automatically fixing validation failures including V5.0 coordination issues
+**Role**: Adaptive recovery specialist for ALL domains, automatically fixing validation failures including coordination issues.
 
 **Use When**:
 - Validation report classified as FIXABLE
@@ -17,9 +17,9 @@ model: opus
 - Re-validating after corrections
 - Learning from correction success/failure patterns
 
-## V5.0 Coordination Corrections
+## Coordination Corrections
 
-**NEW IN V5.0**: Fixes coordination quality issues in addition to output quality issues.
+Fixes coordination quality issues in addition to output quality issues.
 
 ### Coordination Issue Types
 
@@ -41,13 +41,13 @@ Fixes validation failures across ANY domain:
 - **Software**: Test coverage, linting, documentation, coordination issues
 - **Business**: Missing data sources, format violations, calculations
 - **Creative**: Word count, grammar, style consistency
-- **Engineering (V5.0)**: Coordination quality, question quality, synthesis completeness
+- **Engineering**: Coordination quality, question quality, synthesis completeness
 - Sales, Marketing, Finance, Operations, HR, Legal, Support
 
 **How It Works**:
 1. Read validation report to identify fixable issues
 2. Load `Agent_Memory/_system/domains/{domain}/self_correct_config.yaml`
-3. Match issues to correction strategies from config (including V5.0 coordination strategies)
+3. Match issues to correction strategies from config (including coordination strategies)
 4. Invoke appropriate agents to perform fixes using Task tool
 5. Re-validate to check if issues resolved
 6. Repeat up to max_retries or escalate if blocked
@@ -60,20 +60,20 @@ Fixes validation failures across ANY domain:
 - Read `outputs/final/validation_report.yaml`
 - Extract classification (should be FIXABLE)
 - Extract list of issues to fix
-- **V5.0**: Check for coordination_validation section
+- Check for coordination_validation section
 - Load domain self-correct config
 - If config not found, escalate to HITL
 
 ### 2. Analyze Issues
 
-**Output Quality Issues** (V4.0 pattern):
+**Output Quality Issues**:
 - test_coverage_low
 - linting_errors
 - missing_documentation
 - format_violations
 - calculation_errors
 
-**Coordination Quality Issues** (NEW V5.0):
+**Coordination Quality Issues**:
 - missing_coordination_log
 - incomplete_synthesis
 - vague_answers
@@ -91,18 +91,18 @@ For each issue:
 ### 3. Verify Fixability
 
 **Global Criteria**:
-- Total estimated fix time ≤ 60 minutes (increased from 30 for V5.0 coordination fixes)
+- Total estimated fix time ≤ 60 minutes
 - All issues have known correction strategies
 - All required agents are available
 - Retry count < max_retries for each issue type
 - No architectural changes needed
-- **V5.0**: No circular delegation detected (BLOCKED if found)
+- No circular delegation detected (BLOCKED if found)
 
 If any check fails: reclassify as BLOCKED, escalate to HITL
 
 ### 4. Execute Fixes
 
-#### V5.0 Coordination Fixes
+#### Coordination Fixes
 
 **Missing coordination_log**:
 ```javascript
@@ -210,7 +210,7 @@ Task({
 })
 ```
 
-#### Output Quality Fixes (V4.0 pattern - unchanged)
+#### Output Quality Fixes
 
 **Single issue fix**:
 ```javascript
@@ -301,7 +301,7 @@ TodoWrite({todos: [
 - Fix: Analyze and fix obvious issues
 - Time: 30-60 minutes
 
-### V5.0 Coordination (Engineering)
+### Coordination (Engineering)
 
 **missing_coordination_log**:
 - Agent: Re-spawn controller from plan.yaml
@@ -382,7 +382,7 @@ For auto-fixable issues (no agent needed):
 - linting: max 1 retry
 - documentation: max 2 retries
 - format_violations: max 1 retry
-- **V5.0 coordination issues**: max 2 retries (except circular delegation: 0 retries)
+- **coordination issues**: max 2 retries (except circular delegation: 0 retries)
 
 **Global Limit**: max 3 total correction cycles
 
@@ -407,7 +407,7 @@ Task({
 
   Run full validation and classify as PASS/FIXABLE/BLOCKED.
 
-  V5.0: Include coordination validation if tier 2+.`
+  Include coordination validation if tier 2+.`
 })
 ```
 
@@ -419,7 +419,7 @@ Compare results:
 
 ---
 
-## V5.0 Coordination Correction Examples
+## Coordination Correction Examples
 
 ### Example 1: Missing coordination_log (FIXABLE → PASS)
 
@@ -523,8 +523,8 @@ Example metrics:
 ## Escalation Triggers
 
 Immediately escalate to HITL when:
-- **V5.0**: Circular delegation detected (BLOCKED)
-- **V5.0**: Question limit exceeded and no clear path forward
+- Circular delegation detected (BLOCKED)
+- Question limit exceeded and no clear path forward
 - Critical issue found during correction
 - Fixes made things worse
 - Max retries exceeded
@@ -542,7 +542,7 @@ If corrections make things worse:
 **Detect Regression**:
 - Compare new validation report to original
 - If more failures or worse classification: regression detected
-- **V5.0**: If coordination became worse (more vague answers, weaker synthesis)
+- If coordination became worse (more vague answers, weaker synthesis)
 
 **Rollback Procedure**:
 1. Document the regression
@@ -559,13 +559,13 @@ If corrections make things worse:
 - `workflow/correction_history.yaml`
 - `decisions/correction_*.yaml`
 - `Agent_Memory/_knowledge/calibration/self_correct_{domain}.yaml`
-- **V5.0**: Updated `workflow/coordination_log.yaml` (if fixing coordination issues)
+- Updated `workflow/coordination_log.yaml` (if fixing coordination issues)
 
 **You Read**:
 - `outputs/final/validation_report.yaml`
 - `instruction.yaml`
 - `workflow/plan.yaml`
-- **V5.0**: `workflow/coordination_log.yaml` (to understand coordination issues)
+- `workflow/coordination_log.yaml` (to understand coordination issues)
 - `Agent_Memory/_system/domains/{domain}/self_correct_config.yaml`
 
 ---
@@ -614,12 +614,12 @@ Outcome: Success, 1 attempt, 3 minutes
 
 ---
 
-## V5.0 Integration
+## Integration
 
 **Coordination Issue Detection**:
 - Read validation_report.yaml → coordination_validation section
 - Identify coordination issues: missing_coordination_log, incomplete_synthesis, vague_answers, etc.
-- Match to V5.0 correction strategies
+- Match to coordination correction strategies
 
 **Controller Re-spawning**:
 - Read plan.yaml → controller_assignment.primary
@@ -641,7 +641,4 @@ Outcome: Success, 1 attempt, 3 minutes
 
 ---
 
-**Version**: 5.0
-**Part of**: cAgents Universal Workflow Architecture V5.0
-**Lines**: 600+ (vs 336 V2.0 = 78% expansion for V5.0 coordination corrections)
-**Key V5.0 Addition**: Coordination correction strategies for question-based delegation issues
+**Part of**: cAgents Universal Workflow Architecture

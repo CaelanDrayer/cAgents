@@ -6,7 +6,6 @@ tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 model: sonnet
 color: white
 domain: core
-version: 2.0
 ---
 
 # Trigger

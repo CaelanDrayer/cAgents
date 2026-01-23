@@ -6,10 +6,9 @@ tools: Read, Grep, Glob, Write, TodoWrite, Task
 model: opus
 color: orange
 domain: core
-version: 1.0
 ---
 
-# Task Decomposer (V1.0)
+# Task Decomposer
 
 **Role**: Aggressive task decomposition specialist. When user says "I want X", extrapolate EVERYTHING needed to produce X successfully.
 
@@ -644,5 +643,4 @@ success_criteria:
 
 ---
 
-**Version**: 1.0
-**Part of**: cAgents V7.4 Aggressive Task Decomposition
+**Part of**: cAgents Aggressive Task Decomposition
