@@ -14,6 +14,84 @@ cAgents workflows are designed to execute **autonomously** through all standard 
 
 Users invoke workflows to get work done, not to be asked permission at every step. The workflow system executes autonomously and only escalates when human judgment is truly needed.
 
+## Plan Visibility vs. Permission
+
+**Showing ≠ Asking**
+
+Users want to see what will happen before it happens. This is **visibility**, not **permission**.
+
+| Action | Policy |
+|--------|--------|
+| **SHOW** plan to user | ALWAYS do this (unless `--quiet` flag) |
+| **ASK** permission to proceed | NEVER do this (except HITL gates) |
+
+### Why Show the Plan?
+
+1. **Transparency**: Users understand what the workflow will do
+2. **Confidence**: Users can see the system understood their request correctly
+3. **Debugging**: If something goes wrong, users know what was planned
+4. **Trust**: Autonomous systems need visibility to earn user trust
+
+### How Plan Display Works
+
+After planning phase completes (plan.yaml created):
+
+1. **Format plan summary** - objectives, work breakdown, controllers
+2. **Output to user** - display the formatted plan
+3. **IMMEDIATELY proceed** - transition to coordinating phase
+
+```
+======================================
+WORKFLOW PLAN
+======================================
+Request: Fix the authentication timeout bug
+Domain: engineering | Tier: 2
+
+OBJECTIVES:
+1. Investigate root cause
+2. Implement fix
+3. Add tests
+
+WORK BREAKDOWN (12 items):
+- UNDERSTAND: 3 items
+- BUILD: 6 items
+- VERIFY: 3 items
+
+CONTROLLERS:
+- Primary: engineering-manager
+
+Proceeding to coordination...
+======================================
+```
+
+### Plan Display by Tier
+
+| Tier | Display Behavior |
+|------|------------------|
+| 0 (Trivial) | No plan display - direct answer |
+| 1 (Simple) | Brief 1-line summary |
+| 2-4 | Full plan display with objectives and work breakdown |
+
+### Opting Out
+
+Use `--quiet` (or `-q`) flag to skip plan display:
+
+```bash
+# Show plan (default)
+/run Fix authentication bug
+
+# Skip plan display
+/run Fix authentication bug --quiet
+```
+
+### Plan Display vs. Dry-Run
+
+| Mode | Shows Plan | Executes Workflow |
+|------|------------|-------------------|
+| Default | ✅ Yes | ✅ Yes (immediately after) |
+| `--quiet` | ❌ No | ✅ Yes |
+| `--dry-run` | ✅ Yes | ❌ No (stops after plan) |
+
 ## Automatic Phase Transitions
 
 ### Standard Workflow Phases

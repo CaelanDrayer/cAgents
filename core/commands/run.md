@@ -16,6 +16,7 @@ You are a minimal delegation layer that invokes the trigger agent to handle enha
 **Features**:
 - **Interactive mode** (`--interactive`) - Ask user preferences before starting
 - **Dry-run mode** (`--dry-run`) - Preview workflow without executing
+- **Quiet mode** (`--quiet` or `-q`) - Skip plan display, proceed directly to execution
 - **Template selection** (`--template <name>`) - Use specific workflow template
 - **Domain override** (`--domain <domain>`) - Override auto-detection
 - **Tier override** (`--tier <N>`) - Override tier classification
@@ -111,6 +112,7 @@ function parseCommandFlags(commandString) {
     // Flags
     interactive: commandString.includes('--interactive'),
     dryRun: commandString.includes('--dry-run'),
+    quiet: commandString.includes('--quiet') || commandString.includes('-q'),
     stream: commandString.includes('--stream'),
     skipPreflight: commandString.includes('--skip-preflight'),
 
@@ -138,6 +140,7 @@ Output: {
   request: "Fix auth bug",
   interactive: true,
   dryRun: false,
+  quiet: false,
   stream: true,
   skipPreflight: false,
   template: "bug_fix",
@@ -161,6 +164,7 @@ Task({
     Flags:
     - Interactive mode: {flags.interactive}
     - Dry-run mode: {flags.dryRun}
+    - Quiet mode: {flags.quiet}
     - Stream progress: {flags.stream}
     - Skip preflight: {flags.skipPreflight}
     - Template: {flags.template || 'auto-match'}
@@ -280,12 +284,15 @@ TodoWrite({
 |------|------|-------------|---------|---------|
 | `--interactive` | Boolean | Enable interactive mode | false | `/run Fix bug --interactive` |
 | `--dry-run` | Boolean | Preview workflow without executing | false | `/run Add feature --dry-run` |
+| `--quiet`, `-q` | Boolean | Skip plan display, proceed directly | false | `/run Fix bug --quiet` |
 | `--stream` | Boolean | Real-time progress updates | false | `/run Deploy app --stream` |
 | `--skip-preflight` | Boolean | Skip pre-flight validation | false | `/run Hotfix --skip-preflight` |
 | `--template <name>` | String | Use specific template | auto-match | `/run Budget --template budget_creation` |
 | `--domain <domain>` | String | Override domain detection | auto-detect | `/run Analyze --domain engineering` |
 | `--tier <N>` | Number | Override tier classification (0-4) | auto-classify | `/run Migrate --tier 4` |
 | `--confidence <N>` | Number | Set confidence threshold | 0.7 | `/run Request --confidence 0.6` |
+
+**Note on Plan Display**: By default, `/run` shows the workflow plan after planning completes (for tier 2+ workflows). Use `--quiet` to skip this display if you prefer silent execution. Use `--dry-run` if you want to see the plan and STOP (without executing).
 
 **Available Templates** (13):
 - `bug_fix` - Bug fix workflow (tier 2, engineering)

@@ -35,15 +35,23 @@ Core architecture and development guidance for cAgents.
 
 **Project Documentation** (in `docs/`):
 - `AGENT_OPTIMIZATION_INSTRUCTION.md` - Agent optimization guidelines
+- `ARCHITECTURE.md` - Architecture design
 - `AUTOMATIC_WORKFLOW_PROGRESSION.md` - Automatic phase transition policy (CRITICAL)
+- `CLAUDE_CODE_HOOKS_SPECIFICATION.md` - Claude Code hooks spec
+- `COMMANDS.md` - Command reference
 - `CONTEXT_MANAGEMENT.md` - Context handling and token management
+- `DOCUMENTATION_CLEANUP_SUMMARY.md` - Documentation cleanup summary
 - `DOCUMENTATION_STANDARDS.md` - Documentation best practices
+- `DOMAIN_STRUCTURE_STANDARD.md` - Domain organization standard
+- `GAME_DEV_V7.3.0_ANALYSIS.md` - Game development analysis
+- `GETTING_STARTED.md` - Getting started guide
+- `HOOK_REGISTRATION_FIX.md` - Hook registration fix
 - `OPTIMIZATION_PROGRESS.md` - Optimization tracking and progress
+- `RELEASE_NOTES.md` - Release history
 - `TASK_COMPLETION_ENFORCEMENT_SUMMARY.md` - Task completion protocol summary
 - `TASK_CONSOLIDATION.md` - Task consolidation strategies
 - `TOKEN_MIGRATION_SUMMARY.md` - Token optimization migration details
 - `WORKFLOW_EVALUATION_FIXES.md` - Workflow issue resolutions
-- `ARCHITECTURE.md` - Architecture design
 
 **Root Documentation** (exceptions):
 - `workflow_agent_interactions.md` - Agent interaction patterns (referenced throughout)
@@ -70,8 +78,8 @@ Core architecture and development guidance for cAgents.
 
 ```
 cAgents/
+├── CLAUDE.md                        # Main project memory (this file)
 ├── .claude/
-│   ├── CLAUDE.md                    # This file (main project memory)
 │   └── rules/
 │       ├── core/
 │       │   ├── orchestration.md     # Workflow orchestration patterns
@@ -279,16 +287,10 @@ CLAUDE.local.md
 
 **Current Implementation**:
 - Main project memory: `./CLAUDE.md` (this file)
+- Modular rules: `.claude/rules/` (14 rule files across 4 categories)
 - Agent patterns: `workflow_agent_interactions.md` (root-level exception)
 - Domain configs: `Agent_Memory/_system/domains/{domain}/*.yaml`
 - Runtime state: `Agent_Memory/` (git-ignored)
-
-**Recommended Enhancements**:
-1. Create `.claude/rules/` structure for modular organization
-2. Add `CLAUDE.local.md` to .gitignore for personal preferences
-3. Use imports for large documentation (architecture, patterns)
-4. Create domain-specific rules with path filtering
-5. Document memory structure in onboarding guides
 
 ## Project Overview
 
@@ -299,7 +301,7 @@ CLAUDE.local.md
 - **Batch Delegation**: 60-80% context reduction through batch operations
 - **Checkpoint/Resume**: Full pause/resume capability at any point
 - **Progress Queries**: 500-token summaries instead of 10K+ task loads
-- **Aggressive Decomposition**: User says "add auth" → system generates 30+ work items
+- **Aggressive Decomposition**: User says "add auth" -> system generates 30+ work items
 - **Controller-Centric**: Controllers coordinate via batch inventory operations
 
 **Architecture**: Controller-Centric Coordination with Task Inventory
@@ -387,29 +389,29 @@ When users say "I want X", the system autonomously figures out everything needed
 
 ```
 User Request: "Add authentication to my app"
-         ↓
+         |
 Step 1: Request Analysis
-         → Type: feature, Action: add, Subject: authentication
-         ↓
+         -> Type: feature, Action: add, Subject: authentication
+         |
 Step 2: Component Extraction
-         → UNDERSTAND (5 items): analyze existing code, review constraints
-         → DESIGN (4 items): architecture, security, API contracts
-         → BUILD (12 items): backend, frontend, database
-         → VERIFY (8 items): unit tests, integration tests, security tests
-         → DOCUMENT (4 items): API docs, user guides, developer docs
-         ↓
+         -> UNDERSTAND (5 items): analyze existing code, review constraints
+         -> DESIGN (4 items): architecture, security, API contracts
+         -> BUILD (12 items): backend, frontend, database
+         -> VERIFY (8 items): unit tests, integration tests, security tests
+         -> DOCUMENT (4 items): API docs, user guides, developer docs
+         |
 Step 3: Implicit Discovery
-         → Security: CSRF, rate limiting, secure cookies (user didn't mention)
-         → Testing: regression tests, penetration tests (user didn't mention)
-         → Infrastructure: env variables, migrations (user didn't mention)
-         ↓
+         -> Security: CSRF, rate limiting, secure cookies (user didn't mention)
+         -> Testing: regression tests, penetration tests (user didn't mention)
+         -> Infrastructure: env variables, migrations (user didn't mention)
+         |
 Step 4: Dependency Mapping
-         → Critical path: analyze → design → user_model → auth_service → tests → docs
-         → Parallel groups: [backend, frontend], [unit_tests, integration_tests]
-         ↓
+         -> Critical path: analyze -> design -> user_model -> auth_service -> tests -> docs
+         -> Parallel groups: [backend, frontend], [unit_tests, integration_tests]
+         |
 Step 5: Work Item Generation
-         → 33 work items with acceptance criteria
-         → Each item: ID, name, description, acceptance criteria, dependencies, effort
+         -> 33 work items with acceptance criteria
+         -> Each item: ID, name, description, acceptance criteria, dependencies, effort
 ```
 
 ### Decomposition Output
@@ -496,7 +498,7 @@ Planner -> Objectives -> Controller -> Questions -> Execution Agents -> Answers 
 |------|------|-------|---------|----------|
 | **1: Core** | Infrastructure | 12 | Workflow orchestration | orchestrator, planner, executor, validator |
 | **2: Controller** | Coordination | ~53 | Question-based delegation and synthesis | engineering-manager, architect, cto, campaign-manager, game-designer, game-producer |
-| **3: Execution** | Specialists | ~175 | Answer questions and execute tasks | backend-developer, copywriter, financial-analyst, level-designer, animator |
+| **3: Execution** | Specialists | ~147 | Answer questions and execute tasks | backend-developer, copywriter, financial-analyst, level-designer, animator |
 | **4: Support** | Operations | ~19 | Foundational services | scribe, data-extractor, etc. |
 
 ### Controller Selection
@@ -810,6 +812,7 @@ No code required - universal agents load configs automatically.
 
 ```
 cAgents/
+├── CLAUDE.md                # Main project memory (this file)
 ├── core/                    # Core infrastructure (tier 1)
 │   ├── agents/              # 12 core agents
 │   └── commands/            # 4 universal commands
@@ -832,10 +835,9 @@ cAgents/
 │   ├── agents/              # Customer experience, legal, compliance, support
 │   └── .claude-plugin/      # Serve manifest
 ├── docs/                    # Project documentation
-│   └── ARCHITECTURE.md      # Architecture design
+│   └── *.md                 # Implementation guides, standards, release notes
 ├── .claude/                 # Memory system
-│   ├── CLAUDE.md            # Main project memory (symlink to root)
-│   └── rules/               # Modular rules
+│   └── rules/               # Modular rules (14 files across 4 categories)
 ├── .claude-plugin/          # Root manifest
 └── Agent_Memory/            # Runtime state (git-ignored)
     └── _system/
@@ -877,8 +879,6 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 | Memory not loading | Run `/memory` to view loaded files, check file locations |
 | Local preferences not applied | Ensure CLAUDE.local.md in .gitignore, check loading order |
 
-Full troubleshooting: `archive/docs/TROUBLESHOOTING.md`
-
 See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 
 ---
@@ -889,3 +889,4 @@ See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 **Directories**: 7 (core, shared, make, grow, operate, people, serve)
 **Key Innovation**: CSV-based task inventory for large workflows + aggressive decomposition
 **Dependencies**: None (file-based, self-contained)
+**Version**: 7.5.1

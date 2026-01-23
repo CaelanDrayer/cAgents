@@ -30,11 +30,13 @@ Phase transitions are AUTOMATIC. Orchestrator proceeds to next phase immediately
 All tier 2+ workflows follow this pattern:
 
 ```
-routing → planning → coordinating → executing → validating
-   ↓          ↓           ↓            ↓           ↓
-  Router   Planner   Controller   Executor   Validator
-(tier 0-4) (objectives) (questions) (monitor) (quality)
+routing → planning → [PLAN DISPLAY] → coordinating → executing → validating
+   ↓          ↓            ↓              ↓            ↓           ↓
+  Router   Planner    Orchestrator   Controller   Executor   Validator
+(tier 0-4) (objectives) (show plan)   (questions)  (monitor)  (quality)
 ```
+
+**Plan Display**: After planning, orchestrator shows the plan to the user, then immediately proceeds to coordinating. This is visibility, not a checkpoint.
 
 ## Phase Responsibilities
 
@@ -64,6 +66,22 @@ routing → planning → coordinating → executing → validating
 - Check coordination quality
 - Verify output quality
 - Validate no regressions
+
+## Plan Display Phase
+
+After planning completes (plan.yaml exists), orchestrator displays the plan before coordinating:
+
+1. **Read** plan.yaml and decomposition.yaml
+2. **Format** plan summary (objectives, work breakdown, controllers)
+3. **Output** to user (unless `--quiet` flag)
+4. **Proceed** immediately to coordinating (do NOT wait)
+
+**Plan Display by Tier**:
+- **Tier 0**: Skip (no plan)
+- **Tier 1**: Brief 1-line summary
+- **Tier 2-4**: Full plan with work breakdown
+
+**IMPORTANT**: Showing plan ≠ Asking permission. Display then proceed.
 
 ## Key Principle
 

@@ -62,6 +62,128 @@ When a phase completes successfully:
 - Unrecoverable error or blocker encountered
 - Validation status is BLOCKED (not PASS or FIXABLE)
 
+## Plan Display (After Planning, Before Coordinating)
+
+When the planning phase completes (plan.yaml + decomposition.yaml exist), display the plan to the user before proceeding to coordination. This provides **visibility** without requiring **permission**.
+
+**IMPORTANT**: Showing the plan is NOT the same as asking permission. After displaying the plan, IMMEDIATELY proceed to coordinating phase.
+
+### When to Display Plan
+
+| Tier | Display Behavior |
+|------|------------------|
+| **Tier 0** | Skip - direct answer, no plan exists |
+| **Tier 1** | Brief - 1-2 line summary only |
+| **Tier 2-4** | Full - objectives, work breakdown, controllers |
+
+Skip display entirely if `--quiet` flag is set.
+
+### Plan Display Steps
+
+1. **Read plan artifacts**:
+   - `Agent_Memory/{session_id}/workflow/plan.yaml`
+   - `Agent_Memory/{session_id}/workflow/decomposition.yaml`
+
+2. **Format and OUTPUT plan summary** (not asking, just showing):
+
+```
+======================================
+WORKFLOW PLAN
+======================================
+Request: {original_request}
+Domain: {domain} | Tier: {tier}
+
+OBJECTIVES:
+1. {objective_1}
+2. {objective_2}
+...
+
+WORK BREAKDOWN ({total_items} items):
+- UNDERSTAND: {count} items
+- DESIGN: {count} items
+- BUILD: {count} items
+- VERIFY: {count} items
+- DOCUMENT: {count} items
+
+CONTROLLERS:
+- Primary: {primary_controller}
+- Supporting: {supporting_controllers or 'None'}
+
+CRITICAL PATH: {critical_path_summary}
+
+Proceeding to coordination...
+======================================
+```
+
+3. **IMMEDIATELY proceed** to coordinating phase (do NOT wait for user input)
+
+### Plan Display Format by Tier
+
+**Tier 1 (Simple)**:
+```
+Plan: {request_summary} | {count} tasks | {controller}
+Proceeding...
+```
+
+**Tier 2-4 (Full)**:
+```
+======================================
+WORKFLOW PLAN
+======================================
+[Full format as shown above]
+======================================
+```
+
+### Implementation Pattern
+
+```markdown
+After planning phase completes:
+
+1. Read plan.yaml and decomposition.yaml
+2. Check flags.quiet - if true, skip to step 5
+3. Check tier:
+   - Tier 0: Skip display (no plan)
+   - Tier 1: Output brief summary
+   - Tier 2-4: Output full plan display
+4. Output plan to user (use text output, NOT AskUserQuestion)
+5. Immediately transition to coordinating phase
+6. Invoke controller via Task tool
+
+CRITICAL: Step 5 happens IMMEDIATELY after step 4.
+Do NOT wait for user response. Do NOT ask "proceed?".
+```
+
+### Example: Full Plan Display
+
+```
+======================================
+WORKFLOW PLAN
+======================================
+Request: Fix the authentication timeout bug
+Domain: engineering | Tier: 2
+
+OBJECTIVES:
+1. Investigate root cause of authentication timeout
+2. Implement fix with proper timeout handling
+3. Add tests to prevent regression
+
+WORK BREAKDOWN (12 items):
+- UNDERSTAND: 3 items
+- DESIGN: 2 items
+- BUILD: 4 items
+- VERIFY: 2 items
+- DOCUMENT: 1 item
+
+CONTROLLERS:
+- Primary: engineering-manager
+- Supporting: None
+
+CRITICAL PATH: investigate → design fix → implement → test → document
+
+Proceeding to coordination...
+======================================
+```
+
 ## Trigger Integration
 
 Orchestrator reads and uses enhanced metadata from trigger.
@@ -225,6 +347,7 @@ routing
   ↓ (Router assigns tier + template)
 planning
   ↓ (Planner defines objectives, selects controller)
+  ↓ [PLAN DISPLAY - show plan to user, then auto-proceed]
 coordinating
   ↓ (Controller asks questions, synthesizes solution)
 executing
@@ -242,6 +365,8 @@ blocked
   ├─ Resolved → executing (retry)
   └─ Aborted → failed
 ```
+
+**Plan Display Note**: The plan display step shows the user what will happen but does NOT wait for permission. It's informational transparency, not a checkpoint.
 
 ## Universal Workflow Agents
 
@@ -337,10 +462,18 @@ Use Task tool:
 
 - **Routing**: routing_decision.yaml exists
 - **Planning**: plan.yaml exists with controller assignment
+  - *After detection*: Display plan (unless --quiet), then proceed to coordinating
 - **Coordinating**: coordination_log.yaml exists with synthesized solution
 - **Executing**: all tasks completed, outputs aggregated
 - **Validating**: validation_result set in status.yaml
 - **Correcting**: correction result recorded
+
+### Quiet Mode
+
+When `--quiet` flag is set in instruction metadata:
+- Skip plan display entirely
+- Proceed directly from planning to coordinating
+- Still log plan to status.yaml for auditability
 
 ## Tier-Specific Workflows
 
