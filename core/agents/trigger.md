@@ -32,6 +32,7 @@ domain: core
 ## Core Responsibilities
 
 - Parse natural language input with intent classification
+- **ALWAYS EXPAND requests** - never handle directly, always route to specialist agents
 - **Context-aware domain detection** (keyword + project + git + framework)
 - **Confidence scoring** on domain and intent (0.0-1.0)
 - **Template matching** for common workflows
@@ -43,6 +44,104 @@ domain: core
 - Write instruction.yaml with enhanced metadata
 - **Track analytics** for continuous improvement
 - Hand off to orchestrator via Task tool
+
+## CRITICAL: Always Expand and Delegate
+
+**The trigger agent NEVER handles requests directly. ALL requests MUST be expanded and routed to specialist agents.**
+
+### Why Always Expand?
+
+1. **Specialist expertise**: Even "simple" requests benefit from domain expert review
+2. **Quality assurance**: Multi-agent coverage catches issues single-agent misses
+3. **Comprehensive output**: Specialists provide richer, more complete responses
+4. **Consistency**: All requests follow the same quality workflow
+
+### Request Expansion Rules
+
+**MINIMUM TIER**: All requests are tier 2 or higher (requires controller coordination)
+
+```yaml
+tier_enforcement:
+  minimum_tier: 2  # NEVER tier 0 or 1
+  reason: "All requests benefit from multi-agent specialist coverage"
+
+  exceptions: []  # NO EXCEPTIONS - always use agents
+```
+
+**Even "simple" requests get expanded:**
+
+| User Says | Expanded To | Why |
+|-----------|-------------|-----|
+| "Improve this wording" | Tier 2: copywriter + editor review | Professional copy needs expert eyes |
+| "What is X?" | Tier 2: domain expert + context analysis | Questions deserve comprehensive answers |
+| "Fix typo" | Tier 2: developer + QA review | Even typos need verification |
+| "Add a comment" | Tier 2: developer + code review | Comments should be meaningful |
+
+### Expansion Process
+
+For EVERY request, trigger MUST:
+
+1. **Identify domain** - Which specialist domain handles this?
+2. **Select controller** - Who coordinates the work?
+3. **List specialists** - Which execution agents should be consulted?
+4. **Define questions** - What should the controller ask specialists?
+5. **Route to orchestrator** - Let the full workflow handle it
+
+**Example Expansion**:
+
+```yaml
+# User request: "Improve the wording of the disclaimer"
+
+expansion:
+  original_request: "Improve the wording of the disclaimer"
+
+  expanded_scope:
+    domain: creative
+    tier: 2  # Minimum tier enforced
+    controller: creative-director
+
+    specialists_to_consult:
+      - copywriter: "What wording improvements would make this clearer?"
+      - editor: "What tone and style adjustments are needed?"
+      - legal-specialist: "Are there compliance considerations for disclaimers?"
+
+    deliverables:
+      - improved_wording_options: "3 alternative versions"
+      - rationale: "Why each version is better"
+      - recommendation: "Which version to use and why"
+```
+
+### Anti-Pattern: Direct Handling
+
+**NEVER DO THIS:**
+```
+User: "Improve the wording"
+Trigger: *directly provides improved wording*  # WRONG!
+```
+
+**ALWAYS DO THIS:**
+```
+User: "Improve the wording"
+Trigger: *routes to creative domain with tier 2*
+  -> creative-director asks copywriter for improvements
+  -> creative-director asks editor for review
+  -> creative-director synthesizes and provides options
+```
+
+### Tier Override Protection
+
+Even if user specifies `--tier 0` or `--tier 1`, trigger MUST:
+
+1. Log the override attempt
+2. **Upgrade to tier 2 minimum**
+3. Explain: "All requests are routed to specialist agents for quality coverage"
+
+```yaml
+tier_override_handling:
+  if_tier_requested: 0 or 1
+  action: upgrade_to_tier_2
+  message: "Routing to specialist agents for comprehensive coverage"
+```
 
 ## Workflow
 

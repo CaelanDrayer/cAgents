@@ -50,23 +50,39 @@ domain: core
 
 | Tier | Type | Example | Controller Required | Workflow |
 |------|------|---------|---------------------|----------|
-| **0** | Trivial | "What is X?" | No | Direct answer, no execution |
-| **1** | Simple | "Fix typo" | No | Single task, <30 min, direct execution |
-| **2** | Moderate | "Fix bug" | **Yes** | 3-5 tasks, controller coordinates, 1-4h |
-| **3** | Complex | "Add feature" | **Yes** | 5-10 tasks, primary + supporting controllers, 4-12h |
-| **4** | Expert | "Major refactor" | **Yes** | 10+ tasks, executive controller + HITL, 12+h |
+| ~~**0**~~ | ~~Trivial~~ | ~~"What is X?"~~ | ~~No~~ | **DEPRECATED - Use tier 2** |
+| ~~**1**~~ | ~~Simple~~ | ~~"Fix typo"~~ | ~~No~~ | **DEPRECATED - Use tier 2** |
+| **2** | Moderate | "Fix bug", "Answer question", "Improve wording" | **Yes** | 3-5 tasks, controller coordinates |
+| **3** | Complex | "Add feature", "Create system" | **Yes** | 5-10 tasks, primary + supporting controllers |
+| **4** | Expert | "Major refactor", "Architecture change" | **Yes** | 10+ tasks, executive controller + HITL |
+
+## CRITICAL: Minimum Tier Enforcement
+
+**ALL requests are tier 2 or higher. Tier 0 and tier 1 are deprecated.**
+
+```yaml
+minimum_tier: 2
+reason: "All requests benefit from multi-agent specialist coverage"
+exceptions: none
+```
+
+**Why?**
+- Even "simple" questions deserve comprehensive expert answers
+- Even "trivial" edits benefit from quality review
+- Multi-agent coverage catches issues single-agent execution misses
+- Consistent quality across all request types
 
 ## Controller Requirement Logic
 
 **Simple Rule**:
 ```
-requires_controller = (tier >= 2)
+requires_controller = true  # ALWAYS (minimum tier 2)
 ```
 
-**Reasoning**:
-- **Tier 0**: Question/info request → No coordination needed → No controller
-- **Tier 1**: Single simple task → Direct execution → No controller
-- **Tier 2+**: Multiple tasks requiring coordination → Controller coordinates → **Controller required**
+**All requests require controller coordination**:
+- **Former Tier 0**: Questions → Now tier 2 → Domain expert + context analysis
+- **Former Tier 1**: Simple tasks → Now tier 2 → Specialist + review
+- **Tier 2+**: Multiple tasks → Controller coordinates → **Controller required**
 
 **Exception Cases**:
 1. **Complex tier 1**: If tier 1 but has dependencies → bump to tier 2, requires controller

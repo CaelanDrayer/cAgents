@@ -308,54 +308,70 @@ detection_methods:
 intent_classification:
   description: "Classify user intent beyond domain detection"
 
+  # CRITICAL: Minimum tier is 2 for ALL intents
+  # All requests must be routed to specialist agents
+  minimum_tier: 2
+  enforcement: strict
+  reason: "All requests benefit from multi-agent specialist coverage"
+
   patterns:
     - intent: bug_fix
       keywords: [fix, bug, issue, error, broken, crash, fail, problem]
       confidence: 0.85
-      typical_tier: 2
+      typical_tier: 2  # Minimum tier
       workflow_template: bug_fix
+      specialists: [developer, qa-lead]
 
     - intent: feature
       keywords: [add, implement, create, new, build, develop]
       confidence: 0.80
       typical_tier: 3
       workflow_template: feature_addition
+      specialists: [developer, architect, qa-lead]
 
     - intent: refactor
-      keywords: [refactor, improve, clean, optimize, restructure, reorganize]
+      keywords: [refactor, clean, optimize, restructure, reorganize]
       confidence: 0.75
       typical_tier: 3
       workflow_template: code_refactor
+      specialists: [developer, architect]
+      notes: "Code-specific refactoring (not content editing)"
 
     - intent: question
       keywords: [how, what, why, explain, describe, tell me]
       confidence: 0.90
-      typical_tier: 0
-      workflow_template: question_answer
+      typical_tier: 2  # UPGRADED from 0 - questions deserve expert answers
+      workflow_template: expert_answer
+      specialists: [domain-expert, researcher]
+      notes: "Questions routed to domain experts for comprehensive answers"
 
     - intent: analysis
       keywords: [analyze, review, assess, evaluate, audit, examine]
       confidence: 0.80
       typical_tier: 2
       workflow_template: analysis_request
+      specialists: [analyst, domain-expert]
 
     - intent: documentation
       keywords: [document, write docs, readme, guide, tutorial]
       confidence: 0.85
       typical_tier: 2
       workflow_template: documentation_creation
+      specialists: [technical-writer, developer]
 
     - intent: content_creation
       keywords: [write, story, novel, blog, article, content, copy]
       confidence: 0.85
       typical_tier: 2
       workflow_template: content_creation
+      specialists: [copywriter, editor]
 
     - intent: content_editing
-      keywords: [improve wording, update wording, rewrite, rephrase, better wording, edit text, revise text, polish text, make it sound, word it, change the wording, fix wording, improve the text, update the text, edit copy, revise copy, improve copy]
+      keywords: [improve wording, update wording, rewrite, rephrase, better wording, edit text, revise text, polish text, make it sound, word it, change the wording, fix wording, improve the text, update the text, edit copy, revise copy, improve copy, improve]
       confidence: 0.85
       typical_tier: 2
       workflow_template: content_creation
+      specialists: [copywriter, editor]
       notes: "Routes to creative domain with copywriter/editor specialists"
 
     - intent: planning
@@ -363,12 +379,22 @@ intent_classification:
       confidence: 0.80
       typical_tier: 2
       workflow_template: strategic_planning
+      specialists: [strategist, analyst]
 
     - intent: testing
       keywords: [test, coverage, spec, validate, verify]
       confidence: 0.85
       typical_tier: 2
       workflow_template: testing_workflow
+      specialists: [qa-lead, developer]
+
+    - intent: simple_edit
+      keywords: [typo, spelling, grammar, small change, quick fix, minor]
+      confidence: 0.80
+      typical_tier: 2  # Even "simple" edits get specialist review
+      workflow_template: code_review
+      specialists: [developer, reviewer]
+      notes: "Even minor edits benefit from quality review"
 
 # MULTI-DOMAIN DETECTION
 multi_domain:
