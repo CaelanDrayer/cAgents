@@ -383,31 +383,31 @@ When users say "I want X", the system autonomously figures out everything needed
 
 **Philosophy**: Users state outcomes, not requirements. The planner's job is to unpack what they actually need.
 
-### The 5 Decomposition Levels
+### The 5 Decomposition Steps
 
 ```
 User Request: "Add authentication to my app"
          ↓
-Level 1: Request Analysis
+Step 1: Request Analysis
          → Type: feature, Action: add, Subject: authentication
          ↓
-Level 2: Component Extraction
+Step 2: Component Extraction
          → UNDERSTAND (5 items): analyze existing code, review constraints
          → DESIGN (4 items): architecture, security, API contracts
          → BUILD (12 items): backend, frontend, database
          → VERIFY (8 items): unit tests, integration tests, security tests
          → DOCUMENT (4 items): API docs, user guides, developer docs
          ↓
-Level 3: Implicit Discovery
+Step 3: Implicit Discovery
          → Security: CSRF, rate limiting, secure cookies (user didn't mention)
          → Testing: regression tests, penetration tests (user didn't mention)
          → Infrastructure: env variables, migrations (user didn't mention)
          ↓
-Level 4: Dependency Mapping
+Step 4: Dependency Mapping
          → Critical path: analyze → design → user_model → auth_service → tests → docs
          → Parallel groups: [backend, frontend], [unit_tests, integration_tests]
          ↓
-Level 5: Work Item Generation
+Step 5: Work Item Generation
          → 33 work items with acceptance criteria
          → Each item: ID, name, description, acceptance criteria, dependencies, effort
 ```

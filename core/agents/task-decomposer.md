@@ -91,7 +91,7 @@ Decomposer extrapolates:
 
 See `.claude/rules/quality/implicit-discovery.md` for the full Unsaid Framework.
 
-### Level 1: Request Analysis
+### Step 1: Request Analysis
 
 **Extract the core intent**:
 - What is the user actually trying to achieve?
@@ -113,7 +113,7 @@ See `.claude/rules/quality/implicit-discovery.md` for the full Unsaid Framework.
 | Question | "How does X", "What is Y" | No decomposition (tier 0) |
 | Abstract | "Make it better", "Fix it" | Discover + then apply above |
 
-### Level 2: Component Extraction
+### Step 2: Component Extraction
 
 **Break request into major components**:
 
@@ -147,7 +147,7 @@ See `.claude/rules/quality/implicit-discovery.md` for the full Unsaid Framework.
    - Change records
    - Deployment notes
 
-### Level 3: Implicit Requirement Discovery (The Unsaid)
+### Step 3: Implicit Requirement Discovery (The Unsaid)
 
 **CRITICAL**: Users state outcomes, not requirements. Fill in everything they DIDN'T say.
 
@@ -212,7 +212,7 @@ discovery_questions:
     - "What operational docs are needed?"
 ```
 
-### Level 4: Dependency Mapping
+### Step 4: Dependency Mapping
 
 **Identify what depends on what**:
 
@@ -239,7 +239,7 @@ dependency_types:
     example: "Social login can be added later"
 ```
 
-### Level 5: Work Item Generation
+### Step 5: Work Item Generation
 
 **Create actionable work items from components**:
 

@@ -54,22 +54,22 @@ See `.claude/rules/quality/implicit-discovery.md` for the Unsaid Framework.
 
 ## V6.0 Decomposition Framework
 
-### The 5 Decomposition Levels
+### The 5 Decomposition Steps
 
 ```
-Level 1: Request Analysis
+Step 1: Request Analysis
     ↓ What is user asking for?
-Level 2: Component Extraction
+Step 2: Component Extraction
     ↓ What major parts are needed?
-Level 3: Implicit Discovery
+Step 3: Implicit Discovery
     ↓ What didn't user say but is required?
-Level 4: Dependency Mapping
+Step 4: Dependency Mapping
     ↓ What depends on what?
-Level 5: Work Item Generation
+Step 5: Work Item Generation
     ↓ What are the concrete tasks?
 ```
 
-### Level 1: Request Analysis
+### Step 1: Request Analysis
 
 **Parse the request to understand core intent**:
 
@@ -102,7 +102,7 @@ request_analysis:
 | Migration | "migrate", "move", "upgrade" | Source → target → transition |
 | Question | "how", "what", "why", "explain" | No decomposition (tier 0) |
 
-### Level 2: Component Extraction
+### Step 2: Component Extraction
 
 **Break request into 5 major component types**:
 
@@ -234,7 +234,7 @@ document:
     - deployment_notes
 ```
 
-### Level 3: Implicit Requirement Discovery
+### Step 3: Implicit Requirement Discovery
 
 **CRITICAL**: Search codebase to discover what user didn't mention but needs.
 
@@ -313,7 +313,7 @@ implicit_requirements:
     - "Existing tests must pass"           # User didn't mention
 ```
 
-### Level 4: Dependency Mapping
+### Step 4: Dependency Mapping
 
 **Map what depends on what**:
 
@@ -367,7 +367,7 @@ auth_endpoints  auth_context
     documentation
 ```
 
-### Level 5: Work Item Generation
+### Step 5: Work Item Generation
 
 **Generate concrete, actionable work items**:
 
