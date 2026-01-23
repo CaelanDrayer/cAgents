@@ -56,6 +56,30 @@ Core architecture and development guidance for cAgents.
 **Root Documentation** (exceptions):
 - `workflow_agent_interactions.md` - Agent interaction patterns (referenced throughout)
 
+## Version Management
+
+**CRITICAL: Always bump version on commits.**
+
+When committing changes to this repository, you MUST increment the version in:
+- `.claude-plugin/marketplace.json`
+- `.claude-plugin/plugin.json`
+
+**Version Format**: `major.minor.patch` (e.g., 7.5.3)
+
+**When to bump**:
+| Change Type | Bump | Example |
+|-------------|------|---------|
+| Bug fix, minor tweak | patch | 7.5.2 → 7.5.3 |
+| New feature, enhancement | minor | 7.5.3 → 7.6.0 |
+| Breaking change, major refactor | major | 7.6.0 → 8.0.0 |
+
+**Commit checklist**:
+1. Make your changes
+2. Increment version in both JSON files
+3. `git add -A`
+4. `git commit -m "feat/fix/chore: description"`
+5. `git push origin main`
+
 ## Memory Management
 
 **Claude Code Memory Hierarchy**: cAgents leverages Claude Code's 5-tier memory system for flexible, scalable configuration.
