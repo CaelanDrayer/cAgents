@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "7.4.1",
-  "description": "cAgents V7.4 Aggressive Decomposition Edition - Universal multi-domain agent system with 230 agents across 5 super-domains. Features aggressive task decomposition, controller-centric question-based delegation, enhanced Claude Code hooks for safety. Game dev specialists included.",
+  "version": "7.5.1",
+  "description": "cAgents V7.5 Task Inventory Edition - Universal multi-domain agent system with 231 agents across 5 super-domains. CSV-based task inventory for large-scale workflows (60-80% context savings). Features aggressive task decomposition, controller-centric question-based delegation. Game dev specialists included.",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -41,8 +41,8 @@
   "license": "MIT",
   "architecture": "Controller-Centric Question-Based Delegation",
   "agents": {
-    "total": 230,
-    "core": 11,
+    "total": 231,
+    "core": 12,
     "shared": 14,
     "breakdown": {
       "make": 108,
