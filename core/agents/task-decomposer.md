@@ -75,12 +75,33 @@ Decomposer extrapolates:
 
 ## Decomposition Framework
 
+### Level 0: Abstraction Classification (FIRST STEP)
+
+**Before decomposing, classify how abstract the request is**:
+
+| Abstraction | Pattern | Example | Extrapolation Needed |
+|-------------|---------|---------|---------------------|
+| Level 5 (Pure Outcome) | Vague verbs, no specifics | "Make it better", "Fix it" | WHAT, WHERE, HOW, WHY |
+| Level 4 (Goal-Oriented) | Outcome specified, no method | "Improve performance" | WHERE, HOW, metrics |
+| Level 3 (Domain-Aware) | Domain clear, method unclear | "Fix the login" | HOW, specifics, criteria |
+| Level 2 (Specific Task) | Task clear, details unclear | "Add caching to API" | Details, edge cases |
+| Level 1 (Detailed) | Full specification | "Add progress bar to SignupForm.tsx" | Validate only |
+
+**The more abstract, the more we must fill in on behalf of the user**.
+
+See `.claude/rules/quality/implicit-discovery.md` for the full Unsaid Framework.
+
 ### Level 1: Request Analysis
 
 **Extract the core intent**:
 - What is the user actually trying to achieve?
 - What's the business/user value?
 - What's the success condition?
+
+**For abstract requests (Level 4-5), determine**:
+- WHAT specifically needs to change? (Discovery required)
+- WHAT is the target/subject? (Context analysis)
+- WHAT does success look like? (Define success criteria)
 
 **Identify request type**:
 | Type | Pattern | Decomposition Strategy |
@@ -90,6 +111,7 @@ Decomposer extrapolates:
 | Improvement | "Improve X", "Optimize Y", "Enhance Z" | Current state + target state + delta |
 | Migration | "Migrate X", "Move to Y", "Upgrade Z" | Source + target + transition path |
 | Question | "How does X", "What is Y" | No decomposition (tier 0) |
+| Abstract | "Make it better", "Fix it" | Discover + then apply above |
 
 ### Level 2: Component Extraction
 
@@ -125,7 +147,31 @@ Decomposer extrapolates:
    - Change records
    - Deployment notes
 
-### Level 3: Implicit Requirement Discovery
+### Level 3: Implicit Requirement Discovery (The Unsaid)
+
+**CRITICAL**: Users state outcomes, not requirements. Fill in everything they DIDN'T say.
+
+**The Unsaid Framework** - For every request, discover:
+
+```yaml
+unsaid_pre_work:  # Before starting
+  - "What is the current state?"
+  - "What constraints exist?"
+  - "What does success look like?"
+  - "What is NOT included?"
+
+unsaid_during_work:  # During execution
+  - "How thoroughly should this be done?"
+  - "What edge cases matter?"
+  - "What shouldn't break?"
+  - "What security concerns exist?"
+
+unsaid_post_work:  # After completion
+  - "How do we know it works?"
+  - "Who needs to know about this?"
+  - "What documentation is needed?"
+  - "How will this be maintained?"
+```
 
 **Ask discovery questions for each component**:
 
@@ -626,16 +672,117 @@ success_criteria:
   - "All endpoints have auth middleware"  # from work_005
 ```
 
+## Handling Abstract Requests
+
+**When user says something vague, fill in the blanks**:
+
+### Example: "Make it faster"
+
+```yaml
+# Step 1: Classify abstraction
+abstraction_level: 5  # Pure outcome, most abstract
+
+# Step 2: Discover WHAT
+discovery_what:
+  action: Analyze codebase for performance indicators
+  search:
+    - Grep for slow queries, N+1 patterns
+    - Check for missing indexes
+    - Find unoptimized loops
+    - Identify large payload responses
+  result: "3 slow API endpoints, 2 heavy database queries identified"
+
+# Step 3: Discover WHERE
+discovery_where:
+  action: Profile and measure
+  result: "/api/users (2.3s), /api/reports (4.1s), dashboard query (1.8s)"
+
+# Step 4: Discover HOW
+discovery_how:
+  action: Check existing patterns, constraints
+  result: "Caching available (Redis), can optimize queries, lazy loading possible"
+
+# Step 5: Fill in unsaid
+unsaid_pre:
+  - Establish baseline metrics
+  - Define acceptable performance (SLAs)
+  - Review existing performance tests
+
+unsaid_during:
+  - Measure before/after each change
+  - Test under realistic load
+  - Check for regressions
+
+unsaid_post:
+  - Document optimizations
+  - Add performance monitoring
+  - Set alerting thresholds
+```
+
+### Example: "Fix the bug"
+
+```yaml
+# Step 1: Classify abstraction
+abstraction_level: 4  # Goal-oriented (fix), but WHAT bug?
+
+# Step 2: Discover WHAT bug
+discovery_what:
+  action: Check recent activity
+  search:
+    - Recent error logs
+    - Recent bug reports/issues
+    - Recent code changes
+    - User complaints
+  result: "Login timeout not handled - users stuck on loading screen"
+
+# Step 3: Fill in unsaid
+unsaid_pre:
+  - Reproduce the bug
+  - Identify root cause (not just symptom)
+  - Check for similar issues
+
+unsaid_during:
+  - Write failing test first
+  - Fix root cause
+  - Handle edge cases
+  - Add logging
+
+unsaid_post:
+  - Verify fix
+  - Run regression tests
+  - Update error handling docs
+  - Consider monitoring
+```
+
+### Example: "Add a feature"
+
+```yaml
+# Step 1: Classify abstraction
+abstraction_level: 4  # Goal-oriented, but WHAT feature?
+
+# Step 2: Interactive or infer
+if interactive_mode:
+  ask_user: "What feature would you like to add?"
+else:
+  infer_from_context:
+    - Check recent discussions in code comments
+    - Look for TODO comments
+    - Check issues/tickets
+    - Analyze usage patterns
+```
+
 ## CRITICAL: Aggressive Decomposition Rules
 
 1. **NEVER accept surface-level requests** - Always dig deeper
-2. **ALWAYS identify implicit requirements** - What did user NOT say?
-3. **ALWAYS discover dependencies** - What must happen first?
-4. **ALWAYS include verification** - How do we know it works?
-5. **ALWAYS include documentation** - Who needs to know?
-6. **QUESTION everything** - Is there more to this?
-7. **CONTEXT is king** - Search codebase, understand current state
-8. **RECURSIVE decomposition** - Keep breaking down until atomic
+2. **ALWAYS classify abstraction level** - How much must we fill in?
+3. **ALWAYS identify implicit requirements** - What did user NOT say?
+4. **ALWAYS discover dependencies** - What must happen first?
+5. **ALWAYS include verification** - How do we know it works?
+6. **ALWAYS include documentation** - Who needs to know?
+7. **QUESTION everything** - Is there more to this?
+8. **CONTEXT is king** - Search codebase, understand current state
+9. **RECURSIVE decomposition** - Keep breaking down until atomic
+10. **FILL IN THE BLANKS** - User states outcome, we determine requirements
 
 ## Anti-Patterns (DO NOT DO)
 

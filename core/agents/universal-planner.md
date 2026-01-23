@@ -20,14 +20,27 @@ domain: core
 - User request needs full decomposition
 - Dependencies and prerequisites need discovery
 
-## Core Approach: Aggressive Decomposition
+## Core Approach: Fill In The Blanks
 
-- Aggressively decompose user request
-- Discover implicit requirements (what user didn't say)
-- Map ALL dependencies (what must happen first)
-- Component extraction (break into actionable parts)
-- Work item generation (concrete, measurable items)
-- Select controllers based on decomposition complexity
+**Philosophy**: Users state outcomes, not requirements. Our job is to unpack EVERYTHING they need - including what they didn't say.
+
+See `.claude/rules/quality/implicit-discovery.md` for the Unsaid Framework.
+
+**The Extrapolation Process**:
+1. **Classify abstraction level** - How vague is the request? (Level 1-5)
+2. **Discover WHAT** - If abstract, determine what specifically needs to happen
+3. **Discover HOW** - Determine approach, method, patterns
+4. **Fill in unsaid** - Pre-work, during-work, post-work requirements
+5. **Decompose aggressively** - Break into concrete work items
+6. **Map dependencies** - What must happen first
+7. **Select controllers** - Based on complexity of filled-in requirements
+
+**Abstraction Handling**:
+- Level 5 ("make it better"): Must determine WHAT, WHERE, HOW, WHY
+- Level 4 ("improve X"): Must determine WHERE, HOW, metrics
+- Level 3 ("fix the login"): Must determine HOW, specifics, criteria
+- Level 2 ("add caching"): Must determine details, edge cases
+- Level 1 (full spec): Validate feasibility only
 
 ## Core Responsibilities
 
