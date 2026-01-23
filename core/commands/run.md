@@ -185,7 +185,7 @@ Task({
     10. Delegate to orchestrator with recommendations
 
     Config Files:
-    - Agent_Memory/_system/commands/run/domain_detection.yaml
+    - Agent_Memory/_system/trigger/domain_detection.yaml
     - Agent_Memory/_system/commands/run/workflow_templates.yaml
     - Agent_Memory/_system/commands/run/preflight_validation.yaml
     - Agent_Memory/_system/commands/run/workflow_analytics.yaml
@@ -317,7 +317,7 @@ TodoWrite({
 - See `core/agents/run.md` and `core/agents/orchestrator.md` for complete logic
 
 **Configuration Files**:
-- `Agent_Memory/_system/commands/run/domain_detection.yaml` - Detection rules
+- `Agent_Memory/_system/trigger/domain_detection.yaml` - Detection rules
 - `Agent_Memory/_system/commands/run/workflow_templates.yaml` - Template catalog
 - `Agent_Memory/_system/commands/run/preflight_validation.yaml` - Validation framework
 - `Agent_Memory/_system/commands/run/workflow_analytics.yaml` - Analytics config

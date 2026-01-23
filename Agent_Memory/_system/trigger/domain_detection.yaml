@@ -1,8 +1,11 @@
-# Domain Detection V2.0 Configuration
-# Enhanced context-aware domain detection with confidence scoring
-version: "2.0"
-created_at: "2026-01-16"
+# Domain Detection Configuration
+# Context-aware domain detection with confidence scoring, minimum tier 2 enforcement
 description: "Context-aware domain detection with keyword, project structure, git history, and framework detection"
+
+# CRITICAL: All requests are tier 2+ (always use specialist agents)
+minimum_tier: 2
+enforcement: strict
+reason: "All requests benefit from multi-agent specialist coverage"
 
 # DETECTION METHODS (Weighted)
 detection_methods:
@@ -190,7 +193,6 @@ detection_methods:
           confidence_boost: 0.15
 
     file_type_distribution:
-      # Analyze file types in project
       thresholds:
         - types: [".js", ".ts", ".tsx", ".jsx"]
           count_threshold: 10
@@ -308,17 +310,11 @@ detection_methods:
 intent_classification:
   description: "Classify user intent beyond domain detection"
 
-  # CRITICAL: Minimum tier is 2 for ALL intents
-  # All requests must be routed to specialist agents
-  minimum_tier: 2
-  enforcement: strict
-  reason: "All requests benefit from multi-agent specialist coverage"
-
   patterns:
     - intent: bug_fix
       keywords: [fix, bug, issue, error, broken, crash, fail, problem]
       confidence: 0.85
-      typical_tier: 2  # Minimum tier
+      typical_tier: 2
       workflow_template: bug_fix
       specialists: [developer, qa-lead]
 
@@ -340,7 +336,7 @@ intent_classification:
     - intent: question
       keywords: [how, what, why, explain, describe, tell me]
       confidence: 0.90
-      typical_tier: 2  # UPGRADED from 0 - questions deserve expert answers
+      typical_tier: 2
       workflow_template: expert_answer
       specialists: [domain-expert, researcher]
       notes: "Questions routed to domain experts for comprehensive answers"
@@ -391,7 +387,7 @@ intent_classification:
     - intent: simple_edit
       keywords: [typo, spelling, grammar, small change, quick fix, minor]
       confidence: 0.80
-      typical_tier: 2  # Even "simple" edits get specialist review
+      typical_tier: 2
       workflow_template: code_review
       specialists: [developer, reviewer]
       notes: "Even minor edits benefit from quality review"
@@ -473,7 +469,7 @@ historical_learning:
     - user_corrected_domain:
         action: boost_actual_domain
         boost_amount: 0.10
-        decay_rate: 0.95  # Decay boost over time
+        decay_rate: 0.95
 
     - workflow_failed:
         action: reduce_domain_confidence
@@ -510,28 +506,9 @@ scoring_algorithm:
 
   example:
     request: "Fix authentication bug in Next.js app"
-    keyword_score: 0.80  # "fix", "bug", "auth" match engineering
-    context_score: 0.90  # next.config.js detected
-    framework_score: 0.90  # Next.js detected
-    historical_adjustment: 0.05  # Previous similar requests succeeded
-    final_score: (0.80*0.3 + 0.90*0.4 + 0.90*0.3) + 0.05 = 0.92
+    keyword_score: 0.80
+    context_score: 0.90
+    framework_score: 0.90
+    historical_adjustment: 0.05
+    final_score: 0.92
     classification: engineering (high confidence)
-
-# VERSION HISTORY
-version_history:
-  - version: "1.0"
-    description: "Basic keyword-based detection"
-    date: "2025-12-01"
-
-  - version: "2.0"
-    description: "Context-aware detection with confidence scoring, framework detection, multi-domain support, historical learning"
-    date: "2026-01-16"
-    enhancements:
-      - Context-based detection (project structure, git history, file types)
-      - Framework-specific detection (Next.js, React, Django, etc.)
-      - Intent classification (bug fix, feature, refactor, etc.)
-      - Confidence scoring with thresholds
-      - Multi-domain workflow support
-      - Ambiguity detection and user clarification
-      - Historical learning from past workflows
-      - ML-ready structure for future enhancements
