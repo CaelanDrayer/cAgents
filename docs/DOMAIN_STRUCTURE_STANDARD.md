@@ -1,11 +1,11 @@
-# Domain Structure Standard (V7.0)
+# Domain Structure Standard (V7.5.1)
 
-**Status**: V7.0 Standard established
-**Last Updated**: 2026-01-13
+**Status**: V7.5.1 Super-Domain Standard
+**Last Updated**: 2026-01-22
 
-## V7.0 Standard Domain Structure
+## V7.5.1 Super-Domain Structure
 
-All new domains MUST follow this structure:
+All domains follow this structure:
 
 ```
 {domain}/
@@ -14,7 +14,12 @@ All new domains MUST follow this structure:
 ├── agents/
 │   ├── {agent-name}.md      # Agent definitions (with tier field)
 │   └── ...
-├── package.json             # Domain metadata (v7.0.1)
+├── config/                  # Domain-specific configs (V7.5.1+)
+│   ├── planner_config.yaml  # Controller catalog + planning templates
+│   ├── router_config.yaml   # Routing patterns
+│   ├── executor_config.yaml # Execution patterns
+│   ├── validator_config.yaml # Validation rules
+│   └── self_correct_config.yaml # Recovery patterns
 └── README.md                # Domain overview (optional)
 ```
 
@@ -27,223 +32,101 @@ All new domains MUST follow this structure:
 
 **2. `agents/{agent-name}.md`**
 - Agent definition with YAML frontmatter
-- **MUST include `tier` field** (controller, execution, or support)
+- **MUST include `tier` field** (controller, execution, or infrastructure)
 - Tools, model, description
 
-**3. `package.json`**
-- Domain version (MUST match root: v7.0.1)
-- Domain description
-- Keywords
-
-### Deprecated Structures
-
-**V2 Domain Structure** (DEPRECATED):
-```
-{domain}/
-├── .claude-plugin/
-├── agents/
-├── commands/         # ❌ DEPRECATED
-├── skills/           # ❌ DEPRECATED
-├── package.json
-└── README.md
-```
-
-**Why Deprecated**:
-- commands/ and skills/ are replaced by universal workflow agents
-- V7.0 uses agent-only structure with controller-centric coordination
-- Old structure adds maintenance overhead
+**3. `config/*.yaml` (V7.5.1)**
+- Domain-specific planner, router, executor, validator, self-correct configs
+- Use YAML anchors for shared patterns (see planner_config optimization)
 
 ---
 
-## V7.0 Canonical Domains
+## V7.5.1 Super-Domains
 
-Current official domains (from `package.json`):
+Current official super-domains:
 
-| Domain | Status | Structure | Agents |
-|--------|--------|-----------|--------|
-| **engineering** | ✅ V7.0 | agents/ only | 45 |
-| **revenue** | ✅ V7.0 | agents/ only | 40 |
-| **creative** | ✅ V7.0 | agents/ only | 18 |
-| **finance-operations** | ✅ V7.0 | agents/ only | 32 |
-| **people-culture** | ✅ V7.0 | agents/ only | 19 |
-| **customer-experience** | ✅ V7.0 | agents/ only | 18 |
-| **legal-compliance** | ✅ V7.0 | agents/ only | 14 |
-| **shared** | ✅ V7.0 | agents/ only | 33 |
-| **core** | ✅ V7.0 | agents/ only | 11 |
+| Super-Domain | Purpose | Agents | Key Controllers |
+|--------------|---------|--------|-----------------|
+| **make** | Creation | 108 | engineering-manager, architect, creative-director, game-designer |
+| **grow** | Acquisition | 37 | marketing-strategist, sales-strategist, campaign-manager |
+| **operate** | Operations | 13 | operations-manager, business-analyst, change-manager |
+| **people** | Talent | 19 | chro, hr-manager, talent-acquisition |
+| **serve** | Support & Governance | 28 | customer-success-manager, general-counsel, support-manager |
+| **shared** | Cross-domain | 14 | compliance-officer, data-scientist, quality-manager |
+| **core** | Infrastructure | 12 | orchestrator, trigger, universal-* agents |
 
-**Total**: 230 agents across 9 domains
+**Total**: 231 agents across 7 directories (5 super-domains + shared + core)
 
 ---
 
-## Legacy V2 Domains (To Be Migrated)
+## Super-Domain Details
 
-These domains use old V2 structure and should be gradually migrated:
+### Make (108 agents)
+Combines: Engineering + Creative + Product + DevOps + QA + Game Development
 
-| Domain | Status | Structure | Replacement |
-|--------|--------|-----------|-------------|
-| **business** | ⚠️ V2 | commands/skills | revenue? |
-| **hr** | ⚠️ V2 | commands/skills | people-culture |
-| **legal** | ⚠️ V2 | commands/skills | legal-compliance |
-| **marketing** | ⚠️ V2 | commands/skills | revenue |
-| **sales** | ⚠️ V2 | commands/skills | revenue |
-| **support** | ⚠️ V2 | commands/skills | customer-experience? |
-| **planning** | ⚠️ V2 | commands/skills | shared? |
-| **software** | ⚠️ V2 | commands/skills | engineering? |
+**Includes**:
+- Engineering: backend-developer, frontend-developer, architect, etc.
+- Creative: story-architect, narrative-designer, editor, etc.
+- Product: product-owner, project-manager, etc.
+- Game Dev: game-designer, level-designer, animator, etc.
 
-### Migration Strategy
+### Grow (37 agents)
+Combines: Marketing + Sales + Partnerships
 
-**Phase 1: Analysis** (Complete ✅)
-- Identified 8 V2 domains with commands/skills/
-- Confirmed V7.0 standard (agents only)
+**Includes**:
+- Marketing: marketing-strategist, content-marketing-manager, seo-specialist
+- Sales: sales-strategist, account-executive, sales-operations-manager
+- Growth: growth-marketer, demand-generation-manager
 
-**Phase 2: Audit** (Recommended Next)
-1. For each V2 domain:
-   - List all agents
-   - Check if agents exist in V7.0 replacement domain
-   - Identify unique agents that need migration
-   - Check for commands/skills references
+### Operate (13 agents)
+Combines: Finance + Operations + Procurement
 
-**Phase 3: Gradual Migration** (Future)
-1. **hr → people-culture**
-   - Compare agent lists
-   - Migrate unique agents
-   - Update configs
-   - Test routing
-   - Deprecate hr/
+**Includes**:
+- Operations: operations-manager, process-improvement-specialist
+- Finance: business-analyst, risk-manager
+- Supply Chain: supply-chain-manager, procurement-specialist
 
-2. **legal → legal-compliance**
-   - Same process
+### People (19 agents)
+Combines: HR + Culture + Talent Acquisition
 
-3. **sales + marketing → revenue**
-   - Merge agents into revenue
-   - Update routing keywords
-   - Test multi-domain routing
+**Includes**:
+- HR: chro, hr-business-partner, hr-operations-manager
+- Talent: recruiter, talent-acquisition-manager
+- Development: learning-and-development-manager
 
-4. **Others**
-   - business, support, planning, software
-   - Determine canonical V7.0 replacement
-   - Migrate systematically
+### Serve (28 agents)
+Combines: Customer Experience + Legal + Compliance + Support
 
-**Phase 4: Cleanup**
-- Move deprecated domains to archive/
-- Update all references
-- Update documentation
+**Includes**:
+- Support: support-manager, customer-support-rep, technical-support-engineer
+- Legal: general-counsel, legal-analyst, contracts-manager
+- Compliance: compliance-manager, privacy-officer
+
+---
+
+## Historical Note
+
+**V7.0 Domain Names** (Deprecated):
+The following domain names were used in V7.0 and have been consolidated into super-domains:
+- engineering → make
+- revenue → grow
+- creative → make
+- finance-operations → operate
+- people-culture → people
+- customer-experience → serve
+- legal-compliance → serve
 
 ---
 
 ## Creating New Domains
 
-Follow V7.0 standard structure:
-
-### Step 1: Create Directory Structure
-
-```bash
-mkdir -p {domain}/.claude-plugin
-mkdir -p {domain}/agents
-```
-
-### Step 2: Create package.json
-
-```json
-{
-  "name": "@cagents/{domain}",
-  "version": "7.0.1",
-  "description": "{Domain} agents for cAgents",
-  "keywords": ["{domain}", "agents", "v7.0"]
-}
-```
-
-### Step 3: Create plugin.json
-
-```json
-{
-  "name": "{domain}",
-  "version": "7.0.1",
-  "agents": [
-    "{domain}:{agent-name}"
-  ]
-}
-```
-
-### Step 4: Create Agents
-
-Each agent file must include:
-
-```markdown
----
-name: {agent-name}
-tier: controller|execution|support
-description: Agent description
-tools: Read, Write, Grep, Glob, Edit
-model: sonnet|opus|haiku
----
-
-# Agent prompt content
-```
-
-### Step 5: Create Domain Configs
-
-Create 5 config files in `Agent_Memory/_system/domains/{domain}/`:
-1. `router_config.yaml` - Tier classification
-2. `planner_config.yaml` - Objectives + controller_catalog
-3. `executor_config.yaml` - Execution monitoring
-4. `validator_config.yaml` - Quality gates
-5. `self_correct_config.yaml` - Recovery patterns
-
-### Step 6: Register Domain
-
-Update root `package.json`:
-```json
-"domains": [
-  "existing-domain",
-  "{new-domain}"
-]
-```
-
-Update root `.claude-plugin/plugin.json` to include new domain.
+See CLAUDE.md "Creating Domains" section for instructions on:
+1. Creating 5 config files
+2. Creating controller_catalog in planner_config.yaml
+3. Creating controller and execution agents
+4. Creating plugin manifest
 
 ---
 
-## Validation Checklist
-
-Before marking domain complete:
-
-- [ ] Directory structure matches V7.0 standard (agents/ only, NO commands/skills/)
-- [ ] All agents have `tier` field in frontmatter
-- [ ] package.json version is 7.0.1
-- [ ] plugin.json lists all agents
-- [ ] Domain registered in root package.json
-- [ ] 5 domain configs created in Agent_Memory/_system/domains/
-- [ ] Domain tested with sample instruction
-- [ ] Documentation updated
-
----
-
-## Current Status
-
-**V7.0 Standard Established**: ✅
-- 9 domains follow V7.0 structure
-- 230 agents with tier fields
-- Agent-only structure (no commands/skills)
-
-**Legacy V2 Domains**: ⚠️
-- 8 domains still use V2 structure
-- Gradual migration recommended
-- No immediate removal (preserve functionality)
-
-**Consolidated**: ✅
-- finance + operations → finance-operations (17 + 15 agents)
-- Zero duplication in finance-operations
-
-**Next Steps**:
-1. Audit V2 domains for unique agents
-2. Plan migration for hr → people-culture
-3. Plan migration for legal → legal-compliance
-4. Determine revenue consolidation strategy (sales + marketing)
-5. Archive V2 domains after migration complete
-
----
-
-**Version**: V7.0.1
-**Standard Status**: Official
-**Compliance**: 9 of 17 domains (53%)
+**Version**: V7.5.1
+**Previous**: V7.0.1 (deprecated domain names)

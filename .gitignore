@@ -72,5 +72,8 @@ documentation/temp/
 CLAUDE.local.md
 *.local.md
 
+# Claude Code sessions (runtime data)
+.claude/sessions/
+
 # Python virtual environment
 .venv/

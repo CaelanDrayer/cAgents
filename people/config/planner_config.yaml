@@ -1,15 +1,18 @@
 super_domain: people
 description: Planning configuration for PEOPLE super-domain
 
+# Shared questions used by all controllers in this domain
+shared_questions: &people_questions
+  - "What are the current team dynamics and gaps?"
+  - "What are the cultural considerations?"
+  - "What are the retention and engagement metrics?"
+
 controller_catalog:
   tier_4:
     - name: chro
       agent_path: people/agents/chro.md
       coordination_style: question_based
-      typical_questions:
-        - "What are the current team dynamics and gaps?"
-        - "What are the cultural considerations?"
-        - "What are the retention and engagement metrics?"
+      typical_questions: *people_questions
       use_when:
         - "Strategic people vision needed"
         - "Workforce planning required"
@@ -18,6 +21,7 @@ controller_catalog:
         - "Major HR transformations"
       complexity: tier_4
 
+# Templates inherited from base - see Agent_Memory/_system/templates/base_planner_config.yaml
 objectives_templates:
   default:
     - "Implement {feature} in people domain"

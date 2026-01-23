@@ -443,8 +443,8 @@ See CLAUDE.md for complete /optimize documentation.
 ## Getting Help
 
 - **Full Architecture**: See `CLAUDE.md` for complete system documentation
-- **V5.0 Workflows**: See `docs/V5_WORKFLOW_EXAMPLES.md` for tier 2, 3, 4 examples
-- **V5.0 Migration**: See `docs/V5_MIGRATION_GUIDE.md` for upgrade guide
+- **Getting Started**: See `docs/GETTING_STARTED.md` for quick start guide
+- **Architecture**: See `docs/ARCHITECTURE.md` for architecture design
 
 ---
 

@@ -1,15 +1,18 @@
 super_domain: operate
 description: Planning configuration for OPERATE super-domain
 
+# Shared questions used by all controllers in this domain
+shared_questions: &operate_questions
+  - "What are the current operational metrics?"
+  - "What are the efficiency bottlenecks?"
+  - "What are the compliance requirements?"
+
 controller_catalog:
   tier_2:
     - name: business-analyst
       agent_path: operate/agents/business-analyst.md
       coordination_style: question_based
-      typical_questions:
-        - "What are the current operational metrics?"
-        - "What are the efficiency bottlenecks?"
-        - "What are the compliance requirements?"
+      typical_questions: *operate_questions
       use_when:
         - "Requirements gathering needed"
         - "Process analysis required"
@@ -20,10 +23,7 @@ controller_catalog:
     - name: change-manager
       agent_path: operate/agents/change-manager.md
       coordination_style: question_based
-      typical_questions:
-        - "What are the current operational metrics?"
-        - "What are the efficiency bottlenecks?"
-        - "What are the compliance requirements?"
+      typical_questions: *operate_questions
       use_when:
         - "Organizational change planning"
         - "Transformation initiatives"
@@ -34,10 +34,7 @@ controller_catalog:
     - name: operations-manager
       agent_path: operate/agents/operations-manager.md
       coordination_style: question_based
-      typical_questions:
-        - "What are the current operational metrics?"
-        - "What are the efficiency bottlenecks?"
-        - "What are the compliance requirements?"
+      typical_questions: *operate_questions
       use_when:
         - "Operations optimization needed"
         - "Process management required"
@@ -48,10 +45,7 @@ controller_catalog:
     - name: supply-chain-manager
       agent_path: operate/agents/supply-chain-manager.md
       coordination_style: question_based
-      typical_questions:
-        - "What are the current operational metrics?"
-        - "What are the efficiency bottlenecks?"
-        - "What are the compliance requirements?"
+      typical_questions: *operate_questions
       use_when:
         - "Supply chain optimization"
         - "Inventory management needed"
@@ -59,6 +53,7 @@ controller_catalog:
         - "Logistics and distribution"
       complexity: tier_2
 
+# Templates inherited from base - see Agent_Memory/_system/templates/base_planner_config.yaml
 objectives_templates:
   default:
     - "Implement {feature} in operate domain"

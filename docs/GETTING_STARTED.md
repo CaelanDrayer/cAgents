@@ -1,4 +1,4 @@
-# Getting Started with cAgents V7.0
+# Getting Started with cAgents V7.5.1
 
 Quick start guide for the cAgents universal multi-domain agent system.
 
@@ -200,11 +200,11 @@ Bash utilities for programmatic access:
 ## Next Steps
 
 1. Read [CLAUDE.md](../CLAUDE.md) for full architecture details
-2. Explore [V5_ARCHITECTURE.md](V5_ARCHITECTURE.md) for V7.0 design
+2. Explore [ARCHITECTURE.md](ARCHITECTURE.md) for architecture design
 3. Check [workflow_agent_interactions.md](../workflow_agent_interactions.md) for patterns
 4. Review domain-specific agents in `{domain}/agents/`
 
 ---
 
-**Version**: 7.0.0
+**Version**: 7.5.1
 **Questions?** Check the troubleshooting guide or explore the codebase.

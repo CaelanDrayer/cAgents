@@ -1,15 +1,18 @@
 super_domain: serve
 description: Planning configuration for SERVE super-domain
 
+# Shared questions used by all controllers in this domain
+shared_questions: &serve_questions
+  - "What are the customer pain points?"
+  - "What are the service level requirements?"
+  - "What are the support/legal constraints?"
+
 controller_catalog:
   tier_2:
     - name: legal-operations-manager
       agent_path: serve/agents/legal-operations-manager.md
       coordination_style: question_based
-      typical_questions:
-        - "What are the customer pain points?"
-        - "What are the service level requirements?"
-        - "What are the support/legal constraints?"
+      typical_questions: *serve_questions
       use_when:
         - "Legal department operations"
         - "Legal spend management"
@@ -20,10 +23,7 @@ controller_catalog:
     - name: support-operations-manager
       agent_path: serve/agents/support-operations-manager.md
       coordination_style: question_based
-      typical_questions:
-        - "What are the customer pain points?"
-        - "What are the service level requirements?"
-        - "What are the support/legal constraints?"
+      typical_questions: *serve_questions
       use_when:
         - "Support process optimization"
         - "Tool implementation needed"
@@ -35,10 +35,7 @@ controller_catalog:
     - name: general-counsel
       agent_path: serve/agents/general-counsel.md
       coordination_style: question_based
-      typical_questions:
-        - "What are the customer pain points?"
-        - "What are the service level requirements?"
-        - "What are the support/legal constraints?"
+      typical_questions: *serve_questions
       use_when:
         - "High-stakes legal decisions"
         - "Executive legal counsel"
@@ -46,6 +43,7 @@ controller_catalog:
         - "Crisis management"
       complexity: tier_4
 
+# Templates inherited from base - see Agent_Memory/_system/templates/base_planner_config.yaml
 objectives_templates:
   default:
     - "Implement {feature} in serve domain"

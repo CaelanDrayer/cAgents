@@ -1,0 +1,59 @@
+# My cAgents Development Preferences
+
+> Copy this file to `CLAUDE.local.md` and customize for your local environment.
+> CLAUDE.local.md is git-ignored and won't be committed.
+
+## Local Environment
+
+```
+# Development servers
+Dev server: http://localhost:3000
+API server: http://localhost:8080
+Claude Code server: http://localhost:52125
+```
+
+## Personal Shortcuts
+
+- Prefer `pnpm` over `npm` for package management
+- Use functional components over class components
+- Prefer Playwright over Cypress for E2E tests
+- Use 2-space indentation
+
+## Test Data
+
+```yaml
+# Test instruction IDs for local testing
+test_instruction: inst_20260122_001
+test_super_domain: make
+test_controller: engineering-manager
+
+# Test session IDs
+test_run_session: run_20260122_100000
+test_optimize_session: optimize_20260122_100000
+```
+
+## Preferred Tools
+
+- Editor: VS Code with Claude Code extension
+- Terminal: iTerm2 / Windows Terminal
+- Git UI: GitKraken / lazygit
+
+## Local Overrides
+
+```yaml
+# Override default safety levels
+default_safety_level: medium
+
+# Override parallel execution limits
+max_parallel_agents: 5
+
+# Override validation strictness
+validation_level: standard
+```
+
+## Notes
+
+Add any personal notes or reminders here:
+- [ ] Remember to check Agent_Memory/sessions/ for debugging
+- [ ] Use /optimize --dry-run before applying changes
+- [ ] Check docs/GETTING_STARTED.md for workflow patterns

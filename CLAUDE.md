@@ -44,8 +44,6 @@ Core architecture and development guidance for cAgents.
 - `TOKEN_MIGRATION_SUMMARY.md` - Token optimization migration details
 - `WORKFLOW_EVALUATION_FIXES.md` - Workflow issue resolutions
 - `ARCHITECTURE.md` - Architecture design
-- `MIGRATION_GUIDE.md` - Migration guide
-- `WORKFLOW_EXAMPLES.md` - Tier 2, 3, 4 reference implementations
 
 **Root Documentation** (exceptions):
 - `workflow_agent_interactions.md` - Agent interaction patterns (referenced throughout)
@@ -78,18 +76,20 @@ cAgents/
 │       ├── core/
 │       │   ├── orchestration.md     # Workflow orchestration patterns
 │       │   ├── controllers.md       # Controller coordination guidelines
-│       │   └── execution.md         # Execution agent patterns
+│       │   ├── execution.md         # Execution agent patterns
+│       │   └── shared-questions.md  # Universal controller questions
 │       ├── domains/
-│       │   ├── make.md              # Make super-domain specifics
+│       │   ├── engineering.md       # Engineering workflows and agents
 │       │   ├── grow.md              # Grow super-domain specifics
-│       │   └── operate.md           # Operate super-domain specifics
+│       │   ├── operate.md           # Operate super-domain specifics
+│       │   ├── people.md            # People super-domain specifics
+│       │   └── serve.md             # Serve super-domain specifics
 │       ├── memory/
-│       │   ├── agent-memory.md      # Agent_Memory/ structure and usage
-│       │   └── context-mgmt.md      # Context handling best practices
+│       │   └── agent-memory.md      # Agent_Memory/ structure and usage
 │       └── quality/
-│           ├── testing.md           # Testing conventions
-│           ├── validation.md        # Validation requirements
-│           └── completion.md        # Task completion protocol
+│           ├── completion.md           # Task completion protocol
+│           ├── validation-framework.md # End-to-end traceability
+│           └── implicit-discovery.md   # Handling abstract requests
 └── CLAUDE.local.md                  # Your local preferences (git-ignored)
 ```
 
@@ -832,9 +832,7 @@ cAgents/
 │   ├── agents/              # Customer experience, legal, compliance, support
 │   └── .claude-plugin/      # Serve manifest
 ├── docs/                    # Project documentation
-│   ├── ARCHITECTURE.md      # Architecture design
-│   ├── MIGRATION_GUIDE.md   # Migration guide
-│   └── WORKFLOW_EXAMPLES.md # Tier 2, 3, 4 examples
+│   └── ARCHITECTURE.md      # Architecture design
 ├── .claude/                 # Memory system
 │   ├── CLAUDE.md            # Main project memory (symlink to root)
 │   └── rules/               # Modular rules

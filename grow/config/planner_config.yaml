@@ -1,15 +1,18 @@
 super_domain: grow
 description: Planning configuration for GROW super-domain
 
+# Shared questions used by all controllers in this domain
+shared_questions: &grow_questions
+  - "What are the current campaign/sales metrics?"
+  - "What is the target audience and positioning?"
+  - "What are the conversion bottlenecks?"
+
 controller_catalog:
   tier_2:
     - name: creative-director
       agent_path: grow/agents/creative-director.md
       coordination_style: question_based
-      typical_questions:
-        - "What are the current campaign/sales metrics?"
-        - "What is the target audience and positioning?"
-        - "What are the conversion bottlenecks?"
+      typical_questions: *grow_questions
       use_when:
         - "Creative strategy and concepts needed"
         - "Campaign creative execution"
@@ -20,10 +23,7 @@ controller_catalog:
     - name: marketing-strategist
       agent_path: grow/agents/marketing-strategist.md
       coordination_style: question_based
-      typical_questions:
-        - "What are the current campaign/sales metrics?"
-        - "What is the target audience and positioning?"
-        - "What are the conversion bottlenecks?"
+      typical_questions: *grow_questions
       use_when:
         - "Marketing strategy development"
         - "Competitive analysis needed"
@@ -34,10 +34,7 @@ controller_catalog:
     - name: product-marketing-manager
       agent_path: grow/agents/product-marketing-manager.md
       coordination_style: question_based
-      typical_questions:
-        - "What are the current campaign/sales metrics?"
-        - "What is the target audience and positioning?"
-        - "What are the conversion bottlenecks?"
+      typical_questions: *grow_questions
       use_when:
         - "Product launch planning"
         - "Product positioning and messaging"
@@ -48,10 +45,7 @@ controller_catalog:
     - name: sales-strategist
       agent_path: grow/agents/sales-strategist.md
       coordination_style: question_based
-      typical_questions:
-        - "What are the current campaign/sales metrics?"
-        - "What is the target audience and positioning?"
-        - "What are the conversion bottlenecks?"
+      typical_questions: *grow_questions
       use_when:
         - "GTM strategy design"
         - "Market segmentation and ICP definition"
@@ -63,10 +57,7 @@ controller_catalog:
     - name: cro
       agent_path: grow/agents/cro.md
       coordination_style: question_based
-      typical_questions:
-        - "What are the current campaign/sales metrics?"
-        - "What is the target audience and positioning?"
-        - "What are the conversion bottlenecks?"
+      typical_questions: *grow_questions
       use_when:
         - "Executive revenue strategy"
         - "GTM planning and execution"
@@ -74,6 +65,7 @@ controller_catalog:
         - "Cross-functional alignment"
       complexity: tier_4
 
+# Templates inherited from base - see Agent_Memory/_system/templates/base_planner_config.yaml
 objectives_templates:
   default:
     - "Implement {feature} in grow domain"

@@ -1,15 +1,18 @@
 super_domain: make
 description: Planning configuration for MAKE super-domain
 
+# Shared questions used by all controllers in this domain
+shared_questions: &make_questions
+  - "What is the current implementation of this feature?"
+  - "What are the technical constraints we need to consider?"
+  - "What are the key risks and dependencies?"
+
 controller_catalog:
   tier_2:
     - name: architect
       agent_path: make/agents/architect.md
       coordination_style: question_based
-      typical_questions:
-        - "What is the current implementation of this feature?"
-        - "What are the technical constraints we need to consider?"
-        - "What are the key risks and dependencies?"
+      typical_questions: *make_questions
       use_when:
         - "System design questions"
         - "Architectural decisions needed"
@@ -20,10 +23,7 @@ controller_catalog:
     - name: backend-lead
       agent_path: make/agents/backend-lead.md
       coordination_style: question_based
-      typical_questions:
-        - "What is the current implementation of this feature?"
-        - "What are the technical constraints we need to consider?"
-        - "What are the key risks and dependencies?"
+      typical_questions: *make_questions
       use_when:
         - "Backend work breakdown needed"
         - "API design leadership"
@@ -34,10 +34,7 @@ controller_catalog:
     - name: data-lead
       agent_path: make/agents/data-lead.md
       coordination_style: question_based
-      typical_questions:
-        - "What is the current implementation of this feature?"
-        - "What are the technical constraints we need to consider?"
-        - "What are the key risks and dependencies?"
+      typical_questions: *make_questions
       use_when:
         - "Database architecture needed"
         - "Schema design and data modeling"
@@ -48,10 +45,7 @@ controller_catalog:
     - name: devops-lead
       agent_path: make/agents/devops-lead.md
       coordination_style: question_based
-      typical_questions:
-        - "What is the current implementation of this feature?"
-        - "What are the technical constraints we need to consider?"
-        - "What are the key risks and dependencies?"
+      typical_questions: *make_questions
       use_when:
         - "Infrastructure provisioning needed"
         - "CI/CD pipeline management"
@@ -62,10 +56,7 @@ controller_catalog:
     - name: editor
       agent_path: make/agents/editor.md
       coordination_style: question_based
-      typical_questions:
-        - "What is the current implementation of this feature?"
-        - "What are the technical constraints we need to consider?"
-        - "What are the key risks and dependencies?"
+      typical_questions: *make_questions
       use_when:
         - "Creative editing needed"
         - "Structural editing required"
@@ -76,10 +67,7 @@ controller_catalog:
     - name: engineering-manager
       agent_path: make/agents/engineering-manager.md
       coordination_style: question_based
-      typical_questions:
-        - "What is the current implementation of this feature?"
-        - "What are the technical constraints we need to consider?"
-        - "What are the key risks and dependencies?"
+      typical_questions: *make_questions
       use_when:
         - "Strategic engineering oversight needed"
         - "Risk assessment required"
@@ -90,10 +78,7 @@ controller_catalog:
     - name: frontend-lead
       agent_path: make/agents/frontend-lead.md
       coordination_style: question_based
-      typical_questions:
-        - "What is the current implementation of this feature?"
-        - "What are the technical constraints we need to consider?"
-        - "What are the key risks and dependencies?"
+      typical_questions: *make_questions
       use_when:
         - "Frontend work breakdown needed"
         - "UI/UX strategy"
@@ -104,10 +89,7 @@ controller_catalog:
     - name: product-owner
       agent_path: make/agents/product-owner.md
       coordination_style: question_based
-      typical_questions:
-        - "What is the current implementation of this feature?"
-        - "What are the technical constraints we need to consider?"
-        - "What are the key risks and dependencies?"
+      typical_questions: *make_questions
       use_when:
         - "Feature planning and prioritization"
         - "Scope decisions needed"
@@ -118,10 +100,7 @@ controller_catalog:
     - name: program-manager
       agent_path: make/agents/program-manager.md
       coordination_style: question_based
-      typical_questions:
-        - "What is the current implementation of this feature?"
-        - "What are the technical constraints we need to consider?"
-        - "What are the key risks and dependencies?"
+      typical_questions: *make_questions
       use_when:
         - "Multi-project programs"
         - "Program-level coordination"
@@ -132,10 +111,7 @@ controller_catalog:
     - name: project-manager
       agent_path: make/agents/project-manager.md
       coordination_style: question_based
-      typical_questions:
-        - "What is the current implementation of this feature?"
-        - "What are the technical constraints we need to consider?"
-        - "What are the key risks and dependencies?"
+      typical_questions: *make_questions
       use_when:
         - "Individual project planning"
         - "Scope definition needed"
@@ -146,10 +122,7 @@ controller_catalog:
     - name: qa-lead
       agent_path: make/agents/qa-lead.md
       coordination_style: question_based
-      typical_questions:
-        - "What is the current implementation of this feature?"
-        - "What are the technical constraints we need to consider?"
-        - "What are the key risks and dependencies?"
+      typical_questions: *make_questions
       use_when:
         - "Test strategy needed"
         - "QA team management"
@@ -160,10 +133,7 @@ controller_catalog:
     - name: security-lead
       agent_path: make/agents/security-lead.md
       coordination_style: question_based
-      typical_questions:
-        - "What is the current implementation of this feature?"
-        - "What are the technical constraints we need to consider?"
-        - "What are the key risks and dependencies?"
+      typical_questions: *make_questions
       use_when:
         - "Security reviews needed"
         - "Threat modeling required"
@@ -174,10 +144,7 @@ controller_catalog:
     - name: story-architect
       agent_path: make/agents/story-architect.md
       coordination_style: question_based
-      typical_questions:
-        - "What is the current implementation of this feature?"
-        - "What are the technical constraints we need to consider?"
-        - "What are the key risks and dependencies?"
+      typical_questions: *make_questions
       use_when:
         - "Story structure design"
         - "Plot outlines needed"
@@ -188,10 +155,7 @@ controller_catalog:
     - name: strategic-planner
       agent_path: make/agents/strategic-planner.md
       coordination_style: question_based
-      typical_questions:
-        - "What is the current implementation of this feature?"
-        - "What are the technical constraints we need to consider?"
-        - "What are the key risks and dependencies?"
+      typical_questions: *make_questions
       use_when:
         - "Long-term strategic planning"
         - "Vision development"
@@ -202,10 +166,7 @@ controller_catalog:
     - name: tech-lead
       agent_path: make/agents/tech-lead.md
       coordination_style: question_based
-      typical_questions:
-        - "What is the current implementation of this feature?"
-        - "What are the technical constraints we need to consider?"
-        - "What are the key risks and dependencies?"
+      typical_questions: *make_questions
       use_when:
         - "Delivery leadership needed"
         - "Team coordination required"
@@ -217,10 +178,7 @@ controller_catalog:
     - name: cco
       agent_path: make/agents/cco.md
       coordination_style: question_based
-      typical_questions:
-        - "What is the current implementation of this feature?"
-        - "What are the technical constraints we need to consider?"
-        - "What are the key risks and dependencies?"
+      typical_questions: *make_questions
       use_when:
         - "Tier 3-4 creative projects"
         - "Major creative decisions"
@@ -231,10 +189,7 @@ controller_catalog:
     - name: cpo
       agent_path: make/agents/cpo.md
       coordination_style: question_based
-      typical_questions:
-        - "What is the current implementation of this feature?"
-        - "What are the technical constraints we need to consider?"
-        - "What are the key risks and dependencies?"
+      typical_questions: *make_questions
       use_when:
         - "Strategic planning oversight"
         - "Complex multi-domain planning"
@@ -245,10 +200,7 @@ controller_catalog:
     - name: vp-engineering
       agent_path: make/agents/vp-engineering.md
       coordination_style: question_based
-      typical_questions:
-        - "What is the current implementation of this feature?"
-        - "What are the technical constraints we need to consider?"
-        - "What are the key risks and dependencies?"
+      typical_questions: *make_questions
       use_when:
         - "Engineering org management"
         - "Team building needed"
@@ -260,10 +212,7 @@ controller_catalog:
     - name: ceo
       agent_path: make/agents/ceo.md
       coordination_style: question_based
-      typical_questions:
-        - "What is the current implementation of this feature?"
-        - "What are the technical constraints we need to consider?"
-        - "What are the key risks and dependencies?"
+      typical_questions: *make_questions
       use_when:
         - "Strategic vision and direction"
         - "Major business decisions"
@@ -274,10 +223,7 @@ controller_catalog:
     - name: cfo
       agent_path: make/agents/cfo.md
       coordination_style: question_based
-      typical_questions:
-        - "What is the current implementation of this feature?"
-        - "What are the technical constraints we need to consider?"
-        - "What are the key risks and dependencies?"
+      typical_questions: *make_questions
       use_when:
         - "Financial strategy and planning"
         - "Budget approvals needed"
@@ -288,10 +234,7 @@ controller_catalog:
     - name: cto
       agent_path: make/agents/cto.md
       coordination_style: question_based
-      typical_questions:
-        - "What is the current implementation of this feature?"
-        - "What are the technical constraints we need to consider?"
-        - "What are the key risks and dependencies?"
+      typical_questions: *make_questions
       use_when:
         - "Technology strategy and vision"
         - "Major architecture decisions"
@@ -299,6 +242,7 @@ controller_catalog:
         - "Engineering excellence"
       complexity: tier_4
 
+# Templates inherited from base - see Agent_Memory/_system/templates/base_planner_config.yaml
 objectives_templates:
   default:
     - "Implement {feature} in make domain"
