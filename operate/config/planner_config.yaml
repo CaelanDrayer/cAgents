@@ -53,15 +53,19 @@ controller_catalog:
         - "Logistics and distribution"
       complexity: tier_2
 
-# Templates inherited from base - see Agent_Memory/_system/templates/base_planner_config.yaml
+# Templates for objective generation
 objectives_templates:
   default:
     - "Implement {feature} in operate domain"
     - "Analyze {data} for operate operations"
     - "Create {deliverable} for operate use case"
 
+# Success criteria - references shared template
+# See: Agent_Memory/_system/templates/shared_success_criteria.yaml for full patterns
 success_criteria_patterns:
-  default:
-    - "All objectives met with verified evidence"
-    - "All outputs exist and are production-quality"
-    - "No regressions in existing functionality"
+  _shared: "@Agent_Memory/_system/templates/shared_success_criteria.yaml"
+  # Domain-specific additions for operate super-domain
+  operate_specific:
+    - "Financial accuracy meets audit standards"
+    - "Operational efficiency metrics improved"
+    - "Compliance requirements satisfied"

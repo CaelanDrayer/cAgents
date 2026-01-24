@@ -1,11 +1,21 @@
 # Domain Detection Configuration
 # Context-aware domain detection with confidence scoring, minimum tier 2 enforcement
+# Updated for V7.5+ super-domain structure
 description: "Context-aware domain detection with keyword, project structure, git history, and framework detection"
 
 # CRITICAL: All requests are tier 2+ (always use specialist agents)
 minimum_tier: 2
 enforcement: strict
 reason: "All requests benefit from multi-agent specialist coverage"
+
+# V7.5+ SUPER-DOMAIN MAPPING
+# 5 super-domains: make, grow, operate, people, serve
+super_domains:
+  make: "Creation capability (engineering, creative, product, game development)"
+  grow: "Acquisition capability (marketing, sales)"
+  operate: "Operations capability (finance, operations)"
+  people: "Talent capability (HR, culture)"
+  serve: "Support & Governance (customer experience, legal, compliance)"
 
 # DETECTION METHODS (Weighted)
 detection_methods:
@@ -14,32 +24,29 @@ detection_methods:
     weight: 0.3
     description: "Traditional keyword matching from user request"
     patterns:
-      engineering:
-        keywords: [code, fix, bug, api, test, deploy, refactor, implement, build, debug, error, crash, feature, backend, frontend, database, server]
+      # MAKE super-domain (engineering + creative + product)
+      make:
+        keywords: [code, fix, bug, api, test, deploy, refactor, implement, build, debug, error, crash, feature, backend, frontend, database, server, story, novel, character, write, plot, chapter, scene, dialogue, narrative, worldbuilding, fiction, poem, prose, wording, rewrite, rephrase, copy, text improvement, edit text, revise, polish, copywriting, tone, phrasing, product, design, ux, ui, game, level, graphics, animation, audio]
         confidence_boost: 0.15
 
-      creative:
-        keywords: [story, novel, character, write, plot, chapter, scene, dialogue, narrative, worldbuilding, fiction, poem, prose, wording, rewrite, rephrase, copy, text improvement, edit text, revise, polish, copywriting, tone, phrasing]
+      # GROW super-domain (marketing + sales)
+      grow:
+        keywords: [sales, forecast, pipeline, revenue, deal, CRM, marketing, campaign, launch, content, brand, SEO, demand, conversion, leads, acquisition, funnel, growth]
         confidence_boost: 0.15
 
-      revenue:
-        keywords: [sales, forecast, pipeline, revenue, deal, CRM, marketing, campaign, launch, content, brand, SEO, demand, conversion]
+      # OPERATE super-domain (finance + operations)
+      operate:
+        keywords: [budget, expense, ROI, P&L, cashflow, FP&A, financial, cost, spending, profit, loss, accounting, operations, supply chain, inventory, logistics, procurement]
         confidence_boost: 0.15
 
-      finance-operations:
-        keywords: [budget, expense, ROI, P&L, cashflow, FP&A, financial, cost, spending, profit, loss, accounting]
+      # PEOPLE super-domain (HR + culture)
+      people:
+        keywords: [recruit, onboard, talent, compensation, culture, HR, hiring, employee, team, performance, feedback, training, development, engagement]
         confidence_boost: 0.15
 
-      people-culture:
-        keywords: [recruit, onboard, talent, compensation, culture, HR, hiring, employee, team, performance, feedback]
-        confidence_boost: 0.15
-
-      customer-experience:
-        keywords: [customer, support, ticket, help desk, SLA, satisfaction, feedback, retention, churn, service]
-        confidence_boost: 0.15
-
-      legal-compliance:
-        keywords: [contract, compliance, IP, policy, regulatory, legal, GDPR, audit, risk, governance]
+      # SERVE super-domain (customer experience + legal + compliance)
+      serve:
+        keywords: [customer, support, ticket, help desk, SLA, satisfaction, feedback, retention, churn, service, contract, compliance, IP, policy, regulatory, legal, GDPR, audit, risk, governance]
         confidence_boost: 0.15
 
       universal:
@@ -52,9 +59,9 @@ detection_methods:
     description: "Project structure, files, and configuration analysis"
 
     project_structure:
-      # Package managers and config files
+      # Package managers and config files -> MAKE
       - file: package.json
-        indicates: [engineering, product]
+        indicates: [make]
         confidence_boost: 0.20
         check_contents: true
         patterns:
@@ -72,7 +79,7 @@ detection_methods:
             boost: 0.10
 
       - file: requirements.txt
-        indicates: [engineering]
+        indicates: [make]
         confidence_boost: 0.20
         check_contents: true
         patterns:
@@ -87,7 +94,7 @@ detection_methods:
             boost: 0.10
 
       - file: composer.json
-        indicates: [engineering]
+        indicates: [make]
         confidence_boost: 0.20
         check_contents: true
         patterns:
@@ -96,12 +103,12 @@ detection_methods:
             boost: 0.10
 
       - file: pom.xml
-        indicates: [engineering]
+        indicates: [make]
         confidence_boost: 0.20
         framework: java_spring
 
       - file: Gemfile
-        indicates: [engineering]
+        indicates: [make]
         confidence_boost: 0.20
         check_contents: true
         patterns:
@@ -110,58 +117,58 @@ detection_methods:
             boost: 0.10
 
       - file: go.mod
-        indicates: [engineering]
+        indicates: [make]
         confidence_boost: 0.20
         framework: golang
 
       - file: Cargo.toml
-        indicates: [engineering]
+        indicates: [make]
         confidence_boost: 0.20
         framework: rust
 
-      # Documentation and content
+      # Documentation and content -> MAKE (creative)
       - file: docs/
-        indicates: [universal, creative]
+        indicates: [universal, make]
         confidence_boost: 0.10
 
       - pattern: "*.md"
         count_threshold: 10
-        indicates: [creative, universal]
+        indicates: [make, universal]
         confidence_boost: 0.15
 
-      # Build and deployment
+      # Build and deployment -> MAKE (engineering) + OPERATE
       - file: Dockerfile
-        indicates: [engineering, finance-operations]
+        indicates: [make, operate]
         confidence_boost: 0.15
 
       - file: docker-compose.yml
-        indicates: [engineering, finance-operations]
+        indicates: [make, operate]
         confidence_boost: 0.15
 
       - file: terraform/
-        indicates: [engineering, finance-operations]
+        indicates: [make, operate]
         confidence_boost: 0.20
 
       - file: .github/workflows/
-        indicates: [engineering]
+        indicates: [make]
         confidence_boost: 0.15
 
-      # Marketing and sales
+      # Marketing and sales -> GROW
       - file: campaigns/
-        indicates: [revenue]
+        indicates: [grow]
         confidence_boost: 0.20
 
       - file: content/
-        indicates: [revenue, creative]
+        indicates: [grow, make]
         confidence_boost: 0.15
 
-      # Finance
+      # Finance -> OPERATE
       - pattern: "*budget*.xlsx"
-        indicates: [finance-operations]
+        indicates: [operate]
         confidence_boost: 0.25
 
       - pattern: "*forecast*.csv"
-        indicates: [finance-operations, revenue]
+        indicates: [operate, grow]
         confidence_boost: 0.20
 
     git_history:
@@ -169,49 +176,49 @@ detection_methods:
       recent_commits: 20
       analysis:
         - pattern: "fix.*auth"
-          indicates: engineering
+          indicates: make
           confidence_boost: 0.15
 
         - pattern: "add.*feature"
-          indicates: engineering
+          indicates: make
           confidence_boost: 0.12
 
         - pattern: "update.*docs"
-          indicates: [universal, creative]
+          indicates: [universal, make]
           confidence_boost: 0.10
 
         - pattern: "campaign.*"
-          indicates: revenue
+          indicates: grow
           confidence_boost: 0.15
 
         - pattern: "budget.*"
-          indicates: finance-operations
+          indicates: operate
           confidence_boost: 0.15
 
         - pattern: "hire.*|onboard.*"
-          indicates: people-culture
+          indicates: people
           confidence_boost: 0.15
 
     file_type_distribution:
       thresholds:
         - types: [".js", ".ts", ".tsx", ".jsx"]
           count_threshold: 10
-          indicates: engineering
+          indicates: make
           confidence_boost: 0.20
 
         - types: [".py"]
           count_threshold: 5
-          indicates: engineering
+          indicates: make
           confidence_boost: 0.20
 
         - types: [".md", ".txt"]
           count_threshold: 20
-          indicates: creative
+          indicates: make
           confidence_boost: 0.15
 
         - types: [".tf"]
           count_threshold: 3
-          indicates: engineering
+          indicates: make
           confidence_boost: 0.20
 
   # Method 3: Framework Detection (30% weight)
@@ -226,7 +233,7 @@ detection_methods:
           - file: next.config.mjs
           - directory: app/
           - directory: pages/
-        domains: [engineering, product]
+        domains: [make]
         confidence: 0.90
         boost_if_found: 0.25
 
@@ -235,7 +242,7 @@ detection_methods:
           - package_keyword: '"react"'
           - file_pattern: "*.jsx"
           - file_pattern: "*.tsx"
-        domains: [engineering]
+        domains: [make]
         confidence: 0.85
         boost_if_found: 0.20
 
@@ -243,7 +250,7 @@ detection_methods:
         indicators:
           - package_keyword: '"vue"'
           - file_pattern: "*.vue"
-        domains: [engineering]
+        domains: [make]
         confidence: 0.85
         boost_if_found: 0.20
 
@@ -251,7 +258,7 @@ detection_methods:
         indicators:
           - file: angular.json
           - package_keyword: '"@angular"'
-        domains: [engineering]
+        domains: [make]
         confidence: 0.90
         boost_if_found: 0.25
 
@@ -260,7 +267,7 @@ detection_methods:
           - file: manage.py
           - file: settings.py
           - package_keyword: django
-        domains: [engineering]
+        domains: [make]
         confidence: 0.90
         boost_if_found: 0.25
 
@@ -268,7 +275,7 @@ detection_methods:
         indicators:
           - package_keyword: fastapi
           - file_pattern: "*main.py"
-        domains: [engineering]
+        domains: [make]
         confidence: 0.85
         boost_if_found: 0.20
 
@@ -276,7 +283,7 @@ detection_methods:
         indicators:
           - package_keyword: flask
           - file_pattern: "app.py"
-        domains: [engineering]
+        domains: [make]
         confidence: 0.80
         boost_if_found: 0.15
 
@@ -284,7 +291,7 @@ detection_methods:
         indicators:
           - package_keyword: '"express"'
           - file_pattern: "*server.js"
-        domains: [engineering]
+        domains: [make]
         confidence: 0.80
         boost_if_found: 0.15
 
@@ -293,7 +300,7 @@ detection_methods:
           - file: Gemfile
           - gem_keyword: rails
           - file: config/routes.rb
-        domains: [engineering]
+        domains: [make]
         confidence: 0.90
         boost_if_found: 0.25
 
@@ -302,7 +309,7 @@ detection_methods:
           - file: artisan
           - file: composer.json
           - composer_keyword: laravel
-        domains: [engineering]
+        domains: [make]
         confidence: 0.90
         boost_if_found: 0.25
 
@@ -368,7 +375,7 @@ intent_classification:
       typical_tier: 2
       workflow_template: content_creation
       specialists: [copywriter, editor]
-      notes: "Routes to creative domain with copywriter/editor specialists"
+      notes: "Routes to make domain (creative) with copywriter/editor specialists"
 
     - intent: planning
       keywords: [plan, strategy, roadmap, OKR, goals, objectives]
@@ -399,23 +406,23 @@ multi_domain:
 
   patterns:
     - keywords: [GDPR, compliance, implementation]
-      domains: [legal-compliance, engineering, people-culture]
+      domains: [serve, make, people]
       confidence: 0.85
 
     - keywords: [product launch, campaign]
-      domains: [revenue, engineering, creative]
+      domains: [grow, make]
       confidence: 0.80
 
     - keywords: [employee onboarding, system access]
-      domains: [people-culture, engineering]
+      domains: [people, make]
       confidence: 0.80
 
     - keywords: [financial reporting, dashboard]
-      domains: [finance-operations, engineering]
+      domains: [operate, make]
       confidence: 0.85
 
     - keywords: [customer feedback, feature request]
-      domains: [customer-experience, engineering, product]
+      domains: [serve, make]
       confidence: 0.80
 
 # CONFIDENCE THRESHOLDS
@@ -443,7 +450,7 @@ ambiguity_detection:
       action: ask_user_confirm
 
     - conflicting_signals:
-        example: "keywords suggest engineering, project structure suggests creative"
+        example: "keywords suggest make, project structure suggests grow"
         action: ask_user_clarify
 
   user_prompt_template: |
@@ -511,4 +518,4 @@ scoring_algorithm:
     framework_score: 0.90
     historical_adjustment: 0.05
     final_score: 0.92
-    classification: engineering (high confidence)
+    classification: make (high confidence)

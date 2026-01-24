@@ -2,6 +2,68 @@
 
 Question-based delegation patterns for V7.0 controllers.
 
+## CRITICAL: Controllers NEVER Do Direct Work
+
+**Controllers are COORDINATORS, not IMPLEMENTERS.**
+
+### Enforcement Rules
+
+```yaml
+controller_enforcement:
+  # Controllers MUST use Task tool to spawn execution agents
+  required_delegation: true
+  minimum_subagents_per_objective: 2
+  self_answered_questions: 0  # NEVER answer own questions
+
+  # What controllers CAN do
+  allowed_actions:
+    - Ask questions (spawn execution agents via Task tool)
+    - Synthesize answers from specialists
+    - Create implementation task list
+    - Write coordination_log.yaml
+    - Report progress summaries
+
+  # What controllers CANNOT do
+  prohibited_actions:
+    - Write code directly
+    - Create content directly
+    - Answer their own questions
+    - Use Edit tool on implementation files
+    - Skip delegation for "simple" tasks
+```
+
+### Anti-Patterns (NEVER DO THIS)
+
+```
+# WRONG - Controller doing direct work
+Controller: "Let me fix that typo for you"
+Controller: "Here's the improved wording: ..."
+Controller: "I'll implement this change directly"
+
+# RIGHT - Controller delegating to specialists
+Controller: "Delegating to backend-developer for implementation"
+Controller: "Spawning copywriter to improve wording"
+Controller: "Asking qa-tester to verify the fix"
+```
+
+### Mandatory Delegation Flow
+
+For EVERY question, controller MUST:
+1. Formulate the question
+2. Use Task tool to spawn execution agent
+3. Wait for agent response
+4. Record answer in coordination_log.yaml
+5. Synthesize after all questions answered
+
+```javascript
+// Controller MUST do this for each question:
+Task({
+  subagent_type: "{domain}:{execution_agent}",
+  description: "Answer: {question}",
+  prompt: "Question from controller: {question}\nProvide expert answer."
+})
+```
+
 ## Controller Role
 
 Controllers are tier 2 agents that:

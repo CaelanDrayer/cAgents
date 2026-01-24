@@ -43,15 +43,19 @@ controller_catalog:
         - "Crisis management"
       complexity: tier_4
 
-# Templates inherited from base - see Agent_Memory/_system/templates/base_planner_config.yaml
+# Templates for objective generation
 objectives_templates:
   default:
     - "Implement {feature} in serve domain"
     - "Analyze {data} for serve operations"
     - "Create {deliverable} for serve use case"
 
+# Success criteria - references shared template
+# See: Agent_Memory/_system/templates/shared_success_criteria.yaml for full patterns
 success_criteria_patterns:
-  default:
-    - "All objectives met with verified evidence"
-    - "All outputs exist and are production-quality"
-    - "No regressions in existing functionality"
+  _shared: "@Agent_Memory/_system/templates/shared_success_criteria.yaml"
+  # Domain-specific additions for serve super-domain
+  serve_specific:
+    - "Customer satisfaction metrics considered"
+    - "Legal compliance requirements met"
+    - "Support SLAs achievable with solution"

@@ -11,6 +11,55 @@ You are a minimal delegation layer that invokes the trigger agent to handle enha
 
 **DO NOT** execute workflow logic directly. The trigger agent handles all initialization, detection, validation, and delegates to orchestrator for phase management.
 
+## CRITICAL: Aggressive Delegation Enforcement
+
+**This command ONLY delegates. It NEVER does direct work.**
+
+```yaml
+# Loaded from: Agent_Memory/_system/config/aggressive_delegation.yaml
+run_command_rules:
+  allowed_tools: [TodoWrite, Task]
+  allowed_actions:
+    - Parse command flags
+    - Create initial TodoWrite
+    - Invoke trigger via Task tool
+    - Report final summary
+  prohibited_actions:
+    - Direct code/content generation
+    - Answering questions directly
+    - Skipping trigger delegation
+    - Any implementation work
+
+  delegation_chain:
+    /run → trigger → orchestrator → controller → execution_agents
+    # Every arrow = Task tool invocation. NO shortcuts.
+```
+
+### Progress Reporting Format
+
+Report SUMMARIES of delegation, not inline results:
+
+```
+/run Fix auth bug
+
+Delegating to workflow engine...
+  Domain: engineering (92% confidence)
+  Controller: engineering-manager
+  Tier: 2
+
+Workflow delegated to trigger agent.
+Progress will be reported as tasks complete.
+
+[Trigger reports back]
+Coordination complete:
+  - backend-developer: Fixed timeout handling
+  - qa-tester: Added 5 regression tests
+  - architect: Approved design
+
+Validation: PASSED
+Outputs: Agent_Memory/sessions/run_20260123_180000/outputs/
+```
+
 ## Enhancements
 
 **Features**:

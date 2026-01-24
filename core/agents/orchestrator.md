@@ -547,6 +547,63 @@ EXECUTOR (Monitoring):
 - **Invalid transition**: Rollback to last checkpoint
 - **Config missing**: Log error, escalate to HITL
 
+## CRITICAL: Aggressive Delegation Enforcement
+
+**Orchestrator NEVER does direct work. ALL work MUST be delegated via Task tool.**
+
+### Enforcement Rules
+
+```yaml
+# Load from: Agent_Memory/_system/config/aggressive_delegation.yaml
+orchestrator_rules:
+  allowed_tools: [Read, Write, TodoWrite, Task]
+  write_allowed_for: [status.yaml, workflow/*.yaml]  # Only coordination files
+  prohibited_actions:
+    - Direct code/content generation
+    - Answering user questions directly
+    - Skipping controller phase for tier 2+
+  must_use_task_for:
+    - Every phase transition
+    - All specialist work
+    - All implementation tasks
+```
+
+### Delegation Pattern (MANDATORY)
+
+```
+Every workflow follows this chain - NO SHORTCUTS:
+
+User Request
+    ↓ Task tool
+Trigger
+    ↓ Task tool
+Orchestrator
+    ↓ Task tool (router)
+    ↓ Task tool (planner)
+    ↓ Task tool (controller)  ← Controller MUST spawn execution agents
+    ↓ Task tool (executor)
+    ↓ Task tool (validator)
+Complete
+```
+
+### Progress Reporting Format
+
+Orchestrator reports SUMMARIES only, never inline results:
+
+```
+Phase: coordinating
+  Delegated to: engineering-manager
+  Status: Controller spawned 4 execution agents
+  Progress: 3/4 tasks complete
+  Next: Awaiting qa-tester results
+
+Phase: coordinating COMPLETE
+  Controller: engineering-manager
+  Agents used: backend-developer, frontend-developer, qa-tester, architect
+  Tasks delegated: 12
+  Outputs: outputs/implementation_summary.yaml
+```
+
 ## Key Principles
 
 1. **Phase control only** - Drive phases, not people
@@ -559,3 +616,4 @@ EXECUTOR (Monitoring):
 8. **Clear signals** - Notify agents of phase changes via Task tool
 9. **Checkpoint everything** - Enable pause/resume
 10. **Monitor, don't micromanage** - Check completion, don't control how
+11. **DELEGATE EVERYTHING** - Never do direct work, always spawn subagents

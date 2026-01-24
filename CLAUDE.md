@@ -5,6 +5,7 @@ Core architecture and development guidance for cAgents.
 ## Table of Contents
 
 - [Documentation Structure](#documentation-structure)
+- [Version Management](#version-management)
 - [Memory Management](#memory-management)
 - [Project Overview](#project-overview)
 - [CRITICAL: Automatic Workflow Progression](#critical-automatic-workflow-progression)
@@ -69,9 +70,9 @@ When committing changes to this repository, you MUST increment the version in:
 **When to bump**:
 | Change Type | Bump | Example |
 |-------------|------|---------|
-| Bug fix, minor tweak | patch | 7.5.2 → 7.5.3 |
-| New feature, enhancement | minor | 7.5.3 → 7.6.0 |
-| Breaking change, major refactor | major | 7.6.0 → 8.0.0 |
+| Bug fix, minor tweak | patch | 7.5.2 -> 7.5.3 |
+| New feature, enhancement | minor | 7.5.3 -> 7.6.0 |
+| Breaking change, major refactor | major | 7.6.0 -> 8.0.0 |
 
 **Commit checklist**:
 1. Make your changes
@@ -160,9 +161,9 @@ See @docs/ARCHITECTURE.md for detailed architecture design.
 @workflow_agent_interactions.md
 
 ## Domain Configurations
-- Make: @Agent_Memory/_system/domains/make/planner_config.yaml
-- Grow: @Agent_Memory/_system/domains/grow/planner_config.yaml
-- Operate: @Agent_Memory/_system/domains/operate/planner_config.yaml
+- Make: @make/config/planner_config.yaml
+- Grow: @grow/config/planner_config.yaml
+- Operate: @operate/config/planner_config.yaml
 
 ## Personal Preferences
 @~/.claude/my-cagents-preferences.md
@@ -313,7 +314,7 @@ CLAUDE.local.md
 - Main project memory: `./CLAUDE.md` (this file)
 - Modular rules: `.claude/rules/` (14 rule files across 4 categories)
 - Agent patterns: `workflow_agent_interactions.md` (root-level exception)
-- Domain configs: `Agent_Memory/_system/domains/{domain}/*.yaml`
+- Domain configs: `{domain}/config/*.yaml` (planner_config.yaml, etc.)
 - Runtime state: `Agent_Memory/` (git-ignored)
 
 ## Project Overview
@@ -360,6 +361,38 @@ CLAUDE.local.md
 - **Production & QA** (4): game-producer, technical-artist, qa-tester-games, localization-lead
 - **Specialized** (3): monetization-designer, live-ops-specialist, accessibility-game-designer
 
+## CRITICAL: Aggressive Delegation
+
+**Core Principle**: /run command and all coordination agents NEVER do direct work. ALL work is delegated to subagents via Task tool.
+
+**Minimum Tier**: Always tier 2+ (controller coordination required). NO exceptions.
+
+**Delegation Chain** (every arrow = Task tool):
+```
+/run -> trigger -> orchestrator -> controller -> execution_agents
+         |           |              |              |
+      (detect)   (phases)      (questions)    (actual work)
+```
+
+**Coordination Agents** (ONLY coordinate, never implement):
+- trigger, orchestrator, universal-executor - Phase management only
+- All controllers (engineering-manager, etc.) - Ask questions, synthesize answers, delegate tasks
+
+**Execution Agents** (DO the actual work):
+- backend-developer, frontend-developer, copywriter, qa-tester, etc.
+- Only tier 3 agents can use Edit/Write for implementation
+
+**Progress Reporting**: Coordinators report SUMMARIES only:
+```
+Delegated: Fix auth bug -> engineering-manager
+  -> backend-developer: Analyzed code (3 issues found)
+  -> qa-tester: Created regression tests (5 tests)
+  -> architect: Reviewed design (approved)
+Complete: outputs/fix_summary.yaml
+```
+
+**Config**: `Agent_Memory/_system/config/aggressive_delegation.yaml`
+
 ## CRITICAL: Automatic Workflow Progression
 
 **Core Principle**: Workflows proceed automatically through phases (routing -> planning -> coordinating -> executing -> validating) WITHOUT asking permission. See `docs/AUTOMATIC_WORKFLOW_PROGRESSION.md` for full policy.
@@ -401,7 +434,7 @@ CLAUDE.local.md
 - `task-decomposer` - Aggressive task decomposition (extrapolates all requirements from user requests)
 - `task-inventory` - CSV-based state management (60-80% context savings for large workflows)
 
-**Config Location**: `Agent_Memory/_system/domains/{domain}/*.yaml` (5 files per domain)
+**Config Location**: `{domain}/config/*.yaml` (planner_config.yaml, router_config.yaml, etc.)
 
 ## Aggressive Decomposition
 
@@ -756,7 +789,7 @@ Agent_Memory/
 │   │   ├── explore/                  # /explore command configs
 │   │   ├── review/                   # /review command configs
 │   │   └── optimize/                 # /optimize command configs
-│   └── domains/{domain}/             # Domain configs (5 files each)
+│   └── templates/                    # Shared templates (success_criteria, etc.)
 ├── _knowledge/                       # Patterns, calibration, learnings
 ├── _archive/                         # Completed sessions
 ├── _communication/                   # Agent messaging
@@ -766,6 +799,8 @@ Agent_Memory/
     ├── review_{YYYYMMDD_HHMMSS}/     # /review sessions
     └── optimize_{YYYYMMDD_HHMMSS}/   # /optimize sessions
 ```
+
+**Domain Config Location**: `{domain}/config/*.yaml` (e.g., `make/config/planner_config.yaml`)
 
 **Session ID Format**: `{command}_{YYYYMMDD}_{HHMMSS}` (consistent across all commands)
 
@@ -823,7 +858,7 @@ executes_tasks: ["implement endpoints", "write tests", ...]
 
 ## Creating Domains
 
-1. Create 5 config files: `Agent_Memory/_system/domains/{domain}/*.yaml`
+1. Create config files: `{domain}/config/planner_config.yaml` (and other configs as needed)
 2. Create controller_catalog in `planner_config.yaml`
 3. Create controller agents in `{domain}/agents/` with tier: controller
 4. Create execution agents in `{domain}/agents/` with tier: execution
@@ -845,18 +880,23 @@ cAgents/
 │   └── .claude-plugin/      # Shared manifest
 ├── make/                    # MAKE super-domain (108 agents)
 │   ├── agents/              # Engineering, creative, product, devops, qa, game development
+│   ├── config/              # Domain configs (planner_config.yaml, etc.)
 │   └── .claude-plugin/      # Make manifest
 ├── grow/                    # GROW super-domain (37 agents)
 │   ├── agents/              # Marketing, sales, partnerships
+│   ├── config/              # Domain configs
 │   └── .claude-plugin/      # Grow manifest
 ├── operate/                 # OPERATE super-domain (13 agents)
 │   ├── agents/              # Finance, operations, procurement
+│   ├── config/              # Domain configs
 │   └── .claude-plugin/      # Operate manifest
 ├── people/                  # PEOPLE super-domain (19 agents)
 │   ├── agents/              # HR, talent, culture
+│   ├── config/              # Domain configs
 │   └── .claude-plugin/      # People manifest
 ├── serve/                   # SERVE super-domain (28 agents)
 │   ├── agents/              # Customer experience, legal, compliance, support
+│   ├── config/              # Domain configs
 │   └── .claude-plugin/      # Serve manifest
 ├── docs/                    # Project documentation
 │   └── *.md                 # Implementation guides, standards, release notes
@@ -865,7 +905,7 @@ cAgents/
 ├── .claude-plugin/          # Root manifest
 └── Agent_Memory/            # Runtime state (git-ignored)
     └── _system/
-        └── domains/{domain}/*.yaml    # Domain configs
+        └── templates/       # Shared templates (success_criteria, etc.)
 ```
 
 **Root Directory Policy**: Only CLAUDE.md, README.md, and workflow_agent_interactions.md should exist in the root. All other documentation belongs in `docs/` or `archive/docs/`.
@@ -885,7 +925,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 
 **Commands**: `/run`, `/explore`, `/review`, `/optimize`, `/memory`, `/init` | **Agents**: 231 total (12 core + 14 shared + 205 domain specialists across 5 super-domains)
 **Super-Domains**: Make (108), Grow (37), Operate (13), People (19), Serve (28)
-**Key Files**: `CLAUDE.md` (this file), `.claude/rules/*.md`, `Agent_Memory/_system/domains/{domain}/*.yaml`, `Agent_Memory/sessions/{command}_{id}/workflow/decomposition.yaml`
+**Key Files**: `CLAUDE.md` (this file), `.claude/rules/*.md`, `{domain}/config/*.yaml`, `Agent_Memory/sessions/{command}_{id}/workflow/decomposition.yaml`
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+), work items with acceptance criteria, dependency-aware coordination
 
 ## Troubleshooting
@@ -913,4 +953,4 @@ See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 **Directories**: 7 (core, shared, make, grow, operate, people, serve)
 **Key Innovation**: CSV-based task inventory for large workflows + aggressive decomposition
 **Dependencies**: None (file-based, self-contained)
-**Version**: 7.5.1
+**Version**: 7.5.4

@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "7.5.3",
+  "version": "7.5.4",
   "description": "Universal multi-domain agent system with 231 specialized agents. CSV-based task inventory for large-scale workflows (60-80% context savings), batch delegation, checkpoint/resume. Features aggressive task decomposition, controller-centric question-based delegation across 5 super-domains (Make, Grow, Operate, People, Serve). Parallel execution (50x speedup), recursive workflows, comprehensive work breakdowns, dependency mapping.",
   "author": {
     "name": "CaelanDrayer",

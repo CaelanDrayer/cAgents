@@ -65,15 +65,19 @@ controller_catalog:
         - "Cross-functional alignment"
       complexity: tier_4
 
-# Templates inherited from base - see Agent_Memory/_system/templates/base_planner_config.yaml
+# Templates for objective generation
 objectives_templates:
   default:
     - "Implement {feature} in grow domain"
     - "Analyze {data} for grow operations"
     - "Create {deliverable} for grow use case"
 
+# Success criteria - references shared template
+# See: Agent_Memory/_system/templates/shared_success_criteria.yaml for full patterns
 success_criteria_patterns:
-  default:
-    - "All objectives met with verified evidence"
-    - "All outputs exist and are production-quality"
-    - "No regressions in existing functionality"
+  _shared: "@Agent_Memory/_system/templates/shared_success_criteria.yaml"
+  # Domain-specific additions for grow super-domain
+  grow_specific:
+    - "Campaign metrics meet or exceed targets"
+    - "Sales enablement content approved by stakeholders"
+    - "Marketing assets align with brand guidelines"

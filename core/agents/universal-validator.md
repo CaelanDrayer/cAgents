@@ -190,7 +190,99 @@ Before running traditional quality gates, validator MUST verify coordination qua
 
 ---
 
-### Phase 4: Implementation Tasks Validation
+### Phase 4: Delegation Compliance Validation (NEW)
+
+**Verify coordination agents delegated ALL work via Task tool**:
+
+Load enforcement config: `Agent_Memory/_system/config/aggressive_delegation.yaml`
+
+1. **Controller Delegation Compliance**:
+   ```yaml
+   for each question in questions_asked:
+     if question.delegated_to is null or empty:
+       issue: "Controller answered question directly (self-answered)"
+       severity: CRITICAL
+       action: BLOCKED (delegation pattern violated)
+       details: {
+         question: question.question_text,
+         violation: "Controllers MUST spawn execution agents via Task tool"
+       }
+
+   for each task in implementation_tasks:
+     if task.assigned_to is null or empty:
+       issue: "Implementation task not delegated"
+       severity: CRITICAL
+       action: BLOCKED (no delegation)
+     if get_agent_tier(task.assigned_to) != "execution":
+       issue: "Task assigned to non-execution agent"
+       severity: MAJOR
+       action: FIXABLE (reassign to execution agent)
+   ```
+
+2. **Delegation Count Validation**:
+   ```yaml
+   # From aggressive_delegation.yaml
+   minimum_subagents_per_objective = 2
+
+   for each objective in plan.objectives:
+     subagents_used = count_unique_agents(coordination_log, objective.id)
+     if subagents_used < minimum_subagents_per_objective:
+       issue: "Insufficient delegation for objective"
+       severity: MAJOR
+       action: FIXABLE (controller should use more specialists)
+       details: {
+         objective: objective.description,
+         subagents_used: subagents_used,
+         minimum_required: minimum_subagents_per_objective
+       }
+   ```
+
+3. **Self-Answered Question Detection**:
+   ```yaml
+   self_answered_questions = 0
+   for each question in questions_asked:
+     if question.answered_by == controller_primary:
+       self_answered_questions += 1
+       issue: "Controller answered own question"
+       severity: CRITICAL
+       action: BLOCKED (controllers NEVER answer their own questions)
+
+   # From aggressive_delegation.yaml: maximum_self_answered_questions: 0
+   if self_answered_questions > 0:
+     classification = BLOCKED
+     reason = "Controller violated delegation pattern (self-answered questions)"
+   ```
+
+4. **Direct Work Detection**:
+   ```yaml
+   # Check for anti-patterns indicating controller did direct work
+   anti_patterns:
+     - pattern: "Let me fix that directly"
+       indicates: direct_work
+     - pattern: "I'll implement this"
+       indicates: direct_work
+     - pattern: "Here's the code:"
+       indicates: code_generation
+     - pattern: "I've made the following changes:"
+       indicates: direct_changes
+
+   for each note in coordination_log.notes:
+     for each pattern in anti_patterns:
+       if note.contains(pattern):
+         issue: "Controller did direct work (anti-pattern detected)"
+         severity: CRITICAL
+         action: BLOCKED (coordination agent violated delegation rules)
+   ```
+
+**Classification**:
+- Self-answered questions > 0 → **BLOCKED** (architecture violation)
+- Direct work anti-patterns detected → **BLOCKED** (delegation violated)
+- Insufficient delegation count → **FIXABLE** (work may be valid, delegation weak)
+- All delegation metrics pass → Continue to Phase 5
+
+---
+
+### Phase 5: Implementation Tasks Validation
 
 **Verify controller created actionable implementation tasks from synthesis**:
 
@@ -244,6 +336,8 @@ Before running traditional quality gates, validator MUST verify coordination qua
 | **Coordination Completeness** | coordination_log.yaml has all required fields | CRITICAL | All required fields present |
 | **Question-Based Delegation** | Controller asked questions, got answers | CRITICAL | ≥1 question for tier 2-3, ≥5 for tier 4 |
 | **No Circular Delegation** | Controller delegated to execution agents only | CRITICAL | No controller → controller delegation |
+| **Delegation Compliance** | ALL work delegated via Task tool | CRITICAL | 0 self-answered questions, 0 direct work patterns |
+| **Minimum Subagent Usage** | Controller used sufficient specialists | MAJOR | ≥2 unique execution agents per objective |
 | **Synthesis Quality** | Synthesis addresses all objectives | MAJOR | All objectives mentioned in synthesis |
 | **Implementation Tasks** | Tasks created and align with synthesis | MAJOR | ≥3 tasks, specific, actionable |
 | **Question Limit Adherence** | Controller stayed within question limit | MINOR | questions_asked ≤ max_questions |
@@ -358,6 +452,11 @@ evidence_trace:
 - No synthesis or implementation tasks
 - Synthesis completely incoherent
 
+**Delegation Compliance BLOCKED Triggers** (from aggressive_delegation.yaml):
+- Self-answered questions > 0 (controller answered own question)
+- Direct work anti-patterns detected (controller did implementation)
+- Task not delegated to execution agent
+
 ---
 
 ## Validation Report Format
@@ -388,6 +487,15 @@ coordination_validation:
   synthesis_quality: {high/medium/low/missing}
   implementation_tasks_count: {count}
   coordination_health: PASS | FIXABLE | BLOCKED
+
+# Delegation compliance (from aggressive_delegation.yaml)
+delegation_compliance:
+  self_answered_questions: {count}  # MUST be 0
+  direct_work_patterns_detected: {count}  # MUST be 0
+  unique_subagents_used: {count}
+  minimum_subagents_required: {count}
+  delegation_compliance_status: PASS | BLOCKED
+  anti_patterns_found: []  # List of detected anti-patterns
 
   issues:
     critical:
@@ -608,6 +716,17 @@ Next: hitl
 
 ## Configuration
 
+**Delegation Enforcement** (`Agent_Memory/_system/config/aggressive_delegation.yaml`):
+```yaml
+# Loaded for delegation compliance validation
+validation_rules:
+  controller_must_delegate:
+    maximum_self_answered_questions: 0
+    minimum_subagents_per_objective: 2
+  no_direct_work:
+    prohibited_actions: [Edit, Write]  # for implementation files
+```
+
 **Validator Config** (`Agent_Memory/_system/domains/{domain}/validator_config.yaml`):
 ```yaml
 # Coordination validation config
@@ -641,6 +760,9 @@ quality_gates:
 | Synthesis missing | Controller incomplete | FIXABLE if work done, request completion |
 | Question limit exceeded | Controller over-coordinated | FIXABLE (minor), work likely usable |
 | Traditional tests fail | Code quality issues | Follow standard classification logic |
+| Self-answered questions | Controller violated delegation | BLOCKED, controller must use Task tool for ALL questions |
+| Direct work pattern detected | Controller did implementation | BLOCKED, re-run with proper delegation (escalate) |
+| Insufficient subagents | Controller delegated to too few | FIXABLE (major), verify quality then request more specialists |
 
 ---
 
