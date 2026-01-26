@@ -10,7 +10,7 @@
     {
       "name": "cagents",
       "description": "Universal multi-domain agent system with 231 specialized agents across 5 super-domains. CSV-based task inventory for large-scale workflows (60-80% context savings). Controller-centric question-based delegation architecture with parallel execution up to 50x speedup. Enhanced Claude Code hooks for safety and workflow tracking.",
-      "version": "7.5.4",
+      "version": "7.6.1",
       "author": {
         "name": "CaelanDrayer",
         "email": "caelan@caelandrayer.ca"
