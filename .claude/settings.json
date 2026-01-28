@@ -7,6 +7,11 @@
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/hooks/session/on-session-start.sh",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "node $CLAUDE_PROJECT_DIR/.claude/hooks/session-catchup.js",
+            "timeout": 5
           }
         ]
       }
@@ -29,6 +34,11 @@
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/hooks/workflow/stop-workflow.sh",
             "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "node $CLAUDE_PROJECT_DIR/.claude/hooks/verify-completion.js",
+            "timeout": 10
           }
         ]
       }
@@ -73,6 +83,11 @@
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/hooks/tools/pre-write.sh",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "node $CLAUDE_PROJECT_DIR/.claude/hooks/secret-detection.js",
+            "timeout": 5
           }
         ]
       },
@@ -94,6 +109,28 @@
           {
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/hooks/workflow/on-task-complete.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node $CLAUDE_PROJECT_DIR/.claude/hooks/pre-compact-save.js",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node $CLAUDE_PROJECT_DIR/.claude/hooks/notification.js",
             "timeout": 5
           }
         ]

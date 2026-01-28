@@ -9,8 +9,8 @@
   "plugins": [
     {
       "name": "cagents",
-      "description": "Universal multi-domain agent system with 231 specialized agents across 5 super-domains. CSV-based task inventory for large-scale workflows (60-80% context savings). Controller-centric question-based delegation architecture with parallel execution up to 50x speedup. Enhanced Claude Code hooks for safety and workflow tracking.",
-      "version": "7.6.1",
+      "description": "Universal multi-domain agent system with 231 specialized agents across 5 super-domains. V8.0 features: Claude Code hooks system (12 hook types), progressive skill disclosure (SKILL.md), 4-tier model routing (Haiku/Sonnet/Opus), comprehensive security review (20+ patterns), session management with waypoints, metrics infrastructure, evaluation framework, CI/CD scripts, and instinct-based pattern learning. CSV-based task inventory for large-scale workflows (60-80% context savings). Controller-centric question-based delegation architecture with parallel execution up to 50x speedup.",
+      "version": "8.0.0",
       "author": {
         "name": "CaelanDrayer",
         "email": "caelan@caelandrayer.ca"
