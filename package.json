@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "8.0.6",
-  "description": "cAgents V8.0 - Universal multi-domain agent system with 250 agents across 5 super-domains. Features: Claude Code hooks (12 types), progressive skill disclosure (SKILL.md), 4-tier model routing, session management, metrics infrastructure, evaluation framework, CI/CD scripts. CSV-based task inventory for large-scale workflows.",
+  "version": "8.0.7",
+  "description": "cAgents V8.0 - Universal multi-domain agent system with 233 agents across 5 super-domains. Features: Claude Code hooks (12 types), progressive skill disclosure (SKILL.md), 4-tier model routing, session management, metrics infrastructure, evaluation framework, CI/CD scripts. CSV-based task inventory for large-scale workflows.",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -41,11 +41,11 @@
   "license": "MIT",
   "architecture": "Controller-Centric Question-Based Delegation",
   "agents": {
-    "total": 250,
+    "total": 233,
     "core": 12,
     "shared": 14,
     "breakdown": {
-      "make": 108,
+      "make": 110,
       "grow": 37,
       "operate": 13,
       "people": 19,

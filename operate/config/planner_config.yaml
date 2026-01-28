@@ -55,7 +55,7 @@ controller_catalog:
 
   tier_3:
     - name: finance-manager
-      agent_path: operate/agents/finance-manager.md
+      agent_path: make/agents/finance-manager.md
       coordination_style: question_based
       typical_questions: *operate_questions
       use_when:

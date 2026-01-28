@@ -54,15 +54,15 @@ controller_catalog:
       complexity: tier_2
 
   tier_3:
-    - name: marketing-director
-      agent_path: grow/agents/marketing-director.md
+    - name: cmo
+      agent_path: grow/agents/cmo.md
       coordination_style: question_based
       typical_questions: *grow_questions
       use_when:
         - "Marketing department leadership"
         - "Multi-channel campaign coordination"
         - "Marketing budget allocation"
-        - "Team and vendor management"
+        - "Executive marketing strategy"
       complexity: tier_3
 
   tier_4:
