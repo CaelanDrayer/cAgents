@@ -1,6 +1,6 @@
 {
   "name": "@cagents/core",
-  "version": "7.4.0",
+  "version": "8.0.2",
   "description": "cAgents Core V7.4.0 - Aggressive Task Decomposition Edition. When users say 'I want X', the system extrapolates ALL requirements needed for success. Features: 5-level decomposition (request analysis, component extraction, implicit discovery, dependency mapping, work item generation), comprehensive work breakdowns with acceptance criteria, dependency graphs with critical path identification, parallel execution opportunities. Unified Run V2.0, Orchestrator V6.0, HITL, Optimizer V7.0, Task-Consolidator, Task-Decomposer, and 5 universal workflow agents across 5 super-domains. Controller-centric coordination with decomposition-aware execution.",
   "author": {
     "name": "CaelanDrayer",

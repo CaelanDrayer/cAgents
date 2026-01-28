@@ -56,18 +56,19 @@ Complete hook system with 12 hook types documented and 4 implementations:
 - Comprehensive documentation
 
 #### 2. Progressive Skill Disclosure (SKILL.md)
-**Files**: `make/agents/SKILL.md/*.md` (9 agents)
+**Files**: `make/agents/*/SKILL.md` (6 agents)
 
-Agents converted to modular SKILL.md format:
-- backend-developer
-- frontend-developer
+Agents converted to modular SKILL.md format with resources/ directories:
+- architect (+ resources/adr-template.md, design-patterns.md)
+- backend-developer (+ resources/api-patterns.md)
 - devops-lead
-- architect
-- qa-lead
+- frontend-developer
+- qa-lead (+ resources/test-strategy.md)
 - security-specialist
-- technical-writer
-- dba
-- ml-engineer
+
+Additional cross-domain agents:
+- grow/agents/marketing-strategist
+- people/agents/hr-business-partner
 
 **Structure**:
 ```

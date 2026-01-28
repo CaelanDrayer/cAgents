@@ -33,22 +33,22 @@ STRICT=false
 
 log_check() {
     echo -e "${BLUE}[CHECK]${NC} $1"
-    ((CHECKS_RUN++))
+    CHECKS_RUN=$((CHECKS_RUN + 1))
 }
 
 log_pass() {
     echo -e "${GREEN}[PASS]${NC} $1"
-    ((CHECKS_PASSED++))
+    CHECKS_PASSED=$((CHECKS_PASSED + 1))
 }
 
 log_warn() {
     echo -e "${YELLOW}[WARN]${NC} $1"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 }
 
 log_fail() {
     echo -e "${RED}[FAIL]${NC} $1"
-    ((ERRORS++))
+    ERRORS=$((ERRORS + 1))
 }
 
 #

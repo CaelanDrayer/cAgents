@@ -1,6 +1,6 @@
 {
   "name": "cagents-people",
-  "version": "7.3.1",
+  "version": "8.0.2",
   "description": "PEOPLE super-domain: Talent & organization capability (people + hr). 19 agents for recruiting, onboarding, performance management, and culture initiatives. V7.1.0 cleanup release.",
   "super_domain": "people",
   "agent_count": 19,

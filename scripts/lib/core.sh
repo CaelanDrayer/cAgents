@@ -169,9 +169,8 @@ generate_id() {
 #######################################
 is_set() {
   local var_name="$1"
-  local var_value
-  eval "var_value=\${$var_name:-}"
-  [[ -n "$var_value" ]]
+  # Use indirect variable expansion (safer than eval)
+  [[ -n "${!var_name:-}" ]]
 }
 
 #######################################

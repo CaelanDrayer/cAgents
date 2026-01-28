@@ -90,5 +90,5 @@ Agent_Memory/
 
 ---
 
-**Version**: V7.5.1
-**Last Updated**: 2026-01-22
+**Version**: V8.0.2
+**Last Updated**: 2026-01-27

@@ -46,12 +46,12 @@ log_info() {
 
 log_warn() {
     echo -e "${YELLOW}[WARN]${NC} $1"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 }
 
 log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
-    ((ERRORS++))
+    ERRORS=$((ERRORS + 1))
 }
 
 log_section() {
