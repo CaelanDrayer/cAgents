@@ -2,29 +2,29 @@
 
 Comprehensive reference for all cAgents universal commands.
 
-## /explore - Interactive Discovery Assistant
+## /designer - Interactive Design Discovery
 
-**Status**: Production-Ready (v6.7)
+**Status**: Production-Ready (v8.0)
 **Domains**: All (Software, Creative, Business, Marketing, Product, etc.)
 **Complexity**: Universal (adapts to any domain)
 
 ### Overview
 
-Universal interactive design assistant that helps transform vague ideas into well-defined designs through intelligent chunk-based questioning with context awareness and expertise adaptation.
+Universal interactive design assistant that helps transform vague ideas into well-defined designs through structured questioning using AskUserQuestion. ALWAYS asks user for input - never assumes.
 
-### What's New in v6.7
+### What's New in v8.0
 
-- **Smart Chunking**: Groups 3-5 related questions into logical topics with auto-synthesis
+- **ALWAYS Interactive**: Uses AskUserQuestion tool for EVERY question - never plain text
+- **Structured Options**: Every question provides 2-4 meaningful options plus automatic "Other"
 - **Context Discovery**: Automatically maps your project structure (for software domains)
 - **Answer Synthesis**: Summarizes findings after each chunk completion
 - **Intelligent Sequencing**: Adapts questions based on your expertise level
-- **30% More Efficient**: Fewer questions needed for same coverage (12-15 vs 20+)
 
 ### Usage
 
 ```bash
-/explore                              # Start interactive discovery session
-/explore [initial idea]               # Start with context (e.g., "Build a todo app")
+/designer                             # Start interactive design session
+/designer [initial idea]              # Start with context (e.g., "Build a todo app")
 ```
 
 ### How It Works
@@ -80,7 +80,7 @@ Questions are grouped into logical topics:
 
 #### 2. Context Discovery (Software Projects)
 
-When you're designing software features, /explore automatically:
+When you're designing software features, /designer automatically:
 - Detects your programming language and framework
 - Finds key modules (auth, checkout, user management, etc.)
 - Identifies your tech stack (frontend, backend, database)
@@ -106,7 +106,7 @@ This makes questions **80% more specific and relevant**.
 
 #### 3. Answer Synthesis
 
-After each chunk (3-5 questions), /explore automatically synthesizes findings:
+After each chunk (3-5 questions), /designer automatically synthesizes findings:
 
 ```
 Based on our discussion about the core problem:
@@ -126,7 +126,7 @@ This ensures you're building on solid understanding before diving deeper.
 
 #### 4. Intelligent Expertise Adaptation
 
-/explore detects your expertise level from your answers and adapts questions accordingly:
+/designer detects your expertise level from your answers and adapts questions accordingly:
 
 **Beginner indicators**: Vague language, short answers, uncertainty, questions back
 **Expert indicators**: Technical jargon, detailed answers, certainty, trade-off discussions
@@ -149,10 +149,10 @@ Chunks unlock based on:
 
 ### Session Files
 
-When you run /explore, it creates a session with this structure:
+When you run /designer, it creates a session with this structure:
 
 ```
-Agent_Memory/explore_sessions/session_20260113_143022/
+Agent_Memory/designer_sessions/session_20260113_143022/
 ├── session.yaml              # Session metadata (v6.7 format)
 ├── qa_log.yaml               # All Q&A pairs organized by chunk
 ├── chunks.yaml               # Chunk progress tracking
@@ -166,7 +166,7 @@ Agent_Memory/explore_sessions/session_20260113_143022/
 
 Sessions are automatically saved and can be resumed later.
 
-### When to Use /explore
+### When to Use /designer
 
 **Perfect for**:
 - Fleshing out vague ideas before implementation
@@ -182,7 +182,7 @@ Sessions are automatically saved and can be resumed later.
 
 ### After Exploring
 
-When you cancel /explore, you get options:
+When you cancel /designer, you get options:
 
 1. **Generate Design Document**: Comprehensive doc with all Q&A and syntheses
 2. **Start Implementation with /run**: Automatically formats session context into implementation request
@@ -262,7 +262,7 @@ v6.7 fully supports old designer sessions (v6.6 and earlier):
 ### Example Session Flow
 
 ```
-User: /explore
+User: /designer
 
 Claude: "What are you trying to create or achieve?"
 
@@ -328,7 +328,7 @@ Claude: [Chunk 1 complete]
 ### Tips for Best Results
 
 1. **Be specific in first answer**: Helps with domain detection and context discovery
-2. **Don't rush**: /explore helps you think through edge cases and trade-offs
+2. **Don't rush**: /designer helps you think through edge cases and trade-offs
 3. **Ask follow-ups**: If a question isn't clear, ask for clarification
 4. **Use synthesis**: Review syntheses to ensure shared understanding
 5. **Cancel when ready**: No fixed endpoint, you control when to stop
@@ -433,7 +433,7 @@ See CLAUDE.md for complete /optimize documentation.
 
 | Command | Purpose | Duration | Interaction | Output |
 |---------|---------|----------|-------------|--------|
-| **/explore** | Discovery & exploration | 10-30 min | Continuous Q&A | Design document + session |
+| **/designer** | Discovery & exploration | 10-30 min | Continuous Q&A | Design document + session |
 | **/run** | Implementation | Varies | Autonomous | Working implementation |
 | **/review** | Quality review | 3-10 min | Autonomous | Issue report + fixes |
 | **/optimize** | Performance improvement | 5-15 min | Autonomous | Optimized code/content |
@@ -448,5 +448,5 @@ See CLAUDE.md for complete /optimize documentation.
 
 ---
 
-**Commands**: /run, /explore, /review, /optimize
+**Commands**: /run, /designer, /review, /optimize
 **Last Updated**: 2026-01-21

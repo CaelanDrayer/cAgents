@@ -14,7 +14,7 @@ Agent_Memory/
 │   │   │   ├── workflow_templates.yaml
 │   │   │   ├── preflight_validation.yaml
 │   │   │   └── workflow_analytics.yaml
-│   │   ├── explore/                  # /explore command configs
+│   │   ├── designer/                 # /designer command configs
 │   │   │   └── templates/            # Design templates
 │   │   ├── review/                   # /review command configs
 │   │   │   └── framework_patterns.yaml
@@ -46,7 +46,7 @@ Agent_Memory/
 │   └── broadcast/                    # System announcements
 └── sessions/                         # All command sessions (STANDARDIZED)
     ├── run_{YYYYMMDD_HHMMSS}/        # /run workflow sessions
-    ├── explore_{YYYYMMDD_HHMMSS}/    # /explore design sessions
+    ├── designer_{YYYYMMDD_HHMMSS}/   # /designer design sessions
     ├── review_{YYYYMMDD_HHMMSS}/     # /review sessions
     └── optimize_{YYYYMMDD_HHMMSS}/   # /optimize sessions
 ```
@@ -58,7 +58,7 @@ All commands use consistent session ID format: `{command}_{YYYYMMDD}_{HHMMSS}`
 | Command | Session ID Pattern | Example |
 |---------|-------------------|---------|
 | `/run` | `run_YYYYMMDD_HHMMSS` | `run_20260121_143022` |
-| `/explore` | `explore_YYYYMMDD_HHMMSS` | `explore_20260121_143022` |
+| `/designer` | `designer_YYYYMMDD_HHMMSS` | `designer_20260121_143022` |
 | `/review` | `review_YYYYMMDD_HHMMSS` | `review_20260121_143022` |
 | `/optimize` | `optimize_YYYYMMDD_HHMMSS` | `optimize_20260121_143022` |
 
@@ -202,7 +202,7 @@ resume_hints:
 
 ## Command-Specific Extensions
 
-**/explore sessions** also include:
+**/designer sessions** also include:
 ```
 ├── session.yaml                  # Session state
 ├── qa_log.yaml                   # Q&A with phases
@@ -239,7 +239,7 @@ resume_hints:
 | Command | Config Path |
 |---------|------------|
 | `/run` | `Agent_Memory/_system/commands/run/` |
-| `/explore` | `Agent_Memory/_system/commands/explore/` |
+| `/designer` | `Agent_Memory/_system/commands/designer/` |
 | `/review` | `Agent_Memory/_system/commands/review/` |
 | `/optimize` | `Agent_Memory/_system/commands/optimize/` |
 

@@ -2,23 +2,25 @@
 
 **Universal Multi-Domain Agent System for Claude Code**
 
-V7.5.1 - Production-ready controller-centric architecture with 231 agents across 5 super-domains. Task Inventory Edition.
+V8.0.2 - Production-ready controller-centric architecture with 250 agents across 5 super-domains. Infrastructure & Learning Edition.
 
 ## Overview
 
 cAgents transforms AI-assisted work across any domain through specialized agent teams that collaborate autonomously. From software engineering to marketing, operations to creative work - one unified system handles it all.
 
-**V7.5.1 Release** (2026-01-22):
-- ✅ CSV-based task inventory for large-scale workflows (60-80% context savings)
-- ✅ Aggressive task decomposition with implicit requirement discovery
-- ✅ Completion validation framework with end-to-end traceability
-- ✅ Total agents: 231 (12 core + 14 shared + 205 domain specialists)
+**V8.0.2 Release** (2026-01-27):
+- ✅ Claude Code hooks system (12 types, 6 implementations)
+- ✅ Progressive skill disclosure (SKILL.md format with resources/)
+- ✅ 4-tier model routing (Haiku/Sonnet/Opus)
+- ✅ Session management with waypoints and recovery
+- ✅ Evaluation framework and CI/CD scripts
+- ✅ Total agents: 250 (12 core + 14 shared + 224 domain specialists)
 
 ## Architecture
 
 **V7.0 Controller-Centric Question-Based Delegation**
 
-231 agents organized into:
+250 agents organized into:
 - **Core** (12): Infrastructure (trigger, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, 5 universal workflow agents)
 - **Shared** (14): Cross-domain capabilities (leadership, planning, data, quality, customer, operations)
 - **Make** (108): Creation (engineering, creative, product, devops, qa, **game development**)
@@ -109,7 +111,7 @@ The system automatically:
 ### Universal Commands
 
 ```bash
-/explore    # Interactive discovery assistant (works across all domains)
+/designer   # Interactive design discovery (ALWAYS uses AskUserQuestion)
 /review     # Comprehensive review (code, documents, strategies, campaigns)
 /optimize   # Universal optimizer (8 types: code, content, process, data, infrastructure, campaign, creative, sales)
 ```
@@ -162,7 +164,7 @@ Up to 50 concurrent agents with 4 execution modes (Sequential, Pipeline, Swarm, 
 
 ### Enhanced Commands (V7.0)
 - **/run**: 2-3x faster initialization, 90%+ domain accuracy, context-aware detection
-- **/explore**: Smart chunking, context discovery, adaptive questioning
+- **/designer**: ALWAYS uses AskUserQuestion, context discovery, adaptive questioning
 - **/optimize**: Zero-arg invocation, auto-detection, 8 optimization types
 - **/review**: 33% faster, 81% faster to critical issues, 98% more actionable suggestions
 

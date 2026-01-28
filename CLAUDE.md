@@ -724,8 +724,8 @@ Auto-routes to super-domain, executes full workflow with controller-centric coor
 /run Design game mechanics     # -> Make domain (tier 2: game-designer controller)
 ```
 
-### /explore - Interactive Discovery
-Asks questions to flesh out ideas across all domains. Runs until canceled.
+### /designer - Interactive Design Discovery
+Interactive design tool using AskUserQuestion for EVERY interaction. ALWAYS asks user for input - never assumes. Runs until user stops.
 
 ### /review - Enhanced Review
 Universal review with 8 enhancements:
@@ -786,7 +786,7 @@ Agent_Memory/
 │   ├── config/                       # Global configuration
 │   ├── commands/                     # Command-specific configs
 │   │   ├── run/                      # /run command configs
-│   │   ├── explore/                  # /explore command configs
+│   │   ├── designer/                 # /designer command configs
 │   │   ├── review/                   # /review command configs
 │   │   └── optimize/                 # /optimize command configs
 │   └── templates/                    # Shared templates (success_criteria, etc.)
@@ -795,7 +795,7 @@ Agent_Memory/
 ├── _communication/                   # Agent messaging
 └── sessions/                         # All command sessions (STANDARDIZED)
     ├── run_{YYYYMMDD_HHMMSS}/        # /run workflow sessions
-    ├── explore_{YYYYMMDD_HHMMSS}/    # /explore design sessions
+    ├── designer_{YYYYMMDD_HHMMSS}/   # /designer design sessions
     ├── review_{YYYYMMDD_HHMMSS}/     # /review sessions
     └── optimize_{YYYYMMDD_HHMMSS}/   # /optimize sessions
 ```
@@ -923,7 +923,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 
 ## Quick Reference
 
-**Commands**: `/run`, `/explore`, `/review`, `/optimize`, `/memory`, `/init` | **Agents**: 231 total (12 core + 14 shared + 205 domain specialists across 5 super-domains)
+**Commands**: `/run`, `/designer`, `/review`, `/optimize`, `/memory`, `/init` | **Agents**: 250 total (12 core + 14 shared + 224 domain specialists across 5 super-domains)
 **Super-Domains**: Make (108), Grow (37), Operate (13), People (19), Serve (28)
 **Key Files**: `CLAUDE.md` (this file), `.claude/rules/*.md`, `{domain}/config/*.yaml`, `Agent_Memory/sessions/{command}_{id}/workflow/decomposition.yaml`
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+), work items with acceptance criteria, dependency-aware coordination
