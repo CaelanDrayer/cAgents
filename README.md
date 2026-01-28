@@ -2,28 +2,28 @@
 
 **Universal Multi-Domain Agent System for Claude Code**
 
-V8.0.2 - Production-ready controller-centric architecture with 250 agents across 5 super-domains. Infrastructure & Learning Edition.
+V8.0.6 - Production-ready controller-centric architecture with 233 agents across 5 super-domains. Infrastructure & Learning Edition.
 
 ## Overview
 
 cAgents transforms AI-assisted work across any domain through specialized agent teams that collaborate autonomously. From software engineering to marketing, operations to creative work - one unified system handles it all.
 
-**V8.0.2 Release** (2026-01-27):
+**V8.0.6 Release** (2026-01-28):
 - ✅ Claude Code hooks system (12 types, 6 implementations)
 - ✅ Progressive skill disclosure (SKILL.md format with resources/)
 - ✅ 4-tier model routing (Haiku/Sonnet/Opus)
 - ✅ Session management with waypoints and recovery
 - ✅ Evaluation framework and CI/CD scripts
-- ✅ Total agents: 250 (12 core + 14 shared + 224 domain specialists)
+- ✅ Total agents: 233 (12 core + 14 shared + 207 domain specialists)
 
 ## Architecture
 
 **V7.0 Controller-Centric Question-Based Delegation**
 
-250 agents organized into:
+233 agents organized into:
 - **Core** (12): Infrastructure (trigger, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, 5 universal workflow agents)
-- **Shared** (14): Cross-domain capabilities (leadership, planning, data, quality, customer, operations)
-- **Make** (108): Creation (engineering, creative, product, devops, qa, **game development**)
+- **Shared** (14): Cross-domain capabilities (data, analytics, quality, compliance, customer, operations)
+- **Make** (110): Creation (engineering, creative, product, devops, qa, **game development**)
 - **Grow** (37): Acquisition (marketing, sales, partnerships)
 - **Operate** (13): Operations (finance, operations, procurement)
 - **People** (19): Talent (HR, culture, talent acquisition)
@@ -209,15 +209,16 @@ File-based, instruction-scoped, parallel-safe, pause/resume capable.
 - Optimizer V7.0: 20-50% faster code, 30-60% smaller bundles
 - Task consolidation: 40-88% context reduction
 
-**V7.5.1 Task Inventory Edition**:
+**V8.0 Infrastructure & Learning Edition**:
 - CSV-based task inventory for 20+ task workflows (60-80% context savings)
 - Aggressive task decomposition with implicit requirement discovery
-- Total agents: 231 (12 core + 14 shared + 205 domain specialists)
+- Total agents: 233 (12 core + 14 shared + 207 domain specialists)
 - Game engines supported: Unity, Unreal Engine, Godot
 
 ## Version History
 
-- **V7.5.1** (2026-01-22) - Task Inventory Edition: CSV-based task inventory, aggressive decomposition, completion validation, 231 agents
+- **V8.0.6** (2026-01-28) - Infrastructure & Learning Edition: Hooks, SKILL.md, model routing, session management, 233 agents
+- **V7.5.1** (2026-01-22) - Task Inventory Edition: CSV-based task inventory, aggressive decomposition, completion validation
 - **V7.3.0** (2026-01-19) - Game Development Edition: 28 new game dev agents, Make domain expanded to 108 agents
 - **V7.1.0** (2026-01-19) - Cleanup release: removed 358 legacy agents, streamlined to 7 directories, 201 production agents
 - **V7.0.3** - Introduced 5 super-domains (Make, Grow, Operate, People, Serve), consolidated 8 legacy domains
@@ -237,4 +238,4 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | **cAgents V7.5.1 Task Inventory Edition** | 231 agents across 5 super-domains
+**Built with Claude Code** | **cAgents V8.0.6** | 233 agents across 5 super-domains
