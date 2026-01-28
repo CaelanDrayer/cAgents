@@ -31,6 +31,18 @@ controller_catalog:
         - "Operational efficiency improvement"
       complexity: tier_2
 
+  tier_3:
+    - name: vp-customer-support
+      agent_path: serve/agents/vp-customer-support.md
+      coordination_style: question_based
+      typical_questions: *serve_questions
+      use_when:
+        - "Customer support strategy"
+        - "Support team leadership"
+        - "Multi-channel support coordination"
+        - "Customer experience transformation"
+      complexity: tier_3
+
   tier_4:
     - name: general-counsel
       agent_path: serve/agents/general-counsel.md

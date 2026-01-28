@@ -8,6 +8,41 @@ shared_questions: &people_questions
   - "What are the retention and engagement metrics?"
 
 controller_catalog:
+  tier_2:
+    - name: hr-business-partner
+      agent_path: people/agents/hr-business-partner.md
+      coordination_style: question_based
+      typical_questions: *people_questions
+      use_when:
+        - "Business unit HR support needed"
+        - "Employee relations issues"
+        - "Performance management questions"
+        - "HR policy implementation"
+      complexity: tier_2
+
+    - name: talent-acquisition-manager
+      agent_path: people/agents/talent-acquisition-manager.md
+      coordination_style: question_based
+      typical_questions: *people_questions
+      use_when:
+        - "Recruiting strategy needed"
+        - "Hiring pipeline optimization"
+        - "Employer branding"
+        - "Candidate experience improvement"
+      complexity: tier_2
+
+  tier_3:
+    - name: hr-operations-manager
+      agent_path: people/agents/hr-operations-manager.md
+      coordination_style: question_based
+      typical_questions: *people_questions
+      use_when:
+        - "HR process optimization"
+        - "HR technology implementation"
+        - "Cross-functional HR initiatives"
+        - "HR analytics and reporting"
+      complexity: tier_3
+
   tier_4:
     - name: chro
       agent_path: people/agents/chro.md

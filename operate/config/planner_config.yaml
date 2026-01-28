@@ -53,6 +53,30 @@ controller_catalog:
         - "Logistics and distribution"
       complexity: tier_2
 
+  tier_3:
+    - name: finance-manager
+      agent_path: operate/agents/finance-manager.md
+      coordination_style: question_based
+      typical_questions: *operate_questions
+      use_when:
+        - "Financial planning and analysis"
+        - "Budget management"
+        - "Cost optimization initiatives"
+        - "Financial reporting requirements"
+      complexity: tier_3
+
+  tier_4:
+    - name: cfo
+      agent_path: make/agents/cfo.md
+      coordination_style: question_based
+      typical_questions: *operate_questions
+      use_when:
+        - "Executive financial strategy"
+        - "Major investment decisions"
+        - "Financial transformation"
+        - "Board-level reporting"
+      complexity: tier_4
+
 # Templates for objective generation
 objectives_templates:
   default:
