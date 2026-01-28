@@ -1,6 +1,6 @@
 {
   "name": "cagents-shared-capabilities",
-  "version": "8.0.6",
+  "version": "8.0.7",
   "description": "Shared cross-domain capabilities for cAgents V8.0 - 14 universal agents accessible to all workflows across all 5 super-domains. Includes data & analytics (data-scientist, bi-specialist, market-research-analyst, competitive-intelligence-analyst), quality & compliance (quality-manager, process-auditor, compliance-officer, performance-analyst), customer (account-manager, customer-success-manager, customer-advocacy-manager, relationship-manager), and operations (change-management-specialist, capacity-planner).",
   "domain": "shared",
   "tier": 2,

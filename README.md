@@ -2,13 +2,13 @@
 
 **Universal Multi-Domain Agent System for Claude Code**
 
-V8.0.6 - Production-ready controller-centric architecture with 233 agents across 5 super-domains. Infrastructure & Learning Edition.
+V8.0.7 - Production-ready controller-centric architecture with 233 agents across 5 super-domains. Infrastructure & Learning Edition.
 
 ## Overview
 
 cAgents transforms AI-assisted work across any domain through specialized agent teams that collaborate autonomously. From software engineering to marketing, operations to creative work - one unified system handles it all.
 
-**V8.0.6 Release** (2026-01-28):
+**V8.0.7 Release** (2026-01-28):
 - ✅ Claude Code hooks system (12 types, 6 implementations)
 - ✅ Progressive skill disclosure (SKILL.md format with resources/)
 - ✅ 4-tier model routing (Haiku/Sonnet/Opus)
@@ -217,7 +217,7 @@ File-based, instruction-scoped, parallel-safe, pause/resume capable.
 
 ## Version History
 
-- **V8.0.6** (2026-01-28) - Infrastructure & Learning Edition: Hooks, SKILL.md, model routing, session management, 233 agents
+- **V8.0.7** (2026-01-28) - Infrastructure & Learning Edition: Hooks, SKILL.md, model routing, session management, 233 agents
 - **V7.5.1** (2026-01-22) - Task Inventory Edition: CSV-based task inventory, aggressive decomposition, completion validation
 - **V7.3.0** (2026-01-19) - Game Development Edition: 28 new game dev agents, Make domain expanded to 108 agents
 - **V7.1.0** (2026-01-19) - Cleanup release: removed 358 legacy agents, streamlined to 7 directories, 201 production agents
@@ -238,4 +238,4 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | **cAgents V8.0.6** | 233 agents across 5 super-domains
+**Built with Claude Code** | **cAgents V8.0.7** | 233 agents across 5 super-domains
