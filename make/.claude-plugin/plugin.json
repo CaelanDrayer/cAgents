@@ -1,9 +1,9 @@
 {
   "name": "cagents-make",
-  "version": "8.0.2",
-  "description": "MAKE super-domain: Creation capability (engineering + creative + product + game development). V7.3.0 Game Dev Edition: 108 agents for software development, creative content, product design, devops, QA, and comprehensive game development pipeline. Includes 28 new game dev specialists.",
+  "version": "8.0.6",
+  "description": "MAKE super-domain: Creation capability (engineering + creative + product + game development). V8.0 Edition: 110 agents for software development, creative content, product design, devops, QA, and comprehensive game development pipeline. Includes 28 game dev specialists.",
   "super_domain": "make",
-  "agent_count": 108,
+  "agent_count": 110,
   "capabilities": ["engineering", "creative", "product", "devops", "qa", "game_development"],
   "game_dev_agents": [
     "game-designer",

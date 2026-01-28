@@ -1,6 +1,6 @@
 {
   "name": "@cagents/core",
-  "version": "8.0.5",
+  "version": "8.0.6",
   "description": "cAgents Core V8.0 - Universal multi-domain agent system with aggressive task decomposition. Features: 5-level decomposition, comprehensive work breakdowns with acceptance criteria, dependency graphs, parallel execution. Includes 12 core agents: trigger, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, and 5 universal workflow agents. Controller-centric coordination with question-based delegation.",
   "author": {
     "name": "CaelanDrayer",
