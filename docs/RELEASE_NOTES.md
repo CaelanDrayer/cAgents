@@ -1,6 +1,6 @@
 # cAgents Release Notes
 
-**Current Version**: 8.0.0
+**Current Version**: 8.0.2
 **Release Date**: January 27, 2026
 **Status**: Production-Ready
 
@@ -8,7 +8,9 @@
 
 ## Version History
 
-- [v8.0.0](#v800---january-27-2026) - Infrastructure & Learning Edition (Current)
+- [v8.0.2](#v802---january-27-2026) - Review Fixes (Current)
+- [v8.0.1](#v801---january-27-2026) - Validation Pass
+- [v8.0.0](#v800---january-27-2026) - Infrastructure & Learning Edition
 - [v7.5.1](#v751---january-22-2026) - Documentation & Domain Rules Edition
 - [v7.5.0](#v750---january-22-2026) - Task Inventory Edition
 - [v7.4.2](#v742---january-21-2026) - CLAUDE.md Optimization
@@ -22,6 +24,34 @@
 - [v7.0.2](#v702---january-17-2026) - Trigger V2.0 Enhancement
 - [v7.0.1](#v701---january-15-2026) - Plugin Cache Fix
 - [v7.0.0](#v700---january-13-2026) - Production Baseline
+
+---
+
+## v8.0.2 - January 27, 2026
+
+**Theme**: Review Fixes
+
+### Changes
+
+- Fix version mismatch in package.json (7.5.1 → 8.0.2)
+- Update agent count in CLAUDE.md and package.json (231 → 250)
+- Update version in CLAUDE.md footer (8.0.0 → 8.0.2)
+- Sync all documentation to reflect accurate agent counts
+
+---
+
+## v8.0.1 - January 27, 2026
+
+**Theme**: Validation Pass
+
+### Changes
+
+- Validated all 25 V8.0 improvements with evidence
+- Updated all domain plugin.json versions to 8.0.1
+- Fixed `eval` security risk in scripts/lib/core.sh (indirect variable expansion)
+- Fixed arithmetic increment for `set -e` compatibility in CI scripts
+- Corrected SKILL.md agent count in RELEASE_NOTES.md (6 make/ + 2 cross-domain)
+- Updated ARCHITECTURE.md version to V8.0.1
 
 ---
 

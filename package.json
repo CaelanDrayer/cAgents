@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "7.5.1",
-  "description": "cAgents V7.5 Task Inventory Edition - Universal multi-domain agent system with 231 agents across 5 super-domains. CSV-based task inventory for large-scale workflows (60-80% context savings). Features aggressive task decomposition, controller-centric question-based delegation. Game dev specialists included.",
+  "version": "8.0.2",
+  "description": "cAgents V8.0 - Universal multi-domain agent system with 250 agents across 5 super-domains. Features: Claude Code hooks (12 types), progressive skill disclosure (SKILL.md), 4-tier model routing, session management, metrics infrastructure, evaluation framework, CI/CD scripts. CSV-based task inventory for large-scale workflows.",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -41,7 +41,7 @@
   "license": "MIT",
   "architecture": "Controller-Centric Question-Based Delegation",
   "agents": {
-    "total": 231,
+    "total": 250,
     "core": 12,
     "shared": 14,
     "breakdown": {

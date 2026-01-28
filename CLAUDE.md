@@ -947,10 +947,10 @@ See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 
 ---
 
-**Total Agents**: 231 (12 core + 14 shared + 205 domain specialists)
+**Total Agents**: 250 (12 core + 14 shared + 224 domain specialists)
 **Architecture**: Controller-Centric Coordination with Task Inventory
 **Super-Domains**: 5 (Make, Grow, Operate, People, Serve)
 **Directories**: 7 (core, shared, make, grow, operate, people, serve)
 **Key Innovation**: CSV-based task inventory for large workflows + aggressive decomposition
 **Dependencies**: None (file-based, self-contained)
-**Version**: 8.0.0
+**Version**: 8.0.2
