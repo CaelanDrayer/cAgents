@@ -280,11 +280,57 @@ AskUserQuestion({
     options: [
       {label: "Keep exploring", description: "Dig deeper into this topic"},
       {label: "Explore new area", description: "Move to a different aspect"},
-      {label: "Generate summary", description: "Create design document"},
-      {label: "Start implementing", description: "Begin building with /run"}
+      {label: "Generate summary", description: "Create design document only"},
+      {label: "Build it now", description: "Generate design and start implementation immediately"}
     ],
     multiSelect: false
   }]
+})
+```
+
+### 7. Automatic Implementation Trigger
+
+**CRITICAL**: When user selects "Build it now", the designer MUST:
+
+1. Generate the design document (design_document.md)
+2. Save session state
+3. **Automatically invoke the Skill tool** to trigger `/run` with the design
+
+```javascript
+// When user selects "Build it now":
+
+// Step 1: Generate and save design document
+const sessionId = `designer_${timestamp}`;
+const designPath = `Agent_Memory/sessions/${sessionId}/design_document.md`;
+// Write design_document.md with all gathered requirements
+
+// Step 2: Automatically trigger /run to implement
+Skill({
+  skill: "run",
+  args: `implement design from ${sessionId}`
+})
+```
+
+**The designer command NEVER ends without offering to build.** When the design is complete:
+
+```javascript
+AskUserQuestion({
+  questions: [{
+    question: "Design complete! Ready to build?",
+    header: "Build",
+    options: [
+      {label: "Yes, build it now (Recommended)", description: "Start implementation immediately with /run"},
+      {label: "Save design only", description: "Save design document for later"},
+      {label: "Continue refining", description: "Keep exploring the design"}
+    ],
+    multiSelect: false
+  }]
+})
+
+// If user selects "Yes, build it now":
+Skill({
+  skill: "run",
+  args: `implement design from ${sessionId}`
 })
 ```
 
@@ -381,7 +427,7 @@ Add Google OAuth2 login to the existing SPA while keeping email/password login w
 
 ---
 
-*Use `/run implement from designer_20260121_143022` to start implementation*
+*Design ready for implementation via /run*
 ```
 
 ## Rules
@@ -401,6 +447,10 @@ Add Google OAuth2 login to the existing SPA while keeping email/password login w
 7. **ADAPT TO EXPERTISE** - Adjust option complexity to user's level.
 
 8. **KNOW WHEN TO STOP** - Recognize completion signals, offer summary.
+
+9. **ALWAYS OFFER TO BUILD** - When design is complete, always ask if user wants to build it now. Make "Build it now" the recommended option.
+
+10. **AUTO-TRIGGER /run** - When user selects "Build it now", automatically invoke `Skill({skill: "run", args: "implement design from {session_id}"})`. Do NOT make user type another command.
 
 ## Example Session
 
@@ -438,24 +488,49 @@ Claude: [Uses AskUserQuestion]
 
 [...continues with AskUserQuestion for each interaction...]
 
-User: [Selects "Generate summary"]
+User: [Selects "Build it now"]
 
 Claude: Great design session! Here's your design document:
         [Generates design_document.md]
+        [Saves to Agent_Memory/sessions/designer_20260121_143022/]
 
-        Ready to implement? Use `/run implement from designer_20260121_143022`
+        Starting implementation now...
+        [Automatically invokes Skill tool: run "implement design from designer_20260121_143022"]
+
+        [/run workflow begins automatically]
 ```
 
-## Integration with /run
+## Automatic /run Integration
 
-After design, users can implement:
+**CRITICAL**: Designer automatically triggers `/run` when the user is ready to build.
+
+### How It Works
+
+1. User completes design exploration
+2. Designer asks "Ready to build?"
+3. If user selects "Yes, build it now":
+   - Designer saves design_document.md
+   - Designer **automatically invokes** `/run implement design from {session_id}`
+   - Implementation begins without user needing to type another command
+
+### Manual Fallback
+
+If the user prefers to implement later:
 
 ```bash
-/run implement from designer_20260121_143022
+/run implement design from designer_20260121_143022
 ```
 
-This loads the design document as context for the implementation workflow.
+This loads the saved design document as context for the implementation workflow.
+
+### Design Document Context
+
+The `/run` command receives:
+- Full design document with goals, decisions, constraints
+- Session Q&A log for context
+- Discovered codebase information
+- Success criteria from design
 
 ---
 
-**ALWAYS use AskUserQuestion. Never assume. Always ask.**
+**ALWAYS use AskUserQuestion. Never assume. Always ask. ALWAYS offer to build.**
