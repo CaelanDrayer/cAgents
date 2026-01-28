@@ -1,7 +1,7 @@
 {
   "name": "@cagents/core",
-  "version": "8.0.2",
-  "description": "cAgents Core V7.4.0 - Aggressive Task Decomposition Edition. When users say 'I want X', the system extrapolates ALL requirements needed for success. Features: 5-level decomposition (request analysis, component extraction, implicit discovery, dependency mapping, work item generation), comprehensive work breakdowns with acceptance criteria, dependency graphs with critical path identification, parallel execution opportunities. Unified Run V2.0, Orchestrator V6.0, HITL, Optimizer V7.0, Task-Consolidator, Task-Decomposer, and 5 universal workflow agents across 5 super-domains. Controller-centric coordination with decomposition-aware execution.",
+  "version": "8.0.5",
+  "description": "cAgents Core V8.0 - Universal multi-domain agent system with aggressive task decomposition. Features: 5-level decomposition, comprehensive work breakdowns with acceptance criteria, dependency graphs, parallel execution. Includes 12 core agents: trigger, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, and 5 universal workflow agents. Controller-centric coordination with question-based delegation.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",
@@ -15,31 +15,16 @@
     "core",
     "infrastructure",
     "orchestration",
-    "run-v2",
-    "explore-v2",
-    "optimizer-v7",
-    "review-v3",
-    "hitl",
     "universal-workflow",
-    "agent-memory",
-    "claude-code",
-    "plugin",
-    "multi-domain",
-    "recursive-workflows",
     "controller-centric",
     "question-based-delegation",
-    "context-aware",
-    "pre-flight-validation",
-    "bash-library",
-    "lifecycle-hooks",
-    "atomic-operations",
-    "ralph-loop-patterns",
-    "markdown-frontmatter",
-    "v7.0"
+    "task-decomposition",
+    "task-inventory",
+    "v8.0"
   ],
   "commands": [
     "./commands/run.md",
-    "./commands/explore.md",
+    "./commands/designer.md",
     "./commands/review.md",
     "./commands/optimize.md"
   ],
@@ -50,11 +35,11 @@
     "./agents/universal-router.md",
     "./agents/universal-planner.md",
     "./agents/universal-executor.md",
-    "./agents/universal-executor-enhanced.md",
     "./agents/universal-validator.md",
     "./agents/universal-self-correct.md",
     "./agents/optimizer.md",
     "./agents/task-consolidator.md",
-    "./agents/task-decomposer.md"
+    "./agents/task-decomposer.md",
+    "./agents/task-inventory.md"
   ]
 }
