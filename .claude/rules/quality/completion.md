@@ -120,4 +120,13 @@ Add 3K tokens per coordination cycle for evidence tracking (included in planning
 
 ---
 
+## See Also
+
+- **validation-framework.md** - Full traceability chain from planning to validation
+- **controllers.md** - Controller coordination and evidence capture
+- **orchestration.md** - Phase transitions and workflow management
+- **implicit-discovery.md** - Handling abstract requests
+
+---
+
 **Part of**: cAgents Completion Validation Framework

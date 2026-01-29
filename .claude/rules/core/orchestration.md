@@ -86,3 +86,12 @@ After planning completes (plan.yaml exists), orchestrator displays the plan befo
 ## Key Principle
 
 **Controllers coordinate, don't execute directly**. Use question-based delegation to specialists.
+
+---
+
+## See Also
+
+- **controllers.md** - Question-based delegation patterns
+- **execution.md** - Execution agent patterns (tier 3)
+- **completion.md** - Task completion protocol
+- **validation-framework.md** - End-to-end completion traceability

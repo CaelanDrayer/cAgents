@@ -60,3 +60,12 @@ Example: Controller → backend-developer (question) → answer → synthesis
 ```
 
 Benefits: Modularity, specialization, parallelization (up to 50 concurrent)
+
+---
+
+## See Also
+
+- **controllers.md** - Controller coordination patterns (tier 2)
+- **orchestration.md** - Workflow phases and transitions
+- **skill-format.md** - SKILL.md agent format specification
+- **subagent-alignment.md** - Task tool alignment patterns

@@ -114,3 +114,12 @@ Controllers are tier 2 agents that:
 - ❌ DO NOT wait for user approval
 
 The executor monitors you and will automatically proceed when coordination_log.yaml is complete. Your job is to coordinate work, not to ask permission to implement it.
+
+---
+
+## See Also
+
+- **orchestration.md** - Workflow phases and automatic transitions
+- **execution.md** - Execution agent patterns (tier 3)
+- **shared-questions.md** - Universal controller question patterns
+- **completion.md** - Task completion protocol and evidence requirements
