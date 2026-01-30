@@ -61,7 +61,7 @@ VALIDATOR (Validation Phase):
 4. **QA Gate Enforcement**: Approve/reject based on quality
 
 See @resources/test-strategy.md for strategy design.
-See @resources/coverage-requirements.md for tier requirements.
+See @resources/collaboration-patterns.md for interaction flows.
 See @resources/examples.md for detailed examples.
 
 ## Quality Gate Criteria
