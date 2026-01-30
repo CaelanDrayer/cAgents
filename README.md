@@ -2,28 +2,28 @@
 
 **Universal Multi-Domain Agent System for Claude Code**
 
-V8.0.7 - Production-ready controller-centric architecture with 233 agents across 5 super-domains. Infrastructure & Learning Edition.
+V8.0.11 - Production-ready controller-centric architecture with 237 agents across 5 super-domains. Progressive Disclosure Edition.
 
 ## Overview
 
 cAgents transforms AI-assisted work across any domain through specialized agent teams that collaborate autonomously. From software engineering to marketing, operations to creative work - one unified system handles it all.
 
-**V8.0.7 Release** (2026-01-28):
+**V8.0.11 Release** (2026-01-29):
 - ✅ Claude Code hooks system (12 types, 6 implementations)
-- ✅ Progressive skill disclosure (SKILL.md format with resources/)
+- ✅ Progressive skill disclosure (10 SKILL.md migrations, 80%+ token savings)
 - ✅ 4-tier model routing (Haiku/Sonnet/Opus)
 - ✅ Session management with waypoints and recovery
 - ✅ Evaluation framework and CI/CD scripts
-- ✅ Total agents: 233 (12 core + 14 shared + 207 domain specialists)
+- ✅ Total agents: 237 (12 core + 14 shared + 211 domain specialists)
 
 ## Architecture
 
 **V7.0 Controller-Centric Question-Based Delegation**
 
-233 agents organized into:
+237 agents organized into:
 - **Core** (12): Infrastructure (trigger, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, 5 universal workflow agents)
 - **Shared** (14): Cross-domain capabilities (data, analytics, quality, compliance, customer, operations)
-- **Make** (110): Creation (engineering, creative, product, devops, qa, **game development**)
+- **Make** (114): Creation (engineering, creative, product, devops, qa, **game development** - includes 10 SKILL.md directories)
 - **Grow** (37): Acquisition (marketing, sales, partnerships)
 - **Operate** (13): Operations (finance, operations, procurement)
 - **People** (19): Talent (HR, culture, talent acquisition)

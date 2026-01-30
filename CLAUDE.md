@@ -334,13 +334,13 @@ CLAUDE.local.md
 - **Tier 2**: Controllers (coordinate work items via batch delegation)
 - **Tier 3**: Execution agents (implement work items)
 - **Tier 4**: Support agents (foundational services)
-- **Total**: 233 agents
+- **Total**: 237 agents
 - **Execution**: 4 modes (Sequential, Pipeline, Swarm, Mesh) - up to 50x speedup
 
 **Agent Distribution**:
 - **Core Infrastructure** (12): Workflow orchestration + decomposition + inventory
 - **Shared** (14): Cross-domain capabilities (leadership, planning, data, quality)
-- **Make** (110): Creation capability (engineering, creative, product, game development)
+- **Make** (114): Creation capability (engineering, creative, product, game development) - includes 10 SKILL.md directories
 - **Grow** (37): Acquisition capability (marketing, sales)
 - **Operate** (13): Operations capability (finance, operations)
 - **People** (19): Talent capability (HR, culture)
@@ -923,8 +923,8 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 
 ## Quick Reference
 
-**Commands**: `/run`, `/designer`, `/review`, `/optimize`, `/memory`, `/init` | **Agents**: 233 total (12 core + 14 shared + 207 domain specialists across 5 super-domains)
-**Super-Domains**: Make (108), Grow (37), Operate (13), People (19), Serve (28)
+**Commands**: `/run`, `/designer`, `/review`, `/optimize`, `/memory`, `/init` | **Agents**: 237 total (12 core + 14 shared + 211 domain specialists across 5 super-domains)
+**Super-Domains**: Make (114), Grow (37), Operate (13), People (19), Serve (28)
 **Key Files**: `CLAUDE.md` (this file), `.claude/rules/*.md`, `{domain}/config/*.yaml`, `Agent_Memory/sessions/{command}_{id}/workflow/decomposition.yaml`
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+), work items with acceptance criteria, dependency-aware coordination
 
@@ -947,10 +947,10 @@ See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 
 ---
 
-**Total Agents**: 233 (12 core + 14 shared + 207 domain specialists)
+**Total Agents**: 237 (12 core + 14 shared + 211 domain specialists)
 **Architecture**: Controller-Centric Coordination with Task Inventory
 **Super-Domains**: 5 (Make, Grow, Operate, People, Serve)
 **Directories**: 7 (core, shared, make, grow, operate, people, serve)
 **Key Innovation**: CSV-based task inventory for large workflows + aggressive decomposition
 **Dependencies**: None (file-based, self-contained)
-**Version**: 8.0.10
+**Version**: 8.0.11
