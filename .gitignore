@@ -77,3 +77,5 @@ CLAUDE.local.md
 
 # Python virtual environment
 .venv/
+example/
+metrics.jsonl
