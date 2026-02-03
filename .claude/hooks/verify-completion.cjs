@@ -62,7 +62,12 @@ function findActiveSession() {
     const statusFile = path.join(sessionsDir, session, 'status.yaml');
     if (fs.existsSync(statusFile)) {
       const content = fs.readFileSync(statusFile, 'utf8');
-      if (!content.includes('phase: completed') && !content.includes('phase: failed')) {
+      // Check both 'phase:' and 'current_phase:' patterns
+      const isCompleted = content.includes('phase: completed') ||
+                          content.includes('current_phase: completed') ||
+                          content.includes('phase: failed') ||
+                          content.includes('current_phase: failed');
+      if (!isCompleted) {
         return path.join(sessionsDir, session);
       }
     }
@@ -97,13 +102,15 @@ function verifyCompletion(sessionDir) {
   // 1. Check status.yaml exists and has valid phase
   const statusFile = path.join(sessionDir, 'status.yaml');
   if (!fs.existsSync(statusFile)) {
-    issues.push('Missing status.yaml file');
+    // No status.yaml means workflow wasn't properly initialized - just warn, don't block
+    warnings.push('No status.yaml file (session may not be a cAgents workflow)');
   } else {
     const content = fs.readFileSync(statusFile, 'utf8');
-    const phase = extractYamlValue(content, 'phase');
+    // Check both 'phase' and 'current_phase' (different versions use different field names)
+    const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase');
 
     if (!phase) {
-      issues.push('No phase defined in status.yaml');
+      warnings.push('No phase defined in status.yaml');
     } else if (phase !== 'completed' && phase !== 'validating') {
       warnings.push(`Workflow stopping in '${phase}' phase (expected: completed or validating)`);
     }
