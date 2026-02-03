@@ -179,7 +179,9 @@ Use `@path/to/file` syntax to include external content:
 
 **Core Principle**: /run command and all coordination agents NEVER do direct work. ALL work is delegated to subagents via Task tool.
 
-**Minimum Tier**: Always tier 2+ (controller coordination required). NO exceptions.
+**Minimum Tier**: Always tier 2+ (controller coordination required). ALL requests use agents. NO exceptions.
+
+**Tier Enforcement**: Former tier 0/1 requests automatically upgraded to tier 2 for multi-agent specialist coverage.
 
 **Delegation Chain** (every arrow = Task tool):
 ```
@@ -204,6 +206,18 @@ Delegated: Fix auth bug -> engineering-manager
   -> architect: Reviewed design (approved)
 Complete: outputs/fix_summary.yaml
 ```
+
+**Why Minimum Tier 2?**
+- Even "simple" questions get comprehensive expert answers (not just quick responses)
+- Even "trivial" edits benefit from quality review (catch issues early)
+- Multi-agent coverage catches issues single-agent execution misses
+- Consistent quality across all request types
+- Maximum utilization of specialist agent expertise
+
+**Tier Upgrade Examples**:
+- **"What is X?"** → Tier 2 → Domain expert provides comprehensive answer via controller
+- **"Fix typo"** → Tier 2 → Specialist + editor review for quality
+- **"Improve wording"** → Tier 2 → Copywriter + editor coordination
 
 **Config**: `Agent_Memory/_system/config/aggressive_delegation.yaml`
 
@@ -237,7 +251,7 @@ Complete: outputs/fix_summary.yaml
 - `optimizer` - Universal optimization (code, content, processes, data, infrastructure, campaigns)
 
 **Universal Workflow Agents** (5):
-- `universal-router` - Tier classification (0-4), sets requires_controller flag
+- `universal-router` - Tier classification (2-4), ALWAYS requires controllers
 - `universal-planner` - Aggressive decomposition + controller selection (generates comprehensive work breakdowns)
 - `universal-executor` - Monitors controllers (not execution agents)
 - `universal-validator` - Quality gates with coordination validation
@@ -367,7 +381,7 @@ Planner -> Objectives -> Controller -> Questions -> Execution Agents -> Answers 
 routing -> planning -> coordinating -> executing -> validating
    |          |           |            |           |
   Router   Planner   Controller   Executor   Validator
-(tier 0-4) (objectives) (questions) (monitor) (quality)
+(tier 2-4) (objectives) (questions) (monitor) (quality)
 ```
 
 ### Coordinating Phase Workflow
@@ -398,20 +412,30 @@ status: completed
 
 | Tier | Type | Coordination | Example | Workflow |
 |------|------|--------------|---------|----------|
-| 0 | Trivial | None | "What is X?" | routing -> answer |
-| 1 | Simple | None | "Fix typo" | routing -> planning -> executing -> validating |
-| 2 | Moderate | 1 controller | "Fix bug" | routing -> planning -> **coordinating** -> executing -> validating |
-| 3 | Complex | 1 primary + 1-2 supporting | "Add feature" | routing -> planning -> **coordinating** -> executing -> validating |
-| 4 | Expert | 1 executive + 1 primary + 2-4 supporting | "Major refactor" | + HITL |
+| **2** | Moderate | 1 controller | "Fix bug", "Answer question", "Fix typo" | routing -> planning -> **coordinating** -> executing -> validating |
+| **3** | Complex | 1 primary + 1-2 supporting | "Add feature" | routing -> planning -> **coordinating** -> executing -> validating |
+| **4** | Expert | 1 executive + 1 primary + 2-4 supporting | "Major refactor" | routing -> planning -> **coordinating** -> executing -> validating + HITL |
 
-**CRITICAL**: Tier 2+ workflows include coordinating phase with controllers.
+**DEPRECATED TIERS**:
+- ~~Tier 0 (Trivial)~~ - **Automatically upgraded to Tier 2** - Questions get expert answers via controller
+- ~~Tier 1 (Simple)~~ - **Automatically upgraded to Tier 2** - Simple tasks get specialist + review
+
+**CRITICAL**: ALL workflows use controller coordination (minimum tier 2). Former tier 0/1 requests automatically upgraded.
 
 ### Coordination Patterns by Tier
 
-- **Tier 0-1**: No controllers (direct answer or simple execution)
-- **Tier 2**: 1 primary controller - Ask questions -> synthesize -> coordinate
-- **Tier 3**: 1 primary + 1-2 supporting - Multi-controller coordination
+- **Tier 2**: 1 primary controller - Ask questions -> synthesize -> coordinate implementation
+  - Examples: "What is X?", "Fix typo", "Improve wording", "Fix bug"
+  - Pattern: Domain expert + coordinator provides comprehensive answer/solution
+
+- **Tier 3**: 1 primary + 1-2 supporting controllers - Multi-controller coordination with synthesis
+  - Examples: "Add feature", "Create system", "Design campaign"
+  - Pattern: Primary coordinator + specialist controllers (architect, security, etc.)
+
 - **Tier 4**: 1 executive + 1 primary + 2-4 supporting + HITL approval
+  - Examples: "Major refactor", "Architecture migration", "Strategic initiative"
+  - Pattern: Executive oversight + primary coordinator + multiple specialists + human approval
+
 
 ## Workflow Execution
 

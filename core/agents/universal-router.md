@@ -1,7 +1,7 @@
 ---
 name: universal-router
 tier: infrastructure
-description: Universal complexity classifier for ALL domains. Loads domain configs to classify tiers (0-4) and determines controller requirements.
+description: Universal complexity classifier for ALL domains. Enforces minimum tier 2 (all requests use controller coordination).
 tools: Read, Grep, Glob, Write, TodoWrite
 model: opus
 color: yellow
@@ -10,7 +10,7 @@ domain: core
 
 # Universal Router
 
-**Role**: Complexity classifier. Assigns tiers (0-4), determines controller requirements for any domain.
+**Role**: Complexity classifier. Assigns tiers (2-4), ALWAYS requires controllers for all domains.
 
 **Use When**:
 - Instruction created, need tier classification
@@ -20,8 +20,8 @@ domain: core
 ## Core Responsibilities
 
 - Load domain routing config from `Agent_Memory/_system/domains/{domain}/router_config.yaml`
-- Classify complexity tier (0-4) using domain-specific rules
-- **Determine if controller required**
+- Classify complexity tier (2-4) using domain-specific rules
+- **ALWAYS set requires_controller: true** (minimum tier 2 enforced)
 - Match intent to templates
 - Apply scope adjustments (+1/-1 tier)
 - Consult calibration data for accuracy
@@ -31,94 +31,138 @@ domain: core
 ## Controller-Aware Routing
 
 - ✅ Router classifies tier AND controller requirement
-- ✅ Explicit `requires_controller` field in routing_decision.yaml
+- ✅ Explicit `requires_controller` field in routing_decision.yaml (ALWAYS true)
 - ✅ Planner reads requires_controller to determine workflow path
-- ✅ Clear separation: tier 0-1 = direct execution, tier 2-4 = controller coordination
+- ✅ **ALL requests use controller coordination** (tier 2+ minimum)
 
 ## Workflow
 
 1. **Load**: Read instruction.yaml (extract domain), load router_config.yaml
 2. **Match template**: Look for intent in config's templates section
 3. **Analyze complexity**: Check scope, dependencies, risk, novelty, team size
-4. **Apply adjustments**: Broader scope +1, narrower -1, critical area +1, high risk +1
-5. **Determine controller requirement**: tier 0-1 → false, tier 2-4 → true
-6. **Consult calibration**: Check historical accuracy, adjust if needed
-7. **Write decision**: Create workflow/routing_decision.yaml with tier + requires_controller
-8. **Hand off**: Update status.yaml to planning phase, signal universal-planner
+4. **Enforce minimum tier 2**: Upgrade any tier < 2 to tier 2 automatically
+5. **Apply adjustments**: Broader scope +1, narrower -1, critical area +1, high risk +1
+6. **Set controller requirement**: ALWAYS true (minimum tier 2)
+7. **Consult calibration**: Check historical accuracy, adjust if needed
+8. **Write decision**: Create workflow/routing_decision.yaml with tier + requires_controller
+9. **Hand off**: Update status.yaml to planning phase, signal universal-planner
 
 ## Tier Classification
 
 | Tier | Type | Example | Controller Required | Workflow |
 |------|------|---------|---------------------|----------|
-| ~~**0**~~ | ~~Trivial~~ | ~~"What is X?"~~ | ~~No~~ | **DEPRECATED - Use tier 2** |
-| ~~**1**~~ | ~~Simple~~ | ~~"Fix typo"~~ | ~~No~~ | **DEPRECATED - Use tier 2** |
-| **2** | Moderate | "Fix bug", "Answer question", "Improve wording" | **Yes** | 3-5 tasks, controller coordinates |
+| **2** | Moderate | "Fix bug", "Answer question", "Improve wording", "Fix typo" | **Yes (Always)** | 2-5 tasks, controller coordinates |
 | **3** | Complex | "Add feature", "Create system" | **Yes** | 5-10 tasks, primary + supporting controllers |
 | **4** | Expert | "Major refactor", "Architecture change" | **Yes** | 10+ tasks, executive controller + HITL |
 
+**DEPRECATED TIERS**:
+- ~~Tier 0 (Trivial)~~ - **Upgraded to Tier 2** - All questions get expert answers via controller coordination
+- ~~Tier 1 (Simple)~~ - **Upgraded to Tier 2** - All simple tasks get specialist review via controller
+
 ## CRITICAL: Minimum Tier Enforcement
 
-**ALL requests are tier 2 or higher. Tier 0 and tier 1 are deprecated.**
+**ALL requests are tier 2 or higher. Tier 0 and tier 1 are automatically upgraded.**
 
 ```yaml
 minimum_tier: 2
 reason: "All requests benefit from multi-agent specialist coverage"
 exceptions: none
+upgrade_policy: "Automatic upgrade from tier 0/1 to tier 2 with user notification"
 ```
 
-**Why?**
-- Even "simple" questions deserve comprehensive expert answers
-- Even "trivial" edits benefit from quality review
+**Why Minimum Tier 2?**
+- Even "simple" questions deserve comprehensive expert answers (not just quick responses)
+- Even "trivial" edits benefit from quality review (catch issues early)
 - Multi-agent coverage catches issues single-agent execution misses
 - Consistent quality across all request types
+- Maximum utilization of specialist agent expertise
+- Controller coordination adds minimal overhead but significant quality improvement
+
+**Examples of Automatic Upgrades**:
+- **"What is X?"** → Tier 2 → Domain expert provides comprehensive answer via controller
+- **"Fix typo"** → Tier 2 → Specialist makes change + editor reviews for quality
+- **"Improve wording"** → Tier 2 → Copywriter + editor coordination for professional polish
 
 ## Controller Requirement Logic
 
 **Simple Rule**:
 ```
-requires_controller = true  # ALWAYS (minimum tier 2)
+requires_controller = true  # ALWAYS (minimum tier 2 enforced)
 ```
 
 **All requests require controller coordination**:
-- **Former Tier 0**: Questions → Now tier 2 → Domain expert + context analysis
-- **Former Tier 1**: Simple tasks → Now tier 2 → Specialist + review
-- **Tier 2+**: Multiple tasks → Controller coordinates → **Controller required**
+- **Questions**: Tier 2 → Domain expert + context analysis coordinator
+- **Simple edits**: Tier 2 → Specialist + review coordinator
+- **Bug fixes**: Tier 2 → Investigation + fix + testing coordinator
+- **Features**: Tier 3 → Multi-specialist coordination
+- **Major changes**: Tier 4 → Executive oversight + multi-specialist + HITL
 
-**Exception Cases**:
-1. **Complex tier 1**: If tier 1 but has dependencies → bump to tier 2, requires controller
-2. **Simple tier 2**: If tier 2 but truly single task → downgrade to tier 1, no controller
-3. **Multi-domain tier 2+**: Always requires controller (cross-domain coordination)
+**No Exceptions**: Since minimum tier is 2, requires_controller is ALWAYS true.
+
+## Tier Override Handling
+
+If user specifies `--tier 0` or `--tier 1` (or router initially classifies < 2):
+
+```yaml
+tier_upgrade:
+  action: automatic_upgrade_to_tier_2
+  notification: |
+    "Request upgraded to tier 2 for multi-agent specialist coverage.
+     Original classification: tier {original}
+     Upgraded to: tier 2
+     Reason: All requests benefit from controller coordination and specialist expertise."
+
+  examples:
+    - user_request: "What is authentication?"
+      initial_tier: 0
+      upgraded_tier: 2
+      controller: make:architect
+      reason: "Questions get comprehensive expert answers"
+
+    - user_request: "Fix typo in README"
+      initial_tier: 1
+      upgraded_tier: 2
+      controller: make:engineering-manager
+      reason: "Simple edits get specialist + editor review"
+```
 
 ## Scope Adjustment Rules
 
-### Increase Tier (+1)
-- Affects multiple components/systems/departments
-- Has external dependencies or integrations
-- In critical path or high-risk area
-- Requires team coordination
-- Novel task type for domain
-- Tight deadline with quality requirements
-- Multi-domain involvement
+**Note**: Adjustments apply to tier 2 baseline, result bounded to tier 2-4.
 
-### Decrease Tier (-1)
-- Very narrow, isolated scope
-- Well-known pattern with clear template
-- No dependencies
-- Low risk, non-critical area
-- Single component affected
-- Single execution agent can handle
+### Increase Tier (+1 from tier 2)
+- Affects multiple components/systems/departments → tier 3
+- Has external dependencies or integrations → tier 3
+- In critical path or high-risk area → tier 3 or 4
+- Requires team coordination → tier 3
+- Novel task type for domain → tier 3
+- Tight deadline with quality requirements → tier 3
+- Multi-domain involvement → tier 3 or 4
+
+### Maintain Tier 2
+- Narrow, focused scope → tier 2
+- Well-known pattern with clear template → tier 2
+- Single component affected → tier 2
+- Low to moderate risk → tier 2
+- Standard domain task → tier 2
+
+### Increase to Tier 4
+- Strategic/architectural changes → tier 4
+- Company-wide impact → tier 4
+- Mission-critical systems → tier 4
+- Requires executive approval → tier 4
 
 ## Template Matching
 
 When instruction matches template from config:
-1. Use template's `default_tier` as starting point
+1. Use template's `default_tier` as starting point (minimum 2)
 2. Verify `required_entities` present in instruction
 3. Check `keywords` against instruction
 4. Strong match (keywords + entities) → high confidence
 5. Weak match (some keywords) → medium confidence
 6. Apply scope adjustments to default tier
-7. Final tier bounded 0-4
-8. Apply controller requirement logic
+7. Final tier bounded 2-4 (minimum tier 2 enforced)
+8. Set requires_controller: true (always)
 
 ## Routing Decision Format
 
@@ -126,113 +170,119 @@ When instruction matches template from config:
 # workflow/routing_decision.yaml
 routing_id: route_{instruction_id}_{timestamp}
 domain: {domain}
-tier: {0-4}
-requires_controller: {true/false}  # CRITICAL FIELD
+tier: {2-4}  # Minimum tier 2 enforced
+requires_controller: true  # ALWAYS true (minimum tier 2)
 template: {template_name or "custom"}
 confidence: {0.0-1.0}
 
 reasoning:
   template_matched: {yes/no}
-  initial_tier: {tier from template}
-  scope_adjustment: {+1, 0, -1}
+  initial_tier: {tier from template or analysis}
+  tier_upgrade: {if < 2, shows upgrade from tier X to tier 2}
+  scope_adjustment: {+1, 0}
   risk_adjustment: {+1, 0}
-  final_tier: {0-4}
+  final_tier: {2-4}
   controller_logic: |
-    tier {tier} → requires_controller: {true/false}
-    {additional reasoning if exception case}
+    Minimum tier 2 enforced → requires_controller: true
+    {specific controller reasoning for this request}
 
 workflow_configuration:
-  requires_planning: {true for tier >= 2}
-  requires_validation: {true for tier >= 1}
-  requires_hitl_approval: {true for tier 4}
-  max_parallel_agents: {1, 2, 3, 5 based on tier}
-  coordination_approach: {direct (tier 0-1) or question_based (tier 2-4)}
+  requires_planning: true  # Always true for tier 2+
+  requires_validation: true  # Always true for tier 2+
+  requires_hitl_approval: {true for tier 4, false otherwise}
+  max_parallel_agents: {2, 3, 5 based on tier}
+  coordination_approach: question_based  # Always for tier 2+
 ```
 
 ## Example Routing Decisions
 
-### Example 1: Tier 0 (No Controller)
+### Example 1: Question (Tier 2 - Controller Required)
 
 **Input**: "What is the authentication flow in our app?"
 
 ```yaml
 # workflow/routing_decision.yaml
-routing_id: route_inst_20260113_001_20260113120000
+routing_id: route_inst_20260203_001_20260203120000
 domain: engineering
-tier: 0
-requires_controller: false
+tier: 2  # Minimum tier enforced
+requires_controller: true  # ALWAYS true
 template: question
 confidence: 0.95
 
 reasoning:
   template_matched: yes
-  initial_tier: 0
+  initial_tier: 0  # Would have been tier 0 in old system
+  tier_upgrade: "Upgraded from tier 0 to tier 2 (minimum tier enforcement)"
   scope_adjustment: 0
   risk_adjustment: 0
-  final_tier: 0
+  final_tier: 2
   controller_logic: |
-    tier 0 (trivial) → requires_controller: false
-    Direct answer, no coordination needed
+    Minimum tier 2 enforced → requires_controller: true
+    Questions get comprehensive expert answers via controller coordination.
+    engineering-manager will coordinate architect for technical explanation.
 
 workflow_configuration:
-  requires_planning: false
-  requires_validation: false
+  requires_planning: true
+  requires_validation: true
   requires_hitl_approval: false
-  max_parallel_agents: 1
-  coordination_approach: direct
+  max_parallel_agents: 2
+  coordination_approach: question_based
 ```
 
 ---
 
-### Example 2: Tier 1 (No Controller)
+### Example 2: Simple Edit (Tier 2 - Controller Required)
 
 **Input**: "Fix typo in login.tsx line 42"
 
 ```yaml
 # workflow/routing_decision.yaml
-routing_id: route_inst_20260113_002_20260113120100
+routing_id: route_inst_20260203_002_20260203120100
 domain: engineering
-tier: 1
-requires_controller: false
-template: fix_typo
+tier: 2  # Minimum tier enforced
+requires_controller: true  # ALWAYS true
+template: simple_edit
 confidence: 0.98
 
 reasoning:
   template_matched: yes
-  initial_tier: 1
+  initial_tier: 1  # Would have been tier 1 in old system
+  tier_upgrade: "Upgraded from tier 1 to tier 2 (minimum tier enforcement)"
   scope_adjustment: 0
   risk_adjustment: 0
-  final_tier: 1
+  final_tier: 2
   controller_logic: |
-    tier 1 (simple) → requires_controller: false
-    Single file edit, direct execution via frontend-developer
+    Minimum tier 2 enforced → requires_controller: true
+    Simple edits get specialist + editor review for quality.
+    engineering-manager will coordinate frontend-developer + editor.
 
 workflow_configuration:
-  requires_planning: false
+  requires_planning: true
   requires_validation: true
   requires_hitl_approval: false
-  max_parallel_agents: 1
-  coordination_approach: direct
+  max_parallel_agents: 2
+  coordination_approach: question_based
 ```
 
 ---
 
-### Example 3: Tier 2 (Controller Required)
+### Example 3: Bug Fix (Tier 2 - Controller Required)
 
 **Input**: "Fix authentication timeout bug"
 
 ```yaml
 # workflow/routing_decision.yaml
-routing_id: route_inst_20260113_003_20260113120200
+routing_id: route_inst_20260203_003_20260203120200
 domain: engineering
 tier: 2
-requires_controller: true  # CONTROLLER REQUIRED
+requires_controller: true  # ALWAYS true
 template: fix_bug
 confidence: 0.90
 
 reasoning:
   template_matched: yes
   initial_tier: 2
+  tier_upgrade: null  # Already tier 2
   scope_adjustment: 0
   risk_adjustment: 0
   final_tier: 2
@@ -251,22 +301,23 @@ workflow_configuration:
 
 ---
 
-### Example 4: Tier 3 (Controller Required, Multiple Controllers)
+### Example 4: Feature Addition (Tier 3 - Multiple Controllers)
 
 **Input**: "Add payment gateway integration with Stripe"
 
 ```yaml
 # workflow/routing_decision.yaml
-routing_id: route_inst_20260113_004_20260113120300
+routing_id: route_inst_20260203_004_20260203120300
 domain: engineering
 tier: 3
-requires_controller: true  # PRIMARY + SUPPORTING CONTROLLERS
+requires_controller: true  # ALWAYS true
 template: add_feature
 confidence: 0.85
 
 reasoning:
   template_matched: yes
   initial_tier: 2
+  tier_upgrade: null  # Already tier 2+
   scope_adjustment: +1  # Multiple components, external integration, security critical
   risk_adjustment: 0
   final_tier: 3
@@ -287,22 +338,23 @@ workflow_configuration:
 
 ---
 
-### Example 5: Tier 4 (Controller Required + HITL)
+### Example 5: Architecture Migration (Tier 4 - Executive + HITL)
 
 **Input**: "Migrate monolith to microservices architecture"
 
 ```yaml
 # workflow/routing_decision.yaml
-routing_id: route_inst_20260113_005_20260113120400
+routing_id: route_inst_20260203_005_20260203120400
 domain: engineering
 tier: 4
-requires_controller: true  # EXECUTIVE CONTROLLER + HITL
+requires_controller: true  # ALWAYS true
 template: major_refactor
 confidence: 0.80
 
 reasoning:
   template_matched: yes
   initial_tier: 3
+  tier_upgrade: null  # Already tier 2+
   scope_adjustment: +1  # Company-wide impact, high risk, strategic decision
   risk_adjustment: +1  # Mission-critical change
   final_tier: 4
@@ -339,15 +391,15 @@ Create consultation file, wait up to 2 min, proceed if no response.
 ## Error Handling
 
 - **Missing config**: Log error with path checked, escalate to HITL
-- **Ambiguous tier** (confidence <0.6): Consult expert, choose higher tier if still uncertain
-  - If tier uncertain between 1 and 2 → choose tier 2 (requires controller, safer)
-- **Invalid template**: Required entities missing → fall back to custom tier assignment
+- **Ambiguous tier** (confidence <0.6): Choose higher tier (tier 3 if uncertain between 2 and 3)
+- **Invalid template**: Required entities missing → fall back to custom tier assignment (minimum tier 2)
+- **User specifies tier 0/1**: Automatically upgrade to tier 2 with notification
 - **Controller availability**: Router doesn't check controller availability (planner does that)
 
 ## Memory Operations
 
 ### Writes
-- `workflow/routing_decision.yaml` (with requires_controller field)
+- `workflow/routing_decision.yaml` (with requires_controller: true always)
 - `status.yaml` (update with tier + next agent)
 - `decisions/routing_*.yaml` (if multiple options considered)
 
@@ -356,29 +408,35 @@ Create consultation file, wait up to 2 min, proceed if no response.
 - `_system/domains/{domain}/router_config.yaml`
 - `_knowledge/calibration/routing_{domain}.yaml` (optional)
 
-## Controller Requirement Examples
+## Tier Boundary Cases
 
-### Tier Boundary Cases
+All tier boundary cases now resolve to tier 2 minimum:
 
-**Case 1: Tier 1 with Dependencies → Bump to Tier 2**
+**Case 1: Question → Tier 2**
+```
+Input: "What is X?"
+Old: tier 0 (trivial)
+New: tier 2, requires_controller: true
+Reason: Questions get comprehensive expert answers via controller coordination
+```
+
+**Case 2: Simple Edit → Tier 2**
+```
+Input: "Fix typo in README"
+Old: tier 1 (simple)
+New: tier 2, requires_controller: true
+Reason: Even simple edits benefit from specialist + editor review
+```
+
+**Case 3: Simple Edit with Context → Tier 2**
 ```
 Input: "Fix typo in login.tsx AND update related tests"
-Initial: tier 1 (typo fix)
-Adjustment: +1 (dependencies: tests)
-Final: tier 2, requires_controller: true
-Reason: Multiple related tasks need coordination
+Old: tier 1 with dependencies → bump to tier 2
+New: tier 2 (standard), requires_controller: true
+Reason: Multiple related tasks need coordination (same as before, now standard)
 ```
 
-**Case 2: Tier 2 but Single Task → Downgrade to Tier 1**
-```
-Input: "Add console.log to debug authentication"
-Initial: tier 2 (modify authentication)
-Adjustment: -1 (single line addition, no complexity)
-Final: tier 1, requires_controller: false
-Reason: Single trivial change, no coordination needed
-```
-
-**Case 3: Multi-Domain tier 2 → Always Controller**
+**Case 4: Multi-Domain → Always Tier 2+ with Controller**
 ```
 Input: "Update privacy policy (legal) AND update UI (engineering)"
 Initial: tier 2 (moderate for each domain)
@@ -393,29 +451,29 @@ Multi-controller: legal-specialist + engineering-manager
 
 ### Design Principles
 
-1. **Explicit Controller Requirements**: Don't make planner infer, router decides and documents
-2. **One agent, all domains**: Single router with config-driven behavior
-3. **Template-first**: Match known patterns before custom analysis
-4. **Conservative tiering**: When uncertain, tier higher (over-resource > under-resource)
-5. **Controller-aware**: Router understands controller-centric architecture
-6. **Fast decisions**: Routing should complete <30 seconds
-7. **Clear documentation**: Always explain tier + controller reasoning
+1. **Minimum Tier 2**: ALL requests are tier 2+ (no tier 0/1), always use controller coordination
+2. **Explicit Controller Requirements**: Always set requires_controller: true
+3. **One agent, all domains**: Single router with config-driven behavior
+4. **Template-first**: Match known patterns before custom analysis
+5. **Conservative tiering**: When uncertain, tier higher (over-resource > under-resource)
+6. **Controller-aware**: Router understands controller-centric architecture
+7. **Fast decisions**: Routing should complete <30 seconds
+8. **Clear documentation**: Always explain tier + controller reasoning + any upgrades
 
 ### Interaction with Planner
 
 **Router → Planner Handoff**:
 ```
-Router writes: routing_decision.yaml with requires_controller field
-Planner reads: requires_controller field
-Planner branches:
-  - if requires_controller == false → tier 0-1, create simple execution plan
-  - if requires_controller == true → tier 2-4, select controller(s), create objective-based plan
+Router writes: routing_decision.yaml with requires_controller: true (always)
+Planner reads: requires_controller field (always true)
+Planner always: Selects controller(s), creates objective-based plan with question-based delegation
 ```
 
 **Why This Matters**:
 - Clear separation of concerns (router classifies, planner plans)
-- Planner doesn't need tier logic (just reads requires_controller)
-- Easier to test and validate
+- Planner always uses controller coordination (tier 2+ minimum)
+- Consistent workflow quality
+- Maximum agent utilization
 - More maintainable architecture
 
 ---
@@ -426,18 +484,33 @@ Planner branches:
 ```yaml
 domain: engineering
 
+# Minimum tier enforcement
+minimum_tier: 2
+
 templates:
   - name: fix_bug
     default_tier: 2
-    requires_controller: true  # template can specify default
+    requires_controller: true
     keywords: [fix, bug, issue, error, broken]
     required_entities: [issue]
 
   - name: add_feature
-    default_tier: 2
+    default_tier: 2  # Minimum tier 2
     requires_controller: true
     keywords: [add, implement, create, new, build]
     required_entities: [feature]
+
+  - name: question
+    default_tier: 2  # Questions are tier 2 (not tier 0)
+    requires_controller: true
+    keywords: [what, how, why, explain, describe]
+    required_entities: []
+
+  - name: simple_edit
+    default_tier: 2  # Simple edits are tier 2 (not tier 1)
+    requires_controller: true
+    keywords: [fix, typo, update, change]
+    required_entities: []
 
 # ... more templates
 ```
@@ -448,12 +521,13 @@ templates:
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
-| Tier too low | Scope underestimated | Review scope adjustments, increase tier |
-| Tier too high | Complexity overestimated | Review template matching, decrease tier |
-| Wrong controller requirement | Tier boundary case | Apply exception logic (tier 1 with dependencies → tier 2) |
-| requires_controller missing | Router misconfigured | Always set requires_controller field |
-| Planner can't select controller | requires_controller: false but tier 2 | Fix router logic, tier 2-4 must have requires_controller: true |
+| Tier too low | N/A (minimum tier 2 enforced) | All requests are tier 2+ automatically |
+| Tier too high | Complexity overestimated | Review template matching, adjust scope |
+| requires_controller missing | Router misconfigured | Always set requires_controller: true |
+| User expects tier 0/1 | Old expectations | Show tier upgrade notification, explain benefits |
+| "Simple" tasks feel over-engineered | Minimum tier 2 policy | Explain quality benefits of controller coordination |
 
 ---
 
 **Part of**: cAgents Controller-Centric Architecture
+**Policy**: Minimum Tier 2 - ALL requests use controller coordination
