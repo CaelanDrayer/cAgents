@@ -9,12 +9,24 @@ V8.0.11 - Production-ready controller-centric architecture with 237 agents acros
 cAgents transforms AI-assisted work across any domain through specialized agent teams that collaborate autonomously. From software engineering to marketing, operations to creative work - one unified system handles it all.
 
 **V8.0.11 Release** (2026-01-29):
-- ✅ Claude Code hooks system (12 types, 6 implementations)
-- ✅ Progressive skill disclosure (10 SKILL.md migrations, 80%+ token savings)
-- ✅ 4-tier model routing (Haiku/Sonnet/Opus)
-- ✅ Session management with waypoints and recovery
-- ✅ Evaluation framework and CI/CD scripts
-- ✅ Total agents: 237 (12 core + 14 shared + 211 domain specialists)
+- Claude Code hooks system (12 types, 6 implementations)
+- Progressive skill disclosure (10 SKILL.md migrations, 80%+ token savings)
+- 4-tier model routing (Haiku/Sonnet/Opus)
+- Session management with waypoints and recovery
+- Evaluation framework and CI/CD scripts
+- Total agents: 237 (12 core + 14 shared + 211 domain specialists)
+
+## Requirements
+
+- **Claude Code** (required)
+- **Node.js** (optional, recommended) - Required for advanced hooks:
+  - Session catchup (resume incomplete sessions)
+  - Completion verification (validate task completion)
+  - Secret detection (block secrets in file writes)
+  - Pre-compact state preservation
+  - Notification logging
+
+Without Node.js, cAgents works with shell-only hooks for basic session and workflow management.
 
 ## Architecture
 
@@ -30,17 +42,17 @@ cAgents transforms AI-assisted work across any domain through specialized agent 
 - **Serve** (28): Support & Governance (customer experience, legal, compliance, support)
 
 ```
-User Request → Trigger → Orchestrator
-    ↓
+User Request -> Trigger -> Orchestrator
+    |
 Routing (classify tier 0-4)
-    ↓
+    |
 Planning (define objectives)
-    ↓
-Coordinating (controller questions → specialists answer → synthesis)
-    ↓
+    |
+Coordinating (controller questions -> specialists answer -> synthesis)
+    |
 Executing (implementation)
-    ↓
-Validating (quality gates) → Complete
+    |
+Validating (quality gates) -> Complete
 ```
 
 **Key Innovation**: Controllers use question-based delegation to specialists, synthesize answers, and coordinate implementation. Planning defines WHAT (objectives), controllers determine HOW (questions + synthesis).
@@ -60,9 +72,25 @@ This installs the complete system with all super-domains.
 ```bash
 git clone https://github.com/CaelanDrayer/cAgents.git
 cd cAgents
+./setup.sh  # Configures hooks based on Node.js availability
 ```
 
 Then configure Claude Code to load the plugin directory.
+
+### Setup Script
+
+The `setup.sh` script automatically configures hooks based on your environment:
+
+```bash
+# Auto-detect Node.js and configure appropriate hooks
+./setup.sh
+
+# Force shell-only mode (no Node.js hooks)
+./setup.sh --force-shell-only
+```
+
+**With Node.js**: All 13 hooks enabled (8 shell + 5 Node.js)
+**Without Node.js**: 8 shell hooks enabled, advanced features disabled
 
 ## Quick Start
 
@@ -102,11 +130,11 @@ The system automatically:
 
 | Tier | Type | Coordination | Example | Workflow |
 |------|------|--------------|---------|----------|
-| 0 | Trivial | None | "What is X?" | routing → answer |
-| 1 | Simple | None | "Fix typo" | routing → planning → executing → validating |
-| 2 | Moderate | 1 controller | "Fix bug" | routing → planning → **coordinating** → executing → validating |
-| 3 | Complex | 1 primary + 1-2 supporting | "Add feature" | routing → planning → **coordinating** → executing → validating |
-| 4 | Expert | 1 executive + 1 primary + 2-4 supporting + HITL | "Major refactor" | routing → planning → **coordinating** → executing → validating + HITL |
+| 0 | Trivial | None | "What is X?" | routing -> answer |
+| 1 | Simple | None | "Fix typo" | routing -> planning -> executing -> validating |
+| 2 | Moderate | 1 controller | "Fix bug" | routing -> planning -> **coordinating** -> executing -> validating |
+| 3 | Complex | 1 primary + 1-2 supporting | "Add feature" | routing -> planning -> **coordinating** -> executing -> validating |
+| 4 | Expert | 1 executive + 1 primary + 2-4 supporting + HITL | "Major refactor" | routing -> planning -> **coordinating** -> executing -> validating + HITL |
 
 ### Universal Commands
 
@@ -189,6 +217,26 @@ Agent_Memory/
 ```
 
 File-based, instruction-scoped, parallel-safe, pause/resume capable.
+
+## Hooks System
+
+cAgents uses Claude Code's hook system for workflow integration:
+
+| Hook Type | Shell Hooks | Node.js Hooks |
+|-----------|------------|---------------|
+| SessionStart | on-session-start.sh | session-catchup.cjs |
+| SessionEnd | on-session-end.sh | - |
+| Stop | stop-workflow.sh | verify-completion.cjs |
+| SubagentStop | on-workflow-complete.sh | - |
+| UserPromptSubmit | on-user-prompt.sh | - |
+| PreToolUse (Bash) | pre-bash.sh | - |
+| PreToolUse (Write) | pre-write.sh | secret-detection.cjs |
+| PreToolUse (Task) | on-task-start.sh | - |
+| PostToolUse (Task) | on-task-complete.sh | - |
+| PreCompact | - | pre-compact-save.cjs |
+| Notification | - | notification.cjs |
+
+Run `./setup.sh` to configure hooks based on Node.js availability.
 
 ## Documentation
 

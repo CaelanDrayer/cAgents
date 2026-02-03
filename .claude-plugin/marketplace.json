@@ -9,8 +9,8 @@
   "plugins": [
     {
       "name": "cagents",
-      "description": "Universal multi-domain agent system with 233 specialized agents across 5 super-domains. V8.0 features: Claude Code hooks system (12 hook types), progressive skill disclosure (SKILL.md), 4-tier model routing (Haiku/Sonnet/Opus), comprehensive security review (20+ patterns), session management with waypoints, metrics infrastructure, evaluation framework, CI/CD scripts, and instinct-based pattern learning. CSV-based task inventory for large-scale workflows (60-80% context savings). Controller-centric question-based delegation with minimum tier 2 enforcement ensures ALL requests use multi-agent specialist coverage. Parallel execution up to 50x speedup.",
-      "version": "8.0.20",
+      "description": "Universal multi-domain agent system with 233 specialized agents across 5 super-domains. V8.0 features: Claude Code hooks system (12 hook types), progressive skill disclosure (SKILL.md), 4-tier model routing (Haiku/Sonnet/Opus), comprehensive security review (20+ patterns), session management with waypoints, metrics infrastructure, evaluation framework, CI/CD scripts, and instinct-based pattern learning. CSV-based task inventory for large-scale workflows (60-80% context savings). Controller-centric question-based delegation with minimum tier 2 enforcement ensures ALL requests use multi-agent specialist coverage. Parallel execution up to 50x speedup. Setup script auto-detects Node.js and configures hooks accordingly.",
+      "version": "8.0.22",
       "author": {
         "name": "CaelanDrayer",
         "email": "caelan@caelandrayer.ca"
