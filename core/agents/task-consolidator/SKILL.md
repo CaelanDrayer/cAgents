@@ -60,4 +60,43 @@ Context optimization specialist for large tasks.
 - **Context safety**: No agent exceeds 8K
 - **Graceful failure**: One micro-task failure doesn't block entire task
 
+## Context Overflow Splitting
+
+When invoked by `universal-self-correct` after context exhaustion:
+
+### Input
+- `checkpoint_path`: Path to exhaustion waypoint
+- `remaining_work_items`: List of incomplete work items
+- `original_task_description`: What was being attempted
+
+### Splitting Strategy
+1. **Read checkpoint**: Load remaining work items and their acceptance criteria
+2. **Group by independence**: Items with no dependencies on each other -> parallel micro-tasks
+3. **Group by file**: Items touching the same file -> same micro-task (avoid merge conflicts)
+4. **Size each micro-task**: Target 8K tokens (estimate: 1 file read ~500 tokens, 1 file edit ~1K tokens, 1 test run ~2K tokens)
+5. **Generate micro-task definitions**: Each gets specific scope, files, and criteria
+
+### Output Format
+```yaml
+micro_tasks:
+  - id: MT-001
+    scope: "Edit src/auth/login.ts to add JWT validation"
+    files: [src/auth/login.ts]
+    acceptance_criteria: ["JWT tokens validated on login"]
+    estimated_tokens: 6000
+    dependencies: []
+  - id: MT-002
+    scope: "Write tests for JWT validation"
+    files: [tests/auth/login.test.ts]
+    acceptance_criteria: ["5 test cases covering JWT validation"]
+    estimated_tokens: 7000
+    dependencies: [MT-001]
+```
+
+### Sizing Rules
+- **Minimum micro-task**: 2K tokens (below this, overhead exceeds benefit)
+- **Maximum micro-task**: 12K tokens (above this, risk of re-exhaustion)
+- **Target micro-task**: 8K tokens (safe buffer for all model contexts)
+- **Max micro-tasks per split**: 20 (beyond this, coordination overhead is too high)
+
 See @resources/consolidation-patterns.md for detailed splitting strategies and merge patterns.

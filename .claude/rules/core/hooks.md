@@ -7,7 +7,7 @@ V8.0 hook system with all 12 official Claude Code hook types.
 cAgents uses a dual-hook system configured in `.claude/settings.json`:
 
 - **Shell hooks** (`hooks/`): 9 scripts for session lifecycle, workflow events, and tool validation. These are the baseline hooks that work without Node.js.
-- **JavaScript hooks** (`.claude/hooks/`): 5 registered `.cjs` scripts for advanced features (session catchup, secret detection, completion verification, pre-compact state save, notifications). Plus 1 standalone CLI tool (`eval-runner.cjs`).
+- **JavaScript hooks** (`.claude/hooks/`): 6 registered `.cjs` scripts for advanced features (session catchup, secret detection, completion verification, pre-compact state save, notifications, context overflow recovery). Plus 1 standalone CLI tool (`eval-runner.cjs`).
 
 The `setup.sh` script auto-detects Node.js and configures the appropriate settings. Without Node.js, only shell hooks are active (via `settings.shell-only.json`). With Node.js, both systems run (via `settings.full.json`).
 
@@ -28,7 +28,7 @@ The `setup.sh` script auto-detects Node.js and configures the appropriate settin
 | `PreCompact` | Before context compaction | `pre-compact-save.cjs` | Save critical state |
 | `PermissionRequest` | Permission dialog | (planned) | HITL integration |
 | `Error` | Error occurs | (planned) | Error tracking |
-| `ContextOverflow` | Context limit hit | (planned) | State preservation |
+| `ContextOverflow` | Context limit hit | `context-overflow.cjs` | Save exhaustion checkpoint, trigger self-correction |
 
 ## Active Hooks (V8.0)
 
@@ -102,6 +102,13 @@ The `setup.sh` script auto-detects Node.js and configures the appropriate settin
 - **Purpose**: Detect incomplete sessions on startup
 - **Outputs**: Resume options to user
 - **Creates**: `Agent_Memory/_system/incomplete_sessions.json`
+
+#### ContextOverflow
+- **File**: `.claude/hooks/context-overflow.cjs`
+- **Purpose**: Save exhaustion checkpoint when context limit is reached, trigger self-correction
+- **Creates**: Waypoint at `sessions/{id}/waypoints/wp-exhaustion-{timestamp}.yaml` and `continuation_needed.yaml`
+- **Recovery**: System message directs agent to invoke `universal-self-correct` with `correction_type: context_overflow`
+- **Output**: `{"continue": true, "systemMessage": "..."}`
 
 #### Eval Runner (CLI Tool, not a registered hook)
 - **File**: `.claude/hooks/eval-runner.cjs`

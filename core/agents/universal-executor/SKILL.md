@@ -67,4 +67,41 @@ The executor monitors controllers, doesn't manage teams:
 3. **Detect, Don't Prevent**: Early detection, auto-recovery, escalate if needed
 4. **Aggregate, Don't Synthesize**: Controller already synthesized
 
+## Subagent Context Failure Handling
+
+When a controller or execution agent exhausts its context:
+
+### Detection Signals
+- Controller's coordination_log.yaml has `status: in_progress` (not `completed`)
+- Expected output files missing after Task tool returns
+- Checkpoint/waypoint created by pre-compact hook
+
+### Recovery Protocol
+1. **Don't panic** - Partial work is preserved in session files
+2. **Read checkpoint**: Load `waypoints/` for the failed agent's state
+3. **Count continuations**: Track in `execution_state.yaml` (field: `continuation_count`)
+4. **If continuations < 5**: Invoke `universal-self-correct` with:
+   - `correction_type: context_overflow`
+   - `checkpoint_path: waypoints/wp-NNN.yaml`
+   - `remaining_work_items: [list from checkpoint]`
+5. **If continuations >= 5**: Escalate to HITL
+6. **After recovery**: Merge outputs and continue to validation
+
+### Continuation Tracking
+```yaml
+# execution_state.yaml
+continuation_count: 2
+continuations:
+  - attempt: 1
+    agent: make:backend-developer
+    reason: context_exhaustion
+    recovered_items: [WI-003, WI-004]
+    remaining_items: [WI-005, WI-006, WI-007]
+  - attempt: 2
+    agent: make:backend-developer
+    reason: context_exhaustion
+    recovered_items: [WI-005, WI-006]
+    remaining_items: [WI-007]
+```
+
 See @resources/executor-patterns.md for monitoring and blocker handling.

@@ -87,4 +87,24 @@ Read plan.yaml and coordination_log.yaml for context.
 [Full planner_config.yaml contents]
 ```
 
+## Context Exhaustion Recovery
+
+When a subagent (controller, executor, or any phase agent) returns with incomplete work:
+
+### Detection
+- Task tool returns but expected deliverables are missing
+- Waypoint/checkpoint files exist with `type: exhaustion`
+- Phase output is partial (e.g., coordination_log exists but has pending work items)
+
+### Recovery Flow
+1. **Read checkpoint**: Load latest waypoint from `sessions/{id}/waypoints/`
+2. **Assess damage**: What completed vs. what's still pending?
+3. **Invoke self-correct**: Spawn `universal-self-correct` with `correction_type: context_overflow`
+4. **Self-correct splits and retries**: It breaks remaining work into micro-tasks
+5. **Resume phase**: Continue from where the failed agent left off
+6. **If 5 continuations exceeded**: Escalate to HITL
+
+### Key Rule
+**Never retry the same scope at the same size.** Always split before retrying.
+
 See @resources/orchestration-frameworks.md for phase management and inventory patterns.
