@@ -1,15 +1,18 @@
 {
   "name": "cagents",
-  "version": "8.0.16",
-  "description": "cAgents V8.0 - Universal multi-domain agent system with 237 agents across 5 super-domains. Features: Claude Code hooks (12 types), progressive skill disclosure (SKILL.md), 4-tier model routing, session management, metrics infrastructure, evaluation framework, CI/CD scripts. CSV-based task inventory for large-scale workflows.",
+  "version": "8.0.24",
+  "description": "cAgents V8.0 - Universal multi-domain agent system with 231 agents across 5 super-domains. Features: Claude Code hooks (12 types), progressive skill disclosure (SKILL.md), 4-tier model routing, session management, metrics infrastructure, evaluation framework, CI/CD scripts. CSV-based task inventory for large-scale workflows.",
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run lint",
     "validate:configs": "python3 scripts/validate_agent_configs.py",
     "validate:agents": "python3 scripts/lint_agent_docs.py",
+    "validate:versions": "bash scripts/validate-versions.sh",
+    "validate:counts": "bash scripts/validate-agent-counts.sh",
     "generate:manifest": "bash scripts/generate_plugin_manifest.sh",
-    "lint": "npm run validate:configs && npm run validate:agents"
+    "lint": "npm run validate:configs && npm run validate:agents",
+    "ci": "npm run validate:versions && npm run validate:counts && npm run lint"
   },
   "keywords": [
     "agents",
@@ -41,11 +44,11 @@
   "license": "MIT",
   "architecture": "Controller-Centric Question-Based Delegation",
   "agents": {
-    "total": 237,
+    "total": 231,
     "core": 12,
     "shared": 14,
     "breakdown": {
-      "make": 114,
+      "make": 108,
       "grow": 37,
       "operate": 13,
       "people": 19,

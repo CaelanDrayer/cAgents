@@ -2,7 +2,7 @@
 
 **Universal Multi-Domain Agent System for Claude Code**
 
-V8.0.11 - Production-ready controller-centric architecture with 237 agents across 5 super-domains. Progressive Disclosure Edition.
+V8.0.11 - Production-ready controller-centric architecture with 231 agents across 5 super-domains. Progressive Disclosure Edition.
 
 ## Overview
 
@@ -14,7 +14,7 @@ cAgents transforms AI-assisted work across any domain through specialized agent 
 - 4-tier model routing (Haiku/Sonnet/Opus)
 - Session management with waypoints and recovery
 - Evaluation framework and CI/CD scripts
-- Total agents: 237 (12 core + 14 shared + 211 domain specialists)
+- Total agents: 231 (12 core + 14 shared + 205 domain specialists)
 
 ## Requirements
 
@@ -32,7 +32,7 @@ Without Node.js, cAgents works with shell-only hooks for basic session and workf
 
 **V7.0 Controller-Centric Question-Based Delegation**
 
-237 agents organized into:
+231 agents organized into:
 - **Core** (12): Infrastructure (trigger, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, 5 universal workflow agents)
 - **Shared** (14): Cross-domain capabilities (data, analytics, quality, compliance, customer, operations)
 - **Make** (114): Creation (engineering, creative, product, devops, qa, **game development** - includes 10 SKILL.md directories)
@@ -265,7 +265,7 @@ Run `./setup.sh` to configure hooks based on Node.js availability.
 
 ## Version History
 
-- **V8.0.7** (2026-01-28) - Infrastructure & Learning Edition: Hooks, SKILL.md, model routing, session management, 233 agents
+- **V8.0.7** (2026-01-28) - Infrastructure & Learning Edition: Hooks, SKILL.md, model routing, session management, 231 agents
 - **V7.5.1** (2026-01-22) - Task Inventory Edition: CSV-based task inventory, aggressive decomposition, completion validation
 - **V7.3.0** (2026-01-19) - Game Development Edition: 28 new game dev agents, Make domain expanded to 108 agents
 - **V7.1.0** (2026-01-19) - Cleanup release: removed 358 legacy agents, streamlined to 7 directories, 201 production agents
@@ -286,4 +286,4 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | **cAgents V8.0.7** | 233 agents across 5 super-domains
+**Built with Claude Code** | **cAgents V8.0.7** | 231 agents across 5 super-domains

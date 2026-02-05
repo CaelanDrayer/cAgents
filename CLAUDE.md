@@ -148,7 +148,7 @@ Use `@path/to/file` syntax to include external content:
 - **Tier 2**: Controllers (coordinate work items via batch delegation)
 - **Tier 3**: Execution agents (implement work items)
 - **Tier 4**: Support agents (foundational services)
-- **Total**: 237 agents
+- **Total**: 231 agents
 - **Execution**: 4 modes (Sequential, Pipeline, Swarm, Mesh) - up to 50x speedup
 
 **Agent Distribution**:
@@ -650,7 +650,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 ## Quick Reference
 
 **Commands**: `/run`, `/designer`, `/review`, `/optimize`, `/memory`, `/init`
-**Agents**: 237 total (13 core + 14 shared + 210 domain specialists)
+**Agents**: 231 total (12 core + 14 shared + 205 domain specialists)
 **Super-Domains**: Make (109), Grow (39), Operate (13), People (21), Serve (28)
 **Key Files**: `CLAUDE.md`, `.claude/rules/*.md`, `{domain}/config/*.yaml`
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
@@ -674,7 +674,7 @@ See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 
 ---
 
-**Total Agents**: 237 (13 core + 14 shared + 210 domain specialists)
+**Total Agents**: 231 (12 core + 14 shared + 205 domain specialists)
 **Architecture**: Controller-Centric Coordination with Task Inventory
 **Super-Domains**: 5 (Make, Grow, Operate, People, Serve)
 **Directories**: 7 (core, shared, make, grow, operate, people, serve)
