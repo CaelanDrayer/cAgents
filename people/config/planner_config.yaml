@@ -1,7 +1,7 @@
 super_domain: people
 description: Planning configuration for PEOPLE super-domain
 
-# Shared questions used by all controllers in this domain
+# Shared questions defined once via YAML anchor. See .claude/rules/core/shared-questions.md
 shared_questions: &people_questions
   - "What are the current team dynamics and gaps?"
   - "What are the cultural considerations?"

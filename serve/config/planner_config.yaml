@@ -1,7 +1,7 @@
 super_domain: serve
 description: Planning configuration for SERVE super-domain
 
-# Shared questions used by all controllers in this domain
+# Shared questions defined once via YAML anchor. See .claude/rules/core/shared-questions.md
 shared_questions: &serve_questions
   - "What are the customer pain points?"
   - "What are the service level requirements?"

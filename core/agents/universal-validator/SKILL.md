@@ -97,7 +97,7 @@ See @resources/classification-logic.md for PASS/FIXABLE/BLOCKED rules.
 - `instruction.yaml`, `workflow/plan.yaml`
 - `workflow/coordination_log.yaml` (primary validation target)
 - `outputs/*` (all outputs)
-- `_system/domains/{domain}/validator_config.yaml`
+- `{domain}/config/validator_config.yaml`
 
 ---
 

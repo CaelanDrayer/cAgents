@@ -91,7 +91,7 @@ See @resources/unsaid-framework.md for implicit requirement discovery.
 ### Reads
 - `instruction.yaml` - User request
 - Codebase files via Grep/Glob - Context discovery
-- `_system/domains/{domain}/decomposition_patterns.yaml` - Domain patterns
+- `{domain}/config/planner_config.yaml` - Domain controller catalog and patterns
 
 ---
 

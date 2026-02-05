@@ -87,6 +87,23 @@ After creating plan and decomposition:
 - **DO NOT** ask user to review decomposition
 - **DO NOT** wait for user approval
 
+## Context Efficiency
+
+Keep plan.yaml and decomposition.yaml concise to prevent downstream context overloading:
+
+**plan.yaml budget**: Under 50 lines (~500 tokens)
+- Objectives (2-5 items, 1-2 lines each)
+- Controller assignment (3 lines)
+- Summary stats (5 lines)
+- Reference `workflow/decomposition.yaml` for details
+
+**decomposition.yaml budget**: Under 150 lines (~1500 tokens)
+- Work items with ID, name, type, dependencies, acceptance criteria
+- Skip verbose descriptions - acceptance criteria IS the specification
+- Use IDs for cross-references, not repeated text
+
+**Anti-pattern**: Duplicating acceptance criteria in both plan.yaml objectives AND decomposition.yaml work items. Define once in decomposition, reference by WI-ID from plan.
+
 ---
 
 **Part of**: cAgents Aggressive Task Decomposition

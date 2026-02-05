@@ -62,8 +62,8 @@ When committing changes to this repository, you MUST increment the version in:
 | Change Type | Bump | Example |
 |-------------|------|---------|
 | Bug fix, minor tweak | patch | 8.0.16 -> 8.0.17 |
-| New feature, enhancement | minor | 8.0.17 -> 8.1.0 |
-| Breaking change, major refactor | major | 8.1.0 -> 9.0.0 |
+| New feature, enhancement | minor | 8.0.17 -> 8.1.1 |
+| Breaking change, major refactor | major | 8.1.1 -> 9.0.0 |
 
 **Commit checklist**:
 1. Make your changes
@@ -681,4 +681,4 @@ See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 **Directories**: 7 (core, shared, make, grow, operate, people, serve)
 **Key Innovation**: CSV-based task inventory for large workflows + aggressive decomposition
 **Dependencies**: None (file-based, self-contained)
-**Version**: 8.1.0
+**Version**: 8.1.1

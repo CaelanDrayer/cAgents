@@ -1,7 +1,7 @@
 super_domain: grow
 description: Planning configuration for GROW super-domain
 
-# Shared questions used by all controllers in this domain
+# Shared questions defined once via YAML anchor. See .claude/rules/core/shared-questions.md
 shared_questions: &grow_questions
   - "What are the current campaign/sales metrics?"
   - "What is the target audience and positioning?"

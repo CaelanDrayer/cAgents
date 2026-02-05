@@ -62,4 +62,29 @@ Controllers are the primary coordination layer:
 2. **Controller-centric** - Controllers coordinate, not planner or executor
 3. **DELEGATE EVERYTHING** - Never do direct work, always spawn subagents
 
+## Context-Efficient Delegation
+
+When spawning subagents via Task tool, minimize context passed in prompts:
+
+1. **Pass file PATHS, not file CONTENTS** - Let subagents load what they need
+2. **Essential fields only** - domain, tier, controller name, session path
+3. **Never repeat SKILL.md content** in delegation prompts
+4. **Max prompt size**: ~500 tokens for delegation (request + paths + flags)
+
+**Delegation prompt template**:
+```
+Request: {user_request}
+Session: Agent_Memory/sessions/{session_id}/
+Domain: {domain} | Tier: {tier} | Controller: {controller}
+Read plan.yaml and coordination_log.yaml for context.
+```
+
+**Anti-pattern** (wastes 3-5K tokens):
+```
+[Full instruction.yaml contents]
+[Full plan.yaml contents]
+[Full decomposition.yaml contents]
+[Full planner_config.yaml contents]
+```
+
 See @resources/orchestration-frameworks.md for phase management and inventory patterns.

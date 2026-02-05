@@ -223,44 +223,14 @@ The command delegates ALL workflow logic to the trigger agent using Task tool:
 
 ```javascript
 Task({
-  subagent_type: "trigger",
-  description: "Initialize workflow with enhanced detection and validation",
+  subagent_type: "cagents:trigger",
+  description: "Workflow: {flags.request}",
   prompt: `
-    User Request: {flags.request}
+    Request: {flags.request}
+    Flags: {JSON.stringify(flags)}
 
-    Flags:
-    - Interactive mode: {flags.interactive}
-    - Dry-run mode: {flags.dryRun}
-    - Quiet mode: {flags.quiet}
-    - Stream progress: {flags.stream}
-    - Skip preflight: {flags.skipPreflight}
-    - Template: {flags.template || 'auto-match'}
-    - Domain override: {flags.domain || 'auto-detect'}
-    - Tier override: {flags.tier || 'auto-classify'}
-    - Confidence threshold: {flags.confidence}
-
-    Initialize the universal workflow:
-    1. Gather context (git, project structure, frameworks)
-    2. Detect domain using 3-method scoring (keyword 30%, context 40%, framework 30%)
-    3. Classify intent (bug fix, feature, refactor, etc.)
-    4. Match workflow template (13 templates available)
-    5. Run pre-flight validation (4 levels: context, feasibility, resources, conflicts)
-    6. If interactive: Ask user preferences
-    7. If dry-run: Show preview and stop
-    8. Create instruction folder with enhanced metadata
-    9. Track analytics (initiation metrics)
-    10. Delegate to orchestrator with recommendations
-
-    Config Files:
-    - Agent_Memory/_system/trigger/domain_detection.yaml
-    - Agent_Memory/_system/commands/run/workflow_templates.yaml
-    - Agent_Memory/_system/commands/run/preflight_validation.yaml
-    - Agent_Memory/_system/commands/run/workflow_analytics.yaml
-
-    Session Folder:
-    - Agent_Memory/sessions/run_{YYYYMMDD_HHMMSS}/
-
-    Keep user informed with TodoWrite at every step.
+    Initialize workflow. Detect domain, classify intent, validate, delegate to orchestrator.
+    Session: Agent_Memory/sessions/run_{YYYYMMDD_HHMMSS}/
   `
 })
 ```
@@ -385,9 +355,9 @@ TodoWrite({
 
 **Configuration Files**:
 - `Agent_Memory/_system/trigger/domain_detection.yaml` - Detection rules
-- `Agent_Memory/_system/commands/run/workflow_templates.yaml` - Template catalog
-- `Agent_Memory/_system/commands/run/preflight_validation.yaml` - Validation framework
-- `Agent_Memory/_system/commands/run/workflow_analytics.yaml` - Analytics config
+- `Agent_Memory/_system/trigger/workflow_templates.yaml` - Template catalog
+- `Agent_Memory/_system/trigger/preflight_validation.yaml` - Validation framework
+- `Agent_Memory/_system/trigger/workflow_analytics.yaml` - Analytics config
 
 **Session Folder**:
 - `Agent_Memory/sessions/run_{YYYYMMDD_HHMMSS}/` - Per-workflow session data

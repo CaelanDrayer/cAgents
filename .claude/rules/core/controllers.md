@@ -64,6 +64,34 @@ Task({
 })
 ```
 
+### Context-Efficient Question Delegation
+
+When delegating questions to execution agents, keep prompts minimal:
+
+**Good** (~200 tokens):
+```javascript
+Task({
+  subagent_type: "make:backend-developer",
+  description: "Answer: What is current auth implementation?",
+  prompt: "What is the current authentication implementation? Check src/ for auth-related code. Report: method used, libraries, known issues."
+})
+```
+
+**Bad** (~2000 tokens):
+```javascript
+Task({
+  subagent_type: "make:backend-developer",
+  description: "Answer: What is current auth implementation?",
+  prompt: "[Full plan.yaml...] [Full decomposition.yaml...] [Full instruction.yaml...] Question: What is the current authentication implementation?"
+})
+```
+
+**Rules**:
+- Question prompts should be **under 300 tokens**
+- Include only: the question, where to look, what to report
+- Do NOT include plan/decomposition/instruction contents
+- Execution agents can read session files themselves if needed
+
 ## Controller Role
 
 Controllers are tier 2 agents that:

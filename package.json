@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "8.1.0",
+  "version": "8.1.1",
   "description": "cAgents V8.1 - Universal multi-domain agent system with 234 agents across 5 super-domains. Features: 100% SKILL.md progressive disclosure migration, Claude Code hooks (12 types), 4-tier model routing, session management, metrics infrastructure, evaluation framework, CI/CD scripts. CSV-based task inventory for large-scale workflows.",
   "type": "module",
   "main": "index.js",
