@@ -91,7 +91,7 @@ class ConfigValidator:
             print(f"{RED}Error: Agent_Memory/_system/domains/ not found{RESET}")
             return (1, 0, 0)
 
-        domains = [d for d in self.domains_config_path.iterdir() if d.is_dir()]
+        domains = [d for d in self.domains_config_path.iterdir() if d.is_dir() and not d.name.startswith('_')]
 
         if not domains:
             print(f"{YELLOW}Warning: No domains found in {self.domains_config_path}{RESET}")
@@ -205,11 +205,14 @@ class ConfigValidator:
             self.errors.append(f"{domain_name}: Domain directory not found: {ref_domain}")
             return
 
-        # Check if agent file exists
+        # Check if agent file exists (supports both flat .md and directory/SKILL.md formats)
         agent_file = domain_dir / "agents" / f"{agent_name}.md"
+        agent_skill_file = domain_dir / "agents" / agent_name / "SKILL.md"
 
-        if not agent_file.exists():
-            error = f"    {RED}Agent not found: {controller_ref} ({agent_file}){RESET}"
+        if agent_skill_file.exists():
+            agent_file = agent_skill_file
+        elif not agent_file.exists():
+            error = f"    {RED}Agent not found: {controller_ref} (checked {agent_file} and {agent_skill_file}){RESET}"
             print(error)
             self.errors.append(f"{domain_name}: Agent not found: {controller_ref}")
             return

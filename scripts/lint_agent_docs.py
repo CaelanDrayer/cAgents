@@ -33,7 +33,7 @@ BLUE = '\033[94m'
 RESET = '\033[0m'
 
 REQUIRED_FIELDS = ['name', 'tier', 'description', 'tools', 'model']
-VALID_TIERS = ['controller', 'execution', 'support', 'core']
+VALID_TIERS = ['controller', 'execution', 'support', 'core', 'infrastructure']
 VALID_MODELS = ['sonnet', 'opus', 'haiku']
 
 @dataclass
@@ -60,22 +60,18 @@ class AgentLinter:
 
         agent_files = []
 
-        # Core agents
-        core_agents = self.project_root / "core" / "agents"
-        if core_agents.exists():
-            agent_files.extend(core_agents.glob("*.md"))
-
-        # Shared agents
-        shared_agents = self.project_root / "shared" / "agents"
-        if shared_agents.exists():
-            agent_files.extend(shared_agents.glob("*.md"))
-
-        # Domain agents (check all directories with agents/ subdirectory)
+        # Search all directories with agents/ subdirectory (core, shared, domains)
+        skip_filenames = {'README.md', 'CHANGELOG.md', 'INDEX.md'}
         for item in self.project_root.iterdir():
             if item.is_dir() and not item.name.startswith('.') and not item.name.startswith('_'):
                 agents_dir = item / "agents"
                 if agents_dir.exists():
-                    agent_files.extend(agents_dir.glob("*.md"))
+                    # Flat agent files (agent-name.md), excluding non-agent files
+                    for f in agents_dir.glob("*.md"):
+                        if f.name not in skip_filenames:
+                            agent_files.append(f)
+                    # Directory agent files (agent-name/SKILL.md)
+                    agent_files.extend(agents_dir.glob("*/SKILL.md"))
 
         return sorted(agent_files)
 
@@ -222,33 +218,50 @@ class AgentLinter:
 
         if 'tools' in frontmatter:
             tools = frontmatter['tools']
-            if not isinstance(tools, list):
+            if isinstance(tools, str):
+                # Accept comma-separated string format (standard SKILL.md format)
+                tools_list = [t.strip() for t in tools.split(',') if t.strip()]
+                if len(tools_list) == 0:
+                    issues.append(AgentIssue(
+                        file_path=agent_file,
+                        severity='info',
+                        issue_type='no_tools',
+                        message="No tools specified (agent may not use any tools)",
+                        field='tools'
+                    ))
+            elif isinstance(tools, list):
+                if len(tools) == 0:
+                    issues.append(AgentIssue(
+                        file_path=agent_file,
+                        severity='info',
+                        issue_type='no_tools',
+                        message="No tools specified (agent may not use any tools)",
+                        field='tools'
+                    ))
+            else:
                 issues.append(AgentIssue(
                     file_path=agent_file,
                     severity='warning',
                     issue_type='invalid_tools',
-                    message=f"tools should be a list, got: {type(tools).__name__}",
-                    field='tools'
-                ))
-            elif len(tools) == 0:
-                issues.append(AgentIssue(
-                    file_path=agent_file,
-                    severity='info',
-                    issue_type='no_tools',
-                    message="No tools specified (agent may not use any tools)",
+                    message=f"tools should be a list or comma-separated string, got: {type(tools).__name__}",
                     field='tools'
                 ))
 
-        # Check name matches filename
+        # Check name matches filename/directory
         if 'name' in frontmatter:
-            expected_name = agent_file.stem
+            # For SKILL.md files, expected name is the parent directory name
+            # For flat .md files, expected name is the file stem
+            if agent_file.name == 'SKILL.md':
+                expected_name = agent_file.parent.name
+            else:
+                expected_name = agent_file.stem
             actual_name = frontmatter['name']
             if actual_name != expected_name:
                 issues.append(AgentIssue(
                     file_path=agent_file,
                     severity='warning',
                     issue_type='name_mismatch',
-                    message=f"Name mismatch: frontmatter '{actual_name}' != filename '{expected_name}'",
+                    message=f"Name mismatch: frontmatter '{actual_name}' != expected '{expected_name}'",
                     field='name'
                 ))
 
