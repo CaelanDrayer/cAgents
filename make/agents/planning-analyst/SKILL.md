@@ -27,6 +27,14 @@ Planning analytics and data-driven insights.
 - Identify improvement opportunities
 - Support data-driven planning
 
+## Metrics and KPI Tracking
+
+See @resources/metrics-and-kpi-tracking.md for the full guide to planning metrics, KPI frameworks, dashboard design patterns, and data collection best practices.
+
+## Forecasting Techniques
+
+See @resources/forecasting-techniques.md for detailed quantitative and qualitative forecasting methods, validation approaches, error metrics, and communication guidelines.
+
 ## Success Metrics
 
 - Forecast accuracy >80%

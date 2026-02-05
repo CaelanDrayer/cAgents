@@ -52,3 +52,9 @@ People operations coordination and HR process management.
 - Policy compliance rates
 - Onboarding effectiveness
 - HR service delivery quality
+
+## Detailed Resources
+
+See @resources/hr-operations-framework.md for the HR service delivery model, onboarding/offboarding processes, policy development framework, and compliance calendar.
+
+See @resources/employee-lifecycle-management.md for the full employee lifecycle (attract through alumni), performance management cycles, retention strategies, and career pathway frameworks.

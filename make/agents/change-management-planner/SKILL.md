@@ -27,6 +27,12 @@ Organizational change planning and adoption.
 - Track adoption and behavior change
 - Conduct change reinforcement
 
+## Detailed Resources
+
+See @resources/change-strategy-frameworks.md for ADKAR, Kotter's 8-Step, readiness assessment, and strategy selection guidance.
+
+See @resources/stakeholder-adoption-playbook.md for stakeholder mapping, resistance management, champion networks, and adoption measurement.
+
 ## Success Metrics
 
 - Change adoption rate >80%

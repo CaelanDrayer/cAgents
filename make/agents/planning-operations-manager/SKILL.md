@@ -35,6 +35,12 @@ Planning process and operational excellence.
 - Facilitate planning reviews
 - Support continuous improvement
 
+## Detailed Resources
+
+See @resources/process-optimization-framework.md for the structured approach to evaluating, redesigning, and improving planning processes.
+
+See @resources/planning-templates-guide.md for the comprehensive guide to creating, managing, and governing planning templates.
+
 ## Success Metrics
 
 - Planning cycle time reduction YoY

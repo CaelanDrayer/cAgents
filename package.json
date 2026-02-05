@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "8.0.28",
-  "description": "cAgents V8.0 - Universal multi-domain agent system with 231 agents across 5 super-domains. Features: Claude Code hooks (12 types), progressive skill disclosure (SKILL.md), 4-tier model routing, session management, metrics infrastructure, evaluation framework, CI/CD scripts. CSV-based task inventory for large-scale workflows.",
+  "version": "8.1.0",
+  "description": "cAgents V8.1 - Universal multi-domain agent system with 234 agents across 5 super-domains. Features: 100% SKILL.md progressive disclosure migration, Claude Code hooks (12 types), 4-tier model routing, session management, metrics infrastructure, evaluation framework, CI/CD scripts. CSV-based task inventory for large-scale workflows.",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -44,14 +44,14 @@
   "license": "MIT",
   "architecture": "Controller-Centric Question-Based Delegation",
   "agents": {
-    "total": 231,
+    "total": 234,
     "core": 12,
     "shared": 14,
     "breakdown": {
-      "make": 108,
-      "grow": 37,
+      "make": 109,
+      "grow": 38,
       "operate": 13,
-      "people": 19,
+      "people": 20,
       "serve": 28
     },
     "game_dev_edition": "28 new game development agents added to Make domain",

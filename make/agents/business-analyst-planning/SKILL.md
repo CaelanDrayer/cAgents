@@ -27,6 +27,12 @@ Business requirements gathering and analysis.
 - Document business requirements
 - Validate solutions against needs
 
+## Detailed Resources
+
+See @resources/requirements-gathering-framework.md for elicitation techniques, documentation templates, and prioritization methods.
+
+See @resources/gap-analysis-methods.md for current/desired state analysis, impact assessment, and gap tracking frameworks.
+
 ## Success Metrics
 
 - Requirements completeness >90%

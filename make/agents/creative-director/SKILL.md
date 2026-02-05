@@ -43,6 +43,12 @@ Creative vision and direction for Make domain projects.
 - Creative standards and guidelines
 - Cross-team creative coordination
 
+## Detailed Resources
+
+See @resources/creative-direction-guide.md for creative brief templates, narrative architecture, quality review frameworks, and cross-team coordination.
+
+See @resources/visual-strategy-patterns.md for color strategy, typography systems, layout patterns, design system governance, and motion principles.
+
 ## Success Metrics
 
 - Creative output quality

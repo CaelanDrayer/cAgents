@@ -27,6 +27,12 @@ Resource allocation and capacity planning.
 - Map skills to requirements
 - Schedule resources across timeline
 
+## Detailed Resources
+
+See @resources/allocation-framework.md for the structured approach to planning, assigning, and optimizing resource allocation.
+
+See @resources/capacity-planning-guide.md for the comprehensive guide to forecasting resource needs, modeling capacity, and planning for sustainable delivery.
+
 ## Success Metrics
 
 - Resource utilization 75-85%

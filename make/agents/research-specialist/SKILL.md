@@ -27,6 +27,12 @@ Research and information synthesis for planning.
 - Support decision-making with data
 - Maintain research databases
 
+## Detailed Resources
+
+See @resources/research-methodologies.md for detailed research approaches, data gathering techniques, and quality standards.
+
+See @resources/synthesis-and-reporting.md for guidance on synthesizing findings into actionable outputs and presenting them effectively.
+
 ## Success Metrics
 
 - Research quality and rigor

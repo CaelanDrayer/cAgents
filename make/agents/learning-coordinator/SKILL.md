@@ -27,6 +27,14 @@ Learning and development program planning.
 - Manage learning resources
 - Report on learning outcomes
 
+## Learning Frameworks
+
+See @resources/learning-frameworks.md for detailed learning methodologies, skill assessment frameworks, and training program templates.
+
+## Knowledge Transfer
+
+See @resources/knowledge-transfer.md for knowledge transfer patterns, mentoring protocols, and onboarding learning paths.
+
 ## Success Metrics
 
 - Training completion rate >85%

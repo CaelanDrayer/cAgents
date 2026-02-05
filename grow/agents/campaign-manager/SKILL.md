@@ -53,3 +53,9 @@ Campaign execution and performance leadership.
 - Cost per acquisition
 - Channel performance
 - Budget utilization efficiency
+
+## Detailed Resources
+
+See @resources/campaign-planning-framework.md for campaign brief templates, channel selection matrices, timeline templates, and cross-functional coordination patterns.
+
+See @resources/metrics-and-optimization.md for the metrics hierarchy, A/B testing protocols, optimization playbooks, and post-campaign analysis templates.

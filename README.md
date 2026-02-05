@@ -2,19 +2,19 @@
 
 **Universal Multi-Domain Agent System for Claude Code**
 
-V8.0.28 - Production-ready controller-centric architecture with 231 agents across 5 super-domains. Progressive Disclosure Edition.
+V8.1.0 - Production-ready controller-centric architecture with 234 agents across 5 super-domains. 100% SKILL.md Progressive Disclosure Edition.
 
 ## Overview
 
 cAgents transforms AI-assisted work across any domain through specialized agent teams that collaborate autonomously. From software engineering to marketing, operations to creative work - one unified system handles it all.
 
-**V8.0.28 Release** (2026-02-04):
+**V8.1.0 Release** (2026-02-04):
 - Claude Code hooks system (12 types, 6 implementations)
 - Progressive skill disclosure (all agents use SKILL.md format with resources/)
 - 4-tier model routing (Haiku/Sonnet/Opus)
 - Session management with waypoints and recovery
 - Evaluation framework and CI/CD scripts
-- Total agents: 231 (12 core + 14 shared + 205 domain specialists)
+- Total agents: 234 (12 core + 14 shared + 208 domain specialists)
 
 ## Requirements
 
@@ -32,13 +32,13 @@ Without Node.js, cAgents works with shell-only hooks for basic session and workf
 
 **V7.0 Controller-Centric Question-Based Delegation**
 
-231 agents organized into:
+234 agents organized into:
 - **Core** (12): Infrastructure (trigger, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, 5 universal workflow agents)
 - **Shared** (14): Cross-domain capabilities (data, analytics, quality, compliance, customer, operations)
-- **Make** (108): Creation (engineering, creative, product, devops, qa, **game development**)
-- **Grow** (37): Acquisition (marketing, sales, partnerships)
+- **Make** (109): Creation (engineering, creative, product, devops, qa, **game development**)
+- **Grow** (38): Acquisition (marketing, sales, partnerships)
 - **Operate** (13): Operations (finance, operations, procurement)
-- **People** (19): Talent (HR, culture, talent acquisition)
+- **People** (20): Talent (HR, culture, talent acquisition)
 - **Serve** (28): Support & Governance (customer experience, legal, compliance, support)
 
 ```
@@ -146,13 +146,13 @@ The system automatically:
 
 ## Super-Domains
 
-### Make (Creation) - 108 agents
+### Make (Creation) - 109 agents
 Engineering, creative writing, product design, devops, QA, **game development**
 - **Controllers**: engineering-manager, architect, creative-director, product-manager, game-director, cto, cco
 - **Execution**: backend-developer, frontend-developer, copywriter, story-architect, gameplay-programmer, level-designer, game-artist, audio-engineer, qa-lead, security-specialist
 - **Use cases**: Software development, creative content, product design, technical writing, **game development (Unity, Unreal, Godot)**
 
-### Grow (Acquisition) - 37 agents
+### Grow (Acquisition) - 38 agents
 Marketing, sales, partnerships
 - **Controllers**: marketing-strategist, campaign-manager, sales-strategist, cro
 - **Execution**: content-strategist, copywriter, seo-specialist, sales-development-rep, account-executive
@@ -164,7 +164,7 @@ Finance, operations, procurement
 - **Execution**: financial-analyst, budget-analyst, procurement-specialist, supply-chain-manager
 - **Use cases**: Financial planning, budgeting, operations optimization, procurement
 
-### People (Talent) - 19 agents
+### People (Talent) - 20 agents
 HR, talent acquisition, culture
 - **Controllers**: hr-manager, talent-acquisition-specialist, chro
 - **Execution**: recruiter, onboarding-specialist, culture-champion, learning-development-specialist
@@ -260,12 +260,12 @@ Run `./setup.sh` to configure hooks based on Node.js availability.
 **V8.0 Infrastructure & Learning Edition**:
 - CSV-based task inventory for 20+ task workflows (60-80% context savings)
 - Aggressive task decomposition with implicit requirement discovery
-- Total agents: 231 (12 core + 14 shared + 205 domain specialists)
+- Total agents: 234 (12 core + 14 shared + 208 domain specialists)
 - Game engines supported: Unity, Unreal Engine, Godot
 
 ## Version History
 
-- **V8.0.7** (2026-01-28) - Infrastructure & Learning Edition: Hooks, SKILL.md, model routing, session management, 231 agents
+- **V8.0.7** (2026-01-28) - Infrastructure & Learning Edition: Hooks, SKILL.md, model routing, session management, 234 agents
 - **V7.5.1** (2026-01-22) - Task Inventory Edition: CSV-based task inventory, aggressive decomposition, completion validation
 - **V7.3.0** (2026-01-19) - Game Development Edition: 28 new game dev agents, Make domain expanded to 108 agents
 - **V7.1.0** (2026-01-19) - Cleanup release: removed 358 legacy agents, streamlined to 7 directories, 201 production agents
@@ -286,4 +286,4 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | **cAgents V8.0.28** | 231 agents across 5 super-domains
+**Built with Claude Code** | **cAgents V8.1.0** | 234 agents across 5 super-domains

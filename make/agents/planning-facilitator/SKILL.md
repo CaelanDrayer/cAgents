@@ -34,6 +34,12 @@ Workshop and planning session facilitation.
 - Affinity mapping and clustering
 - Force field analysis
 
+See @resources/facilitation-techniques.md for detailed technique guides including idea generation methods, prioritization frameworks, consensus building approaches, session design patterns, and strategies for managing difficult group dynamics.
+
+## Agenda Design
+
+See @resources/agenda-design-patterns.md for agenda templates covering quarterly planning, sprint planning, roadmap reviews, and problem-solving workshops, along with pre-session and post-session protocols.
+
 ## Success Metrics
 
 - Workshop effectiveness >85%

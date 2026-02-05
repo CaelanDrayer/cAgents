@@ -27,6 +27,14 @@ Predictive analytics and forecasting for planning.
 - Report on forecast performance
 - Support planning with data insights
 
+## Forecasting Models
+
+See @resources/forecasting-models.md for statistical forecasting techniques, time series analysis, and model selection criteria.
+
+## Data Patterns
+
+See @resources/data-patterns.md for pattern recognition techniques, anomaly detection, and trend analysis methods.
+
 ## Success Metrics
 
 - Forecast accuracy >80%

@@ -27,6 +27,14 @@ Market research and competitive intelligence for planning.
 - Create market research reports
 - Monitor competitive movements
 
+## Research Methodologies
+
+See @resources/research-methodologies.md for detailed primary and secondary research methods including qualitative techniques, quantitative approaches, market sizing frameworks, and synthesis deliverables.
+
+## Competitive Analysis
+
+See @resources/competitive-analysis-framework.md for the structured four-phase competitive intelligence framework covering identification, collection, analysis, and application to planning.
+
 ## Success Metrics
 
 - Research completeness and accuracy
