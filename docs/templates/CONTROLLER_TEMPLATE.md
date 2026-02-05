@@ -1,7 +1,7 @@
 ---
 name: controller-name
 tier: controller
-domain: engineering
+domain: make
 version: "1.0.0"
 description: Brief description of this controller's coordination focus
 coordination_style: question_based
@@ -95,7 +95,7 @@ This controller typically delegates to:
 ### coordination_log.yaml
 
 ```yaml
-controller: engineering:controller-name
+controller: make:controller-name
 objectives: [...]
 questions_asked:
   - question: "..."

@@ -1,9 +1,9 @@
-# Domain Structure Standard (V7.5.1)
+# Domain Structure Standard
 
-**Status**: V7.5.1 Super-Domain Standard
-**Last Updated**: 2026-01-22
+**Status**: Current Super-Domain Standard
+**Last Updated**: 2026-02-05
 
-## V7.5.1 Super-Domain Structure
+## Super-Domain Structure
 
 All domains follow this structure:
 
@@ -12,14 +12,15 @@ All domains follow this structure:
 ├── .claude-plugin/
 │   └── plugin.json          # Domain plugin manifest
 ├── agents/
-│   ├── {agent-name}.md      # Agent definitions (with tier field)
+│   ├── {agent-name}/        # Directory-based agents (SKILL.md + resources/)
+│   ├── {agent-name}.md      # Single-file agents
 │   └── ...
-├── config/                  # Domain-specific configs (V7.5.1+)
+├── config/                  # Domain-specific configs
 │   ├── planner_config.yaml  # Controller catalog + planning templates
 │   ├── router_config.yaml   # Routing patterns
-│   ├── executor_config.yaml # Execution patterns
-│   ├── validator_config.yaml # Validation rules
-│   └── self_correct_config.yaml # Recovery patterns
+│   ├── executor_config.yaml # Execution patterns (inherits shared/config/base_executor_config.yaml)
+│   ├── validator_config.yaml # Validation rules (inherits shared/config/base_validator_config.yaml)
+│   └── self_correct_config.yaml # Recovery patterns (inherits shared/config/base_self_correct_config.yaml)
 └── README.md                # Domain overview (optional)
 ```
 
@@ -30,18 +31,20 @@ All domains follow this structure:
 - Lists all agents in the domain
 - Specifies dependencies
 
-**2. `agents/{agent-name}.md`**
+**2. `agents/{agent-name}.md` or `agents/{agent-name}/SKILL.md`**
 - Agent definition with YAML frontmatter
-- **MUST include `tier` field** (controller, execution, or infrastructure)
+- **MUST include `tier` field** (controller, execution, or support)
 - Tools, model, description
+- Directory-based agents use progressive disclosure (SKILL.md + resources/)
 
-**3. `config/*.yaml` (V7.5.1)**
+**3. `config/*.yaml`**
 - Domain-specific planner, router, executor, validator, self-correct configs
+- Executor, validator, and self_correct configs inherit shared base templates via `_base` field
 - Use YAML anchors for shared patterns (see planner_config optimization)
 
 ---
 
-## V7.5.1 Super-Domains
+## Super-Domains
 
 Current official super-domains:
 
@@ -104,10 +107,34 @@ Combines: Customer Experience + Legal + Compliance + Support
 
 ---
 
+## Shared Config Inheritance
+
+Domain configs for executor, validator, and self_correct use a base template pattern:
+
+```yaml
+# Example: make/config/executor_config.yaml
+_base: shared/config/base_executor_config.yaml
+
+super_domain: make
+description: Execution monitoring for MAKE super-domain
+
+domain_specific_monitoring:
+- Code compilation and build success
+- Test suite execution results
+- Creative deliverable quality review
+```
+
+Base templates live in `shared/config/`:
+- `base_executor_config.yaml` — Shared monitoring patterns
+- `base_validator_config.yaml` — Shared quality gates
+- `base_self_correct_config.yaml` — Shared coordination failure recovery
+
+---
+
 ## Historical Note
 
-**V7.0 Domain Names** (Deprecated):
-The following domain names were used in V7.0 and have been consolidated into super-domains:
+**Legacy Domain Names** (Deprecated):
+The following domain names were used historically and have been consolidated into super-domains:
 - engineering → make
 - revenue → grow
 - creative → make
@@ -121,12 +148,11 @@ The following domain names were used in V7.0 and have been consolidated into sup
 ## Creating New Domains
 
 See CLAUDE.md "Creating Domains" section for instructions on:
-1. Creating 5 config files
+1. Creating 5 config files (with `_base` references to shared templates)
 2. Creating controller_catalog in planner_config.yaml
 3. Creating controller and execution agents
 4. Creating plugin manifest
 
 ---
 
-**Version**: V7.5.1
-**Previous**: V7.0.1 (deprecated domain names)
+**Version**: 8.5.2

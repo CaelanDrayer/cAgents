@@ -1,22 +1,22 @@
+# Self-correct config for PEOPLE super-domain
+# Inherits shared coordination failure patterns from base config
+_base: shared/config/base_self_correct_config.yaml
+
 super_domain: people
 description: Self-correction patterns for PEOPLE super-domain
-recovery_patterns:
-  coordination_failures:
-  - failure: Insufficient questions asked
-    recovery: Ask follow-up questions to clarify
-  - failure: Synthesis lacks coherence
-    recovery: Re-synthesize with focus on consistency
-  execution_failures:
-  - failure: Task incomplete
-    recovery: Identify blocking issue and resolve
-  - failure: Policy violates employment law
-    recovery: Consult compliance, revise policy
-  - failure: Change management resistance
-    recovery: Increase stakeholder engagement, adjust rollout plan
-  validation_failures:
-  - failure: Quality gate failed
-    recovery: Address specific failure and re-validate
-  - failure: Employee experience negatively impacted
-    recovery: Gather feedback, adjust approach
-  - failure: DEI requirements not met
-    recovery: Review inclusion criteria, revise program
+
+execution_failures:
+- failure: Task incomplete
+  recovery: Identify blocking issue and resolve
+- failure: Policy violates employment law
+  recovery: Consult compliance, revise policy
+- failure: Change management resistance
+  recovery: Increase stakeholder engagement, adjust rollout plan
+
+validation_failures:
+- failure: Quality gate failed
+  recovery: Address specific failure and re-validate
+- failure: Employee experience negatively impacted
+  recovery: Gather feedback, adjust approach
+- failure: DEI requirements not met
+  recovery: Review inclusion criteria, revise program

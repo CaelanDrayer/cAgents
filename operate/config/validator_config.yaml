@@ -1,24 +1,17 @@
+# Validator config for OPERATE super-domain
+# Inherits shared quality gates from base config
+_base: shared/config/base_validator_config.yaml
+
 super_domain: operate
 description: Validation rules for OPERATE super-domain
-quality_gates:
-  coordination_quality:
-    required_sections:
-    - questions_asked
-    - synthesized_solution
-    - implementation_tasks
-    min_questions: 5
-    min_tasks: 3
-  output_quality:
-    required_checks:
-    - All objectives met
-    - All outputs exist
-    - Evidence provided
-  regression_checks:
-  - No disruption to existing operations
-  - Compliance requirements maintained
-  - No negative financial impact without approval
-  domain_specific_checks:
-  - Financial accuracy meets audit standards
-  - Operational efficiency metrics improved
-  - Compliance requirements satisfied
-  - Risk assessments completed for changes
+
+regression_checks:
+- No disruption to existing operations
+- Compliance requirements maintained
+- No negative financial impact without approval
+
+domain_specific_checks:
+- Financial accuracy meets audit standards
+- Operational efficiency metrics improved
+- Compliance requirements satisfied
+- Risk assessments completed for changes

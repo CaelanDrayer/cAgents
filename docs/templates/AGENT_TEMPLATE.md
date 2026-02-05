@@ -21,7 +21,7 @@ executes_tasks: []     # For execution agents only
 
 **How to invoke**:
 ```bash
-/trigger {example usage}
+/run {example usage}
 ```
 
 **Common patterns**:
@@ -35,7 +35,7 @@ executes_tasks: []     # For execution agents only
 
 ### Purpose
 
-{2-3 paragraphs explaining the agent's role in the cAgents V7.0 system.}
+{2-3 paragraphs explaining the agent's role in the cAgents system.}
 
 ### Capabilities
 
@@ -45,7 +45,7 @@ executes_tasks: []     # For execution agents only
 
 ### Workflow Integration
 
-{How this agent fits into the V7.0 workflow (routing → planning → coordinating → executing → validating)}
+{How this agent fits into the workflow (routing → planning → coordinating → executing → validating)}
 
 ---
 
@@ -213,4 +213,4 @@ executes_tasks: []          # Execution: list of task types executed
 **Version**: 1.0
 **Tier**: {tier}
 **Domain**: {domain}
-**Part of**: cAgents V7.0
+**Part of**: cAgents

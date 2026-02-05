@@ -13,16 +13,16 @@
 
 ```bash
 # {Workflow 1}
-/trigger {example request 1}
+/run {example request 1}
 
 # {Workflow 2}
-/trigger {example request 2}
+/run {example request 2}
 
 # {Workflow 3}
-/trigger {example request 3}
+/run {example request 3}
 
 # Review/Optimize
-/reviewer {target}
+/review {target}
 /optimize {target}
 ```
 
@@ -30,10 +30,10 @@
 
 ```bash
 # {Workflow 1}
-/trigger {example request 1}
+/run {example request 1}
 
 # {Workflow 2}
-/trigger {example request 2}
+/run {example request 2}
 ```
 
 ---
@@ -143,5 +143,5 @@
 
 **Version**: 1.0
 **Super-Domain**: {domain}
-**Part of**: cAgents V7.0
+**Part of**: cAgents
 **Last Updated**: {date}

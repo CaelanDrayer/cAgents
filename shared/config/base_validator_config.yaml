@@ -1,0 +1,22 @@
+# Base Validator Config - Shared across all super-domains
+# Domain configs inherit this and add regression_checks + domain_specific_checks.
+#
+# Usage in domain configs:
+#   _base: shared/config/base_validator_config.yaml
+#   super_domain: {domain}
+#   regression_checks: [...]
+#   domain_specific_checks: [...]
+
+quality_gates:
+  coordination_quality:
+    required_sections:
+    - questions_asked
+    - synthesized_solution
+    - implementation_tasks
+    min_questions: 5
+    min_tasks: 3
+  output_quality:
+    required_checks:
+    - All objectives met
+    - All outputs exist
+    - Evidence provided

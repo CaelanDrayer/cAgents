@@ -1,24 +1,17 @@
+# Validator config for SERVE super-domain
+# Inherits shared quality gates from base config
+_base: shared/config/base_validator_config.yaml
+
 super_domain: serve
 description: Validation rules for SERVE super-domain
-quality_gates:
-  coordination_quality:
-    required_sections:
-    - questions_asked
-    - synthesized_solution
-    - implementation_tasks
-    min_questions: 5
-    min_tasks: 3
-  output_quality:
-    required_checks:
-    - All objectives met
-    - All outputs exist
-    - Evidence provided
-  regression_checks:
-  - No degradation to customer satisfaction
-  - Legal compliance maintained
-  - Support SLAs not violated
-  domain_specific_checks:
-  - Customer satisfaction metrics considered
-  - Legal compliance requirements met
-  - Support SLAs achievable with solution
-  - Escalation paths properly defined
+
+regression_checks:
+- No degradation to customer satisfaction
+- Legal compliance maintained
+- Support SLAs not violated
+
+domain_specific_checks:
+- Customer satisfaction metrics considered
+- Legal compliance requirements met
+- Support SLAs achievable with solution
+- Escalation paths properly defined

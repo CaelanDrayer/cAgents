@@ -1,24 +1,17 @@
+# Validator config for GROW super-domain
+# Inherits shared quality gates from base config
+_base: shared/config/base_validator_config.yaml
+
 super_domain: grow
 description: Validation rules for GROW super-domain
-quality_gates:
-  coordination_quality:
-    required_sections:
-    - questions_asked
-    - synthesized_solution
-    - implementation_tasks
-    min_questions: 5
-    min_tasks: 3
-  output_quality:
-    required_checks:
-    - All objectives met
-    - All outputs exist
-    - Evidence provided
-  regression_checks:
-  - No breaking changes to existing campaigns
-  - Brand guidelines compliance maintained
-  - No negative impact on existing conversion funnels
-  domain_specific_checks:
-  - Campaign metrics meet or exceed targets
-  - Sales enablement content approved by stakeholders
-  - Marketing assets align with brand guidelines
-  - Target audience properly defined and validated
+
+regression_checks:
+- No breaking changes to existing campaigns
+- Brand guidelines compliance maintained
+- No negative impact on existing conversion funnels
+
+domain_specific_checks:
+- Campaign metrics meet or exceed targets
+- Sales enablement content approved by stakeholders
+- Marketing assets align with brand guidelines
+- Target audience properly defined and validated

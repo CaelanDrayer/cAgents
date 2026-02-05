@@ -1,0 +1,21 @@
+# Base Executor Config - Shared across all super-domains
+# Domain configs inherit this and add domain_specific_monitoring only.
+#
+# Usage in domain configs:
+#   _base: shared/config/base_executor_config.yaml
+#   super_domain: {domain}
+#   domain_specific_monitoring: [...]
+
+monitoring_patterns:
+  controller_tracking:
+    coordination_log_required: true
+    progress_indicators:
+    - questions_asked
+    - answers_received
+    - synthesis_complete
+    - tasks_created
+  completion_criteria:
+  - All questions answered
+  - Synthesis documented
+  - Tasks completed
+  - coordination_log.yaml exists

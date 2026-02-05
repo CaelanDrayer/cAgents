@@ -1,19 +1,11 @@
+# Executor config for GROW super-domain
+# Inherits shared monitoring patterns from base config
+_base: shared/config/base_executor_config.yaml
+
 super_domain: grow
 description: Execution monitoring for GROW super-domain
-monitoring_patterns:
-  controller_tracking:
-    coordination_log_required: true
-    progress_indicators:
-    - questions_asked
-    - answers_received
-    - synthesis_complete
-    - tasks_created
-  completion_criteria:
-  - All questions answered
-  - Synthesis documented
-  - Tasks completed
-  - coordination_log.yaml exists
-  domain_specific_monitoring:
-  - Campaign asset creation progress
-  - Content review and approval status
-  - Sales enablement material completion
+
+domain_specific_monitoring:
+- Campaign asset creation progress
+- Content review and approval status
+- Sales enablement material completion

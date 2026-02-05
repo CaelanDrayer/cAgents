@@ -1,24 +1,17 @@
+# Validator config for PEOPLE super-domain
+# Inherits shared quality gates from base config
+_base: shared/config/base_validator_config.yaml
+
 super_domain: people
 description: Validation rules for PEOPLE super-domain
-quality_gates:
-  coordination_quality:
-    required_sections:
-    - questions_asked
-    - synthesized_solution
-    - implementation_tasks
-    min_questions: 5
-    min_tasks: 3
-  output_quality:
-    required_checks:
-    - All objectives met
-    - All outputs exist
-    - Evidence provided
-  regression_checks:
-  - No violation of employment regulations
-  - Existing HR policies not contradicted
-  - No negative impact on employee experience
-  domain_specific_checks:
-  - HR policies comply with employment regulations
-  - Employee experience metrics considered
-  - Culture alignment verified
-  - Diversity and inclusion impact assessed
+
+regression_checks:
+- No violation of employment regulations
+- Existing HR policies not contradicted
+- No negative impact on employee experience
+
+domain_specific_checks:
+- HR policies comply with employment regulations
+- Employee experience metrics considered
+- Culture alignment verified
+- Diversity and inclusion impact assessed

@@ -1,0 +1,15 @@
+# Base Self-Correct Config - Shared across all super-domains
+# Domain configs inherit this and add domain-specific execution_failures + validation_failures.
+#
+# Usage in domain configs:
+#   _base: shared/config/base_self_correct_config.yaml
+#   super_domain: {domain}
+#   execution_failures: [...]
+#   validation_failures: [...]
+
+recovery_patterns:
+  coordination_failures:
+  - failure: Insufficient questions asked
+    recovery: Ask follow-up questions to clarify
+  - failure: Synthesis lacks coherence
+    recovery: Re-synthesize with focus on consistency
