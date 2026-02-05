@@ -12,17 +12,8 @@ set -o pipefail
 exec 3>&1
 exec 1>&2
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LIB_DIR="${SCRIPT_DIR}/../../scripts/lib"
-
-if [[ -r "$LIB_DIR/hook-bootstrap.sh" ]]; then
-    source "$LIB_DIR/hook-bootstrap.sh"
-else
-    timestamp() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
-    log_debug() { :; }
-    log_warn() { echo "[$(timestamp)] [WARN] $*"; }
-    log_error() { echo "[$(timestamp)] [ERROR] $*"; }
-fi
+# shellcheck source=../../scripts/lib/hook-init.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../scripts/lib/hook-init.sh"
 
 main() {
     hook_init
@@ -50,13 +41,15 @@ main() {
     for protected in "${protected_paths[@]}"; do
         if [[ "$file_path" == "$protected"* ]]; then
             log_error "Blocked write to protected path: $file_path"
+            local safe_path
+            safe_path=$(json_escape "$file_path")
             cat >&3 <<EOF
 {
   "continue": false,
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
     "permissionDecision": "deny",
-    "permissionDecisionReason": "Cannot write to protected system path: $file_path"
+    "permissionDecisionReason": "Cannot write to protected system path: ${safe_path}"
   }
 }
 EOF
@@ -86,15 +79,15 @@ EOF
 
     # Build response
     if [[ -n "$warning_message" ]]; then
+        warning_message=$(json_escape "$warning_message")
         cat >&3 <<EOF
 {
   "continue": true,
-  "systemMessage": "$warning_message",
+  "systemMessage": "${warning_message}",
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
     "permissionDecision": "allow",
-    "permissionDecisionReason": "File write allowed with warning",
-    "additionalContext": "Note: $warning_message"
+    "permissionDecisionReason": "File write allowed with warning"
   }
 }
 EOF

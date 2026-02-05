@@ -11,17 +11,8 @@ set -o pipefail
 exec 3>&1
 exec 1>&2
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LIB_DIR="${SCRIPT_DIR}/../../scripts/lib"
-
-if [[ -r "$LIB_DIR/hook-bootstrap.sh" ]]; then
-    source "$LIB_DIR/hook-bootstrap.sh"
-else
-    timestamp() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
-    log_info() { echo "[$(timestamp)] [INFO] $*"; }
-fi
-
-readonly AGENT_MEMORY_DIR="Agent_Memory"
+# shellcheck source=../../scripts/lib/hook-init.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../scripts/lib/hook-init.sh"
 
 main() {
     hook_init
@@ -35,18 +26,16 @@ main() {
     if [[ -n "$active_instruction" ]]; then
         log_info "Completing workflow: $active_instruction"
 
-        # Update status.yaml
-        local status_file="${HOOK_CWD}/${AGENT_MEMORY_DIR}/${active_instruction}/status.yaml"
+        # Update status.yaml (idempotent - replace if exists, append if not)
+        local status_file="${HOOK_CWD}/${CAGENTS_AGENT_MEMORY_DIR}/${active_instruction}/status.yaml"
         if [[ -f "$status_file" ]]; then
-            {
-                echo "completed_at: \"$(timestamp)\""
-                echo "final_status: \"success\""
-            } >> "$status_file" 2>/dev/null || true
+            yaml_update_field "$status_file" "completed_at" "$(timestamp)"
+            yaml_update_field "$status_file" "final_status" "completed"
         fi
 
         # Archive to _archive directory
-        local archive_dir="${HOOK_CWD}/${AGENT_MEMORY_DIR}/_archive"
-        local inst_dir="${HOOK_CWD}/${AGENT_MEMORY_DIR}/${active_instruction}"
+        local archive_dir="${HOOK_CWD}/${CAGENTS_AGENT_MEMORY_DIR}/_archive"
+        local inst_dir="${HOOK_CWD}/${CAGENTS_AGENT_MEMORY_DIR}/${active_instruction}"
         if [[ -d "$inst_dir" ]]; then
             mkdir -p "$archive_dir" 2>/dev/null || true
             cp -r "$inst_dir" "$archive_dir/" 2>/dev/null || true

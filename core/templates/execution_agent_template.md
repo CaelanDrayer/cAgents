@@ -19,7 +19,7 @@ tools: Read, Grep, Glob, Write, Bash, TodoWrite
 - Controller asks {specialization}-specific question
 - Implementation task assigned requiring {specialization} expertise
 
-## V5.0 Execution Pattern
+## Execution Pattern
 
 ### What Execution Agents Do
 

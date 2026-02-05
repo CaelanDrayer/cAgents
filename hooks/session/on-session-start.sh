@@ -14,18 +14,9 @@ set -o pipefail
 exec 3>&1  # Save stdout
 exec 1>&2  # Redirect stdout to stderr
 
-# Source bootstrap (provides fallbacks if libraries unavailable)
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LIB_DIR="${SCRIPT_DIR}/../../scripts/lib"
-
-# shellcheck source=../../scripts/lib/hook-bootstrap.sh
-if [[ -r "$LIB_DIR/hook-bootstrap.sh" ]]; then
-    source "$LIB_DIR/hook-bootstrap.sh"
-else
-    # Minimal fallbacks
-    timestamp() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
-    log_info() { echo "[$(timestamp)] [INFO] $*"; }
-fi
+# Source shared hook init (provides bootstrap + fallbacks)
+# shellcheck source=../../scripts/lib/hook-init.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../scripts/lib/hook-init.sh"
 
 main() {
     hook_init

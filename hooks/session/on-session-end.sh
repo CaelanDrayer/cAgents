@@ -13,15 +13,8 @@ set -o pipefail
 exec 3>&1
 exec 1>&2
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LIB_DIR="${SCRIPT_DIR}/../../scripts/lib"
-
-if [[ -r "$LIB_DIR/hook-bootstrap.sh" ]]; then
-    source "$LIB_DIR/hook-bootstrap.sh"
-else
-    timestamp() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
-    log_info() { echo "[$(timestamp)] [INFO] $*"; }
-fi
+# shellcheck source=../../scripts/lib/hook-init.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../scripts/lib/hook-init.sh"
 
 main() {
     hook_init
@@ -34,7 +27,7 @@ main() {
     # Archive session file if it exists
     local session_file="${HOOK_CWD}/.claude/cagents-session.local.md"
     if [[ -f "$session_file" ]]; then
-        local archive_dir="${HOOK_CWD}/.claude/sessions"
+        local archive_dir="${HOOK_CWD}/Agent_Memory/_archive"
         mkdir -p "$archive_dir" 2>/dev/null || true
         local archive_name="${session_id}_$(date +%Y%m%d_%H%M%S).md"
         cp "$session_file" "$archive_dir/$archive_name" 2>/dev/null || true

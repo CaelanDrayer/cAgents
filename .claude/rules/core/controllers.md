@@ -1,6 +1,6 @@
 # Controller Coordination Guidelines
 
-Question-based delegation patterns for V7.0 controllers.
+Question-based delegation patterns for controllers.
 
 ## CRITICAL: Controllers NEVER Do Direct Work
 

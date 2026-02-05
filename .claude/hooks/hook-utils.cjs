@@ -28,6 +28,7 @@ const SESSION_PREFIXES = ['run_', 'optimize_', 'review_', 'designer_'];
 function readStdin() {
   return new Promise((resolve) => {
     let data = '';
+    let resolved = false;
     process.stdin.setEncoding('utf8');
 
     if (process.stdin.isTTY) {
@@ -35,17 +36,20 @@ function readStdin() {
       return;
     }
 
+    function done(result) {
+      if (resolved) return;
+      resolved = true;
+      resolve(result);
+    }
+
     process.stdin.on('data', (chunk) => { data += chunk; });
     process.stdin.on('end', () => {
-      try {
-        resolve(data ? JSON.parse(data) : {});
-      } catch (e) {
-        resolve({});
-      }
+      try { done(data ? JSON.parse(data) : {}); }
+      catch (e) { done({}); }
     });
-    process.stdin.on('error', () => resolve({}));
+    process.stdin.on('error', () => done({}));
 
-    setTimeout(() => resolve({}), 1000);
+    setTimeout(() => done({}), 3000);
   });
 }
 
@@ -113,6 +117,49 @@ function findActiveSession() {
   return null;
 }
 
+/**
+ * Ensure a directory exists, creating it recursively if needed
+ */
+function ensureDir(dirPath) {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+  return dirPath;
+}
+
+/**
+ * Generate a filesystem-safe timestamp slug from a Date
+ * Example: "2026-02-05_09-46-24"
+ */
+function getTimestampSlug(date = new Date()) {
+  return date.toISOString().replace(/[:.]/g, '-').replace('T', '_').slice(0, 19);
+}
+
+/**
+ * Get a waypoint file path in a session's waypoints directory
+ */
+function getWaypointPath(sessionDir, type, date = new Date()) {
+  const waypointsDir = ensureDir(path.join(sessionDir, 'waypoints'));
+  const slug = getTimestampSlug(date);
+  return path.join(waypointsDir, `wp-${type}-${slug}.yaml`);
+}
+
+/**
+ * Assign a grade based on score and thresholds
+ */
+function assignGrade(score, thresholds = { excellent: 85, pass: 65 }) {
+  if (score >= thresholds.excellent) return 'EXCELLENT';
+  if (score >= thresholds.pass) return 'PASS';
+  return 'FAIL';
+}
+
+/**
+ * Calculate total score from a breakdown object, floored at 0
+ */
+function calculateScore(breakdown) {
+  return Math.max(0, Object.values(breakdown).reduce((a, b) => a + b, 0));
+}
+
 module.exports = {
   AGENT_MEMORY_DIR,
   SESSION_PREFIXES,
@@ -120,5 +167,10 @@ module.exports = {
   safeRead,
   extractYamlValue,
   countPattern,
-  findActiveSession
+  findActiveSession,
+  ensureDir,
+  getTimestampSlug,
+  getWaypointPath,
+  assignGrade,
+  calculateScore
 };

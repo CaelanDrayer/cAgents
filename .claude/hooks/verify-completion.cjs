@@ -33,6 +33,8 @@ function verifyCompletion(sessionDir) {
 
     if (!phase) {
       warnings.push('No phase defined in status.yaml');
+    } else if (phase === 'planning' || phase === 'coordinating' || phase === 'executing') {
+      issues.push(`Workflow stopping in '${phase}' phase (expected: completed or validating)`);
     } else if (phase !== 'completed' && phase !== 'validating') {
       warnings.push(`Workflow stopping in '${phase}' phase (expected: completed or validating)`);
     }
@@ -46,10 +48,10 @@ function verifyCompletion(sessionDir) {
     const inProgressCount = countPattern(coordContent, /status:\s*in_progress/g);
 
     if (pendingCount > 0) {
-      warnings.push(`${pendingCount} work item(s) still pending`);
+      issues.push(`${pendingCount} work item(s) still pending`);
     }
     if (inProgressCount > 0) {
-      warnings.push(`${inProgressCount} work item(s) still in progress`);
+      issues.push(`${inProgressCount} work item(s) still in progress`);
     }
 
     // Check for missing evidence (empty arrays or bare key)

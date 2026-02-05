@@ -16,7 +16,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { AGENT_MEMORY_DIR, extractYamlValue, safeRead, countPattern } = require('./hook-utils.cjs');
+const { AGENT_MEMORY_DIR, extractYamlValue, safeRead, countPattern, ensureDir, assignGrade, calculateScore } = require('./hook-utils.cjs');
 
 /**
  * Cached file reads — avoids re-reading the same file multiple times
@@ -137,15 +137,8 @@ function evaluateDecomposition(sessionDir) {
   }
 
   // Calculate total score
-  result.score = Object.values(result.breakdown).reduce((a, b) => a + b, 0);
-
-  if (result.score >= 90) {
-    result.grade = 'EXCELLENT';
-  } else if (result.score >= 70) {
-    result.grade = 'PASS';
-  } else {
-    result.grade = 'FAIL';
-  }
+  result.score = calculateScore(result.breakdown);
+  result.grade = assignGrade(result.score, { excellent: 90, pass: 70 });
 
   return result;
 }
@@ -253,15 +246,8 @@ function evaluateCoordination(sessionDir) {
   }
 
   // Calculate total score
-  result.score = Math.max(0, Object.values(result.breakdown).reduce((a, b) => a + b, 0));
-
-  if (result.score >= 85) {
-    result.grade = 'EXCELLENT';
-  } else if (result.score >= 65) {
-    result.grade = 'PASS';
-  } else {
-    result.grade = 'FAIL';
-  }
+  result.score = calculateScore(result.breakdown);
+  result.grade = assignGrade(result.score, { excellent: 85, pass: 65 });
 
   return result;
 }
@@ -273,53 +259,46 @@ function generateReport(sessionId, decomp, coord) {
   const timestamp = new Date().toISOString();
   const overallScore = Math.round((decomp.score + coord.score) / 2);
 
-  let overallGrade;
-  if (overallScore >= 87) {
-    overallGrade = 'EXCELLENT';
-  } else if (overallScore >= 67) {
-    overallGrade = 'PASS';
-  } else {
-    overallGrade = 'FAIL';
-  }
+  const overallGrade = assignGrade(overallScore, { excellent: 87, pass: 67 });
 
-  return `# Evaluation Report: ${sessionId}
+  return `# Evaluation Report
+session_id: "${sessionId}"
 generated_at: "${timestamp}"
 evaluator: eval-runner.js
 version: "8.0.0"
 
-## Overall Assessment
-overall_score: ${overallScore}
-overall_grade: "${overallGrade}"
+overall:
+  score: ${overallScore}
+  grade: "${overallGrade}"
 
-## Decomposition Quality
-score: ${decomp.score}
-grade: "${decomp.grade}"
-breakdown:
-  acceptance_criteria: ${decomp.breakdown.acceptance_criteria}
-  dependencies: ${decomp.breakdown.dependencies}
-  implicit_discovery: ${decomp.breakdown.implicit_discovery}
-  effort_estimation: ${decomp.breakdown.effort_estimation}
-${decomp.issues.length > 0 ? `issues:\n${decomp.issues.map(i => `  - "${i}"`).join('\n')}` : 'issues: []'}
-${decomp.recommendations.length > 0 ? `recommendations:\n${decomp.recommendations.map(r => `  - "${r}"`).join('\n')}` : 'recommendations: []'}
+decomposition:
+  score: ${decomp.score}
+  grade: "${decomp.grade}"
+  breakdown:
+    acceptance_criteria: ${decomp.breakdown.acceptance_criteria}
+    dependencies: ${decomp.breakdown.dependencies}
+    implicit_discovery: ${decomp.breakdown.implicit_discovery}
+    effort_estimation: ${decomp.breakdown.effort_estimation}
+  ${decomp.issues.length > 0 ? `issues:\n${decomp.issues.map(i => `    - "${i}"`).join('\n')}` : 'issues: []'}
+  ${decomp.recommendations.length > 0 ? `recommendations:\n${decomp.recommendations.map(r => `    - "${r}"`).join('\n')}` : 'recommendations: []'}
 
-## Coordination Quality
-score: ${coord.score}
-grade: "${coord.grade}"
-breakdown:
-  specificity: ${coord.breakdown.specificity}
-  delegation: ${coord.breakdown.delegation}
-  synthesis: ${coord.breakdown.synthesis}
-  evidence: ${coord.breakdown.evidence}
-${coord.anti_patterns.length > 0 ? `anti_patterns:\n${coord.anti_patterns.map(a => `  - "${a}"`).join('\n')}` : 'anti_patterns: []'}
-${coord.issues.length > 0 ? `issues:\n${coord.issues.map(i => `  - "${i}"`).join('\n')}` : 'issues: []'}
-${coord.recommendations.length > 0 ? `recommendations:\n${coord.recommendations.map(r => `  - "${r}"`).join('\n')}` : 'recommendations: []'}
+coordination:
+  score: ${coord.score}
+  grade: "${coord.grade}"
+  breakdown:
+    specificity: ${coord.breakdown.specificity}
+    delegation: ${coord.breakdown.delegation}
+    synthesis: ${coord.breakdown.synthesis}
+    evidence: ${coord.breakdown.evidence}
+  ${coord.anti_patterns.length > 0 ? `anti_patterns:\n${coord.anti_patterns.map(a => `    - "${a}"`).join('\n')}` : 'anti_patterns: []'}
+  ${coord.issues.length > 0 ? `issues:\n${coord.issues.map(i => `    - "${i}"`).join('\n')}` : 'issues: []'}
+  ${coord.recommendations.length > 0 ? `recommendations:\n${coord.recommendations.map(r => `    - "${r}"`).join('\n')}` : 'recommendations: []'}
 
-## Summary
-All issues:
-${[...decomp.issues, ...coord.issues].map(i => `  - "${i}"`).join('\n') || '  - (none)'}
-
-All recommendations:
-${[...decomp.recommendations, ...coord.recommendations].map(r => `  - "${r}"`).join('\n') || '  - (none)'}
+summary:
+  all_issues:
+${[...decomp.issues, ...coord.issues].map(i => `    - "${i}"`).join('\n') || '    - "(none)"'}
+  all_recommendations:
+${[...decomp.recommendations, ...coord.recommendations].map(r => `    - "${r}"`).join('\n') || '    - "(none)"'}
 `;
 }
 
@@ -341,10 +320,7 @@ function runEvaluation(sessionId) {
   const report = generateReport(sessionId, decomp, coord);
 
   // Save report
-  const evalsDir = path.join(sessionDir, 'evals');
-  if (!fs.existsSync(evalsDir)) {
-    fs.mkdirSync(evalsDir, { recursive: true });
-  }
+  const evalsDir = ensureDir(path.join(sessionDir, 'evals'));
 
   const reportFile = path.join(evalsDir, 'evaluation_report.yaml');
   fs.writeFileSync(reportFile, report);

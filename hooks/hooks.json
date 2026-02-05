@@ -1,5 +1,0 @@
-{
-  "$comment": "DEPRECATED: This file is no longer used. Hooks are now configured in .claude/settings.json per Claude Code specification. This file is kept for backward compatibility reference.",
-  "see": ".claude/settings.json",
-  "hooks": {}
-}

@@ -1,17 +1,6 @@
 super_domain: serve
 description: Routing configuration for SERVE super-domain
-tier_classification:
-  # NOTE: tier_0 and tier_1 are deprecated - all requests auto-upgrade to tier_2 minimum
-  tier_2:
-    description: Moderate complexity, 1 controller
-    time_estimate: 1-4 hours
-    auto_upgrade_from: [tier_0, tier_1]
-  tier_3:
-    description: Complex, multiple controllers
-    time_estimate: 4-12 hours
-  tier_4:
-    description: Expert-level, HITL required
-    time_estimate: 1-3 days
+_base: shared/config/base_router_config.yaml
 keywords:
   - serve
   - support

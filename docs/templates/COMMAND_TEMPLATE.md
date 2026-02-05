@@ -63,7 +63,7 @@ Delegate ALL logic to the agent:
 
 ```javascript
 Task({
-  subagent_type: "agent-name",
+  subagent_type: "cagents:agent-name",
   description: "Brief description of what this delegation does",
   prompt: `
     User Request: {parsed.argument}

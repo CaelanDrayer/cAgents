@@ -23,7 +23,7 @@ validating
 ### Routing Phase
 ```yaml
 Task:
-  subagent_type: "universal-router"
+  subagent_type: "cagents:universal-router"
   description: "Route and classify instruction"
   prompt: |
     Route instruction: {instruction_id}
@@ -34,7 +34,7 @@ Task:
 ### Planning Phase
 ```yaml
 Task:
-  subagent_type: "universal-planner"
+  subagent_type: "cagents:universal-planner"
   description: "Define objectives and select controller"
   prompt: |
     Plan execution: {instruction_id}
@@ -104,7 +104,7 @@ Proceeding to coordination...
 ### Inventory Initialization
 ```yaml
 Task:
-  subagent_type: "task-inventory"
+  subagent_type: "cagents:task-inventory"
   description: "Initialize CSV inventory from decomposition"
   prompt: |
     Initialize task inventory:

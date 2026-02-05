@@ -11,17 +11,8 @@ set -o pipefail
 exec 3>&1
 exec 1>&2
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LIB_DIR="${SCRIPT_DIR}/../../scripts/lib"
-
-if [[ -r "$LIB_DIR/hook-bootstrap.sh" ]]; then
-    source "$LIB_DIR/hook-bootstrap.sh"
-else
-    timestamp() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
-    log_info() { echo "[$(timestamp)] [INFO] $*"; }
-fi
-
-readonly AGENT_MEMORY_DIR="Agent_Memory"
+# shellcheck source=../../scripts/lib/hook-init.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../scripts/lib/hook-init.sh"
 
 main() {
     hook_init
@@ -37,15 +28,7 @@ main() {
     active_instruction=$(get_active_instruction "$HOOK_CWD")
 
     if [[ -n "$active_instruction" ]]; then
-        # Log task to coordination log
-        local coord_log="${HOOK_CWD}/${AGENT_MEMORY_DIR}/${active_instruction}/workflow/coordination_log.yaml"
-        if [[ -d "$(dirname "$coord_log")" ]]; then
-            {
-                echo "# Task started at $(timestamp)"
-                echo "# Agent: $subagent_type"
-                echo "# Description: $description"
-            } >> "$coord_log" 2>/dev/null || true
-        fi
+        log_info "Task started for workflow: $active_instruction (agent: $subagent_type)"
     fi
 
     # Provide context about cAgents agent types
@@ -60,13 +43,14 @@ main() {
     esac
 
     if [[ -n "$context" ]]; then
+        context=$(json_escape "$context")
         cat >&3 <<EOF
 {
   "continue": true,
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
     "permissionDecision": "allow",
-    "additionalContext": "$context"
+    "additionalContext": "${context}"
   }
 }
 EOF

@@ -12,17 +12,8 @@ set -o pipefail
 exec 3>&1
 exec 1>&2
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LIB_DIR="${SCRIPT_DIR}/../../scripts/lib"
-
-if [[ -r "$LIB_DIR/hook-bootstrap.sh" ]]; then
-    source "$LIB_DIR/hook-bootstrap.sh"
-else
-    timestamp() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
-    log_debug() { :; }
-fi
-
-readonly AGENT_MEMORY_DIR="Agent_Memory"
+# shellcheck source=../../scripts/lib/hook-init.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../scripts/lib/hook-init.sh"
 
 main() {
     hook_init
@@ -45,7 +36,7 @@ main() {
         context="[cAgents] Active workflow: $active_instruction (phase: $active_phase)"
 
         # Check status file for more details
-        local status_file="${HOOK_CWD}/${AGENT_MEMORY_DIR}/${active_instruction}/status.yaml"
+        local status_file="${HOOK_CWD}/${CAGENTS_AGENT_MEMORY_DIR}/${active_instruction}/status.yaml"
         if [[ -f "$status_file" ]]; then
             local status
             status=$(grep "^status:" "$status_file" 2>/dev/null | sed 's/status: *//' | tr -d '"')
@@ -54,7 +45,7 @@ main() {
     fi
 
     # Detect workflow commands
-    if [[ "$prompt" == /run* ]] || [[ "$prompt" == /explore* ]] || \
+    if [[ "$prompt" == /run* ]] || [[ "$prompt" == /designer* ]] || \
        [[ "$prompt" == /review* ]] || [[ "$prompt" == /optimize* ]]; then
         if [[ -n "$context" ]]; then
             context="$context | Note: New workflow command detected while workflow active"
@@ -63,12 +54,13 @@ main() {
 
     # Build response
     if [[ -n "$context" ]]; then
+        context=$(json_escape "$context")
         cat >&3 <<EOF
 {
   "continue": true,
   "hookSpecificOutput": {
     "hookEventName": "UserPromptSubmit",
-    "additionalContext": "$context"
+    "additionalContext": "${context}"
   }
 }
 EOF

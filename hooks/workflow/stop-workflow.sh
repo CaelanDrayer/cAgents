@@ -13,19 +13,8 @@ set -o pipefail
 exec 3>&1
 exec 1>&2
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LIB_DIR="${SCRIPT_DIR}/../../scripts/lib"
-
-if [[ -r "$LIB_DIR/hook-bootstrap.sh" ]]; then
-    source "$LIB_DIR/hook-bootstrap.sh"
-else
-    timestamp() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
-    log_info() { echo "[$(timestamp)] [INFO] $*"; }
-    log_warn() { echo "[$(timestamp)] [WARN] $*"; }
-fi
-
-# Configuration
-readonly AGENT_MEMORY_DIR="Agent_Memory"
+# shellcheck source=../../scripts/lib/hook-init.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../scripts/lib/hook-init.sh"
 
 main() {
     hook_init
@@ -43,14 +32,10 @@ main() {
         log_info "Active workflow found: $active_instruction"
 
         # Update status file if it exists
-        local status_file="${HOOK_CWD}/${AGENT_MEMORY_DIR}/${active_instruction}/status.yaml"
+        local status_file="${HOOK_CWD}/${CAGENTS_AGENT_MEMORY_DIR}/${active_instruction}/status.yaml"
         if [[ -f "$status_file" ]]; then
-            local updated_at
-            updated_at=$(timestamp)
-            {
-                echo "stopped_at: \"$updated_at\""
-                echo "stop_reason: \"$reason\""
-            } >> "$status_file" 2>/dev/null || true
+            yaml_update_field "$status_file" "stopped_at" "$(timestamp)"
+            yaml_update_field "$status_file" "stop_reason" "$reason"
             log_info "Updated status file"
         fi
 

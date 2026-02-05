@@ -440,7 +440,7 @@ Hand off to the reviewer agent to execute the workflow:
 
 ```javascript
 Task({
-  subagent_type: "agent-design:reviewer",
+  subagent_type: "cagents:review",
   description: "Execute autonomous universal review",
   prompt: `Execute comprehensive autonomous review.
 

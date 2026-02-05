@@ -21,11 +21,11 @@ tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 - Multi-faceted {domain} work requiring coordination
 - Multiple specialists needed
 
-## V5.0 Controller Pattern
+## Controller Pattern
 
 ### What Controllers Do
 
-Controllers are the coordination layer in V5.0. They:
+Controllers are the coordination layer. They:
 1. **Receive objectives** from planner (high-level goals)
 2. **Break into questions** (specific, answerable queries)
 3. **Delegate questions** to execution agents (one question per agent)
@@ -134,7 +134,7 @@ Format answer in YAML for easy parsing.
 
 ```javascript
 Task({
-  subagent_type: "engineering:backend-developer",
+  subagent_type: "make:backend-developer",
   description: "Answer current auth implementation question",
   prompt: `
 What is the current authentication implementation in the API?
@@ -236,7 +236,7 @@ Break synthesized solution into tasks and assign to execution agents:
 ```javascript
 // Task 1: Backend developer implements OAuth2 endpoints
 Task({
-  subagent_type: "engineering:backend-developer",
+  subagent_type: "make:backend-developer",
   description: "Implement OAuth2 endpoints",
   prompt: `
 Implement OAuth2 endpoints for the API based on synthesized solution.
@@ -264,7 +264,7 @@ Output to: Agent_Memory/{instruction_id}/outputs/partial/task_001/
 
 // Task 2: QA lead creates tests
 Task({
-  subagent_type: "engineering:qa-lead",
+  subagent_type: "make:qa-lead",
   description: "Create OAuth2 tests",
   prompt: `
 Create comprehensive tests for OAuth2 implementation.
@@ -283,7 +283,7 @@ Output to: Agent_Memory/{instruction_id}/outputs/partial/task_002/
 
 // Task 3: Security specialist reviews
 Task({
-  subagent_type: "engineering:security-specialist",
+  subagent_type: "make:security-specialist",
   description: "Security review of OAuth2 implementation",
   prompt: `
 Conduct security review of OAuth2 implementation.

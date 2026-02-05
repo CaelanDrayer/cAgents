@@ -1,13 +1,13 @@
 # cAgents Hook System
 
-V8.0 hook system with all 12 official Claude Code hook types.
+V8.5 hook system with all 12 official Claude Code hook types.
 
 ## Architecture
 
 cAgents uses a dual-hook system configured in `.claude/settings.json`:
 
-- **Shell hooks** (`hooks/`): 9 scripts for session lifecycle, workflow events, and tool validation. These are the baseline hooks that work without Node.js.
-- **JavaScript hooks** (`.claude/hooks/`): 6 registered `.cjs` scripts for advanced features (session catchup, secret detection, completion verification, pre-compact state save, notifications, context overflow recovery). Plus 1 standalone CLI tool (`eval-runner.cjs`).
+- **Shell hooks** (`hooks/`): 9 scripts for session lifecycle, workflow events, and tool validation. These are the baseline hooks that work without Node.js. Shared functions (`get_active_instruction`, `get_active_phase`, `get_session_field`) are provided by `scripts/lib/hook-bootstrap.sh`.
+- **JavaScript hooks** (`.claude/hooks/`): 7 `.cjs` files — 1 shared utility module (`hook-utils.cjs`) + 6 registered hooks for advanced features (session catchup, secret detection, completion verification, pre-compact state save, notifications, context overflow recovery). Plus 1 standalone CLI tool (`eval-runner.cjs`). All CJS hooks import shared functions (`readStdin`, `findActiveSession`, `extractYamlValue`, `safeRead`, `countPattern`) from `hook-utils.cjs`.
 
 The `setup.sh` script auto-detects Node.js and configures the appropriate settings. Without Node.js, only shell hooks are active (via `settings.shell-only.json`). With Node.js, both systems run (via `settings.full.json`).
 
@@ -26,9 +26,9 @@ The `setup.sh` script auto-detects Node.js and configures the appropriate settin
 | `SubagentStop` | Subagent completes | `on-workflow-complete.sh` | Aggregate results |
 | `Notification` | Status notification | `notification.cjs` | Log, alert, track |
 | `PreCompact` | Before context compaction | `pre-compact-save.cjs` | Save critical state |
+| `ContextOverflow` | Context limit hit | `context-overflow.cjs` | Save exhaustion checkpoint, trigger self-correction |
 | `PermissionRequest` | Permission dialog | (planned) | HITL integration |
 | `Error` | Error occurs | (planned) | Error tracking |
-| `ContextOverflow` | Context limit hit | `context-overflow.cjs` | Save exhaustion checkpoint, trigger self-correction |
 
 ## Active Hooks (V8.0)
 
@@ -51,7 +51,8 @@ The `setup.sh` script auto-detects Node.js and configures the appropriate settin
 - **File**: `hooks/tools/pre-bash.sh`
 - **Matcher**: `Bash`
 - **Purpose**: Validate bash commands, block dangerous operations
-- **Blocked**: `rm -rf /`, `sudo`, etc.
+- **Blocked** (exit 2): `rm -rf /`, `rm -rf ~`, fork bombs, `mkfs`, `dd if=/dev/zero`, `> /dev/sda`, `sudo`
+- **Warned** (allow): destructive git commands (`--force`, `reset --hard`, `clean -fd`)
 
 #### PreToolUse: Write/Edit
 - **Files**:
@@ -96,6 +97,7 @@ The `setup.sh` script auto-detects Node.js and configures the appropriate settin
 - **Purpose**: Save critical workflow state before context compaction
 - **Creates**: Waypoint file in `sessions/{id}/waypoints/`
 - **Output**: `{"continue": true, "systemMessage": "..."}`
+- **Note**: Only `pre-compact-save.cjs` runs here; `context-overflow.cjs` is registered under `ContextOverflow`
 
 #### Session Catchup
 - **File**: `.claude/hooks/session-catchup.cjs`
@@ -105,6 +107,7 @@ The `setup.sh` script auto-detects Node.js and configures the appropriate settin
 
 #### ContextOverflow
 - **File**: `.claude/hooks/context-overflow.cjs`
+- **Registered under**: `ContextOverflow` hook event (not PreCompact)
 - **Purpose**: Save exhaustion checkpoint when context limit is reached, trigger self-correction
 - **Creates**: Waypoint at `sessions/{id}/waypoints/wp-exhaustion-{timestamp}.yaml` and `continuation_needed.yaml`
 - **Recovery**: System message directs agent to invoke `universal-self-correct` with `correction_type: context_overflow`
@@ -224,6 +227,8 @@ The secret detection hook (`secret-detection.cjs`) blocks these patterns:
 - Slack tokens: `xox[baprs]-...`
 - Stripe live keys: `sk_live_...`, `rk_live_...`
 - Database connection strings with credentials
+- Heroku API keys: `HEROKU_API_KEY=<uuid>` (context-required, no bare UUID matching)
+- OpenAI API keys: `sk-proj-...` (newer format), `sk-<48-50 chars>` (legacy, excludes `sk-ant-`/`sk-live_`/`sk-test_`)
 
 ### High (Blocked)
 - Google API keys: `AIza...`
@@ -363,10 +368,12 @@ Hooks are registered in `.claude/settings.json`:
 ## Related Files
 
 - `.claude/settings.json` - Hook registration (active configuration)
-- `.claude/settings.full.json` - Template for full hooks (shell + JS)
+- `.claude/settings.full.json` - Template for full hooks (shell + JS), synced with settings.json
 - `.claude/settings.shell-only.json` - Template for shell-only hooks (no Node.js)
 - `setup.sh` - Auto-detects Node.js and selects appropriate settings
 - `Agent_Memory/_system/config/hooks.yaml` - Hook behavior config
 - `scripts/ci/check-quality.sh` - Hook validation in CI
 - `Agent_Memory/_system/evals/` - Evaluation framework
 - `archive/hooks/` - Archived legacy hooks (coordination, hitl, phase, workflow-start/fail)
+
+**Removed**: `hooks/hooks.json` was deprecated and has been deleted.

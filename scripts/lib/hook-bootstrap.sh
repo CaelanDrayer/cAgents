@@ -218,6 +218,31 @@ if [[ "$USING_FALLBACKS" == "true" ]]; then
 fi
 
 # ============================================
+# SHARED HELPERS
+# ============================================
+
+# Escape a string for safe JSON embedding
+# Usage: json_escape "string with \"quotes\""
+json_escape() {
+    local input="$1"
+    input="${input//\\/\\\\}"
+    echo "${input//\"/\\\"}"
+}
+
+# Update or append a YAML field in a file (idempotent)
+# Usage: yaml_update_field "file.yaml" "field_name" "value"
+yaml_update_field() {
+    local file="$1"
+    local field="$2"
+    local value="$3"
+    if grep -q "^${field}:" "$file" 2>/dev/null; then
+        sed -i "s|^${field}:.*|${field}: \"${value}\"|" "$file" 2>/dev/null || true
+    else
+        echo "${field}: \"${value}\"" >> "$file" 2>/dev/null || true
+    fi
+}
+
+# ============================================
 # HOOK INITIALIZATION
 # ============================================
 

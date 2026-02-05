@@ -2,18 +2,19 @@
 
 **Universal Multi-Domain Agent System for Claude Code**
 
-V8.1.0 - Production-ready controller-centric architecture with 234 agents across 5 super-domains. 100% SKILL.md Progressive Disclosure Edition.
+V8.5.2 - Production-ready controller-centric architecture with 234 agents across 5 super-domains. 100% SKILL.md Progressive Disclosure Edition.
 
 ## Overview
 
 cAgents transforms AI-assisted work across any domain through specialized agent teams that collaborate autonomously. From software engineering to marketing, operations to creative work - one unified system handles it all.
 
-**V8.1.0 Release** (2026-02-04):
-- Claude Code hooks system (12 types, 6 implementations)
+**V8.5.2 Release** (2026-02-05):
+- Claude Code hooks system (12 types, 9 shell + 7 Node.js hooks)
 - Progressive skill disclosure (all agents use SKILL.md format with resources/)
 - 4-tier model routing (Haiku/Sonnet/Opus)
 - Session management with waypoints and recovery
 - Evaluation framework and CI/CD scripts
+- Optimized hook infrastructure with caching and deduplication
 - Total agents: 234 (12 core + 14 shared + 208 domain specialists)
 
 ## Requirements
@@ -30,7 +31,7 @@ Without Node.js, cAgents works with shell-only hooks for basic session and workf
 
 ## Architecture
 
-**V7.0 Controller-Centric Question-Based Delegation**
+**Controller-Centric Question-Based Delegation**
 
 234 agents organized into:
 - **Core** (12): Infrastructure (trigger, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, 5 universal workflow agents)
@@ -89,7 +90,7 @@ The `setup.sh` script automatically configures hooks based on your environment:
 ./setup.sh --force-shell-only
 ```
 
-**With Node.js**: All 15 hooks enabled (9 shell + 6 Node.js)
+**With Node.js**: All hooks enabled (9 shell + 7 Node.js)
 **Without Node.js**: 9 shell hooks enabled, advanced features disabled
 
 ## Quick Start
@@ -265,6 +266,7 @@ Run `./setup.sh` to configure hooks based on Node.js availability.
 
 ## Version History
 
+- **V8.5.2** (2026-02-05) - Config consolidation, documentation cleanup, hook optimization
 - **V8.0.7** (2026-01-28) - Infrastructure & Learning Edition: Hooks, SKILL.md, model routing, session management, 234 agents
 - **V7.5.1** (2026-01-22) - Task Inventory Edition: CSV-based task inventory, aggressive decomposition, completion validation
 - **V7.3.0** (2026-01-19) - Game Development Edition: 28 new game dev agents, Make domain expanded to 108 agents
@@ -286,4 +288,4 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | **cAgents V8.1.0** | 234 agents across 5 super-domains
+**Built with Claude Code** | **cAgents V8.5.2** | 234 agents across 5 super-domains

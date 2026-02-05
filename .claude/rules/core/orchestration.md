@@ -1,6 +1,6 @@
 # Orchestration Patterns
 
-Workflow orchestration guidelines for cAgents V7.0.
+Workflow orchestration guidelines for cAgents.
 
 ## CRITICAL: Automatic Phase Transitions
 

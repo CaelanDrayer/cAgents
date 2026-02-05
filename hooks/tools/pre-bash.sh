@@ -12,16 +12,8 @@ set -o pipefail
 exec 3>&1
 exec 1>&2
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LIB_DIR="${SCRIPT_DIR}/../../scripts/lib"
-
-if [[ -r "$LIB_DIR/hook-bootstrap.sh" ]]; then
-    source "$LIB_DIR/hook-bootstrap.sh"
-else
-    timestamp() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
-    log_debug() { :; }
-    log_warn() { echo "[$(timestamp)] [WARN] $*"; }
-fi
+# shellcheck source=../../scripts/lib/hook-init.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../scripts/lib/hook-init.sh"
 
 main() {
     hook_init
@@ -32,46 +24,58 @@ main() {
 
     log_debug "Pre-bash hook: $description"
 
-    # Define dangerous patterns to warn about (but not block)
-    local dangerous_patterns=(
+    # Define dangerous patterns that are BLOCKED (exit 2)
+    local blocked_patterns=(
         "rm -rf /"
         "rm -rf ~"
         ":(){ :|:& };:"  # Fork bomb
         "> /dev/sda"
         "mkfs"
         "dd if=/dev/zero"
+        "sudo "
+        "sudo\t"
     )
 
-    local warning_message=""
-
-    for pattern in "${dangerous_patterns[@]}"; do
+    for pattern in "${blocked_patterns[@]}"; do
         if [[ "$command" == *"$pattern"* ]]; then
-            warning_message="Potentially dangerous command detected: $pattern"
-            log_warn "$warning_message"
-            break
+            local block_reason
+            block_reason="Blocked dangerous command: ${pattern}"
+            log_warn "$block_reason"
+            block_reason=$(json_escape "$block_reason")
+            cat >&3 <<EOF
+{
+  "continue": false,
+  "hookSpecificOutput": {
+    "hookEventName": "PreToolUse",
+    "permissionDecision": "deny",
+    "permissionDecisionReason": "${block_reason}"
+  }
+}
+EOF
+            exit 2
         fi
     done
 
-    # Check for commands that modify git history destructively
+    # Warn about destructive git commands (allow but warn)
+    local warning_message=""
     if [[ "$command" == *"git push"*"--force"* ]] || \
        [[ "$command" == *"git reset --hard"* ]] || \
        [[ "$command" == *"git clean -fd"* ]]; then
-        warning_message="Git command may cause data loss: $command"
+        warning_message="Git command may cause data loss"
         log_warn "$warning_message"
     fi
 
     # Build response
     if [[ -n "$warning_message" ]]; then
-        # Allow but with warning
+        warning_message=$(json_escape "$warning_message")
         cat >&3 <<EOF
 {
   "continue": true,
-  "systemMessage": "$warning_message",
+  "systemMessage": "${warning_message}",
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
     "permissionDecision": "allow",
-    "permissionDecisionReason": "Command allowed with warning",
-    "additionalContext": "Warning: $warning_message"
+    "permissionDecisionReason": "Command allowed with warning"
   }
 }
 EOF

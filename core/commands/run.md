@@ -104,7 +104,7 @@ When the user runs `/run <request> [flags]`, this command:
 4. Trigger agent handles:
    - **Context-aware domain detection** (project structure, git history, frameworks)
    - **Intent classification** (bug fix, feature, question, etc.)
-   - **Template matching** (13 pre-defined templates)
+   - **Template matching** (12 pre-defined templates)
    - **Pre-flight validation** (4-level validation: context, feasibility, resources, conflicts)
    - **Interactive mode** (if enabled, ask user preferences)
    - **Dry-run preview** (if enabled, show workflow plan without executing)
@@ -296,7 +296,7 @@ TodoWrite({
 1. **Context-Aware Detection**: 3-method weighted scoring (keyword, context, framework)
 2. **Confidence Scoring**: 0.0-1.0 scores on domain and intent with thresholds
 3. **Intent Classification**: 9 patterns (bug fix, feature, refactor, question, etc.)
-4. **Template Matching**: 13 pre-defined templates for common workflows
+4. **Template Matching**: 12 pre-defined templates for common workflows
 5. **Pre-Flight Validation**: 4-level checks (context, feasibility, resources, conflicts)
 6. **Interactive Mode**: User preference gathering before workflow starts
 7. **Dry-Run Mode**: Preview workflow without executing
@@ -326,12 +326,12 @@ TodoWrite({
 | `--skip-preflight` | Boolean | Skip pre-flight validation | false | `/run Hotfix --skip-preflight` |
 | `--template <name>` | String | Use specific template | auto-match | `/run Budget --template budget_creation` |
 | `--domain <domain>` | String | Override domain detection | auto-detect | `/run Analyze --domain engineering` |
-| `--tier <N>` | Number | Override tier classification (0-4) | auto-classify | `/run Migrate --tier 4` |
+| `--tier <N>` | Number | Override tier classification (2-4) | auto-classify | `/run Migrate --tier 4` |
 | `--confidence <N>` | Number | Set confidence threshold | 0.7 | `/run Request --confidence 0.6` |
 
 **Note on Plan Display**: By default, `/run` shows the workflow plan after planning completes (for tier 2+ workflows). Use `--quiet` to skip this display if you prefer silent execution. Use `--dry-run` if you want to see the plan and STOP (without executing).
 
-**Available Templates** (13):
+**Available Templates** (12):
 - `bug_fix` - Bug fix workflow (tier 2, engineering)
 - `feature_addition` - Feature addition (tier 3, engineering + product)
 - `code_refactor` - Code refactoring (tier 3, engineering)

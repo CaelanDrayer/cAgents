@@ -66,8 +66,9 @@ const SECRET_PATTERNS = [
   // Anthropic
   { pattern: /sk-ant-[a-zA-Z0-9_-]{40,}/g, name: 'Anthropic API Key', severity: 'critical' },
 
-  // OpenAI
-  { pattern: /sk-[a-zA-Z0-9]{48}/g, name: 'OpenAI API Key', severity: 'critical' },
+  // OpenAI (sk-proj- prefix for newer keys, exclude sk-ant- which is Anthropic)
+  { pattern: /sk-proj-[a-zA-Z0-9_-]{40,}/g, name: 'OpenAI API Key', severity: 'critical' },
+  { pattern: /sk-(?!ant-|live_|test_)[a-zA-Z0-9]{46,50}/g, name: 'OpenAI API Key (legacy)', severity: 'critical' },
 
   // NPM
   { pattern: /npm_[a-zA-Z0-9]{36}/g, name: 'NPM Access Token', severity: 'critical' },
@@ -75,8 +76,8 @@ const SECRET_PATTERNS = [
   // PyPI
   { pattern: /pypi-[a-zA-Z0-9_-]{64,}/g, name: 'PyPI API Token', severity: 'critical' },
 
-  // Heroku
-  { pattern: /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g, name: 'Heroku API Key (UUID format)', severity: 'medium' },
+  // Heroku (require HEROKU context to avoid matching all UUIDs)
+  { pattern: /(?:HEROKU[_-]?API[_-]?KEY|heroku[_-]?api[_-]?key)[\s]*[=:]\s*["']?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}["']?/gi, name: 'Heroku API Key', severity: 'critical' },
 
   // JWT (warning only - could be test tokens)
   { pattern: /eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*/g, name: 'JWT Token', severity: 'low' }

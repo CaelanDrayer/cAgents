@@ -19,19 +19,19 @@ User Request
 │ TRIGGER (Core Infrastructure)                       │
 │ • Parse request & detect domain                     │
 │ • Create instruction workspace                      │
-│ • Initialize Agent_Memory/{instruction_id}/         │
+│ • Initialize Agent_Memory/sessions/{session_id}/     │
 └─────────────────────────────────────────────────────┘
     ↓
 ┌─────────────────────────────────────────────────────┐
 │ UNIVERSAL-ROUTER (Config-Driven)                    │
-│ • Load domain config: {domain}/router.yaml          │
+│ • Load domain config: {domain}/config/router_config.yaml          │
 │ • Classify complexity: Tier 2-4                     │
 │ • Select task template or create custom             │
 └─────────────────────────────────────────────────────┘
     ↓
 ┌─────────────────────────────────────────────────────┐
 │ UNIVERSAL-PLANNER (Config-Driven)                   │
-│ • Load domain config: {domain}/planner.yaml         │
+│ • Load domain config: {domain}/config/planner_config.yaml         │
 │ • Decompose into domain-appropriate tasks           │
 │ • Assign to domain team agents                      │
 │ • Define acceptance criteria                        │
@@ -39,7 +39,7 @@ User Request
     ↓
 ┌─────────────────────────────────────────────────────┐
 │ UNIVERSAL-EXECUTOR (Config-Driven)                  │
-│ • Load domain config: {domain}/executor.yaml        │
+│ • Load domain config: {domain}/config/executor_config.yaml        │
 │ • Spawn team agents via Task tool                   │
 │ • Execute tasks in dependency order                 │
 │ • Up to 50 agents in parallel                       │
@@ -47,7 +47,7 @@ User Request
     ↓
 ┌─────────────────────────────────────────────────────┐
 │ UNIVERSAL-VALIDATOR (Config-Driven)                 │
-│ • Load domain config: {domain}/validator.yaml       │
+│ • Load domain config: {domain}/config/validator_config.yaml       │
 │ • Check acceptance criteria                         │
 │ • Run domain-specific quality gates                 │
 │ • Result: PASS | FIXABLE | BLOCKED                  │
@@ -55,7 +55,7 @@ User Request
     ↓
 ┌─────────────────────────────────────────────────────┐
 │ UNIVERSAL-SELF-CORRECT (If FIXABLE)                 │
-│ • Load domain config: {domain}/self-correct.yaml    │
+│ • Load domain config: {domain}/config/self_correct_config.yaml    │
 │ • Attempt automated fixes                           │
 │ • Re-run validator                                  │
 └─────────────────────────────────────────────────────┘
@@ -77,12 +77,12 @@ Complete
 
 **User Request**: "Fix the login bug where users can't authenticate"
 
-**Domain**: Software
+**Domain**: Make
 **Tier**: 2 (Moderate)
 
 **Flow**:
 
-1. **Trigger** → Detects "make" domain, creates `inst_20260112_001/`
+1. **Trigger** → Detects "make" domain, creates `run_20260112_001/`
 2. **Universal-Router** → Loads `make/router.yaml`, classifies Tier 2
 3. **Universal-Planner** → Loads `make/planner.yaml`, creates tasks:
    - Investigate auth flow
@@ -112,12 +112,12 @@ Complete
 
 **User Request**: "Write Chapter 3 where the protagonist discovers the hidden truth"
 
-**Domain**: Creative
+**Domain**: Make
 **Tier**: 3 (Complex)
 
 **Flow**:
 
-1. **Trigger** → Detects "make" domain, creates `inst_20260112_002/`
+1. **Trigger** → Detects "make" domain, creates `run_20260112_002/`
 2. **Universal-Router** → Loads `make/router.yaml`, classifies Tier 3
 3. **Universal-Planner** → Loads `make/planner.yaml`, creates tasks:
    - Review story arc and character state
@@ -148,12 +148,12 @@ Complete
 
 **User Request**: "Design comprehensive Q1 product launch campaign with multi-channel strategy"
 
-**Domain**: Marketing
+**Domain**: Grow
 **Tier**: 4 (Expert - requires leadership oversight)
 
 **Flow**:
 
-1. **Trigger** → Detects "grow" domain, creates `inst_20260112_003/`
+1. **Trigger** → Detects "grow" domain, creates `run_20260112_003/`
 2. **Universal-Router** → Loads `grow/router.yaml`, classifies Tier 4
 3. **Universal-Planner** → Loads `grow/planner.yaml`, consults intelligence:
    - `predictive-analyst` → Forecasts campaign performance (parallel)
@@ -227,7 +227,7 @@ Executors **never execute directly**—they spawn specialists:
 
 ```python
 # Universal-Executor reads executor.yaml for domain
-config = load_config(f"{domain}/executor.yaml")
+config = load_config(f"{domain}/config/executor_config.yaml")
 
 for task in pending_tasks:
     agent = config.get_agent_for_task(task.type)

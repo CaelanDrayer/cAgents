@@ -154,7 +154,7 @@ Max retries: 1
 
 ```yaml
 Task:
-  subagent_type: "universal-validator"
+  subagent_type: "cagents:universal-validator"
   description: "Re-validate after corrections"
   prompt: |
     Re-validate after correction attempts.

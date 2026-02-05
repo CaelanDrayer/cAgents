@@ -14,20 +14,17 @@
 
 const fs = require('fs');
 const path = require('path');
-const { readStdin, findActiveSession, extractYamlValue, safeRead, countPattern } = require('./hook-utils.cjs');
+const { readStdin, findActiveSession, extractYamlValue, safeRead, countPattern, getTimestampSlug, getWaypointPath } = require('./hook-utils.cjs');
 
 /**
  * Create waypoint snapshot.
  * Uses timestamp-based IDs to avoid scanning the directory for numbering.
  */
 function createWaypoint(sessionDir) {
-  const waypointsDir = path.join(sessionDir, 'waypoints');
-  fs.mkdirSync(waypointsDir, { recursive: true });
-
   const timestamp = new Date();
-  const tsSlug = timestamp.toISOString().replace(/[:.]/g, '-').replace('T', '_').slice(0, 19);
+  const tsSlug = getTimestampSlug(timestamp);
   const waypointId = `WP-compact-${tsSlug}`;
-  const waypointFile = path.join(waypointsDir, `wp-compact-${tsSlug}.yaml`);
+  const waypointFile = getWaypointPath(sessionDir, 'compact', timestamp);
 
   // Gather state from various files
   const statusFile = path.join(sessionDir, 'status.yaml');

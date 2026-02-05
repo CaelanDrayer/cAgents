@@ -14,7 +14,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { readStdin, AGENT_MEMORY_DIR, SESSION_PREFIXES, extractYamlValue, safeRead, countPattern } = require('./hook-utils.cjs');
+const { readStdin, AGENT_MEMORY_DIR, SESSION_PREFIXES, extractYamlValue, safeRead, countPattern, ensureDir } = require('./hook-utils.cjs');
 
 /**
  * Find incomplete sessions
@@ -36,7 +36,7 @@ function findIncompleteSessions() {
     const content = safeRead(statusFile);
     if (!content) continue;
 
-    const phase = extractYamlValue(content, 'phase');
+    const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase');
 
     // Skip completed or failed sessions
     if (phase === 'completed' || phase === 'failed' || phase === 'aborted') continue;
@@ -153,11 +153,7 @@ async function main() {
 
       // Write incomplete sessions to a temp file for /resume command
       const stateFile = path.join(AGENT_MEMORY_DIR, '_system', 'incomplete_sessions.json');
-      const stateDir = path.dirname(stateFile);
-
-      if (!fs.existsSync(stateDir)) {
-        fs.mkdirSync(stateDir, { recursive: true });
-      }
+      ensureDir(path.dirname(stateFile));
 
       fs.writeFileSync(stateFile, JSON.stringify({
         detected_at: new Date().toISOString(),

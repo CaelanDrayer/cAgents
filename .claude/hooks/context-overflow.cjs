@@ -14,7 +14,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { readStdin, findActiveSession, extractYamlValue, safeRead } = require('./hook-utils.cjs');
+const { readStdin, findActiveSession, extractYamlValue, safeRead, countPattern, ensureDir, getTimestampSlug, getWaypointPath } = require('./hook-utils.cjs');
 
 function gatherPendingWork(sessionDir) {
   const items = [];
@@ -26,8 +26,8 @@ function gatherPendingWork(sessionDir) {
   }
   const coordLog = safeRead(path.join(sessionDir, 'workflow', 'coordination_log.yaml'));
   if (coordLog) {
-    const pendingCount = (coordLog.match(/status:\s*pending/g) || []).length;
-    const inProgressCount = (coordLog.match(/status:\s*in_progress/g) || []).length;
+    const pendingCount = countPattern(coordLog, /status:\s*pending/g);
+    const inProgressCount = countPattern(coordLog, /status:\s*in_progress/g);
     if (pendingCount) items.push(`${pendingCount} pending work items`);
     if (inProgressCount) items.push(`${inProgressCount} in-progress work items`);
   }
@@ -35,12 +35,10 @@ function gatherPendingWork(sessionDir) {
 }
 
 function createExhaustionCheckpoint(sessionDir) {
-  const waypointsDir = path.join(sessionDir, 'waypoints');
-  fs.mkdirSync(waypointsDir, { recursive: true });
-
-  const timestamp = new Date().toISOString();
-  const tsSlug = timestamp.replace(/[:.]/g, '-').replace('T', '_').slice(0, 19);
-  const wpFile = path.join(waypointsDir, `wp-exhaustion-${tsSlug}.yaml`);
+  const now = new Date();
+  const timestamp = now.toISOString();
+  const tsSlug = getTimestampSlug(now);
+  const wpFile = getWaypointPath(sessionDir, 'exhaustion', now);
 
   const statusContent = safeRead(path.join(sessionDir, 'status.yaml'));
   const phase = statusContent ? (extractYamlValue(statusContent, 'phase') || 'unknown') : 'unknown';
