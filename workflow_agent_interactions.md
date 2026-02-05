@@ -1,12 +1,12 @@
 # Workflow Agent Interactions
 
-How cAgents executes tasks across 11 domains using universal workflows.
+How cAgents executes tasks across 5 super-domains using universal workflows.
 
 ---
 
 ## Core Concept
 
-**One workflow architecture, multiple domains.** The same 5 universal agents handle software, creative, business, marketing, sales, finance, operations, planning, HR, legal, and support—by loading domain-specific configurations.
+**One workflow architecture, multiple domains.** The same 5 universal agents handle Make, Grow, Operate, People, and Serve—by loading domain-specific configurations.
 
 ## The Universal Workflow
 
@@ -25,7 +25,7 @@ User Request
 ┌─────────────────────────────────────────────────────┐
 │ UNIVERSAL-ROUTER (Config-Driven)                    │
 │ • Load domain config: {domain}/router.yaml          │
-│ • Classify complexity: Tier 0-4                     │
+│ • Classify complexity: Tier 2-4                     │
 │ • Select task template or create custom             │
 └─────────────────────────────────────────────────────┘
     ↓
@@ -82,20 +82,20 @@ Complete
 
 **Flow**:
 
-1. **Trigger** → Detects "software" domain, creates `inst_20260112_001/`
-2. **Universal-Router** → Loads `software/router.yaml`, classifies Tier 2
-3. **Universal-Planner** → Loads `software/planner.yaml`, creates tasks:
+1. **Trigger** → Detects "make" domain, creates `inst_20260112_001/`
+2. **Universal-Router** → Loads `make/router.yaml`, classifies Tier 2
+3. **Universal-Planner** → Loads `make/planner.yaml`, creates tasks:
    - Investigate auth flow
    - Identify bug root cause
    - Implement fix
    - Write tests
    - Run test suite
-4. **Universal-Executor** → Loads `software/executor.yaml`, spawns:
+4. **Universal-Executor** → Loads `make/executor.yaml`, spawns:
    - `backend-developer` → Investigates, finds JWT validation error
    - `backend-developer` → Fixes token validation logic
    - `backend-developer` → Writes unit tests
    - `qa-lead` → Runs full test suite (parallel)
-5. **Universal-Validator** → Loads `software/validator.yaml`:
+5. **Universal-Validator** → Loads `make/validator.yaml`:
    - ✓ Bug fixed
    - ✓ Tests passing (98% coverage)
    - ✓ No security regressions
@@ -117,20 +117,20 @@ Complete
 
 **Flow**:
 
-1. **Trigger** → Detects "creative" domain, creates `inst_20260112_002/`
-2. **Universal-Router** → Loads `creative/router.yaml`, classifies Tier 3
-3. **Universal-Planner** → Loads `creative/planner.yaml`, creates tasks:
+1. **Trigger** → Detects "make" domain, creates `inst_20260112_002/`
+2. **Universal-Router** → Loads `make/router.yaml`, classifies Tier 3
+3. **Universal-Planner** → Loads `make/planner.yaml`, creates tasks:
    - Review story arc and character state
    - Design revelation scene
    - Write chapter draft
    - Edit for pacing and emotion
    - Continuity check
-4. **Universal-Executor** → Loads `creative/executor.yaml`, spawns:
+4. **Universal-Executor** → Loads `make/executor.yaml`, spawns:
    - `story-architect` → Reviews arc, designs revelation (sequential)
    - `prose-stylist` → Writes 3,500-word draft (sequential)
    - `editor` → Refines pacing, dialogue, tension (sequential)
    - `continuity-checker` → Validates timeline, character consistency (parallel)
-5. **Universal-Validator** → Loads `creative/validator.yaml`:
+5. **Universal-Validator** → Loads `make/validator.yaml`:
    - ✓ Advances plot meaningfully
    - ✓ Character voice consistent
    - ✓ No continuity errors
@@ -153,13 +153,13 @@ Complete
 
 **Flow**:
 
-1. **Trigger** → Detects "marketing" domain, creates `inst_20260112_003/`
-2. **Universal-Router** → Loads `marketing/router.yaml`, classifies Tier 4
-3. **Universal-Planner** → Loads `marketing/planner.yaml`, consults intelligence:
+1. **Trigger** → Detects "grow" domain, creates `inst_20260112_003/`
+2. **Universal-Router** → Loads `grow/router.yaml`, classifies Tier 4
+3. **Universal-Planner** → Loads `grow/planner.yaml`, consults intelligence:
    - `predictive-analyst` → Forecasts campaign performance (parallel)
    - `risk-assessment` → Identifies budget, timing, competitive risks (parallel)
    - Creates 15 tasks across strategy, creative, media, analytics
-4. **Universal-Executor** → Loads `marketing/executor.yaml`, spawns in waves:
+4. **Universal-Executor** → Loads `grow/executor.yaml`, spawns in waves:
    - **Wave 1** (Leadership):
      - `cmo` → Defines strategic positioning, budget ($250K), goals
      - `product-marketing-manager` → Develops messaging framework
@@ -176,12 +176,12 @@ Complete
      - `events-manager` → Launch event design
    - **Wave 4** (Analytics):
      - `marketing-analyst` → Tracking dashboards, attribution model
-5. **Universal-Validator** → Loads `marketing/validator.yaml`, spawns QA:
+5. **Universal-Validator** → Loads `grow/validator.yaml`, spawns QA:
    - `marketing-operations-manager` → Reviews feasibility, tech stack (parallel)
    - `brand-manager` → Validates brand consistency (parallel)
    - `marketing-data-analyst` → Validates metrics framework (parallel)
    - **Result**: FIXABLE (budget exceeds approval threshold)
-6. **Universal-Self-Correct** → Loads `marketing/self-correct.yaml`:
+6. **Universal-Self-Correct** → Loads `grow/self-correct.yaml`:
    - Re-engages `cmo` → Optimizes budget to $225K, adjusts paid media
    - Re-runs validator → **Result**: PASS with CMO approval
 7. **HITL** → Escalates final approval to human (Tier 4 requirement)
@@ -201,23 +201,23 @@ Universal agents load domain-specific configs:
 
 ```
 Agent_Memory/_system/domains/
-├── software/
-│   ├── router.yaml      # Tier rules: "bug fix" → Tier 1-2
+├── make/
+│   ├── router.yaml      # Tier rules: "bug fix" → Tier 2, "add feature" → Tier 3
 │   ├── planner.yaml     # Task templates: test-driven workflow
 │   ├── executor.yaml    # Team: backend-dev, frontend-dev, qa
 │   ├── validator.yaml   # Gates: tests pass, no regressions
 │   └── self-correct.yaml
-├── creative/
-│   ├── router.yaml      # Tier rules: "write chapter" → Tier 2-3
-│   ├── planner.yaml     # Task templates: draft → edit → polish
-│   ├── executor.yaml    # Team: prose-stylist, editor, continuity
-│   ├── validator.yaml   # Gates: plot coherent, voice consistent
+├── grow/
+│   ├── router.yaml      # Tier rules: "campaign" → Tier 3-4
+│   ├── planner.yaml     # Task templates: strategy → creative → media
+│   ├── executor.yaml    # Team: campaign-manager, strategist, copywriter
+│   ├── validator.yaml   # Gates: on-brand, feasible, measurable
 │   └── self-correct.yaml
-└── marketing/
-    ├── router.yaml      # Tier rules: "campaign" → Tier 3-4
-    ├── planner.yaml     # Task templates: strategy → creative → media
-    ├── executor.yaml    # Team: CMO, strategist, creative, media
-    ├── validator.yaml   # Gates: on-brand, feasible, measurable
+└── operate/
+    ├── router.yaml      # Tier rules: "budget" → Tier 2, "audit" → Tier 3
+    ├── planner.yaml     # Task templates: analysis → plan → execute
+    ├── executor.yaml    # Team: financial-analyst, operations-analyst
+    ├── validator.yaml   # Gates: compliant, accurate, approved
     └── self-correct.yaml
 ```
 
@@ -244,11 +244,11 @@ Benefits:
 
 | Tier | Type | Example | Workflow |
 |------|------|---------|----------|
-| 0 | Trivial | "What is X?" | Direct answer, no workflow |
-| 1 | Simple | "Fix typo" | Execute → Validate |
-| 2 | Moderate | "Fix bug", "Write chapter" | Plan → Execute → Validate |
+| 2 | Moderate | "Fix bug", "Fix typo", "What is X?" | Plan → Execute → Validate |
 | 3 | Complex | "Add feature", "Campaign plan" | Plan → Parallel execution → Validate |
 | 4 | Expert | "Architecture design", "Major launch" | Full orchestration + HITL approval |
+
+**Note**: Minimum tier is 2 (controller coordination required). Former tiers 0/1 are auto-upgraded.
 
 ### 4. Validation Outcomes
 
@@ -376,26 +376,29 @@ Every workflow creates persistent state:
 Agent_Memory/
 ├── _system/              # Infrastructure
 │   ├── registry.yaml     # All active instructions
-│   ├── domains/          # Domain configs (5 files × 11 domains)
+│   ├── domains/          # Domain configs (5 files × 5 super-domains)
 │   └── config/           # Reviewer, optimizer configs
 ├── _knowledge/           # Learning layer
 │   ├── patterns/         # Proven solutions
 │   ├── calibration/      # Historical accuracy
 │   └── learnings/        # Extracted insights
 ├── _archive/             # Completed workflows
-└── inst_20260112_001/    # Active instruction
-    ├── instruction.yaml  # Original request
-    ├── status.yaml       # Current phase
-    ├── workflow/
-    │   └── plan.yaml     # Task breakdown
-    ├── tasks/
-    │   ├── pending/
-    │   ├── in_progress/
-    │   └── completed/
-    ├── decisions/
-    │   └── router.yaml   # Tier classification
-    └── outputs/
-        └── final/        # Deliverables
+└── sessions/             # All command sessions
+    └── run_20260204_143022/  # Active session
+        ├── instruction.yaml  # Original request
+        ├── status.yaml       # Current phase
+        ├── task_plan.md      # Work item breakdown
+        ├── findings.md       # Discoveries/decisions
+        ├── progress.md       # Status/resume
+        ├── workflow/
+        │   ├── plan.yaml             # Task breakdown
+        │   └── coordination_log.yaml # Q&A + synthesis
+        ├── tasks/
+        │   ├── pending/
+        │   ├── in_progress/
+        │   └── completed/
+        └── outputs/
+            └── final/        # Deliverables
 ```
 
 **Pause/Resume**: Any workflow can stop and restart from Agent_Memory state.
@@ -416,7 +419,7 @@ Agent_Memory/
 
 ## Summary
 
-**cAgents = One universal workflow × 11 domain configs × 228 specialized agents**
+**cAgents = One universal workflow × 5 super-domain configs × 234 specialized agents**
 
 - **Universal**: Same 5 workflow agents handle all domains
 - **Config-Driven**: Domains customize via YAML, not code

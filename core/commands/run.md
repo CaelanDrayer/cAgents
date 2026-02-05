@@ -342,7 +342,7 @@ TodoWrite({
 - `sales_forecast` - Sales forecasting (tier 2, revenue/finance)
 - `analysis_request` - General analysis (tier 2, universal)
 - `budget_creation` - Budget creation (tier 3, finance)
-- `question_answer` - Q&A (tier 0, universal)
+- `question_answer` - Q&A (tier 2, universal)
 - `documentation_creation` - Documentation (tier 2, universal/engineering)
 
 ## Important Notes
@@ -351,7 +351,7 @@ TodoWrite({
 - Trigger agent handles detection, validation, and initialization
 - Orchestrator handles phase transitions with adaptive execution
 - Universal workflow agents (router, planner, executor, validator) handle execution
-- See `core/agents/run.md` and `core/agents/orchestrator.md` for complete logic
+- See `core/agents/trigger/SKILL.md` and `core/agents/orchestrator/SKILL.md` for complete logic
 
 **Configuration Files**:
 - `Agent_Memory/_system/trigger/domain_detection.yaml` - Detection rules

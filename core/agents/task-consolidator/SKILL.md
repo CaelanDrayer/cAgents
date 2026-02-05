@@ -4,6 +4,7 @@ domain: core
 tier: infrastructure
 description: Context-aware task consolidation agent that splits large tasks into micro-tasks across multiple agents, then consolidates results. Reduces context usage by 40-60%.
 model: opus
+color: bright_yellow
 capabilities:
   - task_decomposition
   - parallel_execution

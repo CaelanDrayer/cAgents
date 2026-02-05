@@ -4,6 +4,7 @@ domain: core
 tier: infrastructure
 description: Universal workflow phase conductor for all domains with CSV-based task inventory for large-scale workflows.
 model: opus
+color: bright_magenta
 capabilities:
   - phase_control
   - workflow_coordination

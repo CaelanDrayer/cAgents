@@ -14,14 +14,14 @@ This standalone instruction contains all context needed to execute the remaining
 - ~10,500 tokens saved
 
 **Remaining**: Phases 2-4 (Agent file optimization)
-- 228 agents need optimization following established standards
+- 234 agents need optimization following established standards
 - Expected ~135,000 total token savings across all phases
 
 ---
 
 ## Objective
 
-Optimize all 228 agent files to minimize context window usage while maintaining clarity and completeness.
+Optimize all 234 agent files to minimize context window usage while maintaining clarity and completeness.
 
 **Standards**: Follow `DOCUMENTATION_STANDARDS.md` principles
 **Template**: Use example from `archive/docs/AGENT_OPTIMIZATION_EXAMPLE.md`
@@ -276,7 +276,7 @@ Create `OPTIMIZATION_PROGRESS.md` to track:
 ### Business Domain (18 agents)
 ...
 
-**Grand Total**: X/228 agents, Y/~21,500 lines saved
+**Grand Total**: X/234 agents, Y/~21,500 lines saved
 ```
 
 ### Commit Strategy

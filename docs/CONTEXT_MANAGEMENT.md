@@ -35,14 +35,14 @@ available_for_tasks: 180000     # Available for workflow execution
 
 | Tier | Complexity | Tasks | Context Budget | Buffer |
 |------|-----------|-------|----------------|--------|
-| 0 | Trivial | 0 | <5K tokens | 0% |
-| 1 | Simple | 1 | 15K tokens | 20% |
-| 2 | Moderate | 3-5 | 50K tokens | 20% |
+| 2 | Moderate | 1-5 | 50K tokens | 20% |
 | 3 | Complex | 5-10 | 100K tokens | 20% |
 | 4 | Expert | 10+ | 150K tokens | 30% |
 
+**Note**: Minimum tier is 2 (former tiers 0/1 auto-upgraded).
+
 **Why buffers?**
-- Tier 1-3: 20% buffer for normal variability
+- Tier 2-3: 20% buffer for normal variability
 - Tier 4: 30% buffer for higher complexity and cross-domain work
 
 ### Task-Level Budgets

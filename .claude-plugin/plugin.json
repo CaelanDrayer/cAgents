@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "8.3.0",
+  "version": "8.4.0",
   "description": "Universal multi-domain agent system with 234 specialized agents. V8.1 features: 100% SKILL.md progressive disclosure migration (all 234 agents), Claude Code hooks system (12 hook types, 6 implementations), 4-tier model routing (Haiku/Sonnet/Opus with project overrides), comprehensive security review (20+ secret patterns), session management (waypoints, recovery, three-file pattern), metrics infrastructure (config, session, daily tracking), evaluation framework (quality, completeness, coordination evals), CI/CD scripts (cagents-ci.sh, run-evals.sh, check-quality.sh), skill creator scripts (init_agent.js, validate_agent.js), and instinct-based pattern learning. CSV-based task inventory for large-scale workflows (60-80% context savings), batch delegation, checkpoint/resume. Features aggressive task decomposition, controller-centric question-based delegation across 5 super-domains (Make, Grow, Operate, People, Serve). Minimum tier 2 enforcement ensures ALL requests use multi-agent specialist coverage. Parallel execution (50x speedup), recursive workflows, comprehensive work breakdowns, dependency mapping. Setup script auto-detects Node.js and configures hooks accordingly.",
   "author": {
     "name": "CaelanDrayer",

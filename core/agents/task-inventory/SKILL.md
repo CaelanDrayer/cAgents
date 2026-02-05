@@ -4,6 +4,7 @@ domain: core
 tier: infrastructure
 description: CSV-based task inventory manager for large-scale workflows. Tracks task completion, enables batch delegation, reduces context overhead by 60-80%.
 model: opus
+color: bright_white
 capabilities:
   - csv_state_management
   - batch_delegation

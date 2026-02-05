@@ -4,6 +4,7 @@ domain: core
 tier: infrastructure
 description: Universal complexity classifier for all domains. Enforces minimum tier 2 (all requests use controller coordination).
 model: opus
+color: bright_cyan
 capabilities:
   - tier_classification
   - template_matching

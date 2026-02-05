@@ -1,7 +1,7 @@
 ---
 name: universal-planner
 tier: infrastructure
-description: "Universal planning agent with aggressive task decomposition. Extrapolates ALL requirements from user requests - breaks into components, discovers implicit needs, maps dependencies, creates comprehensive work breakdowns."
+description: "Universal planning agent that orchestrates the planning phase. Selects controllers, defines objectives, and writes plan.yaml. Delegates decomposition to task-decomposer for complex requests (tier 3+), handles simple decomposition inline for tier 2."
 tools: Read, Grep, Glob, Write, TodoWrite, Task
 model: opus
 color: bright_blue
@@ -21,10 +21,12 @@ capabilities:
 **Philosophy**: Users state outcomes, not requirements. Your job is to unpack what they actually need.
 
 **Use When**:
-- Routing phase complete, need comprehensive planning
-- Tier >= 1 requiring coordination
-- User request needs full decomposition
-- Dependencies and prerequisites need discovery
+- Routing phase complete, need planning phase orchestration
+- Tier 2+: Define objectives and select controllers
+- Tier 3+: Delegate decomposition to task-decomposer, then select controllers
+- Plan.yaml and controller assignment needed
+
+**Relationship with task-decomposer**: Universal-planner orchestrates the planning phase and writes plan.yaml. For complex requests (tier 3+), it delegates the actual decomposition work to task-decomposer which writes decomposition.yaml. For simple tier 2 requests, planner handles decomposition inline.
 
 ## Core Approach: Fill In The Blanks
 

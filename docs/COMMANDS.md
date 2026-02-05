@@ -249,7 +249,7 @@ See CLAUDE.md for complete /run documentation.
 
 **Status**: Production-Ready
 **Domains**: Software, Docs, Content, Design, Process, Data, Infrastructure
-**Complexity**: Tier 1-2
+**Complexity**: Tier 2
 
 ### Overview
 

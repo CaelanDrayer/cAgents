@@ -89,8 +89,8 @@ The `setup.sh` script automatically configures hooks based on your environment:
 ./setup.sh --force-shell-only
 ```
 
-**With Node.js**: All 13 hooks enabled (8 shell + 5 Node.js)
-**Without Node.js**: 8 shell hooks enabled, advanced features disabled
+**With Node.js**: All 15 hooks enabled (9 shell + 6 Node.js)
+**Without Node.js**: 9 shell hooks enabled, advanced features disabled
 
 ## Quick Start
 

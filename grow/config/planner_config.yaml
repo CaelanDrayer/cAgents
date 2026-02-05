@@ -9,6 +9,20 @@ shared_questions: &grow_questions
 
 controller_catalog:
   tier_2:
+    - name: campaign-manager
+      agent_path: grow/agents/campaign-manager/SKILL.md
+      coordination_style: question_based
+      typical_questions:
+        - "What are the campaign goals, timeline, and budget?"
+        - "What channels and audience segments are targeted?"
+        - "What are the campaign performance metrics and optimization levers?"
+      use_when:
+        - "Campaign planning and execution"
+        - "Multi-channel campaign coordination"
+        - "Campaign performance optimization"
+        - "Marketing event management"
+      complexity: tier_2
+
     - name: creative-director
       agent_path: grow/agents/creative-director/SKILL.md
       coordination_style: question_based

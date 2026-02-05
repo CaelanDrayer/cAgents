@@ -123,7 +123,7 @@ content_decomposition:
 | Fix | "fix", "bug", "broken" | Root cause → solution tree |
 | Improvement | "improve", "optimize" | Current → target → delta |
 | Migration | "migrate", "move", "upgrade" | Source → target → transition |
-| Question | "how", "what", "why" | No decomposition (tier 0) |
+| Question | "how", "what", "why" | Minimal decomposition (tier 2, expert answer) |
 | Abstract | "make better", "fix it" | Discover → then apply above |
 
 ## Context Gathering Commands

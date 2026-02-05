@@ -52,9 +52,8 @@ Conducted comprehensive evaluation of complex task workflows (tier 3-4) with the
 - Updated tier budget tables in planner
 - Adjusted context breakdown to include verification
 
-**Context Budget Updates**:
+**Context Budget Updates** (minimum tier 2):
 ```
-Tier 1: <13K base + 2K verification = <15K total
 Tier 2: 15-45K base + 5-10K verification = 20-55K total
 Tier 3: 50-90K base + 10-20K verification = 60-110K total
 Tier 4: 100-130K base + 20-30K verification = 120-160K total

@@ -83,10 +83,10 @@ cAgents supports 5 super-domains:
 
 | Super-Domain | Agents | Keywords | Example Requests |
 |--------------|--------|----------|-----------------|
-| **Make** | 108 | fix, bug, feature, code, write, story, game | "Fix auth bug", "Write a novel" |
-| **Grow** | 37 | campaign, sales, marketing, SEO | "Plan Q4 launch" |
+| **Make** | 109 | fix, bug, feature, code, write, story, game | "Fix auth bug", "Write a novel" |
+| **Grow** | 38 | campaign, sales, marketing, SEO | "Plan Q4 launch" |
 | **Operate** | 13 | budget, forecast, operations, procurement | "Create annual budget" |
-| **People** | 19 | recruit, onboard, culture, HR | "Design onboarding program" |
+| **People** | 20 | recruit, onboard, culture, HR | "Design onboarding program" |
 | **Serve** | 28 | support, legal, compliance, contract | "Review vendor contract" |
 
 ## Agent Architecture (V8.0)
@@ -106,7 +106,7 @@ Tier 4: Support (~19 agents)
   - scribe, data-extractor...
 ```
 
-**Total**: 231 agents (12 core + 14 shared + 205 domain specialists)
+**Total**: 234 agents (12 core + 14 shared + 208 domain specialists)
 
 **Key Concept**: Controllers coordinate work via question-based delegation. They ask questions to specialists, synthesize answers, and coordinate implementation.
 

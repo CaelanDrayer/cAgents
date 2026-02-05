@@ -2,7 +2,7 @@
 
 **Version**: 7.0
 **Status**: Active Policy
-**Applies To**: All workflows (tier 0-4)
+**Applies To**: All workflows (tier 2-4)
 
 ## Overview
 

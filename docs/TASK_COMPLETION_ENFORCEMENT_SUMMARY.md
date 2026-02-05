@@ -259,7 +259,7 @@ actual_context_used: 12450  # tokens
 
 ## Testing Recommendations
 
-1. **Test with simple tier 1 task**: Verify manifest created with verification
+1. **Test with simple tier 2 task**: Verify manifest created with verification
 2. **Test with tier 2 task**: Verify subagent receives completion requirements in prompt
 3. **Test with tier 3 task**: Verify all parallel tasks have manifests before validation
 4. **Test validation failure**: Mark task complete without verification, ensure validator catches it

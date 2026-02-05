@@ -4,6 +4,7 @@ domain: core
 tier: infrastructure
 description: Universal adaptive correction agent that automatically fixes validation failures, including coordination issues. Works across all domains.
 model: opus
+color: bright_magenta
 capabilities:
   - validation_fix
   - coordination_correction

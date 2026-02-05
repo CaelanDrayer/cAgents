@@ -115,9 +115,9 @@
 
 ### Priority 3: Other Domain Agents
 
-**Grow Domain** (37 agents - need inventory)
+**Grow Domain** (38 agents - need inventory)
 **Operate Domain** (13 agents - need inventory)
-**People Domain** (19 agents - need inventory)
+**People Domain** (20 agents - need inventory)
 **Serve Domain** (28 agents - need inventory)
 
 **Total Other Domains**: 97 agents (not yet inventoried)

@@ -33,7 +33,7 @@ All tier 2+ workflows follow this pattern:
 routing → planning → [PLAN DISPLAY] → coordinating → executing → validating
    ↓          ↓            ↓              ↓            ↓           ↓
   Router   Planner    Orchestrator   Controller   Executor   Validator
-(tier 0-4) (objectives) (show plan)   (questions)  (monitor)  (quality)
+(tier 2-4) (objectives) (show plan)   (questions)  (monitor)  (quality)
 ```
 
 **Plan Display**: After planning, orchestrator shows the plan to the user, then immediately proceeds to coordinating. This is visibility, not a checkpoint.
@@ -41,7 +41,7 @@ routing → planning → [PLAN DISPLAY] → coordinating → executing → valid
 ## Phase Responsibilities
 
 ### Routing (universal-router)
-- Classify complexity tier (0-4)
+- Classify complexity tier (2-4, auto-upgrades from 0/1)
 - Set `requires_controller` flag for tier 2+
 - Domain detection and validation
 
@@ -77,9 +77,7 @@ After planning completes (plan.yaml exists), orchestrator displays the plan befo
 4. **Proceed** immediately to coordinating (do NOT wait)
 
 **Plan Display by Tier**:
-- **Tier 0**: Skip (no plan)
-- **Tier 1**: Brief 1-line summary
-- **Tier 2-4**: Full plan with work breakdown
+- **Tier 2-4**: Full plan with work breakdown (all tiers, since minimum is tier 2)
 
 **IMPORTANT**: Showing plan ≠ Asking permission. Display then proceed.
 

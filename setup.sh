@@ -116,8 +116,8 @@ if NODE_VERSION=$(detect_nodejs); then
             echo -e "${GREEN}Full hooks already configured.${NC}"
             echo ""
             echo "All hooks enabled:"
-            echo "  - Shell hooks: 8 hooks (session, workflow, tools)"
-            echo "  - Node.js hooks: 5 hooks (catchup, completion, secrets, compact, notifications)"
+            echo "  - Shell hooks: 9 hooks (session, workflow, tools)"
+            echo "  - Node.js hooks: 6 hooks (catchup, completion, secrets, compact, notifications, context-overflow)"
             echo ""
             echo -e "${GREEN}cAgents is ready to use!${NC}"
             exit 0
@@ -138,8 +138,8 @@ if NODE_VERSION=$(detect_nodejs); then
     echo -e "${GREEN}Configuration complete (full mode)${NC}"
     echo ""
     echo "All hooks enabled:"
-    echo "  - Shell hooks: 8 hooks (session, workflow, tools)"
-    echo "  - Node.js hooks: 5 hooks (catchup, completion, secrets, compact, notifications)"
+    echo "  - Shell hooks: 9 hooks (session, workflow, tools)"
+    echo "  - Node.js hooks: 6 hooks (catchup, completion, secrets, compact, notifications, context-overflow)"
     echo ""
     echo -e "${GREEN}cAgents is ready to use!${NC}"
 

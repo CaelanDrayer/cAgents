@@ -19,10 +19,10 @@ cAgents is a universal multi-domain agent system with controller-centric coordin
 
 ### Super-Domains (5)
 
-1. **Make** (108 agents): Creation - engineering, creative, product, game dev
-2. **Grow** (37 agents): Acquisition - marketing, sales
+1. **Make** (109 agents): Creation - engineering, creative, product, game dev
+2. **Grow** (38 agents): Acquisition - marketing, sales
 3. **Operate** (13 agents): Operations - finance, operations
-4. **People** (19 agents): Talent - HR, culture
+4. **People** (20 agents): Talent - HR, culture
 5. **Serve** (28 agents): Support & Governance - customer experience, legal
 
 ## Workflow Phases

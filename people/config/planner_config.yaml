@@ -9,6 +9,20 @@ shared_questions: &people_questions
 
 controller_catalog:
   tier_2:
+    - name: hr-manager
+      agent_path: people/agents/hr-manager/SKILL.md
+      coordination_style: question_based
+      typical_questions:
+        - "What are the current HR operations and process gaps?"
+        - "What employee lifecycle stage needs attention?"
+        - "What policy or compliance issues need resolution?"
+      use_when:
+        - "HR operations coordination needed"
+        - "Employee lifecycle management"
+        - "HR policy implementation"
+        - "People team coordination"
+      complexity: tier_2
+
     - name: hr-business-partner
       agent_path: people/agents/hr-business-partner/SKILL.md
       coordination_style: question_based
@@ -20,28 +34,8 @@ controller_catalog:
         - "HR policy implementation"
       complexity: tier_2
 
-    - name: talent-acquisition-manager
-      agent_path: people/agents/talent-acquisition-manager/SKILL.md
-      coordination_style: question_based
-      typical_questions: *people_questions
-      use_when:
-        - "Recruiting strategy needed"
-        - "Hiring pipeline optimization"
-        - "Employer branding"
-        - "Candidate experience improvement"
-      complexity: tier_2
-
-  tier_3:
-    - name: hr-operations-manager
-      agent_path: people/agents/hr-operations-manager/SKILL.md
-      coordination_style: question_based
-      typical_questions: *people_questions
-      use_when:
-        - "HR process optimization"
-        - "HR technology implementation"
-        - "Cross-functional HR initiatives"
-        - "HR analytics and reporting"
-      complexity: tier_3
+  # Note: talent-acquisition-manager and hr-operations-manager are execution agents
+  # (tier: execution in SKILL.md), not controllers. They answer questions from controllers.
 
   tier_4:
     - name: chro

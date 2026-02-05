@@ -54,10 +54,14 @@ controller_catalog:
       complexity: tier_2
 
   tier_3:
+    # Cross-domain reference: finance-manager lives in make/ but serves operate workflows
     - name: finance-manager
       agent_path: make/agents/finance-manager/SKILL.md
       coordination_style: question_based
-      typical_questions: *operate_questions
+      typical_questions:
+        - "What is the current budget status and variance?"
+        - "What are the cost drivers and ROI projections?"
+        - "What financial reporting requirements apply?"
       use_when:
         - "Financial planning and analysis"
         - "Budget management"
@@ -66,10 +70,14 @@ controller_catalog:
       complexity: tier_3
 
   tier_4:
+    # Cross-domain reference: cfo lives in make/ but serves operate workflows
     - name: cfo
       agent_path: make/agents/cfo/SKILL.md
       coordination_style: question_based
-      typical_questions: *operate_questions
+      typical_questions:
+        - "What is the strategic financial outlook?"
+        - "What investment decisions require executive oversight?"
+        - "What board-level financial reporting is needed?"
       use_when:
         - "Executive financial strategy"
         - "Major investment decisions"

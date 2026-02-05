@@ -32,9 +32,7 @@ Override models for specific complexity tiers:
 
 ```yaml
 tier_models:
-  tier_0: haiku    # Trivial tasks
-  tier_1: haiku    # Simple tasks
-  tier_2: sonnet   # Moderate complexity
+  tier_2: sonnet   # Moderate complexity (minimum tier)
   tier_3: sonnet   # Complex tasks
   tier_4: opus     # Expert tasks (or sonnet for cost control)
 ```
@@ -94,11 +92,10 @@ disable_haiku: true
 # Default to Sonnet for balanced performance
 default_model: sonnet
 
-# Override specific tiers
+# Override specific tiers (minimum tier 2)
 tier_models:
-  tier_0: haiku
-  tier_1: haiku
-  tier_4: sonnet  # Don't use Opus even for complex tasks
+  tier_2: sonnet   # Moderate tasks
+  tier_4: sonnet   # Don't use Opus even for complex tasks
 
 # Keep Opus for architecture decisions only
 agent_models:
@@ -120,7 +117,7 @@ Model selection follows this priority order:
 1. **Project overrides** (`.cagents/model_routing.yaml`)
 2. **Agent-specific overrides** (system config)
 3. **Scenario detection** (think, background, longContext)
-4. **Tier-based matrix** (tier 0-4)
+4. **Tier-based matrix** (tier 2-4)
 5. **Default model** (sonnet)
 6. **Fallback chain** (if primary unavailable)
 7. **Cost limit enforcement** (downgrade if over budget)

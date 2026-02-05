@@ -47,21 +47,21 @@ Current official super-domains:
 
 | Super-Domain | Purpose | Agents | Key Controllers |
 |--------------|---------|--------|-----------------|
-| **make** | Creation | 108 | engineering-manager, architect, creative-director, game-designer |
-| **grow** | Acquisition | 37 | marketing-strategist, sales-strategist, campaign-manager |
+| **make** | Creation | 109 | engineering-manager, architect, creative-director, game-designer |
+| **grow** | Acquisition | 38 | marketing-strategist, sales-strategist, campaign-manager |
 | **operate** | Operations | 13 | operations-manager, business-analyst, change-manager |
-| **people** | Talent | 19 | chro, hr-manager, talent-acquisition |
+| **people** | Talent | 20 | chro, hr-manager, talent-acquisition |
 | **serve** | Support & Governance | 28 | customer-success-manager, general-counsel, support-manager |
 | **shared** | Cross-domain | 14 | compliance-officer, data-scientist, quality-manager |
 | **core** | Infrastructure | 12 | orchestrator, trigger, universal-* agents |
 
-**Total**: 231 agents across 7 directories (5 super-domains + shared + core)
+**Total**: 234 agents across 7 directories (5 super-domains + shared + core)
 
 ---
 
 ## Super-Domain Details
 
-### Make (108 agents)
+### Make (109 agents)
 Combines: Engineering + Creative + Product + DevOps + QA + Game Development
 
 **Includes**:
@@ -70,7 +70,7 @@ Combines: Engineering + Creative + Product + DevOps + QA + Game Development
 - Product: product-owner, project-manager, etc.
 - Game Dev: game-designer, level-designer, animator, etc.
 
-### Grow (37 agents)
+### Grow (38 agents)
 Combines: Marketing + Sales + Partnerships
 
 **Includes**:
@@ -86,7 +86,7 @@ Combines: Finance + Operations + Procurement
 - Finance: business-analyst, risk-manager
 - Supply Chain: supply-chain-manager, procurement-specialist
 
-### People (19 agents)
+### People (20 agents)
 Combines: HR + Culture + Talent Acquisition
 
 **Includes**:
