@@ -159,15 +159,36 @@ Detects within 2-3 exchanges and adapts accordingly.
 5. **Business Process** - Workflows with BPMN-style diagrams
 6. **Creative Content** - Stories, novels, screenplays
 
+#### 9. Long Session Resilience
+
+Sessions survive context compaction and can resume from any point:
+
+- **Incremental saves**: Phase files written to disk as each phase completes
+- **Context monitoring**: After 20 questions, enters context-conscious mode (shorter summaries, immediate writes)
+- **Document splitting**: Large designs auto-split into per-feature/per-component files
+- **Phase checkpoints**: Waypoint files created at every phase transition with resume instructions
+- **Assembly, not rebuild**: Final document assembled from phase files on disk
+
 ### Session Files
 
 ```
 Agent_Memory/sessions/designer_20260204_143022/
-├── session.yaml              # Session metadata (V2.0 format with phase tracking)
-├── qa_log.yaml               # All Q&A with phase, decisions, patterns applied
-├── design_document.md        # Comprehensive design document with artifacts
+├── session.yaml                    # Master state (updated per question)
+├── qa_log.yaml                     # Active phase Q&A only (completed phases summarized)
+├── phases/                         # Phase outputs (written at completion)
+│   ├── 01_discovery.md
+│   ├── 02_ideation.md
+│   ├── 03_refinement.md
+│   └── 04_specification.md
+├── artifacts/                      # Individual artifact files
+│   ├── user_stories.md
+│   ├── technical_spec.md
+│   ├── implementation_checklist.md
+│   └── diagrams/*.mermaid
+├── waypoints/                      # Phase transition checkpoints
+├── design_document.md              # Final assembled document (or index)
 └── validation/
-    └── validation_report.yaml  # 4-level validation scores
+    └── validation_report.yaml
 ```
 
 ### Integration with /run
