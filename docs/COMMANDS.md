@@ -278,30 +278,71 @@ See CLAUDE.md for complete /review documentation.
 
 **Status**: Production-Ready
 **Optimization Types**: 8 types (code, content, process, data, infrastructure, campaign, creative, sales)
-**Complexity**: Tier 1-3
+**Complexity**: Tier 2-4
 
 ### Overview
 
-Universal optimizer across 8 optimization types with baseline measurement, optimization execution, and validation.
+Universal 5-phase optimization engine that detects opportunities, measures baselines, plans approach, executes changes atomically with rollback, and validates results with before/after metrics. Supports 8 optimization types across all domains with cross-file analysis, parallel execution, and ML-ready pattern learning.
 
 ### Usage
 
 ```bash
 /optimize                              # Auto-detect and optimize
-/optimize src/ --type code            # Code optimization
-/optimize --type content blog/        # Content optimization
-/optimize --focus performance         # Performance focus
+/optimize "Make the app faster"        # Natural language goal
+/optimize --interactive                # Ask preferences via AskUserQuestion
+/optimize src/ --type code             # Specific target and type
+/optimize --dry-run                    # Preview without applying
+/optimize --type content blog/         # Content optimization
+/optimize --plan-only                  # Generate plan, trigger /run
+/optimize --cross-file                 # Cross-file dependency analysis
+```
+
+### 5-Phase Workflow
+
+```
+Detection → Analysis → Planning → Execution → Validation
+   ↓          ↓          ↓          ↓           ↓
+ Type/    Baseline +   ROI +     Atomic +    Before/
+ Intent   Opportunities  Groups   Rollback   After Metrics
 ```
 
 ### Key Features
 
-- **20-50% faster** execution
-- **30-60% smaller** bundles (code optimization)
-- **15-40% less** memory usage
-- Auto-detection of optimization opportunities
-- Baseline measurement → optimization → validation workflow
+1. **5-Phase Structured Workflow**: Detection → Analysis → Planning → Execution → Validation
+2. **8 Optimization Types**: Code, content, process, infrastructure, data, campaign, creative, sales
+3. **Atomic Execution**: Git snapshot before every change, automatic rollback on failure
+4. **Cross-File Analysis**: Dependency graphs, data flow analysis, architectural patterns, performance propagation
+5. **Risk Classification**: 5 levels (SAFE/LOW/MEDIUM/HIGH/CRITICAL) with appropriate auto-apply thresholds
+6. **Parallel Execution**: Independent optimizations run simultaneously for 3-10x speedup
+7. **Baseline Measurement**: Quantified before/after metrics for every optimization
+8. **Quality Gates**: Tests pass, no new lint errors, performance improved, bundle size maintained
+9. **Session Resilience**: Incremental saves, phase checkpoints, context monitoring, resume capability
+10. **ML-Ready Learning**: Track predicted vs actual impact, update pattern accuracy over time
+11. **Plugin Integration**: Auto-trigger `/run` for CRITICAL optimizations, `/designer` for exploration, `/review` for post-check
 
-See CLAUDE.md for complete /optimize documentation.
+### Session Files
+
+```
+Agent_Memory/sessions/optimize_{YYYYMMDD_HHMMSS}/
+├── status.yaml                    # Current phase + history
+├── task_plan.md                   # Three-file pattern: work items
+├── findings.md                    # Three-file pattern: discoveries
+├── progress.md                    # Three-file pattern: status/resume
+├── workflow/
+│   ├── detection_report.yaml      # Phase 1 output
+│   ├── baseline_metrics.yaml      # Phase 2 baseline
+│   ├── opportunities.yaml         # Phase 2 opportunities
+│   ├── cross_file_analysis.yaml   # Phase 2 cross-file (if enabled)
+│   ├── plan.yaml                  # Phase 3 plan
+│   ├── execution_summary.yaml     # Phase 4 results
+│   └── coordination_log.yaml      # Controller Q&A
+├── optimizations/{opt_id}/        # Per-optimization snapshots + results
+├── waypoints/                     # Phase transition checkpoints
+├── outputs/optimization_report.md # Final report
+└── validation/validation_report.yaml
+```
+
+See `core/commands/optimize.md` for complete documentation.
 
 ---
 
@@ -312,7 +353,7 @@ See CLAUDE.md for complete /optimize documentation.
 | **/designer** | Structured design | 15-45 min | 4-phase Q&A | Design doc + artifacts + diagrams + validation |
 | **/run** | Implementation | Varies | Autonomous | Working implementation |
 | **/review** | Quality review | 3-10 min | Autonomous | Issue report + fixes |
-| **/optimize** | Performance improvement | 5-15 min | Autonomous | Optimized code/content |
+| **/optimize** | Universal optimization | 5-20 min | Autonomous (or interactive) | Before/after metrics + optimized output |
 
 ---
 

@@ -520,16 +520,22 @@ Universal review with 8 enhancements: Intelligent agent selection (30-50% faster
 Config: `Agent_Memory/_system/commands/review/`
 
 ### /optimize - Universal Optimizer
-Trigger-style workflow with controller-centric coordination, supports 8 optimization types: code, content, process, data, infrastructure, campaign, creative, sales.
+5-phase optimization engine with 8 types (code, content, process, infrastructure, data, campaign, creative, sales). Detects opportunities, measures baselines, plans by ROI, executes atomically with rollback, validates with before/after metrics.
 
 ```bash
-/optimize                              # Auto-detect everything
+/optimize                              # Auto-detect and optimize
 /optimize "Make the app faster"        # Natural language goal
-/optimize src/ --type code             # Specific target
-/optimize --continuous --interval 1d   # Background monitoring
+/optimize --interactive                # Ask preferences via AskUserQuestion
+/optimize src/ --type code             # Specific target and type
+/optimize --dry-run                    # Preview without applying
+/optimize --plan-only                  # Generate plan, trigger /run
+/optimize --cross-file                 # Cross-file dependency analysis
 ```
 
-**5-Phase Workflow**: detection -> analysis -> planning -> execution -> validation
+**5-Phase Workflow**: Detection → Analysis → Planning → Execution → Validation
+**Key Features**: Atomic execution with rollback, cross-file analysis, parallel execution, risk classification (SAFE/LOW/MEDIUM/HIGH/CRITICAL), session resilience, ML-ready pattern learning, plugin integration (/run, /designer, /review).
+
+Config: `Agent_Memory/_system/optimize/`, `core/commands/optimize/`
 
 See `core/commands/optimize.md` for detailed documentation.
 
