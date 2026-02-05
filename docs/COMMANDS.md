@@ -2,338 +2,193 @@
 
 Comprehensive reference for all cAgents universal commands.
 
-## /designer - Interactive Design Discovery
+## /designer - Interactive Design Engine
 
-**Status**: Production-Ready (v8.0)
-**Domains**: All (Software, Creative, Business, Marketing, Product, etc.)
+**Status**: Production-Ready (V2.0)
+**Domains**: All (Software, Creative, Business)
 **Complexity**: Universal (adapts to any domain)
 
 ### Overview
 
-Universal interactive design assistant that helps transform vague ideas into well-defined designs through structured questioning using AskUserQuestion. ALWAYS asks user for input - never assumes.
+Structured design engine that transforms vague ideas into comprehensive, implementation-ready design documents through a 4-phase workflow with artifact generation, pattern recommendations, and 4-level validation.
 
-### What's New in v8.0
+### What's New in V2.0
 
-- **ALWAYS Interactive**: Uses AskUserQuestion tool for EVERY question - never plain text
-- **Structured Options**: Every question provides 2-4 meaningful options plus automatic "Other"
-- **Context Discovery**: Automatically maps your project structure (for software domains)
-- **Answer Synthesis**: Summarizes findings after each chunk completion
-- **Intelligent Sequencing**: Adapts questions based on your expertise level
+- **4-Phase Structured Workflow**: Discovery → Ideation → Refinement → Specification
+- **Artifact Generation**: Auto-generate user stories, tech specs, mermaid diagrams, implementation checklists
+- **Pattern Recommendations**: Proven design patterns from library recommended during ideation
+- **4-Level Validation**: Completeness, consistency, feasibility, quality checks with scores
+- **Real-Time Design Building**: Watch the design document form as you answer questions
+- **Template Library**: 6 pre-built templates (product feature, UI/UX, system architecture, API, business process, creative content)
+- **Phase Quality Gates**: Enforced checks before phase transitions - no gaps allowed
+- **Auto-Build Integration**: Automatically triggers `/run` when design is complete
 
 ### Usage
 
 ```bash
-/designer                             # Start interactive design session
-/designer [initial idea]              # Start with context (e.g., "Build a todo app")
+/designer                              # Start fresh design session
+/designer [topic]                      # Start with a specific topic
+/designer --resume {id}                # Resume previous session
+/designer --template product-feature   # Start with template
+/designer --focus technical            # Focus on specific areas
+/designer --detail high                # Comprehensive detail level
 ```
 
 ### How It Works
 
 ```
-1. Universal Opening Question
-   └─> "What are you trying to create or achieve?"
+Phase 1: Discovery (15%)
+   ├─> Opening question + domain detection
+   ├─> Context discovery (search codebase for software projects)
+   ├─> Domain-specific questions (from chunk templates)
+   ├─> Template offer (if matches a known pattern)
+   ├─> Phase gate: problem, stakeholders, constraints, success criteria
+   └─> Synthesis confirmation
 
-2. Domain Detection
-   └─> Analyzes your answer to determine domain (software, creative, business, etc.)
+Phase 2: Ideation (25%)
+   ├─> Generate 2-4 solution alternatives (pattern-informed)
+   ├─> Trade-off exploration for key decisions
+   ├─> Pattern recommendations from design pattern library
+   ├─> Phase gate: 2+ alternatives explored, approach selected with rationale
+   └─> Selection confirmation
 
-3. Context Discovery (Software only)
-   └─> Maps your project: language, framework, modules, tech stack
+Phase 3: Refinement (35%)
+   ├─> Domain-specific detailing (architecture, flows, data model, etc.)
+   ├─> Real-time design building with progress display
+   ├─> Mermaid diagram generation (architecture, sequence, ERD, flow)
+   ├─> Phase gate: all major design questions answered, diagrams generated
+   └─> Edge cases and error handling
 
-4. Chunk-Based Questioning
-   ├─> Chunk 1: Core Problem/Premise (3-5 questions)
-   ├─> Synthesis: Summarizes key findings
-   ├─> Chunk 2: Architecture/Characters/Future State (3-5 questions)
-   ├─> Synthesis: Summarizes key findings
-   └─> ... continues until you cancel
-
-5. Design Document Generation (on request)
-   └─> Comprehensive design from all Q&A and syntheses
+Phase 4: Specification (25%)
+   ├─> Auto-generate artifacts (user stories, specs, diagrams, checklists)
+   ├─> 4-level validation (completeness, consistency, feasibility, quality)
+   ├─> Design document assembly
+   └─> Build offer → auto-trigger /run
 ```
 
 ### Key Features
 
-#### 1. Smart Chunking
+#### 1. 4-Phase Structured Workflow
 
-Questions are grouped into logical topics:
+Each phase has a specific goal, quality gate, and natural transition:
 
-**Software Domain Chunks**:
-- Core Problem Statement (3 questions)
-- Technical Architecture (5 questions)
-- User Experience (4 questions)
-- Security & Compliance (3 questions)
-- Testing & Validation (3 questions)
-- Deployment & Operations (4 questions)
+| Phase | Goal | Questions | Gate |
+|-------|------|-----------|------|
+| Discovery | Understand problem | 5-7 | Problem + stakeholders + constraints defined |
+| Ideation | Select approach | 4-6 | 2+ alternatives explored, one selected |
+| Refinement | Detail design | 8-15 | Architecture + data model + flows complete |
+| Specification | Generate artifacts | 2-4 | Artifacts generated, validation passed |
 
-**Creative Domain Chunks**:
-- Core Premise (3 questions)
-- Characters (5 questions)
-- World & Setting (4 questions)
-- Conflict & Plot (5 questions)
-- Themes & Style (3 questions)
+#### 2. Pattern Recommendations
 
-**Business Domain Chunks**:
-- Current State Analysis (4 questions)
-- Desired Future State (4 questions)
-- Stakeholders & Impact (3 questions)
-- Implementation Plan (4 questions)
-- Risk & Mitigation (3 questions)
-
-#### 2. Context Discovery (Software Projects)
-
-When you're designing software features, /designer automatically:
-- Detects your programming language and framework
-- Finds key modules (auth, checkout, user management, etc.)
-- Identifies your tech stack (frontend, backend, database)
-- Maps your project architecture (monorepo, microservices, monolith)
-
-**Example**:
-```
-You: "Build OAuth support for the login system"
-
-Claude: [Discovers context automatically]
-
-        "I searched your codebase and found:
-
-        **Project**: TypeScript Next.js monorepo
-        **Key Modules**: Authentication (JWT with Passport.js)
-        **Tech Stack**: React + Next.js + PostgreSQL + Vercel
-
-        I see you're using JWT with Passport.js. Should we add OAuth
-        providers alongside the existing authentication, or replace it?"
-```
-
-This makes questions **80% more specific and relevant**.
-
-#### 3. Answer Synthesis
-
-After each chunk (3-5 questions), /designer automatically synthesizes findings:
+During ideation, /designer recommends proven design patterns from the library:
 
 ```
-Based on our discussion about the core problem:
+For authentication, I recommend "JWT with Refresh Token Rotation":
+- Short-lived access tokens (15min)
+- Rotating refresh tokens (7 days)
+- httpOnly cookies for storage
 
-Remote teams (5-50 people) struggle with async task management because
-tasks get lost in Slack with unclear ownership and progress tracking.
-
-Key insights:
-• Target: Remote teams needing structured task management
-• Pain points: Lost tasks, unclear ownership, no progress visibility
-• Context: Currently using Slack (insufficient for task management)
-
-Now let's explore the technical architecture...
+This is proven by Auth0, Supabase, and similar services.
 ```
 
-This ensures you're building on solid understanding before diving deeper.
+Pattern categories: Authentication, Architecture, Data, Integration, Product, Business Process, Creative Content.
 
-#### 4. Intelligent Expertise Adaptation
+#### 3. Artifact Generation
 
-/designer detects your expertise level from your answers and adapts questions accordingly:
+In the specification phase, /designer auto-generates:
 
-**Beginner indicators**: Vague language, short answers, uncertainty, questions back
-**Expert indicators**: Technical jargon, detailed answers, certainty, trade-off discussions
+**Software**: User stories (with acceptance criteria), technical specs, mermaid diagrams (architecture, sequence, ERD), implementation checklists
+**Business**: Process flow documents, RACI matrices, implementation roadmaps, risk registers
+**Creative**: Story bibles, character sheets, plot outlines, world bibles, style guides
 
-**Example**:
+#### 4. 4-Level Validation
+
+Before finalizing, every design is validated:
+
+| Level | Checks | Example |
+|-------|--------|---------|
+| Completeness | All critical areas covered | Problem statement exists, stakeholders identified |
+| Consistency | No contradictions | Scale requirements match architecture choice |
+| Feasibility | Realistic and implementable | Timeline fits scope, team can deliver |
+| Quality | Best practices followed | Security addressed, testing planned |
+
+Scores from 0.0 to 1.0 with overall assessment.
+
+#### 5. Real-Time Design Building
+
+During refinement, the design document forms in real-time:
 
 ```
-Beginner question: "What programming language would you like to use?"
-Expert question: "What's your current tech stack, and are there any constraints?"
+Design Progress: Phase 3 - Refinement
+
+  [x] Technical Architecture (Complete)
+  [x] Data Model (Complete)
+  [ ] User Flows (In Progress - 2/4 flows)
+  [ ] Security (Pending)
+
+Latest addition:
+  ## Data Model
+  [mermaid ERD diagram]
 ```
 
-Adapts within 3-4 answers to match your knowledge level.
+#### 6. Context Discovery (Software Projects)
 
-#### 5. Progressive Disclosure
+Automatically discovers project context:
+- Language/framework from package files
+- Architecture pattern (monorepo, microservices, monolith)
+- Key modules (auth, checkout, user management, etc.)
+- Tech stack (frontend, backend, database, infrastructure)
 
-Chunks unlock based on:
-- **Dependencies**: "Technical Architecture" requires "Core Problem" first
-- **Expertise Level**: Beginners skip advanced chunks like "Deployment & Operations"
-- **Domain**: Creative domain doesn't need "Security & Compliance"
+#### 7. Expertise Adaptation
+
+Questions adapt to user's expertise level:
+- **Beginner**: "What programming language would you like to use?"
+- **Expert**: "What's your current tech stack, and are there any constraints?"
+
+Detects within 2-3 exchanges and adapts accordingly.
+
+#### 8. Template Library
+
+6 pre-built templates for common design scenarios:
+
+1. **Product Feature** - Features with user stories and flows
+2. **UI/UX Design** - Interfaces with wireframes and interactions
+3. **System Architecture** - Full architecture from requirements to deployment
+4. **API Design** - REST/GraphQL with OpenAPI specs
+5. **Business Process** - Workflows with BPMN-style diagrams
+6. **Creative Content** - Stories, novels, screenplays
 
 ### Session Files
 
-When you run /designer, it creates a session with this structure:
-
 ```
-Agent_Memory/sessions/designer_20260113_143022/
-├── session.yaml              # Session metadata (v6.7 format)
-├── qa_log.yaml               # All Q&A pairs organized by chunk
-├── chunks.yaml               # Chunk progress tracking
-├── context_map.yaml          # Discovered project context (software only)
-├── chunk_syntheses/          # Syntheses for each completed chunk
-│   ├── chunk_001_synthesis.md
-│   ├── chunk_002_synthesis.md
-│   └── chunk_003_synthesis.md
-└── design_document.md        # Generated on request
+Agent_Memory/sessions/designer_20260204_143022/
+├── session.yaml              # Session metadata (V2.0 format with phase tracking)
+├── qa_log.yaml               # All Q&A with phase, decisions, patterns applied
+├── design_document.md        # Comprehensive design document with artifacts
+└── validation/
+    └── validation_report.yaml  # 4-level validation scores
 ```
-
-Sessions are automatically saved and can be resumed later.
-
-### When to Use /designer
-
-**Perfect for**:
-- Fleshing out vague ideas before implementation
-- Understanding requirements through guided questions
-- Exploring problem space before committing to solution
-- Capturing design decisions with reasoning
-- Creating comprehensive design documents
-
-**Not ideal for**:
-- Quick questions (just ask directly)
-- Implementation (use /run after exploring)
-- Simple tasks that don't need design phase
-
-### After Exploring
-
-When you cancel /designer, you get options:
-
-1. **Generate Design Document**: Comprehensive doc with all Q&A and syntheses
-2. **Start Implementation with /run**: Automatically formats session context into implementation request
-3. **Continue Later**: Session is saved, resume anytime
-
-### Design Document Generation
-
-Request a design document after your session:
-
-```
-User: "Generate a design document"
-
-Claude: [Creates comprehensive document from session]
-```
-
-**Software Design Document** includes:
-- Problem & Purpose (from chunk 1)
-- Technical Architecture (from chunk 2)
-- User Experience (from chunk 3)
-- Security & Compliance (from chunk 4)
-- Testing & Validation (from chunk 5)
-- Deployment & Operations (from chunk 6)
-- Complete Q&A log with syntheses
-
-**Creative Writing Document** includes:
-- Premise (from chunk 1)
-- Characters (from chunk 2)
-- World & Setting (from chunk 3)
-- Conflict & Plot (from chunk 4)
-- Themes & Style (from chunk 5)
-- Complete story blueprint
-
-**Business Process Document** includes:
-- Current State (from chunk 1)
-- Desired Future State (from chunk 2)
-- Stakeholders & Impact (from chunk 3)
-- Implementation Plan (from chunk 4)
-- Risk & Mitigation (from chunk 5)
 
 ### Integration with /run
 
-Seamlessly transition from design to implementation:
+When user selects "Build it now", /designer automatically triggers:
 
 ```
-User: "Start implementation with /run"
-
-Claude: "I'll create an implementation workflow using all context from
-        your discovery session. This includes:
-
-        • Problem statement and requirements
-        • Technical architecture decisions
-        • Success criteria and constraints
-        • Complete design reference
-
-        Ready to proceed?"
-
-User: "Yes"
-
-Claude: [Automatically invokes /run with comprehensive context]
+Skill({skill: "run", args: "implement design from designer_20260204_143022"})
 ```
 
-The /run workflow receives:
-- All session context (Q&A + syntheses)
-- Discovered project context (if software)
-- Design decisions with reasoning
-- Success criteria
-- Constraints and requirements
-
-### Backward Compatibility
-
-v6.7 fully supports old designer sessions (v6.6 and earlier):
-- Automatically detects legacy format
-- Migrates on first read
-- No data loss
-- All old sessions continue to work
-
-### Example Session Flow
-
-```
-User: /designer
-
-Claude: "What are you trying to create or achieve?"
-
-User: "A todo app with team collaboration features"
-
-Claude: [Domain detected: software]
-        [Loads software chunks]
-        [Runs context discovery]
-
-        "I searched your codebase and found:
-
-        **Project**: TypeScript Next.js app
-        **Key Modules**: Authentication (JWT), User profiles
-        **Tech Stack**: React + Next.js + PostgreSQL
-
-        Now let me understand what you want to build..."
-
-        [Chunk 1: Core Problem Statement]
-
-        "Who will use this todo app with team features?"
-
-User: "Remote teams of 5-50 people who need async task management"
-
-Claude: [Expertise score: 0.5 (intermediate)]
-        [Question 2 of 3 in chunk]
-
-        "What makes task management difficult for these remote teams currently?"
-
-User: "Tasks get lost in Slack, no clear ownership, hard to track progress"
-
-Claude: [Chunk 1 complete]
-        [Generating synthesis...]
-
-        "Based on our discussion about the core problem:
-
-        Remote teams (5-50 people) struggle with async task management
-        because tasks get lost in Slack with unclear ownership and
-        progress tracking.
-
-        Key insights:
-        • Target: Remote teams needing structured task management
-        • Pain points: Lost tasks, unclear ownership, no progress visibility
-        • Context: Currently using Slack (insufficient)
-
-        Now let's explore the technical architecture..."
-
-        [Transitions to Chunk 2]
-
-        "I see you're using Next.js with PostgreSQL. Should the todo app
-        integrate with your existing auth, or be a separate system?"
-
-[Session continues...]
-```
-
-### Success Metrics (v6.7)
-
-- **Question Efficiency**: 12-15 questions vs 20+ (30% reduction)
-- **Context Awareness**: 80%+ software questions use discovered context
-- **Synthesis Quality**: 90%+ key insights captured per chunk
-- **Expertise Detection**: Adapts within 3-4 answers
-- **Backward Compatibility**: 100% legacy session support
+The /run workflow receives the full design document with all decisions, constraints, patterns, and artifacts as implementation context.
 
 ### Tips for Best Results
 
-1. **Be specific in first answer**: Helps with domain detection and context discovery
-2. **Don't rush**: /designer helps you think through edge cases and trade-offs
-3. **Ask follow-ups**: If a question isn't clear, ask for clarification
-4. **Use synthesis**: Review syntheses to ensure shared understanding
-5. **Cancel when ready**: No fixed endpoint, you control when to stop
-6. **Generate document**: Great for sharing with team or referencing later
-7. **Use with /run**: Explore → Implement workflow is powerful
+1. **Be specific in first answer**: Helps domain detection and context discovery
+2. **Trust the phases**: Discovery → Ideation → Refinement → Specification
+3. **Review synthesis points**: Confirm understanding before moving forward
+4. **Explore alternatives**: The ideation phase is where you avoid bad decisions
+5. **Look at validation scores**: They catch real issues in your design
+6. **Use templates**: They ensure comprehensive coverage of important areas
+7. **Let it build**: Transition directly to /run when design is complete
 
 ---
 
@@ -433,7 +288,7 @@ See CLAUDE.md for complete /optimize documentation.
 
 | Command | Purpose | Duration | Interaction | Output |
 |---------|---------|----------|-------------|--------|
-| **/designer** | Discovery & exploration | 10-30 min | Continuous Q&A | Design document + session |
+| **/designer** | Structured design | 15-45 min | 4-phase Q&A | Design doc + artifacts + diagrams + validation |
 | **/run** | Implementation | Varies | Autonomous | Working implementation |
 | **/review** | Quality review | 3-10 min | Autonomous | Issue report + fixes |
 | **/optimize** | Performance improvement | 5-15 min | Autonomous | Optimized code/content |

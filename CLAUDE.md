@@ -487,8 +487,27 @@ Auto-routes to super-domain, executes full workflow with controller-centric coor
 /run Design game mechanics     # -> Make domain (tier 2: game-designer)
 ```
 
-### /designer - Interactive Design Discovery
-Interactive design tool using AskUserQuestion for EVERY interaction. ALWAYS asks user for input - never assumes. Runs until user stops.
+### /designer - Interactive Design Engine (V2.0)
+Structured 4-phase design engine (Discovery → Ideation → Refinement → Specification) that transforms ideas into implementation-ready design documents with artifact generation, pattern recommendations, and 4-level validation. ALWAYS uses AskUserQuestion for every interaction.
+
+```bash
+/designer                              # Start fresh design session
+/designer [topic]                      # Start with a specific topic
+/designer --resume {id}                # Resume previous session
+/designer --template product-feature   # Start with template
+/designer --focus technical            # Focus on specific areas
+```
+
+**Key Capabilities**:
+- **4-Phase Workflow**: Discovery (problem) → Ideation (alternatives + patterns) → Refinement (detailed design + diagrams) → Specification (artifacts + validation)
+- **Artifact Generation**: User stories, tech specs, mermaid diagrams, implementation checklists
+- **Pattern Library**: Recommends proven design patterns during ideation
+- **4-Level Validation**: Completeness, consistency, feasibility, quality (0.0-1.0 scores)
+- **6 Templates**: Product feature, UI/UX, system architecture, API, business process, creative content
+- **Auto-Build**: Automatically triggers `/run` when design is complete
+- **Context Discovery**: Searches codebase for software projects to ask informed questions
+
+Config: `Agent_Memory/_system/templates/designer/`
 
 ### /review - Enhanced Review
 Universal review with 8 enhancements: Intelligent agent selection (30-50% faster), severity-based early reporting (81% faster to critical), auto-fix suggestions (98% more actionable), priority intelligence, diff-aware analysis, context-aware, real-time progress, pattern learning (78% detection).
@@ -681,4 +700,4 @@ See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 **Directories**: 7 (core, shared, make, grow, operate, people, serve)
 **Key Innovation**: CSV-based task inventory for large workflows + aggressive decomposition
 **Dependencies**: None (file-based, self-contained)
-**Version**: 8.1.1
+**Version**: 8.2.0
