@@ -5,7 +5,7 @@ tier: support
 domain: make
 layer: intelligence
 model: sonnet
-color: red
+color: bright_red
 capabilities:
   - risk_analysis
   - vulnerability_detection

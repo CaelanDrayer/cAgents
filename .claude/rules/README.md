@@ -21,6 +21,8 @@ Topic-specific rules organized for better maintainability.
 │   ├── operate.md          # Operate (finance/operations) patterns
 │   ├── people.md           # People (HR/culture) patterns
 │   └── serve.md            # Serve (support/legal) patterns
+├── infrastructure/ # Infrastructure configuration
+│   └── model-routing.md    # Model routing guidelines
 ├── memory/         # Memory and state management
 │   └── agent-memory.md     # Agent_Memory/ structure and usage
 └── quality/        # Quality and completion
@@ -65,7 +67,7 @@ Import rules into CLAUDE.md or other docs:
 See @.claude/rules/core/orchestration.md for workflow patterns.
 ```
 
-## Current Rules (18 files)
+## Current Rules (19 files)
 
 ### Core (8 files)
 1. **core/orchestration.md** - Workflow phases (routing -> validating)
@@ -84,16 +86,19 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 12. **domains/people.md** - People (HR/culture) guidelines
 13. **domains/serve.md** - Serve (support/legal) guidelines
 
+### Infrastructure (1 file)
+14. **infrastructure/model-routing.md** - Model routing guidelines and project overrides
+
 ### Memory (1 file)
-14. **memory/agent-memory.md** - Agent_Memory/ structure (V8.0: three-file pattern, waypoints)
+15. **memory/agent-memory.md** - Agent_Memory/ structure (V8.0: three-file pattern, waypoints)
 
 ### Quality (3 files)
-15. **quality/completion.md** - Task completion protocol
-16. **quality/validation-framework.md** - End-to-end completion traceability
-17. **quality/implicit-discovery.md** - Handling abstract requests
+16. **quality/completion.md** - Task completion protocol
+17. **quality/validation-framework.md** - End-to-end completion traceability
+18. **quality/implicit-discovery.md** - Handling abstract requests
 
 ### Meta (1 file)
-18. **README.md** - This index file
+19. **README.md** - This index file
 
 ## V8.0 Additions
 
@@ -130,10 +135,12 @@ Adds V8.0 session management features:
 - `scripts/ci/check-quality.sh` - Pre-commit quality checks
 
 ### Hooks
-- `.claude/hooks/session-catchup.js` - Session recovery
-- `.claude/hooks/pre-compact-save.js` - State preservation
-- `.claude/hooks/verify-completion.js` - Completion verification
-- `.claude/hooks/eval-runner.js` - Quality evaluation
+- `.claude/hooks/session-catchup.cjs` - Session recovery
+- `.claude/hooks/pre-compact-save.cjs` - State preservation
+- `.claude/hooks/verify-completion.cjs` - Completion verification
+- `.claude/hooks/eval-runner.cjs` - Quality evaluation (CLI tool)
+- `.claude/hooks/secret-detection.cjs` - Secret detection for Write/Edit
+- `.claude/hooks/notification.cjs` - Status notification logging
 
 ### Metrics & Evals
 - `Agent_Memory/_system/metrics/` - Workflow metrics

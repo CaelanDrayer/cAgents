@@ -1,4 +1,4 @@
-# Getting Started with cAgents V7.5.1
+# Getting Started with cAgents V8.0
 
 Quick start guide for the cAgents universal multi-domain agent system.
 
@@ -6,7 +6,7 @@ Quick start guide for the cAgents universal multi-domain agent system.
 
 - Claude Code CLI installed
 - Git repository (recommended)
-- Node.js (optional, for npm commands)
+- Node.js (optional, recommended for advanced hooks)
 
 ## Quick Start
 
@@ -16,6 +16,7 @@ Quick start guide for the cAgents universal multi-domain agent system.
 # Clone the repository
 git clone https://github.com/CaelanDrayer/cAgents.git
 cd cAgents
+./setup.sh  # Configures hooks based on Node.js availability
 
 # Or add as a plugin to existing project
 claude --plugin-dir /path/to/cAgents
@@ -25,20 +26,20 @@ claude --plugin-dir /path/to/cAgents
 
 ```bash
 # Basic usage - auto-detects domain
-/trigger Fix the login bug
+/run Fix the login bug
 
-# With domain override
-/trigger Write a marketing email --domain revenue
+# Creative work
+/run Write a marketing email
 
-# Interactive mode (recommended for first time)
-/trigger Add user authentication --interactive
+# Complex task
+/run Add user authentication
 ```
 
 ### 3. Understand the Output
 
 cAgents will:
-1. **Detect domain** (engineering, creative, revenue, etc.)
-2. **Classify tier** (0-4 based on complexity)
+1. **Detect domain** (Make, Grow, Operate, People, Serve)
+2. **Classify tier** (2-4 based on complexity, minimum tier 2 enforced)
 3. **Select controllers** (coordinate work via questions)
 4. **Execute workflow** (routing -> planning -> coordinating -> executing -> validating)
 5. **Report results** (validation status and outputs)
@@ -47,9 +48,9 @@ cAgents will:
 
 | Command | Purpose | Example |
 |---------|---------|---------|
-| `/trigger` | Universal workflow entry point | `/trigger Fix auth bug` |
+| `/run` | Universal workflow entry point | `/run Fix auth bug` |
 | `/designer` | Interactive design exploration | `/designer` |
-| `/reviewer` | Code and content review | `/reviewer src/` |
+| `/review` | Code and content review | `/review src/` |
 | `/optimize` | Universal optimization | `/optimize` |
 
 ## Understanding Workflows
@@ -58,11 +59,11 @@ cAgents will:
 
 | Tier | Type | Duration | Example |
 |------|------|----------|---------|
-| 0 | Trivial | Seconds | "What is X?" |
-| 1 | Simple | Minutes | "Fix typo" |
-| 2 | Moderate | 15-45 min | "Fix bug" |
+| 2 | Moderate | 15-45 min | "Fix bug", "What is X?", "Fix typo" |
 | 3 | Complex | 1-4 hours | "Add feature" |
 | 4 | Expert | 4+ hours | "Major refactor" |
+
+**Note**: Tiers 0-1 are deprecated and automatically upgraded to Tier 2.
 
 ### Workflow Phases
 
@@ -76,38 +77,38 @@ routing -> planning -> coordinating -> executing -> validating
 4. **Executing**: Implementation based on coordinated solution
 5. **Validating**: Quality gates verify outputs
 
-## Domains
+## Super-Domains
 
-cAgents supports 8 domains:
+cAgents supports 5 super-domains:
 
-| Domain | Keywords | Example Requests |
-|--------|----------|-----------------|
-| Engineering | fix, bug, feature, code | "Fix authentication bug" |
-| Creative | write, story, character | "Write a fantasy novel" |
-| Revenue | campaign, sales, marketing | "Plan Q4 launch" |
-| Finance-Operations | budget, forecast, expense | "Create 2024 budget" |
-| People-Culture | recruit, onboard, culture | "Design onboarding program" |
-| Customer-Experience | support, feedback, SLA | "Improve support tickets" |
-| Legal-Compliance | contract, GDPR, policy | "Review vendor contract" |
-| Universal | analyze, document, review | "Document the API" |
+| Super-Domain | Agents | Keywords | Example Requests |
+|--------------|--------|----------|-----------------|
+| **Make** | 108 | fix, bug, feature, code, write, story, game | "Fix auth bug", "Write a novel" |
+| **Grow** | 37 | campaign, sales, marketing, SEO | "Plan Q4 launch" |
+| **Operate** | 13 | budget, forecast, operations, procurement | "Create annual budget" |
+| **People** | 19 | recruit, onboard, culture, HR | "Design onboarding program" |
+| **Serve** | 28 | support, legal, compliance, contract | "Review vendor contract" |
 
-## Agent Architecture (V7.0)
+## Agent Architecture (V8.0)
 
 ```
-Tier 1: Core (10 agents)
-  - orchestrator, trigger, planner, executor, validator...
+Tier 1: Core (12 agents)
+  - orchestrator, trigger, planner, executor, validator, hitl, optimizer,
+    task-consolidator, task-decomposer, task-inventory, router, self-correct
 
-Tier 2: Controllers (~50 agents)
+Tier 2: Controllers (~53 agents)
   - engineering-manager, architect, campaign-manager...
 
-Tier 3: Execution (~150 agents)
+Tier 3: Execution (~147 agents)
   - backend-developer, copywriter, financial-analyst...
 
 Tier 4: Support (~19 agents)
   - scribe, data-extractor...
 ```
 
-**V7.0 Key Concept**: Controllers coordinate work via question-based delegation. They ask questions to specialists, synthesize answers, and coordinate implementation.
+**Total**: 231 agents (12 core + 14 shared + 205 domain specialists)
+
+**Key Concept**: Controllers coordinate work via question-based delegation. They ask questions to specialists, synthesize answers, and coordinate implementation.
 
 ## Configuration
 
@@ -117,39 +118,39 @@ Tier 4: Support (~19 agents)
 Agent_Memory/
 ├── _system/           # Registry, configs
 ├── _knowledge/        # Patterns, learnings
-└── inst_{id}/         # Per-workflow state
-    ├── instruction.yaml
-    ├── status.yaml
-    ├── workflow/
-    └── outputs/
+└── sessions/          # Per-command sessions (standardized)
+    └── {command}_{YYYYMMDD_HHMMSS}/
+        ├── instruction.yaml
+        ├── status.yaml
+        ├── workflow/
+        └── outputs/
 ```
 
 ### Project Memory
 
 ```
 .claude/
-├── CLAUDE.md          # Project instructions
-├── rules/             # Modular rules
-├── cagents-session.local.md  # Session state
-└── workflow/          # Active workflows
+├── rules/             # Modular rules (19 files across 5 categories)
+├── hooks/             # Hook implementations (6 Node.js hooks)
+└── settings.json      # Hook registration and settings
 ```
 
 ## Advanced Usage
 
-### V2.0 Trigger Flags
+### Advanced Flags
 
 ```bash
 # Dry run (preview without executing)
-/trigger Add feature --dry-run
+/run Add feature --dry-run
 
 # Interactive mode (asks preferences)
-/trigger Refactor auth --interactive
+/run Refactor auth --interactive
 
 # Template-based
-/trigger Fix bug --template bug_fix
+/run Fix bug --template bug_fix
 
 # Stream progress
-/trigger Deploy --stream
+/run Deploy --stream
 ```
 
 ### Hooks
@@ -182,7 +183,7 @@ Bash utilities for programmatic access:
 
 ## Best Practices
 
-1. **Use /trigger for all workflows** - It auto-routes to the right domain
+1. **Use /run for all workflows** - It auto-routes to the right domain
 2. **Start with --interactive** for new workflow types
 3. **Use --dry-run** to preview complex workflows
 4. **Don't ask Claude for permission** - Workflows proceed automatically
@@ -192,7 +193,7 @@ Bash utilities for programmatic access:
 
 | Issue | Solution |
 |-------|----------|
-| Wrong domain detected | Use `--domain` flag to override |
+| Wrong domain detected | Use explicit domain keywords |
 | Workflow stuck | Check `Agent_Memory/{id}/status.yaml` |
 | No progress updates | Ensure TodoWrite is being used |
 | Missing outputs | Check `Agent_Memory/{id}/outputs/` |
@@ -206,5 +207,5 @@ Bash utilities for programmatic access:
 
 ---
 
-**Version**: 7.5.1
+**Version**: 8.0.28
 **Questions?** Check the troubleshooting guide or explore the codebase.

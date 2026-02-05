@@ -14,7 +14,7 @@ capabilities:
   - process_management
   - performance_optimization
   - continuous_improvement
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 ---
 
 # Operations Manager

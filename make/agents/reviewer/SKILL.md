@@ -15,10 +15,9 @@ capabilities:
   - pattern-learning
 tools: Read, Grep, Glob, Write, TodoWrite, Task, Bash
 model: sonnet
-color: magenta
+color: bright_magenta
 layer: workflow
 tier: support
-version: "3.0"
 ---
 
 # V3.0 Enhanced Reviewer Agent

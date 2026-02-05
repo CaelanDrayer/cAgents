@@ -10,7 +10,7 @@ shared_questions: &grow_questions
 controller_catalog:
   tier_2:
     - name: creative-director
-      agent_path: grow/agents/creative-director.md
+      agent_path: grow/agents/creative-director/SKILL.md
       coordination_style: question_based
       typical_questions: *grow_questions
       use_when:
@@ -21,7 +21,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: marketing-strategist
-      agent_path: grow/agents/marketing-strategist.md
+      agent_path: grow/agents/marketing-strategist/SKILL.md
       coordination_style: question_based
       typical_questions: *grow_questions
       use_when:
@@ -32,7 +32,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: product-marketing-manager
-      agent_path: grow/agents/product-marketing-manager.md
+      agent_path: grow/agents/product-marketing-manager/SKILL.md
       coordination_style: question_based
       typical_questions: *grow_questions
       use_when:
@@ -43,7 +43,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: sales-strategist
-      agent_path: grow/agents/sales-strategist.md
+      agent_path: grow/agents/sales-strategist/SKILL.md
       coordination_style: question_based
       typical_questions: *grow_questions
       use_when:
@@ -55,7 +55,7 @@ controller_catalog:
 
   tier_3:
     - name: cmo
-      agent_path: grow/agents/cmo.md
+      agent_path: grow/agents/cmo/SKILL.md
       coordination_style: question_based
       typical_questions: *grow_questions
       use_when:
@@ -67,7 +67,7 @@ controller_catalog:
 
   tier_4:
     - name: cro
-      agent_path: grow/agents/cro.md
+      agent_path: grow/agents/cro/SKILL.md
       coordination_style: question_based
       typical_questions: *grow_questions
       use_when:

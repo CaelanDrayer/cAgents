@@ -4,7 +4,7 @@ description: "Financial oversight specialist managing IT budgets, costs, ROI ana
 tier: execution
 domain: make
 model: sonnet
-color: green
+color: bright_green
 capabilities:
   - budget_management
   - cost_analysis

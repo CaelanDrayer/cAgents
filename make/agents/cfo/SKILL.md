@@ -9,8 +9,14 @@ typical_questions:
   - "What is the current implementation of this feature?"
   - "What are the technical constraints we need to consider?"
   - "What are the key risks and dependencies?"
-color: green
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+color: bright_green
+capabilities:
+  - financial_strategy
+  - budget_management
+  - fundraising
+  - investment_decisions
+  - financial_risk_assessment
+tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 ---
 
 # CFO

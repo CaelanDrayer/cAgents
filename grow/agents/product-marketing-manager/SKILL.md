@@ -14,7 +14,7 @@ capabilities:
   - launch_planning
   - competitive_intelligence
   - sales_enablement
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 ---
 
 # Product Marketing Manager

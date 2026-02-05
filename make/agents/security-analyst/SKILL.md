@@ -4,7 +4,7 @@ description: "QA Layer agent for security vulnerability scanning and OWASP compl
 tier: support
 domain: make
 model: sonnet
-color: red
+color: bright_red
 layer: qa
 capabilities:
   - vulnerability_scanning

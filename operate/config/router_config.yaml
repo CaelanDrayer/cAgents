@@ -1,15 +1,11 @@
 super_domain: operate
 description: Routing configuration for OPERATE super-domain
 tier_classification:
-  tier_0:
-    description: Trivial questions
-    time_estimate: < 5 minutes
-  tier_1:
-    description: Simple single-file changes
-    time_estimate: < 30 minutes
+  # NOTE: tier_0 and tier_1 are deprecated - all requests auto-upgrade to tier_2 minimum
   tier_2:
     description: Moderate complexity, 1 controller
     time_estimate: 1-4 hours
+    auto_upgrade_from: [tier_0, tier_1]
   tier_3:
     description: Complex, multiple controllers
     time_estimate: 4-12 hours
@@ -17,5 +13,28 @@ tier_classification:
     description: Expert-level, HITL required
     time_estimate: 1-3 days
 keywords:
-- operate
-complexity_indicators: []
+  - operate
+  - finance
+  - budget
+  - operations
+  - process
+  - efficiency
+  - compliance
+  - procurement
+  - supply chain
+  - cost
+  - audit
+  - risk
+complexity_indicators:
+  tier_2:
+    - "single process optimization"
+    - "one department affected"
+    - "clear operational requirements"
+  tier_3:
+    - "cross-department coordination"
+    - "financial planning with multiple stakeholders"
+    - "compliance-driven changes"
+  tier_4:
+    - "major operational transformation"
+    - "organization-wide financial impact"
+    - "board-level reporting required"

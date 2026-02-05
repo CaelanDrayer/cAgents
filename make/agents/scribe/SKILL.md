@@ -4,7 +4,7 @@ description: "Documentation specialist for capturing decisions, knowledge, and l
 tier: execution
 domain: make
 model: sonnet
-color: gray
+color: bright_white
 capabilities:
   - documentation
   - decision_capture

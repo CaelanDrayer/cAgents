@@ -14,7 +14,7 @@ capabilities:
   - inventory_management
   - vendor_management
   - logistics_optimization
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 ---
 
 # Supply Chain Manager

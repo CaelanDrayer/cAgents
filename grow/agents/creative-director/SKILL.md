@@ -14,7 +14,7 @@ capabilities:
   - visual_design
   - brand_expression
   - campaign_creative
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 ---
 
 # Creative Director

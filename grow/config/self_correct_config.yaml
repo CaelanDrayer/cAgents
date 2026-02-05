@@ -9,6 +9,14 @@ recovery_patterns:
   execution_failures:
   - failure: Task incomplete
     recovery: Identify blocking issue and resolve
+  - failure: Content misses target audience
+    recovery: Re-analyze audience, revise messaging
+  - failure: Campaign metrics below threshold
+    recovery: Adjust targeting, creative, or channel mix
   validation_failures:
   - failure: Quality gate failed
     recovery: Address specific failure and re-validate
+  - failure: Brand guidelines violated
+    recovery: Review brand standards, revise assets
+  - failure: Conversion funnel degraded
+    recovery: A/B test alternatives, restore baseline

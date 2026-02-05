@@ -9,6 +9,14 @@ recovery_patterns:
   execution_failures:
   - failure: Task incomplete
     recovery: Identify blocking issue and resolve
+  - failure: Policy violates employment law
+    recovery: Consult compliance, revise policy
+  - failure: Change management resistance
+    recovery: Increase stakeholder engagement, adjust rollout plan
   validation_failures:
   - failure: Quality gate failed
     recovery: Address specific failure and re-validate
+  - failure: Employee experience negatively impacted
+    recovery: Gather feedback, adjust approach
+  - failure: DEI requirements not met
+    recovery: Review inclusion criteria, revise program

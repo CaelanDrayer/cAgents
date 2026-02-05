@@ -9,8 +9,14 @@ typical_questions:
   - "What is the current implementation of this feature?"
   - "What are the technical constraints we need to consider?"
   - "What are the key risks and dependencies?"
-color: purple
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+color: bright_magenta
+capabilities:
+  - strategic_vision
+  - executive_decisions
+  - stakeholder_management
+  - organizational_alignment
+  - major_initiatives
+tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 ---
 
 # CEO

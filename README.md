@@ -2,15 +2,15 @@
 
 **Universal Multi-Domain Agent System for Claude Code**
 
-V8.0.11 - Production-ready controller-centric architecture with 231 agents across 5 super-domains. Progressive Disclosure Edition.
+V8.0.28 - Production-ready controller-centric architecture with 231 agents across 5 super-domains. Progressive Disclosure Edition.
 
 ## Overview
 
 cAgents transforms AI-assisted work across any domain through specialized agent teams that collaborate autonomously. From software engineering to marketing, operations to creative work - one unified system handles it all.
 
-**V8.0.11 Release** (2026-01-29):
+**V8.0.28 Release** (2026-02-04):
 - Claude Code hooks system (12 types, 6 implementations)
-- Progressive skill disclosure (10 SKILL.md migrations, 80%+ token savings)
+- Progressive skill disclosure (all agents use SKILL.md format with resources/)
 - 4-tier model routing (Haiku/Sonnet/Opus)
 - Session management with waypoints and recovery
 - Evaluation framework and CI/CD scripts
@@ -35,7 +35,7 @@ Without Node.js, cAgents works with shell-only hooks for basic session and workf
 231 agents organized into:
 - **Core** (12): Infrastructure (trigger, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, 5 universal workflow agents)
 - **Shared** (14): Cross-domain capabilities (data, analytics, quality, compliance, customer, operations)
-- **Make** (114): Creation (engineering, creative, product, devops, qa, **game development** - includes 10 SKILL.md directories)
+- **Make** (108): Creation (engineering, creative, product, devops, qa, **game development**)
 - **Grow** (37): Acquisition (marketing, sales, partnerships)
 - **Operate** (13): Operations (finance, operations, procurement)
 - **People** (19): Talent (HR, culture, talent acquisition)
@@ -44,7 +44,7 @@ Without Node.js, cAgents works with shell-only hooks for basic session and workf
 ```
 User Request -> Trigger -> Orchestrator
     |
-Routing (classify tier 0-4)
+Routing (classify tier 2-4)
     |
 Planning (define objectives)
     |
@@ -121,7 +121,7 @@ One command handles ANY request type - routing happens automatically:
 The system automatically:
 1. Analyzes your request and identifies intent
 2. Routes to the appropriate super-domain (Make/Grow/Operate/People/Serve)
-3. Classifies complexity tier (0-4)
+3. Classifies complexity tier (2-4, minimum tier 2 enforced)
 4. Selects appropriate controllers and execution agents
 5. Orchestrates the workflow through all phases
 6. Delivers validated results
@@ -130,11 +130,11 @@ The system automatically:
 
 | Tier | Type | Coordination | Example | Workflow |
 |------|------|--------------|---------|----------|
-| 0 | Trivial | None | "What is X?" | routing -> answer |
-| 1 | Simple | None | "Fix typo" | routing -> planning -> executing -> validating |
-| 2 | Moderate | 1 controller | "Fix bug" | routing -> planning -> **coordinating** -> executing -> validating |
+| 2 | Moderate | 1 controller | "Fix bug", "What is X?", "Fix typo" | routing -> planning -> **coordinating** -> executing -> validating |
 | 3 | Complex | 1 primary + 1-2 supporting | "Add feature" | routing -> planning -> **coordinating** -> executing -> validating |
 | 4 | Expert | 1 executive + 1 primary + 2-4 supporting + HITL | "Major refactor" | routing -> planning -> **coordinating** -> executing -> validating + HITL |
+
+**Note**: Tiers 0-1 are deprecated and automatically upgraded to Tier 2 for multi-agent specialist coverage.
 
 ### Universal Commands
 
@@ -260,7 +260,7 @@ Run `./setup.sh` to configure hooks based on Node.js availability.
 **V8.0 Infrastructure & Learning Edition**:
 - CSV-based task inventory for 20+ task workflows (60-80% context savings)
 - Aggressive task decomposition with implicit requirement discovery
-- Total agents: 233 (12 core + 14 shared + 207 domain specialists)
+- Total agents: 231 (12 core + 14 shared + 205 domain specialists)
 - Game engines supported: Unity, Unreal Engine, Godot
 
 ## Version History
@@ -286,4 +286,4 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | **cAgents V8.0.7** | 231 agents across 5 super-domains
+**Built with Claude Code** | **cAgents V8.0.28** | 231 agents across 5 super-domains

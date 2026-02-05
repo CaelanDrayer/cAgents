@@ -5,7 +5,7 @@ tier: support
 domain: make
 layer: qa
 model: sonnet
-color: yellow
+color: bright_yellow
 capabilities:
   - style_checking
   - convention_enforcement

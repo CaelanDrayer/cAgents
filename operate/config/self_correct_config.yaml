@@ -9,6 +9,14 @@ recovery_patterns:
   execution_failures:
   - failure: Task incomplete
     recovery: Identify blocking issue and resolve
+  - failure: Financial calculations inaccurate
+    recovery: Audit data sources, recalculate with verification
+  - failure: Process change disrupts operations
+    recovery: Roll back change, implement incrementally
   validation_failures:
   - failure: Quality gate failed
     recovery: Address specific failure and re-validate
+  - failure: Compliance requirement missed
+    recovery: Review applicable regulations, add controls
+  - failure: Budget variance exceeds threshold
+    recovery: Identify variance drivers, propose adjustments

@@ -1,6 +1,6 @@
 {
   "name": "@cagents/core",
-  "version": "8.0.16",
+  "version": "8.0.28",
   "description": "cAgents Core V8.0 - Universal multi-domain agent system with aggressive task decomposition. Features: 5-level decomposition, comprehensive work breakdowns with acceptance criteria, dependency graphs, parallel execution. Includes 12 core agents: trigger, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, and 5 universal workflow agents. Controller-centric coordination with question-based delegation.",
   "author": {
     "name": "CaelanDrayer",
@@ -29,17 +29,17 @@
     "./commands/optimize.md"
   ],
   "agents": [
-    "./agents/trigger.md",
-    "./agents/orchestrator.md",
-    "./agents/hitl.md",
-    "./agents/universal-router.md",
-    "./agents/universal-planner.md",
-    "./agents/universal-executor.md",
-    "./agents/universal-validator.md",
-    "./agents/universal-self-correct.md",
-    "./agents/optimizer.md",
-    "./agents/task-consolidator.md",
-    "./agents/task-decomposer.md",
-    "./agents/task-inventory.md"
+    "./agents/trigger/SKILL.md",
+    "./agents/orchestrator/SKILL.md",
+    "./agents/hitl/SKILL.md",
+    "./agents/universal-router/SKILL.md",
+    "./agents/universal-planner/SKILL.md",
+    "./agents/universal-executor/SKILL.md",
+    "./agents/universal-validator/SKILL.md",
+    "./agents/universal-self-correct/SKILL.md",
+    "./agents/optimizer/SKILL.md",
+    "./agents/task-consolidator/SKILL.md",
+    "./agents/task-decomposer/SKILL.md",
+    "./agents/task-inventory/SKILL.md"
   ]
 }

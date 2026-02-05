@@ -4,7 +4,7 @@ domain: make
 tier: execution
 description: "Compliance officer managing regulatory requirements, audits, policies, and risk assessment. Use PROACTIVELY for compliance reviews, audit preparation, policy violations, data privacy requirements, and regulatory changes."
 model: opus
-color: red
+color: bright_red
 capabilities:
   - regulatory_compliance
   - audit_management

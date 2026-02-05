@@ -4,7 +4,7 @@ description: "VP of Engineering responsible for engineering organization managem
 tier: controller
 domain: make
 model: opus
-color: cyan
+color: bright_cyan
 coordination_style: question_based
 typical_questions:
   - "What is the current implementation of this feature?"

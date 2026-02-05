@@ -4,7 +4,7 @@ description: "UX/UI designer specializing in user research, interface design, de
 tier: execution
 domain: make
 model: sonnet
-color: magenta
+color: bright_magenta
 capabilities:
   - user_research
   - interface_design

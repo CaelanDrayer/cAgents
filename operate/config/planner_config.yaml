@@ -10,7 +10,7 @@ shared_questions: &operate_questions
 controller_catalog:
   tier_2:
     - name: business-analyst
-      agent_path: operate/agents/business-analyst.md
+      agent_path: operate/agents/business-analyst/SKILL.md
       coordination_style: question_based
       typical_questions: *operate_questions
       use_when:
@@ -21,7 +21,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: change-manager
-      agent_path: operate/agents/change-manager.md
+      agent_path: operate/agents/change-manager/SKILL.md
       coordination_style: question_based
       typical_questions: *operate_questions
       use_when:
@@ -32,7 +32,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: operations-manager
-      agent_path: operate/agents/operations-manager.md
+      agent_path: operate/agents/operations-manager/SKILL.md
       coordination_style: question_based
       typical_questions: *operate_questions
       use_when:
@@ -43,7 +43,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: supply-chain-manager
-      agent_path: operate/agents/supply-chain-manager.md
+      agent_path: operate/agents/supply-chain-manager/SKILL.md
       coordination_style: question_based
       typical_questions: *operate_questions
       use_when:
@@ -55,7 +55,7 @@ controller_catalog:
 
   tier_3:
     - name: finance-manager
-      agent_path: make/agents/finance-manager.md
+      agent_path: make/agents/finance-manager/SKILL.md
       coordination_style: question_based
       typical_questions: *operate_questions
       use_when:
@@ -67,7 +67,7 @@ controller_catalog:
 
   tier_4:
     - name: cfo
-      agent_path: make/agents/cfo.md
+      agent_path: make/agents/cfo/SKILL.md
       coordination_style: question_based
       typical_questions: *operate_questions
       use_when:

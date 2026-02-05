@@ -13,3 +13,7 @@ monitoring_patterns:
   - Synthesis documented
   - Tasks completed
   - coordination_log.yaml exists
+  domain_specific_monitoring:
+  - HR policy compliance review status
+  - Stakeholder communication progress
+  - Employee impact assessment completion

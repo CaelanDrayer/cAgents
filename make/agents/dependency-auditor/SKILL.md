@@ -4,7 +4,7 @@ description: "QA Layer agent for dependency vulnerability and currency checking.
 tier: support
 domain: make
 model: sonnet
-color: purple
+color: bright_magenta
 layer: qa
 capabilities:
   - dependency_scanning

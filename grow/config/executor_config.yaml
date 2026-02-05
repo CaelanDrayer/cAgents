@@ -13,3 +13,7 @@ monitoring_patterns:
   - Synthesis documented
   - Tasks completed
   - coordination_log.yaml exists
+  domain_specific_monitoring:
+  - Campaign asset creation progress
+  - Content review and approval status
+  - Sales enablement material completion

@@ -4,7 +4,7 @@ description: "QA Layer agent for test coverage validation and gap identification
 tier: support
 domain: make
 model: sonnet
-color: green
+color: bright_green
 layer: qa
 capabilities:
   - coverage_analysis

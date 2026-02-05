@@ -9,6 +9,14 @@ recovery_patterns:
   execution_failures:
   - failure: Task incomplete
     recovery: Identify blocking issue and resolve
+  - failure: Tests failing
+    recovery: Analyze test failures, fix implementation, re-run tests
+  - failure: Build errors
+    recovery: Check dependencies, fix compilation issues
   validation_failures:
   - failure: Quality gate failed
     recovery: Address specific failure and re-validate
+  - failure: Code coverage insufficient
+    recovery: Add missing tests for uncovered paths
+  - failure: Security scan found vulnerabilities
+    recovery: Patch vulnerabilities and re-scan

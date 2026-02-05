@@ -96,8 +96,9 @@ When committing changes to this repository, you MUST increment the version in:
 
 ```
 .claude/rules/
-├── core/           # orchestration.md, controllers.md, execution.md
+├── core/           # orchestration.md, controllers.md, execution.md, + 5 more
 ├── domains/        # engineering.md, grow.md, operate.md, people.md, serve.md
+├── infrastructure/ # model-routing.md
 ├── memory/         # agent-memory.md
 └── quality/        # completion.md, validation-framework.md, implicit-discovery.md
 ```
@@ -126,7 +127,7 @@ Use `@path/to/file` syntax to include external content:
 ### cAgents Memory Strategy
 
 - Main project memory: `./CLAUDE.md` (this file)
-- Modular rules: `.claude/rules/` (18 rule files across 4 categories)
+- Modular rules: `.claude/rules/` (19 rule files across 5 categories)
 - Agent patterns: `workflow_agent_interactions.md` (root-level exception)
 - Domain configs: `{domain}/config/*.yaml`
 - Runtime state: `Agent_Memory/` (git-ignored)
@@ -617,17 +618,17 @@ cAgents/
 │   ├── agents/              # 12 core agents
 │   └── commands/            # 4 universal commands
 ├── shared/                  # Shared cross-domain capabilities (14 agents)
-├── make/                    # MAKE super-domain (109 agents)
+├── make/                    # MAKE super-domain (108 agents)
 │   ├── agents/              # Engineering, creative, product, devops, qa, game development
 │   ├── config/              # Domain configs (planner_config.yaml, etc.)
 │   └── .claude-plugin/      # Make manifest
-├── grow/                    # GROW super-domain (39 agents)
+├── grow/                    # GROW super-domain (37 agents)
 ├── operate/                 # OPERATE super-domain (13 agents)
-├── people/                  # PEOPLE super-domain (21 agents)
+├── people/                  # PEOPLE super-domain (19 agents)
 ├── serve/                   # SERVE super-domain (28 agents)
 ├── docs/                    # Project documentation
 ├── .claude/                 # Memory system
-│   └── rules/               # Modular rules (18 files across 4 categories)
+│   └── rules/               # Modular rules (19 files across 5 categories)
 ├── .claude-plugin/          # Root manifest
 └── Agent_Memory/            # Runtime state (git-ignored)
 ```
@@ -680,4 +681,4 @@ See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 **Directories**: 7 (core, shared, make, grow, operate, people, serve)
 **Key Innovation**: CSV-based task inventory for large workflows + aggressive decomposition
 **Dependencies**: None (file-based, self-contained)
-**Version**: 8.0.18
+**Version**: 8.0.28

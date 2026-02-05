@@ -4,7 +4,7 @@ description: "QA Layer agent for regulatory compliance and policy enforcement. U
 tier: support
 domain: make
 model: sonnet
-color: darkblue
+color: bright_blue
 layer: qa
 capabilities:
   - compliance_checking

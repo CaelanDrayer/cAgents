@@ -4,7 +4,7 @@ tier: infrastructure
 description: "Universal entry point with context-aware detection, confidence scoring, template matching, pre-flight validation, and workflow analytics. Routes ALL requests to specialist agents - never handles directly."
 tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 model: sonnet
-color: white
+color: bright_white
 domain: core
 capabilities:
   - domain_detection

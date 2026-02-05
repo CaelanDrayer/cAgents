@@ -9,6 +9,12 @@ typical_questions:
   - "What is the current implementation of this feature?"
   - "What are the technical constraints we need to consider?"
   - "What are the key risks and dependencies?"
+capabilities:
+  - creative_vision
+  - narrative_strategy
+  - artistic_direction
+  - brand_identity
+  - creative_quality
 tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 ---
 

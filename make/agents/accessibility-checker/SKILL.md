@@ -4,7 +4,7 @@ description: "QA Layer agent for WCAG compliance and accessibility validation. U
 tier: support
 domain: make
 model: sonnet
-color: pink
+color: bright_magenta
 layer: qa
 capabilities:
   - wcag_compliance

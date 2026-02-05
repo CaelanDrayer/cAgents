@@ -14,6 +14,11 @@ quality_gates:
     - All outputs exist
     - Evidence provided
   regression_checks:
-  - No breaking changes
-  - Existing tests pass
-  - No security vulnerabilities introduced
+  - No breaking changes to existing campaigns
+  - Brand guidelines compliance maintained
+  - No negative impact on existing conversion funnels
+  domain_specific_checks:
+  - Campaign metrics meet or exceed targets
+  - Sales enablement content approved by stakeholders
+  - Marketing assets align with brand guidelines
+  - Target audience properly defined and validated

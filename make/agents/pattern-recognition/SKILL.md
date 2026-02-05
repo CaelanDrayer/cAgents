@@ -4,7 +4,7 @@ description: "Intelligence Layer agent that identifies recurring issues across w
 tier: support
 domain: make
 model: sonnet
-color: purple
+color: bright_magenta
 layer: intelligence
 capabilities:
   - pattern_analysis

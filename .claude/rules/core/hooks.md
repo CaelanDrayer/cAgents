@@ -2,19 +2,30 @@
 
 V8.0 hook system with all 12 official Claude Code hook types.
 
+## Architecture
+
+cAgents uses a dual-hook system configured in `.claude/settings.json`:
+
+- **Shell hooks** (`hooks/`): 9 scripts for session lifecycle, workflow events, and tool validation. These are the baseline hooks that work without Node.js.
+- **JavaScript hooks** (`.claude/hooks/`): 5 registered `.cjs` scripts for advanced features (session catchup, secret detection, completion verification, pre-compact state save, notifications). Plus 1 standalone CLI tool (`eval-runner.cjs`).
+
+The `setup.sh` script auto-detects Node.js and configures the appropriate settings. Without Node.js, only shell hooks are active (via `settings.shell-only.json`). With Node.js, both systems run (via `settings.full.json`).
+
+**Archived hooks**: 10 legacy shell scripts and 1 schema file were archived to `archive/hooks/` as they were never registered in settings.json and not called from any active code. These were "programmatic" hooks from an earlier design that anticipated being called by agents during coordination/phase/HITL events but were never wired up.
+
 ## Hook Types Overview
 
 | Hook Type | Trigger | cAgents Implementation | Purpose |
 |-----------|---------|------------------------|---------|
-| `SessionStart` | Session begins | `on-session-start.sh`, `session-catchup.js` | Initialize state, detect incomplete sessions |
+| `SessionStart` | Session begins | `on-session-start.sh`, `session-catchup.cjs` | Initialize state, detect incomplete sessions |
 | `SessionEnd` | Session ends | `on-session-end.sh` | Clean up, archive session |
 | `PreToolUse` | Before tool execution | Multiple (see below) | Validate, block, modify |
 | `PostToolUse` | After tool execution | `on-task-complete.sh` | Track, log, verify |
 | `UserPromptSubmit` | User sends message | `on-user-prompt.sh` | Detect commands, route |
-| `Stop` | Claude stops responding | `stop-workflow.sh`, `verify-completion.js` | Verify completion |
+| `Stop` | Claude stops responding | `stop-workflow.sh`, `verify-completion.cjs` | Verify completion |
 | `SubagentStop` | Subagent completes | `on-workflow-complete.sh` | Aggregate results |
-| `Notification` | Status notification | `notification.js` | Log, alert, track |
-| `PreCompact` | Before context compaction | `pre-compact-save.js` | Save critical state |
+| `Notification` | Status notification | `notification.cjs` | Log, alert, track |
+| `PreCompact` | Before context compaction | `pre-compact-save.cjs` | Save critical state |
 | `PermissionRequest` | Permission dialog | (planned) | HITL integration |
 | `Error` | Error occurs | (planned) | Error tracking |
 | `ContextOverflow` | Context limit hit | (planned) | State preservation |
@@ -26,7 +37,7 @@ V8.0 hook system with all 12 official Claude Code hook types.
 #### SessionStart
 - **Files**:
   - `hooks/session/on-session-start.sh` - Initialize session
-  - `.claude/hooks/session-catchup.js` - Detect incomplete sessions
+  - `.claude/hooks/session-catchup.cjs` - Detect incomplete sessions
 - **Purpose**: Initialize session state, offer resume for incomplete sessions
 - **Output**: `{"continue": true, "systemMessage": "..."}`
 
@@ -45,7 +56,7 @@ V8.0 hook system with all 12 official Claude Code hook types.
 #### PreToolUse: Write/Edit
 - **Files**:
   - `hooks/tools/pre-write.sh` - Path validation
-  - `.claude/hooks/secret-detection.js` - Secret blocking
+  - `.claude/hooks/secret-detection.cjs` - Secret blocking
 - **Matcher**: `Write|Edit`
 - **Purpose**: Block writes to protected paths, detect secrets
 - **Blocked**: System paths, files with secrets
@@ -60,7 +71,7 @@ V8.0 hook system with all 12 official Claude Code hook types.
 #### Stop
 - **Files**:
   - `hooks/workflow/stop-workflow.sh`
-  - `.claude/hooks/verify-completion.js`
+  - `.claude/hooks/verify-completion.cjs`
 - **Purpose**: Verify completion criteria before stopping
 
 #### SubagentStop
@@ -75,27 +86,27 @@ V8.0 hook system with all 12 official Claude Code hook types.
 ### V8.0 Hooks
 
 #### Notification
-- **File**: `.claude/hooks/notification.js`
+- **File**: `.claude/hooks/notification.cjs`
 - **Purpose**: Log and track status notifications
 - **Input**: `{type, message, session_id, phase, ...}`
 - **Output**: `{"continue": true}`
 
 #### PreCompact
-- **File**: `.claude/hooks/pre-compact-save.js`
+- **File**: `.claude/hooks/pre-compact-save.cjs`
 - **Purpose**: Save critical workflow state before context compaction
 - **Creates**: Waypoint file in `sessions/{id}/waypoints/`
 - **Output**: `{"continue": true, "systemMessage": "..."}`
 
 #### Session Catchup
-- **File**: `.claude/hooks/session-catchup.js`
+- **File**: `.claude/hooks/session-catchup.cjs`
 - **Purpose**: Detect incomplete sessions on startup
 - **Outputs**: Resume options to user
 - **Creates**: `Agent_Memory/_system/incomplete_sessions.json`
 
-#### Eval Runner
-- **File**: `.claude/hooks/eval-runner.js`
-- **Purpose**: Run quality evaluations on sessions
-- **Usage**: `node eval-runner.js --session <session_id>`
+#### Eval Runner (CLI Tool, not a registered hook)
+- **File**: `.claude/hooks/eval-runner.cjs`
+- **Purpose**: Run quality evaluations on sessions (standalone CLI tool)
+- **Usage**: `node eval-runner.cjs --session <session_id>`
 - **Creates**: `sessions/{id}/evals/evaluation_report.yaml`
 
 ## Hook Input/Output
@@ -197,7 +208,7 @@ hook_overrides:
 
 ## Secret Detection
 
-The secret detection hook (`secret-detection.js`) blocks these patterns:
+The secret detection hook (`secret-detection.cjs`) blocks these patterns:
 
 ### Critical (Blocked)
 - GitHub tokens: `ghp_`, `gho_`, `ghu_`, `ghs_`, `ghr_`
@@ -344,7 +355,11 @@ Hooks are registered in `.claude/settings.json`:
 
 ## Related Files
 
-- `.claude/settings.json` - Hook registration
+- `.claude/settings.json` - Hook registration (active configuration)
+- `.claude/settings.full.json` - Template for full hooks (shell + JS)
+- `.claude/settings.shell-only.json` - Template for shell-only hooks (no Node.js)
+- `setup.sh` - Auto-detects Node.js and selects appropriate settings
 - `Agent_Memory/_system/config/hooks.yaml` - Hook behavior config
 - `scripts/ci/check-quality.sh` - Hook validation in CI
 - `Agent_Memory/_system/evals/` - Evaluation framework
+- `archive/hooks/` - Archived legacy hooks (coordination, hitl, phase, workflow-start/fail)

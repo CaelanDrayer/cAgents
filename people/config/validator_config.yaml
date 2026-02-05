@@ -14,6 +14,11 @@ quality_gates:
     - All outputs exist
     - Evidence provided
   regression_checks:
-  - No breaking changes
-  - Existing tests pass
-  - No security vulnerabilities introduced
+  - No violation of employment regulations
+  - Existing HR policies not contradicted
+  - No negative impact on employee experience
+  domain_specific_checks:
+  - HR policies comply with employment regulations
+  - Employee experience metrics considered
+  - Culture alignment verified
+  - Diversity and inclusion impact assessed

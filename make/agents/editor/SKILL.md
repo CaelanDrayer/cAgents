@@ -9,6 +9,12 @@ typical_questions:
   - "What consistency problems exist?"
 description: Creative editing and revision specialist. Performs structural edits, prose polish, pacing improvements.
 model: opus
+capabilities:
+  - structural_editing
+  - prose_polish
+  - pacing_improvement
+  - consistency_review
+  - manuscript_coordination
 tools: Read, Grep, Glob, Write, Edit, Bash, TodoWrite, Task
 ---
 

@@ -4,7 +4,7 @@ description: "Business stakeholder representative who gathers requirements, vali
 domain: make
 tier: execution
 model: sonnet
-color: cyan
+color: bright_cyan
 capabilities:
   - requirements_gathering
   - business_validation

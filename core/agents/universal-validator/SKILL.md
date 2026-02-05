@@ -4,7 +4,7 @@ tier: infrastructure
 description: "Universal quality validator for ALL domains. Validates controller coordination and quality gates. Enforces delegation compliance."
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 model: opus
-color: cyan
+color: bright_cyan
 domain: core
 capabilities:
   - coordination_validation

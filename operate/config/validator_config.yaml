@@ -14,6 +14,11 @@ quality_gates:
     - All outputs exist
     - Evidence provided
   regression_checks:
-  - No breaking changes
-  - Existing tests pass
-  - No security vulnerabilities introduced
+  - No disruption to existing operations
+  - Compliance requirements maintained
+  - No negative financial impact without approval
+  domain_specific_checks:
+  - Financial accuracy meets audit standards
+  - Operational efficiency metrics improved
+  - Compliance requirements satisfied
+  - Risk assessments completed for changes

@@ -14,7 +14,7 @@ capabilities:
   - process_analysis
   - solution_design
   - stakeholder_management
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 ---
 
 # Business Analyst

@@ -10,7 +10,7 @@ shared_questions: &make_questions
 controller_catalog:
   tier_2:
     - name: architect
-      agent_path: make/agents/architect.md
+      agent_path: make/agents/architect/SKILL.md
       coordination_style: question_based
       typical_questions: *make_questions
       use_when:
@@ -21,7 +21,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: backend-lead
-      agent_path: make/agents/backend-lead.md
+      agent_path: make/agents/backend-lead/SKILL.md
       coordination_style: question_based
       typical_questions: *make_questions
       use_when:
@@ -32,7 +32,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: data-lead
-      agent_path: make/agents/data-lead.md
+      agent_path: make/agents/data-lead/SKILL.md
       coordination_style: question_based
       typical_questions: *make_questions
       use_when:
@@ -43,7 +43,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: devops-lead
-      agent_path: make/agents/devops-lead.md
+      agent_path: make/agents/devops-lead/SKILL.md
       coordination_style: question_based
       typical_questions: *make_questions
       use_when:
@@ -54,7 +54,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: editor
-      agent_path: make/agents/editor.md
+      agent_path: make/agents/editor/SKILL.md
       coordination_style: question_based
       typical_questions: *make_questions
       use_when:
@@ -65,7 +65,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: engineering-manager
-      agent_path: make/agents/engineering-manager.md
+      agent_path: make/agents/engineering-manager/SKILL.md
       coordination_style: question_based
       typical_questions: *make_questions
       use_when:
@@ -76,7 +76,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: frontend-lead
-      agent_path: make/agents/frontend-lead.md
+      agent_path: make/agents/frontend-lead/SKILL.md
       coordination_style: question_based
       typical_questions: *make_questions
       use_when:
@@ -87,7 +87,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: product-owner
-      agent_path: make/agents/product-owner.md
+      agent_path: make/agents/product-owner/SKILL.md
       coordination_style: question_based
       typical_questions: *make_questions
       use_when:
@@ -98,7 +98,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: program-manager
-      agent_path: make/agents/program-manager.md
+      agent_path: make/agents/program-manager/SKILL.md
       coordination_style: question_based
       typical_questions: *make_questions
       use_when:
@@ -109,7 +109,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: project-manager
-      agent_path: make/agents/project-manager.md
+      agent_path: make/agents/project-manager/SKILL.md
       coordination_style: question_based
       typical_questions: *make_questions
       use_when:
@@ -120,7 +120,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: qa-lead
-      agent_path: make/agents/qa-lead.md
+      agent_path: make/agents/qa-lead/SKILL.md
       coordination_style: question_based
       typical_questions: *make_questions
       use_when:
@@ -131,7 +131,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: security-lead
-      agent_path: make/agents/security-lead.md
+      agent_path: make/agents/security-lead/SKILL.md
       coordination_style: question_based
       typical_questions: *make_questions
       use_when:
@@ -142,7 +142,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: story-architect
-      agent_path: make/agents/story-architect.md
+      agent_path: make/agents/story-architect/SKILL.md
       coordination_style: question_based
       typical_questions: *make_questions
       use_when:
@@ -153,7 +153,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: strategic-planner
-      agent_path: make/agents/strategic-planner.md
+      agent_path: make/agents/strategic-planner/SKILL.md
       coordination_style: question_based
       typical_questions: *make_questions
       use_when:
@@ -164,7 +164,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: tech-lead
-      agent_path: make/agents/tech-lead.md
+      agent_path: make/agents/tech-lead/SKILL.md
       coordination_style: question_based
       typical_questions: *make_questions
       use_when:
@@ -176,7 +176,7 @@ controller_catalog:
 
   tier_3:
     - name: cco
-      agent_path: make/agents/cco.md
+      agent_path: make/agents/cco/SKILL.md
       coordination_style: question_based
       typical_questions: *make_questions
       use_when:
@@ -187,7 +187,7 @@ controller_catalog:
       complexity: tier_3
 
     - name: cpo
-      agent_path: make/agents/cpo.md
+      agent_path: make/agents/cpo/SKILL.md
       coordination_style: question_based
       typical_questions: *make_questions
       use_when:
@@ -198,7 +198,7 @@ controller_catalog:
       complexity: tier_3
 
     - name: vp-engineering
-      agent_path: make/agents/vp-engineering.md
+      agent_path: make/agents/vp-engineering/SKILL.md
       coordination_style: question_based
       typical_questions: *make_questions
       use_when:
@@ -210,7 +210,7 @@ controller_catalog:
 
   tier_4:
     - name: ceo
-      agent_path: make/agents/ceo.md
+      agent_path: make/agents/ceo/SKILL.md
       coordination_style: question_based
       typical_questions: *make_questions
       use_when:
@@ -221,7 +221,7 @@ controller_catalog:
       complexity: tier_4
 
     - name: cfo
-      agent_path: make/agents/cfo.md
+      agent_path: make/agents/cfo/SKILL.md
       coordination_style: question_based
       typical_questions: *make_questions
       use_when:
@@ -232,7 +232,7 @@ controller_catalog:
       complexity: tier_4
 
     - name: cto
-      agent_path: make/agents/cto.md
+      agent_path: make/agents/cto/SKILL.md
       coordination_style: question_based
       typical_questions: *make_questions
       use_when:

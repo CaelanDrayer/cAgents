@@ -23,7 +23,7 @@ capabilities:
   - quality_enforcement
   - cross_functional_collaboration
   - conflict_resolution
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 ---
 
 # Tech Lead Agent

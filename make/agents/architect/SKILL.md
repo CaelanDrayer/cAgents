@@ -24,7 +24,7 @@ capabilities:
   - technical_debt_management
   - design_patterns
   - trade_off_analysis
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 ---
 
 # Architect Agent

@@ -15,7 +15,7 @@ capabilities:
   - culture_transformation
   - executive_decision_making
   - board_reporting
-tools: Read, Write, Grep, Glob, TodoWrite
+tools: Read, Write, Grep, Glob, Bash, TodoWrite, Task
 ---
 
 # Chief Human Resources Officer

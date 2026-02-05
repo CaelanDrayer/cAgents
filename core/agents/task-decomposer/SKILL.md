@@ -4,7 +4,7 @@ tier: infrastructure
 description: "Aggressive task decomposition agent that extrapolates ALL requirements from user requests. Breaks requests into components, identifies implicit needs, discovers dependencies, and creates comprehensive work breakdowns."
 tools: Read, Grep, Glob, Write, TodoWrite, Task
 model: opus
-color: orange
+color: bright_yellow
 domain: core
 capabilities:
   - abstraction_classification

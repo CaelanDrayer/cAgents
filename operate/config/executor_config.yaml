@@ -13,3 +13,7 @@ monitoring_patterns:
   - Synthesis documented
   - Tasks completed
   - coordination_log.yaml exists
+  domain_specific_monitoring:
+  - Financial calculation accuracy verification
+  - Process documentation completeness
+  - Compliance checkpoint validation

@@ -152,7 +152,7 @@ Chunks unlock based on:
 When you run /designer, it creates a session with this structure:
 
 ```
-Agent_Memory/designer_sessions/session_20260113_143022/
+Agent_Memory/sessions/designer_20260113_143022/
 ├── session.yaml              # Session metadata (v6.7 format)
 ├── qa_log.yaml               # All Q&A pairs organized by chunk
 ├── chunks.yaml               # Chunk progress tracking
@@ -341,7 +341,7 @@ Claude: [Chunk 1 complete]
 
 **Status**: Production-Ready
 **Domains**: All
-**Complexity**: Tier 0-4 (auto-detected)
+**Complexity**: Tier 2-4 (auto-detected, minimum tier 2 enforced)
 
 ### Overview
 
@@ -359,7 +359,7 @@ Universal entry point that automatically routes requests to appropriate domain, 
 
 ### Workflow Phases
 
-1. **Routing**: Classify complexity tier (0-4), detect domain, set requirements
+1. **Routing**: Classify complexity tier (2-4), detect domain, set requirements
 2. **Planning**: Create objectives (not detailed tasks), select controller
 3. **Coordinating**: Controller uses question-based delegation to specialists
 4. **Executing**: Execute implementation with controller coordination
@@ -449,4 +449,4 @@ See CLAUDE.md for complete /optimize documentation.
 ---
 
 **Commands**: /run, /designer, /review, /optimize
-**Last Updated**: 2026-01-21
+**Last Updated**: 2026-02-04

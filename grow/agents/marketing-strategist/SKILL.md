@@ -9,7 +9,13 @@ typical_questions:
   - "What are the current campaign/sales metrics?"
   - "What is the target audience and positioning?"
   - "What are the conversion bottlenecks?"
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+capabilities:
+  - marketing_strategy
+  - competitive_analysis
+  - market_research
+  - strategic_planning
+  - go_to_market
+tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 ---
 
 # Marketing Strategist

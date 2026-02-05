@@ -14,7 +14,7 @@ capabilities:
   - budget_allocation
   - executive_leadership
   - cross_functional
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 ---
 
 # Chief Marketing Officer

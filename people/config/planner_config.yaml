@@ -10,7 +10,7 @@ shared_questions: &people_questions
 controller_catalog:
   tier_2:
     - name: hr-business-partner
-      agent_path: people/agents/hr-business-partner.md
+      agent_path: people/agents/hr-business-partner/SKILL.md
       coordination_style: question_based
       typical_questions: *people_questions
       use_when:
@@ -21,7 +21,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: talent-acquisition-manager
-      agent_path: people/agents/talent-acquisition-manager.md
+      agent_path: people/agents/talent-acquisition-manager/SKILL.md
       coordination_style: question_based
       typical_questions: *people_questions
       use_when:
@@ -33,7 +33,7 @@ controller_catalog:
 
   tier_3:
     - name: hr-operations-manager
-      agent_path: people/agents/hr-operations-manager.md
+      agent_path: people/agents/hr-operations-manager/SKILL.md
       coordination_style: question_based
       typical_questions: *people_questions
       use_when:
@@ -45,7 +45,7 @@ controller_catalog:
 
   tier_4:
     - name: chro
-      agent_path: people/agents/chro.md
+      agent_path: people/agents/chro/SKILL.md
       coordination_style: question_based
       typical_questions: *people_questions
       use_when:

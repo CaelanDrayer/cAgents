@@ -10,7 +10,13 @@ typical_questions:
   - "What are the technical constraints we need to consider?"
   - "What are the key risks and dependencies?"
 color: bright_blue
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+capabilities:
+  - technology_strategy
+  - technical_architecture
+  - innovation_leadership
+  - engineering_excellence
+  - platform_decisions
+tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 ---
 
 # CTO

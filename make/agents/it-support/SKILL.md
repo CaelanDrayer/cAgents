@@ -4,7 +4,7 @@ description: "IT support specialist managing user assistance, troubleshooting, a
 tier: execution
 domain: make
 model: sonnet
-color: yellow
+color: bright_yellow
 capabilities:
   - user_support
   - troubleshooting

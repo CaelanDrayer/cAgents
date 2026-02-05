@@ -1,7 +1,7 @@
 # cAgents Release Notes
 
-**Current Version**: 8.0.2
-**Release Date**: January 27, 2026
+**Current Version**: 8.0.28
+**Release Date**: February 4, 2026
 **Status**: Production-Ready
 
 ---
@@ -34,7 +34,7 @@
 ### Changes
 
 - Fix version mismatch in package.json (7.5.1 → 8.0.2)
-- Update agent count in CLAUDE.md and package.json (231 → 250)
+- Sync agent count across CLAUDE.md and package.json (231)
 - Update version in CLAUDE.md footer (8.0.0 → 8.0.2)
 - Sync all documentation to reflect accurate agent counts
 
@@ -661,7 +661,7 @@ See full V7.0.0 release notes in archive/docs/ for complete details.
 
 ---
 
-## Current State (v8.0.0)
+## Current State (v8.0.28)
 
 **Total Agents**: 231
 - Core Infrastructure: 12 (orchestrator, planner, executor, validator, self-correct, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, trigger, router)
@@ -721,7 +721,7 @@ cd cAgents
 /run "Create Q4 marketing campaign and financial forecast"
 
 # Design session
-/explore "Design a real-time multiplayer game architecture"
+/designer "Design a real-time multiplayer game architecture"
 
 # Code review
 /review src/
@@ -774,6 +774,6 @@ Copyright (c) 2026 PathingIT
 
 ---
 
-**Current Version**: 8.0.0
-**Release Date**: January 27, 2026
-**Git Tag**: v8.0.0
+**Current Version**: 8.0.28
+**Release Date**: February 4, 2026
+**Git Tag**: v8.0.28

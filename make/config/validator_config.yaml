@@ -17,3 +17,8 @@ quality_gates:
   - No breaking changes
   - Existing tests pass
   - No security vulnerabilities introduced
+  domain_specific_checks:
+  - Code follows engineering standards and best practices
+  - Tests pass with tier-appropriate coverage
+  - Creative work meets quality and style guidelines
+  - Game mechanics balanced and playtested (if applicable)

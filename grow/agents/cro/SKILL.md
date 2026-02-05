@@ -14,7 +14,7 @@ capabilities:
   - sales_marketing_alignment
   - pipeline_management
   - executive_leadership
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 ---
 
 # Chief Revenue Officer

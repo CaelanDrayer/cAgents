@@ -42,7 +42,7 @@ capabilities:
   - strategic_alignment
   - customer_needs_translation
   - business_case_development
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 ---
 
 # Product Owner

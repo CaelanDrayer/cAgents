@@ -5,7 +5,7 @@ tier: support
 domain: make
 layer: qa
 model: sonnet
-color: gray
+color: bright_white
 capabilities:
   - doc_review
   - completeness_check

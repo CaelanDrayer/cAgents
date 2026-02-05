@@ -10,7 +10,7 @@ shared_questions: &serve_questions
 controller_catalog:
   tier_2:
     - name: legal-operations-manager
-      agent_path: serve/agents/legal-operations-manager.md
+      agent_path: serve/agents/legal-operations-manager/SKILL.md
       coordination_style: question_based
       typical_questions: *serve_questions
       use_when:
@@ -21,7 +21,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: support-operations-manager
-      agent_path: serve/agents/support-operations-manager.md
+      agent_path: serve/agents/support-operations-manager/SKILL.md
       coordination_style: question_based
       typical_questions: *serve_questions
       use_when:
@@ -33,7 +33,7 @@ controller_catalog:
 
   tier_3:
     - name: vp-customer-support
-      agent_path: serve/agents/vp-customer-support.md
+      agent_path: serve/agents/vp-customer-support/SKILL.md
       coordination_style: question_based
       typical_questions: *serve_questions
       use_when:
@@ -45,7 +45,7 @@ controller_catalog:
 
   tier_4:
     - name: general-counsel
-      agent_path: serve/agents/general-counsel.md
+      agent_path: serve/agents/general-counsel/SKILL.md
       coordination_style: question_based
       typical_questions: *serve_questions
       use_when:

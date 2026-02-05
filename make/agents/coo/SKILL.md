@@ -4,7 +4,13 @@ description: "Chief Operating Officer for operational execution and process opti
 tier: execution
 domain: make
 model: opus
-color: orange
+color: bright_yellow
+capabilities:
+  - operational_execution
+  - process_optimization
+  - cross_functional_coordination
+  - resource_allocation
+  - performance_management
 tools: Read, Grep, Glob, Write, Bash, TodoWrite
 ---
 

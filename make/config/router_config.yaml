@@ -1,15 +1,11 @@
 super_domain: make
 description: Routing configuration for MAKE super-domain
 tier_classification:
-  tier_0:
-    description: Trivial questions
-    time_estimate: < 5 minutes
-  tier_1:
-    description: Simple single-file changes
-    time_estimate: < 30 minutes
+  # NOTE: tier_0 and tier_1 are deprecated - all requests auto-upgrade to tier_2 minimum
   tier_2:
     description: Moderate complexity, 1 controller
     time_estimate: 1-4 hours
+    auto_upgrade_from: [tier_0, tier_1]
   tier_3:
     description: Complex, multiple controllers
     time_estimate: 4-12 hours
@@ -17,5 +13,30 @@ tier_classification:
     description: Expert-level, HITL required
     time_estimate: 1-3 days
 keywords:
-- make
-complexity_indicators: []
+  - make
+  - build
+  - code
+  - develop
+  - engineer
+  - implement
+  - create
+  - design
+  - write
+  - test
+  - deploy
+  - game
+  - creative
+  - story
+complexity_indicators:
+  tier_2:
+    - "single feature or bug fix"
+    - "one domain area affected"
+    - "clear requirements"
+  tier_3:
+    - "multiple features or systems"
+    - "cross-domain coordination"
+    - "architectural decisions needed"
+  tier_4:
+    - "major refactor or migration"
+    - "organization-wide impact"
+    - "executive approval required"

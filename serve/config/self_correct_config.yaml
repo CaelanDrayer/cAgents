@@ -9,6 +9,14 @@ recovery_patterns:
   execution_failures:
   - failure: Task incomplete
     recovery: Identify blocking issue and resolve
+  - failure: SLA breach risk
+    recovery: Escalate immediately, allocate additional resources
+  - failure: Legal review incomplete
+    recovery: Engage additional legal specialists, extend review
   validation_failures:
   - failure: Quality gate failed
     recovery: Address specific failure and re-validate
+  - failure: Customer satisfaction below target
+    recovery: Analyze feedback, implement targeted improvements
+  - failure: Compliance gap identified
+    recovery: Document gap, implement remediation plan

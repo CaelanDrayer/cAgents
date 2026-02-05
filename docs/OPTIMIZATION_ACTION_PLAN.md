@@ -7,7 +7,7 @@
 ## Summary of Work Completed Today
 
 ### 1. Comprehensive Inventory ✅
-- Created `REMAINING_OPTIMIZATIONS.md` - Full analysis of remaining work
+- Created `docs/REMAINING_OPTIMIZATIONS.md` - Full analysis of remaining work
 - Identified 15 Priority 1 agents (3,070 lines to save)
 - Identified 15 Priority 2 agents (1,465 lines to save)
 - Projected 80,000 total token savings across 87 agents
@@ -239,8 +239,8 @@ git push origin main
 - `make/agents/architect/` - Reference template (93% savings)
 
 ### Documentation
-- `REMAINING_OPTIMIZATIONS.md` - Full inventory (this session)
-- `MIGRATION_STATUS.md` - Historical status (v8.0.15 review)
+- `docs/REMAINING_OPTIMIZATIONS.md` - Full inventory (this session)
+- `archive/docs/MIGRATION_STATUS.md` - Historical status (v8.0.15 review)
 - `Agent_Memory/sessions/run_20260129_010237/outputs/final/MIGRATION_COMPLETION_GUIDE.md` - Step-by-step guide
 - `.claude/rules/core/progressive-disclosure.md` - Loading spec
 - `.claude/rules/core/skill-format.md` - Format spec

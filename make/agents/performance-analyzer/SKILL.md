@@ -4,7 +4,7 @@ description: "QA Layer agent for performance bottleneck detection and optimizati
 tier: support
 domain: make
 model: sonnet
-color: orange
+color: bright_yellow
 layer: qa
 capabilities:
   - performance_analysis

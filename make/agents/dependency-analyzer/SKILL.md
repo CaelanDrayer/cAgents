@@ -4,7 +4,7 @@ description: "Intelligence Layer agent that maps task dependencies and optimizes
 tier: support
 domain: make
 model: sonnet
-color: blue
+color: bright_blue
 layer: intelligence
 capabilities:
   - dependency_mapping

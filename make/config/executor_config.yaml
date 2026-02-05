@@ -13,3 +13,7 @@ monitoring_patterns:
   - Synthesis documented
   - Tasks completed
   - coordination_log.yaml exists
+  domain_specific_monitoring:
+  - Code compilation and build success
+  - Test suite execution results
+  - Creative deliverable quality review

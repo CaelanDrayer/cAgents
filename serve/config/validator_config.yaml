@@ -14,6 +14,11 @@ quality_gates:
     - All outputs exist
     - Evidence provided
   regression_checks:
-  - No breaking changes
-  - Existing tests pass
-  - No security vulnerabilities introduced
+  - No degradation to customer satisfaction
+  - Legal compliance maintained
+  - Support SLAs not violated
+  domain_specific_checks:
+  - Customer satisfaction metrics considered
+  - Legal compliance requirements met
+  - Support SLAs achievable with solution
+  - Escalation paths properly defined

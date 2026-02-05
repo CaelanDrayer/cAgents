@@ -14,7 +14,7 @@ capabilities:
   - market_segmentation
   - competitive_positioning
   - sales_model_design
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 ---
 
 # Sales Strategist
