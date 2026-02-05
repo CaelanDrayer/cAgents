@@ -1,10 +1,13 @@
 #!/bin/bash
 # cAgents Task Start Hook (PreToolUse for Task tool)
 # Tracks when subagent tasks are spawned
-# Version: 2.0.0
+# Version: 2.1.0
 #
 # Input (stdin): JSON with tool_input containing subagent_type, description, prompt
 # Output (stdout): JSON response
+
+# CRITICAL: Always output valid JSON on any failure
+trap 'echo "{\"continue\":true}" >&3 2>/dev/null || echo "{\"continue\":true}"; exit 0' ERR EXIT
 
 set -o pipefail
 
@@ -12,7 +15,18 @@ exec 3>&1
 exec 1>&2
 
 # shellcheck source=../../scripts/lib/hook-init.sh
-source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../scripts/lib/hook-init.sh"
+_HOOK_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)" || _HOOK_SCRIPT_DIR="."
+_HOOK_INIT="${_HOOK_SCRIPT_DIR}/../../scripts/lib/hook-init.sh"
+if [[ -r "$_HOOK_INIT" ]]; then
+    source "$_HOOK_INIT"
+else
+    timestamp() { date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || echo "unknown"; }
+    log_info() { echo "[INFO] $*" >&2; }
+    hook_init() { HOOK_INPUT='{}'; HOOK_CWD='.'; [[ ! -t 0 ]] && HOOK_INPUT="$(cat 2>/dev/null)" || true; }
+    hook_field() { echo "${2:-}"; }
+    get_active_instruction() { :; }
+    json_escape() { local s="$1"; s="${s//\\/\\\\}"; echo "${s//\"/\\\"}"; }
+fi
 
 main() {
     hook_init
@@ -58,6 +72,7 @@ EOF
         echo '{"continue":true}' >&3
     fi
 
+    trap - ERR EXIT
     exit 0
 }
 

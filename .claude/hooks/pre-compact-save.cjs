@@ -12,9 +12,30 @@
  * Output (stdout): JSON with continue status
  */
 
+// CRITICAL: Wrap everything in try-catch for plugin resilience
+try {
+
 const fs = require('fs');
 const path = require('path');
-const { readStdin, findActiveSession, extractYamlValue, safeRead, countPattern, getTimestampSlug, getWaypointPath } = require('./hook-utils.cjs');
+
+// Try to load hook-utils, fall back to inline implementations
+let utils;
+try {
+  utils = require('./hook-utils.cjs');
+} catch {
+  // Minimal inline fallbacks for plugin mode
+  utils = {
+    readStdin: () => Promise.resolve({}),
+    findActiveSession: () => null,
+    extractYamlValue: () => null,
+    safeRead: () => null,
+    countPattern: () => 0,
+    getTimestampSlug: () => new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19),
+    getWaypointPath: () => '/tmp/wp.yaml'
+  };
+}
+
+const { readStdin, findActiveSession, extractYamlValue, safeRead, countPattern, getTimestampSlug, getWaypointPath } = utils;
 
 /**
  * Create waypoint snapshot.
@@ -100,3 +121,8 @@ async function main() {
 }
 
 main();
+
+} catch (e) {
+  // Top-level catch for plugin resilience - always output valid JSON
+  console.log(JSON.stringify({ continue: true }));
+}

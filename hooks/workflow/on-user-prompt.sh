@@ -1,11 +1,14 @@
 #!/bin/bash
 # cAgents User Prompt Submit Hook
 # Intercepts user prompts to detect workflow triggers
-# Version: 2.0.0
+# Version: 2.1.0
 #
 # Input (stdin): JSON with prompt, session_id, cwd
 # Output (stdout): JSON with additionalContext for cAgents awareness
 # Exit 0 = allow, Exit 2 = block
+
+# CRITICAL: Always output valid JSON on any failure
+trap 'echo "{\"continue\":true}" >&3 2>/dev/null || echo "{\"continue\":true}"; exit 0' ERR EXIT
 
 set -o pipefail
 
@@ -13,7 +16,20 @@ exec 3>&1
 exec 1>&2
 
 # shellcheck source=../../scripts/lib/hook-init.sh
-source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../scripts/lib/hook-init.sh"
+_HOOK_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)" || _HOOK_SCRIPT_DIR="."
+_HOOK_INIT="${_HOOK_SCRIPT_DIR}/../../scripts/lib/hook-init.sh"
+if [[ -r "$_HOOK_INIT" ]]; then
+    source "$_HOOK_INIT"
+else
+    timestamp() { date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || echo "unknown"; }
+    log_debug() { :; }
+    hook_init() { HOOK_INPUT='{}'; HOOK_CWD='.'; [[ ! -t 0 ]] && HOOK_INPUT="$(cat 2>/dev/null)" || true; }
+    hook_field() { echo "${2:-}"; }
+    get_active_instruction() { :; }
+    get_active_phase() { :; }
+    json_escape() { local s="$1"; s="${s//\\/\\\\}"; echo "${s//\"/\\\"}"; }
+    readonly CAGENTS_AGENT_MEMORY_DIR="Agent_Memory"
+fi
 
 main() {
     hook_init
@@ -68,6 +84,7 @@ EOF
         echo '{"continue":true}' >&3
     fi
 
+    trap - ERR EXIT
     exit 0
 }
 

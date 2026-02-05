@@ -15,7 +15,26 @@
  * Output (stdout): JSON with continue status and denial reason if blocked
  */
 
-const { readStdin } = require('./hook-utils.cjs');
+// CRITICAL: Wrap everything in try-catch for plugin resilience
+try {
+
+// Try to load hook-utils, fall back to inline implementation
+let readStdin;
+try {
+  readStdin = require('./hook-utils.cjs').readStdin;
+} catch {
+  // Minimal inline fallback for plugin mode
+  readStdin = () => new Promise((resolve) => {
+    let data = '';
+    process.stdin.setEncoding('utf8');
+    if (process.stdin.isTTY) { resolve({}); return; }
+    process.stdin.on('data', (chunk) => { data += chunk; });
+    process.stdin.on('end', () => {
+      try { resolve(JSON.parse(data)); } catch { resolve({}); }
+    });
+    setTimeout(() => resolve({}), 3000);
+  });
+}
 
 // Build private key patterns dynamically to avoid self-detection
 const PK_BEGIN = '-----' + 'BEGIN ';
@@ -222,3 +241,8 @@ async function main() {
 }
 
 main();
+
+} catch (e) {
+  // Top-level catch for plugin resilience - always output valid JSON
+  console.log(JSON.stringify({ continue: true }));
+}

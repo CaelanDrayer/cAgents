@@ -12,9 +12,31 @@
  * Output (stdout): JSON with system message for resumption
  */
 
+// CRITICAL: Wrap everything in try-catch for plugin resilience
+// This ensures hooks don't break Claude Code when running as a plugin
+try {
+
 const fs = require('fs');
 const path = require('path');
-const { readStdin, AGENT_MEMORY_DIR, SESSION_PREFIXES, extractYamlValue, safeRead, countPattern, ensureDir } = require('./hook-utils.cjs');
+
+// Try to load hook-utils, fall back to inline implementations
+let utils;
+try {
+  utils = require('./hook-utils.cjs');
+} catch {
+  // Minimal inline fallbacks for plugin mode
+  utils = {
+    AGENT_MEMORY_DIR: path.join(process.cwd(), 'Agent_Memory'),
+    SESSION_PREFIXES: ['run_', 'optimize_', 'review_', 'designer_'],
+    readStdin: () => Promise.resolve({}),
+    extractYamlValue: () => null,
+    safeRead: () => null,
+    countPattern: () => 0,
+    ensureDir: (d) => { try { fs.mkdirSync(d, { recursive: true }); } catch {} return d; }
+  };
+}
+
+const { readStdin, AGENT_MEMORY_DIR, SESSION_PREFIXES, extractYamlValue, safeRead, countPattern, ensureDir } = utils;
 
 /**
  * Find incomplete sessions
@@ -177,3 +199,8 @@ async function main() {
 }
 
 main();
+
+} catch (e) {
+  // Top-level catch for plugin resilience - always output valid JSON
+  console.log(JSON.stringify({ continue: true }));
+}
