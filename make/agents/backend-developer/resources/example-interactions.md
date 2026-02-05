@@ -20,28 +20,6 @@ Detailed workflow examples for common backend development tasks.
 
 **Outcome**: Secure registration API with email verification, rate limiting, comprehensive tests
 
----
-
-## Example 2: Optimize Slow Product Search Query
-
-**Request**: "Optimize product search query causing slow page loads (4.5s)"
-
-**Actions**:
-1. Understand: Product search with filters timing out
-2. Review code: Found N+1 query loading categories, reviews separately
-3. Profile: EXPLAIN ANALYZE shows full table scan, no indexes
-4. Consult DBA: "Composite index on (category_id, price) or separate?"
-5. Implement:
-   - Add composite index
-   - Fix N+1 with JOIN
-   - Add Redis caching (5 min TTL)
-6. Switch to cursor-based pagination
-7. Verify results match before optimization
-8. Test: Query time 4.5s → 180ms (96% improvement)
-
-**Outcome**: Search optimized from 4.5s → 180ms, cache hit rate 65%
-
----
 
 ## Example 3: GraphQL Resolver for Nested Order Data
 
@@ -59,26 +37,6 @@ Detailed workflow examples for common backend development tasks.
 
 **Outcome**: Efficient nested GraphQL queries, 95% performance improvement
 
----
-
-## Example 4: JWT Refresh Token Rotation
-
-**Request**: "Implement JWT refresh token rotation with Redis storage"
-
-**Actions**:
-1. Requirements: Access (15min) + refresh (7 days), rotation on use
-2. Review: Currently JWT access only, no refresh
-3. Plan: POST /auth/refresh, Redis for refresh token storage
-4. Consult security: "Sliding window for refresh expiry?"
-5. Implement: Store in Redis, rotate on use, detect theft
-6. Add refresh token family tracking
-7. Test: Valid refresh, expired, theft detection
-8. Request security review
-9. Performance: Refresh <50ms with Redis lookup
-
-**Outcome**: Secure refresh token rotation with theft detection
-
----
 
 ## Example 5: Background Job Processor for Bulk Emails
 
@@ -96,26 +54,6 @@ Detailed workflow examples for common backend development tasks.
 
 **Outcome**: Scalable background job processing, 10k emails in <2 minutes
 
----
-
-## Example 6: Stripe Payment Integration with Webhooks
-
-**Request**: "Integrate Stripe for subscription billing with webhooks"
-
-**Actions**:
-1. Read Stripe docs: Payment Intents, webhooks, signature verification
-2. Review: No payment system, need subscriptions table
-3. Plan: Checkout endpoint + webhook handler + signature verification
-4. Consult frontend: "Hosted checkout or custom Elements?"
-5. Implement: Checkout sessions + webhook with event handling
-6. Optimize: Idempotency keys, webhook retry handling
-7. Test: Checkout creation, signature verification, event handling
-8. Request security review
-9. Test: Process test payments, verify webhooks received
-
-**Outcome**: Secure Stripe integration with subscription billing
-
----
 
 ## Example 7: Rate Limiting with Redis Sliding Window
 
@@ -133,25 +71,6 @@ Detailed workflow examples for common backend development tasks.
 
 **Outcome**: Sliding window rate limiting, prevents API abuse
 
----
-
-## Example 8: Multi-Tenant Database Migration
-
-**Request**: "Add multi-tenant support to existing schema"
-
-**Actions**:
-1. Requirements: Add tenant_id to all tables, isolate data
-2. Review: 15 tables need tenant_id, foreign key constraints
-3. Plan: Create tenant table, add columns, backfill, add indexes
-4. Consult DBA: "Row-level security or application filtering?"
-5. Create migrations with proper sequencing
-6. Add composite indexes on (tenant_id, id)
-7. Test: Data isolation, tenant_id filtering
-8. Run on staging, verify integrity
-
-**Outcome**: Multi-tenant schema with data isolation, indexed queries
-
----
 
 ## Example 9: Debug Memory Leak in Node.js
 
@@ -170,21 +89,3 @@ Detailed workflow examples for common backend development tasks.
 
 **Outcome**: Memory leak fixed, heap stable, no crashes in 7 days
 
----
-
-## Example 10: API Versioning Strategy
-
-**Request**: "Implement v1/v2 API versioning without breaking clients"
-
-**Actions**:
-1. Requirements: Support /api/v1 and /api/v2, deprecate v1 in 6 months
-2. Review: All endpoints at /api/* without version
-3. Plan: URL versioning (clear, cacheable)
-4. Consult architect: "URL or Accept header versioning?"
-5. Implement: v1Router, v2Router, default to v1
-6. Share business logic, differ only in response format
-7. Test: v1 old format, v2 new format, default is v1
-8. Add deprecation headers for v1
-9. Document: Policy, timeline, migration guide
-
-**Outcome**: API versioning implemented, migration path clear

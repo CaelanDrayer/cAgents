@@ -152,12 +152,12 @@ Use `@path/to/file` syntax to include external content:
 - **Execution**: 4 modes (Sequential, Pipeline, Swarm, Mesh) - up to 50x speedup
 
 **Agent Distribution**:
-- **Core Infrastructure** (13): Workflow orchestration + decomposition + inventory
+- **Core Infrastructure** (12): Workflow orchestration + decomposition + inventory
 - **Shared** (14): Cross-domain capabilities (leadership, planning, data, quality)
-- **Make** (109): Creation capability (engineering, creative, product, game development) - includes 23 SKILL.md directories
-- **Grow** (39): Acquisition capability (marketing, sales)
+- **Make** (108): Creation capability (engineering, creative, product, game development) - includes 23 SKILL.md directories
+- **Grow** (37): Acquisition capability (marketing, sales)
 - **Operate** (13): Operations capability (finance, operations)
-- **People** (21): Talent capability (HR, culture)
+- **People** (19): Talent capability (HR, culture)
 - **Serve** (28): Support & governance (customer experience, legal, compliance)
 
 **Super-Domains** (5 domains):
@@ -651,7 +651,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 
 **Commands**: `/run`, `/designer`, `/review`, `/optimize`, `/memory`, `/init`
 **Agents**: 231 total (12 core + 14 shared + 205 domain specialists)
-**Super-Domains**: Make (109), Grow (39), Operate (13), People (21), Serve (28)
+**Super-Domains**: Make (108), Grow (37), Operate (13), People (19), Serve (28)
 **Key Files**: `CLAUDE.md`, `.claude/rules/*.md`, `{domain}/config/*.yaml`
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 

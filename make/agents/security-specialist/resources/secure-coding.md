@@ -91,85 +91,6 @@ app.post('/login', async (req, res) => {
 })
 ```
 
----
-
-## Input Validation Patterns
-
-### Schema Validation (Joi)
-
-```javascript
-const Joi = require('joi')
-
-const userSchema = Joi.object({
-  email: Joi.string().email().required(),
-  password: Joi.string().min(12).max(128).required(),
-  username: Joi.string().alphanum().min(3).max(30).required()
-})
-
-app.post('/register', async (req, res) => {
-  const { error, value } = userSchema.validate(req.body)
-  if (error) {
-    return res.status(400).json({ error: error.details[0].message })
-  }
-  // Use validated 'value', not raw req.body
-})
-```
-
-### SQL Injection Prevention
-
-```javascript
-// SECURE: Parameterized queries
-const mysql = require('mysql2/promise')
-
-async function getUser(userId) {
-  const [rows] = await pool.execute(
-    'SELECT * FROM users WHERE id = ?',
-    [userId]
-  )
-  return rows[0]
-}
-
-// SECURE: ORM (Sequelize)
-const user = await User.findOne({
-  where: { id: userId }
-})
-
-// SECURE: Query builder (Knex)
-const user = await knex('users')
-  .where('id', userId)
-  .first()
-```
-
-### XSS Prevention
-
-```javascript
-const escape = require('escape-html')
-
-// Escape output
-res.send(`<div>Welcome, ${escape(username)}</div>`)
-
-// React (auto-escapes by default)
-return <div>Welcome, {username}</div>
-
-// DANGEROUS: dangerouslySetInnerHTML
-// Only use with sanitized content
-import DOMPurify from 'dompurify'
-return <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }} />
-
-// Content Security Policy
-app.use(helmet.contentSecurityPolicy({
-  directives: {
-    defaultSrc: ["'self'"],
-    scriptSrc: ["'self'"],
-    styleSrc: ["'self'", "'unsafe-inline'"],
-    imgSrc: ["'self'", "data:", "https:"],
-    connectSrc: ["'self'"],
-    frameAncestors: ["'none'"]
-  }
-}))
-```
-
----
 
 ## Access Control Patterns
 
@@ -214,65 +135,6 @@ app.get('/api/documents/:id', async (req, res) => {
 })
 ```
 
----
-
-## Secrets Management
-
-### Environment Variables
-
-```javascript
-// .env (development)
-DATABASE_URL=postgres://localhost/mydb
-JWT_SECRET=your-256-bit-secret
-STRIPE_SECRET_KEY=sk_test_...
-
-// .env.production (production, managed externally)
-// Use secrets manager for production
-
-// Load with dotenv
-require('dotenv').config()
-
-// Access
-const dbUrl = process.env.DATABASE_URL
-```
-
-### AWS Secrets Manager
-
-```javascript
-const { SecretsManager } = require('@aws-sdk/client-secrets-manager')
-
-const client = new SecretsManager({ region: 'us-east-1' })
-
-async function getSecret(secretName) {
-  const response = await client.getSecretValue({ SecretId: secretName })
-  return JSON.parse(response.SecretString)
-}
-
-// Usage
-const dbCreds = await getSecret('prod/database')
-```
-
-### Never Log Secrets
-
-```javascript
-// BAD
-console.log(`Connecting with password: ${password}`)
-
-// GOOD
-console.log(`Connecting to database: ${hostname}`)
-
-// Redact in error handling
-function safeLog(obj) {
-  const redacted = { ...obj }
-  const sensitiveKeys = ['password', 'secret', 'token', 'key', 'authorization']
-  sensitiveKeys.forEach(key => {
-    if (redacted[key]) redacted[key] = '[REDACTED]'
-  })
-  return redacted
-}
-```
-
----
 
 ## File Upload Security
 
@@ -319,39 +181,6 @@ app.get('/files/:filename', requireAuth, (req, res) => {
 })
 ```
 
----
-
-## Rate Limiting
-
-```javascript
-const rateLimit = require('express-rate-limit')
-const RedisStore = require('rate-limit-redis')
-
-// General API rate limit
-const apiLimiter = rateLimit({
-  store: new RedisStore({ client: redisClient }),
-  windowMs: 15 * 60 * 1000,  // 15 minutes
-  max: 100,
-  message: { error: 'Too many requests' },
-  standardHeaders: true,
-  legacyHeaders: false
-})
-
-// Strict login rate limit
-const loginLimiter = rateLimit({
-  store: new RedisStore({ client: redisClient }),
-  windowMs: 60 * 60 * 1000,  // 1 hour
-  max: 5,
-  skipSuccessfulRequests: true,
-  message: { error: 'Too many login attempts' }
-})
-
-// Apply
-app.use('/api/', apiLimiter)
-app.post('/api/login', loginLimiter, login)
-```
-
----
 
 ## Security Headers
 
@@ -387,49 +216,6 @@ app.use(helmet.frameguard({ action: 'deny' }))
 app.use(helmet.xssFilter())
 ```
 
----
-
-## Error Handling
-
-```javascript
-// Production error handler (no stack traces)
-app.use((err, req, res, next) => {
-  // Log full error internally
-  console.error({
-    error: err.message,
-    stack: err.stack,
-    url: req.url,
-    method: req.method,
-    ip: req.ip,
-    userId: req.user?.id
-  })
-
-  // Return safe error to client
-  const statusCode = err.statusCode || 500
-  const message = statusCode === 500
-    ? 'Internal Server Error'
-    : err.message
-
-  res.status(statusCode).json({ error: message })
-})
-
-// Custom error classes
-class AuthenticationError extends Error {
-  constructor(message = 'Authentication failed') {
-    super(message)
-    this.statusCode = 401
-  }
-}
-
-class ForbiddenError extends Error {
-  constructor(message = 'Access denied') {
-    super(message)
-    this.statusCode = 403
-  }
-}
-```
-
----
 
 ## HTTPS/TLS
 
@@ -454,33 +240,6 @@ app.use((req, res, next) => {
 })
 ```
 
----
-
-## Database Security
-
-```javascript
-// Connection with SSL
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: true,
-    ca: fs.readFileSync('rds-ca-cert.pem')
-  }
-})
-
-// Principle of least privilege
-// Use read-only connection for queries
-const readPool = new Pool({ /* read-only user */ })
-const writePool = new Pool({ /* write user */ })
-
-// Timeout to prevent slow query DoS
-const pool = new Pool({
-  statement_timeout: 30000,  // 30 seconds
-  query_timeout: 30000
-})
-```
-
----
 
 ## Logging Security Events
 

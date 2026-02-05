@@ -47,22 +47,3 @@
 ## Conclusion
 [Summary, takeaways, CTA]
 
----
-Meta Title: [50-60 chars]
-Meta Description: [150-160 chars]
-Keywords: [Primary + secondary]
-```
-
-## Editorial Calendar Fields
-
-| Field | Purpose |
-|-------|---------|
-| Title | Working headline |
-| Format | Blog/Guide/Case study |
-| Target Keyword | Primary SEO target |
-| Persona | Target audience |
-| Funnel Stage | TOFU/MOFU/BOFU |
-| Due Date | Draft deadline |
-| Publish Date | Go-live date |
-| Owner | Author/Creator |
-| Status | Draft/Review/Published |

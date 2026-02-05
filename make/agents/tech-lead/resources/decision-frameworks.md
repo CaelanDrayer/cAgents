@@ -36,45 +36,6 @@ Decision-making approaches and frameworks for common tech lead scenarios.
 
 **Response**: Add to backlog, address when capacity allows
 
----
-
-## Build vs. Buy Decision Framework
-
-### Evaluate These Factors
-
-| Factor | Build | Buy |
-|--------|-------|-----|
-| Core competency | Yes | No |
-| Competitive advantage | Yes | No |
-| Customization needed | High | Low |
-| Time to market | Long OK | Short needed |
-| Maintenance capacity | Have it | Limited |
-| Budget | Limited | Available |
-| Risk tolerance | High | Low |
-
-### Decision Tree
-
-1. **Is this a core competency?**
-   - Yes → Lean toward build
-   - No → Continue
-
-2. **Does a solution exist that meets 80%+ of needs?**
-   - Yes → Lean toward buy
-   - No → Continue
-
-3. **Can we afford the maintenance burden?**
-   - Yes → Build is viable
-   - No → Buy or simplify
-
-4. **Is time-to-market critical?**
-   - Yes → Buy if available
-   - No → Build may be worth it
-
-### Example
-- Build: Custom recommendation engine (competitive advantage)
-- Buy: Payment processing (not core, mature solutions exist)
-
----
 
 ## Refactoring Decision Framework
 
@@ -118,43 +79,6 @@ No-Refactor Cost = (Extra time per future change) × (Expected changes) × (Team
 If No-Refactor Cost > Refactor Cost → Refactor
 ```
 
----
-
-## Risk Assessment Framework
-
-### Risk Identification
-
-For each initiative, ask:
-- What could go wrong technically?
-- What could go wrong with timeline?
-- What could go wrong with team/resources?
-- What could go wrong with dependencies?
-- What could go wrong with requirements?
-
-### Risk Classification
-
-| Likelihood | Impact: Low | Impact: Medium | Impact: High |
-|------------|-------------|----------------|--------------|
-| High | Medium | High | Critical |
-| Medium | Low | Medium | High |
-| Low | Accept | Low | Medium |
-
-### Risk Mitigation Strategies
-
-1. **Avoid**: Change approach to eliminate risk
-2. **Mitigate**: Take action to reduce likelihood or impact
-3. **Transfer**: Shift risk to another party (vendor, insurance)
-4. **Accept**: Acknowledge and monitor
-
-### Example Risk Register
-
-| Risk | Likelihood | Impact | Level | Mitigation |
-|------|------------|--------|-------|------------|
-| API provider outage | Medium | High | High | Implement caching, circuit breaker |
-| Key developer leaves | Low | High | Medium | Knowledge sharing, documentation |
-| Scope creep | High | Medium | High | Clear requirements, change control |
-
----
 
 ## Trade-off Analysis Framework
 
@@ -209,42 +133,6 @@ Decision: Pay debt when:
 - Feature can wait without business impact
 ```
 
----
-
-## Escalation Decision Framework
-
-### When to Escalate to HITL
-
-1. **Budget/resource requests beyond authority**
-   - New headcount needed
-   - Significant budget for tools/services
-   - External vendor contracts
-
-2. **Strategic direction changes**
-   - Major architectural shifts
-   - Technology stack changes
-   - Product direction pivots
-
-3. **Unresolvable team conflicts**
-   - Persistent disagreements after mediation
-   - Conflicts affecting delivery
-   - HR-related issues
-
-4. **Risk acceptance beyond authority**
-   - Security exceptions
-   - Compliance risks
-   - Major deadline changes
-
-### Escalation Checklist
-
-Before escalating, ensure you have:
-- [ ] Clear problem statement
-- [ ] Options with trade-offs
-- [ ] Recommended approach with rationale
-- [ ] Impact assessment
-- [ ] Timeline requirements
-
----
 
 ## Incident Response Framework
 
@@ -300,47 +188,6 @@ Before escalating, ensure you have:
 - Learning 2
 ```
 
----
-
-## Sprint Planning Framework
-
-### Capacity Calculation
-
-```
-Available Capacity = Team Members × Days × Focus Factor
-
-Where:
-- Days = Sprint length (usually 10 days)
-- Focus Factor = 0.6-0.8 (accounts for meetings, support, etc.)
-
-Example:
-- 4 developers × 10 days × 0.7 = 28 development days
-```
-
-### Task Estimation Guidelines
-
-| Size | Points | Description |
-|------|--------|-------------|
-| XS | 1 | Hours of work, well-understood |
-| S | 2 | 1 day, clear requirements |
-| M | 3-5 | 2-3 days, some uncertainty |
-| L | 8 | 1 week, needs breakdown |
-| XL | 13+ | Too big, must split |
-
-### Sprint Composition
-
-```
-Recommended allocation:
-- 70% Committed features
-- 20% Buffer for unknown
-- 10% Technical debt / improvements
-
-Warning signs:
-- > 80% committed = overloaded
-- < 60% committed = may be underutilized
-```
-
----
 
 ## Knowledge Base
 

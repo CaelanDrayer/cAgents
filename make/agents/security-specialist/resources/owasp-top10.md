@@ -39,44 +39,6 @@ if (user.id !== req.user.id && !req.user.isAdmin) {
 app.use(cors({ origin: ['https://example.com'] }))
 ```
 
----
-
-## A02: Cryptographic Failures
-
-**Detection Patterns**:
-- Hardcoded secrets/API keys
-- Weak hashing algorithms (MD5, SHA1 for passwords)
-- Missing TLS/HTTPS
-- Sensitive data in URLs/logs
-- Insufficient key length
-
-**Code Indicators**:
-```javascript
-// VULNERABLE: Weak hashing
-const hash = crypto.createHash('md5').update(password).digest('hex')
-
-// VULNERABLE: Hardcoded secret
-const JWT_SECRET = 'mysecret123'
-
-// VULNERABLE: Sensitive data in URL
-app.get('/api/user?ssn=123-45-6789')
-```
-
-**Remediation**:
-```javascript
-// Strong hashing
-const hash = await bcrypt.hash(password, 12)
-
-// Environment variables
-const JWT_SECRET = process.env.JWT_SECRET
-
-// POST for sensitive data
-app.post('/api/user', (req, res) => {
-  const ssn = req.body.ssn  // In body, not URL
-})
-```
-
----
 
 ## A03: Injection
 
@@ -111,45 +73,6 @@ const sanitized = userInput.replace(/[^a-zA-Z0-9.-]/g, '')
 res.send(`<div>Welcome, ${escapeHtml(userName)}</div>`)
 ```
 
----
-
-## A04: Insecure Design
-
-**Detection Patterns**:
-- Missing rate limiting on authentication
-- No account lockout after failed attempts
-- Weak password requirements
-- Missing CAPTCHA on public forms
-- No fraud detection on transactions
-
-**Code Indicators**:
-```javascript
-// VULNERABLE: No rate limiting
-app.post('/api/login', (req, res) => { ... })
-
-// VULNERABLE: Weak password rules
-if (password.length >= 4) { ... }
-
-// VULNERABLE: No lockout
-// Failed login just returns error, no counter
-```
-
-**Remediation**:
-```javascript
-// Rate limiting
-const limiter = rateLimit({ windowMs: 15*60*1000, max: 5 })
-app.post('/api/login', limiter, ...)
-
-// Strong password rules
-const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{12,}$/
-
-// Account lockout
-if (failedAttempts >= 5) {
-  await lockAccount(userId, 30 * 60 * 1000)  // 30 min
-}
-```
-
----
 
 ## A05: Security Misconfiguration
 
@@ -190,37 +113,6 @@ app.use(helmet())
 app.use(helmet.contentSecurityPolicy({ directives: { ... } }))
 ```
 
----
-
-## A06: Vulnerable and Outdated Components
-
-**Detection Patterns**:
-- Dependencies with known CVEs
-- Outdated frameworks/libraries
-- Unmaintained packages
-- No automated vulnerability scanning
-
-**Detection Commands**:
-```bash
-npm audit
-npm audit --json
-npx snyk test
-pip-audit
-```
-
-**Remediation**:
-```bash
-# Update vulnerable packages
-npm audit fix
-npm update
-
-# Enable automated scanning
-# - GitHub Dependabot
-# - Snyk integration
-# - npm audit in CI/CD
-```
-
----
 
 ## A07: Identification and Authentication Failures
 
@@ -262,41 +154,6 @@ if (operation.requiresMFA) {
 }
 ```
 
----
-
-## A08: Software and Data Integrity Failures
-
-**Detection Patterns**:
-- No integrity verification on downloads
-- Insecure deserialization
-- CI/CD pipeline vulnerabilities
-- Unsigned code/packages
-
-**Code Indicators**:
-```javascript
-// VULNERABLE: Insecure deserialization
-const data = JSON.parse(untrustedInput)
-eval(data.code)
-
-// VULNERABLE: No checksum verification
-download(url)  // No hash check
-```
-
-**Remediation**:
-```javascript
-// Safe deserialization
-const data = JSON.parse(untrustedInput)
-// Validate schema, don't eval
-
-// Verify checksums
-const hash = crypto.createHash('sha256').update(fileBuffer).digest('hex')
-if (hash !== expectedHash) throw new Error('Integrity check failed')
-
-// Sign packages
-npm publish --sign
-```
-
----
 
 ## A09: Security Logging and Monitoring Failures
 
@@ -334,46 +191,6 @@ if (failedLogins > 10) {
 // - Set retention policy
 ```
 
----
-
-## A10: Server-Side Request Forgery (SSRF)
-
-**Detection Patterns**:
-- User-controlled URLs in fetch/request
-- No URL validation
-- Internal network access from user input
-- Cloud metadata endpoint access
-
-**Code Indicators**:
-```javascript
-// VULNERABLE: User-controlled URL
-app.get('/fetch', async (req, res) => {
-  const data = await fetch(req.query.url)  // No validation
-  res.json(data)
-})
-```
-
-**Remediation**:
-```javascript
-// URL validation
-const url = new URL(req.query.url)
-const allowed = ['https://api.example.com']
-if (!allowed.some(a => url.hostname.endsWith(a))) {
-  return res.status(400).json({ error: 'URL not allowed' })
-}
-
-// Block internal IPs
-if (isInternalIP(url.hostname)) {
-  return res.status(400).json({ error: 'Internal URLs blocked' })
-}
-
-// Block cloud metadata
-if (url.hostname === '169.254.169.254') {
-  return res.status(400).json({ error: 'Metadata endpoint blocked' })
-}
-```
-
----
 
 ## Quick Reference
 

@@ -29,35 +29,6 @@ assignments:
 
 **Synthesis**: "Dashboard widget system planned as 3-sprint initiative. Sarah leads architecture, Mike handles individual widgets, design review in sprint 1."
 
----
-
-## Example 2: Performance Crisis
-
-**Context**: Page load times increased 3x after recent deployment.
-
-**Immediate Actions**:
-1. Roll back if critical path affected
-2. Identify regression source
-3. Assign investigation
-
-**Questions**:
-1. "What changed in the last deployment?"
-2. "Which components are rendering slowly?"
-3. "Are there new network requests or large bundles?"
-
-**Delegation**:
-```yaml
-investigation:
-  - agent: frontend-developer
-    task: "Profile React renders and identify heavy components"
-
-  - agent: performance-engineer
-    task: "Analyze bundle size changes and network waterfall"
-```
-
-**Resolution**: "Found 2MB unoptimized image and missing React.memo on list items. Hotfix deployed, load time back to baseline."
-
----
 
 ## Example 3: Code Review Escalation
 
@@ -90,39 +61,6 @@ review_process:
 
 **Outcome**: "Requested changes: extract shared logic to custom hook, add error boundary, improve test coverage from 40% to 80%."
 
----
-
-## Example 4: Sprint Planning
-
-**Context**: Planning frontend work for upcoming sprint.
-
-**Planning Process**:
-```yaml
-sprint_planning:
-  1_review_backlog:
-    - Prioritize by product value
-    - Estimate complexity
-    - Identify dependencies
-
-  2_capacity_check:
-    - Team availability (PTO, meetings)
-    - Skill requirements per task
-    - Carryover from previous sprint
-
-  3_assignment:
-    - Match skills to tasks
-    - Balance workload
-    - Consider growth opportunities
-
-  4_commitments:
-    - Sprint goal alignment
-    - Risk identification
-    - Communication plan
-```
-
-**Output**: "Sprint 23 committed: 3 features, 2 bug fixes, 1 tech debt item. 85% capacity utilized, Alex primary on auth feature."
-
----
 
 ## Example 5: Cross-Team Dependency
 
@@ -152,37 +90,6 @@ dependency_management:
 2. "Assigned frontend-developer to build with mock data"
 3. "Integration milestone set for sprint mid-point"
 
----
-
-## Example 6: Accessibility Audit Response
-
-**Context**: Accessibility audit found 15 WCAG violations.
-
-**Triage**:
-```yaml
-accessibility_triage:
-  critical:  # Fix immediately
-    - Missing alt text on functional images
-    - Keyboard traps
-    - Missing form labels
-
-  high:  # Fix this sprint
-    - Color contrast issues
-    - Missing focus indicators
-    - Screen reader announcements
-
-  medium:  # Plan for next sprint
-    - ARIA improvements
-    - Skip navigation links
-    - Heading hierarchy
-```
-
-**Delegation**:
-- "accessibility-specialist: Review fixes for correctness"
-- "frontend-developer-1: Fix critical issues"
-- "frontend-developer-2: Address high priority items"
-
----
 
 ## Example 7: Component Library Update
 
@@ -209,34 +116,6 @@ migration_approach:
 
 **Communication**: "Design system v3 migration: 47 component instances, 3-sprint rollout, backward compatibility maintained."
 
----
-
-## Example 8: Technical Debt Prioritization
-
-**Context**: Quarterly tech debt review session.
-
-**Evaluation Framework**:
-```yaml
-tech_debt_scoring:
-  impact:
-    developer_velocity: 0.4
-    bug_frequency: 0.3
-    performance: 0.2
-    security: 0.1
-
-  effort:
-    small: "< 2 days"
-    medium: "2-5 days"
-    large: "> 5 days"
-
-  priority:
-    formula: "impact_score / effort_days"
-    threshold: 0.5  # Minimum for inclusion
-```
-
-**Decision**: "Prioritized: 1) Replace legacy state management (high impact, medium effort), 2) Consolidate API clients (medium impact, small effort)."
-
----
 
 ## Example 9: New Team Member Onboarding
 
@@ -268,42 +147,6 @@ onboarding_structure:
 
 **Mentorship Assignment**: "Paired with Sarah (senior) for first month. Starting task: Add unit tests to user profile component."
 
----
-
-## Example 10: Production Incident Response
-
-**Context**: Users reporting blank screen on checkout page.
-
-**Response Protocol**:
-```yaml
-incident_response:
-  1_assess:  # First 5 minutes
-    - Check error monitoring
-    - Verify reproduction
-    - Determine scope
-
-  2_contain:  # Next 10 minutes
-    - Roll back if clear culprit
-    - Feature flag if available
-    - Communicate status
-
-  3_resolve:  # Until fixed
-    - Root cause investigation
-    - Fix implementation
-    - Thorough testing
-
-  4_postmortem:  # After resolution
-    - Timeline documentation
-    - Root cause analysis
-    - Prevention measures
-```
-
-**Actions Taken**:
-1. "Identified: Third-party script blocking render"
-2. "Hotfix: Made script loading async"
-3. "Postmortem scheduled for Friday"
-
----
 
 ## Key Patterns
 

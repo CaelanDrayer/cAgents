@@ -9,37 +9,6 @@ Comprehensive checklist for security reviews.
 - [ ] Review any existing security documentation
 - [ ] Note sensitive data types involved (PII, credentials, financial)
 
----
-
-## Authentication Review
-
-### Password Security
-- [ ] Passwords hashed with bcrypt/argon2 (not MD5/SHA1)
-- [ ] Cost factor >= 12 for bcrypt
-- [ ] No password length limits that truncate
-- [ ] Password complexity requirements enforced
-
-### Token Security
-- [ ] JWT uses strong algorithm (HS256+ or RS256)
-- [ ] JWT secret is strong and from environment
-- [ ] Token expiration set appropriately (1h-24h typical)
-- [ ] Algorithm specified in verification (prevent confusion)
-- [ ] Refresh token rotation implemented
-
-### Session Security
-- [ ] Session secret is strong and from environment
-- [ ] Session cookie has `httpOnly` flag
-- [ ] Session cookie has `secure` flag (production)
-- [ ] Session cookie has `sameSite: strict`
-- [ ] Session regenerated after login
-- [ ] Session destroyed on logout
-
-### Multi-Factor Authentication
-- [ ] MFA available for sensitive operations
-- [ ] MFA backup codes generated securely
-- [ ] Rate limiting on MFA attempts
-
----
 
 ## Authorization Review
 
@@ -60,41 +29,6 @@ Comprehensive checklist for security reviews.
 - [ ] Allowed origins explicitly listed
 - [ ] Credentials handling configured correctly
 
----
-
-## Input Validation Review
-
-### SQL Injection
-- [ ] All queries parameterized
-- [ ] No string concatenation in queries
-- [ ] ORM used correctly (no raw queries with user input)
-- [ ] Stored procedures use parameters
-
-### XSS Prevention
-- [ ] User input escaped before output
-- [ ] Content Security Policy configured
-- [ ] `dangerouslySetInnerHTML` uses sanitization
-- [ ] HTTP-only cookies prevent token theft
-
-### Command Injection
-- [ ] No `exec`/`eval` with user input
-- [ ] Shell commands avoid user input
-- [ ] If needed, strict whitelist validation
-
-### File Upload
-- [ ] File type validated (MIME + extension)
-- [ ] Filename sanitized (no path traversal)
-- [ ] Files stored outside web root
-- [ ] File size limited
-- [ ] No execution permissions on upload directory
-
-### Other Injection
-- [ ] LDAP injection prevented
-- [ ] XML injection prevented (disable external entities)
-- [ ] Template injection prevented
-- [ ] Header injection prevented
-
----
 
 ## Data Protection Review
 
@@ -123,29 +57,6 @@ Comprehensive checklist for security reviews.
 - [ ] Stack traces hidden in production
 - [ ] Debug mode disabled in production
 
----
-
-## API Security Review
-
-### Rate Limiting
-- [ ] Rate limiting on authentication endpoints
-- [ ] Rate limiting on API endpoints
-- [ ] Account lockout after failed attempts
-- [ ] Rate limit headers returned
-
-### Request Validation
-- [ ] Request size limits set
-- [ ] Content-Type validated
-- [ ] JSON parsing has depth limit
-- [ ] Schema validation on input
-
-### Response Security
-- [ ] Security headers set (via helmet)
-- [ ] No sensitive data in response headers
-- [ ] Proper status codes returned
-- [ ] HSTS enabled
-
----
 
 ## Dependency Review
 
@@ -161,23 +72,6 @@ Comprehensive checklist for security reviews.
 - [ ] Lock file committed
 - [ ] No dependencies from untrusted sources
 
----
-
-## Infrastructure Review
-
-### Configuration
-- [ ] Debug mode disabled in production
-- [ ] Default credentials changed
-- [ ] Unnecessary features disabled
-- [ ] Proper error handling configured
-
-### Network
-- [ ] Firewall rules restrictive
-- [ ] Internal services not exposed
-- [ ] HTTPS enforced
-- [ ] No SSRF vulnerabilities
-
----
 
 ## Severity Classification
 
@@ -206,48 +100,6 @@ Comprehensive checklist for security reviews.
 - Outdated dependencies (no known exploits)
 - Minor header improvements
 
----
-
-## Review Output Template
-
-```yaml
-review_id: SR-{timestamp}
-reviewer: security-specialist
-date: {date}
-scope: {files/endpoints reviewed}
-
-result: approved | approved_with_changes | rejected
-
-summary:
-  critical: 0
-  high: 0
-  medium: 0
-  low: 0
-
-findings:
-  - id: F-001
-    severity: high
-    category: authentication
-    issue: "No rate limiting on login endpoint"
-    location: "src/auth/login.js:15"
-    description: "Login endpoint allows unlimited attempts, enabling brute force attacks"
-    recommendation: "Add rate limiting middleware (5 attempts per 15 minutes)"
-    code_fix: |
-      const loginLimiter = rateLimit({ windowMs: 900000, max: 5 })
-      router.post('/login', loginLimiter, login)
-
-required_changes:
-  - "Add rate limiting to login endpoint"
-
-optional_suggestions:
-  - "Consider adding CAPTCHA after 3 failed attempts"
-
-approval_conditions:
-  - "All required changes implemented"
-  - "Re-review before production deployment"
-```
-
----
 
 ## Collaboration Protocols
 
@@ -285,13 +137,3 @@ deployment_blocked: true
 details: {vulnerability description}
 ```
 
----
-
-## Response SLAs
-
-| Severity | Response Time | Resolution |
-|----------|--------------|------------|
-| Critical | 4 hours | Block deployment |
-| High | 24 hours | Block until fixed |
-| Medium | 72 hours | Track for fix |
-| Low | 2 weeks | Suggest improvement |

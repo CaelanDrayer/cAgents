@@ -51,52 +51,6 @@ const paymentStateMachine = {
 
 **Evidence**: "Implemented PaymentService with Stripe/PayPal adapters, 15 unit tests, webhook handler with idempotency."
 
----
-
-## Example 2: JWT Token Refactoring
-
-**Question**: "Can you refactor the authentication to use JWT properly?"
-
-**Investigation**:
-```yaml
-current_state:
-  issues_found:
-    - "Tokens stored in localStorage (XSS vulnerable)"
-    - "No refresh token mechanism"
-    - "Token validation on every request (no caching)"
-    - "Hardcoded secret in code"
-
-  security_risks:
-    critical:
-      - "Token theft via XSS"
-      - "Secret exposure in repository"
-    high:
-      - "No token revocation"
-      - "Long-lived access tokens"
-```
-
-**Solution Design**:
-```yaml
-new_architecture:
-  access_token:
-    storage: "Memory only (not localStorage)"
-    lifetime: "15 minutes"
-    refresh: "Via refresh token"
-
-  refresh_token:
-    storage: "HttpOnly cookie"
-    lifetime: "7 days"
-    rotation: "On each refresh"
-
-  security_improvements:
-    - "Secrets from environment variables"
-    - "Token blacklist for revocation"
-    - "CSRF protection with SameSite cookies"
-```
-
-**Implementation Result**: "Migrated to dual-token system, added refresh endpoint, updated all clients to handle token refresh, added revocation capability."
-
----
 
 ## Example 3: Pull Request Review
 
@@ -145,59 +99,6 @@ review_phases:
 💡 Consider adding cache stats for monitoring
 ```
 
----
-
-## Example 4: Debugging Slow Dashboard
-
-**Question**: "The dashboard is loading slowly, can you investigate?"
-
-**Investigation**:
-```yaml
-profiling_steps:
-  1_measure_baseline:
-    - "Current load time: 4.2 seconds"
-    - "Target: < 1 second"
-
-  2_identify_bottlenecks:
-    network:
-      - "12 API calls, 8 sequential"
-      - "2 calls returning 500KB+ data"
-    rendering:
-      - "3 components re-rendering excessively"
-      - "Large list without virtualization"
-    bundle:
-      - "Chart library loaded upfront (300KB)"
-
-  3_root_causes:
-    primary: "Sequential API calls (2.5s)"
-    secondary: "Excessive data fetching (1.2s)"
-    tertiary: "Re-renders (0.5s)"
-```
-
-**Optimizations Implemented**:
-```yaml
-fixes:
-  api_parallelization:
-    before: "8 sequential calls"
-    after: "Promise.all for independent calls"
-    savings: "1.8 seconds"
-
-  data_optimization:
-    before: "Fetch all records"
-    after: "Paginate + aggregate on backend"
-    savings: "0.9 seconds"
-
-  render_optimization:
-    changes:
-      - "Added React.memo to chart components"
-      - "Virtualized large data table"
-      - "Lazy loaded chart library"
-    savings: "0.4 seconds"
-```
-
-**Result**: "Dashboard load time reduced from 4.2s to 1.1s (74% improvement)."
-
----
 
 ## Example 5: Mentoring Junior Developer
 
@@ -231,66 +132,6 @@ session_structure:
 
 **Outcome**: "Junior implemented search with debouncing, learned about controlled inputs, will document the pattern."
 
----
-
-## Example 6: Task Breakdown
-
-**Question**: "Can you break down the user profile feature into tasks?"
-
-**Decomposition**:
-```yaml
-feature: "User Profile Management"
-total_estimate: "13 story points (2 sprints)"
-
-tasks:
-  - id: "PROF-1"
-    name: "Create profile data model"
-    estimate: 2
-    dependencies: []
-    acceptance_criteria:
-      - "TypeScript interfaces defined"
-      - "Database schema created"
-      - "API types generated"
-
-  - id: "PROF-2"
-    name: "Implement profile API endpoints"
-    estimate: 3
-    dependencies: [PROF-1]
-    acceptance_criteria:
-      - "GET /profile returns user data"
-      - "PATCH /profile updates fields"
-      - "Input validation complete"
-      - "Error responses standardized"
-
-  - id: "PROF-3"
-    name: "Build profile form component"
-    estimate: 3
-    dependencies: [PROF-1]
-    acceptance_criteria:
-      - "All fields editable"
-      - "Validation feedback shown"
-      - "Loading/error states handled"
-
-  - id: "PROF-4"
-    name: "Add avatar upload"
-    estimate: 3
-    dependencies: [PROF-2]
-    acceptance_criteria:
-      - "Image upload to storage"
-      - "Resize/crop functionality"
-      - "Progress indicator"
-
-  - id: "PROF-5"
-    name: "Integration and testing"
-    estimate: 2
-    dependencies: [PROF-2, PROF-3, PROF-4]
-    acceptance_criteria:
-      - "E2E tests passing"
-      - "85% code coverage"
-      - "Performance benchmarks met"
-```
-
----
 
 ## Example 7: Race Condition Fix
 
@@ -339,48 +180,6 @@ useEffect(() => {
 
 **Evidence**: "Implemented AbortController pattern across all data fetching, added request ID tracking for debugging."
 
----
-
-## Example 8: Comprehensive Testing Strategy
-
-**Question**: "How should we approach testing for the checkout flow?"
-
-**Test Strategy**:
-```yaml
-testing_pyramid:
-  unit_tests:  # 70% of tests
-    coverage:
-      - "Cart calculation logic"
-      - "Discount application"
-      - "Tax calculation"
-      - "Validation functions"
-    tools: ["Jest", "React Testing Library"]
-
-  integration_tests:  # 20% of tests
-    coverage:
-      - "Cart + API integration"
-      - "Payment form submission"
-      - "Order creation flow"
-    tools: ["MSW for mocking", "Testing Library"]
-
-  e2e_tests:  # 10% of tests
-    coverage:
-      - "Happy path: complete checkout"
-      - "Error path: payment failure"
-      - "Edge case: session timeout"
-    tools: ["Playwright"]
-
-  specific_scenarios:
-    - "Cart with 0 items"
-    - "Cart with 100+ items"
-    - "Discount code edge cases"
-    - "Currency conversion"
-    - "Tax calculation by region"
-```
-
-**Implementation**: "Created 45 unit tests, 12 integration tests, 3 E2E tests. Coverage at 87%."
-
----
 
 ## Example 9: Query Optimization
 
@@ -420,57 +219,6 @@ analysis:
 
 **Result**: "Query time reduced from 8.5s to 180ms. Added pagination for scalability."
 
----
-
-## Example 10: Legacy Code Refactoring
-
-**Question**: "Can you refactor the notification system? It's become unmaintainable."
-
-**Assessment**:
-```yaml
-current_state:
-  issues:
-    - "1,200 line file"
-    - "Nested callbacks 8 levels deep"
-    - "Mixed concerns (UI + logic + API)"
-    - "No tests"
-    - "5 different notification types handled inconsistently"
-
-  risks:
-    - "High: Breaking existing notifications"
-    - "Medium: Timing/ordering issues"
-    - "Low: UI inconsistencies"
-```
-
-**Refactoring Plan**:
-```yaml
-approach: "Strangler Fig Pattern"
-
-phases:
-  1_preparation:
-    - "Add integration tests for current behavior"
-    - "Document all notification types"
-    - "Create feature flag for gradual rollout"
-
-  2_extraction:
-    - "Extract notification types to separate files"
-    - "Create common interface"
-    - "Implement factory pattern"
-
-  3_modernization:
-    - "Convert to async/await"
-    - "Add proper error handling"
-    - "Implement event-based triggering"
-
-  4_cleanup:
-    - "Remove old code behind flag"
-    - "Add unit tests for each type"
-    - "Document new architecture"
-```
-
-**Outcome**: "Notification system now 6 focused files (avg 150 lines), 90% test coverage, consistent API."
-
----
 
 ## Key Patterns
 

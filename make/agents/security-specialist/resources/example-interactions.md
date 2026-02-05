@@ -36,41 +36,6 @@ Detailed workflow examples for common security review tasks.
 
 **Outcome**: APPROVED WITH CHANGES - Implement rate limiting, fix timing attack, validate redirects
 
----
-
-## Example 2: Assess JWT Token Implementation
-
-**Request**: "Review JWT implementation in authentication service"
-
-**Actions**:
-1. Read code: JWT generation and validation
-2. Identify issues:
-   - Using HS256 with weak secret ("secret123")
-   - No token expiration set
-   - Accepting both symmetric and asymmetric signatures (algorithm confusion)
-3. Classify:
-   - CRITICAL: Weak JWT secret (trivially crackable)
-   - HIGH: No expiration (tokens valid forever)
-   - HIGH: Algorithm confusion vulnerability
-4. Provide remediation:
-   ```javascript
-   // Generate strong secret
-   const secret = crypto.randomBytes(64).toString('hex')
-
-   // Set expiration and specify algorithm
-   jwt.sign(payload, secret, {
-     algorithm: 'HS256',
-     expiresIn: '1h'
-   })
-
-   // Verify with explicit algorithm
-   jwt.verify(token, secret, { algorithms: ['HS256'] })
-   ```
-5. Document: 3 critical JWT vulnerabilities
-
-**Outcome**: REJECTED - Critical vulnerabilities must be fixed before deployment
-
----
 
 ## Example 3: Check Input Validation for SQL Injection
 
@@ -98,36 +63,6 @@ Detailed workflow examples for common security review tasks.
 
 **Outcome**: REJECTED - Block deployment until parameterized queries implemented
 
----
-
-## Example 4: Verify Password Hashing
-
-**Request**: "Review password storage implementation"
-
-**Actions**:
-1. Read code: Password hashing in user registration
-2. Identify issues:
-   - Using MD5 (cryptographically broken)
-   - No salt used (rainbow table vulnerable)
-3. Classify:
-   - CRITICAL: MD5 is broken, easily cracked
-   - HIGH: No salt allows rainbow table attacks
-4. Provide remediation:
-   ```javascript
-   const bcrypt = require('bcrypt')
-   const SALT_ROUNDS = 12
-
-   // Hash password
-   const hash = await bcrypt.hash(password, SALT_ROUNDS)
-
-   // Verify password
-   const valid = await bcrypt.compare(password, hash)
-   ```
-5. Document: Password storage is insecure
-
-**Outcome**: REJECTED - Must use bcrypt/argon2 with proper cost factor
-
----
 
 ## Example 5: Review API Endpoint Access Control
 
@@ -161,45 +96,6 @@ Detailed workflow examples for common security review tasks.
 
 **Outcome**: REJECTED - Critical access control missing, block deployment
 
----
-
-## Example 6: Assess File Upload Security
-
-**Request**: "Review file upload handling in profile picture endpoint"
-
-**Actions**:
-1. Read code: File upload endpoint implementation
-2. Identify issues:
-   - No file type validation (can upload .exe, .php)
-   - Original filename preserved (path traversal risk)
-   - Files stored in web root (direct execution possible)
-   - No file size limit (DoS via large files)
-3. Classify:
-   - CRITICAL: Arbitrary file upload (RCE possible)
-   - HIGH: Path traversal risk
-   - MEDIUM: DoS via large files
-4. Provide remediation:
-   ```javascript
-   // Validate file type
-   const allowedTypes = ['image/jpeg', 'image/png', 'image/gif']
-   if (!allowedTypes.includes(file.mimetype)) {
-     return res.status(400).json({ error: 'Invalid file type' })
-   }
-
-   // Generate safe filename
-   const filename = `${uuid.v4()}.${allowedExtensions[file.mimetype]}`
-
-   // Store outside web root
-   const uploadPath = path.join(__dirname, '../uploads/private/', filename)
-
-   // Limit file size (5MB)
-   const upload = multer({ limits: { fileSize: 5 * 1024 * 1024 } })
-   ```
-5. Document: 4 file upload vulnerabilities
-
-**Outcome**: REJECTED - Critical vulnerabilities, rewrite upload handling
-
----
 
 ## Example 7: Check for Secrets Exposure
 
@@ -235,45 +131,6 @@ Detailed workflow examples for common security review tasks.
 
 **Outcome**: REJECTED - Rotate all compromised credentials immediately
 
----
-
-## Example 8: Review Session Management
-
-**Request**: "Review session handling in Express.js application"
-
-**Actions**:
-1. Read code: Session configuration
-2. Identify issues:
-   - Using default session secret ("keyboard cat")
-   - Session cookie not httpOnly (XSS can steal)
-   - Session cookie not secure (sent over HTTP)
-   - No session fixation protection
-   - Very long session expiry (30 days)
-3. Classify:
-   - HIGH: Default/weak session secret
-   - HIGH: Cookie not httpOnly
-   - MEDIUM: Cookie not secure
-   - MEDIUM: Session fixation risk
-   - LOW: Long session expiry
-4. Provide remediation:
-   ```javascript
-   app.use(session({
-     secret: process.env.SESSION_SECRET,  // Strong random secret from env
-     resave: false,
-     saveUninitialized: false,  // Prevent session fixation
-     cookie: {
-       secure: true,        // HTTPS only
-       httpOnly: true,      // Prevent XSS access
-       sameSite: 'strict',  // Prevent CSRF
-       maxAge: 86400000     // 24 hour expiry
-     }
-   }))
-   ```
-5. Document: 5 session security issues (2 High, 3 Medium)
-
-**Outcome**: APPROVED WITH CHANGES - Fix session configuration, use secure settings
-
----
 
 ## Example 9: Security Review for Third-Party Integration
 
@@ -318,40 +175,3 @@ Detailed workflow examples for common security review tasks.
 
 **Outcome**: APPROVED WITH CHANGES - Add replay prevention and idempotency
 
----
-
-## Example 10: Dependency Security Audit
-
-**Request**: "Audit project dependencies for known vulnerabilities"
-
-**Actions**:
-1. Run npm audit: `npm audit --json`
-2. Analyze results:
-   - CRITICAL: lodash@4.17.15 (Prototype Pollution - CVE-2020-8203)
-   - HIGH: express@4.16.0 (Open Redirect - CVE-2022-24999)
-   - MEDIUM: moment@2.24.0 (ReDoS - CVE-2022-31129)
-3. Check exploitation likelihood:
-   - lodash: HIGH (commonly exploited, affects merge/set functions)
-   - express: MEDIUM (requires specific redirect configuration)
-   - moment: LOW (date parsing edge case)
-4. Classify:
-   - CRITICAL: 1 vulnerability (lodash prototype pollution)
-   - HIGH: 1 vulnerability (express redirect)
-   - MEDIUM: 1 vulnerability (moment ReDoS)
-5. Provide remediation:
-   ```bash
-   # FIX: Upgrade affected packages
-   npm install lodash@latest  # 4.17.15 → 4.17.21
-   npm install express@latest  # 4.16.0 → 4.18.2
-   npm install moment@latest   # 2.24.0 → 2.29.4 (or migrate to date-fns)
-
-   # Verify fixes
-   npm audit
-
-   # Alternative: Use npm audit fix
-   npm audit fix
-   ```
-6. Document: 3 CVEs found, upgrades available, no breaking changes
-7. Recommend: Enable Dependabot/Snyk for continuous monitoring
-
-**Outcome**: APPROVED WITH CHANGES - Upgrade dependencies, enable automated scanning

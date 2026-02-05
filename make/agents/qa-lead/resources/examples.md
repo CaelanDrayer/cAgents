@@ -31,42 +31,6 @@ This file contains 10 detailed examples of QA Lead interactions, extracted from 
 
 **Outcome**: 26 tests created, 88% coverage achieved, all tests pass locally
 
----
-
-## Example 2: Design Test Strategy for Payment Processing
-
-**Request**: "Design a test strategy for the payment processing feature with 90% coverage"
-
-**QA Lead Actions**:
-1. Understand target: Stripe integration, checkout flow, webhook handling
-2. Assess risk: High risk (financial transactions), need security tests
-3. Consult security specialist: "Need specific security tests for payments?"
-4. Design strategy:
-   - Unit: Payment validation, amount calculation, currency conversion
-   - Integration: Stripe API calls (with mocks), webhook signature verification
-   - E2E: Full checkout flow with test credit cards
-   - Security: SQL injection in amount, XSS in description, webhook tampering
-5. Create test plan:
-   ```yaml
-   test_plan:
-     unit_tests:
-       - validate_payment_amount (positive, zero, negative, overflow)
-       - calculate_tax (various rates, edge cases)
-       - format_currency (USD, EUR, JPY)
-     integration_tests:
-       - POST /api/payments/checkout (success, failure, timeout)
-       - POST /webhooks/stripe (valid signature, invalid signature)
-     e2e_tests:
-       - complete_purchase_flow (add item -> checkout -> payment -> confirmation)
-       - declined_card_handling (4000 0000 0000 0002)
-   ```
-6. Implement tests: 45 tests total (30 unit, 10 integration, 5 e2e)
-7. Run locally: All tests pass, 93% coverage
-8. Document: Test data (test cards), mock Stripe responses, security test cases
-
-**Outcome**: Comprehensive payment test strategy, 93% coverage, security tests included
-
----
 
 ## Example 3: Write Integration Tests for REST API Endpoints
 
@@ -99,39 +63,6 @@ This file contains 10 detailed examples of QA Lead interactions, extracted from 
 
 **Outcome**: 18 integration tests for orders API, 87% coverage, all passing
 
----
-
-## Example 4: Implement E2E Tests for Checkout Flow
-
-**Request**: "Implement e2e tests for the checkout flow from cart to confirmation"
-
-**QA Lead Actions**:
-1. Map user flow: Add to cart -> View cart -> Enter shipping -> Payment -> Confirmation
-2. Identify test scenarios:
-   - Happy path: Complete purchase with valid card
-   - Declined card: Handle payment failure gracefully
-   - Empty cart: Prevent checkout with no items
-3. Set up Playwright: Install, configure test environment
-4. Implement happy path test:
-   ```javascript
-   test('complete checkout flow', async ({ page }) => {
-     await page.goto('/products')
-     await page.click('button[data-product="1"]')  // Add to cart
-     await page.click('a[href="/cart"]')
-     await page.click('button:has-text("Checkout")')
-     await page.fill('#email', 'test@example.com')
-     await page.fill('#card', '4242424242424242')
-     await page.click('button:has-text("Pay")')
-     await expect(page.locator('.confirmation')).toBeVisible()
-   })
-   ```
-5. Add error scenarios: Declined card (4000 0000 0000 0002), empty cart
-6. Run tests: All 3 e2e tests pass, 5-10s execution time
-7. Document: Test data (cards), environment setup, screenshot on failure
-
-**Outcome**: 3 e2e tests for checkout flow, all critical paths covered
-
----
 
 ## Example 5: Investigate and Reproduce Login Bug
 
@@ -167,45 +98,6 @@ This file contains 10 detailed examples of QA Lead interactions, extracted from 
 
 **Outcome**: Bug reproduced with failing test, root cause identified, ready for fix
 
----
-
-## Example 6: Add Accessibility Tests for WCAG AA Compliance
-
-**Request**: "Add accessibility tests to ensure WCAG AA compliance for the registration form"
-
-**QA Lead Actions**:
-1. Review form: Email input, password input, submit button, error messages
-2. Plan accessibility tests:
-   - Semantic HTML: Form labels, ARIA attributes
-   - Keyboard navigation: Tab order, Enter to submit
-   - Screen reader: Announce errors, label associations
-   - Color contrast: Text meets WCAG AA (4.5:1 ratio)
-3. Install axe-core: Accessibility testing library
-4. Implement tests:
-   ```javascript
-   test('registration form has no accessibility violations', async () => {
-     const html = render(<RegistrationForm />)
-     const results = await axe(html.container)
-     expect(results.violations).toHaveLength(0)
-   })
-
-   test('form is keyboard navigable', async ({ page }) => {
-     await page.goto('/register')
-     await page.keyboard.press('Tab')  // Focus email
-     await page.keyboard.type('test@example.com')
-     await page.keyboard.press('Tab')  // Focus password
-     await page.keyboard.type('password123')
-     await page.keyboard.press('Enter')  // Submit
-     await expect(page.locator('.success')).toBeVisible()
-   })
-   ```
-5. Run tests: Found 2 violations (missing label, low contrast)
-6. Document issues: Report to frontend dev for fixes
-7. Re-run after fixes: All accessibility tests pass
-
-**Outcome**: WCAG AA compliance verified, 2 accessibility issues fixed
-
----
 
 ## Example 7: Create Load Tests for API Performance
 
@@ -248,49 +140,6 @@ This file contains 10 detailed examples of QA Lead interactions, extracted from 
 
 **Outcome**: Load test shows API handles 987 req/s (near target), actionable recommendations
 
----
-
-## Example 8: Write Contract Tests for GraphQL API
-
-**Request**: "Write contract tests for the GraphQL API to prevent breaking changes"
-
-**QA Lead Actions**:
-1. Understand contract testing: Verify API responses match expected schema
-2. Read GraphQL schema: Query { products, orders }, Mutation { createOrder }
-3. Plan contract tests: Test query responses match schema, mutations work as expected
-4. Implement with graphql-schema-linter:
-   ```javascript
-   test('products query matches schema', async () => {
-     const query = `{ products { id, name, price } }`
-     const result = await graphql(schema, query)
-
-     expect(result.data.products).toEqual(
-       expect.arrayContaining([
-         expect.objectContaining({
-           id: expect.any(String),
-           name: expect.any(String),
-           price: expect.any(Number),
-         })
-       ])
-     )
-   })
-
-   test('createOrder mutation returns expected fields', async () => {
-     const mutation = `mutation { createOrder(input: {...}) { id, total, status } }`
-     const result = await graphql(schema, mutation)
-
-     expect(result.data.createOrder).toHaveProperty('id')
-     expect(result.data.createOrder).toHaveProperty('total')
-     expect(result.data.createOrder).toHaveProperty('status')
-   })
-   ```
-5. Add snapshot tests: Capture response shape, detect breaking changes
-6. Run tests: All contract tests pass, schema validated
-7. Document: Contract test coverage, snapshot update process
-
-**Outcome**: Contract tests prevent breaking API changes, schema validated
-
----
 
 ## Example 9: Implement Regression Tests After Bug Fix
 
@@ -327,52 +176,3 @@ This file contains 10 detailed examples of QA Lead interactions, extracted from 
 
 **Outcome**: Regression test ensures race condition won't return
 
----
-
-## Example 10: Create Test Data Management Strategy
-
-**Request**: "Design a test data management strategy for the order processing system"
-
-**QA Lead Actions**:
-1. Understand scope: Orders system needs customers, products, inventory, payments
-2. Assess current state: Tests using hardcoded data, brittle and hard to maintain
-3. Design strategy:
-   - Fixtures: JSON files for seed data (customers, products)
-   - Factories: Dynamic test data generation with faker.js
-   - Builders: Fluent API for complex test objects
-4. Implement fixtures:
-   ```javascript
-   // tests/fixtures/customers.json
-   [
-     { id: 1, email: 'test@example.com', name: 'Test User' },
-     { id: 2, email: 'admin@example.com', name: 'Admin User' }
-   ]
-   ```
-5. Create factories:
-   ```javascript
-   // tests/factories/orderFactory.js
-   import { faker } from '@faker-js/faker'
-
-   export function createOrder(overrides = {}) {
-     return {
-       id: faker.datatype.uuid(),
-       customerId: faker.datatype.number(),
-       total: faker.commerce.price(),
-       status: 'pending',
-       ...overrides
-     }
-   }
-   ```
-6. Build builders:
-   ```javascript
-   class OrderBuilder {
-     constructor() { this.order = createOrder() }
-     withCustomer(id) { this.order.customerId = id; return this }
-     withTotal(amount) { this.order.total = amount; return this }
-     build() { return this.order }
-   }
-   ```
-7. Document usage: Examples of fixtures, factories, builders
-8. Refactor existing tests: Use new data management approach
-
-**Outcome**: Maintainable test data strategy, reduced test brittleness

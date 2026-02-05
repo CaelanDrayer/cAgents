@@ -112,30 +112,6 @@ ansible/
 
 ```yaml
 # roles/nginx/tasks/main.yml
----
-- name: Install nginx
-  apt:
-    name: nginx
-    state: present
-    update_cache: yes
-  notify: Start nginx
-
-- name: Copy nginx config
-  template:
-    src: nginx.conf.j2
-    dest: /etc/nginx/nginx.conf
-    validate: nginx -t -c %s
-  notify: Reload nginx
-
-- name: Enable site
-  file:
-    src: /etc/nginx/sites-available/default
-    dest: /etc/nginx/sites-enabled/default
-    state: link
-  notify: Reload nginx
-
-# roles/nginx/handlers/main.yml
----
 - name: Start nginx
   service:
     name: nginx
