@@ -126,17 +126,6 @@
         ]
       }
     ],
-    "ContextOverflow": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node $CLAUDE_PROJECT_DIR/.claude/hooks/context-overflow.cjs",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
     "Notification": [
       {
         "hooks": [

@@ -7,7 +7,7 @@ V8.5 hook system with all 12 official Claude Code hook types.
 cAgents uses a dual-hook system configured in `.claude/settings.json`:
 
 - **Shell hooks** (`hooks/`): 9 scripts for session lifecycle, workflow events, and tool validation. These are the baseline hooks that work without Node.js. Shared functions (`get_active_instruction`, `get_active_phase`, `get_session_field`) are provided by `scripts/lib/hook-bootstrap.sh`.
-- **JavaScript hooks** (`.claude/hooks/`): 7 `.cjs` files — 1 shared utility module (`hook-utils.cjs`) + 6 registered hooks for advanced features (session catchup, secret detection, completion verification, pre-compact state save, notifications, context overflow recovery). Plus 1 standalone CLI tool (`eval-runner.cjs`). All CJS hooks import shared functions (`readStdin`, `findActiveSession`, `extractYamlValue`, `safeRead`, `countPattern`) from `hook-utils.cjs`.
+- **JavaScript hooks** (`.claude/hooks/`): 7 `.cjs` files — 1 shared utility module (`hook-utils.cjs`) + 5 registered hooks for advanced features (session catchup, secret detection, completion verification, pre-compact state save, notifications). Plus 1 standalone CLI tool (`eval-runner.cjs`) and 1 unregistered hook (`context-overflow.cjs` - awaiting Claude Code support for ContextOverflow hook type). All CJS hooks import shared functions (`readStdin`, `findActiveSession`, `extractYamlValue`, `safeRead`, `countPattern`) from `hook-utils.cjs`.
 
 The `setup.sh` script auto-detects Node.js and configures the appropriate settings. Without Node.js, only shell hooks are active (via `settings.shell-only.json`). With Node.js, both systems run (via `settings.full.json`).
 
@@ -26,7 +26,6 @@ The `setup.sh` script auto-detects Node.js and configures the appropriate settin
 | `SubagentStop` | Subagent completes | `on-workflow-complete.sh` | Aggregate results |
 | `Notification` | Status notification | `notification.cjs` | Log, alert, track |
 | `PreCompact` | Before context compaction | `pre-compact-save.cjs` | Save critical state |
-| `ContextOverflow` | Context limit hit | `context-overflow.cjs` | Save exhaustion checkpoint, trigger self-correction |
 | `PermissionRequest` | Permission dialog | (planned) | HITL integration |
 | `Error` | Error occurs | (planned) | Error tracking |
 
@@ -97,7 +96,6 @@ The `setup.sh` script auto-detects Node.js and configures the appropriate settin
 - **Purpose**: Save critical workflow state before context compaction
 - **Creates**: Waypoint file in `sessions/{id}/waypoints/`
 - **Output**: `{"continue": true, "systemMessage": "..."}`
-- **Note**: Only `pre-compact-save.cjs` runs here; `context-overflow.cjs` is registered under `ContextOverflow`
 
 #### Session Catchup
 - **File**: `.claude/hooks/session-catchup.cjs`
@@ -105,13 +103,13 @@ The `setup.sh` script auto-detects Node.js and configures the appropriate settin
 - **Outputs**: Resume options to user
 - **Creates**: `Agent_Memory/_system/incomplete_sessions.json`
 
-#### ContextOverflow
+#### Context Overflow (NOT REGISTERED - awaiting Claude Code support)
 - **File**: `.claude/hooks/context-overflow.cjs`
-- **Registered under**: `ContextOverflow` hook event (not PreCompact)
+- **Status**: NOT REGISTERED - "ContextOverflow" is not a valid Claude Code hook type
 - **Purpose**: Save exhaustion checkpoint when context limit is reached, trigger self-correction
 - **Creates**: Waypoint at `sessions/{id}/waypoints/wp-exhaustion-{timestamp}.yaml` and `continuation_needed.yaml`
 - **Recovery**: System message directs agent to invoke `universal-self-correct` with `correction_type: context_overflow`
-- **Output**: `{"continue": true, "systemMessage": "..."}`
+- **Note**: This hook exists but cannot be registered until Claude Code adds a ContextOverflow or similar hook type
 
 #### Eval Runner (CLI Tool, not a registered hook)
 - **File**: `.claude/hooks/eval-runner.cjs`
