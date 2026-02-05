@@ -14,52 +14,7 @@
 
 const fs = require('fs');
 const path = require('path');
-
-const AGENT_MEMORY_DIR = process.env.CLAUDE_PROJECT_DIR
-  ? path.join(process.env.CLAUDE_PROJECT_DIR, 'Agent_Memory')
-  : path.join(process.cwd(), 'Agent_Memory');
-
-function readStdin() {
-  return new Promise((resolve) => {
-    let data = '';
-    process.stdin.setEncoding('utf8');
-    if (process.stdin.isTTY) { resolve({}); return; }
-    process.stdin.on('data', (chunk) => { data += chunk; });
-    process.stdin.on('end', () => {
-      try { resolve(data ? JSON.parse(data) : {}); }
-      catch { resolve({}); }
-    });
-    process.stdin.on('error', () => resolve({}));
-    setTimeout(() => resolve({}), 1000);
-  });
-}
-
-function extractYamlValue(content, key) {
-  const regex = new RegExp(`^${key}:\\s*(.+)$`, 'm');
-  const match = content.match(regex);
-  return match ? match[1].trim().replace(/^["']|["']$/g, '') : null;
-}
-
-function safeRead(filePath) {
-  try { return fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : null; }
-  catch { return null; }
-}
-
-function findActiveSession() {
-  const sessionsDir = path.join(AGENT_MEMORY_DIR, 'sessions');
-  if (!fs.existsSync(sessionsDir)) return null;
-  const sessions = fs.readdirSync(sessionsDir)
-    .filter(d => d.startsWith('run_') || d.startsWith('optimize_') || d.startsWith('review_') || d.startsWith('designer_'))
-    .sort().reverse();
-  for (const session of sessions) {
-    const statusFile = path.join(sessionsDir, session, 'status.yaml');
-    const content = safeRead(statusFile);
-    if (content && !content.includes('phase: completed') && !content.includes('phase: failed')) {
-      return path.join(sessionsDir, session);
-    }
-  }
-  return null;
-}
+const { readStdin, findActiveSession, extractYamlValue, safeRead } = require('./hook-utils.cjs');
 
 function gatherPendingWork(sessionDir) {
   const items = [];

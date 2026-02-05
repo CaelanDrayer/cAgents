@@ -24,21 +24,11 @@ else
 fi
 
 main() {
-    local input
-    if [[ -t 0 ]]; then
-        input='{}'
-    else
-        input="$(cat)" || input='{}'
-    fi
+    hook_init
 
     local command description
-    if command -v jq &>/dev/null; then
-        command=$(echo "$input" | jq -r '.tool_input.command // ""')
-        description=$(echo "$input" | jq -r '.tool_input.description // ""')
-    else
-        command=""
-        description=""
-    fi
+    command=$(hook_field "tool_input.command" "")
+    description=$(hook_field "tool_input.description" "")
 
     log_debug "Pre-bash hook: $description"
 

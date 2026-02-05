@@ -14,83 +14,7 @@
 
 const fs = require('fs');
 const path = require('path');
-
-const AGENT_MEMORY_DIR = process.env.CLAUDE_PROJECT_DIR
-  ? path.join(process.env.CLAUDE_PROJECT_DIR, 'Agent_Memory')
-  : path.join(process.cwd(), 'Agent_Memory');
-
-/**
- * Read JSON from stdin
- */
-function readStdin() {
-  return new Promise((resolve, reject) => {
-    let data = '';
-    process.stdin.setEncoding('utf8');
-
-    if (process.stdin.isTTY) {
-      resolve({});
-      return;
-    }
-
-    process.stdin.on('data', (chunk) => { data += chunk; });
-    process.stdin.on('end', () => {
-      try {
-        resolve(data ? JSON.parse(data) : {});
-      } catch (e) {
-        resolve({});
-      }
-    });
-    process.stdin.on('error', () => resolve({}));
-
-    setTimeout(() => resolve({}), 1000);
-  });
-}
-
-/**
- * Find active session directory
- */
-function findActiveSession() {
-  const sessionsDir = path.join(AGENT_MEMORY_DIR, 'sessions');
-  if (!fs.existsSync(sessionsDir)) return null;
-
-  const sessions = fs.readdirSync(sessionsDir)
-    .filter(d => d.startsWith('run_') || d.startsWith('optimize_') || d.startsWith('explore_'))
-    .sort()
-    .reverse();
-
-  for (const session of sessions) {
-    const statusFile = path.join(sessionsDir, session, 'status.yaml');
-    if (fs.existsSync(statusFile)) {
-      const content = fs.readFileSync(statusFile, 'utf8');
-      // Check both 'phase:' and 'current_phase:' patterns
-      const isCompleted = content.includes('phase: completed') ||
-                          content.includes('current_phase: completed') ||
-                          content.includes('phase: failed') ||
-                          content.includes('current_phase: failed');
-      if (!isCompleted) {
-        return path.join(sessionsDir, session);
-      }
-    }
-  }
-  return null;
-}
-
-/**
- * Simple YAML value extraction
- */
-function extractYamlValue(content, key) {
-  const regex = new RegExp(`^${key}:\\s*(.+)$`, 'm');
-  const match = content.match(regex);
-  return match ? match[1].trim().replace(/^["']|["']$/g, '') : null;
-}
-
-/**
- * Count pattern occurrences in YAML content
- */
-function countPattern(content, pattern) {
-  const matches = content.match(pattern);
-  return matches ? matches.length : 0;
-}
+const { readStdin, findActiveSession, extractYamlValue, safeRead, countPattern } = require('./hook-utils.cjs');
 
 /**
  * Verify completion criteria
@@ -101,13 +25,11 @@ function verifyCompletion(sessionDir) {
 
   // 1. Check status.yaml exists and has valid phase
   const statusFile = path.join(sessionDir, 'status.yaml');
-  if (!fs.existsSync(statusFile)) {
-    // No status.yaml means workflow wasn't properly initialized - just warn, don't block
+  const statusContent = safeRead(statusFile);
+  if (!statusContent) {
     warnings.push('No status.yaml file (session may not be a cAgents workflow)');
   } else {
-    const content = fs.readFileSync(statusFile, 'utf8');
-    // Check both 'phase' and 'current_phase' (different versions use different field names)
-    const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase');
+    const phase = extractYamlValue(statusContent, 'phase') || extractYamlValue(statusContent, 'current_phase');
 
     if (!phase) {
       warnings.push('No phase defined in status.yaml');
@@ -118,12 +40,10 @@ function verifyCompletion(sessionDir) {
 
   // 2. Check coordination_log.yaml for work item completion
   const coordFile = path.join(sessionDir, 'workflow', 'coordination_log.yaml');
-  if (fs.existsSync(coordFile)) {
-    const content = fs.readFileSync(coordFile, 'utf8');
-
-    const completedCount = countPattern(content, /status:\s*completed/g);
-    const pendingCount = countPattern(content, /status:\s*pending/g);
-    const inProgressCount = countPattern(content, /status:\s*in_progress/g);
+  const coordContent = safeRead(coordFile);
+  if (coordContent) {
+    const pendingCount = countPattern(coordContent, /status:\s*pending/g);
+    const inProgressCount = countPattern(coordContent, /status:\s*in_progress/g);
 
     if (pendingCount > 0) {
       warnings.push(`${pendingCount} work item(s) still pending`);
@@ -132,23 +52,20 @@ function verifyCompletion(sessionDir) {
       warnings.push(`${inProgressCount} work item(s) still in progress`);
     }
 
-    // Check for missing evidence
-    const evidenceMatches = content.match(/evidence:\s*\[?\]?/g);
-    if (evidenceMatches) {
-      const emptyEvidence = evidenceMatches.filter(e => /evidence:\s*\[?\]?$/.test(e)).length;
-      if (emptyEvidence > 0) {
-        warnings.push(`${emptyEvidence} work item(s) missing completion evidence`);
-      }
+    // Check for missing evidence (empty arrays or bare key)
+    const emptyEvidence = countPattern(coordContent, /evidence:\s*(?:\[\]|null|""|'')$/gm);
+    if (emptyEvidence > 0) {
+      warnings.push(`${emptyEvidence} work item(s) missing completion evidence`);
     }
   }
 
   // 3. Check for validation report if in validating/completed phase
   const validationFile = path.join(sessionDir, 'validation', 'validation_report.yaml');
-  if (!fs.existsSync(validationFile)) {
+  const valContent = safeRead(validationFile);
+  if (!valContent) {
     warnings.push('Missing validation report');
   } else {
-    const content = fs.readFileSync(validationFile, 'utf8');
-    const status = extractYamlValue(content, 'overall_status') || extractYamlValue(content, 'status');
+    const status = extractYamlValue(valContent, 'overall_status') || extractYamlValue(valContent, 'status');
 
     if (status && status !== 'PASS') {
       warnings.push(`Validation status: ${status} (expected: PASS)`);
@@ -198,13 +115,12 @@ notes: |
  * Main hook execution
  */
 async function main() {
-  const input = await readStdin();
+  await readStdin();
 
   try {
     const sessionDir = findActiveSession();
 
     if (!sessionDir) {
-      // No active session - allow stop
       console.log(JSON.stringify({ continue: true }));
       return;
     }
@@ -224,19 +140,16 @@ async function main() {
     }
 
     // Decide whether to allow stop
-    // Issues = blocking, Warnings = informational
     if (result.issues.length > 0) {
-      const output = {
-        continue: true, // Don't block stop, but provide feedback
+      console.log(JSON.stringify({
+        continue: true,
         systemMessage: `cAgents completion verification found issues:\n${result.issues.join('\n')}\n\nPlease address these before considering the workflow complete.`
-      };
-      console.log(JSON.stringify(output));
+      }));
     } else if (result.warnings.length > 0) {
-      const output = {
+      console.log(JSON.stringify({
         continue: true,
         systemMessage: `cAgents workflow stopping with ${result.warnings.length} warning(s). See completion_summary.yaml for details.`
-      };
-      console.log(JSON.stringify(output));
+      }));
     } else {
       console.error('[VerifyCompletion] All completion criteria verified');
       console.log(JSON.stringify({ continue: true }));

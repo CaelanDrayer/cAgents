@@ -14,37 +14,7 @@
 
 const fs = require('fs');
 const path = require('path');
-
-const AGENT_MEMORY_DIR = process.env.CLAUDE_PROJECT_DIR
-  ? path.join(process.env.CLAUDE_PROJECT_DIR, 'Agent_Memory')
-  : path.join(process.cwd(), 'Agent_Memory');
-
-/**
- * Read JSON from stdin
- */
-function readStdin() {
-  return new Promise((resolve, reject) => {
-    let data = '';
-    process.stdin.setEncoding('utf8');
-
-    if (process.stdin.isTTY) {
-      resolve({});
-      return;
-    }
-
-    process.stdin.on('data', (chunk) => { data += chunk; });
-    process.stdin.on('end', () => {
-      try {
-        resolve(data ? JSON.parse(data) : {});
-      } catch (e) {
-        resolve({});
-      }
-    });
-    process.stdin.on('error', () => resolve({}));
-
-    setTimeout(() => resolve({}), 1000);
-  });
-}
+const { readStdin, AGENT_MEMORY_DIR } = require('./hook-utils.cjs');
 
 /**
  * Log notification to file
@@ -76,7 +46,6 @@ function logNotification(notification) {
  * Get notification type and message from context
  */
 function parseNotification(input) {
-  // Notification context may vary - extract what we can
   return {
     type: input.notification_type || input.type || 'info',
     message: input.message || input.content || '',
@@ -99,29 +68,15 @@ async function main() {
     // Log the notification
     logNotification(notification);
 
-    // Handle specific notification types
-    switch (notification.type) {
-      case 'phase_complete':
-        console.error(`[Notification] Phase complete: ${notification.phase}`);
-        break;
-
-      case 'workflow_complete':
-        console.error(`[Notification] Workflow complete: ${notification.instruction_id}`);
-        break;
-
-      case 'error':
-        console.error(`[Notification] Error: ${notification.message}`);
-        break;
-
-      case 'hitl_required':
-        console.error(`[Notification] HITL approval required: ${notification.message}`);
-        break;
-
-      default:
-        if (notification.message) {
-          console.error(`[Notification] ${notification.message}`);
-        }
-    }
+    // Log to stderr by type
+    const logMessages = {
+      phase_complete: `Phase complete: ${notification.phase}`,
+      workflow_complete: `Workflow complete: ${notification.instruction_id}`,
+      error: `Error: ${notification.message}`,
+      hitl_required: `HITL approval required: ${notification.message}`
+    };
+    const msg = logMessages[notification.type] || notification.message;
+    if (msg) console.error(`[Notification] ${msg}`);
 
     // Always continue - notifications are non-blocking
     console.log(JSON.stringify({ continue: true }));

@@ -25,44 +25,27 @@ fi
 readonly AGENT_MEMORY_DIR="Agent_Memory"
 
 main() {
-    local input
-    if [[ -t 0 ]]; then
-        input='{}'
-    else
-        input="$(cat)" || input='{}'
-    fi
+    hook_init
 
-    local prompt session_id cwd
-    if command -v jq &>/dev/null; then
-        prompt=$(echo "$input" | jq -r '.prompt // ""')
-        session_id=$(echo "$input" | jq -r '.session_id // "unknown"')
-        cwd=$(echo "$input" | jq -r '.cwd // "."')
-    else
-        prompt=""
-        session_id="unknown"
-        cwd="."
-    fi
+    local prompt
+    prompt=$(hook_field "prompt" "")
 
     log_debug "User prompt submitted"
 
     # Check for active workflow state
-    local session_file="${cwd}/.claude/cagents-session.local.md"
-    local active_instruction=""
-    local active_phase=""
-
-    if [[ -f "$session_file" ]]; then
-        active_instruction=$(grep "^active_instruction:" "$session_file" 2>/dev/null | sed 's/active_instruction: *//' | tr -d '"')
-        active_phase=$(grep "^active_phase:" "$session_file" 2>/dev/null | sed 's/active_phase: *//' | tr -d '"')
-    fi
+    local active_instruction
+    local active_phase
+    active_instruction=$(get_active_instruction "$HOOK_CWD")
+    active_phase=$(get_active_phase "$HOOK_CWD")
 
     # Build context about current workflow state
     local context=""
 
-    if [[ -n "$active_instruction" && "$active_instruction" != "null" ]]; then
+    if [[ -n "$active_instruction" ]]; then
         context="[cAgents] Active workflow: $active_instruction (phase: $active_phase)"
 
         # Check status file for more details
-        local status_file="${cwd}/${AGENT_MEMORY_DIR}/${active_instruction}/status.yaml"
+        local status_file="${HOOK_CWD}/${AGENT_MEMORY_DIR}/${active_instruction}/status.yaml"
         if [[ -f "$status_file" ]]; then
             local status
             status=$(grep "^status:" "$status_file" 2>/dev/null | sed 's/status: *//' | tr -d '"')

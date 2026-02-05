@@ -24,28 +24,17 @@ else
 fi
 
 main() {
-    local input
-    if [[ -t 0 ]]; then
-        input='{}'
-    else
-        input="$(cat)" || input='{}'
-    fi
+    hook_init
 
-    local session_id cwd
-    if command -v jq &>/dev/null; then
-        session_id=$(echo "$input" | jq -r '.session_id // "unknown"')
-        cwd=$(echo "$input" | jq -r '.cwd // "."')
-    else
-        session_id="unknown"
-        cwd="."
-    fi
+    local session_id
+    session_id=$(hook_field "session_id" "unknown")
 
     log_info "Session ending: $session_id"
 
     # Archive session file if it exists
-    local session_file="${cwd}/.claude/cagents-session.local.md"
+    local session_file="${HOOK_CWD}/.claude/cagents-session.local.md"
     if [[ -f "$session_file" ]]; then
-        local archive_dir="${cwd}/.claude/sessions"
+        local archive_dir="${HOOK_CWD}/.claude/sessions"
         mkdir -p "$archive_dir" 2>/dev/null || true
         local archive_name="${session_id}_$(date +%Y%m%d_%H%M%S).md"
         cp "$session_file" "$archive_dir/$archive_name" 2>/dev/null || true

@@ -1,6 +1,6 @@
 {
   "name": "cagents-grow",
-  "version": "8.4.0",
+  "version": "8.5.1",
   "description": "GROW super-domain: Customer acquisition capability (marketing + sales). 38 agents for marketing campaigns, sales strategies, content marketing, SEO, and demand generation.",
   "super_domain": "grow",
   "agent_count": 38,

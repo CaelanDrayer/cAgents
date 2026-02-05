@@ -16,18 +16,19 @@
 
 const fs = require('fs');
 const path = require('path');
-
-const AGENT_MEMORY_DIR = process.env.CLAUDE_PROJECT_DIR
-  ? path.join(process.env.CLAUDE_PROJECT_DIR, 'Agent_Memory')
-  : path.join(process.cwd(), 'Agent_Memory');
+const { AGENT_MEMORY_DIR, extractYamlValue, safeRead, countPattern } = require('./hook-utils.cjs');
 
 /**
- * Simple YAML value extraction (key: value)
+ * Cached file reads — avoids re-reading the same file multiple times
+ * during a single evaluation run.
  */
-function extractYamlValue(content, key) {
-  const regex = new RegExp(`^${key}:\\s*["']?([^"'\\n]+)["']?`, 'm');
-  const match = content.match(regex);
-  return match ? match[1].trim() : null;
+const _fileCache = new Map();
+
+function cachedRead(filePath) {
+  if (_fileCache.has(filePath)) return _fileCache.get(filePath);
+  const content = safeRead(filePath);
+  _fileCache.set(filePath, content);
+  return content;
 }
 
 /**
@@ -41,14 +42,6 @@ function extractYamlArray(content, key) {
   return match[1].split('\n')
     .map(line => line.replace(/^\s*-\s*/, '').trim())
     .filter(line => line.length > 0);
-}
-
-/**
- * Count occurrences of pattern
- */
-function countPattern(content, pattern) {
-  const matches = content.match(pattern);
-  return matches ? matches.length : 0;
 }
 
 /**
@@ -68,14 +61,12 @@ function evaluateDecomposition(sessionDir) {
     recommendations: []
   };
 
-  // Read decomposition.yaml
   const decompFile = path.join(sessionDir, 'workflow', 'decomposition.yaml');
-  if (!fs.existsSync(decompFile)) {
+  const content = cachedRead(decompFile);
+  if (!content) {
     result.issues.push('Missing decomposition.yaml');
     return result;
   }
-
-  const content = fs.readFileSync(decompFile, 'utf8');
 
   // Count work items
   const workItemCount = countPattern(content, /^\s*-\s*id:\s*WI-/gm);
@@ -148,7 +139,6 @@ function evaluateDecomposition(sessionDir) {
   // Calculate total score
   result.score = Object.values(result.breakdown).reduce((a, b) => a + b, 0);
 
-  // Assign grade
   if (result.score >= 90) {
     result.grade = 'EXCELLENT';
   } else if (result.score >= 70) {
@@ -178,14 +168,12 @@ function evaluateCoordination(sessionDir) {
     recommendations: []
   };
 
-  // Read coordination_log.yaml
   const coordFile = path.join(sessionDir, 'workflow', 'coordination_log.yaml');
-  if (!fs.existsSync(coordFile)) {
+  const content = cachedRead(coordFile);
+  if (!content) {
     result.issues.push('Missing coordination_log.yaml');
     return result;
   }
-
-  const content = fs.readFileSync(coordFile, 'utf8');
 
   // Count questions
   const questionCount = countPattern(content, /question:/g);
@@ -195,9 +183,7 @@ function evaluateCoordination(sessionDir) {
   }
 
   // 1. Check question specificity (25 points)
-  // Good patterns: specific subjects
   const specificPatterns = countPattern(content, /question:.*\b(what|how|which|current|specific|existing)\b/gi);
-  // Bad patterns: vague questions
   const vaguePatterns = countPattern(content, /question:.*\b(think|good|should we|maybe)\b/gi);
 
   const specificityRate = (specificPatterns - vaguePatterns) / questionCount;
@@ -269,7 +255,6 @@ function evaluateCoordination(sessionDir) {
   // Calculate total score
   result.score = Math.max(0, Object.values(result.breakdown).reduce((a, b) => a + b, 0));
 
-  // Assign grade
   if (result.score >= 85) {
     result.grade = 'EXCELLENT';
   } else if (result.score >= 65) {
@@ -297,7 +282,7 @@ function generateReport(sessionId, decomp, coord) {
     overallGrade = 'FAIL';
   }
 
-  const report = `# Evaluation Report: ${sessionId}
+  return `# Evaluation Report: ${sessionId}
 generated_at: "${timestamp}"
 evaluator: eval-runner.js
 version: "8.0.0"
@@ -336,8 +321,6 @@ ${[...decomp.issues, ...coord.issues].map(i => `  - "${i}"`).join('\n') || '  - 
 All recommendations:
 ${[...decomp.recommendations, ...coord.recommendations].map(r => `  - "${r}"`).join('\n') || '  - (none)'}
 `;
-
-  return report;
 }
 
 /**
@@ -353,11 +336,8 @@ function runEvaluation(sessionId) {
 
   console.log(`Evaluating session: ${sessionId}`);
 
-  // Run evaluations
   const decomp = evaluateDecomposition(sessionDir);
   const coord = evaluateCoordination(sessionDir);
-
-  // Generate report
   const report = generateReport(sessionId, decomp, coord);
 
   // Save report

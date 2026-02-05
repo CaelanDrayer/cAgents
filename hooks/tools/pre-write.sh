@@ -25,21 +25,11 @@ else
 fi
 
 main() {
-    local input
-    if [[ -t 0 ]]; then
-        input='{}'
-    else
-        input="$(cat)" || input='{}'
-    fi
+    hook_init
 
     local tool_name file_path
-    if command -v jq &>/dev/null; then
-        tool_name=$(echo "$input" | jq -r '.tool_name // "Write"')
-        file_path=$(echo "$input" | jq -r '.tool_input.file_path // ""')
-    else
-        tool_name="Write"
-        file_path=""
-    fi
+    tool_name=$(hook_field "tool_name" "Write")
+    file_path=$(hook_field "tool_input.file_path" "")
 
     log_debug "Pre-$tool_name hook: $file_path"
 

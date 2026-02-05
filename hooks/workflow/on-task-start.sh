@@ -24,42 +24,27 @@ fi
 readonly AGENT_MEMORY_DIR="Agent_Memory"
 
 main() {
-    local input
-    if [[ -t 0 ]]; then
-        input='{}'
-    else
-        input="$(cat)" || input='{}'
-    fi
+    hook_init
 
-    local subagent_type description cwd
-    if command -v jq &>/dev/null; then
-        subagent_type=$(echo "$input" | jq -r '.tool_input.subagent_type // "unknown"')
-        description=$(echo "$input" | jq -r '.tool_input.description // ""')
-        cwd=$(echo "$input" | jq -r '.cwd // "."')
-    else
-        subagent_type="unknown"
-        description=""
-        cwd="."
-    fi
+    local subagent_type description
+    subagent_type=$(hook_field "tool_input.subagent_type" "unknown")
+    description=$(hook_field "tool_input.description" "")
 
     log_info "Task starting: $subagent_type - $description"
 
     # Track task in session state
-    local session_file="${cwd}/.claude/cagents-session.local.md"
-    if [[ -f "$session_file" ]]; then
-        local active_instruction
-        active_instruction=$(grep "^active_instruction:" "$session_file" 2>/dev/null | sed 's/active_instruction: *//' | tr -d '"')
+    local active_instruction
+    active_instruction=$(get_active_instruction "$HOOK_CWD")
 
-        if [[ -n "$active_instruction" && "$active_instruction" != "null" ]]; then
-            # Log task to coordination log
-            local coord_log="${cwd}/${AGENT_MEMORY_DIR}/${active_instruction}/workflow/coordination_log.yaml"
-            if [[ -d "$(dirname "$coord_log")" ]]; then
-                {
-                    echo "# Task started at $(timestamp)"
-                    echo "# Agent: $subagent_type"
-                    echo "# Description: $description"
-                } >> "$coord_log" 2>/dev/null || true
-            fi
+    if [[ -n "$active_instruction" ]]; then
+        # Log task to coordination log
+        local coord_log="${HOOK_CWD}/${AGENT_MEMORY_DIR}/${active_instruction}/workflow/coordination_log.yaml"
+        if [[ -d "$(dirname "$coord_log")" ]]; then
+            {
+                echo "# Task started at $(timestamp)"
+                echo "# Agent: $subagent_type"
+                echo "# Description: $description"
+            } >> "$coord_log" 2>/dev/null || true
         fi
     fi
 

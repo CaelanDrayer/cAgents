@@ -28,29 +28,16 @@ else
 fi
 
 main() {
-    # Read input from stdin (Claude Code provides JSON)
-    local input
-    if [[ -t 0 ]]; then
-        input='{}'
-    else
-        input="$(cat)" || input='{}'
-    fi
+    hook_init
 
-    # Parse input fields
-    local session_id cwd
-    if command -v jq &>/dev/null; then
-        session_id=$(echo "$input" | jq -r '.session_id // "unknown"')
-        cwd=$(echo "$input" | jq -r '.cwd // "."')
-    else
-        session_id="unknown"
-        cwd="."
-    fi
+    local session_id
+    session_id=$(hook_field "session_id" "unknown")
 
     log_info "Session starting: $session_id"
-    log_info "Working directory: $cwd"
+    log_info "Working directory: $HOOK_CWD"
 
     # Initialize session state file
-    local session_dir="${cwd}/.claude"
+    local session_dir="${HOOK_CWD}/.claude"
     mkdir -p "$session_dir" 2>/dev/null || true
 
     local session_file="${session_dir}/cagents-session.local.md"

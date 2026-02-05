@@ -142,6 +142,44 @@ fi
 # HOOK HELPER FUNCTIONS
 # ============================================
 
+# Common constants
+readonly CAGENTS_AGENT_MEMORY_DIR="Agent_Memory"
+
+# Get a field from the cAgents session file (YAML-like key: value)
+# Usage: get_session_field "cwd" "field_name"
+# Returns: field value (empty string if not found)
+get_session_field() {
+    local cwd="${1:-.}"
+    local field="$2"
+    local session_file="${cwd}/.claude/cagents-session.local.md"
+    if [[ -f "$session_file" ]]; then
+        grep "^${field}:" "$session_file" 2>/dev/null | sed "s/${field}: *//" | tr -d '"'
+    fi
+}
+
+# Get the active instruction ID from session state
+# Usage: get_active_instruction "cwd"
+# Returns: instruction ID or empty string
+get_active_instruction() {
+    local cwd="${1:-.}"
+    local value
+    value=$(get_session_field "$cwd" "active_instruction")
+    if [[ -n "$value" && "$value" != "null" ]]; then
+        echo "$value"
+    fi
+}
+
+# Get the active phase from session state
+# Usage: get_active_phase "cwd"
+get_active_phase() {
+    local cwd="${1:-.}"
+    local value
+    value=$(get_session_field "$cwd" "active_phase")
+    if [[ -n "$value" && "$value" != "null" ]]; then
+        echo "$value"
+    fi
+}
+
 # Read hook input from stdin
 read_hook_input() {
     local input=""
@@ -178,3 +216,41 @@ hook_fail() {
 if [[ "$USING_FALLBACKS" == "true" ]]; then
     log_debug "Hook running with fallback implementations (some libraries not loaded)"
 fi
+
+# ============================================
+# HOOK INITIALIZATION
+# ============================================
+
+# Standard hook initialization: redirect stdout, read stdin JSON, parse cwd.
+# Sets global variables: HOOK_INPUT, HOOK_CWD
+# Usage: hook_init (call at start of main function)
+HOOK_INPUT='{}'
+HOOK_CWD='.'
+
+hook_init() {
+    # Read stdin
+    if [[ -t 0 ]]; then
+        HOOK_INPUT='{}'
+    else
+        HOOK_INPUT="$(cat)" || HOOK_INPUT='{}'
+    fi
+
+    # Parse cwd
+    if command -v jq &>/dev/null; then
+        HOOK_CWD=$(echo "$HOOK_INPUT" | jq -r '.cwd // "."')
+    else
+        HOOK_CWD="."
+    fi
+}
+
+# Parse a field from HOOK_INPUT using jq (with fallback)
+# Usage: hook_field "tool_input.command" "default_value"
+hook_field() {
+    local field="$1"
+    local default="${2:-}"
+    if command -v jq &>/dev/null; then
+        echo "$HOOK_INPUT" | jq -r ".${field} // \"${default}\""
+    else
+        echo "$default"
+    fi
+}

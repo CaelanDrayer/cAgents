@@ -14,46 +14,7 @@
 
 const fs = require('fs');
 const path = require('path');
-
-const AGENT_MEMORY_DIR = process.env.CLAUDE_PROJECT_DIR
-  ? path.join(process.env.CLAUDE_PROJECT_DIR, 'Agent_Memory')
-  : path.join(process.cwd(), 'Agent_Memory');
-
-/**
- * Read JSON from stdin
- */
-function readStdin() {
-  return new Promise((resolve, reject) => {
-    let data = '';
-    process.stdin.setEncoding('utf8');
-
-    if (process.stdin.isTTY) {
-      resolve({});
-      return;
-    }
-
-    process.stdin.on('data', (chunk) => { data += chunk; });
-    process.stdin.on('end', () => {
-      try {
-        resolve(data ? JSON.parse(data) : {});
-      } catch (e) {
-        resolve({});
-      }
-    });
-    process.stdin.on('error', () => resolve({}));
-
-    setTimeout(() => resolve({}), 1000);
-  });
-}
-
-/**
- * Simple YAML value extraction
- */
-function extractYamlValue(content, key) {
-  const regex = new RegExp(`^${key}:\\s*["']?([^"'\\n]+)["']?`, 'm');
-  const match = content.match(regex);
-  return match ? match[1].trim() : null;
-}
+const { readStdin, AGENT_MEMORY_DIR, SESSION_PREFIXES, extractYamlValue, safeRead, countPattern } = require('./hook-utils.cjs');
 
 /**
  * Find incomplete sessions
@@ -64,46 +25,46 @@ function findIncompleteSessions() {
 
   const incomplete = [];
   const sessions = fs.readdirSync(sessionsDir)
-    .filter(d => d.startsWith('run_') || d.startsWith('optimize_') || d.startsWith('explore_') || d.startsWith('review_'))
+    .filter(d => SESSION_PREFIXES.some(p => d.startsWith(p)))
     .sort()
     .reverse();
 
-  for (const session of sessions.slice(0, 10)) { // Check last 10 sessions
+  for (const session of sessions.slice(0, 10)) {
     const sessionDir = path.join(sessionsDir, session);
     const statusFile = path.join(sessionDir, 'status.yaml');
 
-    if (!fs.existsSync(statusFile)) continue;
+    const content = safeRead(statusFile);
+    if (!content) continue;
 
-    try {
-      const content = fs.readFileSync(statusFile, 'utf8');
-      const phase = extractYamlValue(content, 'phase');
+    const phase = extractYamlValue(content, 'phase');
 
-      // Skip completed or failed sessions
-      if (phase === 'completed' || phase === 'failed' || phase === 'aborted') continue;
+    // Skip completed or failed sessions
+    if (phase === 'completed' || phase === 'failed' || phase === 'aborted') continue;
 
-      // This session is incomplete
-      const instructionFile = path.join(sessionDir, 'instruction.yaml');
-      let request = 'Unknown request';
+    // This session is incomplete
+    const instructionFile = path.join(sessionDir, 'instruction.yaml');
+    let request = 'Unknown request';
 
-      if (fs.existsSync(instructionFile)) {
-        const instContent = fs.readFileSync(instructionFile, 'utf8');
-        request = extractYamlValue(instContent, 'raw_request') ||
-                  extractYamlValue(instContent, 'request') ||
-                  'Unknown request';
-      }
+    const instContent = safeRead(instructionFile);
+    if (instContent) {
+      request = extractYamlValue(instContent, 'raw_request') ||
+                extractYamlValue(instContent, 'request') ||
+                'Unknown request';
+    }
 
-      // Get waypoint info if available
-      const waypointsDir = path.join(sessionDir, 'waypoints');
-      let latestWaypoint = null;
+    // Get waypoint info if available
+    const waypointsDir = path.join(sessionDir, 'waypoints');
+    let latestWaypoint = null;
 
-      if (fs.existsSync(waypointsDir)) {
-        const waypoints = fs.readdirSync(waypointsDir)
-          .filter(f => f.startsWith('wp-'))
-          .sort()
-          .reverse();
+    if (fs.existsSync(waypointsDir)) {
+      const waypoints = fs.readdirSync(waypointsDir)
+        .filter(f => f.startsWith('wp-'))
+        .sort()
+        .reverse();
 
-        if (waypoints.length > 0) {
-          const wpContent = fs.readFileSync(path.join(waypointsDir, waypoints[0]), 'utf8');
+      if (waypoints.length > 0) {
+        const wpContent = safeRead(path.join(waypointsDir, waypoints[0]));
+        if (wpContent) {
           latestWaypoint = {
             id: extractYamlValue(wpContent, 'id'),
             phase: extractYamlValue(wpContent, 'phase'),
@@ -111,35 +72,28 @@ function findIncompleteSessions() {
           };
         }
       }
-
-      // Get progress info
-      const coordFile = path.join(sessionDir, 'workflow', 'coordination_log.yaml');
-      let progress = { completed: 0, total: 0 };
-
-      if (fs.existsSync(coordFile)) {
-        const coordContent = fs.readFileSync(coordFile, 'utf8');
-        const completedMatches = coordContent.match(/status:\s*completed/g);
-        const pendingMatches = coordContent.match(/status:\s*pending/g);
-        const inProgressMatches = coordContent.match(/status:\s*in_progress/g);
-
-        progress.completed = completedMatches ? completedMatches.length : 0;
-        progress.total = progress.completed +
-                        (pendingMatches ? pendingMatches.length : 0) +
-                        (inProgressMatches ? inProgressMatches.length : 0);
-      }
-
-      incomplete.push({
-        session_id: session,
-        session_dir: sessionDir,
-        phase,
-        request: request.substring(0, 100) + (request.length > 100 ? '...' : ''),
-        waypoint: latestWaypoint,
-        progress
-      });
-
-    } catch (error) {
-      console.error(`[SessionCatchup] Error reading session ${session}: ${error.message}`);
     }
+
+    // Get progress info
+    const coordFile = path.join(sessionDir, 'workflow', 'coordination_log.yaml');
+    let progress = { completed: 0, total: 0 };
+
+    const coordContent = safeRead(coordFile);
+    if (coordContent) {
+      progress.completed = countPattern(coordContent, /status:\s*completed/g);
+      const pending = countPattern(coordContent, /status:\s*pending/g);
+      const inProgress = countPattern(coordContent, /status:\s*in_progress/g);
+      progress.total = progress.completed + pending + inProgress;
+    }
+
+    incomplete.push({
+      session_id: session,
+      session_dir: sessionDir,
+      phase,
+      request: request.substring(0, 100) + (request.length > 100 ? '...' : ''),
+      waypoint: latestWaypoint,
+      progress
+    });
   }
 
   return incomplete;
@@ -173,7 +127,7 @@ function createResumeInstructions(sessions) {
   let message = '## Incomplete Sessions Detected\n\n';
   message += 'The following sessions were interrupted and can be resumed:\n\n';
 
-  sessions.forEach((session, index) => {
+  sessions.forEach((session) => {
     message += formatSessionInfo(session) + '\n\n';
   });
 
@@ -189,7 +143,7 @@ function createResumeInstructions(sessions) {
  * Main hook execution
  */
 async function main() {
-  const input = await readStdin();
+  await readStdin();
 
   try {
     const incomplete = findIncompleteSessions();
@@ -212,11 +166,10 @@ async function main() {
 
       console.error(`[SessionCatchup] Found ${incomplete.length} incomplete session(s)`);
 
-      const output = {
+      console.log(JSON.stringify({
         continue: true,
         systemMessage: message
-      };
-      console.log(JSON.stringify(output));
+      }));
     } else {
       console.log(JSON.stringify({ continue: true }));
     }
