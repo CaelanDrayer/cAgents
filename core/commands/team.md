@@ -160,21 +160,43 @@ Team Lead (Controller)
 
 ## Fallback Behavior
 
-If Agent Teams is unavailable:
+If Agent Teams is unavailable, work items default to `/run` execution:
 
 ```javascript
-// Automatic fallback to parallel Task tool calls
+// Default: Each work item gets full /run orchestration (parallel invocations)
+Skill({ skill: "run", args: `implement WI-001: ${item1.description} from team session ${session_id}` })
+Skill({ skill: "run", args: `implement WI-002: ${item2.description} from team session ${session_id}` })
+Skill({ skill: "run", args: `implement WI-003: ${item3.description} from team session ${session_id}` })
+// Sent in parallel for concurrent execution
+
+// Alternative for trivial/SAFE work items only:
 Task({ subagent_type: "make:backend-developer", prompt: "Task A..." })
-Task({ subagent_type: "make:frontend-developer", prompt: "Task B..." })
 Task({ subagent_type: "make:qa-tester", prompt: "Task C..." })
-// Sent in single message for parallel execution
 ```
 
 **User notification**:
 ```
-Agent Teams not available. Using standard parallel execution.
+Agent Teams not available. Using /run for work item execution.
 Team features (peer messaging, shared tasks) disabled.
+Each work item receives full /run orchestration for quality.
 ```
+
+### Unsuitable Request Fallback
+
+If the request is unsuitable for team execution (tier 2, too few work items, all sequential):
+
+1. Notify user: "Request better suited for standard execution."
+2. Automatically delegate to `/run`:
+
+```javascript
+// When team-trigger determines request is unsuitable for teams
+Skill({
+  skill: "run",
+  args: `${flags.request}`
+})
+```
+
+This ensures no request falls through — unsuitable team requests seamlessly continue via standard `/run` execution.
 
 ## Session Structure
 
@@ -217,6 +239,26 @@ TodoWrite({
   ]
 })
 ```
+
+## /run Escalation for Complex Work Items
+
+Team members and the team lead can escalate complex work items to `/run` when a task requires full workflow orchestration beyond a single agent's capability:
+
+```javascript
+// Team lead escalates a HIGH/CRITICAL work item to /run
+Skill({
+  skill: "run",
+  args: `implement work item ${workItem.id}: ${workItem.description} from team session ${session_id}`
+})
+```
+
+**Escalation triggers**:
+- Work item risk is HIGH or CRITICAL
+- Work item requires its own planning/coordination cycle
+- A team member reports the task exceeds their capability
+- Work item has cross-cutting concerns spanning multiple domains
+
+After `/run` completes, the team lead marks the item as completed in the shared task list, references the `/run` session outputs, and continues with remaining parallel work.
 
 ## Command Responsibilities
 

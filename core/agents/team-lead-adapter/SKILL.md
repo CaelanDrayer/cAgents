@@ -102,19 +102,22 @@ SendMessage({
 });
 ```
 
-### Without Agent Teams (Fallback Mode)
+### Without Agent Teams (Fallback Mode — Default: /run)
+
+**CRITICAL**: By default, each work item is executed via `/run` to get full workflow orchestration (controller coordination, quality validation). Direct Task calls to execution agents are only used when `/run` overhead is unnecessary (trivial items, SAFE risk).
 
 ```javascript
-// Parallel Task invocations (sent in single message)
+// Default: Each work item gets its own /run invocation for full orchestration
+// Parallel /run invocations (sent in single message for concurrency)
+Skill({ skill: "run", args: `implement WI-001: Implement user model from team session ${session_id}` })
+Skill({ skill: "run", args: `implement WI-002: Create user form from team session ${session_id}` })
+Skill({ skill: "run", args: `implement WI-003: Write user tests from team session ${session_id}` })
+
+// Alternative: Direct Task calls for trivial/SAFE work items only
 const results = await Promise.all([
   Task({
     subagent_type: "make:backend-developer",
     description: "WI-001: Implement user model",
-    prompt: "..."
-  }),
-  Task({
-    subagent_type: "make:frontend-developer",
-    description: "WI-002: Create user form",
     prompt: "..."
   }),
   Task({
@@ -123,10 +126,15 @@ const results = await Promise.all([
     prompt: "..."
   })
 ]);
-
-// Aggregate results manually
-const aggregated = results.map(r => r.output);
 ```
+
+**Decision criteria for /run vs direct Task**:
+| Work Item Risk | Method | Rationale |
+|---------------|--------|-----------|
+| HIGH/CRITICAL | `/run` via Skill | Full orchestration required |
+| MEDIUM | `/run` via Skill | Coordination + validation beneficial |
+| LOW | `/run` or direct Task | Either works, `/run` preferred |
+| SAFE/trivial | Direct Task | Overhead not warranted |
 
 ## Work Item Distribution
 
@@ -280,6 +288,37 @@ synthesized_solution:
 status: completed
 ```
 
+## /run Escalation for Complex Sub-Tasks
+
+When a team member encounters a work item that requires full workflow orchestration (CRITICAL risk, multi-phase implementation, architectural decisions), the team lead can escalate it to `/run`:
+
+```javascript
+// Team lead escalates a complex work item via /run
+Skill({
+  skill: "run",
+  args: `implement work item ${workItem.id}: ${workItem.description} from team session ${session_id}`
+})
+```
+
+**When to escalate to /run**:
+- Work item risk classified as HIGH or CRITICAL
+- Work item requires its own planning/coordination cycle
+- Member reports the task exceeds single-agent capability
+- Work item has cross-cutting concerns spanning multiple domains
+
+**When NOT to escalate** (keep within team):
+- Standard execution work items (SAFE/LOW/MEDIUM risk)
+- Items well-scoped with clear acceptance criteria
+- Items matching member's stated capabilities
+
+### Post-/run Integration
+
+After `/run` completes the escalated work item:
+1. Mark the work item as completed in task_list.yaml
+2. Reference `/run` session outputs as evidence
+3. Notify other team members of any integration points
+4. Continue with remaining team work items
+
 ## Error Handling
 
 ### Member Failure
@@ -327,10 +366,12 @@ If team execution partially fails:
 ## Key Principles
 
 1. **Delegate only** - Never do direct implementation work
-2. **Parallel first** - Maximize concurrent execution
-3. **Self-claiming preferred** - Let members claim matching work
-4. **Continuous monitoring** - Track progress, rebalance as needed
-5. **Synthesis at end** - Combine outputs into coherent result
+2. **/run by default** - Use `/run` via Skill for work items to get full orchestration; direct Task calls only for trivial/SAFE items
+3. **Parallel first** - Maximize concurrent execution
+4. **Self-claiming preferred** - Let members claim matching work (full Teams mode)
+5. **Continuous monitoring** - Track progress, rebalance as needed
+6. **Synthesis at end** - Combine outputs into coherent result
+7. **Escalate when needed** - Complex sub-tasks get their own `/run` workflow
 
 ---
 

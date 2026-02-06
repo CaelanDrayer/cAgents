@@ -63,12 +63,12 @@ team_suitability_criteria:
 ```
 1. Receive request from /team command
 2. Check AGENT_TEAMS_AVAILABLE
-3. If unavailable: warn user, delegate to /run with parallel hints
+3. If unavailable: warn user, delegate to /run via `Skill({skill: "run", args: "{request}"})`
 4. Analyze request:
    - Route through universal-router for tier classification
    - Route through universal-planner for decomposition
    - Analyze work items for parallelism
-5. If team unsuitable: fall back to standard /run
+5. If team unsuitable: fall back to standard /run via `Skill({skill: "run", args: "{request}"})`
 6. Select team lead based on domain
 7. Generate team configuration
 8. Initialize session structure
@@ -163,9 +163,46 @@ Agent_Memory/sessions/team_{YYYYMMDD_HHMMSS}/
 └── outputs/
 ```
 
-## Fallback Handling
+## /run as Default Execution Path
 
-When Agent Teams unavailable:
+**CRITICAL**: `/run` is the default execution engine. Team mode is an optimization layer on top of `/run`.
+
+### Fallback Scenarios
+
+Three scenarios trigger delegation to `/run` via Skill:
+
+**1. Agent Teams Unavailable + Not Parallelizable**
+When `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is not set and the request has no parallelism benefit:
+```javascript
+Skill({
+  skill: "run",
+  args: `${request}`
+})
+```
+
+**2. Request Unsuitable for Teams**
+When team suitability analysis fails (tier 2, <3 items, all sequential):
+```javascript
+// Notify user: "Request better suited for standard execution. Delegating to /run."
+Skill({
+  skill: "run",
+  args: `${request}`
+})
+```
+
+**3. Team Member Escalation**
+When a team member encounters a work item requiring full orchestration (HIGH/CRITICAL risk):
+```javascript
+// Team lead escalates complex sub-task to /run
+Skill({
+  skill: "run",
+  args: `implement work item ${workItem.id}: ${workItem.description} from team session ${session_id}`
+})
+```
+
+### Agent Teams Unavailable + Parallelizable
+
+When Agent Teams is not available BUT the request has parallelism benefit, use parallel Task calls (not `/run`):
 
 ```javascript
 // Instead of spawnTeam(), use parallel Task calls

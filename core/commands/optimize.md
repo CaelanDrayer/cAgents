@@ -323,7 +323,7 @@ estimated_optimizations: 17
 skipped_critical: 3
 ```
 
-If `--plan-only`: display plan and stop. If `--dry-run`: show what would change per optimization and stop.
+If `--plan-only`: display plan and trigger `/run` for implementation (see Integration section). If `--dry-run`: show what would change per optimization and stop.
 
 ### /run Handoff for CRITICAL Optimizations
 
@@ -439,17 +439,63 @@ When optimization requires significant implementation (CRITICAL risk, architectu
 - Trigger `/run` via Skill tool with session context
 - `/run` receives full analysis, opportunities, and plan as implementation context
 
+**CRITICAL handoff** (already in Phase 3 for risk 81-100):
+```javascript
+Skill({
+  skill: "run",
+  args: `implement optimization plan from ${session_id}`
+})
+```
+
+**--plan-only handoff** (after Phase 3 planning completes):
+When `--plan-only` flag is set, generate the plan and immediately hand off to `/run`:
+```javascript
+// After plan.yaml is written in Phase 3
+if (flags.planOnly) {
+  // Display plan summary to user
+  // Then trigger /run for implementation
+  Skill({
+    skill: "run",
+    args: `implement optimization plan from ${session_id}`
+  })
+  return; // /run handles implementation from here
+}
+```
+
 ### /designer Integration
 
-For exploration before optimization:
-- If user wants to explore options interactively, offer `/designer` via AskUserQuestion
+For exploration before optimization (`--explore-first` flag):
+- If user wants to explore options interactively before optimizing, start with `/designer`
 - `/designer` produces a design document that feeds back into `/optimize` planning
+
+**--explore-first handoff** (before Phase 1 detection):
+```javascript
+// When --explore-first is set, delegate to /designer first
+if (flags.exploreFirst) {
+  Skill({
+    skill: "designer",
+    args: `explore optimization opportunities for ${flags.target || 'project'}`
+  })
+  return; // Designer handles exploration, user can run /optimize after
+}
+```
 
 ### /review Integration
 
-For post-optimization quality assurance:
-- If `--review-after` flag set, trigger `/review` on optimized files
+For post-optimization quality assurance (`--review-after` flag):
+- After Phase 5 validation, trigger `/review` on all optimized files
 - Ensures optimizations don't introduce quality issues
+
+**--review-after handoff** (after Phase 5 validation completes):
+```javascript
+// After validation_report.yaml is written in Phase 5
+if (flags.reviewAfter) {
+  Skill({
+    skill: "review",
+    args: `${optimizedFiles.join(' ')} --focus quality`
+  })
+}
+```
 
 ## Session Management
 

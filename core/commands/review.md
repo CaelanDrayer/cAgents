@@ -613,6 +613,66 @@ Critical Issues:
 Full report: Agent_Memory/sessions/review_20260105_144245/reports/final_report.md
 ```
 
+## Integration with Other Commands
+
+### Offer Fixes via /run
+
+When critical or high-severity issues are found during review, offer the user the option to fix them automatically via `/run`:
+
+```javascript
+// After Phase 6 report generation, if critical/high issues exist:
+if (criticalCount > 0 || highCount > 0) {
+  AskUserQuestion({
+    questions: [{
+      question: `Found ${criticalCount} critical and ${highCount} high-severity issues. Would you like to fix them?`,
+      header: "Fix Issues",
+      options: [
+        {label: "Fix now with /run (Recommended)", description: "Automatically fix critical and high issues"},
+        {label: "Show report only", description: "Review the report without applying fixes"},
+        {label: "Fix critical only", description: "Only fix critical-severity issues"}
+      ],
+      multiSelect: false
+    }]
+  })
+
+  // If user selects "Fix now with /run" or "Fix critical only":
+  Skill({
+    skill: "run",
+    args: `fix ${severity} issues from review session ${session_id}`
+  })
+}
+```
+
+### Offer Optimization via /optimize
+
+When performance opportunities or optimization candidates are detected during review, offer `/optimize`:
+
+```javascript
+// After Phase 6 report generation, if performance issues detected:
+if (performanceIssuesFound || optimizationOpportunities.length > 0) {
+  AskUserQuestion({
+    questions: [{
+      question: `Detected ${optimizationOpportunities.length} optimization opportunities. Want to optimize?`,
+      header: "Optimize",
+      options: [
+        {label: "Optimize now", description: "Run /optimize on the reviewed target"},
+        {label: "Show opportunities only", description: "Include in report without acting"},
+        {label: "Optimize after fixing", description: "Fix issues first, then optimize"}
+      ],
+      multiSelect: false
+    }]
+  })
+
+  // If user selects "Optimize now":
+  Skill({
+    skill: "optimize",
+    args: `${targetPath} --review-after`
+  })
+}
+```
+
+**Note**: These integrations are optional and only offered when relevant findings exist. The review always completes its full report first before offering next steps.
+
 ---
 
 **Execute the full autonomous review. Auto-detect type. Use appropriate agents. No permissions needed. Just do it.**
