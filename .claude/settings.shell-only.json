@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/hooks/session/on-session-start.sh",
+            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -f \"$ROOT/hooks/session/on-session-start.sh\" ]; then \"$ROOT/hooks/session/on-session-start.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
             "timeout": 10
           }
         ]
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/hooks/session/on-session-end.sh",
+            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -f \"$ROOT/hooks/session/on-session-end.sh\" ]; then \"$ROOT/hooks/session/on-session-end.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
             "timeout": 10
           }
         ]
@@ -28,7 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/hooks/workflow/stop-workflow.sh",
+            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -f \"$ROOT/hooks/workflow/stop-workflow.sh\" ]; then \"$ROOT/hooks/workflow/stop-workflow.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
             "timeout": 15
           }
         ]
@@ -39,7 +39,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/hooks/workflow/on-workflow-complete.sh",
+            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -f \"$ROOT/hooks/workflow/on-workflow-complete.sh\" ]; then \"$ROOT/hooks/workflow/on-workflow-complete.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
             "timeout": 10
           }
         ]
@@ -50,7 +50,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/hooks/workflow/on-user-prompt.sh",
+            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -f \"$ROOT/hooks/workflow/on-user-prompt.sh\" ]; then \"$ROOT/hooks/workflow/on-user-prompt.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
             "timeout": 5
           }
         ]
@@ -62,7 +62,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/hooks/tools/pre-bash.sh",
+            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -f \"$ROOT/hooks/tools/pre-bash.sh\" ]; then \"$ROOT/hooks/tools/pre-bash.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
             "timeout": 5
           }
         ]
@@ -72,7 +72,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/hooks/tools/pre-write.sh",
+            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -f \"$ROOT/hooks/tools/pre-write.sh\" ]; then \"$ROOT/hooks/tools/pre-write.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
             "timeout": 5
           }
         ]
@@ -82,7 +82,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/hooks/workflow/on-task-start.sh",
+            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -f \"$ROOT/hooks/workflow/on-task-start.sh\" ]; then \"$ROOT/hooks/workflow/on-task-start.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
             "timeout": 5
           }
         ]
@@ -94,7 +94,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/hooks/workflow/on-task-complete.sh",
+            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -f \"$ROOT/hooks/workflow/on-task-complete.sh\" ]; then \"$ROOT/hooks/workflow/on-task-complete.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
             "timeout": 5
           }
         ]

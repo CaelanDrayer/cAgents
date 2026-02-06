@@ -2,7 +2,7 @@
 name: orchestrator
 domain: core
 tier: infrastructure
-description: Universal workflow phase conductor for all domains with CSV-based task inventory for large-scale workflows.
+description: Universal workflow phase conductor for all domains with CSV-based task inventory for large-scale workflows. Supports team mode execution via Agent Teams integration.
 model: opus
 color: bright_magenta
 capabilities:
@@ -11,6 +11,7 @@ capabilities:
   - checkpoint_resume
   - inventory_management
   - adaptive_execution
+  - team_mode_support
 tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 ---
 
@@ -44,11 +45,22 @@ When a phase completes:
 
 ## Phase Lifecycle
 
+### Standard Mode
 ```
 routing -> planning -> [PLAN DISPLAY] -> coordinating -> executing -> validating
    |          |              |              |              |             |
   tier     objectives    (show plan)    controller     monitor       quality
 ```
+
+### Team Mode
+```
+routing -> planning -> [PLAN DISPLAY] -> [TEAM EXECUTING] -> validating
+   |          |              |                  |                |
+  tier     objectives    (show plan)      team-lead          quality
+                                        (parallel exec)
+```
+
+In team mode, the coordinating and executing phases are merged into team execution where the team-lead-adapter manages parallel work item distribution via Agent Teams.
 
 ## Controller-Centric Architecture
 
@@ -109,3 +121,72 @@ When a subagent (controller, executor, or any phase agent) returns with incomple
 **Never retry the same scope at the same size.** Always split before retrying.
 
 See @resources/orchestration-frameworks.md for phase management and inventory patterns.
+
+## Team Mode Execution
+
+When `team_mode: true` is set in instruction.yaml or flags include `--team`:
+
+### Detection
+```yaml
+team_mode_indicators:
+  - flags.team == true
+  - instruction.yaml contains team_mode: true
+  - session folder starts with team_
+```
+
+### Team Execution Flow
+
+1. **After Planning**: Instead of spawning controller directly, spawn team-lead-adapter
+2. **Team Lead Initialization**: Team-lead-adapter wraps selected controller in delegate mode
+3. **Parallel Execution**: Work items distributed to team members for parallel execution
+4. **Progress Monitoring**: Monitor `team/task_list.yaml` instead of polling controller
+5. **Aggregation**: Team lead aggregates results into coordination_log.yaml
+6. **Validation**: Standard validation phase on aggregated outputs
+
+### Delegation to Team Lead
+
+```javascript
+// Standard mode: spawn controller
+Task({
+  subagent_type: "{domain}:{controller}",
+  description: "Coordinate: {request}",
+  prompt: "Session: {session_path}\nRead plan.yaml for context."
+})
+
+// Team mode: spawn team-lead-adapter
+Task({
+  subagent_type: "cagents:team-lead-adapter",
+  description: "Team lead: {request}",
+  prompt: `
+    Session: {session_path}
+    Controller: {domain}:{controller}
+    Mode: team_execution
+    Read team/team_manifest.yaml and team/task_list.yaml for team context.
+  `
+})
+```
+
+### Team Progress Monitoring
+
+Instead of polling coordination_log.yaml:
+1. Read `team/task_list.yaml` for shared task statuses
+2. Check for completion: `summary.completed == summary.total`
+3. Monitor `team/messages/` for critical communications
+4. Aggregate metrics from `team/metrics/`
+
+### Team Mode Benefits
+
+| Metric | Standard Mode | Team Mode |
+|--------|---------------|-----------|
+| Execution | Sequential | Parallel |
+| Coordination | Controller polls | Shared task list |
+| Communication | Task results | Peer-to-peer |
+| Time reduction | Baseline | 40-60% faster |
+
+### Fallback Handling
+
+If Agent Teams is unavailable during team mode:
+1. Team-lead-adapter detects unavailability
+2. Falls back to parallel Task tool calls
+3. Logs degraded mode in session
+4. Proceeds with reduced functionality (no peer messaging)

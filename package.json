@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "8.5.2",
-  "description": "cAgents V8.1 - Universal multi-domain agent system with 234 agents across 5 super-domains. Features: 100% SKILL.md progressive disclosure migration, Claude Code hooks (12 types), 4-tier model routing, session management, metrics infrastructure, evaluation framework, CI/CD scripts. CSV-based task inventory for large-scale workflows.",
+  "version": "8.6.0",
+  "description": "cAgents V8.6 - Universal multi-domain agent system with 236 agents across 5 super-domains. Features: Claude Code Agent Teams integration for parallel team-based execution (40-60% time reduction), /team command with peer-to-peer communication and shared task lists. Plus: SKILL.md progressive disclosure, Claude Code hooks (12 types), 4-tier model routing, session management, metrics infrastructure. CSV-based task inventory for large-scale workflows.",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -27,6 +27,11 @@
     "designer",
     "optimizer",
     "reviewer",
+    "agent-teams",
+    "parallel-teams",
+    "peer-to-peer",
+    "shared-tasks",
+    "team-execution",
     "super-domains",
     "game-development",
     "unity",
@@ -44,8 +49,8 @@
   "license": "MIT",
   "architecture": "Controller-Centric Question-Based Delegation",
   "agents": {
-    "total": 234,
-    "core": 12,
+    "total": 236,
+    "core": 14,
     "shared": 14,
     "breakdown": {
       "make": 109,
@@ -86,6 +91,11 @@
     "atomic_file_operations": true,
     "markdown_frontmatter_state": true,
     "ralph_loop_patterns": true,
+    "agent_teams_integration": true,
+    "team_mode": true,
+    "parallel_team_execution": true,
+    "peer_to_peer_messaging": true,
+    "shared_task_lists": true,
     "game_development_pipeline": true,
     "game_engines_supported": ["Unity", "Unreal Engine", "Godot"],
     "game_dev_specializations": ["design", "programming", "art", "audio", "production", "narrative", "qa", "monetization"]

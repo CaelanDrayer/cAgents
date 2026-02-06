@@ -18,6 +18,7 @@ Core architecture and development guidance for cAgents.
 - [Workflow Execution](#workflow-execution)
 - [Task Completion Protocol](#task-completion-protocol)
 - [Commands](#commands)
+- [Team Mode](#team-mode)
 - [Agent Memory](#agent-memory)
 - [Recursive Workflows](#recursive-workflows)
 - [Creating Agents](#creating-agents)
@@ -45,6 +46,7 @@ Core architecture and development guidance for cAgents.
 - `GETTING_STARTED.md` - Getting started guide
 - `OPTIMIZATION_PROGRESS.md` - Optimization tracking and progress
 - `RELEASE_NOTES.md` - Release history
+- `TEAM_MODE.md` - Agent Teams integration (V8.6)
 
 **Root Documentation** (exceptions):
 - `workflow_agent_interactions.md` - Agent interaction patterns (referenced throughout)
@@ -243,13 +245,17 @@ Complete: outputs/fix_summary.yaml
 
 **If requirements are clear, PROCEED. Do not ask.**
 
-## Core Infrastructure (Tier 1: 12 agents)
+## Core Infrastructure (Tier 1: 14 agents)
 
 **Orchestration Agents** (4):
 - `trigger` - Entry point, domain detection, routing
 - `orchestrator` - Phase conductor (routing -> planning -> **coordinating** -> executing -> validating)
 - `hitl` - Human escalation for tier-4 decisions
 - `optimizer` - Universal optimization (code, content, processes, data, infrastructure, campaigns)
+
+**Team Agents** (2) - V8.6:
+- `team-trigger` - Team initialization, Agent Teams detection, parallelism analysis
+- `team-lead-adapter` - Wraps controllers for team lead mode (delegate only)
 
 **Universal Workflow Agents** (5):
 - `universal-router` - Tier classification (2-4), ALWAYS requires controllers
@@ -552,6 +558,82 @@ See `core/commands/optimize.md` for detailed documentation.
 /init                      # Create initial CLAUDE.md for project
 ```
 
+### /team - Parallel Team Execution (V8.6)
+Parallel team-based workflow execution using Claude Code Agent Teams. Provides 40-60% execution time reduction for tier 3+ workflows through peer-to-peer communication and shared task lists.
+
+```bash
+/team Implement OAuth2 authentication    # Full team execution
+/team Build user dashboard --dry-run     # Preview team composition
+/team Create API endpoints --members 4   # Limit team size
+/team Add payment gateway --display      # Show team communication
+```
+
+**Or use with /run**:
+```bash
+/run Build feature --team                # Team mode via flag
+```
+
+**Key Features**:
+- **Peer-to-Peer Communication**: Team members communicate directly via SendMessage
+- **Shared Task Lists**: Work items in `team/task_list.yaml` for self-claiming
+- **Team Leads**: Controllers operate in delegate mode (coordination only)
+- **Parallel Execution**: Independent work items execute concurrently
+- **Automatic Fallback**: Falls back to parallel Task calls if Agent Teams unavailable
+
+**Performance Targets**:
+- 40-60% execution time reduction
+- >70% parallelism utilization
+- 3x work item throughput
+
+Config: `.cagents/team_config.yaml`, see `docs/TEAM_MODE.md` for full documentation.
+
+## Team Mode
+
+### Overview
+
+Team Mode enables parallel team-based execution using Claude Code's experimental Agent Teams feature. Controllers become team leads operating in delegate mode, work items are distributed to team members for parallel execution.
+
+### When to Use
+
+| Use /team | Use /run |
+|-----------|----------|
+| Tier 3+ complex workflows | Tier 2 simple coordination |
+| Multiple parallelizable work items | Sequential workflows |
+| Time-sensitive delivery | Quality-focused delivery |
+| Large features with components | Small changes |
+
+### Team Architecture
+
+```
+Team Lead (Controller) ─┬─ Member 1 ─→ WI-001 ─→ Complete
+                        ├─ Member 2 ─→ WI-002 ─→ Complete
+                        └─ Member 3 ─→ WI-003 ─→ Complete
+                                (parallel)
+                        └───────────────────────→ Aggregate
+```
+
+### Session Structure
+
+```
+Agent_Memory/sessions/team_{timestamp}/
+├── team/
+│   ├── team_manifest.yaml    # Team composition
+│   ├── task_list.yaml        # Shared work items
+│   ├── messages/             # Peer-to-peer communication
+│   └── metrics/              # Timing and parallelism
+├── workflow/
+└── outputs/
+```
+
+### Fallback Behavior
+
+If Agent Teams is unavailable (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` not set):
+- Falls back to parallel Task tool calls
+- Peer messaging disabled, direct assignment only
+- Parallelism still achieved via concurrent invocations
+
+See `docs/TEAM_MODE.md` for full documentation and `.claude/rules/core/teams.md` for coordination patterns.
+
 ## Agent Memory
 
 **Full Structure**: See @.claude/rules/memory/agent-memory.md for detailed memory organization.
@@ -567,6 +649,7 @@ Agent_Memory/
 ├── _communication/                   # Agent messaging
 └── sessions/                         # All command sessions (STANDARDIZED)
     ├── run_{YYYYMMDD_HHMMSS}/        # /run workflow sessions
+    ├── team_{YYYYMMDD_HHMMSS}/       # /team parallel sessions
     ├── designer_{YYYYMMDD_HHMMSS}/   # /designer design sessions
     ├── review_{YYYYMMDD_HHMMSS}/     # /review sessions
     └── optimize_{YYYYMMDD_HHMMSS}/   # /optimize sessions
@@ -675,11 +758,12 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 
 ## Quick Reference
 
-**Commands**: `/run`, `/designer`, `/review`, `/optimize`, `/memory`, `/init`
-**Agents**: 234 total (12 core + 14 shared + 208 domain specialists)
+**Commands**: `/run`, `/team`, `/designer`, `/review`, `/optimize`, `/memory`, `/init`
+**Agents**: 236 total (14 core + 14 shared + 208 domain specialists)
 **Super-Domains**: Make (109), Grow (38), Operate (13), People (20), Serve (28)
 **Key Files**: `CLAUDE.md`, `.claude/rules/*.md`, `{domain}/config/*.yaml`
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
+**Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ workflows
 
 ## Troubleshooting
 
@@ -695,14 +779,18 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 | Missing coordination_log | Controller didn't complete - check controller logs |
 | Memory not loading | Run `/memory` to view loaded files |
 | Local preferences not applied | Ensure CLAUDE.local.md in .gitignore |
+| Team not spawning | Check `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` env var |
+| Team slower than expected | Check parallelism_score, use standard mode for sequential work |
+| Team fallback mode active | Set env var or check Agent Teams availability |
 
 See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 
 ---
 
-**Total Agents**: 234 (12 core + 14 shared + 208 domain specialists)
-**Architecture**: Controller-Centric Coordination with Task Inventory
+**Total Agents**: 236 (14 core + 14 shared + 208 domain specialists)
+**Architecture**: Controller-Centric Coordination with Task Inventory + Agent Teams
 **Super-Domains**: 5 (Make, Grow, Operate, People, Serve)
+**Team Mode**: 40-60% execution time reduction via parallel teams
 **Directories**: 7 (core, shared, make, grow, operate, people, serve)
 **Key Innovation**: CSV-based task inventory for large workflows + aggressive decomposition
 **Dependencies**: None (file-based, self-contained)

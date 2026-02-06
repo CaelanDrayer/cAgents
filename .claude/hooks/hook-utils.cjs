@@ -20,7 +20,7 @@ const AGENT_MEMORY_DIR = process.env.CLAUDE_PROJECT_DIR
   ? path.join(process.env.CLAUDE_PROJECT_DIR, 'Agent_Memory')
   : path.join(process.cwd(), 'Agent_Memory');
 
-const SESSION_PREFIXES = ['run_', 'optimize_', 'review_', 'designer_'];
+const SESSION_PREFIXES = ['run_', 'optimize_', 'review_', 'designer_', 'team_'];
 
 /**
  * Read JSON from stdin with timeout

@@ -14,7 +14,8 @@ Topic-specific rules organized for better maintainability.
 │   ├── hooks.md               # V8.0 hook system documentation
 │   ├── skill-format.md        # V8.0 SKILL.md agent format spec
 │   ├── progressive-disclosure.md # V8.0 three-tier loading pattern
-│   └── subagent-alignment.md  # V8.0 Task tool alignment
+│   ├── subagent-alignment.md  # V8.0 Task tool alignment
+│   └── teams.md               # V8.6 Agent Teams coordination patterns
 ├── domains/        # Domain-specific guidelines
 │   ├── engineering.md      # Engineering workflows and agents
 │   ├── grow.md             # Grow (marketing/sales) patterns
@@ -67,9 +68,9 @@ Import rules into CLAUDE.md or other docs:
 See @.claude/rules/core/orchestration.md for workflow patterns.
 ```
 
-## Current Rules (19 files)
+## Current Rules (20 files)
 
-### Core (8 files)
+### Core (9 files)
 1. **core/orchestration.md** - Workflow phases (routing -> validating)
 2. **core/controllers.md** - Question-based delegation patterns
 3. **core/execution.md** - Execution agent patterns
@@ -78,6 +79,7 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 6. **core/skill-format.md** - V8.0 SKILL.md agent format specification
 7. **core/progressive-disclosure.md** - V8.0 three-tier loading pattern
 8. **core/subagent-alignment.md** - V8.0 Task tool alignment patterns
+9. **core/teams.md** - V8.6 Agent Teams coordination patterns
 
 ### Domains (5 files)
 9. **domains/engineering.md** - Engineering domain guidelines
@@ -98,7 +100,7 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 18. **quality/implicit-discovery.md** - Handling abstract requests
 
 ### Meta (1 file)
-19. **README.md** - This index file
+20. **README.md** - This index file
 
 ## V8.0 Additions
 

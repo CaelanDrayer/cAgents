@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "8.5.8",
-  "description": "Universal multi-domain agent system with 234 specialized agents. V8.1 features: 100% SKILL.md progressive disclosure migration (all 234 agents), Claude Code hooks system (12 hook types, 6 implementations), 4-tier model routing (Haiku/Sonnet/Opus with project overrides), comprehensive security review (20+ secret patterns), session management (waypoints, recovery, three-file pattern), metrics infrastructure (config, session, daily tracking), evaluation framework (quality, completeness, coordination evals), CI/CD scripts (cagents-ci.sh, run-evals.sh, check-quality.sh), skill creator scripts (init_agent.js, validate_agent.js), and instinct-based pattern learning. CSV-based task inventory for large-scale workflows (60-80% context savings), batch delegation, checkpoint/resume. Features aggressive task decomposition, controller-centric question-based delegation across 5 super-domains (Make, Grow, Operate, People, Serve). Minimum tier 2 enforcement ensures ALL requests use multi-agent specialist coverage. Parallel execution (50x speedup), recursive workflows, comprehensive work breakdowns, dependency mapping. Setup script auto-detects Node.js and configures hooks accordingly.",
+  "version": "8.6.0",
+  "description": "Universal multi-domain agent system with 236 specialized agents. V8.6 features: Claude Code Agent Teams integration for parallel team-based execution (40-60% time reduction), /team command with peer-to-peer communication, shared task lists, self-claiming work items. Plus: 100% SKILL.md progressive disclosure migration, Claude Code hooks (12 types), 4-tier model routing, session management (waypoints, recovery), metrics infrastructure, evaluation framework, CI/CD scripts. CSV-based task inventory (60-80% context savings). Controller-centric question-based delegation across 5 super-domains. Minimum tier 2 enforcement. Parallel execution (50x speedup).",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",
@@ -50,6 +50,11 @@
     "mandatory-delegation",
     "nodejs-detection",
     "conditional-hooks",
+    "agent-teams",
+    "parallel-teams",
+    "peer-to-peer",
+    "shared-tasks",
+    "team-execution",
     "make",
     "grow",
     "operate",
@@ -58,12 +63,15 @@
   ],
   "commands": [
     "./core/commands/run.md",
+    "./core/commands/team.md",
     "./core/commands/designer.md",
     "./core/commands/review.md",
     "./core/commands/optimize.md"
   ],
   "agents": [
     "./core/agents/trigger/SKILL.md",
+    "./core/agents/team-trigger/SKILL.md",
+    "./core/agents/team-lead-adapter/SKILL.md",
     "./core/agents/orchestrator/SKILL.md",
     "./core/agents/hitl/SKILL.md",
     "./core/agents/universal-router/SKILL.md",

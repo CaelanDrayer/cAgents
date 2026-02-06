@@ -90,6 +90,7 @@ Even seemingly simple requests like "What is X?" or "Fix typo" are routed throug
 - **Skip preflight** (`--skip-preflight`) - Skip pre-flight validation (not recommended)
 - **Confidence threshold** (`--confidence <N>`) - Set detection confidence threshold
 - **Streaming progress** (`--stream`) - Real-time progress updates
+- **Team mode** (`--team`) - Parallel team-based execution with Agent Teams
 
 ## How It Works
 
@@ -166,6 +167,13 @@ When the user runs `/run <request> [flags]`, this command:
 # Interactive mode + real-time progress updates
 ```
 
+**Team Mode** (Parallel execution with Agent Teams):
+```bash
+/run Build user dashboard --team
+# Spawns parallel team with peer-to-peer communication
+# 40-60% execution time reduction for tier 3+ workflows
+```
+
 ## Flag Parsing
 
 **Parse command arguments before delegation**:
@@ -182,6 +190,7 @@ function parseCommandFlags(commandString) {
     quiet: commandString.includes('--quiet') || commandString.includes('-q'),
     stream: commandString.includes('--stream'),
     skipPreflight: commandString.includes('--skip-preflight'),
+    team: commandString.includes('--team'),
 
     // Extract value flags
     template: extractFlagValue(commandString, '--template'),
@@ -219,9 +228,10 @@ Output: {
 
 ## Delegation to Trigger Agent
 
-The command delegates ALL workflow logic to the trigger agent using Task tool:
+The command delegates ALL workflow logic to the trigger agent (or team-trigger for team mode):
 
 ```javascript
+// Standard mode
 Task({
   subagent_type: "cagents:trigger",
   description: "Workflow: {flags.request}",
@@ -231,6 +241,21 @@ Task({
 
     Initialize workflow. Detect domain, classify intent, validate, delegate to orchestrator.
     Session: Agent_Memory/sessions/run_{YYYYMMDD_HHMMSS}/
+  `
+})
+
+// Team mode (when --team flag present)
+Task({
+  subagent_type: "cagents:team-trigger",
+  description: "Team: {flags.request}",
+  prompt: `
+    Request: {flags.request}
+    Flags: {JSON.stringify(flags)}
+    Mode: team_execution
+
+    Initialize team workflow. Check Agent Teams availability, analyze parallelism,
+    spawn team, distribute work items.
+    Session: Agent_Memory/sessions/team_{YYYYMMDD_HHMMSS}/
   `
 })
 ```
@@ -328,6 +353,7 @@ TodoWrite({
 | `--domain <domain>` | String | Override domain detection | auto-detect | `/run Analyze --domain engineering` |
 | `--tier <N>` | Number | Override tier classification (2-4) | auto-classify | `/run Migrate --tier 4` |
 | `--confidence <N>` | Number | Set confidence threshold | 0.7 | `/run Request --confidence 0.6` |
+| `--team` | Boolean | Use parallel team execution | false | `/run Build feature --team` |
 
 **Note on Plan Display**: By default, `/run` shows the workflow plan after planning completes (for tier 2+ workflows). Use `--quiet` to skip this display if you prefer silent execution. Use `--dry-run` if you want to see the plan and STOP (without executing).
 

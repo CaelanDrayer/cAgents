@@ -1,7 +1,7 @@
 {
   "name": "@cagents/core",
-  "version": "8.5.2",
-  "description": "cAgents Core V8.0 - Universal multi-domain agent system with aggressive task decomposition. Features: 5-level decomposition, comprehensive work breakdowns with acceptance criteria, dependency graphs, parallel execution. Includes 12 core agents: trigger, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, and 5 universal workflow agents. Controller-centric coordination with question-based delegation.",
+  "version": "8.6.0",
+  "description": "cAgents Core V8.6 - Universal multi-domain agent system with Agent Teams integration. Features: /team command for parallel team-based execution, peer-to-peer communication, shared task lists, self-claiming work items. Includes 14 core agents: trigger, team-trigger, team-lead-adapter, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, and 5 universal workflow agents. Controller-centric coordination with question-based delegation.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",
@@ -20,16 +20,22 @@
     "question-based-delegation",
     "task-decomposition",
     "task-inventory",
-    "v8.0"
+    "agent-teams",
+    "parallel-teams",
+    "peer-to-peer",
+    "v8.6"
   ],
   "commands": [
     "./commands/run.md",
+    "./commands/team.md",
     "./commands/designer.md",
     "./commands/review.md",
     "./commands/optimize.md"
   ],
   "agents": [
     "./agents/trigger/SKILL.md",
+    "./agents/team-trigger/SKILL.md",
+    "./agents/team-lead-adapter/SKILL.md",
     "./agents/orchestrator/SKILL.md",
     "./agents/hitl/SKILL.md",
     "./agents/universal-router/SKILL.md",
