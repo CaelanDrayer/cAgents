@@ -578,7 +578,7 @@ Parallel team-based workflow execution using Claude Code Agent Teams. Provides 4
 - **Shared Task Lists**: Work items in `team/task_list.yaml` for self-claiming
 - **Team Leads**: Controllers operate in delegate mode (coordination only)
 - **Parallel Execution**: Independent work items execute concurrently
-- **Automatic Fallback**: Falls back to parallel Task calls if Agent Teams unavailable
+- **Automatic Fallback**: Falls back to parallel `/run` Skill invocations if Agent Teams unavailable
 
 **Performance Targets**:
 - 40-60% execution time reduction
@@ -605,11 +605,13 @@ Team Mode enables parallel team-based execution using Claude Code's experimental
 ### Team Architecture
 
 ```
-Team Lead (Controller) ─┬─ Member 1 ─→ WI-001 ─→ Complete
-                        ├─ Member 2 ─→ WI-002 ─→ Complete
-                        └─ Member 3 ─→ WI-003 ─→ Complete
-                                (parallel)
-                        └───────────────────────→ Aggregate
+/team <request>
+    │
+    └── Team Lead (Controller) ─┬─ Member 1 ─→ /run WI-001 ─→ Complete
+                                ├─ Member 2 ─→ /run WI-002 ─→ Complete
+                                └─ Member 3 ─→ /run WI-003 ─→ Complete
+                                        (parallel /run)
+                                └──────────────────────────→ Aggregate
 ```
 
 ### Session Structure
@@ -628,9 +630,9 @@ Agent_Memory/sessions/team_{timestamp}/
 ### Fallback Behavior
 
 If Agent Teams is unavailable (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` not set):
-- Falls back to parallel Task tool calls
+- Falls back to parallel `/run` Skill invocations (each work item still gets full orchestration)
 - Peer messaging disabled, direct assignment only
-- Parallelism still achieved via concurrent invocations
+- Parallelism still achieved via concurrent `/run` invocations
 
 See `docs/TEAM_MODE.md` for full documentation and `.claude/rules/core/teams.md` for coordination patterns.
 

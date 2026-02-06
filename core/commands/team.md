@@ -22,7 +22,7 @@ Before any team operation, verify Agent Teams is available:
 const teamsAvailable = process.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS === '1';
 ```
 
-**If unavailable**: Fall back to standard `/run` with parallel Task tool calls.
+**If unavailable**: Fall back to parallel `/run` Skill invocations.
 
 ## How It Works
 
@@ -145,38 +145,55 @@ team_composition:
 ## Parallel Execution Model
 
 ```
-Team Lead (Controller)
+/team <request>
     │
-    ├── Spawn teammates via spawnTeam()
-    ├── Create shared task list (work items)
-    │
-    ├── Member 1 ──┬── Claims task A ──→ Executes ──→ Completes
-    ├── Member 2 ──┼── Claims task B ──→ Executes ──→ Completes
-    ├── Member 3 ──┴── Claims task C ──→ Executes ──→ Completes
-    │                  (parallel)
-    │
-    └── Aggregates results when all tasks complete
+    └── Team Lead (Controller — delegate only)
+        │
+        ├── Decomposes request into work items
+        ├── Creates shared task list
+        │
+        ├── Member 1 ──→ /run WI-001 ──→ (full orchestration) ──→ Complete
+        ├── Member 2 ──→ /run WI-002 ──→ (full orchestration) ──→ Complete
+        ├── Member 3 ──→ /run WI-003 ──→ (full orchestration) ──→ Complete
+        │                 (parallel /run invocations)
+        │
+        └── Aggregates /run outputs into final result
 ```
 
-## Fallback Behavior
+**Key**: Every work item gets full `/run` orchestration (controller coordination, specialist execution, quality validation). `/team` provides the parallelism layer; `/run` provides the quality layer.
 
-If Agent Teams is unavailable, work items default to `/run` execution:
+## Work Item Execution via /run
+
+**CRITICAL**: Every work item is executed via `/run`. This is not a fallback — it's the primary execution model. `/team` handles decomposition and parallelism; `/run` handles each work item's full orchestration.
+
+### With Agent Teams (Full Mode)
+
+Team members are spawned and each one invokes `/run` for their claimed work item:
 
 ```javascript
-// Default: Each work item gets full /run orchestration (parallel invocations)
+// Team lead assigns work items to members
+// Each member executes their item via /run for full orchestration
+SendMessage({
+  to: "member-1",
+  message: `Execute your work item via /run:
+    Skill({ skill: "run", args: "implement WI-001: ${item.description} from team session ${session_id}" })`
+});
+```
+
+### Without Agent Teams (Fallback Mode)
+
+Parallel `/run` invocations sent in a single message:
+
+```javascript
+// Each work item gets its own /run — parallel invocations
 Skill({ skill: "run", args: `implement WI-001: ${item1.description} from team session ${session_id}` })
 Skill({ skill: "run", args: `implement WI-002: ${item2.description} from team session ${session_id}` })
 Skill({ skill: "run", args: `implement WI-003: ${item3.description} from team session ${session_id}` })
-// Sent in parallel for concurrent execution
-
-// Alternative for trivial/SAFE work items only:
-Task({ subagent_type: "make:backend-developer", prompt: "Task A..." })
-Task({ subagent_type: "make:qa-tester", prompt: "Task C..." })
 ```
 
 **User notification**:
 ```
-Agent Teams not available. Using /run for work item execution.
+Agent Teams not available. Using parallel /run invocations.
 Team features (peer messaging, shared tasks) disabled.
 Each work item receives full /run orchestration for quality.
 ```
@@ -296,4 +313,4 @@ team_mode:
 
 ---
 
-**Key Innovation**: Leverage Claude Code Agent Teams for true peer-to-peer parallel execution with shared context.
+**Key Innovation**: `/team` decomposes and parallelizes; `/run` orchestrates each work item. Best of both worlds — parallel speed with full orchestration quality.

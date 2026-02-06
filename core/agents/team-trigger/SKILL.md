@@ -36,8 +36,8 @@ capabilities:
 const AGENT_TEAMS_AVAILABLE = process.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS === '1';
 ```
 
-**If available**: Use full Agent Teams API (spawnTeam, SendMessage, shared tasks)
-**If unavailable**: Fall back to parallel Task tool calls (degraded but functional)
+**If available**: Use full Agent Teams API (spawnTeam, SendMessage, shared tasks) — members invoke `/run` for each work item
+**If unavailable**: Use parallel `/run` Skill invocations (each work item still gets full orchestration)
 
 ## Team Suitability Analysis
 
@@ -72,7 +72,7 @@ team_suitability_criteria:
 6. Select team lead based on domain
 7. Generate team configuration
 8. Initialize session structure
-9. Spawn team via spawnTeam() or parallel Task calls
+9. Spawn team via spawnTeam() or parallel /run Skill invocations
 10. Hand off to team-lead-adapter
 ```
 
@@ -163,67 +163,61 @@ Agent_Memory/sessions/team_{YYYYMMDD_HHMMSS}/
 └── outputs/
 ```
 
-## /run as Default Execution Path
+## /run as the Execution Engine
 
-**CRITICAL**: `/run` is the default execution engine. Team mode is an optimization layer on top of `/run`.
+**CRITICAL**: `/run` is the execution engine for ALL work items. `/team` handles decomposition and parallelism; `/run` handles orchestration of each individual work item. This is not a fallback — it's the core architecture.
 
-### Fallback Scenarios
-
-Three scenarios trigger delegation to `/run` via Skill:
-
-**1. Agent Teams Unavailable + Not Parallelizable**
-When `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is not set and the request has no parallelism benefit:
-```javascript
-Skill({
-  skill: "run",
-  args: `${request}`
-})
+```
+/team = Parallelism layer (decompose, distribute, aggregate)
+/run  = Orchestration layer (plan, coordinate, execute, validate per work item)
 ```
 
-**2. Request Unsuitable for Teams**
-When team suitability analysis fails (tier 2, <3 items, all sequential):
-```javascript
-// Notify user: "Request better suited for standard execution. Delegating to /run."
-Skill({
-  skill: "run",
-  args: `${request}`
-})
-```
+### How Work Items Execute
 
-**3. Team Member Escalation**
-When a team member encounters a work item requiring full orchestration (HIGH/CRITICAL risk):
+Every work item, regardless of Agent Teams availability, is executed via `/run`:
+
 ```javascript
-// Team lead escalates complex sub-task to /run
+// Each work item gets its own /run invocation
 Skill({
   skill: "run",
   args: `implement work item ${workItem.id}: ${workItem.description} from team session ${session_id}`
 })
 ```
 
-### Agent Teams Unavailable + Parallelizable
+**With Agent Teams**: Team members are spawned; each member invokes `/run` for their claimed items.
+**Without Agent Teams**: Parallel `/run` Skill invocations sent in a single message for concurrency.
 
-When Agent Teams is not available BUT the request has parallelism benefit, use parallel Task calls (not `/run`):
+### Fallback to Single /run
+
+Two scenarios where the entire request goes to a single `/run` (no team decomposition):
+
+**1. Agent Teams Unavailable + Not Parallelizable**
+```javascript
+Skill({ skill: "run", args: `${request}` })
+```
+
+**2. Request Unsuitable for Teams** (tier 2, <3 items, all sequential)
+```javascript
+// Notify user: "Request better suited for standard execution. Delegating to /run."
+Skill({ skill: "run", args: `${request}` })
+```
+
+### Without Agent Teams + Parallelizable
+
+When Agent Teams is unavailable but the request IS parallelizable, send parallel `/run` invocations:
 
 ```javascript
-// Instead of spawnTeam(), use parallel Task calls
-const parallelTasks = workItems
-  .filter(item => item.dependencies.length === 0)
-  .map(item => ({
-    subagent_type: `${domain}:${item.assigned_agent}`,
-    description: `Work item: ${item.name}`,
-    prompt: `Execute work item ${item.id}: ${item.description}`
-  }));
-
-// Send all in single message for parallel execution
-// Task tool calls are made in parallel when in same message
+// Parallel /run invocations (sent in single message for concurrency)
+Skill({ skill: "run", args: `implement WI-001: ${item1.description} from team session ${session_id}` })
+Skill({ skill: "run", args: `implement WI-002: ${item2.description} from team session ${session_id}` })
+Skill({ skill: "run", args: `implement WI-003: ${item3.description} from team session ${session_id}` })
 ```
 
 **User notification**:
 ```
-Agent Teams experimental feature not enabled.
-Falling back to parallel Task tool execution.
+Agent Teams not available. Using parallel /run invocations.
 Team features (peer messaging, dynamic task claiming) disabled.
-Parallelism still achieved via concurrent Task invocations.
+Each work item receives full /run orchestration for quality.
 
 To enable full team features:
   export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
@@ -243,11 +237,12 @@ To enable full team features:
 
 ## Key Principles
 
-1. **Feature detection first** - Always check Agent Teams availability
-2. **Graceful degradation** - Fall back to parallel Tasks if unavailable
-3. **Parallelism analysis** - Only use teams when beneficial
-4. **Controller as lead** - Domain controllers become team leads
-5. **Session isolation** - Each team gets its own session folder
+1. **/run for every work item** - Every work item gets full `/run` orchestration, always
+2. **/team for parallelism** - Team mode adds decomposition + parallel distribution on top of `/run`
+3. **Feature detection first** - Check Agent Teams availability for peer messaging
+4. **Graceful degradation** - Without Agent Teams, use parallel `/run` Skill calls
+5. **Controller as lead** - Domain controllers become team leads (delegate only)
+6. **Session isolation** - Each team gets its own session folder
 
 ## Delegation to Team-Lead-Adapter
 

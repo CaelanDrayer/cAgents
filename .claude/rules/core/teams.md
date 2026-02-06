@@ -1,10 +1,13 @@
 # Team Coordination Patterns
 
-Guidelines for Agent Teams parallel execution in cAgents V8.6.
+Guidelines for Agent Teams parallel execution in cAgents V8.7.
 
 ## Overview
 
+**Core Architecture**: `/team` decomposes and parallelizes; `/run` orchestrates each work item.
+
 Agent Teams enables parallel team-based execution with:
+- **Every work item via /run**: Full orchestration (plan, coordinate, execute, validate) per item
 - **Peer-to-peer messaging**: Direct communication between team members
 - **Shared task lists**: Self-claiming work items
 - **Independent contexts**: Each member has isolated context
@@ -13,16 +16,18 @@ Agent Teams enables parallel team-based execution with:
 ## Team Architecture
 
 ```
-Team Lead (Controller in Delegate Mode)
+/team <request>
     │
-    ├── spawnTeam() / parallel Tasks
-    │
-    ├── Member 1 ──┬── Claims WI-001 ──→ Executes ──→ Completes
-    ├── Member 2 ──┼── Claims WI-002 ──→ Executes ──→ Completes
-    ├── Member 3 ──┴── Claims WI-003 ──→ Executes ──→ Completes
-    │                  (parallel)
-    │
-    └── Aggregates results via coordination_log.yaml
+    └── Team Lead (Controller in Delegate Mode)
+        │
+        ├── Decomposes into work items
+        │
+        ├── Member 1 ──→ /run WI-001 ──→ (full orchestration) ──→ Complete
+        ├── Member 2 ──→ /run WI-002 ──→ (full orchestration) ──→ Complete
+        ├── Member 3 ──→ /run WI-003 ──→ (full orchestration) ──→ Complete
+        │                 (parallel /run invocations)
+        │
+        └── Aggregates /run outputs via coordination_log.yaml
 ```
 
 ## When to Use Teams
@@ -102,16 +107,16 @@ spawnTeam({
   ]
 });
 
-// Direct message
+// Assign work — member executes via /run
 SendMessage({
   to: "backend-dev",
-  message: "Work item WI-001 assigned. Check task_list.yaml."
+  message: `Execute WI-001 via: Skill({ skill: "run", args: "implement WI-001: Implement user model from team session ${session_id}" })`
 });
 
 // Broadcast
 SendMessage({
   to: "all",
-  message: "Backend API complete. Frontend can integrate."
+  message: "WI-001 complete via /run. Frontend can integrate."
 });
 
 // Status query
@@ -121,13 +126,13 @@ SendMessage({
 });
 ```
 
-### Without Agent Teams (Fallback)
+### Without Agent Teams (Parallel /run)
 
 ```javascript
-// Parallel Task calls in single message
-Task({ subagent_type: "make:backend-developer", prompt: "WI-001..." })
-Task({ subagent_type: "make:frontend-developer", prompt: "WI-002..." })
-// Both execute in parallel
+// Parallel /run invocations in single message — each gets full orchestration
+Skill({ skill: "run", args: `implement WI-001: Implement user model from team session ${session_id}` })
+Skill({ skill: "run", args: `implement WI-002: Create user form from team session ${session_id}` })
+// Both execute concurrently with full /run orchestration
 ```
 
 ## Shared Task List
@@ -172,7 +177,7 @@ available ──claim──> claimed ──start──> in_progress ──finish
 If Agent Teams is unavailable:
 
 1. **Detection**: team-trigger checks `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`
-2. **Degradation**: Uses parallel Task tool calls instead
+2. **Execution**: Uses parallel `/run` Skill invocations (each work item still gets full orchestration)
 3. **Limitations**:
    - No peer-to-peer messaging
    - No self-claiming (direct assignment only)
@@ -180,9 +185,9 @@ If Agent Teams is unavailable:
 4. **Notification**: User informed of degraded mode
 
 ```
-Agent Teams not available. Using parallel Task execution.
+Agent Teams not available. Using parallel /run invocations.
 Team features (peer messaging, shared tasks) disabled.
-Parallelism still achieved via concurrent Task invocations.
+Each work item receives full /run orchestration for quality.
 ```
 
 ## Performance Targets

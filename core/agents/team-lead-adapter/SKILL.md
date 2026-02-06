@@ -56,14 +56,14 @@ delegate_mode_enforcement:
 1. Receive team context from team-trigger
 2. Load team_manifest.yaml and task_list.yaml
 3. Enter delegate mode (wrap controller behavior)
-4. Distribute initial work items:
-   - Full Teams: Via spawnTeam() member assignment
-   - Fallback: Via parallel Task tool calls
+4. Distribute work items — each executed via /run:
+   - Full Teams: Members claim items, each invokes /run
+   - Without Teams: Parallel /run Skill invocations
 5. Monitor progress:
-   - Full Teams: Poll shared task list
-   - Fallback: Wait for Task results
-6. Handle member questions via peer messaging
-7. Aggregate completed work
+   - Full Teams: Poll shared task list + peer messages
+   - Without Teams: Wait for /run results
+6. Handle member questions via peer messaging (Full Teams only)
+7. Aggregate /run outputs from all work items
 8. Synthesize final deliverables
 9. Write coordination_log.yaml
 10. Signal completion to orchestrator
@@ -71,70 +71,61 @@ delegate_mode_enforcement:
 
 ## Team Communication Patterns
 
+## CRITICAL: Every Work Item Executes via /run
+
+**Every work item gets full `/run` orchestration.** This is the core architecture — not a fallback. `/team` provides parallelism; `/run` provides quality.
+
+```
+/team decomposes → work items → each item → /run → (plan → coordinate → execute → validate)
+```
+
 ### With Agent Teams (Full Mode)
 
+Members are spawned as team agents. Each member invokes `/run` for their claimed work item:
+
 ```javascript
-// Spawn team with members
+// Spawn team
 spawnTeam({
   members: [
-    { name: "backend-dev", type: "make:backend-developer" },
-    { name: "frontend-dev", type: "make:frontend-developer" },
-    { name: "qa", type: "make:qa-tester" }
+    { name: "member-1", type: "general-purpose" },
+    { name: "member-2", type: "general-purpose" },
+    { name: "member-3", type: "general-purpose" }
   ]
 });
 
-// Assign work via SendMessage
+// Assign work — member executes via /run
 SendMessage({
-  to: "backend-dev",
-  message: "Work item WI-001: Implement user model. See task_list.yaml."
+  to: "member-1",
+  message: `You are assigned WI-001: Implement user model.
+    Execute via: Skill({ skill: "run", args: "implement WI-001: Implement user model from team session ${session_id}" })
+    Report results when complete.`
+});
+
+SendMessage({
+  to: "member-2",
+  message: `You are assigned WI-002: Create user form.
+    Execute via: Skill({ skill: "run", args: "implement WI-002: Create user form from team session ${session_id}" })
+    Report results when complete.`
 });
 
 // Query status
-SendMessage({
-  to: "frontend-dev",
-  message: "Status check: What's your progress on WI-002?"
-});
+SendMessage({ to: "member-1", message: "Status check: What's your progress on WI-001?" });
 
-// Broadcast to all
-SendMessage({
-  to: "all",
-  message: "Update: Backend API ready. Frontend can now integrate."
-});
+// Broadcast integration points
+SendMessage({ to: "all", message: "Update: WI-001 complete. WI-003 is now unblocked." });
 ```
 
-### Without Agent Teams (Fallback Mode — Default: /run)
+### Without Agent Teams (Parallel /run Mode)
 
-**CRITICAL**: By default, each work item is executed via `/run` to get full workflow orchestration (controller coordination, quality validation). Direct Task calls to execution agents are only used when `/run` overhead is unnecessary (trivial items, SAFE risk).
+Parallel `/run` Skill invocations sent in a single message:
 
 ```javascript
-// Default: Each work item gets its own /run invocation for full orchestration
-// Parallel /run invocations (sent in single message for concurrency)
+// Each work item gets its own /run — sent in parallel
 Skill({ skill: "run", args: `implement WI-001: Implement user model from team session ${session_id}` })
 Skill({ skill: "run", args: `implement WI-002: Create user form from team session ${session_id}` })
 Skill({ skill: "run", args: `implement WI-003: Write user tests from team session ${session_id}` })
-
-// Alternative: Direct Task calls for trivial/SAFE work items only
-const results = await Promise.all([
-  Task({
-    subagent_type: "make:backend-developer",
-    description: "WI-001: Implement user model",
-    prompt: "..."
-  }),
-  Task({
-    subagent_type: "make:qa-tester",
-    description: "WI-003: Write user tests",
-    prompt: "..."
-  })
-]);
+// All execute concurrently, each with full orchestration
 ```
-
-**Decision criteria for /run vs direct Task**:
-| Work Item Risk | Method | Rationale |
-|---------------|--------|-----------|
-| HIGH/CRITICAL | `/run` via Skill | Full orchestration required |
-| MEDIUM | `/run` via Skill | Coordination + validation beneficial |
-| LOW | `/run` or direct Task | Either works, `/run` preferred |
-| SAFE/trivial | Direct Task | Overhead not warranted |
 
 ## Work Item Distribution
 
@@ -288,36 +279,25 @@ synthesized_solution:
 status: completed
 ```
 
-## /run Escalation for Complex Sub-Tasks
+## /run Output Integration
 
-When a team member encounters a work item that requires full workflow orchestration (CRITICAL risk, multi-phase implementation, architectural decisions), the team lead can escalate it to `/run`:
+Since every work item executes via `/run`, each produces a full session with outputs:
 
-```javascript
-// Team lead escalates a complex work item via /run
-Skill({
-  skill: "run",
-  args: `implement work item ${workItem.id}: ${workItem.description} from team session ${session_id}`
-})
-```
+### Collecting /run Results
 
-**When to escalate to /run**:
-- Work item risk classified as HIGH or CRITICAL
-- Work item requires its own planning/coordination cycle
-- Member reports the task exceeds single-agent capability
-- Work item has cross-cutting concerns spanning multiple domains
-
-**When NOT to escalate** (keep within team):
-- Standard execution work items (SAFE/LOW/MEDIUM risk)
-- Items well-scoped with clear acceptance criteria
-- Items matching member's stated capabilities
-
-### Post-/run Integration
-
-After `/run` completes the escalated work item:
+After each `/run` completes a work item:
 1. Mark the work item as completed in task_list.yaml
-2. Reference `/run` session outputs as evidence
-3. Notify other team members of any integration points
-4. Continue with remaining team work items
+2. Reference the `/run` session outputs as evidence
+3. Notify other team members of any integration points (unblocked dependencies)
+4. Continue with remaining parallel work items
+
+### Cross-Item Dependencies
+
+When WI-002 depends on WI-001's output:
+1. WI-001 completes via `/run` → outputs available
+2. Team lead notifies member assigned to WI-002
+3. WI-002's `/run` invocation includes reference to WI-001's outputs
+4. Sequential items execute in dependency order; independent items stay parallel
 
 ## Error Handling
 
@@ -366,12 +346,12 @@ If team execution partially fails:
 ## Key Principles
 
 1. **Delegate only** - Never do direct implementation work
-2. **/run by default** - Use `/run` via Skill for work items to get full orchestration; direct Task calls only for trivial/SAFE items
-3. **Parallel first** - Maximize concurrent execution
-4. **Self-claiming preferred** - Let members claim matching work (full Teams mode)
-5. **Continuous monitoring** - Track progress, rebalance as needed
-6. **Synthesis at end** - Combine outputs into coherent result
-7. **Escalate when needed** - Complex sub-tasks get their own `/run` workflow
+2. **/run for every work item** - Every work item executes via `/run` for full orchestration — no exceptions
+3. **/team for parallelism** - Team mode adds decomposition + parallel distribution on top of `/run`
+4. **Parallel first** - Maximize concurrent `/run` invocations
+5. **Self-claiming preferred** - Let members claim matching work (full Teams mode)
+6. **Continuous monitoring** - Track progress, rebalance as needed
+7. **Synthesis at end** - Aggregate `/run` outputs into coherent result
 
 ---
 
