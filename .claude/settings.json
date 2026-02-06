@@ -9,12 +9,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -f \"$ROOT/hooks/session/on-session-start.sh\" ]; then \"$ROOT/hooks/session/on-session-start.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/hooks/session/on-session-start.sh\" ]; then \"$ROOT/hooks/session/on-session-start.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -f \"$ROOT/.claude/hooks/session-catchup.cjs\" ]; then node \"$ROOT/.claude/hooks/session-catchup.cjs\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/.claude/hooks/session-catchup.cjs\" ]; then node \"$ROOT/.claude/hooks/session-catchup.cjs\"; else echo \"{\\\"continue\\\":true}\"; fi'",
             "timeout": 5
           }
         ]
@@ -25,7 +25,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -f \"$ROOT/hooks/session/on-session-end.sh\" ]; then \"$ROOT/hooks/session/on-session-end.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/hooks/session/on-session-end.sh\" ]; then \"$ROOT/hooks/session/on-session-end.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
             "timeout": 10
           }
         ]
@@ -36,12 +36,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -f \"$ROOT/hooks/workflow/stop-workflow.sh\" ]; then \"$ROOT/hooks/workflow/stop-workflow.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/hooks/workflow/stop-workflow.sh\" ]; then \"$ROOT/hooks/workflow/stop-workflow.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
             "timeout": 15
           },
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -f \"$ROOT/.claude/hooks/verify-completion.cjs\" ]; then node \"$ROOT/.claude/hooks/verify-completion.cjs\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/.claude/hooks/verify-completion.cjs\" ]; then node \"$ROOT/.claude/hooks/verify-completion.cjs\"; else echo \"{\\\"continue\\\":true}\"; fi'",
             "timeout": 10
           }
         ]
@@ -52,7 +52,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -f \"$ROOT/hooks/workflow/on-workflow-complete.sh\" ]; then \"$ROOT/hooks/workflow/on-workflow-complete.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/hooks/workflow/on-workflow-complete.sh\" ]; then \"$ROOT/hooks/workflow/on-workflow-complete.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
             "timeout": 10
           }
         ]
@@ -63,7 +63,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -f \"$ROOT/hooks/workflow/on-user-prompt.sh\" ]; then \"$ROOT/hooks/workflow/on-user-prompt.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/hooks/workflow/on-user-prompt.sh\" ]; then \"$ROOT/hooks/workflow/on-user-prompt.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
             "timeout": 5
           }
         ]
@@ -75,7 +75,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -f \"$ROOT/hooks/tools/pre-bash.sh\" ]; then \"$ROOT/hooks/tools/pre-bash.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/hooks/tools/pre-bash.sh\" ]; then \"$ROOT/hooks/tools/pre-bash.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
             "timeout": 5
           }
         ]
@@ -85,12 +85,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -f \"$ROOT/hooks/tools/pre-write.sh\" ]; then \"$ROOT/hooks/tools/pre-write.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/hooks/tools/pre-write.sh\" ]; then \"$ROOT/hooks/tools/pre-write.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -f \"$ROOT/.claude/hooks/secret-detection.cjs\" ]; then node \"$ROOT/.claude/hooks/secret-detection.cjs\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/.claude/hooks/secret-detection.cjs\" ]; then node \"$ROOT/.claude/hooks/secret-detection.cjs\"; else echo \"{\\\"continue\\\":true}\"; fi'",
             "timeout": 5
           }
         ]
@@ -100,7 +100,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -f \"$ROOT/hooks/workflow/on-task-start.sh\" ]; then \"$ROOT/hooks/workflow/on-task-start.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/hooks/workflow/on-task-start.sh\" ]; then \"$ROOT/hooks/workflow/on-task-start.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
             "timeout": 5
           }
         ]
@@ -112,7 +112,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -f \"$ROOT/hooks/workflow/on-task-complete.sh\" ]; then \"$ROOT/hooks/workflow/on-task-complete.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/hooks/workflow/on-task-complete.sh\" ]; then \"$ROOT/hooks/workflow/on-task-complete.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
             "timeout": 5
           }
         ]
@@ -123,7 +123,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -f \"$ROOT/.claude/hooks/pre-compact-save.cjs\" ]; then node \"$ROOT/.claude/hooks/pre-compact-save.cjs\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/.claude/hooks/pre-compact-save.cjs\" ]; then node \"$ROOT/.claude/hooks/pre-compact-save.cjs\"; else echo \"{\\\"continue\\\":true}\"; fi'",
             "timeout": 10
           }
         ]
@@ -134,7 +134,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -f \"$ROOT/.claude/hooks/notification.cjs\" ]; then node \"$ROOT/.claude/hooks/notification.cjs\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/.claude/hooks/notification.cjs\" ]; then node \"$ROOT/.claude/hooks/notification.cjs\"; else echo \"{\\\"continue\\\":true}\"; fi'",
             "timeout": 5
           }
         ]
