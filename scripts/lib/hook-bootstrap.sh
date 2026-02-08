@@ -218,6 +218,17 @@ if [[ "$USING_FALLBACKS" == "true" ]]; then
 fi
 
 # ============================================
+# HOOK SAFETY: Reset strict mode after library loading
+# ============================================
+# core.sh sets 'set -euo pipefail' which is appropriate for scripts but
+# dangerous for hooks. Hooks MUST always produce valid JSON output, even
+# on error. Disable errexit (-e) and nounset (-u) so that unset variables
+# or non-zero returns don't cause silent failures with no JSON output.
+# Individual hooks can re-enable strict mode if they want, but the safe
+# default for hooks is to be lenient.
+set +eu 2>/dev/null || true
+
+# ============================================
 # SHARED HELPERS
 # ============================================
 

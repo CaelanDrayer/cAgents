@@ -126,8 +126,12 @@ cleanup_temp_files() {
   CAGENTS_TEMP_FILES=()
 }
 
-# Register cleanup on exit
-trap cleanup_temp_files EXIT
+# Register cleanup on exit, but only if no EXIT trap is already set.
+# Hook scripts set their own EXIT trap for JSON output resilience;
+# unconditionally overwriting it here would break hook error handling.
+if [[ -z "$(trap -p EXIT 2>/dev/null)" ]]; then
+    trap cleanup_temp_files EXIT
+fi
 
 #######################################
 # Safe file delete (idempotent)

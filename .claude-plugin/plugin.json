@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "9.1.1",
+  "version": "9.1.2",
   "description": "Universal multi-domain agent system with 236 specialized agents. V9.0 features: Skills system (.claude/skills/ auto-discovery), 14 hook event types with shell+JS dual architecture, opusplan model routing, enhanced PreCompact waypoints with coordination state. Agent Teams integration for parallel team-based execution (40-60% time reduction). CSV-based task inventory (60-80% context savings). Controller-centric question-based delegation across 5 super-domains. Minimum tier 2 enforcement. Parallel execution (50x speedup).",
   "author": {
     "name": "CaelanDrayer",

@@ -1,20 +1,21 @@
 #!/bin/bash
 # cAgents Stop Workflow Hook
 # Graceful workflow termination with cleanup
-# Version: 2.1.0
+# Version: 2.2.0
 #
 # Input (stdin): JSON with session_id, reason, cwd, etc.
 # Output (stdout): JSON response with continue flag
 # Exit 2 to block stop (force Claude to continue)
 
-# CRITICAL: Always output valid JSON on any failure
-trap 'echo "{\"continue\":true}" >&3 2>/dev/null || echo "{\"continue\":true}"; exit 0' ERR EXIT
-
-set -o pipefail
-
 # ALL output goes to stderr except final JSON
 exec 3>&1
 exec 1>&2
+
+set -o pipefail
+
+# CRITICAL: Always output valid JSON on any failure.
+# This trap must be set AFTER fd 3 is created (exec 3>&1 above).
+trap 'echo "{\"continue\":true}" >&3 2>/dev/null || echo "{\"continue\":true}"; exit 0' ERR EXIT
 
 # shellcheck source=../../scripts/lib/hook-init.sh
 _HOOK_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)" || _HOOK_SCRIPT_DIR="."
@@ -30,6 +31,14 @@ else
     yaml_update_field() { :; }
     readonly CAGENTS_AGENT_MEMORY_DIR="Agent_Memory"
 fi
+
+# CRITICAL: Re-establish safety trap after sourcing libraries.
+# files.sh sets 'trap cleanup_temp_files EXIT' which overwrites our trap.
+# core.sh sets 'set -euo pipefail' which makes the hook fragile.
+# Restore our resilient settings here.
+trap 'echo "{\"continue\":true}" >&3 2>/dev/null || echo "{\"continue\":true}"; exit 0' ERR EXIT
+set +eu  # Disable errexit and nounset from core.sh — hooks must never fail silently
+set -o pipefail
 
 main() {
     hook_init
