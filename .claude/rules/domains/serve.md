@@ -1,3 +1,8 @@
+---
+paths:
+  - "serve/**"
+---
+
 # Serve Domain Guidelines
 
 Domain-specific patterns for customer experience, legal, and compliance workflows.

@@ -1,6 +1,7 @@
 ---
 name: optimize
 description: "Universal optimizer with 5-phase workflow, 8 optimization types, parallel execution, atomic rollback, and cross-file analysis. Detects, measures, plans, executes atomically, and validates with before/after metrics."
+argument-hint: "[<target>] [--type <type>] [--dry-run] [--interactive] [--rollback]"
 user-invocable: true
 context: fork
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite

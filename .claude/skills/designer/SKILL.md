@@ -1,6 +1,7 @@
 ---
 name: designer
 description: "Interactive design engine that transforms ideas into implementation-ready design documents through structured 4-phase exploration with artifact generation, pattern recommendations, and validation."
+argument-hint: "[<topic>] [--resume <id>] [--template <name>]"
 user-invocable: true
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite, AskUserQuestion
 ---

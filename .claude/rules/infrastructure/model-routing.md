@@ -1,3 +1,10 @@
+---
+paths:
+  - ".cagents/**"
+  - "**/config/*.yaml"
+  - "**/agents/**/SKILL.md"
+---
+
 # Model Routing Guidelines
 
 Project-level model routing configuration for cAgents V9.0.

@@ -1,6 +1,6 @@
 # cAgents Release Notes
 
-**Current Version**: 9.3.2
+**Current Version**: 9.4.1
 **Release Date**: February 7, 2026
 **Status**: Production-Ready
 
@@ -8,7 +8,12 @@
 
 ## Version History
 
-- [v9.3.2](#v932---february-7-2026) - Consistency fixes (Current)
+- [v9.4.1](#v941---february-7-2026) - Hook corrections + context optimization (Current)
+- [v9.4.0](#v940---february-7-2026) - Skill improvements from comprehensive review
+- [v9.3.5](#v935---february-7-2026) - Remove non-functional context-overflow hook
+- [v9.3.4](#v934---february-7-2026) - Hook reliability fixes
+- [v9.3.3](#v933---february-7-2026) - Final consistency pass
+- [v9.3.2](#v932---february-7-2026) - Consistency fixes
 - [v9.3.1](#v931---february-7-2026) - Skills path + stop hook fixes
 - [v9.3.0](#v930---february-7-2026) - /helper skill + frontmatter fixes
 - [v9.2.0](#v920---february-7-2026) - Built-in Agent Teams migration
@@ -18,6 +23,64 @@
 - [v9.0.0](#v900---february-7-2026) - Platform Alignment Edition
 
 ---
+
+## v9.4.1 - February 7, 2026
+
+**Theme**: Hook correctness + context optimization + skill UX.
+
+**Hook Fixes (7 categories)**:
+- Fixed shell hook ERR EXIT trap pattern causing potential double JSON output (8 hooks)
+- Fixed PreToolUse hooks using exit 2 instead of exit 0 with deny JSON (pre-bash.sh, pre-write.sh, secret-detection.cjs)
+- Fixed SubagentStart hook using wrong input fields (`subagent_type` -> `agent_type`/`agent_id`)
+- Fixed TaskCompleted hook using wrong input fields (now uses `task_subject`, `task_description`, `teammate_name`)
+- Fixed TeammateIdle hook using wrong fallback field (`agent_name` -> `teammate_name` only)
+- Updated hook dispatcher comments to reflect correct exit code semantics
+- Unified version across all 14 manifest/config/settings files to 9.4.1
+
+**Context Optimization (77% token reduction)**:
+- Added path-specific YAML frontmatter to 13 rules files for conditional loading
+- Rules now only load when working in relevant directories (e.g., hooks.md only for hook files)
+- Always-loaded: orchestration, controllers, execution, shared-questions, agent-memory, completion
+
+**Skill UX**:
+- Added `argument-hint` frontmatter to all 6 skills for better command-line discovery
+
+**Documentation**:
+- Updated hooks.md exit code docs (exit 0 + deny JSON, not exit 2)
+- Updated RELEASE_NOTES.md with v9.3.3 through v9.4.1 entries
+
+## v9.4.0 - February 7, 2026
+
+**Theme**: Skill improvements from comprehensive review.
+
+- Fixed /run domain terminology (Engineering/Creative/Revenue -> Make/Grow/Operate)
+- Fixed /review self-recursive delegation (was delegating to itself via cagents:review)
+- Marked /optimize --continuous mode as planned/not-yet-implemented
+- Added /helper self-reference section and updated overview tables
+- Fixed .gitignore blocking all reference/ directories (tracked 23 skill reference files)
+- Added --resume flag to /run for session continuation
+- Added error handling section to /run
+
+## v9.3.5 - February 7, 2026
+
+**Theme**: Remove non-functional context-overflow hook.
+
+- Removed context-overflow.cjs registration (ContextOverflow not a valid hook type)
+- Cleaned up references in hooks.md and README.md
+
+## v9.3.4 - February 7, 2026
+
+**Theme**: Hook reliability - double JSON output, missing paths, permissions.
+
+- Fixed hooks producing duplicate JSON output on error paths
+- Fixed missing session path resolution in stop-workflow.sh
+- Fixed env var priority in hook-utils.cjs
+
+## v9.3.3 - February 7, 2026
+
+**Theme**: Final consistency pass - all versions, counts, docs unified.
+
+- Unified all version references to 9.3.3
 
 ## v9.3.2 - February 7, 2026
 

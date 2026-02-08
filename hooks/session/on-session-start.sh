@@ -9,7 +9,7 @@
 
 # CRITICAL: Always output valid JSON on any failure
 # This ensures hooks don't break Claude Code when running as a plugin
-trap 'echo "{\"continue\":true}" >&3 2>/dev/null || echo "{\"continue\":true}"; exit 0' ERR EXIT
+trap 'echo "{\"continue\":true}" >&3 2>/dev/null || echo "{\"continue\":true}"; exit 0' ERR
 
 # Strict mode but don't exit on error - hooks should be resilient
 set -o pipefail
@@ -67,7 +67,7 @@ EOF
 
     # Output success JSON to original stdout (fd 3)
     # Claude Code expects: { continue: bool, systemMessage?: string }
-    trap - ERR EXIT  # Clear trap before normal exit
+    trap - ERR  # Clear trap before normal exit
     echo '{"continue":true,"systemMessage":"cAgents session initialized"}' >&3
     exit 0
 }

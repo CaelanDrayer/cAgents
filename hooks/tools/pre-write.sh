@@ -5,10 +5,10 @@
 #
 # Input (stdin): JSON with tool_name, tool_input (file_path, content, etc.)
 # Output (stdout): JSON with hookSpecificOutput for PreToolUse
-# Exit 0 = allow, Exit 2 = block
+# Exit 0 with permissionDecision: "deny" = block, Exit 0 with no JSON or "allow" = allow
 
 # CRITICAL: Always output valid JSON on any failure
-trap 'echo "{\"continue\":true}" >&3 2>/dev/null || echo "{\"continue\":true}"; exit 0' ERR EXIT
+trap 'echo "{\"continue\":true}" >&3 2>/dev/null || echo "{\"continue\":true}"; exit 0' ERR
 
 set -o pipefail
 
@@ -60,10 +60,11 @@ main() {
             log_error "Blocked write to protected path: $file_path"
             local safe_path
             safe_path=$(json_escape "$file_path")
-            trap - ERR EXIT  # Clear trap before intentional block exit
+            # Use exit 0 with permissionDecision: "deny" per Claude Code docs.
+            # Exit 2 would ignore JSON; exit 0 with deny JSON is the correct approach.
+            trap - ERR
             cat >&3 <<EOF
 {
-  "continue": false,
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
     "permissionDecision": "deny",
@@ -71,7 +72,7 @@ main() {
   }
 }
 EOF
-            exit 2
+            exit 0
         fi
     done
 
@@ -113,7 +114,7 @@ EOF
         echo '{"continue":true}' >&3
     fi
 
-    trap - ERR EXIT
+    trap - ERR
     exit 0
 }
 

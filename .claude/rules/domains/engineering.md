@@ -1,3 +1,10 @@
+---
+paths:
+  - "make/**"
+  - "core/**"
+  - "shared/**"
+---
+
 # Engineering Domain Guidelines
 
 Domain-specific patterns for engineering workflows.

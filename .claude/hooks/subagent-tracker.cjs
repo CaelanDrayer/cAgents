@@ -93,11 +93,12 @@ async function main() {
   try {
     const now = new Date().toISOString();
 
-    // Extract agent info from input
-    const subagentType = input.subagent_type || input.tool_input?.subagent_type || 'unknown';
-    const description = (input.description || input.tool_input?.description || '').slice(0, 100);
-    const parentAgent = input.parent_agent || input.agent_name || 'root';
-    const agentId = `agent_${Date.now()}`;
+    // Extract agent info from SubagentStart input
+    // Per Claude Code docs: SubagentStart provides agent_id and agent_type
+    const subagentType = input.agent_type || 'unknown';
+    const agentId = input.agent_id || `agent_${Date.now()}`;
+    const description = (input.description || '').slice(0, 100);
+    const parentAgent = input.parent_agent || 'root';
 
     const sessionDir = findActiveSession();
     if (!sessionDir) {

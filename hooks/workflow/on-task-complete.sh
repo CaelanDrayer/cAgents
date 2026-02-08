@@ -7,7 +7,7 @@
 # Output (stdout): JSON response
 
 # CRITICAL: Always output valid JSON on any failure
-trap 'echo "{\"continue\":true}" >&3 2>/dev/null || echo "{\"continue\":true}"; exit 0' ERR EXIT
+trap 'echo "{\"continue\":true}" >&3 2>/dev/null || echo "{\"continue\":true}"; exit 0' ERR
 
 set -o pipefail
 
@@ -39,7 +39,7 @@ main() {
         log_info "Task completed for workflow: $active_instruction"
     fi
 
-    trap - ERR EXIT
+    trap - ERR
     echo '{"continue":true}' >&3
     exit 0
 }

@@ -1,3 +1,8 @@
+---
+paths:
+  - "operate/**"
+---
+
 # Operate Domain Guidelines
 
 Domain-specific patterns for finance and operations workflows.

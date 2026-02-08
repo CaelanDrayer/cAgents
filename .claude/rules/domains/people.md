@@ -1,3 +1,8 @@
+---
+paths:
+  - "people/**"
+---
+
 # People Domain Guidelines
 
 Domain-specific patterns for HR and talent workflows.

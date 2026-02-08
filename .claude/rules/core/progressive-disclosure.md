@@ -1,3 +1,9 @@
+---
+paths:
+  - "**/agents/**/*.md"
+  - "**/agents/**/SKILL.md"
+---
+
 # Progressive Disclosure Pattern
 
 V8.0 three-tier loading strategy for token optimization.

@@ -69,7 +69,8 @@ async function main() {
   const input = await readStdin();
 
   try {
-    const teammateName = input.teammate_name || input.agent_name || 'teammate';
+    // Per Claude Code docs: TeammateIdle provides teammate_name and team_name
+    const teammateName = input.teammate_name || 'teammate';
 
     const sessionDir = findTeamSession();
     if (!sessionDir) {

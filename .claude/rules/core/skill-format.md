@@ -1,3 +1,10 @@
+---
+paths:
+  - "**/agents/**/*.md"
+  - "**/agents/**/SKILL.md"
+  - ".claude/skills/**"
+---
+
 # SKILL.md Agent Format Specification
 
 V9.0 agent format based on official Claude Code SKILL.md specification.

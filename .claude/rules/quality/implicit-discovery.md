@@ -1,3 +1,9 @@
+---
+paths:
+  - "core/agents/universal-planner/**"
+  - "core/agents/task-decomposer/**"
+---
+
 # Implicit Requirement Discovery
 
 When users provide abstract requests, the system fills in the blanks on their behalf.

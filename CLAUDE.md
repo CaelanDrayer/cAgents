@@ -841,4 +841,4 @@ See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 **Directories**: 7 (core, shared, make, grow, operate, people, serve)
 **Key Innovation**: CSV-based task inventory for large workflows + aggressive decomposition
 **Dependencies**: None (file-based, self-contained)
-**Version**: 9.3.3
+**Version**: 9.4.1

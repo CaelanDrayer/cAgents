@@ -8,7 +8,7 @@
 # Exit 0 = allow, Exit 2 = block
 
 # CRITICAL: Always output valid JSON on any failure
-trap 'echo "{\"continue\":true}" >&3 2>/dev/null || echo "{\"continue\":true}"; exit 0' ERR EXIT
+trap 'echo "{\"continue\":true}" >&3 2>/dev/null || echo "{\"continue\":true}"; exit 0' ERR
 
 set -o pipefail
 
@@ -84,7 +84,7 @@ EOF
         echo '{"continue":true}' >&3
     fi
 
-    trap - ERR EXIT
+    trap - ERR
     exit 0
 }
 

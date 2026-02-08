@@ -1,3 +1,8 @@
+---
+paths:
+  - "grow/**"
+---
+
 # Grow Domain Guidelines
 
 Domain-specific patterns for marketing and sales workflows.

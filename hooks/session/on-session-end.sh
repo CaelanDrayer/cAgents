@@ -8,7 +8,7 @@
 # All logging MUST go to stderr
 
 # CRITICAL: Always output valid JSON on any failure
-trap 'echo "{\"continue\":true}" >&3 2>/dev/null || echo "{\"continue\":true}"; exit 0' ERR EXIT
+trap 'echo "{\"continue\":true}" >&3 2>/dev/null || echo "{\"continue\":true}"; exit 0' ERR
 
 set -o pipefail
 
@@ -50,7 +50,7 @@ main() {
         log_info "Archived session to $archive_name"
     fi
 
-    trap - ERR EXIT  # Clear trap before normal exit
+    trap - ERR  # Clear trap before normal exit
     echo '{"continue":true}' >&3
     exit 0
 }

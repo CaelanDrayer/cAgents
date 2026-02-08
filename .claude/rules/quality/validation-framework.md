@@ -1,3 +1,9 @@
+---
+paths:
+  - "core/agents/universal-validator/**"
+  - "core/agents/universal-executor/**"
+---
+
 # Completion Validation Framework
 
 End-to-end traceability from "what is done" definition to completion verification.

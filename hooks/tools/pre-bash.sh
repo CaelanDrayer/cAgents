@@ -5,10 +5,10 @@
 #
 # Input (stdin): JSON with tool_name, tool_input (command, description, timeout)
 # Output (stdout): JSON with hookSpecificOutput for PreToolUse
-# Exit 0 = allow, Exit 2 = block
+# Exit 0 with permissionDecision: "deny" = block, Exit 0 with no JSON or "allow" = allow
 
 # CRITICAL: Always output valid JSON on any failure
-trap 'echo "{\"continue\":true}" >&3 2>/dev/null || echo "{\"continue\":true}"; exit 0' ERR EXIT
+trap 'echo "{\"continue\":true}" >&3 2>/dev/null || echo "{\"continue\":true}"; exit 0' ERR
 
 set -o pipefail
 
@@ -43,7 +43,7 @@ main() {
     local normalized_command
     normalized_command=$(echo "$command" | tr '\t' ' ' | tr -s ' ')
 
-    # Define dangerous patterns that are BLOCKED (exit 2)
+    # Define dangerous patterns that are BLOCKED (deny via JSON on exit 0)
     local blocked_patterns=(
         "rm -rf /"
         "rm -rf ~"
@@ -60,10 +60,11 @@ main() {
             block_reason="Blocked dangerous command: ${pattern}"
             log_warn "$block_reason"
             block_reason=$(json_escape "$block_reason")
-            trap - ERR EXIT  # Clear trap before intentional block exit
+            # Use exit 0 with permissionDecision: "deny" per Claude Code docs.
+            # Exit 2 would ignore JSON; exit 0 with deny JSON is the correct approach.
+            trap - ERR
             cat >&3 <<EOF
 {
-  "continue": false,
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
     "permissionDecision": "deny",
@@ -71,7 +72,7 @@ main() {
   }
 }
 EOF
-            exit 2
+            exit 0
         fi
     done
 
@@ -103,7 +104,7 @@ EOF
         echo '{"continue":true}' >&3
     fi
 
-    trap - ERR EXIT
+    trap - ERR
     exit 0
 }
 

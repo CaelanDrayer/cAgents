@@ -1,6 +1,7 @@
 ---
 name: run
 description: "Universal workflow engine entry point. Delegates all requests to the trigger agent for full multi-agent orchestration with controller coordination."
+argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--resume <session_id>]"
 user-invocable: true
 context: fork
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite

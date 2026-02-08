@@ -1,3 +1,11 @@
+---
+paths:
+  - "core/agents/team-*/**"
+  - ".claude/skills/team/**"
+  - ".claude/hooks/team-*.cjs"
+  - ".claude/hooks/teammate-*.cjs"
+---
+
 # Team Coordination Patterns
 
 Guidelines for parallel team execution in cAgents V9.2 using Claude Code's built-in agent teams.

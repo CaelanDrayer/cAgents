@@ -209,16 +209,16 @@ async function main() {
         .map(f => `- ${f.type} (line ${f.line}): ${f.redacted}`)
         .join('\n');
 
+      // Use exit 0 with permissionDecision: "deny" per Claude Code docs.
+      // Exit 2 would ignore stdout JSON; exit 0 with deny JSON is the correct approach.
       console.error(`[SecretDetection] BLOCKED: Found ${allSignificant.length} secret(s) in ${filePath}`);
       console.log(JSON.stringify({
-        continue: false,
         hookSpecificOutput: {
           hookEventName: 'PreToolUse',
           permissionDecision: 'deny',
           permissionDecisionReason: `Secret detected in file content:\n${findingsList}\n\nRemove secrets before writing. Use environment variables or .env files instead.`
         }
       }));
-      process.exit(2);
     }
 
     if (findings.medium.length > 0) {

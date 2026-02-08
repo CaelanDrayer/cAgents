@@ -1,3 +1,11 @@
+---
+paths:
+  - ".claude/hooks/**"
+  - "hooks/**"
+  - "scripts/hook-dispatch*"
+  - ".claude/settings*.json"
+---
+
 # cAgents Hook System
 
 V9.0 hook system with 14 hook event types and 3 hook types (command, prompt, agent).
@@ -7,7 +15,7 @@ V9.0 hook system with 14 hook event types and 3 hook types (command, prompt, age
 cAgents uses a dual-hook system configured in `.claude/settings.json`:
 
 - **Shell hooks** (`hooks/`): 9 scripts for session lifecycle, workflow events, and tool validation. These are the baseline hooks that work without Node.js. Shared functions (`get_active_instruction`, `get_active_phase`, `get_session_field`) are provided by `scripts/lib/hook-bootstrap.sh`.
-- **JavaScript hooks** (`.claude/hooks/`): 14 `.cjs` files — 1 shared utility module (`hook-utils.cjs`) + 12 registered hooks for advanced features (session catchup, secret detection, completion verification, pre-compact state save, notifications, tool failure tracking, subagent tracking, teammate idle handling, permission handling, team task completion, team start, team stop). Plus 1 standalone CLI tool (`eval-runner.cjs`). All CJS hooks import shared functions from `hook-utils.cjs`.
+- **JavaScript hooks** (`.claude/hooks/`): 15 `.cjs` files — 1 shared utility module (`hook-utils.cjs`) + 12 registered hooks for advanced features (session catchup, secret detection, completion verification, pre-compact state save, notifications, tool failure tracking, subagent tracking, teammate idle handling, permission handling, team task completion, team start, team stop). Plus 1 standalone CLI tool (`eval-runner.cjs`) and 1 unregistered hook (`context-overflow.cjs` - awaiting Claude Code support for ContextOverflow hook type). All CJS hooks import shared functions from `hook-utils.cjs`.
 - **Hook dispatchers** (`scripts/`): `hook-dispatch.sh` and `hook-dispatch-node.sh` simplify settings.json registration by eliminating verbose bash-in-JSON wrappers.
 - **Prompt hooks**: 2 prompt-based hooks inject guidance at SessionStart and Stop events.
 
@@ -56,7 +64,7 @@ The `setup.sh` script auto-detects Node.js and configures the appropriate settin
 - **File**: `hooks/tools/pre-bash.sh`
 - **Matcher**: `Bash`
 - **Purpose**: Validate bash commands, block dangerous operations
-- **Blocked** (exit 2): `rm -rf /`, `rm -rf ~`, fork bombs, `mkfs`, `dd if=/dev/zero`, `> /dev/sda`, `sudo`
+- **Blocked** (exit 0, deny JSON): `rm -rf /`, `rm -rf ~`, fork bombs, `mkfs`, `dd if=/dev/zero`, `> /dev/sda`, `sudo`
 - **Warned** (allow): destructive git commands (`--force`, `reset --hard`, `clean -fd`)
 
 #### PreToolUse: Write/Edit
@@ -151,8 +159,8 @@ Hooks output JSON to stdout:
 
 ### Exit Codes
 
-- `0`: Success, continue
-- `2`: Block operation (for PreToolUse)
+- `0`: Success — JSON parsed from stdout. Use `permissionDecision: "deny"` in hookSpecificOutput to block PreToolUse operations.
+- `2`: Blocking error — Claude Code ignores stdout JSON and feeds stderr to the model. Use only for fatal errors, NOT for PreToolUse deny (use exit 0 + deny JSON instead).
 
 ## Prompt-Based Hooks
 

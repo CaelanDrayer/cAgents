@@ -1,6 +1,7 @@
 ---
 name: team
 description: "Parallel team-based workflow execution using Claude Code's built-in agent teams with tmux split pane display. Decomposes work and parallelizes via teammates running /run, with shared task lists and inter-agent messaging."
+argument-hint: "<request> [--dry-run] [--members <n>] [--display] [--teammate-mode tmux|auto|in-process]"
 user-invocable: true
 context: fork
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite, TeamCreate, TaskCreate, TaskUpdate, TaskList, SendMessage

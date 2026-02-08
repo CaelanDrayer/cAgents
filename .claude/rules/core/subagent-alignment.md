@@ -1,3 +1,9 @@
+---
+paths:
+  - "core/agents/**"
+  - ".claude/skills/**"
+---
+
 # Built-in Subagent Alignment
 
 Alignment between cAgents subagent types and official Claude Code Task tool patterns.

@@ -1,6 +1,7 @@
 ---
 name: helper
 description: "Interactive command guide that explains cAgents skills and recommends the right command for the user's needs. Provides in-depth explanations, usage examples, comparison tables, and guided recommendation through structured questioning."
+argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--topic <topic>]"
 user-invocable: true
 allowed-tools: Read, Grep, Glob, Bash, TodoWrite
 ---

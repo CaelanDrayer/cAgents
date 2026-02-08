@@ -69,19 +69,32 @@ function findTeamSession() {
 }
 
 /**
- * Extract work item ID from task description or prompt
+ * Extract work item ID from TaskCompleted input
+ * Per Claude Code docs: TaskCompleted provides task_id, task_subject, task_description
  */
 function extractWorkItemId(input) {
-  const description = input.tool_input?.description || '';
-  const prompt = input.tool_input?.prompt || '';
-  const combined = `${description} ${prompt}`;
+  // First try task_subject for WI-XXX pattern (TaskCompleted hook input)
+  const subject = input.task_subject || '';
+  const description = input.task_description || '';
+  const combined = `${subject} ${description}`;
 
   // Look for WI-XXX pattern
   const match = combined.match(/WI-(\d+)/i);
   if (match) return `WI-${match[1]}`;
 
+  // Fall back to task_id if no WI pattern found
+  if (input.task_id) return input.task_id;
+
+  // Legacy support: check tool_input fields (for PostToolUse Task events)
+  const legacyDesc = input.tool_input?.description || '';
+  const legacyPrompt = input.tool_input?.prompt || '';
+  const legacyCombined = `${legacyDesc} ${legacyPrompt}`;
+
+  const legacyMatch = legacyCombined.match(/WI-(\d+)/i);
+  if (legacyMatch) return `WI-${legacyMatch[1]}`;
+
   // Look for work_item_id in prompt
-  const idMatch = combined.match(/work_item_id:\s*["']?([^"'\s]+)/i);
+  const idMatch = legacyCombined.match(/work_item_id:\s*["']?([^"'\s]+)/i);
   if (idMatch) return idMatch[1];
 
   return null;
@@ -219,12 +232,10 @@ async function main() {
   const input = await readStdin();
 
   try {
-    // Only process Task tool completions
-    if (input.tool_name !== 'Task') {
-      console.log(JSON.stringify({ continue: true }));
-      return;
-    }
-
+    // TaskCompleted hook fires when a task is marked as completed.
+    // Per Claude Code docs: provides task_id, task_subject, task_description,
+    // and optionally teammate_name, team_name.
+    // Skip if no team session is active.
     const sessionDir = findTeamSession();
 
     if (!sessionDir) {
@@ -233,7 +244,7 @@ async function main() {
       return;
     }
 
-    // Extract work item ID
+    // Extract work item ID from task subject/description
     const workItemId = extractWorkItemId(input);
     if (!workItemId) {
       // Not a work item task
@@ -241,9 +252,8 @@ async function main() {
       return;
     }
 
-    // Extract member name from subagent_type
-    const subagentType = input.tool_input?.subagent_type || '';
-    const memberName = subagentType.split(':').pop() || 'unknown';
+    // Extract member name from TaskCompleted input or legacy subagent_type
+    const memberName = input.teammate_name || (input.tool_input?.subagent_type || '').split(':').pop() || 'unknown';
 
     // Update task list
     const result = updateTaskList(sessionDir, workItemId, memberName, input.tool_output);
