@@ -775,7 +775,7 @@ context_conscious_mode:
 1. Write ALL current state to files immediately
 2. Create a waypoint checkpoint
 3. Summarize remaining work as a compact resume plan
-4. If context overflows, the `context-overflow.cjs` hook saves an exhaustion checkpoint
+4. If context overflows, the `pre-compact-save.cjs` hook saves a waypoint checkpoint
 
 ### Phase-Level Checkpointing (Waypoints)
 

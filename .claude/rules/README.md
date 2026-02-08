@@ -108,7 +108,7 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 Documents all 14 Claude Code hook event types with cAgents implementations:
 - SessionStart, SessionEnd, Stop, SubagentStop
 - PreToolUse, PostToolUse, UserPromptSubmit
-- Notification, PreCompact, PermissionRequest, Error, ContextOverflow
+- Notification, PreCompact, PermissionRequest, Error
 
 New hooks added:
 - `session-catchup.js` - Detect and offer resume for incomplete sessions

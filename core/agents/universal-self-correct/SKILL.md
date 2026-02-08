@@ -10,7 +10,7 @@ capabilities:
   - coordination_correction
   - auto_recovery
   - pattern_learning
-  - context_overflow_recovery
+  - subagent_recovery
 tools: ["Read","Grep","Glob","Write","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
@@ -70,19 +70,19 @@ Adaptive recovery specialist for all domains.
 3. **Learn from patterns**: Update calibration data
 4. **Graceful escalation**: When blocked, provide full context
 
-## Context Overflow Recovery
+## Subagent Incomplete Recovery
 
-When a subagent exhausts its context window mid-task:
+When a subagent fails to complete its assigned work:
 
 ### Detection Signals
 - Subagent returns with incomplete work (partial outputs, missing deliverables)
-- Checkpoint/waypoint file exists with `type: exhaustion` or `type: critical`
+- Checkpoint/waypoint file exists with `type: pre_compact`
 - coordination_log.yaml has work items still `in_progress` or `pending`
 - Task tool returns truncated or missing results
 
 ### Recovery Workflow
 
-1. **Load checkpoint**: Read `waypoints/` or `checkpoint.yaml` from failed agent's session
+1. **Load checkpoint**: Read `waypoints/` from failed agent's session
 2. **Assess remaining work**: Compare completed vs. pending work items from checkpoint
 3. **Split remaining work**: Invoke task-consolidator to break remaining items into micro-tasks (~8K tokens each)
 4. **Spawn micro-tasks**: Launch each micro-task as independent subagent via Task tool
@@ -104,5 +104,4 @@ Target **8K tokens per micro-task** (fits comfortably in any context window):
 - **If exceeded**: Escalate to HITL with full checkpoint and progress summary
 - **Each continuation inherits**: checkpoint, partial outputs, remaining acceptance criteria
 
-See @resources/context-recovery-patterns.md for detailed recovery strategies.
 See @resources/self-correct-patterns.md for correction strategies.

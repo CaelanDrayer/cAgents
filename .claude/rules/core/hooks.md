@@ -7,7 +7,7 @@ V9.0 hook system with 14 hook event types and 3 hook types (command, prompt, age
 cAgents uses a dual-hook system configured in `.claude/settings.json`:
 
 - **Shell hooks** (`hooks/`): 9 scripts for session lifecycle, workflow events, and tool validation. These are the baseline hooks that work without Node.js. Shared functions (`get_active_instruction`, `get_active_phase`, `get_session_field`) are provided by `scripts/lib/hook-bootstrap.sh`.
-- **JavaScript hooks** (`.claude/hooks/`): 15 `.cjs` files — 1 shared utility module (`hook-utils.cjs`) + 12 registered hooks for advanced features (session catchup, secret detection, completion verification, pre-compact state save, notifications, tool failure tracking, subagent tracking, teammate idle handling, permission handling, team task completion, team start, team stop). Plus 1 standalone CLI tool (`eval-runner.cjs`) and 1 unregistered hook (`context-overflow.cjs` - awaiting Claude Code support for ContextOverflow hook type). All CJS hooks import shared functions from `hook-utils.cjs`.
+- **JavaScript hooks** (`.claude/hooks/`): 14 `.cjs` files — 1 shared utility module (`hook-utils.cjs`) + 12 registered hooks for advanced features (session catchup, secret detection, completion verification, pre-compact state save, notifications, tool failure tracking, subagent tracking, teammate idle handling, permission handling, team task completion, team start, team stop). Plus 1 standalone CLI tool (`eval-runner.cjs`). All CJS hooks import shared functions from `hook-utils.cjs`.
 - **Hook dispatchers** (`scripts/`): `hook-dispatch.sh` and `hook-dispatch-node.sh` simplify settings.json registration by eliminating verbose bash-in-JSON wrappers.
 - **Prompt hooks**: 2 prompt-based hooks inject guidance at SessionStart and Stop events.
 
@@ -108,14 +108,6 @@ The `setup.sh` script auto-detects Node.js and configures the appropriate settin
 - **Purpose**: Detect incomplete sessions on startup
 - **Outputs**: Resume options to user
 - **Creates**: `Agent_Memory/_system/incomplete_sessions.json`
-
-#### Context Overflow (NOT REGISTERED - awaiting Claude Code support)
-- **File**: `.claude/hooks/context-overflow.cjs`
-- **Status**: NOT REGISTERED - "ContextOverflow" is not a valid Claude Code hook type
-- **Purpose**: Save exhaustion checkpoint when context limit is reached, trigger self-correction
-- **Creates**: Waypoint at `sessions/{id}/waypoints/wp-exhaustion-{timestamp}.yaml` and `continuation_needed.yaml`
-- **Recovery**: System message directs agent to invoke `universal-self-correct` with `correction_type: context_overflow`
-- **Note**: This hook exists but cannot be registered until Claude Code adds a ContextOverflow or similar hook type
 
 #### Eval Runner (CLI Tool, not a registered hook)
 - **File**: `.claude/hooks/eval-runner.cjs`

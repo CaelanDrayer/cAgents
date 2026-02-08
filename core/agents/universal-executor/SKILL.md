@@ -84,7 +84,7 @@ When a controller or execution agent exhausts its context:
 2. **Read checkpoint**: Load `waypoints/` for the failed agent's state
 3. **Count continuations**: Track in `execution_state.yaml` (field: `continuation_count`)
 4. **If continuations < 5**: Invoke `universal-self-correct` with:
-   - `correction_type: context_overflow`
+   - `correction_type: subagent_incomplete`
    - `checkpoint_path: waypoints/wp-NNN.yaml`
    - `remaining_work_items: [list from checkpoint]`
 5. **If continuations >= 5**: Escalate to HITL

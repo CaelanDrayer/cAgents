@@ -63,12 +63,12 @@ Context optimization specialist for large tasks.
 - **Context safety**: No agent exceeds 8K
 - **Graceful failure**: One micro-task failure doesn't block entire task
 
-## Context Overflow Splitting
+## Work Item Splitting
 
-When invoked by `universal-self-correct` after context exhaustion:
+When invoked by `universal-self-correct` after subagent incomplete work:
 
 ### Input
-- `checkpoint_path`: Path to exhaustion waypoint
+- `checkpoint_path`: Path to waypoint
 - `remaining_work_items`: List of incomplete work items
 - `original_task_description`: What was being attempted
 
