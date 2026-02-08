@@ -1,10 +1,11 @@
 {
-  "$comment": "Full hooks configuration - cAgents V9.0 - requires Node.js for advanced features",
+  "$comment": "Full hooks configuration - cAgents V9.2 - requires Node.js for advanced features",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
+  "teammateMode": "tmux",
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CAGENTS_VERSION": "9.0.0"
+    "CAGENTS_VERSION": "9.2.0"
   },
   "permissions": {
     "allow": [

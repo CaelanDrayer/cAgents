@@ -1,16 +1,17 @@
 # Team Coordination Patterns
 
-Guidelines for parallel team execution in cAgents V9.1.
+Guidelines for parallel team execution in cAgents V9.2 using Claude Code's built-in agent teams.
 
 ## Overview
 
-**Core Architecture**: `/team` decomposes and parallelizes via **tmux split panes**; `/run` orchestrates each work item.
+**Core Architecture**: `/team` decomposes and parallelizes using **Claude Code's built-in agent teams**; `/run` orchestrates each work item.
 
 Team Mode enables parallel execution with:
-- **tmux split panes**: Each work item runs in its own tmux pane, all visible simultaneously in a tiled layout
+- **Built-in agent teams**: TeamCreate, SendMessage, TaskCreate/TaskList for coordination
+- **teammateMode: tmux**: Each teammate in its own tmux split pane (managed by Claude Code)
 - **Every work item via /run**: Full orchestration (plan, coordinate, execute, validate) per item
-- **Shared task lists**: Track work item progress and dependencies
-- **Independent contexts**: Each tmux pane has isolated context
+- **Shared task lists**: Built-in TaskCreate/TaskList at `~/.claude/tasks/{team-name}/`
+- **Independent contexts**: Each teammate has its own context window
 - **Team leads**: Controllers operate in delegate mode
 
 ## Team Architecture
@@ -18,16 +19,54 @@ Team Mode enables parallel execution with:
 ```
 /team <request>
     |
-    +-- team-trigger (decomposes, creates tmux session with split panes)
+    +-- team-trigger (decomposes, creates agent team via TeamCreate)
         |
-        +-- tmux pane 0: Team Lead (monitors progress)
-        +-- tmux pane 1: claude /run WI-001 --> (full orchestration) --> Complete
-        +-- tmux pane 2: claude /run WI-002 --> (full orchestration) --> Complete
-        +-- tmux pane 3: claude /run WI-003 --> (full orchestration) --> Complete
-        |                    (parallel in split panes -- all visible at once)
+        +-- Team Lead (coordinates via SendMessage, manages TaskList)
+        +-- Teammate 1: /run WI-001 --> (full orchestration) --> Complete
+        +-- Teammate 2: /run WI-002 --> (full orchestration) --> Complete
+        +-- Teammate 3: /run WI-003 --> (full orchestration) --> Complete
+        |                    (parallel -- each in own context/tmux pane)
         |
         +-- Aggregates /run outputs via coordination_log.yaml
 ```
+
+## Built-in Agent Teams
+
+cAgents uses Claude Code's built-in agent teams feature, which provides:
+
+| Tool | Purpose |
+|------|---------|
+| **TeamCreate** | Create team with shared task list |
+| **TeamDelete** | Clean up team and task resources |
+| **TaskCreate** | Create work items as shared tasks |
+| **TaskUpdate** | Update task status, set owner, manage dependencies |
+| **TaskList** | View all tasks and their status |
+| **TaskGet** | Read full task details |
+| **SendMessage** | Direct messaging between lead and teammates |
+
+Key behaviors:
+- Teammate messages arrive automatically (no polling)
+- Idle notifications sent when teammates finish turns
+- File-lock based task claiming prevents race conditions
+- Team config at `~/.claude/teams/{team-name}/config.json`
+- Task list at `~/.claude/tasks/{team-name}/`
+
+## Display Modes (teammateMode)
+
+| Mode | Behavior | Requirements |
+|------|----------|--------------|
+| `"auto"` (default) | tmux if inside tmux session, otherwise in-process | None |
+| `"tmux"` | Force tmux split panes -- each teammate in own pane | tmux installed |
+| `"in-process"` | All teammates in main terminal (Shift+Up/Down) | None |
+
+Configure in settings.json:
+```json
+{
+  "teammateMode": "tmux"
+}
+```
+
+Per-session: `claude --teammate-mode tmux`
 
 ## When to Use Teams
 
@@ -59,54 +98,73 @@ disqualified:
   tier: 2 with items < 4
 ```
 
-## Execution Method Priority
+## Team Lifecycle
 
 ```
-1. tmux (default) - Create tmux session with split panes, one pane per work item, each runs claude /run
-2. Agent Teams API - If CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1, use spawnTeam/SendMessage
-3. Parallel /run - Fallback: parallel Skill invocations in single message
+1. TeamCreate -- create team and shared task list
+2. TaskCreate -- create work items as shared tasks
+3. Spawn teammates -- Claude creates teammate instances
+4. SendMessage -- assign work, coordinate
+5. TaskList/TaskUpdate -- track progress
+6. Aggregate -- synthesize results
+7. SendMessage (shutdown_request) -- shut down teammates
+8. TeamDelete -- clean up resources
 ```
 
-## tmux Execution (Primary Method)
+### Team Creation
 
-### Session Creation with Split Panes
-
-```bash
-# Create tmux session (detached) -- first pane is the team lead
-tmux new-session -d -s "cagents-team-${SESSION_ID}"
-
-# Split into panes for each work item
-tmux split-window -t "cagents-team-${SESSION_ID}"
-tmux split-window -t "cagents-team-${SESSION_ID}"
-tmux split-window -t "cagents-team-${SESSION_ID}"
-
-# Apply tiled layout so all panes are evenly sized and visible at once
-tmux select-layout -t "cagents-team-${SESSION_ID}" tiled
+```javascript
+TeamCreate({
+  team_name: "cagents-team-{session_id}",
+  description: "Parallel execution of {request}"
+})
 ```
 
-### Work Item Execution
+### Task Distribution
 
-```bash
-# Launch claude /run in each pane (pane 0 = team lead, panes 1+ = work items)
-tmux send-keys -t "cagents-team-${SESSION_ID}.1" \
-  "claude --print '/run implement WI-001: Implement user model from team session ${SESSION_ID}'" Enter
+```javascript
+// Create tasks for each work item
+TaskCreate({
+  subject: "WI-001: Implement user model",
+  description: "Execute via /run: ...",
+  activeForm: "Implementing user model"
+})
 
-tmux send-keys -t "cagents-team-${SESSION_ID}.2" \
-  "claude --print '/run implement WI-002: Create user form from team session ${SESSION_ID}'" Enter
+// Set dependencies
+TaskUpdate({ taskId: "3", addBlockedBy: ["1"] })
 ```
 
-### Monitoring
+### Teammate Communication
 
-```bash
-# List all panes and their running processes
-tmux list-panes -t "cagents-team-${SESSION_ID}" -F "#{pane_index} #{pane_pid} #{pane_current_command}"
+```javascript
+// Assign work
+SendMessage({
+  type: "message",
+  recipient: "teammate-1",
+  content: "Execute WI-001 via /run. Report when complete.",
+  summary: "Assigning WI-001"
+})
+
+// Broadcast update (use sparingly)
+SendMessage({
+  type: "broadcast",
+  content: "WI-001 complete. WI-003 now unblocked.",
+  summary: "WI-001 done, WI-003 available"
+})
+
+// Shut down teammate
+SendMessage({
+  type: "shutdown_request",
+  recipient: "teammate-1",
+  content: "All work complete."
+})
 ```
 
 ### Cleanup
 
-```bash
-# After all work items complete
-tmux kill-session -t "cagents-team-${SESSION_ID}"
+```javascript
+// After all teammates shut down:
+TeamDelete()
 ```
 
 ## Team Lead (Controller) Behavior
@@ -117,11 +175,13 @@ Team leads ONLY coordinate. They NEVER implement.
 
 ```yaml
 allowed_actions:
-  - Distribute work items to members
-  - Monitor tmux pane progress / task list
-  - Request status from members
-  - Synthesize member outputs
+  - Distribute work items to teammates via SendMessage
+  - Monitor task list progress via TaskList
+  - Request status from teammates via SendMessage
+  - Synthesize teammate outputs
   - Write coordination_log.yaml
+  - Shut down teammates via SendMessage (shutdown_request)
+  - Clean up team via TeamDelete
 
 prohibited_actions:
   - Edit/Write implementation files
@@ -130,111 +190,35 @@ prohibited_actions:
   - Skip delegation for "simple" tasks
 ```
 
-### Work Distribution
+### Work Distribution Strategies
 
-1. Team lead analyzes work items and dependencies
-2. Creates tmux panes for each parallelizable work item
-3. Launches `claude /run` in each pane
-4. Monitors completion and handles dependencies
-5. Aggregates results
+**Self-Claiming (Preferred)**: Teammates check TaskList and claim available tasks after completing current work. Built-in file-lock prevents race conditions.
 
-## Agent Teams Mode (Alternative)
-
-When `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` and Agent Teams is preferred:
-
-```javascript
-// Spawn team
-spawnTeam({
-  members: [
-    { name: "backend-dev", type: "make:backend-developer" },
-    { name: "frontend-dev", type: "make:frontend-developer" }
-  ]
-});
-
-// Assign work -- member executes via /run
-SendMessage({
-  to: "backend-dev",
-  message: `Execute WI-001 via: Skill({ skill: "run", args: "implement WI-001: Implement user model from team session ${session_id}" })`
-});
-
-// Broadcast
-SendMessage({
-  to: "all",
-  message: "WI-001 complete via /run. Frontend can integrate."
-});
-```
+**Direct Assignment**: Lead assigns tasks to specific teammates via TaskUpdate (set owner) and SendMessage.
 
 ## Shared Task List
 
-```yaml
-# team/task_list.yaml
-task_list:
-  summary:
-    total: 8
-    available: 2
-    in_progress: 3
-    completed: 2
-
-  items:
-    - id: WI-001
-      name: "Implement user model"
-      status: completed
-      tmux_pane: 1
-      completed_at: "2026-02-06T14:40:00Z"
-
-    - id: WI-002
-      status: in_progress
-      tmux_pane: 2
-      progress: 60%
-
-    - id: WI-003
-      status: available
-      dependencies: [WI-001]  # Now unblocked
-```
-
-### Status Transitions
+Tasks managed via built-in tools with these states:
 
 ```
-available --> in_progress --> completed
-                  |
-                  +--> blocked
+pending --> in_progress --> completed
 ```
+
+Dependencies: Use `addBlockedBy` in TaskUpdate. Blocked tasks auto-unblock when dependencies complete.
 
 ## Fallback Behavior
-
-### Execution Method Detection
-
-```bash
-# Priority 1: tmux (default)
-command -v tmux >/dev/null 2>&1
-
-# Priority 2: Agent Teams API
-CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS === '1'
-
-# Priority 3: Parallel /run (always available)
-```
-
-### When tmux is Unavailable
-
-1. **Check Agent Teams**: If env var set, use Agent Teams with peer messaging
-2. **Final fallback**: Parallel `/run` Skill invocations (each work item still gets full orchestration)
-3. **Limitations** (parallel /run mode):
-   - No peer-to-peer messaging
-   - No visual parallelism
-   - Sequential result aggregation
-4. **Notification**: User informed of degraded mode
-
-```
-tmux and Agent Teams not available. Using parallel /run invocations.
-Team features (split pane visual parallelism, peer messaging) disabled.
-Each work item receives full /run orchestration for quality.
-```
 
 ### Unsuitable Request Fallback
 
 If the request is unsuitable for team execution (tier 2, too few work items, all sequential):
 1. Notify user: "Request better suited for standard execution."
 2. Automatically delegate to `/run` for standard orchestration.
+
+### Display Mode Fallback
+
+- `"auto"` mode: Automatically falls back to in-process if not inside tmux
+- `"tmux"` mode: Requires tmux installed; in-process if unavailable
+- `"in-process"`: Works in any terminal
 
 ## Performance Targets
 
@@ -248,31 +232,34 @@ If the request is unsuitable for team execution (tier 2, too few work items, all
 
 ```
 Agent_Memory/sessions/team_{timestamp}/
-├── instruction.yaml
-├── status.yaml
-├── team/
-│   ├── team_manifest.yaml    # Team composition + execution method
-│   ├── task_list.yaml        # Shared work items
-│   ├── messages/             # Communication log (Agent Teams mode)
-│   └── metrics/
-│       ├── timing.yaml
-│       └── parallelism.yaml
-├── workflow/
-│   ├── plan.yaml
-│   ├── decomposition.yaml
-│   └── coordination_log.yaml
-└── outputs/
++-- instruction.yaml
++-- status.yaml
++-- team/
+|   +-- team_manifest.yaml    # Team composition + display mode
+|   +-- messages/             # Communication log
+|   +-- metrics/
+|       +-- timing.yaml
+|       +-- parallelism.yaml
++-- workflow/
+|   +-- plan.yaml
+|   +-- decomposition.yaml
+|   +-- coordination_log.yaml
++-- outputs/
 ```
+
+Built-in resources (managed by Claude Code):
+- Team config: `~/.claude/teams/{team-name}/config.json`
+- Task list: `~/.claude/tasks/{team-name}/`
 
 ## Error Handling
 
-### Member Failure
-- Log warning
-- Reassign work item (create new tmux pane)
-- If no recovery possible: mark item blocked
+### Teammate Failure
+- Send status query via SendMessage
+- If unresponsive: spawn replacement teammate
+- Reassign work item
 
 ### Deadlock Detection
-- Detect circular dependencies
+- Detect circular dependencies via TaskList
 - Break cycle by sequentializing
 - Warn about degraded parallelism
 
@@ -283,10 +270,10 @@ Agent_Memory/sessions/team_{timestamp}/
 
 ## Integration Points
 
-- **team-trigger**: Initializes team, creates tmux session with split panes, checks availability
-- **team-lead-adapter**: Wraps controller in delegate mode, monitors tmux panes
+- **team-trigger**: Creates team via TeamCreate, initializes session
+- **team-lead-adapter**: Wraps controller in delegate mode, uses SendMessage/TaskList
 - **orchestrator**: Detects team mode, routes appropriately
-- **Hooks**: team-start.cjs, team-stop.cjs, team-task-complete.cjs
+- **Hooks**: team-start.cjs, team-stop.cjs, team-task-complete.cjs, teammate-idle-handler.cjs
 
 ## Configuration
 
@@ -297,10 +284,9 @@ team_mode:
   min_work_items: 3
   max_team_size: 8
   prefer_teams_for_tiers: [3, 4]
-  fallback_parallel_tasks: true
-  execution_method: tmux    # tmux (default) | agent_teams | parallel_tasks
+  teammate_mode: tmux    # auto | tmux | in-process
 ```
 
 ---
 
-**Part of**: cAgents Core Infrastructure - Parallel Team Execution
+**Part of**: cAgents Core Infrastructure - Built-in Agent Teams Integration

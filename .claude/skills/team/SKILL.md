@@ -1,40 +1,54 @@
 ---
 name: team
-description: "Parallel team-based workflow execution using tmux split panes. Decomposes work and parallelizes via /run in split panes for true visual parallelism and 40-60% execution time reduction on tier 3+ workflows."
+description: "Parallel team-based workflow execution using Claude Code's built-in agent teams with tmux split pane display. Decomposes work and parallelizes via teammates running /run, with shared task lists and inter-agent messaging."
 user-invocable: true
 context: fork
 agent: true
-allowedTools: ["Read", "Grep", "Glob", "Write", "Bash", "Task", "TodoWrite", "SendMessage"]
+allowedTools: ["Read", "Grep", "Glob", "Write", "Bash", "Task", "TodoWrite", "TeamCreate", "TaskCreate", "TaskUpdate", "TaskList", "SendMessage"]
 ---
 
-# /team - Parallel Team Execution via tmux Split Panes
+# /team - Parallel Team Execution via Built-in Agent Teams
 
 You are a **minimal delegation layer** that initializes team-based execution for parallelizable workflows. Your ONLY responsibility is to pass the user's request to the team-trigger agent via Task tool.
 
-DO NOT execute ANY logic directly. The team-trigger agent handles team initialization, tmux session setup, and orchestration.
+DO NOT execute ANY logic directly. The team-trigger agent handles team initialization, teammate spawning, and orchestration.
 
 ## Core Architecture
 
-`/team` decomposes and parallelizes using **tmux split panes**; `/run` orchestrates each work item. Every team member runs in its own tmux pane within a single session, executing `/run` for its assigned work item. This provides true visual parallelism -- you can watch all agents working simultaneously in a single split view.
+`/team` uses **Claude Code's built-in agent teams** to coordinate multiple Claude Code instances working in parallel. Each teammate runs in its own context window, executing `/run` for its assigned work item. When `teammateMode` is set to `"tmux"`, each teammate gets its own tmux split pane for true visual parallelism.
 
 ```
 /team <request>
     |
-    +-- team-trigger (decomposes, creates tmux session with split panes)
+    +-- team-trigger (decomposes, creates agent team via TeamCreate)
         |
-        +-- tmux pane 0: Team Lead (monitors progress)
-        +-- tmux pane 1: claude /run WI-001 --> (full orchestration) --> Complete
-        +-- tmux pane 2: claude /run WI-002 --> (full orchestration) --> Complete
-        +-- tmux pane 3: claude /run WI-003 --> (full orchestration) --> Complete
-        |                    (parallel in split panes -- all visible at once)
+        +-- Team Lead (coordinates via SendMessage, manages shared TaskList)
+        +-- Teammate 1: /run WI-001 --> (full orchestration) --> Complete
+        +-- Teammate 2: /run WI-002 --> (full orchestration) --> Complete
+        +-- Teammate 3: /run WI-003 --> (full orchestration) --> Complete
+        |                    (parallel -- each in own context/tmux pane)
         |
         +-- Aggregates /run outputs into final result
 ```
 
+## Built-in Agent Teams
+
+This command uses Claude Code's **built-in agent teams feature** (not custom tmux scripting). Key components:
+
+- **TeamCreate**: Creates the team with a shared task list
+- **SendMessage**: Teammates communicate directly with each other and the lead
+- **TaskCreate/TaskUpdate/TaskList**: Shared task list that all teammates can access
+- **teammateMode**: Display mode configured in settings.json
+  - `"auto"` (default): Uses tmux split panes if running inside tmux, otherwise in-process
+  - `"tmux"`: Forces tmux split pane display -- each teammate in its own pane, all visible at once
+  - `"in-process"`: All teammates in main terminal, navigate with Shift+Up/Down
+
+The team lead is the main session. Teammates are separate Claude Code instances that load project context (CLAUDE.md, skills, MCP servers) automatically.
+
 ## Argument Handling
 
 Parse `$ARGUMENTS` for:
-- **Flags**: `--parallel`, `--dry-run`, `--display`, `--quiet`/`-q`
+- **Flags**: `--parallel`, `--dry-run`, `--display`, `--quiet`/`-q`, `--teammate-mode <mode>`
 - **Value flags**: `--lead <agent>`, `--members <N>`, `--domain <domain>`, `--tier <N>`
 - **Request**: Everything before the first `--` flag
 
@@ -48,8 +62,8 @@ When the user runs `/team <request> [flags]`:
 2. **Create TodoWrite** for user visibility:
    ```
    - Initialize team and analyze parallelism (in_progress)
-   - Create tmux session with split panes for members (pending)
-   - Execute parallel /run tasks in tmux panes (pending)
+   - Create agent team and spawn teammates (pending)
+   - Execute parallel /run tasks via teammates (pending)
    - Aggregate results and validate (pending)
    ```
 3. **Invoke team-trigger** via Task tool with request + flags
@@ -66,73 +80,73 @@ Task({
     Flags: {flags}
     Mode: team_execution
 
-    Initialize team workflow:
+    Initialize team workflow using built-in agent teams:
     1. Analyze request for parallelizable work items
     2. Select team lead (controller)
-    3. Create tmux session with split panes for each team member
-    4. Launch claude /run in each tmux pane for each work item
-    5. Monitor tmux panes for completion
-    6. Aggregate results from all /run sessions
+    3. Create agent team via TeamCreate
+    4. Create shared tasks via TaskCreate for each work item
+    5. Spawn teammates -- each executes /run for their assigned work item
+    6. Monitor via TaskList and teammate messages
+    7. Aggregate results from all /run sessions
 
     Session: Agent_Memory/sessions/team_{YYYYMMDD_HHMMSS}/
   `
 })
 ```
 
-## tmux Execution Model
+## Agent Team Execution Model
 
-### Session Creation with Split Panes
+### Team Creation
 
-The team-trigger creates a tmux session named `cagents-team-{session_id}` with split panes (one pane per work item), all visible simultaneously in a tiled layout:
+The team-trigger creates an agent team using Claude Code's built-in TeamCreate:
 
-```bash
-# Create tmux session (detached) -- first pane is the team lead
-tmux new-session -d -s "cagents-team-${SESSION_ID}"
-
-# Split into panes for each work item (tiled layout keeps all visible)
-tmux split-window -t "cagents-team-${SESSION_ID}"
-tmux split-window -t "cagents-team-${SESSION_ID}"
-tmux split-window -t "cagents-team-${SESSION_ID}"
-
-# Apply tiled layout so all panes are evenly sized and visible
-tmux select-layout -t "cagents-team-${SESSION_ID}" tiled
+```javascript
+TeamCreate({
+  team_name: "cagents-team-{session_id}",
+  description: "Parallel execution of {request}"
+})
 ```
 
-### Work Item Execution via /run
+### Task Distribution
 
-Each tmux pane launches a `claude` CLI instance with `/run`:
+Work items are created as shared tasks that teammates claim and execute:
 
-```bash
-# In each pane, launch claude with /run for the work item
-# Pane 0 is the team lead monitor; panes 1+ are work items
-tmux send-keys -t "cagents-team-${SESSION_ID}.1" \
-  "claude --print '/run implement WI-001: Implement user model from team session ${SESSION_ID}'" Enter
-
-tmux send-keys -t "cagents-team-${SESSION_ID}.2" \
-  "claude --print '/run implement WI-002: Create user form from team session ${SESSION_ID}'" Enter
+```javascript
+TaskCreate({
+  subject: "WI-001: Implement user model",
+  description: "Execute via /run: implement WI-001...",
+  activeForm: "Implementing user model"
+})
 ```
 
-### Monitoring
+### Teammate Communication
 
-The team lead pane (pane 0) monitors all work item panes:
+The lead and teammates communicate via SendMessage:
 
-```bash
-# List all panes and their running processes
-tmux list-panes -t "cagents-team-${SESSION_ID}" -F "#{pane_index} #{pane_pid} #{pane_current_command}"
+```javascript
+// Lead assigns work to a teammate
+SendMessage({
+  type: "message",
+  recipient: "backend-dev",
+  content: "Execute WI-001: Implement user model via /run",
+  summary: "Assigning WI-001 to backend-dev"
+})
+
+// Broadcast status update
+SendMessage({
+  type: "broadcast",
+  content: "WI-001 complete. WI-003 is now unblocked.",
+  summary: "WI-001 complete, WI-003 unblocked"
+})
 ```
 
-### Cleanup
+### tmux Split Pane Display
 
-After all work items complete:
-
-```bash
-# Kill the tmux session
-tmux kill-session -t "cagents-team-${SESSION_ID}"
-```
+When `teammateMode: "tmux"` is set in settings.json (or the user is already in a tmux session with `"auto"` mode), each teammate gets its own tmux pane. All panes are visible simultaneously in a tiled layout. No manual tmux scripting is needed -- Claude Code manages the panes automatically.
 
 ## CRITICAL: Team Members Default to /run
 
-**Every team member uses `/run` to complete their work item.** This is not optional -- it is the default and only execution path. `/run` provides full orchestration (controller coordination, specialist execution, quality validation) for each work item. `/team` provides the parallelism layer via tmux; `/run` provides the quality layer per item.
+**Every team member uses `/run` to complete their work item.** This is not optional -- it is the default and only execution path. `/run` provides full orchestration (controller coordination, specialist execution, quality validation) for each work item. `/team` provides the parallelism layer via agent teams; `/run` provides the quality layer per item.
 
 ## When to Use /team vs /run
 
@@ -161,13 +175,13 @@ This ensures no request falls through -- unsuitable team requests seamlessly con
 
 **This command NEVER does:**
 - Team composition (team-trigger does this)
-- tmux session management (team-trigger does this)
-- Work item distribution (team-lead-adapter does this)
-- Parallel execution (tmux split panes with /run do this)
+- Agent team creation (team-trigger does this via TeamCreate)
+- Work item distribution (team-lead-adapter does this via SendMessage)
+- Parallel execution (teammates do this, each running /run)
 - Result aggregation (team lead does this)
 
 See @reference/architecture.md for team execution model details.
-See @reference/fallback-behavior.md for fallback patterns when tmux is unavailable.
+See @reference/fallback-behavior.md for fallback patterns.
 
 ## Performance Targets
 
@@ -179,17 +193,27 @@ See @reference/fallback-behavior.md for fallback patterns when tmux is unavailab
 
 ## Configuration
 
-Project-level override (`.cagents/team_config.yaml`):
+### settings.json (teammateMode)
+
+```json
+{
+  "teammateMode": "tmux"
+}
+```
+
+Options: `"auto"` (default), `"tmux"` (force split panes), `"in-process"` (all in main terminal).
+
+### Project-level override (`.cagents/team_config.yaml`):
+
 ```yaml
 team_mode:
   enabled: true
   min_work_items: 3
   max_team_size: 8
   prefer_teams_for_tiers: [3, 4]
-  fallback_parallel_tasks: true
-  execution_method: tmux    # tmux (default) | agent_teams | parallel_tasks
+  teammate_mode: tmux    # auto | tmux | in-process
 ```
 
 ---
 
-**Key Innovation**: `/team` decomposes and parallelizes via tmux split panes; each member runs `/run` for full orchestration per work item. True visual parallelism with all panes visible at once.**
+**Key Innovation**: `/team` uses Claude Code's built-in agent teams with tmux split pane display; each teammate runs `/run` for full orchestration per work item. Real visual parallelism with shared task lists and inter-agent messaging.

@@ -1,8 +1,8 @@
 ---
 name: team-trigger
 tier: infrastructure
-description: "Team initialization agent that checks Agent Teams availability, detects team suitability, initializes team sessions, and generates Claude Code team configurations."
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+description: "Team initialization agent that creates Claude Code agent teams via built-in TeamCreate, analyzes parallelism, spawns teammates, and manages shared task lists for parallel work item execution."
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task","TeamCreate","TaskCreate","TaskUpdate","TaskList","SendMessage"]
 model: sonnet
 color: bright_cyan
 domain: core
@@ -18,30 +18,31 @@ permissionMode: "bypassPermissions"
 
 # Team Trigger
 
-**Role**: Team initialization and orchestration entry point for parallel team-based execution.
+**Role**: Team initialization and orchestration entry point for parallel team-based execution using Claude Code's built-in agent teams.
 
 ## Core Responsibilities
 
-1. Check tmux availability and Agent Teams env var
-2. Analyze request for parallelizable work items
-3. Detect team suitability (tier 3+, multiple independent items)
-4. Select appropriate team lead (controller)
-5. Create tmux session with split panes for parallel execution
-6. Initialize team session structure
-7. Launch `claude /run` in each tmux pane for work items
-8. Monitor tmux panes for completion and aggregate results
+1. Analyze request for parallelizable work items
+2. Detect team suitability (tier 3+, multiple independent items)
+3. Select appropriate team lead (controller)
+4. Create agent team via **TeamCreate** (built-in Claude Code feature)
+5. Create shared tasks via **TaskCreate** for each work item
+6. Spawn teammates that each execute `/run` for their assigned work item
+7. Configure tmux split pane display mode
+8. Monitor via TaskList and teammate messages, aggregate results
 
-## Execution Method Priority
+## Built-in Agent Teams
 
-```
-1. tmux (default) - Create tmux session with split panes, one pane per work item, each runs claude /run
-2. Agent Teams API - If CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1, use spawnTeam/SendMessage
-3. Parallel /run - Fallback: parallel Skill invocations in single message
-```
+This agent uses Claude Code's **built-in agent teams** instead of manual tmux scripting. The built-in system provides:
 
-**tmux available**: Create tmux session `cagents-team-{session_id}` with split panes per work item
-**Agent Teams available**: Use spawnTeam() API with peer messaging
-**Neither available**: Parallel `/run` Skill invocations
+- **TeamCreate**: Creates a team with shared task list at `~/.claude/tasks/{team-name}/`
+- **SendMessage**: Direct messaging between teammates and lead
+- **TaskCreate/TaskUpdate/TaskList**: Shared task coordination with dependency tracking
+- **teammateMode**: Display mode (`"auto"`, `"tmux"`, `"in-process"`) configured in settings.json
+- **Automatic context loading**: Teammates load CLAUDE.md, skills, and MCP servers automatically
+- **File-lock based task claiming**: Prevents race conditions when multiple teammates claim tasks
+
+When `teammateMode` is `"tmux"` (or `"auto"` inside a tmux session), each teammate gets its own tmux split pane managed by Claude Code -- no manual tmux commands needed.
 
 ## Team Suitability Analysis
 
@@ -66,92 +67,85 @@ team_suitability_criteria:
 
 ```
 1. Receive request from /team command
-2. Check execution method availability (tmux > Agent Teams > parallel /run)
-3. Analyze request:
+2. Analyze request:
    - Route through universal-router for tier classification
    - Route through universal-planner for decomposition
    - Analyze work items for parallelism
-4. If team unsuitable: fall back to standard /run via Skill({skill: "run", args: "{request}"})
-5. Select team lead based on domain
-6. Initialize session structure
-7. Execute based on available method:
-   a. tmux: Create tmux session with split panes, launch claude /run in each pane
-   b. Agent Teams: spawnTeam() with members, each invokes /run
-   c. Parallel: Send parallel /run Skill invocations
-8. Monitor progress and aggregate results
+3. If team unsuitable: fall back to standard /run via Skill({skill: "run", args: "{request}"})
+4. Select team lead based on domain
+5. Initialize session structure in Agent_Memory/
+6. Create agent team via TeamCreate:
+   TeamCreate({
+     team_name: "cagents-team-{session_id}",
+     description: "Parallel execution of {request}"
+   })
+7. Create shared tasks via TaskCreate for each work item
+8. Spawn teammates -- each receives instructions to execute /run for their work item
+9. Monitor progress via TaskList and automatic message delivery
+10. Aggregate results when all tasks complete
+11. Clean up team via TeamDelete
 ```
 
-## tmux Execution (Primary Method)
+## Team Creation
 
-### Session Creation with Split Panes
+### Step 1: Create the Agent Team
 
-```bash
-# Check tmux availability
-command -v tmux >/dev/null 2>&1
-
-# Create tmux session (detached) -- first pane is the team lead
-tmux new-session -d -s "cagents-team-${SESSION_ID}"
-
-# Split into panes for each work item
-tmux split-window -t "cagents-team-${SESSION_ID}"
-tmux split-window -t "cagents-team-${SESSION_ID}"
-tmux split-window -t "cagents-team-${SESSION_ID}"
-
-# Apply tiled layout so all panes are evenly sized and visible at once
-tmux select-layout -t "cagents-team-${SESSION_ID}" tiled
+```javascript
+TeamCreate({
+  team_name: "cagents-team-{session_id}",
+  description: "Parallel execution: {request}"
+})
 ```
 
-### Work Item Execution
+This creates:
+- Team config at `~/.claude/teams/cagents-team-{session_id}/config.json`
+- Task list at `~/.claude/tasks/cagents-team-{session_id}/`
 
-```bash
-# Launch claude /run in each pane (pane 0 = team lead, panes 1+ = work items)
-tmux send-keys -t "cagents-team-${SESSION_ID}.1" \
-  "claude --print '/run implement WI-001: Implement user model from team session ${SESSION_ID}'" Enter
+### Step 2: Create Shared Tasks
 
-tmux send-keys -t "cagents-team-${SESSION_ID}.2" \
-  "claude --print '/run implement WI-002: Create user form from team session ${SESSION_ID}'" Enter
+For each work item from the decomposition:
+
+```javascript
+TaskCreate({
+  subject: "WI-001: Implement user model",
+  description: "Execute via /run: implement user model with password_hash field. Acceptance criteria: model exists, migration created, tests pass.",
+  activeForm: "Implementing user model"
+})
+
+TaskCreate({
+  subject: "WI-002: Create user registration form",
+  description: "Execute via /run: create registration form with validation. Acceptance criteria: form renders, validation works, responsive.",
+  activeForm: "Creating registration form"
+})
 ```
 
-### Monitoring
+### Step 3: Spawn Teammates
 
-```bash
-# List all panes and their running processes
-tmux list-panes -t "cagents-team-${SESSION_ID}" -F "#{pane_index} #{pane_pid} #{pane_current_command}"
+Tell Claude to create teammates. Each teammate receives instructions to claim tasks and execute them via `/run`:
+
+```
+Create a team with {N} teammates to work on these items in parallel.
+Each teammate should claim an available task from the task list and
+execute it via /run. Use the /run skill for full orchestration of
+each work item.
 ```
 
-### Cleanup
+For specific teammate guidance:
 
-```bash
-# After all work items complete
-tmux kill-session -t "cagents-team-${SESSION_ID}"
+```javascript
+SendMessage({
+  type: "message",
+  recipient: "teammate-1",
+  content: "Claim WI-001 from the task list and execute via: Skill({skill: 'run', args: 'implement WI-001: Implement user model from team session {session_id}'}). Report results when complete.",
+  summary: "Assigning WI-001 to teammate-1"
+})
 ```
 
-## Team Configuration Generation
+### Step 4: Monitor and Aggregate
 
-Generate team manifest for the session:
-
-```yaml
-# team/team_manifest.yaml
-team:
-  name: "cagents-team-{session_id}"
-  execution_method: tmux  # tmux | agent_teams | parallel_tasks
-  lead:
-    controller: "{domain}:{controller_name}"
-    mode: delegate
-  members:
-    - name: "wi-001"
-      work_item: "WI-001"
-      description: "{item_description}"
-      tmux_pane: 1
-    - name: "wi-002"
-      work_item: "WI-002"
-      description: "{item_description}"
-      tmux_pane: 2
-  shared_context:
-    session_dir: "Agent_Memory/sessions/team_{timestamp}/"
-    plan_file: "workflow/plan.yaml"
-    task_list: "team/task_list.yaml"
-```
+- Teammates send messages automatically when they complete work
+- Use TaskList to check progress
+- Teammates can self-claim unblocked tasks after completing their current one
 
 ## Team Lead Selection
 
@@ -193,77 +187,62 @@ parallelism_analysis:
     parallelism_score: 0.7  # 70% items can run in parallel
 ```
 
+## Team Configuration Generation
+
+Generate team manifest for the session:
+
+```yaml
+# team/team_manifest.yaml
+team:
+  name: "cagents-team-{session_id}"
+  execution_method: built_in_agent_teams
+  teammate_mode: tmux  # auto | tmux | in-process
+  lead:
+    controller: "{domain}:{controller_name}"
+    mode: delegate
+  members:
+    - name: "teammate-1"
+      work_item: "WI-001"
+      description: "{item_description}"
+    - name: "teammate-2"
+      work_item: "WI-002"
+      description: "{item_description}"
+  shared_context:
+    session_dir: "Agent_Memory/sessions/team_{timestamp}/"
+    plan_file: "workflow/plan.yaml"
+```
+
 ## Session Initialization
 
 Create team session structure:
 
 ```bash
 Agent_Memory/sessions/team_{YYYYMMDD_HHMMSS}/
-├── instruction.yaml          # User request + flags
-├── status.yaml               # Current phase
-├── team/
-│   ├── team_manifest.yaml    # Generated team config
-│   ├── task_list.yaml        # Shared work items
-│   └── messages/             # Peer-to-peer messages
-├── workflow/
-│   ├── plan.yaml             # From planner
-│   └── decomposition.yaml    # From decomposer
-└── outputs/
++-- instruction.yaml          # User request + flags
++-- status.yaml               # Current phase
++-- team/
+|   +-- team_manifest.yaml    # Generated team config
+|   +-- messages/             # Communication log
+|   +-- metrics/
+|       +-- timing.yaml
+|       +-- parallelism.yaml
++-- workflow/
+|   +-- plan.yaml             # From planner
+|   +-- decomposition.yaml    # From decomposer
+|   +-- coordination_log.yaml # Final coordination record
++-- outputs/
 ```
+
+Note: The shared task list is managed by Claude Code's built-in system at `~/.claude/tasks/{team-name}/`, not in the session directory.
 
 ## /run as the Execution Engine
 
-**CRITICAL**: `/run` is the execution engine for ALL work items. `/team` handles decomposition and parallelism; `/run` handles orchestration of each individual work item. This is not a fallback — it's the core architecture.
+**CRITICAL**: `/run` is the execution engine for ALL work items. `/team` handles decomposition and parallelism; `/run` handles orchestration of each individual work item. This is not a fallback -- it is the core architecture.
 
 ```
 /team = Parallelism layer (decompose, distribute, aggregate)
 /run  = Orchestration layer (plan, coordinate, execute, validate per work item)
 ```
-
-### How Work Items Execute
-
-Every work item, regardless of Agent Teams availability, is executed via `/run`:
-
-```javascript
-// Each work item gets its own /run invocation
-Skill({
-  skill: "run",
-  args: `implement work item ${workItem.id}: ${workItem.description} from team session ${session_id}`
-})
-```
-
-**tmux available**: Each work item runs `claude /run` in its own tmux pane for true visual parallelism -- all panes visible simultaneously.
-**Agent Teams available**: Team members are spawned; each member invokes `/run` for their claimed items.
-**Neither available**: Parallel `/run` Skill invocations sent in a single message for concurrency.
-
-### Fallback to Single /run
-
-Request goes to a single `/run` when unsuitable for teams (tier 2, <3 items, all sequential):
-```javascript
-// Notify user: "Request better suited for standard execution. Delegating to /run."
-Skill({ skill: "run", args: `${request}` })
-```
-
-## Memory Operations
-
-### Writes
-- `Agent_Memory/sessions/team_{id}/` - Complete session structure
-- `Agent_Memory/sessions/team_{id}/team/team_manifest.yaml` - Team config
-- `Agent_Memory/sessions/team_{id}/team/task_list.yaml` - Shared tasks
-
-### Reads
-- `Agent_Memory/_system/config/team_config.yaml` - Team defaults
-- Domain planner_config.yaml for controller selection
-- Decomposition for work item analysis
-
-## Key Principles
-
-1. **/run for every work item** - Every work item gets full `/run` orchestration, always
-2. **tmux split panes for visual parallelism** - Default execution method: one tmux pane per work item, all visible at once
-3. **/team for decomposition** - Team mode adds decomposition + parallel distribution on top of `/run`
-4. **Graceful degradation** - tmux -> Agent Teams -> parallel `/run` Skill calls
-5. **Controller as lead** - Domain controllers become team leads (delegate only)
-6. **Session isolation** - Each team gets its own session folder
 
 ## Delegation to Team-Lead-Adapter
 
@@ -275,21 +254,51 @@ Task({
   description: "Lead team: {request}",
   prompt: `
     Session: Agent_Memory/sessions/team_{session_id}/
+    Team: cagents-team-{session_id}
     Team manifest: team/team_manifest.yaml
-    Task list: team/task_list.yaml
-    Mode: ${AGENT_TEAMS_AVAILABLE ? 'full_teams' : 'parallel_tasks'}
 
-    Coordinate team execution:
+    Coordinate team execution using built-in agent teams:
     1. Enter delegate mode (coordination only)
-    2. Distribute work items to team members
-    3. Monitor progress via shared task list
+    2. Distribute work items to teammates via SendMessage
+    3. Monitor progress via TaskList and teammate messages
     4. Aggregate results
     5. Write final coordination_log.yaml
+    6. Clean up team via TeamDelete
   `
 })
 ```
 
+## Fallback Behavior
+
+If the request is unsuitable for team execution:
+
+```javascript
+// Notify user: "Request better suited for standard execution. Delegating to /run."
+Skill({ skill: "run", args: `${request}` })
+```
+
+## Memory Operations
+
+### Writes
+- `Agent_Memory/sessions/team_{id}/` - Complete session structure
+- `Agent_Memory/sessions/team_{id}/team/team_manifest.yaml` - Team config
+
+### Reads
+- `Agent_Memory/_system/config/team_config.yaml` - Team defaults
+- Domain planner_config.yaml for controller selection
+- Decomposition for work item analysis
+
+## Key Principles
+
+1. **/run for every work item** - Every work item gets full `/run` orchestration, always
+2. **Built-in agent teams** - Use TeamCreate, SendMessage, TaskCreate (not manual tmux)
+3. **tmux via teammateMode** - Claude Code manages tmux split panes automatically when configured
+4. **/team for decomposition** - Team mode adds decomposition + parallel distribution on top of `/run`
+5. **Controller as lead** - Domain controllers become team leads (delegate only)
+6. **Session isolation** - Each team gets its own session folder
+7. **Shared task list** - Built-in TaskCreate/TaskList for coordination
+
 ---
 
-**Version**: 1.0
-**Part of**: cAgents Core Infrastructure - Agent Teams Integration
+**Version**: 2.0
+**Part of**: cAgents Core Infrastructure - Built-in Agent Teams Integration
