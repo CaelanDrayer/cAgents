@@ -1,6 +1,6 @@
 # cAgents Release Notes
 
-**Current Version**: 9.0.0
+**Current Version**: 9.3.2
 **Release Date**: February 7, 2026
 **Status**: Production-Ready
 
@@ -8,9 +8,78 @@
 
 ## Version History
 
-- [v9.0.0](#v900---february-7-2026) - Platform Alignment Edition (Current)
+- [v9.3.2](#v932---february-7-2026) - Consistency fixes (Current)
+- [v9.3.1](#v931---february-7-2026) - Skills path + stop hook fixes
+- [v9.3.0](#v930---february-7-2026) - /helper skill + frontmatter fixes
+- [v9.2.0](#v920---february-7-2026) - Built-in Agent Teams migration
+- [v9.1.2](#v912---february-7-2026) - Stop hook JSON validation fix
+- [v9.1.1](#v911---february-7-2026) - tmux split pane refinements
+- [v9.1.0](#v910---february-7-2026) - tmux split panes for team execution
+- [v9.0.0](#v900---february-7-2026) - Platform Alignment Edition
 
 ---
+
+## v9.3.2 - February 7, 2026
+
+**Theme**: Consistency Pass - Unified versions, corrected counts, added safety blocks.
+
+- Unified version to 9.3.2 across all 16 manifest/config files (root, marketplace, package.json, settings, 7 domain plugins)
+- Fixed CJS hook count from 11 to 12 in documentation (CLAUDE.md, hooks.md, README.md, setup.sh)
+- Fixed shell hook count from 7 to 9 in setup.sh
+- Fixed Tier 1 agent count from 12 to 14 in CLAUDE.md
+- Added `mkfs` to pre-bash.sh blocked command patterns
+- Removed dead `index.js` reference from package.json
+- Removed stale V9.0 version strings from setup.sh
+
+## v9.3.1 - February 7, 2026
+
+**Theme**: Plugin discoverability + stop hook reliability.
+
+- Added `"skills": "./.claude/skills/"` to plugin.json so slash commands are discoverable when installed as a plugin
+- Fixed sessions/ path in stop-workflow.sh
+- Fixed env var priority in hook-utils.cjs (CLAUDE_PROJECT_DIR before CLAUDE_PLUGIN_ROOT)
+- Added stop_hook_active loop protection and decision:block format in verify-completion.cjs
+
+## v9.3.0 - February 7, 2026
+
+**Theme**: New /helper command + skill frontmatter corrections.
+
+- New `/helper` skill (7 files) for command guidance, natural language recommendation, comparisons, and topic deep dives
+- Fixed skill frontmatter across all 6 skills: `allowedTools` -> `allowed-tools` (kebab-case)
+- Removed invalid `agent: true/false` boolean fields (should be string subagent type or omitted)
+- Removed undocumented `context: none` (omitting field achieves same behavior)
+- Synced settings templates and package.json versions
+
+## v9.2.0 - February 7, 2026
+
+**Theme**: Built-in Agent Teams migration.
+
+- Migrated `/team` from manual tmux scripting to Claude Code's built-in agent teams API
+- Uses `TeamCreate`, `SendMessage`, `TaskCreate`/`TaskList`/`TaskUpdate`, `TeamDelete`
+- `teammateMode: "tmux"` in settings.json provides split pane display automatically
+- Updated team-trigger and team-lead-adapter agents to v2.0
+- Updated all team documentation (CLAUDE.md, teams.md, TEAM_MODE.md, architecture.md, fallback-behavior.md)
+
+## v9.1.2 - February 7, 2026
+
+**Theme**: Stop hook JSON validation bugfix.
+
+- Fixed 3 interconnected bugs in stop hook JSON output
+
+## v9.1.1 - February 7, 2026
+
+**Theme**: tmux split pane refinements.
+
+- Refined tmux split pane team parallel execution
+
+## v9.1.0 - February 7, 2026
+
+**Theme**: tmux split panes for team parallel execution.
+
+- Added tmux split pane parallelism for `/team` command
+- Each work item runs in its own tmux pane via `claude /run`
+- Team leads operate in delegate mode
+- 40-60% execution time reduction target
 
 ## v9.0.0 - February 7, 2026
 

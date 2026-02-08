@@ -129,7 +129,7 @@ Use `@path/to/file` syntax to include external content:
 ### cAgents Memory Strategy
 
 - Main project memory: `./CLAUDE.md` (this file)
-- Modular rules: `.claude/rules/` (19 rule files across 5 categories)
+- Modular rules: `.claude/rules/` (20 files across 5 categories)
 - Agent patterns: `workflow_agent_interactions.md` (root-level exception)
 - Domain configs: `{domain}/config/*.yaml`
 - Runtime state: `Agent_Memory/` (git-ignored)
@@ -757,7 +757,7 @@ cAgents/
 ├── CLAUDE.md                # Main project memory (this file)
 ├── .claude/
 │   ├── skills/              # V9.0 Skills (run, team, designer, review, optimize, helper)
-│   ├── hooks/               # CJS hooks (11 hooks + hook-utils.cjs)
+│   ├── hooks/               # CJS hooks (12 registered + hook-utils.cjs)
 │   ├── rules/               # Modular rules (20 files across 5 categories)
 │   └── settings.json        # Hook registration + permissions + env
 ├── core/                    # Core infrastructure (tier 1)
@@ -801,7 +801,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 **Agents**: 236 total (14 core + 14 shared + 208 domain specialists)
 **Super-Domains**: Make (109), Grow (38), Operate (13), People (20), Serve (28)
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/*.yaml`
-**Hooks**: 14 event types, 3 hook types (command, prompt, agent) in `.claude/settings.json`
+**Hooks**: 14 event types, 2 hook types (command, prompt) in `.claude/settings.json`
 **Models**: opusplan (controllers), sonnet (execution), haiku (support)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ workflows via built-in agent teams with tmux display
@@ -841,4 +841,4 @@ See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 **Directories**: 7 (core, shared, make, grow, operate, people, serve)
 **Key Innovation**: CSV-based task inventory for large workflows + aggressive decomposition
 **Dependencies**: None (file-based, self-contained)
-**Version**: 9.3.2
+**Version**: 9.3.3

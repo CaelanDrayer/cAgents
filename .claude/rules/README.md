@@ -105,7 +105,7 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 ## V8.0 Additions
 
 ### hooks.md (Enhanced)
-Documents all 12 Claude Code hook types with cAgents implementations:
+Documents all 14 Claude Code hook event types with cAgents implementations:
 - SessionStart, SessionEnd, Stop, SubagentStop
 - PreToolUse, PostToolUse, UserPromptSubmit
 - Notification, PreCompact, PermissionRequest, Error, ContextOverflow
