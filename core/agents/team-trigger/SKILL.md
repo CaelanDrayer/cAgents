@@ -22,24 +22,26 @@ permissionMode: "bypassPermissions"
 
 ## Core Responsibilities
 
-1. Check Claude Code Agent Teams availability (env var)
+1. Check tmux availability and Agent Teams env var
 2. Analyze request for parallelizable work items
 3. Detect team suitability (tier 3+, multiple independent items)
 4. Select appropriate team lead (controller)
-5. Generate team configuration for Claude Code
+5. Create tmux session with windows for parallel execution
 6. Initialize team session structure
-7. Spawn team via Claude Code Agent Teams API (or fall back)
-8. Hand off to team-lead-adapter for execution
+7. Launch `claude /run` in each tmux window for work items
+8. Monitor tmux windows for completion and aggregate results
 
-## CRITICAL: Agent Teams Detection
+## Execution Method Priority
 
-```javascript
-// Check at startup
-const AGENT_TEAMS_AVAILABLE = process.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS === '1';
+```
+1. tmux (default) - Create tmux session, one window per work item, each runs claude /run
+2. Agent Teams API - If CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1, use spawnTeam/SendMessage
+3. Parallel /run - Fallback: parallel Skill invocations in single message
 ```
 
-**If available**: Use full Agent Teams API (spawnTeam, SendMessage, shared tasks) — members invoke `/run` for each work item
-**If unavailable**: Use parallel `/run` Skill invocations (each work item still gets full orchestration)
+**tmux available**: Create tmux session `cagents-team-{session_id}` with windows per work item
+**Agent Teams available**: Use spawnTeam() API with peer messaging
+**Neither available**: Parallel `/run` Skill invocations
 
 ## Team Suitability Analysis
 
@@ -64,47 +66,88 @@ team_suitability_criteria:
 
 ```
 1. Receive request from /team command
-2. Check AGENT_TEAMS_AVAILABLE
-3. If unavailable: warn user, delegate to /run via `Skill({skill: "run", args: "{request}"})`
-4. Analyze request:
+2. Check execution method availability (tmux > Agent Teams > parallel /run)
+3. Analyze request:
    - Route through universal-router for tier classification
    - Route through universal-planner for decomposition
    - Analyze work items for parallelism
-5. If team unsuitable: fall back to standard /run via `Skill({skill: "run", args: "{request}"})`
-6. Select team lead based on domain
-7. Generate team configuration
-8. Initialize session structure
-9. Spawn team via spawnTeam() or parallel /run Skill invocations
-10. Hand off to team-lead-adapter
+4. If team unsuitable: fall back to standard /run via Skill({skill: "run", args: "{request}"})
+5. Select team lead based on domain
+6. Initialize session structure
+7. Execute based on available method:
+   a. tmux: Create tmux session, launch claude /run in each window
+   b. Agent Teams: spawnTeam() with members, each invokes /run
+   c. Parallel: Send parallel /run Skill invocations
+8. Monitor progress and aggregate results
+```
+
+## tmux Execution (Primary Method)
+
+### Session Creation
+
+```bash
+# Check tmux availability
+command -v tmux >/dev/null 2>&1
+
+# Create tmux session (detached)
+tmux new-session -d -s "cagents-team-${SESSION_ID}" -n "lead"
+
+# Create a window per work item
+tmux new-window -t "cagents-team-${SESSION_ID}" -n "wi-001"
+tmux new-window -t "cagents-team-${SESSION_ID}" -n "wi-002"
+tmux new-window -t "cagents-team-${SESSION_ID}" -n "wi-003"
+```
+
+### Work Item Execution
+
+```bash
+# Launch claude /run in each window
+tmux send-keys -t "cagents-team-${SESSION_ID}:wi-001" \
+  "claude --print '/run implement WI-001: Implement user model from team session ${SESSION_ID}'" Enter
+
+tmux send-keys -t "cagents-team-${SESSION_ID}:wi-002" \
+  "claude --print '/run implement WI-002: Create user form from team session ${SESSION_ID}'" Enter
+```
+
+### Monitoring
+
+```bash
+# Check window status
+tmux list-windows -t "cagents-team-${SESSION_ID}" -F "#{window_name} #{pane_pid}"
+```
+
+### Cleanup
+
+```bash
+# After all work items complete
+tmux kill-session -t "cagents-team-${SESSION_ID}"
 ```
 
 ## Team Configuration Generation
 
-Generate Claude Code team config:
+Generate team manifest for the session:
 
-```json
-{
-  "name": "cagents-{session_id}",
-  "description": "{request_summary}",
-  "lead": {
-    "controller": "{domain}:{controller_name}",
-    "mode": "delegate",
-    "tools": ["Read", "Write", "Task", "SendMessage", "TeammateTool"]
-  },
-  "members": [
-    {
-      "name": "{agent_name}",
-      "type": "{domain}:{agent_type}",
-      "capabilities": ["..."],
-      "assigned_items": ["WI-001", "WI-002"]
-    }
-  ],
-  "shared_context": {
-    "session_dir": "Agent_Memory/sessions/team_{timestamp}/",
-    "plan_file": "workflow/plan.yaml",
-    "task_list": "team/task_list.yaml"
-  }
-}
+```yaml
+# team/team_manifest.yaml
+team:
+  name: "cagents-team-{session_id}"
+  execution_method: tmux  # tmux | agent_teams | parallel_tasks
+  lead:
+    controller: "{domain}:{controller_name}"
+    mode: delegate
+  members:
+    - name: "wi-001"
+      work_item: "WI-001"
+      description: "{item_description}"
+      tmux_window: "wi-001"
+    - name: "wi-002"
+      work_item: "WI-002"
+      description: "{item_description}"
+      tmux_window: "wi-002"
+  shared_context:
+    session_dir: "Agent_Memory/sessions/team_{timestamp}/"
+    plan_file: "workflow/plan.yaml"
+    task_list: "team/task_list.yaml"
 ```
 
 ## Team Lead Selection
@@ -186,43 +229,16 @@ Skill({
 })
 ```
 
-**With Agent Teams**: Team members are spawned; each member invokes `/run` for their claimed items.
-**Without Agent Teams**: Parallel `/run` Skill invocations sent in a single message for concurrency.
+**tmux available**: Each work item runs `claude /run` in its own tmux window for true visual parallelism.
+**Agent Teams available**: Team members are spawned; each member invokes `/run` for their claimed items.
+**Neither available**: Parallel `/run` Skill invocations sent in a single message for concurrency.
 
 ### Fallback to Single /run
 
-Two scenarios where the entire request goes to a single `/run` (no team decomposition):
-
-**1. Agent Teams Unavailable + Not Parallelizable**
-```javascript
-Skill({ skill: "run", args: `${request}` })
-```
-
-**2. Request Unsuitable for Teams** (tier 2, <3 items, all sequential)
+Request goes to a single `/run` when unsuitable for teams (tier 2, <3 items, all sequential):
 ```javascript
 // Notify user: "Request better suited for standard execution. Delegating to /run."
 Skill({ skill: "run", args: `${request}` })
-```
-
-### Without Agent Teams + Parallelizable
-
-When Agent Teams is unavailable but the request IS parallelizable, send parallel `/run` invocations:
-
-```javascript
-// Parallel /run invocations (sent in single message for concurrency)
-Skill({ skill: "run", args: `implement WI-001: ${item1.description} from team session ${session_id}` })
-Skill({ skill: "run", args: `implement WI-002: ${item2.description} from team session ${session_id}` })
-Skill({ skill: "run", args: `implement WI-003: ${item3.description} from team session ${session_id}` })
-```
-
-**User notification**:
-```
-Agent Teams not available. Using parallel /run invocations.
-Team features (peer messaging, dynamic task claiming) disabled.
-Each work item receives full /run orchestration for quality.
-
-To enable full team features:
-  export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 ```
 
 ## Memory Operations
@@ -240,9 +256,9 @@ To enable full team features:
 ## Key Principles
 
 1. **/run for every work item** - Every work item gets full `/run` orchestration, always
-2. **/team for parallelism** - Team mode adds decomposition + parallel distribution on top of `/run`
-3. **Feature detection first** - Check Agent Teams availability for peer messaging
-4. **Graceful degradation** - Without Agent Teams, use parallel `/run` Skill calls
+2. **tmux for visual parallelism** - Default execution method: one tmux window per work item
+3. **/team for decomposition** - Team mode adds decomposition + parallel distribution on top of `/run`
+4. **Graceful degradation** - tmux -> Agent Teams -> parallel `/run` Skill calls
 5. **Controller as lead** - Domain controllers become team leads (delegate only)
 6. **Session isolation** - Each team gets its own session folder
 

@@ -59,19 +59,43 @@ delegate_mode_enforcement:
 2. Load team_manifest.yaml and task_list.yaml
 3. Enter delegate mode (wrap controller behavior)
 4. Distribute work items — each executed via /run:
-   - Full Teams: Members claim items, each invokes /run
-   - Without Teams: Parallel /run Skill invocations
+   a. tmux mode: Monitor tmux windows running claude /run
+   b. Agent Teams: Members claim items, each invokes /run
+   c. Parallel mode: Parallel /run Skill invocations
 5. Monitor progress:
-   - Full Teams: Poll shared task list + peer messages
-   - Without Teams: Wait for /run results
-6. Handle member questions via peer messaging (Full Teams only)
+   a. tmux: Check tmux window processes for completion
+   b. Agent Teams: Poll shared task list + peer messages
+   c. Parallel: Wait for /run results
+6. Handle member questions via peer messaging (Agent Teams only)
 7. Aggregate /run outputs from all work items
 8. Synthesize final deliverables
 9. Write coordination_log.yaml
 10. Signal completion to orchestrator
+11. Cleanup: kill tmux session if applicable
 ```
 
-## Team Communication Patterns
+## Execution Methods
+
+### tmux Mode (Default)
+
+When tmux is available, team-trigger creates the session. The adapter monitors tmux windows:
+
+```bash
+# Monitor window completion
+while true; do
+  # List active windows (excluding lead window)
+  active=$(tmux list-windows -t "cagents-team-${SESSION_ID}" -F "#{window_name}" 2>/dev/null | grep -c "^wi-")
+  if [ "$active" -eq 0 ]; then break; fi
+  sleep 5
+done
+
+# Cleanup after all windows complete
+tmux kill-session -t "cagents-team-${SESSION_ID}"
+```
+
+Each tmux window runs `claude --print '/run implement WI-XXX: ...'` independently.
+
+## Team Communication Patterns (Agent Teams Mode)
 
 ## CRITICAL: Every Work Item Executes via /run
 
@@ -349,9 +373,9 @@ If team execution partially fails:
 
 1. **Delegate only** - Never do direct implementation work
 2. **/run for every work item** - Every work item executes via `/run` for full orchestration — no exceptions
-3. **/team for parallelism** - Team mode adds decomposition + parallel distribution on top of `/run`
-4. **Parallel first** - Maximize concurrent `/run` invocations
-5. **Self-claiming preferred** - Let members claim matching work (full Teams mode)
+3. **tmux for visual parallelism** - Default: each work item in its own tmux window
+4. **/team for decomposition** - Team mode adds decomposition + parallel distribution on top of `/run`
+5. **Parallel first** - Maximize concurrent `/run` invocations
 6. **Continuous monitoring** - Track progress, rebalance as needed
 7. **Synthesis at end** - Aggregate `/run` outputs into coherent result
 
