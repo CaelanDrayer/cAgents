@@ -94,28 +94,39 @@ See @reference/report-formats.md for review-type-specific report templates.
 
 ## Task Tool Delegation
 
+For each parallel group, spawn review agents via Task tool:
+
 ```javascript
+// Group 1 - Independent structural analysis (parallel)
 Task({
-  subagent_type: "cagents:review",
-  description: "Execute autonomous universal review",
-  prompt: `Execute comprehensive autonomous review.
-
-Target: ${targetPath || process.cwd()}
-Arguments: ${JSON.stringify(args)}
-
-CRITICAL INSTRUCTIONS:
-1. FIRST: Detect review type (code, docs, content, design, process, data, infrastructure)
-2. Create review folder in Agent_Memory/
-3. Analyze scope appropriate to review type
-4. Determine execution strategy
-5. Invoke appropriate agents based on review type
-6. Aggregate and classify findings
-7. Generate final report appropriate to review type
-8. Use TodoWrite to show progress throughout
-
-Execute the full workflow autonomously without asking for permission.`
+  subagent_type: "make:architecture-reviewer",
+  description: "Review architecture and design patterns",
+  prompt: `Review architecture for: ${targetPath}. Check system design, patterns, coupling.`
 })
+Task({
+  subagent_type: "make:code-standards-auditor",
+  description: "Audit code standards and conventions",
+  prompt: `Audit code standards for: ${targetPath}. Check style, naming, conventions.`
+})
+Task({
+  subagent_type: "make:documentation-reviewer",
+  description: "Review documentation quality",
+  prompt: `Review documentation for: ${targetPath}. Check clarity, completeness, accuracy.`
+})
+
+// Group 2 - Context-dependent (after Group 1, parallel within group)
+Task({
+  subagent_type: "make:performance-analyzer",
+  description: "Analyze performance issues",
+  prompt: `Analyze performance for: ${targetPath}. Architecture context: ${group1Results}.`
+})
+// ... security-analyst, test-coverage-validator
+
+// Group 3 - Specialized (after Group 2, parallel within group)
+// ... dependency-auditor, accessibility-checker, qa-compliance-officer
 ```
+
+Aggregate results from all groups, then generate report directly. Do NOT delegate to yourself.
 
 ## TodoWrite Pattern
 

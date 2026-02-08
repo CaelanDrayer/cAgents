@@ -50,7 +50,7 @@ Side-by-side comparison matrices for `/helper --compare`.
 | `--members` | -- | -- | -- | -- | Yes |
 | `--lead` | -- | -- | -- | -- | Yes |
 | `--team` | Yes | -- | -- | -- | N/A |
-| `--resume` | -- | Yes | -- | -- | -- |
+| `--resume` | Yes | Yes | -- | -- | -- |
 
 ## Integration Pipeline Matrix
 
@@ -72,7 +72,7 @@ Side-by-side comparison matrices for `/helper --compare`.
 | **Maximum complexity** | Tier 4 (expert + HITL) | Any | Any | Tier 4 (CRITICAL -> /run) | Tier 4 |
 | **Scope** | Single task | Single design | Single target | Single target | Multiple parallel tasks |
 | **Parallelism** | No (sequential) | No (interactive) | Yes (agent groups) | Yes (independent opts) | Yes (teammates) |
-| **Resumable** | Yes (session waypoints) | Yes (--resume flag) | No | Yes (session waypoints) | No |
+| **Resumable** | Yes (--resume flag + waypoints) | Yes (--resume flag) | No | Yes (session waypoints) | No |
 
 ## Performance Characteristics
 

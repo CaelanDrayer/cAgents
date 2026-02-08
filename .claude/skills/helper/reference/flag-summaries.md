@@ -16,6 +16,7 @@ Complete flag tables for all commands, used by `/helper --flags <command>`.
 | `--domain <domain>` | String | Override domain detection | auto-detect | `/run Analyze --domain engineering` |
 | `--tier <N>` | Number | Override tier (2-4) | auto-classify | `/run Migrate --tier 4` |
 | `--confidence <N>` | Number | Detection confidence threshold | 0.7 | `/run Request --confidence 0.6` |
+| `--resume <id>` | String | Resume an interrupted session | none | `/run --resume run_20260207_143022` |
 
 ### /run Templates (12)
 
@@ -25,14 +26,14 @@ Complete flag tables for all commands, used by `/helper --flags <command>`.
 | `feature_addition` | 3 | engineering + product | Feature addition |
 | `code_refactor` | 3 | engineering | Code refactoring |
 | `architecture_migration` | 4 | engineering + HITL | Major migration |
-| `content_creation` | 2 | creative/revenue | Content creation |
-| `story_development` | 3 | creative | Story development |
-| `campaign_planning` | 3 | revenue | Marketing campaign |
-| `sales_forecast` | 2 | revenue/finance | Sales forecasting |
+| `content_creation` | 2 | make/grow | Content creation |
+| `story_development` | 3 | make | Story development |
+| `campaign_planning` | 3 | grow | Marketing campaign |
+| `sales_forecast` | 2 | grow/operate | Sales forecasting |
 | `analysis_request` | 2 | universal | General analysis |
-| `budget_creation` | 3 | finance | Budget creation |
+| `budget_creation` | 3 | operate | Budget creation |
 | `question_answer` | 2 | universal | Q&A |
-| `documentation_creation` | 2 | universal/engineering | Documentation |
+| `documentation_creation` | 2 | universal/make | Documentation |
 
 ---
 

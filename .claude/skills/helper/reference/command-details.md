@@ -64,6 +64,7 @@ Result: Bug fixed, tests passing, outputs saved
 | `--tier <N>` | Force complexity tier (2-4) | `/run Migrate database --tier 4` |
 | `--template <name>` | Use a workflow template | `/run Budget --template budget_creation` |
 | `--stream` | Real-time progress updates | `/run Deploy app --stream` |
+| `--resume <id>` | Resume an interrupted session | `/run --resume run_20260207_143022` |
 
 ### Real Examples
 
@@ -504,3 +505,80 @@ You: /team Implement OAuth2 with Google, GitHub, and email login
 3. **Independent work is key**: The more independent the items, the better the parallelism
 4. **tmux gives best visibility**: Use `--teammate-mode tmux` for visual split pane display
 5. **Each item gets full /run quality**: No shortcuts -- every work item goes through full orchestration
+
+---
+
+## /helper - Interactive Command Guide
+
+### What It Does
+
+`/helper` explains cAgents skills and recommends the right command for your needs. It provides detailed explanations, usage examples, comparison tables, flag references, and guided recommendations. It never executes commands -- it only educates and recommends.
+
+### When to Use /helper
+
+- **New to cAgents**: Get an overview of all available commands
+- **Choosing a command**: Not sure which command fits your task
+- **Learning flags**: Need to understand what flags a command supports
+- **Comparing commands**: Want to see side-by-side differences
+- **Quick reference**: Need a one-screen summary of all commands
+
+### When NOT to Use /helper
+
+- **You know which command to use**: Just run it directly
+- **You want to execute something**: /helper only explains, never executes
+
+### How It Works (Simplified)
+
+```
+/helper                     -> Full overview of all 6 commands
+/helper run                 -> Deep dive into /run
+/helper how do I fix a bug  -> "Use /run. Here's how..."
+/helper --compare           -> Side-by-side comparison table
+/helper --flags review      -> All /review flags with examples
+/helper --quick             -> One-screen reference card
+/helper --topic domains     -> Deep dive into the 5 super-domains
+```
+
+### Key Flags
+
+| Flag | What It Does | Example |
+|------|-------------|---------|
+| `--compare` | Side-by-side comparison of all commands | `/helper --compare` |
+| `--flags <command>` | Complete flag reference for a command | `/helper --flags run` |
+| `--examples` | Real-world usage examples by domain | `/helper --examples` |
+| `--quick` | One-screen quick reference card | `/helper --quick` |
+| `--topic <topic>` | Deep dive into a topic | `/helper --topic domains` |
+
+### Real Examples
+
+```bash
+# Full interactive guide
+/helper
+
+# Learn about a specific command
+/helper run
+/helper designer
+/helper review
+
+# Natural language question
+/helper how do I review code for security issues
+/helper which command should I use to build a feature
+
+# Compare all commands
+/helper --compare
+
+# Quick reference
+/helper --quick
+
+# Explore topics
+/helper --topic workflow
+/helper --topic agents
+```
+
+### Tips
+
+1. **Start with `/helper --quick`**: Get oriented fast with the one-screen reference
+2. **Use natural language**: Ask questions like "how do I..." and get targeted recommendations
+3. **Check flags before running**: `/helper --flags run` shows every flag with examples
+4. **Compare when unsure**: `/helper --compare` shows exactly when each command is best
+5. **Explore topics**: Use `--topic` for deep dives into domains, tiers, agents, teams, etc.

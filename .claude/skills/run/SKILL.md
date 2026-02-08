@@ -36,7 +36,7 @@ Former tier 0/1 requests are automatically upgraded to tier 2.
 
 Parse `$ARGUMENTS` for:
 - **Flags**: `--interactive`, `--dry-run`, `--quiet`/`-q`, `--stream`, `--skip-preflight`, `--team`
-- **Value flags**: `--template <name>`, `--domain <domain>`, `--tier <N>`, `--confidence <N>`
+- **Value flags**: `--template <name>`, `--domain <domain>`, `--tier <N>`, `--confidence <N>`, `--resume <session_id>`
 - **Request**: Everything before the first `--` flag
 
 Extract the request text and flags separately before delegation.
@@ -47,7 +47,8 @@ See @reference/flags.md for complete flag reference with defaults and examples.
 
 When the user runs `/run <request> [flags]`:
 
-1. **Parse flags** from `$ARGUMENTS`
+1. **Parse flags** from `$ARGUMENTS` (check for `--resume` first)
+   - If `--resume <session_id>`: Load session from `Agent_Memory/sessions/{session_id}/progress.md`, pass to trigger with resume context
 2. **Create TodoWrite** for user visibility:
    ```
    - Initialize workflow and delegate to trigger agent (in_progress)
@@ -130,6 +131,17 @@ Outputs: Agent_Memory/sessions/run_20260123_180000/outputs/
 - Phase execution (orchestrator does this)
 - Task coordination (executor does this)
 - Workflow logic (agents handle this)
+
+## Error Handling
+
+If the trigger agent fails or returns an error:
+1. **Report the error** to the user with the session path
+2. **Suggest recovery**: `--resume <session_id>` to continue from last waypoint
+3. **Never retry silently** - always inform the user of what happened
+
+If the workflow times out or context is exhausted:
+1. Session state is preserved in `Agent_Memory/sessions/run_{timestamp}/`
+2. User can resume with `/run --resume <session_id>`
 
 See @reference/domain-coverage.md for domain detection details.
 See @reference/delegation-patterns.md for advanced delegation patterns.
