@@ -1,11 +1,11 @@
 {
-  "$comment": "Hook configuration - cAgents V9.5 - CJS-only hooks (no shell dispatch layer)",
+  "$comment": "Hook configuration - cAgents V9.5.1 - CJS-only hooks with spec-compliant JSON output",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
   "teammateMode": "tmux",
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CAGENTS_VERSION": "9.5.0"
+    "CAGENTS_VERSION": "9.5.1"
   },
   "permissions": {
     "allow": [

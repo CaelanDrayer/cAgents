@@ -72,10 +72,14 @@ speedup:
   const teamsAvailable = process.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS === '1';
   console.error(`[TeamStart] Initialized team monitoring for ${path.basename(sessionDir)}`);
 
+  const msg = teamsAvailable
+    ? 'Team session initialized with full Agent Teams support.'
+    : 'Team session initialized in fallback mode (parallel Tasks).';
+
   return {
-    continue: true,
-    systemMessage: teamsAvailable
-      ? 'Team session initialized with full Agent Teams support.'
-      : 'Team session initialized in fallback mode (parallel Tasks).'
+    hookSpecificOutput: {
+      hookEventName: 'SubagentStart',
+      additionalContext: msg
+    }
   };
 });

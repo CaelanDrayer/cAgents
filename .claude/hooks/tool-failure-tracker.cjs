@@ -68,8 +68,10 @@ createHook('ToolFailureTracker', async (input) => {
     const suggestion = TOOL_ALTERNATIVES[toolName] || `Tool "${toolName}" has failed ${recentCount + 1} times recently. Consider an alternative approach.`;
     console.error(`[ToolFailureTracker] Pattern: ${recentCount + 1} failures of ${toolName}`);
     return {
-      continue: true,
-      systemMessage: `Tool failure pattern detected: "${toolName}" has failed ${recentCount + 1} times recently.\n${suggestion}`
+      hookSpecificOutput: {
+        hookEventName: 'PostToolUseFailure',
+        additionalContext: `Tool failure pattern detected: "${toolName}" has failed ${recentCount + 1} times recently.\n${suggestion}`
+      }
     };
   }
 

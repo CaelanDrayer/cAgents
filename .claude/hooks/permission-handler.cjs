@@ -26,28 +26,26 @@ createHook('PermissionHandler', async (input) => {
   const toolInput = input.tool_input || {};
   const filePath = toolInput.file_path || toolInput.path || '';
 
-  // Always-safe tools
+  // Always-safe tools - use PermissionRequest decision format
   if (ALWAYS_SAFE_TOOLS.has(toolName)) {
-    return { allow: true, hookEvent: 'PermissionRequest', reason: `${toolName} is a safe read-only tool.` };
+    return { allow: true, hookEvent: 'PermissionRequest' };
   }
 
-  // Write/Edit to Agent_Memory
+  // Write/Edit to Agent_Memory - use PermissionRequest decision format
   if ((toolName === 'Write' || toolName === 'Edit') && isAgentMemoryPath(filePath)) {
-    return { allow: true, hookEvent: 'PermissionRequest', reason: 'Write to Agent_Memory is safe (session state).' };
+    return { allow: true, hookEvent: 'PermissionRequest' };
   }
 
-  // Check for HITL context
+  // Check for HITL context - deny permission so user must approve
   const sessionDir = findActiveSession();
   if (sessionDir) {
     const planContent = safeRead(path.join(sessionDir, 'workflow', 'plan.yaml'));
     if (planContent && (planContent.includes('hitl_gate') || planContent.includes('HITL') || planContent.includes('human_approval'))) {
       const tier = extractYamlValue(planContent, 'tier');
       if (tier === '4') {
-        console.error('[PermissionHandler] HITL gate detected');
-        return {
-          continue: true,
-          systemMessage: `HITL Gate: Tier 4 workflow requires human approval.\nTool: ${toolName}\nTarget: ${filePath || 'N/A'}`
-        };
+        console.error('[PermissionHandler] HITL gate detected - requiring user approval');
+        // Don't auto-approve or deny - let the permission dialog show to the user
+        return null;
       }
     }
   }

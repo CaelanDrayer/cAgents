@@ -42,17 +42,15 @@ createHook('BashValidator', async (input) => {
     }
   }
 
-  // Check for warning patterns
+  // Check for warning patterns - escalate to user confirmation via 'ask'
   for (const { pattern, message } of GIT_WARNING_PATTERNS) {
     if (pattern.test(command)) {
       console.error(`[BashValidator] WARNING: ${message}`);
       return {
-        continue: true,
-        systemMessage: message,
         hookSpecificOutput: {
           hookEventName: 'PreToolUse',
-          permissionDecision: 'allow',
-          permissionDecisionReason: 'Command allowed with warning'
+          permissionDecision: 'ask',
+          permissionDecisionReason: message
         }
       };
     }

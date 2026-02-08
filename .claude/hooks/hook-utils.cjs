@@ -318,16 +318,28 @@ function createHook(name, handler) {
           return;
         }
 
-        // Shorthand: { allow: true, reason: "..." } -> full PreToolUse allow response
+        // Shorthand: { allow: true, reason: "..." } -> full allow response
+        // Supports both PreToolUse (permissionDecision) and PermissionRequest (decision.behavior)
         if (result.allow) {
-          console.log(JSON.stringify({
-            continue: true,
-            hookSpecificOutput: {
-              hookEventName: result.hookEvent || 'PreToolUse',
-              permissionDecision: 'allow',
-              permissionDecisionReason: result.reason || 'Allowed by hook'
-            }
-          }));
+          const hookEvent = result.hookEvent || 'PreToolUse';
+          if (hookEvent === 'PermissionRequest') {
+            console.log(JSON.stringify({
+              hookSpecificOutput: {
+                hookEventName: 'PermissionRequest',
+                decision: {
+                  behavior: 'allow'
+                }
+              }
+            }));
+          } else {
+            console.log(JSON.stringify({
+              hookSpecificOutput: {
+                hookEventName: hookEvent,
+                permissionDecision: 'allow',
+                permissionDecisionReason: result.reason || 'Allowed by hook'
+              }
+            }));
+          }
           return;
         }
 

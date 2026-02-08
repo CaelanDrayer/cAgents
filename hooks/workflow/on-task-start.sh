@@ -60,10 +60,10 @@ main() {
         context=$(json_escape "$context")
         cat >&3 <<EOF
 {
-  "continue": true,
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
     "permissionDecision": "allow",
+    "permissionDecisionReason": "cAgents workflow agent auto-approved",
     "additionalContext": "${context}"
   }
 }

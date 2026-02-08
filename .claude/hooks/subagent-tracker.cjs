@@ -44,7 +44,9 @@ createHook('SubagentTracker', async (input) => {
   console.error(`[SubagentTracker] Spawned ${subagentType} (parent: ${parentAgent})`);
 
   return {
-    continue: true,
-    systemMessage: `Agent tree: ${total} agents spawned (latest: ${subagentType})`
+    hookSpecificOutput: {
+      hookEventName: 'SubagentStart',
+      additionalContext: `Agent tree: ${total} agents spawned (latest: ${subagentType})`
+    }
   };
 });

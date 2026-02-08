@@ -68,7 +68,7 @@ EOF
     # Output success JSON to original stdout (fd 3)
     # Claude Code expects: { continue: bool, systemMessage?: string }
     trap - ERR  # Clear trap before normal exit
-    echo '{"continue":true,"systemMessage":"cAgents session initialized"}' >&3
+    echo '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"cAgents session initialized"}}' >&3
     exit 0
 }
 

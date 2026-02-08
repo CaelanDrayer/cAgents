@@ -90,12 +90,10 @@ EOF
         warning_message=$(json_escape "$warning_message")
         cat >&3 <<EOF
 {
-  "continue": true,
-  "systemMessage": "${warning_message}",
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
-    "permissionDecision": "allow",
-    "permissionDecisionReason": "Command allowed with warning"
+    "permissionDecision": "ask",
+    "permissionDecisionReason": "${warning_message}"
   }
 }
 EOF

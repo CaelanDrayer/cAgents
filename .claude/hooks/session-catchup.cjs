@@ -86,7 +86,12 @@ createHook('SessionCatchup', async (input) => {
   const incomplete = findIncompleteSessions();
 
   if (incomplete.length === 0) {
-    return { continue: true, systemMessage: 'cAgents session initialized' };
+    return {
+      hookSpecificOutput: {
+        hookEventName: 'SessionStart',
+        additionalContext: 'cAgents session initialized'
+      }
+    };
   }
 
   // Save state for /resume command
@@ -119,5 +124,10 @@ createHook('SessionCatchup', async (input) => {
   message += '- Use `/run --resume <session_id>` to resume a specific session\n';
   message += '- Continue with a new request to start fresh\n';
 
-  return { continue: true, systemMessage: message };
+  return {
+    hookSpecificOutput: {
+      hookEventName: 'SessionStart',
+      additionalContext: message
+    }
+  };
 });
