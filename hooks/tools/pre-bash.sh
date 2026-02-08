@@ -60,6 +60,7 @@ main() {
             block_reason="Blocked dangerous command: ${pattern}"
             log_warn "$block_reason"
             block_reason=$(json_escape "$block_reason")
+            trap - ERR EXIT  # Clear trap before intentional block exit
             cat >&3 <<EOF
 {
   "continue": false,

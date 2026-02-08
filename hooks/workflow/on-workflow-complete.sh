@@ -41,7 +41,7 @@ main() {
         log_info "Completing workflow: $active_instruction"
 
         # Update status.yaml (idempotent - replace if exists, append if not)
-        local status_file="${HOOK_CWD}/${CAGENTS_AGENT_MEMORY_DIR}/${active_instruction}/status.yaml"
+        local status_file="${HOOK_CWD}/${CAGENTS_AGENT_MEMORY_DIR}/sessions/${active_instruction}/status.yaml"
         if [[ -f "$status_file" ]]; then
             yaml_update_field "$status_file" "completed_at" "$(timestamp)"
             yaml_update_field "$status_file" "final_status" "completed"
@@ -49,7 +49,7 @@ main() {
 
         # Archive to _archive directory
         local archive_dir="${HOOK_CWD}/${CAGENTS_AGENT_MEMORY_DIR}/_archive"
-        local inst_dir="${HOOK_CWD}/${CAGENTS_AGENT_MEMORY_DIR}/${active_instruction}"
+        local inst_dir="${HOOK_CWD}/${CAGENTS_AGENT_MEMORY_DIR}/sessions/${active_instruction}"
         if [[ -d "$inst_dir" ]]; then
             mkdir -p "$archive_dir" 2>/dev/null || true
             cp -r "$inst_dir" "$archive_dir/" 2>/dev/null || true

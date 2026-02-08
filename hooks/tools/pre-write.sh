@@ -60,6 +60,7 @@ main() {
             log_error "Blocked write to protected path: $file_path"
             local safe_path
             safe_path=$(json_escape "$file_path")
+            trap - ERR EXIT  # Clear trap before intentional block exit
             cat >&3 <<EOF
 {
   "continue": false,

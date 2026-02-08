@@ -52,7 +52,7 @@ main() {
         context="[cAgents] Active workflow: $active_instruction (phase: $active_phase)"
 
         # Check status file for more details
-        local status_file="${HOOK_CWD}/${CAGENTS_AGENT_MEMORY_DIR}/${active_instruction}/status.yaml"
+        local status_file="${HOOK_CWD}/${CAGENTS_AGENT_MEMORY_DIR}/sessions/${active_instruction}/status.yaml"
         if [[ -f "$status_file" ]]; then
             local status
             status=$(grep "^status:" "$status_file" 2>/dev/null | sed 's/status: *//' | tr -d '"')
