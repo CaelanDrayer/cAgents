@@ -138,9 +138,19 @@ notes: |
  * Main hook execution
  */
 async function main() {
-  await readStdin();
+  const input = await readStdin();
 
   try {
+    // Check if stop_hook_active is true to prevent infinite loops.
+    // When Claude Code is already continuing due to a prior stop hook block,
+    // stop_hook_active is set to true. We should allow the stop to proceed
+    // to avoid an infinite continue loop.
+    if (input && input.stop_hook_active) {
+      console.error('[VerifyCompletion] stop_hook_active=true, allowing stop to avoid loop');
+      console.log(JSON.stringify({ continue: true }));
+      return;
+    }
+
     const sessionDir = findActiveSession();
 
     if (!sessionDir) {
@@ -162,11 +172,13 @@ async function main() {
       console.error(`[VerifyCompletion] WARNINGS: ${result.warnings.join('; ')}`);
     }
 
-    // Decide whether to allow stop
+    // Decide whether to allow stop.
+    // Use "decision: block" for Stop hooks per Claude Code docs to prevent
+    // premature stopping when work items are still incomplete.
     if (result.issues.length > 0) {
       console.log(JSON.stringify({
-        continue: true,
-        systemMessage: `cAgents completion verification found issues:\n${result.issues.join('\n')}\n\nPlease address these before considering the workflow complete.`
+        decision: 'block',
+        reason: `cAgents completion verification found issues:\n${result.issues.join('\n')}\n\nPlease address these before stopping.`
       }));
     } else if (result.warnings.length > 0) {
       console.log(JSON.stringify({

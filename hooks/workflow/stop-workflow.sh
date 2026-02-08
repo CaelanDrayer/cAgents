@@ -1,66 +1,86 @@
 #!/bin/bash
 # cAgents Stop Workflow Hook
 # Graceful workflow termination with cleanup
-# Version: 2.2.0
+# Version: 2.3.0
 #
-# Input (stdin): JSON with session_id, reason, cwd, etc.
-# Output (stdout): JSON response with continue flag
+# Input (stdin): JSON with session_id, stop_hook_active, cwd, etc.
+# Output (stdout): JSON response with continue/decision fields
 # Exit 2 to block stop (force Claude to continue)
 
-# ALL output goes to stderr except final JSON
-exec 3>&1
-exec 1>&2
-
 set -o pipefail
 
-# CRITICAL: Always output valid JSON on any failure.
-# This trap must be set AFTER fd 3 is created (exec 3>&1 above).
-trap 'echo "{\"continue\":true}" >&3 2>/dev/null || echo "{\"continue\":true}"; exit 0' ERR EXIT
-
-# shellcheck source=../../scripts/lib/hook-init.sh
-_HOOK_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)" || _HOOK_SCRIPT_DIR="."
-_HOOK_INIT="${_HOOK_SCRIPT_DIR}/../../scripts/lib/hook-init.sh"
-if [[ -r "$_HOOK_INIT" ]]; then
-    source "$_HOOK_INIT"
-else
-    timestamp() { date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || echo "unknown"; }
-    log_info() { echo "[INFO] $*" >&2; }
-    hook_init() { HOOK_INPUT='{}'; HOOK_CWD='.'; [[ ! -t 0 ]] && HOOK_INPUT="$(cat 2>/dev/null)" || true; }
-    hook_field() { echo "${2:-}"; }
-    get_active_instruction() { :; }
-    yaml_update_field() { :; }
-    readonly CAGENTS_AGENT_MEMORY_DIR="Agent_Memory"
+# Read stdin first (before any redirects) so we can parse it
+HOOK_INPUT='{}'
+if [[ ! -t 0 ]]; then
+    HOOK_INPUT="$(cat 2>/dev/null)" || HOOK_INPUT='{}'
 fi
 
-# CRITICAL: Re-establish safety trap after sourcing libraries.
-# files.sh sets 'trap cleanup_temp_files EXIT' which overwrites our trap.
-# core.sh sets 'set -euo pipefail' which makes the hook fragile.
-# Restore our resilient settings here.
-trap 'echo "{\"continue\":true}" >&3 2>/dev/null || echo "{\"continue\":true}"; exit 0' ERR EXIT
-set +eu  # Disable errexit and nounset from core.sh — hooks must never fail silently
-set -o pipefail
+# Safe JSON output function - writes to stdout
+emit_json() {
+    echo "$1"
+    exit 0
+}
+
+# CRITICAL: Always output valid JSON on any failure.
+trap 'echo "{\"continue\":true}"; exit 0' ERR
+
+# Determine project root
+HOOK_CWD="."
+if command -v jq &>/dev/null; then
+    HOOK_CWD=$(echo "$HOOK_INPUT" | jq -r '.cwd // "."' 2>/dev/null) || HOOK_CWD="."
+fi
+
+# shellcheck source=../../scripts/lib/hook-bootstrap.sh
+_HOOK_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)" || _HOOK_SCRIPT_DIR="."
+_BOOTSTRAP="${_HOOK_SCRIPT_DIR}/../../scripts/lib/hook-bootstrap.sh"
+
+# Source bootstrap for shared functions (logging, yaml, state)
+# Use inline fallbacks if bootstrap unavailable
+if [[ -r "$_BOOTSTRAP" ]]; then
+    source "$_BOOTSTRAP" 2>/dev/null || true
+    # Reset strict mode after sourcing (core.sh may set -euo)
+    set +eu 2>/dev/null || true
+    set -o pipefail
+else
+    timestamp() { date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || echo "unknown"; }
+    get_active_instruction() { :; }
+    yaml_update_field() { :; }
+    CAGENTS_AGENT_MEMORY_DIR="Agent_Memory"
+fi
+
+# Re-establish safety trap after sourcing libraries
+trap 'echo "{\"continue\":true}"; exit 0' ERR
+
+# Parse fields from input
+hook_field() {
+    local field="$1"
+    local default="${2:-}"
+    if command -v jq &>/dev/null; then
+        echo "$HOOK_INPUT" | jq -r ".${field} // \"${default}\"" 2>/dev/null || echo "$default"
+    else
+        echo "$default"
+    fi
+}
 
 main() {
-    hook_init
-
     local reason
     reason=$(hook_field "reason" "unknown")
 
-    log_info "Stop hook invoked (reason: $reason)"
+    echo "[INFO] Stop hook invoked (reason: $reason)" >&2
 
     # Check for active workflow that shouldn't be stopped
     local active_instruction
-    active_instruction=$(get_active_instruction "$HOOK_CWD")
+    active_instruction=$(get_active_instruction "$HOOK_CWD" 2>/dev/null) || active_instruction=""
 
     if [[ -n "$active_instruction" ]]; then
-        log_info "Active workflow found: $active_instruction"
+        echo "[INFO] Active workflow found: $active_instruction" >&2
 
-        # Update status file if it exists
-        local status_file="${HOOK_CWD}/${CAGENTS_AGENT_MEMORY_DIR}/${active_instruction}/status.yaml"
+        # Update status file if it exists (sessions/ subdirectory)
+        local status_file="${HOOK_CWD}/${CAGENTS_AGENT_MEMORY_DIR}/sessions/${active_instruction}/status.yaml"
         if [[ -f "$status_file" ]]; then
-            yaml_update_field "$status_file" "stopped_at" "$(timestamp)"
-            yaml_update_field "$status_file" "stop_reason" "$reason"
-            log_info "Updated status file"
+            yaml_update_field "$status_file" "stopped_at" "$(timestamp)" 2>/dev/null || true
+            yaml_update_field "$status_file" "stop_reason" "$reason" 2>/dev/null || true
+            echo "[INFO] Updated status file" >&2
         fi
 
         # Clear session state
@@ -72,9 +92,7 @@ main() {
     fi
 
     # Allow the stop to proceed
-    trap - ERR EXIT
-    echo '{"continue":true}' >&3
-    exit 0
+    emit_json '{"continue":true}'
 }
 
 main "$@"

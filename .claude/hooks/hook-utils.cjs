@@ -16,8 +16,11 @@
 const fs = require('fs');
 const path = require('path');
 
-const PROJECT_ROOT = process.env.CLAUDE_PLUGIN_ROOT
-  || process.env.CLAUDE_PROJECT_DIR
+// For hook scripts, CLAUDE_PROJECT_DIR is the user's project root where
+// Agent_Memory/ lives. CLAUDE_PLUGIN_ROOT is the plugin install directory
+// which does NOT contain Agent_Memory/. Prefer CLAUDE_PROJECT_DIR.
+const PROJECT_ROOT = process.env.CLAUDE_PROJECT_DIR
+  || process.env.CLAUDE_PLUGIN_ROOT
   || process.cwd();
 
 const AGENT_MEMORY_DIR = path.join(PROJECT_ROOT, 'Agent_Memory');
