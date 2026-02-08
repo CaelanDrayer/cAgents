@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "9.5.1",
-  "description": "Universal multi-domain agent system with 236 specialized agents. V9.5.1 features: Spec-compliant hook JSON output (hookSpecificOutput per event type), exit-code-only hooks for TeammateIdle/TaskCompleted, correct PermissionRequest decision format. CJS-only hook architecture, createHook() factory pattern, Skills system, 14 hook event types, opusplan model routing, enhanced PreCompact waypoints. Agent Teams for parallel execution (40-60% time reduction). CSV-based task inventory (60-80% context savings). Controller-centric delegation across 5 super-domains.",
+  "version": "9.5.2",
+  "description": "Universal multi-domain agent system with 236 specialized agents. V9.5.2 features: Fix SessionStart prompt hook error (prompt hooks unsupported for SessionStart per Claude Code spec), move behavioral context into session-catchup.cjs additionalContext, fix PreToolUse secret-detection to use permissionDecision:ask instead of systemMessage. CJS-only hook architecture, createHook() factory, Skills system, 14 hook event types, Agent Teams for parallel execution, CSV-based task inventory, controller-centric delegation across 5 super-domains.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",

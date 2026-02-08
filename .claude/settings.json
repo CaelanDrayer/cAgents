@@ -1,11 +1,11 @@
 {
-  "$comment": "Hook configuration - cAgents V9.5.1 - CJS-only hooks with spec-compliant JSON output",
+  "$comment": "Hook configuration - cAgents V9.5.2 - Fix SessionStart prompt hook, spec-compliant JSON output",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
   "teammateMode": "tmux",
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CAGENTS_VERSION": "9.5.1"
+    "CAGENTS_VERSION": "9.5.2"
   },
   "permissions": {
     "allow": [
@@ -31,10 +31,6 @@
             "type": "command",
             "command": "node .claude/hooks/session-catchup.cjs",
             "timeout": 10
-          },
-          {
-            "type": "prompt",
-            "prompt": "You are using cAgents V9.5. Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission."
           }
         ]
       }

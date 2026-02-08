@@ -160,7 +160,13 @@ createHook('SecretDetection', async (input) => {
   if (findings.medium.length > 0) {
     const warnings = findings.medium.map(f => `${f.type} (line ${f.line})`).join(', ');
     console.error(`[SecretDetection] WARNING: ${findings.medium.length} possible secret(s) in ${filePath}`);
-    return { continue: true, systemMessage: `Warning: Possible secrets detected (${warnings}). Review before committing.` };
+    return {
+      hookSpecificOutput: {
+        hookEventName: 'PreToolUse',
+        permissionDecision: 'ask',
+        permissionDecisionReason: `Possible secrets detected: ${warnings}. Review before committing.`
+      }
+    };
   }
 
   return null;

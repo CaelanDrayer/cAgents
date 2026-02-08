@@ -48,7 +48,7 @@ The V9.5 refactoring eliminates the dual shell+JS architecture that caused recur
 
 | Hook Type | Trigger | cAgents Hook | Purpose |
 |-----------|---------|--------------|---------|
-| `SessionStart` | Session begins | `session-catchup.cjs`, prompt hook | Initialize state, detect incomplete sessions |
+| `SessionStart` | Session begins | `session-catchup.cjs` | Initialize state, detect incomplete sessions, inject cAgents context |
 | `SessionEnd` | Session ends | `team-stop.cjs` | Finalize metrics, update status |
 | `PreToolUse` | Before tool execution | `bash-validator.cjs`, `secret-detection.cjs` | Validate, block dangerous operations |
 | `PostToolUseFailure` | Tool execution fails | `tool-failure-tracker.cjs` | Track failures, detect patterns, suggest recovery |
@@ -99,10 +99,10 @@ createHook('MyHook', async (input) => {
 ### Session Lifecycle
 
 #### SessionStart: session-catchup.cjs
-- **Purpose**: Detect incomplete sessions on startup, offer resume options
-- **Also**: Initializes session state (replaces on-session-start.sh)
+- **Purpose**: Detect incomplete sessions on startup, offer resume options, inject cAgents behavioral context
+- **Also**: Initializes session state (replaces on-session-start.sh); includes prompt guidance previously in a separate prompt hook (prompt hooks not supported for SessionStart)
 - **Creates**: `Agent_Memory/_system/incomplete_sessions.json`
-- **Output**: `{"continue": true, "systemMessage": "..."}`
+- **Output**: `{"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "..."}}`
 
 #### SessionEnd: team-stop.cjs
 - **Purpose**: Finalize team metrics and update session status
@@ -211,17 +211,25 @@ Hooks output JSON to stdout:
 
 ## Prompt-Based Hooks
 
-In addition to command hooks, Claude Code supports prompt-based hooks that inject text into the conversation:
+In addition to command hooks, Claude Code supports prompt-based hooks (`type: "prompt"`) that use an LLM to evaluate conditions and return yes/no decisions. Agent hooks (`type: "agent"`) spawn subagents with tool access for verification.
+
+**Supported Events** (prompt and agent hooks):
+- `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`
+- `UserPromptSubmit`, `Stop`, `SubagentStop`, `TaskCompleted`
+
+**NOT Supported** (command hooks only):
+- `SessionStart`, `SessionEnd`, `SubagentStart`, `PreCompact`, `Notification`
+- `TeammateIdle` (exit codes only, no prompt/agent/JSON)
 
 ```json
 {
   "hooks": {
-    "SessionStart": [
+    "Stop": [
       {
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "Remember to follow cAgents task completion protocol."
+            "prompt": "Check if all tasks are complete before stopping: $ARGUMENTS"
           }
         ]
       }
@@ -230,15 +238,12 @@ In addition to command hooks, Claude Code supports prompt-based hooks that injec
 }
 ```
 
-**Use Cases**:
-- Inject reminders at session start
-- Add context before specific tool use
-- Provide guidance after errors
+**Note**: For SessionStart context injection, use a command hook that returns `hookSpecificOutput.additionalContext` instead of a prompt hook. See `session-catchup.cjs` for the cAgents implementation.
 
 **Limitations**:
-- Cannot block operations
-- Cannot modify tool input
-- Text only (no JSON processing)
+- Only supported on the events listed above
+- Cannot modify tool input (use command hooks for that)
+- LLM responds with `{"ok": true/false, "reason": "..."}` JSON
 
 ## Secret Detection
 
