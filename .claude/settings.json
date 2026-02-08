@@ -1,11 +1,11 @@
 {
-  "$comment": "Hook configuration - cAgents V9.5.2 - Fix SessionStart prompt hook, spec-compliant JSON output",
+  "$comment": "Hook configuration - cAgents V9.6.0 - Team templates, wave execution, interface contracts, plugin hook paths",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
   "teammateMode": "tmux",
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CAGENTS_VERSION": "9.5.2"
+    "CAGENTS_VERSION": "9.6.0"
   },
   "permissions": {
     "allow": [

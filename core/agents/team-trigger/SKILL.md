@@ -288,6 +288,76 @@ Skill({ skill: "run", args: `${request}` })
 - Domain planner_config.yaml for controller selection
 - Decomposition for work item analysis
 
+## Template Selection
+
+When decomposition is complete, select a team template for structured delivery:
+
+1. **Load** `Agent_Memory/_system/templates/teams/_index.yaml` catalog
+2. **Score** each template: `keyword * 0.4 + domain * 0.2 + signal * 0.2 + items * 0.2`
+3. **Select** top scorer above `confidence_threshold` (0.6)
+4. **Override**: `--template <id>` forces a template, `--no-template` forces flat execution
+5. **Tag** work items with wave assignment and team ownership
+
+If no template matches (or `--no-template`), use flat parallel execution (existing behavior).
+
+See @resources/template-selection.md for the full auto-selection algorithm.
+
+## Wave Execution
+
+When a template is selected, execute work items in wave order using **gate sentinel tasks**:
+
+```
+Wave 0 (bootstrap):  Orchestrator executes foundation items via /run
+  -> GATE-0 sentinel (addBlockedBy: all wave-0 tasks)
+  -> Quality gate validation
+
+Wave 1 (parallel):   Teams execute in parallel via teammates running /run
+  -> GATE-1 sentinel (addBlockedBy: all wave-1 tasks)
+  -> Quality gate validation per team
+
+Wave 2 (integration): Orchestrator executes integration items via /run
+  -> Final quality gate
+```
+
+**Key**: Waves are enforced via TaskCreate dependencies (`addBlockedBy` on gate sentinel tasks), not custom orchestration. This preserves full compatibility with built-in task tools.
+
+See @resources/wave-execution.md for the gate sentinel pattern and validation logic.
+
+## Interface Contracts
+
+Templates define contracts between teams -- interface agreements established in one wave and consumed in the next:
+
+```yaml
+contracts:
+  - provider: platform
+    consumer: product
+    interface: "Database Schema"
+    established_in: 0    # Created during wave 0
+    consumed_in: 1       # Used during wave 1
+```
+
+At gate validation, verify contract artifacts exist before unblocking the next wave.
+
+See @resources/interface-contracts.md for contract lifecycle and enforcement.
+
+## Template-Enhanced Workflow
+
+```
+1. Receive request from /team command
+2. Analyze + decompose (existing behavior)
+3. NEW: Select template (auto or --template flag)
+4. NEW: Tag work items with wave + team assignments
+5. Create agent team via TeamCreate
+6. NEW: Execute wave loop:
+   Wave 0: Orchestrator runs foundation via /run
+     -> Quality gate check -> contracts established
+   Wave 1: Teams execute in parallel via /run
+     -> Quality gate check per team
+   Wave 2: Orchestrator integrates + polishes via /run
+     -> Final quality gate
+7. Aggregate results
+```
+
 ## Key Principles
 
 1. **/run for every work item** - Every work item gets full `/run` orchestration, always
@@ -297,8 +367,11 @@ Skill({ skill: "run", args: `${request}` })
 5. **Controller as lead** - Domain controllers become team leads (delegate only)
 6. **Session isolation** - Each team gets its own session folder
 7. **Shared task list** - Built-in TaskCreate/TaskList for coordination
+8. **Template-driven structure** - Pre-built team structures for common project types
+9. **Wave-gated delivery** - Quality gates between delivery phases via sentinel tasks
+10. **Interface contracts** - Explicit agreements between teams for clean handoffs
 
 ---
 
-**Version**: 2.0
+**Version**: 3.0
 **Part of**: cAgents Core Infrastructure - Built-in Agent Teams Integration

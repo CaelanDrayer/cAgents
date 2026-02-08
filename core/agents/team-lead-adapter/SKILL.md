@@ -335,6 +335,51 @@ If team execution partially fails:
 - `workflow/plan.yaml` - Original objectives
 - `workflow/decomposition.yaml` - Work items
 
+## Wave-Aware Coordination
+
+When the team manifest includes a template with waves, the lead coordinates wave-by-wave:
+
+### Wave Loop
+
+```
+for each wave in manifest.template.waves:
+  if wave.type == "bootstrap" or "integration":
+    # Execute foundation/integration items sequentially via /run
+    for each task tagged with this wave:
+      Execute via /run (lead coordinates directly)
+    # Validate quality gate criteria
+    Verify gate criteria from template
+    Mark GATE-{wave.id} as completed (TaskUpdate)
+
+  if wave.type == "parallel":
+    # Teammates claim and execute in parallel
+    # Tasks already blocked by GATE-{wave.id - 1}
+    # Monitor via TaskList until all wave tasks complete
+    # Validate quality gate criteria per team
+    Mark GATE-{wave.id} as completed (TaskUpdate)
+```
+
+### Gate Validation
+
+When all tasks in a wave complete, validate quality gate before marking the gate sentinel:
+
+1. **Read** gate criteria from the template
+2. **Verify** each criterion (file_exists, output_exists, test_result)
+3. **Check** interface contracts established in this wave have artifacts present
+4. **Mark** GATE-N task as completed -> unblocks next wave's tasks
+5. **Broadcast** wave completion to all teammates
+
+### Contract Tracking
+
+Track contract status in coordination_log.yaml:
+
+```yaml
+contracts:
+  - interface: "Database Schema"
+    status: fulfilled  # established | consumed | fulfilled | violated
+    artifacts_verified: true
+```
+
 ## Key Principles
 
 1. **Delegate only** - Never do direct implementation work
@@ -344,8 +389,10 @@ If team execution partially fails:
 5. **Continuous monitoring** - Track progress via TaskList and teammate messages
 6. **Synthesis at end** - Aggregate `/run` outputs into coherent result
 7. **Clean shutdown** - Shut down teammates and TeamDelete when complete
+8. **Wave-aware** - Execute waves in order, validate gates between phases
+9. **Contract enforcement** - Verify interface contracts at gate boundaries
 
 ---
 
-**Version**: 2.0
+**Version**: 3.0
 **Part of**: cAgents Core Infrastructure - Built-in Agent Teams Integration

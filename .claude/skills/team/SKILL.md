@@ -1,7 +1,7 @@
 ---
 name: team
 description: "Parallel team-based workflow execution using Claude Code's built-in agent teams with tmux split pane display. Decomposes work and parallelizes via teammates running /run, with shared task lists and inter-agent messaging."
-argument-hint: "<request> [--dry-run] [--members <n>] [--display] [--teammate-mode tmux|auto|in-process]"
+argument-hint: "<request> [--dry-run] [--members <n>] [--display] [--teammate-mode tmux|auto|in-process] [--template <name>] [--waves <n>] [--no-template]"
 user-invocable: true
 context: fork
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite, TeamCreate, TaskCreate, TaskUpdate, TaskList, SendMessage
@@ -48,8 +48,8 @@ The team lead is the main session. Teammates are separate Claude Code instances 
 ## Argument Handling
 
 Parse `$ARGUMENTS` for:
-- **Flags**: `--parallel`, `--dry-run`, `--display`, `--quiet`/`-q`, `--teammate-mode <mode>`
-- **Value flags**: `--lead <agent>`, `--members <N>`, `--domain <domain>`, `--tier <N>`
+- **Flags**: `--parallel`, `--dry-run`, `--display`, `--quiet`/`-q`, `--teammate-mode <mode>`, `--no-template`
+- **Value flags**: `--lead <agent>`, `--members <N>`, `--domain <domain>`, `--tier <N>`, `--template <name>`, `--waves <N>`
 - **Request**: Everything before the first `--` flag
 
 See @reference/flags.md for complete flag reference.

@@ -10,11 +10,14 @@ function parseTeamFlags(commandString) {
     dryRun: commandString.includes('--dry-run'),
     display: commandString.includes('--display'),
     quiet: commandString.includes('--quiet') || commandString.includes('-q'),
+    noTemplate: commandString.includes('--no-template'),
     teammateMode: extractFlagValue(commandString, '--teammate-mode'),
     lead: extractFlagValue(commandString, '--lead'),
     members: parseInt(extractFlagValue(commandString, '--members') || '8', 10),
     domain: extractFlagValue(commandString, '--domain'),
-    tier: extractFlagValue(commandString, '--tier')
+    tier: extractFlagValue(commandString, '--tier'),
+    template: extractFlagValue(commandString, '--template'),
+    waves: extractFlagValue(commandString, '--waves') ? parseInt(extractFlagValue(commandString, '--waves'), 10) : null
   };
   return flags;
 }
@@ -33,6 +36,9 @@ function parseTeamFlags(commandString) {
 | `--tier <N>` | Number | Override tier classification | auto |
 | `--quiet`, `-q` | Boolean | Suppress team progress output | false |
 | `--teammate-mode <mode>` | String | Display mode: auto, tmux, in-process | auto |
+| `--template <name>` | String | Force specific team template (e.g., fullstack-app, api-service) | auto-detect |
+| `--waves <N>` | Number | Override number of delivery waves | template default |
+| `--no-template` | Boolean | Force flat execution without template structure | false |
 
 ## Usage Examples
 
@@ -52,6 +58,16 @@ function parseTeamFlags(commandString) {
 /team Add API endpoints --display                        # Show communication
 /team Implement feature --teammate-mode tmux             # Force tmux split panes
 /team Build system --teammate-mode in-process            # Force in-process mode
+```
+
+### With Templates
+```bash
+/team Build a full-stack app                            # Auto-selects fullstack-app template
+/team Build REST API --template api-service             # Force API service template
+/team Create React dashboard --template frontend-app    # Force frontend template
+/team Build game mechanics --template game-project      # Force game template
+/team Fix auth bug --no-template                        # Force flat (no waves)
+/team Build feature --waves 2                           # Override wave count
 ```
 
 ## Display Mode (teammateMode)

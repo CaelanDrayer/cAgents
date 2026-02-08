@@ -259,6 +259,8 @@ Built-in team resources:
 
 ## Team Lifecycle
 
+### Standard (Flat) Lifecycle
+
 ```
 1. TeamCreate -- create team and shared task list
 2. TaskCreate -- create work items as shared tasks (with dependencies)
@@ -269,6 +271,23 @@ Built-in team resources:
 7. Aggregate -- synthesize results into coordination_log.yaml
 8. SendMessage (shutdown_request) -- shut down teammates
 9. TeamDelete -- clean up team and task resources
+```
+
+### Template + Wave Lifecycle (V9.6)
+
+```
+1. TeamCreate -- create team and shared task list
+2. Auto-select template (or use --template flag)
+3. Tag work items with wave + team assignments
+4. Create tasks with wave-gated dependencies (GATE sentinel pattern)
+5. Wave 0 (bootstrap): Orchestrator executes foundation via /run
+   -> Validate GATE-0 quality criteria -> Mark GATE-0 complete
+6. Wave 1 (parallel): Teams execute in parallel via /run
+   -> Validate GATE-1 quality criteria per team -> Mark GATE-1 complete
+7. Wave 2 (integration): Orchestrator integrates + polishes via /run
+   -> Validate final quality gate
+8. Aggregate results + track contract fulfillment
+9. Shutdown teammates + TeamDelete
 ```
 
 ## Performance
@@ -324,6 +343,160 @@ To disable team mode for a project:
 team_mode:
   enabled: false
 ```
+
+## Team Templates (V9.6)
+
+### Overview
+
+Team templates provide pre-built team structures for common project types. Instead of flat parallel execution, templates organize work into teams with delivery waves, quality gates between waves, and interface contracts between teams.
+
+### Available Templates
+
+| Template | Teams | Waves | Best For |
+|----------|-------|-------|----------|
+| `fullstack-app` | Platform + Product + Experience | 3 | Full-stack web apps |
+| `api-service` | API + Data + Security | 2 | REST/GraphQL APIs |
+| `frontend-app` | UI/UX + Components + State | 2 | Frontend SPAs |
+| `content-campaign` | Strategy + Content + Distribution | 3 | Marketing campaigns |
+| `data-pipeline` | Ingestion + Transform + Serving | 2 | Data engineering |
+| `game-project` | Core Dev + Art & Audio + Design & QA | 3 | Game development |
+| `_custom` | User-defined | User-defined | Custom structures |
+
+### Auto-Selection
+
+Templates are automatically selected based on scoring:
+
+```
+Score = keyword_match * 0.4 + domain_match * 0.2 + project_signal * 0.2 + item_count * 0.2
+```
+
+The highest-scoring template above its `confidence_threshold` (0.6) is selected. If no template qualifies, flat execution is used.
+
+### Template Flags
+
+| Flag | Description | Example |
+|------|-------------|---------|
+| `--template <id>` | Force specific template | `/team Build app --template fullstack-app` |
+| `--no-template` | Force flat execution | `/team Fix bug --no-template` |
+| `--waves <N>` | Override wave count | `/team Build app --waves 2` |
+
+### Template Location
+
+Templates are stored in `Agent_Memory/_system/templates/teams/` with `_index.yaml` as the catalog index.
+
+## Delivery Waves (V9.6)
+
+### Overview
+
+Waves are delivery phases that enforce execution order. Work items are tagged with wave assignments, and gate sentinel tasks prevent the next wave from starting until the current wave's quality criteria are met.
+
+### Wave Types
+
+| Type | Executor | Parallelism | Purpose |
+|------|----------|-------------|---------|
+| `bootstrap` | Orchestrator (sequential /run) | None | Foundation, contracts, setup |
+| `parallel` | Teams (parallel /run per item) | Full | Main build phase |
+| `integration` | Orchestrator (sequential /run) | None | Wiring, testing, polish |
+
+### Gate Sentinel Pattern
+
+Waves are enforced via TaskCreate dependencies -- no custom orchestration code:
+
+```
+Wave 0 tasks created
+  -> GATE-0 sentinel (addBlockedBy: all wave-0 task IDs)
+
+Wave 1 tasks created (addBlockedBy: [GATE-0])
+  -> GATE-1 sentinel (addBlockedBy: all wave-1 task IDs)
+
+Wave 2 tasks created (addBlockedBy: [GATE-1])
+```
+
+The team lead validates quality criteria before marking each GATE task complete, unblocking the next wave.
+
+### Quality Gates
+
+Each wave ends with a quality gate:
+
+```yaml
+quality_gate:
+  name: "GATE-0: Foundation Ready"
+  criteria:
+    - "Project structure created"
+    - "Database schema defined"
+    - "Interface contracts documented"
+  verification_method: file_exists  # file_exists | output_exists | test_result | manual_review
+```
+
+### Example: 3-Wave Full-Stack App
+
+```
+Wave 0 (Foundation):
+  - Setup project structure
+  - Define database schema
+  - Export shared types
+  -> GATE-0: Verify structure + schema + types exist
+
+Wave 1 (Parallel Build):
+  Platform team: Backend APIs, database migrations
+  Product team: Business logic, feature endpoints
+  Experience team: UI components, forms, pages
+  -> GATE-1: Verify APIs operational, logic implemented, UI built
+
+Wave 2 (Integration):
+  - Wire frontend to backend
+  - End-to-end testing
+  - Performance optimization
+  -> GATE-2: All integrated, tests passing
+```
+
+## Interface Contracts (V9.6)
+
+### Overview
+
+Contracts define explicit interfaces between teams. They ensure that when one team produces an artifact (schema, API types, design tokens), consuming teams can depend on it.
+
+### Contract Schema
+
+```yaml
+contracts:
+  - provider: platform       # Team that creates the interface
+    consumer: product        # Team that depends on it
+    interface: "Database Schema & Models"
+    description: "Platform defines data layer; Product consumes models"
+    established_in: 0        # Wave where artifact is created
+    consumed_in: 1           # Wave where artifact is consumed
+    artifacts:               # Files to verify
+      - schema.prisma
+      - src/models/
+```
+
+### Contract Lifecycle
+
+1. **Established**: Provider creates artifacts during `established_in` wave
+2. **Verified**: Gate validation checks artifacts exist
+3. **Consumed**: Consumer uses artifacts during `consumed_in` wave
+4. **Fulfilled**: Both established and consumed successfully
+
+### Contract Tracking
+
+Contracts are tracked in `coordination_log.yaml`:
+
+```yaml
+contracts:
+  - interface: "Database Schema"
+    status: fulfilled  # established | consumed | fulfilled | violated
+    artifacts_verified: true
+```
+
+## Backward Compatibility
+
+All template/wave features are additive. When no template matches:
+- Low confidence score from auto-selection
+- `--no-template` flag used
+- No templates exist in `Agent_Memory/_system/templates/teams/`
+
+The system behaves exactly as V9.2: flat parallel execution with no waves or contracts.
 
 ## Troubleshooting
 
@@ -382,6 +555,28 @@ team_mode:
 
 **Fix**: Use TeamDelete to clean up, or manually remove `~/.claude/teams/{team-name}/` and `~/.claude/tasks/{team-name}/`
 
+### Wrong Template Selected
+
+**Symptom**: Auto-selection picks wrong template
+
+**Fix**: Use `--template <id>` to force the correct template, or `--no-template` for flat execution
+
+### Wave Gate Stuck
+
+**Symptom**: Tasks stuck waiting for gate to pass
+
+**Causes**:
+- Gate quality criteria not met
+- Contract artifacts missing
+
+**Fix**: Check gate criteria, verify provider teams completed contract artifacts, manually mark gate complete if criteria verified
+
+### Contract Violation
+
+**Symptom**: Consumer team can't find expected artifacts
+
+**Fix**: Verify provider team completed its wave, check artifact paths in template, re-run provider work items if needed
+
 ## Hooks
 
 Team-specific hooks in `.claude/hooks/`:
@@ -400,5 +595,5 @@ Team-specific hooks in `.claude/hooks/`:
 
 ---
 
-**Version**: 9.2.0
+**Version**: 9.6.0
 **Part of**: cAgents - Parallel Team Execution via Built-in Agent Teams

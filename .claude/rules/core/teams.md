@@ -276,10 +276,115 @@ Built-in resources (managed by Claude Code):
 - Document partial results clearly
 - Return with status of succeeded/failed items
 
+## Team Templates
+
+Pre-built team structures for common project types. Templates define teams, delivery waves, quality gates, and interface contracts.
+
+### Available Templates
+
+| Template | Teams | Waves | Domain |
+|----------|-------|-------|--------|
+| `fullstack-app` | Platform + Product + Experience | 3 | make:engineering |
+| `api-service` | API + Data + Security | 2 | make:engineering |
+| `frontend-app` | UI/UX + Components + State | 2 | make:engineering |
+| `content-campaign` | Strategy + Content + Distribution | 3 | grow:marketing |
+| `data-pipeline` | Ingestion + Transform + Serving | 2 | make:engineering |
+| `game-project` | Core Dev + Art & Audio + Design & QA | 3 | make:game-development |
+| `_custom` | User-defined | User-defined | Any |
+
+### Auto-Selection
+
+Templates are auto-selected by scoring against the request:
+
+```
+Score = keyword * 0.4 + domain * 0.2 + signal * 0.2 + items * 0.2
+Select top scorer above confidence_threshold (0.6)
+```
+
+Override with flags: `--template <id>`, `--no-template`, `--waves <N>`
+
+### Template Location
+
+`Agent_Memory/_system/templates/teams/` with `_index.yaml` catalog.
+
+## Wave Execution
+
+Waves are delivery phases enforced via TaskCreate dependencies (gate sentinel tasks).
+
+### Wave Types
+
+| Type | Executor | Description |
+|------|----------|-------------|
+| `bootstrap` | Orchestrator (sequential /run) | Foundation setup, contracts |
+| `parallel` | Teams (parallel /run per item) | Main build phase |
+| `integration` | Orchestrator (sequential /run) | Wiring, testing, polish |
+
+### Gate Sentinel Pattern
+
+```
+Wave 0 tasks -> GATE-0 (addBlockedBy: all wave-0 tasks)
+Wave 1 tasks (addBlockedBy: [GATE-0]) -> GATE-1 (addBlockedBy: all wave-1 tasks)
+Wave 2 tasks (addBlockedBy: [GATE-1])
+```
+
+Team lead validates quality gate criteria before marking GATE-N complete, which unblocks the next wave. No custom orchestration code -- uses built-in TaskCreate dependencies.
+
+### Quality Gates
+
+Each wave has a quality gate with:
+- **criteria**: List of conditions to verify
+- **verification_method**: How to check (file_exists, output_exists, test_result, manual_review)
+
+Example:
+```yaml
+quality_gate:
+  name: "GATE-0: Foundation Ready"
+  criteria:
+    - "Project structure created"
+    - "Database schema defined"
+    - "Interface contracts documented"
+  verification_method: file_exists
+```
+
+## Interface Contracts
+
+Contracts define interfaces between teams -- agreements established in one wave and consumed in the next.
+
+### Contract Schema
+
+```yaml
+contracts:
+  - provider: platform       # Team that creates the interface
+    consumer: product        # Team that depends on it
+    interface: "Database Schema"
+    established_in: 0        # Wave where provider creates artifact
+    consumed_in: 1           # Wave where consumer uses it
+    artifacts: ["schema.prisma", "src/models/"]
+```
+
+### Contract Enforcement
+
+1. **At gate validation**: Verify contract artifacts exist before marking gate complete
+2. **During parallel execution**: Consumer tasks reference contract artifacts in instructions
+3. **At final gate**: Verify all contracts established and consumed
+
+### Contract Status
+
+Tracked in coordination_log.yaml:
+```yaml
+contracts:
+  - interface: "Database Schema"
+    status: fulfilled  # established | consumed | fulfilled | violated
+```
+
+## Backward Compatibility
+
+When no template matches (low confidence, `--no-template`, or no templates exist), the system behaves exactly as today: flat parallel execution with no waves. All template/wave features are additive.
+
 ## Integration Points
 
-- **team-trigger**: Creates team via TeamCreate, initializes session
-- **team-lead-adapter**: Wraps controller in delegate mode, uses SendMessage/TaskList
+- **team-trigger**: Creates team via TeamCreate, initializes session, selects template, executes waves
+- **team-lead-adapter**: Wraps controller in delegate mode, validates gates, tracks contracts
 - **orchestrator**: Detects team mode, routes appropriately
 - **Hooks**: team-start.cjs, team-stop.cjs, team-task-complete.cjs, teammate-idle-handler.cjs
 
