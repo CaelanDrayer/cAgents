@@ -10,7 +10,7 @@ cAgents transforms AI-assisted work across any domain through specialized agent 
 
 **V9.0 Release** (2026-02-07):
 - Skills system (`.claude/skills/` auto-discovery replaces legacy commands)
-- 14 hook event types with shell+JS dual architecture (11 CJS hooks + 9 shell hooks)
+- 14 hook event types with shell+JS dual architecture (12 CJS hooks + 9 shell hooks)
 - Agent Teams integration for parallel team-based execution (40-60% time reduction)
 - opusplan model routing (Opus reasoning + Sonnet execution for controllers)
 - Enhanced PreCompact waypoints with coordination state preservation
@@ -94,7 +94,7 @@ The `setup.sh` script automatically configures hooks based on your environment:
 ./setup.sh --force-shell-only
 ```
 
-**With Node.js**: All hooks enabled (9 shell + 7 Node.js)
+**With Node.js**: All hooks enabled (9 shell + 12 Node.js)
 **Without Node.js**: 9 shell hooks enabled, advanced features disabled
 
 ## Quick Start
@@ -309,4 +309,4 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | **cAgents V9.0** | 236 agents across 5 super-domains
+**Built with Claude Code** | **cAgents V9.3** | 236 agents across 5 super-domains

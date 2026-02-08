@@ -50,6 +50,7 @@ main() {
         ":(){ :|:& };:"  # Fork bomb
         "> /dev/sda"
         "dd if=/dev/zero"
+        "mkfs"
         "sudo "
     )
 

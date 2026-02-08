@@ -24,7 +24,7 @@ SETTINGS_FULL="$CLAUDE_DIR/settings.full.json"
 SETTINGS_SHELL_ONLY="$CLAUDE_DIR/settings.shell-only.json"
 
 echo -e "${BLUE}======================================${NC}"
-echo -e "${BLUE}cAgents V9.0 Setup${NC}"
+echo -e "${BLUE}cAgents Setup${NC}"
 echo -e "${BLUE}======================================${NC}"
 echo ""
 
@@ -122,13 +122,13 @@ if NODE_VERSION=$(detect_nodejs); then
             echo -e "${GREEN}Full hooks already configured.${NC}"
             echo ""
             echo "All 14 hook events enabled:"
-            echo "  - Shell hooks: 7 hooks (session, workflow, tools)"
-            echo "  - Node.js hooks: 10 hooks (catchup, completion, secrets, compact,"
+            echo "  - Shell hooks: 9 hooks (session, workflow, tools)"
+            echo "  - Node.js hooks: 12 hooks (catchup, completion, secrets, compact,"
             echo "    notifications, failure tracker, subagent tracker, idle handler,"
             echo "    permission handler, team task complete)"
             echo "  - Prompt hooks: 2 (SessionStart rules, Stop checklist)"
             echo ""
-            echo -e "${GREEN}cAgents V9.0 is ready to use!${NC}"
+            echo -e "${GREEN}cAgents is ready to use!${NC}"
             exit 0
         fi
     fi
@@ -147,18 +147,18 @@ if NODE_VERSION=$(detect_nodejs); then
     echo -e "${GREEN}Configuration complete (full mode)${NC}"
     echo ""
     echo "All 14 hook events enabled:"
-    echo "  - Shell hooks: 7 hooks (session, workflow, tools)"
-    echo "  - Node.js hooks: 10 hooks (catchup, completion, secrets, compact,"
+    echo "  - Shell hooks: 9 hooks (session, workflow, tools)"
+    echo "  - Node.js hooks: 12 hooks (catchup, completion, secrets, compact,"
     echo "    notifications, failure tracker, subagent tracker, idle handler,"
     echo "    permission handler, team task complete)"
     echo "  - Prompt hooks: 2 (SessionStart rules, Stop checklist)"
     echo ""
-    echo -e "${GREEN}cAgents V9.0 is ready to use!${NC}"
+    echo -e "${GREEN}cAgents is ready to use!${NC}"
 
 else
     echo -e "${YELLOW}Node.js not found${NC}"
     echo ""
-    echo "Node.js is required for advanced cAgents V9.0 features:"
+    echo "Node.js is required for advanced cAgents features:"
     echo "  - Session catchup (resume incomplete sessions)"
     echo "  - Verify completion (completion validation)"
     echo "  - Secret detection (block secrets in writes)"

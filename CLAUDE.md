@@ -357,7 +357,7 @@ Planner -> Objectives -> Controller -> Questions -> Execution Agents -> Answers 
 
 | Tier | Role | Count | Purpose | Examples |
 |------|------|-------|---------|----------|
-| **1: Core** | Infrastructure | 12 | Workflow orchestration | orchestrator, planner, executor, validator |
+| **1: Core** | Infrastructure | 14 | Workflow orchestration | orchestrator, planner, executor, validator |
 | **2: Controller** | Coordination | ~53 | Question-based delegation | engineering-manager, architect, cto, campaign-manager |
 | **3: Execution** | Specialists | ~147 | Answer questions and execute | backend-developer, copywriter, financial-analyst |
 | **4: Support** | Operations | ~19 | Foundational services | scribe, data-extractor |
@@ -835,10 +835,10 @@ See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 **Architecture**: Controller-Centric Coordination with Task Inventory + Built-in Agent Teams
 **Super-Domains**: 5 (Make, Grow, Operate, People, Serve)
 **Skills**: 6 (run, team, designer, review, optimize, helper) in `.claude/skills/`
-**Hooks**: 14 event types, 11 CJS hooks, 2 prompt hooks, 2 dispatchers
+**Hooks**: 14 event types, 12 CJS hooks, 2 prompt hooks, 2 dispatchers
 **Models**: opusplan (controllers), sonnet (execution), haiku (support)
 **Team Mode**: 40-60% execution time reduction via built-in agent teams with tmux split pane display
 **Directories**: 7 (core, shared, make, grow, operate, people, serve)
 **Key Innovation**: CSV-based task inventory for large workflows + aggressive decomposition
 **Dependencies**: None (file-based, self-contained)
-**Version**: 9.2.0
+**Version**: 9.3.2
