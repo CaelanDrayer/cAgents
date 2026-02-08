@@ -1,56 +1,30 @@
 #!/usr/bin/env node
 /**
  * Verify Completion Hook - Stop hook verification
- * cAgents V8.0 - Verification Loop Enhancement
+ * cAgents V9.5 - Refactored
  *
- * This hook runs on Stop event to verify workflow completion criteria.
- * Prevents premature workflow termination without proper completion evidence.
- *
- * 100% Self-Contained: Uses only built-in Node.js modules.
+ * Runs on Stop event to verify workflow completion criteria.
+ * Also handles stop-workflow cleanup (replaces stop-workflow.sh).
  *
  * Input (stdin): JSON with session context
- * Output (stdout): JSON with continue status
+ * Output (stdout): JSON with continue/block decision
  */
-
-// CRITICAL: Wrap everything in try-catch for plugin resilience
-try {
 
 const fs = require('fs');
 const path = require('path');
+const { createHook, findActiveSession, extractYamlValue, safeRead, countPattern, ensureDir } = require('./hook-utils.cjs');
 
-// Try to load hook-utils, fall back to inline implementations
-let utils;
-try {
-  utils = require('./hook-utils.cjs');
-} catch {
-  // Minimal inline fallbacks for plugin mode
-  utils = {
-    readStdin: () => Promise.resolve({}),
-    findActiveSession: () => null,
-    extractYamlValue: () => null,
-    safeRead: () => null,
-    countPattern: () => 0,
-    ensureDir: (d) => { try { fs.mkdirSync(d, { recursive: true }); } catch {} return d; }
-  };
-}
-
-const { readStdin, findActiveSession, extractYamlValue, safeRead, countPattern, ensureDir } = utils;
-
-/**
- * Verify completion criteria
- */
 function verifyCompletion(sessionDir) {
   const issues = [];
   const warnings = [];
 
-  // 1. Check status.yaml exists and has valid phase
+  // 1. Check status.yaml
   const statusFile = path.join(sessionDir, 'status.yaml');
   const statusContent = safeRead(statusFile);
   if (!statusContent) {
     warnings.push('No status.yaml file (session may not be a cAgents workflow)');
   } else {
     const phase = extractYamlValue(statusContent, 'phase') || extractYamlValue(statusContent, 'current_phase');
-
     if (!phase) {
       warnings.push('No phase defined in status.yaml');
     } else if (phase === 'planning' || phase === 'coordinating' || phase === 'executing') {
@@ -66,45 +40,42 @@ function verifyCompletion(sessionDir) {
   if (coordContent) {
     const pendingCount = countPattern(coordContent, /status:\s*pending/g);
     const inProgressCount = countPattern(coordContent, /status:\s*in_progress/g);
+    if (pendingCount > 0) issues.push(`${pendingCount} work item(s) still pending`);
+    if (inProgressCount > 0) issues.push(`${inProgressCount} work item(s) still in progress`);
 
-    if (pendingCount > 0) {
-      issues.push(`${pendingCount} work item(s) still pending`);
-    }
-    if (inProgressCount > 0) {
-      issues.push(`${inProgressCount} work item(s) still in progress`);
-    }
-
-    // Check for missing evidence (empty arrays or bare key)
     const emptyEvidence = countPattern(coordContent, /evidence:\s*(?:\[\]|null|""|'')$/gm);
-    if (emptyEvidence > 0) {
-      warnings.push(`${emptyEvidence} work item(s) missing completion evidence`);
-    }
+    if (emptyEvidence > 0) warnings.push(`${emptyEvidence} work item(s) missing completion evidence`);
   }
 
-  // 3. Check for validation report if in validating/completed phase
+  // 3. Check validation report
   const validationFile = path.join(sessionDir, 'validation', 'validation_report.yaml');
   const valContent = safeRead(validationFile);
   if (!valContent) {
     warnings.push('Missing validation report');
   } else {
     const status = extractYamlValue(valContent, 'overall_status') || extractYamlValue(valContent, 'status');
-
-    if (status && status !== 'PASS') {
-      warnings.push(`Validation status: ${status} (expected: PASS)`);
-    }
+    if (status && status !== 'PASS') warnings.push(`Validation status: ${status} (expected: PASS)`);
   }
 
   return { issues, warnings };
 }
 
-/**
- * Create completion summary
- */
-function createCompletionSummary(sessionDir, result) {
+createHook('VerifyCompletion', async (input) => {
+  // Prevent infinite loops: if stop_hook_active, allow stop
+  if (input && input.stop_hook_active) {
+    console.error('[VerifyCompletion] stop_hook_active=true, allowing stop');
+    return null;
+  }
+
+  const sessionDir = findActiveSession();
+  if (!sessionDir) return null;
+
+  const result = verifyCompletion(sessionDir);
+
+  // Write completion summary
   ensureDir(sessionDir);
   const summaryFile = path.join(sessionDir, 'completion_summary.yaml');
   const timestamp = new Date().toISOString();
-
   const content = `# Completion Summary
 generated_at: "${timestamp}"
 verified_by: verify-completion-hook
@@ -114,91 +85,28 @@ verification_result:
   issues_count: ${result.issues.length}
   warnings_count: ${result.warnings.length}
 
-${result.issues.length > 0 ? `issues:
-${result.issues.map(i => `  - "${i}"`).join('\n')}` : 'issues: []'}
+${result.issues.length > 0 ? `issues:\n${result.issues.map(i => `  - "${i}"`).join('\n')}` : 'issues: []'}
 
-${result.warnings.length > 0 ? `warnings:
-${result.warnings.map(w => `  - "${w}"`).join('\n')}` : 'warnings: []'}
-
-notes: |
-  This summary was generated by the verify-completion hook.
-  Review warnings and ensure all work items have completion evidence.
+${result.warnings.length > 0 ? `warnings:\n${result.warnings.map(w => `  - "${w}"`).join('\n')}` : 'warnings: []'}
 `;
+  try { fs.writeFileSync(summaryFile, content); } catch {}
 
-  try {
-    fs.writeFileSync(summaryFile, content);
-  } catch (error) {
-    console.error(`[VerifyCompletion] Failed to write summary: ${error.message}`);
+  if (result.issues.length > 0) {
+    console.error(`[VerifyCompletion] ISSUES: ${result.issues.join('; ')}`);
+    return {
+      decision: 'block',
+      reason: `cAgents completion verification found issues:\n${result.issues.join('\n')}\n\nPlease address these before stopping.`
+    };
   }
 
-  return summaryFile;
-}
-
-/**
- * Main hook execution
- */
-async function main() {
-  const input = await readStdin();
-
-  try {
-    // Check if stop_hook_active is true to prevent infinite loops.
-    // When Claude Code is already continuing due to a prior stop hook block,
-    // stop_hook_active is set to true. We should allow the stop to proceed
-    // to avoid an infinite continue loop.
-    if (input && input.stop_hook_active) {
-      console.error('[VerifyCompletion] stop_hook_active=true, allowing stop to avoid loop');
-      console.log(JSON.stringify({ continue: true }));
-      return;
-    }
-
-    const sessionDir = findActiveSession();
-
-    if (!sessionDir) {
-      console.log(JSON.stringify({ continue: true }));
-      return;
-    }
-
-    // Verify completion
-    const result = verifyCompletion(sessionDir);
-
-    // Create summary
-    createCompletionSummary(sessionDir, result);
-
-    // Log findings
-    if (result.issues.length > 0) {
-      console.error(`[VerifyCompletion] ISSUES: ${result.issues.join('; ')}`);
-    }
-    if (result.warnings.length > 0) {
-      console.error(`[VerifyCompletion] WARNINGS: ${result.warnings.join('; ')}`);
-    }
-
-    // Decide whether to allow stop.
-    // Use "decision: block" for Stop hooks per Claude Code docs to prevent
-    // premature stopping when work items are still incomplete.
-    if (result.issues.length > 0) {
-      console.log(JSON.stringify({
-        decision: 'block',
-        reason: `cAgents completion verification found issues:\n${result.issues.join('\n')}\n\nPlease address these before stopping.`
-      }));
-    } else if (result.warnings.length > 0) {
-      console.log(JSON.stringify({
-        continue: true,
-        systemMessage: `cAgents workflow stopping with ${result.warnings.length} warning(s). See completion_summary.yaml for details.`
-      }));
-    } else {
-      console.error('[VerifyCompletion] All completion criteria verified');
-      console.log(JSON.stringify({ continue: true }));
-    }
-
-  } catch (error) {
-    console.error(`[VerifyCompletion] Error: ${error.message}`);
-    console.log(JSON.stringify({ continue: true }));
+  if (result.warnings.length > 0) {
+    console.error(`[VerifyCompletion] WARNINGS: ${result.warnings.join('; ')}`);
+    return {
+      continue: true,
+      systemMessage: `cAgents workflow stopping with ${result.warnings.length} warning(s). See completion_summary.yaml for details.`
+    };
   }
-}
 
-main();
-
-} catch (e) {
-  // Top-level catch for plugin resilience - always output valid JSON
-  console.log(JSON.stringify({ continue: true }));
-}
+  console.error('[VerifyCompletion] All completion criteria verified');
+  return null;
+});

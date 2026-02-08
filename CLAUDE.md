@@ -757,7 +757,7 @@ cAgents/
 ├── CLAUDE.md                # Main project memory (this file)
 ├── .claude/
 │   ├── skills/              # V9.0 Skills (run, team, designer, review, optimize, helper)
-│   ├── hooks/               # CJS hooks (12 registered + hook-utils.cjs)
+│   ├── hooks/               # CJS hooks (13 registered + hook-utils.cjs + eval-runner CLI)
 │   ├── rules/               # Modular rules (20 files across 5 categories)
 │   └── settings.json        # Hook registration + permissions + env
 ├── core/                    # Core infrastructure (tier 1)
@@ -835,10 +835,10 @@ See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 **Architecture**: Controller-Centric Coordination with Task Inventory + Built-in Agent Teams
 **Super-Domains**: 5 (Make, Grow, Operate, People, Serve)
 **Skills**: 6 (run, team, designer, review, optimize, helper) in `.claude/skills/`
-**Hooks**: 14 event types, 12 CJS hooks, 2 prompt hooks, 2 dispatchers
+**Hooks**: 14 event types, 13 CJS hooks, 2 prompt hooks, direct invocation (no dispatchers)
 **Models**: opusplan (controllers), sonnet (execution), haiku (support)
 **Team Mode**: 40-60% execution time reduction via built-in agent teams with tmux split pane display
 **Directories**: 7 (core, shared, make, grow, operate, people, serve)
 **Key Innovation**: CSV-based task inventory for large workflows + aggressive decomposition
 **Dependencies**: None (file-based, self-contained)
-**Version**: 9.4.1
+**Version**: 9.5.0

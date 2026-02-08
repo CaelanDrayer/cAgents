@@ -1,43 +1,19 @@
 #!/usr/bin/env node
 /**
  * Tool Failure Tracker Hook - Track and analyze tool failures
- * cAgents V9.0 - PostToolUseFailure Handler
+ * cAgents V9.5 - Refactored
  *
  * Tracks tool failures with tool name, error message, timestamp.
  * Detects failure patterns (3+ failures of same tool = suggest alternative).
- * Writes failure log to active session's workflow/tool_failures.yaml.
  *
- * 100% Self-Contained: Uses only built-in Node.js modules.
- *
- * Input (stdin): JSON with tool_name, error, session context
+ * Input (stdin): JSON with tool_name, error from PostToolUseFailure event
  * Output (stdout): JSON with continue status and recovery suggestions
  */
 
-// CRITICAL: Wrap everything in try-catch for plugin resilience
-try {
-
 const fs = require('fs');
 const path = require('path');
+const { createHook, findActiveSession, safeRead, ensureDir } = require('./hook-utils.cjs');
 
-// Try to load hook-utils, fall back to inline implementations
-let utils;
-try {
-  utils = require('./hook-utils.cjs');
-} catch {
-  // Minimal inline fallbacks for plugin mode
-  utils = {
-    readStdin: () => Promise.resolve({}),
-    findActiveSession: () => null,
-    safeRead: () => null,
-    ensureDir: (d) => { try { fs.mkdirSync(d, { recursive: true }); } catch {} return d; }
-  };
-}
-
-const { readStdin, findActiveSession, safeRead, ensureDir } = utils;
-
-/**
- * Tool alternative suggestions for common failures
- */
 const TOOL_ALTERNATIVES = {
   'Bash': 'Consider using Read/Write/Glob/Grep dedicated tools instead of shell commands.',
   'Write': 'Check file path permissions. Try writing to Agent_Memory/ instead.',
@@ -48,117 +24,54 @@ const TOOL_ALTERNATIVES = {
   'Grep': 'Pattern may have regex issues. Try a simpler pattern or different path.'
 };
 
-/**
- * Parse existing failure log
- */
-function parseFailureLog(content) {
-  if (!content) return [];
+createHook('ToolFailureTracker', async (input) => {
+  const toolName = input.tool_name || 'unknown';
+  const errorMsg = (input.error || input.tool_output || '').toString().slice(0, 200);
+  const now = new Date().toISOString();
 
-  const entries = [];
-  const blocks = content.split(/\n- timestamp:/);
+  const sessionDir = findActiveSession();
+  if (!sessionDir) return null;
 
-  for (let i = 1; i < blocks.length; i++) {
-    const block = '- timestamp:' + blocks[i];
-    const entry = {};
+  const workflowDir = ensureDir(path.join(sessionDir, 'workflow'));
+  const failureFile = path.join(workflowDir, 'tool_failures.yaml');
 
-    const tsMatch = block.match(/timestamp:\s*"([^"]+)"/);
-    if (tsMatch) entry.timestamp = tsMatch[1];
-
-    const toolMatch = block.match(/tool:\s*"([^"]+)"/);
-    if (toolMatch) entry.tool = toolMatch[1];
-
-    const errorMatch = block.match(/error:\s*"([^"]+)"/);
-    if (errorMatch) entry.error = errorMatch[1];
-
-    if (entry.tool) entries.push(entry);
+  // Parse existing failures for pattern detection
+  const existingContent = safeRead(failureFile);
+  const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+  let recentCount = 0;
+  if (existingContent) {
+    const blocks = existingContent.split(/\n- timestamp:/);
+    for (let i = 1; i < blocks.length; i++) {
+      const block = blocks[i];
+      const tsMatch = block.match(/timestamp:\s*"([^"]+)"/);
+      const toolMatch = block.match(/tool:\s*"([^"]+)"/);
+      if (tsMatch && toolMatch && toolMatch[1] === toolName && tsMatch[1] > tenMinAgo) {
+        recentCount++;
+      }
+    }
   }
 
-  return entries;
-}
+  // Append new failure
+  const safeError = errorMsg.replace(/"/g, "'").replace(/\n/g, ' ');
+  const newEntry = `\n- timestamp: "${now}"\n  tool: "${toolName}"\n  error: "${safeError}"\n`;
 
-/**
- * Detect failure patterns
- */
-function detectPatterns(entries, currentTool) {
-  // Count recent failures of same tool (last 10 minutes)
-  const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+  if (!existingContent) {
+    fs.writeFileSync(failureFile, `# Tool Failure Log\n# Session: ${path.basename(sessionDir)}\n\nfailures:${newEntry}`);
+  } else {
+    fs.appendFileSync(failureFile, newEntry);
+  }
 
-  const recentSameTool = entries.filter(e =>
-    e.tool === currentTool && e.timestamp > tenMinAgo
-  );
+  console.error(`[ToolFailureTracker] ${toolName} failed: ${safeError.slice(0, 80)}`);
 
-  if (recentSameTool.length >= 2) { // 2 + current = 3
+  // Pattern detection (2 previous + current = 3)
+  if (recentCount >= 2) {
+    const suggestion = TOOL_ALTERNATIVES[toolName] || `Tool "${toolName}" has failed ${recentCount + 1} times recently. Consider an alternative approach.`;
+    console.error(`[ToolFailureTracker] Pattern: ${recentCount + 1} failures of ${toolName}`);
     return {
-      pattern_detected: true,
-      tool: currentTool,
-      count: recentSameTool.length + 1,
-      suggestion: TOOL_ALTERNATIVES[currentTool] || `Tool "${currentTool}" has failed ${recentSameTool.length + 1} times recently. Consider an alternative approach.`
+      continue: true,
+      systemMessage: `Tool failure pattern detected: "${toolName}" has failed ${recentCount + 1} times recently.\n${suggestion}`
     };
   }
 
   return null;
-}
-
-/**
- * Main hook execution
- */
-async function main() {
-  const input = await readStdin();
-
-  try {
-    const toolName = input.tool_name || 'unknown';
-    const errorMsg = (input.error || input.tool_output || '').toString().slice(0, 200);
-    const now = new Date().toISOString();
-
-    const sessionDir = findActiveSession();
-    if (!sessionDir) {
-      console.log(JSON.stringify({ continue: true }));
-      return;
-    }
-
-    // Write to failure log
-    const workflowDir = ensureDir(path.join(sessionDir, 'workflow'));
-    const failureFile = path.join(workflowDir, 'tool_failures.yaml');
-
-    const existingContent = safeRead(failureFile);
-    let entries = parseFailureLog(existingContent);
-
-    // Detect patterns before adding new entry
-    const pattern = detectPatterns(entries, toolName);
-
-    // Append new failure entry
-    const safeError = errorMsg.replace(/"/g, "'").replace(/\n/g, ' ');
-    const newEntry = `\n- timestamp: "${now}"\n  tool: "${toolName}"\n  error: "${safeError}"\n`;
-
-    if (!existingContent) {
-      const header = `# Tool Failure Log\n# Auto-generated by tool-failure-tracker.cjs\n# Session: ${path.basename(sessionDir)}\n\nfailures:${newEntry}`;
-      fs.writeFileSync(failureFile, header);
-    } else {
-      fs.appendFileSync(failureFile, newEntry);
-    }
-
-    console.error(`[ToolFailureTracker] ${toolName} failed: ${safeError.slice(0, 80)}`);
-
-    // Return pattern-based suggestions
-    if (pattern) {
-      console.error(`[ToolFailureTracker] Pattern detected: ${pattern.count} failures of ${toolName}`);
-      console.log(JSON.stringify({
-        continue: true,
-        systemMessage: `Tool failure pattern detected: "${toolName}" has failed ${pattern.count} times recently.\n${pattern.suggestion}`
-      }));
-    } else {
-      console.log(JSON.stringify({ continue: true }));
-    }
-
-  } catch (error) {
-    console.error(`[ToolFailureTracker] Error: ${error.message}`);
-    console.log(JSON.stringify({ continue: true }));
-  }
-}
-
-main();
-
-} catch (e) {
-  // Top-level catch for plugin resilience - always output valid JSON
-  console.log(JSON.stringify({ continue: true }));
-}
+});

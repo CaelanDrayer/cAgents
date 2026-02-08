@@ -1,124 +1,171 @@
 ---
 paths:
   - ".claude/hooks/**"
-  - "hooks/**"
-  - "scripts/hook-dispatch*"
   - ".claude/settings*.json"
 ---
 
 # cAgents Hook System
 
-V9.0 hook system with 14 hook event types and 3 hook types (command, prompt, agent).
+V9.5 CJS-only hook architecture with 14 hook event types and `createHook()` factory pattern.
 
 ## Architecture
 
-cAgents uses a dual-hook system configured in `.claude/settings.json`:
+cAgents uses a unified CJS hook system configured in `.claude/settings.json`:
 
-- **Shell hooks** (`hooks/`): 9 scripts for session lifecycle, workflow events, and tool validation. These are the baseline hooks that work without Node.js. Shared functions (`get_active_instruction`, `get_active_phase`, `get_session_field`) are provided by `scripts/lib/hook-bootstrap.sh`.
-- **JavaScript hooks** (`.claude/hooks/`): 15 `.cjs` files — 1 shared utility module (`hook-utils.cjs`) + 12 registered hooks for advanced features (session catchup, secret detection, completion verification, pre-compact state save, notifications, tool failure tracking, subagent tracking, teammate idle handling, permission handling, team task completion, team start, team stop). Plus 1 standalone CLI tool (`eval-runner.cjs`) and 1 unregistered hook (`context-overflow.cjs` - awaiting Claude Code support for ContextOverflow hook type). All CJS hooks import shared functions from `hook-utils.cjs`.
-- **Hook dispatchers** (`scripts/`): `hook-dispatch.sh` and `hook-dispatch-node.sh` simplify settings.json registration by eliminating verbose bash-in-JSON wrappers.
+- **CJS hooks** (`.claude/hooks/`): 15 `.cjs` files -- 1 shared utility module (`hook-utils.cjs`) + 13 registered hooks + 1 standalone CLI tool (`eval-runner.cjs`). All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output).
 - **Prompt hooks**: 2 prompt-based hooks inject guidance at SessionStart and Stop events.
+- **Direct invocation**: All hooks are called directly via `node .claude/hooks/<name>.cjs` -- no shell dispatch layer.
 
-The `setup.sh` script auto-detects Node.js and configures the appropriate settings. Without Node.js, only shell hooks are active (via `settings.shell-only.json`). With Node.js, both systems run (via `settings.full.json`).
+### V9.5 Changes (from V9.4)
 
-**Archived hooks**: 10 legacy shell scripts and 1 schema file were archived to `archive/hooks/` as they were never registered in settings.json and not called from any active code. These were "programmatic" hooks from an earlier design that anticipated being called by agents during coordination/phase/HITL events but were never wired up.
+The V9.5 refactoring eliminates the dual shell+JS architecture that caused recurring bugs:
+
+**Removed**:
+- 9 shell hooks (`hooks/session/`, `hooks/workflow/`, `hooks/tools/`)
+- 2 dispatch scripts (`scripts/hook-dispatch.sh`, `scripts/hook-dispatch-node.sh`)
+- Shell library dependency for hooks (`scripts/lib/core.sh`, `hook-bootstrap.sh`, etc.)
+
+**Added**:
+- `createHook()` factory in `hook-utils.cjs` (eliminates ~25 lines of boilerplate per hook)
+- `bash-validator.cjs` (new CJS hook replacing `pre-bash.sh`)
+- `findTeamSession()` helper (extracted from 4 duplicated team hooks)
+
+**Merged**:
+- `on-session-start.sh` logic -> `session-catchup.cjs`
+- `on-session-end.sh` logic -> `team-stop.cjs`
+- `stop-workflow.sh` logic -> `verify-completion.cjs`
+- `pre-write.sh` path protection -> `secret-detection.cjs`
+- `pre-bash.sh` command validation -> `bash-validator.cjs`
+
+**Root Causes Fixed**:
+- ERR EXIT trap causing duplicate JSON output in shell hooks
+- `set -euo pipefail` from `core.sh` propagating into hooks via dispatch
+- PreToolUse deny using exit 2 instead of exit 0 + deny JSON
+- fd redirection (`exec 3>&1; exec 1>&2`) fragility in shell hooks
+- Double-JSON-output from dispatch layer on error paths
 
 ## Hook Types Overview
 
-| Hook Type | Trigger | cAgents Implementation | Purpose |
-|-----------|---------|------------------------|---------|
-| `SessionStart` | Session begins | `on-session-start.sh`, `session-catchup.cjs`, prompt hook | Initialize state, detect incomplete sessions |
-| `SessionEnd` | Session ends | `on-session-end.sh`, `team-stop.cjs` | Clean up, archive session, team cleanup |
-| `PreToolUse` | Before tool execution | Multiple (see below) | Validate, block, modify |
-| `PostToolUse` | After tool execution | `on-task-complete.sh` | Track, log, verify |
+| Hook Type | Trigger | cAgents Hook | Purpose |
+|-----------|---------|--------------|---------|
+| `SessionStart` | Session begins | `session-catchup.cjs`, prompt hook | Initialize state, detect incomplete sessions |
+| `SessionEnd` | Session ends | `team-stop.cjs` | Finalize metrics, update status |
+| `PreToolUse` | Before tool execution | `bash-validator.cjs`, `secret-detection.cjs` | Validate, block dangerous operations |
 | `PostToolUseFailure` | Tool execution fails | `tool-failure-tracker.cjs` | Track failures, detect patterns, suggest recovery |
-| `UserPromptSubmit` | User sends message | `on-user-prompt.sh` | Detect commands, route |
-| `Stop` | Claude stops responding | `stop-workflow.sh`, `verify-completion.cjs`, prompt hook | Verify completion |
-| `SubagentStart` | Subagent spawned | `subagent-tracker.cjs`, `team-start.cjs` | Log spawns, track agent chains |
-| `SubagentStop` | Subagent completes | `on-workflow-complete.sh` | Aggregate results |
+| `Stop` | Claude stops responding | `verify-completion.cjs`, prompt hook | Verify completion criteria |
+| `SubagentStart` | Subagent spawned | `subagent-tracker.cjs`, `team-start.cjs` | Log spawns, initialize team monitoring |
 | `TeammateIdle` | Teammate goes idle | `teammate-idle-handler.cjs` | Find available work for idle members |
 | `TaskCompleted` | Task finishes | `team-task-complete.cjs` | Update task list, unblock dependencies |
 | `PermissionRequest` | Permission dialog | `permission-handler.cjs` | Auto-approve safe patterns, HITL gates |
-| `Notification` | Status notification | `notification.cjs` | Log, alert, track |
+| `Notification` | Status notification | `notification.cjs` | Log and track |
 | `PreCompact` | Before context compaction | `pre-compact-save.cjs` | Save critical state + coordination state |
-| `Error` | Error occurs | (planned) | Error tracking |
 
-## Active Hooks (V9.0)
+## createHook() Factory
+
+All hooks use the `createHook(name, handler)` factory from `hook-utils.cjs`:
+
+```javascript
+const { createHook } = require('./hook-utils.cjs');
+
+createHook('MyHook', async (input) => {
+  // input = parsed JSON from stdin
+
+  // Return null for no-op (outputs {"continue": true})
+  if (!relevant) return null;
+
+  // Return deny shorthand for PreToolUse blocks
+  return { deny: true, reason: 'Blocked because ...' };
+
+  // Return allow shorthand for PreToolUse approvals
+  return { allow: true, reason: 'Safe operation', hookEvent: 'PreToolUse' };
+
+  // Return system message
+  return { continue: true, systemMessage: 'Info for the model...' };
+
+  // Return block decision for Stop hooks
+  return { decision: 'block', reason: 'Not complete yet' };
+});
+```
+
+**Factory handles**:
+- stdin reading with 3-second timeout
+- JSON parsing with graceful fallback to `{}`
+- Try-catch wrapping (errors produce `{"continue": true}`)
+- Result transformation (`deny` shorthand -> full hookSpecificOutput)
+- Single JSON output to stdout (no double-output possible)
+
+## Active Hooks (V9.5)
 
 ### Session Lifecycle
 
-#### SessionStart
-- **Files**:
-  - `hooks/session/on-session-start.sh` - Initialize session
-  - `.claude/hooks/session-catchup.cjs` - Detect incomplete sessions
-- **Purpose**: Initialize session state, offer resume for incomplete sessions
+#### SessionStart: session-catchup.cjs
+- **Purpose**: Detect incomplete sessions on startup, offer resume options
+- **Also**: Initializes session state (replaces on-session-start.sh)
+- **Creates**: `Agent_Memory/_system/incomplete_sessions.json`
 - **Output**: `{"continue": true, "systemMessage": "..."}`
 
-#### SessionEnd
-- **File**: `hooks/session/on-session-end.sh`
-- **Purpose**: Clean up session, archive if complete
+#### SessionEnd: team-stop.cjs
+- **Purpose**: Finalize team metrics and update session status
+- **Also**: Session cleanup (replaces on-session-end.sh)
+- **Updates**: `status.yaml`, `metrics/timing.yaml`
 
 ### Tool Validation
 
-#### PreToolUse: Bash
-- **File**: `hooks/tools/pre-bash.sh`
+#### PreToolUse[Bash]: bash-validator.cjs
 - **Matcher**: `Bash`
-- **Purpose**: Validate bash commands, block dangerous operations
-- **Blocked** (exit 0, deny JSON): `rm -rf /`, `rm -rf ~`, fork bombs, `mkfs`, `dd if=/dev/zero`, `> /dev/sda`, `sudo`
-- **Warned** (allow): destructive git commands (`--force`, `reset --hard`, `clean -fd`)
+- **Purpose**: Block dangerous bash commands
+- **Blocked** (deny): `rm -rf /`, `rm -rf ~`, fork bombs, `mkfs`, `dd if=/dev/zero`, `> /dev/sda`, `sudo`
+- **Warned** (allow + message): destructive git commands (`--force`, `reset --hard`, `clean -fd`)
 
-#### PreToolUse: Write/Edit
-- **Files**:
-  - `hooks/tools/pre-write.sh` - Path validation
-  - `.claude/hooks/secret-detection.cjs` - Secret blocking
+#### PreToolUse[Write|Edit]: secret-detection.cjs
 - **Matcher**: `Write|Edit`
-- **Purpose**: Block writes to protected paths, detect secrets
-- **Blocked**: System paths, files with secrets
-
-#### PreToolUse: Task
-- **File**: `hooks/workflow/on-task-start.sh`
-- **Matcher**: `Task`
-- **Purpose**: Track task delegation
+- **Purpose**: Block writes to protected paths and detect secrets
+- **Three phases**: (1) Protected path check, (2) Sensitive file warning, (3) Secret scanning
+- **Blocked**: System paths (`/etc/`, `/usr/`, `~/.ssh/`), files with critical/high secrets
 
 ### Workflow Events
 
-#### Stop
-- **Files**:
-  - `hooks/workflow/stop-workflow.sh`
-  - `.claude/hooks/verify-completion.cjs`
-- **Purpose**: Verify completion criteria before stopping
+#### Stop: verify-completion.cjs
+- **Purpose**: Verify completion criteria before allowing stop
+- **Also**: Stop-workflow cleanup (replaces stop-workflow.sh)
+- **Creates**: `completion_summary.yaml`
+- **Can block**: Returns `{decision: "block", reason: "..."}` for incomplete workflows
 
-#### SubagentStop
-- **File**: `hooks/workflow/on-workflow-complete.sh`
-- **Purpose**: Aggregate subagent outputs
+#### SubagentStart: subagent-tracker.cjs + team-start.cjs
+- **subagent-tracker.cjs**: Logs agent spawns to `workflow/agent_tree.yaml`
+- **team-start.cjs**: Initializes team monitoring directories and metrics files
 
-#### PostToolUse: Task
-- **File**: `hooks/workflow/on-task-complete.sh`
-- **Matcher**: `Task`
-- **Purpose**: Track task completion
+#### PostToolUseFailure: tool-failure-tracker.cjs
+- **Purpose**: Track tool failures, detect patterns (3+ failures suggests alternatives)
+- **Creates**: `workflow/tool_failures.yaml`
 
-### V8.0 Hooks
+### Team Hooks
 
-#### Notification
-- **File**: `.claude/hooks/notification.cjs`
-- **Purpose**: Log and track status notifications
-- **Input**: `{type, message, session_id, phase, ...}`
-- **Output**: `{"continue": true}`
+#### TeammateIdle: teammate-idle-handler.cjs
+- **Purpose**: Suggest available work items from team task list
 
-#### PreCompact
-- **File**: `.claude/hooks/pre-compact-save.cjs`
+#### TaskCompleted: team-task-complete.cjs
+- **Purpose**: Update task_list.yaml status, check dependency unblocking
+- **Input fields**: `task_subject`, `task_description`, `teammate_name` (Claude Code API)
+
+#### PermissionRequest: permission-handler.cjs
+- **Purpose**: Auto-approve safe patterns (Read, Grep, Glob), HITL gates for tier 4
+- **Auto-approved**: Read, Grep, Glob, TaskList, TaskGet; Write/Edit to Agent_Memory
+
+### State Management
+
+#### PreCompact: pre-compact-save.cjs
 - **Purpose**: Save critical workflow state before context compaction
 - **Creates**: Waypoint file in `sessions/{id}/waypoints/`
-- **Output**: `{"continue": true, "systemMessage": "..."}`
+- **Includes**: Coordination state, team state, resume instructions
 
-#### Session Catchup
-- **File**: `.claude/hooks/session-catchup.cjs`
-- **Purpose**: Detect incomplete sessions on startup
-- **Outputs**: Resume options to user
-- **Creates**: `Agent_Memory/_system/incomplete_sessions.json`
+#### Notification: notification.cjs
+- **Purpose**: Log notifications to daily files with 1MB rotation
+- **Creates**: `Agent_Memory/_system/logs/notifications_{date}.log`
 
-#### Eval Runner (CLI Tool, not a registered hook)
-- **File**: `.claude/hooks/eval-runner.cjs`
+### CLI Tool (Not a registered hook)
+
+#### eval-runner.cjs
 - **Purpose**: Run quality evaluations on sessions (standalone CLI tool)
 - **Usage**: `node eval-runner.cjs --session <session_id>`
 - **Creates**: `sessions/{id}/evals/evaluation_report.yaml`
@@ -159,8 +206,8 @@ Hooks output JSON to stdout:
 
 ### Exit Codes
 
-- `0`: Success — JSON parsed from stdout. Use `permissionDecision: "deny"` in hookSpecificOutput to block PreToolUse operations.
-- `2`: Blocking error — Claude Code ignores stdout JSON and feeds stderr to the model. Use only for fatal errors, NOT for PreToolUse deny (use exit 0 + deny JSON instead).
+- `0`: Success -- JSON parsed from stdout. Use `permissionDecision: "deny"` in hookSpecificOutput to block PreToolUse operations.
+- `2`: Blocking error -- Claude Code ignores stdout JSON and feeds stderr to the model. Use only for fatal errors, NOT for PreToolUse deny (use exit 0 + deny JSON instead).
 
 ## Prompt-Based Hooks
 
@@ -193,33 +240,6 @@ In addition to command hooks, Claude Code supports prompt-based hooks that injec
 - Cannot modify tool input
 - Text only (no JSON processing)
 
-## Hook Override in Agent Frontmatter
-
-Agents can specify hook overrides in SKILL.md frontmatter:
-
-```yaml
----
-name: security-specialist
-tier: execution
-domain: make
-hook_overrides:
-  PreToolUse:
-    Bash:
-      skip: true        # Security specialist can run any bash
-    Write:
-      skip_secret_scan: false  # Still scan for secrets
-  custom_hooks:
-    on_complete:
-      run_security_audit: true
----
-```
-
-**Available Override Options**:
-- `skip: true` - Skip this hook entirely for this agent
-- `skip_secret_scan: true` - Skip secret detection
-- `timeout_override: 30` - Override default timeout
-- `custom_hooks` - Agent-specific hook logic
-
 ## Secret Detection
 
 The secret detection hook (`secret-detection.cjs`) blocks these patterns:
@@ -231,8 +251,9 @@ The secret detection hook (`secret-detection.cjs`) blocks these patterns:
 - Slack tokens: `xox[baprs]-...`
 - Stripe live keys: `sk_live_...`, `rk_live_...`
 - Database connection strings with credentials
-- Heroku API keys: `HEROKU_API_KEY=<uuid>` (context-required, no bare UUID matching)
-- OpenAI API keys: `sk-proj-...` (newer format), `sk-<48-50 chars>` (legacy, excludes `sk-ant-`/`sk-live_`/`sk-test_`)
+- Anthropic API keys: `sk-ant-...`
+- OpenAI API keys: `sk-proj-...` (newer format), `sk-<48-50 chars>` (legacy)
+- NPM/PyPI tokens
 
 ### High (Blocked)
 - Google API keys: `AIza...`
@@ -240,7 +261,6 @@ The secret detection hook (`secret-detection.cjs`) blocks these patterns:
 ### Medium (Warning)
 - Generic API keys
 - Generic secret keys
-- Google OAuth Client IDs
 
 ### Low (Logged)
 - JWT tokens (could be test tokens)
@@ -255,44 +275,33 @@ Skipped for:
 
 ## Creating Custom Hooks
 
-### Shell Hook Template
-
-```bash
-#!/bin/bash
-set -o pipefail
-
-# Redirect stdout to stderr, save original stdout
-exec 3>&1
-exec 1>&2
-
-# Read input
-input="$(cat)" || input='{}'
-
-# Parse with jq if available
-if command -v jq &>/dev/null; then
-    value=$(echo "$input" | jq -r '.field // "default"')
-fi
-
-# Your logic here...
-
-# Output JSON to original stdout
-echo '{"continue":true}' >&3
-exit 0
-```
-
-### JavaScript Hook Template
+### Using createHook() Factory (Recommended)
 
 ```javascript
 #!/usr/bin/env node
-/**
- * Custom Hook - 100% Self-Contained
- * NO external dependencies (no npm packages)
- */
+const { createHook } = require('./hook-utils.cjs');
 
+createHook('MyCustomHook', async (input) => {
+  const toolName = input.tool_name || '';
+  const toolInput = input.tool_input || {};
+
+  // Your logic here...
+
+  // Return null for pass-through
+  return null;
+
+  // Or return a result object
+  return { continue: true, systemMessage: 'Context for the model' };
+});
+```
+
+### Manual (for hooks outside the cAgents hook directory)
+
+```javascript
+#!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
 
-// Read stdin
 function readStdin() {
   return new Promise((resolve) => {
     let data = '';
@@ -309,10 +318,7 @@ function readStdin() {
 
 async function main() {
   const input = await readStdin();
-
   // Your logic here...
-
-  // Output result
   console.log(JSON.stringify({ continue: true }));
 }
 
@@ -328,12 +334,12 @@ Hooks are registered in `.claude/settings.json`:
   "hooks": {
     "HookType": [
       {
-        "matcher": "ToolName",  // Optional: for PreToolUse/PostToolUse
+        "matcher": "ToolName",
         "hooks": [
           {
             "type": "command",
-            "command": "path/to/hook.sh",
-            "timeout": 10
+            "command": "node .claude/hooks/my-hook.cjs",
+            "timeout": 5
           }
         ]
       }
@@ -344,40 +350,40 @@ Hooks are registered in `.claude/settings.json`:
 
 ## Best Practices
 
-1. **Fast execution**: Keep hooks under 5 seconds
-2. **Graceful failure**: Don't block on errors
-3. **Clear logging**: Use stderr for logs, stdout for JSON only
-4. **Idempotent**: Hooks may run multiple times
-5. **Self-contained**: No external dependencies (100% built-in Node.js)
-6. **Informative output**: Provide clear messages to user
+1. **Use createHook()**: Eliminates boilerplate and guarantees correct output format
+2. **Fast execution**: Keep hooks under 5 seconds
+3. **Graceful failure**: createHook() handles errors automatically (returns `{"continue": true}`)
+4. **Clear logging**: Use `console.error()` for logs (stderr), `createHook()` handles stdout
+5. **Idempotent**: Hooks may run multiple times
+6. **Self-contained**: No external dependencies (100% built-in Node.js)
 7. **State in files**: Store state in Agent_Memory, not memory
+8. **Single JSON output**: createHook() guarantees exactly one JSON output to stdout
 
 ## Troubleshooting
 
 ### Hook not running
 - Check `.claude/settings.json` for registration
 - Verify file permissions (`chmod +x`)
-- Check path uses `$CLAUDE_PROJECT_DIR`
+- Verify `node` is in PATH
 
 ### Hook blocks unexpectedly
-- Check exit code (2 = block)
-- Review `permissionDecisionReason` in output
+- Check `permissionDecisionReason` in output
 - Check matcher pattern for PreToolUse
+- Test hook manually: `echo '{}' | node .claude/hooks/<name>.cjs`
 
 ### Hook output not shown
-- Ensure JSON output goes to stdout (fd 1 or fd 3)
-- Ensure logs go to stderr (fd 2)
-- Check JSON is valid
+- Ensure using createHook() factory (handles output correctly)
+- Check JSON is valid: `echo '{}' | node .claude/hooks/<name>.cjs 2>/dev/null | node -e "process.stdin.on('data',d=>console.log(JSON.parse(d)))"`
 
 ## Related Files
 
 - `.claude/settings.json` - Hook registration (active configuration)
-- `.claude/settings.full.json` - Template for full hooks (shell + JS), synced with settings.json
-- `.claude/settings.shell-only.json` - Template for shell-only hooks (no Node.js)
-- `setup.sh` - Auto-detects Node.js and selects appropriate settings
+- `.claude/hooks/hook-utils.cjs` - Shared utilities and createHook() factory
 - `Agent_Memory/_system/config/hooks.yaml` - Hook behavior config
 - `scripts/ci/check-quality.sh` - Hook validation in CI
 - `Agent_Memory/_system/evals/` - Evaluation framework
-- `archive/hooks/` - Archived legacy hooks (coordination, hitl, phase, workflow-start/fail)
 
-**Removed**: `hooks/hooks.json` was deprecated and has been deleted.
+**Archived (V9.4 and earlier)**:
+- `hooks/` directory - Legacy shell hooks (replaced by CJS hooks)
+- `scripts/hook-dispatch.sh` - Legacy shell dispatch (no longer used)
+- `scripts/hook-dispatch-node.sh` - Legacy Node dispatch (no longer used)

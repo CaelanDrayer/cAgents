@@ -1,6 +1,6 @@
 # cAgents Release Notes
 
-**Current Version**: 9.4.1
+**Current Version**: 9.5.0
 **Release Date**: February 7, 2026
 **Status**: Production-Ready
 
@@ -8,7 +8,8 @@
 
 ## Version History
 
-- [v9.4.1](#v941---february-7-2026) - Hook corrections + context optimization (Current)
+- [v9.5.0](#v950---february-7-2026) - CJS-only hook architecture refactoring (Current)
+- [v9.4.1](#v941---february-7-2026) - Hook corrections + context optimization
 - [v9.4.0](#v940---february-7-2026) - Skill improvements from comprehensive review
 - [v9.3.5](#v935---february-7-2026) - Remove non-functional context-overflow hook
 - [v9.3.4](#v934---february-7-2026) - Hook reliability fixes
@@ -21,6 +22,85 @@
 - [v9.1.1](#v911---february-7-2026) - tmux split pane refinements
 - [v9.1.0](#v910---february-7-2026) - tmux split panes for team execution
 - [v9.0.0](#v900---february-7-2026) - Platform Alignment Edition
+
+---
+
+## v9.5.0 - February 7, 2026
+
+**Theme**: CJS-only hook architecture -- ground-up refactoring eliminating the dual shell+JS hook system.
+
+**Root Cause Analysis**: Versions 9.1.2 through 9.4.1 each contained hook fixes for recurring bugs caused by the dual-language architecture. The fundamental issues were:
+- Shell hooks' `set -euo pipefail` (from `core.sh`) propagating strict mode into hooks
+- ERR EXIT traps causing duplicate JSON output on error paths
+- fd redirection (`exec 3>&1; exec 1>&2`) fragility for stdout/stderr separation
+- Shell dispatch layer (`hook-dispatch.sh`, `hook-dispatch-node.sh`) adding indirection that amplified errors
+- PreToolUse deny using exit 2 instead of exit 0 + deny JSON
+
+**Solution**: Consolidate to CJS-only architecture with `createHook()` factory pattern.
+
+**Infrastructure Changes**:
+- New `createHook(name, handler)` factory in `hook-utils.cjs` -- eliminates ~25 lines of boilerplate per hook
+- New `findTeamSession()` helper extracted from 4 duplicated team hooks
+- New `bash-validator.cjs` hook replacing `pre-bash.sh`
+- All hooks invoked directly via `node .claude/hooks/<name>.cjs` (no dispatch layer)
+- Shorthand result types: `{ deny: true, reason }` and `{ allow: true, reason }`
+
+**Shell Hooks Eliminated (9)**:
+- `hooks/session/on-session-start.sh` -> merged into `session-catchup.cjs`
+- `hooks/session/on-session-end.sh` -> merged into `team-stop.cjs`
+- `hooks/workflow/stop-workflow.sh` -> merged into `verify-completion.cjs`
+- `hooks/tools/pre-bash.sh` -> replaced by `bash-validator.cjs`
+- `hooks/tools/pre-write.sh` -> merged into `secret-detection.cjs`
+- `hooks/workflow/on-task-start.sh` -> removed (minimal logging only)
+- `hooks/workflow/on-task-complete.sh` -> removed (minimal logging only)
+- `hooks/workflow/on-workflow-complete.sh` -> removed (archiving logic minimal)
+- `hooks/workflow/on-user-prompt.sh` -> removed (context injection minimal)
+
+**Dispatch Scripts Eliminated (2)**:
+- `scripts/hook-dispatch.sh` -> no longer needed
+- `scripts/hook-dispatch-node.sh` -> no longer needed
+
+**Hook Registry Updated** (`settings.json`):
+- All hooks now `node .claude/hooks/<name>.cjs` (was `$CLAUDE_PLUGIN_ROOT/scripts/hook-dispatch*.sh`)
+- Removed SubagentStop event (was on-workflow-complete.sh, minimal)
+- Removed UserPromptSubmit event (was on-user-prompt.sh, minimal)
+- Removed PostToolUse[Task] event (was on-task-complete.sh, minimal)
+- Removed PreToolUse[Task] event (was on-task-start.sh, minimal)
+- CAGENTS_VERSION env updated to 9.5.0
+
+**Refactored Hooks (12)**:
+- `session-catchup.cjs` - 123 lines (was 205), uses createHook()
+- `verify-completion.cjs` - 112 lines (was 204), uses createHook()
+- `pre-compact-save.cjs` - 115 lines (was 363), uses createHook()
+- `secret-detection.cjs` - 167 lines (was 249), uses createHook(), merged pre-write.sh
+- `notification.cjs` - 53 lines (was 121), uses createHook()
+- `subagent-tracker.cjs` - 50 lines (was 147), uses createHook()
+- `tool-failure-tracker.cjs` - 77 lines (was 164), uses createHook()
+- `team-start.cjs` - 81 lines (was 205), uses createHook()
+- `team-stop.cjs` - 77 lines (was 252), uses createHook(), merged on-session-end.sh
+- `team-task-complete.cjs` - 109 lines (was 315), uses createHook()
+- `teammate-idle-handler.cjs` - 39 lines (was 110), uses createHook()
+- `permission-handler.cjs` - 56 lines (was 141), uses createHook()
+
+**New Hook (1)**:
+- `bash-validator.cjs` - 62 lines, replaces pre-bash.sh, uses createHook()
+
+**Validation**: All 13 hooks tested with empty input (`echo '{}' | node .claude/hooks/<name>.cjs`) producing valid `{"continue":true}` JSON. Security hooks tested with targeted inputs (dangerous commands, protected paths, secret patterns) -- all correctly deny/allow as expected.
+
+**Documentation Updated**:
+- `.claude/rules/core/hooks.md` - Rewritten for V9.5 CJS-only architecture
+- `CLAUDE.md` - Updated hook counts, version references
+- `docs/RELEASE_NOTES.md` - This entry
+
+**Impact Summary**:
+| Metric | Before (V9.4) | After (V9.5) | Change |
+|--------|---------------|--------------|--------|
+| Shell hooks | 9 | 0 | -100% |
+| Dispatch scripts | 2 | 0 | -100% |
+| CJS hooks | 12 | 13 | +1 (bash-validator) |
+| Total hook lines | ~2,800 | ~1,060 | -62% |
+| Hook boilerplate per file | ~25 lines | 0 (createHook) | -100% |
+| Hook bug fix commits (9.1-9.4) | 5 | 0 (target) | Architectural fix |
 
 ---
 

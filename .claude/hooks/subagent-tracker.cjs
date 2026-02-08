@@ -1,147 +1,50 @@
 #!/usr/bin/env node
 /**
  * Subagent Tracker Hook - Log subagent spawns and track agent chains
- * cAgents V9.0 - SubagentStart Handler
+ * cAgents V9.5 - Refactored
  *
- * Logs subagent spawns: agent type, description, parent agent, timestamp.
- * Tracks agent chains (who spawned who).
- * Writes to active session's workflow/agent_tree.yaml.
+ * Logs subagent spawns to active session's workflow/agent_tree.yaml.
  *
- * 100% Self-Contained: Uses only built-in Node.js modules.
- *
- * Input (stdin): JSON with subagent context
+ * Input (stdin): JSON with agent_type, agent_id from SubagentStart event
  * Output (stdout): JSON with continue status and agent hierarchy context
  */
 
-// CRITICAL: Wrap everything in try-catch for plugin resilience
-try {
-
 const fs = require('fs');
 const path = require('path');
+const { createHook, findActiveSession, safeRead, ensureDir } = require('./hook-utils.cjs');
 
-// Try to load hook-utils, fall back to inline implementations
-let utils;
-try {
-  utils = require('./hook-utils.cjs');
-} catch {
-  // Minimal inline fallbacks for plugin mode
-  utils = {
-    readStdin: () => Promise.resolve({}),
-    findActiveSession: () => null,
-    safeRead: () => null,
-    ensureDir: (d) => { try { fs.mkdirSync(d, { recursive: true }); } catch {} return d; }
+createHook('SubagentTracker', async (input) => {
+  // SubagentStart provides agent_id and agent_type per Claude Code docs
+  const subagentType = input.agent_type || 'unknown';
+  const agentId = input.agent_id || `agent_${Date.now()}`;
+  const description = (input.description || '').slice(0, 100);
+  const parentAgent = input.parent_agent || 'root';
+
+  const sessionDir = findActiveSession();
+  if (!sessionDir) return null;
+
+  const workflowDir = ensureDir(path.join(sessionDir, 'workflow'));
+  const treeFile = path.join(workflowDir, 'agent_tree.yaml');
+
+  const existingContent = safeRead(treeFile);
+  const safeDesc = description.replace(/"/g, "'").replace(/\n/g, ' ');
+  const now = new Date().toISOString();
+  const newEntry = `\n- id: "${agentId}"\n  type: "${subagentType}"\n  description: "${safeDesc}"\n  parent: "${parentAgent}"\n  spawned_at: "${now}"\n`;
+
+  if (!existingContent) {
+    fs.writeFileSync(treeFile, `# Agent Tree\n# Session: ${path.basename(sessionDir)}\n\nagents:${newEntry}`);
+  } else {
+    fs.appendFileSync(treeFile, newEntry);
+  }
+
+  // Count existing agents by type
+  const typeMatches = (existingContent || '').match(/type: "([^"]+)"/g) || [];
+  const total = typeMatches.length + 1;
+
+  console.error(`[SubagentTracker] Spawned ${subagentType} (parent: ${parentAgent})`);
+
+  return {
+    continue: true,
+    systemMessage: `Agent tree: ${total} agents spawned (latest: ${subagentType})`
   };
-}
-
-const { readStdin, findActiveSession, safeRead, ensureDir } = utils;
-
-/**
- * Parse existing agent tree
- */
-function parseAgentTree(content) {
-  if (!content) return [];
-
-  const agents = [];
-  const blocks = content.split(/\n- id:/);
-
-  for (let i = 1; i < blocks.length; i++) {
-    const block = '- id:' + blocks[i];
-    const agent = {};
-
-    const idMatch = block.match(/id:\s*"([^"]+)"/);
-    if (idMatch) agent.id = idMatch[1];
-
-    const typeMatch = block.match(/type:\s*"([^"]+)"/);
-    if (typeMatch) agent.type = typeMatch[1];
-
-    const parentMatch = block.match(/parent:\s*"([^"]+)"/);
-    if (parentMatch) agent.parent = parentMatch[1];
-
-    if (agent.id) agents.push(agent);
-  }
-
-  return agents;
-}
-
-/**
- * Build hierarchy summary from agent tree
- */
-function buildHierarchySummary(agents, newAgent) {
-  if (agents.length === 0) return `First agent spawned: ${newAgent.type}`;
-
-  // Count agents by type
-  const typeCounts = {};
-  for (const a of agents) {
-    typeCounts[a.type] = (typeCounts[a.type] || 0) + 1;
-  }
-  typeCounts[newAgent.type] = (typeCounts[newAgent.type] || 0) + 1;
-
-  const total = agents.length + 1;
-  const types = Object.entries(typeCounts)
-    .map(([t, c]) => `${t}(${c})`)
-    .join(', ');
-
-  return `Agent tree: ${total} agents spawned [${types}]`;
-}
-
-/**
- * Main hook execution
- */
-async function main() {
-  const input = await readStdin();
-
-  try {
-    const now = new Date().toISOString();
-
-    // Extract agent info from SubagentStart input
-    // Per Claude Code docs: SubagentStart provides agent_id and agent_type
-    const subagentType = input.agent_type || 'unknown';
-    const agentId = input.agent_id || `agent_${Date.now()}`;
-    const description = (input.description || '').slice(0, 100);
-    const parentAgent = input.parent_agent || 'root';
-
-    const sessionDir = findActiveSession();
-    if (!sessionDir) {
-      console.log(JSON.stringify({ continue: true }));
-      return;
-    }
-
-    // Write to agent tree
-    const workflowDir = ensureDir(path.join(sessionDir, 'workflow'));
-    const treeFile = path.join(workflowDir, 'agent_tree.yaml');
-
-    const existingContent = safeRead(treeFile);
-    const existingAgents = parseAgentTree(existingContent);
-
-    const safeDesc = description.replace(/"/g, "'").replace(/\n/g, ' ');
-    const newAgent = { id: agentId, type: subagentType, parent: parentAgent };
-
-    const newEntry = `\n- id: "${agentId}"\n  type: "${subagentType}"\n  description: "${safeDesc}"\n  parent: "${parentAgent}"\n  spawned_at: "${now}"\n`;
-
-    if (!existingContent) {
-      const header = `# Agent Tree\n# Auto-generated by subagent-tracker.cjs\n# Session: ${path.basename(sessionDir)}\n\nagents:${newEntry}`;
-      fs.writeFileSync(treeFile, header);
-    } else {
-      fs.appendFileSync(treeFile, newEntry);
-    }
-
-    const summary = buildHierarchySummary(existingAgents, newAgent);
-    console.error(`[SubagentTracker] Spawned ${subagentType} (parent: ${parentAgent})`);
-
-    console.log(JSON.stringify({
-      continue: true,
-      systemMessage: summary
-    }));
-
-  } catch (error) {
-    console.error(`[SubagentTracker] Error: ${error.message}`);
-    console.log(JSON.stringify({ continue: true }));
-  }
-}
-
-main();
-
-} catch (e) {
-  // Top-level catch for plugin resilience - always output valid JSON
-  console.log(JSON.stringify({ continue: true }));
-}
+});

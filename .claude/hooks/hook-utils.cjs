@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 /**
  * Shared Hook Utilities - Common functions for cAgents hooks
- * cAgents V8.0 - DRY Hook Infrastructure
+ * cAgents V9.5 - Refactored Hook Infrastructure
  *
- * Provides shared utilities used across all CJS hooks:
+ * Provides:
+ * - createHook(handler) - Factory that eliminates per-hook boilerplate
  * - readStdin() - Parse JSON from stdin
  * - findActiveSession() - Locate the most recent non-completed session
  * - extractYamlValue() - Extract a value from simple YAML content
@@ -16,9 +17,8 @@
 const fs = require('fs');
 const path = require('path');
 
-// For hook scripts, CLAUDE_PROJECT_DIR is the user's project root where
-// Agent_Memory/ lives. CLAUDE_PLUGIN_ROOT is the plugin install directory
-// which does NOT contain Agent_Memory/. Prefer CLAUDE_PROJECT_DIR.
+// Resolve project root: prefer CLAUDE_PROJECT_DIR (user project with Agent_Memory),
+// fall back to CLAUDE_PLUGIN_ROOT (plugin install dir), then cwd.
 const PROJECT_ROOT = process.env.CLAUDE_PROJECT_DIR
   || process.env.CLAUDE_PLUGIN_ROOT
   || process.cwd();
@@ -28,7 +28,8 @@ const AGENT_MEMORY_DIR = path.join(PROJECT_ROOT, 'Agent_Memory');
 const SESSION_PREFIXES = ['run_', 'optimize_', 'review_', 'designer_', 'team_'];
 
 /**
- * Read JSON from stdin with timeout
+ * Read JSON from stdin with timeout.
+ * Returns parsed object or {} on any failure.
  */
 function readStdin() {
   return new Promise((resolve) => {
@@ -50,19 +51,19 @@ function readStdin() {
     process.stdin.on('data', (chunk) => { data += chunk; });
     process.stdin.on('end', () => {
       try { done(data ? JSON.parse(data) : {}); }
-      catch (e) { done({}); }
+      catch { done({}); }
     });
     process.stdin.on('error', () => done({}));
 
     setTimeout(() => {
-      if (!resolved) console.error('[hook-utils] readStdin timeout after 3s - proceeding with empty input');
+      if (!resolved) console.error('[hook-utils] readStdin timeout after 3s');
       done({});
     }, 3000);
   });
 }
 
 /**
- * Read a file safely, returning null on any error
+ * Read a file safely, returning null on any error.
  */
 function safeRead(filePath) {
   try {
@@ -73,7 +74,7 @@ function safeRead(filePath) {
 }
 
 /**
- * Extract a simple key: value from YAML content
+ * Extract a simple key: value from YAML content.
  */
 function extractYamlValue(content, key) {
   const regex = new RegExp(`^${key}:\\s*["']?([^"'\\n]+)["']?`, 'm');
@@ -82,7 +83,7 @@ function extractYamlValue(content, key) {
 }
 
 /**
- * Count regex pattern matches in content
+ * Count regex pattern matches in content.
  */
 function countPattern(content, pattern) {
   const matches = content.match(pattern);
@@ -91,7 +92,7 @@ function countPattern(content, pattern) {
 
 /**
  * Find the most recent active (non-completed, non-failed) session directory.
- * Result is cached per process invocation for performance (avoids repeated dir scans).
+ * Cached per process invocation.
  */
 let _cachedActiveSession = undefined;
 
@@ -107,7 +108,6 @@ function findActiveSession() {
   const sessions = fs.readdirSync(sessionsDir)
     .filter(d => SESSION_PREFIXES.some(p => d.startsWith(p)))
     .sort((a, b) => {
-      // Sort by timestamp portion (after first underscore) for correct cross-prefix ordering
       const tsA = a.substring(a.indexOf('_') + 1);
       const tsB = b.substring(b.indexOf('_') + 1);
       return tsB.localeCompare(tsA);
@@ -130,7 +130,41 @@ function findActiveSession() {
 }
 
 /**
- * Ensure a directory exists, creating it recursively if needed
+ * Find the most recent active team session.
+ * @param {object} input - Hook input (may contain session_id)
+ * @returns {string|null} Session directory path or null
+ */
+function findTeamSession(input = {}) {
+  // Check if session_id is provided
+  if (input.session_id && input.session_id.startsWith('team_')) {
+    const sessionDir = path.join(AGENT_MEMORY_DIR, 'sessions', input.session_id);
+    if (fs.existsSync(sessionDir)) return sessionDir;
+  }
+
+  const sessionsDir = path.join(AGENT_MEMORY_DIR, 'sessions');
+  if (!fs.existsSync(sessionsDir)) return null;
+
+  const teamSessions = fs.readdirSync(sessionsDir)
+    .filter(d => d.startsWith('team_'))
+    .sort()
+    .reverse();
+
+  for (const session of teamSessions) {
+    const statusFile = path.join(sessionsDir, session, 'status.yaml');
+    const content = safeRead(statusFile);
+    if (!content) continue;
+
+    const phase = extractYamlValue(content, 'phase');
+    if (phase && phase !== 'completed' && phase !== 'failed') {
+      return path.join(sessionsDir, session);
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Ensure a directory exists, creating it recursively if needed.
  */
 function ensureDir(dirPath) {
   if (!fs.existsSync(dirPath)) {
@@ -140,7 +174,7 @@ function ensureDir(dirPath) {
 }
 
 /**
- * Generate a filesystem-safe timestamp slug from a Date
+ * Generate a filesystem-safe timestamp slug.
  * Example: "2026-02-05_09-46-24"
  */
 function getTimestampSlug(date = new Date()) {
@@ -148,7 +182,7 @@ function getTimestampSlug(date = new Date()) {
 }
 
 /**
- * Get a waypoint file path in a session's waypoints directory
+ * Get a waypoint file path in a session's waypoints directory.
  */
 function getWaypointPath(sessionDir, type, date = new Date()) {
   const waypointsDir = ensureDir(path.join(sessionDir, 'waypoints'));
@@ -157,7 +191,7 @@ function getWaypointPath(sessionDir, type, date = new Date()) {
 }
 
 /**
- * Assign a grade based on score and thresholds
+ * Assign a grade based on score and thresholds.
  */
 function assignGrade(score, thresholds = { excellent: 85, pass: 65 }) {
   if (score >= thresholds.excellent) return 'EXCELLENT';
@@ -166,7 +200,7 @@ function assignGrade(score, thresholds = { excellent: 85, pass: 65 }) {
 }
 
 /**
- * Calculate total score from a breakdown object, floored at 0
+ * Calculate total score from a breakdown object, floored at 0.
  */
 function calculateScore(breakdown) {
   return Math.max(0, Object.values(breakdown).reduce((a, b) => a + b, 0));
@@ -174,7 +208,6 @@ function calculateScore(breakdown) {
 
 /**
  * Parse a simple YAML task list file and return items array.
- * Handles the task_list.yaml format used by team sessions.
  */
 function parseTaskList(filePath) {
   const content = safeRead(filePath);
@@ -216,11 +249,10 @@ function parseTaskList(filePath) {
 }
 
 /**
- * Check if a work item's dependencies are all completed
+ * Check if a work item's dependencies are all completed.
  */
 function areDependenciesMet(item, allItems) {
   if (!item.dependencies || item.dependencies.length === 0) return true;
-
   return item.dependencies.every(depId => {
     const dep = allItems.find(i => i.id === depId);
     return dep && dep.status === 'completed';
@@ -228,12 +260,11 @@ function areDependenciesMet(item, allItems) {
 }
 
 /**
- * Find available (unclaimed, unblocked) work items from a task list file
+ * Find available (unclaimed, unblocked) work items from a task list file.
  */
 function findAvailableWork(taskListPath) {
   const items = parseTaskList(taskListPath);
   if (items.length === 0) return [];
-
   return items.filter(item =>
     (item.status === 'available' || item.status === 'pending') &&
     !item.claimed_by &&
@@ -241,14 +272,92 @@ function findAvailableWork(taskListPath) {
   );
 }
 
+// ============================================================
+// createHook() Factory
+// ============================================================
+// Eliminates per-hook boilerplate: try-catch wrapping, stdin reading,
+// JSON output, error handling. Each hook only needs to provide a handler
+// function: async (input) => result.
+//
+// Result can be:
+//   - null/undefined: outputs {"continue": true}
+//   - { continue: true, systemMessage: "..." }
+//   - { decision: "block", reason: "..." }
+//   - { deny: true, reason: "..." } (for PreToolUse hooks)
+//   - Any valid hook response object
+// ============================================================
+
+/**
+ * Create and run a hook with standard boilerplate.
+ *
+ * @param {string} name - Hook name for logging (e.g., "SessionCatchup")
+ * @param {function} handler - async (input) => result object
+ */
+function createHook(name, handler) {
+  async function run() {
+    try {
+      const input = await readStdin();
+
+      try {
+        const result = await handler(input);
+
+        if (!result) {
+          console.log(JSON.stringify({ continue: true }));
+          return;
+        }
+
+        // Shorthand: { deny: true, reason: "..." } -> full PreToolUse deny response
+        if (result.deny) {
+          console.log(JSON.stringify({
+            hookSpecificOutput: {
+              hookEventName: 'PreToolUse',
+              permissionDecision: 'deny',
+              permissionDecisionReason: result.reason || 'Blocked by hook'
+            }
+          }));
+          return;
+        }
+
+        // Shorthand: { allow: true, reason: "..." } -> full PreToolUse allow response
+        if (result.allow) {
+          console.log(JSON.stringify({
+            continue: true,
+            hookSpecificOutput: {
+              hookEventName: result.hookEvent || 'PreToolUse',
+              permissionDecision: 'allow',
+              permissionDecisionReason: result.reason || 'Allowed by hook'
+            }
+          }));
+          return;
+        }
+
+        console.log(JSON.stringify(result));
+
+      } catch (error) {
+        console.error(`[${name}] Error: ${error.message}`);
+        console.log(JSON.stringify({ continue: true }));
+      }
+
+    } catch (e) {
+      // Fatal error (e.g., stdin read failure)
+      console.log(JSON.stringify({ continue: true }));
+    }
+  }
+
+  run();
+}
+
 module.exports = {
+  PROJECT_ROOT,
   AGENT_MEMORY_DIR,
   SESSION_PREFIXES,
+  createHook,
   readStdin,
   safeRead,
   extractYamlValue,
   countPattern,
   findActiveSession,
+  findTeamSession,
   ensureDir,
   getTimestampSlug,
   getWaypointPath,
