@@ -59,11 +59,11 @@ delegate_mode_enforcement:
 2. Load team_manifest.yaml and task_list.yaml
 3. Enter delegate mode (wrap controller behavior)
 4. Distribute work items — each executed via /run:
-   a. tmux mode: Monitor tmux windows running claude /run
+   a. tmux mode: Monitor tmux panes running claude /run
    b. Agent Teams: Members claim items, each invokes /run
    c. Parallel mode: Parallel /run Skill invocations
 5. Monitor progress:
-   a. tmux: Check tmux window processes for completion
+   a. tmux: Check tmux pane processes for completion
    b. Agent Teams: Poll shared task list + peer messages
    c. Parallel: Wait for /run results
 6. Handle member questions via peer messaging (Agent Teams only)
@@ -71,29 +71,29 @@ delegate_mode_enforcement:
 8. Synthesize final deliverables
 9. Write coordination_log.yaml
 10. Signal completion to orchestrator
-11. Cleanup: kill tmux session if applicable
+11. Cleanup: kill tmux session (all panes) if applicable
 ```
 
 ## Execution Methods
 
 ### tmux Mode (Default)
 
-When tmux is available, team-trigger creates the session. The adapter monitors tmux windows:
+When tmux is available, team-trigger creates the session with split panes. The adapter monitors panes:
 
 ```bash
-# Monitor window completion
+# Monitor pane completion (pane 0 = team lead, panes 1+ = work items)
 while true; do
-  # List active windows (excluding lead window)
-  active=$(tmux list-windows -t "cagents-team-${SESSION_ID}" -F "#{window_name}" 2>/dev/null | grep -c "^wi-")
+  # Count active work item panes (exclude pane 0 which is the lead)
+  active=$(tmux list-panes -t "cagents-team-${SESSION_ID}" -F "#{pane_index} #{pane_current_command}" 2>/dev/null | awk '$1 > 0' | grep -cv "bash$")
   if [ "$active" -eq 0 ]; then break; fi
   sleep 5
 done
 
-# Cleanup after all windows complete
+# Cleanup after all panes complete
 tmux kill-session -t "cagents-team-${SESSION_ID}"
 ```
 
-Each tmux window runs `claude --print '/run implement WI-XXX: ...'` independently.
+Each tmux pane runs `claude --print '/run implement WI-XXX: ...'` independently, all visible in a tiled split view.
 
 ## Team Communication Patterns (Agent Teams Mode)
 
@@ -373,7 +373,7 @@ If team execution partially fails:
 
 1. **Delegate only** - Never do direct implementation work
 2. **/run for every work item** - Every work item executes via `/run` for full orchestration — no exceptions
-3. **tmux for visual parallelism** - Default: each work item in its own tmux window
+3. **tmux split panes for visual parallelism** - Default: each work item in its own tmux pane, all visible at once
 4. **/team for decomposition** - Team mode adds decomposition + parallel distribution on top of `/run`
 5. **Parallel first** - Maximize concurrent `/run` invocations
 6. **Continuous monitoring** - Track progress, rebalance as needed

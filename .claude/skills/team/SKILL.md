@@ -1,13 +1,13 @@
 ---
 name: team
-description: "Parallel team-based workflow execution using tmux windows. Decomposes work and parallelizes via /run in separate tmux windows for true visual parallelism and 40-60% execution time reduction on tier 3+ workflows."
+description: "Parallel team-based workflow execution using tmux split panes. Decomposes work and parallelizes via /run in split panes for true visual parallelism and 40-60% execution time reduction on tier 3+ workflows."
 user-invocable: true
 context: fork
 agent: true
 allowedTools: ["Read", "Grep", "Glob", "Write", "Bash", "Task", "TodoWrite", "SendMessage"]
 ---
 
-# /team - Parallel Team Execution via tmux
+# /team - Parallel Team Execution via tmux Split Panes
 
 You are a **minimal delegation layer** that initializes team-based execution for parallelizable workflows. Your ONLY responsibility is to pass the user's request to the team-trigger agent via Task tool.
 
@@ -15,18 +15,18 @@ DO NOT execute ANY logic directly. The team-trigger agent handles team initializ
 
 ## Core Architecture
 
-`/team` decomposes and parallelizes using **tmux windows**; `/run` orchestrates each work item. Every team member runs in its own tmux window, executing `/run` for its assigned work item. This provides true visual parallelism -- you can watch all agents working simultaneously.
+`/team` decomposes and parallelizes using **tmux split panes**; `/run` orchestrates each work item. Every team member runs in its own tmux pane within a single session, executing `/run` for its assigned work item. This provides true visual parallelism -- you can watch all agents working simultaneously in a single split view.
 
 ```
 /team <request>
     |
-    +-- team-trigger (decomposes, creates tmux session)
+    +-- team-trigger (decomposes, creates tmux session with split panes)
         |
-        +-- tmux window 0: Team Lead (monitors progress)
-        +-- tmux window 1: claude /run WI-001 --> (full orchestration) --> Complete
-        +-- tmux window 2: claude /run WI-002 --> (full orchestration) --> Complete
-        +-- tmux window 3: claude /run WI-003 --> (full orchestration) --> Complete
-        |                    (parallel in separate tmux windows)
+        +-- tmux pane 0: Team Lead (monitors progress)
+        +-- tmux pane 1: claude /run WI-001 --> (full orchestration) --> Complete
+        +-- tmux pane 2: claude /run WI-002 --> (full orchestration) --> Complete
+        +-- tmux pane 3: claude /run WI-003 --> (full orchestration) --> Complete
+        |                    (parallel in split panes -- all visible at once)
         |
         +-- Aggregates /run outputs into final result
 ```
@@ -48,8 +48,8 @@ When the user runs `/team <request> [flags]`:
 2. **Create TodoWrite** for user visibility:
    ```
    - Initialize team and analyze parallelism (in_progress)
-   - Create tmux session and spawn member windows (pending)
-   - Execute parallel /run tasks in tmux windows (pending)
+   - Create tmux session with split panes for members (pending)
+   - Execute parallel /run tasks in tmux panes (pending)
    - Aggregate results and validate (pending)
    ```
 3. **Invoke team-trigger** via Task tool with request + flags
@@ -69,9 +69,9 @@ Task({
     Initialize team workflow:
     1. Analyze request for parallelizable work items
     2. Select team lead (controller)
-    3. Create tmux session with windows for each team member
-    4. Launch claude /run in each tmux window for each work item
-    5. Monitor tmux windows for completion
+    3. Create tmux session with split panes for each team member
+    4. Launch claude /run in each tmux pane for each work item
+    5. Monitor tmux panes for completion
     6. Aggregate results from all /run sessions
 
     Session: Agent_Memory/sessions/team_{YYYYMMDD_HHMMSS}/
@@ -81,40 +81,44 @@ Task({
 
 ## tmux Execution Model
 
-### Session Creation
+### Session Creation with Split Panes
 
-The team-trigger creates a tmux session named `cagents-team-{session_id}`:
+The team-trigger creates a tmux session named `cagents-team-{session_id}` with split panes (one pane per work item), all visible simultaneously in a tiled layout:
 
 ```bash
-# Create tmux session (detached)
-tmux new-session -d -s "cagents-team-${SESSION_ID}" -n "lead"
+# Create tmux session (detached) -- first pane is the team lead
+tmux new-session -d -s "cagents-team-${SESSION_ID}"
 
-# Create a window per team member work item
-tmux new-window -t "cagents-team-${SESSION_ID}" -n "wi-001"
-tmux new-window -t "cagents-team-${SESSION_ID}" -n "wi-002"
-tmux new-window -t "cagents-team-${SESSION_ID}" -n "wi-003"
+# Split into panes for each work item (tiled layout keeps all visible)
+tmux split-window -t "cagents-team-${SESSION_ID}"
+tmux split-window -t "cagents-team-${SESSION_ID}"
+tmux split-window -t "cagents-team-${SESSION_ID}"
+
+# Apply tiled layout so all panes are evenly sized and visible
+tmux select-layout -t "cagents-team-${SESSION_ID}" tiled
 ```
 
 ### Work Item Execution via /run
 
-Each tmux window launches a `claude` CLI instance with `/run`:
+Each tmux pane launches a `claude` CLI instance with `/run`:
 
 ```bash
-# In each tmux window, launch claude with /run for the work item
-tmux send-keys -t "cagents-team-${SESSION_ID}:wi-001" \
+# In each pane, launch claude with /run for the work item
+# Pane 0 is the team lead monitor; panes 1+ are work items
+tmux send-keys -t "cagents-team-${SESSION_ID}.1" \
   "claude --print '/run implement WI-001: Implement user model from team session ${SESSION_ID}'" Enter
 
-tmux send-keys -t "cagents-team-${SESSION_ID}:wi-002" \
+tmux send-keys -t "cagents-team-${SESSION_ID}.2" \
   "claude --print '/run implement WI-002: Create user form from team session ${SESSION_ID}'" Enter
 ```
 
 ### Monitoring
 
-The team lead window monitors all work items:
+The team lead pane (pane 0) monitors all work item panes:
 
 ```bash
-# Check if a window's process is still running
-tmux list-windows -t "cagents-team-${SESSION_ID}" -F "#{window_name} #{pane_pid}"
+# List all panes and their running processes
+tmux list-panes -t "cagents-team-${SESSION_ID}" -F "#{pane_index} #{pane_pid} #{pane_current_command}"
 ```
 
 ### Cleanup
@@ -159,7 +163,7 @@ This ensures no request falls through -- unsuitable team requests seamlessly con
 - Team composition (team-trigger does this)
 - tmux session management (team-trigger does this)
 - Work item distribution (team-lead-adapter does this)
-- Parallel execution (tmux windows with /run do this)
+- Parallel execution (tmux split panes with /run do this)
 - Result aggregation (team lead does this)
 
 See @reference/architecture.md for team execution model details.
@@ -188,4 +192,4 @@ team_mode:
 
 ---
 
-**Key Innovation**: `/team` decomposes and parallelizes via tmux windows; each member runs `/run` for full orchestration per work item. True visual parallelism with quality guarantees.**
+**Key Innovation**: `/team` decomposes and parallelizes via tmux split panes; each member runs `/run` for full orchestration per work item. True visual parallelism with all panes visible at once.**

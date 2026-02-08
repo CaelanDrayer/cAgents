@@ -180,15 +180,16 @@ Instead of polling coordination_log.yaml:
 
 | Metric | Standard Mode | Team Mode |
 |--------|---------------|-----------|
-| Execution | Sequential | Parallel |
+| Execution | Sequential | Parallel (tmux split panes) |
 | Coordination | Controller polls | Shared task list |
-| Communication | Task results | Peer-to-peer |
+| Parallelism | Single context | Visual parallelism via tmux split panes |
 | Time reduction | Baseline | 40-60% faster |
 
 ### Fallback Handling
 
-If Agent Teams is unavailable during team mode:
-1. Team-lead-adapter detects unavailability
-2. Falls back to parallel Task tool calls
+Execution method priority: tmux -> Agent Teams -> parallel /run.
+If tmux is unavailable during team mode:
+1. Team-trigger checks Agent Teams availability
+2. Falls back to parallel `/run` Skill invocations if neither available
 3. Logs degraded mode in session
-4. Proceeds with reduced functionality (no peer messaging)
+4. Proceeds with reduced functionality (no visual parallelism)

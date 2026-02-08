@@ -1,33 +1,32 @@
 # Team Coordination Patterns
 
-Guidelines for Agent Teams parallel execution in cAgents V8.7.
+Guidelines for parallel team execution in cAgents V9.1.
 
 ## Overview
 
-**Core Architecture**: `/team` decomposes and parallelizes; `/run` orchestrates each work item.
+**Core Architecture**: `/team` decomposes and parallelizes via **tmux split panes**; `/run` orchestrates each work item.
 
-Agent Teams enables parallel team-based execution with:
+Team Mode enables parallel execution with:
+- **tmux split panes**: Each work item runs in its own tmux pane, all visible simultaneously in a tiled layout
 - **Every work item via /run**: Full orchestration (plan, coordinate, execute, validate) per item
-- **Peer-to-peer messaging**: Direct communication between team members
-- **Shared task lists**: Self-claiming work items
-- **Independent contexts**: Each member has isolated context
+- **Shared task lists**: Track work item progress and dependencies
+- **Independent contexts**: Each tmux pane has isolated context
 - **Team leads**: Controllers operate in delegate mode
 
 ## Team Architecture
 
 ```
 /team <request>
-    │
-    └── Team Lead (Controller in Delegate Mode)
-        │
-        ├── Decomposes into work items
-        │
-        ├── Member 1 ──→ /run WI-001 ──→ (full orchestration) ──→ Complete
-        ├── Member 2 ──→ /run WI-002 ──→ (full orchestration) ──→ Complete
-        ├── Member 3 ──→ /run WI-003 ──→ (full orchestration) ──→ Complete
-        │                 (parallel /run invocations)
-        │
-        └── Aggregates /run outputs via coordination_log.yaml
+    |
+    +-- team-trigger (decomposes, creates tmux session with split panes)
+        |
+        +-- tmux pane 0: Team Lead (monitors progress)
+        +-- tmux pane 1: claude /run WI-001 --> (full orchestration) --> Complete
+        +-- tmux pane 2: claude /run WI-002 --> (full orchestration) --> Complete
+        +-- tmux pane 3: claude /run WI-003 --> (full orchestration) --> Complete
+        |                    (parallel in split panes -- all visible at once)
+        |
+        +-- Aggregates /run outputs via coordination_log.yaml
 ```
 
 ## When to Use Teams
@@ -60,6 +59,56 @@ disqualified:
   tier: 2 with items < 4
 ```
 
+## Execution Method Priority
+
+```
+1. tmux (default) - Create tmux session with split panes, one pane per work item, each runs claude /run
+2. Agent Teams API - If CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1, use spawnTeam/SendMessage
+3. Parallel /run - Fallback: parallel Skill invocations in single message
+```
+
+## tmux Execution (Primary Method)
+
+### Session Creation with Split Panes
+
+```bash
+# Create tmux session (detached) -- first pane is the team lead
+tmux new-session -d -s "cagents-team-${SESSION_ID}"
+
+# Split into panes for each work item
+tmux split-window -t "cagents-team-${SESSION_ID}"
+tmux split-window -t "cagents-team-${SESSION_ID}"
+tmux split-window -t "cagents-team-${SESSION_ID}"
+
+# Apply tiled layout so all panes are evenly sized and visible at once
+tmux select-layout -t "cagents-team-${SESSION_ID}" tiled
+```
+
+### Work Item Execution
+
+```bash
+# Launch claude /run in each pane (pane 0 = team lead, panes 1+ = work items)
+tmux send-keys -t "cagents-team-${SESSION_ID}.1" \
+  "claude --print '/run implement WI-001: Implement user model from team session ${SESSION_ID}'" Enter
+
+tmux send-keys -t "cagents-team-${SESSION_ID}.2" \
+  "claude --print '/run implement WI-002: Create user form from team session ${SESSION_ID}'" Enter
+```
+
+### Monitoring
+
+```bash
+# List all panes and their running processes
+tmux list-panes -t "cagents-team-${SESSION_ID}" -F "#{pane_index} #{pane_pid} #{pane_current_command}"
+```
+
+### Cleanup
+
+```bash
+# After all work items complete
+tmux kill-session -t "cagents-team-${SESSION_ID}"
+```
+
 ## Team Lead (Controller) Behavior
 
 ### Delegate Mode Enforcement
@@ -69,8 +118,7 @@ Team leads ONLY coordinate. They NEVER implement.
 ```yaml
 allowed_actions:
   - Distribute work items to members
-  - Send messages via SendMessage
-  - Monitor task list progress
+  - Monitor tmux pane progress / task list
   - Request status from members
   - Synthesize member outputs
   - Write coordination_log.yaml
@@ -82,21 +130,17 @@ prohibited_actions:
   - Skip delegation for "simple" tasks
 ```
 
-### Work Distribution Strategies
+### Work Distribution
 
-**Self-Claiming (Full Teams)**:
-1. Post work items to shared task_list.yaml
-2. Members claim items matching their skills
-3. Team lead monitors and rebalances as needed
+1. Team lead analyzes work items and dependencies
+2. Creates tmux panes for each parallelizable work item
+3. Launches `claude /run` in each pane
+4. Monitors completion and handles dependencies
+5. Aggregates results
 
-**Direct Assignment (Fallback)**:
-1. Team lead analyzes work items and member capabilities
-2. Assigns items based on skill match and load balancing
-3. Respects dependency ordering
+## Agent Teams Mode (Alternative)
 
-## Team Communication Patterns
-
-### With Agent Teams API
+When `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` and Agent Teams is preferred:
 
 ```javascript
 // Spawn team
@@ -107,7 +151,7 @@ spawnTeam({
   ]
 });
 
-// Assign work — member executes via /run
+// Assign work -- member executes via /run
 SendMessage({
   to: "backend-dev",
   message: `Execute WI-001 via: Skill({ skill: "run", args: "implement WI-001: Implement user model from team session ${session_id}" })`
@@ -118,21 +162,6 @@ SendMessage({
   to: "all",
   message: "WI-001 complete via /run. Frontend can integrate."
 });
-
-// Status query
-SendMessage({
-  to: "frontend-dev",
-  message: "Status check: WI-002 progress?"
-});
-```
-
-### Without Agent Teams (Parallel /run)
-
-```javascript
-// Parallel /run invocations in single message — each gets full orchestration
-Skill({ skill: "run", args: `implement WI-001: Implement user model from team session ${session_id}` })
-Skill({ skill: "run", args: `implement WI-002: Create user form from team session ${session_id}` })
-// Both execute concurrently with full /run orchestration
 ```
 
 ## Shared Task List
@@ -143,7 +172,6 @@ task_list:
   summary:
     total: 8
     available: 2
-    claimed: 1
     in_progress: 3
     completed: 2
 
@@ -151,12 +179,12 @@ task_list:
     - id: WI-001
       name: "Implement user model"
       status: completed
-      claimed_by: backend-dev
+      tmux_pane: 1
       completed_at: "2026-02-06T14:40:00Z"
 
     - id: WI-002
       status: in_progress
-      claimed_by: frontend-dev
+      tmux_pane: 2
       progress: 60%
 
     - id: WI-003
@@ -167,28 +195,46 @@ task_list:
 ### Status Transitions
 
 ```
-available ──claim──> claimed ──start──> in_progress ──finish──> completed
-                                              │
-                                              └──block──> blocked
+available --> in_progress --> completed
+                  |
+                  +--> blocked
 ```
 
 ## Fallback Behavior
 
-If Agent Teams is unavailable:
+### Execution Method Detection
 
-1. **Detection**: team-trigger checks `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`
-2. **Execution**: Uses parallel `/run` Skill invocations (each work item still gets full orchestration)
-3. **Limitations**:
+```bash
+# Priority 1: tmux (default)
+command -v tmux >/dev/null 2>&1
+
+# Priority 2: Agent Teams API
+CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS === '1'
+
+# Priority 3: Parallel /run (always available)
+```
+
+### When tmux is Unavailable
+
+1. **Check Agent Teams**: If env var set, use Agent Teams with peer messaging
+2. **Final fallback**: Parallel `/run` Skill invocations (each work item still gets full orchestration)
+3. **Limitations** (parallel /run mode):
    - No peer-to-peer messaging
-   - No self-claiming (direct assignment only)
+   - No visual parallelism
    - Sequential result aggregation
 4. **Notification**: User informed of degraded mode
 
 ```
-Agent Teams not available. Using parallel /run invocations.
-Team features (peer messaging, shared tasks) disabled.
+tmux and Agent Teams not available. Using parallel /run invocations.
+Team features (split pane visual parallelism, peer messaging) disabled.
 Each work item receives full /run orchestration for quality.
 ```
+
+### Unsuitable Request Fallback
+
+If the request is unsuitable for team execution (tier 2, too few work items, all sequential):
+1. Notify user: "Request better suited for standard execution."
+2. Automatically delegate to `/run` for standard orchestration.
 
 ## Performance Targets
 
@@ -205,9 +251,9 @@ Agent_Memory/sessions/team_{timestamp}/
 ├── instruction.yaml
 ├── status.yaml
 ├── team/
-│   ├── team_manifest.yaml    # Team composition
+│   ├── team_manifest.yaml    # Team composition + execution method
 │   ├── task_list.yaml        # Shared work items
-│   ├── messages/             # Communication log
+│   ├── messages/             # Communication log (Agent Teams mode)
 │   └── metrics/
 │       ├── timing.yaml
 │       └── parallelism.yaml
@@ -222,8 +268,8 @@ Agent_Memory/sessions/team_{timestamp}/
 
 ### Member Failure
 - Log warning
-- Reassign work item to available member
-- If no members available: mark item blocked
+- Reassign work item (create new tmux pane)
+- If no recovery possible: mark item blocked
 
 ### Deadlock Detection
 - Detect circular dependencies
@@ -237,8 +283,8 @@ Agent_Memory/sessions/team_{timestamp}/
 
 ## Integration Points
 
-- **team-trigger**: Initializes team, checks availability
-- **team-lead-adapter**: Wraps controller in delegate mode
+- **team-trigger**: Initializes team, creates tmux session with split panes, checks availability
+- **team-lead-adapter**: Wraps controller in delegate mode, monitors tmux panes
 - **orchestrator**: Detects team mode, routes appropriately
 - **Hooks**: team-start.cjs, team-stop.cjs, team-task-complete.cjs
 
@@ -252,8 +298,9 @@ team_mode:
   max_team_size: 8
   prefer_teams_for_tiers: [3, 4]
   fallback_parallel_tasks: true
+  execution_method: tmux    # tmux (default) | agent_teams | parallel_tasks
 ```
 
 ---
 
-**Part of**: cAgents Core Infrastructure - Agent Teams Integration
+**Part of**: cAgents Core Infrastructure - Parallel Team Execution

@@ -87,8 +87,8 @@ Task({
     Request: {request}
     Flags: {flags}
     Mode: team_execution
-    Initialize team workflow. Check Agent Teams availability, analyze parallelism,
-    spawn team, distribute work items.
+    Initialize team workflow. Check tmux availability, analyze parallelism,
+    create tmux session with split panes per work item, launch claude /run in each.
     Session: Agent_Memory/sessions/team_{YYYYMMDD_HHMMSS}/
   `
 })

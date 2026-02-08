@@ -7,20 +7,20 @@
     |
     +-- team-trigger (decomposes, selects execution method)
         |
-        +-- tmux session: cagents-team-{session_id}
+        +-- tmux session: cagents-team-{session_id} (tiled split panes)
             |
-            +-- window 0: Team Lead (monitors progress)
-            +-- window 1: claude /run WI-001 --> (full orchestration) --> Complete
-            +-- window 2: claude /run WI-002 --> (full orchestration) --> Complete
-            +-- window 3: claude /run WI-003 --> (full orchestration) --> Complete
-            |                 (parallel in separate tmux windows)
+            +-- pane 0: Team Lead (monitors progress)
+            +-- pane 1: claude /run WI-001 --> (full orchestration) --> Complete
+            +-- pane 2: claude /run WI-002 --> (full orchestration) --> Complete
+            +-- pane 3: claude /run WI-003 --> (full orchestration) --> Complete
+            |                 (parallel in split panes -- all visible at once)
             |
             +-- Aggregates /run outputs into final result
 ```
 
 ## Execution Method Priority
 
-1. **tmux** (default) - True visual parallelism with separate windows
+1. **tmux** (default) - True visual parallelism with split panes (all visible at once)
 2. **Agent Teams** - Claude Code experimental API with peer messaging
 3. **Parallel /run** - Fallback: concurrent Skill invocations in single message
 
@@ -30,19 +30,22 @@ Every work item is executed via `/run`. This is the primary execution model, not
 
 ### tmux Mode (Default)
 
-Each work item runs in its own tmux window:
+Each work item runs in its own tmux pane within a single session, all visible simultaneously:
 
 ```bash
-# Create tmux session
-tmux new-session -d -s "cagents-team-${SESSION_ID}" -n "lead"
+# Create tmux session (detached) -- first pane is the team lead
+tmux new-session -d -s "cagents-team-${SESSION_ID}"
 
-# Create window per work item and launch claude /run
-tmux new-window -t "cagents-team-${SESSION_ID}" -n "wi-001"
-tmux send-keys -t "cagents-team-${SESSION_ID}:wi-001" \
+# Split into panes for each work item and apply tiled layout
+tmux split-window -t "cagents-team-${SESSION_ID}"
+tmux split-window -t "cagents-team-${SESSION_ID}"
+tmux select-layout -t "cagents-team-${SESSION_ID}" tiled
+
+# Launch claude /run in each pane (pane 0 = lead, panes 1+ = work items)
+tmux send-keys -t "cagents-team-${SESSION_ID}.1" \
   "claude --print '/run implement WI-001: ${item.description} from team session ${SESSION_ID}'" Enter
 
-tmux new-window -t "cagents-team-${SESSION_ID}" -n "wi-002"
-tmux send-keys -t "cagents-team-${SESSION_ID}:wi-002" \
+tmux send-keys -t "cagents-team-${SESSION_ID}.2" \
   "claude --print '/run implement WI-002: ${item.description} from team session ${SESSION_ID}'" Enter
 ```
 
@@ -75,7 +78,7 @@ Team leads ONLY coordinate. They NEVER implement.
 **Allowed actions:**
 - Distribute work items to members
 - Send messages via SendMessage (Agent Teams mode)
-- Monitor task list / tmux window progress
+- Monitor task list / tmux pane progress
 - Request status from members
 - Synthesize member outputs
 - Write coordination_log.yaml
@@ -96,27 +99,27 @@ task_list:
       name: "Implement user model"
       status: completed
       claimed_by: backend-dev
-      tmux_window: wi-001
+      tmux_pane: 1
     - id: WI-002
       status: in_progress
       claimed_by: frontend-dev
-      tmux_window: wi-002
+      tmux_pane: 2
       progress: 60%
     - id: WI-003
       status: available
       dependencies: [WI-001]  # Now unblocked
 ```
 
-Status transitions: `available -> claimed -> in_progress -> completed`
+Status transitions: `available --> claimed --> in_progress --> completed`
 
 ## tmux Monitoring
 
 ```bash
-# Check if work items are still running
-tmux list-windows -t "cagents-team-${SESSION_ID}" -F "#{window_name} #{pane_pid}"
+# List all panes and their running processes
+tmux list-panes -t "cagents-team-${SESSION_ID}" -F "#{pane_index} #{pane_pid} #{pane_current_command}"
 
-# Check specific window activity
-tmux list-panes -t "cagents-team-${SESSION_ID}:wi-001" -F "#{pane_pid} #{pane_current_command}"
+# Check if specific pane process is still running
+tmux list-panes -t "cagents-team-${SESSION_ID}" -F "#{pane_index} #{pane_pid}" -f "#{==:#{pane_index},1}"
 ```
 
 ## Session Structure

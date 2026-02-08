@@ -15,7 +15,7 @@ Topic-specific rules organized for better maintainability.
 │   ├── skill-format.md        # V8.0 SKILL.md agent format spec
 │   ├── progressive-disclosure.md # V8.0 three-tier loading pattern
 │   ├── subagent-alignment.md  # V8.0 Task tool alignment
-│   └── teams.md               # V8.6 Agent Teams coordination patterns
+│   └── teams.md               # V9.1 Team coordination patterns (tmux + fallback)
 ├── domains/        # Domain-specific guidelines
 │   ├── engineering.md      # Engineering workflows and agents
 │   ├── grow.md             # Grow (marketing/sales) patterns
@@ -79,7 +79,7 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 6. **core/skill-format.md** - V9.0 SKILL.md format (maxTurns, permissionMode, memory, opusplan)
 7. **core/progressive-disclosure.md** - Three-tier loading (10/10 agents converted)
 8. **core/subagent-alignment.md** - Task tool alignment patterns
-9. **core/teams.md** - V8.7 Agent Teams coordination patterns
+9. **core/teams.md** - V9.1 Team coordination patterns (tmux + fallback)
 
 ### Domains (5 files)
 9. **domains/engineering.md** - Engineering domain guidelines

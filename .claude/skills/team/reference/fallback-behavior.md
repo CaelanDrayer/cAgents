@@ -14,18 +14,26 @@ CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS === '1'
 # Priority 3: Parallel /run (always available)
 ```
 
-## Method 1: tmux (Default)
+## Method 1: tmux Split Panes (Default)
 
-When tmux is available, create a tmux session with one window per work item:
+When tmux is available, create a tmux session with split panes (one pane per work item, all visible at once):
 
 ```bash
-tmux new-session -d -s "cagents-team-${SESSION_ID}" -n "lead"
-tmux new-window -t "cagents-team-${SESSION_ID}" -n "wi-001"
-tmux send-keys -t "cagents-team-${SESSION_ID}:wi-001" \
+# Create session -- first pane is the team lead
+tmux new-session -d -s "cagents-team-${SESSION_ID}"
+
+# Split into panes for each work item
+tmux split-window -t "cagents-team-${SESSION_ID}"
+
+# Launch /run in the new pane
+tmux send-keys -t "cagents-team-${SESSION_ID}.1" \
   "claude --print '/run implement WI-001: ${item.description} from team session ${SESSION_ID}'" Enter
+
+# Apply tiled layout for even sizing
+tmux select-layout -t "cagents-team-${SESSION_ID}" tiled
 ```
 
-**Advantages**: True visual parallelism, user can watch all agents work simultaneously.
+**Advantages**: True visual parallelism with all panes visible in a single split view. User can watch all agents work simultaneously without switching tabs.
 
 ## Method 2: Agent Teams API
 

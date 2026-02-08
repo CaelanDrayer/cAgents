@@ -1,28 +1,33 @@
 ---
 name: team
-description: Parallel team-based workflow execution with peer-to-peer communication. Leverages Claude Code Agent Teams for 40-60% execution time reduction on tier 3+ workflows.
+description: Parallel team-based workflow execution via tmux split panes with /run per work item. Provides 40-60% execution time reduction on tier 3+ workflows through true visual parallelism.
 ---
 
 # Team Command
 
-**Parallel team-based workflow execution** using Claude Code's experimental Agent Teams feature.
+**NOTE**: This is a legacy command file. The active implementation is in `.claude/skills/team/SKILL.md`.
+
+**Parallel team-based workflow execution** using tmux split panes as the primary execution method.
 
 ## Your Mission
 
 You are a minimal delegation layer that initializes team-based execution for parallelizable workflows. Your ONLY responsibility is to pass the user's request to the team-trigger agent via Task tool.
 
-DO NOT execute ANY logic directly. The team-trigger agent handles team initialization and orchestration.
+DO NOT execute ANY logic directly. The team-trigger agent handles team initialization, tmux session creation with split panes, and orchestration.
 
-## CRITICAL: Agent Teams Feature Detection
+## Execution Method Detection
 
-Before any team operation, verify Agent Teams is available:
+Before any team operation, detect the best available execution method:
 
-```javascript
-// Team-trigger checks this
-const teamsAvailable = process.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS === '1';
+```bash
+# Priority 1: tmux (default)
+command -v tmux >/dev/null 2>&1
+
+# Priority 2: Agent Teams API
+CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS === '1'
+
+# Priority 3: Parallel /run (always available)
 ```
-
-**If unavailable**: Fall back to parallel `/run` Skill invocations.
 
 ## How It Works
 
@@ -30,10 +35,11 @@ When the user runs `/team <request> [flags]`:
 
 1. **Parse flags** from command arguments
 2. Create initial TodoWrite entry to show progress
-3. Check Agent Teams availability
-4. If available: Invoke team-trigger agent via Task tool
-5. If unavailable: Fall back to `/run` with parallel execution
-6. Report results when complete
+3. Check tmux availability (then Agent Teams, then parallel /run)
+4. Invoke team-trigger agent via Task tool
+5. team-trigger creates tmux session with split panes per work item
+6. Each tmux pane runs `claude /run` for its work item
+7. Report results when complete
 
 ## Usage
 
@@ -97,12 +103,12 @@ Task({
     Mode: team_execution
 
     Initialize team workflow:
-    1. Check Agent Teams availability
+    1. Check tmux availability (then Agent Teams, then parallel /run)
     2. Analyze request for parallelizable work items
     3. Select team lead (controller)
-    4. Spawn team via Claude Code Agent Teams API
-    5. Map work items to shared task list
-    6. Monitor and aggregate results
+    4. Create tmux session with split panes for each work item
+    5. Launch claude /run in each tmux pane
+    6. Monitor tmux panes and aggregate results
 
     Session: Agent_Memory/sessions/team_{YYYYMMDD_HHMMSS}/
   `
@@ -146,33 +152,46 @@ team_composition:
 
 ```
 /team <request>
-    │
-    └── Team Lead (Controller — delegate only)
-        │
-        ├── Decomposes request into work items
-        ├── Creates shared task list
-        │
-        ├── Member 1 ──→ /run WI-001 ──→ (full orchestration) ──→ Complete
-        ├── Member 2 ──→ /run WI-002 ──→ (full orchestration) ──→ Complete
-        ├── Member 3 ──→ /run WI-003 ──→ (full orchestration) ──→ Complete
-        │                 (parallel /run invocations)
-        │
-        └── Aggregates /run outputs into final result
+    |
+    +-- team-trigger (decomposes, creates tmux session with split panes)
+        |
+        +-- tmux pane 0: Team Lead (monitors progress)
+        +-- tmux pane 1: claude /run WI-001 --> (full orchestration) --> Complete
+        +-- tmux pane 2: claude /run WI-002 --> (full orchestration) --> Complete
+        +-- tmux pane 3: claude /run WI-003 --> (full orchestration) --> Complete
+        |                    (parallel in split panes -- all visible at once)
+        |
+        +-- Aggregates /run outputs into final result
 ```
 
-**Key**: Every work item gets full `/run` orchestration (controller coordination, specialist execution, quality validation). `/team` provides the parallelism layer; `/run` provides the quality layer.
+**Key**: Every work item gets full `/run` orchestration (controller coordination, specialist execution, quality validation). `/team` provides the parallelism layer via tmux split panes; `/run` provides the quality layer.
 
 ## Work Item Execution via /run
 
-**CRITICAL**: Every work item is executed via `/run`. This is not a fallback — it's the primary execution model. `/team` handles decomposition and parallelism; `/run` handles each work item's full orchestration.
+**CRITICAL**: Every work item is executed via `/run`. This is not a fallback -- it is the primary execution model. `/team` handles decomposition and parallelism; `/run` handles each work item's full orchestration.
 
-### With Agent Teams (Full Mode)
+### tmux Mode (Default)
+
+Each work item runs in its own tmux pane, all visible in a tiled split view:
+
+```bash
+# Create tmux session (detached) -- first pane is the team lead
+tmux new-session -d -s "cagents-team-${SESSION_ID}"
+
+# Split into panes for each work item
+tmux split-window -t "cagents-team-${SESSION_ID}"
+
+# Apply tiled layout and launch claude /run in the new pane
+tmux select-layout -t "cagents-team-${SESSION_ID}" tiled
+tmux send-keys -t "cagents-team-${SESSION_ID}.1" \
+  "claude --print '/run implement WI-001: ${item.description} from team session ${SESSION_ID}'" Enter
+```
+
+### Agent Teams Mode (Alternative)
 
 Team members are spawned and each one invokes `/run` for their claimed work item:
 
 ```javascript
-// Team lead assigns work items to members
-// Each member executes their item via /run for full orchestration
 SendMessage({
   to: "member-1",
   message: `Execute your work item via /run:
@@ -180,21 +199,19 @@ SendMessage({
 });
 ```
 
-### Without Agent Teams (Fallback Mode)
+### Parallel /run Mode (Fallback)
 
 Parallel `/run` invocations sent in a single message:
 
 ```javascript
-// Each work item gets its own /run — parallel invocations
 Skill({ skill: "run", args: `implement WI-001: ${item1.description} from team session ${session_id}` })
 Skill({ skill: "run", args: `implement WI-002: ${item2.description} from team session ${session_id}` })
-Skill({ skill: "run", args: `implement WI-003: ${item3.description} from team session ${session_id}` })
 ```
 
-**User notification**:
+**User notification** (when tmux + Agent Teams unavailable):
 ```
-Agent Teams not available. Using parallel /run invocations.
-Team features (peer messaging, shared tasks) disabled.
+tmux and Agent Teams not available. Using parallel /run invocations.
+Team features (split pane visual parallelism, peer messaging) disabled.
 Each work item receives full /run orchestration for quality.
 ```
 
@@ -222,7 +239,7 @@ Agent_Memory/sessions/team_{timestamp}/
 ├── instruction.yaml          # User request
 ├── status.yaml               # Current state
 ├── team/
-│   ├── team_manifest.yaml    # Team composition
+│   ├── team_manifest.yaml    # Team composition + execution method
 │   ├── task_list.yaml        # Shared task list (work items)
 │   ├── messages/             # Peer-to-peer messages
 │   │   └── {timestamp}.yaml  # Individual messages
@@ -287,8 +304,9 @@ After `/run` completes, the team lead marks the item as completed in the shared 
 
 **This command NEVER does:**
 - Team composition (team-trigger does this)
+- tmux session management (team-trigger does this)
 - Work item distribution (team-lead-adapter does this)
-- Parallel execution (Claude Code Agent Teams does this)
+- Parallel execution (tmux split panes with /run do this)
 - Result aggregation (team lead does this)
 
 ## Configuration
@@ -301,6 +319,7 @@ team_mode:
   max_team_size: 8         # Maximum team members
   prefer_teams_for_tiers: [3, 4]
   fallback_parallel_tasks: true
+  execution_method: tmux   # tmux (default) | agent_teams | parallel_tasks
 ```
 
 ## Related Files
@@ -313,4 +332,4 @@ team_mode:
 
 ---
 
-**Key Innovation**: `/team` decomposes and parallelizes; `/run` orchestrates each work item. Best of both worlds — parallel speed with full orchestration quality.
+**Key Innovation**: `/team` decomposes and parallelizes via tmux split panes; each member runs `/run` for full orchestration per work item. True visual parallelism with all panes visible at once.

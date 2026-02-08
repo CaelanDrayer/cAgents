@@ -46,7 +46,7 @@ Core architecture and development guidance for cAgents.
 - `GETTING_STARTED.md` - Getting started guide
 - `OPTIMIZATION_PROGRESS.md` - Optimization tracking and progress
 - `RELEASE_NOTES.md` - Release history
-- `TEAM_MODE.md` - Agent Teams integration (V8.6)
+- `TEAM_MODE.md` - Parallel team execution via tmux split panes (V9.1)
 
 **Root Documentation** (exceptions):
 - `workflow_agent_interactions.md` - Agent interaction patterns (referenced throughout)
@@ -253,9 +253,9 @@ Complete: outputs/fix_summary.yaml
 - `hitl` - Human escalation for tier-4 decisions
 - `optimizer` - Universal optimization (code, content, processes, data, infrastructure, campaigns)
 
-**Team Agents** (2) - V8.6:
-- `team-trigger` - Team initialization, Agent Teams detection, parallelism analysis
-- `team-lead-adapter` - Wraps controllers for team lead mode (delegate only)
+**Team Agents** (2) - V9.1:
+- `team-trigger` - Team initialization, tmux split pane session creation, parallelism analysis
+- `team-lead-adapter` - Wraps controllers for team lead mode (delegate only, monitors tmux panes)
 
 **Universal Workflow Agents** (5):
 - `universal-router` - Tier classification (2-4), ALWAYS requires controllers
@@ -486,7 +486,7 @@ See `workflow_agent_interactions.md` for detailed agent interaction patterns.
 | Skill | Context | Agent | Description |
 |-------|---------|-------|-------------|
 | `/run` | `fork` | `true` | Universal workflow engine — delegates to trigger agent |
-| `/team` | `fork` | `true` | Parallel team execution with peer-to-peer messaging |
+| `/team` | `fork` | `true` | Parallel team execution via tmux split panes with /run per work item |
 | `/designer` | `none` | `false` | Interactive design engine (stays in main context for AskUserQuestion) |
 | `/review` | `fork` | `true` | Universal review with parallel agent execution |
 | `/optimize` | `fork` | `true` | 5-phase optimization with atomic rollback |
@@ -553,8 +553,8 @@ Skill: `.claude/skills/optimize/SKILL.md` + `reference/` (6 files: flags, optimi
 /init                      # Create initial CLAUDE.md for project
 ```
 
-### /team - Parallel Team Execution (V8.6)
-Parallel team-based workflow execution using Claude Code Agent Teams. Provides 40-60% execution time reduction for tier 3+ workflows through peer-to-peer communication and shared task lists.
+### /team - Parallel Team Execution via tmux Split Panes (V9.1)
+Parallel team-based workflow execution using **tmux split panes**. Each work item runs in its own tmux pane via `claude /run`, with all panes visible simultaneously in a tiled layout, providing true visual parallelism and 40-60% execution time reduction for tier 3+ workflows.
 
 ```bash
 /team Implement OAuth2 authentication    # Full team execution
@@ -568,12 +568,14 @@ Parallel team-based workflow execution using Claude Code Agent Teams. Provides 4
 /run Build feature --team                # Team mode via flag
 ```
 
+**Core Architecture**: `/team` decomposes and parallelizes via tmux split panes; `/run` orchestrates each work item.
+
 **Key Features**:
-- **Peer-to-Peer Communication**: Team members communicate directly via SendMessage
-- **Shared Task Lists**: Work items in `team/task_list.yaml` for self-claiming
+- **tmux Split Pane Parallelism**: Each work item in its own tmux pane -- all visible simultaneously in a tiled layout
+- **Every Work Item via /run**: Full orchestration (plan, coordinate, execute, validate) per item
+- **Shared Task Lists**: Work items in `team/task_list.yaml` for progress tracking
 - **Team Leads**: Controllers operate in delegate mode (coordination only)
-- **Parallel Execution**: Independent work items execute concurrently
-- **Automatic Fallback**: Falls back to parallel `/run` Skill invocations if Agent Teams unavailable
+- **Graceful Fallback**: tmux -> Agent Teams -> parallel `/run` Skill invocations
 
 **Performance Targets**:
 - 40-60% execution time reduction
@@ -586,7 +588,9 @@ Config: `.cagents/team_config.yaml`, see `docs/TEAM_MODE.md` for full documentat
 
 ### Overview
 
-Team Mode enables parallel team-based execution using Claude Code's experimental Agent Teams feature. Controllers become team leads operating in delegate mode, work items are distributed to team members for parallel execution.
+Team Mode enables parallel team-based execution using **tmux split panes** as the primary execution method. Each work item runs in its own tmux pane via `claude /run`, with all panes visible simultaneously in a tiled layout. Controllers become team leads operating in delegate mode.
+
+**Core Architecture**: `/team` decomposes and parallelizes via tmux split panes; `/run` orchestrates each work item.
 
 ### When to Use
 
@@ -601,22 +605,32 @@ Team Mode enables parallel team-based execution using Claude Code's experimental
 
 ```
 /team <request>
-    │
-    └── Team Lead (Controller) ─┬─ Member 1 ─→ /run WI-001 ─→ Complete
-                                ├─ Member 2 ─→ /run WI-002 ─→ Complete
-                                └─ Member 3 ─→ /run WI-003 ─→ Complete
-                                        (parallel /run)
-                                └──────────────────────────→ Aggregate
+    |
+    +-- team-trigger (decomposes, creates tmux session with split panes)
+        |
+        +-- tmux pane 0: Team Lead (monitors progress)
+        +-- tmux pane 1: claude /run WI-001 --> (full orchestration) --> Complete
+        +-- tmux pane 2: claude /run WI-002 --> (full orchestration) --> Complete
+        +-- tmux pane 3: claude /run WI-003 --> (full orchestration) --> Complete
+        |                    (parallel in split panes -- all visible at once)
+        |
+        +-- Aggregates /run outputs into final result
 ```
+
+### Execution Method Priority
+
+1. **tmux** (default) -- True visual parallelism with split panes (all visible at once)
+2. **Agent Teams** -- Claude Code experimental API with peer messaging
+3. **Parallel /run** -- Fallback: concurrent Skill invocations in single message
 
 ### Session Structure
 
 ```
 Agent_Memory/sessions/team_{timestamp}/
 ├── team/
-│   ├── team_manifest.yaml    # Team composition
+│   ├── team_manifest.yaml    # Team composition + execution method
 │   ├── task_list.yaml        # Shared work items
-│   ├── messages/             # Peer-to-peer communication
+│   ├── messages/             # Communication log (Agent Teams mode)
 │   └── metrics/              # Timing and parallelism
 ├── workflow/
 └── outputs/
@@ -624,10 +638,10 @@ Agent_Memory/sessions/team_{timestamp}/
 
 ### Fallback Behavior
 
-If Agent Teams is unavailable (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` not set):
-- Falls back to parallel `/run` Skill invocations (each work item still gets full orchestration)
-- Peer messaging disabled, direct assignment only
-- Parallelism still achieved via concurrent `/run` invocations
+Execution method detection: tmux -> Agent Teams -> parallel /run
+- **tmux unavailable**: Falls to Agent Teams if `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`
+- **Neither available**: Parallel `/run` Skill invocations (each work item still gets full orchestration)
+- **Unsuitable request**: Automatically delegates to standard `/run`
 
 See `docs/TEAM_MODE.md` for full documentation and `.claude/rules/core/teams.md` for coordination patterns.
 
@@ -768,7 +782,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 **Hooks**: 14 event types, 3 hook types (command, prompt, agent) in `.claude/settings.json`
 **Models**: opusplan (controllers), sonnet (execution), haiku (support)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
-**Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ workflows
+**Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ workflows via tmux split panes
 
 ## Troubleshooting
 
@@ -784,22 +798,23 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 | Missing coordination_log | Controller didn't complete - check controller logs |
 | Memory not loading | Run `/memory` to view loaded files |
 | Local preferences not applied | Ensure CLAUDE.local.md in .gitignore |
-| Team not spawning | Check `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` env var |
+| Team not spawning | Check tmux is installed, verify work items >= 3, ensure terminal is large enough for panes |
 | Team slower than expected | Check parallelism_score, use standard mode for sequential work |
-| Team fallback mode active | Set env var or check Agent Teams availability |
+| Team fallback mode active | Install tmux, or set `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` |
+| tmux pane issues | Verify `tmux` and `claude` in PATH, check `tmux ls` for conflicts, resize terminal for more panes |
 
 See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 
 ---
 
 **Total Agents**: 236 (14 core + 14 shared + 208 domain specialists)
-**Architecture**: Controller-Centric Coordination with Task Inventory + Agent Teams
+**Architecture**: Controller-Centric Coordination with Task Inventory + tmux Split Pane Team Execution
 **Super-Domains**: 5 (Make, Grow, Operate, People, Serve)
 **Skills**: 5 (run, team, designer, review, optimize) in `.claude/skills/`
 **Hooks**: 14 event types, 11 CJS hooks, 2 prompt hooks, 2 dispatchers
 **Models**: opusplan (controllers), sonnet (execution), haiku (support)
-**Team Mode**: 40-60% execution time reduction via parallel teams
+**Team Mode**: 40-60% execution time reduction via tmux split pane parallel teams
 **Directories**: 7 (core, shared, make, grow, operate, people, serve)
 **Key Innovation**: CSV-based task inventory for large workflows + aggressive decomposition
 **Dependencies**: None (file-based, self-contained)
-**Version**: 9.0.0
+**Version**: 9.1.0

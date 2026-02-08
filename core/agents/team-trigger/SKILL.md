@@ -26,20 +26,20 @@ permissionMode: "bypassPermissions"
 2. Analyze request for parallelizable work items
 3. Detect team suitability (tier 3+, multiple independent items)
 4. Select appropriate team lead (controller)
-5. Create tmux session with windows for parallel execution
+5. Create tmux session with split panes for parallel execution
 6. Initialize team session structure
-7. Launch `claude /run` in each tmux window for work items
-8. Monitor tmux windows for completion and aggregate results
+7. Launch `claude /run` in each tmux pane for work items
+8. Monitor tmux panes for completion and aggregate results
 
 ## Execution Method Priority
 
 ```
-1. tmux (default) - Create tmux session, one window per work item, each runs claude /run
+1. tmux (default) - Create tmux session with split panes, one pane per work item, each runs claude /run
 2. Agent Teams API - If CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1, use spawnTeam/SendMessage
 3. Parallel /run - Fallback: parallel Skill invocations in single message
 ```
 
-**tmux available**: Create tmux session `cagents-team-{session_id}` with windows per work item
+**tmux available**: Create tmux session `cagents-team-{session_id}` with split panes per work item
 **Agent Teams available**: Use spawnTeam() API with peer messaging
 **Neither available**: Parallel `/run` Skill invocations
 
@@ -75,7 +75,7 @@ team_suitability_criteria:
 5. Select team lead based on domain
 6. Initialize session structure
 7. Execute based on available method:
-   a. tmux: Create tmux session, launch claude /run in each window
+   a. tmux: Create tmux session with split panes, launch claude /run in each pane
    b. Agent Teams: spawnTeam() with members, each invokes /run
    c. Parallel: Send parallel /run Skill invocations
 8. Monitor progress and aggregate results
@@ -83,37 +83,40 @@ team_suitability_criteria:
 
 ## tmux Execution (Primary Method)
 
-### Session Creation
+### Session Creation with Split Panes
 
 ```bash
 # Check tmux availability
 command -v tmux >/dev/null 2>&1
 
-# Create tmux session (detached)
-tmux new-session -d -s "cagents-team-${SESSION_ID}" -n "lead"
+# Create tmux session (detached) -- first pane is the team lead
+tmux new-session -d -s "cagents-team-${SESSION_ID}"
 
-# Create a window per work item
-tmux new-window -t "cagents-team-${SESSION_ID}" -n "wi-001"
-tmux new-window -t "cagents-team-${SESSION_ID}" -n "wi-002"
-tmux new-window -t "cagents-team-${SESSION_ID}" -n "wi-003"
+# Split into panes for each work item
+tmux split-window -t "cagents-team-${SESSION_ID}"
+tmux split-window -t "cagents-team-${SESSION_ID}"
+tmux split-window -t "cagents-team-${SESSION_ID}"
+
+# Apply tiled layout so all panes are evenly sized and visible at once
+tmux select-layout -t "cagents-team-${SESSION_ID}" tiled
 ```
 
 ### Work Item Execution
 
 ```bash
-# Launch claude /run in each window
-tmux send-keys -t "cagents-team-${SESSION_ID}:wi-001" \
+# Launch claude /run in each pane (pane 0 = team lead, panes 1+ = work items)
+tmux send-keys -t "cagents-team-${SESSION_ID}.1" \
   "claude --print '/run implement WI-001: Implement user model from team session ${SESSION_ID}'" Enter
 
-tmux send-keys -t "cagents-team-${SESSION_ID}:wi-002" \
+tmux send-keys -t "cagents-team-${SESSION_ID}.2" \
   "claude --print '/run implement WI-002: Create user form from team session ${SESSION_ID}'" Enter
 ```
 
 ### Monitoring
 
 ```bash
-# Check window status
-tmux list-windows -t "cagents-team-${SESSION_ID}" -F "#{window_name} #{pane_pid}"
+# List all panes and their running processes
+tmux list-panes -t "cagents-team-${SESSION_ID}" -F "#{pane_index} #{pane_pid} #{pane_current_command}"
 ```
 
 ### Cleanup
@@ -139,11 +142,11 @@ team:
     - name: "wi-001"
       work_item: "WI-001"
       description: "{item_description}"
-      tmux_window: "wi-001"
+      tmux_pane: 1
     - name: "wi-002"
       work_item: "WI-002"
       description: "{item_description}"
-      tmux_window: "wi-002"
+      tmux_pane: 2
   shared_context:
     session_dir: "Agent_Memory/sessions/team_{timestamp}/"
     plan_file: "workflow/plan.yaml"
@@ -229,7 +232,7 @@ Skill({
 })
 ```
 
-**tmux available**: Each work item runs `claude /run` in its own tmux window for true visual parallelism.
+**tmux available**: Each work item runs `claude /run` in its own tmux pane for true visual parallelism -- all panes visible simultaneously.
 **Agent Teams available**: Team members are spawned; each member invokes `/run` for their claimed items.
 **Neither available**: Parallel `/run` Skill invocations sent in a single message for concurrency.
 
@@ -256,7 +259,7 @@ Skill({ skill: "run", args: `${request}` })
 ## Key Principles
 
 1. **/run for every work item** - Every work item gets full `/run` orchestration, always
-2. **tmux for visual parallelism** - Default execution method: one tmux window per work item
+2. **tmux split panes for visual parallelism** - Default execution method: one tmux pane per work item, all visible at once
 3. **/team for decomposition** - Team mode adds decomposition + parallel distribution on top of `/run`
 4. **Graceful degradation** - tmux -> Agent Teams -> parallel `/run` Skill calls
 5. **Controller as lead** - Domain controllers become team leads (delegate only)
