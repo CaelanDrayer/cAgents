@@ -1,0 +1,506 @@
+# Command Detail Templates
+
+Detailed help content for each command when the user runs `/helper <command>`.
+
+## /run - Universal Workflow Engine
+
+### What It Does
+
+`/run` is the general-purpose command that handles ANY task in ANY domain. You give it a natural language request, and it automatically detects the domain (engineering, creative, marketing, finance, HR, support), classifies the complexity, creates a plan with objectives, coordinates specialist agents through a controller, and validates the results. Every request goes through a full orchestration pipeline: routing, planning, coordinating, executing, and validating.
+
+### When to Use /run
+
+- **Fix something**: "Fix the authentication bug", "Fix the broken CSS on the homepage"
+- **Build something**: "Add OAuth2 login", "Implement the payment gateway"
+- **Write something**: "Write a fantasy novel about space pirates", "Write API documentation"
+- **Create something**: "Create Q4 budget", "Create a sales forecast"
+- **Analyze something**: "Analyze user behavior data", "What is the best auth approach?"
+- **Refactor something**: "Refactor the auth module", "Migrate from REST to GraphQL"
+- **Any domain**: Engineering, creative writing, marketing, finance, HR, legal -- it routes automatically
+
+### When NOT to Use /run
+
+- **You want to PLAN first**: Use `/designer` to think through the design before building
+- **You want to CHECK existing work**: Use `/review` for quality analysis
+- **You want to IMPROVE metrics**: Use `/optimize` for measurable improvements
+- **You have a LARGE task with parallel parts**: Use `/team` (or `/run --team`)
+
+### How It Works (Simplified)
+
+```
+You: /run Fix auth bug
+  |
+  v
+[Trigger] Detects domain: Engineering, Intent: bug_fix, Tier: 2
+  |
+  v
+[Orchestrator] Creates plan with objectives
+  |
+  v
+[Controller: engineering-manager] Asks specialists questions:
+  - "What is the current auth implementation?" -> backend-developer
+  - "What are the key risks?" -> security-specialist
+  - "What tests are needed?" -> qa-lead
+  |
+  v
+[Execution Agents] Implement the fix, write tests, validate
+  |
+  v
+[Validator] Checks all acceptance criteria met
+  |
+  v
+Result: Bug fixed, tests passing, outputs saved
+```
+
+### Key Flags
+
+| Flag | What It Does | Example |
+|------|-------------|---------|
+| `--interactive` | Ask your preferences before starting | `/run Fix bug --interactive` |
+| `--dry-run` | Show the plan without executing | `/run Add feature --dry-run` |
+| `--quiet` / `-q` | Skip plan display, go straight to work | `/run Fix bug --quiet` |
+| `--team` | Run in parallel team mode | `/run Build dashboard --team` |
+| `--domain <name>` | Force a specific domain | `/run Analyze --domain engineering` |
+| `--tier <N>` | Force complexity tier (2-4) | `/run Migrate database --tier 4` |
+| `--template <name>` | Use a workflow template | `/run Budget --template budget_creation` |
+| `--stream` | Real-time progress updates | `/run Deploy app --stream` |
+
+### Real Examples
+
+```bash
+# Simple bug fix
+/run Fix the login timeout error
+
+# Feature addition
+/run Add user profile page with avatar upload
+
+# Creative writing
+/run Write a 3-chapter mystery story set in Victorian London
+
+# Business task
+/run Create Q4 marketing campaign plan for product launch
+
+# With flags
+/run Implement OAuth2 with Google and GitHub providers --interactive
+/run Refactor the authentication module --dry-run
+/run Build user dashboard --team
+```
+
+### Integration
+
+- **After /designer**: `/designer` creates a design document, then triggers `/run` to build it
+- **After /review**: If review finds critical issues, `/run` fixes them
+- **After /optimize**: If optimizer finds CRITICAL opportunities, `/run` implements them
+- **With /team**: `/run --team` activates parallel team execution
+
+### Tips
+
+1. **Be specific**: "Fix the auth timeout when session expires after 30 minutes" works better than "fix auth"
+2. **Use --dry-run first**: Preview the plan before committing to execution
+3. **Use --interactive for complex tasks**: Let the system ask clarifying questions
+4. **Check the domain**: If it routes to the wrong domain, use `--domain` to override
+5. **Use --team for big features**: If the task has 3+ independent components
+
+---
+
+## /designer - Interactive Design Engine
+
+### What It Does
+
+`/designer` is a structured 4-phase design tool that helps you think through a problem before building. It guides you through Discovery (understanding the problem), Ideation (exploring solutions), Refinement (detailing the design), and Specification (generating artifacts). It asks one question at a time, searches your codebase for context, recommends proven design patterns, generates mermaid diagrams, and produces implementation-ready documents. When done, it offers to build via `/run` or `/team`.
+
+### When to Use /designer
+
+- **Planning a new feature**: Before writing code, design the approach
+- **System architecture**: Design the overall system before implementation
+- **Exploring options**: When unsure which approach to take
+- **Creating specs**: Need user stories, tech specs, or design documents
+- **Creative projects**: Design story worlds, character arcs, game mechanics
+- **Business processes**: Design workflows, RACI matrices, implementation plans
+
+### When NOT to Use /designer
+
+- **You already know what to build**: Go straight to `/run`
+- **Quick fixes**: Bug fixes and small changes don't need design sessions
+- **You want quality checks**: Use `/review` instead
+- **Time-sensitive**: Design sessions take 15-45 minutes
+
+### How It Works (Simplified)
+
+```
+Phase 1: Discovery (15% of session)
+  "What are you building? Who is it for? What constraints?"
+  -> Searches your codebase for context
+  -> Gate: Problem + stakeholders + constraints + success criteria
+
+Phase 2: Ideation (25% of session)
+  "Here are 3 approaches. Which do you prefer?"
+  -> Recommends proven design patterns
+  -> Gate: 2+ alternatives explored, one selected
+
+Phase 3: Refinement (35% of session)
+  "Let's detail the architecture, data model, user flows..."
+  -> Generates mermaid diagrams as design forms
+  -> Gate: All major design questions answered
+
+Phase 4: Specification (25% of session)
+  -> Generates user stories, tech specs, diagrams, checklists
+  -> Validates completeness, consistency, feasibility, quality
+  -> Offers: "Build it now (/run)" or "Build with team (/team)"
+```
+
+### Key Flags
+
+| Flag | What It Does | Example |
+|------|-------------|---------|
+| `--resume {id}` | Resume a previous design session | `/designer --resume designer_20260204_143022` |
+| `--template <name>` | Start with a pre-built template | `/designer --template system-architecture` |
+| `--focus <area>` | Focus the design on specific areas | `/designer --focus security` |
+| `--detail <level>` | Set detail depth (low/medium/high) | `/designer --detail high` |
+
+### Real Examples
+
+```bash
+# Start fresh (asks what you want to design)
+/designer
+
+# Start with a topic
+/designer OAuth2 authentication for our SPA
+
+# Use a template
+/designer --template product-feature
+
+# Resume a previous session
+/designer --resume designer_20260204_143022
+
+# Focus on specific area
+/designer payment gateway integration --focus security
+```
+
+### Integration
+
+- **Flows into /run**: After design, select "Build it now" to auto-trigger `/run`
+- **Flows into /team**: After design, select "Build with team" to auto-trigger `/team`
+- **Standalone**: Save the design document without building
+
+### Tips
+
+1. **Be honest in answers**: The design quality depends on your input quality
+2. **Trust the phases**: Don't rush to implementation -- Discovery and Ideation prevent bad decisions
+3. **Review synthesis points**: When the designer summarizes, correct any misunderstandings
+4. **Use templates**: They ensure comprehensive coverage of important areas
+5. **Sessions can resume**: If interrupted, use `--resume` to continue where you left off
+
+---
+
+## /review - Universal Review Orchestrator
+
+### What It Does
+
+`/review` runs a multi-agent quality review on code, documentation, content, designs, processes, data, or infrastructure. It auto-detects the review type and framework, runs specialist agents in parallel groups, scores findings with confidence levels, generates auto-fix suggestions, and checks quality gates. It covers everything from architecture to accessibility to security.
+
+### When to Use /review
+
+- **Code review**: Check architecture, security, performance, standards, test coverage
+- **Pre-merge checks**: Review staged or changed files before committing
+- **Security audit**: Focus on vulnerabilities and security patterns
+- **Documentation review**: Check clarity, completeness, accuracy
+- **Infrastructure review**: Verify security, cost, reliability of infra configs
+- **Content review**: Check tone, grammar, messaging, audience fit
+
+### When NOT to Use /review
+
+- **You want to FIX things**: Use `/run` to implement fixes
+- **You want measurable improvements**: Use `/optimize` for before/after metrics
+- **You want to design**: Use `/designer` for planning
+
+### How It Works (Simplified)
+
+```
+[Initialize] Auto-detect review type (code/docs/content/...) + framework (Next.js/React/...)
+  |
+  v
+[Parallel Group 1] architecture-reviewer, code-standards-auditor, documentation-reviewer
+  |
+  v
+[Parallel Group 2] performance-analyzer, security-analyst, test-coverage-validator
+  |
+  v
+[Parallel Group 3] dependency-auditor, accessibility-checker, compliance-officer
+  |
+  v
+[Aggregate] Merge findings, add confidence scores (0.0-1.0), classify severity
+  |
+  v
+[Auto-Fix] Generate fix suggestions with confidence-based safety levels
+  |
+  v
+[Quality Gates] Check thresholds (strict/standard/relaxed)
+  |
+  v
+[Report] Final report with findings, fixes, recommendations
+```
+
+### Key Flags
+
+| Flag | What It Does | Example |
+|------|-------------|---------|
+| `--focus <area>` | Focus on specific area | `/review --focus security` |
+| `--scope changed` | Only review changed files | `/review --scope changed` |
+| `--auto-fix safe` | Generate safe auto-fixes | `/review --auto-fix safe` |
+| `--framework <name>` | Force framework detection | `/review --framework nextjs` |
+| `--quality-gate strict` | Strict quality thresholds | `/review --quality-gate strict` |
+| `--run-tests` | Run tests after auto-fix | `/review --auto-fix safe --run-tests` |
+| `--output <format>` | Output format | `/review --output summary` |
+| `--parallel` | Parallel agent execution (default) | `/review --parallel` |
+
+### Real Examples
+
+```bash
+# Review current directory
+/review
+
+# Review specific path
+/review src/auth/
+
+# Security-focused review
+/review --focus security
+
+# Review only changed files with auto-fix
+/review --scope changed --auto-fix safe --apply-safe-fixes
+
+# Strict quality gate with test validation
+/review --quality-gate strict --run-tests --rollback-on-failure
+
+# Framework-specific review
+/review --framework nextjs --focus performance
+
+# Review with detailed report saved to file
+/review --output detailed --save-report ./code-review.md
+```
+
+### Integration
+
+- **Feeds into /run**: Critical findings can be fixed via `/run`
+- **After /optimize**: Verify optimization quality with a review
+- **Pre-merge pipeline**: `/review --scope staged --quality-gate strict`
+
+### Tips
+
+1. **Use --scope changed for speed**: Don't review the entire codebase every time
+2. **Trust auto-detection**: It detects frameworks and review types accurately
+3. **Start with --focus security**: Security issues are the most impactful
+4. **Use --auto-fix safe**: Safe fixes are low-risk and save time
+5. **Check confidence scores**: Higher confidence = more reliable finding
+
+---
+
+## /optimize - Universal Optimizer
+
+### What It Does
+
+`/optimize` detects improvement opportunities in your code, content, processes, or infrastructure. It measures baselines, plans optimizations by ROI, executes changes atomically (with rollback on failure), and validates with before/after metrics. It supports 8 optimization types and can work across multiple files. Every optimization is measurable -- no vague claims.
+
+### When to Use /optimize
+
+- **Slow code**: Speed up API endpoints, reduce query time, improve FCP/LCP
+- **Large bundles**: Reduce bundle size, tree-shake unused code
+- **High costs**: Optimize infrastructure spending, reduce resource usage
+- **Poor content**: Improve readability scores, SEO rankings, engagement metrics
+- **Inefficient processes**: Streamline workflows, reduce manual steps
+- **Campaigns**: Improve conversion rates, click-through rates, engagement
+
+### When NOT to Use /optimize
+
+- **Building new features**: Use `/run` for new implementations
+- **Checking quality**: Use `/review` for quality analysis
+- **Planning**: Use `/designer` for design exploration
+- **The code is broken**: Fix bugs with `/run` first, then optimize
+
+### How It Works (Simplified)
+
+```
+[Detection] Scan project, detect type (code/content/process/...), classify opportunities
+  |
+  v
+[Analysis] Measure baseline metrics, identify improvement areas, classify risk
+  |
+  v
+[Planning] Prioritize by ROI, group for parallel execution, select specialists
+  |
+  v
+[Execution] For each optimization: snapshot -> apply -> validate -> keep or rollback
+  |
+  v
+[Validation] Re-measure all metrics, compare before/after, check quality gates
+  |
+  v
+[Report] "Bundle size: 2.8MB -> 1.8MB (-36%)", "Query time: 450ms -> 120ms (-73%)"
+```
+
+### Key Flags
+
+| Flag | What It Does | Example |
+|------|-------------|---------|
+| `--type <type>` | Force optimization type | `/optimize --type code` |
+| `--dry-run` | Preview without applying | `/optimize --dry-run` |
+| `--safety safe` | Only safe optimizations | `/optimize --safety safe` |
+| `--cross-file` | Multi-file dependency analysis | `/optimize --cross-file` |
+| `--plan-only` | Generate plan, hand off to /run | `/optimize --plan-only` |
+| `--review-after` | Trigger /review after optimizing | `/optimize --review-after` |
+| `--explore-first` | Start with /designer exploration | `/optimize --explore-first` |
+| `--focus performance` | Focus on specific goal | `/optimize --focus performance` |
+
+### 8 Optimization Types
+
+| Type | What It Optimizes | Example Metrics |
+|------|-------------------|-----------------|
+| `code` | Performance, bundles, algorithms | FCP, LCP, bundle size, query time |
+| `content` | Readability, SEO, engagement | Readability score, SEO score |
+| `process` | Workflow efficiency, automation | Cycle time, manual steps, error rate |
+| `infrastructure` | Cost, scaling, reliability | Monthly cost, utilization, uptime |
+| `data` | Query performance, ETL speed | Query time, ETL duration |
+| `campaign` | Conversion, engagement, targeting | Conversion %, CTR, open rate |
+| `creative` | Pacing, depth, structure | Engagement score, consistency |
+| `sales` | Sales cycle, win rate | Cycle length, win rate % |
+
+### Real Examples
+
+```bash
+# Auto-detect and optimize
+/optimize
+
+# Natural language goal
+/optimize "Make the homepage load faster"
+
+# Specific target and type
+/optimize src/ --type code --focus performance
+
+# Safe optimizations only with test validation
+/optimize --safety safe --require-tests-pass
+
+# Preview without applying changes
+/optimize --dry-run
+
+# Full optimization with post-review
+/optimize src/ --cross-file --review-after --validation comprehensive
+
+# Content SEO optimization
+/optimize blog/ --type content --focus quality
+
+# Generate plan only, hand off to /run for implementation
+/optimize --type code --plan-only
+```
+
+### Integration
+
+- **Flows into /review**: Use `--review-after` to verify quality
+- **Flows into /run**: Use `--plan-only` to hand off CRITICAL items to /run
+- **Flows from /designer**: Use `--explore-first` to design the optimization approach
+
+### Tips
+
+1. **Always start with --dry-run**: See what would change before committing
+2. **Use --safety safe first**: Low-risk optimizations are a good starting point
+3. **Check before/after metrics**: The report shows measurable impact
+4. **Use --cross-file for codebases**: Multi-file analysis catches architecture-level opportunities
+5. **Rollback is automatic**: If tests fail, changes are rolled back
+
+---
+
+## /team - Parallel Team Execution
+
+### What It Does
+
+`/team` decomposes a large task into parallelizable work items and runs them simultaneously using Claude Code's built-in agent teams. Each teammate is a separate Claude Code instance that executes its work item via `/run` (full orchestration per item). With tmux split panes, all teammates are visible at once. It provides shared task lists and inter-agent messaging for coordination.
+
+### When to Use /team
+
+- **Large features**: 3+ independent components that can run in parallel
+- **Time-sensitive delivery**: Need 40-60% faster execution
+- **Tier 3+ workflows**: Complex tasks with multiple work items
+- **Multi-part tasks**: Backend + frontend + tests + docs simultaneously
+
+### When NOT to Use /team
+
+- **Simple tasks**: Single work item -- use `/run` instead
+- **Sequential dependencies**: If everything depends on the previous step, parallelism won't help
+- **Tier 2 tasks**: Simple bug fixes and questions -- use `/run`
+- **Quality over speed**: If you want maximum attention per item, `/run` gives sequential focus
+
+### How It Works (Simplified)
+
+```
+You: /team Implement OAuth2 with Google, GitHub, and email login
+  |
+  v
+[Team Trigger] Decomposes into work items:
+  WI-001: Implement Google OAuth provider
+  WI-002: Implement GitHub OAuth provider
+  WI-003: Implement email/password login
+  WI-004: Create unified auth middleware
+  |
+  v
+[Team Creation] Creates agent team + shared task list
+  |
+  v
+[Parallel Execution in tmux split panes]
+  Pane 0: Team Lead (coordinates, monitors)
+  Pane 1: Teammate -> /run "Implement Google OAuth"     -> Complete
+  Pane 2: Teammate -> /run "Implement GitHub OAuth"     -> Complete
+  Pane 3: Teammate -> /run "Implement email login"      -> Complete
+  Pane 4: Teammate -> /run "Create auth middleware"      -> (waits for 1-3, then runs)
+  |
+  v
+[Aggregation] Combine all results into final output
+```
+
+### Key Flags
+
+| Flag | What It Does | Example |
+|------|-------------|---------|
+| `--dry-run` | Preview team composition | `/team Build feature --dry-run` |
+| `--members <N>` | Limit team size | `/team Build system --members 4` |
+| `--lead <agent>` | Specify team lead | `/team Build API --lead engineering-manager` |
+| `--teammate-mode <mode>` | Display mode (tmux/in-process) | `/team Build app --teammate-mode tmux` |
+| `--display` | Show team communication | `/team Build feature --display` |
+| `--quiet` / `-q` | Suppress progress output | `/team Build feature --quiet` |
+| `--domain <name>` | Force domain | `/team Campaign --domain grow` |
+| `--parallel` | Force parallel execution | `/team Build system --parallel` |
+
+### Real Examples
+
+```bash
+# Basic team execution
+/team Implement OAuth2 authentication
+
+# Preview team without executing
+/team Build user dashboard --dry-run
+
+# Limit team size
+/team Add payment gateway --members 4
+
+# Show team communication
+/team Create API endpoints --display
+
+# Force tmux split pane display
+/team Implement search feature --teammate-mode tmux
+
+# Via /run with --team flag (equivalent)
+/run Build user dashboard --team
+```
+
+### Integration
+
+- **After /designer**: Design a feature, then build with team for speed
+- **Uses /run internally**: Every teammate runs `/run` for full orchestration per item
+- **Alternative to /run**: For parallelizable tasks, `/team` replaces `/run`
+- **Shortcut**: `/run --team` is equivalent to `/team`
+
+### Tips
+
+1. **Check suitability first**: Use `--dry-run` to see the team composition before committing
+2. **3+ work items minimum**: Tasks with fewer than 3 items may not benefit from team mode
+3. **Independent work is key**: The more independent the items, the better the parallelism
+4. **tmux gives best visibility**: Use `--teammate-mode tmux` for visual split pane display
+5. **Each item gets full /run quality**: No shortcuts -- every work item goes through full orchestration

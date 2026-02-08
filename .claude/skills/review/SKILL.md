@@ -3,8 +3,7 @@ name: review
 description: "Universal review orchestrator with parallel execution, framework-specific patterns, enhanced auto-fix engine, quality gates, and confidence scoring. Reviews code, docs, content, designs, processes, data, and infrastructure."
 user-invocable: true
 context: fork
-agent: true
-allowedTools: ["Read", "Grep", "Glob", "Write", "Bash", "Task", "TodoWrite"]
+allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
 ---
 
 # /review - Universal Review Orchestrator

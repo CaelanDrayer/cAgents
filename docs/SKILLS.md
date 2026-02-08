@@ -11,6 +11,7 @@ Comprehensive reference for all cAgents skills (formerly commands). V9.0 migrate
 | `/designer` | none | false | 161 | 7 |
 | `/review` | fork | true | 164 | 6 |
 | `/optimize` | fork | true | 158 | 6 |
+| `/helper` | none | false | 148 | 6 |
 
 ## /designer - Interactive Design Engine
 
@@ -356,6 +357,51 @@ See `core/commands/optimize.md` for complete documentation.
 
 ---
 
+## /helper - Interactive Command Guide
+
+**Status**: Production-Ready
+**Domains**: Meta (covers all commands)
+**Complexity**: N/A (informational only)
+
+### Overview
+
+Interactive command guide that explains cAgents skills and recommends the right command for the user's needs. Provides detailed command explanations, usage examples, comparison tables, flag references, and guided recommendations through natural language intent classification.
+
+### Usage
+
+```bash
+/helper                        # Full interactive guide with all commands
+/helper run                    # Deep dive into /run command
+/helper designer               # Deep dive into /designer command
+/helper review                 # Deep dive into /review command
+/helper optimize               # Deep dive into /optimize command
+/helper team                   # Deep dive into /team command
+/helper how do I fix a bug     # Natural language recommendation
+/helper --compare              # Side-by-side comparison of all commands
+/helper --flags review         # Complete flag reference for /review
+/helper --examples             # Real-world usage examples by domain
+/helper --quick                # One-screen quick reference card
+/helper --topic domains        # Deep dive: the 5 super-domains
+/helper --topic workflow       # Deep dive: agent orchestration
+/helper --topic tiers          # Deep dive: complexity tiers
+/helper --topic teams          # Deep dive: team mode
+/helper --topic sessions       # Deep dive: session management
+```
+
+### Key Features
+
+1. **8 Modes**: Full guide, specific command, natural language, comparison, flags, examples, quick reference, topic deep dive
+2. **Intent Classification**: Analyzes natural language to recommend the right command
+3. **Copy-Paste Examples**: All examples can be copied and used directly
+4. **Integration Awareness**: Shows how commands work together in pipelines
+5. **Non-Executing**: Explains and recommends only -- never executes commands
+
+### Session Files
+
+None -- `/helper` is informational only and does not create sessions.
+
+---
+
 ## Command Comparison
 
 | Command | Purpose | Duration | Interaction | Output |
@@ -364,16 +410,19 @@ See `core/commands/optimize.md` for complete documentation.
 | **/run** | Implementation | Varies | Autonomous | Working implementation |
 | **/review** | Quality review | 3-10 min | Autonomous | Issue report + fixes |
 | **/optimize** | Universal optimization | 5-20 min | Autonomous (or interactive) | Before/after metrics + optimized output |
+| **/team** | Parallel execution | Varies (40-60% faster) | Autonomous | Aggregated parallel results |
+| **/helper** | Command guidance | Instant | Informational | Recommendations + explanations |
 
 ---
 
 ## Getting Help
 
+- **Command Guide**: Use `/helper` for interactive command guidance
 - **Full Architecture**: See `CLAUDE.md` for complete system documentation
 - **Getting Started**: See `docs/GETTING_STARTED.md` for quick start guide
 - **Architecture**: See `docs/ARCHITECTURE.md` for architecture design
 
 ---
 
-**Commands**: /run, /designer, /review, /optimize
-**Last Updated**: 2026-02-04
+**Commands**: /run, /designer, /review, /optimize, /team, /helper
+**Last Updated**: 2026-02-07

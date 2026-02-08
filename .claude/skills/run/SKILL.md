@@ -3,8 +3,7 @@ name: run
 description: "Universal workflow engine entry point. Delegates all requests to the trigger agent for full multi-agent orchestration with controller coordination."
 user-invocable: true
 context: fork
-agent: true
-allowedTools: ["Read", "Grep", "Glob", "Write", "Bash", "Task", "TodoWrite"]
+allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
 ---
 
 # /run - Universal Workflow Engine

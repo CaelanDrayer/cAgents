@@ -2,9 +2,7 @@
 name: designer
 description: "Interactive design engine that transforms ideas into implementation-ready design documents through structured 4-phase exploration with artifact generation, pattern recommendations, and validation."
 user-invocable: true
-context: none
-agent: false
-allowedTools: ["Read", "Grep", "Glob", "Write", "Bash", "Task", "TodoWrite", "AskUserQuestion"]
+allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite, AskUserQuestion
 ---
 
 # /designer - Interactive Design Engine

@@ -490,6 +490,7 @@ See `workflow_agent_interactions.md` for detailed agent interaction patterns.
 | `/designer` | `none` | `false` | Interactive design engine (stays in main context for AskUserQuestion) |
 | `/review` | `fork` | `true` | Universal review with parallel agent execution |
 | `/optimize` | `fork` | `true` | 5-phase optimization with atomic rollback |
+| `/helper` | `none` | `false` | Interactive command guide — explains skills and recommends the right command |
 
 ### /run - Universal Entry Point
 Auto-routes to super-domain, executes full workflow with controller-centric coordination.
@@ -539,6 +540,23 @@ Skill: `.claude/skills/review/SKILL.md` + `reference/` (6 files: flags, agent-gr
 ```
 
 Skill: `.claude/skills/optimize/SKILL.md` + `reference/` (6 files: flags, optimization-types, risk-classification, phase-details, cross-file, session-management)
+
+### /helper - Interactive Command Guide
+Explains cAgents skills and recommends the right command for the user's needs. Provides detailed command explanations, usage examples, comparison tables, and guided recommendations.
+
+```bash
+/helper                        # Full interactive guide with all commands
+/helper run                    # Deep dive into /run command
+/helper designer               # Deep dive into /designer command
+/helper how do I fix a bug     # Natural language recommendation
+/helper --compare              # Side-by-side comparison of all commands
+/helper --flags review         # Complete flag reference for /review
+/helper --examples             # Real-world usage examples by domain
+/helper --quick                # One-screen quick reference card
+/helper --topic domains        # Deep dive into a specific topic
+```
+
+Skill: `.claude/skills/helper/SKILL.md` + `reference/` (5 files: command-details, recommendation-engine, comparison-tables, flag-summaries, examples, topic-guides)
 
 ### /memory - Memory Management
 ```bash
@@ -738,7 +756,7 @@ No code required - universal agents load configs automatically.
 cAgents/
 ├── CLAUDE.md                # Main project memory (this file)
 ├── .claude/
-│   ├── skills/              # V9.0 Skills (run, team, designer, review, optimize)
+│   ├── skills/              # V9.0 Skills (run, team, designer, review, optimize, helper)
 │   ├── hooks/               # CJS hooks (11 hooks + hook-utils.cjs)
 │   ├── rules/               # Modular rules (20 files across 5 categories)
 │   └── settings.json        # Hook registration + permissions + env
@@ -778,7 +796,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 
 ## Quick Reference
 
-**Skills**: `/run`, `/team`, `/designer`, `/review`, `/optimize` (in `.claude/skills/`)
+**Skills**: `/run`, `/team`, `/designer`, `/review`, `/optimize`, `/helper` (in `.claude/skills/`)
 **Built-in**: `/memory`, `/init` (Claude Code native)
 **Agents**: 236 total (14 core + 14 shared + 208 domain specialists)
 **Super-Domains**: Make (109), Grow (38), Operate (13), People (20), Serve (28)
@@ -816,7 +834,7 @@ See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 **Total Agents**: 236 (14 core + 14 shared + 208 domain specialists)
 **Architecture**: Controller-Centric Coordination with Task Inventory + Built-in Agent Teams
 **Super-Domains**: 5 (Make, Grow, Operate, People, Serve)
-**Skills**: 5 (run, team, designer, review, optimize) in `.claude/skills/`
+**Skills**: 6 (run, team, designer, review, optimize, helper) in `.claude/skills/`
 **Hooks**: 14 event types, 11 CJS hooks, 2 prompt hooks, 2 dispatchers
 **Models**: opusplan (controllers), sonnet (execution), haiku (support)
 **Team Mode**: 40-60% execution time reduction via built-in agent teams with tmux split pane display

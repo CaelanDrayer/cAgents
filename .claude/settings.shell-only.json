@@ -1,9 +1,10 @@
 {
-  "$comment": "Shell-only hooks configuration - cAgents V9.0 - Node.js hooks disabled. Run setup.sh after installing Node.js to enable full functionality.",
+  "$comment": "Shell-only hooks configuration - cAgents V9.2 - Node.js hooks disabled. Run setup.sh after installing Node.js to enable full functionality.",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
+  "teammateMode": "tmux",
   "env": {
-    "CAGENTS_VERSION": "9.0.0"
+    "CAGENTS_VERSION": "9.2.0"
   },
   "permissions": {
     "allow": [
