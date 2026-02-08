@@ -52,6 +52,16 @@ function logNotification(notification) {
       ...notification
     };
 
+    // Log rotation: truncate if over 1MB to prevent unbounded growth
+    try {
+      const stats = fs.statSync(logFile);
+      if (stats.size > 1024 * 1024) {
+        // Keep last 100 lines
+        const lines = fs.readFileSync(logFile, 'utf8').split('\n');
+        fs.writeFileSync(logFile, lines.slice(-100).join('\n') + '\n');
+      }
+    } catch { /* file may not exist yet, ignore */ }
+
     fs.appendFileSync(logFile, JSON.stringify(entry) + '\n');
   } catch (error) {
     console.error(`[Notification] Failed to log: ${error.message}`);

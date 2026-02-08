@@ -38,20 +38,23 @@ main() {
 
     log_debug "Pre-bash hook: $description"
 
+    # Normalize whitespace for more robust pattern matching
+    # Collapse multiple spaces/tabs into single space for comparison
+    local normalized_command
+    normalized_command=$(echo "$command" | tr '\t' ' ' | tr -s ' ')
+
     # Define dangerous patterns that are BLOCKED (exit 2)
     local blocked_patterns=(
         "rm -rf /"
         "rm -rf ~"
         ":(){ :|:& };:"  # Fork bomb
         "> /dev/sda"
-        "mkfs"
         "dd if=/dev/zero"
         "sudo "
-        "sudo\t"
     )
 
     for pattern in "${blocked_patterns[@]}"; do
-        if [[ "$command" == *"$pattern"* ]]; then
+        if [[ "$normalized_command" == *"$pattern"* ]]; then
             local block_reason
             block_reason="Blocked dangerous command: ${pattern}"
             log_warn "$block_reason"

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Team Start Hook - Initialize team monitoring
- * cAgents V8.6 - Agent Teams Integration
+ * cAgents V9.0 - Agent Teams Integration
  *
  * This hook runs when a team session starts to initialize
  * team-specific tracking and monitoring.

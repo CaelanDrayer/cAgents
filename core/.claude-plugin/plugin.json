@@ -23,7 +23,7 @@
     "agent-teams",
     "parallel-teams",
     "peer-to-peer",
-    "v8.6"
+    "v9.0"
   ],
   "agents": [
     "./agents/trigger/SKILL.md",

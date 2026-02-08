@@ -10,7 +10,7 @@ Core architecture and development guidance for cAgents.
 - [Project Overview](#project-overview)
 - [CRITICAL: Aggressive Delegation](#critical-aggressive-delegation)
 - [CRITICAL: Automatic Workflow Progression](#critical-automatic-workflow-progression)
-- [Core Infrastructure](#core-infrastructure-tier-1-12-agents)
+- [Core Infrastructure](#core-infrastructure-tier-1-14-agents)
 - [Aggressive Decomposition](#aggressive-decomposition)
 - [Controller-Centric Architecture](#controller-centric-architecture)
 - [Coordinating Phase](#coordinating-phase)
@@ -147,15 +147,15 @@ Use `@path/to/file` syntax to include external content:
 - **Controller-Centric**: Controllers coordinate via batch inventory operations
 
 **Architecture**: Controller-Centric Coordination with Task Inventory
-- **Tier 1**: 12 core infrastructure agents (trigger, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, 5 universal workflow agents)
+- **Tier 1**: 14 core infrastructure agents (trigger, team-trigger, team-lead-adapter, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, 5 universal workflow agents)
 - **Tier 2**: Controllers (coordinate work items via batch delegation)
 - **Tier 3**: Execution agents (implement work items)
 - **Tier 4**: Support agents (foundational services)
-- **Total**: 234 agents
+- **Total**: 236 agents
 - **Execution**: 4 modes (Sequential, Pipeline, Swarm, Mesh) - up to 50x speedup
 
 **Agent Distribution**:
-- **Core Infrastructure** (12): Workflow orchestration + decomposition + inventory
+- **Core Infrastructure** (14): Workflow orchestration + decomposition + inventory + team coordination
 - **Shared** (14): Cross-domain capabilities (leadership, planning, data, quality)
 - **Make** (109): Creation capability (engineering, creative, product, game development)
 - **Grow** (38): Acquisition capability (marketing, sales)

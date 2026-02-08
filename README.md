@@ -2,20 +2,21 @@
 
 **Universal Multi-Domain Agent System for Claude Code**
 
-V8.5.2 - Production-ready controller-centric architecture with 234 agents across 5 super-domains. 100% SKILL.md Progressive Disclosure Edition.
+V9.0 - Platform Alignment Edition with 236 agents across 5 super-domains. Skills system, 14 hook event types, Agent Teams parallel execution, opusplan model routing.
 
 ## Overview
 
 cAgents transforms AI-assisted work across any domain through specialized agent teams that collaborate autonomously. From software engineering to marketing, operations to creative work - one unified system handles it all.
 
-**V8.5.2 Release** (2026-02-05):
-- Claude Code hooks system (12 types, 9 shell + 7 Node.js hooks)
+**V9.0 Release** (2026-02-07):
+- Skills system (`.claude/skills/` auto-discovery replaces legacy commands)
+- 14 hook event types with shell+JS dual architecture (11 CJS hooks + 9 shell hooks)
+- Agent Teams integration for parallel team-based execution (40-60% time reduction)
+- opusplan model routing (Opus reasoning + Sonnet execution for controllers)
+- Enhanced PreCompact waypoints with coordination state preservation
 - Progressive skill disclosure (all agents use SKILL.md format with resources/)
-- 4-tier model routing (Haiku/Sonnet/Opus)
-- Session management with waypoints and recovery
-- Evaluation framework and CI/CD scripts
-- Optimized hook infrastructure with caching and deduplication
-- Total agents: 234 (12 core + 14 shared + 208 domain specialists)
+- Session management with three-file pattern and waypoints
+- Total agents: 236 (14 core + 14 shared + 208 domain specialists)
 
 ## Requirements
 
@@ -24,7 +25,10 @@ cAgents transforms AI-assisted work across any domain through specialized agent 
   - Session catchup (resume incomplete sessions)
   - Completion verification (validate task completion)
   - Secret detection (block secrets in file writes)
-  - Pre-compact state preservation
+  - Pre-compact state preservation with coordination state
+  - Subagent tracking and tool failure tracking
+  - Team coordination (start, stop, task completion, idle handling)
+  - Permission handling
   - Notification logging
 
 Without Node.js, cAgents works with shell-only hooks for basic session and workflow management.
@@ -33,8 +37,8 @@ Without Node.js, cAgents works with shell-only hooks for basic session and workf
 
 **Controller-Centric Question-Based Delegation**
 
-234 agents organized into:
-- **Core** (12): Infrastructure (trigger, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, 5 universal workflow agents)
+236 agents organized into:
+- **Core** (14): Infrastructure (trigger, team-trigger, team-lead-adapter, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, 5 universal workflow agents)
 - **Shared** (14): Cross-domain capabilities (data, analytics, quality, compliance, customer, operations)
 - **Make** (109): Creation (engineering, creative, product, devops, qa, **game development**)
 - **Grow** (38): Acquisition (marketing, sales, partnerships)
@@ -137,6 +141,14 @@ The system automatically:
 
 **Note**: Tiers 0-1 are deprecated and automatically upgraded to Tier 2 for multi-agent specialist coverage.
 
+### Team Execution
+
+```bash
+/team Implement OAuth2 authentication    # Full team execution
+/team Build user dashboard --dry-run     # Preview team composition
+/team Create API endpoints --members 4   # Limit team size
+```
+
 ### Universal Commands
 
 ```bash
@@ -191,14 +203,15 @@ Plans define high-level objectives (WHAT), controllers determine implementation 
 ### Parallel Execution
 Up to 50 concurrent agents with 4 execution modes (Sequential, Pipeline, Swarm, Mesh) for up to 50x speedup.
 
-### Enhanced Commands (V7.0)
-- **/run**: 2-3x faster initialization, 90%+ domain accuracy, context-aware detection
-- **/designer**: ALWAYS uses AskUserQuestion, context discovery, adaptive questioning
-- **/optimize**: Zero-arg invocation, auto-detection, 8 optimization types
-- **/review**: 33% faster, 81% faster to critical issues, 98% more actionable suggestions
+### Skills System (V9.0)
+- **/run**: Universal workflow engine - routes through specialist agents
+- **/team**: Parallel team execution with peer-to-peer messaging and shared task lists
+- **/designer**: Interactive design discovery (ALWAYS uses AskUserQuestion)
+- **/review**: Comprehensive review with intelligent agent selection
+- **/optimize**: Universal optimizer with 8 optimization types and atomic rollback
 
-### Ralph Loop-Inspired Bash Infrastructure
-6 library modules with 86 functions, 14 lifecycle hooks, atomic file operations, markdown frontmatter state management.
+### Agent Teams (V8.6+)
+Parallel team-based execution with 40-60% time reduction, peer-to-peer messaging, shared task lists, and team leads operating in delegate mode.
 
 ## Agent_Memory System
 
@@ -226,14 +239,19 @@ cAgents uses Claude Code's hook system for workflow integration:
 | Hook Type | Shell Hooks | Node.js Hooks |
 |-----------|------------|---------------|
 | SessionStart | on-session-start.sh | session-catchup.cjs |
-| SessionEnd | on-session-end.sh | - |
+| SessionEnd | on-session-end.sh | team-stop.cjs |
 | Stop | stop-workflow.sh | verify-completion.cjs |
+| SubagentStart | - | subagent-tracker.cjs, team-start.cjs |
 | SubagentStop | on-workflow-complete.sh | - |
 | UserPromptSubmit | on-user-prompt.sh | - |
 | PreToolUse (Bash) | pre-bash.sh | - |
 | PreToolUse (Write) | pre-write.sh | secret-detection.cjs |
 | PreToolUse (Task) | on-task-start.sh | - |
 | PostToolUse (Task) | on-task-complete.sh | - |
+| PostToolUseFailure | - | tool-failure-tracker.cjs |
+| TeammateIdle | - | teammate-idle-handler.cjs |
+| TaskCompleted | - | team-task-complete.cjs |
+| PermissionRequest | - | permission-handler.cjs |
 | PreCompact | - | pre-compact-save.cjs |
 | Notification | - | notification.cjs |
 
@@ -248,26 +266,29 @@ Run `./setup.sh` to configure hooks based on Node.js availability.
 
 ## Performance
 
-**V7.0 Architecture**:
+**V9.0 Platform Alignment**:
+- Skills system with auto-discovery (.claude/skills/)
+- 14 hook event types with shell+JS dual architecture
+- Agent Teams: 40-60% execution time reduction for tier 3+ workflows
+- opusplan model routing for controllers
+- 76% initial context reduction via path-specific rules
+
+**Core Architecture**:
 - 30-40% simpler planning (objectives vs detailed tasks)
 - 20-30% fewer tokens (no detailed task lists)
 - Up to 50x speedup with parallel execution (swarm mode)
-
-**Enhanced Commands**:
-- Reviewer V3.0: 33% faster, 81% faster to critical issues
-- Optimizer V7.0: 20-50% faster code, 30-60% smaller bundles
-- Task consolidation: 40-88% context reduction
-
-**V8.0 Infrastructure & Learning Edition**:
 - CSV-based task inventory for 20+ task workflows (60-80% context savings)
 - Aggressive task decomposition with implicit requirement discovery
-- Total agents: 234 (12 core + 14 shared + 208 domain specialists)
+- Total agents: 236 (14 core + 14 shared + 208 domain specialists)
 - Game engines supported: Unity, Unreal Engine, Godot
 
 ## Version History
 
+- **V9.0.0** (2026-02-07) - Platform Alignment Edition: Skills system, 14 hook event types, Agent Teams, opusplan model routing, 236 agents
+- **V8.7.0** (2026-02-06) - Agent Teams integration, /run as universal execution path for /team work items
+- **V8.6.0** (2026-02-05) - Claude Code Agent Teams integration, team-trigger and team-lead-adapter agents
 - **V8.5.2** (2026-02-05) - Config consolidation, documentation cleanup, hook optimization
-- **V8.0.7** (2026-01-28) - Infrastructure & Learning Edition: Hooks, SKILL.md, model routing, session management, 234 agents
+- **V8.0.7** (2026-01-28) - Infrastructure & Learning Edition: Hooks, SKILL.md, model routing, session management
 - **V7.5.1** (2026-01-22) - Task Inventory Edition: CSV-based task inventory, aggressive decomposition, completion validation
 - **V7.3.0** (2026-01-19) - Game Development Edition: 28 new game dev agents, Make domain expanded to 108 agents
 - **V7.1.0** (2026-01-19) - Cleanup release: removed 358 legacy agents, streamlined to 7 directories, 201 production agents
@@ -288,4 +309,4 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | **cAgents V8.5.2** | 234 agents across 5 super-domains
+**Built with Claude Code** | **cAgents V9.0** | 236 agents across 5 super-domains

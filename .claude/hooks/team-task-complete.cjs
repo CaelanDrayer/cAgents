@@ -97,9 +97,10 @@ function updateTaskList(sessionDir, workItemId, memberName, output) {
   if (!content) return false;
 
   // Find and update the work item
-  // This is a simple regex-based update for YAML
+  // Escape regex special characters in workItemId to prevent ReDoS
+  const escapedId = workItemId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const itemPattern = new RegExp(
-    `(- id:\\s*["']?${workItemId}["']?[\\s\\S]*?status:\\s*)\\w+`,
+    `(- id:\\s*["']?${escapedId}["']?[\\s\\S]*?status:\\s*)\\w+`,
     'i'
   );
 
@@ -110,9 +111,9 @@ function updateTaskList(sessionDir, workItemId, memberName, output) {
   // Update status to completed
   content = content.replace(itemPattern, '$1completed');
 
-  // Update completed_at if field exists
+  // Update completed_at if field exists (handles null or any previous value)
   const completedAtPattern = new RegExp(
-    `(- id:\\s*["']?${workItemId}["']?[\\s\\S]*?completed_at:\\s*)null`,
+    `(- id:\\s*["']?${escapedId}["']?[\\s\\S]*?completed_at:\\s*)(?:null|"[^"]*")`,
     'i'
   );
   content = content.replace(completedAtPattern, `$1"${now}"`);

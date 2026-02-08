@@ -37,7 +37,7 @@ const { readStdin, AGENT_MEMORY_DIR, findActiveSession, safeRead, extractYamlVal
 /**
  * Tools that are always safe to auto-approve
  */
-const ALWAYS_SAFE_TOOLS = new Set(['Read', 'Grep', 'Glob', 'WebSearch', 'TaskList', 'TaskGet']);
+const ALWAYS_SAFE_TOOLS = new Set(['Read', 'Grep', 'Glob', 'TaskList', 'TaskGet']);
 
 /**
  * Check if a Write/Edit path is within Agent_Memory

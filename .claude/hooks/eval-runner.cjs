@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Evaluation Runner Hook
- * cAgents V8.0 - Automated Quality Assessment
+ * Evaluation Runner - Automated Quality Assessment (CLI Tool)
+ * cAgents V9.0 - Quality Evaluation
  *
  * Self-contained evaluation runner that assesses decomposition,
  * coordination, and overall workflow quality.
@@ -14,9 +14,40 @@
  *   node eval-runner.js --daily-report
  */
 
+// CRITICAL: Wrap everything in try-catch for resilience
+try {
+
 const fs = require('fs');
 const path = require('path');
-const { AGENT_MEMORY_DIR, extractYamlValue, safeRead, countPattern, ensureDir, assignGrade, calculateScore } = require('./hook-utils.cjs');
+
+// Try to load hook-utils, fall back to inline implementations
+let utils;
+try {
+  utils = require('./hook-utils.cjs');
+} catch {
+  // Minimal inline fallbacks
+  utils = {
+    AGENT_MEMORY_DIR: path.join(process.cwd(), 'Agent_Memory'),
+    extractYamlValue: (content, key) => {
+      const regex = new RegExp(`^${key}:\\s*["']?([^"'\\n]+)["']?`, 'm');
+      const match = content.match(regex);
+      return match ? match[1].trim() : null;
+    },
+    safeRead: (filePath) => {
+      try { return fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : null; } catch { return null; }
+    },
+    countPattern: (content, pattern) => { const m = content.match(pattern); return m ? m.length : 0; },
+    ensureDir: (d) => { try { fs.mkdirSync(d, { recursive: true }); } catch {} return d; },
+    assignGrade: (score, thresholds = { excellent: 85, pass: 65 }) => {
+      if (score >= thresholds.excellent) return 'EXCELLENT';
+      if (score >= thresholds.pass) return 'PASS';
+      return 'FAIL';
+    },
+    calculateScore: (breakdown) => Math.max(0, Object.values(breakdown).reduce((a, b) => a + b, 0))
+  };
+}
+
+const { AGENT_MEMORY_DIR, extractYamlValue, safeRead, countPattern, ensureDir, assignGrade, calculateScore } = utils;
 
 /**
  * Cached file reads — avoids re-reading the same file multiple times
@@ -265,7 +296,7 @@ function generateReport(sessionId, decomp, coord) {
 session_id: "${sessionId}"
 generated_at: "${timestamp}"
 evaluator: eval-runner.js
-version: "8.0.0"
+version: "9.0.0"
 
 overall:
   score: ${overallScore}
@@ -362,3 +393,9 @@ if (!sessionId) {
 }
 
 runEvaluation(sessionId);
+
+} catch (e) {
+  // Top-level catch for resilience
+  console.error(`[EvalRunner] Fatal error: ${e.message}`);
+  process.exit(1);
+}

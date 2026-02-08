@@ -51,7 +51,10 @@ function readStdin() {
     });
     process.stdin.on('error', () => done({}));
 
-    setTimeout(() => done({}), 3000);
+    setTimeout(() => {
+      if (!resolved) console.error('[hook-utils] readStdin timeout after 3s - proceeding with empty input');
+      done({});
+    }, 3000);
   });
 }
 
@@ -100,8 +103,12 @@ function findActiveSession() {
 
   const sessions = fs.readdirSync(sessionsDir)
     .filter(d => SESSION_PREFIXES.some(p => d.startsWith(p)))
-    .sort()
-    .reverse();
+    .sort((a, b) => {
+      // Sort by timestamp portion (after first underscore) for correct cross-prefix ordering
+      const tsA = a.substring(a.indexOf('_') + 1);
+      const tsB = b.substring(b.indexOf('_') + 1);
+      return tsB.localeCompare(tsA);
+    });
 
   for (const session of sessions) {
     const statusFile = path.join(sessionsDir, session, 'status.yaml');

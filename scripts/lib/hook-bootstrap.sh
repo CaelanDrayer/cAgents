@@ -83,8 +83,8 @@ if ! declare -f json_get &>/dev/null; then
         if command -v jq &>/dev/null; then
             echo "$json" | jq -r ".$key // empty" 2>/dev/null
         else
-            # Very basic fallback - extract simple key-value pairs
-            echo "$json" | grep -oP "\"$key\"\\s*:\\s*\"?\\K[^,\"}]+" 2>/dev/null | head -1
+            # Portable fallback - extract simple key-value pairs (no grep -P)
+            echo "$json" | sed -n "s/.*\"${key}\"[[:space:]]*:[[:space:]]*\"\?\([^,\"}\!]*\)\"\?.*/\1/p" 2>/dev/null | head -1
         fi
     }
 fi

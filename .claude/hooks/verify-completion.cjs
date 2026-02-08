@@ -29,11 +29,12 @@ try {
     findActiveSession: () => null,
     extractYamlValue: () => null,
     safeRead: () => null,
-    countPattern: () => 0
+    countPattern: () => 0,
+    ensureDir: (d) => { try { fs.mkdirSync(d, { recursive: true }); } catch {} return d; }
   };
 }
 
-const { readStdin, findActiveSession, extractYamlValue, safeRead, countPattern } = utils;
+const { readStdin, findActiveSession, extractYamlValue, safeRead, countPattern, ensureDir } = utils;
 
 /**
  * Verify completion criteria
@@ -100,6 +101,7 @@ function verifyCompletion(sessionDir) {
  * Create completion summary
  */
 function createCompletionSummary(sessionDir, result) {
+  ensureDir(sessionDir);
   const summaryFile = path.join(sessionDir, 'completion_summary.yaml');
   const timestamp = new Date().toISOString();
 

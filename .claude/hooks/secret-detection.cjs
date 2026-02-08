@@ -193,7 +193,8 @@ async function main() {
   try {
     const toolInput = input.tool_input || {};
     const filePath = toolInput.file_path || '';
-    const content = toolInput.content || '';
+    // Handle both Write (content) and Edit (new_string) tool input shapes
+    const content = toolInput.content || toolInput.new_string || '';
 
     if (!content) {
       console.log(JSON.stringify({ continue: true }));

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Team Stop Hook - Cleanup and archive team session
- * cAgents V8.6 - Agent Teams Integration
+ * cAgents V9.0 - Agent Teams Integration
  *
  * This hook runs when a team session ends to finalize metrics,
  * archive results, and cleanup resources.
@@ -58,6 +58,17 @@ function findTeamSession(input) {
     .sort()
     .reverse();
 
+  // Prefer non-completed sessions, but fall back to most recent
+  for (const session of teamSessions) {
+    const statusFile = path.join(sessionsDir, session, 'status.yaml');
+    const content = safeRead(statusFile);
+    if (!content) continue;
+    const phase = extractYamlValue(content, 'phase');
+    if (phase && phase !== 'completed' && phase !== 'failed') {
+      return path.join(sessionsDir, session);
+    }
+  }
+  // Fallback: return most recent if all completed (for final cleanup)
   return teamSessions.length > 0
     ? path.join(sessionsDir, teamSessions[0])
     : null;

@@ -27,7 +27,7 @@ try {
   // Minimal inline fallbacks for plugin mode
   utils = {
     AGENT_MEMORY_DIR: path.join(process.cwd(), 'Agent_Memory'),
-    SESSION_PREFIXES: ['run_', 'optimize_', 'review_', 'designer_'],
+    SESSION_PREFIXES: ['run_', 'optimize_', 'review_', 'designer_', 'team_'],
     readStdin: () => Promise.resolve({}),
     extractYamlValue: () => null,
     safeRead: () => null,
@@ -154,8 +154,7 @@ function createResumeInstructions(sessions) {
   });
 
   message += '### Resume Options\n\n';
-  message += '- `/resume` - Resume the most recent incomplete session\n';
-  message += '- `/resume <session_id>` - Resume a specific session\n';
+  message += '- Use `/run --resume <session_id>` to resume a specific session\n';
   message += '- Continue with a new request to start fresh\n';
 
   return message;

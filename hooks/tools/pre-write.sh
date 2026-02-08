@@ -48,9 +48,11 @@ main() {
         "/boot/"
         "/sys/"
         "/proc/"
-        "$HOME/.ssh/"
-        "$HOME/.gnupg/"
     )
+    # Only add $HOME-based paths if HOME is set and non-empty
+    if [[ -n "${HOME:-}" ]]; then
+        protected_paths+=("$HOME/.ssh/" "$HOME/.gnupg/")
+    fi
 
     # Check for protected paths
     for protected in "${protected_paths[@]}"; do
