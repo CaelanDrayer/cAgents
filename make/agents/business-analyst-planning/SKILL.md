@@ -9,7 +9,8 @@ capabilities:
   - gap_analysis
   - acceptance_criteria
   - business_case_development
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Business Analyst (Planning)

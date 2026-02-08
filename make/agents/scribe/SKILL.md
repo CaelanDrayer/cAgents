@@ -11,7 +11,8 @@ capabilities:
   - knowledge_management
   - technical_writing
   - learning_documentation
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Scribe Agent

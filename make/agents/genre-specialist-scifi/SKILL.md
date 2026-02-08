@@ -9,7 +9,8 @@ capabilities:
   - technology_systems
   - scientific_plausibility
   - worldbuilding_scifi
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Sci-Fi Genre Specialist

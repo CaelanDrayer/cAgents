@@ -3,7 +3,7 @@ name: performance-analyzer
 description: "QA Layer agent for performance bottleneck detection and optimization. Use for performance reviews, profiling, and optimization recommendations."
 tier: support
 domain: make
-model: sonnet
+model: "haiku"
 color: bright_yellow
 layer: qa
 capabilities:
@@ -11,7 +11,9 @@ capabilities:
   - bottleneck_detection
   - optimization
   - profiling
-tools: Read, Grep, Glob, Bash
+tools: ["Read","Grep","Glob","Bash"]
+maxTurns: 10
+disallowedTools: ["Task"]
 ---
 
 # Performance Analyzer Agent

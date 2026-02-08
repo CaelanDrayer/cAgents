@@ -9,7 +9,8 @@ capabilities:
   - stakeholder_adoption
   - communication_planning
   - resistance_management
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Change Management Planner

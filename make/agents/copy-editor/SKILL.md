@@ -9,7 +9,8 @@ capabilities:
   - grammar_correction
   - proofreading
   - style_guide_adherence
-tools: Read, Grep, Glob, Write, Edit, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Edit","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Copy Editor

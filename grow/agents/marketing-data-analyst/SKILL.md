@@ -9,7 +9,8 @@ capabilities:
   - customer_segmentation
   - marketing_mix_modeling
   - statistical_analysis
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Marketing Data Analyst

@@ -9,7 +9,8 @@ capabilities:
   - system_debugging
   - log_analysis
   - engineering_coordination
-tools: Read, Grep, Glob, Bash, Write
+tools: ["Read","Grep","Glob","Bash","Write"]
+maxTurns: 30
 ---
 
 # Technical Support Engineer

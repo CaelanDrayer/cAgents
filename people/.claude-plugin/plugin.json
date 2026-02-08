@@ -1,10 +1,32 @@
 {
   "name": "cagents-people",
-  "version": "8.5.2",
+  "version": "9.0.0",
   "description": "PEOPLE super-domain: Talent & organization capability (people + hr). 20 agents for recruiting, onboarding, performance management, and culture initiatives.",
   "super_domain": "people",
   "agent_count": 20,
   "capabilities": ["people", "people-culture", "hr", "talent"],
+  "agents": [
+    "./agents/benefits-administrator/SKILL.md",
+    "./agents/chro/SKILL.md",
+    "./agents/compensation-analyst/SKILL.md",
+    "./agents/culture-and-engagement-manager/SKILL.md",
+    "./agents/diversity-and-inclusion-manager/SKILL.md",
+    "./agents/employee-relations-specialist/SKILL.md",
+    "./agents/hr-analyst/SKILL.md",
+    "./agents/hr-business-partner/SKILL.md",
+    "./agents/hr-compliance-specialist/SKILL.md",
+    "./agents/hr-manager/SKILL.md",
+    "./agents/hr-operations-manager/SKILL.md",
+    "./agents/hris-administrator/SKILL.md",
+    "./agents/learning-and-development-manager/SKILL.md",
+    "./agents/onboarding-specialist/SKILL.md",
+    "./agents/organizational-development-specialist/SKILL.md",
+    "./agents/performance-management-specialist/SKILL.md",
+    "./agents/recruiter/SKILL.md",
+    "./agents/recruiting-coordinator/SKILL.md",
+    "./agents/talent-acquisition-manager/SKILL.md",
+    "./agents/workforce-planning-analyst/SKILL.md"
+  ],
   "dependencies": [
     "cagents-core",
     "cagents-shared"

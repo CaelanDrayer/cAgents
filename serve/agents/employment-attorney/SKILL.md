@@ -9,7 +9,8 @@ capabilities:
   - workplace_investigations
   - policy_development
   - dispute_resolution
-tools: Read, Write, Grep, Glob, TodoWrite
+tools: ["Read","Write","Grep","Glob","TodoWrite"]
+maxTurns: 30
 ---
 
 # Employment Attorney

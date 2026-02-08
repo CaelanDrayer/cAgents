@@ -9,7 +9,8 @@ capabilities:
   - performance_coaching
   - workflow_optimization
   - resource_allocation
-tools: Read, Grep, Glob, Write
+tools: ["Read","Grep","Glob","Write"]
+maxTurns: 30
 ---
 
 # Support Manager

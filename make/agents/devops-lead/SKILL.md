@@ -18,7 +18,10 @@ capabilities:
   - container_orchestration
   - security_infrastructure
   - disaster_recovery
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # DevOps Lead Agent

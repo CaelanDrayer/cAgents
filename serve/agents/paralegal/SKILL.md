@@ -9,7 +9,8 @@ capabilities:
   - legal_research
   - filing_coordination
   - matter_support
-tools: Read, Write, Grep, Glob, TodoWrite
+tools: ["Read","Write","Grep","Glob","TodoWrite"]
+maxTurns: 30
 ---
 
 # Paralegal

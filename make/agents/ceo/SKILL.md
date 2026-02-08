@@ -3,7 +3,7 @@ name: ceo
 description: "Chief Executive Officer providing strategic vision and company direction. Use for strategic decisions, major initiatives, and stakeholder communications."
 tier: controller
 domain: make
-model: opus
+model: "opusplan"
 coordination_style: question_based
 typical_questions:
   - "What is the current implementation of this feature?"
@@ -16,7 +16,10 @@ capabilities:
   - stakeholder_management
   - organizational_alignment
   - major_initiatives
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # CEO

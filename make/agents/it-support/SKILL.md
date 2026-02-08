@@ -12,7 +12,8 @@ capabilities:
   - incident_resolution
   - user_training
   - knowledge_base_management
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # IT Support Specialist

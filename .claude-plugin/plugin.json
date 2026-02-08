@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "8.7.0",
-  "description": "Universal multi-domain agent system with 236 specialized agents. V8.6 features: Claude Code Agent Teams integration for parallel team-based execution (40-60% time reduction), /team command with peer-to-peer communication, shared task lists, self-claiming work items. Plus: 100% SKILL.md progressive disclosure migration, Claude Code hooks (12 types), 4-tier model routing, session management (waypoints, recovery), metrics infrastructure, evaluation framework, CI/CD scripts. CSV-based task inventory (60-80% context savings). Controller-centric question-based delegation across 5 super-domains. Minimum tier 2 enforcement. Parallel execution (50x speedup).",
+  "version": "9.0.0",
+  "description": "Universal multi-domain agent system with 236 specialized agents. V9.0 features: Skills system (.claude/skills/ auto-discovery), 14 hook event types with shell+JS dual architecture, opusplan model routing, enhanced PreCompact waypoints with coordination state. Agent Teams integration for parallel team-based execution (40-60% time reduction). CSV-based task inventory (60-80% context savings). Controller-centric question-based delegation across 5 super-domains. Minimum tier 2 enforcement. Parallel execution (50x speedup).",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",
@@ -60,13 +60,6 @@
     "operate",
     "people",
     "serve"
-  ],
-  "commands": [
-    "./core/commands/run.md",
-    "./core/commands/team.md",
-    "./core/commands/designer.md",
-    "./core/commands/review.md",
-    "./core/commands/optimize.md"
   ],
   "agents": [
     "./core/agents/trigger/SKILL.md",

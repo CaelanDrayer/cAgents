@@ -9,7 +9,8 @@ capabilities:
   - goal_frameworks
   - calibration_facilitation
   - feedback_systems
-tools: Read, Write, Grep, TodoWrite
+tools: ["Read","Write","Grep","TodoWrite"]
+maxTurns: 30
 ---
 
 # Performance Management Specialist

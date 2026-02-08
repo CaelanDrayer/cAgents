@@ -9,7 +9,8 @@ capabilities:
   - attribution
   - dashboards
   - roi_analysis
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Marketing Analyst

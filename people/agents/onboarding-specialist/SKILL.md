@@ -9,7 +9,8 @@ capabilities:
   - new_hire_experience
   - pre_boarding
   - integration_tracking
-tools: Read, Write, Bash, TodoWrite
+tools: ["Read","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Onboarding Specialist

@@ -9,7 +9,8 @@ capabilities:
   - on_page_seo
   - technical_seo
   - link_building
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # SEO Specialist

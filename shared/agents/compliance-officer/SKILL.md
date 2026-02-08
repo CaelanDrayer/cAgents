@@ -15,7 +15,10 @@ capabilities:
   - compliance_monitoring
   - risk_assessment
   - compliance_training
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Compliance Officer

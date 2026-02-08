@@ -9,7 +9,8 @@ capabilities:
   - deal_sourcing
   - market_expansion
   - ecosystem_building
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Business Development Manager

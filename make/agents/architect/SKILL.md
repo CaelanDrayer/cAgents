@@ -3,7 +3,7 @@ name: architect
 description: "System design expert for architecture, API design, and pattern selection. Use for designing systems, evaluating technical approaches, or making structural decisions."
 tier: controller
 domain: make
-model: opus
+model: "opusplan"
 coordination_style: question_based
 typical_questions:
   - "What is the current implementation of this feature?"
@@ -24,7 +24,10 @@ capabilities:
   - technical_debt_management
   - design_patterns
   - trade_off_analysis
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Architect Agent

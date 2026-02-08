@@ -3,7 +3,7 @@ name: frontend-lead
 description: "Technical leader for frontend development. Coordinates UI/UX implementation, manages frontend team assignments, and ensures code quality through reviews. Use for tier 2+ frontend-focused engineering tasks."
 tier: controller
 domain: make
-model: opus
+model: "opusplan"
 coordination_style: question_based
 typical_questions:
   - "What is the current frontend architecture?"
@@ -16,8 +16,11 @@ capabilities:
   - code_review
   - performance_optimization
   - component_design
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 color: bright_cyan
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Frontend Lead

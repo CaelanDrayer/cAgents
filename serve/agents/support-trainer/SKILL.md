@@ -9,7 +9,8 @@ capabilities:
   - curriculum_development
   - onboarding
   - skill_assessment
-tools: Read, Grep, Glob, Write
+tools: ["Read","Grep","Glob","Write"]
+maxTurns: 30
 ---
 
 # Support Trainer

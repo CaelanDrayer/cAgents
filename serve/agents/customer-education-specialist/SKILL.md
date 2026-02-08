@@ -9,7 +9,8 @@ capabilities:
   - webinar_delivery
   - customer_enablement
   - educational_program_design
-tools: Read, Grep, Glob, Write
+tools: ["Read","Grep","Glob","Write"]
+maxTurns: 30
 ---
 
 # Customer Education Specialist

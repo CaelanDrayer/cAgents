@@ -17,7 +17,7 @@ Core architecture and development guidance for cAgents.
 - [Complexity Tiers](#complexity-tiers)
 - [Workflow Execution](#workflow-execution)
 - [Task Completion Protocol](#task-completion-protocol)
-- [Commands](#commands)
+- [Skills (Commands)](#skills-commands)
 - [Team Mode](#team-mode)
 - [Agent Memory](#agent-memory)
 - [Recursive Workflows](#recursive-workflows)
@@ -39,7 +39,7 @@ Core architecture and development guidance for cAgents.
 **Project Documentation** (in `docs/`):
 - `ARCHITECTURE.md` - Architecture design
 - `AUTOMATIC_WORKFLOW_PROGRESSION.md` - Automatic phase transition policy (CRITICAL)
-- `COMMANDS.md` - Command reference
+- `SKILLS.md` - Skills (commands) reference
 - `CONTEXT_MANAGEMENT.md` - Context handling and token management
 - `DOCUMENTATION_STANDARDS.md` - Documentation best practices
 - `DOMAIN_STRUCTURE_STANDARD.md` - Domain organization standard
@@ -479,7 +479,17 @@ See `workflow_agent_interactions.md` for detailed agent interaction patterns.
 
 **Files**: `Agent_Memory/_system/task_completion_protocol.yaml`, `Agent_Memory/sessions/{session_id}/workflow/coordination_log.yaml`
 
-## Commands
+## Skills (Commands)
+
+**V9.0**: Commands migrated to Claude Code skills format in `.claude/skills/`. Skills are auto-discovered — no manifest registration needed.
+
+| Skill | Context | Agent | Description |
+|-------|---------|-------|-------------|
+| `/run` | `fork` | `true` | Universal workflow engine — delegates to trigger agent |
+| `/team` | `fork` | `true` | Parallel team execution with peer-to-peer messaging |
+| `/designer` | `none` | `false` | Interactive design engine (stays in main context for AskUserQuestion) |
+| `/review` | `fork` | `true` | Universal review with parallel agent execution |
+| `/optimize` | `fork` | `true` | 5-phase optimization with atomic rollback |
 
 ### /run - Universal Entry Point
 Auto-routes to super-domain, executes full workflow with controller-centric coordination.
@@ -493,40 +503,32 @@ Auto-routes to super-domain, executes full workflow with controller-centric coor
 /run Design game mechanics     # -> Make domain (tier 2: game-designer)
 ```
 
+Skill: `.claude/skills/run/SKILL.md` + `reference/` (flags, domain-coverage, delegation-patterns)
+
 ### /designer - Interactive Design Engine (V2.0)
-Structured 4-phase design engine (Discovery → Ideation → Refinement → Specification) that transforms ideas into implementation-ready design documents with artifact generation, pattern recommendations, and 4-level validation. ALWAYS uses AskUserQuestion for every interaction.
+Structured 4-phase design engine (Discovery → Ideation → Refinement → Specification). ALWAYS uses AskUserQuestion for every interaction.
 
 ```bash
 /designer                              # Start fresh design session
 /designer [topic]                      # Start with a specific topic
 /designer --resume {id}                # Resume previous session
 /designer --template product-feature   # Start with template
-/designer --focus technical            # Focus on specific areas
 ```
 
-**Key Capabilities**:
-- **4-Phase Workflow**: Discovery (problem) → Ideation (alternatives + patterns) → Refinement (detailed design + diagrams) → Specification (artifacts + validation)
-- **Artifact Generation**: User stories, tech specs, mermaid diagrams, implementation checklists
-- **Pattern Library**: Recommends proven design patterns during ideation
-- **4-Level Validation**: Completeness, consistency, feasibility, quality (0.0-1.0 scores)
-- **6 Templates**: Product feature, UI/UX, system architecture, API, business process, creative content
-- **Auto-Build**: Automatically triggers `/run` when design is complete
-- **Context Discovery**: Searches codebase for software projects to ask informed questions
-
-Config: `Agent_Memory/_system/templates/designer/`
+Skill: `.claude/skills/designer/SKILL.md` + `reference/` (7 files: phase guides, session resilience, rules)
 
 ### /review - Enhanced Review
-Universal review with 8 enhancements: Intelligent agent selection (30-50% faster), severity-based early reporting (81% faster to critical), auto-fix suggestions (98% more actionable), priority intelligence, diff-aware analysis, context-aware, real-time progress, pattern learning (78% detection).
+Universal review with intelligent agent selection, severity-based reporting, auto-fix suggestions.
 
 ```bash
 /review src/              # Code review
 /review --focus security  # Security focus
 ```
 
-Config: `Agent_Memory/_system/commands/review/`
+Skill: `.claude/skills/review/SKILL.md` + `reference/` (6 files: flags, agent-groups, framework-patterns, auto-fix, quality-gates, report-formats)
 
 ### /optimize - Universal Optimizer
-5-phase optimization engine with 8 types (code, content, process, infrastructure, data, campaign, creative, sales). Detects opportunities, measures baselines, plans by ROI, executes atomically with rollback, validates with before/after metrics.
+5-phase optimization engine with 8 types. Atomic rollback, cross-file analysis, ML-ready pattern learning.
 
 ```bash
 /optimize                              # Auto-detect and optimize
@@ -534,16 +536,9 @@ Config: `Agent_Memory/_system/commands/review/`
 /optimize --interactive                # Ask preferences via AskUserQuestion
 /optimize src/ --type code             # Specific target and type
 /optimize --dry-run                    # Preview without applying
-/optimize --plan-only                  # Generate plan, trigger /run
-/optimize --cross-file                 # Cross-file dependency analysis
 ```
 
-**5-Phase Workflow**: Detection → Analysis → Planning → Execution → Validation
-**Key Features**: Atomic execution with rollback, cross-file analysis, parallel execution, risk classification (SAFE/LOW/MEDIUM/HIGH/CRITICAL), session resilience, ML-ready pattern learning, plugin integration (/run, /designer, /review).
-
-Config: `Agent_Memory/_system/optimize/`, `core/commands/optimize/`
-
-See `core/commands/optimize.md` for detailed documentation.
+Skill: `.claude/skills/optimize/SKILL.md` + `reference/` (6 files: flags, optimization-types, risk-classification, phase-details, cross-file, session-management)
 
 ### /memory - Memory Management
 ```bash
@@ -724,21 +719,26 @@ No code required - universal agents load configs automatically.
 ```
 cAgents/
 ├── CLAUDE.md                # Main project memory (this file)
+├── .claude/
+│   ├── skills/              # V9.0 Skills (run, team, designer, review, optimize)
+│   ├── hooks/               # CJS hooks (11 hooks + hook-utils.cjs)
+│   ├── rules/               # Modular rules (20 files across 5 categories)
+│   └── settings.json        # Hook registration + permissions + env
 ├── core/                    # Core infrastructure (tier 1)
-│   ├── agents/              # 12 core agents
-│   └── commands/            # 4 universal commands
+│   ├── agents/              # 14 core agents
+│   └── commands/            # Legacy commands (archived, replaced by skills)
 ├── shared/                  # Shared cross-domain capabilities (14 agents)
-├── make/                    # MAKE super-domain (108 agents)
+│   └── resources/           # V9.0 Shared resources (common questions, templates)
+├── make/                    # MAKE super-domain (109 agents)
 │   ├── agents/              # Engineering, creative, product, devops, qa, game development
 │   ├── config/              # Domain configs (planner_config.yaml, etc.)
 │   └── .claude-plugin/      # Make manifest
-├── grow/                    # GROW super-domain (37 agents)
+├── grow/                    # GROW super-domain (38 agents)
 ├── operate/                 # OPERATE super-domain (13 agents)
-├── people/                  # PEOPLE super-domain (19 agents)
+├── people/                  # PEOPLE super-domain (20 agents)
 ├── serve/                   # SERVE super-domain (28 agents)
+├── scripts/                 # Hook dispatchers, version sync, agent update scripts
 ├── docs/                    # Project documentation
-├── .claude/                 # Memory system
-│   └── rules/               # Modular rules (19 files across 5 categories)
 ├── .claude-plugin/          # Root manifest
 └── Agent_Memory/            # Runtime state (git-ignored)
 ```
@@ -760,10 +760,13 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 
 ## Quick Reference
 
-**Commands**: `/run`, `/team`, `/designer`, `/review`, `/optimize`, `/memory`, `/init`
+**Skills**: `/run`, `/team`, `/designer`, `/review`, `/optimize` (in `.claude/skills/`)
+**Built-in**: `/memory`, `/init` (Claude Code native)
 **Agents**: 236 total (14 core + 14 shared + 208 domain specialists)
 **Super-Domains**: Make (109), Grow (38), Operate (13), People (20), Serve (28)
-**Key Files**: `CLAUDE.md`, `.claude/rules/*.md`, `{domain}/config/*.yaml`
+**Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/*.yaml`
+**Hooks**: 14 event types, 3 hook types (command, prompt, agent) in `.claude/settings.json`
+**Models**: opusplan (controllers), sonnet (execution), haiku (support)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ workflows
 
@@ -792,8 +795,11 @@ See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 **Total Agents**: 236 (14 core + 14 shared + 208 domain specialists)
 **Architecture**: Controller-Centric Coordination with Task Inventory + Agent Teams
 **Super-Domains**: 5 (Make, Grow, Operate, People, Serve)
+**Skills**: 5 (run, team, designer, review, optimize) in `.claude/skills/`
+**Hooks**: 14 event types, 11 CJS hooks, 2 prompt hooks, 2 dispatchers
+**Models**: opusplan (controllers), sonnet (execution), haiku (support)
 **Team Mode**: 40-60% execution time reduction via parallel teams
 **Directories**: 7 (core, shared, make, grow, operate, people, serve)
 **Key Innovation**: CSV-based task inventory for large workflows + aggressive decomposition
 **Dependencies**: None (file-based, self-contained)
-**Version**: 8.5.2
+**Version**: 9.0.0

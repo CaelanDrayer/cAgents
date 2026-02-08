@@ -9,7 +9,8 @@ capabilities:
   - contract_negotiation
   - risk_analysis
   - contract_lifecycle_management
-tools: Read, Write, Edit, Grep, Glob, TodoWrite
+tools: ["Read","Write","Edit","Grep","Glob","TodoWrite"]
+maxTurns: 30
 ---
 
 # Contracts Manager

@@ -10,7 +10,8 @@ capabilities:
   - brand_guidelines
   - positioning
   - brand_voice
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Brand Manager

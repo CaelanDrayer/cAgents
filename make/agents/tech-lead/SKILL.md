@@ -3,7 +3,7 @@ name: tech-lead
 description: "Engineering leader for delivery, team coordination, and strategic decisions. Use PROACTIVELY for complex tasks requiring orchestration, priority decisions, or cross-team coordination."
 tier: controller
 domain: make
-model: opus
+model: "opusplan"
 coordination_style: question_based
 typical_questions:
   - "What is the current implementation of this feature?"
@@ -23,7 +23,10 @@ capabilities:
   - quality_enforcement
   - cross_functional_collaboration
   - conflict_resolution
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Tech Lead Agent

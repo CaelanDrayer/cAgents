@@ -9,7 +9,8 @@ capabilities:
   - data_management
   - system_configuration
   - user_support
-tools: Read, Write, Grep, Bash, TodoWrite
+tools: ["Read","Write","Grep","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # HRIS Administrator

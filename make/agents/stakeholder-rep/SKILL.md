@@ -11,7 +11,8 @@ capabilities:
   - stakeholder_alignment
   - acceptance_testing
   - business_communication
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Stakeholder Representative

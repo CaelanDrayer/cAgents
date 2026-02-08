@@ -9,7 +9,8 @@ capabilities:
   - template_development
   - tool_management
   - planning_operations
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Planning Operations Manager

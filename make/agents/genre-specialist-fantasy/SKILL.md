@@ -9,7 +9,8 @@ capabilities:
   - magic_system_design
   - fantasy_worldbuilding
   - quest_narratives
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Fantasy Genre Specialist

@@ -9,7 +9,8 @@ capabilities:
   - compliance_frameworks
   - risk_assessment
   - integrated_governance
-tools: Read, Write, Grep, Glob, TodoWrite
+tools: ["Read","Write","Grep","Glob","TodoWrite"]
+maxTurns: 30
 ---
 
 # Risk and Compliance Manager

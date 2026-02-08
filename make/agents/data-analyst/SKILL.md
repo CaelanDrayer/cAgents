@@ -12,7 +12,8 @@ capabilities:
   - data_quality
   - business_intelligence
   - data_visualization
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Data Analyst / Data Engineer Agent

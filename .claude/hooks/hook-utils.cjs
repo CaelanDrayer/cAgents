@@ -162,6 +162,75 @@ function calculateScore(breakdown) {
   return Math.max(0, Object.values(breakdown).reduce((a, b) => a + b, 0));
 }
 
+/**
+ * Parse a simple YAML task list file and return items array.
+ * Handles the task_list.yaml format used by team sessions.
+ */
+function parseTaskList(filePath) {
+  const content = safeRead(filePath);
+  if (!content) return [];
+
+  const items = [];
+  const itemBlocks = content.split(/\n\s*- id:\s*/);
+
+  for (let i = 1; i < itemBlocks.length; i++) {
+    const block = '- id: ' + itemBlocks[i];
+    const item = {};
+
+    const idMatch = block.match(/id:\s*["']?([^"'\n]+)["']?/);
+    if (idMatch) item.id = idMatch[1].trim();
+
+    const nameMatch = block.match(/name:\s*["']?([^"'\n]+)["']?/);
+    if (nameMatch) item.name = nameMatch[1].trim();
+
+    const statusMatch = block.match(/status:\s*["']?([^"'\n]+)["']?/);
+    if (statusMatch) item.status = statusMatch[1].trim();
+
+    const claimedMatch = block.match(/claimed_by:\s*["']?([^"'\n]+)["']?/);
+    if (claimedMatch) item.claimed_by = claimedMatch[1].trim();
+
+    const depsMatch = block.match(/dependencies:\s*\[([^\]]*)\]/);
+    if (depsMatch) {
+      item.dependencies = depsMatch[1]
+        .split(',')
+        .map(d => d.trim().replace(/["']/g, ''))
+        .filter(Boolean);
+    } else {
+      item.dependencies = [];
+    }
+
+    if (item.id) items.push(item);
+  }
+
+  return items;
+}
+
+/**
+ * Check if a work item's dependencies are all completed
+ */
+function areDependenciesMet(item, allItems) {
+  if (!item.dependencies || item.dependencies.length === 0) return true;
+
+  return item.dependencies.every(depId => {
+    const dep = allItems.find(i => i.id === depId);
+    return dep && dep.status === 'completed';
+  });
+}
+
+/**
+ * Find available (unclaimed, unblocked) work items from a task list file
+ */
+function findAvailableWork(taskListPath) {
+  const items = parseTaskList(taskListPath);
+  if (items.length === 0) return [];
+
+  return items.filter(item =>
+    (item.status === 'available' || item.status === 'pending') &&
+    !item.claimed_by &&
+    areDependenciesMet(item, items)
+  );
+}
+
 module.exports = {
   AGENT_MEMORY_DIR,
   SESSION_PREFIXES,
@@ -174,5 +243,8 @@ module.exports = {
   getTimestampSlug,
   getWaypointPath,
   assignGrade,
-  calculateScore
+  calculateScore,
+  parseTaskList,
+  areDependenciesMet,
+  findAvailableWork
 };

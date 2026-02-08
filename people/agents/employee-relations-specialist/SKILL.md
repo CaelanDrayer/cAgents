@@ -9,7 +9,8 @@ capabilities:
   - investigations
   - policy_interpretation
   - employee_advocacy
-tools: Read, Write, Grep, TodoWrite
+tools: ["Read","Write","Grep","TodoWrite"]
+maxTurns: 30
 ---
 
 # Employee Relations Specialist

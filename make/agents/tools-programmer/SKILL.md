@@ -10,7 +10,8 @@ capabilities:
   - asset_pipeline_tools
   - build_automation
   - workflow_optimization
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Tools Programmer

@@ -15,7 +15,10 @@ capabilities:
   - communication_execution
   - change_support
   - resistance_handling
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Change Management Specialist

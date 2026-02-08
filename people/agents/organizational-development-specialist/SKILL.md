@@ -9,7 +9,8 @@ capabilities:
   - change_management
   - team_effectiveness
   - transformation_leadership
-tools: Read, Write, Grep, TodoWrite
+tools: ["Read","Write","Grep","TodoWrite"]
+maxTurns: 30
 ---
 
 # Organizational Development Specialist

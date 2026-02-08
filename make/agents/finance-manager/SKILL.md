@@ -12,7 +12,8 @@ capabilities:
   - vendor_management
   - financial_forecasting
   - resource_allocation
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Finance Manager

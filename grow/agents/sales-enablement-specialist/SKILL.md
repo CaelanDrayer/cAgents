@@ -9,7 +9,8 @@ capabilities:
   - playbook_creation
   - content_development
   - training_design
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Sales Enablement Specialist

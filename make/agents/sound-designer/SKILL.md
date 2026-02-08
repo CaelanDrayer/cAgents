@@ -10,7 +10,8 @@ capabilities:
   - ambient_soundscapes
   - foley_recording
   - audio_mixing
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Sound Designer

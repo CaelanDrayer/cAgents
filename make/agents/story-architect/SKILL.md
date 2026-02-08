@@ -8,13 +8,16 @@ typical_questions:
   - "What are the key plot turning points?"
   - "How do character arcs align with plot?"
 description: Story structure and plot design specialist. Creates plot outlines, narrative structures, story arcs, and plot development.
-model: opus
+model: "opusplan"
 capabilities:
   - plot_structure
   - story_arcs
   - narrative_design
   - conflict_design
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Story Architect

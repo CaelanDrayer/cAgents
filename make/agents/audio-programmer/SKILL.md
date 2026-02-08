@@ -11,7 +11,8 @@ capabilities:
   - fmod_integration
   - spatial_audio_systems
   - audio_profiling
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Audio Programmer

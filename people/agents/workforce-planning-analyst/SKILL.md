@@ -9,7 +9,8 @@ capabilities:
   - capacity_planning
   - scenario_modeling
   - headcount_budgeting
-tools: Read, Write, Grep, Bash, TodoWrite
+tools: ["Read","Write","Grep","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Workforce Planning Analyst

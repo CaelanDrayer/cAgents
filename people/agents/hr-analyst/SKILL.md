@@ -9,7 +9,8 @@ capabilities:
   - hr_reporting
   - data_visualization
   - predictive_modeling
-tools: Read, Write, Grep, Bash, TodoWrite
+tools: ["Read","Write","Grep","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # HR Analyst

@@ -9,7 +9,8 @@ capabilities:
   - risk_assessment
   - mitigation_planning
   - dependency_mapping
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Risk & Dependency Planner

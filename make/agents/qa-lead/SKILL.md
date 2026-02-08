@@ -21,7 +21,10 @@ capabilities:
   - e2e_testing
   - performance_testing
   - security_testing
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # QA Lead Agent

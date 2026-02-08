@@ -22,8 +22,9 @@ capabilities:
   - debugging
   - mentoring
   - code_review
-tools: Read, Write, Edit, Grep, Glob, Bash, TodoWrite
+tools: ["Read","Write","Edit","Grep","Glob","Bash","TodoWrite"]
 color: bright_green
+maxTurns: 30
 ---
 
 # Senior Developer

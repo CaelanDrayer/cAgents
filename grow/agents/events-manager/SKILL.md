@@ -9,7 +9,8 @@ capabilities:
   - event_logistics
   - webinar_production
   - event_roi
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Events Manager

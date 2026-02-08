@@ -9,7 +9,8 @@ capabilities:
   - inclusive_hiring
   - erg_support
   - equity_analysis
-tools: Read, Write, Grep, TodoWrite
+tools: ["Read","Write","Grep","TodoWrite"]
+maxTurns: 30
 ---
 
 # Diversity and Inclusion Manager

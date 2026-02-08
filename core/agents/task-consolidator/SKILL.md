@@ -10,7 +10,9 @@ capabilities:
   - parallel_execution
   - result_consolidation
   - context_optimization
-tools: Read, Grep, Glob, Write, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","TodoWrite","Task"]
+maxTurns: 30
+permissionMode: "bypassPermissions"
 ---
 
 # Task Consolidator

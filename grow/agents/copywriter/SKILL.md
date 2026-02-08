@@ -10,7 +10,8 @@ capabilities:
   - email_copy
   - social_media
   - brand_voice
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Copywriter

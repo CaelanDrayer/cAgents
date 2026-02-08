@@ -15,7 +15,10 @@ capabilities:
   - upsell_cross_sell
   - renewal_management
   - account_growth
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Account Manager

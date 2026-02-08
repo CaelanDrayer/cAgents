@@ -10,7 +10,8 @@ capabilities:
   - copyright_protection
   - trade_secret_programs
   - ip_licensing
-tools: Read, Write, Grep, Glob, TodoWrite
+tools: ["Read","Write","Grep","Glob","TodoWrite"]
+maxTurns: 30
 ---
 
 # IP Attorney

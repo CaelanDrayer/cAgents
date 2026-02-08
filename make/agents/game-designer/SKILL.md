@@ -8,7 +8,7 @@ typical_questions:
   - "How does this system interact with other game systems?"
   - "What is the player experience flow for this content?"
 description: Game design lead for core mechanics, systems design, and gameplay coordination. Use for tier 3-4 instructions requiring game design decisions, system balancing, or cross-team gameplay coordination.
-model: opus
+model: "opusplan"
 color: bright_cyan
 capabilities:
   - game_mechanics_design
@@ -16,7 +16,10 @@ capabilities:
   - player_experience_design
   - game_loop_architecture
   - design_documentation
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Game Designer

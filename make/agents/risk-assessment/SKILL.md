@@ -4,14 +4,16 @@ description: "Intelligence Layer agent that analyzes work for potential failure 
 tier: support
 domain: make
 layer: intelligence
-model: sonnet
+model: "haiku"
 color: bright_red
 capabilities:
   - risk_analysis
   - vulnerability_detection
   - failure_prediction
   - proactive_mitigation
-tools: Read, Grep, Glob
+tools: ["Read","Grep","Glob"]
+maxTurns: 10
+disallowedTools: ["Task"]
 ---
 
 # Risk Assessment Agent

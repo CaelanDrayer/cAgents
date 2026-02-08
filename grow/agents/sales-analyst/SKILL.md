@@ -9,7 +9,8 @@ capabilities:
   - forecast_modeling
   - performance_analysis
   - trend_identification
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Sales Analyst

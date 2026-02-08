@@ -160,13 +160,13 @@ Update plugin.json if needed to reference new path.
 
 ## Implementation Status
 
-- [x] engineering-manager (converted)
-- [x] architect (converted)
-- [x] backend-developer (converted)
-- [x] qa-lead (converted)
-- [ ] creative-director (pending)
-- [ ] game-designer (pending)
-- [ ] campaign-manager (pending)
-- [ ] marketing-strategist (pending)
-- [ ] hr-manager (pending)
-- [ ] customer-success-manager (pending)
+- [x] engineering-manager (converted V8.0)
+- [x] architect (converted V8.0)
+- [x] backend-developer (converted V8.0)
+- [x] qa-lead (converted V8.0)
+- [x] creative-director (converted V9.0)
+- [x] game-designer (converted V9.0)
+- [x] campaign-manager (converted V9.0)
+- [x] marketing-strategist (converted V9.0)
+- [x] hr-manager (converted V9.0)
+- [x] customer-success-manager (converted V9.0)

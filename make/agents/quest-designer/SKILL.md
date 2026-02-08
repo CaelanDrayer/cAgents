@@ -10,7 +10,8 @@ capabilities:
   - mission_design
   - objective_design
   - player_motivation
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Quest Designer

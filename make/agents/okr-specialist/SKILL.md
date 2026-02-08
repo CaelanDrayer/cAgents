@@ -9,7 +9,8 @@ capabilities:
   - objective_setting
   - key_result_definition
   - okr_tracking
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # OKR Specialist

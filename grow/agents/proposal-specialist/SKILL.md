@@ -9,7 +9,8 @@ capabilities:
   - proposal_writing
   - bid_coordination
   - sow_development
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Proposal Specialist

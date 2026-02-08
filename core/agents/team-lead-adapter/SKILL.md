@@ -2,7 +2,7 @@
 name: team-lead-adapter
 tier: infrastructure
 description: "Wraps domain controllers to operate as team leads in delegate mode. Manages peer-to-peer communication, shared task distribution, and result aggregation."
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 model: opus
 color: bright_yellow
 domain: core
@@ -12,6 +12,8 @@ capabilities:
   - task_distribution
   - peer_messaging
   - result_aggregation
+maxTurns: 30
+permissionMode: "bypassPermissions"
 ---
 
 # Team Lead Adapter

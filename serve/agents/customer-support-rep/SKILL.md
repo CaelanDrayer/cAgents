@@ -9,7 +9,8 @@ capabilities:
   - issue_troubleshooting
   - ticket_management
   - customer_communication
-tools: Read, Write, Grep, Glob, TodoWrite
+tools: ["Read","Write","Grep","Glob","TodoWrite"]
+maxTurns: 30
 ---
 
 # Customer Support Representative

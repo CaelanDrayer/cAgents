@@ -9,7 +9,8 @@ capabilities:
   - pay_equity_analysis
   - offer_design
   - equity_modeling
-tools: Read, Write, Grep, Bash, TodoWrite
+tools: ["Read","Write","Grep","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Compensation Analyst

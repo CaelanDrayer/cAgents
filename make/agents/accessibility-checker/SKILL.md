@@ -3,7 +3,7 @@ name: accessibility-checker
 description: "QA Layer agent for WCAG compliance and accessibility validation. Use for accessibility reviews, ARIA validation, and a11y testing."
 tier: support
 domain: make
-model: sonnet
+model: "haiku"
 color: bright_magenta
 layer: qa
 capabilities:
@@ -11,7 +11,9 @@ capabilities:
   - accessibility_checking
   - a11y_validation
   - aria_review
-tools: Read, Grep, Glob, Bash
+tools: ["Read","Grep","Glob","Bash"]
+maxTurns: 10
+disallowedTools: ["Task"]
 ---
 
 # Accessibility Checker Agent

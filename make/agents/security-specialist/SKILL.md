@@ -14,7 +14,8 @@ capabilities:
   - encryption_review
   - secrets_management
   - penetration_testing
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Security Specialist Agent

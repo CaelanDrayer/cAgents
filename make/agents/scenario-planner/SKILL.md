@@ -9,7 +9,8 @@ capabilities:
   - strategic_foresight
   - contingency_planning
   - strategy_stress_testing
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Scenario Planner

@@ -9,7 +9,8 @@ capabilities:
   - candidate_communications
   - recruiting_operations
   - process_optimization
-tools: Read, Write, Bash, TodoWrite
+tools: ["Read","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Recruiting Coordinator

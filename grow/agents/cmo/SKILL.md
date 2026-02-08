@@ -8,13 +8,16 @@ typical_questions:
   - "What is our market position vs competitors?"
   - "What marketing initiatives need executive decision?"
 description: Chief Marketing Officer. Executive marketing leadership providing strategic oversight, budget decisions, and cross-functional alignment.
-model: opus
+model: "opusplan"
 capabilities:
   - marketing_strategy
   - budget_allocation
   - executive_leadership
   - cross_functional
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Chief Marketing Officer

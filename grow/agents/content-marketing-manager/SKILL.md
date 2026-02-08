@@ -9,7 +9,8 @@ capabilities:
   - editorial_planning
   - content_production
   - seo_content
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Content Marketing Manager

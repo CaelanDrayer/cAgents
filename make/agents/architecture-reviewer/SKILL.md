@@ -3,13 +3,15 @@ name: architecture-reviewer
 domain: make
 tier: support
 description: QA Layer agent for architecture reviews, system design validation, and pattern enforcement.
-model: sonnet
+model: "haiku"
 capabilities:
   - architecture_review
   - design_validation
   - pattern_enforcement
   - system_analysis
-tools: Read, Grep, Glob
+tools: ["Read","Grep","Glob"]
+maxTurns: 10
+disallowedTools: ["Task"]
 ---
 
 # Architecture Reviewer

@@ -11,7 +11,8 @@ capabilities:
   - icon_design
   - ui_animation
   - accessibility_ui
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # UI Artist

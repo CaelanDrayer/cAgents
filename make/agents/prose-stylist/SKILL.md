@@ -9,7 +9,8 @@ capabilities:
   - scene_writing
   - narrative_voice
   - description
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Prose Stylist

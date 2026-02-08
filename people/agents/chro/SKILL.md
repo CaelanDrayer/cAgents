@@ -8,14 +8,17 @@ typical_questions:
   - "What are the cultural considerations?"
   - "What are the retention and engagement metrics?"
 description: Chief Human Resources Officer - Strategic people vision, talent strategy, and organizational culture. Use for workforce planning, organizational design, and major HR transformations.
-model: opus
+model: "opusplan"
 capabilities:
   - strategic_hr_leadership
   - talent_strategy
   - culture_transformation
   - executive_decision_making
   - board_reporting
-tools: Read, Write, Grep, Glob, Bash, TodoWrite, Task
+tools: ["Read","Write","Grep","Glob","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Chief Human Resources Officer

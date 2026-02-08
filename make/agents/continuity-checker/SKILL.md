@@ -9,7 +9,8 @@ capabilities:
   - plot_hole_detection
   - timeline_checking
   - consistency_analysis
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Continuity Checker

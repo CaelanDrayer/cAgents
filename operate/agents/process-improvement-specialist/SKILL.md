@@ -9,7 +9,8 @@ capabilities:
   - lean_six_sigma
   - waste_elimination
   - kaizen
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Process Improvement Specialist

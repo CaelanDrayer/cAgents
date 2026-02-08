@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 /**
  * Team Task Complete Hook - Track task completion in team sessions
- * cAgents V8.6 - Agent Teams Integration
+ * cAgents V9.0 - TaskCompleted Handler (Enhanced)
  *
- * This hook runs after a Task tool completes in a team session
- * to update the shared task list and track progress.
+ * This hook runs when a task completes in a team session.
+ * Updates task_list.yaml status, checks if dependencies are unblocked,
+ * notifies team lead of completion, and tracks progress.
  *
  * 100% Self-Contained: Uses only built-in Node.js modules.
  *
@@ -32,11 +33,13 @@ try {
     safeRead: () => null,
     countPattern: () => 0,
     ensureDir: (d) => { try { fs.mkdirSync(d, { recursive: true }); } catch {} return d; },
-    getTimestampSlug: (d = new Date()) => d.toISOString().replace(/[:.]/g, '-').replace('T', '_').slice(0, 19)
+    getTimestampSlug: (d = new Date()) => d.toISOString().replace(/[:.]/g, '-').replace('T', '_').slice(0, 19),
+    parseTaskList: () => [],
+    areDependenciesMet: () => true
   };
 }
 
-const { readStdin, AGENT_MEMORY_DIR, safeRead, extractYamlValue, countPattern, ensureDir, getTimestampSlug } = utils;
+const { readStdin, AGENT_MEMORY_DIR, safeRead, extractYamlValue, countPattern, ensureDir, getTimestampSlug, parseTaskList, areDependenciesMet } = utils;
 
 /**
  * Find active team session
@@ -251,11 +254,41 @@ async function main() {
       // Update timing metrics
       updateTimingMetrics(sessionDir, workItemId, memberName);
 
+      // Check for newly unblocked dependencies
+      const taskListPath = path.join(sessionDir, 'team', 'task_list.yaml');
+      const allItems = parseTaskList(taskListPath);
+      const newlyUnblocked = allItems.filter(item =>
+        (item.status === 'available' || item.status === 'pending') &&
+        !item.claimed_by &&
+        item.dependencies &&
+        item.dependencies.includes(workItemId) &&
+        areDependenciesMet(item, allItems)
+      );
+
       console.error(`[TeamTaskComplete] ${workItemId} completed by ${memberName}`);
       console.error(`[TeamTaskComplete] Progress: ${result.completedCount}/${result.totalCount}`);
-    }
 
-    console.log(JSON.stringify({ continue: true }));
+      // Build system message for team lead
+      let systemMsg = `Work item ${workItemId} completed by ${memberName}. Progress: ${result.completedCount}/${result.totalCount}.`;
+
+      if (newlyUnblocked.length > 0) {
+        const unblockedList = newlyUnblocked.map(i => i.id).join(', ');
+        systemMsg += ` Newly unblocked: ${unblockedList}.`;
+        console.error(`[TeamTaskComplete] Unblocked: ${unblockedList}`);
+      }
+
+      if (result.completedCount === result.totalCount) {
+        systemMsg += ' All work items complete - ready for validation.';
+        console.error('[TeamTaskComplete] All work items complete!');
+      }
+
+      console.log(JSON.stringify({
+        continue: true,
+        systemMessage: systemMsg
+      }));
+    } else {
+      console.log(JSON.stringify({ continue: true }));
+    }
 
   } catch (error) {
     console.error(`[TeamTaskComplete] Error: ${error.message}`);

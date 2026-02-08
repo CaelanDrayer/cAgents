@@ -9,7 +9,8 @@ capabilities:
   - learning_path_design
   - skill_gap_analysis
   - program_coordination
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Learning Coordinator

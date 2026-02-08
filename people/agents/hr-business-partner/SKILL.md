@@ -15,7 +15,10 @@ capabilities:
   - organizational_planning
   - change_management
   - talent_strategy
-tools: Read, Write, Grep, Glob, Bash, TodoWrite, Task
+tools: ["Read","Write","Grep","Glob","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # HR Business Partner

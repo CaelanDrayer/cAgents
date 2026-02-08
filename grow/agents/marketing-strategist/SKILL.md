@@ -15,7 +15,10 @@ capabilities:
   - market_research
   - strategic_planning
   - go_to_market
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Marketing Strategist

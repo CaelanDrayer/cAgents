@@ -9,7 +9,8 @@ capabilities:
   - partner_enablement
   - alliance_marketing
   - channel_programs
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Partnership Marketing Manager

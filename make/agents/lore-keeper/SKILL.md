@@ -9,7 +9,8 @@ capabilities:
   - historical_timelines
   - continuity_tracking
   - canon_maintenance
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Lore Keeper

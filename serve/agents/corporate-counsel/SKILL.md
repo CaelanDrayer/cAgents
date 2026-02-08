@@ -9,7 +9,8 @@ capabilities:
   - ma_transactions
   - corporate_governance
   - securities_compliance
-tools: Read, Write, Grep, Glob, TodoWrite
+tools: ["Read","Write","Grep","Glob","TodoWrite"]
+maxTurns: 30
 ---
 
 # Corporate Counsel

@@ -9,7 +9,8 @@ capabilities:
   - initiative_prioritization
   - resource_optimization
   - value_maximization
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Portfolio Manager

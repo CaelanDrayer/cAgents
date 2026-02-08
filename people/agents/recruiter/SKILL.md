@@ -9,7 +9,8 @@ capabilities:
   - screening_interviews
   - candidate_engagement
   - offer_negotiation
-tools: Read, Write, Grep, Bash, TodoWrite
+tools: ["Read","Write","Grep","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Recruiter

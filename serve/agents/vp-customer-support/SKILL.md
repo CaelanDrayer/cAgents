@@ -3,7 +3,7 @@ name: vp-customer-support
 domain: serve
 tier: controller
 description: VP of Customer Support providing executive leadership for support strategy, customer experience, and critical escalation management.
-model: opus
+model: "opusplan"
 coordination_style: question_based
 typical_questions:
   - "What are the current support metrics and satisfaction trends?"
@@ -14,7 +14,10 @@ capabilities:
   - customer_experience_leadership
   - escalation_management
   - team_development
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # VP of Customer Support

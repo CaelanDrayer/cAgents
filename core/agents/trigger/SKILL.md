@@ -2,7 +2,7 @@
 name: trigger
 tier: infrastructure
 description: "Universal entry point with context-aware detection, confidence scoring, template matching, pre-flight validation, and workflow analytics. Routes ALL requests to specialist agents - never handles directly."
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 model: sonnet
 color: bright_white
 domain: core
@@ -13,6 +13,8 @@ capabilities:
   - preflight_validation
   - workflow_initialization
   - analytics_tracking
+maxTurns: 50
+permissionMode: "bypassPermissions"
 ---
 
 # Trigger

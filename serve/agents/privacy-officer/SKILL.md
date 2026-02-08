@@ -10,7 +10,8 @@ capabilities:
   - ccpa_compliance
   - privacy_by_design
   - data_governance
-tools: Read, Write, Grep, Glob, TodoWrite
+tools: ["Read","Write","Grep","Glob","TodoWrite"]
+maxTurns: 30
 ---
 
 # Privacy Officer

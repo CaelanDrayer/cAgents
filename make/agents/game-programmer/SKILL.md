@@ -12,7 +12,8 @@ capabilities:
   - game_state_management
   - state_machines
   - input_handling
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Game Programmer

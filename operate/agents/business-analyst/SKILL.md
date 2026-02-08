@@ -14,7 +14,10 @@ capabilities:
   - process_analysis
   - solution_design
   - stakeholder_management
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Business Analyst

@@ -9,7 +9,8 @@ capabilities:
   - trauma_development
   - emotional_authenticity
   - internal_conflict
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Character Psychologist

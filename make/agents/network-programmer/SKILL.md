@@ -10,7 +10,8 @@ capabilities:
   - state_synchronization
   - lag_compensation
   - matchmaking_systems
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Network Programmer

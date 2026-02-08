@@ -9,7 +9,8 @@ capabilities:
   - competitive_intelligence
   - trend_analysis
   - market_sizing
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Market Analyst

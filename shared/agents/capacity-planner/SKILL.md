@@ -15,7 +15,10 @@ capabilities:
   - capacity_modeling
   - scaling_planning
   - capacity_optimization
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Capacity Planner

@@ -11,7 +11,8 @@ capabilities:
   - iap_design
   - battle_pass_design
   - ethical_monetization
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Monetization Designer

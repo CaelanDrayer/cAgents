@@ -9,7 +9,8 @@ capabilities:
   - twist_development
   - subplot_weaving
   - plot_escalation
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Plot Developer

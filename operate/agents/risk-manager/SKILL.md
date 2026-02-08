@@ -9,7 +9,8 @@ capabilities:
   - risk_mitigation
   - business_continuity
   - crisis_management
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Risk Manager

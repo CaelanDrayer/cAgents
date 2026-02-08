@@ -2,7 +2,7 @@
 name: universal-validator
 tier: infrastructure
 description: "Universal quality validator for ALL domains. Validates controller coordination and quality gates. Enforces delegation compliance."
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 model: opus
 color: bright_cyan
 domain: core
@@ -12,6 +12,8 @@ capabilities:
   - delegation_compliance
   - acceptance_verification
   - evidence_chain
+maxTurns: 40
+permissionMode: "bypassPermissions"
 ---
 
 # Universal Validator

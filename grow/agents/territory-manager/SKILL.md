@@ -9,7 +9,8 @@ capabilities:
   - team_coaching
   - pipeline_management
   - performance_optimization
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Territory Manager

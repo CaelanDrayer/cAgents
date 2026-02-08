@@ -10,7 +10,8 @@ capabilities:
   - adaptive_music_systems
   - theme_development
   - music_production
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Music Composer

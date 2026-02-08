@@ -16,7 +16,10 @@ capabilities:
   - penetration_testing
   - compliance_auditing
   - vulnerability_assessment
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Security Lead Agent

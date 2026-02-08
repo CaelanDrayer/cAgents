@@ -9,7 +9,8 @@ capabilities:
   - forecasting
   - trend_analysis
   - data_analysis
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Predictive Analyst

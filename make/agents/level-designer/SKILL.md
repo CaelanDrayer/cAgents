@@ -12,7 +12,8 @@ capabilities:
   - encounter_design
   - environmental_storytelling
   - player_guidance
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Level Designer

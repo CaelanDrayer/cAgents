@@ -11,7 +11,8 @@ capabilities:
   - world_building_text
   - quest_text
   - ui_text
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Game Writer

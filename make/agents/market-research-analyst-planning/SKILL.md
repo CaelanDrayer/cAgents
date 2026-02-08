@@ -9,7 +9,8 @@ capabilities:
   - competitive_intelligence
   - customer_insights
   - trend_analysis
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Market Research Analyst (Planning)

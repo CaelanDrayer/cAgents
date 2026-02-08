@@ -9,7 +9,8 @@ capabilities:
   - career_development
   - skills_gap_analysis
   - learning_effectiveness
-tools: Read, Write, Grep, TodoWrite
+tools: ["Read","Write","Grep","TodoWrite"]
+maxTurns: 30
 ---
 
 # Learning and Development Manager

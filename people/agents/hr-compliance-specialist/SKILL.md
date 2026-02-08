@@ -9,7 +9,8 @@ capabilities:
   - policy_development
   - audit_readiness
   - risk_mitigation
-tools: Read, Write, Grep, TodoWrite
+tools: ["Read","Write","Grep","TodoWrite"]
+maxTurns: 30
 ---
 
 # HR Compliance Specialist

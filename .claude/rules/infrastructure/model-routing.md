@@ -1,6 +1,6 @@
 # Model Routing Guidelines
 
-Project-level model routing configuration for cAgents V8.0.
+Project-level model routing configuration for cAgents V9.0.
 
 ## Overview
 
@@ -17,13 +17,36 @@ your-project/
 
 ## Override Options
 
+### Available Models
+
+| Model | ID | Best For | Notes |
+|-------|----|----------|-------|
+| **opus** | `opus` | Complex reasoning, architecture | Highest capability |
+| **opusplan** | `opusplan` | Controllers, coordination | Opus for planning/reasoning, Sonnet for execution. Ideal for controllers that reason about coordination but delegate implementation. |
+| **sonnet** | `sonnet` | Implementation, general tasks | Balanced capability and cost |
+| **haiku** | `haiku` | Support, lightweight tasks | Fastest, lowest cost |
+
+### The `opusplan` Model
+
+The `opusplan` model uses a hybrid approach: Opus-level reasoning for planning and coordination decisions, with Sonnet-level execution for tool use and implementation. This makes it ideal for controller agents that need to reason about complex coordination but delegate all implementation to execution agents.
+
+**Default assignment**: All controller agents with `model: opus` are set to `opusplan`. Infrastructure agents like the optimizer also use `opusplan`.
+
+### Context Window Options
+
+The `[1m]` context window option enables 1M token context for large codebases:
+- Use when working with 50+ files or 100K+ tokens of context
+- Supported by Sonnet and Haiku models
+- Higher cost per request due to extended context
+- Configure via `.cagents/model_routing.yaml` or agent frontmatter
+
 ### Default Model
 
 Set a default model for all project tasks:
 
 ```yaml
 # .cagents/model_routing.yaml
-default_model: sonnet  # Options: opus, sonnet, haiku
+default_model: sonnet  # Options: opus, opusplan, sonnet, haiku
 ```
 
 ### Tier-Based Overrides
@@ -36,6 +59,16 @@ tier_models:
   tier_3: sonnet   # Complex tasks
   tier_4: opus     # Expert tasks (or sonnet for cost control)
 ```
+
+### Effort Level Mapping
+
+Each tier maps to an effort level that influences model behavior:
+
+| Tier | Effort Level | Description |
+|------|-------------|-------------|
+| Tier 2 | medium | Moderate reasoning, balanced speed/quality |
+| Tier 3 | high | Deep reasoning, thorough analysis |
+| Tier 4 | high | Maximum reasoning, comprehensive review |
 
 ### Scenario-Based Overrides
 
@@ -112,15 +145,31 @@ disable_opus: true
 
 ## Selection Priority
 
-Model selection follows this priority order:
+Model selection follows this priority order (highest wins):
 
-1. **Project overrides** (`.cagents/model_routing.yaml`)
-2. **Agent-specific overrides** (system config)
-3. **Scenario detection** (think, background, longContext)
-4. **Tier-based matrix** (tier 2-4)
-5. **Default model** (sonnet)
-6. **Fallback chain** (if primary unavailable)
-7. **Cost limit enforcement** (downgrade if over budget)
+1. **Environment variable `CLAUDE_MODEL`** (absolute override)
+2. **Environment variable `CLAUDE_AGENT_MODEL`** (agent-specific override)
+3. **Project overrides** (`.cagents/model_routing.yaml`)
+4. **Agent frontmatter** (`model:` field in SKILL.md)
+5. **Tier-based defaults** (tier 2-4 matrix)
+6. **Scenario detection** (think, background, longContext)
+7. **Default model** (sonnet)
+8. **Fallback chain** (if primary unavailable)
+9. **Cost limit enforcement** (downgrade if over budget)
+
+### Environment Variable Priority
+
+Environment variables take absolute precedence over all other configuration:
+
+```bash
+# Override ALL agents to use a specific model
+export CLAUDE_MODEL=sonnet
+
+# Override only subagent model selection
+export CLAUDE_AGENT_MODEL=haiku
+```
+
+`CLAUDE_MODEL` overrides everything including agent frontmatter. `CLAUDE_AGENT_MODEL` overrides only subagent (Task tool) model selection but not the main agent.
 
 ## Validation
 

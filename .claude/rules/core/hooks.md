@@ -1,13 +1,15 @@
 # cAgents Hook System
 
-V8.5 hook system with all 12 official Claude Code hook types.
+V9.0 hook system with 14 hook event types and 3 hook types (command, prompt, agent).
 
 ## Architecture
 
 cAgents uses a dual-hook system configured in `.claude/settings.json`:
 
 - **Shell hooks** (`hooks/`): 9 scripts for session lifecycle, workflow events, and tool validation. These are the baseline hooks that work without Node.js. Shared functions (`get_active_instruction`, `get_active_phase`, `get_session_field`) are provided by `scripts/lib/hook-bootstrap.sh`.
-- **JavaScript hooks** (`.claude/hooks/`): 7 `.cjs` files — 1 shared utility module (`hook-utils.cjs`) + 5 registered hooks for advanced features (session catchup, secret detection, completion verification, pre-compact state save, notifications). Plus 1 standalone CLI tool (`eval-runner.cjs`) and 1 unregistered hook (`context-overflow.cjs` - awaiting Claude Code support for ContextOverflow hook type). All CJS hooks import shared functions (`readStdin`, `findActiveSession`, `extractYamlValue`, `safeRead`, `countPattern`) from `hook-utils.cjs`.
+- **JavaScript hooks** (`.claude/hooks/`): 11 `.cjs` files — 1 shared utility module (`hook-utils.cjs`) + 9 registered hooks for advanced features (session catchup, secret detection, completion verification, pre-compact state save, notifications, tool failure tracking, subagent tracking, teammate idle handling, permission handling, team task completion). Plus 1 standalone CLI tool (`eval-runner.cjs`) and 1 unregistered hook (`context-overflow.cjs` - awaiting Claude Code support for ContextOverflow hook type). All CJS hooks import shared functions from `hook-utils.cjs`.
+- **Hook dispatchers** (`scripts/`): `hook-dispatch.sh` and `hook-dispatch-node.sh` simplify settings.json registration by eliminating verbose bash-in-JSON wrappers.
+- **Prompt hooks**: 2 prompt-based hooks inject guidance at SessionStart and Stop events.
 
 The `setup.sh` script auto-detects Node.js and configures the appropriate settings. Without Node.js, only shell hooks are active (via `settings.shell-only.json`). With Node.js, both systems run (via `settings.full.json`).
 
@@ -17,19 +19,23 @@ The `setup.sh` script auto-detects Node.js and configures the appropriate settin
 
 | Hook Type | Trigger | cAgents Implementation | Purpose |
 |-----------|---------|------------------------|---------|
-| `SessionStart` | Session begins | `on-session-start.sh`, `session-catchup.cjs` | Initialize state, detect incomplete sessions |
-| `SessionEnd` | Session ends | `on-session-end.sh` | Clean up, archive session |
+| `SessionStart` | Session begins | `on-session-start.sh`, `session-catchup.cjs`, prompt hook | Initialize state, detect incomplete sessions |
+| `SessionEnd` | Session ends | `on-session-end.sh`, `team-stop.cjs` | Clean up, archive session, team cleanup |
 | `PreToolUse` | Before tool execution | Multiple (see below) | Validate, block, modify |
 | `PostToolUse` | After tool execution | `on-task-complete.sh` | Track, log, verify |
+| `PostToolUseFailure` | Tool execution fails | `tool-failure-tracker.cjs` | Track failures, detect patterns, suggest recovery |
 | `UserPromptSubmit` | User sends message | `on-user-prompt.sh` | Detect commands, route |
-| `Stop` | Claude stops responding | `stop-workflow.sh`, `verify-completion.cjs` | Verify completion |
+| `Stop` | Claude stops responding | `stop-workflow.sh`, `verify-completion.cjs`, prompt hook | Verify completion |
+| `SubagentStart` | Subagent spawned | `subagent-tracker.cjs`, `team-start.cjs` | Log spawns, track agent chains |
 | `SubagentStop` | Subagent completes | `on-workflow-complete.sh` | Aggregate results |
+| `TeammateIdle` | Teammate goes idle | `teammate-idle-handler.cjs` | Find available work for idle members |
+| `TaskCompleted` | Task finishes | `team-task-complete.cjs` | Update task list, unblock dependencies |
+| `PermissionRequest` | Permission dialog | `permission-handler.cjs` | Auto-approve safe patterns, HITL gates |
 | `Notification` | Status notification | `notification.cjs` | Log, alert, track |
-| `PreCompact` | Before context compaction | `pre-compact-save.cjs` | Save critical state |
-| `PermissionRequest` | Permission dialog | (planned) | HITL integration |
+| `PreCompact` | Before context compaction | `pre-compact-save.cjs` | Save critical state + coordination state |
 | `Error` | Error occurs | (planned) | Error tracking |
 
-## Active Hooks (V8.0)
+## Active Hooks (V9.0)
 
 ### Session Lifecycle
 

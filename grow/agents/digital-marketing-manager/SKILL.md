@@ -9,7 +9,8 @@ capabilities:
   - performance_marketing
   - conversion_optimization
   - channel_management
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Digital Marketing Manager

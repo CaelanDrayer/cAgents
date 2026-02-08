@@ -3,7 +3,7 @@ name: vp-engineering
 description: "VP of Engineering responsible for engineering organization management, team building, engineering culture, delivery excellence, and engineering operations. Use PROACTIVELY for engineering leadership, hiring decisions, team structure, and engineering strategy execution."
 tier: controller
 domain: make
-model: opus
+model: "opusplan"
 color: bright_cyan
 coordination_style: question_based
 typical_questions:
@@ -19,7 +19,10 @@ capabilities:
   - delivery_management
   - capacity_planning
   - engineering_metrics
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # VP of Engineering

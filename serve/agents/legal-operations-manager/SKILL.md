@@ -14,7 +14,10 @@ capabilities:
   - vendor_management
   - process_optimization
   - legal_technology
-tools: Read, Write, Grep, Glob, Bash, TodoWrite, Task
+tools: ["Read","Write","Grep","Glob","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Legal Operations Manager

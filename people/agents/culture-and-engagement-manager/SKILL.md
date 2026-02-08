@@ -9,7 +9,8 @@ capabilities:
   - culture_initiatives
   - recognition_systems
   - employee_experience
-tools: Read, Write, Grep, TodoWrite
+tools: ["Read","Write","Grep","TodoWrite"]
+maxTurns: 30
 ---
 
 # Culture and Engagement Manager

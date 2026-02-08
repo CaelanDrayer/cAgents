@@ -11,7 +11,8 @@ capabilities:
   - seasonal_content
   - player_engagement
   - analytics_monitoring
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Live Ops Specialist

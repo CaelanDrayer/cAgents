@@ -9,7 +9,8 @@ capabilities:
   - expansion_campaigns
   - advocacy_programs
   - retention_marketing
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Customer Marketing Manager

@@ -9,7 +9,8 @@ capabilities:
   - spend_analysis
   - risk_quantification
   - legal_metrics
-tools: Read, Write, Grep, Glob, TodoWrite
+tools: ["Read","Write","Grep","Glob","TodoWrite"]
+maxTurns: 30
 ---
 
 # Legal Analyst

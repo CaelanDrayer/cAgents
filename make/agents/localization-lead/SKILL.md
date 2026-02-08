@@ -8,14 +8,17 @@ typical_questions:
   - "What are the cultural considerations for this market?"
   - "What is the translation status for each language?"
 description: Localization coordination lead for translation, cultural adaptation, and multi-language support. Use for tier 3-4 instructions requiring localization planning or multi-region launches.
-model: opus
+model: "opusplan"
 color: bright_green
 capabilities:
   - localization_management
   - translation_coordination
   - cultural_adaptation
   - localization_testing
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Localization Lead

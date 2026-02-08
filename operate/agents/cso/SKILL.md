@@ -9,7 +9,8 @@ capabilities:
   - competitive_analysis
   - growth_strategy
   - business_model
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Chief Strategy Officer

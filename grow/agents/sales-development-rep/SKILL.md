@@ -9,7 +9,8 @@ capabilities:
   - lead_qualification
   - meeting_generation
   - cadence_execution
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Sales Development Rep

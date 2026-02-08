@@ -9,7 +9,8 @@ capabilities:
   - packaging_design
   - deal_desk
   - discount_optimization
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Pricing Analyst

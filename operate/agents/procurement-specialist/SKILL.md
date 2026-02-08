@@ -9,7 +9,8 @@ capabilities:
   - vendor_management
   - contract_negotiation
   - cost_optimization
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Procurement Specialist

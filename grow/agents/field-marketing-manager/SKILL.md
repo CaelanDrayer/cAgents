@@ -9,7 +9,8 @@ capabilities:
   - local_events
   - territory_support
   - geo_targeting
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Field Marketing Manager

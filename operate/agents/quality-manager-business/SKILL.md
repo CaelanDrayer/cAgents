@@ -9,7 +9,8 @@ capabilities:
   - quality_control
   - process_improvement
   - iso_compliance
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Quality Manager (Business)

@@ -17,7 +17,10 @@ capabilities:
   - survey_design
   - focus_groups
   - competitive_research
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Market Research Analyst

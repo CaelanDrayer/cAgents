@@ -8,7 +8,7 @@ typical_questions:
   - "What is the current implementation of this feature?"
   - "What are the technical constraints we need to consider?"
   - "What are the key risks and dependencies?"
-model: opus
+model: "opusplan"
 color: bright_blue
 capabilities:
   - product_vision
@@ -42,7 +42,10 @@ capabilities:
   - strategic_alignment
   - customer_needs_translation
   - business_case_development
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Product Owner

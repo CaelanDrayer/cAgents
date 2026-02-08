@@ -16,7 +16,10 @@ capabilities:
   - ecosystem_development
   - strategic_relationships
   - networking
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Relationship Manager

@@ -3,7 +3,7 @@ name: data-scientist
 domain: shared
 tier: controller
 description: Data science specialist coordinating machine learning, predictive modeling, statistical analysis, and advanced analytics across ALL domains.
-model: opus
+model: "opusplan"
 coordination_style: question_based
 typical_questions:
   - "What is the business problem we're solving with ML?"
@@ -18,7 +18,10 @@ capabilities:
   - ab_testing
   - nlp
   - computer_vision
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Data Scientist

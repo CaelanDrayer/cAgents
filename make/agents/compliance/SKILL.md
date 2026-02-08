@@ -12,7 +12,8 @@ capabilities:
   - risk_assessment
   - data_privacy
   - compliance_training
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Compliance Officer

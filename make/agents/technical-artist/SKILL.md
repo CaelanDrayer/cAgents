@@ -10,7 +10,8 @@ capabilities:
   - art_pipeline_optimization
   - asset_optimization
   - dcc_scripting
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Technical Artist

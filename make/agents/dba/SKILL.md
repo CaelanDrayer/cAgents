@@ -12,7 +12,8 @@ capabilities:
   - data_migration
   - query_optimization
   - database_security
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Database Administrator Agent

@@ -3,7 +3,7 @@ name: cco
 description: "Chief Creative Officer providing creative vision, narrative strategy, and artistic direction. Use for tier 3-4 creative projects and major creative decisions."
 tier: controller
 domain: make
-model: opus
+model: "opusplan"
 coordination_style: question_based
 typical_questions:
   - "What is the current implementation of this feature?"
@@ -15,7 +15,10 @@ capabilities:
   - artistic_direction
   - brand_identity
   - creative_quality
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Chief Creative Officer (CCO)

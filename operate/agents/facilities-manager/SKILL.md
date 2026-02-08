@@ -9,7 +9,8 @@ capabilities:
   - building_maintenance
   - vendor_coordination
   - safety_compliance
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Facilities Manager

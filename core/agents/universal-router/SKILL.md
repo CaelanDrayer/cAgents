@@ -10,7 +10,9 @@ capabilities:
   - template_matching
   - controller_requirement
   - scope_adjustment
-tools: Read, Grep, Glob, Write, TodoWrite
+tools: ["Read","Grep","Glob","Write","TodoWrite"]
+maxTurns: 15
+permissionMode: "bypassPermissions"
 ---
 
 # Universal Router

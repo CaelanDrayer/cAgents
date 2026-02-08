@@ -3,7 +3,7 @@ name: dependency-auditor
 description: "QA Layer agent for dependency vulnerability and currency checking. Use for vulnerability scanning, outdated package detection, and license compliance."
 tier: support
 domain: make
-model: sonnet
+model: "haiku"
 color: bright_magenta
 layer: qa
 capabilities:
@@ -11,7 +11,9 @@ capabilities:
   - vulnerability_detection
   - version_checking
   - license_compliance
-tools: Read, Grep, Glob, Bash
+tools: ["Read","Grep","Glob","Bash"]
+maxTurns: 10
+disallowedTools: ["Task"]
 ---
 
 # Dependency Auditor Agent

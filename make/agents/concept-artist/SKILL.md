@@ -10,7 +10,8 @@ capabilities:
   - environment_concept_art
   - visual_style_development
   - style_guide_creation
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Concept Artist

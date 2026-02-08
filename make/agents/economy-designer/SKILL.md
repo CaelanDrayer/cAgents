@@ -11,7 +11,8 @@ capabilities:
   - progression_curves
   - economy_balancing
   - loot_tables
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Economy Designer

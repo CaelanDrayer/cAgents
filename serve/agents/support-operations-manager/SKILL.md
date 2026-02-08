@@ -14,7 +14,10 @@ capabilities:
   - tool_implementation
   - workflow_automation
   - operational_efficiency
-tools: Read, Grep, Glob, Bash, Write, Task
+tools: ["Read","Grep","Glob","Bash","Write","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Support Operations Manager

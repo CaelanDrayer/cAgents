@@ -10,7 +10,8 @@ capabilities:
   - progression_testing
   - bug_reproduction
   - certification_testing
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # QA Tester (Games)

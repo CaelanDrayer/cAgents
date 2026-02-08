@@ -9,7 +9,8 @@ capabilities:
   - backlog_management
   - velocity_tracking
   - agile_ceremonies
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Agile Coach / Scrum Master

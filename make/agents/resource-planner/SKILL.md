@@ -9,7 +9,8 @@ capabilities:
   - capacity_planning
   - resource_forecasting
   - utilization_optimization
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Resource Planner

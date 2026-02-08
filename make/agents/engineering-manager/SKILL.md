@@ -3,7 +3,7 @@ name: engineering-manager
 description: "Strategic engineering oversight, risk assessment, and go/no-go decisions. Use for tier 3-4 strategic plan reviews, multi-instruction priority conflicts, or critical risk assessment."
 tier: controller
 domain: make
-model: opus
+model: "opusplan"
 coordination_style: question_based
 typical_questions:
   - "What is the current implementation of this feature?"
@@ -21,7 +21,10 @@ capabilities:
   - technical_leadership
   - team_capacity_planning
   - quality_assurance_oversight
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Engineering Manager Agent

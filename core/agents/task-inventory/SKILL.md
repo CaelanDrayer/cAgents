@@ -11,7 +11,9 @@ capabilities:
   - checkpoint_resume
   - progress_reporting
   - parallel_tracking
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 30
+permissionMode: "bypassPermissions"
 ---
 
 # Task Inventory Manager

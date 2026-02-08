@@ -16,7 +16,10 @@ capabilities:
   - etl_pipeline_design
   - query_optimization
   - analytics_strategy
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Data Lead Agent

@@ -9,7 +9,8 @@ capabilities:
   - representation_review
   - cultural_accuracy
   - authenticity_verification
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Sensitivity Reader

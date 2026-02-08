@@ -17,7 +17,8 @@ capabilities:
   - release_engineering
   - deployment_strategies
   - gitops_workflows
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # DevOps Engineer

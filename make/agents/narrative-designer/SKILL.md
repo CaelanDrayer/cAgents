@@ -10,7 +10,8 @@ capabilities:
   - story_flow
   - chapter_progression
   - narrative_cohesion
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Narrative Designer

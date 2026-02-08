@@ -13,11 +13,13 @@ capabilities:
   - context-aware-analysis
   - diff-aware-review
   - pattern-learning
-tools: Read, Grep, Glob, Write, TodoWrite, Task, Bash
-model: sonnet
+tools: ["Read","Grep","Glob","Write","TodoWrite","Task","Bash"]
+model: "haiku"
 color: bright_magenta
 layer: workflow
 tier: support
+maxTurns: 10
+disallowedTools: ["Task"]
 ---
 
 # V3.0 Enhanced Reviewer Agent

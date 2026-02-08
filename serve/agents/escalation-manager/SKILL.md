@@ -9,7 +9,8 @@ capabilities:
   - incident_command
   - cross_functional_coordination
   - customer_recovery
-tools: Read, Write, Grep, Glob, Bash, TodoWrite
+tools: ["Read","Write","Grep","Glob","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Escalation Manager

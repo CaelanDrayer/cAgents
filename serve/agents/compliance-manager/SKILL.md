@@ -9,7 +9,8 @@ capabilities:
   - audit_management
   - compliance_programs
   - risk_assessment
-tools: Read, Write, Grep, Glob, TodoWrite
+tools: ["Read","Write","Grep","Glob","TodoWrite"]
+maxTurns: 30
 ---
 
 # Compliance Manager

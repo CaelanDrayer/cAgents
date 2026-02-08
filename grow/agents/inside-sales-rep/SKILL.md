@@ -9,7 +9,8 @@ capabilities:
   - trial_conversion
   - quick_demos
   - high_velocity
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Inside Sales Rep

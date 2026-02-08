@@ -11,7 +11,8 @@ capabilities:
   - visual_accessibility
   - audio_accessibility
   - motor_accessibility
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Accessibility Game Designer

@@ -9,7 +9,8 @@ capabilities:
   - vendor_management
   - enrollment_coordination
   - employee_education
-tools: Read, Write, Bash, TodoWrite
+tools: ["Read","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Benefits Administrator

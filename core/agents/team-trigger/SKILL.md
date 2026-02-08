@@ -2,7 +2,7 @@
 name: team-trigger
 tier: infrastructure
 description: "Team initialization agent that checks Agent Teams availability, detects team suitability, initializes team sessions, and generates Claude Code team configurations."
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 model: sonnet
 color: bright_cyan
 domain: core
@@ -12,6 +12,8 @@ capabilities:
   - team_initialization
   - fallback_handling
   - session_management
+maxTurns: 30
+permissionMode: "bypassPermissions"
 ---
 
 # Team Trigger

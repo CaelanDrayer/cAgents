@@ -9,7 +9,8 @@ capabilities:
   - funnel_optimization
   - viral_mechanics
   - rapid_testing
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Growth Marketer

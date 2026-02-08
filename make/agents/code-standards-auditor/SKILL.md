@@ -4,14 +4,16 @@ description: "QA Layer agent for code style, conventions, and best practices enf
 tier: support
 domain: make
 layer: qa
-model: sonnet
+model: "haiku"
 color: bright_yellow
 capabilities:
   - style_checking
   - convention_enforcement
   - best_practices
   - code_quality
-tools: Read, Grep, Glob, Bash
+tools: ["Read","Grep","Glob","Bash"]
+maxTurns: 10
+disallowedTools: ["Task"]
 ---
 
 # Code Standards Auditor Agent

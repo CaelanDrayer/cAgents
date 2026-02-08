@@ -9,7 +9,8 @@ capabilities:
   - documentation
   - content_editing
   - api_documentation
-tools: Read, Grep, Glob, Write
+tools: ["Read","Grep","Glob","Write"]
+maxTurns: 30
 ---
 
 # Technical Writer

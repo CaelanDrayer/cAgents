@@ -16,7 +16,10 @@ capabilities:
   - database_coordination
   - backend_architecture_decisions
   - team_mentoring
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Backend Lead Agent

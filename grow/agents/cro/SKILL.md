@@ -8,13 +8,16 @@ typical_questions:
   - "Where are the conversion bottlenecks in the funnel?"
   - "What sales and marketing alignment issues exist?"
 description: Chief Revenue Officer. Executive revenue leadership owning end-to-end revenue generation across marketing, sales, and customer success.
-model: opus
+model: "opusplan"
 capabilities:
   - revenue_strategy
   - sales_marketing_alignment
   - pipeline_management
   - executive_leadership
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Chief Revenue Officer

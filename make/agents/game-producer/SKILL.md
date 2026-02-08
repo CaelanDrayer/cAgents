@@ -8,7 +8,7 @@ typical_questions:
   - "What blockers are preventing progress?"
   - "What resources are needed to complete this feature?"
 description: Game production lead for scheduling, resource management, and cross-team coordination. Use for tier 3-4 instructions requiring production oversight, milestone management, or multi-team coordination.
-model: opus
+model: "opusplan"
 color: bright_white
 capabilities:
   - production_management
@@ -16,7 +16,10 @@ capabilities:
   - resource_allocation
   - team_coordination
   - risk_management
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Game Producer

@@ -10,7 +10,8 @@ capabilities:
   - branching_narratives
   - dialogue_systems
   - player_agency
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Narrative Game Designer

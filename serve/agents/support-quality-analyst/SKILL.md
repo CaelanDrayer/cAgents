@@ -9,7 +9,8 @@ capabilities:
   - ticket_review
   - coaching
   - standards_development
-tools: Read, Grep, Glob, Write
+tools: ["Read","Grep","Glob","Write"]
+maxTurns: 30
 ---
 
 # Support Quality Analyst

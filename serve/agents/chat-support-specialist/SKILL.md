@@ -9,7 +9,8 @@ capabilities:
   - concurrent_conversation_management
   - rapid_response
   - chat_efficiency
-tools: Read, Grep, Glob, Write
+tools: ["Read","Grep","Glob","Write"]
+maxTurns: 30
 ---
 
 # Chat Support Specialist

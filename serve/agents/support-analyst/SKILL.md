@@ -9,7 +9,8 @@ capabilities:
   - metrics_reporting
   - trend_identification
   - performance_insights
-tools: Read, Grep, Glob, Bash, Write
+tools: ["Read","Grep","Glob","Bash","Write"]
+maxTurns: 30
 ---
 
 # Support Analyst

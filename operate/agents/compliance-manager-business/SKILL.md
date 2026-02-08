@@ -9,7 +9,8 @@ capabilities:
   - policy_management
   - audit_coordination
   - compliance_training
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Compliance Manager (Business)

@@ -10,7 +10,9 @@ capabilities:
   - blocker_detection
   - output_aggregation
   - progress_tracking
-tools: Read, Grep, Glob, Write, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
 ---
 
 # Universal Executor

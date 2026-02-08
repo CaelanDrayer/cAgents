@@ -1,14 +1,89 @@
 # cAgents Release Notes
 
-**Current Version**: 8.0.28
-**Release Date**: February 4, 2026
+**Current Version**: 9.0.0
+**Release Date**: February 7, 2026
 **Status**: Production-Ready
 
 ---
 
 ## Version History
 
-- [v8.0.2](#v802---january-27-2026) - Review Fixes (Current)
+- [v9.0.0](#v900---february-7-2026) - Platform Alignment Edition (Current)
+
+---
+
+## v9.0.0 - February 7, 2026
+
+**Theme**: Platform Alignment Edition - Major overhaul aligning cAgents with Claude Code's latest platform capabilities.
+
+### Skills Migration (Phase 1)
+- Migrated 5 commands from `core/commands/` to `.claude/skills/` format
+- Each skill has SKILL.md (~120-300 lines) + `reference/` subdirectory with detailed docs
+- `/run`, `/team`, `/review`, `/optimize`: `context: fork`, `agent: true` (isolated execution)
+- `/designer`: `context: none`, `agent: false` (interactive AskUserQuestion in main context)
+- All skills use `$ARGUMENTS` substitution and `allowedTools` arrays
+- Total: 5 SKILL.md files + 25 reference files
+
+### Hooks Overhaul (Phase 2)
+- **5 new CJS hooks**: tool-failure-tracker (PostToolUseFailure), subagent-tracker (SubagentStart), teammate-idle-handler (TeammateIdle), permission-handler (PermissionRequest), team-task-complete upgrade (TaskCompleted)
+- **2 hook dispatchers**: `scripts/hook-dispatch.sh` and `scripts/hook-dispatch-node.sh` — eliminates verbose bash-in-JSON wrappers in settings.json
+- **2 prompt hooks**: SessionStart (cAgents context + auto-proceed policy), Stop (completion verification checklist)
+- **3 orphaned hooks registered**: team-start.cjs → SubagentStart, team-stop.cjs → SessionEnd, team-task-complete.cjs → TaskCompleted
+- **hook-utils.cjs enhanced**: Added parseTaskList, areDependenciesMet, findAvailableWork utilities
+- **14 hook event types** now covered (was 10)
+
+### Settings Enhancement (Phase 3)
+- Added `displayOrigin: "cAgents"` for branded output
+- Added `trustProjectMdFiles: true` for CLAUDE.md trust
+- Added declarative `permissions` block (allow/deny patterns)
+- Added `CAGENTS_VERSION: "9.0.0"` environment variable
+- Settings restructured with dispatcher pattern (30% smaller)
+
+### Agent Configuration (Phase 4)
+- **All 236 agents updated** with batch script (`scripts/update-agent-frontmatter.js`)
+- `tools:` converted from comma-separated strings to JSON arrays
+- `maxTurns:` added: infrastructure (15-50), controllers (40), execution (30), support (10)
+- `permissionMode: "bypassPermissions"` added to infrastructure + controllers (~67 agents)
+- `memory: {"project": true}` added to learning agents (controllers, qa-lead, optimizer, architect)
+- `disallowedTools: ["Task"]` added to support agents
+- Controllers updated from `model: opus` to `model: "opusplan"` (Opus planning + Sonnet execution)
+
+### Manifest Sync (Phase 5)
+- All 9 manifests synchronized to version 9.0.0 (was: root 8.7.0, core 8.6.0, domains 8.5.2)
+- `"commands"` arrays removed from root and core manifests (skills auto-discovered)
+- `"agents"` arrays added to all domain manifests
+- Created `scripts/sync-versions.sh` for future version consistency
+
+### Context Management (Phase 6)
+- **6 agents converted to progressive disclosure**: creative-director, game-designer, campaign-manager, marketing-strategist, hr-manager, customer-success-manager (10/10 complete)
+- **Shared resources created**: `shared/resources/` with common-questions.md, evidence-patterns.md, completion-protocol.md, delegation-templates.md
+- **PreCompact hook enhanced**: Now saves controller coordination state (questions completed/remaining, work item status, explicit resume instructions)
+
+### Documentation (Phase 7)
+- CLAUDE.md: Commands → Skills section, version 9.0.0, directory structure, quick reference
+- hooks.md: 14 event types, 3 hook types, new hooks documented
+- skill-format.md: New frontmatter fields (maxTurns, permissionMode, memory, opusplan)
+- progressive-disclosure.md: Updated status (10/10 complete)
+- model-routing.md: opusplan, effort levels, 1M context, env variable priority
+- Release notes: V9.0 entry
+
+### Summary
+
+| Area | Files Created | Files Modified |
+|------|--------------|----------------|
+| Skills Migration | 30 | 0 |
+| Hooks Overhaul | 7 | 4 |
+| Settings | 0 | 3 |
+| Agent Config | 1 script | ~236 agents |
+| Manifests | 1 script | 9 manifests |
+| Context | ~18 | 7 |
+| Documentation | 0 | 8 |
+
+**Breaking Changes**: Commands array removed from manifests. Skills in `.claude/skills/` replace `core/commands/`. Agent frontmatter format changed (tools string → array).
+
+---
+
+- [v8.0.2](#v802---january-27-2026) - Review Fixes
 - [v8.0.1](#v801---january-27-2026) - Validation Pass
 - [v8.0.0](#v800---january-27-2026) - Infrastructure & Learning Edition
 - [v7.5.1](#v751---january-22-2026) - Documentation & Domain Rules Edition

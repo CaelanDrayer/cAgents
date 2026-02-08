@@ -11,7 +11,8 @@ capabilities:
   - locomotion_systems
   - combat_animations
   - cinematic_animation
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Animator

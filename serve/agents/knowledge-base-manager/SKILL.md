@@ -9,7 +9,8 @@ capabilities:
   - taxonomy_design
   - search_optimization
   - knowledge_curation
-tools: Read, Grep, Glob, Write
+tools: ["Read","Grep","Glob","Write"]
+maxTurns: 30
 ---
 
 # Knowledge Base Manager

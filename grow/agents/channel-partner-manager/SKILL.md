@@ -9,7 +9,8 @@ capabilities:
   - partner_enablement
   - co_selling
   - partner_management
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Channel Partner Manager

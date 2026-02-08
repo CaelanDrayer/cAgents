@@ -9,7 +9,8 @@ capabilities:
   - agency_relations
   - regulatory_strategy
   - industry_compliance
-tools: Read, Write, Grep, Glob, TodoWrite
+tools: ["Read","Write","Grep","Glob","TodoWrite"]
+maxTurns: 30
 ---
 
 # Regulatory Affairs Specialist

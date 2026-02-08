@@ -14,7 +14,10 @@ capabilities:
   - scenario_planning
   - competitive_analysis
   - vision_development
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Strategic Planner

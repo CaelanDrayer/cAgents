@@ -9,7 +9,8 @@ capabilities:
   - discovery
   - settlement_negotiation
   - trial_strategy
-tools: Read, Write, Grep, Glob, TodoWrite
+tools: ["Read","Write","Grep","Glob","TodoWrite"]
+maxTurns: 30
 ---
 
 # Litigation Manager

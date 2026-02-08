@@ -9,7 +9,8 @@ capabilities:
   - media_relations
   - press_releases
   - thought_leadership
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # PR Specialist

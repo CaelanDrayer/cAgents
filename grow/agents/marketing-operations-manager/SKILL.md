@@ -9,7 +9,8 @@ capabilities:
   - lead_management
   - martech_stack
   - campaign_operations
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Marketing Operations Manager

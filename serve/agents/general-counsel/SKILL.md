@@ -3,7 +3,7 @@ name: general-counsel
 domain: serve
 tier: controller
 description: Chief Legal Officer coordinating all legal matters including litigation, transactions, governance, and risk management.
-model: opus
+model: "opusplan"
 coordination_style: question_based
 typical_questions:
   - "What is the current legal exposure or risk level?"
@@ -15,7 +15,10 @@ capabilities:
   - corporate_governance
   - transaction_management
   - risk_coordination
-tools: Read, Write, Grep, Glob, Bash, TodoWrite, Task
+tools: ["Read","Write","Grep","Glob","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # General Counsel

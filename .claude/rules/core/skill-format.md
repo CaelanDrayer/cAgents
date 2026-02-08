@@ -1,6 +1,6 @@
 # SKILL.md Agent Format Specification
 
-V8.0 agent format based on official Claude Code SKILL.md specification.
+V9.0 agent format based on official Claude Code SKILL.md specification.
 
 ## Frontmatter Schema
 
@@ -10,12 +10,16 @@ name: agent-name                    # Required: Unique identifier (kebab-case)
 description: "Brief description"    # Required: 1-2 sentence purpose statement
 tier: controller|execution|support  # Required: Agent tier classification
 domain: make|grow|operate|people|serve  # Required: Super-domain
-model: opus|sonnet|haiku           # Optional: Preferred model (see model_routing.yaml)
+model: opus|opusplan|sonnet|haiku  # Optional: Preferred model (see model_routing.yaml)
 coordination_style: question_based  # Optional: For controllers only
 typical_questions: [...]           # Optional: For controllers only
 capabilities: [...]                # Optional: List of capabilities
-tools: Read, Write, Bash, Task     # Optional: Allowed tools
+tools: ["Read", "Write", "Bash"]   # V9.0: JSON array format (not comma-separated)
 color: bright_blue                 # Optional: Display color
+maxTurns: 40                       # V9.0: Maximum agentic turns
+permissionMode: "bypassPermissions" # V9.0: For infrastructure + controllers
+memory: {"project": true}          # V9.0: Persistent memory for learning agents
+disallowedTools: ["Task"]          # V9.0: For support agents (prevent delegation)
 ---
 ```
 
@@ -44,9 +48,28 @@ color: bright_blue                 # Optional: Display color
 ## Optional Fields
 
 ### model
-- Preferred model: `opus`, `sonnet`, or `haiku`
-- Overridden by model_routing.yaml scenario detection
+- Preferred model: `opus`, `opusplan`, `sonnet`, or `haiku`
+- `opusplan`: Opus reasoning + Sonnet execution (ideal for controllers)
+- Overridden by model_routing.yaml scenario detection and environment variables
 - If omitted, uses model_routing.yaml defaults
+
+### maxTurns (V9.0)
+- Maximum number of agentic turns (API round-trips)
+- Infrastructure: 15-50, Controllers: 40, Execution: 30, Support: 10
+- Prevents runaway agent loops
+
+### permissionMode (V9.0)
+- `"bypassPermissions"` for infrastructure and controller agents
+- Execution agents omit this (need user approval for writes)
+- Support agents omit this
+
+### memory (V9.0)
+- `{"project": true}` for learning agents (controllers, qa-lead, optimizer, architect)
+- Enables persistent memory across sessions
+
+### disallowedTools (V9.0)
+- `["Task"]` for support agents to prevent unauthorized delegation
+- Enforces tier boundaries
 
 ### coordination_style (Controllers only)
 - `question_based`: Uses question delegation pattern

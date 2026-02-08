@@ -14,7 +14,8 @@ capabilities:
   - error_handling
   - backend_testing
   - performance_optimization
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Backend Developer Agent

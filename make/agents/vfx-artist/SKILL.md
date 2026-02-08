@@ -10,7 +10,8 @@ capabilities:
   - magic_effects
   - environmental_effects
   - vfx_optimization
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # VFX Artist

@@ -9,7 +9,8 @@ capabilities:
   - nurture_programs
   - funnel_optimization
   - abm
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Demand Generation Manager

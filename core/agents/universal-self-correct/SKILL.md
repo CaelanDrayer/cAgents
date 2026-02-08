@@ -11,7 +11,9 @@ capabilities:
   - auto_recovery
   - pattern_learning
   - context_overflow_recovery
-tools: Read, Grep, Glob, Write, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
 ---
 
 # Universal Self-Correct

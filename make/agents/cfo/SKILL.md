@@ -3,7 +3,7 @@ name: cfo
 description: "Chief Financial Officer for financial strategy, budgeting, and fundraising. Use for budget requests, investment decisions, pricing strategy, or financial risk assessment."
 tier: controller
 domain: make
-model: opus
+model: "opusplan"
 coordination_style: question_based
 typical_questions:
   - "What is the current implementation of this feature?"
@@ -16,7 +16,10 @@ capabilities:
   - fundraising
   - investment_decisions
   - financial_risk_assessment
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # CFO

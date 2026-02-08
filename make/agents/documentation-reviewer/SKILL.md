@@ -4,14 +4,16 @@ description: "QA Layer agent for documentation completeness and accuracy validat
 tier: support
 domain: make
 layer: qa
-model: sonnet
+model: "haiku"
 color: bright_white
 capabilities:
   - doc_review
   - completeness_check
   - accuracy_validation
   - doc_quality
-tools: Read, Grep, Glob, Bash
+tools: ["Read","Grep","Glob","Bash"]
+maxTurns: 10
+disallowedTools: ["Task"]
 ---
 
 # Documentation Reviewer Agent

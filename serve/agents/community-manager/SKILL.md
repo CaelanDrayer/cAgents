@@ -9,7 +9,8 @@ capabilities:
   - forum_moderation
   - user_engagement
   - peer_support_facilitation
-tools: Read, Grep, Glob, Write
+tools: ["Read","Grep","Glob","Write"]
+maxTurns: 30
 ---
 
 # Community Manager

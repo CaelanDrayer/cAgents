@@ -11,7 +11,8 @@ capabilities:
   - cross_functional_coordination
   - resource_allocation
   - performance_management
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # COO

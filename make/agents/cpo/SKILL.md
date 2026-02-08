@@ -3,7 +3,7 @@ name: cpo
 description: "Chief Planning Officer providing strategic planning oversight and cross-functional alignment. Use for tier 3-4 strategic plans, major initiatives, or complex multi-domain planning."
 tier: controller
 domain: make
-model: opus
+model: "opusplan"
 coordination_style: question_based
 typical_questions:
   - "What is the current implementation of this feature?"
@@ -16,7 +16,10 @@ capabilities:
   - roadmapping
   - change_management
   - planning_governance
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Chief Planning Officer (CPO)

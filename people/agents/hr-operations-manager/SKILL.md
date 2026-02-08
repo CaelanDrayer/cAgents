@@ -9,7 +9,8 @@ capabilities:
   - vendor_management
   - operational_excellence
   - systems_integration
-tools: Read, Write, Grep, Bash, TodoWrite
+tools: ["Read","Write","Grep","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # HR Operations Manager

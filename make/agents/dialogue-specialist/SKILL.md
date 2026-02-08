@@ -9,7 +9,8 @@ capabilities:
   - character_voice_dialogue
   - subtext
   - natural_speech
-tools: Read, Grep, Glob, Write, Edit, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Edit","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Dialogue Specialist

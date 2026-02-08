@@ -9,7 +9,8 @@ capabilities:
   - feature_prioritization
   - dependency_mapping
   - timeline_visualization
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Roadmap Planner

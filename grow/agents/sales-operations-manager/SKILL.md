@@ -9,7 +9,8 @@ capabilities:
   - territory_design
   - quota_allocation
   - process_optimization
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Sales Operations Manager

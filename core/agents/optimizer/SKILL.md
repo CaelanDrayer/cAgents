@@ -3,8 +3,8 @@ name: optimizer
 tier: infrastructure
 domain: core
 description: "Universal optimization orchestrator with 5-phase workflow, 8 optimization types, parallel execution, atomic rollback, and ML-ready pattern learning. Coordinates specialists to optimize code, content, processes, infrastructure, data, campaigns, creative, and sales."
-tools: Read, Grep, Glob, Write, Bash, Edit, TodoWrite, Task
-model: sonnet
+tools: ["Read","Grep","Glob","Write","Bash","Edit","TodoWrite","Task"]
+model: "opusplan"
 color: bright_yellow
 capabilities:
   - parallel_execution
@@ -15,6 +15,8 @@ capabilities:
   - quality_gates
   - cross_file_analysis
   - session_resilience
+maxTurns: 50
+permissionMode: "bypassPermissions"
 ---
 
 # Universal Optimizer

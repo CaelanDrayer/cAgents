@@ -3,7 +3,7 @@ name: dependency-analyzer
 description: "Intelligence Layer agent that maps task dependencies and optimizes execution order. Use after planning to validate dependencies and identify parallelization opportunities."
 tier: support
 domain: make
-model: sonnet
+model: "haiku"
 color: bright_blue
 layer: intelligence
 capabilities:
@@ -11,7 +11,9 @@ capabilities:
   - circular_reference_detection
   - execution_optimization
   - prerequisite_validation
-tools: Read, Grep, Glob
+tools: ["Read","Grep","Glob"]
+maxTurns: 10
+disallowedTools: ["Task"]
 ---
 
 # Dependency Analyzer Agent

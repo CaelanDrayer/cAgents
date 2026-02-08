@@ -15,7 +15,8 @@ capabilities:
   - cloud_infrastructure
   - security_hardening
   - capacity_planning
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Systems Administrator

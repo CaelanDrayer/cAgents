@@ -3,7 +3,7 @@ name: qa-compliance-officer
 description: "QA Layer agent for regulatory compliance and policy enforcement. Use for GDPR, SOX, HIPAA, SOC2, and PCI-DSS compliance reviews."
 tier: support
 domain: make
-model: sonnet
+model: "haiku"
 color: bright_blue
 layer: qa
 capabilities:
@@ -13,7 +13,9 @@ capabilities:
   - gdpr
   - sox
   - hipaa
-tools: Read, Grep, Glob, Bash
+tools: ["Read","Grep","Glob","Bash"]
+maxTurns: 10
+disallowedTools: ["Task"]
 ---
 
 # QA Compliance Officer Agent

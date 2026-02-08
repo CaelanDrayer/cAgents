@@ -11,7 +11,8 @@ capabilities:
   - digital_sculpting
   - topology_optimization
   - uv_unwrapping
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # 3D Modeler

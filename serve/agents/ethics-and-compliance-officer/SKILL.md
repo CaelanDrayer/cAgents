@@ -9,7 +9,8 @@ capabilities:
   - compliance_investigations
   - code_of_conduct
   - whistleblower_programs
-tools: Read, Write, Grep, Glob, TodoWrite
+tools: ["Read","Write","Grep","Glob","TodoWrite"]
+maxTurns: 30
 ---
 
 # Ethics and Compliance Officer

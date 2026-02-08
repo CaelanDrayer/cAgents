@@ -15,7 +15,8 @@ capabilities:
   - design_system_creation
 answers_questions: ["design systems", "UI aesthetics", "frontend styling", "animation patterns", "color systems"]
 executes_tasks: ["create distinctive designs", "implement unique aesthetics", "avoid generic patterns", "design cohesive themes"]
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Frontend Aesthetics Agent

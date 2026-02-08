@@ -11,7 +11,8 @@ capabilities:
   - perception_systems
   - tactical_ai
   - ai_debugging_tools
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # AI Programmer

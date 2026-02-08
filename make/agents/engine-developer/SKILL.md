@@ -12,7 +12,8 @@ capabilities:
   - rendering_pipeline
   - platform_optimization
   - threading_systems
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Engine Developer

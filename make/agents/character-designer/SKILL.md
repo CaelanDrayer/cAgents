@@ -9,7 +9,8 @@ capabilities:
   - backstory_development
   - character_arcs
   - character_voice
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Character Designer

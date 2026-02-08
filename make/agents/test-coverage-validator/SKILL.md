@@ -3,7 +3,7 @@ name: test-coverage-validator
 description: "QA Layer agent for test coverage validation and gap identification. Use for coverage reviews and test quality assessment."
 tier: support
 domain: make
-model: sonnet
+model: "haiku"
 color: bright_green
 layer: qa
 capabilities:
@@ -11,7 +11,9 @@ capabilities:
   - test_validation
   - gap_identification
   - test_quality
-tools: Read, Grep, Glob, Bash
+tools: ["Read","Grep","Glob","Bash"]
+maxTurns: 10
+disallowedTools: ["Task"]
 ---
 
 # Test Coverage Validator Agent

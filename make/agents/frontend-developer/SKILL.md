@@ -14,7 +14,8 @@ capabilities:
   - frontend_performance
   - typescript
   - design_systems
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Frontend Developer Agent

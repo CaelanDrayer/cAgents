@@ -12,7 +12,9 @@ capabilities:
   - inventory_management
   - adaptive_execution
   - team_mode_support
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 50
+permissionMode: "bypassPermissions"
 ---
 
 # Orchestrator

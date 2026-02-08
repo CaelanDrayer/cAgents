@@ -10,7 +10,8 @@ capabilities:
   - substance_painter
   - material_authoring
   - texture_optimization
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+maxTurns: 30
 ---
 
 # Texture Artist

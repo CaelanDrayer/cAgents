@@ -75,11 +75,11 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 2. **core/controllers.md** - Question-based delegation patterns
 3. **core/execution.md** - Execution agent patterns
 4. **core/shared-questions.md** - Universal controller question patterns
-5. **core/hooks.md** - V8.0 hook system (12 hook types)
-6. **core/skill-format.md** - V8.0 SKILL.md agent format specification
-7. **core/progressive-disclosure.md** - V8.0 three-tier loading pattern
-8. **core/subagent-alignment.md** - V8.0 Task tool alignment patterns
-9. **core/teams.md** - V8.6 Agent Teams coordination patterns
+5. **core/hooks.md** - V9.0 hook system (14 event types, 3 hook types)
+6. **core/skill-format.md** - V9.0 SKILL.md format (maxTurns, permissionMode, memory, opusplan)
+7. **core/progressive-disclosure.md** - Three-tier loading (10/10 agents converted)
+8. **core/subagent-alignment.md** - Task tool alignment patterns
+9. **core/teams.md** - V8.7 Agent Teams coordination patterns
 
 ### Domains (5 files)
 9. **domains/engineering.md** - Engineering domain guidelines

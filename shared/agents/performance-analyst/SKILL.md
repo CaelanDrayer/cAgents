@@ -16,7 +16,10 @@ capabilities:
   - capacity_analysis
   - performance_testing
   - metrics_analysis
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # Performance Analyst

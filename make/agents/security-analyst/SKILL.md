@@ -3,7 +3,7 @@ name: security-analyst
 description: "QA Layer agent for security vulnerability scanning and OWASP compliance. Use for security reviews, vulnerability detection, and secrets scanning."
 tier: support
 domain: make
-model: sonnet
+model: "haiku"
 color: bright_red
 layer: qa
 capabilities:
@@ -11,7 +11,9 @@ capabilities:
   - security_review
   - owasp_compliance
   - secrets_detection
-tools: Read, Grep, Glob, Bash
+tools: ["Read","Grep","Glob","Bash"]
+maxTurns: 10
+disallowedTools: ["Task"]
 ---
 
 # Security Analyst Agent

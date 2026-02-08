@@ -9,7 +9,8 @@ capabilities:
   - pipeline_management
   - hiring_manager_partnership
   - talent_market_analysis
-tools: Read, Write, Grep, Glob, TodoWrite
+tools: ["Read","Write","Grep","Glob","TodoWrite"]
+maxTurns: 30
 ---
 
 # Talent Acquisition Manager

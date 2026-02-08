@@ -1,7 +1,26 @@
 {
-  "$comment": "Full hooks configuration - requires Node.js for advanced features",
+  "$comment": "Full hooks configuration - cAgents V9.0 - requires Node.js for advanced features",
+  "displayOrigin": "cAgents",
+  "trustProjectMdFiles": true,
   "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "CAGENTS_VERSION": "9.0.0"
+  },
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Glob(**)",
+      "Grep(**)",
+      "Bash(git *)",
+      "Write(Agent_Memory/**)"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)",
+      "Bash(sudo *)",
+      "Write(/etc/**)",
+      "Write(~/.ssh/**)"
+    ]
   },
   "hooks": {
     "SessionStart": [
@@ -9,13 +28,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/hooks/session/on-session-start.sh\" ]; then \"$ROOT/hooks/session/on-session-start.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "$CLAUDE_PLUGIN_ROOT/scripts/hook-dispatch.sh hooks/session/on-session-start.sh",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/.claude/hooks/session-catchup.cjs\" ]; then node \"$ROOT/.claude/hooks/session-catchup.cjs\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "$CLAUDE_PLUGIN_ROOT/scripts/hook-dispatch-node.sh .claude/hooks/session-catchup.cjs",
             "timeout": 5
+          },
+          {
+            "type": "prompt",
+            "prompt": "You are using cAgents V9.0. Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission."
           }
         ]
       }
@@ -25,7 +48,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/hooks/session/on-session-end.sh\" ]; then \"$ROOT/hooks/session/on-session-end.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "$CLAUDE_PLUGIN_ROOT/scripts/hook-dispatch.sh hooks/session/on-session-end.sh",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "$CLAUDE_PLUGIN_ROOT/scripts/hook-dispatch-node.sh .claude/hooks/team-stop.cjs",
             "timeout": 10
           }
         ]
@@ -36,13 +64,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/hooks/workflow/stop-workflow.sh\" ]; then \"$ROOT/hooks/workflow/stop-workflow.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "$CLAUDE_PLUGIN_ROOT/scripts/hook-dispatch.sh hooks/workflow/stop-workflow.sh",
             "timeout": 15
           },
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/.claude/hooks/verify-completion.cjs\" ]; then node \"$ROOT/.claude/hooks/verify-completion.cjs\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "$CLAUDE_PLUGIN_ROOT/scripts/hook-dispatch-node.sh .claude/hooks/verify-completion.cjs",
             "timeout": 10
+          },
+          {
+            "type": "prompt",
+            "prompt": "Before stopping, verify: all work items completed with evidence, coordination_log.yaml written, outputs produced."
           }
         ]
       }
@@ -52,8 +84,24 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/hooks/workflow/on-workflow-complete.sh\" ]; then \"$ROOT/hooks/workflow/on-workflow-complete.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "$CLAUDE_PLUGIN_ROOT/scripts/hook-dispatch.sh hooks/workflow/on-workflow-complete.sh",
             "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PLUGIN_ROOT/scripts/hook-dispatch-node.sh .claude/hooks/subagent-tracker.cjs",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "$CLAUDE_PLUGIN_ROOT/scripts/hook-dispatch-node.sh .claude/hooks/team-start.cjs",
+            "timeout": 5
           }
         ]
       }
@@ -63,7 +111,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/hooks/workflow/on-user-prompt.sh\" ]; then \"$ROOT/hooks/workflow/on-user-prompt.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "$CLAUDE_PLUGIN_ROOT/scripts/hook-dispatch.sh hooks/workflow/on-user-prompt.sh",
             "timeout": 5
           }
         ]
@@ -75,7 +123,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/hooks/tools/pre-bash.sh\" ]; then \"$ROOT/hooks/tools/pre-bash.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "$CLAUDE_PLUGIN_ROOT/scripts/hook-dispatch.sh hooks/tools/pre-bash.sh",
             "timeout": 5
           }
         ]
@@ -85,12 +133,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/hooks/tools/pre-write.sh\" ]; then \"$ROOT/hooks/tools/pre-write.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "$CLAUDE_PLUGIN_ROOT/scripts/hook-dispatch.sh hooks/tools/pre-write.sh",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/.claude/hooks/secret-detection.cjs\" ]; then node \"$ROOT/.claude/hooks/secret-detection.cjs\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "$CLAUDE_PLUGIN_ROOT/scripts/hook-dispatch-node.sh .claude/hooks/secret-detection.cjs",
             "timeout": 5
           }
         ]
@@ -100,7 +148,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/hooks/workflow/on-task-start.sh\" ]; then \"$ROOT/hooks/workflow/on-task-start.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "$CLAUDE_PLUGIN_ROOT/scripts/hook-dispatch.sh hooks/workflow/on-task-start.sh",
             "timeout": 5
           }
         ]
@@ -112,7 +160,51 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/hooks/workflow/on-task-complete.sh\" ]; then \"$ROOT/hooks/workflow/on-task-complete.sh\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "$CLAUDE_PLUGIN_ROOT/scripts/hook-dispatch.sh hooks/workflow/on-task-complete.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PLUGIN_ROOT/scripts/hook-dispatch-node.sh .claude/hooks/tool-failure-tracker.cjs",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "TeammateIdle": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PLUGIN_ROOT/scripts/hook-dispatch-node.sh .claude/hooks/teammate-idle-handler.cjs",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PLUGIN_ROOT/scripts/hook-dispatch-node.sh .claude/hooks/team-task-complete.cjs",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PLUGIN_ROOT/scripts/hook-dispatch-node.sh .claude/hooks/permission-handler.cjs",
             "timeout": 5
           }
         ]
@@ -123,7 +215,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/.claude/hooks/pre-compact-save.cjs\" ]; then node \"$ROOT/.claude/hooks/pre-compact-save.cjs\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "$CLAUDE_PLUGIN_ROOT/scripts/hook-dispatch-node.sh .claude/hooks/pre-compact-save.cjs",
             "timeout": 10
           }
         ]
@@ -134,7 +226,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'ROOT=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; if [ -z \"$ROOT\" ] || [ \"$ROOT\" = \"/\" ]; then echo \"{\\\"continue\\\":true}\"; exit 0; fi; if [ -f \"$ROOT/.claude/hooks/notification.cjs\" ]; then node \"$ROOT/.claude/hooks/notification.cjs\"; else echo \"{\\\"continue\\\":true}\"; fi'",
+            "command": "$CLAUDE_PLUGIN_ROOT/scripts/hook-dispatch-node.sh .claude/hooks/notification.cjs",
             "timeout": 5
           }
         ]

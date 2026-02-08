@@ -3,7 +3,7 @@ name: pattern-recognition
 description: "Intelligence Layer agent that identifies recurring issues across workflows and suggests process improvements. Use for workflow analysis and pattern detection."
 tier: support
 domain: make
-model: sonnet
+model: "haiku"
 color: bright_magenta
 layer: intelligence
 capabilities:
@@ -11,7 +11,9 @@ capabilities:
   - workflow_optimization
   - process_improvement
   - trend_detection
-tools: Read, Grep, Glob
+tools: ["Read","Grep","Glob"]
+maxTurns: 10
+disallowedTools: ["Task"]
 ---
 
 # Pattern Recognition Agent
