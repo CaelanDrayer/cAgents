@@ -69,51 +69,107 @@ Teammate messages are delivered automatically -- no polling needed. Idle notific
 
 ## Workflow
 
+**CRITICAL: Execute IMMEDIATELY. Do not ask permission. Build out the team and assign work NOW.**
+
 ```
 1. Receive team context from team-trigger
 2. Read team manifest and check TaskList for work items
 3. Enter delegate mode (coordination only)
-4. Distribute work items to teammates:
-   - Assign tasks via SendMessage with /run instructions
+4. IMMEDIATELY distribute work items to teammates:
+   - Send work assignment via SendMessage WITH explicit Skill({skill: "run"}) invocation
+   - Each teammate MUST invoke /run to spin out its own agents
    - Teammates self-claim available tasks after completing current work
-5. Monitor progress:
+5. For wave-based execution, coordinate wave-by-wave:
+   - Wave 0 (bootstrap): Execute foundation items
+   - Wait for GATE-0 validation -> proceed to wave 1
+   - Wave 1 (parallel): Teammates execute via /run in parallel
+   - Wait for GATE-1 validation -> proceed to wave 2
+   - Wave 2 (integration): Execute integration items
+6. Monitor progress:
    - Messages from teammates arrive automatically
    - Check TaskList periodically for status
    - Idle notifications indicate teammate readiness
-6. Handle teammate questions via SendMessage
-7. Aggregate /run outputs from all work items
-8. Synthesize final deliverables
-9. Write coordination_log.yaml
-10. Shut down teammates via SendMessage (type: shutdown_request)
-11. Clean up team via TeamDelete
+7. Handle teammate questions via SendMessage
+8. Aggregate /run outputs from all work items
+9. Synthesize final deliverables
+10. Write coordination_log.yaml
+11. Shut down teammates via SendMessage (type: shutdown_request)
+12. Clean up team via TeamDelete
 ```
 
-## CRITICAL: Every Work Item Executes via /run
+**Step 4 is MANDATORY and IMMEDIATE.** Do not wait. Do not ask the user. Assign all work items to teammates as soon as the team is ready.
+
+## CRITICAL: Every Teammate Spins Out Its Own Agents via /run
 
 **Every work item gets full `/run` orchestration.** This is the core architecture -- not a fallback. `/team` provides parallelism; `/run` provides quality.
 
 ```
-/team decomposes -> work items -> each item -> /run -> (plan -> coordinate -> execute -> validate)
+/team decomposes -> work items -> each teammate -> /run -> (trigger -> controller -> execution agents)
 ```
+
+**When a teammate invokes `/run`, that `/run` creates its own controller and execution agents.** This is how teammates "spin out their own agents." Each teammate is NOT just a worker -- it is an orchestration node that delegates to specialists.
+
+```
+Teammate 1 -> Skill({skill: "run", args: "WI-001"})
+  -> trigger -> orchestrator -> engineering-manager (controller)
+    -> backend-developer (execution agent)
+    -> qa-tester (execution agent)
+  -> validated output
+
+Teammate 2 -> Skill({skill: "run", args: "WI-002"})
+  -> trigger -> orchestrator -> engineering-manager (controller)
+    -> frontend-developer (execution agent)
+    -> ui-designer (execution agent)
+  -> validated output
+```
+
+**NEVER instruct teammates to implement directly. ALWAYS instruct them to invoke /run via Skill tool.**
 
 ## Teammate Communication
 
-### Assigning Work
+### Assigning Work -- MUST Include Skill Invocation
+
+**CRITICAL: Every work assignment message MUST include the explicit Skill invocation for /run.** This ensures the teammate spins out its own agents (controller + execution agents) rather than implementing directly.
 
 ```javascript
-// Assign specific work item to a teammate
+// Assign specific work item -- MUST include Skill invocation
 SendMessage({
   type: "message",
   recipient: "teammate-1",
-  content: "You are assigned WI-001: Implement user model.\nExecute via: Skill({skill: 'run', args: 'implement WI-001: Implement user model from team session {session_id}'})\nReport results when complete.",
-  summary: "Assigning WI-001 to teammate-1"
+  content: `You are assigned WI-001: Implement user model.
+
+CRITICAL: You MUST execute this via the Skill tool to spin out your own agents:
+Skill({ skill: "run", args: "implement WI-001: Implement user model. Acceptance criteria: model exists with password_hash field, migration created, unit tests pass." })
+
+Do NOT implement this directly. The /run skill will create a controller (e.g., engineering-manager) who will delegate to execution agents (e.g., backend-developer, qa-tester). Your job is to invoke /run and report results.
+
+After completion, mark your task done via TaskUpdate and report results to me via SendMessage.`,
+  summary: "Assigning WI-001 to teammate-1 with /run"
 })
 
 SendMessage({
   type: "message",
   recipient: "teammate-2",
-  content: "You are assigned WI-002: Create user form.\nExecute via: Skill({skill: 'run', args: 'implement WI-002: Create user form from team session {session_id}'})\nReport results when complete.",
-  summary: "Assigning WI-002 to teammate-2"
+  content: `You are assigned WI-002: Create user registration form.
+
+CRITICAL: You MUST execute this via the Skill tool to spin out your own agents:
+Skill({ skill: "run", args: "implement WI-002: Create user registration form. Acceptance criteria: form renders, validation works, responsive design." })
+
+Do NOT implement this directly. /run handles all agent delegation automatically.
+
+After completion, mark your task done via TaskUpdate and report results to me via SendMessage.`,
+  summary: "Assigning WI-002 to teammate-2 with /run"
+})
+```
+
+**Anti-pattern (NEVER DO THIS):**
+```javascript
+// WRONG: No Skill invocation -- teammate will implement directly
+SendMessage({
+  type: "message",
+  recipient: "teammate-1",
+  content: "Implement the user model with password_hash field.",
+  summary: "Assigning WI-001"
 })
 ```
 
@@ -382,15 +438,17 @@ contracts:
 
 ## Key Principles
 
-1. **Delegate only** - Never do direct implementation work
-2. **/run for every work item** - Every work item executes via `/run` for full orchestration
-3. **Built-in tools** - Use SendMessage, TaskList, TaskUpdate for all coordination
-4. **Parallel first** - Maximize concurrent work items via self-claiming
-5. **Continuous monitoring** - Track progress via TaskList and teammate messages
-6. **Synthesis at end** - Aggregate `/run` outputs into coherent result
-7. **Clean shutdown** - Shut down teammates and TeamDelete when complete
-8. **Wave-aware** - Execute waves in order, validate gates between phases
-9. **Contract enforcement** - Verify interface contracts at gate boundaries
+1. **Teammates spin out their own agents** - Every teammate invokes `/run` via Skill tool. The `/run` creates its own controller + execution agents. Teammates NEVER implement directly.
+2. **Assign work IMMEDIATELY** - Send work assignments to teammates the moment the team is created. Never pause or ask permission.
+3. **Explicit Skill invocation in every assignment** - Every SendMessage to a teammate MUST contain the exact `Skill({ skill: "run", args: "..." })` invocation pattern.
+4. **Delegate only** - Never do direct implementation work
+5. **Built-in tools** - Use SendMessage, TaskList, TaskUpdate for all coordination
+6. **Parallel first** - Maximize concurrent work items via self-claiming
+7. **Wave-aware** - Execute waves in order, validate gates between phases
+8. **Contract enforcement** - Verify interface contracts at gate boundaries
+9. **Continuous monitoring** - Track progress via TaskList and teammate messages
+10. **Synthesis at end** - Aggregate `/run` outputs into coherent result
+11. **Clean shutdown** - Shut down teammates and TeamDelete when complete
 
 ---
 

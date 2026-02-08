@@ -14,7 +14,7 @@ cAgents uses a unified CJS hook system configured in `.claude/settings.json`:
 
 - **CJS hooks** (`.claude/hooks/`): 15 `.cjs` files -- 1 shared utility module (`hook-utils.cjs`) + 13 registered hooks + 1 standalone CLI tool (`eval-runner.cjs`). All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output).
 - **Prompt hooks**: 2 prompt-based hooks inject guidance at SessionStart and Stop events.
-- **Direct invocation**: All hooks are called directly via `node .claude/hooks/<name>.cjs` -- no shell dispatch layer.
+- **Direct invocation**: All hooks are called directly via `node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/<name>.cjs` -- no shell dispatch layer. The `${CLAUDE_PLUGIN_ROOT}` variable ensures hooks resolve correctly when the plugin is installed in other projects.
 
 ### V9.5 Changes (from V9.4)
 
@@ -343,7 +343,7 @@ Hooks are registered in `.claude/settings.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/my-hook.cjs",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/my-hook.cjs",
             "timeout": 5
           }
         ]

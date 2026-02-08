@@ -2,6 +2,10 @@
 
 Reference document for team-trigger's wave-based delivery pattern.
 
+## CRITICAL: Waves Are the Default
+
+**Wave-based delivery is the DEFAULT for tier 3+ requests.** Template auto-selection runs automatically. Only fall back to flat execution when `--no-template` is explicitly used or no template scores above the confidence threshold.
+
 ## Wave Execution Architecture
 
 Waves are enforced via **TaskCreate dependencies** (gate sentinel tasks with `addBlockedBy`), not custom orchestration code. This preserves full compatibility with Claude Code's built-in task tools.
@@ -86,6 +90,15 @@ When all tasks in a wave complete, the team lead validates:
 | `bootstrap` | Orchestrator (sequential /run) | None | Foundation setup, contracts |
 | `parallel` | Teams (parallel /run per item) | Full | Main build phase |
 | `integration` | Orchestrator (sequential /run) | None | Wiring, testing, polish |
+
+**CRITICAL for `parallel` waves**: Each teammate invokes `/run` via the Skill tool. The `/run` spins out its own controller and execution agents. Teammates NEVER implement directly.
+
+```
+Parallel wave:
+  Teammate 1 -> Skill({skill: "run", args: "WI-003"}) -> controller -> execution agents
+  Teammate 2 -> Skill({skill: "run", args: "WI-004"}) -> controller -> execution agents
+  Teammate 3 -> Skill({skill: "run", args: "WI-005"}) -> controller -> execution agents
+```
 
 ## Contract Enforcement
 

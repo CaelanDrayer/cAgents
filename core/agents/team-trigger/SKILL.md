@@ -65,6 +65,8 @@ team_suitability_criteria:
 
 ## Workflow
 
+**CRITICAL: Execute this workflow WITHOUT asking permission. Build the team and spawn teammates IMMEDIATELY.**
+
 ```
 1. Receive request from /team command
 2. Analyze request:
@@ -74,17 +76,16 @@ team_suitability_criteria:
 3. If team unsuitable: fall back to standard /run via Skill({skill: "run", args: "{request}"})
 4. Select team lead based on domain
 5. Initialize session structure in Agent_Memory/
-6. Create agent team via TeamCreate:
-   TeamCreate({
-     team_name: "cagents-team-{session_id}",
-     description: "Parallel execution of {request}"
-   })
-7. Create shared tasks via TaskCreate for each work item
-8. Spawn teammates -- each receives instructions to execute /run for their work item
-9. Monitor progress via TaskList and automatic message delivery
-10. Aggregate results when all tasks complete
-11. Clean up team via TeamDelete
+6. Create agent team via TeamCreate -- DO THIS IMMEDIATELY
+7. Create shared tasks via TaskCreate for each work item -- WITH wave dependencies
+8. IMMEDIATELY spawn teammates -- each MUST invoke /run via Skill tool to spin out its own agents
+9. Execute waves: wave 0 (bootstrap) -> gate validation -> wave 1 (parallel) -> gate validation -> wave 2 (integration)
+10. Monitor progress via TaskList and automatic message delivery
+11. Aggregate results when all tasks complete
+12. Clean up team via TeamDelete
 ```
+
+**Steps 6-8 are MANDATORY and IMMEDIATE. Do not pause between them. Do not ask the user if they want to proceed.**
 
 ## Team Creation
 
@@ -119,26 +120,47 @@ TaskCreate({
 })
 ```
 
-### Step 3: Spawn Teammates
+### Step 3: Spawn Teammates IMMEDIATELY
 
-Tell Claude to create teammates. Each teammate receives instructions to claim tasks and execute them via `/run`:
+**CRITICAL: Do not delay teammate spawning.** As soon as the team and tasks are created, spawn teammates immediately. Do not ask for permission. Do not wait for user confirmation.
 
+Spawn teammates using the Task tool. Each teammate MUST receive explicit instructions to use the Skill tool to invoke `/run` for their work item. The `/run` skill will handle all agent delegation (controller + execution agents) automatically.
+
+**Teammate spawn instructions MUST include the exact Skill invocation:**
+
+```javascript
+// Spawn teammate via Task tool -- each teammate gets explicit /run instructions
+Task({
+  description: "Teammate 1: Execute WI-001 via /run",
+  prompt: `You are a team member. Your job is to execute work item WI-001.
+
+CRITICAL: You MUST use the Skill tool to invoke /run. This will spin out your own controller and execution agents automatically. Do NOT implement the work directly.
+
+Execute now:
+Skill({ skill: "run", args: "implement WI-001: {description}. Acceptance criteria: {criteria}" })
+
+After /run completes, mark your task as completed via TaskUpdate and report results to the team lead via SendMessage.`
+})
 ```
-Create a team with {N} teammates to work on these items in parallel.
-Each teammate should claim an available task from the task list and
-execute it via /run. Use the /run skill for full orchestration of
-each work item.
-```
 
-For specific teammate guidance:
+For already-spawned teammates, assign via SendMessage with explicit Skill invocation:
 
 ```javascript
 SendMessage({
   type: "message",
   recipient: "teammate-1",
-  content: "Claim WI-001 from the task list and execute via: Skill({skill: 'run', args: 'implement WI-001: Implement user model from team session {session_id}'}). Report results when complete.",
+  content: "You are assigned WI-001: {description}.\n\nCRITICAL: Execute via the Skill tool -- this will spin out your own controller and execution agents:\nSkill({ skill: 'run', args: 'implement WI-001: {description}' })\n\nDo NOT implement directly. /run handles all agent delegation. Report results when complete.",
   summary: "Assigning WI-001 to teammate-1"
 })
+```
+
+**Anti-pattern (NEVER DO THIS):**
+```
+# WRONG: Telling teammate to implement directly
+"Implement the user model with password_hash field"
+
+# RIGHT: Telling teammate to invoke /run which spins out agents
+"Use Skill({ skill: 'run', args: 'implement WI-001: Implement user model' })"
 ```
 
 ### Step 4: Monitor and Aggregate
@@ -235,13 +257,27 @@ Agent_Memory/sessions/team_{YYYYMMDD_HHMMSS}/
 
 Note: The shared task list is managed by Claude Code's built-in system at `~/.claude/tasks/{team-name}/`, not in the session directory.
 
-## /run as the Execution Engine
+## /run as the Execution Engine -- Teammates MUST Spawn Their Own Agents
 
 **CRITICAL**: `/run` is the execution engine for ALL work items. `/team` handles decomposition and parallelism; `/run` handles orchestration of each individual work item. This is not a fallback -- it is the core architecture.
 
 ```
 /team = Parallelism layer (decompose, distribute, aggregate)
 /run  = Orchestration layer (plan, coordinate, execute, validate per work item)
+```
+
+**CRITICAL: Teammates spin out their own agents.** When a teammate executes `/run`, that `/run` invocation triggers the full cAgents delegation chain:
+```
+Teammate -> /run WI-001
+  -> trigger -> orchestrator -> controller (e.g., engineering-manager)
+    -> execution agents (e.g., backend-developer, qa-tester)
+```
+
+Each teammate is NOT just executing work directly. Each teammate invokes `/run` which creates its own controller and execution agents. This is the entire point of team mode: parallel work items, each with full multi-agent orchestration.
+
+**NEVER instruct teammates to implement work items directly.** ALWAYS instruct them to use the Skill tool:
+```javascript
+Skill({ skill: "run", args: "implement WI-001: {description}" })
 ```
 
 ## Delegation to Team-Lead-Adapter
@@ -340,36 +376,45 @@ At gate validation, verify contract artifacts exist before unblocking the next w
 
 See @resources/interface-contracts.md for contract lifecycle and enforcement.
 
-## Template-Enhanced Workflow
+## Template-Enhanced Workflow (DEFAULT for tier 3+)
+
+**Templates with wave execution are the DEFAULT for tier 3+ requests.** Only fall back to flat execution when `--no-template` is used or no template scores above threshold.
 
 ```
 1. Receive request from /team command
-2. Analyze + decompose (existing behavior)
-3. NEW: Select template (auto or --template flag)
-4. NEW: Tag work items with wave + team assignments
-5. Create agent team via TeamCreate
-6. NEW: Execute wave loop:
-   Wave 0: Orchestrator runs foundation via /run
-     -> Quality gate check -> contracts established
-   Wave 1: Teams execute in parallel via /run
-     -> Quality gate check per team
-   Wave 2: Orchestrator integrates + polishes via /run
+2. Analyze + decompose
+3. Select template (auto or --template flag) -- AUTO-SELECT IS THE DEFAULT
+4. Tag work items with wave + team assignments
+5. Create agent team via TeamCreate -- IMMEDIATELY
+6. IMMEDIATELY spawn teammates for each team defined in template
+7. Execute wave loop:
+   Wave 0 (bootstrap): Execute foundation items via /run
+     -> Quality gate check -> contracts established -> mark GATE-0 complete
+   Wave 1 (parallel): Teammates execute in parallel -- EACH INVOKES /run VIA SKILL TOOL
+     -> Each teammate's /run spins out its own controller + execution agents
+     -> Quality gate check per team -> mark GATE-1 complete
+   Wave 2 (integration): Execute integration + polish via /run
      -> Final quality gate
-7. Aggregate results
+8. Aggregate results from all teammates
+9. Shutdown teammates + TeamDelete
 ```
+
+**CRITICAL**: In wave 1, teammates do NOT implement directly. Each teammate invokes `/run` via the Skill tool, which creates its own controller and execution agents. This is how team members "spin out their own agents."
 
 ## Key Principles
 
-1. **/run for every work item** - Every work item gets full `/run` orchestration, always
-2. **Built-in agent teams** - Use TeamCreate, SendMessage, TaskCreate (not manual tmux)
-3. **tmux via teammateMode** - Claude Code manages tmux split panes automatically when configured
-4. **/team for decomposition** - Team mode adds decomposition + parallel distribution on top of `/run`
-5. **Controller as lead** - Domain controllers become team leads (delegate only)
-6. **Session isolation** - Each team gets its own session folder
-7. **Shared task list** - Built-in TaskCreate/TaskList for coordination
-8. **Template-driven structure** - Pre-built team structures for common project types
-9. **Wave-gated delivery** - Quality gates between delivery phases via sentinel tasks
-10. **Interface contracts** - Explicit agreements between teams for clean handoffs
+1. **Teammates spin out their own agents** - Every teammate invokes `/run` via Skill tool, which creates its own controller + execution agents. Teammates NEVER implement directly.
+2. **Build teams IMMEDIATELY** - Create team, create tasks, spawn teammates without pausing or asking permission. Proactive team building is mandatory.
+3. **Waves are the default** - Template auto-selection and wave execution are the default for tier 3+ requests. Flat execution only when `--no-template` or no template matches.
+4. **Built-in agent teams** - Use TeamCreate, SendMessage, TaskCreate (not manual tmux)
+5. **tmux via teammateMode** - Claude Code manages tmux split panes automatically when configured
+6. **/team for decomposition** - Team mode adds decomposition + parallel distribution on top of `/run`
+7. **Controller as lead** - Domain controllers become team leads (delegate only)
+8. **Session isolation** - Each team gets its own session folder
+9. **Shared task list** - Built-in TaskCreate/TaskList for coordination
+10. **Template-driven structure** - Pre-built team structures for common project types
+11. **Wave-gated delivery** - Quality gates between delivery phases via sentinel tasks
+12. **Interface contracts** - Explicit agreements between teams for clean handoffs
 
 ---
 

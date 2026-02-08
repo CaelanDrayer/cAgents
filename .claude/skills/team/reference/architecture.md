@@ -47,40 +47,49 @@ Or per-session via CLI flag:
 claude --teammate-mode tmux
 ```
 
-## Work Item Execution via /run
+## Work Item Execution -- Teammates Spin Out Their Own Agents
 
-Every work item is executed via `/run`. This is the primary execution model, not a fallback. `/team` handles decomposition and parallelism; `/run` handles each work item's full orchestration.
+Every work item is executed via `/run`. When a teammate invokes `/run` via the Skill tool, that `/run` creates its own controller and execution agents. This is how teammates "spin out their own agents."
 
-### Team Creation Flow
+```
+Teammate -> Skill({skill: "run", args: "WI-001: ..."})
+  -> trigger -> orchestrator -> controller (e.g., engineering-manager)
+    -> execution agents (e.g., backend-developer, qa-tester)
+  -> validated output returned to teammate
+```
+
+**Teammates NEVER implement work items directly.** They ALWAYS invoke `/run` via the Skill tool.
+
+### Team Creation Flow (Execute IMMEDIATELY)
 
 ```javascript
-// 1. Create the agent team
+// 1. Create the agent team -- IMMEDIATELY after decomposition
 TeamCreate({
   team_name: "cagents-team-{session_id}",
   description: "Parallel execution of {request}"
 })
 
-// 2. Create shared tasks for each work item
+// 2. Create shared tasks with wave dependencies (GATE sentinel pattern)
 TaskCreate({
   subject: "WI-001: Implement user model",
-  description: "Execute via /run: ...",
+  description: "Execute via Skill({skill: 'run', args: 'implement WI-001: ...'}). Do NOT implement directly.",
   activeForm: "Implementing user model"
 })
 
-// 3. Spawn teammates and assign work
-// Claude creates teammates based on natural language instructions
-// Each teammate claims tasks and executes via /run
+// 3. IMMEDIATELY spawn teammates and assign work
+// Each teammate MUST invoke /run via Skill tool
+// /run will spin out its own controller + execution agents
 ```
 
-### Teammate Assignment
+### Teammate Assignment -- MUST Include Skill Invocation
 
 ```javascript
-// Lead assigns work to a teammate via SendMessage
+// Lead assigns work -- MUST include explicit Skill invocation
 SendMessage({
   type: "message",
   recipient: "teammate-1",
-  content: "Claim WI-001 and execute via /run. Report results when complete.",
-  summary: "Assigning WI-001"
+  content: "You are assigned WI-001: Implement user model.\n\nCRITICAL: Execute via the Skill tool to spin out your own agents:\nSkill({ skill: 'run', args: 'implement WI-001: Implement user model' })\n\nDo NOT implement directly. /run creates controller + execution agents. Report when complete.",
+  summary: "Assigning WI-001 with /run"
 })
 ```
 
@@ -92,7 +101,8 @@ After completing a task, teammates check TaskList for unblocked, unassigned work
 // Teammate flow:
 TaskList()  // Find available tasks
 TaskUpdate({ taskId: "3", status: "in_progress", owner: "teammate-1" })  // Claim
-// Execute via /run
+// Execute via /run using Skill tool -- spins out its own agents
+Skill({ skill: "run", args: "implement WI-003: {description}" })
 TaskUpdate({ taskId: "3", status: "completed" })  // Mark done
 ```
 
@@ -165,15 +175,19 @@ disqualified:
   tier: 2 with items < 4
 ```
 
-## Team Lifecycle
+## Team Lifecycle (Execute IMMEDIATELY -- No Permission Required)
 
 ```
-1. TeamCreate -- create team and shared task list
-2. TaskCreate -- create work items as shared tasks
-3. Spawn teammates -- Claude creates teammate instances
-4. SendMessage -- assign work, coordinate
-5. TaskList/TaskUpdate -- track progress
-6. Aggregate -- synthesize results
-7. SendMessage (shutdown_request) -- shut down teammates
-8. TeamDelete -- clean up resources
+1. TeamCreate -- create team and shared task list IMMEDIATELY
+2. Auto-select template -> tag work items with wave + team assignments
+3. TaskCreate -- create work items with wave dependencies (GATE sentinel pattern)
+4. IMMEDIATELY spawn teammates
+5. SendMessage -- assign work WITH explicit Skill({skill: "run"}) invocation
+6. Execute waves: bootstrap -> gate -> parallel (teammates invoke /run) -> gate -> integration
+7. TaskList/TaskUpdate -- track progress
+8. Aggregate -- synthesize results from teammate /run outputs
+9. SendMessage (shutdown_request) -- shut down teammates
+10. TeamDelete -- clean up resources
 ```
+
+**Steps 1-5 are MANDATORY and IMMEDIATE.** Do not pause or ask permission between them.

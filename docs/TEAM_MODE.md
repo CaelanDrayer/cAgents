@@ -59,10 +59,12 @@ When `teammateMode: "tmux"` is configured:
 - True visual parallelism -- watch all agents work at once
 - Claude Code manages the panes automatically
 
-### /run for Every Work Item
-Every team member uses `/run` for their work item:
-- Full orchestration per item (plan, coordinate, execute, validate)
-- `/team` provides parallelism; `/run` provides quality
+### Teammates Spin Out Their Own Agents via /run
+Every team member invokes `/run` via the Skill tool for their work item:
+- `/run` creates its own controller and execution agents (e.g., engineering-manager -> backend-developer, qa-tester)
+- Each teammate is an orchestration node, not a direct implementer
+- Teammates NEVER implement work directly -- they invoke `/run` which delegates to specialists
+- `/team` provides parallelism; `/run` provides multi-agent orchestration per item
 - This is the core architecture, not a fallback
 
 ### Shared Task Lists
@@ -229,7 +231,9 @@ Controllers become team leads based on domain:
 Claude creates teammates based on the work items. Each teammate is a full Claude Code instance that:
 - Loads project context (CLAUDE.md, skills, MCP servers) automatically
 - Claims tasks from the shared task list
-- Executes work items via `/run`
+- **Invokes `/run` via the Skill tool** -- this spins out its own controller + execution agents
+- Each teammate's `/run` creates: trigger -> orchestrator -> controller -> execution agents
+- Teammates NEVER implement work directly -- they always delegate via `/run`
 - Reports results back to the lead
 
 ## Session Structure
@@ -259,19 +263,21 @@ Built-in team resources:
 
 ## Team Lifecycle
 
-### Standard (Flat) Lifecycle
+### Standard (Flat) Lifecycle -- Execute IMMEDIATELY
 
 ```
-1. TeamCreate -- create team and shared task list
+1. TeamCreate -- create team and shared task list IMMEDIATELY
 2. TaskCreate -- create work items as shared tasks (with dependencies)
-3. Spawn teammates -- Claude creates teammate instances
-4. SendMessage -- assign work items to teammates
-5. Teammates execute via /run -- each with full orchestration
+3. IMMEDIATELY spawn teammates -- do not pause or ask permission
+4. SendMessage -- assign work items WITH explicit Skill({skill: "run"}) invocation
+5. Teammates invoke /run via Skill tool -- each spins out its own controller + execution agents
 6. TaskList/TaskUpdate -- track progress, self-claim unblocked tasks
 7. Aggregate -- synthesize results into coordination_log.yaml
 8. SendMessage (shutdown_request) -- shut down teammates
 9. TeamDelete -- clean up team and task resources
 ```
+
+**Steps 1-4 are MANDATORY and IMMEDIATE.** The team must be built and teammates must be spawned without waiting for user permission.
 
 ### Template + Wave Lifecycle (V9.6)
 

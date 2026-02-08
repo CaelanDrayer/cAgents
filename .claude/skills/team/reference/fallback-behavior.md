@@ -91,9 +91,11 @@ Current limitations of built-in agent teams:
 - **No session resumption with in-process teammates**: `/resume` and `/rewind` do not restore in-process teammates
 - **Task status can lag**: teammates may not always mark tasks as completed promptly
 - **One team per session**: a lead can only manage one team at a time
-- **No nested teams**: teammates cannot spawn their own teams
+- **No nested teams**: teammates cannot spawn their own *teams* (via TeamCreate), but teammates CAN and MUST spawn their own *agents* (via `/run` which creates controllers + execution agents)
 - **Lead is fixed**: cannot promote a teammate to lead
 - **Split panes require tmux**: not supported in VS Code terminal, Windows Terminal, or Ghostty
+
+**IMPORTANT distinction**: "No nested teams" means teammates cannot create sub-teams via TeamCreate. However, teammates absolutely CAN and MUST invoke `/run` via the Skill tool, which spins out controllers and execution agents. This is the core architecture -- each teammate is an orchestration node that delegates to specialists.
 
 ## Related Files
 

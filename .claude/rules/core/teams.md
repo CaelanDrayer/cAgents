@@ -22,6 +22,38 @@ Team Mode enables parallel execution with:
 - **Independent contexts**: Each teammate has its own context window
 - **Team leads**: Controllers operate in delegate mode
 
+## CRITICAL: Teammates Spin Out Their Own Agents
+
+**This is the most important principle of team mode.** Teammates do NOT implement work items directly. Each teammate invokes `/run` via the Skill tool, and `/run` creates its own controller and execution agents.
+
+```
+Teammate -> Skill({skill: "run", args: "WI-001: ..."})
+  -> trigger -> orchestrator -> controller (e.g., engineering-manager)
+    -> execution agents (e.g., backend-developer, qa-tester)
+  -> validated output
+```
+
+**Every work assignment to a teammate MUST include the explicit Skill invocation pattern:**
+```javascript
+Skill({ skill: "run", args: "implement WI-001: {description}" })
+```
+
+**Anti-patterns (NEVER DO):**
+- Telling a teammate to "implement X" without /run
+- Having the team lead do implementation work
+- Skipping /run for "simple" work items
+- Having teammates answer questions directly instead of delegating to /run
+
+## CRITICAL: Build Teams and Execute Waves IMMEDIATELY
+
+The `/team` command, team-trigger, and team-lead-adapter MUST:
+1. Create the agent team via TeamCreate **immediately** after decomposition
+2. Create tasks with wave dependencies (GATE sentinel pattern) **immediately**
+3. Spawn teammates and assign work **immediately**
+4. Execute waves in order without pausing or asking permission
+
+**NEVER ask the user for permission to proceed between waves or before spawning teammates.**
+
 ## Team Architecture
 
 ```
@@ -106,17 +138,19 @@ disqualified:
   tier: 2 with items < 4
 ```
 
-## Team Lifecycle
+## Team Lifecycle (Execute IMMEDIATELY -- No Permission Required)
 
 ```
-1. TeamCreate -- create team and shared task list
-2. TaskCreate -- create work items as shared tasks
-3. Spawn teammates -- Claude creates teammate instances
-4. SendMessage -- assign work, coordinate
-5. TaskList/TaskUpdate -- track progress
-6. Aggregate -- synthesize results
-7. SendMessage (shutdown_request) -- shut down teammates
-8. TeamDelete -- clean up resources
+1. TeamCreate -- create team and shared task list IMMEDIATELY
+2. Auto-select template for wave-based delivery (default for tier 3+)
+3. TaskCreate -- create work items with wave dependencies (GATE sentinel pattern)
+4. Spawn teammates IMMEDIATELY -- do not pause or ask permission
+5. SendMessage -- assign work WITH explicit Skill({skill: "run"}) invocation
+6. Execute waves: bootstrap -> gate validation -> parallel -> gate validation -> integration
+7. TaskList/TaskUpdate -- track progress
+8. Aggregate -- synthesize results
+9. SendMessage (shutdown_request) -- shut down teammates
+10. TeamDelete -- clean up resources
 ```
 
 ### Team Creation
@@ -142,15 +176,15 @@ TaskCreate({
 TaskUpdate({ taskId: "3", addBlockedBy: ["1"] })
 ```
 
-### Teammate Communication
+### Teammate Communication -- MUST Include Skill Invocation
 
 ```javascript
-// Assign work
+// Assign work -- ALWAYS include explicit Skill invocation
 SendMessage({
   type: "message",
   recipient: "teammate-1",
-  content: "Execute WI-001 via /run. Report when complete.",
-  summary: "Assigning WI-001"
+  content: "You are assigned WI-001. CRITICAL: Execute via the Skill tool to spin out your own agents:\nSkill({ skill: 'run', args: 'implement WI-001: {description}' })\nDo NOT implement directly. /run creates controller + execution agents. Report when complete.",
+  summary: "Assigning WI-001 with /run"
 })
 
 // Broadcast update (use sparingly)
@@ -377,9 +411,14 @@ contracts:
     status: fulfilled  # established | consumed | fulfilled | violated
 ```
 
-## Backward Compatibility
+## Template and Wave Execution (DEFAULT)
 
-When no template matches (low confidence, `--no-template`, or no templates exist), the system behaves exactly as today: flat parallel execution with no waves. All template/wave features are additive.
+**Templates with wave execution are the DEFAULT for tier 3+ requests.** Auto-selection runs automatically. Only fall back to flat execution when:
+- `--no-template` flag is explicitly used
+- No template scores above the confidence threshold (0.6)
+- No templates exist in `Agent_Memory/_system/templates/teams/`
+
+When flat execution is used, the system behaves as a simple parallel distribution without waves or gates.
 
 ## Integration Points
 

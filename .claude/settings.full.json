@@ -29,7 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/session-catchup.cjs",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/session-catchup.cjs",
             "timeout": 10
           },
           {
@@ -44,7 +44,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/team-stop.cjs",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/team-stop.cjs",
             "timeout": 10
           }
         ]
@@ -55,7 +55,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/verify-completion.cjs",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/verify-completion.cjs",
             "timeout": 10
           },
           {
@@ -70,12 +70,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/subagent-tracker.cjs",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/subagent-tracker.cjs",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "node .claude/hooks/team-start.cjs",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/team-start.cjs",
             "timeout": 5
           }
         ]
@@ -87,7 +87,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/bash-validator.cjs",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/bash-validator.cjs",
             "timeout": 5
           }
         ]
@@ -97,7 +97,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/secret-detection.cjs",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/secret-detection.cjs",
             "timeout": 5
           }
         ]
@@ -108,7 +108,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/tool-failure-tracker.cjs",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/tool-failure-tracker.cjs",
             "timeout": 5
           }
         ]
@@ -119,7 +119,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/teammate-idle-handler.cjs",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/teammate-idle-handler.cjs",
             "timeout": 5
           }
         ]
@@ -130,7 +130,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/team-task-complete.cjs",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/team-task-complete.cjs",
             "timeout": 5
           }
         ]
@@ -141,7 +141,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/permission-handler.cjs",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/permission-handler.cjs",
             "timeout": 5
           }
         ]
@@ -152,7 +152,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/pre-compact-save.cjs",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/pre-compact-save.cjs",
             "timeout": 10
           }
         ]
@@ -163,7 +163,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/notification.cjs",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/notification.cjs",
             "timeout": 5
           }
         ]

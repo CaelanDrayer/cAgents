@@ -80,14 +80,23 @@ Task({
     Flags: {flags}
     Mode: team_execution
 
+    CRITICAL: Build out the team IMMEDIATELY and execute waves. Do NOT ask permission.
+
     Initialize team workflow using built-in agent teams:
     1. Analyze request for parallelizable work items
     2. Select team lead (controller)
-    3. Create agent team via TeamCreate
-    4. Create shared tasks via TaskCreate for each work item
-    5. Spawn teammates -- each executes /run for their assigned work item
-    6. Monitor via TaskList and teammate messages
-    7. Aggregate results from all /run sessions
+    3. Auto-select template for wave-based delivery (default for tier 3+)
+    4. Create agent team via TeamCreate -- IMMEDIATELY
+    5. Create shared tasks via TaskCreate with wave dependencies (GATE sentinel pattern)
+    6. IMMEDIATELY spawn teammates -- each MUST invoke /run via Skill tool to spin out its own agents
+    7. Execute waves: bootstrap -> gate -> parallel (teammates run /run) -> gate -> integration
+    8. Monitor via TaskList and teammate messages
+    9. Aggregate results from all /run sessions
+    10. Shutdown teammates + TeamDelete
+
+    CRITICAL: Each teammate MUST use Skill({skill: "run", args: "..."}) to execute their work item.
+    /run will create its own controller + execution agents for each work item.
+    Teammates NEVER implement directly.
 
     Session: Agent_Memory/sessions/team_{YYYYMMDD_HHMMSS}/
   `
@@ -144,9 +153,17 @@ SendMessage({
 
 When `teammateMode: "tmux"` is set in settings.json (or the user is already in a tmux session with `"auto"` mode), each teammate gets its own tmux pane. All panes are visible simultaneously in a tiled layout. No manual tmux scripting is needed -- Claude Code manages the panes automatically.
 
-## CRITICAL: Team Members Default to /run
+## CRITICAL: Team Members Spin Out Their Own Agents via /run
 
-**Every team member uses `/run` to complete their work item.** This is not optional -- it is the default and only execution path. `/run` provides full orchestration (controller coordination, specialist execution, quality validation) for each work item. `/team` provides the parallelism layer via agent teams; `/run` provides the quality layer per item.
+**Every team member invokes `/run` via the Skill tool to complete their work item.** This is not optional -- it is the default and only execution path. When a teammate invokes `/run`, that `/run` spins out its own controller and execution agents (e.g., engineering-manager -> backend-developer, qa-tester). Each teammate is an orchestration node, not a direct implementer.
+
+```
+Teammate -> Skill({skill: "run", args: "WI-001: ..."})
+  -> trigger -> orchestrator -> controller -> execution agents
+  -> validated output returned to teammate
+```
+
+**Teammates NEVER implement work directly.** They ALWAYS invoke `/run` which creates the full agent delegation chain. `/team` provides the parallelism layer; `/run` provides the multi-agent orchestration layer per item.
 
 ## When to Use /team vs /run
 
@@ -170,15 +187,18 @@ This ensures no request falls through -- unsuitable team requests seamlessly con
 **This command ONLY does:**
 - Parse command arguments
 - Create initial TodoWrite
-- Invoke team-trigger via Task tool
+- Invoke team-trigger via Task tool with EXPLICIT instructions to build team immediately
 - Return final report to user
 
 **This command NEVER does:**
 - Team composition (team-trigger does this)
 - Agent team creation (team-trigger does this via TeamCreate)
 - Work item distribution (team-lead-adapter does this via SendMessage)
-- Parallel execution (teammates do this, each running /run)
+- Parallel execution (teammates do this, each invoking /run via Skill tool)
+- Direct implementation (teammates invoke /run which spins out controllers + execution agents)
 - Result aggregation (team lead does this)
+
+**CRITICAL**: The prompt to team-trigger MUST explicitly instruct it to build out the team immediately, spawn teammates, execute waves, and ensure each teammate invokes `/run` via the Skill tool. Without this explicit instruction, the team-trigger may not proactively build out the team.
 
 See @reference/architecture.md for team execution model details.
 See @reference/fallback-behavior.md for fallback patterns.
