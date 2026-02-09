@@ -1,11 +1,11 @@
 {
-  "$comment": "Hook configuration - cAgents V9.6.1 - Fix hook paths with ${CLAUDE_PLUGIN_ROOT} for cross-project portability",
+  "$comment": "Hook configuration - cAgents V9.6.2 - Remove unreliable Stop prompt hook causing JSON validation failures",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
   "teammateMode": "tmux",
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CAGENTS_VERSION": "9.6.1"
+    "CAGENTS_VERSION": "9.6.2"
   },
   "permissions": {
     "allow": [
@@ -53,10 +53,6 @@
             "type": "command",
             "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/verify-completion.cjs",
             "timeout": 10
-          },
-          {
-            "type": "prompt",
-            "prompt": "Before stopping, verify: all work items completed with evidence, coordination_log.yaml written, outputs produced."
           }
         ]
       }

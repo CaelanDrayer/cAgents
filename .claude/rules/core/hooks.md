@@ -13,7 +13,7 @@ V9.5 CJS-only hook architecture with 14 hook event types and `createHook()` fact
 cAgents uses a unified CJS hook system configured in `.claude/settings.json`:
 
 - **CJS hooks** (`.claude/hooks/`): 15 `.cjs` files -- 1 shared utility module (`hook-utils.cjs`) + 13 registered hooks + 1 standalone CLI tool (`eval-runner.cjs`). All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output).
-- **Prompt hooks**: 2 prompt-based hooks inject guidance at SessionStart and Stop events.
+- **Prompt hooks**: None currently active. The Stop prompt hook was removed in V9.6.2 due to unreliable LLM JSON responses causing recurring validation failures. The `verify-completion.cjs` command hook provides equivalent file-based verification.
 - **Direct invocation**: All hooks are called directly via `node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/<name>.cjs` -- no shell dispatch layer. The `${CLAUDE_PLUGIN_ROOT}` variable ensures hooks resolve correctly when the plugin is installed in other projects.
 
 ### V9.5 Changes (from V9.4)
@@ -52,7 +52,7 @@ The V9.5 refactoring eliminates the dual shell+JS architecture that caused recur
 | `SessionEnd` | Session ends | `team-stop.cjs` | Finalize metrics, update status |
 | `PreToolUse` | Before tool execution | `bash-validator.cjs`, `secret-detection.cjs` | Validate, block dangerous operations |
 | `PostToolUseFailure` | Tool execution fails | `tool-failure-tracker.cjs` | Track failures, detect patterns, suggest recovery |
-| `Stop` | Claude stops responding | `verify-completion.cjs`, prompt hook | Verify completion criteria |
+| `Stop` | Claude stops responding | `verify-completion.cjs` | Verify completion criteria |
 | `SubagentStart` | Subagent spawned | `subagent-tracker.cjs`, `team-start.cjs` | Log spawns, initialize team monitoring |
 | `TeammateIdle` | Teammate goes idle | `teammate-idle-handler.cjs` | Find available work for idle members |
 | `TaskCompleted` | Task finishes | `team-task-complete.cjs` | Update task list, unblock dependencies |

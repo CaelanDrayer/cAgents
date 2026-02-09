@@ -801,7 +801,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed optimization tracking.
 **Agents**: 236 total (14 core + 14 shared + 208 domain specialists)
 **Super-Domains**: Make (109), Grow (38), Operate (13), People (20), Serve (28)
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/*.yaml`
-**Hooks**: 14 event types, 2 hook types (command, prompt) in `.claude/settings.json`
+**Hooks**: 14 event types, 13 CJS command hooks in `.claude/settings.json`
 **Models**: opusplan (controllers), sonnet (execution), haiku (support)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ workflows via built-in agent teams with tmux display
@@ -835,7 +835,7 @@ See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
 **Architecture**: Controller-Centric Coordination with Task Inventory + Built-in Agent Teams
 **Super-Domains**: 5 (Make, Grow, Operate, People, Serve)
 **Skills**: 6 (run, team, designer, review, optimize, helper) in `.claude/skills/`
-**Hooks**: 14 event types, 13 CJS hooks, 2 prompt hooks, direct invocation (no dispatchers)
+**Hooks**: 14 event types, 13 CJS hooks, direct invocation (no dispatchers)
 **Models**: opusplan (controllers), sonnet (execution), haiku (support)
 **Team Mode**: 40-60% execution time reduction via built-in agent teams with tmux split pane display
 **Directories**: 7 (core, shared, make, grow, operate, people, serve)
