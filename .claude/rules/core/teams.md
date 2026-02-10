@@ -44,9 +44,18 @@ Skill({ skill: "run", args: "implement WI-001: {description}" })
 - Skipping /run for "simple" work items
 - Having teammates answer questions directly instead of delegating to /run
 
+## CRITICAL: Create Teams, Not Just Tasks
+
+**The most common failure mode is creating tasks without spawning real team members.** The `/team` skill MUST:
+1. **TeamCreate** -- Create a real agent team (NOT just a task list)
+2. **TaskCreate** -- Create work items as shared tasks
+3. **Spawn teammates** -- Via Task tool with explicit /run instructions
+
+All three steps are required. Creating tasks without spawning teammates to execute them is an anti-pattern that results in "just spinning out tasks" instead of "spinning out team members."
+
 ## CRITICAL: Build Teams and Execute Waves IMMEDIATELY
 
-The `/team` command, team-trigger, and team-lead-adapter MUST:
+The `/team` command MUST:
 1. Create the agent team via TeamCreate **immediately** after decomposition
 2. Create tasks with wave dependencies (GATE sentinel pattern) **immediately**
 3. Spawn teammates and assign work **immediately**
@@ -59,15 +68,20 @@ The `/team` command, team-trigger, and team-lead-adapter MUST:
 ```
 /team <request>
     |
-    +-- team-trigger (decomposes, creates agent team via TeamCreate)
-        |
-        +-- Team Lead (coordinates via SendMessage, manages TaskList)
-        +-- Teammate 1: /run WI-001 --> (full orchestration) --> Complete
-        +-- Teammate 2: /run WI-002 --> (full orchestration) --> Complete
-        +-- Teammate 3: /run WI-003 --> (full orchestration) --> Complete
-        |                    (parallel -- each in own context/tmux pane)
-        |
-        +-- Aggregates /run outputs via coordination_log.yaml
+    /team skill directly:
+    |
+    1. Analyze + decompose request into work items
+    2. TeamCreate -- create team IMMEDIATELY
+    3. TaskCreate -- create work items as shared tasks with wave dependencies
+    4. Spawn teammates via Task tool -- each gets explicit /run instructions
+    |
+    +-- Team Lead = /team skill (coordinate via SendMessage, manage TaskList)
+    +-- Teammate 1: /run WI-001 --> (trigger -> controller -> execution agents) --> Complete
+    +-- Teammate 2: /run WI-002 --> (trigger -> controller -> execution agents) --> Complete
+    +-- Teammate 3: /run WI-003 --> (trigger -> controller -> execution agents) --> Complete
+    |                    (parallel -- each in own context/tmux pane)
+    |
+    +-- Aggregates /run outputs via coordination_log.yaml
 ```
 
 ## Built-in Agent Teams

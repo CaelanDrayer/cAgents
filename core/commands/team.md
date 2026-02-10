@@ -5,15 +5,15 @@ description: Parallel team-based workflow execution via tmux split panes with /r
 
 # Team Command
 
-**NOTE**: This is a legacy command file. The active implementation is in `.claude/skills/team/SKILL.md`.
+**NOTE**: This is a LEGACY command file. The active implementation is in `.claude/skills/team/SKILL.md`.
 
-**Parallel team-based workflow execution** using tmux split panes as the primary execution method.
+**DEPRECATED**: The `/team` skill now directly creates teams via TeamCreate and spawns teammates. It no longer delegates to team-trigger as a "minimal delegation layer." See the active SKILL.md for the current architecture.
 
-## Your Mission
+**Parallel team-based workflow execution** using Claude Code's built-in agent teams with tmux split pane display.
 
-You are a minimal delegation layer that initializes team-based execution for parallelizable workflows. Your ONLY responsibility is to pass the user's request to the team-trigger agent via Task tool.
+## Your Mission (LEGACY -- See .claude/skills/team/SKILL.md)
 
-DO NOT execute ANY logic directly. The team-trigger agent handles team initialization, tmux session creation with split panes, and orchestration.
+The active `/team` skill is a **team orchestrator** that directly creates and manages agent teams. It uses TeamCreate, TaskCreate, and Task tool to spawn real team members who each invoke `/run` to spin out their own controllers and execution agents.
 
 ## Execution Method Detection
 

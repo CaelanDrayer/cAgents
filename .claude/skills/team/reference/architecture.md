@@ -5,16 +5,32 @@
 ```
 /team <request>
     |
-    +-- team-trigger (decomposes, creates agent team via TeamCreate)
-        |
-        +-- Team Lead (coordinates via SendMessage, manages TaskList)
-        +-- Teammate 1: /run WI-001 --> (full orchestration) --> Complete
-        +-- Teammate 2: /run WI-002 --> (full orchestration) --> Complete
-        +-- Teammate 3: /run WI-003 --> (full orchestration) --> Complete
-        |                 (parallel -- each in own context/tmux pane)
-        |
-        +-- Aggregates /run outputs into final result
+    /team skill directly:
+    |
+    1. Analyze + decompose request into work items
+    2. TeamCreate -- create team IMMEDIATELY
+    3. TaskCreate -- create work items as shared tasks with wave dependencies
+    4. Spawn teammates via Task tool -- each gets explicit /run instructions
+    |
+    +-- Team Lead = /team skill (coordinate via SendMessage, manage TaskList)
+    +-- Teammate 1: /run WI-001 --> (trigger -> controller -> execution agents) --> Complete
+    +-- Teammate 2: /run WI-002 --> (trigger -> controller -> execution agents) --> Complete
+    +-- Teammate 3: /run WI-003 --> (trigger -> controller -> execution agents) --> Complete
+    |                 (parallel -- each in own context/tmux pane)
+    |
+    5. Monitor via TaskList + automatic teammate messages
+    6. Aggregate results from all /run sessions
+    7. Shutdown teammates + TeamDelete
 ```
+
+## CRITICAL: Create Teams, Not Just Tasks
+
+The `/team` skill MUST:
+1. **TeamCreate** -- Create a real agent team
+2. **TaskCreate** -- Create work items as shared tasks
+3. **Spawn teammates** -- Via Task tool with explicit /run instructions
+
+All three steps are required. Creating tasks without spawning teammates to execute them is an anti-pattern.
 
 ## Built-in Agent Teams
 
@@ -76,15 +92,17 @@ TaskCreate({
   activeForm: "Implementing user model"
 })
 
-// 3. IMMEDIATELY spawn teammates and assign work
-// Each teammate MUST invoke /run via Skill tool
-// /run will spin out its own controller + execution agents
+// 3. IMMEDIATELY spawn teammates -- each MUST invoke /run via Skill tool
+Task({
+  description: "Teammate: Execute WI-001 via /run",
+  prompt: "You are a team member. Execute WI-001 via: Skill({skill: 'run', args: '...'})"
+})
 ```
 
 ### Teammate Assignment -- MUST Include Skill Invocation
 
 ```javascript
-// Lead assigns work -- MUST include explicit Skill invocation
+// For already-spawned teammates, assign via SendMessage
 SendMessage({
   type: "message",
   recipient: "teammate-1",
@@ -106,24 +124,25 @@ Skill({ skill: "run", args: "implement WI-003: {description}" })
 TaskUpdate({ taskId: "3", status: "completed" })  // Mark done
 ```
 
-## Team Lead Behavior (Delegate Mode)
+## Team Lead Behavior
 
-Team leads ONLY coordinate. They NEVER implement.
+The `/team` skill itself acts as team lead. It ONLY coordinates. It NEVER implements.
 
 **Allowed actions:**
 - Distribute work items to teammates via SendMessage
 - Monitor task list progress via TaskList
 - Request status from teammates via SendMessage
 - Synthesize teammate outputs
-- Write coordination_log.yaml
+- Validate wave quality gates
 - Shut down teammates via SendMessage (type: shutdown_request)
 - Clean up team via TeamDelete
 
 **Prohibited actions:**
 - Edit/Write implementation files
 - Answer questions directly
-- Execute work items themselves
+- Execute work items themselves (except bootstrap/integration wave items via /run)
 - Skip delegation for "simple" tasks
+- Create only tasks without spawning teammates
 
 ## Shared Task List
 
@@ -178,11 +197,11 @@ disqualified:
 ## Team Lifecycle (Execute IMMEDIATELY -- No Permission Required)
 
 ```
-1. TeamCreate -- create team and shared task list IMMEDIATELY
-2. Auto-select template -> tag work items with wave + team assignments
-3. TaskCreate -- create work items with wave dependencies (GATE sentinel pattern)
-4. IMMEDIATELY spawn teammates
-5. SendMessage -- assign work WITH explicit Skill({skill: "run"}) invocation
+1. Analyze + decompose request into work items
+2. TeamCreate -- create team and shared task list IMMEDIATELY
+3. Auto-select template -> tag work items with wave + team assignments
+4. TaskCreate -- create work items with wave dependencies (GATE sentinel pattern)
+5. IMMEDIATELY spawn teammates via Task tool with explicit /run instructions
 6. Execute waves: bootstrap -> gate -> parallel (teammates invoke /run) -> gate -> integration
 7. TaskList/TaskUpdate -- track progress
 8. Aggregate -- synthesize results from teammate /run outputs
@@ -190,4 +209,4 @@ disqualified:
 10. TeamDelete -- clean up resources
 ```
 
-**Steps 1-5 are MANDATORY and IMMEDIATE.** Do not pause or ask permission between them.
+**Steps 2-5 are MANDATORY and IMMEDIATE.** Do not pause or ask permission between them.

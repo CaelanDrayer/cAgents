@@ -1,11 +1,11 @@
 {
-  "$comment": "Hook configuration - cAgents V9.6.2 - Remove unreliable Stop prompt hook causing JSON validation failures",
+  "$comment": "Hook configuration - cAgents V9.7.0 - /team directly creates teams via TeamCreate, spawns real teammates",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
   "teammateMode": "tmux",
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CAGENTS_VERSION": "9.6.2"
+    "CAGENTS_VERSION": "9.7.0"
   },
   "permissions": {
     "allow": [
