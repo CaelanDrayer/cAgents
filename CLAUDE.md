@@ -571,12 +571,12 @@ Skill: `.claude/skills/helper/SKILL.md` + `reference/` (5 files: command-details
 /init                      # Create initial CLAUDE.md for project
 ```
 
-### /team - Parallel Team Execution via Built-in Agent Teams (V9.2)
-Parallel team-based workflow execution using **Claude Code's built-in agent teams**. Each teammate runs `/run` for its assigned work item, with `teammateMode: "tmux"` providing tmux split pane display for true visual parallelism and 40-60% execution time reduction for tier 3+ workflows.
+### /team - Parallel Team Execution via Built-in Agent Teams (V9.7)
+Parallel team-based workflow execution using **Claude Code's built-in agent teams**. Follows a strict **Route & Plan (via /run) -> Determine Team Structure -> Spin Out** pipeline: delegates routing + planning to `/run`'s infrastructure (trigger -> router + planner), determines team composition and waves, then spins teammates out in the session. Each teammate runs `/run` for its assigned work item, with `teammateMode: "tmux"` providing tmux split pane display for true visual parallelism and 40-60% execution time reduction for tier 3+ workflows.
 
 ```bash
 /team Implement OAuth2 authentication    # Full team execution
-/team Build user dashboard --dry-run     # Preview team composition
+/team Build user dashboard --dry-run     # Preview team composition (Phase 1+2 only)
 /team Create API endpoints --members 4   # Limit team size
 /team Add payment gateway --display      # Show team communication
 /team Implement feature --teammate-mode tmux  # Force tmux split panes
@@ -587,9 +587,13 @@ Parallel team-based workflow execution using **Claude Code's built-in agent team
 /run Build feature --team                # Team mode via flag
 ```
 
-**Core Architecture**: `/team` decomposes and parallelizes via built-in agent teams (TeamCreate, SendMessage, TaskList); `/run` orchestrates each work item.
+**Three-Phase Pipeline**:
+1. **ROUTE & PLAN (via /run)**: Delegate to trigger agent for routing + planning -> plan.yaml + decomposition.yaml
+2. **DETERMINE TEAM STRUCTURE**: Use plan/decomposition to select template, assign waves, determine team composition
+3. **SPIN OUT**: TeamCreate, TaskCreate with GATE sentinels, spawn teammates who each invoke `/run`
 
 **Key Features**:
+- **Routing + Planning via /run**: Reuses trigger/router/planner for consistent decomposition quality
 - **Built-in Agent Teams**: Uses TeamCreate, SendMessage, TaskCreate/TaskList for coordination
 - **tmux Split Pane Display**: `teammateMode: "tmux"` gives each teammate its own pane (managed by Claude Code)
 - **Every Work Item via /run**: Full orchestration (plan, coordinate, execute, validate) per item
@@ -608,9 +612,9 @@ Config: `.cagents/team_config.yaml`, settings.json (`teammateMode`), see `docs/T
 
 ### Overview
 
-Team Mode enables parallel team-based execution using **Claude Code's built-in agent teams**. Each teammate executes `/run` for its assigned work item. When `teammateMode: "tmux"` is configured, each teammate gets its own tmux split pane for true visual parallelism. Controllers become team leads operating in delegate mode.
+Team Mode enables parallel team-based execution using **Claude Code's built-in agent teams**. It follows a strict **Route & Plan (via /run) -> Determine Team Structure -> Spin Out** pipeline: delegates routing + planning to `/run`'s infrastructure, determines team composition and wave structure, then spins teammates out in the session. Each teammate executes `/run` for its assigned work item. When `teammateMode: "tmux"` is configured, each teammate gets its own tmux split pane for true visual parallelism. Controllers become team leads operating in delegate mode.
 
-**Core Architecture**: `/team` decomposes and parallelizes via built-in agent teams (TeamCreate, SendMessage, TaskList); `/run` orchestrates each work item.
+**Three-Phase Pipeline**: `/team` delegates routing + planning to `/run`'s trigger -> router + planner pipeline, determines team structure, then spins out teammates via built-in agent teams; `/run` orchestrates each work item.
 
 ### When to Use
 
@@ -626,12 +630,14 @@ Team Mode enables parallel team-based execution using **Claude Code's built-in a
 ```
 /team <request>
     |
-    +-- team-trigger (decomposes, creates agent team via TeamCreate)
+    Phase 1: ROUTE & PLAN (via /run)        -- Delegate to trigger -> router + planner -> plan.yaml + decomposition.yaml
+    Phase 2: DETERMINE TEAM STRUCTURE       -- Use plan/decomposition for template, waves, team composition
+    Phase 3: SPIN OUT                       -- Create team, tasks, spawn teammates in session
         |
-        +-- Team Lead (coordinates via SendMessage, manages TaskList)
-        +-- Teammate 1: /run WI-001 --> (full orchestration) --> Complete
-        +-- Teammate 2: /run WI-002 --> (full orchestration) --> Complete
-        +-- Teammate 3: /run WI-003 --> (full orchestration) --> Complete
+        +-- Team Lead = /team (coordinates via SendMessage, manages TaskList)
+        +-- Teammate 1: /run WI-001 --> (trigger -> controller -> agents) --> Complete
+        +-- Teammate 2: /run WI-002 --> (trigger -> controller -> agents) --> Complete
+        +-- Teammate 3: /run WI-003 --> (trigger -> controller -> agents) --> Complete
         |                    (parallel -- each in own context/tmux pane)
         |
         +-- Aggregates /run outputs into final result

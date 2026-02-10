@@ -6,7 +6,7 @@ cAgents V9.2 - Parallel Team Execution via Built-in Agent Teams
 
 Team Mode enables parallel team-based execution using **Claude Code's built-in agent teams**. Each work item is assigned to a teammate that executes `/run` for full orchestration. When `teammateMode` is set to `"tmux"`, each teammate gets its own tmux split pane, providing true visual parallelism and 40-60% execution time reduction for tier 3+ workflows.
 
-**Core Architecture**: `/team` decomposes and parallelizes via built-in agent teams; `/run` orchestrates each work item.
+**Core Architecture**: `/team` delegates routing + planning to `/run`'s infrastructure (trigger -> router + planner), then parallelizes via built-in agent teams; `/run` orchestrates each work item.
 
 ## Quick Start
 
@@ -20,7 +20,7 @@ Team Mode enables parallel team-based execution using **Claude Code's built-in a
 
 ## What is Team Mode?
 
-Team Mode transforms the standard sequential controller-execution pattern into parallel team-based execution using Claude Code's built-in agent teams:
+Team Mode transforms the standard sequential controller-execution pattern into parallel team-based execution using Claude Code's built-in agent teams. It follows a strict **Route & Plan (via /run) -> Determine Team Structure -> Spin Out** pipeline:
 
 **Standard Mode** (`/run`):
 ```
@@ -32,16 +32,20 @@ Controller -> Agent 1 -> Agent 2 -> Agent 3 -> Results
 ```
 /team <request>
     |
-    +-- team-trigger (decomposes, creates agent team via TeamCreate)
+    Phase 1: ROUTE & PLAN (via /run)  -- Delegate to trigger -> router + planner -> plan.yaml + decomposition.yaml
+    Phase 2: DETERMINE TEAM STRUCTURE -- Use plan/decomposition for template, waves, team composition
+    Phase 3: SPIN OUT                 -- Create team, tasks, spawn teammates in session
         |
-        +-- Team Lead (coordinates via SendMessage, manages TaskList)
-        +-- Teammate 1: /run WI-001 --> (full orchestration) --> Complete
-        +-- Teammate 2: /run WI-002 --> (full orchestration) --> Complete
-        +-- Teammate 3: /run WI-003 --> (full orchestration) --> Complete
+        +-- Team Lead = /team (coordinates via SendMessage, manages TaskList)
+        +-- Teammate 1: /run WI-001 --> (trigger -> controller -> agents) --> Complete
+        +-- Teammate 2: /run WI-002 --> (trigger -> controller -> agents) --> Complete
+        +-- Teammate 3: /run WI-003 --> (trigger -> controller -> agents) --> Complete
         |                    (parallel -- each in own context/tmux pane)
         |
         +-- Aggregates /run outputs into final result
 ```
+
+**Key Improvement (V9.7)**: `/team` now reuses `/run`'s trigger -> orchestrator -> router + planner pipeline for routing and planning. This ensures consistent decomposition quality and eliminates duplicated domain detection / tier classification logic.
 
 ## Key Features
 
@@ -263,21 +267,32 @@ Built-in team resources:
 
 ## Team Lifecycle
 
-### Standard (Flat) Lifecycle -- Execute IMMEDIATELY
+### Standard (Flat) Lifecycle -- Three-Phase Pipeline
 
 ```
-1. TeamCreate -- create team and shared task list IMMEDIATELY
-2. TaskCreate -- create work items as shared tasks (with dependencies)
-3. IMMEDIATELY spawn teammates -- do not pause or ask permission
-4. SendMessage -- assign work items WITH explicit Skill({skill: "run"}) invocation
-5. Teammates invoke /run via Skill tool -- each spins out its own controller + execution agents
-6. TaskList/TaskUpdate -- track progress, self-claim unblocked tasks
-7. Aggregate -- synthesize results into coordination_log.yaml
-8. SendMessage (shutdown_request) -- shut down teammates
-9. TeamDelete -- clean up team and task resources
+Phase 1: ROUTE & PLAN (via /run)
+  - Delegate to trigger agent with mode: team_planning_only
+  - Produces plan.yaml + decomposition.yaml
+  - Check team suitability (>= 3 items, has parallel work)
+
+Phase 2: DETERMINE TEAM STRUCTURE
+  - Read plan.yaml + decomposition.yaml from Phase 1
+  - Select template (or flat execution)
+  - Assign waves and team composition (lead from plan.yaml controller_assignment)
+
+Phase 3: SPIN OUT (in session) -- Execute IMMEDIATELY
+  3a. TeamCreate -- create team and shared task list IMMEDIATELY
+  3b. TaskCreate -- create work items (from decomposition.yaml) as shared tasks (with wave dependencies)
+  3c. Execute wave 0 (bootstrap) via /run sequentially
+  3d. IMMEDIATELY spawn teammates -- each invokes /run via Skill tool
+  3e. Teammates spin out own controller + execution agents per work item
+  3f. TaskList/TaskUpdate -- track progress, self-claim unblocked tasks
+  3g. Aggregate -- synthesize results into coordination_log.yaml
+  3h. SendMessage (shutdown_request) -- shut down teammates
+  3i. TeamDelete -- clean up team and task resources
 ```
 
-**Steps 1-4 are MANDATORY and IMMEDIATE.** The team must be built and teammates must be spawned without waiting for user permission.
+**Steps 3a-3d are MANDATORY and IMMEDIATE.** The team must be built and teammates must be spawned without waiting for user permission.
 
 ### Template + Wave Lifecycle (V9.6)
 
@@ -601,5 +616,5 @@ Team-specific hooks in `.claude/hooks/`:
 
 ---
 
-**Version**: 9.6.0
+**Version**: 9.7.0
 **Part of**: cAgents - Parallel Team Execution via Built-in Agent Teams

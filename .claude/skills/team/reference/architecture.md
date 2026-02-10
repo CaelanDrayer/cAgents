@@ -1,16 +1,28 @@
 # /team Execution Architecture
 
-## Parallel Execution Model
+## Three-Phase Pipeline
 
 ```
 /team <request>
     |
-    /team skill directly:
+    Phase 1: ROUTE & PLAN (via /run)
+    |   Delegate to trigger agent with mode: team_planning_only
+    |   Trigger runs: domain detection -> tier classification -> decomposition
+    |   Produces: plan.yaml + decomposition.yaml in session folder
+    |   Check team suitability (>= 3 items, has parallel work)
     |
-    1. Analyze + decompose request into work items
-    2. TeamCreate -- create team IMMEDIATELY
-    3. TaskCreate -- create work items as shared tasks with wave dependencies
-    4. Spawn teammates via Task tool -- each gets explicit /run instructions
+    Phase 2: DETERMINE TEAM STRUCTURE
+    |   Read plan.yaml + decomposition.yaml from Phase 1
+    |   Select template (auto-score or --template flag)
+    |   Assign waves (bootstrap -> parallel -> integration)
+    |   Determine team composition (size, lead from plan.yaml, contracts)
+    |   If --dry-run: display plan and stop
+    |
+    Phase 3: SPIN OUT (in session)
+    |   TeamCreate -- create team IMMEDIATELY
+    |   TaskCreate -- create ALL work items (from decomposition.yaml) with wave dependencies (GATE sentinel pattern)
+    |   Execute Wave 0 (bootstrap) via /run sequentially
+    |   Spawn teammates via Task tool -- each invokes /run
     |
     +-- Team Lead = /team skill (coordinate via SendMessage, manage TaskList)
     +-- Teammate 1: /run WI-001 --> (trigger -> controller -> execution agents) --> Complete
@@ -18,19 +30,30 @@
     +-- Teammate 3: /run WI-003 --> (trigger -> controller -> execution agents) --> Complete
     |                 (parallel -- each in own context/tmux pane)
     |
-    5. Monitor via TaskList + automatic teammate messages
-    6. Aggregate results from all /run sessions
-    7. Shutdown teammates + TeamDelete
+    Monitor via TaskList + automatic teammate messages
+    Validate wave gates, execute remaining waves
+    Aggregate results from all /run sessions
+    Shutdown teammates + TeamDelete
 ```
+
+## CRITICAL: Phases 1-2 Reuse /run's Infrastructure
+
+The `/team` skill delegates routing and planning to `/run`'s trigger -> orchestrator -> router + planner pipeline. This ensures:
+- **Consistent decomposition quality** between `/run` and `/team`
+- **No duplicated logic** for domain detection, tier classification, or task decomposition
+- **Reuse of all /run infrastructure**: pre-flight validation, template matching, aggressive decomposition
+
+The trigger agent is invoked with `mode: team_planning_only`, which tells it to execute routing and planning only, then stop before coordinating/executing.
 
 ## CRITICAL: Create Teams, Not Just Tasks
 
 The `/team` skill MUST:
-1. **TeamCreate** -- Create a real agent team
-2. **TaskCreate** -- Create work items as shared tasks
-3. **Spawn teammates** -- Via Task tool with explicit /run instructions
+1. **Delegate to /run** -- Routing + planning to produce plan.yaml and decomposition.yaml
+2. **TeamCreate** -- Create a real agent team
+3. **TaskCreate** -- Create work items as shared tasks
+4. **Spawn teammates** -- Via Task tool with explicit /run instructions
 
-All three steps are required. Creating tasks without spawning teammates to execute them is an anti-pattern.
+All four steps are required. Creating tasks without spawning teammates to execute them is an anti-pattern.
 
 ## Built-in Agent Teams
 
@@ -76,23 +99,46 @@ Teammate -> Skill({skill: "run", args: "WI-001: ..."})
 
 **Teammates NEVER implement work items directly.** They ALWAYS invoke `/run` via the Skill tool.
 
-### Team Creation Flow (Execute IMMEDIATELY)
+### Phase 1: Route & Plan via /run (Execute FIRST)
 
 ```javascript
-// 1. Create the agent team -- IMMEDIATELY after decomposition
+// Phase 1: Delegate routing + planning to trigger agent
+Task({
+  subagent_type: "cagents:trigger",
+  description: "Route and plan for team execution: {request}",
+  prompt: `
+    Request: {request}
+    Flags: {flags}
+    Mode: team_planning_only
+    Execute routing and planning phases ONLY (do NOT proceed to coordinating/executing).
+    Write plan.yaml and decomposition.yaml to: Agent_Memory/sessions/{session_id}/workflow/
+    After planning completes, STOP.
+    Session: Agent_Memory/sessions/{session_id}/
+  `
+})
+
+// Read outputs from /run's planning phase
+// plan.yaml: tier, domain, objectives, controller_assignment
+// decomposition.yaml: work items with IDs, dependencies, acceptance criteria
+```
+
+### Phase 3: Team Creation Flow (Execute IMMEDIATELY after Phase 2)
+
+```javascript
+// Phase 3a: Create the agent team -- IMMEDIATELY after Phase 2
 TeamCreate({
   team_name: "cagents-team-{session_id}",
   description: "Parallel execution of {request}"
 })
 
-// 2. Create shared tasks with wave dependencies (GATE sentinel pattern)
+// Phase 3b: Create shared tasks from decomposition.yaml with wave dependencies (GATE sentinel pattern)
 TaskCreate({
   subject: "WI-001: Implement user model",
   description: "Execute via Skill({skill: 'run', args: 'implement WI-001: ...'}). Do NOT implement directly.",
   activeForm: "Implementing user model"
 })
 
-// 3. IMMEDIATELY spawn teammates -- each MUST invoke /run via Skill tool
+// Phase 3c: IMMEDIATELY spawn teammates -- each MUST invoke /run via Skill tool
 Task({
   description: "Teammate: Execute WI-001 via /run",
   prompt: "You are a team member. Execute WI-001 via: Skill({skill: 'run', args: '...'})"
@@ -197,16 +243,19 @@ disqualified:
 ## Team Lifecycle (Execute IMMEDIATELY -- No Permission Required)
 
 ```
-1. Analyze + decompose request into work items
-2. TeamCreate -- create team and shared task list IMMEDIATELY
-3. Auto-select template -> tag work items with wave + team assignments
-4. TaskCreate -- create work items with wave dependencies (GATE sentinel pattern)
-5. IMMEDIATELY spawn teammates via Task tool with explicit /run instructions
-6. Execute waves: bootstrap -> gate -> parallel (teammates invoke /run) -> gate -> integration
-7. TaskList/TaskUpdate -- track progress
-8. Aggregate -- synthesize results from teammate /run outputs
-9. SendMessage (shutdown_request) -- shut down teammates
-10. TeamDelete -- clean up resources
+Phase 1: Route & Plan (via /run) -- delegate to trigger agent with mode: team_planning_only
+  -> produces plan.yaml + decomposition.yaml
+Phase 2: Determine -- use plan/decomposition to select template, assign waves, determine team composition
+Phase 3: Spin Out:
+  3a. TeamCreate -- create team and shared task list IMMEDIATELY
+  3b. TaskCreate -- create work items (from decomposition.yaml) with wave dependencies (GATE sentinel pattern)
+  3c. Execute wave 0 (bootstrap) via /run sequentially
+  3d. IMMEDIATELY spawn teammates via Task tool with explicit /run instructions
+  3e. Execute waves: parallel (teammates invoke /run) -> gate -> integration
+4. TaskList/TaskUpdate -- track progress
+5. Aggregate -- synthesize results from teammate /run outputs
+6. SendMessage (shutdown_request) -- shut down teammates
+7. TeamDelete -- clean up resources
 ```
 
-**Steps 2-5 are MANDATORY and IMMEDIATE.** Do not pause or ask permission between them.
+**Steps 3a-3d are MANDATORY and IMMEDIATE.** Do not pause or ask permission between them.

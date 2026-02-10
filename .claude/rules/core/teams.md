@@ -12,9 +12,10 @@ Guidelines for parallel team execution in cAgents V9.2 using Claude Code's built
 
 ## Overview
 
-**Core Architecture**: `/team` decomposes and parallelizes using **Claude Code's built-in agent teams**; `/run` orchestrates each work item.
+**Core Architecture**: `/team` delegates routing + planning to `/run`'s infrastructure (trigger -> orchestrator -> router + planner), then parallelizes using **Claude Code's built-in agent teams**; `/run` orchestrates each work item.
 
 Team Mode enables parallel execution with:
+- **Routing + planning via /run**: Reuses trigger/router/planner for consistent decomposition quality
 - **Built-in agent teams**: TeamCreate, SendMessage, TaskCreate/TaskList for coordination
 - **teammateMode: tmux**: Each teammate in its own tmux split pane (managed by Claude Code)
 - **Every work item via /run**: Full orchestration (plan, coordinate, execute, validate) per item
@@ -53,27 +54,40 @@ Skill({ skill: "run", args: "implement WI-001: {description}" })
 
 All three steps are required. Creating tasks without spawning teammates to execute them is an anti-pattern that results in "just spinning out tasks" instead of "spinning out team members."
 
-## CRITICAL: Build Teams and Execute Waves IMMEDIATELY
+## CRITICAL: Three-Phase Pipeline -- Route & Plan, Determine, Spin Out
 
-The `/team` command MUST:
-1. Create the agent team via TeamCreate **immediately** after decomposition
-2. Create tasks with wave dependencies (GATE sentinel pattern) **immediately**
-3. Spawn teammates and assign work **immediately**
-4. Execute waves in order without pausing or asking permission
+The `/team` command follows a strict three-phase pipeline:
 
-**NEVER ask the user for permission to proceed between waves or before spawning teammates.**
+```
+Phase 1: ROUTE & PLAN (via /run)        -- Delegate to trigger agent for routing + planning -> plan.yaml + decomposition.yaml
+Phase 2: DETERMINE TEAM STRUCTURE       -- Use plan/decomposition to select template, waves, team composition
+Phase 3: SPIN OUT                       -- Create team, create tasks, spawn teammates into the session
+```
+
+**Phase 1 reuses /run's trigger -> orchestrator -> router + planner pipeline.** This ensures consistent routing, tier classification, and decomposition quality between `/run` and `/team`.
+
+**Phase 3 MUST execute IMMEDIATELY after Phase 2. NEVER ask the user for permission.**
 
 ## Team Architecture
 
 ```
 /team <request>
     |
-    /team skill directly:
+    Phase 1: ROUTE & PLAN (via /run)
+    |   Delegate to trigger agent (mode: team_planning_only)
+    |   -> routing (domain detection, tier classification)
+    |   -> planning (decomposition, objectives, controller selection)
+    |   -> plan.yaml + decomposition.yaml
     |
-    1. Analyze + decompose request into work items
-    2. TeamCreate -- create team IMMEDIATELY
-    3. TaskCreate -- create work items as shared tasks with wave dependencies
-    4. Spawn teammates via Task tool -- each gets explicit /run instructions
+    Phase 2: DETERMINE TEAM STRUCTURE
+    |   Read plan.yaml + decomposition.yaml
+    |   Select template, assign waves, determine team composition
+    |
+    Phase 3: SPIN OUT (in session)
+    |   TeamCreate -- create team IMMEDIATELY
+    |   TaskCreate -- create work items (from decomposition.yaml) with wave dependencies (GATE sentinel pattern)
+    |   Execute wave 0 (bootstrap) via /run sequentially
+    |   Spawn teammates via Task tool -- each invokes /run
     |
     +-- Team Lead = /team skill (coordinate via SendMessage, manage TaskList)
     +-- Teammate 1: /run WI-001 --> (trigger -> controller -> execution agents) --> Complete
@@ -155,16 +169,29 @@ disqualified:
 ## Team Lifecycle (Execute IMMEDIATELY -- No Permission Required)
 
 ```
-1. TeamCreate -- create team and shared task list IMMEDIATELY
-2. Auto-select template for wave-based delivery (default for tier 3+)
-3. TaskCreate -- create work items with wave dependencies (GATE sentinel pattern)
-4. Spawn teammates IMMEDIATELY -- do not pause or ask permission
-5. SendMessage -- assign work WITH explicit Skill({skill: "run"}) invocation
-6. Execute waves: bootstrap -> gate validation -> parallel -> gate validation -> integration
-7. TaskList/TaskUpdate -- track progress
-8. Aggregate -- synthesize results
-9. SendMessage (shutdown_request) -- shut down teammates
-10. TeamDelete -- clean up resources
+Phase 1: ROUTE & PLAN (via /run)
+  - Delegate to trigger agent with mode: team_planning_only
+  - Produces plan.yaml + decomposition.yaml
+  - Check team suitability (>= 3 items, has parallel work)
+
+Phase 2: DETERMINE TEAM STRUCTURE
+  - Use plan.yaml + decomposition.yaml from Phase 1
+  - Auto-select template for wave-based delivery (default for tier 3+)
+  - Assign waves to work items
+  - Determine team composition (lead from plan.yaml controller_assignment)
+
+Phase 3: SPIN OUT (in session)
+  3a. TeamCreate -- create team and shared task list IMMEDIATELY
+  3b. TaskCreate -- create work items (from decomposition.yaml) with wave dependencies (GATE sentinel pattern)
+  3c. Execute wave 0 (bootstrap) via /run sequentially
+  3d. Spawn teammates IMMEDIATELY -- each invokes /run via Skill tool
+  3e. Execute waves: parallel (teammates invoke /run) -> gate -> integration
+
+Post-execution:
+  4. TaskList/TaskUpdate -- track progress
+  5. Aggregate -- synthesize results
+  6. SendMessage (shutdown_request) -- shut down teammates
+  7. TeamDelete -- clean up resources
 ```
 
 ### Team Creation
@@ -436,7 +463,8 @@ When flat execution is used, the system behaves as a simple parallel distributio
 
 ## Integration Points
 
-- **team-trigger**: Creates team via TeamCreate, initializes session, selects template, executes waves
+- **trigger + router + planner**: Provides routing and planning for /team via `mode: team_planning_only` (Phase 1)
+- **team-trigger**: Delegates Phase 1 to trigger, determines team structure, creates team via TeamCreate, executes waves
 - **team-lead-adapter**: Wraps controller in delegate mode, validates gates, tracks contracts
 - **orchestrator**: Detects team mode, routes appropriately
 - **Hooks**: team-start.cjs, team-stop.cjs, team-task-complete.cjs, teammate-idle-handler.cjs

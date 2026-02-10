@@ -64,6 +64,15 @@ routing -> planning -> [PLAN DISPLAY] -> [TEAM EXECUTING] -> validating
 
 In team mode, the coordinating and executing phases are merged into team execution where the team-lead-adapter manages parallel work item distribution via Agent Teams.
 
+### Team Planning Only Mode
+```
+routing -> planning -> STOP (return plan.yaml + decomposition.yaml to /team)
+   |          |
+  tier     objectives
+```
+
+When `mode: team_planning_only` is set, the orchestrator executes ONLY routing and planning phases, writes plan.yaml and decomposition.yaml, then returns. The `/team` skill takes over from there for team-specific determination and parallel execution.
+
 ## Controller-Centric Architecture
 
 Controllers are the primary coordination layer:
