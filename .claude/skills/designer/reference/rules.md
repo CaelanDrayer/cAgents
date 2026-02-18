@@ -10,7 +10,7 @@ The complete 20-rule behavioral contract for the /designer command.
 
 4. **BUILD ON ANSWERS** - Each question should connect to what the user said. Never ask questions in a vacuum.
 
-5. **ONE QUESTION AT A TIME** - Don't overwhelm with multiple AskUserQuestion calls.
+5. **MULTIPLE QUESTIONS ALLOWED** - The designer may ask multiple questions at a time by including multiple entries in the `questions` array of a single AskUserQuestion call. Always use the AskUserQuestion tool, never plain text.
 
 6. **GENERATE ARTIFACTS INLINE** - Build the design document as you go. Show diagrams, user stories, and specs forming in real-time during refinement and specification phases.
 

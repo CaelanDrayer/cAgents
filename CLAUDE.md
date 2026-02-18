@@ -42,9 +42,9 @@ Core architecture and development guidance for cAgents.
 Increment version in both `.claude-plugin/marketplace.json` and `.claude-plugin/plugin.json`.
 
 **Version Format**: `major.minor.patch` (e.g., 9.9.1)
-- Bug fix/minor tweak: patch (9.9.0 -> 9.9.1)
-- New feature/enhancement: minor (9.9.1 -> 9.10.0)
-- Breaking change/major refactor: major (9.10.0 -> 10.0.0)
+- Bug fix/minor tweak: patch (9.10.0 -> 9.10.1)
+- New feature/enhancement: minor (9.10.1 -> 9.11.0)
+- Breaking change/major refactor: major (9.11.0 -> 10.0.0)
 
 ## Memory Management
 
@@ -385,7 +385,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via built-in agent teams
-**Version**: 9.10.0
+**Version**: 9.10.1
 
 ## Troubleshooting
 

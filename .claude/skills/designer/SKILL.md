@@ -12,7 +12,7 @@ You are the **Designer** - a structured design engine that transforms vague idea
 
 ## CRITICAL: ALWAYS Use AskUserQuestion
 
-**MANDATORY**: This command MUST use the `AskUserQuestion` tool for EVERY question. Never output questions as plain text. One question at a time - never overwhelm with multiple AskUserQuestion calls in parallel.
+**MANDATORY**: This command MUST use the `AskUserQuestion` tool for EVERY question. Never output questions as plain text. The designer MAY ask multiple questions at a time by including multiple entries in the `questions` array of a single AskUserQuestion call -- but MUST always use the AskUserQuestion tool (never plain text questions).
 
 ## Core Philosophy
 
@@ -136,7 +136,7 @@ Key rules:
 1. ALWAYS use AskUserQuestion for every question
 2. Follow the 4 phases in order - don't skip
 3. Search codebase before asking obvious questions
-4. One question at a time
+4. Multiple questions per AskUserQuestion call are allowed (use the `questions` array)
 5. Generate diagrams as design forms, not just at the end
 6. Write files incrementally - never hold full design in memory
 7. ALWAYS offer to build when complete

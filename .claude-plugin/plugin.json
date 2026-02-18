@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "9.10.0",
-  "description": "Universal multi-domain agent system with 236 specialized agents. V9.10.0: Claude 4.6 model generation support (Opus 4.6, Sonnet 4.6, Haiku 4.5). Team templates, wave-based delivery with quality gates, interface contracts, gate sentinel pattern. CJS-only hook architecture, Skills system, 14 hook event types, Agent Teams for parallel execution, CSV-based task inventory, controller-centric delegation across 5 super-domains.",
+  "version": "9.10.1",
+  "description": "Universal multi-domain agent system with 236 specialized agents. V9.10.1: Claude 4.6 model generation support (Opus 4.6, Sonnet 4.6, Haiku 4.5). Team templates, wave-based delivery with quality gates, interface contracts, gate sentinel pattern. CJS-only hook architecture, Skills system, 14 hook event types, Agent Teams for parallel execution, CSV-based task inventory, controller-centric delegation across 5 super-domains.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",
@@ -63,20 +63,13 @@
   ],
   "skills": "./.claude/skills/",
   "agents": [
-    "./core/agents/trigger/SKILL.md",
-    "./core/agents/team-trigger/SKILL.md",
-    "./core/agents/team-lead-adapter/SKILL.md",
-    "./core/agents/orchestrator/SKILL.md",
-    "./core/agents/hitl/SKILL.md",
-    "./core/agents/universal-router/SKILL.md",
-    "./core/agents/universal-planner/SKILL.md",
-    "./core/agents/universal-executor/SKILL.md",
-    "./core/agents/universal-validator/SKILL.md",
-    "./core/agents/universal-self-correct/SKILL.md",
-    "./core/agents/optimizer/SKILL.md",
-    "./core/agents/task-consolidator/SKILL.md",
-    "./core/agents/task-decomposer/SKILL.md",
-    "./core/agents/task-inventory/SKILL.md"
+    "./core/agents/",
+    "./shared/agents/",
+    "./make/agents/",
+    "./grow/agents/",
+    "./operate/agents/",
+    "./people/agents/",
+    "./serve/agents/"
   ],
   "hooks": "./.claude/settings.json"
 }
