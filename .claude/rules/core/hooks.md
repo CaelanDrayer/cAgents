@@ -14,7 +14,7 @@ cAgents uses a unified CJS hook system configured in `.claude/settings.json`:
 
 - **CJS hooks** (`.claude/hooks/`): 16 `.cjs` files -- 1 shared utility module (`hook-utils.cjs`) + 1 hook launcher (`run-hook.cjs`) + 13 registered hooks + 1 standalone CLI tool (`eval-runner.cjs`). Most hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output). Two hooks (`teammate-idle-handler.cjs`, `team-task-complete.cjs`) manage their own lifecycle because they use exit code 2 for signaling, which `createHook()` does not support.
 - **Prompt hooks**: None currently active. The Stop prompt hook was removed in V9.6.2 due to unreliable LLM JSON responses causing recurring validation failures. The `verify-completion.cjs` command hook provides equivalent file-based verification.
-- **Resilient invocation via run-hook.cjs**: All hooks are called via `node .claude/hooks/run-hook.cjs <hook-name>` -- a launcher that resolves the target hook path using multiple fallbacks (`CLAUDE_PLUGIN_ROOT` -> `CLAUDE_PROJECT_DIR` -> `process.cwd()` -> `__dirname`). This eliminates the `MODULE_NOT_FOUND` errors that occurred when `${CLAUDE_PLUGIN_ROOT}` was not set.
+- **Resilient invocation via run-hook.cjs**: All hooks are called via `node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/run-hook.cjs <hook-name>` -- a launcher that resolves the target hook path using multiple fallbacks (`CLAUDE_PLUGIN_ROOT` -> `CLAUDE_PROJECT_DIR` -> `process.cwd()` -> `__dirname`). The `${CLAUDE_PLUGIN_ROOT}` prefix ensures the launcher itself is found regardless of the user's working directory.
 
 ### V9.5 Changes (from V9.4)
 
@@ -343,7 +343,7 @@ Hooks are registered in `.claude/settings.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/run-hook.cjs my-hook",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/run-hook.cjs my-hook",
             "timeout": 5
           }
         ]
