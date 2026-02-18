@@ -1,0 +1,225 @@
+super_domain: shared
+description: Planning configuration for SHARED cross-domain capabilities. These 14 agents are available to ALL super-domains for data/analytics, quality/compliance, customer, and operations coordination.
+
+# Shared questions defined once via YAML anchor
+shared_questions: &shared_questions
+  - "What is the current state of the area being assessed?"
+  - "What are the cross-domain constraints and dependencies?"
+  - "What are the key risks and success criteria?"
+
+controller_catalog:
+  tier_2:
+    # Data & Analytics
+    - name: data-scientist
+      agent_path: shared/agents/data-scientist/SKILL.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the business problem we're solving with ML?"
+        - "What data is available and what is its quality?"
+        - "What are the key performance metrics and success criteria?"
+      use_when:
+        - "Machine learning or predictive modeling needed"
+        - "Statistical analysis required"
+        - "Data science coordination across domains"
+        - "Advanced analytics or feature engineering"
+      complexity: tier_2
+
+    - name: bi-specialist
+      agent_path: shared/agents/bi-specialist/SKILL.md
+      coordination_style: question_based
+      typical_questions:
+        - "What are the key business questions to answer?"
+        - "What data sources need to be integrated?"
+        - "What self-service capabilities do users need?"
+      use_when:
+        - "Business intelligence strategy needed"
+        - "Dashboard or reporting design"
+        - "Data warehousing coordination"
+        - "Self-service analytics setup"
+      complexity: tier_2
+
+    - name: market-research-analyst
+      agent_path: shared/agents/market-research-analyst/SKILL.md
+      coordination_style: question_based
+      typical_questions:
+        - "What are the research objectives and key questions?"
+        - "Who is the target audience for this research?"
+        - "What research methods are most appropriate?"
+      use_when:
+        - "Market research coordination needed"
+        - "Customer research required"
+        - "Industry analysis across domains"
+        - "Market sizing or survey design"
+      complexity: tier_2
+
+    - name: competitive-intelligence-analyst
+      agent_path: shared/agents/competitive-intelligence-analyst/SKILL.md
+      coordination_style: question_based
+      typical_questions:
+        - "Who are the key competitors in this space?"
+        - "Why are we winning or losing against competitors?"
+        - "What are competitor strengths and weaknesses?"
+      use_when:
+        - "Competitive analysis needed"
+        - "Win/loss analysis required"
+        - "Competitive positioning across domains"
+        - "Battle card creation"
+      complexity: tier_2
+
+    # Quality & Compliance
+    - name: quality-manager
+      agent_path: shared/agents/quality-manager/SKILL.md
+      coordination_style: question_based
+      typical_questions:
+        - "What are the current quality standards and metrics?"
+        - "What quality issues or gaps need to be addressed?"
+        - "What continuous improvement opportunities exist?"
+      use_when:
+        - "Quality management coordination needed"
+        - "QA process improvement"
+        - "Quality standards enforcement"
+        - "Continuous improvement initiatives"
+      complexity: tier_2
+
+    - name: process-auditor
+      agent_path: shared/agents/process-auditor/SKILL.md
+      coordination_style: question_based
+      typical_questions:
+        - "What processes and controls are in scope for this audit?"
+        - "What compliance requirements apply?"
+        - "What evidence is needed to verify control effectiveness?"
+      use_when:
+        - "Process audit coordination needed"
+        - "Compliance verification required"
+        - "Control testing across domains"
+        - "Audit reporting"
+      complexity: tier_2
+
+    - name: compliance-officer
+      agent_path: shared/agents/compliance-officer/SKILL.md
+      coordination_style: question_based
+      typical_questions:
+        - "What regulations apply to this activity?"
+        - "What compliance risks exist?"
+        - "What controls are needed?"
+      use_when:
+        - "Regulatory compliance coordination"
+        - "Policy development needed"
+        - "Compliance monitoring across domains"
+        - "Risk assessment for compliance"
+      complexity: tier_2
+
+    - name: performance-analyst
+      agent_path: shared/agents/performance-analyst/SKILL.md
+      coordination_style: question_based
+      typical_questions:
+        - "What are the current performance metrics and baselines?"
+        - "Where are the bottlenecks in the system/process?"
+        - "What are the performance requirements and targets?"
+      use_when:
+        - "Performance analysis coordination needed"
+        - "Bottleneck identification required"
+        - "Performance optimization across domains"
+        - "Capacity analysis"
+      complexity: tier_2
+
+    # Customer
+    - name: account-manager
+      agent_path: shared/agents/account-manager/SKILL.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the current account health and engagement level?"
+        - "What expansion opportunities exist for this account?"
+        - "What are the key risks to retention?"
+      use_when:
+        - "Account management coordination needed"
+        - "Account planning required"
+        - "Upsell/cross-sell strategy"
+        - "Renewal management"
+      complexity: tier_2
+
+    - name: customer-success-manager
+      agent_path: shared/agents/customer-success-manager/SKILL.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the current customer health score and engagement level?"
+        - "What adoption milestones have been achieved vs planned?"
+        - "What are the key risks to customer success?"
+      use_when:
+        - "Customer success coordination needed"
+        - "Onboarding or adoption management"
+        - "Customer health monitoring"
+        - "Proactive support planning"
+      complexity: tier_2
+
+    - name: customer-advocacy-manager
+      agent_path: shared/agents/customer-advocacy-manager/SKILL.md
+      coordination_style: question_based
+      typical_questions:
+        - "Which customers are good advocacy candidates?"
+        - "What customer stories should we capture?"
+        - "How can we build customer community engagement?"
+      use_when:
+        - "Customer advocacy coordination needed"
+        - "Case study or testimonial development"
+        - "Reference management"
+        - "Customer community building"
+      complexity: tier_2
+
+    - name: relationship-manager
+      agent_path: shared/agents/relationship-manager/SKILL.md
+      coordination_style: question_based
+      typical_questions:
+        - "Who are the key stakeholders and what are their priorities?"
+        - "What is the current health of this relationship?"
+        - "What value can we create for this relationship?"
+      use_when:
+        - "Stakeholder relationship coordination needed"
+        - "Partner management required"
+        - "Strategic relationship development"
+        - "Ecosystem coordination"
+      complexity: tier_2
+
+    # Operations
+    - name: change-management-specialist
+      agent_path: shared/agents/change-management-specialist/SKILL.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is the change readiness level?"
+        - "What training and support is needed?"
+        - "What resistance points exist?"
+      use_when:
+        - "Change management coordination needed"
+        - "Training delivery planning"
+        - "Communication execution for changes"
+        - "Resistance management"
+      complexity: tier_2
+
+    - name: capacity-planner
+      agent_path: shared/agents/capacity-planner/SKILL.md
+      coordination_style: question_based
+      typical_questions:
+        - "What is current capacity utilization?"
+        - "What is the demand forecast for next period?"
+        - "Where are the capacity constraints?"
+      use_when:
+        - "Capacity planning coordination needed"
+        - "Demand forecasting required"
+        - "Scaling planning across domains"
+        - "Capacity optimization"
+      complexity: tier_2
+
+# Templates for objective generation
+objectives_templates:
+  default:
+    - "Coordinate {capability} across domains"
+    - "Analyze {data} using shared expertise"
+    - "Provide {service} for cross-domain use case"
+
+# Success criteria - references shared template
+success_criteria_patterns:
+  _shared: "@Agent_Memory/_system/templates/shared_success_criteria.yaml"
+  shared_specific:
+    - "Cross-domain coordination requirements met"
+    - "Shared expertise applied consistently across domains"
+    - "Analysis or audit covers all relevant domains"

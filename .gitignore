@@ -70,10 +70,12 @@ documentation/temp/
 CLAUDE.local.md
 *.local.md
 
-# Claude Code sessions (runtime data)
+# Claude Code sessions and plans (runtime data)
 .claude/sessions/
+.claude/plans/
 
 # Python virtual environment
 .venv/
+__pycache__/
 example/
 metrics.jsonl

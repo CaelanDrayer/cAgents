@@ -2,7 +2,7 @@
 
 **Universal Multi-Domain Agent System for Claude Code**
 
-V9.0 - Platform Alignment Edition with 236 agents across 5 super-domains. Skills system, 14 hook event types, Agent Teams parallel execution, opusplan model routing.
+V9.0 - Platform Alignment Edition with 236 agents across 5 super-domains. Skills system, 14 hook event types, Agent Teams parallel execution, Claude 4.6 model routing (Opus 4.6, Sonnet 4.6, Haiku 4.5).
 
 ## Overview
 
@@ -12,7 +12,7 @@ cAgents transforms AI-assisted work across any domain through specialized agent 
 - Skills system (`.claude/skills/` auto-discovery replaces legacy commands)
 - 14 hook event types with shell+JS dual architecture (12 CJS hooks + 9 shell hooks)
 - Agent Teams integration for parallel team-based execution (40-60% time reduction)
-- opusplan model routing (Opus reasoning + Sonnet execution for controllers)
+- Claude 4.6 model routing: Opus 4.6 (reasoning), Sonnet 4.6 (execution), Haiku 4.5 (support), opusplan hybrid (Opus 4.6 planning + Sonnet 4.6 execution for controllers)
 - Enhanced PreCompact waypoints with coordination state preservation
 - Progressive skill disclosure (all agents use SKILL.md format with resources/)
 - Session management with three-file pattern and waypoints
@@ -270,7 +270,7 @@ Run `./setup.sh` to configure hooks based on Node.js availability.
 - Skills system with auto-discovery (.claude/skills/)
 - 14 hook event types with shell+JS dual architecture
 - Agent Teams: 40-60% execution time reduction for tier 3+ workflows
-- opusplan model routing for controllers
+- Claude 4.6 model routing (Opus 4.6, Sonnet 4.6, Haiku 4.5) with opusplan hybrid for controllers
 - 76% initial context reduction via path-specific rules
 
 **Core Architecture**:
@@ -309,4 +309,4 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | **cAgents V9.3** | 236 agents across 5 super-domains
+**Built with Claude Code** | **cAgents V9.3** | 236 agents across 5 super-domains | Powered by Claude Opus 4.6, Sonnet 4.6 & Haiku 4.5

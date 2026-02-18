@@ -4,7 +4,7 @@
 
 ## Overview
 
-cAgents is a universal multi-domain agent system with controller-centric coordination. V8.0 features CSV-based task inventory for large-scale workflows, progressive skill disclosure, and Claude Code hooks system.
+cAgents is a universal multi-domain agent system with controller-centric coordination. Features CSV-based task inventory for large-scale workflows, progressive skill disclosure, CJS-only hooks system, Agent Teams for parallel execution, and Skills system.
 
 ## Core Architecture
 
@@ -12,7 +12,7 @@ cAgents is a universal multi-domain agent system with controller-centric coordin
 
 | Tier | Role | Count | Purpose |
 |------|------|-------|---------|
-| **1: Core** | Infrastructure | 12 | Workflow orchestration |
+| **1: Core** | Infrastructure | 14 | Workflow orchestration |
 | **2: Controller** | Coordination | ~53 | Question-based delegation |
 | **3: Execution** | Specialists | ~147 | Answer questions, execute tasks |
 | **4: Support** | Operations | ~19 | Foundational services |
@@ -91,5 +91,5 @@ Agent_Memory/
 
 ---
 
-**Version**: V8.0.28
-**Last Updated**: 2026-01-27
+**Version**: V9.9.1
+**Last Updated**: 2026-02-12

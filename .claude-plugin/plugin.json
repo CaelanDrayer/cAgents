@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "9.9.0",
-  "description": "Universal multi-domain agent system with 236 specialized agents. V9.9.0: /team delegates routing + planning to /run's infrastructure (trigger -> router + planner) for consistent decomposition, then determines team structure and spins out teammates. Each teammate invokes /run to spin out its own controller + execution agents. Team templates, wave-based delivery with quality gates, interface contracts, gate sentinel pattern. CJS-only hook architecture, Skills system, 14 hook event types, Agent Teams for parallel execution, CSV-based task inventory, controller-centric delegation across 5 super-domains.",
+  "version": "9.10.0",
+  "description": "Universal multi-domain agent system with 236 specialized agents. V9.10.0: Claude 4.6 model generation support (Opus 4.6, Sonnet 4.6, Haiku 4.5). Team templates, wave-based delivery with quality gates, interface contracts, gate sentinel pattern. CJS-only hook architecture, Skills system, 14 hook event types, Agent Teams for parallel execution, CSV-based task inventory, controller-centric delegation across 5 super-domains.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",

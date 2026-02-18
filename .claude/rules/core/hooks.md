@@ -12,9 +12,9 @@ V9.5 CJS-only hook architecture with 14 hook event types and `createHook()` fact
 
 cAgents uses a unified CJS hook system configured in `.claude/settings.json`:
 
-- **CJS hooks** (`.claude/hooks/`): 15 `.cjs` files -- 1 shared utility module (`hook-utils.cjs`) + 13 registered hooks + 1 standalone CLI tool (`eval-runner.cjs`). All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output).
+- **CJS hooks** (`.claude/hooks/`): 16 `.cjs` files -- 1 shared utility module (`hook-utils.cjs`) + 1 hook launcher (`run-hook.cjs`) + 13 registered hooks + 1 standalone CLI tool (`eval-runner.cjs`). All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output).
 - **Prompt hooks**: None currently active. The Stop prompt hook was removed in V9.6.2 due to unreliable LLM JSON responses causing recurring validation failures. The `verify-completion.cjs` command hook provides equivalent file-based verification.
-- **Direct invocation**: All hooks are called directly via `node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/<name>.cjs` -- no shell dispatch layer. The `${CLAUDE_PLUGIN_ROOT}` variable ensures hooks resolve correctly when the plugin is installed in other projects.
+- **Resilient invocation via run-hook.cjs**: All hooks are called via `node .claude/hooks/run-hook.cjs <hook-name>` -- a launcher that resolves the target hook path using multiple fallbacks (`CLAUDE_PLUGIN_ROOT` -> `CLAUDE_PROJECT_DIR` -> `process.cwd()` -> `__dirname`). This eliminates the `MODULE_NOT_FOUND` errors that occurred when `${CLAUDE_PLUGIN_ROOT}` was not set.
 
 ### V9.5 Changes (from V9.4)
 
@@ -343,7 +343,7 @@ Hooks are registered in `.claude/settings.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/my-hook.cjs",
+            "command": "node .claude/hooks/run-hook.cjs my-hook",
             "timeout": 5
           }
         ]
@@ -388,7 +388,7 @@ Hooks are registered in `.claude/settings.json`:
 - `scripts/ci/check-quality.sh` - Hook validation in CI
 - `Agent_Memory/_system/evals/` - Evaluation framework
 
-**Archived (V9.4 and earlier)**:
-- `hooks/` directory - Legacy shell hooks (replaced by CJS hooks)
-- `scripts/hook-dispatch.sh` - Legacy shell dispatch (no longer used)
-- `scripts/hook-dispatch-node.sh` - Legacy Node dispatch (no longer used)
+**Removed in V9.5** (no longer present in codebase):
+- `hooks/` directory - Legacy shell hooks (replaced by `.claude/hooks/*.cjs`)
+- `scripts/hook-dispatch.sh` - Legacy shell dispatch (replaced by `run-hook.cjs`)
+- `scripts/hook-dispatch-node.sh` - Legacy Node dispatch (replaced by `run-hook.cjs`)

@@ -224,13 +224,13 @@ quality_checks() {
         log_error "Missing marketplace.json"
     fi
 
-    # Check 3: Hooks are executable
-    log_info "Checking hooks..."
+    # Check 3: CJS hooks are valid (V9.5+: CJS-only hooks in .claude/hooks/)
+    log_info "Checking CJS hooks..."
     ((checks_total++))
     local hooks_valid=true
-    for hook in $(find "$PROJECT_ROOT/.claude/hooks" -name "*.js" -type f 2>/dev/null); do
-        if ! node -c "$hook" 2>/dev/null; then
-            log_error "Invalid JavaScript: $hook"
+    for hook in $(find "$PROJECT_ROOT/.claude/hooks" -name "*.cjs" -type f 2>/dev/null); do
+        if ! node --check "$hook" 2>/dev/null; then
+            log_error "Invalid CJS hook: $hook"
             hooks_valid=false
         fi
     done
@@ -290,7 +290,7 @@ run_evals() {
         return 0
     fi
 
-    local eval_runner="$PROJECT_ROOT/.claude/hooks/eval-runner.js"
+    local eval_runner="$PROJECT_ROOT/.claude/hooks/eval-runner.cjs"
     if [[ ! -f "$eval_runner" ]]; then
         log_warn "Eval runner not found, skipping evaluations"
         return 0

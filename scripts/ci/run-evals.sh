@@ -16,7 +16,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 AGENT_MEMORY="$PROJECT_ROOT/Agent_Memory"
 SESSIONS_DIR="$AGENT_MEMORY/sessions"
-EVAL_RUNNER="$PROJECT_ROOT/.claude/hooks/eval-runner.js"
+EVAL_RUNNER="$PROJECT_ROOT/.claude/hooks/eval-runner.cjs"
 
 # Colors
 GREEN='\033[0;32m'

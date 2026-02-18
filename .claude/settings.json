@@ -1,11 +1,11 @@
 {
-  "$comment": "Hook configuration - cAgents V9.7.0 - /team directly creates teams via TeamCreate, spawns real teammates",
+  "$comment": "Hook configuration - cAgents V9.9.1 - Resilient hook paths via run-hook.cjs launcher",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
   "teammateMode": "tmux",
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CAGENTS_VERSION": "9.7.0"
+    "CAGENTS_VERSION": "9.9.1"
   },
   "permissions": {
     "allow": [
@@ -29,7 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/session-catchup.cjs",
+            "command": "node .claude/hooks/run-hook.cjs session-catchup",
             "timeout": 10
           }
         ]
@@ -40,7 +40,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/team-stop.cjs",
+            "command": "node .claude/hooks/run-hook.cjs team-stop",
             "timeout": 10
           }
         ]
@@ -51,7 +51,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/verify-completion.cjs",
+            "command": "node .claude/hooks/run-hook.cjs verify-completion",
             "timeout": 10
           }
         ]
@@ -62,12 +62,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/subagent-tracker.cjs",
+            "command": "node .claude/hooks/run-hook.cjs subagent-tracker",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/team-start.cjs",
+            "command": "node .claude/hooks/run-hook.cjs team-start",
             "timeout": 5
           }
         ]
@@ -79,7 +79,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/bash-validator.cjs",
+            "command": "node .claude/hooks/run-hook.cjs bash-validator",
             "timeout": 5
           }
         ]
@@ -89,7 +89,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/secret-detection.cjs",
+            "command": "node .claude/hooks/run-hook.cjs secret-detection",
             "timeout": 5
           }
         ]
@@ -100,7 +100,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/tool-failure-tracker.cjs",
+            "command": "node .claude/hooks/run-hook.cjs tool-failure-tracker",
             "timeout": 5
           }
         ]
@@ -111,7 +111,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/teammate-idle-handler.cjs",
+            "command": "node .claude/hooks/run-hook.cjs teammate-idle-handler",
             "timeout": 5
           }
         ]
@@ -122,7 +122,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/team-task-complete.cjs",
+            "command": "node .claude/hooks/run-hook.cjs team-task-complete",
             "timeout": 5
           }
         ]
@@ -133,7 +133,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/permission-handler.cjs",
+            "command": "node .claude/hooks/run-hook.cjs permission-handler",
             "timeout": 5
           }
         ]
@@ -144,7 +144,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/pre-compact-save.cjs",
+            "command": "node .claude/hooks/run-hook.cjs pre-compact-save",
             "timeout": 10
           }
         ]
@@ -155,7 +155,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/notification.cjs",
+            "command": "node .claude/hooks/run-hook.cjs notification",
             "timeout": 5
           }
         ]

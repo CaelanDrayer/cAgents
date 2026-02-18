@@ -55,8 +55,9 @@ disallowedTools: ["Task"]          # V9.0: For support agents (prevent delegatio
 ## Optional Fields
 
 ### model
-- Preferred model: `opus`, `opusplan`, `sonnet`, or `haiku`
-- `opusplan`: Opus reasoning + Sonnet execution (ideal for controllers)
+- Preferred model alias: `opus`, `opusplan`, `sonnet`, or `haiku`
+- These aliases map to the latest Claude generation: `opus` -> Claude Opus 4.6, `sonnet` -> Claude Sonnet 4.6, `haiku` -> Claude Haiku 4.5
+- `opusplan`: Claude Opus 4.6 reasoning + Claude Sonnet 4.6 execution (ideal for controllers)
 - Overridden by model_routing.yaml scenario detection and environment variables
 - If omitted, uses model_routing.yaml defaults
 

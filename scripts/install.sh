@@ -43,18 +43,18 @@ else
     print_status "error" "Library directory not found: scripts/lib"
 fi
 
-# Step 2: Fix hook script permissions (make executable)
+# Step 2: Fix CJS hook file permissions (V9.5+: CJS-only hooks in .claude/hooks/)
 echo ""
-echo "Step 2: Setting hook script permissions..."
+echo "Step 2: Setting CJS hook permissions..."
 hook_count=0
-if [[ -d "$CAGENTS_ROOT/hooks" ]]; then
+if [[ -d "$CAGENTS_ROOT/.claude/hooks" ]]; then
     while IFS= read -r -d '' hook; do
-        chmod 755 "$hook" 2>/dev/null || true
+        chmod 644 "$hook" 2>/dev/null || true
         ((hook_count++))
-    done < <(find "$CAGENTS_ROOT/hooks" -name "*.sh" -print0)
-    print_status "ok" "Hook scripts are now executable ($hook_count scripts)"
+    done < <(find "$CAGENTS_ROOT/.claude/hooks" -name "*.cjs" -print0)
+    print_status "ok" "CJS hook files are readable ($hook_count files in .claude/hooks/)"
 else
-    print_status "error" "Hooks directory not found: hooks/"
+    print_status "error" "Hooks directory not found: .claude/hooks/"
 fi
 
 # Step 3: Create Agent_Memory directory structure
@@ -67,30 +67,29 @@ mkdir -p "$CAGENTS_ROOT/Agent_Memory/_knowledge"
 mkdir -p "$CAGENTS_ROOT/Agent_Memory/_archive"
 print_status "ok" "Agent_Memory directories created"
 
-# Step 4: Verify hooks.json exists
+# Step 4: Verify hooks configuration (V9.5+: hooks registered in .claude/settings.json)
 echo ""
 echo "Step 4: Verifying hooks configuration..."
-if [[ -f "$CAGENTS_ROOT/hooks/hooks.json" ]]; then
-    print_status "ok" "hooks/hooks.json found"
+if [[ -f "$CAGENTS_ROOT/.claude/settings.json" ]]; then
+    print_status "ok" ".claude/settings.json found (hook registration)"
 else
-    print_status "error" "hooks/hooks.json not found - hooks will not run"
+    print_status "error" ".claude/settings.json not found - hooks will not run"
 fi
 
-# Step 5: Test a hook script
+# Step 5: Test a CJS hook (V9.5+: all hooks invoked via run-hook.cjs launcher)
 echo ""
-echo "Step 5: Testing hook execution..."
-test_hook="$CAGENTS_ROOT/hooks/workflow/stop-workflow.sh"
-if [[ -x "$test_hook" ]]; then
-    # Run hook with test input
-    test_output=$(echo '{"instruction_id":"install_test","reason":"user_requested","message":"","force":false}' | bash "$test_hook" 2>&1) || true
-    if echo "$test_output" | grep -q '"decision"'; then
-        print_status "ok" "Hook scripts execute correctly"
+echo "Step 5: Testing CJS hook execution..."
+run_hook="$CAGENTS_ROOT/.claude/hooks/run-hook.cjs"
+if [[ -f "$run_hook" ]]; then
+    test_output=$(echo '{}' | node "$run_hook" verify-completion 2>&1) || true
+    if echo "$test_output" | grep -q '"continue"'; then
+        print_status "ok" "CJS hooks execute correctly via run-hook.cjs"
     else
-        print_status "error" "Hook execution returned unexpected output"
+        print_status "error" "CJS hook execution returned unexpected output"
         echo "    Output: $test_output"
     fi
 else
-    print_status "error" "Test hook not executable: $test_hook"
+    print_status "error" "Hook launcher not found: .claude/hooks/run-hook.cjs"
 fi
 
 # Summary

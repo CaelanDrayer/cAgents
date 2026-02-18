@@ -13,6 +13,20 @@ Project-level model routing configuration for cAgents V9.0.
 
 cAgents supports project-level model routing overrides via `.cagents/model_routing.yaml`. This allows projects to customize model selection for cost control, quality requirements, or specific use cases.
 
+## Current Claude Model Generation (4.6)
+
+As of February 2026, the latest Claude models are:
+
+| Model | API ID | Context Window | Max Output | Pricing (input/output per MTok) |
+|-------|--------|----------------|------------|----------------------------------|
+| **Claude Opus 4.6** | `claude-opus-4-6` | 200K / 1M (beta) | 128K tokens | $5 / $25 |
+| **Claude Sonnet 4.6** | `claude-sonnet-4-6` | 200K / 1M (beta) | 64K tokens | $3 / $15 |
+| **Claude Haiku 4.5** | `claude-haiku-4-5` | 200K | 64K tokens | $1 / $5 |
+
+All models support text/image input, extended thinking, and adaptive thinking (except Haiku). Opus 4.6 and Sonnet 4.6 support 1M token context windows via beta header.
+
+**Legacy models** (still available but migration recommended): Claude Sonnet 4.5, Claude Opus 4.5, Claude Opus 4.1, Claude Sonnet 4, Claude Opus 4, Claude Sonnet 3.7, Claude Haiku 3.
+
 ## Configuration Location
 
 ```
@@ -24,18 +38,20 @@ your-project/
 
 ## Override Options
 
-### Available Models
+### Available Models (cAgents Aliases)
 
-| Model | ID | Best For | Notes |
-|-------|----|----------|-------|
-| **opus** | `opus` | Complex reasoning, architecture | Highest capability |
-| **opusplan** | `opusplan` | Controllers, coordination | Opus for planning/reasoning, Sonnet for execution. Ideal for controllers that reason about coordination but delegate implementation. |
-| **sonnet** | `sonnet` | Implementation, general tasks | Balanced capability and cost |
-| **haiku** | `haiku` | Support, lightweight tasks | Fastest, lowest cost |
+cAgents uses abstract aliases that map to the latest Claude models:
+
+| Alias | Maps To | API ID | Best For | Notes |
+|-------|---------|--------|----------|-------|
+| **opus** | Claude Opus 4.6 | `claude-opus-4-6` | Complex reasoning, architecture | Highest capability, 128K max output |
+| **opusplan** | Claude Opus 4.6 (plan) + Sonnet 4.6 (execute) | `claude-opus-4-6` / `claude-sonnet-4-6` | Controllers, coordination | Opus for planning/reasoning, Sonnet for execution. Ideal for controllers that reason about coordination but delegate implementation. |
+| **sonnet** | Claude Sonnet 4.6 | `claude-sonnet-4-6` | Implementation, general tasks | Balanced capability and cost, 1M context support |
+| **haiku** | Claude Haiku 4.5 | `claude-haiku-4-5` | Support, lightweight tasks | Fastest, lowest cost |
 
 ### The `opusplan` Model
 
-The `opusplan` model uses a hybrid approach: Opus-level reasoning for planning and coordination decisions, with Sonnet-level execution for tool use and implementation. This makes it ideal for controller agents that need to reason about complex coordination but delegate all implementation to execution agents.
+The `opusplan` model uses a hybrid approach: Claude Opus 4.6-level reasoning for planning and coordination decisions, with Claude Sonnet 4.6-level execution for tool use and implementation. This makes it ideal for controller agents that need to reason about complex coordination but delegate all implementation to execution agents.
 
 **Default assignment**: All controller agents with `model: opus` are set to `opusplan`. Infrastructure agents like the optimizer also use `opusplan`.
 

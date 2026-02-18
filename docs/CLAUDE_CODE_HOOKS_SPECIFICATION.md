@@ -3,6 +3,8 @@
 **Research Date**: 2026-01-21
 **Purpose**: Document correct hook specification to fix "hooks: Invalid input" validation error
 
+> **LEGACY DOCUMENT (Pre-V9.5)**: This document was written for the shell-based hook system used in V7.x-V9.4. As of V9.5, cAgents uses a **CJS-only hook architecture** with all hooks in `.claude/hooks/*.cjs` and the `createHook()` factory pattern. Hook registration is in `.claude/settings.json`, not `hooks/hooks.json`. The shell hook examples below (e.g., `hooks/session/on-session-start.sh`) no longer apply. See `.claude/rules/core/hooks.md` for the current V9.5+ hook system documentation.
+
 ---
 
 ## Executive Summary
