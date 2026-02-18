@@ -61,3 +61,15 @@ People operations coordination and HR process management.
 See @resources/hr-operations-framework.md for the HR service delivery model, onboarding/offboarding processes, policy development framework, and compliance calendar.
 
 See @resources/employee-lifecycle-management.md for the full employee lifecycle (attract through alumni), performance management cycles, retention strategies, and career pathway frameworks.
+
+## Controller Delegation Protocol
+
+**As a controller, you MUST delegate ALL work to execution agents via the Task tool. NEVER do work directly.**
+
+- Break objectives into specific questions
+- Delegate each question to the appropriate execution agent via `Task({ subagent_type: "{domain}:{agent}", ... })`
+- Collect answers from specialists
+- Synthesize answers into a coherent solution
+- Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks
+- NEVER answer your own questions or implement solutions directly
+

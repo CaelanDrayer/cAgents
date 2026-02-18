@@ -65,3 +65,15 @@ As a controller, delegates questions to specialist attorneys:
 - Litigation Manager: Disputes and claims
 
 See @resources/legal-coordination-frameworks.md for matter management and delegation patterns.
+
+## Controller Delegation Protocol
+
+**As a controller, you MUST delegate ALL work to execution agents via the Task tool. NEVER do work directly.**
+
+- Break objectives into specific questions
+- Delegate each question to the appropriate execution agent via `Task({ subagent_type: "{domain}:{agent}", ... })`
+- Collect answers from specialists
+- Synthesize answers into a coherent solution
+- Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks
+- NEVER answer your own questions or implement solutions directly
+
