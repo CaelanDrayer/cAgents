@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Permission Handler Hook - Smart permission decisions
- * cAgents V9.5 - Refactored
+ * cAgents V9.10 - Refactored
  *
  * Auto-approves safe patterns, provides HITL context for tier 4.
  *
@@ -40,13 +40,11 @@ createHook('PermissionHandler', async (input) => {
   const sessionDir = findActiveSession();
   if (sessionDir) {
     const planContent = safeRead(path.join(sessionDir, 'workflow', 'plan.yaml'));
-    if (planContent && (planContent.includes('hitl_gate') || planContent.includes('HITL') || planContent.includes('human_approval'))) {
-      const tier = extractYamlValue(planContent, 'tier');
-      if (tier === '4') {
-        console.error('[PermissionHandler] HITL gate detected - requiring user approval');
-        // Don't auto-approve or deny - let the permission dialog show to the user
-        return null;
-      }
+    const tier = extractYamlValue(planContent, 'tier');
+    if (tier === '4' && planContent && (planContent.includes('hitl_gate:') || planContent.includes('human_approval:'))) {
+      console.error('[PermissionHandler] HITL gate detected - requiring user approval');
+      // Don't auto-approve or deny - let the permission dialog show to the user
+      return null;
     }
   }
 

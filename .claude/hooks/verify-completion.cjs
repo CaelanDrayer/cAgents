@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Verify Completion Hook - Stop hook verification
- * cAgents V9.5 - Refactored
+ * cAgents V9.10 - Refactored
  *
  * Runs on Stop event to verify workflow completion criteria.
  * Also handles stop-workflow cleanup (replaces stop-workflow.sh).
@@ -29,7 +29,7 @@ function verifyCompletion(sessionDir) {
       warnings.push('No phase defined in status.yaml');
     } else if (phase === 'planning' || phase === 'coordinating' || phase === 'executing') {
       issues.push(`Workflow stopping in '${phase}' phase (expected: completed or validating)`);
-    } else if (phase !== 'completed' && phase !== 'validating') {
+    } else if (phase !== 'completed' && phase !== 'complete' && phase !== 'validating') {
       warnings.push(`Workflow stopping in '${phase}' phase (expected: completed or validating)`);
     }
   }

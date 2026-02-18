@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Tool Failure Tracker Hook - Track and analyze tool failures
- * cAgents V9.5 - Refactored
+ * cAgents V9.10 - Refactored
  *
  * Tracks tool failures with tool name, error message, timestamp.
  * Detects failure patterns (3+ failures of same tool = suggest alternative).
@@ -25,7 +25,9 @@ const TOOL_ALTERNATIVES = {
 };
 
 createHook('ToolFailureTracker', async (input) => {
-  const toolName = input.tool_name || 'unknown';
+  if (!input.tool_name) return null;
+
+  const toolName = input.tool_name;
   const errorMsg = (input.error || input.tool_output || '').toString().slice(0, 200);
   const now = new Date().toISOString();
 

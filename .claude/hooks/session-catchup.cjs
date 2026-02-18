@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Session Catchup Hook - Resume incomplete sessions
- * cAgents V9.5 - Refactored
+ * cAgents V9.10 - Refactored
  *
  * Runs on SessionStart to detect and offer resumption of incomplete sessions.
  * Also initializes session state (replaces on-session-start.sh).
@@ -31,7 +31,7 @@ function findIncompleteSessions() {
     if (!content) continue;
 
     const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase');
-    if (phase === 'completed' || phase === 'failed' || phase === 'aborted') continue;
+    if (phase === 'completed' || phase === 'complete' || phase === 'failed' || phase === 'aborted') continue;
 
     const instructionFile = path.join(sessionDir, 'instruction.yaml');
     let request = 'Unknown request';
@@ -85,7 +85,7 @@ function findIncompleteSessions() {
 createHook('SessionCatchup', async (input) => {
   const incomplete = findIncompleteSessions();
 
-  const cagentsContext = 'cAgents V9.5 session initialized. Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission.';
+  const cagentsContext = 'cAgents V9.10 session initialized. Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission.';
 
   if (incomplete.length === 0) {
     return {

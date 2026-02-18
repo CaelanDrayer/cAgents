@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Bash Validator Hook - Block dangerous commands
- * cAgents V9.5 - New (replaces pre-bash.sh)
+ * cAgents V9.10 - New (replaces pre-bash.sh)
  *
  * Validates bash commands before execution for safety.
  * Blocks destructive operations, warns about risky git commands.

@@ -1,11 +1,11 @@
 {
-  "$comment": "Hook configuration - cAgents V9.9.1 - Resilient hook paths via run-hook.cjs launcher",
+  "$comment": "Hook configuration - cAgents V9.10.3 - Resilient hook paths via run-hook.cjs launcher",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
   "teammateMode": "tmux",
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CAGENTS_VERSION": "9.9.1"
+    "CAGENTS_VERSION": "9.10.3"
   },
   "permissions": {
     "allow": [
@@ -31,10 +31,6 @@
             "type": "command",
             "command": "node .claude/hooks/run-hook.cjs session-catchup",
             "timeout": 10
-          },
-          {
-            "type": "prompt",
-            "prompt": "You are using cAgents V9.9. Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission."
           }
         ]
       }
@@ -57,10 +53,6 @@
             "type": "command",
             "command": "node .claude/hooks/run-hook.cjs verify-completion",
             "timeout": 10
-          },
-          {
-            "type": "prompt",
-            "prompt": "Before stopping, verify: all work items completed with evidence, coordination_log.yaml written, outputs produced."
           }
         ]
       }

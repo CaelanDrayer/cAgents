@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Notification Hook - Status notifications for cAgents workflows
- * cAgents V9.5 - Refactored
+ * cAgents V9.10 - Refactored
  *
  * Handles the Notification event type for status updates.
  * Logs notifications to daily log files.

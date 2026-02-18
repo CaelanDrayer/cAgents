@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Team Start Hook - Initialize team monitoring
- * cAgents V9.5 - Refactored
+ * cAgents V9.10 - Refactored
  *
  * Runs on SubagentStart to initialize team-specific tracking and monitoring.
  *

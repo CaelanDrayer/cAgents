@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Team Task Complete Hook - Track task completion in team sessions
- * cAgents V9.5 - Refactored
+ * cAgents V9.10 - Refactored
  *
  * Runs when a task completes (TaskCompleted event) in a team session.
  * Updates task_list.yaml, checks dependencies, tracks progress.

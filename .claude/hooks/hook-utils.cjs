@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Shared Hook Utilities - Common functions for cAgents hooks
- * cAgents V9.5 - Refactored Hook Infrastructure
+ * cAgents V9.10 - Refactored Hook Infrastructure
  *
  * Provides:
  * - createHook(handler) - Factory that eliminates per-hook boilerplate
@@ -119,7 +119,7 @@ function findActiveSession() {
     if (!content) continue;
 
     const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase');
-    if (phase && phase !== 'completed' && phase !== 'failed') {
+    if (phase && phase !== 'completed' && phase !== 'complete' && phase !== 'failed') {
       _cachedActiveSession = path.join(sessionsDir, session);
       return _cachedActiveSession;
     }
@@ -146,8 +146,11 @@ function findTeamSession(input = {}) {
 
   const teamSessions = fs.readdirSync(sessionsDir)
     .filter(d => d.startsWith('team_'))
-    .sort()
-    .reverse();
+    .sort((a, b) => {
+      const tsA = a.substring(a.indexOf('_') + 1);
+      const tsB = b.substring(b.indexOf('_') + 1);
+      return tsB.localeCompare(tsA);
+    });
 
   for (const session of teamSessions) {
     const statusFile = path.join(sessionsDir, session, 'status.yaml');
@@ -155,7 +158,7 @@ function findTeamSession(input = {}) {
     if (!content) continue;
 
     const phase = extractYamlValue(content, 'phase');
-    if (phase && phase !== 'completed' && phase !== 'failed') {
+    if (phase && phase !== 'completed' && phase !== 'complete' && phase !== 'failed') {
       return path.join(sessionsDir, session);
     }
   }

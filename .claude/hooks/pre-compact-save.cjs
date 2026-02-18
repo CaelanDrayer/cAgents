@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * PreCompact Hook - Save critical state before context compaction
- * cAgents V9.5 - Refactored
+ * cAgents V9.10 - Refactored
  *
  * Saves critical workflow state that must survive compaction,
  * including controller coordination state and resume instructions.

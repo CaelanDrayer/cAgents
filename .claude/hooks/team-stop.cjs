@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Team Stop Hook - Cleanup and archive team session
- * cAgents V9.5 - Refactored (also replaces on-session-end.sh cleanup)
+ * cAgents V9.10 - Refactored (also replaces on-session-end.sh cleanup)
  *
  * Runs on SessionEnd to finalize team metrics and update status.
  *

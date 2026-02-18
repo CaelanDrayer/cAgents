@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Teammate Idle Handler Hook - Suggest available work for idle teammates
- * cAgents V9.5 - Refactored
+ * cAgents V9.10 - Refactored
  *
  * Reads team task list and suggests available work items.
  * TeammateIdle uses exit codes only (per Claude Code docs):

@@ -1,11 +1,11 @@
 {
-  "$comment": "Hook configuration - cAgents V9.9.1 - Resilient hook paths via run-hook.cjs launcher",
+  "$comment": "Hook configuration - cAgents V9.10.3 - Resilient hook paths via run-hook.cjs launcher",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
   "teammateMode": "tmux",
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CAGENTS_VERSION": "9.9.1"
+    "CAGENTS_VERSION": "9.10.3"
   },
   "permissions": {
     "allow": [

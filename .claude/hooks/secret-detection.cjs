@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Secret Detection + Path Protection Hook - Block secrets and protected paths
- * cAgents V9.5 - Refactored (merged pre-write.sh path protection)
+ * cAgents V9.10 - Refactored (merged pre-write.sh path protection)
  *
  * Runs BEFORE Write/Edit operations to:
  * 1. Block writes to protected system paths (from pre-write.sh)

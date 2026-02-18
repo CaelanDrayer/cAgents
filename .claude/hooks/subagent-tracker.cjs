@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Subagent Tracker Hook - Log subagent spawns and track agent chains
- * cAgents V9.5 - Refactored
+ * cAgents V9.10 - Refactored
  *
  * Logs subagent spawns to active session's workflow/agent_tree.yaml.
  *
@@ -29,10 +29,10 @@ createHook('SubagentTracker', async (input) => {
   const existingContent = safeRead(treeFile);
   const safeDesc = description.replace(/"/g, "'").replace(/\n/g, ' ');
   const now = new Date().toISOString();
-  const newEntry = `\n- id: "${agentId}"\n  type: "${subagentType}"\n  description: "${safeDesc}"\n  parent: "${parentAgent}"\n  spawned_at: "${now}"\n`;
+  const newEntry = `  - id: "${agentId}"\n    type: "${subagentType}"\n    description: "${safeDesc}"\n    parent: "${parentAgent}"\n    spawned_at: "${now}"\n`;
 
   if (!existingContent) {
-    fs.writeFileSync(treeFile, `# Agent Tree\n# Session: ${path.basename(sessionDir)}\n\nagents:${newEntry}`);
+    fs.writeFileSync(treeFile, `# Agent Tree\n# Session: ${path.basename(sessionDir)}\n\nagents:\n${newEntry}`);
   } else {
     fs.appendFileSync(treeFile, newEntry);
   }
