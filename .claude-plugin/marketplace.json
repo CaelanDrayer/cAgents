@@ -10,7 +10,7 @@
     {
       "name": "cagents",
       "description": "Universal multi-domain agent system with 236 specialized agents across 5 super-domains. V9.6.0 features: Team templates (fullstack-app, api-service, frontend-app, content-campaign, data-pipeline, game-project), wave-based delivery with quality gates, interface contracts, gate sentinel pattern. Agent Teams for parallel team-based execution (40-60% time reduction). CSV-based task inventory (60-80% context savings). Controller-centric delegation with minimum tier 2 enforcement.",
-      "version": "9.10.6",
+      "version": "9.12.0",
       "author": {
         "name": "CaelanDrayer",
         "email": "caelan@caelandrayer.ca"

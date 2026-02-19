@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Shared Hook Utilities - Common functions for cAgents hooks
- * cAgents V9.10 - Refactored Hook Infrastructure
+ * cAgents V9.12 - Self-contained hook path resolution
  *
  * Provides:
  * - createHook(handler) - Factory that eliminates per-hook boilerplate
@@ -18,8 +18,15 @@ const fs = require('fs');
 const path = require('path');
 
 // Resolve project root: prefer CLAUDE_PROJECT_DIR (user project with Agent_Memory),
-// fall back to CLAUDE_PLUGIN_ROOT (plugin install dir), then cwd.
+// fall back to CAGENTS_DIR (plugin install dir), then CLAUDE_PLUGIN_ROOT, then cwd.
 const PROJECT_ROOT = process.env.CLAUDE_PROJECT_DIR
+  || process.env.CAGENTS_DIR
+  || process.env.CLAUDE_PLUGIN_ROOT
+  || process.cwd();
+
+// Resolve plugin root: where the cAgents plugin is installed (for finding plugin resources).
+// CAGENTS_DIR is always set in settings.json env block by install.sh.
+const PLUGIN_ROOT = process.env.CAGENTS_DIR
   || process.env.CLAUDE_PLUGIN_ROOT
   || process.cwd();
 
@@ -364,6 +371,7 @@ function createHook(name, handler) {
 
 module.exports = {
   PROJECT_ROOT,
+  PLUGIN_ROOT,
   AGENT_MEMORY_DIR,
   SESSION_PREFIXES,
   createHook,

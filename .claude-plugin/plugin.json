@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "9.10.6",
-  "description": "Universal multi-domain agent system with 236 specialized agents. V9.10.6: Fix hook paths to use $CLAUDE_PROJECT_DIR (built-in) instead of ${CAGENTS_DIR} (custom env not expanded in command strings). Team templates, wave-based delivery with quality gates, interface contracts, gate sentinel pattern. CJS-only hook architecture, Skills system, 14 hook event types, Agent Teams for parallel execution, CSV-based task inventory, controller-centric delegation across 5 super-domains.",
+  "version": "9.12.0",
+  "description": "Universal multi-domain agent system with 236 specialized agents. V9.12.0: Self-contained hook paths using $CAGENTS_DIR (set in settings.json env) instead of unreliable $CLAUDE_PLUGIN_ROOT -- fixes MODULE_NOT_FOUND errors when plugin is loaded cross-project. Team templates, wave-based delivery with quality gates, interface contracts, gate sentinel pattern. CJS-only hook architecture, Skills system, 14 hook event types, Agent Teams for parallel execution, CSV-based task inventory, controller-centric delegation across 5 super-domains.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",

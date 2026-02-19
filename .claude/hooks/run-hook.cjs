@@ -4,17 +4,18 @@
  *
  * Resolves the hook directory path using multiple fallbacks:
  * 1. __dirname (two levels up from .claude/hooks/ - always correct when launcher is found)
- * 2. CAGENTS_DIR (explicit cAgents installation path, set in settings.json env)
- * 3. CLAUDE_PROJECT_DIR (set by Claude Code for project context)
- * 4. CLAUDE_PLUGIN_ROOT (set by Claude Code for plugins)
+ * 2. CAGENTS_DIR (explicit cAgents installation path, set in settings.json env - most reliable)
+ * 3. CLAUDE_PLUGIN_ROOT (set by Claude Code - may point to plugin dir, but unreliable cross-project)
+ * 4. CLAUDE_PROJECT_DIR (set by Claude Code - points to the user's project directory)
  * 5. process.cwd() (current working directory - works for local dev)
  *
- * Usage in settings.json:
- *   "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/run-hook.cjs <hook-name>"
+ * Usage in settings.json (plugin hooks):
+ *   "command": "node \"$CAGENTS_DIR\"/.claude/hooks/run-hook.cjs <hook-name>"
  *
- * NOTE: Claude Code does NOT expand custom env vars (like ${CAGENTS_DIR}) in
- * hook command strings. Use the built-in $CLAUDE_PROJECT_DIR variable instead.
- * See: https://github.com/anthropics/claude-code/issues/4276
+ * NOTE: Use $CAGENTS_DIR (not $CLAUDE_PLUGIN_ROOT or $CLAUDE_PROJECT_DIR) in hook command strings.
+ * CAGENTS_DIR is set in settings.json env block and always points to the plugin install directory.
+ * CLAUDE_PLUGIN_ROOT is unreliable when the plugin is loaded cross-project (may resolve to user dir).
+ * CLAUDE_PROJECT_DIR points to the user's project directory, not the plugin directory.
  */
 
 const path = require('path');
@@ -31,11 +32,12 @@ if (!hookName) {
 
 // Resolve hooks directory using multiple fallbacks
 // __dirname is first because if this file is executing, it's always correct
+// CAGENTS_DIR is second because it's explicitly set in settings.json env and always reliable
 const candidates = [
   path.resolve(__dirname, '../..'),  // Two levels up from .claude/hooks/ - always correct
-  process.env.CAGENTS_DIR,
-  process.env.CLAUDE_PROJECT_DIR,
-  process.env.CLAUDE_PLUGIN_ROOT,
+  process.env.CAGENTS_DIR,           // Explicit path set in settings.json env by install.sh
+  process.env.CLAUDE_PLUGIN_ROOT,    // Plugin dir (unreliable cross-project, may point to user dir)
+  process.env.CLAUDE_PROJECT_DIR,    // User's project dir (fallback for local dev)
   process.cwd()
 ].filter(Boolean);
 
