@@ -67,23 +67,15 @@ mkdir -p "$CAGENTS_ROOT/Agent_Memory/_knowledge"
 mkdir -p "$CAGENTS_ROOT/Agent_Memory/_archive"
 print_status "ok" "Agent_Memory directories created"
 
-# Step 4: Set CAGENTS_DIR in settings.json for portable hook paths
+# Step 4: Verify settings.json hook configuration
 echo ""
-echo "Step 4: Setting CAGENTS_DIR in hook configuration..."
+echo "Step 4: Verifying hook configuration..."
 if [[ -f "$CAGENTS_ROOT/.claude/settings.json" ]]; then
-    # Update CAGENTS_DIR to the actual installation path
-    if command -v node &>/dev/null; then
-        node -e "
-          const fs = require('fs');
-          const p = '$CAGENTS_ROOT/.claude/settings.json';
-          const s = JSON.parse(fs.readFileSync(p, 'utf8'));
-          s.env = s.env || {};
-          s.env.CAGENTS_DIR = '$CAGENTS_ROOT';
-          fs.writeFileSync(p, JSON.stringify(s, null, 2) + '\n');
-        "
-        print_status "ok" "CAGENTS_DIR set to $CAGENTS_ROOT in .claude/settings.json"
+    # Verify hooks use ${CLAUDE_PLUGIN_ROOT} (the official Claude Code plugin variable)
+    if grep -q 'CLAUDE_PLUGIN_ROOT' "$CAGENTS_ROOT/.claude/settings.json"; then
+        print_status "ok" "Hook commands use \${CLAUDE_PLUGIN_ROOT} (portable)"
     else
-        print_status "error" "node not found - cannot update CAGENTS_DIR"
+        print_status "error" "Hook commands missing \${CLAUDE_PLUGIN_ROOT} -- hooks may not resolve correctly"
     fi
     print_status "ok" ".claude/settings.json found (hook registration)"
 else

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Shared Hook Utilities - Common functions for cAgents hooks
- * cAgents V9.12 - Self-contained hook path resolution
+ * cAgents V9.13 - Self-contained plugin via __dirname + ${CLAUDE_PLUGIN_ROOT}
  *
  * Provides:
  * - createHook(handler) - Factory that eliminates per-hook boilerplate
@@ -12,23 +12,29 @@
  * - countPattern() - Count regex matches in content
  *
  * 100% Self-Contained: Uses only built-in Node.js modules.
+ *
+ * Path Resolution:
+ * - PLUGIN_ROOT: Where cAgents is installed. Uses __dirname (always correct when
+ *   hooks are executing) as primary, CLAUDE_PLUGIN_ROOT as fallback.
+ * - PROJECT_ROOT: Where the user's project lives (where Agent_Memory/ is created).
+ *   Uses CLAUDE_PROJECT_DIR when running as a cross-project plugin, falls back to
+ *   PLUGIN_ROOT for local dev (plugin IS the project).
  */
 
 const fs = require('fs');
 const path = require('path');
 
-// Resolve project root: prefer CLAUDE_PROJECT_DIR (user project with Agent_Memory),
-// fall back to CAGENTS_DIR (plugin install dir), then CLAUDE_PLUGIN_ROOT, then cwd.
-const PROJECT_ROOT = process.env.CLAUDE_PROJECT_DIR
-  || process.env.CAGENTS_DIR
+// Resolve plugin root: where cAgents is installed (for finding plugin resources).
+// __dirname is .claude/hooks/ -- two levels up is the plugin root. Always correct.
+const PLUGIN_ROOT = path.resolve(__dirname, '../..')
   || process.env.CLAUDE_PLUGIN_ROOT
   || process.cwd();
 
-// Resolve plugin root: where the cAgents plugin is installed (for finding plugin resources).
-// CAGENTS_DIR is always set in settings.json env block by install.sh.
-const PLUGIN_ROOT = process.env.CAGENTS_DIR
-  || process.env.CLAUDE_PLUGIN_ROOT
-  || process.cwd();
+// Resolve project root: the user's project directory (where Agent_Memory/ lives).
+// When loaded as a cross-project plugin, CLAUDE_PROJECT_DIR points to the user's project.
+// When running locally (plugin IS the project), fall back to PLUGIN_ROOT.
+const PROJECT_ROOT = process.env.CLAUDE_PROJECT_DIR
+  || PLUGIN_ROOT;
 
 const AGENT_MEMORY_DIR = path.join(PROJECT_ROOT, 'Agent_Memory');
 

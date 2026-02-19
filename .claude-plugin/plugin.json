@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "9.12.0",
-  "description": "Universal multi-domain agent system with 236 specialized agents. V9.12.0: Self-contained hook paths using $CAGENTS_DIR (set in settings.json env) instead of unreliable $CLAUDE_PLUGIN_ROOT -- fixes MODULE_NOT_FOUND errors when plugin is loaded cross-project. Team templates, wave-based delivery with quality gates, interface contracts, gate sentinel pattern. CJS-only hook architecture, Skills system, 14 hook event types, Agent Teams for parallel execution, CSV-based task inventory, controller-centric delegation across 5 super-domains.",
+  "version": "9.13.0",
+  "description": "Universal multi-domain agent system with 236 specialized agents. V9.13.0: Fully self-contained plugin -- hook commands use ${CLAUDE_PLUGIN_ROOT} (the official Claude Code plugin env var) with __dirname fallback in run-hook.cjs. No hardcoded paths or custom env vars required. Properly loadable from marketplace into any project. Team templates, wave-based delivery with quality gates, interface contracts, gate sentinel pattern. CJS-only hook architecture, Skills system, 14 hook event types, Agent Teams for parallel execution, CSV-based task inventory, controller-centric delegation across 5 super-domains.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",

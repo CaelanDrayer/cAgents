@@ -42,9 +42,9 @@ Core architecture and development guidance for cAgents.
 Increment version in both `.claude-plugin/marketplace.json` and `.claude-plugin/plugin.json`.
 
 **Version Format**: `major.minor.patch` (e.g., 9.9.1)
-- Bug fix/minor tweak: patch (9.12.0 -> 9.12.1)
-- New feature/enhancement: minor (9.12.1 -> 9.13.0)
-- Breaking change/major refactor: major (9.13.0 -> 10.0.0)
+- Bug fix/minor tweak: patch (9.13.0 -> 9.13.1)
+- New feature/enhancement: minor (9.13.1 -> 9.14.0)
+- Breaking change/major refactor: major (9.14.0 -> 10.0.0)
 
 ## Memory Management
 
@@ -347,7 +347,7 @@ cAgents/
 
 ## Hooks System
 
-**Architecture**: CJS-only hooks with `createHook()` factory. All invoked via `node "$CAGENTS_DIR"/.claude/hooks/run-hook.cjs <hook-name>` for self-contained path resolution. See @.claude/rules/core/hooks.md for full documentation.
+**Architecture**: CJS-only hooks with `createHook()` factory. All invoked via `node "${CLAUDE_PLUGIN_ROOT}"/.claude/hooks/run-hook.cjs <hook-name>` using the official Claude Code plugin env var for self-contained path resolution. See @.claude/rules/core/hooks.md for full documentation.
 
 **16 .cjs files**: `hook-utils.cjs` (factory), `run-hook.cjs` (launcher), `eval-runner.cjs` (CLI), + 13 registered hooks across 11 event types:
 
@@ -389,7 +389,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via built-in agent teams
-**Version**: 9.12.0
+**Version**: 9.13.0
 
 ## Troubleshooting
 

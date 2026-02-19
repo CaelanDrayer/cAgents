@@ -1,6 +1,6 @@
 {
   "name": "cagents-serve",
-  "version": "9.12.0",
+  "version": "9.13.0",
   "description": "SERVE super-domain: Customer support & governance capability (support + legal). 28 agents for customer support, legal review, compliance audits, and documentation.",
   "super_domain": "serve",
   "agent_count": 28,

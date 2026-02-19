@@ -85,7 +85,7 @@ function findIncompleteSessions() {
 createHook('SessionCatchup', async (input) => {
   const incomplete = findIncompleteSessions();
 
-  const cagentsContext = 'cAgents V9.10 session initialized. Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission.';
+  const cagentsContext = 'cAgents V9.13 session initialized. Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission.';
 
   if (incomplete.length === 0) {
     return {
