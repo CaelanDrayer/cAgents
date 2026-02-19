@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "9.10.4",
-  "description": "Universal multi-domain agent system with 236 specialized agents. V9.10.4: Explicit agent registration for Claude Desktop compatibility. Team templates, wave-based delivery with quality gates, interface contracts, gate sentinel pattern. CJS-only hook architecture, Skills system, 14 hook event types, Agent Teams for parallel execution, CSV-based task inventory, controller-centric delegation across 5 super-domains.",
+  "version": "9.10.5",
+  "description": "Universal multi-domain agent system with 236 specialized agents. V9.10.5: Explicit agent registration for Claude Desktop compatibility. Team templates, wave-based delivery with quality gates, interface contracts, gate sentinel pattern. CJS-only hook architecture, Skills system, 14 hook event types, Agent Teams for parallel execution, CSV-based task inventory, controller-centric delegation across 5 super-domains.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",

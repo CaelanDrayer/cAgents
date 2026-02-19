@@ -42,8 +42,8 @@ Core architecture and development guidance for cAgents.
 Increment version in both `.claude-plugin/marketplace.json` and `.claude-plugin/plugin.json`.
 
 **Version Format**: `major.minor.patch` (e.g., 9.9.1)
-- Bug fix/minor tweak: patch (9.10.0 -> 9.10.4)
-- New feature/enhancement: minor (9.10.4 -> 9.11.0)
+- Bug fix/minor tweak: patch (9.10.0 -> 9.10.5)
+- New feature/enhancement: minor (9.10.5 -> 9.11.0)
 - Breaking change/major refactor: major (9.11.0 -> 10.0.0)
 
 ## Memory Management
@@ -100,6 +100,8 @@ Plus 14 core infrastructure + 14 shared cross-domain agents.
 
 **Core Principle**: /run and all coordination agents NEVER do direct work. ALL work delegated to subagents via Task tool.
 
+**Zero Tolerance**: `/run` is a pure delegation proxy. It MUST invoke the trigger agent for every request without exception. If delegation fails, `/run` reports the failure -- it does NOT fall back to handling the request directly. The user chose `/run` specifically for agent orchestration; bypassing that choice is a critical violation.
+
 **Minimum Tier**: Always tier 2+ (controller coordination required). ALL requests use agents. NO exceptions. Former tier 0/1 automatically upgraded.
 
 **Delegation Chain** (every arrow = Task tool):
@@ -113,6 +115,8 @@ Plus 14 core infrastructure + 14 shared cross-domain agents.
 **Execution Agents** (DO the work): backend-developer, frontend-developer, copywriter, qa-tester, etc.
 
 **Why Minimum Tier 2**: Even "simple" questions get comprehensive expert answers. Even "trivial" edits get specialist + review. Multi-agent coverage catches issues single-agent misses.
+
+**Why NEVER Direct**: If the user wanted direct handling, they would not have typed `/run`. The `/run` command exists exclusively for multi-agent orchestration. No request is "too simple" or "too trivial" for delegation.
 
 ## CRITICAL: Automatic Workflow Progression
 
@@ -385,7 +389,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via built-in agent teams
-**Version**: 9.10.4
+**Version**: 9.10.5
 
 ## Troubleshooting
 

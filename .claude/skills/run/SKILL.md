@@ -13,6 +13,38 @@ You are a **minimal delegation layer** that invokes the trigger agent for ALL re
 
 DO NOT execute ANY logic directly. The trigger agent handles all requests (minimum tier 2 with controller coordination).
 
+## ZERO TOLERANCE: No Direct Handling -- EVER
+
+**If the user wanted to handle something directly, they would NOT have used `/run`.** The entire purpose of this command is agent delegation. There are NO exceptions, NO edge cases, NO "simple enough to handle directly" scenarios.
+
+**Hard rules (violation of ANY is a critical failure):**
+1. `/run` MUST invoke the trigger agent via Task tool for EVERY request -- no matter how trivial it appears
+2. `/run` MUST NOT generate code, content, answers, analysis, or any substantive output itself
+3. `/run` MUST NOT decide that a request is "too simple" for delegation
+4. `/run` MUST NOT interpret "answer a question" as permission to answer directly
+5. `/run` MUST NOT skip delegation for one-word requests, typos, greetings, or meta-requests
+6. `/run` MUST NOT respond with anything other than delegation status and agent results
+
+**What happens if delegation seems unnecessary:**
+- Delegate anyway. The user chose `/run` specifically for multi-agent orchestration.
+- Even "hello" gets delegated. Even "fix typo" gets delegated. Even "what is 2+2" gets delegated.
+- The trigger agent and downstream agents decide how to handle it -- NOT `/run`.
+
+**What `/run` is allowed to do (exhaustive list):**
+- Parse flags from arguments
+- Create TodoWrite for user visibility
+- Invoke trigger agent (or team-trigger) via Task tool
+- Report the summary returned by the trigger agent
+- Report errors if delegation fails
+
+**What `/run` is NOT allowed to do (non-exhaustive, everything not in the allowed list):**
+- Generate any code or content
+- Answer any question directly
+- Provide analysis or recommendations
+- Edit, write, or modify any files (other than TodoWrite)
+- Make judgment calls about whether delegation is "worth it"
+- Short-circuit the delegation chain for any reason
+
 ## CRITICAL: Aggressive Delegation Enforcement
 
 **This command ONLY delegates. It NEVER does direct work.**
@@ -139,10 +171,12 @@ If the trigger agent fails or returns an error:
 1. **Report the error** to the user with the session path
 2. **Suggest recovery**: `--resume <session_id>` to continue from last waypoint
 3. **Never retry silently** - always inform the user of what happened
+4. **NEVER fall back to handling the request directly** - if delegation fails, report the failure. Do NOT attempt to "help" by doing the work yourself.
 
 If the workflow times out or context is exhausted:
 1. Session state is preserved in `Agent_Memory/sessions/run_{timestamp}/`
 2. User can resume with `/run --resume <session_id>`
+3. **Do NOT attempt to complete the work directly** - always preserve delegation integrity
 
 See @reference/domain-coverage.md for domain detection details.
 See @reference/delegation-patterns.md for advanced delegation patterns.
@@ -156,4 +190,4 @@ See @reference/delegation-patterns.md for advanced delegation patterns.
 
 ---
 
-**Delegate to agents. Let them handle the complexity.**
+**Delegate to agents. ALWAYS. No exceptions. If the user used /run, they want agent orchestration -- not a direct response.**

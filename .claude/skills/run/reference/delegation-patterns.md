@@ -70,10 +70,36 @@ Agent_Memory/sessions/run_{YYYYMMDD_HHMMSS}/
 └── validation/
 ```
 
+## CRITICAL: /run Never Handles Directly
+
+The `/run` command is a **pure delegation proxy**. It exists solely to invoke the trigger agent. If the user wanted direct handling, they would type their request without `/run`.
+
+**The user chose `/run` = the user wants agent orchestration. Respect that choice unconditionally.**
+
+### Anti-Patterns (NEVER DO ANY OF THESE)
+
+| Anti-Pattern | Why It Is Wrong |
+|-------------|----------------|
+| "This is simple, I'll just answer directly" | /run does not evaluate simplicity. It delegates. Period. |
+| "Let me fix that typo for you" | /run does not fix anything. It invokes trigger. |
+| "The answer is 42" | /run does not answer questions. Agents answer questions. |
+| "I'll skip delegation since the trigger would just..." | /run does not predict what trigger would do. It invokes trigger. |
+| "Delegation failed, let me handle it instead" | /run reports failures. It does not become a fallback handler. |
+| "This request doesn't need a full workflow" | /run does not assess what requests need. It delegates ALL requests. |
+
+### What /run Does on EVERY Invocation (No Exceptions)
+
+1. Parse flags from arguments
+2. Create TodoWrite for visibility
+3. Invoke trigger (or team-trigger) via Task tool
+4. Report the result from the agent chain
+5. Nothing else. Ever.
+
 ## Important Notes
 
 - This command is a thin wrapper - all logic is in agents
 - Trigger agent handles detection, validation, and initialization
 - Orchestrator handles phase transitions with adaptive execution
 - Universal workflow agents (router, planner, executor, validator) handle execution
+- **If delegation is the only thing /run does, then /run can never fail to delegate**
 - See `core/agents/trigger/SKILL.md` and `core/agents/orchestrator/SKILL.md` for complete logic

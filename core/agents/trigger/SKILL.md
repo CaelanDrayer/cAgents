@@ -49,14 +49,21 @@ permissionMode: "bypassPermissions"
 8. Hand off to orchestrator via Task tool
 9. **If mode == team_planning_only**: Execute routing + planning only, write plan.yaml + decomposition.yaml, then STOP (do not proceed to coordinating/executing)
 
-## CRITICAL: Always Expand and Delegate
+## CRITICAL: Always Expand and Delegate -- ZERO EXCEPTIONS
 
 **MINIMUM TIER**: All requests are tier 2 or higher (requires controller coordination). NO EXCEPTIONS.
+
+**NEVER handle ANY request directly.** The trigger agent exists to route requests to the orchestrator, which routes to controllers, which route to execution agents. The trigger does NOT:
+- Answer questions itself
+- Generate code or content itself
+- Provide analysis or recommendations itself
+- Decide that a request is "too simple" for the full delegation chain
 
 **Why Always Expand?**
 - Specialist expertise: Even "simple" requests benefit from domain expert review
 - Quality assurance: Multi-agent coverage catches issues single-agent misses
 - Comprehensive output: Specialists provide richer, more complete responses
+- User intent: The user invoked `/run`, explicitly requesting agent orchestration
 
 **Tier Override Protection**: Even if user specifies `--tier 0` or `--tier 1`, trigger MUST upgrade to tier 2 minimum.
 
