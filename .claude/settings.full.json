@@ -1,11 +1,11 @@
 {
-  "$comment": "Hook configuration - cAgents V9.10.5 - Resilient hook paths via run-hook.cjs launcher",
+  "$comment": "Hook configuration - cAgents V9.10.6 - Fix hook paths: use $CLAUDE_PROJECT_DIR (built-in) instead of ${CAGENTS_DIR} (custom env not expanded in command strings)",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
   "teammateMode": "tmux",
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CAGENTS_VERSION": "9.10.5",
+    "CAGENTS_VERSION": "9.10.6",
     "CAGENTS_DIR": "/home/PathingIT/cAgents"
   },
   "permissions": {
@@ -30,7 +30,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CAGENTS_DIR}/.claude/hooks/run-hook.cjs session-catchup",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/run-hook.cjs session-catchup",
             "timeout": 10
           }
         ]
@@ -41,7 +41,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CAGENTS_DIR}/.claude/hooks/run-hook.cjs team-stop",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/run-hook.cjs team-stop",
             "timeout": 10
           }
         ]
@@ -52,7 +52,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CAGENTS_DIR}/.claude/hooks/run-hook.cjs verify-completion",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/run-hook.cjs verify-completion",
             "timeout": 10
           }
         ]
@@ -63,12 +63,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CAGENTS_DIR}/.claude/hooks/run-hook.cjs subagent-tracker",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/run-hook.cjs subagent-tracker",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "node ${CAGENTS_DIR}/.claude/hooks/run-hook.cjs team-start",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/run-hook.cjs team-start",
             "timeout": 5
           }
         ]
@@ -80,7 +80,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CAGENTS_DIR}/.claude/hooks/run-hook.cjs bash-validator",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/run-hook.cjs bash-validator",
             "timeout": 5
           }
         ]
@@ -90,7 +90,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CAGENTS_DIR}/.claude/hooks/run-hook.cjs secret-detection",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/run-hook.cjs secret-detection",
             "timeout": 5
           }
         ]
@@ -101,7 +101,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CAGENTS_DIR}/.claude/hooks/run-hook.cjs tool-failure-tracker",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/run-hook.cjs tool-failure-tracker",
             "timeout": 5
           }
         ]
@@ -112,7 +112,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CAGENTS_DIR}/.claude/hooks/run-hook.cjs teammate-idle-handler",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/run-hook.cjs teammate-idle-handler",
             "timeout": 5
           }
         ]
@@ -123,7 +123,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CAGENTS_DIR}/.claude/hooks/run-hook.cjs team-task-complete",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/run-hook.cjs team-task-complete",
             "timeout": 5
           }
         ]
@@ -134,7 +134,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CAGENTS_DIR}/.claude/hooks/run-hook.cjs permission-handler",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/run-hook.cjs permission-handler",
             "timeout": 5
           }
         ]
@@ -145,7 +145,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CAGENTS_DIR}/.claude/hooks/run-hook.cjs pre-compact-save",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/run-hook.cjs pre-compact-save",
             "timeout": 10
           }
         ]
@@ -156,7 +156,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CAGENTS_DIR}/.claude/hooks/run-hook.cjs notification",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/run-hook.cjs notification",
             "timeout": 5
           }
         ]

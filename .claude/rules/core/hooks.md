@@ -12,9 +12,9 @@ V9.10 CJS-only hook architecture with 14 hook event types and `createHook()` fac
 
 cAgents uses a unified CJS hook system configured in `.claude/settings.json`:
 
-- **CJS hooks** (`.claude/hooks/`): 16 `.cjs` files -- 1 shared utility module (`hook-utils.cjs`) + 1 hook launcher (`run-hook.cjs`) + 13 registered hooks + 1 standalone CLI tool (`eval-runner.cjs`). Most hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output). Two hooks (`teammate-idle-handler.cjs`, `team-task-complete.cjs`) manage their own lifecycle because they use exit code 2 for signaling, which `createHook()` does not support.
+- **CJS hooks** (`.claude/hooks/`): 16 `.cjs` files -- 1 shared utility module (`hook-utils.cjs`) + 1 hook launcher (`run-hook.cjs`) + 13 registered hooks + 1 standalone CLI tool (`eval-runner.cjs`). All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output).
 - **Prompt hooks**: None currently active. The Stop prompt hook was removed in V9.6.2 due to unreliable LLM JSON responses causing recurring validation failures. The `verify-completion.cjs` command hook provides equivalent file-based verification.
-- **Resilient invocation via run-hook.cjs**: All hooks are called via `node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/run-hook.cjs <hook-name>` -- a launcher that resolves the target hook path using multiple fallbacks (`CLAUDE_PLUGIN_ROOT` -> `CLAUDE_PROJECT_DIR` -> `process.cwd()` -> `__dirname`). The `${CLAUDE_PLUGIN_ROOT}` prefix ensures the launcher itself is found regardless of the user's working directory.
+- **Resilient invocation via run-hook.cjs**: All hooks are called via `node "$CLAUDE_PROJECT_DIR"/.claude/hooks/run-hook.cjs <hook-name>` -- a launcher that resolves the target hook path using multiple fallbacks (`__dirname` -> `CAGENTS_DIR` -> `CLAUDE_PROJECT_DIR` -> `CLAUDE_PLUGIN_ROOT` -> `process.cwd()`). The `$CLAUDE_PROJECT_DIR` is a built-in Claude Code variable that reliably resolves to the project root. Note: Custom env vars like `${CAGENTS_DIR}` are NOT expanded in hook command strings (see [issue #4276](https://github.com/anthropics/claude-code/issues/4276)).
 
 ### V9.5 Changes (from V9.4)
 
@@ -343,7 +343,7 @@ Hooks are registered in `.claude/settings.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/run-hook.cjs my-hook",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/run-hook.cjs my-hook",
             "timeout": 5
           }
         ]

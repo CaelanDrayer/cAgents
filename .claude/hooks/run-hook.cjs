@@ -3,18 +3,18 @@
  * Hook Runner - Resilient hook launcher for cAgents
  *
  * Resolves the hook directory path using multiple fallbacks:
- * 1. CAGENTS_DIR (explicit cAgents installation path, set in settings.json env)
- * 2. CLAUDE_PLUGIN_ROOT (set by Claude Code - may point to user's project, not plugin)
+ * 1. __dirname (two levels up from .claude/hooks/ - always correct when launcher is found)
+ * 2. CAGENTS_DIR (explicit cAgents installation path, set in settings.json env)
  * 3. CLAUDE_PROJECT_DIR (set by Claude Code for project context)
- * 4. process.cwd() (current working directory - works for local dev)
- * 5. __dirname (two levels up from .claude/hooks/ - always correct when launcher is found)
+ * 4. CLAUDE_PLUGIN_ROOT (set by Claude Code for plugins)
+ * 5. process.cwd() (current working directory - works for local dev)
  *
  * Usage in settings.json:
- *   "command": "node ${CAGENTS_DIR}/.claude/hooks/run-hook.cjs <hook-name>"
+ *   "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/run-hook.cjs <hook-name>"
  *
- * IMPORTANT: CLAUDE_PLUGIN_ROOT resolves to the user's project directory, NOT
- * the plugin directory. Use CAGENTS_DIR (set in settings.json env block) for
- * reliable hook resolution when cAgents is used as a plugin from other projects.
+ * NOTE: Claude Code does NOT expand custom env vars (like ${CAGENTS_DIR}) in
+ * hook command strings. Use the built-in $CLAUDE_PROJECT_DIR variable instead.
+ * See: https://github.com/anthropics/claude-code/issues/4276
  */
 
 const path = require('path');
@@ -30,11 +30,12 @@ if (!hookName) {
 }
 
 // Resolve hooks directory using multiple fallbacks
+// __dirname is first because if this file is executing, it's always correct
 const candidates = [
-  process.env.CAGENTS_DIR,
   path.resolve(__dirname, '../..'),  // Two levels up from .claude/hooks/ - always correct
-  process.env.CLAUDE_PLUGIN_ROOT,
+  process.env.CAGENTS_DIR,
   process.env.CLAUDE_PROJECT_DIR,
+  process.env.CLAUDE_PLUGIN_ROOT,
   process.cwd()
 ].filter(Boolean);
 
