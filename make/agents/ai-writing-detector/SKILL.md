@@ -76,7 +76,7 @@ Weights sum to 1.16 and are normalized to 1.0 at scoring time.
 
 1. Check if a custom sensitivity profile was provided
 2. If not, use default `medium` for all 14 categories
-3. Load pattern definitions from `@resources/hallmark-patterns.yaml`
+3. Load pattern definitions from @resources/hallmark-patterns.yaml
 
 ### Step 3: Category-by-Category Scanning
 
@@ -88,10 +88,14 @@ For each of the 14 categories:
 - Or when density exceeds 5 per 1000 words across the document
 - Record each cluster with line numbers, the specific words, and surrounding context
 
-**Category 2 -- Analytical/Academic Words** (weight: 0.08):
+**Category 2 -- Analytical/Academic Words & Technical Jargon** (weight: 0.08):
 - Scan for overly formal connectives: furthermore, moreover, consequently, subsequently, thereby, wherein, hitherto, notwithstanding
 - Scan for academic vocabulary: juxtaposition, dichotomy, extrapolate, elucidate, delineate, contextualize, posit, ascertain, predicated, promulgate, paradigm, synergy
 - Flag when density exceeds 5 per 1000 words (1-2 per 1000 is normal academic writing)
+- Scan for domain-inappropriate technical jargon: utilize, facilitate, methodology, functionality, implementation, infrastructure, optimization, operationalize, systematize, conceptualize, incentivize, synergize
+- Flag technical jargon used in non-technical prose when simpler alternatives exist
+- Detect complex multi-clause sentences (3+ subordinate clauses) that convey detailed information using unnecessarily complex grammatical structures
+- Calculate average clause count per sentence; flag if consistently above 2.5
 
 **Category 3 -- Punctuation/Style Tics** (weight: 0.08):
 - Count em dashes per 500 words (flag if > 2)
@@ -117,6 +121,9 @@ For each of the 14 categories:
 **Category 6 -- Transitions** (weight: 0.06):
 - Detect performative navigation phrases at sentence/paragraph boundaries
 - Match: "Let's explore", "Let's dive in", "Moving on to", "Having established", "With that in mind", "Building on this", "Let's delve into", etc.
+- Detect mechanical subordinate-clause transitions: "In light of the fact that", "In consideration of", "With regard to", "In terms of", "In the context of", "As a consequence of", etc.
+- Flag formulaic subordinate-clause paragraph bridges (e.g., "While X, it is...", "Although X, this...", "Given that X, we...")
+- Flag when 3+ paragraphs begin with the same subordinate-clause bridge pattern
 
 **Category 7 -- Qualifiers & Softening** (weight: 0.06):
 - Detect unnecessary hedging: "It's worth noting", "It's important to remember", "while this may vary", "to some extent", "one could argue", "generally speaking"
@@ -139,6 +146,10 @@ For each of the 14 categories:
 - Check name diversity (flag if names are generic: Emily, Sarah, Alex, James)
 - Score specificity (abstract vs. concrete/sensory details)
 - Analyze adjective-noun pairings for predictability
+- Detect "rich yet shallow" vocabulary: high lexical diversity (type-token ratio > 0.70) combined with low emotional/sensory word ratio (< 2 per 1000 words)
+- Flag absence of spontaneous language: no colloquialisms, informal interjections ("honestly", "look", "I mean"), visceral reactions ("gut feeling", "makes my skin crawl")
+- Detect emotional flatness: sophisticated vocabulary with no expression of joy, frustration, surprise, anger, or humor
+- Flag ornamental vocabulary: advanced words used decoratively rather than precisely ("myriad of", "plethora of", "cornucopia of", "constellation of")
 
 **Category 10 -- Mechanical Writing** (weight: 0.12):
 - Calculate sentence length variance (flag if within 20% of average)
@@ -147,6 +158,11 @@ For each of the 14 categories:
 - Detect grammar perfection (no fragments, no "And"/"But" openers)
 - Flag American English uniformity without regional variation
 - Check for zero spelling errors (humans occasionally mistype)
+- Detect literary device absence: no metaphors, similes, analogies, personification, alliteration, irony, or vivid imagery -- text that is informational without any imaginative or creative element
+- Detect creative grammar deficit: correct grammar without intentional fragments, one-word sentences, parenthetical asides, dash interruptions, trailing ellipses, unconventional capitalization, or sentence inversions
+- Detect predictable syntax: over 85% declarative sentences, no rhetorical questions, no exclamatory or imperative sentences, fewer than 10% non-standard openers (adverbial, prepositional, dependent clause openers)
+- Detect complex sentence preference: average clause count above 2.5 per sentence, fewer than 20% simple sentences, excessive subordinating conjunction density (> 8 per 1000 words: which, that, although, while, because, since, whereas, whereby)
+- Detect predictable rhythm: uniform clause lengths (variance within 25% of mean), same sentence-ending cadence pattern repeated, fewer than 10% short sentences (under 8 words), paragraphs following identical build-up-then-conclude patterns
 
 **Category 11 -- Repetitive Phrasing** (weight: 0.08):
 - Detect "Not only... but also" overuse
@@ -160,6 +176,9 @@ For each of the 14 categories:
 - Detect vague future references: "time will tell", "remains to be seen"
 - Flag non-committal language on straightforward topics
 - Score commitment level per claim
+- Detect speculative/hypothetical focus: excessive emphasis on potential outcomes and future implications rather than concrete present realities ("has the potential to", "could revolutionize", "may reshape", "is poised to", "promises to")
+- Measure future orientation ratio: flag if > 30% of sentences are future-oriented rather than analyzing present conditions
+- Flag conditional speculation chains: "if implemented correctly... if leveraged properly... if harnessed effectively..."
 
 **Category 13 -- Conflicting Subtext** (weight: 0.10):
 - Analyze sentences where surface meaning contradicts implied meaning
@@ -183,6 +202,9 @@ After individual category scans:
 2. Evaluate grammar perfection holistically
 3. Detect style/tone shifts (possible human/AI boundary in mixed content)
 4. Check for assignment-agnostic writing (text so vague it could answer many prompts)
+5. Check for technical complexity without substance: complex sentence structures and advanced vocabulary masking shallow analysis (high subordinate clause count + low specificity + technical jargon without concrete examples)
+6. Detect mechanical fluency: perfectly smooth transitions between every paragraph with no digressions, asides, tangential observations, self-corrections, or surprising connections
+7. Assess syntax monotony: uniform syntactic patterns (declarative dominance > 85%, consistent clause count, same opener patterns, no interrogative/exclamatory/imperative variety)
 
 ### Step 5: Score Calculation
 
@@ -226,7 +248,7 @@ Optional parameters:
 
 ## Output Format
 
-See `@resources/hallmark-patterns.yaml` for the full detection report schema.
+See @resources/hallmark-patterns.yaml for the full detection report schema.
 
 The report is written to the same directory as the input document as `detection_report.yaml`, or to a specified output path.
 

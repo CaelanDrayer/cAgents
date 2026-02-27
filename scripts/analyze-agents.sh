@@ -1,11 +1,14 @@
 #!/bin/bash
 # Deep agent analysis
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
 echo "=== DEEP AGENT ANALYSIS ==="
 echo ""
 
 # Find all SKILL.md files (primary agent files)
-skill_files=$(find /home/PathingIT/cAgents/{core,shared,make,grow,operate,people,serve}/agents -name "SKILL.md" -o -name "*.md" -not -path "*/resources/*" 2>/dev/null | grep -v "/resources/" | sort)
+skill_files=$(find "$PROJECT_ROOT"/{core,shared,make,grow,operate,people,serve}/agents -name "SKILL.md" -o -name "*.md" -not -path "*/resources/*" 2>/dev/null | grep -v "/resources/" | sort)
 
 echo "Agent files found: $(echo "$skill_files" | wc -l)"
 echo ""
@@ -81,7 +84,7 @@ echo ""
 echo "=== CHECKING PLUGIN MANIFESTS ==="
 
 for domain in core shared make grow operate people serve; do
-    manifest="/home/PathingIT/cAgents/$domain/.claude-plugin/plugin.json"
+    manifest="$PROJECT_ROOT/$domain/.claude-plugin/plugin.json"
     
     if [ -f "$manifest" ]; then
         echo "Domain: $domain"
@@ -105,7 +108,7 @@ except Exception as e:
         missing=0
         while IFS= read -r path; do
             if [ -n "$path" ]; then
-                full_path="/home/PathingIT/cAgents/$domain/$path"
+                full_path="$PROJECT_ROOT/$domain/$path"
                 if [ ! -f "$full_path" ]; then
                     echo "  MISSING: $path (referenced in plugin.json)"
                     ((missing++))

@@ -1,22 +1,25 @@
 #!/bin/bash
 # Create missing resource files referenced by @path
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
 missing_files=(
-  "/home/PathingIT/cAgents/grow/agents/marketing-strategist/resources/strategy-framework.md"
-  "/home/PathingIT/cAgents/grow/agents/marketing-strategist/resources/competitive-analysis.md"
-  "/home/PathingIT/cAgents/grow/agents/marketing-strategist/resources/gtm-template.md"
-  "/home/PathingIT/cAgents/make/agents/architect/resources/examples.md"
-  "/home/PathingIT/cAgents/make/agents/backend-developer/resources/database-optimization.md"
-  "/home/PathingIT/cAgents/make/agents/backend-developer/resources/examples.md"
-  "/home/PathingIT/cAgents/make/agents/devops-lead/resources/infrastructure-patterns.md"
-  "/home/PathingIT/cAgents/make/agents/devops-lead/resources/deployment-strategies.md"
-  "/home/PathingIT/cAgents/make/agents/devops-lead/resources/monitoring-setup.md"
-  "/home/PathingIT/cAgents/make/agents/frontend-developer/resources/component-patterns.md"
-  "/home/PathingIT/cAgents/make/agents/frontend-developer/resources/accessibility-guide.md"
-  "/home/PathingIT/cAgents/make/agents/frontend-developer/resources/performance-tips.md"
-  "/home/PathingIT/cAgents/people/agents/hr-business-partner/resources/org-planning.md"
-  "/home/PathingIT/cAgents/people/agents/hr-business-partner/resources/change-management.md"
-  "/home/PathingIT/cAgents/people/agents/hr-business-partner/resources/talent-review.md"
+  "$PROJECT_ROOT/grow/agents/marketing-strategist/resources/strategy-framework.md"
+  "$PROJECT_ROOT/grow/agents/marketing-strategist/resources/competitive-analysis.md"
+  "$PROJECT_ROOT/grow/agents/marketing-strategist/resources/gtm-template.md"
+  "$PROJECT_ROOT/make/agents/architect/resources/examples.md"
+  "$PROJECT_ROOT/make/agents/backend-developer/resources/database-optimization.md"
+  "$PROJECT_ROOT/make/agents/backend-developer/resources/examples.md"
+  "$PROJECT_ROOT/make/agents/devops-lead/resources/infrastructure-patterns.md"
+  "$PROJECT_ROOT/make/agents/devops-lead/resources/deployment-strategies.md"
+  "$PROJECT_ROOT/make/agents/devops-lead/resources/monitoring-setup.md"
+  "$PROJECT_ROOT/make/agents/frontend-developer/resources/component-patterns.md"
+  "$PROJECT_ROOT/make/agents/frontend-developer/resources/accessibility-guide.md"
+  "$PROJECT_ROOT/make/agents/frontend-developer/resources/performance-tips.md"
+  "$PROJECT_ROOT/people/agents/hr-business-partner/resources/org-planning.md"
+  "$PROJECT_ROOT/people/agents/hr-business-partner/resources/change-management.md"
+  "$PROJECT_ROOT/people/agents/hr-business-partner/resources/talent-review.md"
 )
 
 for file in "${missing_files[@]}"; do

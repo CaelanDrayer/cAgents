@@ -467,7 +467,7 @@ vocabulary_tells:
 analytical_academic:
   weight: 0.08
   signal_strength: medium
-  description: "Overly formal connectives and academic vocabulary uncommon in natural prose"
+  description: "Overly formal connectives, academic vocabulary, and domain-inappropriate technical jargon"
   detection_threshold:
     density: 5    # per 1000 words; 1-2 is normal academic writing
   patterns:
@@ -493,6 +493,32 @@ analytical_academic:
     - implications
     - paradigm
     - synergy
+  technical_jargon:
+    description: "Technical jargon and advanced vocabulary used outside appropriate technical context"
+    patterns:
+      - "utilize"          # when "use" works
+      - "facilitate"       # when "help" or "enable" works
+      - "methodology"      # when "method" or "approach" works
+      - "functionality"    # when "feature" or "ability" works
+      - "implementation"   # when "setup" or "use" works
+      - "infrastructure"   # in non-technical contexts
+      - "optimization"     # when "improvement" works
+      - "operationalize"   # when "put into practice" works
+      - "systematize"      # when "organize" works
+      - "conceptualize"    # when "imagine" or "think about" works
+      - "instantiate"      # in non-programming contexts
+      - "parameterize"     # in non-technical contexts
+      - "incentivize"      # when "motivate" or "encourage" works
+      - "synergize"        # when "combine" or "work together" works
+    rule: "Flag when technical vocabulary appears in non-technical prose or when simpler alternatives exist"
+  complex_clause_density:
+    description: "Sentences with 3+ subordinate clauses conveying detailed information"
+    threshold: 3    # clauses per sentence; flag if avg exceeds this
+    patterns:
+      - "which .+ that .+ where"
+      - "although .+ while .+ because"
+      - "given that .+ in order to .+ so that"
+    rule: "Flag sentences with multiple nested clauses that could be broken into simpler statements"
 
 # ==============================================================================
 # Category 3: Punctuation/Style Tics (weight: 0.08)
@@ -776,7 +802,7 @@ ai_phrases:
 transitions:
   weight: 0.06
   signal_strength: weak
-  description: "Performative navigation phrases that feel like guided tours"
+  description: "Performative navigation phrases and mechanical subordinate-clause connectors"
   patterns:
     - "Let's explore"
     - "Let's dive in"
@@ -796,6 +822,35 @@ transitions:
     - "Now that we've covered"
     - "Turning our attention to"
     - "As we move forward"
+  mechanical_transitions:
+    description: "Complex grammatical structures using subordinate clauses and transitional phrases to connect ideas in a formulaic way"
+    patterns:
+      - "In light of the fact that"
+      - "In consideration of"
+      - "With regard to"
+      - "In relation to"
+      - "With respect to"
+      - "In terms of"
+      - "In the context of"
+      - "As a consequence of"
+      - "As a result of this"
+      - "In conjunction with"
+      - "By virtue of"
+      - "On the basis of"
+      - "For the purpose of"
+      - "With the aim of"
+      - "In accordance with"
+    subordinate_clause_bridges:
+      description: "Using subordinate clauses as mechanical paragraph bridges"
+      patterns:
+        - "^While .+, it is"
+        - "^Although .+, this"
+        - "^Given that .+, we"
+        - "^Considering .+, the"
+        - "^As .+ continues to .+, it"
+        - "^Since .+ has .+, the"
+      rule: "AI uses subordinate clause openers as formulaic bridges between paragraphs -- same pattern repeated"
+      threshold: 3    # flag if 3+ paragraphs begin with subordinate clause bridges
 
 # ==============================================================================
 # Category 7: Qualifiers & Softening (weight: 0.06)
@@ -917,6 +972,40 @@ creativity_deficit:
       description: "Generic 'city' instead of specific places like Portland or Osaka"
     specificity_deficit:
       description: "Abstract instead of concrete, sensory details"
+    rich_yet_shallow_vocabulary:
+      description: "Rich and varied vocabulary that lacks spontaneity and emotional depth"
+      checks:
+        high_lexical_diversity_low_emotion:
+          description: "Vocabulary diversity score is high but emotional/sensory word ratio is low"
+          lexical_diversity_threshold: 0.70   # flag if type-token ratio above this
+          emotion_word_threshold: 2           # per 1000 words; flag if below this
+        absence_of_spontaneous_language:
+          description: "No colloquialisms, slang, informal expressions, or conversational asides"
+          patterns_absent:
+            - colloquialisms
+            - informal_interjections    # "honestly", "look", "I mean", "y'know"
+            - conversational_hedges     # "sort of", "kind of", "like" (informal)
+            - visceral_reactions        # "gut feeling", "makes my skin crawl", "hit me like"
+        emotional_flatness:
+          description: "Vocabulary is sophisticated but emotionally neutral -- no joy, frustration, surprise, anger"
+          emotion_categories_absent:
+            - joy_delight       # "thrilling", "loved it", "exciting"
+            - frustration_anger # "infuriating", "maddening", "annoying"
+            - surprise_wonder   # "astonishing", "blew my mind", "jaw-dropping"
+            - sadness_loss      # "heartbreaking", "devastating", "gutting"
+            - humor_amusement   # "hilarious", "cracked up", "absurd"
+          rule: "Human writers naturally express emotion; AI produces emotionally flat text with impressive vocabulary"
+        ornamental_vocabulary:
+          description: "Advanced words used decoratively rather than precisely"
+          patterns:
+            - "myriad of"
+            - "plethora of"
+            - "cornucopia of"
+            - "panoply of"
+            - "constellation of"
+            - "mosaic of"
+            - "kaleidoscope of"
+          rule: "AI uses advanced vocabulary as ornamentation; humans use it for precision"
 
 # ==============================================================================
 # Category 10: Mechanical Writing (weight: 0.12)
@@ -924,7 +1013,7 @@ creativity_deficit:
 mechanical_writing:
   weight: 0.12
   signal_strength: strong
-  description: "Technically correct but rhythmically monotonous prose"
+  description: "Technically correct but rhythmically monotonous prose lacking literary devices and creative grammar"
   checks:
     sentence_length_uniformity:
       threshold: 0.20    # flag if variance within 20% of mean
@@ -973,6 +1062,90 @@ mechanical_writing:
       description: "Zero spelling errors (humans occasionally mistype)"
     american_english_only:
       description: "No British/regional spelling variation"
+    literary_device_absence:
+      description: "No metaphors, similes, analogies, personification, alliteration, or other literary devices"
+      checks:
+        - simile_absence           # no "like a..." or "as ... as" comparisons
+        - metaphor_absence         # no figurative language beyond cliches
+        - personification_absence  # no attributing human qualities to abstract concepts naturally
+        - alliteration_absence     # no sound-based word pairings
+        - irony_absence            # no ironic or sardonic observations
+        - imagery_absence          # no vivid sensory language (sight, sound, taste, touch, smell)
+        - analogy_absence          # no extended comparisons to clarify ideas
+      rule: "Human writing naturally incorporates literary devices; their total absence signals mechanical generation"
+    creative_grammar_deficit:
+      description: "Grammatically correct but lacking creative deviations typical of human writing"
+      checks:
+        - no_intentional_fragments        # humans use fragments for emphasis ("Not a chance.")
+        - no_one_word_sentences           # "Exactly." "Never." "Why?"
+        - no_parenthetical_asides         # humans insert (often witty) parenthetical commentary
+        - no_dashes_for_interruption      # using dashes to mimic interrupted thought mid-sentence
+        - no_ellipsis_for_trailing_off    # trailing thoughts with "..."
+        - no_unconventional_capitalization # humans occasionally capitalize for EMPHASIS
+        - no_sentence_inversion           # "Gone are the days..." or "Rarely does..."
+      rule: "Correct grammar without any creative bending suggests automated generation"
+    predictable_syntax:
+      description: "Limited syntax variety favoring declarative sentences and repetitive structures"
+      checks:
+        declarative_dominance:
+          description: "Over 85% of sentences are declarative (Subject-Verb-Object)"
+          threshold: 0.85    # flag if > 85% declarative
+        question_absence:
+          description: "No rhetorical or genuine questions"
+          threshold: 0        # flag if zero questions in 500+ word text
+        exclamatory_absence:
+          description: "No exclamatory or emphatic sentences"
+        imperative_absence:
+          description: "No imperative sentences or direct address"
+        conditional_overuse:
+          description: "Heavy reliance on if/then and conditional structures"
+        inverted_sentence_absence:
+          description: "No sentences beginning with adverbs, prepositional phrases, or dependent clauses"
+          threshold: 0.10    # flag if < 10% of sentences use non-standard openers
+      rule: "Natural writing mixes declarative, interrogative, exclamatory, and imperative sentences"
+    complex_sentence_preference:
+      description: "Preference for long, complex sentences with multiple subordinate clauses"
+      checks:
+        avg_clause_count:
+          threshold: 2.5     # flag if average sentence has > 2.5 clauses
+        max_simple_ratio:
+          threshold: 0.20    # flag if < 20% of sentences are simple (one clause)
+        subordinate_clause_density:
+          description: "Excessive use of 'which', 'that', 'although', 'while', 'because', 'since', 'whereas'"
+          threshold: 8       # per 1000 words; flag if > 8
+      subordinating_conjunctions:
+        - which
+        - that
+        - although
+        - while
+        - because
+        - since
+        - whereas
+        - whereby
+        - whenever
+        - wherever
+        - "in order to"
+        - "so that"
+        - "given that"
+        - "provided that"
+        - "assuming that"
+      rule: "AI tends to produce uniformly complex sentences; humans mix simple and complex naturally"
+    predictable_rhythm:
+      description: "Consistent and predictable prosodic rhythm without natural variation"
+      checks:
+        syllable_uniformity:
+          description: "Sentences with similar syllable counts and stress patterns"
+        clause_length_uniformity:
+          description: "Subordinate clauses of similar word counts"
+          threshold: 0.25   # flag if clause length variance within 25% of mean
+        cadence_repetition:
+          description: "Same sentence-ending pattern (long clause -> short concluding clause) repeated"
+        breath_pattern_absence:
+          description: "No short sentences that provide natural breathing points"
+          threshold: 0.10   # flag if < 10% of sentences are under 8 words
+        paragraph_rhythm_uniformity:
+          description: "Paragraphs that all follow the same build-up-then-conclude pattern"
+      rule: "Human writing has natural rhythm variation; AI produces metronomic regularity"
 
 # ==============================================================================
 # Category 11: Repetitive Phrasing (weight: 0.08)
@@ -1002,7 +1175,7 @@ repetitive_phrasing:
 speculative_focus:
   weight: 0.06
   signal_strength: weak
-  description: "Non-committal, hedge-everything language"
+  description: "Non-committal, hedge-everything language with excessive focus on potential outcomes and future implications"
   hedging_words:
     - might
     - could potentially
@@ -1023,6 +1196,31 @@ speculative_focus:
     - "while we can't be certain"
     - "it's difficult to say"
     - "results may vary"
+  speculative_hypothetical:
+    description: "Excessive focus on potential outcomes and future implications rather than concrete present realities"
+    patterns:
+      - "has the potential to"
+      - "could revolutionize"
+      - "may reshape"
+      - "might transform"
+      - "promises to"
+      - "stands to"
+      - "is poised to"
+      - "would likely"
+      - "if implemented correctly"
+      - "if leveraged properly"
+      - "if harnessed effectively"
+      - "the implications are"
+      - "the ramifications could"
+      - "this could pave the way"
+      - "the possibilities are"
+      - "what remains to be seen is"
+      - "the question remains"
+      - "only then will we"
+    future_orientation:
+      description: "Disproportionate focus on future implications vs. present analysis"
+      threshold: 0.30    # flag if > 30% of sentences are future-oriented
+      rule: "AI overemphasizes what might happen instead of analyzing what is happening"
 
 # ==============================================================================
 # Category 13: Conflicting Subtext (weight: 0.10)
@@ -1104,6 +1302,29 @@ cross_category:
   assignment_agnostic:
     description: "Text so vague it could answer many different prompts"
     categories: [tone_voice, creativity_deficit, speculative_focus]
+  technical_complexity_without_substance:
+    description: "Complex sentence structures and advanced vocabulary masking shallow analysis"
+    categories: [analytical_academic, creativity_deficit, mechanical_writing]
+    checks:
+      - "High subordinate clause count combined with low specificity"
+      - "Technical jargon density inversely correlated with concrete examples"
+      - "Rich vocabulary diversity with absence of emotional or sensory language"
+  mechanical_fluency:
+    description: "Text that reads fluently but lacks the unpredictability of human thought"
+    categories: [mechanical_writing, transitions, creativity_deficit]
+    checks:
+      - "Perfectly smooth transitions between every paragraph"
+      - "No digressions, asides, or tangential observations"
+      - "No self-corrections or mid-thought pivots"
+      - "No unexpected juxtapositions or surprising connections"
+  syntax_monotony:
+    description: "Uniform syntactic patterns creating predictable, metronomic prose"
+    categories: [mechanical_writing, structural_patterns, repetitive_phrasing]
+    checks:
+      - "Declarative sentence dominance > 85%"
+      - "Consistent clause count per sentence"
+      - "Same sentence opener patterns repeated"
+      - "No interrogative, exclamatory, or imperative variety"
 
 # ==============================================================================
 # Detection Report Schema

@@ -100,6 +100,48 @@ pass_1:
       - before: "This provides valuable insights into the complex landscape"
         after: "This helps explain the situation"
 
+  technical_jargon:
+    strategy: "Replace domain-inappropriate technical jargon with plain alternatives"
+    rules:
+      - "Only flag jargon when used outside its appropriate technical domain"
+      - "Replace with the simplest word that preserves meaning"
+      - "Keep jargon in genuinely technical contexts (API docs, engineering specs)"
+      - "If the audience is non-technical, simplify aggressively"
+    replacements:
+      utilize: "use"
+      facilitate: "help, enable, make possible"
+      methodology: "method, approach, way"
+      functionality: "feature, ability, what it does"
+      implementation: "setup, design, how it works"
+      optimization: "improvement, tuning"
+      operationalize: "put into practice, start using"
+      systematize: "organize, set up"
+      conceptualize: "imagine, picture, think about"
+      incentivize: "motivate, encourage, reward"
+      synergize: "combine, work together"
+      instantiate: "create, set up"
+      parameterize: "configure, set up"
+    examples:
+      - before: "We need to operationalize this methodology to facilitate better outcomes"
+        after: "We need to put this approach into practice to get better results"
+      - before: "The optimization of existing functionality requires a systematic methodology"
+        after: "Improving what we have takes a clear plan"
+      - before: "Utilizing this framework to incentivize stakeholder engagement"
+        after: "Using this framework to encourage people to get involved"
+
+  complex_clause_simplification:
+    strategy: "Break multi-clause sentences into simpler statements"
+    rules:
+      - "Split sentences with 3+ clauses into 2-3 shorter sentences"
+      - "Remove unnecessary subordinating conjunctions"
+      - "Keep one main idea per sentence; move secondary ideas to their own sentence"
+      - "Preserve logical connections but use simpler linking (periods, 'and', 'but')"
+    examples:
+      - before: "Although the system, which was designed to handle concurrent requests, has demonstrated significant improvements in throughput, it remains unclear whether the architecture can scale to meet the demands that will emerge as the user base grows."
+        after: "The system handles concurrent requests well and throughput has improved. But can the architecture scale as the user base grows? That's still unclear."
+      - before: "Given that the research indicates a strong correlation between early intervention and positive outcomes, while acknowledging that implementation challenges persist in underserved communities, it becomes evident that a multi-pronged approach is necessary."
+        after: "Research shows early intervention leads to better outcomes. Underserved communities still face implementation challenges, though. A multi-pronged approach is the way forward."
+
 # ==============================================================================
 # Pass 2 Strategies: Punctuation, Style & Grammar Humanization
 # ==============================================================================
@@ -167,6 +209,41 @@ pass_2:
       - before: "The tool, which was built last year, is still reliable."
         after: "The tool (built last year) is still reliable."
 
+  literary_device_injection:
+    strategy: "Add natural literary devices where the text is purely mechanical"
+    rules:
+      - "Add similes or analogies to clarify abstract concepts (1-2 per 500 words max)"
+      - "Use personification sparingly for abstract concepts when it aids understanding"
+      - "Introduce vivid imagery (sensory language) to replace abstract descriptions"
+      - "Add ironic or sardonic observations where the author's voice would naturally include them"
+      - "Do NOT force literary devices -- only add where they genuinely improve clarity or engagement"
+      - "Match device sophistication to the document's register"
+    examples:
+      - before: "The system processes requests efficiently under high load conditions."
+        after: "The system chews through requests even when traffic spikes -- it barely notices the load."
+      - before: "The data reveals an interesting pattern of user behavior."
+        after: "The data tells a story: users cluster around three behaviors, like commuters choosing between the same three routes."
+      - before: "The implementation required significant effort from the team."
+        after: "The implementation was a slog. Three weeks of the team grinding through edge cases, fueled by stubbornness and cold coffee."
+
+  creative_grammar_injection:
+    strategy: "Introduce creative grammatical deviations that signal human authorship"
+    rules:
+      - "Add intentional fragments for emphasis (1-2 per 500 words)"
+      - "Use one-word sentences for impact ('Exactly.' 'Never.' 'Done.')"
+      - "Insert parenthetical asides that reveal the author's thought process"
+      - "Use dashes to create mid-sentence interruptions or afterthoughts"
+      - "Add trailing ellipses sparingly where thoughts naturally trail off"
+      - "Use sentence inversions for emphasis ('Rarely does...' 'Gone are...')"
+      - "Match frequency to the document's register -- more in informal, fewer in formal"
+    examples:
+      - before: "The results were clear and there was no room for debate."
+        after: "The results were clear. No debate."
+      - before: "We should consider the cost implications carefully before proceeding."
+        after: "The cost implications -- and they're not trivial -- deserve a hard look before we proceed."
+      - before: "This approach has rarely been attempted in the industry."
+        after: "Rarely has anyone in this industry attempted this approach."
+
 # ==============================================================================
 # Pass 3 Strategies: Structural & Transitions
 # ==============================================================================
@@ -226,6 +303,34 @@ pass_3:
         after: "[removed -- next paragraph simply starts discussing architecture]"
       - before: "Having established the background, let's turn our attention to the solution."
         after: "The solution builds on this."
+
+  mechanical_transition_replacement:
+    strategy: "Replace formulaic subordinate-clause transitions with natural connectors or silence"
+    rules:
+      - "Replace wordy prepositional transitions with simple connectors or remove entirely"
+      - "Break the pattern of every paragraph opening with a subordinate clause"
+      - "Vary paragraph openers: some start with the main point, some with a question, some with a short declarative"
+      - "If 3+ paragraphs use the same subordinate-clause bridge pattern, rewrite at least 2 of them"
+    replacements:
+      "In light of the fact that": "Because, Since"
+      "In consideration of": "Considering, Given"
+      "With regard to": "About, On"
+      "In relation to": "About, Regarding"
+      "With respect to": "About, For"
+      "In terms of": "[remove or restructure]"
+      "In the context of": "In, For, Within"
+      "As a consequence of": "Because of, After"
+      "In conjunction with": "With, Along with"
+      "By virtue of": "Because of, Through"
+      "On the basis of": "Based on, From"
+      "For the purpose of": "To, For"
+      "With the aim of": "To"
+      "In accordance with": "Following, Per"
+    examples:
+      - before: "In light of the fact that the market has shifted, organizations must adapt."
+        after: "The market has shifted. Organizations need to adapt."
+      - before: "While the previous approach demonstrated promise, it ultimately failed to deliver. Although the new method addresses several shortcomings, challenges remain. Given that resources are limited, prioritization becomes essential."
+        after: "The previous approach showed promise but didn't deliver. The new method fixes several problems. Still, with limited resources, we need to prioritize."
 
   qualifier_removal:
     strategy: "Remove unnecessary hedging or replace with direct statements"
@@ -295,9 +400,82 @@ pass_4:
       - "Use questions to break up declarative sequences"
       - "Vary openers: start some sentences with adverbs, prepositional phrases, or dependent clauses"
       - "Avoid more than 3 sentences with the same structure in a row"
+      - "Ensure at least 10% of sentences are short (under 8 words) for breathing room"
+      - "Vary clause lengths within complex sentences -- not all clauses should be the same word count"
+      - "Break the build-up-then-conclude paragraph pattern: some paragraphs should start with the conclusion"
     examples:
       - before: "The system processes data efficiently. The system handles errors gracefully. The system scales horizontally."
         after: "The system processes data efficiently and handles errors without crashing. Does it scale? Horizontally, yes."
+      - before: "The framework provides robust capabilities for enterprise applications. The framework supports multiple deployment configurations. The framework enables seamless integration with existing systems."
+        after: "It scales. The framework handles enterprise workloads, supports multiple deployment configs, and plugs into what you already have."
+
+  syntax_diversification:
+    strategy: "Break declarative sentence dominance with varied sentence types"
+    rules:
+      - "Convert some declarative sentences to rhetorical questions"
+      - "Add imperative sentences for direct engagement ('Consider this', 'Look at the numbers', 'Try it yourself')"
+      - "Insert exclamatory statements where genuine surprise or emphasis is warranted"
+      - "Use sentence inversions ('Rarely does...', 'Not once did...', 'Only then can...')"
+      - "Start some sentences with adverbs ('Surprisingly,', 'Oddly,', 'Frankly,')"
+      - "Start some sentences with prepositional phrases ('In practice,', 'On the ground,', 'Behind the scenes,')"
+      - "Target: no more than 70% declarative sentences in the rewritten text"
+    examples:
+      - before: "The results exceeded expectations. The team completed the project on time. The stakeholders were satisfied."
+        after: "The results exceeded expectations. On time, too. When was the last time that happened? The stakeholders were satisfied -- genuinely, not just politely."
+      - before: "The data shows a clear trend. The trend indicates growing adoption. Users are spending more time on the platform."
+        after: "Look at the data. There's a clear trend: adoption is growing, and users are spending more time on the platform. Not a small increase, either."
+
+  complex_sentence_simplification:
+    strategy: "Break uniformly complex sentences into a natural mix of simple and complex"
+    rules:
+      - "Target at least 25% simple sentences (one main clause, no subordination)"
+      - "Split sentences with 3+ clauses into multiple sentences"
+      - "Replace subordinating conjunctions with periods or simple conjunctions where possible"
+      - "Keep some complex sentences for nuanced points -- the goal is variety, not simplicity everywhere"
+      - "Remove unnecessary 'which', 'that', 'although' clauses that don't add essential information"
+    examples:
+      - before: "While the technology has matured significantly over the past decade, which has enabled broader adoption across industries, there remain challenges that prevent organizations from fully realizing its potential, particularly in sectors where regulatory compliance demands rigorous oversight."
+        after: "The technology has matured over the past decade. Adoption has spread across industries. But challenges remain -- especially where regulatory compliance demands rigorous oversight."
+      - before: "Although experts have debated the merits of this approach, which combines elements from multiple disciplines, the consensus that has emerged suggests that integration, provided it is implemented carefully, yields better outcomes than siloed approaches."
+        after: "Experts have debated this approach for years. It pulls from multiple disciplines. The emerging consensus? Careful integration beats working in silos."
+
+  predictable_rhythm_breaking:
+    strategy: "Disrupt metronomic rhythm patterns with intentional variation"
+    rules:
+      - "Vary sentence endings: not every sentence should end with a trailing clause"
+      - "Insert 'breath point' sentences of 3-7 words between longer passages"
+      - "Alternate between front-loaded sentences (conclusion first) and back-loaded (build to conclusion)"
+      - "Break cadence expectations: after two similar-length sentences, use a drastically different length"
+      - "Use paragraph-level rhythm variation: short punchy paragraphs next to flowing ones"
+    examples:
+      - before: "The research demonstrates that collaborative approaches yield stronger outcomes when teams are aligned. The evidence suggests that communication frameworks enhance team coordination significantly. The data indicates that regular feedback loops improve project delivery timelines."
+        after: "Collaborative approaches work better when teams are aligned. That much is clear. But here's what the data adds: regular feedback loops -- actual conversations, not just status updates -- tighten delivery timelines. Communication frameworks help, but they're the scaffolding, not the building."
+
+  emotional_depth_injection:
+    strategy: "Add emotional authenticity and spontaneity to vocabulary-rich but emotionally flat text"
+    rules:
+      - "Replace ornamental vocabulary with precise, emotionally resonant words"
+      - "Add colloquialisms and informal expressions where the register permits"
+      - "Insert genuine reactions: surprise, frustration, delight, skepticism"
+      - "Add conversational asides that reveal thought process ('honestly', 'look', 'the truth is')"
+      - "Replace 'myriad of' / 'plethora of' / 'constellation of' with specific quantities or plain language"
+      - "Where the author's emotional reaction is unknown, flag: [AUTHOR: how did this make you feel?]"
+      - "Do NOT manufacture fake emotion -- better to flag for author than to fabricate"
+    replacements:
+      "myriad of": "many, dozens of, [specific number]"
+      "plethora of": "plenty of, a lot of, [specific number]"
+      "cornucopia of": "a mix of, lots of"
+      "panoply of": "a range of, various"
+      "constellation of": "a set of, several related"
+      "mosaic of": "a mix of, a blend of"
+      "kaleidoscope of": "a shifting mix of"
+    examples:
+      - before: "The initiative presented a myriad of challenges that necessitated a comprehensive reevaluation of existing methodologies."
+        after: "The initiative hit us with challenge after challenge. Honestly, we had to throw out half our playbook and start over."
+      - before: "The findings illuminate a constellation of interconnected factors that collectively influence organizational outcomes."
+        after: "Six factors kept showing up in the findings, all tangled together. Pull one thread and the others move."
+      - before: "The team demonstrated remarkable resilience in navigating the complexities of this transformative endeavor."
+        after: "The team gutted it out. Three months of messy, frustrating work -- but they got it done."
 
   repetition_consolidation:
     strategy: "Merge repeated points into single strong statements"
