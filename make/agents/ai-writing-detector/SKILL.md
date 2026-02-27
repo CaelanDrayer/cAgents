@@ -39,6 +39,9 @@ Identify passages, phrases, and structural patterns characteristic of AI-generat
 
 ```
 Document -> ai-writing-detector -> detection_report.yaml -> ai-writing-rewriter -> Rewritten Document
+         (+ optional sensitivity profile)    |
+                                             +-> per-finding locations, severity,
+                                                 confidence scores, and rewrite suggestions
 ```
 
 This agent produces the detection report. It does NOT rewrite -- that is the rewriter's job.

@@ -220,5 +220,5 @@ Bash utilities for programmatic access:
 
 ---
 
-**Version**: 9.20.0
+**Version**: 9.22.0
 **Questions?** Check the troubleshooting guide or explore the codebase.

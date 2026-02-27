@@ -6,12 +6,12 @@ Comprehensive reference for all cAgents skills (formerly commands). V9.0 migrate
 
 | Skill | Context | Agent | Lines | Ref Files |
 |-------|---------|-------|-------|-----------|
-| `/run` | fork | true | 147 | 3 |
-| `/team` | fork | true | 125 | 3 |
-| `/designer` | none | false | 161 | 7 |
-| `/review` | fork | true | 164 | 6 |
-| `/optimize` | fork | true | 158 | 6 |
-| `/helper` | none | false | 148 | 6 |
+| `/run` | fork | true | 391 | 3 |
+| `/team` | fork | true | 181 | 3 |
+| `/designer` | none | false | 160 | 7 |
+| `/review` | fork | true | 177 | 6 |
+| `/optimize` | fork | true | 160 | 6 |
+| `/helper` | none | false | 265 | 6 |
 
 ## /designer - Interactive Design Engine
 

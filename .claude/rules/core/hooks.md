@@ -6,7 +6,7 @@ paths:
 
 # cAgents Hook System
 
-V9.17.1 CJS-only hook architecture with 14 hook event types, `createHook()` factory pattern, agent audit trail, and resilient path resolution.
+V9.22.0 CJS-only hook architecture with 15 hooks across 13 event types, `createHook()` factory pattern, agent audit trail with completion summaries, and resilient path resolution.
 
 ## Architecture
 
@@ -51,10 +51,11 @@ The V9.5 refactoring eliminates the dual shell+JS architecture that caused recur
 | `SessionStart` | Session begins | `session-catchup.cjs` | Initialize state, detect incomplete sessions, inject cAgents context |
 | `SessionEnd` | Session ends | `team-stop.cjs` | Finalize metrics, update status |
 | `PreToolUse` | Before tool execution | `bash-validator.cjs`, `secret-detection.cjs` | Validate, block dangerous operations |
+| `PostToolUse` | After tool execution | `post-write-validator.cjs` | Validate JSON/YAML syntax, audit file changes |
 | `PostToolUseFailure` | Tool execution fails | `tool-failure-tracker.cjs` | Track failures, detect patterns, suggest recovery |
 | `Stop` | Claude stops responding | `verify-completion.cjs` | Verify completion criteria |
 | `SubagentStart` | Subagent spawned | `subagent-tracker.cjs`, `team-start.cjs` | Log spawns, initialize team monitoring, inject self-registration context |
-| `SubagentStop` | Subagent finishes | `subagent-stop-tracker.cjs` | Log completion, update agent tree with stop timestamps |
+| `SubagentStop` | Subagent finishes | `subagent-stop-tracker.cjs` | Log completion, capture summaries + duration, update agent tree |
 | `TeammateIdle` | Teammate goes idle | `teammate-idle-handler.cjs` | Find available work for idle members |
 | `TaskCompleted` | Task finishes | `team-task-complete.cjs` | Update task list, unblock dependencies |
 | `PermissionRequest` | Permission dialog | `permission-handler.cjs` | Auto-approve safe patterns, HITL gates |
@@ -137,9 +138,17 @@ createHook('MyHook', async (input) => {
 - **team-start.cjs**: Initializes team monitoring directories and metrics files
 
 #### SubagentStop: subagent-stop-tracker.cjs
-- **Purpose**: Track when subagents finish, updating agent_tree.yaml with `stopped_at` timestamps
-- **Also**: Appends stop events to the global audit log (`_system/logs/agent_spawns.log`)
-- **Updates**: `workflow/agent_tree.yaml` (adds `stopped_at` to the agent entry)
+- **Purpose**: Track when subagents finish, capturing completion summaries and duration metrics
+- **Also**: Appends stop events with summaries to the global audit log (`_system/logs/agent_spawns.log`)
+- **Updates**: `workflow/agent_tree.yaml` (adds `stopped_at`, `completion_summary`, `duration_seconds` to agent entry)
+- **Captures**: `last_assistant_message` from SubagentStop input (truncated to 300 chars for audit trail)
+
+#### PostToolUse[Write|Edit]: post-write-validator.cjs
+- **Matcher**: `Write|Edit`
+- **Purpose**: Validate file syntax after successful Write/Edit operations
+- **Validates**: JSON parsing, YAML tab detection, duplicate YAML top-level keys
+- **Logs**: All file changes to `workflow/file_changes.log` with timestamps and validation status
+- **Output**: Warning systemMessage if syntax issues found (does not block -- write already succeeded)
 
 #### PostToolUseFailure: tool-failure-tracker.cjs
 - **Purpose**: Track tool failures, detect patterns (3+ failures suggests alternatives)

@@ -104,14 +104,14 @@ Plus 14 core infrastructure + 14 shared cross-domain agents.
 
 **Minimum Tier**: Always tier 2+ (controller coordination required). ALL requests use agents. NO exceptions. Former tier 0/1 automatically upgraded.
 
-**Delegation Chain** (flattened V9.18 -- 2 levels instead of 5):
+**Delegation Chain** (flattened V9.18, inline V9.22 -- 2 levels instead of 5):
 ```
-/run (inline: routing + planning + orchestration) -> controller -> execution_agents
-                                                       |              |
-                                                   (questions)    (actual work)
+/run (inline, no fork: routing + planning + orchestration) -> controller -> execution_agents
+                                                                 |              |
+                                                             (questions)    (actual work)
 ```
 
-Previous 5-level chain (`/run -> trigger -> orchestrator -> controller -> execution`) was replaced because deep nesting caused systematic failures (Task tool unavailability, context exhaustion, empty session directories).
+V9.22: `/run` changed from `context: fork` to `context: none` to eliminate an extra nesting level. Since Claude Code subagents cannot spawn other subagents, running /run inline means the controller is a direct subagent (level 1) rather than a sub-subagent. `/team` teammates now spawn controllers directly via Task tool instead of invoking /run as a nested Skill fork.
 
 **Coordination Agents** (ONLY coordinate): controllers (engineering-manager, architect, etc.)
 **Execution Agents** (DO the work): backend-developer, frontend-developer, copywriter, qa-tester, etc.
@@ -228,7 +228,7 @@ User Request -> /run (inline routing + planning + orchestration)
 
 | Skill | Context | Agent | Description |
 |-------|---------|-------|-------------|
-| `/run` | `fork` | `true` | Universal workflow engine -- routes/plans inline, delegates to controller |
+| `/run` | `none` | `true` | Universal workflow engine -- runs inline (no fork), routes/plans, delegates to controller |
 | `/team` | `fork` | `true` | Parallel team execution via built-in agent teams |
 | `/designer` | `none` | `false` | Interactive 4-phase design engine (Discovery -> Specification) |
 | `/review` | `fork` | `true` | Universal review with parallel agent execution |
@@ -395,11 +395,11 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Agents**: 238 total (14 core + 14 shared + 210 domain specialists)
 **Super-Domains**: Make (111), Grow (38), Operate (13), People (20), Serve (28)
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/*.yaml`
-**Hooks**: 12 event types, 14 CJS hooks, invoked via `run-hook.cjs` launcher
+**Hooks**: 13 event types, 15 CJS hooks, invoked via `run-hook.cjs` launcher
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via built-in agent teams
-**Version**: 9.20.0
+**Version**: 9.22.0
 
 ## Troubleshooting
 

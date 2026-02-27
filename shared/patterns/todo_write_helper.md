@@ -1,6 +1,6 @@
 # TodoWrite Helper Patterns
 
-Shared TodoWrite patterns for cAgents V9.20 to eliminate duplication.
+Shared TodoWrite patterns for cAgents V9.21 to eliminate duplication.
 
 **IMPORTANT: Agent Name Prefix Convention** - All tasks displayed to users MUST be prefixed with the executing agent's name in brackets: `[agent-name] task description`. This applies to both `content` and `activeForm` fields. This lets the user see which agent is responsible for each task at a glance.
 
@@ -162,5 +162,5 @@ Then reference specific patterns:
 **Version**: 3.0
 **Created**: 2026-01-19
 **Updated**: 2026-02-27 (Blocking prerequisite enforcement, call checklist, stronger anti-patterns)
-**Part of**: cAgents V9.20.0
+**Part of**: cAgents V9.22.0
 **Saves**: ~2,000 lines of duplication

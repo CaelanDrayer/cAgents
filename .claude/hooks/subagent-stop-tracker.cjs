@@ -61,11 +61,15 @@ createHook('SubagentStopTracker', async (input) => {
   const agentId = input.agent_id || 'unknown';
   const now = new Date().toISOString();
 
-  // Append to global audit log
+  // Capture last assistant message summary for auditability (truncated to 500 chars)
+  const lastMessage = (input.last_assistant_message || '').slice(0, 500).replace(/\n/g, ' ').trim();
+
+  // Append to global audit log (includes summary)
   try {
     const logsDir = ensureDir(path.join(AGENT_MEMORY_DIR, '_system', 'logs'));
     const logFile = path.join(logsDir, 'agent_spawns.log');
-    fs.appendFileSync(logFile, `${now} | agent_id=${agentId} | type=${subagentType} | event=stop | session=${input.session_id || 'unknown'}\n`);
+    const summaryPart = lastMessage ? ` | summary=${lastMessage.slice(0, 200)}` : '';
+    fs.appendFileSync(logFile, `${now} | agent_id=${agentId} | type=${subagentType} | event=stop | session=${input.session_id || 'unknown'}${summaryPart}\n`);
   } catch (err) {
     console.error(`[SubagentStopTracker] Failed to write audit log: ${err.message}`);
   }
@@ -135,11 +139,33 @@ createHook('SubagentStopTracker', async (input) => {
     }
 
     if (insertedStop) {
+      // Also add completion summary and duration if available
+      const summaryLines = [];
+      if (lastMessage) {
+        summaryLines.push(`    completion_summary: "${lastMessage.replace(/"/g, '\\"').slice(0, 300)}"`);
+      }
+      // Calculate duration from spawned_at if available
+      const spawnedMatch = newLines.join('\n').match(new RegExp(`id: "${agentId}"[\\s\\S]*?spawned_at: "([^"]+)"`));
+      if (spawnedMatch) {
+        const spawnedAt = new Date(spawnedMatch[1]);
+        const stoppedAt = new Date(now);
+        const durationMs = stoppedAt - spawnedAt;
+        const durationSec = Math.round(durationMs / 1000);
+        summaryLines.push(`    duration_seconds: ${durationSec}`);
+      }
+      if (summaryLines.length > 0) {
+        // Insert summary lines after stopped_at
+        const stopIndex = newLines.findIndex(l => l.includes(`stopped_at: "${now}"`));
+        if (stopIndex >= 0) {
+          newLines.splice(stopIndex + 1, 0, ...summaryLines);
+        }
+      }
       fs.writeFileSync(treeFile, newLines.join('\n'));
       console.error(`[SubagentStopTracker] Agent ${agentId} (${subagentType}) stopped`);
     } else {
       // Fallback: append at end
-      fs.appendFileSync(treeFile, `    stopped_at: "${now}"\n`);
+      const extra = lastMessage ? `\n    completion_summary: "${lastMessage.replace(/"/g, '\\"').slice(0, 300)}"` : '';
+      fs.appendFileSync(treeFile, `    stopped_at: "${now}"${extra}\n`);
       console.error(`[SubagentStopTracker] Agent ${agentId} (${subagentType}) stopped (appended)`);
     }
   } else {

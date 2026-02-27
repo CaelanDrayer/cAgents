@@ -9,24 +9,24 @@
     |
     Step 2: DECOMPOSE into work items (you do this directly)
     |   Break request into 3-8 work items with wave assignments
-    |   Wave 0 (bootstrap): foundation/setup -- you execute via /run
+    |   Wave 0 (bootstrap): foundation/setup -- you execute via controller delegation
     |   Wave 1 (parallel): main work -- teammates execute in parallel
-    |   Wave 2 (integration): testing/review -- you execute via /run
+    |   Wave 2 (integration): testing/review -- you execute via controller delegation
     |   If < 3 items or no parallel work: fall back to /run
     |
     Step 3: TeamCreate -- create agent team IMMEDIATELY
     |
     Step 4: TaskCreate -- create task for EVERY work item
     |
-    Step 5: Execute Wave 0 via /run (you, sequentially)
+    Step 5: Execute Wave 0 via controller delegation (you, sequentially)
     |
     Step 6: Spawn teammates via Task tool (ALL at once, in parallel)
     |   Each teammate gets its own tmux pane (when teammateMode=tmux)
-    |   Each teammate invokes /run via Skill tool for their work item
+    |   Each teammate spawns its assigned controller directly via Task tool
     |
     Step 7: Monitor progress via TaskList + teammate messages
     |
-    Step 8: Execute Wave 2 via /run (you, sequentially)
+    Step 8: Execute Wave 2 via controller delegation (you, sequentially)
     |
     Step 9: Shutdown teammates + TeamDelete + report results
 ```
@@ -36,8 +36,9 @@
 The /team skill decomposes the request directly instead of delegating to trigger/planner because:
 - **Eliminates fragile multi-agent dependency** -- no risk of trigger/planner failing to produce files
 - **Faster startup** -- decomposition happens in one step, not a multi-agent chain
-- **Each teammate invokes /run anyway** -- full agent orchestration happens per work item
+- **Each teammate spawns its controller directly** -- full agent orchestration happens per work item
 - **Simpler to execute reliably** -- fewer sequential dependencies = fewer failure points
+- **Assigns controllers during decomposition** -- team lead determines which controller each work item needs
 
 ## CRITICAL: Create Teams AND Teammates
 
@@ -81,16 +82,17 @@ Configure in settings.json:
 
 ## Teammate Execution Model
 
-Each teammate invokes `/run` via the Skill tool. `/run` handles full agent orchestration:
+Each teammate spawns its assigned controller directly via Task tool. This eliminates the extra Skill fork level, keeping nesting within Claude Code's supported limits:
 
 ```
-Teammate -> Skill({skill: "run", args: "WI-003: ..."})
-  -> trigger -> orchestrator -> controller (e.g., engineering-manager)
-    -> execution agents (e.g., backend-developer, qa-tester)
+Teammate (full session) -> Task({subagent_type: "cagents:{controller_name}"})
+  -> controller (e.g., engineering-manager) -> execution agents (e.g., backend-developer)
   -> validated output returned to teammate
 ```
 
-Teammates NEVER implement work directly. They always delegate through /run.
+Teammates NEVER implement work directly. They always coordinate through controllers.
+
+**Why no Skill("run") fork**: Teammates are full Claude Code sessions. Invoking /run via Skill would add an unnecessary nesting level (teammate -> /run fork -> controller -> execution = 3 levels). Spawning the controller directly keeps it at 2 levels (teammate -> controller -> execution).
 
 ## Team Lead Behavior
 

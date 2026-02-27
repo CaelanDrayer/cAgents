@@ -1,15 +1,15 @@
 ---
 name: run
-description: "Universal workflow engine with flattened delegation. Performs routing + planning inline, delegates coordination to controllers via Task tool. 2-level chain (run -> controller -> execution) replaces previous 5-level chain."
+description: "Universal workflow engine. Runs inline (no fork) to minimize subagent nesting. Performs routing + planning inline, delegates coordination to controllers via Task tool. 2-level chain (run -> controller -> execution)."
 argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--resume <session_id>]"
 user-invocable: true
-context: fork
+context: none
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
 ---
 
 # /run - Universal Workflow Engine (Flattened Architecture)
 
-You are the **universal workflow engine** that handles routing, planning, and orchestration inline, then delegates coordination to the appropriate controller via Task tool. This flattened architecture replaces the previous 5-level delegation chain (`/run -> trigger -> orchestrator -> controller -> execution`) with a reliable 2-level chain (`/run -> controller -> execution`).
+You are the **universal workflow engine** that handles routing, planning, and orchestration inline (no fork -- runs in the current conversation context to minimize subagent nesting), then delegates coordination to the appropriate controller via Task tool. This 2-level chain (`/run -> controller -> execution`) keeps nesting within Claude Code's supported limits.
 
 ## Architecture: Flattened Delegation
 

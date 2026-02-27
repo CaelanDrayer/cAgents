@@ -1,14 +1,42 @@
 # cAgents Release Notes
 
-**Current Version**: 9.5.0
-**Release Date**: February 7, 2026
+**Current Version**: 9.22.0
+**Release Date**: February 27, 2026
 **Status**: Production-Ready
 
 ---
 
 ## Version History
 
-- [v9.5.0](#v950---february-7-2026) - CJS-only hook architecture refactoring (Current)
+- [v9.22.0](#v9220---february-27-2026) - Nesting reduction, PostToolUse validation, enhanced audit trail (Current)
+- [v9.21.0](#v9210---february-27-2026) - Documentation sync + stale reference fixes
+- [v9.20.0](#v9200---february-27-2026) - TodoWrite blocking prerequisite enforcement
+- [v9.19.1](#v9191---february-27-2026) - Embedded TodoWrite in /run workflow steps
+- [v9.19.0](#v9190---february-27-2026) - Flattened /run to 2-level chain + TodoWrite progressive refinement
+- [v9.17.0](#v9170---february-27-2026) - Agent name prefixing in TodoWrite patterns
+- [v9.16.1](#v9161---february-27-2026) - Agent audit trail with SubagentStop tracking
+- [v9.16.0](#v9160---february-26-2026) - AI writing detection enhancements
+- [v9.15.1](#v9151---february-26-2026) - /team skill rewrite for reliable team spawning
+- [v9.15.0](#v9150---february-26-2026) - Agent namespace correction to cagents: prefix
+- [v9.14.1](#v9141---february-26-2026) - Hook system validation fixes from workflow audit
+- [v9.14.0](#v9140---february-26-2026) - AI writing detection and rewrite agents
+- [v9.13.0](#v9130---february-25-2026) - Self-contained hook paths via CLAUDE_PLUGIN_ROOT
+- [v9.12.0](#v9120---february-25-2026) - Hook paths via CAGENTS_DIR env from settings.json
+- [v9.10.6](#v9106---february-25-2026) - Hook path fixes using CLAUDE_PROJECT_DIR
+- [v9.10.5](#v9105---february-24-2026) - Zero tolerance direct handling in /run
+- [v9.10.4](#v9104---february-24-2026) - Portable hook paths with CAGENTS_DIR env var
+- [v9.10.3](#v9103---february-24-2026) - 10 hook system bugs + Controller Delegation Protocol
+- [v9.10.2](#v9102---february-23-2026) - Explicit 236-agent registration in plugin.json
+- [v9.10.1](#v9101---february-23-2026) - Directory-based agent discovery for Claude Desktop
+- [v9.10.0](#v9100---february-23-2026) - CJS-only hooks, run-hook.cjs launcher, Claude 4.6 models
+- [v9.9.0](#v990---february-22-2026) - /team delegates routing+planning to /run
+- [v9.7.0](#v970---february-22-2026) - /team direct TeamCreate and teammate spawning
+- [v9.6.2](#v962---february-22-2026) - Remove unreliable prompt-type Stop hook
+- [v9.6.1](#v961---february-22-2026) - Teammate /run Skill enforcement + hook path fixes
+- [v9.6.0](#v960---february-22-2026) - Team templates, wave execution, interface contracts
+- [v9.5.2](#v952---february-7-2026) - Remove unsupported SessionStart prompt hook
+- [v9.5.1](#v951---february-7-2026) - Hook JSON output format corrections
+- [v9.5.0](#v950---february-7-2026) - CJS-only hook architecture refactoring
 - [v9.4.1](#v941---february-7-2026) - Hook corrections + context optimization
 - [v9.4.0](#v940---february-7-2026) - Skill improvements from comprehensive review
 - [v9.3.5](#v935---february-7-2026) - Remove non-functional context-overflow hook
@@ -22,6 +50,343 @@
 - [v9.1.1](#v911---february-7-2026) - tmux split pane refinements
 - [v9.1.0](#v910---february-7-2026) - tmux split panes for team execution
 - [v9.0.0](#v900---february-7-2026) - Platform Alignment Edition
+
+---
+
+## v9.22.0 - February 27, 2026
+
+**Theme**: Nesting reduction + quality infrastructure -- /run runs inline (no fork), /team teammates spawn controllers directly, PostToolUse validation hook, enhanced agent audit trail with completion summaries and duration tracking.
+
+**Breaking Changes**:
+- `/run` SKILL.md: `context: fork` changed to `context: none`. /run now runs inline in the current conversation context instead of forking a subagent. This eliminates one nesting level.
+- `/team` teammate prompts: Teammates now spawn controllers directly via Task tool instead of invoking /run as a nested Skill fork. Team lead assigns controllers during decomposition.
+
+**Changes**:
+- `/run` context changed from `fork` to `none` (minimizes subagent nesting per Claude Code constraints)
+- `/team` Step 2 now assigns a controller per work item during decomposition
+- `/team` Steps 5/8 (wave 0/2) use direct controller delegation instead of Skill("run")
+- `/team` Step 6 teammate prompt spawns assigned controller directly via Task tool
+- New `post-write-validator.cjs` PostToolUse hook validates JSON/YAML syntax after Write/Edit
+- Enhanced `subagent-stop-tracker.cjs` captures `last_assistant_message` summary and `duration_seconds`
+- Agent audit trail now includes `completion_summary` and `duration_seconds` per agent in `agent_tree.yaml`
+- Global audit log (`agent_spawns.log`) includes stop event summaries
+- File change audit trail added (`workflow/file_changes.log`) via PostToolUse hook
+- Updated architecture documentation across CLAUDE.md, orchestration.md, hooks.md, controllers.md
+- Version synced to 9.22.0 across all version files
+
+**New Hook**: `PostToolUse[Write|Edit]` -> `post-write-validator.cjs` (18th .cjs file, 15th registered hook)
+
+**Nesting Model** (before vs after):
+- `/run` direct: fork(1) -> controller(2) -> execution(3) => inline(0) -> controller(1) -> execution(2)
+- `/team` teammate: teammate -> Skill/run fork(1) -> controller(2) -> execution(3) => teammate -> controller(1) -> execution(2)
+
+**Files Changed**: 20+ files across skills, hooks, settings, rules, docs, and manifests
+
+---
+
+## v9.21.0 - February 27, 2026
+
+**Theme**: Documentation sync + stale reference fixes -- comprehensive alignment of all documentation with current v9.20 architecture.
+
+**Changes**:
+- Updated RELEASE_NOTES.md with all missing v9.5.1-v9.20.0 entries (was stuck at v9.5.0)
+- Fixed RELEASE_NOTES.md "Current State" section (was v8.0.28 with wrong agent counts -- now v9.21.0 with 238 agents)
+- Fixed package.json description (said V9.14, now V9.21.0)
+- Fixed README.md version references (V9.19 -> V9.20/V9.21)
+- Fixed TEAM_MODE.md stale architecture references (removed trigger -> router + planner 5-level chain, updated to flattened 2-level)
+- Fixed SKILLS.md skill line counts (were from v9.0 era)
+- Fixed team architecture.md reference file (showed old 5-level chain)
+- Version synced to 9.21.0 across all 12 version files
+
+**Files Changed**: 16 files across docs, manifests, and configuration
+
+---
+
+## v9.20.0 - February 27, 2026
+
+**Theme**: TodoWrite blocking prerequisite enforcement -- restructured /run steps so TodoWrite is ACTION 1 per phase, added mandatory TodoWrite to all 57 controllers, stronger helper patterns.
+
+**Changes**:
+- Restructured /run 6-step workflow so TodoWrite is ACTION 1 or ACTION 2 in every step (minimum 4 TodoWrite calls per execution)
+- Added mandatory TodoWrite requirement to all 57 controller agents for execution agent visibility
+- Enhanced /helper skill with stronger patterns
+- Fixed stale documentation references
+- Version synced to 9.20.0 across all manifests
+
+---
+
+## v9.19.1 - February 27, 2026
+
+**Theme**: Embedded TodoWrite directives directly into /run workflow steps.
+
+**Changes**:
+- TodoWrite calls now appear as explicit ACTION items within each /run step
+- Prevents TodoWrite from being treated as optional afterthought
+- Each step shows exactly when and what to write to TodoWrite
+
+---
+
+## v9.19.0 - February 27, 2026
+
+**Theme**: Flattened /run to 2-level delegation chain + hook path fix + TodoWrite progressive refinement.
+
+**Changes**:
+- **Flattened architecture**: /run now performs routing, planning, and orchestration inline (no separate trigger, orchestrator, universal-router, universal-planner agents)
+- Only controller and execution agents are spawned as subagents (2 levels instead of 5)
+- Hook path resolution: bash -c wrapper with 3-tier fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd)
+- TodoWrite progressive refinement: controllers update TodoWrite entries as execution agents are identified
+- V9.18 replaced the 5-level chain that caused Task tool unavailability, context exhaustion, and empty session directories
+
+---
+
+## v9.17.0 - February 27, 2026
+
+**Theme**: Agent name prefixing in TodoWrite patterns.
+
+**Changes**:
+- All TodoWrite entries now prefixed with executing agent name (e.g., `[engineering-manager] Coordinate work`)
+- Gives users real-time visibility into which agent is performing which task
+- Applied across all controller and /run TodoWrite patterns
+
+---
+
+## v9.16.1 - February 27, 2026
+
+**Theme**: Agent audit trail with SubagentStop tracking + race condition fix.
+
+**Changes**:
+- Added `subagent-stop-tracker.cjs` hook for SubagentStop events
+- Agent tree now records `stopped_at` timestamps when agents finish
+- Fixed race condition in session discovery when status.yaml hasn't been written yet
+- Global audit log at `Agent_Memory/_system/logs/agent_spawns.log`
+
+---
+
+## v9.16.0 - February 26, 2026
+
+**Theme**: AI writing detection enhancements.
+
+**Changes**:
+- Added perplexity, burstiness, and LIX readability analysis to AI writing detector
+- Enhanced human-like rewrite strategies for AI writing rewriter
+- Improved detection accuracy with new linguistic metrics
+
+---
+
+## v9.15.1 - February 26, 2026
+
+**Theme**: /team skill rewrite for reliable team spawning + tmux sessions.
+
+**Changes**:
+- Rewrote /team SKILL.md with explicit step-by-step execution instructions
+- Eliminated common failure modes (creating tasks without spawning teammates, skipping TeamCreate)
+- Added wave-based execution model (wave 0 bootstrap, wave 1 parallel, wave 2 integration)
+- Added reference files: architecture.md, fallback-behavior.md, flags.md
+
+---
+
+## v9.15.0 - February 26, 2026
+
+**Theme**: Agent namespace correction to cagents: prefix + session linkage.
+
+**Changes**:
+- Corrected agent namespace to use `cagents:` prefix consistently
+- Added session linkage for subagent tracking
+- Fixed agent discovery in plugin contexts
+
+---
+
+## v9.14.1 - February 26, 2026
+
+**Theme**: Resolve 6 hook system validation issues from workflow tree audit.
+
+**Changes**:
+- Fixed 6 hook validation issues identified during comprehensive workflow audit
+- Improved hook error handling and output format compliance
+
+---
+
+## v9.14.0 - February 26, 2026
+
+**Theme**: AI writing detection and rewrite agents.
+
+**Changes**:
+- New `ai-writing-detector` agent with 14-category hallmark scanning
+- New `ai-writing-rewriter` agent with 5-pass humanization pipeline
+- Detection patterns cover: hedging language, formulaic transitions, passive voice overuse, etc.
+- Rewrite strategies: vocabulary diversification, sentence restructuring, rhythm variation
+- Added to Make domain (agents count: 236 -> 238)
+- Fixed scripts and resource stubs
+
+---
+
+## v9.13.0 - February 25, 2026
+
+**Theme**: Self-contained hook paths via CLAUDE_PLUGIN_ROOT env var.
+
+**Changes**:
+- All hook paths now use `${CLAUDE_PLUGIN_ROOT}` for self-contained plugin operation
+- Eliminates dependency on working directory for hook resolution
+- Works correctly when cAgents installed as a Claude Code plugin
+
+---
+
+## v9.12.0 - February 25, 2026
+
+**Theme**: Hook paths via CAGENTS_DIR env from settings.json.
+
+**Changes**:
+- Added `CAGENTS_DIR` custom env var approach for hook path resolution
+- Settings.json env section used to pass directory path to hooks
+
+---
+
+## v9.10.6 - February 25, 2026
+
+**Theme**: Hook path fixes using CLAUDE_PROJECT_DIR.
+
+**Changes**:
+- Use `$CLAUDE_PROJECT_DIR` for hook paths (custom env vars not expanded by Claude Code)
+- Fixed hook resolution in subagent contexts
+
+---
+
+## v9.10.5 - February 24, 2026
+
+**Theme**: Zero tolerance direct handling in /run -- always delegate.
+
+**Changes**:
+- Enforced strict delegation policy: /run NEVER handles requests directly
+- All requests delegated to subagents via Task tool without exception
+- If delegation fails, /run reports failure rather than falling back to direct handling
+
+---
+
+## v9.10.4 - February 24, 2026
+
+**Theme**: Portable hook paths with CAGENTS_DIR env var.
+
+**Changes**:
+- Use `CAGENTS_DIR` environment variable for portable hook paths across projects
+- Works when cAgents is installed outside the working directory
+
+---
+
+## v9.10.3 - February 24, 2026
+
+**Theme**: 10 hook system bugs resolved + Controller Delegation Protocol added to all 57 controllers.
+
+**Changes**:
+- Resolved 10 hook system bugs identified in comprehensive audit
+- Added Controller Delegation Protocol to all 57 controller agent SKILL.md files
+- Protocol enforces: controllers NEVER do direct work, minimum 2 subagents per objective
+
+---
+
+## v9.10.2 - February 23, 2026
+
+**Theme**: Explicit 236-agent registration in plugin.json for Claude Desktop.
+
+**Changes**:
+- Explicitly registered all 236 agents in root plugin.json `agents` array
+- Required for Claude Desktop which needs explicit agent paths (no directory scanning)
+
+---
+
+## v9.10.1 - February 23, 2026
+
+**Theme**: Directory-based agent discovery for Claude Desktop compatibility.
+
+**Changes**:
+- Added directory-based agent discovery approach
+- Ensures agents are discoverable in Claude Desktop environments
+
+---
+
+## v9.10.0 - February 23, 2026
+
+**Theme**: CJS-only hook architecture with run-hook.cjs launcher + Claude 4.6 model support.
+
+**Changes**:
+- Added `run-hook.cjs` launcher that resolves hook paths using `__dirname`
+- All settings.json hook commands now invoke via `node .claude/hooks/run-hook.cjs <hook-name>`
+- Added Claude 4.6 model routing: Opus 4.6 (reasoning), Sonnet 4.6 (execution), Haiku 4.5 (support)
+- `opusplan` hybrid model for controllers (Opus 4.6 planning + Sonnet 4.6 execution)
+
+---
+
+## v9.9.0 - February 22, 2026
+
+**Theme**: /team delegates routing+planning to /run's infrastructure.
+
+**Changes**:
+- /team now reuses /run's routing and planning infrastructure
+- Eliminates duplicated domain detection and tier classification logic
+- Consistent decomposition quality across /team and /run workflows
+
+---
+
+## v9.7.0 - February 22, 2026
+
+**Theme**: /team directly orchestrates TeamCreate and teammate spawning.
+
+**Changes**:
+- /team now calls TeamCreate directly instead of delegating to team-trigger
+- Simplified team creation pipeline for reliability
+- Teammates spawned via Task tool with explicit /run Skill invocation
+
+---
+
+## v9.6.2 - February 22, 2026
+
+**Theme**: Remove unreliable prompt-type Stop hook causing JSON validation errors.
+
+**Changes**:
+- Removed prompt-type Stop hook that caused recurring JSON validation failures
+- `verify-completion.cjs` command hook provides equivalent file-based verification
+
+---
+
+## v9.6.1 - February 22, 2026
+
+**Theme**: Enforce teammate /run Skill invocation + hook path fixes.
+
+**Changes**:
+- Enforced that teammates MUST invoke /run via Skill tool (not implement directly)
+- Fixed hook paths with CLAUDE_PLUGIN_ROOT resolution
+
+---
+
+## v9.6.0 - February 22, 2026
+
+**Theme**: Team templates, wave execution, interface contracts.
+
+**Changes**:
+- **Team templates**: 7 pre-built templates (fullstack-app, api-service, frontend-app, content-campaign, data-pipeline, game-project, custom)
+- **Wave execution**: 3-wave model (bootstrap -> parallel -> integration) with gate sentinel pattern
+- **Interface contracts**: Explicit provider/consumer contracts between teams with artifact verification
+- **Gate sentinel pattern**: Wave ordering enforced via TaskCreate dependencies (no custom orchestration)
+- Auto-template selection based on keyword/domain/project scoring
+
+---
+
+## v9.5.2 - February 7, 2026
+
+**Theme**: Remove unsupported SessionStart prompt hook + fix secret-detection output.
+
+**Changes**:
+- Removed SessionStart prompt hook (not supported by Claude Code for this event type)
+- Fixed secret-detection.cjs output format compliance
+
+---
+
+## v9.5.1 - February 7, 2026
+
+**Theme**: Correct hook JSON output formats per Claude Code event type specs.
+
+**Changes**:
+- Fixed JSON output format for multiple hooks to comply with Claude Code specifications
+- Ensured hookSpecificOutput matches expected schema for each event type
 
 ---
 
@@ -948,40 +1313,42 @@ See full V7.0.0 release notes in archive/docs/ for complete details.
 
 ---
 
-## Current State (v8.0.28)
+## Current State (v9.22.0)
 
-**Total Agents**: 231
-- Core Infrastructure: 12 (orchestrator, planner, executor, validator, self-correct, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, trigger, router)
+**Total Agents**: 238
+- Core Infrastructure: 14 (trigger, team-trigger, team-lead-adapter, orchestrator, hitl, optimizer, universal-router, universal-planner, universal-executor, universal-validator, universal-self-correct, task-consolidator, task-decomposer, task-inventory)
 - Shared: 14 (cross-domain capabilities)
-- Make: 108 (engineering + creative + product + game development)
-- Grow: 37 (marketing + sales)
+- Make: 111 (engineering + creative + product + game development)
+- Grow: 38 (marketing + sales)
 - Operate: 13 (finance + operations)
-- People: 19 (HR + talent)
+- People: 20 (HR + talent)
 - Serve: 28 (customer experience + legal + compliance)
 
-**Architecture**: Controller-Centric Question-Based Delegation with:
+**Architecture**: Inline 2-level delegation with Controller-Centric Question-Based Delegation:
+- /run runs inline (context: none), delegates to controller -> execution agents
+- /team teammates spawn controllers directly (no Skill fork nesting)
+- PostToolUse validation hook for JSON/YAML syntax checking
+- Enhanced audit trail with completion summaries and duration tracking
+- TodoWrite blocking prerequisite enforcement for user-visible progress
+- CJS-only hook system (15 hooks via createHook() factory)
 - CSV Task Inventory (60-80% context savings)
-- Progressive Skill Disclosure (40-60% context reduction)
-- 4-Tier Model Routing (30-50% cost reduction)
-- Instinct-Based Pattern Learning
-- Claude Code Hooks System
+- Agent Teams for parallel execution (40-60% time reduction)
+- Claude 4.6 model routing (Opus 4.6, Sonnet 4.6, Haiku 4.5)
 
-**Key V8.0 Features**:
-- 12 hook types documented, 4 implementations
-- 9 agents converted to SKILL.md format
-- Project-level model routing overrides
-- Internal tool registry (30-40% faster operations)
-- Pattern learning from successful workflows
-- CI/CD scripts for automation
-- Comprehensive metrics and evaluation framework
+**Key V9.22 Features**:
+- /run context: none (inline execution, eliminates fork nesting level)
+- /team teammates spawn controllers directly via Task tool
+- PostToolUse[Write|Edit] validation hook (post-write-validator.cjs)
+- SubagentStop captures completion_summary and duration_seconds
+- File change audit trail (workflow/file_changes.log)
+- Team lead assigns controllers during work item decomposition
 
 **Performance**:
-- 70% faster workflow execution vs v6.9
-- 60-80% context savings for large workflows
-- 30-50% cost reduction via model routing
-- 40-60% context reduction via SKILL.md
-- 38% less memory baseline
-- 60% fewer file operations
+- 2-level delegation chain eliminates context exhaustion at deep nesting
+- 60-80% context savings for large workflows (CSV task inventory)
+- 40-60% execution time reduction (Agent Teams parallel execution)
+- 30-40% simpler planning (objectives vs detailed tasks)
+- Up to 50x speedup with parallel execution (swarm mode)
 
 ---
 
@@ -1017,7 +1384,7 @@ cd cAgents
 ### Verify Installation
 
 ```bash
-# Check version (should show 8.0.0)
+# Check version (should show 9.20.0+)
 cat .claude-plugin/plugin.json | grep version
 ```
 
@@ -1032,10 +1399,11 @@ cat .claude-plugin/plugin.json | grep version
 - **Commands**: `docs/COMMANDS.md`
 - **Release Notes**: `docs/RELEASE_NOTES.md` (this file)
 
-**V8.0 Specific**:
+**V9.22 Specific**:
 - **Model Routing**: `.claude/rules/infrastructure/model-routing.md`
-- **Hooks**: `hooks/hooks.json`
-- **Patterns**: `Agent_Memory/_knowledge/patterns/`
+- **Hooks**: `.claude/hooks/*.cjs` (15 CJS hooks via createHook() factory)
+- **Rules**: `.claude/rules/` (20 modular rule files)
+- **Skills**: `.claude/skills/` (6 skills: run, team, designer, review, optimize, helper)
 
 ---
 
@@ -1061,6 +1429,6 @@ Copyright (c) 2026 PathingIT
 
 ---
 
-**Current Version**: 8.0.28
-**Release Date**: February 4, 2026
-**Git Tag**: v8.0.28
+**Current Version**: 9.21.0
+**Release Date**: February 27, 2026
+**Git Tag**: v9.21.0

@@ -2,13 +2,14 @@
 
 **Universal Multi-Domain Agent System for Claude Code**
 
-V9.20 with 238 agents across 5 super-domains. Flattened 2-level delegation, CJS-only hook system, Agent Teams parallel execution, Claude 4.6 model routing (Opus 4.6, Sonnet 4.6, Haiku 4.5).
+V9.21 with 238 agents across 5 super-domains. Flattened 2-level delegation, CJS-only hook system, Agent Teams parallel execution, Claude 4.6 model routing (Opus 4.6, Sonnet 4.6, Haiku 4.5).
 
 ## Overview
 
 cAgents transforms AI-assisted work across any domain through specialized agent teams that collaborate autonomously. From software engineering to marketing, operations to creative work - one unified system handles it all.
 
-**V9.19 Release**:
+**V9.21 Release**:
+- TodoWrite blocking prerequisite enforcement for user-visible progress tracking
 - Flattened 2-level delegation chain (`/run -> controller -> execution`) replacing unreliable 5-level chain
 - CJS-only hook system (14 hooks via `createHook()` factory, shell hooks removed in V9.5)
 - Agent Teams integration for parallel team-based execution (40-60% time reduction)
@@ -257,7 +258,7 @@ All hooks use the `createHook()` factory from `hook-utils.cjs` and are invoked v
 
 ## Performance
 
-**V9.19 Flattened Architecture**:
+**V9.21 Flattened Architecture**:
 - 2-level delegation chain (reliable) replaces 5-level chain
 - CJS-only hook system with `createHook()` factory (14 hooks)
 - Agent Teams: 40-60% execution time reduction for tier 3+ workflows
@@ -274,6 +275,7 @@ All hooks use the `createHook()` factory from `hook-utils.cjs` and are invoked v
 
 ## Version History
 
+- **V9.22.0** (2026-02-27) - Documentation sync + stale reference fixes across all docs
 - **V9.20.0** (2026-02-27) - TodoWrite blocking prerequisite enforcement, mandatory controller TodoWrite, stronger helper patterns
 - **V9.19.1** (2026-02-27) - Flattened 2-level delegation, CJS-only hooks, TodoWrite progressive refinement, 238 agents
 - **V9.0.0** (2026-02-07) - Platform Alignment Edition: Skills system, 14 hook event types, Agent Teams, opusplan model routing, 236 agents
@@ -301,4 +303,4 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | **cAgents V9.19** | 238 agents across 5 super-domains | Powered by Claude Opus 4.6, Sonnet 4.6 & Haiku 4.5
+**Built with Claude Code** | **cAgents V9.21** | 238 agents across 5 super-domains | Powered by Claude Opus 4.6, Sonnet 4.6 & Haiku 4.5

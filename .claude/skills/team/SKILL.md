@@ -33,6 +33,7 @@ Break the user's request into 3-8 concrete work items. You do this yourself -- d
 For each work item, define:
 - **ID**: WI-001, WI-002, etc.
 - **Description**: What needs to be done
+- **Controller**: Which cagents controller coordinates this (e.g., cagents:engineering-manager, cagents:creative-director). Select from the domain's `planner_config.yaml`.
 - **Dependencies**: Which other WIs must complete first (if any)
 - **Wave**: 0 (foundation/setup), 1 (main parallel work), 2 (integration/testing)
 
@@ -82,10 +83,14 @@ TaskCreate({ subject: "WI-006: <description>", description: "Wave 2 (integration
 
 ### Step 5: Execute Wave 0 (Bootstrap) -- You Do This
 
-Execute wave 0 work items yourself, sequentially, using /run:
+Execute wave 0 work items yourself by spawning the assigned controller directly via Task tool (no Skill fork -- minimizes nesting):
 
 ```
-Skill({ skill: "run", args: "WI-001: <description>. Acceptance criteria: <criteria>" })
+Task({
+  subagent_type: "cagents:{controller_name}",
+  description: "Coordinate WI-001: <description>",
+  prompt: "You are the {controller_name} controller.\n\nREQUEST: WI-001: <description>\nACCEPTANCE CRITERIA: <criteria>\n\nBreak into questions, delegate to execution agents via Task tool, synthesize, implement. Write results when complete."
+})
 ```
 
 After each wave-0 item completes, mark its task as completed:
@@ -102,18 +107,28 @@ Spawn ALL teammates in PARALLEL (make all Task calls at once, do not wait betwee
 ```
 Task({
   description: "Execute WI-003: <short description>",
-  prompt: "You are a teammate executing a work item.
+  prompt: "You are a teammate executing a work item by coordinating through its assigned controller.
 
 WORK ITEM: WI-003: <full description>
 ACCEPTANCE CRITERIA: <criteria>
+ASSIGNED CONTROLLER: cagents:{controller_name}
 
 INSTRUCTIONS:
-1. Use the Skill tool to invoke /run for your work item:
-   Skill({ skill: 'run', args: 'WI-003: <description>. Acceptance criteria: <criteria>' })
-2. After /run completes, mark your task completed:
+1. Spawn the assigned controller to coordinate your work item:
+   Task({
+     subagent_type: 'cagents:{controller_name}',
+     description: 'Coordinate: WI-003: <description>',
+     prompt: 'You are the {controller_name} controller.\\nREQUEST: <work_item_description>\\nACCEPTANCE CRITERIA: <criteria>\\nBreak into questions, delegate to execution agents via Task tool, synthesize answers, coordinate implementation.'
+   })
+2. After controller returns, verify outputs meet acceptance criteria.
+3. Mark your task completed:
    TaskUpdate({ taskId: '<task_id>', status: 'completed' })
-3. Check TaskList for more unblocked work you can claim.
-4. Send results to team lead: SendMessage({ type: 'message', recipient: '<lead_name>', content: 'WI-003 complete. <summary>', summary: 'WI-003 done' })"
+4. Send results to team lead:
+   SendMessage({ type: 'message', recipient: '<lead_name>', content: 'WI-003 complete. <summary>', summary: 'WI-003 done' })
+5. Check TaskList for more unblocked work you can claim.",
+  team_name: "{team_name}",
+  name: "teammate-wi-003",
+  subagent_type: "general-purpose"
 })
 ```
 
@@ -128,9 +143,13 @@ After spawning teammates:
 
 ### Step 8: Execute Wave 2 (Integration) -- You Do This
 
-Execute wave 2 items yourself sequentially via /run:
+Execute wave 2 items yourself by spawning controllers directly (same pattern as Step 5):
 ```
-Skill({ skill: "run", args: "WI-006: <description>. Acceptance criteria: <criteria>" })
+Task({
+  subagent_type: "cagents:{controller_name}",
+  description: "Coordinate WI-006: <description>",
+  prompt: "You are the {controller_name} controller.\n\nREQUEST: WI-006: <description>\nACCEPTANCE CRITERIA: <criteria>\n\nBreak into questions, delegate to execution agents via Task tool, synthesize, implement. Write results when complete."
+})
 ```
 
 Mark each completed:
@@ -157,11 +176,11 @@ TeamDelete()
 1. **You MUST call TeamCreate.** No exceptions. This is what creates the team.
 2. **You MUST spawn teammates via Task tool.** This is what creates tmux panes.
 3. **Spawn ALL wave-1 teammates at the same time** (parallel Task calls).
-4. **Teammates invoke /run via Skill tool** -- they do NOT implement work directly.
+4. **Teammates spawn controllers directly via Task tool** -- they do NOT implement work directly or invoke /run as a nested skill.
 5. **You (the lead) do wave 0 and wave 2** -- teammates do wave 1.
 6. **Never ask permission** between steps. Execute the full pipeline automatically.
 7. **Never just create tasks without spawning teammates** -- tasks without teammates are useless.
-8. **Never implement work items yourself** (except wave 0/2 bootstrap and integration via /run).
+8. **Never implement work items yourself** (except wave 0/2 bootstrap and integration via controller delegation).
 
 ## Fallback
 

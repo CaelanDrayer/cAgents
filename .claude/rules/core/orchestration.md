@@ -33,10 +33,12 @@ The `/run` command now performs routing, planning, and orchestration **inline** 
 /run -> trigger -> orchestrator -> controller -> execution_agents
 ```
 
-**Current** (2 levels -- reliable):
+**Current** (2 levels -- reliable, V9.22 `context: none`):
 ```
-/run (inline: routing + planning + orchestration) -> controller -> execution_agents
+/run (inline, no fork: routing + planning + orchestration) -> controller -> execution_agents
 ```
+
+V9.22 changed /run from `context: fork` to `context: none`. Since Claude Code subagents cannot spawn other subagents, running /run inline means the controller is a direct subagent (level 1) rather than a sub-subagent. For /team, teammates now spawn controllers directly instead of invoking /run as a nested Skill fork.
 
 ### What /run Does Inline
 - **Routing**: Domain detection, tier classification (previously trigger + universal-router)
