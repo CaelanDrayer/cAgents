@@ -174,21 +174,51 @@ rationale: "{why this route}"
 
 **If full hierarchy**: Proceed to Step 4.
 
-### Step 4: C-Suite Parallel Analysis (INIT -> ANALYZED)
+### Step 4: Dependency-Ordered C-Suite Analysis (INIT -> ANALYZED)
 
-Spawn relevant C-suite agents in parallel at level 1. Each analyzes the instruction from their domain perspective.
+C-suite analysis uses **multi-wave dependency-ordered execution** with inline peer passes. Independent C-suite agents run first (Wave 1), then dependent agents run with access to Wave 1 outputs (Wave 2). This gives dependent agents richer cross-domain context via file-based reads. Key constraint: subagents cannot spawn subagents, so all cross-pollination is FILE-BASED (agent A writes domain_analysis, agent B reads it).
 
-**4a. For each relevant C-suite, spawn in parallel:**
+**4a. Detect C-suite dependencies:**
+
+Before spawning, analyze the instruction to determine which C-suite agents depend on peer analyses. Use the dependency map from @reference/csuite-mapping.md:
 
 ```
+Default dependency patterns (override based on instruction context):
+  - CFO often benefits from CTO analysis (cost of technical scope)
+  - CRO often benefits from CCO analysis (brand/creative alignment)
+  - COO often benefits from CTO + CFO analysis (operational + cost feasibility)
+  - CHRO often benefits from COO analysis (org structure implications)
+  - General Counsel often benefits from all peers (compliance across domains)
+
+For each relevant C-suite agent:
+  dependencies = analyze_instruction_for_peer_needs(instruction, domain_key)
+  if dependencies is empty -> assign to Wave 1 (independent)
+  if dependencies exist -> assign to Wave 2 (dependent, reads Wave 1 outputs)
+```
+
+Write `domain_dependencies.yaml`:
+```yaml
+wave_1_independent:
+  - {domain_key}: {csuite_agent}  # No peer dependencies
+wave_2_dependent:
+  - {domain_key}:
+      agent: {csuite_agent}
+      reads_from: [{peer_domain_key_1}, {peer_domain_key_2}]
+```
+
+**4b. Wave 1 -- Spawn INDEPENDENT C-suite agents in parallel:**
+
+```
+# Spawn all Wave 1 (independent) C-suite agents simultaneously
 Task({
   subagent_type: "cagents:{csuite_agent}",
-  description: "Domain analysis: {domain_key}",
+  description: "Domain analysis (Wave 1 independent): {domain_key}",
   prompt: "You are the {csuite_title} performing strategic domain analysis.
 
 CHAIRPERSON INSTRUCTION: {user_instruction}
 SESSION: {SESSION_DIR}/
 YOUR DOMAIN: {domain_key}
+WAVE: 1 (independent -- no peer analyses available yet)
 
 Analyze this instruction from your domain perspective. Write your analysis to:
 {SESSION_DIR}/domain_analyses/domain_analysis_{domain_key}.yaml
@@ -213,9 +243,59 @@ Format:
 })
 ```
 
-**4b. After all C-suite agents return:**
+Wait for all Wave 1 agents to complete before proceeding to Wave 2.
 
-Read all `domain_analyses/domain_analysis_*.yaml` files. Update TodoWrite and status.yaml to ANALYZED.
+**4c. Wave 2 -- Spawn DEPENDENT C-suite agents with peer analysis access:**
+
+```
+# Spawn all Wave 2 (dependent) C-suite agents simultaneously
+# Each reads relevant Wave 1 peer analyses from domain_analyses/
+Task({
+  subagent_type: "cagents:{csuite_agent}",
+  description: "Domain analysis (Wave 2 dependent): {domain_key}",
+  prompt: "You are the {csuite_title} performing strategic domain analysis.
+
+CHAIRPERSON INSTRUCTION: {user_instruction}
+SESSION: {SESSION_DIR}/
+YOUR DOMAIN: {domain_key}
+WAVE: 2 (dependent -- peer analyses available from Wave 1)
+
+IMPORTANT: Before writing your analysis, READ the following peer domain analyses for cross-domain context:
+{for each peer in reads_from: '{SESSION_DIR}/domain_analyses/domain_analysis_{peer_domain_key}.yaml'}
+
+Use insights from peer analyses to inform your own assessment (e.g., technical scope from CTO informs your cost estimates, brand direction from CCO informs your go-to-market approach). Reference specific peer findings where relevant.
+
+Write your analysis to:
+{SESSION_DIR}/domain_analyses/domain_analysis_{domain_key}.yaml
+
+Format:
+  agent: cagents:{csuite_agent}
+  domain: {domain_key}
+  scope_assessment: '{what this means for your domain}'
+  peer_context_used:
+    - from: '{peer_domain}'
+      insight: '{what you learned from their analysis}'
+  work_required:
+    - '{work item 1}'
+    - '{work item 2}'
+  resource_needs:
+    - '{resource 1}'
+  risks:
+    - '{risk 1}'
+  dependencies_on_other_domains:
+    - domain: '{other_domain}'
+      need: '{what you need}'
+  estimated_complexity: simple|moderate|complex
+  priority: high|medium|low
+"
+})
+```
+
+**4d. After all C-suite agents (Wave 1 + Wave 2) return:**
+
+Read all `domain_analyses/domain_analysis_*.yaml` files. Verify Wave 2 agents referenced peer context. Update TodoWrite and status.yaml to ANALYZED.
+
+**Note**: If all C-suite agents are independent (no dependencies detected), all run in Wave 1 and Wave 2 is skipped. If only one domain is involved, dependency ordering is unnecessary.
 
 ### Step 5: Two-Phase Deliberation (ANALYZED -> DELIBERATED)
 
@@ -230,7 +310,9 @@ Read all domain analyses. Synthesize into `strategic_brief_draft.yaml`:
 
 Write `strategic_brief_draft.yaml` to session directory.
 
-**5b. Spawn same C-suite again for objections (parallel):**
+**5b. Spawn same C-suite again for objections (parallel, with ALL peer analyses):**
+
+Each C-suite agent reads the strategic brief draft AND ALL peer domain analyses (not just their own). This ensures objections are informed by the full cross-domain context, not just a single domain's view.
 
 ```
 Task({
@@ -239,7 +321,17 @@ Task({
   prompt: "You are the {csuite_title} reviewing the CEO's strategic brief draft.
 
 SESSION: {SESSION_DIR}/
-Read: strategic_brief_draft.yaml and all domain_analyses/*.yaml
+
+MANDATORY READS (read ALL of these before writing objections):
+1. {SESSION_DIR}/strategic_brief_draft.yaml -- the CEO's proposed brief
+2. ALL files in {SESSION_DIR}/domain_analyses/ -- every peer's domain analysis
+   Read each domain_analysis_*.yaml to understand what other C-suite members assessed.
+
+You have access to ALL peer analyses. Use this cross-domain context to:
+- Identify conflicts between your domain's needs and peer domains' plans
+- Spot gaps where peer dependencies are not addressed in the brief
+- Flag risks that span multiple domains
+- Suggest improvements informed by peer insights
 
 Review from your domain perspective. Write objections to:
 {SESSION_DIR}/objections/objections_{csuite_agent}.yaml
@@ -247,6 +339,7 @@ Review from your domain perspective. Write objections to:
 Format:
   agent: cagents:{csuite_agent}
   domain: {domain_key}
+  peer_analyses_reviewed: [{list of domain_keys whose analyses you read}]
   status: approved|conditional_approval|objection
   approved:
     - '{approved items}'
@@ -255,6 +348,7 @@ Format:
       concern: '{why}'
       alternative: '{proposed fix}'
       severity: blocking|suggestion
+      cross_domain_context: '{which peer analysis informed this objection, if any}'
   requested_dependencies:
     - from: '{other_domain}'
       need: '{what}'
@@ -458,11 +552,12 @@ For instructions touching 2+ domains: execute the full 6-state pipeline.
 
 ## Communication Model
 
-- **CEO <-> C-suite**: File-based (domain_analysis, objections). CEO mediates all.
+- **CEO <-> C-suite**: File-based (domain_analysis, objections). CEO decides all.
+- **C-suite peer reads**: C-suite agents READ peer domain analyses via file-based inline passes (domain_analyses/*.yaml). Wave 2 agents read Wave 1 outputs during analysis; ALL agents read ALL peer analyses during objection phase. No direct messaging -- reads only.
 - **C-suite <-> /team**: Sequential Skill invocation with session dir. Status updates via domain_status.
 - **Cross-domain**: Shared session directory. Dependencies via strategic_brief cross_domain_dependencies.
 - **Escalation**: domain_status.escalations -> CEO reads -> resolves or escalates to user.
-- **No direct peer messaging**: C-suite members never message each other. All coordination flows through CEO.
+- **No direct peer messaging**: C-suite members never message each other directly. Cross-pollination happens via file-based reads of peer analyses, not via messaging.
 
 ## Key Rules
 
@@ -496,6 +591,7 @@ Agent_Memory/sessions/org_{timestamp}/
 +-- instruction.yaml
 +-- status.yaml
 +-- routing_decision.yaml
++-- domain_dependencies.yaml
 +-- strategic_brief_draft.yaml
 +-- strategic_brief.yaml
 +-- domain_analyses/
@@ -518,4 +614,4 @@ Agent_Memory/sessions/org_{timestamp}/
 
 ---
 
-**Corporate hierarchy orchestration: CEO inline (context: none), C-suite parallel analysis via Task, two-phase deliberation, strategic brief, sequential /team execution per domain via Skill, CEO integration. TodoWrite at every state transition.**
+**Corporate hierarchy orchestration: CEO inline (context: none), dependency-ordered C-suite analysis via Task (Wave 1 independent, Wave 2 reads peer analyses via file-based inline passes), two-phase deliberation (objection phase reads ALL peer analyses), strategic brief, sequential /team execution per domain via Skill, CEO integration. TodoWrite at every state transition.**

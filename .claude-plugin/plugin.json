@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "9.28.0",
-  "description": "Universal multi-domain agent system with 239 specialized agents. V9.28.0: Phase 1 skill improvements -- adaptive pipeline (tier 2 fast path), review baselines/profiles/trends, GATE validation standards, teammate failure recovery, optimization learning/benchmarks, /org domain-level resume. Event-driven pipeline with state machine loop, prompt-engineer agent, reviewer loops, revision routing. CJS-only hook architecture, Skills system, 15 hooks across 13 event types, Agent Teams for parallel execution, CSV-based task inventory, controller-centric delegation across 5 super-domains.",
+  "version": "9.30.0",
+  "description": "Universal multi-domain agent system with 239 specialized agents. V9.30.0: /org dependency-ordered C-suite passes with inline peer analysis (multi-wave analysis, objection phase reads all peer analyses). V9.29.0: /designer subagent-delegated question preparation. Event-driven pipeline with state machine loop, prompt-engineer agent, reviewer loops, revision routing. CJS-only hook architecture, Skills system, 15 hooks across 13 event types, Agent Teams for parallel execution, CSV-based task inventory, controller-centric delegation across 5 super-domains.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",

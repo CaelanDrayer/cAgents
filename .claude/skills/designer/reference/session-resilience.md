@@ -8,6 +8,16 @@ Design sessions can run 30-60+ questions spanning hours. Context windows are fin
 Agent_Memory/sessions/designer_{YYYYMMDD_HHMMSS}/
 +-- session.yaml                    # Master state (updated after every question)
 +-- qa_log.yaml                     # Active phase Q&A only (completed phases summarized)
++-- question_prep/                  # Research agent outputs (per-phase question lists)
+|   +-- discovery_codebase.yaml     # Codebase analysis for Discovery
+|   +-- discovery_architecture.yaml # Architecture analysis for Discovery
+|   +-- ideation_patterns.yaml      # Pattern analysis for Ideation
+|   +-- ideation_feasibility.yaml   # Feasibility analysis for Ideation
+|   +-- refinement_architecture.yaml # Architecture deep-dive for Refinement
+|   +-- refinement_security.yaml    # Security analysis for Refinement
+|   +-- refinement_testing.yaml     # Testing analysis for Refinement
+|   +-- specification_compatibility.yaml # Codebase compatibility for Specification
+|   +-- followup_*.yaml             # Follow-up research triggered by user answers
 +-- phases/                         # Phase output files (written at phase completion)
 |   +-- 01_discovery.md
 |   +-- 02_ideation.md
@@ -34,7 +44,7 @@ Agent_Memory/sessions/designer_{YYYYMMDD_HHMMSS}/
 
 ```yaml
 session_id: designer_20260204_143022
-version: "2.0"
+version: "3.0"
 status: active
 current_phase: refinement
 domain: software
@@ -60,6 +70,24 @@ phases:
     questions_asked: 6
   specification:
     status: pending
+
+# Controller state for research-enriched question management
+controller_state:
+  question_pool_size: 8
+  questions_asked: 6
+  questions_skipped: 2
+  questions_remaining: 0
+  follow_up_dispatched: 1
+  follow_up_received: 1
+  research_status:
+    discovery_codebase: completed
+    discovery_architecture: completed
+    ideation_patterns: completed
+    ideation_feasibility: completed
+    refinement_architecture: completed
+    refinement_security: completed
+    refinement_testing: completed
+    specification_compatibility: in_progress  # Pre-spawned during refinement overlap
 ```
 
 ## Incremental File Saves
@@ -67,12 +95,13 @@ phases:
 **MANDATORY**: Do NOT hold the entire design in memory. Write to files incrementally.
 
 **Rules**:
+- Research agents write `question_prep/*.yaml` files immediately (they are subagents with file access)
 - Write `phases/01_discovery.md` the moment Discovery phase gate passes
 - Write `phases/02_ideation.md` the moment Ideation phase gate passes
 - Write individual artifact files as they are generated (not all at once)
 - Write diagram `.mermaid` files as each diagram is created
 - The final `design_document.md` is ASSEMBLED from phase files at the end - not built from memory
-- Update `session.yaml` after every question
+- Update `session.yaml` (including `controller_state`) after every question
 
 ## Context Window Monitoring
 
@@ -88,11 +117,14 @@ phases:
 - Stop including full Q&A history in synthesis - summarize instead
 - Reduce inline diagram complexity
 - Write artifacts to files immediately, show only summary inline
+- Read only question summaries from question_prep files (not full context per question)
 
 **When approaching context limits** (>30 questions):
 1. Write ALL current state to files immediately
-2. Create a waypoint checkpoint
+2. Create a waypoint checkpoint (including research agent status)
 3. Summarize remaining work as a compact resume plan
+
+**Research agents mitigate context pressure**: Because research agents write to files instead of returning results in the conversation context, the designer only loads ~200-500 tokens per phase from question_prep files (summaries + active question context). This is much less than the ~2000+ tokens that inline codebase analysis would consume.
 
 ## Phase-Level Checkpointing (Waypoints)
 
@@ -115,11 +147,20 @@ completed_work:
 
 files_written:
   - phases/01_discovery.md
+  - question_prep/discovery_codebase.yaml
+  - question_prep/discovery_architecture.yaml
   - session.yaml
   - qa_log.yaml
 
+research_status:
+  discovery_codebase: completed
+  discovery_architecture: completed
+  ideation_patterns: in_progress  # Pre-spawned during overlap
+  ideation_feasibility: in_progress
+
 resume_instructions: |
   Read phases/01_discovery.md for full Discovery output.
+  Read question_prep/ideation_*.yaml for pre-prepared Ideation questions (if available).
   Continue with Ideation phase: generate 2-4 solution alternatives.
   Discovery synthesis confirmed by user.
 ```
@@ -133,6 +174,7 @@ The `qa_log.yaml` keeps only active phase Q&A. After phase completion, move Q&A 
 completed_phases:
   discovery:
     question_count: 7
+    questions_skipped: 1
     summary: "Problem: OAuth2 for SPA. Users: developers + end users. Constraints: backward compat."
     full_log: "phases/01_discovery.md"
 
@@ -142,19 +184,23 @@ exchanges:
     phase: ideation
     question: "Which approach interests you most?"
     answer: "Option A: next-auth providers"
+    source: question_prep/ideation_patterns.yaml  # Track which research informed this question
 ```
 
 ## Session Resume Protocol
 
 When resuming (via `/designer --resume {id}` or after context compaction):
 
-1. Read `session.yaml` (100-200 tokens) - get phase, progress, domain
-2. Read latest `waypoints/wp-*.yaml` (200-300 tokens) - get resume instructions
+1. Read `session.yaml` (100-200 tokens) - get phase, progress, domain, controller_state
+2. Read latest `waypoints/wp-*.yaml` (200-300 tokens) - get resume instructions and research_status
 3. Read ONLY the current phase file (500-1500 tokens) - NOT all phase files
 4. Read active `qa_log.yaml` (only current phase's exchanges)
-5. Continue from where you left off
+5. Read `question_prep/{current_phase}_*.yaml` summaries (100-200 tokens) - restore question pool
+6. If research agents were in_progress: check if question_prep files now exist; if so, read them
+7. Continue from where you left off with restored question pool
 
 **DO NOT** reload all previous phase files. They are on disk for final assembly.
+**DO NOT** re-spawn research agents for phases that already have question_prep files.
 
 **Resume announcement**:
 ```javascript
@@ -166,6 +212,7 @@ AskUserQuestion({
 **Current Phase**: ${current_phase}
 **Progress**: ${progress_percentage}%
 **Last Activity**: ${last_activity}
+**Research Status**: ${research_summary}
 
 ${resume_summary}
 

@@ -245,15 +245,15 @@ User Request -> /run (state machine loop, reads pipeline_config.yaml)
 | `/org` | `none` | `true` | Corporate hierarchy orchestration -- CEO inline + C-suite via Task + sequential /team per domain |
 | `/run` | `none` | `true` | Event-driven pipeline engine -- state machine loop, sequential enrichment, controller+reviewer, revision routing |
 | `/team` | `fork` | `true` | N-wave parallel team execution via built-in agent teams (maximize waves) |
-| `/designer` | `none` | `false` | Interactive 4-phase design engine (Discovery -> Specification) |
+| `/designer` | `none` | `false` | Interactive 4-phase design engine with subagent-delegated question preparation and inline controller pattern |
 | `/review` | `fork` | `true` | Universal review with parallel agent execution |
 | `/optimize` | `fork` | `true` | 5-phase optimization with atomic rollback |
 | `/helper` | `none` | `false` | Interactive command guide |
 
 **Built-in**: `/memory` (view/edit memory files), `/init` (bootstrap project CLAUDE.md)
 
-### /org - Corporate Hierarchy Orchestration (V9.26, V9.28)
-CEO inline logic (`context: none`) with C-suite parallel analysis via Task, two-phase deliberation, strategic brief, and sequential /team execution per domain via Skill. Runs inline (not forked) because subagents cannot spawn other subagents. 6-state pipeline: INIT -> ANALYZED -> DELIBERATED -> BRIEFED -> EXECUTED -> INTEGRATED -> COMPLETE.
+### /org - Corporate Hierarchy Orchestration (V9.26, V9.30)
+CEO inline logic (`context: none`) with dependency-ordered C-suite analysis via Task (Wave 1 independent agents in parallel, Wave 2 dependent agents reading peer analyses via file-based inline passes), two-phase deliberation (objection phase reads ALL peer analyses for cross-domain context), strategic brief, and sequential /team execution per domain via Skill. Runs inline (not forked) because subagents cannot spawn other subagents. 6-state pipeline: INIT -> ANALYZED -> DELIBERATED -> BRIEFED -> EXECUTED -> INTEGRATED -> COMPLETE.
 ```bash
 /org Launch new product with campaign    # -> Full hierarchy (make_eng + grow + operate_fin)
 /org Fix auth bug                        # -> Single /run with strategic brief
@@ -285,8 +285,8 @@ Config: `settings.json` (`teammateMode`: auto/tmux/in-process). See `docs/TEAM_M
 ### /designer, /review, /optimize, /helper
 Each skill has `SKILL.md` + `reference/` directory with detailed docs. Use `/helper` for guidance.
 
-V9.27 additions:
-- **/designer**: `--brief <path>` for /org integration, `--iterate <session_id>` for design iteration, codebase compatibility validation
+V9.29 additions:
+- **/designer**: Subagent-delegated question preparation (research agents pre-build context-rich question lists per phase), inline controller pattern (select, reorder, skip, adapt questions), phase-overlap (next-phase research begins during current phase), follow-up research dispatch, graceful fallback, 28 behavioral rules
 - **/review**: Review baselines (`--baseline`, `--suppress`), review profiles (`--profile`), quality trend tracking, baseline-suppression reference
 - **/optimize**: Benchmark integration (`--benchmark`), optimization history/learning (`--history`), pattern effectiveness tracking
 - **/helper**: Full /org documentation, troubleshooting mode (`--troubleshoot`), updated comparison matrices
@@ -465,7 +465,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Event-driven state machine with revision routing (FAIL/REVISE), reviewer loops, prompt-engineer
-**Version**: 9.28.0
+**Version**: 9.30.0
 
 ## Troubleshooting
 

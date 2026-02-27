@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "9.28.0",
-  "description": "cAgents V9.28.0 - Universal multi-domain agent system with 239 agents across 5 super-domains. Phase 1 skill improvements: adaptive pipeline (tier 2 fast path), review baselines/profiles/quality trends, GATE validation standards, teammate failure recovery, optimization benchmarks/learning, /org domain-level resume. Event-driven pipeline with state machine loop, prompt-engineer agent, reviewer loops, revision routing. CJS-only hook architecture with createHook() factory, Skills system (.claude/skills/ auto-discovery), 13 active hook event types (16 supported), opusplan model routing. Agent Teams integration for parallel team-based execution (40-60% time reduction). CSV-based task inventory (60-80% context savings). Controller-centric question-based delegation across 5 super-domains.",
+  "version": "9.30.0",
+  "description": "cAgents V9.30.0 - Universal multi-domain agent system with 239 agents across 5 super-domains. /org dependency-ordered C-suite passes with inline peer analysis (multi-wave analysis, objection phase reads all peer analyses). Event-driven pipeline with state machine loop, prompt-engineer agent, reviewer loops, revision routing. CJS-only hook architecture with createHook() factory, Skills system (.claude/skills/ auto-discovery), 13 active hook event types (16 supported), opusplan model routing. Agent Teams integration for parallel team-based execution (40-60% time reduction). CSV-based task inventory (60-80% context savings). Controller-centric question-based delegation across 5 super-domains.",
   "type": "module",
   "main": "",
   "scripts": {

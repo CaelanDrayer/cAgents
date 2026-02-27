@@ -2,6 +2,18 @@
 
 **Goal**: Generate production-ready artifacts from all gathered design information.
 
+## Step 1: Read Specification Research
+
+Read pre-prepared research files (spawned during Refinement phase-overlap):
+- `question_prep/specification_compatibility.yaml` -- Codebase compatibility analysis (API patterns, naming conventions, model patterns, test patterns)
+
+Use research findings to:
+1. Pre-fill codebase compatibility validation data (avoid re-scanning the codebase)
+2. Flag any design-codebase incompatibilities proactively
+3. Ensure artifact generation uses correct naming conventions, API patterns, etc.
+
+**Fallback**: If research files unavailable, perform inline compatibility checks with Glob/Grep/Read.
+
 ## Artifact Generation
 
 Reference: `Agent_Memory/_system/templates/designer/artifact_generator.yaml`
@@ -94,20 +106,25 @@ Run 5-level validation on the completed design:
 - Score: 0.0 to 1.0
 
 **5. Codebase Compatibility** (software designs only) - Does the design align with the existing codebase?
-- Check: Proposed APIs vs existing API patterns (Grep for route definitions, API conventions)
-- Check: Data model compatibility with existing schema (Read existing models/migrations)
-- Check: Import/dependency feasibility (check package.json, requirements.txt, go.mod, etc.)
-- Check: Naming convention alignment (match existing casing, file structure patterns)
+- **Primary source**: `question_prep/specification_compatibility.yaml` from research agent (pre-analyzed)
+- Check: Proposed APIs vs existing API patterns
+- Check: Data model compatibility with existing schema
+- Check: Import/dependency feasibility
+- Check: Naming convention alignment
 - Score: 0.0 to 1.0
 - Flag incompatibilities as validation warnings with suggested adjustments
 
 ```
-Codebase compatibility checks:
-  1. Glob for existing API route files -> compare proposed API patterns
-  2. Grep for existing model definitions -> compare proposed data models
-  3. Read package manifests -> verify proposed dependencies are compatible
-  4. Grep for naming patterns (camelCase vs snake_case, file naming) -> flag mismatches
-  5. Check existing test patterns -> ensure proposed testing approach aligns
+Codebase compatibility data sources (in order of preference):
+  1. question_prep/specification_compatibility.yaml (research agent pre-analysis -- preferred)
+  2. Inline Glob/Grep/Read (fallback if research unavailable)
+
+Research agent provides:
+  - Existing API route patterns and conventions
+  - Existing model definitions and naming patterns
+  - Package manifest dependency compatibility
+  - Test pattern analysis
+  - Specific incompatibilities with proposed design (pre-flagged)
 ```
 
 Present validation results via AskUserQuestion:
