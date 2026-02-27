@@ -26,17 +26,19 @@ Task({
 
 ## cAgents Subagent Type Format
 
-cAgents extends the Task tool with domain-qualified agent references:
+cAgents registers all agents under the `cagents` plugin namespace. The Task tool uses `cagents:{agent-name}`:
 
 ```
-Format: "{domain}:{agent-name}"
+Format: "cagents:{agent-name}"
 
 Examples:
-- "make:backend-developer"
-- "make:engineering-manager"
-- "grow:copywriter"
-- "operate:financial-analyst"
+- "cagents:backend-developer"
+- "cagents:engineering-manager"
+- "cagents:copywriter"
+- "cagents:business-analyst"
 ```
+
+**IMPORTANT**: Do NOT use `{domain}:{agent-name}` format (e.g., `make:backend-developer`). The plugin registers all agents under the `cagents:` namespace, not domain-specific namespaces. Using the wrong prefix causes fallback to generic general-purpose agents instead of loading the specialized SKILL.md.
 
 ## Alignment with Claude Code Patterns
 
@@ -53,7 +55,7 @@ Task({
 **cAgents Equivalent**:
 ```javascript
 Task({
-  subagent_type: "make:architect",
+  subagent_type: "cagents:architect",
   description: "Research authentication patterns",
   prompt: "Question from controller: What authentication approach should we use?..."
 })
@@ -72,7 +74,7 @@ Task({
 **cAgents Equivalent**:
 ```javascript
 Task({
-  subagent_type: "make:backend-developer",
+  subagent_type: "cagents:backend-developer",
   description: "Implement user authentication",
   prompt: "Implementation task from engineering-manager:\n\nWork Item: WI-003...\nAcceptance Criteria: ..."
 })
@@ -91,7 +93,7 @@ Task({
 **cAgents Equivalent**:
 ```javascript
 Task({
-  subagent_type: "make:qa-lead",
+  subagent_type: "cagents:qa-lead",
   description: "Review authentication implementation",
   prompt: "Validation task:\n\nVerify WI-003 acceptance criteria:\n- Tests pass\n- Security scan clean..."
 })
@@ -105,11 +107,11 @@ Controllers coordinate work through question-based delegation:
 
 | cAgents Controller | Use Case | Delegates To |
 |-------------------|----------|--------------|
-| `make:engineering-manager` | Engineering work | backend-developer, frontend-developer, qa-lead |
-| `make:architect` | System design | engineer specialists, security-specialist |
-| `make:creative-director` | Creative work | copywriter, designer, content-strategist |
-| `grow:campaign-manager` | Marketing campaigns | copywriter, seo-specialist, email-specialist |
-| `operate:operations-manager` | Operations | operations-analyst, procurement-specialist |
+| `cagents:engineering-manager` | Engineering work | backend-developer, frontend-developer, qa-lead |
+| `cagents:architect` | System design | engineer specialists, security-specialist |
+| `cagents:creative-director` | Creative work | copywriter, designer, content-strategist |
+| `cagents:campaign-manager` | Marketing campaigns | copywriter, seo-specialist, email-specialist |
+| `cagents:operations-manager` | Operations | operations-analyst, procurement-specialist |
 
 ### Execution Agents (Tier 3)
 
@@ -117,11 +119,11 @@ Execution agents answer questions and implement tasks:
 
 | cAgents Agent | Expertise | Typical Questions |
 |--------------|-----------|-------------------|
-| `make:backend-developer` | Server-side code | Implementation details, API design |
-| `make:frontend-developer` | Client-side code | UI implementation, state management |
-| `make:qa-lead` | Testing | Test strategy, coverage, quality gates |
-| `grow:copywriter` | Written content | Messaging, tone, audience fit |
-| `operate:financial-analyst` | Financial analysis | Budgets, forecasts, ROI |
+| `cagents:backend-developer` | Server-side code | Implementation details, API design |
+| `cagents:frontend-developer` | Client-side code | UI implementation, state management |
+| `cagents:qa-lead` | Testing | Test strategy, coverage, quality gates |
+| `cagents:copywriter` | Written content | Messaging, tone, audience fit |
+| `cagents:business-analyst` | Business/financial analysis | Budgets, forecasts, ROI |
 
 ## Prompt Templates
 
@@ -175,13 +177,16 @@ Please synthesize into:
 
 ## Best Practices
 
-### 1. Always Use Domain Prefix
+### 1. Always Use cagents: Prefix
 
 ```javascript
-// Good
+// Good - matches plugin namespace
+Task({ subagent_type: "cagents:backend-developer", ... })
+
+// Bad - domain prefix doesn't match registered namespace, falls back to generic agent
 Task({ subagent_type: "make:backend-developer", ... })
 
-// Avoid (ambiguous)
+// Bad - no prefix, ambiguous
 Task({ subagent_type: "backend-developer", ... })
 ```
 

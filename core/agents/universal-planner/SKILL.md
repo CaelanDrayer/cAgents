@@ -76,8 +76,8 @@ objectives:
   - "Ensure security best practices"
 
 controller_assignment:
-  primary: engineering:engineering-manager
-  supporting: [engineering:architect, engineering:security-specialist]
+  primary: cagents:engineering-manager
+  supporting: [cagents:architect, cagents:security-specialist]
 
 work_breakdown_file: workflow/decomposition.yaml
 ```

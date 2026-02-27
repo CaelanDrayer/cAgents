@@ -31,7 +31,7 @@ createHook('ToolFailureTracker', async (input) => {
   const errorMsg = (input.error || input.tool_output || '').toString().slice(0, 200);
   const now = new Date().toISOString();
 
-  const sessionDir = findActiveSession();
+  const sessionDir = findActiveSession(input.session_id);
   if (!sessionDir) return null;
 
   const workflowDir = ensureDir(path.join(sessionDir, 'workflow'));

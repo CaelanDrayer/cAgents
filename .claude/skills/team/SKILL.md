@@ -124,14 +124,14 @@ Build the team and launch teammates. Execute ALL sub-steps IMMEDIATELY without p
 
     **Gate 1 sentinel, Wave 2 tasks, etc.**
 
-12. **Execute Wave 0 (bootstrap)** sequentially via /run:
+12. **Execute Wave 0 (bootstrap)** sequentially via /run (include `Parent-Session` for session linkage):
     ```
-    Skill({ skill: "run", args: "WI-001: {description}. Acceptance criteria: {criteria}" })
-    Skill({ skill: "run", args: "WI-002: {description}. Acceptance criteria: {criteria}" })
+    Skill({ skill: "run", args: "WI-001: {description}. Acceptance criteria: {criteria}. Parent-Session: {session_id}" })
+    Skill({ skill: "run", args: "WI-002: {description}. Acceptance criteria: {criteria}. Parent-Session: {session_id}" })
     ```
     After all wave-0 items complete: validate quality gate, mark GATE-0 as completed.
 
-13. **Spawn teammates** for Wave 1 (parallel) via Task tool. Each teammate MUST receive explicit instructions to invoke `/run` via the Skill tool:
+13. **Spawn teammates** for Wave 1 (parallel) via Task tool. Each teammate MUST receive explicit instructions to invoke `/run` via the Skill tool. **Include `Parent-Session`** for session linkage:
 
     ```
     Task({
@@ -140,13 +140,14 @@ Build the team and launch teammates. Execute ALL sub-steps IMMEDIATELY without p
 
     YOUR ASSIGNED WORK ITEM: WI-{id}: {description}
     Acceptance criteria: {criteria}
+    Parent-Session: {session_id}
 
     CRITICAL INSTRUCTIONS:
     1. You MUST use the Skill tool to invoke /run for your work item. This will spin out your own controller and execution agents automatically.
     2. Do NOT implement the work directly. /run handles all agent delegation.
-    3. Execute now:
+    3. Execute now (INCLUDE the Parent-Session so child sessions link back to the team):
 
-    Skill({ skill: 'run', args: '{work_item_description}. Acceptance criteria: {criteria}' })
+    Skill({ skill: 'run', args: '{work_item_description}. Acceptance criteria: {criteria}. Parent-Session: {session_id}' })
 
     4. After /run completes, mark your task as completed:
        TaskUpdate({ taskId: '{task_id}', status: 'completed' })
@@ -238,8 +239,8 @@ plan.yaml:
   tier: 3
   domain: engineering
   controller_assignment:
-    primary: engineering:engineering-manager
-    supporting: [engineering:architect]
+    primary: cagents:engineering-manager
+    supporting: [cagents:architect]
   objectives: ["Implement complete OAuth2 auth"]
 
 decomposition.yaml:
@@ -279,14 +280,14 @@ TaskCreate GATE-1 (blocked by WI-003, WI-004, WI-005)
 TaskCreate WI-006, WI-007 (wave 2, blocked by GATE-1)
 
 Execute Wave 0 (bootstrap):
-  Skill({ skill: "run", args: "WI-001: Design auth architecture" })
-  Skill({ skill: "run", args: "WI-002: Define database schema" })
+  Skill({ skill: "run", args: "WI-001: Design auth architecture. Parent-Session: team_20260209_143000" })
+  Skill({ skill: "run", args: "WI-002: Define database schema. Parent-Session: team_20260209_143000" })
   Mark GATE-0 complete -> unblocks wave 1
 
 Spawn 3 teammates for Wave 1 (parallel):
-  Task({ description: "Teammate: WI-003", prompt: "...Skill({skill:'run', args:'WI-003: ...'})..." })
-  Task({ description: "Teammate: WI-004", prompt: "...Skill({skill:'run', args:'WI-004: ...'})..." })
-  Task({ description: "Teammate: WI-005", prompt: "...Skill({skill:'run', args:'WI-005: ...'})..." })
+  Task({ description: "Teammate: WI-003", prompt: "...Skill({skill:'run', args:'WI-003: ... Parent-Session: team_20260209_143000'})..." })
+  Task({ description: "Teammate: WI-004", prompt: "...Skill({skill:'run', args:'WI-004: ... Parent-Session: team_20260209_143000'})..." })
+  Task({ description: "Teammate: WI-005", prompt: "...Skill({skill:'run', args:'WI-005: ... Parent-Session: team_20260209_143000'})..." })
 
 Monitor: TaskList, wait for teammates to complete, mark GATE-1
 

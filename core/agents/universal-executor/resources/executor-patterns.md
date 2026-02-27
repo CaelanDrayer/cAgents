@@ -4,7 +4,7 @@
 
 ```yaml
 Task:
-  subagent_type: "{domain}:{controller_name}"
+  subagent_type: "cagents:{controller_name}"
   description: "Coordinate {objective} via question-based delegation"
   prompt: |
     You are the primary controller for this workflow.
@@ -74,7 +74,7 @@ Steps:
 ```yaml
 instruction_id: {id}
 coordination_approach: question_based
-controller_primary: {domain}:{controller}
+controller_primary: cagents:{controller}
 controller_supporting: []
 
 coordination_stats:

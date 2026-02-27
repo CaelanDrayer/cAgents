@@ -56,7 +56,7 @@ function getNextAction(phase, coordState) {
 }
 
 createHook('PreCompact', async (input) => {
-  const sessionDir = findActiveSession();
+  const sessionDir = findActiveSession(input.session_id);
   if (!sessionDir) return null;
 
   const timestamp = new Date();

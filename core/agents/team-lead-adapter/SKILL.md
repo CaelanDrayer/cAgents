@@ -139,7 +139,7 @@ SendMessage({
   content: `You are assigned WI-001: Implement user model.
 
 CRITICAL: You MUST execute this via the Skill tool to spin out your own agents:
-Skill({ skill: "run", args: "implement WI-001: Implement user model. Acceptance criteria: model exists with password_hash field, migration created, unit tests pass." })
+Skill({ skill: "run", args: "implement WI-001: Implement user model. Acceptance criteria: model exists with password_hash field, migration created, unit tests pass. Parent-Session: {session_id}" })
 
 Do NOT implement this directly. The /run skill will create a controller (e.g., engineering-manager) who will delegate to execution agents (e.g., backend-developer, qa-tester). Your job is to invoke /run and report results.
 
@@ -153,7 +153,7 @@ SendMessage({
   content: `You are assigned WI-002: Create user registration form.
 
 CRITICAL: You MUST execute this via the Skill tool to spin out your own agents:
-Skill({ skill: "run", args: "implement WI-002: Create user registration form. Acceptance criteria: form renders, validation works, responsive design." })
+Skill({ skill: "run", args: "implement WI-002: Create user registration form. Acceptance criteria: form renders, validation works, responsive design. Parent-Session: {session_id}" })
 
 Do NOT implement this directly. /run handles all agent delegation automatically.
 
@@ -289,7 +289,7 @@ aggregation_process:
 # workflow/coordination_log.yaml
 
 controller: team-lead-adapter
-wrapped_controller: make:engineering-manager
+wrapped_controller: cagents:engineering-manager
 mode: team_execution
 execution_method: built_in_agent_teams
 

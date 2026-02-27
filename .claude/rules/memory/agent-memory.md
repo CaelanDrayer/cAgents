@@ -78,6 +78,8 @@ Agent_Memory/sessions/{session_id}/
 │   ├── decomposition.yaml       # Work item breakdown (detailed)
 │   ├── coordination_log.yaml    # Q&A exchanges, synthesis (V7.0)
 │   ├── execution_summary.yaml   # Aggregated outputs
+│   ├── child_sessions.yaml      # Child session IDs (team sessions only)
+│   ├── agent_tree.yaml          # Spawned agent hierarchy
 │   └── checkpoints/             # State snapshots
 ├── waypoints/                    # [NEW] Resume checkpoints
 │   └── wp-001.yaml              # Waypoint snapshot

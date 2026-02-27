@@ -95,7 +95,7 @@ This controller typically delegates to:
 ### coordination_log.yaml
 
 ```yaml
-controller: make:controller-name
+controller: cagents:controller-name
 objectives: [...]
 questions_asked:
   - question: "..."

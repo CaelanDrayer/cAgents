@@ -20,7 +20,7 @@ createHook('SubagentTracker', async (input) => {
   const description = (input.description || '').slice(0, 100);
   const parentAgent = input.parent_agent || 'root';
 
-  const sessionDir = findActiveSession();
+  const sessionDir = findActiveSession(input.session_id);
   if (!sessionDir) return null;
 
   const workflowDir = ensureDir(path.join(sessionDir, 'workflow'));

@@ -168,7 +168,7 @@ Agent_Memory/{instruction_id}/outputs/partial/{task_id}/
 **Manifest Format**:
 ```yaml
 task_id: {task_id}
-assigned_to: {domain}:{execution-agent-name}
+assigned_to: cagents:{execution-agent-name}
 completed_at: ISO8601
 
 acceptance_criteria_verification:

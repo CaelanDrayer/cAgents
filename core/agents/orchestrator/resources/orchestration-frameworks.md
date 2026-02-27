@@ -45,7 +45,7 @@ Task:
 ### Coordinating Phase
 ```yaml
 Task:
-  subagent_type: "{domain}:{controller-agent}"
+  subagent_type: "cagents:{controller-agent}"
   description: "Coordinate work using decomposition"
   prompt: |
     You are the coordinating controller.

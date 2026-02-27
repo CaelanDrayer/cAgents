@@ -179,7 +179,7 @@ Controllers are the coordination hub between planning and execution. See @.claud
 
 **Coordination Log** (`Agent_Memory/sessions/{session_id}/workflow/coordination_log.yaml`):
 ```yaml
-controller: make:engineering-manager
+controller: cagents:engineering-manager
 objectives: [...]
 questions_asked: [{question, delegated_to, answer}, ...]
 synthesized_solution: {approach, rationale, implementation_steps, risks}
@@ -389,7 +389,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via built-in agent teams
-**Version**: 9.14.1
+**Version**: 9.15.0
 
 ## Troubleshooting
 

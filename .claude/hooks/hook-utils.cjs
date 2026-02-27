@@ -6,7 +6,7 @@
  * Provides:
  * - createHook(handler) - Factory that eliminates per-hook boilerplate
  * - readStdin() - Parse JSON from stdin
- * - findActiveSession() - Locate the most recent non-completed session
+ * - findActiveSession(sessionHint?) - Locate the most recent non-completed session (with optional hint to prevent parallel collision)
  * - extractYamlValue() - Extract a value from simple YAML content
  * - safeRead() - Read a file with graceful fallback
  * - countPattern() - Count regex matches in content
@@ -105,17 +105,51 @@ function countPattern(content, pattern) {
 
 /**
  * Find the most recent active (non-completed, non-failed) session directory.
- * Cached per process invocation.
+ * Cached per process invocation (cache is keyed by sessionHint to support
+ * multiple concurrent teammates).
+ *
+ * @param {string} [sessionHint] - Optional session_id hint (e.g., from hook input).
+ *   When provided and the session exists + is active, returns it immediately.
+ *   This prevents the "findActiveSession collision" bug where multiple
+ *   parallel teammates' hooks all write to the same session.
  */
 let _cachedActiveSession = undefined;
+let _cachedHint = undefined;
 
-function findActiveSession() {
+function findActiveSession(sessionHint) {
+  // If we have a hint and it differs from cached, invalidate cache
+  if (sessionHint && sessionHint !== _cachedHint) {
+    _cachedActiveSession = undefined;
+    _cachedHint = sessionHint;
+  }
+
   if (_cachedActiveSession !== undefined) return _cachedActiveSession;
 
   const sessionsDir = path.join(AGENT_MEMORY_DIR, 'sessions');
   if (!fs.existsSync(sessionsDir)) {
     _cachedActiveSession = null;
     return null;
+  }
+
+  // If a session hint is provided, try it first (avoids collision between parallel teammates)
+  if (sessionHint) {
+    const hintDir = path.join(sessionsDir, sessionHint);
+    if (fs.existsSync(hintDir)) {
+      const statusFile = path.join(hintDir, 'status.yaml');
+      const content = safeRead(statusFile);
+      if (content) {
+        const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase');
+        if (phase && phase !== 'completed' && phase !== 'complete' && phase !== 'failed' && phase !== 'aborted') {
+          _cachedActiveSession = hintDir;
+          return _cachedActiveSession;
+        }
+      }
+      // Even if no status.yaml yet (session just created), trust the hint
+      if (fs.existsSync(hintDir)) {
+        _cachedActiveSession = hintDir;
+        return _cachedActiveSession;
+      }
+    }
   }
 
   const sessions = fs.readdirSync(sessionsDir)

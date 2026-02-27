@@ -100,24 +100,24 @@ For each parallel group, spawn review agents via Task tool:
 ```javascript
 // Group 1 - Independent structural analysis (parallel)
 Task({
-  subagent_type: "make:architecture-reviewer",
+  subagent_type: "cagents:architecture-reviewer",
   description: "Review architecture and design patterns",
   prompt: `Review architecture for: ${targetPath}. Check system design, patterns, coupling.`
 })
 Task({
-  subagent_type: "make:code-standards-auditor",
+  subagent_type: "cagents:code-standards-auditor",
   description: "Audit code standards and conventions",
   prompt: `Audit code standards for: ${targetPath}. Check style, naming, conventions.`
 })
 Task({
-  subagent_type: "make:documentation-reviewer",
+  subagent_type: "cagents:documentation-reviewer",
   description: "Review documentation quality",
   prompt: `Review documentation for: ${targetPath}. Check clarity, completeness, accuracy.`
 })
 
 // Group 2 - Context-dependent (after Group 1, parallel within group)
 Task({
-  subagent_type: "make:performance-analyzer",
+  subagent_type: "cagents:performance-analyzer",
   description: "Analyze performance issues",
   prompt: `Analyze performance for: ${targetPath}. Architecture context: ${group1Results}.`
 })

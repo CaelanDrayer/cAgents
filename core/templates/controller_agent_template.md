@@ -68,7 +68,7 @@ success_criteria:
   - "Criterion 2: {measurable outcome}"
 
 controller_assignment:
-  primary: {domain}:{controller-name}
+  primary: cagents:{controller-name}
 ```
 
 ### Step 2: Break Into Questions
@@ -108,7 +108,7 @@ For each question, spawn execution agent via Task tool:
 
 ```javascript
 Task({
-  subagent_type: "{domain}:{execution-agent}",
+  subagent_type: "cagents:{execution-agent}",
   description: "Answer {topic} question",
   prompt: `
 {Specific question here}
@@ -134,7 +134,7 @@ Format answer in YAML for easy parsing.
 
 ```javascript
 Task({
-  subagent_type: "make:backend-developer",
+  subagent_type: "cagents:backend-developer",
   description: "Answer current auth implementation question",
   prompt: `
 What is the current authentication implementation in the API?
@@ -164,7 +164,7 @@ Collect all answers and synthesize into coherent approach:
 # Agent_Memory/{instruction_id}/workflow/coordination_log.yaml
 
 coordination_id: coord_{instruction_id}
-controller: {domain}:{controller-name}
+controller: cagents:{controller-name}
 objectives: [from plan.yaml]
 
 questions_asked:
@@ -236,7 +236,7 @@ Break synthesized solution into tasks and assign to execution agents:
 ```javascript
 // Task 1: Backend developer implements OAuth2 endpoints
 Task({
-  subagent_type: "make:backend-developer",
+  subagent_type: "cagents:backend-developer",
   description: "Implement OAuth2 endpoints",
   prompt: `
 Implement OAuth2 endpoints for the API based on synthesized solution.
@@ -264,7 +264,7 @@ Output to: Agent_Memory/{instruction_id}/outputs/partial/task_001/
 
 // Task 2: QA lead creates tests
 Task({
-  subagent_type: "make:qa-lead",
+  subagent_type: "cagents:qa-lead",
   description: "Create OAuth2 tests",
   prompt: `
 Create comprehensive tests for OAuth2 implementation.
@@ -283,7 +283,7 @@ Output to: Agent_Memory/{instruction_id}/outputs/partial/task_002/
 
 // Task 3: Security specialist reviews
 Task({
-  subagent_type: "make:security-specialist",
+  subagent_type: "cagents:security-specialist",
   description: "Security review of OAuth2 implementation",
   prompt: `
 Conduct security review of OAuth2 implementation.

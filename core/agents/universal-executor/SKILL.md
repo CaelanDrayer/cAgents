@@ -96,12 +96,12 @@ When a controller or execution agent exhausts its context:
 continuation_count: 2
 continuations:
   - attempt: 1
-    agent: make:backend-developer
+    agent: cagents:backend-developer
     reason: context_exhaustion
     recovered_items: [WI-003, WI-004]
     remaining_items: [WI-005, WI-006, WI-007]
   - attempt: 2
-    agent: make:backend-developer
+    agent: cagents:backend-developer
     reason: context_exhaustion
     recovered_items: [WI-005, WI-006]
     remaining_items: [WI-007]

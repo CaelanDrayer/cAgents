@@ -159,7 +159,7 @@ team_mode_indicators:
 ```javascript
 // Standard mode: spawn controller
 Task({
-  subagent_type: "{domain}:{controller}",
+  subagent_type: "cagents:{controller}",
   description: "Coordinate: {request}",
   prompt: "Session: {session_path}\nRead plan.yaml for context."
 })
@@ -170,7 +170,7 @@ Task({
   description: "Team lead: {request}",
   prompt: `
     Session: {session_path}
-    Controller: {domain}:{controller}
+    Controller: cagents:{controller}
     Mode: team_execution
     Read team/team_manifest.yaml and team/task_list.yaml for team context.
   `

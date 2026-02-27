@@ -67,7 +67,7 @@ createHook('VerifyCompletion', async (input) => {
     return null;
   }
 
-  const sessionDir = findActiveSession();
+  const sessionDir = findActiveSession(input.session_id);
   if (!sessionDir) return null;
 
   const result = verifyCompletion(sessionDir);

@@ -25,7 +25,7 @@ Please provide your expert answer focusing on {specific_area}.
 
 ```javascript
 Task({
-  subagent_type: "make:backend-developer",
+  subagent_type: "cagents:backend-developer",
   description: "Answer: What is current auth implementation?",
   prompt: "What is the current authentication implementation? Check src/ for auth-related code. Report: method used, libraries, known issues."
 })
@@ -55,7 +55,7 @@ Please implement and provide evidence of completion.
 
 ```javascript
 Task({
-  subagent_type: "make:backend-developer",
+  subagent_type: "cagents:backend-developer",
   description: "Implement WI-003: User model",
   prompt: "Implementation Task from engineering-manager:\n\nWork Item: WI-003\nName: Implement user model\n\nAcceptance Criteria:\n- User model has password_hash field\n- Database migration created\n- Unit tests pass\n\nDependencies Completed: WI-001 (analysis), WI-002 (design)\n\nPlease implement and provide evidence of completion."
 })
@@ -78,20 +78,22 @@ Please synthesize into:
 4. Risks and mitigations
 ```
 
-## Domain-Qualified Agent References
+## Plugin-Namespaced Agent References
 
-Always use domain-qualified agent names:
+Always use the `cagents:` plugin namespace prefix for agent names:
 
 ```
-Format: "{domain}:{agent-name}"
+Format: "cagents:{agent-name}"
 
 Examples:
-- "make:backend-developer"
-- "make:engineering-manager"
-- "grow:copywriter"
-- "operate:financial-analyst"
-- "people:recruiter"
-- "serve:legal-analyst"
+- "cagents:backend-developer"
+- "cagents:engineering-manager"
+- "cagents:copywriter"
+- "cagents:business-analyst"
+- "cagents:recruiter"
+- "cagents:legal-analyst"
 ```
+
+**IMPORTANT**: Do NOT use `{domain}:{agent-name}` (e.g., `make:backend-developer`). The plugin registers all agents under the `cagents:` namespace. Using domain prefixes causes fallback to generic general-purpose agents.
 
 See @.claude/rules/core/subagent-alignment.md for full alignment patterns.

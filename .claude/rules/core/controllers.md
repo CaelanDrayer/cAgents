@@ -58,7 +58,7 @@ For EVERY question, controller MUST:
 ```javascript
 // Controller MUST do this for each question:
 Task({
-  subagent_type: "{domain}:{execution_agent}",
+  subagent_type: "cagents:{execution_agent}",
   description: "Answer: {question}",
   prompt: "Question from controller: {question}\nProvide expert answer."
 })
@@ -71,7 +71,7 @@ When delegating questions to execution agents, keep prompts minimal:
 **Good** (~200 tokens):
 ```javascript
 Task({
-  subagent_type: "make:backend-developer",
+  subagent_type: "cagents:backend-developer",
   description: "Answer: What is current auth implementation?",
   prompt: "What is the current authentication implementation? Check src/ for auth-related code. Report: method used, libraries, known issues."
 })
@@ -80,7 +80,7 @@ Task({
 **Bad** (~2000 tokens):
 ```javascript
 Task({
-  subagent_type: "make:backend-developer",
+  subagent_type: "cagents:backend-developer",
   description: "Answer: What is current auth implementation?",
   prompt: "[Full plan.yaml...] [Full decomposition.yaml...] [Full instruction.yaml...] Question: What is the current authentication implementation?"
 })

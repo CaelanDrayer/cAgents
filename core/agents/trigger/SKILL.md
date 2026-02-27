@@ -87,6 +87,31 @@ See @resources/todowrite-patterns.md for progress tracking patterns.
 - `Agent_Memory/_system/trigger/workflow_templates.yaml` - Template catalog
 - `Agent_Memory/_system/trigger/preflight_validation.yaml` - Validation rules
 
+## Parent Session Linkage
+
+When the trigger is invoked from within a team context (teammate running /run), the delegation prompt may include a `Parent-Session` field. If present, include it in instruction.yaml:
+
+```yaml
+# instruction.yaml (with parent session linkage)
+session_id: run_20260212_102800
+parent_session: team_20260212_102515    # Present when invoked from /team
+request: "WI-003: Implement backend auth endpoints"
+domain: engineering
+tier: 3
+```
+
+**Detection**: Check the delegation prompt for `Parent-Session: {session_id}`. If found, write it as `parent_session` in instruction.yaml. This enables hooks and validators to trace teammate sessions back to their parent team session.
+
+**Also update parent**: After creating the child session, write the child session ID to the parent team session's `workflow/child_sessions.yaml`:
+
+```yaml
+# Agent_Memory/sessions/{parent_session}/workflow/child_sessions.yaml
+child_sessions:
+  - session_id: run_20260212_102800
+    work_item: "WI-003"
+    created_at: "2026-02-12T10:28:00Z"
+```
+
 ## Team Planning Only Mode
 
 When invoked with `mode: team_planning_only` (by `/team` or team-trigger), the trigger executes a **truncated workflow**:

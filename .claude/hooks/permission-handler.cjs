@@ -37,7 +37,7 @@ createHook('PermissionHandler', async (input) => {
   }
 
   // Check for HITL context - deny permission so user must approve
-  const sessionDir = findActiveSession();
+  const sessionDir = findActiveSession(input.session_id);
   if (sessionDir) {
     const planContent = safeRead(path.join(sessionDir, 'workflow', 'plan.yaml'));
     const tier = extractYamlValue(planContent, 'tier');
