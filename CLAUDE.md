@@ -104,19 +104,22 @@ Plus 14 core infrastructure + 14 shared cross-domain agents.
 
 **Minimum Tier**: Always tier 2+ (controller coordination required). ALL requests use agents. NO exceptions. Former tier 0/1 automatically upgraded.
 
-**Delegation Chain** (every arrow = Task tool):
+**Delegation Chain** (flattened V9.18 -- 2 levels instead of 5):
 ```
-/run -> trigger -> orchestrator -> controller -> execution_agents
-         |           |              |              |
-      (detect)   (phases)      (questions)    (actual work)
+/run (inline: routing + planning + orchestration) -> controller -> execution_agents
+                                                       |              |
+                                                   (questions)    (actual work)
 ```
 
-**Coordination Agents** (ONLY coordinate): trigger, orchestrator, universal-executor, all controllers
+Previous 5-level chain (`/run -> trigger -> orchestrator -> controller -> execution`) was replaced because deep nesting caused systematic failures (Task tool unavailability, context exhaustion, empty session directories).
+
+**Coordination Agents** (ONLY coordinate): controllers (engineering-manager, architect, etc.)
 **Execution Agents** (DO the work): backend-developer, frontend-developer, copywriter, qa-tester, etc.
+**Inline in /run**: routing, planning, orchestration, validation (previously trigger, orchestrator, universal-router, universal-planner)
 
 **Why Minimum Tier 2**: Even "simple" questions get comprehensive expert answers. Even "trivial" edits get specialist + review. Multi-agent coverage catches issues single-agent misses.
 
-**Why NEVER Direct**: If the user wanted direct handling, they would not have typed `/run`. The `/run` command exists exclusively for multi-agent orchestration. No request is "too simple" or "too trivial" for delegation.
+**Why Flattened**: The 5-level delegation chain caused Task tool unavailability at deep nesting levels, context exhaustion before reaching execution agents, and sessions ending with empty workflow directories. The 2-level chain keeps routing/planning in-context and delegates only coordination (which requires domain expertise) and execution (which requires specialist skills).
 
 ## CRITICAL: Automatic Workflow Progression
 
@@ -200,13 +203,13 @@ ALL workflows use routing -> planning -> **coordinating** -> executing -> valida
 ## Workflow Execution
 
 ```
-User Request -> Trigger (domain detect) -> Orchestrator
-  Routing -> Universal-Router (tier 2-4)
-  Planning -> Universal-Planner (objectives + controller selection)
-  Coordinating -> Controller (question-based delegation, synthesis)
-  Executing -> Universal-Executor (monitor controller progress)
-  Validating -> Universal-Validator (coordination + output quality)
-  PASS -> Complete | FIXABLE -> Self-Correct | BLOCKED -> HITL
+User Request -> /run (inline routing + planning + orchestration)
+  Routing: Domain detection, tier classification (inline)
+  Planning: Objectives, controller selection, work items (inline)
+  Coordinating -> Controller via Task tool (question-based delegation, synthesis)
+    Execution -> Execution agents via controller's Task tool (actual work)
+  Validating: Check coordination_log.yaml, verify outputs (inline)
+  PASS -> Complete | FIXABLE -> Report issues | BLOCKED -> Suggest --resume
 ```
 
 **Subagent Architecture**: Agents delegate to specialists via Task tool. Pattern: "Use {subagent} to {task}". Up to 50 concurrent. See `workflow_agent_interactions.md`.
@@ -225,7 +228,7 @@ User Request -> Trigger (domain detect) -> Orchestrator
 
 | Skill | Context | Agent | Description |
 |-------|---------|-------|-------------|
-| `/run` | `fork` | `true` | Universal workflow engine -- delegates to trigger agent |
+| `/run` | `fork` | `true` | Universal workflow engine -- routes/plans inline, delegates to controller |
 | `/team` | `fork` | `true` | Parallel team execution via built-in agent teams |
 | `/designer` | `none` | `false` | Interactive 4-phase design engine (Discovery -> Specification) |
 | `/review` | `fork` | `true` | Universal review with parallel agent execution |
@@ -234,8 +237,8 @@ User Request -> Trigger (domain detect) -> Orchestrator
 
 **Built-in**: `/memory` (view/edit memory files), `/init` (bootstrap project CLAUDE.md)
 
-### /run - Universal Entry Point
-Auto-routes to super-domain, executes full workflow with controller-centric coordination.
+### /run - Universal Entry Point (Flattened V9.18)
+Routes and plans inline, delegates coordination to controllers. 2-level chain replaces previous 5-level chain.
 ```bash
 /run Fix auth bug              # -> Make (tier 2: engineering-manager)
 /run Write fantasy story       # -> Make (tier 2: creative-director)
@@ -353,7 +356,7 @@ cAgents/
 
 ## Hooks System
 
-**Architecture**: CJS-only hooks with `createHook()` factory. All invoked via `node "${CLAUDE_PLUGIN_ROOT}"/.claude/hooks/run-hook.cjs <hook-name>` using the official Claude Code plugin env var for self-contained path resolution. See @.claude/rules/core/hooks.md for full documentation.
+**Architecture**: CJS-only hooks with `createHook()` factory. All invoked via `bash -c` wrapper with 3-tier fallback chain (`CLAUDE_PLUGIN_ROOT` -> `CLAUDE_PROJECT_DIR` -> `pwd`) for resilient path resolution. See @.claude/rules/core/hooks.md for full documentation.
 
 **17 .cjs files**: `hook-utils.cjs` (factory), `run-hook.cjs` (launcher), `eval-runner.cjs` (CLI), + 14 registered hooks across 12 event types:
 
@@ -396,7 +399,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via built-in agent teams
-**Version**: 9.17.0
+**Version**: 9.19.0
 
 ## Troubleshooting
 

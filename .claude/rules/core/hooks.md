@@ -6,7 +6,7 @@ paths:
 
 # cAgents Hook System
 
-V9.16 CJS-only hook architecture with 14 hook event types, `createHook()` factory pattern, and agent audit trail.
+V9.17.1 CJS-only hook architecture with 14 hook event types, `createHook()` factory pattern, agent audit trail, and resilient path resolution.
 
 ## Architecture
 
@@ -14,7 +14,7 @@ cAgents uses a unified CJS hook system configured in `.claude/settings.json`:
 
 - **CJS hooks** (`.claude/hooks/`): 17 `.cjs` files -- 1 shared utility module (`hook-utils.cjs`) + 1 hook launcher (`run-hook.cjs`) + 14 registered hooks + 1 standalone CLI tool (`eval-runner.cjs`). All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output).
 - **Prompt hooks**: None currently active. The Stop prompt hook was removed in V9.6.2 due to unreliable LLM JSON responses causing recurring validation failures. The `verify-completion.cjs` command hook provides equivalent file-based verification.
-- **Self-contained invocation via run-hook.cjs**: All hooks are called via `node "${CLAUDE_PLUGIN_ROOT}"/.claude/hooks/run-hook.cjs <hook-name>` -- a launcher that resolves the target hook path using `__dirname` (always correct, since the launcher itself is in `.claude/hooks/`). The `${CLAUDE_PLUGIN_ROOT}` env var in command strings is the official Claude Code mechanism for plugin portability (see docs.anthropic.com/en/hooks). V9.13 switched from `$CAGENTS_DIR` (custom env var not expanded by Claude Code in command strings) to `${CLAUDE_PLUGIN_ROOT}` (built-in, always expanded). Previous attempts used `$CLAUDE_PROJECT_DIR` (wrong: points to user's project) and custom `$CAGENTS_DIR` (wrong: custom env vars are not expanded in hook command strings).
+- **Self-contained invocation via run-hook.cjs**: All hooks are called via `bash -c 'R="${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"; node "$R/.claude/hooks/run-hook.cjs" <hook-name>'` -- a bash wrapper with a 3-tier fallback chain that resolves the plugin root, then launches `run-hook.cjs` which resolves the target hook path using `__dirname`. V9.17.1 switched from bare `node "${CLAUDE_PLUGIN_ROOT}"/.claude/hooks/run-hook.cjs` (which fails with MODULE_NOT_FOUND when `CLAUDE_PLUGIN_ROOT` is not expanded) to a `bash -c` wrapper with fallback chain: `CLAUDE_PLUGIN_ROOT` (official plugin env var) -> `CLAUDE_PROJECT_DIR` (user's project dir, works for local dev) -> `pwd` (last resort). Previous V9.13 approach used `${CLAUDE_PLUGIN_ROOT}` directly in the command string, but this fails when the env var is not set (e.g., in certain subagent contexts, SessionEnd events, or non-plugin installations).
 
 ### V9.5 Changes (from V9.4)
 
@@ -349,7 +349,7 @@ Hooks are registered in `.claude/settings.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}\"/.claude/hooks/run-hook.cjs my-hook",
+            "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" my-hook'",
             "timeout": 5
           }
         ]
@@ -358,6 +358,11 @@ Hooks are registered in `.claude/settings.json`:
   }
 }
 ```
+
+The `bash -c` wrapper provides a 3-tier fallback chain for resolving the plugin root:
+1. `CLAUDE_PLUGIN_ROOT` -- Official Claude Code plugin env var (set when loaded as marketplace plugin)
+2. `CLAUDE_PROJECT_DIR` -- User's project directory (works for local development)
+3. `$(pwd)` -- Current working directory (last resort fallback)
 
 ## Best Practices
 

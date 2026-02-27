@@ -1,32 +1,57 @@
-# /run Delegation Patterns
+# /run Delegation Patterns (Flattened Architecture)
 
-## Delegation Chain
+## Delegation Chain (V9.18)
 
-Every request follows this chain, with each arrow being a Task tool invocation:
+The flattened architecture reduces the delegation chain from 5 levels to 2:
 
+**Previous** (5 levels -- unreliable, frequent failures):
 ```
 /run -> trigger -> orchestrator -> controller -> execution_agents
 ```
 
-## What Each Agent Does
+**Current** (2 levels -- reliable):
+```
+/run (inline: routing + planning + orchestration) -> controller -> execution_agents
+```
 
-| Agent | Responsibility |
-|-------|---------------|
-| **trigger** | Domain detection, intent classification, template matching, pre-flight validation |
-| **orchestrator** | Phase conductor (routing -> planning -> coordinating -> executing -> validating) |
-| **controller** | Question-based delegation, synthesis, implementation coordination |
-| **execution agents** | Actual implementation work (coding, writing, analysis) |
+## What /run Does Inline
 
-## Trigger Agent Capabilities
+| Phase | Previously | Now |
+|-------|-----------|-----|
+| **Routing** | trigger + universal-router (2 agents) | /run inline |
+| **Planning** | orchestrator + universal-planner (2 agents) | /run inline |
+| **Orchestration** | orchestrator (1 agent) | /run inline |
+| **Coordination** | controller (1 agent) | controller via Task tool |
+| **Execution** | execution agents (N agents) | execution agents via controller |
+| **Validation** | universal-validator (1 agent) | /run inline (basic checks) |
 
-1. **Context-aware domain detection** (project structure, git history, frameworks)
-2. **Intent classification** (bug fix, feature, question, etc.)
-3. **Template matching** (12 pre-defined templates)
-4. **Pre-flight validation** (4-level: context, feasibility, resources, conflicts)
-5. **Interactive mode** (if enabled, ask user preferences)
-6. **Dry-run preview** (if enabled, show plan without executing)
-7. **Instruction initialization** with enhanced metadata
-8. **Delegation to orchestrator** with recommendations
+## Why Flattened?
+
+The 5-level chain caused systematic failures:
+1. **Task tool unavailability**: The Task tool for spawning subagents was not always available at every nesting level
+2. **Context exhaustion**: Each nesting level consumed context, leaving less for actual work
+3. **Session tracking failures**: Deeply nested agents couldn't always find/write to session files
+4. **Agent type confusion**: All agents appeared as "general-purpose" at every level
+5. **Incomplete workflows**: Most sessions ended with empty workflow directories
+
+## Controller Delegation
+
+The only Task tool delegation is to the controller:
+
+```javascript
+Task({
+  subagent_type: "cagents:{controller_name}",
+  description: "Coordinate: {request}",
+  prompt: `
+    Request: {user_request}
+    Session: Agent_Memory/sessions/{SESSION_ID}/
+    Domain: {domain} | Tier: {tier}
+    Read plan.yaml for objectives and work items.
+    Coordinate via question-based delegation to execution agents.
+    Write coordination_log.yaml when complete.
+  `
+})
+```
 
 ## Domain-to-Controller Mapping
 
@@ -40,66 +65,50 @@ Every request follows this chain, with each arrow being a Task tool invocation:
 | "Handle customer complaint" | Serve | customer-success-manager |
 | "Design game mechanics" | Make (game dev) | game-designer |
 
+## Team Mode Delegation
+
+For `--team`, /run still performs routing + planning inline, then delegates to team-trigger:
+
+```javascript
+Task({
+  subagent_type: "cagents:team-trigger",
+  description: "Team: {request}",
+  prompt: `
+    Request: {request}
+    Session: Agent_Memory/sessions/{SESSION_ID}/
+    Mode: team_execution
+    Plan already created at: workflow/plan.yaml
+    Decomposition at: workflow/decomposition.yaml
+  `
+})
+```
+
 ## Configuration Files
 
 | Config | Path | Purpose |
 |--------|------|---------|
-| Domain detection | `Agent_Memory/_system/trigger/domain_detection.yaml` | Detection rules |
-| Workflow templates | `Agent_Memory/_system/trigger/workflow_templates.yaml` | Template catalog |
-| Pre-flight validation | `Agent_Memory/_system/trigger/preflight_validation.yaml` | Validation framework |
-| Workflow analytics | `Agent_Memory/_system/trigger/workflow_analytics.yaml` | Analytics config |
-| Aggressive delegation | `Agent_Memory/_system/config/aggressive_delegation.yaml` | Delegation policy |
+| Planner configs | `{domain}/config/planner_config.yaml` | Controller catalog |
+| Domain detection | Keywords in SKILL.md (inline) | Domain routing |
 
 ## Session Structure
 
 ```
 Agent_Memory/sessions/run_{YYYYMMDD_HHMMSS}/
-├── instruction.yaml
-├── status.yaml
-├── task_plan.md
-├── findings.md
-├── progress.md
-├── workflow/
-│   ├── plan.yaml
-│   ├── decomposition.yaml
-│   ├── coordination_log.yaml
-│   └── execution_summary.yaml
-├── waypoints/
-├── tasks/
-├── outputs/
-└── validation/
++-- instruction.yaml         # Written by /run (Step 2)
++-- status.yaml              # Written by /run (Step 2, updated throughout)
++-- workflow/
+|   +-- plan.yaml            # Written by /run (Step 4)
+|   +-- decomposition.yaml   # Written by /run (Step 4, tier 3+)
+|   +-- coordination_log.yaml # Written by controller (Step 5)
+|   +-- agent_tree.yaml      # Written by SubagentStart hook
++-- outputs/
++-- validation/
 ```
-
-## CRITICAL: /run Never Handles Directly
-
-The `/run` command is a **pure delegation proxy**. It exists solely to invoke the trigger agent. If the user wanted direct handling, they would type their request without `/run`.
-
-**The user chose `/run` = the user wants agent orchestration. Respect that choice unconditionally.**
-
-### Anti-Patterns (NEVER DO ANY OF THESE)
-
-| Anti-Pattern | Why It Is Wrong |
-|-------------|----------------|
-| "This is simple, I'll just answer directly" | /run does not evaluate simplicity. It delegates. Period. |
-| "Let me fix that typo for you" | /run does not fix anything. It invokes trigger. |
-| "The answer is 42" | /run does not answer questions. Agents answer questions. |
-| "I'll skip delegation since the trigger would just..." | /run does not predict what trigger would do. It invokes trigger. |
-| "Delegation failed, let me handle it instead" | /run reports failures. It does not become a fallback handler. |
-| "This request doesn't need a full workflow" | /run does not assess what requests need. It delegates ALL requests. |
-
-### What /run Does on EVERY Invocation (No Exceptions)
-
-1. Parse flags from arguments
-2. Create TodoWrite for visibility
-3. Invoke trigger (or team-trigger) via Task tool
-4. Report the result from the agent chain
-5. Nothing else. Ever.
 
 ## Important Notes
 
-- This command is a thin wrapper - all logic is in agents
-- Trigger agent handles detection, validation, and initialization
-- Orchestrator handles phase transitions with adaptive execution
-- Universal workflow agents (router, planner, executor, validator) handle execution
-- **If delegation is the only thing /run does, then /run can never fail to delegate**
-- See `core/agents/trigger/SKILL.md` and `core/agents/orchestrator/SKILL.md` for complete logic
+- /run performs routing, planning, and orchestration -- these do NOT need subagent delegation
+- The controller is the ONLY subagent spawned by /run in standard mode
+- The controller spawns execution agents (1 level of nesting under the controller)
+- Total nesting depth: /run (level 0) -> controller (level 1) -> execution agents (level 2)
+- This is well within Claude Code's subagent nesting limits

@@ -147,6 +147,12 @@ TodoWrite({
 })
 ```
 
+### Progressive Refinement
+
+When this agent determines which downstream agent(s) will handle work, it MUST update TodoWrite to show the specific agent name(s). Replace generic placeholders (e.g., `[controller]`, `[executor]`) with the actual agent names as soon as they are known. If multiple agents will be involved, add a separate entry for EACH with its specific name and task description.
+
+See `shared/patterns/todo_write_helper.md` for the full Progressive Refinement Pattern.
+
 ## Memory Ownership
 
 ### This agent owns/writes:

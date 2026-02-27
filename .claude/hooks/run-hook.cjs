@@ -9,15 +9,22 @@
  * 4. process.cwd() (current working directory -- local dev fallback)
  *
  * Usage in settings.json (plugin hooks):
- *   "command": "node \"${CLAUDE_PLUGIN_ROOT}\"/.claude/hooks/run-hook.cjs <hook-name>"
+ *   "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" <hook-name>'"
  *
- * NOTE: Hook command strings in settings.json use ${CLAUDE_PLUGIN_ROOT} (the official
- * Claude Code plugin env var, see docs.anthropic.com/en/hooks). Once run-hook.cjs
- * is executing, __dirname provides the most reliable path to sibling hook files.
+ * NOTE: V9.17.1 wraps the node command in bash -c with a 3-tier fallback chain to
+ * handle cases where CLAUDE_PLUGIN_ROOT is not expanded (empty string causes
+ * MODULE_NOT_FOUND at /.claude/hooks/run-hook.cjs). The fallback chain is:
+ *   1. CLAUDE_PLUGIN_ROOT - official plugin env var (set by Claude Code for plugins)
+ *   2. CLAUDE_PROJECT_DIR - user's project dir (works for local dev)
+ *   3. $(pwd) - current working directory (last resort)
  *
- * HISTORY: Previous versions tried $CAGENTS_DIR (custom env, not expanded by Claude
- * Code in command strings) and $CLAUDE_PROJECT_DIR (points to user's project, not
- * plugin). ${CLAUDE_PLUGIN_ROOT} is the documented mechanism for plugin portability.
+ * Once run-hook.cjs is executing, __dirname provides the most reliable path to
+ * sibling hook files (belt-and-suspenders with the bash -c fallback).
+ *
+ * HISTORY: V9.13 used bare ${CLAUDE_PLUGIN_ROOT} in command strings, which fails
+ * when the env var is not set (resolves to /.claude/hooks/run-hook.cjs).
+ * Earlier versions tried $CAGENTS_DIR (custom env, not expanded) and
+ * $CLAUDE_PROJECT_DIR alone (points to user's project, not plugin).
  */
 
 const path = require('path');

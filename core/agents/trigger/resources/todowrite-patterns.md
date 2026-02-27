@@ -81,6 +81,26 @@ Combine TodoWrite with user-facing messages:
 [trigger] Detecting domain using 3-method analysis...
 ```
 
+## Progressive Refinement: Update Agent Names as Routing Decisions Are Made
+
+When the trigger (or /run in the flattened architecture) determines which controller will handle the request, it MUST issue a TodoWrite update to replace the generic `[controller]` placeholder with the specific agent name.
+
+**Example**: After detecting domain and selecting `engineering-manager` as controller:
+
+```javascript
+// BEFORE: Generic placeholder
+{content: "[controller] Coordinate work via question-based delegation", status: "pending", ...}
+
+// AFTER: Specific agent name
+{content: "[engineering-manager] Coordinate work via question-based delegation", status: "pending", ...}
+```
+
+This pattern continues downstream:
+- The **controller** updates TodoWrite when it identifies execution agents (e.g., `[backend-developer]`, `[qa-tester]`)
+- If **multiple executors** are needed, add a SEPARATE TodoWrite entry for EACH with its specific agent name and task description
+
+See `shared/patterns/todo_write_helper.md` for the full Progressive Refinement Pattern.
+
 ## Anti-Patterns (DO NOT DO)
 
 - DON'T: Create TodoWrite only at start and never update
@@ -88,3 +108,5 @@ Combine TodoWrite with user-facing messages:
 - DON'T: Forget to mark tasks complete when phases finish
 - DON'T: Have ambiguous task descriptions
 - DON'T: Skip TodoWrite updates between phases
+- DON'T: Leave generic `[controller]` or `[executor]` placeholders after the specific agent is known
+- DON'T: Show a single `[executor] Execute tasks` entry when multiple executors are involved -- list each one separately

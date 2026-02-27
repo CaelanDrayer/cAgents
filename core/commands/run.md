@@ -298,21 +298,50 @@ The trigger agent (not this command) handles requests across ALL domains with en
 
 See `core/agents/run.md` for complete domain detection logic and confidence scoring.
 
-## TodoWrite Pattern
+## TodoWrite Pattern (Progressive Refinement)
 
-Create minimal todo for user visibility. **Prefix each task with the executing agent name in brackets:**
+Create TodoWrite at session start with generic placeholders, then **progressively refine** entries as specific agents are identified. This gives users real-time visibility into which agent handles each task.
 
+**Initial TodoWrite** (before routing):
 ```javascript
 TodoWrite({
   todos: [
-    {content: "[trigger] Initialize workflow and detect domain", status: "in_progress", activeForm: "[trigger] Initializing workflow and detecting domain"},
-    {content: "[orchestrator] Plan objectives and select controllers", status: "pending", activeForm: "[orchestrator] Planning objectives and selecting controllers"},
+    {content: "[/run] Route request to domain and tier", status: "in_progress", activeForm: "[/run] Routing request to domain and tier"},
+    {content: "[/run] Plan objectives and select controller", status: "pending", activeForm: "[/run] Planning objectives and selecting controller"},
     {content: "[controller] Coordinate work via question-based delegation", status: "pending", activeForm: "[controller] Coordinating work via question-based delegation"},
-    {content: "[executor] Monitor execution and aggregate outputs", status: "pending", activeForm: "[executor] Monitoring execution and aggregating outputs"},
-    {content: "[validator] Validate outputs and quality", status: "pending", activeForm: "[validator] Validating outputs and quality"}
+    {content: "[/run] Validate outputs and quality", status: "pending", activeForm: "[/run] Validating outputs and quality"}
   ]
 })
 ```
+
+**After routing selects controller** (replace `[controller]` placeholder with actual name):
+```javascript
+TodoWrite({
+  todos: [
+    {content: "[/run] Route request to domain and tier", status: "completed"},
+    {content: "[/run] Plan objectives and select controller", status: "in_progress", activeForm: "[/run] Planning objectives and selecting controller"},
+    {content: "[engineering-manager] Coordinate work via question-based delegation", status: "pending", activeForm: "[engineering-manager] Coordinating work via question-based delegation"},
+    {content: "[/run] Validate outputs and quality", status: "pending", activeForm: "[/run] Validating outputs and quality"}
+  ]
+})
+```
+
+**After controller identifies execution agents** (add per-executor entries):
+```javascript
+// Controller issues this update when it determines which execution agents to use
+TodoWrite({
+  todos: [
+    {content: "[/run] Route request to domain and tier", status: "completed"},
+    {content: "[/run] Plan objectives and select controller", status: "completed"},
+    {content: "[engineering-manager] Coordinate: ask questions and synthesize", status: "in_progress", activeForm: "[engineering-manager] Coordinating work"},
+    {content: "[backend-developer] Implement authentication fix", status: "pending", activeForm: "[backend-developer] Implementing authentication fix"},
+    {content: "[qa-tester] Create regression tests", status: "pending", activeForm: "[qa-tester] Creating regression tests"},
+    {content: "[/run] Validate outputs and quality", status: "pending", activeForm: "[/run] Validating outputs and quality"}
+  ]
+})
+```
+
+**Rules**: Replace `[controller]` with the actual controller name as soon as it is known. When multiple executors are identified, add a separate entry for EACH with `[agent-name] specific task description`. See `shared/patterns/todo_write_helper.md` for the full Progressive Refinement Pattern.
 
 ## Features Summary
 

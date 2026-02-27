@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "9.17.0",
-  "description": "Universal multi-domain agent system with 238 specialized agents. V9.14.0: AI writing detection and rewrite agents (14-category hallmark scanning, 5-pass humanization). Fully self-contained plugin -- hook commands use ${CLAUDE_PLUGIN_ROOT} (the official Claude Code plugin env var) with __dirname fallback in run-hook.cjs. No hardcoded paths or custom env vars required. Properly loadable from marketplace into any project. Team templates, wave-based delivery with quality gates, interface contracts, gate sentinel pattern. CJS-only hook architecture, Skills system, 14 hook event types, Agent Teams for parallel execution, CSV-based task inventory, controller-centric delegation across 5 super-domains.",
+  "version": "9.19.0",
+  "description": "Universal multi-domain agent system with 238 specialized agents. V9.19.0: Progressive TodoWrite refinement -- task list dynamically updates with specific agent names as routing decisions are made; multiple executors shown individually. V9.18.0: Flattened /run delegation chain. Self-contained plugin with resilient path resolution. Team templates, wave-based delivery with quality gates. CJS-only hook architecture, Skills system, 14 hook event types, Agent Teams for parallel execution, CSV-based task inventory, controller-centric delegation across 5 super-domains.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",

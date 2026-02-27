@@ -331,6 +331,30 @@ status: completed
 completed_at: 2026-01-12T11:30:00Z
 ```
 
+## TodoWrite: Progressive Refinement of Execution Agents
+
+**CRITICAL**: When you determine which execution agents you will delegate to, you MUST issue a TodoWrite update that adds a specific entry for EACH execution agent with its name and task description. This replaces any generic executor placeholders.
+
+```javascript
+// After determining you need backend-developer, qa-lead, and security-specialist:
+TodoWrite({
+  todos: [
+    // ... completed routing/planning entries ...
+    {content: "[{controller-name}] Coordinate: ask questions and synthesize", status: "in_progress", activeForm: "[{controller-name}] Coordinating work"},
+    {content: "[backend-developer] Implement OAuth2 endpoints", status: "pending", activeForm: "[backend-developer] Implementing OAuth2 endpoints"},
+    {content: "[qa-lead] Create OAuth2 tests", status: "pending", activeForm: "[qa-lead] Creating OAuth2 tests"},
+    {content: "[security-specialist] Security review of implementation", status: "pending", activeForm: "[security-specialist] Reviewing security"},
+    {content: "[/run] Validate outputs and quality", status: "pending", activeForm: "[/run] Validating outputs"}
+  ]
+})
+```
+
+**Rules**:
+- Add a SEPARATE entry for EACH execution agent -- never group multiple agents into one entry
+- Include the specific task description (not generic "execute work")
+- Update TodoWrite again as each executor completes (mark individual entries completed)
+- See `shared/patterns/todo_write_helper.md` for the full Progressive Refinement Pattern
+
 ## Delegation Targets
 
 **Execution Agents You Can Delegate To**:
@@ -372,6 +396,6 @@ completed_at: 2026-01-12T11:30:00Z
 
 ---
 
-**Version**: 5.0 (Controller Template)
+**Version**: 6.0 (Controller Template)
 **Tier**: Controller (Tier 2)
-**Part of**: cAgents V5.0 Controller-Centric Architecture
+**Part of**: cAgents V9.18.0 Controller-Centric Architecture

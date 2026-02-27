@@ -6,15 +6,14 @@ Workflow orchestration guidelines for cAgents.
 
 **NEVER ASK USER FOR PERMISSION TO PROCEED BETWEEN PHASES**
 
-Phase transitions are AUTOMATIC. Orchestrator proceeds to next phase immediately when current phase completes.
+Phase transitions are AUTOMATIC. Proceed to next phase immediately when current phase completes.
 
 ### Automatic Transition Rules
 
-- ✅ routing → planning: AUTOMATIC (no user permission needed)
-- ✅ planning → coordinating: AUTOMATIC (no user permission needed)
-- ✅ coordinating → executing: AUTOMATIC (no user permission needed)
-- ✅ executing → validating: AUTOMATIC (no user permission needed)
-- ✅ validating → complete: AUTOMATIC if PASS (no user permission needed)
+- routing -> planning: AUTOMATIC (no user permission needed)
+- planning -> coordinating: AUTOMATIC (no user permission needed)
+- coordinating -> validating: AUTOMATIC (no user permission needed)
+- validating -> complete: AUTOMATIC if PASS (no user permission needed)
 
 ### Only Ask User When
 
@@ -25,65 +24,87 @@ Phase transitions are AUTOMATIC. Orchestrator proceeds to next phase immediately
 
 **If requirements are clear and phase is complete, PROCEED automatically.**
 
+## Flattened Architecture (V9.18)
+
+The `/run` command now performs routing, planning, and orchestration **inline** instead of delegating to separate agents. Only the controller (coordination) and execution agents are spawned as subagents.
+
+**Previous** (5 levels -- unreliable):
+```
+/run -> trigger -> orchestrator -> controller -> execution_agents
+```
+
+**Current** (2 levels -- reliable):
+```
+/run (inline: routing + planning + orchestration) -> controller -> execution_agents
+```
+
+### What /run Does Inline
+- **Routing**: Domain detection, tier classification (previously trigger + universal-router)
+- **Planning**: Objective definition, controller selection, work items (previously orchestrator + universal-planner)
+- **Orchestration**: Phase management, session initialization (previously orchestrator)
+- **Validation**: Basic output verification (previously universal-validator)
+
+### What Gets Delegated (via Task tool)
+- **Controller**: Question-based coordination, specialist delegation, synthesis
+- **Execution agents**: Actual implementation work (spawned by controller)
+
 ## Workflow Phases
 
 All tier 2+ workflows follow this pattern:
 
 ```
-routing → planning → [PLAN DISPLAY] → coordinating → executing → validating
-   ↓          ↓            ↓              ↓            ↓           ↓
-  Router   Planner    Orchestrator   Controller   Executor   Validator
-(tier 2-4) (objectives) (show plan)   (questions)  (monitor)  (quality)
+routing -> planning -> [PLAN DISPLAY] -> coordinating -> validating
+   |          |              |              |               |
+  /run      /run         /run output    Controller       /run
+(inline)  (inline)      (show plan)    (Task tool)     (inline)
 ```
 
-**Plan Display**: After planning, orchestrator shows the plan to the user, then immediately proceeds to coordinating. This is visibility, not a checkpoint.
+**Plan Display**: After planning, /run shows the plan to the user, then immediately proceeds to coordinating. This is visibility, not a checkpoint.
 
 ## Phase Responsibilities
 
-### Routing (universal-router)
+### Routing (inline in /run)
 - Classify complexity tier (2-4, auto-upgrades from 0/1)
-- Set `requires_controller` flag for tier 2+
-- Domain detection and validation
+- Domain detection via keyword matching
+- Set controller requirement (always true, minimum tier 2)
 
-### Planning (universal-planner)
+### Planning (inline in /run)
 - Define objectives (WHAT needs to be done)
-- Select controllers (primary + supporting)
-- Create objective-driven plan (NOT detailed tasks)
+- Select controllers from planner_config.yaml
+- Write plan.yaml and decomposition.yaml
 
-### Coordinating (Controllers)
+### Coordinating (Controller via Task tool)
 - Break objectives into questions
-- Delegate questions to specialists
+- Delegate questions to execution agents (via Task tool)
 - Synthesize answers into solutions
 - Create implementation tasks
 - Write coordination_log.yaml
 
-### Executing (universal-executor)
-- Monitor controller progress (NOT execution agents)
-- Track coordination_log.yaml completion
-- Validate phase transitions
-
-### Validating (universal-validator)
-- Check coordination quality
-- Verify output quality
-- Validate no regressions
+### Validating (inline in /run)
+- Check coordination_log.yaml exists and is complete
+- Verify outputs match plan objectives
+- Write execution_summary.yaml
 
 ## Plan Display Phase
 
-After planning completes (plan.yaml exists), orchestrator displays the plan before coordinating:
+After planning completes (plan.yaml written), display the plan before coordinating:
 
-1. **Read** plan.yaml and decomposition.yaml
-2. **Format** plan summary (objectives, work breakdown, controllers)
-3. **Output** to user (unless `--quiet` flag)
-4. **Proceed** immediately to coordinating (do NOT wait)
+1. **Format** plan summary (objectives, work breakdown, controllers)
+2. **Output** to user (unless `--quiet` flag)
+3. **Proceed** immediately to coordinating (do NOT wait)
 
 **Plan Display by Tier**:
 - **Tier 2-4**: Full plan with work breakdown (all tiers, since minimum is tier 2)
 
-**IMPORTANT**: Showing plan ≠ Asking permission. Display then proceed.
+**IMPORTANT**: Showing plan does not equal asking permission. Display then proceed.
 
 ## Key Principle
 
 **Controllers coordinate, don't execute directly**. Use question-based delegation to specialists.
+
+## Context for Existing Agents
+
+The trigger, orchestrator, universal-router, universal-planner, universal-executor, and universal-validator agents still exist in `core/agents/` and can be used by the team-trigger and other workflows. However, the standard `/run` command no longer spawns them as separate subagents -- their logic is performed inline by `/run` for reliability.
 
 ---
 
