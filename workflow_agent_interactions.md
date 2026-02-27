@@ -1,8 +1,8 @@
 # Workflow Agent Interactions
 
-How cAgents executes tasks across 5 super-domains using 6 commands and 238 specialized agents.
+How cAgents executes tasks across 5 super-domains using 7 commands and 239 specialized agents.
 
-**Version**: 9.25.0 (Event-Driven Pipeline Architecture)
+**Version**: 9.26.0 (Corporate Hierarchy Orchestration)
 
 ---
 
@@ -10,6 +10,7 @@ How cAgents executes tasks across 5 super-domains using 6 commands and 238 speci
 
 - [Core Concept](#core-concept)
 - [Commands Overview](#commands-overview)
+- [/org -- Corporate Hierarchy Orchestration](#org----corporate-hierarchy-orchestration)
 - [/run -- Event-Driven Pipeline Engine](#run----event-driven-pipeline-engine)
 - [/team -- N-Wave Parallel Team Execution](#team----n-wave-parallel-team-execution)
 - [/review -- Universal Review Orchestrator](#review----universal-review-orchestrator)
@@ -30,7 +31,7 @@ How cAgents executes tasks across 5 super-domains using 6 commands and 238 speci
 
 ## Core Concept
 
-**One event-driven pipeline, six commands, five super-domains.** Every task enters through one of six commands (`/run`, `/team`, `/review`, `/optimize`, `/designer`, `/helper`), which route the request through a config-driven state machine to specialized controller and execution agents.
+**One event-driven pipeline, seven commands, five super-domains.** Every task enters through one of seven commands (`/org`, `/run`, `/team`, `/review`, `/optimize`, `/designer`, `/helper`), which route the request through a config-driven state machine to specialized controller and execution agents.
 
 The architecture is **controller-centric**: controllers coordinate work by asking questions of specialist execution agents, synthesizing their answers, and driving implementation. Controllers never implement directly.
 
@@ -40,12 +41,103 @@ The architecture is **controller-centric**: controllers coordinate work by askin
 
 | Command | Purpose | Execution Model | Best For |
 |---------|---------|-----------------|----------|
+| `/org` | Corporate hierarchy orchestration | CEO + C-suite deliberation + parallel /team per domain | Multi-domain strategic initiatives, cross-functional work |
 | `/run` | Universal workflow engine | Event-driven state machine, sequential pipeline | Building, fixing, writing, analyzing |
 | `/team` | Parallel team execution | N-wave parallel with per-wave quality gates | Large features with 3+ parallel work items |
 | `/review` | Universal review | Parallel review agents with confidence scoring | Code, docs, content, infrastructure review |
 | `/optimize` | Universal optimizer | 5-phase atomic optimization with rollback | Performance, cost, quality improvements |
 | `/designer` | Interactive design engine | 4-phase guided Q&A | Planning features, systems, stories before building |
 | `/helper` | Command guide | Interactive reference | Learning commands, comparing options |
+
+---
+
+## /org -- Corporate Hierarchy Orchestration
+
+The strategic command. Orchestrates cAgents' 239 agents through a corporate hierarchy model. The user acts as Chairperson, providing a strategic instruction. `/org` runs CEO logic inline, spawns relevant C-suite agents for parallel domain analysis, conducts a deliberation round, produces a strategic brief, then delegates to parallel `/team` instances per domain.
+
+### Architecture
+
+```
+User (Chairperson)
+  +-- /org (CEO inline -- level 0)
+        +-- CTO (Make Engineering)
+        +-- CCO (Make Creative)
+        +-- CRO (Grow)
+        +-- CFO (Operate Finance)
+        +-- COO (Operate Operations)
+        +-- CHRO (People)
+        +-- General Counsel (Serve)
+```
+
+### State Machine
+
+```
+INIT -> ANALYZED -> DELIBERATED -> BRIEFED -> EXECUTED -> INTEGRATED -> COMPLETE
+  |                                              |
+  +-- single domain -> skip to BRIEFED           +-- /team per domain (parallel)
+```
+
+### C-Suite Domain Mapping
+
+| Domain | C-Suite | Agent | Scope |
+|--------|---------|-------|-------|
+| Make (Engineering) | CTO | `cagents:cto` | Technical architecture, implementation, testing |
+| Make (Creative) | CCO | `cagents:cco` | Creative direction, branding, UX, game design |
+| Grow | CRO | `cagents:cro` | Marketing, sales, go-to-market, revenue |
+| Operate (Finance) | CFO | `cagents:cfo` | Budget, ROI, financial planning |
+| Operate (Operations) | COO | `cagents:coo` | Process, logistics, operational execution |
+| People | CHRO | `cagents:chro` | Talent, hiring, culture, org structure |
+| Serve | General Counsel | `cagents:general-counsel` | Legal, compliance, customer support |
+
+### Routing Logic
+
+| Condition | Route | States Executed |
+|-----------|-------|-----------------|
+| 1 domain + simple scope | /run with --brief | INIT -> BRIEFED -> EXECUTED -> COMPLETE |
+| 1 domain + complex scope | /team with strategic_brief | INIT -> BRIEFED -> EXECUTED -> INTEGRATED -> COMPLETE |
+| 2+ domains | Full hierarchy | All 7 states |
+
+### Two-Phase Deliberation
+
+For multi-domain instructions:
+
+1. **Analysis**: CEO spawns relevant C-suite in parallel. Each writes `domain_analysis_{domain}.yaml`
+2. **Deliberation**: CEO drafts strategic brief -> C-suite reviews for objections -> CEO resolves conflicts
+3. **Execution**: Parallel `/team` per domain with strategic_brief.yaml context
+4. **Integration**: CEO merges cross-domain outputs
+
+### Strategic Brief
+
+Every request gets a `strategic_brief.yaml` -- even single-domain routes. The brief provides CEO-level framing (mission, success criteria, risk register) that enriches downstream agent context.
+
+### Escalation Protocol
+
+```
+Execution agent -> Controller -> C-suite -> CEO -> User (if unresolvable)
+```
+
+Triggers: cross-domain dependency conflict, scope exceeds authority, acceptance criteria unachievable, agent deadlock, security/compliance concern.
+
+### Example: Launch New Product (Full Hierarchy)
+
+**User**: `/org Launch the analytics product by Q2`
+
+1. **INIT**: CEO identifies 5 domains (make_eng, make_cre, grow, operate_fin, people)
+2. **ANALYZED**: CTO, CCO, CRO, CFO, CHRO analyze in parallel
+3. **DELIBERATED**: CFO objects (budget), CHRO flags (hiring timeline) -> CEO resolves with phased approach
+4. **BRIEFED**: Final strategic brief with domain assignments and dependencies
+5. **EXECUTED**: 5 parallel /team instances (one per domain)
+6. **INTEGRATED**: CEO merges outputs, verifies cross-domain handoffs
+7. **COMPLETE**: Integrated launch plan
+
+### Flags
+
+| Flag | Effect |
+|------|--------|
+| `--dry-run` | Show routing decision without executing |
+| `--quick` | Skip deliberation for single domain |
+| `--domains <d1,d2>` | Force specific domain scope |
+| `--resume <session_id>` | Resume incomplete session |
 
 ---
 
@@ -518,6 +610,9 @@ Explains cAgents commands and recommends the right one for the user's needs. Doe
 Commands are designed to work together through well-defined handoffs:
 
 ```
+/org -> /team              Strategic brief -> parallel domain execution (most powerful pipeline)
+/org -> /run               Strategic brief -> single domain execution
+/designer -> /org          Design, then execute via corporate hierarchy
 /designer -> /run          Design thoroughly, then build (most common pipeline)
 /designer -> /team         Design, then build in parallel (for big features)
 /optimize -> /review       Optimize, then verify quality
@@ -859,16 +954,17 @@ All hooks invoked via `bash -c` wrapper with 3-tier fallback chain (`CLAUDE_PLUG
 
 ## Summary
 
-**cAgents = 6 commands x event-driven pipeline x 5 super-domains x 238 specialized agents**
+**cAgents = 7 commands x event-driven pipeline x 5 super-domains x 239 specialized agents**
 
+- **Corporate Hierarchy**: `/org` provides CEO-level strategic framing with C-suite parallel analysis, deliberation, and multi-domain parallel execution
 - **Event-Driven**: Config-driven state machine with sequential enrichment, nested execution with reviewer loops, and revision routing
-- **6 Commands**: `/run` (execute), `/team` (parallel), `/review` (quality), `/optimize` (improve), `/designer` (plan), `/helper` (guide)
+- **7 Commands**: `/org` (strategic), `/run` (execute), `/team` (parallel), `/review` (quality), `/optimize` (improve), `/designer` (plan), `/helper` (guide)
 - **Controller-Centric**: Controllers coordinate via question-based delegation, never implement directly
 - **N-Wave Parallel**: `/team` decomposes into waves with GATE quality checks, teammates invoke `/run`
-- **Cross-Skill Integration**: Commands hand off to each other (`/designer` -> `/run`, `/review` -> `/run`, `/optimize` -> `/review`)
-- **Config-Driven**: Domains customize via YAML configs (`planner_config.yaml`, `pipeline_config.yaml`), not code
-- **Scalable**: Up to 50 concurrent agents, N-wave team execution
+- **Cross-Skill Integration**: Commands hand off to each other (`/org` -> `/team`, `/designer` -> `/run`, `/review` -> `/run`, `/optimize` -> `/review`)
+- **Config-Driven**: Domains customize via YAML configs (`planner_config.yaml`, `pipeline_config.yaml`, `org_pipeline_config.yaml`), not code
+- **Scalable**: Up to 50 concurrent agents, N-wave team execution, parallel /team per domain via /org
 - **Resilient**: Three-file pattern, waypoints, pre-compact hooks, `--resume` for interrupted sessions
-- **Quality-Gated**: Dual revision loops (controller-level 3 rounds, pipeline-level 5 cycles), GATE sentinels between waves
+- **Quality-Gated**: Dual revision loops (controller-level 3 rounds, pipeline-level 5 cycles), GATE sentinels between waves, C-suite deliberation
 
-**Result**: Any request, any domain, fully automated end-to-end execution with quality gates and revision routing.
+**Result**: Any request, any domain, any scale -- from single fixes to multi-domain strategic initiatives -- fully automated end-to-end execution with quality gates, revision routing, and corporate hierarchy orchestration.

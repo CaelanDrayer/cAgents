@@ -208,6 +208,18 @@ controller_catalog:
         - "Delivery excellence"
       complexity: tier_3
 
+    - name: coo
+      agent_path: make/agents/coo/SKILL.md
+      coordination_style: question_based
+      typical_questions: *make_questions
+      use_when:
+        - "Operational process coordination"
+        - "Cross-functional operations management"
+        - "Resource allocation decisions"
+        - "Process optimization initiatives"
+        - "/org C-suite operate_ops domain"
+      complexity: tier_3
+
   tier_4:
     - name: ceo
       agent_path: make/agents/ceo/SKILL.md

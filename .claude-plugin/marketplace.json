@@ -9,8 +9,8 @@
   "plugins": [
     {
       "name": "cagents",
-      "description": "Universal multi-domain agent system with 239 specialized agents across 5 super-domains. V9.25.0: Event-driven pipeline with state machine loop, prompt-engineer agent, reviewer loops, revision routing. Agent Teams for parallel execution (40-60% time reduction). CSV-based task inventory (60-80% context savings). Controller-centric delegation with minimum tier 2 enforcement.",
-      "version": "9.25.0",
+      "description": "Universal multi-domain agent system with 239 specialized agents across 5 super-domains. V9.26.0: /org corporate hierarchy orchestration (CEO + C-suite + parallel /team). Event-driven pipeline with revision routing. Agent Teams for parallel execution (40-60% time reduction). CSV-based task inventory (60-80% context savings). Controller-centric delegation with minimum tier 2 enforcement.",
+      "version": "9.26.0",
       "author": {
         "name": "CaelanDrayer",
         "email": "caelan@caelandrayer.ca"

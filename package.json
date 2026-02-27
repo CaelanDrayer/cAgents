@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "9.25.0",
-  "description": "cAgents V9.25.0 - Universal multi-domain agent system with 239 agents across 5 super-domains. Event-driven pipeline with state machine loop, prompt-engineer agent, reviewer loops, revision routing. CJS-only hook architecture with createHook() factory, Skills system (.claude/skills/ auto-discovery), 13 active hook event types (16 supported), opusplan model routing. Agent Teams integration for parallel team-based execution (40-60% time reduction). CSV-based task inventory (60-80% context savings). Controller-centric question-based delegation across 5 super-domains.",
+  "version": "9.26.0",
+  "description": "cAgents V9.26.0 - Universal multi-domain agent system with 239 agents across 5 super-domains. /org corporate hierarchy orchestration (CEO + C-suite deliberation + parallel /team per domain). Event-driven pipeline with state machine loop, prompt-engineer agent, reviewer loops, revision routing. CJS-only hook architecture with createHook() factory, Skills system (.claude/skills/ auto-discovery), 13 active hook event types (16 supported), opusplan model routing. Agent Teams integration for parallel team-based execution (40-60% time reduction). CSV-based task inventory (60-80% context savings). Controller-centric question-based delegation across 5 super-domains.",
   "type": "module",
   "main": "",
   "scripts": {

@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "9.25.0",
-  "description": "Universal multi-domain agent system with 239 specialized agents. V9.25.0: Event-driven pipeline with state machine loop, prompt-engineer agent, reviewer loops, revision routing. Self-contained plugin with resilient path resolution. CJS-only hook architecture, Skills system, 15 hooks across 13 event types, Agent Teams for parallel execution, CSV-based task inventory, controller-centric delegation across 5 super-domains.",
+  "version": "9.26.0",
+  "description": "Universal multi-domain agent system with 239 specialized agents. V9.26.0: /org corporate hierarchy orchestration (CEO + C-suite deliberation + parallel /team per domain). Event-driven pipeline with state machine loop, prompt-engineer agent, reviewer loops, revision routing. CJS-only hook architecture, Skills system, 15 hooks across 13 event types, Agent Teams for parallel execution, CSV-based task inventory, controller-centric delegation across 5 super-domains.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",

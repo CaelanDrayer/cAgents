@@ -1,7 +1,7 @@
 ---
 name: run
 description: "Event-driven pipeline engine. Runs inline (no fork) with state machine loop reading pipeline_config.yaml. Spawns agents sequentially at level 1, controllers spawn executors/reviewers at level 2. Supports revision loops and pre-enrichment detection."
-argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--resume <session_id>] [--session <session_dir>]"
+argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--brief <path>] [--resume <session_id>] [--session <session_dir>]"
 user-invocable: true
 context: none
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
@@ -54,12 +54,14 @@ When the user runs `/run <request> [flags]`:
 
 Parse `$ARGUMENTS` for:
 - **Flags**: `--interactive`, `--dry-run`, `--quiet`/`-q`, `--stream`, `--skip-preflight`, `--team`
-- **Value flags**: `--template <name>`, `--domain <domain>`, `--tier <N>`, `--confidence <N>`, `--resume <session_id>`, `--session <session_dir>`
+- **Value flags**: `--template <name>`, `--domain <domain>`, `--tier <N>`, `--confidence <N>`, `--brief <path>`, `--resume <session_id>`, `--session <session_dir>`
 - **Request**: Everything before the first `--` flag
 
 If `--resume <session_id>`: Load session from `Agent_Memory/sessions/{session_id}/progress.md` and resume from last checkpoint.
 
 If `--session <session_dir>`: This is a pre-enriched session (from /team). Skip to pre-enrichment detection in Step 3.
+
+If `--brief <path>`: This request comes from `/org` with a strategic brief. Read the `strategic_brief.yaml` at the given path. Use the brief's `mission`, `success_criteria`, and `domain_assignments` to enrich context passed to the orchestrator and planner. The brief provides CEO-level strategic framing that gives downstream agents richer context about the mission and constraints. Store brief path in `instruction.yaml` as `strategic_brief_path`.
 
 ---
 
@@ -303,6 +305,7 @@ If `--dry-run` with `--team`: Display plan summary and team composition, then ST
 - Parse flags from arguments
 - Create session directory and files (instruction.yaml, status.yaml)
 - Load pipeline_config.yaml
+- Read strategic_brief.yaml if `--brief` flag provided (from /org)
 - Domain detection and tier classification (inline)
 - **Call TodoWrite** at every state transition
 - Spawn pipeline agents via Task tool (one per state)

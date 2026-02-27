@@ -1,6 +1,6 @@
 # cAgents Release Notes
 
-**Current Version**: 9.23.0
+**Current Version**: 9.26.0
 **Release Date**: February 27, 2026
 **Status**: Production-Ready
 
@@ -8,7 +8,8 @@
 
 ## Version History
 
-- [v9.23.0](#v9230---february-27-2026) - Event-driven pipeline, prompt-engineer agent, reviewer loops, revision routing (Current)
+- [v9.26.0](#v9260---february-27-2026) - /org corporate hierarchy orchestration, COO controller promotion, --brief flag, strategic brief awareness (Current)
+- [v9.23.0](#v9230---february-27-2026) - Event-driven pipeline, prompt-engineer agent, reviewer loops, revision routing
 - [v9.22.0](#v9220---february-27-2026) - Nesting reduction, PostToolUse validation, enhanced audit trail
 - [v9.21.0](#v9210---february-27-2026) - Documentation sync + stale reference fixes
 - [v9.20.0](#v9200---february-27-2026) - TodoWrite blocking prerequisite enforcement
@@ -51,6 +52,71 @@
 - [v9.1.1](#v911---february-7-2026) - tmux split pane refinements
 - [v9.1.0](#v910---february-7-2026) - tmux split panes for team execution
 - [v9.0.0](#v900---february-7-2026) - Platform Alignment Edition
+
+---
+
+## v9.26.0 - February 27, 2026
+
+**Theme**: Corporate hierarchy orchestration -- New `/org` command that maps cAgents' 239 agents to a corporate hierarchy model. CEO logic runs inline, C-suite agents provide parallel domain analysis, two-phase deliberation produces a strategic brief, and parallel `/team` instances execute per domain. COO promoted to controller tier. `/run` gains `--brief` flag. `/team` gains strategic brief awareness.
+
+### New Features
+
+**1. /org Command** (`.claude/skills/org/`)
+- 6-state pipeline: INIT -> ANALYZED -> DELIBERATED -> BRIEFED -> EXECUTED -> INTEGRATED -> COMPLETE
+- CEO inline logic with C-suite parallel spawning
+- Two-phase deliberation (analysis + objections)
+- Strategic brief generation (`strategic_brief.yaml`)
+- Parallel `/team` delegation per domain
+- Structured escalation protocol (execution -> controller -> C-suite -> CEO -> user)
+- Smart routing: single domain simple -> /run, single domain complex -> /team, multi-domain -> full hierarchy
+- Reference files: flags.md, csuite-mapping.md, strategic-brief-schema.md, escalation-protocol.md, examples.md
+- Pipeline config: `org_pipeline_config.yaml`
+
+**2. COO Controller Promotion**
+- `make/agents/coo/SKILL.md`: tier changed from `execution` to `controller`
+- Added Task tool to allowed tools list
+- Added `coordination_style: question_based` and `typical_questions`
+- Added /org integration section for operate_ops domain analysis
+- Added to `make/config/planner_config.yaml` controller_catalog as tier_3
+
+**3. /run --brief Flag**
+- New `--brief <path>` flag reads strategic_brief.yaml for context
+- Passes CEO-level mission, success criteria, and domain assignments to enrichment agents
+- Enables /org -> /run delegation with strategic framing
+
+**4. /team Strategic Brief Awareness**
+- Detects `strategic_brief.yaml` in session directory
+- Reads mission and success criteria for enrichment context
+- Writes `domain_status` updates to brief (CEO monitoring interface)
+- Checks for escalation directives from CEO
+
+### Configuration Changes
+
+| File | Change |
+|------|--------|
+| `Agent_Memory/_system/config/org_pipeline_config.yaml` | New: 6-state machine, C-suite config, routing rules |
+| `make/agents/coo/SKILL.md` | Modified: execution -> controller tier |
+| `make/config/planner_config.yaml` | Modified: COO added to tier_3 controllers |
+| `.claude/skills/run/SKILL.md` | Modified: --brief flag added |
+| `.claude/skills/team/SKILL.md` | Modified: strategic_brief.yaml awareness added |
+
+### Documentation Updates
+
+| File | Change |
+|------|--------|
+| `CLAUDE.md` | /org in skills table, quick reference, directory structure |
+| `workflow_agent_interactions.md` | /org section, updated commands overview and summary |
+| `docs/RELEASE_NOTES.md` | This entry |
+
+### Version Bump
+
+All 10 version files bumped: 9.25.0 -> 9.26.0
+
+### Migration Notes
+
+- No breaking changes. Existing /run and /team workflows unchanged.
+- COO reclassification: existing workflows referencing COO as execution agent will now get controller behavior (question-based delegation). This is an improvement, not a regression.
+- Agent count remains 239 (COO reclassified, not new).
 
 ---
 

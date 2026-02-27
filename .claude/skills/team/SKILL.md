@@ -381,9 +381,40 @@ Skill({ skill: "run", args: "<the original request>" })
 ```
 This ensures every /team invocation produces a result — either via team execution or /run delegation.
 
+## Strategic Brief Awareness (/org Integration)
+
+When invoked by `/org`, the session directory may contain a `strategic_brief.yaml`. If present:
+
+1. **Read the brief** at session initialization (Step 2a, after creating session):
+   ```
+   Check for ${SESSION_DIR}/strategic_brief.yaml
+   If exists: read and extract mission, success_criteria, domain_assignments
+   ```
+
+2. **Pass brief context to enrichment agents** -- include mission and success criteria in orchestrator and planner prompts for richer context.
+
+3. **Write domain_status updates** during execution:
+   - After each wave completes, update the brief's `domain_status` section:
+   ```yaml
+   domain_status:
+     {domain_key}:
+       progress: {percentage}
+       status: in_progress|completed
+       completed_wis: [WI-xxx, ...]
+       blockers: []
+   ```
+   - Write updates to `${SESSION_DIR}/strategic_brief.yaml` (the brief is the CEO's monitoring interface)
+
+4. **Check for escalation directives** -- if the CEO has added directives to the brief (from resolving escalations), read them and adjust execution accordingly.
+
+5. **Report completion** by setting domain_status to completed with 100% progress.
+
+This allows `/org`'s CEO to monitor domain execution progress and handle cross-domain escalations in real-time.
+
 ## Configuration
 
 - Pipeline config: `Agent_Memory/_system/config/pipeline_config.yaml`
+- Org pipeline config: `Agent_Memory/_system/config/org_pipeline_config.yaml`
 - `teammateMode` in settings.json controls display: `"tmux"` (split panes), `"auto"`, `"in-process"`
 - `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` must be `"1"` in settings.json env
 - Both are already configured in this project's settings.json

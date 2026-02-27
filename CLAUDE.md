@@ -242,6 +242,7 @@ User Request -> /run (state machine loop, reads pipeline_config.yaml)
 
 | Skill | Context | Agent | Description |
 |-------|---------|-------|-------------|
+| `/org` | `fork` | `true` | Corporate hierarchy orchestration -- CEO + C-suite deliberation + parallel /team per domain |
 | `/run` | `none` | `true` | Event-driven pipeline engine -- state machine loop, sequential enrichment, controller+reviewer, revision routing |
 | `/team` | `fork` | `true` | N-wave parallel team execution via built-in agent teams (maximize waves) |
 | `/designer` | `none` | `false` | Interactive 4-phase design engine (Discovery -> Specification) |
@@ -250,6 +251,16 @@ User Request -> /run (state machine loop, reads pipeline_config.yaml)
 | `/helper` | `none` | `false` | Interactive command guide |
 
 **Built-in**: `/memory` (view/edit memory files), `/init` (bootstrap project CLAUDE.md)
+
+### /org - Corporate Hierarchy Orchestration (V9.26)
+CEO inline logic with C-suite parallel analysis, two-phase deliberation, strategic brief, and parallel /team execution per domain. 6-state pipeline: INIT -> ANALYZED -> DELIBERATED -> BRIEFED -> EXECUTED -> INTEGRATED -> COMPLETE.
+```bash
+/org Launch new product with campaign    # -> Full hierarchy (make_eng + grow + operate_fin)
+/org Fix auth bug                        # -> Single /run with strategic brief
+/org Restructure engineering team        # -> Full hierarchy (make_eng + people)
+/org Migrate to microservices --dry-run  # -> Preview routing decision
+```
+Skill: `.claude/skills/org/SKILL.md` + `reference/`
 
 ### /run - Event-Driven Pipeline Engine (V9.23)
 State machine loop reading pipeline_config.yaml. Sequential enrichment (orchestrator, planner, decomposer, prompt-engineer), nested execution (controller + executor + reviewer), revision routing (FAIL/REVISE).
@@ -318,7 +329,7 @@ Agent_Memory/
 +-- _knowledge/    # patterns, calibration, learnings
 +-- _archive/      # completed sessions
 +-- _communication/# agent messaging
-+-- sessions/      # run_*, team_*, designer_*, review_*, optimize_*
++-- sessions/      # org_*, run_*, team_*, designer_*, review_*, optimize_*
 ```
 
 **Session ID**: `{command}_{YYYYMMDD}_{HHMMSS}`
@@ -356,7 +367,7 @@ No code required -- universal agents load configs automatically.
 cAgents/
 +-- CLAUDE.md                # Main project memory (this file)
 +-- .claude/
-|   +-- skills/              # Skills (run, team, designer, review, optimize, helper)
+|   +-- skills/              # Skills (org, run, team, designer, review, optimize, helper)
 |   +-- hooks/               # 18 .cjs files (15 hooks + utils + launcher + eval CLI)
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (20 files, 5 categories)
@@ -438,7 +449,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 
 ## Quick Reference
 
-**Skills**: `/run`, `/team`, `/designer`, `/review`, `/optimize`, `/helper` (in `.claude/skills/`)
+**Skills**: `/org`, `/run`, `/team`, `/designer`, `/review`, `/optimize`, `/helper` (in `.claude/skills/`)
 **Built-in**: `/memory`, `/init` (Claude Code native)
 **Agents**: 239 total (15 core + 14 shared + 210 domain specialists)
 **Super-Domains**: Make (111), Grow (38), Operate (13), People (20), Serve (28)
@@ -448,7 +459,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Event-driven state machine with revision routing (FAIL/REVISE), reviewer loops, prompt-engineer
-**Version**: 9.25.0
+**Version**: 9.26.0
 
 ## Troubleshooting
 
