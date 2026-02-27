@@ -1,37 +1,39 @@
 # TodoWrite Helper Patterns
 
-Shared TodoWrite patterns for cAgents V7.0 to eliminate duplication.
+Shared TodoWrite patterns for cAgents V9.20 to eliminate duplication.
 
 **IMPORTANT: Agent Name Prefix Convention** - All tasks displayed to users MUST be prefixed with the executing agent's name in brackets: `[agent-name] task description`. This applies to both `content` and `activeForm` fields. This lets the user see which agent is responsible for each task at a glance.
 
+## BLOCKING REQUIREMENT: TodoWrite Calls
+
+**TodoWrite is a BLOCKING PREREQUISITE.** You CANNOT proceed to the next action until you have called TodoWrite. This is not optional. This is the primary mechanism for user-visible progress tracking. Without TodoWrite, the user has zero visibility into what is happening.
+
+**If you skip a TodoWrite call, the workflow is broken.**
+
+## TodoWrite Call Checklist
+
+Every workflow agent MUST follow this checklist:
+
+- [ ] **Before starting work**: Call TodoWrite with initial task list
+- [ ] **After each routing/planning decision**: Call TodoWrite to update agent names
+- [ ] **Before delegating to execution agents**: Call TodoWrite to show which agents will work
+- [ ] **After each phase completes**: Call TodoWrite to mark completed and advance next to in_progress
+- [ ] **At completion**: Call TodoWrite with all tasks marked completed
+
 ## Standard Workflow TodoWrite Pattern
 
-Use this pattern for standard tier 2+ workflows (routing -> planning -> coordinating -> executing -> validating):
+Use this pattern for standard tier 2+ workflows (routing -> planning -> coordinating -> validating):
 
-```yaml
-todos:
-  - content: "[universal-router] Route request to appropriate domain and tier"
-    status: "in_progress"
-    activeForm: "[universal-router] Routing request to appropriate domain and tier"
-
-  - content: "[universal-planner] Create objectives and select controllers"
-    status: "pending"
-    activeForm: "[universal-planner] Creating objectives and selecting controllers"
-
-  - content: "[{controller}] Coordinate work via question-based delegation"
-    status: "pending"
-    activeForm: "[{controller}] Coordinating work via question-based delegation"
-
-  - content: "[universal-executor] Execute implementation tasks"
-    status: "pending"
-    activeForm: "[universal-executor] Executing implementation tasks"
-
-  - content: "[universal-validator] Validate outputs and quality"
-    status: "pending"
-    activeForm: "[universal-validator] Validating outputs and quality"
+```
+TodoWrite([
+  {"content": "[/run] Route request to domain and tier", "status": "in_progress", "id": "route"},
+  {"content": "[/run] Plan objectives and select controller", "status": "pending", "id": "plan"},
+  {"content": "[controller] Coordinate work via question-based delegation", "status": "pending", "id": "coordinate"},
+  {"content": "[/run] Validate outputs and quality", "status": "pending", "id": "validate"}
+])
 ```
 
-**Note**: Replace `{controller}` with the actual controller name once known (e.g., `engineering-manager`, `creative-director`). Before the controller is selected, use `[controller]` as a placeholder.
+**Note**: Replace `[controller]` with the actual controller name once known (e.g., `[engineering-manager]`, `[creative-director]`). Before the controller is selected, use `[controller]` as a placeholder.
 
 ## Progressive Refinement Pattern (Agent Routing Updates)
 
@@ -42,60 +44,36 @@ todos:
 The TodoWrite list evolves as the workflow progresses and agents are identified:
 
 **Step 1 -- Initial (before routing)**:
-```yaml
-todos:
-  - content: "[/run] Route request to domain and tier"
-    status: "in_progress"
-    activeForm: "[/run] Routing request to domain and tier"
-  - content: "[/run] Plan objectives and select controller"
-    status: "pending"
-    activeForm: "[/run] Planning objectives and selecting controller"
-  - content: "[controller] Coordinate work via question-based delegation"
-    status: "pending"
-    activeForm: "[controller] Coordinating work via question-based delegation"
-  - content: "[/run] Validate outputs and quality"
-    status: "pending"
-    activeForm: "[/run] Validating outputs and quality"
+```
+TodoWrite([
+  {"content": "[/run] Route request to domain and tier", "status": "in_progress", "id": "route"},
+  {"content": "[/run] Plan objectives and select controller", "status": "pending", "id": "plan"},
+  {"content": "[controller] Coordinate work via question-based delegation", "status": "pending", "id": "coordinate"},
+  {"content": "[/run] Validate outputs and quality", "status": "pending", "id": "validate"}
+])
 ```
 
 **Step 2 -- After routing selects controller** (e.g., `engineering-manager`):
-```yaml
-todos:
-  - content: "[/run] Route request to domain and tier"
-    status: "completed"
-  - content: "[/run] Plan objectives and select controller"
-    status: "in_progress"
-    activeForm: "[/run] Planning objectives and selecting controller"
-  - content: "[engineering-manager] Coordinate work via question-based delegation"
-    status: "pending"
-    activeForm: "[engineering-manager] Coordinating work via question-based delegation"
-  - content: "[/run] Validate outputs and quality"
-    status: "pending"
-    activeForm: "[/run] Validating outputs and quality"
+```
+TodoWrite([
+  {"content": "[/run] Route request to domain and tier", "status": "completed", "id": "route"},
+  {"content": "[/run] Plan objectives and select controller", "status": "in_progress", "id": "plan"},
+  {"content": "[engineering-manager] Coordinate work via question-based delegation", "status": "pending", "id": "coordinate"},
+  {"content": "[/run] Validate outputs and quality", "status": "pending", "id": "validate"}
+])
 ```
 
 **Step 3 -- After controller identifies execution agents** (e.g., `backend-developer`, `qa-tester`, `security-specialist`):
-```yaml
-todos:
-  - content: "[/run] Route request to domain and tier"
-    status: "completed"
-  - content: "[/run] Plan objectives and select controller"
-    status: "completed"
-  - content: "[engineering-manager] Coordinate work via question-based delegation"
-    status: "in_progress"
-    activeForm: "[engineering-manager] Coordinating work via question-based delegation"
-  - content: "[backend-developer] Implement authentication fix"
-    status: "pending"
-    activeForm: "[backend-developer] Implementing authentication fix"
-  - content: "[qa-tester] Create regression tests"
-    status: "pending"
-    activeForm: "[qa-tester] Creating regression tests"
-  - content: "[security-specialist] Review security implications"
-    status: "pending"
-    activeForm: "[security-specialist] Reviewing security implications"
-  - content: "[/run] Validate outputs and quality"
-    status: "pending"
-    activeForm: "[/run] Validating outputs and quality"
+```
+TodoWrite([
+  {"content": "[/run] Route request to domain and tier", "status": "completed", "id": "route"},
+  {"content": "[/run] Plan objectives and select controller", "status": "completed", "id": "plan"},
+  {"content": "[engineering-manager] Coordinate: ask questions and synthesize", "status": "in_progress", "id": "coordinate"},
+  {"content": "[backend-developer] Implement authentication fix", "status": "pending", "id": "exec1"},
+  {"content": "[qa-tester] Create regression tests", "status": "pending", "id": "exec2"},
+  {"content": "[security-specialist] Review security implications", "status": "pending", "id": "exec3"},
+  {"content": "[/run] Validate outputs and quality", "status": "pending", "id": "validate"}
+])
 ```
 
 ### Rules for Progressive Refinement
@@ -110,20 +88,15 @@ todos:
 
 | Workflow Agent | Updates TodoWrite When | What Changes |
 |----------------|----------------------|--------------|
-| `/run` (routing) | Controller identified | `[controller]` -> `[engineering-manager]` |
+| `/run` (Step 2) | Session initialized | Initial 4-item task list |
+| `/run` (Step 3) | Controller identified | `[controller]` -> `[engineering-manager]` |
+| `/run` (Step 5) | Before delegation | Mark coordination as in_progress |
 | Controller | Execution agents identified | Add individual `[backend-developer]`, `[qa-tester]`, etc. entries |
-| Controller | Implementation tasks created | Update executor entries with specific task descriptions |
+| `/run` (Step 6) | After controller returns | Mark all tasks completed |
 
 ## Phase Transition TodoWrite Pattern
 
 Use when marking a phase complete and transitioning to next phase:
-
-```yaml
-# Mark current phase complete
-TodoWrite:
-  - Update current task status: "in_progress" → "completed"
-  - Update next task status: "pending" → "in_progress"
-```
 
 **CRITICAL**: NEVER have zero tasks in_progress. Always mark one task complete and immediately mark the next as in_progress in the same TodoWrite call.
 
@@ -131,76 +104,32 @@ TodoWrite:
 
 Use when encountering validation failures or blockers:
 
-```yaml
-# Mark failed task
-TodoWrite:
-  - Current task status: "in_progress" → "pending"
-  - Add error todo (prefix with the agent handling the error):
-      content: "[{agent}] Resolve {error_type}: {error_message}"
-      status: "in_progress"
-      activeForm: "[{agent}] Resolving {error_type}: {error_message}"
+```
+TodoWrite([
+  ...previous completed entries...,
+  {"content": "[{agent}] Resolve {error_type}: {error_message}", "status": "in_progress", "id": "error"}
+])
 ```
 
 ## Controller Coordination TodoWrite Pattern
 
-Use for controllers during coordinating phase. Prefix with the controller's own name:
+Use for controllers during coordinating phase. Prefix with the controller's own name.
 
-```yaml
-todos:
-  - content: "[{controller}] Analyze objectives from plan.yaml"
-    status: "in_progress"
-    activeForm: "[{controller}] Analyzing objectives from plan.yaml"
+After identifying execution agents, update the TodoWrite to add specific executor entries:
 
-  - content: "[{controller}] Break down into {N} specific questions"
-    status: "pending"
-    activeForm: "[{controller}] Breaking down into {N} specific questions"
-
-  - content: "[{controller}] Delegate questions to execution agents"
-    status: "pending"
-    activeForm: "[{controller}] Delegating questions to execution agents"
-
-  - content: "[{controller}] Synthesize answers into solution"
-    status: "pending"
-    activeForm: "[{controller}] Synthesizing answers into solution"
-
-  - content: "[{controller}] Create implementation tasks"
-    status: "pending"
-    activeForm: "[{controller}] Creating implementation tasks"
-
-  - content: "[{controller}] Write coordination_log.yaml"
-    status: "pending"
-    activeForm: "[{controller}] Writing coordination_log.yaml"
+```
+TodoWrite([
+  {"content": "[/run] Route request to domain and tier", "status": "completed", "id": "route"},
+  {"content": "[/run] Plan objectives and select controller", "status": "completed", "id": "plan"},
+  {"content": "[engineering-manager] Coordinate: ask questions and synthesize", "status": "in_progress", "id": "coordinate"},
+  {"content": "[backend-developer] Answer: What is current auth implementation?", "status": "pending", "id": "exec1"},
+  {"content": "[qa-tester] Answer: What test coverage exists?", "status": "pending", "id": "exec2"},
+  {"content": "[engineering-manager] Synthesize answers into solution", "status": "pending", "id": "synthesize"},
+  {"content": "[/run] Validate outputs and quality", "status": "pending", "id": "validate"}
+])
 ```
 
-**Note**: Replace `{controller}` with the actual controller name (e.g., `[engineering-manager]`, `[creative-director]`).
-
-**After identifying execution agents**, update the TodoWrite to add specific executor entries using the **Progressive Refinement Pattern**. For example, after `engineering-manager` determines it needs `backend-developer` and `qa-tester`:
-
-```yaml
-todos:
-  - content: "[engineering-manager] Analyze objectives from plan.yaml"
-    status: "completed"
-  - content: "[engineering-manager] Break down into 4 specific questions"
-    status: "completed"
-  - content: "[engineering-manager] Delegate questions to execution agents"
-    status: "in_progress"
-    activeForm: "[engineering-manager] Delegating questions to execution agents"
-  - content: "[backend-developer] Answer: What is current auth implementation?"
-    status: "pending"
-    activeForm: "[backend-developer] Analyzing current auth implementation"
-  - content: "[qa-tester] Answer: What test coverage exists?"
-    status: "pending"
-    activeForm: "[qa-tester] Analyzing test coverage"
-  - content: "[engineering-manager] Synthesize answers into solution"
-    status: "pending"
-    activeForm: "[engineering-manager] Synthesizing answers into solution"
-  - content: "[engineering-manager] Create implementation tasks"
-    status: "pending"
-    activeForm: "[engineering-manager] Creating implementation tasks"
-  - content: "[engineering-manager] Write coordination_log.yaml"
-    status: "pending"
-    activeForm: "[engineering-manager] Writing coordination_log.yaml"
-```
+**Note**: Replace agent names and task descriptions with actuals. The `[/run]` prefix items are preserved from the initial task list.
 
 ## Usage
 
@@ -212,50 +141,26 @@ Agents import this helper via:
 
 Then reference specific patterns:
 - **Standard workflow pattern**: For tier 2+ workflows
+- **Progressive refinement pattern**: When agents are identified
 - **Phase transition pattern**: When completing phases
 - **Error handling pattern**: When encountering failures
 - **Controller coordination pattern**: For coordinating phase
 
-## Benefits
+## Anti-Patterns (DO NOT DO)
 
-- **2,000+ lines eliminated**: No duplication across agents
-- **Consistency**: All agents use same TodoWrite patterns
-- **Maintainability**: Update pattern once, affects all agents
-- **Clarity**: Single source of truth for TodoWrite usage
-
-## Example Usage in Agent
-
-```markdown
----
-name: engineering-manager
-tier: controller
-domain: make
----
-
-# Engineering Manager
-
-@shared/patterns/todo_write_helper.md
-
-## Coordinating Phase
-
-During coordination, use the **Controller Coordination TodoWrite Pattern** from the helper,
-replacing `{controller}` with your agent name (`engineering-manager`):
-
-1. [engineering-manager] Analyze objectives
-2. [engineering-manager] Break into questions (8-12)
-3. [engineering-manager] Delegate to specialists
-4. [engineering-manager] Synthesize answers
-5. [engineering-manager] Create tasks
-6. [engineering-manager] Write coordination_log.yaml
-
-The agent-prefixed TodoWrite pattern ensures the user can see which agent is
-responsible for each task at a glance.
-```
+- DO NOT create TodoWrite only at start and never update
+- DO NOT batch update multiple tasks at once (except dry-run stop)
+- DO NOT forget to mark tasks complete when phases finish
+- DO NOT have ambiguous task descriptions
+- DO NOT skip TodoWrite updates between phases
+- DO NOT leave generic `[controller]` or `[executor]` placeholders after the specific agent is known
+- DO NOT show a single `[executor] Execute tasks` entry when multiple executors are involved -- list each one separately
+- DO NOT proceed to the next step without calling TodoWrite first
 
 ---
 
-**Version**: 2.0
+**Version**: 3.0
 **Created**: 2026-01-19
-**Updated**: 2026-02-27 (Progressive Refinement Pattern for agent routing visibility)
-**Part of**: cAgents V9.18.0
+**Updated**: 2026-02-27 (Blocking prerequisite enforcement, call checklist, stronger anti-patterns)
+**Part of**: cAgents V9.20.0
 **Saves**: ~2,000 lines of duplication

@@ -13,7 +13,7 @@ Side-by-side comparison matrices for `/helper --compare`.
 | **Output** | Implementation + report | Design document + artifacts | Issue report + fixes | Before/after metrics | Aggregated results |
 | **Domains** | All 5 super-domains | All (software/business/creative) | Code, docs, content, infra + 4 more | 8 types across domains | All (delegates to /run) |
 | **Context** | Fork (separate context) | None (main context, for Q&A) | Fork | Fork | Fork |
-| **Agent count** | 236 available | 1 (designer itself) | 9 parallel groups | Varies by type | Multiple teammates |
+| **Agent count** | 238 available | 1 (designer itself) | 9 parallel groups | Varies by type | Multiple teammates |
 
 ## When-to-Use Decision Matrix
 

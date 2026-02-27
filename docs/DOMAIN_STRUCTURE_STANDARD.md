@@ -50,21 +50,21 @@ Current official super-domains:
 
 | Super-Domain | Purpose | Agents | Key Controllers |
 |--------------|---------|--------|-----------------|
-| **make** | Creation | 109 | engineering-manager, architect, creative-director, game-designer |
+| **make** | Creation | 111 | engineering-manager, architect, creative-director, game-designer |
 | **grow** | Acquisition | 38 | marketing-strategist, sales-strategist, campaign-manager |
 | **operate** | Operations | 13 | operations-manager, business-analyst, change-manager |
 | **people** | Talent | 20 | chro, hr-manager, talent-acquisition |
 | **serve** | Support & Governance | 28 | customer-success-manager, general-counsel, support-manager |
 | **shared** | Cross-domain | 14 | compliance-officer, data-scientist, quality-manager |
-| **core** | Infrastructure | 12 | orchestrator, trigger, universal-* agents |
+| **core** | Infrastructure | 14 | orchestrator, trigger, universal-* agents |
 
-**Total**: 234 agents across 7 directories (5 super-domains + shared + core)
+**Total**: 238 agents across 7 directories (5 super-domains + shared + core)
 
 ---
 
 ## Super-Domain Details
 
-### Make (109 agents)
+### Make (111 agents)
 Combines: Engineering + Creative + Product + DevOps + QA + Game Development
 
 **Includes**:

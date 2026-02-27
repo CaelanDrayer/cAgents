@@ -1,11 +1,11 @@
 {
-  "$comment": "Hook configuration - cAgents V9.18.0 - Flattened /run delegation chain. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd). See docs.anthropic.com/en/hooks.",
+  "$comment": "Hook configuration - cAgents V9.20.0 - TodoWrite blocking prerequisite enforcement. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd). See docs.anthropic.com/en/hooks.",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
   "teammateMode": "tmux",
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CAGENTS_VERSION": "9.18.0"
+    "CAGENTS_VERSION": "9.20.0"
   },
   "permissions": {
     "allow": [

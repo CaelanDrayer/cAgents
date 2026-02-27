@@ -155,7 +155,7 @@ Available topics:
 - `domains` -- The 5 super-domains (Make, Grow, Operate, People, Serve)
 - `workflow` -- How the agent orchestration works under the hood
 - `tiers` -- Complexity tiers (2-4) and what they mean
-- `agents` -- The 236 agents and how they are organized
+- `agents` -- The 238 agents and how they are organized
 - `teams` -- How team mode works with tmux/agent teams
 - `sessions` -- Session management, resume, and recovery
 

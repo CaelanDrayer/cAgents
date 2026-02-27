@@ -2,21 +2,20 @@
 
 **Universal Multi-Domain Agent System for Claude Code**
 
-V9.0 - Platform Alignment Edition with 236 agents across 5 super-domains. Skills system, 14 hook event types, Agent Teams parallel execution, Claude 4.6 model routing (Opus 4.6, Sonnet 4.6, Haiku 4.5).
+V9.20 with 238 agents across 5 super-domains. Flattened 2-level delegation, CJS-only hook system, Agent Teams parallel execution, Claude 4.6 model routing (Opus 4.6, Sonnet 4.6, Haiku 4.5).
 
 ## Overview
 
 cAgents transforms AI-assisted work across any domain through specialized agent teams that collaborate autonomously. From software engineering to marketing, operations to creative work - one unified system handles it all.
 
-**V9.0 Release** (2026-02-07):
-- Skills system (`.claude/skills/` auto-discovery replaces legacy commands)
-- 14 hook event types with shell+JS dual architecture (12 CJS hooks + 9 shell hooks)
+**V9.19 Release**:
+- Flattened 2-level delegation chain (`/run -> controller -> execution`) replacing unreliable 5-level chain
+- CJS-only hook system (14 hooks via `createHook()` factory, shell hooks removed in V9.5)
 - Agent Teams integration for parallel team-based execution (40-60% time reduction)
-- Claude 4.6 model routing: Opus 4.6 (reasoning), Sonnet 4.6 (execution), Haiku 4.5 (support), opusplan hybrid (Opus 4.6 planning + Sonnet 4.6 execution for controllers)
-- Enhanced PreCompact waypoints with coordination state preservation
+- Claude 4.6 model routing: Opus 4.6 (reasoning), Sonnet 4.6 (execution), Haiku 4.5 (support), opusplan hybrid for controllers
 - Progressive skill disclosure (all agents use SKILL.md format with resources/)
 - Session management with three-file pattern and waypoints
-- Total agents: 236 (14 core + 14 shared + 208 domain specialists)
+- Total agents: 238 (14 core + 14 shared + 210 domain specialists)
 
 ## Requirements
 
@@ -31,33 +30,32 @@ cAgents transforms AI-assisted work across any domain through specialized agent 
   - Permission handling
   - Notification logging
 
-Without Node.js, cAgents works with shell-only hooks for basic session and workflow management.
+Without Node.js, hooks are not available (CJS-only architecture since V9.5).
 
 ## Architecture
 
 **Controller-Centric Question-Based Delegation**
 
-236 agents organized into:
+238 agents organized into:
 - **Core** (14): Infrastructure (trigger, team-trigger, team-lead-adapter, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, 5 universal workflow agents)
 - **Shared** (14): Cross-domain capabilities (data, analytics, quality, compliance, customer, operations)
-- **Make** (109): Creation (engineering, creative, product, devops, qa, **game development**)
+- **Make** (111): Creation (engineering, creative, product, devops, qa, **game development**)
 - **Grow** (38): Acquisition (marketing, sales, partnerships)
 - **Operate** (13): Operations (finance, operations, procurement)
 - **People** (20): Talent (HR, culture, talent acquisition)
 - **Serve** (28): Support & Governance (customer experience, legal, compliance, support)
 
 ```
-User Request -> Trigger -> Orchestrator
+User Request -> /run (inline: routing + planning + orchestration)
     |
-Routing (classify tier 2-4)
+    v
+Controller (question-based delegation -> specialists answer -> synthesis)
     |
-Planning (define objectives)
+    v
+Execution Agents (actual implementation work)
     |
-Coordinating (controller questions -> specialists answer -> synthesis)
-    |
-Executing (implementation)
-    |
-Validating (quality gates) -> Complete
+    v
+/run validates outputs -> Complete
 ```
 
 **Key Innovation**: Controllers use question-based delegation to specialists, synthesize answers, and coordinate implementation. Planning defines WHAT (objectives), controllers determine HOW (questions + synthesis).
@@ -84,18 +82,14 @@ Then configure Claude Code to load the plugin directory.
 
 ### Setup Script
 
-The `setup.sh` script automatically configures hooks based on your environment:
+The `setup.sh` script configures the hook system:
 
 ```bash
-# Auto-detect Node.js and configure appropriate hooks
+# Configure hooks and verify Node.js
 ./setup.sh
-
-# Force shell-only mode (no Node.js hooks)
-./setup.sh --force-shell-only
 ```
 
-**With Node.js**: All hooks enabled (9 shell + 12 Node.js)
-**Without Node.js**: 9 shell hooks enabled, advanced features disabled
+**Requires Node.js**: All hooks are CJS-only (V9.5+). Shell hooks were removed.
 
 ## Quick Start
 
@@ -159,7 +153,7 @@ The system automatically:
 
 ## Super-Domains
 
-### Make (Creation) - 109 agents
+### Make (Creation) - 111 agents
 Engineering, creative writing, product design, devops, QA, **game development**
 - **Controllers**: engineering-manager, architect, creative-director, product-manager, game-director, cto, cco
 - **Execution**: backend-developer, frontend-developer, copywriter, story-architect, gameplay-programmer, level-designer, game-artist, audio-engineer, qa-lead, security-specialist
@@ -236,26 +230,23 @@ File-based, instruction-scoped, parallel-safe, pause/resume capable.
 
 cAgents uses Claude Code's hook system for workflow integration:
 
-| Hook Type | Shell Hooks | Node.js Hooks |
-|-----------|------------|---------------|
-| SessionStart | on-session-start.sh | session-catchup.cjs |
-| SessionEnd | on-session-end.sh | team-stop.cjs |
-| Stop | stop-workflow.sh | verify-completion.cjs |
-| SubagentStart | - | subagent-tracker.cjs, team-start.cjs |
-| SubagentStop | on-workflow-complete.sh | - |
-| UserPromptSubmit | on-user-prompt.sh | - |
-| PreToolUse (Bash) | pre-bash.sh | - |
-| PreToolUse (Write) | pre-write.sh | secret-detection.cjs |
-| PreToolUse (Task) | on-task-start.sh | - |
-| PostToolUse (Task) | on-task-complete.sh | - |
-| PostToolUseFailure | - | tool-failure-tracker.cjs |
-| TeammateIdle | - | teammate-idle-handler.cjs |
-| TaskCompleted | - | team-task-complete.cjs |
-| PermissionRequest | - | permission-handler.cjs |
-| PreCompact | - | pre-compact-save.cjs |
-| Notification | - | notification.cjs |
+| Hook Type | CJS Hook |
+|-----------|----------|
+| SessionStart | session-catchup.cjs |
+| SessionEnd | team-stop.cjs |
+| Stop | verify-completion.cjs |
+| SubagentStart | subagent-tracker.cjs, team-start.cjs |
+| SubagentStop | subagent-stop-tracker.cjs |
+| PreToolUse (Bash) | bash-validator.cjs |
+| PreToolUse (Write/Edit) | secret-detection.cjs |
+| PostToolUseFailure | tool-failure-tracker.cjs |
+| TeammateIdle | teammate-idle-handler.cjs |
+| TaskCompleted | team-task-complete.cjs |
+| PermissionRequest | permission-handler.cjs |
+| PreCompact | pre-compact-save.cjs |
+| Notification | notification.cjs |
 
-Run `./setup.sh` to configure hooks based on Node.js availability.
+All hooks use the `createHook()` factory from `hook-utils.cjs` and are invoked via `run-hook.cjs`. See `.claude/rules/core/hooks.md` for details.
 
 ## Documentation
 
@@ -266,12 +257,11 @@ Run `./setup.sh` to configure hooks based on Node.js availability.
 
 ## Performance
 
-**V9.0 Platform Alignment**:
-- Skills system with auto-discovery (.claude/skills/)
-- 14 hook event types with shell+JS dual architecture
+**V9.19 Flattened Architecture**:
+- 2-level delegation chain (reliable) replaces 5-level chain
+- CJS-only hook system with `createHook()` factory (14 hooks)
 - Agent Teams: 40-60% execution time reduction for tier 3+ workflows
 - Claude 4.6 model routing (Opus 4.6, Sonnet 4.6, Haiku 4.5) with opusplan hybrid for controllers
-- 76% initial context reduction via path-specific rules
 
 **Core Architecture**:
 - 30-40% simpler planning (objectives vs detailed tasks)
@@ -279,11 +269,13 @@ Run `./setup.sh` to configure hooks based on Node.js availability.
 - Up to 50x speedup with parallel execution (swarm mode)
 - CSV-based task inventory for 20+ task workflows (60-80% context savings)
 - Aggressive task decomposition with implicit requirement discovery
-- Total agents: 236 (14 core + 14 shared + 208 domain specialists)
+- Total agents: 238 (14 core + 14 shared + 210 domain specialists)
 - Game engines supported: Unity, Unreal Engine, Godot
 
 ## Version History
 
+- **V9.20.0** (2026-02-27) - TodoWrite blocking prerequisite enforcement, mandatory controller TodoWrite, stronger helper patterns
+- **V9.19.1** (2026-02-27) - Flattened 2-level delegation, CJS-only hooks, TodoWrite progressive refinement, 238 agents
 - **V9.0.0** (2026-02-07) - Platform Alignment Edition: Skills system, 14 hook event types, Agent Teams, opusplan model routing, 236 agents
 - **V8.7.0** (2026-02-06) - Agent Teams integration, /run as universal execution path for /team work items
 - **V8.6.0** (2026-02-05) - Claude Code Agent Teams integration, team-trigger and team-lead-adapter agents
@@ -309,4 +301,4 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | **cAgents V9.3** | 236 agents across 5 super-domains | Powered by Claude Opus 4.6, Sonnet 4.6 & Haiku 4.5
+**Built with Claude Code** | **cAgents V9.19** | 238 agents across 5 super-domains | Powered by Claude Opus 4.6, Sonnet 4.6 & Haiku 4.5

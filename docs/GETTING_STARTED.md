@@ -1,4 +1,4 @@
-# Getting Started with cAgents V9.9
+# Getting Started with cAgents V9.20
 
 Quick start guide for the cAgents universal multi-domain agent system.
 
@@ -49,9 +49,11 @@ cAgents will:
 | Command | Purpose | Example |
 |---------|---------|---------|
 | `/run` | Universal workflow entry point | `/run Fix auth bug` |
+| `/team` | Parallel team execution | `/team Build user dashboard` |
 | `/designer` | Interactive design exploration | `/designer` |
 | `/review` | Code and content review | `/review src/` |
 | `/optimize` | Universal optimization | `/optimize` |
+| `/helper` | Interactive command guide | `/helper` |
 
 ## Understanding Workflows
 
@@ -83,32 +85,35 @@ cAgents supports 5 super-domains:
 
 | Super-Domain | Agents | Keywords | Example Requests |
 |--------------|--------|----------|-----------------|
-| **Make** | 109 | fix, bug, feature, code, write, story, game | "Fix auth bug", "Write a novel" |
+| **Make** | 111 | fix, bug, feature, code, write, story, game | "Fix auth bug", "Write a novel" |
 | **Grow** | 38 | campaign, sales, marketing, SEO | "Plan Q4 launch" |
 | **Operate** | 13 | budget, forecast, operations, procurement | "Create annual budget" |
 | **People** | 20 | recruit, onboard, culture, HR | "Design onboarding program" |
 | **Serve** | 28 | support, legal, compliance, contract | "Review vendor contract" |
 
-## Agent Architecture (V8.0)
+## Agent Architecture
 
 ```
-Tier 1: Core (12 agents)
-  - orchestrator, trigger, planner, executor, validator, hitl, optimizer,
-    task-consolidator, task-decomposer, task-inventory, router, self-correct
+Tier 1: Core Infrastructure (14 agents)
+  - orchestrator, trigger, hitl, optimizer, team-trigger, team-lead-adapter,
+    universal-router, universal-planner, universal-executor, universal-validator,
+    universal-self-correct, task-consolidator, task-decomposer, task-inventory
 
 Tier 2: Controllers (~53 agents)
   - engineering-manager, architect, campaign-manager...
 
-Tier 3: Execution (~147 agents)
+Tier 3: Execution (~149 agents)
   - backend-developer, copywriter, financial-analyst...
 
 Tier 4: Support (~19 agents)
   - scribe, data-extractor...
 ```
 
-**Total**: 234 agents (12 core + 14 shared + 208 domain specialists)
+**Total**: 238 agents (14 core + 14 shared + 210 domain specialists)
 
 **Key Concept**: Controllers coordinate work via question-based delegation. They ask questions to specialists, synthesize answers, and coordinate implementation.
+
+**Flattened Architecture (V9.18+)**: `/run` performs routing, planning, and orchestration inline, delegating only coordination (to controllers) and execution (to specialists) as subagents. This 2-level chain replaces the previous 5-level chain for reliability.
 
 ## Configuration
 
@@ -130,9 +135,10 @@ Agent_Memory/
 
 ```
 .claude/
-├── rules/             # Modular rules (19 files across 5 categories)
-├── hooks/             # Hook implementations (6 Node.js hooks)
-└── settings.json      # Hook registration and settings
+├── rules/             # Modular rules (20 files across 5 categories)
+├── hooks/             # CJS hook implementations (17 files: 14 hooks + utils + launcher + eval CLI)
+├── skills/            # Skill definitions (run, team, designer, review, optimize, helper)
+└── settings.json      # Hook registration, permissions, and environment
 ```
 
 ## Advanced Usage
@@ -155,16 +161,23 @@ Agent_Memory/
 
 ### Hooks
 
-cAgents supports lifecycle hooks:
+cAgents uses a CJS-only hook system (V9.5+) with the `createHook()` factory pattern:
 
-```bash
-hooks/
-├── hooks.json         # Hook registration
-├── workflow/
-│   └── stop-workflow.sh
-├── phase/
-└── hitl/
 ```
+.claude/hooks/
+├── hook-utils.cjs         # Shared utilities and createHook() factory
+├── run-hook.cjs           # Hook launcher (all hooks invoked via this)
+├── session-catchup.cjs    # SessionStart: detect incomplete sessions
+├── team-stop.cjs          # SessionEnd: finalize team metrics
+├── verify-completion.cjs  # Stop: verify completion criteria
+├── bash-validator.cjs     # PreToolUse[Bash]: block dangerous commands
+├── secret-detection.cjs   # PreToolUse[Write|Edit]: detect secrets
+├── subagent-tracker.cjs   # SubagentStart: log agent spawns
+├── ...                    # + 8 more hooks (14 total)
+└── eval-runner.cjs        # CLI tool: quality evaluations
+```
+
+Hook registration is in `.claude/settings.json`. See `.claude/rules/core/hooks.md` for full documentation.
 
 ### Scripts
 
@@ -207,5 +220,5 @@ Bash utilities for programmatic access:
 
 ---
 
-**Version**: 8.0.28
+**Version**: 9.20.0
 **Questions?** Check the troubleshooting guide or explore the codebase.

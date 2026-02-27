@@ -14,12 +14,12 @@ cAgents is a universal multi-domain agent system with controller-centric coordin
 |------|------|-------|---------|
 | **1: Core** | Infrastructure | 14 | Workflow orchestration |
 | **2: Controller** | Coordination | ~53 | Question-based delegation |
-| **3: Execution** | Specialists | ~147 | Answer questions, execute tasks |
+| **3: Execution** | Specialists | ~149 | Answer questions, execute tasks |
 | **4: Support** | Operations | ~19 | Foundational services |
 
 ### Super-Domains (5)
 
-1. **Make** (109 agents): Creation - engineering, creative, product, game dev
+1. **Make** (111 agents): Creation - engineering, creative, product, game dev
 2. **Grow** (38 agents): Acquisition - marketing, sales
 3. **Operate** (13 agents): Operations - finance, operations
 4. **People** (20 agents): Talent - HR, culture
@@ -30,7 +30,8 @@ cAgents is a universal multi-domain agent system with controller-centric coordin
 ```
 routing -> planning -> coordinating -> executing -> validating
    |          |           |            |           |
-  Router   Planner   Controller   Executor   Validator
+  /run      /run      Controller    /run        /run
+(inline)  (inline)   (Task tool)  (monitors)  (inline)
 ```
 
 ### Phase Details
@@ -91,5 +92,5 @@ Agent_Memory/
 
 ---
 
-**Version**: V9.9.1
-**Last Updated**: 2026-02-12
+**Version**: V9.20.0
+**Last Updated**: 2026-02-27

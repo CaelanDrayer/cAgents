@@ -9,8 +9,8 @@
   "plugins": [
     {
       "name": "cagents",
-      "description": "Universal multi-domain agent system with 238 specialized agents across 5 super-domains. V9.19.1: Enforce mandatory TodoWrite calls at every phase transition in /run -- embedded directly into workflow steps to prevent skipping. V9.19.0: Progressive TodoWrite refinement. V9.18.0: Flattened /run delegation chain. Agent Teams for parallel execution (40-60% time reduction). CSV-based task inventory (60-80% context savings). Controller-centric delegation with minimum tier 2 enforcement.",
-      "version": "9.19.1",
+      "description": "Universal multi-domain agent system with 238 specialized agents across 5 super-domains. V9.20.0: TodoWrite blocking prerequisite enforcement -- restructured /run steps so TodoWrite is ACTION 1 per phase, added mandatory TodoWrite to all 57 controllers, stronger helper patterns. V9.19.1: Embedded TodoWrite directives in /run steps. V9.18.0: Flattened /run delegation chain. Agent Teams for parallel execution (40-60% time reduction). CSV-based task inventory (60-80% context savings). Controller-centric delegation with minimum tier 2 enforcement.",
+      "version": "9.20.0",
       "author": {
         "name": "CaelanDrayer",
         "email": "caelan@caelandrayer.ca"

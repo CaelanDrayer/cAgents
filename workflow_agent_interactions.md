@@ -419,7 +419,7 @@ Agent_Memory/
 
 ## Summary
 
-**cAgents = One universal workflow × 5 super-domain configs × 234 specialized agents**
+**cAgents = One universal workflow × 5 super-domain configs × 238 specialized agents**
 
 - **Universal**: Same 5 workflow agents handle all domains
 - **Config-Driven**: Domains customize via YAML, not code

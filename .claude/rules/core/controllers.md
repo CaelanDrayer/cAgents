@@ -106,13 +106,34 @@ Controllers are tier 2 agents that:
 ```
 1. Controller receives objectives from plan.yaml
 2. Controller breaks into specific questions
-3. Controller delegates questions to execution agents
-4. Execution agents provide expert answers
-5. Controller synthesizes answers into solution
-6. Controller creates implementation tasks
-7. Controller coordinates execution
-8. Controller writes coordination_log.yaml
+3. Controller identifies which execution agents to delegate to
+4. Controller calls TodoWrite to show execution agents to user (MANDATORY)
+5. Controller delegates questions to execution agents
+6. Execution agents provide expert answers
+7. Controller synthesizes answers into solution
+8. Controller creates implementation tasks
+9. Controller coordinates execution
+10. Controller writes coordination_log.yaml
 ```
+
+## MANDATORY: TodoWrite for Execution Agent Visibility
+
+**Every controller MUST call TodoWrite after identifying which execution agents it will delegate to.** This gives the user real-time visibility into which agents are active.
+
+Call TodoWrite BEFORE starting to delegate questions:
+
+```
+TodoWrite([
+  {"content": "[/run] Route request to domain and tier", "status": "completed", "id": "route"},
+  {"content": "[/run] Plan objectives and select controller", "status": "completed", "id": "plan"},
+  {"content": "[{your_controller_name}] Coordinate: ask questions and synthesize", "status": "in_progress", "id": "coordinate"},
+  {"content": "[{exec_agent_1}] {specific_task_1}", "status": "pending", "id": "exec1"},
+  {"content": "[{exec_agent_2}] {specific_task_2}", "status": "pending", "id": "exec2"},
+  {"content": "[/run] Validate outputs and quality", "status": "pending", "id": "validate"}
+])
+```
+
+Replace placeholders with actual agent names and task descriptions. As each execution agent completes, update their entry to `completed`.
 
 ## Controller Selection by Tier
 

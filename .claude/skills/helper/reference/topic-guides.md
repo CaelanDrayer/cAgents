@@ -128,9 +128,9 @@ Use when the design decomposes into 3+ parallel work items.
 
 ### The 5 Super-Domains
 
-cAgents organizes 236 agents into 5 super-domains. When you use `/run` or `/team`, the system automatically detects which domain to route to.
+cAgents organizes 238 agents into 5 super-domains. When you use `/run` or `/team`, the system automatically detects which domain to route to.
 
-#### Make (109 agents) -- Creation
+#### Make (111 agents) -- Creation
 
 Everything related to building and creating:
 - **Engineering**: Bug fixes, features, APIs, databases, DevOps
@@ -272,9 +272,9 @@ Every request is classified into a complexity tier, which determines how many ag
 
 ## Topic: agents
 
-### The 236 Agents and How They Are Organized
+### The 238 Agents and How They Are Organized
 
-cAgents has 236 specialized agents organized in a 4-tier hierarchy:
+cAgents has 238 specialized agents organized in a 4-tier hierarchy:
 
 #### Tier 1: Core Infrastructure (14 agents)
 

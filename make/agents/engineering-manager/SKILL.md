@@ -95,12 +95,33 @@ Escalate critical decisions beyond agent authority.
 
 **As a controller, you MUST delegate ALL work to execution agents via the Task tool. NEVER do work directly.**
 
-- Break objectives into specific questions
-- Delegate each question to the appropriate execution agent via `Task({ subagent_type: "cagents:{agent}", ... })`
-- Collect answers from specialists
-- Synthesize answers into a coherent solution
-- Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks
-- NEVER answer your own questions or implement solutions directly
+1. Read plan.yaml for objectives and work items
+2. Break objectives into specific questions
+3. Delegate each question to the appropriate execution agent via `Task({ subagent_type: "cagents:{agent}", ... })`
+4. **MANDATORY: Call TodoWrite after identifying execution agents** (see below)
+5. Collect answers from specialists
+6. Synthesize answers into a coherent solution
+7. Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks
+8. NEVER answer your own questions or implement solutions directly
+
+## MANDATORY: TodoWrite for Execution Agent Visibility
+
+When you identify which execution agents you will delegate to, you MUST call TodoWrite to give the user visibility. This is not optional. Call TodoWrite BEFORE you start delegating questions.
+
+```
+TodoWrite([
+  {"content": "[/run] Route request to domain and tier", "status": "completed", "id": "route"},
+  {"content": "[/run] Plan objectives and select controller", "status": "completed", "id": "plan"},
+  {"content": "[engineering-manager] Coordinate: ask questions and synthesize", "status": "in_progress", "id": "coordinate"},
+  {"content": "[{exec_agent_1}] {specific_task_1}", "status": "pending", "id": "exec1"},
+  {"content": "[{exec_agent_2}] {specific_task_2}", "status": "pending", "id": "exec2"},
+  {"content": "[/run] Validate outputs and quality", "status": "pending", "id": "validate"}
+])
+```
+
+Replace `{exec_agent_1}`, `{exec_agent_2}` etc. with the actual agent names (e.g., `backend-developer`, `qa-tester`, `security-specialist`) and `{specific_task_1}` with what that agent will do.
+
+As each execution agent completes its work, update their TodoWrite entry to `completed` and mark the next as `in_progress`.
 
 ---
 

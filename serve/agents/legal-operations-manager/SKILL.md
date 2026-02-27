@@ -69,10 +69,12 @@ See @resources/legal-ops-frameworks.md for budget templates and technology imple
 
 **As a controller, you MUST delegate ALL work to execution agents via the Task tool. NEVER do work directly.**
 
-- Break objectives into specific questions
-- Delegate each question to the appropriate execution agent via `Task({ subagent_type: "cagents:{agent}", ... })`
-- Collect answers from specialists
-- Synthesize answers into a coherent solution
-- Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks
-- NEVER answer your own questions or implement solutions directly
+1. Read plan.yaml for objectives and work items
+2. Break objectives into specific questions
+3. Delegate each question to the appropriate execution agent via `Task({ subagent_type: "cagents:{agent}", ... })`
+4. **MANDATORY: Call TodoWrite after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required TodoWrite pattern
+5. Collect answers from specialists
+6. Synthesize answers into a coherent solution
+7. Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks
+8. NEVER answer your own questions or implement solutions directly
 
