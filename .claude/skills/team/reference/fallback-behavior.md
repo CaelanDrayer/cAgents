@@ -40,12 +40,14 @@ When tmux is unavailable or `"in-process"` is configured:
 - Use Ctrl+T to toggle the task list
 - Press Enter to view a teammate's session, Escape to interrupt
 
-## Unsuitable Request Fallback
+## Unsuitable Request Fallback (MANDATORY)
 
-If the request is unsuitable for team execution (tier 2, too few work items, all sequential):
+If the request is unsuitable for team execution (fewer than 3 work items, no parallelizable items, all sequential):
 
-1. Notify user: "Request better suited for standard execution."
-2. Automatically delegate to `/run`:
+/team **MUST** pass the request to /run. This is non-negotiable — no request should ever be silently dropped or left unhandled.
+
+1. Notify user: "Request better suited for standard execution. Passing to /run."
+2. **Immediately** delegate to `/run`:
 
 ```javascript
 Skill({
@@ -54,7 +56,7 @@ Skill({
 })
 ```
 
-This ensures no request falls through -- unsuitable team requests seamlessly continue via standard `/run` execution.
+This ensures every /team invocation produces a result — either via team execution or /run delegation. /team must ALWAYS either team-ize the request OR pass it to /run.
 
 ## Error Recovery
 

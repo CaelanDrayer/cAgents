@@ -61,7 +61,9 @@ Wave N (Lead, sequential): Integration + Final Validation
 
 ## MANDATORY: You MUST Execute These Steps
 
-**If you do not call TeamCreate and spawn teammates via Task tool, you have FAILED.** Do not just describe what you would do. Do not just create tasks without teammates. Do not fall back to /run for the whole request. Actually execute the steps below.
+**If you do not call TeamCreate and spawn teammates via Task tool, you have FAILED.** Do not just describe what you would do. Do not just create tasks without teammates. Actually execute the steps below.
+
+**EXCEPTION: Mandatory /run fallback.** If the request produces fewer than 3 work items or has no parallelizable items, you MUST pass the request to /run via `Skill({ skill: "run" })`. Never silently drop a request — either team-ize it or /run it.
 
 ## Step-by-Step Execution (Follow Exactly)
 
@@ -152,10 +154,11 @@ After reading work_items.yaml, organize items by wave number. Count the number o
 | 3 | 5 |
 | 4 | 6 |
 
-If the request produces fewer than 3 work items total or has no parallelizable items, fall back:
+If the request produces fewer than 3 work items total or has no parallelizable items, you **MUST** pass to /run. Never silently drop the request:
 ```
 Skill({ skill: "run", args: "<the full request>" })
 ```
+This is mandatory — /team must ALWAYS either execute as a team OR delegate to /run. No request should ever be left unhandled.
 
 If `--dry-run` is specified, display the work items, wave structure, and team composition, then STOP.
 
@@ -370,12 +373,13 @@ Within a single wave, all teammates run in parallel. Use TaskUpdate `addBlockedB
 11. **Never just create tasks without spawning teammates** -- tasks without teammates are useless.
 12. **All enrichment stages always run** -- no skipping for consistency.
 
-## Fallback
+## Fallback (MANDATORY)
 
-If the request has fewer than 3 work items or no parallelizable work:
+If the request has fewer than 3 work items or no parallelizable work, you **MUST** pass to /run. Never silently fail or leave a request unhandled:
 ```
 Skill({ skill: "run", args: "<the original request>" })
 ```
+This ensures every /team invocation produces a result — either via team execution or /run delegation.
 
 ## Configuration
 
