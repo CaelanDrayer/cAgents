@@ -1,0 +1,1180 @@
+# AI Writing Hallmark Patterns
+# Used by ai-writing-detector to scan documents for AI writing characteristics.
+# 14 categories with full word/phrase lists, weights, and sensitivity defaults.
+#
+# Weight normalization: raw weights sum to 1.16; divide each by 1.16 at runtime.
+
+scoring:
+  weight_sum: 1.16
+  verdicts:
+    low_ai_likelihood: { max: 0.3 }
+    moderate_ai_likelihood: { min: 0.3, max: 0.6 }
+    high_ai_likelihood: { min: 0.6 }
+
+sensitivity_defaults:
+  vocabulary_tells: medium
+  analytical_academic: medium
+  punctuation_style: medium
+  structural_patterns: medium
+  ai_phrases: medium
+  transitions: medium
+  qualifiers_softening: medium
+  tone_voice: medium
+  creativity_deficit: medium
+  mechanical_writing: medium
+  repetitive_phrasing: medium
+  speculative_focus: medium
+  conflicting_subtext: medium
+  detached_warmth: medium
+
+sensitivity_thresholds:
+  low:
+    min_confidence: 0.85
+    min_severity: high
+  medium:
+    min_confidence: 0.50
+    min_severity: low
+  high:
+    min_confidence: 0.30
+    min_severity: low
+
+# ==============================================================================
+# Category 1: Vocabulary Tells (weight: 0.04)
+# ==============================================================================
+vocabulary_tells:
+  weight: 0.04
+  signal_strength: low
+  description: "AI-favored words uncommon at AI frequency in natural writing"
+  detection_threshold:
+    cluster: 3          # 3+ AI words in a single paragraph
+    density: 5          # 5+ per 1000 words across document
+  nouns:
+    - aim
+    - aims
+    - aspect
+    - challenges
+    - change
+    - climate
+    - community
+    - compel
+    - compelling
+    - compels
+    - complexities
+    - complexity
+    - component
+    - comprehensive
+    - confront
+    - confrontation
+    - confrontational
+    - confrontations
+    - confronts
+    - deep
+    - deepens
+    - deeper
+    - deepest
+    - deeply
+    - delve
+    - delves
+    - depth
+    - development
+    - diverse
+    - draw
+    - drawn
+    - draws
+    - dreams
+    - dynamics
+    - elegant
+    - elevate
+    - elevates
+    - elucidate
+    - elucidates
+    - elucidatory
+    - elusiveness
+    - embark
+    - embarks
+    - embodies
+    - embodiment
+    - embodiments
+    - embody
+    - embrace
+    - embraces
+    - empower
+    - emulate
+    - emulates
+    - enact
+    - endeavor
+    - endeavors
+    - endurance
+    - endure
+    - engage
+    - enhance
+    - enlightenment
+    - enlightenments
+    - enlightens
+    - entwine
+    - entwines
+    - environment
+    - era
+    - eras
+    - espouse
+    - espouses
+    - evoke
+    - evokes
+    - exacerbate
+    - exacerbates
+    - exemplifies
+    - exploration
+    - explorations
+    - exploratory
+    - explore
+    - explores
+    - facet
+    - facets
+    - foster
+    - fosters
+    - grapple
+    - grapples
+    - groundwork
+    - harness
+    - health
+    - hidden
+    - highlight
+    - highlights
+    - illuminate
+    - illuminates
+    - illumination
+    - imperative
+    - imperatives
+    - importance
+    - innovate
+    - innovates
+    - innovation
+    - innovator
+    - innovators
+    - insight
+    - insightful
+    - insights
+    - insignificant
+    - inspiration
+    - inspirations
+    - inspire
+    - inspires
+    - integrate
+    - interplay
+    - interplayed
+    - interplays
+    - intertwine
+    - intertwines
+    - intricacies
+    - intricate
+    - jeopardizing
+    - journey
+    - kaleidoscope
+    - kaleidoscopes
+    - key
+    - landscape
+    - landscapes
+    - lens
+    - life
+    - manifold
+    - meaningful
+    - meticulousness
+    - moreover
+    - navigate
+    - navigates
+    - notes
+    - nuance
+    - nuances
+    - offering
+    - paramount
+    - pivot
+    - pivotal
+    - pivots
+    - poignancy
+    - poignant
+    - possibilities
+    - potent
+    - profound
+    - quest
+    - quirky
+    - readers
+    - realm
+    - realms
+    - reimagine
+    - reimagines
+    - relentless
+    - relentlessness
+    - resonance
+    - resonate
+    - resonates
+    - reveal
+    - reveals
+    - reverberate
+    - reverberates
+    - revolution
+    - revolutionizes
+    - roadmap
+    - robust
+    - role
+    - scheme
+    - seamless
+    - seamlessness
+    - seek
+    - seeks
+    - shape
+    - showcase
+    - showcases
+    - significance
+    - straightforward
+    - strive
+    - strives
+    - support
+    - symphony
+    - tailor
+    - tapestries
+    - tapestry
+    - tempest
+    - testament
+    - testaments
+    - timeless
+    - timelessness
+    - tireless
+    - toolkit
+    - transcend
+    - transcendence
+    - transcendent
+    - transcends
+    - transformative
+    - underlies
+    - underline
+    - underlines
+    - undermine
+    - undermines
+    - underpin
+    - underscore
+    - underscores
+    - undervalues
+    - unleash
+    - unleashes
+    - unlock
+    - unlocks
+    - unravel
+    - unravels
+    - value
+    - values
+    - vast
+    - versatile
+    - versatility
+    - vibrant
+    - vital
+    - vitalize
+    - vivid
+    - weave
+    - whimsy
+    - wove
+
+  verbs:
+    - aimed
+    - aiming
+    - capturing
+    - confronted
+    - confronting
+    - consider
+    - crafted
+    - curated
+    - deepen
+    - deepened
+    - deepening
+    - delved
+    - delving
+    - drawing
+    - elevated
+    - elevating
+    - elucidated
+    - elucidating
+    - embarked
+    - embarking
+    - embodied
+    - embodying
+    - embraced
+    - embracing
+    - emulated
+    - endeavored
+    - endeavoring
+    - endured
+    - enduring
+    - enhanced
+    - enhancing
+    - enlighten
+    - enlightened
+    - enlightening
+    - ensure
+    - entwined
+    - entwining
+    - espoused
+    - espousing
+    - esteemed
+    - evoked
+    - evoking
+    - evolving
+    - exacerbated
+    - exacerbating
+    - exemplify
+    - exemplifying
+    - explored
+    - exploring
+    - faceted
+    - fostered
+    - fostering
+    - grappled
+    - grappling
+    - groundbreaking
+    - guiding
+    - highlighted
+    - highlighting
+    - illuminated
+    - illuminating
+    - improve
+    - innovated
+    - innovating
+    - inspired
+    - inspiring
+    - interplaying
+    - intertwined
+    - intertwining
+    - multifaceted
+    - navigated
+    - navigating
+    - partaking
+    - pivoted
+    - pivoting
+    - reimagined
+    - reimagining
+    - resonating
+    - revealed
+    - revealing
+    - reverberated
+    - reverberating
+    - revitalize
+    - revolutionize
+    - revolutionized
+    - revolutionizing
+    - seeking
+    - showcased
+    - showcasing
+    - strived
+    - striving
+    - structured
+    - transcended
+    - transcending
+    - underlining
+    - underlying
+    - undermining
+    - underpinning
+    - underscoring
+    - understanding
+    - undervalued
+    - undervaluing
+    - uninspiring
+    - unleashing
+    - unlocking
+    - unraveling
+    - valued
+    - valuing
+    - weaving
+
+  adjectives:
+    - aimless
+    - authentic
+    - commendable
+    - complex
+    - creative
+    - critical
+    - crucial
+    - dynamic
+    - elucidative
+    - elusive
+    - endurable
+    - essential
+    - exemplary
+    - explorational
+    - explorative
+    - grand
+    - indelible
+    - innovative
+    - inspirational
+    - invaluable
+    - meticulous
+    - nonconfrontational
+    - notable
+    - nuanced
+    - powerful
+    - professional
+    - rich
+    - significant
+    - sustainable
+    - underlined
+    - undermined
+    - underpinned
+    - underscored
+    - undervalue
+    - uninspired
+    - unleashed
+    - unlocked
+    - unraveled
+    - valuable
+    - whimsical
+
+  adverbs:
+    - additionally
+    - aimlessly
+    - aptly
+    - creatively
+    - critically
+    - crucially
+    - dynamically
+    - elusively
+    - embracingly
+    - endurably
+    - enduringly
+    - indelibly
+    - insightfully
+    - insignificantly
+    - intricately
+    - invaluably
+    - mere
+    - merely
+    - meticulously
+    - notably
+    - pivotally
+    - poignantly
+    - powerfully
+    - profoundly
+    - relentlessly
+    - seamlessly
+    - significantly
+    - successfully
+    - timelessly
+    - tirelessly
+    - underly
+    - vibrantly
+    - vividly
+    - woven
+
+# ==============================================================================
+# Category 2: Analytical/Academic Words (weight: 0.08)
+# ==============================================================================
+analytical_academic:
+  weight: 0.08
+  signal_strength: medium
+  description: "Overly formal connectives and academic vocabulary uncommon in natural prose"
+  detection_threshold:
+    density: 5    # per 1000 words; 1-2 is normal academic writing
+  patterns:
+    - furthermore
+    - moreover
+    - consequently
+    - subsequently
+    - thereby
+    - wherein
+    - hitherto
+    - notwithstanding
+    - juxtaposition
+    - dichotomy
+    - extrapolate
+    - elucidate
+    - delineate
+    - contextualize
+    - posit
+    - ascertain
+    - predicated
+    - promulgate
+    - advancements
+    - implications
+    - paradigm
+    - synergy
+
+# ==============================================================================
+# Category 3: Punctuation/Style Tics (weight: 0.08)
+# ==============================================================================
+punctuation_style:
+  weight: 0.08
+  signal_strength: medium
+  description: "Characteristic punctuation patterns of AI-generated text"
+  checks:
+    em_dash_overuse:
+      description: "AI uses em dashes for explanatory clauses and dramatic pauses"
+      threshold: 2      # per 500 words
+      pattern: "---?|\\u2014"
+    colon_list_patterns:
+      description: "Colon followed by list structure"
+      patterns:
+        - "Here are the key"
+        - "Here's what"
+        - "Consider the following"
+        - "The main points are:"
+        - "Key takeaways:"
+        - "Important considerations:"
+    oxford_comma_consistency:
+      description: "AI uses Oxford commas 100% consistently"
+      threshold: 1.0    # flag if every serial comma uses Oxford
+    semicolon_absence:
+      description: "AI rarely uses semicolons unlike human academic writing"
+      threshold: 0       # per 1000 words; flag if zero
+    perfect_punctuation:
+      description: "No creative use of ellipsis, fragments, unconventional punctuation"
+      patterns_absent:
+        - "..."
+        - sentence_fragments
+        - exclamation_clusters
+
+# ==============================================================================
+# Category 4: Structural Patterns (weight: 0.12)
+# ==============================================================================
+structural_patterns:
+  weight: 0.12
+  signal_strength: strong
+  description: "Formulaic document organization typical of AI output"
+  checks:
+    formulaic_headers:
+      patterns:
+        - "## Introduction"
+        - "## Key Takeaways"
+        - "## Conclusion"
+        - "## Summary"
+        - "## Overview"
+        - "## Background"
+        - "## Key Points"
+        - "## Final Thoughts"
+    excessive_lists:
+      threshold: 0.40    # flag if > 40% content in lists
+    conclusion_patterns:
+      patterns:
+        - "In conclusion"
+        - "To summarize"
+        - "In summary"
+        - "Overall,"
+        - "To sum up"
+        - "In closing"
+        - "To wrap up"
+    paragraph_uniformity:
+      threshold: 0.20    # flag if all paragraphs within 20% of average length
+    three_point_pattern:
+      description: "Everything in groups of three"
+    mid_essay_bullets:
+      description: "Bullet lists appearing where flowing prose is more natural"
+    long_conclusions:
+      description: "Conclusions that repeat most of the content"
+      overlap_threshold: 0.50  # flag if > 50% semantic overlap with body
+
+# ==============================================================================
+# Category 5: AI Phrases (weight: 0.06)
+# ==============================================================================
+ai_phrases:
+  weight: 0.06
+  signal_strength: medium
+  description: "Multi-word phrases appearing far more in AI output than human writing"
+  detection_threshold:
+    density: 5    # per 1000 words
+  phrases:
+    - "about the potential"
+    - "additionally we"
+    - "advocate for"
+    - "ai language model"
+    - "amidst"
+    - "any potential"
+    - "anyone looking"
+    - "appreciation for"
+    - "are committed"
+    - "are committed to"
+    - "are urging"
+    - "as a reminder"
+    - "as an ai"
+    - "as we"
+    - "been met with"
+    - "best regards"
+    - "bustling"
+    - "can help to"
+    - "can vary"
+    - "captivating"
+    - "cautionary tale"
+    - "commitment to"
+    - "connect with"
+    - "consult with"
+    - "couldn't help"
+    - "couldn't shake"
+    - "crucial for"
+    - "crucial role"
+    - "crucial role in"
+    - "dedication"
+    - "dedication to"
+    - "deeper understanding"
+    - "despite these"
+    - "email finds you"
+    - "emphasizing"
+    - "enduring"
+    - "enigmatic"
+    - "expressed his"
+    - "expressed their"
+    - "expressing their"
+    - "factors including"
+    - "feel a sense"
+    - "felt a sense"
+    - "financial advisor"
+    - "findings suggest"
+    - "finds you well"
+    - "for greater"
+    - "for individuals"
+    - "for understanding"
+    - "from that day"
+    - "further research"
+    - "future generations"
+    - "generations to"
+    - "glimpse into"
+    - "grateful for"
+    - "gratitude for"
+    - "groundbreaking"
+    - "has expressed"
+    - "has shaped the"
+    - "has sparked"
+    - "have expressed"
+    - "have important"
+    - "heart pounding"
+    - "help but feel"
+    - "help but wonder"
+    - "here are some"
+    - "high-quality"
+    - "highlights the importance"
+    - "his legacy"
+    - "hope this email"
+    - "human spirit"
+    - "i hope this"
+    - "important implications"
+    - "important implications for"
+    - "important to note"
+    - "in a world"
+    - "in conclusion"
+    - "in shaping"
+    - "in summary"
+    - "incident has"
+    - "individuals to"
+    - "insights into"
+    - "interplay between"
+    - "is a complex"
+    - "is a draft"
+    - "is a reminder"
+    - "is a testament"
+    - "is crucial for"
+    - "is sure to"
+    - "it's important"
+    - "it's important to note"
+    - "it's not about"
+    - "it remains to"
+    - "its potential"
+    - "it's crucial to"
+    - "knew that"
+    - "known for"
+    - "language model"
+    - "lay ahead"
+    - "meticulously"
+    - "natural world"
+    - "navigate"
+    - "nestled"
+    - "new insights"
+    - "new insights into"
+    - "newfound"
+    - "not only"
+    - "our findings"
+    - "our understanding"
+    - "overall this"
+    - "packs a punch"
+    - "paper presents"
+    - "paving the way"
+    - "perseverance"
+    - "personal growth"
+    - "personalized"
+    - "potential applications"
+    - "pounding in"
+    - "prioritize"
+    - "provide valuable"
+    - "provide valuable insights"
+    - "quality of life"
+    - "raised concerns about"
+    - "rare genetic"
+    - "relentless"
+    - "remember that"
+    - "resilience"
+    - "results provide"
+    - "rich history"
+    - "said his"
+    - "sense of peace"
+    - "sense of purpose"
+    - "serves as"
+    - "several reasons"
+    - "shake the feeling"
+    - "shaping"
+    - "shed light"
+    - "shed light on"
+    - "showcasing"
+    - "significant impact"
+    - "significant impact on"
+    - "significant role"
+    - "significant role in"
+    - "simple yet"
+    - "societal"
+    - "solace"
+    - "solace in"
+    - "standout"
+    - "stark reminder"
+    - "step-by-step"
+    - "storytelling"
+    - "stumbled upon"
+    - "sustainability"
+    - "tapestry"
+    - "testament"
+    - "testament to"
+    - "the effects of"
+    - "the rise of"
+    - "their understanding of"
+    - "these challenges"
+    - "thick with"
+    - "this email finds"
+    - "this paper presents"
+    - "thought-provoking"
+    - "timeless"
+    - "tirelessly"
+    - "tirelessly to"
+    - "to anyone looking"
+    - "to consult"
+    - "to consult with"
+    - "to form the"
+    - "to inspire"
+    - "to mitigate the risk"
+    - "to navigate"
+    - "to the power"
+    - "turn of events"
+    - "underscores"
+    - "unease"
+    - "unwavering"
+    - "unyielding"
+    - "valuable insights"
+    - "valuable insights into"
+    - "vibrant"
+    - "was known for"
+    - "wash over"
+    - "weaving"
+    - "well-being"
+    - "when it comes to"
+    - "which can lead"
+    - "with a sense"
+    - "world around"
+    - "you well"
+
+# ==============================================================================
+# Category 6: Transitions (weight: 0.06)
+# ==============================================================================
+transitions:
+  weight: 0.06
+  signal_strength: weak
+  description: "Performative navigation phrases that feel like guided tours"
+  patterns:
+    - "Let's explore"
+    - "Let's dive in"
+    - "Let's dive deeper"
+    - "Moving on to"
+    - "Now let's turn our attention to"
+    - "Having established"
+    - "With that in mind"
+    - "That being said"
+    - "Building on this"
+    - "Taking a step back"
+    - "It's also worth exploring"
+    - "Let's delve into"
+    - "With this in mind"
+    - "As we turn to"
+    - "Let's take a closer look"
+    - "Now that we've covered"
+    - "Turning our attention to"
+    - "As we move forward"
+
+# ==============================================================================
+# Category 7: Qualifiers & Softening (weight: 0.06)
+# ==============================================================================
+qualifiers_softening:
+  weight: 0.06
+  signal_strength: weak
+  description: "Unnecessary hedging and over-explanation of simple points"
+  patterns:
+    - "It's worth noting"
+    - "It's important to remember"
+    - "It's important to note"
+    - "while this may vary"
+    - "to some extent"
+    - "in many ways"
+    - "it should be noted that"
+    - "one could argue"
+    - "it bears mentioning"
+    - "generally speaking"
+    - "broadly speaking"
+    - "of course"
+    - "as previously mentioned"
+    - "needless to say"
+    - "it goes without saying"
+
+# ==============================================================================
+# Category 8: Tone/Voice (weight: 0.12)
+# ==============================================================================
+tone_voice:
+  weight: 0.12
+  signal_strength: strong
+  description: "Authoritative yet non-committal AI voice -- formal, positive, vague, no perspective"
+  checks:
+    diplomatic_phrasing:
+      description: "Never taking a strong position"
+      patterns:
+        - "on one hand"
+        - "on the other hand"
+        - "there are valid points on both sides"
+        - "it depends on the context"
+    corporate_speak:
+      patterns:
+        - "stakeholder alignment"
+        - "value proposition"
+        - "synergize"
+        - "leverage"
+        - "actionable insights"
+        - "circle back"
+        - "move the needle"
+        - "thought leadership"
+    impersonal_authority:
+      patterns:
+        - "research suggests"
+        - "experts agree"
+        - "studies show"
+        - "it is widely recognized"
+        - "it is generally accepted"
+    helpfulness_markers:
+      patterns:
+        - "I hope this helps"
+        - "feel free to"
+        - "don't hesitate to"
+        - "happy to help"
+        - "let me know if"
+    formality_uniformity:
+      description: "No tonal variation throughout the text"
+    criticism_absence:
+      description: "Overly positive, avoids all criticism or negative assessment"
+    humor_absence:
+      description: "No humor, sarcasm, irony, or playful register shifts"
+
+# ==============================================================================
+# Category 9: Creativity Deficit (weight: 0.12)
+# ==============================================================================
+creativity_deficit:
+  weight: 0.12
+  signal_strength: strong
+  description: "Safe, predictable language lacking genuine creative spark"
+  checks:
+    generic_metaphors:
+      patterns:
+        - "tip of the iceberg"
+        - "double-edged sword"
+        - "a breath of fresh air"
+        - "stands out from the crowd"
+        - "at the end of the day"
+        - "food for thought"
+        - "the elephant in the room"
+        - "a game changer"
+        - "think outside the box"
+    predictable_pairings:
+      patterns:
+        - "crucial role"
+        - "significant impact"
+        - "bustling city"
+        - "quiet determination"
+        - "rich tapestry"
+        - "vast landscape"
+        - "pivotal moment"
+        - "profound impact"
+        - "invaluable resource"
+        - "vibrant community"
+    ai_names:
+      description: "Generic names defaulted to by AI"
+      patterns:
+        - Emily
+        - Sarah
+        - Alex
+        - James
+        - Sophia
+        - Ethan
+        - Olivia
+        - Liam
+        - Maya
+        - Noah
+    proper_noun_deficit:
+      description: "Avoids real place names, brand names, specific references"
+    cultural_specificity_deficit:
+      description: "Generic 'city' instead of specific places like Portland or Osaka"
+    specificity_deficit:
+      description: "Abstract instead of concrete, sensory details"
+
+# ==============================================================================
+# Category 10: Mechanical Writing (weight: 0.12)
+# ==============================================================================
+mechanical_writing:
+  weight: 0.12
+  signal_strength: strong
+  description: "Technically correct but rhythmically monotonous prose"
+  checks:
+    sentence_length_uniformity:
+      threshold: 0.20    # flag if variance within 20% of mean
+    repetitive_openers:
+      description: "Subject-Verb pattern every sentence"
+    claim_evidence_conclusion:
+      description: "Same paragraph structure repeated throughout"
+    contraction_avoidance:
+      human_patterns:
+        - "we've"
+        - "it's"
+        - "they're"
+        - "we're"
+        - "don't"
+        - "can't"
+        - "won't"
+        - "isn't"
+        - "aren't"
+        - "didn't"
+        - "doesn't"
+        - "shouldn't"
+        - "couldn't"
+        - "wouldn't"
+      ai_patterns:
+        - "we have"
+        - "it is"
+        - "they are"
+        - "we are"
+        - "do not"
+        - "cannot"
+        - "will not"
+        - "is not"
+        - "are not"
+        - "did not"
+        - "does not"
+        - "should not"
+        - "could not"
+        - "would not"
+    grammar_perfection:
+      description: "No fragments, run-ons, 'And'/'But' openers"
+      checks:
+        - fragment_absence
+        - run_on_absence
+        - conjunction_opener_absence
+    spelling_perfection:
+      description: "Zero spelling errors (humans occasionally mistype)"
+    american_english_only:
+      description: "No British/regional spelling variation"
+
+# ==============================================================================
+# Category 11: Repetitive Phrasing (weight: 0.08)
+# ==============================================================================
+repetitive_phrasing:
+  weight: 0.08
+  signal_strength: medium
+  description: "Restating ideas in slightly different words"
+  checks:
+    not_only_but_also:
+      pattern: "not only .+ but also"
+      description: "Overuse of this construction"
+    semantic_redundancy:
+      description: "Same point restated in different words within 2-3 sentences"
+    echo_phrasing:
+      description: "Paragraph ending with variant of its opening"
+    parallel_overuse:
+      description: "By doing X, we can Y. By doing A, we can B."
+    conclusion_body_overlap:
+      threshold: 0.50    # semantic overlap with body text
+    prompt_echo:
+      description: "Repeatedly echoing the original topic/question"
+
+# ==============================================================================
+# Category 12: Speculative Focus (weight: 0.06)
+# ==============================================================================
+speculative_focus:
+  weight: 0.06
+  signal_strength: weak
+  description: "Non-committal, hedge-everything language"
+  hedging_words:
+    - might
+    - could potentially
+    - may
+    - perhaps
+    - arguably
+    - possibly
+    - conceivably
+  vague_future:
+    - "time will tell"
+    - "remains to be seen"
+    - "only time will reveal"
+    - "the future will determine"
+  non_committal:
+    - "it depends"
+    - "there are many factors"
+    - "it could be argued"
+    - "while we can't be certain"
+    - "it's difficult to say"
+    - "results may vary"
+
+# ==============================================================================
+# Category 13: Conflicting Subtext (weight: 0.10)
+# ==============================================================================
+conflicting_subtext:
+  weight: 0.10
+  signal_strength: strong
+  description: "Surface meaning contradicts implied meaning"
+  checks:
+    backhanded_praise:
+      description: "Praise that reads as condescending or undermining"
+      patterns:
+        - "commendable, .+ however"
+        - "impressive, .+ but"
+        - "While .+ effort .+ results"
+    qualifier_negation:
+      description: "Qualifiers that negate the main clause"
+      patterns:
+        - "While impressive, this falls short"
+        - "Although notable, it fails"
+        - "Despite being .+, it lacks"
+    mixed_signals:
+      description: "this is great, however... patterns"
+    tone_content_mismatch:
+      description: "Upbeat language about serious topics or vice versa"
+    compliment_criticism_sandwich:
+      description: "Positive-negative-positive leaving ambiguous meaning"
+    intent_implication_misalignment:
+      description: "Statements whose implications contradict apparent intent"
+
+# ==============================================================================
+# Category 14: Detached Warmth (weight: 0.06)
+# ==============================================================================
+detached_warmth:
+  weight: 0.06
+  signal_strength: weak
+  description: "Performative empathy without genuine emotional engagement"
+  performative_empathy:
+    - "understandably"
+    - "it makes sense that"
+    - "and that's okay"
+    - "it's natural to feel"
+    - "it's completely normal"
+  false_intimacy:
+    - "we all know"
+    - "as we can all agree"
+    - "we've all been there"
+    - "we can all relate"
+  hollow_reassurance:
+    - "rest assured"
+    - "you're not alone"
+    - "don't worry"
+    - "it will be okay"
+  hollow_encouragement:
+    - "keep pushing forward"
+    - "you've got this"
+    - "stay strong"
+    - "believe in yourself"
+    - "you can do it"
+  generic_closings:
+    - "every journey begins with a single step"
+    - "the sky is the limit"
+    - "the possibilities are endless"
+    - "here's to new beginnings"
+
+# ==============================================================================
+# Cross-Category Meta-Patterns
+# ==============================================================================
+cross_category:
+  monotonous_clause_complexity:
+    description: "Complex clauses that do not vary in length or style"
+    categories: [mechanical_writing, structural_patterns]
+  grammar_perfection_holistic:
+    description: "Expert human writers sometimes use non-textbook patterns"
+    categories: [mechanical_writing, punctuation_style]
+  style_tone_shifts:
+    description: "Abrupt shifts where human text becomes AI or vice versa in mixed content"
+    categories: [tone_voice, detached_warmth, mechanical_writing]
+  assignment_agnostic:
+    description: "Text so vague it could answer many different prompts"
+    categories: [tone_voice, creativity_deficit, speculative_focus]
+
+# ==============================================================================
+# Detection Report Schema
+# ==============================================================================
+report_schema:
+  metadata:
+    - document          # path to scanned file
+    - timestamp         # ISO 8601
+    - word_count        # total words
+    - sensitivity_profile  # per-category sensitivity levels
+
+  overall_score: "float 0.0-1.0 (0=human, 1=AI)"
+  verdict: "low_ai_likelihood | moderate_ai_likelihood | high_ai_likelihood"
+
+  category_scores:
+    _each:
+      - score           # 0.0-1.0
+      - weight          # raw weight from config
+      - findings_count  # number of findings in this category
+
+  findings:
+    _each:
+      - id              # F-001, F-002, ...
+      - category        # category key
+      - line            # line number in document
+      - col             # column number
+      - text            # matched text
+      - pattern         # pattern name
+      - severity        # low | medium | high
+      - confidence      # 0.0-1.0
+      - suggestion      # rewrite suggestion
+      - context         # sentence | paragraph | section
+      - subtext_analysis  # (category 13 only) surface_meaning, implied_meaning, conflict_type
+
+  summary:
+    - strongest_signals    # top categories by score
+    - total_findings       # total count
+    - high_severity        # count
+    - medium_severity      # count
+    - low_severity         # count
+    - rewrite_priority     # ordered list of categories for rewriter
+
+# ==============================================================================
+# False Positive Filtering
+# ==============================================================================
+false_positive_filters:
+  skip_file_patterns:
+    - "*.test.js"
+    - "*.test.ts"
+    - "*.spec.js"
+    - "*.spec.ts"
+    - "*.test.py"
+    - "*_test.go"
+    - "*.md"           # documentation may intentionally use some patterns
+    - "README*"
+    - "CHANGELOG*"
+    - "LICENSE*"
+    - "package-lock.json"
+    - "yarn.lock"
+  skip_content_patterns:
+    - code_blocks       # fenced code blocks (```)
+    - inline_code       # backtick-wrapped content
+    - urls              # hyperlinks
+    - file_paths        # /path/to/file patterns
+  context_adjustments:
+    academic_papers:
+      analytical_academic: { threshold_multiplier: 2.0 }
+      qualifiers_softening: { threshold_multiplier: 1.5 }
+    creative_fiction:
+      vocabulary_tells: { threshold_multiplier: 0.5 }
+      creativity_deficit: { threshold_multiplier: 0.7 }
+    technical_docs:
+      structural_patterns: { threshold_multiplier: 2.0 }
+      mechanical_writing: { threshold_multiplier: 1.5 }

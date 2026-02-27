@@ -1,0 +1,438 @@
+# AI Writing Rewrite Strategies
+# Per-category rewrite rules with before/after examples.
+# Used by ai-writing-rewriter during its 5-pass workflow.
+
+# ==============================================================================
+# Pass 1 Strategies: Vocabulary, Academic Words & AI Phrases
+# ==============================================================================
+pass_1:
+  name: "Vocabulary, Academic Words & AI Phrases"
+  categories: [vocabulary_tells, analytical_academic, ai_phrases]
+  priority: 1
+  description: "Replace AI-favored words and phrases with natural alternatives"
+
+  vocabulary_tells:
+    strategy: "Replace only when words cluster or density is abnormally high"
+    rules:
+      - "Do NOT replace every instance of an AI-favored word"
+      - "Only act when 3+ AI words appear in a single paragraph or density exceeds 5/1000 words"
+      - "Preserve technical terms that are domain-appropriate"
+      - "Match the replacement to the same register (formal/informal)"
+    replacements:
+      delve: "look into, examine, explore"
+      tapestry: "mix, combination, range"
+      nuanced: "detailed, subtle, specific"
+      landscape: "field, area, scene"
+      robust: "strong, solid, reliable"
+      leverage: "use, apply, take advantage of"
+      paradigm: "model, approach, framework"
+      illuminate: "show, reveal, explain"
+      multifaceted: "complex, varied, many-sided"
+      transformative: "major, significant, game-changing"
+      embark: "start, begin, set out"
+      journey: "process, experience, path"
+      realm: "area, field, domain"
+      pivotal: "key, critical, important"
+      seamless: "smooth, easy, integrated"
+      unleash: "release, enable, free up"
+      resonate: "connect, ring true, matter"
+      foster: "build, encourage, support"
+      navigate: "handle, work through, manage"
+      underscore: "highlight, emphasize, show"
+      comprehensive: "thorough, complete, full"
+      innovative: "new, creative, original"
+    examples:
+      - before: "delve into the nuanced tapestry of our collective journey"
+        after: "look at the details of our shared history"
+      - before: "This robust framework illuminates the multifaceted landscape"
+        after: "This solid framework shows the different aspects"
+      - before: "embark on a transformative journey through this realm"
+        after: "start working through this area"
+
+  analytical_academic:
+    strategy: "Reduce formal connective density; replace with simpler alternatives or remove"
+    rules:
+      - "Replace formal connectives with simple conjunctions or punctuation"
+      - "Remove connectives that add no meaning"
+      - "Keep academic tone in genuinely academic texts (threshold x2)"
+    replacements:
+      furthermore: "also, and, plus"
+      moreover: "also, and, on top of that"
+      consequently: "so, as a result"
+      subsequently: "then, later, after that"
+      thereby: "which, so"
+      wherein: "where, in which"
+      hitherto: "until now, so far"
+      notwithstanding: "despite, even though"
+      promulgate: "spread, publish, announce"
+      paradigm: "model, approach, pattern"
+      synergy: "cooperation, combined effect"
+    examples:
+      - before: "Furthermore, the implications of this paradigm shift are profound"
+        after: "This shift matters more than it looks"
+      - before: "Consequently, we must ascertain the predicated outcomes"
+        after: "So we need to figure out what the likely results are"
+
+  ai_phrases:
+    strategy: "Remove or replace characteristic AI multi-word phrases"
+    rules:
+      - "Remove phrases that add no meaning ('it is a testament to')"
+      - "Replace phrases with direct statements"
+      - "Simplify wordy constructions"
+    replacements:
+      "it's important to note": "[remove or start with the actual point]"
+      "it is a testament to": "it shows, it proves"
+      "crucial role in": "matters for, helps with"
+      "significant impact on": "changes, affects, shapes"
+      "in a world where": "[remove -- just state the condition]"
+      "not only X but also Y": "X. And Y. / X and Y"
+      "valuable insights into": "useful information about"
+      "paving the way for": "making room for, enabling"
+      "shed light on": "explain, clarify, show"
+      "the rise of": "[use specific timeframe instead]"
+      "when it comes to": "for, with, regarding"
+      "at the end of the day": "ultimately, in practice"
+    examples:
+      - before: "It is a testament to the resilience of the human spirit"
+        after: "It shows how stubborn people can be"
+      - before: "In a world where technology is constantly evolving"
+        after: "Technology keeps changing"
+      - before: "This provides valuable insights into the complex landscape"
+        after: "This helps explain the situation"
+
+# ==============================================================================
+# Pass 2 Strategies: Punctuation, Style & Grammar Humanization
+# ==============================================================================
+pass_2:
+  name: "Punctuation, Style & Grammar Humanization"
+  categories: [punctuation_style, mechanical_writing]
+  priority: 2
+  description: "Humanize punctuation patterns and break mechanical writing habits"
+
+  em_dash_reduction:
+    strategy: "Replace excess em dashes with commas, periods, or restructuring"
+    rules:
+      - "Keep the first 1-2 em dashes per 500 words"
+      - "Replace subsequent ones with commas, parentheses, or new sentences"
+    examples:
+      - before: "The system -- which was designed for scalability -- performed well -- even under load"
+        after: "The system, designed for scalability, performed well. Even under load."
+
+  contraction_addition:
+    strategy: "Add natural contractions where the register allows"
+    rules:
+      - "Informal/narrative text: contract freely"
+      - "Semi-formal text: contract common forms (it's, we've, don't)"
+      - "Formal/academic text: contract sparingly or not at all"
+      - "Never contract in direct quotes unless the speaker would"
+    examples:
+      - before: "We have observed that it is not sufficient"
+        after: "We've noticed it isn't enough"
+      - before: "It does not appear that they are ready"
+        after: "It doesn't look like they're ready"
+
+  fragment_introduction:
+    strategy: "Add occasional fragments for rhythm and emphasis"
+    rules:
+      - "Use sparingly: 1-2 fragments per 500 words maximum"
+      - "Best after a complete sentence that sets up the fragment"
+      - "Fragments work for emphasis, lists, and emotional beats"
+    examples:
+      - before: "It is important. It is urgent. It is necessary."
+        after: "It's important. Urgent, even. And necessary."
+      - before: "The result was clear. The result was undeniable."
+        after: "The result was clear. Undeniable."
+
+  conjunction_openers:
+    strategy: "Add 'And' or 'But' sentence openers where they improve flow"
+    rules:
+      - "Use when connecting to the previous sentence's idea"
+      - "Effective for contrast (But) and addition (And)"
+      - "Do not overuse: 1-3 per 500 words"
+    examples:
+      - before: "However, the data tells a different story."
+        after: "But the data tells a different story."
+      - before: "Additionally, there is evidence of improvement."
+        after: "And there's evidence of improvement."
+
+  punctuation_variety:
+    strategy: "Add semicolons, parenthetical asides, and varied punctuation"
+    rules:
+      - "Add 1-2 semicolons per 1000 words in appropriate contexts"
+      - "Use parentheses for genuine asides (not just for qualifiers)"
+      - "Vary comma patterns"
+    examples:
+      - before: "The first approach works well. The second approach is faster."
+        after: "The first approach works well; the second is faster."
+      - before: "The tool, which was built last year, is still reliable."
+        after: "The tool (built last year) is still reliable."
+
+# ==============================================================================
+# Pass 3 Strategies: Structural & Transitions
+# ==============================================================================
+pass_3:
+  name: "Structural & Transitions"
+  categories: [structural_patterns, transitions, qualifiers_softening]
+  priority: 3
+  description: "Break formulaic structure and remove performative transitions"
+
+  list_to_prose:
+    strategy: "Convert formulaic lists into flowing paragraphs"
+    rules:
+      - "Keep lists that are genuinely list-like (specs, steps, requirements)"
+      - "Convert lists that are really points in an argument into prose"
+      - "Vary the converted paragraph lengths"
+    examples:
+      - before: |
+          ## Key Takeaways
+          - AI detection requires multiple categories
+          - No single indicator is definitive
+          - Context matters for accuracy
+        after: |
+          AI detection works best when you look at multiple categories at once. No single indicator proves anything on its own, and context shapes how much any signal matters.
+
+  paragraph_variation:
+    strategy: "Vary paragraph lengths dramatically"
+    rules:
+      - "Mix single-sentence paragraphs with multi-sentence ones"
+      - "Short paragraphs for emphasis or transitions"
+      - "Longer paragraphs for developed arguments"
+      - "Break uniform blocks into varied sizes"
+    examples:
+      - before: "Four paragraphs, each exactly 4 sentences long"
+        after: "One 6-sentence paragraph. A two-sentence paragraph. One sentence alone. Then three more sentences for the close."
+
+  conclusion_rewrite:
+    strategy: "Replace formulaic conclusions with genuine endings"
+    rules:
+      - "Remove 'In conclusion', 'To summarize', 'Overall'"
+      - "Do not repeat the body content"
+      - "End with a forward-looking statement, question, or specific observation"
+      - "Keep conclusions shorter than the average section"
+    examples:
+      - before: "In conclusion, we have explored the various aspects of AI detection and found that it is a complex but important topic that deserves further attention."
+        after: "The pattern holds. Whether the tools keep up with the models is another question."
+      - before: "Overall, this comprehensive analysis demonstrates the significant impact of these changes on the broader landscape."
+        after: "These changes will ripple outward. How far depends on what happens next."
+
+  transition_removal:
+    strategy: "Remove or replace performative transitions"
+    rules:
+      - "Delete guided-tour transitions entirely when the next paragraph flows naturally"
+      - "Replace with a simple sentence that connects ideas if a bridge is needed"
+      - "Never use 'Let's dive in', 'Let's explore', 'Moving on to'"
+    examples:
+      - before: "Let's dive deeper into the technical architecture."
+        after: "[removed -- next paragraph simply starts discussing architecture]"
+      - before: "Having established the background, let's turn our attention to the solution."
+        after: "The solution builds on this."
+
+  qualifier_removal:
+    strategy: "Remove unnecessary hedging or replace with direct statements"
+    rules:
+      - "Delete qualifiers that add no information"
+      - "Replace qualified statements with direct ones where confidence is warranted"
+      - "Keep genuine hedges in uncertain contexts"
+    examples:
+      - before: "It's worth noting that the data clearly shows a trend."
+        after: "The data shows a clear trend."
+      - before: "It's important to remember that security matters."
+        after: "Security matters."
+
+# ==============================================================================
+# Pass 4 Strategies: Tone, Voice, Creativity & Rhythm
+# ==============================================================================
+pass_4:
+  name: "Tone, Voice, Creativity & Rhythm"
+  categories: [tone_voice, creativity_deficit, mechanical_writing, repetitive_phrasing, speculative_focus, detached_warmth]
+  priority: 4
+  description: "Inject personality, specificity, and natural rhythm"
+
+  opinion_injection:
+    strategy: "Add genuine perspective where the text is uncommitted"
+    rules:
+      - "If the author's position is clear from context, state it directly"
+      - "If the author's position is unknown, insert [AUTHOR: take a position here]"
+      - "Remove 'on one hand / on the other hand' when a clear conclusion follows"
+      - "Do not fabricate opinions the author did not express"
+    examples:
+      - before: "There are valid points on both sides of the debate."
+        after: "The evidence leans toward X. [AUTHOR: confirm your position]"
+
+  specificity_injection:
+    strategy: "Replace generic descriptions with concrete, specific details"
+    rules:
+      - "Replace 'a city' with a real city name if context suggests one"
+      - "Replace 'experts' with specific names or organizations if known"
+      - "Replace abstract descriptions with sensory details"
+      - "Do not invent facts -- use plausible specifics or flag for author"
+    examples:
+      - before: "The bustling city was full of quiet determination"
+        after: "Portland hummed with the stubborn energy of people who bike in the rain"
+      - before: "Experts agree that this approach works"
+        after: "Teams at Stripe and Shopify have shipped this pattern successfully"
+      - before: "a large technology company"
+        after: "[AUTHOR: name the company, or specify the industry segment]"
+
+  cliche_replacement:
+    strategy: "Replace generic metaphors with original language"
+    rules:
+      - "Replace cliches with specific, concrete comparisons"
+      - "Or simply state the point directly without metaphor"
+      - "Original metaphors are fine; generic ones are not"
+    examples:
+      - before: "This is just the tip of the iceberg"
+        after: "This is the visible part. Most of the work is underneath."
+      - before: "a double-edged sword"
+        after: "useful, but it creates its own problems"
+      - before: "think outside the box"
+        after: "try something we haven't tried"
+
+  rhythm_variation:
+    strategy: "Mix sentence lengths and structures for natural rhythm"
+    rules:
+      - "Follow a long sentence with a short one"
+      - "Use questions to break up declarative sequences"
+      - "Vary openers: start some sentences with adverbs, prepositional phrases, or dependent clauses"
+      - "Avoid more than 3 sentences with the same structure in a row"
+    examples:
+      - before: "The system processes data efficiently. The system handles errors gracefully. The system scales horizontally."
+        after: "The system processes data efficiently and handles errors without crashing. Does it scale? Horizontally, yes."
+
+  repetition_consolidation:
+    strategy: "Merge repeated points into single strong statements"
+    rules:
+      - "Find semantic duplicates within 3 sentences of each other"
+      - "Keep the stronger version, remove the weaker"
+      - "In conclusions, do not repeat body content"
+    examples:
+      - before: "This is important for growth. Growth depends on this factor. Without this, growth will stall."
+        after: "Growth depends on this."
+
+  hedging_reduction:
+    strategy: "Replace non-committal language with definitive statements"
+    rules:
+      - "Replace 'might' with 'will' or 'does' when evidence supports it"
+      - "Remove 'could potentially' -- just say 'could' or state directly"
+      - "Keep hedges only for genuinely uncertain claims"
+    examples:
+      - before: "This could potentially have a significant impact on future outcomes"
+        after: "This will change how things work"
+      - before: "It might perhaps be worth considering"
+        after: "Consider this"
+
+  warmth_removal:
+    strategy: "Remove performative empathy and hollow encouragement"
+    rules:
+      - "Delete generic warm phrases that add no information"
+      - "Replace with specific, genuine engagement if appropriate"
+      - "Or simply remove -- silence is better than hollow warmth"
+    examples:
+      - before: "We all know that change is hard. And that's okay."
+        after: "[removed]"
+      - before: "Keep pushing forward, you've got this!"
+        after: "[removed, or replaced with a concrete next step]"
+      - before: "Remember, every journey begins with a single step."
+        after: "[removed]"
+
+# ==============================================================================
+# Pass 5 Strategies: Subtext & Coherence Verification
+# ==============================================================================
+pass_5:
+  name: "Subtext & Coherence Verification"
+  categories: [conflicting_subtext]
+  priority: 5
+  description: "Fix subtext conflicts and verify document coherence"
+
+  backhanded_praise_fix:
+    strategy: "Separate praise from criticism into clear, distinct statements"
+    rules:
+      - "Split compound sentences that praise then undermine"
+      - "State praise genuinely, then state concerns separately"
+      - "Do not sandwich criticism between compliments"
+    examples:
+      - before: "While the team's effort was commendable, the results speak for themselves"
+        after: "The team worked hard. The results fell short of what we needed."
+      - before: "Although this is an impressive achievement, it merely scratches the surface"
+        after: "This is a real achievement. There's more to do, but this is a strong start."
+
+  qualifier_negation_fix:
+    strategy: "Prevent qualifiers from undermining their main clause"
+    rules:
+      - "If the qualifier contradicts the main point, choose one or the other"
+      - "If both points are valid, make them separate sentences"
+    examples:
+      - before: "While impressive, this falls short of expectations"
+        after: "This is impressive work. It's not yet where we need it to be."
+      - before: "Despite being well-designed, the system fails under load"
+        after: "The design is solid. Performance under load is the problem."
+
+  tone_content_alignment:
+    strategy: "Match emotional tone to content gravity"
+    rules:
+      - "Serious topics get measured language"
+      - "Positive topics can be enthusiastic"
+      - "Do not use upbeat language for negative outcomes"
+    examples:
+      - before: "We appreciate your patience during this exciting transition (layoffs)"
+        after: "We know this transition has been difficult. Here's what we're doing about it."
+
+  coherence_verification:
+    strategy: "Final read-through for unified voice and logical consistency"
+    rules:
+      - "Read the full document as a continuous text"
+      - "Check that rewrites from passes 1-4 did not create new conflicts"
+      - "Verify paragraph-to-paragraph logical flow"
+      - "Ensure the document reads as one voice, not a patchwork"
+      - "Flag any remaining passages that need author input"
+
+# ==============================================================================
+# Voice Profile Parameters
+# ==============================================================================
+voice_profile:
+  analyzable_features:
+    - avg_sentence_length
+    - sentence_length_variance
+    - vocabulary_level          # reading grade level
+    - contraction_frequency     # contractions per 100 words
+    - punctuation_preferences   # semicolons, dashes, parentheses per 1000 words
+    - formality_level           # 1-5 scale
+    - humor_frequency           # humorous passages per 1000 words
+    - opinion_strength          # hedged (1) to direct (5)
+    - favorite_structures       # common sentence patterns
+    - characteristic_phrases    # author's signature expressions
+  application:
+    - "Match sentence length distribution to reference"
+    - "Use vocabulary at the same reading level"
+    - "Mirror punctuation patterns"
+    - "Match contraction frequency"
+    - "Preserve author's characteristic phrases"
+    - "Match formality level and opinion strength"
+
+# ==============================================================================
+# Output Configuration
+# ==============================================================================
+output:
+  rewritten_document:
+    naming: "{original_name}.rewritten.{ext}"
+    format: "Same format as original"
+  rewrite_summary:
+    naming: "rewrite_summary.yaml"
+    fields:
+      - input_document
+      - detection_report
+      - output_document
+      - changes_by_pass
+      - total_changes
+      - author_review_flags
+      - original_score
+      - estimated_new_score
+  author_flags:
+    format: "[AUTHOR: {instruction}]"
+    types:
+      - "take a position here"
+      - "confirm your position"
+      - "name the company"
+      - "intentional ambiguity?"
+      - "add specific detail"
+      - "verify this claim"

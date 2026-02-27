@@ -242,6 +242,27 @@ controller_catalog:
         - "Engineering excellence"
       complexity: tier_4
 
+# Execution agents available for controller delegation
+# Controllers can delegate questions to these agents via Task tool
+execution_agents:
+  - name: ai-writing-detector
+    agent_path: make/agents/ai-writing-detector/SKILL.md
+    tier: execution
+    use_when:
+      - "AI writing detection needed"
+      - "Document scanning for AI hallmarks"
+      - "AI content identification"
+      - "Writing authenticity assessment"
+
+  - name: ai-writing-rewriter
+    agent_path: make/agents/ai-writing-rewriter/SKILL.md
+    tier: execution
+    use_when:
+      - "AI writing humanization needed"
+      - "Text rewriting to remove AI patterns"
+      - "Voice-preserving content revision"
+      - "AI hallmark elimination"
+
 # Templates for objective generation
 objectives_templates:
   default:

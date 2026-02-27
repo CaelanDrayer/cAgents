@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "9.5.0",
-  "description": "cAgents V9.5 - Universal multi-domain agent system with 236 agents across 5 super-domains. Features: CJS-only hook architecture with createHook() factory, Skills system (.claude/skills/ auto-discovery), 14 hook event types, opusplan model routing, enhanced PreCompact waypoints. Agent Teams integration for parallel team-based execution (40-60% time reduction). CSV-based task inventory (60-80% context savings). Controller-centric question-based delegation across 5 super-domains.",
+  "version": "9.14.0",
+  "description": "cAgents V9.14 - Universal multi-domain agent system with 238 agents across 5 super-domains. Features: AI writing detection and rewrite agents (14-category hallmark scanning, 5-pass humanization). CJS-only hook architecture with createHook() factory, Skills system (.claude/skills/ auto-discovery), 14 hook event types, opusplan model routing, enhanced PreCompact waypoints. Agent Teams integration for parallel team-based execution (40-60% time reduction). CSV-based task inventory (60-80% context savings). Controller-centric question-based delegation across 5 super-domains.",
   "type": "module",
   "main": "",
   "scripts": {
@@ -49,11 +49,11 @@
   "license": "MIT",
   "architecture": "Controller-Centric Question-Based Delegation",
   "agents": {
-    "total": 236,
+    "total": 238,
     "core": 14,
     "shared": 14,
     "breakdown": {
-      "make": 109,
+      "make": 111,
       "grow": 38,
       "operate": 13,
       "people": 20,

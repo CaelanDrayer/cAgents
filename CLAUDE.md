@@ -80,15 +80,15 @@ quality/        # completion, validation-framework, implicit-discovery (3 files)
 **Architecture**: Controller-Centric Coordination with Task Inventory
 - **Tier 1**: 14 core infrastructure agents
 - **Tier 2**: Controllers (~53 agents, coordinate via batch delegation)
-- **Tier 3**: Execution agents (~147 agents, implement work items)
+- **Tier 3**: Execution agents (~149 agents, implement work items)
 - **Tier 4**: Support agents (~19 agents, foundational services)
-- **Total**: 236 agents across 5 super-domains
+- **Total**: 238 agents across 5 super-domains
 - **Execution**: 4 modes (Sequential, Pipeline, Swarm, Mesh) - up to 50x speedup
 
 **Super-Domains** (5):
 | Domain | Agents | Capability |
 |--------|--------|------------|
-| **Make** | 109 | Creation (engineering, creative, product, game dev -- includes 28 game dev agents) |
+| **Make** | 111 | Creation (engineering, creative, product, game dev -- includes 28 game dev agents) |
 | **Grow** | 38 | Acquisition (marketing, sales) |
 | **Operate** | 13 | Operations (finance, operations) |
 | **People** | 20 | Talent (HR, culture) |
@@ -334,7 +334,7 @@ cAgents/
 |   +-- settings.full.json   # Full config with prompt hooks (reference)
 +-- core/                    # Core infrastructure (14 agents + _templates)
 +-- shared/                  # Cross-domain capabilities (14 agents + resources)
-+-- make/                    # MAKE super-domain (109 agents, configs, manifest)
++-- make/                    # MAKE super-domain (111 agents, configs, manifest)
 +-- grow/                    # GROW (38 agents)
 +-- operate/                 # OPERATE (13 agents)
 +-- people/                  # PEOPLE (20 agents)
@@ -382,14 +382,14 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 
 **Skills**: `/run`, `/team`, `/designer`, `/review`, `/optimize`, `/helper` (in `.claude/skills/`)
 **Built-in**: `/memory`, `/init` (Claude Code native)
-**Agents**: 236 total (14 core + 14 shared + 208 domain specialists)
-**Super-Domains**: Make (109), Grow (38), Operate (13), People (20), Serve (28)
+**Agents**: 238 total (14 core + 14 shared + 210 domain specialists)
+**Super-Domains**: Make (111), Grow (38), Operate (13), People (20), Serve (28)
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/*.yaml`
 **Hooks**: 11 event types, 13 CJS hooks, invoked via `run-hook.cjs` launcher
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via built-in agent teams
-**Version**: 9.13.0
+**Version**: 9.14.0
 
 ## Troubleshooting
 
