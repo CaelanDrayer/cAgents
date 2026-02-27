@@ -12,16 +12,15 @@ Guidelines for parallel team execution in cAgents V9.2 using Claude Code's built
 
 ## Overview
 
-**Core Architecture**: `/team` delegates routing + planning to `/run`'s infrastructure (trigger -> orchestrator -> router + planner), then parallelizes using **Claude Code's built-in agent teams**; `/run` orchestrates each work item.
+**Core Architecture**: `/team` decomposes the request into work items, creates a real agent team via TeamCreate, spawns teammates who each invoke `/run` for their work item. Each teammate appears as a tmux pane (when teammateMode=tmux).
 
 Team Mode enables parallel execution with:
-- **Routing + planning via /run**: Reuses trigger/router/planner for consistent decomposition quality
+- **Direct decomposition**: /team breaks the request into 3-8 work items with wave assignments
 - **Built-in agent teams**: TeamCreate, SendMessage, TaskCreate/TaskList for coordination
 - **teammateMode: tmux**: Each teammate in its own tmux split pane (managed by Claude Code)
 - **Every work item via /run**: Full orchestration (plan, coordinate, execute, validate) per item
 - **Shared task lists**: Built-in TaskCreate/TaskList at `~/.claude/tasks/{team-name}/`
 - **Independent contexts**: Each teammate has its own context window
-- **Team leads**: Controllers operate in delegate mode
 
 ## CRITICAL: Teammates Spin Out Their Own Agents
 
@@ -47,56 +46,37 @@ Skill({ skill: "run", args: "implement WI-001: {description}" })
 
 ## CRITICAL: Create Teams, Not Just Tasks
 
-**The most common failure mode is creating tasks without spawning real team members.** The `/team` skill MUST:
-1. **TeamCreate** -- Create a real agent team (NOT just a task list)
+**The most common failure mode is creating tasks without spawning real team members.** The `/team` skill MUST execute ALL THREE steps:
+1. **TeamCreate** -- Create a real agent team (NOT just a task list). This is what enables tmux panes.
 2. **TaskCreate** -- Create work items as shared tasks
-3. **Spawn teammates** -- Via Task tool with explicit /run instructions
+3. **Spawn teammates via Task tool** -- Each Task call creates a real Claude Code instance (appears as tmux pane)
 
-All three steps are required. Creating tasks without spawning teammates to execute them is an anti-pattern that results in "just spinning out tasks" instead of "spinning out team members."
+All three steps are required. Creating tasks without spawning teammates to execute them is the primary bug that causes /team to "never spin out team members."
 
-## CRITICAL: Three-Phase Pipeline -- Route & Plan, Determine, Spin Out
-
-The `/team` command follows a strict three-phase pipeline:
-
-```
-Phase 1: ROUTE & PLAN (via /run)        -- Delegate to trigger agent for routing + planning -> plan.yaml + decomposition.yaml
-Phase 2: DETERMINE TEAM STRUCTURE       -- Use plan/decomposition to select template, waves, team composition
-Phase 3: SPIN OUT                       -- Create team, create tasks, spawn teammates into the session
-```
-
-**Phase 1 reuses /run's trigger -> orchestrator -> router + planner pipeline.** This ensures consistent routing, tier classification, and decomposition quality between `/run` and `/team`.
-
-**Phase 3 MUST execute IMMEDIATELY after Phase 2. NEVER ask the user for permission.**
-
-## Team Architecture
+## Execution Pipeline
 
 ```
 /team <request>
     |
-    Phase 1: ROUTE & PLAN (via /run)
-    |   Delegate to trigger agent (mode: team_planning_only)
-    |   -> routing (domain detection, tier classification)
-    |   -> planning (decomposition, objectives, controller selection)
-    |   -> plan.yaml + decomposition.yaml
-    |
-    Phase 2: DETERMINE TEAM STRUCTURE
-    |   Read plan.yaml + decomposition.yaml
-    |   Select template, assign waves, determine team composition
-    |
-    Phase 3: SPIN OUT (in session)
-    |   TeamCreate -- create team IMMEDIATELY
-    |   TaskCreate -- create work items (from decomposition.yaml) with wave dependencies (GATE sentinel pattern)
-    |   Execute wave 0 (bootstrap) via /run sequentially
-    |   Spawn teammates via Task tool -- each invokes /run
+    Step 1: PARSE request
+    Step 2: DECOMPOSE into 3-8 work items with wave assignments (done by /team directly)
+    Step 3: TeamCreate -- create team IMMEDIATELY
+    Step 4: TaskCreate -- create task for EVERY work item
+    Step 5: Execute Wave 0 (bootstrap) via /run sequentially (team lead does this)
+    Step 6: Spawn teammates via Task tool -- ALL at once, in parallel
     |
     +-- Team Lead = /team skill (coordinate via SendMessage, manage TaskList)
-    +-- Teammate 1: /run WI-001 --> (trigger -> controller -> execution agents) --> Complete
-    +-- Teammate 2: /run WI-002 --> (trigger -> controller -> execution agents) --> Complete
-    +-- Teammate 3: /run WI-003 --> (trigger -> controller -> execution agents) --> Complete
-    |                    (parallel -- each in own context/tmux pane)
+    +-- Teammate 1: /run WI-003 --> (trigger -> controller -> execution agents) --> Complete
+    +-- Teammate 2: /run WI-004 --> (trigger -> controller -> execution agents) --> Complete
+    +-- Teammate 3: /run WI-005 --> (trigger -> controller -> execution agents) --> Complete
+    |                    (parallel -- each in own tmux pane)
     |
-    +-- Aggregates /run outputs via coordination_log.yaml
+    Step 7: Monitor via TaskList + automatic teammate messages
+    Step 8: Execute Wave 2 (integration) via /run (team lead does this)
+    Step 9: Shutdown teammates + TeamDelete + report results
 ```
+
+**Steps 3-6 are MANDATORY and IMMEDIATE. Do not pause or ask permission between them.**
 
 ## Built-in Agent Teams
 
@@ -169,30 +149,18 @@ disqualified:
 ## Team Lifecycle (Execute IMMEDIATELY -- No Permission Required)
 
 ```
-Phase 1: ROUTE & PLAN (via /run)
-  - Delegate to trigger agent with mode: team_planning_only
-  - Produces plan.yaml + decomposition.yaml
-  - Check team suitability (>= 3 items, has parallel work)
-
-Phase 2: DETERMINE TEAM STRUCTURE
-  - Use plan.yaml + decomposition.yaml from Phase 1
-  - Auto-select template for wave-based delivery (default for tier 3+)
-  - Assign waves to work items
-  - Determine team composition (lead from plan.yaml controller_assignment)
-
-Phase 3: SPIN OUT (in session)
-  3a. TeamCreate -- create team and shared task list IMMEDIATELY
-  3b. TaskCreate -- create work items (from decomposition.yaml) with wave dependencies (GATE sentinel pattern)
-  3c. Execute wave 0 (bootstrap) via /run sequentially
-  3d. Spawn teammates IMMEDIATELY -- each invokes /run via Skill tool
-  3e. Execute waves: parallel (teammates invoke /run) -> gate -> integration
-
-Post-execution:
-  4. TaskList/TaskUpdate -- track progress
-  5. Aggregate -- synthesize results
-  6. SendMessage (shutdown_request) -- shut down teammates
-  7. TeamDelete -- clean up resources
+1. Parse request and flags
+2. Decompose request into 3-8 work items (done directly by /team)
+3. TeamCreate -- create team and shared task list IMMEDIATELY
+4. TaskCreate -- create ALL work items as tasks
+5. Execute wave 0 (bootstrap) via /run sequentially
+6. Spawn ALL wave-1 teammates via Task tool IN PARALLEL
+7. Monitor via TaskList + automatic teammate messages
+8. Execute wave 2 (integration) via /run sequentially
+9. Shutdown teammates + TeamDelete
 ```
+
+**Steps 3-6 are MANDATORY and IMMEDIATE. Do not pause or ask permission.**
 
 ### Team Creation
 
@@ -463,8 +431,8 @@ When flat execution is used, the system behaves as a simple parallel distributio
 
 ## Integration Points
 
-- **trigger + router + planner**: Provides routing and planning for /team via `mode: team_planning_only` (Phase 1)
-- **team-trigger**: Delegates Phase 1 to trigger, determines team structure, creates team via TeamCreate, executes waves
+- **trigger + router + planner**: Available for routing and planning (used by /run, optionally by /team via `mode: team_planning_only`)
+- **team-trigger**: Decomposes request directly, creates team via TeamCreate, spawns teammates, executes waves
 - **team-lead-adapter**: Wraps controller in delegate mode, validates gates, tracks contracts
 - **orchestrator**: Detects team mode, routes appropriately
 - **Hooks**: team-start.cjs, team-stop.cjs, team-task-complete.cjs, teammate-idle-handler.cjs

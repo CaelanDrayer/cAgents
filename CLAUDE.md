@@ -258,16 +258,22 @@ Each skill has `SKILL.md` + `reference/` directory with detailed docs. Use `/hel
 
 ## Team Mode
 
-Parallel team-based execution using Claude Code's built-in agent teams. Three-phase pipeline delegates routing + planning to `/run`, determines team structure (template, waves, composition), then spins out teammates.
+Parallel team-based execution using Claude Code's built-in agent teams. Decomposes request into work items, creates team via TeamCreate, spawns teammates who each invoke /run.
 
 ```
-/team <request> -> Phase 1: /run (routing+planning) -> Phase 2: Team structure -> Phase 3: Spin out
-  +-- Team Lead = /team (coordinates via SendMessage, TaskList)
-  +-- Teammates: each runs /run for assigned work item (parallel, own context/tmux pane)
-  +-- Aggregates outputs into final result
+/team <request>
+  Step 1: Parse request
+  Step 2: Decompose into 3-8 work items (done directly by /team)
+  Step 3: TeamCreate (creates team + enables tmux panes)
+  Step 4: TaskCreate for all work items
+  Step 5: Wave 0 (bootstrap) via /run (team lead)
+  Step 6: Spawn teammates via Task tool (parallel -- each in own tmux pane)
+  Step 7: Monitor, then Wave 2 (integration), then cleanup
 ```
 
-**Wave Execution**: bootstrap (sequential) -> parallel (teammates) -> integration (sequential). Gate sentinels enforce ordering via TaskCreate dependencies.
+**CRITICAL**: /team MUST call TeamCreate AND spawn teammates via Task tool. Creating tasks without teammates is the primary failure mode.
+
+**Wave Execution**: bootstrap (sequential, team lead) -> parallel (teammates) -> integration (sequential, team lead). Gate sentinels enforce ordering via TaskCreate dependencies.
 
 **Display Modes** (`teammateMode` in settings.json): `auto` (default), `tmux` (split panes), `in-process` (main terminal)
 
@@ -389,7 +395,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via built-in agent teams
-**Version**: 9.15.0
+**Version**: 9.15.1
 
 ## Troubleshooting
 
