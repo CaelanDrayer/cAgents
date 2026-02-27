@@ -28,7 +28,26 @@ function findIncompleteSessions() {
     const sessionDir = path.join(sessionsDir, session);
     const statusFile = path.join(sessionDir, 'status.yaml');
     const content = safeRead(statusFile);
-    if (!content) continue;
+
+    // Handle sessions WITHOUT status.yaml: check if instruction.yaml exists (orphaned session)
+    if (!content) {
+      const instructionFile = path.join(sessionDir, 'instruction.yaml');
+      const instContent = safeRead(instructionFile);
+      if (instContent) {
+        // Orphaned session: has instruction but no status tracking
+        const request = extractYamlValue(instContent, 'raw_request') ||
+                        extractYamlValue(instContent, 'request') ||
+                        'Unknown request';
+        incomplete.push({
+          session_id: session,
+          phase: 'orphaned',
+          request: request.substring(0, 100) + (request.length > 100 ? '...' : ''),
+          waypoint: null,
+          progress: { completed: 0, total: 0 }
+        });
+      }
+      continue;
+    }
 
     const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase');
     if (phase === 'completed' || phase === 'complete' || phase === 'failed' || phase === 'aborted') continue;

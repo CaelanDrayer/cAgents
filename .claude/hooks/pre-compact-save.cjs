@@ -65,7 +65,26 @@ createHook('PreCompact', async (input) => {
   const waypointFile = getWaypointPath(sessionDir, 'compact', timestamp);
 
   const statusContent = safeRead(path.join(sessionDir, 'status.yaml'));
-  const phase = statusContent ? (extractYamlValue(statusContent, 'phase') || 'unknown') : 'unknown';
+  let phase = statusContent
+    ? (extractYamlValue(statusContent, 'phase') || extractYamlValue(statusContent, 'current_phase'))
+    : null;
+
+  // If status.yaml didn't yield a phase, infer from available workflow artifacts
+  if (!phase) {
+    const coordFile = path.join(sessionDir, 'workflow', 'coordination_log.yaml');
+    const planFile = path.join(sessionDir, 'workflow', 'plan.yaml');
+    const decompFile = path.join(sessionDir, 'workflow', 'decomposition.yaml');
+    if (safeRead(coordFile)) {
+      phase = 'coordinating';
+    } else if (safeRead(decompFile) || safeRead(planFile)) {
+      phase = 'planning';
+    } else if (safeRead(path.join(sessionDir, 'instruction.yaml'))) {
+      phase = 'routing';
+    } else {
+      phase = 'unknown';
+    }
+    console.error(`[PreCompact] Phase inferred from artifacts: ${phase}`);
+  }
 
   const coordContent = safeRead(path.join(sessionDir, 'workflow', 'coordination_log.yaml'));
   const coordState = extractCoordinationState(coordContent);

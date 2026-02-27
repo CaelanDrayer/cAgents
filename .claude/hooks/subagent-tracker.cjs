@@ -31,6 +31,12 @@ createHook('SubagentTracker', async (input) => {
   const now = new Date().toISOString();
   const newEntry = `  - id: "${agentId}"\n    type: "${subagentType}"\n    description: "${safeDesc}"\n    parent: "${parentAgent}"\n    spawned_at: "${now}"\n`;
 
+  // Dedup check: skip if this agent ID is already recorded (SubagentStart can fire multiple times per spawn)
+  if (existingContent && existingContent.includes(`id: "${agentId}"`)) {
+    console.error(`[SubagentTracker] Skipping duplicate entry for agent ${agentId}`);
+    return null;
+  }
+
   if (!existingContent) {
     fs.writeFileSync(treeFile, `# Agent Tree\n# Session: ${path.basename(sessionDir)}\n\nagents:\n${newEntry}`);
   } else {

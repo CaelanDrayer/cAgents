@@ -30,7 +30,7 @@ function verifyCompletion(sessionDir) {
     } else if (phase === 'planning' || phase === 'coordinating' || phase === 'executing') {
       issues.push(`Workflow stopping in '${phase}' phase (expected: completed or validating)`);
     } else if (phase !== 'completed' && phase !== 'complete' && phase !== 'validating') {
-      warnings.push(`Workflow stopping in '${phase}' phase (expected: completed or validating)`);
+      warnings.push(`Workflow stopping in '${phase}' phase (expected: complete/completed or validating)`);
     }
   }
 

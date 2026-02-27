@@ -10,7 +10,7 @@
     {
       "name": "cagents",
       "description": "Universal multi-domain agent system with 238 specialized agents across 5 super-domains. V9.14.0: AI writing detection and rewrite agents (14-category hallmark scanning, 5-pass humanization). Team templates (fullstack-app, api-service, frontend-app, content-campaign, data-pipeline, game-project), wave-based delivery with quality gates, interface contracts, gate sentinel pattern. Agent Teams for parallel team-based execution (40-60% time reduction). CSV-based task inventory (60-80% context savings). Controller-centric delegation with minimum tier 2 enforcement.",
-      "version": "9.14.0",
+      "version": "9.14.1",
       "author": {
         "name": "CaelanDrayer",
         "email": "caelan@caelandrayer.ca"

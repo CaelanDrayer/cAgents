@@ -132,7 +132,7 @@ function findActiveSession() {
     if (!content) continue;
 
     const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase');
-    if (phase && phase !== 'completed' && phase !== 'complete' && phase !== 'failed') {
+    if (phase && phase !== 'completed' && phase !== 'complete' && phase !== 'failed' && phase !== 'aborted') {
       _cachedActiveSession = path.join(sessionsDir, session);
       return _cachedActiveSession;
     }
@@ -171,7 +171,7 @@ function findTeamSession(input = {}) {
     if (!content) continue;
 
     const phase = extractYamlValue(content, 'phase');
-    if (phase && phase !== 'completed' && phase !== 'complete' && phase !== 'failed') {
+    if (phase && phase !== 'completed' && phase !== 'complete' && phase !== 'failed' && phase !== 'aborted') {
       return path.join(sessionsDir, session);
     }
   }
