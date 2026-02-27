@@ -75,7 +75,7 @@ Reference: `Agent_Memory/_system/templates/designer/artifact_generator.yaml`
 
 Reference: `Agent_Memory/_system/templates/designer/validation_framework.yaml`
 
-Run 4-level validation on the completed design:
+Run 5-level validation on the completed design:
 
 **1. Completeness** - Are all critical areas covered?
 - Check: All required fields from the chunk template are answered
@@ -92,6 +92,23 @@ Run 4-level validation on the completed design:
 **4. Quality** - Best practices followed?
 - Check: Security addressed, testing planned, edge cases considered, monitoring defined
 - Score: 0.0 to 1.0
+
+**5. Codebase Compatibility** (software designs only) - Does the design align with the existing codebase?
+- Check: Proposed APIs vs existing API patterns (Grep for route definitions, API conventions)
+- Check: Data model compatibility with existing schema (Read existing models/migrations)
+- Check: Import/dependency feasibility (check package.json, requirements.txt, go.mod, etc.)
+- Check: Naming convention alignment (match existing casing, file structure patterns)
+- Score: 0.0 to 1.0
+- Flag incompatibilities as validation warnings with suggested adjustments
+
+```
+Codebase compatibility checks:
+  1. Glob for existing API route files -> compare proposed API patterns
+  2. Grep for existing model definitions -> compare proposed data models
+  3. Read package manifests -> verify proposed dependencies are compatible
+  4. Grep for naming patterns (camelCase vs snake_case, file naming) -> flag mismatches
+  5. Check existing test patterns -> ensure proposed testing approach aligns
+```
 
 Present validation results via AskUserQuestion:
 

@@ -263,12 +263,42 @@ for each wave K from 1 to N-1:
       - Wait for teammate messages (they arrive automatically)
       - Periodically check TaskList to see progress
       - If a teammate flags an issue: course-correct if needed
+      - Track per-teammate timeout: if no progress after 5 minutes, consider recovery
 
-  5d. Validate GATE-K when all wave K items complete:
+  5c-2. Automatic teammate failure recovery:
+      If a teammate fails (task stuck, error reported, or timeout):
+
+      Recovery chain (max 2 retries per work item):
+      1. RETRY: Spawn replacement teammate with error context:
+         Task({
+           description: "RETRY Wave {K} - WI-{N}: <description>",
+           prompt: "Previous attempt failed with: {error_context}. Avoid: {failure_cause}.
+                   Execute WI-{N} with adjusted approach. ...",
+           team_name: "{team_name}",
+           name: "teammate-w{K}-wi-{N}-retry-{R}",
+           subagent_type: "general-purpose"
+         })
+      2. SIMPLIFY: If retry fails, break the work item into sub-items:
+         Create WI-{N}a (core implementation) and WI-{N}b (edge cases + testing)
+         Spawn separate teammates for each sub-item
+      3. ESCALATE: If simplify also fails, mark the work item as blocked:
+         TaskUpdate({ taskId: "{task_id}", status: "completed",
+                      description: "BLOCKED: Failed after 2 retries. Error: {context}" })
+         Log failure in workflow/failed_items.yaml
+         Continue with remaining wave items (do not halt the entire wave)
+
+      Track recovery metrics per wave:
+        recovery_attempts: {count}
+        successful_recoveries: {count}
+        blocked_items: [{WI-ids}]
+
+  5d. Validate GATE-K when all wave K items complete (or blocked):
       - Verify outputs exist for each work item in wave K
-      - Check quality gate criteria for wave K
+      - Check quality gate criteria based on wave type (see GATE Validation Standards below)
       - If gate passes: Mark GATE-K task as completed (unblocks wave K+1)
-      - If gate fails: Report issues, spawn fix-up teammates, re-validate
+      - If gate fails but blocked items exist: Apply partial pass -- mark gate as
+        conditionally passed with noted gaps; proceed with degraded scope
+      - If gate fails without blocked items: Report issues, spawn fix-up teammates, re-validate
 
   5e. Shut down wave K teammates before spawning wave K+1:
       SendMessage({ type: "shutdown_request", recipient: "teammate-w{K}-wi-{N}", content: "Wave {K} complete." })
@@ -303,7 +333,8 @@ Task({
 ```
 
 If PASS: Pipeline complete. Proceed to cleanup.
-If FAIL: Report issues with evidence. Suggest `/run --resume {SESSION_ID}`.
+If FAIL with partial results: Report partial completion summary (see Partial Results on Failure below).
+If FAIL without partial results: Report issues with evidence. Suggest `/run --resume {SESSION_ID}`.
 
 ### Step 7: Shut Down and Clean Up
 
@@ -322,8 +353,10 @@ TeamDelete()
    - Work items completed per wave
    - Gate validation results per wave
    - Revision rounds used (if any)
+   - Recovery attempts and outcomes (retries, simplifications, blocked items)
    - Final validation status
    - Output file locations
+   - If partial: which items completed vs blocked vs not started (see below)
 
 ## Cross-Wave Coordination
 
@@ -372,6 +405,76 @@ Within a single wave, all teammates run in parallel. Use TaskUpdate `addBlockedB
 10. **Never ask permission** between waves. Execute the full pipeline automatically.
 11. **Never just create tasks without spawning teammates** -- tasks without teammates are useless.
 12. **All enrichment stages always run** -- no skipping for consistency.
+
+## GATE Validation Standards
+
+GATE validation criteria are standardized by wave type. The lead uses these criteria when validating each gate (Step 5d). See @reference/gate-standards.md for the full standard.
+
+| Wave Type | Validation Criteria | Method |
+|-----------|-------------------|--------|
+| **Research / Analysis** | All research outputs exist; each has summary section; key findings documented | `file_exists` + `content_check` |
+| **Design / Architecture** | Design artifacts exist; interfaces defined; decisions documented with rationale | `file_exists` + `content_check` |
+| **Core Implementation** | Implementation files created/modified; no syntax errors; acceptance criteria addressed | `file_exists` + `syntax_check` + `grep_criteria` |
+| **Supporting Implementation** | Integration points connected; supporting features functional; no regressions | `file_exists` + `syntax_check` |
+| **Testing / QA** | Test files exist for implemented features; test execution attempted (pass or documented failure) | `file_exists` + `test_run` |
+| **Documentation** | Doc files updated; API changes reflected; examples provided | `file_exists` + `content_check` |
+
+**Gate validation algorithm**:
+1. For each work item in the wave, check if output directory exists (`outputs/wi-{N}/`)
+2. Apply wave-type-specific criteria from the table above
+3. Compute gate score: `completed_criteria / total_criteria`
+4. Gate result:
+   - Score >= 0.9: **PASS** (proceed to next wave)
+   - Score >= 0.7 with no critical failures: **CONDITIONAL_PASS** (proceed with noted gaps)
+   - Score < 0.7 or critical failures: **FAIL** (attempt fix-up or escalate)
+
+**Conditional pass**: If blocked items caused the gap, log the gaps and proceed. The integration wave (final) accounts for these gaps in its validation.
+
+## Partial Results on Failure
+
+If the pipeline cannot complete all waves, report partial results instead of a binary failure. This ensures users always get value from completed work.
+
+**Partial results report format**:
+```
+Team execution partially complete:
+  Wave 1 (Research):       COMPLETE - 3/3 items done
+  Wave 2 (Implementation): COMPLETE - 4/4 items done
+  Wave 3 (Testing):        PARTIAL  - 2/3 items done, 1 blocked
+  Wave 4 (Documentation):  NOT STARTED (blocked by Wave 3 gap)
+
+Completed outputs: Agent_Memory/sessions/{id}/outputs/
+  - wi-001/ through wi-007/: COMPLETE
+  - wi-008/ and wi-009/:     COMPLETE
+  - wi-010/:                 BLOCKED (test framework incompatibility)
+  - wi-011/ through wi-012/: NOT STARTED
+
+Recovery:
+  - Fix wi-010 manually, then: /team --resume {session_id}
+  - Or accept partial results and continue from outputs/
+```
+
+**When to report partial results**:
+- A wave has blocked items after recovery attempts
+- A gate fails and fix-up attempts are exhausted
+- Context exhaustion occurs mid-pipeline
+- Final validation returns FAIL but some waves completed successfully
+
+**Partial results are stored in** `workflow/partial_results.yaml`:
+```yaml
+status: partial
+completed_waves: [1, 2]
+partial_waves:
+  3: {completed: [WI-008, WI-009], blocked: [WI-010], reason: "test framework incompatibility"}
+not_started_waves: [4]
+total_items: 12
+completed_items: 9
+blocked_items: 1
+not_started_items: 2
+completion_rate: 0.75
+output_locations:
+  - outputs/wi-001/ through outputs/wi-009/
+resume_command: "/team --resume {session_id}"
+```
 
 ## Fallback (MANDATORY)
 

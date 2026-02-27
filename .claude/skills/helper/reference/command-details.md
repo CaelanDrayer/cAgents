@@ -508,6 +508,111 @@ You: /team Implement OAuth2 with Google, GitHub, and email login
 
 ---
 
+## /org - Corporate Hierarchy Orchestration
+
+### What It Does
+
+`/org` orchestrates multi-domain tasks through a corporate hierarchy model. A CEO (inline) engages C-suite agents (CTO, CCO, CRO, CFO, COO, CHRO, General Counsel) for parallel domain analysis, conducts deliberation with objection rounds, produces a strategic brief, then delegates to sequential `/team` invocations per domain (dependency-ordered). For single-domain tasks, it shortcuts to `/run` or `/team` with a strategic brief for richer context.
+
+### When to Use /org
+
+- **Multi-domain initiatives**: Engineering + marketing + hiring in one coordinated effort
+- **Strategic-level tasks**: Product launches, company restructures, major migrations
+- **Cross-domain coordination**: When domains need shared dependencies and risk management
+- **When you need a strategic brief**: Risk register, success criteria, cross-domain dependencies
+
+### When NOT to Use /org
+
+- **Single-domain tasks**: Use `/run` or `/team` directly -- /org adds overhead for single domains
+- **Simple bug fixes**: Use `/run` -- no need for C-suite analysis
+- **Parallel execution within one domain**: Use `/team` -- /org is for cross-domain parallelism
+- **Quick tasks**: /org's deliberation phase adds 5-15 minutes of strategic analysis
+
+### How It Works (Simplified)
+
+```
+You: /org Launch new product with marketing campaign and hiring plan
+  |
+  v
+[CEO] Analyzes: 3 domains touched (make_eng, grow, people)
+  |
+  v
+[C-Suite Parallel Analysis] CTO, CRO, CHRO each analyze from their domain
+  |
+  v
+[Deliberation] CEO drafts strategic brief -> C-suite objects/approves
+  -> CEO resolves conflicts -> Final strategic brief
+  |
+  v
+[Parallel Execution] /team per domain (each runs independently)
+  -> /team make_eng: Build product features
+  -> /team grow: Create marketing campaign
+  -> /team people: Execute hiring plan
+  |
+  v
+[Integration] CEO merges all domain outputs, resolves cross-domain conflicts
+  |
+  v
+Result: All domains complete, integrated deliverable
+```
+
+### Key Flags
+
+| Flag | What It Does | Example |
+|------|-------------|---------|
+| `--dry-run` | Preview routing decision and C-suite plan | `/org Launch product --dry-run` |
+| `--quick` | Skip deliberation for single-domain routing | `/org Fix auth --quick` |
+| `--domains <d1,d2,...>` | Force specific domain scope | `/org Task --domains make_eng,grow` |
+| `--resume <session_id>` | Resume an interrupted /org session | `/org --resume org_20260227_143022` |
+
+### Domain Detection
+
+| Domain Key | C-Suite | Keywords |
+|-----------|---------|----------|
+| make_eng | CTO | fix, build, implement, code, api, database, architecture |
+| make_cre | CCO | write, story, content, design, creative, brand, UX |
+| grow | CRO | campaign, marketing, sales, conversion, SEO, leads |
+| operate_fin | CFO | budget, cost, forecast, investment, ROI, financial |
+| operate_ops | COO | operations, process, supply chain, logistics, efficiency |
+| people | CHRO | hire, recruit, onboard, culture, HR, talent, performance |
+| serve | General Counsel | support, legal, compliance, customer, SLA, contract |
+
+### Real Examples
+
+```bash
+# Multi-domain: engineering + marketing + hiring
+/org Launch new product with marketing campaign and engineering build
+
+# Preview routing without executing
+/org Restructure engineering team --dry-run
+
+# Force specific domains
+/org Major initiative --domains make_eng,grow,people
+
+# Resume an interrupted session
+/org --resume org_20260227_143022
+
+# Single-domain (auto-routes to /run or /team with strategic brief)
+/org Fix critical auth bug
+```
+
+### Integration
+
+- **Delegates to /team**: Each domain executes via sequential `/team` invocations (dependency-ordered)
+- **Delegates to /run**: Single-domain simple tasks route through `/run` with strategic brief
+- **After /designer**: Use `/org` when a design spans multiple domains
+- **Strategic brief**: All downstream executions receive a strategic brief with mission, success criteria, and risk register
+
+### Tips
+
+1. **Multi-domain is the sweet spot**: /org shines when 2+ domains need coordinated work
+2. **Use --dry-run first**: See which domains and C-suite agents will be engaged
+3. **Be specific about scope**: "Launch product" is broad -- add specifics for better domain detection
+4. **Single-domain auto-routes**: /org smartly delegates to /run or /team when only one domain is needed
+5. **Check the strategic brief**: The brief in the session directory shows all decisions and risk analysis
+
+---
+
 ## /helper - Interactive Command Guide
 
 ### What It Does

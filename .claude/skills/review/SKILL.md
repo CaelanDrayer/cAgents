@@ -1,7 +1,7 @@
 ---
 name: review
 description: "Universal review orchestrator with parallel execution, framework-specific patterns, enhanced auto-fix engine, quality gates, and confidence scoring. Reviews code, docs, content, designs, processes, data, and infrastructure."
-argument-hint: "<target> [--focus <area>] [--auto-fix] [--severity <level>] [--format <type>]"
+argument-hint: "<target> [--focus <area>] [--auto-fix] [--severity <level>] [--format <type>] [--profile <name>] [--baseline] [--suppress <id>]"
 user-invocable: true
 context: fork
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
@@ -38,6 +38,16 @@ Parse `$ARGUMENTS` for:
 - **Confidence flags**: `--confidence <N>`, `--min-confidence <N>`, `--show-confidence`
 - **Context flags**: `--git-hotspots`, `--pr-context <branch>`, `--recent-changes <period>`, `--critical-first`
 - **Output flags**: `--output json|markdown|summary|detailed`, `--save-report <path>`
+- **Profile flags**: `--profile <name>` (load named review profile from `.claude/review-profiles.yaml`)
+- **Baseline flags**: `--baseline` (compare against saved baseline, show only new findings), `--reset-baseline` (clear baseline), `--suppress <finding_id>` (suppress a specific finding)
+
+If `--profile <name>` is provided, load the named profile from `.claude/review-profiles.yaml` (or `Agent_Memory/_system/commands/review/profiles.yaml`). Profile settings serve as defaults that can be overridden by explicit flags. If the profile file does not exist, warn and continue with explicit flags only.
+
+If `--baseline` is provided, load `Agent_Memory/_system/commands/review/baseline.yaml` during Phase 1. In Phase 3 (Aggregation), filter out findings that match baseline entries with status `acknowledged` or `suppressed`. Report only new or changed findings. Include a "Baseline Summary" section in the report showing how many findings were filtered.
+
+If `--suppress <finding_id>` is provided, add or update the finding in the baseline file with `status: suppressed` and skip the review workflow.
+
+If `--reset-baseline` is provided, clear the baseline file and proceed with a full review.
 
 See @reference/flags.md for complete flag reference with examples.
 
@@ -61,14 +71,18 @@ Analyze the target to determine review type:
 
 ### Phase 1: Initialize Review
 1. Parse flags from `$ARGUMENTS`
-2. Interactive mode check (if `--interactive`): ask focus areas, auto-fix preference, framework
-3. Determine target and detect review type
-4. Detect framework (if code): check package.json, requirements.txt, etc.
-5. Load framework-specific patterns from `Agent_Memory/_system/commands/review/framework_patterns.yaml`
-6. Create session: `Agent_Memory/sessions/review_{YYYYMMDD_HHMMSS}/`
-7. Context-aware analysis: git hotspots, PR context, file priority scoring
-8. Analyze scope and determine parallel execution strategy
-9. Write `scope_analysis.yaml` and `execution_strategy.yaml`
+2. If `--profile <name>`: load profile from `.claude/review-profiles.yaml` or `Agent_Memory/_system/commands/review/profiles.yaml`. Apply profile settings as defaults; explicit flags override profile values.
+3. If `--suppress <id>`: update baseline file with suppressed finding, output confirmation, and exit (no review).
+4. If `--reset-baseline`: clear `Agent_Memory/_system/commands/review/baseline.yaml` and continue.
+5. Interactive mode check (if `--interactive`): ask focus areas, auto-fix preference, framework
+6. Determine target and detect review type
+7. Detect framework (if code): check package.json, requirements.txt, etc.
+8. Load framework-specific patterns from `Agent_Memory/_system/commands/review/framework_patterns.yaml`
+9. If `--baseline`: load `Agent_Memory/_system/commands/review/baseline.yaml` into session context for Phase 3 filtering
+10. Create session: `Agent_Memory/sessions/review_{YYYYMMDD_HHMMSS}/`
+11. Context-aware analysis: git hotspots, PR context, file priority scoring
+12. Analyze scope and determine parallel execution strategy
+13. Write `scope_analysis.yaml` and `execution_strategy.yaml`
 
 ### Phase 2: Execute Review with Parallel Agents
 Run agents in parallel groups. See @reference/agent-groups.md for group composition.
@@ -81,8 +95,10 @@ Stream critical findings immediately as agents complete. Update TodoWrite after 
 2. Add confidence scores (0.0-1.0) with framework-specific bonus
 3. Filter by confidence threshold (default: 0.5)
 4. Remove duplicates with intelligent merging
-5. Classify by severity: Critical (>=0.8), High (>=0.6), Medium (>=0.4), Low (>=0.3)
-6. Write `reports/aggregate.yaml`
+5. If `--baseline`: filter out findings matching baseline entries with status `acknowledged` or `suppressed`. Track filtered count for report.
+6. Classify by severity: Critical (>=0.8), High (>=0.6), Medium (>=0.4), Low (>=0.3)
+7. Assign unique finding IDs (F-{NNN}) for baseline management
+8. Write `reports/aggregate.yaml`
 
 ### Phase 4: Generate Auto-Fixes
 See @reference/auto-fix-engine.md for confidence-based fix generation and validation.
@@ -92,6 +108,30 @@ See @reference/quality-gates.md for threshold checking and regression testing.
 
 ### Phase 6: Generate Enhanced Report
 See @reference/report-formats.md for review-type-specific report templates.
+
+After generating the report:
+1. **Update baseline**: Write all findings to `Agent_Memory/_system/commands/review/baseline.yaml` with `status: acknowledged` and the current session ID. This becomes the baseline for the next `--baseline` review.
+2. **Record quality trend**: Append a summary entry to `Agent_Memory/_system/commands/review/history.yaml`:
+
+```yaml
+reviews:
+  - session: review_{YYYYMMDD_HHMMSS}
+    date: "{YYYY-MM-DD}"
+    target: "{reviewed_path}"
+    type: "{review_type}"
+    findings: {critical: N, high: N, medium: N, low: N}
+    total_findings: N
+    baseline_filtered: N  # findings filtered by baseline (0 if --baseline not used)
+    auto_fixes_applied: N
+    quality_score: N  # 0-100 composite score
+    framework: "{detected_framework or null}"
+```
+
+3. **Include quality trend in report**: If 2+ entries exist in `history.yaml` for the same target, include a "Quality Trend" section showing:
+   - Finding count trajectory (last 5 reviews)
+   - Quality score trajectory
+   - Trend direction: Improving / Stable / Declining
+   - Per-severity change from previous review
 
 ## Task Tool Delegation
 
@@ -157,6 +197,76 @@ If performance opportunities detected, offer `/optimize`:
 ```javascript
 Skill({ skill: "optimize", args: `${targetPath} --review-after` })
 ```
+
+## Review Profiles
+
+Review profiles are named presets that bundle common flag combinations. Stored in `.claude/review-profiles.yaml` (project-level) or `Agent_Memory/_system/commands/review/profiles.yaml` (user-level).
+
+```yaml
+# .claude/review-profiles.yaml
+profiles:
+  pre-merge:
+    scope: changed
+    quality_gate: strict
+    auto_fix: safe
+    apply_safe_fixes: true
+    run_tests: true
+    rollback_on_failure: true
+    baseline: true
+  security-audit:
+    focus: security
+    confidence: 0.6
+    quality_gate: strict
+    output: detailed
+    save_report: ./security-audit.md
+  quick:
+    scope: changed
+    parallel: true
+    confidence: 0.7
+    output: summary
+  content-review:
+    type: content
+    focus: quality
+    output: detailed
+  process-review:
+    type: process
+    focus: quality
+    output: detailed
+```
+
+**Usage**: `/review --profile pre-merge` loads the profile, then any additional flags override profile values. For example: `/review --profile pre-merge --quality-gate relaxed` uses pre-merge defaults but overrides the quality gate to relaxed.
+
+## Baseline Schema
+
+The baseline file tracks acknowledged findings across reviews. See @reference/baseline-suppression.md for full schema and matching algorithm.
+
+```yaml
+# Agent_Memory/_system/commands/review/baseline.yaml
+version: 1
+last_updated: "{ISO_TIMESTAMP}"
+last_session: review_{YYYYMMDD_HHMMSS}
+baselines:
+  "{file_path}":
+    - finding_id: F-{NNN}
+      description: "{finding description}"
+      severity: critical|high|medium|low
+      status: acknowledged|suppressed|deferred
+      acknowledged_at: "{ISO_DATE}"
+      review_session: review_{YYYYMMDD_HHMMSS}
+      suppress_reason: "{optional reason for suppression}"
+```
+
+**Matching**: Findings are matched to baseline entries by file path + description similarity (fuzzy match). A finding is considered "baseline" if it matches an existing entry with >= 0.85 similarity score. This handles minor wording changes between reviews.
+
+## Config File References
+
+| Config | Location | Purpose |
+|--------|----------|---------|
+| Framework patterns | `Agent_Memory/_system/commands/review/framework_patterns.yaml` | Framework-specific review rules |
+| Review baseline | `Agent_Memory/_system/commands/review/baseline.yaml` | Acknowledged/suppressed findings |
+| Review history | `Agent_Memory/_system/commands/review/history.yaml` | Quality trend tracking |
+| Review profiles (project) | `.claude/review-profiles.yaml` | Named review flag presets |
+| Review profiles (user) | `Agent_Memory/_system/commands/review/profiles.yaml` | User-level review flag presets |
 
 ## Important Rules
 

@@ -3,7 +3,7 @@ name: coo
 description: "Chief Operating Officer for operational execution and process optimization. Coordinates cross-functional operations via question-based delegation. Use for operational decisions, process coordination, and efficiency improvements."
 tier: controller
 domain: make
-model: opus
+model: "opusplan"
 color: bright_yellow
 coordination_style: question_based
 typical_questions:
@@ -21,7 +21,9 @@ capabilities:
   - performance_management
   - question_based_delegation
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
-maxTurns: 30
+maxTurns: 40
+permissionMode: "bypassPermissions"
+memory: {"project": true}
 ---
 
 # COO

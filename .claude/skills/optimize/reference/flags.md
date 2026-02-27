@@ -46,13 +46,26 @@
 /optimize --dependency-graph           # Generate dependency graph visualization
 ```
 
+## History & Learning
+```bash
+/optimize --history                    # Show past optimization sessions and outcomes
+/optimize --history --domain make      # Show history for specific domain
+```
+
+## Benchmark Integration
+```bash
+/optimize --benchmark auto             # Auto-detect appropriate benchmark tool
+/optimize --benchmark lighthouse       # Use Lighthouse for web performance
+/optimize --benchmark k6               # Use k6 for API load testing
+/optimize --benchmark hyperfine        # Use hyperfine for CLI performance
+```
+
 ## Continuous Mode (Planned)
 
 > **Note**: Continuous mode is not yet implemented. These flags are reserved for future use.
 
 ```bash
 /optimize --continuous --interval 1d   # (Planned) Run daily optimization scan
-/optimize --history                    # (Planned) Show optimization history
 ```
 
 ## Validation

@@ -38,6 +38,8 @@ function parseCommandFlags(commandString) {
 | `--confidence <N>` | Number | Set detection confidence threshold | 0.7 | `/run Request --confidence 0.6` |
 | `--team` | Boolean | Use parallel team execution via Agent Teams | false | `/run Build feature --team` |
 | `--resume <id>` | String | Resume an interrupted workflow session | none | `/run --resume run_20260207_143022` |
+| `--analytics` | Boolean | Display pipeline analytics dashboard and exit | false | `/run --analytics` |
+| `--analytics domain` | String | Show per-domain analytics breakdown | none | `/run --analytics domain` |
 
 ## Plan Display Behavior
 
@@ -80,4 +82,6 @@ By default, `/run` shows the workflow plan after planning completes (for tier 2+
 /run Refactor authentication module --tier 3       # Force tier
 /run Add payment gateway --interactive --stream    # Combined flags
 /run Build user dashboard --team                   # Parallel team execution
+/run --analytics                                   # Show pipeline analytics dashboard
+/run --analytics domain                            # Per-domain analytics breakdown
 ```

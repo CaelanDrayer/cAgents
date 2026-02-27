@@ -1,7 +1,7 @@
 ---
 name: run
 description: "Event-driven pipeline engine. Runs inline (no fork) with state machine loop reading pipeline_config.yaml. Spawns agents sequentially at level 1, controllers spawn executors/reviewers at level 2. Supports revision loops and pre-enrichment detection."
-argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--brief <path>] [--resume <session_id>] [--session <session_dir>]"
+argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--analytics]"
 user-invocable: true
 context: none
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
@@ -53,9 +53,11 @@ When the user runs `/run <request> [flags]`:
 ### Step 1: Parse Arguments
 
 Parse `$ARGUMENTS` for:
-- **Flags**: `--interactive`, `--dry-run`, `--quiet`/`-q`, `--stream`, `--skip-preflight`, `--team`
+- **Flags**: `--interactive`, `--dry-run`, `--quiet`/`-q`, `--stream`, `--skip-preflight`, `--team`, `--analytics`
 - **Value flags**: `--template <name>`, `--domain <domain>`, `--tier <N>`, `--confidence <N>`, `--brief <path>`, `--resume <session_id>`, `--session <session_dir>`
 - **Request**: Everything before the first `--` flag
+
+If `--analytics`: Read `Agent_Memory/_system/metrics/pipeline_analytics.yaml`, display the analytics dashboard (success rate, avg duration, by-domain, by-tier, bottlenecks), and exit without running a pipeline.
 
 If `--resume <session_id>`: Load session from `Agent_Memory/sessions/{session_id}/progress.md` and resume from last checkpoint.
 
@@ -155,6 +157,71 @@ Before spawning the orchestrator, classify domain and tier inline:
 | 2 | Single component, clear scope | 1 primary controller |
 | 3 | Multiple components, external deps | 1 primary + 1-2 supporting |
 | 4 | Strategic/architectural, company-wide | Executive + HITL |
+
+**3b-2. Display domain/tier confirmation:**
+
+After classifying domain and tier, display the classification to the user for transparency:
+
+```
+Detected: Domain={domain} ({super_domain}), Tier={tier}, Controller={controller_name}
+```
+
+If `--interactive`, ask for confirmation with override options:
+```
+I detected this as a {domain} task (Tier {tier}). Is that right?
+1. Yes, proceed
+2. Different domain: [specify]
+3. Higher complexity: Tier 3 or 4
+```
+
+If not interactive, just display and proceed. Include an override hint:
+```
+Detected: Domain=Make (Engineering), Tier=2, Controller=engineering-manager
+  (Override with: --domain <domain> --tier <N>)
+```
+
+**3b-3. Adaptive pipeline (tier-based state skipping):**
+
+For **tier 2** requests with clear scope, skip enrichment agents that add minimal value:
+
+| State | Tier 2 (Simple) | Tier 3+ (Complex) |
+|-------|-----------------|-------------------|
+| INIT (orchestrator) | **SKIP** -- /run does inline enrichment | Execute |
+| ORCHESTRATED (planner) | Execute (always needed) | Execute |
+| PLANNED (decomposer) | **SKIP** -- single work item from plan.yaml | Execute |
+| DECOMPOSED (prompt-engineer) | **SKIP** -- use default delegation prompt | Execute |
+| PROMPTS_READY (controller) | Execute | Execute |
+| COORDINATED (validator) | Execute | Execute |
+
+**Tier 2 fast path**:
+```
+/run -> inline enrichment -> planner -> controller -> validator -> DONE
+```
+
+This saves 3 agent spawns (orchestrator, decomposer, prompt-engineer) for simple tasks, reducing execution time by ~40%.
+
+For tier 2, when skipping INIT:
+- Write a minimal `enriched_context.yaml` inline with the user request, domain, tier, and working directory context.
+- This becomes the planner's input.
+
+For tier 2, when skipping DECOMPOSED:
+- Extract the single work item from plan.yaml objectives directly.
+- Write a minimal `work_items.yaml` with one work item.
+
+For tier 2, when skipping PROMPTS_READY prompt-engineer:
+- Use a default delegation prompt template instead of a crafted one.
+- Write a minimal `delegation_prompts.yaml` with the standard controller prompt.
+
+Update the TodoWrite to reflect the shorter pipeline:
+```
+TodoWrite([
+  {"content": "[/run] Pipeline: INIT (inline enrichment)", "status": "completed", "id": "init"},
+  {"content": "[/run] Pipeline: PLANNED (planning)", "status": "in_progress", "id": "planned"},
+  {"content": "[controller] Pipeline: PROMPTS_READY (coordinating)", "status": "pending", "id": "prompts_ready"},
+  {"content": "[/run] Pipeline: COORDINATED (validating)", "status": "pending", "id": "coordinated"},
+  {"content": "[/run] Pipeline: VALIDATED (complete)", "status": "pending", "id": "validated"}
+])
+```
 
 **3c. Execute state machine loop:**
 
@@ -270,7 +337,29 @@ total_agents_spawned: {count}
 ```
 
 4. **Update status.yaml** to `completed`
-5. **Report results** to user
+5. **Track execution analytics**: Append session metrics to `Agent_Memory/_system/metrics/pipeline_analytics.yaml`:
+
+```yaml
+# Append to session_log array
+session_log:
+  - session_id: {SESSION_ID}
+    date: "{ISO_DATE}"
+    domain: "{domain}"
+    tier: {tier}
+    controller: "{controller_name}"
+    final_state: VALIDATED|FAILED
+    revision_rounds: {N}
+    states_executed: [{list}]
+    states_skipped: [{list}]  # from adaptive pipeline
+    total_agents_spawned: {count}
+    duration_seconds: {elapsed}
+    started_at: "{ISO_TIMESTAMP}"
+    completed_at: "{ISO_TIMESTAMP}"
+```
+
+After appending, recalculate aggregate metrics (total_sessions, success_rate, avg_duration, by_domain, by_tier, bottlenecks). Keep the last 500 sessions in the log; archive older entries.
+
+6. **Report results** to user
 
 If pipeline failed after max revisions:
 - Report what completed vs what remains
@@ -351,6 +440,7 @@ See @reference/flags.md for complete flag reference with defaults and examples.
 - Session folder: `Agent_Memory/sessions/run_{YYYYMMDD_HHMMSS}/`
 - Agent audit trail: `Agent_Memory/sessions/{session_id}/workflow/agent_tree.yaml`
 - Global audit log: `Agent_Memory/_system/logs/agent_spawns.log`
+- Pipeline analytics: `Agent_Memory/_system/metrics/pipeline_analytics.yaml`
 
 ## Agent Audit Trail
 

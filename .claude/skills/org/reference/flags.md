@@ -7,7 +7,8 @@
 | `--dry-run` | Boolean | `false` | Show routing decision and planned C-suite engagement without executing |
 | `--quick` | Boolean | `false` | Skip deliberation round for single-domain instructions (generate brief directly) |
 | `--domains <d1,d2,...>` | Value | auto-detect | Force specific domain scope (comma-separated: make_eng, make_cre, grow, operate_fin, operate_ops, people, serve) |
-| `--resume <session_id>` | Value | none | Resume an incomplete /org session from last checkpoint |
+| `--resume <session_id>` | Value | none | Resume an incomplete /org session from last checkpoint. Skips completed domains and only re-executes incomplete/failed ones. |
+| `--resume <id> --domain <key>` | Value | none | Resume only a specific failed domain within an /org session. Other completed domains are preserved. |
 
 ## Domain Keys
 
@@ -38,8 +39,11 @@ Valid domain keys for `--domains`:
 # Force specific domains
 /org Restructure the engineering team --domains make_eng,people
 
-# Resume interrupted session
+# Resume interrupted session (skips completed domains)
 /org --resume org_20260227_143022
+
+# Resume only a specific failed domain
+/org --resume org_20260227_143022 --domain make_eng
 ```
 
 ## Flag Interaction

@@ -41,7 +41,7 @@ The architecture is **controller-centric**: controllers coordinate work by askin
 
 | Command | Purpose | Execution Model | Best For |
 |---------|---------|-----------------|----------|
-| `/org` | Corporate hierarchy orchestration | CEO + C-suite deliberation + parallel /team per domain | Multi-domain strategic initiatives, cross-functional work |
+| `/org` | Corporate hierarchy orchestration | CEO inline + C-suite via Task + sequential /team per domain | Multi-domain strategic initiatives, cross-functional work |
 | `/run` | Universal workflow engine | Event-driven state machine, sequential pipeline | Building, fixing, writing, analyzing |
 | `/team` | Parallel team execution | N-wave parallel with per-wave quality gates | Large features with 3+ parallel work items |
 | `/review` | Universal review | Parallel review agents with confidence scoring | Code, docs, content, infrastructure review |
@@ -53,13 +53,13 @@ The architecture is **controller-centric**: controllers coordinate work by askin
 
 ## /org -- Corporate Hierarchy Orchestration
 
-The strategic command. Orchestrates cAgents' 239 agents through a corporate hierarchy model. The user acts as Chairperson, providing a strategic instruction. `/org` runs CEO logic inline, spawns relevant C-suite agents for parallel domain analysis, conducts a deliberation round, produces a strategic brief, then delegates to parallel `/team` instances per domain.
+The strategic command. Orchestrates cAgents' 239 agents through a corporate hierarchy model. The user acts as Chairperson, providing a strategic instruction. `/org` runs CEO logic inline (`context: none`), spawns relevant C-suite agents via Task for parallel domain analysis, conducts a deliberation round, produces a strategic brief, then delegates to sequential `/team` instances per domain via Skill. Runs inline (not forked) because subagents cannot spawn other subagents -- /org needs Task for C-suite and Skill for /team.
 
 ### Architecture
 
 ```
 User (Chairperson)
-  +-- /org (CEO inline -- level 0)
+  +-- /org (CEO inline -- main thread, context: none)
         +-- CTO (Make Engineering)
         +-- CCO (Make Creative)
         +-- CRO (Grow)
@@ -74,7 +74,7 @@ User (Chairperson)
 ```
 INIT -> ANALYZED -> DELIBERATED -> BRIEFED -> EXECUTED -> INTEGRATED -> COMPLETE
   |                                              |
-  +-- single domain -> skip to BRIEFED           +-- /team per domain (parallel)
+  +-- single domain -> skip to BRIEFED           +-- /team per domain (sequential)
 ```
 
 ### C-Suite Domain Mapping
@@ -103,7 +103,7 @@ For multi-domain instructions:
 
 1. **Analysis**: CEO spawns relevant C-suite in parallel. Each writes `domain_analysis_{domain}.yaml`
 2. **Deliberation**: CEO drafts strategic brief -> C-suite reviews for objections -> CEO resolves conflicts
-3. **Execution**: Parallel `/team` per domain with strategic_brief.yaml context
+3. **Execution**: Sequential `/team` per domain with strategic_brief.yaml context (ordered by dependency/priority)
 4. **Integration**: CEO merges cross-domain outputs
 
 ### Strategic Brief
@@ -126,7 +126,7 @@ Triggers: cross-domain dependency conflict, scope exceeds authority, acceptance 
 2. **ANALYZED**: CTO, CCO, CRO, CFO, CHRO analyze in parallel
 3. **DELIBERATED**: CFO objects (budget), CHRO flags (hiring timeline) -> CEO resolves with phased approach
 4. **BRIEFED**: Final strategic brief with domain assignments and dependencies
-5. **EXECUTED**: 5 parallel /team instances (one per domain)
+5. **EXECUTED**: 5 sequential /team instances (one per domain, dependency-ordered)
 6. **INTEGRATED**: CEO merges outputs, verifies cross-domain handoffs
 7. **COMPLETE**: Integrated launch plan
 
@@ -610,7 +610,7 @@ Explains cAgents commands and recommends the right one for the user's needs. Doe
 Commands are designed to work together through well-defined handoffs:
 
 ```
-/org -> /team              Strategic brief -> parallel domain execution (most powerful pipeline)
+/org -> /team              Strategic brief -> sequential domain execution (most powerful pipeline)
 /org -> /run               Strategic brief -> single domain execution
 /designer -> /org          Design, then execute via corporate hierarchy
 /designer -> /run          Design thoroughly, then build (most common pipeline)
@@ -956,14 +956,14 @@ All hooks invoked via `bash -c` wrapper with 3-tier fallback chain (`CLAUDE_PLUG
 
 **cAgents = 7 commands x event-driven pipeline x 5 super-domains x 239 specialized agents**
 
-- **Corporate Hierarchy**: `/org` provides CEO-level strategic framing with C-suite parallel analysis, deliberation, and multi-domain parallel execution
+- **Corporate Hierarchy**: `/org` provides CEO-level strategic framing (inline, context:none) with C-suite parallel analysis via Task, deliberation, and multi-domain sequential execution via Skill
 - **Event-Driven**: Config-driven state machine with sequential enrichment, nested execution with reviewer loops, and revision routing
 - **7 Commands**: `/org` (strategic), `/run` (execute), `/team` (parallel), `/review` (quality), `/optimize` (improve), `/designer` (plan), `/helper` (guide)
 - **Controller-Centric**: Controllers coordinate via question-based delegation, never implement directly
 - **N-Wave Parallel**: `/team` decomposes into waves with GATE quality checks, teammates invoke `/run`
 - **Cross-Skill Integration**: Commands hand off to each other (`/org` -> `/team`, `/designer` -> `/run`, `/review` -> `/run`, `/optimize` -> `/review`)
 - **Config-Driven**: Domains customize via YAML configs (`planner_config.yaml`, `pipeline_config.yaml`, `org_pipeline_config.yaml`), not code
-- **Scalable**: Up to 50 concurrent agents, N-wave team execution, parallel /team per domain via /org
+- **Scalable**: Up to 50 concurrent agents, N-wave team execution, sequential /team per domain via /org
 - **Resilient**: Three-file pattern, waypoints, pre-compact hooks, `--resume` for interrupted sessions
 - **Quality-Gated**: Dual revision loops (controller-level 3 rounds, pipeline-level 5 cycles), GATE sentinels between waves, C-suite deliberation
 

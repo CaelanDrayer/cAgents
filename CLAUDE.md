@@ -242,7 +242,7 @@ User Request -> /run (state machine loop, reads pipeline_config.yaml)
 
 | Skill | Context | Agent | Description |
 |-------|---------|-------|-------------|
-| `/org` | `fork` | `true` | Corporate hierarchy orchestration -- CEO + C-suite deliberation + parallel /team per domain |
+| `/org` | `none` | `true` | Corporate hierarchy orchestration -- CEO inline + C-suite via Task + sequential /team per domain |
 | `/run` | `none` | `true` | Event-driven pipeline engine -- state machine loop, sequential enrichment, controller+reviewer, revision routing |
 | `/team` | `fork` | `true` | N-wave parallel team execution via built-in agent teams (maximize waves) |
 | `/designer` | `none` | `false` | Interactive 4-phase design engine (Discovery -> Specification) |
@@ -252,8 +252,8 @@ User Request -> /run (state machine loop, reads pipeline_config.yaml)
 
 **Built-in**: `/memory` (view/edit memory files), `/init` (bootstrap project CLAUDE.md)
 
-### /org - Corporate Hierarchy Orchestration (V9.26)
-CEO inline logic with C-suite parallel analysis, two-phase deliberation, strategic brief, and parallel /team execution per domain. 6-state pipeline: INIT -> ANALYZED -> DELIBERATED -> BRIEFED -> EXECUTED -> INTEGRATED -> COMPLETE.
+### /org - Corporate Hierarchy Orchestration (V9.26, V9.28)
+CEO inline logic (`context: none`) with C-suite parallel analysis via Task, two-phase deliberation, strategic brief, and sequential /team execution per domain via Skill. Runs inline (not forked) because subagents cannot spawn other subagents. 6-state pipeline: INIT -> ANALYZED -> DELIBERATED -> BRIEFED -> EXECUTED -> INTEGRATED -> COMPLETE.
 ```bash
 /org Launch new product with campaign    # -> Full hierarchy (make_eng + grow + operate_fin)
 /org Fix auth bug                        # -> Single /run with strategic brief
@@ -262,8 +262,8 @@ CEO inline logic with C-suite parallel analysis, two-phase deliberation, strateg
 ```
 Skill: `.claude/skills/org/SKILL.md` + `reference/`
 
-### /run - Event-Driven Pipeline Engine (V9.23)
-State machine loop reading pipeline_config.yaml. Sequential enrichment (orchestrator, planner, decomposer, prompt-engineer), nested execution (controller + executor + reviewer), revision routing (FAIL/REVISE).
+### /run - Event-Driven Pipeline Engine (V9.23, V9.27)
+State machine loop reading pipeline_config.yaml. Sequential enrichment (orchestrator, planner, decomposer, prompt-engineer), nested execution (controller + executor + reviewer), revision routing (FAIL/REVISE). V9.27: Adaptive pipeline (tier 2 fast path skips 3 agents), domain/tier confirmation display, execution analytics (`--analytics`).
 ```bash
 /run Fix auth bug              # -> Make (tier 2: engineering-manager)
 /run Write fantasy story       # -> Make (tier 2: creative-director)
@@ -272,8 +272,8 @@ State machine loop reading pipeline_config.yaml. Sequential enrichment (orchestr
 ```
 Skill: `.claude/skills/run/SKILL.md` + `reference/`
 
-### /team - N-Wave Parallel Team Execution (V9.23)
-N-wave pipeline: **Wave 0 (lead: enrichment) -> Wave 1..N-1 (teammates: per-wave spawn, parallel within wave) -> Wave N (lead: integration)**. Maximizes waves for quality gating. Each wave spawns fresh teammates, validates GATE, then proceeds. 40-60% execution time reduction for tier 3+.
+### /team - N-Wave Parallel Team Execution (V9.23, V9.27)
+N-wave pipeline: **Wave 0 (lead: enrichment) -> Wave 1..N-1 (teammates: per-wave spawn, parallel within wave) -> Wave N (lead: integration)**. Maximizes waves for quality gating. Each wave spawns fresh teammates, validates GATE, then proceeds. 40-60% execution time reduction for tier 3+. V9.27: Automatic teammate failure recovery (retry + simplify + escalate), GATE validation standards per wave type, partial results on failure.
 ```bash
 /team Implement OAuth2 authentication    # Full team execution (5-7 waves)
 /team Build user dashboard --dry-run     # Preview wave structure
@@ -284,6 +284,12 @@ Config: `settings.json` (`teammateMode`: auto/tmux/in-process). See `docs/TEAM_M
 
 ### /designer, /review, /optimize, /helper
 Each skill has `SKILL.md` + `reference/` directory with detailed docs. Use `/helper` for guidance.
+
+V9.27 additions:
+- **/designer**: `--brief <path>` for /org integration, `--iterate <session_id>` for design iteration, codebase compatibility validation
+- **/review**: Review baselines (`--baseline`, `--suppress`), review profiles (`--profile`), quality trend tracking, baseline-suppression reference
+- **/optimize**: Benchmark integration (`--benchmark`), optimization history/learning (`--history`), pattern effectiveness tracking
+- **/helper**: Full /org documentation, troubleshooting mode (`--troubleshoot`), updated comparison matrices
 
 ## Team Mode
 
@@ -459,7 +465,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Event-driven state machine with revision routing (FAIL/REVISE), reviewer loops, prompt-engineer
-**Version**: 9.26.0
+**Version**: 9.28.0
 
 ## Troubleshooting
 

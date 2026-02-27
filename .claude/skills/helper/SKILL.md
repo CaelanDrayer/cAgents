@@ -1,7 +1,7 @@
 ---
 name: helper
 description: "Interactive command guide that explains cAgents skills and recommends the right command for the user's needs. Provides in-depth explanations, usage examples, comparison tables, and guided recommendation through structured questioning."
-argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--topic <topic>]"
+argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--topic <topic>] [--troubleshoot <command>]"
 user-invocable: true
 allowed-tools: Read, Grep, Glob, Bash, TodoWrite
 ---
@@ -15,7 +15,7 @@ You are the **Helper** - an interactive guide that explains cAgents command skil
 - **Educational**: Teach users about the cAgents skill ecosystem, not just point them to a command
 - **Interactive**: Ask clarifying questions when the user's intent is ambiguous
 - **Practical**: Provide real usage examples and concrete recommendations
-- **Comprehensive**: Cover all 6 skills (/run, /designer, /review, /optimize, /team, /helper) plus their flags and integration points
+- **Comprehensive**: Cover all 7 skills (/run, /designer, /review, /optimize, /team, /org, /helper) plus their flags and integration points
 - **Non-Executing**: This command explains and recommends -- it NEVER executes other commands on behalf of the user
 
 ## Argument Handling
@@ -45,6 +45,7 @@ Available Commands:
 | /review     | Quality review                 | Autonomous  | 3-10 min   | Code review, security, quality checks |
 | /optimize   | Improve existing work          | Autonomous  | 5-20 min   | Performance, cost, content quality    |
 | /team       | Parallel team execution        | Autonomous  | Varies     | Large features with parallel work     |
+| /org        | Multi-domain hierarchy         | Autonomous  | 25-60 min  | Cross-domain strategic initiatives    |
 | /helper     | Command guide and reference    | Interactive | 1-2 min    | Learning commands, comparing options  |
 ```
 
@@ -58,6 +59,7 @@ What do you want to do?
   "I want to CHECK quality of existing work"  --> /review
   "I want to IMPROVE existing work"           --> /optimize
   "I have a BIG task with parallel parts"     --> /team
+  "I have a MULTI-DOMAIN strategic initiative" --> /org
   "I need help choosing a command"            --> /helper (you're here!)
 
 Need more detail? Try:
@@ -139,10 +141,13 @@ cAgents Quick Reference:
   /review [path]           Review code, docs, content quality
   /optimize [target]       Improve performance, cost, quality
   /team <task>             Parallel execution for big tasks
+  /org <instruction>       Multi-domain corporate hierarchy
 
 Flags: --dry-run (preview), --interactive (ask first), --quiet (silent)
 Combos: /designer -> /run (design then build), /optimize -> /review (optimize then check)
+        /org -> /team (multi-domain parallel), /run --team (parallel shortcut)
 Help: /helper <command> for details, /helper --compare for comparison
+Troubleshoot: /helper --troubleshoot <command> for common issues
 ```
 
 ### Mode 8: Topic Deep Dive (--topic flag)
@@ -160,6 +165,26 @@ Available topics:
 - `sessions` -- Session management, resume, and recovery
 
 See @reference/topic-guides.md for topic content.
+
+### Mode 9: Troubleshooting Mode (--troubleshoot flag)
+
+When the user runs `/helper --troubleshoot <command>`, present common issues and diagnostic flows for that command.
+
+See @reference/troubleshooting.md for troubleshooting content per command.
+
+**Format:**
+```
+Common Issues with /<command>:
+
+1. "{Issue title}"
+   Symptom: {what the user sees}
+   Likely cause: {what went wrong}
+   Check: {how to diagnose}
+   Fix: {how to resolve}
+   Prevention: {how to avoid in future}
+
+2. ...
+```
 
 ## Command Detail Summaries
 
@@ -237,6 +262,20 @@ See @reference/topic-guides.md for topic content.
 
 **Workflow**: Decompose -> Create Team -> Spawn Teammates -> Parallel /run per item -> Aggregate Results
 
+### /org - Corporate Hierarchy Orchestration
+
+**What**: A corporate hierarchy orchestrator that coordinates multi-domain initiatives. A CEO (inline) engages C-suite agents for domain analysis, conducts deliberation with objection rounds, produces a strategic brief, then delegates to sequential /team invocations per domain (dependency-ordered). For single-domain tasks, it shortcuts to /run or /team. Think of it as "coordinate across multiple business domains."
+
+**When to use**:
+- Multi-domain initiatives (engineering + marketing + hiring)
+- Product launches requiring cross-domain coordination
+- Strategic-level tasks with risk registers and dependency management
+- Company restructures or major migrations spanning domains
+
+**Key flags**: `--dry-run` (preview routing), `--quick` (skip deliberation), `--domains <d1,d2,...>` (force domains), `--resume <id>` (resume session)
+
+**Workflow**: CEO Routing -> C-Suite Analysis -> Deliberation -> Strategic Brief -> Sequential /team per domain -> Integration
+
 ## Command Integration Pipelines
 
 Commands are designed to work together:
@@ -248,6 +287,8 @@ Commands are designed to work together:
 /review -> /run           Review finds issues, /run fixes them
 /optimize -> /run         Optimizer generates plan, /run implements CRITICAL items
 /run --team               Shortcut: /run with parallel team execution
+/org -> /team (per domain) Multi-domain: CEO deliberation then sequential /team
+/org -> /run               Single-domain: strategic brief then /run
 ```
 
 ## Rules

@@ -61,6 +61,19 @@ strategic_brief:
 
   # User directives (from escalation resolution)
   directives: []
+
+  # Version history (tracks brief mutations during execution)
+  _version_history:
+    - version: 1
+      state: BRIEFED
+      timestamp: "{ISO_TIMESTAMP}"
+      changes: "Initial brief after deliberation"
+    # Subsequent versions appended as brief is modified:
+    # - version: 2
+    #   state: EXECUTED
+    #   timestamp: "{ISO_TIMESTAMP}"
+    #   changes: "{description of what changed and why}"
+    #   directive_ref: "{directive_id if triggered by user directive}"
 ```
 
 ## Field Descriptions
@@ -111,6 +124,32 @@ requested_dependencies:
 risk_flags:
   - "{newly identified risk}"
 ```
+
+## Version History
+
+The `_version_history` array tracks all mutations to the strategic brief during execution. Before any modification to `strategic_brief.yaml`, the CEO must:
+
+1. Snapshot the current state into the version history
+2. Record: version number, current pipeline state, timestamp, change description
+3. If triggered by a user directive, reference the directive ID
+
+**Use cases:**
+- Integration phase: Diff version 1 (original plan) vs. final version (actual execution) to analyze brief drift
+- Retrospective: Understand how the plan evolved during execution
+- Audit: Trace every modification to a decision point or escalation
+
+## Domain-Level Resume
+
+When `--resume` is used, the CEO checks each domain's `domain_status`:
+
+| Status | Action on Resume |
+|--------|-----------------|
+| `completed` | Skip entirely -- preserve existing outputs |
+| `in_progress` | Re-execute -- spawn new /team for this domain |
+| `blocked` | Re-execute -- attempt with current state |
+| `pending` | Execute normally |
+
+When `--resume <id> --domain <key>` is used, ONLY the specified domain is re-executed. All other domains retain their current status. The integration phase re-runs only if any domain was re-executed.
 
 ## Template Location
 

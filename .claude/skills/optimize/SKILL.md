@@ -41,6 +41,8 @@ Parse `$ARGUMENTS` for:
 - **Integration flags**: `--plan-only`, `--explore-first`, `--review-after`
 - **Cross-file flags**: `--cross-file`, `--no-cross-file`, `--cross-file-only`, `--dependency-graph`
 - **Validation flags**: `--validation comprehensive`, `--rollback automatic`, `--require-tests-pass`
+- **History flags**: `--history` (show past session outcomes)
+- **Benchmark flags**: `--benchmark auto|lighthouse|k6|hyperfine`
 
 See @reference/flags.md for complete flag reference.
 
@@ -61,20 +63,54 @@ See @reference/optimization-types.md for detailed type descriptions and metrics.
 
 ## 5-Phase Workflow
 
+### Phase 0: History & Learning (pre-detection)
+
+**If `--history` flag**: Display past optimization sessions and outcomes, then exit.
+
+```
+Read Agent_Memory/_system/optimize/learning/optimization_history.yaml
+Display: session_id, date, type, applied_count, impact_summary, success_rate
+```
+
+**For all sessions**: Load optimization learning data to improve recommendations.
+
+```yaml
+# Agent_Memory/_system/optimize/learning/pattern_effectiveness.yaml
+# Read at session start, updated after each session completion
+patterns:
+  {pattern_name}:
+    total_applied: {count}
+    success_rate: {0.0-1.0}
+    avg_impact: "{measurable impact description}"
+    common_failures: ["{failure reason 1}", ...]
+    confidence_adjustment: {-0.10 to +0.10}  # Boost/reduce confidence for proven/failing patterns
+```
+
+At session start, read `pattern_effectiveness.yaml` and adjust confidence scores for known patterns.
+At session end, write outcome to `optimization_history.yaml` and update `pattern_effectiveness.yaml`.
+
 ### Phase 1: Detection (15%)
 1. Parse `$ARGUMENTS` for target, type, and flags
 2. If no explicit type: auto-scan project structure for optimization indicators
 3. Detect frameworks from project files
 4. Parse natural language if user provides a goal (load `Agent_Memory/_system/optimize/intent_patterns.yaml`)
-5. If `--interactive`: ask user preferences via AskUserQuestion (target, safety level, apply mode)
-6. Write `detection_report.yaml`
+5. **Load learning data**: Read `pattern_effectiveness.yaml` to adjust confidence for known patterns
+6. If `--interactive`: ask user preferences via AskUserQuestion (target, safety level, apply mode)
+7. Write `detection_report.yaml`
 
 ### Phase 2: Analysis (25%)
 1. **Measure baseline** metrics relevant to optimization type
+   - If `--benchmark <tool>` specified, use that tool for baseline measurement:
+     - `lighthouse`: `npx lighthouse {url} --output json` for web performance (FCP, LCP, CLS, TBT, SI)
+     - `k6`: Run load test script for API performance (p95 latency, RPS, error rate)
+     - `hyperfine`: `hyperfine '{command}'` for CLI performance (mean time, stddev)
+     - `auto`: Auto-detect appropriate tool based on optimization type and project structure
+   - Store benchmark results in `baseline_benchmarks.yaml`
 2. **Scan for opportunities** using patterns from config files
 3. **Cross-file analysis** (if enabled): dependency graph, data flow, architectural patterns, performance propagation
 4. **Classify risk** per opportunity (SAFE/LOW/MEDIUM/HIGH/CRITICAL)
-5. Write `baseline_metrics.yaml` and `opportunities.yaml`
+5. **Apply learning adjustments**: For patterns in `pattern_effectiveness.yaml`, adjust confidence scores based on historical success rates
+6. Write `baseline_metrics.yaml`, `baseline_benchmarks.yaml` (if benchmark used), and `opportunities.yaml`
 
 See @reference/risk-classification.md for risk levels and auto-apply rules.
 See @reference/cross-file-analysis.md for cross-file analysis patterns.
@@ -104,7 +140,9 @@ See @reference/phase-details.md for atomic execution pattern.
 5. If any gate fails: rollback affected optimizations
 6. Generate final report with before/after metrics
 7. Suggest remaining opportunities and next steps
-8. Write `validation_report.yaml` and `optimization_report.md`
+8. **Re-run benchmark** if `--benchmark` was used: Compare baseline vs. final benchmark results
+9. **Update learning data**: Write session outcome to `optimization_history.yaml` and update `pattern_effectiveness.yaml` with success/failure per pattern applied
+10. Write `validation_report.yaml` and `optimization_report.md`
 
 ## Cross-Skill Integration
 
@@ -154,7 +192,9 @@ Session path: `Agent_Memory/sessions/optimize_{YYYYMMDD_HHMMSS}/`
 | Framework patterns | `Agent_Memory/_system/optimize/framework_patterns.yaml` | Framework-specific optimizations |
 | Scan patterns | `Agent_Memory/_system/optimize/scan_patterns.yaml` | General opportunity detection |
 | Cross-file patterns | `core/commands/optimize/cross_file_patterns.yaml` | Multi-file analysis patterns |
+| Pattern effectiveness | `Agent_Memory/_system/optimize/learning/pattern_effectiveness.yaml` | Learning from past sessions |
+| Optimization history | `Agent_Memory/_system/optimize/learning/optimization_history.yaml` | Session outcome tracking |
 
 ---
 
-**Detect. Measure. Plan. Execute Atomically. Validate. Learn.**
+**Detect. Measure. Plan. Execute Atomically. Validate. Learn from outcomes.**

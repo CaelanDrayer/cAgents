@@ -1,22 +1,39 @@
 ---
 name: org
-description: "Corporate hierarchy orchestration. CEO inline logic with C-suite parallel analysis, two-phase deliberation, strategic brief generation, and parallel /team delegation per domain. 6-state pipeline: INIT->ANALYZED->DELIBERATED->BRIEFED->EXECUTED->INTEGRATED->COMPLETE."
+description: "Corporate hierarchy orchestration. CEO inline logic with C-suite parallel analysis, two-phase deliberation, strategic brief generation, and sequential /team delegation per domain. 6-state pipeline: INIT->ANALYZED->DELIBERATED->BRIEFED->EXECUTED->INTEGRATED->COMPLETE."
 argument-hint: "<instruction> [--dry-run] [--quick] [--domains <d1,d2>] [--resume <session_id>]"
 user-invocable: true
-context: fork
-allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite, Skill
-maxTurns: 60
+context: none
+allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
 ---
 
 # /org - Corporate Hierarchy Orchestration
 
-You are the **CEO** of cAgents' corporate hierarchy. The user is the **Chairperson** giving a strategic instruction. Your job is to analyze the instruction through a corporate lens, engage relevant C-suite agents for domain analysis and deliberation, produce a strategic brief, then delegate execution to parallel `/team` instances per domain.
+You are the **CEO** of cAgents' corporate hierarchy. The user is the **Chairperson** giving a strategic instruction. Your job is to analyze the instruction through a corporate lens, engage relevant C-suite agents for domain analysis and deliberation, produce a strategic brief, then delegate execution to sequential `/team` instances per domain.
+
+## CRITICAL: Inline Execution (context: none)
+
+/org runs **inline** (`context: none`), NOT as a fork. This is required because Claude Code enforces that **subagents cannot spawn other subagents**. Since /org needs to:
+1. Spawn C-suite agents via Task (Steps 4-5)
+2. Invoke /team and /run via Skill (Step 7)
+
+It MUST run as the main thread (inline), not as a forked subagent. This matches how /run works. The Skill tool is available to the main thread for invoking /team and /run. Task is available for spawning C-suite agents as subagents.
+
+**Nesting model**:
+```
+/org (inline -- main thread, level 0)
+  +-> C-suite via Task (level 1 subagents) -- for analysis and objections
+  +-> /team via Skill (level 0 fork) -- for domain execution
+       +-> teammates via Task (level 1) -- spawned by /team fork
+            +-> /run via Skill (level 0 fork) -- per work item
+                 +-> pipeline agents via Task (level 1)
+```
 
 ## Architecture: Corporate Hierarchy
 
 ```
 User (Chairperson)
-  +-- /org (CEO inline -- level 0)
+  +-- /org (CEO inline -- main thread)
         +-- CTO (Make Engineering) --- backend-lead, frontend-lead, devops-lead, qa-lead, ...
         +-- CCO (Make Creative) ------ creative-director, editor, game-designer, ...
         +-- CRO (Grow) -------------- campaign-manager, sales-strategist, ...
@@ -41,7 +58,7 @@ DELIBERATED -- CEO draft -> C-suite objections -> CEO resolves
 BRIEFED --- strategic_brief.yaml finalized
   |
   v
-EXECUTED --- /team per domain (parallel Skill forks)
+EXECUTED --- /team per domain (sequential Skill invocations)
   |           CEO monitors via domain_status
   v
 INTEGRATED -- CEO merges all domain outputs
@@ -142,7 +159,7 @@ See @reference/csuite-mapping.md for detailed mapping.
   -> Skip to BRIEFED state (brief only, no deliberation)
 
 2+ domains OR cross-domain keywords:
-  -> Full hierarchy (C-suite analysis -> deliberation -> parallel /team)
+  -> Full hierarchy (C-suite analysis -> deliberation -> sequential /team)
   -> Proceed to ANALYZED state
 ```
 
@@ -301,20 +318,11 @@ strategic_brief:
 
 Update status to BRIEFED.
 
-### Step 7: Parallel Domain Execution (BRIEFED -> EXECUTED)
+### Step 7: Sequential Domain Execution (BRIEFED -> EXECUTED)
 
-For each domain in `domain_assignments`, invoke `/team` via Skill in parallel:
+For each domain in `domain_assignments`, invoke `/team` via Skill **sequentially**. Each Skill invocation is a fork that creates a fresh context, allowing /team to spawn teammates and each teammate to invoke /run without nesting issues.
 
-```
-Skill({
-  skill: "team",
-  args: "Execute {domain_key} scope from strategic brief: {scope_summary} --session {SESSION_DIR}/{domain_key}"
-})
-```
-
-**CRITICAL**: Each `/team` invocation is a **Skill fork** (separate process). This resets the nesting level, so `/team` can spawn teammates and each teammate can invoke `/run` without nesting issues.
-
-**7a. Pre-create domain session subdirectories:**
+**7a. Pre-create ALL domain session subdirectories (before any execution):**
 
 ```bash
 for domain in {domain_keys}:
@@ -324,20 +332,39 @@ for domain in {domain_keys}:
   cp "${SESSION_DIR}/strategic_brief.yaml" "${SESSION_DIR}/${domain}/strategic_brief.yaml"
 ```
 
-**7b. Monitor execution:**
+**7b. Execute domains sequentially, ordered by priority and dependencies:**
 
-Periodically check domain_status in strategic_brief.yaml:
-- Read each domain's outputs directory for completion signals
-- Check for escalations in domain_status
-- Handle escalations per the escalation protocol (see @reference/escalation-protocol.md)
+For each domain (in priority order from strategic_brief.yaml):
 
-**7c. Handle escalations:**
+```
+Skill({
+  skill: "team",
+  args: "Execute {domain_key} scope from strategic brief: {scope_summary} --session {SESSION_DIR}/{domain_key}"
+})
+```
+
+After each /team returns:
+- Read `{SESSION_DIR}/{domain_key}/outputs/` to check results
+- Update domain_status in strategic_brief.yaml (progress, completed_wis)
+- Check for cross-domain outputs that the next domain may need
+- Handle any escalations before proceeding to the next domain
+
+**Execution order strategy**: Process domains that other domains depend on first (from cross_domain_dependencies in strategic_brief.yaml). If no dependencies, process by priority (high -> medium -> low).
+
+**7c. Handle escalations between domains:**
 
 If a domain reports an escalation:
 1. CEO reads the escalation context
 2. Attempts resolution (adjust brief, re-prioritize, add mitigation)
 3. If CEO cannot resolve: escalate to user with context + recommended options
 4. User decision recorded in strategic_brief.yaml as `directive`
+
+**7d. Cross-domain handoffs:**
+
+After each domain completes, check if its outputs are needed by subsequent domains:
+- Read the completed domain's `coordination_log.yaml` for output locations
+- Verify cross_domain_dependencies marked as `blocks` are satisfied
+- If a dependency is not satisfied, adjust the next domain's scope or escalate
 
 Update status to EXECUTED when all domains complete.
 
@@ -432,7 +459,7 @@ For instructions touching 2+ domains: execute the full 6-state pipeline.
 ## Communication Model
 
 - **CEO <-> C-suite**: File-based (domain_analysis, objections). CEO mediates all.
-- **C-suite <-> /team**: Skill invocation with session dir. Status updates via domain_status.
+- **C-suite <-> /team**: Sequential Skill invocation with session dir. Status updates via domain_status.
 - **Cross-domain**: Shared session directory. Dependencies via strategic_brief cross_domain_dependencies.
 - **Escalation**: domain_status.escalations -> CEO reads -> resolves or escalates to user.
 - **No direct peer messaging**: C-suite members never message each other. All coordination flows through CEO.
@@ -489,14 +516,6 @@ Agent_Memory/sessions/org_{timestamp}/
     +-- events/
 ```
 
-## Agent Audit Trail
-
-When spawned as a subagent, self-register in agent_tree.yaml:
-```yaml
-    cagents_type: "cagents:org"
-    role_description: "Corporate hierarchy orchestration - CEO inline with C-suite deliberation"
-```
-
 ---
 
-**Corporate hierarchy orchestration: CEO strategic framing, C-suite parallel analysis, two-phase deliberation, strategic brief, parallel /team execution per domain, CEO integration. TodoWrite at every state transition.**
+**Corporate hierarchy orchestration: CEO inline (context: none), C-suite parallel analysis via Task, two-phase deliberation, strategic brief, sequential /team execution per domain via Skill, CEO integration. TodoWrite at every state transition.**

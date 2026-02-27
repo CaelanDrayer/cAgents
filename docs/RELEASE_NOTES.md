@@ -57,7 +57,7 @@
 
 ## v9.26.0 - February 27, 2026
 
-**Theme**: Corporate hierarchy orchestration -- New `/org` command that maps cAgents' 239 agents to a corporate hierarchy model. CEO logic runs inline, C-suite agents provide parallel domain analysis, two-phase deliberation produces a strategic brief, and parallel `/team` instances execute per domain. COO promoted to controller tier. `/run` gains `--brief` flag. `/team` gains strategic brief awareness.
+**Theme**: Corporate hierarchy orchestration -- New `/org` command that maps cAgents' 239 agents to a corporate hierarchy model. CEO logic runs inline, C-suite agents provide parallel domain analysis, two-phase deliberation produces a strategic brief, and sequential `/team` instances execute per domain (dependency-ordered). COO promoted to controller tier. `/run` gains `--brief` flag. `/team` gains strategic brief awareness.
 
 ### New Features
 

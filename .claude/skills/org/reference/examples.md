@@ -60,7 +60,7 @@
    - CHRO flags: "Hiring 5 engineers in 4 weeks is aggressive"
    - CEO resolves: Phase hiring across Q1-Q2, reduce initial scope to core analytics
 4. **BRIEFED**: Final strategic_brief.yaml with phased approach
-5. **EXECUTED**: Parallel /team per domain:
+5. **EXECUTED**: Sequential /team per domain (dependency-ordered):
    - /team make_eng (engineering build)
    - /team make_cre (design + brand)
    - /team grow (GTM campaign)
@@ -125,5 +125,5 @@
   |     +-- Complex scope? -> /team with strategic_brief
   |
   +-- 2+ domains?
-        +-- Full hierarchy (C-suite analysis -> deliberation -> parallel /team)
+        +-- Full hierarchy (C-suite analysis -> deliberation -> sequential /team)
 ```

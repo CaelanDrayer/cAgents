@@ -109,6 +109,31 @@
 /review --save-report ./review.md # Save report to file
 ```
 
+### Review Profiles
+```bash
+/review --profile pre-merge       # Load "pre-merge" profile (strict + auto-fix + tests)
+/review --profile security-audit  # Load "security-audit" profile
+/review --profile quick           # Load "quick" profile (changed files, summary output)
+/review --profile content-review  # Load "content-review" profile (non-code focused)
+```
+
+Profile config location: `.claude/review-profiles.yaml` (project) or `Agent_Memory/_system/commands/review/profiles.yaml` (user).
+Explicit flags always override profile values.
+
+### Baseline & Suppression
+```bash
+/review --baseline                # Compare against saved baseline, show only new findings
+/review --reset-baseline          # Clear baseline, review everything fresh
+/review --suppress F-001          # Mark finding F-001 as suppressed (skip review)
+/review --suppress F-001 --reason "Known limitation, deferred to Q3"  # With reason
+```
+
+### Quality Trends
+```bash
+/review --trends                  # Show quality trend for the target (last 5 reviews)
+/review --trends --target src/    # Show trends for specific target
+```
+
 ### Pattern Learning
 ```bash
 /review --learn                   # Update pattern database from findings
@@ -136,4 +161,25 @@
 
 # Full review with detailed report
 /review --parallel --auto-fix all --output detailed --save-report ./full-review.md
+
+# Pre-merge review using saved profile
+/review --profile pre-merge
+
+# Baseline review -- only show new findings since last review
+/review src/ --baseline --output summary
+
+# Suppress a known finding
+/review --suppress F-042 --reason "Accepted risk, tracked in JIRA-1234"
+
+# Review a business process document (non-code)
+/review docs/onboarding-workflow.md --type process --focus quality
+
+# Review marketing content
+/review content/blog/ --type content --profile content-review
+
+# Show quality trends over time
+/review --trends --target src/
+
+# Security audit profile with baseline filtering
+/review --profile security-audit --baseline
 ```

@@ -234,3 +234,26 @@ Complete flag tables for all commands, used by `/helper --flags <command>`.
 | `--tier <N>` | Number | Override tier | auto | `/team Build system --tier 4` |
 | `--quiet` / `-q` | Boolean | Suppress output | false | `/team Build feature --quiet` |
 | `--teammate-mode <mode>` | String | Display: auto/tmux/in-process | auto | `/team Build app --teammate-mode tmux` |
+
+---
+
+## /org Flags
+
+| Flag | Type | Description | Default | Example |
+|------|------|-------------|---------|---------|
+| `--dry-run` | Boolean | Preview routing decision and C-suite engagement plan | false | `/org Launch product --dry-run` |
+| `--quick` | Boolean | Skip deliberation for single-domain routing | false | `/org Fix auth --quick` |
+| `--domains <d1,d2,...>` | String | Force specific domain scope | auto-detect | `/org Task --domains make_eng,grow` |
+| `--resume <session_id>` | String | Resume interrupted /org session | none | `/org --resume org_20260227_143022` |
+
+### /org Domain Keys
+
+| Domain Key | C-Suite Agent | Example Keywords |
+|-----------|---------------|------------------|
+| `make_eng` | CTO | fix, build, implement, code, api, database, architecture |
+| `make_cre` | CCO | write, story, content, design, creative, brand, UX |
+| `grow` | CRO | campaign, marketing, sales, conversion, SEO, leads |
+| `operate_fin` | CFO | budget, cost, forecast, investment, ROI, financial |
+| `operate_ops` | COO | operations, process, supply chain, logistics, efficiency |
+| `people` | CHRO | hire, recruit, onboard, culture, HR, talent, performance |
+| `serve` | General Counsel | support, legal, compliance, customer, SLA, contract |
