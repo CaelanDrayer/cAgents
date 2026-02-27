@@ -160,6 +160,7 @@ function findActiveSession(sessionHint) {
       return tsB.localeCompare(tsA);
     });
 
+  // First pass: look for sessions with status.yaml in a non-terminal phase
   for (const session of sessions) {
     const statusFile = path.join(sessionsDir, session, 'status.yaml');
     const content = safeRead(statusFile);
@@ -170,6 +171,24 @@ function findActiveSession(sessionHint) {
       _cachedActiveSession = path.join(sessionsDir, session);
       return _cachedActiveSession;
     }
+  }
+
+  // Second pass: look for recently-created sessions without status.yaml
+  // (handles the race condition where trigger agent hasn't written status.yaml yet)
+  const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+  for (const session of sessions) {
+    const sessionPath = path.join(sessionsDir, session);
+    const statusFile = path.join(sessionPath, 'status.yaml');
+    if (safeRead(statusFile)) continue; // Already checked in first pass
+
+    try {
+      const stat = fs.statSync(sessionPath);
+      if (stat.mtimeMs > fiveMinutesAgo) {
+        console.error(`[findActiveSession] Found recent session without status.yaml: ${session}`);
+        _cachedActiveSession = sessionPath;
+        return _cachedActiveSession;
+      }
+    } catch { /* skip */ }
   }
 
   _cachedActiveSession = null;

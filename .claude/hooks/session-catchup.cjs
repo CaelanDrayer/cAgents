@@ -104,7 +104,7 @@ function findIncompleteSessions() {
 createHook('SessionCatchup', async (input) => {
   const incomplete = findIncompleteSessions();
 
-  const cagentsContext = 'cAgents V9.15 session initialized. Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Task tool subagent_type references.';
+  const cagentsContext = 'cAgents V9.16 session initialized. Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Task tool subagent_type references. IMPORTANT: When spawned as a cAgents agent, self-register your agent type in workflow/agent_tree.yaml for audit trail (SubagentStart hook injects instructions).';
 
   if (incomplete.length === 0) {
     return {

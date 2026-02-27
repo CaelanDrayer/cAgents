@@ -6,13 +6,13 @@ paths:
 
 # cAgents Hook System
 
-V9.13 CJS-only hook architecture with 14 hook event types and `createHook()` factory pattern.
+V9.16 CJS-only hook architecture with 14 hook event types, `createHook()` factory pattern, and agent audit trail.
 
 ## Architecture
 
 cAgents uses a unified CJS hook system configured in `.claude/settings.json`:
 
-- **CJS hooks** (`.claude/hooks/`): 16 `.cjs` files -- 1 shared utility module (`hook-utils.cjs`) + 1 hook launcher (`run-hook.cjs`) + 13 registered hooks + 1 standalone CLI tool (`eval-runner.cjs`). All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output).
+- **CJS hooks** (`.claude/hooks/`): 17 `.cjs` files -- 1 shared utility module (`hook-utils.cjs`) + 1 hook launcher (`run-hook.cjs`) + 14 registered hooks + 1 standalone CLI tool (`eval-runner.cjs`). All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output).
 - **Prompt hooks**: None currently active. The Stop prompt hook was removed in V9.6.2 due to unreliable LLM JSON responses causing recurring validation failures. The `verify-completion.cjs` command hook provides equivalent file-based verification.
 - **Self-contained invocation via run-hook.cjs**: All hooks are called via `node "${CLAUDE_PLUGIN_ROOT}"/.claude/hooks/run-hook.cjs <hook-name>` -- a launcher that resolves the target hook path using `__dirname` (always correct, since the launcher itself is in `.claude/hooks/`). The `${CLAUDE_PLUGIN_ROOT}` env var in command strings is the official Claude Code mechanism for plugin portability (see docs.anthropic.com/en/hooks). V9.13 switched from `$CAGENTS_DIR` (custom env var not expanded by Claude Code in command strings) to `${CLAUDE_PLUGIN_ROOT}` (built-in, always expanded). Previous attempts used `$CLAUDE_PROJECT_DIR` (wrong: points to user's project) and custom `$CAGENTS_DIR` (wrong: custom env vars are not expanded in hook command strings).
 
@@ -53,7 +53,8 @@ The V9.5 refactoring eliminates the dual shell+JS architecture that caused recur
 | `PreToolUse` | Before tool execution | `bash-validator.cjs`, `secret-detection.cjs` | Validate, block dangerous operations |
 | `PostToolUseFailure` | Tool execution fails | `tool-failure-tracker.cjs` | Track failures, detect patterns, suggest recovery |
 | `Stop` | Claude stops responding | `verify-completion.cjs` | Verify completion criteria |
-| `SubagentStart` | Subagent spawned | `subagent-tracker.cjs`, `team-start.cjs` | Log spawns, initialize team monitoring |
+| `SubagentStart` | Subagent spawned | `subagent-tracker.cjs`, `team-start.cjs` | Log spawns, initialize team monitoring, inject self-registration context |
+| `SubagentStop` | Subagent finishes | `subagent-stop-tracker.cjs` | Log completion, update agent tree with stop timestamps |
 | `TeammateIdle` | Teammate goes idle | `teammate-idle-handler.cjs` | Find available work for idle members |
 | `TaskCompleted` | Task finishes | `team-task-complete.cjs` | Update task list, unblock dependencies |
 | `PermissionRequest` | Permission dialog | `permission-handler.cjs` | Auto-approve safe patterns, HITL gates |
@@ -132,8 +133,13 @@ createHook('MyHook', async (input) => {
 - **Can block**: Returns `{decision: "block", reason: "..."}` for incomplete workflows
 
 #### SubagentStart: subagent-tracker.cjs + team-start.cjs
-- **subagent-tracker.cjs**: Logs agent spawns to `workflow/agent_tree.yaml`
+- **subagent-tracker.cjs**: Logs agent spawns to `workflow/agent_tree.yaml` and global audit log (`_system/logs/agent_spawns.log`). Includes fallback session discovery for the race condition where `status.yaml` hasn't been written yet. Injects `additionalContext` asking cAgents agents to self-register their `cagents:{name}` type, since Claude Code's `agent_type` field reports "general-purpose" for plugin agents.
 - **team-start.cjs**: Initializes team monitoring directories and metrics files
+
+#### SubagentStop: subagent-stop-tracker.cjs
+- **Purpose**: Track when subagents finish, updating agent_tree.yaml with `stopped_at` timestamps
+- **Also**: Appends stop events to the global audit log (`_system/logs/agent_spawns.log`)
+- **Updates**: `workflow/agent_tree.yaml` (adds `stopped_at` to the agent entry)
 
 #### PostToolUseFailure: tool-failure-tracker.cjs
 - **Purpose**: Track tool failures, detect patterns (3+ failures suggests alternatives)

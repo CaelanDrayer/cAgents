@@ -333,7 +333,7 @@ cAgents/
 +-- CLAUDE.md                # Main project memory (this file)
 +-- .claude/
 |   +-- skills/              # Skills (run, team, designer, review, optimize, helper)
-|   +-- hooks/               # 16 .cjs files (13 hooks + utils + launcher + eval CLI)
+|   +-- hooks/               # 17 .cjs files (14 hooks + utils + launcher + eval CLI)
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (20 files, 5 categories)
 |   +-- settings.json        # Hook registration + permissions + env
@@ -355,7 +355,7 @@ cAgents/
 
 **Architecture**: CJS-only hooks with `createHook()` factory. All invoked via `node "${CLAUDE_PLUGIN_ROOT}"/.claude/hooks/run-hook.cjs <hook-name>` using the official Claude Code plugin env var for self-contained path resolution. See @.claude/rules/core/hooks.md for full documentation.
 
-**16 .cjs files**: `hook-utils.cjs` (factory), `run-hook.cjs` (launcher), `eval-runner.cjs` (CLI), + 13 registered hooks across 11 event types:
+**17 .cjs files**: `hook-utils.cjs` (factory), `run-hook.cjs` (launcher), `eval-runner.cjs` (CLI), + 14 registered hooks across 12 event types:
 
 | Event Type | Hook(s) |
 |------------|---------|
@@ -363,6 +363,7 @@ cAgents/
 | `SessionEnd` | `team-stop.cjs` |
 | `Stop` | `verify-completion.cjs` |
 | `SubagentStart` | `subagent-tracker.cjs`, `team-start.cjs` |
+| `SubagentStop` | `subagent-stop-tracker.cjs` |
 | `PreToolUse[Bash]` | `bash-validator.cjs` |
 | `PreToolUse[Write\|Edit]` | `secret-detection.cjs` |
 | `PostToolUseFailure` | `tool-failure-tracker.cjs` |
@@ -391,11 +392,11 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Agents**: 238 total (14 core + 14 shared + 210 domain specialists)
 **Super-Domains**: Make (111), Grow (38), Operate (13), People (20), Serve (28)
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/*.yaml`
-**Hooks**: 11 event types, 13 CJS hooks, invoked via `run-hook.cjs` launcher
+**Hooks**: 12 event types, 14 CJS hooks, invoked via `run-hook.cjs` launcher
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via built-in agent teams
-**Version**: 9.16.0
+**Version**: 9.16.1
 
 ## Troubleshooting
 

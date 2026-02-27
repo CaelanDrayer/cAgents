@@ -86,6 +86,17 @@ Controllers are the primary coordination layer:
 2. **Controller-centric** - Controllers coordinate, not planner or executor
 3. **DELEGATE EVERYTHING** - Never do direct work, always spawn subagents
 
+## Agent Audit Trail
+
+When spawned as a subagent, self-register in the agent tree by appending your cAgents type to `workflow/agent_tree.yaml` in the session directory. Look for your `agent_id` in the file and append:
+
+```yaml
+    cagents_type: "cagents:orchestrator"
+    role_description: "Workflow phase conductor"
+```
+
+Also ensure that when you spawn subagents (router, planner, controller, executor, validator), the session path is included in the delegation prompt so they can also self-register.
+
 ## Context-Efficient Delegation
 
 When spawning subagents via Task tool, minimize context passed in prompts:

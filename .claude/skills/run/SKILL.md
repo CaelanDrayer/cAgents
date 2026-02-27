@@ -187,6 +187,16 @@ See @reference/delegation-patterns.md for advanced delegation patterns.
 - Templates: `Agent_Memory/_system/trigger/workflow_templates.yaml`
 - Validation: `Agent_Memory/_system/trigger/preflight_validation.yaml`
 - Session folder: `Agent_Memory/sessions/run_{YYYYMMDD_HHMMSS}/`
+- Agent audit trail: `Agent_Memory/sessions/{session_id}/workflow/agent_tree.yaml`
+- Global audit log: `Agent_Memory/_system/logs/agent_spawns.log`
+
+## Agent Audit Trail
+
+Every `/run` session tracks which agents were spawned via `workflow/agent_tree.yaml`. The SubagentStart hook records each spawn, and the SubagentStop hook records completion. Each cAgents agent is expected to self-register its `cagents:{name}` type since Claude Code's SubagentStart event only provides a generic agent_type.
+
+To audit a previous run: `cat Agent_Memory/sessions/run_{YYYYMMDD_HHMMSS}/workflow/agent_tree.yaml`
+
+For cross-session auditing: `cat Agent_Memory/_system/logs/agent_spawns.log`
 
 ---
 

@@ -75,17 +75,38 @@ See @resources/todowrite-patterns.md for progress tracking patterns.
 
 ## Memory Operations
 
+### CRITICAL: Session Initialization Order
+
+The session directory and its key files MUST be created in this exact order, BEFORE spawning any subagents. The SubagentStart hook (`subagent-tracker.cjs`) uses `findActiveSession()` to locate the session directory. If `status.yaml` does not exist when the first subagent spawns, the hook cannot find the session and agent tracking fails silently.
+
+**Required creation order** (all BEFORE any Task tool calls):
+1. Create session directory: `Agent_Memory/sessions/run_{YYYYMMDD_HHMMSS}/`
+2. Create `instruction.yaml` with request metadata
+3. Create `status.yaml` with `phase: routing` (MUST exist before spawning orchestrator)
+4. Create `workflow/` directory
+
 ### Writes
-- `Agent_Memory/{instruction_id}/` - Complete folder structure
-- `Agent_Memory/{instruction_id}/instruction.yaml` - Enhanced metadata
-- `Agent_Memory/{instruction_id}/status.yaml` - Initial status
-- `Agent_Memory/{instruction_id}/workflow/` - Detection, validation, context files
+- `Agent_Memory/sessions/{session_id}/` - Complete folder structure
+- `Agent_Memory/sessions/{session_id}/instruction.yaml` - Enhanced metadata
+- `Agent_Memory/sessions/{session_id}/status.yaml` - Initial status (phase: routing)
+- `Agent_Memory/sessions/{session_id}/workflow/` - Detection, validation, context files
 - `Agent_Memory/_knowledge/analytics/workflow_metrics.jsonl` - Analytics tracking
 
 ### Reads
 - `Agent_Memory/_system/trigger/domain_detection.yaml` - Detection config
 - `Agent_Memory/_system/trigger/workflow_templates.yaml` - Template catalog
 - `Agent_Memory/_system/trigger/preflight_validation.yaml` - Validation rules
+
+## Agent Audit Trail
+
+When spawned as a subagent, the SubagentStart hook injects context asking you to self-register your cAgents agent name. If you see a message about self-registering in `agent_tree.yaml`, append your agent type information:
+
+```yaml
+    cagents_type: "cagents:trigger"
+    role_description: "Universal entry point - domain detection and workflow initialization"
+```
+
+This is critical for auditing which agents were used in a workflow. Claude Code's SubagentStart event only provides a generic `agent_type` (often "general-purpose"), so cAgents agents must self-report their actual role.
 
 ## Parent Session Linkage
 
