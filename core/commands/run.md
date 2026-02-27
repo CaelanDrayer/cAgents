@@ -37,26 +37,24 @@ run_command_rules:
 
 ### Progress Reporting Format
 
-Report SUMMARIES of delegation, not inline results:
+Report SUMMARIES of delegation, not inline results. **Prefix each task/result with the agent name in brackets:**
 
 ```
 /run Fix auth bug
 
-Delegating to workflow engine...
+[trigger] Delegating to workflow engine...
   Domain: engineering (92% confidence)
   Controller: engineering-manager
   Tier: 2
 
-Workflow delegated to trigger agent.
-Progress will be reported as tasks complete.
+[orchestrator] Workflow plan created, proceeding to coordination...
 
-[Trigger reports back]
-Coordination complete:
-  - backend-developer: Fixed timeout handling
-  - qa-tester: Added 5 regression tests
-  - architect: Approved design
+[engineering-manager] Coordination complete:
+  - [backend-developer] Fixed timeout handling
+  - [qa-tester] Added 5 regression tests
+  - [architect] Approved design
 
-Validation: PASSED
+[universal-validator] Validation: PASSED
 Outputs: Agent_Memory/sessions/run_20260123_180000/outputs/
 ```
 
@@ -302,15 +300,16 @@ See `core/agents/run.md` for complete domain detection logic and confidence scor
 
 ## TodoWrite Pattern
 
-Create minimal todo for user visibility:
+Create minimal todo for user visibility. **Prefix each task with the executing agent name in brackets:**
 
 ```javascript
 TodoWrite({
   todos: [
-    {content: "Initialize workflow and delegate to trigger agent", status: "in_progress", activeForm: "Initializing workflow and delegating to trigger agent"},
-    {content: "Execute tasks with domain team", status: "pending", activeForm: "Executing tasks with domain team"},
-    {content: "Validate outputs and quality", status: "pending", activeForm: "Validating outputs and quality"},
-    {content: "Finalize and archive results", status: "pending", activeForm: "Finalizing and archiving results"}
+    {content: "[trigger] Initialize workflow and detect domain", status: "in_progress", activeForm: "[trigger] Initializing workflow and detecting domain"},
+    {content: "[orchestrator] Plan objectives and select controllers", status: "pending", activeForm: "[orchestrator] Planning objectives and selecting controllers"},
+    {content: "[controller] Coordinate work via question-based delegation", status: "pending", activeForm: "[controller] Coordinating work via question-based delegation"},
+    {content: "[executor] Monitor execution and aggregate outputs", status: "pending", activeForm: "[executor] Monitoring execution and aggregating outputs"},
+    {content: "[validator] Validate outputs and quality", status: "pending", activeForm: "[validator] Validating outputs and quality"}
   ]
 })
 ```

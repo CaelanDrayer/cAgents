@@ -79,13 +79,13 @@ Task({
 
 ## TodoWrite Pattern
 
-Create minimal todo for visibility:
+Create minimal todo for visibility. **Prefix each task with the executing agent name in brackets:**
 
 ```javascript
 TodoWrite({
   todos: [
-    {content: "Process request", status: "in_progress", activeForm: "Processing request"},
-    {content: "Complete workflow", status: "pending", activeForm: "Completing workflow"}
+    {content: "[{agent-name}] Process request", status: "in_progress", activeForm: "[{agent-name}] Processing request"},
+    {content: "[{agent-name}] Complete workflow", status: "pending", activeForm: "[{agent-name}] Completing workflow"}
   ]
 })
 ```

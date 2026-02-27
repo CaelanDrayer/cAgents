@@ -2,32 +2,36 @@
 
 Shared TodoWrite patterns for cAgents V7.0 to eliminate duplication.
 
+**IMPORTANT: Agent Name Prefix Convention** - All tasks displayed to users MUST be prefixed with the executing agent's name in brackets: `[agent-name] task description`. This applies to both `content` and `activeForm` fields. This lets the user see which agent is responsible for each task at a glance.
+
 ## Standard Workflow TodoWrite Pattern
 
-Use this pattern for standard tier 2+ workflows (routing → planning → coordinating → executing → validating):
+Use this pattern for standard tier 2+ workflows (routing -> planning -> coordinating -> executing -> validating):
 
 ```yaml
 todos:
-  - content: "Route request to appropriate domain and tier"
+  - content: "[universal-router] Route request to appropriate domain and tier"
     status: "in_progress"
-    activeForm: "Routing request to appropriate domain and tier"
+    activeForm: "[universal-router] Routing request to appropriate domain and tier"
 
-  - content: "Create objectives and select controllers"
+  - content: "[universal-planner] Create objectives and select controllers"
     status: "pending"
-    activeForm: "Creating objectives and selecting controllers"
+    activeForm: "[universal-planner] Creating objectives and selecting controllers"
 
-  - content: "Coordinate work via question-based delegation"
+  - content: "[{controller}] Coordinate work via question-based delegation"
     status: "pending"
-    activeForm: "Coordinating work via question-based delegation"
+    activeForm: "[{controller}] Coordinating work via question-based delegation"
 
-  - content: "Execute implementation tasks"
+  - content: "[universal-executor] Execute implementation tasks"
     status: "pending"
-    activeForm: "Executing implementation tasks"
+    activeForm: "[universal-executor] Executing implementation tasks"
 
-  - content: "Validate outputs and quality"
+  - content: "[universal-validator] Validate outputs and quality"
     status: "pending"
-    activeForm: "Validating outputs and quality"
+    activeForm: "[universal-validator] Validating outputs and quality"
 ```
+
+**Note**: Replace `{controller}` with the actual controller name once known (e.g., `engineering-manager`, `creative-director`). Before the controller is selected, use `[controller]` as a placeholder.
 
 ## Phase Transition TodoWrite Pattern
 
@@ -50,42 +54,44 @@ Use when encountering validation failures or blockers:
 # Mark failed task
 TodoWrite:
   - Current task status: "in_progress" → "pending"
-  - Add error todo:
-      content: "Resolve {error_type}: {error_message}"
+  - Add error todo (prefix with the agent handling the error):
+      content: "[{agent}] Resolve {error_type}: {error_message}"
       status: "in_progress"
-      activeForm: "Resolving {error_type}: {error_message}"
+      activeForm: "[{agent}] Resolving {error_type}: {error_message}"
 ```
 
 ## Controller Coordination TodoWrite Pattern
 
-Use for controllers during coordinating phase:
+Use for controllers during coordinating phase. Prefix with the controller's own name:
 
 ```yaml
 todos:
-  - content: "Analyze objectives from plan.yaml"
+  - content: "[{controller}] Analyze objectives from plan.yaml"
     status: "in_progress"
-    activeForm: "Analyzing objectives from plan.yaml"
+    activeForm: "[{controller}] Analyzing objectives from plan.yaml"
 
-  - content: "Break down into {N} specific questions"
+  - content: "[{controller}] Break down into {N} specific questions"
     status: "pending"
-    activeForm: "Breaking down into {N} specific questions"
+    activeForm: "[{controller}] Breaking down into {N} specific questions"
 
-  - content: "Delegate questions to execution agents"
+  - content: "[{controller}] Delegate questions to execution agents"
     status: "pending"
-    activeForm: "Delegating questions to execution agents"
+    activeForm: "[{controller}] Delegating questions to execution agents"
 
-  - content: "Synthesize answers into solution"
+  - content: "[{controller}] Synthesize answers into solution"
     status: "pending"
-    activeForm: "Synthesizing answers into solution"
+    activeForm: "[{controller}] Synthesizing answers into solution"
 
-  - content: "Create implementation tasks"
+  - content: "[{controller}] Create implementation tasks"
     status: "pending"
-    activeForm: "Creating implementation tasks"
+    activeForm: "[{controller}] Creating implementation tasks"
 
-  - content: "Write coordination_log.yaml"
+  - content: "[{controller}] Write coordination_log.yaml"
     status: "pending"
-    activeForm: "Writing coordination_log.yaml"
+    activeForm: "[{controller}] Writing coordination_log.yaml"
 ```
+
+**Note**: Replace `{controller}` with the actual controller name (e.g., `[engineering-manager]`, `[creative-director]`).
 
 ## Usage
 
@@ -123,16 +129,18 @@ domain: make
 
 ## Coordinating Phase
 
-During coordination, use the **Controller Coordination TodoWrite Pattern** from the helper:
+During coordination, use the **Controller Coordination TodoWrite Pattern** from the helper,
+replacing `{controller}` with your agent name (`engineering-manager`):
 
-1. Analyze objectives
-2. Break into questions (8-12)
-3. Delegate to specialists
-4. Synthesize answers
-5. Create tasks
-6. Write coordination_log.yaml
+1. [engineering-manager] Analyze objectives
+2. [engineering-manager] Break into questions (8-12)
+3. [engineering-manager] Delegate to specialists
+4. [engineering-manager] Synthesize answers
+5. [engineering-manager] Create tasks
+6. [engineering-manager] Write coordination_log.yaml
 
-The TodoWrite pattern ensures progress visibility for user.
+The agent-prefixed TodoWrite pattern ensures the user can see which agent is
+responsible for each task at a glance.
 ```
 
 ---

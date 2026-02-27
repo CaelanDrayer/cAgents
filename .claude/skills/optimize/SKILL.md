@@ -125,14 +125,16 @@ Skill({ skill: "review", args: `${optimizedFiles.join(' ')} --focus quality` })
 
 ## TodoWrite Pattern
 
+**Prefix each task with the executing agent name in brackets:**
+
 ```javascript
 TodoWrite({
   todos: [
-    {content: "Detect optimization type and scan project", status: "in_progress", activeForm: "Detecting optimization opportunities"},
-    {content: "Analyze baseline and identify opportunities", status: "pending", activeForm: "Analyzing baseline metrics"},
-    {content: "Plan and prioritize optimizations", status: "pending", activeForm: "Planning optimizations"},
-    {content: "Execute optimizations atomically", status: "pending", activeForm: "Executing optimizations"},
-    {content: "Validate results and generate report", status: "pending", activeForm: "Validating optimization results"}
+    {content: "[optimizer] Detect optimization type and scan project", status: "in_progress", activeForm: "[optimizer] Detecting optimization opportunities"},
+    {content: "[optimizer] Analyze baseline and identify opportunities", status: "pending", activeForm: "[optimizer] Analyzing baseline metrics"},
+    {content: "[optimizer] Plan and prioritize optimizations", status: "pending", activeForm: "[optimizer] Planning optimizations"},
+    {content: "[optimizer] Execute optimizations atomically", status: "pending", activeForm: "[optimizer] Executing optimizations"},
+    {content: "[optimizer] Validate results and generate report", status: "pending", activeForm: "[optimizer] Validating optimization results"}
   ]
 })
 ```

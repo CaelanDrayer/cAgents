@@ -82,11 +82,11 @@
 ```javascript
 TodoWrite({
   todos: [
-    {content: "Generating executive summary", status: "in_progress"},
-    {content: "Formatting critical issues (2 found)", status: "pending"},
-    {content: "Adding auto-fix suggestions (12 available)", status: "pending"},
-    {content: "Computing review metrics", status: "pending"},
-    {content: "Writing recommendations", status: "pending"}
+    {content: "[reviewer] Generating executive summary", status: "in_progress"},
+    {content: "[reviewer] Formatting critical issues (2 found)", status: "pending"},
+    {content: "[reviewer] Adding auto-fix suggestions (12 available)", status: "pending"},
+    {content: "[reviewer] Computing review metrics", status: "pending"},
+    {content: "[reviewer] Writing recommendations", status: "pending"}
   ]
 })
 ```

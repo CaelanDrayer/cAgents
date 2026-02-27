@@ -1,6 +1,6 @@
 # TodoWrite Patterns for Trigger
 
-Progress tracking throughout all phases.
+Progress tracking throughout all phases. **All tasks MUST be prefixed with the agent name in brackets** (e.g., `[trigger]`, `[orchestrator]`) so the user can see which agent is executing each task.
 
 ## Initial Task List
 
@@ -9,15 +9,15 @@ Create at start of workflow:
 ```javascript
 TodoWrite({
   todos: [
-    {content: "Initialize and parse user request", status: "in_progress", activeForm: "Initializing and parsing user request"},
-    {content: "Gather context (git, project structure, frameworks)", status: "pending", activeForm: "Gathering context"},
-    {content: "Detect domain with confidence scoring", status: "pending", activeForm: "Detecting domain with confidence scoring"},
-    {content: "Classify intent (bug fix, feature, etc.)", status: "pending", activeForm: "Classifying intent"},
-    {content: "Match workflow template", status: "pending", activeForm: "Matching workflow template"},
-    {content: "Run pre-flight validation (4 levels)", status: "pending", activeForm: "Running pre-flight validation"},
-    {content: "Create instruction folder with metadata", status: "pending", activeForm: "Creating instruction folder with metadata"},
-    {content: "Track analytics and predictions", status: "pending", activeForm: "Tracking analytics and predictions"},
-    {content: "Delegate to orchestrator for execution", status: "pending", activeForm: "Delegating to orchestrator for execution"}
+    {content: "[trigger] Initialize and parse user request", status: "in_progress", activeForm: "[trigger] Initializing and parsing user request"},
+    {content: "[trigger] Gather context (git, project structure, frameworks)", status: "pending", activeForm: "[trigger] Gathering context"},
+    {content: "[trigger] Detect domain with confidence scoring", status: "pending", activeForm: "[trigger] Detecting domain with confidence scoring"},
+    {content: "[trigger] Classify intent (bug fix, feature, etc.)", status: "pending", activeForm: "[trigger] Classifying intent"},
+    {content: "[trigger] Match workflow template", status: "pending", activeForm: "[trigger] Matching workflow template"},
+    {content: "[trigger] Run pre-flight validation (4 levels)", status: "pending", activeForm: "[trigger] Running pre-flight validation"},
+    {content: "[trigger] Create instruction folder with metadata", status: "pending", activeForm: "[trigger] Creating instruction folder with metadata"},
+    {content: "[trigger] Track analytics and predictions", status: "pending", activeForm: "[trigger] Tracking analytics and predictions"},
+    {content: "[trigger] Delegate to orchestrator for execution", status: "pending", activeForm: "[trigger] Delegating to orchestrator for execution"}
   ]
 })
 ```
@@ -45,9 +45,9 @@ TodoWrite({
 // Phase 1 Complete -> Phase 2 Start
 TodoWrite({
   todos: [
-    {content: "Initialize and parse user request", status: "completed", ...},
-    {content: "Gather context (git, project structure, frameworks)", status: "in_progress", ...},
-    {content: "Detect domain with confidence scoring", status: "pending", ...},
+    {content: "[trigger] Initialize and parse user request", status: "completed", ...},
+    {content: "[trigger] Gather context (git, project structure, frameworks)", status: "in_progress", ...},
+    {content: "[trigger] Detect domain with confidence scoring", status: "pending", ...},
     // ... rest remain pending
   ]
 })
@@ -55,9 +55,9 @@ TodoWrite({
 // Phase 2 Complete -> Phase 3 Start
 TodoWrite({
   todos: [
-    {content: "Initialize and parse user request", status: "completed", ...},
-    {content: "Gather context (git, project structure, frameworks)", status: "completed", ...},
-    {content: "Detect domain with confidence scoring", status: "in_progress", ...},
+    {content: "[trigger] Initialize and parse user request", status: "completed", ...},
+    {content: "[trigger] Gather context (git, project structure, frameworks)", status: "completed", ...},
+    {content: "[trigger] Detect domain with confidence scoring", status: "in_progress", ...},
     // ... rest remain pending
   ]
 })
@@ -68,17 +68,17 @@ TodoWrite({
 Combine TodoWrite with user-facing messages:
 
 ```markdown
-[TodoWrite marks "Gather context" as in_progress]
+[TodoWrite marks "[trigger] Gather context" as in_progress]
 
-Gathering project context...
+[trigger] Gathering project context...
   - Git context: 20 recent commits analyzed
   - Project structure: package.json, next.config.js found
   - Framework detected: Next.js 14.0.0
   - File types: 45% TypeScript, 30% JavaScript, 15% CSS, 10% other
 
-[TodoWrite marks "Gather context" as completed, marks "Detect domain" as in_progress]
+[TodoWrite marks "[trigger] Gather context" as completed, marks "[trigger] Detect domain" as in_progress]
 
-Detecting domain using 3-method analysis...
+[trigger] Detecting domain using 3-method analysis...
 ```
 
 ## Anti-Patterns (DO NOT DO)

@@ -165,9 +165,10 @@ Agent_Memory/{instruction_id}/outputs/partial/{task_id}/
 └── {additional_files}
 ```
 
-**Manifest Format**:
+**Manifest Format** (note: task name is prefixed with agent name in brackets for user visibility):
 ```yaml
 task_id: {task_id}
+task_name: "[{execution-agent-name}] {task description}"
 assigned_to: cagents:{execution-agent-name}
 completed_at: ISO8601
 

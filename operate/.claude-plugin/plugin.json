@@ -1,6 +1,6 @@
 {
   "name": "cagents-operate",
-  "version": "9.16.1",
+  "version": "9.17.0",
   "description": "OPERATE super-domain: Business operations capability (finance + operations). 13 agents for financial planning, budgeting, operations optimization, and procurement.",
   "super_domain": "operate",
   "agent_count": 13,

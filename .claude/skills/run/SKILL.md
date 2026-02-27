@@ -82,12 +82,13 @@ When the user runs `/run <request> [flags]`:
 
 1. **Parse flags** from `$ARGUMENTS` (check for `--resume` first)
    - If `--resume <session_id>`: Load session from `Agent_Memory/sessions/{session_id}/progress.md`, pass to trigger with resume context
-2. **Create TodoWrite** for user visibility:
+2. **Create TodoWrite** for user visibility (prefix each task with the executing agent):
    ```
-   - Initialize workflow and delegate to trigger agent (in_progress)
-   - Execute tasks with domain team (pending)
-   - Validate outputs and quality (pending)
-   - Finalize and archive results (pending)
+   - [trigger] Initialize workflow and detect domain (in_progress)
+   - [orchestrator] Plan objectives and select controllers (pending)
+   - [controller] Coordinate work via question-based delegation (pending)
+   - [executor] Monitor execution and aggregate outputs (pending)
+   - [validator] Validate outputs and quality (pending)
    ```
 3. **Check for --team flag**: If present, delegate to team-trigger instead of trigger
 4. **Invoke trigger agent** via Task tool with request + flags + working directory
@@ -129,25 +130,24 @@ Task({
 
 ## Progress Reporting
 
-Report SUMMARIES of delegation, not inline results:
+Report SUMMARIES of delegation, not inline results. **Prefix each task/result with the agent name in brackets:**
 
 ```
 /run Fix auth bug
 
-Delegating to workflow engine...
+[trigger] Delegating to workflow engine...
   Domain: engineering (92% confidence)
   Controller: engineering-manager
   Tier: 2
 
-Workflow delegated to trigger agent.
+[orchestrator] Workflow plan created, proceeding to coordination...
 
-[Trigger reports back]
-Coordination complete:
-  - backend-developer: Fixed timeout handling
-  - qa-tester: Added 5 regression tests
-  - architect: Approved design
+[engineering-manager] Coordination complete:
+  - [backend-developer] Fixed timeout handling
+  - [qa-tester] Added 5 regression tests
+  - [architect] Approved design
 
-Validation: PASSED
+[universal-validator] Validation: PASSED
 Outputs: Agent_Memory/sessions/run_20260123_180000/outputs/
 ```
 

@@ -300,15 +300,17 @@ group3.forEach(result => streamFindings(result));
 
 ### Initial Todos (Start of Review)
 
+**Prefix each task with the executing agent name in brackets:**
+
 ```javascript
 TodoWrite({
   todos: [
-    {content: "Initialize review (detecting framework, analyzing scope)", status: "in_progress", activeForm: "Initializing review"},
-    {content: "Run parallel review agents (0/7 groups complete)", status: "pending", activeForm: "Running parallel review agents"},
-    {content: "Aggregate findings with confidence scoring", status: "pending", activeForm: "Aggregating findings"},
-    {content: "Generate and validate auto-fixes", status: "pending", activeForm: "Generating auto-fixes"},
-    {content: "Check quality gates and run tests", status: "pending", activeForm: "Checking quality gates"},
-    {content: "Generate enhanced report", status: "pending", activeForm: "Generating enhanced report"}
+    {content: "[review] Initialize review (detecting framework, analyzing scope)", status: "in_progress", activeForm: "[review] Initializing review"},
+    {content: "[review] Run parallel review agents (0/7 groups complete)", status: "pending", activeForm: "[review] Running parallel review agents"},
+    {content: "[review] Aggregate findings with confidence scoring", status: "pending", activeForm: "[review] Aggregating findings"},
+    {content: "[review] Generate and validate auto-fixes", status: "pending", activeForm: "[review] Generating auto-fixes"},
+    {content: "[review] Check quality gates and run tests", status: "pending", activeForm: "[review] Checking quality gates"},
+    {content: "[review] Generate enhanced report", status: "pending", activeForm: "[review] Generating enhanced report"}
   ]
 })
 ```

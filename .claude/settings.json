@@ -1,11 +1,11 @@
 {
-  "$comment": "Hook configuration - cAgents V9.16.1 - Self-contained plugin: all hook commands use ${CLAUDE_PLUGIN_ROOT} (set by Claude Code for plugins, see docs.anthropic.com/en/hooks). __dirname in run-hook.cjs provides belt-and-suspenders fallback.",
+  "$comment": "Hook configuration - cAgents V9.17.0 - Self-contained plugin: all hook commands use ${CLAUDE_PLUGIN_ROOT} (set by Claude Code for plugins, see docs.anthropic.com/en/hooks). __dirname in run-hook.cjs provides belt-and-suspenders fallback.",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
   "teammateMode": "tmux",
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CAGENTS_VERSION": "9.16.1"
+    "CAGENTS_VERSION": "9.17.0"
   },
   "permissions": {
     "allow": [

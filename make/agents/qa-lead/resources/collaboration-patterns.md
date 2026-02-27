@@ -391,12 +391,12 @@ completion_time: 1h
 ```javascript
 TodoWrite({
   todos: [
-    {content: "Analyze code to identify test boundaries", status: "completed", activeForm: "Analyzing code to identify test boundaries"},
-    {content: "Design test strategy with coverage plan", status: "completed", activeForm: "Designing test strategy with coverage plan"},
-    {content: "Implement unit tests for core logic", status: "in_progress", activeForm: "Implementing unit tests for core logic"},
-    {content: "Create integration tests for API endpoints", status: "pending", activeForm: "Creating integration tests for API endpoints"},
-    {content: "Build e2e tests for user workflows", status: "pending", activeForm: "Building e2e tests for user workflows"},
-    {content: "Run tests locally and verify coverage", status: "pending", activeForm: "Running tests locally and verifying coverage"}
+    {content: "[qa-lead] Analyze code to identify test boundaries", status: "completed", activeForm: "[qa-lead] Analyzing code to identify test boundaries"},
+    {content: "[qa-lead] Design test strategy with coverage plan", status: "completed", activeForm: "[qa-lead] Designing test strategy with coverage plan"},
+    {content: "[qa-lead] Implement unit tests for core logic", status: "in_progress", activeForm: "[qa-lead] Implementing unit tests for core logic"},
+    {content: "[qa-lead] Create integration tests for API endpoints", status: "pending", activeForm: "[qa-lead] Creating integration tests for API endpoints"},
+    {content: "[qa-lead] Build e2e tests for user workflows", status: "pending", activeForm: "[qa-lead] Building e2e tests for user workflows"},
+    {content: "[qa-lead] Run tests locally and verify coverage", status: "pending", activeForm: "[qa-lead] Running tests locally and verifying coverage"}
   ]
 })
 ```

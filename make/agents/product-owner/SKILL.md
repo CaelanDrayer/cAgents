@@ -90,9 +90,9 @@ Use TodoWrite to display progress:
 ```javascript
 TodoWrite({
   todos: [
-    {content: "Review feature request and assess business value", status: "completed", activeForm: "..."},
-    {content: "Consult stakeholders on requirements and priorities", status: "in_progress", activeForm: "..."},
-    {content: "Make priority decision and update backlog", status: "pending", activeForm: "..."}
+    {content: "[product-owner] Review feature request and assess business value", status: "completed", activeForm: "[product-owner] Reviewing feature request"},
+    {content: "[product-owner] Consult stakeholders on requirements and priorities", status: "in_progress", activeForm: "[product-owner] Consulting stakeholders"},
+    {content: "[product-owner] Make priority decision and update backlog", status: "pending", activeForm: "[product-owner] Making priority decision"}
   ]
 })
 ```

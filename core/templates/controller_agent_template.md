@@ -303,26 +303,26 @@ Output to: Agent_Memory/{instruction_id}/outputs/partial/task_003/
 
 ### Step 6: Monitor and Report
 
-Track task completion and report to executor:
+Track task completion and report to executor. **Prefix all task names with the assigned agent in brackets** for user visibility:
 
 ```yaml
 # Update coordination_log.yaml
 
 implementation_tasks:
   - task_id: task_001
-    name: "Implement OAuth2 endpoints"
+    name: "[backend-developer] Implement OAuth2 endpoints"
     assigned_to: backend-developer
     status: completed
     completed_at: 2026-01-12T11:00:00Z
-  
+
   - task_id: task_002
-    name: "Create OAuth2 tests"
+    name: "[qa-lead] Create OAuth2 tests"
     assigned_to: qa-lead
     status: completed
     completed_at: 2026-01-12T11:15:00Z
-  
+
   - task_id: task_003
-    name: "Security review"
+    name: "[security-specialist] Security review"
     assigned_to: security-specialist
     status: completed
     completed_at: 2026-01-12T11:20:00Z

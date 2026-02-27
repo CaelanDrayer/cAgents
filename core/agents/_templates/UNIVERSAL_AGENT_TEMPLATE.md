@@ -135,13 +135,13 @@ See template at: `Agent_Memory/_system/domains/_template/{agent_type}_config.yam
 
 ## Progress Tracking with TodoWrite
 
-**CRITICAL**: Use TodoWrite to show {agent type} progress
+**CRITICAL**: Use TodoWrite to show {agent type} progress. **Prefix each task with the agent name in brackets** so the user can see which agent is executing each task:
 
 ```javascript
 TodoWrite({
   todos: [
-    {content: "{Step 1}", status: "in_progress", activeForm: "{Doing step 1}"},
-    {content: "{Step 2}", status: "pending", activeForm: "{Doing step 2}"},
+    {content: "[{agent-name}] {Step 1}", status: "in_progress", activeForm: "[{agent-name}] {Doing step 1}"},
+    {content: "[{agent-name}] {Step 2}", status: "pending", activeForm: "[{agent-name}] {Doing step 2}"},
     ...
   ]
 })

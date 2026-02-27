@@ -210,12 +210,12 @@ escalation:
 ```javascript
 TodoWrite({
   todos: [
-    {content: "Understand system requirements and constraints", status: "completed", activeForm: "Understanding system requirements"},
-    {content: "Evaluate 3 architectural options and trade-offs", status: "completed", activeForm: "Evaluating architectural options"},
-    {content: "Consult Security Specialist on auth approach", status: "in_progress", activeForm: "Consulting Security Specialist"},
-    {content: "Select optimal design and document ADR", status: "pending", activeForm: "Selecting optimal design"},
-    {content: "Create design artifacts (diagrams, API specs)", status: "pending", activeForm: "Creating design artifacts"},
-    {content: "Review with team and incorporate feedback", status: "pending", activeForm: "Reviewing with team"}
+    {content: "[architect] Understand system requirements and constraints", status: "completed", activeForm: "[architect] Understanding system requirements"},
+    {content: "[architect] Evaluate 3 architectural options and trade-offs", status: "completed", activeForm: "[architect] Evaluating architectural options"},
+    {content: "[architect] Consult Security Specialist on auth approach", status: "in_progress", activeForm: "[architect] Consulting Security Specialist"},
+    {content: "[architect] Select optimal design and document ADR", status: "pending", activeForm: "[architect] Selecting optimal design"},
+    {content: "[architect] Create design artifacts (diagrams, API specs)", status: "pending", activeForm: "[architect] Creating design artifacts"},
+    {content: "[architect] Review with team and incorporate feedback", status: "pending", activeForm: "[architect] Reviewing with team"}
   ]
 })
 ```
@@ -225,11 +225,11 @@ TodoWrite({
 ```javascript
 TodoWrite({
   todos: [
-    {content: "Read proposed architecture from Planner", status: "completed", activeForm: "Reading proposed architecture"},
-    {content: "Identify architectural issues and anti-patterns", status: "completed", activeForm: "Identifying architectural issues"},
-    {content: "Evaluate scalability and performance implications", status: "in_progress", activeForm: "Evaluating scalability implications"},
-    {content: "Provide recommendations and revised architecture", status: "pending", activeForm: "Providing recommendations"},
-    {content: "Document review results and approval status", status: "pending", activeForm: "Documenting review results"}
+    {content: "[architect] Read proposed architecture from Planner", status: "completed", activeForm: "[architect] Reading proposed architecture"},
+    {content: "[architect] Identify architectural issues and anti-patterns", status: "completed", activeForm: "[architect] Identifying architectural issues"},
+    {content: "[architect] Evaluate scalability and performance implications", status: "in_progress", activeForm: "[architect] Evaluating scalability implications"},
+    {content: "[architect] Provide recommendations and revised architecture", status: "pending", activeForm: "[architect] Providing recommendations"},
+    {content: "[architect] Document review results and approval status", status: "pending", activeForm: "[architect] Documenting review results"}
   ]
 })
 ```

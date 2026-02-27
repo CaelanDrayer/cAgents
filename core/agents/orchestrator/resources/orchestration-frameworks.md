@@ -57,6 +57,9 @@ Task:
 ## Plan Display Format
 
 ### Tier 2-4 (Full Display)
+
+**Agent prefix convention**: Each phase/task shown to the user is prefixed with the executing agent name in brackets.
+
 ```
 ======================================
 WORKFLOW PLAN
@@ -76,12 +79,16 @@ WORK BREAKDOWN ({total_items} items):
 - DOCUMENT: {count} items
 
 CONTROLLERS:
-- Primary: {primary_controller}
-- Supporting: {supporting_controllers or 'None'}
+- Primary: [{primary_controller}]
+- Supporting: [{supporting_controllers} or 'None']
+
+EXECUTION AGENTS:
+- [{execution_agent_1}] {assigned_work_items}
+- [{execution_agent_2}] {assigned_work_items}
 
 CRITICAL PATH: {critical_path_summary}
 
-Proceeding to coordination...
+[orchestrator] Proceeding to coordination...
 ======================================
 ```
 
