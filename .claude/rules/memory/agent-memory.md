@@ -1,6 +1,62 @@
 # Agent Memory Structure
 
-File-based memory organization for cAgents.
+File-based memory organization for cAgents. Aligned with Claude Code's memory hierarchy.
+
+## Claude Code Memory Hierarchy
+
+Claude Code provides a 6-tier memory system that cAgents operates within:
+
+| Memory Type | Location | Shared With | Loaded |
+|-------------|----------|-------------|--------|
+| **Managed policy** | OS-level paths (macOS/Linux/Windows) | All users in org | Always, highest priority |
+| **Project memory** | `./CLAUDE.md` or `./.claude/CLAUDE.md` | Team via git | Always at launch |
+| **Project rules** | `./.claude/rules/*.md` | Team via git | Always (path-specific rules conditional) |
+| **User memory** | `~/.claude/CLAUDE.md` | Just you | Always |
+| **Project local** | `./CLAUDE.local.md` | Just you (auto-gitignored) | Always |
+| **Auto memory** | `~/.claude/projects/<project>/memory/` | Just you | First 200 lines of MEMORY.md |
+
+**Loading Order**: Managed -> User -> Project -> Project Rules -> Project Local (later = higher priority)
+
+### Auto Memory (Claude Code Native)
+
+Auto memory is a persistent directory where Claude records learnings automatically:
+- **Location**: `~/.claude/projects/<project>/memory/MEMORY.md` (+ topic files)
+- **Loaded**: First 200 lines of MEMORY.md at session start
+- **Toggle**: `/memory` command or `autoMemoryEnabled` in settings.json
+- **Override**: `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` (force off) or `=0` (force on)
+- **Separate from cAgents**: Agent_Memory/ is cAgents' own file-based memory, distinct from Claude Code's auto memory
+
+### CLAUDE.local.md
+
+`CLAUDE.local.md` is automatically added to `.gitignore`, making it ideal for private project-specific preferences.
+
+### Recursive Memory Lookup
+
+Claude Code reads CLAUDE.md files recursively up the directory tree from cwd to (not including) root. CLAUDE.md files in child directories load on demand when Claude reads files in those subtrees.
+
+### User-Level Rules
+
+Personal rules at `~/.claude/rules/` apply to all projects. User-level rules are loaded before project rules (project rules have higher priority).
+
+### Path-Specific Rules
+
+Rules files support glob patterns in YAML frontmatter:
+```yaml
+---
+paths:
+  - "src/**/*.{ts,tsx}"    # Brace expansion supported
+  - "{src,lib}/**/*.ts"    # Multiple directories
+  - "tests/**/*.test.ts"
+---
+```
+
+Rules without `paths` apply unconditionally. Symlinks in `.claude/rules/` are resolved normally.
+
+### --add-dir Memory Loading
+
+Set `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1` to load CLAUDE.md files from `--add-dir` directories.
+
+## cAgents Agent_Memory Structure
 
 ## Directory Structure
 

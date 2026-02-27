@@ -12,10 +12,12 @@ Guidelines for parallel team execution in cAgents V9.2 using Claude Code's built
 
 ## Overview
 
-**Core Architecture**: `/team` decomposes the request into work items, creates a real agent team via TeamCreate, spawns teammates who each invoke `/run` for their work item. Each teammate appears as a tmux pane (when teammateMode=tmux).
+**Core Architecture**: `/team` decomposes the request into work items across as many waves as the work requires, creates a real agent team via TeamCreate, and spawns teammates per-wave who each invoke `/run` for their work item. Each teammate appears as a tmux pane (when teammateMode=tmux). More waves = better quality gating.
 
-Team Mode enables parallel execution with:
-- **Direct decomposition**: /team breaks the request into 3-8 work items with wave assignments
+Team Mode enables N-wave parallel execution with:
+- **Maximum wave decomposition**: /team breaks the request into work items across 3-10 waves (more waves preferred)
+- **Per-wave spawn cycles**: Teammates are spawned fresh for each wave, shut down after wave completes
+- **GATE sentinel quality checks**: Lead validates between waves before proceeding
 - **Built-in agent teams**: TeamCreate, SendMessage, TaskCreate/TaskList for coordination
 - **teammateMode: tmux**: Each teammate in its own tmux split pane (managed by Claude Code)
 - **Every work item via /run**: Full orchestration (plan, coordinate, execute, validate) per item
@@ -58,25 +60,30 @@ All three steps are required. Creating tasks without spawning teammates to execu
 ```
 /team <request>
     |
-    Step 1: PARSE request
-    Step 2: DECOMPOSE into 3-8 work items with wave assignments (done by /team directly)
+    Step 1: PARSE request and flags
+    Step 2: DECOMPOSE into work items with MAXIMUM wave granularity (3-10 waves)
     Step 3: TeamCreate -- create team IMMEDIATELY
-    Step 4: TaskCreate -- create task for EVERY work item
-    Step 5: Execute Wave 0 (bootstrap) via /run sequentially (team lead does this)
-    Step 6: Spawn teammates via Task tool -- ALL at once, in parallel
+    Step 4: TaskCreate -- create tasks for ALL work items + GATE sentinels with wave dependencies
+    Step 5: Execute Wave 0 (enrichment + bootstrap) -- lead does this sequentially
     |
-    +-- Team Lead = /team skill (coordinate via SendMessage, manage TaskList)
-    +-- Teammate 1: /run WI-003 --> (trigger -> controller -> execution agents) --> Complete
-    +-- Teammate 2: /run WI-004 --> (trigger -> controller -> execution agents) --> Complete
-    +-- Teammate 3: /run WI-005 --> (trigger -> controller -> execution agents) --> Complete
-    |                    (parallel -- each in own tmux pane)
+    Step 6: FOR EACH Wave K (1 to N-1):
+    |   +-- Spawn teammates for wave K (ALL at once, in parallel)
+    |   |   +-- Teammate 1: /run WI-{X} --> (controller -> execution agents) --> Complete
+    |   |   +-- Teammate 2: /run WI-{Y} --> (controller -> execution agents) --> Complete
+    |   |   +-- Teammate 3: /run WI-{Z} --> (controller -> execution agents) --> Complete
+    |   |                    (parallel within wave -- each in own tmux pane)
+    |   +-- Monitor wave K via TaskList + teammate messages
+    |   +-- Validate GATE-K when all wave K items complete
+    |   +-- Shut down wave K teammates
+    |   +-- Proceed to wave K+1 (AUTOMATIC)
     |
-    Step 7: Monitor via TaskList + automatic teammate messages
-    Step 8: Execute Wave 2 (integration) via /run (team lead does this)
-    Step 9: Shutdown teammates + TeamDelete + report results
+    Step 7: Execute final wave (integration + validation) -- lead does this
+    Step 8: Shutdown remaining teammates + TeamDelete + report results
 ```
 
-**Steps 3-6 are MANDATORY and IMMEDIATE. Do not pause or ask permission between them.**
+**Steps 3-6 are MANDATORY and IMMEDIATE. Do not pause or ask permission between waves.**
+
+**CRITICAL: Maximize waves.** More waves = more quality gates = higher quality output. There is nothing wrong with more waves. Prefer 5-7 waves over 2-3 waves.
 
 ## Built-in Agent Teams
 
@@ -98,6 +105,26 @@ Key behaviors:
 - File-lock based task claiming prevents race conditions
 - Team config at `~/.claude/teams/{team-name}/config.json`
 - Task list at `~/.claude/tasks/{team-name}/`
+
+## Claude Code Agent Teams: Capabilities and Limitations
+
+### Capabilities
+- **Direct teammate interaction**: Users can message teammates directly using Shift+Down (in-process) or clicking panes (split)
+- **Plan approval mode**: Use `CLAUDE_CODE_PLAN_MODE_REQUIRED` to require teammates to plan before implementing. Lead reviews and approves/rejects plans.
+- **Teammate model override**: Specify models per teammate: "Use Sonnet for each teammate"
+- **Task dependencies**: Tasks can block other tasks. Blocked tasks auto-unblock when dependencies complete.
+- **Self-claiming**: After finishing, teammates pick up next unassigned, unblocked task autonomously.
+- **In-process navigation**: Shift+Down to cycle teammates, Enter to view, Escape to interrupt, Ctrl+T for task list.
+
+### Limitations (Claude Code Enforced)
+- **No session resumption**: `/resume` and `/rewind` do not restore in-process teammates
+- **No nested teams**: Teammates cannot spawn their own teams. Only the lead manages the team.
+- **One team per session**: Clean up current team before starting a new one.
+- **Lead is fixed**: Cannot promote a teammate to lead or transfer leadership.
+- **Permissions set at spawn**: All teammates start with lead's permission mode. Can change individually after spawning, but not at spawn time.
+- **Task status can lag**: Teammates sometimes fail to mark tasks completed, blocking dependents.
+- **Shutdown can be slow**: Teammates finish current request before shutting down.
+- **Split panes require tmux/iTerm2**: Not supported in VS Code terminal, Windows Terminal, or Ghostty.
 
 ## Display Modes (teammateMode)
 
@@ -149,18 +176,29 @@ disqualified:
 ## Team Lifecycle (Execute IMMEDIATELY -- No Permission Required)
 
 ```
-1. Parse request and flags
-2. Decompose request into 3-8 work items (done directly by /team)
+1. Parse request and flags (including --waves <N>)
+2. Decompose request into work items with MAXIMUM wave granularity
 3. TeamCreate -- create team and shared task list IMMEDIATELY
-4. TaskCreate -- create ALL work items as tasks
-5. Execute wave 0 (bootstrap) via /run sequentially
-6. Spawn ALL wave-1 teammates via Task tool IN PARALLEL
-7. Monitor via TaskList + automatic teammate messages
-8. Execute wave 2 (integration) via /run sequentially
-9. Shutdown teammates + TeamDelete
+4. TaskCreate -- create ALL work items + GATE sentinels with wave dependencies
+5. Execute wave 0 (enrichment + bootstrap) sequentially
+6. FOR EACH wave K (1 to N-1):
+   a. Spawn wave K teammates IN PARALLEL
+   b. Monitor wave K via TaskList + teammate messages
+   c. Validate GATE-K when all wave K items complete
+   d. Shut down wave K teammates
+   e. Mark GATE-K complete -> proceed to wave K+1
+7. Execute final wave (integration + validation) sequentially
+8. Shutdown remaining teammates + TeamDelete
 ```
 
-**Steps 3-6 are MANDATORY and IMMEDIATE. Do not pause or ask permission.**
+**Steps 3-6 are MANDATORY and IMMEDIATE. Do not pause or ask permission between waves.**
+
+**Wave count guidance:**
+| Tier | Minimum waves | Typical waves |
+|------|---------------|---------------|
+| 2 | 3 | 3-4 |
+| 3 | 5 | 5-7 |
+| 4 | 6 | 6-10 |
 
 ### Team Creation
 
@@ -352,15 +390,22 @@ Override with flags: `--template <id>`, `--no-template`, `--waves <N>`
 
 ## Wave Execution
 
-Waves are delivery phases enforced via TaskCreate dependencies (gate sentinel tasks).
+Waves are delivery phases enforced via TaskCreate dependencies (gate sentinel tasks). **Maximize the number of waves** -- more waves provide better quality gating and coordination points.
 
 ### Wave Types
 
 | Type | Executor | Description |
 |------|----------|-------------|
-| `bootstrap` | Orchestrator (sequential /run) | Foundation setup, contracts |
-| `parallel` | Teams (parallel /run per item) | Main build phase |
-| `integration` | Orchestrator (sequential /run) | Wiring, testing, polish |
+| `bootstrap` | Lead (sequential) | Foundation setup, contracts, scaffolding |
+| `research` | Teammates (parallel) | Analysis, information gathering |
+| `design` | Teammates (parallel) | Architecture decisions, interface definitions |
+| `implementation` | Teammates (parallel) | Core build work |
+| `supporting` | Teammates (parallel) | Secondary features, integrations |
+| `testing` | Teammates (parallel) | QA, security, validation |
+| `documentation` | Teammates (parallel) | Docs, cleanup, optimization |
+| `integration` | Lead (sequential) | Merge, final testing, polish |
+
+Not all wave types are needed for every request, but prefer MORE granular waves over fewer consolidated ones. If work items span multiple concerns (e.g., research AND implementation), split them into separate waves.
 
 ### Gate Sentinel Pattern
 

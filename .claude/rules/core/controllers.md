@@ -153,16 +153,135 @@ Replace placeholders with actual agent names and task descriptions. As each exec
 - **Adaptive coordination**: Follow-up questions based on answers
 - **Expert-driven**: Use domain knowledge to determine HOW
 
+## Reviewer Loop (V9.23.0 Event-Driven Pipeline)
+
+Controllers now include an internal reviewer loop. After each executor completes implementation, the controller spawns a reviewer to evaluate against acceptance criteria. If the reviewer identifies issues, the controller sends feedback back to the executor for revision. This loops up to 3 times before escalating to /run's validator.
+
+### Reviewer Loop Flow
+
+```
+Controller receives work item with acceptance criteria
+  |
+  +-> Spawn executor (level 2) -> implementation
+  |
+  +-> Spawn reviewer (level 2) -> review_report.yaml
+  |     |
+  |     +-> PASS: Accept implementation, move to next work item
+  |     +-> REVISE: Send feedback to executor
+  |           |
+  |           +-> Re-spawn executor with feedback (round 2)
+  |           +-> Re-spawn reviewer (round 2)
+  |           +-> ... (max 3 internal rounds)
+  |           +-> After round 3: Accept best result, escalate issues to validator
+  |
+  +-> Write coordination_log.yaml with review_rounds tracking
+```
+
+### Reviewer Spawning Pattern
+
+After each executor completes, spawn a reviewer:
+
+```javascript
+// Step 1: Executor implements
+Task({
+  subagent_type: "cagents:{execution_agent}",
+  description: "Implement: {work_item}",
+  prompt: "Implement {work_item_description}.\nAcceptance criteria: {criteria}\n{feedback_from_previous_round if any}"
+})
+
+// Step 2: Reviewer evaluates
+Task({
+  subagent_type: "cagents:reviewer",  // or domain-specific reviewer (qa-tester, etc.)
+  description: "Review: {work_item}",
+  prompt: "Review implementation of {work_item_description}.\nAcceptance criteria: {criteria}\nCheck: Does implementation meet all criteria?\nOutput: PASS or REVISE with specific feedback."
+})
+```
+
+### Reviewer Output Format
+
+The reviewer should output:
+
+```yaml
+review_result: PASS|REVISE
+round: {current_round}
+feedback: |
+  {specific feedback if REVISE -- what needs to change and why}
+criteria_met:
+  - criterion: "{criterion_text}"
+    met: true|false
+    notes: "{details}"
+```
+
+### Revision Round Handling
+
+```
+if review_result == PASS:
+  Accept implementation, proceed to next work item
+elif review_result == REVISE and round < 3:
+  Re-spawn executor with: original prompt + reviewer feedback
+  Increment round counter
+elif review_result == REVISE and round >= 3:
+  Accept best available result
+  Log unresolved issues for validator escalation
+  Continue to next work item
+```
+
+### coordination_log.yaml Review Tracking
+
+Add `review_rounds` to coordination_log.yaml for each work item:
+
+```yaml
+implementation_tasks:
+  - task_id: WI-001
+    name: "{task_name}"
+    assigned_to: cagents:{executor}
+    acceptance_criteria: [...]
+    status: completed
+    review_rounds:
+      - round: 1
+        reviewer: cagents:reviewer
+        result: REVISE
+        feedback: "Missing error handling for edge case X"
+      - round: 2
+        reviewer: cagents:reviewer
+        result: PASS
+        feedback: ""
+    total_rounds: 2
+```
+
+### Write Completion Event
+
+After all work items are coordinated (with reviewer loops), write a completion event:
+
+```yaml
+event_id: EVT-{N}
+state: COORDINATED
+agent: cagents:{controller_name}
+timestamp: "{ISO_TIMESTAMP}"
+duration_seconds: {elapsed}
+inputs_consumed:
+  - workflow/delegation_prompts.yaml
+  - workflow/work_items.yaml
+outputs_produced:
+  - workflow/coordination_log.yaml
+next_state: COORDINATED
+metadata:
+  work_items_completed: {count}
+  total_review_rounds: {sum_across_all_items}
+  items_with_revisions: {count_of_items_that_needed_revision}
+```
+
 ## CRITICAL: Do Not Ask Permission
 
 **After completing coordination:**
-- ✅ Write coordination_log.yaml with all Q&A, synthesis, and tasks
+- ✅ Write coordination_log.yaml with all Q&A, synthesis, review rounds, and tasks
+- ✅ Write completion event to workflow/events/
 - ✅ Signal completion (coordination_log.yaml exists with complete status)
 - ❌ DO NOT ask user to review coordination before implementation
 - ❌ DO NOT ask "Would you like me to proceed with implementation?"
 - ❌ DO NOT wait for user approval
 
-The executor monitors you and will automatically proceed when coordination_log.yaml is complete. Your job is to coordinate work, not to ask permission to implement it.
+The /run state machine monitors completion events and will automatically proceed to validation when coordination_log.yaml is complete. Your job is to coordinate work (including reviewer loops), not to ask permission.
 
 ---
 

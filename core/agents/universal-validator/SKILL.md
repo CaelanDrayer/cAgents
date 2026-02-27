@@ -71,13 +71,60 @@ See @resources/coordination-validation.md for coordination quality checks.
 See @resources/quality-gates.md for domain-specific quality gates.
 See @resources/classification-logic.md for PASS/FIXABLE/BLOCKED rules.
 
-## Classification Logic
+## Classification Logic (Event-Driven Pipeline V9.23.0)
 
-| Classification | Conditions | Next Agent |
-|----------------|------------|------------|
-| **PASS** | All gates pass, criteria met | Complete (archive) |
-| **FIXABLE** | Fixable in <30min, no critical failures | universal-self-correct |
-| **BLOCKED** | Critical failures, coordination violations | HITL (escalate) |
+The validator now outputs three classifications that drive /run's revision routing:
+
+| Classification | Conditions | Pipeline Action |
+|----------------|------------|-----------------|
+| **PASS** | All gates pass, criteria met | Advance to VALIDATED (pipeline complete) |
+| **FAIL** | Fixable issues, re-execution needed | Route back to PROMPTS_READY (re-run controller) |
+| **REVISE** | Fundamental issues, re-planning needed | Route back to PLANNED (re-plan with feedback) |
+
+**Previous FIXABLE is now FAIL** (triggers controller re-execution with feedback).
+**Previous BLOCKED is escalated** after max revision cycles (5) are exhausted.
+
+### Validation Report Output
+
+Write `workflow/validation_report.yaml`:
+
+```yaml
+classification: PASS|FAIL|REVISE
+feedback: |
+  {detailed feedback for the next agent if FAIL or REVISE}
+issues:
+  - severity: critical|major|minor
+    description: "{issue description}"
+    suggested_fix: "{how to fix}"
+acceptance_criteria_results:
+  - criterion: "{criterion text}"
+    met: true|false
+    evidence: "{evidence or reason for failure}"
+revision_target: PROMPTS_READY|PLANNED  # only present for FAIL/REVISE
+```
+
+### Write Completion Event
+
+After writing validation_report.yaml, write a completion event to `workflow/events/`:
+
+```yaml
+event_id: EVT-{N}
+state: VALIDATED
+agent: cagents:universal-validator
+timestamp: "{ISO_TIMESTAMP}"
+duration_seconds: {elapsed}
+inputs_consumed:
+  - workflow/coordination_log.yaml
+  - workflow/work_items.yaml
+outputs_produced:
+  - workflow/validation_report.yaml
+next_state: VALIDATED
+metadata:
+  classification: PASS|FAIL|REVISE
+  revision_target: PROMPTS_READY|PLANNED  # only for FAIL/REVISE
+```
+
+If FAIL or REVISE, the event's `metadata.classification` tells /run where to route. /run reads this event, checks the classification, and either completes or loops back.
 
 ## Critical BLOCKED Triggers
 
@@ -91,13 +138,15 @@ See @resources/classification-logic.md for PASS/FIXABLE/BLOCKED rules.
 ## Memory Operations
 
 ### Writes
-- `outputs/final/validation_report.yaml`
+- `workflow/validation_report.yaml` - Pipeline-standard validation output (PASS/FAIL/REVISE)
+- `workflow/events/EVT-{N}.yaml` - Completion event with classification metadata
+- `outputs/final/validation_report.yaml` - Detailed validation report (legacy location, also written)
 - `outputs/final/validation_summary.md`
-- `_communication/validation_blocked.yaml` (if BLOCKED)
 
 ### Reads
 - `instruction.yaml`, `workflow/plan.yaml`
 - `workflow/coordination_log.yaml` (primary validation target)
+- `workflow/work_items.yaml` - Acceptance criteria to validate against
 - `outputs/*` (all outputs)
 - `{domain}/config/validator_config.yaml`
 

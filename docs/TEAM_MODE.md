@@ -1,12 +1,12 @@
 # Team Mode Documentation
 
-cAgents V9.21 - Parallel Team Execution via Built-in Agent Teams
+cAgents V9.24 - N-Wave Parallel Team Execution via Built-in Agent Teams
 
 ## Overview
 
-Team Mode enables parallel team-based execution using **Claude Code's built-in agent teams**. Each work item is assigned to a teammate that executes `/run` for full orchestration. When `teammateMode` is set to `"tmux"`, each teammate gets its own tmux split pane, providing true visual parallelism and 40-60% execution time reduction for tier 3+ workflows.
+Team Mode enables N-wave parallel team-based execution using **Claude Code's built-in agent teams**. Work items are decomposed across as many waves as the task requires, with teammates spawned per-wave and quality gates validated between waves. More waves = better quality gating = higher quality output. When `teammateMode` is set to `"tmux"`, each teammate gets its own tmux split pane, providing true visual parallelism and 40-60% execution time reduction for tier 3+ workflows.
 
-**Core Architecture**: `/team` decomposes the request into work items, creates a team via TeamCreate, spawns teammates who each invoke `/run`. `/run` performs routing + planning inline, then delegates to controllers and execution agents (flattened 2-level chain since V9.18).
+**Core Architecture**: `/team` decomposes the request into work items with maximum wave granularity (3-10 waves), creates a team via TeamCreate, and spawns teammates per-wave who each invoke `/run`. `/run` performs routing + planning inline, then delegates to controllers and execution agents (flattened 2-level chain since V9.18). GATE sentinel tasks enforce wave ordering.
 
 ## Quick Start
 
@@ -20,7 +20,7 @@ Team Mode enables parallel team-based execution using **Claude Code's built-in a
 
 ## What is Team Mode?
 
-Team Mode transforms the standard sequential controller-execution pattern into parallel team-based execution using Claude Code's built-in agent teams. It follows a strict **Route & Plan (via /run) -> Determine Team Structure -> Spin Out** pipeline:
+Team Mode transforms the standard sequential controller-execution pattern into N-wave parallel team-based execution using Claude Code's built-in agent teams. It follows a strict **Decompose -> Create Team -> Execute Per-Wave** pipeline with quality gates between waves:
 
 **Standard Mode** (`/run`):
 ```
@@ -32,23 +32,28 @@ Controller -> Agent 1 -> Agent 2 -> Agent 3 -> Results
 ```
 /team <request>
     |
-    Step 1: PARSE request and flags
-    Step 2: DECOMPOSE into 3-8 work items (wave 0/1/2 assignment)
+    Step 1: PARSE request and flags (including --waves <N>)
+    Step 2: DECOMPOSE into work items with MAXIMUM wave granularity (3-10 waves)
     Step 3: TeamCreate -- create team and shared task list
-    Step 4: TaskCreate -- create tasks for all work items
-    Step 5: Execute Wave 0 (bootstrap) via /run (lead, sequentially)
-    Step 6: Spawn teammates via Task tool (ALL at once, in parallel)
+    Step 4: TaskCreate -- create tasks + GATE sentinels with wave dependencies
+    Step 5: Execute Wave 0 (enrichment + bootstrap) -- lead, sequentially
         |
-        +-- Team Lead = /team (coordinates via SendMessage, manages TaskList)
-        +-- Teammate 1: /run WI-001 --> (controller -> execution agents) --> Complete
-        +-- Teammate 2: /run WI-002 --> (controller -> execution agents) --> Complete
-        +-- Teammate 3: /run WI-003 --> (controller -> execution agents) --> Complete
+    Step 6: FOR EACH Wave K (1 to N-1):
+        +-- Spawn teammates for wave K (parallel within wave)
+        |   +-- Teammate 1: /run WI-{X} --> (controller -> execution agents) --> Complete
+        |   +-- Teammate 2: /run WI-{Y} --> (controller -> execution agents) --> Complete
         |                    (parallel -- each in own context/tmux pane)
+        +-- Monitor + validate GATE-K
+        +-- Shut down wave K teammates
+        +-- Proceed to wave K+1 (AUTOMATIC)
         |
-        +-- Aggregates /run outputs into final result
+    Step 7: Final wave (integration + validation) -- lead, sequentially
+    Step 8: Shutdown + TeamDelete + report
 ```
 
-**Key Improvement (V9.18+)**: `/run` now performs routing + planning inline (no separate trigger/orchestrator/router/planner agents). `/team` decomposes work items directly, then each teammate invokes `/run` which delegates to the appropriate controller and execution agents via the flattened 2-level chain.
+**Key Principle**: More waves = better quality. Each wave provides a quality gate checkpoint where the lead validates outputs before proceeding. Prefer 5-7 waves over 2-3 waves. There is nothing wrong with more waves.
+
+**Key Improvement (V9.18+)**: `/run` now performs routing + planning inline (no separate trigger/orchestrator/router/planner agents). `/team` decomposes work items directly with wave assignments, then spawns teammates per-wave who each invoke `/run` which delegates to the appropriate controller and execution agents via the flattened 2-level chain.
 
 ## Key Features
 
@@ -272,32 +277,38 @@ Built-in team resources:
 
 ## Team Lifecycle
 
-### Standard (Flat) Lifecycle -- Three-Phase Pipeline
+### N-Wave Lifecycle -- Per-Wave Spawn Pipeline
 
 ```
 Phase 1: DECOMPOSE
-  - /team decomposes request into 3-8 work items directly
-  - Assigns waves (0=bootstrap, 1=parallel, 2=integration)
+  - /team decomposes request into work items with MAXIMUM wave granularity
+  - Assigns wave numbers (0=bootstrap, 1..N-1=execution, N=integration)
+  - Maximize waves: prefer 5-7 waves over 2-3 waves
   - Check team suitability (>= 3 items, has parallel work)
 
-Phase 2: CREATE TEAM
+Phase 2: CREATE TEAM + TASKS
   - TeamCreate to create team and shared task list
-  - TaskCreate for all work items with wave dependencies
+  - TaskCreate for all work items + GATE sentinels with wave dependencies
   - Select template (or flat execution)
 
-Phase 3: SPIN OUT (in session) -- Execute IMMEDIATELY
-  3a. TeamCreate -- create team and shared task list IMMEDIATELY
-  3b. TaskCreate -- create work items (from decomposition.yaml) as shared tasks (with wave dependencies)
-  3c. Execute wave 0 (bootstrap) via direct controller delegation
-  3d. IMMEDIATELY spawn teammates -- each spawns its assigned controller directly
-  3e. Controllers coordinate execution agents per work item
-  3f. TaskList/TaskUpdate -- track progress, self-claim unblocked tasks
-  3g. Aggregate -- synthesize results into coordination_log.yaml
-  3h. SendMessage (shutdown_request) -- shut down teammates
-  3i. TeamDelete -- clean up team and task resources
+Phase 3: EXECUTE WAVES -- Each wave is a distinct spawn cycle
+  3a. Wave 0 (lead): Enrichment + bootstrap
+  3b. FOR EACH Wave K (1 to N-1):
+      - Spawn teammates for wave K (ALL at once, in parallel)
+      - Each teammate invokes /run for their work item
+      - Teammates read outputs from previous waves
+      - Monitor wave K progress via TaskList + messages
+      - All wave K items complete -> Validate GATE-K
+      - Shut down wave K teammates
+      - Mark GATE-K complete -> unblocks wave K+1
+      - Proceed to wave K+1 (AUTOMATIC)
+  3c. Final wave (lead): Integration + validation
+  3d. Aggregate -- synthesize results into coordination_log.yaml
+  3e. SendMessage (shutdown_request) -- shut down remaining teammates
+  3f. TeamDelete -- clean up team and task resources
 ```
 
-**Steps 3a-3d are MANDATORY and IMMEDIATE.** The team must be built and teammates must be spawned without waiting for user permission.
+**All steps are MANDATORY and IMMEDIATE.** The team must be built, waves must execute, and gates must be validated without waiting for user permission. More waves are always preferred.
 
 ### Template + Wave Lifecycle (V9.6)
 
@@ -410,19 +421,34 @@ The highest-scoring template above its `confidence_threshold` (0.6) is selected.
 
 Templates are stored in `Agent_Memory/_system/templates/teams/` with `_index.yaml` as the catalog index.
 
-## Delivery Waves (V9.6)
+## Delivery Waves (V9.24)
 
 ### Overview
 
-Waves are delivery phases that enforce execution order. Work items are tagged with wave assignments, and gate sentinel tasks prevent the next wave from starting until the current wave's quality criteria are met.
+Waves are delivery phases that enforce execution order. Work items are tagged with wave assignments, and gate sentinel tasks prevent the next wave from starting until the current wave's quality criteria are met. **Maximize the number of waves** -- more waves provide better quality gating, clearer dependency boundaries, and smaller focused work units.
 
 ### Wave Types
 
 | Type | Executor | Parallelism | Purpose |
 |------|----------|-------------|---------|
-| `bootstrap` | Orchestrator (sequential /run) | None | Foundation, contracts, setup |
-| `parallel` | Teams (parallel /run per item) | Full | Main build phase |
-| `integration` | Orchestrator (sequential /run) | None | Wiring, testing, polish |
+| `bootstrap` | Lead (sequential) | None | Foundation, scaffolding, contracts |
+| `research` | Teammates (parallel per wave) | Full | Analysis, information gathering |
+| `design` | Teammates (parallel per wave) | Full | Architecture decisions, interfaces |
+| `implementation` | Teammates (parallel per wave) | Full | Core build work |
+| `supporting` | Teammates (parallel per wave) | Full | Secondary features, integrations |
+| `testing` | Teammates (parallel per wave) | Full | QA, security, validation |
+| `documentation` | Teammates (parallel per wave) | Full | Docs, cleanup, optimization |
+| `integration` | Lead (sequential) | None | Merge, final testing, polish |
+
+Not all wave types are needed for every request, but prefer MORE granular waves over fewer. If work spans multiple concerns, split into separate waves.
+
+### Wave Count Guidance
+
+| Tier | Minimum waves | Typical waves |
+|------|---------------|---------------|
+| 2 | 3 | 3-4 |
+| 3 | 5 | 5-7 |
+| 4 | 6 | 6-10 |
 
 ### Gate Sentinel Pattern
 
@@ -454,26 +480,71 @@ quality_gate:
   verification_method: file_exists  # file_exists | output_exists | test_result | manual_review
 ```
 
-### Example: 3-Wave Full-Stack App
+### Example: 7-Wave Full-Stack App
 
 ```
-Wave 0 (Foundation):
-  - Setup project structure
-  - Define database schema
-  - Export shared types
+Wave 0 (Foundation -- lead):
+  - Setup project structure, configs, tooling
+  - Define database schema, export shared types
   -> GATE-0: Verify structure + schema + types exist
 
-Wave 1 (Parallel Build):
-  Platform team: Backend APIs, database migrations
-  Product team: Business logic, feature endpoints
-  Experience team: UI components, forms, pages
-  -> GATE-1: Verify APIs operational, logic implemented, UI built
+Wave 1 (Research -- teammates, parallel):
+  - Analyze existing codebase patterns
+  - Research library/framework options
+  - Document API requirements
+  -> GATE-1: Research artifacts verified
 
-Wave 2 (Integration):
-  - Wire frontend to backend
-  - End-to-end testing
+Wave 2 (Design -- teammates, parallel):
+  - Design database models and relationships
+  - Define API contracts (OpenAPI/GraphQL schema)
+  - Create UI wireframes and component architecture
+  -> GATE-2: Design artifacts verified, contracts established
+
+Wave 3 (Core Implementation -- teammates, parallel):
+  Platform team: Backend APIs, database migrations
+  Product team: Business logic, core feature endpoints
+  -> GATE-3: Core APIs operational, business logic implemented
+
+Wave 4 (UI + Supporting Features -- teammates, parallel):
+  Experience team: UI components, forms, pages
+  Integration team: Third-party integrations, webhooks
+  -> GATE-4: UI built, integrations connected
+
+Wave 5 (Testing + Security -- teammates, parallel):
+  QA team: Unit tests, integration tests, e2e tests
+  Security team: Auth validation, input sanitization, vulnerability scan
+  -> GATE-5: Tests passing, security scan clean
+
+Wave 6 (Integration + Polish -- lead):
+  - Wire all components together
   - Performance optimization
-  -> GATE-2: All integrated, tests passing
+  - Documentation
+  - Final end-to-end validation
+  -> GATE-6: All integrated, tests passing, docs complete
+```
+
+### Example: 5-Wave API Service
+
+```
+Wave 0 (Foundation -- lead):
+  - Project scaffolding, database setup
+  -> GATE-0
+
+Wave 1 (Design -- teammates, parallel):
+  - API schema design, data model design
+  -> GATE-1
+
+Wave 2 (Implementation -- teammates, parallel):
+  - Endpoint implementation, middleware, data access layer
+  -> GATE-2
+
+Wave 3 (Testing -- teammates, parallel):
+  - Unit tests, integration tests, load tests
+  -> GATE-3
+
+Wave 4 (Integration -- lead):
+  - Final wiring, documentation, deployment config
+  -> GATE-4
 ```
 
 ## Interface Contracts (V9.6)
@@ -621,5 +692,5 @@ Team-specific hooks in `.claude/hooks/`:
 
 ---
 
-**Version**: 9.22.0
-**Part of**: cAgents - Parallel Team Execution via Built-in Agent Teams
+**Version**: 9.25.0
+**Part of**: cAgents - N-Wave Parallel Team Execution via Built-in Agent Teams

@@ -1,37 +1,50 @@
 ---
 name: run
-description: "Universal workflow engine. Runs inline (no fork) to minimize subagent nesting. Performs routing + planning inline, delegates coordination to controllers via Task tool. 2-level chain (run -> controller -> execution)."
-argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--resume <session_id>]"
+description: "Event-driven pipeline engine. Runs inline (no fork) with state machine loop reading pipeline_config.yaml. Spawns agents sequentially at level 1, controllers spawn executors/reviewers at level 2. Supports revision loops and pre-enrichment detection."
+argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--resume <session_id>] [--session <session_dir>]"
 user-invocable: true
 context: none
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
 ---
 
-# /run - Universal Workflow Engine (Flattened Architecture)
+# /run - Event-Driven Pipeline Engine
 
-You are the **universal workflow engine** that handles routing, planning, and orchestration inline (no fork -- runs in the current conversation context to minimize subagent nesting), then delegates coordination to the appropriate controller via Task tool. This 2-level chain (`/run -> controller -> execution`) keeps nesting within Claude Code's supported limits.
+You are the **event-driven pipeline engine** that executes a state machine loop, spawning agents sequentially at level 1 based on `pipeline_config.yaml`. Controllers spawn executors and reviewers at level 2. Revision loops at both levels ensure quality. This replaces the previous fixed 6-step workflow with a config-driven state machine.
 
-## Architecture: Flattened Delegation
+## Architecture: Event-Driven State Machine
 
 ```
-/run (routing + planning + orchestration inline) -> controller -> execution_agents
+/run (state machine loop -- level 0)
+  |
+  Phase 1: Sequential enrichment (all level 1, spawned by /run)
+  +-> orchestrator (level 1)    -> enriched_context.yaml
+  +-> planner (level 1)         -> plan.yaml
+  +-> decomposer (level 1)      -> work_items.yaml
+  +-> prompt-engineer (level 1)  -> delegation_prompts.yaml
+  |
+  Phase 2: Nested execution (level 1 + 2)
+  +-> controller (level 1)
+       +-> executor (level 2)   -> implementation
+       +-> reviewer (level 2)   -> review_report.yaml
+       +-> revision loop (level 2, max 3 rounds)
+  |
+  Phase 3: Validation (level 1)
+  +-> validator (level 1)       -> validation_report.yaml
+  |
+  Revision loop (max 5 rounds):
+    FAIL   -> back to Phase 2 (PROMPTS_READY)
+    REVISE -> back to Phase 1 (PLANNED, re-plan)
 ```
-
-`/run` performs the work previously done by trigger, orchestrator, universal-router, and universal-planner directly. Only the controller (which needs domain expertise to ask questions and synthesize) and execution agents (which do the actual work) are spawned as subagents.
 
 ## BLOCKING REQUIREMENT: TodoWrite
 
-**TodoWrite is a BLOCKING PREREQUISITE for every phase transition.** You CANNOT proceed to the next step until you have called TodoWrite. This is not optional. This is not a suggestion. This is the primary mechanism for user-visible progress tracking.
+**TodoWrite is a BLOCKING PREREQUISITE for every state transition.** You CANNOT proceed to the next state until you have called TodoWrite. This is not optional.
 
 **If you skip a TodoWrite call, the workflow is broken.** The user sees TodoWrite entries in the UI task list -- without them, the user has zero visibility into what is happening.
 
-**Minimum 4 TodoWrite calls per /run execution** -- one at each of these steps:
-1. Step 2 (after session init)
-2. Step 3 (after routing completes)
-3. Step 5 (before controller delegation)
-4. Step 6 (after controller returns)
+**Minimum TodoWrite calls**: One per state transition (typically 7+ per full pipeline run).
 
-## Core Workflow (6 Steps)
+## Core Workflow (State Machine)
 
 When the user runs `/run <request> [flags]`:
 
@@ -41,23 +54,27 @@ When the user runs `/run <request> [flags]`:
 
 Parse `$ARGUMENTS` for:
 - **Flags**: `--interactive`, `--dry-run`, `--quiet`/`-q`, `--stream`, `--skip-preflight`, `--team`
-- **Value flags**: `--template <name>`, `--domain <domain>`, `--tier <N>`, `--confidence <N>`, `--resume <session_id>`
+- **Value flags**: `--template <name>`, `--domain <domain>`, `--tier <N>`, `--confidence <N>`, `--resume <session_id>`, `--session <session_dir>`
 - **Request**: Everything before the first `--` flag
 
 If `--resume <session_id>`: Load session from `Agent_Memory/sessions/{session_id}/progress.md` and resume from last checkpoint.
 
+If `--session <session_dir>`: This is a pre-enriched session (from /team). Skip to pre-enrichment detection in Step 3.
+
 ---
 
-### Step 2: Initialize Session + CALL TodoWrite
+### Step 2: Initialize Session + Load Pipeline Config
 
 **ACTION 1 -- Create session files:**
 
 ```bash
 SESSION_ID="run_$(date -u +%Y%m%d_%H%M%S)"
 SESSION_DIR="Agent_Memory/sessions/${SESSION_ID}"
-mkdir -p "${SESSION_DIR}/workflow"
+mkdir -p "${SESSION_DIR}/workflow/events"
 mkdir -p "${SESSION_DIR}/outputs"
 ```
+
+If `--session` was provided, use that directory instead and skip session creation.
 
 Write `instruction.yaml`:
 ```yaml
@@ -72,31 +89,52 @@ metadata:
 
 Write `status.yaml`:
 ```yaml
-phase: routing
+pipeline_state: INIT
+revision_round: 0
 created_at: "{ISO_TIMESTAMP}"
-phase_history:
-  - phase: routing
+state_history:
+  - state: INIT
     entered_at: "{ISO_TIMESTAMP}"
 ```
 
-**ACTION 2 -- Call TodoWrite NOW (this is mandatory, do not skip):**
+**ACTION 2 -- Load pipeline config:**
+
+Read `Agent_Memory/_system/config/pipeline_config.yaml` to get the state machine definition.
+
+**ACTION 3 -- Call TodoWrite NOW (mandatory):**
 
 ```
 TodoWrite([
-  {"content": "[/run] Route request to domain and tier", "status": "in_progress", "id": "route"},
-  {"content": "[/run] Plan objectives and select controller", "status": "pending", "id": "plan"},
-  {"content": "[controller] Coordinate work via question-based delegation", "status": "pending", "id": "coordinate"},
-  {"content": "[/run] Validate outputs and quality", "status": "pending", "id": "validate"}
+  {"content": "[/run] Pipeline: INIT (enriching context)", "status": "in_progress", "id": "init"},
+  {"content": "[/run] Pipeline: ORCHESTRATED (planning)", "status": "pending", "id": "orchestrated"},
+  {"content": "[/run] Pipeline: PLANNED (decomposing)", "status": "pending", "id": "planned"},
+  {"content": "[/run] Pipeline: DECOMPOSED (crafting prompts)", "status": "pending", "id": "decomposed"},
+  {"content": "[controller] Pipeline: PROMPTS_READY (coordinating)", "status": "pending", "id": "prompts_ready"},
+  {"content": "[/run] Pipeline: COORDINATED (validating)", "status": "pending", "id": "coordinated"},
+  {"content": "[/run] Pipeline: VALIDATED (complete)", "status": "pending", "id": "validated"}
 ])
 ```
 
-You have now initialized the session AND called TodoWrite. Proceed to Step 3.
+Proceed to Step 3.
 
 ---
 
-### Step 3: Route + CALL TodoWrite
+### Step 3: State Machine Loop
 
-**ACTION 1 -- Classify domain and tier (inline, no delegation):**
+This is the core loop. For each state in the pipeline:
+
+**3a. Check pre-enrichment (for /team teammate flows):**
+
+If `--session` was provided, check which enrichment files already exist:
+- `enriched_context.yaml` exists -> skip INIT, start from ORCHESTRATED
+- `plan.yaml` exists -> skip INIT+ORCHESTRATED, start from PLANNED
+- `work_items.yaml` exists -> skip through PLANNED, start from DECOMPOSED
+
+Set `current_state` to the first state that needs execution based on pre-enrichment detection. Use the `pre_enrichment.skip_if_exists` mapping from pipeline_config.yaml.
+
+**3b. Route domain and tier (inline, during INIT processing):**
+
+Before spawning the orchestrator, classify domain and tier inline:
 
 | Domain | Keywords |
 |--------|----------|
@@ -116,121 +154,56 @@ You have now initialized the session AND called TodoWrite. Proceed to Step 3.
 | 3 | Multiple components, external deps | 1 primary + 1-2 supporting |
 | 4 | Strategic/architectural, company-wide | Executive + HITL |
 
-Update `status.yaml` phase to `planning`.
-
-**ACTION 2 -- Call TodoWrite NOW with the specific controller name:**
-
-Replace `[controller]` with the actual controller identified during routing (e.g., `engineering-manager`, `creative-director`).
+**3c. Execute state machine loop:**
 
 ```
-TodoWrite([
-  {"content": "[/run] Route request to domain and tier", "status": "completed", "id": "route"},
-  {"content": "[/run] Plan objectives and select controller", "status": "in_progress", "id": "plan"},
-  {"content": "[{controller_name}] Coordinate work via question-based delegation", "status": "pending", "id": "coordinate"},
-  {"content": "[/run] Validate outputs and quality", "status": "pending", "id": "validate"}
-])
+while current_state is not terminal (VALIDATED):
+  1. Look up current_state in pipeline_config.yaml
+  2. Determine agent to spawn (or "dynamic" for controller from plan.yaml)
+  3. Spawn agent at level 1 via Task tool (see delegation below)
+  4. After agent returns, read completion event from workflow/events/
+  5. Update status.yaml with new state
+  6. Call TodoWrite to reflect progress
+  7. Check for revision: if validator returned FAIL or REVISE, route accordingly
+  8. Advance to next_state from event file
 ```
 
-Output a brief routing summary:
-```
-[/run] Routing... Domain: {domain}, Tier: {tier}, Controller: {controller_name}
-```
-
-Proceed to Step 4.
-
----
-
-### Step 4: Plan (Inline -- No Delegation)
-
-Define objectives and select the controller. Load the appropriate planner_config.yaml:
-- Make: `make/config/planner_config.yaml`
-- Grow: `grow/config/planner_config.yaml`
-- Operate: `operate/config/planner_config.yaml`
-- People: `people/config/planner_config.yaml`
-- Serve: `serve/config/planner_config.yaml`
-
-Match the request to a controller from the `controller_catalog` based on `use_when` patterns and the classified tier.
-
-**Common Controller Mappings** (quick reference):
-
-| Request Type | Controller |
-|-------------|-----------|
-| Bug fix, code fix | engineering-manager |
-| Architecture, system design | architect |
-| Frontend work | frontend-lead |
-| Backend work | backend-lead |
-| Story, creative writing | editor or creative-director |
-| Game design | game-designer or game-producer |
-| Marketing campaign | campaign-manager |
-| Sales strategy | sales-strategist |
-| Budget, finance | finance-manager |
-| HR, hiring | hr-manager |
-| Customer support | customer-success-manager or vp-customer-support |
-| Legal, compliance | legal-counsel or general-counsel |
-
-Write `plan.yaml`:
-```yaml
-plan_id: plan_{SESSION_ID}
-tier: {tier}
-domain: {domain}
-request: "{user_request}"
-
-objectives:
-  - "{objective_1}"
-  - "{objective_2}"
-
-controller_assignment:
-  primary: cagents:{controller_name}
-  supporting: []  # Add for tier 3+
-
-work_items_summary:
-  count: {estimated_count}
-  types: {understand, design, build, verify}
-```
-
-Write `decomposition.yaml` for tier 3+ (inline for tier 2):
-```yaml
-work_items:
-  - id: WI-001
-    name: "{work_item_name}"
-    type: understand|design|build|verify
-    acceptance_criteria:
-      - "{criterion_1}"
-    dependencies: []
-```
-
-If `--dry-run`: Display plan and STOP here.
-If `--team`: Delegate to team-trigger with plan.yaml already written (skip to team execution).
-
-Update `status.yaml` phase to `coordinating`.
-
-Output a brief planning summary:
-```
-[/run] Planning... {N} objectives, {M} work items, controller: {controller_name}
-```
-
-Proceed to Step 5.
-
----
-
-### Step 5: CALL TodoWrite + Delegate to Controller
-
-**ACTION 1 -- Call TodoWrite NOW to mark coordination starting:**
-
-```
-TodoWrite([
-  {"content": "[/run] Route request to domain and tier", "status": "completed", "id": "route"},
-  {"content": "[/run] Plan objectives and select controller", "status": "completed", "id": "plan"},
-  {"content": "[{controller_name}] Coordinate work via question-based delegation", "status": "in_progress", "id": "coordinate"},
-  {"content": "[/run] Validate outputs and quality", "status": "pending", "id": "validate"}
-])
-```
-
-**ACTION 2 -- Spawn the controller via Task tool:**
+**3d. Agent delegation pattern (for each state):**
 
 ```
 Task({
-  subagent_type: "cagents:{controller_name}",
+  subagent_type: "cagents:{agent_from_pipeline_config}",
+  description: "{state}: {brief_description}",
+  prompt: `You are the {agent_name} in the event-driven pipeline.
+
+REQUEST: {user_request}
+SESSION: Agent_Memory/sessions/{SESSION_ID}/
+DOMAIN: {domain} | TIER: {tier}
+CURRENT STATE: {current_state}
+
+INSTRUCTIONS:
+1. Read your inputs from the session workflow/ directory.
+2. Perform your phase work.
+3. Write your outputs to the session workflow/ directory.
+4. Write a completion event to workflow/events/EVT-{N}.yaml:
+   event_id: EVT-{N}
+   state: {next_state}
+   agent: cagents:{agent_name}
+   timestamp: "{ISO_TIMESTAMP}"
+   inputs_consumed: [{inputs}]
+   outputs_produced: [{outputs}]
+   next_state: {next_state}
+`
+})
+```
+
+**For the PROMPTS_READY state (controller):**
+
+The controller is dynamic -- resolved from `plan.yaml` `controller_assignment.primary`. Use the delegation prompt from `workflow/delegation_prompts.yaml` if available (crafted by prompt-engineer), otherwise fall back to standard controller prompt.
+
+```
+Task({
+  subagent_type: "cagents:{controller_from_plan}",
   description: "Coordinate: {request}",
   prompt: `You are the {controller_name} controller coordinating work for this request.
 
@@ -239,133 +212,129 @@ SESSION: Agent_Memory/sessions/{SESSION_ID}/
 DOMAIN: {domain} | TIER: {tier}
 
 INSTRUCTIONS:
-1. Read workflow/plan.yaml for objectives and work items.
-2. Break objectives into specific questions.
-3. For EACH question, delegate to an execution agent via Task tool:
-   Task({ subagent_type: "cagents:{execution_agent}", description: "Answer: {question}", prompt: "{question}" })
-4. After identifying which execution agents you will use, call TodoWrite to show them:
-   TodoWrite([
-     {"content": "[/run] Route request to domain and tier", "status": "completed", "id": "route"},
-     {"content": "[/run] Plan objectives and select controller", "status": "completed", "id": "plan"},
-     {"content": "[{controller_name}] Coordinate: ask questions and synthesize", "status": "in_progress", "id": "coordinate"},
-     {"content": "[{exec_agent_1}] {specific_task_1}", "status": "pending", "id": "exec1"},
-     {"content": "[{exec_agent_2}] {specific_task_2}", "status": "pending", "id": "exec2"},
-     {"content": "[/run] Validate outputs and quality", "status": "pending", "id": "validate"}
-   ])
-5. Synthesize answers into a coherent solution.
-6. Coordinate implementation via execution agents.
-7. Write coordination_log.yaml when complete with status: completed.
+1. Read workflow/delegation_prompts.yaml for your optimized delegation prompt.
+2. Read workflow/plan.yaml for objectives and work items.
+3. Break objectives into specific questions.
+4. For EACH question, delegate to an execution agent via Task tool.
+5. After each executor completes, spawn a reviewer to evaluate against acceptance criteria.
+6. If reviewer says REVISE: send feedback to executor (max 3 internal rounds).
+7. After identifying execution agents, call TodoWrite to show them.
+8. Synthesize answers into a coherent solution.
+9. Write coordination_log.yaml when complete with status: completed.
+10. Write completion event to workflow/events/EVT-{N}.yaml with state: COORDINATED.
 `
 })
 ```
 
-The controller will coordinate the work. Wait for it to return.
+**3e. Call TodoWrite after each state transition:**
 
-Update `status.yaml` phase to `executing` then `validating` after controller returns.
+After each agent returns and a state transition occurs, call TodoWrite to update progress. Mark the completed state as `completed` and the next state as `in_progress`.
+
+**3f. Revision handling:**
+
+After the COORDINATED state, read `workflow/validation_report.yaml`:
+
+- **PASS**: Advance to VALIDATED (terminal). Pipeline complete.
+- **FAIL**: Route back to PROMPTS_READY. Increment `revision_round`. Pass feedback from validation_report.yaml to the controller. Max 5 total revision cycles.
+- **REVISE**: Route back to PLANNED. Increment `revision_round`. Pass feedback to the planner. Max 5 total revision cycles.
+
+If `revision_round >= max_cycles` (5): Escalate to user (HITL). Report what completed and what failed.
+
+Update TodoWrite on revision:
+```
+TodoWrite([
+  ...completed_states...,
+  {"content": "[/run] REVISION {N}/5: Re-running from {target_state}", "status": "in_progress", "id": "revision"},
+  ...remaining_states...
+])
+```
 
 ---
 
-### Step 6: CALL TodoWrite + Validate and Report
+### Step 4: Report Results
 
-After the controller returns:
+After the state machine loop exits:
 
-1. **Check coordination_log.yaml** exists and has `status: completed`
-2. **Verify outputs** match plan objectives
-3. **Write execution_summary.yaml** with results
+1. **Read final state** from status.yaml
+2. **Summarize pipeline execution**: which states ran, revision cycles used, final status
+3. **Write execution_summary.yaml** with results:
+
+```yaml
+session_id: {SESSION_ID}
+final_state: VALIDATED  # or FAILED
+revision_rounds_used: {N}
+states_executed: [INIT, ORCHESTRATED, PLANNED, DECOMPOSED, PROMPTS_READY, COORDINATED, VALIDATED]
+total_agents_spawned: {count}
+```
+
 4. **Update status.yaml** to `completed`
-
-**ACTION -- Call TodoWrite NOW to mark completion:**
-
-On success:
-```
-TodoWrite([
-  {"content": "[/run] Route request to domain and tier", "status": "completed", "id": "route"},
-  {"content": "[/run] Plan objectives and select controller", "status": "completed", "id": "plan"},
-  {"content": "[{controller_name}] Coordinate work via question-based delegation", "status": "completed", "id": "coordinate"},
-  {"content": "[/run] Validate outputs and quality", "status": "completed", "id": "validate"}
-])
-```
-
-On failure:
-```
-TodoWrite([
-  {"content": "[/run] Route request to domain and tier", "status": "completed", "id": "route"},
-  {"content": "[/run] Plan objectives and select controller", "status": "completed", "id": "plan"},
-  {"content": "[{controller_name}] Coordinate work via question-based delegation", "status": "completed", "id": "coordinate"},
-  {"content": "[/run] Validate outputs -- FAILED: {reason}", "status": "in_progress", "id": "validate"}
-])
-```
-
 5. **Report results** to user
 
-If validation fails:
-- FIXABLE: Note issues, report with suggestions
-- BLOCKED: Report failure, suggest `--resume {SESSION_ID}`
+If pipeline failed after max revisions:
+- Report what completed vs what remains
+- Suggest recovery: `/run --resume {SESSION_ID}`
+- Save progress in progress.md for resumption
 
 ---
 
 ## Team Mode (--team flag)
 
-For team mode, after completing Steps 1-4 (routing + planning), delegate to team-trigger:
+For team mode, after completing routing + planning inline, delegate to `/team`:
 
 ```
-Task({
-  subagent_type: "cagents:team-trigger",
-  description: "Team: {request}",
-  prompt: `
-    Request: {request}
-    Session: Agent_Memory/sessions/{SESSION_ID}/
-    Mode: team_execution
-    Plan already created at: workflow/plan.yaml
-    Decomposition at: workflow/decomposition.yaml
-    Initialize team execution from existing plan.
-  `
-})
+Skill({ skill: "team", args: "{request} --session {SESSION_DIR}" })
 ```
+
+The /team skill handles decomposition into work items, team creation, and parallel execution. Each teammate invokes `/run --session {SESSION_DIR}` which detects pre-enrichment and picks up from the appropriate state.
+
+If `--dry-run` with `--team`: Display plan summary and team composition, then STOP.
 
 ## TodoWrite Rules Summary
 
-1. **/run calls TodoWrite exactly 4 times** -- Steps 2, 3, 5, and 6.
-2. **Each TodoWrite call is ACTION 1 or ACTION 2 in its step** -- it happens BEFORE or IMMEDIATELY AFTER the main work, never as an afterthought.
-3. **The controller also calls TodoWrite** when it identifies execution agents (progressive refinement -- see the prompt template in Step 5).
+1. **/run calls TodoWrite at every state transition** -- minimum once per state.
+2. **Each TodoWrite call happens BEFORE advancing to the next state.**
+3. **The controller also calls TodoWrite** when it identifies execution agents (progressive refinement).
 4. **Never use generic placeholders** after the specific agent is known. Replace `[controller]` with `[engineering-manager]` etc.
 5. **Never have zero tasks `in_progress`** -- always transition one to `completed` and the next to `in_progress` in the same call.
-6. **Each execution agent gets its own entry** with `[agent-name] specific task description`.
+6. **On revision, add a revision entry** showing round number and target state.
 
 ## What /run Does Directly (Exhaustive List)
 
 - Parse flags from arguments
-- Create session directory and files (instruction.yaml, status.yaml, plan.yaml, decomposition.yaml)
-- **Call TodoWrite** (Step 2: initial task list)
-- Domain detection (keyword-based routing)
-- Tier classification
-- **Call TodoWrite** (Step 3: replace `[controller]` with specific name)
-- Controller selection (from planner_config.yaml)
-- Plan creation (objectives, work items)
-- **Call TodoWrite** (Step 5: mark coordination as in_progress)
-- Spawn controller via Task tool
-- Validate controller output
-- **Call TodoWrite** (Step 6: mark all tasks completed)
+- Create session directory and files (instruction.yaml, status.yaml)
+- Load pipeline_config.yaml
+- Domain detection and tier classification (inline)
+- **Call TodoWrite** at every state transition
+- Spawn pipeline agents via Task tool (one per state)
+- Read completion events from workflow/events/
+- Handle revision routing (FAIL -> PROMPTS_READY, REVISE -> PLANNED)
+- Validate final state and write execution_summary.yaml
 - Report results to user
 
 ## What /run Delegates (Exhaustive List)
 
-- **Controller** (via Task tool): Question-based coordination, synthesis, implementation task management
-- **Execution agents** (via controller): Actual implementation work (coding, writing, analysis)
-- **Team-trigger** (via Task tool, --team mode only): Parallel team execution
+- **Orchestrator** (level 1): Enrich context -> enriched_context.yaml
+- **Universal-planner** (level 1): Plan objectives -> plan.yaml
+- **Task-decomposer** (level 1): Decompose -> work_items.yaml
+- **Prompt-engineer** (level 1): Craft prompts -> delegation_prompts.yaml
+- **Controller** (level 1, dynamic): Coordinate execution with reviewer loop -> coordination_log.yaml
+- **Universal-validator** (level 1): Validate -> validation_report.yaml (PASS/FAIL/REVISE)
+- **Execution agents** (level 2, via controller): Actual implementation work
+- **Reviewer** (level 2, via controller): Review against acceptance criteria
 
 ## Error Handling
 
-If the controller fails or returns incomplete:
-1. **Check for partial results** in coordination_log.yaml
-2. **Report what completed** vs what remains
-3. **Suggest recovery**: `/run --resume {SESSION_ID}`
-4. **Save progress** in progress.md for resumption
+If an agent fails or returns incomplete:
+1. **Check for partial results** in session workflow/ directory
+2. **Check for completion event** in workflow/events/
+3. **If no event**: Retry agent once with reduced scope
+4. **If retry fails**: Save progress to progress.md, suggest `--resume {SESSION_ID}`
 
 If context is exhausted mid-workflow:
 1. Session state is preserved in Agent_Memory/sessions/
 2. pre-compact-save hook creates waypoints automatically
 3. User can resume with `/run --resume {SESSION_ID}`
+4. Resume detects completed states from events/ and skips them
 
 ## Argument Handling
 
@@ -373,7 +342,9 @@ See @reference/flags.md for complete flag reference with defaults and examples.
 
 ## Configuration
 
+- Pipeline config: `Agent_Memory/_system/config/pipeline_config.yaml`
 - Planner configs: `{domain}/config/planner_config.yaml`
+- Event template: `Agent_Memory/_system/templates/event.yaml`
 - Session folder: `Agent_Memory/sessions/run_{YYYYMMDD_HHMMSS}/`
 - Agent audit trail: `Agent_Memory/sessions/{session_id}/workflow/agent_tree.yaml`
 - Global audit log: `Agent_Memory/_system/logs/agent_spawns.log`
@@ -383,9 +354,9 @@ See @reference/flags.md for complete flag reference with defaults and examples.
 When spawned as a subagent (e.g., by /team), self-register in agent_tree.yaml:
 ```yaml
     cagents_type: "cagents:run"
-    role_description: "Universal workflow engine - routing, planning, and orchestration"
+    role_description: "Event-driven pipeline engine - state machine loop"
 ```
 
 ---
 
-**Flattened architecture: Route and plan inline, delegate coordination to controllers. 2 levels instead of 5. TodoWrite at every phase transition.**
+**Event-driven pipeline: Config-driven state machine with sequential enrichment, nested execution with reviewer loops, and revision routing. TodoWrite at every state transition.**

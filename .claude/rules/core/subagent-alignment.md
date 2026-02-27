@@ -24,6 +24,78 @@ Task({
 })
 ```
 
+## Claude Code Built-in Subagents
+
+Claude Code includes built-in subagents automatically available:
+
+| Subagent | Model | Tools | Purpose |
+|----------|-------|-------|---------|
+| **Explore** | Haiku | Read-only (no Write/Edit) | Fast codebase search and analysis |
+| **Plan** | Inherits | Read-only (no Write/Edit) | Research during plan mode |
+| **general-purpose** | Inherits | All tools | Complex multi-step tasks |
+| **Bash** | Inherits | Bash | Terminal commands in separate context |
+
+## Subagent Configuration Fields (Claude Code)
+
+Claude Code subagents support these frontmatter fields:
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `name` | Yes | Unique identifier (lowercase, hyphens) |
+| `description` | Yes | When Claude should delegate to this subagent |
+| `tools` | No | Tool allowlist. Inherits all if omitted |
+| `disallowedTools` | No | Tools to deny (removed from inherited or specified list) |
+| `model` | No | `sonnet`, `opus`, `haiku`, or `inherit` (default: `inherit`) |
+| `permissionMode` | No | `default`, `acceptEdits`, `dontAsk`, `bypassPermissions`, `plan` |
+| `maxTurns` | No | Maximum agentic turns before the subagent stops |
+| `skills` | No | Skills to preload into subagent context at startup |
+| `mcpServers` | No | MCP servers available to this subagent |
+| `hooks` | No | Lifecycle hooks scoped to this subagent |
+| `memory` | No | Persistent memory scope: `user`, `project`, or `local` |
+| `background` | No | `true` to always run as background task (default: `false`) |
+| `isolation` | No | `worktree` to run in temporary git worktree |
+
+### Background vs Foreground Subagents
+
+- **Foreground**: Blocks main conversation. Permission prompts pass through to user.
+- **Background**: Runs concurrently. Auto-denies unapproved permissions. User can press Ctrl+B to background a running task.
+
+### Persistent Memory
+
+The `memory` field gives subagents a persistent directory across conversations:
+
+| Scope | Location | Use when |
+|-------|----------|----------|
+| `user` | `~/.claude/agent-memory/<name>/` | Learnings across all projects |
+| `project` | `.claude/agent-memory/<name>/` | Project-specific, shareable via VCS |
+| `local` | `.claude/agent-memory-local/<name>/` | Project-specific, not checked in |
+
+### Isolation via Worktrees
+
+Set `isolation: "worktree"` to run a subagent in a temporary git worktree, giving it an isolated copy of the repository. The worktree is auto-cleaned if the subagent makes no changes.
+
+### Subagent Spawning Restrictions
+
+Use `Task(agent_type)` syntax in the `tools` field to restrict which subagents can be spawned:
+
+```yaml
+tools: Task(worker, researcher), Read, Bash  # Only worker and researcher allowed
+```
+
+To disable specific subagents, add `Task(AgentName)` to the `deny` permission array:
+
+```json
+{ "permissions": { "deny": ["Task(Explore)", "Task(my-agent)"] } }
+```
+
+### Resuming Subagents
+
+Subagents can be resumed to continue previous work with full conversation history retained. Transcripts persist at `~/.claude/projects/{project}/{sessionId}/subagents/agent-{agentId}.jsonl`.
+
+### Auto-Compaction
+
+Subagents support automatic context compaction at ~95% capacity. Override trigger percentage with `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`.
+
 ## cAgents Subagent Type Format
 
 cAgents registers all agents under the `cagents` plugin namespace. The Task tool uses `cagents:{agent-name}`:

@@ -6,13 +6,13 @@ paths:
 
 # cAgents Hook System
 
-V9.22.0 CJS-only hook architecture with 15 hooks across 13 event types, `createHook()` factory pattern, agent audit trail with completion summaries, and resilient path resolution.
+V9.25.0 CJS-only hook architecture with 15 registered hooks + 1 CLI tool across 13 event types (of 16 total Claude Code event types), `createHook()` factory pattern, agent audit trail with completion summaries, and resilient path resolution. Supports command, prompt, and agent hook types, async execution, and matcher-based filtering.
 
 ## Architecture
 
 cAgents uses a unified CJS hook system configured in `.claude/settings.json`:
 
-- **CJS hooks** (`.claude/hooks/`): 17 `.cjs` files -- 1 shared utility module (`hook-utils.cjs`) + 1 hook launcher (`run-hook.cjs`) + 14 registered hooks + 1 standalone CLI tool (`eval-runner.cjs`). All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output).
+- **CJS hooks** (`.claude/hooks/`): 18 `.cjs` files -- 1 shared utility module (`hook-utils.cjs`) + 1 hook launcher (`run-hook.cjs`) + 15 registered hooks + 1 standalone CLI tool (`eval-runner.cjs`). All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output).
 - **Prompt hooks**: None currently active. The Stop prompt hook was removed in V9.6.2 due to unreliable LLM JSON responses causing recurring validation failures. The `verify-completion.cjs` command hook provides equivalent file-based verification.
 - **Self-contained invocation via run-hook.cjs**: All hooks are called via `bash -c 'R="${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"; node "$R/.claude/hooks/run-hook.cjs" <hook-name>'` -- a bash wrapper with a 3-tier fallback chain that resolves the plugin root, then launches `run-hook.cjs` which resolves the target hook path using `__dirname`. V9.17.1 switched from bare `node "${CLAUDE_PLUGIN_ROOT}"/.claude/hooks/run-hook.cjs` (which fails with MODULE_NOT_FOUND when `CLAUDE_PLUGIN_ROOT` is not expanded) to a `bash -c` wrapper with fallback chain: `CLAUDE_PLUGIN_ROOT` (official plugin env var) -> `CLAUDE_PROJECT_DIR` (user's project dir, works for local dev) -> `pwd` (last resort). Previous V9.13 approach used `${CLAUDE_PLUGIN_ROOT}` directly in the command string, but this fails when the env var is not set (e.g., in certain subagent contexts, SessionEnd events, or non-plugin installations).
 
@@ -46,21 +46,40 @@ The V9.5 refactoring eliminates the dual shell+JS architecture that caused recur
 
 ## Hook Types Overview
 
+Claude Code supports 16 hook event types. cAgents implements 15 registered hooks across 13 of these events. Three events (`UserPromptSubmit`, `ConfigChange`, `WorktreeCreate/Remove`) have no cAgents hooks but are available for custom use.
+
 | Hook Type | Trigger | cAgents Hook | Purpose |
 |-----------|---------|--------------|---------|
-| `SessionStart` | Session begins | `session-catchup.cjs` | Initialize state, detect incomplete sessions, inject cAgents context |
+| `SessionStart` | Session begins/resumes | `session-catchup.cjs` | Initialize state, detect incomplete sessions, inject cAgents context |
 | `SessionEnd` | Session ends | `team-stop.cjs` | Finalize metrics, update status |
+| `UserPromptSubmit` | User submits prompt | *(none)* | Available for custom input validation/preprocessing |
 | `PreToolUse` | Before tool execution | `bash-validator.cjs`, `secret-detection.cjs` | Validate, block dangerous operations |
+| `PermissionRequest` | Permission dialog | `permission-handler.cjs` | Auto-approve safe patterns, HITL gates |
 | `PostToolUse` | After tool execution | `post-write-validator.cjs` | Validate JSON/YAML syntax, audit file changes |
 | `PostToolUseFailure` | Tool execution fails | `tool-failure-tracker.cjs` | Track failures, detect patterns, suggest recovery |
-| `Stop` | Claude stops responding | `verify-completion.cjs` | Verify completion criteria |
+| `Notification` | Status notification | `notification.cjs` | Log and track |
 | `SubagentStart` | Subagent spawned | `subagent-tracker.cjs`, `team-start.cjs` | Log spawns, initialize team monitoring, inject self-registration context |
 | `SubagentStop` | Subagent finishes | `subagent-stop-tracker.cjs` | Log completion, capture summaries + duration, update agent tree |
+| `Stop` | Claude stops responding | `verify-completion.cjs` | Verify completion criteria |
 | `TeammateIdle` | Teammate goes idle | `teammate-idle-handler.cjs` | Find available work for idle members |
 | `TaskCompleted` | Task finishes | `team-task-complete.cjs` | Update task list, unblock dependencies |
-| `PermissionRequest` | Permission dialog | `permission-handler.cjs` | Auto-approve safe patterns, HITL gates |
-| `Notification` | Status notification | `notification.cjs` | Log and track |
+| `ConfigChange` | Config file changes | *(none)* | Available for custom config change handling |
+| `WorktreeCreate` | Worktree being created | *(none)* | Available for custom VCS-agnostic worktree setup |
+| `WorktreeRemove` | Worktree being removed | *(none)* | Available for custom worktree cleanup |
 | `PreCompact` | Before context compaction | `pre-compact-save.cjs` | Save critical state + coordination state |
+
+### Matcher Patterns by Event
+
+| Event | What matcher filters | Example values |
+|-------|---------------------|----------------|
+| `SessionStart` | How session started | `startup`, `resume`, `clear`, `compact` |
+| `SessionEnd` | Why session ended | `clear`, `logout`, `prompt_input_exit`, `other` |
+| `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest` | Tool name | `Bash`, `Edit\|Write`, `mcp__.*` |
+| `Notification` | Notification type | `permission_prompt`, `idle_prompt`, `auth_success` |
+| `SubagentStart`, `SubagentStop` | Agent type name | `Bash`, `Explore`, `Plan`, custom agent names |
+| `PreCompact` | Compaction trigger | `manual`, `auto` |
+| `ConfigChange` | Config source | `user_settings`, `project_settings`, `local_settings`, `skills` |
+| `UserPromptSubmit`, `Stop`, `TeammateIdle`, `TaskCompleted`, `WorktreeCreate`, `WorktreeRemove` | *(no matcher)* | Always fires on every occurrence |
 
 ## createHook() Factory
 
@@ -221,20 +240,55 @@ Hooks output JSON to stdout:
 
 ### Exit Codes
 
-- `0`: Success -- JSON parsed from stdout. Use `permissionDecision: "deny"` in hookSpecificOutput to block PreToolUse operations.
-- `2`: Blocking error -- Claude Code ignores stdout JSON and feeds stderr to the model. Use only for fatal errors, NOT for PreToolUse deny (use exit 0 + deny JSON instead).
+- `0`: Success -- JSON parsed from stdout. Use `permissionDecision: "deny"` in hookSpecificOutput to block PreToolUse operations. For most events, stdout is only shown in verbose mode (Ctrl+O). Exceptions: `UserPromptSubmit` and `SessionStart` add stdout as context Claude can see.
+- `2`: Blocking error -- Claude Code ignores stdout JSON and feeds stderr to the model. The effect depends on the event:
+  - **Can block**: `PreToolUse` (blocks tool call), `PermissionRequest` (denies permission), `UserPromptSubmit` (blocks prompt), `Stop` (prevents stopping), `SubagentStop` (prevents stop), `TeammateIdle` (keeps working), `TaskCompleted` (prevents completion), `ConfigChange` (blocks change), `WorktreeCreate` (fails creation)
+  - **Cannot block**: `PostToolUse`, `PostToolUseFailure`, `Notification`, `SubagentStart`, `SessionStart`, `SessionEnd`, `PreCompact`, `WorktreeRemove` -- stderr shown to user only
+- Any other exit code: Non-blocking error, stderr shown in verbose mode, execution continues.
 
-## Prompt-Based Hooks
+## Hook Handler Types
 
-In addition to command hooks, Claude Code supports prompt-based hooks (`type: "prompt"`) that use an LLM to evaluate conditions and return yes/no decisions. Agent hooks (`type: "agent"`) spawn subagents with tool access for verification.
+Claude Code supports three hook handler types:
 
-**Supported Events** (prompt and agent hooks):
+### Command Hooks (`type: "command"`)
+Run a shell command. Receives JSON on stdin, communicates via exit codes and stdout JSON.
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `type` | yes | `"command"` |
+| `command` | yes | Shell command to execute |
+| `timeout` | no | Seconds before canceling (default: 600) |
+| `async` | no | If `true`, runs in background without blocking |
+| `statusMessage` | no | Custom spinner message while hook runs |
+| `once` | no | If `true`, runs once per session then removed (skills only) |
+
+### Prompt Hooks (`type: "prompt"`)
+Use an LLM to evaluate conditions and return yes/no decisions.
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `type` | yes | `"prompt"` |
+| `prompt` | yes | Prompt text. Use `$ARGUMENTS` for hook input JSON |
+| `model` | no | Model for evaluation (defaults to fast model) |
+| `timeout` | no | Seconds before canceling (default: 30) |
+
+### Agent Hooks (`type: "agent"`)
+Spawn a subagent with tool access (Read, Grep, Glob) to verify conditions.
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `type` | yes | `"agent"` |
+| `prompt` | yes | Prompt text. Use `$ARGUMENTS` for hook input JSON |
+| `model` | no | Model for evaluation |
+| `timeout` | no | Seconds before canceling (default: 60) |
+
+**Supported Events** (all three types):
 - `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`
 - `UserPromptSubmit`, `Stop`, `SubagentStop`, `TaskCompleted`
 
-**NOT Supported** (command hooks only):
+**Command hooks only** (prompt/agent NOT supported):
 - `SessionStart`, `SessionEnd`, `SubagentStart`, `PreCompact`, `Notification`
-- `TeammateIdle` (exit codes only, no prompt/agent/JSON)
+- `TeammateIdle`, `ConfigChange`, `WorktreeCreate`, `WorktreeRemove`
 
 ```json
 {
@@ -253,12 +307,37 @@ In addition to command hooks, Claude Code supports prompt-based hooks (`type: "p
 }
 ```
 
-**Note**: For SessionStart context injection, use a command hook that returns `hookSpecificOutput.additionalContext` instead of a prompt hook. See `session-catchup.cjs` for the cAgents implementation.
+### Async Hooks
 
-**Limitations**:
-- Only supported on the events listed above
-- Cannot modify tool input (use command hooks for that)
-- LLM responds with `{"ok": true/false, "reason": "..."}` JSON
+Command hooks support `"async": true` to run in the background without blocking. Useful for logging, analytics, or notifications that should not delay tool execution.
+
+```json
+{
+  "type": "command",
+  "command": "./scripts/log-event.sh",
+  "async": true
+}
+```
+
+### Hooks in Skills and Agents
+
+Hooks can be defined in skill and subagent YAML frontmatter, scoped to the component's lifecycle:
+
+```yaml
+---
+name: secure-ops
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: "./scripts/security-check.sh"
+---
+```
+
+For subagents, `Stop` hooks are automatically converted to `SubagentStop` events.
+
+**Note**: For SessionStart context injection, use a command hook that returns `hookSpecificOutput.additionalContext` instead of a prompt hook. See `session-catchup.cjs` for the cAgents implementation.
 
 ## Secret Detection
 

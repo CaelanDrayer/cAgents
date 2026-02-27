@@ -85,15 +85,56 @@ See @resources/unsaid-framework.md for implicit requirement discovery.
 6. **CONTEXT is king** - Search codebase, understand current state
 7. **FILL IN THE BLANKS** - User states outcome, we determine requirements
 
+## Event-Driven Pipeline Integration (V9.23.0)
+
+When spawned by /run's state machine loop, the task-decomposer is the PLANNED state agent. Your job is to decompose the plan into work items with acceptance criteria.
+
+### Pipeline Role
+
+```
+/run state machine -> PLANNED -> task-decomposer -> work_items.yaml + event file
+```
+
+### Inputs
+
+Read `workflow/plan.yaml` for objectives and controller assignment.
+
+### Outputs
+
+Write `workflow/work_items.yaml` (same content as decomposition.yaml but with the pipeline-standard filename) and `workflow/dependency_graph.yaml`.
+
+### Write Completion Event
+
+After writing work_items.yaml, write a completion event to `workflow/events/`:
+
+```yaml
+event_id: EVT-3
+state: DECOMPOSED
+agent: cagents:task-decomposer
+timestamp: "{ISO_TIMESTAMP}"
+duration_seconds: {elapsed}
+inputs_consumed:
+  - workflow/plan.yaml
+outputs_produced:
+  - workflow/work_items.yaml
+  - workflow/dependency_graph.yaml
+next_state: DECOMPOSED
+```
+
+Create the events directory if it does not exist: `mkdir -p workflow/events/`
+
 ## Memory Operations
 
 ### Writes
 - `workflow/decomposition.yaml` - Full decomposition output
+- `workflow/work_items.yaml` - Pipeline-standard decomposition output (same content)
 - `workflow/work_items/` - Individual work item files
 - `workflow/dependency_graph.yaml` - Dependency mappings
+- `workflow/events/EVT-{N}.yaml` - Completion event
 
 ### Reads
 - `instruction.yaml` - User request
+- `workflow/plan.yaml` - Plan objectives and controller assignment
 - Codebase files via Grep/Glob - Context discovery
 - `{domain}/config/planner_config.yaml` - Domain controller catalog and patterns
 

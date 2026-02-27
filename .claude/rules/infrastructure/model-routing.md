@@ -166,12 +166,74 @@ cost_limits:
 disable_opus: true
 ```
 
-## Selection Priority
+## Claude Code Model Configuration (Native)
+
+Claude Code provides several native model configuration mechanisms:
+
+### Model Setting Methods (Priority Order)
+1. **During session**: `/model <alias|name>` to switch mid-session
+2. **At startup**: `claude --model <alias|name>`
+3. **Environment variable**: `ANTHROPIC_MODEL=<alias|name>`
+4. **Settings file**: `"model": "opus"` in settings.json
+
+### Claude Code Model Aliases
+
+| Alias | Behavior |
+|-------|----------|
+| `default` | Depends on account type (Max/Team Premium: Opus, Pro/Team Standard: Sonnet) |
+| `sonnet` | Latest Sonnet (currently Sonnet 4.6) |
+| `opus` | Latest Opus (currently Opus 4.6) |
+| `haiku` | Fast, efficient Haiku |
+| `sonnet[1m]` | Sonnet with 1M token context window |
+| `opusplan` | Opus during plan mode, Sonnet for execution |
+
+### Effort Levels (Claude Code Native)
+
+Effort levels control Opus 4.6's adaptive reasoning:
+- **low**: Faster, cheaper for straightforward tasks
+- **medium**: Balanced
+- **high** (default): Deeper reasoning for complex problems
+
+Set via: `/model` slider, `CLAUDE_CODE_EFFORT_LEVEL` env var, or `effortLevel` in settings.json.
+
+### 1M Context Window
+
+Opus 4.6 and Sonnet 4.6 support 1M token context (beta). Standard rates up to 200K tokens, then long-context pricing. Disable with `CLAUDE_CODE_DISABLE_1M_CONTEXT=1`.
+
+### Model Restriction (Managed)
+
+Administrators can restrict model selection:
+```json
+{ "availableModels": ["sonnet", "haiku"] }
+```
+
+### Model-Specific Environment Variables
+
+| Variable | Purpose |
+|----------|---------|
+| `ANTHROPIC_MODEL` | Override model for all requests |
+| `ANTHROPIC_DEFAULT_OPUS_MODEL` | Pin opus alias to specific version |
+| `ANTHROPIC_DEFAULT_SONNET_MODEL` | Pin sonnet alias to specific version |
+| `ANTHROPIC_DEFAULT_HAIKU_MODEL` | Pin haiku alias to specific version |
+| `CLAUDE_CODE_SUBAGENT_MODEL` | Override model for all subagents |
+| `CLAUDE_CODE_EFFORT_LEVEL` | Reasoning effort: low, medium, high |
+| `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING` | Revert to fixed thinking budget |
+| `MAX_THINKING_TOKENS` | Fixed thinking budget (when adaptive disabled) |
+
+### Prompt Caching
+
+Enabled by default. Disable with:
+- `DISABLE_PROMPT_CACHING=1` (all models)
+- `DISABLE_PROMPT_CACHING_OPUS=1` (Opus only)
+- `DISABLE_PROMPT_CACHING_SONNET=1` (Sonnet only)
+- `DISABLE_PROMPT_CACHING_HAIKU=1` (Haiku only)
+
+## cAgents Model Selection Priority
 
 Model selection follows this priority order (highest wins):
 
-1. **Environment variable `CLAUDE_MODEL`** (absolute override)
-2. **Environment variable `CLAUDE_AGENT_MODEL`** (agent-specific override)
+1. **Claude Code env vars** (`ANTHROPIC_MODEL`, `CLAUDE_CODE_SUBAGENT_MODEL`)
+2. **Claude Code settings** (`model` in settings.json)
 3. **Project overrides** (`.cagents/model_routing.yaml`)
 4. **Agent frontmatter** (`model:` field in SKILL.md)
 5. **Tier-based defaults** (tier 2-4 matrix)
@@ -179,20 +241,6 @@ Model selection follows this priority order (highest wins):
 7. **Default model** (sonnet)
 8. **Fallback chain** (if primary unavailable)
 9. **Cost limit enforcement** (downgrade if over budget)
-
-### Environment Variable Priority
-
-Environment variables take absolute precedence over all other configuration:
-
-```bash
-# Override ALL agents to use a specific model
-export CLAUDE_MODEL=sonnet
-
-# Override only subagent model selection
-export CLAUDE_AGENT_MODEL=haiku
-```
-
-`CLAUDE_MODEL` overrides everything including agent frontmatter. `CLAUDE_AGENT_MODEL` overrides only subagent (Task tool) model selection but not the main agent.
 
 ## Validation
 

@@ -1,15 +1,63 @@
 ---
 name: team
-description: "Parallel team-based workflow execution using Claude Code's built-in agent teams with tmux split pane display. Decomposes request into work items, creates a real team via TeamCreate, spawns teammates who each invoke /run."
-argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--no-template]"
+description: "N-wave parallel team execution using Claude Code's built-in agent teams. Encourages maximum wave decomposition for better quality gating, coordination, and parallel throughput. More waves = more checkpoints = higher quality."
+argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--no-template] [--waves <n>]"
 user-invocable: true
 context: fork
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite, TeamCreate, TeamDelete, TaskCreate, TaskUpdate, TaskList, TaskGet, SendMessage, Skill
 ---
 
-# /team - Parallel Team Execution
+# /team - N-Wave Parallel Team Execution
 
-You are a team orchestrator. Your job is to **create a real agent team and spawn real teammates**. You MUST call TeamCreate, TaskCreate, and spawn teammates via the Task tool. This is non-negotiable.
+You are a team orchestrator using the event-driven pipeline. Your job is to **create a real agent team and spawn real teammates**. You MUST call TeamCreate, TaskCreate, and spawn teammates via the Task tool. This is non-negotiable.
+
+## CRITICAL: Maximize Waves
+
+**More waves are ALWAYS better.** There is nothing wrong with more waves. Each wave provides:
+- A quality gate checkpoint (catch issues early, not at the end)
+- A coordination point (lead validates before next phase starts)
+- Clear dependency boundaries (consumers wait for providers)
+- Smaller, more focused work units (higher success rate per teammate)
+
+**Default behavior**: Decompose into as many waves as the work requires. Do NOT collapse phases that could be separate waves. If work items have natural dependency ordering, each dependency level should be its own wave.
+
+**Wave count guidance**:
+| Work complexity | Minimum waves | Typical waves |
+|----------------|---------------|---------------|
+| Tier 2 (moderate) | 3 | 3-4 |
+| Tier 3 (complex) | 4 | 5-7 |
+| Tier 4 (expert) | 5 | 6-10 |
+
+## Architecture: N-Wave Model
+
+```
+Wave 0 (Lead, sequential): Enrichment + Foundation
+  INIT -> orchestrator -> planner -> decomposer
+  All enrichment stages always run (no skipping)
+  Output: enriched_context.yaml, plan.yaml, work_items.yaml
+  Lead may also execute bootstrap work items (scaffolding, schemas, contracts)
+
+Wave 1..N-1 (Teammates, parallel per wave): Execution Waves
+  Each wave spawns a FRESH ROUND of teammates for that wave's work items
+  Teammates within a wave run in parallel
+  Each wave has a GATE sentinel -- lead validates before next wave starts
+  Later waves consume outputs from earlier waves via file-based handoffs
+
+  Typical wave breakdown:
+    Wave 1: Research / Analysis / Design (specialists gather information)
+    Wave 2: Core Implementation (primary build work)
+    Wave 3: Supporting Implementation (secondary features, integrations)
+    Wave 4: Testing / Validation (QA, security scans, performance)
+    Wave 5: Documentation / Polish (docs, cleanup, optimization)
+    Wave 6+: Additional phases as complexity demands
+
+Wave N (Lead, sequential): Integration + Final Validation
+  Integration controller merges cross-WI outputs
+  Final validator confirms all WIs complete
+  COMPLETE or escalate
+```
+
+**IMPORTANT**: Each wave is a DISTINCT spawn cycle. Do NOT collapse multiple waves into a single teammate invocation. Spawn teammates for Wave K, wait for them to complete, validate the gate, THEN spawn teammates for Wave K+1. This maximizes quality gating and coordination.
 
 ## MANDATORY: You MUST Execute These Steps
 
@@ -21,33 +69,95 @@ You are a team orchestrator. Your job is to **create a real agent team and spawn
 
 Extract the user's request from `$ARGUMENTS`. Check for flags:
 - `--dry-run`: Show plan only, do not execute
-- `--members <N>`: Max teammates (default: 5)
+- `--members <N>`: Max teammates per wave (default: 5)
 - `--teammate-mode <mode>`: tmux (default from settings), auto, or in-process
+- `--waves <N>`: Minimum number of waves (default: auto-maximize)
 
 The request is everything before the first `--` flag.
 
-### Step 2: Decompose into Work Items
+### Step 2: Execute Wave 0 -- Enrichment (Lead Does This)
 
-Break the user's request into 3-8 concrete work items. You do this yourself -- do NOT delegate decomposition to another agent. Think about what independent pieces of work are needed.
+Run the enrichment pipeline sequentially. All three stages always run (consistency over speed).
 
-For each work item, define:
-- **ID**: WI-001, WI-002, etc.
-- **Description**: What needs to be done
-- **Controller**: Which cagents controller coordinates this (e.g., cagents:engineering-manager, cagents:creative-director). Select from the domain's `planner_config.yaml`.
-- **Dependencies**: Which other WIs must complete first (if any)
-- **Wave**: 0 (foundation/setup), 1 (main parallel work), 2 (integration/testing)
+**2a. Initialize session:**
 
-Assign waves:
-- **Wave 0**: Setup, design, schemas, contracts (1-2 items, executed by you sequentially)
-- **Wave 1**: Main implementation work (2-5 items, executed by teammates IN PARALLEL)
-- **Wave 2**: Integration, testing, review (1-2 items, executed by you sequentially)
+```bash
+SESSION_ID="run_$(date -u +%Y%m%d_%H%M%S)"
+SESSION_DIR="Agent_Memory/sessions/${SESSION_ID}"
+mkdir -p "${SESSION_DIR}/workflow/events"
+mkdir -p "${SESSION_DIR}/outputs"
+```
 
-If the request produces fewer than 3 work items or has no parallelizable items, fall back:
+Write `instruction.yaml` and `status.yaml` with initial state INIT.
+
+**2b. Classify domain and tier (inline):**
+
+| Domain | Keywords |
+|--------|----------|
+| Make (engineering) | fix, bug, implement, code, api, database, build, refactor, test, deploy |
+| Make (creative) | write, story, content, design, creative, novel, script, poem |
+| Make (game dev) | game, level, quest, character, mechanic, balance, gameplay |
+| Grow | campaign, marketing, sales, conversion, SEO, funnel, leads, revenue |
+| Operate | budget, cost, forecast, operations, process, supply chain, procurement |
+| People | hire, recruit, onboard, culture, HR, talent, performance review |
+| Serve | support, legal, compliance, customer, SLA, contract, privacy |
+
+**Tier Classification** (minimum tier 2):
+
+| Tier | Criteria | Controllers |
+|------|----------|-------------|
+| 2 | Single component, clear scope | 1 primary controller |
+| 3 | Multiple components, external deps | 1 primary + 1-2 supporting |
+| 4 | Strategic/architectural, company-wide | Executive + HITL |
+
+**2c. Spawn orchestrator (enrichment):**
+
+```
+Task({
+  subagent_type: "cagents:orchestrator",
+  description: "INIT: Enrich context",
+  prompt: "You are the orchestrator in the event-driven pipeline.\n\nREQUEST: {user_request}\nSESSION: {SESSION_DIR}/\nDOMAIN: {domain} | TIER: {tier}\n\nEnrich the request with domain context and project state. Write workflow/enriched_context.yaml and a completion event to workflow/events/EVT-1.yaml."
+})
+```
+
+**2d. Spawn planner:**
+
+```
+Task({
+  subagent_type: "cagents:universal-planner",
+  description: "ORCHESTRATED: Plan objectives",
+  prompt: "You are the universal-planner in the event-driven pipeline.\n\nREQUEST: {user_request}\nSESSION: {SESSION_DIR}/\nDOMAIN: {domain} | TIER: {tier}\n\nRead workflow/enriched_context.yaml. Define objectives, select controllers, write workflow/plan.yaml and a completion event to workflow/events/EVT-2.yaml."
+})
+```
+
+**2e. Spawn decomposer (with wave maximization):**
+
+```
+Task({
+  subagent_type: "cagents:task-decomposer",
+  description: "PLANNED: Decompose into work items with maximum wave granularity",
+  prompt: "You are the task-decomposer in the event-driven pipeline.\n\nREQUEST: {user_request}\nSESSION: {SESSION_DIR}/\nDOMAIN: {domain} | TIER: {tier}\n\nRead workflow/plan.yaml. Decompose into work items with acceptance criteria.\n\nCRITICAL WAVE MAXIMIZATION:\n- Assign each work item a wave number (0, 1, 2, 3, ...)\n- Wave 0 = foundation/bootstrap (lead executes)\n- Maximize the number of waves by separating work into natural dependency layers\n- If item B depends on item A's output, they MUST be in different waves\n- Even items that COULD run in the same wave SHOULD be split into separate waves if they represent distinct phases (e.g., research vs implementation vs testing vs documentation)\n- Prefer 5-10 waves over 2-3 waves\n- Each wave should have a clear quality gate with verifiable criteria\n- The final wave is always integration/validation (lead executes)\n\nWave assignment strategy:\n  Wave 0: Scaffolding, schemas, contracts, project setup\n  Wave 1: Research, analysis, information gathering\n  Wave 2: Design, architecture decisions, interface definitions\n  Wave 3: Core implementation (primary features)\n  Wave 4: Supporting implementation (secondary features, integrations)\n  Wave 5: Testing, QA, security validation\n  Wave 6: Documentation, cleanup, optimization\n  Wave 7+: Additional phases as needed\n\nWrite workflow/work_items.yaml with wave assignments and a completion event to workflow/events/EVT-3.yaml."
+})
+```
+
+After decomposer returns, read `workflow/work_items.yaml` to get the work items and their wave assignments.
+
+**2f. Analyze wave structure:**
+
+After reading work_items.yaml, organize items by wave number. Count the number of distinct waves. If the decomposer produced fewer waves than expected for the tier, re-decompose with more granularity:
+
+| Tier | Minimum waves expected |
+|------|----------------------|
+| 2 | 3 |
+| 3 | 5 |
+| 4 | 6 |
+
+If the request produces fewer than 3 work items total or has no parallelizable items, fall back:
 ```
 Skill({ skill: "run", args: "<the full request>" })
 ```
 
-If `--dry-run` is specified, display the work items and waves, then STOP.
+If `--dry-run` is specified, display the work items, wave structure, and team composition, then STOP.
 
 ### Step 3: Create the Team (TeamCreate)
 
@@ -60,106 +170,141 @@ TeamCreate({
 })
 ```
 
-Use the current date/time for the timestamp. This creates the team and shared task list.
+### Step 4: Create Tasks for ALL Work Items with Wave Gates (TaskCreate)
 
-### Step 4: Create Tasks for ALL Work Items (TaskCreate)
+Create a task for EVERY work item from `work_items.yaml` using TaskCreate. Also create GATE sentinel tasks between waves. Create them all before spawning any teammates.
 
-Create a task for EVERY work item using TaskCreate. Create them all before spawning teammates.
+**4a. Create work item tasks:**
 
-For wave 0 items:
+For each work item:
 ```
-TaskCreate({ subject: "WI-001: <description>", description: "Wave 0 (bootstrap). <details and acceptance criteria>", activeForm: "Executing WI-001" })
-```
-
-For wave 1 items (add dependency on wave 0 completion):
-```
-TaskCreate({ subject: "WI-003: <description>", description: "Wave 1 (parallel). <details and acceptance criteria>", activeForm: "Executing WI-003" })
-```
-
-For wave 2 items:
-```
-TaskCreate({ subject: "WI-006: <description>", description: "Wave 2 (integration). <details and acceptance criteria>", activeForm: "Executing WI-006" })
-```
-
-### Step 5: Execute Wave 0 (Bootstrap) -- You Do This
-
-Execute wave 0 work items yourself by spawning the assigned controller directly via Task tool (no Skill fork -- minimizes nesting):
-
-```
-Task({
-  subagent_type: "cagents:{controller_name}",
-  description: "Coordinate WI-001: <description>",
-  prompt: "You are the {controller_name} controller.\n\nREQUEST: WI-001: <description>\nACCEPTANCE CRITERIA: <criteria>\n\nBreak into questions, delegate to execution agents via Task tool, synthesize, implement. Write results when complete."
+TaskCreate({
+  subject: "WI-{N}: <description>",
+  description: "Wave {W}. Work item from decomposition. <details and acceptance criteria>",
+  activeForm: "Executing WI-{N}"
 })
 ```
 
-After each wave-0 item completes, mark its task as completed:
+**4b. Create GATE sentinel tasks between waves:**
+
+For each wave transition (wave K -> wave K+1), create a gate:
 ```
-TaskUpdate({ taskId: "<id>", status: "completed" })
-```
-
-### Step 6: Spawn Teammates for Wave 1 (CRITICAL -- This Creates tmux Panes)
-
-**This is the step that creates actual team members and tmux split panes.** Spawn one teammate per wave-1 work item using the Task tool. The `team_name` and `name` parameters connect them to the team.
-
-Spawn ALL teammates in PARALLEL (make all Task calls at once, do not wait between them):
-
-```
-Task({
-  description: "Execute WI-003: <short description>",
-  prompt: "You are a teammate executing a work item by coordinating through its assigned controller.
-
-WORK ITEM: WI-003: <full description>
-ACCEPTANCE CRITERIA: <criteria>
-ASSIGNED CONTROLLER: cagents:{controller_name}
-
-INSTRUCTIONS:
-1. Spawn the assigned controller to coordinate your work item:
-   Task({
-     subagent_type: 'cagents:{controller_name}',
-     description: 'Coordinate: WI-003: <description>',
-     prompt: 'You are the {controller_name} controller.\\nREQUEST: <work_item_description>\\nACCEPTANCE CRITERIA: <criteria>\\nBreak into questions, delegate to execution agents via Task tool, synthesize answers, coordinate implementation.'
-   })
-2. After controller returns, verify outputs meet acceptance criteria.
-3. Mark your task completed:
-   TaskUpdate({ taskId: '<task_id>', status: 'completed' })
-4. Send results to team lead:
-   SendMessage({ type: 'message', recipient: '<lead_name>', content: 'WI-003 complete. <summary>', summary: 'WI-003 done' })
-5. Check TaskList for more unblocked work you can claim.",
-  team_name: "{team_name}",
-  name: "teammate-wi-003",
-  subagent_type: "general-purpose"
+TaskCreate({
+  subject: "GATE-{K}: Quality gate after wave {K}",
+  description: "Quality gate. Lead validates all wave {K} outputs before wave {K+1} starts. Criteria: <gate criteria from decomposition>",
+  activeForm: "Validating GATE-{K}"
 })
 ```
 
-**Spawn ALL wave-1 teammates simultaneously.** Each Task call creates a real Claude Code instance that appears as a tmux pane (when teammateMode is "tmux").
+**4c. Set up wave dependencies:**
 
-### Step 7: Monitor Progress
+```
+# Wave 1 work items are blocked by GATE-0
+TaskUpdate({ taskId: "{wave1_item_id}", addBlockedBy: ["{gate0_id}"] })
 
-After spawning teammates:
-1. Wait for teammate messages (they arrive automatically)
-2. Periodically check TaskList to see progress
-3. When all wave-1 tasks show completed, proceed to wave 2
+# GATE-0 is blocked by all wave 0 work items
+TaskUpdate({ taskId: "{gate0_id}", addBlockedBy: ["{wave0_item1_id}", "{wave0_item2_id}", ...] })
 
-### Step 8: Execute Wave 2 (Integration) -- You Do This
+# Wave 2 work items are blocked by GATE-1
+TaskUpdate({ taskId: "{wave2_item_id}", addBlockedBy: ["{gate1_id}"] })
 
-Execute wave 2 items yourself by spawning controllers directly (same pattern as Step 5):
+# GATE-1 is blocked by all wave 1 work items
+TaskUpdate({ taskId: "{gate1_id}", addBlockedBy: ["{wave1_item1_id}", "{wave1_item2_id}", ...] })
+
+# ... repeat for each wave transition
+```
+
+Also set up intra-wave dependencies from the decomposition's dependency graph.
+
+### Step 5: Execute Waves 1..N-1 -- Spawn Teammates Per Wave (CRITICAL)
+
+**This is the core execution loop. For EACH wave, spawn a fresh round of teammates, wait for completion, validate the gate, then proceed to the next wave.**
+
+```
+for each wave K from 1 to N-1:
+
+  5a. Display wave K status:
+      "=== WAVE {K}/{N-1}: {wave_description} ==="
+      List work items in this wave
+
+  5b. Spawn teammates for wave K IN PARALLEL:
+      For each work item in wave K:
+
+      Task({
+        description: "Wave {K} - Execute WI-{N}: <short description>",
+        prompt: "You are a teammate executing a work item in wave {K} of the pipeline.
+
+      WORK ITEM: WI-{N}: <full description>
+      WAVE: {K} of {total_waves}
+      ACCEPTANCE CRITERIA: <criteria>
+      SESSION DIR: {SESSION_DIR}  (contains enriched_context.yaml, plan.yaml, work_items.yaml)
+      OUTPUTS FROM PREVIOUS WAVES: {SESSION_DIR}/outputs/  (read artifacts from earlier waves)
+
+      INSTRUCTIONS:
+      1. Read outputs from previous waves if your work item depends on them
+      2. Invoke /run for your work item:
+         Skill({ skill: 'run', args: 'execute WI-{N}: {description} --session {SESSION_DIR}' })
+      3. /run detects pre-enrichment and picks up from DECOMPOSED
+      4. Pipeline: prompt-engineer -> controller -> executor+reviewer -> validator
+      5. Write your outputs to {SESSION_DIR}/outputs/wi-{N}/
+      6. If issues arise: flag to lead via SendMessage but continue working
+      7. On completion:
+         TaskUpdate({ taskId: '{task_id}', status: 'completed' })
+         SendMessage({ type: 'message', recipient: '{lead_name}', content: 'WI-{N} complete. <summary>', summary: 'WI-{N} done' })",
+        team_name: "{team_name}",
+        name: "teammate-w{K}-wi-{N}",
+        subagent_type: "general-purpose"
+      })
+
+  5c. Monitor wave K progress:
+      - Wait for teammate messages (they arrive automatically)
+      - Periodically check TaskList to see progress
+      - If a teammate flags an issue: course-correct if needed
+
+  5d. Validate GATE-K when all wave K items complete:
+      - Verify outputs exist for each work item in wave K
+      - Check quality gate criteria for wave K
+      - If gate passes: Mark GATE-K task as completed (unblocks wave K+1)
+      - If gate fails: Report issues, spawn fix-up teammates, re-validate
+
+  5e. Shut down wave K teammates before spawning wave K+1:
+      SendMessage({ type: "shutdown_request", recipient: "teammate-w{K}-wi-{N}", content: "Wave {K} complete." })
+
+  5f. Proceed to wave K+1 (AUTOMATIC -- do NOT ask permission)
+```
+
+**Each wave is a distinct spawn-execute-validate cycle.** This ensures quality gates are enforced between phases, outputs from earlier waves are available to later waves, and issues are caught early.
+
+### Step 6: Execute Final Wave -- Integration + Validation (Lead Does This)
+
+Run integration to merge cross-wave outputs:
+
+**6a. Spawn integration controller:**
+
 ```
 Task({
-  subagent_type: "cagents:{controller_name}",
-  description: "Coordinate WI-006: <description>",
-  prompt: "You are the {controller_name} controller.\n\nREQUEST: WI-006: <description>\nACCEPTANCE CRITERIA: <criteria>\n\nBreak into questions, delegate to execution agents via Task tool, synthesize, implement. Write results when complete."
+  subagent_type: "cagents:{primary_controller_from_plan}",
+  description: "Integration: Merge outputs from all {N} waves",
+  prompt: "You are the {controller_name} controller performing final integration.\n\nSESSION: {SESSION_DIR}/\n\nAll {N-1} execution waves are complete. Read workflow/coordination_log.yaml and outputs/ from each wave and WI. Merge cross-WI outputs, resolve conflicts, write final integrated outputs. Write coordination_log.yaml with integration results."
 })
 ```
 
-Mark each completed:
+**6b. Spawn final validator:**
+
 ```
-TaskUpdate({ taskId: "<id>", status: "completed" })
+Task({
+  subagent_type: "cagents:universal-validator",
+  description: "Final validation: All waves and WIs complete",
+  prompt: "You are the universal-validator performing final validation.\n\nSESSION: {SESSION_DIR}/\n\nAll {N} waves and integration are complete. Validate all acceptance criteria across all WIs and all wave gates. Write workflow/validation_report.yaml with PASS/FAIL/REVISE classification."
+})
 ```
 
-### Step 9: Shut Down and Clean Up
+If PASS: Pipeline complete. Proceed to cleanup.
+If FAIL: Report issues with evidence. Suggest `/run --resume {SESSION_ID}`.
 
-1. Shut down each teammate:
+### Step 7: Shut Down and Clean Up
+
+1. Shut down any remaining teammates (wave teammates should already be shut down per-wave):
 ```
 SendMessage({ type: "shutdown_request", recipient: "<teammate_name>", content: "All work complete, shutting down." })
 ```
@@ -169,18 +314,61 @@ SendMessage({ type: "shutdown_request", recipient: "<teammate_name>", content: "
 TeamDelete()
 ```
 
-3. Report final results to the user.
+3. Report final results to the user including:
+   - Total waves executed
+   - Work items completed per wave
+   - Gate validation results per wave
+   - Revision rounds used (if any)
+   - Final validation status
+   - Output file locations
+
+## Cross-Wave Coordination
+
+### File-Based Handoffs Between Waves
+Each wave's outputs are available to subsequent waves via the shared session directory:
+
+```
+Wave 1 teammate (WI-001):
+  Completes -> writes outputs/wi-001/api_spec.yaml
+  TaskUpdate(WI-001, completed)
+  SendMessage(lead, "WI-001 done")
+
+Lead validates GATE-1 -> marks complete -> unblocks wave 2
+
+Wave 2 teammate (WI-003, depends on WI-001):
+  Reads outputs/wi-001/api_spec.yaml from session dir
+  Builds on wave 1 outputs
+  Writes outputs/wi-003/implementation/
+```
+
+### Intra-Wave Parallelism
+Within a single wave, all teammates run in parallel. Use TaskUpdate `addBlockedBy` for any intra-wave dependencies.
+
+### Task Dependencies
+- **Inter-wave**: Enforced via GATE sentinel tasks (wave K+1 items blocked by GATE-K)
+- **Intra-wave**: Set via TaskUpdate `addBlockedBy` based on decomposition dependency graph
+- Dependencies auto-unblock via TaskList
+
+### Teammate Autonomy
+- Teammates flag issues to lead via SendMessage but continue working
+- Lead can course-correct if needed but doesn't block progress
+- All enrichment always runs (consistency over speed)
+- Teammates within a wave operate independently
 
 ## Key Rules
 
 1. **You MUST call TeamCreate.** No exceptions. This is what creates the team.
 2. **You MUST spawn teammates via Task tool.** This is what creates tmux panes.
-3. **Spawn ALL wave-1 teammates at the same time** (parallel Task calls).
-4. **Teammates spawn controllers directly via Task tool** -- they do NOT implement work directly or invoke /run as a nested skill.
-5. **You (the lead) do wave 0 and wave 2** -- teammates do wave 1.
-6. **Never ask permission** between steps. Execute the full pipeline automatically.
-7. **Never just create tasks without spawning teammates** -- tasks without teammates are useless.
-8. **Never implement work items yourself** (except wave 0/2 bootstrap and integration via controller delegation).
+3. **Spawn teammates PER WAVE** -- each wave gets its own fresh round of teammates.
+4. **Within a wave, spawn ALL teammates at the same time** (parallel Task calls).
+5. **Validate each GATE before proceeding to the next wave.** Gates are quality checkpoints.
+6. **Shut down wave K teammates before spawning wave K+1 teammates.**
+7. **Maximize the number of waves.** More waves = better quality gating. There is nothing wrong with more waves.
+8. **Teammates invoke /run with --session** to run the full pipeline for their work item.
+9. **You (the lead) do Wave 0 (enrichment) and the final wave (integration)** -- teammates do all middle waves.
+10. **Never ask permission** between waves. Execute the full pipeline automatically.
+11. **Never just create tasks without spawning teammates** -- tasks without teammates are useless.
+12. **All enrichment stages always run** -- no skipping for consistency.
 
 ## Fallback
 
@@ -191,6 +379,7 @@ Skill({ skill: "run", args: "<the original request>" })
 
 ## Configuration
 
+- Pipeline config: `Agent_Memory/_system/config/pipeline_config.yaml`
 - `teammateMode` in settings.json controls display: `"tmux"` (split panes), `"auto"`, `"in-process"`
 - `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` must be `"1"` in settings.json env
 - Both are already configured in this project's settings.json

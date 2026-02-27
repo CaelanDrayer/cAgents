@@ -5,9 +5,9 @@ paths:
   - ".claude/skills/**"
 ---
 
-# SKILL.md Agent Format Specification
+# SKILL.md Agent and Skill Format Specification
 
-V9.0 agent format based on official Claude Code SKILL.md specification.
+V9.25.0 agent/skill format based on official Claude Code SKILL.md and subagent specification.
 
 ## Frontmatter Schema
 
@@ -207,6 +207,85 @@ When converting agent to directory structure:
 | Support | ~400 | ~150 | 62% |
 
 **Target: 40-60% token savings across agent catalog**
+
+## Skill Frontmatter (Claude Code Skills)
+
+Skills in `.claude/skills/` use a separate frontmatter schema from agents:
+
+```yaml
+---
+name: my-skill                     # Optional: Display name. Uses directory name if omitted
+description: "What this skill does" # Recommended: When to use it
+argument-hint: "<request> [flags]" # Optional: Autocomplete hint
+disable-model-invocation: true     # Optional: Only user can invoke (default: false)
+user-invocable: false              # Optional: Hide from / menu (default: true)
+allowed-tools: Read, Grep, Bash    # Optional: Tool restrictions
+model: opus                        # Optional: Model override
+context: fork                      # Optional: Run in forked subagent context
+agent: Explore                     # Optional: Subagent type when context:fork (default: general-purpose)
+hooks:                             # Optional: Lifecycle hooks scoped to this skill
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: "./scripts/validate.sh"
+---
+```
+
+### Skill Invocation Control
+
+| Frontmatter | User can invoke | Claude can invoke | Context behavior |
+|-------------|----------------|-------------------|------------------|
+| (default) | Yes | Yes | Description in context, full loads on invoke |
+| `disable-model-invocation: true` | Yes | No | Not in context, loads when user invokes |
+| `user-invocable: false` | No | Yes | Description in context, loads when Claude invokes |
+
+### String Substitutions in Skills
+
+| Variable | Description |
+|----------|-------------|
+| `$ARGUMENTS` | All arguments passed when invoking |
+| `$ARGUMENTS[N]` | Access specific argument by 0-based index |
+| `$N` | Shorthand for `$ARGUMENTS[N]` (e.g., `$0`, `$1`) |
+| `${CLAUDE_SESSION_ID}` | Current session ID |
+
+### Dynamic Context Injection
+
+The `` !`command` `` syntax runs shell commands before skill content is sent to Claude:
+
+```yaml
+---
+name: pr-summary
+context: fork
+agent: Explore
+---
+## PR Context
+- PR diff: !`gh pr diff`
+- Comments: !`gh pr view --comments`
+```
+
+Commands execute immediately and output replaces the placeholder.
+
+### Running Skills in Subagents (context: fork)
+
+When `context: fork` is set:
+1. A new isolated context is created
+2. The subagent receives skill content as its prompt
+3. The `agent` field determines execution environment (model, tools, permissions)
+4. Results summarized and returned to main conversation
+
+Available agent types: `Explore` (read-only, haiku), `Plan` (read-only), `general-purpose` (all tools), or any custom subagent name.
+
+### Skill Location Precedence
+
+| Location | Scope | Priority |
+|----------|-------|----------|
+| Enterprise managed | All users in org | Highest |
+| `~/.claude/skills/` | All your projects | High |
+| `.claude/skills/` | This project only | Medium |
+| Plugin `skills/` | Where plugin enabled | Lowest |
+
+Skills from `--add-dir` directories are also loaded and support live change detection.
 
 ## Example: Full Controller SKILL.md
 

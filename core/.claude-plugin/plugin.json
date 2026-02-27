@@ -1,7 +1,7 @@
 {
   "name": "@cagents/core",
-  "version": "9.22.0",
-  "description": "cAgents Core V9.0 - Universal multi-domain agent system with skills system, 14 hook event types, and opusplan model routing. Agent Teams integration for parallel team-based execution. Includes 14 core agents: trigger, team-trigger, team-lead-adapter, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, and 5 universal workflow agents. Controller-centric coordination with question-based delegation.",
+  "version": "9.25.0",
+  "description": "cAgents Core V9.25 - Universal multi-domain agent system with event-driven pipeline, skills system, 13 active hook event types (16 supported), and opusplan model routing. Agent Teams integration for parallel team-based execution. Includes 15 core agents: trigger, team-trigger, team-lead-adapter, orchestrator, hitl, optimizer, prompt-engineer, task-consolidator, task-decomposer, task-inventory, and 5 universal workflow agents. Controller-centric coordination with question-based delegation and reviewer loops.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",
@@ -39,6 +39,7 @@
     "./agents/optimizer/SKILL.md",
     "./agents/task-consolidator/SKILL.md",
     "./agents/task-decomposer/SKILL.md",
-    "./agents/task-inventory/SKILL.md"
+    "./agents/task-inventory/SKILL.md",
+    "./agents/prompt-engineer/SKILL.md"
   ]
 }

@@ -2,117 +2,180 @@
 
 Workflow orchestration guidelines for cAgents.
 
-## CRITICAL: Automatic Phase Transitions
+## CRITICAL: Automatic State Transitions
 
-**NEVER ASK USER FOR PERMISSION TO PROCEED BETWEEN PHASES**
+**NEVER ASK USER FOR PERMISSION TO PROCEED BETWEEN STATES**
 
-Phase transitions are AUTOMATIC. Proceed to next phase immediately when current phase completes.
+State transitions are AUTOMATIC. Proceed to next state immediately when current state completes.
 
 ### Automatic Transition Rules
 
-- routing -> planning: AUTOMATIC (no user permission needed)
-- planning -> coordinating: AUTOMATIC (no user permission needed)
-- coordinating -> validating: AUTOMATIC (no user permission needed)
-- validating -> complete: AUTOMATIC if PASS (no user permission needed)
+- INIT -> ORCHESTRATED: AUTOMATIC (no user permission needed)
+- ORCHESTRATED -> PLANNED: AUTOMATIC (no user permission needed)
+- PLANNED -> DECOMPOSED: AUTOMATIC (no user permission needed)
+- DECOMPOSED -> PROMPTS_READY: AUTOMATIC (no user permission needed)
+- PROMPTS_READY -> COORDINATED: AUTOMATIC (no user permission needed)
+- COORDINATED -> VALIDATED: AUTOMATIC if PASS (no user permission needed)
+- FAIL -> PROMPTS_READY: AUTOMATIC (revision routing)
+- REVISE -> PLANNED: AUTOMATIC (revision routing)
 
 ### Only Ask User When
 
 - Tier 4 HITL approval gates (specified in plan.yaml)
 - Unrecoverable errors or blockers
 - Ambiguous requirements that cannot be inferred
-- Validation BLOCKED status (not FIXABLE)
+- Max revision cycles (5) exhausted
 
-**If requirements are clear and phase is complete, PROCEED automatically.**
+**If requirements are clear and state is complete, PROCEED automatically.**
 
-## Flattened Architecture (V9.18)
+## Event-Driven Pipeline Architecture (V9.23.0)
 
-The `/run` command now performs routing, planning, and orchestration **inline** instead of delegating to separate agents. Only the controller (coordination) and execution agents are spawned as subagents.
+`/run` is now a state machine engine that reads `pipeline_config.yaml` and executes agents sequentially. Each agent writes a completion event file that /run reads to advance the state machine.
 
-**Previous** (5 levels -- unreliable):
-```
-/run -> trigger -> orchestrator -> controller -> execution_agents
-```
-
-**Current** (2 levels -- reliable, V9.22 `context: none`):
-```
-/run (inline, no fork: routing + planning + orchestration) -> controller -> execution_agents
-```
-
-V9.22 changed /run from `context: fork` to `context: none`. Since Claude Code subagents cannot spawn other subagents, running /run inline means the controller is a direct subagent (level 1) rather than a sub-subagent. For /team, teammates now spawn controllers directly instead of invoking /run as a nested Skill fork.
-
-### What /run Does Inline
-- **Routing**: Domain detection, tier classification (previously trigger + universal-router)
-- **Planning**: Objective definition, controller selection, work items (previously orchestrator + universal-planner)
-- **Orchestration**: Phase management, session initialization (previously orchestrator)
-- **Validation**: Basic output verification (previously universal-validator)
-
-### What Gets Delegated (via Task tool)
-- **Controller**: Question-based coordination, specialist delegation, synthesis
-- **Execution agents**: Actual implementation work (spawned by controller)
-
-## Workflow Phases
-
-All tier 2+ workflows follow this pattern:
+### State Machine
 
 ```
-routing -> planning -> [PLAN DISPLAY] -> coordinating -> validating
-   |          |              |              |               |
-  /run      /run         /run output    Controller       /run
-(inline)  (inline)      (show plan)    (Task tool)     (inline)
+INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED -> VALIDATED -> COMPLETE
+                                                                                     |
+                                                                              FAIL -> PROMPTS_READY (retry)
+                                                                              REVISE -> PLANNED (re-plan)
 ```
 
-**Plan Display**: After planning, /run shows the plan to the user, then immediately proceeds to coordinating. This is visibility, not a checkpoint.
+### Nesting Model
 
-## Phase Responsibilities
+```
+/run (state machine loop -- level 0)
+  |
+  Phase 1: Sequential enrichment (all level 1, spawned by /run)
+  +-> orchestrator (level 1)    -> enriched_context.yaml
+  +-> planner (level 1)         -> plan.yaml
+  +-> decomposer (level 1)      -> work_items.yaml
+  +-> prompt-engineer (level 1)  -> delegation_prompts.yaml
+  |
+  Phase 2: Nested execution (level 1 + 2)
+  +-> controller (level 1)
+       +-> executor (level 2)   -> implementation
+       +-> reviewer (level 2)   -> review_report.yaml
+       +-> revision loop (level 2, max 3 rounds)
+  |
+  Phase 3: Validation (level 1)
+  +-> validator (level 1)       -> validation_report.yaml
+  |
+  Revision loop (max 5 rounds):
+    FAIL   -> back to Phase 2 (PROMPTS_READY)
+    REVISE -> back to Phase 1 (PLANNED)
+```
 
-### Routing (inline in /run)
-- Classify complexity tier (2-4, auto-upgrades from 0/1)
-- Domain detection via keyword matching
-- Set controller requirement (always true, minimum tier 2)
+### What /run Does (State Machine Engine)
+- **State management**: Read/write status.yaml, track state transitions
+- **Agent spawning**: Spawn pipeline agents at level 1 via Task tool
+- **Event reading**: Read completion events from workflow/events/ to advance state
+- **Revision routing**: Route FAIL to PROMPTS_READY, REVISE to PLANNED
+- **Pre-enrichment detection**: Skip completed states for /team teammate flows
+- **Domain/tier classification**: Inline routing before pipeline starts
 
-### Planning (inline in /run)
-- Define objectives (WHAT needs to be done)
-- Select controllers from planner_config.yaml
-- Write plan.yaml and decomposition.yaml
+### What Gets Delegated (Pipeline Agents at Level 1)
+- **Orchestrator** (INIT): Context enrichment -> enriched_context.yaml
+- **Universal-planner** (ORCHESTRATED): Objectives + controller selection -> plan.yaml
+- **Task-decomposer** (PLANNED): Work item decomposition -> work_items.yaml
+- **Prompt-engineer** (DECOMPOSED): Optimized delegation prompts -> delegation_prompts.yaml
+- **Controller** (PROMPTS_READY): Question-based coordination with reviewer loop -> coordination_log.yaml
+- **Universal-validator** (COORDINATED): Quality validation -> validation_report.yaml (PASS/FAIL/REVISE)
 
-### Coordinating (Controller via Task tool)
-- Break objectives into questions
-- Delegate questions to execution agents (via Task tool)
-- Synthesize answers into solutions
-- Create implementation tasks
-- Write coordination_log.yaml
+### What Gets Delegated (Level 2, by Controller)
+- **Execution agents**: Actual implementation work
+- **Reviewer**: Evaluates executor output against acceptance criteria (max 3 internal rounds)
 
-### Validating (inline in /run)
-- Check coordination_log.yaml exists and is complete
-- Verify outputs match plan objectives
-- Write execution_summary.yaml
+## Pipeline Configuration
 
-## Plan Display Phase
+The state machine is defined in `Agent_Memory/_system/config/pipeline_config.yaml`:
 
-After planning completes (plan.yaml written), display the plan before coordinating:
+```yaml
+states:
+  INIT:
+    agent: cagents:orchestrator
+    next: ORCHESTRATED
+    outputs: [enriched_context.yaml]
+  ORCHESTRATED:
+    agent: cagents:universal-planner
+    next: PLANNED
+    inputs: [enriched_context.yaml]
+    outputs: [plan.yaml]
+  # ... (see pipeline_config.yaml for full definition)
 
-1. **Format** plan summary (objectives, work breakdown, controllers)
-2. **Output** to user (unless `--quiet` flag)
-3. **Proceed** immediately to coordinating (do NOT wait)
+revision:
+  max_cycles: 5
+  on_fail: PROMPTS_READY
+  on_revise: PLANNED
+  escalation: user_hitl
+```
 
-**Plan Display by Tier**:
-- **Tier 2-4**: Full plan with work breakdown (all tiers, since minimum is tier 2)
+## Event Files
 
-**IMPORTANT**: Showing plan does not equal asking permission. Display then proceed.
+Each pipeline agent writes a completion event to `workflow/events/EVT-{N}.yaml`:
 
-## Key Principle
+```yaml
+event_id: EVT-1
+state: ORCHESTRATED
+agent: cagents:orchestrator
+timestamp: "{ISO_TIMESTAMP}"
+inputs_consumed: [instruction.yaml]
+outputs_produced: [workflow/enriched_context.yaml]
+next_state: ORCHESTRATED
+```
 
-**Controllers coordinate, don't execute directly**. Use question-based delegation to specialists.
+/run reads these events to determine the next state transition.
+
+## Revision Routing
+
+### FAIL (Re-execute with feedback)
+When validator classifies output as FAIL:
+1. /run routes back to PROMPTS_READY state
+2. Controller re-runs with feedback from validation_report.yaml
+3. Revision counter incremented (max 5 total cycles)
+
+### REVISE (Re-plan with feedback)
+When validator classifies output as REVISE:
+1. /run routes back to PLANNED state
+2. Planner and subsequent agents re-run with feedback
+3. Revision counter incremented (max 5 total cycles)
+
+### Escalation
+After max_cycles (5) exhausted:
+1. Escalate to user (HITL)
+2. Report what completed and what failed
+3. Suggest `/run --resume {SESSION_ID}`
+
+## /team Integration (5-Wave Model)
+
+```
+Wave 0 (Lead): orchestrator -> planner -> decomposer (all enrichment)
+Wave 1-3 (Teammates): Each runs /run --session (prompt-engineer -> controller+reviewer -> validator)
+Wave 4 (Lead): Integration controller -> final validator
+```
+
+- Wave 0 always runs all enrichment stages (consistency over speed)
+- Teammates detect pre-enrichment via --session flag and skip completed states
+- File-based handoffs between dependent work items
+- Teammate autonomy: flag issues but continue working
+
+## Key Principles
+
+1. **Config-driven**: State machine reads pipeline_config.yaml, not hardcoded steps
+2. **Event-based**: Agents write completion events, /run reads them to advance
+3. **Revision-capable**: Both controller-level (3 rounds) and pipeline-level (5 cycles) revision loops
+4. **Controllers coordinate, don't execute directly**: Question-based delegation to specialists
+5. **Prompt-engineer optimizes delegation**: Between decomposition and controller execution
 
 ## Context for Existing Agents
 
-The trigger, orchestrator, universal-router, universal-planner, universal-executor, and universal-validator agents still exist in `core/agents/` and can be used by the team-trigger and other workflows. However, the standard `/run` command no longer spawns them as separate subagents -- their logic is performed inline by `/run` for reliability.
+The trigger, universal-router, and universal-executor agents still exist in `core/agents/` and can be used by other workflows. However, the standard `/run` command now uses the event-driven pipeline where their roles are performed by the state machine engine (routing/execution monitoring) or by other pipeline agents (orchestrator for enrichment, planner for objectives).
 
 ---
 
 ## See Also
 
-- **controllers.md** - Question-based delegation patterns
+- **controllers.md** - Question-based delegation patterns with reviewer loop
 - **execution.md** - Execution agent patterns (tier 3)
 - **completion.md** - Task completion protocol
 - **validation-framework.md** - End-to-end completion traceability

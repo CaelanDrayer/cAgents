@@ -1,6 +1,6 @@
 # cAgents Release Notes
 
-**Current Version**: 9.22.0
+**Current Version**: 9.23.0
 **Release Date**: February 27, 2026
 **Status**: Production-Ready
 
@@ -8,7 +8,8 @@
 
 ## Version History
 
-- [v9.22.0](#v9220---february-27-2026) - Nesting reduction, PostToolUse validation, enhanced audit trail (Current)
+- [v9.23.0](#v9230---february-27-2026) - Event-driven pipeline, prompt-engineer agent, reviewer loops, revision routing (Current)
+- [v9.22.0](#v9220---february-27-2026) - Nesting reduction, PostToolUse validation, enhanced audit trail
 - [v9.21.0](#v9210---february-27-2026) - Documentation sync + stale reference fixes
 - [v9.20.0](#v9200---february-27-2026) - TodoWrite blocking prerequisite enforcement
 - [v9.19.1](#v9191---february-27-2026) - Embedded TodoWrite in /run workflow steps
@@ -50,6 +51,40 @@
 - [v9.1.1](#v911---february-7-2026) - tmux split pane refinements
 - [v9.1.0](#v910---february-7-2026) - tmux split panes for team execution
 - [v9.0.0](#v900---february-7-2026) - Platform Alignment Edition
+
+---
+
+## v9.23.0 - February 27, 2026
+
+**Theme**: Event-driven agent pipeline -- Replace one-shot delegation with state machine engine. Each agent enriches the user's request before passing downstream. Revision loops at both controller and pipeline levels ensure quality. New prompt-engineer agent crafts optimized delegation prompts.
+
+**New Agent**:
+- `prompt-engineer` (core/agents/prompt-engineer/SKILL.md): Sits between decomposer and controller. Reads work items, analyzes codebase, crafts optimized delegation prompts with code snippets, constraints, and anti-patterns. Registered in core and root plugin.json.
+- Agent count: 238 -> 239 (15 core + 14 shared + 210 domain)
+
+**New Files**:
+- `Agent_Memory/_system/config/pipeline_config.yaml`: State machine definition (INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED -> VALIDATED), revision routing, model routing, controller revision settings
+- `Agent_Memory/_system/templates/event.yaml`: Event schema template for pipeline agents
+
+**Major Rewrites**:
+- `/run` SKILL.md: Replaced 6-step fixed workflow with state machine loop reading pipeline_config.yaml. /run spawns agents sequentially at level 1, reads completion events to advance state. Supports revision routing (FAIL -> PROMPTS_READY, REVISE -> PLANNED, max 5 cycles). Detects pre-enrichment for /team teammate flows via --session flag.
+- `/team` SKILL.md: Replaced 3-wave model with 5-wave model. Wave 0 (lead: enrichment via orchestrator+planner+decomposer), Wave 1-3 (teammates: each runs /run --session for prompt-engineer+controller+reviewer+validator), Wave 4 (lead: integration+final validation). Teammate autonomy: flag issues but continue working. Cross-WI file-based handoffs.
+
+**Updated Core Agents**:
+- `orchestrator`: Added event writing for enriched_context.yaml output
+- `universal-planner`: Added event writing for plan.yaml output
+- `task-decomposer`: Added event writing for work_items.yaml output, pipeline-standard filename
+- `universal-validator`: Changed PASS/FIXABLE/BLOCKED to PASS/FAIL/REVISE classification. FAIL triggers controller re-execution, REVISE triggers re-planning. Added event writing with classification metadata.
+
+**Updated Rules**:
+- `controllers.md`: Added reviewer loop section. After executor completes, controller spawns reviewer (max 3 internal rounds). review_rounds tracking in coordination_log.yaml. Controller writes completion event.
+- `orchestration.md`: Full rewrite with event-driven state machine model, pipeline config, event files, revision routing, /team 5-wave integration.
+
+**Updated Documentation**:
+- CLAUDE.md: Updated architecture (state machine), delegation chain, core infrastructure (15 agents), workflow execution, skills descriptions, team mode, quick reference
+- Version bump: 9.22.0 -> 9.23.0 across all 10 version files
+
+**Design Source**: `Agent_Memory/sessions/designer_20260227_082000/design_document.md`
 
 ---
 

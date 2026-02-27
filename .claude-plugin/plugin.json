@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "9.22.0",
-  "description": "Universal multi-domain agent system with 238 specialized agents. V9.22.0: Nesting reduction (/run inline, /team direct controller spawning), PostToolUse validation, enhanced audit trail. Self-contained plugin with resilient path resolution. CJS-only hook architecture, Skills system, 15 hooks across 13 event types, Agent Teams for parallel execution, CSV-based task inventory, controller-centric delegation across 5 super-domains.",
+  "version": "9.25.0",
+  "description": "Universal multi-domain agent system with 239 specialized agents. V9.25.0: Event-driven pipeline with state machine loop, prompt-engineer agent, reviewer loops, revision routing. Self-contained plugin with resilient path resolution. CJS-only hook architecture, Skills system, 15 hooks across 13 event types, Agent Teams for parallel execution, CSV-based task inventory, controller-centric delegation across 5 super-domains.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",
@@ -77,6 +77,7 @@
     "./core/agents/task-consolidator/SKILL.md",
     "./core/agents/task-decomposer/SKILL.md",
     "./core/agents/task-inventory/SKILL.md",
+    "./core/agents/prompt-engineer/SKILL.md",
     "./shared/agents/account-manager/SKILL.md",
     "./shared/agents/bi-specialist/SKILL.md",
     "./shared/agents/capacity-planner/SKILL.md",

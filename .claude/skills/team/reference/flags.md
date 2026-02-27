@@ -37,7 +37,7 @@ function parseTeamFlags(commandString) {
 | `--quiet`, `-q` | Boolean | Suppress team progress output | false |
 | `--teammate-mode <mode>` | String | Display mode: auto, tmux, in-process | auto |
 | `--template <name>` | String | Force specific team template (e.g., fullstack-app, api-service) | auto-detect |
-| `--waves <N>` | Number | Override number of delivery waves | template default |
+| `--waves <N>` | Number | Set minimum number of delivery waves (system maximizes by default) | auto-maximize |
 | `--no-template` | Boolean | Force flat execution without template structure | false |
 
 ## Usage Examples
@@ -60,14 +60,15 @@ function parseTeamFlags(commandString) {
 /team Build system --teammate-mode in-process            # Force in-process mode
 ```
 
-### With Templates
+### With Templates and Waves
 ```bash
-/team Build a full-stack app                            # Auto-selects fullstack-app template
+/team Build a full-stack app                            # Auto-selects template, maximizes waves (5-7)
 /team Build REST API --template api-service             # Force API service template
 /team Create React dashboard --template frontend-app    # Force frontend template
-/team Build game mechanics --template game-project      # Force game template
-/team Fix auth bug --no-template                        # Force flat (no waves)
-/team Build feature --waves 2                           # Override wave count
+/team Build game mechanics --template game-project      # Force game template (6+ waves)
+/team Fix auth bug --no-template                        # Force flat (no wave gating)
+/team Build feature --waves 8                           # Force minimum 8 waves
+/team Implement search --waves 5                        # Force minimum 5 waves
 ```
 
 ## Display Mode (teammateMode)

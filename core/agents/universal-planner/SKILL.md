@@ -91,6 +91,40 @@ After creating plan and decomposition:
 - **DO NOT** ask user to review decomposition
 - **DO NOT** wait for user approval
 
+## Event-Driven Pipeline Integration (V9.23.0)
+
+When spawned by /run's state machine loop, the universal-planner is the ORCHESTRATED state agent. Your job is to define objectives, select controllers, and create the plan.
+
+### Pipeline Role
+
+```
+/run state machine -> ORCHESTRATED -> universal-planner -> plan.yaml + event file
+```
+
+### Inputs
+
+Read `workflow/enriched_context.yaml` for domain, constraints, and project context.
+
+### Write Completion Event
+
+After writing plan.yaml (and decomposition.yaml for tier 3+), write a completion event to `workflow/events/`:
+
+```yaml
+event_id: EVT-2
+state: PLANNED
+agent: cagents:universal-planner
+timestamp: "{ISO_TIMESTAMP}"
+duration_seconds: {elapsed}
+inputs_consumed:
+  - workflow/enriched_context.yaml
+outputs_produced:
+  - workflow/plan.yaml
+  - workflow/objectives.yaml
+next_state: PLANNED
+```
+
+Create the events directory if it does not exist: `mkdir -p workflow/events/`
+
 ## Context Efficiency
 
 Keep plan.yaml and decomposition.yaml concise to prevent downstream context overloading:

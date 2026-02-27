@@ -86,6 +86,51 @@ Controllers are the primary coordination layer:
 2. **Controller-centric** - Controllers coordinate, not planner or executor
 3. **DELEGATE EVERYTHING** - Never do direct work, always spawn subagents
 
+## Event-Driven Pipeline Integration (V9.23.0)
+
+When spawned by /run's state machine loop, the orchestrator is the INIT state agent. Your job is to enrich the user request with domain context, constraints, and project state.
+
+### Pipeline Role
+
+```
+/run state machine -> INIT -> orchestrator -> enriched_context.yaml + event file
+```
+
+### Output: enriched_context.yaml
+
+Write `workflow/enriched_context.yaml` with:
+```yaml
+domain: {detected_domain}
+tier: {classified_tier}
+constraints:
+  - "{constraint_1}"
+  - "{constraint_2}"
+project_context:
+  codebase_type: "{type}"
+  key_patterns: ["{pattern_1}", "{pattern_2}"]
+  relevant_files: ["{file_1}", "{file_2}"]
+enrichment_summary: "{brief_summary_of_context}"
+```
+
+### Write Completion Event
+
+After writing enriched_context.yaml, write a completion event to `workflow/events/`:
+
+```yaml
+event_id: EVT-1
+state: ORCHESTRATED
+agent: cagents:orchestrator
+timestamp: "{ISO_TIMESTAMP}"
+duration_seconds: {elapsed}
+inputs_consumed:
+  - instruction.yaml
+outputs_produced:
+  - workflow/enriched_context.yaml
+next_state: ORCHESTRATED
+```
+
+Create the events directory if it does not exist: `mkdir -p workflow/events/`
+
 ## Agent Audit Trail
 
 When spawned as a subagent, self-register in the agent tree by appending your cAgents type to `workflow/agent_tree.yaml` in the session directory. Look for your `agent_id` in the file and append:
