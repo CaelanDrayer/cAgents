@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "9.19.0",
-  "description": "Universal multi-domain agent system with 238 specialized agents. V9.19.0: Progressive TodoWrite refinement -- task list dynamically updates with specific agent names as routing decisions are made; multiple executors shown individually. V9.18.0: Flattened /run delegation chain. Self-contained plugin with resilient path resolution. Team templates, wave-based delivery with quality gates. CJS-only hook architecture, Skills system, 14 hook event types, Agent Teams for parallel execution, CSV-based task inventory, controller-centric delegation across 5 super-domains.",
+  "version": "9.19.1",
+  "description": "Universal multi-domain agent system with 238 specialized agents. V9.19.1: Enforce mandatory TodoWrite calls at every phase transition in /run -- embedded directly into workflow steps to prevent skipping. V9.19.0: Progressive TodoWrite refinement. V9.18.0: Flattened /run delegation chain. Self-contained plugin with resilient path resolution. CJS-only hook architecture, Skills system, 14 hook event types, Agent Teams for parallel execution, CSV-based task inventory, controller-centric delegation across 5 super-domains.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",

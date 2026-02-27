@@ -25,6 +25,20 @@ You are the **universal workflow engine** that handles routing, planning, and or
 
 `/run` now performs the work previously done by trigger, orchestrator, universal-router, and universal-planner directly. Only the controller (which needs domain expertise to ask questions and synthesize) and execution agents (which do the actual work) are spawned as subagents.
 
+## MANDATORY: TodoWrite at Every Phase Transition
+
+**TodoWrite is NOT optional. You MUST call TodoWrite at every phase transition.** This is the primary mechanism for user-visible progress tracking. Text output alone is insufficient -- the user sees TodoWrite entries in the UI task list.
+
+**Enforcement rule**: Every step below contains a `>>> CALL TodoWrite <<<` directive. You MUST execute that TodoWrite call before proceeding to the next step. Skipping TodoWrite is a critical violation equivalent to skipping file writes.
+
+**Minimum 4 TodoWrite calls per /run execution**:
+1. Step 2 (session init) -- initial task list with generic placeholders
+2. Step 3 (after routing) -- replace `[controller]` with specific controller name
+3. Step 5 (before delegation) -- mark coordinating as in_progress
+4. Step 6 (after completion) -- mark all tasks completed
+
+See @shared/patterns/todo_write_helper.md for the full Progressive Refinement Pattern.
+
 ## Core Workflow (6 Steps)
 
 When the user runs `/run <request> [flags]`:
@@ -72,6 +86,18 @@ phase_history:
     entered_at: "{ISO_TIMESTAMP}"
 ```
 
+**>>> CALL TodoWrite <<<** -- Initialize the task list immediately after creating session files:
+```javascript
+TodoWrite({
+  todos: [
+    {content: "[/run] Route request to domain and tier", status: "in_progress", activeForm: "[/run] Routing request"},
+    {content: "[/run] Plan objectives and select controller", status: "pending", activeForm: "[/run] Planning objectives"},
+    {content: "[controller] Coordinate work via question-based delegation", status: "pending", activeForm: "[controller] Coordinating work"},
+    {content: "[/run] Validate outputs and quality", status: "pending", activeForm: "[/run] Validating outputs"}
+  ]
+})
+```
+
 ### Step 3: Route (Inline -- No Delegation)
 
 Classify the request domain and complexity tier. This was previously done by trigger + universal-router across 2 agent levels.
@@ -99,6 +125,19 @@ Classify the request domain and complexity tier. This was previously done by tri
 **Scope adjustments**: Multiple systems (+1), external dependencies (+1), high-risk (+1), executive approval needed (+2).
 
 Update `status.yaml` phase to `planning`.
+
+**>>> CALL TodoWrite <<<** -- Mark routing completed, start planning. Replace `[controller]` with the actual controller name identified during routing:
+```javascript
+TodoWrite({
+  todos: [
+    {content: "[/run] Route request to domain and tier", status: "completed"},
+    {content: "[/run] Plan objectives and select controller", status: "in_progress", activeForm: "[/run] Planning objectives"},
+    {content: "[{controller_name}] Coordinate work via question-based delegation", status: "pending", activeForm: "[{controller_name}] Coordinating work"},
+    {content: "[/run] Validate outputs and quality", status: "pending", activeForm: "[/run] Validating outputs"}
+  ]
+})
+```
+Replace `{controller_name}` with the actual controller (e.g., `engineering-manager`, `editor`, `creative-director`).
 
 ### Step 4: Plan (Inline -- No Delegation)
 
@@ -170,6 +209,20 @@ Update `status.yaml` phase to `coordinating`.
 
 This is the ONLY delegation step. Spawn the selected controller to coordinate the work.
 
+**>>> CALL TodoWrite <<<** -- Mark planning completed, coordination starting:
+```javascript
+TodoWrite({
+  todos: [
+    {content: "[/run] Route request to domain and tier", status: "completed"},
+    {content: "[/run] Plan objectives and select controller", status: "completed"},
+    {content: "[{controller_name}] Coordinate work via question-based delegation", status: "in_progress", activeForm: "[{controller_name}] Coordinating work"},
+    {content: "[/run] Validate outputs and quality", status: "pending", activeForm: "[/run] Validating outputs"}
+  ]
+})
+```
+
+Then spawn the controller:
+
 ```javascript
 Task({
   subagent_type: "cagents:{controller_name}",
@@ -203,6 +256,30 @@ After the controller returns:
 2. **Verify outputs** match plan objectives
 3. **Write execution_summary.yaml** with results
 4. **Update status.yaml** to `completed`
+
+**>>> CALL TodoWrite <<<** -- Mark all tasks completed (or mark validation failed if applicable):
+```javascript
+// On success:
+TodoWrite({
+  todos: [
+    {content: "[/run] Route request to domain and tier", status: "completed"},
+    {content: "[/run] Plan objectives and select controller", status: "completed"},
+    {content: "[{controller_name}] Coordinate work via question-based delegation", status: "completed"},
+    {content: "[/run] Validate outputs and quality", status: "completed"}
+  ]
+})
+
+// On failure:
+TodoWrite({
+  todos: [
+    {content: "[/run] Route request to domain and tier", status: "completed"},
+    {content: "[/run] Plan objectives and select controller", status: "completed"},
+    {content: "[{controller_name}] Coordinate work via question-based delegation", status: "completed"},
+    {content: "[/run] Validate outputs and quality -- FAILED: {reason}", status: "in_progress", activeForm: "[/run] Validation failed"}
+  ]
+})
+```
+
 5. **Report results** to user
 
 If validation fails:
@@ -230,68 +307,22 @@ Task({
 
 ## Progress Reporting
 
-Report progress at each step. Prefix with agent name:
+**Primary progress**: TodoWrite (mandatory, embedded in each step above -- the `>>> CALL TodoWrite <<<` directives).
+
+**Secondary progress**: Brief text output is optional to supplement TodoWrite. Keep text terse -- the user sees the TodoWrite task list in the UI. If you output text, prefix with agent name:
 
 ```
-/run Fix auth bug
-
-[/run] Routing...
-  Domain: Make (engineering), Confidence: 0.92
-  Tier: 2, Controller: engineering-manager
-
-[/run] Planning...
-  Objectives: Fix authentication timeout, Add regression tests
-  Work items: 5 (1 understand, 1 design, 2 build, 1 verify)
-
-[engineering-manager] Coordinating...
-  Questions asked: 3
-  - [backend-developer] Current auth implementation: JWT with 30min expiry
-  - [security-specialist] Risk assessment: Medium (timeout too short)
-  - [qa-tester] Test coverage: 45% (needs improvement)
-
-[engineering-manager] Implementation:
-  - [backend-developer] Fixed timeout to 1hr with refresh
-  - [qa-tester] Added 5 regression tests (coverage: 82%)
-
+[/run] Routing... Domain: Make (engineering), Tier: 2, Controller: engineering-manager
+[/run] Planning... 3 objectives, 5 work items
+[/run] Delegating to engineering-manager...
 [/run] Validation: PASSED
-  All objectives met. Session: Agent_Memory/sessions/run_20260227_100000/
 ```
 
-## TodoWrite Progressive Refinement
+**NEVER substitute text output for TodoWrite.** Both can coexist, but TodoWrite is mandatory and text is supplementary.
 
-**CRITICAL**: TodoWrite entries MUST be updated with specific agent names as soon as routing decisions are made. The task list should progressively refine from generic placeholders to specific agents so the user always sees exactly which agent handles each task.
+### Controller TodoWrite Updates
 
-See @shared/patterns/todo_write_helper.md for the full Progressive Refinement Pattern.
-
-### /run TodoWrite Flow (3 Updates Minimum)
-
-**Update 1 -- Session start** (generic placeholders):
-```javascript
-TodoWrite({
-  todos: [
-    {content: "[/run] Route request to domain and tier", status: "in_progress", activeForm: "[/run] Routing request"},
-    {content: "[/run] Plan objectives and select controller", status: "pending", activeForm: "[/run] Planning objectives"},
-    {content: "[controller] Coordinate work via question-based delegation", status: "pending", activeForm: "[controller] Coordinating work"},
-    {content: "[/run] Validate outputs and quality", status: "pending", activeForm: "[/run] Validating outputs"}
-  ]
-})
-```
-
-**Update 2 -- After routing selects controller** (replace `[controller]` with specific name):
-```javascript
-TodoWrite({
-  todos: [
-    {content: "[/run] Route request to domain and tier", status: "completed"},
-    {content: "[/run] Plan objectives and select controller", status: "in_progress", activeForm: "[/run] Planning objectives"},
-    {content: "[engineering-manager] Coordinate work via question-based delegation", status: "pending", activeForm: "[engineering-manager] Coordinating work"},
-    {content: "[/run] Validate outputs and quality", status: "pending", activeForm: "[/run] Validating outputs"}
-  ]
-})
-```
-
-**Update 3 -- Controller identifies execution agents** (add specific executor entries):
-
-The controller is responsible for this update. When it determines which execution agents will be used, it replaces its generic coordination entry with specific per-agent entries:
+The controller (spawned in Step 5) is responsible for its own TodoWrite updates. When it identifies execution agents, it should add specific entries:
 
 ```javascript
 TodoWrite({
@@ -307,26 +338,29 @@ TodoWrite({
 })
 ```
 
-### Rules
+### TodoWrite Rules
 
-1. `/run` updates TodoWrite twice: once at start (generic), once after controller selection (specific controller name)
+1. `/run` calls TodoWrite at minimum 4 times (Steps 2, 3, 5, 6) -- these are mandatory via `>>> CALL TodoWrite <<<` directives
 2. The controller updates TodoWrite when it identifies which execution agents it will delegate to
-3. If multiple executors: add a SEPARATE entry for each executor with `[agent-name] specific task description`
+3. If multiple executors: add a SEPARATE entry for each with `[agent-name] specific task description`
 4. Never show generic `[executor]` or `[execution-agent]` -- always use the actual agent name
-5. Include a brief task description for each executor entry (not just the agent name)
+5. Never have zero tasks `in_progress` -- always transition one to `completed` and the next to `in_progress` in the same call
 
 ## What /run Does Directly (Exhaustive List)
 
 - Parse flags from arguments
+- **Call TodoWrite** (Step 2: initial task list with generic placeholders)
 - Create session directory and files (instruction.yaml, status.yaml, plan.yaml, decomposition.yaml)
 - Domain detection (keyword-based routing)
 - Tier classification
+- **Call TodoWrite** (Step 3: replace `[controller]` with specific controller name)
 - Controller selection (from planner_config.yaml)
 - Plan creation (objectives, work items)
+- **Call TodoWrite** (Step 5: mark coordination as in_progress)
 - Spawn controller via Task tool
 - Validate controller output
+- **Call TodoWrite** (Step 6: mark all tasks completed or flag validation failure)
 - Report results to user
-- Create TodoWrite entries for progress visibility
 
 ## What /run Delegates (Exhaustive List)
 
