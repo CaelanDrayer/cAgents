@@ -1,6 +1,6 @@
 {
   "name": "@cagents/core",
-  "version": "9.15.1",
+  "version": "9.16.0",
   "description": "cAgents Core V9.0 - Universal multi-domain agent system with skills system, 14 hook event types, and opusplan model routing. Agent Teams integration for parallel team-based execution. Includes 14 core agents: trigger, team-trigger, team-lead-adapter, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, and 5 universal workflow agents. Controller-centric coordination with question-based delegation.",
   "author": {
     "name": "CaelanDrayer",

@@ -5,7 +5,7 @@
 # Weight normalization: raw weights sum to 1.16; divide each by 1.16 at runtime.
 
 scoring:
-  weight_sum: 1.16
+  weight_sum: 1.38    # 1.16 (14 categories) + 0.08 (perplexity) + 0.08 (burstiness) + 0.06 (LIX)
   verdicts:
     low_ai_likelihood: { max: 0.3 }
     moderate_ai_likelihood: { min: 0.3, max: 0.6 }
@@ -519,6 +519,19 @@ analytical_academic:
       - "although .+ while .+ because"
       - "given that .+ in order to .+ so that"
     rule: "Flag sentences with multiple nested clauses that could be broken into simpler statements"
+  technical_jargon_complexity:
+    description: "Complex sentence structures with multiple clauses convey detailed information and nuanced arguments, often using technical jargon and advanced vocabulary"
+    named_pattern: "Technical Jargon"
+    composite_checks:
+      - technical_jargon_density_high       # technical_jargon patterns > 5 per 1000 words
+      - complex_clause_density_high         # avg clause count > 2.5 per sentence
+      - advanced_vocabulary_density_high    # academic vocabulary > 8 per 1000 words
+    detection:
+      all_of:
+        - { check: technical_jargon_density, threshold: 5, unit: "per 1000 words" }
+        - { check: avg_clause_count, threshold: 2.5, unit: "clauses per sentence" }
+        - { check: academic_vocabulary_density, threshold: 8, unit: "per 1000 words" }
+    rule: "AI produces text where complex grammatical structures and specialized vocabulary serve as vehicles for detailed but often generic information, rather than being necessitated by the content's actual complexity"
 
 # ==============================================================================
 # Category 3: Punctuation/Style Tics (weight: 0.08)
@@ -1006,6 +1019,41 @@ creativity_deficit:
             - "mosaic of"
             - "kaleidoscope of"
           rule: "AI uses advanced vocabulary as ornamentation; humans use it for precision"
+    lacks_creativity:
+      description: "The writing is precise and consistent but lacks the richness and creativity of human writing"
+      named_pattern: "Lacks Creativity"
+      composite_checks:
+        - specificity_deficit_present        # abstract over concrete/sensory details
+        - literary_device_absence_present    # no metaphors, similes, analogies (from cat 10)
+        - predictable_pairings_present       # formulaic adjective-noun combinations
+        - proper_noun_deficit_present        # avoids real names, places, brands
+        - cultural_specificity_deficit_present  # generic locations instead of specific places
+      detection:
+        any_3_of:
+          - { check: specificity_score, threshold: 0.6, direction: "above", note: "high abstraction" }
+          - { check: literary_device_count, threshold: 0, unit: "per 500 words", note: "zero literary devices" }
+          - { check: predictable_pairing_density, threshold: 3, unit: "per 1000 words" }
+          - { check: proper_noun_ratio, threshold: 0.5, unit: "per 1000 words", direction: "below" }
+          - { check: cultural_reference_count, threshold: 0, note: "no specific cultural references" }
+      rule: "AI writing achieves precision and consistency at the cost of richness -- it reads as competent but flat, missing the creative texture that human writers naturally provide through specific references, varied literary devices, and unpredictable word choices"
+    rich_yet_shallow_pattern:
+      description: "The vocabulary is rich and varied but lacks spontaneity and emotional depth"
+      named_pattern: "Rich Yet Shallow"
+      composite_checks:
+        - high_lexical_diversity_present     # type-token ratio > 0.70
+        - low_emotional_word_ratio           # emotional/sensory words < 2 per 1000
+        - absence_of_spontaneous_language    # no colloquialisms or informal expressions
+        - emotional_flatness_present         # sophisticated vocab but no expressed emotions
+        - ornamental_vocabulary_present      # decorative rather than precise word use
+      detection:
+        all_of:
+          - { check: lexical_diversity, threshold: 0.70, direction: "above" }
+          - { check: emotional_word_ratio, threshold: 2, unit: "per 1000 words", direction: "below" }
+        any_2_of:
+          - { check: colloquialism_count, threshold: 0, note: "zero informal expressions" }
+          - { check: emotion_expression_count, threshold: 0, note: "no joy, frustration, surprise, humor" }
+          - { check: ornamental_vocab_density, threshold: 2, unit: "per 1000 words" }
+      rule: "AI produces text with impressive vocabulary breadth that nonetheless feels hollow -- the words are varied but emotionally inert, creating a veneer of sophistication over shallow, impersonal content"
 
 # ==============================================================================
 # Category 10: Mechanical Writing (weight: 0.12)
@@ -1146,6 +1194,111 @@ mechanical_writing:
         paragraph_rhythm_uniformity:
           description: "Paragraphs that all follow the same build-up-then-conclude pattern"
       rule: "Human writing has natural rhythm variation; AI produces metronomic regularity"
+    predictable_rhythm_pattern:
+      description: "Syntax variety is minimal, leading to a consistent and predictable rhythm"
+      named_pattern: "Predictable Rhythm"
+      composite_checks:
+        - declarative_dominance_present      # > 80% declarative sentences
+        - clause_length_uniformity_present   # clause lengths within 25% of mean
+        - breath_pattern_absence_present     # < 10% short sentences (under 8 words)
+        - cadence_repetition_present         # same sentence-ending patterns
+        - sentence_type_monotony_present     # < 3 different sentence types used
+      detection:
+        any_3_of:
+          - { check: declarative_ratio, threshold: 0.80, direction: "above" }
+          - { check: clause_length_variance, threshold: 0.25, direction: "below", note: "within 25% of mean" }
+          - { check: short_sentence_ratio, threshold: 0.10, direction: "below", note: "under 8 words" }
+          - { check: cadence_pattern_repetitions, threshold: 3, note: "same ending pattern 3+ times" }
+          - { check: sentence_type_count, threshold: 3, direction: "below", note: "fewer than 3 types: declarative, interrogative, imperative, exclamatory" }
+      rule: "AI writing falls into a rhythmic rut where every sentence follows the same syntactic template, creating a metronomic predictability that human readers sense even if they cannot articulate what feels off"
+    thought_process_absence:
+      description: "Zero human thought-process markers in the text"
+      checks:
+        hesitation_marker_absence:
+          description: "No conversational hedges or filler words that signal thinking"
+          patterns_absent:
+            - "actually"
+            - "I mean"
+            - "sort of"
+            - "kind of"
+            - "well,"
+            - "you know"
+            - "honestly"
+            - "look,"
+            - "admittedly"
+            - "to be fair"
+          threshold: 0    # flag if zero in documents > 1000 words
+        self_correction_absence:
+          description: "No mid-thought corrections or rephrasing"
+          patterns_absent:
+            - "wait"
+            - "actually, that's not"
+            - "let me rephrase"
+            - "put another way"
+            - "what I mean is"
+            - "in other words"
+            - "to put it differently"
+            - "or rather"
+            - "I should clarify"
+          threshold: 0    # flag if zero in documents > 1500 words
+        digression_absence:
+          description: "No tangential observations, asides, or mid-thought pivots"
+          threshold: 0    # flag if zero digressions detected in documents > 2000 words
+      rule: "Human writers leave traces of their thinking process -- hesitations, corrections, digressions. Their total absence signals generation, not composition."
+    grammatical_informality_absence:
+      description: "Zero common human grammatical informalities in long documents"
+      checks:
+        comma_splice_absence:
+          description: "Zero comma splices -- common in natural fast-paced writing"
+          threshold: 0    # flag if zero in documents > 1000 words
+        preposition_ending_absence:
+          description: "Zero sentences ending with prepositions"
+          threshold: 0    # flag if zero in documents > 500 words
+        split_infinitive_absence:
+          description: "Zero split infinitives -- natural in human English"
+          threshold: 0    # flag if zero in documents > 1000 words
+        perfect_whom_usage:
+          description: "Perfect whom/who distinction -- most humans default to 'who' even when 'whom' is correct"
+          threshold: 1.0  # flag if 100% correct whom usage (and whom is used at all)
+      rule: "The absence of ALL minor grammatical informalities in a long document is itself a detection signal -- even careful human writers occasionally comma-splice, end with prepositions, or split infinitives"
+    perfect_grammar_zero_thought:
+      description: "Flawless grammar combined with zero human thought-process markers"
+      named_pattern: "Perfect Grammar + Zero Thought Markers"
+      composite_checks:
+        - grammar_perfection_present         # grammar score > 0.95
+        - hesitation_marker_absence_present  # zero hesitation markers
+        - self_correction_absence_present    # zero self-corrections
+        - grammatical_informality_absence_present  # zero common informalities
+      detection:
+        all_of:
+          - { check: grammar_perfection_score, threshold: 0.95, direction: "above" }
+          - { check: hesitation_marker_count, threshold: 0, note: "zero hesitation markers" }
+          - { check: self_correction_count, threshold: 0, note: "zero self-corrections" }
+          - { check: grammatical_informality_count, threshold: 0, note: "zero comma splices, preposition endings, split infinitives" }
+      rule: "This pattern is extremely strong: human writers who achieve perfect grammar still leave traces of their thinking in the text -- hesitations, corrections, informal constructions. Perfect grammar with zero thought markers is almost exclusively AI-generated."
+    lacks_creative_grammar:
+      description: "The grammatical structure is correct but lacks creative deviations typical of human writing"
+      named_pattern: "Lacks Creative Grammar"
+      composite_checks:
+        - no_intentional_fragments_present
+        - no_one_word_sentences_present
+        - no_parenthetical_asides_present
+        - no_dashes_for_interruption_present
+        - no_ellipsis_for_trailing_off_present
+        - no_sentence_inversion_present
+        - no_unconventional_capitalization_present
+      detection:
+        all_of:
+          - { check: grammar_perfection_score, threshold: 0.95, direction: "above", note: "near-perfect grammar" }
+          - { check: creative_deviation_count, threshold: 0, note: "zero creative grammar deviations in entire document" }
+        supporting:
+          - { check: fragment_count, threshold: 0 }
+          - { check: one_word_sentence_count, threshold: 0 }
+          - { check: parenthetical_aside_count, threshold: 0 }
+          - { check: dash_interruption_count, threshold: 0 }
+          - { check: ellipsis_trailing_count, threshold: 0 }
+          - { check: sentence_inversion_count, threshold: 0 }
+      rule: "Human writers bend grammar for effect -- fragments for punch, inversions for emphasis, asides for personality. AI writes correct grammar uniformly, producing text that is technically flawless but creatively sterile"
 
 # ==============================================================================
 # Category 11: Repetitive Phrasing (weight: 0.08)
@@ -1325,6 +1478,182 @@ cross_category:
       - "Consistent clause count per sentence"
       - "Same sentence opener patterns repeated"
       - "No interrogative, exclamatory, or imperative variety"
+  linear_argumentation:
+    description: "All arguments follow perfectly linear claim-evidence-conclusion structure"
+    named_pattern: "Linear Argumentation"
+    categories: [structural_patterns, tone_voice, creativity_deficit]
+    checks:
+      counter_argument_absence:
+        description: "No counter-arguments or alternative perspectives acknowledged in any argument"
+        threshold: 0    # flag if zero across entire document
+      self_correction_absence:
+        description: "No mid-argument corrections, pivots, or reconsiderations"
+        threshold: 0    # flag if zero
+      non_linear_reasoning_absence:
+        description: "No question-first, conclusion-first, or example-first reasoning patterns"
+        threshold: 0    # flag if zero non-linear patterns
+      argument_count_minimum:
+        threshold: 3    # need at least 3 arguments to measure
+    detection:
+      all_of:
+        - { check: counter_argument_count, threshold: 0, note: "zero counter-arguments" }
+        - { check: self_correction_count, threshold: 0, note: "zero mid-argument corrections" }
+        - { check: non_linear_pattern_count, threshold: 0, note: "zero non-linear reasoning" }
+        - { check: argument_count, threshold: 3, direction: "above", note: "enough arguments to measure" }
+    rule: "Human writers almost always acknowledge complexity -- even structured thinkers occasionally say 'but wait' or 'on second thought'. Perfectly linear argumentation across 3+ arguments signals AI generation."
+  analogy_originality:
+    description: "Assessment of metaphor and analogy originality"
+    categories: [creativity_deficit]
+    checks:
+      cliche_only_analogies:
+        description: "All metaphors drawn from the generic_metaphors cliche pool"
+        threshold: 0.80    # flag if > 80% of analogies are from cliche list
+      domain_crossing_absence:
+        description: "No analogies that cross domains unexpectedly"
+        threshold: 0       # flag if zero
+      extended_analogy_absence:
+        description: "No analogies developed across multiple sentences"
+        threshold: 0       # flag if zero in documents > 1000 words
+      cultural_specificity_absence:
+        description: "No culturally specific or contextually unique comparisons"
+        threshold: 0       # flag if zero
+    scoring:
+      originality_score: "0.0 (all cliches) to 1.0 (all original)"
+      flag_threshold: 0.20    # flag if below and analogies are present
+    rule: "Human writers create analogies from their lived experience -- surprising, domain-crossing, culturally specific comparisons. AI draws from a common pool of safe, generic metaphors."
+  register_shift_absence:
+    description: "Uniform formality register throughout the entire document"
+    categories: [tone_voice, mechanical_writing]
+    checks:
+      formality_variance:
+        description: "Variance in formality level across paragraphs"
+        threshold: 0.15    # flag if formality variance below this (0-1 scale)
+        min_document_length: 500    # words; only flag in substantial documents
+      register_shift_count:
+        description: "Number of transitions between formal and informal register"
+        threshold: 0    # flag if zero shifts in documents > 500 words
+    rule: "Human writers naturally shift between registers -- a technical explanation followed by a casual aside, a formal opening followed by a conversational body. Uniform register throughout signals AI's consistent tone-setting."
+  mechanical_precision:
+    description: "Precise and technical word choice prioritizes clarity and specificity, avoiding colloquial language"
+    named_pattern: "Mechanical Precision"
+    categories: [analytical_academic, creativity_deficit, mechanical_writing]
+    checks:
+      - "High formal vocabulary density with zero colloquialisms or informal expressions"
+      - "Technical register maintained uniformly without any register shifts"
+      - "Word choice consistently favors precision over personality"
+      - "Absence of hedges, slang, contractions, or conversational markers"
+      - "Every word serves a functional purpose -- no playful, decorative, or emotionally expressive language"
+    detection:
+      all_of:
+        - { check: formal_vocabulary_density, threshold: 10, unit: "per 1000 words", direction: "above" }
+        - { check: colloquialism_count, threshold: 0, note: "zero informal expressions in entire document" }
+        - { check: register_shift_count, threshold: 0, note: "no tonal or formality shifts" }
+      any_1_of:
+        - { check: contraction_count, threshold: 0, note: "zero contractions" }
+        - { check: conversational_marker_count, threshold: 0, note: "no 'well', 'honestly', 'look', etc." }
+    rule: "AI selects words like an optimizer -- maximizing clarity and information density while eliminating the colloquial roughness, playfulness, and personality that make human prose feel alive"
+  sophisticated_clarity:
+    description: "Precise word choice prioritizes clarity and sophistication, sometimes affecting natural flow"
+    named_pattern: "Sophisticated Clarity"
+    categories: [tone_voice, mechanical_writing, creativity_deficit]
+    checks:
+      - "High reading level (grade 12+) with uniformly sophisticated vocabulary"
+      - "Text reads clearly but lacks conversational naturalness"
+      - "No rhythm variation -- sophistication maintained at cost of flow"
+      - "Absence of simple, punchy sentences that would break the sophisticated register"
+      - "Every sentence constructed for maximum informational clarity, sacrificing the meandering, digressive quality of natural thought"
+    detection:
+      all_of:
+        - { check: reading_grade_level, threshold: 12, direction: "above" }
+        - { check: vocabulary_sophistication_score, threshold: 0.75, direction: "above" }
+        - { check: conversational_element_count, threshold: 0, note: "no informal register elements" }
+      any_2_of:
+        - { check: short_sentence_ratio, threshold: 0.10, direction: "below", note: "fewer than 10% short sentences" }
+        - { check: rhythm_variance, threshold: 0.20, direction: "below", note: "low rhythm variation" }
+        - { check: digression_count, threshold: 0, note: "no asides, tangents, or self-corrections" }
+    rule: "AI writes with a uniform sophistication that prioritizes reader comprehension over natural expression, producing text that is clear and polished but lacks the organic flow of a human mind moving between registers, pausing to reconsider, or choosing a simple word when a complex one would technically be more precise"
+  perplexity_analysis:
+    description: "Low text perplexity indicates AI-generated content due to high-probability token selection"
+    categories: [vocabulary_tells, creativity_deficit, mechanical_writing]
+    checks:
+      vocabulary_surprise:
+        description: "Proportion of word choices that are unexpected given context"
+        threshold: 0.30    # flag if below -- low surprise = AI
+        scale: "0.0 (completely predictable) to 1.0 (completely unpredictable)"
+      ngram_novelty:
+        description: "Proportion of 3-grams not in common language corpora"
+        threshold: 0.15    # flag if below
+      transition_unpredictability:
+        description: "Variance in semantic distance between consecutive sentences"
+        threshold: 0.20    # flag if below -- low variance = AI
+    scoring:
+      method: "average of vocabulary_surprise, ngram_novelty, transition_unpredictability"
+      weight: 0.08
+      signal_strength: strong
+    rule: "AI selects high-probability tokens, producing text with low perplexity -- predictable word choices, common n-grams, and smooth semantic transitions. Human text is messier: unexpected words, novel phrases, and jarring transitions between ideas."
+  burstiness_analysis:
+    description: "Low burstiness (uniform complexity) indicates AI-generated content"
+    categories: [mechanical_writing, structural_patterns, creativity_deficit]
+    checks:
+      sentence_complexity_variance:
+        description: "Variance in sentence complexity (clause count, word count) across 500-word windows"
+        threshold: 0.25    # flag if below -- low variance = AI
+        window_size: 500   # words
+      paragraph_readability_variance:
+        description: "Variance in Flesch-Kincaid readability scores across paragraphs"
+        threshold: 8.0     # flag if standard deviation below this value across paragraphs
+      perplexity_standard_deviation:
+        description: "Standard deviation of perplexity scores across document sections"
+        threshold: 0.15    # flag if below
+    scoring:
+      method: "weighted average: sentence_complexity_variance (0.4), paragraph_readability_variance (0.3), perplexity_std_dev (0.3)"
+      weight: 0.08
+      signal_strength: strong
+    rule: "Human writing is bursty -- alternating between simple directness and elaborate complexity. AI maintains a uniform register, producing text where every passage reads at roughly the same difficulty level. Low burstiness is one of the most reliable AI signals."
+  low_perplexity_low_burstiness:
+    description: "Document is both predictable (low perplexity) and uniform (low burstiness)"
+    named_pattern: "Low Perplexity + Low Burstiness"
+    categories: [vocabulary_tells, mechanical_writing, creativity_deficit, structural_patterns]
+    detection:
+      all_of:
+        - { check: perplexity_score, threshold: 0.30, direction: "below", note: "document-level perplexity" }
+        - { check: burstiness_score, threshold: 0.25, direction: "below", note: "complexity uniformity" }
+    rule: "The strongest composite AI signal: text that is both word-by-word predictable and paragraph-by-paragraph uniform. Human writing is almost never both -- even formulaic human writing has complexity bursts, and even predictable human vocabulary has moments of surprise."
+  lix_analysis:
+    description: "LIX readability uniformity indicates AI-generated content"
+    categories: [mechanical_writing, structural_patterns]
+    formula: "(words / sentences) + (long_words * 100 / words)"
+    long_word_threshold: 7    # characters; words with 7+ chars are "long"
+    lix_scale:
+      very_easy: { max: 25, label: "Children's books" }
+      easy: { min: 25, max: 35, label: "Fiction, popular press" }
+      medium: { min: 35, max: 45, label: "Newspapers, magazines" }
+      difficult: { min: 45, max: 55, label: "Academic, professional" }
+      very_difficult: { min: 55, label: "Legal, technical, specialist" }
+    checks:
+      lix_uniformity:
+        description: "LIX scores are uniform across document sections"
+        threshold: 5.0    # flag if standard deviation of per-section LIX is below this
+        min_sections: 3   # need at least 3 sections to measure
+        signal_strength: medium
+      lix_range:
+        description: "Difference between highest and lowest section LIX scores"
+        threshold: 10.0   # flag if range < 10 (human text typically has range > 15)
+    scoring:
+      weight: 0.06
+      signal_strength: medium
+    rule: "AI produces text at a consistent complexity level -- every section reads at roughly the same difficulty. Human writers naturally shift between accessible and challenging prose, producing high LIX variance across sections."
+  uniform_lix:
+    description: "LIX readability is uniform across all document sections"
+    named_pattern: "Uniform LIX"
+    categories: [mechanical_writing, structural_patterns]
+    detection:
+      all_of:
+        - { check: lix_std_deviation, threshold: 5.0, direction: "below", note: "low section-to-section variation" }
+        - { check: section_count, threshold: 3, direction: "above", note: "enough sections to measure" }
+      supporting:
+        - { check: lix_range, threshold: 10.0, direction: "below", note: "narrow overall range" }
+    rule: "Human writing shows LIX variability -- an easy introductory section, a dense analytical middle, a punchy conclusion. AI maintains a uniform reading level throughout, like a thermostat holding a steady temperature."
 
 # ==============================================================================
 # Detection Report Schema

@@ -2,7 +2,7 @@
 name: ai-writing-detector
 domain: make
 tier: execution
-description: AI writing detection specialist. Scans documents across 14 pattern categories to identify AI-generated content hallmarks. Outputs structured YAML detection reports with per-finding locations, severity, confidence scores, and rewrite suggestions.
+description: AI writing detection specialist. Scans documents across 14 pattern categories plus cross-category analysis (perplexity, burstiness, LIX, linear argumentation, analogy originality) to identify AI-generated content hallmarks. Outputs structured YAML detection reports with per-finding locations, severity, confidence scores, and rewrite suggestions.
 model: opus
 capabilities:
   - ai_writing_detection
@@ -22,8 +22,9 @@ answers_questions:
 executes_tasks:
   - "Scan document for AI writing patterns"
   - "Generate AI detection report"
-  - "Analyze text for AI hallmarks across 14 categories"
+  - "Analyze text for AI hallmarks across 14 categories plus cross-category patterns"
   - "Produce per-category confidence scores"
+  - "Measure text perplexity, burstiness, and LIX readability variance"
 ---
 
 # AI Writing Detector
@@ -61,7 +62,7 @@ This agent produces the detection report. It does NOT rewrite -- that is the rew
 | 13 | Conflicting Subtext | 0.10 | Strong |
 | 14 | Detached Warmth | 0.06 | Weak |
 
-Weights sum to 1.16 and are normalized to 1.0 at scoring time.
+Category weights sum to 1.16. Cross-category analysis weights (perplexity: 0.08, burstiness: 0.08, LIX: 0.06) add 0.22, bringing the total to 1.38. All weights are normalized to 1.0 at scoring time.
 
 ## Detection Workflow
 
@@ -96,6 +97,7 @@ For each of the 14 categories:
 - Flag technical jargon used in non-technical prose when simpler alternatives exist
 - Detect complex multi-clause sentences (3+ subordinate clauses) that convey detailed information using unnecessarily complex grammatical structures
 - Calculate average clause count per sentence; flag if consistently above 2.5
+- **Named Pattern: Technical Jargon** -- Detect composite pattern where complex sentence structures (avg clause count > 2.5), technical jargon density (> 5 per 1000 words), and advanced vocabulary density (> 8 per 1000 words) co-occur. This signals AI-generated text where grammatical complexity and specialized vocabulary serve as vehicles for generic information rather than being demanded by the content's actual complexity.
 
 **Category 3 -- Punctuation/Style Tics** (weight: 0.08):
 - Count em dashes per 500 words (flag if > 2)
@@ -150,6 +152,8 @@ For each of the 14 categories:
 - Flag absence of spontaneous language: no colloquialisms, informal interjections ("honestly", "look", "I mean"), visceral reactions ("gut feeling", "makes my skin crawl")
 - Detect emotional flatness: sophisticated vocabulary with no expression of joy, frustration, surprise, anger, or humor
 - Flag ornamental vocabulary: advanced words used decoratively rather than precisely ("myriad of", "plethora of", "cornucopia of", "constellation of")
+- **Named Pattern: Lacks Creativity** -- Detect composite pattern where the writing is precise and consistent but lacks richness: 3+ of these indicators must co-occur: high abstraction (specificity score > 0.6), zero literary devices per 500 words, predictable adjective-noun pairings (> 3 per 1000 words), low proper noun ratio (< 0.5 per 1000 words), zero specific cultural references. Signals competent but flat AI prose.
+- **Named Pattern: Rich Yet Shallow** -- Detect composite pattern where vocabulary is rich and varied but lacks spontaneity and emotional depth: high lexical diversity (type-token ratio > 0.70) combined with low emotional word ratio (< 2 per 1000 words), plus 2+ of: zero colloquialisms, zero expressed emotions (joy, frustration, surprise, humor), or ornamental vocabulary density > 2 per 1000 words. Signals impressive but hollow AI vocabulary.
 
 **Category 10 -- Mechanical Writing** (weight: 0.12):
 - Calculate sentence length variance (flag if within 20% of average)
@@ -163,6 +167,11 @@ For each of the 14 categories:
 - Detect predictable syntax: over 85% declarative sentences, no rhetorical questions, no exclamatory or imperative sentences, fewer than 10% non-standard openers (adverbial, prepositional, dependent clause openers)
 - Detect complex sentence preference: average clause count above 2.5 per sentence, fewer than 20% simple sentences, excessive subordinating conjunction density (> 8 per 1000 words: which, that, although, while, because, since, whereas, whereby)
 - Detect predictable rhythm: uniform clause lengths (variance within 25% of mean), same sentence-ending cadence pattern repeated, fewer than 10% short sentences (under 8 words), paragraphs following identical build-up-then-conclude patterns
+- **Named Pattern: Predictable Rhythm** -- Detect composite pattern where syntax variety is minimal, producing a consistent and predictable rhythm: 3+ of these indicators must co-occur: declarative ratio > 80%, clause length variance within 25% of mean, short sentence ratio < 10%, same cadence pattern repeated 3+ times, fewer than 3 sentence types used. Signals metronomic AI prose.
+- **Named Pattern: Lacks Creative Grammar** -- Detect composite pattern where grammar is correct but sterile: near-perfect grammar score (> 0.95) combined with zero creative deviations (no fragments, no one-word sentences, no parenthetical asides, no dash interruptions, no trailing ellipses, no sentence inversions). Signals AI's uniform grammatical correctness without human creative bending.
+- Detect thought-process absence: zero hesitation markers ("actually", "I mean", "sort of", "kind of", "well"), zero self-corrections ("wait, that's not right", "let me rephrase"), zero mid-thought pivots or digressions, zero filler words in long passages (> 2000 words). Human writers naturally include thinking-on-the-page markers; their total absence signals generation rather than composition.
+- Detect imperfection absence: zero comma splices in documents > 1000 words, zero preposition-ending sentences, zero split infinitives, perfect "whom" usage (most humans default to "who"). The absence of ALL minor grammatical informalities in a long document is itself a signal.
+- **Named Pattern: Perfect Grammar + Zero Thought Markers** -- Detect composite pattern where grammar is flawless AND no human thought-process markers are present. Requires: grammar perfection score > 0.95 AND zero hesitation markers AND zero self-corrections AND zero filler words AND zero grammatical informalities (comma splices, preposition endings, split infinitives). This pattern is extremely strong: human writers who achieve perfect grammar still leave traces of their thinking process in the text.
 
 **Category 11 -- Repetitive Phrasing** (weight: 0.08):
 - Detect "Not only... but also" overuse
@@ -205,12 +214,23 @@ After individual category scans:
 5. Check for technical complexity without substance: complex sentence structures and advanced vocabulary masking shallow analysis (high subordinate clause count + low specificity + technical jargon without concrete examples)
 6. Detect mechanical fluency: perfectly smooth transitions between every paragraph with no digressions, asides, tangential observations, self-corrections, or surprising connections
 7. Assess syntax monotony: uniform syntactic patterns (declarative dominance > 85%, consistent clause count, same opener patterns, no interrogative/exclamatory/imperative variety)
+8. **Named Pattern: Mechanical Precision** -- Detect cross-category pattern where precise, technical word choice prioritizes clarity and specificity while avoiding colloquial language. Requires: formal vocabulary density > 10 per 1000 words, zero colloquialisms in entire document, zero register shifts, plus zero contractions or zero conversational markers ("well", "honestly", "look"). Combines signals from analytical_academic, creativity_deficit, and mechanical_writing.
+9. **Named Pattern: Sophisticated Clarity** -- Detect cross-category pattern where word choice prioritizes clarity and sophistication at the cost of natural flow. Requires: reading grade level > 12, vocabulary sophistication score > 0.75, zero informal register elements, plus 2+ of: short sentence ratio < 10%, rhythm variance < 0.20, zero digressions/asides/self-corrections. Combines signals from tone_voice, mechanical_writing, and creativity_deficit.
+10. **Perplexity Analysis** -- Measure the document's text perplexity (unpredictability of word sequences). AI-generated text exhibits LOW perplexity because models select high-probability tokens. Human text exhibits HIGHER perplexity because humans make unexpected word choices, use idiosyncratic phrasing, and draw from personal vocabulary. Measure: vocabulary surprise score (proportion of low-frequency word choices), n-gram novelty (proportion of 3-grams not in common corpora), and transition unpredictability (variance in semantic distance between consecutive sentences). Flag if document-level perplexity is uniformly low (< 0.30 on 0-1 scale) across all sections.
+11. **Burstiness Analysis** -- Measure the variation in perplexity/complexity across the document. Human writing is "bursty": some passages are simple and direct, others are complex and elaborate. AI writing maintains uniform complexity throughout. Measure: sentence complexity variance across 500-word windows, paragraph-level readability score variance (Flesch-Kincaid variance across paragraphs), and perplexity standard deviation across document sections. Flag if burstiness score is LOW (< 0.25 on 0-1 scale), indicating uniform complexity typical of AI generation. High burstiness (> 0.50) is a strong human signal.
+12. **Named Pattern: Low Perplexity + Low Burstiness** -- Detect composite pattern where text is both predictable (low perplexity) and uniform (low burstiness). Requires: document perplexity score < 0.30 AND burstiness score < 0.25. This is one of the strongest AI signals because AI models produce text that is both individually predictable (high-probability token selection) and globally uniform (consistent complexity throughout). Human writing is almost always unpredictable in spots and uneven in complexity.
+13. **LIX Readability Analysis** -- Calculate the LIX (Lasbarhetsindex) score for the document and for each major section. LIX = (words/sentences) + (long_words * 100 / words), where long_words = words with 7+ characters. AI text tends to produce moderate, UNIFORM LIX scores across sections (typically 40-50). Human text shows HIGH LIX VARIABILITY -- some sections score 25 (very easy), others 55+ (very difficult). Measure: document-wide LIX average, per-section LIX scores, LIX standard deviation across sections. Flag if LIX standard deviation < 5.0 (indicating AI-like uniformity). The overall LIX level itself is less diagnostic than the VARIANCE in LIX across sections.
+14. **Named Pattern: Uniform LIX** -- Detect composite pattern where LIX readability is uniform across all document sections. Requires: LIX standard deviation < 5.0 across sections AND section count >= 3. Uniform LIX signals that every passage was generated at the same complexity level, which is characteristic of AI but not of human writers who naturally shift between accessible and challenging prose.
+15. **Linear Argumentation Detection** -- Detect perfectly linear argument structure where every argument follows claim -> evidence -> conclusion without deviation. Check for: zero counter-arguments or alternative perspectives acknowledged, zero self-corrections or mid-argument pivots, zero acknowledged uncertainty about the writer's own position, zero non-linear reasoning patterns (questions before claims, conclusions before evidence, example-first reasoning). Human writers naturally introduce counter-arguments, correct themselves, and reason non-linearly; perfectly linear argumentation across an entire document signals AI generation.
+16. **Named Pattern: Linear Argumentation** -- Detect composite pattern where ALL arguments follow the same linear structure. Requires: zero counter-arguments in entire document AND zero self-corrections AND zero non-linear reasoning patterns AND argument count >= 3. Human writers almost always acknowledge complexity -- even the most structured thinkers occasionally say "but wait" or "on second thought". Perfect linearity across 3+ arguments is a strong AI signal.
+17. **Analogy Originality Assessment** -- Assess the originality of metaphors and analogies used. Check for: all metaphors drawn from a common cliche pool (Category 9 generic_metaphors list), zero culturally specific or unusual comparisons, zero extended analogies that develop across sentences, zero analogies that cross domains unexpectedly. Score analogy originality: 0.0 (all cliches) to 1.0 (all original). Flag if originality score < 0.20 and analogy count > 0 (present but unoriginal).
+18. **Register Shift Absence** -- Detect uniform register throughout the entire document. Human writers naturally shift between formal and informal registers -- a technical explanation followed by a casual aside, a formal introduction followed by a conversational body. Flag if: zero register shifts detected across all paragraphs, formality level variance < 0.15 on 0-1 scale, and document length > 500 words. Strengthen existing tone_voice formality_uniformity check with quantitative thresholds.
 
 ### Step 5: Score Calculation
 
 1. For each category, calculate a raw score 0.0 (human) to 1.0 (AI)
-2. Apply normalized weights (divide each weight by sum of all weights = 1.16)
-3. Compute weighted overall score: `sum(category_score * normalized_weight)`
+2. Apply normalized weights (divide each weight by sum of all weights, including cross-category weights for perplexity, burstiness, and LIX)
+3. Compute weighted overall score: `sum(category_score * normalized_weight)`, including cross-category analysis scores
 4. Determine verdict:
    - `low_ai_likelihood` (score < 0.3)
    - `moderate_ai_likelihood` (score 0.3 - 0.6)

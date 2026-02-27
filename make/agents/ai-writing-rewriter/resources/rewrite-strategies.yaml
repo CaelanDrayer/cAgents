@@ -142,6 +142,22 @@ pass_1:
       - before: "Given that the research indicates a strong correlation between early intervention and positive outcomes, while acknowledging that implementation challenges persist in underserved communities, it becomes evident that a multi-pronged approach is necessary."
         after: "Research shows early intervention leads to better outcomes. Underserved communities still face implementation challenges, though. A multi-pronged approach is the way forward."
 
+  technical_jargon_complexity_rewrite:
+    strategy: "Simultaneously simplify technical jargon, break complex clauses, and replace advanced vocabulary when the Technical Jargon named pattern is flagged"
+    named_pattern: "Technical Jargon"
+    rules:
+      - "Apply vocabulary simplification, clause breaking, and jargon replacement in a single combined pass on the flagged passage"
+      - "Replace technical jargon with plain alternatives AND break multi-clause sentences AND simplify vocabulary -- all three at once"
+      - "The passage should read naturally to a non-specialist after rewrite"
+      - "Preserve technical accuracy -- simplify the expression, not the meaning"
+    examples:
+      - before: "The infrastructure optimization methodology facilitates the systematic operationalization of performance improvements, which, when implemented in conjunction with existing frameworks that have been validated through comprehensive testing, yields substantial enhancements to overall system throughput."
+        after: "This approach helps improve performance. It works with your existing, tested frameworks. The result: better throughput across the board."
+      - before: "Utilizing advanced algorithmic paradigms, the implementation instantiates a sophisticated data processing pipeline that, through iterative optimization cycles, achieves significant computational efficiency gains."
+        after: "The system uses smart algorithms to process data faster. Each cycle gets more efficient."
+      - before: "The conceptualization of this methodology necessitates a comprehensive understanding of the underlying infrastructure, which, when properly parameterized and systematically deployed, facilitates optimal resource utilization across heterogeneous environments."
+        after: "To use this method, you need to understand the infrastructure. Set it up right and it uses resources well, no matter the environment."
+
 # ==============================================================================
 # Pass 2 Strategies: Punctuation, Style & Grammar Humanization
 # ==============================================================================
@@ -225,6 +241,70 @@ pass_2:
         after: "The data tells a story: users cluster around three behaviors, like commuters choosing between the same three routes."
       - before: "The implementation required significant effort from the team."
         after: "The implementation was a slog. Three weeks of the team grinding through edge cases, fueled by stubbornness and cold coffee."
+
+  subtle_imperfection_injection:
+    strategy: "Introduce subtle, realistic grammatical informalities that well-educated humans naturally produce"
+    rules:
+      - "Limit to 1-2 imperfections per 1000 words -- they should be rare enough to feel natural"
+      - "Allowed informalities: comma splices in casual prose, preposition-ending sentences, split infinitives, 'who' where 'whom' is technically correct, starting sentences with 'Because' or 'Which'"
+      - "NOT allowed: misspellings, wrong homophones (there/their/they're), subject-verb disagreement, double negatives, missing articles"
+      - "Match imperfection type to register: casual text gets comma splices; professional text gets split infinitives and preposition-endings"
+      - "Each imperfection should look like something an educated, fluent writer would naturally produce"
+      - "Do NOT cluster imperfections -- spread them across the document"
+      - "The goal is not to make the text look careless, but to remove the machine-like perfection that signals AI"
+    examples:
+      - before: "The person to whom we spoke confirmed the timeline."
+        after: "The person who we spoke to confirmed the timeline."
+        note: "'who' for 'whom' + ending with preposition -- natural in spoken/written English"
+      - before: "We need to carefully review the proposal."
+        after: "We need to really carefully review the proposal."
+        note: "Split infinitive that sounds natural, even a bit emphatic"
+      - before: "The report was thorough. It covered every angle."
+        after: "The report was thorough, it covered every angle."
+        note: "Comma splice -- common in fast-paced prose"
+      - before: "That is the outcome for which we were hoping."
+        after: "That's the outcome we were hoping for."
+        note: "Preposition ending + contraction -- natural English"
+
+  strategic_filler_injection:
+    strategy: "Add natural filler words and conversational markers that signal human speech patterns"
+    rules:
+      - "Add filler words sparingly: 2-4 per 1000 words maximum"
+      - "Use natural conversational fillers: 'actually', 'kind of', 'sort of', 'you know', 'I mean', 'it seems like', 'honestly', 'look', 'well'"
+      - "Place fillers where a human would naturally hesitate or recalibrate"
+      - "Do NOT cluster fillers -- spread them across the document"
+      - "Match filler type to register: informal text gets 'you know' and 'sort of'; semi-formal gets 'actually' and 'honestly'; formal text gets at most 'well' or 'admittedly'"
+      - "Fillers should never appear forced or excessive -- they should sound like the writer's natural thinking rhythm"
+      - "Do NOT add fillers to direct quotations, data citations, or technical specifications"
+    examples:
+      - before: "The system performs well under load."
+        after: "The system actually performs well under load."
+      - before: "This is the best approach for the problem."
+        after: "Honestly, this is the best approach for the problem."
+      - before: "The results were unexpected."
+        after: "The results were, well, unexpected."
+      - before: "This framework handles most edge cases."
+        after: "This framework handles most edge cases -- sort of. The really weird ones still trip it up."
+      - before: "We should reconsider the timeline."
+        after: "Look, we should reconsider the timeline."
+
+  conversational_tone_enhancement:
+    strategy: "Inject colloquialisms, idioms, and informal language for natural conversational flow"
+    rules:
+      - "Add colloquialisms where the register permits: 'a tall order', 'the bottom line', 'get the ball rolling'"
+      - "Use idioms sparingly but naturally: they increase perplexity and signal human authorship"
+      - "Replace formal transitions with conversational alternatives: 'That said' over 'Notwithstanding'"
+      - "Introduce informal contractions in non-formal contexts: 'gonna' is too far, but 'it's a no-brainer' is fine"
+      - "Allow mild informality even in professional prose: professional does not mean stiff"
+      - "Match idiom choice to the likely cultural background of the writer"
+      - "Do NOT overdo it -- 3-5 colloquialisms per 1000 words maximum in professional text"
+    examples:
+      - before: "The implementation proved more difficult than anticipated."
+        after: "The implementation was a taller order than anyone expected."
+      - before: "We need to begin this process immediately."
+        after: "We need to get the ball rolling on this."
+      - before: "The fundamental issue is resource allocation."
+        after: "The bottom line? Resource allocation."
 
   creative_grammar_injection:
     strategy: "Introduce creative grammatical deviations that signal human authorship"
@@ -331,6 +411,59 @@ pass_3:
         after: "The market has shifted. Organizations need to adapt."
       - before: "While the previous approach demonstrated promise, it ultimately failed to deliver. Although the new method addresses several shortcomings, challenges remain. Given that resources are limited, prioritization becomes essential."
         after: "The previous approach showed promise but didn't deliver. The new method fixes several problems. Still, with limited resources, we need to prioritize."
+
+  counter_argument_injection:
+    strategy: "Introduce counter-arguments and alternative perspectives naturally, not as formulaic balance"
+    rules:
+      - "When the text makes a strong claim, acknowledge 1-2 counter-arguments briefly before continuing"
+      - "Do NOT use 'on one hand / on the other hand' -- that's an AI tell"
+      - "Use natural acknowledgment patterns: 'Sure, you could argue X, but...' or 'Critics might point to X. Fair enough.' or 'There's a case for the opposite view, but it doesn't hold up because...'"
+      - "Engage with the counter-argument genuinely, then dismiss or integrate it"
+      - "Not every claim needs a counter-argument -- use for key assertions only (1-2 per section)"
+      - "The counter-argument should feel like the writer genuinely considered alternatives, not like a debate template"
+      - "Keep counter-argument engagement brief: 1-3 sentences maximum"
+    examples:
+      - before: "Microservices are the best architecture for modern applications."
+        after: "Microservices are the right call for most modern applications. Sure, you could argue that a well-designed monolith handles 80% of use cases -- and honestly, for small teams, it might. But once you're past a certain scale, the monolith starts to crack."
+      - before: "Remote work increases productivity across all roles."
+        after: "Remote work increases productivity for most knowledge workers. Not everyone, though. Some roles -- onboarding-heavy positions, early-career engineers who learn by osmosis -- genuinely suffer. But the data on experienced individual contributors is hard to argue with."
+      - before: "This framework should be adopted immediately."
+        after: "This framework deserves adoption. The migration cost? Real. Worth it? Look at the teams that have already switched -- their deployment frequency doubled within a quarter."
+
+  non_linear_argumentation:
+    strategy: "Break perfectly linear argument structures into natural, human-like reasoning patterns"
+    rules:
+      - "Not every argument should follow claim -> evidence -> conclusion"
+      - "Allow arguments to unfold naturally: start with a question, present a puzzle, explore alternatives, then circle back"
+      - "Introduce self-correction mid-argument: 'Actually, wait -- that's not quite right' or 'Let me rephrase'"
+      - "Occasionally lead with the conclusion, then explain how you got there"
+      - "Let some arguments develop through example first, then state the principle"
+      - "Include moments of genuine uncertainty or qualification within the argument"
+      - "1-2 non-linear argument structures per major section is enough -- not everything needs restructuring"
+    examples:
+      - before: "Research shows that spaced repetition improves retention. Studies by Ebbinghaus demonstrated the forgetting curve. Therefore, we should implement spaced repetition in our training program."
+        after: "Here's something strange: we know exactly how memory works -- Ebbinghaus mapped the forgetting curve over a century ago -- and most training programs still ignore it. Spaced repetition improves retention. The evidence is not ambiguous. So why isn't every onboarding program built around it?"
+      - before: "The data shows a correlation between X and Y. This suggests a causal relationship. We should act on this finding."
+        after: "X and Y correlate. Does that mean X causes Y? Not necessarily -- we've been burned by correlation before. But this particular dataset controls for the usual confounders, and the effect size is large enough to take seriously. Worth acting on? I think so."
+      - before: "Step 1: Identify the problem. Step 2: Analyze root causes. Step 3: Implement solutions."
+        after: "Start with the symptoms. What's actually breaking? Once you see the pattern -- and there's usually a pattern -- the root cause tends to announce itself. Then you fix it. Sometimes the fix is obvious. Sometimes you try three things before one sticks."
+
+  natural_rephrasing:
+    strategy: "Mimic human thought processes by occasionally rephrasing or re-articulating ideas for clarity"
+    rules:
+      - "Occasionally rephrase a point in a better, clearer way -- 'Put another way...' or 'What I mean is...' or 'In other words...'"
+      - "Use sparingly: 1-2 per 1000 words maximum"
+      - "The rephrasing should genuinely clarify, not just repeat"
+      - "This is DIFFERENT from repetitive phrasing (AI tell) -- this is deliberate re-articulation where the first attempt was imprecise"
+      - "The rephrasing should feel like the writer realized their first formulation wasn't quite right"
+      - "Best used for complex or nuanced points where one formulation might not land"
+    examples:
+      - before: "The system provides eventual consistency across distributed nodes."
+        after: "The system provides eventual consistency across distributed nodes. Put plainly: your data gets everywhere it needs to go, just not instantly."
+      - before: "The organizational culture resists change through structural inertia and normative pressure."
+        after: "The organizational culture resists change through structural inertia and normative pressure. What I mean is, the way things are set up makes change hard, and the unwritten rules make it harder."
+      - before: "This creates a principal-agent problem."
+        after: "This creates a principal-agent problem -- basically, the people making decisions aren't the ones living with the consequences."
 
   qualifier_removal:
     strategy: "Remove unnecessary hedging or replace with direct statements"
@@ -477,6 +610,45 @@ pass_4:
       - before: "The team demonstrated remarkable resilience in navigating the complexities of this transformative endeavor."
         after: "The team gutted it out. Three months of messy, frustrating work -- but they got it done."
 
+  showing_over_telling:
+    strategy: "Replace abstract telling statements with vivid showing descriptions using sensory details and concrete examples"
+    rules:
+      - "Convert 'telling' sentences into 'showing' sentences with specific, observable details"
+      - "Use sensory language: what you can see, hear, feel, taste, or smell"
+      - "Replace summary statements with concrete examples or mini-scenes"
+      - "Use specific numbers, names, and observable actions instead of general assessments"
+      - "Not every sentence needs to 'show' -- reserve this for key points and emotional beats"
+      - "Technical/analytical passages may need 'telling' for clarity -- use judgment"
+    examples:
+      - before: "The meeting was productive."
+        after: "We walked out with three decisions, two action items, and for once, no unresolved arguments."
+      - before: "The team was frustrated with the delays."
+        after: "By the third postponement, the team stopped RSVPing to sprint demos. The Slack channel went quiet."
+      - before: "The product launch was a success."
+        after: "Traffic spiked 400% in the first hour. The support queue stayed empty. Marketing was already drafting the case study by lunch."
+      - before: "The architecture is complex."
+        after: "The architecture has fourteen microservices, three message queues, and a dependency graph that fills a whiteboard."
+      - before: "User engagement improved significantly."
+        after: "Users went from opening the app twice a week to checking it daily. Session lengths doubled."
+
+  natural_tangent_injection:
+    strategy: "Allow slight tangents and digressions that mimic natural human thought flow"
+    rules:
+      - "Allow 1-2 brief tangents per major section -- no more"
+      - "Tangents should add texture, insight, or personality -- not just fill space"
+      - "After the tangent, bring it back to the main point naturally"
+      - "Tangent types: brief anecdote, related observation, parenthetical aside, 'speaking of which' digression"
+      - "Keep tangents short: 1-2 sentences maximum"
+      - "Do NOT force tangents -- only add where they arise naturally from the content"
+      - "Tangents work best in narrative, essay, and informal analytical writing; avoid in specifications and instructions"
+    examples:
+      - before: "The team decided to adopt microservices. The transition took six months."
+        after: "The team decided to adopt microservices. (Not that anyone agreed on what 'microservice' meant at first -- that debate alone ate two sprints.) The transition took six months."
+      - before: "Cloud costs increased by 40% in Q3. We implemented cost controls in Q4."
+        after: "Cloud costs increased by 40% in Q3. Forty percent -- the kind of number that makes finance send you a meeting invite with no subject line. We implemented cost controls in Q4."
+      - before: "The research supports early intervention. Programs should start in elementary school."
+        after: "The research supports early intervention. There's a study from Helsinki -- small sample, but the results are striking -- that tracked outcomes over twenty years. Programs should start in elementary school."
+
   repetition_consolidation:
     strategy: "Merge repeated points into single strong statements"
     rules:
@@ -488,16 +660,32 @@ pass_4:
         after: "Growth depends on this."
 
   hedging_reduction:
-    strategy: "Replace non-committal language with definitive statements"
+    strategy: "Replace non-committal language with definitive statements, but PRESERVE hedging where genuine uncertainty exists"
     rules:
       - "Replace 'might' with 'will' or 'does' when evidence supports it"
       - "Remove 'could potentially' -- just say 'could' or state directly"
-      - "Keep hedges only for genuinely uncertain claims"
+      - "Keep hedges for genuinely uncertain claims -- do NOT remove all hedging"
+      - "PRESERVE 'may', 'might', 'could' when the claim is genuinely speculative or forward-looking"
+      - "PRESERVE 'seems to suggest', 'potentially' when data is preliminary or inconclusive"
+      - "Human writers hedge naturally on uncertain topics -- removing ALL hedging is itself an AI tell"
+      - "Target: remove ~60% of hedging (the performative, unnecessary kind), keep ~40% (the genuine uncertainty kind)"
+      - "When in doubt, keep the hedge -- over-confident writing is as much an AI signal as over-hedged writing"
     examples:
       - before: "This could potentially have a significant impact on future outcomes"
         after: "This will change how things work"
+        note: "Performative hedge removed -- evidence supports the claim"
       - before: "It might perhaps be worth considering"
         after: "Consider this"
+        note: "Unnecessary double-hedge removed"
+      - before: "Early results suggest this may improve outcomes by 15-20%"
+        after: "Early results suggest this may improve outcomes by 15-20%"
+        note: "KEEP -- genuinely preliminary data, hedge is appropriate"
+      - before: "This approach could reshape the industry within five years"
+        after: "This approach could reshape the industry within five years"
+        note: "KEEP -- forward-looking speculation, hedge is warranted"
+      - before: "The data seems to indicate a correlation, though more research is needed"
+        after: "The data suggests a correlation. More research will tell."
+        note: "Simplified but hedge preserved -- the uncertainty is real"
 
   warmth_removal:
     strategy: "Remove performative empathy and hollow encouragement"
@@ -512,6 +700,145 @@ pass_4:
         after: "[removed, or replaced with a concrete next step]"
       - before: "Remember, every journey begins with a single step."
         after: "[removed]"
+
+  lacks_creativity_rewrite:
+    strategy: "Inject creative richness into precise-but-flat prose flagged with the Lacks Creativity pattern"
+    named_pattern: "Lacks Creativity"
+    rules:
+      - "Replace abstract descriptions with concrete, sensory details"
+      - "Add specific proper nouns: real place names, brand names, cultural references"
+      - "Introduce at least one original metaphor or analogy per 500 words"
+      - "Break predictable adjective-noun pairings with unexpected but apt combinations"
+      - "Replace generic examples with specific, vivid ones"
+      - "Do not invent facts -- use plausible specifics or flag for author with [AUTHOR: add specific detail]"
+    examples:
+      - before: "The application provides comprehensive functionality for data management across diverse organizational contexts."
+        after: "The app handles data management -- whether you're a three-person startup in Austin or a sprawling government agency."
+      - before: "The solution addresses the significant challenges facing modern enterprises in a competitive landscape."
+        after: "The solution tackles the kind of problems that keep CTOs up at night: data silos, slow deploys, and teams that can't ship without stepping on each other."
+      - before: "The technology enables effective communication across distributed teams."
+        after: "A team in Berlin, another in Sao Paulo, a third working from kitchen tables across Montana -- the tool keeps them all in sync."
+
+  rich_yet_shallow_rewrite:
+    strategy: "Inject emotional depth and spontaneity into vocabulary-rich but emotionally flat prose flagged with the Rich Yet Shallow pattern"
+    named_pattern: "Rich Yet Shallow"
+    rules:
+      - "Replace ornamental vocabulary ('myriad of', 'plethora of') with specific quantities or plain language"
+      - "Add colloquialisms and conversational markers where register permits ('honestly', 'look', 'the truth is')"
+      - "Insert genuine emotional reactions: surprise, frustration, delight, skepticism"
+      - "Add visceral or sensory language to replace emotionally neutral descriptions"
+      - "Break the pattern of sophisticated-but-hollow prose by mixing registers"
+      - "Where the author's emotional reaction is unknown, flag: [AUTHOR: how did this make you feel?]"
+    examples:
+      - before: "The framework demonstrates significant capability through its multifaceted approach to processing complex datasets with remarkable efficiency."
+        after: "Honestly, the framework punches above its weight. It chews through messy datasets that would choke most tools."
+      - before: "The initiative encompassed a comprehensive array of strategic considerations that collectively informed the organizational trajectory."
+        after: "The initiative forced us to rethink everything. Frustrating? Absolutely. But we came out of it with a plan that actually makes sense."
+      - before: "The findings illuminate a constellation of interconnected factors that collectively influence the observed outcomes."
+        after: "Six factors kept showing up in the findings, all tangled together. Pull one thread and the others move."
+
+  predictable_rhythm_rewrite:
+    strategy: "Break metronomic rhythm in prose flagged with the Predictable Rhythm pattern"
+    named_pattern: "Predictable Rhythm"
+    rules:
+      - "Insert short 'breath point' sentences (3-7 words) between longer passages"
+      - "Convert some declarative sentences to rhetorical questions or imperatives"
+      - "Add sentence inversions ('Rarely does...', 'Not once did...')"
+      - "Ensure at least 3 different sentence types in the rewritten passage"
+      - "Follow two similar-length sentences with a drastically different length"
+      - "Vary paragraph rhythm: short punchy paragraphs next to flowing ones"
+    examples:
+      - before: "The system processes requests efficiently. The system handles errors gracefully. The system scales horizontally. The system maintains consistency."
+        after: "The system processes requests efficiently and handles errors without crashing. Does it scale? Horizontally, yes. Consistency? Rock solid."
+      - before: "The research demonstrates positive outcomes. The evidence supports the conclusion. The data validates the hypothesis. The findings confirm the theory."
+        after: "The research is clear. Positive outcomes across the board. Every data point validates the hypothesis -- not a single outlier. When does that ever happen?"
+
+  lacks_creative_grammar_rewrite:
+    strategy: "Introduce human grammatical personality into sterile prose flagged with the Lacks Creative Grammar pattern"
+    named_pattern: "Lacks Creative Grammar"
+    rules:
+      - "Add intentional fragments for emphasis (1-2 per 500 words)"
+      - "Insert one-word sentences for impact ('Done.' 'Never.' 'Why?')"
+      - "Add parenthetical asides that reveal thought process"
+      - "Use dashes to create mid-sentence interruptions or afterthoughts"
+      - "Introduce sentence inversions for emphasis ('Rarely does...' 'Gone are...')"
+      - "Add trailing ellipses sparingly where thoughts naturally trail off"
+      - "Match frequency to register -- more in informal, fewer in formal"
+    examples:
+      - before: "The results were clear and there was no room for debate on the matter at hand."
+        after: "The results were clear. No debate. Done."
+      - before: "We should consider the cost implications carefully before proceeding with the proposed changes."
+        after: "The cost implications -- and they're not trivial -- deserve a hard look before we move forward."
+      - before: "This approach has rarely been attempted in the industry and it remains to be seen whether it will succeed."
+        after: "Rarely has anyone in this industry tried this. Will it work? That's the question."
+
+  mechanical_precision_rewrite:
+    strategy: "Humanize clinical precision in prose flagged with the Mechanical Precision pattern"
+    named_pattern: "Mechanical Precision"
+    rules:
+      - "Introduce contractions to break uniform formality ('we have' -> 'we've', 'it is' -> 'it's')"
+      - "Add conversational markers ('honestly', 'look', 'well', 'in practice')"
+      - "Include at least one register shift per 500 words (formal to informal or vice versa)"
+      - "Allow playful or emotionally expressive language alongside functional vocabulary"
+      - "Break the uniform formality with occasional colloquial phrasing"
+      - "Replace some precision-optimized words with simpler, more human alternatives"
+    examples:
+      - before: "The implementation utilizes a systematic approach to facilitate optimal performance outcomes."
+        after: "We went with a structured approach. It works -- honestly, better than we expected."
+      - before: "The analysis reveals that the proposed solution addresses the identified requirements with a high degree of specificity."
+        after: "The analysis checks out. The solution hits every requirement we identified -- and a few we didn't think of."
+      - before: "The data indicates a statistically significant correlation between the two variables under examination."
+        after: "The numbers are clear: these two variables are linked. Not loosely, either -- the correlation is strong."
+
+  perfect_grammar_zero_thought_rewrite:
+    strategy: "Inject both grammatical informalities and thought-process markers when flagged with the Perfect Grammar + Zero Thought Markers pattern"
+    named_pattern: "Perfect Grammar + Zero Thought Markers"
+    rules:
+      - "This is one of the strongest AI signals -- address aggressively"
+      - "Inject 2-3 subtle grammatical informalities per 1000 words (comma splices, preposition endings, split infinitives)"
+      - "Inject 3-4 human thought-process markers per 1000 words (fillers, self-corrections, hesitations)"
+      - "Both types must be present -- either alone is insufficient"
+      - "Spread evenly across the document; do not cluster"
+      - "Match informality type to register"
+    examples:
+      - before: "The analysis reveals that the proposed methodology addresses the identified requirements with a high degree of specificity and thoroughness."
+        after: "The analysis checks out -- honestly, better than we expected. The methodology hits every requirement we identified, and sort of accidentally covers a few we didn't think of."
+      - before: "The system processes transactions reliably across all deployment configurations."
+        after: "The system processes transactions reliably, it works across all deployment configurations we've tested. Actually, wait -- there was one edge case in the distributed setup. But they patched that in the last release."
+
+  linear_argumentation_rewrite:
+    strategy: "Restructure linear arguments with counter-arguments and non-linear reasoning when flagged with the Linear Argumentation pattern"
+    named_pattern: "Linear Argumentation"
+    rules:
+      - "For each flagged linear argument, acknowledge at least one counter-argument"
+      - "Use natural counter-argument patterns: 'Sure, you could argue X, but...' or 'Fair point about X. However...'"
+      - "Introduce at least one non-linear element: lead with a question, start with the conclusion, use example-first reasoning"
+      - "Include at least one self-correction or uncertainty acknowledgment"
+      - "Target: no more than 50% of arguments should follow strict claim-evidence-conclusion"
+      - "Do NOT use formulaic 'on one hand / on the other hand'"
+    examples:
+      - before: "Data shows that remote work increases productivity. Multiple studies confirm this finding. Organizations should therefore adopt remote work policies."
+        after: "Does remote work increase productivity? The data says yes -- multiple studies, different methodologies, same conclusion. Though I should note: the studies mostly cover knowledge workers. Manufacturing, healthcare, retail? Different story entirely. For office-based teams, though? The case for remote work is strong."
+      - before: "Step one: analyze the problem. Step two: design the solution. Step three: implement and test."
+        after: "Start by understanding what's actually broken. Not what the ticket says -- what's really going on underneath. The solution usually suggests itself once you see the real problem. Then build it, test it. Sometimes you'll realize halfway through that you misdiagnosed the issue. That's fine. Adjust."
+
+  sophisticated_clarity_rewrite:
+    strategy: "Add natural flow to uniformly sophisticated prose flagged with the Sophisticated Clarity pattern"
+    named_pattern: "Sophisticated Clarity"
+    rules:
+      - "Inject short, punchy sentences between elaborate ones"
+      - "Add digressions or tangential observations where they serve the text"
+      - "Allow the occasional simple word where a complex one would normally appear"
+      - "Break uniform sophistication with moments of plainspoken directness"
+      - "Introduce informal register elements that contrast with the sophisticated baseline"
+      - "Add rhythm variation by mixing simple and complex sentences"
+    examples:
+      - before: "The comprehensive analysis demonstrates that the sophisticated methodological framework yields substantive improvements in operational efficiency across multiple dimensions."
+        after: "The analysis is clear: this framework improves efficiency. Not incrementally, either. We're talking real gains."
+      - before: "The pedagogical implications of these findings suggest a fundamental reconceptualization of how educational institutions approach curriculum development and instructional methodology."
+        after: "These findings change how we should think about teaching. Not tweaks to the curriculum -- a rethink of the whole approach. That's a big ask for most schools."
+      - before: "The synthesis of these disparate research threads yields a coherent theoretical framework that elucidates the underlying mechanisms governing the observed phenomena."
+        after: "Pull these research threads together and a picture emerges. We can finally explain why this happens. Simple version? The mechanisms work together, not in isolation."
 
 # ==============================================================================
 # Pass 5 Strategies: Subtext & Coherence Verification
@@ -565,6 +892,76 @@ pass_5:
       - "Flag any remaining passages that need author input"
 
 # ==============================================================================
+# Cross-Pass: Perplexity & Burstiness Strategies
+# ==============================================================================
+perplexity_burstiness:
+  name: "Perplexity & Burstiness Enhancement"
+  applies_to: [pass_1, pass_2, pass_3, pass_4, pass_5]
+  description: "Strategies applied across all passes to increase text perplexity (unpredictability) and burstiness (complexity variation)"
+
+  increase_perplexity:
+    strategy: "Make word choices less predictable while preserving meaning"
+    rules:
+      - "Choose unexpected but apt synonyms over the obvious choice -- 'the project cratered' instead of 'the project failed'"
+      - "Use idiomatic expressions that break predictable patterns -- 'hit the ground running' over 'began immediately'"
+      - "Introduce domain-crossing vocabulary: borrow terms from one field to describe another"
+      - "Replace common collocations with surprising but natural pairings"
+      - "Use culturally specific references that add unpredictability -- a real restaurant name, a specific street, a niche cultural reference"
+      - "Vary register unpredictably: drop into casual language in a formal passage, or use a precise technical term in casual prose"
+      - "Avoid the first synonym that comes to mind; reach for the second or third option"
+    examples:
+      - before: "The project was successful and met its goals."
+        after: "The project landed. Every milestone, hit. The kind of outcome that makes you suspicious something was missed."
+      - before: "The team worked together effectively."
+        after: "The team clicked -- that rare chemistry where everyone's pulling the same direction without a single awkward meeting about it."
+      - before: "This approach has several advantages."
+        after: "This approach has teeth. Three advantages that actually hold up under scrutiny."
+
+  increase_burstiness:
+    strategy: "Deliberately vary complexity and reading level across passages"
+    rules:
+      - "Follow a dense, multi-clause paragraph with a short, punchy one (1-2 sentences)"
+      - "Mix reading levels: some sentences at grade 6 ('It works.'), others at grade 14 ('The recursive instantiation of dependent modules necessitates careful orchestration of lifecycle events.')"
+      - "Alternate between technical precision and casual directness within the same section"
+      - "Create 'complexity valleys' -- passages of deliberate simplicity between peaks of elaboration"
+      - "Vary paragraph lengths dramatically: a 1-sentence paragraph followed by a 6-sentence one"
+      - "Ensure at least 30% of sentences differ by 50%+ in word count from their neighbors"
+      - "Alternate between abstract analysis and concrete, ground-level description"
+    examples:
+      - before: "The framework supports multiple deployment configurations. The framework enables integration with existing systems. The framework provides monitoring capabilities. The framework handles scaling automatically."
+        after: |
+          The framework plugs into what you already have. Deployments? Multiple configurations, pick your flavor.
+
+          But here's where it gets interesting. The monitoring -- and I mean real monitoring, not just uptime pings -- feeds directly into the auto-scaling logic. Your traffic spikes at 2 AM on a Tuesday because someone posted your link on Reddit? The framework notices before you do. It scales. It settles. You sleep through it.
+
+          Simple as that.
+
+  increase_lix_variance:
+    strategy: "Vary LIX readability scores across sections for natural human complexity patterns"
+    rules:
+      - "Target high average LIX (45-55 range) with high variance (std dev > 8.0)"
+      - "Write introductions and transitions with short sentences and common words (LIX 25-35)"
+      - "Write analytical and technical passages with longer sentences and specialized vocabulary (LIX 50-60)"
+      - "Ensure the gap between simplest and most complex section exceeds 20 LIX points"
+      - "Vary average sentence length between sections: some sections avg 12 words/sentence, others avg 25+"
+      - "Use polysyllabic vocabulary in dense passages, monosyllabic vocabulary in punchy passages"
+      - "Create deliberate 'rest stops' -- easy-reading paragraphs between challenging ones"
+    lix_reference:
+      very_easy: "< 25: Short sentences, simple words. 'It works. Fast. Clean.'"
+      easy: "25-35: Clear prose, conversational. 'The tool does what it promises and gets out of the way.'"
+      medium: "35-45: Standard professional. 'Organizations implementing this framework should anticipate measurable improvements within the first quarter.'"
+      difficult: "45-55: Academic/technical. 'The recursive instantiation of dependent modules necessitates careful orchestration of asynchronous lifecycle events across distributed execution contexts.'"
+      very_difficult: "55+: Dense specialist. 'Notwithstanding the aforementioned methodological constraints inherent in cross-sectional epidemiological investigations, the preponderance of longitudinal evidence substantiates the hypothesized dose-response relationship.'"
+    examples:
+      - before: "The system handles requests. The system processes data efficiently. The system scales well. The system is reliable."
+        after: |
+          The system handles requests. Fast.
+
+          Under the hood, the request-processing pipeline orchestrates a cascade of asynchronous handlers, each operating within its own bounded execution context and competing for shared resources through a lock-free concurrent queue. It's the kind of architecture that looks simple from the outside -- and that simplicity is the whole point.
+
+          Reliable? Dead reliable.
+
+# ==============================================================================
 # Voice Profile Parameters
 # ==============================================================================
 voice_profile:
@@ -586,6 +983,49 @@ voice_profile:
     - "Match contraction frequency"
     - "Preserve author's characteristic phrases"
     - "Match formality level and opinion strength"
+
+# ==============================================================================
+# Persona-Based Voice Adaptation
+# ==============================================================================
+persona_adaptation:
+  name: "Persona-Based Voice Adaptation"
+  applies_to: [pass_1, pass_2, pass_3, pass_4, pass_5]
+  description: "Adopt a specific persona's voice, mannerisms, and writing quirks across all passes"
+
+  persona_voice_capture:
+    strategy: "Identify and apply 3-5 characteristic patterns for the specified persona"
+    rules:
+      - "Each persona has distinctive vocabulary, sentence patterns, and stylistic quirks"
+      - "Identify the persona's likely register (formal, semi-formal, casual)"
+      - "Determine the persona's opinion strength (hedged vs. direct)"
+      - "Find the persona's natural imperfections (comma splices, over-hedging, exclamation overuse)"
+      - "Apply patterns consistently but not robotically -- allow natural drift"
+    personas:
+      forgetful_academic:
+        vocabulary: "precise but occasionally tangential"
+        patterns: ["parenthetical asides", "self-corrections mid-sentence", "'Now, where was I'", "'as I was saying'"]
+        imperfections: ["loses thread and circles back", "over-qualifies", "drops in Latin phrases"]
+        register: "formal with occasional informal asides"
+      passionate_activist:
+        vocabulary: "emotional, urgent, specific statistics"
+        patterns: ["short imperative sentences", "rhetorical questions", "calls to action", "emotional appeals"]
+        imperfections: ["occasional hyperbole", "sentences that run long from passion"]
+        register: "semi-formal with emotional spikes"
+      humorous_storyteller:
+        vocabulary: "vivid, unexpected comparisons, cultural references"
+        patterns: ["anecdote openers", "punchline structure", "comic timing via sentence length", "sardonic asides"]
+        imperfections: ["gets sidetracked by jokes", "occasional too-clever wordplay"]
+        register: "casual to semi-formal, flexible"
+      cynical_journalist:
+        vocabulary: "precise, source-attributed, skeptical"
+        patterns: ["punchy ledes", "source citations", "'according to'", "dry one-liners"]
+        imperfections: ["overly terse", "drops context assuming reader knows background"]
+        register: "professional with dry humor"
+      startup_founder:
+        vocabulary: "metric-obsessed, future-oriented, energetic"
+        patterns: ["numbers and percentages", "'we shipped'", "war metaphors", "vision statements"]
+        imperfections: ["over-optimistic", "buzzword-adjacent", "switches between casual and pitch-mode"]
+        register: "casual-but-strategic"
 
 # ==============================================================================
 # Output Configuration
