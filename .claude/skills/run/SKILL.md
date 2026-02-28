@@ -109,13 +109,13 @@ Read `Agent_Memory/_system/config/pipeline_config.yaml` to get the state machine
 
 ```
 TodoWrite([
-  {"content": "[/run] Pipeline: INIT (enriching context)", "status": "in_progress", "id": "init"},
-  {"content": "[/run] Pipeline: ORCHESTRATED (planning)", "status": "pending", "id": "orchestrated"},
-  {"content": "[/run] Pipeline: PLANNED (decomposing)", "status": "pending", "id": "planned"},
-  {"content": "[/run] Pipeline: DECOMPOSED (crafting prompts)", "status": "pending", "id": "decomposed"},
-  {"content": "[controller] Pipeline: PROMPTS_READY (coordinating)", "status": "pending", "id": "prompts_ready"},
-  {"content": "[/run] Pipeline: COORDINATED (validating)", "status": "pending", "id": "coordinated"},
-  {"content": "[/run] Pipeline: VALIDATED (complete)", "status": "pending", "id": "validated"}
+  {"content": "[orchestrator] Enriching request context", "status": "in_progress", "id": "init"},
+  {"content": "[universal-planner] Planning objectives and selecting controller", "status": "pending", "id": "orchestrated"},
+  {"content": "[task-decomposer] Decomposing into work items", "status": "pending", "id": "planned"},
+  {"content": "[prompt-engineer] Crafting delegation prompts", "status": "pending", "id": "decomposed"},
+  {"content": "[controller] Coordinating implementation with execution agents", "status": "pending", "id": "prompts_ready"},
+  {"content": "[universal-validator] Validating outputs against acceptance criteria", "status": "pending", "id": "coordinated"},
+  {"content": "[/run] Pipeline complete", "status": "pending", "id": "validated"}
 ])
 ```
 
@@ -248,11 +248,11 @@ For tier 2, when skipping PROMPTS_READY prompt-engineer:
 Update the TodoWrite to reflect the shorter pipeline:
 ```
 TodoWrite([
-  {"content": "[/run] Pipeline: INIT (inline enrichment)", "status": "completed", "id": "init"},
-  {"content": "[/run] Pipeline: PLANNED (planning)", "status": "in_progress", "id": "planned"},
-  {"content": "[controller] Pipeline: PROMPTS_READY (coordinating)", "status": "pending", "id": "prompts_ready"},
-  {"content": "[/run] Pipeline: COORDINATED (validating)", "status": "pending", "id": "coordinated"},
-  {"content": "[/run] Pipeline: VALIDATED (complete)", "status": "pending", "id": "validated"}
+  {"content": "[/run] Context enriched (inline fast path)", "status": "completed", "id": "init"},
+  {"content": "[universal-planner] Planning objectives and selecting controller", "status": "in_progress", "id": "planned"},
+  {"content": "[{controller_name}] Coordinating implementation with execution agents", "status": "pending", "id": "prompts_ready"},
+  {"content": "[universal-validator] Validating outputs against acceptance criteria", "status": "pending", "id": "coordinated"},
+  {"content": "[/run] Pipeline complete", "status": "pending", "id": "validated"}
 ])
 ```
 
@@ -346,7 +346,7 @@ Update TodoWrite on revision:
 ```
 TodoWrite([
   ...completed_states...,
-  {"content": "[/run] REVISION {N}/5: Re-running from {target_state}", "status": "in_progress", "id": "revision"},
+  {"content": "[/run] Revision {N}/5: Re-executing from {target_agent} due to validation feedback", "status": "in_progress", "id": "revision"},
   ...remaining_states...
 ])
 ```
@@ -418,9 +418,10 @@ If `--dry-run` with `--team`: Display plan summary and team composition, then ST
 1. **/run calls TodoWrite at every state transition** -- minimum once per state.
 2. **Each TodoWrite call happens BEFORE advancing to the next state.**
 3. **The controller also calls TodoWrite** when it identifies execution agents (progressive refinement).
-4. **Never use generic placeholders** after the specific agent is known. Replace `[controller]` with `[engineering-manager]` etc.
+4. **Always use descriptive, action-oriented names.** Format: `[{agent-name}] {verb phrase}`. Replace `[controller]` with the actual controller name (e.g., `[engineering-manager]`) as soon as it is known.
 5. **Never have zero tasks `in_progress`** -- always transition one to `completed` and the next to `in_progress` in the same call.
-6. **On revision, add a revision entry** showing round number and target state.
+6. **On revision, add a revision entry** showing round number and what is being re-executed.
+7. **Never expose internal state machine names** (INIT, ORCHESTRATED, PLANNED, DECOMPOSED, PROMPTS_READY, COORDINATED, VALIDATED) as primary TodoWrite content. Users see these entries in the UI -- they should communicate meaningful work being done.
 
 ## What /run Does Directly (Exhaustive List)
 

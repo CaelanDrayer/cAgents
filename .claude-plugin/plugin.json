@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "10.0.0",
+  "version": "10.1.0",
   "description": "cAgents v10.0.0 - Universal multi-domain agent system with 207 specialized agents across 8 business domains. Progressive pipeline, agent chaining, structured error format.",
   "author": {
     "name": "CaelanDrayer",

@@ -153,20 +153,33 @@ Controllers are tier 2 agents that:
 
 **Every controller MUST call TodoWrite after identifying which execution agents it will delegate to.** This gives the user real-time visibility into which agents are active.
 
+**Naming Rules**: Use descriptive, action-oriented names. Format: `[{agent-name}] {verb phrase describing what the agent does}`. Never use internal state machine names (INIT, ORCHESTRATED, PLANNED, etc.) as primary content. Users see these in the UI -- they should communicate meaningful work.
+
 Call TodoWrite BEFORE starting to delegate questions:
 
+**Good** (descriptive, action-oriented):
 ```
 TodoWrite([
-  {"content": "[/run] Route request to domain and tier", "status": "completed", "id": "route"},
-  {"content": "[/run] Plan objectives and select controller", "status": "completed", "id": "plan"},
-  {"content": "[{your_controller_name}] Coordinate: ask questions and synthesize", "status": "in_progress", "id": "coordinate"},
-  {"content": "[{exec_agent_1}] {specific_task_1}", "status": "pending", "id": "exec1"},
-  {"content": "[{exec_agent_2}] {specific_task_2}", "status": "pending", "id": "exec2"},
-  {"content": "[/run] Validate outputs and quality", "status": "pending", "id": "validate"}
+  {"content": "[orchestrator] Enriching request context", "status": "completed", "id": "route"},
+  {"content": "[universal-planner] Planning objectives and selecting controller", "status": "completed", "id": "plan"},
+  {"content": "[engineering-manager] Coordinating implementation with execution agents", "status": "in_progress", "id": "coordinate"},
+  {"content": "[backend-developer] Implementing user authentication endpoint", "status": "pending", "id": "exec1"},
+  {"content": "[qa-tester] Validating auth endpoint against acceptance criteria", "status": "pending", "id": "exec2"},
+  {"content": "[universal-validator] Validating outputs against acceptance criteria", "status": "pending", "id": "validate"}
 ])
 ```
 
-Replace placeholders with actual agent names and task descriptions. As each execution agent completes, update their entry to `completed`.
+**Bad** (state machine jargon, generic placeholders):
+```
+TodoWrite([
+  {"content": "[/run] Pipeline: INIT (enriching context)", ...},
+  {"content": "[/run] Pipeline: ORCHESTRATED (planning)", ...},
+  {"content": "[controller] Pipeline: PROMPTS_READY (coordinating)", ...},
+  {"content": "[exec_agent_1] specific_task_1", ...}
+])
+```
+
+Replace all placeholders with actual agent names as soon as they are known. As each execution agent completes, update their entry to `completed`.
 
 ## Controller Selection by Tier
 

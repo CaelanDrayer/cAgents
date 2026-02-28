@@ -229,7 +229,28 @@ for each wave K from 1 to N-1:
       List work items in this wave
 
   5b. Spawn teammates for wave K IN PARALLEL:
-      For each work item in wave K:
+
+      **--members batching**: If wave K has more work items than the `--members` cap
+      (default: 5), batch them into sub-waves. Each sub-wave spawns up to `--members`
+      teammates in parallel, waits for all to complete, then spawns the next batch.
+      Every work item gets its own dedicated teammate -- never collapse multiple tasks
+      into a single teammate.
+
+      ```
+      items_in_wave = work_items_for_wave_K
+      batch_size = members_cap  # from --members flag, default 5
+      for batch in chunk(items_in_wave, batch_size):
+        # Spawn all items in this batch in parallel
+        for each work_item in batch:
+          Task({...})  # one teammate per item
+        # Wait for batch to complete before spawning next batch
+        # Apply early shutdown (5c-1) as each teammate finishes
+      ```
+
+      For each work item in wave K (within the current batch):
+
+      # Resolve the controller from plan.yaml to determine the agent type suffix
+      # e.g., if plan.yaml assigns engineering-manager, use that as the suffix
 
       Task({
         description: "Wave {K} - Execute WI-{N}: <short description>",
@@ -257,15 +278,41 @@ for each wave K from 1 to N-1:
          TaskUpdate({ taskId: '{task_id}', status: 'completed' })
          SendMessage({ type: 'message', recipient: '{lead_name}', content: 'WI-{N} complete. <summary>', summary: 'WI-{N} done' })",
         team_name: "{team_name}",
-        name: "teammate-w{K}-wi-{N}",
+        name: "w{K}-wi-{N}-{controller_type}",
         subagent_type: "general-purpose"
       })
+
+      # The {controller_type} suffix comes from the controller assigned to this work item
+      # in plan.yaml (e.g., "engineering-manager", "narrative-director", "campaign-manager").
+      # This makes teammate names self-documenting in the UI:
+      #   w1-wi-3-engineering-manager
+      #   w2-wi-5-backend-developer
 
   5c. Monitor wave K progress:
       - Wait for teammate messages (they arrive automatically)
       - Periodically check TaskList to see progress
       - If a teammate flags an issue: course-correct if needed
       - Track per-teammate timeout: if no progress after 5 minutes, consider recovery
+
+  5c-1. Early individual shutdown (resource optimization):
+      When a teammate reports completion (via SendMessage), shut it down IMMEDIATELY
+      rather than waiting for the entire wave to finish:
+
+      ```
+      # As each teammate completes:
+      On receiving "WI-{N} complete" from w{K}-wi-{N}-{type}:
+        1. Verify the work item output exists in {SESSION_DIR}/outputs/wi-{N}/
+        2. If verified: send immediate shutdown
+           SendMessage({ type: "shutdown_request",
+                         recipient: "w{K}-wi-{N}-{type}",
+                         content: "WI-{N} verified complete. Shutting down early." })
+        3. Track: wave_K_completed += 1
+        4. If wave_K_completed == wave_K_total: proceed to GATE validation (5d)
+      ```
+
+      This frees resources (tmux panes, context windows) as soon as each teammate
+      finishes, rather than holding all teammates alive until the entire wave completes.
+      Teammates that finish early no longer consume resources while waiting.
 
   5c-2. Automatic teammate failure recovery:
       If a teammate fails (task stuck, error reported, or timeout):
@@ -279,7 +326,7 @@ for each wave K from 1 to N-1:
                    Skill({ skill: 'run', args: 'execute WI-{N}: {description} --session {SESSION_DIR}' })
                    ...",
            team_name: "{team_name}",
-           name: "teammate-w{K}-wi-{N}-retry-{R}",
+           name: "w{K}-wi-{N}-{controller_type}-retry-{R}",
            subagent_type: "general-purpose"
          })
       2. SIMPLIFY: If retry fails, break the work item into sub-items:
@@ -304,8 +351,10 @@ for each wave K from 1 to N-1:
         conditionally passed with noted gaps; proceed with degraded scope
       - If gate fails without blocked items: Report issues, spawn fix-up teammates, re-validate
 
-  5e. Shut down wave K teammates before spawning wave K+1:
-      SendMessage({ type: "shutdown_request", recipient: "teammate-w{K}-wi-{N}", content: "Wave {K} complete." })
+  5e. Shut down any remaining wave K teammates before spawning wave K+1:
+      Most teammates should already be shut down via early individual shutdown (5c-1).
+      Send shutdown to any that remain (e.g., teammates that timed out or are stuck):
+      SendMessage({ type: "shutdown_request", recipient: "w{K}-wi-{N}-{type}", content: "Wave {K} complete." })
 
   5f. Proceed to wave K+1 (AUTOMATIC -- do NOT ask permission)
 ```
@@ -402,7 +451,7 @@ Within a single wave, all teammates run in parallel. Use TaskUpdate `addBlockedB
 3. **Spawn teammates PER WAVE** -- each wave gets its own fresh round of teammates.
 4. **Within a wave, spawn ALL teammates at the same time** (parallel Task calls).
 5. **Validate each GATE before proceeding to the next wave.** Gates are quality checkpoints.
-6. **Shut down wave K teammates before spawning wave K+1 teammates.**
+6. **Shut down teammates individually as they complete (early shutdown), and shut down any remaining before spawning wave K+1.**
 7. **Maximize the number of waves.** More waves = better quality gating. There is nothing wrong with more waves.
 8. **Teammates MUST invoke /run via Skill tool** to execute their work item. Teammates NEVER implement directly -- they call `Skill({ skill: 'run', args: '...' })` and let the pipeline handle everything. This is non-negotiable.
 9. **You (the lead) do Wave 0 (enrichment) and the final wave (integration)** -- teammates do all middle waves.

@@ -1,9 +1,9 @@
 # Domain Structure Standard
 
-**Status**: Current Super-Domain Standard
-**Last Updated**: 2026-02-05
+**Status**: Current Business Domain Standard (V10.0.0)
+**Last Updated**: 2026-02-28
 
-## Super-Domain Structure
+## Business Domain Structure
 
 All domains follow this structure:
 
@@ -44,66 +44,84 @@ All domains follow this structure:
 
 ---
 
-## Super-Domains
+## Business Domains (V10.0.0)
 
-Current official super-domains:
+Current official business domains:
 
-| Super-Domain | Purpose | Agents | Key Controllers |
-|--------------|---------|--------|-----------------|
-| **make** | Creation | 111 | engineering-manager, architect, creative-director, game-designer |
-| **grow** | Acquisition | 38 | marketing-strategist, sales-strategist, campaign-manager |
-| **operate** | Operations | 13 | operations-manager, business-analyst, change-manager |
-| **people** | Talent | 20 | chro, hr-manager, talent-acquisition |
-| **serve** | Support & Governance | 28 | customer-success-manager, general-counsel, support-manager |
-| **shared** | Cross-domain | 14 | compliance-officer, data-scientist, quality-manager |
-| **core** | Infrastructure | 14 | orchestrator, trigger, universal-* agents |
+| Domain | Purpose | Agents | Key Controllers |
+|--------|---------|--------|-----------------|
+| **engineering** | Software engineering | 33 | engineering-manager, architect, tech-lead |
+| **creative** | Creative production | 24 | creative-director, game-designer, story-architect |
+| **business** | Business operations | 33 | operations-manager, business-analyst, product-owner |
+| **growth** | Revenue & acquisition | 36 | marketing-strategist, sales-strategist, campaign-manager |
+| **people** | Talent & culture | 19 | chro, hr-manager, talent-acquisition |
+| **service** | Support & governance | 33 | customer-success-manager, general-counsel, support-manager |
+| **leadership** | C-suite & strategy | 10 | cto, cro, cfo, coo, chro, ceo |
+| **shared** | Cross-domain utilities | 4 | compliance-officer, data-scientist |
+| **core** | Infrastructure | 15 | orchestrator, trigger, universal-* agents |
 
-**Total**: 238 agents across 7 directories (5 super-domains + shared + core)
+**Total**: 207 agents across 9 directories (7 business domains + shared + core)
 
 ---
 
-## Super-Domain Details
+## Domain Details
 
-### Make (111 agents)
-Combines: Engineering + Creative + Product + DevOps + QA + Game Development
+### Engineering (33 agents)
+Software engineering: backend, frontend, DevOps, QA, security
 
 **Includes**:
 - Engineering: backend-developer, frontend-developer, architect, etc.
-- Creative: story-architect, narrative-designer, editor, etc.
-- Product: product-owner, project-manager, etc.
-- Game Dev: game-designer, level-designer, animator, etc.
+- DevOps: devops-engineer, infrastructure-engineer
+- Quality: qa-lead, qa-tester, reviewer
+- Security: security-specialist
 
-### Grow (38 agents)
-Combines: Marketing + Sales + Partnerships
+### Creative (24 agents)
+Creative production: storytelling, game development, design
+
+**Includes**:
+- Narrative: story-architect, narrative-designer, editor
+- Game Dev: game-designer, level-designer, animator
+- Visual: ui-designer, ux-designer
+
+### Business (33 agents)
+Business operations: product, finance, procurement, operations
+
+**Includes**:
+- Product: product-owner, project-manager
+- Finance: financial-analyst, risk-manager
+- Operations: operations-manager, process-improvement-specialist
+- Supply Chain: supply-chain-manager, procurement-specialist
+
+### Growth (36 agents)
+Revenue & acquisition: marketing, sales, partnerships
 
 **Includes**:
 - Marketing: marketing-strategist, content-marketing-manager, seo-specialist
 - Sales: sales-strategist, account-executive, sales-operations-manager
 - Growth: growth-marketer, demand-generation-manager
 
-### Operate (13 agents)
-Combines: Finance + Operations + Procurement
-
-**Includes**:
-- Operations: operations-manager, process-improvement-specialist
-- Finance: business-analyst, risk-manager
-- Supply Chain: supply-chain-manager, procurement-specialist
-
-### People (20 agents)
-Combines: HR + Culture + Talent Acquisition
+### People (19 agents)
+Talent & culture: HR, talent acquisition, learning & development
 
 **Includes**:
 - HR: chro, hr-business-partner, hr-operations-manager
 - Talent: recruiter, talent-acquisition-manager
 - Development: learning-and-development-manager
 
-### Serve (28 agents)
-Combines: Customer Experience + Legal + Compliance + Support
+### Service (33 agents)
+Support & governance: customer experience, legal, compliance
 
 **Includes**:
 - Support: support-manager, customer-support-rep, technical-support-engineer
 - Legal: general-counsel, legal-analyst, contracts-manager
 - Compliance: compliance-manager, privacy-officer
+
+### Leadership (10 agents)
+C-suite strategy and executive coordination
+
+**Includes**:
+- C-Suite: cto, cro, cfo, coo, chro, ceo
+- Strategy: chief-of-staff, strategy-director
 
 ---
 
@@ -112,16 +130,16 @@ Combines: Customer Experience + Legal + Compliance + Support
 Domain configs for executor, validator, and self_correct use a base template pattern:
 
 ```yaml
-# Example: make/config/executor_config.yaml
+# Example: engineering/config/executor_config.yaml
 _base: shared/config/base_executor_config.yaml
 
-super_domain: make
-description: Execution monitoring for MAKE super-domain
+domain: engineering
+description: Execution monitoring for engineering domain
 
 domain_specific_monitoring:
 - Code compilation and build success
 - Test suite execution results
-- Creative deliverable quality review
+- Security scan results
 ```
 
 Base templates live in `shared/config/`:
@@ -131,17 +149,19 @@ Base templates live in `shared/config/`:
 
 ---
 
-## Historical Note
+## Legacy Directories (Archives)
 
-**Legacy Domain Names** (Deprecated):
-The following domain names were used historically and have been consolidated into super-domains:
-- engineering → make
-- revenue → grow
-- creative → make
-- finance-operations → operate
-- people-culture → people
-- customer-experience → serve
-- legal-compliance → serve
+The following directories are preserved as archives from the v9.x era (5 super-domain model).
+**Do not delete. Do not modify. Read-only archives.**
+
+| Archive Directory | Former Purpose |
+|-------------------|----------------|
+| `make/` | Engineering + Creative + Game Dev (111 agents) |
+| `grow/` | Marketing + Sales (38 agents) |
+| `operate/` | Finance + Operations (13 agents) |
+| `serve/` | Support + Legal + Compliance (28 agents) |
+
+The v10.0.0 restructure redistributed these agents into the 8 new business domains.
 
 ---
 
@@ -155,4 +175,4 @@ See CLAUDE.md "Creating Domains" section for instructions on:
 
 ---
 
-**Version**: 8.5.2
+**Version**: 10.0.0

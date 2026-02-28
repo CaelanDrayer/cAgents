@@ -7,7 +7,7 @@
  *
  * Usage:
  *   node validate_agent.js <agent-dir>
- *   node validate_agent.js make/agents/backend-developer/
+ *   node validate_agent.js engineering/agents/backend-developer/
  */
 
 const fs = require('fs');
@@ -109,7 +109,7 @@ function validateAgent(agentDir) {
   }
 
   // Validate domain
-  const validDomains = ['core', 'shared', 'make', 'grow', 'operate', 'people', 'serve'];
+  const validDomains = ['core', 'shared', 'engineering', 'creative', 'business', 'growth', 'people', 'service', 'leadership'];
   if (!frontmatter.domain) {
     warnings.push("Missing 'domain' in frontmatter");
   } else if (!validDomains.includes(frontmatter.domain)) {
@@ -190,8 +190,8 @@ if (args.length === 0) {
   console.log('Usage: node validate_agent.js <agent-dir>');
   console.log('');
   console.log('Examples:');
-  console.log('  node validate_agent.js make/agents/backend-developer/');
-  console.log('  node validate_agent.js make/agents/backend-developer.md');
+  console.log('  node validate_agent.js engineering/agents/backend-developer/');
+  console.log('  node validate_agent.js engineering/agents/backend-developer.md');
   process.exit(0);
 }
 

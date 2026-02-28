@@ -227,12 +227,12 @@ The /run workflow receives the full design document with all decisions, constrai
 ## /run - Universal Entry Point
 
 **Status**: Production-Ready
-**Domains**: All
+**Domains**: All 8 business domains (engineering, creative, business, growth, people, service, leadership, shared)
 **Complexity**: Tier 2-4 (auto-detected, minimum tier 2 enforced)
 
 ### Overview
 
-Universal entry point that automatically routes requests to appropriate domain, creates objectives-based plan, coordinates controller-based execution, and validates results.
+Universal entry point that automatically routes requests to the appropriate business domain, creates objectives-based plan, coordinates controller-based execution, and validates results.
 
 ### Usage
 
@@ -240,8 +240,8 @@ Universal entry point that automatically routes requests to appropriate domain, 
 /run [your request]                # Any task in any domain
 /run Fix auth bug                  # → Engineering domain (tier 2)
 /run Write fantasy story           # → Creative domain (tier 2)
-/run Plan Q4 campaign              # → Revenue domain (tier 3)
-/run Create budget                 # → Finance-Operations (tier 4)
+/run Plan Q4 campaign              # → Growth domain (tier 3)
+/run Create budget                 # → Business domain (tier 4)
 ```
 
 ### Workflow Phases
@@ -381,7 +381,7 @@ Interactive command guide that explains cAgents skills and recommends the right 
 /helper --flags review         # Complete flag reference for /review
 /helper --examples             # Real-world usage examples by domain
 /helper --quick                # One-screen quick reference card
-/helper --topic domains        # Deep dive: the 5 super-domains
+/helper --topic domains        # Deep dive: the 8 business domains
 /helper --topic workflow       # Deep dive: agent orchestration
 /helper --topic tiers          # Deep dive: complexity tiers
 /helper --topic teams          # Deep dive: team mode
@@ -425,4 +425,4 @@ None -- `/helper` is informational only and does not create sessions.
 ---
 
 **Commands**: /run, /designer, /review, /optimize, /team, /helper
-**Last Updated**: 2026-02-07
+**Last Updated**: 2026-02-28

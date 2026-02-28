@@ -1,7 +1,7 @@
 ---
 name: {agent-name}
 tier: {controller|execution|support|infrastructure}
-domain: {make|grow|operate|people|serve|core|shared}
+domain: {engineering|creative|business|growth|people|service|leadership|shared|core}
 coordination_style: {question_based}  # For controllers only
 typical_questions: []  # For controllers only
 answers_questions: []  # For execution agents only
@@ -85,9 +85,9 @@ executes_tasks: []     # For execution agents only
 ### Configuration
 
 **Config Files**:
-- `{super-domain}/config/planner_config.yaml` - Controller catalog entry
-- `{super-domain}/config/executor_config.yaml` - Execution monitoring
-- `{super-domain}/config/validator_config.yaml` - Quality gates
+- `{domain}/config/planner_config.yaml` - Controller catalog entry
+- `{domain}/config/executor_config.yaml` - Execution monitoring
+- `{domain}/config/validator_config.yaml` - Quality gates
 
 **Key Settings**:
 ```yaml
@@ -171,7 +171,7 @@ controller_catalog:
 ```yaml
 name: {agent-name}          # Required: kebab-case name
 tier: {tier}                # Required: controller, execution, support, infrastructure
-domain: {domain}            # Required: super-domain or core/shared
+domain: {domain}            # Required: business domain or core/shared
 coordination_style: {style} # Controllers: question_based
 typical_questions: []       # Controllers: list of question patterns
 answers_questions: []       # Execution: list of question types answered

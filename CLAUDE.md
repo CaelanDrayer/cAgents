@@ -399,7 +399,7 @@ cAgents/
 
 ## Hooks System
 
-**Architecture**: CJS-only hooks with `createHook()` factory. All invoked via `bash -c` wrapper with 3-tier fallback chain (`CLAUDE_PLUGIN_ROOT` -> `CLAUDE_PROJECT_DIR` -> `pwd`) for resilient path resolution. See @.claude/rules/core/hooks.md for full documentation.
+**Architecture**: CJS-only hooks with `createHook()` factory. Supports 4 handler types (command, http, prompt, agent). All invoked via `bash -c` wrapper with 3-tier fallback chain (`CLAUDE_PLUGIN_ROOT` -> `CLAUDE_PROJECT_DIR` -> `pwd`) for resilient path resolution. See @.claude/rules/core/hooks.md for full documentation.
 
 **18 .cjs files**: `hook-utils.cjs` (factory), `run-hook.cjs` (launcher), `eval-runner.cjs` (CLI), + 15 registered hooks across 13 event types:
 
@@ -465,13 +465,13 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Agents**: 206 total (15 core + 4 shared + 10 leadership + 177 domain specialists)
 **Domains**: Engineering (33), Creative (24), Business (69), People (19), Service (32), Leadership (10), Core (15), Shared (4)
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/domain_overrides.yaml`, `Agent_Memory/_system/config/pipeline_config.yaml`
-**Hooks**: 13 event types (16 supported by Claude Code), 15 registered CJS hooks (18 .cjs files), invoked via `run-hook.cjs` launcher
+**Hooks**: 13 event types (17 supported by Claude Code), 15 registered CJS hooks (18 .cjs files), invoked via `run-hook.cjs` launcher
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 265 Vitest tests (hooks + config validation)
-**Version**: 10.0.0
+**Version**: 10.1.0
 
 ## Troubleshooting
 

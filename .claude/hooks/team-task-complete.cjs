@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Team Task Complete Hook - Track task completion in team sessions
- * cAgents V9.10 - Refactored
+ * cAgents V9.31 - Aligned with official Claude Code TaskCompleted schema
  *
  * Runs when a task completes (TaskCompleted event) in a team session.
  * Updates task_list.yaml, checks dependencies, tracks progress.
@@ -9,7 +9,11 @@
  *   exit 0 = allow task completion
  *   exit 2 = prevent completion, stderr is fed back as feedback
  *
- * Input (stdin): JSON with task_id, task_subject, task_description, teammate_name
+ * Official TaskCompleted input schema fields:
+ *   task_id          - Unique task identifier (primary identifier)
+ *   task_subject     - Task subject/title
+ *   task_description - Task description
+ *   team_name        - Name of the team
  * Output: exit code 0 (allow) or exit code 2 (block with stderr feedback)
  */
 
@@ -18,13 +22,15 @@ const path = require('path');
 const { readStdin, findTeamSession, safeRead, countPattern, ensureDir, getTimestampSlug, parseTaskList, areDependenciesMet } = require('./hook-utils.cjs');
 
 function extractWorkItemId(input) {
-  // TaskCompleted provides task_subject, task_description, task_id
+  // Primary: use task_id directly from official TaskCompleted schema
+  if (input.task_id) return input.task_id;
+
+  // Fallback: extract WI-xxx pattern from task_subject or task_description
   const combined = `${input.task_subject || ''} ${input.task_description || ''}`;
   const match = combined.match(/WI-(\d+)/i);
   if (match) return `WI-${match[1]}`;
-  if (input.task_id) return input.task_id;
 
-  // Legacy: check tool_input fields
+  // Legacy fallback: check tool_input fields
   const legacyCombined = `${input.tool_input?.description || ''} ${input.tool_input?.prompt || ''}`;
   const legacyMatch = legacyCombined.match(/WI-(\d+)/i);
   if (legacyMatch) return `WI-${legacyMatch[1]}`;
@@ -35,8 +41,9 @@ function extractWorkItemId(input) {
 async function run() {
   try {
     const input = await readStdin();
+    const teamName = input.team_name || '';
 
-    const sessionDir = findTeamSession();
+    const sessionDir = findTeamSession(input);
     if (!sessionDir) {
       process.exit(0);
       return;
@@ -87,8 +94,9 @@ async function run() {
     // Record completion message
     const messagesDir = ensureDir(path.join(sessionDir, 'team', 'messages'));
     const tsSlug = getTimestampSlug();
+    const teamLabel = teamName ? `team: "${teamName}"\n` : '';
     fs.writeFileSync(path.join(messagesDir, `${tsSlug}_completion_${workItemId}.yaml`),
-      `# Task Completion\ntimestamp: "${now}"\nsender: "${memberName}"\nwork_item_id: "${workItemId}"\n`);
+      `# Task Completion\ntimestamp: "${now}"\nsender: "${memberName}"\nwork_item_id: "${workItemId}"\n${teamLabel}`);
 
     // Update timing metrics
     const timingFile = path.join(sessionDir, 'team', 'metrics', 'timing.yaml');
@@ -113,7 +121,8 @@ async function run() {
       areDependenciesMet(item, allItems)
     );
 
-    console.error(`[TeamTaskComplete] ${workItemId} completed by ${memberName} (${completedCount}/${totalCount})`);
+    const teamLabel2 = teamName ? `[${teamName}] ` : '';
+    console.error(`[TeamTaskComplete] ${teamLabel2}${workItemId} completed by ${memberName} (${completedCount}/${totalCount})`);
 
     if (newlyUnblocked.length > 0) {
       console.error(`[TeamTaskComplete] Newly unblocked: ${newlyUnblocked.map(i => i.id).join(', ')}`);

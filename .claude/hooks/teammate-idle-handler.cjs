@@ -1,15 +1,17 @@
 #!/usr/bin/env node
 /**
  * Teammate Idle Handler Hook - Suggest available work for idle teammates
- * cAgents V9.10 - Refactored
+ * cAgents V9.31 - Aligned with official Claude Code TeammateIdle schema
  *
  * Reads team task list and suggests available work items.
  * TeammateIdle uses exit codes only (per Claude Code docs):
  *   exit 0 = allow teammate to go idle
  *   exit 2 = prevent idle, stderr is fed back as feedback
  *
- * Input (stdin): JSON with teammate_name from TeammateIdle event
- * Output: exit code + stderr feedback
+ * Official TeammateIdle input schema fields:
+ *   team_name      - Name of the team (primary identifier)
+ *   teammate_name  - Name of the idle teammate
+ * Output: exit code + stderr feedback (stdout JSON is ignored by TeammateIdle)
  */
 
 const path = require('path');
@@ -18,9 +20,10 @@ const { readStdin, findTeamSession, findAvailableWork } = require('./hook-utils.
 async function run() {
   try {
     const input = await readStdin();
+    const teamName = input.team_name || '';
     const teammateName = input.teammate_name || 'teammate';
 
-    const sessionDir = findTeamSession();
+    const sessionDir = findTeamSession(input);
     if (!sessionDir) {
       process.exit(0);  // No team session, allow idle
       return;
@@ -30,7 +33,8 @@ async function run() {
     const available = findAvailableWork(taskListPath);
 
     if (available.length === 0) {
-      console.error(`[TeammateIdle] ${teammateName} idle, no available work`);
+      const teamLabel = teamName ? `[${teamName}] ` : '';
+      console.error(`[TeammateIdle] ${teamLabel}${teammateName} idle, no available work`);
       process.exit(0);  // Allow idle
       return;
     }
@@ -39,7 +43,8 @@ async function run() {
       .map(item => `- ${item.id}: ${item.name || 'Unnamed task'}`)
       .join('\n');
 
-    console.error(`[TeammateIdle] ${teammateName} idle, ${available.length} items available`);
+    const teamLabel = teamName ? `[${teamName}] ` : '';
+    console.error(`[TeammateIdle] ${teamLabel}${teammateName} idle, ${available.length} items available`);
 
     // Exit 2 = prevent idle, stderr feedback is sent to the teammate
     process.stderr.write(`${available.length} work item(s) available:\n${suggestions}\n\nClaim a work item to continue.\n`);

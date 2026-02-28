@@ -25,7 +25,7 @@ Progressive disclosure reduces token usage by loading agent content on-demand in
 name: engineering-manager
 description: "Strategic oversight..."
 tier: controller
-domain: make
+domain: engineering
 ---
 ```
 
@@ -78,7 +78,7 @@ The @path syntax triggers on-demand loading only when the resource is needed.
 ### High-Value Agents (Directory Structure)
 
 ```
-make/agents/engineering-manager/
+engineering/agents/engineering-manager/
 ├── SKILL.md                    # Tier 1 + 2
 └── resources/
     ├── risk-framework.md       # Tier 3
@@ -89,7 +89,7 @@ make/agents/engineering-manager/
 ### Simple Agents (Single File)
 
 ```
-make/agents/copywriter.md       # All tiers in one file
+engineering/agents/copywriter.md       # All tiers in one file
 ```
 
 **Conversion criteria**: Convert to directory if agent file > 500 tokens
@@ -121,13 +121,13 @@ make/agents/copywriter.md       # All tiers in one file
 
 ```bash
 # Find agents > 500 tokens (lines * ~5 tokens/line)
-wc -l make/agents/*.md | awk '$1 > 100'
+wc -l engineering/agents/*.md | awk '$1 > 100'
 ```
 
 ### Step 2: Create Directory
 
 ```bash
-mkdir -p make/agents/{agent-name}/resources
+mkdir -p engineering/agents/{agent-name}/resources
 ```
 
 ### Step 3: Split Content

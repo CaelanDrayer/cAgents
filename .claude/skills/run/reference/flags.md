@@ -55,14 +55,14 @@ By default, `/run` shows the workflow plan after planning completes (for tier 2+
 | `feature_addition` | 3 | engineering + product | Feature addition |
 | `code_refactor` | 3 | engineering | Code refactoring |
 | `architecture_migration` | 4 | engineering + HITL | Major migration |
-| `content_creation` | 2 | make/grow | Content creation |
-| `story_development` | 3 | make | Story development |
-| `campaign_planning` | 3 | grow | Marketing campaign |
-| `sales_forecast` | 2 | grow/operate | Sales forecasting |
+| `content_creation` | 2 | creative/growth | Content creation |
+| `story_development` | 3 | creative | Story development |
+| `campaign_planning` | 3 | growth | Marketing campaign |
+| `sales_forecast` | 2 | growth/business | Sales forecasting |
 | `analysis_request` | 2 | universal | General analysis |
-| `budget_creation` | 3 | operate | Budget creation |
+| `budget_creation` | 3 | business | Budget creation |
 | `question_answer` | 2 | universal | Q&A |
-| `documentation_creation` | 2 | universal/make | Documentation |
+| `documentation_creation` | 2 | universal/engineering | Documentation |
 
 ## Usage Examples
 

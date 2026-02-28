@@ -16,7 +16,7 @@ V9.25.0 agent/skill format based on official Claude Code SKILL.md and subagent s
 name: agent-name                    # Required: Unique identifier (kebab-case)
 description: "Brief description"    # Required: 1-2 sentence purpose statement
 tier: controller|execution|support  # Required: Agent tier classification
-domain: make|grow|operate|people|serve  # Required: Super-domain
+domain: engineering|creative|business|growth|people|service|leadership|shared|core  # Required: Business domain
 model: opus|opusplan|sonnet|haiku  # Optional: Preferred model (see model_routing.yaml)
 coordination_style: question_based  # Optional: For controllers only
 typical_questions: [...]           # Optional: For controllers only
@@ -49,7 +49,7 @@ disallowedTools: ["Task"]          # V9.0: For support agents (prevent delegatio
 - `support`: Tier 4 agents providing foundational services
 
 ### domain
-- One of: `make`, `grow`, `operate`, `people`, `serve`
+- One of: `engineering`, `creative`, `business`, `growth`, `people`, `service`, `leadership`, `shared`, `core`
 - Determines which planner_config.yaml is loaded
 
 ## Optional Fields
@@ -104,7 +104,7 @@ disallowedTools: ["Task"]          # V9.0: For support agents (prevent delegatio
 ### Directory Structure (High-Value Agents)
 
 ```
-make/agents/engineering-manager/
+engineering/agents/engineering-manager/
 ├── SKILL.md                    # Tier 1 + 2: Frontmatter + Instructions
 └── resources/
     ├── typical-questions.md    # Tier 3: Full question catalog
@@ -156,7 +156,7 @@ The `@path` syntax triggers on-demand loading when the resource is needed.
 ---
 name: backend-developer
 tier: execution
-domain: make
+domain: engineering
 ---
 
 # Backend Developer Agent
@@ -167,13 +167,13 @@ domain: make
 ### Directory Agent (V8.0)
 
 ```
-make/agents/backend-developer/
+engineering/agents/backend-developer/
 ├── SKILL.md (~200 tokens)
 │   ---
 │   name: backend-developer
 │   description: "Implements backend services..."
 │   tier: execution
-│   domain: make
+│   domain: engineering
 │   ---
 │   # Backend Developer
 │   Core instructions here.
@@ -294,7 +294,7 @@ Skills from `--add-dir` directories are also loaded and support live change dete
 name: engineering-manager
 description: "Coordinates engineering work via question-based delegation. Use for tier 2+ engineering tasks requiring multi-specialist coordination."
 tier: controller
-domain: make
+domain: engineering
 model: opus
 coordination_style: question_based
 typical_questions:

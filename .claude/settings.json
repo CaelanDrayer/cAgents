@@ -1,11 +1,11 @@
 {
-  "$comment": "Hook configuration - cAgents V9.25.0 - Event-driven pipeline with state machine loop, prompt-engineer agent, reviewer loops, revision routing. 18 CJS files (15 registered hooks + utils + launcher + eval CLI) across 13 event types. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd).",
+  "$comment": "Hook configuration - cAgents V10.0.0 - Progressive pipeline (3 paths), agent chaining, structured error format. 18 CJS files (15 registered hooks + utils + launcher + eval CLI) across 13 event types. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd).",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
   "teammateMode": "tmux",
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CAGENTS_VERSION": "9.23.0"
+    "CAGENTS_VERSION": "10.0.0"
   },
   "permissions": {
     "allow": [

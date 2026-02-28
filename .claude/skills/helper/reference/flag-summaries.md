@@ -26,14 +26,14 @@ Complete flag tables for all commands, used by `/helper --flags <command>`.
 | `feature_addition` | 3 | engineering + product | Feature addition |
 | `code_refactor` | 3 | engineering | Code refactoring |
 | `architecture_migration` | 4 | engineering + HITL | Major migration |
-| `content_creation` | 2 | make/grow | Content creation |
-| `story_development` | 3 | make | Story development |
-| `campaign_planning` | 3 | grow | Marketing campaign |
-| `sales_forecast` | 2 | grow/operate | Sales forecasting |
+| `content_creation` | 2 | creative/growth | Content creation |
+| `story_development` | 3 | creative | Story development |
+| `campaign_planning` | 3 | growth | Marketing campaign |
+| `sales_forecast` | 2 | growth/business | Sales forecasting |
 | `analysis_request` | 2 | universal | General analysis |
-| `budget_creation` | 3 | operate | Budget creation |
+| `budget_creation` | 3 | business | Budget creation |
 | `question_answer` | 2 | universal | Q&A |
-| `documentation_creation` | 2 | universal/make | Documentation |
+| `documentation_creation` | 2 | universal/engineering | Documentation |
 
 ---
 
@@ -230,7 +230,7 @@ Complete flag tables for all commands, used by `/helper --flags <command>`.
 | `--lead <agent>` | String | Specify team lead | auto-detect | `/team Build API --lead engineering-manager` |
 | `--members <N>` | Number | Max team members | 8 | `/team Build system --members 4` |
 | `--display` | Boolean | Show team communication | false | `/team Build feature --display` |
-| `--domain <domain>` | String | Override domain | auto-detect | `/team Campaign --domain grow` |
+| `--domain <domain>` | String | Override domain | auto-detect | `/team Campaign --domain growth` |
 | `--tier <N>` | Number | Override tier | auto | `/team Build system --tier 4` |
 | `--quiet` / `-q` | Boolean | Suppress output | false | `/team Build feature --quiet` |
 | `--teammate-mode <mode>` | String | Display: auto/tmux/in-process | auto | `/team Build app --teammate-mode tmux` |
@@ -243,17 +243,17 @@ Complete flag tables for all commands, used by `/helper --flags <command>`.
 |------|------|-------------|---------|---------|
 | `--dry-run` | Boolean | Preview routing decision and C-suite engagement plan | false | `/org Launch product --dry-run` |
 | `--quick` | Boolean | Skip deliberation for single-domain routing | false | `/org Fix auth --quick` |
-| `--domains <d1,d2,...>` | String | Force specific domain scope | auto-detect | `/org Task --domains make_eng,grow` |
+| `--domains <d1,d2,...>` | String | Force specific domain scope | auto-detect | `/org Task --domains engineering,growth` |
 | `--resume <session_id>` | String | Resume interrupted /org session | none | `/org --resume org_20260227_143022` |
 
 ### /org Domain Keys
 
 | Domain Key | C-Suite Agent | Example Keywords |
 |-----------|---------------|------------------|
-| `make_eng` | CTO | fix, build, implement, code, api, database, architecture |
-| `make_cre` | CCO | write, story, content, design, creative, brand, UX |
-| `grow` | CRO | campaign, marketing, sales, conversion, SEO, leads |
-| `operate_fin` | CFO | budget, cost, forecast, investment, ROI, financial |
-| `operate_ops` | COO | operations, process, supply chain, logistics, efficiency |
+| `engineering` | CTO | fix, build, implement, code, api, database, architecture |
+| `creative` | CCO | write, story, content, design, creative, brand, UX |
+| `growth` | CRO | campaign, marketing, sales, conversion, SEO, leads |
+| `business_fin` | CFO | budget, cost, forecast, investment, ROI, financial |
+| `business_ops` | COO | operations, process, supply chain, logistics, efficiency |
 | `people` | CHRO | hire, recruit, onboard, culture, HR, talent, performance |
-| `serve` | General Counsel | support, legal, compliance, customer, SLA, contract |
+| `service` | General Counsel | support, legal, compliance, customer, SLA, contract |

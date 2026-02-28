@@ -9,7 +9,7 @@
  *   node init_agent.js <agent-name> [--path <output-dir>] [--tier <tier>] [--domain <domain>]
  *
  * Examples:
- *   node init_agent.js backend-developer --path make/agents/ --tier execution --domain make
+ *   node init_agent.js backend-developer --path engineering/agents/ --tier execution --domain engineering
  *   node init_agent.js engineering-manager --tier controller
  */
 
@@ -167,7 +167,7 @@ function initAgent(agentName, options) {
   const {
     outputPath = '.',
     tier = 'execution',
-    domain = 'make',
+    domain = 'engineering',
     model = getDefaultModel(tier)
   } = options;
 
@@ -303,12 +303,12 @@ if (args.length === 0) {
   console.log('Options:');
   console.log('  --path <dir>    Output directory (default: current dir)');
   console.log('  --tier <tier>   Agent tier: controller, execution, support, infrastructure');
-  console.log('  --domain <dom>  Domain: make, grow, operate, people, serve, core, shared');
+  console.log('  --domain <dom>  Domain: engineering, creative, business, growth, people, service, leadership, shared, core');
   console.log('  --model <model> Model: opus, sonnet, haiku (default based on tier)');
   console.log('');
   console.log('Examples:');
-  console.log('  node init_agent.js backend-developer --path make/agents/ --tier execution');
-  console.log('  node init_agent.js engineering-manager --tier controller --domain make');
+  console.log('  node init_agent.js backend-developer --path engineering/agents/ --tier execution');
+  console.log('  node init_agent.js engineering-manager --tier controller --domain engineering');
   process.exit(0);
 }
 

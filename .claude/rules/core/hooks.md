@@ -6,7 +6,7 @@ paths:
 
 # cAgents Hook System
 
-V9.25.0 CJS-only hook architecture with 15 registered hooks + 1 CLI tool across 13 event types (of 16 total Claude Code event types), `createHook()` factory pattern, agent audit trail with completion summaries, and resilient path resolution. Supports command, prompt, and agent hook types, async execution, and matcher-based filtering.
+V10.0.0 CJS-only hook architecture with 15 registered hooks + 1 CLI tool across 13 event types (of 17 total Claude Code event types), `createHook()` factory pattern, agent audit trail with completion summaries, and resilient path resolution. Supports command, http, prompt, and agent hook types, async execution, and matcher-based filtering.
 
 ## Architecture
 
@@ -46,7 +46,7 @@ The V9.5 refactoring eliminates the dual shell+JS architecture that caused recur
 
 ## Hook Types Overview
 
-Claude Code supports 16 hook event types. cAgents implements 15 registered hooks across 13 of these events. Three events (`UserPromptSubmit`, `ConfigChange`, `WorktreeCreate/Remove`) have no cAgents hooks but are available for custom use.
+Claude Code supports 17 hook event types. cAgents implements 15 registered hooks across 13 of these events. Four events (`UserPromptSubmit`, `ConfigChange`, `WorktreeCreate`, `WorktreeRemove`) have no cAgents hooks but are available for custom use.
 
 | Hook Type | Trigger | cAgents Hook | Purpose |
 |-----------|---------|--------------|---------|
@@ -240,6 +240,8 @@ Hooks output JSON to stdout:
 
 ### Exit Codes
 
+**Note**: Exit codes apply to command hooks only. HTTP hooks communicate success/failure via HTTP response status codes (2xx = success, non-2xx may block depending on event). Prompt and agent hooks communicate via their LLM response.
+
 - `0`: Success -- JSON parsed from stdout. Use `permissionDecision: "deny"` in hookSpecificOutput to block PreToolUse operations. For most events, stdout is only shown in verbose mode (Ctrl+O). Exceptions: `UserPromptSubmit` and `SessionStart` add stdout as context Claude can see.
 - `2`: Blocking error -- Claude Code ignores stdout JSON and feeds stderr to the model. The effect depends on the event:
   - **Can block**: `PreToolUse` (blocks tool call), `PermissionRequest` (denies permission), `UserPromptSubmit` (blocks prompt), `Stop` (prevents stopping), `SubagentStop` (prevents stop), `TeammateIdle` (keeps working), `TaskCompleted` (prevents completion), `ConfigChange` (blocks change), `WorktreeCreate` (fails creation)
@@ -248,7 +250,7 @@ Hooks output JSON to stdout:
 
 ## Hook Handler Types
 
-Claude Code supports three hook handler types:
+Claude Code supports four hook handler types:
 
 ### Command Hooks (`type: "command"`)
 Run a shell command. Receives JSON on stdin, communicates via exit codes and stdout JSON.
@@ -261,6 +263,16 @@ Run a shell command. Receives JSON on stdin, communicates via exit codes and std
 | `async` | no | If `true`, runs in background without blocking |
 | `statusMessage` | no | Custom spinner message while hook runs |
 | `once` | no | If `true`, runs once per session then removed (skills only) |
+
+### HTTP Hooks (`type: "http"`)
+Send an HTTP POST request to a URL endpoint. Useful for external integrations, webhooks, and logging to external services.
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `type` | yes | `"http"` |
+| `url` | yes | URL endpoint to POST to (receives JSON payload) |
+| `headers` | no | Custom HTTP headers as key-value pairs |
+| `timeout` | no | Seconds before canceling (default: 30) |
 
 ### Prompt Hooks (`type: "prompt"`)
 Use an LLM to evaluate conditions and return yes/no decisions.
@@ -282,11 +294,11 @@ Spawn a subagent with tool access (Read, Grep, Glob) to verify conditions.
 | `model` | no | Model for evaluation |
 | `timeout` | no | Seconds before canceling (default: 60) |
 
-**Supported Events** (all three types):
+**Supported Events** (all four types: command, http, prompt, agent):
 - `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`
 - `UserPromptSubmit`, `Stop`, `SubagentStop`, `TaskCompleted`
 
-**Command hooks only** (prompt/agent NOT supported):
+**Command hooks only** (http/prompt/agent NOT supported):
 - `SessionStart`, `SessionEnd`, `SubagentStart`, `PreCompact`, `Notification`
 - `TeammateIdle`, `ConfigChange`, `WorktreeCreate`, `WorktreeRemove`
 

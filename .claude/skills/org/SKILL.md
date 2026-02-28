@@ -180,7 +180,81 @@ rationale: "{why this route}"
 
 **If single domain route**: Generate a strategic_brief.yaml with CEO framing, then invoke /run or /team directly. Skip to BRIEFED state.
 
-**If full hierarchy**: Proceed to Step 4.
+**If full hierarchy**: Proceed to Step 3c.
+
+### Step 3c: Pre-Execution Research (before C-suite analysis)
+
+Before spawning C-suite agents, spawn lightweight research subagents to gather concrete facts about the actual project state. This grounds C-suite analyses in real data rather than instruction-text interpretation alone.
+
+**3c-1. Identify research areas from routing decision:**
+
+Based on `routing_decision.yaml` domains and the instruction, identify what needs researching:
+
+| Domain Touched | Research Agent | Research Focus |
+|---------------|---------------|----------------|
+| engineering | `cagents:backend-developer` or domain specialist | Existing codebase architecture, current implementations, technical constraints |
+| creative | `cagents:copywriter` or domain specialist | Existing content patterns, brand guidelines, style conventions |
+| business | `cagents:data-analyst` | Relevant metrics, KPIs, financial data, market context |
+| people | `cagents:hr-manager` | Current org structure, team composition, role requirements |
+| service | `cagents:customer-success-manager` | Current support patterns, SLAs, compliance requirements |
+
+Always spawn at least one general codebase research agent to provide foundational context.
+
+**3c-2. Spawn research subagents in parallel:**
+
+```
+# General codebase research (always runs)
+Task({
+  subagent_type: "general-purpose",
+  description: "Research: Codebase analysis for {instruction_summary}",
+  prompt: "You are a research agent gathering concrete project facts BEFORE strategic analysis.
+
+INSTRUCTION: {user_instruction}
+SESSION: {SESSION_DIR}/
+
+Use Grep, Glob, and Read tools to investigate the actual project state relevant to this instruction. Focus on:
+1. Existing implementations related to the instruction
+2. File structure and architecture patterns
+3. Dependencies and integration points
+4. Current state of areas that will be changed
+
+Write your findings to:
+{SESSION_DIR}/domain_analyses/research_codebase.yaml
+
+Format:
+  research_area: codebase_analysis
+  files_examined: [{list of key files read}]
+  findings:
+    - area: '{topic}'
+      current_state: '{what exists now}'
+      relevant_files: [{paths}]
+      constraints: ['{any constraints discovered}']
+  summary: '{one paragraph summary of key findings}'
+"
+})
+
+# Domain-specific research (per touched domain)
+Task({
+  subagent_type: "cagents:{domain_research_agent}",
+  description: "Research: {domain_key} domain analysis for {instruction_summary}",
+  prompt: "You are a domain research agent gathering concrete facts about {domain_key}.
+
+INSTRUCTION: {user_instruction}
+SESSION: {SESSION_DIR}/
+
+Use Grep, Glob, and Read tools to investigate the actual project state for the {domain_key} domain. Focus on domain-specific concerns.
+
+Write your findings to:
+{SESSION_DIR}/domain_analyses/research_{domain_key}.yaml
+"
+})
+```
+
+**3c-3. After all research agents return:**
+
+Read all `domain_analyses/research_*.yaml` files. These will be passed as additional context to C-suite agents in Step 4.
+
+Proceed to Step 4.
 
 ### Step 4: Dependency-Ordered C-Suite Analysis (INIT -> ANALYZED)
 
@@ -232,6 +306,8 @@ SESSION: {SESSION_DIR}/
 YOUR DOMAIN: {domain_key}
 WAVE: 1 (independent -- no peer analyses available yet)
 
+RESEARCH FINDINGS: Read {SESSION_DIR}/domain_analyses/research_*.yaml for concrete project facts gathered by research agents. Use these findings to ground your analysis in actual project state rather than instruction-text interpretation alone.
+
 Analyze this instruction from your domain perspective. Write your analysis to:
 {SESSION_DIR}/domain_analyses/domain_analysis_{domain_key}.yaml
 
@@ -271,6 +347,8 @@ CHAIRPERSON INSTRUCTION: {user_instruction}
 SESSION: {SESSION_DIR}/
 YOUR DOMAIN: {domain_key}
 WAVE: 2 (dependent -- peer analyses available from Wave 1)
+
+RESEARCH FINDINGS: Read {SESSION_DIR}/domain_analyses/research_*.yaml for concrete project facts gathered by research agents. Use these findings to ground your analysis in actual project state.
 
 IMPORTANT: Before writing your analysis, READ the following peer domain analyses for cross-domain context:
 {for each peer in reads_from: '{SESSION_DIR}/domain_analyses/domain_analysis_{peer_domain_key}.yaml'}
@@ -628,4 +706,4 @@ Agent_Memory/sessions/org_{timestamp}/
 
 ---
 
-**Corporate hierarchy orchestration: CEO inline (context: none), dependency-ordered C-suite analysis via Task (Wave 1 independent, Wave 2 reads peer analyses via file-based inline passes), two-phase deliberation (objection phase reads ALL peer analyses), strategic brief, sequential /team execution per domain via Skill, CEO integration. TodoWrite at every state transition.**
+**Corporate hierarchy orchestration: CEO inline (context: none), pre-execution research subagents (gather concrete project facts), dependency-ordered C-suite analysis via Task (Wave 1 independent, Wave 2 reads peer analyses via file-based inline passes), two-phase deliberation (objection phase reads ALL peer analyses), strategic brief, sequential /team execution per domain via Skill, CEO integration. TodoWrite at every state transition.**

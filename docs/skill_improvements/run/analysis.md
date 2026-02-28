@@ -2,7 +2,7 @@
 
 ## Current State Summary
 
-The /run skill is the core event-driven pipeline engine of cAgents. It operates as a state machine loop (INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED -> VALIDATED) reading from pipeline_config.yaml. It spawns 6 pipeline agents sequentially at level 1 (orchestrator, planner, decomposer, prompt-engineer, controller, validator), with controllers spawning executors and reviewers at level 2. It supports revision loops (FAIL/REVISE, max 5 cycles), pre-enrichment detection for /team flows, and domain/tier classification across 5 super-domains.
+The /run skill is the core event-driven pipeline engine of cAgents. It operates as a state machine loop (INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED -> VALIDATED) reading from pipeline_config.yaml. It spawns 6 pipeline agents sequentially at level 1 (orchestrator, planner, decomposer, prompt-engineer, controller, validator), with controllers spawning executors and reviewers at level 2. It supports revision loops (FAIL/REVISE, max 5 cycles), pre-enrichment detection for /team flows, and domain/tier classification across 8 business domains (engineering, creative, business, growth, people, service, leadership, shared) with 207 agents.
 
 ## Strengths
 
@@ -11,7 +11,7 @@ The /run skill is the core event-driven pipeline engine of cAgents. It operates 
 3. **Revision loops** at both controller level (3 rounds) and pipeline level (5 cycles) ensure quality
 4. **Prompt-engineer stage** optimizes delegation quality between decomposer and controller
 5. **Pre-enrichment detection** enables efficient /team integration (skip completed states)
-6. **Universal domain coverage** across all 5 super-domains with 238 agents
+6. **Universal domain coverage** across all 8 business domains with 207 agents
 7. **12 workflow templates** for common task patterns
 8. **TodoWrite at every state transition** provides user visibility
 9. **Resume capability** via --resume flag and session waypoints

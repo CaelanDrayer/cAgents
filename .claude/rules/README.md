@@ -75,7 +75,7 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 2. **core/controllers.md** - Question-based delegation patterns
 3. **core/execution.md** - Execution agent patterns
 4. **core/shared-questions.md** - Universal controller question patterns
-5. **core/hooks.md** - V9.0 hook system (14 event types, 3 hook types)
+5. **core/hooks.md** - V10.0 hook system (17 event types, 4 hook types)
 6. **core/skill-format.md** - V9.0 SKILL.md format (maxTurns, permissionMode, memory, opusplan)
 7. **core/progressive-disclosure.md** - Three-tier loading (10/10 agents converted)
 8. **core/subagent-alignment.md** - Task tool alignment patterns
@@ -105,7 +105,7 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 ## V8.0 Additions
 
 ### hooks.md (Enhanced)
-Documents all 14 Claude Code hook event types with cAgents implementations:
+Documents all 17 Claude Code hook event types with cAgents implementations:
 - SessionStart, SessionEnd, Stop, SubagentStop
 - PreToolUse, PostToolUse, UserPromptSubmit
 - Notification, PreCompact, PermissionRequest, Error
