@@ -1,0 +1,26 @@
+# Creative domain overrides
+domain: creative
+description: "Creative writing, narrative design, fiction, content creation, game art and audio"
+
+planner:
+  controller_catalog:
+    tier_2: [narrative-director]
+    tier_3: [narrative-director, story-architect, editor]
+    tier_4: [cco, narrative-director, story-architect]
+
+router:
+  keywords:
+    - write
+    - story
+    - content
+    - design
+    - creative
+    - novel
+    - script
+    - poem
+    - narrative
+    - game art
+    - audio
+    - animation
+    - character
+    - worldbuild

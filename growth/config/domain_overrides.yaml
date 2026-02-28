@@ -1,0 +1,23 @@
+# Growth domain overrides
+domain: growth
+description: "Marketing execution, sales operations, demand generation"
+
+planner:
+  controller_catalog:
+    tier_2: [campaign-manager]
+    tier_3: [campaign-manager, marketing-strategist, sales-strategist]
+    tier_4: [cmo, cro, marketing-strategist]
+
+router:
+  keywords:
+    - campaign
+    - marketing
+    - sales
+    - conversion
+    - SEO
+    - funnel
+    - leads
+    - revenue
+    - growth
+    - demand
+    - acquisition

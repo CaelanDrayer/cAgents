@@ -17,11 +17,11 @@ Topic-specific rules organized for better maintainability.
 │   ├── subagent-alignment.md  # V8.0 Task tool alignment
 │   └── teams.md               # V9.2 Team coordination patterns (built-in agent teams)
 ├── domains/        # Domain-specific guidelines
-│   ├── engineering.md      # Engineering workflows and agents
-│   ├── grow.md             # Grow (marketing/sales) patterns
-│   ├── operate.md          # Operate (finance/operations) patterns
-│   ├── people.md           # People (HR/culture) patterns
-│   └── serve.md            # Serve (support/legal) patterns
+│   ├── engineering.md      # Engineering domain (engineering/)
+│   ├── grow.md             # Business domain (business/, growth/)
+│   ├── operate.md          # Operations/Finance within business domain
+│   ├── people.md           # People domain (people/)
+│   └── serve.md            # Service domain (service/)
 ├── infrastructure/ # Infrastructure configuration
 │   └── model-routing.md    # Model routing guidelines
 ├── memory/         # Memory and state management

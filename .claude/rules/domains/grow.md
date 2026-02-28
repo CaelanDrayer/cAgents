@@ -1,57 +1,64 @@
 ---
 paths:
-  - "grow/**"
+  - "business/**"
+  - "growth/**"
 ---
 
-# Grow Domain Guidelines
+# Business Domain Guidelines
 
-Domain-specific patterns for marketing and sales workflows.
+Domain-specific patterns for strategy, product, operations, finance, marketing, and sales workflows.
 
 ## Controller Selection
 
 **Tier 2** (Moderate complexity):
+- **operations-manager**: Process optimization, operational workflows
 - **campaign-manager**: Campaign execution, marketing tactics
-- **sales-operations-manager**: Sales process optimization
 
 **Tier 3** (Complex):
-- **Primary**: marketing-strategist (marketing coordination)
-- **Supporting**: campaign-manager (execution), content-strategist (content)
+- **Primary**: strategic-planner (business strategy coordination)
+- **Supporting**: marketing-strategist (marketing), sales-strategist (sales), finance-manager (financial)
 
 **Tier 4** (Expert):
-- **Executive**: cro (revenue oversight)
-- **Primary**: marketing-strategist (coordination)
-- **Supporting**: sales-strategist, campaign-manager, content-strategist
+- **Executive**: cpo (product oversight), cfo (financial oversight)
+- **Primary**: strategic-planner (coordination)
+- **Supporting**: operations-manager, marketing-strategist, finance-manager
 
 ## Typical Questions
 
-Grow controllers typically ask:
+Business controllers typically ask:
 
-**Campaign Analysis**:
-- "What are the current campaign metrics and performance?"
+**Strategy & Product**:
+- "What is the current market positioning?"
+- "What are the strategic priorities for this initiative?"
+- "What product roadmap considerations apply?"
+
+**Financial Analysis**:
+- "What is the budget impact of this initiative?"
+- "What are the cost drivers and ROI projections?"
+- "What financial constraints apply?"
+
+**Marketing & Sales**:
 - "Who is the target audience for this initiative?"
 - "What channels are most effective for this segment?"
-
-**Sales Process**:
-- "What is the current sales pipeline status?"
 - "What are the conversion bottlenecks?"
-- "What competitive positioning should we use?"
 
-**Content & Messaging**:
-- "What messaging resonates with this audience?"
-- "What content assets do we need?"
-- "How should we sequence the customer journey?"
+**Operations**:
+- "What is the current process flow and cycle time?"
+- "Where are the bottlenecks in operations?"
+- "What automation opportunities exist?"
 
 ## Execution Agents
 
-Common grow execution agents:
+Common business execution agents:
 - **copywriter**: Sales copy, marketing content, ad copy
-- **content-marketing-manager**: Content strategy, editorial calendar
+- **marketing-analyst**: Campaign metrics, market analysis
+- **sales-strategist**: Sales process, deal strategy
+- **finance-manager**: Budgeting, financial reporting
+- **operations-manager**: Process optimization
+- **product-owner**: Product requirements, backlog management
+- **business-analyst**: Requirements analysis, process mapping
 - **seo-specialist**: Search optimization, keyword research
-- **social-media-manager**: Social content, community engagement
-- **email-marketing-specialist**: Email campaigns, nurture sequences
-- **growth-hacker**: Growth experiments, conversion optimization
-- **sales-rep**: Customer outreach, deal closure
 
 ## Config Location
 
-`Agent_Memory/_system/domains/grow/*.yaml`
+`business/config/domain_overrides.yaml`

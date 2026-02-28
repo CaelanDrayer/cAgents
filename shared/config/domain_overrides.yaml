@@ -1,0 +1,12 @@
+# Shared domain overrides
+# Cross-cutting specialists used by multiple domains
+domain: shared
+description: "Cross-domain intelligence and data specialists"
+
+planner:
+  note: "Shared agents are referenced by controllers in other domains, not routed to directly"
+  controller_catalog: {}
+
+router:
+  note: "Shared agents are invoked by controllers, not by direct routing"
+  keywords: []

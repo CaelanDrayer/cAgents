@@ -1,18 +1,21 @@
 {
   "name": "cagents",
-  "version": "9.30.0",
-  "description": "cAgents V9.30.0 - Universal multi-domain agent system with 239 agents across 5 super-domains. /org dependency-ordered C-suite passes with inline peer analysis (multi-wave analysis, objection phase reads all peer analyses). Event-driven pipeline with state machine loop, prompt-engineer agent, reviewer loops, revision routing. CJS-only hook architecture with createHook() factory, Skills system (.claude/skills/ auto-discovery), 13 active hook event types (16 supported), opusplan model routing. Agent Teams integration for parallel team-based execution (40-60% time reduction). CSV-based task inventory (60-80% context savings). Controller-centric question-based delegation across 5 super-domains.",
+  "version": "10.0.0",
+  "description": "cAgents V10.0.0 - Universal multi-domain agent system with 207 agents across 8 business domains (Engineering, Creative, Business, Growth, People, Service, Leadership, Shared). Progressive pipeline with 3 paths based on 9-signal complexity scoring. Agent chaining with topological execution ordering. Structured error format (What/Why/Fix). Event-driven state machine with revision routing. CJS-only hook architecture with createHook() factory. Agent Teams for parallel execution (40-60% time reduction). Controller-centric question-based delegation.",
   "type": "module",
   "main": "",
   "scripts": {
-    "test": "npm run lint",
+    "test": "vitest run --config tests/vitest.config.js",
+    "test:hooks": "vitest run --config tests/vitest.config.js tests/hooks/",
+    "test:config": "vitest run --config tests/vitest.config.js tests/config/",
+    "test:watch": "vitest --config tests/vitest.config.js",
     "validate:configs": "python3 scripts/validate_agent_configs.py",
-    "validate:agents": "python3 scripts/lint_agent_docs.py",
-    "validate:versions": "bash scripts/validate-versions.sh",
+    "validate:agents": "bash scripts/ci/validate-agents.sh",
+    "validate:versions": "bash scripts/ci/validate-versions.sh",
     "validate:counts": "bash scripts/validate-agent-counts.sh",
     "generate:manifest": "bash scripts/generate_plugin_manifest.sh",
-    "lint": "npm run validate:configs && npm run validate:agents",
-    "ci": "npm run validate:versions && npm run validate:counts && npm run lint"
+    "lint": "npm run validate:configs",
+    "ci": "npm run test && npm run validate:versions && npm run validate:agents"
   },
   "keywords": [
     "agents",
@@ -49,26 +52,30 @@
   "license": "MIT",
   "architecture": "Controller-Centric Question-Based Delegation",
   "agents": {
-    "total": 239,
+    "total": 207,
     "core": 15,
-    "shared": 14,
+    "shared": 4,
     "breakdown": {
-      "make": 111,
-      "grow": 38,
-      "operate": 13,
-      "people": 20,
-      "serve": 28
+      "engineering": 33,
+      "creative": 24,
+      "business": 33,
+      "growth": 36,
+      "people": 19,
+      "service": 33,
+      "leadership": 10
     },
-    "game_dev_edition": "28 new game development agents added to Make domain",
-    "consolidation": "64% reduction (560 legacy agents to 201 production agents)",
-    "directory_consolidation": "70% reduction (22 directories to 7 directories)"
+    "consolidation": "239 to 207 agents through v10.0.0 restructure",
+    "domain_restructure": "5 super-domains to 8 business domains"
   },
-  "super_domains": [
-    "make",
-    "grow",
-    "operate",
+  "business_domains": [
+    "engineering",
+    "creative",
+    "business",
+    "growth",
     "people",
-    "serve"
+    "service",
+    "leadership",
+    "shared"
   ],
   "features": {
     "controller_coordination": true,
@@ -97,7 +104,23 @@
     "peer_to_peer_messaging": true,
     "shared_task_lists": true,
     "game_development_pipeline": true,
-    "game_engines_supported": ["Unity", "Unreal Engine", "Godot"],
-    "game_dev_specializations": ["design", "programming", "art", "audio", "production", "narrative", "qa", "monetization"]
+    "game_engines_supported": [
+      "Unity",
+      "Unreal Engine",
+      "Godot"
+    ],
+    "game_dev_specializations": [
+      "design",
+      "programming",
+      "art",
+      "audio",
+      "production",
+      "narrative",
+      "qa",
+      "monetization"
+    ]
+  },
+  "devDependencies": {
+    "vitest": "^4.0.18"
   }
 }

@@ -1,9 +1,9 @@
 ---
 paths:
-  - "serve/**"
+  - "service/**"
 ---
 
-# Serve Domain Guidelines
+# Service Domain Guidelines
 
 Domain-specific patterns for customer experience, legal, and compliance workflows.
 
@@ -14,12 +14,12 @@ Domain-specific patterns for customer experience, legal, and compliance workflow
 - **legal-counsel**: Legal review, contract management
 
 **Tier 3** (Complex):
-- **Primary**: cx-director (customer experience coordination)
-- **Supporting**: customer-success-manager (accounts), legal-counsel (legal)
+- **Primary**: vp-customer-support (customer experience coordination)
+- **Supporting**: legal-counsel (legal), compliance-director (compliance)
 
 **Tier 4** (Expert):
 - **Executive**: general-counsel (legal oversight)
-- **Primary**: cx-director (coordination)
+- **Primary**: vp-customer-support (coordination)
 - **Supporting**: customer-success-manager, legal-counsel, compliance-director
 
 ## Typical Questions
@@ -53,4 +53,4 @@ Common serve execution agents:
 
 ## Config Location
 
-`Agent_Memory/_system/domains/serve/*.yaml`
+`service/config/domain_overrides.yaml`

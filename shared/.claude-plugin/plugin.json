@@ -1,38 +1,11 @@
 {
-  "name": "cagents-shared-capabilities",
-  "version": "9.30.0",
-  "description": "Shared cross-domain capabilities for cAgents V9.0 - 14 universal agents accessible to all workflows across all 5 super-domains. Includes data & analytics (data-scientist, bi-specialist, market-research-analyst, competitive-intelligence-analyst), quality & compliance (quality-manager, process-auditor, compliance-officer, performance-analyst), customer (account-manager, customer-success-manager, customer-advocacy-manager, relationship-manager), and operations (change-management-specialist, capacity-planner).",
-  "domain": "shared",
-  "tier": 2,
-  "agent_count": 14,
+  "name": "cagents-shared",
+  "version": "10.0.0",
+  "description": "cAgents shared domain - 4 cross-cutting data and intelligence specialists",
   "agents": [
-    "./agents/data-scientist/SKILL.md",
-    "./agents/bi-specialist/SKILL.md",
-    "./agents/market-research-analyst/SKILL.md",
-    "./agents/competitive-intelligence-analyst/SKILL.md",
-    "./agents/quality-manager/SKILL.md",
-    "./agents/process-auditor/SKILL.md",
-    "./agents/compliance-officer/SKILL.md",
-    "./agents/performance-analyst/SKILL.md",
-    "./agents/account-manager/SKILL.md",
-    "./agents/customer-success-manager/SKILL.md",
-    "./agents/customer-advocacy-manager/SKILL.md",
-    "./agents/relationship-manager/SKILL.md",
-    "./agents/change-management-specialist/SKILL.md",
-    "./agents/capacity-planner/SKILL.md"
-  ],
-  "keywords": [
-    "shared",
-    "capabilities",
-    "universal",
-    "cross-domain",
-    "data",
-    "analytics",
-    "quality",
-    "compliance",
-    "customer",
-    "operations",
-    "tier-2",
-    "v9.0"
+    "shared/agents/bi-specialist/SKILL.md",
+    "shared/agents/competitive-intelligence-analyst/SKILL.md",
+    "shared/agents/data-scientist/SKILL.md",
+    "shared/agents/market-research-analyst/SKILL.md"
   ]
 }

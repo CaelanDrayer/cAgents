@@ -342,6 +342,55 @@ function findAvailableWork(taskListPath) {
 }
 
 // ============================================================
+// Structured Error Format (What / Why / Fix)
+// ============================================================
+// Provides consistent, actionable error messages across all hooks.
+// Every error message answers three questions:
+//   1. WHAT happened (the observable problem)
+//   2. WHY it happened (root cause or context)
+//   3. FIX: how to resolve it (concrete action)
+// ============================================================
+
+/**
+ * Format a structured error message with What/Why/Fix sections.
+ *
+ * @param {object} opts - Error details
+ * @param {string} opts.what - What happened (the problem)
+ * @param {string} opts.why - Why it happened (root cause)
+ * @param {string} opts.fix - How to fix it (concrete action)
+ * @param {string} [opts.hook] - Hook name for attribution
+ * @returns {string} Formatted error message
+ */
+function formatError({ what, why, fix, hook }) {
+  const parts = [];
+  if (hook) parts.push(`[${hook}]`);
+  parts.push(`WHAT: ${what}`);
+  parts.push(`WHY: ${why}`);
+  parts.push(`FIX: ${fix}`);
+  return parts.join('\n');
+}
+
+/**
+ * Create a structured deny response for PreToolUse hooks.
+ *
+ * @param {object} opts - Error details (same as formatError)
+ * @returns {object} Hook deny response with formatted reason
+ */
+function denyWithReason({ what, why, fix, hook }) {
+  return { deny: true, reason: formatError({ what, why, fix, hook }) };
+}
+
+/**
+ * Create a structured warning (continue with systemMessage).
+ *
+ * @param {object} opts - Warning details (same as formatError)
+ * @returns {object} Hook continue response with formatted systemMessage
+ */
+function warnWithReason({ what, why, fix, hook }) {
+  return { continue: true, systemMessage: formatError({ what, why, fix, hook }) };
+}
+
+// ============================================================
 // createHook() Factory
 // ============================================================
 // Eliminates per-hook boilerplate: try-catch wrapping, stdin reading,
@@ -447,5 +496,8 @@ module.exports = {
   calculateScore,
   parseTaskList,
   areDependenciesMet,
-  findAvailableWork
+  findAvailableWork,
+  formatError,
+  denyWithReason,
+  warnWithReason
 };

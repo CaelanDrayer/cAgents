@@ -188,15 +188,17 @@ TodoWrite({
 
 ## Cross-Skill Integration
 
-After report generation, if critical/high issues found, offer fix via `/run`:
-```javascript
-Skill({ skill: "run", args: `fix ${severity} issues from review session ${session_id}` })
+After report generation, if critical/high issues found, suggest fix via AskUserQuestion:
+```
+AskUserQuestion: "Review found ${count} ${severity} issues. Want to auto-fix? Run: /run Fix ${severity} issues from review session ${session_id}"
 ```
 
-If performance opportunities detected, offer `/optimize`:
-```javascript
-Skill({ skill: "optimize", args: `${targetPath} --review-after` })
+If performance opportunities detected, suggest optimization:
 ```
+AskUserQuestion: "Performance opportunities detected. Want to optimize? Run: /optimize ${targetPath}"
+```
+
+**Note**: `/review` runs in `context: fork` and MUST NOT call Skill() to invoke other skills. Use AskUserQuestion handoffs instead.
 
 ## Review Profiles
 

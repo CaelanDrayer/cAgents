@@ -11,6 +11,7 @@
 #   validate    - Validate all agents
 #   lint        - Lint agent documentation
 #   check       - Run quality checks
+#   test        - Run Vitest test suite
 #   evals       - Run evaluations on recent sessions
 #   all         - Run all checks
 #
@@ -19,6 +20,7 @@
 #   1 - Validation errors
 #   2 - Linting errors
 #   3 - Quality check failures
+#   4 - Test failures
 
 set -e
 
@@ -87,7 +89,7 @@ validate_agents() {
     local failed=0
 
     # Validate agents in each domain
-    for domain in core shared make grow operate people serve; do
+    for domain in core shared engineering creative business growth people service leadership; do
         log_info "Checking $domain domain..."
 
         # Check for agent files
@@ -147,7 +149,7 @@ lint_docs() {
 
     # Check for TODO/FIXME in production agents
     log_info "Checking for TODO/FIXME in agents..."
-    for domain in core shared make grow operate people serve; do
+    for domain in core shared engineering creative business growth people service leadership; do
         local domain_dir="$PROJECT_ROOT/$domain/agents"
         if [[ -d "$domain_dir" ]]; then
             while IFS= read -r file; do
@@ -161,7 +163,7 @@ lint_docs() {
 
     # Check for placeholder text
     log_info "Checking for placeholder text..."
-    for domain in core shared make grow operate people serve; do
+    for domain in core shared engineering creative business growth people service leadership; do
         local domain_dir="$PROJECT_ROOT/$domain/agents"
         if [[ -d "$domain_dir" ]]; then
             while IFS= read -r file; do
@@ -175,7 +177,7 @@ lint_docs() {
 
     # Check for required sections in agents
     log_info "Checking required sections..."
-    for domain in core shared make grow operate people serve; do
+    for domain in core shared engineering creative business growth people service leadership; do
         local domain_dir="$PROJECT_ROOT/$domain/agents"
         if [[ -d "$domain_dir" ]]; then
             while IFS= read -r file; do
@@ -242,7 +244,7 @@ quality_checks() {
     log_info "Checking directory structure..."
     ((checks_total++))
     local dirs_ok=true
-    for dir in "core/agents" "shared/agents" "make/agents" ".claude/hooks" ".claude/rules"; do
+    for dir in "core/agents" "shared/agents" "engineering/agents" "creative/agents" "business/agents" ".claude/hooks" ".claude/rules"; do
         if [[ ! -d "$PROJECT_ROOT/$dir" ]]; then
             log_error "Missing directory: $dir"
             dirs_ok=false
@@ -305,6 +307,33 @@ run_evals() {
 }
 
 #
+# Run Vitest tests
+#
+run_tests() {
+    log_section "VITEST TESTS"
+
+    if [[ ! -f "$PROJECT_ROOT/package.json" ]]; then
+        log_warn "No package.json found, skipping tests"
+        return 0
+    fi
+
+    # Check if vitest is available
+    if ! command -v npx &> /dev/null; then
+        log_warn "npx not available, skipping tests"
+        return 0
+    fi
+
+    log_info "Running Vitest test suite..."
+    if cd "$PROJECT_ROOT" && npx vitest run --reporter=verbose 2>&1; then
+        log_info "All tests passed"
+        return 0
+    else
+        log_error "Test suite failed"
+        return 4
+    fi
+}
+
+#
 # Main execution
 #
 main() {
@@ -328,10 +357,14 @@ main() {
         evals)
             run_evals || exit_code=0
             ;;
+        test)
+            run_tests || exit_code=4
+            ;;
         all)
             validate_agents || exit_code=1
             lint_docs || exit_code=$((exit_code > 0 ? exit_code : 2))
             quality_checks || exit_code=$((exit_code > 0 ? exit_code : 3))
+            run_tests || exit_code=$((exit_code > 0 ? exit_code : 4))
             ;;
         *)
             echo "Unknown command: $command"

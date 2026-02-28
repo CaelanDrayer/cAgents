@@ -142,13 +142,46 @@ Before spawning the orchestrator, classify domain and tier inline:
 
 | Domain | Keywords |
 |--------|----------|
-| Make (engineering) | fix, bug, implement, code, api, database, build, refactor, test, deploy |
-| Make (creative) | write, story, content, design, creative, novel, script, poem |
-| Make (game dev) | game, level, quest, character, mechanic, balance, gameplay |
-| Grow | campaign, marketing, sales, conversion, SEO, funnel, leads, revenue |
-| Operate | budget, cost, forecast, operations, process, supply chain, procurement |
-| People | hire, recruit, onboard, culture, HR, talent, performance review |
-| Serve | support, legal, compliance, customer, SLA, contract, privacy |
+| Engineering | fix, bug, implement, code, api, database, build, refactor, test, deploy, backend, frontend, devops, security, infrastructure |
+| Creative | write, story, content, narrative, novel, script, poem, game art, audio, animation, character design, worldbuild |
+| Business | budget, cost, forecast, operations, process, supply chain, procurement, strategy, campaign, marketing, sales, conversion, SEO, funnel, leads, revenue, product, roadmap, planning |
+| People | hire, recruit, onboard, culture, HR, talent, performance review, benefits, compensation, diversity |
+| Service | support, legal, compliance, customer, SLA, contract, privacy, governance, ticket, escalation |
+
+Load domain controller catalog from `{domain}/config/domain_overrides.yaml`.
+
+**3b-1b. Complexity scoring (9 signals) for progressive pipeline:**
+
+Compute a complexity score (0.0 to 1.0) inline using 9 weighted signals:
+
+| Signal | Weight | Scoring |
+|--------|--------|---------|
+| Request length | 0.15 | <10 words: 0, 10-30: 0.3, 30-60: 0.6, 60+: 1.0 |
+| Complexity keywords | 0.20 | "refactor", "migrate", "integrate", "redesign" each +0.25 (capped 1.0) |
+| Multi-component | 0.10 | "and", "then", "plus", "also" each +0.25 (capped 1.0) |
+| File references | 0.10 | Explicit file paths: +0.33 per file (capped 1.0) |
+| Domain breadth | 0.15 | Multi-domain keywords: 1 domain=0, 2+=1.0 |
+| Test requirements | 0.05 | "with tests", "ensure", "verify": 1.0 if present |
+| Security markers | 0.10 | "auth", "encryption", "RBAC", "security": 1.0 if present |
+| Architecture markers | 0.10 | "API", "database", "microservice", "schema": 1.0 if present |
+| Scale markers | 0.05 | "all", "every", "entire", "comprehensive": 1.0 if present |
+
+`complexity_score = sum(signal_score * weight)`
+
+**Pipeline path selection:**
+
+| Path | Score Range | States | Skip Agents |
+|------|-----------|--------|-------------|
+| **Minimal** | < 0.25 | PLANNED -> PROMPTS_READY -> COORDINATED | orchestrator, decomposer, prompt-engineer, validator |
+| **Medium** | 0.25 - 0.65 | PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED -> VALIDATED | orchestrator, prompt-engineer |
+| **Full** | >= 0.65 or tier 4 | All 7 states | none |
+
+Display the selected path:
+```
+Pipeline: {path} (score: {score:.2f}), Domain={domain}, Tier={tier}, Controller={controller}
+```
+
+**Planner escalation**: After planner runs, if plan.yaml contains `complexity_escalation: medium` or `complexity_escalation: full`, upgrade to the higher path (never downgrade).
 
 **Tier Classification** (minimum tier 2):
 

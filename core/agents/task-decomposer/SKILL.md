@@ -101,7 +101,47 @@ Read `workflow/plan.yaml` for objectives and controller assignment.
 
 ### Outputs
 
-Write `workflow/work_items.yaml` (same content as decomposition.yaml but with the pipeline-standard filename) and `workflow/dependency_graph.yaml`.
+Write `workflow/work_items.yaml` with the v10 enhanced format and `workflow/dependency_graph.yaml`.
+
+### v10 Enhanced Work Item Format (Agent Chaining)
+
+Each work item MUST include:
+- `agent`: Specific agent assignment (e.g., `cagents:architect`, `cagents:backend-developer`)
+- `inputs`: File paths of dependency outputs this work item consumes
+- `outputs`: File path where this agent writes its output (format: `outputs/WI-{N}_{name}.md`)
+- `dependencies`: List of work item IDs that must complete before this one starts
+
+```yaml
+work_items:
+  - id: WI-001
+    name: "Design API architecture"
+    agent: cagents:architect
+    type: DESIGN
+    inputs: [user_request]
+    outputs: ["outputs/WI-001_architecture.md"]
+    acceptance_criteria:
+      - "Architecture decisions documented"
+    dependencies: []
+
+  - id: WI-002
+    name: "Design database schema"
+    agent: cagents:dba
+    type: BUILD
+    inputs: ["outputs/WI-001_architecture.md"]
+    outputs: ["outputs/WI-002_schema.md"]
+    acceptance_criteria:
+      - "Schema migration created"
+    dependencies: [WI-001]
+```
+
+The controller uses this to execute work items in topological order, passing file outputs from completed dependencies as context to downstream agents.
+
+### Adaptive Chain Depth
+
+Chain depth adapts to pipeline path:
+- **Minimal**: 2-3 agents (planner -> executor -> reviewer)
+- **Medium**: 3-5 agents (planner -> architect -> executor -> qa -> reviewer)
+- **Full**: 5-8 agents (full specialist chain)
 
 ### Write Completion Event
 

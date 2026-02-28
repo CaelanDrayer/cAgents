@@ -146,19 +146,21 @@ See @reference/phase-details.md for atomic execution pattern.
 
 ## Cross-Skill Integration
 
+**Note**: `/optimize` runs in `context: fork` and MUST NOT call Skill() to invoke other skills. Use AskUserQuestion handoffs instead.
+
 ### /run Handoff (CRITICAL risk or --plan-only)
-```javascript
-Skill({ skill: "run", args: `implement optimization plan from ${session_id}` })
+```
+AskUserQuestion: "Optimization plan ready. Want to implement? Run: /run Implement optimizations from ${session_id}"
 ```
 
 ### /designer Handoff (--explore-first)
-```javascript
-Skill({ skill: "designer", args: `explore optimization opportunities for ${target}` })
+```
+AskUserQuestion: "Want to explore design options first? Run: /designer Explore optimization opportunities for ${target}"
 ```
 
 ### /review Handoff (--review-after)
-```javascript
-Skill({ skill: "review", args: `${optimizedFiles.join(' ')} --focus quality` })
+```
+AskUserQuestion: "Optimizations applied. Want to review quality? Run: /review ${optimizedFiles} --focus quality"
 ```
 
 ## TodoWrite Pattern

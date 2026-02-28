@@ -1,0 +1,31 @@
+# Business domain overrides
+domain: business
+description: "Strategy, product management, operations, finance, marketing, sales, and business execution"
+
+planner:
+  controller_catalog:
+    tier_2: [operations-manager, campaign-manager]
+    tier_3: [strategic-planner, marketing-strategist, sales-strategist, finance-manager]
+    tier_4: [cpo, cfo, strategic-planner, operations-manager]
+
+router:
+  keywords:
+    - budget
+    - cost
+    - forecast
+    - operations
+    - process
+    - supply chain
+    - procurement
+    - strategy
+    - campaign
+    - marketing
+    - sales
+    - conversion
+    - SEO
+    - funnel
+    - leads
+    - revenue
+    - product
+    - roadmap
+    - planning

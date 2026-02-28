@@ -1,30 +1,28 @@
 ---
 paths:
-  - "operate/**"
+  - "business/agents/operations-*/**"
+  - "business/agents/finance-*/**"
+  - "business/agents/procurement-*/**"
+  - "business/agents/supply-chain-*/**"
+  - "business/agents/quality-manager*/**"
+  - "business/agents/facilities-*/**"
+  - "business/agents/risk-*/**"
+  - "business/agents/process-*/**"
 ---
 
-# Operate Domain Guidelines
+# Operations & Finance Guidelines
 
-Domain-specific patterns for finance and operations workflows.
+Operations and finance agents are part of the **business** domain in v10.0.0. This rules file provides specialized patterns for operations and finance workflows.
 
 ## Controller Selection
 
-**Tier 2** (Moderate complexity):
-- **operations-manager**: Process optimization, operational workflows
-- **finance-manager**: Budgeting, financial reporting
+For operations/finance requests within the business domain:
 
-**Tier 3** (Complex):
-- **Primary**: operations-manager (operations coordination)
-- **Supporting**: finance-manager (financial), compliance-officer (compliance)
-
-**Tier 4** (Expert):
-- **Executive**: cfo (financial oversight), coo (operations oversight)
-- **Primary**: operations-manager (coordination)
-- **Supporting**: finance-manager, compliance-officer, risk-manager
+**Tier 2**: operations-manager, finance-manager
+**Tier 3**: + strategic-planner, compliance-officer
+**Tier 4**: cfo + coo + operations-manager
 
 ## Typical Questions
-
-Operate controllers typically ask:
 
 **Financial Analysis**:
 - "What is the current budget status and variance?"
@@ -41,16 +39,6 @@ Operate controllers typically ask:
 - "What are the operational risks?"
 - "What controls are needed?"
 
-## Execution Agents
-
-Common operate execution agents:
-- **financial-analyst**: Financial modeling, analysis
-- **accountant**: Bookkeeping, financial records
-- **operations-analyst**: Process analysis, efficiency studies
-- **procurement-specialist**: Vendor management, purchasing
-- **compliance-analyst**: Regulatory compliance, audit prep
-- **risk-analyst**: Risk assessment, mitigation planning
-
 ## Config Location
 
-`Agent_Memory/_system/domains/operate/*.yaml`
+`business/config/domain_overrides.yaml`

@@ -1,6 +1,39 @@
 # Controller Coordination Guidelines
 
-Question-based delegation patterns for controllers.
+Question-based delegation patterns for controllers with v10 agent chaining support.
+
+## v10 Agent Chaining: Topological Execution
+
+Controllers execute work items in dependency order, passing context between agents via files:
+
+```
+Controller receives work_items.yaml with agent assignments + dependency graph
+  1. Topological sort by dependencies -> execution order
+  2. For each work item in order:
+     a. Gather output files from completed dependencies
+     b. Read dependency outputs and extract relevant context
+     c. Spawn assigned agent via Task tool with:
+        - Work item description + acceptance criteria
+        - Context summary from dependency outputs
+        - Path to write output file (outputs/WI-{N}_{name}.md)
+     d. Agent executes and writes output to session dir
+     e. Spawn reviewer to check against acceptance criteria
+     f. If REVISE: re-spawn agent with feedback (max 3 rounds)
+  3. Independent work items (no dependency between them) execute in parallel
+  4. After all work items complete: write coordination_log.yaml
+```
+
+### File-Based Context Passing
+
+Agents write outputs to the session directory:
+```
+outputs/
+  WI-001_architecture.md    # architect's output
+  WI-002_schema.md          # dba's output
+  WI-003_implementation.md  # backend-developer's output
+```
+
+Controller reads dependency outputs and summarizes context for the next agent's prompt.
 
 ## CRITICAL: Controllers NEVER Do Direct Work
 

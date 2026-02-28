@@ -96,13 +96,11 @@ Write `instruction.yaml` and `status.yaml` with initial state INIT.
 
 | Domain | Keywords |
 |--------|----------|
-| Make (engineering) | fix, bug, implement, code, api, database, build, refactor, test, deploy |
-| Make (creative) | write, story, content, design, creative, novel, script, poem |
-| Make (game dev) | game, level, quest, character, mechanic, balance, gameplay |
-| Grow | campaign, marketing, sales, conversion, SEO, funnel, leads, revenue |
-| Operate | budget, cost, forecast, operations, process, supply chain, procurement |
-| People | hire, recruit, onboard, culture, HR, talent, performance review |
-| Serve | support, legal, compliance, customer, SLA, contract, privacy |
+| Engineering | fix, bug, implement, code, api, database, build, refactor, test, deploy, devops, CI/CD, architecture |
+| Creative | write, story, content, design, creative, novel, script, poem, narrative, game art, audio, UX |
+| Business | campaign, marketing, sales, budget, cost, forecast, operations, process, product, strategy, revenue, ROI |
+| People | hire, recruit, onboard, culture, HR, talent, performance review, retention, DEI |
+| Service | support, legal, compliance, customer, SLA, contract, privacy, escalation, GDPR |
 
 **Tier Classification** (minimum tier 2):
 
@@ -243,9 +241,13 @@ for each wave K from 1 to N-1:
       SESSION DIR: {SESSION_DIR}  (contains enriched_context.yaml, plan.yaml, work_items.yaml)
       OUTPUTS FROM PREVIOUS WAVES: {SESSION_DIR}/outputs/  (read artifacts from earlier waves)
 
+      CRITICAL: You MUST use /run to execute your work item. Do NOT implement anything directly.
+      Your ONLY job is to invoke /run via the Skill tool and let the pipeline handle execution.
+      Direct implementation without /run is a violation of the team protocol.
+
       INSTRUCTIONS:
       1. Read outputs from previous waves if your work item depends on them
-      2. Invoke /run for your work item:
+      2. MANDATORY: Invoke /run for your work item:
          Skill({ skill: 'run', args: 'execute WI-{N}: {description} --session {SESSION_DIR}' })
       3. /run detects pre-enrichment and picks up from DECOMPOSED
       4. Pipeline: prompt-engineer -> controller -> executor+reviewer -> validator
@@ -273,7 +275,9 @@ for each wave K from 1 to N-1:
          Task({
            description: "RETRY Wave {K} - WI-{N}: <description>",
            prompt: "Previous attempt failed with: {error_context}. Avoid: {failure_cause}.
-                   Execute WI-{N} with adjusted approach. ...",
+                   CRITICAL: You MUST use /run to execute your work item via Skill tool. Do NOT implement directly.
+                   Skill({ skill: 'run', args: 'execute WI-{N}: {description} --session {SESSION_DIR}' })
+                   ...",
            team_name: "{team_name}",
            name: "teammate-w{K}-wi-{N}-retry-{R}",
            subagent_type: "general-purpose"
@@ -400,7 +404,7 @@ Within a single wave, all teammates run in parallel. Use TaskUpdate `addBlockedB
 5. **Validate each GATE before proceeding to the next wave.** Gates are quality checkpoints.
 6. **Shut down wave K teammates before spawning wave K+1 teammates.**
 7. **Maximize the number of waves.** More waves = better quality gating. There is nothing wrong with more waves.
-8. **Teammates invoke /run with --session** to run the full pipeline for their work item.
+8. **Teammates MUST invoke /run via Skill tool** to execute their work item. Teammates NEVER implement directly -- they call `Skill({ skill: 'run', args: '...' })` and let the pipeline handle everything. This is non-negotiable.
 9. **You (the lead) do Wave 0 (enrichment) and the final wave (integration)** -- teammates do all middle waves.
 10. **Never ask permission** between waves. Execute the full pipeline automatically.
 11. **Never just create tasks without spawning teammates** -- tasks without teammates are useless.

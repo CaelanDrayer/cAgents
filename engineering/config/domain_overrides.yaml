@@ -1,0 +1,28 @@
+# Engineering domain overrides
+# Only what differs from core/config/defaults.yaml
+domain: engineering
+description: "Software engineering, infrastructure, security, QA, and game programming"
+
+planner:
+  controller_catalog:
+    tier_2: [engineering-manager]
+    tier_3: [engineering-manager, architect, security-lead]
+    tier_4: [cto, engineering-manager, architect, devops-lead]
+
+router:
+  keywords:
+    - fix
+    - bug
+    - implement
+    - code
+    - api
+    - database
+    - build
+    - refactor
+    - test
+    - deploy
+    - backend
+    - frontend
+    - devops
+    - security
+    - infrastructure

@@ -53,4 +53,4 @@ Common people execution agents:
 
 ## Config Location
 
-`Agent_Memory/_system/domains/people/*.yaml`
+`people/config/domain_overrides.yaml`

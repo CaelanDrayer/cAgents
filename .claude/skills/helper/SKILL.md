@@ -3,7 +3,7 @@ name: helper
 description: "Interactive command guide that explains cAgents skills and recommends the right command for the user's needs. Provides in-depth explanations, usage examples, comparison tables, and guided recommendation through structured questioning."
 argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--topic <topic>] [--troubleshoot <command>]"
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash, TodoWrite
+allowed-tools: Read, Grep, Glob, Bash, TodoWrite, AskUserQuestion
 ---
 
 # /helper - Interactive Command Guide
@@ -91,10 +91,23 @@ When the user provides a natural language description of what they want to do, a
 
 See @reference/recommendation-engine.md for the intent classification logic.
 
+**Intent Classification Patterns:**
+
+| Intent Signal | Keywords / Patterns | Recommended Command |
+|---------------|-------------------|-------------------|
+| Fix / Debug | fix, bug, error, broken, crash, debug, repair, patch | `/run` |
+| Build / Create | build, create, implement, add, make, write code, new feature | `/run` (simple) or `/team` (complex, 3+ components) |
+| Plan / Design | plan, design, architect, explore, think through, spec, prototype | `/designer` |
+| Review / Audit | review, audit, check, inspect, analyze quality, security scan | `/review` |
+| Optimize / Improve | optimize, improve, speed up, reduce, faster, smaller, better | `/optimize` |
+| Coordinate / Multi-domain | launch, restructure, migrate, company-wide, cross-team, strategic | `/org` |
+| Parallel / Large | parallel, team, big feature, multiple components, time-sensitive | `/team` |
+| Learn / Understand | how do I, what is, explain, help, compare, which command | `/helper` |
+
 **Analysis steps:**
-1. Classify the intent (build, plan, review, optimize, parallelize)
-2. Estimate complexity (simple, moderate, complex)
-3. Check for multi-command workflows
+1. Classify the intent using the pattern table above (match keywords)
+2. Estimate complexity (simple, moderate, complex) based on scope words
+3. Check for multi-command workflows (e.g., "plan then build" -> `/designer` then `/run`)
 4. Present recommendation with rationale
 
 **Output format:**
@@ -157,10 +170,10 @@ When the user runs `/helper --topic <topic>`, explain a specific concept.
 Available topics:
 - `flags` -- How flags work across all commands
 - `integration` -- How commands work together (pipelines)
-- `domains` -- The 5 super-domains (Make, Grow, Operate, People, Serve)
+- `domains` -- The 8 business domains (Engineering, Creative, Business, People, Service, Leadership, Shared, Growth)
 - `workflow` -- How the agent orchestration works under the hood
 - `tiers` -- Complexity tiers (2-4) and what they mean
-- `agents` -- The 238 agents and how they are organized
+- `agents` -- The 206 agents and how they are organized
 - `teams` -- How team mode works with tmux/agent teams
 - `sessions` -- Session management, resume, and recovery
 
@@ -190,7 +203,7 @@ Common Issues with /<command>:
 
 ### /run - Universal Workflow Engine
 
-**What**: The general-purpose command that handles any task. It detects the domain (engineering, creative, marketing, finance, HR, support), classifies complexity, creates a plan, coordinates specialist agents, and validates results. Think of it as "do this thing for me."
+**What**: The general-purpose command that handles any task. It detects the domain (engineering, creative, business, people, service), classifies complexity via a 9-signal scoring system, selects the optimal pipeline path (minimal/medium/full), coordinates specialist agents, and validates results. Think of it as "do this thing for me."
 
 **When to use**:
 - Fix a bug, add a feature, refactor code

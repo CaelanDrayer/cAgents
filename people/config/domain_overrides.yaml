@@ -1,0 +1,23 @@
+# People domain overrides
+domain: people
+description: "Human resources, talent acquisition, culture, and people operations"
+
+planner:
+  controller_catalog:
+    tier_2: [hr-manager]
+    tier_3: [hr-manager, talent-acquisition-manager]
+    tier_4: [chro, hr-manager, talent-acquisition-manager]
+
+router:
+  keywords:
+    - hire
+    - recruit
+    - onboard
+    - culture
+    - HR
+    - talent
+    - performance review
+    - benefits
+    - compensation
+    - diversity
+    - employee

@@ -66,7 +66,7 @@ Increment version in both `.claude-plugin/marketplace.json` and `.claude-plugin/
 **Rules Structure** (`.claude/rules/`):
 ```
 core/           # orchestration, controllers, execution, hooks, teams, etc. (9 files)
-domains/        # engineering, grow, operate, people, serve (5 files)
+domains/        # engineering, creative, business, people, service (5 files)
 infrastructure/ # model-routing (1 file)
 memory/         # agent-memory (1 file)
 quality/        # completion, validation-framework, implicit-discovery (3 files)
@@ -82,22 +82,25 @@ quality/        # completion, validation-framework, implicit-discovery (3 files)
 
 **Architecture**: Controller-Centric Coordination with Task Inventory
 - **Tier 1**: 15 core infrastructure agents (includes prompt-engineer)
-- **Tier 2**: Controllers (~53 agents, coordinate via batch delegation)
-- **Tier 3**: Execution agents (~149 agents, implement work items)
-- **Tier 4**: Support agents (~19 agents, foundational services)
-- **Total**: 239 agents across 5 super-domains
-- **Execution**: Event-driven pipeline with state machine loop, revision routing, reviewer loops
+- **Tier 2**: Controllers (coordinate via batch delegation)
+- **Tier 3**: Execution agents (implement work items)
+- **Tier 4**: Support agents (foundational services)
+- **Total**: 206 agents across 8 business domains
+- **Execution**: Event-driven pipeline with progressive paths (minimal/medium/full), revision routing, reviewer loops
 
-**Super-Domains** (5):
-| Domain | Agents | Capability |
-|--------|--------|------------|
-| **Make** | 111 | Creation (engineering, creative, product, game dev -- includes 28 game dev agents) |
-| **Grow** | 38 | Acquisition (marketing, sales) |
-| **Operate** | 13 | Operations (finance, operations) |
-| **People** | 20 | Talent (HR, culture) |
-| **Serve** | 28 | Support & governance (CX, legal, compliance) |
+**Business Domains** (8):
+| Domain | Dir | Agents | Capability |
+|--------|-----|--------|------------|
+| **Engineering** | `engineering/` | 33 | Software engineering, infrastructure, security, QA, game programming |
+| **Creative** | `creative/` | 24 | Creative writing, narrative design, game art, audio |
+| **Business** | `business/` | 69 | Strategy, product, operations, finance, marketing, sales |
+| **People** | `people/` | 19 | HR, talent acquisition, culture |
+| **Service** | `service/` | 32 | Customer support, CX, legal, compliance, governance |
+| **Leadership** | `leadership/` | 10 | C-suite executives (used by /org, not directly routable) |
+| **Core** | `core/` | 15 | Infrastructure agents (trigger, orchestrator, planner, etc.) |
+| **Shared** | `shared/` | 4 | Cross-domain intelligence (BI, data science, market research) |
 
-Plus 15 core infrastructure + 14 shared cross-domain agents.
+**Config**: Each domain has `{domain}/config/domain_overrides.yaml` with controller_catalog and router keywords.
 
 ## CRITICAL: Aggressive Delegation
 
@@ -152,7 +155,7 @@ Workflows proceed automatically through phases WITHOUT asking permission. See `d
 
 **Task Management** (3): `task-consolidator` (40-88% context reduction), `task-decomposer` (aggressive decomposition), `task-inventory` (CSV-based state, 60-80% savings)
 
-**Config**: `{domain}/config/*.yaml` (planner_config.yaml, router_config.yaml, etc.)
+**Config**: `{domain}/config/domain_overrides.yaml` (controller_catalog, router keywords)
 
 ## Aggressive Decomposition
 
@@ -174,16 +177,16 @@ Controllers are the coordination hub between planning and execution. See @.claud
 
 **Key Principles**: Controllers ask (not assign), execution agents answer, synthesis drives implementation, adaptive follow-up questions.
 
-**Controllers by Super-Domain**:
+**Controllers by Domain**:
 | Domain | Tier 2 | Tier 3 | Tier 4 |
 |--------|--------|--------|--------|
-| **Make** | engineering-manager, architect, creative-director | + security-specialist | cto + architect |
-| **Grow** | campaign-manager, sales-strategist | + content-strategist | cro + marketing-strategist |
-| **Operate** | operations-manager, finance-manager | + compliance-officer | cfo + coo |
-| **People** | hr-manager, talent-acquisition | + culture-champion | chro + ceo |
-| **Serve** | customer-success-manager, legal-counsel | + compliance-director | general-counsel |
+| **Engineering** | engineering-manager | + architect, security-lead | cto + engineering-manager + architect |
+| **Creative** | narrative-director | + story-architect, editor | cco + narrative-director |
+| **Business** | operations-manager, campaign-manager | + strategic-planner, marketing-strategist | cpo + cfo + strategic-planner |
+| **People** | hr-manager | + talent-acquisition-manager | chro + hr-manager |
+| **Service** | customer-success-manager, legal-counsel | + vp-customer-support, compliance-director | general-counsel + vp-customer-support |
 
-**Discovery**: Planner loads `planner_config.yaml` -> `controller_catalog` -> matches tier + super-domain
+**Discovery**: Planner loads `{domain}/config/domain_overrides.yaml` -> `controller_catalog` -> matches tier + domain
 
 **Coordinating Phase** (between planning and executing):
 1. Orchestrator spawns controller with plan.yaml + decomposition.yaml
@@ -255,9 +258,9 @@ User Request -> /run (state machine loop, reads pipeline_config.yaml)
 ### /org - Corporate Hierarchy Orchestration (V9.26, V9.30)
 CEO inline logic (`context: none`) with dependency-ordered C-suite analysis via Task (Wave 1 independent agents in parallel, Wave 2 dependent agents reading peer analyses via file-based inline passes), two-phase deliberation (objection phase reads ALL peer analyses for cross-domain context), strategic brief, and sequential /team execution per domain via Skill. Runs inline (not forked) because subagents cannot spawn other subagents. 6-state pipeline: INIT -> ANALYZED -> DELIBERATED -> BRIEFED -> EXECUTED -> INTEGRATED -> COMPLETE.
 ```bash
-/org Launch new product with campaign    # -> Full hierarchy (make_eng + grow + operate_fin)
+/org Launch new product with campaign    # -> Full hierarchy (engineering + business + people)
 /org Fix auth bug                        # -> Single /run with strategic brief
-/org Restructure engineering team        # -> Full hierarchy (make_eng + people)
+/org Restructure engineering team        # -> Full hierarchy (engineering + people)
 /org Migrate to microservices --dry-run  # -> Preview routing decision
 ```
 Skill: `.claude/skills/org/SKILL.md` + `reference/`
@@ -265,10 +268,10 @@ Skill: `.claude/skills/org/SKILL.md` + `reference/`
 ### /run - Event-Driven Pipeline Engine (V9.23, V9.27)
 State machine loop reading pipeline_config.yaml. Sequential enrichment (orchestrator, planner, decomposer, prompt-engineer), nested execution (controller + executor + reviewer), revision routing (FAIL/REVISE). V9.27: Adaptive pipeline (tier 2 fast path skips 3 agents), domain/tier confirmation display, execution analytics (`--analytics`).
 ```bash
-/run Fix auth bug              # -> Make (tier 2: engineering-manager)
-/run Write fantasy story       # -> Make (tier 2: creative-director)
-/run Plan Q4 campaign          # -> Grow (tier 3: marketing-strategist)
-/run Design game mechanics     # -> Make (tier 2: game-designer)
+/run Fix auth bug              # -> Engineering (tier 2: engineering-manager)
+/run Write fantasy story       # -> Creative (tier 2: narrative-director)
+/run Plan Q4 campaign          # -> Business (tier 3: marketing-strategist)
+/run Design game mechanics     # -> Business (tier 2: game-designer)
 ```
 Skill: `.claude/skills/run/SKILL.md` + `reference/`
 
@@ -350,17 +353,17 @@ Agent_Memory/
 
 See @.claude/rules/core/execution.md for execution agent guidelines.
 
-1. Choose tier (controller or execution) and domain
-2. Create `{domain}/agents/my-agent.md` with YAML frontmatter (include `tier`, `domain`, `name`)
-3. Add to `{domain}/.claude-plugin/plugin.json`
-4. Test: `claude --plugin-dir .`
+1. Choose tier (controller or execution) and domain (engineering, creative, business, people, service)
+2. Create `{domain}/agents/my-agent/SKILL.md` with YAML frontmatter (include `tier`, `domain`, `name`)
+3. Add to `{domain}/.claude-plugin/plugin.json` and root `.claude-plugin/plugin.json`
+4. Test: `claude --plugin-dir .` and `bash scripts/ci/validate-agents.sh`
 
 **Controller frontmatter**: `tier: controller`, `coordination_style: question_based`, `typical_questions: [...]`
 **Execution frontmatter**: `tier: execution`, `answers_questions: [...]`, `executes_tasks: [...]`
 
 ## Creating Domains
 
-1. Create `{domain}/config/planner_config.yaml` with `controller_catalog`
+1. Create `{domain}/config/domain_overrides.yaml` with `controller_catalog` and `router.keywords`
 2. Create controller + execution agents in `{domain}/agents/`
 3. Create `{domain}/.claude-plugin/plugin.json`
 4. Update root `.claude-plugin/plugin.json`
@@ -378,16 +381,18 @@ cAgents/
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (20 files, 5 categories)
 |   +-- settings.json        # Hook registration + permissions + env
-|   +-- settings.full.json   # Full config with prompt hooks (reference)
-+-- core/                    # Core infrastructure (14 agents + _templates)
-+-- shared/                  # Cross-domain capabilities (14 agents + resources)
-+-- make/                    # MAKE super-domain (111 agents, configs, manifest)
-+-- grow/                    # GROW (38 agents)
-+-- operate/                 # OPERATE (13 agents)
-+-- people/                  # PEOPLE (20 agents)
-+-- serve/                   # SERVE (28 agents)
++-- engineering/             # Engineering domain (33 agents, config, manifest)
++-- creative/                # Creative domain (24 agents)
++-- business/                # Business domain (69 agents)
++-- people/                  # People domain (19 agents)
++-- service/                 # Service domain (32 agents)
++-- leadership/              # Leadership domain (10 C-suite agents)
++-- core/                    # Core infrastructure (15 agents)
++-- shared/                  # Cross-domain specialists (4 agents)
++-- growth/                  # Growth (legacy, consolidated into business/)
 +-- scripts/                 # Version sync, validation, CI scripts
-+-- docs/                    # Project documentation (17 files)
++-- tests/                   # Vitest test suite (hooks + config)
++-- docs/                    # Project documentation
 +-- .claude-plugin/          # Root manifest
 +-- Agent_Memory/            # Runtime state (git-ignored)
 ```
@@ -427,7 +432,7 @@ cAgents is distributed as a Claude Code plugin. See `.claude-plugin/plugin.json`
 ```
 
 **Key Manifest Fields**:
-- `agents`: Array of SKILL.md paths (239 agents registered)
+- `agents`: Array of SKILL.md paths (206 agents registered)
 - `skills`: Path to skills directory (`.claude/skills/`)
 - `hooks`: Path to settings.json for hook registration
 - `settings.json`: Default settings applied when plugin loads (under `agent` key for subagent defaults)
@@ -457,15 +462,16 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 
 **Skills**: `/org`, `/run`, `/team`, `/designer`, `/review`, `/optimize`, `/helper` (in `.claude/skills/`)
 **Built-in**: `/memory`, `/init` (Claude Code native)
-**Agents**: 239 total (15 core + 14 shared + 210 domain specialists)
-**Super-Domains**: Make (111), Grow (38), Operate (13), People (20), Serve (28)
-**Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/*.yaml`, `Agent_Memory/_system/config/pipeline_config.yaml`
+**Agents**: 206 total (15 core + 4 shared + 10 leadership + 177 domain specialists)
+**Domains**: Engineering (33), Creative (24), Business (69), People (19), Service (32), Leadership (10), Core (15), Shared (4)
+**Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/domain_overrides.yaml`, `Agent_Memory/_system/config/pipeline_config.yaml`
 **Hooks**: 13 event types (16 supported by Claude Code), 15 registered CJS hooks (18 .cjs files), invoked via `run-hook.cjs` launcher
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
-**Pipeline**: Event-driven state machine with revision routing (FAIL/REVISE), reviewer loops, prompt-engineer
-**Version**: 9.30.0
+**Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
+**Tests**: `npm test` runs 265 Vitest tests (hooks + config validation)
+**Version**: 10.0.0
 
 ## Troubleshooting
 

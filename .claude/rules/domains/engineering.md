@@ -1,6 +1,6 @@
 ---
 paths:
-  - "make/**"
+  - "engineering/**"
   - "core/**"
   - "shared/**"
 ---
@@ -56,4 +56,4 @@ Common engineering execution agents:
 
 ## Config Location
 
-`Agent_Memory/_system/domains/engineering/*.yaml`
+`engineering/config/domain_overrides.yaml`

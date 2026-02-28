@@ -1,7 +1,7 @@
 ---
 name: talent-acquisition-manager
 domain: people
-tier: execution
+tier: controller
 description: Strategic recruitment leader for recruiting strategy, pipeline management, and talent market insights.
 model: sonnet
 capabilities:

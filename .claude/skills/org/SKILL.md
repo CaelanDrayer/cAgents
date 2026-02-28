@@ -34,14 +34,17 @@ It MUST run as the main thread (inline), not as a forked subagent. This matches 
 ```
 User (Chairperson)
   +-- /org (CEO inline -- main thread)
-        +-- CTO (Make Engineering) --- backend-lead, frontend-lead, devops-lead, qa-lead, ...
-        +-- CCO (Make Creative) ------ creative-director, editor, game-designer, ...
-        +-- CRO (Grow) -------------- campaign-manager, sales-strategist, ...
-        +-- CFO (Operate Finance) ---- finance-manager, data-analyst, ...
-        +-- COO (Operate Operations) - operations-manager, process-improvement, ...
-        +-- CHRO (People) ----------- hr-manager, talent-acquisition, ...
-        +-- General Counsel (Serve) -- legal-ops-manager, customer-success, ...
+        +-- CTO (Engineering) -------- backend-lead, frontend-lead, devops-lead, qa-lead, ...
+        +-- CCO (Creative) ----------- narrative-director, editor, game-designer, ...
+        +-- CPO (Business - Product) -- product-manager, strategic-planner, ...
+        +-- CRO (Business - Growth) --- campaign-manager, sales-strategist, ...
+        +-- CFO (Business - Finance) -- finance-manager, data-analyst, ...
+        +-- COO (Business - Ops) ------ operations-manager, process-improvement, ...
+        +-- CHRO (People) ------------ hr-manager, talent-acquisition-manager, ...
+        +-- General Counsel (Service) - legal-counsel, customer-success-manager, ...
 ```
+
+**Note**: All C-suite agents reside in `leadership/agents/`. Domain execution agents reside in their respective domain directories (engineering/, creative/, business/, people/, service/, shared/).
 
 ## State Machine (6 States)
 
@@ -135,15 +138,20 @@ Analyze the instruction to determine routing:
 
 **3a. Identify touched domains:**
 
-| Domain Key | C-Suite | Keywords |
-|-----------|---------|----------|
-| make_eng | CTO | fix, bug, implement, code, api, database, build, refactor, test, deploy, architecture |
-| make_cre | CCO | write, story, content, design, creative, novel, script, poem, brand, UX |
-| grow | CRO | campaign, marketing, sales, conversion, SEO, funnel, leads, revenue |
-| operate_fin | CFO | budget, cost, forecast, investment, ROI, financial, funding |
-| operate_ops | COO | operations, process, supply chain, procurement, logistics, efficiency |
-| people | CHRO | hire, recruit, onboard, culture, HR, talent, performance review, team |
-| serve | General Counsel | support, legal, compliance, customer, SLA, contract, privacy |
+| Domain Key | C-Suite | Agent Dir | Keywords |
+|-----------|---------|-----------|----------|
+| engineering | CTO | engineering/ | fix, bug, implement, code, api, database, build, refactor, test, deploy, architecture, devops, CI/CD |
+| creative | CCO | creative/ | write, story, content, design, creative, novel, script, poem, narrative, game art, audio, UX |
+| business | CPO/CRO/CFO/COO | business/ | campaign, marketing, sales, budget, cost, forecast, operations, process, product, strategy, revenue, ROI |
+| people | CHRO | people/ | hire, recruit, onboard, culture, HR, talent, performance review, team, retention, DEI |
+| service | General Counsel | service/ | support, legal, compliance, customer, SLA, contract, privacy, escalation, GDPR |
+
+**Multi-C-Suite for Business domain**: The business domain consolidates product, growth, finance, and operations. When business is touched, activate the most relevant C-suite agent(s) based on keywords:
+- Product/strategy keywords -> CPO
+- Sales/marketing/growth keywords -> CRO
+- Finance/budget/cost keywords -> CFO
+- Operations/process keywords -> COO
+- Multiple sub-areas -> activate multiple C-suite agents for the same domain
 
 See @reference/csuite-mapping.md for detailed mapping.
 
@@ -186,9 +194,13 @@ Before spawning, analyze the instruction to determine which C-suite agents depen
 Default dependency patterns (override based on instruction context):
   - CFO often benefits from CTO analysis (cost of technical scope)
   - CRO often benefits from CCO analysis (brand/creative alignment)
+  - CPO often benefits from CTO + CCO analysis (product feasibility)
   - COO often benefits from CTO + CFO analysis (operational + cost feasibility)
   - CHRO often benefits from COO analysis (org structure implications)
   - General Counsel often benefits from all peers (compliance across domains)
+
+Note: C-suite agents are loaded from leadership/agents/. Each agent's domain
+field in frontmatter identifies their primary domain responsibility.
 
 For each relevant C-suite agent:
   dependencies = analyze_instruction_for_peer_needs(instruction, domain_key)
@@ -595,13 +607,15 @@ Agent_Memory/sessions/org_{timestamp}/
 +-- strategic_brief_draft.yaml
 +-- strategic_brief.yaml
 +-- domain_analyses/
-|   +-- domain_analysis_make_eng.yaml
-|   +-- domain_analysis_make_cre.yaml
-|   +-- domain_analysis_grow.yaml
-|   +-- ...
+|   +-- domain_analysis_engineering.yaml
+|   +-- domain_analysis_creative.yaml
+|   +-- domain_analysis_business.yaml
+|   +-- domain_analysis_people.yaml
+|   +-- domain_analysis_service.yaml
 +-- objections/
 |   +-- objections_cto.yaml
-|   +-- objections_cro.yaml
+|   +-- objections_cco.yaml
+|   +-- objections_cpo.yaml
 |   +-- ...
 +-- {domain_key}/               # /team session per domain
 |   +-- workflow/

@@ -146,7 +146,7 @@ check_agent_frontmatter() {
 
     local issues=0
 
-    for domain in core shared make grow operate people serve; do
+    for domain in core shared engineering creative business growth people service leadership; do
         local domain_dir="$PROJECT_ROOT/$domain/agents"
         [[ ! -d "$domain_dir" ]] && continue
 
@@ -261,8 +261,8 @@ check_required_files() {
         ".claude-plugin/plugin.json"
         ".claude-plugin/marketplace.json"
         ".claude/settings.json"
-        "core/agents/trigger.md"
-        "core/agents/orchestrator.md"
+        "core/agents/trigger/SKILL.md"
+        "core/agents/orchestrator/SKILL.md"
     )
 
     local missing=0

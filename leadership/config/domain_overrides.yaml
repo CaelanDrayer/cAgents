@@ -1,0 +1,12 @@
+# Leadership domain overrides
+# Leadership agents are invoked by /org, not directly by /run
+domain: leadership
+description: "C-suite executives for strategic coordination via /org"
+
+planner:
+  controller_catalog:
+    tier_4: [ceo, cto, cfo, cmo, cro, coo, cco, cpo, chro, cso]
+
+router:
+  note: "Leadership agents are not directly routable. Used by /org command."
+  keywords: []

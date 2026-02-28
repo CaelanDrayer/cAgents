@@ -1,0 +1,22 @@
+# Service domain overrides
+domain: service
+description: "Customer support, CX, legal, compliance, and governance"
+
+planner:
+  controller_catalog:
+    tier_2: [customer-success-manager, legal-counsel]
+    tier_3: [vp-customer-support, legal-counsel, compliance-director]
+    tier_4: [general-counsel, vp-customer-support, compliance-director]
+
+router:
+  keywords:
+    - support
+    - legal
+    - compliance
+    - customer
+    - SLA
+    - contract
+    - privacy
+    - governance
+    - ticket
+    - escalation
