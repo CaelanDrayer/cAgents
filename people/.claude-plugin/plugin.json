@@ -1,6 +1,6 @@
 {
   "name": "cagents-people",
-  "version": "10.1.3",
+  "version": "10.1.4",
   "description": "cAgents people domain - 19 HR, talent acquisition, culture, and people operations agents",
   "agents": [
     "./agents/benefits-administrator/SKILL.md",

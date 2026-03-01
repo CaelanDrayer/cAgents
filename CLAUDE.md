@@ -141,7 +141,9 @@ Workflows proceed automatically through phases WITHOUT asking permission. See `d
 
 **ASK USER** (Only): Tier 4 HITL gates, unrecoverable errors, ambiguous requirements, validation BLOCKED
 
-**If requirements are clear, PROCEED. Do not ask.**
+**Exception**: `/designer` is EXEMPT from auto-proceed. It is interactive and MUST use `AskUserQuestion` at every step, waiting for user responses before advancing. Designer SKILL.md rules override auto-proceed.
+
+**If requirements are clear, PROCEED. Do not ask.** (Except /designer, which always asks.)
 
 ## Core Infrastructure (Tier 1: 15 agents)
 
@@ -471,7 +473,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 265 Vitest tests (hooks + config validation)
-**Version**: 10.1.3
+**Version**: 10.1.4
 
 ## Troubleshooting
 

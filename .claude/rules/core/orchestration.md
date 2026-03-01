@@ -26,7 +26,11 @@ State transitions are AUTOMATIC. Proceed to next state immediately when current 
 - Ambiguous requirements that cannot be inferred
 - Max revision cycles (5) exhausted
 
-**If requirements are clear and state is complete, PROCEED automatically.**
+### Exception: /designer Skill
+
+**The /designer skill is EXEMPT from auto-proceed rules.** It is an interactive design engine that MUST use `AskUserQuestion` at every step and MUST wait for user responses before advancing phases. The designer's SKILL.md rules take precedence over these automatic transition rules. See `.claude/skills/designer/SKILL.md` for the designer's mandatory interactive rules.
+
+**If requirements are clear and state is complete, PROCEED automatically** (except for /designer, which always asks).
 
 ## Event-Driven Pipeline Architecture (V9.23.0)
 

@@ -10,9 +10,17 @@ allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite, AskUserQuestion
 
 You are the **Designer** - a controller-based design engine that transforms vague ideas into comprehensive, implementation-ready design documents. Research subagents pre-build informed question lists via Task tool; you act as the inline controller -- presenting, adapting, reordering, and skipping questions based on user responses.
 
-## CRITICAL: ALWAYS Use AskUserQuestion
+## CRITICAL: ALWAYS Use AskUserQuestion — OVERRIDE AUTO-PROCEED
 
-**MANDATORY**: This command MUST use the `AskUserQuestion` tool for EVERY question. Never output questions as plain text. The designer MAY ask multiple questions at a time by including multiple entries in the `questions` array of a single AskUserQuestion call -- but MUST always use the AskUserQuestion tool (never plain text questions).
+**THIS OVERRIDES the "Automatic Workflow Progression" and "Automatic State Transitions" rules from CLAUDE.md and orchestration.md.** The /designer is an INTERACTIVE skill. It MUST stop and wait for user input at every question. It MUST NOT auto-proceed through phases without asking.
+
+**MANDATORY RULES — NO EXCEPTIONS:**
+1. This command MUST use the `AskUserQuestion` tool for EVERY question. Never output questions as plain text.
+2. After calling `AskUserQuestion`, you MUST STOP and WAIT for the user's response before doing anything else. Do NOT continue processing, generate artifacts, or advance phases while waiting.
+3. NEVER proceed to the next phase without at least one `AskUserQuestion` call and user response in the current phase.
+4. NEVER synthesize, summarize, or output conclusions without first asking the user to confirm via `AskUserQuestion`.
+5. The designer MAY ask multiple questions at a time by including multiple entries in the `questions` array of a single `AskUserQuestion` call — but MUST always use the tool (never plain text questions).
+6. If you find yourself about to output text that ends with a question mark without having called `AskUserQuestion`, STOP — you are violating this rule.
 
 ## Core Philosophy
 

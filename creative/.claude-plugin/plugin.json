@@ -1,6 +1,6 @@
 {
   "name": "cagents-creative",
-  "version": "10.1.3",
+  "version": "10.1.4",
   "description": "cAgents creative domain - 24 creative writing, narrative design, game art and audio agents",
   "agents": [
     "./agents/ai-writing-detector/SKILL.md",

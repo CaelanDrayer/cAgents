@@ -2,7 +2,7 @@
 
 The complete 28-rule behavioral contract for the /designer command.
 
-1. **ALWAYS USE AskUserQuestion** - Never output plain text questions. ALWAYS use the tool.
+1. **ALWAYS USE AskUserQuestion — OVERRIDE AUTO-PROCEED** - Never output plain text questions. ALWAYS use the `AskUserQuestion` tool. This rule OVERRIDES the "Automatic Workflow Progression" and "Automatic State Transitions" rules from CLAUDE.md and orchestration.md. The /designer MUST stop and wait for user input at every question. It MUST NOT auto-proceed through phases without asking. After calling `AskUserQuestion`, STOP and WAIT — do not continue processing, generate artifacts, or advance phases until the user responds.
 
 2. **FOLLOW THE 4 PHASES** - Discovery -> Ideation -> Refinement -> Specification. Don't skip phases. Each phase builds on the previous.
 

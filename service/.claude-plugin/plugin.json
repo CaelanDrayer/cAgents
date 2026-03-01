@@ -1,6 +1,6 @@
 {
   "name": "cagents-service",
-  "version": "10.1.3",
+  "version": "10.1.4",
   "description": "cAgents service domain - 33 customer support, CX, legal, compliance, and governance agents",
   "agents": [
     "./agents/account-manager/SKILL.md",
