@@ -91,6 +91,21 @@ createHook('VerifyCompletion', async (input) => {
   const sessionDir = findActiveSession(input.session_id);
   if (!sessionDir) return null;
 
+  // Skip stale sessions (>24h old) - they're abandoned, not actively running
+  const statusFile = path.join(sessionDir, 'status.yaml');
+  const statusContent = safeRead(statusFile);
+  if (statusContent) {
+    const updatedAt = extractYamlValue(statusContent, 'updated_at') || extractYamlValue(statusContent, 'created_at');
+    if (updatedAt) {
+      const sessionAge = Date.now() - new Date(updatedAt).getTime();
+      const twentyFourHours = 24 * 60 * 60 * 1000;
+      if (sessionAge > twentyFourHours) {
+        console.error(`[VerifyCompletion] Skipping stale session (${Math.round(sessionAge / 3600000)}h old): ${path.basename(sessionDir)}`);
+        return null;
+      }
+    }
+  }
+
   const result = verifyCompletion(sessionDir);
 
   // Write completion summary
