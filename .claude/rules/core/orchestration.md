@@ -32,6 +32,15 @@ State transitions are AUTOMATIC. Proceed to next state immediately when current 
 
 **If requirements are clear and state is complete, PROCEED automatically** (except for /designer, which always asks).
 
+### Task Cleanup at Terminal States
+
+When a pipeline reaches a terminal state (VALIDATED, COMPLETE), the skill engine MUST clean up all tasks created during the session:
+
+1. Call `TaskList` to find any tasks still in `pending` or `in_progress` status
+2. Mark completed work as `TaskUpdate(status: completed)`
+3. Delete obsolete tasks with `TaskUpdate(status: deleted)`
+4. Never leave stale tasks behind — the user sees these in the UI
+
 ## Event-Driven Pipeline Architecture (V9.23.0)
 
 `/run` is now a state machine engine that reads `pipeline_config.yaml` and executes agents sequentially. Each agent writes a completion event file that /run reads to advance the state machine.

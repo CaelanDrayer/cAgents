@@ -116,7 +116,7 @@ When the trigger is invoked from within a team context (teammate running /run), 
 # instruction.yaml (with parent session linkage)
 session_id: run_20260212_102800
 parent_session: team_20260212_102515    # Present when invoked from /team
-request: "WI-003: Implement backend auth endpoints"
+request: "TASK-03: Implement backend auth endpoints"
 domain: engineering
 tier: 3
 ```
@@ -129,7 +129,7 @@ tier: 3
 # Agent_Memory/sessions/{parent_session}/workflow/child_sessions.yaml
 child_sessions:
   - session_id: run_20260212_102800
-    work_item: "WI-003"
+    work_item: "TASK-03"
     created_at: "2026-02-12T10:28:00Z"
 ```
 

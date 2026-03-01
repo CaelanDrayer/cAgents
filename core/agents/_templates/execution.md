@@ -54,5 +54,5 @@ You implement work assigned by controllers:
 
 Write outputs to session directory:
 - Implementation files at specified paths
-- Output summary at outputs/WI-{N}_{name}.md
+- Output summary at outputs/TASK-{N}_{name}.md
 - Evidence: file paths, test results, metrics

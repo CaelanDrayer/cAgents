@@ -28,17 +28,17 @@ When all wave-0 tasks complete, the team lead validates quality criteria and mar
 
 ```javascript
 // Wave 0: Foundation tasks
-TaskCreate({ subject: "WI-001: Setup project structure", ... })   // -> task #1
-TaskCreate({ subject: "WI-002: Define database schema", ... })    // -> task #2
+TaskCreate({ subject: "TASK-01: Setup project structure", ... })   // -> task #1
+TaskCreate({ subject: "TASK-02: Define database schema", ... })    // -> task #2
 
 // Gate 0: Sentinel blocked by all wave-0 tasks
 TaskCreate({ subject: "GATE-0: Foundation Ready", description: "Quality gate. Validate: project structure, schema, contracts.", activeForm: "Validating foundation" })
-TaskUpdate({ taskId: "3", addBlockedBy: ["1", "2"] })             // GATE-0 blocked by WI-001, WI-002
+TaskUpdate({ taskId: "3", addBlockedBy: ["1", "2"] })             // GATE-0 blocked by TASK-01, TASK-02
 
 // Wave 1: Parallel build tasks (blocked by GATE-0)
-TaskCreate({ subject: "WI-003: Build API endpoints", ... })       // -> task #4
+TaskCreate({ subject: "TASK-03: Build API endpoints", ... })       // -> task #4
 TaskUpdate({ taskId: "4", addBlockedBy: ["3"] })                  // blocked by GATE-0
-TaskCreate({ subject: "WI-004: Build UI components", ... })       // -> task #5
+TaskCreate({ subject: "TASK-04: Build UI components", ... })       // -> task #5
 TaskUpdate({ taskId: "5", addBlockedBy: ["3"] })                  // blocked by GATE-0
 
 // Gate 1: Sentinel blocked by all wave-1 tasks
@@ -95,9 +95,9 @@ When all tasks in a wave complete, the team lead validates:
 
 ```
 Parallel wave:
-  Teammate 1 -> Skill({skill: "run", args: "WI-003"}) -> controller -> execution agents
-  Teammate 2 -> Skill({skill: "run", args: "WI-004"}) -> controller -> execution agents
-  Teammate 3 -> Skill({skill: "run", args: "WI-005"}) -> controller -> execution agents
+  Teammate 1 -> Skill({skill: "run", args: "TASK-03"}) -> controller -> execution agents
+  Teammate 2 -> Skill({skill: "run", args: "TASK-04"}) -> controller -> execution agents
+  Teammate 3 -> Skill({skill: "run", args: "TASK-05"}) -> controller -> execution agents
 ```
 
 ## Contract Enforcement

@@ -15,7 +15,7 @@ Controller receives work_items.yaml with agent assignments + dependency graph
      c. Spawn assigned agent via Task tool with:
         - Work item description + acceptance criteria
         - Context summary from dependency outputs
-        - Path to write output file (outputs/WI-{N}_{name}.md)
+        - Path to write output file (outputs/TASK-{N}_{name}.md)
      d. Agent executes and writes output to session dir
      e. Spawn reviewer to check against acceptance criteria
      f. If REVISE: re-spawn agent with feedback (max 3 rounds)
@@ -28,9 +28,9 @@ Controller receives work_items.yaml with agent assignments + dependency graph
 Agents write outputs to the session directory:
 ```
 outputs/
-  WI-001_architecture.md    # architect's output
-  WI-002_schema.md          # dba's output
-  WI-003_implementation.md  # backend-developer's output
+  TASK-01_architecture.md    # architect's output
+  TASK-02_schema.md          # dba's output
+  TASK-03_implementation.md  # backend-developer's output
 ```
 
 Controller reads dependency outputs and summarizes context for the next agent's prompt.
@@ -278,7 +278,7 @@ Add `review_rounds` to coordination_log.yaml for each work item:
 
 ```yaml
 implementation_tasks:
-  - task_id: WI-001
+  - task_id: TASK-01
     name: "{task_name}"
     assigned_to: cagents:{executor}
     acceptance_criteria: [...]

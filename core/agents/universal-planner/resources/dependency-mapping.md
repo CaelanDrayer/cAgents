@@ -72,30 +72,30 @@ auth_endpoints  auth_context
 ```yaml
 dependency_graph:
   critical_path:
-    - WI-001  # Analyze existing
-    - WI-002  # Design architecture
-    - WI-003  # Update user model
-    - WI-004  # Auth service
-    - WI-008  # Integration tests
-    - WI-012  # Security review
-    - WI-016  # Documentation
+    - TASK-01  # Analyze existing
+    - TASK-02  # Design architecture
+    - TASK-03  # Update user model
+    - TASK-04  # Auth service
+    - TASK-08  # Integration tests
+    - TASK-12  # Security review
+    - TASK-16  # Documentation
 
   parallel_groups:
     group_1:  # After design complete
-      - WI-003  # User model
-      - WI-004  # Auth service (can start interface)
+      - TASK-03  # User model
+      - TASK-04  # Auth service (can start interface)
 
     group_2:  # After backend interface defined
-      - WI-005  # Backend endpoints
-      - WI-009  # Frontend pages
+      - TASK-05  # Backend endpoints
+      - TASK-09  # Frontend pages
 
     group_3:  # After implementation
-      - WI-008  # Integration tests
-      - WI-010  # Security tests
+      - TASK-08  # Integration tests
+      - TASK-10  # Security tests
 
   blocking_dependencies:
-    - WI-012 (security_review) blocks production_deploy
-    - WI-008 (integration_tests) blocks merge
+    - TASK-12 (security_review) blocks production_deploy
+    - TASK-08 (integration_tests) blocks merge
 ```
 
 ## Critical Path Analysis
@@ -116,6 +116,6 @@ Look for items that:
 
 ```yaml
 parallel_opportunities:
-  - {items: [WI-003, WI-004], reason: "Same dependency (WI-002), different targets"}
-  - {items: [WI-008, WI-010], reason: "Independent test types, same codebase"}
+  - {items: [TASK-03, TASK-04], reason: "Same dependency (TASK-02), different targets"}
+  - {items: [TASK-08, TASK-10], reason: "Independent test types, same codebase"}
 ```

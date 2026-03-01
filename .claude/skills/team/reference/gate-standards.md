@@ -9,7 +9,7 @@ Standard quality gate criteria for each wave type. The lead applies these standa
 Waves focused on information gathering, analysis, and discovery.
 
 **Criteria**:
-1. All research output files exist in `outputs/wi-{N}/`
+1. All research output files exist in `outputs/task-{N}/`
 2. Each output has a structured summary section (minimum 200 words)
 3. Key findings are documented with evidence (file paths, data points, references)
 4. Gaps or unknowns are explicitly noted (not silently omitted)
@@ -137,7 +137,7 @@ gates:
     gaps:
       - criterion: "Key findings documented"
         status: partial
-        note: "WI-002 findings lack quantitative evidence"
+        note: "TASK-02 findings lack quantitative evidence"
     timestamp: "{ISO_TIMESTAMP}"
   GATE-2:
     wave: 2

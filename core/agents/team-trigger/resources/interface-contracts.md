@@ -57,7 +57,7 @@ for each contract where established_in == gate.wave:
 Consumer teammates should reference contract artifacts in their `/run` instructions:
 
 ```
-Execute WI-003: Build user service.
+Execute TASK-03: Build user service.
 Contract dependency: Database Schema from platform team.
 Reference artifacts: schema.prisma, src/models/
 ```
@@ -79,7 +79,7 @@ When creating teammate tasks, include contract context:
 
 ```javascript
 TaskCreate({
-  subject: "WI-003: Build user API endpoints",
+  subject: "TASK-03: Build user API endpoints",
   description: `Execute via /run: Build user CRUD endpoints.
     Contract: Consumes "Database Schema & Models" from platform team.
     Reference: schema.prisma, src/models/, src/types/

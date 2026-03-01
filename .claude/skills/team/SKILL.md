@@ -180,9 +180,9 @@ Create a task for EVERY work item from `work_items.yaml` using TaskCreate. Also 
 For each work item:
 ```
 TaskCreate({
-  subject: "WI-{N}: <description>",
+  subject: "TASK-{N}: <description>",
   description: "Wave {W}. Work item from decomposition. <details and acceptance criteria>",
-  activeForm: "Executing WI-{N}"
+  activeForm: "Executing TASK-{N}"
 })
 ```
 
@@ -253,10 +253,10 @@ for each wave K from 1 to N-1:
       # e.g., if plan.yaml assigns engineering-manager, use that as the suffix
 
       Task({
-        description: "Wave {K} - Execute WI-{N}: <short description>",
+        description: "Wave {K} - Execute TASK-{N}: <short description>",
         prompt: "You are a teammate executing a work item in wave {K} of the pipeline.
 
-      WORK ITEM: WI-{N}: <full description>
+      WORK ITEM: TASK-{N}: <full description>
       WAVE: {K} of {total_waves}
       ACCEPTANCE CRITERIA: <criteria>
       SESSION DIR: {SESSION_DIR}  (contains enriched_context.yaml, plan.yaml, work_items.yaml)
@@ -269,24 +269,24 @@ for each wave K from 1 to N-1:
       INSTRUCTIONS:
       1. Read outputs from previous waves if your work item depends on them
       2. MANDATORY: Invoke /run for your work item:
-         Skill({ skill: 'run', args: 'execute WI-{N}: {description} --session {SESSION_DIR}' })
+         Skill({ skill: 'run', args: 'execute TASK-{N}: {description} --session {SESSION_DIR}' })
       3. /run detects pre-enrichment and picks up from DECOMPOSED
       4. Pipeline: prompt-engineer -> controller -> executor+reviewer -> validator
-      5. Write your outputs to {SESSION_DIR}/outputs/wi-{N}/
+      5. Write your outputs to {SESSION_DIR}/outputs/task-{N}/
       6. If issues arise: flag to lead via SendMessage but continue working
       7. On completion:
          TaskUpdate({ taskId: '{task_id}', status: 'completed' })
-         SendMessage({ type: 'message', recipient: '{lead_name}', content: 'WI-{N} complete. <summary>', summary: 'WI-{N} done' })",
+         SendMessage({ type: 'message', recipient: '{lead_name}', content: 'TASK-{N} complete. <summary>', summary: 'TASK-{N} done' })",
         team_name: "{team_name}",
-        name: "w{K}-wi-{N}-{controller_type}",
+        name: "w{K}-task-{N}-{controller_type}",
         subagent_type: "general-purpose"
       })
 
       # The {controller_type} suffix comes from the controller assigned to this work item
       # in plan.yaml (e.g., "engineering-manager", "narrative-director", "campaign-manager").
       # This makes teammate names self-documenting in the UI:
-      #   w1-wi-3-engineering-manager
-      #   w2-wi-5-backend-developer
+      #   w1-task-3-engineering-manager
+      #   w2-task-5-backend-developer
 
   5c. Monitor wave K progress:
       - Wait for teammate messages (they arrive automatically)
@@ -300,12 +300,12 @@ for each wave K from 1 to N-1:
 
       ```
       # As each teammate completes:
-      On receiving "WI-{N} complete" from w{K}-wi-{N}-{type}:
-        1. Verify the work item output exists in {SESSION_DIR}/outputs/wi-{N}/
+      On receiving "TASK-{N} complete" from w{K}-task-{N}-{type}:
+        1. Verify the work item output exists in {SESSION_DIR}/outputs/task-{N}/
         2. If verified: send immediate shutdown
            SendMessage({ type: "shutdown_request",
-                         recipient: "w{K}-wi-{N}-{type}",
-                         content: "WI-{N} verified complete. Shutting down early." })
+                         recipient: "w{K}-task-{N}-{type}",
+                         content: "TASK-{N} verified complete. Shutting down early." })
         3. Track: wave_K_completed += 1
         4. If wave_K_completed == wave_K_total: proceed to GATE validation (5d)
       ```
@@ -320,17 +320,17 @@ for each wave K from 1 to N-1:
       Recovery chain (max 2 retries per work item):
       1. RETRY: Spawn replacement teammate with error context:
          Task({
-           description: "RETRY Wave {K} - WI-{N}: <description>",
+           description: "RETRY Wave {K} - TASK-{N}: <description>",
            prompt: "Previous attempt failed with: {error_context}. Avoid: {failure_cause}.
                    CRITICAL: You MUST use /run to execute your work item via Skill tool. Do NOT implement directly.
-                   Skill({ skill: 'run', args: 'execute WI-{N}: {description} --session {SESSION_DIR}' })
+                   Skill({ skill: 'run', args: 'execute TASK-{N}: {description} --session {SESSION_DIR}' })
                    ...",
            team_name: "{team_name}",
-           name: "w{K}-wi-{N}-{controller_type}-retry-{R}",
+           name: "w{K}-task-{N}-{controller_type}-retry-{R}",
            subagent_type: "general-purpose"
          })
       2. SIMPLIFY: If retry fails, break the work item into sub-items:
-         Create WI-{N}a (core implementation) and WI-{N}b (edge cases + testing)
+         Create TASK-{N}a (core implementation) and TASK-{N}b (edge cases + testing)
          Spawn separate teammates for each sub-item
       3. ESCALATE: If simplify also fails, mark the work item as blocked:
          TaskUpdate({ taskId: "{task_id}", status: "completed",
@@ -341,7 +341,7 @@ for each wave K from 1 to N-1:
       Track recovery metrics per wave:
         recovery_attempts: {count}
         successful_recoveries: {count}
-        blocked_items: [{WI-ids}]
+        blocked_items: [{TASK-ids}]
 
   5d. Validate GATE-K when all wave K items complete (or blocked):
       - Verify outputs exist for each work item in wave K
@@ -354,7 +354,7 @@ for each wave K from 1 to N-1:
   5e. Shut down any remaining wave K teammates before spawning wave K+1:
       Most teammates should already be shut down via early individual shutdown (5c-1).
       Send shutdown to any that remain (e.g., teammates that timed out or are stuck):
-      SendMessage({ type: "shutdown_request", recipient: "w{K}-wi-{N}-{type}", content: "Wave {K} complete." })
+      SendMessage({ type: "shutdown_request", recipient: "w{K}-task-{N}-{type}", content: "Wave {K} complete." })
 
   5f. Proceed to wave K+1 (AUTOMATIC -- do NOT ask permission)
 ```
@@ -401,7 +401,9 @@ SendMessage({ type: "shutdown_request", recipient: "<teammate_name>", content: "
 TeamDelete()
 ```
 
-3. Report final results to the user including:
+3. **Clean up tasks**: Call `TaskList` and mark all session tasks as `completed` or `deleted` via `TaskUpdate`. Never leave stale in_progress tasks behind.
+
+4. Report final results to the user including:
    - Total waves executed
    - Work items completed per wave
    - Gate validation results per wave
@@ -417,17 +419,17 @@ TeamDelete()
 Each wave's outputs are available to subsequent waves via the shared session directory:
 
 ```
-Wave 1 teammate (WI-001):
-  Completes -> writes outputs/wi-001/api_spec.yaml
-  TaskUpdate(WI-001, completed)
-  SendMessage(lead, "WI-001 done")
+Wave 1 teammate (TASK-01):
+  Completes -> writes outputs/task-01/api_spec.yaml
+  TaskUpdate(TASK-01, completed)
+  SendMessage(lead, "TASK-01 done")
 
 Lead validates GATE-1 -> marks complete -> unblocks wave 2
 
-Wave 2 teammate (WI-003, depends on WI-001):
-  Reads outputs/wi-001/api_spec.yaml from session dir
+Wave 2 teammate (TASK-03, depends on TASK-01):
+  Reads outputs/task-01/api_spec.yaml from session dir
   Builds on wave 1 outputs
-  Writes outputs/wi-003/implementation/
+  Writes outputs/task-03/implementation/
 ```
 
 ### Intra-Wave Parallelism
@@ -473,7 +475,7 @@ GATE validation criteria are standardized by wave type. The lead uses these crit
 | **Documentation** | Doc files updated; API changes reflected; examples provided | `file_exists` + `content_check` |
 
 **Gate validation algorithm**:
-1. For each work item in the wave, check if output directory exists (`outputs/wi-{N}/`)
+1. For each work item in the wave, check if output directory exists (`outputs/task-{N}/`)
 2. Apply wave-type-specific criteria from the table above
 3. Compute gate score: `completed_criteria / total_criteria`
 4. Gate result:
@@ -496,13 +498,13 @@ Team execution partially complete:
   Wave 4 (Documentation):  NOT STARTED (blocked by Wave 3 gap)
 
 Completed outputs: Agent_Memory/sessions/{id}/outputs/
-  - wi-001/ through wi-007/: COMPLETE
-  - wi-008/ and wi-009/:     COMPLETE
-  - wi-010/:                 BLOCKED (test framework incompatibility)
-  - wi-011/ through wi-012/: NOT STARTED
+  - task-01/ through task-07/: COMPLETE
+  - task-08/ and task-09/:     COMPLETE
+  - task-10/:                 BLOCKED (test framework incompatibility)
+  - task-11/ through task-12/: NOT STARTED
 
 Recovery:
-  - Fix wi-010 manually, then: /team --resume {session_id}
+  - Fix task-10 manually, then: /team --resume {session_id}
   - Or accept partial results and continue from outputs/
 ```
 
@@ -517,7 +519,7 @@ Recovery:
 status: partial
 completed_waves: [1, 2]
 partial_waves:
-  3: {completed: [WI-008, WI-009], blocked: [WI-010], reason: "test framework incompatibility"}
+  3: {completed: [TASK-08, TASK-09], blocked: [TASK-10], reason: "test framework incompatibility"}
 not_started_waves: [4]
 total_items: 12
 completed_items: 9
@@ -525,7 +527,7 @@ blocked_items: 1
 not_started_items: 2
 completion_rate: 0.75
 output_locations:
-  - outputs/wi-001/ through outputs/wi-009/
+  - outputs/task-01/ through outputs/task-09/
 resume_command: "/team --resume {session_id}"
 ```
 
@@ -556,7 +558,7 @@ When invoked by `/org`, the session directory may contain a `strategic_brief.yam
      {domain_key}:
        progress: {percentage}
        status: in_progress|completed
-       completed_wis: [WI-xxx, ...]
+       completed_wis: [TASK-xx, ...]
        blockers: []
    ```
    - Write updates to `${SESSION_DIR}/strategic_brief.yaml` (the brief is the CEO's monitoring interface)

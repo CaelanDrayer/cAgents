@@ -436,10 +436,10 @@ You: /team Implement OAuth2 with Google, GitHub, and email login
   |
   v
 [Team Trigger] Decomposes into work items:
-  WI-001: Implement Google OAuth provider
-  WI-002: Implement GitHub OAuth provider
-  WI-003: Implement email/password login
-  WI-004: Create unified auth middleware
+  TASK-01: Implement Google OAuth provider
+  TASK-02: Implement GitHub OAuth provider
+  TASK-03: Implement email/password login
+  TASK-04: Create unified auth middleware
   |
   v
 [Team Creation] Creates agent team + shared task list

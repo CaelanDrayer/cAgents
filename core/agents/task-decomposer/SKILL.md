@@ -108,30 +108,30 @@ Write `workflow/work_items.yaml` with the v10 enhanced format and `workflow/depe
 Each work item MUST include:
 - `agent`: Specific agent assignment (e.g., `cagents:architect`, `cagents:backend-developer`)
 - `inputs`: File paths of dependency outputs this work item consumes
-- `outputs`: File path where this agent writes its output (format: `outputs/WI-{N}_{name}.md`)
+- `outputs`: File path where this agent writes its output (format: `outputs/TASK-{N}_{name}.md`)
 - `dependencies`: List of work item IDs that must complete before this one starts
 
 ```yaml
 work_items:
-  - id: WI-001
+  - id: TASK-01
     name: "Design API architecture"
     agent: cagents:architect
     type: DESIGN
     inputs: [user_request]
-    outputs: ["outputs/WI-001_architecture.md"]
+    outputs: ["outputs/TASK-01_architecture.md"]
     acceptance_criteria:
       - "Architecture decisions documented"
     dependencies: []
 
-  - id: WI-002
+  - id: TASK-02
     name: "Design database schema"
     agent: cagents:dba
     type: BUILD
-    inputs: ["outputs/WI-001_architecture.md"]
-    outputs: ["outputs/WI-002_schema.md"]
+    inputs: ["outputs/TASK-01_architecture.md"]
+    outputs: ["outputs/TASK-02_schema.md"]
     acceptance_criteria:
       - "Schema migration created"
-    dependencies: [WI-001]
+    dependencies: [TASK-01]
 ```
 
 The controller uses this to execute work items in topological order, passing file outputs from completed dependencies as context to downstream agents.

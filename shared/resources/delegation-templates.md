@@ -56,8 +56,8 @@ Please implement and provide evidence of completion.
 ```javascript
 Task({
   subagent_type: "cagents:backend-developer",
-  description: "Implement WI-003: User model",
-  prompt: "Implementation Task from engineering-manager:\n\nWork Item: WI-003\nName: Implement user model\n\nAcceptance Criteria:\n- User model has password_hash field\n- Database migration created\n- Unit tests pass\n\nDependencies Completed: WI-001 (analysis), WI-002 (design)\n\nPlease implement and provide evidence of completion."
+  description: "Implement TASK-03: User model",
+  prompt: "Implementation Task from engineering-manager:\n\nWork Item: TASK-03\nName: Implement user model\n\nAcceptance Criteria:\n- User model has password_hash field\n- Database migration created\n- Unit tests pass\n\nDependencies Completed: TASK-01 (analysis), TASK-02 (design)\n\nPlease implement and provide evidence of completion."
 })
 ```
 

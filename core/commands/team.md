@@ -156,9 +156,9 @@ team_composition:
     +-- team-trigger (decomposes, creates tmux session with split panes)
         |
         +-- tmux pane 0: Team Lead (monitors progress)
-        +-- tmux pane 1: claude /run WI-001 --> (full orchestration) --> Complete
-        +-- tmux pane 2: claude /run WI-002 --> (full orchestration) --> Complete
-        +-- tmux pane 3: claude /run WI-003 --> (full orchestration) --> Complete
+        +-- tmux pane 1: claude /run TASK-01 --> (full orchestration) --> Complete
+        +-- tmux pane 2: claude /run TASK-02 --> (full orchestration) --> Complete
+        +-- tmux pane 3: claude /run TASK-03 --> (full orchestration) --> Complete
         |                    (parallel in split panes -- all visible at once)
         |
         +-- Aggregates /run outputs into final result
@@ -184,7 +184,7 @@ tmux split-window -t "cagents-team-${SESSION_ID}"
 # Apply tiled layout and launch claude /run in the new pane
 tmux select-layout -t "cagents-team-${SESSION_ID}" tiled
 tmux send-keys -t "cagents-team-${SESSION_ID}.1" \
-  "claude --print '/run implement WI-001: ${item.description} from team session ${SESSION_ID}'" Enter
+  "claude --print '/run implement TASK-01: ${item.description} from team session ${SESSION_ID}'" Enter
 ```
 
 ### Agent Teams Mode (Alternative)
@@ -195,7 +195,7 @@ Team members are spawned and each one invokes `/run` for their claimed work item
 SendMessage({
   to: "member-1",
   message: `Execute your work item via /run:
-    Skill({ skill: "run", args: "implement WI-001: ${item.description} from team session ${session_id}" })`
+    Skill({ skill: "run", args: "implement TASK-01: ${item.description} from team session ${session_id}" })`
 });
 ```
 
@@ -204,8 +204,8 @@ SendMessage({
 Parallel `/run` invocations sent in a single message:
 
 ```javascript
-Skill({ skill: "run", args: `implement WI-001: ${item1.description} from team session ${session_id}` })
-Skill({ skill: "run", args: `implement WI-002: ${item2.description} from team session ${session_id}` })
+Skill({ skill: "run", args: `implement TASK-01: ${item1.description} from team session ${session_id}` })
+Skill({ skill: "run", args: `implement TASK-02: ${item2.description} from team session ${session_id}` })
 ```
 
 **User notification** (when tmux + Agent Teams unavailable):

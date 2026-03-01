@@ -218,7 +218,7 @@ The controller (PROMPTS_READY state) spawns execution agents and reviewers at le
 1. **INIT** -- /run creates session `run_20260227_143022/`, classifies domain=Make, tier=2
 2. **Orchestrator** -- Enriches context: project uses JWT auth, Express backend, React frontend
 3. **Planner** -- Defines objectives, selects `engineering-manager` as controller
-4. **Decomposer** -- Creates work items: WI-001 (investigate), WI-002 (fix), WI-003 (test)
+4. **Decomposer** -- Creates work items: TASK-01 (investigate), TASK-02 (fix), TASK-03 (test)
 5. **Prompt-engineer** -- Reads auth-related code, crafts delegation prompts with code snippets
 6. **Engineering-manager** (controller) -- Asks questions:
    - "What is the current auth implementation?" -> delegates to `backend-developer`
@@ -285,7 +285,7 @@ Each wave is a distinct spawn-execute-validate cycle:
 **Key principle**: Teammates never implement directly. Each teammate invokes `/run` via the Skill tool, which creates its own controller and execution agents.
 
 ```
-Teammate -> Skill({skill: "run", args: "WI-001: ..."})
+Teammate -> Skill({skill: "run", args: "TASK-01: ..."})
   -> /run state machine -> controller -> execution agents -> validated output
 ```
 
@@ -356,18 +356,18 @@ More waves are always better -- each wave provides a quality gate checkpoint, a 
    - Lead scaffolds OAuth config, database schema
 
 2. **Wave 1 (2 teammates, parallel)**:
-   - Teammate-1: `/run WI-001: Design OAuth flow and provider integration`
-   - Teammate-2: `/run WI-002: Research token management strategy`
+   - Teammate-1: `/run TASK-01: Design OAuth flow and provider integration`
+   - Teammate-2: `/run TASK-02: Research token management strategy`
    - GATE-1: Lead validates design artifacts exist
 
 3. **Wave 2 (3 teammates, parallel)**:
-   - Teammate-3: `/run WI-003: Implement OAuth provider endpoints`
-   - Teammate-4: `/run WI-004: Implement token refresh logic`
-   - Teammate-5: `/run WI-005: Build login/logout UI components`
+   - Teammate-3: `/run TASK-03: Implement OAuth provider endpoints`
+   - Teammate-4: `/run TASK-04: Implement token refresh logic`
+   - Teammate-5: `/run TASK-05: Build login/logout UI components`
    - GATE-2: Lead validates endpoints work, UI renders
 
 4. **Wave 3 (1 teammate)**:
-   - Teammate-6: `/run WI-006: Integration tests + security audit`
+   - Teammate-6: `/run TASK-06: Integration tests + security audit`
    - GATE-3: Lead validates tests pass, no vulnerabilities
 
 5. **Wave 4 (Lead)**: Integration
@@ -781,7 +781,7 @@ synthesized_solution:
   implementation_steps: [...]
   risks: [...]
 implementation_tasks:
-  - task_id: WI-002
+  - task_id: TASK-02
     name: "Fix JWT validation"
     assigned_to: cagents:backend-developer
     acceptance_criteria: [...]

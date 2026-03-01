@@ -40,8 +40,8 @@ Controller -> Agent 1 -> Agent 2 -> Agent 3 -> Results
         |
     Step 6: FOR EACH Wave K (1 to N-1):
         +-- Spawn teammates for wave K (parallel within wave)
-        |   +-- Teammate 1: /run WI-{X} --> (controller -> execution agents) --> Complete
-        |   +-- Teammate 2: /run WI-{Y} --> (controller -> execution agents) --> Complete
+        |   +-- Teammate 1: /run TASK-{X} --> (controller -> execution agents) --> Complete
+        |   +-- Teammate 2: /run TASK-{Y} --> (controller -> execution agents) --> Complete
         |                    (parallel -- each in own context/tmux pane)
         +-- Monitor + validate GATE-K
         +-- Shut down wave K teammates

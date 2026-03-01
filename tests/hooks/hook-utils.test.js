@@ -226,24 +226,24 @@ describe('hook-utils.cjs', () => {
 
   describe('areDependenciesMet', () => {
     it('should return true when no dependencies', () => {
-      const item = { id: 'WI-001', dependencies: [] };
+      const item = { id: 'TASK-01', dependencies: [] };
       expect(hookUtils.areDependenciesMet(item, [])).toBe(true);
     });
 
     it('should return true when all deps completed', () => {
-      const item = { id: 'WI-002', dependencies: ['WI-001'] };
+      const item = { id: 'TASK-02', dependencies: ['TASK-01'] };
       const allItems = [
-        { id: 'WI-001', status: 'completed' },
-        { id: 'WI-002', status: 'pending', dependencies: ['WI-001'] }
+        { id: 'TASK-01', status: 'completed' },
+        { id: 'TASK-02', status: 'pending', dependencies: ['TASK-01'] }
       ];
       expect(hookUtils.areDependenciesMet(item, allItems)).toBe(true);
     });
 
     it('should return false when deps not completed', () => {
-      const item = { id: 'WI-002', dependencies: ['WI-001'] };
+      const item = { id: 'TASK-02', dependencies: ['TASK-01'] };
       const allItems = [
-        { id: 'WI-001', status: 'pending' },
-        { id: 'WI-002', status: 'pending', dependencies: ['WI-001'] }
+        { id: 'TASK-01', status: 'pending' },
+        { id: 'TASK-02', status: 'pending', dependencies: ['TASK-01'] }
       ];
       expect(hookUtils.areDependenciesMet(item, allItems)).toBe(false);
     });

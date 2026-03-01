@@ -169,14 +169,14 @@ Implement user authentication
 ## Work Items
 
 ### Completed
-- [x] WI-001: Analyze existing auth - Evidence: analysis.md
-- [x] WI-002: Design auth architecture - Evidence: design.yaml
+- [x] TASK-01: Analyze existing auth - Evidence: analysis.md
+- [x] TASK-02: Design auth architecture - Evidence: design.yaml
 
 ### In Progress
-- [ ] WI-003: Implement user model - Assigned to: backend-developer
+- [ ] TASK-03: Implement user model - Assigned to: backend-developer
 
 ### Pending
-- [ ] WI-004: Add auth endpoints - Blocked by: WI-003
+- [ ] TASK-04: Add auth endpoints - Blocked by: TASK-03
 ```
 
 ### File 2: findings.md (1000-5000 tokens)
@@ -219,7 +219,7 @@ Current status and resume instructions.
 
 ## Resume Instructions
 1. Read: task_plan.md, findings.md
-2. Continue from: WI-003 implementation
+2. Continue from: TASK-03 implementation
 ```
 
 ### Context Efficiency
@@ -242,12 +242,12 @@ phase: coordinating
 created_at: "2026-01-27T17:00:00Z"
 
 work_items:
-  completed: [WI-001, WI-002]
-  in_progress: [WI-003]
-  pending: [WI-004, WI-005]
+  completed: [TASK-01, TASK-02]
+  in_progress: [TASK-03]
+  pending: [TASK-04, TASK-05]
 
 resume_hints:
-  next_action: "Continue with WI-003 implementation"
+  next_action: "Continue with TASK-03 implementation"
   context_needed: [task_plan.md, findings.md]
 ```
 

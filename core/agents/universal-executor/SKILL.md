@@ -98,13 +98,13 @@ continuations:
   - attempt: 1
     agent: cagents:backend-developer
     reason: context_exhaustion
-    recovered_items: [WI-003, WI-004]
-    remaining_items: [WI-005, WI-006, WI-007]
+    recovered_items: [TASK-03, TASK-04]
+    remaining_items: [TASK-05, TASK-06, TASK-07]
   - attempt: 2
     agent: cagents:backend-developer
     reason: context_exhaustion
-    recovered_items: [WI-005, WI-006]
-    remaining_items: [WI-007]
+    recovered_items: [TASK-05, TASK-06]
+    remaining_items: [TASK-07]
 ```
 
 See @resources/executor-patterns.md for monitoring and blocker handling.

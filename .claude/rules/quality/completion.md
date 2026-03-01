@@ -114,6 +114,11 @@ Add 3K tokens per coordination cycle for evidence tracking (included in planning
 - [ ] Evidence chain confirmed
 - [ ] All derived_from work items complete
 
+**At Session End (Task Cleanup):**
+- [ ] All TaskCreate tasks marked completed or deleted via TaskUpdate
+- [ ] No stale in_progress tasks left behind
+- [ ] TaskList returns no orphaned tasks from this session
+
 ## Protocol Location
 
 `Agent_Memory/_system/task_completion_protocol.yaml`

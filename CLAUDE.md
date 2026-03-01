@@ -241,6 +241,21 @@ User Request -> /run (state machine loop, reads pipeline_config.yaml)
 
 **Evidence must be specific**: File paths, test results, metrics. No "probably works" or "mostly done".
 
+## CRITICAL: Task Cleanup Protocol
+
+**Every `TaskCreate` MUST have a matching `TaskUpdate(status: completed)` before the agent stops.** Stale in_progress tasks confuse users and clutter the UI.
+
+**Rules**:
+1. When you create a task via `TaskCreate`, you OWN its lifecycle — mark it `completed` when done
+2. Before stopping or finishing a skill, check `TaskList` and resolve all your tasks
+3. `/run`, `/team`, `/org`, `/designer` MUST clean up all tasks at pipeline/session end
+4. If a task is no longer needed, use `TaskUpdate(status: deleted)` — never leave it in_progress
+
+**Anti-patterns** (never do this):
+- Creating a task, doing the work, then stopping without marking it completed
+- Leaving tasks as `in_progress` after the work is committed/pushed
+- Creating tracking tasks that are never updated
+
 ## Skills (Commands)
 
 **V9.0+**: Skills in `.claude/skills/`, auto-discovered.
@@ -473,7 +488,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 265 Vitest tests (hooks + config validation)
-**Version**: 10.1.4
+**Version**: 10.1.5
 
 ## Troubleshooting
 

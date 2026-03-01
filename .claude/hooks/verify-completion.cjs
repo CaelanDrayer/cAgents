@@ -144,5 +144,11 @@ ${result.warnings.length > 0 ? `warnings:\n${result.warnings.map(w => `  - "${w}
   }
 
   console.error('[VerifyCompletion] All completion criteria verified');
-  return null;
+
+  // Always remind to clean up tasks (the hook cannot check TaskList directly,
+  // but the systemMessage prompts the agent to do so before stopping)
+  return {
+    continue: true,
+    systemMessage: 'Before stopping: call TaskList and mark all your in_progress/pending tasks as completed or deleted via TaskUpdate. Never leave stale tasks behind.'
+  };
 });

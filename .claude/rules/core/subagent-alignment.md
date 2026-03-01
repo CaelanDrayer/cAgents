@@ -148,7 +148,7 @@ Task({
 Task({
   subagent_type: "cagents:backend-developer",
   description: "Implement user authentication",
-  prompt: "Implementation task from engineering-manager:\n\nWork Item: WI-003...\nAcceptance Criteria: ..."
+  prompt: "Implementation task from engineering-manager:\n\nWork Item: TASK-03...\nAcceptance Criteria: ..."
 })
 ```
 
@@ -167,7 +167,7 @@ Task({
 Task({
   subagent_type: "cagents:qa-lead",
   description: "Review authentication implementation",
-  prompt: "Validation task:\n\nVerify WI-003 acceptance criteria:\n- Tests pass\n- Security scan clean..."
+  prompt: "Validation task:\n\nVerify TASK-03 acceptance criteria:\n- Tests pass\n- Security scan clean..."
 })
 ```
 

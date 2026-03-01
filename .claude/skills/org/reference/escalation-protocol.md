@@ -32,7 +32,7 @@ Within a /team session, the controller writes to domain_status.escalations:
 escalations:
   - type: dependency_conflict
     description: "Need API spec from grow domain before implementation"
-    blocking_wi: WI-003
+    blocking_wi: TASK-03
     requested_action: "Prioritize API spec in grow domain"
     escalated_at: "{timestamp}"
 ```

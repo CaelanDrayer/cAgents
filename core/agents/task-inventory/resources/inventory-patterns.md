@@ -75,7 +75,7 @@ request:
     limit: 10
 
 result:
-  assigned: [WI-003, WI-004, WI-005, ...]
+  assigned: [TASK-03, TASK-04, TASK-05, ...]
   tokens_saved: 4500
 ```
 
@@ -85,17 +85,17 @@ request:
   operation: batch_complete
   agent: backend-developer
   completions:
-    - task_id: WI-003
-      output_path: outputs/wi-003/
+    - task_id: TASK-03
+      output_path: outputs/task-03/
       notes: "Implemented with tests"
-    - task_id: WI-004
+    - task_id: TASK-04
       status: failed
       notes: "Dependency missing"
 
 result:
-  completed: [WI-003]
-  failed: [WI-004]
-  unblocked: [WI-015, WI-016]  # Tasks that depended on WI-003
+  completed: [TASK-03]
+  failed: [TASK-04]
+  unblocked: [TASK-15, TASK-16]  # Tasks that depended on TASK-03
 ```
 
 ### query
@@ -159,11 +159,11 @@ request:
 
 result:
   interrupted:
-    - task_id: WI-025
+    - task_id: TASK-25
       status_at_checkpoint: in_progress
       assigned_to: backend-developer
       action_needed: restart_or_verify
-  completed_preserved: [WI-001, ..., WI-024]
+  completed_preserved: [TASK-01, ..., TASK-24]
   next_batch: "Continue with in_progress tasks"
 ```
 
@@ -201,12 +201,12 @@ task-inventory init --from decomposition.yaml
 
 # Batch operations
 task-inventory assign --agent backend-developer --type build --limit 10
-task-inventory complete --tasks "WI-003,WI-004" --agent backend-developer
+task-inventory complete --tasks "TASK-03,TASK-04" --agent backend-developer
 
 # Query
 task-inventory query --status pending --type build
 task-inventory progress
-task-inventory dependencies WI-015
+task-inventory dependencies TASK-15
 
 # Checkpoint/resume
 task-inventory checkpoint --name "pre-validation"

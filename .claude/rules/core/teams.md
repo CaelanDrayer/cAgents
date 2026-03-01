@@ -29,7 +29,7 @@ Team Mode enables N-wave parallel execution with:
 **This is the most important principle of team mode.** Teammates do NOT implement work items directly. Each teammate invokes `/run` via the Skill tool, and `/run` creates its own controller and execution agents.
 
 ```
-Teammate -> Skill({skill: "run", args: "WI-001: ..."})
+Teammate -> Skill({skill: "run", args: "TASK-01: ..."})
   -> trigger -> orchestrator -> controller (e.g., engineering-manager)
     -> execution agents (e.g., backend-developer, qa-tester)
   -> validated output
@@ -37,7 +37,7 @@ Teammate -> Skill({skill: "run", args: "WI-001: ..."})
 
 **Every work assignment to a teammate MUST include the explicit Skill invocation pattern:**
 ```javascript
-Skill({ skill: "run", args: "implement WI-001: {description}" })
+Skill({ skill: "run", args: "implement TASK-01: {description}" })
 ```
 
 **Anti-patterns (NEVER DO):**
@@ -68,9 +68,9 @@ All three steps are required. Creating tasks without spawning teammates to execu
     |
     Step 6: FOR EACH Wave K (1 to N-1):
     |   +-- Spawn teammates for wave K (ALL at once, in parallel)
-    |   |   +-- Teammate 1: /run WI-{X} --> (controller -> execution agents) --> Complete
-    |   |   +-- Teammate 2: /run WI-{Y} --> (controller -> execution agents) --> Complete
-    |   |   +-- Teammate 3: /run WI-{Z} --> (controller -> execution agents) --> Complete
+    |   |   +-- Teammate 1: /run TASK-{X} --> (controller -> execution agents) --> Complete
+    |   |   +-- Teammate 2: /run TASK-{Y} --> (controller -> execution agents) --> Complete
+    |   |   +-- Teammate 3: /run TASK-{Z} --> (controller -> execution agents) --> Complete
     |   |                    (parallel within wave -- each in own tmux pane)
     |   +-- Monitor wave K via TaskList + teammate messages
     |   +-- Validate GATE-K when all wave K items complete
@@ -214,7 +214,7 @@ TeamCreate({
 ```javascript
 // Create tasks for each work item
 TaskCreate({
-  subject: "WI-001: Implement user model",
+  subject: "TASK-01: Implement user model",
   description: "Execute via /run: ...",
   activeForm: "Implementing user model"
 })
@@ -230,15 +230,15 @@ TaskUpdate({ taskId: "3", addBlockedBy: ["1"] })
 SendMessage({
   type: "message",
   recipient: "teammate-1",
-  content: "You are assigned WI-001. CRITICAL: Execute via the Skill tool to spin out your own agents:\nSkill({ skill: 'run', args: 'implement WI-001: {description}' })\nDo NOT implement directly. /run creates controller + execution agents. Report when complete.",
-  summary: "Assigning WI-001 with /run"
+  content: "You are assigned TASK-01. CRITICAL: Execute via the Skill tool to spin out your own agents:\nSkill({ skill: 'run', args: 'implement TASK-01: {description}' })\nDo NOT implement directly. /run creates controller + execution agents. Report when complete.",
+  summary: "Assigning TASK-01 with /run"
 })
 
 // Broadcast update (use sparingly)
 SendMessage({
   type: "broadcast",
-  content: "WI-001 complete. WI-003 now unblocked.",
-  summary: "WI-001 done, WI-003 available"
+  content: "TASK-01 complete. TASK-03 now unblocked.",
+  summary: "TASK-01 done, TASK-03 available"
 })
 
 // Shut down teammate

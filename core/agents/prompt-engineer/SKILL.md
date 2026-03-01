@@ -77,7 +77,7 @@ Write `workflow/delegation_prompts.yaml` with one entry per work item:
 
 ```yaml
 prompts:
-  WI-001:
+  TASK-01:
     controller: cagents:{controller_name}
     prompt: |
       <assembled prompt>
@@ -85,7 +85,7 @@ prompts:
       - path/to/file1.ts
       - path/to/file2.ts
     estimated_tokens: 450
-  WI-002:
+  TASK-02:
     controller: cagents:{controller_name}
     prompt: |
       <assembled prompt>

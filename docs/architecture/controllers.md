@@ -58,7 +58,7 @@ synthesized_solution:
   approach: "Extend existing JWT system"
   rationale: "Minimal disruption"
 implementation_tasks:
-  - task_id: WI-001
+  - task_id: TASK-01
     name: "Add MFA support"
     assigned_to: cagents:backend-developer
     acceptance_criteria: [...]

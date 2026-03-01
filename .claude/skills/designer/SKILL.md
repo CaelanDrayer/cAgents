@@ -242,6 +242,7 @@ See @reference/phase-4-specification.md for artifact templates and validation fr
 3. **Design validation**: Run 5-level validation (includes Codebase Compatibility from research): Completeness, Consistency, Feasibility, Quality, Codebase Compatibility. Present results via AskUserQuestion.
 4. **Final document assembly**: Assemble `design_document.md` from phase files. See @reference/document-assembly.md.
 5. **Build offer**: ALWAYS offer to build via AskUserQuestion with options: "Build it now (/run)", "Build with team (/team)", "Save design only", "Continue refining".
+6. **Task cleanup**: Before ending the session, call `TaskList` and mark all tasks as `completed` or `deleted` via `TaskUpdate`. Never leave stale in_progress tasks behind.
 
 ## Build Integration
 

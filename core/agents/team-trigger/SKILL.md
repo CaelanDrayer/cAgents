@@ -104,7 +104,7 @@ Step 9: Shutdown teammates + TeamDelete
 Break the user's request into 3-8 concrete work items. You do this yourself -- do NOT delegate to another agent.
 
 For each work item, define:
-- **ID**: WI-001, WI-002, etc.
+- **ID**: TASK-01, TASK-02, etc.
 - **Description**: What needs to be done
 - **Dependencies**: Which other WIs must complete first (if any)
 - **Wave**: 0 (foundation/setup), 1 (main parallel work), 2 (integration/testing)
@@ -135,15 +135,15 @@ Use the GATE sentinel pattern to enforce wave ordering:
 
 ```javascript
 // Wave 0 tasks
-TaskCreate({ subject: "WI-001: {description}", description: "Execute via /run. Acceptance criteria: ...", activeForm: "Executing WI-001" })
-TaskCreate({ subject: "WI-002: {description}", description: "Execute via /run. Acceptance criteria: ...", activeForm: "Executing WI-002" })
+TaskCreate({ subject: "TASK-01: {description}", description: "Execute via /run. Acceptance criteria: ...", activeForm: "Executing TASK-01" })
+TaskCreate({ subject: "TASK-02: {description}", description: "Execute via /run. Acceptance criteria: ...", activeForm: "Executing TASK-02" })
 
 // Gate 0 sentinel (blocked by all wave-0 tasks)
 TaskCreate({ subject: "GATE-0: Foundation Ready", description: "Quality gate. All wave-0 tasks must complete.", activeForm: "Validating foundation" })
 TaskUpdate({ taskId: "{gate_id}", addBlockedBy: ["{wave_0_task_ids}"] })
 
 // Wave 1 tasks (blocked by GATE-0)
-TaskCreate({ subject: "WI-003: {description}", ... })
+TaskCreate({ subject: "TASK-03: {description}", ... })
 TaskUpdate({ taskId: "{task_id}", addBlockedBy: ["{gate_0_id}"] })
 ```
 
@@ -155,10 +155,10 @@ Spawn teammates using the Task tool. Each teammate MUST receive explicit instruc
 
 ```javascript
 Task({
-  description: "Teammate: Execute WI-001 via /run",
+  description: "Teammate: Execute TASK-01 via /run",
   prompt: `You are a team member in team '{team_name}'.
 
-YOUR ASSIGNED WORK ITEM: WI-001: {description}
+YOUR ASSIGNED WORK ITEM: TASK-01: {description}
 Acceptance criteria: {criteria}
 
 CRITICAL INSTRUCTIONS:
@@ -166,7 +166,7 @@ CRITICAL INSTRUCTIONS:
 2. Do NOT implement the work directly. /run handles all agent delegation.
 3. Execute now:
 
-Skill({ skill: "run", args: "implement WI-001: {description}. Acceptance criteria: {criteria}" })
+Skill({ skill: "run", args: "implement TASK-01: {description}. Acceptance criteria: {criteria}" })
 
 4. After /run completes, mark your task as completed:
    TaskUpdate({ taskId: '{task_id}', status: 'completed' })
@@ -181,11 +181,11 @@ Skill({ skill: "run", args: "implement WI-001: {description}. Acceptance criteri
 "Implement the user model with password_hash field"
 
 # WRONG: Just creating tasks without spawning teammates
-TaskCreate({ subject: "WI-001: Implement user model" })  // No one to execute it!
+TaskCreate({ subject: "TASK-01: Implement user model" })  // No one to execute it!
 
 # RIGHT: Creating tasks AND spawning teammates who invoke /run
-TaskCreate({ subject: "WI-001: Implement user model", ... })
-Task({ description: "Teammate: WI-001", prompt: "...Skill({skill:'run', args:'WI-001: ...'})..." })
+TaskCreate({ subject: "TASK-01: Implement user model", ... })
+Task({ description: "Teammate: TASK-01", prompt: "...Skill({skill:'run', args:'TASK-01: ...'})..." })
 ```
 
 ### Step 7: Monitor and Aggregate
@@ -201,7 +201,7 @@ Task({ description: "Teammate: WI-001", prompt: "...Skill({skill:'run', args:'WI
 **Every teammate invokes `/run` via the Skill tool.** When a teammate runs `/run`, that `/run` spins out its own controller and execution agents:
 
 ```
-Teammate -> Skill({skill: "run", args: "WI-001: ..."})
+Teammate -> Skill({skill: "run", args: "TASK-01: ..."})
   -> trigger -> orchestrator -> controller (e.g., engineering-manager)
     -> execution agents (e.g., backend-developer, qa-tester)
   -> validated output
@@ -224,10 +224,10 @@ parallelism_analysis:
 
   output:
     parallel_groups:
-      - [WI-001, WI-002, WI-003]  # Can run together
-      - [WI-004, WI-005]          # After group 1
-      - [WI-006]                   # Sequential
-    critical_path: [WI-001, WI-004, WI-006]
+      - [TASK-01, TASK-02, TASK-03]  # Can run together
+      - [TASK-04, TASK-05]          # After group 1
+      - [TASK-06]                   # Sequential
+    critical_path: [TASK-01, TASK-04, TASK-06]
     parallelism_score: 0.7  # 70% items can run in parallel
 ```
 

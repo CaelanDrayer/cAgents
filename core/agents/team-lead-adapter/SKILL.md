@@ -110,13 +110,13 @@ Teammate messages are delivered automatically -- no polling needed. Idle notific
 **When a teammate invokes `/run`, that `/run` creates its own controller and execution agents.** This is how teammates "spin out their own agents." Each teammate is NOT just a worker -- it is an orchestration node that delegates to specialists.
 
 ```
-Teammate 1 -> Skill({skill: "run", args: "WI-001"})
+Teammate 1 -> Skill({skill: "run", args: "TASK-01"})
   -> trigger -> orchestrator -> engineering-manager (controller)
     -> backend-developer (execution agent)
     -> qa-tester (execution agent)
   -> validated output
 
-Teammate 2 -> Skill({skill: "run", args: "WI-002"})
+Teammate 2 -> Skill({skill: "run", args: "TASK-02"})
   -> trigger -> orchestrator -> engineering-manager (controller)
     -> frontend-developer (execution agent)
     -> ui-designer (execution agent)
@@ -136,29 +136,29 @@ Teammate 2 -> Skill({skill: "run", args: "WI-002"})
 SendMessage({
   type: "message",
   recipient: "teammate-1",
-  content: `You are assigned WI-001: Implement user model.
+  content: `You are assigned TASK-01: Implement user model.
 
 CRITICAL: You MUST execute this via the Skill tool to spin out your own agents:
-Skill({ skill: "run", args: "implement WI-001: Implement user model. Acceptance criteria: model exists with password_hash field, migration created, unit tests pass. Parent-Session: {session_id}" })
+Skill({ skill: "run", args: "implement TASK-01: Implement user model. Acceptance criteria: model exists with password_hash field, migration created, unit tests pass. Parent-Session: {session_id}" })
 
 Do NOT implement this directly. The /run skill will create a controller (e.g., engineering-manager) who will delegate to execution agents (e.g., backend-developer, qa-tester). Your job is to invoke /run and report results.
 
 After completion, mark your task done via TaskUpdate and report results to me via SendMessage.`,
-  summary: "Assigning WI-001 to teammate-1 with /run"
+  summary: "Assigning TASK-01 to teammate-1 with /run"
 })
 
 SendMessage({
   type: "message",
   recipient: "teammate-2",
-  content: `You are assigned WI-002: Create user registration form.
+  content: `You are assigned TASK-02: Create user registration form.
 
 CRITICAL: You MUST execute this via the Skill tool to spin out your own agents:
-Skill({ skill: "run", args: "implement WI-002: Create user registration form. Acceptance criteria: form renders, validation works, responsive design. Parent-Session: {session_id}" })
+Skill({ skill: "run", args: "implement TASK-02: Create user registration form. Acceptance criteria: form renders, validation works, responsive design. Parent-Session: {session_id}" })
 
 Do NOT implement this directly. /run handles all agent delegation automatically.
 
 After completion, mark your task done via TaskUpdate and report results to me via SendMessage.`,
-  summary: "Assigning WI-002 to teammate-2 with /run"
+  summary: "Assigning TASK-02 to teammate-2 with /run"
 })
 ```
 
@@ -169,7 +169,7 @@ SendMessage({
   type: "message",
   recipient: "teammate-1",
   content: "Implement the user model with password_hash field.",
-  summary: "Assigning WI-001"
+  summary: "Assigning TASK-01"
 })
 ```
 
@@ -179,8 +179,8 @@ SendMessage({
 SendMessage({
   type: "message",
   recipient: "teammate-1",
-  content: "Status check: What is your progress on WI-001?",
-  summary: "Checking WI-001 progress"
+  content: "Status check: What is your progress on TASK-01?",
+  summary: "Checking TASK-01 progress"
 })
 ```
 
@@ -190,8 +190,8 @@ SendMessage({
 // Use sparingly -- sends to ALL teammates
 SendMessage({
   type: "broadcast",
-  content: "WI-001 is complete. WI-003 is now unblocked and available for claiming.",
-  summary: "WI-001 complete, WI-003 unblocked"
+  content: "TASK-01 is complete. TASK-03 is now unblocked and available for claiming.",
+  summary: "TASK-01 complete, TASK-03 unblocked"
 })
 ```
 
@@ -232,10 +232,10 @@ TaskUpdate({ taskId: "1", status: "completed" })
 Use `addBlockedBy` to set up dependencies between tasks:
 
 ```javascript
-TaskUpdate({ taskId: "3", addBlockedBy: ["1"] })  // WI-003 blocked by WI-001
+TaskUpdate({ taskId: "3", addBlockedBy: ["1"] })  // TASK-03 blocked by TASK-01
 ```
 
-When WI-001 completes, WI-003 becomes available for claiming.
+When TASK-01 completes, TASK-03 becomes available for claiming.
 
 ## Work Item Distribution
 
@@ -299,14 +299,14 @@ team:
   teammate_mode: tmux
   members:
     - name: teammate-1
-      items_completed: [WI-001, WI-004]
+      items_completed: [TASK-01, TASK-04]
     - name: teammate-2
-      items_completed: [WI-002, WI-005]
+      items_completed: [TASK-02, TASK-05]
     - name: teammate-3
-      items_completed: [WI-003, WI-006]
+      items_completed: [TASK-03, TASK-06]
 
 work_item_status:
-  - id: WI-001
+  - id: TASK-01
     status: completed
     completed_by: teammate-1
     completed_at: "2026-02-06T14:40:00Z"

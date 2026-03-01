@@ -477,7 +477,7 @@ strategic_brief:
     {domain_key}:
       csuite: cagents:{agent}
       scope: "{what this domain handles}"
-      work_items: [WI-xxx, ...]
+      work_items: [TASK-xx, ...]
       priority: high|medium|low
   cross_domain_dependencies:
     - from: {domain}.{WI}
@@ -612,7 +612,9 @@ TodoWrite([
 ])
 ```
 
-**9c. Report to user:**
+**9c. Clean up tasks:** Call `TaskList` and mark all session tasks as `completed` or `deleted` via `TaskUpdate`. Never leave stale in_progress tasks behind.
+
+**9d. Report to user:**
 
 Summarize what was accomplished across all domains, key decisions made during deliberation, any escalations handled, and where outputs can be found.
 

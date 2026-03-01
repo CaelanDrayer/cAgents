@@ -39,8 +39,8 @@ Every SendMessage to a teammate must include the explicit `/run` Skill invocatio
 SendMessage({
   type: "message",
   recipient: "teammate-1",
-  content: "Assigned WI-001. Execute: Skill({skill: 'run', args: 'WI-001: ...'})",
-  summary: "Assigning WI-001"
+  content: "Assigned TASK-01. Execute: Skill({skill: 'run', args: 'TASK-01: ...'})",
+  summary: "Assigning TASK-01"
 })
 ```
 
@@ -50,8 +50,8 @@ SendMessage({
 SendMessage({
   type: "message",
   recipient: "teammate-1",
-  content: "Status check on WI-001?",
-  summary: "Checking WI-001 status"
+  content: "Status check on TASK-01?",
+  summary: "Checking TASK-01 status"
 })
 ```
 

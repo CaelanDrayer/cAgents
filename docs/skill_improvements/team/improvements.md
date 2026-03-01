@@ -8,15 +8,15 @@
 **Proposed**: Automatic retry with progressive fallback.
 
 ```
-Teammate failure detected (WI-003 in Wave 2):
+Teammate failure detected (TASK-03 in Wave 2):
 
 Recovery chain:
 1. Retry: Spawn new teammate with same work item + error context
    "Previous attempt failed with: {error}. Avoid: {failure cause}."
-2. Simplify: If retry fails, break WI-003 into sub-items
-   WI-003a: Core implementation
-   WI-003b: Edge cases + testing
-3. Escalate: If simplify fails, mark WI-003 as blocked
+2. Simplify: If retry fails, break TASK-03 into sub-items
+   TASK-03a: Core implementation
+   TASK-03b: Edge cases + testing
+3. Escalate: If simplify fails, mark TASK-03 as blocked
    Continue with remaining wave items
    Report partial results to user
 ```
@@ -36,7 +36,7 @@ Recovery chain:
 gate_standards:
   research_wave:
     criteria:
-      - "All research outputs exist in outputs/wi-{N}/"
+      - "All research outputs exist in outputs/task-{N}/"
       - "Each output has a summary section"
       - "Key findings are documented"
     validation: file_exists + content_check
@@ -83,10 +83,10 @@ retrospective:
     wave_5: {items: 2, duration: 80s, gate_result: PASS, retries: 0}
 
   bottlenecks:
-    - wave_2: "WI-005 took 150s (3x average), blocked by slow API analysis"
+    - wave_2: "TASK-05 took 150s (3x average), blocked by slow API analysis"
 
   improvements_for_next_time:
-    - "WI-005 could be split into separate API analysis and implementation items"
+    - "TASK-05 could be split into separate API analysis and implementation items"
     - "Wave 3 gate failure was due to missing test file -- add to acceptance criteria"
 ```
 
@@ -97,7 +97,7 @@ retrospective:
 
 ```
 Simple work items (< 500 chars description):
-  Prompt: "Execute WI-{N}: {description}. Session: {dir}. Write outputs to outputs/wi-{N}/."
+  Prompt: "Execute TASK-{N}: {description}. Session: {dir}. Write outputs to outputs/task-{N}/."
   (~100 tokens)
 
 Medium work items (500-2000 chars):
@@ -125,10 +125,10 @@ Team execution partially complete:
   Wave 4 (Documentation): NOT STARTED (blocked by Wave 3)
 
 Completed outputs: Agent_Memory/sessions/{id}/outputs/
-  - wi-001/ through wi-007/ (complete)
-  - wi-008/ and wi-009/ (complete)
-  - wi-010/ (failed: test framework incompatibility)
-  - wi-011/ through wi-012/ (not started)
+  - task-01/ through task-07/ (complete)
+  - task-08/ and task-09/ (complete)
+  - task-10/ (failed: test framework incompatibility)
+  - task-11/ through task-12/ (not started)
 
 To complete remaining:
   /team --resume {session_id}
@@ -162,10 +162,10 @@ If wave overhead exceeds 50% of parallel savings, suggest fewer waves.
 
 ```
 Wave 2 has 4 work items:
-  WI-003: Implement user API endpoints
-  WI-004: Implement admin API endpoints
-  WI-005: Implement auth middleware
-  WI-006: Implement rate limiting
+  TASK-03: Implement user API endpoints
+  TASK-04: Implement admin API endpoints
+  TASK-05: Implement auth middleware
+  TASK-06: Implement rate limiting
 
 Shared context: All 4 touch src/api/ and share database models.
 
@@ -184,14 +184,14 @@ Pre-wave context preparation:
 
 ```
 Wave 3: 3 items assigned
-  WI-008: Complete (45s)
-  WI-009: Complete (60s)
-  WI-010: Complete (30s)
+  TASK-08: Complete (45s)
+  TASK-09: Complete (60s)
+  TASK-10: Complete (30s)
 
 Wave 4: 1 item assigned
-  WI-011: Pending
+  TASK-11: Pending
 
-Decision: Merge WI-011 into Wave 3 (spawn immediately, no wave boundary)
+Decision: Merge TASK-11 into Wave 3 (spawn immediately, no wave boundary)
 Saves: 30s overhead (spawn + gate + shutdown cycle)
 ```
 
@@ -201,8 +201,8 @@ Saves: 30s overhead (spawn + gate + shutdown cycle)
 
 Allow optional peer messaging within a wave for related work items:
 ```
-WI-003 teammate: "I'm defining the user API schema. WI-004, do you need specific fields?"
-WI-004 teammate: "Yes, include admin_level in the user model."
+TASK-03 teammate: "I'm defining the user API schema. TASK-04, do you need specific fields?"
+TASK-04 teammate: "Yes, include admin_level in the user model."
 ```
 
 ### 3.2 Wave Visualization
@@ -210,7 +210,7 @@ WI-004 teammate: "Yes, include admin_level in the user model."
 Real-time wave progress visualization:
 ```
 Wave 0: [====] Lead enrichment COMPLETE
-Wave 1: [===-] 3/4 items | WI-003 in progress
+Wave 1: [===-] 3/4 items | TASK-03 in progress
 Wave 2: [----] Blocked by GATE-1
 Wave 3: [----] Blocked by GATE-2
 Wave N: [----] Integration pending

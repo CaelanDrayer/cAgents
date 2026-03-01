@@ -6,7 +6,7 @@ Create actionable work items from components.
 
 ```yaml
 work_item_template:
-  id: string  # Unique identifier (WI-001)
+  id: string  # Unique identifier (TASK-01)
   name: string  # Clear, action-oriented name
   type: understand | design | build | verify | document
   description: string  # What needs to be done
@@ -25,7 +25,7 @@ work_item_template:
 ### Understand Work Item
 
 ```yaml
-- id: WI-001
+- id: TASK-01
   name: "Analyze existing auth implementation"
   type: understand
   description: |
@@ -46,7 +46,7 @@ work_item_template:
 ### Build Work Item
 
 ```yaml
-- id: WI-003
+- id: TASK-03
   name: "Implement user model"
   type: build
   description: |
@@ -62,7 +62,7 @@ work_item_template:
     - criterion: "Database migration created"
       verification_method: file_exists
       evidence_type: file_path
-  dependencies: [WI-002]
+  dependencies: [TASK-02]
   estimated_effort: small
   skills_required: [backend, database]
 ```
@@ -70,7 +70,7 @@ work_item_template:
 ### Verify Work Item
 
 ```yaml
-- id: WI-008
+- id: TASK-08
   name: "Integration test login flow"
   type: verify
   description: |
@@ -86,7 +86,7 @@ work_item_template:
     - criterion: "Coverage > 80%"
       verification_method: metric_check
       evidence_type: metric
-  dependencies: [WI-005, WI-006]
+  dependencies: [TASK-05, TASK-06]
   estimated_effort: medium
   skills_required: [testing, backend]
 ```

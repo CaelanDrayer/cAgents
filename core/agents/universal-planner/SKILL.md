@@ -140,7 +140,7 @@ Keep plan.yaml and decomposition.yaml concise to prevent downstream context over
 - Skip verbose descriptions - acceptance criteria IS the specification
 - Use IDs for cross-references, not repeated text
 
-**Anti-pattern**: Duplicating acceptance criteria in both plan.yaml objectives AND decomposition.yaml work items. Define once in decomposition, reference by WI-ID from plan.
+**Anti-pattern**: Duplicating acceptance criteria in both plan.yaml objectives AND decomposition.yaml work items. Define once in decomposition, reference by TASK-ID from plan.
 
 ---
 

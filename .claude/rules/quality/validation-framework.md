@@ -25,7 +25,7 @@ Request → Decomposition → Plan → Coordination → Execution → Validation
 Each work item MUST have:
 ```yaml
 work_item:
-  id: WI-003
+  id: TASK-03
   name: "Implement user model"
   acceptance_criteria:
     - criterion: "User model has password_hash field"
@@ -49,11 +49,11 @@ objective:
     - criterion: "Users can log in with email/password"
       verification_method: "Test: login_flow_test passes"
       evidence_type: test_result
-      derived_from: [WI-003, WI-004, WI-005]  # Traceability
+      derived_from: [TASK-03, TASK-04, TASK-05]  # Traceability
     - criterion: "No security vulnerabilities"
       verification_method: "Security scan: 0 critical findings"
       evidence_type: scan_result
-      derived_from: [WI-010, WI-011]
+      derived_from: [TASK-10, TASK-11]
 ```
 
 **Key Addition**: `derived_from` links objectives to work items.
@@ -65,7 +65,7 @@ objective:
 ```yaml
 # coordination_log.yaml
 work_item_status:
-  - id: WI-003
+  - id: TASK-03
     status: completed
     evidence:
       - criterion: "User model has password_hash field"
@@ -77,7 +77,7 @@ work_item_status:
     completed_at: "2026-01-22T10:30:00Z"
     completed_by: backend-developer
 
-  - id: WI-004
+  - id: TASK-04
     status: in_progress
     evidence:
       - criterion: "Auth service handles login"
@@ -102,14 +102,14 @@ objective_verification:
         verification_method: "Test: login_flow_test passes"
         evidence_source: coordination_log
         evidence_found: "Test passed at 2026-01-22T11:00:00Z"
-        work_items_verified: [WI-003, WI-004, WI-005]
+        work_items_verified: [TASK-03, TASK-04, TASK-05]
         status: PASS
 
       - criterion: "No security vulnerabilities"
         verification_method: "Security scan: 0 critical findings"
         evidence_source: outputs/security_scan.json
         evidence_found: "0 critical, 2 low severity findings"
-        work_items_verified: [WI-010, WI-011]
+        work_items_verified: [TASK-10, TASK-11]
         status: PASS
 
 work_item_verification:
@@ -155,7 +155,7 @@ Validation Report: "OBJ-1 PASS"
     ↑
 Evidence: "Test passed, files exist, scan clean"
     ↑
-Work Items: [WI-003, WI-004, WI-005] all completed with evidence
+Work Items: [TASK-03, TASK-04, TASK-05] all completed with evidence
     ↑
 Coordination Log: Evidence captured for each acceptance criterion
 ```
@@ -190,7 +190,7 @@ Coordination Log: Evidence captured for each acceptance criterion
 If criterion missing evidence:
   status: FIXABLE
   action: Request controller to provide evidence
-  example: "WI-003 criterion 'migration created' has no evidence path"
+  example: "TASK-03 criterion 'migration created' has no evidence path"
 ```
 
 ### Failed Verification
@@ -208,7 +208,7 @@ If verification fails:
 If some work items incomplete:
   status: BLOCKED (cannot verify objectives)
   action: Identify missing work items
-  example: "WI-010, WI-011 not started (security tests)"
+  example: "TASK-10, TASK-11 not started (security tests)"
 ```
 
 ## Key Principles

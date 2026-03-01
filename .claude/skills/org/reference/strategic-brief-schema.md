@@ -21,7 +21,7 @@ strategic_brief:
       csuite: cagents:{agent}
       scope: "{what this domain handles}"
       work_items:
-        - id: WI-{NNN}
+        - id: TASK-{NN}
           description: "{work item}"
           acceptance_criteria:
             - "{criterion}"
@@ -30,8 +30,8 @@ strategic_brief:
 
   # Cross-domain dependency map
   cross_domain_dependencies:
-    - from: "{domain_key}.{WI-id}"
-      to: "{domain_key}.{WI-id}"
+    - from: "{domain_key}.{TASK-id}"
+      to: "{domain_key}.{TASK-id}"
       type: blocks|informs
       description: "{why this dependency exists}"
 

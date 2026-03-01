@@ -392,7 +392,8 @@ session_log:
 
 After appending, recalculate aggregate metrics (total_sessions, success_rate, avg_duration, by_domain, by_tier, bottlenecks). Keep the last 500 sessions in the log; archive older entries.
 
-6. **Report results** to user
+6. **Clean up tasks**: Call `TaskList` and mark all session tasks as `completed` or `deleted` via `TaskUpdate`. Never leave stale in_progress tasks behind.
+7. **Report results** to user
 
 If pipeline failed after max revisions:
 - Report what completed vs what remains
