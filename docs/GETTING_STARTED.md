@@ -1,4 +1,4 @@
-# Getting Started with cAgents V10.0.0
+# Getting Started with cAgents V10.1.0
 
 Quick start guide for the cAgents universal multi-domain agent system.
 
@@ -224,5 +224,5 @@ Bash utilities for programmatic access:
 
 ---
 
-**Version**: 10.0.0
+**Version**: 10.1.0
 **Questions?** Check the troubleshooting guide or explore the codebase.

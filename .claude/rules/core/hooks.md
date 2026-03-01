@@ -6,7 +6,7 @@ paths:
 
 # cAgents Hook System
 
-V10.0.0 CJS-only hook architecture with 15 registered hooks + 1 CLI tool across 13 event types (of 17 total Claude Code event types), `createHook()` factory pattern, agent audit trail with completion summaries, and resilient path resolution. Supports command, http, prompt, and agent hook types, async execution, and matcher-based filtering.
+V10.1.0 CJS-only hook architecture with 15 registered hooks + 1 CLI tool across 13 event types (of 17 total Claude Code event types), `createHook()` factory pattern, agent audit trail with completion summaries, and resilient path resolution. Supports command, http, prompt, and agent hook types, async execution, and matcher-based filtering.
 
 ## Architecture
 

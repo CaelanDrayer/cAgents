@@ -1,6 +1,6 @@
 # Domain Structure Standard
 
-**Status**: Current Business Domain Standard (V10.0.0)
+**Status**: Current Business Domain Standard (V10.1.0)
 **Last Updated**: 2026-02-28
 
 ## Business Domain Structure
@@ -44,7 +44,7 @@ All domains follow this structure:
 
 ---
 
-## Business Domains (V10.0.0)
+## Business Domains (V10.1.0)
 
 Current official business domains:
 
@@ -175,4 +175,4 @@ See CLAUDE.md "Creating Domains" section for instructions on:
 
 ---
 
-**Version**: 10.0.0
+**Version**: 10.1.0

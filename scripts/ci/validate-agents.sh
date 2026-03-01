@@ -2,7 +2,7 @@
 #
 # cAgents Agent Schema Validation
 # Validates all agent SKILL.md files across all 8 domains
-# Version: 10.0.0
+# Version: 10.1.0
 #
 # Usage:
 #   ./scripts/ci/validate-agents.sh           # Validate all domains
@@ -219,7 +219,7 @@ main() {
     if [[ $COUNT_ONLY != true ]]; then
         echo ""
         echo "=================================================="
-        echo "cAgents Agent Validation (v10.0.0)"
+        echo "cAgents Agent Validation (v10.1.0)"
         echo "=================================================="
     fi
 
