@@ -18,14 +18,25 @@ function verifyCompletion(sessionDir) {
   const issues = [];
   const warnings = [];
 
-  // 1. Check status.yaml
+  // 1. Check status.yaml (supports both phase-based and pipeline_state-based sessions)
   const statusFile = path.join(sessionDir, 'status.yaml');
   const statusContent = safeRead(statusFile);
   if (!statusContent) {
     warnings.push('No status.yaml file (session may not be a cAgents workflow)');
   } else {
     const phase = extractYamlValue(statusContent, 'phase') || extractYamlValue(statusContent, 'current_phase');
-    if (!phase) {
+    const pipelineState = extractYamlValue(statusContent, 'pipeline_state');
+
+    if (pipelineState) {
+      // /org and /run pipeline_state sessions
+      const terminalStates = ['COMPLETE', 'VALIDATED', 'completed'];
+      const activeStates = ['INIT', 'ANALYZED', 'DELIBERATED', 'BRIEFED', 'EXECUTED', 'PLANNED', 'DECOMPOSED', 'PROMPTS_READY'];
+      if (activeStates.includes(pipelineState)) {
+        issues.push(`Workflow stopping in '${pipelineState}' pipeline state (expected: COMPLETE or VALIDATED)`);
+      } else if (!terminalStates.includes(pipelineState)) {
+        warnings.push(`Workflow stopping in '${pipelineState}' pipeline state`);
+      }
+    } else if (!phase) {
       warnings.push('No phase defined in status.yaml');
     } else if (phase === 'planning' || phase === 'coordinating' || phase === 'executing') {
       issues.push(`Workflow stopping in '${phase}' phase (expected: completed or validating)`);
@@ -35,8 +46,18 @@ function verifyCompletion(sessionDir) {
   }
 
   // 2. Check coordination_log.yaml for work item completion
+  // For /org sessions, also check integration_report.yaml and per-domain coordination logs
   const coordFile = path.join(sessionDir, 'workflow', 'coordination_log.yaml');
-  const coordContent = safeRead(coordFile);
+  let coordContent = safeRead(coordFile);
+
+  // For /org sessions: check integration_report.yaml as the primary completion indicator
+  const integrationReport = safeRead(path.join(sessionDir, 'integration_report.yaml'));
+  if (!coordContent && integrationReport) {
+    // /org session with integration report - check for unresolved issues
+    const unresolvedCount = countPattern(integrationReport, /status:\s*unresolved/g);
+    if (unresolvedCount > 0) warnings.push(`${unresolvedCount} cross-domain issue(s) unresolved in integration report`);
+  }
+
   if (coordContent) {
     const pendingCount = countPattern(coordContent, /status:\s*pending/g);
     const inProgressCount = countPattern(coordContent, /status:\s*in_progress/g);

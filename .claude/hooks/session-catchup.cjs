@@ -49,8 +49,9 @@ function findIncompleteSessions() {
       continue;
     }
 
-    const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase');
-    if (phase === 'completed' || phase === 'complete' || phase === 'failed' || phase === 'aborted') continue;
+    const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase') || extractYamlValue(content, 'pipeline_state');
+    const terminalStates = ['completed', 'complete', 'failed', 'aborted', 'COMPLETE', 'VALIDATED'];
+    if (terminalStates.includes(phase)) continue;
 
     const instructionFile = path.join(sessionDir, 'instruction.yaml');
     let request = 'Unknown request';

@@ -37,8 +37,19 @@ describe('verify-completion.cjs', () => {
   });
 
   it('should allow stop when no active session found', () => {
-    const result = runHook({ session_id: 'nonexistent_session_999' });
-    expect(result.continue).toBe(true);
+    // Use a temp project dir so findActiveSession doesn't find real active sessions
+    const tmpDir = join(TEST_SESSIONS_DIR, '..', '..', '_test_isolated_vc');
+    mkdirSync(join(tmpDir, 'Agent_Memory', 'sessions'), { recursive: true });
+    try {
+      const result = execSync(
+        `printf '%s' '${JSON.stringify({ session_id: 'nonexistent_session_999' }).replace(/'/g, "'\\''")}' | CLAUDE_PROJECT_DIR="${tmpDir}" node "${HOOK_PATH}"`,
+        { encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'] }
+      );
+      const parsed = JSON.parse(result.trim());
+      expect(parsed.continue).toBe(true);
+    } finally {
+      try { rmSync(tmpDir, { recursive: true, force: true }); } catch {}
+    }
   });
 
   describe('with active session', () => {

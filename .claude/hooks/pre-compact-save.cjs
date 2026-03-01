@@ -66,7 +66,7 @@ createHook('PreCompact', async (input) => {
 
   const statusContent = safeRead(path.join(sessionDir, 'status.yaml'));
   let phase = statusContent
-    ? (extractYamlValue(statusContent, 'phase') || extractYamlValue(statusContent, 'current_phase'))
+    ? (extractYamlValue(statusContent, 'phase') || extractYamlValue(statusContent, 'current_phase') || extractYamlValue(statusContent, 'pipeline_state'))
     : null;
 
   // If status.yaml didn't yield a phase, infer from available workflow artifacts

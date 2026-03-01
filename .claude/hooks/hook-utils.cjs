@@ -38,7 +38,7 @@ const PROJECT_ROOT = process.env.CLAUDE_PROJECT_DIR
 
 const AGENT_MEMORY_DIR = path.join(PROJECT_ROOT, 'Agent_Memory');
 
-const SESSION_PREFIXES = ['run_', 'optimize_', 'review_', 'designer_', 'team_'];
+const SESSION_PREFIXES = ['run_', 'optimize_', 'review_', 'designer_', 'team_', 'org_'];
 
 /**
  * Read JSON from stdin with timeout.
@@ -138,8 +138,9 @@ function findActiveSession(sessionHint) {
       const statusFile = path.join(hintDir, 'status.yaml');
       const content = safeRead(statusFile);
       if (content) {
-        const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase');
-        if (phase && phase !== 'completed' && phase !== 'complete' && phase !== 'failed' && phase !== 'aborted') {
+        const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase') || extractYamlValue(content, 'pipeline_state');
+        const terminalStates = ['completed', 'complete', 'failed', 'aborted', 'COMPLETE', 'VALIDATED'];
+        if (phase && !terminalStates.includes(phase)) {
           _cachedActiveSession = hintDir;
           return _cachedActiveSession;
         }
@@ -166,8 +167,9 @@ function findActiveSession(sessionHint) {
     const content = safeRead(statusFile);
     if (!content) continue;
 
-    const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase');
-    if (phase && phase !== 'completed' && phase !== 'complete' && phase !== 'failed' && phase !== 'aborted') {
+    const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase') || extractYamlValue(content, 'pipeline_state');
+    const terminalStates = ['completed', 'complete', 'failed', 'aborted', 'COMPLETE', 'VALIDATED'];
+    if (phase && !terminalStates.includes(phase)) {
       _cachedActiveSession = path.join(sessionsDir, session);
       return _cachedActiveSession;
     }
@@ -223,8 +225,9 @@ function findTeamSession(input = {}) {
     const content = safeRead(statusFile);
     if (!content) continue;
 
-    const phase = extractYamlValue(content, 'phase');
-    if (phase && phase !== 'completed' && phase !== 'complete' && phase !== 'failed' && phase !== 'aborted') {
+    const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'pipeline_state');
+    const terminalStates = ['completed', 'complete', 'failed', 'aborted', 'COMPLETE', 'VALIDATED'];
+    if (phase && !terminalStates.includes(phase)) {
       return path.join(sessionsDir, session);
     }
   }
