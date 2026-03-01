@@ -1,11 +1,11 @@
 {
   "name": "cagents-shared",
-  "version": "10.1.2",
+  "version": "10.1.3",
   "description": "cAgents shared domain - 4 cross-cutting data and intelligence specialists",
   "agents": [
-    "shared/agents/bi-specialist/SKILL.md",
-    "shared/agents/competitive-intelligence-analyst/SKILL.md",
-    "shared/agents/data-scientist/SKILL.md",
-    "shared/agents/market-research-analyst/SKILL.md"
+    "./agents/bi-specialist/SKILL.md",
+    "./agents/competitive-intelligence-analyst/SKILL.md",
+    "./agents/data-scientist/SKILL.md",
+    "./agents/market-research-analyst/SKILL.md"
   ]
 }

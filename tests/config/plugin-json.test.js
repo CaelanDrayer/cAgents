@@ -32,12 +32,12 @@ describe('root plugin.json', () => {
 
   it('should reference skills directory', () => {
     const plugin = loadPluginJson(PLUGIN_PATH);
-    expect(plugin.skills).toBe('.claude/skills/');
+    expect(plugin.skills).toBe('./.claude/skills/');
   });
 
   it('should reference hooks settings', () => {
     const plugin = loadPluginJson(PLUGIN_PATH);
-    expect(plugin.hooks).toBe('.claude/settings.json');
+    expect(plugin.hooks).toBe('./.claude/settings.json');
   });
 
   it('should have agents array with 200+ entries', () => {
@@ -49,7 +49,12 @@ describe('root plugin.json', () => {
   it('all agent paths should point to existing SKILL.md files', () => {
     const plugin = loadPluginJson(PLUGIN_PATH);
     const missing = plugin.agents.filter(
-      agentPath => !existsSync(join(PROJECT_ROOT, agentPath))
+      agentPath => {
+        const resolved = agentPath.startsWith('./')
+          ? join(PROJECT_ROOT, agentPath.slice(2))
+          : join(PROJECT_ROOT, agentPath);
+        return !existsSync(resolved);
+      }
     );
     expect(missing).toEqual([]);
   });
@@ -59,7 +64,7 @@ describe('root plugin.json', () => {
     const agents = plugin.agents;
     const domains = ['engineering', 'creative', 'business', 'people', 'service', 'core', 'leadership', 'shared'];
     for (const domain of domains) {
-      const domainAgents = agents.filter(a => a.startsWith(`${domain}/`));
+      const domainAgents = agents.filter(a => a.startsWith(`./${domain}/`));
       expect(domainAgents.length).toBeGreaterThan(0);
     }
   });
