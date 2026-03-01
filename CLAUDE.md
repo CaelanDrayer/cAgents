@@ -85,7 +85,7 @@ quality/        # completion, validation-framework, implicit-discovery (3 files)
 - **Tier 2**: Controllers (coordinate via batch delegation)
 - **Tier 3**: Execution agents (implement work items)
 - **Tier 4**: Support agents (foundational services)
-- **Total**: 206 agents across 8 business domains
+- **Total**: 207 agents across 8 business domains
 - **Execution**: Event-driven pipeline with progressive paths (minimal/medium/full), revision routing, reviewer loops
 
 **Business Domains** (8):
@@ -432,7 +432,7 @@ cAgents is distributed as a Claude Code plugin. See `.claude-plugin/plugin.json`
 ```
 
 **Key Manifest Fields**:
-- `agents`: Array of SKILL.md paths (206 agents registered)
+- `agents`: Array of SKILL.md paths (207 agents registered)
 - `skills`: Path to skills directory (`.claude/skills/`)
 - `hooks`: Path to settings.json for hook registration
 - `settings.json`: Default settings applied when plugin loads (under `agent` key for subagent defaults)
@@ -471,7 +471,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 265 Vitest tests (hooks + config validation)
-**Version**: 10.1.0
+**Version**: 10.1.2
 
 ## Troubleshooting
 
