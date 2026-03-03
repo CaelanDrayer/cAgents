@@ -1,6 +1,6 @@
 # Creative domain overrides
 domain: creative
-description: "Creative writing, narrative design, fiction, content creation, game art and audio"
+description: "Creative writing, narrative design, fiction, literary criticism, content creation, game art and audio"
 
 planner:
   controller_catalog:
@@ -24,3 +24,16 @@ router:
     - animation
     - character
     - worldbuild
+    - critique
+    - literary
+    - dialogue
+    - prose
+    - edit
+    - fiction
+    - plot
+    - theme
+    - pacing
+    - tension
+    - voice
+    - genre
+    - lore

@@ -85,14 +85,14 @@ quality/        # completion, validation-framework, implicit-discovery (3 files)
 - **Tier 2**: Controllers (coordinate via batch delegation)
 - **Tier 3**: Execution agents (implement work items)
 - **Tier 4**: Support agents (foundational services)
-- **Total**: 207 agents across 8 business domains
+- **Total**: 213 agents across 8 business domains
 - **Execution**: Event-driven pipeline with progressive paths (minimal/medium/full), revision routing, reviewer loops
 
 **Business Domains** (8):
 | Domain | Dir | Agents | Capability |
 |--------|-----|--------|------------|
 | **Engineering** | `engineering/` | 33 | Software engineering, infrastructure, security, QA, game programming |
-| **Creative** | `creative/` | 24 | Creative writing, narrative design, game art, audio |
+| **Creative** | `creative/` | 30 | Creative writing, narrative design, literary criticism, game art, audio |
 | **Business** | `business/` | 69 | Strategy, product, operations, finance, marketing, sales |
 | **People** | `people/` | 19 | HR, talent acquisition, culture |
 | **Service** | `service/` | 32 | Customer support, CX, legal, compliance, governance |
@@ -399,7 +399,7 @@ cAgents/
 |   +-- rules/               # Modular rules (20 files, 5 categories)
 |   +-- settings.json        # Hook registration + permissions + env
 +-- engineering/             # Engineering domain (33 agents, config, manifest)
-+-- creative/                # Creative domain (24 agents)
++-- creative/                # Creative domain (30 agents)
 +-- business/                # Business domain (69 agents)
 +-- people/                  # People domain (19 agents)
 +-- service/                 # Service domain (32 agents)
@@ -449,7 +449,7 @@ cAgents is distributed as a Claude Code plugin. See `.claude-plugin/plugin.json`
 ```
 
 **Key Manifest Fields**:
-- `agents`: Array of SKILL.md paths (207 agents registered)
+- `agents`: Array of SKILL.md paths (213 agents registered)
 - `skills`: Path to skills directory (`.claude/skills/`)
 - `hooks`: Path to settings.json for hook registration
 - `settings.json`: Default settings applied when plugin loads (under `agent` key for subagent defaults)
@@ -479,8 +479,8 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 
 **Skills**: `/org`, `/run`, `/team`, `/designer`, `/review`, `/optimize`, `/helper` (in `.claude/skills/`)
 **Built-in**: `/memory`, `/init` (Claude Code native)
-**Agents**: 206 total (15 core + 4 shared + 10 leadership + 177 domain specialists)
-**Domains**: Engineering (33), Creative (24), Business (69), People (19), Service (32), Leadership (10), Core (15), Shared (4)
+**Agents**: 213 total (15 core + 4 shared + 10 leadership + 184 domain specialists)
+**Domains**: Engineering (33), Creative (30), Business (69), People (19), Service (32), Leadership (10), Core (15), Shared (4)
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/domain_overrides.yaml`, `Agent_Memory/_system/config/pipeline_config.yaml`
 **Hooks**: 13 event types (17 supported by Claude Code), 15 registered CJS hooks (18 .cjs files), invoked via `run-hook.cjs` launcher
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
@@ -488,7 +488,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 265 Vitest tests (hooks + config validation)
-**Version**: 10.2.3
+**Version**: 10.3.0
 
 ## Troubleshooting
 
