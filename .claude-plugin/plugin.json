@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "10.2.2",
+  "version": "10.2.3",
   "description": "cAgents v10.2.2 - Universal multi-domain agent system with 207 specialized agents across 8 business domains. Event-driven pipeline (3 progressive paths), agent chaining with topological execution, revision routing, N-wave parallel teams, 6-phase interactive designer, and 18 CJS hooks.",
   "author": {
     "name": "CaelanDrayer",
