@@ -1,9 +1,13 @@
 ---
 name: org
-description: "Corporate hierarchy orchestration. CEO inline logic with C-suite parallel analysis, two-phase deliberation, strategic brief generation, and sequential /team delegation per domain. 6-state pipeline: INIT->ANALYZED->DELIBERATED->BRIEFED->EXECUTED->INTEGRATED->COMPLETE."
+description: "Corporate hierarchy orchestration that coordinates C-suite agents across multiple business domains for strategic initiatives. Use when a request spans 2+ domains (engineering, creative, business, people, service) or requires executive-level analysis and deliberation. TRIGGER when: user says 'org', 'organization', 'strategic', 'cross-domain', or gives a broad initiative touching multiple teams. Do NOT use for single-domain tasks (use /run or /team)."
 argument-hint: "<instruction> [--dry-run] [--quick] [--domains <d1,d2>] [--resume <session_id>]"
 user-invocable: true
 context: none
+license: MIT
+metadata:
+  author: CaelanDrayer
+  version: 10.2.2
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
 ---
 

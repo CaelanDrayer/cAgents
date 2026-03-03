@@ -1,9 +1,13 @@
 ---
 name: run
-description: "Event-driven pipeline engine. Runs inline (no fork) with state machine loop reading pipeline_config.yaml. Spawns agents sequentially at level 1, controllers spawn executors/reviewers at level 2. Supports revision loops and pre-enrichment detection."
+description: "Event-driven pipeline engine that orchestrates multi-agent workflows for any task. Use when you need to implement features, fix bugs, write content, or execute any single-domain request through coordinated agent delegation. TRIGGER when: user says 'run', 'implement', 'fix', 'build', 'create', or any actionable request. Do NOT use for parallel multi-item work (use /team) or cross-domain strategic initiatives (use /org)."
 argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--analytics]"
 user-invocable: true
 context: none
+license: MIT
+metadata:
+  author: CaelanDrayer
+  version: 10.2.2
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
 ---
 

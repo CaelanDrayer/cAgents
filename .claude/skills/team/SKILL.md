@@ -1,9 +1,13 @@
 ---
 name: team
-description: "N-wave parallel team execution using Claude Code's built-in agent teams. Encourages maximum wave decomposition for better quality gating, coordination, and parallel throughput. More waves = more checkpoints = higher quality."
+description: "N-wave parallel team execution that spawns multiple agents working simultaneously for 40-60% faster delivery. Use when you have complex tasks with 3+ parallelizable work items, or need tier 3+ implementation with quality gating. TRIGGER when: user says 'team', 'parallel', 'swarm', or has complex multi-part requests. Do NOT use for simple single-item tasks (use /run) or cross-domain corporate orchestration (use /org)."
 argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--no-template] [--waves <n>]"
 user-invocable: true
 context: fork
+license: MIT
+metadata:
+  author: CaelanDrayer
+  version: 10.2.2
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite, TeamCreate, TeamDelete, TaskCreate, TaskUpdate, TaskList, TaskGet, SendMessage, Skill
 ---
 

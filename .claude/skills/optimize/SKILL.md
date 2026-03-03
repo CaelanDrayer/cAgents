@@ -1,9 +1,13 @@
 ---
 name: optimize
-description: "Universal optimizer with 5-phase workflow, 8 optimization types, parallel execution, atomic rollback, and cross-file analysis. Detects, measures, plans, executes atomically, and validates with before/after metrics."
+description: "Universal optimizer that detects and fixes performance, size, quality, and efficiency issues with atomic rollback safety. Use when you need to optimize code performance, reduce bundle size, improve query speed, or enhance any measurable metric. TRIGGER when: user says 'optimize', 'speed up', 'reduce size', 'improve performance', or wants before/after metrics. Do NOT use for quality review without changes (use /review) or new feature implementation (use /run)."
 argument-hint: "[<target>] [--type <type>] [--dry-run] [--interactive] [--rollback]"
 user-invocable: true
 context: fork
+license: MIT
+metadata:
+  author: CaelanDrayer
+  version: 10.2.2
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
 ---
 

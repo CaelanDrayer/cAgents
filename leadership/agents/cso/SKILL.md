@@ -2,6 +2,7 @@
 name: cso
 domain: leadership
 tier: controller
+coordination_style: question_based
 description: Chief Strategy Officer providing strategic vision and competitive positioning. Leads long-term planning and growth strategy.
 model: opus
 capabilities:

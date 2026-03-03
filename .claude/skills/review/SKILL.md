@@ -1,9 +1,13 @@
 ---
 name: review
-description: "Universal review orchestrator with parallel execution, framework-specific patterns, enhanced auto-fix engine, quality gates, and confidence scoring. Reviews code, docs, content, designs, processes, data, and infrastructure."
+description: "Universal review orchestrator that performs comprehensive quality reviews with parallel agent execution and auto-fix. Use when you need to review code, documentation, content, designs, processes, or infrastructure for quality issues. TRIGGER when: user says 'review', 'audit', 'check quality', 'code review', or wants feedback on existing work. Do NOT use for optimization (use /optimize) or new implementation (use /run)."
 argument-hint: "<target> [--focus <area>] [--auto-fix] [--severity <level>] [--format <type>] [--profile <name>] [--baseline] [--suppress <id>]"
 user-invocable: true
 context: fork
+license: MIT
+metadata:
+  author: CaelanDrayer
+  version: 10.2.2
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
 ---
 

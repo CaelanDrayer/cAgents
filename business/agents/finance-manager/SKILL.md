@@ -3,6 +3,7 @@ name: finance-manager
 description: "Financial oversight specialist managing IT budgets, costs, ROI analysis, and resource allocation decisions. Use PROACTIVELY for budget decisions, cost assessments, vendor contracts, and financial planning."
 tier: controller
 domain: business
+coordination_style: question_based
 model: sonnet
 color: bright_green
 capabilities:

@@ -1,8 +1,13 @@
 ---
 name: designer
-description: "Interactive design engine with subagent-delegated question preparation. Research agents pre-build context-rich question lists; inline designer acts as controller -- presenting, adapting, reordering, and skipping questions based on user responses."
+description: "Interactive design engine that produces comprehensive design documents through guided questioning. Use when you need to explore, plan, or design before implementing -- gathering requirements through structured Q&A with research-backed questions. TRIGGER when: user says 'design', 'plan this', 'help me think through', 'architecture', or needs a design document. Do NOT use for direct implementation (use /run) or code review (use /review)."
 argument-hint: "[<topic>] [--deep] [--resume <id>] [--template <name>] [--brief <path>] [--iterate <session_id>]"
 user-invocable: true
+context: none
+license: MIT
+metadata:
+  author: CaelanDrayer
+  version: 10.2.2
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite, AskUserQuestion
 ---
 
