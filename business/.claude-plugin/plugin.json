@@ -1,6 +1,6 @@
 {
   "name": "cagents-business",
-  "version": "10.2.1",
+  "version": "10.2.2",
   "description": "cAgents business domain - Strategy, product management, operations, finance, and planning agents",
   "agents": [
     "./agents/agile-coach/SKILL.md",

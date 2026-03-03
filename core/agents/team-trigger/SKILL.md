@@ -152,22 +152,35 @@ TaskUpdate({ taskId: "{task_id}", addBlockedBy: ["{gate_0_id}"] })
 
 **CRITICAL: Do not delay teammate spawning.** As soon as the team and tasks are created, spawn teammates immediately.
 
-Spawn teammates using the Task tool. Each teammate is spawned as the controller agent from `plan.yaml`, and receives instructions to delegate to execution agents directly:
+Spawn teammates using the Task tool. Each teammate is spawned as the **controller** agent from `plan.yaml`, and receives instructions to delegate to execution agents directly.
+
+**CONTROLLER RESOLUTION (do this ONCE before spawning any teammates):**
+
+```
+# Read plan.yaml -> controller_assignment -> primary
+# This is ALWAYS the subagent_type for ALL teammates.
+# Example: plan.yaml says "primary: cagents:engineering-manager"
+#   -> CONTROLLER_TYPE = "engineering-manager"
+#
+# NEVER use work_items.yaml's per-item `agent` field as subagent_type.
+# The `agent` field (e.g., "backend-developer", "senior-developer") is an
+# EXECUTION agent -- it lacks the Task tool and CANNOT delegate work.
+# Only controllers (engineering-manager, narrative-director, etc.) have Task tool.
+CONTROLLER_TYPE = plan.yaml -> controller_assignment -> primary
+```
 
 ```javascript
-// controller_from_plan = plan.yaml's controller_assignment.primary (e.g., "engineering-manager")
-// agent_from_work_items = work_items.yaml's per-item agent field (e.g., "backend-developer")
-
 Task({
+  subagent_type: "cagents:{CONTROLLER_TYPE}",  // MUST be the controller from plan.yaml, NEVER an execution agent
   description: "Teammate: Execute TASK-01",
   prompt: `You are a team member in team '{team_name}'.
 
 YOUR ASSIGNED WORK ITEM: TASK-01: {description}
 Acceptance criteria: {criteria}
-ASSIGNED AGENT: {agent_from_work_items}
+EXECUTION AGENT TO SPAWN: {agent_from_work_items}  (delegate to this agent via Task tool)
 
 CRITICAL INSTRUCTIONS:
-1. You are a controller agent. Spawn the assigned execution agent via Task tool:
+1. You are a CONTROLLER agent. Spawn the execution agent via Task tool:
    Task({
      subagent_type: 'cagents:{agent_from_work_items}',
      description: 'Implement TASK-01: {description}',
@@ -183,22 +196,24 @@ CRITICAL INSTRUCTIONS:
 4. After validation passes, mark your task as completed:
    TaskUpdate({ taskId: '{task_id}', status: 'completed' })
 5. Check TaskList for additional unblocked tasks you can claim.
-6. Report results to the team lead via SendMessage when done.`,
-  subagent_type: "cagents:{controller_from_plan}"
+6. Report results to the team lead via SendMessage when done.`
 })
 ```
 
 **Anti-pattern (NEVER DO THIS):**
 ```
+# WRONG: Using execution agent as subagent_type (lacks Task tool, can't delegate)
+Task({ subagent_type: "cagents:senior-developer", ... })
+Task({ subagent_type: "cagents:backend-developer", ... })
+
 # WRONG: Telling teammate to implement directly
 "Implement the user model with password_hash field"
 
 # WRONG: Just creating tasks without spawning teammates
 TaskCreate({ subject: "TASK-01: Implement user model" })  // No one to execute it!
 
-# RIGHT: Creating tasks AND spawning teammates as controllers
-TaskCreate({ subject: "TASK-01: Implement user model", ... })
-Task({ description: "Teammate: TASK-01", prompt: "...Task({subagent_type:'cagents:{agent}', ...})...", subagent_type: "cagents:{controller}" })
+# RIGHT: Controller as subagent_type, execution agent inside the delegation prompt
+Task({ subagent_type: "cagents:engineering-manager", prompt: "...Task({subagent_type:'cagents:backend-developer', ...})..." })
 ```
 
 ### Step 7: Monitor and Aggregate

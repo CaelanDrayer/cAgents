@@ -249,12 +249,30 @@ for each wave K from 1 to N-1:
 
       For each work item in wave K (within the current batch):
 
-      # Resolve the controller from plan.yaml's controller_assignment.primary
-      # e.g., if plan.yaml assigns engineering-manager, use "cagents:engineering-manager"
-      # The work_items.yaml `agent` field has the execution agent (e.g., backend-developer)
-      # We spawn the CONTROLLER which then delegates to execution agents
+      ##############################################################################
+      # CONTROLLER RESOLUTION (do this ONCE before spawning, NOT per work item)
+      #
+      # Read plan.yaml -> controller_assignment -> primary
+      # This is ALWAYS the subagent_type for ALL teammates in ALL waves.
+      # Example: plan.yaml says "primary: cagents:engineering-manager"
+      #   -> CONTROLLER_TYPE = "engineering-manager"
+      #
+      # NEVER use work_items.yaml's per-item `agent` field as subagent_type.
+      # The `agent` field (e.g., "backend-developer", "senior-developer") is an
+      # EXECUTION agent -- it lacks the Task tool and CANNOT delegate work.
+      # Only controllers (engineering-manager, narrative-director, etc.) have Task tool.
+      #
+      # VALIDATION: controller_type must match an entry in domain_overrides.yaml
+      # controller_catalog. If it doesn't, something is wrong -- fall back to
+      # the tier_2 default controller for the detected domain.
+      ##############################################################################
+      CONTROLLER_TYPE = plan.yaml -> controller_assignment -> primary
+      # e.g., CONTROLLER_TYPE = "engineering-manager"
 
       Task({
+        subagent_type: "cagents:{CONTROLLER_TYPE}",  # MUST be the controller from plan.yaml, NEVER an execution agent
+        name: "w{K}-task-{N}-{CONTROLLER_TYPE}",
+        team_name: "{team_name}",
         description: "Wave {K} - Execute TASK-{N}: <short description>",
         prompt: "You are a teammate executing a work item in wave {K} of the pipeline.
 
@@ -263,15 +281,15 @@ for each wave K from 1 to N-1:
       ACCEPTANCE CRITERIA: <criteria>
       SESSION DIR: {SESSION_DIR}  (contains enriched_context.yaml, plan.yaml, work_items.yaml)
       OUTPUTS FROM PREVIOUS WAVES: {SESSION_DIR}/outputs/  (read artifacts from earlier waves)
-      ASSIGNED AGENT: {agent_from_work_items}  (the execution agent for this work item)
+      EXECUTION AGENT TO SPAWN: {agent_from_work_items}  (delegate to this agent via Task tool)
 
-      CRITICAL: You are a controller agent. Your job is to coordinate execution, NOT implement directly.
-      Spawn the assigned execution agent via Task tool, then spawn a reviewer to validate.
+      CRITICAL: You are a CONTROLLER agent. Your job is to coordinate execution, NOT implement directly.
+      Spawn the execution agent below via Task tool, then spawn a reviewer to validate.
       Direct implementation without delegating to execution agents is a violation of the team protocol.
 
       INSTRUCTIONS:
       1. Read outputs from previous waves if your work item depends on them
-      2. Spawn the assigned execution agent to implement the work item:
+      2. Spawn the execution agent to implement the work item:
          Task({
            subagent_type: 'cagents:{agent_from_work_items}',
            description: 'Implement TASK-{N}: {short_description}',
@@ -288,22 +306,8 @@ for each wave K from 1 to N-1:
       6. If issues arise: flag to lead via SendMessage but continue working
       7. On completion:
          TaskUpdate({ taskId: '{task_id}', status: 'completed' })
-         SendMessage({ type: 'message', recipient: '{lead_name}', content: 'TASK-{N} complete. <summary>', summary: 'TASK-{N} done' })",
-        team_name: "{team_name}",
-        name: "w{K}-task-{N}-{controller_type}",
-        subagent_type: "cagents:{controller_from_plan}"
+         SendMessage({ type: 'message', recipient: '{lead_name}', content: 'TASK-{N} complete. <summary>', summary: 'TASK-{N} done' })"
       })
-
-      # {controller_from_plan} = plan.yaml's controller_assignment.primary
-      #   (e.g., "cagents:engineering-manager", "cagents:narrative-director")
-      #   Used as the subagent_type so the teammate IS the controller agent
-      # {agent_from_work_items} = work_items.yaml's per-item `agent` field
-      #   (e.g., "backend-developer", "copywriter")
-      #   Used in the delegation prompt so the controller knows which execution agent to spawn
-      # {controller_type} = short name for the teammate name suffix
-      #   (e.g., "engineering-manager") making names self-documenting in the UI:
-      #   w1-task-3-engineering-manager
-      #   w2-task-5-engineering-manager
 
   5c. Monitor wave K progress:
       - Wait for teammate messages (they arrive automatically)
