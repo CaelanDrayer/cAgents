@@ -9,20 +9,26 @@ Agent_Memory/sessions/designer_{YYYYMMDD_HHMMSS}/
 +-- session.yaml                    # Master state (updated after every question)
 +-- qa_log.yaml                     # Active phase Q&A only (completed phases summarized)
 +-- question_prep/                  # Research agent outputs (per-phase question lists)
-|   +-- discovery_codebase.yaml     # Codebase analysis for Discovery
-|   +-- discovery_architecture.yaml # Architecture analysis for Discovery
-|   +-- ideation_patterns.yaml      # Pattern analysis for Ideation
-|   +-- ideation_feasibility.yaml   # Feasibility analysis for Ideation
-|   +-- refinement_architecture.yaml # Architecture deep-dive for Refinement
-|   +-- refinement_security.yaml    # Security analysis for Refinement
-|   +-- refinement_testing.yaml     # Testing analysis for Refinement
-|   +-- specification_compatibility.yaml # Codebase compatibility for Specification
+|   +-- empathize_ux.yaml           # UX analysis for Empathize (--deep only)
+|   +-- empathize_stakeholders.yaml # Stakeholder analysis for Empathize (--deep only)
+|   +-- define_architecture.yaml    # Architecture analysis for Define (--deep only)
+|   +-- define_codebase.yaml        # Codebase analysis for Define (--deep only)
+|   +-- conceptualize_patterns.yaml # Pattern analysis for Conceptualize (--deep only)
+|   +-- ideation_patterns.yaml      # Pattern analysis for Ideation (--deep only)
+|   +-- ideation_feasibility.yaml   # Feasibility analysis for Ideation (--deep only)
+|   +-- refinement_architecture.yaml # Architecture deep-dive for Refinement (always)
+|   +-- refinement_security.yaml    # Security analysis for Refinement (always)
+|   +-- refinement_testing.yaml     # Testing analysis for Refinement (always)
+|   +-- specification_compatibility.yaml # Codebase compatibility for Specification (always)
+|   +-- deferred_*.yaml             # Research for deferred "Research this for me" questions
 |   +-- followup_*.yaml             # Follow-up research triggered by user answers
 +-- phases/                         # Phase output files (written at phase completion)
-|   +-- 01_discovery.md
-|   +-- 02_ideation.md
-|   +-- 03_refinement.md
-|   +-- 04_specification.md
+|   +-- 01_empathize.md
+|   +-- 02_define.md
+|   +-- 03_conceptualize.md
+|   +-- 04_ideation.md
+|   +-- 05_refinement.md
+|   +-- 06_specification.md
 +-- artifacts/                      # Generated artifacts (written individually)
 |   +-- user_stories.md
 |   +-- technical_spec.md
@@ -57,14 +63,22 @@ started_at: "2026-02-04T14:30:22Z"
 last_activity: "2026-02-04T15:15:00Z"
 
 phases:
-  discovery:
+  empathize:
     status: completed
-    questions_asked: 7
-    file: phases/01_discovery.md
+    questions_asked: 4
+    file: phases/01_empathize.md
+  define:
+    status: completed
+    questions_asked: 5
+    file: phases/02_define.md
+  conceptualize:
+    status: completed
+    questions_asked: 3
+    file: phases/03_conceptualize.md
   ideation:
     status: completed
     questions_asked: 5
-    file: phases/02_ideation.md
+    file: phases/04_ideation.md
   refinement:
     status: in_progress
     questions_asked: 6
@@ -79,11 +93,15 @@ controller_state:
   questions_remaining: 0
   follow_up_dispatched: 1
   follow_up_received: 1
+  deferred_questions: []  # Questions deferred via "Research this for me"
   research_status:
-    discovery_codebase: completed
-    discovery_architecture: completed
-    ideation_patterns: completed
-    ideation_feasibility: completed
+    empathize_ux: skipped  # Only with --deep
+    empathize_stakeholders: skipped
+    define_architecture: skipped
+    define_codebase: skipped
+    conceptualize_patterns: skipped
+    ideation_patterns: skipped
+    ideation_feasibility: skipped
     refinement_architecture: completed
     refinement_security: completed
     refinement_testing: completed
@@ -96,8 +114,10 @@ controller_state:
 
 **Rules**:
 - Research agents write `question_prep/*.yaml` files immediately (they are subagents with file access)
-- Write `phases/01_discovery.md` the moment Discovery phase gate passes
-- Write `phases/02_ideation.md` the moment Ideation phase gate passes
+- Write `phases/01_empathize.md` the moment Empathize phase gate passes
+- Write `phases/02_define.md` the moment Define phase gate passes
+- Write `phases/03_conceptualize.md` the moment Conceptualize phase gate passes
+- Write `phases/04_ideation.md` the moment Ideation phase gate passes
 - Write individual artifact files as they are generated (not all at once)
 - Write diagram `.mermaid` files as each diagram is created
 - The final `design_document.md` is ASSEMBLED from phase files at the end - not built from memory
@@ -113,7 +133,7 @@ controller_state:
 **Context-Conscious Mode** (activated after 20 questions):
 - Shorter synthesis summaries (100-200 words, not 300-500)
 - Write phase files immediately (don't wait for phase gate)
-- Reference files instead of repeating content ("See phases/01_discovery.md")
+- Reference files instead of repeating content ("See phases/01_empathize.md")
 - Stop including full Q&A history in synthesis - summarize instead
 - Reduce inline diagram complexity
 - Write artifacts to files immediately, show only summary inline
@@ -134,8 +154,8 @@ Create a waypoint file at every phase transition:
 # waypoints/wp-001.yaml
 id: WP-001
 type: phase_transition
-phase_from: discovery
-phase_to: ideation
+phase_from: empathize
+phase_to: define
 created_at: "2026-02-04T15:00:00Z"
 question_count: 7
 
@@ -146,23 +166,23 @@ completed_work:
   - "Success criteria: response time < 200ms, 99.9% uptime"
 
 files_written:
-  - phases/01_discovery.md
-  - question_prep/discovery_codebase.yaml
-  - question_prep/discovery_architecture.yaml
+  - phases/01_empathize.md
+  - question_prep/empathize_ux.yaml
+  - question_prep/empathize_stakeholders.yaml
   - session.yaml
   - qa_log.yaml
 
 research_status:
-  discovery_codebase: completed
-  discovery_architecture: completed
-  ideation_patterns: in_progress  # Pre-spawned during overlap
-  ideation_feasibility: in_progress
+  empathize_ux: completed
+  empathize_stakeholders: completed
+  define_architecture: in_progress  # Pre-spawned during overlap
+  define_codebase: in_progress
 
 resume_instructions: |
-  Read phases/01_discovery.md for full Discovery output.
-  Read question_prep/ideation_*.yaml for pre-prepared Ideation questions (if available).
-  Continue with Ideation phase: generate 2-4 solution alternatives.
-  Discovery synthesis confirmed by user.
+  Read phases/01_empathize.md for full Empathize output.
+  Read question_prep/define_*.yaml for pre-prepared Define questions (if available).
+  Continue with Define phase: crystallize problem statement, constraints, success criteria.
+  Empathize synthesis confirmed by user.
 ```
 
 ## Q&A Log Management
@@ -172,11 +192,16 @@ The `qa_log.yaml` keeps only active phase Q&A. After phase completion, move Q&A 
 ```yaml
 # qa_log.yaml (after Discovery completes)
 completed_phases:
-  discovery:
-    question_count: 7
+  empathize:
+    question_count: 4
+    questions_skipped: 0
+    summary: "Users: developers + end users. Pain: no OAuth2 for SPA."
+    full_log: "phases/01_empathize.md"
+  define:
+    question_count: 5
     questions_skipped: 1
-    summary: "Problem: OAuth2 for SPA. Users: developers + end users. Constraints: backward compat."
-    full_log: "phases/01_discovery.md"
+    summary: "Problem: OAuth2 for SPA. Constraints: backward compat. Success: response < 200ms."
+    full_log: "phases/02_define.md"
 
 exchanges:
   # Only current phase's Q&A lives here

@@ -265,7 +265,7 @@ User Request -> /run (state machine loop, reads pipeline_config.yaml)
 | `/org` | `none` | `true` | Corporate hierarchy orchestration -- CEO inline + C-suite via Task + sequential /team per domain |
 | `/run` | `none` | `true` | Event-driven pipeline engine -- state machine loop, sequential enrichment, controller+reviewer, revision routing |
 | `/team` | `fork` | `true` | N-wave parallel team execution via built-in agent teams (maximize waves) |
-| `/designer` | `none` | `false` | Interactive 4-phase design engine with subagent-delegated question preparation and inline controller pattern |
+| `/designer` | `none` | `false` | Interactive 6-phase design engine with subagent-delegated question preparation, inline controller pattern, defer-to-subagent, and endless refinement mode |
 | `/review` | `fork` | `true` | Universal review with parallel agent execution |
 | `/optimize` | `fork` | `true` | 5-phase optimization with atomic rollback |
 | `/helper` | `none` | `false` | Interactive command guide |
@@ -488,7 +488,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 265 Vitest tests (hooks + config validation)
-**Version**: 10.1.5
+**Version**: 10.1.7
 
 ## Troubleshooting
 

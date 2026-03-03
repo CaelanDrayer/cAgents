@@ -12,7 +12,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findActiveSession, extractYamlValue, safeRead, countPattern, ensureDir } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, extractYamlValue, safeRead, countPattern, ensureDir, PROJECT_ROOT } = require('./hook-utils.cjs');
 
 function verifyCompletion(sessionDir) {
   const issues = [];
@@ -68,12 +68,20 @@ function verifyCompletion(sessionDir) {
     if (emptyEvidence > 0) warnings.push(`${emptyEvidence} work item(s) missing completion evidence`);
   }
 
-  // 3. Check validation report
+  // 3. Check validation report (only if session reached a state where validation is expected)
   const validationFile = path.join(sessionDir, 'validation', 'validation_report.yaml');
   const valContent = safeRead(validationFile);
-  if (!valContent) {
+  // Only warn about missing validation if the session has a status.yaml indicating
+  // it should have reached validation (terminal or near-terminal states).
+  // Early-stage sessions (INIT, PLANNED, DECOMPOSED, etc.) are not expected to have one.
+  const statesExpectingValidation = ['COORDINATED', 'VALIDATED', 'COMPLETE', 'completed', 'complete', 'validating'];
+  const currentPhase = statusContent
+    ? (extractYamlValue(statusContent, 'pipeline_state') || extractYamlValue(statusContent, 'phase') || extractYamlValue(statusContent, 'current_phase'))
+    : null;
+  const shouldHaveValidation = currentPhase && statesExpectingValidation.includes(currentPhase);
+  if (!valContent && shouldHaveValidation) {
     warnings.push('Missing validation report');
-  } else {
+  } else if (valContent) {
     const status = extractYamlValue(valContent, 'overall_status') || extractYamlValue(valContent, 'status');
     if (status && status !== 'PASS') warnings.push(`Validation status: ${status} (expected: PASS)`);
   }
@@ -104,6 +112,18 @@ createHook('VerifyCompletion', async (input) => {
         return null;
       }
     }
+  } else {
+    // No status.yaml -- use directory mtime as fallback staleness check.
+    // Sessions without status.yaml were never properly initialized (pipeline
+    // failed before writing status.yaml). Skip verification entirely since
+    // there's nothing meaningful to verify.
+    try {
+      const stat = fs.statSync(sessionDir);
+      const dirAge = Date.now() - stat.mtimeMs;
+      console.error(`[VerifyCompletion] Session has no status.yaml (dir age: ${Math.round(dirAge / 60000)}min): ${path.basename(sessionDir)}`);
+    } catch { /* ignore */ }
+    console.error(`[VerifyCompletion] Skipping session without status.yaml: ${path.basename(sessionDir)}`);
+    return null;
   }
 
   const result = verifyCompletion(sessionDir);
@@ -131,7 +151,7 @@ ${result.warnings.length > 0 ? `warnings:\n${result.warnings.map(w => `  - "${w}
     console.error(`[VerifyCompletion] ISSUES: ${result.issues.join('; ')}`);
     return {
       decision: 'block',
-      reason: `cAgents completion verification found issues:\n${result.issues.join('\n')}\n\nPlease address these before stopping.`
+      reason: `cAgents completion verification found issues:\n${result.issues.join('\n')}\n\nSee ${path.relative(PROJECT_ROOT, summaryFile)} for details. Please address these before stopping.`
     };
   }
 
@@ -139,7 +159,7 @@ ${result.warnings.length > 0 ? `warnings:\n${result.warnings.map(w => `  - "${w}
     console.error(`[VerifyCompletion] WARNINGS: ${result.warnings.join('; ')}`);
     return {
       continue: true,
-      systemMessage: `cAgents workflow stopping with ${result.warnings.length} warning(s). See completion_summary.yaml for details.`
+      systemMessage: `cAgents workflow stopping with ${result.warnings.length} warning(s). See ${path.relative(PROJECT_ROOT, summaryFile)} for details.`
     };
   }
 

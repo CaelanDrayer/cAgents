@@ -1,7 +1,7 @@
 ---
 name: team-trigger
 tier: infrastructure
-description: "Team initialization agent invoked via /run --team flag. Decomposes request into work items, creates Claude Code agent teams via built-in TeamCreate, spawns teammates who each invoke /run, and manages shared task lists for parallel work item execution."
+description: "Team initialization agent invoked via /run --team flag. Decomposes request into work items, creates Claude Code agent teams via built-in TeamCreate, spawns teammates as controller agents who delegate to execution agents directly, and manages shared task lists for parallel work item execution."
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task","TeamCreate","TeamDelete","TaskCreate","TaskUpdate","TaskList","TaskGet","SendMessage","Skill"]
 model: sonnet
 color: bright_cyan
@@ -19,9 +19,9 @@ permissionMode: "bypassPermissions"
 
 # Team Trigger
 
-**Role**: Team initialization and orchestration agent for parallel team-based execution using Claude Code's built-in agent teams. Invoked via `/run --team` flag or directly by `/team` skill. Decomposes the request into work items directly, creates the team via TeamCreate, spawns teammates who each invoke /run for their work item.
+**Role**: Team initialization and orchestration agent for parallel team-based execution using Claude Code's built-in agent teams. Invoked via `/run --team` flag or directly by `/team` skill. Decomposes the request into work items directly, creates the team via TeamCreate, spawns teammates as controller agents that delegate to execution agents directly.
 
-**CRITICAL**: When invoked, you MUST decompose the request into work items, then create the team via TeamCreate, create tasks via TaskCreate, and spawn real teammates via Task tool. Do NOT just create tasks -- create TEAM MEMBERS who execute their work items via `/run`. If you do not call TeamCreate and spawn teammates, you have FAILED.
+**CRITICAL**: When invoked, you MUST decompose the request into work items, then create the team via TeamCreate, create tasks via TaskCreate, and spawn real teammates via Task tool. Do NOT just create tasks -- create TEAM MEMBERS who spawn execution agents directly via Task tool. If you do not call TeamCreate and spawn teammates, you have FAILED.
 
 ## Invocation Context
 
@@ -38,7 +38,7 @@ In both cases, your job is: decompose the request into work items -> create team
 3. Create agent team via **TeamCreate** IMMEDIATELY (built-in Claude Code feature)
 4. Create shared tasks via **TaskCreate** for each work item
 5. Execute wave 0 (bootstrap) items via /run sequentially (you do this)
-6. **Spawn teammates via Task tool** -- each MUST invoke `/run` via Skill tool
+6. **Spawn teammates via Task tool** -- each spawned as controller agent, delegates to execution agents
 7. Monitor via TaskList and teammate messages
 8. Execute wave 2 (integration) items via /run sequentially (you do this)
 9. Aggregate results and clean up via TeamDelete
@@ -90,7 +90,8 @@ Step 3: TeamCreate -- create agent team IMMEDIATELY
 Step 4: TaskCreate -- create task for EVERY work item
 Step 5: Execute wave 0 via /run sequentially (you do this)
 Step 6: Spawn ALL wave-1 teammates via Task tool IN PARALLEL
-  - Each teammate invokes /run via Skill tool
+  - Each teammate is spawned as the controller agent (cagents:{controller_from_plan})
+  - Each teammate spawns execution agents directly via Task tool
   - Each teammate appears as a tmux pane (when teammateMode=tmux)
 Step 7: Monitor via TaskList + automatic teammate messages
 Step 8: Execute wave 2 via /run sequentially (you do this)
@@ -151,27 +152,39 @@ TaskUpdate({ taskId: "{task_id}", addBlockedBy: ["{gate_0_id}"] })
 
 **CRITICAL: Do not delay teammate spawning.** As soon as the team and tasks are created, spawn teammates immediately.
 
-Spawn teammates using the Task tool. Each teammate MUST receive explicit instructions to invoke `/run` via the Skill tool:
+Spawn teammates using the Task tool. Each teammate is spawned as the controller agent from `plan.yaml`, and receives instructions to delegate to execution agents directly:
 
 ```javascript
+// controller_from_plan = plan.yaml's controller_assignment.primary (e.g., "engineering-manager")
+// agent_from_work_items = work_items.yaml's per-item agent field (e.g., "backend-developer")
+
 Task({
-  description: "Teammate: Execute TASK-01 via /run",
+  description: "Teammate: Execute TASK-01",
   prompt: `You are a team member in team '{team_name}'.
 
 YOUR ASSIGNED WORK ITEM: TASK-01: {description}
 Acceptance criteria: {criteria}
+ASSIGNED AGENT: {agent_from_work_items}
 
 CRITICAL INSTRUCTIONS:
-1. You MUST use the Skill tool to invoke /run for your work item. This will spin out your own controller and execution agents automatically.
-2. Do NOT implement the work directly. /run handles all agent delegation.
-3. Execute now:
-
-Skill({ skill: "run", args: "implement TASK-01: {description}. Acceptance criteria: {criteria}" })
-
-4. After /run completes, mark your task as completed:
+1. You are a controller agent. Spawn the assigned execution agent via Task tool:
+   Task({
+     subagent_type: 'cagents:{agent_from_work_items}',
+     description: 'Implement TASK-01: {description}',
+     prompt: 'Implement TASK-01: {description}. Acceptance criteria: {criteria}.'
+   })
+2. After execution agent returns, spawn a reviewer to validate:
+   Task({
+     subagent_type: 'cagents:reviewer',
+     description: 'Review TASK-01',
+     prompt: 'Review TASK-01. Acceptance criteria: {criteria}. Output: PASS or REVISE.'
+   })
+3. If REVISE: re-spawn execution agent with feedback (max 3 rounds)
+4. After validation passes, mark your task as completed:
    TaskUpdate({ taskId: '{task_id}', status: 'completed' })
 5. Check TaskList for additional unblocked tasks you can claim.
-6. Report results to the team lead via SendMessage when done.`
+6. Report results to the team lead via SendMessage when done.`,
+  subagent_type: "cagents:{controller_from_plan}"
 })
 ```
 
@@ -183,9 +196,9 @@ Skill({ skill: "run", args: "implement TASK-01: {description}. Acceptance criter
 # WRONG: Just creating tasks without spawning teammates
 TaskCreate({ subject: "TASK-01: Implement user model" })  // No one to execute it!
 
-# RIGHT: Creating tasks AND spawning teammates who invoke /run
+# RIGHT: Creating tasks AND spawning teammates as controllers
 TaskCreate({ subject: "TASK-01: Implement user model", ... })
-Task({ description: "Teammate: TASK-01", prompt: "...Skill({skill:'run', args:'TASK-01: ...'})..." })
+Task({ description: "Teammate: TASK-01", prompt: "...Task({subagent_type:'cagents:{agent}', ...})...", subagent_type: "cagents:{controller}" })
 ```
 
 ### Step 7: Monitor and Aggregate
@@ -196,18 +209,18 @@ Task({ description: "Teammate: TASK-01", prompt: "...Skill({skill:'run', args:'T
 - Mark GATE-N sentinels as completed to unblock next wave
 - Teammates can self-claim unblocked tasks after completing their current one
 
-## CRITICAL: Teammates Spin Out Their Own Agents via /run
+## CRITICAL: Teammates Spawn Controllers Directly
 
-**Every teammate invokes `/run` via the Skill tool.** When a teammate runs `/run`, that `/run` spins out its own controller and execution agents:
+**Each teammate IS a controller agent** (spawned with `subagent_type: "cagents:{controller_from_plan}"`). The controller delegates to execution agents directly via Task tool:
 
 ```
-Teammate -> Skill({skill: "run", args: "TASK-01: ..."})
-  -> trigger -> orchestrator -> controller (e.g., engineering-manager)
-    -> execution agents (e.g., backend-developer, qa-tester)
-  -> validated output
+Teammate (cagents:{controller}) -> Task({subagent_type: "cagents:{execution_agent}"})
+  -> execution agent (e.g., backend-developer) -> implementation
+  -> reviewer (cagents:reviewer) -> validation
+  -> output returned to teammate
 ```
 
-**Teammates NEVER implement work items directly.** This is the entire point of team mode.
+**Teammates NEVER implement work items directly.** They always delegate to execution agents via Task tool.
 
 ## Parallelism Analysis
 
@@ -298,7 +311,7 @@ Agent_Memory/sessions/team_{YYYYMMDD_HHMMSS}/
 2. **You MUST spawn teammates via Task tool** - This creates tmux panes. Without it, no parallelism.
 3. **Decompose directly** - Break the request into work items yourself. Do NOT delegate decomposition.
 4. **Create teams, not just tasks** - TeamCreate + TaskCreate + Task (spawn). All three required.
-5. **Teammates invoke /run** - Every teammate uses Skill tool to call /run for their work item.
+5. **Teammates are controllers** - Each teammate is spawned as `cagents:{controller_from_plan}` and delegates to execution agents via Task tool.
 6. **Execute IMMEDIATELY** - Steps 3-6 happen without pausing or asking permission.
 7. **Built-in agent teams** - Use TeamCreate, SendMessage, TaskCreate (not manual tmux).
 8. **Wave ordering** - Wave 0 (you), Wave 1 (teammates in parallel), Wave 2 (you).

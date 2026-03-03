@@ -1,6 +1,8 @@
-# Phase 4: Specification (25% of session)
+# Phase 6: Specification (20% of session)
 
 **Goal**: Generate production-ready artifacts from all gathered design information.
+
+**Research agents**: ALWAYS spawned (no `--deep` required).
 
 ## Step 1: Read Specification Research
 
@@ -114,19 +116,6 @@ Run 5-level validation on the completed design:
 - Score: 0.0 to 1.0
 - Flag incompatibilities as validation warnings with suggested adjustments
 
-```
-Codebase compatibility data sources (in order of preference):
-  1. question_prep/specification_compatibility.yaml (research agent pre-analysis -- preferred)
-  2. Inline Glob/Grep/Read (fallback if research unavailable)
-
-Research agent provides:
-  - Existing API route patterns and conventions
-  - Existing model definitions and naming patterns
-  - Package manifest dependency compatibility
-  - Test pattern analysis
-  - Specific incompatibilities with proposed design (pre-flagged)
-```
-
 Present validation results via AskUserQuestion:
 
 ```javascript
@@ -146,10 +135,10 @@ ${issues_if_any}
 ${recommendation}`,
     header: "Validation",
     options: [
-      {label: "Accept design", description: "Design is ready, proceed to final document"},
+      {label: "Accept design", description: "Design is ready, proceed to build options"},
       {label: "Fix issues", description: "Address validation concerns before finalizing"},
       {label: "Accept with notes", description: "Acknowledge issues but proceed anyway"},
-      {label: "Continue refining", description: "Go back to refinement for more detail"}
+      {label: "Research this for me", description: "Dispatch a subagent to suggest fixes for validation issues"}
     ],
     multiSelect: false
   }]
@@ -158,18 +147,30 @@ ${recommendation}`,
 
 ## Build Offer
 
-**CRITICAL**: When design is complete, ALWAYS offer to build:
+**CRITICAL**: When design is complete, ALWAYS offer 6 build options:
 
 ```javascript
 AskUserQuestion({
   questions: [{
-    question: "Design complete! Your design document and artifacts have been generated. Ready to build?",
+    question: "Design complete! Your design document and artifacts have been generated. What would you like to do?",
     header: "Build",
     options: [
-      {label: "Build it now (Recommended)", description: "Start implementation immediately with /run"},
-      {label: "Build with team (Parallel)", description: "Start parallel team implementation with /team for faster delivery"},
-      {label: "Save design only", description: "Save for later, I'll build when ready"},
-      {label: "Continue refining", description: "Go back and add more detail"}
+      {label: "Build it now (/run) (Recommended)", description: "Execute immediately with the pipeline engine"},
+      {label: "Build with team (/team)", description: "Parallel team execution for complex designs"},
+      {label: "Build with org (/org)", description: "Full corporate hierarchy orchestration for cross-domain designs"},
+      {label: "Refine specific area", description: "Jump back to a specific phase or topic for targeted refinement"}
+    ],
+    multiSelect: false
+  }]
+})
+// Note: AskUserQuestion supports max 4 options. Use a second question for remaining options:
+AskUserQuestion({
+  questions: [{
+    question: "Or would you prefer to continue refining?",
+    header: "More options",
+    options: [
+      {label: "Endless refinement loop", description: "Enter continuous refinement mode - keep improving until satisfied"},
+      {label: "Save design only", description: "Save for later, I'll build when ready"}
     ],
     multiSelect: false
   }]
@@ -178,14 +179,37 @@ AskUserQuestion({
 
 ### Auto-Trigger Build
 
-When user selects "Build it now":
+When user selects "Build it now (/run)":
 ```javascript
 Skill({ skill: "run", args: `implement design from ${session_id}` })
 ```
 
-When user selects "Build with team (Parallel)":
+When user selects "Build with team (/team)":
 ```javascript
 Skill({ skill: "team", args: `implement design from ${session_id}` })
+```
+
+When user selects "Build with org (/org)":
+```javascript
+Skill({ skill: "org", args: `implement design from ${session_id}` })
+```
+
+When user selects "Refine specific area":
+```
+Ask which phase/topic to refine via AskUserQuestion.
+Jump back to that phase with existing context preserved.
+Only re-ask questions relevant to the specified area.
+```
+
+When user selects "Endless refinement loop":
+```
+Enter continuous refinement mode:
+1. Present design areas
+2. User picks one
+3. Targeted refinement with research agent
+4. Show diff of what changed
+5. Loop back to step 1
+6. Exit when user selects "I'm satisfied - show build options"
 ```
 
 ### Save for Later
@@ -197,4 +221,5 @@ Your design is saved at: Agent_Memory/sessions/{session_id}/
 To implement later:
   /run implement design from {session_id}
   /team implement design from {session_id}   (parallel, faster for large designs)
+  /org implement design from {session_id}    (full hierarchy for cross-domain)
 ```

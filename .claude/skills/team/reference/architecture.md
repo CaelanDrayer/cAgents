@@ -127,7 +127,7 @@ Teammates are spawned per-wave and shut down when their wave completes:
 ```
 Wave K starts:
   1. Lead spawns teammates for all wave K work items (parallel)
-  2. Each teammate executes its work item via /run
+  2. Each teammate spawns its assigned execution agent directly via Task tool
   3. Teammates write outputs to SESSION_DIR/outputs/task-{N}/
   4. Teammates send completion messages to lead
   5. Lead validates GATE-K quality criteria

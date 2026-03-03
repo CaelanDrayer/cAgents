@@ -1,38 +1,36 @@
-# Phase 2: Ideation (25% of session)
+# Phase 4: Ideation (20% of session)
 
-**Goal**: Explore 2-4 solution alternatives, evaluate trade-offs, and select an approach.
+**Goal**: Explore 2-4 concrete solution alternatives, evaluate trade-offs, and select an approach.
 
 ## Step 1: Read Ideation Research
 
-Read pre-prepared research files (spawned during Discovery phase-overlap):
+Read pre-prepared research files (spawned during Conceptualize phase-overlap if `--deep`):
 - `question_prep/ideation_patterns.yaml` -- Design pattern analysis, alternative approaches
 - `question_prep/ideation_feasibility.yaml` -- Feasibility assessment, effort estimates
 
-Build a question pool from research findings. If research files are not yet available (agents still running or failed), fall back to the design pattern library + inline analysis.
+Build a question pool from research findings. If research files are not yet available (agents still running, failed, or `--deep` not set), fall back to the design pattern library + inline analysis.
 
 **Pattern Library Reference**: `Agent_Memory/_system/templates/designer/patterns/design_patterns_library.yaml`
 
-## Step 2: Generate Research-Informed Alternatives
+## Step 2: Generate Alternatives
 
-Based on research findings + discovery context, propose 2-4 approaches. Research agents have already analyzed the codebase for feasibility, so alternatives should be grounded in reality.
+Based on research findings (if available) + conceptualize context, propose 2-4 approaches. Include "Research this for me" on every question.
 
 For each alternative, include:
-- What pattern(s) does it use? (from research)
-- What are the pros and cons? (research-informed, not generic)
-- What's the effort/complexity? (from feasibility research)
-- What's the risk level? (from research)
-
-Present alternatives via AskUserQuestion:
+- What pattern(s) does it use? (from research if available)
+- What are the pros and cons?
+- What's the effort/complexity?
+- What's the risk level?
 
 ```javascript
 AskUserQuestion({
   questions: [{
-    question: `Based on your project's ${tech_stack} stack and ${constraints}, here are 3 approaches:
+    question: `Based on your ${scope_context}, here are 3 approaches:
 
 **Option A: ${approach_a_name}**
 ${approach_a_description}
-Pros: ${research_informed_pros} | Cons: ${research_informed_cons}
-Effort: ${effort_from_research} | Risk: ${risk_level}
+Pros: ${pros} | Cons: ${cons}
+Effort: ${effort} | Risk: ${risk}
 
 **Option B: ${approach_b_name}**
 ${approach_b_description}
@@ -50,7 +48,7 @@ Which approach interests you most?`,
       {label: "Option A", description: approach_a_summary},
       {label: "Option B", description: approach_b_summary},
       {label: "Option C", description: approach_c_summary},
-      {label: "Combine approaches", description: "Mix elements from multiple options"}
+      {label: "Research this for me", description: "Dispatch a subagent to evaluate feasibility of each option"}
     ],
     multiSelect: false
   }]
@@ -59,7 +57,7 @@ Which approach interests you most?`,
 
 ## Step 3: Pattern Recommendations (Controller-Adapted)
 
-When the user selects an approach, present research-enriched pattern recommendations:
+When the user selects an approach, present pattern recommendations:
 
 ```javascript
 AskUserQuestion({
@@ -68,15 +66,15 @@ AskUserQuestion({
 
 ${pattern_details}
 
-${research_context_about_how_pattern_fits_codebase}
+${context_about_how_pattern_fits}
 
-This pattern fits your ${tech_stack} stack because ${specific_reason}. Should we design with this pattern?`,
+Should we design with this pattern?`,
     header: "Pattern",
     options: [
       {label: "Use this pattern (Recommended)", description: pattern_summary},
       {label: "Simpler approach", description: "Something less complex"},
       {label: "More complex", description: "More capability but more work"},
-      {label: "Tell me more", description: "Explain trade-offs in detail"}
+      {label: "Research this for me", description: "Dispatch a subagent to evaluate this pattern against your codebase"}
     ],
     multiSelect: false
   }]
@@ -87,7 +85,7 @@ This pattern fits your ${tech_stack} stack because ${specific_reason}. Should we
 
 ## Step 4: Trade-off Exploration
 
-For key decisions, present research-informed trade-offs:
+For key decisions, present trade-offs:
 
 ```javascript
 AskUserQuestion({
@@ -98,14 +96,14 @@ AskUserQuestion({
       {label: "Simplicity", description: "Easier to build and maintain, fewer moving parts"},
       {label: "Scalability", description: "Handles growth, but more complex upfront"},
       {label: "Speed to market", description: "Ship fast, iterate later"},
-      {label: "Long-term flexibility", description: "More work now, easier to change later"}
+      {label: "Research this for me", description: "Dispatch a subagent to analyze which trade-off best fits your project"}
     ],
     multiSelect: false
   }]
 })
 ```
 
-**Follow-up dispatch**: If user's trade-off choice significantly changes the design direction (e.g., choosing "Scalability" when research assumed "Simplicity"), dispatch a follow-up research agent to re-assess approach feasibility under new constraints.
+**Follow-up dispatch**: If user's trade-off choice significantly changes the design direction, dispatch a follow-up research agent to re-assess approach feasibility.
 
 ## Ideation Phase Gate + Phase-Overlap
 
@@ -115,18 +113,17 @@ Before advancing to Refinement, verify:
 - [ ] One approach selected with clear rationale
 - [ ] Key technical/creative decisions logged
 
-**Phase-Overlap**: During synthesis (Step 6), spawn Refinement research agents:
+**Phase-Overlap**: During synthesis, ALWAYS spawn Refinement research agents (Refinement always uses research, regardless of `--deep`):
 
 ```javascript
-// Spawn during Ideation synthesis:
 Task({
   subagent_type: "cagents:architect",
   description: "Research: Architecture deep-dive for Refinement questions",
   prompt: `Research agent for Refinement phase.
 TOPIC: ${topic}
 SESSION: ${session_dir}
-SELECTED APPROACH: Read ${session_dir}/phases/02_ideation.md
-Deep-dive into architecture: component interactions, data flow, integration points, constraints.
+SELECTED APPROACH: Read ${session_dir}/phases/04_ideation.md
+Deep-dive: component interactions, data flow, integration points, constraints.
 Write to: ${session_dir}/question_prep/refinement_architecture.yaml`
 })
 
@@ -136,7 +133,7 @@ Task({
   prompt: `Research agent for Refinement security questions.
 TOPIC: ${topic}
 SESSION: ${session_dir}
-APPROACH: Read ${session_dir}/phases/02_ideation.md
+APPROACH: Read ${session_dir}/phases/04_ideation.md
 Analyze: auth patterns, data privacy, encryption needs, compliance, security gaps.
 Write to: ${session_dir}/question_prep/refinement_security.yaml`
 })
@@ -147,7 +144,7 @@ Task({
   prompt: `Research agent for Refinement testing questions.
 TOPIC: ${topic}
 SESSION: ${session_dir}
-APPROACH: Read ${session_dir}/phases/02_ideation.md
+APPROACH: Read ${session_dir}/phases/04_ideation.md
 Analyze: existing test coverage, testing patterns, testability of proposed approach.
 Write to: ${session_dir}/question_prep/refinement_testing.yaml`
 })
@@ -172,7 +169,7 @@ Ready to detail this approach?`,
       {label: "Yes, detail it", description: "Move to detailed design (refinement phase)"},
       {label: "Explore more", description: "I want to consider other options"},
       {label: "Adjust approach", description: "Modify the selected approach"},
-      {label: "Start over", description: "Go back to discovery with different constraints"}
+      {label: "Research this for me", description: "Dispatch a subagent to validate the selected approach"}
     ],
     multiSelect: false
   }]

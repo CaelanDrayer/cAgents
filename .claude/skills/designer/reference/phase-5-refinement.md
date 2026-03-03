@@ -1,6 +1,8 @@
-# Phase 3: Refinement (35% of session)
+# Phase 5: Refinement (30% of session)
 
 **Goal**: Detail the selected approach with architecture, flows, data models, security, and testing.
+
+**Research agents**: ALWAYS spawned (no `--deep` required).
 
 ## Step 1: Read Refinement Research
 
@@ -40,21 +42,18 @@ Build question pool from all research files. Merge with domain-specific refineme
 
 ## Step 3: Present Research-Enriched Questions
 
-Use the controller pattern to present questions from the pool:
-
-**Selection**: Pick highest-priority question, enriched with research context. Example:
+Use the controller pattern to present questions from the pool. Always include "Research this for me":
 
 ```javascript
-// Research found existing API patterns -- question is enriched:
 AskUserQuestion({
   questions: [{
-    question: "Your existing API uses RESTful routes with /api/v1/ prefix and camelCase response fields (found in src/routes/). Should the new endpoints follow the same conventions, or do you want to establish new patterns?",
+    question: "Your existing API uses RESTful routes with /api/v1/ prefix and camelCase response fields (found in src/routes/). Should the new endpoints follow the same conventions?",
     header: "API Design",
     options: [
       {label: "Follow existing patterns", description: "Match /api/v1/ prefix, camelCase, existing error format"},
       {label: "New API version", description: "Create /api/v2/ with updated conventions"},
       {label: "GraphQL alongside REST", description: "Add GraphQL for new features, keep REST for existing"},
-      {label: "Custom approach", description: "Define new conventions from scratch"}
+      {label: "Research this for me", description: "Dispatch a subagent to analyze API patterns in depth"}
     ],
     multiSelect: false
   }]
@@ -69,7 +68,7 @@ AskUserQuestion({
 
 ## Step 4: Real-Time Design Building
 
-**CRITICAL**: As you gather information in refinement, actively build the design document. After each significant answer:
+**CRITICAL**: As you gather information, actively build the design document. After each significant answer:
 
 1. Output what was just added to the design (so user sees it forming)
 2. Show progress through the refinement areas
@@ -78,7 +77,7 @@ AskUserQuestion({
 **Progress Display Pattern**:
 
 ```
-Design Progress: Phase 3 - Refinement
+Design Progress: Phase 5 - Refinement
 
   [x] Technical Architecture (Complete)
   [x] Data Model (Complete)
@@ -151,7 +150,6 @@ Keep specialist prompts under 300 tokens. Include: the question, where to look, 
 Throughout Refinement, dispatch follow-up research when user reveals unexpected information:
 
 ```javascript
-// Example: User reveals they need real-time updates (not in original research)
 Task({
   subagent_type: "cagents:architect",
   description: "Follow-up research: real-time architecture",
@@ -162,8 +160,6 @@ Investigate: existing WebSocket setup, suitable real-time patterns for ${tech_st
 Write to: ${session_dir}/question_prep/followup_refinement_realtime.yaml`
 })
 ```
-
-Integrate follow-up results into the question pool when they arrive.
 
 ## Refinement Phase Gate + Phase-Overlap
 
@@ -186,7 +182,7 @@ Task({
   prompt: `Research agent for Specification codebase compatibility.
 TOPIC: ${topic}
 SESSION: ${session_dir}
-DESIGN: Read ${session_dir}/phases/03_refinement.md (partial -- in progress)
+DESIGN: Read ${session_dir}/phases/05_refinement.md (partial -- in progress)
 Check: existing API patterns, naming conventions, model patterns, test patterns, imports.
 Flag any incompatibilities with proposed design.
 Write to: ${session_dir}/question_prep/specification_compatibility.yaml`

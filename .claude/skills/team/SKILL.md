@@ -249,8 +249,10 @@ for each wave K from 1 to N-1:
 
       For each work item in wave K (within the current batch):
 
-      # Resolve the controller from plan.yaml to determine the agent type suffix
-      # e.g., if plan.yaml assigns engineering-manager, use that as the suffix
+      # Resolve the controller from plan.yaml's controller_assignment.primary
+      # e.g., if plan.yaml assigns engineering-manager, use "cagents:engineering-manager"
+      # The work_items.yaml `agent` field has the execution agent (e.g., backend-developer)
+      # We spawn the CONTROLLER which then delegates to execution agents
 
       Task({
         description: "Wave {K} - Execute TASK-{N}: <short description>",
@@ -261,32 +263,47 @@ for each wave K from 1 to N-1:
       ACCEPTANCE CRITERIA: <criteria>
       SESSION DIR: {SESSION_DIR}  (contains enriched_context.yaml, plan.yaml, work_items.yaml)
       OUTPUTS FROM PREVIOUS WAVES: {SESSION_DIR}/outputs/  (read artifacts from earlier waves)
+      ASSIGNED AGENT: {agent_from_work_items}  (the execution agent for this work item)
 
-      CRITICAL: You MUST use /run to execute your work item. Do NOT implement anything directly.
-      Your ONLY job is to invoke /run via the Skill tool and let the pipeline handle execution.
-      Direct implementation without /run is a violation of the team protocol.
+      CRITICAL: You are a controller agent. Your job is to coordinate execution, NOT implement directly.
+      Spawn the assigned execution agent via Task tool, then spawn a reviewer to validate.
+      Direct implementation without delegating to execution agents is a violation of the team protocol.
 
       INSTRUCTIONS:
       1. Read outputs from previous waves if your work item depends on them
-      2. MANDATORY: Invoke /run for your work item:
-         Skill({ skill: 'run', args: 'execute TASK-{N}: {description} --session {SESSION_DIR}' })
-      3. /run detects pre-enrichment and picks up from DECOMPOSED
-      4. Pipeline: prompt-engineer -> controller -> executor+reviewer -> validator
-      5. Write your outputs to {SESSION_DIR}/outputs/task-{N}/
+      2. Spawn the assigned execution agent to implement the work item:
+         Task({
+           subagent_type: 'cagents:{agent_from_work_items}',
+           description: 'Implement TASK-{N}: {short_description}',
+           prompt: 'Implement TASK-{N}: {description}. Acceptance criteria: {criteria}. Write outputs to {SESSION_DIR}/outputs/task-{N}/'
+         })
+      3. After execution agent returns, spawn a reviewer to validate:
+         Task({
+           subagent_type: 'cagents:reviewer',
+           description: 'Review TASK-{N}',
+           prompt: 'Review implementation of TASK-{N}. Acceptance criteria: {criteria}. Output: PASS or REVISE with feedback.'
+         })
+      4. If REVISE: re-spawn execution agent with feedback (max 3 rounds)
+      5. Write outputs to {SESSION_DIR}/outputs/task-{N}/
       6. If issues arise: flag to lead via SendMessage but continue working
       7. On completion:
          TaskUpdate({ taskId: '{task_id}', status: 'completed' })
          SendMessage({ type: 'message', recipient: '{lead_name}', content: 'TASK-{N} complete. <summary>', summary: 'TASK-{N} done' })",
         team_name: "{team_name}",
         name: "w{K}-task-{N}-{controller_type}",
-        subagent_type: "general-purpose"
+        subagent_type: "cagents:{controller_from_plan}"
       })
 
-      # The {controller_type} suffix comes from the controller assigned to this work item
-      # in plan.yaml (e.g., "engineering-manager", "narrative-director", "campaign-manager").
-      # This makes teammate names self-documenting in the UI:
+      # {controller_from_plan} = plan.yaml's controller_assignment.primary
+      #   (e.g., "cagents:engineering-manager", "cagents:narrative-director")
+      #   Used as the subagent_type so the teammate IS the controller agent
+      # {agent_from_work_items} = work_items.yaml's per-item `agent` field
+      #   (e.g., "backend-developer", "copywriter")
+      #   Used in the delegation prompt so the controller knows which execution agent to spawn
+      # {controller_type} = short name for the teammate name suffix
+      #   (e.g., "engineering-manager") making names self-documenting in the UI:
       #   w1-task-3-engineering-manager
-      #   w2-task-5-backend-developer
+      #   w2-task-5-engineering-manager
 
   5c. Monitor wave K progress:
       - Wait for teammate messages (they arrive automatically)
@@ -322,12 +339,12 @@ for each wave K from 1 to N-1:
          Task({
            description: "RETRY Wave {K} - TASK-{N}: <description>",
            prompt: "Previous attempt failed with: {error_context}. Avoid: {failure_cause}.
-                   CRITICAL: You MUST use /run to execute your work item via Skill tool. Do NOT implement directly.
-                   Skill({ skill: 'run', args: 'execute TASK-{N}: {description} --session {SESSION_DIR}' })
+                   CRITICAL: You are a controller agent. Spawn the assigned execution agent via Task tool to implement.
+                   Do NOT implement directly. Delegate to cagents:{agent_from_work_items} and spawn cagents:reviewer to validate.
                    ...",
            team_name: "{team_name}",
            name: "w{K}-task-{N}-{controller_type}-retry-{R}",
-           subagent_type: "general-purpose"
+           subagent_type: "cagents:{controller_from_plan}"
          })
       2. SIMPLIFY: If retry fails, break the work item into sub-items:
          Create TASK-{N}a (core implementation) and TASK-{N}b (edge cases + testing)
@@ -455,7 +472,7 @@ Within a single wave, all teammates run in parallel. Use TaskUpdate `addBlockedB
 5. **Validate each GATE before proceeding to the next wave.** Gates are quality checkpoints.
 6. **Shut down teammates individually as they complete (early shutdown), and shut down any remaining before spawning wave K+1.**
 7. **Maximize the number of waves.** More waves = better quality gating. There is nothing wrong with more waves.
-8. **Teammates MUST invoke /run via Skill tool** to execute their work item. Teammates NEVER implement directly -- they call `Skill({ skill: 'run', args: '...' })` and let the pipeline handle everything. This is non-negotiable.
+8. **Teammates ARE controller agents** that spawn execution agents directly via Task tool. Teammates NEVER implement directly -- they delegate to `cagents:{execution_agent}` and spawn `cagents:reviewer` to validate. This is non-negotiable.
 9. **You (the lead) do Wave 0 (enrichment) and the final wave (integration)** -- teammates do all middle waves.
 10. **Never ask permission** between waves. Execute the full pipeline automatically.
 11. **Never just create tasks without spawning teammates** -- tasks without teammates are useless.
