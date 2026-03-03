@@ -10,7 +10,7 @@
     {
       "name": "cagents",
       "description": "Universal multi-domain agent system with 207 specialized agents across 8 business domains. Progressive pipeline (3 paths), agent chaining with topological execution, structured error format. Event-driven pipeline with revision routing. Agent Teams for parallel execution (40-60% time reduction). Controller-centric delegation with minimum tier 2 enforcement.",
-      "version": "10.1.7",
+      "version": "10.2.1",
       "author": {
         "name": "CaelanDrayer",
         "email": "caelan@caelandrayer.ca"

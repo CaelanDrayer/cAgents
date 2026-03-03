@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "10.1.7",
+  "version": "10.2.1",
   "description": "cAgents V10.1.0 - Universal multi-domain agent system with 207 agents across 8 business domains (Engineering, Creative, Business, Growth, People, Service, Leadership, Shared). Progressive pipeline with 3 paths based on 9-signal complexity scoring. Agent chaining with topological execution ordering. Structured error format (What/Why/Fix). Event-driven state machine with revision routing. CJS-only hook architecture with createHook() factory. Agent Teams for parallel execution (40-60% time reduction). Controller-centric question-based delegation.",
   "type": "module",
   "main": "",

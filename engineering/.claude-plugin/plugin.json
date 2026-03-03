@@ -1,6 +1,6 @@
 {
   "name": "cagents-engineering",
-  "version": "10.1.7",
+  "version": "10.2.1",
   "description": "cAgents engineering domain - 33 software engineering, infrastructure, security, QA, and game programming agents",
   "agents": [
     "./agents/accessibility-checker/SKILL.md",
