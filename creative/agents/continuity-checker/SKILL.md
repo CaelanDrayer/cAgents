@@ -3,7 +3,7 @@ name: continuity-checker
 domain: creative
 tier: execution
 description: "Expert continuity analyst who builds and maintains the story bible -- tracking every name, date, object, rule, and relationship so the reader never encounters a detail that contradicts another. The manuscript's institutional memory."
-model: sonnet
+model: opus
 capabilities:
   - story_bible_construction
   - character_knowledge_tracking

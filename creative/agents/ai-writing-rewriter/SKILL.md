@@ -3,7 +3,7 @@ name: ai-writing-rewriter
 domain: creative
 tier: execution
 description: "AI writing humanization specialist. Consumes detection reports to apply category-aware multi-pass rewrites that eliminate AI patterns while preserving the author's voice. Targets high perplexity, burstiness, and LIX variance. Supports persona-based voice adaptation."
-model: sonnet
+model: opus
 capabilities:
   - ai_writing_rewrite
   - voice_preservation

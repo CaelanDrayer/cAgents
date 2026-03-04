@@ -6,13 +6,13 @@ paths:
 
 # cAgents Hook System
 
-V10.1.0 CJS-only hook architecture with 15 registered hooks + 1 CLI tool across 13 event types (of 17 total Claude Code event types), `createHook()` factory pattern, agent audit trail with completion summaries, and resilient path resolution. Supports command, http, prompt, and agent hook types, async execution, and matcher-based filtering.
+V10.4.0 CJS-only hook architecture with 16 registered hooks + 1 CLI tool across 13 event types (of 17 total Claude Code event types), `createHook()` factory pattern, agent audit trail with completion summaries, attention injection for goal refresh, and resilient path resolution. Supports command, http, prompt, and agent hook types, async execution, and matcher-based filtering.
 
 ## Architecture
 
 cAgents uses a unified CJS hook system configured in `.claude/settings.json`:
 
-- **CJS hooks** (`.claude/hooks/`): 18 `.cjs` files -- 1 shared utility module (`hook-utils.cjs`) + 1 hook launcher (`run-hook.cjs`) + 15 registered hooks + 1 standalone CLI tool (`eval-runner.cjs`). All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output).
+- **CJS hooks** (`.claude/hooks/`): 19 `.cjs` files -- 1 shared utility module (`hook-utils.cjs`) + 1 hook launcher (`run-hook.cjs`) + 16 registered hooks + 1 standalone CLI tool (`eval-runner.cjs`). All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output).
 - **Prompt hooks**: None currently active. The Stop prompt hook was removed in V9.6.2 due to unreliable LLM JSON responses causing recurring validation failures. The `verify-completion.cjs` command hook provides equivalent file-based verification.
 - **Self-contained invocation via run-hook.cjs**: All hooks are called via `bash -c 'R="${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"; node "$R/.claude/hooks/run-hook.cjs" <hook-name>'` -- a bash wrapper with a 3-tier fallback chain that resolves the plugin root, then launches `run-hook.cjs` which resolves the target hook path using `__dirname`. V9.17.1 switched from bare `node "${CLAUDE_PLUGIN_ROOT}"/.claude/hooks/run-hook.cjs` (which fails with MODULE_NOT_FOUND when `CLAUDE_PLUGIN_ROOT` is not expanded) to a `bash -c` wrapper with fallback chain: `CLAUDE_PLUGIN_ROOT` (official plugin env var) -> `CLAUDE_PROJECT_DIR` (user's project dir, works for local dev) -> `pwd` (last resort). Previous V9.13 approach used `${CLAUDE_PLUGIN_ROOT}` directly in the command string, but this fails when the env var is not set (e.g., in certain subagent contexts, SessionEnd events, or non-plugin installations).
 
@@ -46,14 +46,14 @@ The V9.5 refactoring eliminates the dual shell+JS architecture that caused recur
 
 ## Hook Types Overview
 
-Claude Code supports 17 hook event types. cAgents implements 15 registered hooks across 13 of these events. Four events (`UserPromptSubmit`, `ConfigChange`, `WorktreeCreate`, `WorktreeRemove`) have no cAgents hooks but are available for custom use.
+Claude Code supports 17 hook event types. cAgents implements 16 registered hooks across 13 of these events. Four events (`UserPromptSubmit`, `ConfigChange`, `WorktreeCreate`, `WorktreeRemove`) have no cAgents hooks but are available for custom use.
 
 | Hook Type | Trigger | cAgents Hook | Purpose |
 |-----------|---------|--------------|---------|
 | `SessionStart` | Session begins/resumes | `session-catchup.cjs` | Initialize state, detect incomplete sessions, inject cAgents context |
 | `SessionEnd` | Session ends | `team-stop.cjs` | Finalize metrics, update status |
 | `UserPromptSubmit` | User submits prompt | *(none)* | Available for custom input validation/preprocessing |
-| `PreToolUse` | Before tool execution | `bash-validator.cjs`, `secret-detection.cjs` | Validate, block dangerous operations |
+| `PreToolUse` | Before tool execution | `bash-validator.cjs`, `secret-detection.cjs`, `attention-injection.cjs` | Validate, block dangerous operations, refresh goals |
 | `PermissionRequest` | Permission dialog | `permission-handler.cjs` | Auto-approve safe patterns, HITL gates |
 | `PostToolUse` | After tool execution | `post-write-validator.cjs` | Validate JSON/YAML syntax, audit file changes |
 | `PostToolUseFailure` | Tool execution fails | `tool-failure-tracker.cjs` | Track failures, detect patterns, suggest recovery |
@@ -144,6 +144,13 @@ createHook('MyHook', async (input) => {
 - **Three phases**: (1) Protected path check, (2) Sensitive file warning, (3) Secret scanning
 - **Blocked**: System paths (`/etc/`, `/usr/`, `~/.ssh/`), files with critical/high secrets
 
+#### PreToolUse[Write|Edit|Bash]: attention-injection.cjs
+- **Matcher**: `Write|Edit|Bash`
+- **Purpose**: Refresh plan objectives in attention window before tool operations (Manus-style goal drift prevention)
+- **Reads**: `workflow/plan.yaml` mission, domain, controller; `workflow/coordination_log.yaml` status
+- **Output**: systemMessage with concise goal reminder (mission + domain + coordination status)
+- **No-op when**: No active session, no plan.yaml, or writing to planning files
+
 ### Workflow Events
 
 #### Stop: verify-completion.cjs
@@ -164,10 +171,11 @@ createHook('MyHook', async (input) => {
 
 #### PostToolUse[Write|Edit]: post-write-validator.cjs
 - **Matcher**: `Write|Edit`
-- **Purpose**: Validate file syntax after successful Write/Edit operations
+- **Purpose**: Validate file syntax after successful Write/Edit operations, nudge planning file updates
 - **Validates**: JSON parsing, YAML tab detection, duplicate YAML top-level keys
+- **Planning reminder**: During active sessions with plan.yaml, reminds to update coordination_log/progress.md after implementation file writes
 - **Logs**: All file changes to `workflow/file_changes.log` with timestamps and validation status
-- **Output**: Warning systemMessage if syntax issues found (does not block -- write already succeeded)
+- **Output**: Warning systemMessage if syntax issues found; planning reminder for non-planning file writes
 
 #### PostToolUseFailure: tool-failure-tracker.cjs
 - **Purpose**: Track tool failures, detect patterns (3+ failures suggests alternatives)
@@ -191,7 +199,7 @@ createHook('MyHook', async (input) => {
 #### PreCompact: pre-compact-save.cjs
 - **Purpose**: Save critical workflow state before context compaction
 - **Creates**: Waypoint file in `sessions/{id}/waypoints/`
-- **Includes**: Coordination state, team state, resume instructions
+- **Includes**: Coordination state, team state, 5-question reboot check (where_am_i, where_going, whats_the_goal, what_learned, what_done), resume instructions
 
 #### Notification: notification.cjs
 - **Purpose**: Log notifications to daily files with 1MB rotation

@@ -79,3 +79,4 @@ CLAUDE.local.md
 __pycache__/
 example/
 metrics.jsonl
+vendor_repos/

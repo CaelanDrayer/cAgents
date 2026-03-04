@@ -72,12 +72,32 @@ createHook('PostWriteValidator', async (input) => {
     } catch { /* best effort */ }
   }
 
+  // Planning reminder: nudge to update planning files after writes during active sessions
+  let planningReminder = '';
+  if (sessionDir) {
+    const planPath = path.join(sessionDir, 'workflow', 'plan.yaml');
+    const planExists = safeRead(planPath);
+    if (planExists) {
+      // Check if the written file is a planning file itself (don't nag about planning files)
+      const isPlanningFile = filePath.includes('plan.yaml') || filePath.includes('coordination_log') ||
+        filePath.includes('task_plan.md') || filePath.includes('findings.md') || filePath.includes('progress.md') ||
+        filePath.includes('status.yaml') || filePath.includes('waypoint');
+      if (!isPlanningFile) {
+        planningReminder = '\n[planning-reminder] Implementation file updated. If this completes a phase or work item, update coordination_log.yaml status and progress.md.';
+      }
+    }
+  }
+
   if (warnings.length > 0) {
     console.error(`[PostWriteValidator] Warnings: ${warnings.join('; ')}`);
     return {
       continue: true,
-      systemMessage: `Post-write validation warnings:\n${warnings.map(w => `- ${w}`).join('\n')}`
+      systemMessage: `Post-write validation warnings:\n${warnings.map(w => `- ${w}`).join('\n')}${planningReminder}`
     };
+  }
+
+  if (planningReminder) {
+    return { continue: true, systemMessage: planningReminder.trim() };
   }
 
   return null;

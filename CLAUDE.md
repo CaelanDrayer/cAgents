@@ -394,7 +394,7 @@ cAgents/
 +-- CLAUDE.md                # Main project memory (this file)
 +-- .claude/
 |   +-- skills/              # Skills (org, run, team, designer, review, optimize, helper)
-|   +-- hooks/               # 18 .cjs files (15 hooks + utils + launcher + eval CLI)
+|   +-- hooks/               # 19 .cjs files (16 hooks + utils + launcher + eval CLI)
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (20 files, 5 categories)
 |   +-- settings.json        # Hook registration + permissions + env
@@ -418,7 +418,7 @@ cAgents/
 
 **Architecture**: CJS-only hooks with `createHook()` factory. Supports 4 handler types (command, http, prompt, agent). All invoked via `bash -c` wrapper with 3-tier fallback chain (`CLAUDE_PLUGIN_ROOT` -> `CLAUDE_PROJECT_DIR` -> `pwd`) for resilient path resolution. See @.claude/rules/core/hooks.md for full documentation.
 
-**18 .cjs files**: `hook-utils.cjs` (factory), `run-hook.cjs` (launcher), `eval-runner.cjs` (CLI), + 15 registered hooks across 13 event types:
+**19 .cjs files**: `hook-utils.cjs` (factory), `run-hook.cjs` (launcher), `eval-runner.cjs` (CLI), + 16 registered hooks across 13 event types:
 
 | Event Type | Hook(s) |
 |------------|---------|
@@ -429,6 +429,7 @@ cAgents/
 | `SubagentStop` | `subagent-stop-tracker.cjs` |
 | `PreToolUse[Bash]` | `bash-validator.cjs` |
 | `PreToolUse[Write\|Edit]` | `secret-detection.cjs` |
+| `PreToolUse[Write\|Edit\|Bash]` | `attention-injection.cjs` |
 | `PostToolUse[Write\|Edit]` | `post-write-validator.cjs` |
 | `PostToolUseFailure` | `tool-failure-tracker.cjs` |
 | `TeammateIdle` | `teammate-idle-handler.cjs` |
@@ -482,13 +483,13 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Agents**: 213 total (15 core + 4 shared + 10 leadership + 184 domain specialists)
 **Domains**: Engineering (33), Creative (30), Business (69), People (19), Service (32), Leadership (10), Core (15), Shared (4)
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/domain_overrides.yaml`, `Agent_Memory/_system/config/pipeline_config.yaml`
-**Hooks**: 13 event types (17 supported by Claude Code), 15 registered CJS hooks (18 .cjs files), invoked via `run-hook.cjs` launcher
+**Hooks**: 13 event types (17 supported by Claude Code), 16 registered CJS hooks (19 .cjs files), invoked via `run-hook.cjs` launcher
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 265 Vitest tests (hooks + config validation)
-**Version**: 10.3.0
+**Version**: 10.4.0
 
 ## Troubleshooting
 

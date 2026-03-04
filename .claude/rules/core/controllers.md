@@ -317,6 +317,41 @@ metadata:
   items_with_revisions: {count_of_items_that_needed_revision}
 ```
 
+## Read-Before-Decide Pattern
+
+Controllers MUST re-read plan objectives before major decisions to combat attention drift.
+
+### Rule
+
+> Before synthesis and before spawning execution agents, re-read plan.yaml objectives to refresh goals in the attention window.
+
+### When to Re-Read
+
+| Decision Point | What to Read | Why |
+|---------------|--------------|-----|
+| Before synthesizing answers | `plan.yaml` objectives | Ensures synthesis aligns with original goals, not drift |
+| Before spawning execution agents | `plan.yaml` + `work_items.yaml` | Confirms correct work items and acceptance criteria |
+| After 5+ delegated questions | `plan.yaml` mission | Re-anchor to mission after extended Q&A |
+| Before writing coordination_log | `plan.yaml` success criteria | Verify all criteria addressed before completing |
+
+### Pattern
+
+```
+1. Controller receives objectives from plan.yaml
+2. Controller breaks into questions, delegates to execution agents
+3. ... (many tool calls later, goals may have faded) ...
+4. BEFORE synthesis: Re-read plan.yaml objectives  <-- THIS IS THE KEY STEP
+5. Synthesize answers ALIGNED to refreshed objectives
+6. BEFORE spawning executors: Re-read work_items.yaml
+7. Spawn executors with correct context
+```
+
+### Why This Works
+
+The "lost in the middle" effect means that after many tool calls, the original objectives fade from the model's attention window. Re-reading the plan file right before a major decision point recites the goals back into active attention, ensuring decisions stay aligned with the mission.
+
+This is the same principle as Manus's "attention manipulation through file recitation" -- reading the plan is not about getting new information, it's about refreshing what matters in the attention window.
+
 ## CRITICAL: Do Not Ask Permission
 
 **After completing coordination:**

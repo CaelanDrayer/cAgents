@@ -3,7 +3,7 @@ name: animator
 domain: creative
 tier: execution
 description: "Character animation specialist for rigging, locomotion, combat, and cinematic performance. Expert in the 12 Principles, character acting through movement, and the physics of believable motion."
-model: sonnet
+model: opus
 capabilities:
   - character_rigging
   - skeletal_animation

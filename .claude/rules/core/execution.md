@@ -61,6 +61,46 @@ Example: Controller → backend-developer (question) → answer → synthesis
 
 Benefits: Modularity, specialization, parallelization (up to 50 concurrent)
 
+## 2-Action Findings Capture Rule
+
+Inspired by Manus-style context engineering: execution agents must persist findings to session files after every 2 research operations to prevent information loss during context compaction.
+
+### Rule
+
+> After every 2 view/search/read operations, IMMEDIATELY save key findings to session files.
+
+### Why
+
+- Visual/multimodal content (images, browser results, PDFs) does not persist across context compaction
+- Research findings discovered early in a session fade from attention after many tool calls
+- Writing findings to disk creates a persistent external memory that survives any context event
+
+### When to Capture
+
+| After 2 of these operations | Write findings to |
+|------------------------------|-------------------|
+| Grep, Glob, Read (research) | `findings.md` or `workflow/enriched_context.yaml` |
+| WebFetch, WebSearch | `findings.md` (CRITICAL - web content is ephemeral) |
+| Read of images/PDFs | `findings.md` (multimodal content must be captured as text) |
+| Any tool that discovers facts | Session workflow files |
+
+### What to Capture
+
+```markdown
+## Key Discoveries
+- Finding 1: {concrete fact with file path or source}
+- Finding 2: {specific detail, not vague summary}
+```
+
+### Anti-Patterns
+
+| Don't | Do Instead |
+|-------|------------|
+| Read 5 files then try to remember all | Write findings after every 2 reads |
+| View image and keep details in context | Immediately describe image content in findings.md |
+| Search web and assume results persist | Write key results to disk before next operation |
+| Rely on context for discovered facts | Treat filesystem as your persistent memory |
+
 ---
 
 ## See Also

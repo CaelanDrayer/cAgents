@@ -3,7 +3,7 @@ name: sound-designer
 domain: creative
 tier: execution
 description: "Game audio specialist for sound effects, Foley, spatial audio, and interactive soundscapes. Expert in audio layering, emotional sound design, and the craft of making players feel through what they hear."
-model: sonnet
+model: opus
 capabilities:
   - sound_effect_design
   - ambient_soundscapes

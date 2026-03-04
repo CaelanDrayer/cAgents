@@ -122,6 +122,27 @@ trigger: context_compaction
     waypointContent += `\nteam:\n  total_items: ${teamState.total}\n  completed: ${teamState.completed}\n  in_progress: ${teamState.in_progress}\n  available: ${teamState.available}\n`;
   }
 
+  // 5-Question Reboot Check (inspired by planning-with-files Manus pattern)
+  // Answers: Where am I? Where am I going? What's the goal? What have I learned? What have I done?
+  const planContent = safeRead(path.join(sessionDir, 'workflow', 'plan.yaml'));
+  const goal = planContent ? (extractYamlValue(planContent, 'mission') || extractYamlValue(planContent, 'request') || 'See plan.yaml') : 'No plan.yaml found';
+
+  const remainingPhases = [];
+  if (phase === 'routing' || phase === 'INIT') remainingPhases.push('planning', 'coordinating', 'executing', 'validating');
+  else if (phase === 'planning' || phase === 'ORCHESTRATED' || phase === 'PLANNED') remainingPhases.push('coordinating', 'executing', 'validating');
+  else if (phase === 'coordinating' || phase === 'PROMPTS_READY' || phase === 'DECOMPOSED') remainingPhases.push('executing', 'validating');
+  else if (phase === 'executing' || phase === 'COORDINATED') remainingPhases.push('validating');
+
+  const findingsPath = path.join(sessionDir, 'findings.md');
+  const findingsContent = safeRead(findingsPath);
+  const hasFindings = findingsContent && findingsContent.length > 50;
+
+  const progressPath = path.join(sessionDir, 'progress.md');
+  const progressContent = safeRead(progressPath);
+  const hasProgress = progressContent && progressContent.length > 50;
+
+  waypointContent += `\nreboot_check:\n  where_am_i: "${phase}"\n  where_going: "${remainingPhases.length > 0 ? remainingPhases.join(' -> ') : 'validation/complete'}"\n  whats_the_goal: "${goal.replace(/"/g, '\\"').substring(0, 200)}"\n  what_learned: "${hasFindings ? 'See findings.md' : 'No findings captured yet'}"\n  what_done: "${hasProgress ? 'See progress.md' : coordState ? `${coordState.work_items.completed} items completed` : 'Check coordination_log.yaml'}"\n`;
+
   waypointContent += `\nrecovery:\n  read_files:\n    - status.yaml\n    - workflow/plan.yaml\n    - workflow/coordination_log.yaml\n  resume_phase: ${phase}\n  next_action: "${getNextAction(phase, coordState)}"\n`;
 
   fs.writeFileSync(waypointFile, waypointContent);

@@ -3,7 +3,7 @@ name: concept-artist
 domain: creative
 tier: execution
 description: "Visual development specialist for concept art, style guides, and art direction. Expert in character design, environment concepts, mood and atmosphere, and visual storytelling across production pipelines."
-model: sonnet
+model: opus
 capabilities:
   - character_concept_design
   - environment_concept_art

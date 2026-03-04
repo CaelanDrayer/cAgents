@@ -228,6 +228,52 @@ Enabled by default. Disable with:
 - `DISABLE_PROMPT_CACHING_SONNET=1` (Sonnet only)
 - `DISABLE_PROMPT_CACHING_HAIKU=1` (Haiku only)
 
+## KV-Cache Optimization Guidelines
+
+Optimize prompt structure for KV-cache efficiency. When the API processes prompts, the KV-cache stores computed attention for prefix tokens. Subsequent requests sharing the same prefix reuse cached computations, reducing latency and cost.
+
+### Principles
+
+1. **Stable prefixes**: Keep system prompts, instructions, and static context at the TOP of prompts. These rarely change between calls and will cache effectively.
+
+2. **Dynamic content last**: Place variable content (user input, tool results, conversation history) at the END of prompts. This maximizes the cacheable prefix length.
+
+3. **Append-only context**: When building multi-turn context, append new information rather than restructuring. Restructuring invalidates the cache for all subsequent tokens.
+
+4. **Consistent agent prompts**: Agent SKILL.md content forms the system prompt. Keep this stable -- avoid per-request customization of the system prompt when possible. Pass variable context as user messages instead.
+
+### Prompt Structure for Cache Efficiency
+
+```
+[CACHEABLE - Stable prefix]
+├── System instructions (SKILL.md content)
+├── Rules and guidelines (.claude/rules/*.md)
+├── Domain configuration (domain_overrides.yaml)
+└── Static context (architecture docs, patterns)
+
+[VARIABLE - Dynamic suffix]
+├── Session-specific context (plan.yaml objectives)
+├── Current work item details
+├── Previous tool results
+└── User's specific request
+```
+
+### Anti-Patterns
+
+| Don't | Do Instead |
+|-------|------------|
+| Restructure system prompt per request | Keep system prompt identical; vary user messages |
+| Embed dynamic data in agent frontmatter | Pass dynamic data as delegation prompt content |
+| Shuffle instruction order between calls | Maintain consistent instruction ordering |
+| Include timestamps in system context | Put timestamps in user/assistant messages only |
+
+### Impact
+
+With proper prompt structure:
+- **Cache hit rate**: 80-95% for stable system prompts
+- **Latency reduction**: ~50% for cached prefixes (time-to-first-token)
+- **Cost reduction**: Cached input tokens are billed at reduced rates
+
 ## cAgents Model Selection Priority
 
 Model selection follows this priority order (highest wins):

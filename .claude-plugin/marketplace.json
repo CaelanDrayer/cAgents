@@ -9,8 +9,8 @@
   "plugins": [
     {
       "name": "cagents",
-      "description": "Universal multi-domain agent system with 213 specialized agents across 8 business domains (Engineering, Creative, Business, People, Service, Leadership, Core, Shared). Event-driven pipeline engine with 3 progressive paths, agent chaining with topological execution, and revision routing. 7 skills: /run (pipeline), /team (parallel N-wave execution, 40-60% faster), /org (corporate hierarchy), /designer (interactive 6-phase design), /review, /optimize, /helper. Controller-centric delegation with reviewer loops, minimum tier 2 enforcement, and 18 CJS hooks.",
-      "version": "10.3.0",
+      "description": "Universal multi-domain agent system with 213 specialized agents across 8 business domains (Engineering, Creative, Business, People, Service, Leadership, Core, Shared). Event-driven pipeline engine with 3 progressive paths, agent chaining with topological execution, and revision routing. 7 skills: /run (pipeline), /team (parallel N-wave execution, 40-60% faster), /org (corporate hierarchy), /designer (interactive 6-phase design), /review, /optimize, /helper. Controller-centric delegation with reviewer loops, minimum tier 2 enforcement, attention injection for goal drift prevention, and 19 CJS hooks.",
+      "version": "10.4.0",
       "author": {
         "name": "CaelanDrayer",
         "email": "caelan@caelandrayer.ca"
