@@ -80,3 +80,8 @@ __pycache__/
 example/
 metrics.jsonl
 vendor_repos/
+
+# Test/tool temp directories
+.loki-test-tmp/
+.omc/
+.orphaned_at

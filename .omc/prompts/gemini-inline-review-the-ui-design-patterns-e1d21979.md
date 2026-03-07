@@ -1,1 +1,0 @@
-Review the UI design patterns
