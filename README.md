@@ -2,25 +2,27 @@
 
 **Universal Multi-Domain Agent System for Claude Code**
 
-V9.21 with 238 agents across 5 super-domains. Flattened 2-level delegation, CJS-only hook system, Agent Teams parallel execution, Claude 4.6 model routing (Opus 4.6, Sonnet 4.6, Haiku 4.5).
+V10.6.0 with 213 agents across 8 business domains. Event-driven pipeline state machine, controller-centric delegation, CJS-only hook system, Agent Teams parallel execution, Claude 4.6 model routing (Opus 4.6, Sonnet 4.6, Haiku 4.5).
 
 ## Overview
 
 cAgents transforms AI-assisted work across any domain through specialized agent teams that collaborate autonomously. From software engineering to marketing, operations to creative work - one unified system handles it all.
 
-**V9.21 Release**:
-- TodoWrite blocking prerequisite enforcement for user-visible progress tracking
-- Flattened 2-level delegation chain (`/run -> controller -> execution`) replacing unreliable 5-level chain
-- CJS-only hook system (14 hooks via `createHook()` factory, shell hooks removed in V9.5)
-- Agent Teams integration for parallel team-based execution (40-60% time reduction)
-- Claude 4.6 model routing: Opus 4.6 (reasoning), Sonnet 4.6 (execution), Haiku 4.5 (support), opusplan hybrid for controllers
-- Progressive skill disclosure (all agents use SKILL.md format with resources/)
-- Session management with three-file pattern and waypoints
-- Total agents: 238 (14 core + 14 shared + 210 domain specialists)
+**V10.6.0 Release**:
+- Confidence tiers in coordination_log and validation (0.0-1.0 scoring per work item)
+- Blind review anti-sycophancy for tier 3+ workflows (independent reviewers, Devil's Advocate)
+- Dead-letter queue with PARTIAL_PASS classification (failed work items do not block pipeline)
+- Handoff documents protocol: persistent inter-stage communication that survives context compaction
+- Signal file intervention: PAUSE/STOP/RESUME pipeline control via filesystem signals
+- Append-only DECISIONS.md and CORRECTIONS.md logs for controller coordination
+- Four Questions reboot check in pre-compact-save.cjs waypoints
+- Character-budgeted context injection (MAX_SESSION_START_CHARS=1500, MAX_ATTENTION_CHARS=500)
+- /context skill for shared product context across sessions
+- 124 agent descriptions rewritten to trigger-only format
 
 ## Requirements
 
-- **Claude Code** (required)
+- **Claude Code 2.1.69+** (required)
 - **Node.js** (optional, recommended) - Required for advanced hooks:
   - Session catchup (resume incomplete sessions)
   - Completion verification (validate task completion)
@@ -33,33 +35,41 @@ cAgents transforms AI-assisted work across any domain through specialized agent 
 
 Without Node.js, hooks are not available (CJS-only architecture since V9.5).
 
+### Compatibility
+
+| cAgents | Min Claude Code | Key Features |
+|---------|----------------|--------------|
+| 10.6.0+ | 2.1.69+ | Confidence tiers, blind review, dead-letter queue, handoff documents |
+| 10.5.0+ | 2.1.69+ | Clean team lifecycle (`continue:false`), hook reliability fixes |
+| 10.0-10.4 | 2.1.47+ | Custom model frontmatter in teammates |
+
 ## Architecture
 
-**Controller-Centric Question-Based Delegation**
+**Event-Driven Pipeline State Machine with Controller-Centric Delegation**
 
-238 agents organized into:
-- **Core** (14): Infrastructure (trigger, team-trigger, team-lead-adapter, orchestrator, hitl, optimizer, task-consolidator, task-decomposer, task-inventory, 5 universal workflow agents)
-- **Shared** (14): Cross-domain capabilities (data, analytics, quality, compliance, customer, operations)
-- **Make** (111): Creation (engineering, creative, product, devops, qa, **game development**)
-- **Grow** (38): Acquisition (marketing, sales, partnerships)
-- **Operate** (13): Operations (finance, operations, procurement)
-- **People** (20): Talent (HR, culture, talent acquisition)
-- **Serve** (28): Support & Governance (customer experience, legal, compliance, support)
+213 agents organized into 8 business domains:
+- **Core** (15): Infrastructure agents (trigger, team-trigger, team-lead-adapter, orchestrator, hitl, optimizer, prompt-engineer, task-consolidator, task-decomposer, task-inventory, 5 universal workflow agents)
+- **Shared** (4): Cross-domain intelligence (BI specialist, data scientist, market research analyst, competitive intelligence analyst)
+- **Engineering** (33): Software engineering, infrastructure, security, QA, game programming
+- **Creative** (30): Creative writing, narrative design, literary criticism, game art, audio
+- **Business** (69): Strategy, product, operations, finance, marketing, sales
+- **Growth** (36): Legacy domain in growth/ - consolidated into business/
+- **People** (19): HR, talent acquisition, culture
+- **Service** (32): Customer support, CX, legal, compliance, governance
+- **Leadership** (10): C-suite executives (used by /org, not directly routable)
 
 ```
-User Request -> /run (inline: routing + planning + orchestration)
-    |
-    v
-Controller (question-based delegation -> specialists answer -> synthesis)
-    |
-    v
-Execution Agents (actual implementation work)
-    |
-    v
-/run validates outputs -> Complete
+User Request -> /run (state machine loop, reads pipeline_config.yaml)
+  -> orchestrator     (context enrichment -> enriched_context.yaml)
+  -> universal-planner (objectives + controller selection -> plan.yaml)
+  -> task-decomposer  (work items -> work_items.yaml)
+  -> prompt-engineer  (delegation prompts -> delegation_prompts.yaml)
+  -> controller       (question-based coordination with executor + reviewer loops)
+  -> universal-validator (quality gates -> PASS/FAIL/REVISE)
+  -> Complete
 ```
 
-**Key Innovation**: Controllers use question-based delegation to specialists, synthesize answers, and coordinate implementation. Planning defines WHAT (objectives), controllers determine HOW (questions + synthesis).
+**Key Innovation**: Controllers use question-based delegation to specialists, synthesize answers, and coordinate implementation. Planning defines WHAT (objectives), controllers determine HOW (questions + synthesis). The validator drives revision routing: FAIL routes back to the controller, REVISE routes back to the planner (max 5 cycles).
 
 ## Installation
 
@@ -69,7 +79,7 @@ Execution Agents (actual implementation work)
 /plugin CaelanDrayer/cAgents
 ```
 
-This installs the complete system with all super-domains.
+This installs the complete system with all business domains.
 
 ### Manual Installation
 
@@ -120,93 +130,110 @@ One command handles ANY request type - routing happens automatically:
 
 The system automatically:
 1. Analyzes your request and identifies intent
-2. Routes to the appropriate super-domain (Make/Grow/Operate/People/Serve)
+2. Routes to the appropriate business domain (Engineering, Creative, Business, People, Service, etc.)
 3. Classifies complexity tier (2-4, minimum tier 2 enforced)
 4. Selects appropriate controllers and execution agents
-5. Orchestrates the workflow through all phases
+5. Orchestrates the workflow through all pipeline phases
 6. Delivers validated results
 
 ### Complexity Tiers
 
 | Tier | Type | Coordination | Example | Workflow |
 |------|------|--------------|---------|----------|
-| 2 | Moderate | 1 controller | "Fix bug", "What is X?", "Fix typo" | routing -> planning -> **coordinating** -> executing -> validating |
-| 3 | Complex | 1 primary + 1-2 supporting | "Add feature" | routing -> planning -> **coordinating** -> executing -> validating |
-| 4 | Expert | 1 executive + 1 primary + 2-4 supporting + HITL | "Major refactor" | routing -> planning -> **coordinating** -> executing -> validating + HITL |
+| 2 | Moderate | 1 controller | "Fix bug", "What is X?", "Fix typo" | routing -> planning -> coordinating -> executing -> validating |
+| 3 | Complex | 1 primary + 1-2 supporting | "Add feature" | routing -> planning -> coordinating -> executing -> validating |
+| 4 | Expert | 1 executive + 1 primary + 2-4 supporting + HITL | "Major refactor" | routing -> planning -> coordinating -> executing -> validating + HITL |
 
 **Note**: Tiers 0-1 are deprecated and automatically upgraded to Tier 2 for multi-agent specialist coverage.
 
 ### Team Execution
 
 ```bash
-/team Implement OAuth2 authentication    # Full team execution
-/team Build user dashboard --dry-run     # Preview team composition
-/team Create API endpoints --members 4   # Limit team size
+/team Implement OAuth2 authentication    # Full team execution (5-7 waves)
+/team Build user dashboard --dry-run     # Preview wave structure
+/team Build feature --waves 8            # Force minimum 8 waves
+/run Build feature --team                # Team mode via flag
 ```
 
-### Universal Commands
+### All Skills
 
 ```bash
-/designer   # Interactive design discovery (ALWAYS uses AskUserQuestion)
-/review     # Comprehensive review (code, documents, strategies, campaigns)
-/optimize   # Universal optimizer (8 types: code, content, process, data, infrastructure, campaign, creative, sales)
+/run        # Universal workflow engine - routes to specialist agents
+/team       # N-wave parallel team execution (40-60% time reduction for tier 3+)
+/org        # Corporate hierarchy orchestration - CEO + C-suite + sequential /team per domain
+/designer   # Interactive design discovery (ALWAYS uses AskUserQuestion at every step)
+/review     # Comprehensive review with parallel agent execution
+/optimize   # Universal optimizer with atomic rollback
+/helper     # Interactive command guide
+/context    # Shared product context document for all agents
 ```
 
-## Super-Domains
+## Business Domains
 
-### Make (Creation) - 111 agents
-Engineering, creative writing, product design, devops, QA, **game development**
-- **Controllers**: engineering-manager, architect, creative-director, product-manager, game-director, cto, cco
-- **Execution**: backend-developer, frontend-developer, copywriter, story-architect, gameplay-programmer, level-designer, game-artist, audio-engineer, qa-lead, security-specialist
-- **Use cases**: Software development, creative content, product design, technical writing, **game development (Unity, Unreal, Godot)**
+### Engineering (33 agents)
+Software engineering, infrastructure, security, QA, game programming
+- **Controllers**: engineering-manager, architect, security-lead, devops-lead
+- **Execution**: backend-developer, frontend-developer, qa-lead, dba, ux-designer, dependency-analyzer
+- **Use cases**: Software development, security review, infrastructure, technical architecture, game development (Unity, Unreal, Godot)
 
-### Grow (Acquisition) - 38 agents
-Marketing, sales, partnerships
-- **Controllers**: marketing-strategist, campaign-manager, sales-strategist, cro
-- **Execution**: content-strategist, copywriter, seo-specialist, sales-development-rep, account-executive
-- **Use cases**: Marketing campaigns, sales strategies, content marketing, SEO, demand generation
+### Creative (30 agents)
+Creative writing, narrative design, literary criticism, game art, audio
+- **Controllers**: narrative-director
+- **Execution**: copywriter, story-architect, literary-critic, voice-coach, theme-analyst, pacing-specialist, tension-architect
+- **Note**: All creative execution agents run on Opus 4.6 for highest quality output
 
-### Operate (Operations) - 13 agents
-Finance, operations, procurement
-- **Controllers**: operations-manager, finance-manager, cfo, coo
-- **Execution**: financial-analyst, budget-analyst, procurement-specialist, supply-chain-manager
-- **Use cases**: Financial planning, budgeting, operations optimization, procurement
+### Business (69 agents)
+Strategy, product, operations, finance, marketing, sales
+- **Controllers**: operations-manager, campaign-manager, strategic-planner, product-manager
+- **Execution**: financial-analyst, market-research-analyst, project-manager, agile-coach, procurement-specialist
 
-### People (Talent) - 20 agents
+### People (19 agents)
 HR, talent acquisition, culture
-- **Controllers**: hr-manager, talent-acquisition-specialist, chro
-- **Execution**: recruiter, onboarding-specialist, culture-champion, learning-development-specialist
-- **Use cases**: Recruiting, onboarding, performance management, culture initiatives
+- **Controllers**: hr-manager, talent-acquisition-manager
+- **Execution**: recruiter, recruiting-coordinator
 
-### Serve (Support & Governance) - 28 agents
-Customer experience, legal, compliance, support
-- **Controllers**: customer-success-manager, legal-counsel, compliance-officer, cx-director
-- **Execution**: support-specialist, technical-writer, compliance-analyst, legal-researcher
-- **Use cases**: Customer support, legal review, compliance audits, documentation
+### Service (32 agents)
+Customer support, CX, legal, compliance, governance
+- **Controllers**: customer-success-manager, vp-customer-support, general-counsel
+- **Execution**: customer-support-rep, technical-writer, compliance-officer, paralegal
+
+### Leadership (10 agents)
+C-suite executives - used by /org, not directly routable
+- **Agents**: cto, cco, cpo, cmo, cfo, coo, cro, cso, chro, general-counsel
+
+### Core (15 agents)
+Infrastructure - the pipeline engine
+- trigger, orchestrator, hitl, optimizer, prompt-engineer
+- team-trigger, team-lead-adapter
+- universal-router, universal-planner, universal-executor, universal-validator, universal-self-correct
+- task-consolidator, task-decomposer, task-inventory
+
+### Shared (4 agents)
+Cross-domain intelligence
+- bi-specialist, data-scientist, market-research-analyst, competitive-intelligence-analyst
 
 ## Core Features
 
+### Event-Driven Pipeline (V9.23+)
+Config-driven state machine reads `pipeline_config.yaml`. Each agent writes a completion event file that /run reads to advance the state. Revision routing: FAIL -> re-run controller, REVISE -> re-run planner (max 5 cycles each).
+
 ### Controller-Centric Coordination
-Controllers ask questions to specialists, synthesize answers, coordinate implementation. No more rigid task lists - adaptive, expert-driven workflows.
+Controllers ask questions to specialists, synthesize answers, coordinate implementation. Adaptive, expert-driven workflows replace rigid task lists.
+
+### Reviewer Loops (V9.23+)
+After each executor completes, a reviewer evaluates against acceptance criteria. REVISE sends feedback back to the executor (max 3 internal rounds). Tier 3+ uses blind review with independent reviewers and a Devil's Advocate confirmation step.
+
+### Confidence Tiers (V10.6.0)
+Every completed work item includes a confidence score (0.0-1.0). Items below 0.7 trigger additional reviewer scrutiny. Validator uses confidence scores to prioritize verification.
 
 ### Objective-Driven Planning
 Plans define high-level objectives (WHAT), controllers determine implementation approach (HOW) through question-based delegation.
 
-### Universal Workflow Agents
-5 universal agents (router, planner, executor, validator, self-correct) work across ALL domains via YAML configuration. No domain-specific workflow code needed.
-
-### Parallel Execution
-Up to 50 concurrent agents with 4 execution modes (Sequential, Pipeline, Swarm, Mesh) for up to 50x speedup.
-
-### Skills System (V9.0)
-- **/run**: Universal workflow engine - routes through specialist agents
-- **/team**: Parallel team execution with peer-to-peer messaging and shared task lists
-- **/designer**: Interactive design discovery (ALWAYS uses AskUserQuestion)
-- **/review**: Comprehensive review with intelligent agent selection
-- **/optimize**: Universal optimizer with 8 optimization types and atomic rollback
-
 ### Agent Teams (V8.6+)
-Parallel team-based execution with 40-60% time reduction, peer-to-peer messaging, shared task lists, and team leads operating in delegate mode.
+N-wave parallel execution with 40-60% time reduction. Each wave spawns fresh teammates, validates a GATE checkpoint, then proceeds. Prefer 5-7 waves for tier 3+ workflows.
+
+### CSV Task Inventory
+60-80% context savings for workflows with 20+ tasks. State persists to disk across compaction events.
 
 ## Agent_Memory System
 
@@ -216,30 +243,39 @@ All state persists in `Agent_Memory/` at your project root:
 Agent_Memory/
 ├── _system/              # Registry, config, agent status
 ├── _knowledge/           # Patterns, calibration, learnings
-├── _archive/             # Completed instructions
-└── {instruction_id}/     # Per-task working memory
-    ├── instruction.yaml  # Request + metadata
-    ├── status.yaml       # Current phase
-    ├── workflow/         # Plan, coordination_log, execution state
-    ├── tasks/            # pending/, in_progress/, completed/
-    └── outputs/          # Deliverables
+├── _archive/             # Completed sessions
+├── _communication/       # Agent messaging (inbox, broadcast)
+├── _projects/            # Persistent cross-session project state (DECISIONS.md, CORRECTIONS.md)
+└── sessions/             # All command sessions
+    └── {command}_{YYYYMMDD_HHMMSS}/
+        ├── instruction.yaml    # Request + metadata
+        ├── status.yaml         # Current phase
+        ├── task_plan.md        # Work item breakdown (three-file pattern)
+        ├── findings.md         # Discoveries and decisions
+        ├── progress.md         # Status and resume instructions
+        ├── workflow/           # Plan, coordination_log, events, handoffs
+        ├── waypoints/          # Resume checkpoints
+        ├── tasks/              # pending/, in_progress/, completed/
+        └── outputs/            # Deliverables
 ```
 
-File-based, instruction-scoped, parallel-safe, pause/resume capable.
+File-based, session-scoped, parallel-safe, pause/resume capable.
 
 ## Hooks System
 
-cAgents uses Claude Code's hook system for workflow integration:
+cAgents registers 16 hooks across 13 event types. All use the `createHook()` factory from `hook-utils.cjs` and are invoked via `run-hook.cjs`.
 
-| Hook Type | CJS Hook |
-|-----------|----------|
+| Event | Hook(s) |
+|-------|---------|
 | SessionStart | session-catchup.cjs |
 | SessionEnd | team-stop.cjs |
 | Stop | verify-completion.cjs |
 | SubagentStart | subagent-tracker.cjs, team-start.cjs |
 | SubagentStop | subagent-stop-tracker.cjs |
-| PreToolUse (Bash) | bash-validator.cjs |
-| PreToolUse (Write/Edit) | secret-detection.cjs |
+| PreToolUse[Bash] | bash-validator.cjs |
+| PreToolUse[Write\|Edit] | secret-detection.cjs |
+| PreToolUse[Write\|Edit\|Bash] | attention-injection.cjs |
+| PostToolUse[Write\|Edit] | post-write-validator.cjs |
 | PostToolUseFailure | tool-failure-tracker.cjs |
 | TeammateIdle | teammate-idle-handler.cjs |
 | TaskCompleted | team-task-complete.cjs |
@@ -247,49 +283,46 @@ cAgents uses Claude Code's hook system for workflow integration:
 | PreCompact | pre-compact-save.cjs |
 | Notification | notification.cjs |
 
-All hooks use the `createHook()` factory from `hook-utils.cjs` and are invoked via `run-hook.cjs`. See `.claude/rules/core/hooks.md` for details.
+19 total .cjs files: 16 registered hooks + hook-utils.cjs (factory) + run-hook.cjs (launcher) + eval-runner.cjs (CLI tool).
+
+See `.claude/rules/core/hooks.md` for full documentation.
 
 ## Documentation
 
-- **CLAUDE.md** - Complete architecture, commands, and agent reference (this is the main documentation)
+- **CLAUDE.md** - Complete architecture, commands, and agent reference
 - **README.md** - Quick start guide (this file)
-- **docs/** - Implementation guides, standards, optimization tracking
+- **docs/** - Implementation guides, ARCHITECTURE.md, SKILLS.md, TEAM_MODE.md, RELEASE_NOTES.md, COMMAND_SELECTION.md, and more (17 files)
 - **.claude/rules/** - Modular topic-specific rules (controllers, execution, memory, quality)
+- **SECURITY.md** - Security policy and vulnerability reporting
 
 ## Performance
 
-**V9.21 Flattened Architecture**:
-- 2-level delegation chain (reliable) replaces 5-level chain
-- CJS-only hook system with `createHook()` factory (14 hooks)
+**Event-Driven Pipeline**:
+- 16 registered CJS hooks (19 .cjs files) via `createHook()` factory
 - Agent Teams: 40-60% execution time reduction for tier 3+ workflows
-- Claude 4.6 model routing (Opus 4.6, Sonnet 4.6, Haiku 4.5) with opusplan hybrid for controllers
+- Claude 4.6 model routing: Opus 4.6 (controllers/reasoning), Sonnet 4.6 (execution), Haiku 4.5 (support)
 
 **Core Architecture**:
 - 30-40% simpler planning (objectives vs detailed tasks)
 - 20-30% fewer tokens (no detailed task lists)
-- Up to 50x speedup with parallel execution (swarm mode)
+- Up to 50x speedup with parallel execution
 - CSV-based task inventory for 20+ task workflows (60-80% context savings)
-- Aggressive task decomposition with implicit requirement discovery
-- Total agents: 238 (14 core + 14 shared + 210 domain specialists)
-- Game engines supported: Unity, Unreal Engine, Godot
+- Aggressive task decomposition with implicit requirement discovery (30+ work items)
+- Total agents: 213 (15 core + 4 shared + 10 leadership + 184 domain specialists)
 
 ## Version History
 
-- **V9.22.0** (2026-02-27) - Documentation sync + stale reference fixes across all docs
-- **V9.20.0** (2026-02-27) - TodoWrite blocking prerequisite enforcement, mandatory controller TodoWrite, stronger helper patterns
-- **V9.19.1** (2026-02-27) - Flattened 2-level delegation, CJS-only hooks, TodoWrite progressive refinement, 238 agents
-- **V9.0.0** (2026-02-07) - Platform Alignment Edition: Skills system, 14 hook event types, Agent Teams, opusplan model routing, 236 agents
-- **V8.7.0** (2026-02-06) - Agent Teams integration, /run as universal execution path for /team work items
-- **V8.6.0** (2026-02-05) - Claude Code Agent Teams integration, team-trigger and team-lead-adapter agents
-- **V8.5.2** (2026-02-05) - Config consolidation, documentation cleanup, hook optimization
-- **V8.0.7** (2026-01-28) - Infrastructure & Learning Edition: Hooks, SKILL.md, model routing, session management
-- **V7.5.1** (2026-01-22) - Task Inventory Edition: CSV-based task inventory, aggressive decomposition, completion validation
-- **V7.3.0** (2026-01-19) - Game Development Edition: 28 new game dev agents, Make domain expanded to 108 agents
-- **V7.1.0** (2026-01-19) - Cleanup release: removed 358 legacy agents, streamlined to 7 directories, 201 production agents
-- **V7.0.3** - Introduced 5 super-domains (Make, Grow, Operate, People, Serve), consolidated 8 legacy domains
+- **V10.6.0** - Competitive improvements: confidence tiers, blind review anti-sycophancy, dead-letter queue, handoff documents protocol, signal file intervention (PAUSE/STOP/RESUME), append-only DECISIONS.md/CORRECTIONS.md, Four Questions reboot check, /context skill, 124 agent descriptions rewritten
+- **V10.5.0** - Clean team lifecycle: `continue:false` + `stopReason` for TeammateIdle/TaskCompleted; minimum Claude Code version declaration (2.1.69+)
+- **V10.4.0** - Manus-style context engineering: attention-injection.cjs PreToolUse hook, KV-cache optimization, planning reminders, 5-question reboot check, 2-action findings capture rule, read-before-decide pattern
+- **V10.3.0** - Creative domain overhaul: 24->30 agents, 6 new specialists (literary-critic, voice-coach, theme-analyst, pacing-specialist, tension-architect, research-specialist), all creative execution agents on Opus 4.6
+- **V10.2.3** - TRIGGER patterns and metadata fields on 124 agent descriptions
+- **V10.0.0** - Domain restructure: 5 super-domains (Make/Grow/Operate/People/Serve) replaced by 8 business domains (Engineering/Creative/Business/Growth/People/Service/Leadership/Core); agent chaining with topological execution
+- **V9.22.0** - Documentation sync, stale reference fixes
+- **V9.0.0** - Platform Alignment Edition: Skills system, hook event types, Agent Teams, opusplan model routing
+- **V8.0.7** - Infrastructure and Learning Edition: Hooks, SKILL.md, model routing, session management
+- **V7.5.1** - Task Inventory Edition: CSV-based task inventory, aggressive decomposition, completion validation
 - **V7.0.0** - Controller-centric architecture with question-based delegation, objective-driven planning
-- **V6.0.0** - Universal workflow agents replace domain-specific workflow agents via configuration
-- **V5.0.0** - Orchestration with realistic organizational hierarchy
 
 ## Support
 
@@ -303,4 +336,4 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | **cAgents V9.21** | 238 agents across 5 super-domains | Powered by Claude Opus 4.6, Sonnet 4.6 & Haiku 4.5
+**Built with Claude Code** | **cAgents V10.6.0** | 213 agents across 8 business domains | Powered by Claude Opus 4.6, Sonnet 4.6 & Haiku 4.5
