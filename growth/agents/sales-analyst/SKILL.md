@@ -2,7 +2,7 @@
 name: sales-analyst
 domain: growth
 tier: execution
-description: Sales analytics and insights specialist. Provides pipeline analytics, forecast modeling, performance analysis, and trend identification.
+description: "Use when you need sales analytics and insights specialist. Provides pipeline analytics, forecast modeling, performance analysis, and trend identification."
 model: sonnet
 capabilities:
   - pipeline_analytics

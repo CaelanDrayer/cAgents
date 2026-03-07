@@ -641,7 +641,7 @@ Result: All domains complete, integrated deliverable
 /helper --compare           -> Side-by-side comparison table
 /helper --flags review      -> All /review flags with examples
 /helper --quick             -> One-screen reference card
-/helper --topic domains     -> Deep dive into the 5 super-domains
+/helper --topic domains     -> Deep dive into the 8 business domains
 ```
 
 ### Key Flags

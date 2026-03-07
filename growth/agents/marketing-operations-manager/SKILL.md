@@ -2,7 +2,7 @@
 name: marketing-operations-manager
 domain: growth
 tier: execution
-description: Marketing operations and technology specialist. Manages marketing automation, lead management, campaign operations, and martech stack.
+description: "Use when you need marketing operations and technology specialist. Manages marketing automation, lead management, campaign operations, and martech stack."
 model: sonnet
 capabilities:
   - marketing_automation

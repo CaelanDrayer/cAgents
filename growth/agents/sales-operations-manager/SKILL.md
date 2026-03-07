@@ -2,7 +2,7 @@
 name: sales-operations-manager
 domain: growth
 tier: execution
-description: Sales infrastructure and process specialist. Manages CRM administration, territory design, quota allocation, and process optimization.
+description: "Use when you need sales infrastructure and process specialist. Manages CRM administration, territory design, quota allocation, and process optimization."
 model: sonnet
 capabilities:
   - crm_administration

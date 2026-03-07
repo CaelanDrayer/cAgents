@@ -2,7 +2,7 @@
 name: research-specialist
 domain: business
 tier: execution
-description: Research and information gathering specialist. Conducts research, gathers data, synthesizes findings for planning and decision support.
+description: "Use when you need research and information gathering specialist. Conducts research, gathers data, synthesizes findings for planning and decision support."
 model: sonnet
 capabilities:
   - research_methodology

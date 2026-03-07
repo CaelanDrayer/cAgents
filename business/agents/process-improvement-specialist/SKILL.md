@@ -2,7 +2,7 @@
 name: process-improvement-specialist
 domain: business
 tier: execution
-description: Process optimization and continuous improvement specialist. Uses Lean, Six Sigma, and other methodologies to drive efficiency.
+description: "Use when you need process optimization and continuous improvement specialist. Uses Lean, Six Sigma, and other methodologies to drive efficiency."
 model: sonnet
 capabilities:
   - process_analysis

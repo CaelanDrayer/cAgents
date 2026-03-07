@@ -1,7 +1,7 @@
 ---
 name: universal-planner
 tier: infrastructure
-description: "Universal planning agent that orchestrates the planning phase. Selects controllers, defines objectives, and writes plan.yaml. Delegates decomposition to task-decomposer for complex requests (tier 3+), handles simple decomposition inline for tier 2."
+description: "Use when you need planning agent that orchestrates the planning phase. Selects controllers, defines objectives, and writes plan.yaml. Delegates decomposition to task-decomposer for complex requests (tier 3+), handles simple decomposition inline for tier 2."
 tools: ["Read","Grep","Glob","Write","TodoWrite","Task"]
 model: opus
 color: bright_blue
@@ -14,6 +14,8 @@ capabilities:
   - controller_selection
 maxTurns: 40
 permissionMode: "bypassPermissions"
+related-agents: ["orchestrator", "task-decomposer", "prompt-engineer", "universal-validator"]
+not-my-scope: ["Direct implementation", "code review", "content creation", "test execution"]
 ---
 
 # Universal Planner

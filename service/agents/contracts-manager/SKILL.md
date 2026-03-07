@@ -2,7 +2,7 @@
 name: contracts-manager
 domain: service
 tier: execution
-description: Contract drafting, negotiation, and lifecycle management specialist for agreements and risk assessment.
+description: "Use when you need agreements and risk assessment."
 model: sonnet
 capabilities:
   - contract_drafting

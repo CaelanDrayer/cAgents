@@ -2,7 +2,7 @@
 name: market-research-analyst
 domain: shared
 tier: controller
-description: Market research specialist coordinating market analysis, customer research, industry analysis, and insights generation across ALL domains.
+description: "Use when you need market research specialist coordinating market analysis, customer research, industry analysis, and insights generation across ALL domains."
 model: sonnet
 coordination_style: question_based
 typical_questions:

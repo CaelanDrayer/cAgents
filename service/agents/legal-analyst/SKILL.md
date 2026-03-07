@@ -2,7 +2,7 @@
 name: legal-analyst
 domain: service
 tier: execution
-description: Legal data and analytics specialist for spend analysis, risk quantification, and data-driven legal insights.
+description: "Use when you need spend analysis, risk quantification, and data-driven legal insights."
 model: sonnet
 capabilities:
   - legal_analytics

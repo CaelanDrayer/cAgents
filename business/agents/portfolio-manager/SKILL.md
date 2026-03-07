@@ -2,7 +2,7 @@
 name: portfolio-manager
 domain: business
 tier: execution
-description: Portfolio planning and optimization specialist. Prioritizes initiatives across portfolio, optimizes resource allocation, maximizes portfolio value.
+description: "Use when you need portfolio planning and optimization specialist. Prioritizes initiatives across portfolio, optimizes resource allocation, maximizes portfolio value."
 model: sonnet
 capabilities:
   - portfolio_planning

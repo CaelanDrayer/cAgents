@@ -20,6 +20,8 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related-agents: ["architect", "backend-developer", "devops-lead", "qa-tester"]
+not-my-scope: ["Feature development", "UI design", "content creation", "marketing strategy"]
 ---
 
 # Security Lead Agent

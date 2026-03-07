@@ -2,7 +2,7 @@
 name: account-manager
 domain: service
 tier: controller
-description: Account management specialist for account planning, relationship management, upsell/cross-sell, and renewal management across all domains.
+description: "Use when you need account planning, relationship management, upsell/cross-sell, and renewal management across all domains."
 model: sonnet
 coordination_style: question_based
 typical_questions:

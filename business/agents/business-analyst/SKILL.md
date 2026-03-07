@@ -7,7 +7,7 @@ typical_questions:
   - "What are the current operational metrics?"
   - "What are the efficiency bottlenecks?"
   - "What are the compliance requirements?"
-description: Requirements gathering and solution design specialist. Bridges business and technology through analysis, stakeholder management, and documentation.
+description: "Use when you need requirements gathering and solution design specialist. Bridges business and technology through analysis, stakeholder management, and documentation."
 model: sonnet
 capabilities:
   - requirements_analysis

@@ -2,7 +2,7 @@
 name: pr-specialist
 domain: growth
 tier: execution
-description: Public relations and media specialist. Manages PR strategy, media relations, press releases, thought leadership, and reputation management.
+description: "Use when you need public relations and media specialist. Manages PR strategy, media relations, press releases, thought leadership, and reputation management."
 model: sonnet
 capabilities:
   - pr_strategy

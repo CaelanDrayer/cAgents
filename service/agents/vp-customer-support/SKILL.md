@@ -2,7 +2,7 @@
 name: vp-customer-support
 domain: service
 tier: controller
-description: VP of Customer Support providing executive leadership for support strategy, customer experience, and critical escalation management.
+description: "Use when you need support strategy, customer experience, and critical escalation management."
 model: "opusplan"
 coordination_style: question_based
 typical_questions:

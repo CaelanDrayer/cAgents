@@ -2,7 +2,7 @@
 name: customer-advocacy-manager
 domain: service
 tier: controller
-description: Customer advocacy specialist for reference management, case studies, testimonials, and customer community building across all domains.
+description: "Use when you need reference management, case studies, testimonials, and customer community building across all domains."
 model: sonnet
 coordination_style: question_based
 typical_questions:

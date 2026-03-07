@@ -2,7 +2,7 @@
 name: quality-manager-business
 domain: business
 tier: execution
-description: Quality management and continuous improvement specialist. Ensures quality through standards, processes, and improvement methodologies.
+description: "Use when you need quality management and continuous improvement specialist. Ensures quality through standards, processes, and improvement methodologies."
 model: sonnet
 capabilities:
   - quality_assurance

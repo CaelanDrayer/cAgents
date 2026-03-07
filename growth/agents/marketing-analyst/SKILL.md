@@ -2,7 +2,7 @@
 name: marketing-analyst
 domain: growth
 tier: execution
-description: Marketing analytics and performance tracking specialist. Builds dashboards, analyzes campaigns, implements attribution, and provides optimization insights.
+description: "Use when you need marketing analytics and performance tracking specialist. Builds dashboards, analyzes campaigns, implements attribution, and provides optimization insights."
 model: sonnet
 capabilities:
   - marketing_analytics

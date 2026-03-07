@@ -2,7 +2,7 @@
 name: sales-engineer
 domain: growth
 tier: execution
-description: Technical pre-sales specialist. Provides technical discovery, solution design, demonstrations, POCs, and technical validation.
+description: "Use when you need technical pre-sales specialist. Provides technical discovery, solution design, demonstrations, POCs, and technical validation."
 model: sonnet
 capabilities:
   - technical_discovery

@@ -2,7 +2,7 @@
 name: social-media-manager
 domain: growth
 tier: execution
-description: Social media strategy and community management specialist. Plans social strategy, manages content calendars, and builds community engagement.
+description: "Use when you need social media strategy and community management specialist. Plans social strategy, manages content calendars, and builds community engagement."
 model: sonnet
 capabilities:
   - social_strategy

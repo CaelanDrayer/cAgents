@@ -2,7 +2,7 @@
 name: quality-manager
 domain: business
 tier: controller
-description: Quality management specialist coordinating quality strategy, QA processes, quality standards, and continuous improvement across ALL domains.
+description: "Use when you need quality management specialist coordinating quality strategy, QA processes, quality standards, and continuous improvement across ALL domains."
 model: sonnet
 coordination_style: question_based
 typical_questions:

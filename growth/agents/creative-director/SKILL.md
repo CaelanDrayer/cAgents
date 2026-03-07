@@ -7,7 +7,7 @@ typical_questions:
   - "What are the current campaign/sales metrics?"
   - "What is the target audience and positioning?"
   - "What are the conversion bottlenecks?"
-description: Creative strategy and visual design leader. Directs creative vision, campaign visuals, brand expression, and creative quality across all touchpoints.
+description: "Use when you need creative strategy and visual design leader. Directs creative vision, campaign visuals, brand expression, and creative quality across all touchpoints."
 model: sonnet
 capabilities:
   - creative_strategy

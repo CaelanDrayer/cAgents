@@ -2,7 +2,7 @@
 name: process-auditor
 domain: business
 tier: controller
-description: Process audit specialist coordinating audits, compliance verification, process improvement identification, and audit reporting across ALL domains.
+description: "Use when you need process audit specialist coordinating audits, compliance verification, process improvement identification, and audit reporting across ALL domains."
 model: sonnet
 coordination_style: question_based
 typical_questions:

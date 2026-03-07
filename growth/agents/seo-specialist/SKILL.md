@@ -2,7 +2,7 @@
 name: seo-specialist
 domain: growth
 tier: execution
-description: SEO strategy and optimization specialist. Conducts keyword research, on-page optimization, technical SEO, and organic search growth.
+description: "Use when you need sEO strategy and optimization specialist. Conducts keyword research, on-page optimization, technical SEO, and organic search growth."
 model: sonnet
 capabilities:
   - keyword_research

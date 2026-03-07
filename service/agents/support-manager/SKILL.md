@@ -2,7 +2,7 @@
 name: support-manager
 domain: service
 tier: execution
-description: Support team leader managing daily operations, agent performance coaching, and workflow optimization.
+description: "Use when you need daily operations, agent performance coaching, and workflow optimization."
 model: sonnet
 capabilities:
   - team_management

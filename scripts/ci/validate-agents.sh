@@ -2,7 +2,7 @@
 #
 # cAgents Agent Schema Validation
 # Validates all agent SKILL.md files across all 8 domains
-# Version: 10.1.0
+# Version: 10.6.0
 #
 # Usage:
 #   ./scripts/ci/validate-agents.sh           # Validate all domains
@@ -13,10 +13,13 @@
 # Checks:
 #   1. SKILL.md exists for each agent directory
 #   2. Frontmatter starts with ---
-#   3. Required fields: name, tier
-#   4. Tier value is valid (controller, execution, support, executive)
+#   3. Required fields: name (WARN), tier (ERROR)
+#   4. Tier value is valid (controller, execution, support, executive, infrastructure)
 #   5. Agent path matches plugin.json registration
 #   6. No orphan agents (in directory but not in plugin.json)
+#   7. Domain/name consistency (agent dir matches domain field)
+#   8. Description length validation (10-300 chars)
+#   9. related-agents resolution (referenced agents must exist)
 
 set -e
 
@@ -114,9 +117,9 @@ validate_agent() {
         return
     fi
 
-    # Check 4: Required field - tier
+    # Check 4: Required field - tier (ERROR - tier is mandatory)
     if ! echo "$frontmatter" | grep -q "^tier:"; then
-        log_warn "Missing 'tier' field: $relative_path"
+        log_fail "Missing 'tier' field (required): $relative_path"
         return
     fi
 
@@ -138,6 +141,60 @@ validate_agent() {
             log_warn "Not in root plugin.json: $relative_path"
             return
         fi
+    fi
+
+    # Check 7: Domain/name consistency
+    local name_value
+    name_value=$(echo "$frontmatter" | grep "^name:" | sed 's/^name:\s*//' | tr -d '[:space:]' | tr -d '"' | tr -d "'")
+    local domain_value
+    domain_value=$(echo "$frontmatter" | grep "^domain:" | sed 's/^domain:\s*//' | tr -d '[:space:]' | tr -d '"' | tr -d "'")
+    local dir_domain
+    dir_domain=$(echo "$relative_path" | cut -d'/' -f1)
+    local dir_name
+    dir_name=$(basename "$(dirname "$skill_md")")
+
+    if [[ -n "$domain_value" ]] && [[ "$domain_value" != "$dir_domain" ]]; then
+        # Allow core agents to have non-core domain values (infrastructure agents)
+        if [[ "$dir_domain" != "core" ]] || [[ "$domain_value" != "core" && "$tier_value" != "infrastructure" ]]; then
+            log_warn "Domain mismatch: frontmatter says '$domain_value' but file is in '$dir_domain/': $relative_path"
+        fi
+    fi
+
+    if [[ -n "$name_value" ]] && [[ "$name_value" != "$dir_name" ]]; then
+        log_warn "Name mismatch: frontmatter says '$name_value' but directory is '$dir_name': $relative_path"
+    fi
+
+    # Check 8: Description length validation (10-300 chars)
+    local description
+    description=$(echo "$frontmatter" | grep "^description:" | sed 's/^description:\s*//' | tr -d '"' | tr -d "'")
+    if [[ -n "$description" ]]; then
+        local desc_len=${#description}
+        if [[ $desc_len -lt 10 ]]; then
+            log_warn "Description too short (${desc_len} chars, min 10): $relative_path"
+        elif [[ $desc_len -gt 300 ]]; then
+            log_warn "Description too long (${desc_len} chars, max 300): $relative_path"
+        fi
+    fi
+
+    # Check 9: related-agents resolution (referenced agents must exist)
+    local related_agents
+    related_agents=$(echo "$frontmatter" | grep -A 20 "^related-agents:" | grep "^\s*-" | sed 's/^\s*-\s*//' | tr -d '"' | tr -d "'")
+    if [[ -n "$related_agents" ]]; then
+        while IFS= read -r related; do
+            related=$(echo "$related" | tr -d '[:space:]')
+            [[ -z "$related" ]] && continue
+            # Check if the referenced agent exists in any domain
+            local found=false
+            for check_domain in "${DOMAINS[@]}"; do
+                if [[ -f "$PROJECT_ROOT/$check_domain/agents/$related/SKILL.md" ]]; then
+                    found=true
+                    break
+                fi
+            done
+            if [[ "$found" != true ]]; then
+                log_warn "related-agent '$related' not found in any domain: $relative_path"
+            fi
+        done <<< "$related_agents"
     fi
 
     log_pass "$relative_path"
@@ -219,7 +276,7 @@ main() {
     if [[ $COUNT_ONLY != true ]]; then
         echo ""
         echo "=================================================="
-        echo "cAgents Agent Validation (v10.1.0)"
+        echo "cAgents Agent Validation (v10.6.0)"
         echo "=================================================="
     fi
 

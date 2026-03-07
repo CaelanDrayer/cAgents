@@ -1,0 +1,11 @@
+{
+  "mcp_servers": [
+    {
+      "name": "alpha",
+      "command": "node",
+      "args": [
+        "/tmp/_mock-mcp-server-mgr-4169921-1772862686514.js"
+      ]
+    }
+  ]
+}

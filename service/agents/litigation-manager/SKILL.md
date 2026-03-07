@@ -2,7 +2,7 @@
 name: litigation-manager
 domain: service
 tier: execution
-description: Litigation and dispute resolution specialist for lawsuit management, discovery, settlement negotiations, and trial strategy.
+description: "Use when you need lawsuit management, discovery, settlement negotiations, and trial strategy."
 model: sonnet
 capabilities:
   - litigation_management

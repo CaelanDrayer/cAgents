@@ -2,7 +2,7 @@
 name: okr-specialist
 domain: business
 tier: execution
-description: OKR planning and implementation expert. Facilitates OKR setting, defines objectives and key results, tracks progress, coaches teams on OKR methodology.
+description: "Use when you need oKR planning and implementation expert. Facilitates OKR setting, defines objectives and key results, tracks progress, coaches teams on OKR methodology."
 model: sonnet
 capabilities:
   - okr_planning

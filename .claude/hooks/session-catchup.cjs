@@ -12,7 +12,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, AGENT_MEMORY_DIR, SESSION_PREFIXES, extractYamlValue, safeRead, countPattern, ensureDir } = require('./hook-utils.cjs');
+const { createHook, AGENT_MEMORY_DIR, SESSION_PREFIXES, extractYamlValue, safeRead, countPattern, ensureDir, MAX_SESSION_START_CHARS } = require('./hook-utils.cjs');
 
 function findIncompleteSessions() {
   const sessionsDir = path.join(AGENT_MEMORY_DIR, 'sessions');
@@ -105,7 +105,7 @@ function findIncompleteSessions() {
 createHook('SessionCatchup', async (input) => {
   const incomplete = findIncompleteSessions();
 
-  const cagentsContext = 'cAgents V9.16 session initialized. Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Task tool subagent_type references. IMPORTANT: When spawned as a cAgents agent, self-register your agent type in workflow/agent_tree.yaml for audit trail (SubagentStart hook injects instructions).';
+  const cagentsContext = 'cAgents V10.5.0 session initialized. Minimum Claude Code version: 2.1.69 (required for hook lifecycle events). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Task tool subagent_type references. IMPORTANT: When spawned as a cAgents agent, self-register your agent type in workflow/agent_tree.yaml for audit trail (SubagentStart hook injects instructions).';
 
   if (incomplete.length === 0) {
     return {
@@ -146,10 +146,16 @@ createHook('SessionCatchup', async (input) => {
   message += '- Use `/run --resume <session_id>` to resume a specific session\n';
   message += '- Continue with a new request to start fresh\n';
 
+  // Truncate additionalContext to MAX_SESSION_START_CHARS budget (v10.6.0)
+  let fullContext = cagentsContext + '\n\n' + message;
+  if (fullContext.length > MAX_SESSION_START_CHARS) {
+    fullContext = fullContext.slice(0, MAX_SESSION_START_CHARS - 3) + '...';
+  }
+
   return {
     hookSpecificOutput: {
       hookEventName: 'SessionStart',
-      additionalContext: cagentsContext + '\n\n' + message
+      additionalContext: fullContext
     }
   };
 });

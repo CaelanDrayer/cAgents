@@ -2,7 +2,7 @@
 name: resource-planner
 domain: business
 tier: execution
-description: Resource allocation and capacity planning specialist. Plans resource allocation, forecasts capacity needs, optimizes resource utilization.
+description: "Use when you need resource allocation and capacity planning specialist. Plans resource allocation, forecasts capacity needs, optimizes resource utilization."
 model: sonnet
 capabilities:
   - resource_allocation

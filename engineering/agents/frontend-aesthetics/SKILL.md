@@ -1,6 +1,6 @@
 ---
 name: frontend-aesthetics
-description: "Frontend aesthetics specialist creating distinctive, creative designs that avoid generic patterns. Expert in unique typography, cohesive color systems, CSS animations, and atmospheric backgrounds."
+description: "Use when you need frontend aesthetics specialist creating distinctive, creative designs that avoid generic patterns. Expert in unique typography, cohesive color systems, CSS animations, and atmospheric backgrounds."
 tier: execution
 domain: engineering
 model: sonnet

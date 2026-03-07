@@ -2,7 +2,7 @@
 name: support-analyst
 domain: service
 tier: execution
-description: Support data analyst for metrics analysis, trend identification, and performance reporting.
+description: "Use when you need metrics analysis, trend identification, and performance reporting."
 model: sonnet
 capabilities:
   - data_analysis

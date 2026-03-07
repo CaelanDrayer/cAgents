@@ -1,8 +1,8 @@
 # Workflow Agent Interactions
 
-How cAgents executes tasks across 5 super-domains using 7 commands and 239 specialized agents.
+How cAgents executes tasks across 8 business domains using 8 commands and 213 specialized agents.
 
-**Version**: 9.26.0 (Corporate Hierarchy Orchestration)
+**Version**: 10.6.0
 
 ---
 
@@ -954,7 +954,7 @@ All hooks invoked via `bash -c` wrapper with 3-tier fallback chain (`CLAUDE_PLUG
 
 ## Summary
 
-**cAgents = 7 commands x event-driven pipeline x 5 super-domains x 239 specialized agents**
+**cAgents = 8 commands x event-driven pipeline x 8 business domains x 213 specialized agents**
 
 - **Corporate Hierarchy**: `/org` provides CEO-level strategic framing (inline, context:none) with C-suite parallel analysis via Task, deliberation, and multi-domain sequential execution via Skill
 - **Event-Driven**: Config-driven state machine with sequential enrichment, nested execution with reviewer loops, and revision routing

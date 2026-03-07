@@ -2,7 +2,7 @@
 name: employment-attorney
 domain: service
 tier: execution
-description: Employment law specialist for workplace policies, disputes, investigations, and regulatory compliance.
+description: "Use when you need workplace policies, disputes, investigations, and regulatory compliance."
 model: sonnet
 capabilities:
   - employment_law

@@ -28,6 +28,8 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related-agents: ["engineering-manager", "backend-developer", "devops-lead", "security-lead"]
+not-my-scope: ["Direct code implementation", "UI design", "content writing", "marketing"]
 ---
 
 # Architect Agent

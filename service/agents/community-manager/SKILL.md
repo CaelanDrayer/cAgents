@@ -2,7 +2,7 @@
 name: community-manager
 domain: service
 tier: execution
-description: Customer community builder and engagement specialist for forums, peer support, and user advocacy.
+description: "Use when you need forums, peer support, and user advocacy."
 model: sonnet
 capabilities:
   - community_building

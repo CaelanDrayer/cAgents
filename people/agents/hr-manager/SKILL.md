@@ -18,6 +18,8 @@ tools: ["Read","Write","Grep","Glob","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related-agents: ["talent-acquisition-manager", "culture-champion", "training-coordinator", "compensation-analyst"]
+not-my-scope: ["Code implementation", "technical architecture", "marketing campaigns", "financial auditing"]
 ---
 
 # HR Manager

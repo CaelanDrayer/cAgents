@@ -126,59 +126,65 @@ Use when the design decomposes into 3+ parallel work items.
 
 ## Topic: domains
 
-### The 5 Super-Domains
+### The 8 Business Domains
 
-cAgents organizes 238 agents into 5 super-domains. When you use `/run` or `/team`, the system automatically detects which domain to route to.
+cAgents organizes 213 agents into 8 business domains. When you use `/run` or `/team`, the system automatically detects which domain to route to.
 
-#### Make (111 agents) -- Creation
+#### Engineering (33 agents)
 
-Everything related to building and creating:
-- **Engineering**: Bug fixes, features, APIs, databases, DevOps
-- **Creative**: Stories, content, design, game development
-- **Product**: Product management, UX design
+Software engineering, infrastructure, security, QA:
+- Backend, frontend, DevOps, architecture, security, game programming
 
-**Example requests**: "Fix the auth bug", "Write a novel", "Add payment gateway", "Design game mechanics"
+**Example requests**: "Fix the auth bug", "Add payment gateway", "Deploy to production"
 
-#### Grow (38 agents) -- Acquisition
+#### Creative (30 agents)
 
-Everything related to marketing and sales:
-- **Marketing**: Campaigns, SEO, content marketing, social media
-- **Sales**: Sales strategy, pipeline, outreach, forecasting
+Creative writing, narrative design, game art, audio:
+- Story architecture, narrative design, literary criticism, game development
 
-**Example requests**: "Plan Q4 campaign", "Create sales forecast", "Write ad copy"
+**Example requests**: "Write a novel", "Design game mechanics", "Create character backstory"
 
-#### Operate (13 agents) -- Operations
+#### Business (69 agents)
 
-Everything related to finance and operations:
-- **Finance**: Budgets, FP&A, accounting, procurement
-- **Operations**: Process optimization, logistics
+Strategy, product, operations, finance, marketing, sales:
+- Product management, operations, finance, procurement, marketing, sales
 
-**Example requests**: "Create Q4 budget", "Streamline invoice approval", "Analyze expenses"
+**Example requests**: "Plan product roadmap", "Create Q4 budget", "Plan marketing campaign"
 
-#### People (20 agents) -- Talent
+#### Growth (36 agents)
 
-Everything related to HR and culture:
-- **HR**: Recruiting, onboarding, compensation, benefits
-- **Culture**: Team building, engagement, change management
+Revenue and customer acquisition:
+- Marketing campaigns, SEO, sales strategy, demand generation
+
+**Example requests**: "Plan Q4 campaign", "Create sales forecast", "Improve conversions"
+
+#### People (19 agents)
+
+HR, talent acquisition, culture:
+- Recruiting, onboarding, compensation, team building, change management
 
 **Example requests**: "Hire software engineer", "Design onboarding workflow", "Plan team event"
 
-#### Serve (28 agents) -- Support & Governance
+#### Service (33 agents)
 
-Everything related to customer experience and legal:
-- **Customer Experience**: Support, success management, feedback
-- **Legal & Compliance**: Contracts, policies, GDPR, regulations
+Customer support, legal, compliance:
+- Customer experience, support, legal, contracts, compliance, governance
 
 **Example requests**: "Handle customer complaint", "Review contract", "Create privacy policy"
 
+#### Leadership (10 agents)
+
+C-suite executives (used by /org, not directly routable):
+- CTO, CRO, CFO, COO, CHRO, CEO, chief-of-staff, strategy-director
+
+#### Shared (4 agents)
+
+Cross-domain intelligence utilities:
+- BI specialist, data scientist, market research, competitive intelligence
+
 #### Domain Detection
 
-The system uses 3 methods to detect the right domain:
-1. **Keyword matching**: "Fix bug" -> Engineering, "Create budget" -> Finance
-2. **Context analysis**: Project structure, git history, file types
-3. **Framework detection**: package.json -> JavaScript/TypeScript engineering
-
-You can override detection with `--domain <name>`.
+The system uses keyword matching and context analysis to detect the right domain automatically. You can override detection with `--domain <name>`.
 
 ---
 
@@ -191,7 +197,7 @@ When you use `/run`, here is what happens step by step:
 ```
 Step 1: TRIGGER (domain detection)
   - Analyzes your request text
-  - Detects domain (Make, Grow, Operate, People, Serve)
+  - Detects domain (Engineering, Creative, Business, Growth, People, Service)
   - Classifies intent (bug fix, feature, question, etc.)
   - Validates feasibility
 
@@ -272,11 +278,11 @@ Every request is classified into a complexity tier, which determines how many ag
 
 ## Topic: agents
 
-### The 238 Agents and How They Are Organized
+### The 213 Agents and How They Are Organized
 
-cAgents has 238 specialized agents organized in a 4-tier hierarchy:
+cAgents has 213 specialized agents organized in a 4-tier hierarchy:
 
-#### Tier 1: Core Infrastructure (14 agents)
+#### Tier 1: Core Infrastructure (15 agents)
 
 These are the backbone -- they manage workflows, not tasks:
 - **trigger** -- Entry point, domain detection
@@ -286,34 +292,31 @@ These are the backbone -- they manage workflows, not tasks:
 - **team-trigger/team-lead-adapter** -- Team coordination
 - **hitl** -- Human escalation
 - **optimizer** -- Universal optimization
+- **prompt-engineer** -- Delegation prompt crafting
 
-#### Tier 2: Controllers (~53 agents)
+#### Tier 2: Controllers
 
 Controllers coordinate work through question-based delegation:
-- **engineering-manager** -- Engineering work
-- **architect** -- System design
-- **creative-director** -- Creative work
-- **campaign-manager** -- Marketing campaigns
-- **operations-manager** -- Operations
-- **hr-manager** -- HR tasks
-- **customer-success-manager** -- Customer support
+- **engineering-manager**, **architect** -- Engineering
+- **narrative-director** -- Creative
+- **operations-manager**, **campaign-manager** -- Business
+- **hr-manager** -- People
+- **customer-success-manager**, **general-counsel** -- Service
 - And many more specialized controllers...
 
-#### Tier 3: Execution Agents (~147 agents)
+#### Tier 3: Execution Agents
 
 These are the specialists that do the actual work:
 - **backend-developer**, **frontend-developer** -- Code
 - **copywriter**, **content-marketing-manager** -- Content
-- **qa-lead**, **security-specialist** -- Quality
-- **game-designer**, **game-programmer** -- Game development
-- **financial-analyst**, **accountant** -- Finance
+- **qa-lead**, **security-lead** -- Quality
+- **game-designer** -- Game development
+- **financial-analyst** -- Finance
 - And many more...
 
-#### Tier 4: Support Agents (~19 agents)
+#### Tier 4: Support Agents
 
-Foundational services:
-- **scribe** -- Documentation
-- **data-extractor** -- Data handling
+Foundational services and cross-domain utilities.
 
 **Agent selection is automatic** -- controllers choose the right execution agents based on the questions they need answered.
 

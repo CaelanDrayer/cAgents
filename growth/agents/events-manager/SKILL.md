@@ -2,7 +2,7 @@
 name: events-manager
 domain: growth
 tier: execution
-description: Event marketing and execution specialist. Plans and executes conferences, trade shows, webinars, field events, and customer events.
+description: "Use when you need event marketing and execution specialist. Plans and executes conferences, trade shows, webinars, field events, and customer events."
 model: sonnet
 capabilities:
   - event_planning

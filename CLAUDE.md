@@ -269,6 +269,7 @@ User Request -> /run (state machine loop, reads pipeline_config.yaml)
 | `/review` | `fork` | `true` | Universal review with parallel agent execution |
 | `/optimize` | `fork` | `true` | 5-phase optimization with atomic rollback |
 | `/helper` | `none` | `false` | Interactive command guide |
+| `/context` | `none` | `false` | Shared product context document -- generates persistent project-context.md for all agents |
 
 **Built-in**: `/memory` (view/edit memory files), `/init` (bootstrap project CLAUDE.md)
 
@@ -393,7 +394,7 @@ No code required -- universal agents load configs automatically.
 cAgents/
 +-- CLAUDE.md                # Main project memory (this file)
 +-- .claude/
-|   +-- skills/              # Skills (org, run, team, designer, review, optimize, helper)
+|   +-- skills/              # Skills (org, run, team, designer, review, optimize, helper, context)
 |   +-- hooks/               # 19 .cjs files (16 hooks + utils + launcher + eval CLI)
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (20 files, 5 categories)
@@ -478,7 +479,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 
 ## Quick Reference
 
-**Skills**: `/org`, `/run`, `/team`, `/designer`, `/review`, `/optimize`, `/helper` (in `.claude/skills/`)
+**Skills**: `/org`, `/run`, `/team`, `/designer`, `/review`, `/optimize`, `/helper`, `/context` (in `.claude/skills/`)
 **Built-in**: `/memory`, `/init` (Claude Code native)
 **Agents**: 213 total (15 core + 4 shared + 10 leadership + 184 domain specialists)
 **Domains**: Engineering (33), Creative (30), Business (69), People (19), Service (32), Leadership (10), Core (15), Shared (4)
@@ -489,7 +490,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 265 Vitest tests (hooks + config validation)
-**Version**: 10.4.0
+**Version**: 10.6.0
 
 ## Troubleshooting
 

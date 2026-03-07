@@ -40,6 +40,11 @@ const AGENT_MEMORY_DIR = path.join(PROJECT_ROOT, 'Agent_Memory');
 
 const SESSION_PREFIXES = ['run_', 'optimize_', 'review_', 'designer_', 'team_', 'org_'];
 
+// Character budgets for context injection (v10.6.0)
+// These constants prevent hooks from injecting unbounded context into the model's window.
+const MAX_SESSION_START_CHARS = 1500;  // Max chars for SessionStart additionalContext
+const MAX_ATTENTION_CHARS = 500;       // Max chars for attention-injection systemMessage
+
 /**
  * Read JSON from stdin with timeout.
  * Returns parsed object or {} on any failure.
@@ -485,6 +490,8 @@ module.exports = {
   PLUGIN_ROOT,
   AGENT_MEMORY_DIR,
   SESSION_PREFIXES,
+  MAX_SESSION_START_CHARS,
+  MAX_ATTENTION_CHARS,
   createHook,
   readStdin,
   safeRead,

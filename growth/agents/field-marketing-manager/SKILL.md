@@ -2,7 +2,7 @@
 name: field-marketing-manager
 domain: growth
 tier: execution
-description: Regional and field marketing specialist. Executes regional campaigns, local events, sales territory support, and geographic marketing.
+description: "Use when you need regional and field marketing specialist. Executes regional campaigns, local events, sales territory support, and geographic marketing."
 model: sonnet
 capabilities:
   - regional_marketing

@@ -2,7 +2,7 @@
 name: legal-operations-manager
 domain: service
 tier: controller
-description: Legal department operations leader for spend management, process improvement, technology implementation, and vendor management.
+description: "Use when you need spend management, process improvement, technology implementation, and vendor management."
 model: sonnet
 coordination_style: question_based
 typical_questions:

@@ -2,7 +2,7 @@
 name: bi-specialist
 domain: shared
 tier: controller
-description: Business Intelligence specialist for BI strategy, enterprise dashboards, data warehousing, and self-service analytics across all domains.
+description: "Use when you need BI strategy, enterprise dashboards, data warehousing, and self-service analytics across all domains."
 model: sonnet
 coordination_style: question_based
 typical_questions:

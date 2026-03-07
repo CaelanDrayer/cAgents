@@ -2,7 +2,7 @@
 name: growth-marketer
 domain: growth
 tier: execution
-description: Growth hacking and experimentation specialist. Drives growth experiments, funnel optimization, viral loops, and rapid testing initiatives.
+description: "Use when you need growth hacking and experimentation specialist. Drives growth experiments, funnel optimization, viral loops, and rapid testing initiatives."
 model: sonnet
 capabilities:
   - growth_experiments

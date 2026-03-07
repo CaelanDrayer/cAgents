@@ -2,7 +2,7 @@
 name: recruiting-coordinator
 domain: people
 tier: execution
-description: Interview logistics specialist managing scheduling, candidate communications, and recruiting operations.
+description: "Use when you need scheduling, candidate communications, and recruiting operations."
 model: haiku
 capabilities:
   - interview_scheduling

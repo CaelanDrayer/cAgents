@@ -1,7 +1,7 @@
 ---
 name: task-decomposer
 tier: infrastructure
-description: "Decomposition engine called by universal-planner for tier 3+ requests. Breaks requests into components, discovers implicit needs, maps dependencies, generates work items with acceptance criteria. Writes decomposition.yaml."
+description: "Use when you need tier 3+ requests. Breaks requests into components, discovers implicit needs, maps dependencies, generates work items with acceptance criteria. Writes decomposition.yaml."
 tools: ["Read","Grep","Glob","Write","TodoWrite","Task"]
 model: opus
 color: bright_yellow
@@ -14,6 +14,8 @@ capabilities:
   - work_breakdown_generation
 maxTurns: 30
 permissionMode: "bypassPermissions"
+related-agents: ["universal-planner", "prompt-engineer", "orchestrator"]
+not-my-scope: ["Implementation", "validation", "coordination", "content creation"]
 ---
 
 # Task Decomposer

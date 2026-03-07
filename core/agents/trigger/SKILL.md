@@ -1,7 +1,7 @@
 ---
 name: trigger
 tier: infrastructure
-description: "Universal entry point with context-aware detection, confidence scoring, template matching, pre-flight validation, and workflow analytics. Routes ALL requests to specialist agents - never handles directly. Supports team_planning_only mode for /team integration."
+description: "Use when you need entry point with context-aware detection, confidence scoring, template matching, pre-flight validation, and workflow analytics. Routes ALL requests to specialist agents - never handles directly. Supports team_planning_only mode for /team integration."
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 model: sonnet
 color: bright_white

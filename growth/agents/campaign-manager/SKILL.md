@@ -7,7 +7,7 @@ typical_questions:
   - "What are the current campaign/sales metrics?"
   - "What is the target audience and positioning?"
   - "What are the conversion bottlenecks?"
-description: Campaign execution and management leader. Coordinates campaign planning, execution, optimization, and performance tracking across channels.
+description: "Use when you need campaign execution and management leader. Coordinates campaign planning, execution, optimization, and performance tracking across channels."
 model: sonnet
 capabilities:
   - campaign_planning

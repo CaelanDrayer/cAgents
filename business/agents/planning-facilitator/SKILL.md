@@ -2,7 +2,7 @@
 name: planning-facilitator
 domain: business
 tier: execution
-description: Planning workshop and meeting facilitation specialist. Facilitates strategic planning sessions, builds consensus, manages group dynamics.
+description: "Use when you need planning workshop and meeting facilitation specialist. Facilitates strategic planning sessions, builds consensus, manages group dynamics."
 model: sonnet
 capabilities:
   - workshop_facilitation

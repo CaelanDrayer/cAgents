@@ -25,6 +25,8 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related-agents: ["architect", "devops-lead", "qa-tester", "security-lead"]
+not-my-scope: ["Direct code implementation", "visual design", "content creation", "financial analysis"]
 ---
 
 # Engineering Manager Agent

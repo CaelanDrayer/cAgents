@@ -2,7 +2,7 @@
 name: scenario-planner
 domain: business
 tier: execution
-description: Scenario planning and strategic foresight specialist. Develops future scenarios, identifies uncertainties, creates contingency plans, stress-tests strategies.
+description: "Use when you need scenario planning and strategic foresight specialist. Develops future scenarios, identifies uncertainties, creates contingency plans, stress-tests strategies."
 model: sonnet
 capabilities:
   - scenario_development

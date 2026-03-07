@@ -2,7 +2,7 @@
 name: influencer-marketing-specialist
 domain: growth
 tier: execution
-description: Influencer marketing and creator partnerships specialist. Manages influencer campaigns, creator collaborations, ambassador programs, and influencer ROI.
+description: "Use when you need influencer marketing and creator partnerships specialist. Manages influencer campaigns, creator collaborations, ambassador programs, and influencer ROI."
 model: sonnet
 capabilities:
   - influencer_campaigns

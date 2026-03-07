@@ -2,7 +2,7 @@
 name: channel-partner-manager
 domain: growth
 tier: execution
-description: Partner ecosystem and indirect revenue specialist. Manages partner recruitment, enablement, and co-selling to drive indirect revenue.
+description: "Use when you need partner ecosystem and indirect revenue specialist. Manages partner recruitment, enablement, and co-selling to drive indirect revenue."
 model: sonnet
 capabilities:
   - partner_recruitment

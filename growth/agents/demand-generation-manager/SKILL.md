@@ -2,7 +2,7 @@
 name: demand-generation-manager
 domain: growth
 tier: execution
-description: Demand generation and pipeline creation specialist. Designs lead generation campaigns, nurture programs, funnel optimization, and pipeline acceleration.
+description: "Use when you need demand generation and pipeline creation specialist. Designs lead generation campaigns, nurture programs, funnel optimization, and pipeline acceleration."
 model: sonnet
 capabilities:
   - lead_generation

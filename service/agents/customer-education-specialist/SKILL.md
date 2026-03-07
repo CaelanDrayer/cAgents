@@ -2,7 +2,7 @@
 name: customer-education-specialist
 domain: service
 tier: execution
-description: Customer training and education program developer for tutorials, webinars, and certifications.
+description: "Use when you need tutorials, webinars, and certifications."
 model: sonnet
 capabilities:
   - training_content_creation

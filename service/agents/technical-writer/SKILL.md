@@ -2,7 +2,7 @@
 name: technical-writer
 domain: service
 tier: execution
-description: Documentation specialist for help content, API docs, technical guides, and knowledge base articles.
+description: "Use when you need help content, API docs, technical guides, and knowledge base articles."
 model: sonnet
 capabilities:
   - technical_writing

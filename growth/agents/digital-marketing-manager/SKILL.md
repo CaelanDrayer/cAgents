@@ -2,7 +2,7 @@
 name: digital-marketing-manager
 domain: growth
 tier: execution
-description: Digital marketing and paid acquisition specialist. Plans paid campaigns, digital channel strategy, conversion optimization, and performance marketing.
+description: "Use when you need digital marketing and paid acquisition specialist. Plans paid campaigns, digital channel strategy, conversion optimization, and performance marketing."
 model: sonnet
 capabilities:
   - paid_campaigns

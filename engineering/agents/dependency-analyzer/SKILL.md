@@ -1,6 +1,6 @@
 ---
 name: dependency-analyzer
-description: "Intelligence Layer agent that maps task dependencies and optimizes execution order. Use after planning to validate dependencies and identify parallelization opportunities."
+description: "Use when you need maps task dependencies and optimizes execution order. Use after planning to validate dependencies and identify parallelization opportunities."
 tier: support
 domain: engineering
 model: "haiku"

@@ -2,7 +2,7 @@
 name: brand-manager
 domain: growth
 tier: execution
-description: Brand strategy and identity specialist. Manages brand positioning, guidelines, voice, and consistency across all touchpoints.
+description: "Use when you need brand strategy and identity specialist. Manages brand positioning, guidelines, voice, and consistency across all touchpoints."
 model: sonnet
 capabilities:
   - brand_strategy

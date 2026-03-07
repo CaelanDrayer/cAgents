@@ -2,7 +2,7 @@
 name: ip-attorney
 domain: service
 tier: execution
-description: Intellectual property specialist for patents, trademarks, copyrights, trade secrets, and licensing agreements.
+description: "Use when you need patents, trademarks, copyrights, trade secrets, and licensing agreements."
 model: sonnet
 capabilities:
   - patent_prosecution

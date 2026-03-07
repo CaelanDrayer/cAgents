@@ -2,7 +2,7 @@
 name: paralegal
 domain: service
 tier: execution
-description: Legal support specialist for document preparation, research assistance, filing coordination, and matter management.
+description: "Use when you need document preparation, research assistance, filing coordination, and matter management."
 model: sonnet
 capabilities:
   - document_preparation

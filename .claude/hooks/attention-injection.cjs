@@ -14,8 +14,40 @@
  * Output (stdout): JSON with allow + systemMessage containing plan objectives
  */
 
+const fs = require('fs');
 const path = require('path');
-const { createHook, findActiveSession, safeRead, extractYamlValue, AGENT_MEMORY_DIR } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, safeRead, extractYamlValue, AGENT_MEMORY_DIR, MAX_ATTENTION_CHARS } = require('./hook-utils.cjs');
+
+// Tool call counter for strategic compaction suggestions (v10.6.0)
+// Tracks calls per session to suggest /compact at phase transitions.
+const COMPACTION_THRESHOLD = 50; // Suggest compaction after this many tool calls
+const toolCallCountFile = path.join(AGENT_MEMORY_DIR, '_system', 'tool_call_count.json');
+
+function getToolCallCount(sessionId) {
+  try {
+    const data = safeRead(toolCallCountFile);
+    if (data) {
+      const counts = JSON.parse(data);
+      return counts[sessionId] || 0;
+    }
+  } catch { /* ignore */ }
+  return 0;
+}
+
+function incrementToolCallCount(sessionId) {
+  let counts = {};
+  try {
+    const data = safeRead(toolCallCountFile);
+    if (data) counts = JSON.parse(data);
+  } catch { /* ignore */ }
+  counts[sessionId] = (counts[sessionId] || 0) + 1;
+  try {
+    const dir = path.dirname(toolCallCountFile);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(toolCallCountFile, JSON.stringify(counts));
+  } catch { /* ignore */ }
+  return counts[sessionId];
+}
 
 /**
  * Extract concise objectives from plan.yaml content.
@@ -83,6 +115,28 @@ createHook('AttentionInjection', async (input) => {
 
   // Only inject if we have meaningful content
   if (reminder === '[cAgents Goal Refresh]') return null;
+
+  // Strategic compaction suggestion (v10.6.0)
+  // Track tool calls and suggest /compact at phase transitions
+  const sessionId = path.basename(sessionDir);
+  const callCount = incrementToolCallCount(sessionId);
+
+  if (callCount > 0 && callCount % COMPACTION_THRESHOLD === 0) {
+    // Check if we're at a phase transition (status just changed)
+    const statusContent = safeRead(path.join(sessionDir, 'status.yaml'));
+    const currentPhase = statusContent
+      ? (extractYamlValue(statusContent, 'pipeline_state') || extractYamlValue(statusContent, 'phase'))
+      : null;
+
+    if (currentPhase) {
+      reminder += `\n[Compaction hint: ${callCount} tool calls in session. Consider /compact if context feels crowded.]`;
+    }
+  }
+
+  // Truncate to MAX_ATTENTION_CHARS budget (v10.6.0)
+  if (reminder.length > MAX_ATTENTION_CHARS) {
+    reminder = reminder.slice(0, MAX_ATTENTION_CHARS - 3) + '...';
+  }
 
   return {
     continue: true,

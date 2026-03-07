@@ -7,7 +7,7 @@ typical_questions:
   - "What is the project scope and timeline?"
   - "What resources are needed?"
   - "What are the key risks?"
-description: Project planning and execution specialist. Defines scope, creates timelines, allocates resources, manages risks, tracks progress.
+description: "Use when you need project planning and execution specialist. Defines scope, creates timelines, allocates resources, manages risks, tracks progress."
 model: sonnet
 capabilities:
   - project_planning

@@ -4,6 +4,10 @@ description: "Financial oversight specialist managing IT budgets, costs, ROI ana
 tier: controller
 domain: business
 coordination_style: question_based
+typical_questions:
+  - "What is the current budget allocation and spend rate?"
+  - "What is the expected ROI and payback period?"
+  - "What are the cost risks and financial constraints?"
 model: sonnet
 color: bright_green
 capabilities:

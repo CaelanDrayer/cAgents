@@ -1,0 +1,1 @@
+Test gemini inline prompt

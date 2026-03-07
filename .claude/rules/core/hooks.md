@@ -6,7 +6,7 @@ paths:
 
 # cAgents Hook System
 
-V10.4.0 CJS-only hook architecture with 16 registered hooks + 1 CLI tool across 13 event types (of 17 total Claude Code event types), `createHook()` factory pattern, agent audit trail with completion summaries, attention injection for goal refresh, and resilient path resolution. Supports command, http, prompt, and agent hook types, async execution, and matcher-based filtering.
+V10.5.0 CJS-only hook architecture with 16 registered hooks + 1 CLI tool across 13 event types (of 17 total Claude Code event types), `createHook()` factory pattern, agent audit trail with completion summaries, attention injection for goal refresh, clean team lifecycle (`continue:false` + `stopReason` for TeammateIdle/TaskCompleted), and resilient path resolution. Supports command, http, prompt, and agent hook types, async execution, and matcher-based filtering.
 
 ## Architecture
 
@@ -61,8 +61,8 @@ Claude Code supports 17 hook event types. cAgents implements 16 registered hooks
 | `SubagentStart` | Subagent spawned | `subagent-tracker.cjs`, `team-start.cjs` | Log spawns, initialize team monitoring, inject self-registration context |
 | `SubagentStop` | Subagent finishes | `subagent-stop-tracker.cjs` | Log completion, capture summaries + duration, update agent tree |
 | `Stop` | Claude stops responding | `verify-completion.cjs` | Verify completion criteria |
-| `TeammateIdle` | Teammate goes idle | `teammate-idle-handler.cjs` | Find available work for idle members |
-| `TaskCompleted` | Task finishes | `team-task-complete.cjs` | Update task list, unblock dependencies |
+| `TeammateIdle` | Teammate goes idle | `teammate-idle-handler.cjs` | Find available work or stop teammate (`continue:false`) when all items done |
+| `TaskCompleted` | Task finishes | `team-task-complete.cjs` | Update task list, unblock dependencies, stop teammate (`continue:false`) when all items done |
 | `ConfigChange` | Config file changes | *(none)* | Available for custom config change handling |
 | `WorktreeCreate` | Worktree being created | *(none)* | Available for custom VCS-agnostic worktree setup |
 | `WorktreeRemove` | Worktree being removed | *(none)* | Available for custom worktree cleanup |
@@ -105,6 +105,9 @@ createHook('MyHook', async (input) => {
 
   // Return block decision for Stop hooks
   return { decision: 'block', reason: 'Not complete yet' };
+
+  // Return stop signal for TeammateIdle/TaskCompleted (V10.5.0)
+  return { continue: false, stopReason: 'All work items completed' };
 });
 ```
 
@@ -184,11 +187,15 @@ createHook('MyHook', async (input) => {
 ### Team Hooks
 
 #### TeammateIdle: teammate-idle-handler.cjs
-- **Purpose**: Suggest available work items from team task list
+- **Purpose**: Suggest available work items or cleanly stop idle teammates
+- **V10.5.0**: Refactored to `createHook()`. Returns `{ continue: false, stopReason }` when all work items are completed, causing the teammate to stop cleanly instead of lingering idle.
+- **Logic**: Available work → suggest (continue:true); all completed → stop (continue:false); otherwise → pass-through (null)
 
 #### TaskCompleted: team-task-complete.cjs
-- **Purpose**: Update task_list.yaml status, check dependency unblocking
-- **Input fields**: `task_subject`, `task_description`, `teammate_name` (Claude Code API)
+- **Purpose**: Update task_list.yaml status, check dependency unblocking, stop teammate when all done
+- **Input fields**: `task_id`, `task_subject`, `task_description`, `teammate_name`, `team_name` (Claude Code API)
+- **V10.5.0**: Refactored to `createHook()`. Returns `{ continue: false, stopReason }` when all work items are completed. Reports newly unblocked items via systemMessage.
+- **Side effects**: Updates task_list.yaml, writes completion message, updates timing metrics
 
 #### PermissionRequest: permission-handler.cjs
 - **Purpose**: Auto-approve safe patterns (Read, Grep, Glob), HITL gates for tier 4

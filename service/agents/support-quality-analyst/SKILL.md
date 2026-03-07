@@ -2,7 +2,7 @@
 name: support-quality-analyst
 domain: service
 tier: execution
-description: Support quality assurance specialist for ticket review, agent coaching, and standards development.
+description: "Use when you need ticket review, agent coaching, and standards development."
 model: sonnet
 capabilities:
   - quality_assurance

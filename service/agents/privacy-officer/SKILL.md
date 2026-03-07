@@ -2,7 +2,7 @@
 name: privacy-officer
 domain: service
 tier: execution
-description: Data privacy and protection specialist for GDPR, CCPA, privacy policies, and privacy program management.
+description: "Use when you need GDPR, CCPA, privacy policies, and privacy program management."
 model: sonnet
 capabilities:
   - data_privacy

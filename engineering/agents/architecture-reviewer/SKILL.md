@@ -2,7 +2,7 @@
 name: architecture-reviewer
 domain: engineering
 tier: support
-description: QA Layer agent for architecture reviews, system design validation, and pattern enforcement.
+description: "Use when you need architecture reviews, system design validation, and pattern enforcement."
 model: "haiku"
 capabilities:
   - architecture_review

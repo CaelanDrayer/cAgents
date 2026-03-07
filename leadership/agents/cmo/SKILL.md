@@ -7,7 +7,7 @@ typical_questions:
   - "What are the current marketing metrics and pipeline?"
   - "What is our market position vs competitors?"
   - "What marketing initiatives need executive decision?"
-description: Chief Marketing Officer. Executive marketing leadership providing strategic oversight, budget decisions, and cross-functional alignment.
+description: "Use when you need chief Marketing Officer. Executive marketing leadership providing strategic oversight, budget decisions, and cross-functional alignment."
 model: "opusplan"
 capabilities:
   - marketing_strategy

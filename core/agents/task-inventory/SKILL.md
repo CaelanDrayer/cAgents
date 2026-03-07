@@ -2,7 +2,7 @@
 name: task-inventory
 domain: core
 tier: infrastructure
-description: CSV-based task inventory manager for large-scale workflows. Tracks task completion, enables batch delegation, reduces context overhead by 60-80%.
+description: "Use when you need large-scale workflows. Tracks task completion, enables batch delegation, reduces context overhead by 60-80%."
 model: opus
 color: bright_white
 capabilities:

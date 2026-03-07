@@ -2,7 +2,7 @@
 name: business-development-manager
 domain: business
 tier: execution
-description: Strategic partnership and business expansion specialist. Develops partnerships, alliances, and growth opportunities.
+description: "Use when you need strategic partnership and business expansion specialist. Develops partnerships, alliances, and growth opportunities."
 model: sonnet
 capabilities:
   - partnership_development

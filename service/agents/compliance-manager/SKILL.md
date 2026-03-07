@@ -2,7 +2,7 @@
 name: compliance-manager
 domain: service
 tier: execution
-description: Regulatory compliance and audit specialist for compliance programs, gap assessments, and audit preparation.
+description: "Use when you need compliance programs, gap assessments, and audit preparation."
 model: sonnet
 capabilities:
   - regulatory_compliance

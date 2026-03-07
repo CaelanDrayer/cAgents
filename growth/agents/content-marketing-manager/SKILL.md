@@ -2,7 +2,7 @@
 name: content-marketing-manager
 domain: growth
 tier: execution
-description: Content strategy and production specialist. Plans content strategy, manages editorial calendars, oversees content creation and distribution.
+description: "Use when you need content strategy and production specialist. Plans content strategy, manages editorial calendars, oversees content creation and distribution."
 model: sonnet
 capabilities:
   - content_strategy

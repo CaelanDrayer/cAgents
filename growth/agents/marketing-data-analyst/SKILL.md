@@ -2,7 +2,7 @@
 name: marketing-data-analyst
 domain: growth
 tier: execution
-description: Marketing data science and advanced analytics specialist. Builds predictive models, customer segmentation, marketing mix modeling, and statistical analysis.
+description: "Use when you need marketing data science and advanced analytics specialist. Builds predictive models, customer segmentation, marketing mix modeling, and statistical analysis."
 model: sonnet
 capabilities:
   - predictive_modeling

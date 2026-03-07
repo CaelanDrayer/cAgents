@@ -2,7 +2,7 @@
 name: compliance-officer
 domain: service
 tier: controller
-description: Compliance specialist for regulatory compliance, policy development, monitoring, and risk assessment across all domains.
+description: "Use when you need regulatory compliance, policy development, monitoring, and risk assessment across all domains."
 model: sonnet
 coordination_style: question_based
 typical_questions:

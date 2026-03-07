@@ -7,7 +7,7 @@ typical_questions:
   - "What projects are in this program?"
   - "What are the cross-project dependencies?"
   - "What benefits are we tracking?"
-description: Program planning and coordination specialist. Manages large-scale programs, coordinates multiple projects, tracks benefits realization.
+description: "Use when you need program planning and coordination specialist. Manages large-scale programs, coordinates multiple projects, tracks benefits realization."
 model: sonnet
 capabilities:
   - program_planning

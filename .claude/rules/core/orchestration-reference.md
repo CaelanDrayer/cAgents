@@ -1,0 +1,141 @@
+---
+paths:
+  - "core/agents/orchestrator/**"
+  - "core/agents/universal-*/**"
+  - ".claude/skills/run/**"
+  - "Agent_Memory/_system/config/**"
+---
+
+# Orchestration Reference Details
+
+Detailed schemas, examples, and protocols for pipeline orchestration. See `orchestration.md` for core rules.
+
+## enriched_context.yaml Schema (V10.6.0)
+
+```yaml
+domain: {detected_domain}
+tier: {classified_tier}
+project_summary: "{1-2 sentence project description from _projects/{hash}/product_context.yaml}"
+constraints: [...]
+project_context:
+  codebase_type: "{type}"
+  key_patterns: [...]
+  relevant_files: [...]
+enrichment_summary: "{brief_summary_of_context}"
+```
+
+The `project_summary` field is loaded from `Agent_Memory/_projects/{hash}/product_context.yaml` if it exists (created via `/context init`). Must fit within MAX_ATTENTION_CHARS budget (500 chars).
+
+## Pipeline Configuration
+
+The state machine is defined in `Agent_Memory/_system/config/pipeline_config.yaml`:
+
+```yaml
+states:
+  INIT:
+    agent: cagents:orchestrator
+    next: ORCHESTRATED
+    outputs: [enriched_context.yaml]
+  ORCHESTRATED:
+    agent: cagents:universal-planner
+    next: PLANNED
+    inputs: [enriched_context.yaml]
+    outputs: [plan.yaml]
+  # ... (see pipeline_config.yaml for full definition)
+
+revision:
+  max_cycles: 5
+  on_fail: PROMPTS_READY
+  on_revise: PLANNED
+  escalation: user_hitl
+```
+
+## Event Files
+
+Each pipeline agent writes a completion event to `workflow/events/EVT-{N}.yaml`:
+
+```yaml
+event_id: EVT-1
+state: ORCHESTRATED
+agent: cagents:orchestrator
+timestamp: "{ISO_TIMESTAMP}"
+inputs_consumed: [instruction.yaml]
+outputs_produced: [workflow/enriched_context.yaml]
+next_state: ORCHESTRATED
+```
+
+## Handoff Documents Protocol (V10.6.0)
+
+Each pipeline stage writes a handoff document to `workflow/handoffs/{STATE}.md`.
+
+### Handoff Document Format
+
+```markdown
+# Handoff: {STAGE_NAME}
+Generated: {ISO_TIMESTAMP}
+Agent: cagents:{agent_name}
+
+## Summary
+{1-3 sentence summary of what this stage accomplished}
+
+## Key Outputs
+- {output_file_1}: {what it contains}
+
+## Decisions Made
+- {decision_1}: {rationale}
+
+## Context for Next Stage
+- {key_context_1}
+
+## Warnings/Risks
+- {any_issues_the_next_stage_should_know}
+```
+
+### Rules
+- Handoff documents are APPEND-ONLY (never overwrite previous stages' handoffs)
+- Keep handoffs under 500 tokens
+- Next-stage agents SHOULD read the preceding handoff before starting
+
+## Signal File Intervention Protocol
+
+The pipeline supports graceful intervention via signal files at `Agent_Memory/sessions/{session_id}/signals/`.
+
+| Signal | Effect | State Machine Action |
+|--------|--------|---------------------|
+| `PAUSE` | Pause pipeline | Complete current agent, write waypoint, wait for RESUME |
+| `STOP` | Graceful stop | Complete current agent, write final status, mark session paused |
+| `RESUME` | Resume paused pipeline | Remove PAUSE signal, continue from last completed state |
+
+### State Machine Check (before each transition)
+
+```
+before_transition(current_state, next_state):
+  signals_dir = session_dir/signals/
+  if exists(signals_dir/STOP):
+    write_waypoint(current_state)
+    update_status(phase: "paused", paused_at: current_state)
+    EXIT pipeline
+
+  if exists(signals_dir/PAUSE):
+    write_waypoint(current_state)
+    WAIT until exists(signals_dir/RESUME)
+    CONTINUE to next_state
+```
+
+### User Interaction
+
+```bash
+touch Agent_Memory/sessions/{session_id}/signals/PAUSE   # Pause
+touch Agent_Memory/sessions/{session_id}/signals/STOP     # Stop
+touch Agent_Memory/sessions/{session_id}/signals/RESUME   # Resume
+```
+
+### Pipeline Config Integration
+
+```yaml
+signals:
+  enabled: true
+  check_interval: before_transition
+  signal_dir: signals/
+  supported: [PAUSE, STOP, RESUME]
+```

@@ -2,7 +2,7 @@
 name: universal-executor
 domain: core
 tier: infrastructure
-description: Universal execution monitor for all domains. Monitors controller coordination, aggregates outputs, doesn't directly manage teams.
+description: "Use when you need execution monitor for all domains. Monitors controller coordination, aggregates outputs, doesn't directly manage teams."
 model: opus
 color: bright_green
 capabilities:

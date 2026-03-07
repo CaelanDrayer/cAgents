@@ -2,7 +2,7 @@
 name: general-counsel
 domain: service
 tier: controller
-description: Chief Legal Officer coordinating all legal matters including litigation, transactions, governance, and risk management.
+description: "Use when you need chief Legal Officer coordinating all legal matters including litigation, transactions, governance, and risk management."
 model: "opusplan"
 coordination_style: question_based
 typical_questions:

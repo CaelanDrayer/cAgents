@@ -2,7 +2,7 @@
 name: support-trainer
 domain: service
 tier: execution
-description: Support team training and development specialist for onboarding, skills development, and training effectiveness measurement.
+description: "Use when you need onboarding, skills development, and training effectiveness measurement."
 model: sonnet
 capabilities:
   - training_delivery

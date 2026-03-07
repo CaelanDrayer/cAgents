@@ -2,7 +2,7 @@
 name: ethics-and-compliance-officer
 domain: service
 tier: execution
-description: Ethics program leader managing code of conduct, ethics training, investigations, and whistleblower programs.
+description: "Use when you need code of conduct, ethics training, investigations, and whistleblower programs."
 model: sonnet
 capabilities:
   - ethics_program_management

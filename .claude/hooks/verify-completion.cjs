@@ -165,10 +165,22 @@ ${result.warnings.length > 0 ? `warnings:\n${result.warnings.map(w => `  - "${w}
 
   console.error('[VerifyCompletion] All completion criteria verified');
 
-  // Always remind to clean up tasks (the hook cannot check TaskList directly,
-  // but the systemMessage prompts the agent to do so before stopping)
+  // Four Questions hallucination self-check + task cleanup reminder
+  // These questions force the agent to verify its own claims before stopping,
+  // catching hallucinated completions and fabricated evidence.
+  const fourQuestions = [
+    'SELF-CHECK before stopping:',
+    '1. Did I ACTUALLY make every change I claim, or did I only plan/describe them?',
+    '2. Did I verify my changes work (ran tests, checked syntax), or am I assuming they do?',
+    '3. Are the file paths and evidence I cited real things I observed, or did I fabricate them?',
+    '4. Is there any task I said I would do but quietly skipped or deferred?',
+    '',
+    'If any answer reveals a gap, address it before stopping.',
+    'Also: call TaskList and mark all your in_progress/pending tasks as completed or deleted via TaskUpdate.'
+  ].join('\n');
+
   return {
     continue: true,
-    systemMessage: 'Before stopping: call TaskList and mark all your in_progress/pending tasks as completed or deleted via TaskUpdate. Never leave stale tasks behind.'
+    systemMessage: fourQuestions
   };
 });

@@ -2,7 +2,7 @@
 name: change-management-specialist
 domain: business
 tier: controller
-description: Change management execution specialist for training delivery, communication execution, and change support across all domains.
+description: "Use when you need training delivery, communication execution, and change support across all domains."
 model: sonnet
 coordination_style: question_based
 typical_questions:

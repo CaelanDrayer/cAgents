@@ -14,7 +14,29 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findActiveSession, ensureDir, safeRead, AGENT_MEMORY_DIR } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, ensureDir, safeRead, AGENT_MEMORY_DIR, PROJECT_ROOT } = require('./hook-utils.cjs');
+
+// Auto-format detection cache (v10.6.0)
+let _formatterCache = null;
+function detectFormatter() {
+  if (_formatterCache !== null) return _formatterCache;
+  // Check for common formatters in the project root
+  const biomeConfig = safeRead(path.join(PROJECT_ROOT, 'biome.json')) || safeRead(path.join(PROJECT_ROOT, 'biome.jsonc'));
+  const prettierRc = safeRead(path.join(PROJECT_ROOT, '.prettierrc')) ||
+    safeRead(path.join(PROJECT_ROOT, '.prettierrc.json')) ||
+    safeRead(path.join(PROJECT_ROOT, '.prettierrc.js')) ||
+    safeRead(path.join(PROJECT_ROOT, 'prettier.config.js'));
+  const prettierInPkg = (() => {
+    const pkg = safeRead(path.join(PROJECT_ROOT, 'package.json'));
+    if (pkg) try { return JSON.parse(pkg).prettier ? true : false; } catch { return false; }
+    return false;
+  })();
+
+  if (biomeConfig) _formatterCache = 'biome';
+  else if (prettierRc || prettierInPkg) _formatterCache = 'prettier';
+  else _formatterCache = null;
+  return _formatterCache;
+}
 
 createHook('PostWriteValidator', async (input) => {
   const toolName = input.tool_name || '';
@@ -56,6 +78,16 @@ createHook('PostWriteValidator', async (input) => {
           topKeys.push(match[1]);
         }
       }
+    }
+  }
+
+  // Auto-format suggestion for JS/TS files (v10.6.0)
+  const jsExtensions = ['.js', '.cjs', '.mjs', '.ts', '.tsx', '.jsx'];
+  if (jsExtensions.includes(ext)) {
+    const formatter = detectFormatter();
+    if (formatter) {
+      const cmd = formatter === 'biome' ? `npx biome format --write ${filePath}` : `npx prettier --write ${filePath}`;
+      warnings.push(`[format] ${formatter} detected. Consider running: ${cmd}`);
     }
   }
 

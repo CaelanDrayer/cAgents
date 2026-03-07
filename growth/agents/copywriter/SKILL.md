@@ -2,7 +2,7 @@
 name: copywriter
 domain: growth
 tier: execution
-description: Marketing copy and content creation specialist. Writes compelling copy for ads, landing pages, emails, social media, and marketing materials.
+description: "Use when you need marketing copy and content creation specialist. Writes compelling copy for ads, landing pages, emails, social media, and marketing materials."
 model: sonnet
 capabilities:
   - ad_copy

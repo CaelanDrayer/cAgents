@@ -2,7 +2,7 @@
 name: technical-support-engineer
 domain: service
 tier: execution
-description: Advanced technical troubleshooter for complex issues requiring system debugging, log analysis, and engineering coordination.
+description: "Use when you need advanced technical troubleshooter for complex issues requiring system debugging, log analysis, and engineering coordination."
 model: sonnet
 capabilities:
   - technical_troubleshooting

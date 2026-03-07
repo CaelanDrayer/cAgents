@@ -1,7 +1,7 @@
 ---
 name: team-trigger
 tier: infrastructure
-description: "Team initialization agent invoked via /run --team flag. Decomposes request into work items, creates Claude Code agent teams via built-in TeamCreate, spawns teammates as controller agents who delegate to execution agents directly, and manages shared task lists for parallel work item execution."
+description: "Use when you need team initialization agent invoked via /run --team flag. Decomposes request into work items, creates Claude Code agent teams via built-in TeamCreate, spawns teammates as controller agents who delegate to execution agents directly, and manages shared task lists for parallel work i..."
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task","TeamCreate","TeamDelete","TaskCreate","TaskUpdate","TaskList","TaskGet","SendMessage","Skill"]
 model: sonnet
 color: bright_cyan

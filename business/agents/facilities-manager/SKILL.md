@@ -2,7 +2,7 @@
 name: facilities-manager
 domain: business
 tier: execution
-description: Facilities operations and workplace services specialist. Manages space planning, maintenance, vendors, and safety compliance.
+description: "Use when you need facilities operations and workplace services specialist. Manages space planning, maintenance, vendors, and safety compliance."
 model: sonnet
 capabilities:
   - space_management

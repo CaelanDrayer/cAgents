@@ -7,7 +7,7 @@ typical_questions:
   - "What are the current campaign/sales metrics?"
   - "What is the target audience and positioning?"
   - "What are the conversion bottlenecks?"
-description: Sales strategy and GTM specialist. Develops data-driven sales strategies, market segmentation, competitive positioning, and sales model design.
+description: "Use when you need sales strategy and GTM specialist. Develops data-driven sales strategies, market segmentation, competitive positioning, and sales model design."
 model: sonnet
 capabilities:
   - gtm_strategy

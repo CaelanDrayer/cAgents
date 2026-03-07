@@ -2,7 +2,7 @@
 name: business-analyst-planning
 domain: business
 tier: execution
-description: Business analysis and requirements planning specialist. Gathers requirements, conducts gap analysis, defines acceptance criteria, validates business needs.
+description: "Use when you need business analysis and requirements planning specialist. Gathers requirements, conducts gap analysis, defines acceptance criteria, validates business needs."
 model: sonnet
 capabilities:
   - requirements_gathering

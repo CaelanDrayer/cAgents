@@ -14,6 +14,8 @@ capabilities:
   - prototyping
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related-agents: ["frontend-developer", "accessibility-checker", "product-owner", "architect"]
+not-my-scope: ["Backend code", "database schema", "server infrastructure", "financial analysis"]
 ---
 
 # UX Designer Agent

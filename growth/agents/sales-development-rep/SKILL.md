@@ -2,7 +2,7 @@
 name: sales-development-rep
 domain: growth
 tier: execution
-description: Outbound prospecting and lead qualification specialist. Generates qualified pipeline through cold outreach and meeting setting.
+description: "Use when you need outbound prospecting and lead qualification specialist. Generates qualified pipeline through cold outreach and meeting setting."
 model: sonnet
 capabilities:
   - outbound_prospecting

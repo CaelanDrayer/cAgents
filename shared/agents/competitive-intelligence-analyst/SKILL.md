@@ -2,7 +2,7 @@
 name: competitive-intelligence-analyst
 domain: shared
 tier: controller
-description: Competitive intelligence specialist for competitor analysis, win/loss analysis, and competitive positioning across all domains.
+description: "Use when you need competitor analysis, win/loss analysis, and competitive positioning across all domains."
 model: sonnet
 coordination_style: question_based
 typical_questions:

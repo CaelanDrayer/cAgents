@@ -2,7 +2,7 @@
 name: sales-trainer
 domain: growth
 tier: execution
-description: Sales development and coaching specialist. Delivers onboarding, skills training, coaching programs, and performance improvement.
+description: "Use when you need sales development and coaching specialist. Delivers onboarding, skills training, coaching programs, and performance improvement."
 model: sonnet
 capabilities:
   - sales_training

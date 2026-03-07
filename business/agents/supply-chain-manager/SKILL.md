@@ -7,7 +7,7 @@ typical_questions:
   - "What are the current operational metrics?"
   - "What are the efficiency bottlenecks?"
   - "What are the compliance requirements?"
-description: Supply chain optimization and inventory management specialist. Coordinates end-to-end supply chain for reliable, cost-effective delivery.
+description: "Use when you need supply chain optimization and inventory management specialist. Coordinates end-to-end supply chain for reliable, cost-effective delivery."
 model: sonnet
 capabilities:
   - supply_planning

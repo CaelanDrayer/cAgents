@@ -2,7 +2,7 @@
 name: recruiter
 domain: people
 tier: execution
-description: Full-cycle recruiter for candidate sourcing, screening, engagement, and offer negotiation.
+description: "Use when you need full-cycle recruiter for candidate sourcing, screening, engagement, and offer negotiation."
 model: sonnet
 capabilities:
   - candidate_sourcing

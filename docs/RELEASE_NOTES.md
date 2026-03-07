@@ -1,7 +1,7 @@
 # cAgents Release Notes
 
-**Current Version**: 9.26.0
-**Release Date**: February 27, 2026
+**Current Version**: 10.6.0
+**Release Date**: March 7, 2026
 **Status**: Production-Ready
 
 ---

@@ -16,6 +16,8 @@ capabilities:
   - performance_optimization
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related-agents: ["frontend-developer", "database-admin", "api-designer", "qa-tester"]
+not-my-scope: ["UI components", "visual design", "copy writing", "marketing strategy"]
 ---
 
 # Backend Developer Agent

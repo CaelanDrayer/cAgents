@@ -274,6 +274,13 @@ With proper prompt structure:
 - **Latency reduction**: ~50% for cached prefixes (time-to-first-token)
 - **Cost reduction**: Cached input tokens are billed at reduced rates
 
+### Creative Domain Model Policy
+
+- 27 execution agents: `model: opus` (Claude Opus 4.6)
+- 3 controllers: `model: opusplan` (Opus 4.6 planning mode)
+- Rationale: Creative work demands highest-quality reasoning
+- Team mode: Custom model frontmatter respected since Claude Code 2.1.47
+
 ## cAgents Model Selection Priority
 
 Model selection follows this priority order (highest wins):

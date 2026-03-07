@@ -7,7 +7,7 @@ typical_questions:
   - "What is the strategic vision and objectives?"
   - "What are the key opportunities and threats?"
   - "What strategic initiatives are needed?"
-description: Long-term strategic planning specialist. Facilitates strategic planning, develops frameworks, defines objectives, creates multi-year roadmaps.
+description: "Use when you need long-term strategic planning specialist. Facilitates strategic planning, develops frameworks, defines objectives, creates multi-year roadmaps."
 model: sonnet
 capabilities:
   - strategic_planning
@@ -18,6 +18,8 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related-agents: ["operations-manager", "marketing-strategist", "financial-analyst", "product-manager"]
+not-my-scope: ["Code implementation", "visual design", "HR processes", "legal compliance"]
 ---
 
 # Strategic Planner

@@ -2,7 +2,7 @@
 name: performance-analyst
 domain: business
 tier: controller
-description: Performance analysis specialist coordinating monitoring, optimization, bottleneck identification, and performance improvement across ALL domains.
+description: "Use when you need performance analysis specialist coordinating monitoring, optimization, bottleneck identification, and performance improvement across ALL domains."
 model: sonnet
 coordination_style: question_based
 typical_questions:

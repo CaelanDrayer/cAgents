@@ -2,7 +2,12 @@
 name: talent-acquisition-manager
 domain: people
 tier: controller
-description: Strategic recruitment leader for recruiting strategy, pipeline management, and talent market insights.
+coordination_style: question_based
+typical_questions:
+  - "What are the role requirements and hiring timeline?"
+  - "What is the current talent pipeline and sourcing strategy?"
+  - "What are the key risks and market constraints?"
+description: "Use when you need recruiting strategy, pipeline management, and talent market insights."
 model: sonnet
 capabilities:
   - recruiting_strategy

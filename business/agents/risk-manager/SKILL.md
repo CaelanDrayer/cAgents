@@ -2,7 +2,7 @@
 name: risk-manager
 domain: business
 tier: execution
-description: Enterprise risk management and business continuity specialist. Identifies, assesses, and mitigates risks to protect organization.
+description: "Use when you need enterprise risk management and business continuity specialist. Identifies, assesses, and mitigates risks to protect organization."
 model: sonnet
 capabilities:
   - risk_assessment

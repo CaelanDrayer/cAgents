@@ -1,6 +1,6 @@
 ---
 name: risk-assessment
-description: "Intelligence Layer agent that analyzes work for potential failure points, security vulnerabilities, and performance bottlenecks. Use after planning and during execution to anticipate issues."
+description: "Use when you need potential failure points, security vulnerabilities, and performance bottlenecks. Use after planning and during execution to anticipate issues."
 tier: support
 domain: engineering
 layer: intelligence

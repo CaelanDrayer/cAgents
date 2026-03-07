@@ -14,6 +14,8 @@ capabilities:
   - database_security
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related-agents: ["backend-developer", "architect", "devops-lead", "data-analyst"]
+not-my-scope: ["Frontend code", "UI components", "content writing", "business strategy"]
 ---
 
 # Database Administrator Agent

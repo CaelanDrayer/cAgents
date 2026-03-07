@@ -2,7 +2,7 @@
 name: hitl
 domain: core
 tier: infrastructure
-description: Unified Human-in-the-Loop escalation agent for all domains. Prepares context for human decision-makers, manages escalation workflow, and learns from decisions.
+description: "Use when you need all domains. Prepares context for human decision-makers, manages escalation workflow, and learns from decisions."
 model: sonnet
 color: bright_red
 capabilities:

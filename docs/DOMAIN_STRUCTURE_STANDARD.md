@@ -60,7 +60,7 @@ Current official business domains:
 | **shared** | Cross-domain utilities | 4 | compliance-officer, data-scientist |
 | **core** | Infrastructure | 15 | orchestrator, trigger, universal-* agents |
 
-**Total**: 207 agents across 9 directories (7 business domains + shared + core)
+**Total**: 213 agents across 9 directories (7 business domains + shared + core)
 
 ---
 
@@ -149,19 +149,9 @@ Base templates live in `shared/config/`:
 
 ---
 
-## Legacy Directories (Archives)
+## Legacy Directories (Removed)
 
-The following directories are preserved as archives from the v9.x era (5 super-domain model).
-**Do not delete. Do not modify. Read-only archives.**
-
-| Archive Directory | Former Purpose |
-|-------------------|----------------|
-| `make/` | Engineering + Creative + Game Dev (111 agents) |
-| `grow/` | Marketing + Sales (38 agents) |
-| `operate/` | Finance + Operations (13 agents) |
-| `serve/` | Support + Legal + Compliance (28 agents) |
-
-The v10.0.0 restructure redistributed these agents into the 8 new business domains.
+The v9.x super-domain directories (`make/`, `grow/`, `operate/`, `serve/`) were removed in v10.6.0. Their agents were redistributed into the 8 business domains during the v10.0.0 restructure.
 
 ---
 

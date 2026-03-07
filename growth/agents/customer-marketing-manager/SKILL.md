@@ -2,7 +2,7 @@
 name: customer-marketing-manager
 domain: growth
 tier: execution
-description: Customer retention and expansion specialist. Drives customer engagement, upsell/cross-sell campaigns, advocacy programs, and customer lifecycle marketing.
+description: "Use when you need customer retention and expansion specialist. Drives customer engagement, upsell/cross-sell campaigns, advocacy programs, and customer lifecycle marketing."
 model: sonnet
 capabilities:
   - customer_lifecycle

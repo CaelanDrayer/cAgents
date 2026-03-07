@@ -2,7 +2,7 @@
 name: revenue-operations-manager
 domain: growth
 tier: execution
-description: Revenue process and systems specialist. Aligns revenue processes across sales, marketing, and CS for data-driven growth.
+description: "Use when you need revenue process and systems specialist. Aligns revenue processes across sales, marketing, and CS for data-driven growth."
 model: sonnet
 capabilities:
   - revenue_alignment

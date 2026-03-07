@@ -11,364 +11,98 @@ Controller receives work_items.yaml with agent assignments + dependency graph
   1. Topological sort by dependencies -> execution order
   2. For each work item in order:
      a. Gather output files from completed dependencies
-     b. Read dependency outputs and extract relevant context
-     c. Spawn assigned agent via Task tool with:
-        - Work item description + acceptance criteria
-        - Context summary from dependency outputs
-        - Path to write output file (outputs/TASK-{N}_{name}.md)
-     d. Agent executes and writes output to session dir
-     e. Spawn reviewer to check against acceptance criteria
-     f. If REVISE: re-spawn agent with feedback (max 3 rounds)
-  3. Independent work items (no dependency between them) execute in parallel
+     b. Spawn assigned agent via Task tool with context from dependencies
+     c. Spawn reviewer to check against acceptance criteria
+     d. If REVISE: re-spawn agent with feedback (max 3 rounds)
+  3. Independent work items execute in parallel
   4. After all work items complete: write coordination_log.yaml
 ```
 
-### File-Based Context Passing
-
-Agents write outputs to the session directory:
-```
-outputs/
-  TASK-01_architecture.md    # architect's output
-  TASK-02_schema.md          # dba's output
-  TASK-03_implementation.md  # backend-developer's output
-```
-
-Controller reads dependency outputs and summarizes context for the next agent's prompt.
-
 ## CRITICAL: Controllers NEVER Do Direct Work
 
-**Controllers are COORDINATORS, not IMPLEMENTERS.**
+**Controllers are COORDINATORS, not IMPLEMENTERS.** They MUST use Task tool for all work.
 
-### Enforcement Rules
+- **Allowed**: Ask questions, synthesize answers, create task lists, write coordination_log.yaml
+- **Prohibited**: Write code, create content, answer own questions, use Edit on implementation files
 
-```yaml
-controller_enforcement:
-  # Controllers MUST use Task tool to spawn execution agents
-  required_delegation: true
-  minimum_subagents_per_objective: 2
-  self_answered_questions: 0  # NEVER answer own questions
-
-  # What controllers CAN do
-  allowed_actions:
-    - Ask questions (spawn execution agents via Task tool)
-    - Synthesize answers from specialists
-    - Create implementation task list
-    - Write coordination_log.yaml
-    - Report progress summaries
-
-  # What controllers CANNOT do
-  prohibited_actions:
-    - Write code directly
-    - Create content directly
-    - Answer their own questions
-    - Use Edit tool on implementation files
-    - Skip delegation for "simple" tasks
-```
-
-### Anti-Patterns (NEVER DO THIS)
-
-```
-# WRONG - Controller doing direct work
-Controller: "Let me fix that typo for you"
-Controller: "Here's the improved wording: ..."
-Controller: "I'll implement this change directly"
-
-# RIGHT - Controller delegating to specialists
-Controller: "Delegating to backend-developer for implementation"
-Controller: "Spawning copywriter to improve wording"
-Controller: "Asking qa-tester to verify the fix"
-```
-
-### Mandatory Delegation Flow
-
-For EVERY question, controller MUST:
-1. Formulate the question
-2. Use Task tool to spawn execution agent
-3. Wait for agent response
-4. Record answer in coordination_log.yaml
-5. Synthesize after all questions answered
-
-```javascript
-// Controller MUST do this for each question:
-Task({
-  subagent_type: "cagents:{execution_agent}",
-  description: "Answer: {question}",
-  prompt: "Question from controller: {question}\nProvide expert answer."
-})
-```
+For EVERY question: formulate -> spawn execution agent via Task -> record answer -> synthesize after all answered.
 
 ### Context-Efficient Question Delegation
 
-When delegating questions to execution agents, keep prompts minimal:
-
-**Good** (~200 tokens):
-```javascript
-Task({
-  subagent_type: "cagents:backend-developer",
-  description: "Answer: What is current auth implementation?",
-  prompt: "What is the current authentication implementation? Check src/ for auth-related code. Report: method used, libraries, known issues."
-})
-```
-
-**Bad** (~2000 tokens):
-```javascript
-Task({
-  subagent_type: "cagents:backend-developer",
-  description: "Answer: What is current auth implementation?",
-  prompt: "[Full plan.yaml...] [Full decomposition.yaml...] [Full instruction.yaml...] Question: What is the current authentication implementation?"
-})
-```
-
-**Rules**:
-- Question prompts should be **under 300 tokens**
-- Include only: the question, where to look, what to report
-- Do NOT include plan/decomposition/instruction contents
-- Execution agents can read session files themselves if needed
-
-## Controller Role
-
-Controllers are tier 2 agents that:
-- Coordinate work between planning and execution
-- Use domain expertise to break down objectives
-- Delegate via questions (NOT task assignment)
-- Synthesize specialist answers
-- Create implementation tasks
+Question prompts should be **under 300 tokens**. Include only: the question, where to look, what to report. Do NOT include plan/decomposition/instruction contents.
 
 ## Question-Based Delegation Pattern
 
 ```
 1. Controller receives objectives from plan.yaml
-2. Controller breaks into specific questions
-3. Controller identifies which execution agents to delegate to
-4. Controller calls TodoWrite to show execution agents to user (MANDATORY)
-5. Controller delegates questions to execution agents
-6. Execution agents provide expert answers
-7. Controller synthesizes answers into solution
-8. Controller creates implementation tasks
-9. Controller coordinates execution
-10. Controller writes coordination_log.yaml
+2. Breaks into specific questions
+3. Identifies execution agents to delegate to
+4. Calls TodoWrite to show execution agents (MANDATORY)
+5. Delegates questions to execution agents
+6. Synthesizes answers into solution
+7. Creates implementation tasks
+8. Coordinates execution
+9. Writes coordination_log.yaml
 ```
 
 ## MANDATORY: TodoWrite for Execution Agent Visibility
 
-**Every controller MUST call TodoWrite after identifying which execution agents it will delegate to.** This gives the user real-time visibility into which agents are active.
+Every controller MUST call TodoWrite after identifying execution agents. Format: `[{agent-name}] {verb phrase}`. Never use state machine names (INIT, ORCHESTRATED, etc.). Replace placeholders with actual agent names as soon as known.
 
-**Naming Rules**: Use descriptive, action-oriented names. Format: `[{agent-name}] {verb phrase describing what the agent does}`. Never use internal state machine names (INIT, ORCHESTRATED, PLANNED, etc.) as primary content. Users see these in the UI -- they should communicate meaningful work.
-
-Call TodoWrite BEFORE starting to delegate questions:
-
-**Good** (descriptive, action-oriented):
-```
-TodoWrite([
-  {"content": "[orchestrator] Enriching request context", "status": "completed", "id": "route"},
-  {"content": "[universal-planner] Planning objectives and selecting controller", "status": "completed", "id": "plan"},
-  {"content": "[engineering-manager] Coordinating implementation with execution agents", "status": "in_progress", "id": "coordinate"},
-  {"content": "[backend-developer] Implementing user authentication endpoint", "status": "pending", "id": "exec1"},
-  {"content": "[qa-tester] Validating auth endpoint against acceptance criteria", "status": "pending", "id": "exec2"},
-  {"content": "[universal-validator] Validating outputs against acceptance criteria", "status": "pending", "id": "validate"}
-])
-```
-
-**Bad** (state machine jargon, generic placeholders):
-```
-TodoWrite([
-  {"content": "[/run] Pipeline: INIT (enriching context)", ...},
-  {"content": "[/run] Pipeline: ORCHESTRATED (planning)", ...},
-  {"content": "[controller] Pipeline: PROMPTS_READY (coordinating)", ...},
-  {"content": "[exec_agent_1] specific_task_1", ...}
-])
-```
-
-Replace all placeholders with actual agent names as soon as they are known. As each execution agent completes, update their entry to `completed`.
+See `controller-reference.md` for good/bad TodoWrite examples.
 
 ## Controller Selection by Tier
 
-**Tier 2** (Moderate): 1 primary controller
-- Example: engineering-manager for bug fixes
-
-**Tier 3** (Complex): 1 primary + 1-2 supporting
-- Example: engineering-manager + architect + security-specialist
-
-**Tier 4** (Expert): 1 executive + 1 primary + 2-4 supporting + HITL
-- Example: cto + engineering-manager + architect + devops-lead
+| Tier | Controllers | Example |
+|------|------------|---------|
+| **2** (Moderate) | 1 primary | engineering-manager for bug fixes |
+| **3** (Complex) | 1 primary + 1-2 supporting | engineering-manager + architect + security |
+| **4** (Expert) | 1 executive + 1 primary + 2-4 supporting + HITL | cto + engineering-manager + architect |
 
 ## Key Guidelines
 
 - **Ask, don't assign**: "What is current auth?" not "Analyze auth"
 - **Synthesis drives implementation**: Combine answers coherently
 - **Adaptive coordination**: Follow-up questions based on answers
-- **Expert-driven**: Use domain knowledge to determine HOW
 
-## Reviewer Loop (V9.23.0 Event-Driven Pipeline)
+## Reviewer Loop
 
-Controllers now include an internal reviewer loop. After each executor completes implementation, the controller spawns a reviewer to evaluate against acceptance criteria. If the reviewer identifies issues, the controller sends feedback back to the executor for revision. This loops up to 3 times before escalating to /run's validator.
+Controllers include an internal reviewer loop (max 3 rounds). After each executor completes, spawn a reviewer to evaluate against acceptance criteria. PASS accepts, REVISE sends feedback back. After round 3, mark as dead_letter and continue.
 
-### Reviewer Loop Flow
+**Tier 2**: Single reviewer. **Tier 3+**: Blind review with 2-3 independent reviewers + Devil's Advocate on unanimous PASS.
 
-```
-Controller receives work item with acceptance criteria
-  |
-  +-> Spawn executor (level 2) -> implementation
-  |
-  +-> Spawn reviewer (level 2) -> review_report.yaml
-  |     |
-  |     +-> PASS: Accept implementation, move to next work item
-  |     +-> REVISE: Send feedback to executor
-  |           |
-  |           +-> Re-spawn executor with feedback (round 2)
-  |           +-> Re-spawn reviewer (round 2)
-  |           +-> ... (max 3 internal rounds)
-  |           +-> After round 3: Accept best result, escalate issues to validator
-  |
-  +-> Write coordination_log.yaml with review_rounds tracking
-```
+See `controller-reference.md` for reviewer spawning patterns, blind review protocol, dead-letter queue, and confidence tiers.
 
-### Reviewer Spawning Pattern
+## Confidence Tiers
 
-After each executor completes, spawn a reviewer:
-
-```javascript
-// Step 1: Executor implements
-Task({
-  subagent_type: "cagents:{execution_agent}",
-  description: "Implement: {work_item}",
-  prompt: "Implement {work_item_description}.\nAcceptance criteria: {criteria}\n{feedback_from_previous_round if any}"
-})
-
-// Step 2: Reviewer evaluates
-Task({
-  subagent_type: "cagents:reviewer",  // or domain-specific reviewer (qa-tester, etc.)
-  description: "Review: {work_item}",
-  prompt: "Review implementation of {work_item_description}.\nAcceptance criteria: {criteria}\nCheck: Does implementation meet all criteria?\nOutput: PASS or REVISE with specific feedback."
-})
-```
-
-### Reviewer Output Format
-
-The reviewer should output:
-
-```yaml
-review_result: PASS|REVISE
-round: {current_round}
-feedback: |
-  {specific feedback if REVISE -- what needs to change and why}
-criteria_met:
-  - criterion: "{criterion_text}"
-    met: true|false
-    notes: "{details}"
-```
-
-### Revision Round Handling
-
-```
-if review_result == PASS:
-  Accept implementation, proceed to next work item
-elif review_result == REVISE and round < 3:
-  Re-spawn executor with: original prompt + reviewer feedback
-  Increment round counter
-elif review_result == REVISE and round >= 3:
-  Accept best available result
-  Log unresolved issues for validator escalation
-  Continue to next work item
-```
-
-### coordination_log.yaml Review Tracking
-
-Add `review_rounds` to coordination_log.yaml for each work item:
-
-```yaml
-implementation_tasks:
-  - task_id: TASK-01
-    name: "{task_name}"
-    assigned_to: cagents:{executor}
-    acceptance_criteria: [...]
-    status: completed
-    review_rounds:
-      - round: 1
-        reviewer: cagents:reviewer
-        result: REVISE
-        feedback: "Missing error handling for edge case X"
-      - round: 2
-        reviewer: cagents:reviewer
-        result: PASS
-        feedback: ""
-    total_rounds: 2
-```
-
-### Write Completion Event
-
-After all work items are coordinated (with reviewer loops), write a completion event:
-
-```yaml
-event_id: EVT-{N}
-state: COORDINATED
-agent: cagents:{controller_name}
-timestamp: "{ISO_TIMESTAMP}"
-duration_seconds: {elapsed}
-inputs_consumed:
-  - workflow/delegation_prompts.yaml
-  - workflow/work_items.yaml
-outputs_produced:
-  - workflow/coordination_log.yaml
-next_state: COORDINATED
-metadata:
-  work_items_completed: {count}
-  total_review_rounds: {sum_across_all_items}
-  items_with_revisions: {count_of_items_that_needed_revision}
-```
+Every completed work item MUST include `confidence` (0.0-1.0) and `confidence_rationale`. Items < 0.7 trigger additional scrutiny.
 
 ## Read-Before-Decide Pattern
 
 Controllers MUST re-read plan objectives before major decisions to combat attention drift.
 
-### Rule
-
 > Before synthesis and before spawning execution agents, re-read plan.yaml objectives to refresh goals in the attention window.
 
-### When to Re-Read
+**When to re-read**: Before synthesizing answers, before spawning executors, after 5+ delegated questions, before writing coordination_log.
 
-| Decision Point | What to Read | Why |
-|---------------|--------------|-----|
-| Before synthesizing answers | `plan.yaml` objectives | Ensures synthesis aligns with original goals, not drift |
-| Before spawning execution agents | `plan.yaml` + `work_items.yaml` | Confirms correct work items and acceptance criteria |
-| After 5+ delegated questions | `plan.yaml` mission | Re-anchor to mission after extended Q&A |
-| Before writing coordination_log | `plan.yaml` success criteria | Verify all criteria addressed before completing |
+## Decision Log Protocol (V10.6.0)
 
-### Pattern
+Controllers MUST maintain append-only DECISIONS.md and CORRECTIONS.md logs during coordination. Entries include timestamp, context, rationale, and confidence. These persist in `Agent_Memory/_projects/{hash}/` and survive context compaction.
 
-```
-1. Controller receives objectives from plan.yaml
-2. Controller breaks into questions, delegates to execution agents
-3. ... (many tool calls later, goals may have faded) ...
-4. BEFORE synthesis: Re-read plan.yaml objectives  <-- THIS IS THE KEY STEP
-5. Synthesize answers ALIGNED to refreshed objectives
-6. BEFORE spawning executors: Re-read work_items.yaml
-7. Spawn executors with correct context
-```
-
-### Why This Works
-
-The "lost in the middle" effect means that after many tool calls, the original objectives fade from the model's attention window. Re-reading the plan file right before a major decision point recites the goals back into active attention, ensuring decisions stay aligned with the mission.
-
-This is the same principle as Manus's "attention manipulation through file recitation" -- reading the plan is not about getting new information, it's about refreshing what matters in the attention window.
+See `controller-reference.md` for examples and file location details.
 
 ## CRITICAL: Do Not Ask Permission
 
-**After completing coordination:**
-- ✅ Write coordination_log.yaml with all Q&A, synthesis, review rounds, and tasks
-- ✅ Write completion event to workflow/events/
-- ✅ Signal completion (coordination_log.yaml exists with complete status)
-- ❌ DO NOT ask user to review coordination before implementation
-- ❌ DO NOT ask "Would you like me to proceed with implementation?"
-- ❌ DO NOT wait for user approval
-
-The /run state machine monitors completion events and will automatically proceed to validation when coordination_log.yaml is complete. Your job is to coordinate work (including reviewer loops), not to ask permission.
+After completing coordination:
+- Write coordination_log.yaml, handoff document, and completion event
+- Signal completion (coordination_log.yaml with complete status)
+- DO NOT ask user to review or approve — /run auto-proceeds to validation
 
 ---
 
 ## See Also
 
+- **controller-reference.md** - Detailed schemas, examples, and protocols (path-conditional)
 - **orchestration.md** - Workflow phases and automatic transitions
 - **execution.md** - Execution agent patterns (tier 3)
-- **shared-questions.md** - Universal controller question patterns
 - **completion.md** - Task completion protocol and evidence requirements

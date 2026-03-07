@@ -2,7 +2,7 @@
 name: support-operations-manager
 domain: service
 tier: controller
-description: Support operations and process optimization leader for workflow design, tool implementation, and operational efficiency.
+description: "Use when you need workflow design, tool implementation, and operational efficiency."
 model: sonnet
 coordination_style: question_based
 typical_questions:

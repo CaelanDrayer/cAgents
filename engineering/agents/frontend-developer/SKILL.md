@@ -16,6 +16,8 @@ capabilities:
   - design_systems
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related-agents: ["backend-developer", "ux-designer", "accessibility-specialist", "qa-tester"]
+not-my-scope: ["Database schema", "server infrastructure", "API architecture", "backend business logic"]
 ---
 
 # Frontend Developer Agent

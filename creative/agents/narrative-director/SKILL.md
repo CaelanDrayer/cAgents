@@ -25,6 +25,8 @@ tools: ["Read","Grep","Glob","Write","Edit","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related-agents: ["story-architect", "editor", "voice-coach", "theme-analyst"]
+not-my-scope: ["Code implementation", "financial analysis", "HR management", "infrastructure"]
 ---
 
 # Narrative Director

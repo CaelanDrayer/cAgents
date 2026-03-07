@@ -2,7 +2,7 @@
 name: knowledge-base-manager
 domain: service
 tier: execution
-description: Knowledge base strategist and content curator for self-service content, documentation organization, and discoverability optimization.
+description: "Use when you need self-service content, documentation organization, and discoverability optimization."
 model: sonnet
 capabilities:
   - content_strategy

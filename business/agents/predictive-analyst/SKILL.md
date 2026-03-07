@@ -2,7 +2,7 @@
 name: predictive-analyst
 domain: business
 tier: execution
-description: Predictive analytics and forecasting specialist. Develops predictive models, creates forecasts, provides data-driven planning insights.
+description: "Use when you need predictive analytics and forecasting specialist. Develops predictive models, creates forecasts, provides data-driven planning insights."
 model: sonnet
 capabilities:
   - predictive_modeling

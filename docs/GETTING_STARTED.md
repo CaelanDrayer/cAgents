@@ -113,7 +113,7 @@ Tier 4: Support
   - scribe, data-extractor...
 ```
 
-**Total**: 207 agents (15 core + 4 shared + 10 leadership + 178 domain specialists)
+**Total**: 213 agents (15 core + 4 shared + 10 leadership + 184 domain specialists)
 
 **Key Concept**: Controllers coordinate work via question-based delegation. They ask questions to specialists, synthesize answers, and coordinate implementation.
 

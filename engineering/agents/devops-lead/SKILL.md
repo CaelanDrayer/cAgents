@@ -22,6 +22,8 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related-agents: ["architect", "backend-developer", "security-lead", "engineering-manager"]
+not-my-scope: ["Application business logic", "UI components", "content strategy", "user research"]
 ---
 
 # DevOps Lead Agent

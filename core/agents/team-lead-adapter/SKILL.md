@@ -1,7 +1,7 @@
 ---
 name: team-lead-adapter
 tier: infrastructure
-description: "Wraps domain controllers to operate as team leads in delegate mode using Claude Code's built-in agent teams. Manages teammate communication via SendMessage, shared task distribution via TaskList, and result aggregation."
+description: "Use when you need wraps domain controllers to operate as team leads in delegate mode using Claude Code's built-in agent teams. Manages teammate communication via SendMessage, shared task distribution via TaskList, and result aggregation."
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task","TeamCreate","TeamDelete","TaskCreate","TaskUpdate","TaskList","TaskGet","SendMessage"]
 model: opus
 color: bright_yellow

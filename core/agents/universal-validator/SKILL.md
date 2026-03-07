@@ -1,7 +1,7 @@
 ---
 name: universal-validator
 tier: infrastructure
-description: "Universal quality validator for ALL domains. Validates controller coordination and quality gates. Enforces delegation compliance."
+description: "Use when you need quality validator for ALL domains. Validates controller coordination and quality gates. Enforces delegation compliance."
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 model: opus
 color: bright_cyan
@@ -78,6 +78,7 @@ The validator now outputs three classifications that drive /run's revision routi
 | Classification | Conditions | Pipeline Action |
 |----------------|------------|-----------------|
 | **PASS** | All gates pass, criteria met | Advance to VALIDATED (pipeline complete) |
+| **PARTIAL_PASS** | Most gates pass, dead-letter items exist | Advance to VALIDATED (maps to PASS, dead-letter items reported) |
 | **FAIL** | Fixable issues, re-execution needed | Route back to PROMPTS_READY (re-run controller) |
 | **REVISE** | Fundamental issues, re-planning needed | Route back to PLANNED (re-plan with feedback) |
 
@@ -90,6 +91,7 @@ Write `workflow/validation_report.yaml`:
 
 ```yaml
 classification: PASS|FAIL|REVISE
+overall_confidence: 0.85      # V10.6.0: Weighted average of work item confidences
 feedback: |
   {detailed feedback for the next agent if FAIL or REVISE}
 issues:
@@ -100,6 +102,11 @@ acceptance_criteria_results:
   - criterion: "{criterion text}"
     met: true|false
     evidence: "{evidence or reason for failure}"
+    confidence: 0.9            # V10.6.0: Per-criterion confidence
+low_confidence_items:          # V10.6.0: Items needing extra scrutiny
+  - task_id: TASK-{N}
+    confidence: 0.6
+    reason: "{why confidence is low}"
 revision_target: PROMPTS_READY|PLANNED  # only present for FAIL/REVISE
 ```
 
@@ -125,6 +132,21 @@ metadata:
 ```
 
 If FAIL or REVISE, the event's `metadata.classification` tells /run where to route. /run reads this event, checks the classification, and either completes or loops back.
+
+## Decision Log Validation (V10.6.0)
+
+For tier 3+ workflows, the validator checks for DECISIONS.md:
+
+```yaml
+decision_log_check:
+  required_for: tier_3_and_above
+  checks:
+    - workflow/DECISIONS.md exists
+    - At least 1 decision entry present
+    - Each entry has timestamp, context, rationale
+    - CORRECTIONS.md entries (if any) reference original decisions
+  on_missing: FAIL with feedback "Controller must maintain DECISIONS.md during coordination"
+```
 
 ## Critical BLOCKED Triggers
 

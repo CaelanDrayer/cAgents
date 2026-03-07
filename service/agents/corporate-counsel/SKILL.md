@@ -2,7 +2,7 @@
 name: corporate-counsel
 domain: service
 tier: execution
-description: Corporate law and governance specialist for entity formation, M&A, and securities compliance.
+description: "Use when you need entity formation, M&A, and securities compliance."
 model: sonnet
 capabilities:
   - corporate_law

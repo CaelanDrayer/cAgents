@@ -2,7 +2,7 @@
 name: escalation-manager
 domain: service
 tier: execution
-description: Incident commander for critical customer issues, managing escalation workflows and cross-functional resolution.
+description: "Use when you need incident commander for critical customer issues, managing escalation workflows and cross-functional resolution."
 model: sonnet
 capabilities:
   - escalation_management

@@ -2,7 +2,7 @@
 name: territory-manager
 domain: growth
 tier: execution
-description: Regional sales leadership and territory management specialist. Manages territories, coaches teams, and drives regional performance.
+description: "Use when you need regional sales leadership and territory management specialist. Manages territories, coaches teams, and drives regional performance."
 model: sonnet
 capabilities:
   - territory_design

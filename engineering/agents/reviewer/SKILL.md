@@ -20,6 +20,8 @@ layer: workflow
 tier: support
 maxTurns: 10
 disallowedTools: ["Task"]
+related-agents: ["backend-developer", "frontend-developer", "qa-lead", "architect"]
+not-my-scope: ["Initial implementation", "architecture design", "deployment", "content creation"]
 ---
 
 # V3.0 Enhanced Reviewer Agent

@@ -7,7 +7,7 @@ typical_questions:
   - "What is the current revenue performance vs targets?"
   - "Where are the conversion bottlenecks in the funnel?"
   - "What sales and marketing alignment issues exist?"
-description: Chief Revenue Officer. Executive revenue leadership owning end-to-end revenue generation across marketing, sales, and customer success.
+description: "Use when you need chief Revenue Officer. Executive revenue leadership owning end-to-end revenue generation across marketing, sales, and customer success."
 model: "opusplan"
 capabilities:
   - revenue_strategy

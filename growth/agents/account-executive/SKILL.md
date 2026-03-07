@@ -2,7 +2,7 @@
 name: account-executive
 domain: growth
 tier: execution
-description: Sales closer and deal manager. Owns full sales cycle from qualified lead to closed deal, achieving quota through disciplined execution.
+description: "Use when you need sales closer and deal manager. Owns full sales cycle from qualified lead to closed deal, achieving quota through disciplined execution."
 model: sonnet
 capabilities:
   - opportunity_management

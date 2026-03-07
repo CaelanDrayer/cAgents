@@ -2,7 +2,7 @@
 name: procurement-specialist
 domain: business
 tier: execution
-description: Strategic sourcing and vendor management specialist. Manages procurement, contract negotiation, and supplier relationships.
+description: "Use when you need strategic sourcing and vendor management specialist. Manages procurement, contract negotiation, and supplier relationships."
 model: sonnet
 capabilities:
   - strategic_sourcing

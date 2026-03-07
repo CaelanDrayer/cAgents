@@ -7,7 +7,7 @@ typical_questions:
   - "What are the current campaign/sales metrics?"
   - "What is the target audience and positioning?"
   - "What are the conversion bottlenecks?"
-description: Product positioning, messaging, and launch specialist. Coordinates product launches, competitive positioning, sales enablement, and go-to-market strategy.
+description: "Use when you need product positioning, messaging, and launch specialist. Coordinates product launches, competitive positioning, sales enablement, and go-to-market strategy."
 model: sonnet
 capabilities:
   - product_positioning

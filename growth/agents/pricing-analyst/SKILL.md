@@ -2,7 +2,7 @@
 name: pricing-analyst
 domain: growth
 tier: execution
-description: Pricing strategy and deal optimization specialist. Analyzes pricing, designs packaging, manages deal desk, and optimizes discount strategies.
+description: "Use when you need pricing strategy and deal optimization specialist. Analyzes pricing, designs packaging, manages deal desk, and optimizes discount strategies."
 model: sonnet
 capabilities:
   - pricing_analysis
