@@ -20,6 +20,10 @@ cAgents transforms AI-assisted work across any domain through specialized agent 
 - /context skill for shared product context across sessions
 - 124 agent descriptions rewritten to trigger-only format
 
+## Usage Warning
+
+cAgents spawns multiple subagents per request (3-10+ depending on complexity tier). Each subagent consumes API tokens independently. A single `/run` command can use 10-50x more tokens than a direct Claude Code interaction, and `/team` or `/org` commands amplify this further. Monitor your usage closely, especially with tier 3-4 workflows.
+
 ## Requirements
 
 - **Claude Code 2.1.69+** (required)
