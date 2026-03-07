@@ -57,7 +57,6 @@
         ]
       }
     ],
-    "$comment-SubagentStart": "Dual hooks: subagent-tracker (audit trail) + team-start (team init). Sequential execution guaranteed. Write to different files. No dedup risk.",
     "SubagentStart": [
       {
         "hooks": [
