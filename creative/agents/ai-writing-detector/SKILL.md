@@ -23,6 +23,10 @@ executes_tasks:
   - "Generate AI detection report"
   - "Analyze text across 14 categories plus cross-category signals"
   - "Calibrate detection for genre-specific false positive rates"
+related_agents:
+  - name: ai-writing-rewriter
+    relationship: "Consumes detection_report.yaml to apply targeted humanization rewrites"
+    pipeline: "detector (this) → rewriter (next step)"
 ---
 
 # AI Writing Detector

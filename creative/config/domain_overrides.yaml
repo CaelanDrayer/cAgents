@@ -1,12 +1,28 @@
 # Creative domain overrides
 domain: creative
-description: "Creative writing, narrative design, fiction, literary criticism, content creation, game art and audio"
+description: "Creative writing, narrative design, fiction, literary criticism, content creation, game art and audio, AI writing detection and humanization"
 
 planner:
   controller_catalog:
     tier_2: [narrative-director]
     tier_3: [narrative-director, story-architect, editor]
     tier_4: [cco, narrative-director, story-architect]
+
+  # Specialist agent routing: when request matches these keywords,
+  # the controller should delegate to these specific execution agents
+  specialist_routing:
+    ai_writing_detection:
+      keywords: [detect AI, AI writing, AI detection, scan for AI, AI patterns, AI generated, AI check]
+      agents: [ai-writing-detector]
+      description: "Scan documents for AI writing hallmarks across 14 categories"
+    ai_writing_humanization:
+      keywords: [humanize, humanization, rewrite AI, remove AI, fingerprint, make human, sound human, less AI]
+      agents: [ai-writing-rewriter]
+      description: "Rewrite AI-detected text to sound naturally human"
+    ai_writing_pipeline:
+      keywords: [detect and rewrite, detect and humanize, full AI scan, AI cleanup]
+      agents: [ai-writing-detector, ai-writing-rewriter]
+      description: "Full pipeline: detect AI patterns then rewrite to humanize"
 
 router:
   keywords:
@@ -37,3 +53,14 @@ router:
     - voice
     - genre
     - lore
+    # AI writing detection and humanization
+    - AI writing
+    - AI detection
+    - AI detect
+    - humanize
+    - humanization
+    - AI generated
+    - AI patterns
+    - rewrite AI
+    - fingerprint
+    - AI scan

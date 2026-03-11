@@ -22,6 +22,11 @@ executes_tasks:
   - "Rewrite document to remove AI hallmarks"
   - "Apply category-aware humanization passes"
   - "Adapt text to match a target voice or persona"
+  - "Apply Human Fingerprint Toolkit (9 techniques: sentence variation, quirks, asides, unexpected words, imperfections, register mixing, personal touches, self-corrections, thinking out loud)"
+related_agents:
+  - name: ai-writing-detector
+    relationship: "Produces detection_report.yaml that this agent consumes for targeted rewrites"
+    pipeline: "detector (previous step) → rewriter (this)"
 ---
 
 # AI Writing Rewriter
