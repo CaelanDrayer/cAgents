@@ -19,6 +19,11 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: planning-facilitator
+    type: coordinates
+  - name: organizational-development-specialist
+    type: cross_domain
 ---
 
 # Change Management Specialist

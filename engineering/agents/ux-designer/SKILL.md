@@ -16,6 +16,15 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
 related-agents: ["frontend-developer", "accessibility-checker", "product-owner", "architect"]
 not-my-scope: ["Backend code", "database schema", "server infrastructure", "financial analysis"]
+related_agents:
+  - name: frontend-lead
+    type: coordinated_by
+  - name: frontend-developer
+    type: collaborates_with
+  - name: frontend-aesthetics
+    type: collaborates_with
+  - name: product-owner
+    type: cross_domain
 ---
 
 # UX Designer Agent

@@ -11,6 +11,11 @@ capabilities:
   - kpi_tracking
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: performance-analyst
+    type: coordinated_by
+  - name: predictive-analyst
+    type: collaborates_with
 ---
 
 # Planning Analyst

@@ -13,6 +13,9 @@ capabilities:
   - learning_documentation
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: technical-writer
+    type: cross_domain
 ---
 
 # Scribe Agent

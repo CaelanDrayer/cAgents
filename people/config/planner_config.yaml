@@ -34,12 +34,40 @@ controller_catalog:
         - "HR policy implementation"
       complexity: tier_2
 
-  # Note: talent-acquisition-manager and hr-operations-manager are execution agents
-  # (tier: execution in SKILL.md), not controllers. They answer questions from controllers.
+  # Note: hr-operations-manager is an execution agent (tier: execution in SKILL.md).
+  # talent-acquisition-manager is a controller listed in domain_overrides.yaml.
+
+  tier_3:
+    - name: hr-manager
+      agent_path: people/agents/hr-manager/SKILL.md
+      coordination_style: question_based
+      typical_questions: *people_questions
+      use_when:
+        - "Complex HR operations coordination"
+        - "Multi-team people management"
+      complexity: tier_3
+
+    - name: talent-acquisition-manager
+      agent_path: people/agents/talent-acquisition-manager/SKILL.md
+      coordination_style: question_based
+      typical_questions: *people_questions
+      use_when:
+        - "Large-scale recruiting coordination"
+        - "Talent pipeline strategy"
+      complexity: tier_3
+
+    - name: hr-business-partner
+      agent_path: people/agents/hr-business-partner/SKILL.md
+      coordination_style: question_based
+      typical_questions: *people_questions
+      use_when:
+        - "Business unit HR alignment"
+        - "Organizational development"
+      complexity: tier_3
 
   tier_4:
     - name: chro
-      agent_path: people/agents/chro/SKILL.md
+      agent_path: leadership/agents/chro/SKILL.md
       coordination_style: question_based
       typical_questions: *people_questions
       use_when:

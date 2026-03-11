@@ -11,6 +11,11 @@ capabilities:
   - employee_experience
 tools: ["Read","Write","Grep","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: hr-manager
+    type: coordinated_by
+  - name: diversity-and-inclusion-manager
+    type: collaborates_with
 ---
 
 # Culture and Engagement Manager

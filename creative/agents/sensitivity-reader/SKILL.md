@@ -15,6 +15,13 @@ capabilities:
   - identity_spectrum_evaluation
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: editor
+    type: coordinated_by
+  - name: character-designer
+    type: reviews
+  - name: diversity-and-inclusion-manager
+    type: cross_domain
 ---
 
 # Sensitivity Reader

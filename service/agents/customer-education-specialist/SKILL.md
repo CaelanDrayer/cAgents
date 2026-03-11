@@ -11,6 +11,11 @@ capabilities:
   - educational_program_design
 tools: ["Read","Grep","Glob","Write"]
 maxTurns: 30
+related_agents:
+  - name: customer-success-manager
+    type: coordinated_by
+  - name: knowledge-base-manager
+    type: collaborates_with
 ---
 
 # Customer Education Specialist

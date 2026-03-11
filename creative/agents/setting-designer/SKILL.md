@@ -15,6 +15,11 @@ capabilities:
   - liminal_spaces
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: narrative-director
+    type: coordinated_by
+  - name: worldbuilder
+    type: collaborates_with
 ---
 
 # Setting Designer

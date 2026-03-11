@@ -20,6 +20,17 @@ permissionMode: "bypassPermissions"
 memory: {"project": true}
 related-agents: ["talent-acquisition-manager", "culture-champion", "training-coordinator", "compensation-analyst"]
 not-my-scope: ["Code implementation", "technical architecture", "marketing campaigns", "financial auditing"]
+related_agents:
+  - name: recruiter
+    type: coordinates
+  - name: employee-relations-specialist
+    type: coordinates
+  - name: hr-operations-manager
+    type: coordinates
+  - name: benefits-administrator
+    type: coordinates
+  - name: talent-acquisition-manager
+    type: collaborates_with
 ---
 
 # HR Manager

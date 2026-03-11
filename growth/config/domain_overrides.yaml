@@ -4,9 +4,23 @@ description: "Marketing execution, sales operations, demand generation"
 
 planner:
   controller_catalog:
-    tier_2: [campaign-manager]
-    tier_3: [campaign-manager, marketing-strategist, sales-strategist]
+    tier_2: [campaign-manager, creative-director, product-marketing-manager]
+    tier_3: [campaign-manager, marketing-strategist, sales-strategist, creative-director, product-marketing-manager]
     tier_4: [cmo, cro, marketing-strategist]
+
+  specialist_routing:
+    sales:
+      keywords: [sales, quota, territory, pipeline, deal, close, prospect, SDR, account executive]
+      agents: [sales-strategist]
+      description: "Sales strategy and operations"
+    content:
+      keywords: [content, creative, brand, copy, copywriting, social media]
+      agents: [creative-director]
+      description: "Content and creative marketing"
+    product_marketing:
+      keywords: [positioning, messaging, launch, go-to-market, competitive, GTM]
+      agents: [product-marketing-manager]
+      description: "Product marketing and launches"
 
 router:
   keywords:
@@ -21,3 +35,25 @@ router:
     - growth
     - demand
     - acquisition
+    - brand
+    - social media
+    - email
+    - content marketing
+    - PR
+    - public relations
+    - advertising
+    - PPC
+    - newsletter
+    - engagement
+    - retention
+    - churn
+    - NPS
+    - pricing
+    - proposal
+    - outreach
+    - demo
+    - territory
+    - quota
+    - enablement
+    - copy
+    - copywriting

@@ -14,6 +14,13 @@ capabilities:
   - data_visualization
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: data-lead
+    type: coordinated_by
+  - name: dba
+    type: collaborates_with
+  - name: bi-specialist
+    type: cross_domain
 ---
 
 # Data Analyst / Data Engineer Agent

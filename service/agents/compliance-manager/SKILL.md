@@ -11,6 +11,11 @@ capabilities:
   - risk_assessment
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: compliance-officer
+    type: coordinated_by
+  - name: regulatory-affairs-specialist
+    type: collaborates_with
 ---
 
 # Compliance Manager

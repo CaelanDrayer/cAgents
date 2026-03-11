@@ -15,6 +15,11 @@ capabilities:
   - music_production
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: narrative-director
+    type: coordinated_by
+  - name: sound-designer
+    type: collaborates_with
 ---
 
 # Music Composer

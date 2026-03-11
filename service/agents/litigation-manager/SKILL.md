@@ -11,6 +11,11 @@ capabilities:
   - trial_strategy
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: general-counsel
+    type: coordinated_by
+  - name: paralegal
+    type: collaborates_with
 ---
 
 # Litigation Manager

@@ -18,6 +18,15 @@ tools: ["Read","Grep","Glob","Bash","Write","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: support-analyst
+    type: coordinates
+  - name: support-quality-analyst
+    type: coordinates
+  - name: support-trainer
+    type: coordinates
+  - name: knowledge-base-manager
+    type: coordinates
 ---
 
 # Support Operations Manager

@@ -4,9 +4,15 @@ description: "Strategy, product management, operations, finance, marketing, sale
 
 planner:
   controller_catalog:
-    tier_2: [operations-manager, campaign-manager]
-    tier_3: [strategic-planner, marketing-strategist, sales-strategist, finance-manager]
+    tier_2: [operations-manager, product-owner, project-manager, game-designer]
+    tier_3: [strategic-planner, finance-manager, program-manager, business-analyst, quality-manager, game-producer, supply-chain-manager, process-auditor, change-management-specialist, performance-analyst]
     tier_4: [cpo, cfo, strategic-planner, operations-manager]
+
+  specialist_routing:
+    game_development:
+      keywords: [game, game design, game mechanics, game balance, level design, game system]
+      agents: [game-designer, game-producer]
+      description: "Game design and production coordination (cross-domain: game-programmer in engineering/, game-writer in creative/)"
 
 router:
   keywords:
@@ -18,14 +24,27 @@ router:
     - supply chain
     - procurement
     - strategy
-    - campaign
-    - marketing
-    - sales
-    - conversion
-    - SEO
-    - funnel
-    - leads
-    - revenue
     - product
     - roadmap
     - planning
+    - game
+    - game design
+    - OKR
+    - KPI
+    - analytics
+    - metrics
+    - report
+    - project
+    - program
+    - agile
+    - scrum
+    - sprint
+    - risk
+    - quality
+    - audit
+    - stakeholder
+    - vendor
+    - invoice
+    - ROI
+    - inventory
+    - logistics

@@ -18,6 +18,11 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: business-analyst-planning
+    type: coordinates
+  - name: process-improvement-specialist
+    type: collaborates_with
 ---
 
 # Business Analyst

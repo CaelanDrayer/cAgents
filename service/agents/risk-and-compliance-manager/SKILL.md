@@ -11,6 +11,11 @@ capabilities:
   - integrated_governance
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: compliance-officer
+    type: coordinated_by
+  - name: risk-manager
+    type: cross_domain
 ---
 
 # Risk and Compliance Manager

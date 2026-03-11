@@ -22,6 +22,17 @@ maxTurns: 10
 disallowedTools: ["Task"]
 related-agents: ["backend-developer", "frontend-developer", "qa-lead", "architect"]
 not-my-scope: ["Initial implementation", "architecture design", "deployment", "content creation"]
+related_agents:
+  - name: architecture-reviewer
+    type: coordinates
+  - name: performance-analyzer
+    type: coordinates
+  - name: security-analyst
+    type: coordinates
+  - name: backend-developer
+    type: reviews
+  - name: frontend-developer
+    type: reviews
 ---
 
 # V3.0 Enhanced Reviewer Agent

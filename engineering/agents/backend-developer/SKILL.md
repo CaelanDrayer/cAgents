@@ -18,6 +18,15 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
 related-agents: ["frontend-developer", "database-admin", "api-designer", "qa-tester"]
 not-my-scope: ["UI components", "visual design", "copy writing", "marketing strategy"]
+related_agents:
+  - name: backend-lead
+    type: coordinated_by
+  - name: frontend-developer
+    type: collaborates_with
+  - name: dba
+    type: collaborates_with
+  - name: reviewer
+    type: reviewed_by
 ---
 
 # Backend Developer Agent

@@ -25,6 +25,13 @@ capabilities:
 tools: ["Read","Write","Edit","Grep","Glob","Bash","TodoWrite"]
 color: bright_green
 maxTurns: 30
+related_agents:
+  - name: backend-lead
+    type: coordinated_by
+  - name: backend-developer
+    type: collaborates_with
+  - name: reviewer
+    type: reviewed_by
 ---
 
 # Senior Developer

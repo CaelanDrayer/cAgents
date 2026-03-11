@@ -11,6 +11,11 @@ capabilities:
   - performance_insights
 tools: ["Read","Grep","Glob","Bash","Write"]
 maxTurns: 30
+related_agents:
+  - name: support-operations-manager
+    type: coordinated_by
+  - name: support-quality-analyst
+    type: collaborates_with
 ---
 
 # Support Analyst

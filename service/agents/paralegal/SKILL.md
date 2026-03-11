@@ -11,6 +11,11 @@ capabilities:
   - matter_support
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: legal-operations-manager
+    type: coordinated_by
+  - name: litigation-manager
+    type: collaborates_with
 ---
 
 # Paralegal

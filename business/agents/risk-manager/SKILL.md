@@ -11,6 +11,11 @@ capabilities:
   - crisis_management
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: operations-manager
+    type: coordinated_by
+  - name: scenario-planner
+    type: collaborates_with
 ---
 
 # Risk Manager

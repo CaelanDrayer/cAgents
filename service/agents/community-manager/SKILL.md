@@ -11,6 +11,11 @@ capabilities:
   - peer_support_facilitation
 tools: ["Read","Grep","Glob","Write"]
 maxTurns: 30
+related_agents:
+  - name: customer-advocacy-manager
+    type: coordinated_by
+  - name: social-media-manager
+    type: cross_domain
 ---
 
 # Community Manager

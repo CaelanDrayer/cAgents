@@ -15,6 +15,11 @@ capabilities:
   - contradiction_detection
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: editor
+    type: coordinated_by
+  - name: lore-keeper
+    type: collaborates_with
 ---
 
 # Continuity Checker

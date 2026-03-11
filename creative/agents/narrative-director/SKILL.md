@@ -27,6 +27,17 @@ permissionMode: "bypassPermissions"
 memory: {"project": true}
 related-agents: ["story-architect", "editor", "voice-coach", "theme-analyst"]
 not-my-scope: ["Code implementation", "financial analysis", "HR management", "infrastructure"]
+related_agents:
+  - name: story-architect
+    type: coordinates
+  - name: editor
+    type: coordinates
+  - name: prose-stylist
+    type: coordinates
+  - name: voice-coach
+    type: coordinates
+  - name: theme-analyst
+    type: coordinates
 ---
 
 # Narrative Director

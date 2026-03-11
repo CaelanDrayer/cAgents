@@ -19,6 +19,13 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: market-research-analyst
+    type: collaborates_with
+  - name: product-marketing-manager
+    type: cross_domain
+  - name: sales-enablement-specialist
+    type: cross_domain
 ---
 
 # Competitive Intelligence Analyst

@@ -18,6 +18,13 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: resource-planner
+    type: coordinates
+  - name: risk-manager
+    type: collaborates_with
+  - name: agile-coach
+    type: collaborates_with
 ---
 
 # Project Manager

@@ -11,6 +11,13 @@ capabilities:
   - link_building
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: campaign-manager
+    type: coordinated_by
+  - name: content-marketing-manager
+    type: collaborates_with
+  - name: frontend-developer
+    type: cross_domain
 ---
 
 # SEO Specialist

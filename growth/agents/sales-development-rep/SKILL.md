@@ -11,6 +11,13 @@ capabilities:
   - cadence_execution
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: sales-strategist
+    type: coordinated_by
+  - name: demand-generation-manager
+    type: pipeline_prev
+  - name: account-executive
+    type: pipeline_next
 ---
 
 # Sales Development Rep

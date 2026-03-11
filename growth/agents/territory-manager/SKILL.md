@@ -11,6 +11,11 @@ capabilities:
   - performance_optimization
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: sales-strategist
+    type: coordinated_by
+  - name: field-marketing-manager
+    type: collaborates_with
 ---
 
 # Territory Manager

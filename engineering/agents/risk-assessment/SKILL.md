@@ -14,6 +14,11 @@ capabilities:
 tools: ["Read","Grep","Glob"]
 maxTurns: 10
 disallowedTools: ["Task"]
+related_agents:
+  - name: engineering-manager
+    type: collaborates_with
+  - name: architect
+    type: collaborates_with
 ---
 
 # Risk Assessment Agent

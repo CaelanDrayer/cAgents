@@ -11,6 +11,13 @@ capabilities:
   - channel_management
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: campaign-manager
+    type: coordinated_by
+  - name: marketing-analyst
+    type: collaborates_with
+  - name: seo-specialist
+    type: collaborates_with
 ---
 
 # Digital Marketing Manager

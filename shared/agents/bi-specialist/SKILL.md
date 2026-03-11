@@ -20,6 +20,13 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: data-analyst
+    type: cross_domain
+  - name: marketing-data-analyst
+    type: cross_domain
+  - name: data-scientist
+    type: collaborates_with
 ---
 
 # Business Intelligence Specialist

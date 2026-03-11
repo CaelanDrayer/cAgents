@@ -11,6 +11,15 @@ capabilities:
   - engineering_coordination
 tools: ["Read","Grep","Glob","Bash","Write"]
 maxTurns: 30
+related_agents:
+  - name: vp-customer-support
+    type: coordinated_by
+  - name: customer-support-rep
+    type: pipeline_prev
+  - name: escalation-manager
+    type: pipeline_next
+  - name: backend-developer
+    type: cross_domain
 ---
 
 # Technical Support Engineer

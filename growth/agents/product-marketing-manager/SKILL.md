@@ -18,6 +18,15 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: sales-enablement-specialist
+    type: coordinates
+  - name: copywriter
+    type: coordinates
+  - name: competitive-intelligence-analyst
+    type: cross_domain
+  - name: marketing-strategist
+    type: collaborates_with
 ---
 
 # Product Marketing Manager

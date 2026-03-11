@@ -27,6 +27,13 @@ executes_tasks:
   - authorial_voice_development
   - pov_structure_design
   - style_coaching
+related_agents:
+  - name: narrative-director
+    type: coordinated_by
+  - name: prose-stylist
+    type: collaborates_with
+  - name: dialogue-specialist
+    type: collaborates_with
 ---
 
 # Voice Coach

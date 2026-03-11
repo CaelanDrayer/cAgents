@@ -15,6 +15,13 @@ capabilities:
   - pacing_engineering
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: story-architect
+    type: coordinated_by
+  - name: pacing-specialist
+    type: collaborates_with
+  - name: tension-architect
+    type: collaborates_with
 ---
 
 # Narrative Designer

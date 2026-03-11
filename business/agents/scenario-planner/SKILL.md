@@ -11,6 +11,11 @@ capabilities:
   - strategy_stress_testing
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: strategic-planner
+    type: coordinated_by
+  - name: risk-manager
+    type: collaborates_with
 ---
 
 # Scenario Planner

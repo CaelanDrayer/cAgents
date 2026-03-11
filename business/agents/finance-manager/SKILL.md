@@ -19,6 +19,13 @@ capabilities:
   - resource_allocation
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: procurement-specialist
+    type: coordinates
+  - name: resource-planner
+    type: collaborates_with
+  - name: operations-manager
+    type: collaborates_with
 ---
 
 # Finance Manager

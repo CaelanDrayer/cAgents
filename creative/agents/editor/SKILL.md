@@ -23,6 +23,15 @@ tools: ["Read","Grep","Glob","Write","Edit","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: copy-editor
+    type: coordinates
+  - name: continuity-checker
+    type: coordinates
+  - name: prose-stylist
+    type: coordinates
+  - name: literary-critic
+    type: collaborates_with
 ---
 
 # Editor

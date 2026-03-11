@@ -11,6 +11,11 @@ capabilities:
   - kaizen
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: operations-manager
+    type: coordinated_by
+  - name: quality-manager-business
+    type: collaborates_with
 ---
 
 # Process Improvement Specialist

@@ -18,6 +18,13 @@ tools: ["Read","Write","Grep","Glob","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: paralegal
+    type: coordinates
+  - name: legal-analyst
+    type: coordinates
+  - name: contracts-manager
+    type: coordinates
 ---
 
 # Legal Operations Manager

@@ -18,6 +18,15 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: support-operations-manager
+    type: coordinates
+  - name: customer-success-manager
+    type: coordinates
+  - name: escalation-manager
+    type: coordinates
+  - name: support-manager
+    type: coordinates
 ---
 
 # VP of Customer Support

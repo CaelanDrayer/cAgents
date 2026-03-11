@@ -11,6 +11,11 @@ capabilities:
   - okr_tracking
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: strategic-planner
+    type: coordinated_by
+  - name: performance-management-specialist
+    type: cross_domain
 ---
 
 # OKR Specialist

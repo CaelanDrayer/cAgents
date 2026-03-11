@@ -16,6 +16,13 @@ capabilities:
   - talent_market_analysis
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: recruiter
+    type: coordinates
+  - name: recruiting-coordinator
+    type: coordinates
+  - name: hr-manager
+    type: collaborates_with
 ---
 
 # Talent Acquisition Manager

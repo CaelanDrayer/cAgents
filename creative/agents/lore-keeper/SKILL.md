@@ -15,6 +15,13 @@ capabilities:
   - continuity_management
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: narrative-director
+    type: coordinated_by
+  - name: worldbuilder
+    type: collaborates_with
+  - name: continuity-checker
+    type: collaborates_with
 ---
 
 # Lore Keeper

@@ -11,6 +11,11 @@ capabilities:
   - rapid_testing
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: marketing-strategist
+    type: coordinated_by
+  - name: marketing-data-analyst
+    type: collaborates_with
 ---
 
 # Growth Marketer

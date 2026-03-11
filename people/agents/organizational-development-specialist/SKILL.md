@@ -11,6 +11,11 @@ capabilities:
   - transformation_leadership
 tools: ["Read","Write","Grep","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: hr-business-partner
+    type: coordinated_by
+  - name: change-management-specialist
+    type: cross_domain
 ---
 
 # Organizational Development Specialist

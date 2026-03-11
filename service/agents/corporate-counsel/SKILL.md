@@ -11,6 +11,11 @@ capabilities:
   - securities_compliance
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: general-counsel
+    type: coordinated_by
+  - name: contracts-manager
+    type: collaborates_with
 ---
 
 # Corporate Counsel

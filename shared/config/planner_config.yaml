@@ -1,5 +1,5 @@
 super_domain: shared
-description: Planning configuration for SHARED cross-domain capabilities. These 14 agents are available to ALL super-domains for data/analytics, quality/compliance, customer, and operations coordination.
+description: Planning configuration for SHARED cross-domain capabilities. These 13 agents (4 in shared/, 9 cross-domain references) are available to ALL super-domains for data/analytics, quality/compliance, customer, and operations coordination.
 
 # Shared questions defined once via YAML anchor
 shared_questions: &shared_questions
@@ -68,7 +68,7 @@ controller_catalog:
 
     # Quality & Compliance
     - name: quality-manager
-      agent_path: shared/agents/quality-manager/SKILL.md
+      agent_path: business/agents/quality-manager/SKILL.md
       coordination_style: question_based
       typical_questions:
         - "What are the current quality standards and metrics?"
@@ -82,7 +82,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: process-auditor
-      agent_path: shared/agents/process-auditor/SKILL.md
+      agent_path: business/agents/process-auditor/SKILL.md
       coordination_style: question_based
       typical_questions:
         - "What processes and controls are in scope for this audit?"
@@ -96,7 +96,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: compliance-officer
-      agent_path: shared/agents/compliance-officer/SKILL.md
+      agent_path: service/agents/compliance-officer/SKILL.md
       coordination_style: question_based
       typical_questions:
         - "What regulations apply to this activity?"
@@ -110,7 +110,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: performance-analyst
-      agent_path: shared/agents/performance-analyst/SKILL.md
+      agent_path: business/agents/performance-analyst/SKILL.md
       coordination_style: question_based
       typical_questions:
         - "What are the current performance metrics and baselines?"
@@ -125,7 +125,7 @@ controller_catalog:
 
     # Customer
     - name: account-manager
-      agent_path: shared/agents/account-manager/SKILL.md
+      agent_path: service/agents/account-manager/SKILL.md
       coordination_style: question_based
       typical_questions:
         - "What is the current account health and engagement level?"
@@ -139,7 +139,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: customer-success-manager
-      agent_path: shared/agents/customer-success-manager/SKILL.md
+      agent_path: service/agents/customer-success-manager/SKILL.md
       coordination_style: question_based
       typical_questions:
         - "What is the current customer health score and engagement level?"
@@ -153,7 +153,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: customer-advocacy-manager
-      agent_path: shared/agents/customer-advocacy-manager/SKILL.md
+      agent_path: service/agents/customer-advocacy-manager/SKILL.md
       coordination_style: question_based
       typical_questions:
         - "Which customers are good advocacy candidates?"
@@ -167,7 +167,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: relationship-manager
-      agent_path: shared/agents/relationship-manager/SKILL.md
+      agent_path: service/agents/relationship-manager/SKILL.md
       coordination_style: question_based
       typical_questions:
         - "Who are the key stakeholders and what are their priorities?"
@@ -182,7 +182,7 @@ controller_catalog:
 
     # Operations
     - name: change-management-specialist
-      agent_path: shared/agents/change-management-specialist/SKILL.md
+      agent_path: business/agents/change-management-specialist/SKILL.md
       coordination_style: question_based
       typical_questions:
         - "What is the change readiness level?"
@@ -195,19 +195,7 @@ controller_catalog:
         - "Resistance management"
       complexity: tier_2
 
-    - name: capacity-planner
-      agent_path: shared/agents/capacity-planner/SKILL.md
-      coordination_style: question_based
-      typical_questions:
-        - "What is current capacity utilization?"
-        - "What is the demand forecast for next period?"
-        - "Where are the capacity constraints?"
-      use_when:
-        - "Capacity planning coordination needed"
-        - "Demand forecasting required"
-        - "Scaling planning across domains"
-        - "Capacity optimization"
-      complexity: tier_2
+    # capacity-planner removed: agent does not exist. Use resource-planner (business/) or workforce-planning-analyst (people/) instead.
 
 # Templates for objective generation
 objectives_templates:

@@ -21,6 +21,15 @@ permissionMode: "bypassPermissions"
 memory: {"project": true}
 related-agents: ["vp-customer-support", "support-agent", "cx-analyst", "knowledge-manager"]
 not-my-scope: ["Code implementation", "product development", "financial strategy", "HR policies"]
+related_agents:
+  - name: account-manager
+    type: collaborates_with
+  - name: customer-education-specialist
+    type: coordinates
+  - name: customer-advocacy-manager
+    type: collaborates_with
+  - name: customer-marketing-manager
+    type: cross_domain
 ---
 
 # Customer Success Manager

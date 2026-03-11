@@ -24,6 +24,13 @@ permissionMode: "bypassPermissions"
 memory: {"project": true}
 related-agents: ["architect", "backend-developer", "security-lead", "engineering-manager"]
 not-my-scope: ["Application business logic", "UI components", "content strategy", "user research"]
+related_agents:
+  - name: devops
+    type: coordinates
+  - name: sysadmin
+    type: coordinates
+  - name: architect
+    type: collaborates_with
 ---
 
 # DevOps Lead Agent

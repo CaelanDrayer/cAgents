@@ -11,6 +11,13 @@ capabilities:
   - api_documentation
 tools: ["Read","Grep","Glob","Write"]
 maxTurns: 30
+related_agents:
+  - name: support-operations-manager
+    type: coordinated_by
+  - name: knowledge-base-manager
+    type: collaborates_with
+  - name: scribe
+    type: cross_domain
 ---
 
 # Technical Writer

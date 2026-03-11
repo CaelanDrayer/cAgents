@@ -24,6 +24,13 @@ executes_tasks:
   - character_voice_development
   - conversation_design
   - dialect_creation
+related_agents:
+  - name: narrative-director
+    type: coordinated_by
+  - name: character-designer
+    type: collaborates_with
+  - name: prose-stylist
+    type: collaborates_with
 ---
 
 # Dialogue Specialist

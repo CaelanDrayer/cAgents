@@ -28,6 +28,13 @@ executes_tasks:
   - suspense_revision
   - micro_tension_enhancement
   - dramatic_irony_implementation
+related_agents:
+  - name: story-architect
+    type: coordinated_by
+  - name: pacing-specialist
+    type: collaborates_with
+  - name: plot-developer
+    type: collaborates_with
 ---
 
 # Tension Architect

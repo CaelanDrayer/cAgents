@@ -19,6 +19,15 @@ tools: ["Read","Write","Grep","Glob","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: organizational-development-specialist
+    type: coordinates
+  - name: performance-management-specialist
+    type: coordinates
+  - name: learning-and-development-manager
+    type: coordinates
+  - name: hr-manager
+    type: collaborates_with
 ---
 
 # HR Business Partner

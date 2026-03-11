@@ -15,6 +15,13 @@ capabilities:
   - localization_aware_writing
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: narrative-director
+    type: coordinated_by
+  - name: narrative-game-designer
+    type: collaborates_with
+  - name: game-designer
+    type: cross_domain
 ---
 
 # Game Writer

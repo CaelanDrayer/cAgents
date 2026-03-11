@@ -4,7 +4,7 @@ description: "Creative writing, narrative design, fiction, literary criticism, c
 
 planner:
   controller_catalog:
-    tier_2: [narrative-director]
+    tier_2: [narrative-director, editor]
     tier_3: [narrative-director, story-architect, editor]
     tier_4: [cco, narrative-director, story-architect]
 
@@ -64,3 +64,13 @@ router:
     - rewrite AI
     - fingerprint
     - AI scan
+    - sensitivity
+    - beta read
+    - copy edit
+    - proofread
+    - fact check
+    - continuity
+    - manuscript
+    - draft
+    - revision
+    - outline

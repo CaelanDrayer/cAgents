@@ -11,6 +11,11 @@ capabilities:
   - whistleblower_programs
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: compliance-officer
+    type: coordinated_by
+  - name: hr-compliance-specialist
+    type: cross_domain
 ---
 
 # Ethics and Compliance Officer

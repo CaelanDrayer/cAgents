@@ -11,6 +11,11 @@ capabilities:
   - sow_development
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: sales-strategist
+    type: coordinated_by
+  - name: account-executive
+    type: collaborates_with
 ---
 
 # Proposal Specialist

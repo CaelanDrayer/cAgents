@@ -20,6 +20,13 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: quality-manager-business
+    type: coordinates
+  - name: process-auditor
+    type: collaborates_with
+  - name: process-improvement-specialist
+    type: collaborates_with
 ---
 
 # Quality Manager

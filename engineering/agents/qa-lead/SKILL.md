@@ -27,6 +27,15 @@ permissionMode: "bypassPermissions"
 memory: {"project": true}
 related-agents: ["backend-developer", "frontend-developer", "security-lead", "devops-lead"]
 not-my-scope: ["Feature implementation", "architecture decisions", "UI design", "deployment"]
+related_agents:
+  - name: test-coverage-validator
+    type: coordinates
+  - name: code-standards-auditor
+    type: collaborates_with
+  - name: backend-developer
+    type: reviews
+  - name: frontend-developer
+    type: reviews
 ---
 
 # QA Lead Agent

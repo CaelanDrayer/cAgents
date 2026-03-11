@@ -11,6 +11,11 @@ capabilities:
   - campaign_operations
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: campaign-manager
+    type: coordinated_by
+  - name: revenue-operations-manager
+    type: collaborates_with
 ---
 
 # Marketing Operations Manager

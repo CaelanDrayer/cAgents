@@ -15,6 +15,13 @@ capabilities:
   - narrative_system_documentation
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: narrative-director
+    type: coordinated_by
+  - name: game-writer
+    type: collaborates_with
+  - name: game-designer
+    type: cross_domain
 ---
 
 # Narrative Game Designer

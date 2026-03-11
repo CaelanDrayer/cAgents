@@ -11,6 +11,13 @@ capabilities:
   - seo_content
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: marketing-strategist
+    type: coordinated_by
+  - name: seo-specialist
+    type: collaborates_with
+  - name: copywriter
+    type: collaborates_with
 ---
 
 # Content Marketing Manager

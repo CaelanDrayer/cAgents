@@ -11,6 +11,11 @@ capabilities:
   - performance_development
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: sales-strategist
+    type: coordinated_by
+  - name: sales-enablement-specialist
+    type: collaborates_with
 ---
 
 # Sales Trainer

@@ -11,6 +11,13 @@ capabilities:
   - headcount_budgeting
 tools: ["Read","Write","Grep","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: hr-manager
+    type: coordinated_by
+  - name: hr-analyst
+    type: collaborates_with
+  - name: resource-planner
+    type: cross_domain
 ---
 
 # Workforce Planning Analyst

@@ -11,6 +11,11 @@ capabilities:
   - business_case_development
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: product-owner
+    type: coordinated_by
+  - name: business-analyst
+    type: coordinated_by
 ---
 
 # Business Analyst (Planning)

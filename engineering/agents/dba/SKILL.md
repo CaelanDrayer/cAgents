@@ -16,6 +16,13 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
 related-agents: ["backend-developer", "architect", "devops-lead", "data-analyst"]
 not-my-scope: ["Frontend code", "UI components", "content writing", "business strategy"]
+related_agents:
+  - name: data-lead
+    type: coordinated_by
+  - name: backend-developer
+    type: collaborates_with
+  - name: data-analyst
+    type: collaborates_with
 ---
 
 # Database Administrator Agent

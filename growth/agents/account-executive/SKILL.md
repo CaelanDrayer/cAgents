@@ -11,6 +11,13 @@ capabilities:
   - closing
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: sales-strategist
+    type: coordinated_by
+  - name: sales-engineer
+    type: collaborates_with
+  - name: proposal-specialist
+    type: collaborates_with
 ---
 
 # Account Executive

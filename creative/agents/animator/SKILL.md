@@ -23,6 +23,13 @@ executes_tasks:
   - "Create locomotion system documentation (walk/run/transitions)"
   - "Develop combat animation specifications with timing data"
   - "Write cinematic animation direction and performance notes"
+related_agents:
+  - name: narrative-director
+    type: coordinated_by
+  - name: concept-artist
+    type: collaborates_with
+  - name: game-programmer
+    type: cross_domain
 ---
 
 # Animator

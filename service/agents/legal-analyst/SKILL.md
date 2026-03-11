@@ -11,6 +11,11 @@ capabilities:
   - legal_metrics
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: legal-operations-manager
+    type: coordinated_by
+  - name: compliance-manager
+    type: collaborates_with
 ---
 
 # Legal Analyst

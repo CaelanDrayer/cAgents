@@ -20,6 +20,13 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: planning-analyst
+    type: coordinates
+  - name: predictive-analyst
+    type: coordinates
+  - name: operations-manager
+    type: collaborates_with
 ---
 
 # Performance Analyst

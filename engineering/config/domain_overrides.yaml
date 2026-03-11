@@ -1,13 +1,34 @@
 # Engineering domain overrides
-# Only what differs from core/config/defaults.yaml
 domain: engineering
 description: "Software engineering, infrastructure, security, QA, and game programming"
 
 planner:
   controller_catalog:
-    tier_2: [engineering-manager]
-    tier_3: [engineering-manager, architect, security-lead]
-    tier_4: [cto, engineering-manager, architect, devops-lead]
+    tier_2: [engineering-manager, tech-lead, qa-lead]
+    tier_3: [engineering-manager, architect, security-lead, backend-lead, frontend-lead, data-lead]
+    tier_4: [cto, engineering-manager, architect, devops-lead, vp-engineering]
+
+  specialist_routing:
+    frontend:
+      keywords: [frontend, UI, UX, component, CSS, styling, responsive, design system, wireframe, accessibility]
+      agents: [frontend-lead]
+      description: "Frontend architecture and UI/UX coordination"
+    backend:
+      keywords: [backend, API, database, server, microservice, REST, GraphQL]
+      agents: [backend-lead]
+      description: "Backend architecture and API coordination"
+    data:
+      keywords: [data pipeline, ETL, data warehouse, analytics, data model]
+      agents: [data-lead]
+      description: "Data engineering and pipeline coordination"
+    devops:
+      keywords: [CI/CD, pipeline, Docker, container, Kubernetes, deploy, terraform, ansible, cloud, AWS, GCP, Azure]
+      agents: [devops-lead]
+      description: "DevOps and infrastructure coordination"
+    game_programming:
+      keywords: [game programming, game engine, gameplay, physics engine, Unity, Unreal, Godot, shader, rendering]
+      agents: [engineering-manager]
+      description: "Game programming routed through engineering-manager to game-programmer"
 
 router:
   keywords:
@@ -26,3 +47,46 @@ router:
     - devops
     - security
     - infrastructure
+    - architecture
+    - migrate
+    - migration
+    - CI/CD
+    - pipeline
+    - Docker
+    - container
+    - Kubernetes
+    - cloud
+    - AWS
+    - GCP
+    - Azure
+    - performance
+    - monitor
+    - debug
+    - review
+    - PR
+    - pull request
+    - microservice
+    - serverless
+    - terraform
+    - ansible
+    - lint
+    - type check
+    - schema
+    - UX
+    - UI
+    - design system
+    - accessibility
+    - responsive
+    - wireframe
+    - component
+    - CSS
+    - styling
+    - game programming
+    - game engine
+    - gameplay
+    - physics engine
+    - Unity
+    - Unreal
+    - Godot
+    - shader
+    - rendering

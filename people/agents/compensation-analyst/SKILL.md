@@ -11,6 +11,13 @@ capabilities:
   - equity_modeling
 tools: ["Read","Write","Grep","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: hr-manager
+    type: coordinated_by
+  - name: benefits-administrator
+    type: collaborates_with
+  - name: hr-analyst
+    type: collaborates_with
 ---
 
 # Compensation Analyst

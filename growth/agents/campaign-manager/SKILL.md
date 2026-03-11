@@ -18,6 +18,17 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: copywriter
+    type: coordinates
+  - name: email-marketing-specialist
+    type: coordinates
+  - name: social-media-manager
+    type: coordinates
+  - name: digital-marketing-manager
+    type: coordinates
+  - name: marketing-operations-manager
+    type: coordinates
 ---
 
 # Campaign Manager

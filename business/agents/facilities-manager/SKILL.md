@@ -11,6 +11,9 @@ capabilities:
   - safety_compliance
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: operations-manager
+    type: coordinated_by
 ---
 
 # Facilities Manager

@@ -12,6 +12,15 @@ capabilities:
   - brand_voice
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: campaign-manager
+    type: coordinated_by
+  - name: creative-director
+    type: coordinated_by
+  - name: brand-manager
+    type: collaborates_with
+  - name: seo-specialist
+    type: collaborates_with
 ---
 
 # Copywriter

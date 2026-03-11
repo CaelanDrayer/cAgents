@@ -11,6 +11,11 @@ capabilities:
   - industry_compliance
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: compliance-officer
+    type: coordinated_by
+  - name: compliance-manager
+    type: collaborates_with
 ---
 
 # Regulatory Affairs Specialist

@@ -14,6 +14,13 @@ capabilities:
   - dialect_and_voice_navigation
 tools: ["Read","Grep","Glob","Write","Edit","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: editor
+    type: coordinated_by
+  - name: prose-stylist
+    type: reviews
+  - name: continuity-checker
+    type: collaborates_with
 ---
 
 # Copy Editor

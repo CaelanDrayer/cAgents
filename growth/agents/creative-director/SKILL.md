@@ -18,6 +18,13 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: copywriter
+    type: coordinates
+  - name: brand-manager
+    type: coordinates
+  - name: concept-artist
+    type: cross_domain
 ---
 
 # Creative Director

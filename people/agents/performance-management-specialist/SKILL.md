@@ -11,6 +11,13 @@ capabilities:
   - feedback_systems
 tools: ["Read","Write","Grep","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: hr-business-partner
+    type: coordinated_by
+  - name: learning-and-development-manager
+    type: collaborates_with
+  - name: okr-specialist
+    type: cross_domain
 ---
 
 # Performance Management Specialist

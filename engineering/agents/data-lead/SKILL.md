@@ -20,6 +20,11 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: dba
+    type: coordinates
+  - name: data-analyst
+    type: coordinates
 ---
 
 # Data Lead Agent

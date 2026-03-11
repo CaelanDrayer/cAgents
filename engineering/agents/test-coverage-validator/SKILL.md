@@ -14,6 +14,11 @@ capabilities:
 tools: ["Read","Grep","Glob","Bash"]
 maxTurns: 10
 disallowedTools: ["Task"]
+related_agents:
+  - name: qa-lead
+    type: coordinated_by
+  - name: backend-developer
+    type: reviews
 ---
 
 # Test Coverage Validator Agent

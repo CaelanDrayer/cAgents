@@ -11,6 +11,11 @@ capabilities:
   - contract_lifecycle_management
 tools: ["Read","Write","Edit","Grep","Glob","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: legal-operations-manager
+    type: coordinated_by
+  - name: procurement-specialist
+    type: cross_domain
 ---
 
 # Contracts Manager

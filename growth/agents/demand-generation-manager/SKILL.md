@@ -11,6 +11,11 @@ capabilities:
   - abm
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: campaign-manager
+    type: coordinated_by
+  - name: sales-development-rep
+    type: pipeline_next
 ---
 
 # Demand Generation Manager

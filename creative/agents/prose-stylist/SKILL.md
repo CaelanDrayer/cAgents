@@ -25,6 +25,15 @@ executes_tasks:
   - prose_revision
   - style_analysis
   - voice_refinement
+related_agents:
+  - name: narrative-director
+    type: coordinated_by
+  - name: dialogue-specialist
+    type: collaborates_with
+  - name: voice-coach
+    type: collaborates_with
+  - name: copy-editor
+    type: reviewed_by
 ---
 
 # Prose Stylist

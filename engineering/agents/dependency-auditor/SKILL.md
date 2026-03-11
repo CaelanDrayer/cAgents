@@ -14,6 +14,9 @@ capabilities:
 tools: ["Read","Grep","Glob","Bash"]
 maxTurns: 10
 disallowedTools: ["Task"]
+related_agents:
+  - name: reviewer
+    type: coordinated_by
 ---
 
 # Dependency Auditor Agent

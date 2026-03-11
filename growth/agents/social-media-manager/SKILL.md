@@ -11,6 +11,13 @@ capabilities:
   - social_analytics
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: campaign-manager
+    type: coordinated_by
+  - name: copywriter
+    type: collaborates_with
+  - name: community-manager
+    type: cross_domain
 ---
 
 # Social Media Manager

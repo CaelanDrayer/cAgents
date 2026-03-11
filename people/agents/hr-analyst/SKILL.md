@@ -11,6 +11,13 @@ capabilities:
   - predictive_modeling
 tools: ["Read","Write","Grep","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: hr-manager
+    type: coordinated_by
+  - name: workforce-planning-analyst
+    type: collaborates_with
+  - name: data-scientist
+    type: cross_domain
 ---
 
 # HR Analyst

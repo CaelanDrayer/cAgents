@@ -14,6 +14,13 @@ capabilities:
 tools: ["Read","Grep","Glob","Bash"]
 maxTurns: 10
 disallowedTools: ["Task"]
+related_agents:
+  - name: reviewer
+    type: coordinated_by
+  - name: backend-developer
+    type: reviews
+  - name: frontend-developer
+    type: reviews
 ---
 
 # Code Standards Auditor Agent

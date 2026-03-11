@@ -20,6 +20,13 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: backend-developer
+    type: coordinates
+  - name: senior-developer
+    type: coordinates
+  - name: dba
+    type: collaborates_with
 ---
 
 # Backend Lead Agent

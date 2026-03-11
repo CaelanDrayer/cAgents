@@ -26,6 +26,13 @@ executes_tasks:
   - structural_critique
   - comparative_literary_analysis
   - genre_convention_assessment
+related_agents:
+  - name: editor
+    type: collaborates_with
+  - name: theme-analyst
+    type: collaborates_with
+  - name: prose-stylist
+    type: reviews
 ---
 
 # Literary Critic

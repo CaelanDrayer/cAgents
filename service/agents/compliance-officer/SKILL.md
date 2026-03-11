@@ -19,6 +19,15 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: compliance-manager
+    type: coordinates
+  - name: ethics-and-compliance-officer
+    type: coordinates
+  - name: risk-and-compliance-manager
+    type: coordinates
+  - name: regulatory-affairs-specialist
+    type: coordinates
 ---
 
 # Compliance Officer

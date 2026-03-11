@@ -27,6 +27,11 @@ executes_tasks:
   - thematic_revision
   - allegorical_development
   - subtext_strengthening
+related_agents:
+  - name: narrative-director
+    type: coordinated_by
+  - name: literary-critic
+    type: collaborates_with
 ---
 
 # Theme Analyst

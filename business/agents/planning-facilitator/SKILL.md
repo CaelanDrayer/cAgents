@@ -11,6 +11,11 @@ capabilities:
   - stakeholder_alignment
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: change-management-specialist
+    type: coordinated_by
+  - name: okr-specialist
+    type: collaborates_with
 ---
 
 # Planning Facilitator

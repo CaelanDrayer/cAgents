@@ -11,6 +11,11 @@ capabilities:
   - skill_assessment
 tools: ["Read","Grep","Glob","Write"]
 maxTurns: 30
+related_agents:
+  - name: support-operations-manager
+    type: coordinated_by
+  - name: support-quality-analyst
+    type: collaborates_with
 ---
 
 # Support Trainer

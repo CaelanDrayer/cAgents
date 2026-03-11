@@ -22,6 +22,13 @@ permissionMode: "bypassPermissions"
 memory: {"project": true}
 related-agents: ["architect", "backend-developer", "devops-lead", "qa-tester"]
 not-my-scope: ["Feature development", "UI design", "content creation", "marketing strategy"]
+related_agents:
+  - name: security-specialist
+    type: coordinates
+  - name: security-analyst
+    type: collaborates_with
+  - name: architect
+    type: collaborates_with
 ---
 
 # Security Lead Agent

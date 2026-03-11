@@ -26,6 +26,13 @@ executes_tasks:
   - scientific_plausibility_assessment
   - period_detail_curation
   - research_brief_creation
+related_agents:
+  - name: narrative-director
+    type: coordinated_by
+  - name: worldbuilder
+    type: collaborates_with
+  - name: setting-designer
+    type: collaborates_with
 ---
 
 # Research Specialist

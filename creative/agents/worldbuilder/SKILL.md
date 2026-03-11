@@ -15,6 +15,13 @@ capabilities:
   - world_as_character
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: narrative-director
+    type: coordinated_by
+  - name: setting-designer
+    type: collaborates_with
+  - name: lore-keeper
+    type: collaborates_with
 ---
 
 # Worldbuilder

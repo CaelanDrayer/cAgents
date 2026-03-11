@@ -11,6 +11,11 @@ capabilities:
   - agile_ceremonies
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: product-owner
+    type: coordinated_by
+  - name: project-manager
+    type: collaborates_with
 ---
 
 # Agile Coach / Scrum Master

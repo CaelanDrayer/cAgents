@@ -11,6 +11,13 @@ capabilities:
   - process_automation
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: sales-strategist
+    type: coordinated_by
+  - name: marketing-operations-manager
+    type: collaborates_with
+  - name: customer-success-manager
+    type: cross_domain
 ---
 
 # Revenue Operations Manager

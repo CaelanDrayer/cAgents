@@ -17,6 +17,13 @@ answers_questions: ["design systems", "UI aesthetics", "frontend styling", "anim
 executes_tasks: ["create distinctive designs", "implement unique aesthetics", "avoid generic patterns", "design cohesive themes"]
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: frontend-lead
+    type: coordinated_by
+  - name: frontend-developer
+    type: collaborates_with
+  - name: ux-designer
+    type: collaborates_with
 ---
 
 # Frontend Aesthetics Agent

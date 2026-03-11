@@ -14,6 +14,9 @@ capabilities:
 tools: ["Read","Grep","Glob"]
 maxTurns: 10
 disallowedTools: ["Task"]
+related_agents:
+  - name: architect
+    type: collaborates_with
 ---
 
 # Dependency Analyzer Agent

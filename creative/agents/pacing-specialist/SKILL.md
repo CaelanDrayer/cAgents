@@ -27,6 +27,13 @@ executes_tasks:
   - chapter_restructuring
   - tension_release_mapping
   - tempo_adjustment
+related_agents:
+  - name: story-architect
+    type: coordinated_by
+  - name: tension-architect
+    type: collaborates_with
+  - name: narrative-designer
+    type: collaborates_with
 ---
 
 # Pacing Specialist

@@ -11,6 +11,13 @@ capabilities:
   - deliverability
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: campaign-manager
+    type: coordinated_by
+  - name: copywriter
+    type: collaborates_with
+  - name: marketing-operations-manager
+    type: collaborates_with
 ---
 
 # Email Marketing Specialist

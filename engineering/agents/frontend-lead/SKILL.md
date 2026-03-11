@@ -21,6 +21,15 @@ color: bright_cyan
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: frontend-developer
+    type: coordinates
+  - name: frontend-aesthetics
+    type: coordinates
+  - name: ux-designer
+    type: coordinates
+  - name: accessibility-checker
+    type: collaborates_with
 ---
 
 # Frontend Lead

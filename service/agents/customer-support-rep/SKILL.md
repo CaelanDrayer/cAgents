@@ -11,6 +11,13 @@ capabilities:
   - customer_communication
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: vp-customer-support
+    type: coordinated_by
+  - name: technical-support-engineer
+    type: pipeline_next
+  - name: chat-support-specialist
+    type: collaborates_with
 ---
 
 # Customer Support Representative

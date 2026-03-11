@@ -11,6 +11,13 @@ capabilities:
   - resource_allocation
 tools: ["Read","Grep","Glob","Write"]
 maxTurns: 30
+related_agents:
+  - name: vp-customer-support
+    type: coordinated_by
+  - name: support-quality-analyst
+    type: collaborates_with
+  - name: support-trainer
+    type: collaborates_with
 ---
 
 # Support Manager

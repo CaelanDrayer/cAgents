@@ -14,6 +14,13 @@ capabilities:
   - input_handling
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: engineering-manager
+    type: coordinated_by
+  - name: engine-developer
+    type: collaborates_with
+  - name: game-designer
+    type: cross_domain
 ---
 
 # Game Programmer

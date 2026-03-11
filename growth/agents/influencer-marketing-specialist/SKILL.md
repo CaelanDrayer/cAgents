@@ -11,6 +11,11 @@ capabilities:
   - influencer_roi
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: campaign-manager
+    type: coordinated_by
+  - name: social-media-manager
+    type: collaborates_with
 ---
 
 # Influencer Marketing Specialist

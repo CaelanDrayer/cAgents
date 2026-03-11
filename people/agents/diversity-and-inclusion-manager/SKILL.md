@@ -11,6 +11,13 @@ capabilities:
   - equity_analysis
 tools: ["Read","Write","Grep","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: hr-manager
+    type: coordinated_by
+  - name: culture-and-engagement-manager
+    type: collaborates_with
+  - name: sensitivity-reader
+    type: cross_domain
 ---
 
 # Diversity and Inclusion Manager

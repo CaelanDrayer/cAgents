@@ -11,6 +11,11 @@ capabilities:
   - retention_marketing
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: campaign-manager
+    type: coordinated_by
+  - name: customer-success-manager
+    type: cross_domain
 ---
 
 # Customer Marketing Manager

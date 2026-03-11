@@ -11,6 +11,13 @@ capabilities:
   - partner_management
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: sales-strategist
+    type: coordinated_by
+  - name: partnership-marketing-manager
+    type: collaborates_with
+  - name: business-development-manager
+    type: cross_domain
 ---
 
 # Channel Partner Manager

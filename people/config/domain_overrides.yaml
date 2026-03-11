@@ -4,9 +4,15 @@ description: "Human resources, talent acquisition, culture, and people operation
 
 planner:
   controller_catalog:
-    tier_2: [hr-manager]
-    tier_3: [hr-manager, talent-acquisition-manager]
+    tier_2: [hr-manager, hr-business-partner]
+    tier_3: [hr-manager, talent-acquisition-manager, hr-business-partner]
     tier_4: [chro, hr-manager, talent-acquisition-manager]
+
+  specialist_routing:
+    recruiting:
+      keywords: [recruit, hire, candidate, sourcing, interview, offer, talent pipeline, job posting]
+      agents: [talent-acquisition-manager]
+      description: "Recruiting and talent acquisition coordination"
 
 router:
   keywords:
@@ -21,3 +27,21 @@ router:
     - compensation
     - diversity
     - employee
+    - training
+    - learning
+    - development
+    - workforce
+    - headcount
+    - payroll
+    - policy
+    - handbook
+    - offboarding
+    - succession
+    - career
+    - promotion
+    - HRIS
+    - L&D
+    - retention
+    - engagement
+    - survey
+    - labor

@@ -20,6 +20,15 @@ permissionMode: "bypassPermissions"
 memory: {"project": true}
 related-agents: ["strategic-planner", "finance-manager", "project-manager", "process-improvement-specialist"]
 not-my-scope: ["Code implementation", "visual design", "HR policies", "legal review"]
+related_agents:
+  - name: process-improvement-specialist
+    type: coordinates
+  - name: facilities-manager
+    type: coordinates
+  - name: supply-chain-manager
+    type: collaborates_with
+  - name: strategic-planner
+    type: collaborates_with
 ---
 
 # Operations Manager

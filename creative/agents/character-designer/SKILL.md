@@ -25,6 +25,13 @@ executes_tasks:
   - ensemble_design
   - backstory_architecture
   - character_arc_planning
+related_agents:
+  - name: narrative-director
+    type: coordinated_by
+  - name: character-psychologist
+    type: collaborates_with
+  - name: dialogue-specialist
+    type: collaborates_with
 ---
 
 # Character Designer

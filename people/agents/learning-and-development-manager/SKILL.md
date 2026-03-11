@@ -11,6 +11,13 @@ capabilities:
   - learning_effectiveness
 tools: ["Read","Write","Grep","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: hr-business-partner
+    type: coordinated_by
+  - name: onboarding-specialist
+    type: collaborates_with
+  - name: performance-management-specialist
+    type: collaborates_with
 ---
 
 # Learning and Development Manager

@@ -12,6 +12,11 @@ capabilities:
   - data_governance
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: compliance-officer
+    type: coordinated_by
+  - name: security-lead
+    type: cross_domain
 ---
 
 # Privacy Officer

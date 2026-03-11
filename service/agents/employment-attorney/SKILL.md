@@ -11,6 +11,13 @@ capabilities:
   - dispute_resolution
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: general-counsel
+    type: coordinated_by
+  - name: employee-relations-specialist
+    type: cross_domain
+  - name: hr-compliance-specialist
+    type: cross_domain
 ---
 
 # Employment Attorney

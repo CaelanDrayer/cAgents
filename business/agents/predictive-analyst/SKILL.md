@@ -11,6 +11,11 @@ capabilities:
   - data_analysis
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: performance-analyst
+    type: coordinated_by
+  - name: data-scientist
+    type: cross_domain
 ---
 
 # Predictive Analyst

@@ -11,6 +11,13 @@ capabilities:
   - risk_mitigation
 tools: ["Read","Write","Grep","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: hr-manager
+    type: coordinated_by
+  - name: employee-relations-specialist
+    type: collaborates_with
+  - name: compliance-officer
+    type: cross_domain
 ---
 
 # HR Compliance Specialist

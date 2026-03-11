@@ -11,6 +11,11 @@ capabilities:
   - report_writing
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: strategic-planner
+    type: coordinated_by
+  - name: market-research-analyst
+    type: cross_domain
 ---
 
 # Research Specialist

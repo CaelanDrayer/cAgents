@@ -11,6 +11,13 @@ capabilities:
   - employee_advocacy
 tools: ["Read","Write","Grep","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: hr-manager
+    type: coordinated_by
+  - name: hr-compliance-specialist
+    type: collaborates_with
+  - name: employment-attorney
+    type: cross_domain
 ---
 
 # Employee Relations Specialist

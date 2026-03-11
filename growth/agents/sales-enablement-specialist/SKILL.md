@@ -11,6 +11,11 @@ capabilities:
   - training_design
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: product-marketing-manager
+    type: coordinated_by
+  - name: sales-trainer
+    type: collaborates_with
 ---
 
 # Sales Enablement Specialist

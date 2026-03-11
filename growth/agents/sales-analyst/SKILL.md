@@ -11,6 +11,11 @@ capabilities:
   - trend_identification
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: sales-strategist
+    type: coordinated_by
+  - name: revenue-operations-manager
+    type: collaborates_with
 ---
 
 # Sales Analyst

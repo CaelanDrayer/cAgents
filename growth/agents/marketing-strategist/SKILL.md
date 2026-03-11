@@ -19,6 +19,15 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: brand-manager
+    type: coordinates
+  - name: content-marketing-manager
+    type: coordinates
+  - name: digital-marketing-manager
+    type: coordinates
+  - name: campaign-manager
+    type: collaborates_with
 ---
 
 # Marketing Strategist

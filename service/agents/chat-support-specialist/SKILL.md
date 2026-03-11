@@ -11,6 +11,11 @@ capabilities:
   - chat_efficiency
 tools: ["Read","Grep","Glob","Write"]
 maxTurns: 30
+related_agents:
+  - name: vp-customer-support
+    type: coordinated_by
+  - name: customer-support-rep
+    type: collaborates_with
 ---
 
 # Chat Support Specialist

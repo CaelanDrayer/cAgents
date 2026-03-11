@@ -11,6 +11,11 @@ capabilities:
   - knowledge_curation
 tools: ["Read","Grep","Glob","Write"]
 maxTurns: 30
+related_agents:
+  - name: support-operations-manager
+    type: coordinated_by
+  - name: technical-writer
+    type: collaborates_with
 ---
 
 # Knowledge Base Manager

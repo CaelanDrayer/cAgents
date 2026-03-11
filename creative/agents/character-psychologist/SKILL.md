@@ -25,6 +25,11 @@ executes_tasks:
   - behavioral_authenticity_review
   - relationship_dynamics_design
   - character_psychology_consultation
+related_agents:
+  - name: narrative-director
+    type: coordinated_by
+  - name: character-designer
+    type: collaborates_with
 ---
 
 # Character Psychologist

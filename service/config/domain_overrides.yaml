@@ -4,9 +4,23 @@ description: "Customer support, CX, legal, compliance, and governance"
 
 planner:
   controller_catalog:
-    tier_2: [customer-success-manager, legal-counsel]
-    tier_3: [vp-customer-support, legal-counsel, compliance-director]
-    tier_4: [general-counsel, vp-customer-support, compliance-director]
+    tier_2: [customer-success-manager, general-counsel, account-manager, support-operations-manager]
+    tier_3: [vp-customer-support, general-counsel, compliance-officer, legal-operations-manager, relationship-manager]
+    tier_4: [general-counsel, vp-customer-support, compliance-officer, customer-advocacy-manager]
+
+  specialist_routing:
+    legal:
+      keywords: [legal, lawsuit, contract, IP, patent, trademark, litigation, corporate law]
+      agents: [general-counsel]
+      description: "Legal matters routed to general counsel"
+    compliance:
+      keywords: [compliance, regulation, GDPR, HIPAA, SOC2, privacy, ethics, audit]
+      agents: [compliance-officer]
+      description: "Compliance and regulatory matters"
+    support:
+      keywords: [support, ticket, escalation, help desk, CSAT, chat support]
+      agents: [vp-customer-support]
+      description: "Customer support operations"
 
 router:
   keywords:
@@ -20,3 +34,23 @@ router:
     - governance
     - ticket
     - escalation
+    - knowledge base
+    - FAQ
+    - help desk
+    - CSAT
+    - dispute
+    - lawsuit
+    - litigation
+    - patent
+    - IP
+    - trademark
+    - GDPR
+    - HIPAA
+    - SOC2
+    - regulation
+    - audit
+    - warranty
+    - feedback
+    - CRM
+    - retention
+    - chat support

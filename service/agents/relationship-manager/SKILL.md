@@ -20,6 +20,11 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: account-manager
+    type: collaborates_with
+  - name: customer-success-manager
+    type: collaborates_with
 ---
 
 # Relationship Manager

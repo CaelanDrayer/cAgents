@@ -20,6 +20,15 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: game-programmer
+    type: cross_domain
+  - name: narrative-game-designer
+    type: cross_domain
+  - name: game-writer
+    type: cross_domain
+  - name: game-producer
+    type: collaborates_with
 ---
 
 # Game Designer

@@ -11,6 +11,11 @@ capabilities:
   - iso_compliance
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: quality-manager
+    type: coordinated_by
+  - name: process-improvement-specialist
+    type: collaborates_with
 ---
 
 # Quality Manager (Business)

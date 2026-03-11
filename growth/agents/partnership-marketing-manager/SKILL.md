@@ -11,6 +11,11 @@ capabilities:
   - channel_programs
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: campaign-manager
+    type: coordinated_by
+  - name: channel-partner-manager
+    type: collaborates_with
 ---
 
 # Partnership Marketing Manager

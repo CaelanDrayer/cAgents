@@ -18,6 +18,15 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: account-executive
+    type: coordinates
+  - name: sales-development-rep
+    type: coordinates
+  - name: sales-operations-manager
+    type: coordinates
+  - name: territory-manager
+    type: coordinates
 ---
 
 # Sales Strategist

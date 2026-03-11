@@ -11,6 +11,13 @@ capabilities:
   - cost_optimization
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: finance-manager
+    type: coordinated_by
+  - name: supply-chain-manager
+    type: coordinated_by
+  - name: contracts-manager
+    type: cross_domain
 ---
 
 # Procurement Specialist

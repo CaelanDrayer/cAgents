@@ -11,6 +11,11 @@ capabilities:
   - utilization_optimization
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: project-manager
+    type: coordinated_by
+  - name: finance-manager
+    type: collaborates_with
 ---
 
 # Resource Planner

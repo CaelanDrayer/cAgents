@@ -11,6 +11,13 @@ capabilities:
   - offer_negotiation
 tools: ["Read","Write","Grep","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: talent-acquisition-manager
+    type: coordinated_by
+  - name: recruiting-coordinator
+    type: collaborates_with
+  - name: onboarding-specialist
+    type: pipeline_next
 ---
 
 # Recruiter

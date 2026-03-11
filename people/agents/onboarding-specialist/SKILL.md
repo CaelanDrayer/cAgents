@@ -11,6 +11,13 @@ capabilities:
   - integration_tracking
 tools: ["Read","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: hr-manager
+    type: coordinated_by
+  - name: recruiter
+    type: pipeline_prev
+  - name: learning-and-development-manager
+    type: collaborates_with
 ---
 
 # Onboarding Specialist

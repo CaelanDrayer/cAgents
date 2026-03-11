@@ -11,6 +11,13 @@ capabilities:
   - standards_development
 tools: ["Read","Grep","Glob","Write"]
 maxTurns: 30
+related_agents:
+  - name: support-operations-manager
+    type: coordinated_by
+  - name: support-manager
+    type: collaborates_with
+  - name: customer-support-rep
+    type: reviews
 ---
 
 # Support Quality Analyst

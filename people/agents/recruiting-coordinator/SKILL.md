@@ -11,6 +11,11 @@ capabilities:
   - process_optimization
 tools: ["Read","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: talent-acquisition-manager
+    type: coordinated_by
+  - name: recruiter
+    type: collaborates_with
 ---
 
 # Recruiting Coordinator

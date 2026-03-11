@@ -23,6 +23,11 @@ executes_tasks:
   - "Create ambient soundscape layer documentation"
   - "Develop spatial audio implementation guides"
   - "Write interactive audio system specifications"
+related_agents:
+  - name: narrative-director
+    type: coordinated_by
+  - name: music-composer
+    type: collaborates_with
 ---
 
 # Sound Designer

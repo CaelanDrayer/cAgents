@@ -23,6 +23,15 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: plot-developer
+    type: coordinates
+  - name: narrative-designer
+    type: coordinates
+  - name: pacing-specialist
+    type: coordinates
+  - name: tension-architect
+    type: coordinates
 ---
 
 # Story Architect

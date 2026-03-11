@@ -11,6 +11,11 @@ capabilities:
   - user_support
 tools: ["Read","Write","Grep","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: hr-operations-manager
+    type: coordinated_by
+  - name: hr-analyst
+    type: collaborates_with
 ---
 
 # HRIS Administrator

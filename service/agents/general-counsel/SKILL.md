@@ -19,6 +19,17 @@ tools: ["Read","Write","Grep","Glob","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
+related_agents:
+  - name: corporate-counsel
+    type: coordinates
+  - name: litigation-manager
+    type: coordinates
+  - name: ip-attorney
+    type: coordinates
+  - name: compliance-officer
+    type: coordinates
+  - name: legal-operations-manager
+    type: coordinates
 ---
 
 # General Counsel

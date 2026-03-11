@@ -16,6 +16,11 @@ capabilities:
   - penetration_testing
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: security-lead
+    type: coordinated_by
+  - name: backend-developer
+    type: collaborates_with
 ---
 
 # Security Specialist Agent

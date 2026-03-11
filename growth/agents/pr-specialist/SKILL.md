@@ -11,6 +11,11 @@ capabilities:
   - thought_leadership
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: marketing-strategist
+    type: coordinated_by
+  - name: brand-manager
+    type: collaborates_with
 ---
 
 # PR Specialist

@@ -11,6 +11,11 @@ capabilities:
   - ecosystem_building
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: strategic-planner
+    type: coordinated_by
+  - name: channel-partner-manager
+    type: cross_domain
 ---
 
 # Business Development Manager

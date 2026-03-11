@@ -11,16 +11,18 @@ Domain-specific patterns for customer experience, legal, and compliance workflow
 
 **Tier 2** (Moderate complexity):
 - **customer-success-manager**: Customer relationships, account management
-- **legal-counsel**: Legal review, contract management
+- **general-counsel**: Legal review, contract management
+- **account-manager**: Account planning, retention
+- **support-operations-manager**: Support process optimization
 
 **Tier 3** (Complex):
 - **Primary**: vp-customer-support (customer experience coordination)
-- **Supporting**: legal-counsel (legal), compliance-director (compliance)
+- **Supporting**: general-counsel (legal), compliance-officer (compliance), legal-operations-manager, relationship-manager
 
 **Tier 4** (Expert):
 - **Executive**: general-counsel (legal oversight)
 - **Primary**: vp-customer-support (coordination)
-- **Supporting**: customer-success-manager, legal-counsel, compliance-director
+- **Supporting**: compliance-officer, customer-advocacy-manager
 
 ## Typical Questions
 

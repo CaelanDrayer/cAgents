@@ -11,6 +11,13 @@ capabilities:
   - poc_management
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: sales-strategist
+    type: coordinated_by
+  - name: account-executive
+    type: collaborates_with
+  - name: backend-developer
+    type: cross_domain
 ---
 
 # Sales Engineer

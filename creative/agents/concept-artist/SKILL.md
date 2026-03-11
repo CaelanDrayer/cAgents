@@ -23,6 +23,13 @@ executes_tasks:
   - "Develop environment concept art direction documents"
   - "Build visual style guides with color palettes and shape language"
   - "Write art direction communication documents"
+related_agents:
+  - name: narrative-director
+    type: coordinated_by
+  - name: animator
+    type: collaborates_with
+  - name: setting-designer
+    type: collaborates_with
 ---
 
 # Concept Artist

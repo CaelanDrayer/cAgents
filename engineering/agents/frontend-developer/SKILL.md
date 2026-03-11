@@ -18,6 +18,15 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
 related-agents: ["backend-developer", "ux-designer", "accessibility-specialist", "qa-tester"]
 not-my-scope: ["Database schema", "server infrastructure", "API architecture", "backend business logic"]
+related_agents:
+  - name: frontend-lead
+    type: coordinated_by
+  - name: backend-developer
+    type: collaborates_with
+  - name: ux-designer
+    type: collaborates_with
+  - name: reviewer
+    type: reviewed_by
 ---
 
 # Frontend Developer Agent

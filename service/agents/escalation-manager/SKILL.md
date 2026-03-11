@@ -11,6 +11,11 @@ capabilities:
   - customer_recovery
 tools: ["Read","Write","Grep","Glob","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: vp-customer-support
+    type: coordinated_by
+  - name: technical-support-engineer
+    type: pipeline_prev
 ---
 
 # Escalation Manager

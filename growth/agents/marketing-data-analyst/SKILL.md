@@ -11,6 +11,13 @@ capabilities:
   - statistical_analysis
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: marketing-strategist
+    type: coordinated_by
+  - name: marketing-analyst
+    type: collaborates_with
+  - name: data-scientist
+    type: cross_domain
 ---
 
 # Marketing Data Analyst

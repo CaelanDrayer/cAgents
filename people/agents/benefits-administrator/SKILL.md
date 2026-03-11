@@ -11,6 +11,11 @@ capabilities:
   - employee_education
 tools: ["Read","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: hr-manager
+    type: coordinated_by
+  - name: compensation-analyst
+    type: collaborates_with
 ---
 
 # Benefits Administrator

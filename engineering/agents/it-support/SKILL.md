@@ -14,6 +14,11 @@ capabilities:
   - knowledge_base_management
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 maxTurns: 30
+related_agents:
+  - name: devops-lead
+    type: coordinated_by
+  - name: sysadmin
+    type: collaborates_with
 ---
 
 # IT Support Specialist
