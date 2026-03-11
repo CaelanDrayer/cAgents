@@ -45,20 +45,20 @@ Each category carries a weight reflecting its diagnostic strength. Weights are n
 
 | # | Category | Weight | What It Catches |
 |---|----------|--------|-----------------|
-| 1 | Vocabulary Tells | 0.04 | AI-favored word clusters ("delve", "tapestry", "multifaceted") |
+| 1 | Vocabulary Tells | 0.04 | AI-favored word clusters ("delve", "tapestry", "multifaceted"), significance inflation ("pivotal moment", "testament to"), promotional language ("vibrant", "nestled", "breathtaking") |
 | 2 | Analytical/Academic Language | 0.08 | Formal connective density, domain-inappropriate jargon, complex clause stacking |
-| 3 | Punctuation/Style Tics | 0.08 | Em-dash overuse, perfect Oxford commas, semicolon absence, zero creative punctuation |
+| 3 | Punctuation/Style Tics | 0.08 | Em-dash overuse, perfect Oxford commas, semicolon absence, zero creative punctuation, boldface/emoji overuse as formatting tells |
 | 4 | Structural Patterns | 0.12 | Formulaic headers, high list-to-prose ratio, three-point patterns, bloated conclusions |
-| 5 | AI Phrases | 0.06 | Characteristic phrasings ("it's important to note", "comprehensive exploration") |
+| 5 | AI Phrases | 0.06 | Characteristic phrasings ("it's important to note", "comprehensive exploration"), copula avoidance ("serves as", "stands as"), knowledge-cutoff disclaimers ("as of my last update"), superficial -ing analyses ("highlighting", "showcasing"), false ranges |
 | 6 | Transitions | 0.06 | Performative navigation ("Let's dive in"), mechanical subordinate-clause bridges |
 | 7 | Qualifiers & Softening | 0.06 | Unnecessary hedging, over-explaining obvious points, empty "of course" insertions |
-| 8 | Tone/Voice | 0.12 | Diplomatic evasion, impersonal authority, formality uniformity, absence of humor |
-| 9 | Creativity Deficit | 0.12 | Generic metaphors, low proper noun density, ornamental vocabulary, emotional flatness |
+| 8 | Tone/Voice | 0.12 | Diplomatic evasion, impersonal authority, formality uniformity, absence of humor, vague attributions ("experts argue", "many believe" without sources) |
+| 9 | Creativity Deficit | 0.12 | Generic metaphors, low proper noun density, ornamental vocabulary, emotional flatness, synonym cycling/elegant variation (thesaurus-driven word substitution to avoid repetition) |
 | 10 | Mechanical Writing | 0.12 | Uniform sentence length, grammar perfection, zero thought markers, predictable syntax |
 | 11 | Repetitive Phrasing | 0.08 | "Not only...but also" overuse, echo phrasing, semantic redundancy |
 | 12 | Speculative Focus | 0.06 | Excessive future-orientation, conditional speculation chains, non-committal hedging |
 | 13 | Conflicting Subtext | 0.10 | Surface meaning contradicts implication, backhanded praise, qualifier-negation patterns |
-| 14 | Detached Warmth | 0.06 | Performative empathy, false intimacy, hollow encouragement |
+| 14 | Detached Warmth | 0.06 | Performative empathy, false intimacy, hollow encouragement, chatbot artifacts ("I hope this helps!", "let me know if you need anything") |
 
 ## Cross-Category Analysis (5 Signals)
 
@@ -73,6 +73,30 @@ These signals operate across category boundaries and provide the strongest diagn
 **Linear Argumentation** -- Does every argument follow claim-evidence-conclusion without deviation? Zero counter-arguments, zero self-corrections, zero non-linear reasoning across 3+ arguments is a strong AI signal. Humans naturally say "but wait" or "on second thought."
 
 **Analogy Originality** -- Are all metaphors from the common cliche pool? Zero culturally specific comparisons, zero extended analogies, zero unexpected domain crossings? Score 0.0 (all cliche) to 1.0 (all original). Flag if < 0.20 with analogies present.
+
+## Additional Sub-Signals (Humanizer-Derived)
+
+Ten patterns identified from the blader/humanizer project's Wikipedia-sourced AI cleanup database. Each is integrated as a sub-signal within the most diagnostically appropriate existing category rather than creating new top-level categories, preserving the 14-category weighted architecture.
+
+**Copula Avoidance** (Category 5: AI Phrases) -- AI avoids "is/are" in favor of circumlocutions: "serves as," "stands as," "acts as," "functions as," "represents." Human writers use direct copulas naturally. Flag when 3+ copula-avoidance constructions appear per 1000 words.
+
+**Chatbot Artifacts** (Category 14: Detached Warmth) -- Conversational scaffolding from chatbot training that bleeds into written text: "I hope this helps!", "Let me know if you need anything," "Happy to help!", "Feel free to ask," "Great question!" These are never appropriate in written documents. Flag any occurrence outside dialogue.
+
+**Knowledge-Cutoff Disclaimers** (Category 5: AI Phrases) -- Temporal hedges revealing model awareness: "as of my last update," "I don't have access to real-time data," "as of [year]," "at the time of writing" (when used reflexively, not genuinely). Flag any occurrence -- these are direct AI provenance markers.
+
+**Significance Inflation** (Category 1: Vocabulary Tells) -- Inflating the importance of ordinary facts: "pivotal moment," "testament to," "broader implications," "profound impact," "transformative shift," "watershed moment." AI defaults to superlatives because they are high-probability completions in helpful-response distributions. Flag when density exceeds 3 per 1000 words.
+
+**Promotional Language** (Category 1: Vocabulary Tells) -- Travel-brochure and marketing-copy vocabulary used in non-promotional contexts: "vibrant," "nestled," "breathtaking," "stunning," "world-class," "cutting-edge," "state-of-the-art." Common in AI-generated descriptions of places, products, and experiences. Flag when 3+ appear in non-marketing text.
+
+**Vague Attributions** (Category 8: Tone/Voice) -- Sourceless authority claims: "experts argue," "many believe," "research suggests," "studies show," "according to experts" -- all without naming specific experts, studies, or sources. Human writers either cite or do not claim authority. Flag when 3+ vague attributions appear without any specific sourcing.
+
+**Superficial -ing Analyses** (Category 5: AI Phrases) -- Present-participle constructions that perform analysis without adding substance: "highlighting the importance of," "showcasing the need for," "underscoring the significance of," "demonstrating the value of." These verbs gesture at analysis without performing it. Flag when 3+ appear per 1000 words.
+
+**False Ranges** (Category 5: AI Phrases) -- "From X to Y" constructions used for rhetorical effect rather than denoting actual ranges: "from sustainability to innovation," "from challenges to opportunities," "from theory to practice." AI uses these as structural crutches for organizing lists. Flag when 2+ appear per 1000 words.
+
+**Synonym Cycling** (Category 9: Creativity Deficit) -- Avoiding natural word repetition by cycling through thesaurus synonyms: referring to the same concept as "the framework," "the system," "the platform," "the solution," "the tool" within a single passage. Human writers repeat words naturally; elegant variation at this density signals AI. Flag when 4+ different synonyms refer to the same referent within 500 words.
+
+**Boldface/Emoji Overuse** (Category 3: Punctuation/Style Tics) -- Heavy markdown formatting as a structural crutch: bolding key terms in every paragraph, emoji bullets, excessive use of bold for emphasis rather than prose emphasis. In non-chat contexts, any emoji usage is an AI tell. Flag boldface density > 5% of words or any emoji in formal/semi-formal text.
 
 ## Named Composite Patterns
 

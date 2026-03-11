@@ -10,7 +10,7 @@
     {
       "name": "cagents",
       "description": "213 agents across 8 business domains (Engineering, Creative, Business, Growth, People, Service, Leadership, Shared). 8 commands: /run (implement anything — auto-detects domain, selects controllers, delegates to specialist agents), /team (parallel N-wave execution for complex tasks, 40-60% faster), /org (cross-domain strategic initiatives with C-suite analysis and deliberation), /designer (interactive 6-phase design with guided Q&A), /review (quality audits with parallel reviewers and auto-fix), /optimize (performance optimization with before/after metrics and rollback), /helper (interactive command guide), /context (shared product context across sessions). Controller-centric delegation with reviewer loops across all workflows.",
-      "version": "10.7.0",
+      "version": "10.7.1",
       "author": {
         "name": "CaelanDrayer",
         "email": "caelan@caelandrayer.ca"

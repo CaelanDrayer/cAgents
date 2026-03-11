@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "10.7.0",
-  "description": "cAgents v10.7.0 - 213 agents across 8 business domains. Commands: /run (implement features, fix bugs — auto-routes to the right domain and agents), /team (parallel multi-agent execution, 40-60% faster for complex tasks), /org (cross-domain strategic initiatives with C-suite deliberation), /designer (interactive design exploration with guided Q&A), /review (comprehensive quality audits with parallel reviewers), /optimize (performance optimization with before/after metrics), /helper (command guide and recommendations), /context (shared product context across sessions).",
+  "version": "10.7.1",
+  "description": "cAgents v10.7.1 - 213 agents across 8 business domains. Commands: /run (implement features, fix bugs — auto-routes to the right domain and agents), /team (parallel multi-agent execution, 40-60% faster for complex tasks), /org (cross-domain strategic initiatives with C-suite deliberation), /designer (interactive design exploration with guided Q&A), /review (comprehensive quality audits with parallel reviewers), /optimize (performance optimization with before/after metrics), /helper (command guide and recommendations), /context (shared product context across sessions).",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",

@@ -147,6 +147,186 @@ Preserve hedging on genuinely uncertain claims. Remove hedging on facts and stro
 **Remove**: "It could potentially have a significant impact on future outcomes"
 **Replace**: "It will change how this works"
 
+## Humanizer-Derived Pattern Strategies (10 New Sub-Signals)
+
+### Fixing Copula Avoidance
+
+AI avoids "is/are" in favor of circumlocutions. The fix is simple: restore the direct copula.
+
+**Before**: "The dashboard serves as the primary interface for monitoring system health."
+**After**: "The dashboard is where you check system health."
+
+**Before**: "This framework acts as the backbone of the entire application."
+**After**: "This framework is the backbone of the application."
+
+**Before**: "The study stands as a landmark in the field of genetics."
+**After**: "The study is a landmark in genetics."
+
+**Rule**: Replace "serves as," "stands as," "acts as," "functions as," "represents a" with direct "is/are" constructions. The result is shorter, clearer, and more human.
+
+### Removing Chatbot Artifacts
+
+Delete entirely. Do not replace. These phrases are conversational scaffolding that should never appear in written documents.
+
+**Before**: "I hope this helps you understand the key differences between the two approaches. Let me know if you have any questions!"
+**After**: (Second sentence deleted entirely. First sentence rewritten:) "Those are the key differences between the two approaches."
+
+**Before**: "Great question! The answer involves several factors."
+**After**: "The answer involves several factors." (Or better: lead with the factors.)
+
+**Rule**: "I hope this helps," "Let me know if," "Happy to help," "Great question," "Feel free to ask" -- all deleted without replacement. If the surrounding text needs restructuring after deletion, restructure it.
+
+### Removing Knowledge-Cutoff Disclaimers
+
+Delete and restructure. State facts directly.
+
+**Before**: "As of my last update in 2024, the framework supports three deployment modes."
+**After**: "The framework supports three deployment modes."
+
+**Before**: "I don't have access to real-time data, but based on recent trends, the market appears to be growing."
+**After**: "The market has been growing." (Or cite a specific source.)
+
+**Rule**: Remove all temporal hedges about training data. State facts directly or cite specific sources. If the claim genuinely needs a date qualifier, use a specific date, not "as of my last update."
+
+### Deflating Significance Inflation
+
+Replace superlatives with proportionate language. Let facts speak for themselves.
+
+**Before**: "This represents a pivotal moment in the evolution of cloud computing, marking a transformative shift that cannot be overstated."
+**After**: "This changes how companies deploy cloud infrastructure."
+
+**Before**: "The framework is a testament to the team's dedication, delivering a truly groundbreaking approach to data processing."
+**After**: "The team built a framework that processes data 3x faster than the previous version."
+
+**Rule**: Strip "pivotal," "transformative," "groundbreaking," "testament to," "cannot be overstated." Replace with concrete facts, specific metrics, or simple direct statements. If the fact is genuinely significant, it will speak for itself without inflation.
+
+### Concretizing Promotional Language
+
+Replace brochure adjectives with specific, sensory, concrete details.
+
+**Before**: "The vibrant, bustling neighborhood offers a stunning array of world-class dining options."
+**After**: "The neighborhood has three new restaurants -- a Thai place with a line out the door, a wine bar that does flights, and a ramen shop that somehow got a Michelin nod."
+
+**Before**: "This cutting-edge, state-of-the-art platform delivers unparalleled performance."
+**After**: "The platform handles 10,000 requests per second with sub-50ms latency."
+
+**Rule**: "Vibrant," "stunning," "breathtaking," "world-class," "cutting-edge," "state-of-the-art" -- replace every one with a concrete detail. What makes it vibrant? What makes it world-class? Specifics are more vivid than superlatives.
+
+### Strengthening Vague Attributions
+
+Either cite a specific source or remove the authority claim entirely.
+
+**Before**: "Research suggests that remote work increases productivity, and many experts believe this trend will continue."
+**After**: "Stanford's 2022 study of 16,000 workers found a 13% productivity increase for remote workers."
+
+**Before**: "According to experts, the market is expected to grow significantly over the next decade."
+**After**: "The market will grow. How much depends on regulation -- if the EU framework passes, estimates range from 15% to 40% annual growth."
+
+**Rule**: "Experts argue," "many believe," "research suggests," "studies show" -- if you can cite a specific source, cite it. If not, drop the appeal to authority and state the claim directly. A confident direct assertion is more credible than a vague appeal to unnamed experts.
+
+### Replacing Superficial -ing Analyses
+
+Replace gestural analysis with actual analysis that explains causes and consequences.
+
+**Before**: "This data highlighting the growing trend underscores the importance of proactive measures, showcasing the need for comprehensive planning."
+**After**: "The trend is growing because manufacturing costs dropped 30% in Q2. Companies that wait to adapt will lose market share -- the ones that moved early already captured 15% more revenue."
+
+**Before**: "The report emphasizing the challenges illustrates the complexity of the issue."
+**After**: "The report identifies three challenges: regulatory uncertainty, supply chain fragility, and a 40% talent gap in key technical roles."
+
+**Rule**: "Highlighting," "showcasing," "underscoring," "demonstrating," "illustrating" -- replace each with an actual explanation of WHY something matters, with specific facts and consequences.
+
+### Eliminating False Ranges
+
+Replace rhetorical "from X to Y" with direct statements or actual specifics.
+
+**Before**: "The platform addresses everything from sustainability to innovation, covering the full spectrum from theory to practice."
+**After**: "The platform handles sustainability reporting and R&D tracking. It works for both planning and deployment."
+
+**Before**: "Our approach spans from ideation to implementation, covering from research to application."
+**After**: "We handle the full process: research, design, build, and ship."
+
+**Rule**: "From X to Y" used rhetorically (not as an actual range) -- rewrite as a direct list or statement. If the "range" is genuinely useful (e.g., "from $100 to $500"), keep it.
+
+### Fixing Synonym Cycling
+
+Allow natural word repetition. Pick one term and use it consistently.
+
+**Before**: "The framework provides robust capabilities. The platform supports multiple use cases. The system scales horizontally. The solution integrates with existing tools."
+**After**: "The system provides robust capabilities and supports multiple use cases. It scales horizontally and integrates with existing tools."
+
+**Before**: "The company announced its new strategy. The organization plans to implement changes gradually. The firm expects results within six months. The enterprise will invest heavily."
+**After**: "The company announced its new strategy. It plans to implement changes gradually and expects results within six months. The investment will be significant."
+
+**Rule**: Identify cases where 3+ synonyms refer to the same referent within a passage. Pick the most natural term, use it consistently, and use pronouns ("it," "they") for variety. Human writers repeat words -- it is natural and clear.
+
+### Reducing Boldface/Emoji Overuse
+
+Replace formatting-as-emphasis with prose emphasis. Remove emoji from non-chat text.
+
+**Before**: "The **key advantage** of this approach is **scalability**. By leveraging **cloud infrastructure**, teams can achieve **significant improvements** in **performance**."
+**After**: "The main advantage is scalability. Cloud infrastructure lets teams improve performance substantially."
+
+**Before**: "Key features: ✅ Fast deployment ✅ Easy configuration ✅ Built-in monitoring 🚀"
+**After**: "It deploys fast, configures easily, and includes built-in monitoring."
+
+**Rule**: Remove bold from "key terms" in body text. Use sentence structure and word position for emphasis instead. Remove all emoji from formal and semi-formal text. In casual text, retain only genuinely expressive emoji (not structural emoji like checkmarks and rockets).
+
+## Human Fingerprint Toolkit: Cross-Pass Techniques
+
+These 9 techniques span all passes and represent the core of humanization. Apply at least 5 per rewrite.
+
+### Thinking-Out-Loud Mode
+
+The strongest humanization technique. Write as someone processing ideas in real time.
+
+**Before**: "There are several approaches to this problem. Each has distinct advantages and trade-offs that should be carefully evaluated."
+
+**After**: "Okay so there are a few ways to do this. The obvious one is caching -- fast, simple, everyone's first instinct. But then you hit invalidation and suddenly you're solving a harder problem than the original one. What about just throwing hardware at it? Read replicas, maybe. That's... actually not terrible. Let me think about this. Yeah, replicas with a short lag tolerance. Not sexy, but it works."
+
+**Markers to inject**: "So," "Let me think about this," "Actually," "Wait," "Hmm," "The thing is," "Here's what's interesting," rhetorical questions answered immediately, arriving at conclusions through visible reasoning.
+
+### Register Mixing
+
+Shift between formal and informal within a single passage. Humans do this reflexively.
+
+**Before**: "The architecture demonstrates significant scalability improvements. Throughput metrics indicate a 3x improvement under sustained load conditions."
+
+**After**: "The architecture scales -- and not in the hand-wavy way that marketing materials usually mean. Under sustained load, throughput tripled. We kept pushing and it just... kept going. The engineering team was honestly a little surprised."
+
+**Break points for register shift**: After technical fact (shift to casual interpretation), after dense paragraph (shift to simple summary), when adding opinion to analysis, when something is genuinely surprising.
+
+### Self-Correction and Contradiction
+
+Allow the visible process of refining thought.
+
+**Patterns**:
+- "Well, 'X' is too strong. What I mean is..."
+- "Actually, that's not quite right. The real issue is..."
+- "I said X above, but having thought about it more..."
+- "Okay I oversimplified -- here's what's really going on..."
+
+**Before**: "Microservices provide significant benefits for maintainability and scalability."
+**After**: "Microservices are supposed to help with maintainability -- and they can, if you get service boundaries right. But I've seen plenty of teams where 'microservices' just meant 'a distributed monolith with more network calls.' So: benefits yes, but very conditional ones."
+
+### Conversational Aside Patterns
+
+Types of asides by register:
+- **Casual/blog**: "(and honestly, who hasn't been there)" / "-- which, let's be real, nobody actually does --"
+- **Technical**: "(the edge cases are another story)" / "-- assuming your deployment pipeline doesn't have opinions about this --"
+- **Semi-formal**: "(a point often overlooked in the literature)" / "-- though the implications deserve their own discussion --"
+
+### Specific Detail Anchoring
+
+Replace every abstraction you can with something sensory, named, or numbered.
+
+| Abstract | Anchored |
+|----------|----------|
+| "various industries" | "logistics in Rotterdam, fintech in Singapore, a government agency in DC" |
+| "significant improvement" | "42% faster, which saved about 6 hours per week per analyst" |
+| "the team worked hard" | "the team shipped three releases in two weeks, including one on a Saturday" |
+| "a large company" | "a Fortune 500 retailer with 40,000 employees" |
+
 ## Pass 4: Voice Alignment & Coherence
 
 ### Subtext Repair
@@ -244,3 +424,8 @@ Before finalizing any rewrite:
 - [ ] Author review flags present for subjective judgment calls
 - [ ] Meta self-review completed
 - [ ] No new AI patterns introduced by the rewriting
+- [ ] At least 5 of 9 Human Fingerprint Toolkit techniques applied
+- [ ] At least 3 sentences under 6 words per 1000 words
+- [ ] At least 2 sentences over 35 words per 1000 words
+- [ ] At least 1 register shift per 500 words
+- [ ] At least 1 visible self-correction or contradiction per 1000 words

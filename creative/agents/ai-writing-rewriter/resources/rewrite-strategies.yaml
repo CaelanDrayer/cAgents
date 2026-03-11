@@ -1028,6 +1028,250 @@ persona_adaptation:
         register: "casual-but-strategic"
 
 # ==============================================================================
+# Humanizer-Derived Pattern Strategies (10 New Sub-Signals)
+# ==============================================================================
+humanizer_patterns:
+  name: "Humanizer-derived pattern fixes"
+  description: "Strategies for 10 additional AI patterns identified from blader/humanizer project"
+
+  copula_avoidance:
+    strategy: "Replace circumlocutions with direct 'is/are' copulas"
+    rules:
+      - "Replace 'serves as' with 'is'"
+      - "Replace 'stands as' with 'is'"
+      - "Replace 'acts as' with 'is'"
+      - "Replace 'functions as' with 'is'"
+      - "Replace 'represents a' with 'is a'"
+      - "Replace 'emerges as' with 'is' or 'becomes'"
+      - "Replace 'constitutes a' with 'is a'"
+      - "Replace 'proves to be' with 'is'"
+    replacements:
+      "serves as": "is"
+      "stands as": "is"
+      "acts as": "is"
+      "functions as": "is"
+      "represents a": "is a"
+      "operates as": "is"
+      "emerges as": "is, becomes"
+      "constitutes a": "is a"
+      "proves to be": "is"
+    examples:
+      - before: "The dashboard serves as the primary interface for monitoring"
+        after: "The dashboard is where you check system health"
+      - before: "This framework acts as the backbone of the application"
+        after: "This framework is the backbone of the application"
+
+  chatbot_artifacts:
+    strategy: "Delete entirely without replacement"
+    rules:
+      - "Remove ALL chatbot phrases -- do not replace, just delete"
+      - "Restructure surrounding text if deletion creates awkward flow"
+      - "These phrases are NEVER appropriate in written documents"
+    delete_phrases:
+      - "I hope this helps"
+      - "Let me know if you need anything"
+      - "Let me know if you have any questions"
+      - "Happy to help"
+      - "Feel free to ask"
+      - "Feel free to reach out"
+      - "Don't hesitate to ask"
+      - "Great question"
+      - "That's a great question"
+      - "Glad you asked"
+      - "Let me know if that makes sense"
+      - "Does that make sense"
+      - "Hope that clarifies"
+      - "Let me break this down"
+      - "Let me walk you through"
+    examples:
+      - before: "I hope this helps you understand the differences. Let me know if you have questions!"
+        after: "Those are the key differences."
+      - before: "Great question! The answer involves several factors."
+        after: "The answer involves several factors."
+
+  knowledge_cutoff_disclaimers:
+    strategy: "Delete temporal hedges and state facts directly"
+    rules:
+      - "Remove all references to training data, updates, or model awareness"
+      - "State facts directly or cite specific sources with dates"
+      - "If date context is needed, use a specific date, not 'as of my last update'"
+    delete_phrases:
+      - "as of my last update"
+      - "as of my last training"
+      - "as of my knowledge cutoff"
+      - "I don't have access to real-time"
+      - "I can't browse the internet"
+      - "based on my training"
+      - "my training data goes up to"
+    examples:
+      - before: "As of my last update in 2024, the framework supports three modes"
+        after: "The framework supports three deployment modes"
+      - before: "I don't have real-time data, but based on trends, the market is growing"
+        after: "The market has been growing"
+
+  significance_inflation:
+    strategy: "Deflate superlatives to proportionate language; let facts speak"
+    rules:
+      - "Replace 'pivotal moment' with 'important step' or direct statement"
+      - "Replace 'testament to' with direct cause-effect statement"
+      - "Replace 'cannot be overstated' by stating the actual impact"
+      - "Replace 'groundbreaking' with specific description of what's new"
+      - "Replace 'transformative' with concrete description of the change"
+      - "If truly significant, use specific metrics instead of superlatives"
+    replacements:
+      "pivotal moment": "important step, key point"
+      "testament to": "(state direct cause-effect)"
+      "broader implications": "effects, consequences"
+      "profound impact": "significant effect, major change"
+      "transformative shift": "major change, significant shift"
+      "watershed moment": "turning point, key event"
+      "paradigm-shifting": "new approach, different method"
+      "groundbreaking": "new, first, original"
+      "cannot be overstated": "(state the actual impact with metrics)"
+      "nothing short of": "(state it directly)"
+    examples:
+      - before: "This represents a pivotal moment marking a transformative shift"
+        after: "This changes how companies deploy cloud infrastructure"
+      - before: "The framework is a testament to the team's groundbreaking approach"
+        after: "The team built a framework that processes data 3x faster"
+
+  promotional_language:
+    strategy: "Replace brochure adjectives with concrete, specific details"
+    rules:
+      - "Replace every promotional adjective with a concrete detail"
+      - "Ask: what specifically makes it vibrant/stunning/world-class?"
+      - "Use sensory details, numbers, or specific examples instead"
+    replacements:
+      vibrant: "(describe what makes it lively -- specific sights, sounds, activities)"
+      nestled: "located, sitting, tucked"
+      breathtaking: "(describe the specific visual or experience)"
+      stunning: "(describe what's impressive with specifics)"
+      world-class: "(name specific achievements or rankings)"
+      cutting-edge: "new, latest, recently developed"
+      state-of-the-art: "modern, current, recently upgraded"
+      unparalleled: "(describe what makes it unique with specifics)"
+      bustling: "busy, crowded, packed"
+      thriving: "growing, successful, profitable"
+    examples:
+      - before: "The vibrant, bustling neighborhood offers stunning dining options"
+        after: "The neighborhood has three new restaurants and a line out the door most evenings"
+      - before: "This cutting-edge, state-of-the-art platform delivers unparalleled performance"
+        after: "The platform handles 10,000 requests per second with sub-50ms latency"
+
+  vague_attributions:
+    strategy: "Cite specific sources or remove authority claims"
+    rules:
+      - "If a specific source exists, cite it (author, year, organization)"
+      - "If no source exists, state the claim directly without authority appeal"
+      - "A confident direct assertion is more credible than unnamed experts"
+    replacements:
+      "experts argue": "(name the expert) or (state directly)"
+      "many believe": "(cite source) or (state as fact)"
+      "research suggests": "(cite the specific study)"
+      "studies show": "(cite the specific study with year)"
+      "according to experts": "(name the experts)"
+      "it is widely believed": "(state the fact)"
+      "scholars note": "(name the scholars)"
+    examples:
+      - before: "Research suggests that remote work increases productivity"
+        after: "Stanford's 2022 study found a 13% productivity increase for remote workers"
+      - before: "According to experts, the market will grow significantly"
+        after: "The market will grow -- estimates range from 15% to 40% annual growth"
+
+  superficial_ing_analyses:
+    strategy: "Replace gestural analysis with actual causal explanation"
+    rules:
+      - "Replace 'highlighting X' with explanation of WHY X matters"
+      - "Replace 'showcasing X' with specific evidence or examples"
+      - "Replace 'underscoring X' with concrete consequences"
+      - "Add specific facts, numbers, or examples in place of gestures"
+    replacements:
+      "highlighting the importance of": "(explain WHY it's important with specifics)"
+      "showcasing the need for": "(explain WHAT the need is and WHY)"
+      "underscoring the significance of": "(explain the actual consequences)"
+      "demonstrating the value of": "(show the specific value with metrics)"
+      "illustrating the challenges of": "(name the specific challenges)"
+      "emphasizing the need for": "(explain what happens without it)"
+    examples:
+      - before: "This data showcasing the trend underscores the importance of proactive measures"
+        after: "Manufacturing costs dropped 30% in Q2, so companies that wait to adapt will lose share"
+      - before: "The report emphasizing the challenges illustrates the complexity"
+        after: "The report identifies three challenges: regulatory uncertainty, supply chain fragility, and a 40% talent gap"
+
+  false_ranges:
+    strategy: "Replace rhetorical 'from X to Y' with direct statements"
+    rules:
+      - "Replace abstract conceptual ranges with direct lists or statements"
+      - "Keep genuine numerical/temporal ranges"
+      - "Convert false symmetry into actual specifics"
+    replacements:
+      "from sustainability to innovation": "sustainability and innovation"
+      "from challenges to opportunities": "challenges and opportunities"
+      "from theory to practice": "in theory and in practice"
+      "from planning to execution": "planning and execution"
+      "from ideation to implementation": "the full process"
+      "from conception to completion": "start to finish"
+    examples:
+      - before: "The platform addresses everything from sustainability to innovation"
+        after: "The platform handles sustainability reporting and R&D tracking"
+      - before: "Our approach spans from ideation to implementation"
+        after: "We handle the full process: research, design, build, and ship"
+
+  synonym_cycling:
+    strategy: "Pick one term and repeat it naturally; use pronouns for variety"
+    rules:
+      - "Identify the primary referent for each key concept"
+      - "Use that term consistently throughout the passage"
+      - "Use pronouns (it, they, this) for natural variation"
+      - "Do NOT cycle through thesaurus synonyms for the same thing"
+      - "Natural word repetition is more human than elegant variation"
+    examples:
+      - before: "The framework provides capabilities. The platform supports use cases. The system scales. The solution integrates."
+        after: "The system provides capabilities and supports multiple use cases. It scales horizontally and integrates with existing tools."
+      - before: "The company announced strategy. The organization plans changes. The firm expects results."
+        after: "The company announced its new strategy. It plans to implement changes gradually and expects results within six months."
+
+  boldface_emoji_overuse:
+    strategy: "Remove formatting-as-emphasis; use prose emphasis instead"
+    rules:
+      - "Remove bold from 'key terms' in body text"
+      - "Use sentence structure and word position for emphasis instead"
+      - "Remove all emoji from formal and semi-formal text"
+      - "In casual text, keep only genuinely expressive emoji"
+      - "Convert emoji-bulleted lists to prose or standard bullets"
+    examples:
+      - before: "The **key advantage** is **scalability**. By leveraging **cloud infrastructure**, teams achieve **significant improvements**."
+        after: "The main advantage is scalability. Cloud infrastructure lets teams improve performance substantially."
+      - before: "Features: ✅ Fast deployment ✅ Easy config ✅ Built-in monitoring 🚀"
+        after: "It deploys fast, configures easily, and includes built-in monitoring."
+
+# ==============================================================================
+# Structured Self-Audit Protocol
+# ==============================================================================
+self_audit:
+  name: "Structured Self-Audit"
+  description: "Mandatory 6-step audit protocol after all passes complete"
+  steps:
+    1_obviously_ai_scan:
+      description: "Read each paragraph asking 'AI or human?' -- mark any instant 'AI' responses"
+      action: "Revise marked paragraphs with additional soul injection"
+    2_soul_check:
+      description: "For each section, identify what specific person could have written it"
+      action: "Add specific perspective, opinion, or experiential detail if answer is 'anyone'"
+    3_copula_chatbot_sweep:
+      description: "Quick scan for surviving copula avoidance, chatbot artifacts, disclaimers, inflation"
+      action: "Fix any remaining instances"
+    4_burstiness_audit:
+      description: "Sample 5 consecutive paragraphs from middle -- verify length/complexity variation"
+      action: "If uniform, add short punchy paragraph or increase complexity contrast"
+    5_synonym_cycling_check:
+      description: "Identify 3 most important concepts -- verify consistent terminology"
+      action: "Replace synonym cycling with natural repetition"
+    6_final_verdict:
+      description: "If 2+ paragraphs still fail 'Obviously AI' scan, rewrite is incomplete"
+      action: "Revise failing paragraphs with soul injection until they pass"
+
+# ==============================================================================
 # Output Configuration
 # ==============================================================================
 output:

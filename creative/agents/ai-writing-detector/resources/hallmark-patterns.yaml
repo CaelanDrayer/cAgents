@@ -461,6 +461,68 @@ vocabulary_tells:
     - vividly
     - woven
 
+  # Sub-signal: Significance Inflation
+  # AI inflates ordinary facts to superlative importance
+  significance_inflation:
+    description: "Inflating the importance of ordinary facts with grandiose framing"
+    detection_threshold:
+      density: 3          # 3+ per 1000 words
+    phrases:
+      - "pivotal moment"
+      - "pivotal role"
+      - "pivotal shift"
+      - "testament to"
+      - "a testament to"
+      - "broader implications"
+      - "profound impact"
+      - "profound implications"
+      - "profoundly important"
+      - "transformative shift"
+      - "watershed moment"
+      - "paradigm-shifting"
+      - "game-changing"
+      - "groundbreaking"
+      - "revolutionary approach"
+      - "seismic shift"
+      - "monumental achievement"
+      - "unprecedented"
+      - "nothing short of"
+      - "truly remarkable"
+      - "cannot be overstated"
+      - "impossible to overstate"
+    rule: "AI defaults to superlatives because they are high-probability completions in helpful-response distributions. Human writers reserve strong language for genuinely significant events."
+
+  # Sub-signal: Promotional Language
+  # Travel-brochure and marketing vocabulary in non-promotional contexts
+  promotional_language:
+    description: "Marketing-copy vocabulary used in non-promotional writing"
+    detection_threshold:
+      cluster: 3          # 3+ in non-marketing text
+    words:
+      - vibrant
+      - nestled
+      - breathtaking
+      - stunning
+      - world-class
+      - cutting-edge
+      - state-of-the-art
+      - top-notch
+      - unparalleled
+      - unmatched
+      - second-to-none
+      - best-in-class
+      - sought-after
+      - highly-coveted
+      - awe-inspiring
+      - picturesque
+      - idyllic
+      - charming
+      - quaint
+      - bustling
+      - thriving
+      - booming
+    rule: "AI draws from promotional vocabulary distributions even in descriptive or analytical contexts. Human writers in non-marketing contexts use concrete, specific language rather than brochure adjectives."
+
 # ==============================================================================
 # Category 2: Analytical/Academic Words (weight: 0.08)
 # ==============================================================================
@@ -566,6 +628,24 @@ punctuation_style:
         - "..."
         - sentence_fragments
         - exclamation_clusters
+
+  # Sub-signal: Boldface/Emoji Overuse
+  boldface_emoji_overuse:
+    description: "Heavy markdown formatting as structural crutch; emoji in non-chat contexts"
+    checks:
+      boldface_density:
+        description: "Proportion of words wrapped in **bold** markdown"
+        threshold: 0.05    # flag if > 5% of words are bolded
+      emoji_in_prose:
+        description: "Emoji characters appearing in formal or semi-formal text"
+        threshold: 0       # flag any emoji in non-chat contexts
+        emoji_patterns:
+          - "\\p{Emoji_Presentation}"
+          - "\\p{Extended_Pictographic}"
+      bold_key_terms:
+        description: "Pattern of bolding 'key terms' in every paragraph"
+        threshold: 3       # flag if 3+ paragraphs each have bolded terms
+    rule: "AI uses markdown formatting as a structural crutch -- bolding key terms for emphasis instead of using prose emphasis, and inserting emoji as visual anchors. In formal writing, emoji never appear; in semi-formal writing, their presence is a strong AI tell."
 
 # ==============================================================================
 # Category 4: Structural Patterns (weight: 0.12)
@@ -809,6 +889,95 @@ ai_phrases:
     - "world around"
     - "you well"
 
+  # Sub-signal: Copula Avoidance
+  # AI avoids direct "is/are" in favor of circumlocutions
+  copula_avoidance:
+    description: "Circumlocuting simple 'is/are' copulas with elaborate constructions"
+    detection_threshold:
+      density: 3          # 3+ per 1000 words
+    phrases:
+      - "serves as"
+      - "stands as"
+      - "acts as"
+      - "functions as"
+      - "represents a"
+      - "operates as"
+      - "works as a"
+      - "serves as a"
+      - "stands as a"
+      - "acts as a"
+      - "remains a"
+      - "constitutes a"
+      - "proves to be"
+      - "emerges as"
+    rule: "AI avoids the copula ('is/are') because instruction tuning rewards elaborate, 'helpful' phrasing. 'X serves as Y' instead of 'X is Y' is a consistent AI stylistic tic."
+
+  # Sub-signal: Knowledge-Cutoff Disclaimers
+  # Temporal hedges revealing model self-awareness
+  knowledge_cutoff_disclaimers:
+    description: "Phrases revealing AI model awareness of training data limitations"
+    detection_threshold:
+      density: 0          # flag ANY occurrence -- these are direct provenance markers
+    phrases:
+      - "as of my last update"
+      - "as of my last training"
+      - "as of my knowledge cutoff"
+      - "I don't have access to real-time"
+      - "I don't have real-time"
+      - "I cannot access real-time"
+      - "as of my training data"
+      - "I was last updated"
+      - "my training data goes up to"
+      - "based on my training"
+      - "I'm not able to browse"
+      - "I can't browse the internet"
+      - "as of [year]"
+      - "at the time of this writing"
+    rule: "These are direct AI provenance markers -- no human writer references training data cutoffs. Any occurrence is conclusive."
+
+  # Sub-signal: Superficial -ing Analyses
+  # Present-participle phrases that gesture at analysis without performing it
+  superficial_ing_analyses:
+    description: "Present-participle constructions performing shallow gestural analysis"
+    detection_threshold:
+      density: 3          # 3+ per 1000 words
+    phrases:
+      - "highlighting the importance"
+      - "highlighting the need"
+      - "showcasing the"
+      - "underscoring the"
+      - "underscoring the significance"
+      - "demonstrating the value"
+      - "demonstrating the importance"
+      - "illustrating the"
+      - "emphasizing the need"
+      - "emphasizing the importance"
+      - "reflecting the"
+      - "representing a"
+      - "signaling a"
+      - "pointing to the"
+      - "revealing the"
+    rule: "These -ing constructions substitute for actual analysis. Instead of explaining WHY something is important, AI gestures at importance with a present participle. Human analysts explain; AI highlights."
+
+  # Sub-signal: False Ranges
+  # "From X to Y" used rhetorically, not as actual ranges
+  false_ranges:
+    description: "Rhetorical 'from X to Y' constructions that are not actual ranges"
+    detection_threshold:
+      density: 2          # 2+ per 1000 words
+    patterns:
+      - "from \\w+ to \\w+"
+    example_phrases:
+      - "from sustainability to innovation"
+      - "from challenges to opportunities"
+      - "from theory to practice"
+      - "from planning to execution"
+      - "from ideation to implementation"
+      - "from conception to completion"
+      - "from research to application"
+      - "from strategy to action"
+    rule: "AI uses 'from X to Y' as a structural crutch for organizing binary concepts. Human writers occasionally use this construction, but AI uses it systematically to create false symmetry."
+
 # ==============================================================================
 # Category 6: Transitions (weight: 0.06)
 # ==============================================================================
@@ -935,6 +1104,40 @@ tone_voice:
     humor_absence:
       description: "No humor, sarcasm, irony, or playful register shifts"
 
+  # Sub-signal: Vague Attributions
+  # Sourceless authority claims without naming specific sources
+  vague_attributions:
+    description: "Authority claims without specific named sources"
+    detection_threshold:
+      density: 3          # 3+ vague attributions without any specific sourcing
+    phrases:
+      - "experts argue"
+      - "experts say"
+      - "experts believe"
+      - "experts suggest"
+      - "many believe"
+      - "many argue"
+      - "many experts"
+      - "research suggests"
+      - "studies show"
+      - "studies have shown"
+      - "studies suggest"
+      - "research has shown"
+      - "research indicates"
+      - "according to experts"
+      - "according to research"
+      - "according to studies"
+      - "some argue"
+      - "some believe"
+      - "some experts"
+      - "it is widely believed"
+      - "it is generally agreed"
+      - "scholars note"
+      - "analysts say"
+      - "critics argue"
+      - "observers note"
+    rule: "Human writers either cite specific sources or make claims on their own authority. AI hedges by invoking unnamed experts, studies, and research. The combination of authoritative framing with zero specific attribution is a strong AI signal."
+
 # ==============================================================================
 # Category 9: Creativity Deficit (weight: 0.12)
 # ==============================================================================
@@ -1054,6 +1257,28 @@ creativity_deficit:
           - { check: emotion_expression_count, threshold: 0, note: "no joy, frustration, surprise, humor" }
           - { check: ornamental_vocab_density, threshold: 2, unit: "per 1000 words" }
       rule: "AI produces text with impressive vocabulary breadth that nonetheless feels hollow -- the words are varied but emotionally inert, creating a veneer of sophistication over shallow, impersonal content"
+
+  # Sub-signal: Synonym Cycling / Elegant Variation
+  # Avoiding natural word repetition by cycling through thesaurus synonyms
+  synonym_cycling:
+    description: "Systematically avoiding word repetition by rotating through synonyms for the same referent"
+    detection_threshold:
+      synonym_count: 4    # flag if 4+ different synonyms for same referent in 500 words
+    examples:
+      concept_cycling:
+        - ["the framework", "the system", "the platform", "the solution", "the tool"]
+        - ["the company", "the organization", "the firm", "the enterprise", "the business"]
+        - ["the study", "the research", "the investigation", "the analysis", "the examination"]
+        - ["the problem", "the issue", "the challenge", "the obstacle", "the difficulty"]
+        - ["the method", "the approach", "the technique", "the strategy", "the methodology"]
+    checks:
+      referent_synonym_density:
+        description: "Number of distinct synonyms used for the same referent within a 500-word window"
+        threshold: 4       # flag if 4+ different terms for same entity
+      natural_repetition_absence:
+        description: "Zero natural word repetition for key concepts across 500+ words"
+        threshold: 0       # flag if a key concept is never repeated -- always varied
+    rule: "Human writers naturally repeat words -- saying 'the system' five times feels normal. AI rotates through synonyms like a thesaurus ('the system', 'the platform', 'the framework', 'the solution') because it optimizes for lexical diversity. The cycling itself is the signal."
 
 # ==============================================================================
 # Category 10: Mechanical Writing (weight: 0.12)
@@ -1438,6 +1663,39 @@ detached_warmth:
     - "the sky is the limit"
     - "the possibilities are endless"
     - "here's to new beginnings"
+
+  # Sub-signal: Chatbot Artifacts
+  # Conversational scaffolding from chatbot training bleeding into written text
+  chatbot_artifacts:
+    description: "Conversational chatbot phrases that should never appear in written documents"
+    detection_threshold:
+      density: 0          # flag ANY occurrence outside dialogue
+    phrases:
+      - "I hope this helps"
+      - "I hope this helps!"
+      - "Hope this helps"
+      - "Let me know if you need anything"
+      - "Let me know if you need anything else"
+      - "Let me know if you have any questions"
+      - "Happy to help"
+      - "Happy to help!"
+      - "Feel free to ask"
+      - "Feel free to reach out"
+      - "Don't hesitate to ask"
+      - "Don't hesitate to reach out"
+      - "Great question"
+      - "Great question!"
+      - "That's a great question"
+      - "Glad you asked"
+      - "I'd be happy to"
+      - "I'm glad you asked"
+      - "Is there anything else"
+      - "Let me know if that makes sense"
+      - "Does that make sense"
+      - "Hope that clarifies"
+      - "Let me break this down"
+      - "Let me walk you through"
+    rule: "These phrases are direct chatbot interaction artifacts from conversational fine-tuning. They never appear in genuine written documents (articles, essays, reports, stories). Any occurrence outside of quoted dialogue is a conclusive AI tell."
 
 # ==============================================================================
 # Cross-Category Meta-Patterns
