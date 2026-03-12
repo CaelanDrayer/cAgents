@@ -1,6 +1,6 @@
 ---
 name: designer
-description: "Interactive design engine that produces comprehensive design documents through guided questioning. Use when you need to explore, plan, or design before implementing -- gathering requirements through structured Q&A with research-backed questions. TRIGGER when: user says 'design', 'plan this', 'help me think through', 'architecture', or needs a design document. Do NOT use for direct implementation (use /run) or code review (use /review)."
+description: "Guided design exploration that produces implementation-ready documents through structured Q&A. Use before building to clarify requirements. TRIGGER: design, plan this, think through, architecture. NOT for: implementation (/run) or review (/review)."
 argument-hint: "[<topic>] [--deep] [--resume <id>] [--template <name>] [--brief <path>] [--iterate <session_id>]"
 user-invocable: true
 context: none

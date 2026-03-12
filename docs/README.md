@@ -1,92 +1,70 @@
 # cAgents Documentation
 
-**Version**: 7.5.1 (Controller-Centric Architecture with Task Inventory)
-**Last Updated**: 2026-01-22
-
-## Documentation Structure
-
-This directory contains all project documentation organized by category.
-
-### Core Documentation
-
-**Standards and Guidelines**:
-- `DOCUMENTATION_STANDARDS.md` - Documentation best practices and conventions
-- `DOMAIN_STRUCTURE_STANDARD.md` - Domain package structure standards
-- `AGENT_OPTIMIZATION_INSTRUCTION.md` - Agent optimization guidelines
-
-**System Architecture**:
-- `ARCHITECTURE.md` - System architecture overview
-- `AUTOMATIC_WORKFLOW_PROGRESSION.md` - Automatic phase transition policy (CRITICAL)
-- `CONTEXT_MANAGEMENT.md` - Context handling and token management
-- `TASK_COMPLETION_ENFORCEMENT_SUMMARY.md` - Task completion protocol
-- `TASK_CONSOLIDATION.md` - Task consolidation strategies (40-88% reduction)
-- `TOKEN_MIGRATION_SUMMARY.md` - Token optimization migration details
-- `WORKFLOW_EVALUATION_FIXES.md` - Workflow issue resolutions
-
-**Project Meta**:
-- `COMMANDS.md` - All cAgents commands reference
-- `GETTING_STARTED.md` - Quick start guide
-- `RELEASE_NOTES.md` - Version history and changes
-- `OPTIMIZATION_PROGRESS.md` - Ongoing optimization tracking
-
-### Archived Feature Documentation
-
-Versioned feature documentation has been archived to `archive/docs/versioned/`:
-
-| Feature | Location | Key Files |
-|---------|----------|-----------|
-| Trigger V2.0 | `archive/docs/versioned/trigger-v2/` | Architecture, migration guide, test scenarios |
-| Designer V2.0 | `archive/docs/versioned/designer-v2/` | Optimization summary, migration guide |
-| Optimizer V7.0 | `archive/docs/versioned/optimizer-v7/` | Migration guide, test results |
-| Reviewer V3.0 | `archive/docs/versioned/reviewer-v3/` | Summary, migration guide |
-
-### Historical Documentation
-
-Other archived documentation in `archive/docs/`:
-- Implementation plans (completed)
-- Execution summaries (historical)
-- Old orchestration docs (V2.0 superseded by V5.0)
-- Scripts audit (completed)
+**Version**: 10.9.0
+**Last Updated**: 2026-03-12
 
 ## Quick Navigation
 
-### Getting Started
-1. Read main `../CLAUDE.md` for architecture overview
-2. Read `AUTOMATIC_WORKFLOW_PROGRESSION.md` for workflow behavior (CRITICAL)
-3. Review `COMMANDS.md` for available commands
-4. See `GETTING_STARTED.md` for quick start guide
+| Audience | Start Here |
+|----------|-----------|
+| **New users** | `GETTING_STARTED.md` then `COMMANDS.md` |
+| **Developers** | `ARCHITECTURE.md` then `DOMAIN_STRUCTURE_STANDARD.md` |
+| **Contributors** | `DOCUMENTATION_STANDARDS.md` then `CONTEXT_MANAGEMENT.md` |
 
-### For Developers
-- **Adding a domain**: See `DOMAIN_STRUCTURE_STANDARD.md`
-- **Optimizing agents**: See `AGENT_OPTIMIZATION_INSTRUCTION.md`
-- **Writing documentation**: See `DOCUMENTATION_STANDARDS.md`
-- **Understanding context**: See `CONTEXT_MANAGEMENT.md`
-- **Task completion**: See `TASK_COMPLETION_ENFORCEMENT_SUMMARY.md`
+## Documentation Index
 
-### For Users
-- **Quick Start**: See `GETTING_STARTED.md`
-- **Commands Reference**: See `COMMANDS.md`
-- **Architecture**: See `ARCHITECTURE.md`
+### Architecture and Workflow
+- `ARCHITECTURE.md` - System architecture overview
+- `AUTOMATIC_WORKFLOW_PROGRESSION.md` - Phase transition policy (auto-proceed rules)
+- `CONTEXT_MANAGEMENT.md` - Context handling and token management
+- `CLAUDE_CODE_HOOKS_SPECIFICATION.md` - Claude Code hooks API reference
 
-## Documentation Principles
+### Commands and Skills
+- `COMMANDS.md` - All 8 cAgents commands reference
+- `COMMAND_SELECTION.md` - Guide for choosing the right command
+- `SKILLS.md` - Detailed skill documentation
+- `TEAM_MODE.md` - N-wave parallel team execution guide
 
-1. **Single Source of Truth**: Each concept documented in one place
-2. **Version-Specific**: Clearly marked with version numbers
-3. **Archive Historical**: Move outdated docs to archive
-4. **Migration Guides**: Provide upgrade paths when needed
+### Quality and Operations
+- `TASK_COMPLETION_ENFORCEMENT_SUMMARY.md` - Task completion protocol
+- `TASK_CONSOLIDATION.md` - Task consolidation strategies (40-88% reduction)
+- `WORKFLOW_EVALUATION_FIXES.md` - Workflow issue resolutions
 
-## File Naming Conventions
+### Standards
+- `DOCUMENTATION_STANDARDS.md` - Documentation conventions
+- `DOMAIN_STRUCTURE_STANDARD.md` - Domain package structure
 
-- `[TOPIC]_[DESCRIPTOR].md` - General topic docs
-- `README.md` - Index and navigation (this file)
+### Project Meta
+- `GETTING_STARTED.md` - Quick start guide
+- `RELEASE_NOTES.md` - Version history
+- `CHANGELOG.md` - Detailed change log
+- `OPTIMIZATION_PROGRESS.md` - Performance tracking
+- `REMAINING_OPTIMIZATIONS.md` - Planned optimizations
 
-## Documentation Status
+### Subdirectories
+- `agents/` - Agent-specific documentation
+- `architecture/` - Architecture diagrams and details
+- `commands/` - Per-command deep dives
+- `config/` - Configuration reference
+- `hooks/` - Hook system details
+- `improvements/` - Improvement proposals
+- `migration/` - Migration guides
+- `skill_improvements/` - Per-skill analysis and improvement plans
+- `templates/` - Document templates
+- `testing/` - Test documentation
 
-**Active Documentation** (This Directory): 19 files
-**Archived Documentation**: `archive/docs/` and `archive/docs/versioned/`
+### Archived
+- `archive/docs/` - Historical documentation
+- `archive/docs/versioned/` - Versioned feature docs (trigger-v2, designer-v2, optimizer-v7, reviewer-v3)
+
+## Canonical References
+
+- **Architecture**: `CLAUDE.md` (root) is the single source of truth
+- **Rules**: `.claude/rules/` contains modular topic-specific rules
+- **Agent specs**: `{domain}/agents/{name}/SKILL.md` per agent
+- **Domain config**: `{domain}/config/domain_overrides.yaml` per domain
 
 ---
 
 **Maintained By**: cAgents Core Team
-**Questions**: See main project README or CLAUDE.md
-**Last Cleanup**: 2026-01-22
+**Last Cleanup**: 2026-03-12

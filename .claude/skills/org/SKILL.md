@@ -1,6 +1,6 @@
 ---
 name: org
-description: "Corporate hierarchy orchestration that coordinates C-suite agents across multiple business domains for strategic initiatives. Use when a request spans 2+ domains (engineering, creative, business, people, service) or requires executive-level analysis and deliberation. TRIGGER when: user says 'org', 'organization', 'strategic', 'cross-domain', or gives a broad initiative touching multiple teams. Do NOT use for single-domain tasks (use /run or /team)."
+description: "Coordinate C-suite agents across domains for strategic initiatives. Use when work spans 2+ business domains or needs executive analysis. TRIGGER: org, strategic, cross-domain, company-wide. NOT for: single-domain tasks (/run or /team)."
 argument-hint: "<instruction> [--dry-run] [--quick] [--domains <d1,d2>] [--resume <session_id>]"
 user-invocable: true
 context: none

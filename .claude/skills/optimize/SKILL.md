@@ -1,6 +1,6 @@
 ---
 name: optimize
-description: "Universal optimizer that detects and fixes performance, size, quality, and efficiency issues with atomic rollback safety. Use when you need to optimize code performance, reduce bundle size, improve query speed, or enhance any measurable metric. TRIGGER when: user says 'optimize', 'speed up', 'reduce size', 'improve performance', or wants before/after metrics. Do NOT use for quality review without changes (use /review) or new feature implementation (use /run)."
+description: "Detect and fix performance, size, and efficiency issues with rollback safety. Use when you need measurable improvements with before/after metrics. TRIGGER: optimize, speed up, reduce size, improve performance. NOT for: review-only (/review) or new features (/run)."
 argument-hint: "[<target>] [--type <type>] [--dry-run] [--interactive] [--rollback]"
 user-invocable: true
 context: fork

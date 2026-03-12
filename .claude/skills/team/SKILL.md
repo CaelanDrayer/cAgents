@@ -1,6 +1,6 @@
 ---
 name: team
-description: "N-wave parallel team execution that spawns multiple agents working simultaneously for 40-60% faster delivery. Use when you have complex tasks with 3+ parallelizable work items, or need tier 3+ implementation with quality gating. TRIGGER when: user says 'team', 'parallel', 'swarm', or has complex multi-part requests. Do NOT use for simple single-item tasks (use /run) or cross-domain corporate orchestration (use /org)."
+description: "Parallel multi-agent execution with wave-based quality gates. Use for complex tasks with 3+ parallelizable items. TRIGGER: team, parallel, swarm, complex multi-part. NOT for: simple tasks (/run) or cross-domain strategy (/org)."
 argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--no-template] [--waves <n>]"
 user-invocable: true
 context: fork

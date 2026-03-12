@@ -2,16 +2,10 @@
 # Sync version across all cAgents manifest files
 # Usage: ./scripts/sync-versions.sh <new-version>
 #
-# Updates version in:
-#   .claude-plugin/plugin.json
-#   .claude-plugin/marketplace.json
-#   core/.claude-plugin/plugin.json
-#   make/.claude-plugin/plugin.json
-#   grow/.claude-plugin/plugin.json
-#   operate/.claude-plugin/plugin.json
-#   people/.claude-plugin/plugin.json
-#   serve/.claude-plugin/plugin.json
-#   shared/.claude-plugin/plugin.json
+# Updates version in all 13 locations (see .claude/rules/core/version-registry.md):
+#   .claude-plugin/plugin.json, .claude-plugin/marketplace.json, package.json,
+#   CLAUDE.md, and 9 domain plugin.json files (core, engineering, creative,
+#   business, growth, people, service, leadership, shared)
 
 set -euo pipefail
 
@@ -30,12 +24,15 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 MANIFESTS=(
   "$ROOT/.claude-plugin/plugin.json"
   "$ROOT/.claude-plugin/marketplace.json"
+  "$ROOT/package.json"
   "$ROOT/core/.claude-plugin/plugin.json"
-  "$ROOT/make/.claude-plugin/plugin.json"
-  "$ROOT/grow/.claude-plugin/plugin.json"
-  "$ROOT/operate/.claude-plugin/plugin.json"
+  "$ROOT/engineering/.claude-plugin/plugin.json"
+  "$ROOT/creative/.claude-plugin/plugin.json"
+  "$ROOT/business/.claude-plugin/plugin.json"
+  "$ROOT/growth/.claude-plugin/plugin.json"
   "$ROOT/people/.claude-plugin/plugin.json"
-  "$ROOT/serve/.claude-plugin/plugin.json"
+  "$ROOT/service/.claude-plugin/plugin.json"
+  "$ROOT/leadership/.claude-plugin/plugin.json"
   "$ROOT/shared/.claude-plugin/plugin.json"
 )
 
@@ -60,6 +57,20 @@ for manifest in "${MANIFESTS[@]}"; do
     FAILED=$((FAILED + 1))
   fi
 done
+
+# Update CLAUDE.md Quick Reference version line
+CLAUDEMD="$ROOT/CLAUDE.md"
+if [ -f "$CLAUDEMD" ]; then
+  if sed -i "s/\*\*Version\*\*: [0-9]*\.[0-9]*\.[0-9]*/\*\*Version\*\*: $VERSION/" "$CLAUDEMD"; then
+    echo "  OK: CLAUDE.md"
+    UPDATED=$((UPDATED + 1))
+  else
+    echo "FAIL: CLAUDE.md"
+    FAILED=$((FAILED + 1))
+  fi
+else
+  echo "SKIP: CLAUDE.md (not found)"
+fi
 
 echo ""
 echo "Version sync complete: $UPDATED updated, $FAILED failed"

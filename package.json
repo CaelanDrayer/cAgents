@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "10.8.0",
-  "description": "cAgents v10.7.1 - 213 agents across 8 business domains. 8 commands: /run, /team, /org, /designer, /review, /optimize, /helper, /context. Controller-centric delegation with event-driven pipeline, agent teams for parallel execution, and progressive complexity scoring.",
+  "version": "10.9.0",
+  "description": "213 agents across 8 business domains. Multi-agent orchestration with 8 commands for engineering, creative, business, and more.",
   "type": "module",
   "main": "",
   "scripts": {

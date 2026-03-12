@@ -1,6 +1,6 @@
 ---
 name: context
-description: "Manage shared product context documents for consistent enrichment across sessions"
+description: "Create and manage shared product context for consistent agent enrichment. Use to persist project knowledge across sessions. TRIGGER: context, product context, project knowledge. NOT for: running tasks or reviewing work."
 context: none
 agent: false
 ---

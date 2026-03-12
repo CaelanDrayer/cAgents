@@ -1,6 +1,6 @@
 ---
 name: run
-description: "Event-driven pipeline engine that orchestrates multi-agent workflows for any task. Use when you need to implement features, fix bugs, write content, or execute any single-domain request through coordinated agent delegation. TRIGGER when: user says 'run', 'implement', 'fix', 'build', 'create', or any actionable request. Do NOT use for parallel multi-item work (use /team) or cross-domain strategic initiatives (use /org)."
+description: "Execute any task through coordinated agents. Use for building, fixing, writing, or any single-domain work. TRIGGER: run, implement, fix, build, create. NOT for: parallel work (/team) or cross-domain strategy (/org)."
 argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--analytics]"
 user-invocable: true
 context: none

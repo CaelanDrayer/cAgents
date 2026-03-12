@@ -1,6 +1,6 @@
 ---
 name: review
-description: "Universal review orchestrator that performs comprehensive quality reviews with parallel agent execution and auto-fix. Use when you need to review code, documentation, content, designs, processes, or infrastructure for quality issues. TRIGGER when: user says 'review', 'audit', 'check quality', 'code review', or wants feedback on existing work. Do NOT use for optimization (use /optimize) or new implementation (use /run)."
+description: "Quality review with parallel specialist agents and optional auto-fix. Use for reviewing code, docs, content, or infrastructure. TRIGGER: review, audit, check quality, code review. NOT for: optimization (/optimize) or new implementation (/run)."
 argument-hint: "<target> [--focus <area>] [--auto-fix] [--severity <level>] [--format <type>] [--profile <name>] [--baseline] [--suppress <id>]"
 user-invocable: true
 context: fork

@@ -1,6 +1,6 @@
 ---
 name: helper
-description: "Interactive command guide that explains cAgents skills and recommends the right one for your task. Use when you want to understand available commands, compare skills, see usage examples, or get help choosing the right skill. TRIGGER when: user says 'help', 'which command', 'how do I', 'what can cAgents do', or needs guidance on skill selection. Do NOT use for executing tasks directly -- it only explains and recommends."
+description: "Explains cAgents commands and recommends the right one for your task. Use when choosing between skills or learning how they work. TRIGGER: help, which command, how do I, what can cAgents do. NOT for: executing tasks directly."
 argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--topic <topic>] [--troubleshoot <command>]"
 user-invocable: true
 context: none

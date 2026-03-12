@@ -37,14 +37,9 @@ Core architecture and development guidance for cAgents.
 
 ## Version Management
 
-**CRITICAL: Always bump version on commits.**
+**CRITICAL: Always bump version on commits.** Run `scripts/sync-versions.sh <version>` to update all 13 locations. See @.claude/rules/core/version-registry.md for the canonical list.
 
-Increment version in both `.claude-plugin/marketplace.json` and `.claude-plugin/plugin.json`.
-
-**Version Format**: `major.minor.patch` (e.g., 9.9.1)
-- Bug fix/minor tweak: patch (9.13.0 -> 9.13.1)
-- New feature/enhancement: minor (9.13.1 -> 9.14.0)
-- Breaking change/major refactor: major (9.14.0 -> 10.0.0)
+**Version Format**: `major.minor.patch` — patch (bug fix), minor (feature), major (breaking)
 
 ## Memory Management
 
@@ -262,14 +257,14 @@ User Request -> /run (state machine loop, reads pipeline_config.yaml)
 
 | Skill | Context | Agent | Description |
 |-------|---------|-------|-------------|
-| `/org` | `none` | `true` | Corporate hierarchy orchestration -- CEO inline + C-suite via Task + sequential /team per domain |
-| `/run` | `none` | `true` | Event-driven pipeline engine -- state machine loop, sequential enrichment, controller+reviewer, revision routing |
-| `/team` | `fork` | `true` | N-wave parallel team execution via built-in agent teams (maximize waves) |
-| `/designer` | `none` | `false` | Interactive 6-phase design engine with subagent-delegated question preparation, inline controller pattern, defer-to-subagent, and endless refinement mode |
-| `/review` | `fork` | `true` | Universal review with parallel agent execution |
-| `/optimize` | `fork` | `true` | 5-phase optimization with atomic rollback |
-| `/helper` | `none` | `false` | Interactive command guide |
-| `/context` | `none` | `false` | Shared product context document -- generates persistent project-context.md for all agents |
+| `/org` | `none` | `true` | Cross-domain strategy via C-suite agents and sequential team execution |
+| `/run` | `none` | `true` | Execute any task through auto-routed controller and specialist agents |
+| `/team` | `fork` | `true` | Parallel multi-agent execution with wave-based quality gates |
+| `/designer` | `none` | `false` | Interactive design exploration with guided Q&A before building |
+| `/review` | `fork` | `true` | Quality review with parallel specialist agents and auto-fix |
+| `/optimize` | `fork` | `true` | Performance optimization with before/after metrics and rollback |
+| `/helper` | `none` | `false` | Command guide that recommends the right skill for your task |
+| `/context` | `none` | `false` | Shared product context that persists across all sessions |
 
 **Built-in**: `/memory` (view/edit memory files), `/init` (bootstrap project CLAUDE.md)
 
@@ -490,7 +485,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 265 Vitest tests (hooks + config validation)
-**Version**: 10.8.0
+**Version**: 10.9.0
 
 ## Troubleshooting
 
