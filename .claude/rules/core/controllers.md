@@ -91,6 +91,33 @@ Controllers MUST maintain append-only DECISIONS.md and CORRECTIONS.md logs durin
 
 See `controller-reference.md` for examples and file location details.
 
+## Evidence-First Execution Pattern (V10.10.0)
+
+Controllers MUST require specific evidence from execution agents, not vague confirmations.
+
+### Bad (vague):
+```yaml
+- criterion: "Auth is secure"
+  evidence: "Reviewed auth code, looks good"
+```
+
+### Good (specific):
+```yaml
+- criterion: "Auth is secure"
+  evidence: |
+    - Password hashing: bcrypt with cost=12 at src/auth/hash.ts:15
+    - Session tokens: 256-bit random via crypto.randomBytes at src/auth/session.ts:8
+    - CSRF protection: double-submit cookie pattern at src/middleware/csrf.ts:22
+    - Rate limiting: 5 attempts/15min window at src/auth/rate-limit.ts:30
+```
+
+### Execution Agent Response Requirements
+When controllers delegate questions, execution agents MUST respond with:
+1. **Specific file paths and line numbers** (not "in the auth module")
+2. **Actual code snippets** (not "it uses bcrypt")
+3. **Measured metrics** (not "performance is good")
+4. **Named failure modes** (not "it handles errors")
+
 ## CRITICAL: Do Not Ask Permission
 
 After completing coordination:

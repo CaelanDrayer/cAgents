@@ -81,6 +81,35 @@ controller_assignment:
   primary: cagents:engineering-manager
   supporting: [cagents:architect, cagents:security-specialist]
 
+temporal_analysis:
+  hour_1_foundations: "Auth library selection, DB schema for users/sessions"
+  hour_2_3_core: "Token refresh edge cases, session invalidation on password change"
+  hour_4_5_integration: "Middleware ordering conflicts with existing CORS setup"
+  hour_6_plus_polish: "Rate limiting tuning, logging PII scrubbing"
+
+not_in_scope:
+  - item: "OAuth2 social login"
+    rationale: "Phase 2 feature, requires external provider setup"
+    future_consideration: "After core auth is stable, Q2 roadmap"
+  - item: "Multi-factor authentication"
+    rationale: "Depends on notification service not yet built"
+    future_consideration: "After notification service ships"
+
+existing_code:
+  - path: "src/middleware/session.ts"
+    relevance: "Basic session middleware already handles cookie parsing"
+    action: "extend"
+  - path: "src/models/user.ts"
+    relevance: "User model exists but lacks password_hash field"
+    action: "extend"
+
+diagrams: |
+  [Client] -> [Auth Middleware] -> [Route Handler]
+                    |
+              [Session Store] <-> [Redis]
+                    |
+              [User Model] <-> [PostgreSQL]
+
 work_breakdown_file: workflow/decomposition.yaml
 ```
 
@@ -131,10 +160,14 @@ Create the events directory if it does not exist: `mkdir -p workflow/events/`
 
 Keep plan.yaml and decomposition.yaml concise to prevent downstream context overloading:
 
-**plan.yaml budget**: Under 50 lines (~500 tokens)
+**plan.yaml budget**: Under 80 lines (~800 tokens)
 - Objectives (2-5 items, 1-2 lines each)
 - Controller assignment (3 lines)
 - Summary stats (5 lines)
+- Temporal analysis (4 lines)
+- Not-in-scope (2-6 items, 3 lines each)
+- Existing code (2-5 items, 3 lines each)
+- Diagrams (5-15 lines for non-trivial flows)
 - Reference `workflow/decomposition.yaml` for details
 
 **decomposition.yaml budget**: Under 150 lines (~1500 tokens)

@@ -105,7 +105,22 @@ function findIncompleteSessions() {
 createHook('SessionCatchup', async (input) => {
   const incomplete = findIncompleteSessions();
 
-  const cagentsContext = 'cAgents V10.5.0 session initialized. Minimum Claude Code version: 2.1.69 (required for hook lifecycle events). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Task tool subagent_type references. IMPORTANT: When spawned as a cAgents agent, self-register your agent type in workflow/agent_tree.yaml for audit trail (SubagentStart hook injects instructions).';
+  let cagentsContext = 'cAgents V10.5.0 session initialized. Minimum Claude Code version: 2.1.69 (required for hook lifecycle events). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Task tool subagent_type references. IMPORTANT: When spawned as a cAgents agent, self-register your agent type in workflow/agent_tree.yaml for audit trail (SubagentStart hook injects instructions).';
+
+  // Update check (non-blocking, best-effort)
+  try {
+    const { execSync } = require('child_process');
+    const pluginRoot = path.resolve(__dirname, '../..');
+    const updateMsg = execSync(
+      `bash "${pluginRoot}/scripts/update-check.sh" 2>/dev/null`,
+      { timeout: 6000, encoding: 'utf8' }
+    ).trim();
+    if (updateMsg) {
+      cagentsContext = updateMsg + '\n' + cagentsContext;
+    }
+  } catch (e) {
+    // Update check is best-effort, never block session start
+  }
 
   if (incomplete.length === 0) {
     return {

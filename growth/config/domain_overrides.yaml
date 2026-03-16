@@ -21,6 +21,98 @@ planner:
       keywords: [positioning, messaging, launch, go-to-market, competitive, GTM]
       agents: [product-marketing-manager]
       description: "Product marketing and launches"
+    seo:
+      keywords: [SEO, search engine, organic, keyword research, ranking, backlink]
+      agents: [seo-specialist]
+      description: "Search engine optimization"
+    social_media:
+      keywords: [social media, Instagram, LinkedIn, Twitter, TikTok, community, social]
+      agents: [social-media-manager]
+      description: "Social media management (cross-domain: community-manager in service/)"
+    public_relations:
+      keywords: [PR, press release, media, journalist, thought leadership, publicity]
+      agents: [pr-specialist]
+      description: "Public relations and media outreach"
+    email:
+      keywords: [email, newsletter, drip, nurture, automation, email campaign]
+      agents: [email-marketing-specialist]
+      description: "Email marketing and automation"
+    events:
+      keywords: [event, conference, trade show, webinar, meetup, exhibition]
+      agents: [events-coordinator, field-marketing-manager]
+      description: "Event planning and field marketing"
+    demand_gen:
+      keywords: [demand generation, lead gen, pipeline, MQL, funnel, conversion]
+      agents: [demand-generation-manager, growth-marketer]
+      description: "Demand generation and growth marketing"
+    sales_development:
+      keywords: [SDR, BDR, outbound, prospecting, cold email, cold call, pipeline]
+      agents: [sales-development-rep, inside-sales-rep]
+      description: "Sales development and outbound prospecting"
+    sales_enablement:
+      keywords: [sales training, playbook, battlecard, sales content, onboarding sales]
+      agents: [sales-enablement-specialist, sales-trainer]
+      description: "Sales enablement and training"
+    sales_engineering:
+      keywords: [demo, POC, proof of concept, technical sales, solution design, pre-sales]
+      agents: [sales-engineer]
+      description: "Technical sales and solution engineering"
+    pricing:
+      keywords: [pricing, discount, deal desk, packaging, monetization]
+      agents: [pricing-analyst]
+      description: "Pricing strategy and deal desk"
+    territory:
+      keywords: [territory, region, quota, field sales, district]
+      agents: [territory-manager]
+      description: "Territory and field sales management"
+    influencer:
+      keywords: [influencer, creator, ambassador, UGC, partnership marketing]
+      agents: [influencer-marketing-specialist, partnership-marketing-manager]
+      description: "Influencer and partnership marketing"
+    proposals:
+      keywords: [proposal, RFP, RFI, bid, pitch deck]
+      agents: [proposal-specialist]
+      description: "Proposal and RFP management"
+    brand:
+      keywords: [brand, brand identity, brand guidelines, visual identity, brand voice]
+      agents: [brand-manager]
+      description: "Brand strategy and identity"
+    revenue_ops:
+      keywords: [RevOps, revenue operations, CRM, Salesforce, HubSpot, pipeline analytics]
+      agents: [revenue-operations-manager, sales-ops-specialist, marketing-ops-specialist]
+      description: "Revenue operations and CRM management"
+    content_marketing:
+      keywords: [content strategy, blog, whitepaper, content calendar, content marketing]
+      agents: [content-marketing-manager]
+      description: "Content marketing strategy"
+    digital_marketing:
+      keywords: [digital marketing, PPC, paid ads, SEM, display, retargeting]
+      agents: [digital-marketing-manager]
+      description: "Digital and paid marketing"
+    marketing_analytics:
+      keywords: [marketing analytics, attribution, marketing metrics, ROAS, CAC]
+      agents: [marketing-analyst]
+      description: "Marketing analytics and attribution"
+    customer_marketing:
+      keywords: [customer marketing, advocacy, case study, testimonial, reference]
+      agents: [customer-marketing-manager]
+      description: "Customer marketing and advocacy"
+    channel_partners:
+      keywords: [channel, partner, reseller, distributor, channel sales, alliance]
+      agents: [channel-partner-manager]
+      description: "Channel and partner management"
+    account_sales:
+      keywords: [account executive, enterprise sales, strategic account, closing, negotiation]
+      agents: [account-executive]
+      description: "Enterprise and strategic account sales"
+    sales_analytics:
+      keywords: [sales analytics, win rate, pipeline analysis, sales metrics, forecast]
+      agents: [sales-analyst]
+      description: "Sales analytics and forecasting"
+    copywriting:
+      keywords: [copywriting, ad copy, landing page copy, email copy, marketing copy, tagline]
+      agents: [copywriter]
+      description: "Marketing copy and content creation"
 
 router:
   keywords:

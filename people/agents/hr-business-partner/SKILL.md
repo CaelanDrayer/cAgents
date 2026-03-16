@@ -24,7 +24,7 @@ related_agents:
     type: coordinates
   - name: performance-management-specialist
     type: coordinates
-  - name: learning-and-development-manager
+  - name: learning-specialist
     type: coordinates
   - name: hr-manager
     type: collaborates_with

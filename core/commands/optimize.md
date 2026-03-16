@@ -297,7 +297,7 @@ Select controller based on primary optimization type:
 | data | engineering-manager | dba, backend-developer |
 | campaign | campaign-manager | copywriter, growth-hacker |
 | creative | creative-director | game-writer, copywriter |
-| sales | sales-operations-manager | sales-rep |
+| sales | sales-ops-specialist | sales-rep |
 
 ### Plan Output
 

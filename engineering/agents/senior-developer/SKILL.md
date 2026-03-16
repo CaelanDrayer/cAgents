@@ -30,7 +30,7 @@ related_agents:
     type: coordinated_by
   - name: backend-developer
     type: collaborates_with
-  - name: reviewer
+  - name: code-reviewer
     type: reviewed_by
 ---
 

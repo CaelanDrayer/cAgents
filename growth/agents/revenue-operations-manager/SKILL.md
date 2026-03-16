@@ -14,7 +14,7 @@ maxTurns: 30
 related_agents:
   - name: sales-strategist
     type: coordinated_by
-  - name: marketing-operations-manager
+  - name: marketing-ops-specialist
     type: collaborates_with
   - name: customer-success-manager
     type: cross_domain

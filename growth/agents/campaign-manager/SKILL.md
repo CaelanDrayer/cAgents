@@ -27,7 +27,7 @@ related_agents:
     type: coordinates
   - name: digital-marketing-manager
     type: coordinates
-  - name: marketing-operations-manager
+  - name: marketing-ops-specialist
     type: coordinates
 ---
 

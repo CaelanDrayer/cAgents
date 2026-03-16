@@ -16,12 +16,12 @@ Domain-specific patterns for customer experience, legal, and compliance workflow
 - **support-operations-manager**: Support process optimization
 
 **Tier 3** (Complex):
-- **Primary**: vp-customer-support (customer experience coordination)
+- **Primary**: support-director (customer experience coordination)
 - **Supporting**: general-counsel (legal), compliance-officer (compliance), legal-operations-manager, relationship-manager
 
 **Tier 4** (Expert):
 - **Executive**: general-counsel (legal oversight)
-- **Primary**: vp-customer-support (coordination)
+- **Primary**: support-director (coordination)
 - **Supporting**: compliance-officer, customer-advocacy-manager
 
 ## Typical Questions

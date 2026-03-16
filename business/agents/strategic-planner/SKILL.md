@@ -25,7 +25,7 @@ related_agents:
     type: coordinates
   - name: roadmap-planner
     type: coordinates
-  - name: research-specialist
+  - name: business-researcher
     type: coordinates
   - name: operations-manager
     type: collaborates_with

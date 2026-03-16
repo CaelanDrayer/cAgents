@@ -57,7 +57,7 @@ Complexity is determined by a 9-signal scoring system evaluating: component coun
 ### Renamed Agents
 | v9 Name | v10 Name | Domain |
 |---------|----------|--------|
-| cx-director | vp-customer-support | service/ |
+| cx-director | support-director | service/ |
 | culture-champion | culture-and-engagement-manager | people/ |
 | growth-hacker | growth-marketer | business/ |
 

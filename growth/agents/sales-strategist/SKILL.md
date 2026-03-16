@@ -23,7 +23,7 @@ related_agents:
     type: coordinates
   - name: sales-development-rep
     type: coordinates
-  - name: sales-operations-manager
+  - name: sales-ops-specialist
     type: coordinates
   - name: territory-manager
     type: coordinates

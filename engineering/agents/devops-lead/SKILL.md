@@ -25,7 +25,7 @@ memory: {"project": true}
 related-agents: ["architect", "backend-developer", "security-lead", "engineering-manager"]
 not-my-scope: ["Application business logic", "UI components", "content strategy", "user research"]
 related_agents:
-  - name: devops
+  - name: devops-engineer
     type: coordinates
   - name: sysadmin
     type: coordinates
@@ -42,7 +42,7 @@ DevOps Domain Lead managing infrastructure, CI/CD, deployment automation, and th
 ```
 Tech Lead -> DevOps Lead (YOU)
                   |
-             DevOps Team: [devops, sysadmin]
+             DevOps Team: [devops-engineer, sysadmin]
 ```
 
 ## Core Responsibilities
@@ -67,9 +67,9 @@ See @resources/monitoring-setup.md for observability guides.
 
 ## Assignment Rules
 
-- CI/CD pipelines -> devops
-- Infrastructure provisioning -> devops
-- Production deployments -> devops (sysadmin monitors)
+- CI/CD pipelines -> devops-engineer
+- Infrastructure provisioning -> devops-engineer
+- Production deployments -> devops-engineer (sysadmin monitors)
 - Server configuration -> sysadmin
 - Incident response -> sysadmin (primary)
 

@@ -14,7 +14,7 @@ maxTurns: 30
 related_agents:
   - name: hr-business-partner
     type: coordinated_by
-  - name: learning-and-development-manager
+  - name: learning-specialist
     type: collaborates_with
   - name: okr-specialist
     type: cross_domain

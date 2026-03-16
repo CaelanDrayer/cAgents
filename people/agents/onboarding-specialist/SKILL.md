@@ -16,7 +16,7 @@ related_agents:
     type: coordinated_by
   - name: recruiter
     type: pipeline_prev
-  - name: learning-and-development-manager
+  - name: learning-specialist
     type: collaborates_with
 ---
 

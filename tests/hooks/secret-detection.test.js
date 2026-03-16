@@ -61,7 +61,9 @@ describe('secret-detection.cjs', () => {
     });
 
     it('should block Stripe live keys', () => {
-      const result = runHook({ tool_input: { file_path: '/tmp/config.js', content: 'const key = "sk_live_" + "FAKE_TEST_KEY_NOT_REAL";' } });
+      // Split prefix to avoid GitHub push protection false positive on test fixture
+      const stripeKey = 'sk_' + 'live_abcdefghijklmnopqrstuvwx';
+      const result = runHook({ tool_input: { file_path: '/tmp/config.js', content: `const key = "${stripeKey}";` } });
       expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
     });
 

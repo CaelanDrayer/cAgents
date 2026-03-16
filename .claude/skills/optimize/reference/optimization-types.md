@@ -62,7 +62,7 @@
 - **Domain**: Grow
 - **What it optimizes**: Sales cycle, win rate, follow-up completion
 - **Key metrics**: Cycle length, win rate %, follow-up completion %
-- **Controller**: sales-operations-manager
+- **Controller**: sales-ops-specialist
 - **Specialists**: sales-rep
 - **Auto-detection**: Sales docs/CRM configs
 

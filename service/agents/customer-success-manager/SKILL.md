@@ -19,7 +19,7 @@ tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
-related-agents: ["vp-customer-support", "support-agent", "cx-analyst", "knowledge-manager"]
+related-agents: ["support-director", "support-agent", "cx-analyst", "knowledge-manager"]
 not-my-scope: ["Code implementation", "product development", "financial strategy", "HR policies"]
 related_agents:
   - name: account-manager

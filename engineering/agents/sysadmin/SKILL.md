@@ -20,7 +20,7 @@ maxTurns: 30
 related_agents:
   - name: devops-lead
     type: coordinated_by
-  - name: devops
+  - name: devops-engineer
     type: collaborates_with
 ---
 

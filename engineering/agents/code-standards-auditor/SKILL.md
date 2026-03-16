@@ -15,7 +15,7 @@ tools: ["Read","Grep","Glob","Bash"]
 maxTurns: 10
 disallowedTools: ["Task"]
 related_agents:
-  - name: reviewer
+  - name: code-reviewer
     type: coordinated_by
   - name: backend-developer
     type: reviews

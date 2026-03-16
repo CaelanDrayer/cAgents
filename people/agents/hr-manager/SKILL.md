@@ -25,7 +25,7 @@ related_agents:
     type: coordinates
   - name: employee-relations-specialist
     type: coordinates
-  - name: hr-operations-manager
+  - name: hr-ops-specialist
     type: coordinates
   - name: benefits-administrator
     type: coordinates

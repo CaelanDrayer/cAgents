@@ -102,7 +102,7 @@ Planning agents (12):
 - [ ] learning-coordinator, market-research-analyst-planning, okr-specialist
 - [ ] planning-analyst, planning-facilitator, planning-operations-manager
 - [ ] portfolio-manager, predictive-analyst, program-manager, project-manager
-- [ ] research-specialist, resource-planner, risk-dependency-planner
+- [ ] business-researcher, resource-planner, risk-dependency-planner
 - [ ] roadmap-planner, scenario-planner, strategic-planner
 
 Other (6):

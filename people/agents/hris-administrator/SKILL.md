@@ -12,7 +12,7 @@ capabilities:
 tools: ["Read","Write","Grep","Bash","TodoWrite"]
 maxTurns: 30
 related_agents:
-  - name: hr-operations-manager
+  - name: hr-ops-specialist
     type: coordinated_by
   - name: hr-analyst
     type: collaborates_with

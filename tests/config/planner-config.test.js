@@ -75,10 +75,10 @@ describe('domain_overrides.yaml files', () => {
       expect(content).toContain('narrative-director');
     });
 
-    it('business should have operations-manager and campaign-manager', () => {
+    it('business should have operations-manager and product-owner', () => {
       const content = loadOverrides('business');
       expect(content).toContain('operations-manager');
-      expect(content).toContain('campaign-manager');
+      expect(content).toContain('product-owner');
     });
 
     it('business tier_4 should include cpo', () => {
@@ -91,10 +91,10 @@ describe('domain_overrides.yaml files', () => {
       expect(content).toContain('hr-manager');
     });
 
-    it('service should have customer-success-manager and legal-counsel', () => {
+    it('service should have customer-success-manager and general-counsel', () => {
       const content = loadOverrides('service');
       expect(content).toContain('customer-success-manager');
-      expect(content).toContain('legal-counsel');
+      expect(content).toContain('general-counsel');
     });
 
     it('leadership should only have tier_4 (C-suite)', () => {

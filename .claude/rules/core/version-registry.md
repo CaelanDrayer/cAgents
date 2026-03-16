@@ -11,7 +11,7 @@ paths:
 
 All locations where the cAgents version number appears. Keep ALL locations in sync on every release.
 
-## Version Locations (14 total)
+## Version Locations (13 total)
 
 | # | File | Field/Line | Updated By |
 |---|------|-----------|------------|

@@ -25,7 +25,7 @@ related_agents:
     type: collaborates_with
   - name: ux-designer
     type: collaborates_with
-  - name: reviewer
+  - name: code-reviewer
     type: reviewed_by
 ---
 

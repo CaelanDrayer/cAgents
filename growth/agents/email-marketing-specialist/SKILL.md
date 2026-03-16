@@ -16,7 +16,7 @@ related_agents:
     type: coordinated_by
   - name: copywriter
     type: collaborates_with
-  - name: marketing-operations-manager
+  - name: marketing-ops-specialist
     type: collaborates_with
 ---
 

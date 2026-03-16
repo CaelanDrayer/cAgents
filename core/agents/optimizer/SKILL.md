@@ -44,7 +44,7 @@ permissionMode: "bypassPermissions"
 | data | engineering-manager | dba, backend-developer |
 | campaign | campaign-manager | copywriter, growth-hacker |
 | creative | creative-director | game-writer, copywriter |
-| sales | sales-operations-manager | sales-rep |
+| sales | sales-ops-specialist | sales-rep |
 
 ## Risk Classification
 

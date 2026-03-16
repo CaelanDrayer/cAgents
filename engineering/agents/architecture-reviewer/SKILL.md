@@ -13,7 +13,7 @@ tools: ["Read","Grep","Glob"]
 maxTurns: 10
 disallowedTools: ["Task"]
 related_agents:
-  - name: reviewer
+  - name: code-reviewer
     type: coordinated_by
   - name: architect
     type: collaborates_with

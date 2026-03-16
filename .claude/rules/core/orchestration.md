@@ -64,6 +64,48 @@ Wave 0 (Lead): all enrichment. Waves 1-N (Teammates): each runs `/run --session`
 
 Pipeline checks for PAUSE/STOP/RESUME signal files at `sessions/{id}/signals/` before each state transition. See `orchestration-reference.md` for details.
 
+## Plan Quality Requirements (V10.10.0)
+
+Every plan.yaml MUST include these mandatory sections:
+
+### Temporal Interrogation
+Plans must include implementation friction analysis:
+```yaml
+temporal_analysis:
+  hour_1_foundations: "What does the implementer need to know immediately?"
+  hour_2_3_core: "What ambiguities will they hit during core implementation?"
+  hour_4_5_integration: "What will surprise them during integration?"
+  hour_6_plus_polish: "What will they wish they had planned for?"
+```
+
+### NOT In Scope (Mandatory)
+Every plan MUST explicitly document what is deferred:
+```yaml
+not_in_scope:
+  - item: "{deferred work item}"
+    rationale: "{why deferred}"
+    future_consideration: "{when/if to revisit}"
+```
+This prevents scope creep and documents decisions. An empty `not_in_scope` section is acceptable but must be explicitly present.
+
+### Diagrams
+For any non-trivial flow, plans MUST include ASCII diagrams:
+- Data flows
+- State machines
+- Decision trees
+- Dependency graphs
+Diagrams are **deliverables**, not optional. They force externalized thinking and catch edge cases.
+
+### What Already Exists
+Plans MUST identify existing code that partially solves sub-problems:
+```yaml
+existing_code:
+  - path: "{file_path}"
+    relevance: "{what it already does}"
+    action: "reuse|extend|replace"
+```
+This prevents redundant implementation and builds on existing work.
+
 ## Key Principles
 
 1. **Config-driven**: State machine reads pipeline_config.yaml

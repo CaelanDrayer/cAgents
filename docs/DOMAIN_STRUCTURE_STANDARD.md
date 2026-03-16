@@ -97,16 +97,16 @@ Revenue & acquisition: marketing, sales, partnerships
 
 **Includes**:
 - Marketing: marketing-strategist, content-marketing-manager, seo-specialist
-- Sales: sales-strategist, account-executive, sales-operations-manager
+- Sales: sales-strategist, account-executive, sales-ops-specialist
 - Growth: growth-marketer, demand-generation-manager
 
 ### People (19 agents)
 Talent & culture: HR, talent acquisition, learning & development
 
 **Includes**:
-- HR: chro, hr-business-partner, hr-operations-manager
+- HR: chro, hr-business-partner, hr-ops-specialist
 - Talent: recruiter, talent-acquisition-manager
-- Development: learning-and-development-manager
+- Development: learning-specialist
 
 ### Service (33 agents)
 Support & governance: customer experience, legal, compliance

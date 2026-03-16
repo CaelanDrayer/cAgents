@@ -14,7 +14,7 @@ maxTurns: 30
 related_agents:
   - name: support-operations-manager
     type: coordinated_by
-  - name: support-manager
+  - name: support-supervisor
     type: collaborates_with
   - name: customer-support-rep
     type: reviews

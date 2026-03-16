@@ -29,6 +29,30 @@ planner:
       keywords: [game programming, game engine, gameplay, physics engine, Unity, Unreal, Godot, shader, rendering]
       agents: [engineering-manager]
       description: "Game programming routed through engineering-manager to game-programmer"
+    security:
+      keywords: [security, vulnerability, penetration, OWASP, CVE, threat, authentication security]
+      agents: [security-lead, security-engineer]
+      description: "Security assessment, vulnerability analysis, and threat modeling"
+    testing:
+      keywords: [test, QA, quality assurance, unit test, integration test, e2e, coverage]
+      agents: [qa-lead]
+      description: "Testing strategy, QA coordination, and coverage analysis"
+    architecture:
+      keywords: [architecture, system design, patterns, microservice, monolith, event-driven]
+      agents: [architect]
+      description: "System architecture and design pattern guidance"
+    code_review:
+      keywords: [code review, PR review, pull request, review code]
+      agents: [code-reviewer]
+      description: "Code review and pull request evaluation"
+    database:
+      keywords: [database, schema, migration, query optimization, SQL, NoSQL, index]
+      agents: [dba]
+      description: "Database design, schema management, and query optimization"
+    performance:
+      keywords: [performance, optimize, profiling, bottleneck, latency, throughput]
+      agents: [performance-analyzer]
+      description: "Performance profiling, bottleneck identification, and optimization"
 
 router:
   keywords:

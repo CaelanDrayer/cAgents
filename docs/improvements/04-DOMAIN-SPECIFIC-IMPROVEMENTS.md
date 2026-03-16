@@ -94,7 +94,7 @@ Improvements targeted at specific cAgents domains and cross-domain capabilities.
 - **Implementation notes**:
   - Engineering controller detects debugging intent ("fix bug", "debug", "investigate error")
   - Generates 2-4 hypotheses based on error description and codebase context
-  - Spawns independent investigators (using research-specialist or backend-developer)
+  - Spawns independent investigators (using business-researcher or backend-developer)
   - Each investigator reports: hypothesis, evidence for/against, confidence level
   - Controller selects highest-confidence hypothesis and routes fix to appropriate executor
 

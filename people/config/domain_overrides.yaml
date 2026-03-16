@@ -11,8 +11,44 @@ planner:
   specialist_routing:
     recruiting:
       keywords: [recruit, hire, candidate, sourcing, interview, offer, talent pipeline, job posting]
-      agents: [talent-acquisition-manager]
+      agents: [recruiter, recruiting-coordinator, talent-acquisition-manager]
       description: "Recruiting and talent acquisition coordination"
+    compensation:
+      keywords: [salary, compensation, benefits, equity, pay, bonus, package]
+      agents: [compensation-analyst, benefits-administrator]
+      description: "Compensation benchmarking, benefits administration, and pay analysis"
+    employee_relations:
+      keywords: [conflict, investigation, grievance, disciplinary, mediation]
+      agents: [employee-relations-specialist]
+      description: "Employee relations, conflict resolution, and workplace investigations"
+    learning:
+      keywords: [training, development, learning, skills, certification, course]
+      agents: [learning-specialist]
+      description: "Learning programs, skill development, and training coordination"
+    culture:
+      keywords: [culture, engagement, recognition, employee experience, survey, morale]
+      agents: [culture-and-engagement-manager]
+      description: "Culture initiatives, employee engagement, and recognition programs"
+    diversity:
+      keywords: [diversity, inclusion, DEI, equity, ERG, belonging]
+      agents: [diversity-and-inclusion-manager]
+      description: "Diversity, equity, and inclusion strategy and programs"
+    workforce:
+      keywords: [headcount, capacity, workforce plan, org structure, succession]
+      agents: [workforce-planning-analyst, organizational-development-specialist]
+      description: "Workforce planning, org design, and succession planning"
+    hris:
+      keywords: [HRIS, system, data integrity, user management, HR technology]
+      agents: [hris-administrator, hr-ops-specialist]
+      description: "HRIS administration, HR technology, and data management"
+    performance_mgmt:
+      keywords: [performance review, goals, OKR, calibration, feedback, evaluation]
+      agents: [performance-management-specialist]
+      description: "Performance management, goal setting, and calibration"
+    onboarding:
+      keywords: [onboarding, new hire, orientation, first day, ramp up]
+      agents: [onboarding-specialist]
+      description: "New hire onboarding, orientation, and ramp-up programs"
 
 router:
   keywords:

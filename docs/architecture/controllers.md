@@ -42,7 +42,7 @@ After each executor completes:
 | Creative | narrative-director | + story-architect, editor | cco + narrative-director |
 | Business | operations-manager, campaign-manager | + strategic-planner, marketing-strategist | cpo + cfo |
 | People | hr-manager | + talent-acquisition-manager | chro + hr-manager |
-| Service | customer-success-manager, legal-counsel | + vp-customer-support | general-counsel |
+| Service | customer-success-manager, legal-counsel | + support-director | general-counsel |
 
 ## Coordination Log
 

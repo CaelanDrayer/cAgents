@@ -26,7 +26,7 @@ related_agents:
     type: collaborates_with
   - name: marketing-strategist
     type: cross_domain
-  - name: research-specialist
+  - name: business-researcher
     type: cross_domain
 ---
 

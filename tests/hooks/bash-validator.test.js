@@ -93,5 +93,15 @@ describe('bash-validator.cjs', () => {
       const result = runHook({ tool_input: { command: '' } });
       expect(result.continue).toBe(true);
     });
+
+    it('should allow rm -r on specific paths like /tmp/foo', () => {
+      const result = runHook({ tool_input: { command: 'rm -r /tmp/gstack' } });
+      expect(result.continue).toBe(true);
+    });
+
+    it('should allow rm -rf on specific subdirectory paths', () => {
+      const result = runHook({ tool_input: { command: 'rm -rf /tmp/build-cache' } });
+      expect(result.continue).toBe(true);
+    });
   });
 });

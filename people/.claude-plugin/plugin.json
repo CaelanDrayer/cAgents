@@ -1,6 +1,6 @@
 {
   "name": "cagents-people",
-  "version": "10.9.0",
+  "version": "10.11.0",
   "description": "cAgents people domain - 19 HR, talent acquisition, culture, and people operations agents",
   "agents": [
     "./agents/benefits-administrator/SKILL.md",
@@ -12,9 +12,9 @@
     "./agents/hr-business-partner/SKILL.md",
     "./agents/hr-compliance-specialist/SKILL.md",
     "./agents/hr-manager/SKILL.md",
-    "./agents/hr-operations-manager/SKILL.md",
+    "./agents/hr-ops-specialist/SKILL.md",
     "./agents/hris-administrator/SKILL.md",
-    "./agents/learning-and-development-manager/SKILL.md",
+    "./agents/learning-specialist/SKILL.md",
     "./agents/onboarding-specialist/SKILL.md",
     "./agents/organizational-development-specialist/SKILL.md",
     "./agents/performance-management-specialist/SKILL.md",

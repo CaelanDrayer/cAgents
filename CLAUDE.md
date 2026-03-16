@@ -80,15 +80,16 @@ quality/        # completion, validation-framework, implicit-discovery (3 files)
 - **Tier 2**: Controllers (coordinate via batch delegation)
 - **Tier 3**: Execution agents (implement work items)
 - **Tier 4**: Support agents (foundational services)
-- **Total**: 213 agents across 8 business domains
+- **Total**: 208 agents across 8 business domains
 - **Execution**: Event-driven pipeline with progressive paths (minimal/medium/full), revision routing, reviewer loops
 
 **Business Domains** (8):
 | Domain | Dir | Agents | Capability |
 |--------|-----|--------|------------|
-| **Engineering** | `engineering/` | 33 | Software engineering, infrastructure, security, QA, game programming |
+| **Engineering** | `engineering/` | 32 | Software engineering, infrastructure, security, QA, game programming |
 | **Creative** | `creative/` | 30 | Creative writing, narrative design, literary criticism, game art, audio |
-| **Business** | `business/` | 69 | Strategy, product, operations, finance, marketing, sales |
+| **Business** | `business/` | 31 | Strategy, product, operations, finance |
+| **Growth** | `growth/` | 35 | Marketing, sales, revenue operations |
 | **People** | `people/` | 19 | HR, talent acquisition, culture |
 | **Service** | `service/` | 32 | Customer support, CX, legal, compliance, governance |
 | **Leadership** | `leadership/` | 10 | C-suite executives (used by /org, not directly routable) |
@@ -179,9 +180,9 @@ Controllers are the coordination hub between planning and execution. See @.claud
 |--------|--------|--------|--------|
 | **Engineering** | engineering-manager | + architect, security-lead | cto + engineering-manager + architect |
 | **Creative** | narrative-director | + story-architect, editor | cco + narrative-director |
-| **Business** | operations-manager, campaign-manager | + strategic-planner, marketing-strategist | cpo + cfo + strategic-planner |
+| **Business** | operations-manager, product-owner | + strategic-planner, marketing-strategist | cpo + cfo + strategic-planner |
 | **People** | hr-manager | + talent-acquisition-manager | chro + hr-manager |
-| **Service** | customer-success-manager, legal-counsel | + vp-customer-support, compliance-director | general-counsel + vp-customer-support |
+| **Service** | customer-success-manager, general-counsel | + support-director, compliance-officer | general-counsel + support-director |
 
 **Discovery**: Planner loads `{domain}/config/domain_overrides.yaml` -> `controller_catalog` -> matches tier + domain
 
@@ -398,7 +399,7 @@ cAgents/
 +-- creative/                # Creative domain (30 agents)
 +-- business/                # Business domain (69 agents)
 +-- people/                  # People domain (19 agents)
-+-- service/                 # Service domain (32 agents)
++-- service/                 # Service domain (33 agents)
 +-- leadership/              # Leadership domain (10 C-suite agents)
 +-- core/                    # Core infrastructure (15 agents)
 +-- shared/                  # Cross-domain specialists (4 agents)
@@ -446,7 +447,7 @@ cAgents is distributed as a Claude Code plugin. See `.claude-plugin/plugin.json`
 ```
 
 **Key Manifest Fields**:
-- `agents`: Array of SKILL.md paths (213 agents registered)
+- `agents`: Array of SKILL.md paths (208 agents registered)
 - `skills`: Path to skills directory (`.claude/skills/`)
 - `hooks`: Path to settings.json for hook registration
 - `settings.json`: Default settings applied when plugin loads (under `agent` key for subagent defaults)
@@ -476,16 +477,16 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 
 **Skills**: `/org`, `/run`, `/team`, `/designer`, `/review`, `/optimize`, `/helper`, `/context` (in `.claude/skills/`)
 **Built-in**: `/memory`, `/init` (Claude Code native)
-**Agents**: 213 total (15 core + 4 shared + 10 leadership + 184 domain specialists)
-**Domains**: Engineering (33), Creative (30), Business (69), People (19), Service (32), Leadership (10), Core (15), Shared (4)
+**Agents**: 208 total (15 core + 4 shared + 10 leadership + 179 domain specialists)
+**Domains**: Engineering (32), Creative (30), Business (31), Growth (35), People (19), Service (32), Leadership (10), Core (15), Shared (4)
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/domain_overrides.yaml`, `Agent_Memory/_system/config/pipeline_config.yaml`
 **Hooks**: 13 event types (17 supported by Claude Code), 16 registered CJS hooks (19 .cjs files), invoked via `run-hook.cjs` launcher
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
-**Tests**: `npm test` runs 265 Vitest tests (hooks + config validation)
-**Version**: 10.9.0
+**Tests**: `npm test` runs 271 Vitest tests (hooks + config validation)
+**Version**: 10.11.0
 
 ## Troubleshooting
 

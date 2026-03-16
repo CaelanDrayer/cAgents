@@ -1,11 +1,10 @@
 {
   "name": "cagents-business",
-  "version": "10.9.0",
+  "version": "10.11.0",
   "description": "cAgents business domain - Strategy, product management, operations, finance, and planning agents",
   "agents": [
     "./agents/agile-coach/SKILL.md",
     "./agents/business-analyst/SKILL.md",
-    "./agents/business-analyst-planning/SKILL.md",
     "./agents/business-development-manager/SKILL.md",
     "./agents/change-management-specialist/SKILL.md",
     "./agents/facilities-manager/SKILL.md",
@@ -27,8 +26,7 @@
     "./agents/program-manager/SKILL.md",
     "./agents/project-manager/SKILL.md",
     "./agents/quality-manager/SKILL.md",
-    "./agents/quality-manager-business/SKILL.md",
-    "./agents/research-specialist/SKILL.md",
+    "./agents/business-researcher/SKILL.md",
     "./agents/resource-planner/SKILL.md",
     "./agents/risk-manager/SKILL.md",
     "./agents/roadmap-planner/SKILL.md",

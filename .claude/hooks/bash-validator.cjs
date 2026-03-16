@@ -12,14 +12,21 @@
 
 const { createHook } = require('./hook-utils.cjs');
 
-const BLOCKED_PATTERNS = [
-  'rm -rf /',
-  'rm -rf ~',
+// Simple string patterns (checked via includes)
+const BLOCKED_STRINGS = [
   ':(){ :|:& };:',   // Fork bomb
   '> /dev/sda',
   'dd if=/dev/zero',
   'mkfs',
   'sudo '
+];
+
+// Regex patterns for more precise matching
+const BLOCKED_REGEXES = [
+  { pattern: /rm\s+-r[f]?\s+\/\s*$/, label: 'rm -rf /' },          // rm -rf / (root only, not /tmp/foo)
+  { pattern: /rm\s+-r[f]?\s+\/[^a-zA-Z]/, label: 'rm -rf /' },     // rm -rf /  (followed by space/pipe/etc, not a path)
+  { pattern: /rm\s+-r[f]?\s+~\s*$/, label: 'rm -rf ~' },           // rm -rf ~ (home dir)
+  { pattern: /rm\s+-r[f]?\s+~\/\s*$/, label: 'rm -rf ~/' },        // rm -rf ~/ (home dir)
 ];
 
 const GIT_WARNING_PATTERNS = [
@@ -34,11 +41,19 @@ createHook('BashValidator', async (input) => {
 
   if (!command) return null;
 
-  // Check for blocked patterns
-  for (const pattern of BLOCKED_PATTERNS) {
+  // Check for blocked string patterns
+  for (const pattern of BLOCKED_STRINGS) {
     if (command.includes(pattern)) {
       console.error(`[BashValidator] BLOCKED: ${pattern}`);
       return { deny: true, reason: `Blocked dangerous command: ${pattern}` };
+    }
+  }
+
+  // Check for blocked regex patterns (more precise matching)
+  for (const { pattern, label } of BLOCKED_REGEXES) {
+    if (pattern.test(command)) {
+      console.error(`[BashValidator] BLOCKED: ${label}`);
+      return { deny: true, reason: `Blocked dangerous command: ${label}` };
     }
   }
 

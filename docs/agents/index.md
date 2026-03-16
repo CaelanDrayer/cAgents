@@ -77,11 +77,11 @@ Consolidated from former Make (product/game design), Grow (marketing/sales), and
 
 ## People (19 agents)
 
-HR, talent acquisition, culture, workforce planning. Key agents: hr-manager, talent-acquisition-manager, recruiter, compensation-analyst, learning-and-development-manager.
+HR, talent acquisition, culture, workforce planning. Key agents: hr-manager, talent-acquisition-manager, recruiter, compensation-analyst, learning-specialist.
 
 ## Service (32 agents)
 
-Customer support, CX, legal, compliance, governance. Key agents: customer-success-manager, legal-counsel, vp-customer-support, general-counsel, compliance-director, compliance-officer.
+Customer support, CX, legal, compliance, governance. Key agents: customer-success-manager, legal-counsel, support-director, general-counsel, compliance-director, compliance-officer.
 
 ## Leadership (10 agents)
 

@@ -23,6 +23,42 @@ planner:
       keywords: [detect and rewrite, detect and humanize, full AI scan, AI cleanup]
       agents: [ai-writing-detector, ai-writing-rewriter]
       description: "Full pipeline: detect AI patterns then rewrite to humanize"
+    fiction_writing:
+      keywords: [novel, fiction, chapter, scene, character, plot, story writing]
+      agents: [prose-stylist, character-designer]
+      description: "Fiction writing, scene crafting, and character development"
+    editing:
+      keywords: [edit, proofread, copy edit, manuscript review, line edit]
+      agents: [editor, copy-editor]
+      description: "Manuscript editing, proofreading, and copy editing"
+    worldbuilding:
+      keywords: [world, setting, lore, magic system, geography, culture, history]
+      agents: [worldbuilder, lore-keeper, setting-designer]
+      description: "World creation, lore development, and setting design"
+    dialogue:
+      keywords: [dialogue, conversation, voice, speech, dialect]
+      agents: [dialogue-specialist, voice-coach]
+      description: "Dialogue writing, voice coaching, and speech patterns"
+    game_narrative:
+      keywords: [game story, game writing, branching narrative, quest, interactive fiction]
+      agents: [game-writer, narrative-game-designer]
+      description: "Game narrative design, branching stories, and quest writing"
+    game_art:
+      keywords: [concept art, character design visual, environment art, style guide]
+      agents: [concept-artist, animator]
+      description: "Concept art, character visual design, and animation"
+    music_audio:
+      keywords: [soundtrack, music, sound effect, audio, score, composition]
+      agents: [music-composer, sound-designer]
+      description: "Music composition, sound design, and audio production"
+    literary_analysis:
+      keywords: [critique, literary analysis, review manuscript, evaluate writing]
+      agents: [literary-critic]
+      description: "Literary criticism, manuscript evaluation, and writing analysis"
+    research:
+      keywords: [research, fact check, historical accuracy, reference material]
+      agents: [creative-researcher]
+      description: "Research, fact-checking, and reference material gathering"
 
 router:
   keywords:

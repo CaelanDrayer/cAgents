@@ -34,7 +34,7 @@ controller_catalog:
         - "HR policy implementation"
       complexity: tier_2
 
-  # Note: hr-operations-manager is an execution agent (tier: execution in SKILL.md).
+  # Note: hr-ops-specialist is an execution agent (tier: execution in SKILL.md).
   # talent-acquisition-manager is a controller listed in domain_overrides.yaml.
 
   tier_3:

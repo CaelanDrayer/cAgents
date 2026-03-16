@@ -12,7 +12,7 @@ capabilities:
 tools: ["Read","Write","Grep","Glob","Bash","TodoWrite"]
 maxTurns: 30
 related_agents:
-  - name: vp-customer-support
+  - name: support-director
     type: coordinated_by
   - name: technical-support-engineer
     type: pipeline_prev
