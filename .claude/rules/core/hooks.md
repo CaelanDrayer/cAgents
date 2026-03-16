@@ -502,6 +502,12 @@ The `bash -c` wrapper provides a 3-tier fallback chain for resolving the plugin 
 - Check matcher pattern for PreToolUse
 - Test hook manually: `echo '{}' | node .claude/hooks/<name>.cjs`
 
+### "SessionEnd hook...team-stop...failed: Hook cancelled"
+- This is **expected** when cancelling a session (Ctrl+C, escape, or closing Claude Code)
+- Claude Code terminates SessionEnd hooks during teardown before they can finish
+- No data is lost or corrupted — all file writes are individually try-catch guarded
+- The team session's final metrics/status may not be updated, but this is harmless
+
 ### Hook output not shown
 - Ensure using createHook() factory (handles output correctly)
 - Check JSON is valid: `echo '{}' | node .claude/hooks/<name>.cjs 2>/dev/null | node -e "process.stdin.on('data',d=>console.log(JSON.parse(d)))"`

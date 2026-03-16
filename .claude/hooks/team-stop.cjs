@@ -5,6 +5,11 @@
  *
  * Runs on SessionEnd to finalize team metrics and update status.
  *
+ * NOTE: When a user cancels a session, Claude Code may terminate this hook
+ * before it completes, producing "Hook cancelled" in the output. This is
+ * expected behavior — no data is lost or corrupted. All writeFileSync calls
+ * are individually try-catch guarded to handle partial teardown gracefully.
+ *
  * Input (stdin): JSON with session context
  * Output (stdout): JSON with system message
  */

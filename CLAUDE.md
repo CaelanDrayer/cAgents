@@ -504,5 +504,6 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 | Orphaned team resources | TeamDelete or remove `~/.claude/teams/{name}/` and `~/.claude/tasks/{name}/` |
 | Hook not running | Check `.claude/settings.json` registration, verify `node` in PATH |
 | Hook blocks unexpectedly | Test: `echo '{}' \| node .claude/hooks/<name>.cjs` |
+| `SessionEnd hook...team-stop...failed: Hook cancelled` | Expected when cancelling a session — Claude Code terminates hooks during teardown before they finish. No data is lost or corrupted. |
 
 See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
