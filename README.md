@@ -119,6 +119,10 @@ See `docs/RELEASE_NOTES.md` for detailed history. Recent:
 - **V10.3.0** -- Creative domain overhaul (24->30 agents, all on Opus 4.6)
 - **V10.0.0** -- 8 business domains, agent chaining with topological execution
 
+## AgentPath - Session Visualizer
+
+[AgentPath](https://github.com/CaelanDrayer/AgentPath) *(incoming)* is a companion web UI for visualizing cAgents session data. It reads from `Agent_Memory/sessions/` and renders agent trees, pipeline timelines, work item DAGs, and file change logs in real time.
+
 ## License
 
 MIT License - See [LICENSE](LICENSE) for details.
