@@ -41,6 +41,7 @@ Write `status.yaml` at every phase transition:
 
 ```yaml
 session_id: optimize_20260204_143022
+session_type: optimize
 phase: analysis
 phase_history:
   - {phase: detection, started: "...", completed: "...", result: "20 opportunities detected"}

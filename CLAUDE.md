@@ -161,7 +161,7 @@ Users state outcomes, not requirements. The planner unpacks everything needed.
 
 **5 Steps**: Request Analysis -> Component Extraction (UNDERSTAND/DESIGN/BUILD/VERIFY/DOCUMENT) -> Implicit Discovery (security, testing, infrastructure) -> Dependency Mapping -> Work Item Generation (30+ items with acceptance criteria)
 
-**Output** (`decomposition.yaml`): Work items with IDs, types, acceptance criteria, dependencies, plus dependency graph with critical path and parallel groups.
+**Output** (`decomposition.yaml`): Work items with IDs, types, acceptance criteria, dependencies, optional `tags: []` array for categorization, plus dependency graph with critical path and parallel groups.
 
 **Controller Integration**: Controllers receive decomposition, ask clarifying questions for ambiguous items, coordinate execution respecting dependencies, verify acceptance criteria.
 
@@ -194,6 +194,7 @@ Controllers are the coordination hub between planning and execution. See @.claud
 
 **Coordination Log** (`Agent_Memory/sessions/{session_id}/workflow/coordination_log.yaml`):
 ```yaml
+schema_version: "1"
 controller: cagents:engineering-manager
 objectives: [...]
 questions_asked: [{question, delegated_to, answer}, ...]
@@ -201,6 +202,8 @@ synthesized_solution: {approach, rationale, implementation_steps, risks}
 implementation_tasks: [{task_id, name, assigned_to, acceptance_criteria, status}, ...]
 status: completed
 ```
+
+**Canonical Sources**: `workflow/work_items.yaml` is the canonical source for work item definitions (IDs, descriptions, acceptance criteria, dependencies). `team/task_list.yaml` is a status-only overlay (IDs + status + assigned_to). Parsers should read work_items.yaml for structure and task_list.yaml for current status.
 
 ## Complexity Tiers
 
@@ -486,7 +489,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 271 Vitest tests (hooks + config validation)
-**Version**: 10.11.0
+**Version**: 10.12.0
 
 ## Troubleshooting
 

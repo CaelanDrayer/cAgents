@@ -154,9 +154,10 @@ Analyze the target to determine review type:
 8. Load framework-specific patterns from `Agent_Memory/_system/commands/review/framework_patterns.yaml`
 9. If `--baseline`: load `Agent_Memory/_system/commands/review/baseline.yaml` into session context for Phase 3 filtering
 10. Create session: `Agent_Memory/sessions/review_{YYYYMMDD_HHMMSS}/`
-11. Context-aware analysis: git hotspots, PR context, file priority scoring
-12. Analyze scope and determine parallel execution strategy
-13. Write `scope_analysis.yaml` and `execution_strategy.yaml`
+11. Write `instruction.yaml` with `session_type: review`, `command: /review`, `request`, and `created_at`
+12. Context-aware analysis: git hotspots, PR context, file priority scoring
+13. Analyze scope and determine parallel execution strategy
+14. Write `scope_analysis.yaml` and `execution_strategy.yaml`
 
 ### Phase 2: Execute Review with Parallel Agents
 Run agents in parallel groups. See @reference/agent-groups.md for group composition.

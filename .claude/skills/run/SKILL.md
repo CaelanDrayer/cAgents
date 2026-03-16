@@ -87,10 +87,12 @@ If `--session` was provided, use that directory instead and skip session creatio
 Write `instruction.yaml`:
 ```yaml
 session_id: {SESSION_ID}
+session_type: run
 command: /run
 request: "{user_request}"
 created_at: "{ISO_TIMESTAMP}"
 flags: {parsed_flags}
+parent_session_id: {PARENT_SESSION_ID or null}
 metadata:
   working_directory: {CWD}
 ```
@@ -103,7 +105,10 @@ created_at: "{ISO_TIMESTAMP}"
 state_history:
   - state: INIT
     entered_at: "{ISO_TIMESTAMP}"
+    duration_ms: null
 ```
+
+Note: `duration_ms` is computed at state transition time (ms between `entered_at` and the next state's `entered_at`). The current (latest) state has `duration_ms: null` until the next transition.
 
 **ACTION 2 -- Load pipeline config:**
 
@@ -299,6 +304,11 @@ INSTRUCTIONS:
    inputs_consumed: [{inputs}]
    outputs_produced: [{outputs}]
    next_state: {next_state}
+5. After writing each event, update workflow/events/index.yaml with the ordered event list:
+   ```yaml
+   events: [EVT-1, EVT-2, EVT-3, ...]
+   ```
+   This provides authoritative event ordering without requiring numeric sort of filenames.
 `
 })
 ```
@@ -446,7 +456,7 @@ If `--dry-run` with `--team`: Display plan summary and team composition, then ST
 
 - **Orchestrator** (level 1): Enrich context -> enriched_context.yaml
 - **Universal-planner** (level 1): Plan objectives -> plan.yaml
-- **Task-decomposer** (level 1): Decompose -> work_items.yaml
+- **Task-decomposer** (level 1): Decompose -> work_items.yaml (each item may include optional `tags: []` for categorization)
 - **Prompt-engineer** (level 1): Craft prompts -> delegation_prompts.yaml
 - **Controller** (level 1, dynamic): Coordinate execution with reviewer loop -> coordination_log.yaml
 - **Universal-validator** (level 1): Validate -> validation_report.yaml (PASS/FAIL/REVISE)

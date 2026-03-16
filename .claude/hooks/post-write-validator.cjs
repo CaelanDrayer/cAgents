@@ -99,7 +99,13 @@ createHook('PostWriteValidator', async (input) => {
       const auditFile = path.join(auditDir, 'file_changes.log');
       const now = new Date().toISOString();
       const status = warnings.length > 0 ? 'WARN' : 'OK';
-      const line = `${now} | ${toolName} | ${status} | ${filePath}\n`;
+      // PC-03: NDJSON format for reliable parsing (replaces pipe-delimited)
+      const line = JSON.stringify({
+        timestamp: now,
+        tool: toolName,
+        status: status === 'OK' ? 'success' : status === 'WARN' ? 'success' : 'failure',
+        file_path: filePath
+      }) + '\n';
       fs.appendFileSync(auditFile, line);
     } catch { /* best effort */ }
   }

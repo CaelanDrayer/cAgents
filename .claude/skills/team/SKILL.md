@@ -94,7 +94,20 @@ mkdir -p "${SESSION_DIR}/workflow/events"
 mkdir -p "${SESSION_DIR}/outputs"
 ```
 
-Write `instruction.yaml` and `status.yaml` with initial state INIT.
+Write `instruction.yaml`:
+```yaml
+session_id: {SESSION_ID}
+session_type: team
+command: /team
+request: "{user_request}"
+created_at: "{ISO_TIMESTAMP}"
+flags: {parsed_flags}
+parent_session_id: {PARENT_SESSION_ID or null}
+metadata:
+  working_directory: {CWD}
+```
+
+Write `status.yaml` with initial state INIT.
 
 **2b. Classify domain and tier (inline):**
 
@@ -437,6 +450,24 @@ TeamDelete()
    - Final validation status
    - Output file locations
    - If partial: which items completed vs blocked vs not started (see below)
+
+5. Write per-wave metrics to `team/metrics/parallelism.yaml`:
+```yaml
+wave_stats:
+  - wave: 1
+    items: 3
+    peak_concurrent: 3
+    duration_seconds: 120
+    gate_result: PASS
+  - wave: 2
+    items: 4
+    peak_concurrent: 4
+    duration_seconds: 180
+    gate_result: PASS
+total_waves: 3
+total_items: 10
+total_duration_seconds: 420
+```
 
 ## Cross-Wave Coordination
 

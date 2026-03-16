@@ -50,6 +50,7 @@ Agent_Memory/sessions/designer_{YYYYMMDD_HHMMSS}/
 
 ```yaml
 session_id: designer_20260204_143022
+session_type: designer
 version: "3.0"
 status: active
 current_phase: refinement

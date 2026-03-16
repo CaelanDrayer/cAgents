@@ -41,8 +41,12 @@ INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED ->
 - **Universal-planner** (ORCHESTRATED): plan.yaml
 - **Task-decomposer** (PLANNED): work_items.yaml
 - **Prompt-engineer** (DECOMPOSED): delegation_prompts.yaml
-- **Controller** (PROMPTS_READY): coordination_log.yaml (with executor+reviewer loops)
+- **Controller** (PROMPTS_READY): coordination_log.yaml with `schema_version: "1"` (with executor+reviewer loops)
 - **Universal-validator** (COORDINATED): validation_report.yaml
+
+### Canonical File Roles
+- `workflow/work_items.yaml`: Canonical source for work item definitions (IDs, descriptions, acceptance criteria, dependencies)
+- `team/task_list.yaml`: Status-only overlay (IDs + status + assigned_to)
 
 ### Handoff Documents (V10.6.0)
 

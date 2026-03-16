@@ -105,6 +105,7 @@ mkdir -p "${SESSION_DIR}/objections"
 Write `instruction.yaml`:
 ```yaml
 session_id: {SESSION_ID}
+session_type: org
 command: /org
 request: "{user_instruction}"
 created_at: "{ISO_TIMESTAMP}"
@@ -120,6 +121,7 @@ created_at: "{ISO_TIMESTAMP}"
 state_history:
   - state: INIT
     entered_at: "{ISO_TIMESTAMP}"
+    duration_ms: null
 ```
 
 **2b. Call TodoWrite (mandatory):**

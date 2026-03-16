@@ -140,9 +140,15 @@ createHook('SubagentStopTracker', async (input) => {
 
     if (insertedStop) {
       // Also add completion summary and duration if available
+      // PC-12: Structured completion_summary with outcome field
       const summaryLines = [];
       if (lastMessage) {
-        summaryLines.push(`    completion_summary: "${lastMessage.replace(/"/g, '\\"').slice(0, 300)}"`);
+        // Extract outcome from first sentence of the message
+        const firstSentence = lastMessage.split(/[.!?\n]/)[0].trim().slice(0, 100);
+        const outcome = firstSentence || 'Completed';
+        summaryLines.push(`    completion_summary:`);
+        summaryLines.push(`      outcome: "${outcome.replace(/"/g, '\\"')}"`);
+        summaryLines.push(`      detail: "${lastMessage.replace(/"/g, '\\"').slice(0, 300)}"`);
       }
       // Calculate duration from spawned_at if available
       const spawnedMatch = newLines.join('\n').match(new RegExp(`id: "${agentId}"[\\s\\S]*?spawned_at: "([^"]+)"`));
@@ -163,8 +169,13 @@ createHook('SubagentStopTracker', async (input) => {
       fs.writeFileSync(treeFile, newLines.join('\n'));
       console.error(`[SubagentStopTracker] Agent ${agentId} (${subagentType}) stopped`);
     } else {
-      // Fallback: append at end
-      const extra = lastMessage ? `\n    completion_summary: "${lastMessage.replace(/"/g, '\\"').slice(0, 300)}"` : '';
+      // Fallback: append at end (PC-12: structured completion_summary)
+      let extra = '';
+      if (lastMessage) {
+        const firstSentence = lastMessage.split(/[.!?\n]/)[0].trim().slice(0, 100);
+        const outcome = firstSentence || 'Completed';
+        extra = `\n    completion_summary:\n      outcome: "${outcome.replace(/"/g, '\\"')}"\n      detail: "${lastMessage.replace(/"/g, '\\"').slice(0, 300)}"`;
+      }
       fs.appendFileSync(treeFile, `    stopped_at: "${now}"${extra}\n`);
       console.error(`[SubagentStopTracker] Agent ${agentId} (${subagentType}) stopped (appended)`);
     }

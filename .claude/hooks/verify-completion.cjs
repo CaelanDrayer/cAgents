@@ -128,13 +128,16 @@ createHook('VerifyCompletion', async (input) => {
 
   const result = verifyCompletion(sessionDir);
 
-  // Write completion summary
+  // PC-08: Always write completion_summary.yaml with status field
+  // Status: completed (no issues), failed (issues found), interrupted (other)
   ensureDir(sessionDir);
   const summaryFile = path.join(sessionDir, 'completion_summary.yaml');
   const timestamp = new Date().toISOString();
+  const completionStatus = result.issues.length === 0 ? 'completed' : 'failed';
   const content = `# Completion Summary
 generated_at: "${timestamp}"
 verified_by: verify-completion-hook
+status: ${completionStatus}
 
 verification_result:
   passed: ${result.issues.length === 0}

@@ -121,9 +121,11 @@ When controllers delegate questions, execution agents MUST respond with:
 ## CRITICAL: Do Not Ask Permission
 
 After completing coordination:
-- Write coordination_log.yaml, handoff document, and completion event
+- Write coordination_log.yaml (with `schema_version: "1"` at top), handoff document, and completion event
 - Signal completion (coordination_log.yaml with complete status)
 - DO NOT ask user to review or approve — /run auto-proceeds to validation
+
+**Canonical Sources**: `workflow/work_items.yaml` is the canonical source for work item definitions. `team/task_list.yaml` is a status-only overlay (IDs + status + assigned_to).
 
 ---
 
