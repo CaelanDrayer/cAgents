@@ -42,7 +42,9 @@ createHook('TeamStop', async (input) => {
     let updated = timingContent
       .replace(/completed_at:\s*null/, `completed_at: "${now}"`)
       .replace(/total_duration_seconds:\s*\d+/, `total_duration_seconds: ${metrics.duration_seconds}`);
-    fs.writeFileSync(timingFile, updated);
+    try { fs.writeFileSync(timingFile, updated); } catch (e) {
+      console.error(`[TeamStop] Failed to write timing: ${e.message}`);
+    }
   }
 
   // Get speedup factor
@@ -61,7 +63,9 @@ createHook('TeamStop', async (input) => {
       .replace(/phase:\s*\w+/, 'phase: completed')
       .replace(/completed_at:\s*null/, `completed_at: "${now}"`)
       .replace(/result:\s*null/, `result: ${success ? 'success' : 'partial'}`);
-    fs.writeFileSync(statusFile, statusContent);
+    try { fs.writeFileSync(statusFile, statusContent); } catch (e) {
+      console.error(`[TeamStop] Failed to write status: ${e.message}`);
+    }
   }
 
   console.error(`[TeamStop] Finalized ${path.basename(sessionDir)}: ${metrics.items_completed}/${metrics.items_total}`);
