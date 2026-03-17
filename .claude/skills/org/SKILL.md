@@ -135,8 +135,9 @@ Note: /org uses the `pipeline_state` field (not `phase`). Hooks check both field
 3. Update `pipeline_state` to the new state
 4. Write completion summary at COMPLETE state (even on partial completion)
 
-**2b. Call TodoWrite (mandatory):**
+**2b. Call TodoWrite (mandatory). If TodoWrite is unavailable, use TaskCreate instead:**
 
+If TodoWrite is available:
 ```
 TodoWrite([
   {"content": "[org] Routing: analyzing domains & scope", "status": "in_progress", "id": "init"},
@@ -162,6 +163,19 @@ TodoWrite([
   {"content": "[org] Integrating domain outputs", "status": "pending", "id": "integrated"},
   {"content": "[org] Complete ({N} domains, {N} items delivered)", "status": "pending", "id": "complete"}
 ])
+```
+
+If TodoWrite is NOT available, use TaskCreate as fallback. **CRITICAL: Never use state machine names (INIT, ANALYZED, etc.) or `/org CEO` as task subjects.** Describe the work:
+
+```
+# BAD — exposes state names, uses slash prefix:
+TaskCreate({ subject: "[/org CEO] INIT: Analyze instruction and route" })
+TaskCreate({ subject: "[/org CEO] ANALYZED: C-suite domain analysis" })
+
+# GOOD — describes the work being done:
+TaskCreate({ subject: "[org] Routing: analyzing domains & scope" })
+TaskCreate({ subject: "[org > cto] Engineering domain analysis" })
+TaskCreate({ subject: "[org > team] Executing engineering domain" })
 ```
 
 ### Step 3: CEO Routing Decision (INIT -> route)
@@ -695,6 +709,8 @@ For instructions touching 2+ domains: execute the full 6-state pipeline.
 7. **TodoWrite at every state transition** -- no exceptions.
 8. **Cross-domain via files** -- no direct peer messaging between C-suite.
 9. **TaskCreate per subagent** -- every background Agent/Task spawn MUST have a `TaskCreate` call BEFORE the spawn, and a `TaskUpdate(status: completed)` when it returns. This gives users per-agent visibility in the task list UI.
+10. **Never expose state machine names in tasks** -- TaskCreate subjects and TodoWrite content MUST NOT use internal state names (INIT, ANALYZED, DELIBERATED, BRIEFED, EXECUTED, INTEGRATED, COMPLETE) as primary content. Users see these in the UI — describe the WORK being done, not the state. Bad: `[/org CEO] ANALYZED: C-suite domain analysis`. Good: `[org > cto] Engineering domain analysis`.
+11. **No slash prefix on command names** -- Use `[org]`, not `[/org]` or `[/org CEO]`. The `[org]` prefix is sufficient context. `CEO` is implied since /org IS the CEO.
 
 ## Error Handling
 
