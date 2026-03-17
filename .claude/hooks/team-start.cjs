@@ -66,6 +66,17 @@ speedup:
   estimated_sequential_time: 0
   actual_parallel_time: 0
   speedup_factor: 0.0
+
+wave_stats: []
+# Each wave entry will be populated during execution:
+#   - wave: 1
+#     items: 0
+#     peak_concurrent: 0
+#     duration_seconds: 0
+#     gate_result: null
+total_waves: 0
+total_items: 0
+total_duration_seconds: 0
 `);
   }
 

@@ -1,0 +1,176 @@
+# Session Schema Contract
+
+Canonical reference for session YAML files written by all 6 cAgents skills (/run, /org, /team, /designer, /optimize, /review). This is the authoritative schema for AgentPath visualizer developers and hook authors.
+
+## Session Directory Structure
+
+Every skill creates a session directory under `Agent_Memory/sessions/`:
+
+```
+Agent_Memory/sessions/{session_id}/
++-- instruction.yaml    # REQUIRED: Session metadata and request
++-- status.yaml         # REQUIRED: Current state and state history
++-- workflow/
+|   +-- events/         # Completion events (EVT-{N}.yaml)
+|   +-- agent_tree.yaml # Agent spawn tracking (written by hooks)
+|   +-- file_changes.log # File change audit trail (written by hooks)
++-- outputs/            # Work item outputs
+```
+
+## Session ID Format
+
+| Skill | Prefix | Example |
+|-------|--------|---------|
+| /run | `run_` | `run_20260316_143022` |
+| /org | `org_` | `org_20260316_143022` |
+| /team | `run_` | `run_20260316_143022` (uses run_ prefix) |
+| /designer | `designer_` | `designer_20260316_143022` |
+| /optimize | `optimize_` | `optimize_20260316_143022` |
+| /review | `review_` | `review_20260316_143022` |
+
+Note: /team uses the `run_` prefix because teammates invoke /run under the hood.
+
+## instruction.yaml (Required, All 6 Skills)
+
+Every skill writes this file with an identical schema at session creation.
+
+```yaml
+session_id: "{SESSION_ID}"           # REQUIRED: Unique session identifier
+session_type: run|org|team|designer|optimize|review  # REQUIRED: Skill type
+command: /run|/org|/team|/designer|/optimize|/review  # REQUIRED: Skill command
+request: "{user_request}"            # REQUIRED: Original user request text
+created_at: "{ISO_TIMESTAMP}"        # REQUIRED: ISO 8601 timestamp
+flags: {parsed_flags}                # REQUIRED: Object of parsed CLI flags
+parent_session_id: "{id}" | null     # REQUIRED: Parent session if nested, null otherwise
+metadata:
+  working_directory: "{CWD}"         # REQUIRED: Working directory at session creation
+```
+
+### Skill-Specific Extensions
+
+- **/run**: May include `strategic_brief_path` when invoked with `--brief` from /org.
+- **/org**: No extensions beyond the standard schema.
+- **/team**: Same as standard.
+- **/designer**: Same as standard.
+- **/optimize**: Same as standard.
+- **/review**: Same as standard.
+
+## status.yaml (Required, All 6 Skills)
+
+Tracks the current pipeline/phase state and full state history with timing.
+
+### Field Name Mapping (CRITICAL)
+
+The state tracking field name varies by skill:
+
+| Skills | Field Name | Rationale |
+|--------|-----------|-----------|
+| /run, /org | `pipeline_state` | Event-driven pipeline engine with formal state machine |
+| /team, /designer, /optimize, /review | `phase` | Phase-based workflow progression |
+
+Hooks (e.g., attention-injection.cjs, session-catchup.cjs) check BOTH `pipeline_state` AND `phase` as fallback to handle this variation.
+
+### Schema
+
+```yaml
+pipeline_state: "{STATE}"  # /run, /org: INIT, ORCHESTRATED, PLANNED, etc.
+# OR
+phase: "{phase}"           # /team, /designer, /optimize, /review: INIT, detection, empathize, etc.
+
+created_at: "{ISO_TIMESTAMP}"        # REQUIRED: Session creation time
+state_history:                       # REQUIRED: Ordered list of state transitions
+  - state: "{STATE_NAME}"           # REQUIRED: State/phase name
+    entered_at: "{ISO_TIMESTAMP}"   # REQUIRED: When this state was entered
+    duration_ms: {N} | null         # REQUIRED: Milliseconds in this state (null = current)
+```
+
+### State Values by Skill
+
+| Skill | States (in order) |
+|-------|-------------------|
+| /run | INIT, ORCHESTRATED, PLANNED, DECOMPOSED, PROMPTS_READY, COORDINATED, VALIDATED |
+| /org | INIT, ANALYZED, DELIBERATED, BRIEFED, EXECUTED, INTEGRATED, COMPLETE |
+| /team | INIT, (wave states vary) |
+| /designer | empathize, define, conceptualize, ideation, refinement, specification |
+| /optimize | detection, analysis, planning, execution, validation |
+| /review | initializing, executing, aggregating, fixing, validating, reporting |
+
+### Skill-Specific Extensions
+
+- **/run**: Includes `revision_round: {N}` for tracking pipeline revision cycles.
+- **/org**: No additional fields.
+- **/team**: No additional fields.
+- **/designer**: No additional fields.
+- **/optimize**: No additional fields.
+- **/review**: No additional fields.
+
+## Additional Session Files (Skill-Specific)
+
+### /run
+- `workflow/enriched_context.yaml` - Orchestrator output
+- `workflow/plan.yaml` - Planner output with objectives, controller assignment
+- `workflow/work_items.yaml` - Decomposer output
+- `workflow/delegation_prompts.yaml` - Prompt-engineer output
+- `workflow/coordination_log.yaml` - Controller coordination record
+- `workflow/validation_report.yaml` - Validator output (PASS/FAIL/REVISE)
+- `workflow/execution_summary.yaml` - Final pipeline summary
+
+### /org
+- `routing_decision.yaml` - CEO routing analysis
+- `domain_dependencies.yaml` - C-suite dependency ordering
+- `strategic_brief_draft.yaml` - Draft brief before deliberation
+- `strategic_brief.yaml` - Final strategic brief
+- `domain_analyses/` - Per-domain C-suite analysis files
+- `objections/` - Per-C-suite objection files
+- `integration_report.yaml` - Final integration summary
+
+### /team
+- `team/messages/` - Inter-teammate messages
+- `team/metrics/timing.yaml` - Team timing metrics
+- `team/metrics/parallelism.yaml` - Parallelism and wave metrics
+- `workflow/work_items.yaml` - Decomposed work items with wave assignments
+- `workflow/partial_results.yaml` - Partial completion tracking (if applicable)
+
+### /designer
+- `question_prep/` - Research agent question preparation per phase
+- `phases/` - Per-phase output files
+- `artifacts/` - Generated design artifacts
+- `waypoints/` - Checkpoint snapshots at phase transitions
+
+### /optimize
+- `workflow/detection_report.yaml` - Optimization type detection
+- `workflow/baseline_metrics.yaml` - Before-optimization metrics
+- `workflow/opportunities.yaml` - Identified optimization opportunities
+- `workflow/plan.yaml` - Prioritized optimization plan
+- `workflow/execution_summary.yaml` - Per-optimization results
+- `workflow/validation_report.yaml` - Before/after comparison
+
+### /review
+- `reports/` - Review report directory
+- `reports/aggregate.yaml` - Aggregated findings with confidence scores
+- `workflow/scope_analysis.yaml` - Review scope analysis
+- `workflow/execution_strategy.yaml` - Parallel execution plan
+
+## Hook Integration
+
+Hooks discover active sessions by scanning `Agent_Memory/sessions/` for directories matching known prefixes (`run_`, `org_`, `team_`, `designer_`, `optimize_`, `review_`). The `SESSION_PREFIXES` array in `hook-utils.cjs` must include all session type prefixes.
+
+### Key Hook Behaviors
+
+- **session-catchup.cjs** (SessionStart): Detects incomplete sessions by checking status.yaml for non-terminal states.
+- **attention-injection.cjs** (PreToolUse): Reads `pipeline_state` OR `phase` from status.yaml to determine active state.
+- **subagent-tracker.cjs** (SubagentStart): Writes to `workflow/agent_tree.yaml`.
+- **post-write-validator.cjs** (PostToolUse): Logs to `workflow/file_changes.log`.
+- **pre-compact-save.cjs** (PreCompact): Creates waypoints in `waypoints/`.
+
+### Terminal States
+
+A session is considered complete when its status.yaml state matches one of:
+- Lowercase: `completed`, `complete`, `failed`, `aborted`
+- Uppercase: `COMPLETE`, `VALIDATED`
+- /run: `VALIDATED` (final successful state) or after max revision cycles
+- /org: `COMPLETE`
+
+---
+
+**This document is the authoritative reference for the session file contract. All 6 skills and all hooks must conform to these schemas.**

@@ -108,6 +108,8 @@ state_history:
     duration_ms: null
 ```
 
+Note: /run uses the `pipeline_state` field (not `phase`). Hooks check both fields as fallback.
+
 Note: `duration_ms` is computed at state transition time (ms between `entered_at` and the next state's `entered_at`). The current (latest) state has `duration_ms: null` until the next transition.
 
 **ACTION 2 -- Load pipeline config:**

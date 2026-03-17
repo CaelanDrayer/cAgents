@@ -65,6 +65,42 @@ See @reference/optimization-types.md for detailed type descriptions and metrics.
 | **creative** | Make | Pacing, character depth, plot structure, dialogue |
 | **sales** | Grow | Sales cycle, win rate, follow-up completion |
 
+## Initialize Session (FIRST — before any phase work)
+
+**CRITICAL**: Create the session directory and metadata files BEFORE any phase work, agent spawning, or analysis. This ensures all session artifacts have a home from the start.
+
+```bash
+SESSION_ID="optimize_$(date -u +%Y%m%d_%H%M%S)"
+SESSION_DIR="Agent_Memory/sessions/${SESSION_ID}"
+mkdir -p "${SESSION_DIR}/workflow/events"
+mkdir -p "${SESSION_DIR}/outputs"
+```
+
+Write `instruction.yaml`:
+```yaml
+session_id: {SESSION_ID}
+session_type: optimize
+command: /optimize
+request: "{target and flags}"
+created_at: "{ISO_TIMESTAMP}"
+flags: {parsed_flags}
+parent_session_id: {PARENT_SESSION_ID or null}
+metadata:
+  working_directory: {CWD}
+```
+
+Write `status.yaml`:
+```yaml
+phase: detection
+created_at: "{ISO_TIMESTAMP}"
+state_history:
+  - state: detection
+    entered_at: "{ISO_TIMESTAMP}"
+    duration_ms: null
+```
+
+Note: /optimize uses the `phase` field (not `pipeline_state`). Hooks check both fields as fallback.
+
 ## 5-Phase Workflow
 
 ### Phase 0: History & Learning (pre-detection)

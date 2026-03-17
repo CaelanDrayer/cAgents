@@ -73,6 +73,43 @@ If `--resume {id}` is provided, follow the session resume protocol (see @referen
 If `--brief <path>` is provided, read the strategic brief and pre-populate Empathize/Define with mission, success criteria, and domain constraints from the brief. Align design validation criteria with the brief's success criteria. This enables /org integration.
 If `--iterate <session_id>` is provided, load the completed design from the previous session as a starting point. Skip Empathize+Define (context already established), present existing design for targeted modifications, and track changes as a design diff. Save as new session with `parent_session: {session_id}` in session.yaml.
 
+## Initialize Session (FIRST — before any other work)
+
+**CRITICAL**: Create the session directory and metadata files BEFORE spawning any agents, doing any analysis, or asking any questions. This ensures all session artifacts have a home from the start.
+
+```bash
+SESSION_ID="designer_$(date -u +%Y%m%d_%H%M%S)"
+SESSION_DIR="Agent_Memory/sessions/${SESSION_ID}"
+mkdir -p "${SESSION_DIR}/workflow/events"
+mkdir -p "${SESSION_DIR}/outputs"
+mkdir -p "${SESSION_DIR}/question_prep"
+```
+
+Write `instruction.yaml`:
+```yaml
+session_id: {SESSION_ID}
+session_type: designer
+command: /designer
+request: "{topic}"
+created_at: "{ISO_TIMESTAMP}"
+flags: {parsed_flags}
+parent_session_id: {PARENT_SESSION_ID or null}
+metadata:
+  working_directory: {CWD}
+```
+
+Write `status.yaml`:
+```yaml
+phase: empathize
+created_at: "{ISO_TIMESTAMP}"
+state_history:
+  - state: empathize
+    entered_at: "{ISO_TIMESTAMP}"
+    duration_ms: null
+```
+
+Note: /designer uses the `phase` field (not `pipeline_state`). Hooks check both fields as fallback.
+
 ## Subagent Question Preparation
 
 **CRITICAL**: Research subagents pre-build context-rich question lists for the designer to present. The `--deep` flag controls WHEN research agents are used:

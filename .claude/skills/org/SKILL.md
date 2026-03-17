@@ -110,6 +110,7 @@ command: /org
 request: "{user_instruction}"
 created_at: "{ISO_TIMESTAMP}"
 flags: {parsed_flags}
+parent_session_id: null
 metadata:
   working_directory: {CWD}
 ```
@@ -123,6 +124,8 @@ state_history:
     entered_at: "{ISO_TIMESTAMP}"
     duration_ms: null
 ```
+
+Note: /org uses the `pipeline_state` field (not `phase`). Hooks check both fields as fallback.
 
 **2b. Call TodoWrite (mandatory):**
 

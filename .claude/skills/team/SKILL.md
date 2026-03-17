@@ -107,7 +107,17 @@ metadata:
   working_directory: {CWD}
 ```
 
-Write `status.yaml` with initial state INIT.
+Write `status.yaml`:
+```yaml
+phase: INIT
+created_at: "{ISO_TIMESTAMP}"
+state_history:
+  - state: INIT
+    entered_at: "{ISO_TIMESTAMP}"
+    duration_ms: null
+```
+
+Note: /team uses the `phase` field (not `pipeline_state`). Hooks check both fields as fallback.
 
 **2b. Classify domain and tier (inline):**
 
@@ -158,6 +168,8 @@ Task({
 ```
 
 After decomposer returns, read `workflow/work_items.yaml` to get the work items and their wave assignments.
+
+**work_items.yaml vs task_list.yaml**: `workflow/work_items.yaml` (written by the decomposer) is the **canonical work item source** with full metadata: descriptions, acceptance criteria, wave assignments, dependencies, and agent assignments. `team/task_list.yaml` (populated from Claude Code TaskCreate calls) is a **status-only overlay** for team coordination -- it tracks task IDs, completion status, and teammate assignments but does NOT duplicate the rich metadata from work_items.yaml. When checking what a work item requires, always read work_items.yaml. When checking whether it is done, read task_list.yaml.
 
 **2f. Analyze wave structure:**
 

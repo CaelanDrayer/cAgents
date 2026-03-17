@@ -145,19 +145,47 @@ Analyze the target to determine review type:
 
 ### Phase 1: Initialize Review
 1. Parse flags from `$ARGUMENTS`
-2. If `--profile <name>`: load profile from `.claude/review-profiles.yaml` or `Agent_Memory/_system/commands/review/profiles.yaml`. Apply profile settings as defaults; explicit flags override profile values.
-3. If `--suppress <id>`: update baseline file with suppressed finding, output confirmation, and exit (no review).
-4. If `--reset-baseline`: clear `Agent_Memory/_system/commands/review/baseline.yaml` and continue.
-5. Interactive mode check (if `--interactive`): ask focus areas, auto-fix preference, framework
-6. Determine target and detect review type
-7. Detect framework (if code): check package.json, requirements.txt, etc.
-8. Load framework-specific patterns from `Agent_Memory/_system/commands/review/framework_patterns.yaml`
-9. If `--baseline`: load `Agent_Memory/_system/commands/review/baseline.yaml` into session context for Phase 3 filtering
-10. Create session: `Agent_Memory/sessions/review_{YYYYMMDD_HHMMSS}/`
-11. Write `instruction.yaml` with `session_type: review`, `command: /review`, `request`, and `created_at`
-12. Context-aware analysis: git hotspots, PR context, file priority scoring
-13. Analyze scope and determine parallel execution strategy
-14. Write `scope_analysis.yaml` and `execution_strategy.yaml`
+2. **Create session FIRST** (before any analysis or agent work):
+   ```bash
+   SESSION_ID="review_$(date -u +%Y%m%d_%H%M%S)"
+   SESSION_DIR="Agent_Memory/sessions/${SESSION_ID}"
+   mkdir -p "${SESSION_DIR}/workflow/events"
+   mkdir -p "${SESSION_DIR}/outputs"
+   mkdir -p "${SESSION_DIR}/reports"
+   ```
+3. Write `instruction.yaml`:
+   ```yaml
+   session_id: {SESSION_ID}
+   session_type: review
+   command: /review
+   request: "{user_request}"
+   created_at: "{ISO_TIMESTAMP}"
+   flags: {parsed_flags}
+   parent_session_id: {PARENT_SESSION_ID or null}
+   metadata:
+     working_directory: {CWD}
+   ```
+4. Write `status.yaml`:
+   ```yaml
+   phase: initializing
+   created_at: "{ISO_TIMESTAMP}"
+   state_history:
+     - state: initializing
+       entered_at: "{ISO_TIMESTAMP}"
+       duration_ms: null
+   ```
+   Note: /review uses the `phase` field (not `pipeline_state`). Hooks check both fields as fallback.
+5. If `--profile <name>`: load profile from `.claude/review-profiles.yaml` or `Agent_Memory/_system/commands/review/profiles.yaml`. Apply profile settings as defaults; explicit flags override profile values.
+6. If `--suppress <id>`: update baseline file with suppressed finding, output confirmation, and exit (no review).
+7. If `--reset-baseline`: clear `Agent_Memory/_system/commands/review/baseline.yaml` and continue.
+8. Interactive mode check (if `--interactive`): ask focus areas, auto-fix preference, framework
+9. Determine target and detect review type
+10. Detect framework (if code): check package.json, requirements.txt, etc.
+11. Load framework-specific patterns from `Agent_Memory/_system/commands/review/framework_patterns.yaml`
+12. If `--baseline`: load `Agent_Memory/_system/commands/review/baseline.yaml` into session context for Phase 3 filtering
+13. Context-aware analysis: git hotspots, PR context, file priority scoring
+14. Analyze scope and determine parallel execution strategy
+15. Write `scope_analysis.yaml` and `execution_strategy.yaml`
 
 ### Phase 2: Execute Review with Parallel Agents
 Run agents in parallel groups. See @reference/agent-groups.md for group composition.
