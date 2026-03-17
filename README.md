@@ -2,7 +2,7 @@
 
 **Universal Multi-Domain Agent System for Claude Code**
 
-213 agents across 8 business domains. One command handles any request -- engineering, creative, business, people, or service work -- through coordinated specialist agents with quality gates.
+208 agents across 8 business domains. One command handles any request -- engineering, creative, business, people, or service work -- through coordinated specialist agents with quality gates.
 
 ## Usage Warning
 
@@ -73,9 +73,10 @@ Controllers ask questions of specialist agents, synthesize answers, and coordina
 
 | Domain | Agents | Scope |
 |--------|--------|-------|
-| **Engineering** | 33 | Software, infrastructure, security, QA, game dev |
+| **Engineering** | 32 | Software, infrastructure, security, QA, game dev |
 | **Creative** | 30 | Writing, narrative, literary criticism, game art, audio |
-| **Business** | 69 | Strategy, product, operations, finance, marketing, sales |
+| **Business** | 31 | Strategy, product, operations, finance |
+| **Growth** | 35 | Marketing, sales, revenue operations |
 | **People** | 19 | HR, talent acquisition, culture |
 | **Service** | 32 | Customer support, CX, legal, compliance |
 | **Leadership** | 10 | C-suite executives (used by /org) |
@@ -112,6 +113,14 @@ Controllers ask questions of specialist agents, synthesize answers, and coordina
 
 See `docs/RELEASE_NOTES.md` for detailed history. Recent:
 
+- **V10.15.0** -- Redesigned TodoWrite templates with hierarchy, indentation, and granularity
+- **V10.14.0** -- Post-completion follow-up handling in /run pipeline
+- **V10.13.1** -- /run state machine duration_ms, events/index.yaml, execution_summary fixes
+- **V10.13.0** -- Standardize session tracking schemas across all 6 skills
+- **V10.12.1** -- File locking for agent_tree.yaml to prevent race conditions
+- **V10.12.0** -- AgentPath plugin integration with 15 session visualization improvements
+- **V10.11.0** -- Agent reorganization (5 consolidations, 11 renames, 3 tier fixes), gstack-inspired improvements
+- **V10.9.0** -- Documentation overhaul, concise help text, version-registry rule
 - **V10.8.0** -- Agent relationship injection, expanded routing, 38 audit fixes
 - **V10.7.1** -- AI writing tools with humanizer patterns
 - **V10.6.0** -- Confidence tiers, blind review, dead-letter queue, handoff documents, signal file intervention
@@ -129,4 +138,4 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | 213 agents across 8 business domains | Powered by Claude Opus 4.6, Sonnet 4.6, and Haiku 4.5
+**Built with Claude Code** | 208 agents across 8 business domains | Powered by Claude Opus 4.6, Sonnet 4.6, and Haiku 4.5

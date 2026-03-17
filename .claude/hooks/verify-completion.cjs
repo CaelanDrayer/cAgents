@@ -14,6 +14,22 @@ const fs = require('fs');
 const path = require('path');
 const { createHook, findActiveSession, extractYamlValue, safeRead, countPattern, ensureDir, PROJECT_ROOT } = require('./hook-utils.cjs');
 
+/**
+ * Extract the most recent entered_at timestamp from state_history in status.yaml.
+ * Returns age in milliseconds, or null if not determinable.
+ */
+function getLastTransitionAgeMs(statusContent) {
+  // Find all entered_at values and use the last one
+  const matches = statusContent.match(/entered_at:\s*"([^"]+)"/g);
+  if (!matches || matches.length === 0) return null;
+  const lastMatch = matches[matches.length - 1];
+  const tsMatch = lastMatch.match(/entered_at:\s*"([^"]+)"/);
+  if (!tsMatch) return null;
+  try {
+    return Date.now() - new Date(tsMatch[1]).getTime();
+  } catch { return null; }
+}
+
 function verifyCompletion(sessionDir) {
   const issues = [];
   const warnings = [];
@@ -30,9 +46,24 @@ function verifyCompletion(sessionDir) {
     if (pipelineState) {
       // /org and /run pipeline_state sessions
       const terminalStates = ['COMPLETE', 'VALIDATED', 'completed'];
-      const activeStates = ['INIT', 'ANALYZED', 'DELIBERATED', 'BRIEFED', 'EXECUTED', 'PLANNED', 'DECOMPOSED', 'PROMPTS_READY'];
+      const activeStates = ['INIT', 'ANALYZED', 'DELIBERATED', 'BRIEFED', 'EXECUTED', 'PLANNED', 'DECOMPOSED', 'PROMPTS_READY', 'COORDINATED'];
       if (activeStates.includes(pipelineState)) {
-        issues.push(`Workflow stopping in '${pipelineState}' pipeline state (expected: COMPLETE or VALIDATED)`);
+        // Check if pipeline is actively running (recent state transition).
+        // Claude Code fires Stop events between response turns while waiting
+        // for background agents. If the last state transition was recent,
+        // the pipeline is actively running — warn instead of block to avoid
+        // the annoying block→respond→block loop.
+        const lastTransitionAge = getLastTransitionAgeMs(statusContent);
+        const thirtyMinutes = 30 * 60 * 1000;
+        if (lastTransitionAge !== null && lastTransitionAge < thirtyMinutes) {
+          // Pipeline actively running — downgrade to warning (no block)
+          const ageMin = Math.round(lastTransitionAge / 60000);
+          console.error(`[VerifyCompletion] Pipeline in '${pipelineState}' but actively running (last transition ${ageMin}min ago) — warning only`);
+          warnings.push(`Pipeline actively running in '${pipelineState}' state (last transition ${ageMin}min ago)`);
+        } else {
+          // Pipeline may be stuck (no recent transitions) — block
+          issues.push(`Workflow stopping in '${pipelineState}' pipeline state (expected: COMPLETE or VALIDATED)`);
+        }
       } else if (!terminalStates.includes(pipelineState)) {
         warnings.push(`Workflow stopping in '${pipelineState}' pipeline state`);
       }

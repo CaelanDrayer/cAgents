@@ -15,7 +15,10 @@ Topic-specific rules organized for better maintainability.
 │   ├── skill-format.md        # V8.0 SKILL.md agent format spec
 │   ├── progressive-disclosure.md # V8.0 three-tier loading pattern
 │   ├── subagent-alignment.md  # V8.0 Task tool alignment
-│   └── teams.md               # V9.2 Team coordination patterns (built-in agent teams)
+│   ├── teams.md               # V9.2 Team coordination patterns (built-in agent teams)
+│   ├── controller-reference.md    # Detailed controller schemas and protocols
+│   ├── orchestration-reference.md # Detailed orchestration schemas
+│   └── version-registry.md       # Version synchronization (13 locations)
 ├── domains/        # Domain-specific guidelines
 │   ├── engineering.md      # Engineering domain (engineering/)
 │   ├── grow.md             # Business domain (business/, growth/)
@@ -25,7 +28,8 @@ Topic-specific rules organized for better maintainability.
 ├── infrastructure/ # Infrastructure configuration
 │   └── model-routing.md    # Model routing guidelines
 ├── memory/         # Memory and state management
-│   └── agent-memory.md     # Agent_Memory/ structure and usage
+│   ├── agent-memory.md           # Agent_Memory/ structure and usage
+│   └── agent-memory-reference.md # Detailed memory patterns and examples
 └── quality/        # Quality and completion
     ├── completion.md           # Task completion protocol
     ├── validation-framework.md # End-to-end completion traceability
@@ -68,9 +72,9 @@ Import rules into CLAUDE.md or other docs:
 See @.claude/rules/core/orchestration.md for workflow patterns.
 ```
 
-## Current Rules (20 files)
+## Current Rules (24 files)
 
-### Core (9 files)
+### Core (12 files)
 1. **core/orchestration.md** - Workflow phases (routing -> validating)
 2. **core/controllers.md** - Question-based delegation patterns
 3. **core/execution.md** - Execution agent patterns
@@ -80,27 +84,31 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 7. **core/progressive-disclosure.md** - Three-tier loading (10/10 agents converted)
 8. **core/subagent-alignment.md** - Task tool alignment patterns
 9. **core/teams.md** - V9.2 Team coordination patterns (built-in agent teams)
+10. **core/controller-reference.md** - Detailed controller schemas and protocols
+11. **core/orchestration-reference.md** - Detailed orchestration schemas
+12. **core/version-registry.md** - Version synchronization (13 locations)
 
 ### Domains (5 files)
-9. **domains/engineering.md** - Engineering domain guidelines
-10. **domains/grow.md** - Grow (marketing/sales) guidelines
-11. **domains/operate.md** - Operate (finance/operations) guidelines
-12. **domains/people.md** - People (HR/culture) guidelines
-13. **domains/serve.md** - Serve (support/legal) guidelines
+13. **domains/engineering.md** - Engineering domain guidelines
+14. **domains/grow.md** - Grow (marketing/sales) guidelines
+15. **domains/operate.md** - Operate (finance/operations) guidelines
+16. **domains/people.md** - People (HR/culture) guidelines
+17. **domains/serve.md** - Serve (support/legal) guidelines
 
 ### Infrastructure (1 file)
-14. **infrastructure/model-routing.md** - Model routing guidelines and project overrides
+18. **infrastructure/model-routing.md** - Model routing guidelines and project overrides
 
-### Memory (1 file)
-15. **memory/agent-memory.md** - Agent_Memory/ structure (V8.0: three-file pattern, waypoints)
+### Memory (2 files)
+19. **memory/agent-memory.md** - Agent_Memory/ structure (V8.0: three-file pattern, waypoints)
+20. **memory/agent-memory-reference.md** - Detailed memory patterns and examples
 
 ### Quality (3 files)
-16. **quality/completion.md** - Task completion protocol
-17. **quality/validation-framework.md** - End-to-end completion traceability
-18. **quality/implicit-discovery.md** - Handling abstract requests
+21. **quality/completion.md** - Task completion protocol
+22. **quality/validation-framework.md** - End-to-end completion traceability
+23. **quality/implicit-discovery.md** - Handling abstract requests
 
 ### Meta (1 file)
-20. **README.md** - This index file
+24. **README.md** - This index file
 
 ## V8.0 Additions
 

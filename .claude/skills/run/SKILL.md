@@ -554,6 +554,21 @@ If `--dry-run` with `--team`: Display plan summary and team composition, then ST
 10. **On revision, add a revision entry** showing round number and what is being re-executed.
 11. **Never expose internal state machine names** (INIT, ORCHESTRATED, PLANNED, DECOMPOSED, PROMPTS_READY, COORDINATED, VALIDATED) as primary TodoWrite content. Users see these entries in the UI -- they should communicate meaningful work being done.
 
+## CRITICAL: TaskCreate Per Subagent
+
+**Every background Agent/Task spawn MUST have a `TaskCreate` call BEFORE the spawn.** This gives users per-agent visibility in the task list UI.
+
+```
+# Pattern for each background agent:
+TaskCreate({ subject: "WI-1: Fix auth module", description: "..." })
+TaskUpdate({ taskId: "N", status: "in_progress" })
+Agent({ description: "WI-1: Fix auth module", ..., run_in_background: true })
+# When notification arrives:
+TaskUpdate({ taskId: "N", status: "completed" })
+```
+
+Without per-agent tasks, the user only sees generic entries like "◼ [run] Pipeline running" with no visibility into the 3-5 agents actually working in parallel. Each agent MUST be a separate task.
+
 ## What /run Does Directly (Exhaustive List)
 
 - Parse flags from arguments

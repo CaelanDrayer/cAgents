@@ -30,7 +30,7 @@ Core architecture and development guidance for cAgents.
 
 - `CLAUDE.md` - Architecture, commands, agents (this file)
 - `README.md` - Quick start
-- `docs/` - Project documentation (17 files including ARCHITECTURE.md, SKILLS.md, TEAM_MODE.md, RELEASE_NOTES.md, etc.)
+- `docs/` - Project documentation (19 files including ARCHITECTURE.md, SKILLS.md, TEAM_MODE.md, RELEASE_NOTES.md, etc.)
 - `archive/docs/` - Historical documentation (local only)
 - `Agent_Memory/` - Runtime state (excluded from git)
 - `.claude/skills/run/reference/session-schema.md` - Session YAML contract (canonical schema for AgentPath)
@@ -61,10 +61,10 @@ Core architecture and development guidance for cAgents.
 
 **Rules Structure** (`.claude/rules/`):
 ```
-core/           # orchestration, controllers, execution, hooks, teams, etc. (9 files)
+core/           # orchestration, controllers, execution, hooks, teams, etc. (12 files)
 domains/        # engineering, creative, business, people, service (5 files)
 infrastructure/ # model-routing (1 file)
-memory/         # agent-memory (1 file)
+memory/         # agent-memory (2 files)
 quality/        # completion, validation-framework, implicit-discovery (3 files)
 ```
 
@@ -256,6 +256,29 @@ User Request -> /run (state machine loop, reads pipeline_config.yaml)
 - Leaving tasks as `in_progress` after the work is committed/pushed
 - Creating tracking tasks that are never updated
 
+## CRITICAL: TaskCreate Per Subagent
+
+**Every background Agent/Task spawn MUST have a corresponding `TaskCreate` call BEFORE the spawn.** This gives the user per-agent visibility in the task list UI.
+
+**Pattern**:
+```
+# 1. Create task FIRST
+TaskCreate({ subject: "WI-1: Fix auth module", description: "..." })
+# 2. Then spawn the agent
+Agent({ description: "WI-1: Fix auth module", ..., run_in_background: true })
+# 3. When agent completes, update task
+TaskUpdate({ taskId: "N", status: "completed" })
+```
+
+**Rules**:
+1. One `TaskCreate` per `Agent`/`Task` call when using `run_in_background: true`
+2. Task subject should match the agent's description for UI clarity
+3. Mark task `completed` when the agent notification arrives
+4. For foreground (blocking) agents, TaskCreate is optional but recommended for long-running work
+5. `/org`, `/run`, `/team` pipelines MUST create per-subagent tasks — not just top-level orchestration tasks
+
+**Why**: Without per-agent tasks, the user only sees generic orchestration entries (e.g., "◼ [org] Documentation update orchestration") with no visibility into the 4-5 agents actually doing work in parallel.
+
 ## Skills (Commands)
 
 **V9.0+**: Skills in `.claude/skills/`, auto-discovered.
@@ -397,13 +420,13 @@ cAgents/
 |   +-- skills/              # Skills (org, run, team, designer, review, optimize, helper, context)
 |   +-- hooks/               # 19 .cjs files (16 hooks + utils + launcher + eval CLI)
 |   +-- plans/               # Saved execution plans
-|   +-- rules/               # Modular rules (20 files, 5 categories)
+|   +-- rules/               # Modular rules (24 files, 5 categories)
 |   +-- settings.json        # Hook registration + permissions + env
-+-- engineering/             # Engineering domain (33 agents, config, manifest)
++-- engineering/             # Engineering domain (32 agents, config, manifest)
 +-- creative/                # Creative domain (30 agents)
-+-- business/                # Business domain (69 agents)
++-- business/                # Business domain (31 agents)
 +-- people/                  # People domain (19 agents)
-+-- service/                 # Service domain (33 agents)
++-- service/                 # Service domain (32 agents)
 +-- leadership/              # Leadership domain (10 C-suite agents)
 +-- core/                    # Core infrastructure (15 agents)
 +-- shared/                  # Cross-domain specialists (4 agents)
@@ -489,7 +512,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
-**Tests**: `npm test` runs 271 Vitest tests (hooks + config validation)
+**Tests**: `npm test` runs 273 Vitest tests (hooks + config validation)
 **Version**: 10.15.0
 
 ## Troubleshooting

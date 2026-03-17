@@ -692,6 +692,7 @@ For instructions touching 2+ domains: execute the full 6-state pipeline.
 6. **Escalation protocol is mandatory** -- see @reference/escalation-protocol.md.
 7. **TodoWrite at every state transition** -- no exceptions.
 8. **Cross-domain via files** -- no direct peer messaging between C-suite.
+9. **TaskCreate per subagent** -- every background Agent/Task spawn MUST have a `TaskCreate` call BEFORE the spawn, and a `TaskUpdate(status: completed)` when it returns. This gives users per-agent visibility in the task list UI.
 
 ## Error Handling
 

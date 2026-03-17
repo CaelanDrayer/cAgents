@@ -45,9 +45,11 @@ Question prompts should be **under 300 tokens**. Include only: the question, whe
 9. Writes coordination_log.yaml
 ```
 
-## MANDATORY: TodoWrite for Execution Agent Visibility
+## MANDATORY: TaskCreate + TodoWrite for Execution Agent Visibility
 
-Every controller MUST call TodoWrite after identifying execution agents. Use `[{parent} > {agent-name}] {verb phrase}` when spawning an agent, then 2-space indented `[{agent-name}] {sub-task}` for that agent's own work. Never use state machine names (INIT, ORCHESTRATED, etc.). Replace placeholders with actual agent names as soon as known.
+Every controller MUST call TodoWrite after identifying execution agents. Additionally, every background Agent/Task spawn MUST have a `TaskCreate` call BEFORE the spawn, and a `TaskUpdate(status: completed)` when it returns. This gives users per-agent visibility in the task list UI. Without per-agent tasks, the user only sees the controller's top-level task.
+
+Use `[{parent} > {agent-name}] {verb phrase}` when spawning an agent, then 2-space indented `[{agent-name}] {sub-task}` for that agent's own work. Never use state machine names (INIT, ORCHESTRATED, etc.). Replace placeholders with actual agent names as soon as known.
 
 **Format rules:**
 - No slash prefix: `[engineering-manager]` not `[/engineering-manager]`
