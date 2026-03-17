@@ -304,7 +304,7 @@ Skill({ skill: "run", args: `${request}` })
 Create team session structure:
 
 ```bash
-Agent_Memory/sessions/team_{YYYYMMDD_HHMMSS}/
+Agent_Memory/sessions/team_{slug}_{YYMMDD}_{NNN}/
 +-- instruction.yaml          # User request + flags
 +-- status.yaml               # Current phase
 +-- team/

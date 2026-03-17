@@ -77,12 +77,15 @@ If `--iterate <session_id>` is provided, load the completed design from the prev
 
 **CRITICAL**: Create the session directory and metadata files BEFORE spawning any agents, doing any analysis, or asking any questions. This ensures all session artifacts have a home from the start.
 
-```bash
-SESSION_ID="designer_$(date -u +%Y%m%d_%H%M%S)"
-SESSION_DIR="Agent_Memory/sessions/${SESSION_ID}"
-mkdir -p "${SESSION_DIR}/workflow/events"
-mkdir -p "${SESSION_DIR}/outputs"
-mkdir -p "${SESSION_DIR}/question_prep"
+```
+1. Generate a slug from the topic: 2-6 key words, kebab-case, lowercase, max 50 chars
+   Strip filler words (the, a, an, to, for, with, and, of). Example: "Redo session names" -> "redo-session-names"
+2. Get compact date: YYMMDD (e.g., 260317)
+3. Scan Agent_Memory/sessions/ for dirs matching designer_*_{YYMMDD}_* to find highest NNN, increment by 1 (start at 001)
+4. Compose: SESSION_ID="designer_{slug}_{YYMMDD}_{NNN}"
+   Example: SESSION_ID="designer_redo-session-names_260317_001"
+5. SESSION_DIR="Agent_Memory/sessions/${SESSION_ID}"
+6. mkdir -p "${SESSION_DIR}/workflow/events" "${SESSION_DIR}/outputs" "${SESSION_DIR}/question_prep"
 ```
 
 Write `instruction.yaml`:
@@ -540,7 +543,7 @@ endless_refinement:
 
 ## Session State Management
 
-Save progress in `Agent_Memory/sessions/designer_{YYYYMMDD_HHMMSS}/`:
+Save progress in `Agent_Memory/sessions/designer_{slug}_{YYMMDD}_{NNN}/`:
 
 **session.yaml** - Updated after every question (phase, question_count, progress_percentage, controller_state, deferred_questions)
 **qa_log.yaml** - Only active phase Q&A (completed phases summarized with pointer to phase file)

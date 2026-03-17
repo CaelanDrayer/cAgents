@@ -93,7 +93,7 @@ Task({
 ## Session Structure
 
 ```
-Agent_Memory/sessions/run_{YYYYMMDD_HHMMSS}/
+Agent_Memory/sessions/run_{slug}_{YYMMDD}_{NNN}/
 +-- instruction.yaml         # Written by /run (Step 2)
 +-- status.yaml              # Written by /run (Step 2, updated throughout)
 +-- workflow/

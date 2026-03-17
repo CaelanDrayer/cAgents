@@ -128,7 +128,7 @@ Agent_Memory/
 ├── _system/           # Registry, configs
 ├── _knowledge/        # Patterns, learnings
 └── sessions/          # Per-command sessions (standardized)
-    └── {command}_{YYYYMMDD_HHMMSS}/
+    └── {command}_{slug}_{YYMMDD}_{NNN}/
         ├── instruction.yaml
         ├── status.yaml
         ├── workflow/

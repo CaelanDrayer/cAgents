@@ -611,7 +611,7 @@ ${recommendation}`,
 
 ## Session State Management
 
-Save progress in `Agent_Memory/sessions/designer_{YYYYMMDD_HHMMSS}/`:
+Save progress in `Agent_Memory/sessions/designer_{slug}_{YYMMDD}_{NNN}/`:
 
 **Full session directory structure**:
 ```
@@ -984,7 +984,7 @@ When the design is complete (all phases done or user requests summary), generate
 ```markdown
 # Design Document: [Title]
 
-**Session**: designer_YYYYMMDD_HHMMSS
+**Session**: designer_{slug}_{YYMMDD}_{NNN}
 **Domain**: [software/business/creative]
 **Template**: [template name if used]
 **Validation Score**: [overall_score]/1.0

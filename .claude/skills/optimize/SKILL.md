@@ -69,11 +69,15 @@ See @reference/optimization-types.md for detailed type descriptions and metrics.
 
 **CRITICAL**: Create the session directory and metadata files BEFORE any phase work, agent spawning, or analysis. This ensures all session artifacts have a home from the start.
 
-```bash
-SESSION_ID="optimize_$(date -u +%Y%m%d_%H%M%S)"
-SESSION_DIR="Agent_Memory/sessions/${SESSION_ID}"
-mkdir -p "${SESSION_DIR}/workflow/events"
-mkdir -p "${SESSION_DIR}/outputs"
+```
+1. Generate a slug from the request: 2-6 key words, kebab-case, lowercase, max 50 chars
+   Strip filler words (the, a, an, to, for, with, and, of). Example: "Reduce bundle size" -> "reduce-bundle-size"
+2. Get compact date: YYMMDD (e.g., 260317)
+3. Scan Agent_Memory/sessions/ for dirs matching optimize_*_{YYMMDD}_* to find highest NNN, increment by 1 (start at 001)
+4. Compose: SESSION_ID="optimize_{slug}_{YYMMDD}_{NNN}"
+   Example: SESSION_ID="optimize_reduce-bundle-size_260317_001"
+5. SESSION_DIR="Agent_Memory/sessions/${SESSION_ID}"
+6. mkdir -p "${SESSION_DIR}/workflow/events" "${SESSION_DIR}/outputs"
 ```
 
 Write `instruction.yaml`:

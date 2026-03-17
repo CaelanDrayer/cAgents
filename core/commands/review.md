@@ -61,8 +61,8 @@ Execute these phases with parallel execution, framework detection, and streaming
    - Check package.json, requirements.txt, composer.json, etc.
    - Detect: Next.js, React, Vue, Angular, Django, FastAPI, Express, Flask, Rails, Spring Boot, Laravel, .NET
    - Load framework-specific patterns from `Agent_Memory/_system/commands/review/framework_patterns.yaml`
-6. Generate review ID: `review_{YYYYMMDD}_{HHMMSS}`
-7. Create review folder: `Agent_Memory/sessions/review_{YYYYMMDD_HHMMSS}/`
+6. Generate review ID: `review_{slug}_{YYMMDD}_{NNN}`
+7. Create review folder: `Agent_Memory/sessions/review_{slug}_{YYMMDD}_{NNN}/`
 8. **Context-aware analysis**:
    - If --git-hotspots: Analyze git log for frequently changed files
    - If --pr-context: Get diff against specified branch

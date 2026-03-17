@@ -238,7 +238,7 @@ Task({
     Flags: {JSON.stringify(flags)}
 
     Initialize workflow. Detect domain, classify intent, validate, delegate to orchestrator.
-    Session: Agent_Memory/sessions/run_{YYYYMMDD_HHMMSS}/
+    Session: Agent_Memory/sessions/run_{slug}_{YYMMDD}_{NNN}/
   `
 })
 
@@ -253,7 +253,7 @@ Task({
 
     Initialize team workflow. Check tmux availability, analyze parallelism,
     create tmux session with split panes per work item, launch claude /run in each.
-    Session: Agent_Memory/sessions/team_{YYYYMMDD_HHMMSS}/
+    Session: Agent_Memory/sessions/team_{slug}_{YYMMDD}_{NNN}/
   `
 })
 ```
@@ -414,7 +414,7 @@ TodoWrite({
 - `Agent_Memory/_system/trigger/workflow_analytics.yaml` - Analytics config
 
 **Session Folder**:
-- `Agent_Memory/sessions/run_{YYYYMMDD_HHMMSS}/` - Per-workflow session data
+- `Agent_Memory/sessions/run_{slug}_{YYMMDD}_{NNN}/` - Per-workflow session data
 
 ---
 

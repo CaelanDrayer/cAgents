@@ -75,11 +75,15 @@ If `--brief <path>`: This request comes from `/org` with a strategic brief. Read
 
 **ACTION 1 -- Create session files:**
 
-```bash
-SESSION_ID="run_$(date -u +%Y%m%d_%H%M%S)"
-SESSION_DIR="Agent_Memory/sessions/${SESSION_ID}"
-mkdir -p "${SESSION_DIR}/workflow/events"
-mkdir -p "${SESSION_DIR}/outputs"
+```
+1. Generate a slug from the user request: 2-6 key words, kebab-case, lowercase, max 50 chars
+   Strip filler words (the, a, an, to, for, with, and, of). Example: "Fix auth module JWT" -> "fix-auth-module-jwt"
+2. Get compact date: YYMMDD (e.g., 260317)
+3. Scan Agent_Memory/sessions/ for dirs matching run_*_{YYMMDD}_* to find highest NNN, increment by 1 (start at 001)
+4. Compose: SESSION_ID="run_{slug}_{YYMMDD}_{NNN}"
+   Example: SESSION_ID="run_fix-auth-module-jwt_260317_001"
+5. SESSION_DIR="Agent_Memory/sessions/${SESSION_ID}"
+6. mkdir -p "${SESSION_DIR}/workflow/events" "${SESSION_DIR}/outputs"
 ```
 
 If `--session` was provided, use that directory instead and skip session creation.
@@ -620,7 +624,7 @@ See @reference/flags.md for complete flag reference with defaults and examples.
 - Pipeline config: `Agent_Memory/_system/config/pipeline_config.yaml`
 - Planner configs: `{domain}/config/planner_config.yaml`
 - Event template: `Agent_Memory/_system/templates/event.yaml`
-- Session folder: `Agent_Memory/sessions/run_{YYYYMMDD_HHMMSS}/`
+- Session folder: `Agent_Memory/sessions/run_{slug}_{YYMMDD}_{NNN}/`
 - Agent audit trail: `Agent_Memory/sessions/{session_id}/workflow/agent_tree.yaml`
 - Global audit log: `Agent_Memory/_system/logs/agent_spawns.log`
 - Pipeline analytics: `Agent_Memory/_system/metrics/pipeline_analytics.yaml`

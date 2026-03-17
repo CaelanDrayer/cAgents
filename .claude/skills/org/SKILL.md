@@ -93,13 +93,15 @@ See @reference/flags.md for complete flag reference.
 
 **2a. Create session:**
 
-```bash
-SESSION_ID="org_$(date -u +%Y%m%d_%H%M%S)"
-SESSION_DIR="Agent_Memory/sessions/${SESSION_ID}"
-mkdir -p "${SESSION_DIR}/workflow/events"
-mkdir -p "${SESSION_DIR}/outputs"
-mkdir -p "${SESSION_DIR}/domain_analyses"
-mkdir -p "${SESSION_DIR}/objections"
+```
+1. Generate a slug from the user instruction: 2-6 key words, kebab-case, lowercase, max 50 chars
+   Strip filler words (the, a, an, to, for, with, and, of). Example: "Launch new product" -> "launch-new-product"
+2. Get compact date: YYMMDD (e.g., 260317)
+3. Scan Agent_Memory/sessions/ for dirs matching org_*_{YYMMDD}_* to find highest NNN, increment by 1 (start at 001)
+4. Compose: SESSION_ID="org_{slug}_{YYMMDD}_{NNN}"
+   Example: SESSION_ID="org_launch-new-product_260317_001"
+5. SESSION_DIR="Agent_Memory/sessions/${SESSION_ID}"
+6. mkdir -p "${SESSION_DIR}/workflow/events" "${SESSION_DIR}/outputs" "${SESSION_DIR}/domain_analyses" "${SESSION_DIR}/objections"
 ```
 
 Write `instruction.yaml`:

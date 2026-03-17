@@ -110,7 +110,7 @@ Task({
     5. Launch claude /run in each tmux pane
     6. Monitor tmux panes and aggregate results
 
-    Session: Agent_Memory/sessions/team_{YYYYMMDD_HHMMSS}/
+    Session: Agent_Memory/sessions/team_{slug}_{YYMMDD}_{NNN}/
   `
 })
 ```

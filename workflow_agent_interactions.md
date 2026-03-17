@@ -131,7 +131,7 @@ Controller receives objectives from plan.yaml
 
 ## Session Files
 
-Each command creates `Agent_Memory/sessions/{command}_{YYYYMMDD_HHMMSS}/` with:
+Each command creates `Agent_Memory/sessions/{command}_{slug}_{YYMMDD}_{NNN}/` with:
 
 | File | Purpose |
 |------|---------|

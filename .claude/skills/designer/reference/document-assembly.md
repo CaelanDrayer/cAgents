@@ -21,7 +21,7 @@
 ```markdown
 # Design Document: [Title]
 
-**Session**: designer_YYYYMMDD_HHMMSS
+**Session**: designer_{slug}_{YYMMDD}_{NNN}
 **Domain**: [software/business/creative]
 **Template**: [template name if used]
 **Validation Score**: [overall_score]/1.0

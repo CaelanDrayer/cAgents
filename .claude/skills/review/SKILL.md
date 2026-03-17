@@ -146,12 +146,15 @@ Analyze the target to determine review type:
 ### Phase 1: Initialize Review
 1. Parse flags from `$ARGUMENTS`
 2. **Create session FIRST** (before any analysis or agent work):
-   ```bash
-   SESSION_ID="review_$(date -u +%Y%m%d_%H%M%S)"
-   SESSION_DIR="Agent_Memory/sessions/${SESSION_ID}"
-   mkdir -p "${SESSION_DIR}/workflow/events"
-   mkdir -p "${SESSION_DIR}/outputs"
-   mkdir -p "${SESSION_DIR}/reports"
+   ```
+   1. Generate a slug from the request: 2-6 key words, kebab-case, lowercase, max 50 chars
+      Strip filler words (the, a, an, to, for, with, and, of). Example: "Security audit API" -> "security-audit-api"
+   2. Get compact date: YYMMDD (e.g., 260317)
+   3. Scan Agent_Memory/sessions/ for dirs matching review_*_{YYMMDD}_* to find highest NNN, increment by 1 (start at 001)
+   4. Compose: SESSION_ID="review_{slug}_{YYMMDD}_{NNN}"
+      Example: SESSION_ID="review_security-audit-api_260317_001"
+   5. SESSION_DIR="Agent_Memory/sessions/${SESSION_ID}"
+   6. mkdir -p "${SESSION_DIR}/workflow/events" "${SESSION_DIR}/outputs" "${SESSION_DIR}/reports"
    ```
 3. Write `instruction.yaml`:
    ```yaml
@@ -218,7 +221,7 @@ After generating the report:
 
 ```yaml
 reviews:
-  - session: review_{YYYYMMDD_HHMMSS}
+  - session: review_{slug}_{YYMMDD}_{NNN}
     date: "{YYYY-MM-DD}"
     target: "{reviewed_path}"
     type: "{review_type}"
@@ -349,7 +352,7 @@ The baseline file tracks acknowledged findings across reviews. See @reference/ba
 # Agent_Memory/_system/commands/review/baseline.yaml
 version: 1
 last_updated: "{ISO_TIMESTAMP}"
-last_session: review_{YYYYMMDD_HHMMSS}
+last_session: review_{slug}_{YYMMDD}_{NNN}
 baselines:
   "{file_path}":
     - finding_id: F-{NNN}
@@ -357,7 +360,7 @@ baselines:
       severity: critical|high|medium|low
       status: acknowledged|suppressed|deferred
       acknowledged_at: "{ISO_DATE}"
-      review_session: review_{YYYYMMDD_HHMMSS}
+      review_session: review_{slug}_{YYMMDD}_{NNN}
       suppress_reason: "{optional reason for suppression}"
 ```
 

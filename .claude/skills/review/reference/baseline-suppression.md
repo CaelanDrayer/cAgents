@@ -8,7 +8,7 @@ Track acknowledged findings across reviews to eliminate finding fatigue. Users f
 # Agent_Memory/_system/commands/review/baseline.yaml
 version: 1
 last_updated: "{ISO_TIMESTAMP}"
-last_session: review_{YYYYMMDD_HHMMSS}
+last_session: review_{slug}_{YYMMDD}_{NNN}
 baselines:
   "{file_path}":
     - finding_id: F-{NNN}
@@ -18,7 +18,7 @@ baselines:
       category: "{finding category -- security, performance, quality, etc.}"
       status: acknowledged|suppressed|deferred
       acknowledged_at: "{ISO_DATE}"
-      review_session: review_{YYYYMMDD_HHMMSS}
+      review_session: review_{slug}_{YYMMDD}_{NNN}
       suppress_reason: "{optional reason for suppression}"
       deferred_until: "{optional ISO_DATE for deferred findings}"
 ```

@@ -371,11 +371,11 @@ Every command creates a session directory in `Agent_Memory/sessions/`.
 
 | Command | Session ID Format | Example |
 |---------|-------------------|---------|
-| `/run` | `run_YYYYMMDD_HHMMSS` | `run_20260207_143022` |
-| `/designer` | `designer_YYYYMMDD_HHMMSS` | `designer_20260207_143022` |
-| `/review` | `review_YYYYMMDD_HHMMSS` | `review_20260207_143022` |
-| `/optimize` | `optimize_YYYYMMDD_HHMMSS` | `optimize_20260207_143022` |
-| `/team` | `team_YYYYMMDD_HHMMSS` | `team_20260207_143022` |
+| `/run` | `run_{slug}_{YYMMDD}_{NNN}` | `run_fix-auth-module_260207_001` |
+| `/designer` | `designer_{slug}_{YYMMDD}_{NNN}` | `designer_redo-session-names_260207_001` |
+| `/review` | `review_{slug}_{YYMMDD}_{NNN}` | `review_security-audit-api_260207_001` |
+| `/optimize` | `optimize_{slug}_{YYMMDD}_{NNN}` | `optimize_reduce-bundle-size_260207_001` |
+| `/team` | `team_{slug}_{YYMMDD}_{NNN}` | `team_implement-oauth2_260207_001` |
 
 #### Key Session Files
 

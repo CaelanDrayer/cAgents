@@ -2,12 +2,12 @@
 
 ## Session ID Format
 
-`optimize_{YYYYMMDD}_{HHMMSS}` -- consistent with all cAgents commands.
+`optimize_{slug}_{YYMMDD}_{NNN}` -- consistent with all cAgents commands (e.g., `optimize_reduce-bundle-size_260317_001`).
 
 ## Session Directory Structure
 
 ```
-Agent_Memory/sessions/optimize_{YYYYMMDD_HHMMSS}/
+Agent_Memory/sessions/optimize_{slug}_{YYMMDD}_{NNN}/
 +-- instruction.yaml               # User request + metadata
 +-- status.yaml                    # Current phase, phase history
 +-- task_plan.md                   # Three-file pattern: work items

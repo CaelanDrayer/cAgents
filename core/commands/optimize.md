@@ -505,7 +505,7 @@ if (flags.reviewAfter) {
 ### Session Directory Structure
 
 ```
-Agent_Memory/sessions/optimize_{YYYYMMDD_HHMMSS}/
+Agent_Memory/sessions/optimize_{slug}_{YYMMDD}_{NNN}/
 ├── instruction.yaml               # User request + metadata
 ├── status.yaml                    # Current phase, phase history
 ├── task_plan.md                   # Three-file pattern: work items

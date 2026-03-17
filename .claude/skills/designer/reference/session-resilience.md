@@ -5,7 +5,7 @@ Design sessions can run 30-60+ questions spanning hours. Context windows are fin
 ## Session Directory Structure
 
 ```
-Agent_Memory/sessions/designer_{YYYYMMDD_HHMMSS}/
+Agent_Memory/sessions/designer_{slug}_{YYMMDD}_{NNN}/
 +-- session.yaml                    # Master state (updated after every question)
 +-- qa_log.yaml                     # Active phase Q&A only (completed phases summarized)
 +-- question_prep/                  # Research agent outputs (per-phase question lists)

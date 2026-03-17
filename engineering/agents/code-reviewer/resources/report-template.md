@@ -5,7 +5,7 @@
 ```markdown
 # Enhanced Code Review Report
 
-**Review ID**: review_YYYYMMDD_HHMMSS
+**Review ID**: review_{slug}_{YYMMDD}_{NNN}
 **Target**: {target_path}
 **Files Reviewed**: {total} ({changed} changed, {unchanged} unchanged)
 **Agents Executed**: {selected}/{total} (intelligently selected)

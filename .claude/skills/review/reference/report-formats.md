@@ -150,7 +150,7 @@ The full markdown report includes:
 ## Session Structure
 
 ```
-Agent_Memory/sessions/review_{YYYYMMDD_HHMMSS}/
+Agent_Memory/sessions/review_{slug}_{YYMMDD}_{NNN}/
 +-- instruction.yaml
 +-- status.yaml
 +-- scope_analysis.yaml

@@ -87,11 +87,15 @@ Run the enrichment pipeline sequentially. All three stages always run (consisten
 
 **2a. Initialize session:**
 
-```bash
-SESSION_ID="run_$(date -u +%Y%m%d_%H%M%S)"
-SESSION_DIR="Agent_Memory/sessions/${SESSION_ID}"
-mkdir -p "${SESSION_DIR}/workflow/events"
-mkdir -p "${SESSION_DIR}/outputs"
+```
+1. Generate a slug from the user request: 2-6 key words, kebab-case, lowercase, max 50 chars
+   Strip filler words (the, a, an, to, for, with, and, of). Example: "Implement OAuth2 flow" -> "implement-oauth2-flow"
+2. Get compact date: YYMMDD (e.g., 260317)
+3. Scan Agent_Memory/sessions/ for dirs matching team_*_{YYMMDD}_* to find highest NNN, increment by 1 (start at 001)
+4. Compose: SESSION_ID="team_{slug}_{YYMMDD}_{NNN}"
+   Example: SESSION_ID="team_implement-oauth2-flow_260317_001"
+5. SESSION_DIR="Agent_Memory/sessions/${SESSION_ID}"
+6. mkdir -p "${SESSION_DIR}/workflow/events" "${SESSION_DIR}/outputs"
 ```
 
 Write `instruction.yaml`:

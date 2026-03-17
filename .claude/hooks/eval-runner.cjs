@@ -388,7 +388,7 @@ if (!sessionId) {
   console.log('  node eval-runner.js --session <session_id>');
   console.log('');
   console.log('Example:');
-  console.log('  node eval-runner.js --session run_20260127_165825');
+  console.log('  node eval-runner.js --session run_fix-auth_260127_001');
   process.exit(0);
 }
 

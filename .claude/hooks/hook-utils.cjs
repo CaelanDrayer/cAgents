@@ -161,8 +161,13 @@ function findActiveSession(sessionHint) {
   const sessions = fs.readdirSync(sessionsDir)
     .filter(d => SESSION_PREFIXES.some(p => d.startsWith(p)))
     .sort((a, b) => {
-      const tsA = a.substring(a.indexOf('_') + 1);
-      const tsB = b.substring(b.indexOf('_') + 1);
+      // Extract last 2 underscore-separated segments as sort key
+      // Works for both old format (run_20260317_040624 -> 20260317_040624)
+      // and new format (run_fix-auth_260317_001 -> 260317_001)
+      const partsA = a.split('_');
+      const tsA = partsA.slice(-2).join('_');
+      const partsB = b.split('_');
+      const tsB = partsB.slice(-2).join('_');
       return tsB.localeCompare(tsA);
     });
 
@@ -220,8 +225,13 @@ function findTeamSession(input = {}) {
   const teamSessions = fs.readdirSync(sessionsDir)
     .filter(d => d.startsWith('team_'))
     .sort((a, b) => {
-      const tsA = a.substring(a.indexOf('_') + 1);
-      const tsB = b.substring(b.indexOf('_') + 1);
+      // Extract last 2 underscore-separated segments as sort key
+      // Works for both old format (team_20260317_040624 -> 20260317_040624)
+      // and new format (team_fix-auth_260317_001 -> 260317_001)
+      const partsA = a.split('_');
+      const tsA = partsA.slice(-2).join('_');
+      const partsB = b.split('_');
+      const tsB = partsB.slice(-2).join('_');
       return tsB.localeCompare(tsA);
     });
 

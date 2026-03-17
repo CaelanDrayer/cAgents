@@ -19,16 +19,27 @@ Agent_Memory/sessions/{session_id}/
 
 ## Session ID Format
 
+Format: `{command}_{slug}_{YYMMDD}_{NNN}`
+
+| Component | Description | Example |
+|-----------|-------------|---------|
+| `command` | Skill prefix | `run`, `org`, `team`, `designer`, `optimize`, `review` |
+| `slug` | AI-generated 2-6 word kebab-case summary, max 50 chars | `fix-auth-module-jwt` |
+| `YYMMDD` | Compact date (2-digit year) | `260317` |
+| `NNN` | Auto-increment index per command+date, 3 digits | `001` |
+
 | Skill | Prefix | Example |
 |-------|--------|---------|
-| /run | `run_` | `run_20260316_143022` |
-| /org | `org_` | `org_20260316_143022` |
-| /team | `run_` | `run_20260316_143022` (uses run_ prefix) |
-| /designer | `designer_` | `designer_20260316_143022` |
-| /optimize | `optimize_` | `optimize_20260316_143022` |
-| /review | `review_` | `review_20260316_143022` |
+| /run | `run_` | `run_fix-auth-module-jwt_260317_001` |
+| /org | `org_` | `org_launch-new-product_260317_001` |
+| /team | `team_` | `team_implement-oauth2-flow_260317_001` |
+| /designer | `designer_` | `designer_redo-session-names_260317_001` |
+| /optimize | `optimize_` | `optimize_reduce-bundle-size_260317_001` |
+| /review | `review_` | `review_security-audit-api_260317_001` |
 
-Note: /team uses the `run_` prefix because teammates invoke /run under the hood.
+Slug generation: extract 2-6 key words from user request, kebab-case, strip filler words (the, a, an, to, for, with, and, of). Index: scan `Agent_Memory/sessions/` for dirs matching `{command}_*_{YYMMDD}_*`, find highest NNN, increment (start at 001).
+
+Backward compatible: old sessions (`run_20260316_143022`) remain valid. The hook sorting logic extracts the last 2 underscore segments, which works for both old and new formats.
 
 ## instruction.yaml (Required, All 6 Skills)
 

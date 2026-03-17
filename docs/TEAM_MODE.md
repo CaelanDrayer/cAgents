@@ -255,7 +255,7 @@ Claude creates teammates based on the work items. Each teammate is a full Claude
 Team sessions use enhanced session structure:
 
 ```
-Agent_Memory/sessions/team_{YYYYMMDD_HHMMSS}/
+Agent_Memory/sessions/team_{slug}_{YYMMDD}_{NNN}/
 +-- instruction.yaml          # Request + team flags
 +-- status.yaml               # Phase + team status
 +-- team/

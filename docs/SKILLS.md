@@ -334,7 +334,7 @@ Detection → Analysis → Planning → Execution → Validation
 ### Session Files
 
 ```
-Agent_Memory/sessions/optimize_{YYYYMMDD_HHMMSS}/
+Agent_Memory/sessions/optimize_{slug}_{YYMMDD}_{NNN}/
 ├── status.yaml                    # Current phase + history
 ├── task_plan.md                   # Three-file pattern: work items
 ├── findings.md                    # Three-file pattern: discoveries

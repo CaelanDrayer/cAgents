@@ -382,7 +382,7 @@ Agent_Memory/
 +-- sessions/      # org_*, run_*, team_*, designer_*, review_*, optimize_*
 ```
 
-**Session ID**: `{command}_{YYYYMMDD}_{HHMMSS}`
+**Session ID**: `{command}_{slug}_{YYMMDD}_{NNN}` (e.g., `run_fix-auth_260317_001`)
 
 **Key Session Files**: `workflow/plan.yaml`, `workflow/coordination_log.yaml`, `workflow/execution_summary.yaml`
 
@@ -513,7 +513,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 273 Vitest tests (hooks + config validation)
-**Version**: 10.15.0
+**Version**: 10.16.0
 
 ## Troubleshooting
 

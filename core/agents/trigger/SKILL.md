@@ -80,7 +80,7 @@ See @resources/todowrite-patterns.md for progress tracking patterns.
 The session directory and its key files MUST be created in this exact order, BEFORE spawning any subagents. The SubagentStart hook (`subagent-tracker.cjs`) uses `findActiveSession()` to locate the session directory. If `status.yaml` does not exist when the first subagent spawns, the hook cannot find the session and agent tracking fails silently.
 
 **Required creation order** (all BEFORE any Task tool calls):
-1. Create session directory: `Agent_Memory/sessions/run_{YYYYMMDD_HHMMSS}/`
+1. Create session directory: `Agent_Memory/sessions/run_{slug}_{YYMMDD}_{NNN}/`
 2. Create `instruction.yaml` with request metadata
 3. Create `status.yaml` with `phase: routing` (MUST exist before spawning orchestrator)
 4. Create `workflow/` directory
