@@ -33,6 +33,7 @@ Core architecture and development guidance for cAgents.
 - `docs/` - Project documentation (17 files including ARCHITECTURE.md, SKILLS.md, TEAM_MODE.md, RELEASE_NOTES.md, etc.)
 - `archive/docs/` - Historical documentation (local only)
 - `Agent_Memory/` - Runtime state (excluded from git)
+- `.claude/skills/run/reference/session-schema.md` - Session YAML contract (canonical schema for AgentPath)
 - `workflow_agent_interactions.md` - Agent interaction patterns (root-level exception)
 
 ## Version Management
@@ -482,7 +483,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Built-in**: `/memory`, `/init` (Claude Code native)
 **Agents**: 208 total (15 core + 4 shared + 10 leadership + 179 domain specialists)
 **Domains**: Engineering (32), Creative (30), Business (31), Growth (35), People (19), Service (32), Leadership (10), Core (15), Shared (4)
-**Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/domain_overrides.yaml`, `Agent_Memory/_system/config/pipeline_config.yaml`
+**Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/domain_overrides.yaml`, `Agent_Memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (session YAML contract for AgentPath)
 **Hooks**: 13 event types (17 supported by Claude Code), 16 registered CJS hooks (19 .cjs files), invoked via `run-hook.cjs` launcher
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)

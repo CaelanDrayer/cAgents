@@ -99,7 +99,7 @@ state_history:
     duration_ms: null
 ```
 
-Note: /optimize uses the `phase` field (not `pipeline_state`). Hooks check both fields as fallback.
+Note: /optimize uses the `phase` field (not `pipeline_state`). Hooks check both fields as fallback. See `.claude/skills/run/reference/session-schema.md` for the canonical session YAML contract.
 
 ## 5-Phase Workflow
 

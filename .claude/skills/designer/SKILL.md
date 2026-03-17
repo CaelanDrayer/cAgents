@@ -108,7 +108,7 @@ state_history:
     duration_ms: null
 ```
 
-Note: /designer uses the `phase` field (not `pipeline_state`). Hooks check both fields as fallback.
+Note: /designer uses the `phase` field (not `pipeline_state`). Hooks check both fields as fallback. See `.claude/skills/run/reference/session-schema.md` for the canonical session YAML contract.
 
 ## Subagent Question Preparation
 

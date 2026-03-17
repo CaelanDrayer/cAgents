@@ -174,7 +174,7 @@ Analyze the target to determine review type:
        entered_at: "{ISO_TIMESTAMP}"
        duration_ms: null
    ```
-   Note: /review uses the `phase` field (not `pipeline_state`). Hooks check both fields as fallback.
+   Note: /review uses the `phase` field (not `pipeline_state`). Hooks check both fields as fallback. See `.claude/skills/run/reference/session-schema.md` for the canonical session YAML contract.
 5. If `--profile <name>`: load profile from `.claude/review-profiles.yaml` or `Agent_Memory/_system/commands/review/profiles.yaml`. Apply profile settings as defaults; explicit flags override profile values.
 6. If `--suppress <id>`: update baseline file with suppressed finding, output confirmation, and exit (no review).
 7. If `--reset-baseline`: clear `Agent_Memory/_system/commands/review/baseline.yaml` and continue.

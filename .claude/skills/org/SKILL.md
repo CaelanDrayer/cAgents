@@ -125,7 +125,7 @@ state_history:
     duration_ms: null
 ```
 
-Note: /org uses the `pipeline_state` field (not `phase`). Hooks check both fields as fallback.
+Note: /org uses the `pipeline_state` field (not `phase`). Hooks check both fields as fallback. See `.claude/skills/run/reference/session-schema.md` for the canonical session YAML contract.
 
 **State transition protocol**: At every state transition, /org MUST:
 1. Compute `duration_ms` for the previous `state_history` entry (ms between its `entered_at` and now)
