@@ -65,6 +65,36 @@ function findMostRecentSessionDir() {
     }
   } catch { /* sessions dir unreadable */ }
 
+  // Also scan org session subdirectories for nested team/domain sessions
+  // (e.g., org_xxx/engineering/ when /team runs inside /org)
+  const orgDirs = (bestDir ? [] : entries).filter(d => d.startsWith('org_'));
+  for (const orgDir of orgDirs) {
+    const orgPath = path.join(sessionsDir, orgDir);
+    try {
+      const subdirs = fs.readdirSync(orgPath).filter(d => {
+        try { return fs.statSync(path.join(orgPath, d)).isDirectory(); } catch { return false; }
+      });
+      for (const subdir of subdirs) {
+        const nestedPath = path.join(orgPath, subdir);
+        try {
+          const stat = fs.statSync(nestedPath);
+          if (stat.mtimeMs > bestMtime) {
+            const statusContent = safeRead(path.join(nestedPath, 'status.yaml'));
+            if (statusContent) {
+              const phaseMatch = statusContent.match(/phase:\s*(\S+)/);
+              if (phaseMatch) {
+                const phase = phaseMatch[1];
+                if (phase === 'completed' || phase === 'complete' || phase === 'failed' || phase === 'aborted') continue;
+              }
+            }
+            bestMtime = stat.mtimeMs;
+            bestDir = nestedPath;
+          }
+        } catch { /* skip */ }
+      }
+    } catch { /* skip */ }
+  }
+
   return bestDir;
 }
 
@@ -138,6 +168,9 @@ createHook('SubagentTracker', async (input) => {
       .split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   }
 
+  // PC-10: Compute depth — hoisted to outer scope so it's accessible in the return
+  let depth = 0;
+
   // Lock the tree file for the entire read-check-write cycle to prevent
   // race conditions when multiple agents spawn concurrently (see PC-01 bug report).
   const total = withFileLock(treeFile, () => {
@@ -149,8 +182,7 @@ createHook('SubagentTracker', async (input) => {
       return -1; // sentinel: skip
     }
 
-    // PC-10: Compute depth from parent's depth in the tree file (root = 0)
-    let depth = 0;
+    // Compute depth from parent's depth in the tree file (root = 0)
     if (parentAgent && parentAgent !== 'root' && existingContent) {
       const parentBlockRegex = new RegExp(`id: "${parentAgent}"[\\s\\S]*?depth:\\s*(\\d+)`);
       const parentMatch = existingContent.match(parentBlockRegex);

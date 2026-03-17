@@ -203,6 +203,32 @@ function findActiveSession(sessionHint) {
     } catch { /* skip */ }
   }
 
+  // Third pass: scan org session subdirectories for nested team/domain sessions.
+  // When /team runs inside /org, its session dir is nested (e.g., org_xxx/engineering/).
+  // These subdirs have their own status.yaml and are not found by the top-level scan.
+  const orgSessions = sessions.filter(s => s.startsWith('org_'));
+  for (const orgSession of orgSessions) {
+    const orgPath = path.join(sessionsDir, orgSession);
+    try {
+      const subdirs = fs.readdirSync(orgPath).filter(d => {
+        try { return fs.statSync(path.join(orgPath, d)).isDirectory(); } catch { return false; }
+      });
+      for (const subdir of subdirs) {
+        const nestedPath = path.join(orgPath, subdir);
+        const nestedStatus = path.join(nestedPath, 'status.yaml');
+        const content = safeRead(nestedStatus);
+        if (!content) continue;
+        const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase') || extractYamlValue(content, 'pipeline_state');
+        const terminalStates = ['completed', 'complete', 'failed', 'aborted', 'COMPLETE', 'VALIDATED'];
+        if (phase && !terminalStates.includes(phase)) {
+          console.error(`[findActiveSession] Found nested session: ${orgSession}/${subdir}`);
+          _cachedActiveSession = nestedPath;
+          return _cachedActiveSession;
+        }
+      }
+    } catch { /* skip unreadable org dirs */ }
+  }
+
   _cachedActiveSession = null;
   return null;
 }
