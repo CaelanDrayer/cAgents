@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "10.12.0",
+  "version": "10.12.1",
   "description": "213 agents across 8 business domains. Multi-agent orchestration with 8 commands for engineering, creative, business, and more.",
   "type": "module",
   "main": "",

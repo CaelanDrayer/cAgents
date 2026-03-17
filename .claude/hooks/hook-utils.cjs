@@ -350,6 +350,65 @@ function findAvailableWork(taskListPath) {
 }
 
 // ============================================================
+// File Locking (mkdir-based atomic mutex)
+// ============================================================
+// Hooks run as separate Node.js processes. When multiple agents spawn
+// concurrently, their SubagentStart/SubagentStop hooks race on
+// agent_tree.yaml (read-modify-write). mkdirSync is atomic on POSIX,
+// so we use a .lock directory as a mutex.
+// ============================================================
+
+/**
+ * Execute a function while holding a file lock.
+ * Uses mkdirSync as an atomic POSIX mutex (EEXIST = lock held).
+ * Falls back to running without lock after max retries.
+ *
+ * @param {string} filePath - Path to the file being protected
+ * @param {function} fn - Function to execute while holding the lock
+ * @returns {*} Return value of fn
+ */
+function withFileLock(filePath, fn) {
+  const lockDir = filePath + '.lock';
+  const maxRetries = 100;
+  const retryDelayMs = 20;
+  const staleLockMs = 10000; // 10s stale lock threshold
+
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      fs.mkdirSync(lockDir);
+      // Lock acquired
+      try {
+        return fn();
+      } finally {
+        try { fs.rmdirSync(lockDir); } catch { /* best effort */ }
+      }
+    } catch (err) {
+      if (err.code === 'EEXIST') {
+        // Lock held by another process - check for stale lock
+        try {
+          const stat = fs.statSync(lockDir);
+          if (Date.now() - stat.mtimeMs > staleLockMs) {
+            try { fs.rmdirSync(lockDir); } catch { /* another process may have cleared it */ }
+            continue; // Retry immediately after clearing stale lock
+          }
+        } catch { /* lock dir gone, retry */ continue; }
+        // Busy-wait (synchronous, hooks are short-lived)
+        const start = Date.now();
+        while (Date.now() - start < retryDelayMs) { /* spin */ }
+        continue;
+      }
+      // Unexpected error - run without lock rather than failing
+      console.error(`[withFileLock] Unexpected error: ${err.message}, proceeding without lock`);
+      return fn();
+    }
+  }
+
+  // Exhausted retries - proceed without lock (better than failing)
+  console.error(`[withFileLock] Could not acquire lock after ${maxRetries} retries, proceeding without lock`);
+  return fn();
+}
+
+// ============================================================
 // Structured Error Format (What / Why / Fix)
 // ============================================================
 // Provides consistent, actionable error messages across all hooks.
@@ -507,6 +566,7 @@ module.exports = {
   parseTaskList,
   areDependenciesMet,
   findAvailableWork,
+  withFileLock,
   formatError,
   denyWithReason,
   warnWithReason

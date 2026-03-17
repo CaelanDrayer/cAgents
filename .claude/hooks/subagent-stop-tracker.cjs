@@ -13,7 +13,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findActiveSession, safeRead, ensureDir, AGENT_MEMORY_DIR, SESSION_PREFIXES } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, safeRead, ensureDir, withFileLock, AGENT_MEMORY_DIR, SESSION_PREFIXES } = require('./hook-utils.cjs');
 
 /**
  * Find the most recently modified session directory as a fallback.
@@ -86,102 +86,101 @@ createHook('SubagentStopTracker', async (input) => {
   }
 
   const treeFile = path.join(sessionDir, 'workflow', 'agent_tree.yaml');
-  const existingContent = safeRead(treeFile);
 
-  if (existingContent && existingContent.includes(`id: "${agentId}"`)) {
-    // Already has a stopped_at for this agent? Skip.
-    // Build a regex that finds the agent block and checks for stopped_at
-    const agentBlockRegex = new RegExp(`id: "${agentId}"[\\s\\S]*?(?=\\n  - id:|$)`);
-    const agentBlock = existingContent.match(agentBlockRegex);
-    if (agentBlock && agentBlock[0].includes('stopped_at:')) {
-      console.error(`[SubagentStopTracker] Agent ${agentId} already has stopped_at, skipping`);
-      return null;
-    }
+  // Lock the tree file for the entire read-modify-write cycle to prevent
+  // race conditions when multiple agents stop concurrently.
+  withFileLock(treeFile, () => {
+    const existingContent = safeRead(treeFile);
 
-    // Find the last field line for this agent's block and insert stopped_at after it.
-    // Agent entries look like:
-    //   - id: "xxx"
-    //     type: "yyy"
-    //     parent: "zzz"
-    //     spawned_at: "..."
-    //     session: "..."
-    // We find the agent's id line, then scan forward through indented field lines
-    // (lines starting with "    " but not "  - "), and insert after the last one.
-    const lines = existingContent.split('\n');
-    const newLines = [];
-    let foundAgent = false;
-    let lastFieldIndex = -1;
-    let insertedStop = false;
+    if (existingContent && existingContent.includes(`id: "${agentId}"`)) {
+      // Already has a stopped_at for this agent? Skip.
+      const agentBlockRegex = new RegExp(`id: "${agentId}"[\\s\\S]*?(?=\\n  - id:|$)`);
+      const agentBlock = existingContent.match(agentBlockRegex);
+      if (agentBlock && agentBlock[0].includes('stopped_at:') && !agentBlock[0].includes('stopped_at: null')) {
+        console.error(`[SubagentStopTracker] Agent ${agentId} already has stopped_at, skipping`);
+        return;
+      }
 
-    for (let i = 0; i < lines.length; i++) {
-      if (lines[i].includes(`id: "${agentId}"`)) {
-        foundAgent = true;
-        lastFieldIndex = i;
-      } else if (foundAgent && !insertedStop) {
-        // Check if this line is still a field of the current agent
-        // Agent fields are indented with 4+ spaces and don't start with "  - "
-        if (lines[i].match(/^    \S/) && !lines[i].match(/^  - /)) {
+      // Find the agent's block and update stopped_at (which may be null from spawn).
+      // Replace stopped_at: null with the real timestamp, or insert if missing.
+      const lines = existingContent.split('\n');
+      const newLines = [];
+      let foundAgent = false;
+      let lastFieldIndex = -1;
+      let insertedStop = false;
+
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].includes(`id: "${agentId}"`)) {
+          foundAgent = true;
           lastFieldIndex = i;
-        } else {
-          // We've passed the agent's fields - insert stopped_at
-          newLines.push(`    stopped_at: "${now}"`);
-          insertedStop = true;
-          foundAgent = false;
+        } else if (foundAgent && !insertedStop) {
+          // Replace stopped_at: null with real timestamp
+          if (lines[i].match(/^\s+stopped_at:\s*null/)) {
+            newLines.push(`    stopped_at: "${now}"`);
+            insertedStop = true;
+            foundAgent = false;
+            continue; // skip the null line
+          }
+          if (lines[i].match(/^    \S/) && !lines[i].match(/^  - /)) {
+            lastFieldIndex = i;
+          } else {
+            // We've passed the agent's fields - insert stopped_at
+            newLines.push(`    stopped_at: "${now}"`);
+            insertedStop = true;
+            foundAgent = false;
+          }
         }
+        newLines.push(lines[i]);
       }
-      newLines.push(lines[i]);
-    }
 
-    // If agent was the last entry in the file
-    if (foundAgent && !insertedStop) {
-      newLines.push(`    stopped_at: "${now}"`);
-      insertedStop = true;
-    }
+      // If agent was the last entry in the file
+      if (foundAgent && !insertedStop) {
+        newLines.push(`    stopped_at: "${now}"`);
+        insertedStop = true;
+      }
 
-    if (insertedStop) {
-      // Also add completion summary and duration if available
-      // PC-12: Structured completion_summary with outcome field
-      const summaryLines = [];
-      if (lastMessage) {
-        // Extract outcome from first sentence of the message
-        const firstSentence = lastMessage.split(/[.!?\n]/)[0].trim().slice(0, 100);
-        const outcome = firstSentence || 'Completed';
-        summaryLines.push(`    completion_summary:`);
-        summaryLines.push(`      outcome: "${outcome.replace(/"/g, '\\"')}"`);
-        summaryLines.push(`      detail: "${lastMessage.replace(/"/g, '\\"').slice(0, 300)}"`);
-      }
-      // Calculate duration from spawned_at if available
-      const spawnedMatch = newLines.join('\n').match(new RegExp(`id: "${agentId}"[\\s\\S]*?spawned_at: "([^"]+)"`));
-      if (spawnedMatch) {
-        const spawnedAt = new Date(spawnedMatch[1]);
-        const stoppedAt = new Date(now);
-        const durationMs = stoppedAt - spawnedAt;
-        const durationSec = Math.round(durationMs / 1000);
-        summaryLines.push(`    duration_seconds: ${durationSec}`);
-      }
-      if (summaryLines.length > 0) {
-        // Insert summary lines after stopped_at
-        const stopIndex = newLines.findIndex(l => l.includes(`stopped_at: "${now}"`));
-        if (stopIndex >= 0) {
-          newLines.splice(stopIndex + 1, 0, ...summaryLines);
+      if (insertedStop) {
+        // PC-12: Structured completion_summary with outcome field
+        const summaryLines = [];
+        if (lastMessage) {
+          const firstSentence = lastMessage.split(/[.!?\n]/)[0].trim().slice(0, 100);
+          const outcome = firstSentence || 'Completed';
+          summaryLines.push(`    completion_summary:`);
+          summaryLines.push(`      outcome: "${outcome.replace(/"/g, '\\"')}"`);
+          summaryLines.push(`      detail: "${lastMessage.replace(/"/g, '\\"').slice(0, 300)}"`);
         }
+        // Calculate duration from spawned_at if available
+        const spawnedMatch = newLines.join('\n').match(new RegExp(`id: "${agentId}"[\\s\\S]*?spawned_at: "([^"]+)"`));
+        if (spawnedMatch) {
+          const spawnedAt = new Date(spawnedMatch[1]);
+          const stoppedAt = new Date(now);
+          const durationMs = stoppedAt - spawnedAt;
+          const durationSec = Math.round(durationMs / 1000);
+          summaryLines.push(`    duration_seconds: ${durationSec}`);
+        }
+        if (summaryLines.length > 0) {
+          const stopIndex = newLines.findIndex(l => l.includes(`stopped_at: "${now}"`));
+          if (stopIndex >= 0) {
+            newLines.splice(stopIndex + 1, 0, ...summaryLines);
+          }
+        }
+        fs.writeFileSync(treeFile, newLines.join('\n'));
+        console.error(`[SubagentStopTracker] Agent ${agentId} (${subagentType}) stopped`);
+      } else {
+        // Fallback: append at end (PC-12: structured completion_summary)
+        let extra = '';
+        if (lastMessage) {
+          const firstSentence = lastMessage.split(/[.!?\n]/)[0].trim().slice(0, 100);
+          const outcome = firstSentence || 'Completed';
+          extra = `\n    completion_summary:\n      outcome: "${outcome.replace(/"/g, '\\"')}"\n      detail: "${lastMessage.replace(/"/g, '\\"').slice(0, 300)}"`;
+        }
+        fs.appendFileSync(treeFile, `    stopped_at: "${now}"${extra}\n`);
+        console.error(`[SubagentStopTracker] Agent ${agentId} (${subagentType}) stopped (appended)`);
       }
-      fs.writeFileSync(treeFile, newLines.join('\n'));
-      console.error(`[SubagentStopTracker] Agent ${agentId} (${subagentType}) stopped`);
     } else {
-      // Fallback: append at end (PC-12: structured completion_summary)
-      let extra = '';
-      if (lastMessage) {
-        const firstSentence = lastMessage.split(/[.!?\n]/)[0].trim().slice(0, 100);
-        const outcome = firstSentence || 'Completed';
-        extra = `\n    completion_summary:\n      outcome: "${outcome.replace(/"/g, '\\"')}"\n      detail: "${lastMessage.replace(/"/g, '\\"').slice(0, 300)}"`;
-      }
-      fs.appendFileSync(treeFile, `    stopped_at: "${now}"${extra}\n`);
-      console.error(`[SubagentStopTracker] Agent ${agentId} (${subagentType}) stopped (appended)`);
+      console.error(`[SubagentStopTracker] Agent ${agentId} not found in agent_tree.yaml, logging stop event only`);
     }
-  } else {
-    console.error(`[SubagentStopTracker] Agent ${agentId} not found in agent_tree.yaml, logging stop event only`);
-  }
+  });
 
   return null;
 });
