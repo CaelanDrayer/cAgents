@@ -3,6 +3,7 @@ name: proposal-specialist
 domain: growth
 tier: execution
 description: "Use when you need proposal and RFP response specialist. Creates compelling proposals, manages RFP responses, and coordinates bid teams."
+vibe: "Writes proposals that win by making the decision obvious"
 model: sonnet
 capabilities:
   - rfp_response

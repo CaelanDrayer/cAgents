@@ -1,6 +1,7 @@
 ---
 name: dependency-analyzer
 description: "Use when you need maps task dependencies and optimizes execution order. Use after planning to validate dependencies and identify parallelization opportunities."
+vibe: "Maps every dependency so upgrades don't become disasters"
 tier: support
 domain: engineering
 model: "haiku"

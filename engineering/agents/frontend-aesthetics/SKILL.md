@@ -1,6 +1,7 @@
 ---
 name: frontend-aesthetics
 description: "Use when you need frontend aesthetics specialist creating distinctive, creative designs that avoid generic patterns. Expert in unique typography, cohesive color systems, CSS animations, and atmospheric backgrounds."
+vibe: "Makes interfaces that users love before they understand why"
 tier: execution
 domain: engineering
 model: sonnet

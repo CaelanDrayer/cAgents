@@ -3,6 +3,7 @@ name: quality-manager
 domain: business
 tier: controller
 description: "Use when you need quality management specialist coordinating quality strategy, QA processes, quality standards, Six Sigma, ISO compliance, and continuous improvement across ALL domains."
+vibe: "Quality isn't a phase -- it's every single decision"
 model: sonnet
 coordination_style: question_based
 typical_questions:

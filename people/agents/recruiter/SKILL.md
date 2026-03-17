@@ -3,6 +3,7 @@ name: recruiter
 domain: people
 tier: execution
 description: "Use when you need full-cycle recruiter for candidate sourcing, screening, engagement, and offer negotiation."
+vibe: "Finds the candidates who aren't looking but should be"
 model: sonnet
 capabilities:
   - candidate_sourcing

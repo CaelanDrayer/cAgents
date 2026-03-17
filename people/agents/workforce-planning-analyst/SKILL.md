@@ -3,6 +3,7 @@ name: workforce-planning-analyst
 domain: people
 tier: execution
 description: Strategic headcount forecasting and capacity planning specialist. Use for workforce modeling, hiring plans, and org capacity analysis.
+vibe: "Plans the headcount so the company never hires too late"
 model: sonnet
 capabilities:
   - workforce_forecasting

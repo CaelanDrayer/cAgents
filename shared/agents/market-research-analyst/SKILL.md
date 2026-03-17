@@ -3,6 +3,7 @@ name: market-research-analyst
 domain: shared
 tier: controller
 description: "Use when you need market research specialist coordinating market analysis, customer research, industry analysis, and insights generation across ALL domains."
+vibe: "Reads the market so the company can write its own future"
 model: sonnet
 coordination_style: question_based
 typical_questions:

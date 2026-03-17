@@ -325,6 +325,11 @@ function calculateScore(breakdown) {
 
 /**
  * Parse a simple YAML task list file and return items array.
+ * Handles the team/task_list.yaml format with id, name, status,
+ * claimed_by, and dependencies fields.
+ *
+ * @param {string} filePath - Path to the task_list.yaml file
+ * @returns {Array<{id: string, name?: string, status?: string, claimed_by?: string|null, dependencies: string[]}>}
  */
 function parseTaskList(filePath) {
   const content = safeRead(filePath);
@@ -347,7 +352,10 @@ function parseTaskList(filePath) {
     if (statusMatch) item.status = statusMatch[1].trim();
 
     const claimedMatch = block.match(/claimed_by:\s*["']?([^"'\n]+)["']?/);
-    if (claimedMatch) item.claimed_by = claimedMatch[1].trim();
+    if (claimedMatch) {
+      const val = claimedMatch[1].trim();
+      item.claimed_by = (val === 'null' || val === '~') ? null : val;
+    }
 
     const depsMatch = block.match(/dependencies:\s*\[([^\]]*)\]/);
     if (depsMatch) {
@@ -367,6 +375,10 @@ function parseTaskList(filePath) {
 
 /**
  * Check if a work item's dependencies are all completed.
+ *
+ * @param {object} item - Work item to check
+ * @param {Array<object>} allItems - All work items for dependency resolution
+ * @returns {boolean} True if all dependencies have status 'completed'
  */
 function areDependenciesMet(item, allItems) {
   if (!item.dependencies || item.dependencies.length === 0) return true;
@@ -378,6 +390,9 @@ function areDependenciesMet(item, allItems) {
 
 /**
  * Find available (unclaimed, unblocked) work items from a task list file.
+ *
+ * @param {string} taskListPath - Path to the task_list.yaml file
+ * @returns {Array<object>} Work items with status 'available' or 'pending', no claimed_by, and all dependencies met
  */
 function findAvailableWork(taskListPath) {
   const items = parseTaskList(taskListPath);

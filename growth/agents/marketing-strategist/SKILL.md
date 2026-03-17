@@ -1,6 +1,7 @@
 ---
 name: marketing-strategist
 description: "Marketing strategy and planning specialist. Use for marketing strategy development, competitive analysis, market research, or strategic planning."
+vibe: "Plans the marketing playbook three quarters ahead"
 tier: controller
 domain: growth
 model: sonnet

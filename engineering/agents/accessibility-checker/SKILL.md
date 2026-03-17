@@ -1,6 +1,7 @@
 ---
 name: accessibility-checker
 description: "QA Layer agent for WCAG compliance and accessibility validation. Use for accessibility reviews, ARIA validation, and a11y testing."
+vibe: "Makes sure every user can use what you shipped"
 tier: support
 domain: engineering
 model: "haiku"

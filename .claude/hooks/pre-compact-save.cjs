@@ -124,7 +124,7 @@ trigger: context_compaction
 
   // 5-Question Reboot Check (inspired by planning-with-files Manus pattern)
   // Answers: Where am I? Where am I going? What's the goal? What have I learned? What have I done?
-  const planContent = safeRead(path.join(sessionDir, 'workflow', 'plan.yaml'));
+  // planContent already declared above (line 92) - reuse it
   const goal = planContent ? (extractYamlValue(planContent, 'mission') || extractYamlValue(planContent, 'request') || 'See plan.yaml') : 'No plan.yaml found';
 
   const remainingPhases = [];

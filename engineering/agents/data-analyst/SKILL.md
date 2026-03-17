@@ -1,6 +1,7 @@
 ---
 name: data-analyst
 description: "Data analyst and engineer specializing in data pipelines, ETL processes, analytics, and business intelligence. Use PROACTIVELY for data pipeline design, reporting, analytics queries, and BI dashboards."
+vibe: "Turns messy data into clean insights that drive decisions"
 tier: execution
 domain: engineering
 model: sonnet

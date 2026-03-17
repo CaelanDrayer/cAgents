@@ -1,6 +1,7 @@
 ---
 name: tech-lead
 description: "Engineering leader for delivery, team coordination, and strategic decisions. Use PROACTIVELY for complex tasks requiring orchestration, priority decisions, or cross-team coordination."
+vibe: "Sets technical direction and unblocks the team before they're stuck"
 tier: controller
 domain: engineering
 model: "opusplan"

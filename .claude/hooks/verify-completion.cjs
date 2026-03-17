@@ -76,7 +76,63 @@ function verifyCompletion(sessionDir) {
     }
   }
 
-  // 2. Check coordination_log.yaml for work item completion
+  // 2. Sentinel Gate Factchecking (V10.17.0)
+  // Verify that claimed deliverables actually exist on disk.
+  const coordFileForSentinel = path.join(sessionDir, 'workflow', 'coordination_log.yaml');
+  const coordForSentinel = safeRead(coordFileForSentinel);
+  if (coordForSentinel) {
+    // Extract files_created and files_modified claims
+    const filesClaimed = [];
+    const createdMatches = coordForSentinel.match(/files_created:\s*\n((?:\s+-\s+[^\n]+\n?)*)/g);
+    const modifiedMatches = coordForSentinel.match(/files_modified:\s*\n((?:\s+-\s+[^\n]+\n?)*)/g);
+    const outputMatches = coordForSentinel.match(/output(?:_file|_path|s)?:\s*["']?([^\s"'\n]+)/g);
+
+    const extractPaths = (matches) => {
+      if (!matches) return;
+      for (const block of matches) {
+        const lines = block.split('\n');
+        for (const line of lines) {
+          const pathMatch = line.match(/^\s+-\s+["']?([^\s"'\n]+)/);
+          if (pathMatch) {
+            const p = pathMatch[1].trim();
+            if (p && !p.startsWith('files_') && p.includes('/')) filesClaimed.push(p);
+          }
+        }
+      }
+    };
+
+    extractPaths(createdMatches);
+    extractPaths(modifiedMatches);
+    if (outputMatches) {
+      for (const m of outputMatches) {
+        const p = m.replace(/output(?:_file|_path|s)?:\s*["']?/, '').trim();
+        if (p && p.includes('/')) filesClaimed.push(p);
+      }
+    }
+
+    // Verify claimed files exist
+    let missingFiles = 0;
+    const missingList = [];
+    for (const claimed of filesClaimed) {
+      // Resolve relative to session dir or project root
+      const candidates = [
+        path.resolve(sessionDir, claimed),
+        path.resolve(PROJECT_ROOT, claimed),
+      ];
+      const exists = candidates.some(c => fs.existsSync(c));
+      if (!exists) {
+        missingFiles++;
+        if (missingList.length < 5) missingList.push(claimed);
+      }
+    }
+
+    if (missingFiles > 0) {
+      warnings.push(`Sentinel gate: ${missingFiles} claimed deliverable(s) not found on disk: ${missingList.join(', ')}${missingFiles > 5 ? '...' : ''}`);
+    }
+  }
+
+  // 3. Check coordination_log.yaml for work item completion
+  // (renumbered from 2 after sentinel gate insertion)
   // For /org sessions, also check integration_report.yaml and per-domain coordination logs
   const coordFile = path.join(sessionDir, 'workflow', 'coordination_log.yaml');
   let coordContent = safeRead(coordFile);
@@ -99,7 +155,7 @@ function verifyCompletion(sessionDir) {
     if (emptyEvidence > 0) warnings.push(`${emptyEvidence} work item(s) missing completion evidence`);
   }
 
-  // 3. Check validation report (only if session reached a state where validation is expected)
+  // 4. Check validation report (only if session reached a state where validation is expected)
   const validationFile = path.join(sessionDir, 'validation', 'validation_report.yaml');
   const valContent = safeRead(validationFile);
   // Only warn about missing validation if the session has a status.yaml indicating
@@ -158,6 +214,84 @@ createHook('VerifyCompletion', async (input) => {
   }
 
   const result = verifyCompletion(sessionDir);
+
+  // PC-09: Plan-Scoped Learning Capture (V10.17.0)
+  // Write learnings.yaml at session end to capture structured learnings
+  try {
+    const planFile = path.join(sessionDir, 'workflow', 'plan.yaml');
+    const planContent = safeRead(planFile);
+    const coordFile2 = path.join(sessionDir, 'workflow', 'coordination_log.yaml');
+    const coordContent2 = safeRead(coordFile2);
+
+    const learnings = [];
+
+    // Extract decisions from coordination log
+    if (coordContent2) {
+      // Look for patterns that indicate decisions or issues
+      const synthesisMatch = coordContent2.match(/synthesized_solution:[\s\S]*?(?=\n[a-z_]+:|$)/);
+      if (synthesisMatch) {
+        learnings.push({
+          type: 'decision',
+          content: 'Synthesis approach captured in coordination_log.yaml',
+          source: 'coordination_log'
+        });
+      }
+
+      // Count revision rounds (indicates difficulty areas)
+      const revisionCount = countPattern(coordContent2, /revision_round:/g);
+      if (revisionCount > 0) {
+        learnings.push({
+          type: 'issue',
+          content: `${revisionCount} revision round(s) needed - indicates areas of difficulty`,
+          source: 'coordination_log'
+        });
+      }
+    }
+
+    // Check for failed items (things that didn't work)
+    const failedItems = path.join(sessionDir, 'workflow', 'failed_items.yaml');
+    if (fs.existsSync(failedItems)) {
+      learnings.push({
+        type: 'failure',
+        content: 'Some work items failed - see workflow/failed_items.yaml',
+        source: 'failed_items'
+      });
+    }
+
+    // Extract domain and tier from plan
+    let domain = 'unknown';
+    let tier = 'unknown';
+    if (planContent) {
+      domain = extractYamlValue(planContent, 'domain') || extractYamlValue(planContent, 'super_domain') || 'unknown';
+      tier = extractYamlValue(planContent, 'tier') || 'unknown';
+    }
+
+    if (learnings.length > 0 || planContent) {
+      const learningsFile = path.join(sessionDir, 'learnings.yaml');
+      const learningsContent = `# Session Learnings
+# Auto-generated by verify-completion.cjs (V10.17.0)
+generated_at: "${new Date().toISOString()}"
+session_id: "${path.basename(sessionDir)}"
+domain: "${domain}"
+tier: "${tier}"
+completion_status: "${result.issues.length === 0 ? 'completed' : 'failed'}"
+
+learnings:
+${learnings.map(l => `  - type: "${l.type}"
+    content: "${l.content.replace(/"/g, '\\"')}"
+    source: "${l.source}"`).join('\n')}
+
+# Patterns discovered during execution
+patterns:
+  warnings_count: ${result.warnings.length}
+  issues_count: ${result.issues.length}
+${result.warnings.length > 0 ? `  warning_types:\n${result.warnings.map(w => `    - "${w.substring(0, 100).replace(/"/g, '\\"')}"`).join('\n')}` : '  warning_types: []'}
+`;
+      try { fs.writeFileSync(learningsFile, learningsContent); } catch {}
+    }
+  } catch (e) {
+    console.error(`[VerifyCompletion] Learning capture error: ${e.message}`);
+  }
 
   // PC-08: Always write completion_summary.yaml with status field
   // Status: completed (no issues), failed (issues found), interrupted (other)

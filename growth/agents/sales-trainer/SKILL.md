@@ -3,6 +3,7 @@ name: sales-trainer
 domain: growth
 tier: execution
 description: "Use when you need sales development and coaching specialist. Delivers onboarding, skills training, coaching programs, and performance improvement."
+vibe: "Trains reps until objection handling becomes second nature"
 model: sonnet
 capabilities:
   - sales_training

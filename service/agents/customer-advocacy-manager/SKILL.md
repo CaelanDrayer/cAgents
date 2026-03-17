@@ -3,6 +3,7 @@ name: customer-advocacy-manager
 domain: service
 tier: controller
 description: "Use when you need reference management, case studies, testimonials, and customer community building across all domains."
+vibe: "Gives the customer a seat at every internal table"
 model: sonnet
 coordination_style: question_based
 typical_questions:

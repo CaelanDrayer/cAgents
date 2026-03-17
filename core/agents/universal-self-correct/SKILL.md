@@ -3,6 +3,7 @@ name: universal-self-correct
 domain: core
 tier: infrastructure
 description: "Use when you need adaptive correction agent that automatically fixes validation failures, including coordination issues. Works across all domains."
+vibe: "Fixes what the validators flagged before anyone has to ask"
 model: opus
 color: bright_magenta
 capabilities:
@@ -103,5 +104,79 @@ Target **8K tokens per micro-task** (fits comfortably in any context window):
 - **Max micro-tasks per split**: 20
 - **If exceeded**: Escalate to HITL with full checkpoint and progress summary
 - **Each continuation inherits**: checkpoint, partial outputs, remaining acceptance criteria
+
+## When-Stuck Protocol (V10.18.0)
+
+Structured escalation when repeated failures occur on the same work item.
+
+### Stuck Detection
+
+An agent is **stuck** when it has 3+ consecutive failures on the same work item (same error class, same file, or same operation). Detection signals:
+- Same tool failing 3+ times in `workflow/tool_failures.yaml`
+- Same work item returning REVISE 3+ times from reviewer
+- Execution agent reporting "unable to complete" repeatedly
+
+### Recovery Ladder (execute in order)
+
+| Step | Action | Rationale |
+|------|--------|-----------|
+| 1. **Re-read everything** | Re-read ALL relevant files from scratch (not from memory) | Context drift causes stale assumptions |
+| 2. **Review execution log** | Read full `workflow/tool_failures.yaml` and coordination_log | Pattern in failures reveals root cause |
+| 3. **Combine successes** | Identify what DID work across attempts, merge those approaches | Partial successes contain signal |
+| 4. **Try the opposite** | If all attempts used approach A, try approach B | Fixation on one strategy is the #1 stuck cause |
+| 5. **Radical simplification** | Strip the work item to absolute minimum viable scope | Complexity is often the blocker, not the approach |
+| 6. **Escalate** | Mark as BLOCKED with full context, escalate to HITL | Know when to stop |
+
+### Stuck Recovery Prompt Template
+
+When spawning a recovery agent after stuck detection:
+```
+STUCK RECOVERY for {work_item_id}:
+Previous {N} attempts failed. Failure pattern: {pattern_summary}
+What worked: {partial_successes}
+What failed: {failure_summary}
+TRY: {next_step_from_ladder}
+DO NOT repeat: {failed_approaches}
+```
+
+## Crash Recovery Taxonomy (V10.18.0)
+
+Typed failure classification with specific recovery strategies per failure type.
+
+| Failure Type | Detection | Recovery Strategy | Retry Limit |
+|-------------|-----------|-------------------|-------------|
+| `syntax_error` | Parse/compile error in output | Fix immediately using error message | Unlimited (deterministic fix) |
+| `runtime_error` | Execution fails after valid syntax | Analyze stack trace, fix logic | Max 3 attempts |
+| `resource_exhaustion` | OOM, context overflow, disk full | Revert changes + try smaller approach | Max 1 (then simplify) |
+| `timeout` | Operation exceeds time limit | Kill operation, revert partial changes | Max 1 (then decompose smaller) |
+| `external_dependency` | Network, API, service unavailable | Skip work item + log for later | 0 (skip immediately) |
+
+### Recovery Decision Tree
+
+```
+Failure detected
+  -> Classify type (syntax/runtime/resource/timeout/external)
+  -> Check retry count for this type
+  -> If under limit: apply type-specific recovery
+  -> If at limit:
+     - syntax_error: should not happen (always fixable)
+     - runtime_error: escalate with stack traces
+     - resource_exhaustion: revert + radical simplification
+     - timeout: decompose into sub-tasks
+     - external_dependency: skip + log + continue
+```
+
+### Failure Classification in coordination_log
+
+```yaml
+failed_items:
+  - task_id: WI-3
+    failure_type: runtime_error
+    attempts: 3
+    error_summary: "TypeError: Cannot read property 'id' of undefined at handler.ts:45"
+    recovery_actions_taken: ["stack trace analysis", "null check addition", "input validation"]
+    final_status: blocked
+    escalation_context: "Handler receives undefined user object from upstream middleware"
+```
 
 See @resources/self-correct-patterns.md for correction strategies.

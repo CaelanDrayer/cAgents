@@ -1,11 +1,11 @@
 {
-  "$comment": "Hook configuration - cAgents V10.6.0 - Progressive pipeline (3 paths), agent chaining, structured error format, attention injection. 19 CJS files (16 registered hooks + utils + launcher + eval CLI) across 13 event types. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd).",
+  "$comment": "Hook configuration - cAgents V10.18.0 - Progressive pipeline (3 paths), agent chaining, structured error format, attention injection, magic keywords, delegation enforcer. 21 CJS files (18 registered hooks + utils + launcher + eval CLI) across 15 event types. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd).",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
   "teammateMode": "tmux",
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CAGENTS_VERSION": "10.6.0"
+    "CAGENTS_VERSION": "10.18.0"
   },
   "permissions": {
     "allow": [
@@ -114,6 +114,16 @@
             "timeout": 3
           }
         ]
+      },
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" delegation-enforcer'",
+            "timeout": 3
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -179,6 +189,17 @@
             "type": "command",
             "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" pre-compact-save'",
             "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" magic-keywords'",
+            "timeout": 3
           }
         ]
       }

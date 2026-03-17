@@ -1,6 +1,7 @@
 ---
 name: dependency-auditor
 description: "QA Layer agent for dependency vulnerability and currency checking. Use for vulnerability scanning, outdated package detection, and license compliance."
+vibe: "Finds the vulnerable dependency before the CVE does"
 tier: support
 domain: engineering
 model: "haiku"

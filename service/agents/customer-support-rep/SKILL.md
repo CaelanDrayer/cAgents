@@ -3,6 +3,7 @@ name: customer-support-rep
 domain: service
 tier: execution
 description: "Use when you need front-line customer support representative handling inquiries, troubleshooting, and issue resolution."
+vibe: "Solves customer problems like they're solving their own"
 model: sonnet
 capabilities:
   - customer_inquiry_handling

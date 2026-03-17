@@ -8,6 +8,7 @@ typical_questions:
   - "What is the current talent pipeline and sourcing strategy?"
   - "What are the key risks and market constraints?"
 description: "Use when you need recruiting strategy, pipeline management, and talent market insights."
+vibe: "Builds the recruiting engine that fills roles before they're painful"
 model: sonnet
 capabilities:
   - recruiting_strategy

@@ -3,6 +3,7 @@ name: support-trainer
 domain: service
 tier: execution
 description: "Use when you need onboarding, skills development, and training effectiveness measurement."
+vibe: "Trains support teams to handle anything customers throw at them"
 model: sonnet
 capabilities:
   - training_delivery

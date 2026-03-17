@@ -8,6 +8,7 @@ typical_questions:
   - "Where are the conversion bottlenecks in the funnel?"
   - "What sales and marketing alignment issues exist?"
 description: "Use when you need chief Revenue Officer. Executive revenue leadership owning end-to-end revenue generation across marketing, sales, and customer success."
+vibe: "Owns the number and builds the machine to hit it every quarter"
 model: "opusplan"
 capabilities:
   - revenue_strategy

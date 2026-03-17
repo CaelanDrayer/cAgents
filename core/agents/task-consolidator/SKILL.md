@@ -3,6 +3,7 @@ name: task-consolidator
 domain: core
 tier: infrastructure
 description: "Use when you need context-aware task consolidation agent that splits large tasks into micro-tasks across multiple agents, then consolidates results. Reduces context usage by 40-60%."
+vibe: "Turns 100 scattered tasks into a clean, actionable list"
 model: opus
 color: bright_yellow
 capabilities:

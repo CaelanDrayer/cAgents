@@ -3,6 +3,7 @@ name: change-management-specialist
 domain: business
 tier: execution
 description: "Use when you need change plans executed, training delivered, communications deployed, or adoption tracked."
+vibe: "Makes the org actually want the change, not just tolerate it"
 model: sonnet
 answers_questions:
   - "What is the change readiness level?"

@@ -3,6 +3,7 @@ name: partnership-marketing-manager
 domain: growth
 tier: execution
 description: "Use when you need partner and channel marketing specialist. Drives co-marketing, channel partner enablement, alliance marketing, and partnership campaigns."
+vibe: "Creates partnerships where both sides win bigger together"
 model: sonnet
 capabilities:
   - co_marketing

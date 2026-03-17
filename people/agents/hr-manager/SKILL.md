@@ -1,6 +1,7 @@
 ---
 name: hr-manager
 description: "HR operations manager and people team coordinator. Use for HR process management, employee lifecycle operations, and people team coordination."
+vibe: "Builds the team that builds the product"
 tier: controller
 domain: people
 coordination_style: question_based

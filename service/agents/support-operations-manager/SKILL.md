@@ -3,6 +3,7 @@ name: support-operations-manager
 domain: service
 tier: controller
 description: "Use when you need workflow design, tool implementation, and operational efficiency."
+vibe: "Optimizes support workflows so agents spend time helping, not searching"
 model: sonnet
 coordination_style: question_based
 typical_questions:

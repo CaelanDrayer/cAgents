@@ -1,6 +1,7 @@
 ---
 name: qa-lead
 description: "QA domain manager for tactical test planning, team coordination, and quality assurance. Use for tier 3-4 instructions requiring test strategy, QA team management, or comprehensive quality validation."
+vibe: "Finds the bugs before your users do -- every edge case is a story"
 tier: controller
 domain: engineering
 model: sonnet

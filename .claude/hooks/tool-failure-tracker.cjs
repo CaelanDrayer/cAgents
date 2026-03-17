@@ -24,6 +24,46 @@ const TOOL_ALTERNATIVES = {
   'Grep': 'Pattern may have regex issues. Try a simpler pattern or different path.'
 };
 
+// V10.18.0: Crash Recovery Taxonomy - classify failures by type for targeted recovery
+const FAILURE_TAXONOMY = {
+  syntax_error: {
+    patterns: [/SyntaxError/i, /ParseError/i, /Unexpected token/i, /Invalid syntax/i, /YAML.*invalid/i, /JSON.*parse/i],
+    recovery: 'Fix immediately using the error message. Syntax errors are deterministic.',
+    retry_limit: -1  // unlimited - always fixable
+  },
+  runtime_error: {
+    patterns: [/TypeError/i, /ReferenceError/i, /RangeError/i, /Cannot read prop/i, /undefined is not/i, /null reference/i],
+    recovery: 'Analyze stack trace. Check for null/undefined values. Add defensive guards.',
+    retry_limit: 3
+  },
+  resource_exhaustion: {
+    patterns: [/ENOMEM/i, /out of memory/i, /heap.*limit/i, /context.*too long/i, /ENOSPC/i, /disk.*full/i],
+    recovery: 'Revert changes. Try a smaller approach: fewer files, less content, chunked operations.',
+    retry_limit: 1
+  },
+  timeout: {
+    patterns: [/ETIMEDOUT/i, /timeout/i, /timed out/i, /deadline exceeded/i, /ESOCKETTIMEDOUT/i],
+    recovery: 'Kill the operation. Revert partial changes. Decompose into smaller sub-tasks.',
+    retry_limit: 1
+  },
+  external_dependency: {
+    patterns: [/ECONNREFUSED/i, /ENOTFOUND/i, /502|503|504/i, /network.*error/i, /API.*unavailable/i, /rate.*limit/i],
+    recovery: 'Skip this work item and log for later retry. Do not block on external services.',
+    retry_limit: 0
+  }
+};
+
+function classifyFailure(errorMsg) {
+  for (const [type, config] of Object.entries(FAILURE_TAXONOMY)) {
+    for (const pattern of config.patterns) {
+      if (pattern.test(errorMsg)) {
+        return { type, recovery: config.recovery, retry_limit: config.retry_limit };
+      }
+    }
+  }
+  return { type: 'unknown', recovery: 'Investigate the error. Check logs for context.', retry_limit: 2 };
+}
+
 createHook('ToolFailureTracker', async (input) => {
   if (!input.tool_name) return null;
 
@@ -65,15 +105,29 @@ createHook('ToolFailureTracker', async (input) => {
 
   console.error(`[ToolFailureTracker] ${toolName} failed: ${safeError.slice(0, 80)}`);
 
+  // Classify failure type using taxonomy
+  const classification = classifyFailure(errorMsg);
+
   // Pattern detection (2 previous + current = 3)
   if (recentCount >= 2) {
     const suggestion = TOOL_ALTERNATIVES[toolName] || `Tool "${toolName}" has failed ${recentCount + 1} times recently. Consider an alternative approach.`;
-    console.error(`[ToolFailureTracker] Pattern: ${recentCount + 1} failures of ${toolName}`);
+    const taxonomyHint = classification.type !== 'unknown'
+      ? `\nFailure type: ${classification.type} (retry limit: ${classification.retry_limit === -1 ? 'unlimited' : classification.retry_limit})\nRecovery: ${classification.recovery}`
+      : '';
+    console.error(`[ToolFailureTracker] Pattern: ${recentCount + 1} failures of ${toolName} [${classification.type}]`);
     return {
       hookSpecificOutput: {
         hookEventName: 'PostToolUseFailure',
-        additionalContext: `Tool failure pattern detected: "${toolName}" has failed ${recentCount + 1} times recently.\n${suggestion}`
+        additionalContext: `Tool failure pattern detected: "${toolName}" has failed ${recentCount + 1} times recently.\n${suggestion}${taxonomyHint}`
       }
+    };
+  }
+
+  // Even on first failure, provide taxonomy hint for recognized types
+  if (classification.type !== 'unknown') {
+    return {
+      continue: true,
+      systemMessage: `Failure classified as ${classification.type}. ${classification.recovery}`
     };
   }
 

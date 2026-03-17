@@ -6,13 +6,13 @@ paths:
 
 # cAgents Hook System
 
-V10.5.0 CJS-only hook architecture with 16 registered hooks + 1 CLI tool across 13 event types (of 17 total Claude Code event types), `createHook()` factory pattern, agent audit trail with completion summaries, attention injection for goal refresh, clean team lifecycle (`continue:false` + `stopReason` for TeammateIdle/TaskCompleted), and resilient path resolution. Supports command, http, prompt, and agent hook types, async execution, and matcher-based filtering.
+V10.18.0 CJS-only hook architecture with 18 registered hooks + 1 CLI tool across 15 event types (of 17 total Claude Code event types), `createHook()` factory pattern, agent audit trail with completion summaries, attention injection for goal refresh, magic keywords (UserPromptSubmit), delegation enforcer (PreToolUse[Task]), sentinel gate factchecking, plan-scoped learning capture, context auto-check, clean team lifecycle (`continue:false` + `stopReason` for TeammateIdle/TaskCompleted), and resilient path resolution. Supports command, http, prompt, and agent hook types, async execution, and matcher-based filtering.
 
 ## Architecture
 
 cAgents uses a unified CJS hook system configured in `.claude/settings.json`:
 
-- **CJS hooks** (`.claude/hooks/`): 19 `.cjs` files -- 1 shared utility module (`hook-utils.cjs`) + 1 hook launcher (`run-hook.cjs`) + 16 registered hooks + 1 standalone CLI tool (`eval-runner.cjs`). All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output).
+- **CJS hooks** (`.claude/hooks/`): 21 `.cjs` files -- 1 shared utility module (`hook-utils.cjs`) + 1 hook launcher (`run-hook.cjs`) + 18 registered hooks + 1 standalone CLI tool (`eval-runner.cjs`). All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output).
 - **Prompt hooks**: None currently active. The Stop prompt hook was removed in V9.6.2 due to unreliable LLM JSON responses causing recurring validation failures. The `verify-completion.cjs` command hook provides equivalent file-based verification.
 - **Self-contained invocation via run-hook.cjs**: All hooks are called via `bash -c 'R="${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"; node "$R/.claude/hooks/run-hook.cjs" <hook-name>'` -- a bash wrapper with a 3-tier fallback chain that resolves the plugin root, then launches `run-hook.cjs` which resolves the target hook path using `__dirname`. V9.17.1 switched from bare `node "${CLAUDE_PLUGIN_ROOT}"/.claude/hooks/run-hook.cjs` (which fails with MODULE_NOT_FOUND when `CLAUDE_PLUGIN_ROOT` is not expanded) to a `bash -c` wrapper with fallback chain: `CLAUDE_PLUGIN_ROOT` (official plugin env var) -> `CLAUDE_PROJECT_DIR` (user's project dir, works for local dev) -> `pwd` (last resort). Previous V9.13 approach used `${CLAUDE_PLUGIN_ROOT}` directly in the command string, but this fails when the env var is not set (e.g., in certain subagent contexts, SessionEnd events, or non-plugin installations).
 
@@ -46,14 +46,14 @@ The V9.5 refactoring eliminates the dual shell+JS architecture that caused recur
 
 ## Hook Types Overview
 
-Claude Code supports 17 hook event types. cAgents implements 16 registered hooks across 13 of these events. Four events (`UserPromptSubmit`, `ConfigChange`, `WorktreeCreate`, `WorktreeRemove`) have no cAgents hooks but are available for custom use.
+Claude Code supports 17 hook event types. cAgents implements 18 registered hooks across 15 of these events. Two events (`ConfigChange`, `WorktreeCreate`, `WorktreeRemove`) have no cAgents hooks but are available for custom use.
 
 | Hook Type | Trigger | cAgents Hook | Purpose |
 |-----------|---------|--------------|---------|
-| `SessionStart` | Session begins/resumes | `session-catchup.cjs` | Initialize state, detect incomplete sessions, inject cAgents context |
+| `SessionStart` | Session begins/resumes | `session-catchup.cjs` | Initialize state, detect incomplete sessions, inject cAgents context, context auto-check |
 | `SessionEnd` | Session ends | `team-stop.cjs` | Finalize metrics, update status |
-| `UserPromptSubmit` | User submits prompt | *(none)* | Available for custom input validation/preprocessing |
-| `PreToolUse` | Before tool execution | `bash-validator.cjs`, `secret-detection.cjs`, `attention-injection.cjs` | Validate, block dangerous operations, refresh goals |
+| `UserPromptSubmit` | User submits prompt | `magic-keywords.cjs` | Natural language routing suggestions (build->run, review->review, etc.) |
+| `PreToolUse` | Before tool execution | `bash-validator.cjs`, `secret-detection.cjs`, `attention-injection.cjs`, `delegation-enforcer.cjs` | Validate, block dangerous operations, refresh goals, model routing advisory |
 | `PermissionRequest` | Permission dialog | `permission-handler.cjs` | Auto-approve safe patterns, HITL gates |
 | `PostToolUse` | After tool execution | `post-write-validator.cjs` | Validate JSON/YAML syntax, audit file changes |
 | `PostToolUseFailure` | Tool execution fails | `tool-failure-tracker.cjs` | Track failures, detect patterns, suggest recovery |

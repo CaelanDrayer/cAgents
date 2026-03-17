@@ -3,6 +3,7 @@ name: email-marketing-specialist
 domain: growth
 tier: execution
 description: "Use when you need email marketing and automation specialist. Creates email campaigns, nurture sequences, and optimization strategies for engagement and conversion."
+vibe: "Writes emails people actually open and click"
 model: sonnet
 capabilities:
   - email_campaigns

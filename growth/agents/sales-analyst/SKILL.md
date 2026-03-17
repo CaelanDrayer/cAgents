@@ -3,6 +3,7 @@ name: sales-analyst
 domain: growth
 tier: execution
 description: "Use when you need sales analytics and insights specialist. Provides pipeline analytics, forecast modeling, performance analysis, and trend identification."
+vibe: "Finds the patterns in pipeline data that predict next quarter"
 model: sonnet
 capabilities:
   - pipeline_analytics

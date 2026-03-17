@@ -3,6 +3,7 @@ name: regulatory-affairs-specialist
 domain: service
 tier: execution
 description: "Use when you need regulatory submissions, agency communications, and industry compliance."
+vibe: "Stays ahead of regulations so the company is never scrambling"
 model: sonnet
 capabilities:
   - regulatory_filings

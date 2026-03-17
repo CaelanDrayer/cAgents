@@ -2,10 +2,10 @@
 # Sync version across all cAgents manifest files
 # Usage: ./scripts/sync-versions.sh <new-version>
 #
-# Updates version in all 13 locations (see .claude/rules/core/version-registry.md):
+# Updates version in all 14 locations (see .claude/rules/core/version-registry.md):
 #   .claude-plugin/plugin.json, .claude-plugin/marketplace.json, package.json,
-#   CLAUDE.md, and 9 domain plugin.json files (core, engineering, creative,
-#   business, growth, people, service, leadership, shared)
+#   CLAUDE.md, .claude/settings.json, and 9 domain plugin.json files (core,
+#   engineering, creative, business, growth, people, service, leadership, shared)
 
 set -euo pipefail
 
@@ -57,6 +57,21 @@ for manifest in "${MANIFESTS[@]}"; do
     FAILED=$((FAILED + 1))
   fi
 done
+
+# Update settings.json CAGENTS_VERSION and $comment version
+SETTINGS="$ROOT/.claude/settings.json"
+if [ -f "$SETTINGS" ]; then
+  if sed -i "s/\"CAGENTS_VERSION\": *\"[0-9]*\.[0-9]*\.[0-9]*\"/\"CAGENTS_VERSION\": \"$VERSION\"/" "$SETTINGS" && \
+     sed -i "s/cAgents V[0-9]*\.[0-9]*\.[0-9]*/cAgents V$VERSION/" "$SETTINGS"; then
+    echo "  OK: .claude/settings.json"
+    UPDATED=$((UPDATED + 1))
+  else
+    echo "FAIL: .claude/settings.json"
+    FAILED=$((FAILED + 1))
+  fi
+else
+  echo "SKIP: .claude/settings.json (not found)"
+fi
 
 # Update CLAUDE.md Quick Reference version line
 CLAUDEMD="$ROOT/CLAUDE.md"

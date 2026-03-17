@@ -94,6 +94,19 @@ Each teammate operates in its own context window:
 - Parallel execution without interference
 - Teammates load project context automatically
 
+### Worktree Isolation (V10.18.0)
+When teammates modify overlapping files, use `isolation: "worktree"` in the Task call:
+- Each teammate gets an isolated git worktree (separate working directory)
+- Prevents file conflicts during parallel execution
+- Lead handles merge coordination after wave completion
+- Best for waves where 3+ teammates edit code files
+
+### Dynamic Scaling (V10.18.0)
+The lead can adjust teammate count during wave execution:
+- **Scale up**: Spawn additional teammates when work exceeds capacity or items are discovered mid-wave
+- **Scale down**: Shut down teammates immediately on completion (early shutdown) to free resources
+- Scaling events tracked in `team/metrics/parallelism.yaml`
+
 ### Team Leads (Controllers)
 Domain controllers operate in delegate mode:
 - Coordination only, no implementation

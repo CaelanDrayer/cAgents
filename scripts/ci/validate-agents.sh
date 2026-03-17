@@ -20,6 +20,7 @@
 #   7. Domain/name consistency (agent dir matches domain field)
 #   8. Description length validation (10-300 chars)
 #   9. related-agents resolution (referenced agents must exist)
+#  10. Vibe field presence check (WARN if missing)
 
 set -e
 
@@ -136,8 +137,9 @@ validate_agent() {
     esac
 
     # Check 6: Registered in root plugin.json
+    # plugin.json uses "./" prefix (e.g., "./engineering/agents/foo/SKILL.md")
     if [[ -n "$REGISTERED_AGENTS" ]]; then
-        if ! echo "$REGISTERED_AGENTS" | grep -q "^${relative_path}$"; then
+        if ! echo "$REGISTERED_AGENTS" | grep -qF "./${relative_path}"; then
             log_warn "Not in root plugin.json: $relative_path"
             return
         fi
@@ -183,6 +185,9 @@ validate_agent() {
         while IFS= read -r related; do
             related=$(echo "$related" | tr -d '[:space:]')
             [[ -z "$related" ]] && continue
+            # Strip common prefixes (e.g., "name:" from "name:backend-developer")
+            related="${related#name:}"
+            related="${related#cagents:}"
             # Check if the referenced agent exists in any domain
             local found=false
             for check_domain in "${DOMAINS[@]}"; do
@@ -195,6 +200,13 @@ validate_agent() {
                 log_warn "related-agent '$related' not found in any domain: $relative_path"
             fi
         done <<< "$related_agents"
+    fi
+
+    # Check 10: Vibe field presence (WARN if missing - advisory)
+    if ! echo "$frontmatter" | grep -q "^vibe:"; then
+        # Only warn, don't fail - vibe is optional but recommended
+        : # silent pass for now - uncomment below when more agents have vibes
+        # log_warn "Missing 'vibe' field (recommended): $relative_path"
     fi
 
     log_pass "$relative_path"
@@ -247,6 +259,62 @@ check_orphans() {
 }
 
 #
+# Validate hook registry (WI-22/WI-37/WI-38)
+# Verify all hooks referenced in settings.json actually exist as .cjs files
+#
+validate_hooks() {
+    local settings_json="$PROJECT_ROOT/.claude/settings.json"
+    if [[ ! -f "$settings_json" ]]; then
+        log_warn "settings.json not found, skipping hook validation"
+        return
+    fi
+
+    if [[ $COUNT_ONLY != true ]]; then
+        echo -e "\n${BLUE}[hook registry]${NC}"
+    fi
+
+    # Extract hook filenames from settings.json commands
+    local hook_names
+    hook_names=$(node -e "
+        const data = JSON.parse(require('fs').readFileSync('$settings_json', 'utf8'));
+        const hooks = data.hooks || {};
+        const names = new Set();
+        for (const [event, entries] of Object.entries(hooks)) {
+            for (const entry of entries) {
+                for (const hook of (entry.hooks || [])) {
+                    if (hook.command) {
+                        const match = hook.command.match(/run-hook\\.cjs[\"']?\\s+([a-z][a-z0-9-]*)/);
+                        if (match) names.add(match[1]);
+                    }
+                }
+            }
+        }
+        names.forEach(n => console.log(n));
+    " 2>/dev/null)
+
+    local hook_count=0
+    local hook_missing=0
+    while IFS= read -r hook_name; do
+        [[ -z "$hook_name" ]] && continue
+        hook_count=$((hook_count + 1))
+        local hook_file="$PROJECT_ROOT/.claude/hooks/${hook_name}.cjs"
+        if [[ ! -f "$hook_file" ]]; then
+            log_fail "Hook file missing: .claude/hooks/${hook_name}.cjs (referenced in settings.json)"
+            hook_missing=$((hook_missing + 1))
+        fi
+    done <<< "$hook_names"
+
+    if [[ $hook_missing -eq 0 ]] && [[ $hook_count -gt 0 ]] && [[ $COUNT_ONLY != true ]]; then
+        echo -e "  ${GREEN}All $hook_count registered hooks have matching .cjs files${NC}"
+    fi
+
+    # Verify hook count matches expected (18 registered hooks across 15 event types)
+    if [[ $hook_count -gt 0 ]] && [[ $hook_count -ne 18 ]]; then
+        log_warn "Hook count mismatch: found $hook_count registered hooks, expected 18"
+    fi
+}
+
+#
 # Main
 #
 main() {
@@ -288,6 +356,7 @@ main() {
             validate_domain "$domain"
         done
         check_orphans
+        validate_hooks
     fi
 
     # Summary

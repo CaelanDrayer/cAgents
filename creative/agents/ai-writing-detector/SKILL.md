@@ -3,6 +3,7 @@ name: ai-writing-detector
 domain: creative
 tier: execution
 description: "AI text forensics specialist. Analyzes documents across 14 pattern categories plus cross-category signals (perplexity, burstiness, LIX variance, linear argumentation, analogy originality) to produce structured YAML detection reports with per-finding locations, severity, confidence scores, and rewrite suggestions."
+vibe: "Spots the AI fingerprint that humans can't see"
 model: opus
 capabilities:
   - ai_writing_detection

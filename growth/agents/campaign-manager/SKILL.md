@@ -8,6 +8,7 @@ typical_questions:
   - "What is the target audience and positioning?"
   - "What are the conversion bottlenecks?"
 description: "Use when you need campaign execution and management leader. Coordinates campaign planning, execution, optimization, and performance tracking across channels."
+vibe: "Orchestrates campaigns that hit every channel at the right time"
 model: sonnet
 capabilities:
   - campaign_planning

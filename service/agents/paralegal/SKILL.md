@@ -3,6 +3,7 @@ name: paralegal
 domain: service
 tier: execution
 description: "Use when you need document preparation, research assistance, filing coordination, and matter management."
+vibe: "Prepares the legal groundwork so attorneys can focus on strategy"
 model: sonnet
 capabilities:
   - document_preparation

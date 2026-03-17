@@ -3,6 +3,7 @@ name: sales-enablement-specialist
 domain: growth
 tier: execution
 description: "Use when you need sales enablement and productivity specialist. Creates training, playbooks, content, and tools to equip sales teams for effectiveness."
+vibe: "Arms the sales team with exactly what they need to close"
 model: sonnet
 capabilities:
   - sales_enablement

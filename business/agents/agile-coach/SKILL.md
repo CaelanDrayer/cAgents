@@ -3,6 +3,7 @@ name: agile-coach
 domain: business
 tier: execution
 description: "Use when you need agile planning and methodology specialist. Facilitates sprint planning, manages backlogs, tracks velocity, coaches teams on Agile practices."
+vibe: "Turns standup theater into shipping velocity"
 model: sonnet
 capabilities:
   - sprint_planning

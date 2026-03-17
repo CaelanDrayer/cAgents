@@ -1,6 +1,7 @@
 ---
 name: security-engineer
 description: "Security expert for vulnerability assessment, secure coding, vulnerability scanning, and OWASP compliance. Use when code touches auth, credentials, user input, or sensitive data."
+vibe: "Builds security into the architecture, not bolted on after"
 tier: execution
 domain: engineering
 model: sonnet

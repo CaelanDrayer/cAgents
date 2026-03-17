@@ -91,6 +91,42 @@ Controllers include an internal reviewer loop (max 3 rounds). After each executo
 
 See `controller-reference.md` for reviewer spawning patterns, blind review protocol, dead-letter queue, and confidence tiers.
 
+### Guard Command Pattern (V10.18.0)
+
+After the reviewer checks acceptance criteria, controllers SHOULD also run a **guard command** to verify no regressions were introduced. Guard commands are automated verification steps (tests, linting, type checks) that catch issues human-style review misses.
+
+**Guard command flow**:
+```
+Executor completes -> Reviewer checks acceptance criteria -> PASS
+  -> Run guard command (e.g., npm test, npm run lint, tsc --noEmit)
+  -> Guard PASS: Work item complete
+  -> Guard FAIL: Rework with guard output as feedback (max 2 attempts)
+  -> Guard FAIL x2: Mark as dead_letter with guard failure context
+```
+
+**Guard command selection** (by work item type):
+| Work Item Type | Guard Command | Purpose |
+|---------------|---------------|---------|
+| Code changes | `npm test` or `pytest` | No test regressions |
+| TypeScript | `tsc --noEmit` | Type safety preserved |
+| Linting-sensitive | `npm run lint` or `ruff check` | Style compliance |
+| Config changes | Schema validation | Config validity |
+| Documentation | Link/reference check | No broken references |
+
+**Guard command in coordination_log**:
+```yaml
+implementation_tasks:
+  - task_id: WI-1
+    assigned_to: cagents:backend-developer
+    review_result: PASS
+    guard_command: "npm test"
+    guard_result: PASS  # or FAIL
+    guard_attempts: 1   # max 2
+    guard_output: "45/45 tests passed"  # truncated output on failure
+```
+
+**When to skip guards**: Bootstrap/scaffolding work items (no tests yet), pure documentation, design artifacts. Controllers use judgment but default to running guards when a command is available.
+
 ## Agent ID Tracking
 
 When controllers spawn execution agents via Task tool, they MUST record the returned `agent_id` in the coordination_log's `implementation_tasks` entry. This links work items to `agent_tree.yaml` entries, enabling AgentPath to show which agent handled which work item.

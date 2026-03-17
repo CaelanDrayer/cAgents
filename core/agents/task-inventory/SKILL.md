@@ -3,6 +3,7 @@ name: task-inventory
 domain: core
 tier: infrastructure
 description: "Use when you need large-scale workflows. Tracks task completion, enables batch delegation, reduces context overhead by 60-80%."
+vibe: "Tracks every task in CSV so nothing falls through the cracks"
 model: opus
 color: bright_white
 capabilities:

@@ -3,6 +3,7 @@ name: compliance-officer
 domain: service
 tier: controller
 description: "Use when you need regulatory compliance, policy development, monitoring, and risk assessment across all domains."
+vibe: "Makes sure the company follows every rule it agreed to follow"
 model: sonnet
 coordination_style: question_based
 typical_questions:

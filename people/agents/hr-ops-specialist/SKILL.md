@@ -3,6 +3,7 @@ name: hr-ops-specialist
 domain: people
 tier: execution
 description: HR systems and process excellence leader. Use for HRIS management, process optimization, and operational efficiency.
+vibe: "Runs HR operations like a well-documented, repeatable process"
 model: sonnet
 capabilities:
   - hr_process_optimization

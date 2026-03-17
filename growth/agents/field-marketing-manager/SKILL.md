@@ -3,6 +3,7 @@ name: field-marketing-manager
 domain: growth
 tier: execution
 description: "Use when you need regional and field marketing specialist. Executes regional campaigns, local events, sales territory support, and geographic marketing."
+vibe: "Brings the brand to life in markets that matter most"
 model: sonnet
 capabilities:
   - regional_marketing

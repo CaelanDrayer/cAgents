@@ -3,6 +3,7 @@ name: support-quality-analyst
 domain: service
 tier: execution
 description: "Use when you need ticket review, agent coaching, and standards development."
+vibe: "Scores support interactions to raise the bar for everyone"
 model: sonnet
 capabilities:
   - quality_assurance

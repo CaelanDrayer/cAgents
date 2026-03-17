@@ -3,6 +3,7 @@ name: planning-analyst
 domain: business
 tier: execution
 description: "Use when you need planning data analysis and insights specialist. Analyzes planning metrics, forecasts trends, provides planning insights, tracks KPIs."
+vibe: "Spots the gap between the plan and reality before it hurts"
 model: sonnet
 capabilities:
   - metrics_analysis

@@ -3,6 +3,7 @@ name: legal-analyst
 domain: service
 tier: execution
 description: "Use when you need spend analysis, risk quantification, and data-driven legal insights."
+vibe: "Researches legal precedent so counsel can advise with confidence"
 model: sonnet
 capabilities:
   - legal_analytics

@@ -3,6 +3,7 @@ name: performance-analyst
 domain: business
 tier: execution
 description: "Use when you need performance metrics analyzed, bottlenecks identified, capacity planned, or optimization recommendations produced."
+vibe: "Turns raw metrics into decisions that move the needle"
 model: sonnet
 answers_questions:
   - "What are the current performance metrics and baselines?"

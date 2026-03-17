@@ -3,6 +3,7 @@ name: hr-analyst
 domain: people
 tier: execution
 description: HR data analysis and insights specialist. Use for people analytics, HR reporting, dashboard design, and data-driven insights.
+vibe: "Turns people data into people decisions that actually work"
 model: sonnet
 capabilities:
   - people_analytics

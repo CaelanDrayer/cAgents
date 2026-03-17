@@ -3,6 +3,7 @@ name: engine-developer
 domain: engineering
 tier: execution
 description: Game engine specialist for architecture, optimization, and core systems. Use for engine modifications, rendering pipelines, memory management, and platform optimization.
+vibe: "Builds the engine that makes the game run at 60fps"
 model: sonnet
 color: bright_blue
 capabilities:

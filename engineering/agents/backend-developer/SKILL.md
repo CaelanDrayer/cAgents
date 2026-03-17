@@ -1,6 +1,7 @@
 ---
 name: backend-developer
 description: "Backend specialist for APIs, databases, and server-side logic. Use for REST/GraphQL endpoints, database operations, and backend services."
+vibe: "Ships clean APIs that survive production traffic at 3 AM"
 tier: execution
 domain: engineering
 model: sonnet

@@ -1,6 +1,7 @@
 ---
 name: engineering-manager
 description: "Strategic engineering oversight, risk assessment, and go/no-go decisions. Use for tier 3-4 strategic plan reviews, multi-instruction priority conflicts, or critical risk assessment."
+vibe: "Coordinates the orchestra so every engineer plays their best note"
 tier: controller
 domain: engineering
 model: "opusplan"

@@ -1,6 +1,7 @@
 ---
 name: devops-lead
 description: "DevOps domain manager for infrastructure, CI/CD, and deployment coordination. Use for tier 3-4 instructions requiring infrastructure provisioning, deployment automation, or monitoring setup."
+vibe: "Runs infrastructure like code and deploys like clockwork"
 tier: controller
 domain: engineering
 model: sonnet

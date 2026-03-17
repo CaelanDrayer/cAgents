@@ -1,7 +1,7 @@
 ---
 name: run
 description: "Execute any task through coordinated agents. Use for building, fixing, writing, or any single-domain work. TRIGGER: run, implement, fix, build, create. NOT for: parallel work (/team) or cross-domain strategy (/org)."
-argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--analytics]"
+argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--analytics] [--from-review] [--from-designer]"
 user-invocable: true
 context: none
 license: MIT
@@ -58,7 +58,7 @@ When the user runs `/run <request> [flags]`:
 
 Parse `$ARGUMENTS` for:
 - **Flags**: `--interactive`, `--dry-run`, `--quiet`/`-q`, `--stream`, `--skip-preflight`, `--team`, `--analytics`
-- **Value flags**: `--template <name>`, `--domain <domain>`, `--tier <N>`, `--confidence <N>`, `--brief <path>`, `--resume <session_id>`, `--session <session_dir>`
+- **Value flags**: `--template <name>`, `--domain <domain>`, `--tier <N>`, `--confidence <N>`, `--brief <path>`, `--resume <session_id>`, `--session <session_dir>`, `--from-review`, `--from-designer`
 - **Request**: Everything before the first `--` flag
 
 If `--analytics`: Read `Agent_Memory/_system/metrics/pipeline_analytics.yaml`, display the analytics dashboard (success rate, avg duration, by-domain, by-tier, bottlenecks), and exit without running a pipeline.
@@ -68,6 +68,10 @@ If `--resume <session_id>`: Load session from `Agent_Memory/sessions/{session_id
 If `--session <session_dir>`: This is a pre-enriched session (from /team). Skip to pre-enrichment detection in Step 3.
 
 If `--brief <path>`: This request comes from `/org` with a strategic brief. Read the `strategic_brief.yaml` at the given path. Use the brief's `mission`, `success_criteria`, and `domain_assignments` to enrich context passed to the orchestrator and planner. The brief provides CEO-level strategic framing that gives downstream agents richer context about the mission and constraints. Store brief path in `instruction.yaml` as `strategic_brief_path`.
+
+If `--from-review`: Skill chaining from `/review`. Look for the most recent `workflow/review_report.yaml` in the current or parent session. Inject review findings into the orchestrator's enriched context as `review_findings`. The planner should auto-create fix work items for each finding (one work item per CRITICAL/HIGH finding, grouped work items for MEDIUM/LOW). Store the review session reference in `instruction.yaml` as `chained_from: review`.
+
+If `--from-designer`: Skill chaining from `/designer`. Look for the most recent `workflow/design_document.yaml` in the current or parent session. Inject the design spec into the orchestrator's enriched context as `design_spec`. The planner should use the design document's structure, decisions, and constraints as the implementation blueprint. Store the design session reference in `instruction.yaml` as `chained_from: designer`.
 
 ---
 

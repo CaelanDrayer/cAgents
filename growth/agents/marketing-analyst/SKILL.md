@@ -3,6 +3,7 @@ name: marketing-analyst
 domain: growth
 tier: execution
 description: "Use when you need marketing analytics, performance tracking, dashboards, attribution, predictive modeling, customer segmentation, and marketing mix modeling."
+vibe: "Turns campaign data into the next campaign's secret weapon"
 model: sonnet
 capabilities:
   - marketing_analytics

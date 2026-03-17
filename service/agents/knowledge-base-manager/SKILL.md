@@ -3,6 +3,7 @@ name: knowledge-base-manager
 domain: service
 tier: execution
 description: "Use when you need self-service content, documentation organization, and discoverability optimization."
+vibe: "Builds the docs that make support tickets unnecessary"
 model: sonnet
 capabilities:
   - content_strategy

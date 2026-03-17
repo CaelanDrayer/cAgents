@@ -3,6 +3,7 @@ name: roadmap-planner
 domain: business
 tier: execution
 description: "Use when you need product and technology roadmap specialist. Creates strategic roadmaps, prioritizes features, manages dependencies, aligns roadmap to strategy."
+vibe: "Draws the map from here to shipped, including the detours"
 model: sonnet
 capabilities:
   - roadmap_planning

@@ -8,6 +8,7 @@ typical_questions:
   - "What are the efficiency bottlenecks?"
   - "What are the compliance requirements?"
 description: "Use when you need operations optimization and process management specialist. Coordinates operational decisions, efficiency improvements, and process optimization."
+vibe: "Runs the machine that runs the business"
 model: sonnet
 capabilities:
   - operations_planning

@@ -3,6 +3,7 @@ name: process-auditor
 domain: business
 tier: execution
 description: "Use when you need process audits conducted, compliance verified, controls tested, or audit reports produced."
+vibe: "Finds the waste hiding in processes everyone assumes work"
 model: sonnet
 answers_questions:
   - "What processes and controls are in scope for this audit?"

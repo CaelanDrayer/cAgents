@@ -3,6 +3,7 @@ name: planning-operations-manager
 domain: business
 tier: execution
 description: "Use when you need planning process and operations specialist. Optimizes planning processes, develops templates, manages tools, coordinates planning governance."
+vibe: "Keeps planning on track when the plan keeps changing"
 model: sonnet
 capabilities:
   - process_optimization

@@ -3,6 +3,7 @@ name: support-director
 domain: service
 tier: controller
 description: "Use when you need support strategy, customer experience, and critical escalation management."
+vibe: "Leads the support org to deliver experiences customers talk about"
 model: "opusplan"
 coordination_style: question_based
 typical_questions:

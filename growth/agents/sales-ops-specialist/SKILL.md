@@ -3,6 +3,7 @@ name: sales-ops-specialist
 domain: growth
 tier: execution
 description: "Use when you need sales infrastructure and process specialist. Manages CRM administration, territory design, quota allocation, and process optimization."
+vibe: "Keeps CRM clean and forecasts honest"
 model: sonnet
 capabilities:
   - crm_administration

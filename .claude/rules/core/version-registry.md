@@ -11,7 +11,7 @@ paths:
 
 All locations where the cAgents version number appears. Keep ALL locations in sync on every release.
 
-## Version Locations (13 total)
+## Version Locations (14 total)
 
 | # | File | Field/Line | Updated By |
 |---|------|-----------|------------|
@@ -19,19 +19,20 @@ All locations where the cAgents version number appears. Keep ALL locations in sy
 | 2 | `.claude-plugin/plugin.json` | `version` (line 3) | `scripts/sync-versions.sh` |
 | 3 | `.claude-plugin/marketplace.json` | `version` (line 13) | `scripts/sync-versions.sh` |
 | 4 | `CLAUDE.md` | Quick Reference section (`**Version**:`) | `scripts/sync-versions.sh` |
-| 5 | `core/.claude-plugin/plugin.json` | `version` (line 3) | `scripts/sync-versions.sh` |
-| 6 | `engineering/.claude-plugin/plugin.json` | `version` (line 3) | `scripts/sync-versions.sh` |
-| 7 | `creative/.claude-plugin/plugin.json` | `version` (line 3) | `scripts/sync-versions.sh` |
-| 8 | `business/.claude-plugin/plugin.json` | `version` (line 3) | `scripts/sync-versions.sh` |
-| 9 | `growth/.claude-plugin/plugin.json` | `version` (line 3) | `scripts/sync-versions.sh` |
-| 10 | `people/.claude-plugin/plugin.json` | `version` (line 3) | `scripts/sync-versions.sh` |
-| 11 | `service/.claude-plugin/plugin.json` | `version` (line 3) | `scripts/sync-versions.sh` |
-| 12 | `leadership/.claude-plugin/plugin.json` | `version` (line 3) | `scripts/sync-versions.sh` |
-| 13 | `shared/.claude-plugin/plugin.json` | `version` (line 3) | `scripts/sync-versions.sh` |
+| 5 | `.claude/settings.json` | `CAGENTS_VERSION` + `$comment` | `scripts/sync-versions.sh` |
+| 6 | `core/.claude-plugin/plugin.json` | `version` (line 3) | `scripts/sync-versions.sh` |
+| 7 | `engineering/.claude-plugin/plugin.json` | `version` (line 3) | `scripts/sync-versions.sh` |
+| 8 | `creative/.claude-plugin/plugin.json` | `version` (line 3) | `scripts/sync-versions.sh` |
+| 9 | `business/.claude-plugin/plugin.json` | `version` (line 3) | `scripts/sync-versions.sh` |
+| 10 | `growth/.claude-plugin/plugin.json` | `version` (line 3) | `scripts/sync-versions.sh` |
+| 11 | `people/.claude-plugin/plugin.json` | `version` (line 3) | `scripts/sync-versions.sh` |
+| 12 | `service/.claude-plugin/plugin.json` | `version` (line 3) | `scripts/sync-versions.sh` |
+| 13 | `leadership/.claude-plugin/plugin.json` | `version` (line 3) | `scripts/sync-versions.sh` |
+| 14 | `shared/.claude-plugin/plugin.json` | `version` (line 3) | `scripts/sync-versions.sh` |
 
 ## Sync Tool
 
-`scripts/sync-versions.sh <version>` updates all 13 locations (12 JSON files + CLAUDE.md).
+`scripts/sync-versions.sh <version>` updates all 14 locations (12 JSON files + CLAUDE.md + settings.json).
 
 ## Version Bump Procedure
 

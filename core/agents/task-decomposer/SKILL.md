@@ -2,6 +2,7 @@
 name: task-decomposer
 tier: infrastructure
 description: "Use when you need tier 3+ requests. Breaks requests into components, discovers implicit needs, maps dependencies, generates work items with acceptance criteria. Writes decomposition.yaml."
+vibe: "Breaks the impossible into 30 very possible pieces"
 tools: ["Read","Grep","Glob","Write","TodoWrite","Task"]
 model: opus
 color: bright_yellow

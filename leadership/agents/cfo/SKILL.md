@@ -1,6 +1,7 @@
 ---
 name: cfo
 description: "Chief Financial Officer for financial strategy, budgeting, and fundraising. Use for budget requests, investment decisions, pricing strategy, or financial risk assessment."
+vibe: "Turns financial data into the strategy the board actually follows"
 tier: controller
 domain: leadership
 model: "opusplan"

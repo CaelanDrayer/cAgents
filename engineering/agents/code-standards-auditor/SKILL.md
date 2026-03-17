@@ -1,6 +1,7 @@
 ---
 name: code-standards-auditor
 description: "QA Layer agent for code style, conventions, and best practices enforcement. Use for code quality reviews, style checking, and convention enforcement."
+vibe: "Enforces the standards that keep the codebase sane at scale"
 tier: support
 domain: engineering
 layer: qa

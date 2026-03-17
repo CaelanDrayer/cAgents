@@ -3,6 +3,7 @@ name: recruiting-coordinator
 domain: people
 tier: execution
 description: "Use when you need scheduling, candidate communications, and recruiting operations."
+vibe: "Keeps the hiring pipeline moving without dropping a single candidate"
 model: haiku
 capabilities:
   - interview_scheduling

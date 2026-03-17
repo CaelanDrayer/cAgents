@@ -3,6 +3,7 @@ name: universal-router
 domain: core
 tier: infrastructure
 description: "Use when you need complexity classifier for all domains. Enforces minimum tier 2 (all requests use controller coordination)."
+vibe: "Sends every request to exactly the right agent, every time"
 model: opus
 color: bright_cyan
 capabilities:

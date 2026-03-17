@@ -3,6 +3,7 @@ name: demand-generation-manager
 domain: growth
 tier: execution
 description: "Use when you need demand generation and pipeline creation specialist. Designs lead generation campaigns, nurture programs, funnel optimization, and pipeline acceleration."
+vibe: "Fills the pipeline with leads that actually convert"
 model: sonnet
 capabilities:
   - lead_generation

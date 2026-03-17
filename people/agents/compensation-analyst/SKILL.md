@@ -3,6 +3,7 @@ name: compensation-analyst
 domain: people
 tier: execution
 description: Compensation strategy and equity modeling specialist. Use for salary benchmarking, pay equity analysis, and offer package design.
+vibe: "Designs comp packages that attract talent and respect budgets"
 model: sonnet
 capabilities:
   - compensation_benchmarking

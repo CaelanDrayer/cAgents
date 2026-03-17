@@ -15,6 +15,7 @@ V9.25.0 agent/skill format based on official Claude Code SKILL.md and subagent s
 ---
 name: agent-name                    # Required: Unique identifier (kebab-case)
 description: "Brief description"    # Required: 1-2 sentence purpose statement
+vibe: "One-liner personality hook"  # Optional: Agent essence/tagline (max 80 chars)
 tier: controller|execution|support  # Required: Agent tier classification
 domain: engineering|creative|business|growth|people|service|leadership|shared|core  # Required: Business domain
 model: opus|opusplan|sonnet|haiku  # Optional: Preferred model (see model_routing.yaml)
@@ -53,6 +54,12 @@ disallowedTools: ["Task"]          # V9.0: For support agents (prevent delegatio
 - Determines which planner_config.yaml is loaded
 
 ## Optional Fields
+
+### vibe
+- One-liner personality hook capturing the agent's essence (max 80 chars)
+- Should convey the agent's working philosophy, not just restate the description
+- Examples: "Ships clean APIs that survive production traffic at 3 AM", "Finds the bugs before your users do"
+- Added to ~20 representative agents in V10.17.0, pattern documented for remaining agents
 
 ### model
 - Preferred model alias: `opus`, `opusplan`, `sonnet`, or `haiku`
@@ -286,6 +293,58 @@ Available agent types: `Explore` (read-only, haiku), `Plan` (read-only), `genera
 | Plugin `skills/` | Where plugin enabled | Lowest |
 
 Skills from `--add-dir` directories are also loaded and support live change detection.
+
+### Skill Chaining (V10.18.0)
+
+Skills can declare output contracts and consume other skills' outputs, enabling pipelines like `/review -> /run --from-review -> /team`.
+
+**Output Contract** (in skill frontmatter):
+```yaml
+---
+name: review
+output_contract:
+  format: yaml
+  file: "workflow/review_report.yaml"
+  schema:
+    findings: "array of {file, line, severity, message, fix}"
+    summary: "string"
+    quality_score: "number 0-100"
+---
+```
+
+**Input From** (consuming another skill's output):
+```yaml
+---
+name: run
+input_from:
+  review:
+    file: "workflow/review_report.yaml"
+    flag: "--from-review"
+    inject_as: "review_findings"
+  designer:
+    file: "workflow/design_document.yaml"
+    flag: "--from-designer"
+    inject_as: "design_spec"
+---
+```
+
+**Chaining Flags**:
+| Flag | Source Skill | What It Does |
+|------|-------------|-------------|
+| `--from-review` | `/review` | Reads review findings, auto-creates fix work items |
+| `--from-designer` | `/designer` | Reads design doc, uses as implementation spec |
+
+**How chaining works**:
+1. Source skill writes output to its declared `output_contract.file`
+2. Consumer skill checks for the file when invoked with the chaining flag
+3. If file exists, its content is injected into the enrichment context as `inject_as`
+4. The planner/decomposer uses the injected context to inform work items
+
+**Example pipeline**:
+```bash
+/review src/auth/          # Produces review_report.yaml with 5 findings
+/run Fix review findings --from-review  # Reads findings, creates fix work items
+```
 
 ## Example: Full Controller SKILL.md
 

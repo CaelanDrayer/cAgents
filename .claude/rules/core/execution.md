@@ -101,6 +101,51 @@ Inspired by Manus-style context engineering: execution agents must persist findi
 | Search web and assume results persist | Write key results to disk before next operation |
 | Rely on context for discovered facts | Treat filesystem as your persistent memory |
 
+## Commit-Before-Verify Pattern (V10.18.0)
+
+When implementing work items that modify existing code, use the commit-before-verify pattern for clean rollback on failure.
+
+### Pattern
+
+```
+1. Make the change
+2. git add <changed files>
+3. git commit -m "WI-{N}: {description}"
+4. Run verification (tests, lint, type check)
+5a. If PASS: Done - commit stays
+5b. If FAIL: git reset HEAD~1 (undo commit, keep changes staged)
+    -> Fix the issue
+    -> Repeat from step 3
+```
+
+### Why This Works
+
+- **Clean rollback**: `git reset HEAD~1` undoes the commit but keeps changes, allowing targeted fixes
+- **Atomic changes**: Each work item is a single commit, making it easy to identify what broke what
+- **Safe experimentation**: You can try aggressive changes knowing rollback is one command away
+- **Bisect-friendly**: Each commit is a testable unit if regressions surface later
+
+### When to Use
+
+- Code changes that have test suites (`npm test`, `pytest`, etc.)
+- Refactoring where regressions are possible
+- Multi-file changes where partial application could break things
+
+### When NOT to Use
+
+- New file creation (nothing to roll back to)
+- Documentation-only changes
+- Configuration changes without automated validation
+- When working in a worktree (use worktree merge flow instead)
+
+### Anti-Patterns
+
+| Don't | Do Instead |
+|-------|------------|
+| Make 10 changes then test once | Commit-verify after each logical change |
+| `git reset --hard` on failure | `git reset HEAD~1` preserves your staged changes |
+| Skip verification for "obvious" fixes | Always verify - obvious fixes break production |
+
 ---
 
 ## See Also

@@ -3,6 +3,7 @@ name: support-analyst
 domain: service
 tier: execution
 description: "Use when you need metrics analysis, trend identification, and performance reporting."
+vibe: "Mines support data to find the patterns that prevent future tickets"
 model: sonnet
 capabilities:
   - data_analysis

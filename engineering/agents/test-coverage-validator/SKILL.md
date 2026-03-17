@@ -1,6 +1,7 @@
 ---
 name: test-coverage-validator
 description: "QA Layer agent for test coverage validation and gap identification. Use for coverage reviews and test quality assessment."
+vibe: "Ensures every critical path has a test standing guard"
 tier: support
 domain: engineering
 model: "haiku"

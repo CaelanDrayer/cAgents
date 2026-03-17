@@ -3,6 +3,7 @@ name: organizational-development-specialist
 domain: people
 tier: execution
 description: Org design and change management expert. Use for restructuring, team effectiveness, and organizational transformation.
+vibe: "Redesigns the org chart so the work actually flows"
 model: sonnet
 capabilities:
   - org_design

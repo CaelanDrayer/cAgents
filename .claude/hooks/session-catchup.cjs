@@ -105,7 +105,34 @@ function findIncompleteSessions() {
 createHook('SessionCatchup', async (input) => {
   const incomplete = findIncompleteSessions();
 
-  let cagentsContext = 'cAgents V10.5.0 session initialized. Minimum Claude Code version: 2.1.69 (required for hook lifecycle events). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Task tool subagent_type references. IMPORTANT: When spawned as a cAgents agent, self-register your agent type in workflow/agent_tree.yaml for audit trail (SubagentStart hook injects instructions).';
+  let cagentsContext = 'cAgents V10.17.0 session initialized. Minimum Claude Code version: 2.1.69 (required for hook lifecycle events). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Task tool subagent_type references. IMPORTANT: When spawned as a cAgents agent, self-register your agent type in workflow/agent_tree.yaml for audit trail (SubagentStart hook injects instructions).';
+
+  // Context Auto-Check (V10.17.0): Check for product-context.yaml
+  // Inspired by impeccable's .impeccable.md auto-check pattern
+  try {
+    const contextFile = path.join(process.env.CLAUDE_PROJECT_DIR || AGENT_MEMORY_DIR.replace('/Agent_Memory', ''), '.claude', 'context', 'product-context.yaml');
+    if (fs.existsSync(contextFile)) {
+      // Product context exists - load a summary into the session context
+      const contextContent = safeRead(contextFile);
+      if (contextContent) {
+        const productName = extractYamlValue(contextContent, 'product_name') || extractYamlValue(contextContent, 'name') || '';
+        const summary = extractYamlValue(contextContent, 'summary') || extractYamlValue(contextContent, 'description') || '';
+        if (productName || summary) {
+          cagentsContext += ` Product context loaded: ${productName}${summary ? ' - ' + summary.substring(0, 100) : ''}.`;
+        }
+      }
+    } else {
+      // Only suggest /context on first session (check for suggestion marker)
+      const markerFile = path.join(AGENT_MEMORY_DIR, '_system', 'context_suggestion_shown');
+      if (!fs.existsSync(markerFile)) {
+        cagentsContext += ' Tip: Run /context to set up shared product context that persists across sessions.';
+        try {
+          ensureDir(path.join(AGENT_MEMORY_DIR, '_system'));
+          fs.writeFileSync(markerFile, new Date().toISOString());
+        } catch { /* best effort */ }
+      }
+    }
+  } catch { /* context check is best-effort */ }
 
   // Update check (non-blocking, best-effort)
   try {

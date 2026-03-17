@@ -30,12 +30,19 @@ createHook('Notification', async (input) => {
     const dateStr = new Date().toISOString().split('T')[0];
     const logFile = path.join(logsDir, `notifications_${dateStr}.log`);
 
-    // Rotation: truncate if over 1MB
+    // Rotation: if over 1MB, read last 32KB instead of full file (avoid O(n) memory)
     try {
       const stats = fs.statSync(logFile);
       if (stats.size > 1024 * 1024) {
-        const lines = fs.readFileSync(logFile, 'utf8').split('\n');
-        fs.writeFileSync(logFile, lines.slice(-100).join('\n') + '\n');
+        const fd = fs.openSync(logFile, 'r');
+        const tailSize = 32 * 1024;
+        const buf = Buffer.alloc(tailSize);
+        fs.readSync(fd, buf, 0, tailSize, stats.size - tailSize);
+        fs.closeSync(fd);
+        const tail = buf.toString('utf8');
+        // Find first complete line
+        const firstNewline = tail.indexOf('\n');
+        fs.writeFileSync(logFile, tail.slice(firstNewline + 1));
       }
     } catch { /* file may not exist yet */ }
 

@@ -3,6 +3,7 @@ name: risk-and-compliance-manager
 domain: service
 tier: execution
 description: "Use when you need risk assessment, compliance frameworks, and integrated governance across legal and regulatory domains."
+vibe: "Balances risk appetite with compliance requirements"
 model: sonnet
 capabilities:
   - enterprise_risk_management

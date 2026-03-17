@@ -8,6 +8,7 @@ typical_questions:
   - "What is the target audience and positioning?"
   - "What are the conversion bottlenecks?"
 description: "Use when you need sales strategy and GTM specialist. Develops data-driven sales strategies, market segmentation, competitive positioning, and sales model design."
+vibe: "Designs the sales playbook that turns reps into closers"
 model: sonnet
 capabilities:
   - gtm_strategy

@@ -3,6 +3,7 @@ name: performance-management-specialist
 domain: people
 tier: execution
 description: Performance review cycle and goal-setting framework expert. Use for performance reviews, calibration, goal frameworks, and development planning.
+vibe: "Makes performance reviews useful instead of dreaded"
 model: sonnet
 capabilities:
   - performance_review_design

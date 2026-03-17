@@ -3,6 +3,7 @@ name: customer-education-specialist
 domain: service
 tier: execution
 description: "Use when you need tutorials, webinars, and certifications."
+vibe: "Teaches customers to succeed with the product on their own"
 model: sonnet
 capabilities:
   - training_content_creation

@@ -3,6 +3,7 @@ name: competitive-intelligence-analyst
 domain: shared
 tier: controller
 description: "Use when you need competitor analysis, win/loss analysis, and competitive positioning across all domains."
+vibe: "Knows what competitors are doing before they announce it"
 model: sonnet
 coordination_style: question_based
 typical_questions:

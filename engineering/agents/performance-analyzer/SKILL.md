@@ -1,6 +1,7 @@
 ---
 name: performance-analyzer
 description: "QA Layer agent for performance bottleneck detection and optimization. Use for performance reviews, profiling, and optimization recommendations."
+vibe: "Finds the bottleneck hiding in the hot path"
 tier: support
 domain: engineering
 model: "haiku"

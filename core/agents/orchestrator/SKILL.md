@@ -3,6 +3,7 @@ name: orchestrator
 domain: core
 tier: infrastructure
 description: "Use when you need large-scale workflows. Supports team mode execution via Agent Teams integration."
+vibe: "The conductor who ensures every instrument enters on cue"
 model: opus
 color: bright_magenta
 capabilities:

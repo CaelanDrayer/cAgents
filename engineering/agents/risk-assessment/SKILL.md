@@ -1,6 +1,7 @@
 ---
 name: risk-assessment
 description: "Use when you need potential failure points, security vulnerabilities, and performance bottlenecks. Use after planning and during execution to anticipate issues."
+vibe: "Quantifies technical risk so teams can make informed bets"
 tier: support
 domain: engineering
 layer: intelligence

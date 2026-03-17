@@ -1,0 +1,85 @@
+import { describe, it, expect } from 'vitest';
+import { existsSync } from 'fs';
+import { join } from 'path';
+import { execSync } from 'child_process';
+
+const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
+const HOOK_PATH = join(HOOKS_DIR, 'magic-keywords.cjs');
+
+function runHook(input) {
+  const result = execSync(
+    `printf '%s' '${JSON.stringify(input).replace(/'/g, "'\\''")}' | node "${HOOK_PATH}"`,
+    { encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'] }
+  );
+  return JSON.parse(result.trim());
+}
+
+describe('magic-keywords.cjs', () => {
+  it('should exist', () => {
+    expect(existsSync(HOOK_PATH)).toBe(true);
+  });
+
+  it('should return continue true for empty input', () => {
+    const result = runHook({});
+    expect(result.continue).toBe(true);
+  });
+
+  it('should return continue true for short prompts', () => {
+    const result = runHook({ user_prompt: 'hi' });
+    expect(result.continue).toBe(true);
+  });
+
+  it('should suggest /run for build keywords', () => {
+    const result = runHook({ user_prompt: 'build a login page with OAuth' });
+    expect(result.systemMessage).toContain('/run');
+  });
+
+  it('should suggest /run for fix keywords', () => {
+    const result = runHook({ user_prompt: 'fix the authentication bug in login.ts' });
+    expect(result.systemMessage).toContain('/run');
+  });
+
+  it('should suggest /review for review keywords', () => {
+    const result = runHook({ user_prompt: 'review the auth module for security issues' });
+    expect(result.systemMessage).toContain('/review');
+  });
+
+  it('should suggest /optimize for optimize keywords', () => {
+    const result = runHook({ user_prompt: 'optimize the database queries for performance' });
+    expect(result.systemMessage).toContain('/optimize');
+  });
+
+  it('should suggest /designer for design keywords', () => {
+    const result = runHook({ user_prompt: 'design a new dashboard layout' });
+    expect(result.systemMessage).toContain('/designer');
+  });
+
+  it('should suggest /team for team keywords', () => {
+    const result = runHook({ user_prompt: 'team up to build the entire API' });
+    expect(result.systemMessage).toContain('/team');
+  });
+
+  it('should suppress suggestions for questions', () => {
+    const result = runHook({ user_prompt: 'what is the current auth implementation?' });
+    expect(result.continue).toBe(true);
+    expect(result.systemMessage).toBeUndefined();
+  });
+
+  it('should suppress suggestions for slash commands', () => {
+    const result = runHook({ user_prompt: '/run fix the bug' });
+    expect(result.continue).toBe(true);
+    expect(result.systemMessage).toBeUndefined();
+  });
+
+  it('should suppress suggestions for yes/no responses', () => {
+    const result = runHook({ user_prompt: 'yes go ahead' });
+    expect(result.continue).toBe(true);
+    expect(result.systemMessage).toBeUndefined();
+  });
+
+  it('should suppress suggestions for continue/proceed', () => {
+    const result = runHook({ user_prompt: 'continue with the plan' });
+    expect(result.continue).toBe(true);
+    expect(result.systemMessage).toBeUndefined();
+  });
+});

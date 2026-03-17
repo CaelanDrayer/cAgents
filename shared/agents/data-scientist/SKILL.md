@@ -3,6 +3,7 @@ name: data-scientist
 domain: shared
 tier: controller
 description: "Use when you need data science specialist coordinating machine learning, predictive modeling, statistical analysis, and advanced analytics across ALL domains."
+vibe: "Turns messy data into clear decisions"
 model: "opusplan"
 coordination_style: question_based
 typical_questions:

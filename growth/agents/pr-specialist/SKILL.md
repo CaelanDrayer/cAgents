@@ -3,6 +3,7 @@ name: pr-specialist
 domain: growth
 tier: execution
 description: "Use when you need public relations and media specialist. Manages PR strategy, media relations, press releases, thought leadership, and reputation management."
+vibe: "Gets the right story in front of the right journalist at the right time"
 model: sonnet
 capabilities:
   - pr_strategy
