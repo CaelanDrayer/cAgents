@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "10.13.0",
+  "version": "10.13.1",
   "description": "208 agents across 8 domains. /run executes any task, /team runs parallel agents, /org coordinates cross-domain strategy, /designer explores before building, /review audits quality, /optimize improves performance, /helper guides usage, /context shares knowledge.",
   "author": {
     "name": "CaelanDrayer",

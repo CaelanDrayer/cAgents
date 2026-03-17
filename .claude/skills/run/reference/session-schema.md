@@ -110,10 +110,16 @@ state_history:                       # REQUIRED: Ordered list of state transitio
 - `workflow/enriched_context.yaml` - Orchestrator output
 - `workflow/plan.yaml` - Planner output with objectives, controller assignment
 - `workflow/work_items.yaml` - Decomposer output
-- `workflow/delegation_prompts.yaml` - Prompt-engineer output
-- `workflow/coordination_log.yaml` - Controller coordination record
+- `workflow/delegation_prompts.yaml` - Prompt-engineer output (aspirational — may not exist in all sessions)
+- `workflow/coordination_log.yaml` - Controller coordination record (MUST include `schema_version: "1"`)
 - `workflow/validation_report.yaml` - Validator output (PASS/FAIL/REVISE)
-- `workflow/execution_summary.yaml` - Final pipeline summary
+- `workflow/execution_summary.yaml` - **ALWAYS written** by /run, even on failure/interruption
+- `workflow/events/index.yaml` - **Maintained by /run** — authoritative ordered list of EVT-N events
+
+**Runtime responsibilities of /run state machine** (not delegated to agents):
+- Compute `duration_ms` for previous state_history entry at each state transition
+- Maintain `events/index.yaml` after reading each completion event
+- Always write `execution_summary.yaml` at pipeline exit (success, failure, or interruption)
 
 ### /org
 - `routing_decision.yaml` - CEO routing analysis

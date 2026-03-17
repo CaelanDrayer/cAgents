@@ -127,6 +127,12 @@ state_history:
 
 Note: /org uses the `pipeline_state` field (not `phase`). Hooks check both fields as fallback.
 
+**State transition protocol**: At every state transition, /org MUST:
+1. Compute `duration_ms` for the previous `state_history` entry (ms between its `entered_at` and now)
+2. Append new `state_history` entry with `entered_at: now`, `duration_ms: null`
+3. Update `pipeline_state` to the new state
+4. Write completion summary at COMPLETE state (even on partial completion)
+
 **2b. Call TodoWrite (mandatory):**
 
 ```

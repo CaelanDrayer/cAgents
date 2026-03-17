@@ -275,10 +275,16 @@ while current_state is not terminal (VALIDATED):
   2. Determine agent to spawn (or "dynamic" for controller from plan.yaml)
   3. Spawn agent at level 1 via Task tool (see delegation below)
   4. After agent returns, read completion event from workflow/events/
-  5. Update status.yaml with new state
-  6. Call TodoWrite to reflect progress
-  7. Check for revision: if validator returned FAIL or REVISE, route accordingly
-  8. Advance to next_state from event file
+  5. Update status.yaml with new state:
+     a. Set pipeline_state to next_state
+     b. Compute duration_ms for the PREVIOUS state_history entry:
+        duration_ms = (now_ms - previous_entered_at_ms)
+     c. Append new state_history entry with entered_at=now, duration_ms=null
+  6. Update events/index.yaml: read existing events list, append new EVT-{N}, write back
+     (This is /run's responsibility — do NOT rely on spawned agents to maintain the index)
+  7. Call TodoWrite to reflect progress
+  8. Check for revision: if validator returned FAIL or REVISE, route accordingly
+  9. Advance to next_state from event file
 ```
 
 **3d. Agent delegation pattern (for each state):**
@@ -338,7 +344,7 @@ INSTRUCTIONS:
 6. If reviewer says REVISE: send feedback to executor (max 3 internal rounds).
 7. After identifying execution agents, call TodoWrite to show them.
 8. Synthesize answers into a coherent solution.
-9. Write coordination_log.yaml when complete with status: completed.
+9. Write coordination_log.yaml when complete. MUST include schema_version: "1" as the first field, and status: completed.
 10. Write completion event to workflow/events/EVT-{N}.yaml with state: COORDINATED.
 `
 })
@@ -371,21 +377,26 @@ TodoWrite([
 
 ### Step 4: Report Results
 
-After the state machine loop exits:
+After the state machine loop exits (whether success, failure, or max revisions):
 
 1. **Read final state** from status.yaml
-2. **Summarize pipeline execution**: which states ran, revision cycles used, final status
-3. **Write execution_summary.yaml** with results:
+2. **Compute final duration_ms** for the last state_history entry
+3. **ALWAYS write execution_summary.yaml** — this is mandatory even on failure or interruption:
 
 ```yaml
 session_id: {SESSION_ID}
-final_state: VALIDATED  # or FAILED
+final_state: VALIDATED  # or FAILED, INTERRUPTED
+status: completed | failed | interrupted
 revision_rounds_used: {N}
 states_executed: [INIT, ORCHESTRATED, PLANNED, DECOMPOSED, PROMPTS_READY, COORDINATED, VALIDATED]
+states_skipped: [{list}]  # from adaptive pipeline
 total_agents_spawned: {count}
+total_duration_ms: {elapsed_ms}  # total wall clock time from INIT to now
+started_at: "{ISO_TIMESTAMP}"
+completed_at: "{ISO_TIMESTAMP}"
 ```
 
-4. **Update status.yaml** to `completed`
+4. **Update status.yaml**: set `pipeline_state` to terminal value, compute final `duration_ms`
 5. **Track execution analytics**: Append session metrics to `Agent_Memory/_system/metrics/pipeline_analytics.yaml`:
 
 ```yaml
@@ -447,6 +458,9 @@ If `--dry-run` with `--team`: Display plan summary and team composition, then ST
 - Load pipeline_config.yaml
 - Read strategic_brief.yaml if `--brief` flag provided (from /org)
 - Domain detection and tier classification (inline)
+- **Compute duration_ms** for previous state_history entry at each state transition
+- **Maintain events/index.yaml** — append each EVT-N after reading the completion event
+- **Always write execution_summary.yaml** — even on failure or interruption
 - **Call TodoWrite** at every state transition
 - Spawn pipeline agents via Task tool (one per state)
 - Read completion events from workflow/events/
