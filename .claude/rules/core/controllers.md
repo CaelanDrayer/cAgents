@@ -47,9 +47,25 @@ Question prompts should be **under 300 tokens**. Include only: the question, whe
 
 ## MANDATORY: TodoWrite for Execution Agent Visibility
 
-Every controller MUST call TodoWrite after identifying execution agents. Format: `[{agent-name}] {verb phrase}`. Never use state machine names (INIT, ORCHESTRATED, etc.). Replace placeholders with actual agent names as soon as known.
+Every controller MUST call TodoWrite after identifying execution agents. Use `[{parent} > {agent-name}] {verb phrase}` when spawning an agent, then 2-space indented `[{agent-name}] {sub-task}` for that agent's own work. Never use state machine names (INIT, ORCHESTRATED, etc.). Replace placeholders with actual agent names as soon as known.
 
-See `controller-reference.md` for good/bad TodoWrite examples.
+**Format rules:**
+- No slash prefix: `[engineering-manager]` not `[/engineering-manager]`
+- Parent > child on spawn: `[engineering-manager > backend-developer] Implementing auth module`
+- Child-only for sub-tasks: `  [backend-developer] Writing unit tests`
+- 2-space indent for children
+- Include contextual detail (file counts, component names, etc.)
+
+**Example:**
+```
+TodoWrite([
+  {"content": "[engineering-manager > backend-developer] Implementing auth module\n  [backend-developer] Creating JWT middleware\n  [backend-developer] Writing unit tests (4 files)", "status": "in_progress", "id": "wi-1"},
+  {"content": "[engineering-manager > frontend-developer] Building login UI\n  [frontend-developer] Creating login form component", "status": "pending", "id": "wi-2"},
+  {"content": "[engineering-manager] Synthesizing solution", "status": "pending", "id": "synthesis"}
+])
+```
+
+See `controller-reference.md` for additional good/bad TodoWrite examples.
 
 ## Controller Selection by Tier
 

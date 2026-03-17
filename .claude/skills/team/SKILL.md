@@ -137,6 +137,37 @@ Note: /team uses the `phase` field (not `pipeline_state`). Hooks check both fiel
 | 3 | Multiple components, external deps | 1 primary + 1-2 supporting |
 | 4 | Strategic/architectural, company-wide | Executive + HITL |
 
+**2b-2. Call TodoWrite NOW (mandatory):**
+
+```
+TodoWrite([
+  {"content": "[team] Initializing: detecting domain & tier\n  [team] Domain: {domain}, Tier {N} ({N} waves planned)", "status": "in_progress", "id": "init"},
+  {"content": "[team > orchestrator] Enriching context", "status": "pending", "id": "enrich"},
+  {"content": "[team > planner] Planning approach", "status": "pending", "id": "plan"},
+  {"content": "[team > decomposer] Decomposing into work items", "status": "pending", "id": "decompose"},
+  {"content": "[team] Wave {N}: {wave_name} ({N} items)", "status": "pending", "id": "wave_1"},
+  {"content": "[team] Integration & validation", "status": "pending", "id": "integrate"},
+  {"content": "[team] Complete", "status": "pending", "id": "complete"}
+])
+```
+
+As details become known (after decomposer returns), update TodoWrite with per-wave entries:
+```
+TodoWrite([
+  {"content": "[team] Initializing: detecting domain & tier\n  [team] Domain: {domain}, Tier {N} ({N} waves planned)", "status": "completed", "id": "init"},
+  {"content": "[team > orchestrator] Enriching context", "status": "completed", "id": "enrich"},
+  {"content": "[team > planner] Planning approach", "status": "completed", "id": "plan"},
+  {"content": "[team > decomposer] {N} work items across {N} waves", "status": "completed", "id": "decompose"},
+  {"content": "[team] Wave 1: {wave_name} ({N} items)\n  [wave-1 > {agent}] {task_description}", "status": "in_progress", "id": "wave_1"},
+  {"content": "[team] Wave 1 GATE: {PASS/FAIL}", "status": "pending", "id": "gate_1"},
+  {"content": "[team] Wave 2: {wave_name} ({N} items)\n  [wave-2 > {agent}] {task_description}", "status": "pending", "id": "wave_2"},
+  {"content": "[team] Wave 2 GATE: {PASS/FAIL}", "status": "pending", "id": "gate_2"},
+  ...repeat per wave...
+  {"content": "[team] Integration & validation", "status": "pending", "id": "integrate"},
+  {"content": "[team] Complete ({N}/{N} items, {N} waves)", "status": "pending", "id": "complete"}
+])
+```
+
 **2c. Spawn orchestrator (enrichment):**
 
 ```

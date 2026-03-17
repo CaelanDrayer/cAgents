@@ -137,13 +137,28 @@ Note: /org uses the `pipeline_state` field (not `phase`). Hooks check both field
 
 ```
 TodoWrite([
-  {"content": "[/org CEO] INIT: Analyze instruction and route", "status": "in_progress", "id": "init"},
-  {"content": "[/org CEO] ANALYZED: C-suite domain analysis", "status": "pending", "id": "analyzed"},
-  {"content": "[/org CEO] DELIBERATED: Draft brief + objections", "status": "pending", "id": "deliberated"},
-  {"content": "[/org CEO] BRIEFED: Finalize strategic brief", "status": "pending", "id": "briefed"},
-  {"content": "[/org CEO] EXECUTED: /team per domain", "status": "pending", "id": "executed"},
-  {"content": "[/org CEO] INTEGRATED: Merge domain outputs", "status": "pending", "id": "integrated"},
-  {"content": "[/org CEO] COMPLETE: Final deliverable", "status": "pending", "id": "complete"}
+  {"content": "[org] Routing: analyzing domains & scope", "status": "in_progress", "id": "init"},
+  {"content": "[org] C-suite Wave 1: analyzing independent domains", "status": "pending", "id": "analyzed_w1"},
+  {"content": "[org] C-suite Wave 2: cross-domain review", "status": "pending", "id": "analyzed_w2"},
+  {"content": "[org] Drafting strategic brief & objection review", "status": "pending", "id": "deliberated"},
+  {"content": "[org] Strategic brief finalized", "status": "pending", "id": "briefed"},
+  {"content": "[org > team] Executing domain work", "status": "pending", "id": "executed"},
+  {"content": "[org] Integrating domain outputs", "status": "pending", "id": "integrated"},
+  {"content": "[org] Complete", "status": "pending", "id": "complete"}
+])
+```
+
+As details become known, update TodoWrite entries with contextual detail:
+```
+TodoWrite([
+  {"content": "[org] Routing: analyzing domains & scope\n  [org] Route: {domains} ({route_type})", "status": "completed", "id": "init"},
+  {"content": "[org] C-suite Wave 1: {agents} (independent)\n  [org > {csuite}] {domain} domain analysis\n  [{csuite}] {N} work items, complexity: {level}", "status": "in_progress", "id": "analyzed_w1"},
+  {"content": "[org] C-suite Wave 2: {agents} (reads Wave 1)\n  [org > {csuite}] {domain} review (informed by {peers})", "status": "pending", "id": "analyzed_w2"},
+  {"content": "[org] Drafting strategic brief\n  [org > {csuite}] Objection review\n  [{csuite}] {status} ({N} objections)", "status": "pending", "id": "deliberated"},
+  {"content": "[org] Resolving: {N} objections addressed\n[org] Strategic brief finalized", "status": "pending", "id": "briefed"},
+  {"content": "[org > team] Executing {domain} domain\n  [team > {controller}] {domain}: {N}/{total} items complete", "status": "pending", "id": "executed"},
+  {"content": "[org] Integrating domain outputs", "status": "pending", "id": "integrated"},
+  {"content": "[org] Complete ({N} domains, {N} items delivered)", "status": "pending", "id": "complete"}
 ])
 ```
 
@@ -617,13 +632,14 @@ outputs: [{paths}]
 
 ```
 TodoWrite([
-  {"content": "[/org CEO] INIT: Analyze instruction and route", "status": "completed", "id": "init"},
-  {"content": "[/org CEO] ANALYZED: C-suite domain analysis", "status": "completed", "id": "analyzed"},
-  {"content": "[/org CEO] DELIBERATED: Draft brief + objections", "status": "completed", "id": "deliberated"},
-  {"content": "[/org CEO] BRIEFED: Finalize strategic brief", "status": "completed", "id": "briefed"},
-  {"content": "[/org CEO] EXECUTED: /team per domain", "status": "completed", "id": "executed"},
-  {"content": "[/org CEO] INTEGRATED: Merge domain outputs", "status": "completed", "id": "integrated"},
-  {"content": "[/org CEO] COMPLETE: Final deliverable", "status": "completed", "id": "complete"}
+  {"content": "[org] Routing: analyzing domains & scope\n  [org] Route: {domains} ({route_type})", "status": "completed", "id": "init"},
+  {"content": "[org] C-suite Wave 1: {agents} (independent)\n  [org > {csuite}] {domain} domain analysis", "status": "completed", "id": "analyzed_w1"},
+  {"content": "[org] C-suite Wave 2: {agents} (reads Wave 1)\n  [org > {csuite}] {domain} review (informed by {peers})", "status": "completed", "id": "analyzed_w2"},
+  {"content": "[org] Drafting strategic brief\n  [org > {csuite}] Objection review\n  [{csuite}] {status} ({N} objections)", "status": "completed", "id": "deliberated"},
+  {"content": "[org] Resolving: {N} objections addressed\n[org] Strategic brief finalized", "status": "completed", "id": "briefed"},
+  {"content": "[org > team] Executing {domain} domain\n  [team > {controller}] {domain}: {N}/{total} items complete", "status": "completed", "id": "executed"},
+  {"content": "[org] Integrating domain outputs", "status": "completed", "id": "integrated"},
+  {"content": "[org] Complete ({N} domains, {N} items delivered)", "status": "completed", "id": "complete"}
 ])
 ```
 
