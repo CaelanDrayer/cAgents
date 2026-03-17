@@ -200,7 +200,7 @@ controller: cagents:engineering-manager
 objectives: [...]
 questions_asked: [{question, delegated_to, answer}, ...]
 synthesized_solution: {approach, rationale, implementation_steps, risks}
-implementation_tasks: [{task_id, name, assigned_to, acceptance_criteria, status}, ...]
+implementation_tasks: [{task_id, name, assigned_to, agent_id, acceptance_criteria, status}, ...]
 status: completed
 ```
 

@@ -91,6 +91,17 @@ Controllers include an internal reviewer loop (max 3 rounds). After each executo
 
 See `controller-reference.md` for reviewer spawning patterns, blind review protocol, dead-letter queue, and confidence tiers.
 
+## Agent ID Tracking
+
+When controllers spawn execution agents via Task tool, they MUST record the returned `agent_id` in the coordination_log's `implementation_tasks` entry. This links work items to `agent_tree.yaml` entries, enabling AgentPath to show which agent handled which work item.
+
+```yaml
+implementation_tasks:
+  - task_id: WI-1
+    assigned_to: cagents:backend-developer
+    agent_id: "{agent_id from Task result}"  # REQUIRED: links to agent_tree.yaml
+```
+
 ## Confidence Tiers
 
 Every completed work item MUST include `confidence` (0.0-1.0) and `confidence_rationale`. Items < 0.7 trigger additional scrutiny.

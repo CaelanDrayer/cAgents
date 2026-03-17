@@ -125,6 +125,7 @@ implementation_tasks:
   - task_id: TASK-01
     name: "{task_name}"
     assigned_to: cagents:{executor}
+    agent_id: "{agent_id}"          # Links to agent_tree.yaml entry for AgentPath visualization
     acceptance_criteria: [...]
     status: completed
     confidence: 0.85
