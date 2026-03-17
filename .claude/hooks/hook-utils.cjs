@@ -141,7 +141,7 @@ function findActiveSession(sessionHint) {
     const hintDir = path.join(sessionsDir, sessionHint);
     if (fs.existsSync(hintDir)) {
       const statusFile = path.join(hintDir, 'status.yaml');
-      const content = safeRead(statusFile);
+      const content = safeRead(statusFile) || safeRead(path.join(hintDir, 'session.yaml'));
       if (content) {
         const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase') || extractYamlValue(content, 'pipeline_state');
         const terminalStates = ['completed', 'complete', 'failed', 'aborted', 'COMPLETE', 'VALIDATED'];
@@ -171,10 +171,14 @@ function findActiveSession(sessionHint) {
       return tsB.localeCompare(tsA);
     });
 
-  // First pass: look for sessions with status.yaml in a non-terminal phase
+  // First pass: look for sessions with status.yaml (or session.yaml fallback) in a non-terminal phase
   for (const session of sessions) {
     const statusFile = path.join(sessionsDir, session, 'status.yaml');
-    const content = safeRead(statusFile);
+    let content = safeRead(statusFile);
+    // Fallback: legacy designer sessions use session.yaml instead of status.yaml
+    if (!content) {
+      content = safeRead(path.join(sessionsDir, session, 'session.yaml'));
+    }
     if (!content) continue;
 
     const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase') || extractYamlValue(content, 'pipeline_state');
