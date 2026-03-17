@@ -177,7 +177,7 @@ A session is considered complete when its status.yaml state matches one of:
 - /run: `VALIDATED` (final successful state) or after max revision cycles
 - /org: `COMPLETE`
 
-Note: `VALIDATED` may be followed by `FOLLOWUP_{TYPE}_{N}` states if the user provides post-completion feedback. The session re-enters the pipeline and eventually returns to `VALIDATED`. Max 5 follow-up rounds per session.
+Note: `VALIDATED` may be followed by `FOLLOWUP_{TYPE}_{N}` states if the user provides post-completion feedback. The session re-enters the pipeline and eventually returns to `VALIDATED`. No limit on follow-up rounds.
 
 ### Follow-Up Types (/run only)
 

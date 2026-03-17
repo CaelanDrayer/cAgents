@@ -484,9 +484,8 @@ When user input arrives after COMPLETE/VALIDATED, classify it:
 
 **5c. Follow-up limits:**
 
-- Max 5 follow-up rounds per session (prevents runaway sessions)
+- No limit on follow-up rounds — the session stays alive as long as the user keeps providing feedback
 - Each follow-up is tracked in `state_history` as `FOLLOWUP_{TYPE}_{N}`
-- After 5 follow-ups, suggest starting a new session: `/run --resume` or fresh `/run`
 
 **5d. Session schema additions for follow-ups:**
 
