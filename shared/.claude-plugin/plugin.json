@@ -1,6 +1,6 @@
 {
   "name": "cagents-shared",
-  "version": "10.16.0",
+  "version": "10.16.1",
   "description": "cAgents shared domain - 4 cross-cutting data and intelligence specialists",
   "agents": [
     "./agents/bi-specialist/SKILL.md",
