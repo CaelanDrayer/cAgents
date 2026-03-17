@@ -88,7 +88,7 @@ state_history:                       # REQUIRED: Ordered list of state transitio
 
 | Skill | States (in order) |
 |-------|-------------------|
-| /run | INIT, ORCHESTRATED, PLANNED, DECOMPOSED, PROMPTS_READY, COORDINATED, VALIDATED |
+| /run | INIT, ORCHESTRATED, PLANNED, DECOMPOSED, PROMPTS_READY, COORDINATED, VALIDATED, FOLLOWUP_{TYPE}_{N} |
 | /org | INIT, ANALYZED, DELIBERATED, BRIEFED, EXECUTED, INTEGRATED, COMPLETE |
 | /team | INIT, (wave states vary) |
 | /designer | empathize, define, conceptualize, ideation, refinement, specification |
@@ -97,7 +97,7 @@ state_history:                       # REQUIRED: Ordered list of state transitio
 
 ### Skill-Specific Extensions
 
-- **/run**: Includes `revision_round: {N}` for tracking pipeline revision cycles.
+- **/run**: Includes `revision_round: {N}` for pipeline revision cycles and `followup_round: {N}` for post-completion follow-ups. Follow-up states use the naming pattern `FOLLOWUP_{TYPE}_{N}` where TYPE is `ADJUSTMENT`, `REWORK`, `EXTENSION`, `FIX`, or `REVIEW`.
 - **/org**: No additional fields.
 - **/team**: No additional fields.
 - **/designer**: No additional fields.
@@ -176,6 +176,18 @@ A session is considered complete when its status.yaml state matches one of:
 - Uppercase: `COMPLETE`, `VALIDATED`
 - /run: `VALIDATED` (final successful state) or after max revision cycles
 - /org: `COMPLETE`
+
+Note: `VALIDATED` may be followed by `FOLLOWUP_{TYPE}_{N}` states if the user provides post-completion feedback. The session re-enters the pipeline and eventually returns to `VALIDATED`. Max 5 follow-up rounds per session.
+
+### Follow-Up Types (/run only)
+
+| Type | Re-entry Point | Use Case |
+|------|---------------|----------|
+| `ADJUSTMENT` | PROMPTS_READY | Targeted change (rename, tweak, modify) |
+| `REWORK` | PLANNED | Significant redo (wrong approach, rewrite) |
+| `EXTENSION` | DECOMPOSED | Add new scope (also add, extend, include) |
+| `FIX` | PROMPTS_READY | Bug fix (broken, error, failing) |
+| `REVIEW` | COORDINATED | Re-validate (check, verify, test) |
 
 ---
 
