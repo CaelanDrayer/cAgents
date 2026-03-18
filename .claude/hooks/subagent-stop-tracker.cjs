@@ -25,9 +25,10 @@ function findMostRecentSessionDir() {
 
   let bestDir = null;
   let bestMtime = 0;
+  let entries = [];
 
   try {
-    const entries = fs.readdirSync(sessionsDir)
+    entries = fs.readdirSync(sessionsDir)
       .filter(d => SESSION_PREFIXES.some(p => d.startsWith(p)));
 
     for (const entry of entries) {

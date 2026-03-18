@@ -6,7 +6,7 @@
 |------|------|---------|-------------|
 | `--dry-run` | Boolean | `false` | Show routing decision and planned C-suite engagement without executing |
 | `--quick` | Boolean | `false` | Skip deliberation round for single-domain instructions (generate brief directly) |
-| `--domains <d1,d2,...>` | Value | auto-detect | Force specific domain scope (comma-separated: make_eng, make_cre, grow, operate_fin, operate_ops, people, serve) |
+| `--domains <d1,d2,...>` | Value | auto-detect | Force specific domain scope (comma-separated: engineering, creative, growth, business, operate_fin, operate_ops, people, service) |
 | `--resume <session_id>` | Value | none | Resume an incomplete /org session from last checkpoint. Skips completed domains and only re-executes incomplete/failed ones. |
 | `--resume <id> --domain <key>` | Value | none | Resume only a specific failed domain within an /org session. Other completed domains are preserved. |
 
@@ -16,13 +16,14 @@ Valid domain keys for `--domains`:
 
 | Key | C-Suite | Super-Domain |
 |-----|---------|--------------|
-| `make_eng` | CTO | Make (Engineering) |
-| `make_cre` | CCO | Make (Creative) |
-| `grow` | CRO | Grow |
-| `operate_fin` | CFO | Operate (Finance) |
-| `operate_ops` | COO | Operate (Operations) |
+| `engineering` | CTO | Engineering |
+| `creative` | CCO | Creative |
+| `growth` | CRO | Growth |
+| `business` | CPO | Business (Product) |
+| `operate_fin` | CFO | Finance |
+| `operate_ops` | COO | Operations |
 | `people` | CHRO | People |
-| `serve` | General Counsel | Serve |
+| `service` | General Counsel | Service |
 
 ## Examples
 

@@ -19,7 +19,7 @@ You are the **CEO** of cAgents' corporate hierarchy. The user is the **Chairpers
 
 /org runs **inline** (`context: none`), NOT as a fork. This is required because Claude Code enforces that **subagents cannot spawn other subagents**. Since /org needs to:
 1. Spawn C-suite agents via Task (Steps 4-5)
-2. Invoke /team and /run via Skill (Step 7)
+2. Invoke /team via Skill (Step 7)
 
 It MUST run as the main thread (inline), not as a forked subagent. This matches how /run works. The Skill tool is available to the main thread for invoking /team and /run. Task is available for spawning C-suite agents as subagents.
 
@@ -29,8 +29,11 @@ It MUST run as the main thread (inline), not as a forked subagent. This matches 
   +-> C-suite via Task (level 1 subagents) -- for analysis and objections
   +-> /team via Skill (level 0 fork) -- for domain execution
        +-> teammates via Task (level 1) -- spawned by /team fork
-            +-> /run via Skill (level 0 fork) -- per work item
-                 +-> pipeline agents via Task (level 1)
+            +-> execution agents via Task (level 2) -- spawned by controller teammates
+
+Note: /team teammates ARE controllers that spawn execution agents directly via Task. They do NOT
+invoke /run Skill, because that would exceed Claude Code's 2-level subagent nesting limit.
+Work items are tracked via agent_tree.yaml, not child sessions.
 ```
 
 ## Architecture: Corporate Hierarchy
@@ -512,7 +515,18 @@ Format:
 })
 ```
 
-**5c. CEO resolves conflicts:**
+**5c. Validate peer reads (M-03 post-validation):**
+
+Before resolving, verify that each objection file contains a `peer_analyses_reviewed` list with at least 1 entry. If an objection file has an empty or missing `peer_analyses_reviewed`, the C-suite agent did not read peer analyses -- re-spawn that agent with an explicit reminder to read ALL `domain_analyses/*.yaml` files first.
+
+```
+for each objections_{agent}.yaml:
+  if peer_analyses_reviewed is empty or missing:
+    log warning: "{agent} did not review peer analyses"
+    re-spawn agent with stronger read instruction (1 retry max)
+```
+
+**5d. CEO resolves conflicts:**
 
 Read all objections. Resolve:
 - **Blocking objections**: Adjust brief to address
@@ -567,7 +581,7 @@ Update status to BRIEFED.
 
 ### Step 7: Sequential Domain Execution (BRIEFED -> EXECUTED)
 
-For each domain in `domain_assignments`, invoke `/team` via Skill **sequentially**. Each Skill invocation is a fork that creates a fresh context, allowing /team to spawn teammates and each teammate to invoke /run without nesting issues.
+For each domain in `domain_assignments`, invoke `/team` via Skill **sequentially**. Each Skill invocation is a fork that creates a fresh context, allowing /team to spawn teammates who, as controller agents, spawn execution agents directly via Task tool.
 
 **7a. Pre-create ALL domain session subdirectories (before any execution):**
 

@@ -1,6 +1,6 @@
 {
   "name": "cagents-leadership",
-  "version": "10.18.0",
+  "version": "10.20.0",
   "description": "cAgents leadership domain - 10 C-suite executive agents for strategic coordination via /org",
   "agents": [
     "./agents/cco/SKILL.md",
@@ -12,6 +12,7 @@
     "./agents/cpo/SKILL.md",
     "./agents/cro/SKILL.md",
     "./agents/cso/SKILL.md",
-    "./agents/cto/SKILL.md"
+    "./agents/cto/SKILL.md",
+    "./agents/general-counsel/SKILL.md"
   ]
 }

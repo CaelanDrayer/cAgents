@@ -277,6 +277,41 @@ function findTeamSession(input = {}) {
     }
   }
 
+  // H-11: Scan org session subdirectories for nested team sessions
+  // (e.g., org_xxx/engineering/ when /team runs inside /org)
+  try {
+    const orgSessions = fs.readdirSync(sessionsDir)
+      .filter(d => d.startsWith('org_'))
+      .sort((a, b) => {
+        const partsA = a.split('_');
+        const tsA = partsA.slice(-2).join('_');
+        const partsB = b.split('_');
+        const tsB = partsB.slice(-2).join('_');
+        return tsB.localeCompare(tsA);
+      });
+
+    for (const orgSession of orgSessions) {
+      const orgPath = path.join(sessionsDir, orgSession);
+      try {
+        const subdirs = fs.readdirSync(orgPath).filter(d => {
+          try { return fs.statSync(path.join(orgPath, d)).isDirectory(); } catch { return false; }
+        });
+        for (const subdir of subdirs) {
+          const nestedPath = path.join(orgPath, subdir);
+          const nestedStatus = path.join(nestedPath, 'status.yaml');
+          const content = safeRead(nestedStatus);
+          if (!content) continue;
+          const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'pipeline_state');
+          const terminalStates = ['completed', 'complete', 'failed', 'aborted', 'COMPLETE', 'VALIDATED'];
+          if (phase && !terminalStates.includes(phase)) {
+            console.error(`[findTeamSession] Found nested session: ${orgSession}/${subdir}`);
+            return nestedPath;
+          }
+        }
+      } catch { /* skip unreadable org dirs */ }
+    }
+  } catch { /* skip */ }
+
   return null;
 }
 

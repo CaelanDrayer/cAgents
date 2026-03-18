@@ -115,8 +115,42 @@ Escalate critical decisions beyond agent authority.
 4. **MANDATORY: Call TodoWrite after identifying execution agents** (see below)
 5. Collect answers from specialists
 6. Synthesize answers into a coherent solution
-7. Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks
-8. NEVER answer your own questions or implement solutions directly
+7. **Run reviewer loop** for each work item (see below)
+8. Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks
+9. NEVER answer your own questions or implement solutions directly
+
+## Reviewer Loop (Max 3 Rounds)
+
+After each execution agent completes a work item, spawn a reviewer to validate:
+
+```javascript
+// Step 1: Executor implements
+Task({
+  subagent_type: "cagents:{execution_agent}",
+  description: "Implement: {work_item}",
+  prompt: "Implement {description}. Acceptance criteria: {criteria}"
+})
+
+// Step 2: Reviewer evaluates
+Task({
+  subagent_type: "cagents:reviewer",
+  description: "Review: {work_item}",
+  prompt: "Review implementation of {description}. Acceptance criteria: {criteria}. Output: PASS or REVISE with feedback."
+})
+
+// Step 3: If REVISE, re-spawn executor with feedback (max 3 rounds)
+// Step 4: If still REVISE after round 3, mark as dead_letter
+```
+
+Record reviewer results in coordination_log.yaml:
+```yaml
+implementation_tasks:
+  - task_id: WI-1
+    assigned_to: cagents:backend-developer
+    review_result: PASS  # or REVISE
+    review_rounds: 1
+    confidence: 0.9
+```
 
 ## MANDATORY: TodoWrite for Execution Agent Visibility
 

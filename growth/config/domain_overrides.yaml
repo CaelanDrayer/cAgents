@@ -113,6 +113,22 @@ planner:
       keywords: [copywriting, ad copy, landing page copy, email copy, marketing copy, tagline]
       agents: [copywriter]
       description: "Marketing copy and content creation"
+    affiliate:
+      keywords: [affiliate, referral, commission, partner program, affiliate network, referral program]
+      agents: [affiliate-marketing-manager]
+      description: "Affiliate programs and partner referrals"
+    cro:
+      keywords: [CRO, A/B test, conversion, landing page, funnel optimization, split test, multivariate, experiment]
+      agents: [conversion-rate-optimizer]
+      description: "Conversion rate optimization and experimentation"
+    video:
+      keywords: [video, YouTube, TikTok, Reels, webinar, video marketing, short-form, Shorts]
+      agents: [video-marketing-specialist]
+      description: "Video content strategy and channel management"
+    media_buying:
+      keywords: [media buy, programmatic, RTB, ad spend, media plan, display advertising, ad network, DSP]
+      agents: [media-buyer]
+      description: "Programmatic advertising and media buying"
 
 router:
   keywords:

@@ -12,7 +12,7 @@ Guidelines for parallel team execution in cAgents V9.2 using Claude Code's built
 
 ## Overview
 
-**Core Architecture**: `/team` decomposes the request into work items across as many waves as the work requires, creates a real agent team via TeamCreate, and spawns teammates per-wave who each invoke `/run` for their work item. Each teammate appears as a tmux pane (when teammateMode=tmux). More waves = better quality gating.
+**Core Architecture**: `/team` decomposes the request into work items across as many waves as the work requires, creates a real agent team via TeamCreate, and spawns teammates per-wave who are controller agents that delegate to execution agents directly via Task tool. Each teammate appears as a tmux pane (when teammateMode=tmux). More waves = better quality gating.
 
 Team Mode enables N-wave parallel execution with:
 - **Maximum wave decomposition**: /team breaks the request into work items across 3-10 waves (more waves preferred)
@@ -20,31 +20,28 @@ Team Mode enables N-wave parallel execution with:
 - **GATE sentinel quality checks**: Lead validates between waves before proceeding
 - **Built-in agent teams**: TeamCreate, SendMessage, TaskCreate/TaskList for coordination
 - **teammateMode: tmux**: Each teammate in its own tmux split pane (managed by Claude Code)
-- **Every work item via /run**: Full orchestration (plan, coordinate, execute, validate) per item
+- **Every work item via controller**: Teammates ARE controllers that spawn execution agents directly via Task tool
 - **Shared task lists**: Built-in TaskCreate/TaskList at `~/.claude/tasks/{team-name}/`
 - **Independent contexts**: Each teammate has its own context window
 
-## CRITICAL: Teammates Spin Out Their Own Agents
+## CRITICAL: Teammates ARE Controllers That Spawn Execution Agents Directly
 
-**This is the most important principle of team mode.** Teammates do NOT implement work items directly. Each teammate invokes `/run` via the Skill tool, and `/run` creates its own controller and execution agents.
+**This is the most important principle of team mode.** Teammates do NOT implement work items directly. Each teammate is spawned as a controller agent (e.g., `cagents:engineering-manager`) that delegates to execution agents directly via Task tool, then spawns `cagents:reviewer` to validate.
 
 ```
-Teammate -> Skill({skill: "run", args: "TASK-01: ..."})
-  -> trigger -> orchestrator -> controller (e.g., engineering-manager)
-    -> execution agents (e.g., backend-developer, qa-tester)
-  -> validated output
+Teammate (controller, e.g., engineering-manager) -> Task(cagents:backend-developer)
+  -> backend-developer implements work item
+  -> Task(cagents:reviewer) validates against acceptance criteria
+  -> PASS or REVISE (max 3 rounds)
 ```
 
-**Every work assignment to a teammate MUST include the explicit Skill invocation pattern:**
-```javascript
-Skill({ skill: "run", args: "implement TASK-01: {description}" })
-```
+**Teammates do NOT invoke /run via Skill tool.** Claude Code enforces a 2-level subagent nesting limit. Since /team teammates are already level 1 subagents, they spawn execution agents at level 2 directly.
 
 **Anti-patterns (NEVER DO):**
-- Telling a teammate to "implement X" without /run
+- Telling a teammate to invoke /run (exceeds nesting limit)
 - Having the team lead do implementation work
-- Skipping /run for "simple" work items
-- Having teammates answer questions directly instead of delegating to /run
+- Having teammates implement directly without spawning execution agents
+- Having teammates answer questions directly instead of delegating
 
 ## CRITICAL: Create Teams, Not Just Tasks
 
@@ -68,9 +65,9 @@ All three steps are required. Creating tasks without spawning teammates to execu
     |
     Step 6: FOR EACH Wave K (1 to N-1):
     |   +-- Spawn teammates for wave K (ALL at once, in parallel)
-    |   |   +-- Teammate 1: /run TASK-{X} --> (controller -> execution agents) --> Complete
-    |   |   +-- Teammate 2: /run TASK-{Y} --> (controller -> execution agents) --> Complete
-    |   |   +-- Teammate 3: /run TASK-{Z} --> (controller -> execution agents) --> Complete
+    |   |   +-- Teammate 1 (controller): Task(execution agent) -> Task(reviewer) --> Complete
+    |   |   +-- Teammate 2 (controller): Task(execution agent) -> Task(reviewer) --> Complete
+    |   |   +-- Teammate 3 (controller): Task(execution agent) -> Task(reviewer) --> Complete
     |   |                    (parallel within wave -- each in own tmux pane)
     |   +-- Monitor wave K via TaskList + teammate messages
     |   +-- Validate GATE-K when all wave K items complete
@@ -223,17 +220,11 @@ TaskCreate({
 TaskUpdate({ taskId: "3", addBlockedBy: ["1"] })
 ```
 
-### Teammate Communication -- MUST Include Skill Invocation
+### Teammate Communication
+
+Teammates are spawned as controller agents via Task tool (not via SendMessage). Each teammate receives its work item prompt directly in the Task call. Communication between lead and teammates uses SendMessage for status updates and shutdown requests:
 
 ```javascript
-// Assign work -- ALWAYS include explicit Skill invocation
-SendMessage({
-  type: "message",
-  recipient: "teammate-1",
-  content: "You are assigned TASK-01. CRITICAL: Execute via the Skill tool to spin out your own agents:\nSkill({ skill: 'run', args: 'implement TASK-01: {description}' })\nDo NOT implement directly. /run creates controller + execution agents. Report when complete.",
-  summary: "Assigning TASK-01 with /run"
-})
-
 // Broadcast update (use sparingly)
 SendMessage({
   type: "broadcast",
@@ -331,7 +322,7 @@ Agent_Memory/sessions/team_{timestamp}/
 |       +-- parallelism.yaml
 +-- workflow/
 |   +-- plan.yaml
-|   +-- decomposition.yaml
+|   +-- work_items.yaml
 |   +-- coordination_log.yaml
 +-- outputs/
 ```

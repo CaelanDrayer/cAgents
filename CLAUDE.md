@@ -81,7 +81,7 @@ quality/        # completion, validation-framework, implicit-discovery (3 files)
 - **Tier 2**: Controllers (coordinate via batch delegation)
 - **Tier 3**: Execution agents (implement work items)
 - **Tier 4**: Support agents (foundational services)
-- **Total**: 208 agents across 8 business domains
+- **Total**: 214 agents across 8 business domains
 - **Execution**: Event-driven pipeline with progressive paths (minimal/medium/full), revision routing, reviewer loops
 
 **Business Domains** (8):
@@ -90,11 +90,11 @@ quality/        # completion, validation-framework, implicit-discovery (3 files)
 | **Engineering** | `engineering/` | 32 | Software engineering, infrastructure, security, QA, game programming |
 | **Creative** | `creative/` | 30 | Creative writing, narrative design, literary criticism, game art, audio |
 | **Business** | `business/` | 31 | Strategy, product, operations, finance |
-| **Growth** | `growth/` | 35 | Marketing, sales, revenue operations |
+| **Growth** | `growth/` | 39 | Marketing, sales, revenue operations |
 | **People** | `people/` | 19 | HR, talent acquisition, culture |
 | **Service** | `service/` | 32 | Customer support, CX, legal, compliance, governance |
-| **Leadership** | `leadership/` | 10 | C-suite executives (used by /org, not directly routable) |
-| **Core** | `core/` | 15 | Infrastructure agents (trigger, orchestrator, planner, etc.) |
+| **Leadership** | `leadership/` | 11 | C-suite executives + general-counsel (used by /org, not directly routable) |
+| **Core** | `core/` | 16 | Infrastructure agents (trigger, orchestrator, planner, reviewer, etc.) |
 | **Shared** | `shared/` | 4 | Cross-domain intelligence (BI, data science, market research) |
 
 **Config**: Each domain has `{domain}/config/domain_overrides.yaml` with controller_catalog and router keywords.
@@ -142,7 +142,7 @@ Workflows proceed automatically through phases WITHOUT asking permission. See `d
 
 **If requirements are clear, PROCEED. Do not ask.** (Except /designer, which always asks.)
 
-## Core Infrastructure (Tier 1: 15 agents)
+## Core Infrastructure (Tier 1: 16 agents)
 
 **Orchestration** (4): `trigger` (entry point), `orchestrator` (context enrichment), `hitl` (human escalation), `optimizer` (universal optimization)
 
@@ -430,7 +430,7 @@ cAgents/
 +-- leadership/              # Leadership domain (10 C-suite agents)
 +-- core/                    # Core infrastructure (15 agents)
 +-- shared/                  # Cross-domain specialists (4 agents)
-+-- growth/                  # Growth (legacy, consolidated into business/)
++-- growth/                  # Growth domain (39 agents: marketing, sales, revenue ops)
 +-- scripts/                 # Version sync, validation, CI scripts
 +-- tests/                   # Vitest test suite (hooks + config)
 +-- docs/                    # Project documentation
@@ -476,7 +476,7 @@ cAgents is distributed as a Claude Code plugin. See `.claude-plugin/plugin.json`
 ```
 
 **Key Manifest Fields**:
-- `agents`: Array of SKILL.md paths (208 agents registered)
+- `agents`: Array of SKILL.md paths (214 agents registered)
 - `skills`: Path to skills directory (`.claude/skills/`)
 - `hooks`: Path to settings.json for hook registration
 - `settings.json`: Default settings applied when plugin loads (under `agent` key for subagent defaults)
@@ -504,7 +504,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 
 ## V10.18.0 Highlights
 
-- **Vibe field on all 208 agents**: Personality one-liners for every agent in the catalog
+- **Vibe field on all 214 agents**: Personality one-liners for every agent in the catalog
 - **Agent export script**: `scripts/export-agents.sh` converts SKILL.md to Cursor rules, markdown, or bundle format
 - **Worktree isolation**: `/team` teammates can use `isolation: "worktree"` for parallel file safety
 - **Ambiguity scoring**: `/designer` tracks 4-dimension clarity score with readiness gate (< 20% to proceed)
@@ -521,8 +521,8 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 
 **Skills**: `/org`, `/run`, `/team`, `/designer`, `/review`, `/optimize`, `/helper`, `/context` (in `.claude/skills/`)
 **Built-in**: `/memory`, `/init` (Claude Code native)
-**Agents**: 208 total (15 core + 4 shared + 10 leadership + 179 domain specialists)
-**Domains**: Engineering (32), Creative (30), Business (31), Growth (35), People (19), Service (32), Leadership (10), Core (15), Shared (4)
+**Agents**: 214 total (16 core + 4 shared + 11 leadership + 183 domain specialists)
+**Domains**: Engineering (32), Creative (30), Business (31), Growth (39), People (19), Service (32), Leadership (10), Core (15), Shared (4)
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/domain_overrides.yaml`, `Agent_Memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (session YAML contract for AgentPath)
 **Hooks**: 15 event types (17 supported by Claude Code), 18 registered CJS hooks (21 .cjs files), invoked via `run-hook.cjs` launcher
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
@@ -530,7 +530,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 351 Vitest tests (hooks + config validation)
-**Version**: 10.18.0
+**Version**: 10.20.0
 
 ## Troubleshooting
 

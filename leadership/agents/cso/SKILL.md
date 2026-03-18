@@ -9,14 +9,15 @@ typical_questions:
   - "What are the key risks and strategic dependencies?"
 description: "Use when you need chief Strategy Officer providing strategic vision and competitive positioning. Leads long-term planning and growth strategy."
 vibe: "Sees the competitive landscape three moves ahead"
-model: opus
+model: opusplan
 capabilities:
   - strategic_planning
   - competitive_analysis
   - growth_strategy
   - business_model
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
-maxTurns: 30
+tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+maxTurns: 40
+permissionMode: "bypassPermissions"
 ---
 
 # Chief Strategy Officer

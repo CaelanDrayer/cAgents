@@ -5,7 +5,7 @@
 **Input**: `/org Fix the login button alignment`
 
 **CEO Analysis**:
-- Domains touched: make_eng (1 domain)
+- Domains touched: engineering (1 domain)
 - Scope: simple (single component fix)
 - Route: **single_run**
 
@@ -23,7 +23,7 @@
 **Input**: `/org Implement OAuth2 authentication with Google and GitHub providers`
 
 **CEO Analysis**:
-- Domains touched: make_eng (1 domain)
+- Domains touched: engineering (1 domain)
 - Scope: complex (multiple components, external integrations)
 - Route: **single_team**
 
@@ -42,7 +42,7 @@
 **Input**: `/org Launch the new analytics product by Q2`
 
 **CEO Analysis**:
-- Domains touched: make_eng (build), make_cre (UX/branding), grow (GTM), operate_fin (budget), people (hiring)
+- Domains touched: engineering (build), creative (UX/branding), grow (GTM), operate_fin (budget), people (hiring)
 - Scope: multi-domain strategic initiative
 - Route: **full_hierarchy**
 
@@ -61,8 +61,8 @@
    - CEO resolves: Phase hiring across Q1-Q2, reduce initial scope to core analytics
 4. **BRIEFED**: Final strategic_brief.yaml with phased approach
 5. **EXECUTED**: Sequential /team per domain (dependency-ordered):
-   - /team make_eng (engineering build)
-   - /team make_cre (design + brand)
+   - /team engineering (engineering build)
+   - /team creative (design + brand)
    - /team grow (GTM campaign)
    - /team people (hiring pipeline)
 6. **INTEGRATED**: CEO merges outputs, verifies cross-domain handoffs
@@ -75,7 +75,7 @@
 **Input**: `/org Migrate from monolith to microservices`
 
 **CEO Analysis**:
-- Domains: make_eng (architecture), operate_ops (deployment), serve (compliance)
+- Domains: engineering (architecture), operate_ops (deployment), serve (compliance)
 - Route: **full_hierarchy**
 
 **During Execution**:
@@ -90,7 +90,7 @@
 **Input**: `/org Fix the typo in the homepage --quick`
 
 **CEO Analysis**:
-- Domains: make_cre (1 domain)
+- Domains: creative (1 domain)
 - `--quick` flag: skip deliberation
 - Route: **single_run** (quick mode)
 
@@ -103,10 +103,10 @@
 
 ## Example 6: Forced Domains
 
-**Input**: `/org Restructure the engineering org --domains make_eng,people,operate_ops`
+**Input**: `/org Restructure the engineering org --domains engineering,people,operate_ops`
 
 **CEO Analysis**:
-- Domains: forced to make_eng, people, operate_ops
+- Domains: forced to engineering, people, operate_ops
 - Route: **full_hierarchy** (3 domains)
 
 **C-Suite Engaged**: CTO, CHRO, COO (only these 3, others skipped)

@@ -180,7 +180,8 @@ Before spawning the orchestrator, classify domain and tier inline:
 |--------|----------|
 | Engineering | fix, bug, implement, code, api, database, build, refactor, test, deploy, backend, frontend, devops, security, infrastructure |
 | Creative | write, story, content, narrative, novel, script, poem, game art, audio, animation, character design, worldbuild |
-| Business | budget, cost, forecast, operations, process, supply chain, procurement, strategy, campaign, marketing, sales, conversion, SEO, funnel, leads, revenue, product, roadmap, planning |
+| Business | budget, cost, forecast, operations, process, supply chain, procurement, strategy, product, roadmap, planning |
+| Growth | campaign, marketing, sales, conversion, SEO, funnel, leads, revenue, growth, advertising, ads, paid, social media, email marketing, content marketing, demand gen, pipeline |
 | People | hire, recruit, onboard, culture, HR, talent, performance review, benefits, compensation, diversity |
 | Service | support, legal, compliance, customer, SLA, contract, privacy, governance, ticket, escalation |
 

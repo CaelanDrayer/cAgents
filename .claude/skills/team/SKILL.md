@@ -123,9 +123,30 @@ command: /team
 request: "{user_request}"
 created_at: "{ISO_TIMESTAMP}"
 flags: {parsed_flags}
-parent_session_id: {PARENT_SESSION_ID or null}
+parent_session_id: {EXTRACTED_PARENT_SESSION_ID}
 metadata:
   working_directory: {CWD}
+```
+
+**Parent Session Extraction:**
+
+When /team is invoked via /org using the `--session` flag, extract the parent session ID from the path:
+
+- The `--session` flag provides a path like: `Agent_Memory/sessions/{PARENT_SESSION_ID}/{domain_key}`
+- Pattern: split path by `/`, find the component immediately after `sessions/` — that is the `parent_session_id`
+- Example: `--session Agent_Memory/sessions/org_launch-product_260317_001/engineering`
+  → `parent_session_id = "org_launch-product_260317_001"`
+- If no `--session` flag is provided, or the path has no `sessions/` segment, set `parent_session_id: null`
+
+Extraction logic:
+```
+session_flag = flags["session"]  # e.g., "Agent_Memory/sessions/org_foo_260317_001/engineering"
+if session_flag:
+  parts = session_flag.split("/")
+  sessions_index = parts.index("sessions") if "sessions" in parts else -1
+  EXTRACTED_PARENT_SESSION_ID = parts[sessions_index + 1] if sessions_index >= 0 and sessions_index + 1 < len(parts) else null
+else:
+  EXTRACTED_PARENT_SESSION_ID = null
 ```
 
 Write `status.yaml`:
@@ -362,12 +383,19 @@ for each wave K from 1 to N-1:
       For each work item in wave K (within the current batch):
 
       ##############################################################################
-      # CONTROLLER RESOLUTION (do this ONCE before spawning, NOT per work item)
+      # CONTROLLER RESOLUTION (do this ONCE per wave, NOT per work item)
       #
-      # Read plan.yaml -> controller_assignment -> primary
-      # This is ALWAYS the subagent_type for ALL teammates in ALL waves.
+      # DEFAULT: Read plan.yaml -> controller_assignment -> primary
       # Example: plan.yaml says "primary: cagents:engineering-manager"
       #   -> CONTROLLER_TYPE = "engineering-manager"
+      #
+      # M-08: WAVE-SPECIFIC CONTROLLERS: If plan.yaml has supporting controllers
+      # (controller_assignment.supporting), different waves MAY use different
+      # controllers based on the work items' domain alignment:
+      #   - If ALL items in wave K match the primary controller's domain: use primary
+      #   - If items in wave K match a supporting controller's domain: use that controller
+      #   - Example: tier 3 with primary=engineering-manager, supporting=[architect]
+      #     Wave 1 (design): use architect; Waves 2-3 (implementation): use engineering-manager
       #
       # NEVER use work_items.yaml's per-item `agent` field as subagent_type.
       # The `agent` field (e.g., "backend-developer", "senior-developer") is an
@@ -378,8 +406,10 @@ for each wave K from 1 to N-1:
       # controller_catalog. If it doesn't, something is wrong -- fall back to
       # the tier_2 default controller for the detected domain.
       ##############################################################################
+      # Default: primary controller
       CONTROLLER_TYPE = plan.yaml -> controller_assignment -> primary
-      # e.g., CONTROLLER_TYPE = "engineering-manager"
+      # Override per wave if supporting controllers are available and wave items align
+      # e.g., CONTROLLER_TYPE = "engineering-manager" (or "architect" for design waves)
 
       Task({
         subagent_type: "cagents:{CONTROLLER_TYPE}",  # MUST be the controller from plan.yaml, NEVER an execution agent
@@ -475,6 +505,23 @@ for each wave K from 1 to N-1:
         recovery_attempts: {count}
         successful_recoveries: {count}
         blocked_items: [{TASK-ids}]
+
+  5d-pre. Write child_controllers.yaml manifest (after all wave K teammates complete):
+      After all wave K teammates have completed (or been marked blocked), write the controller
+      manifest to track which controllers handled each work item in this wave:
+
+      ```yaml
+      # Append to workflow/child_controllers.yaml:
+      controllers:
+        - wave: {K}
+          name: "w{K}-task-{N}-{CONTROLLER_TYPE}"
+          work_item: "TASK-{N}"
+          agent_type: "cagents:{CONTROLLER_TYPE}"
+          status: completed  # or: blocked, failed
+      ```
+
+      Write (append) each completed/failed teammate entry to `${SESSION_DIR}/workflow/child_controllers.yaml`.
+      This file is the canonical record of controller-to-work-item assignments for AgentPath lineage tracking.
 
   5d. Validate GATE-K when all wave K items complete (or blocked):
       - Verify outputs exist for each work item in wave K
@@ -762,9 +809,20 @@ When invoked by `/org`, the session directory may contain a `strategic_brief.yam
    If exists: read and extract mission, success_criteria, domain_assignments
    ```
 
-2. **Pass brief context to enrichment agents** -- include mission and success criteria in orchestrator and planner prompts for richer context.
+2. **Use brief's domain_assignments as pre-decomposed input** (skip re-derivation):
+   - If the brief contains `domain_assignments.{domain_key}.work_required`, use those items directly as work items instead of running the decomposer from scratch
+   - Map each `work_required` entry to a TASK-N with the brief's acceptance criteria
+   - The planner still runs to assign wave numbers and dependencies, but starts from brief work items rather than deriving from scratch
+   - If `domain_assignments.{domain_key}.csuite` is specified, use that C-suite agent's recommended controller as a controller override hint (e.g., if CTO recommended engineering-manager, prefer that over auto-detection)
 
-3. **Write domain_status updates** during execution:
+3. **Pass brief context to enrichment agents** -- include mission, success criteria, and the C-suite domain analysis summary in orchestrator and planner prompts for richer context.
+
+4. **Validate outputs against brief success_criteria**:
+   - After final validation, cross-check the brief's `success_criteria` array
+   - Each success criterion must map to at least one completed TASK with evidence
+   - Include brief validation results in the final report
+
+5. **Write domain_status updates** during execution:
    - After each wave completes, update the brief's `domain_status` section:
    ```yaml
    domain_status:
@@ -776,11 +834,65 @@ When invoked by `/org`, the session directory may contain a `strategic_brief.yam
    ```
    - Write updates to `${SESSION_DIR}/strategic_brief.yaml` (the brief is the CEO's monitoring interface)
 
-4. **Check for escalation directives** -- if the CEO has added directives to the brief (from resolving escalations), read them and adjust execution accordingly.
+6. **Check for escalation directives** -- if the CEO has added directives to the brief (from resolving escalations), read them and adjust execution accordingly.
 
-5. **Report completion** by setting domain_status to completed with 100% progress.
+7. **Report completion** by setting domain_status to completed with 100% progress.
 
 This allows `/org`'s CEO to monitor domain execution progress and handle cross-domain escalations in real-time.
+
+## Session Hierarchy
+
+Understanding the session hierarchy is essential for correct lineage tracking in AgentPath.
+
+### Session Types and Nesting
+
+/team creates `team_*` sessions (e.g., `team_implement-oauth2_260317_001`). It does NOT create `run_*` sessions. When /org invokes /team via the `--session` flag, the team session's `parent_session_id` is set to the org session ID.
+
+**Hierarchy depth (max 2 levels)**:
+```
+org_* session (level 0)     <- /org creates this
+  team_* session (level 1)  <- /team creates this, parent_session_id = org_*
+```
+
+There is no `org_* -> team_* -> run_*` chain. Claude Code enforces a 2-level subagent nesting limit, which means /team teammates spawn execution agents directly via Task tool rather than invoking /run as a Skill. As a result, controller work is tracked at the `team_*` session level, not in separate child sessions.
+
+### Controller Tracking
+
+Controllers spawned as /team teammates do NOT create their own sessions. Instead, their work is tracked at the session level via:
+
+1. **`workflow/agent_tree.yaml`** — Each spawned controller gets an entry with `spawned_at`, `stopped_at`, `completion_summary`, and `duration_seconds`. This is the authoritative agent audit trail.
+2. **`workflow/coordination_log.yaml`** — Written by each controller teammate after completing its wave work items. Contains objectives, questions_asked, synthesized_solution, and implementation_tasks.
+3. **`workflow/child_controllers.yaml`** — Written by /team lead after each wave (see Step 5d-pre). Maps work items to the controllers that handled them.
+
+### child_controllers.yaml Format
+
+After each wave completes, the lead appends completed controllers to `workflow/child_controllers.yaml`:
+```yaml
+controllers:
+  - wave: 1
+    name: "w1-task-1-engineering-manager"
+    work_item: "TASK-1"
+    agent_type: "cagents:engineering-manager"
+    status: completed
+  - wave: 1
+    name: "w1-task-2-engineering-manager"
+    work_item: "TASK-2"
+    agent_type: "cagents:engineering-manager"
+    status: completed
+  - wave: 2
+    name: "w2-task-3-engineering-manager"
+    work_item: "TASK-3"
+    agent_type: "cagents:engineering-manager"
+    status: completed
+```
+
+### Parent Session ID Extraction
+
+When invoked by /org with `--session Agent_Memory/sessions/org_foo_260317_001/engineering`, the `team_*` session stores:
+```yaml
+parent_session_id: "org_foo_260317_001"
+```
+This is extracted from the `--session` path (see Parent Session Extraction in Step 2a). If /team is invoked directly by a user (no `--session` flag), `parent_session_id` is `null`.
 
 ## Configuration
 

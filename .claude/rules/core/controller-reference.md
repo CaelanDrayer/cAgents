@@ -24,7 +24,7 @@ Task({
 
 // Step 2: Reviewer evaluates
 Task({
-  subagent_type: "cagents:reviewer",
+  subagent_type: "cagents:reviewer",  // domain-agnostic reviewer (core/agents/reviewer/)
   description: "Review: {work_item}",
   prompt: "Review implementation of {work_item_description}.\nAcceptance criteria: {criteria}\nCheck: Does implementation meet all criteria?\nOutput: PASS or REVISE with specific feedback."
 })

@@ -11,16 +11,16 @@ Domain-specific patterns for HR and talent workflows.
 
 **Tier 2** (Moderate complexity):
 - **hr-manager**: HR operations, employee relations
-- **talent-acquisition-specialist**: Recruiting, hiring
+- **talent-acquisition-manager**: Recruiting, hiring
 
 **Tier 3** (Complex):
 - **Primary**: hr-manager (HR coordination)
-- **Supporting**: talent-acquisition-specialist (recruiting), culture-champion (culture)
+- **Supporting**: talent-acquisition-manager (recruiting), culture-and-engagement-manager (culture)
 
 **Tier 4** (Expert):
 - **Executive**: chro (HR strategy)
 - **Primary**: hr-manager (coordination)
-- **Supporting**: talent-acquisition-specialist, culture-champion, change-manager
+- **Supporting**: talent-acquisition-manager, culture-and-engagement-manager, change-management-specialist
 
 ## Typical Questions
 
@@ -45,11 +45,11 @@ People controllers typically ask:
 
 Common people execution agents:
 - **recruiter**: Candidate sourcing, screening
-- **hr-specialist**: HR administration, benefits
-- **training-specialist**: Learning programs, skill development
+- **hr-business-partner**: HR administration, business alignment
+- **learning-specialist**: Learning programs, skill development
 - **compensation-analyst**: Salary benchmarking, compensation planning
 - **employee-relations-specialist**: Conflict resolution, policy
-- **culture-ambassador**: Culture initiatives, engagement programs
+- **culture-and-engagement-manager**: Culture initiatives, engagement programs
 
 ## Config Location
 

@@ -9,7 +9,7 @@ typical_questions:
   - "What are the conversion bottlenecks?"
 description: "Use when you need campaign execution and management leader. Coordinates campaign planning, execution, optimization, and performance tracking across channels."
 vibe: "Orchestrates campaigns that hit every channel at the right time"
-model: sonnet
+model: opusplan
 capabilities:
   - campaign_planning
   - campaign_execution
@@ -85,6 +85,11 @@ See @resources/metrics-and-optimization.md for the metrics hierarchy, A/B testin
 4. **MANDATORY: Call TodoWrite after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required TodoWrite pattern
 5. Collect answers from specialists
 6. Synthesize answers into a coherent solution
-7. Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks
-8. NEVER answer your own questions or implement solutions directly
+7. **Run reviewer loop** for each work item (see Reviewer Loop below)
+8. Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks
+9. NEVER answer your own questions or implement solutions directly
+
+## Reviewer Loop (Max 3 Rounds)
+
+After each execution agent completes a work item, spawn `cagents:reviewer` to validate against acceptance criteria. If REVISE, re-spawn executor with feedback (max 3 rounds). After round 3, mark as dead_letter. See `.claude/rules/core/controller-reference.md` for the full reviewer spawning pattern.
 

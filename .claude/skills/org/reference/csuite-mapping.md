@@ -4,24 +4,29 @@
 
 | Domain Key | C-Suite Title | Agent | Super-Domain | Scope |
 |-----------|---------------|-------|--------------|-------|
-| make_eng | CTO | `cagents:cto` | Make | Technical architecture, implementation, testing, deployment |
-| make_cre | CCO | `cagents:cco` | Make | Creative direction, branding, UX, content, game design |
-| grow | CRO | `cagents:cro` | Grow | Marketing, sales, go-to-market, revenue |
+| engineering | CTO | `cagents:cto` | Make | Technical architecture, implementation, testing, deployment |
+| creative | CCO | `cagents:cco` | Make | Creative direction, branding, UX, content, game design |
+| growth | CRO | `cagents:cro` | Grow | Marketing, sales, go-to-market, revenue |
+| growth | CMO (optional) | `cagents:cmo` | Grow | Brand strategy, creative marketing (co-analyst with CRO for brand-heavy requests) |
+| business | CPO | `cagents:cpo` | Business | Product strategy, roadmap, go-to-market, user research |
 | operate_fin | CFO | `cagents:cfo` | Operate | Budget, ROI, financial planning, cost analysis |
 | operate_ops | COO | `cagents:coo` | Operate | Process, logistics, operational execution, supply chain |
 | people | CHRO | `cagents:chro` | People | Talent, hiring, culture, org structure, L&D |
-| serve | General Counsel | `cagents:general-counsel` | Serve | Legal, compliance, customer support, privacy |
+| service | General Counsel | `cagents:general-counsel` | Serve | Legal, compliance, customer support, privacy |
 
 ## Keyword Detection
 
-### make_eng (CTO)
+### engineering (CTO)
 Primary: `fix`, `bug`, `implement`, `code`, `api`, `database`, `build`, `refactor`, `test`, `deploy`, `architecture`, `backend`, `frontend`, `devops`, `infrastructure`, `microservices`, `ci/cd`, `migration`
 
-### make_cre (CCO)
+### creative (CCO)
 Primary: `write`, `story`, `content`, `design`, `creative`, `novel`, `script`, `poem`, `brand`, `UX`, `game`, `narrative`, `artwork`, `visual`, `animation`, `music`
 
-### grow (CRO)
+### growth (CRO)
 Primary: `campaign`, `marketing`, `sales`, `conversion`, `SEO`, `funnel`, `leads`, `revenue`, `growth`, `acquisition`, `retention`, `pricing`, `go-to-market`, `launch`
+
+### business (CPO)
+Primary: `product`, `roadmap`, `feature`, `user research`, `product strategy`, `go-to-market`, `MVP`, `product-market fit`, `backlog`, `sprint`, `requirements`
 
 ### operate_fin (CFO)
 Primary: `budget`, `cost`, `forecast`, `investment`, `ROI`, `financial`, `funding`, `revenue model`, `burn rate`, `profitability`, `expenses`
@@ -32,7 +37,7 @@ Primary: `operations`, `process`, `supply chain`, `procurement`, `logistics`, `e
 ### people (CHRO)
 Primary: `hire`, `recruit`, `onboard`, `culture`, `HR`, `talent`, `performance review`, `team`, `compensation`, `benefits`, `training`, `L&D`, `retention`, `org structure`
 
-### serve (General Counsel)
+### service (General Counsel)
 Primary: `support`, `legal`, `compliance`, `customer`, `SLA`, `contract`, `privacy`, `GDPR`, `regulation`, `liability`, `dispute`, `escalation`
 
 ## Multi-Domain Detection
@@ -70,7 +75,7 @@ The following default dependencies reflect typical cross-domain information flow
 | CTO | Wave 1 | *(independent)* | Technical scope is foundational; other domains depend on it |
 | CCO | Wave 1 | *(independent)* | Creative direction is foundational for brand-dependent domains |
 | CRO | Wave 2 | CCO, CTO | Go-to-market strategy benefits from brand direction and technical capabilities |
-| CFO | Wave 2 | CTO, COO | Financial planning needs technical cost estimates and operational scope |
+| CFO | Wave 1 | *(independent)* | Financial planning provides budget constraints for dependent agents |
 | COO | Wave 2 | CTO, CFO | Operational execution needs technical scope and budget constraints |
 | CHRO | Wave 2 | CTO, COO | Staffing needs depend on technical scope and operational structure |
 | General Counsel | Wave 2 | All peers | Compliance review benefits from full cross-domain context |

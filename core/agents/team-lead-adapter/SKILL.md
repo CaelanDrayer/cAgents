@@ -100,77 +100,54 @@ Teammate messages are delivered automatically -- no polling needed. Idle notific
 
 **Step 4 is MANDATORY and IMMEDIATE.** Do not wait. Do not ask the user. Assign all work items to teammates as soon as the team is ready.
 
-## CRITICAL: Every Teammate Spins Out Its Own Agents via /run
+## CRITICAL: Teammates ARE Controllers That Spawn Execution Agents Directly
 
-**Every work item gets full `/run` orchestration.** This is the core architecture -- not a fallback. `/team` provides parallelism; `/run` provides quality.
-
-```
-/team decomposes -> work items -> each teammate -> /run -> (trigger -> controller -> execution agents)
-```
-
-**When a teammate invokes `/run`, that `/run` creates its own controller and execution agents.** This is how teammates "spin out their own agents." Each teammate is NOT just a worker -- it is an orchestration node that delegates to specialists.
+**Teammates are controller agents that delegate to execution agents directly via Task tool.** This is the core architecture. `/team` provides parallelism; controllers provide coordination quality.
 
 ```
-Teammate 1 -> Skill({skill: "run", args: "TASK-01"})
-  -> trigger -> orchestrator -> engineering-manager (controller)
-    -> backend-developer (execution agent)
-    -> qa-tester (execution agent)
-  -> validated output
-
-Teammate 2 -> Skill({skill: "run", args: "TASK-02"})
-  -> trigger -> orchestrator -> engineering-manager (controller)
-    -> frontend-developer (execution agent)
-    -> ui-designer (execution agent)
-  -> validated output
+/team decomposes -> work items -> each teammate (controller) -> Task(execution agent) -> Task(reviewer)
 ```
 
-**NEVER instruct teammates to implement directly. ALWAYS instruct them to invoke /run via Skill tool.**
+**Each teammate IS a controller** (e.g., `cagents:engineering-manager`) spawned by the lead via Task tool. The controller then spawns execution agents and reviewers directly:
+
+```
+Teammate 1 (engineering-manager):
+  -> Task(cagents:backend-developer, "Implement TASK-01")
+  -> Task(cagents:reviewer, "Review TASK-01")
+  -> PASS or REVISE (max 3 rounds)
+
+Teammate 2 (engineering-manager):
+  -> Task(cagents:frontend-developer, "Implement TASK-02")
+  -> Task(cagents:reviewer, "Review TASK-02")
+  -> PASS or REVISE (max 3 rounds)
+```
+
+**NEVER instruct teammates to invoke /run via Skill tool** -- this would exceed Claude Code's 2-level subagent nesting limit. Teammates delegate directly.
 
 ## Teammate Communication
 
-### Assigning Work -- MUST Include Skill Invocation
+### Assigning Work -- Teammates Are Spawned as Controllers via Task Tool
 
-**CRITICAL: Every work assignment message MUST include the explicit Skill invocation for /run.** This ensures the teammate spins out its own agents (controller + execution agents) rather than implementing directly.
+**CRITICAL: Teammates are NOT assigned work via SendMessage. They are spawned as controller agents via Task tool.** Each teammate receives its work item directly in the Task call.
 
 ```javascript
-// Assign specific work item -- MUST include Skill invocation
-SendMessage({
-  type: "message",
-  recipient: "teammate-1",
-  content: `You are assigned TASK-01: Implement user model.
-
-CRITICAL: You MUST execute this via the Skill tool to spin out your own agents:
-Skill({ skill: "run", args: "implement TASK-01: Implement user model. Acceptance criteria: model exists with password_hash field, migration created, unit tests pass. Parent-Session: {session_id}" })
-
-Do NOT implement this directly. The /run skill will create a controller (e.g., engineering-manager) who will delegate to execution agents (e.g., backend-developer, qa-tester). Your job is to invoke /run and report results.
-
-After completion, mark your task done via TaskUpdate and report results to me via SendMessage.`,
-  summary: "Assigning TASK-01 to teammate-1 with /run"
-})
-
-SendMessage({
-  type: "message",
-  recipient: "teammate-2",
-  content: `You are assigned TASK-02: Create user registration form.
-
-CRITICAL: You MUST execute this via the Skill tool to spin out your own agents:
-Skill({ skill: "run", args: "implement TASK-02: Create user registration form. Acceptance criteria: form renders, validation works, responsive design. Parent-Session: {session_id}" })
-
-Do NOT implement this directly. /run handles all agent delegation automatically.
-
-After completion, mark your task done via TaskUpdate and report results to me via SendMessage.`,
-  summary: "Assigning TASK-02 to teammate-2 with /run"
+// Spawn a teammate as a controller that delegates to execution agents
+Task({
+  subagent_type: "cagents:engineering-manager",
+  name: "w1-task-1-engineering-manager",
+  team_name: "{team_name}",
+  description: "Wave 1 - Execute TASK-01: Implement user model",
+  prompt: "You are a controller teammate. Spawn cagents:backend-developer to implement TASK-01, then spawn cagents:reviewer to validate. Acceptance criteria: model exists with password_hash field, migration created, unit tests pass."
 })
 ```
 
 **Anti-pattern (NEVER DO THIS):**
 ```javascript
-// WRONG: No Skill invocation -- teammate will implement directly
+// WRONG: Using SendMessage with /run Skill invocation (exceeds nesting limit)
 SendMessage({
   type: "message",
   recipient: "teammate-1",
-  content: "Implement the user model with password_hash field.",
-  summary: "Assigning TASK-01"
+  content: "Execute via Skill({skill: 'run', args: '...'})"
 })
 ```
 
@@ -390,7 +367,7 @@ If team execution partially fails:
 ### Reads
 - `team/team_manifest.yaml` - Team configuration
 - `workflow/plan.yaml` - Original objectives
-- `workflow/decomposition.yaml` - Work items
+- `workflow/work_items.yaml` - Work items
 
 ## Wave-Aware Coordination
 
@@ -439,9 +416,9 @@ contracts:
 
 ## Key Principles
 
-1. **Teammates spin out their own agents** - Every teammate invokes `/run` via Skill tool. The `/run` creates its own controller + execution agents. Teammates NEVER implement directly.
-2. **Assign work IMMEDIATELY** - Send work assignments to teammates the moment the team is created. Never pause or ask permission.
-3. **Explicit Skill invocation in every assignment** - Every SendMessage to a teammate MUST contain the exact `Skill({ skill: "run", args: "..." })` invocation pattern.
+1. **Teammates ARE controllers** - Every teammate is a controller agent spawned via Task tool that delegates to execution agents directly. Teammates NEVER implement directly and NEVER invoke /run.
+2. **Spawn teammates IMMEDIATELY** - Spawn controller teammates via Task tool the moment the team is created. Never pause or ask permission.
+3. **Direct Task delegation** - Teammates spawn execution agents and reviewers directly via Task tool (2-level nesting: lead -> controller teammate -> execution agent).
 4. **Delegate only** - Never do direct implementation work
 5. **Built-in tools** - Use SendMessage, TaskList, TaskUpdate for all coordination
 6. **Parallel first** - Maximize concurrent work items via self-claiming

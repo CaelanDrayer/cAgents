@@ -49,9 +49,9 @@ Common serve execution agents:
 - **customer-support-rep**: Ticket resolution, customer assistance
 - **legal-analyst**: Legal research, document review
 - **compliance-specialist**: Compliance monitoring, audit support
-- **contract-manager**: Contract drafting, negotiation
-- **customer-experience-analyst**: CX metrics, journey mapping
-- **escalation-specialist**: Complex issue resolution
+- **contracts-manager**: Contract drafting, negotiation
+- **support-analyst**: Support metrics, journey mapping
+- **escalation-manager**: Complex issue resolution
 
 ## Config Location
 

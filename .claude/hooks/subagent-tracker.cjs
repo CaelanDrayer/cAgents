@@ -35,9 +35,10 @@ function findMostRecentSessionDir() {
 
   let bestDir = null;
   let bestMtime = 0;
+  let entries = [];
 
   try {
-    const entries = fs.readdirSync(sessionsDir)
+    entries = fs.readdirSync(sessionsDir)
       .filter(d => SESSION_PREFIXES.some(p => d.startsWith(p)));
 
     for (const entry of entries) {
@@ -122,18 +123,87 @@ function appendToGlobalAuditLog(entry) {
   }
 }
 
+/**
+ * Infer parent agent from pending_spawns.yaml or coordination_log.yaml.
+ * When a controller spawns an agent via Task tool, the hook can match
+ * by checking pending spawns or the most recently active controller.
+ */
+function inferParentAgent(sessionDir, subagentType, agentId) {
+  if (!sessionDir) return 'root';
+
+  // Strategy 1: Check pending_spawns.yaml (written by controllers before spawning)
+  const pendingFile = path.join(sessionDir, 'workflow', 'pending_spawns.yaml');
+  const pendingContent = safeRead(pendingFile);
+  if (pendingContent) {
+    // Match by subagent_type or description fragment
+    const typePattern = new RegExp(`agent_type:\\s*["']?${subagentType.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']?`);
+    const typeMatch = pendingContent.match(typePattern);
+    if (typeMatch) {
+      // Extract parent_id from the matching block
+      const blockStart = pendingContent.lastIndexOf('- ', typeMatch.index);
+      const block = pendingContent.slice(blockStart, typeMatch.index + typeMatch[0].length + 200);
+      const parentMatch = block.match(/parent_id:\s*["']?([^"'\n]+)["']?/);
+      if (parentMatch) return parentMatch[1].trim();
+    }
+  }
+
+  // Strategy 2: Check coordination_log.yaml for the most recent controller
+  const coordLog = path.join(sessionDir, 'workflow', 'coordination_log.yaml');
+  const coordContent = safeRead(coordLog);
+  if (coordContent) {
+    const controllerMatch = coordContent.match(/controller:\s*["']?cagents:([^"'\n]+)["']?/);
+    if (controllerMatch) {
+      // Find the controller's agent_id in the tree
+      const treeFile = path.join(sessionDir, 'workflow', 'agent_tree.yaml');
+      const treeContent = safeRead(treeFile);
+      if (treeContent) {
+        const controllerName = controllerMatch[1].trim();
+        const idMatch = treeContent.match(new RegExp(`cagents_type:\\s*["']?cagents:${controllerName}["']?[\\s\\S]*?(?=\\n  - id:|$)`));
+        if (idMatch) {
+          // Walk backwards to find the id field
+          const blockStart = treeContent.lastIndexOf('  - id:', treeContent.indexOf(idMatch[0]));
+          const block = treeContent.slice(blockStart, blockStart + 200);
+          const agentIdMatch = block.match(/id:\s*["']([^"']+)["']/);
+          if (agentIdMatch) return agentIdMatch[1];
+        }
+      }
+    }
+  }
+
+  // Strategy 3: Check child_controllers.yaml for team sessions
+  const childControllersFile = path.join(sessionDir, 'workflow', 'child_controllers.yaml');
+  const childContent = safeRead(childControllersFile);
+  if (childContent) {
+    // The most recently added controller is likely the parent
+    const allNames = [...childContent.matchAll(/name:\s*["']?([^"'\n]+)["']?/g)];
+    if (allNames.length > 0) {
+      const lastControllerName = allNames[allNames.length - 1][1].trim();
+      const treeFile = path.join(sessionDir, 'workflow', 'agent_tree.yaml');
+      const treeContent = safeRead(treeFile);
+      if (treeContent) {
+        // Search by the controller name pattern in agent entries
+        const namePattern = new RegExp(`role_description:.*${lastControllerName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`);
+        const nameMatch = treeContent.match(namePattern);
+        if (nameMatch) {
+          const blockStart = treeContent.lastIndexOf('  - id:', treeContent.indexOf(nameMatch[0]));
+          const block = treeContent.slice(blockStart, blockStart + 200);
+          const agentIdMatch = block.match(/id:\s*["']([^"']+)["']/);
+          if (agentIdMatch) return agentIdMatch[1];
+        }
+      }
+    }
+  }
+
+  return 'root';
+}
+
 createHook('SubagentTracker', async (input) => {
   // SubagentStart provides agent_id and agent_type per Claude Code docs
   // agent_type is the agent name from Claude Code (e.g., "Explore", "Plan",
   // or custom agent names from .claude/agents/ or plugins)
   const subagentType = input.agent_type || 'unknown';
   const agentId = input.agent_id || `agent_${Date.now()}`;
-  const parentAgent = input.parent_agent || 'root';
   const now = new Date().toISOString();
-
-  // Build a global audit log entry regardless of session state
-  const auditEntry = `${now} | agent_id=${agentId} | type=${subagentType} | parent=${parentAgent} | session=${input.session_id || 'unknown'}`;
-  appendToGlobalAuditLog(auditEntry);
 
   // Try to find active session, with fallback to most-recent-modified
   let sessionDir = findActiveSession(input.session_id);
@@ -143,6 +213,14 @@ createHook('SubagentTracker', async (input) => {
       console.error(`[SubagentTracker] findActiveSession returned null, using fallback: ${path.basename(sessionDir)}`);
     }
   }
+
+  // C-03/C-04: Infer parent from session context instead of relying on input.parent_agent
+  // Claude Code does NOT provide parent_agent in SubagentStart events, so we infer it
+  const parentAgent = inferParentAgent(sessionDir, subagentType, agentId);
+
+  // Build a global audit log entry regardless of session state
+  const auditEntry = `${now} | agent_id=${agentId} | type=${subagentType} | parent=${parentAgent} | session=${input.session_id || 'unknown'}`;
+  appendToGlobalAuditLog(auditEntry);
 
   if (!sessionDir) {
     console.error(`[SubagentTracker] No session found for agent ${agentId} (type: ${subagentType})`);
@@ -158,8 +236,26 @@ createHook('SubagentTracker', async (input) => {
   const workflowDir = ensureDir(path.join(sessionDir, 'workflow'));
   const treeFile = path.join(workflowDir, 'agent_tree.yaml');
 
-  // PC-01: Auto-populate cagents_type from subagent_type at spawn time
-  const cagentsType = subagentType.startsWith('cagents:') ? subagentType : '';
+  // C-04: Extract cagents_type from multiple sources
+  // Priority: (1) subagentType if it starts with 'cagents:', (2) input.subagent_type from Task tool,
+  // (3) parse the task description/prompt for cagents: prefix
+  let cagentsType = '';
+  if (subagentType.startsWith('cagents:')) {
+    cagentsType = subagentType;
+  } else if (input.subagent_type && input.subagent_type.startsWith('cagents:')) {
+    cagentsType = input.subagent_type;
+  } else {
+    // Try to extract from tool_input (Task tool passes subagent_type)
+    const toolInput = input.tool_input || {};
+    if (toolInput.subagent_type && toolInput.subagent_type.startsWith('cagents:')) {
+      cagentsType = toolInput.subagent_type;
+    } else {
+      // Parse description for cagents: pattern
+      const desc = toolInput.description || input.description || '';
+      const cagentsMatch = desc.match(/cagents:([a-z][a-z0-9-]*)/);
+      if (cagentsMatch) cagentsType = `cagents:${cagentsMatch[1]}`;
+    }
+  }
 
   // PC-11: Derive short_role from cagents_type (e.g., "cagents:engineering-manager" -> "Engineering Manager")
   let shortRole = '';

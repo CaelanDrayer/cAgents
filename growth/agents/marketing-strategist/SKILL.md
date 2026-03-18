@@ -4,7 +4,7 @@ description: "Marketing strategy and planning specialist. Use for marketing stra
 vibe: "Plans the marketing playbook three quarters ahead"
 tier: controller
 domain: growth
-model: sonnet
+model: opusplan
 coordination_style: question_based
 typical_questions:
   - "What are the current campaign/sales metrics?"

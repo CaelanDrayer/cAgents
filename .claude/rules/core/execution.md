@@ -45,8 +45,12 @@ typical_questions: [...]
 name: backend-developer
 tier: execution
 domain: engineering
-answers_questions: [...]
-executes_tasks: [...]
+capabilities:
+  - backend_development
+  - api_design
+  - database_management
+related-agents: ["architect", "dba", "qa-tester"]
+not-my-scope: ["Frontend work", "DevOps", "Design"]
 ---
 ```
 

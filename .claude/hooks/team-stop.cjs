@@ -73,6 +73,16 @@ createHook('TeamStop', async (input) => {
     }
   }
 
+  // M-07: Mark all agents with stopped_at: null as stopped (cleanup for unreliable SubagentStop)
+  const treeFile = path.join(sessionDir, 'workflow', 'agent_tree.yaml');
+  const treeContent = safeRead(treeFile);
+  if (treeContent && treeContent.includes('stopped_at: null')) {
+    const cleaned = treeContent.replace(/stopped_at: null/g, `stopped_at: "${now}"`);
+    try { fs.writeFileSync(treeFile, cleaned); } catch (e) {
+      console.error(`[TeamStop] Failed to clean up agent_tree: ${e.message}`);
+    }
+  }
+
   console.error(`[TeamStop] Finalized ${path.basename(sessionDir)}: ${metrics.items_completed}/${metrics.items_total}`);
 
   let summary = `## Team Session Complete: ${path.basename(sessionDir)}\n\n`;

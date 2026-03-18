@@ -16,15 +16,15 @@ function extractWorkItemId(input) {
   // Primary: use task_id directly from official TaskCompleted schema
   if (input.task_id) return input.task_id;
 
-  // Fallback: extract WI-xxx pattern from task_subject or task_description
+  // Fallback: extract WI-xxx or TASK-xxx pattern from task_subject or task_description
   const combined = `${input.task_subject || ''} ${input.task_description || ''}`;
-  const match = combined.match(/WI-(\d+)/i);
-  if (match) return `WI-${match[1]}`;
+  const match = combined.match(/(?:WI|TASK)-(\d+)/i);
+  if (match) return `${match[0].split('-')[0].toUpperCase()}-${match[1]}`;
 
   // Legacy fallback: check tool_input fields
   const legacyCombined = `${input.tool_input?.description || ''} ${input.tool_input?.prompt || ''}`;
-  const legacyMatch = legacyCombined.match(/WI-(\d+)/i);
-  if (legacyMatch) return `WI-${legacyMatch[1]}`;
+  const legacyMatch = legacyCombined.match(/(?:WI|TASK)-(\d+)/i);
+  if (legacyMatch) return `${legacyMatch[0].split('-')[0].toUpperCase()}-${legacyMatch[1]}`;
 
   return null;
 }

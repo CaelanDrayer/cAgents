@@ -1,6 +1,6 @@
 {
   "name": "cagents-growth",
-  "version": "10.18.0",
+  "version": "10.20.0",
   "description": "cAgents growth domain - Marketing and sales specialists for customer acquisition and revenue growth",
   "agents": [
     "./agents/account-executive/SKILL.md",
@@ -37,6 +37,10 @@
     "./agents/sales-trainer/SKILL.md",
     "./agents/seo-specialist/SKILL.md",
     "./agents/social-media-manager/SKILL.md",
-    "./agents/territory-manager/SKILL.md"
+    "./agents/territory-manager/SKILL.md",
+    "./agents/affiliate-marketing-manager/SKILL.md",
+    "./agents/conversion-rate-optimizer/SKILL.md",
+    "./agents/video-marketing-specialist/SKILL.md",
+    "./agents/media-buyer/SKILL.md"
   ]
 }
