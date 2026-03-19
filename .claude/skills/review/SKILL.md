@@ -125,27 +125,11 @@ If `--reset-baseline` is provided, clear the baseline file and proceed with a fu
 
 See @reference/flags.md for complete flag reference with examples.
 
-## CRITICAL: Detect First
-
-**Always detect review type AND framework before proceeding.**
-
-Analyze the target to determine review type:
-
-| Review Type | Indicators | Focus Areas |
-|-------------|-----------|-------------|
-| **Code** | .js, .ts, .py files; src/ | Architecture, security, performance, standards, tests |
-| **Documentation** | .md, .txt, docs/ | Clarity, completeness, accuracy, structure |
-| **Content** | Blog posts, marketing copy | Tone, grammar, messaging, audience fit |
-| **Design** | .fig, wireframes, mockups | UX, accessibility, consistency, branding |
-| **Process** | Workflows, SOPs | Efficiency, clarity, risk, compliance |
-| **Data** | .csv, .json, databases | Quality, completeness, consistency, schema |
-| **Infrastructure** | docker, k8s, terraform | Security, scalability, reliability, cost |
-
 ## 6-Phase Workflow
 
 ### Phase 1: Initialize Review
 1. Parse flags from `$ARGUMENTS`
-2. **Create session FIRST** (before any analysis or agent work):
+2. **Create session FIRST** (before any analysis, detection, or agent work):
    ```
    1. Generate a slug from the request: 2-6 key words, kebab-case, lowercase, max 50 chars
       Strip filler words (the, a, an, to, for, with, and, of). Example: "Security audit API" -> "security-audit-api"
@@ -199,7 +183,16 @@ Analyze the target to determine review type:
 6. If `--suppress <id>`: update baseline file with suppressed finding, output confirmation, and exit (no review).
 7. If `--reset-baseline`: clear `Agent_Memory/_system/commands/review/baseline.yaml` and continue.
 8. Interactive mode check (if `--interactive`): ask focus areas, auto-fix preference, framework
-9. Determine target and detect review type
+9. Determine target and detect review type:
+   | Review Type | Indicators | Focus Areas |
+   |-------------|-----------|-------------|
+   | **Code** | .js, .ts, .py files; src/ | Architecture, security, performance, standards, tests |
+   | **Documentation** | .md, .txt, docs/ | Clarity, completeness, accuracy, structure |
+   | **Content** | Blog posts, marketing copy | Tone, grammar, messaging, audience fit |
+   | **Design** | .fig, wireframes, mockups | UX, accessibility, consistency, branding |
+   | **Process** | Workflows, SOPs | Efficiency, clarity, risk, compliance |
+   | **Data** | .csv, .json, databases | Quality, completeness, consistency, schema |
+   | **Infrastructure** | docker, k8s, terraform | Security, scalability, reliability, cost |
 10. Detect framework (if code): check package.json, requirements.txt, etc.
 11. Load framework-specific patterns from `Agent_Memory/_system/commands/review/framework_patterns.yaml`
 12. If `--baseline`: load `Agent_Memory/_system/commands/review/baseline.yaml` into session context for Phase 3 filtering

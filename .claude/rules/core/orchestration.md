@@ -12,6 +12,14 @@ All state transitions are AUTOMATIC: INIT -> ORCHESTRATED -> PLANNED -> DECOMPOS
 
 **Exception**: /designer is EXEMPT from auto-proceed. It MUST use AskUserQuestion at every step.
 
+### CRITICAL: Session Initialization First (V10.22.0)
+
+**Every skill (/run, /team, /org, /review, /optimize, /designer, /debug) MUST create its session directory and write status.yaml BEFORE any other work.** No codebase exploration, no agent spawning, no analysis, no research — session directory first.
+
+**Rationale**: Without a session directory, hooks cannot track the session, agent_tree.yaml has no home, and artifacts have nowhere to be written. Session init is a prerequisite for all other operations.
+
+**Order**: Parse flags -> Create session dir -> Write metadata files -> THEN begin work.
+
 ### Task Cleanup at Terminal States
 
 At VALIDATED/COMPLETE: call TaskList, mark completed work via TaskUpdate, delete obsolete tasks. Never leave stale tasks.
