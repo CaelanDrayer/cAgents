@@ -1,0 +1,30 @@
+{
+  "$ref": "#/definitions/structured-summary",
+  "definitions": {
+    "structured-summary": {
+      "type": "object",
+      "properties": {
+        "outcome": {
+          "type": "string"
+        },
+        "files_affected": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "key_decisions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "outcome"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

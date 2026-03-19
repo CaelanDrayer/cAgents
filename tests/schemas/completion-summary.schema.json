@@ -1,0 +1,33 @@
+{
+  "$ref": "#/definitions/completion-summary",
+  "definitions": {
+    "completion-summary": {
+      "type": "object",
+      "properties": {
+        "outcome": {
+          "type": "string"
+        },
+        "files_affected": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "key_decisions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

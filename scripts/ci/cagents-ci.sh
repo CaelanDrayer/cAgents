@@ -13,6 +13,7 @@
 #   check       - Run quality checks
 #   test        - Run Vitest test suite
 #   evals       - Run evaluations on recent sessions
+#   contract    - Run contract tests (schema compatibility)
 #   all         - Run all checks
 #
 # Exit codes:
@@ -21,6 +22,7 @@
 #   2 - Linting errors
 #   3 - Quality check failures
 #   4 - Test failures
+#   5 - Contract test failures
 
 set -e
 
@@ -307,6 +309,52 @@ run_evals() {
 }
 
 #
+# Fetch schemas for contract tests
+#
+fetch_schemas() {
+    log_info "Fetching schemas for contract tests..."
+    if [[ -f "$SCRIPT_DIR/fetch-schemas.sh" ]]; then
+        if bash "$SCRIPT_DIR/fetch-schemas.sh" 2>&1; then
+            log_info "Schemas fetched successfully"
+        else
+            log_error "Schema fetch failed"
+            return 1
+        fi
+    else
+        log_warn "fetch-schemas.sh not found, skipping schema fetch"
+        return 1
+    fi
+}
+
+#
+# Run contract tests
+#
+run_contract_tests() {
+    log_section "CONTRACT TESTS"
+
+    fetch_schemas || return 5
+
+    if [[ ! -f "$PROJECT_ROOT/tests/contract.test.js" ]]; then
+        log_warn "No contract test file found, skipping"
+        return 0
+    fi
+
+    if ! command -v npx &> /dev/null; then
+        log_warn "npx not available, skipping contract tests"
+        return 0
+    fi
+
+    log_info "Running contract test suite..."
+    if cd "$PROJECT_ROOT" && npx vitest run tests/contract.test.js --reporter=verbose 2>&1; then
+        log_info "All contract tests passed"
+        return 0
+    else
+        log_error "Contract tests failed"
+        return 5
+    fi
+}
+
+#
 # Run Vitest tests
 #
 run_tests() {
@@ -360,15 +408,19 @@ main() {
         test)
             run_tests || exit_code=4
             ;;
+        contract)
+            run_contract_tests || exit_code=5
+            ;;
         all)
             validate_agents || exit_code=1
             lint_docs || exit_code=$((exit_code > 0 ? exit_code : 2))
             quality_checks || exit_code=$((exit_code > 0 ? exit_code : 3))
             run_tests || exit_code=$((exit_code > 0 ? exit_code : 4))
+            run_contract_tests || exit_code=$((exit_code > 0 ? exit_code : 5))
             ;;
         *)
             echo "Unknown command: $command"
-            echo "Usage: $0 [validate|lint|check|evals|all]"
+            echo "Usage: $0 [validate|lint|check|contract|evals|all]"
             exit 1
             ;;
     esac

@@ -537,6 +537,13 @@ for each wave K from 1 to N-1:
       SendMessage({ type: "shutdown_request", recipient: "w{K}-task-{N}-{type}", content: "Wave {K} complete." })
 
   5f. Proceed to wave K+1 (AUTOMATIC -- do NOT ask permission)
+
+  5f-1. Write wave completion event to workflow/events/EVT-{K}.yaml:
+      event_id: EVT-{K}
+      type: wave_complete
+      wave: {K}
+      items_completed: {count}
+      timestamp: "{ISO_TIMESTAMP}"
 ```
 
 **Each wave is a distinct spawn-execute-validate cycle.** This ensures quality gates are enforced between phases, outputs from earlier waves are available to later waves, and issues are caught early.
@@ -581,7 +588,19 @@ SendMessage({ type: "shutdown_request", recipient: "<teammate_name>", content: "
 TeamDelete()
 ```
 
+2b. **Finalize lead agent in agent_tree.yaml:**
+Update the lead agent entry to set:
+- `stopped_at`: `"{ISO_TIMESTAMP}"`
+- `completion_summary`: `"Completed {N}/{total} work items across {N} waves"`
+- `duration_seconds`: `{computed from spawned_at to now}`
+
 3. **Clean up tasks**: Call `TaskList` and mark all session tasks as `completed` or `deleted` via `TaskUpdate`. Never leave stale in_progress tasks behind.
+
+3b. **Compute duration_ms for the final status.yaml state_history entry:**
+```
+duration_ms = Date.now() - Date.parse(last_state_history_entry.entered_at)
+```
+Update the final `state_history` entry in `status.yaml` with the computed `duration_ms`.
 
 4. Report final results to the user including:
    - Total waves executed
@@ -609,6 +628,34 @@ wave_stats:
 total_waves: 3
 total_items: 10
 total_duration_seconds: 420
+```
+
+5b. **Write coordination_log.yaml:**
+After all waves complete, write `${SESSION_DIR}/workflow/coordination_log.yaml`:
+```yaml
+schema_version: "1"
+controller: "cagents:team-lead"
+objectives: [{objectives from plan.yaml or strategic brief}]
+questions_asked: []
+synthesized_solution:
+  approach: "N-wave parallel execution"
+  implementation_steps: [{list of completed work items with status}]
+implementation_tasks: [{map each WI to task_id, name, assigned_to, status}]
+status: completed
+```
+
+5c. **Write execution_summary.yaml:**
+Write `${SESSION_DIR}/workflow/execution_summary.yaml`:
+```yaml
+session_id: {SESSION_ID}
+final_state: complete
+status: completed
+total_waves: {N}
+total_items: {N}
+completed_items: {N}
+total_duration_ms: {elapsed}
+started_at: "{first state_history entered_at}"
+completed_at: "{ISO_TIMESTAMP}"
 ```
 
 ## Cross-Wave Coordination

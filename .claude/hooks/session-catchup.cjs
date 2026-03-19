@@ -29,10 +29,13 @@ function findIncompleteSessions() {
     const statusFile = path.join(sessionDir, 'status.yaml');
     const content = safeRead(statusFile);
 
-    // Handle sessions WITHOUT status.yaml: check if instruction.yaml exists (orphaned session)
+    // Handle sessions WITHOUT status.yaml: check for instruction.yaml or strategic_brief.yaml
     if (!content) {
       const instructionFile = path.join(sessionDir, 'instruction.yaml');
+      const briefFile = path.join(sessionDir, 'strategic_brief.yaml');
       const instContent = safeRead(instructionFile);
+      const briefContent = !instContent ? safeRead(briefFile) : null;
+
       if (instContent) {
         // Orphaned session: has instruction but no status tracking
         const request = extractYamlValue(instContent, 'raw_request') ||
@@ -45,6 +48,16 @@ function findIncompleteSessions() {
           waypoint: null,
           progress: { completed: 0, total: 0 }
         });
+      } else if (briefContent) {
+        // Session with strategic_brief.yaml but no instruction.yaml (e.g., /org sessions)
+        const mission = extractYamlValue(briefContent, 'mission') || 'Unknown mission';
+        incomplete.push({
+          session_id: session,
+          phase: 'orphaned',
+          request: mission.substring(0, 100) + (mission.length > 100 ? '...' : ''),
+          waypoint: null,
+          progress: { completed: 0, total: 0 }
+        });
       }
       continue;
     }
@@ -54,12 +67,19 @@ function findIncompleteSessions() {
     if (terminalStates.includes(phase)) continue;
 
     const instructionFile = path.join(sessionDir, 'instruction.yaml');
+    const briefFile = path.join(sessionDir, 'strategic_brief.yaml');
     let request = 'Unknown request';
     const instContent = safeRead(instructionFile);
     if (instContent) {
       request = extractYamlValue(instContent, 'raw_request') ||
                 extractYamlValue(instContent, 'request') ||
                 'Unknown request';
+    } else {
+      // Fallback: extract mission from strategic_brief.yaml (common for /org sessions)
+      const briefContent = safeRead(briefFile);
+      if (briefContent) {
+        request = extractYamlValue(briefContent, 'mission') || 'Unknown request';
+      }
     }
 
     // Get waypoint info

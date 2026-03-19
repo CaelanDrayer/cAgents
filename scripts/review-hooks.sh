@@ -1,11 +1,13 @@
 #!/bin/bash
 # Review hook implementations
 
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
 echo "=== HOOK REVIEW ==="
 echo ""
 
 # Check .claude/settings.json for registered hooks
-settings_file="/home/PathingIT/cAgents/.claude/settings.json"
+settings_file="$REPO_ROOT/.claude/settings.json"
 
 if [ -f "$settings_file" ]; then
     echo "=== CHECKING REGISTERED HOOKS ==="
@@ -55,8 +57,8 @@ echo ""
 # Check hook files exist and are executable
 echo "=== CHECKING HOOK FILES ==="
 
-hook_files=$(find /home/PathingIT/cAgents/hooks -type f \( -name "*.sh" -o -name "*.js" -o -name "*.cjs" \) 2>/dev/null)
-claude_hooks=$(find /home/PathingIT/cAgents/.claude/hooks -type f \( -name "*.sh" -o -name "*.js" -o -name "*.cjs" \) 2>/dev/null)
+hook_files=$(find $REPO_ROOT/hooks -type f \( -name "*.sh" -o -name "*.js" -o -name "*.cjs" \) 2>/dev/null)
+claude_hooks=$(find $REPO_ROOT/.claude/hooks -type f \( -name "*.sh" -o -name "*.js" -o -name "*.cjs" \) 2>/dev/null)
 
 all_hooks="$hook_files"$'\n'"$claude_hooks"
 
@@ -81,7 +83,7 @@ echo ""
 echo "=== CHECKING SHELL HOOK SYNTAX ==="
 syntax_errors=0
 
-shell_hooks=$(find /home/PathingIT/cAgents/hooks /home/PathingIT/cAgents/.claude/hooks -type f -name "*.sh" 2>/dev/null)
+shell_hooks=$(find $REPO_ROOT/hooks $REPO_ROOT/.claude/hooks -type f -name "*.sh" 2>/dev/null)
 
 while IFS= read -r file; do
     if [ -f "$file" ]; then
@@ -100,7 +102,7 @@ echo ""
 echo "=== CHECKING NODE HOOK SYNTAX ==="
 node_errors=0
 
-node_hooks=$(find /home/PathingIT/cAgents/hooks /home/PathingIT/cAgents/.claude/hooks -type f \( -name "*.js" -o -name "*.cjs" \) 2>/dev/null)
+node_hooks=$(find $REPO_ROOT/hooks $REPO_ROOT/.claude/hooks -type f \( -name "*.js" -o -name "*.cjs" \) 2>/dev/null)
 
 while IFS= read -r file; do
     if [ -f "$file" ]; then

@@ -1,0 +1,28 @@
+{
+  "$ref": "#/definitions/state-transition",
+  "definitions": {
+    "state-transition": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "string"
+        },
+        "entered_at": {
+          "type": "string"
+        },
+        "duration_ms": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "state",
+        "entered_at"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

@@ -1,0 +1,53 @@
+{
+  "$ref": "#/definitions/parallelism-metrics",
+  "definitions": {
+    "parallelism-metrics": {
+      "type": "object",
+      "properties": {
+        "peak_concurrent": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total_agents": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "speedup_factor": {
+          "type": "number"
+        },
+        "wave_breakdown": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "wave": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "agents": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "duration_seconds": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "wave",
+              "agents",
+              "duration_seconds"
+            ],
+            "additionalProperties": true
+          }
+        }
+      },
+      "required": [
+        "peak_concurrent",
+        "total_agents",
+        "speedup_factor"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

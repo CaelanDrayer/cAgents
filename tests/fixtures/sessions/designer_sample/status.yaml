@@ -1,0 +1,21 @@
+phase: specification
+created_at: "2026-01-01T11:00:00Z"
+state_history:
+  - state: empathize
+    entered_at: "2026-01-01T11:00:00Z"
+    duration_ms: 60000
+  - state: define
+    entered_at: "2026-01-01T11:01:00Z"
+    duration_ms: 120000
+  - state: conceptualize
+    entered_at: "2026-01-01T11:03:00Z"
+    duration_ms: 90000
+  - state: ideation
+    entered_at: "2026-01-01T11:04:30Z"
+    duration_ms: 150000
+  - state: refinement
+    entered_at: "2026-01-01T11:07:00Z"
+    duration_ms: 180000
+  - state: specification
+    entered_at: "2026-01-01T11:10:00Z"
+    duration_ms: null

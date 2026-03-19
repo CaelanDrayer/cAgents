@@ -1,11 +1,13 @@
 #!/bin/bash
 # Comprehensive agent review script
 
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
 echo "=== AGENT REVIEW PHASE 2 ==="
 echo ""
 
 # Find all agent files
-agent_files=$(find /home/PathingIT/cAgents/{core,shared,make,grow,operate,people,serve}/agents -type f -name "*.md" 2>/dev/null | sort)
+agent_files=$(find "$REPO_ROOT"/{core,shared,make,grow,operate,people,serve}/agents -type f -name "*.md" 2>/dev/null | sort)
 
 echo "Total agent files found: $(echo "$agent_files" | wc -l)"
 echo ""
@@ -89,7 +91,7 @@ echo ""
 
 # Check for directory structure agents
 echo "=== CHECKING DIRECTORY STRUCTURE ==="
-dir_agents=$(find /home/PathingIT/cAgents/{core,shared,make,grow,operate,people,serve}/agents -type d -name "*" -not -name "agents" 2>/dev/null | wc -l)
+dir_agents=$(find $REPO_ROOT/{core,shared,make,grow,operate,people,serve}/agents -type d -name "*" -not -name "agents" 2>/dev/null | wc -l)
 echo "Agent directories found: $dir_agents"
 echo ""
 

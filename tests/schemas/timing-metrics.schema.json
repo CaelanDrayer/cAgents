@@ -1,0 +1,38 @@
+{
+  "$ref": "#/definitions/timing-metrics",
+  "definitions": {
+    "timing-metrics": {
+      "type": "object",
+      "properties": {
+        "phases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "phase": {
+                "type": "string"
+              },
+              "duration_seconds": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "phase",
+              "duration_seconds"
+            ],
+            "additionalProperties": true
+          },
+          "default": []
+        },
+        "total_duration_seconds": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "total_duration_seconds"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

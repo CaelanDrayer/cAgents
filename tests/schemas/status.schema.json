@@ -1,0 +1,44 @@
+{
+  "$ref": "#/definitions/status",
+  "definitions": {
+    "status": {
+      "type": "object",
+      "properties": {
+        "pipeline_state": {
+          "type": "string"
+        },
+        "state_history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string"
+              },
+              "entered_at": {
+                "type": "string"
+              },
+              "duration_ms": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "state",
+              "entered_at"
+            ],
+            "additionalProperties": true
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "pipeline_state"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

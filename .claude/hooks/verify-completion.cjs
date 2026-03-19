@@ -30,6 +30,69 @@ function getLastTransitionAgeMs(statusContent) {
   } catch { return null; }
 }
 
+/**
+ * Finalize agent lifecycle data for terminal sessions.
+ * Sets stopped_at on the lead agent in agent_tree.yaml and computes
+ * the final duration_ms in the last state_history entry of status.yaml.
+ */
+function finalizeSessionLifecycle(sessionDir) {
+  const statusFile = path.join(sessionDir, 'status.yaml');
+  const statusContent = safeRead(statusFile);
+  if (!statusContent) return;
+
+  // Only finalize for terminal sessions
+  const pipelineState = extractYamlValue(statusContent, 'pipeline_state');
+  const phase = extractYamlValue(statusContent, 'phase') || extractYamlValue(statusContent, 'current_phase');
+  const currentState = pipelineState || phase;
+  const terminalStates = ['complete', 'completed', 'COMPLETE', 'VALIDATED', 'failed'];
+  if (!currentState || !terminalStates.includes(currentState)) return;
+
+  const now = new Date().toISOString();
+
+  // (a) Set stopped_at for lead agent in agent_tree.yaml
+  try {
+    const agentTreeFile = path.join(sessionDir, 'workflow', 'agent_tree.yaml');
+    const agentTreeContent = safeRead(agentTreeFile);
+    if (agentTreeContent) {
+      // Find the first agent entry and check if stopped_at is null
+      const firstAgentMatch = agentTreeContent.match(/(- agent_id:\s*[^\n]+[\s\S]*?stopped_at:\s*)null/);
+      if (firstAgentMatch) {
+        const updated = agentTreeContent.replace(
+          firstAgentMatch[0],
+          firstAgentMatch[1] + '"' + now + '"'
+        );
+        fs.writeFileSync(agentTreeFile, updated);
+        console.error(`[VerifyCompletion] Set lead agent stopped_at: ${now}`);
+      }
+    }
+  } catch (e) {
+    console.error(`[VerifyCompletion] Error setting stopped_at: ${e.message}`);
+  }
+
+  // (b) Compute final duration_ms in last state_history entry
+  try {
+    // Find the last state_history entry with duration_ms: null
+    const lastNullDuration = statusContent.match(/[\s\S]*(entered_at:\s*"([^"]+)"[\s\S]*?duration_ms:\s*)null/);
+    if (lastNullDuration) {
+      const enteredAt = lastNullDuration[2];
+      const durationMs = Date.now() - new Date(enteredAt).getTime();
+      if (durationMs >= 0 && durationMs < 24 * 60 * 60 * 1000) { // sanity: < 24h
+        const updated = statusContent.replace(
+          lastNullDuration[0],
+          lastNullDuration[0].replace(
+            lastNullDuration[1] + 'null',
+            lastNullDuration[1] + String(durationMs)
+          )
+        );
+        fs.writeFileSync(statusFile, updated);
+        console.error(`[VerifyCompletion] Set final duration_ms: ${durationMs}`);
+      }
+    }
+  } catch (e) {
+    console.error(`[VerifyCompletion] Error computing duration_ms: ${e.message}`);
+  }
+}
+
 function verifyCompletion(sessionDir) {
   const issues = [];
   const warnings = [];
@@ -214,6 +277,9 @@ createHook('VerifyCompletion', async (input) => {
   }
 
   const result = verifyCompletion(sessionDir);
+
+  // Finalize agent lifecycle data (stopped_at, duration_ms) for terminal sessions
+  finalizeSessionLifecycle(sessionDir);
 
   // PC-09: Plan-Scoped Learning Capture (V10.17.0)
   // Write learnings.yaml at session end to capture structured learnings

@@ -149,6 +149,8 @@ state_history:
 
 Note: /org uses the `pipeline_state` field (not `phase`). Hooks check both fields as fallback. See `.claude/skills/run/reference/session-schema.md` for the canonical session YAML contract.
 
+**State casing**: Always use lowercase for `pipeline_state` values in `status.yaml` (e.g., `complete` not `COMPLETE`). The `normalizePipelineState` function handles legacy uppercase but new sessions should use lowercase.
+
 **State transition protocol**: At every state transition, /org MUST:
 1. Compute `duration_ms` for the previous `state_history` entry (ms between its `entered_at` and now)
 2. Append new `state_history` entry with `entered_at: now`, `duration_ms: null`
@@ -451,6 +453,16 @@ Format:
 
 Read all `domain_analyses/domain_analysis_*.yaml` files. Verify Wave 2 agents referenced peer context. Update TodoWrite and status.yaml to ANALYZED.
 
+Write state transition event to `workflow/events/EVT-{N}.yaml`:
+```yaml
+event_id: EVT-{N}
+type: state_transition
+state: analyzed
+agent: cagents:ceo
+timestamp: "{ISO_TIMESTAMP}"
+outputs_produced: [domain_analyses/*.yaml]
+```
+
 **Note**: If all C-suite agents are independent (no dependencies detected), all run in Wave 1 and Wave 2 is skipped. If only one domain is involved, dependency ordering is unnecessary.
 
 ### Step 5: Two-Phase Deliberation (ANALYZED -> DELIBERATED)
@@ -536,6 +548,16 @@ Read all objections. Resolve:
 
 Update status to DELIBERATED.
 
+Write state transition event to `workflow/events/EVT-{N}.yaml`:
+```yaml
+event_id: EVT-{N}
+type: state_transition
+state: deliberated
+agent: cagents:ceo
+timestamp: "{ISO_TIMESTAMP}"
+outputs_produced: [objections/*.yaml, strategic_brief_draft.yaml]
+```
+
 ### Step 6: Finalize Strategic Brief (DELIBERATED -> BRIEFED)
 
 Write final `strategic_brief.yaml` incorporating all resolutions.
@@ -578,6 +600,16 @@ strategic_brief:
 ```
 
 Update status to BRIEFED.
+
+Write state transition event to `workflow/events/EVT-{N}.yaml`:
+```yaml
+event_id: EVT-{N}
+type: state_transition
+state: briefed
+agent: cagents:ceo
+timestamp: "{ISO_TIMESTAMP}"
+outputs_produced: [strategic_brief.yaml]
+```
 
 ### Step 7: Sequential Domain Execution (BRIEFED -> EXECUTED)
 
@@ -629,6 +661,16 @@ After each domain completes, check if its outputs are needed by subsequent domai
 
 Update status to EXECUTED when all domains complete.
 
+Write state transition event to `workflow/events/EVT-{N}.yaml`:
+```yaml
+event_id: EVT-{N}
+type: state_transition
+state: executed
+agent: cagents:ceo
+timestamp: "{ISO_TIMESTAMP}"
+outputs_produced: [{domain_key}/outputs/* for each domain]
+```
+
 ### Step 8: Integration (EXECUTED -> INTEGRATED)
 
 CEO reads all domain outputs and produces an integrated deliverable:
@@ -659,9 +701,21 @@ remaining_issues:
 
 Update status to INTEGRATED.
 
+Write state transition event to `workflow/events/EVT-{N}.yaml`:
+```yaml
+event_id: EVT-{N}
+type: state_transition
+state: integrated
+agent: cagents:ceo
+timestamp: "{ISO_TIMESTAMP}"
+outputs_produced: [integration_report.yaml]
+```
+
 ### Step 9: Complete (INTEGRATED -> COMPLETE)
 
 **9a. Write completion summary:**
+
+Compute `duration_ms` for the final `state_history` entry before writing the COMPLETE state to `status.yaml`.
 
 ```yaml
 session_id: {SESSION_ID}
@@ -673,6 +727,23 @@ escalations_handled: {count}
 user_escalations: {count}
 final_status: complete|partial
 outputs: [{paths}]
+```
+
+**9a-1. Finalize CEO agent in agent_tree.yaml:**
+
+Update the CEO agent entry to set:
+- `stopped_at: "{ISO_TIMESTAMP}"`
+- `completion_summary: "Orchestrated {N} domains, {N} C-suite agents, strategic brief + execution"`
+- `duration_seconds: {computed from spawned_at to now}`
+
+Write state transition event to `workflow/events/EVT-{N}.yaml`:
+```yaml
+event_id: EVT-{N}
+type: state_transition
+state: complete
+agent: cagents:ceo
+timestamp: "{ISO_TIMESTAMP}"
+outputs_produced: [integration_report.yaml, execution_summary.yaml]
 ```
 
 **9b. Update final TodoWrite:**
@@ -691,6 +762,20 @@ TodoWrite([
 ```
 
 **9c. Clean up tasks:** Call `TaskList` and mark all session tasks as `completed` or `deleted` via `TaskUpdate`. Never leave stale in_progress tasks behind.
+
+**9c-1. Write `execution_summary.yaml`:**
+
+```yaml
+session_id: {SESSION_ID}
+final_state: complete
+status: completed
+route: {route from routing_decision}
+domains_executed: [{domain_keys}]
+csuite_spawned: [{agent_names}]
+total_duration_ms: {elapsed}
+started_at: "{first state_history entered_at}"
+completed_at: "{ISO_TIMESTAMP}"
+```
 
 **9d. Report to user:**
 

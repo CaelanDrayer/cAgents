@@ -1,0 +1,40 @@
+{
+  "$ref": "#/definitions/file-change",
+  "definitions": {
+    "file-change": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string"
+        },
+        "tool": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "success",
+            "failure"
+          ]
+        },
+        "file_path": {
+          "type": "string"
+        },
+        "duration_ms": {
+          "type": "number"
+        },
+        "error_context": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "timestamp",
+        "tool",
+        "status",
+        "file_path"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

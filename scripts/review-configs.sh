@@ -1,11 +1,13 @@
 #!/bin/bash
 # Review config YAML files for issues
 
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
 echo "=== CONFIG YAML REVIEW ==="
 echo ""
 
 # Find all config YAML files
-config_files=$(find /home/PathingIT/cAgents/{core,shared,make,grow,operate,people,serve}/config -type f -name "*.yaml" 2>/dev/null | sort)
+config_files=$(find "$REPO_ROOT"/{core,shared,make,grow,operate,people,serve}/config -type f -name "*.yaml" 2>/dev/null | sort)
 
 echo "Config files found: $(echo "$config_files" | wc -l)"
 echo ""
@@ -32,7 +34,7 @@ echo ""
 echo "=== CHECKING CONTROLLER CATALOGS ==="
 
 for domain in make grow operate people serve; do
-    planner_config="/home/PathingIT/cAgents/$domain/config/planner_config.yaml"
+    planner_config="$REPO_ROOT/$domain/config/planner_config.yaml"
     
     if [ -f "$planner_config" ]; then
         echo "Domain: $domain"
@@ -61,8 +63,8 @@ except Exception as e:
                     controller_name="${controller#*:}"
                     
                     # Check for agent file
-                    agent_file="/home/PathingIT/cAgents/$domain/agents/$controller_name.md"
-                    agent_dir="/home/PathingIT/cAgents/$domain/agents/$controller_name/SKILL.md"
+                    agent_file="$REPO_ROOT/$domain/agents/$controller_name.md"
+                    agent_dir="$REPO_ROOT/$domain/agents/$controller_name/SKILL.md"
                     
                     if [ ! -f "$agent_file" ] && [ ! -f "$agent_dir" ]; then
                         echo "  MISSING: $controller (expected: $agent_file or $agent_dir)"

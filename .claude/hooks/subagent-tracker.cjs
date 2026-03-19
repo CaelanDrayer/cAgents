@@ -50,10 +50,10 @@ function findMostRecentSessionDir() {
           const statusFile = path.join(fullPath, 'status.yaml');
           const statusContent = safeRead(statusFile);
           if (statusContent) {
-            const phaseMatch = statusContent.match(/phase:\s*(\S+)/);
+            const phaseMatch = statusContent.match(/(?:phase|pipeline_state):\s*(\S+)/);
             if (phaseMatch) {
               const phase = phaseMatch[1];
-              if (phase === 'completed' || phase === 'complete' || phase === 'failed' || phase === 'aborted') {
+              if (phase === 'completed' || phase === 'complete' || phase === 'failed' || phase === 'aborted' || phase === 'COMPLETE' || phase === 'VALIDATED') {
                 continue; // Skip finished sessions
               }
             }
@@ -82,10 +82,10 @@ function findMostRecentSessionDir() {
           if (stat.mtimeMs > bestMtime) {
             const statusContent = safeRead(path.join(nestedPath, 'status.yaml'));
             if (statusContent) {
-              const phaseMatch = statusContent.match(/phase:\s*(\S+)/);
+              const phaseMatch = statusContent.match(/(?:phase|pipeline_state):\s*(\S+)/);
               if (phaseMatch) {
                 const phase = phaseMatch[1];
-                if (phase === 'completed' || phase === 'complete' || phase === 'failed' || phase === 'aborted') continue;
+                if (phase === 'completed' || phase === 'complete' || phase === 'failed' || phase === 'aborted' || phase === 'COMPLETE' || phase === 'VALIDATED') continue;
               }
             }
             bestMtime = stat.mtimeMs;

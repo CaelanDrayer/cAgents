@@ -1,0 +1,9 @@
+session_id: org_fixture-test_260101_001
+session_type: org
+command: /org
+request: "Evaluate and plan migration from monolith to microservices architecture"
+created_at: "2026-01-01T09:00:00Z"
+flags: {}
+parent_session_id: null
+metadata:
+  working_directory: /home/user/project

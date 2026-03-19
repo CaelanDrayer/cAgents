@@ -1,0 +1,22 @@
+{
+  "$ref": "#/definitions/strategic-brief",
+  "definitions": {
+    "strategic-brief": {
+      "type": "object",
+      "properties": {
+        "session_id": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "summary"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

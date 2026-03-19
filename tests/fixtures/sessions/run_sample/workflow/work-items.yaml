@@ -1,0 +1,46 @@
+work_items:
+  - id: WI-1
+    title: "Create auth middleware module"
+    wave: 1
+    description: "Implement JWT-based authentication middleware for Express routes"
+    acceptance_criteria:
+      - "Middleware extracts Bearer token from Authorization header"
+      - "Validates JWT signature and expiry"
+      - "Attaches decoded user payload to req.user"
+      - "Returns 401 for missing or invalid tokens"
+    assigned_to: backend-developer
+    depends_on: []
+    status: complete
+    tags:
+      - auth
+      - middleware
+
+  - id: WI-2
+    title: "Add auth route guards"
+    wave: 1
+    description: "Create role-based route guard utilities"
+    acceptance_criteria:
+      - "requireRole('admin') guard rejects non-admin users with 403"
+      - "Guards compose with existing middleware stack"
+    assigned_to: backend-developer
+    depends_on: []
+    status: complete
+    tags:
+      - auth
+      - guards
+
+  - id: WI-3
+    title: "Write auth middleware tests"
+    wave: 2
+    description: "Unit tests for authentication middleware and route guards"
+    acceptance_criteria:
+      - "Tests cover valid token, expired token, missing token, invalid signature"
+      - "Tests cover role-based access control"
+      - "All tests pass"
+    assigned_to: senior-developer
+    depends_on:
+      - WI-1
+      - WI-2
+    status: complete
+    tags:
+      - testing

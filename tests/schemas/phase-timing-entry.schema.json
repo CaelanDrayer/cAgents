@@ -1,0 +1,22 @@
+{
+  "$ref": "#/definitions/phase-timing-entry",
+  "definitions": {
+    "phase-timing-entry": {
+      "type": "object",
+      "properties": {
+        "phase": {
+          "type": "string"
+        },
+        "duration_seconds": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "phase",
+        "duration_seconds"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

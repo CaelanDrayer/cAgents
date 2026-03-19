@@ -1,11 +1,13 @@
 #!/bin/bash
 # Review scripts for issues
 
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
 echo "=== SCRIPTS REVIEW ==="
 echo ""
 
 # Find all scripts
-script_files=$(find /home/PathingIT/cAgents/scripts -type f \( -name "*.sh" -o -name "*.js" \) 2>/dev/null | sort)
+script_files=$(find "$REPO_ROOT/scripts" -type f \( -name "*.sh" -o -name "*.js" \) 2>/dev/null | sort)
 
 echo "Script files found: $(echo "$script_files" | wc -l)"
 echo ""
@@ -32,7 +34,7 @@ echo ""
 echo "=== CHECKING SHELL SCRIPT SYNTAX ==="
 syntax_errors=0
 
-shell_scripts=$(find /home/PathingIT/cAgents/scripts -type f -name "*.sh" 2>/dev/null)
+shell_scripts=$(find "$REPO_ROOT/scripts" -type f -name "*.sh" 2>/dev/null)
 
 while IFS= read -r file; do
     if [ -f "$file" ]; then
@@ -51,7 +53,7 @@ echo ""
 echo "=== CHECKING NODE SCRIPT SYNTAX ==="
 node_errors=0
 
-node_scripts=$(find /home/PathingIT/cAgents/scripts -type f -name "*.js" 2>/dev/null)
+node_scripts=$(find "$REPO_ROOT/scripts" -type f -name "*.js" 2>/dev/null)
 
 while IFS= read -r file; do
     if [ -f "$file" ]; then
@@ -74,11 +76,11 @@ hardcoded=0
 
 while IFS= read -r file; do
     if [ -f "$file" ]; then
-        # Check for /home/PathingIT/cAgents hardcoded (should use $CLAUDE_PROJECT_DIR or relative)
-        if grep -q "/home/PathingIT/cAgents" "$file" 2>/dev/null; then
+        # Check for $REPO_ROOT hardcoded (should use $CLAUDE_PROJECT_DIR or relative)
+        if grep -q "$REPO_ROOT" "$file" 2>/dev/null; then
             # Exclude this review script itself
             if [[ "$file" != *"review-scripts.sh"* ]] && [[ "$file" != *"review-agents.sh"* ]] && [[ "$file" != *"review-configs.sh"* ]] && [[ "$file" != *"review-hooks.sh"* ]]; then
-                echo "HARDCODED PATH: $file contains /home/PathingIT/cAgents"
+                echo "HARDCODED PATH: $file contains $REPO_ROOT"
                 ((hardcoded++))
             fi
         fi

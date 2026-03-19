@@ -1,0 +1,12 @@
+phase: complete
+created_at: "2026-01-01T09:00:00Z"
+state_history:
+  - state: INIT
+    entered_at: "2026-01-01T09:00:00Z"
+    duration_ms: 5000
+  - state: deliberation
+    entered_at: "2026-01-01T09:00:05Z"
+    duration_ms: 300000
+  - state: complete
+    entered_at: "2026-01-01T09:05:05Z"
+    duration_ms: null

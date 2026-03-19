@@ -17,7 +17,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const ROOT = '/home/PathingIT/cAgents';
+const ROOT = path.resolve(__dirname, '..');
 
 // Directories to scan (exclude example/)
 const AGENT_DIRS = [

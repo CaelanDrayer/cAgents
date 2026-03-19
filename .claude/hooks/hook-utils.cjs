@@ -190,7 +190,8 @@ function findActiveSession(sessionHint) {
   }
 
   // Second pass: look for recently-created sessions without status.yaml
-  // (handles the race condition where trigger agent hasn't written status.yaml yet)
+  // (handles the race condition where trigger agent hasn't written status.yaml yet,
+  //  AND /org sessions that wrote strategic_brief.yaml before instruction.yaml/status.yaml)
   const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
   for (const session of sessions) {
     const sessionPath = path.join(sessionsDir, session);
@@ -198,11 +199,19 @@ function findActiveSession(sessionHint) {
     if (safeRead(statusFile)) continue; // Already checked in first pass
 
     try {
-      const stat = fs.statSync(sessionPath);
-      if (stat.mtimeMs > fiveMinutesAgo) {
-        console.error(`[findActiveSession] Found recent session without status.yaml: ${session}`);
-        _cachedActiveSession = sessionPath;
-        return _cachedActiveSession;
+      // Check for any recognizable session file: instruction.yaml, strategic_brief.yaml,
+      // or workflow/agent_tree.yaml — any of these indicate a valid active session
+      const hasInstruction = fs.existsSync(path.join(sessionPath, 'instruction.yaml'));
+      const hasBrief = fs.existsSync(path.join(sessionPath, 'strategic_brief.yaml'));
+      const hasAgentTree = fs.existsSync(path.join(sessionPath, 'workflow', 'agent_tree.yaml'));
+
+      if (hasInstruction || hasBrief || hasAgentTree) {
+        const stat = fs.statSync(sessionPath);
+        if (stat.mtimeMs > fiveMinutesAgo) {
+          console.error(`[findActiveSession] Found recent session without status.yaml: ${session} (has: ${hasInstruction ? 'instruction' : hasBrief ? 'brief' : 'agent_tree'})`);
+          _cachedActiveSession = sessionPath;
+          return _cachedActiveSession;
+        }
       }
     } catch { /* skip */ }
   }

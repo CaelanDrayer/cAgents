@@ -1,0 +1,87 @@
+{
+  "$ref": "#/definitions/agent-node-raw",
+  "definitions": {
+    "agent-node-raw": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "parent": {
+          "type": "string"
+        },
+        "spawned_at": {
+          "type": "string"
+        },
+        "stopped_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cagents_type": {
+          "type": "string"
+        },
+        "role_description": {
+          "type": "string"
+        },
+        "completion_summary": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "outcome": {
+                  "type": "string"
+                },
+                "files_affected": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "key_decisions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "outcome"
+              ],
+              "additionalProperties": true
+            }
+          ]
+        },
+        "duration_seconds": {
+          "type": "number"
+        },
+        "short_role": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "depth": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "session": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "parent",
+        "spawned_at"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}
