@@ -1,6 +1,6 @@
 {
   "name": "@cagents/core",
-  "version": "10.21.0",
+  "version": "10.22.0",
   "description": "cAgents Core V10.6.0 - Universal multi-domain agent system with progressive pipeline (3 paths), agent chaining, structured error format, event-driven state machine, and opusplan model routing. Agent Teams integration for parallel team-based execution. Includes 15 core agents: trigger, team-trigger, team-lead-adapter, orchestrator, hitl, optimizer, prompt-engineer, task-consolidator, task-decomposer, task-inventory, and 5 universal workflow agents. Controller-centric coordination with question-based delegation and reviewer loops.",
   "author": {
     "name": "CaelanDrayer",
