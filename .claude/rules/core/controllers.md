@@ -91,6 +91,82 @@ Controllers include an internal reviewer loop (max 3 rounds). After each executo
 
 See `controller-reference.md` for reviewer spawning patterns, blind review protocol, dead-letter queue, and confidence tiers.
 
+### Two-Stage Review Protocol (V10.22.0)
+
+Every reviewer loop MUST use two distinct review stages, in strict order. No code quality review before spec compliance passes.
+
+**Stage 1: Spec Compliance Review**
+
+Does the implementation meet the acceptance criteria exactly?
+
+```
+Reviewer prompt (Stage 1):
+  "Review TASK-{N} for SPEC COMPLIANCE ONLY.
+   Acceptance criteria: {criteria from work_items.yaml}
+
+   For each criterion:
+   - MET: cite specific file:line evidence
+   - NOT MET: describe what is missing or incorrect
+   - PARTIAL: describe what is done and what remains
+
+   Verdict: PASS (all criteria MET) or REVISE (any NOT MET/PARTIAL)
+
+   DO NOT comment on code quality, style, or maintainability in this stage."
+```
+
+**Stage 1 checks**:
+- Every acceptance criterion has a MET/NOT MET/PARTIAL status
+- Evidence is specific (file paths, line numbers, test output)
+- No subjective quality judgments in this stage
+- Verdict is binary: all criteria MET = PASS, otherwise REVISE
+
+**If Stage 1 returns REVISE**: Send feedback to execution agent with the specific unmet criteria. Do NOT proceed to Stage 2. The execution agent must address all unmet criteria before code quality review begins.
+
+**Stage 2: Code Quality Review**
+
+Is the implementation well-written, maintainable, and secure?
+
+```
+Reviewer prompt (Stage 2):
+  "Review TASK-{N} for CODE QUALITY.
+   Spec compliance has PASSED -- all acceptance criteria are met.
+
+   Review for:
+   - Correctness: edge cases, error handling, null safety
+   - Maintainability: naming, structure, complexity, DRY
+   - Security: injection, auth bypass, data exposure, trust boundaries
+   - Performance: obvious inefficiencies, N+1 queries, memory leaks
+   - Conventions: project style guide, existing patterns, consistency
+
+   Verdict: PASS (acceptable quality) or REVISE (quality issues that should be fixed)
+   Severity per finding: CRITICAL (must fix) / HIGH (should fix) / LOW (nice to fix)
+
+   Only REVISE for CRITICAL or 2+ HIGH findings."
+```
+
+**Stage 2 checks**:
+- Only runs after Stage 1 PASS
+- Findings are severity-tagged (CRITICAL/HIGH/LOW)
+- REVISE threshold: any CRITICAL or 2+ HIGH findings
+- LOW findings are recorded but do not trigger REVISE
+
+**Why two stages**:
+- Prevents "code is beautiful but doesn't meet requirements" false passes
+- Ensures functional correctness before spending review budget on quality
+- Separates objective (spec compliance) from subjective (code quality) assessment
+- Reduces revision round waste (fixing quality issues in code that doesn't meet spec)
+
+**Coordination log format for two-stage review**:
+```yaml
+implementation_tasks:
+  - task_id: WI-1
+    assigned_to: cagents:backend-developer
+    stage_1_result: PASS    # spec compliance
+    stage_2_result: PASS    # code quality
+    review_result: PASS     # overall (both must PASS)
+    review_rounds: 1
+```
+
 ### Guard Command Pattern (V10.18.0)
 
 After the reviewer checks acceptance criteria, controllers SHOULD also run a **guard command** to verify no regressions were introduced. Guard commands are automated verification steps (tests, linting, type checks) that catch issues human-style review misses.

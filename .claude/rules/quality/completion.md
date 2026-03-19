@@ -119,6 +119,61 @@ Add 3K tokens per coordination cycle for evidence tracking (included in planning
 - [ ] No stale in_progress tasks left behind
 - [ ] TaskList returns no orphaned tasks from this session
 
+## Red Flags: Language Patterns That Indicate Premature Claims
+
+When reviewing completion claims, watch for these language patterns that indicate an agent is claiming completion without sufficient evidence:
+
+| Red Flag Phrase | What It Really Means | Required Instead |
+|----------------|----------------------|------------------|
+| "should work" | Not verified | Run the verification command and show output |
+| "probably" | Not checked | Check definitively and report the result |
+| "seems to" | Superficial check | Deep verification with specific evidence |
+| "mostly done" | Incomplete | 100% with evidence, or mark as in_progress |
+| "I think it works" | Not tested | Run tests, show pass/fail output |
+| "looks correct" | Visual scan only | Automated verification (tests, lint, type check) |
+| "I believe" | Opinion, not evidence | Cite specific file:line, test output, or metric |
+| "as expected" | Assumed, not verified | Show the actual vs expected comparison |
+| "no issues found" | Passive non-discovery | Describe what was actively checked and how |
+| "should be fine" | Wishful thinking | Provide concrete verification evidence |
+
+**Rule**: If a completion claim contains ANY red flag phrase without accompanying concrete evidence, it MUST be rejected. The agent must re-verify and provide specific evidence.
+
+## Rationalization Counters
+
+Common rationalizations agents use to skip verification rigor, mapped to reality checks:
+
+| Rationalization | Reality Check |
+|----------------|---------------|
+| "The change is too small to need verification" | Small changes in critical paths cause large failures. Always verify. |
+| "I already tested this earlier in the session" | Earlier test results may be stale. Run verification NOW. |
+| "The linter/compiler would have caught any issues" | Linters catch syntax, not logic. Run behavioral tests. |
+| "This is just a documentation change" | Documentation with incorrect examples misleads users. Verify examples work. |
+| "The tests were passing before my change" | Your change may have introduced a regression. Run tests AFTER your change. |
+| "I reviewed the code carefully" | Code review catches ~60% of bugs. Automated tests catch the rest. Run both. |
+| "This pattern is well-established" | Even established patterns can be misapplied. Verify the specific instance. |
+| "It's the same approach used elsewhere" | Same approach in different context may behave differently. Verify in context. |
+| "I'll add the test in a follow-up" | Tests written later are tests forgotten. Write the test NOW. |
+| "The acceptance criteria are subjective" | Request clarification, don't skip verification. Vague criteria = ask, don't assume. |
+
+## Fresh Evidence Requirement
+
+**IRON LAW: Verification commands MUST be run in the current session, not cited from memory.**
+
+Verification evidence is only valid if:
+1. **Executed fresh**: The verification command was run AFTER the implementation was complete, in this session
+2. **Output captured**: The actual command output is included in the evidence (not paraphrased)
+3. **Timestamp-adjacent**: The verification happened within the same work sequence as the implementation
+4. **Full output read**: The ENTIRE output was read, not just the first/last line
+
+**Invalid evidence patterns**:
+- "Tests were passing earlier" (stale -- run them again NOW)
+- "I ran the tests and they passed" (no output shown -- include the output)
+- "The file exists at path X" (use `file_exists` verification -- actually check)
+- Citing test results from a previous session or context window
+- Paraphrasing output instead of including the actual output
+
+**Enforcement**: The universal-validator MUST reject completion claims that lack fresh evidence. When reviewing validation_report.yaml, check that evidence includes actual command output from the current session, not references to prior runs.
+
 ## Protocol Location
 
 `Agent_Memory/_system/task_completion_protocol.yaml`

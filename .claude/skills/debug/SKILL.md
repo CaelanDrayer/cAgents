@@ -1,0 +1,175 @@
+---
+name: debug
+description: "Use when a bug defies quick fixes, when 2+ attempted fixes have failed, or when root cause is unclear. Systematic 4-phase debugging: root cause investigation, pattern analysis, hypothesis testing, implementation. TRIGGER: debug, root cause, why does this fail, can't figure out, keeps breaking, intermittent bug. NOT for: known simple fixes (/run) or code review (/review)."
+argument-hint: "<bug description or error message> [--escalate] [--phase <1-4>]"
+user-invocable: true
+context: none
+agent: false
+license: MIT
+metadata:
+  author: CaelanDrayer
+  version: 10.21.0
+allowed-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+---
+
+# /debug - Systematic Debugging Methodology
+
+A structured 4-phase approach to root cause investigation. Inspired by the superpowers framework's debugging discipline. Use this when bugs resist quick fixes or when the root cause is unclear.
+
+## When to Use /debug vs /run
+
+| Situation | Use |
+|-----------|-----|
+| Bug with obvious fix (typo, missing import) | `/run` |
+| Bug that has resisted 2+ fix attempts | `/debug` |
+| Intermittent or non-deterministic failure | `/debug` |
+| Error message with unclear root cause | `/debug` |
+| Performance regression with unknown source | `/debug` |
+| "It works on my machine" scenarios | `/debug` |
+
+## IRON LAW: No Guessing
+
+**Never guess at the root cause.** Every hypothesis must be tested with evidence before implementing a fix. If you cannot reproduce the bug, you cannot fix the bug.
+
+## The 4 Phases
+
+### Phase 1: Root Cause Investigation
+
+**Goal**: Understand what is actually happening vs what should happen.
+
+1. **Reproduce the bug**: Run the exact failing command/scenario. Capture the full error output.
+2. **Read the error carefully**: Parse every line of the stack trace. Note the exact file, line, and function.
+3. **Check recent changes**: `git log --oneline -20` and `git diff HEAD~5` to find what changed.
+4. **Trace the data flow**: Follow the data from input to error point. Read each function in the call chain.
+5. **Run diagnostics**: Execute targeted diagnostic commands (type checks, lint, test isolation).
+
+**Output**: A clear description of WHAT is happening and WHERE it diverges from expected behavior.
+
+**Red Flags (Phase 1)**:
+- Skipping reproduction ("I think I know what's wrong")
+- Reading only the error message, not the full stack trace
+- Assuming the bug is in the file mentioned in the error (it's often upstream)
+- Not checking recent changes ("this couldn't have been caused by my changes")
+
+### Phase 2: Pattern Analysis
+
+**Goal**: Identify what category of bug this is and what patterns apply.
+
+| Bug Pattern | Indicators | Investigation Focus |
+|-------------|-----------|---------------------|
+| **State mutation** | Intermittent failures, order-dependent | Shared state, race conditions, closures |
+| **Type mismatch** | Runtime crashes, undefined properties | Type coercion, null checks, interface contracts |
+| **Timing/async** | Flaky tests, works-sometimes | Promise chains, event ordering, timeouts |
+| **Data flow** | Wrong output, silent failures | Input validation, transformation chain, edge cases |
+| **Configuration** | Works locally, fails in CI | Environment variables, paths, versions |
+| **Integration** | Works in isolation, fails together | API contracts, version mismatches, assumptions |
+
+**Output**: Bug pattern classification with confidence level.
+
+### Phase 3: Hypothesis Testing
+
+**Goal**: Form and test specific hypotheses about the root cause.
+
+For each hypothesis:
+1. **State the hypothesis clearly**: "The bug occurs because X causes Y when Z"
+2. **Define the test**: "If this hypothesis is correct, then [specific observable outcome]"
+3. **Run the test**: Execute the minimal reproduction that proves/disproves
+4. **Record the result**: Confirmed or falsified, with evidence
+
+**Rules**:
+- Test ONE hypothesis at a time
+- Start with the most likely hypothesis (from Phase 2 pattern analysis)
+- A falsified hypothesis is valuable information -- record it
+- Maximum 5 hypotheses before escalation (see Escalation Rules below)
+
+**Red Flags (Phase 3)**:
+- Testing multiple hypotheses simultaneously ("let me try a few things")
+- Implementing a fix as the test ("if I change this, it might work")
+- Ignoring falsified hypotheses ("that didn't work, let me try something else" without recording WHY)
+
+### Phase 4: Implementation
+
+**Goal**: Fix the root cause (not the symptom) with verification.
+
+1. **Write a failing test** that reproduces the bug (mandatory per CLAUDE.md bug-driven testing)
+2. **Implement the minimal fix** that addresses the confirmed root cause
+3. **Run the failing test** -- it must now pass
+4. **Run the full test suite** -- no regressions
+5. **Verify the original reproduction scenario** -- bug is gone
+6. **Document**: Commit message with root cause analysis
+
+**Red Flags (Phase 4)**:
+- Fixing a symptom instead of the root cause ("add a null check" without understanding WHY it's null)
+- Skipping the regression test ("the fix is obvious, we don't need a test")
+- Not running the full test suite ("I only changed one file")
+- Adding defensive code instead of fixing the source ("wrap in try/catch" instead of fixing the error)
+
+## Escalation Rules
+
+**If 3+ fix attempts have failed, STOP and escalate.** This is not a suggestion -- it is a hard rule.
+
+Escalation triggers:
+- 3 falsified hypotheses with no confirmed root cause
+- Fix attempt introduces new failures
+- Bug requires understanding of architecture you don't have access to
+- Root cause appears to be in a dependency or external system
+
+Escalation action:
+- Document all findings (hypotheses tested, evidence gathered, what was ruled out)
+- Flag to the controller or user: "Root cause investigation inconclusive after N attempts. Findings: [summary]. Recommend: architecture discussion / dependency investigation / domain expert review."
+- Use `--escalate` flag if running via /debug to force escalation report
+
+## Rationalization Counters
+
+Common rationalizations agents make to skip debugging rigor, and their counters:
+
+| Rationalization | Reality Check |
+|----------------|---------------|
+| "I think I know what the problem is" | You don't know until you've reproduced it. Run Phase 1. |
+| "This is a simple bug, I don't need the full process" | Simple bugs don't resist 2+ fixes. If you're using /debug, it's not simple. |
+| "Let me just try this quick fix" | Quick fixes that don't address root cause create regression debt. |
+| "The error message tells me exactly what's wrong" | Error messages describe symptoms, not causes. Trace the data flow. |
+| "I'll add a test later" | No. Write the test FIRST (Phase 4, step 1). The test IS the verification. |
+| "It works now, so the fix is correct" | Does the full test suite pass? Is the original scenario verified? Both required. |
+| "This is probably a flaky test" | Flaky tests have root causes too. Investigate timing, state, or ordering. |
+| "I don't need to check recent changes" | Most bugs are caused by recent changes. Always check `git log`. |
+| "The fix is too small to need review" | Small fixes in the wrong place cause large regressions. Always verify. |
+
+## Output Format
+
+When /debug completes, produce a debugging report:
+
+```yaml
+debug_report:
+  bug_description: "{original bug description}"
+  reproduction: "{exact steps to reproduce}"
+  root_cause:
+    confirmed: true|false
+    description: "{root cause explanation}"
+    evidence: "{specific evidence that confirmed the root cause}"
+  hypotheses_tested:
+    - hypothesis: "{description}"
+      result: confirmed|falsified
+      evidence: "{what proved/disproved it}"
+  fix:
+    description: "{what was changed and why}"
+    files_modified: ["{file paths}"]
+    test_added: "{test file path}"
+    test_result: "{pass/fail with output}"
+    full_suite_result: "{pass/fail with summary}"
+  escalated: false
+  escalation_reason: null
+```
+
+## Integration with /run Pipeline
+
+When invoked via `/run` for a bug fix, the /run pipeline's planner should detect debugging keywords and recommend `/debug` methodology in the plan. The engineering-manager controller can spawn a debugging-focused execution flow using this methodology.
+
+When invoked standalone (`/debug <bug>`), follow the 4 phases directly without pipeline overhead.
+
+## See Also
+
+- `/run` - For bugs with known fixes
+- `/review` - For proactive quality review (before bugs occur)
+- `.claude/rules/quality/completion.md` - Evidence requirements for completion claims
+- `.claude/rules/core/execution.md` - Execution agent patterns

@@ -105,6 +105,70 @@ Inspired by Manus-style context engineering: execution agents must persist findi
 | Search web and assume results persist | Write key results to disk before next operation |
 | Rely on context for discovered facts | Treat filesystem as your persistent memory |
 
+## Subagent Status Protocol (V10.22.0)
+
+Execution agents MUST report their completion status using one of four standardized statuses. Controllers MUST handle each status appropriately. Free-form completion messages are no longer acceptable.
+
+### The Four Statuses
+
+| Status | Meaning | When to Use |
+|--------|---------|-------------|
+| **DONE** | Work item fully complete, all acceptance criteria met with evidence | Clean completion, ready for review |
+| **DONE_WITH_CONCERNS** | Work item complete, but agent identified potential issues | Implementation works but has caveats the controller should assess |
+| **NEEDS_CONTEXT** | Cannot complete without additional information | Missing requirements, ambiguous criteria, need access to undiscovered resources |
+| **BLOCKED** | Cannot proceed due to external dependency or infrastructure issue | Dependency unavailable, permission denied, environment broken |
+
+### Reporting Format
+
+Execution agents MUST include status in their completion response:
+
+```yaml
+status: DONE                    # One of: DONE, DONE_WITH_CONCERNS, NEEDS_CONTEXT, BLOCKED
+summary: "Implemented JWT auth middleware with bcrypt hashing"
+evidence:
+  - criterion: "Auth middleware validates tokens"
+    result: "src/middleware/auth.ts:15 - validateToken() checks expiry, signature, and issuer"
+  - criterion: "Tests pass"
+    result: "npm test: 23/23 passed"
+concerns: []                    # For DONE_WITH_CONCERNS: list specific concerns
+missing_context: []             # For NEEDS_CONTEXT: list what is needed
+blocker: null                   # For BLOCKED: describe the blocking factor
+```
+
+### Controller Response by Status
+
+| Status | Controller Action |
+|--------|-------------------|
+| **DONE** | Proceed to reviewer loop (Stage 1: spec compliance) |
+| **DONE_WITH_CONCERNS** | Read concerns. If concerns affect acceptance criteria: request clarification. If concerns are informational: note in coordination_log and proceed to review. Never silently ignore concerns. |
+| **NEEDS_CONTEXT** | Provide the requested context and re-dispatch the agent. If context is unavailable: escalate to user or mark as BLOCKED. Never force retry without providing the missing context. |
+| **BLOCKED** | Assess the blocker. If resolvable: resolve and re-dispatch. If not resolvable: mark work item as blocked in coordination_log, document the blocker, and continue with other work items. |
+
+### Escalation Ladder for BLOCKED Status
+
+```
+1. Controller attempts to resolve the blocker (5 min max)
+2. If unresolvable: check if another execution agent can work around it
+3. If no workaround: escalate to lead/user with:
+   - What is blocked
+   - Why it is blocked
+   - What was tried to unblock it
+   - Impact on remaining work items
+4. If user provides resolution: re-dispatch agent
+5. If user cannot resolve: mark work item as blocked, continue with others
+```
+
+### CRITICAL: Never Ignore an Escalation
+
+**Never ignore an escalation or force retry without changes.** If an execution agent reports NEEDS_CONTEXT or BLOCKED, the controller MUST address the specific issue before re-dispatching. Sending the same prompt again without new information is a violation of the status protocol.
+
+| Anti-Pattern | Correct Approach |
+|-------------|------------------|
+| Re-dispatch with same prompt after NEEDS_CONTEXT | Provide the missing context, then re-dispatch |
+| Ignore DONE_WITH_CONCERNS and proceed | Read concerns, assess impact, document decision |
+| Force retry after BLOCKED without resolving blocker | Attempt resolution or escalate |
+| Treat BLOCKED as DONE and skip the work item silently | Document blocker in coordination_log, mark item status |
+
 ## Commit-Before-Verify Pattern (V10.18.0)
 
 When implementing work items that modify existing code, use the commit-before-verify pattern for clean rollback on failure.
