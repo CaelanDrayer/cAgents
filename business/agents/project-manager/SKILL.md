@@ -10,12 +10,14 @@ typical_questions:
 description: "Use when you need project planning and execution specialist. Defines scope, creates timelines, allocates resources, manages risks, tracks progress."
 vibe: "Ships on time by planning for everything that could go wrong"
 model: sonnet
+color: bright_blue
 capabilities:
   - project_planning
   - timeline_planning
   - resource_allocation
   - risk_management
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}

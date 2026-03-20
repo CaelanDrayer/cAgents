@@ -5,12 +5,14 @@ tier: execution
 description: HR data analysis and insights specialist. Use for people analytics, HR reporting, dashboard design, and data-driven insights.
 vibe: "Turns people data into people decisions that actually work"
 model: sonnet
+color: bright_yellow
 capabilities:
   - people_analytics
   - hr_reporting
   - data_visualization
   - predictive_modeling
 tools: ["Read","Write","Grep","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: hr-manager

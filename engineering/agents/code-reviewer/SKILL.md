@@ -15,13 +15,13 @@ capabilities:
   - diff-aware-review
   - pattern-learning
 tools: ["Read","Grep","Glob","Write","TodoWrite","Task","Bash"]
+allowed-tools: "Read Grep Glob"
 model: "haiku"
 color: bright_magenta
 layer: workflow
 tier: support
 maxTurns: 10
 disallowedTools: ["Task"]
-related-agents: ["backend-developer", "frontend-developer", "qa-lead", "architect"]
 not-my-scope: ["Initial implementation", "architecture design", "deployment", "content creation"]
 related_agents:
   - name: architecture-reviewer

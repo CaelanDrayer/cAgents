@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need partner ecosystem and indirect revenue specialist. Manages partner recruitment, enablement, and co-selling to drive indirect revenue."
 vibe: "Builds partner relationships that multiply revenue"
 model: sonnet
+color: bright_green
 capabilities:
   - partner_recruitment
   - partner_enablement
   - co_selling
   - partner_management
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: sales-strategist

@@ -5,6 +5,7 @@ tier: controller
 description: "Use when you need support strategy, customer experience, and critical escalation management."
 vibe: "Leads the support org to deliver experiences customers talk about"
 model: "opusplan"
+color: bright_red
 coordination_style: question_based
 typical_questions:
   - "What are the current support metrics and satisfaction trends?"
@@ -16,6 +17,7 @@ capabilities:
   - escalation_management
   - team_development
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}

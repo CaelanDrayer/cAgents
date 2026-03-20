@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need oKR planning and implementation expert. Facilitates OKR setting, defines objectives and key results, tracks progress, coaches teams on OKR methodology."
 vibe: "Turns ambitious goals into measurable, achievable milestones"
 model: sonnet
+color: bright_blue
 capabilities:
   - okr_planning
   - objective_setting
   - key_result_definition
   - okr_tracking
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: strategic-planner

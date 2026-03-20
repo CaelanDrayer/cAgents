@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need incident commander for critical customer issues, managing escalation workflows and cross-functional resolution."
 vibe: "Takes the toughest tickets and turns them into saves"
 model: sonnet
+color: bright_red
 capabilities:
   - escalation_management
   - incident_command
   - cross_functional_coordination
   - customer_recovery
 tools: ["Read","Write","Grep","Glob","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: support-director

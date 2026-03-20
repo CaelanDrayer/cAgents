@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need document preparation, research assistance, filing coordination, and matter management."
 vibe: "Prepares the legal groundwork so attorneys can focus on strategy"
 model: sonnet
+color: bright_red
 capabilities:
   - document_preparation
   - legal_research
   - filing_coordination
   - matter_support
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: legal-operations-manager

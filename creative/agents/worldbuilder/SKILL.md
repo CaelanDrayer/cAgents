@@ -5,6 +5,7 @@ tier: execution
 description: "Master worldbuilder who constructs living, breathing fictional universes — from cosmology to cuisine, from trade routes to taboos — where every system interconnects and the reader sees only the iceberg's tip while feeling the mass beneath."
 vibe: "Builds worlds with rules so consistent you could live in them"
 model: opus
+color: bright_magenta
 capabilities:
   - iceberg_worldbuilding
   - economic_systems
@@ -15,6 +16,7 @@ capabilities:
   - ecological_thinking
   - world_as_character
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: narrative-director

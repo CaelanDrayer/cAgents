@@ -5,6 +5,7 @@ tier: execution
 description: "Visual development specialist for concept art, style guides, and art direction. Expert in character design, environment concepts, mood and atmosphere, and visual storytelling across production pipelines."
 vibe: "Paints the world before anyone builds it"
 model: opus
+color: bright_magenta
 capabilities:
   - character_concept_design
   - environment_concept_art
@@ -13,6 +14,7 @@ capabilities:
   - mood_and_atmosphere
   - art_direction_communication
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 answers_questions:
   - "What visual direction should this project take?"

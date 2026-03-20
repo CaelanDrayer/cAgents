@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need high-velocity inbound sales specialist. Closes inbound leads and converts trials through efficient sales motions for SMB deals."
 vibe: "Works the phones and inbox until the pipeline overflows"
 model: sonnet
+color: bright_green
 capabilities:
   - inbound_sales
   - trial_conversion
   - quick_demos
   - high_velocity
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: sales-strategist

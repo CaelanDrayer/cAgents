@@ -5,6 +5,7 @@ tier: execution
 description: "Use when you need marketing copy and content creation specialist. Writes compelling copy for ads, landing pages, emails, social media, and marketing materials."
 vibe: "Writes copy that converts browsers into buyers"
 model: sonnet
+color: bright_green
 capabilities:
   - ad_copy
   - landing_pages
@@ -12,6 +13,7 @@ capabilities:
   - social_media
   - brand_voice
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit"
 maxTurns: 30
 related_agents:
   - name: campaign-manager
@@ -23,6 +25,13 @@ related_agents:
   - name: seo-specialist
     type: collaborates_with
 ---
+
+<example>
+<context>Marketing copy needed</context>
+<user>Write landing page copy for our new project management tool targeting startups</user>
+<agent>copywriter creates: writes headline variants, benefit-focused body copy, social proof section, CTA variations, A/B test recommendations</agent>
+</example>
+
 
 # Copywriter
 

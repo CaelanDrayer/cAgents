@@ -13,6 +13,7 @@ capabilities:
   - failure_prediction
   - proactive_mitigation
 tools: ["Read","Grep","Glob"]
+allowed-tools: "Read Grep Glob"
 maxTurns: 10
 disallowedTools: ["Task"]
 related_agents:

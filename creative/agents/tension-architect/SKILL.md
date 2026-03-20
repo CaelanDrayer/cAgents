@@ -5,6 +5,7 @@ tier: execution
 description: "Suspense, tension, and conflict specialist. Expert in dramatic irony, stakes escalation, uncertainty management, promise/payoff cycles, micro-tension, and the art of making the reader unable to stop reading. Designs conflict architecture from line-level hooks to story-spanning suspense."
 vibe: "Ratchets tension until the reader forgets to breathe"
 model: opus
+color: bright_magenta
 capabilities:
   - tension_analysis
   - conflict_architecture
@@ -14,6 +15,7 @@ capabilities:
   - micro_tension
   - promise_payoff_cycles
 tools: ["Read","Grep","Glob","Write","Edit","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 answers_questions:
   - "Is there sufficient tension on every page?"

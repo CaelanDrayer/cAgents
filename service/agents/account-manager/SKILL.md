@@ -5,6 +5,7 @@ tier: controller
 description: "Use when you need account planning, relationship management, upsell/cross-sell, and renewal management across all domains."
 vibe: "Keeps clients happy enough to renew without being asked"
 model: sonnet
+color: bright_red
 coordination_style: question_based
 typical_questions:
   - "What is the current account health and engagement level?"
@@ -17,6 +18,7 @@ capabilities:
   - renewal_management
   - account_growth
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}

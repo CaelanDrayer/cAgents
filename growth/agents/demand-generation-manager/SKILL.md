@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need demand generation and pipeline creation specialist. Designs lead generation campaigns, nurture programs, funnel optimization, and pipeline acceleration."
 vibe: "Fills the pipeline with leads that actually convert"
 model: sonnet
+color: bright_green
 capabilities:
   - lead_generation
   - nurture_programs
   - funnel_optimization
   - abm
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: campaign-manager

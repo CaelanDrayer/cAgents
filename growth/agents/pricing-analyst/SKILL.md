@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need pricing strategy and deal optimization specialist. Analyzes pricing, designs packaging, manages deal desk, and optimizes discount strategies."
 vibe: "Finds the price point where value meets willingness to pay"
 model: sonnet
+color: bright_green
 capabilities:
   - pricing_analysis
   - packaging_design
   - deal_desk
   - discount_optimization
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: sales-strategist

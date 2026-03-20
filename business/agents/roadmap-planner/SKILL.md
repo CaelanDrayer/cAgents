@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need product and technology roadmap specialist. Creates strategic roadmaps, prioritizes features, manages dependencies, aligns roadmap to strategy."
 vibe: "Draws the map from here to shipped, including the detours"
 model: sonnet
+color: bright_blue
 capabilities:
   - roadmap_planning
   - feature_prioritization
   - dependency_mapping
   - timeline_visualization
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: strategic-planner

@@ -5,6 +5,7 @@ tier: execution
 description: "Use when you need process audits conducted, compliance verified, controls tested, or audit reports produced."
 vibe: "Finds the waste hiding in processes everyone assumes work"
 model: sonnet
+color: bright_blue
 answers_questions:
   - "What processes and controls are in scope for this audit?"
   - "What compliance gaps exist in the current process?"
@@ -24,6 +25,7 @@ capabilities:
   - process_assessment
   - improvement_identification
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}

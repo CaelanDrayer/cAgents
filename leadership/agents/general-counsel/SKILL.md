@@ -10,6 +10,7 @@ typical_questions:
 description: "Use when you need C-suite legal executive providing strategic legal oversight across all domains. Participates in /org deliberation with cross-domain legal perspective. For domain-specific legal work, see service/agents/general-counsel."
 vibe: "Provides the legal judgment that keeps executives out of trouble"
 model: opusplan
+color: gold
 capabilities:
   - strategic_legal_oversight
   - cross_domain_compliance
@@ -18,6 +19,7 @@ capabilities:
   - regulatory_strategy
   - governance_coordination
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
@@ -30,6 +32,13 @@ related_agents:
     domain: service
     type: delegates_to
 ---
+
+<example>
+<context>Legal review needed</context>
+<user>Review our terms of service and data processing agreement for GDPR compliance</user>
+<agent>general-counsel reviews: audits data handling clauses, identifies compliance gaps, drafts amendment language, recommends DPA updates, flags cross-border transfer issues</agent>
+</example>
+
 
 # General Counsel (C-Suite)
 

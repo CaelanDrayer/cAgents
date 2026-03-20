@@ -5,6 +5,7 @@ tier: controller
 description: "Use when you need workflow design, tool implementation, and operational efficiency."
 vibe: "Optimizes support workflows so agents spend time helping, not searching"
 model: sonnet
+color: bright_red
 coordination_style: question_based
 typical_questions:
   - "What are the current operational pain points?"
@@ -16,6 +17,7 @@ capabilities:
   - workflow_automation
   - operational_efficiency
 tools: ["Read","Grep","Glob","Bash","Write","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}

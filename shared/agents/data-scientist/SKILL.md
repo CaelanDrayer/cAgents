@@ -5,6 +5,7 @@ tier: controller
 description: "Use when you need data science specialist coordinating machine learning, predictive modeling, statistical analysis, and advanced analytics across ALL domains."
 vibe: "Turns messy data into clear decisions"
 model: "opusplan"
+color: bright_white
 coordination_style: question_based
 typical_questions:
   - "What is the business problem we're solving with ML?"
@@ -20,6 +21,7 @@ capabilities:
   - nlp
   - computer_vision
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}

@@ -5,12 +5,14 @@ tier: execution
 description: Performance review cycle and goal-setting framework expert. Use for performance reviews, calibration, goal frameworks, and development planning.
 vibe: "Makes performance reviews useful instead of dreaded"
 model: sonnet
+color: bright_yellow
 capabilities:
   - performance_review_design
   - goal_frameworks
   - calibration_facilitation
   - feedback_systems
 tools: ["Read","Write","Grep","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: hr-business-partner

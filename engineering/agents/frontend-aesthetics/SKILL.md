@@ -17,6 +17,7 @@ capabilities:
 answers_questions: ["design systems", "UI aesthetics", "frontend styling", "animation patterns", "color systems"]
 executes_tasks: ["create distinctive designs", "implement unique aesthetics", "avoid generic patterns", "design cohesive themes"]
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: frontend-lead

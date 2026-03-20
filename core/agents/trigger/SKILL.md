@@ -4,6 +4,7 @@ tier: infrastructure
 description: "Use when you need entry point with context-aware detection, confidence scoring, template matching, pre-flight validation, and workflow analytics. Routes ALL requests to specialist agents - never handles directly. Supports team_planning_only mode for /team integration."
 vibe: "The front door that sends every request to exactly the right room"
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
 model: sonnet
 color: bright_white
 domain: core

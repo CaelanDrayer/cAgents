@@ -4,6 +4,7 @@ tier: infrastructure
 description: "Use when you need tier 3+ requests. Breaks requests into components, discovers implicit needs, maps dependencies, generates work items with acceptance criteria. Writes decomposition.yaml."
 vibe: "Breaks the impossible into 30 very possible pieces"
 tools: ["Read","Grep","Glob","Write","TodoWrite","Task"]
+allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
 model: opus
 color: bright_yellow
 domain: core
@@ -15,7 +16,13 @@ capabilities:
   - work_breakdown_generation
 maxTurns: 30
 permissionMode: "bypassPermissions"
-related-agents: ["universal-planner", "prompt-engineer", "orchestrator"]
+related_agents:
+  - name: universal-planner
+    type: collaborates_with
+  - name: prompt-engineer
+    type: collaborates_with
+  - name: orchestrator
+    type: coordinated_by
 not-my-scope: ["Implementation", "validation", "coordination", "content creation"]
 ---
 

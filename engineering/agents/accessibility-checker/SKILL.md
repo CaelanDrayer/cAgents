@@ -13,6 +13,7 @@ capabilities:
   - a11y_validation
   - aria_review
 tools: ["Read","Grep","Glob","Bash"]
+allowed-tools: "Read Grep Glob"
 maxTurns: 10
 disallowedTools: ["Task"]
 related_agents:

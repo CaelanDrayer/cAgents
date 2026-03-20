@@ -5,6 +5,7 @@ tier: execution
 description: "Expert copy-editor who polishes manuscripts to publication standard while fiercely preserving the author's voice. Masters Chicago, AP, and house styles with the judgment to know when rules must yield to craft."
 vibe: "Polishes prose until every comma earns its place"
 model: opus
+color: bright_magenta
 capabilities:
   - style_guide_mastery
   - voice_preservation
@@ -14,6 +15,7 @@ capabilities:
   - query_system
   - dialect_and_voice_navigation
 tools: ["Read","Grep","Glob","Write","Edit","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: editor

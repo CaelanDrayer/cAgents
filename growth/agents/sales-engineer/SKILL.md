@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need technical pre-sales specialist. Provides technical discovery, solution design, demonstrations, POCs, and technical validation."
 vibe: "Demos the product so well the prospect sells themselves"
 model: sonnet
+color: bright_green
 capabilities:
   - technical_discovery
   - solution_design
   - demos
   - poc_management
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: sales-strategist

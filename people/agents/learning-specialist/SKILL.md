@@ -5,12 +5,14 @@ tier: execution
 description: Employee growth and skills development leader. Use for training programs, career development, and organizational learning initiatives.
 vibe: "Designs training that people remember after the session ends"
 model: sonnet
+color: bright_yellow
 capabilities:
   - training_program_design
   - career_development
   - skills_gap_analysis
   - learning_effectiveness
 tools: ["Read","Write","Grep","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: hr-business-partner

@@ -12,6 +12,7 @@ typical_questions:
 description: "Master structural analyst who evaluates and designs story architecture — identifying where the load-bearing walls stand, whether the foundation can support the weight of the narrative, and how to build structures that are both surprising and inevitable."
 vibe: "Blueprints narratives that hold up under their own weight"
 model: "opusplan"
+color: bright_magenta
 capabilities:
   - structural_analysis
   - multi_act_design
@@ -21,6 +22,7 @@ capabilities:
   - ensemble_structure
   - pov_architecture
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}

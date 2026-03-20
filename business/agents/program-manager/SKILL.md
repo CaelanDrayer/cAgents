@@ -10,12 +10,14 @@ typical_questions:
 description: "Use when you need program planning and coordination specialist. Manages large-scale programs, coordinates multiple projects, tracks benefits realization."
 vibe: "Juggles five projects and still catches every ball"
 model: sonnet
+color: bright_blue
 capabilities:
   - program_planning
   - multi_project_coordination
   - benefits_tracking
   - program_governance
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}

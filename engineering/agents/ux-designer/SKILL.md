@@ -14,8 +14,8 @@ capabilities:
   - accessibility
   - prototyping
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
-related-agents: ["frontend-developer", "accessibility-checker", "product-owner", "architect"]
 not-my-scope: ["Backend code", "database schema", "server infrastructure", "financial analysis"]
 related_agents:
   - name: frontend-lead

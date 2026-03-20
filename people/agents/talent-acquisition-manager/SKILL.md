@@ -10,12 +10,14 @@ typical_questions:
 description: "Use when you need recruiting strategy, pipeline management, and talent market insights."
 vibe: "Builds the recruiting engine that fills roles before they're painful"
 model: sonnet
+color: bright_yellow
 capabilities:
   - recruiting_strategy
   - pipeline_management
   - hiring_manager_partnership
   - talent_market_analysis
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 30
 related_agents:
   - name: recruiter

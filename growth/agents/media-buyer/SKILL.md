@@ -5,6 +5,7 @@ tier: execution
 description: "Use when you need programmatic advertising, media planning, and ad spend optimization specialist. Manages media buys across platforms, optimizes ROAS, and negotiates placements."
 vibe: "Stretches every ad dollar until it screams, then squeezes out one more conversion"
 model: sonnet
+color: bright_green
 capabilities:
   - programmatic_advertising
   - media_planning
@@ -13,6 +14,7 @@ capabilities:
   - media_negotiations
   - cross_platform_buying
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: campaign-manager

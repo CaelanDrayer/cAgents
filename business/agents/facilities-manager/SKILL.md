@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need facilities operations and workplace services specialist. Manages space planning, maintenance, vendors, and safety compliance."
 vibe: "Keeps the lights on so everyone else can keep shipping"
 model: sonnet
+color: bright_blue
 capabilities:
   - space_management
   - building_maintenance
   - vendor_coordination
   - safety_compliance
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: operations-manager

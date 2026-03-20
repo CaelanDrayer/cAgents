@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need outbound prospecting and lead qualification specialist. Generates qualified pipeline through cold outreach and meeting setting."
 vibe: "Generates qualified meetings from cold outreach at scale"
 model: sonnet
+color: bright_green
 capabilities:
   - outbound_prospecting
   - lead_qualification
   - meeting_generation
   - cadence_execution
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: sales-strategist

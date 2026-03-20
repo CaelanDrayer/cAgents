@@ -5,6 +5,7 @@ tier: execution
 description: "Expert narrative systems designer specializing in branching architecture, state tracking, player agency, ludonarrative design, dynamic narrative systems, and emergent storytelling. Designs the invisible machinery that makes interactive stories feel alive, responsive, and meaningful."
 vibe: "Weaves player choice and narrative into something seamless"
 model: opus
+color: bright_magenta
 capabilities:
   - branching_narrative_architecture
   - state_tracking_and_consequence_systems
@@ -15,6 +16,7 @@ capabilities:
   - choice_architecture
   - narrative_system_documentation
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: narrative-director

@@ -5,12 +5,14 @@ tier: support
 description: "Use when you need architecture reviews, system design validation, and pattern enforcement."
 vibe: "Reviews architecture like a building inspector -- nothing passes without proof"
 model: "haiku"
+color: bright_cyan
 capabilities:
   - architecture_review
   - design_validation
   - pattern_enforcement
   - system_analysis
 tools: ["Read","Grep","Glob"]
+allowed-tools: "Read Grep Glob"
 maxTurns: 10
 disallowedTools: ["Task"]
 related_agents:

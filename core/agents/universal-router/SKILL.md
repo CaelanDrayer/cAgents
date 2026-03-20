@@ -12,6 +12,7 @@ capabilities:
   - controller_requirement
   - scope_adjustment
 tools: ["Read","Grep","Glob","Write","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
 maxTurns: 15
 permissionMode: "bypassPermissions"
 ---

@@ -10,12 +10,14 @@ typical_questions:
 description: "Use when you need chief Revenue Officer. Executive revenue leadership owning end-to-end revenue generation across marketing, sales, and customer success."
 vibe: "Owns the number and builds the machine to hit it every quarter"
 model: "opusplan"
+color: gold
 capabilities:
   - revenue_strategy
   - sales_marketing_alignment
   - pipeline_management
   - executive_leadership
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}

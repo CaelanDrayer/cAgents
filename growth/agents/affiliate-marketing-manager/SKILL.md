@@ -5,6 +5,7 @@ tier: execution
 description: "Use when you need affiliate program management and partner referral specialist. Manages affiliate networks, commission structures, partner recruitment, and affiliate performance optimization."
 vibe: "Turns every happy customer into a revenue-generating referral engine"
 model: sonnet
+color: bright_green
 capabilities:
   - affiliate_program_design
   - commission_structures
@@ -13,6 +14,7 @@ capabilities:
   - referral_programs
   - affiliate_performance_tracking
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: campaign-manager

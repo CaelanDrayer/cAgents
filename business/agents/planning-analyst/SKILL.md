@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need planning data analysis and insights specialist. Analyzes planning metrics, forecasts trends, provides planning insights, tracks KPIs."
 vibe: "Spots the gap between the plan and reality before it hurts"
 model: sonnet
+color: bright_blue
 capabilities:
   - metrics_analysis
   - trend_forecasting
   - planning_insights
   - kpi_tracking
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: performance-analyst

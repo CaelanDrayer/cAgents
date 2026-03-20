@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need ticket review, agent coaching, and standards development."
 vibe: "Scores support interactions to raise the bar for everyone"
 model: sonnet
+color: bright_red
 capabilities:
   - quality_assurance
   - ticket_review
   - coaching
   - standards_development
 tools: ["Read","Grep","Glob","Write"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: support-operations-manager

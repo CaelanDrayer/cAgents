@@ -5,6 +5,7 @@ tier: execution
 description: "Use when you need performance metrics analyzed, bottlenecks identified, capacity planned, or optimization recommendations produced."
 vibe: "Turns raw metrics into decisions that move the needle"
 model: sonnet
+color: bright_blue
 answers_questions:
   - "What are the current performance metrics and baselines?"
   - "Where are the bottlenecks in the system/process?"
@@ -24,6 +25,7 @@ capabilities:
   - performance_testing
   - metrics_analysis
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}

@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need help content, API docs, technical guides, and knowledge base articles."
 vibe: "Writes documentation so clear even the author learns something"
 model: sonnet
+color: bright_red
 capabilities:
   - technical_writing
   - documentation
   - content_editing
   - api_documentation
 tools: ["Read","Grep","Glob","Write"]
+allowed-tools: "Read Grep Glob Write Edit"
 maxTurns: 30
 related_agents:
   - name: support-operations-manager

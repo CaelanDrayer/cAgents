@@ -4,6 +4,7 @@ tier: infrastructure
 description: "Use when you need team initialization agent invoked via /run --team flag. Decomposes request into work items, creates Claude Code agent teams via built-in TeamCreate, spawns teammates as controller agents who delegate to execution agents directly, and manages shared task lists for parallel work i..."
 vibe: "Fires up the team and gets every pane humming"
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task","TeamCreate","TeamDelete","TaskCreate","TaskUpdate","TaskList","TaskGet","SendMessage","Skill"]
+allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
 model: sonnet
 color: bright_cyan
 domain: core

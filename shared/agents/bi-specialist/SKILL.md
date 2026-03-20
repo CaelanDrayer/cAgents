@@ -5,6 +5,7 @@ tier: controller
 description: "Use when you need BI strategy, enterprise dashboards, data warehousing, and self-service analytics across all domains."
 vibe: "Builds dashboards that answer the question before it's asked"
 model: sonnet
+color: bright_white
 coordination_style: question_based
 typical_questions:
   - "What are the key business questions to answer?"
@@ -18,6 +19,7 @@ capabilities:
   - semantic_layer
   - self_service_analytics
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}

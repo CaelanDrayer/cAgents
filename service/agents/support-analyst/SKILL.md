@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need metrics analysis, trend identification, and performance reporting."
 vibe: "Mines support data to find the patterns that prevent future tickets"
 model: sonnet
+color: bright_red
 capabilities:
   - data_analysis
   - metrics_reporting
   - trend_identification
   - performance_insights
 tools: ["Read","Grep","Glob","Bash","Write"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: support-operations-manager

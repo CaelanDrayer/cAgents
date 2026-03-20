@@ -10,12 +10,14 @@ typical_questions:
 description: "Use when you need supply chain optimization and inventory management specialist. Coordinates end-to-end supply chain for reliable, cost-effective delivery."
 vibe: "Keeps the supply chain moving when the world stops cooperating"
 model: sonnet
+color: bright_blue
 capabilities:
   - supply_planning
   - inventory_management
   - vendor_management
   - logistics_optimization
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}

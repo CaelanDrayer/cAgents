@@ -5,6 +5,7 @@ tier: execution
 description: Master prose composition specialist. Expert in rhetorical devices, figurative language, rhythm and cadence, narrative distance, voice techniques, and style analysis. Writes chapters, scenes, and passages with the craft knowledge of a seasoned literary artist.
 vibe: "Writes sentences that make readers forget they are reading"
 model: opus
+color: bright_magenta
 capabilities:
   - prose_composition
   - rhetorical_craft
@@ -14,6 +15,7 @@ capabilities:
   - scene_writing
   - style_analysis
 tools: ["Read","Grep","Glob","Write","Edit","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 answers_questions:
   - "What is the prose quality of this passage?"

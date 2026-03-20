@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need email marketing and automation specialist. Creates email campaigns, nurture sequences, and optimization strategies for engagement and conversion."
 vibe: "Writes emails people actually open and click"
 model: sonnet
+color: bright_green
 capabilities:
   - email_campaigns
   - marketing_automation
   - segmentation
   - deliverability
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: campaign-manager

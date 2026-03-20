@@ -1,11 +1,11 @@
 {
-  "$comment": "Hook configuration - cAgents V10.22.4 - Progressive pipeline (3 paths), agent chaining, structured error format, attention injection, magic keywords, delegation enforcer. 21 CJS files (18 registered hooks + utils + launcher + eval CLI) across 15 event types. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd).",
+  "$comment": "Hook configuration - cAgents V10.22.5 - Progressive pipeline (3 paths), agent chaining, structured error format, attention injection, magic keywords, delegation enforcer. 21 CJS files (18 registered hooks + utils + launcher + eval CLI) across 15 event types. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd).",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
   "teammateMode": "tmux",
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CAGENTS_VERSION": "10.22.4"
+    "CAGENTS_VERSION": "10.22.5"
   },
   "permissions": {
     "allow": [
@@ -30,7 +30,8 @@
           {
             "type": "command",
             "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" session-catchup'",
-            "timeout": 10
+            "timeout": 10,
+            "statusMessage": "Initializing cAgents session..."
           }
         ]
       }
@@ -41,7 +42,8 @@
           {
             "type": "command",
             "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" team-stop'",
-            "timeout": 10
+            "timeout": 10,
+            "statusMessage": "Finalizing team session..."
           }
         ]
       }
@@ -52,7 +54,8 @@
           {
             "type": "command",
             "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" verify-completion'",
-            "timeout": 10
+            "timeout": 10,
+            "statusMessage": "Verifying task completion..."
           }
         ]
       }
@@ -63,7 +66,8 @@
           {
             "type": "command",
             "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" subagent-tracker'",
-            "timeout": 5
+            "timeout": 5,
+            "async": true
           },
           {
             "type": "command",
@@ -79,7 +83,8 @@
           {
             "type": "command",
             "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" subagent-stop-tracker'",
-            "timeout": 5
+            "timeout": 5,
+            "async": true
           }
         ]
       }
@@ -177,6 +182,7 @@
           {
             "type": "command",
             "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" permission-handler'",
+            "statusMessage": "Checking permissions...",
             "timeout": 5
           }
         ]
@@ -188,7 +194,8 @@
           {
             "type": "command",
             "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" pre-compact-save'",
-            "timeout": 10
+            "timeout": 10,
+            "statusMessage": "Saving workflow state before compaction..."
           }
         ]
       }
@@ -210,7 +217,8 @@
           {
             "type": "command",
             "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" notification'",
-            "timeout": 5
+            "timeout": 5,
+            "async": true
           }
         ]
       }

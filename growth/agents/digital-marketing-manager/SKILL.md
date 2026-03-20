@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need digital marketing and paid acquisition specialist. Plans paid campaigns, digital channel strategy, conversion optimization, and performance marketing."
 vibe: "Masters every digital channel so the right message finds the right person"
 model: sonnet
+color: bright_green
 capabilities:
   - paid_campaigns
   - performance_marketing
   - conversion_optimization
   - channel_management
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: campaign-manager

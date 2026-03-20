@@ -5,6 +5,7 @@ tier: execution
 description: "Game audio specialist for sound effects, Foley, spatial audio, and interactive soundscapes. Expert in audio layering, emotional sound design, and the craft of making players feel through what they hear."
 vibe: "Creates the sounds that make you believe the impossible"
 model: opus
+color: bright_magenta
 capabilities:
   - sound_effect_design
   - ambient_soundscapes
@@ -13,6 +14,7 @@ capabilities:
   - interactive_audio_systems
   - emotional_sound_design
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 answers_questions:
   - "What should this game moment sound like?"

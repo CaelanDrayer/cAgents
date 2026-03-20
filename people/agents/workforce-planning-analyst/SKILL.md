@@ -5,12 +5,14 @@ tier: execution
 description: Strategic headcount forecasting and capacity planning specialist. Use for workforce modeling, hiring plans, and org capacity analysis.
 vibe: "Plans the headcount so the company never hires too late"
 model: sonnet
+color: bright_yellow
 capabilities:
   - workforce_forecasting
   - capacity_planning
   - scenario_modeling
   - headcount_budgeting
 tools: ["Read","Write","Grep","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: hr-manager

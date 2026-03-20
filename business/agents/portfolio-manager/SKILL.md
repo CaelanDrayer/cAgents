@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need portfolio planning and optimization specialist. Prioritizes initiatives across portfolio, optimizes resource allocation, maximizes portfolio value."
 vibe: "Balances bets across projects like a seasoned card counter"
 model: sonnet
+color: bright_blue
 capabilities:
   - portfolio_planning
   - initiative_prioritization
   - resource_optimization
   - value_maximization
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: program-manager

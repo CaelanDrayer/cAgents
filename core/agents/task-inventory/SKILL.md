@@ -13,6 +13,7 @@ capabilities:
   - progress_reporting
   - parallel_tracking
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
 maxTurns: 30
 permissionMode: "bypassPermissions"
 ---

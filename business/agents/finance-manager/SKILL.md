@@ -19,6 +19,7 @@ capabilities:
   - financial_forecasting
   - resource_allocation
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 30
 related_agents:
   - name: procurement-specialist

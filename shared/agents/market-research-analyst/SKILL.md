@@ -5,6 +5,7 @@ tier: controller
 description: "Use when you need market research specialist coordinating market analysis, customer research, industry analysis, and insights generation across ALL domains."
 vibe: "Reads the market so the company can write its own future"
 model: sonnet
+color: bright_white
 coordination_style: question_based
 typical_questions:
   - "What are the research objectives and key questions?"
@@ -19,6 +20,7 @@ capabilities:
   - focus_groups
   - competitive_research
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}

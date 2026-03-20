@@ -4,6 +4,7 @@ tier: infrastructure
 description: "Use when you need planning agent that orchestrates the planning phase. Selects controllers, defines objectives, and writes plan.yaml. Delegates decomposition to task-decomposer for complex requests (tier 3+), handles simple decomposition inline for tier 2."
 vibe: "Plans the work, works the plan, adapts when reality disagrees"
 tools: ["Read","Grep","Glob","Write","TodoWrite","Task"]
+allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
 model: opus
 color: bright_blue
 domain: core
@@ -15,9 +16,24 @@ capabilities:
   - controller_selection
 maxTurns: 40
 permissionMode: "bypassPermissions"
-related-agents: ["orchestrator", "task-decomposer", "prompt-engineer", "universal-validator"]
+related_agents:
+  - name: orchestrator
+    type: coordinated_by
+  - name: task-decomposer
+    type: collaborates_with
+  - name: prompt-engineer
+    type: collaborates_with
+  - name: universal-validator
+    type: collaborates_with
 not-my-scope: ["Direct implementation", "code review", "content creation", "test execution"]
 ---
+
+<example>
+<context>Complex task needs structured planning</context>
+<user>Migrate our monolith to microservices with zero downtime</user>
+<agent>universal-planner decomposes: identifies service boundaries, maps data dependencies, creates migration phases, assigns controllers per domain, writes plan.yaml with 15 work items across 4 dependency levels</agent>
+</example>
+
 
 # Universal Planner
 

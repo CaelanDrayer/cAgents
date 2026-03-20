@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need agreements and risk assessment."
 vibe: "Negotiates contracts where both sides walk away satisfied"
 model: sonnet
+color: bright_red
 capabilities:
   - contract_drafting
   - contract_negotiation
   - risk_analysis
   - contract_lifecycle_management
 tools: ["Read","Write","Edit","Grep","Glob","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: legal-operations-manager

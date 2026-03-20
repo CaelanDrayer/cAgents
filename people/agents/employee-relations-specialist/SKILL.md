@@ -5,12 +5,14 @@ tier: execution
 description: Workplace conflict resolution and employee advocacy expert. Use for investigations, conflict mediation, policy interpretation, and retention conversations.
 vibe: "Resolves workplace issues before they become workplace problems"
 model: sonnet
+color: bright_yellow
 capabilities:
   - conflict_resolution
   - investigations
   - policy_interpretation
   - employee_advocacy
 tools: ["Read","Write","Grep","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: hr-manager

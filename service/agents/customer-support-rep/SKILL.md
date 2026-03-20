@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need front-line customer support representative handling inquiries, troubleshooting, and issue resolution."
 vibe: "Solves customer problems like they're solving their own"
 model: sonnet
+color: bright_red
 capabilities:
   - customer_inquiry_handling
   - issue_troubleshooting
   - ticket_management
   - customer_communication
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: support-director

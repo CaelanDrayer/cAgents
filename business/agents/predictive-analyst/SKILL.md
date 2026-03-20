@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need predictive analytics and forecasting specialist. Develops predictive models, creates forecasts, provides data-driven planning insights."
 vibe: "Sees what's coming by reading what already happened"
 model: sonnet
+color: bright_blue
 capabilities:
   - predictive_modeling
   - forecasting
   - trend_analysis
   - data_analysis
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: performance-analyst

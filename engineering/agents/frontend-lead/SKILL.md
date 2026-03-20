@@ -18,6 +18,7 @@ capabilities:
   - performance_optimization
   - component_design
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 color: bright_cyan
 maxTurns: 40
 permissionMode: "bypassPermissions"

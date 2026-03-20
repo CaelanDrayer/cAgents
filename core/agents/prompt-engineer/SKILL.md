@@ -12,6 +12,7 @@ capabilities:
   - codebase_analysis
   - constraint_extraction
 tools: ["Read", "Grep", "Glob", "Write"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 20
 permissionMode: "bypassPermissions"
 memory:
@@ -24,7 +25,13 @@ executes_tasks:
   - "Craft optimized delegation prompt for controller"
   - "Assemble context package with code snippets"
   - "Define acceptance criteria verification methods"
-related-agents: ["task-decomposer", "universal-planner", "orchestrator"]
+related_agents:
+  - name: task-decomposer
+    type: collaborates_with
+  - name: universal-planner
+    type: collaborates_with
+  - name: orchestrator
+    type: coordinated_by
 not-my-scope: ["Direct implementation", "validation", "test execution", "content creation"]
 ---
 

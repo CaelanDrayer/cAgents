@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need lawsuit management, discovery, settlement negotiations, and trial strategy."
 vibe: "Manages litigation strategy so the company fights the right battles"
 model: sonnet
+color: bright_red
 capabilities:
   - litigation_management
   - discovery
   - settlement_negotiation
   - trial_strategy
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: general-counsel

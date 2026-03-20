@@ -5,6 +5,7 @@ tier: execution
 description: "Use when you need change plans executed, training delivered, communications deployed, or adoption tracked."
 vibe: "Makes the org actually want the change, not just tolerate it"
 model: sonnet
+color: bright_blue
 answers_questions:
   - "What is the change readiness level?"
   - "What training and support is needed?"
@@ -23,6 +24,7 @@ capabilities:
   - change_support
   - resistance_handling
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}

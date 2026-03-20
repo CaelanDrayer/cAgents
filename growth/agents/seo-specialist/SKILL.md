@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need sEO strategy and optimization specialist. Conducts keyword research, on-page optimization, technical SEO, and organic search growth."
 vibe: "Gets pages to rank by understanding what Google actually wants"
 model: sonnet
+color: bright_green
 capabilities:
   - keyword_research
   - on_page_seo
   - technical_seo
   - link_building
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: campaign-manager

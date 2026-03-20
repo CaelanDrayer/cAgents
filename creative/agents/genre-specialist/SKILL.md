@@ -5,6 +5,7 @@ tier: execution
 description: "Multi-genre master with deep expertise across literary fiction, science fiction, fantasy, mystery/thriller, horror, romance, historical fiction, and crime fiction. Knows each genre's DNA — its conventions, reader contracts, structural patterns, and the line between homage and cliché."
 vibe: "Knows every genre's rules well enough to break them right"
 model: opus
+color: bright_magenta
 capabilities:
   - multi_genre_expertise
   - genre_convention_analysis
@@ -13,6 +14,7 @@ capabilities:
   - cross_genre_hybridization
   - genre_specific_structural_patterns
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: narrative-director

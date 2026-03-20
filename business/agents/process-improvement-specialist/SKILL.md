@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need process optimization and continuous improvement specialist. Uses Lean, Six Sigma, and other methodologies to drive efficiency."
 vibe: "Makes good processes great and bad processes gone"
 model: sonnet
+color: bright_blue
 capabilities:
   - process_analysis
   - lean_six_sigma
   - waste_elimination
   - kaizen
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: operations-manager

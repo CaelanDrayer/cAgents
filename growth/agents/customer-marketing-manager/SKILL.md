@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need customer retention and expansion specialist. Drives customer engagement, upsell/cross-sell campaigns, advocacy programs, and customer lifecycle marketing."
 vibe: "Turns happy customers into the best marketing channel"
 model: sonnet
+color: bright_green
 capabilities:
   - customer_lifecycle
   - expansion_campaigns
   - advocacy_programs
   - retention_marketing
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: campaign-manager

@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need workplace policies, disputes, investigations, and regulatory compliance."
 vibe: "Navigates employment law so the company doesn't have to guess"
 model: sonnet
+color: bright_red
 capabilities:
   - employment_law
   - workplace_investigations
   - policy_development
   - dispute_resolution
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: general-counsel

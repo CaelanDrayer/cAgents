@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need agile planning and methodology specialist. Facilitates sprint planning, manages backlogs, tracks velocity, coaches teams on Agile practices."
 vibe: "Turns standup theater into shipping velocity"
 model: sonnet
+color: bright_blue
 capabilities:
   - sprint_planning
   - backlog_management
   - velocity_tracking
   - agile_ceremonies
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: product-owner

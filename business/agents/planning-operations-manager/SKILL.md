@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need planning process and operations specialist. Optimizes planning processes, develops templates, manages tools, coordinates planning governance."
 vibe: "Keeps planning on track when the plan keeps changing"
 model: sonnet
+color: bright_blue
 capabilities:
   - process_optimization
   - template_development
   - tool_management
   - planning_operations
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: operations-manager

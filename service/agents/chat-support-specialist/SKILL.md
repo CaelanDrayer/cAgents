@@ -5,12 +5,14 @@ tier: execution
 description: Real-time chat support expert handling live chat with speed and empathy. Use for instant support and multiple concurrent conversations.
 vibe: "Resolves tickets in chat faster than most people type"
 model: sonnet
+color: bright_red
 capabilities:
   - live_chat_support
   - concurrent_conversation_management
   - rapid_response
   - chat_efficiency
 tools: ["Read","Grep","Glob","Write"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: support-director

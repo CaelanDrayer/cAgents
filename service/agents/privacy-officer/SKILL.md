@@ -5,6 +5,7 @@ tier: execution
 description: "Use when you need GDPR, CCPA, privacy policies, and privacy program management."
 vibe: "Guards user data like every record is their own"
 model: sonnet
+color: bright_red
 capabilities:
   - data_privacy
   - gdpr_compliance
@@ -12,6 +13,7 @@ capabilities:
   - privacy_by_design
   - data_governance
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: compliance-officer

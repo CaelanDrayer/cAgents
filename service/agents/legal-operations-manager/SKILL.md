@@ -5,6 +5,7 @@ tier: controller
 description: "Use when you need spend management, process improvement, technology implementation, and vendor management."
 vibe: "Runs the legal department like a well-managed engineering team"
 model: sonnet
+color: bright_red
 coordination_style: question_based
 typical_questions:
   - "What are the current operational pain points?"
@@ -16,6 +17,7 @@ capabilities:
   - process_optimization
   - legal_technology
 tools: ["Read","Write","Grep","Glob","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}

@@ -13,6 +13,7 @@ capabilities:
   - execution_optimization
   - prerequisite_validation
 tools: ["Read","Grep","Glob"]
+allowed-tools: "Read Grep Glob"
 maxTurns: 10
 disallowedTools: ["Task"]
 related_agents:

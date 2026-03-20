@@ -5,6 +5,7 @@ tier: execution
 description: "Use when you need A/B testing, landing page optimization, and funnel conversion specialist. Designs experiments, analyzes user behavior, and optimizes conversion paths for maximum performance."
 vibe: "Obsessively tests every pixel because a 2% lift compounds into millions"
 model: sonnet
+color: bright_green
 capabilities:
   - ab_testing
   - landing_page_optimization
@@ -13,6 +14,7 @@ capabilities:
   - user_behavior_analysis
   - multivariate_testing
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: campaign-manager

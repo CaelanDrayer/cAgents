@@ -13,6 +13,7 @@ capabilities:
   - version_checking
   - license_compliance
 tools: ["Read","Grep","Glob","Bash"]
+allowed-tools: "Read Grep Glob"
 maxTurns: 10
 disallowedTools: ["Task"]
 related_agents:

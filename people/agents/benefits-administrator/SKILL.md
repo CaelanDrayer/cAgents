@@ -5,12 +5,14 @@ tier: execution
 description: Benefits program manager for health insurance, retirement, and employee perks. Use for benefits enrollment, vendor management, and employee benefits education.
 vibe: "Makes sure every employee gets the benefits they earned"
 model: haiku
+color: bright_yellow
 capabilities:
   - benefits_administration
   - vendor_management
   - enrollment_coordination
   - employee_education
 tools: ["Read","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: hr-manager

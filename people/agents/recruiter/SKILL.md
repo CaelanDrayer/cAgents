@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need full-cycle recruiter for candidate sourcing, screening, engagement, and offer negotiation."
 vibe: "Finds the candidates who aren't looking but should be"
 model: sonnet
+color: bright_yellow
 capabilities:
   - candidate_sourcing
   - screening_interviews
   - candidate_engagement
   - offer_negotiation
 tools: ["Read","Write","Grep","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: talent-acquisition-manager

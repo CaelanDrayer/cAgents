@@ -20,6 +20,7 @@ capabilities:
   - owasp_compliance
   - secrets_detection
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: security-lead

@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need advanced technical troubleshooter for complex issues requiring system debugging, log analysis, and engineering coordination."
 vibe: "Debugs customer issues with the precision of a senior engineer"
 model: sonnet
+color: bright_red
 capabilities:
   - technical_troubleshooting
   - system_debugging
   - log_analysis
   - engineering_coordination
 tools: ["Read","Grep","Glob","Bash","Write"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: support-director

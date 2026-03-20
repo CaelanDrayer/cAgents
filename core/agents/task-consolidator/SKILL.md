@@ -12,6 +12,7 @@ capabilities:
   - result_consolidation
   - context_optimization
 tools: ["Read","Grep","Glob","Write","TodoWrite","Task"]
+allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
 maxTurns: 30
 permissionMode: "bypassPermissions"
 ---

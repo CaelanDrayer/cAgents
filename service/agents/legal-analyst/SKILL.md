@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need spend analysis, risk quantification, and data-driven legal insights."
 vibe: "Researches legal precedent so counsel can advise with confidence"
 model: sonnet
+color: bright_red
 capabilities:
   - legal_analytics
   - spend_analysis
   - risk_quantification
   - legal_metrics
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: legal-operations-manager

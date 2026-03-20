@@ -5,6 +5,7 @@ tier: execution
 description: "Use when you need brand strategy and identity specialist. Manages brand positioning, guidelines, voice, and consistency across all touchpoints."
 vibe: "Guards the brand voice like it's the company's reputation"
 model: sonnet
+color: bright_green
 capabilities:
   - brand_strategy
   - brand_identity
@@ -12,6 +13,7 @@ capabilities:
   - positioning
   - brand_voice
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: creative-director

@@ -5,6 +5,7 @@ tier: execution
 description: "Use when you need marketing analytics, performance tracking, dashboards, attribution, predictive modeling, customer segmentation, and marketing mix modeling."
 vibe: "Turns campaign data into the next campaign's secret weapon"
 model: sonnet
+color: bright_green
 capabilities:
   - marketing_analytics
   - attribution
@@ -15,6 +16,7 @@ capabilities:
   - marketing_mix_modeling
   - statistical_analysis
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: campaign-manager

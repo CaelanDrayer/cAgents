@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need marketing operations and technology specialist. Manages marketing automation, lead management, campaign operations, and martech stack."
 vibe: "Keeps the marketing machine running without anyone noticing"
 model: sonnet
+color: bright_green
 capabilities:
   - marketing_automation
   - lead_management
   - martech_stack
   - campaign_operations
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: campaign-manager

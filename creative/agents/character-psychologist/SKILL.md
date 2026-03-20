@@ -5,6 +5,7 @@ tier: execution
 description: Psychology-informed character specialist. Expert in attachment theory, defense mechanisms, personality frameworks, trauma-informed writing, Jungian archetypes, cognitive behavioral patterns, and developmental psychology. Creates psychologically authentic characters whose behavior emerges from genuine psychological processes.
 vibe: "Knows why your characters do what they do, even when they don't"
 model: opus
+color: bright_magenta
 capabilities:
   - psychological_profiling
   - attachment_theory
@@ -14,6 +15,7 @@ capabilities:
   - relationship_dynamics
   - developmental_psychology
 tools: ["Read","Grep","Glob","Write","Edit","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 answers_questions:
   - "Is this character psychologically authentic?"

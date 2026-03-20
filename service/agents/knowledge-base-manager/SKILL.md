@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need self-service content, documentation organization, and discoverability optimization."
 vibe: "Builds the docs that make support tickets unnecessary"
 model: sonnet
+color: bright_red
 capabilities:
   - content_strategy
   - taxonomy_design
   - search_optimization
   - knowledge_curation
 tools: ["Read","Grep","Glob","Write"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: support-operations-manager

@@ -10,6 +10,7 @@ typical_questions:
 description: Chief Human Resources Officer - Strategic people vision, talent strategy, and organizational culture. Use for workforce planning, organizational design, and major HR transformations.
 vibe: "Builds the culture that makes top talent stay"
 model: "opusplan"
+color: gold
 capabilities:
   - strategic_hr_leadership
   - talent_strategy
@@ -17,6 +18,7 @@ capabilities:
   - executive_decision_making
   - board_reporting
 tools: ["Read","Write","Grep","Glob","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}

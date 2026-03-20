@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need sales development and coaching specialist. Delivers onboarding, skills training, coaching programs, and performance improvement."
 vibe: "Trains reps until objection handling becomes second nature"
 model: sonnet
+color: bright_green
 capabilities:
   - sales_training
   - coaching
   - onboarding
   - performance_development
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: sales-strategist

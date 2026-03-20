@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need risk assessment, compliance frameworks, and integrated governance across legal and regulatory domains."
 vibe: "Balances risk appetite with compliance requirements"
 model: sonnet
+color: bright_red
 capabilities:
   - enterprise_risk_management
   - compliance_frameworks
   - risk_assessment
   - integrated_governance
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: compliance-officer

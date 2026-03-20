@@ -10,12 +10,14 @@ typical_questions:
 description: "Use when you need chief Strategy Officer providing strategic vision and competitive positioning. Leads long-term planning and growth strategy."
 vibe: "Sees the competitive landscape three moves ahead"
 model: opusplan
+color: gold
 capabilities:
   - strategic_planning
   - competitive_analysis
   - growth_strategy
   - business_model
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 ---

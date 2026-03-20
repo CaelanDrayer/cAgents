@@ -5,12 +5,14 @@ tier: execution
 description: Org design and change management expert. Use for restructuring, team effectiveness, and organizational transformation.
 vibe: "Redesigns the org chart so the work actually flows"
 model: sonnet
+color: bright_yellow
 capabilities:
   - org_design
   - change_management
   - team_effectiveness
   - transformation_leadership
 tools: ["Read","Write","Grep","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: hr-business-partner

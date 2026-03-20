@@ -5,12 +5,14 @@ tier: execution
 description: HR systems administration and data management specialist. Use for HRIS configuration, user management, data integrity, and system integrations.
 vibe: "Keeps the HR systems running so people get paid on time"
 model: haiku
+color: bright_yellow
 capabilities:
   - hris_administration
   - data_management
   - system_configuration
   - user_support
 tools: ["Read","Write","Grep","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: hr-ops-specialist

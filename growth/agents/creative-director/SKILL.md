@@ -10,12 +10,14 @@ typical_questions:
 description: "Use when you need creative strategy and visual design leader. Directs creative vision, campaign visuals, brand expression, and creative quality across all touchpoints."
 vibe: "Sets the creative vision and holds the bar impossibly high"
 model: sonnet
+color: bright_green
 capabilities:
   - creative_strategy
   - visual_design
   - brand_expression
   - campaign_creative
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}

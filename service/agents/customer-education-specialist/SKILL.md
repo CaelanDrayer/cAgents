@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need tutorials, webinars, and certifications."
 vibe: "Teaches customers to succeed with the product on their own"
 model: sonnet
+color: bright_red
 capabilities:
   - training_content_creation
   - webinar_delivery
   - customer_enablement
   - educational_program_design
 tools: ["Read","Grep","Glob","Write"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: customer-success-manager

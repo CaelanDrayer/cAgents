@@ -14,6 +14,7 @@ capabilities:
   - adaptive_execution
   - team_mode_support
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
 maxTurns: 50
 permissionMode: "bypassPermissions"
 ---

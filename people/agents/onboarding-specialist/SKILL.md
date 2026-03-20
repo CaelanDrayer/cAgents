@@ -5,12 +5,14 @@ tier: execution
 description: New hire integration expert managing pre-boarding, orientation, and 90-day ramp. Use for onboarding programs, new hire experience, and early retention.
 vibe: "Gets new hires productive before their welcome swag arrives"
 model: sonnet
+color: bright_yellow
 capabilities:
   - onboarding_program_design
   - new_hire_experience
   - pre_boarding
   - integration_tracking
 tools: ["Read","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: hr-manager

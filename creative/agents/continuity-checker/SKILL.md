@@ -5,6 +5,7 @@ tier: execution
 description: "Expert continuity analyst who builds and maintains the story bible -- tracking every name, date, object, rule, and relationship so the reader never encounters a detail that contradicts another. The manuscript's institutional memory."
 vibe: "Catches the plot holes before your readers do"
 model: opus
+color: bright_magenta
 capabilities:
   - story_bible_construction
   - character_knowledge_tracking
@@ -15,6 +16,7 @@ capabilities:
   - series_continuity
   - contradiction_detection
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: editor

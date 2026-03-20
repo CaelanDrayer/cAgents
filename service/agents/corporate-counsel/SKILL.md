@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need entity formation, M&A, and securities compliance."
 vibe: "Protects the company with legal strategy, not just legal caution"
 model: sonnet
+color: bright_red
 capabilities:
   - corporate_law
   - ma_transactions
   - corporate_governance
   - securities_compliance
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: general-counsel

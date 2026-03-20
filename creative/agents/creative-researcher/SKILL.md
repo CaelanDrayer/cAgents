@@ -5,6 +5,7 @@ tier: execution
 description: "Creative and narrative research specialist for fiction writers. Expert in historical accuracy, cultural authenticity, technical verisimilitude, and scientific plausibility. Finds the telling detail that makes a fictional world breathable, and integrates research invisibly into prose."
 vibe: "Digs up the obscure details that make fiction feel real"
 model: opus
+color: bright_magenta
 capabilities:
   - historical_research
   - cultural_authenticity
@@ -14,6 +15,7 @@ capabilities:
   - research_integration
   - period_detail_selection
 tools: ["Read","Grep","Glob","Write","Edit","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 answers_questions:
   - "What historical details are needed for this period and setting?"

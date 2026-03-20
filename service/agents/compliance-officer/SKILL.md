@@ -5,6 +5,7 @@ tier: controller
 description: "Use when you need regulatory compliance, policy development, monitoring, and risk assessment across all domains."
 vibe: "Makes sure the company follows every rule it agreed to follow"
 model: sonnet
+color: bright_red
 coordination_style: question_based
 typical_questions:
   - "What regulations apply to this activity?"
@@ -17,6 +18,7 @@ capabilities:
   - risk_assessment
   - compliance_training
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}

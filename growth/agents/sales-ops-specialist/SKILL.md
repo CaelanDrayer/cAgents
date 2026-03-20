@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need sales infrastructure and process specialist. Manages CRM administration, territory design, quota allocation, and process optimization."
 vibe: "Keeps CRM clean and forecasts honest"
 model: sonnet
+color: bright_green
 capabilities:
   - crm_administration
   - territory_design
   - quota_allocation
   - process_optimization
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: sales-strategist

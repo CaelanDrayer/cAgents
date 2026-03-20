@@ -17,6 +17,7 @@ capabilities:
   - change_management
   - talent_strategy
 tools: ["Read","Write","Grep","Glob","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}

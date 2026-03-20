@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need onboarding, skills development, and training effectiveness measurement."
 vibe: "Trains support teams to handle anything customers throw at them"
 model: sonnet
+color: bright_red
 capabilities:
   - training_delivery
   - curriculum_development
   - onboarding
   - skill_assessment
 tools: ["Read","Grep","Glob","Write"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: support-operations-manager

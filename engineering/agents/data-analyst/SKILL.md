@@ -14,6 +14,7 @@ capabilities:
   - business_intelligence
   - data_visualization
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: data-lead

@@ -5,6 +5,7 @@ tier: controller
 description: "Use when you need customer success specialist coordinating onboarding, adoption, success planning, health monitoring, and proactive support across ALL domains."
 vibe: "Turns customers into advocates before they know they need help"
 model: sonnet
+color: bright_red
 coordination_style: question_based
 typical_questions:
   - "What is the current customer health score and engagement level?"
@@ -17,10 +18,10 @@ capabilities:
   - health_monitoring
   - proactive_support
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
-related-agents: ["support-director", "support-agent", "cx-analyst", "knowledge-manager"]
 not-my-scope: ["Code implementation", "product development", "financial strategy", "HR policies"]
 related_agents:
   - name: account-manager
@@ -32,6 +33,13 @@ related_agents:
   - name: customer-marketing-manager
     type: cross_domain
 ---
+
+<example>
+<context>Customer retention issue</context>
+<user>Three enterprise customers are at risk of churning this month</user>
+<agent>customer-success-manager intervenes: analyzes usage patterns, identifies pain points, creates personalized retention plans, schedules executive check-ins, proposes feature accommodations</agent>
+</example>
+
 
 # Customer Success Manager
 

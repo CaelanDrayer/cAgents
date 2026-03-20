@@ -5,6 +5,7 @@ tier: execution
 description: Master character creator and development specialist. Expert in psychological depth, the wound/want/need framework, character-driven plotting, ensemble dynamics, and character revelation through action. Creates characters with the complexity, contradiction, and vitality of real human beings.
 vibe: "Designs characters you remember long after the story ends"
 model: opus
+color: bright_magenta
 capabilities:
   - character_creation
   - psychological_depth
@@ -14,6 +15,7 @@ capabilities:
   - character_voice
   - foil_relationships
 tools: ["Read","Grep","Glob","Write","Edit","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 answers_questions:
   - "How can this character be deepened?"

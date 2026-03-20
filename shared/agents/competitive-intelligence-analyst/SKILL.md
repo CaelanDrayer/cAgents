@@ -5,6 +5,7 @@ tier: controller
 description: "Use when you need competitor analysis, win/loss analysis, and competitive positioning across all domains."
 vibe: "Knows what competitors are doing before they announce it"
 model: sonnet
+color: bright_white
 coordination_style: question_based
 typical_questions:
   - "Who are the key competitors in this space?"
@@ -17,6 +18,7 @@ capabilities:
   - competitive_positioning
   - battle_cards
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}

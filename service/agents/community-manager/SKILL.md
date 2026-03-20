@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need forums, peer support, and user advocacy."
 vibe: "Builds communities where users help each other before support does"
 model: sonnet
+color: bright_red
 capabilities:
   - community_building
   - forum_moderation
   - user_engagement
   - peer_support_facilitation
 tools: ["Read","Grep","Glob","Write"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: customer-advocacy-manager

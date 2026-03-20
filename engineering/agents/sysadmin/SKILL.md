@@ -17,6 +17,7 @@ capabilities:
   - security_hardening
   - capacity_planning
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: devops-lead

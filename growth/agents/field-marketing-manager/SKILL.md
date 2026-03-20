@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need regional and field marketing specialist. Executes regional campaigns, local events, sales territory support, and geographic marketing."
 vibe: "Brings the brand to life in markets that matter most"
 model: sonnet
+color: bright_green
 capabilities:
   - regional_marketing
   - local_events
   - territory_support
   - geo_targeting
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: campaign-manager

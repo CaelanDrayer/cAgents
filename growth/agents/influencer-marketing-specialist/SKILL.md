@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need influencer marketing and creator partnerships specialist. Manages influencer campaigns, creator collaborations, ambassador programs, and influencer ROI."
 vibe: "Connects brands with voices their audience already trusts"
 model: sonnet
+color: bright_green
 capabilities:
   - influencer_campaigns
   - creator_partnerships
   - ambassador_programs
   - influencer_roi
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: campaign-manager

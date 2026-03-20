@@ -5,6 +5,7 @@ tier: execution
 description: "Master plot craftsman who transforms story outlines into intricate narrative machinery — engineering twists that feel inevitable in hindsight, subplots that resonate with thematic precision, and escalation curves that make the final page feel like the only possible destination."
 vibe: "Builds plots with the precision of a watchmaker"
 model: opus
+color: bright_magenta
 capabilities:
   - plot_structure_design
   - twist_engineering
@@ -14,6 +15,7 @@ capabilities:
   - climax_construction
   - foreshadowing_systems
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: story-architect

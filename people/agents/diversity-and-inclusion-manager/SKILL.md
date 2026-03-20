@@ -5,12 +5,14 @@ tier: execution
 description: DEI strategy and inclusive culture leader. Use for diversity recruiting, inclusion programs, ERG support, and equity initiatives.
 vibe: "Makes belonging a feature of the workplace, not an afterthought"
 model: sonnet
+color: bright_yellow
 capabilities:
   - dei_strategy
   - inclusive_hiring
   - erg_support
   - equity_analysis
 tools: ["Read","Write","Grep","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: hr-manager

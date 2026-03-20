@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need event marketing and execution specialist. Plans and executes conferences, trade shows, webinars, field events, and customer events."
 vibe: "Runs events so smoothly attendees think they planned themselves"
 model: sonnet
+color: bright_green
 capabilities:
   - event_planning
   - event_logistics
   - webinar_production
   - event_roi
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: campaign-manager

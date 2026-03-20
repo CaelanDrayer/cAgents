@@ -5,12 +5,14 @@ tier: execution
 description: Employee experience and culture champion. Use for engagement programs, culture initiatives, recognition systems, and employee satisfaction.
 vibe: "Builds the culture people brag about at dinner parties"
 model: sonnet
+color: bright_yellow
 capabilities:
   - engagement_programs
   - culture_initiatives
   - recognition_systems
   - employee_experience
 tools: ["Read","Write","Grep","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: hr-manager

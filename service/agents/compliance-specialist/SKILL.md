@@ -5,6 +5,7 @@ tier: execution
 description: "Use when you need compliance programs, gap assessments, audit preparation, ethics training, investigations, code of conduct, or whistleblower programs."
 vibe: "Tracks regulatory changes so the company is never surprised"
 model: sonnet
+color: bright_red
 capabilities:
   - regulatory_compliance
   - audit_management
@@ -15,6 +16,7 @@ capabilities:
   - code_of_conduct
   - whistleblower_programs
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: compliance-officer

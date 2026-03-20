@@ -13,6 +13,7 @@ capabilities:
   - pattern_learning
   - subagent_recovery
 tools: ["Read","Grep","Glob","Write","TodoWrite","Task"]
+allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 ---

@@ -2,7 +2,7 @@
 #
 # cAgents Agent Schema Validation
 # Validates all agent SKILL.md files across all 8 domains
-# Version: 10.6.0
+# Version: 10.22.4
 #
 # Usage:
 #   ./scripts/ci/validate-agents.sh           # Validate all domains
@@ -18,9 +18,15 @@
 #   5. Agent path matches plugin.json registration
 #   6. No orphan agents (in directory but not in plugin.json)
 #   7. Domain/name consistency (agent dir matches domain field)
-#   8. Description length validation (10-300 chars)
+#   8. Description length validation (10-1024 chars)
 #   9. related-agents resolution (referenced agents must exist)
 #  10. Vibe field presence check (WARN if missing)
+#  11. Agent Skills spec: name max 64 chars
+#  12. Agent Skills spec: name matches directory name (ERROR)
+#  13. Agent Skills spec: description max 1024 chars
+#  14. Legacy related-agents field rejection (WARN)
+#  15. plugin.json structural validation (required: name field)
+#  16. domain_overrides.yaml agent reference validation
 
 set -e
 
@@ -162,25 +168,41 @@ validate_agent() {
         fi
     fi
 
-    if [[ -n "$name_value" ]] && [[ "$name_value" != "$dir_name" ]]; then
-        log_warn "Name mismatch: frontmatter says '$name_value' but directory is '$dir_name': $relative_path"
+    # Check 11: Agent Skills spec - name max 64 chars
+    if [[ -n "$name_value" ]]; then
+        local name_len=${#name_value}
+        if [[ $name_len -gt 64 ]]; then
+            log_fail "Name too long (${name_len} chars, max 64): $relative_path"
+            return
+        fi
     fi
 
-    # Check 8: Description length validation (10-300 chars)
+    # Check 12: Agent Skills spec - name MUST match directory name (ERROR)
+    if [[ -n "$name_value" ]] && [[ "$name_value" != "$dir_name" ]]; then
+        log_fail "Name/directory mismatch: frontmatter name '$name_value' != directory '$dir_name': $relative_path"
+        return
+    fi
+
+    # Check 8: Description length validation (10-1024 chars)
     local description
     description=$(echo "$frontmatter" | grep "^description:" | sed 's/^description:\s*//' | tr -d '"' | tr -d "'")
     if [[ -n "$description" ]]; then
         local desc_len=${#description}
         if [[ $desc_len -lt 10 ]]; then
             log_warn "Description too short (${desc_len} chars, min 10): $relative_path"
-        elif [[ $desc_len -gt 300 ]]; then
-            log_warn "Description too long (${desc_len} chars, max 300): $relative_path"
+        elif [[ $desc_len -gt 1024 ]]; then
+            log_warn "Description too long (${desc_len} chars, max 1024): $relative_path"
         fi
     fi
 
-    # Check 9: related-agents resolution (referenced agents must exist)
+    # Check 14: Legacy related-agents field rejection (prefer related_agents structured format)
+    if echo "$frontmatter" | grep -q "^related-agents:"; then
+        log_warn "Legacy 'related-agents' field found (use 'related_agents' structured format instead): $relative_path"
+    fi
+
+    # Check 9: related_agents resolution (referenced agents must exist)
     local related_agents
-    related_agents=$(echo "$frontmatter" | grep -A 20 "^related-agents:" | grep "^\s*-" | sed 's/^\s*-\s*//' | tr -d '"' | tr -d "'")
+    related_agents=$(echo "$frontmatter" | grep -A 20 "^related_agents:" | grep "^\s*-\s*name:" | sed 's/^\s*-\s*name:\s*//' | tr -d '"' | tr -d "'")
     if [[ -n "$related_agents" ]]; then
         while IFS= read -r related; do
             related=$(echo "$related" | tr -d '[:space:]')
@@ -204,9 +226,17 @@ validate_agent() {
 
     # Check 10: Vibe field presence (WARN if missing - advisory)
     if ! echo "$frontmatter" | grep -q "^vibe:"; then
-        # Only warn, don't fail - vibe is optional but recommended
-        : # silent pass for now - uncomment below when more agents have vibes
-        # log_warn "Missing 'vibe' field (recommended): $relative_path"
+        : # silent pass for now
+    fi
+
+    # Check 15b: Model field presence (WARN if missing)
+    if ! echo "$frontmatter" | grep -q "^model:"; then
+        log_warn "Missing 'model' field (recommended per Agent Skills spec): $relative_path"
+    fi
+
+    # Check 15c: Color field presence (WARN if missing)
+    if ! echo "$frontmatter" | grep -q "^color:"; then
+        log_warn "Missing 'color' field (recommended per Anthropic convention): $relative_path"
     fi
 
     log_pass "$relative_path"
@@ -315,6 +345,91 @@ validate_hooks() {
 }
 
 #
+# Check 15: Validate plugin.json structural requirements
+#
+validate_plugin_json() {
+    if [[ $COUNT_ONLY != true ]]; then
+        echo -e "\n${BLUE}[plugin.json validation]${NC}"
+    fi
+
+    local root_plugin="$PROJECT_ROOT/.claude-plugin/plugin.json"
+    if [[ ! -f "$root_plugin" ]]; then
+        log_fail "Root plugin.json missing: .claude-plugin/plugin.json"
+        return
+    fi
+
+    # Required field: name
+    local has_name
+    has_name=$(node -e "
+        const data = JSON.parse(require('fs').readFileSync('$root_plugin', 'utf8'));
+        console.log(data.name ? 'yes' : 'no');
+    " 2>/dev/null)
+    if [[ "$has_name" != "yes" ]]; then
+        log_fail "plugin.json missing required 'name' field"
+    else
+        log_pass "Root plugin.json has required 'name' field"
+    fi
+
+    # Validate domain sub-plugin.json files
+    for domain in "${DOMAINS[@]}"; do
+        local domain_plugin="$PROJECT_ROOT/$domain/.claude-plugin/plugin.json"
+        if [[ -f "$domain_plugin" ]]; then
+            local domain_has_name
+            domain_has_name=$(node -e "
+                const data = JSON.parse(require('fs').readFileSync('$domain_plugin', 'utf8'));
+                console.log(data.name ? 'yes' : 'no');
+            " 2>/dev/null)
+            if [[ "$domain_has_name" != "yes" ]]; then
+                log_fail "$domain plugin.json missing 'name' field"
+            fi
+        fi
+    done
+}
+
+#
+# Check 16: Validate domain_overrides.yaml agent references
+#
+validate_domain_overrides() {
+    if [[ $COUNT_ONLY != true ]]; then
+        echo -e "\n${BLUE}[domain_overrides validation]${NC}"
+    fi
+
+    local overrides_found=0
+    local overrides_errors=0
+
+    for domain in "${DOMAINS[@]}"; do
+        local overrides_file="$PROJECT_ROOT/$domain/config/domain_overrides.yaml"
+        if [[ ! -f "$overrides_file" ]]; then
+            continue
+        fi
+        overrides_found=$((overrides_found + 1))
+
+        # Extract agent references from controller_catalog
+        local agent_refs
+        agent_refs=$(grep -E "^\s+name:" "$overrides_file" 2>/dev/null | sed 's/^\s*name:\s*//' | tr -d '"' | tr -d "'" | tr -d '[:space:]')
+        while IFS= read -r agent_ref; do
+            [[ -z "$agent_ref" ]] && continue
+            # Check if agent directory exists in this domain or any domain
+            local found=false
+            for check_domain in "${DOMAINS[@]}"; do
+                if [[ -d "$PROJECT_ROOT/$check_domain/agents/$agent_ref" ]]; then
+                    found=true
+                    break
+                fi
+            done
+            if [[ "$found" != true ]]; then
+                log_warn "domain_overrides.yaml references agent '$agent_ref' not found in any domain: $domain/config/domain_overrides.yaml"
+                overrides_errors=$((overrides_errors + 1))
+            fi
+        done <<< "$agent_refs"
+    done
+
+    if [[ $overrides_found -gt 0 ]] && [[ $overrides_errors -eq 0 ]] && [[ $COUNT_ONLY != true ]]; then
+        echo -e "  ${GREEN}All domain_overrides.yaml agent references valid ($overrides_found files checked)${NC}"
+    fi
+}
+
+#
 # Main
 #
 main() {
@@ -344,7 +459,7 @@ main() {
     if [[ $COUNT_ONLY != true ]]; then
         echo ""
         echo "=================================================="
-        echo "cAgents Agent Validation (v10.6.0)"
+        echo "cAgents Agent Validation (v10.22.4)"
         echo "=================================================="
     fi
 
@@ -357,6 +472,8 @@ main() {
         done
         check_orphans
         validate_hooks
+        validate_plugin_json
+        validate_domain_overrides
     fi
 
     # Summary

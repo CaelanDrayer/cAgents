@@ -5,6 +5,7 @@ tier: execution
 description: "Narrative voice and style specialist. Expert in authorial voice development, narrative mode selection, voice consistency, and style analysis. Deep knowledge of free indirect discourse, stream of consciousness, unreliable narration, omniscient and limited perspectives, and the subtle art of making a narrator's personality inseparable from the prose itself."
 vibe: "Gives every character a voice you'd recognize in a crowd"
 model: opus
+color: bright_magenta
 capabilities:
   - voice_development
   - narrative_mode_selection
@@ -14,6 +15,7 @@ capabilities:
   - voice_differentiation
   - authorial_voice_coaching
 tools: ["Read","Grep","Glob","Write","Edit","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 answers_questions:
   - "What narrative voice best serves this story?"

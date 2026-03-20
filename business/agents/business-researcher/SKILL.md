@@ -5,12 +5,14 @@ tier: execution
 description: "Business and market research specialist. Conducts business research, gathers competitive and market data, synthesizes findings for strategic planning and decision support."
 vibe: "Digs until the data tells a story worth betting on"
 model: sonnet
+color: bright_blue
 capabilities:
   - research_methodology
   - data_gathering
   - synthesis_analysis
   - report_writing
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: strategic-planner

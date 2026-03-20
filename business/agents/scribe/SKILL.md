@@ -13,6 +13,7 @@ capabilities:
   - technical_writing
   - learning_documentation
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: technical-writer

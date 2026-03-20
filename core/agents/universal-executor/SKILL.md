@@ -12,6 +12,7 @@ capabilities:
   - output_aggregation
   - progress_tracking
 tools: ["Read","Grep","Glob","Write","TodoWrite","Task"]
+allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 ---

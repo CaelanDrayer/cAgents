@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need regional sales leadership and territory management specialist. Manages territories, coaches teams, and drives regional performance."
 vibe: "Carves territories so every rep has a winnable book of business"
 model: sonnet
+color: bright_green
 capabilities:
   - territory_design
   - team_coaching
   - pipeline_management
   - performance_optimization
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: sales-strategist

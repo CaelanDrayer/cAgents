@@ -10,16 +10,17 @@ typical_questions:
 description: "Use when you need operations optimization and process management specialist. Coordinates operational decisions, efficiency improvements, and process optimization."
 vibe: "Runs the machine that runs the business"
 model: sonnet
+color: bright_blue
 capabilities:
   - operations_planning
   - process_management
   - performance_optimization
   - continuous_improvement
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
-related-agents: ["strategic-planner", "finance-manager", "project-manager", "process-improvement-specialist"]
 not-my-scope: ["Code implementation", "visual design", "HR policies", "legal review"]
 related_agents:
   - name: process-improvement-specialist
@@ -31,6 +32,13 @@ related_agents:
   - name: strategic-planner
     type: collaborates_with
 ---
+
+<example>
+<context>Process improvement needed</context>
+<user>Our deployment process takes 4 hours and involves 12 manual steps</user>
+<agent>operations-manager optimizes: maps current workflow, identifies automation candidates, designs CI/CD pipeline, estimates time savings, creates implementation roadmap</agent>
+</example>
+
 
 # Operations Manager
 

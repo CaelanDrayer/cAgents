@@ -5,6 +5,7 @@ tier: execution
 description: Master dialogue craftsman. Expert in subtext, dialect creation, power dynamics in conversation, dialogue theories (Mamet, Pinter, Hemingway), and the art of what remains unsaid. Creates distinctive character voices and authentic verbal exchanges that advance story and reveal character simultaneously.
 vibe: "Hears the conversation beneath the conversation"
 model: opus
+color: bright_magenta
 capabilities:
   - dialogue_writing
   - subtext_craft
@@ -13,6 +14,7 @@ capabilities:
   - power_dynamics
   - conversation_design
 tools: ["Read","Grep","Glob","Write","Edit","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 answers_questions:
   - "How can this dialogue be improved?"

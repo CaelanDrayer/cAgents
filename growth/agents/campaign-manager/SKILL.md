@@ -10,12 +10,14 @@ typical_questions:
 description: "Use when you need campaign execution and management leader. Coordinates campaign planning, execution, optimization, and performance tracking across channels."
 vibe: "Orchestrates campaigns that hit every channel at the right time"
 model: opusplan
+color: bright_green
 capabilities:
   - campaign_planning
   - campaign_execution
   - performance_optimization
   - multi_channel_coordination
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
@@ -31,6 +33,13 @@ related_agents:
   - name: marketing-ops-specialist
     type: coordinates
 ---
+
+<example>
+<context>Campaign execution needed</context>
+<user>Execute our Q2 content marketing campaign across social media and email</user>
+<agent>campaign-manager executes: creates posting schedule, writes email sequences, sets up tracking pixels, monitors engagement metrics, adjusts targeting based on early results</agent>
+</example>
+
 
 # Campaign Manager
 

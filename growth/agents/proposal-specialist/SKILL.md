@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need proposal and RFP response specialist. Creates compelling proposals, manages RFP responses, and coordinates bid teams."
 vibe: "Writes proposals that win by making the decision obvious"
 model: sonnet
+color: bright_green
 capabilities:
   - rfp_response
   - proposal_writing
   - bid_coordination
   - sow_development
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: sales-strategist

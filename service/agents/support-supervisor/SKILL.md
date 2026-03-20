@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need daily support operations supervision, agent performance coaching, and workflow optimization."
 vibe: "Coaches support agents until great service becomes muscle memory"
 model: sonnet
+color: bright_red
 capabilities:
   - team_management
   - performance_coaching
   - workflow_optimization
   - resource_allocation
 tools: ["Read","Grep","Glob","Write"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: support-director

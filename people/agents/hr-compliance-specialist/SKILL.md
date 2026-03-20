@@ -5,12 +5,14 @@ tier: execution
 description: Employment law and regulatory compliance expert. Use for legal compliance, policy development, audit readiness, and risk mitigation.
 vibe: "Keeps the company on the right side of every employment law"
 model: sonnet
+color: bright_yellow
 capabilities:
   - employment_law_compliance
   - policy_development
   - audit_readiness
   - risk_mitigation
 tools: ["Read","Write","Grep","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: hr-manager

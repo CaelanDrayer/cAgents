@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need sales closer and deal manager. Owns full sales cycle from qualified lead to closed deal, achieving quota through disciplined execution."
 vibe: "Closes deals by solving problems, not pushing products"
 model: sonnet
+color: bright_green
 capabilities:
   - opportunity_management
   - demos
   - negotiation
   - closing
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: sales-strategist

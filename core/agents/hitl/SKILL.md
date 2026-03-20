@@ -13,6 +13,7 @@ capabilities:
   - pattern_learning
   - workflow_pause_resume
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
 maxTurns: 15
 permissionMode: "bypassPermissions"
 ---

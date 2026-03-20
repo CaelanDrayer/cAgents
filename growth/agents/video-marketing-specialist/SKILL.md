@@ -5,6 +5,7 @@ tier: execution
 description: "Use when you need video content strategy, YouTube management, and short-form video specialist. Plans video campaigns, manages channels, and optimizes video content for engagement and reach."
 vibe: "Knows the first three seconds decide everything and plans accordingly"
 model: sonnet
+color: bright_green
 capabilities:
   - video_content_strategy
   - youtube_management
@@ -13,6 +14,7 @@ capabilities:
   - video_seo
   - video_analytics
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: campaign-manager

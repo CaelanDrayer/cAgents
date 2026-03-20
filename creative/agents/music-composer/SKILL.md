@@ -5,6 +5,7 @@ tier: execution
 description: "Game music composer who writes emotionally powerful scores that respond to gameplay in real-time. Expert in adaptive music systems, leitmotif development, orchestration, and the unique craft of writing music that must loop, layer, branch, and transform without the listener ever noticing the seams."
 vibe: "Scores the moments that make the audience feel everything"
 model: opus
+color: bright_magenta
 capabilities:
   - adaptive_music_composition
   - leitmotif_development
@@ -15,6 +16,7 @@ capabilities:
   - interactive_music_systems
   - music_production
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: narrative-director

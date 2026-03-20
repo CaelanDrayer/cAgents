@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need regulatory submissions, agency communications, and industry compliance."
 vibe: "Stays ahead of regulations so the company is never scrambling"
 model: sonnet
+color: bright_red
 capabilities:
   - regulatory_filings
   - agency_relations
   - regulatory_strategy
   - industry_compliance
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: compliance-officer

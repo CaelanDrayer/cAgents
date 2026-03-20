@@ -10,12 +10,14 @@ typical_questions:
 description: "Use when you need product positioning, messaging, and launch specialist. Coordinates product launches, competitive positioning, sales enablement, and go-to-market strategy."
 vibe: "Positions the product so it sells the story customers need to hear"
 model: sonnet
+color: bright_green
 capabilities:
   - product_positioning
   - launch_planning
   - competitive_intelligence
   - sales_enablement
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}

@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need scenario planning and strategic foresight specialist. Develops future scenarios, identifies uncertainties, creates contingency plans, stress-tests strategies."
 vibe: "Plans for the futures everyone hopes won't happen"
 model: sonnet
+color: bright_blue
 capabilities:
   - scenario_development
   - strategic_foresight
   - contingency_planning
   - strategy_stress_testing
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: strategic-planner

@@ -5,6 +5,7 @@ tier: execution
 description: "Expert narrative flow designer who engineers the reading experience at every scale — from the micro-rhythm of stimulus and response within a paragraph to the macro-architecture of chapter sequences that create compulsive readability. Master of scene/sequel theory, information revelation, and the invisible mechanics that make readers turn pages."
 vibe: "Architects the story so every path feels intentional"
 model: opus
+color: bright_magenta
 capabilities:
   - scene_sequel_design
   - mru_construction
@@ -15,6 +16,7 @@ capabilities:
   - narrative_momentum
   - pacing_engineering
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: story-architect

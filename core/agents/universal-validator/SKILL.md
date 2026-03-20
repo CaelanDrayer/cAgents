@@ -4,6 +4,7 @@ tier: infrastructure
 description: "Use when you need quality validator for ALL domains. Validates controller coordination and quality gates. Enforces delegation compliance."
 vibe: "Trust but verify -- every claim needs evidence, every shortcut gets caught"
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
 model: opus
 color: bright_cyan
 domain: core
@@ -16,6 +17,13 @@ capabilities:
 maxTurns: 40
 permissionMode: "bypassPermissions"
 ---
+
+<example>
+<context>Implementation needs final quality check</context>
+<user>Validate that all 12 work items from the auth refactor meet their acceptance criteria</user>
+<agent>universal-validator checks: verifies each criterion with fresh evidence, runs test suites, confirms file changes match specs, produces validation_report.yaml with PASS/FAIL per item</agent>
+</example>
+
 
 # Universal Validator
 

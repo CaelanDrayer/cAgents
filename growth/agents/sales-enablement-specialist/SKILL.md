@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need sales enablement and productivity specialist. Creates training, playbooks, content, and tools to equip sales teams for effectiveness."
 vibe: "Arms the sales team with exactly what they need to close"
 model: sonnet
+color: bright_green
 capabilities:
   - sales_enablement
   - playbook_creation
   - content_development
   - training_design
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: product-marketing-manager

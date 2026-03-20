@@ -1,6 +1,6 @@
 ---
 name: security-lead
-description: "Security domain manager for threat modeling, security reviews, and penetration testing. Use for tier 3-4 instructions touching authentication, authorization, or sensitive data."
+description: "Use when checking for security vulnerabilities, reviewing auth flows, auditing input validation, or preparing for a security assessment. Handles threat modeling, penetration testing, and compliance checks."
 vibe: "Leads the security team like a general defending the castle"
 tier: controller
 domain: engineering
@@ -18,10 +18,10 @@ capabilities:
   - compliance_auditing
   - vulnerability_assessment
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}
-related-agents: ["architect", "backend-developer", "devops-lead", "qa-tester"]
 not-my-scope: ["Feature development", "UI design", "content creation", "marketing strategy"]
 related_agents:
   - name: security-specialist
@@ -31,6 +31,13 @@ related_agents:
   - name: architect
     type: collaborates_with
 ---
+
+<example>
+<context>Security review needed before launch</context>
+<user>Review our API for security vulnerabilities before we go to production</user>
+<agent>security-lead audits: checks authentication flows, validates input sanitization, reviews CORS config, scans for injection vectors, produces security report with severity ratings</agent>
+</example>
+
 
 # Security Lead Agent
 

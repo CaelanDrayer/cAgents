@@ -5,15 +5,21 @@ tier: execution
 description: "Use when you need domain-agnostic quality review of work item implementations. Evaluates outputs against acceptance criteria and returns PASS or REVISE with specific feedback. Works across all domains."
 vibe: "The impartial judge who only cares about acceptance criteria"
 model: sonnet
+color: bright_cyan
 capabilities:
   - acceptance_criteria_evaluation
   - cross_domain_review
   - evidence_based_assessment
   - revision_feedback
 tools: ["Read","Grep","Glob","Bash"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 15
 permissionMode: "bypassPermissions"
-related-agents: ["code-reviewer", "universal-validator"]
+related_agents:
+  - name: code-reviewer
+    type: collaborates_with
+  - name: universal-validator
+    type: collaborates_with
 not-my-scope: ["Implementation", "planning", "coordination", "content creation"]
 ---
 

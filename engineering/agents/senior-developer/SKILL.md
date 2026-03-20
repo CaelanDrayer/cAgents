@@ -24,6 +24,7 @@ capabilities:
   - mentoring
   - code_review
 tools: ["Read","Write","Edit","Grep","Glob","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 color: bright_green
 maxTurns: 30
 related_agents:

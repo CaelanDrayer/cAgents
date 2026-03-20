@@ -5,6 +5,7 @@ tier: execution
 description: "Master of fictional history and continuity who builds the deep past that gives worlds weight — managing timelines, creating primary sources, distinguishing legend from fact, and ensuring that every canonical detail holds across the full span of a narrative."
 vibe: "Guards the canon like it's the last copy of the sacred text"
 model: opus
+color: bright_magenta
 capabilities:
   - historiographic_methodology
   - primary_source_creation
@@ -15,6 +16,7 @@ capabilities:
   - archaeological_storytelling
   - continuity_management
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: narrative-director

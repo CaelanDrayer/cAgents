@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need social media strategy and community management specialist. Plans social strategy, manages content calendars, and builds community engagement."
 vibe: "Builds communities that talk about the brand even when it's not posting"
 model: sonnet
+color: bright_green
 capabilities:
   - social_strategy
   - content_calendars
   - community_management
   - social_analytics
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: campaign-manager

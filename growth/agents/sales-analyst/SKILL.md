@@ -5,12 +5,14 @@ tier: execution
 description: "Use when you need sales analytics and insights specialist. Provides pipeline analytics, forecast modeling, performance analysis, and trend identification."
 vibe: "Finds the patterns in pipeline data that predict next quarter"
 model: sonnet
+color: bright_green
 capabilities:
   - pipeline_analytics
   - forecast_modeling
   - performance_analysis
   - trend_identification
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: sales-strategist

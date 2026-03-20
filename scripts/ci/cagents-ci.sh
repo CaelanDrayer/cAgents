@@ -2,7 +2,7 @@
 #
 # cAgents CI Runner
 # Self-contained CI script for quality gates
-# Version: 8.0.0
+# Version: 10.22.4
 #
 # Usage:
 #   ./scripts/ci/cagents-ci.sh [command]

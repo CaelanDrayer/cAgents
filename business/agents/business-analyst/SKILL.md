@@ -10,6 +10,7 @@ typical_questions:
 description: "Use when you need requirements gathering, gap analysis, acceptance criteria, solution design, and business planning specialist. Bridges business and technology through analysis, stakeholder management, and documentation."
 vibe: "Finds the signal in spreadsheets everyone else ignores"
 model: sonnet
+color: bright_blue
 capabilities:
   - requirements_analysis
   - process_analysis
@@ -20,6 +21,7 @@ capabilities:
   - acceptance_criteria
   - business_case_development
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}

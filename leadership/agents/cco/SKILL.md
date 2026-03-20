@@ -5,6 +5,7 @@ vibe: "Sets the creative standard that defines the company's voice"
 tier: controller
 domain: leadership
 model: "opusplan"
+color: gold
 coordination_style: question_based
 typical_questions:
   - "What is the current implementation of this feature?"
@@ -17,6 +18,7 @@ capabilities:
   - brand_identity
   - creative_quality
 tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
+allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"
 memory: {"project": true}

@@ -5,6 +5,7 @@ tier: execution
 description: "Use when you need patents, trademarks, copyrights, trade secrets, and licensing agreements."
 vibe: "Protects intellectual property like it's the company's crown jewels"
 model: sonnet
+color: bright_red
 capabilities:
   - patent_prosecution
   - trademark_management
@@ -12,6 +13,7 @@ capabilities:
   - trade_secret_programs
   - ip_licensing
 tools: ["Read","Write","Grep","Glob","TodoWrite"]
+allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:
   - name: general-counsel
