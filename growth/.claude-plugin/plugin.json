@@ -1,6 +1,6 @@
 {
   "name": "cagents-growth",
-  "version": "10.22.3",
+  "version": "10.22.4",
   "description": "cAgents growth domain - Marketing and sales specialists for customer acquisition and revenue growth",
   "agents": [
     "./agents/account-executive/SKILL.md",

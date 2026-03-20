@@ -278,6 +278,34 @@ createHook('VerifyCompletion', async (input) => {
 
   const result = verifyCompletion(sessionDir);
 
+  // Ensure pipeline_state is terminal so finalizeSessionLifecycle can run.
+  // Many sessions (especially /org) exit with pipeline_state still at "init"
+  // because the agent didn't update status.yaml before stopping.
+  try {
+    const statusFile2 = path.join(sessionDir, 'status.yaml');
+    const statusRaw = safeRead(statusFile2);
+    if (statusRaw) {
+      const curPipeline = extractYamlValue(statusRaw, 'pipeline_state');
+      const curPhase = extractYamlValue(statusRaw, 'phase') || extractYamlValue(statusRaw, 'current_phase');
+      const curVal = curPipeline || curPhase;
+      const alreadyTerminal = ['complete', 'completed', 'COMPLETE', 'VALIDATED', 'failed'];
+      if (!curVal || !alreadyTerminal.includes(curVal)) {
+        const finalState = result.issues.length === 0 ? 'complete' : 'failed';
+        const field = curPipeline !== undefined ? 'pipeline_state' : (curPhase !== undefined ? 'phase' : 'pipeline_state');
+        const patched = statusRaw.replace(
+          new RegExp(`(${field}:\\s*)\\S+`),
+          `$1${finalState}`
+        );
+        if (patched !== statusRaw) {
+          fs.writeFileSync(statusFile2, patched);
+          console.error(`[VerifyCompletion] Updated ${field} to "${finalState}" in status.yaml`);
+        }
+      }
+    }
+  } catch (e) {
+    console.error(`[VerifyCompletion] Error updating pipeline_state: ${e.message}`);
+  }
+
   // Finalize agent lifecycle data (stopped_at, duration_ms) for terminal sessions
   finalizeSessionLifecycle(sessionDir);
 

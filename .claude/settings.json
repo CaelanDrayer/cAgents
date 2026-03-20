@@ -1,11 +1,11 @@
 {
-  "$comment": "Hook configuration - cAgents V10.22.3 - Progressive pipeline (3 paths), agent chaining, structured error format, attention injection, magic keywords, delegation enforcer. 21 CJS files (18 registered hooks + utils + launcher + eval CLI) across 15 event types. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd).",
+  "$comment": "Hook configuration - cAgents V10.22.4 - Progressive pipeline (3 paths), agent chaining, structured error format, attention injection, magic keywords, delegation enforcer. 21 CJS files (18 registered hooks + utils + launcher + eval CLI) across 15 event types. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd).",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
   "teammateMode": "tmux",
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CAGENTS_VERSION": "10.22.3"
+    "CAGENTS_VERSION": "10.22.4"
   },
   "permissions": {
     "allow": [
