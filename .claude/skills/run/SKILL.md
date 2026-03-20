@@ -139,6 +139,7 @@ Write `status.yaml`:
 ```yaml
 pipeline_state: INIT
 revision_round: 0
+validation_cycles: 0
 created_at: "{ISO_TIMESTAMP}"
 state_history:
   - state: INIT
@@ -345,12 +346,15 @@ INSTRUCTIONS:
 3. Write your outputs to the session workflow/ directory.
 4. Write a completion event to workflow/events/EVT-{N}.yaml:
    event_id: EVT-{N}
-   state: {next_state}
-   agent: cagents:{agent_name}
+   type: "state_transition"
+   agent_id: "{agent_id}"
+   agent_type: "cagents:{agent_name}"
    timestamp: "{ISO_TIMESTAMP}"
-   inputs_consumed: [{inputs}]
-   outputs_produced: [{outputs}]
-   next_state: {next_state}
+   state_from: "{current_state}"
+   state_to: "{next_state}"
+   payload:
+     inputs_consumed: [{inputs}]
+     outputs_produced: [{outputs}]
 5. After writing each event, update workflow/events/index.yaml with the ordered event list:
    ```yaml
    events: [EVT-1, EVT-2, EVT-3, ...]
@@ -398,10 +402,17 @@ After each agent returns and a state transition occurs, call TodoWrite to update
 After the COORDINATED state, read `workflow/validation_report.yaml`:
 
 - **PASS**: Advance to VALIDATED (terminal). Pipeline complete.
-- **FAIL**: Route back to PROMPTS_READY. Increment `revision_round`. Pass feedback from validation_report.yaml to the controller. Max 5 total revision cycles.
-- **REVISE**: Route back to PLANNED. Increment `revision_round`. Pass feedback to the planner. Max 5 total revision cycles.
+- **FAIL**: Route back to PROMPTS_READY. Increment `revision_round` and `validation_cycles` in status.yaml. Pass feedback from validation_report.yaml to the controller. Max 5 total revision cycles.
+- **REVISE**: Route back to PLANNED. Increment `revision_round` and `validation_cycles` in status.yaml. Pass feedback to the planner. Max 5 total revision cycles.
 
 If `revision_round >= max_cycles` (5): Escalate to user (HITL). Report what completed and what failed.
+
+Update status.yaml on each FAIL/REVISE:
+```yaml
+pipeline_state: PROMPTS_READY  # or PLANNED for REVISE
+revision_round: {N}            # incremented
+validation_cycles: {N}         # incremented (total FAIL+REVISE loops)
+```
 
 Update TodoWrite on revision:
 ```
@@ -494,12 +505,15 @@ When user input arrives after COMPLETE/VALIDATED, classify it:
 
 2. Write followup event to workflow/events/EVT-{N}.yaml:
    event_id: EVT-{N}
-   type: followup
-   followup_type: adjustment|rework|extension|fix|review
-   user_feedback: "{user's follow-up message}"
-   re_entry_state: PROMPTS_READY|PLANNED|DECOMPOSED|COORDINATED
+   type: "followup"
+   agent_id: "pipeline"
+   agent_type: "cagents:run"
    timestamp: "{ISO_TIMESTAMP}"
-   previous_state: VALIDATED
+   payload:
+     followup_type: adjustment|rework|extension|fix|review
+     user_feedback: "{user's follow-up message}"
+     re_entry_state: PROMPTS_READY|PLANNED|DECOMPOSED|COORDINATED
+     previous_state: VALIDATED
 
 3. Update TodoWrite to show the follow-up:
    TodoWrite([

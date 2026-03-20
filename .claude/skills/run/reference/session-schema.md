@@ -108,7 +108,7 @@ state_history:                       # REQUIRED: Ordered list of state transitio
 
 ### Skill-Specific Extensions
 
-- **/run**: Includes `revision_round: {N}` for pipeline revision cycles and `followup_round: {N}` for post-completion follow-ups. Follow-up states use the naming pattern `FOLLOWUP_{TYPE}_{N}` where TYPE is `ADJUSTMENT`, `REWORK`, `EXTENSION`, `FIX`, or `REVIEW`.
+- **/run**: Includes `revision_round: {N}` for pipeline revision cycles, `validation_cycles: {N}` for total FAIL/REVISE loop count, and `followup_round: {N}` for post-completion follow-ups. Follow-up states use the naming pattern `FOLLOWUP_{TYPE}_{N}` where TYPE is `ADJUSTMENT`, `REWORK`, `EXTENSION`, `FIX`, or `REVIEW`.
 - **/org**: No additional fields.
 - **/team**: No additional fields.
 - **/designer**: No additional fields.
@@ -146,6 +146,8 @@ state_history:                       # REQUIRED: Ordered list of state transitio
 - `team/metrics/timing.yaml` - Team timing metrics
 - `team/metrics/parallelism.yaml` - Parallelism and wave metrics
 - `workflow/work_items.yaml` - Decomposed work items with wave assignments
+- `workflow/wave_structure.yaml` - Wave execution plan with names, items, and gate criteria
+- `workflow/child_controllers.yaml` - Controller-to-work-item assignment audit trail
 - `workflow/partial_results.yaml` - Partial completion tracking (if applicable)
 
 ### /designer
@@ -167,6 +169,62 @@ state_history:                       # REQUIRED: Ordered list of state transitio
 - `reports/aggregate.yaml` - Aggregated findings with confidence scores
 - `workflow/scope_analysis.yaml` - Review scope analysis
 - `workflow/execution_strategy.yaml` - Parallel execution plan
+
+## Standardized Artifact Schemas
+
+### tool_failures.yaml (All Skills)
+
+Written by `tool-failure-tracker.cjs` hook on PostToolUseFailure events. Standardized schema:
+
+```yaml
+# tool_failures.yaml
+failures:
+  - tool: "Write"               # REQUIRED: Tool name that failed
+    file_path: "/path/to/file"  # OPTIONAL: File path if applicable (Write/Edit tools)
+    error: "Permission denied"  # REQUIRED: Error message (truncated to 200 chars)
+    timestamp: "2026-03-20T05:00:00Z"  # REQUIRED: ISO 8601 timestamp
+    agent_id: "executor-1"     # REQUIRED: Agent or session ID
+    recoverable: true          # REQUIRED: Whether failure is recoverable (based on taxonomy)
+```
+
+### wave_structure.yaml (/team only)
+
+Written by /team lead after decomposition. Documents the wave execution plan:
+
+```yaml
+waves:
+  - wave: 0
+    name: "Foundation"
+    items: [TASK-1, TASK-2]
+    gate_criteria: "All scaffolding files exist"
+  - wave: 1
+    name: "Core Implementation"
+    items: [TASK-3, TASK-4, TASK-5]
+    gate_criteria: "All features implemented"
+```
+
+### Event Payload Schema (workflow/events/EVT-*.yaml)
+
+All event files MUST include these standardized fields:
+
+```yaml
+event_id: EVT-N                        # REQUIRED: Sequential event ID
+type: "state_transition"               # REQUIRED: One of standardized types below
+agent_id: "string"                     # REQUIRED: Agent that produced this event
+agent_type: "cagents:type"             # REQUIRED: cAgents agent type namespace
+timestamp: "ISO8601"                   # REQUIRED: When event occurred
+state_from: "STATE"                    # For state_transition type
+state_to: "STATE"                      # For state_transition type
+payload: {}                            # Type-specific data
+```
+
+**Standardized event types:**
+- `state_transition` -- Pipeline state change (INIT -> ORCHESTRATED, etc.)
+- `agent_spawn` -- Agent spawned via Task tool
+- `agent_complete` -- Agent finished execution
+- `validation_fail` -- Validator returned FAIL or REVISE
+- `wave_complete` -- Team wave completed (/team only)
+- `followup` -- Post-completion follow-up initiated (/run only)
 
 ## Hook Integration
 
@@ -199,6 +257,35 @@ Note: `VALIDATED` may be followed by `FOLLOWUP_{TYPE}_{N}` states if the user pr
 | `EXTENSION` | DECOMPOSED | Add new scope (also add, extend, include) |
 | `FIX` | PROMPTS_READY | Bug fix (broken, error, failing) |
 | `REVIEW` | COORDINATED | Re-validate (check, verify, test) |
+
+---
+
+## Autonomous Execution Contract
+
+### CAGENTS_SESSION_ID Environment Variable
+
+When AgentPath spawns a cAgents session via `execution-service.ts`, it pre-generates a session ID and passes it to the CLI via the `CAGENTS_SESSION_ID` environment variable:
+
+```
+CAGENTS_SESSION_ID=run_fix-auth_260320_001 claude --plugin-dir ${CAGENTS_PLUGIN_DIR} /run "Fix auth module"
+```
+
+**Contract**:
+- If `CAGENTS_SESSION_ID` is set, all skills (`/run`, `/team`, `/org`, etc.) MUST use it as the session ID instead of auto-generating one
+- This allows AgentPath to link triggered sessions back to the trigger that spawned them
+- The variable is set by `execution-service.ts` in the child process environment
+
+### --plugin-dir Flag
+
+AgentPath's `execution-service.ts` always includes `--plugin-dir` when spawning cAgents sessions:
+
+```
+claude --plugin-dir ${config.cAgentsPluginDir} /run "request"
+```
+
+This ensures the cAgents plugin is loaded and all skills, hooks, and agents are available. Without `--plugin-dir`, spawned sessions would not have access to cAgents capabilities.
+
+**Implementation reference**: `/home/PathingIT/Company/agentpath/server/src/services/execution-service.ts` lines 160-165.
 
 ---
 

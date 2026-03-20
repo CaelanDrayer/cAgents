@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 /**
  * Tool Failure Tracker Hook - Track and analyze tool failures
- * cAgents V9.10 - Refactored
+ * cAgents V10.22.1 - Standardized schema
  *
- * Tracks tool failures with tool name, error message, timestamp.
+ * Tracks tool failures with standardized schema:
+ *   tool, file_path, error, timestamp, agent_id, recoverable
  * Detects failure patterns (3+ failures of same tool = suggest alternative).
  *
  * Input (stdin): JSON with tool_name, error from PostToolUseFailure event
@@ -82,9 +83,9 @@ createHook('ToolFailureTracker', async (input) => {
   const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
   let recentCount = 0;
   if (existingContent) {
-    const blocks = existingContent.split(/\n- timestamp:/);
+    const blocks = existingContent.split(/\n- tool:/);
     for (let i = 1; i < blocks.length; i++) {
-      const block = blocks[i];
+      const block = '- tool:' + blocks[i];
       const tsMatch = block.match(/timestamp:\s*"([^"]+)"/);
       const toolMatch = block.match(/tool:\s*"([^"]+)"/);
       if (tsMatch && toolMatch && toolMatch[1] === toolName && tsMatch[1] > tenMinAgo) {
@@ -93,9 +94,20 @@ createHook('ToolFailureTracker', async (input) => {
     }
   }
 
-  // Append new failure
+  // Determine if failure is recoverable based on taxonomy
+  const classification = classifyFailure(errorMsg);
+  const isRecoverable = classification.retry_limit !== 0;
+
+  // Extract agent_id from input context (SubagentStart provides this)
+  const agentId = input.agent_id || input.session_id || 'unknown';
+
+  // Extract file_path from tool_input if available (Write/Edit tools provide this)
+  const filePath = (input.tool_input && input.tool_input.file_path) || null;
+
+  // Append new failure with standardized schema
   const safeError = errorMsg.replace(/"/g, "'").replace(/\n/g, ' ');
-  const newEntry = `\n- timestamp: "${now}"\n  tool: "${toolName}"\n  error: "${safeError}"\n`;
+  const filePathLine = filePath ? `\n  file_path: "${filePath.replace(/"/g, "'")}"` : '';
+  const newEntry = `\n- tool: "${toolName}"${filePathLine}\n  error: "${safeError}"\n  timestamp: "${now}"\n  agent_id: "${agentId}"\n  recoverable: ${isRecoverable}\n`;
 
   if (!existingContent) {
     fs.writeFileSync(failureFile, `# Tool Failure Log\n# Session: ${path.basename(sessionDir)}\n\nfailures:${newEntry}`);
@@ -104,9 +116,6 @@ createHook('ToolFailureTracker', async (input) => {
   }
 
   console.error(`[ToolFailureTracker] ${toolName} failed: ${safeError.slice(0, 80)}`);
-
-  // Classify failure type using taxonomy
-  const classification = classifyFailure(errorMsg);
 
   // Pattern detection (2 previous + current = 3)
   if (recentCount >= 2) {
