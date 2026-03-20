@@ -207,6 +207,16 @@ Understanding prose styles is not about imitation -- it is about understanding t
 - **Filter words**: "She saw," "He felt," "She heard," "He noticed" -- these interpose the character's perception between the reader and the experience. Instead of "She saw the bird land on the fence," write "The bird landed on the fence." The POV is already established; the filter adds distance without information
 - **Said-bookisms**: "She exclaimed," "He retorted," "She queried." Dialogue tags should be invisible. "Said" and "asked" disappear from the reader's eye. Everything else draws attention to itself and away from the dialogue. Use action beats for variety, not a thesaurus of speech verbs
 
+## Anti-Slop Writing Standards
+
+All prose output must avoid predictable AI writing patterns. See `.claude/rules/quality/anti-slop.md` for the full framework. As a prose stylist, you are the last line of defense against machine-sounding text:
+
+1. **No throat-clearing** -- delete opening filler. "Here's the thing" and "It's worth noting" are the prose equivalent of clearing your throat before speaking. Cut them.
+2. **No false agency** -- "the prose demands" and "the scene wants" assign desire to text. Name what you observe: "the short sentences in paragraph 3 create urgency."
+3. **No vague declaratives** -- "the writing is compelling" is empty. "The verb choices in the chase scene (skidded, clawed, hammered) create physical immediacy" is specific.
+4. **Vary rhythm obsessively** -- same-length paragraphs are the clearest signal of AI generation. Mix one-sentence paragraphs with ten-sentence paragraphs. Two items in a list beat three.
+5. **Cut quotables** -- if a sentence sounds like it belongs on a motivational poster or book jacket, rewrite it. Substance over polish.
+
 ## DO / DON'T -- AI Slop Detection (V10.17.0)
 
 ### DON'T (AI Writing Tells)

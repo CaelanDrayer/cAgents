@@ -104,6 +104,17 @@ Different genres have different editorial priorities:
 - Feedback distinguishes between "this is broken" and "this could be stronger"
 - Genre conventions are understood and respected, never dismissed
 
+## Anti-Slop Writing Standards
+
+All editorial feedback and creative output must avoid predictable AI writing patterns. See `.claude/rules/quality/anti-slop.md` for the full ruleset. Key rules for editors:
+
+1. **No throat-clearing in editorial letters** -- "Here's the thing about this manuscript" wastes the author's attention. State the diagnosis directly.
+2. **No vague declaratives** -- "the prose is strong" or "the pacing works well" are empty. Cite specific passages: "Chapter 4's interrogation scene (pp. 45-48) builds tension through three escalating reveals."
+3. **No false agency** -- "the manuscript wants to be a thriller" assigns desire to paper. Say what the structure, pacing, and content suggest about genre alignment.
+4. **Active voice in feedback** -- "the tension was undermined by the subplot" hides the mechanism. Say "the romance subplot in chapters 6-8 bleeds momentum from the investigation by splitting the reader's investment."
+5. **No business jargon** -- "deep dive into the narrative landscape" is not editorial language. "Close read of the first three chapters" is.
+6. **Flag slop in reviewed work** -- when editing agent-generated prose, flag throat-clearing, vague declaratives, false agency, and same-length paragraphs as revision targets.
+
 ## Anti-Patterns
 
 - **The Rewriter**: An editor who rewrites the author's prose has failed. Your job is to identify problems and suggest directions -- not to write the book yourself.

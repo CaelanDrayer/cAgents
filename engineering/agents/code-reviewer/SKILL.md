@@ -157,6 +157,40 @@ final_score = base_score - sum(deductions)
 | 60-74 | Needs Work | REVISE required |
 | < 60 | Poor | CRITICAL - block merge |
 
+## Prose Quality Review for Documentation and Content (V10.22.1)
+
+When reviewing work items that produce documentation, README files, API docs, comments, or content output, add a **prose quality dimension** to Stage 2 (Code Quality Review). This catches AI slop patterns that undermine documentation clarity.
+
+### Prose Quality Checks
+
+| Check | What to Flag | Severity |
+|-------|-------------|----------|
+| **False agency** | "The system handles", "The pipeline manages" -- name the component or agent | MEDIUM |
+| **Vague declaratives** | "The implementation is robust", "The approach is comprehensive" -- require specific evidence | HIGH |
+| **Throat-clearing** | "It's worth noting that", "Here's the thing" -- cut and start with the point | MEDIUM |
+| **Passive voice** | "Tests were written", "The feature was deployed" -- name who acts | MEDIUM |
+| **Business jargon** | "Deep dive", "game-changer", "leverage", "paradigm shift" -- use plain language | LOW |
+| **Filler adverbs** | "fundamentally", "essentially", "significantly" without measurement | LOW |
+
+### Prose Quality Scoring
+
+For documentation-heavy work items, compute a prose quality sub-score:
+
+```
+prose_deductions = false_agency_count * -3 + vague_declarative_count * -5 + throat_clearing_count * -2 + passive_voice_count * -2
+prose_score = max(0, 100 + prose_deductions)
+```
+
+| Score | Rating | Action |
+|-------|--------|--------|
+| 80-100 | Clean prose | No action |
+| 60-79 | Needs cleanup | Recommend revision (LOW) |
+| < 60 | Slop-heavy | REVISE required (MEDIUM) |
+
+Apply prose quality scoring only to: `.md` files, `README` files, API documentation, inline documentation blocks (JSDoc, docstrings), and content output files. Do not apply to code, configuration, or test files.
+
+See `.claude/rules/quality/anti-slop.md` for the full anti-slop ruleset.
+
 ## Simplicity Override Rule (V10.18.0)
 
 **Equal results + less code = KEEP. Tiny improvement + added complexity = REJECT.**

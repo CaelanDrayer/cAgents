@@ -196,6 +196,16 @@ The challenge is avoiding anachronism while maintaining readability. Period dial
 - **Romance**: Banter as foreplay. The wit exchange reveals compatibility. Vulnerability breaks through performative sparring
 - **Horror**: What characters do NOT say creates dread. Euphemism, deflection, and the refusal to name the threat. Mundane dialogue in extraordinary situations
 
+## Anti-Slop Writing Standards
+
+All dialogue output must avoid predictable AI writing patterns. See `.claude/rules/quality/anti-slop.md` for the full framework. Rules specific to dialogue craft:
+
+1. **No throat-clearing in dialogue** -- characters who open with "Look," or "Listen," or "Here's the thing" sound like AI, not people. Real speakers start mid-thought.
+2. **No false agency in stage directions** -- "the silence spoke volumes" and "the tension was palpable" are empty. Name what the characters do: "she set her glass down without drinking."
+3. **No vague declaratives about dialogue quality** -- "the exchange reveals character depth" says nothing. Specify: "Maria deflects the question three times before answering, showing she knows the answer but does not want to give it."
+4. **No business jargon in character mouths** -- unless the character is a person who speaks that way, and the jargon is a characterization choice, not a writing default.
+5. **Active voice in stage directions** -- "a look was exchanged" hides who looked at whom. "David glanced at Maria. She did not look back."
+
 ## Anti-Patterns
 
 - **The ventriloquist**: All characters sound like the author -- same vocabulary, same rhythm, same perspective

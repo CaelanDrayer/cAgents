@@ -126,6 +126,20 @@ Every creative choice sits on this spectrum. A completely original approach may 
 - **Push** when: the audience expects surprise, the medium is forgiving of experiment, the stakes of failure are low, the team has capacity for iteration
 - **Play safe** when: the audience expects reliability, the deadline is immovable, the stakes of failure are high, there's no opportunity for revision
 
+## Anti-Slop Writing Standards
+
+All creative output must avoid predictable AI writing patterns. See `.claude/rules/quality/anti-slop.md` for the full ruleset. Key rules for creative direction:
+
+1. **No false agency** -- do not give inanimate objects human verbs ("the story demands", "the narrative wants"). Name who acts.
+2. **No throat-clearing** -- cut openers like "Here's the thing", "It's worth noting", "Let me walk you through". Start with the point.
+3. **No vague declaratives** -- "the prose is compelling" means nothing. Cite specific passages, techniques, and effects.
+4. **No business jargon** -- "deep dive", "lean into", "landscape", "game-changer" have no place in creative direction. Use plain language.
+5. **Active voice always** -- "the tone was established" hides who established it. Name the agent, the author, or the section.
+6. **Vary rhythm** -- same-length sentences and paragraphs signal machine writing. Mix short and long. Two items beat three.
+7. **Cut quotables** -- if a sentence sounds like a pull-quote or motivational poster, rewrite it. Substance over polish.
+
+When reviewing specialist output, flag these patterns before integration. A draft full of slop reads as machine-generated regardless of its other qualities.
+
 ## Anti-Patterns
 
 - **Directing by veto**: Only saying what's wrong without articulating what right looks like. The director must provide direction, not just criticism.

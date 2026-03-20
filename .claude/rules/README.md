@@ -72,7 +72,7 @@ Import rules into CLAUDE.md or other docs:
 See @.claude/rules/core/orchestration.md for workflow patterns.
 ```
 
-## Current Rules (25 files)
+## Current Rules (26 files)
 
 ### Core (12 files)
 1. **core/orchestration.md** - Workflow phases (routing -> validating)
@@ -102,14 +102,15 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 19. **memory/agent-memory.md** - Agent_Memory/ structure (V8.0: three-file pattern, waypoints)
 20. **memory/agent-memory-reference.md** - Detailed memory patterns and examples
 
-### Quality (4 files)
+### Quality (5 files)
 21. **quality/completion.md** - Task completion protocol (V10.22.0: red flags, rationalization counters, fresh evidence)
 22. **quality/validation-framework.md** - End-to-end completion traceability
 23. **quality/implicit-discovery.md** - Handling abstract requests
 24. **quality/cso-guidelines.md** - Claude Search Optimization for agent descriptions
+25. **quality/anti-slop.md** - Anti-AI-slop writing rules (V10.22.1: false agency, vague declaratives, passive voice, throat-clearing, business jargon)
 
 ### Meta (1 file)
-25. **README.md** - This index file
+26. **README.md** - This index file
 
 ## V8.0 Additions
 
