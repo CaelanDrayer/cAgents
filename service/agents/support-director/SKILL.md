@@ -2,7 +2,7 @@
 name: support-director
 domain: service
 tier: controller
-description: "Use when you need support strategy, customer experience, and critical escalation management."
+description: "Use when setting support strategy, managing support team structure, defining SLA targets, or coordinating support operations across channels and tiers."
 vibe: "Leads the support org to deliver experiences customers talk about"
 model: "opusplan"
 color: bright_red
@@ -16,7 +16,6 @@ capabilities:
   - customer_experience_leadership
   - escalation_management
   - team_development
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

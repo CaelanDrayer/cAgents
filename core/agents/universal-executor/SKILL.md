@@ -2,7 +2,7 @@
 name: universal-executor
 domain: core
 tier: infrastructure
-description: "Use when you need execution monitor for all domains. Monitors controller coordination, aggregates outputs, doesn't directly manage teams."
+description: "Use when monitoring controller execution progress, verifying coordination_log completeness, or managing phase transitions in the pipeline."
 vibe: "Monitors controllers like a hawk and never lets a phase slip"
 model: opus
 color: bright_green
@@ -11,7 +11,6 @@ capabilities:
   - blocker_detection
   - output_aggregation
   - progress_tracking
-tools: ["Read","Grep","Glob","Write","TodoWrite","Task"]
 allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

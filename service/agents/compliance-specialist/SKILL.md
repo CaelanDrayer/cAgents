@@ -2,7 +2,7 @@
 name: compliance-specialist
 domain: service
 tier: execution
-description: "Use when you need compliance programs, gap assessments, audit preparation, ethics training, investigations, code of conduct, or whistleblower programs."
+description: "Use when performing compliance audits, tracking regulatory changes, documenting compliance procedures, or testing controls against standards."
 vibe: "Tracks regulatory changes so the company is never surprised"
 model: sonnet
 color: bright_red
@@ -15,7 +15,6 @@ capabilities:
   - compliance_investigations
   - code_of_conduct
   - whistleblower_programs
-tools: ["Read","Write","Grep","Glob","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

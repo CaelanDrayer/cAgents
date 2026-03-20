@@ -7,7 +7,7 @@ typical_questions:
   - "What are the current campaign/sales metrics?"
   - "What is the target audience and positioning?"
   - "What are the conversion bottlenecks?"
-description: "Use when you need sales strategy and GTM specialist. Develops data-driven sales strategies, market segmentation, competitive positioning, and sales model design."
+description: "Use when developing sales strategies, defining target segments, planning territory coverage, or designing compensation and incentive structures."
 vibe: "Designs the sales playbook that turns reps into closers"
 model: sonnet
 color: bright_green
@@ -16,7 +16,6 @@ capabilities:
   - market_segmentation
   - competitive_positioning
   - sales_model_design
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

@@ -2,7 +2,7 @@
 name: employee-relations-specialist
 domain: people
 tier: execution
-description: Workplace conflict resolution and employee advocacy expert. Use for investigations, conflict mediation, policy interpretation, and retention conversations.
+description: "Use when handling workplace conflicts, conducting investigations, advising on disciplinary actions, or mediating employee-manager disputes."
 vibe: "Resolves workplace issues before they become workplace problems"
 model: sonnet
 color: bright_yellow
@@ -11,7 +11,6 @@ capabilities:
   - investigations
   - policy_interpretation
   - employee_advocacy
-tools: ["Read","Write","Grep","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

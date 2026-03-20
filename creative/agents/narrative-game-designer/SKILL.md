@@ -2,7 +2,7 @@
 name: narrative-game-designer
 domain: creative
 tier: execution
-description: "Expert narrative systems designer specializing in branching architecture, state tracking, player agency, ludonarrative design, dynamic narrative systems, and emergent storytelling. Designs the invisible machinery that makes interactive stories feel alive, responsive, and meaningful."
+description: "Use when designing interactive narrative systems, creating branching story structures, building player agency frameworks, or integrating story with game mechanics."
 vibe: "Weaves player choice and narrative into something seamless"
 model: opus
 color: bright_magenta
@@ -15,7 +15,6 @@ capabilities:
   - emergent_narrative_design
   - choice_architecture
   - narrative_system_documentation
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

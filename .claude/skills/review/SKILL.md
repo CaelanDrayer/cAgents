@@ -1,13 +1,13 @@
 ---
 name: review
 description: "Quality review with parallel specialist agents and optional auto-fix. Use for reviewing code, docs, content, or infrastructure. TRIGGER: review, audit, check quality, code review. NOT for: optimization (/optimize) or new implementation (/run)."
-argument-hint: "<target> [--focus <area>] [--auto-fix] [--severity <level>] [--format <type>] [--profile <name>] [--baseline] [--suppress <id>]"
-user-invocable: true
-context: fork
 license: MIT
 metadata:
   author: CaelanDrayer
-  version: 10.22.5
+  version: "10.22.5"
+  argument-hint: "<target> [--focus <area>] [--auto-fix] [--severity <level>] [--format <type>] [--profile <name>] [--baseline] [--suppress <id>]"
+  user-invocable: "true"
+  context: "fork"
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
 ---
 

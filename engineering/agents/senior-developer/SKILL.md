@@ -1,6 +1,6 @@
 ---
 name: senior-developer
-description: "Senior engineer handling complex implementation tasks, system design, and mentoring. Implements challenging features requiring deep technical expertise. Use for tier 3 complex implementation work."
+description: "Use when implementing complex features across the full stack, refactoring large codebases, mentoring on design patterns, or making technical decisions."
 vibe: "Writes the code that junior devs learn from for years"
 tier: execution
 domain: engineering
@@ -23,7 +23,6 @@ capabilities:
   - debugging
   - mentoring
   - code_review
-tools: ["Read","Write","Edit","Grep","Glob","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 color: bright_green
 maxTurns: 30

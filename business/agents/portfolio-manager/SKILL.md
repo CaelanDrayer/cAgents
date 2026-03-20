@@ -2,7 +2,7 @@
 name: portfolio-manager
 domain: business
 tier: execution
-description: "Use when you need portfolio planning and optimization specialist. Prioritizes initiatives across portfolio, optimizes resource allocation, maximizes portfolio value."
+description: "Use when managing project portfolios, prioritizing initiatives, balancing resource allocation across programs, or evaluating portfolio performance."
 vibe: "Balances bets across projects like a seasoned card counter"
 model: sonnet
 color: bright_blue
@@ -11,7 +11,6 @@ capabilities:
   - initiative_prioritization
   - resource_optimization
   - value_maximization
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

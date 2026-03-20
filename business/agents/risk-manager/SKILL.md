@@ -2,7 +2,7 @@
 name: risk-manager
 domain: business
 tier: execution
-description: "Use when you need enterprise risk management and business continuity specialist. Identifies, assesses, and mitigates risks to protect organization."
+description: "Use when identifying enterprise risks, assessing threat impact, developing mitigation strategies, or building business continuity plans."
 vibe: "Names the risks nobody wants to talk about, then mitigates them"
 model: sonnet
 color: bright_blue
@@ -11,7 +11,6 @@ capabilities:
   - risk_mitigation
   - business_continuity
   - crisis_management
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

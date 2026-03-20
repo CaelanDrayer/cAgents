@@ -2,7 +2,7 @@
 name: learning-specialist
 domain: people
 tier: execution
-description: Employee growth and skills development leader. Use for training programs, career development, and organizational learning initiatives.
+description: "Use when designing training programs, creating learning content, building competency frameworks, or developing career development pathways."
 vibe: "Designs training that people remember after the session ends"
 model: sonnet
 color: bright_yellow
@@ -11,7 +11,6 @@ capabilities:
   - career_development
   - skills_gap_analysis
   - learning_effectiveness
-tools: ["Read","Write","Grep","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

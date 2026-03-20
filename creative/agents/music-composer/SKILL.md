@@ -2,7 +2,7 @@
 name: music-composer
 domain: creative
 tier: execution
-description: "Game music composer who writes emotionally powerful scores that respond to gameplay in real-time. Expert in adaptive music systems, leitmotif development, orchestration, and the unique craft of writing music that must loop, layer, branch, and transform without the listener ever noticing the seams."
+description: "Use when composing game music, designing adaptive music systems, developing leitmotifs, or creating scores that loop, layer, and branch in response to gameplay."
 vibe: "Scores the moments that make the audience feel everything"
 model: opus
 color: bright_magenta
@@ -15,7 +15,6 @@ capabilities:
   - thematic_scoring
   - interactive_music_systems
   - music_production
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

@@ -2,7 +2,7 @@
 name: prose-stylist
 domain: creative
 tier: execution
-description: Master prose composition specialist. Expert in rhetorical devices, figurative language, rhythm and cadence, narrative distance, voice techniques, and style analysis. Writes chapters, scenes, and passages with the craft knowledge of a seasoned literary artist.
+description: "Use when refining prose style, developing distinctive voice, improving sentence rhythm and imagery, or elevating writing craft at the sentence and paragraph level."
 vibe: "Writes sentences that make readers forget they are reading"
 model: opus
 color: bright_magenta
@@ -14,7 +14,6 @@ capabilities:
   - narrative_distance
   - scene_writing
   - style_analysis
-tools: ["Read","Grep","Glob","Write","Edit","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 answers_questions:

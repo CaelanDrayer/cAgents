@@ -2,7 +2,7 @@
 name: process-improvement-specialist
 domain: business
 tier: execution
-description: "Use when you need process optimization and continuous improvement specialist. Uses Lean, Six Sigma, and other methodologies to drive efficiency."
+description: "Use when optimizing processes using Lean, Six Sigma, or continuous improvement methodologies to reduce waste and increase efficiency."
 vibe: "Makes good processes great and bad processes gone"
 model: sonnet
 color: bright_blue
@@ -11,7 +11,6 @@ capabilities:
   - lean_six_sigma
   - waste_elimination
   - kaizen
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

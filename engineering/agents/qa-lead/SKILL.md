@@ -22,7 +22,6 @@ capabilities:
   - e2e_testing
   - performance_testing
   - security_testing
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

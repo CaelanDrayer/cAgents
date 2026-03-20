@@ -2,7 +2,7 @@
 name: change-management-specialist
 domain: business
 tier: execution
-description: "Use when you need change plans executed, training delivered, communications deployed, or adoption tracked."
+description: "Use when planning organizational changes, developing training programs, deploying internal communications, or tracking adoption of new processes."
 vibe: "Makes the org actually want the change, not just tolerate it"
 model: sonnet
 color: bright_blue
@@ -23,7 +23,6 @@ capabilities:
   - communication_execution
   - change_support
   - resistance_handling
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 40
 permissionMode: "bypassPermissions"

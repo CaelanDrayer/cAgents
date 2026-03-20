@@ -1,6 +1,6 @@
 ---
 name: cfo
-description: "Chief Financial Officer for financial strategy, budgeting, and fundraising. Use for budget requests, investment decisions, pricing strategy, or financial risk assessment."
+description: "Use for budget requests, investment decisions, pricing strategy, financial risk assessment, and fundraising. Chief Financial Officer providing financial leadership."
 vibe: "Turns financial data into the strategy the board actually follows"
 tier: controller
 domain: leadership
@@ -17,7 +17,6 @@ capabilities:
   - fundraising
   - investment_decisions
   - financial_risk_assessment
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

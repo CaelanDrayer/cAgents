@@ -2,7 +2,7 @@
 name: dialogue-specialist
 domain: creative
 tier: execution
-description: Master dialogue craftsman. Expert in subtext, dialect creation, power dynamics in conversation, dialogue theories (Mamet, Pinter, Hemingway), and the art of what remains unsaid. Creates distinctive character voices and authentic verbal exchanges that advance story and reveal character simultaneously.
+description: "Use when writing or improving dialogue, developing distinct character voices, crafting subtext, or ensuring conversations advance both plot and character."
 vibe: "Hears the conversation beneath the conversation"
 model: opus
 color: bright_magenta
@@ -13,7 +13,6 @@ capabilities:
   - dialect_creation
   - power_dynamics
   - conversation_design
-tools: ["Read","Grep","Glob","Write","Edit","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 answers_questions:

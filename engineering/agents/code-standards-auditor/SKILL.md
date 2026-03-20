@@ -1,6 +1,6 @@
 ---
 name: code-standards-auditor
-description: "QA Layer agent for code style, conventions, and best practices enforcement. Use for code quality reviews, style checking, and convention enforcement."
+description: "Use when auditing codebase compliance with coding standards, checking for convention violations, or generating compliance reports against style guides."
 vibe: "Enforces the standards that keep the codebase sane at scale"
 tier: support
 domain: engineering
@@ -12,7 +12,6 @@ capabilities:
   - convention_enforcement
   - best_practices
   - code_quality
-tools: ["Read","Grep","Glob","Bash"]
 allowed-tools: "Read Grep Glob"
 maxTurns: 10
 disallowedTools: ["Task"]

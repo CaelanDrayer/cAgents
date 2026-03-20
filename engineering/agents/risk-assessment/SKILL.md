@@ -1,6 +1,6 @@
 ---
 name: risk-assessment
-description: "Use when you need potential failure points, security vulnerabilities, and performance bottlenecks. Use after planning and during execution to anticipate issues."
+description: "Use when assessing technical risk for proposed changes, evaluating blast radius of refactors, or identifying potential failure modes before implementation."
 vibe: "Quantifies technical risk so teams can make informed bets"
 tier: support
 domain: engineering
@@ -12,7 +12,6 @@ capabilities:
   - vulnerability_detection
   - failure_prediction
   - proactive_mitigation
-tools: ["Read","Grep","Glob"]
 allowed-tools: "Read Grep Glob"
 maxTurns: 10
 disallowedTools: ["Task"]

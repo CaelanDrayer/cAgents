@@ -2,7 +2,7 @@
 name: sales-ops-specialist
 domain: growth
 tier: execution
-description: "Use when you need sales infrastructure and process specialist. Manages CRM administration, territory design, quota allocation, and process optimization."
+description: "Use when managing CRM configuration, building sales reports, optimizing sales processes, or maintaining pipeline hygiene and forecasting accuracy."
 vibe: "Keeps CRM clean and forecasts honest"
 model: sonnet
 color: bright_green
@@ -11,7 +11,6 @@ capabilities:
   - territory_design
   - quota_allocation
   - process_optimization
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

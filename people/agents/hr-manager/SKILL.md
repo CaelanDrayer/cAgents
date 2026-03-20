@@ -16,7 +16,6 @@ capabilities:
   - employee_lifecycle
   - people_team_coordination
   - policy_management
-tools: ["Read","Write","Grep","Glob","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

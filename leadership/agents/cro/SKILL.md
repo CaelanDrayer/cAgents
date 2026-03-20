@@ -7,7 +7,7 @@ typical_questions:
   - "What is the current revenue performance vs targets?"
   - "Where are the conversion bottlenecks in the funnel?"
   - "What sales and marketing alignment issues exist?"
-description: "Use when you need chief Revenue Officer. Executive revenue leadership owning end-to-end revenue generation across marketing, sales, and customer success."
+description: "Use for revenue strategy, sales and marketing alignment, pipeline optimization, and go-to-market execution. CRO-level revenue leadership."
 vibe: "Owns the number and builds the machine to hit it every quarter"
 model: "opusplan"
 color: gold
@@ -16,7 +16,6 @@ capabilities:
   - sales_marketing_alignment
   - pipeline_management
   - executive_leadership
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

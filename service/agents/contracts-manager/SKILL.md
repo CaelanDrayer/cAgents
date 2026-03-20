@@ -2,7 +2,7 @@
 name: contracts-manager
 domain: service
 tier: execution
-description: "Use when you need agreements and risk assessment."
+description: "Use when drafting contracts, negotiating terms, managing contract lifecycle, or ensuring contractual compliance and renewal tracking."
 vibe: "Negotiates contracts where both sides walk away satisfied"
 model: sonnet
 color: bright_red
@@ -11,7 +11,6 @@ capabilities:
   - contract_negotiation
   - risk_analysis
   - contract_lifecycle_management
-tools: ["Read","Write","Edit","Grep","Glob","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

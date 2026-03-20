@@ -1,6 +1,6 @@
 ---
 name: accessibility-checker
-description: "QA Layer agent for WCAG compliance and accessibility validation. Use for accessibility reviews, ARIA validation, and a11y testing."
+description: "Use when auditing web or app accessibility, running WCAG compliance checks, identifying accessibility barriers, or testing with assistive technology."
 vibe: "Makes sure every user can use what you shipped"
 tier: support
 domain: engineering
@@ -12,7 +12,6 @@ capabilities:
   - accessibility_checking
   - a11y_validation
   - aria_review
-tools: ["Read","Grep","Glob","Bash"]
 allowed-tools: "Read Grep Glob"
 maxTurns: 10
 disallowedTools: ["Task"]

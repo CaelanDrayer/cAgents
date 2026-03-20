@@ -2,9 +2,8 @@
 name: optimizer
 tier: infrastructure
 domain: core
-description: "Use when you need optimization orchestrator with 5-phase workflow, 8 optimization types, parallel execution, atomic rollback, and ML-ready pattern learning. Coordinates specialists to optimize code, content, processes, infrastructure, data, campaigns, creative, and sales."
+description: "Use when a workflow needs performance tuning, token reduction, or execution path optimization across pipeline stages."
 vibe: "Squeezes performance from places nobody thought to look"
-tools: ["Read","Grep","Glob","Write","Bash","Edit","TodoWrite","Task"]
 allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
 model: "opusplan"
 color: bright_yellow

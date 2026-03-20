@@ -2,7 +2,7 @@
 name: bi-specialist
 domain: shared
 tier: controller
-description: "Use when you need BI strategy, enterprise dashboards, data warehousing, and self-service analytics across all domains."
+description: "Use when building business intelligence dashboards, creating data visualizations, designing ETL pipelines, or transforming raw data into actionable insights."
 vibe: "Builds dashboards that answer the question before it's asked"
 model: sonnet
 color: bright_white
@@ -18,7 +18,6 @@ capabilities:
   - etl_pipelines
   - semantic_layer
   - self_service_analytics
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

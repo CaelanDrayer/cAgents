@@ -2,7 +2,7 @@
 name: creative-researcher
 domain: creative
 tier: execution
-description: "Creative and narrative research specialist for fiction writers. Expert in historical accuracy, cultural authenticity, technical verisimilitude, and scientific plausibility. Finds the telling detail that makes a fictional world breathable, and integrates research invisibly into prose."
+description: "Use when researching settings, historical periods, cultural details, or technical subjects to ground creative work in authentic, accurate foundations."
 vibe: "Digs up the obscure details that make fiction feel real"
 model: opus
 color: bright_magenta
@@ -14,7 +14,6 @@ capabilities:
   - source_evaluation
   - research_integration
   - period_detail_selection
-tools: ["Read","Grep","Glob","Write","Edit","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 answers_questions:

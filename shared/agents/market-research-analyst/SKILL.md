@@ -2,7 +2,7 @@
 name: market-research-analyst
 domain: shared
 tier: controller
-description: "Use when you need market research specialist coordinating market analysis, customer research, industry analysis, and insights generation across ALL domains."
+description: "Use when conducting market research, analyzing customer segments, evaluating market size and growth, or producing competitive landscape assessments."
 vibe: "Reads the market so the company can write its own future"
 model: sonnet
 color: bright_white
@@ -19,7 +19,6 @@ capabilities:
   - survey_design
   - focus_groups
   - competitive_research
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

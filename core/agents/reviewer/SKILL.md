@@ -2,7 +2,7 @@
 name: reviewer
 domain: core
 tier: execution
-description: "Use when you need domain-agnostic quality review of work item implementations. Evaluates outputs against acceptance criteria and returns PASS or REVISE with specific feedback. Works across all domains."
+description: "Use when validating work item outputs against acceptance criteria, performing spec compliance checks, or conducting code quality review in controller loops."
 vibe: "The impartial judge who only cares about acceptance criteria"
 model: sonnet
 color: bright_cyan
@@ -11,7 +11,6 @@ capabilities:
   - cross_domain_review
   - evidence_based_assessment
   - revision_feedback
-tools: ["Read","Grep","Glob","Bash"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 15
 permissionMode: "bypassPermissions"

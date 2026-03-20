@@ -2,7 +2,7 @@
 name: support-supervisor
 domain: service
 tier: execution
-description: "Use when you need daily support operations supervision, agent performance coaching, and workflow optimization."
+description: "Use when managing support agents, handling real-time queue management, coaching team members, or resolving escalated customer issues."
 vibe: "Coaches support agents until great service becomes muscle memory"
 model: sonnet
 color: bright_red
@@ -11,7 +11,6 @@ capabilities:
   - performance_coaching
   - workflow_optimization
   - resource_allocation
-tools: ["Read","Grep","Glob","Write"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

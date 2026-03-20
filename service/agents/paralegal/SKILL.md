@@ -2,7 +2,7 @@
 name: paralegal
 domain: service
 tier: execution
-description: "Use when you need document preparation, research assistance, filing coordination, and matter management."
+description: "Use when preparing legal documents, conducting legal research, organizing case files, managing discovery processes, or supporting attorneys with filings."
 vibe: "Prepares the legal groundwork so attorneys can focus on strategy"
 model: sonnet
 color: bright_red
@@ -11,7 +11,6 @@ capabilities:
   - legal_research
   - filing_coordination
   - matter_support
-tools: ["Read","Write","Grep","Glob","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

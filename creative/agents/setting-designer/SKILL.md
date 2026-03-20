@@ -2,7 +2,7 @@
 name: setting-designer
 domain: creative
 tier: execution
-description: "Master of atmospheric, immersive settings who transforms locations into living presences — places with personality, mood, and memory, where every sensory detail does narrative work and space itself tells stories."
+description: "Use when designing story settings, creating location profiles, building atmospheric details, or ensuring environments serve narrative and thematic purposes."
 vibe: "Builds worlds so vivid you can smell the rain"
 model: opus
 color: bright_magenta
@@ -15,7 +15,6 @@ capabilities:
   - micro_settings
   - macro_settings
   - liminal_spaces
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

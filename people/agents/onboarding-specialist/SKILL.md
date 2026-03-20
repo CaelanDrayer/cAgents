@@ -2,7 +2,7 @@
 name: onboarding-specialist
 domain: people
 tier: execution
-description: New hire integration expert managing pre-boarding, orientation, and 90-day ramp. Use for onboarding programs, new hire experience, and early retention.
+description: "Use when designing onboarding programs, creating new hire experiences, building 30/60/90 day plans, or improving time-to-productivity for new employees."
 vibe: "Gets new hires productive before their welcome swag arrives"
 model: sonnet
 color: bright_yellow
@@ -11,7 +11,6 @@ capabilities:
   - new_hire_experience
   - pre_boarding
   - integration_tracking
-tools: ["Read","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

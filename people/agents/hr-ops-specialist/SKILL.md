@@ -2,7 +2,7 @@
 name: hr-ops-specialist
 domain: people
 tier: execution
-description: HR systems and process excellence leader. Use for HRIS management, process optimization, and operational efficiency.
+description: "Use when optimizing HR operations, streamlining people processes, managing payroll coordination, or improving HR service delivery efficiency."
 vibe: "Runs HR operations like a well-documented, repeatable process"
 model: sonnet
 color: bright_yellow
@@ -11,7 +11,6 @@ capabilities:
   - vendor_management
   - operational_excellence
   - systems_integration
-tools: ["Read","Write","Grep","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

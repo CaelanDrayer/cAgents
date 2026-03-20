@@ -1,6 +1,6 @@
 ---
 name: coo
-description: "Chief Operating Officer for operational execution and process optimization. Coordinates cross-functional operations via question-based delegation. Use for operational decisions, process coordination, and efficiency improvements."
+description: "Use for operational decisions, process coordination, cross-functional efficiency improvements, and scaling operations. Chief Operating Officer."
 vibe: "Runs operations so efficiently the CEO can focus on vision"
 tier: controller
 domain: leadership
@@ -21,7 +21,6 @@ capabilities:
   - resource_allocation
   - performance_management
   - question_based_delegation
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

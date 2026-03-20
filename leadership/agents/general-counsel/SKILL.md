@@ -7,7 +7,7 @@ typical_questions:
   - "What is the legal and compliance exposure for this initiative?"
   - "What regulatory requirements apply across all affected domains?"
   - "What are the key contractual, privacy, and governance constraints?"
-description: "Use when you need C-suite legal executive providing strategic legal oversight across all domains. Participates in /org deliberation with cross-domain legal perspective. For domain-specific legal work, see service/agents/general-counsel."
+description: "Use for legal strategy, regulatory compliance, contract review, IP protection, and corporate governance. General Counsel-level legal oversight."
 vibe: "Provides the legal judgment that keeps executives out of trouble"
 model: opusplan
 color: gold
@@ -18,7 +18,6 @@ capabilities:
   - risk_assessment
   - regulatory_strategy
   - governance_coordination
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

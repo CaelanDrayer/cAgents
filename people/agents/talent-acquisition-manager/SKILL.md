@@ -7,7 +7,7 @@ typical_questions:
   - "What are the role requirements and hiring timeline?"
   - "What is the current talent pipeline and sourcing strategy?"
   - "What are the key risks and market constraints?"
-description: "Use when you need recruiting strategy, pipeline management, and talent market insights."
+description: "Use when planning hiring pipelines, developing sourcing strategies, building employer brand, or coordinating talent acquisition across multiple roles."
 vibe: "Builds the recruiting engine that fills roles before they're painful"
 model: sonnet
 color: bright_yellow
@@ -16,7 +16,6 @@ capabilities:
   - pipeline_management
   - hiring_manager_partnership
   - talent_market_analysis
-tools: ["Read","Write","Grep","Glob","TodoWrite"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 30
 related_agents:

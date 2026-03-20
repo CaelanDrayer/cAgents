@@ -2,7 +2,7 @@
 name: hr-compliance-specialist
 domain: people
 tier: execution
-description: Employment law and regulatory compliance expert. Use for legal compliance, policy development, audit readiness, and risk mitigation.
+description: "Use when ensuring compliance with labor laws, auditing HR practices, managing regulatory requirements, or developing compliant HR policies and procedures."
 vibe: "Keeps the company on the right side of every employment law"
 model: sonnet
 color: bright_yellow
@@ -11,7 +11,6 @@ capabilities:
   - policy_development
   - audit_readiness
   - risk_mitigation
-tools: ["Read","Write","Grep","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

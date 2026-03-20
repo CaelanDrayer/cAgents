@@ -2,7 +2,7 @@
 name: media-buyer
 domain: growth
 tier: execution
-description: "Use when you need programmatic advertising, media planning, and ad spend optimization specialist. Manages media buys across platforms, optimizes ROAS, and negotiates placements."
+description: "Use when planning media buys across channels, negotiating ad placements, optimizing ad spend allocation, or managing programmatic advertising campaigns."
 vibe: "Stretches every ad dollar until it screams, then squeezes out one more conversion"
 model: sonnet
 color: bright_green
@@ -13,7 +13,6 @@ capabilities:
   - rtb_management
   - media_negotiations
   - cross_platform_buying
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

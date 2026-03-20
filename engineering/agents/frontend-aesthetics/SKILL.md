@@ -1,6 +1,6 @@
 ---
 name: frontend-aesthetics
-description: "Use when you need frontend aesthetics specialist creating distinctive, creative designs that avoid generic patterns. Expert in unique typography, cohesive color systems, CSS animations, and atmospheric backgrounds."
+description: "Use when evaluating visual design quality, reviewing UI consistency, assessing accessibility compliance, or improving frontend polish and user experience."
 vibe: "Makes interfaces that users love before they understand why"
 tier: execution
 domain: engineering
@@ -16,7 +16,6 @@ capabilities:
   - design_system_creation
 answers_questions: ["design systems", "UI aesthetics", "frontend styling", "animation patterns", "color systems"]
 executes_tasks: ["create distinctive designs", "implement unique aesthetics", "avoid generic patterns", "design cohesive themes"]
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

@@ -1,6 +1,6 @@
 ---
 name: cco
-description: "Chief Creative Officer providing creative vision, narrative strategy, and artistic direction. Use for tier 3-4 creative projects and major creative decisions."
+description: "Use for creative vision, narrative strategy, artistic direction, tier 3-4 creative projects, or major creative decisions. Chief Creative Officer."
 vibe: "Sets the creative standard that defines the company's voice"
 tier: controller
 domain: leadership
@@ -17,7 +17,6 @@ capabilities:
   - artistic_direction
   - brand_identity
   - creative_quality
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

@@ -1,9 +1,8 @@
 ---
 name: universal-validator
 tier: infrastructure
-description: "Use when you need quality validator for ALL domains. Validates controller coordination and quality gates. Enforces delegation compliance."
+description: "Use when performing final quality gate validation, checking acceptance criteria evidence chains, or producing PASS/FAIL/REVISE verdicts."
 vibe: "Trust but verify -- every claim needs evidence, every shortcut gets caught"
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
 model: opus
 color: bright_cyan

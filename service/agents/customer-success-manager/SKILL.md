@@ -2,7 +2,7 @@
 name: customer-success-manager
 domain: service
 tier: controller
-description: "Use when you need customer success specialist coordinating onboarding, adoption, success planning, health monitoring, and proactive support across ALL domains."
+description: "Use when onboarding customers, managing customer health scores, driving product adoption, preventing churn, or planning customer expansion strategies."
 vibe: "Turns customers into advocates before they know they need help"
 model: sonnet
 color: bright_red
@@ -17,7 +17,6 @@ capabilities:
   - success_planning
   - health_monitoring
   - proactive_support
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

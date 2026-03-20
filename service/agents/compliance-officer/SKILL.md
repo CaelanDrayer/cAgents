@@ -2,7 +2,7 @@
 name: compliance-officer
 domain: service
 tier: controller
-description: "Use when you need regulatory compliance, policy development, monitoring, and risk assessment across all domains."
+description: "Use when establishing compliance frameworks, conducting compliance assessments, managing regulatory requirements, or developing compliance training programs."
 vibe: "Makes sure the company follows every rule it agreed to follow"
 model: sonnet
 color: bright_red
@@ -17,7 +17,6 @@ capabilities:
   - compliance_monitoring
   - risk_assessment
   - compliance_training
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

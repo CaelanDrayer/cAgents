@@ -1,14 +1,14 @@
 ---
 name: debug
 description: "Use when a bug defies quick fixes, when 2+ attempted fixes have failed, or when root cause is unclear. Systematic 4-phase debugging: root cause investigation, pattern analysis, hypothesis testing, implementation. TRIGGER: debug, root cause, why does this fail, can't figure out, keeps breaking, intermittent bug. NOT for: known simple fixes (/run) or code review (/review)."
-argument-hint: "<bug description or error message> [--escalate] [--phase <1-4>]"
-user-invocable: true
-context: none
-agent: false
 license: MIT
 metadata:
   author: CaelanDrayer
-  version: 10.22.5
+  version: "10.22.5"
+  argument-hint: "<bug description or error message> [--escalate] [--phase <1-4>]"
+  user-invocable: "true"
+  context: "none"
+  agent: "false"
 allowed-tools: Read, Grep, Glob, Write, Bash, TodoWrite
 ---
 

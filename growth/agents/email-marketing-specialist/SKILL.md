@@ -2,7 +2,7 @@
 name: email-marketing-specialist
 domain: growth
 tier: execution
-description: "Use when you need email marketing and automation specialist. Creates email campaigns, nurture sequences, and optimization strategies for engagement and conversion."
+description: "Use when designing email campaigns, building automation workflows, segmenting audiences, optimizing open and click rates, or managing email deliverability."
 vibe: "Writes emails people actually open and click"
 model: sonnet
 color: bright_green
@@ -11,7 +11,6 @@ capabilities:
   - marketing_automation
   - segmentation
   - deliverability
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

@@ -1,8 +1,14 @@
 ---
 name: context
 description: "Create and manage shared product context for consistent agent enrichment. Use to persist project knowledge across sessions. TRIGGER: context, product context, project knowledge. NOT for: running tasks or reviewing work."
-context: none
-agent: false
+license: MIT
+metadata:
+  author: CaelanDrayer
+  version: "10.22.5"
+  user-invocable: "true"
+  context: "none"
+  agent: "false"
+allowed-tools: Read, Grep, Glob, Write, Bash, TodoWrite, AskUserQuestion
 ---
 
 # /context - Shared Product Context Manager

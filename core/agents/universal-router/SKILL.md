@@ -2,7 +2,7 @@
 name: universal-router
 domain: core
 tier: infrastructure
-description: "Use when you need complexity classifier for all domains. Enforces minimum tier 2 (all requests use controller coordination)."
+description: "Use when classifying request complexity into tiers 2-4, detecting domain from keywords, or routing to the appropriate controller catalog."
 vibe: "Sends every request to exactly the right agent, every time"
 model: opus
 color: bright_cyan
@@ -11,7 +11,6 @@ capabilities:
   - template_matching
   - controller_requirement
   - scope_adjustment
-tools: ["Read","Grep","Glob","Write","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
 maxTurns: 15
 permissionMode: "bypassPermissions"

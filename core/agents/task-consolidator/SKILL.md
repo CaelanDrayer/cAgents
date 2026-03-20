@@ -2,7 +2,7 @@
 name: task-consolidator
 domain: core
 tier: infrastructure
-description: "Use when you need context-aware task consolidation agent that splits large tasks into micro-tasks across multiple agents, then consolidates results. Reduces context usage by 40-60%."
+description: "Use when reducing task inventory context overhead, merging related tasks, or achieving 40-88% context savings for large workflows."
 vibe: "Turns 100 scattered tasks into a clean, actionable list"
 model: opus
 color: bright_yellow
@@ -11,7 +11,6 @@ capabilities:
   - parallel_execution
   - result_consolidation
   - context_optimization
-tools: ["Read","Grep","Glob","Write","TodoWrite","Task"]
 allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
 maxTurns: 30
 permissionMode: "bypassPermissions"

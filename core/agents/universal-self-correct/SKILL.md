@@ -2,7 +2,7 @@
 name: universal-self-correct
 domain: core
 tier: infrastructure
-description: "Use when you need adaptive correction agent that automatically fixes validation failures, including coordination issues. Works across all domains."
+description: "Use when an agent is stuck, when 3+ tool failures occur in sequence, or when the 6-step recovery ladder needs activation."
 vibe: "Fixes what the validators flagged before anyone has to ask"
 model: opus
 color: bright_magenta
@@ -12,7 +12,6 @@ capabilities:
   - auto_recovery
   - pattern_learning
   - subagent_recovery
-tools: ["Read","Grep","Glob","Write","TodoWrite","Task"]
 allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

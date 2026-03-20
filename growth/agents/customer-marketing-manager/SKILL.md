@@ -2,7 +2,7 @@
 name: customer-marketing-manager
 domain: growth
 tier: execution
-description: "Use when you need customer retention and expansion specialist. Drives customer engagement, upsell/cross-sell campaigns, advocacy programs, and customer lifecycle marketing."
+description: "Use when developing customer advocacy programs, creating case studies, managing reference programs, or driving expansion within existing accounts."
 vibe: "Turns happy customers into the best marketing channel"
 model: sonnet
 color: bright_green
@@ -11,7 +11,6 @@ capabilities:
   - expansion_campaigns
   - advocacy_programs
   - retention_marketing
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

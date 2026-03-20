@@ -2,7 +2,7 @@
 name: sales-engineer
 domain: growth
 tier: execution
-description: "Use when you need technical pre-sales specialist. Provides technical discovery, solution design, demonstrations, POCs, and technical validation."
+description: "Use when delivering technical demos, answering prospect technical questions, building proof-of-concept solutions, or supporting complex enterprise deals."
 vibe: "Demos the product so well the prospect sells themselves"
 model: sonnet
 color: bright_green
@@ -11,7 +11,6 @@ capabilities:
   - solution_design
   - demos
   - poc_management
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

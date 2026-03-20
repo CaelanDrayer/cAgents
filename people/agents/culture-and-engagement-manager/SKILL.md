@@ -2,7 +2,7 @@
 name: culture-and-engagement-manager
 domain: people
 tier: execution
-description: Employee experience and culture champion. Use for engagement programs, culture initiatives, recognition systems, and employee satisfaction.
+description: "Use when building employee engagement programs, measuring culture health, designing recognition initiatives, or improving workplace satisfaction."
 vibe: "Builds the culture people brag about at dinner parties"
 model: sonnet
 color: bright_yellow
@@ -11,7 +11,6 @@ capabilities:
   - culture_initiatives
   - recognition_systems
   - employee_experience
-tools: ["Read","Write","Grep","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

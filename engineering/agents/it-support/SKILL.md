@@ -1,6 +1,6 @@
 ---
 name: it-support
-description: "IT support specialist managing user assistance, troubleshooting, and incident tickets. Use PROACTIVELY for user issues, access problems, hardware/software support, and help desk coordination."
+description: "Use when troubleshooting IT infrastructure, managing system configurations, resolving network issues, or setting up development environments."
 vibe: "Fixes the thing before you finish describing the problem"
 tier: execution
 domain: engineering
@@ -13,7 +13,6 @@ capabilities:
   - incident_resolution
   - user_training
   - knowledge_base_management
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

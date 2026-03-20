@@ -1,6 +1,6 @@
 ---
 name: cpo
-description: "Chief Planning Officer providing strategic planning oversight and cross-functional alignment. Use for tier 3-4 strategic plans, major initiatives, or complex multi-domain planning."
+description: "Use for strategic planning oversight, cross-functional alignment, tier 3-4 strategic plans, or complex multi-domain planning. Chief Planning Officer."
 vibe: "Ships the product roadmap that customers and revenue both love"
 tier: controller
 domain: leadership
@@ -17,7 +17,6 @@ capabilities:
   - roadmapping
   - change_management
   - planning_governance
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

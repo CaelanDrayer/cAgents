@@ -2,7 +2,7 @@
 name: customer-education-specialist
 domain: service
 tier: execution
-description: "Use when you need tutorials, webinars, and certifications."
+description: "Use when creating product training materials, developing onboarding guides, building knowledge bases, or designing customer education programs."
 vibe: "Teaches customers to succeed with the product on their own"
 model: sonnet
 color: bright_red
@@ -11,7 +11,6 @@ capabilities:
   - webinar_delivery
   - customer_enablement
   - educational_program_design
-tools: ["Read","Grep","Glob","Write"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

@@ -1,13 +1,13 @@
 ---
 name: optimize
 description: "Detect and fix performance, size, and efficiency issues with rollback safety. Use when you need measurable improvements with before/after metrics. TRIGGER: optimize, speed up, reduce size, improve performance. NOT for: review-only (/review) or new features (/run)."
-argument-hint: "[<target>] [--type <type>] [--dry-run] [--interactive] [--rollback]"
-user-invocable: true
-context: fork
 license: MIT
 metadata:
   author: CaelanDrayer
-  version: 10.22.5
+  version: "10.22.5"
+  argument-hint: "[<target>] [--type <type>] [--dry-run] [--interactive] [--rollback]"
+  user-invocable: "true"
+  context: "fork"
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
 ---
 

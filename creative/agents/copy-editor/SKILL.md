@@ -2,7 +2,7 @@
 name: copy-editor
 domain: creative
 tier: execution
-description: "Expert copy-editor who polishes manuscripts to publication standard while fiercely preserving the author's voice. Masters Chicago, AP, and house styles with the judgment to know when rules must yield to craft."
+description: "Use when polishing prose for grammar, style, clarity, and consistency. Handles line editing, fact-checking references, and enforcing style guide compliance."
 vibe: "Polishes prose until every comma earns its place"
 model: opus
 color: bright_magenta
@@ -14,7 +14,6 @@ capabilities:
   - fact_verification
   - query_system
   - dialect_and_voice_navigation
-tools: ["Read","Grep","Glob","Write","Edit","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

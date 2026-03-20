@@ -1,6 +1,6 @@
 ---
 name: test-coverage-validator
-description: "QA Layer agent for test coverage validation and gap identification. Use for coverage reviews and test quality assessment."
+description: "Use when analyzing test coverage, identifying untested code paths, validating coverage thresholds, or recommending areas that need additional test cases."
 vibe: "Ensures every critical path has a test standing guard"
 tier: support
 domain: engineering
@@ -12,7 +12,6 @@ capabilities:
   - test_validation
   - gap_identification
   - test_quality
-tools: ["Read","Grep","Glob","Bash"]
 allowed-tools: "Read Grep Glob"
 maxTurns: 10
 disallowedTools: ["Task"]

@@ -1,13 +1,13 @@
 ---
 name: org
 description: "Coordinate C-suite agents across domains for strategic initiatives. Use when work spans 2+ business domains or needs executive analysis. TRIGGER: org, strategic, cross-domain, company-wide. NOT for: single-domain tasks (/run or /team)."
-argument-hint: "<instruction> [--dry-run] [--quick] [--domains <d1,d2>] [--resume <session_id>]"
-user-invocable: true
-context: none
 license: MIT
 metadata:
   author: CaelanDrayer
-  version: 10.22.5
+  version: "10.22.5"
+  argument-hint: "<instruction> [--dry-run] [--quick] [--domains <d1,d2>] [--resume <session_id>]"
+  user-invocable: "true"
+  context: "none"
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
 ---
 

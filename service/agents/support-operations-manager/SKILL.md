@@ -2,7 +2,7 @@
 name: support-operations-manager
 domain: service
 tier: controller
-description: "Use when you need workflow design, tool implementation, and operational efficiency."
+description: "Use when optimizing support workflows, managing support tooling, configuring routing rules, or tracking operational metrics and team efficiency."
 vibe: "Optimizes support workflows so agents spend time helping, not searching"
 model: sonnet
 color: bright_red
@@ -16,7 +16,6 @@ capabilities:
   - tool_implementation
   - workflow_automation
   - operational_efficiency
-tools: ["Read","Grep","Glob","Bash","Write","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

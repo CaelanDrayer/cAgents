@@ -1,6 +1,6 @@
 ---
 name: security-engineer
-description: "Security expert for vulnerability assessment, secure coding, vulnerability scanning, and OWASP compliance. Use when code touches auth, credentials, user input, or sensitive data."
+description: "Use when implementing security controls, conducting penetration tests, hardening systems, or reviewing code for security vulnerabilities."
 vibe: "Builds security into the architecture, not bolted on after"
 tier: execution
 domain: engineering
@@ -19,7 +19,6 @@ capabilities:
   - security_review
   - owasp_compliance
   - secrets_detection
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

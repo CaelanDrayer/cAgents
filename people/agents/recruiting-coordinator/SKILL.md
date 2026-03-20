@@ -2,7 +2,7 @@
 name: recruiting-coordinator
 domain: people
 tier: execution
-description: "Use when you need scheduling, candidate communications, and recruiting operations."
+description: "Use when scheduling interviews, managing candidate communications, coordinating hiring logistics, or maintaining applicant tracking system data."
 vibe: "Keeps the hiring pipeline moving without dropping a single candidate"
 model: haiku
 color: bright_yellow
@@ -11,7 +11,6 @@ capabilities:
   - candidate_communications
   - recruiting_operations
   - process_optimization
-tools: ["Read","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

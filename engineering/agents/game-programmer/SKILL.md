@@ -2,7 +2,7 @@
 name: game-programmer
 domain: engineering
 tier: execution
-description: Game programming specialist for gameplay systems, physics, and game logic. Use for implementing mechanics, player controllers, game state, and interactive systems.
+description: "Use when implementing gameplay mechanics, writing game logic, building AI systems for games, or integrating game systems with engine frameworks."
 vibe: "Writes the code that makes impossible game mechanics possible"
 model: sonnet
 color: bright_yellow
@@ -13,7 +13,6 @@ capabilities:
   - game_state_management
   - state_machines
   - input_handling
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

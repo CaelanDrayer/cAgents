@@ -2,7 +2,7 @@
 name: roadmap-planner
 domain: business
 tier: execution
-description: "Use when you need product and technology roadmap specialist. Creates strategic roadmaps, prioritizes features, manages dependencies, aligns roadmap to strategy."
+description: "Use when creating product or technology roadmaps, prioritizing features, managing cross-team dependencies, or aligning roadmap to business strategy."
 vibe: "Draws the map from here to shipped, including the detours"
 model: sonnet
 color: bright_blue
@@ -11,7 +11,6 @@ capabilities:
   - feature_prioritization
   - dependency_mapping
   - timeline_visualization
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

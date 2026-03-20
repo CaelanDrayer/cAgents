@@ -7,7 +7,7 @@ typical_questions:
   - "What are the current campaign/sales metrics?"
   - "What is the target audience and positioning?"
   - "What are the conversion bottlenecks?"
-description: "Use when you need campaign execution and management leader. Coordinates campaign planning, execution, optimization, and performance tracking across channels."
+description: "Use when planning marketing campaigns, coordinating cross-channel execution, managing campaign budgets, or analyzing campaign performance metrics."
 vibe: "Orchestrates campaigns that hit every channel at the right time"
 model: opusplan
 color: bright_green
@@ -16,7 +16,6 @@ capabilities:
   - campaign_execution
   - performance_optimization
   - multi_channel_coordination
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

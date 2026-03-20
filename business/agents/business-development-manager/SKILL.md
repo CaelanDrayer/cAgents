@@ -2,7 +2,7 @@
 name: business-development-manager
 domain: business
 tier: execution
-description: "Use when you need strategic partnership and business expansion specialist. Develops partnerships, alliances, and growth opportunities."
+description: "Use when developing strategic partnerships, exploring new market opportunities, evaluating alliances, or planning business expansion."
 vibe: "Opens doors that competitors don't know exist"
 model: sonnet
 color: bright_blue
@@ -11,7 +11,6 @@ capabilities:
   - deal_sourcing
   - market_expansion
   - ecosystem_building
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

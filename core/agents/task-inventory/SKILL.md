@@ -2,7 +2,7 @@
 name: task-inventory
 domain: core
 tier: infrastructure
-description: "Use when you need large-scale workflows. Tracks task completion, enables batch delegation, reduces context overhead by 60-80%."
+description: "Use when managing CSV-based task state for large-scale workflows with 20+ items, achieving 60-80% context savings over inline tracking."
 vibe: "Tracks every task in CSV so nothing falls through the cracks"
 model: opus
 color: bright_white
@@ -12,7 +12,6 @@ capabilities:
   - checkpoint_resume
   - progress_reporting
   - parallel_tracking
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
 maxTurns: 30
 permissionMode: "bypassPermissions"

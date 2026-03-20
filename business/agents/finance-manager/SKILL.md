@@ -1,6 +1,6 @@
 ---
 name: finance-manager
-description: "Financial oversight specialist managing IT budgets, costs, ROI analysis, and resource allocation decisions. Use PROACTIVELY for budget decisions, cost assessments, vendor contracts, and financial planning."
+description: "Use when managing budgets, tracking financial performance, creating forecasts, analyzing cost structures, or producing financial reports."
 vibe: "Counts every dollar so the company can spend the right ones"
 tier: controller
 domain: business
@@ -18,7 +18,6 @@ capabilities:
   - vendor_management
   - financial_forecasting
   - resource_allocation
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 30
 related_agents:

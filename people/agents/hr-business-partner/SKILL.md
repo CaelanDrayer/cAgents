@@ -1,6 +1,6 @@
 ---
 name: hr-business-partner
-description: "Strategic HR advisor embedded with business units. Use for organizational planning, talent strategy, change management, and people consulting."
+description: "Use when aligning HR strategy with business unit goals, advising leaders on people decisions, managing organizational change, or supporting strategic workforce planning."
 vibe: "Bridges the gap between what HR offers and what the business needs"
 tier: controller
 domain: people
@@ -16,7 +16,6 @@ capabilities:
   - organizational_planning
   - change_management
   - talent_strategy
-tools: ["Read","Write","Grep","Glob","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

@@ -1,6 +1,6 @@
 ---
 name: backend-lead
-description: "Backend domain manager for tactical planning, team coordination, and code review. Use for tier 3-4 instructions requiring backend work breakdown, API design, or database coordination."
+description: "Use for coordinating backend development across multiple engineers, reviewing backend architecture decisions, or managing backend technical debt and standards."
 vibe: "Runs the backend team like a well-oiled distributed system"
 tier: controller
 domain: engineering
@@ -17,7 +17,6 @@ capabilities:
   - database_coordination
   - backend_architecture_decisions
   - team_mentoring
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

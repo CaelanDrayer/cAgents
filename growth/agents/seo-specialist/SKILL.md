@@ -2,7 +2,7 @@
 name: seo-specialist
 domain: growth
 tier: execution
-description: "Use when you need sEO strategy and optimization specialist. Conducts keyword research, on-page optimization, technical SEO, and organic search growth."
+description: "Use when optimizing search rankings, conducting keyword research, performing technical SEO audits, building backlink strategies, or improving organic traffic."
 vibe: "Gets pages to rank by understanding what Google actually wants"
 model: sonnet
 color: bright_green
@@ -11,7 +11,6 @@ capabilities:
   - on_page_seo
   - technical_seo
   - link_building
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

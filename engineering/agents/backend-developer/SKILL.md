@@ -15,7 +15,6 @@ capabilities:
   - error_handling
   - backend_testing
   - performance_optimization
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 not-my-scope: ["UI components", "visual design", "copy writing", "marketing strategy"]

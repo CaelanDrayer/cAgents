@@ -2,7 +2,7 @@
 name: influencer-marketing-specialist
 domain: growth
 tier: execution
-description: "Use when you need influencer marketing and creator partnerships specialist. Manages influencer campaigns, creator collaborations, ambassador programs, and influencer ROI."
+description: "Use when identifying influencers, managing influencer partnerships, coordinating sponsored content, or measuring influencer campaign impact."
 vibe: "Connects brands with voices their audience already trusts"
 model: sonnet
 color: bright_green
@@ -11,7 +11,6 @@ capabilities:
   - creator_partnerships
   - ambassador_programs
   - influencer_roi
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

@@ -2,7 +2,7 @@
 name: chat-support-specialist
 domain: service
 tier: execution
-description: Real-time chat support expert handling live chat with speed and empathy. Use for instant support and multiple concurrent conversations.
+description: "Use when handling live chat support conversations, providing real-time customer assistance, managing chat queues, or optimizing chat response quality."
 vibe: "Resolves tickets in chat faster than most people type"
 model: sonnet
 color: bright_red
@@ -11,7 +11,6 @@ capabilities:
   - concurrent_conversation_management
   - rapid_response
   - chat_efficiency
-tools: ["Read","Grep","Glob","Write"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

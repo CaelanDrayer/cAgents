@@ -2,7 +2,7 @@
 name: affiliate-marketing-manager
 domain: growth
 tier: execution
-description: "Use when you need affiliate program management and partner referral specialist. Manages affiliate networks, commission structures, partner recruitment, and affiliate performance optimization."
+description: "Use when building affiliate programs, recruiting partners, managing commission structures, or tracking affiliate-driven conversions."
 vibe: "Turns every happy customer into a revenue-generating referral engine"
 model: sonnet
 color: bright_green
@@ -13,7 +13,6 @@ capabilities:
   - affiliate_network_management
   - referral_programs
   - affiliate_performance_tracking
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

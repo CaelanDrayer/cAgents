@@ -2,7 +2,7 @@
 name: pricing-analyst
 domain: growth
 tier: execution
-description: "Use when you need pricing strategy and deal optimization specialist. Analyzes pricing, designs packaging, manages deal desk, and optimizes discount strategies."
+description: "Use when analyzing pricing strategies, modeling price elasticity, evaluating competitive pricing, or recommending pricing changes based on market data."
 vibe: "Finds the price point where value meets willingness to pay"
 model: sonnet
 color: bright_green
@@ -11,7 +11,6 @@ capabilities:
   - packaging_design
   - deal_desk
   - discount_optimization
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

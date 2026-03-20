@@ -2,7 +2,7 @@
 name: engine-developer
 domain: engineering
 tier: execution
-description: Game engine specialist for architecture, optimization, and core systems. Use for engine modifications, rendering pipelines, memory management, and platform optimization.
+description: "Use when building game engine systems, implementing rendering pipelines, developing physics engines, or creating low-level engine infrastructure."
 vibe: "Builds the engine that makes the game run at 60fps"
 model: sonnet
 color: bright_blue
@@ -13,7 +13,6 @@ capabilities:
   - rendering_pipeline
   - platform_optimization
   - threading_systems
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

@@ -2,7 +2,7 @@
 name: content-marketing-manager
 domain: growth
 tier: execution
-description: "Use when you need content strategy and production specialist. Plans content strategy, manages editorial calendars, oversees content creation and distribution."
+description: "Use when planning content strategy, managing editorial calendars, coordinating content production, or measuring content engagement and ROI."
 vibe: "Creates content that earns attention instead of buying it"
 model: sonnet
 color: bright_green
@@ -11,7 +11,6 @@ capabilities:
   - editorial_planning
   - content_production
   - seo_content
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

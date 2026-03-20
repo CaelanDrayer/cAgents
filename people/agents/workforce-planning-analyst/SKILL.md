@@ -2,7 +2,7 @@
 name: workforce-planning-analyst
 domain: people
 tier: execution
-description: Strategic headcount forecasting and capacity planning specialist. Use for workforce modeling, hiring plans, and org capacity analysis.
+description: "Use when forecasting headcount needs, modeling attrition scenarios, analyzing workforce demographics, or planning talent pipelines against business growth."
 vibe: "Plans the headcount so the company never hires too late"
 model: sonnet
 color: bright_yellow
@@ -11,7 +11,6 @@ capabilities:
   - capacity_planning
   - scenario_modeling
   - headcount_budgeting
-tools: ["Read","Write","Grep","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

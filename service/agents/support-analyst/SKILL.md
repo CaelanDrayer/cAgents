@@ -2,7 +2,7 @@
 name: support-analyst
 domain: service
 tier: execution
-description: "Use when you need metrics analysis, trend identification, and performance reporting."
+description: "Use when analyzing support ticket trends, identifying common issues, building support dashboards, or providing data-driven recommendations to reduce ticket volume."
 vibe: "Mines support data to find the patterns that prevent future tickets"
 model: sonnet
 color: bright_red
@@ -11,7 +11,6 @@ capabilities:
   - metrics_reporting
   - trend_identification
   - performance_insights
-tools: ["Read","Grep","Glob","Bash","Write"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

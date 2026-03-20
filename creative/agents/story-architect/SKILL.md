@@ -9,7 +9,7 @@ typical_questions:
   - "How do character arcs align with plot?"
   - "What structural model best serves this narrative?"
   - "Where are the load-bearing scenes?"
-description: "Master structural analyst who evaluates and designs story architecture — identifying where the load-bearing walls stand, whether the foundation can support the weight of the narrative, and how to build structures that are both surprising and inevitable."
+description: "Use when evaluating story structure, designing narrative architecture, identifying load-bearing plot elements, or building frameworks that balance surprise with inevitability."
 vibe: "Blueprints narratives that hold up under their own weight"
 model: "opusplan"
 color: bright_magenta
@@ -21,7 +21,6 @@ capabilities:
   - series_planning
   - ensemble_structure
   - pov_architecture
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

@@ -1,7 +1,7 @@
 ---
 name: code-reviewer
 domain: engineering
-description: "V3.0 code review orchestrator for comprehensive code reviews with parallel execution, framework-specific patterns, enhanced auto-fix engine, quality gates, and confidence scoring. Use PROACTIVELY for code quality analysis and review."
+description: "Use when reviewing code changes for quality, security, performance, and maintainability. Identifies bugs, anti-patterns, and style violations before merge."
 vibe: "Reviews code like a mentor, not a gatekeeper -- finds the bugs you almost shipped"
 capabilities:
   - parallel-execution
@@ -14,7 +14,6 @@ capabilities:
   - context-aware-analysis
   - diff-aware-review
   - pattern-learning
-tools: ["Read","Grep","Glob","Write","TodoWrite","Task","Bash"]
 allowed-tools: "Read Grep Glob"
 model: "haiku"
 color: bright_magenta

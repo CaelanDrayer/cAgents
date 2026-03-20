@@ -1,6 +1,6 @@
 ---
 name: dba
-description: "Database administrator specializing in database design, optimization, performance tuning, and data integrity. Use PROACTIVELY for schema changes, query optimization, migrations, backup/recovery, and data security."
+description: "Use when designing database schemas, optimizing query performance, managing migrations, configuring replication, or troubleshooting database issues."
 vibe: "Keeps databases fast, safe, and ready for whatever you throw at them"
 tier: execution
 domain: engineering
@@ -13,7 +13,6 @@ capabilities:
   - data_migration
   - query_optimization
   - database_security
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 not-my-scope: ["Frontend code", "UI components", "content writing", "business strategy"]

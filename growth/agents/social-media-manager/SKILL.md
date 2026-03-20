@@ -2,7 +2,7 @@
 name: social-media-manager
 domain: growth
 tier: execution
-description: "Use when you need social media strategy and community management specialist. Plans social strategy, manages content calendars, and builds community engagement."
+description: "Use when managing social media accounts, creating social content calendars, engaging communities, or tracking social media analytics and sentiment."
 vibe: "Builds communities that talk about the brand even when it's not posting"
 model: sonnet
 color: bright_green
@@ -11,7 +11,6 @@ capabilities:
   - content_calendars
   - community_management
   - social_analytics
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

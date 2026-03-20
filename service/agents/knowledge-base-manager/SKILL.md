@@ -2,7 +2,7 @@
 name: knowledge-base-manager
 domain: service
 tier: execution
-description: "Use when you need self-service content, documentation organization, and discoverability optimization."
+description: "Use when organizing knowledge base content, maintaining documentation accuracy, optimizing search and discovery, or managing content lifecycle."
 vibe: "Builds the docs that make support tickets unnecessary"
 model: sonnet
 color: bright_red
@@ -11,7 +11,6 @@ capabilities:
   - taxonomy_design
   - search_optimization
   - knowledge_curation
-tools: ["Read","Grep","Glob","Write"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

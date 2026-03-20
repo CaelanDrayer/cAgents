@@ -2,7 +2,7 @@
 name: support-quality-analyst
 domain: service
 tier: execution
-description: "Use when you need ticket review, agent coaching, and standards development."
+description: "Use when auditing support interactions, scoring agent performance, identifying quality gaps, or developing quality assurance standards and calibration processes."
 vibe: "Scores support interactions to raise the bar for everyone"
 model: sonnet
 color: bright_red
@@ -11,7 +11,6 @@ capabilities:
   - ticket_review
   - coaching
   - standards_development
-tools: ["Read","Grep","Glob","Write"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

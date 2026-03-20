@@ -2,7 +2,7 @@
 name: facilities-manager
 domain: business
 tier: execution
-description: "Use when you need facilities operations and workplace services specialist. Manages space planning, maintenance, vendors, and safety compliance."
+description: "Use when managing office operations, coordinating facility maintenance, planning space allocation, or handling vendor relationships for physical infrastructure."
 vibe: "Keeps the lights on so everyone else can keep shipping"
 model: sonnet
 color: bright_blue
@@ -11,7 +11,6 @@ capabilities:
   - building_maintenance
   - vendor_coordination
   - safety_compliance
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

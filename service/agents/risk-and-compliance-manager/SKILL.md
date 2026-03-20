@@ -2,7 +2,7 @@
 name: risk-and-compliance-manager
 domain: service
 tier: execution
-description: "Use when you need risk assessment, compliance frameworks, and integrated governance across legal and regulatory domains."
+description: "Use when building risk and compliance frameworks, conducting risk assessments, managing audit findings, or coordinating compliance across business units."
 vibe: "Balances risk appetite with compliance requirements"
 model: sonnet
 color: bright_red
@@ -11,7 +11,6 @@ capabilities:
   - compliance_frameworks
   - risk_assessment
   - integrated_governance
-tools: ["Read","Write","Grep","Glob","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

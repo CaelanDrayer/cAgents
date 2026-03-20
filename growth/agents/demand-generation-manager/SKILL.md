@@ -2,7 +2,7 @@
 name: demand-generation-manager
 domain: growth
 tier: execution
-description: "Use when you need demand generation and pipeline creation specialist. Designs lead generation campaigns, nurture programs, funnel optimization, and pipeline acceleration."
+description: "Use when building demand generation pipelines, planning lead nurture campaigns, optimizing MQL-to-SQL conversion, or managing inbound marketing programs."
 vibe: "Fills the pipeline with leads that actually convert"
 model: sonnet
 color: bright_green
@@ -11,7 +11,6 @@ capabilities:
   - nurture_programs
   - funnel_optimization
   - abm
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

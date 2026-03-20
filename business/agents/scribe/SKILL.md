@@ -1,6 +1,6 @@
 ---
 name: scribe
-description: "Documentation specialist for capturing decisions, knowledge, and learnings. Use to document architectural decisions, create technical documentation, or capture project knowledge."
+description: "Use when documenting meeting notes, creating structured summaries, maintaining project records, or producing clear written records from verbal or unstructured inputs."
 vibe: "Documents decisions so nobody can say we never agreed to that"
 tier: execution
 domain: business
@@ -12,7 +12,6 @@ capabilities:
   - knowledge_management
   - technical_writing
   - learning_documentation
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

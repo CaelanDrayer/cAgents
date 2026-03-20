@@ -1,6 +1,6 @@
 ---
 name: data-analyst
-description: "Data analyst and engineer specializing in data pipelines, ETL processes, analytics, and business intelligence. Use PROACTIVELY for data pipeline design, reporting, analytics queries, and BI dashboards."
+description: "Use when analyzing datasets, building queries, creating data visualizations, or extracting insights from structured data using SQL, Python, or BI tools."
 vibe: "Turns messy data into clean insights that drive decisions"
 tier: execution
 domain: engineering
@@ -13,7 +13,6 @@ capabilities:
   - data_quality
   - business_intelligence
   - data_visualization
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

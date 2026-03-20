@@ -2,7 +2,7 @@
 name: performance-management-specialist
 domain: people
 tier: execution
-description: Performance review cycle and goal-setting framework expert. Use for performance reviews, calibration, goal frameworks, and development planning.
+description: "Use when designing performance review processes, building goal-setting frameworks, developing feedback systems, or calibrating performance ratings."
 vibe: "Makes performance reviews useful instead of dreaded"
 model: sonnet
 color: bright_yellow
@@ -11,7 +11,6 @@ capabilities:
   - goal_frameworks
   - calibration_facilitation
   - feedback_systems
-tools: ["Read","Write","Grep","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

@@ -2,7 +2,7 @@
 name: character-psychologist
 domain: creative
 tier: execution
-description: Psychology-informed character specialist. Expert in attachment theory, defense mechanisms, personality frameworks, trauma-informed writing, Jungian archetypes, cognitive behavioral patterns, and developmental psychology. Creates psychologically authentic characters whose behavior emerges from genuine psychological processes.
+description: "Use when analyzing character motivations, diagnosing inconsistencies in character behavior, mapping psychological profiles, or ensuring emotional authenticity in character responses."
 vibe: "Knows why your characters do what they do, even when they don't"
 model: opus
 color: bright_magenta
@@ -14,7 +14,6 @@ capabilities:
   - personality_frameworks
   - relationship_dynamics
   - developmental_psychology
-tools: ["Read","Grep","Glob","Write","Edit","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 answers_questions:

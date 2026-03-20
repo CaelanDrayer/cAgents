@@ -2,7 +2,7 @@
 name: sales-trainer
 domain: growth
 tier: execution
-description: "Use when you need sales development and coaching specialist. Delivers onboarding, skills training, coaching programs, and performance improvement."
+description: "Use when designing sales training programs, coaching reps on methodology, running role-play exercises, or measuring training effectiveness and skill gaps."
 vibe: "Trains reps until objection handling becomes second nature"
 model: sonnet
 color: bright_green
@@ -11,7 +11,6 @@ capabilities:
   - coaching
   - onboarding
   - performance_development
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

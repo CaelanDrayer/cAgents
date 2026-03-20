@@ -2,7 +2,7 @@
 name: field-marketing-manager
 domain: growth
 tier: execution
-description: "Use when you need regional and field marketing specialist. Executes regional campaigns, local events, sales territory support, and geographic marketing."
+description: "Use when planning regional marketing activities, coordinating field events, managing local partnerships, or aligning field efforts with sales territories."
 vibe: "Brings the brand to life in markets that matter most"
 model: sonnet
 color: bright_green
@@ -11,7 +11,6 @@ capabilities:
   - local_events
   - territory_support
   - geo_targeting
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

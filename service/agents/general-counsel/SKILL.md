@@ -2,7 +2,7 @@
 name: general-counsel
 domain: service
 tier: controller
-description: "Use when you need chief Legal Officer coordinating all legal matters including litigation, transactions, governance, and risk management."
+description: "Use for legal strategy, regulatory compliance, contract review, IP protection, and corporate governance. General Counsel-level legal oversight."
 vibe: "Provides the legal judgment that keeps executives out of trouble"
 model: "opusplan"
 color: bright_red
@@ -17,7 +17,6 @@ capabilities:
   - corporate_governance
   - transaction_management
   - risk_coordination
-tools: ["Read","Write","Grep","Glob","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

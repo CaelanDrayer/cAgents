@@ -2,7 +2,7 @@
 name: employment-attorney
 domain: service
 tier: execution
-description: "Use when you need workplace policies, disputes, investigations, and regulatory compliance."
+description: "Use when advising on employment law, reviewing HR policies, handling workplace disputes, or ensuring compliance with labor regulations."
 vibe: "Navigates employment law so the company doesn't have to guess"
 model: sonnet
 color: bright_red
@@ -11,7 +11,6 @@ capabilities:
   - workplace_investigations
   - policy_development
   - dispute_resolution
-tools: ["Read","Write","Grep","Glob","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

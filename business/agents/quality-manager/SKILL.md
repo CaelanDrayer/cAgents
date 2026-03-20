@@ -2,7 +2,7 @@
 name: quality-manager
 domain: business
 tier: controller
-description: "Use when you need quality management specialist coordinating quality strategy, QA processes, quality standards, Six Sigma, ISO compliance, and continuous improvement across ALL domains."
+description: "Use when establishing quality standards, managing QA processes, implementing Six Sigma or ISO compliance, or coordinating continuous improvement across domains."
 vibe: "Quality isn't a phase -- it's every single decision"
 model: sonnet
 color: bright_blue
@@ -22,7 +22,6 @@ capabilities:
   - quality_control
   - process_improvement
   - iso_compliance
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

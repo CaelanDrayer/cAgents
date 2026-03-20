@@ -7,7 +7,7 @@ typical_questions:
   - "What are the current operational metrics?"
   - "What are the efficiency bottlenecks?"
   - "What are the compliance requirements?"
-description: "Use when you need operations optimization and process management specialist. Coordinates operational decisions, efficiency improvements, and process optimization."
+description: "Use when optimizing operational processes, improving efficiency, managing workflows, or coordinating cross-functional operational decisions."
 vibe: "Runs the machine that runs the business"
 model: sonnet
 color: bright_blue
@@ -16,7 +16,6 @@ capabilities:
   - process_management
   - performance_optimization
   - continuous_improvement
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

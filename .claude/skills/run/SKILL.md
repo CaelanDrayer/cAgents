@@ -1,13 +1,13 @@
 ---
 name: run
 description: "Execute any task through coordinated agents. Use for building, fixing, writing, or any single-domain work. TRIGGER: run, implement, fix, build, create. NOT for: parallel work (/team) or cross-domain strategy (/org)."
-argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--analytics] [--from-review] [--from-designer]"
-user-invocable: true
-context: none
 license: MIT
 metadata:
   author: CaelanDrayer
-  version: 10.22.5
+  version: "10.22.5"
+  argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--analytics] [--from-review] [--from-designer]"
+  user-invocable: "true"
+  context: "none"
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
 ---
 

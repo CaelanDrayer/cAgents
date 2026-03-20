@@ -1,13 +1,13 @@
 ---
 name: designer
 description: "Guided design exploration that produces implementation-ready documents through structured Q&A. Use before building to clarify requirements. TRIGGER: design, plan this, think through, architecture. NOT for: implementation (/run) or review (/review)."
-argument-hint: "[<topic>] [--deep] [--resume <id>] [--template <name>] [--brief <path>] [--iterate <session_id>]"
-user-invocable: true
-context: none
 license: MIT
 metadata:
   author: CaelanDrayer
-  version: 10.22.5
+  version: "10.22.5"
+  argument-hint: "[<topic>] [--deep] [--resume <id>] [--template <name>] [--brief <path>] [--iterate <session_id>]"
+  user-invocable: "true"
+  context: "none"
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite, AskUserQuestion
 ---
 

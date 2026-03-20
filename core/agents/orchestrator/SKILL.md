@@ -2,7 +2,7 @@
 name: orchestrator
 domain: core
 tier: infrastructure
-description: "Use when you need large-scale workflows. Supports team mode execution via Agent Teams integration."
+description: "Use when enriching request context at pipeline start, detecting domain and complexity, or preparing enriched_context.yaml for downstream agents."
 vibe: "The conductor who ensures every instrument enters on cue"
 model: opus
 color: bright_magenta
@@ -13,7 +13,6 @@ capabilities:
   - inventory_management
   - adaptive_execution
   - team_mode_support
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
 maxTurns: 50
 permissionMode: "bypassPermissions"

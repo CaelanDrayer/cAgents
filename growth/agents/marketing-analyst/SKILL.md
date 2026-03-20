@@ -2,7 +2,7 @@
 name: marketing-analyst
 domain: growth
 tier: execution
-description: "Use when you need marketing analytics, performance tracking, dashboards, attribution, predictive modeling, customer segmentation, and marketing mix modeling."
+description: "Use when analyzing marketing performance data, building attribution models, creating marketing dashboards, or providing campaign optimization insights."
 vibe: "Turns campaign data into the next campaign's secret weapon"
 model: sonnet
 color: bright_green
@@ -15,7 +15,6 @@ capabilities:
   - customer_segmentation
   - marketing_mix_modeling
   - statistical_analysis
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

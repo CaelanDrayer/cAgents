@@ -2,7 +2,7 @@
 name: architecture-reviewer
 domain: engineering
 tier: support
-description: "Use when you need architecture reviews, system design validation, and pattern enforcement."
+description: "Use when evaluating system architecture decisions, reviewing design patterns, assessing scalability concerns, or validating technical approach before implementation."
 vibe: "Reviews architecture like a building inspector -- nothing passes without proof"
 model: "haiku"
 color: bright_cyan
@@ -11,7 +11,6 @@ capabilities:
   - design_validation
   - pattern_enforcement
   - system_analysis
-tools: ["Read","Grep","Glob"]
 allowed-tools: "Read Grep Glob"
 maxTurns: 10
 disallowedTools: ["Task"]

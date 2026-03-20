@@ -7,7 +7,7 @@ typical_questions:
   - "What projects are in this program?"
   - "What are the cross-project dependencies?"
   - "What benefits are we tracking?"
-description: "Use when you need program planning and coordination specialist. Manages large-scale programs, coordinates multiple projects, tracks benefits realization."
+description: "Use when coordinating multiple related projects, managing cross-project dependencies, tracking program milestones, or aligning projects to strategic goals."
 vibe: "Juggles five projects and still catches every ball"
 model: sonnet
 color: bright_blue
@@ -16,7 +16,6 @@ capabilities:
   - multi_project_coordination
   - benefits_tracking
   - program_governance
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

@@ -2,7 +2,7 @@
 name: revenue-operations-manager
 domain: growth
 tier: execution
-description: "Use when you need revenue process and systems specialist. Aligns revenue processes across sales, marketing, and CS for data-driven growth."
+description: "Use when aligning sales, marketing, and customer success operations, optimizing the revenue funnel, or building cross-functional reporting dashboards."
 vibe: "Aligns sales, marketing, and CS into one revenue machine"
 model: sonnet
 color: bright_green
@@ -11,7 +11,6 @@ capabilities:
   - systems_integration
   - revenue_analytics
   - process_automation
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

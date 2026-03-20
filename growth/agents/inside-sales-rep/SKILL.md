@@ -2,7 +2,7 @@
 name: inside-sales-rep
 domain: growth
 tier: execution
-description: "Use when you need high-velocity inbound sales specialist. Closes inbound leads and converts trials through efficient sales motions for SMB deals."
+description: "Use when qualifying inbound leads, conducting outbound prospecting, managing high-volume sales outreach, or booking meetings for account executives."
 vibe: "Works the phones and inbox until the pipeline overflows"
 model: sonnet
 color: bright_green
@@ -11,7 +11,6 @@ capabilities:
   - trial_conversion
   - quick_demos
   - high_velocity
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

@@ -2,7 +2,7 @@
 name: support-trainer
 domain: service
 tier: execution
-description: "Use when you need onboarding, skills development, and training effectiveness measurement."
+description: "Use when developing support training curricula, onboarding new agents, creating product knowledge assessments, or running skill-building workshops."
 vibe: "Trains support teams to handle anything customers throw at them"
 model: sonnet
 color: bright_red
@@ -11,7 +11,6 @@ capabilities:
   - curriculum_development
   - onboarding
   - skill_assessment
-tools: ["Read","Grep","Glob","Write"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

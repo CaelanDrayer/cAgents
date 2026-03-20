@@ -1,6 +1,6 @@
 ---
 name: devops-engineer
-description: "DevOps engineer specializing in CI/CD pipelines, infrastructure automation, and release engineering. Use PROACTIVELY for deployment automation, infrastructure as code, build pipelines, and development environment setup."
+description: "Use when setting up CI/CD pipelines, configuring infrastructure as code, managing containers and orchestration, or automating deployment processes."
 vibe: "Automates the boring stuff so deploys are a non-event"
 tier: execution
 domain: engineering
@@ -18,7 +18,6 @@ capabilities:
   - release_engineering
   - deployment_strategies
   - gitops_workflows
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

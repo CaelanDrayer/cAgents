@@ -2,7 +2,7 @@
 name: worldbuilder
 domain: creative
 tier: execution
-description: "Master worldbuilder who constructs living, breathing fictional universes — from cosmology to cuisine, from trade routes to taboos — where every system interconnects and the reader sees only the iceberg's tip while feeling the mass beneath."
+description: "Use when constructing fictional universes, designing world systems (cosmology, culture, economics, ecology), or building interconnected settings where every element resonates with internal logic."
 vibe: "Builds worlds with rules so consistent you could live in them"
 model: opus
 color: bright_magenta
@@ -15,7 +15,6 @@ capabilities:
   - linguistic_worldbuilding
   - ecological_thinking
   - world_as_character
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

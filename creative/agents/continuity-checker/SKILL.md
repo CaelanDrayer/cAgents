@@ -2,7 +2,7 @@
 name: continuity-checker
 domain: creative
 tier: execution
-description: "Expert continuity analyst who builds and maintains the story bible -- tracking every name, date, object, rule, and relationship so the reader never encounters a detail that contradicts another. The manuscript's institutional memory."
+description: "Use when verifying narrative consistency, tracking timeline accuracy, checking character detail continuity, or identifying contradictions across story chapters or episodes."
 vibe: "Catches the plot holes before your readers do"
 model: opus
 color: bright_magenta
@@ -15,7 +15,6 @@ capabilities:
   - world_logic_verification
   - series_continuity
   - contradiction_detection
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

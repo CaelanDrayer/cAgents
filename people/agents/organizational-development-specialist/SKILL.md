@@ -2,7 +2,7 @@
 name: organizational-development-specialist
 domain: people
 tier: execution
-description: Org design and change management expert. Use for restructuring, team effectiveness, and organizational transformation.
+description: "Use when designing organizational structures, facilitating team development, managing change initiatives, or improving organizational effectiveness."
 vibe: "Redesigns the org chart so the work actually flows"
 model: sonnet
 color: bright_yellow
@@ -11,7 +11,6 @@ capabilities:
   - change_management
   - team_effectiveness
   - transformation_leadership
-tools: ["Read","Write","Grep","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

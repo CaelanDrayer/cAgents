@@ -2,7 +2,7 @@
 name: escalation-manager
 domain: service
 tier: execution
-description: "Use when you need incident commander for critical customer issues, managing escalation workflows and cross-functional resolution."
+description: "Use when managing escalated customer issues, coordinating cross-team resolution, tracking SLA adherence, or developing escalation procedures."
 vibe: "Takes the toughest tickets and turns them into saves"
 model: sonnet
 color: bright_red
@@ -11,7 +11,6 @@ capabilities:
   - incident_command
   - cross_functional_coordination
   - customer_recovery
-tools: ["Read","Write","Grep","Glob","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

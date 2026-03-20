@@ -15,7 +15,6 @@ capabilities:
   - frontend_performance
   - typescript
   - design_systems
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 not-my-scope: ["Database schema", "server infrastructure", "API architecture", "backend business logic"]

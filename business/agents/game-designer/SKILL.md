@@ -7,7 +7,7 @@ typical_questions:
   - "What are the core gameplay mechanics for this feature?"
   - "How does this system interact with other game systems?"
   - "What is the player experience flow for this content?"
-description: Game design lead for core mechanics, systems design, and gameplay coordination. Use for tier 3-4 instructions requiring game design decisions, system balancing, or cross-team gameplay coordination.
+description: "Use when designing game mechanics, creating reward systems, balancing gameplay loops, developing progression systems, or designing player engagement frameworks."
 vibe: "Designs mechanics that make players forget to eat"
 model: "opusplan"
 color: bright_cyan
@@ -17,7 +17,6 @@ capabilities:
   - player_experience_design
   - game_loop_architecture
   - design_documentation
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

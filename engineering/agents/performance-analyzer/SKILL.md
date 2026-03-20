@@ -1,6 +1,6 @@
 ---
 name: performance-analyzer
-description: "QA Layer agent for performance bottleneck detection and optimization. Use for performance reviews, profiling, and optimization recommendations."
+description: "Use when profiling application performance, identifying bottlenecks, measuring latency, or analyzing resource utilization to optimize throughput."
 vibe: "Finds the bottleneck hiding in the hot path"
 tier: support
 domain: engineering
@@ -12,7 +12,6 @@ capabilities:
   - bottleneck_detection
   - optimization
   - profiling
-tools: ["Read","Grep","Glob","Bash"]
 allowed-tools: "Read Grep Glob"
 maxTurns: 10
 disallowedTools: ["Task"]

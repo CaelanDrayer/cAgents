@@ -7,7 +7,7 @@ typical_questions:
   - "What are the current campaign/sales metrics?"
   - "What is the target audience and positioning?"
   - "What are the conversion bottlenecks?"
-description: "Use when you need product positioning, messaging, and launch specialist. Coordinates product launches, competitive positioning, sales enablement, and go-to-market strategy."
+description: "Use when positioning products, creating go-to-market strategies, developing competitive battlecards, or crafting product messaging and launch plans."
 vibe: "Positions the product so it sells the story customers need to hear"
 model: sonnet
 color: bright_green
@@ -16,7 +16,6 @@ capabilities:
   - launch_planning
   - competitive_intelligence
   - sales_enablement
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

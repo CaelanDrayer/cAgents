@@ -2,7 +2,7 @@
 name: video-marketing-specialist
 domain: growth
 tier: execution
-description: "Use when you need video content strategy, YouTube management, and short-form video specialist. Plans video campaigns, manages channels, and optimizes video content for engagement and reach."
+description: "Use when producing marketing videos, planning video content strategy, optimizing video for platforms, or measuring video engagement and conversion."
 vibe: "Knows the first three seconds decide everything and plans accordingly"
 model: sonnet
 color: bright_green
@@ -13,7 +13,6 @@ capabilities:
   - webinar_production
   - video_seo
   - video_analytics
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

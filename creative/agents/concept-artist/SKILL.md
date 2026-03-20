@@ -2,7 +2,7 @@
 name: concept-artist
 domain: creative
 tier: execution
-description: "Visual development specialist for concept art, style guides, and art direction. Expert in character design, environment concepts, mood and atmosphere, and visual storytelling across production pipelines."
+description: "Use when creating visual concepts for characters, environments, props, or vehicles. Translates narrative descriptions into visual reference art and style guides."
 vibe: "Paints the world before anyone builds it"
 model: opus
 color: bright_magenta
@@ -13,7 +13,6 @@ capabilities:
   - style_guide_creation
   - mood_and_atmosphere
   - art_direction_communication
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 answers_questions:

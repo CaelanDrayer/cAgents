@@ -2,7 +2,7 @@
 name: legal-analyst
 domain: service
 tier: execution
-description: "Use when you need spend analysis, risk quantification, and data-driven legal insights."
+description: "Use when researching legal precedents, analyzing regulatory impact, preparing legal briefs, or supporting attorneys with case documentation."
 vibe: "Researches legal precedent so counsel can advise with confidence"
 model: sonnet
 color: bright_red
@@ -11,7 +11,6 @@ capabilities:
   - spend_analysis
   - risk_quantification
   - legal_metrics
-tools: ["Read","Write","Grep","Glob","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

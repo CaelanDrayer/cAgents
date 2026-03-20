@@ -2,7 +2,7 @@
 name: plot-developer
 domain: creative
 tier: execution
-description: "Master plot craftsman who transforms story outlines into intricate narrative machinery — engineering twists that feel inevitable in hindsight, subplots that resonate with thematic precision, and escalation curves that make the final page feel like the only possible destination."
+description: "Use when developing plot mechanics, engineering twists and reversals, designing subplot resonance, or building escalation curves that drive narrative momentum."
 vibe: "Builds plots with the precision of a watchmaker"
 model: opus
 color: bright_magenta
@@ -14,7 +14,6 @@ capabilities:
   - escalation_theory
   - climax_construction
   - foreshadowing_systems
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

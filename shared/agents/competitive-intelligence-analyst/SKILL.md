@@ -2,7 +2,7 @@
 name: competitive-intelligence-analyst
 domain: shared
 tier: controller
-description: "Use when you need competitor analysis, win/loss analysis, and competitive positioning across all domains."
+description: "Use when tracking competitor activity, analyzing market positioning, building competitive battlecards, or providing strategic intelligence on industry trends."
 vibe: "Knows what competitors are doing before they announce it"
 model: sonnet
 color: bright_white
@@ -17,7 +17,6 @@ capabilities:
   - win_loss_analysis
   - competitive_positioning
   - battle_cards
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

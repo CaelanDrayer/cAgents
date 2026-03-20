@@ -7,7 +7,7 @@ typical_questions:
   - "What are the current campaign/sales metrics?"
   - "What is the target audience and positioning?"
   - "What are the conversion bottlenecks?"
-description: "Use when you need creative strategy and visual design leader. Directs creative vision, campaign visuals, brand expression, and creative quality across all touchpoints."
+description: "Use when setting creative vision, reviewing campaign concepts, directing visual identity, or coordinating creative output across marketing channels."
 vibe: "Sets the creative vision and holds the bar impossibly high"
 model: sonnet
 color: bright_green
@@ -16,7 +16,6 @@ capabilities:
   - visual_design
   - brand_expression
   - campaign_creative
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

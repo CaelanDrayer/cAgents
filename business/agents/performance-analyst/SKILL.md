@@ -2,7 +2,7 @@
 name: performance-analyst
 domain: business
 tier: execution
-description: "Use when you need performance metrics analyzed, bottlenecks identified, capacity planned, or optimization recommendations produced."
+description: "Use when analyzing performance metrics, identifying bottlenecks, planning capacity, or producing optimization recommendations from operational data."
 vibe: "Turns raw metrics into decisions that move the needle"
 model: sonnet
 color: bright_blue
@@ -24,7 +24,6 @@ capabilities:
   - capacity_analysis
   - performance_testing
   - metrics_analysis
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 40
 permissionMode: "bypassPermissions"

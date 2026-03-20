@@ -2,7 +2,7 @@
 name: pacing-specialist
 domain: creative
 tier: execution
-description: "Narrative pacing and rhythm expert. Master of tempo control at every scale -- from the pulse of a sentence to the arc of a novel. Expert in scene/sequel patterns, tension/release cycles, reading speed manipulation, and the architecture of the page-turner."
+description: "Use when optimizing narrative pacing, balancing action with reflection, adjusting scene length and rhythm, or diagnosing sections that drag or rush."
 vibe: "Controls the rhythm so readers can't stop turning pages"
 model: opus
 color: bright_magenta
@@ -14,7 +14,6 @@ capabilities:
   - tension_release_cycles
   - rhythm_analysis
   - reading_speed_control
-tools: ["Read","Grep","Glob","Write","Edit","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 answers_questions:

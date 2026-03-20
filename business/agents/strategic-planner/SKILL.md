@@ -7,7 +7,7 @@ typical_questions:
   - "What is the strategic vision and objectives?"
   - "What are the key opportunities and threats?"
   - "What strategic initiatives are needed?"
-description: "Use when you need long-term strategic planning specialist. Facilitates strategic planning, develops frameworks, defines objectives, creates multi-year roadmaps."
+description: "Use when developing long-term strategy, analyzing competitive positioning, setting strategic priorities, or aligning business units to organizational goals."
 vibe: "Thinks three moves ahead so the company only needs one"
 model: sonnet
 color: bright_blue
@@ -16,7 +16,6 @@ capabilities:
   - scenario_planning
   - competitive_analysis
   - vision_development
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

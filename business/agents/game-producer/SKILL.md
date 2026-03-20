@@ -7,7 +7,7 @@ typical_questions:
   - "What is the current status of this milestone?"
   - "What blockers are preventing progress?"
   - "What resources are needed to complete this feature?"
-description: Game production lead for scheduling, resource management, and cross-team coordination. Use for tier 3-4 instructions requiring production oversight, milestone management, or multi-team coordination.
+description: "Use when managing game production schedules, coordinating cross-discipline teams, tracking milestone delivery, or managing scope and resource allocation for game projects."
 vibe: "Ships games on time without shipping the team's sanity"
 model: "opusplan"
 color: bright_white
@@ -17,7 +17,6 @@ capabilities:
   - resource_allocation
   - team_coordination
   - risk_management
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

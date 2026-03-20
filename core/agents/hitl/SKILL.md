@@ -2,7 +2,7 @@
 name: hitl
 domain: core
 tier: infrastructure
-description: "Use when you need all domains. Prepares context for human decision-makers, manages escalation workflow, and learns from decisions."
+description: "Use when a workflow requires human approval, when automated decisions need manual override, or when tier 4 escalation gates must be resolved."
 vibe: "The human in the loop when machines need a gut check"
 model: sonnet
 color: bright_red
@@ -12,7 +12,6 @@ capabilities:
   - decision_capture
   - pattern_learning
   - workflow_pause_resume
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
 maxTurns: 15
 permissionMode: "bypassPermissions"

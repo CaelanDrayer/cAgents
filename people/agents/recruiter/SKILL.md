@@ -2,7 +2,7 @@
 name: recruiter
 domain: people
 tier: execution
-description: "Use when you need full-cycle recruiter for candidate sourcing, screening, engagement, and offer negotiation."
+description: "Use when sourcing candidates, screening resumes, conducting initial interviews, managing candidate pipelines, or coordinating hiring logistics."
 vibe: "Finds the candidates who aren't looking but should be"
 model: sonnet
 color: bright_yellow
@@ -11,7 +11,6 @@ capabilities:
   - screening_interviews
   - candidate_engagement
   - offer_negotiation
-tools: ["Read","Write","Grep","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

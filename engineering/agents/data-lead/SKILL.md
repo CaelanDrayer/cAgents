@@ -1,6 +1,6 @@
 ---
 name: data-lead
-description: "Data domain manager for database architecture, ETL pipelines, and data team coordination. Use for tier 3-4 instructions requiring schema design, data migrations, or analytics strategy."
+description: "Use for coordinating data engineering work, reviewing data pipeline architecture, managing data quality standards, or overseeing data infrastructure decisions."
 vibe: "Owns the data layer from schema design to query optimization"
 tier: controller
 domain: engineering
@@ -17,7 +17,6 @@ capabilities:
   - etl_pipeline_design
   - query_optimization
   - analytics_strategy
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

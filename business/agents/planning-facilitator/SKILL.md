@@ -2,7 +2,7 @@
 name: planning-facilitator
 domain: business
 tier: execution
-description: "Use when you need planning workshop and meeting facilitation specialist. Facilitates strategic planning sessions, builds consensus, manages group dynamics."
+description: "Use when facilitating strategic planning sessions, running workshops, building consensus across stakeholders, or managing group decision-making dynamics."
 vibe: "Gets 10 people aligned in the time it usually takes 2"
 model: sonnet
 color: bright_blue
@@ -11,7 +11,6 @@ capabilities:
   - consensus_building
   - meeting_management
   - stakeholder_alignment
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

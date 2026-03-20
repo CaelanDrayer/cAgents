@@ -2,7 +2,7 @@
 name: corporate-counsel
 domain: service
 tier: execution
-description: "Use when you need entity formation, M&A, and securities compliance."
+description: "Use when advising on corporate transactions, reviewing corporate governance, handling M&A due diligence, or managing corporate legal matters."
 vibe: "Protects the company with legal strategy, not just legal caution"
 model: sonnet
 color: bright_red
@@ -11,7 +11,6 @@ capabilities:
   - ma_transactions
   - corporate_governance
   - securities_compliance
-tools: ["Read","Write","Grep","Glob","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

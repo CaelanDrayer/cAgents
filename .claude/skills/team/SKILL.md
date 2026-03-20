@@ -1,13 +1,13 @@
 ---
 name: team
 description: "Parallel multi-agent execution with wave-based quality gates. Use for complex tasks with 3+ parallelizable items. TRIGGER: team, parallel, swarm, complex multi-part. NOT for: simple tasks (/run) or cross-domain strategy (/org)."
-argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--no-template] [--waves <n>]"
-user-invocable: true
-context: fork
 license: MIT
 metadata:
   author: CaelanDrayer
-  version: 10.22.5
+  version: "10.22.5"
+  argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--no-template] [--waves <n>]"
+  user-invocable: "true"
+  context: "fork"
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite, TeamCreate, TeamDelete, TaskCreate, TaskUpdate, TaskList, TaskGet, SendMessage, Skill
 ---
 

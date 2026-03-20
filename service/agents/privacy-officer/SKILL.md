@@ -2,7 +2,7 @@
 name: privacy-officer
 domain: service
 tier: execution
-description: "Use when you need GDPR, CCPA, privacy policies, and privacy program management."
+description: "Use when developing privacy policies, conducting privacy impact assessments, managing GDPR/CCPA compliance, or handling data subject access requests."
 vibe: "Guards user data like every record is their own"
 model: sonnet
 color: bright_red
@@ -12,7 +12,6 @@ capabilities:
   - ccpa_compliance
   - privacy_by_design
   - data_governance
-tools: ["Read","Write","Grep","Glob","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

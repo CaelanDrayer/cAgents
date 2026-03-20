@@ -2,7 +2,7 @@
 name: customer-advocacy-manager
 domain: service
 tier: controller
-description: "Use when you need reference management, case studies, testimonials, and customer community building across all domains."
+description: "Use when building customer advocacy programs, managing reference customers, creating case studies, or developing customer community initiatives."
 vibe: "Gives the customer a seat at every internal table"
 model: sonnet
 color: bright_red
@@ -17,7 +17,6 @@ capabilities:
   - case_study_development
   - testimonial_collection
   - customer_community
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

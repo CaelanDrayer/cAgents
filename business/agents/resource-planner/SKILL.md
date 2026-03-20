@@ -2,7 +2,7 @@
 name: resource-planner
 domain: business
 tier: execution
-description: "Use when you need resource allocation and capacity planning specialist. Plans resource allocation, forecasts capacity needs, optimizes resource utilization."
+description: "Use when planning resource allocation, forecasting capacity needs, optimizing team utilization, or balancing workload across projects."
 vibe: "Puts the right people on the right work at the right time"
 model: sonnet
 color: bright_blue
@@ -11,7 +11,6 @@ capabilities:
   - capacity_planning
   - resource_forecasting
   - utilization_optimization
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

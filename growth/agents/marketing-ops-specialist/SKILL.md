@@ -2,7 +2,7 @@
 name: marketing-ops-specialist
 domain: growth
 tier: execution
-description: "Use when you need marketing operations and technology specialist. Manages marketing automation, lead management, campaign operations, and martech stack."
+description: "Use when managing marketing technology stack, configuring automation platforms, maintaining data hygiene, or optimizing marketing workflows and processes."
 vibe: "Keeps the marketing machine running without anyone noticing"
 model: sonnet
 color: bright_green
@@ -11,7 +11,6 @@ capabilities:
   - lead_management
   - martech_stack
   - campaign_operations
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

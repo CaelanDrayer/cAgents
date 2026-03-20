@@ -1,9 +1,8 @@
 ---
 name: universal-planner
 tier: infrastructure
-description: "Use when you need planning agent that orchestrates the planning phase. Selects controllers, defines objectives, and writes plan.yaml. Delegates decomposition to task-decomposer for complex requests (tier 3+), handles simple decomposition inline for tier 2."
+description: "Use when creating plan.yaml with objectives, controller assignments, temporal analysis, and scope boundaries from enriched context."
 vibe: "Plans the work, works the plan, adapts when reality disagrees"
-tools: ["Read","Grep","Glob","Write","TodoWrite","Task"]
 allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
 model: opus
 color: bright_blue

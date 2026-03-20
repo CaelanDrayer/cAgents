@@ -2,7 +2,7 @@
 name: process-auditor
 domain: business
 tier: execution
-description: "Use when you need process audits conducted, compliance verified, controls tested, or audit reports produced."
+description: "Use when conducting process audits, verifying compliance with standards, testing internal controls, or producing audit reports and recommendations."
 vibe: "Finds the waste hiding in processes everyone assumes work"
 model: sonnet
 color: bright_blue
@@ -24,7 +24,6 @@ capabilities:
   - audit_reporting
   - process_assessment
   - improvement_identification
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 40
 permissionMode: "bypassPermissions"

@@ -2,7 +2,7 @@
 name: litigation-manager
 domain: service
 tier: execution
-description: "Use when you need lawsuit management, discovery, settlement negotiations, and trial strategy."
+description: "Use when managing active litigation, coordinating with outside counsel, developing litigation strategy, or tracking case milestones and deadlines."
 vibe: "Manages litigation strategy so the company fights the right battles"
 model: sonnet
 color: bright_red
@@ -11,7 +11,6 @@ capabilities:
   - discovery
   - settlement_negotiation
   - trial_strategy
-tools: ["Read","Write","Grep","Glob","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

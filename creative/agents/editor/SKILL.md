@@ -21,7 +21,6 @@ capabilities:
   - editorial_letter_craft
   - genre_sensitive_editing
   - manuscript_coordination
-tools: ["Read","Grep","Glob","Write","Edit","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

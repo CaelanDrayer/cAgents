@@ -1,6 +1,6 @@
 ---
 name: dependency-analyzer
-description: "Use when you need maps task dependencies and optimizes execution order. Use after planning to validate dependencies and identify parallelization opportunities."
+description: "Use when analyzing dependency trees, identifying version conflicts, evaluating security vulnerabilities in dependencies, or planning dependency upgrades."
 vibe: "Maps every dependency so upgrades don't become disasters"
 tier: support
 domain: engineering
@@ -12,7 +12,6 @@ capabilities:
   - circular_reference_detection
   - execution_optimization
   - prerequisite_validation
-tools: ["Read","Grep","Glob"]
 allowed-tools: "Read Grep Glob"
 maxTurns: 10
 disallowedTools: ["Task"]

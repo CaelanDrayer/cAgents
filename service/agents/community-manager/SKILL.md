@@ -2,7 +2,7 @@
 name: community-manager
 domain: service
 tier: execution
-description: "Use when you need forums, peer support, and user advocacy."
+description: "Use when building community programs, moderating forums, engaging with user communities, or developing community content and events strategy."
 vibe: "Builds communities where users help each other before support does"
 model: sonnet
 color: bright_red
@@ -11,7 +11,6 @@ capabilities:
   - forum_moderation
   - user_engagement
   - peer_support_facilitation
-tools: ["Read","Grep","Glob","Write"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

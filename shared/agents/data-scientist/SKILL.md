@@ -2,7 +2,7 @@
 name: data-scientist
 domain: shared
 tier: controller
-description: "Use when you need data science specialist coordinating machine learning, predictive modeling, statistical analysis, and advanced analytics across ALL domains."
+description: "Use when building statistical models, performing exploratory data analysis, designing experiments, or extracting insights from structured and unstructured datasets."
 vibe: "Turns messy data into clear decisions"
 model: "opusplan"
 color: bright_white
@@ -20,7 +20,6 @@ capabilities:
   - ab_testing
   - nlp
   - computer_vision
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

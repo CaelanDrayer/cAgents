@@ -1,6 +1,6 @@
 ---
 name: sysadmin
-description: "Infrastructure and operations specialist managing deployments, monitoring, and production systems. Use PROACTIVELY for production issues, deployments, infrastructure decisions, and operational concerns."
+description: "Use when managing Linux/Unix systems, configuring servers, automating system administration tasks, or maintaining system reliability and security."
 vibe: "Keeps servers running so everyone else can keep sleeping"
 tier: execution
 domain: engineering
@@ -16,7 +16,6 @@ capabilities:
   - cloud_infrastructure
   - security_hardening
   - capacity_planning
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

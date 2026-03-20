@@ -2,7 +2,7 @@
 name: regulatory-affairs-specialist
 domain: service
 tier: execution
-description: "Use when you need regulatory submissions, agency communications, and industry compliance."
+description: "Use when navigating regulatory submissions, tracking regulatory changes, preparing compliance documentation, or managing regulatory agency relationships."
 vibe: "Stays ahead of regulations so the company is never scrambling"
 model: sonnet
 color: bright_red
@@ -11,7 +11,6 @@ capabilities:
   - agency_relations
   - regulatory_strategy
   - industry_compliance
-tools: ["Read","Write","Grep","Glob","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

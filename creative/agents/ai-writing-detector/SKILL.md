@@ -2,7 +2,7 @@
 name: ai-writing-detector
 domain: creative
 tier: execution
-description: "AI text forensics specialist. Analyzes documents across 14 pattern categories plus cross-category signals (perplexity, burstiness, LIX variance, linear argumentation, analogy originality) to produce structured YAML detection reports with per-finding locations, severity, confidence scores, and rewrite suggestions."
+description: "Use when detecting AI-generated text patterns, analyzing writing for synthetic markers, or evaluating content authenticity against human authorship baselines."
 vibe: "Spots the AI fingerprint that humans can't see"
 model: opus
 color: bright_magenta
@@ -13,7 +13,6 @@ capabilities:
   - detection_reporting
   - cross_category_analysis
   - calibration_profiling
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 answers_questions:

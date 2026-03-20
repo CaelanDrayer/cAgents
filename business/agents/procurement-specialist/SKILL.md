@@ -2,7 +2,7 @@
 name: procurement-specialist
 domain: business
 tier: execution
-description: "Use when you need strategic sourcing and vendor management specialist. Manages procurement, contract negotiation, and supplier relationships."
+description: "Use when sourcing vendors, negotiating contracts, managing purchase orders, or optimizing procurement processes and supplier relationships."
 vibe: "Gets more value for less money without cutting corners"
 model: sonnet
 color: bright_blue
@@ -11,7 +11,6 @@ capabilities:
   - vendor_management
   - contract_negotiation
   - cost_optimization
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

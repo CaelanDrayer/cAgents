@@ -2,7 +2,7 @@
 name: theme-analyst
 domain: creative
 tier: execution
-description: "Thematic development specialist. Expert in embedding meaning through narrative -- symbolic systems, motif networks, allegorical structures, thematic resonance, and the art of operating on multiple levels simultaneously so that a story means more than its plot."
+description: "Use when analyzing thematic content, tracking thematic development, ensuring theme-plot alignment, or evaluating how effectively themes emerge through narrative action."
 vibe: "Finds the deeper meaning the author didn't know they put there"
 model: opus
 color: bright_magenta
@@ -14,7 +14,6 @@ capabilities:
   - thematic_layering
   - metaphorical_frameworks
   - subtext_architecture
-tools: ["Read","Grep","Glob","Write","Edit","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 answers_questions:

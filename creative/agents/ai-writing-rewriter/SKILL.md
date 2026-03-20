@@ -2,7 +2,7 @@
 name: ai-writing-rewriter
 domain: creative
 tier: execution
-description: "AI writing humanization specialist. Consumes detection reports to apply category-aware multi-pass rewrites that eliminate AI patterns while preserving the author's voice. Targets high perplexity, burstiness, and LIX variance. Supports persona-based voice adaptation."
+description: "Use when transforming AI-generated text into natural prose, removing synthetic patterns, injecting human voice, or making generated content indistinguishable from human writing."
 vibe: "Makes AI prose read like a human wrote it on their best day"
 model: opus
 color: bright_magenta
@@ -14,7 +14,6 @@ capabilities:
   - burstiness_injection
   - perplexity_optimization
   - persona_adaptation
-tools: ["Read","Grep","Glob","Write","Edit","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 answers_questions:

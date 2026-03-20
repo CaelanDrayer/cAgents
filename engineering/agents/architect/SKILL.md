@@ -25,7 +25,6 @@ capabilities:
   - technical_debt_management
   - design_patterns
   - trade_off_analysis
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

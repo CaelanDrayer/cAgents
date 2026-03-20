@@ -2,7 +2,7 @@
 name: legal-operations-manager
 domain: service
 tier: controller
-description: "Use when you need spend management, process improvement, technology implementation, and vendor management."
+description: "Use when optimizing legal department processes, managing legal technology, tracking legal spend, or coordinating outside counsel relationships."
 vibe: "Runs the legal department like a well-managed engineering team"
 model: sonnet
 color: bright_red
@@ -16,7 +16,6 @@ capabilities:
   - vendor_management
   - process_optimization
   - legal_technology
-tools: ["Read","Write","Grep","Glob","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

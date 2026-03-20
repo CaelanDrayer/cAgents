@@ -2,7 +2,7 @@
 name: animator
 domain: creative
 tier: execution
-description: "Character animation specialist for rigging, locomotion, combat, and cinematic performance. Expert in the 12 Principles, character acting through movement, and the physics of believable motion."
+description: "Use when creating character animations, designing motion systems, building animation state machines, or crafting movement that conveys personality and emotion."
 vibe: "Brings still frames to life one keyframe at a time"
 model: opus
 color: bright_magenta
@@ -13,7 +13,6 @@ capabilities:
   - combat_animations
   - cinematic_animation
   - motion_design
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 answers_questions:

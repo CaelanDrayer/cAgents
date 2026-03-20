@@ -2,7 +2,7 @@
 name: channel-partner-manager
 domain: growth
 tier: execution
-description: "Use when you need partner ecosystem and indirect revenue specialist. Manages partner recruitment, enablement, and co-selling to drive indirect revenue."
+description: "Use when managing channel partnerships, developing partner programs, coordinating co-marketing efforts, or tracking partner-sourced revenue."
 vibe: "Builds partner relationships that multiply revenue"
 model: sonnet
 color: bright_green
@@ -11,7 +11,6 @@ capabilities:
   - partner_enablement
   - co_selling
   - partner_management
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

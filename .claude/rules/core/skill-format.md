@@ -7,7 +7,7 @@ paths:
 
 # SKILL.md Agent and Skill Format Specification
 
-V9.25.0 agent/skill format based on official Claude Code SKILL.md and subagent specification.
+V10.22.5 agent/skill format based on official Claude Code SKILL.md, subagent specification, and the [Agent Skills spec](https://agentskills.io).
 
 ## Frontmatter Schema
 
@@ -48,6 +48,7 @@ disallowedTools: ["Task"]          # V9.0: For support agents (prevent delegatio
 - `controller`: Tier 2 agents that coordinate work through questions
 - `execution`: Tier 3 agents that implement work and answer questions
 - `support`: Tier 4 agents providing foundational services
+- `infrastructure`: Core pipeline agents (orchestrator, planner, decomposer, validator, etc.) that form the execution backbone. Used by the 16 agents in `core/agents/`.
 
 ### domain
 - One of: `engineering`, `creative`, `business`, `growth`, `people`, `service`, `leadership`, `shared`, `core`
@@ -98,9 +99,11 @@ disallowedTools: ["Task"]          # V9.0: For support agents (prevent delegatio
 - List of capabilities for agent discovery
 - Used by router for intelligent agent selection
 
-### tools
-- Comma-separated list of allowed tools
-- Restricts tool access for security
+### tools (DEPRECATED)
+- **Deprecated in V10.22.5.** Use `allowed-tools` instead.
+- Legacy JSON array format for tool declarations
+- The `allowed-tools` field (space-separated string) is the single authoritative tool declaration per the Agent Skills spec
+- Agents should have `allowed-tools` only; the `tools` field will be removed in a future version
 
 ### color
 - Terminal display color for agent output
@@ -217,26 +220,41 @@ When converting agent to directory structure:
 
 ## Skill Frontmatter (Claude Code Skills)
 
-Skills in `.claude/skills/` use a separate frontmatter schema from agents:
+Skills in `.claude/skills/` follow the [Agent Skills spec](https://agentskills.io) for frontmatter. The spec allows exactly 6 top-level frontmatter fields. Claude Code-specific extensions (argument-hint, user-invocable, context, agent) are stored inside the `metadata` map.
+
+### Agent Skills Spec-Compliant Schema
 
 ```yaml
 ---
-name: my-skill                     # Optional: Display name. Uses directory name if omitted
-description: "What this skill does" # Recommended: When to use it
-argument-hint: "<request> [flags]" # Optional: Autocomplete hint
-disable-model-invocation: true     # Optional: Only user can invoke (default: false)
-user-invocable: false              # Optional: Hide from / menu (default: true)
-allowed-tools: Read, Grep, Bash    # Optional: Tool restrictions
-model: opus                        # Optional: Model override
-context: fork                      # Optional: Run in forked subagent context
-agent: Explore                     # Optional: Subagent type when context:fork (default: general-purpose)
-hooks:                             # Optional: Lifecycle hooks scoped to this skill
-  PreToolUse:
-    - matcher: "Bash"
-      hooks:
-        - type: command
-          command: "./scripts/validate.sh"
+name: my-skill                     # Required: Must match directory name (kebab-case, 1-64 chars)
+description: "What this skill does" # Required: When to use it (1-1024 chars)
+license: MIT                       # Optional: License name or reference
+metadata:                          # Optional: Key-value map for extensions
+  author: org-name
+  version: "1.0"
+  argument-hint: "<request> [flags]"  # Claude Code extension: autocomplete hint
+  user-invocable: "true"              # Claude Code extension: show in / menu
+  context: "none"                     # Claude Code extension: fork|none
+  agent: "false"                      # Claude Code extension: subagent type
+allowed-tools: Read, Grep, Bash    # Optional: Space-delimited pre-approved tools
+compatibility: "Claude Code"       # Optional: Environment requirements (1-500 chars)
 ---
+```
+
+**Spec-allowed top-level fields (6 only)**: `name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools`. Any other field at the top level triggers a validation error with `skills-ref validate`.
+
+**Claude Code extensions in metadata**: Fields like `argument-hint`, `user-invocable`, `context`, and `agent` are Claude Code-specific. They are stored as string key-value pairs inside `metadata`. Claude Code reads metadata keys for these values.
+
+### Legacy Schema (pre-V10.22.5)
+
+The following top-level fields were used before Agent Skills spec alignment and are now stored in `metadata`:
+
+```yaml
+# DEPRECATED top-level fields — move to metadata:
+argument-hint: "<request> [flags]" # -> metadata.argument-hint
+user-invocable: false              # -> metadata.user-invocable
+context: fork                      # -> metadata.context
+agent: Explore                     # -> metadata.agent
 ```
 
 ### Skill Invocation Control

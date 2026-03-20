@@ -2,7 +2,7 @@
 name: okr-specialist
 domain: business
 tier: execution
-description: "Use when you need oKR planning and implementation expert. Facilitates OKR setting, defines objectives and key results, tracks progress, coaches teams on OKR methodology."
+description: "Use when setting OKRs, defining objectives and key results, tracking goal progress, or coaching teams on OKR methodology and alignment."
 vibe: "Turns ambitious goals into measurable, achievable milestones"
 model: sonnet
 color: bright_blue
@@ -11,7 +11,6 @@ capabilities:
   - objective_setting
   - key_result_definition
   - okr_tracking
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

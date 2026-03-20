@@ -2,7 +2,7 @@
 name: conversion-rate-optimizer
 domain: growth
 tier: execution
-description: "Use when you need A/B testing, landing page optimization, and funnel conversion specialist. Designs experiments, analyzes user behavior, and optimizes conversion paths for maximum performance."
+description: "Use when improving conversion funnels, running A/B tests, analyzing user drop-off points, or optimizing landing pages and checkout flows."
 vibe: "Obsessively tests every pixel because a 2% lift compounds into millions"
 model: sonnet
 color: bright_green
@@ -13,7 +13,6 @@ capabilities:
   - conversion_experiments
   - user_behavior_analysis
   - multivariate_testing
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

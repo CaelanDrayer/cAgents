@@ -2,7 +2,7 @@
 name: predictive-analyst
 domain: business
 tier: execution
-description: "Use when you need predictive analytics and forecasting specialist. Develops predictive models, creates forecasts, provides data-driven planning insights."
+description: "Use when building predictive models, creating forecasts from historical data, or providing data-driven planning insights and trend analysis."
 vibe: "Sees what's coming by reading what already happened"
 model: sonnet
 color: bright_blue
@@ -11,7 +11,6 @@ capabilities:
   - forecasting
   - trend_analysis
   - data_analysis
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

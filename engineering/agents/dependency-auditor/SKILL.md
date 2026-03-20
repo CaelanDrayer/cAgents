@@ -1,6 +1,6 @@
 ---
 name: dependency-auditor
-description: "QA Layer agent for dependency vulnerability and currency checking. Use for vulnerability scanning, outdated package detection, and license compliance."
+description: "Use when auditing dependency health, checking for outdated packages, identifying security vulnerabilities in dependencies, or evaluating dependency upgrade risk."
 vibe: "Finds the vulnerable dependency before the CVE does"
 tier: support
 domain: engineering
@@ -12,7 +12,6 @@ capabilities:
   - vulnerability_detection
   - version_checking
   - license_compliance
-tools: ["Read","Grep","Glob","Bash"]
 allowed-tools: "Read Grep Glob"
 maxTurns: 10
 disallowedTools: ["Task"]

@@ -7,7 +7,7 @@ typical_questions:
   - "What is the project scope and timeline?"
   - "What resources are needed?"
   - "What are the key risks?"
-description: "Use when you need project planning and execution specialist. Defines scope, creates timelines, allocates resources, manages risks, tracks progress."
+description: "Use when defining project scope, creating timelines, allocating resources, managing risks, or tracking project progress toward delivery milestones."
 vibe: "Ships on time by planning for everything that could go wrong"
 model: sonnet
 color: bright_blue
@@ -16,7 +16,6 @@ capabilities:
   - timeline_planning
   - resource_allocation
   - risk_management
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

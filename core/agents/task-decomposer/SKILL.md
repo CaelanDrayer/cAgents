@@ -1,9 +1,8 @@
 ---
 name: task-decomposer
 tier: infrastructure
-description: "Use when you need tier 3+ requests. Breaks requests into components, discovers implicit needs, maps dependencies, generates work items with acceptance criteria. Writes decomposition.yaml."
+description: "Use when breaking down plans into granular work items with acceptance criteria, dependency graphs, and wave assignments for parallel execution."
 vibe: "Breaks the impossible into 30 very possible pieces"
-tools: ["Read","Grep","Glob","Write","TodoWrite","Task"]
 allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
 model: opus
 color: bright_yellow

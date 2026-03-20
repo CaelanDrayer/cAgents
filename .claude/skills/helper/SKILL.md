@@ -1,13 +1,13 @@
 ---
 name: helper
 description: "Explains cAgents commands and recommends the right one for your task. Use when choosing between skills or learning how they work. TRIGGER: help, which command, how do I, what can cAgents do. NOT for: executing tasks directly."
-argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--topic <topic>] [--troubleshoot <command>]"
-user-invocable: true
-context: none
 license: MIT
 metadata:
   author: CaelanDrayer
-  version: 10.22.5
+  version: "10.22.5"
+  argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--topic <topic>] [--troubleshoot <command>]"
+  user-invocable: "true"
+  context: "none"
 allowed-tools: Read, Grep, Glob, Bash, TodoWrite, AskUserQuestion
 ---
 

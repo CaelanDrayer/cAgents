@@ -2,7 +2,7 @@
 name: hr-analyst
 domain: people
 tier: execution
-description: HR data analysis and insights specialist. Use for people analytics, HR reporting, dashboard design, and data-driven insights.
+description: "Use when analyzing HR metrics, building people analytics dashboards, modeling workforce trends, or providing data-driven recommendations on talent decisions."
 vibe: "Turns people data into people decisions that actually work"
 model: sonnet
 color: bright_yellow
@@ -11,7 +11,6 @@ capabilities:
   - hr_reporting
   - data_visualization
   - predictive_modeling
-tools: ["Read","Write","Grep","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

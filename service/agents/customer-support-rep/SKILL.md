@@ -2,7 +2,7 @@
 name: customer-support-rep
 domain: service
 tier: execution
-description: "Use when you need front-line customer support representative handling inquiries, troubleshooting, and issue resolution."
+description: "Use when handling customer support tickets, troubleshooting issues, resolving complaints, or providing product usage guidance."
 vibe: "Solves customer problems like they're solving their own"
 model: sonnet
 color: bright_red
@@ -11,7 +11,6 @@ capabilities:
   - issue_troubleshooting
   - ticket_management
   - customer_communication
-tools: ["Read","Write","Grep","Glob","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

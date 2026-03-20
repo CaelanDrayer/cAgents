@@ -2,7 +2,7 @@
 name: growth-marketer
 domain: growth
 tier: execution
-description: "Use when you need growth hacking and experimentation specialist. Drives growth experiments, funnel optimization, viral loops, and rapid testing initiatives."
+description: "Use when running growth experiments, optimizing acquisition channels, improving activation and retention metrics, or building viral loops and referral programs."
 vibe: "Tests 10 things, finds the one that scales, then doubles down"
 model: sonnet
 color: bright_green
@@ -11,7 +11,6 @@ capabilities:
   - funnel_optimization
   - viral_mechanics
   - rapid_testing
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

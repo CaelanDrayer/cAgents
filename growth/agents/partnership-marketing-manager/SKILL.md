@@ -2,7 +2,7 @@
 name: partnership-marketing-manager
 domain: growth
 tier: execution
-description: "Use when you need partner and channel marketing specialist. Drives co-marketing, channel partner enablement, alliance marketing, and partnership campaigns."
+description: "Use when developing co-marketing partnerships, creating joint campaigns, managing partner content, or tracking partnership-driven pipeline."
 vibe: "Creates partnerships where both sides win bigger together"
 model: sonnet
 color: bright_green
@@ -11,7 +11,6 @@ capabilities:
   - partner_enablement
   - alliance_marketing
   - channel_programs
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

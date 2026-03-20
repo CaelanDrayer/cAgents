@@ -2,7 +2,7 @@
 name: relationship-manager
 domain: service
 tier: controller
-description: "Use when you need relationship management specialist coordinating stakeholder relationships, partner management, and strategic relationship development across ALL domains."
+description: "Use when nurturing key business relationships, coordinating partner communications, managing stakeholder expectations, or developing relationship strategies."
 vibe: "Builds relationships that turn transactions into partnerships"
 model: sonnet
 color: bright_red
@@ -18,7 +18,6 @@ capabilities:
   - ecosystem_development
   - strategic_relationships
   - networking
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

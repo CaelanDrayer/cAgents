@@ -2,7 +2,7 @@
 name: digital-marketing-manager
 domain: growth
 tier: execution
-description: "Use when you need digital marketing and paid acquisition specialist. Plans paid campaigns, digital channel strategy, conversion optimization, and performance marketing."
+description: "Use when coordinating digital marketing channels, managing paid and organic campaigns, optimizing digital spend, or tracking online engagement metrics."
 vibe: "Masters every digital channel so the right message finds the right person"
 model: sonnet
 color: bright_green
@@ -11,7 +11,6 @@ capabilities:
   - performance_marketing
   - conversion_optimization
   - channel_management
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

@@ -2,7 +2,7 @@
 name: copywriter
 domain: growth
 tier: execution
-description: "Use when you need marketing copy and content creation specialist. Writes compelling copy for ads, landing pages, emails, social media, and marketing materials."
+description: "Use when writing marketing copy, crafting headlines, creating ad text, developing email sequences, or producing persuasive sales content."
 vibe: "Writes copy that converts browsers into buyers"
 model: sonnet
 color: bright_green
@@ -12,7 +12,6 @@ capabilities:
   - email_copy
   - social_media
   - brand_voice
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit"
 maxTurns: 30
 related_agents:

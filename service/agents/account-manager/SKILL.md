@@ -2,7 +2,7 @@
 name: account-manager
 domain: service
 tier: controller
-description: "Use when you need account planning, relationship management, upsell/cross-sell, and renewal management across all domains."
+description: "Use when managing client relationships, conducting account reviews, identifying upsell opportunities, or ensuring customer satisfaction and retention."
 vibe: "Keeps clients happy enough to renew without being asked"
 model: sonnet
 color: bright_red
@@ -17,7 +17,6 @@ capabilities:
   - upsell_cross_sell
   - renewal_management
   - account_growth
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

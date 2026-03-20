@@ -7,7 +7,7 @@ typical_questions:
   - "What are the current marketing metrics and pipeline?"
   - "What is our market position vs competitors?"
   - "What marketing initiatives need executive decision?"
-description: "Use when you need chief Marketing Officer. Executive marketing leadership providing strategic oversight, budget decisions, and cross-functional alignment."
+description: "Use for marketing strategy, brand positioning, demand generation oversight, and growth channel optimization. CMO-level marketing leadership."
 vibe: "Drives growth by making the market come to the company"
 model: "opusplan"
 color: gold
@@ -16,7 +16,6 @@ capabilities:
   - budget_allocation
   - executive_leadership
   - cross_functional
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

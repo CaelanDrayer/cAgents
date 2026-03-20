@@ -2,7 +2,7 @@
 name: planning-analyst
 domain: business
 tier: execution
-description: "Use when you need planning data analysis and insights specialist. Analyzes planning metrics, forecasts trends, provides planning insights, tracks KPIs."
+description: "Use when analyzing planning metrics, forecasting trends, tracking KPIs, or providing data-driven insights for strategic and operational planning."
 vibe: "Spots the gap between the plan and reality before it hurts"
 model: sonnet
 color: bright_blue
@@ -11,7 +11,6 @@ capabilities:
   - trend_forecasting
   - planning_insights
   - kpi_tracking
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

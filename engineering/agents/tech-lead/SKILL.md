@@ -1,6 +1,6 @@
 ---
 name: tech-lead
-description: "Engineering leader for delivery, team coordination, and strategic decisions. Use PROACTIVELY for complex tasks requiring orchestration, priority decisions, or cross-team coordination."
+description: "Use for leading technical direction on projects, making architecture decisions, coordinating engineering teams, or balancing technical debt with feature delivery."
 vibe: "Sets technical direction and unblocks the team before they're stuck"
 tier: controller
 domain: engineering
@@ -24,7 +24,6 @@ capabilities:
   - quality_enforcement
   - cross_functional_collaboration
   - conflict_resolution
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 maxTurns: 40
 permissionMode: "bypassPermissions"

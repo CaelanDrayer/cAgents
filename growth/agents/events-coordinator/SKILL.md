@@ -2,7 +2,7 @@
 name: events-coordinator
 domain: growth
 tier: execution
-description: "Use when you need event marketing and execution specialist. Plans and executes conferences, trade shows, webinars, field events, and customer events."
+description: "Use when planning events, managing logistics for conferences or webinars, coordinating speakers and sponsors, or tracking event ROI."
 vibe: "Runs events so smoothly attendees think they planned themselves"
 model: sonnet
 color: bright_green
@@ -11,7 +11,6 @@ capabilities:
   - event_logistics
   - webinar_production
   - event_roi
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

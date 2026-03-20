@@ -2,7 +2,7 @@
 name: sales-analyst
 domain: growth
 tier: execution
-description: "Use when you need sales analytics and insights specialist. Provides pipeline analytics, forecast modeling, performance analysis, and trend identification."
+description: "Use when analyzing sales pipeline data, forecasting revenue, identifying deal patterns, or providing data-driven insights to improve sales performance."
 vibe: "Finds the patterns in pipeline data that predict next quarter"
 model: sonnet
 color: bright_green
@@ -11,7 +11,6 @@ capabilities:
   - forecast_modeling
   - performance_analysis
   - trend_identification
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

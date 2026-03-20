@@ -2,7 +2,7 @@
 name: account-executive
 domain: growth
 tier: execution
-description: "Use when you need sales closer and deal manager. Owns full sales cycle from qualified lead to closed deal, achieving quota through disciplined execution."
+description: "Use when managing sales deals through pipeline stages, conducting discovery calls, building proposals, or closing enterprise accounts."
 vibe: "Closes deals by solving problems, not pushing products"
 model: sonnet
 color: bright_green
@@ -11,7 +11,6 @@ capabilities:
   - demos
   - negotiation
   - closing
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 maxTurns: 30
 related_agents:

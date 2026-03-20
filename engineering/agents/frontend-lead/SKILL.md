@@ -1,6 +1,6 @@
 ---
 name: frontend-lead
-description: "Technical leader for frontend development. Coordinates UI/UX implementation, manages frontend team assignments, and ensures code quality through reviews. Use for tier 2+ frontend-focused engineering tasks."
+description: "Use for coordinating frontend development, reviewing UI architecture decisions, managing frontend standards, or overseeing design system implementation."
 vibe: "Ships pixel-perfect UIs that work on every screen"
 tier: controller
 domain: engineering
@@ -17,7 +17,6 @@ capabilities:
   - code_review
   - performance_optimization
   - component_design
-tools: ["Read","Grep","Glob","Write","Bash","TodoWrite","Task"]
 allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
 color: bright_cyan
 maxTurns: 40
