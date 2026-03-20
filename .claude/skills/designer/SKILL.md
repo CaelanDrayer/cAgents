@@ -7,7 +7,7 @@ context: none
 license: MIT
 metadata:
   author: CaelanDrayer
-  version: 10.22.2
+  version: 10.22.3
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite, AskUserQuestion
 ---
 

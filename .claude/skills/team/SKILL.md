@@ -7,7 +7,7 @@ context: fork
 license: MIT
 metadata:
   author: CaelanDrayer
-  version: 10.22.2
+  version: 10.22.3
 allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite, TeamCreate, TeamDelete, TaskCreate, TaskUpdate, TaskList, TaskGet, SendMessage, Skill
 ---
 
