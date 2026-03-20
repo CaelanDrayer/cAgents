@@ -8,13 +8,17 @@ agent: false
 license: MIT
 metadata:
   author: CaelanDrayer
-  version: 10.21.0
+  version: 10.22.2
 allowed-tools: Read, Grep, Glob, Write, Bash, TodoWrite
 ---
 
 # /debug - Systematic Debugging Methodology
 
 A structured 4-phase approach to root cause investigation. Inspired by the superpowers framework's debugging discipline. Use this when bugs resist quick fixes or when the root cause is unclear.
+
+## STOP: Your First Action Is Session Init
+
+**Do NOT explore the codebase, run commands, or analyze the bug yet.** Your very first action must be "Initialize Session" below. Create the session directory and write `status.yaml` BEFORE any other work. Skip to "Initialize Session" now.
 
 ## When to Use /debug vs /run
 

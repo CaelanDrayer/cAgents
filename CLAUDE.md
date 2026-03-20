@@ -38,7 +38,7 @@ Core architecture and development guidance for cAgents.
 
 ## Version Management
 
-**CRITICAL: Always bump version on commits.** Run `scripts/sync-versions.sh <version>` to update all 13 locations. See @.claude/rules/core/version-registry.md for the canonical list.
+**CRITICAL: Always bump version on commits.** Run `scripts/sync-versions.sh <version>` to update all 23 locations. See @.claude/rules/core/version-registry.md for the canonical list.
 
 **Version Format**: `major.minor.patch` — patch (bug fix), minor (feature), major (breaking)
 
@@ -101,9 +101,11 @@ quality/        # completion, validation-framework, implicit-discovery (3 files)
 
 ## CRITICAL: Aggressive Delegation
 
-**Core Principle**: /run and all coordination agents NEVER do direct work. ALL work delegated to subagents via Task tool.
+**Core Principle**: /org, /run, /team, and all coordination agents NEVER do direct work. ALL work delegated to subagents via Task tool or Skill tool. No exceptions.
 
-**Zero Tolerance**: `/run` is a pure delegation proxy. It MUST invoke the trigger agent for every request without exception. If delegation fails, `/run` reports the failure -- it does NOT fall back to handling the request directly. The user chose `/run` specifically for agent orchestration; bypassing that choice is a critical violation.
+**Zero Tolerance**: `/org`, `/run`, and `/team` are pure delegation proxies. They parse, plan, spawn agents, and read results. They do NOT write code, create content, explore the codebase for implementation purposes, or handle tasks themselves. If an orchestrator says "I will handle this myself" or "Rather than spinning up agents, I'll do this directly" — that is a critical violation. The user chose these skills specifically for agent orchestration; bypassing delegation defeats the entire purpose of the plugin.
+
+**This applies to ALL request sizes**: Even for single-file bug fixes, /run MUST still spawn a controller who spawns an execution agent. Even for single-domain requests, /org MUST still generate a strategic brief and invoke /run or /team. There is no request small enough to justify self-handling.
 
 **Minimum Tier**: Always tier 2+ (controller coordination required). ALL requests use agents. NO exceptions. Former tier 0/1 automatically upgraded.
 
@@ -530,7 +532,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 351 Vitest tests (hooks + config validation)
-**Version**: 10.22.1
+**Version**: 10.22.2
 
 ## Troubleshooting
 

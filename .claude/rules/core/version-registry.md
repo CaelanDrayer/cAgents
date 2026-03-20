@@ -11,7 +11,7 @@ paths:
 
 All locations where the cAgents version number appears. Keep ALL locations in sync on every release.
 
-## Version Locations (14 total)
+## Version Locations (23 total)
 
 | # | File | Field/Line | Updated By |
 |---|------|-----------|------------|
@@ -29,10 +29,19 @@ All locations where the cAgents version number appears. Keep ALL locations in sy
 | 12 | `service/.claude-plugin/plugin.json` | `version` (line 3) | `scripts/sync-versions.sh` |
 | 13 | `leadership/.claude-plugin/plugin.json` | `version` (line 3) | `scripts/sync-versions.sh` |
 | 14 | `shared/.claude-plugin/plugin.json` | `version` (line 3) | `scripts/sync-versions.sh` |
+| 15 | `.claude/skills/run/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
+| 16 | `.claude/skills/org/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
+| 17 | `.claude/skills/team/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
+| 18 | `.claude/skills/review/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
+| 19 | `.claude/skills/optimize/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
+| 20 | `.claude/skills/designer/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
+| 21 | `.claude/skills/debug/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
+| 22 | `.claude/skills/helper/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
+| 23 | `.claude/hooks/session-catchup.cjs` | `cAgents V{version} session initialized` | `scripts/sync-versions.sh` |
 
 ## Sync Tool
 
-`scripts/sync-versions.sh <version>` updates all 14 locations (12 JSON files + CLAUDE.md + settings.json).
+`scripts/sync-versions.sh <version>` updates all 23 locations (12 JSON files + CLAUDE.md + settings.json + 8 SKILL.md frontmatters + session-catchup.cjs).
 
 ## Version Bump Procedure
 

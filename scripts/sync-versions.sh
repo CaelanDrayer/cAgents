@@ -2,10 +2,11 @@
 # Sync version across all cAgents manifest files
 # Usage: ./scripts/sync-versions.sh <new-version>
 #
-# Updates version in all 14 locations (see .claude/rules/core/version-registry.md):
+# Updates version in all 24 locations (see .claude/rules/core/version-registry.md):
 #   .claude-plugin/plugin.json, .claude-plugin/marketplace.json, package.json,
-#   CLAUDE.md, .claude/settings.json, and 9 domain plugin.json files (core,
-#   engineering, creative, business, growth, people, service, leadership, shared)
+#   CLAUDE.md, .claude/settings.json, 9 domain plugin.json files (core,
+#   engineering, creative, business, growth, people, service, leadership, shared),
+#   8 skill SKILL.md frontmatter versions, and session-catchup.cjs context string
 
 set -euo pipefail
 
@@ -85,6 +86,50 @@ if [ -f "$CLAUDEMD" ]; then
   fi
 else
   echo "SKIP: CLAUDE.md (not found)"
+fi
+
+# Update skill SKILL.md frontmatter versions
+SKILLS=(
+  "$ROOT/.claude/skills/run/SKILL.md"
+  "$ROOT/.claude/skills/org/SKILL.md"
+  "$ROOT/.claude/skills/team/SKILL.md"
+  "$ROOT/.claude/skills/review/SKILL.md"
+  "$ROOT/.claude/skills/optimize/SKILL.md"
+  "$ROOT/.claude/skills/designer/SKILL.md"
+  "$ROOT/.claude/skills/debug/SKILL.md"
+  "$ROOT/.claude/skills/helper/SKILL.md"
+)
+
+for skill in "${SKILLS[@]}"; do
+  if [ ! -f "$skill" ]; then
+    echo "SKIP: $skill (not found)"
+    continue
+  fi
+
+  # Match "  version: x.y.z" in YAML frontmatter (indented, no quotes)
+  if sed -i "s/^  version: [0-9]*\.[0-9]*\.[0-9]*/  version: $VERSION/" "$skill"; then
+    rel="${skill#$ROOT/}"
+    echo "  OK: $rel"
+    UPDATED=$((UPDATED + 1))
+  else
+    rel="${skill#$ROOT/}"
+    echo "FAIL: $rel"
+    FAILED=$((FAILED + 1))
+  fi
+done
+
+# Update session-catchup.cjs context string version
+CATCHUP="$ROOT/.claude/hooks/session-catchup.cjs"
+if [ -f "$CATCHUP" ]; then
+  if sed -i "s/cAgents V[0-9]*\.[0-9]*\.[0-9]* session initialized/cAgents V$VERSION session initialized/" "$CATCHUP"; then
+    echo "  OK: .claude/hooks/session-catchup.cjs"
+    UPDATED=$((UPDATED + 1))
+  else
+    echo "FAIL: .claude/hooks/session-catchup.cjs"
+    FAILED=$((FAILED + 1))
+  fi
+else
+  echo "SKIP: .claude/hooks/session-catchup.cjs (not found)"
 fi
 
 echo ""

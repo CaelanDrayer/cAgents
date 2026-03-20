@@ -70,7 +70,8 @@ describe('attention-injection.cjs', () => {
 
   it('should return no-op when no active session', () => {
     rmSync(SESSION_DIR, { recursive: true, force: true });
-    const result = runHook({ tool_name: 'Write' });
+    // Pass a non-existent session_id to avoid fallback scan finding other sessions on disk
+    const result = runHook({ tool_name: 'Write', session_id: 'run_nonexistent_999999_999' });
     expect(result.continue).toBe(true);
     expect(result.systemMessage).toBeUndefined();
   });
