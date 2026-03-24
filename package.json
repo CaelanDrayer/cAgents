@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "10.22.6",
+  "version": "10.22.7",
   "description": "214 agents across 8 business domains. Multi-agent orchestration with 8 commands for engineering, creative, business, and more.",
   "type": "module",
   "engines": {
@@ -52,79 +52,11 @@
   ],
   "author": "CaelanDrayer",
   "license": "MIT",
-  "architecture": "Controller-Centric Question-Based Delegation",
-  "agents": {
-    "total": 214,
-    "core": 16,
-    "shared": 4,
-    "breakdown": {
-      "engineering": 32,
-      "creative": 30,
-      "business": 31,
-      "growth": 39,
-      "people": 19,
-      "service": 32,
-      "leadership": 11
-    },
-    "consolidation": "239 to 214 agents through v10.0.0+ restructure",
-    "domain_restructure": "5 super-domains to 8 business domains"
-  },
-  "business_domains": [
-    "engineering",
-    "creative",
-    "business",
-    "growth",
-    "people",
-    "service",
-    "leadership",
-    "shared"
-  ],
-  "features": {
-    "controller_coordination": true,
-    "question_based_delegation": true,
-    "objective_driven_planning": true,
-    "synthesis_driven_implementation": true,
-    "parallel_execution": true,
-    "max_concurrent_agents": 50,
-    "trigger": true,
-    "designer": true,
-    "optimizer": true,
-    "reviewer": true,
-    "intelligent_agent_selection": true,
-    "auto_fix_generation": true,
-    "pattern_learning": true,
-    "context_aware_detection": true,
-    "pre_flight_validation": true,
-    "bash_script_library": true,
-    "lifecycle_hooks": true,
-    "atomic_file_operations": true,
-    "markdown_frontmatter_state": true,
-    "ralph_loop_patterns": true,
-    "agent_teams_integration": true,
-    "team_mode": true,
-    "parallel_team_execution": true,
-    "peer_to_peer_messaging": true,
-    "shared_task_lists": true,
-    "game_development_pipeline": true,
-    "game_engines_supported": [
-      "Unity",
-      "Unreal Engine",
-      "Godot"
-    ],
-    "game_dev_specializations": [
-      "design",
-      "programming",
-      "art",
-      "audio",
-      "production",
-      "narrative",
-      "qa",
-      "monetization"
-    ]
+  "dependencies": {
+    "js-yaml": "^4.1.1"
   },
   "devDependencies": {
     "ajv": "^8.18.0",
-    "js-yaml": "^4.1.1",
     "vitest": "^4.0.18"
   }
 }

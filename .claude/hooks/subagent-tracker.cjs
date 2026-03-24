@@ -22,7 +22,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findActiveSession, safeRead, ensureDir, withFileLock, AGENT_MEMORY_DIR, SESSION_PREFIXES } = require('./hook-utils.cjs');
+const yaml = require('js-yaml');
+const { createHook, findActiveSession, safeRead, ensureDir, withFileLock, AGENT_MEMORY_DIR, SESSION_PREFIXES, TERMINAL_STATES } = require('./hook-utils.cjs');
 
 /**
  * Find the most recently modified session directory as a fallback
@@ -53,7 +54,7 @@ function findMostRecentSessionDir() {
             const phaseMatch = statusContent.match(/(?:phase|pipeline_state):\s*(\S+)/);
             if (phaseMatch) {
               const phase = phaseMatch[1];
-              if (phase === 'completed' || phase === 'complete' || phase === 'failed' || phase === 'aborted' || phase === 'COMPLETE' || phase === 'VALIDATED') {
+              if (TERMINAL_STATES.includes(phase)) {
                 continue; // Skip finished sessions
               }
             }
@@ -85,7 +86,7 @@ function findMostRecentSessionDir() {
               const phaseMatch = statusContent.match(/(?:phase|pipeline_state):\s*(\S+)/);
               if (phaseMatch) {
                 const phase = phaseMatch[1];
-                if (phase === 'completed' || phase === 'complete' || phase === 'failed' || phase === 'aborted' || phase === 'COMPLETE' || phase === 'VALIDATED') continue;
+                if (TERMINAL_STATES.includes(phase)) continue;
               }
             }
             bestMtime = stat.mtimeMs;
@@ -257,6 +258,12 @@ createHook('SubagentTracker', async (input) => {
     }
   }
 
+  // Warn when cagents_type could not be determined from any source
+  if (!cagentsType) {
+    const fallbackDesc = (input.tool_input || {}).description || input.description || 'none';
+    console.error(`[SubagentTracker] WARNING: cagents_type undetermined for agent ${agentId} (fallback description: "${fallbackDesc}"). Spawn this agent with subagent_type: 'cagents:{name}' for full audit trail.`);
+  }
+
   // PC-11: Derive short_role from cagents_type (e.g., "cagents:engineering-manager" -> "Engineering Manager")
   let shortRole = '';
   if (cagentsType) {
@@ -271,41 +278,72 @@ createHook('SubagentTracker', async (input) => {
   // race conditions when multiple agents spawn concurrently (see PC-01 bug report).
   const total = withFileLock(treeFile, () => {
     const existingContent = safeRead(treeFile);
+    const isFreshFile = !existingContent;
 
-    // Dedup check: skip if this agent ID is already recorded (SubagentStart can fire multiple times per spawn)
-    if (existingContent && existingContent.includes(`id: "${agentId}"`)) {
+    // Parse existing file with js-yaml (REQ-002: YAML-aware dedup and append)
+    let parsedObj = { agents: [] };
+    if (!isFreshFile) {
+      try {
+        const parsed = yaml.load(existingContent);
+        if (parsed === null || parsed === undefined) {
+          // File exists but is empty — treat as fresh
+          parsedObj = { agents: [] };
+        } else if (typeof parsed !== 'object' || !parsed.agents) {
+          console.error(`[SubagentTracker] agent_tree.yaml missing agents: key — skipping append`);
+          return -1;
+        } else {
+          parsedObj = parsed;
+        }
+      } catch (parseErr) {
+        console.error(`[SubagentTracker] Malformed agent_tree.yaml — skipping append: ${parseErr.message}`);
+        return -1;
+      }
+    }
+
+    // Dedup check using parsed object (REQ-002: replace string.includes with parsed lookup)
+    if (parsedObj.agents.some(a => a.id === agentId)) {
       console.error(`[SubagentTracker] Skipping duplicate entry for agent ${agentId}`);
       return -1; // sentinel: skip
     }
 
-    // Compute depth from parent's depth in the tree file (root = 0)
-    if (parentAgent && parentAgent !== 'root' && existingContent) {
-      const parentBlockRegex = new RegExp(`id: "${parentAgent}"[\\s\\S]*?depth:\\s*(\\d+)`);
-      const parentMatch = existingContent.match(parentBlockRegex);
-      if (parentMatch) {
-        depth = parseInt(parentMatch[1], 10) + 1;
+    // Compute depth from parent's depth using parsed object (root = 0)
+    if (parentAgent && parentAgent !== 'root' && parsedObj.agents.length > 0) {
+      const parentEntry = parsedObj.agents.find(a => a.id === parentAgent);
+      if (parentEntry && typeof parentEntry.depth === 'number') {
+        depth = parentEntry.depth + 1;
       } else {
         depth = 1; // Parent exists but no depth field yet (legacy entry), assume depth 1
       }
     }
 
-    // Build agent tree entry with all fields
-    // PC-02: Include stopped_at: null explicitly for active agents
-    let newEntry = `  - id: "${agentId}"\n    type: "${subagentType}"\n    parent: "${parentAgent}"\n    depth: ${depth}\n    spawned_at: "${now}"\n    stopped_at: null\n    session: "${path.basename(sessionDir)}"\n`;
+    // Build new agent entry as a JS object (REQ-002: object-based entry, not YAML string)
+    const entry = {
+      id: agentId,
+      type: subagentType,
+      parent: parentAgent,
+      depth,
+      spawned_at: now,
+      stopped_at: null,
+      session: path.basename(sessionDir)
+    };
     if (cagentsType) {
-      newEntry += `    cagents_type: "${cagentsType}"\n`;
-      newEntry += `    short_role: "${shortRole}"\n`;
+      entry.cagents_type = cagentsType;
+      entry.short_role = shortRole;
     }
 
-    if (!existingContent) {
-      fs.writeFileSync(treeFile, `# Agent Tree - cAgents Audit Trail\n# Session: ${path.basename(sessionDir)}\n# Generated by subagent-tracker.cjs hook\n# NOTE: 'type' reflects Claude Code's agent_type field. For cAgents plugin agents,\n# this may show as 'general-purpose' rather than the cagents:{name} namespace.\n# The 'cagents_type' field below (when present) captures the self-reported agent name.\n# See also: Agent_Memory/_system/logs/agent_spawns.log for the global audit trail.\n\nagents:\n${newEntry}`);
+    // Push new entry into parsed object and write full file back
+    parsedObj.agents.push(entry);
+
+    if (isFreshFile) {
+      // Write with header comment for fresh files
+      const headerComment = `# Agent Tree - cAgents Audit Trail\n# Session: ${path.basename(sessionDir)}\n# Generated by subagent-tracker.cjs hook\n# NOTE: 'type' reflects Claude Code's agent_type field. For cAgents plugin agents,\n# this may show as 'general-purpose' rather than the cagents:{name} namespace.\n# The 'cagents_type' field below (when present) captures the self-reported agent name.\n# See also: Agent_Memory/_system/logs/agent_spawns.log for the global audit trail.\n\n`;
+      fs.writeFileSync(treeFile, headerComment + yaml.dump(parsedObj));
     } else {
-      fs.appendFileSync(treeFile, newEntry);
+      // Write full file back using yaml.dump (drops original header comments, acceptable)
+      fs.writeFileSync(treeFile, yaml.dump(parsedObj));
     }
 
-    // Count existing agents
-    const typeMatches = (existingContent || '').match(/id: "/g) || [];
-    return typeMatches.length + 1;
+    return parsedObj.agents.length;
   });
 
   if (total === -1) return null; // dedup: already recorded

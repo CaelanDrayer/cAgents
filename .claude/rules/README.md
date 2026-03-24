@@ -1,3 +1,8 @@
+---
+paths:
+  - ".claude/rules/**"
+---
+
 # cAgents Modular Rules
 
 Topic-specific rules organized for better maintainability.

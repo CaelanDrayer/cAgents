@@ -1,3 +1,10 @@
+---
+paths:
+  - "Agent_Memory/**"
+  - ".claude/hooks/**"
+  - ".claude/skills/**"
+---
+
 # Agent Memory Structure
 
 File-based memory organization for cAgents. Aligned with Claude Code's memory hierarchy.
@@ -49,6 +56,13 @@ See `agent-memory-reference.md` for examples.
 ## Waypoints
 
 Snapshots created at phase transitions and before context compaction. Types: `phase_transition`, `work_item_complete`, `periodic`, `pre_compact`.
+
+## Session Discovery Internals
+
+`findActiveSession()` uses a three-pass algorithm to locate the active session:
+1. **Hint pass**: If `session_id` is provided, check that directory directly.
+2. **Status pass**: Scan all session dirs for a non-terminal `pipeline_state` / `phase`.
+3. **Grace pass**: Sessions created within `SESSION_DISCOVERY_GRACE_PERIOD_MS` (5 minutes) that lack `status.yaml` are treated as active. This bridges the race between session dir creation and first status write. Constant defined in `hook-utils.cjs`. Nested org subdirectory scanning is mutex-locked via `withFileLock` to prevent concurrent hooks from double-discovering the same session.
 
 ## Memory Principles
 

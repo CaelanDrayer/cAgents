@@ -1,3 +1,11 @@
+---
+paths:
+  - "core/agents/universal-validator/**"
+  - "core/agents/universal-planner/**"
+  - ".claude/skills/run/**"
+  - "Agent_Memory/sessions/**/workflow/**"
+---
+
 # Task Completion Protocol
 
 **MANDATORY**: All tasks must be fully completed with verified evidence before marking as done.

@@ -12,7 +12,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findActiveSession, extractYamlValue, safeRead, countPattern, ensureDir, PROJECT_ROOT } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, TERMINAL_STATES, extractYamlValue, safeRead, countPattern, ensureDir, PROJECT_ROOT } = require('./hook-utils.cjs');
 
 /**
  * Extract the most recent entered_at timestamp from state_history in status.yaml.
@@ -44,8 +44,7 @@ function finalizeSessionLifecycle(sessionDir) {
   const pipelineState = extractYamlValue(statusContent, 'pipeline_state');
   const phase = extractYamlValue(statusContent, 'phase') || extractYamlValue(statusContent, 'current_phase');
   const currentState = pipelineState || phase;
-  const terminalStates = ['complete', 'completed', 'COMPLETE', 'VALIDATED', 'failed'];
-  if (!currentState || !terminalStates.includes(currentState)) return;
+  if (!currentState || !TERMINAL_STATES.includes(currentState)) return;
 
   const now = new Date().toISOString();
 
@@ -70,13 +69,20 @@ function finalizeSessionLifecycle(sessionDir) {
   }
 
   // (b) Compute final duration_ms in last state_history entry
+  // Fallback: use Date.now() as stopped_at when absent; started_at = entered_at.
+  // Never produce NaN or negative values.
   try {
     // Find the last state_history entry with duration_ms: null
     const lastNullDuration = statusContent.match(/[\s\S]*(entered_at:\s*"([^"]+)"[\s\S]*?duration_ms:\s*)null/);
     if (lastNullDuration) {
       const enteredAt = lastNullDuration[2];
-      const durationMs = Date.now() - new Date(enteredAt).getTime();
-      if (durationMs >= 0 && durationMs < 24 * 60 * 60 * 1000) { // sanity: < 24h
+      const startMs = new Date(enteredAt).getTime();
+      // Fallback: if started_at (entered_at) is valid, use Date.now() as stopped_at
+      const stoppedMs = Date.now();
+      const durationMs = !isNaN(startMs) && startMs > 0
+        ? Math.max(0, stoppedMs - startMs)
+        : 0; // Cannot compute duration without valid start time — default to 0
+      if (durationMs < 24 * 60 * 60 * 1000) { // sanity: < 24h
         const updated = statusContent.replace(
           lastNullDuration[0],
           lastNullDuration[0].replace(
@@ -108,7 +114,6 @@ function verifyCompletion(sessionDir) {
 
     if (pipelineState) {
       // /org and /run pipeline_state sessions
-      const terminalStates = ['COMPLETE', 'VALIDATED', 'completed'];
       const activeStates = ['INIT', 'ANALYZED', 'DELIBERATED', 'BRIEFED', 'EXECUTED', 'PLANNED', 'DECOMPOSED', 'PROMPTS_READY', 'COORDINATED'];
       if (activeStates.includes(pipelineState)) {
         // Check if pipeline is actively running (recent state transition).
@@ -127,7 +132,7 @@ function verifyCompletion(sessionDir) {
           // Pipeline may be stuck (no recent transitions) — block
           issues.push(`Workflow stopping in '${pipelineState}' pipeline state (expected: COMPLETE or VALIDATED)`);
         }
-      } else if (!terminalStates.includes(pipelineState)) {
+      } else if (!TERMINAL_STATES.includes(pipelineState)) {
         warnings.push(`Workflow stopping in '${pipelineState}' pipeline state`);
       }
     } else if (!phase) {
@@ -139,7 +144,47 @@ function verifyCompletion(sessionDir) {
     }
   }
 
-  // 2. Sentinel Gate Factchecking (V10.17.0)
+  // 2. Delegation violation check (V10.22.6)
+  // If the session stopped in a pre-COORDINATED state with no agent_tree.yaml
+  // child entries (depth 0), flag it as a delegation violation.
+  // This detects self-handling bypasses: the model stopped without spawning any agents.
+  // Exception: sessions that reached VALIDATED/COMPLETE are not flagged (clean completion).
+  const PRE_COORDINATED_STATES_VC = ['INIT', 'ORCHESTRATED', 'PLANNED', 'DECOMPOSED', 'PROMPTS_READY'];
+  const agentTreeFile = path.join(sessionDir, 'workflow', 'agent_tree.yaml');
+  const agentTreeContent = safeRead(agentTreeFile);
+  if (statusContent) {
+    const pipelineStateForVC = extractYamlValue(statusContent, 'pipeline_state');
+    // Only check if session stopped in a pre-COORDINATED state (not naturally completed)
+    if (pipelineStateForVC && PRE_COORDINATED_STATES_VC.includes(pipelineStateForVC)) {
+      // Check agent_tree.yaml for child agents (depth > 0)
+      // agent_tree.yaml entries with depth > 0 indicate agents were spawned
+      let childAgentCount = 0;
+      if (agentTreeContent) {
+        // Count entries with depth: 1 or higher (depth: 0 is the pipeline root itself)
+        const depthMatches = agentTreeContent.match(/\bdepth:\s*([1-9]\d*)\b/g);
+        childAgentCount = depthMatches ? depthMatches.length : 0;
+
+        // Fallback: count agent_id entries beyond the first (first is the /run root)
+        if (childAgentCount === 0) {
+          const agentIdMatches = agentTreeContent.match(/\bagent_id:\s*[^\s\n]+/g);
+          childAgentCount = agentIdMatches ? Math.max(0, agentIdMatches.length - 1) : 0;
+        }
+      }
+
+      if (childAgentCount === 0) {
+        const sessionName = path.basename(sessionDir);
+        warnings.push(
+          `DELEGATION VIOLATION: Session '${sessionName}' stopped in '${pipelineStateForVC}' state ` +
+          `with no child agents spawned. This indicates the pipeline was not executed — ` +
+          `work was self-handled or the session was abandoned before delegation. ` +
+          `Expected: agent_tree.yaml with depth>0 entries showing spawned orchestrator/planner/controller agents.`
+        );
+        console.error(`[VerifyCompletion] Delegation violation detected: ${sessionName} stopped in ${pipelineStateForVC} with no spawned agents`);
+      }
+    }
+  }
+
+  // 3. Sentinel Gate Factchecking (V10.17.0)
   // Verify that claimed deliverables actually exist on disk.
   const coordFileForSentinel = path.join(sessionDir, 'workflow', 'coordination_log.yaml');
   const coordForSentinel = safeRead(coordFileForSentinel);
@@ -194,8 +239,8 @@ function verifyCompletion(sessionDir) {
     }
   }
 
-  // 3. Check coordination_log.yaml for work item completion
-  // (renumbered from 2 after sentinel gate insertion)
+  // 4. Check coordination_log.yaml for work item completion
+  // (renumbered from 2 after sentinel gate insertion, then from 3 after delegation check)
   // For /org sessions, also check integration_report.yaml and per-domain coordination logs
   const coordFile = path.join(sessionDir, 'workflow', 'coordination_log.yaml');
   let coordContent = safeRead(coordFile);
@@ -219,7 +264,7 @@ function verifyCompletion(sessionDir) {
   }
 
   // 4. Check validation report (only if session reached a state where validation is expected)
-  const validationFile = path.join(sessionDir, 'validation', 'validation_report.yaml');
+  const validationFile = path.join(sessionDir, 'workflow', 'validation_report.yaml');
   const valContent = safeRead(validationFile);
   // Only warn about missing validation if the session has a status.yaml indicating
   // it should have reached validation (terminal or near-terminal states).
@@ -234,6 +279,12 @@ function verifyCompletion(sessionDir) {
   } else if (valContent) {
     const status = extractYamlValue(valContent, 'overall_status') || extractYamlValue(valContent, 'status');
     if (status && status !== 'PASS') warnings.push(`Validation status: ${status} (expected: PASS)`);
+  }
+
+  // 5. Check execution_summary.yaml exists (REQ-012)
+  // /run SKILL.md Step 4 item 3 mandates this file even on failure or interruption.
+  if (shouldHaveValidation && !fs.existsSync(path.join(sessionDir, 'workflow', 'execution_summary.yaml'))) {
+    warnings.push('Missing workflow/execution_summary.yaml (required at pipeline completion per /run Step 4)');
   }
 
   return { issues, warnings };
@@ -288,8 +339,7 @@ createHook('VerifyCompletion', async (input) => {
       const curPipeline = extractYamlValue(statusRaw, 'pipeline_state');
       const curPhase = extractYamlValue(statusRaw, 'phase') || extractYamlValue(statusRaw, 'current_phase');
       const curVal = curPipeline || curPhase;
-      const alreadyTerminal = ['complete', 'completed', 'COMPLETE', 'VALIDATED', 'failed'];
-      if (!curVal || !alreadyTerminal.includes(curVal)) {
+      if (!curVal || !TERMINAL_STATES.includes(curVal)) {
         const finalState = result.issues.length === 0 ? 'complete' : 'failed';
         const field = curPipeline !== undefined ? 'pipeline_state' : (curPhase !== undefined ? 'phase' : 'pipeline_state');
         const patched = statusRaw.replace(
@@ -385,6 +435,101 @@ ${result.warnings.length > 0 ? `  warning_types:\n${result.warnings.map(w => `  
     }
   } catch (e) {
     console.error(`[VerifyCompletion] Learning capture error: ${e.message}`);
+  }
+
+  // PC-10: Structured session outcome JSONL (V10.23.0)
+  // Append a single JSON line per session to a rolling JSONL file for analytics.
+  // Failures here must never break the verify-completion hook.
+  try {
+    const learningDir = path.join(AGENT_MEMORY_DIR, '_knowledge', 'learning');
+    fs.mkdirSync(learningDir, { recursive: true });
+
+    // Extract domain and tier from plan.yaml
+    let outcomeDomain = 'unknown';
+    let outcomeTier = 'unknown';
+    try {
+      const planForOutcome = safeRead(path.join(sessionDir, 'workflow', 'plan.yaml'));
+      if (planForOutcome) {
+        outcomeDomain = extractYamlValue(planForOutcome, 'domain') || extractYamlValue(planForOutcome, 'super_domain') || 'unknown';
+        outcomeTier = extractYamlValue(planForOutcome, 'tier') || 'unknown';
+      }
+    } catch { /* plan read failed — use defaults */ }
+
+    // Pipeline state from status.yaml
+    const statusForOutcome = safeRead(path.join(sessionDir, 'status.yaml'));
+    const outcomePipelineState = statusForOutcome
+      ? (extractYamlValue(statusForOutcome, 'pipeline_state') || extractYamlValue(statusForOutcome, 'phase') || 'unknown')
+      : 'unknown';
+
+    // Duration: first entered_at in state_history to now
+    let outcomeDurationMs = null;
+    if (statusForOutcome) {
+      const firstEnteredMatch = statusForOutcome.match(/entered_at:\s*"([^"]+)"/);
+      if (firstEnteredMatch) {
+        try {
+          const startMs = new Date(firstEnteredMatch[1]).getTime();
+          if (!isNaN(startMs) && startMs > 0) {
+            outcomeDurationMs = Math.max(0, Date.now() - startMs);
+          }
+        } catch { /* timestamp parse failed */ }
+      }
+    }
+
+    // Agent count from agent_tree.yaml
+    let outcomeAgentCount = 0;
+    try {
+      const atContent = safeRead(path.join(sessionDir, 'workflow', 'agent_tree.yaml'));
+      if (atContent) {
+        const agentMatches = atContent.match(/agent_id:/g);
+        outcomeAgentCount = agentMatches ? agentMatches.length : 0;
+      }
+    } catch { /* agent tree read failed */ }
+
+    // Work item count from work_items.yaml
+    let outcomeWorkItemCount = 0;
+    try {
+      const wiContent = safeRead(path.join(sessionDir, 'workflow', 'work_items.yaml'));
+      if (wiContent) {
+        const wiMatches = wiContent.match(/- id:/g) || wiContent.match(/- task_id:/g);
+        outcomeWorkItemCount = wiMatches ? wiMatches.length : 0;
+      }
+    } catch { /* work items read failed */ }
+
+    // Revision count from workflow/events/ (FAIL or REVISE events)
+    let outcomeRevisionCount = 0;
+    try {
+      const eventsDir = path.join(sessionDir, 'workflow', 'events');
+      if (fs.existsSync(eventsDir)) {
+        const eventFiles = fs.readdirSync(eventsDir).filter(f => f.endsWith('.yaml'));
+        for (const ef of eventFiles) {
+          const evContent = safeRead(path.join(eventsDir, ef));
+          if (evContent && (/\bFAIL\b/.test(evContent) || /\bREVISE\b/.test(evContent))) {
+            outcomeRevisionCount++;
+          }
+        }
+      }
+    } catch { /* events read failed */ }
+
+    const outcome = {
+      session_id: path.basename(sessionDir),
+      domain: outcomeDomain,
+      tier: outcomeTier,
+      pipeline_state: outcomePipelineState,
+      duration_ms: outcomeDurationMs,
+      agent_count: outcomeAgentCount,
+      work_item_count: outcomeWorkItemCount,
+      pass_fail: result.issues.length === 0 ? 'pass' : 'fail',
+      revision_count: outcomeRevisionCount,
+      warning_count: result.warnings.length,
+      issue_count: result.issues.length,
+      timestamp: new Date().toISOString()
+    };
+
+    const jsonlPath = path.join(learningDir, 'session_outcomes.jsonl');
+    fs.appendFileSync(jsonlPath, JSON.stringify(outcome) + '\n');
+    console.error(`[VerifyCompletion] Session outcome appended to ${path.relative(PROJECT_ROOT, jsonlPath)}`);
+  } catch (e) {
+    console.error(`[VerifyCompletion] Session outcome JSONL error (non-fatal): ${e.message}`);
   }
 
   // PC-08: Always write completion_summary.yaml with status field

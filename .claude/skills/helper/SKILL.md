@@ -4,7 +4,7 @@ description: "Explains cAgents commands and recommends the right one for your ta
 license: MIT
 metadata:
   author: CaelanDrayer
-  version: "10.22.5"
+  version: "10.22.7"
   argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--topic <topic>] [--troubleshoot <command>]"
   user-invocable: "true"
   context: "none"

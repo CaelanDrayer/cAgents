@@ -25,8 +25,6 @@ As of February 2026, the latest Claude models are:
 
 All models support text/image input, extended thinking, and adaptive thinking (except Haiku). Opus 4.6 and Sonnet 4.6 support 1M token context windows via beta header.
 
-**Legacy models** (still available but migration recommended): Claude Sonnet 4.5, Claude Opus 4.5, Claude Opus 4.1, Claude Sonnet 4, Claude Opus 4, Claude Sonnet 3.7, Claude Haiku 3.
-
 ## Configuration Location
 
 ```

@@ -15,7 +15,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findActiveSession, ensureDir, safeRead, AGENT_MEMORY_DIR, PROJECT_ROOT } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, ensureDir, safeRead, AGENT_MEMORY_DIR, PROJECT_ROOT, withFileLock } = require('./hook-utils.cjs');
 
 // Auto-format detection cache (v10.6.0)
 let _formatterCache = null;
@@ -197,7 +197,7 @@ createHook('PostWriteValidator', async (input) => {
         status: status === 'OK' ? 'success' : status === 'WARN' ? 'success' : 'failure',
         file_path: filePath
       }) + '\n';
-      fs.appendFileSync(auditFile, line);
+      withFileLock(auditFile, () => { fs.appendFileSync(auditFile, line); });
     } catch { /* best effort */ }
   }
 

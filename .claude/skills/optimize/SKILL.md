@@ -4,7 +4,7 @@ description: "Detect and fix performance, size, and efficiency issues with rollb
 license: MIT
 metadata:
   author: CaelanDrayer
-  version: "10.22.5"
+  version: "10.22.7"
   argument-hint: "[<target>] [--type <type>] [--dry-run] [--interactive] [--rollback]"
   user-invocable: "true"
   context: "fork"
@@ -74,6 +74,17 @@ See @reference/optimization-types.md for detailed type descriptions and metrics.
 **CRITICAL**: Create the session directory and metadata files BEFORE any phase work, agent spawning, or analysis. This ensures all session artifacts have a home from the start.
 
 ```
+0. Check for CAGENTS_SESSION_ID override:
+   - Read process.env.CAGENTS_SESSION_ID
+   - If set and non-empty: use it verbatim as SESSION_ID (skip steps 1-4 below)
+     - SESSION_DIR="Agent_Memory/sessions/${CAGENTS_SESSION_ID}"
+     - If SESSION_DIR already exists: this is a RESUME — skip session file creation
+       (instruction.yaml, status.yaml, agent_tree.yaml already exist).
+       Skip to Phase 0 (History & Learning).
+     - If SESSION_DIR does not exist: treat as new session — proceed with mkdir
+       and file creation using the env var value as SESSION_ID (skip to step 5 below)
+   - If not set or empty: proceed with auto-generation (steps 1-4 below)
+
 1. Generate a slug from the request: 2-6 key words, kebab-case, lowercase, max 50 chars
    Strip filler words (the, a, an, to, for, with, and, of). Example: "Reduce bundle size" -> "reduce-bundle-size"
 2. Get compact date: YYMMDD (e.g., 260317)

@@ -1,7 +1,22 @@
 {
-  "name": "cagents-leadership",
-  "version": "10.22.6",
-  "description": "cAgents leadership domain - 10 C-suite executive agents for strategic coordination via /org",
+  "name": "@cagents/leadership",
+  "version": "10.22.7",
+  "description": "cAgents leadership domain - 11 C-suite executive agents for strategic coordination via /org",
+  "author": {
+    "name": "CaelanDrayer",
+    "email": "caelan@caelandrayer.ca",
+    "url": "https://github.com/CaelanDrayer"
+  },
+  "homepage": "https://github.com/CaelanDrayer/cAgents",
+  "repository": "https://github.com/CaelanDrayer/cAgents",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "leadership",
+    "c-suite",
+    "executive",
+    "strategic-coordination"
+  ],
   "agents": [
     "./agents/cco/SKILL.md",
     "./agents/ceo/SKILL.md",
@@ -13,6 +28,6 @@
     "./agents/cro/SKILL.md",
     "./agents/cso/SKILL.md",
     "./agents/cto/SKILL.md",
-    "./agents/general-counsel/SKILL.md"
+    "./agents/chief-legal-officer/SKILL.md"
   ]
 }

@@ -1,7 +1,23 @@
 {
-  "name": "cagents-growth",
-  "version": "10.22.6",
+  "name": "@cagents/growth",
+  "version": "10.22.7",
   "description": "cAgents growth domain - Marketing and sales specialists for customer acquisition and revenue growth",
+  "author": {
+    "name": "CaelanDrayer",
+    "email": "caelan@caelandrayer.ca",
+    "url": "https://github.com/CaelanDrayer"
+  },
+  "homepage": "https://github.com/CaelanDrayer/cAgents",
+  "repository": "https://github.com/CaelanDrayer/cAgents",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "growth",
+    "marketing",
+    "sales",
+    "revenue-operations",
+    "customer-acquisition"
+  ],
   "agents": [
     "./agents/account-executive/SKILL.md",
     "./agents/brand-manager/SKILL.md",

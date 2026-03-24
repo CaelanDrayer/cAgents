@@ -1100,14 +1100,15 @@ Agent_Memory/_knowledge/
 │   ├── coordination-patterns.yaml
 │   └── success-patterns.yaml
 └── learning/
-    ├── config.yaml
-    └── pattern-extractor.js
+    └── config.yaml
 
 scripts/
 ├── ci/
 │   ├── cagents-ci.sh
 │   ├── run-evals.sh
 │   └── check-quality.sh
+├── knowledge/
+│   └── pattern-extractor.cjs    # moved from Agent_Memory/_knowledge/learning/ (now version-controlled)
 ├── session/
 │   └── ...
 └── skills/

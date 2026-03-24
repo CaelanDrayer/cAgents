@@ -4,7 +4,7 @@ description: "Quality review with parallel specialist agents and optional auto-f
 license: MIT
 metadata:
   author: CaelanDrayer
-  version: "10.22.5"
+  version: "10.22.7"
   argument-hint: "<target> [--focus <area>] [--auto-fix] [--severity <level>] [--format <type>] [--profile <name>] [--baseline] [--suppress <id>]"
   user-invocable: "true"
   context: "fork"
@@ -135,6 +135,17 @@ See @reference/flags.md for complete flag reference with examples.
 1. Parse flags from `$ARGUMENTS`
 2. **Create session FIRST** (before any analysis, detection, or agent work):
    ```
+   0. Check for CAGENTS_SESSION_ID override:
+      - Read process.env.CAGENTS_SESSION_ID
+      - If set and non-empty: use it verbatim as SESSION_ID (skip steps 1-4 below)
+        - SESSION_DIR="Agent_Memory/sessions/${CAGENTS_SESSION_ID}"
+        - If SESSION_DIR already exists: this is a RESUME — skip session file creation
+          (instruction.yaml, status.yaml, agent_tree.yaml already exist).
+          Skip to step 5 (profile/baseline loading).
+        - If SESSION_DIR does not exist: treat as new session — proceed with mkdir
+          and file creation using the env var value as SESSION_ID (skip to step 5 below)
+      - If not set or empty: proceed with auto-generation (steps 1-4 below)
+
    1. Generate a slug from the request: 2-6 key words, kebab-case, lowercase, max 50 chars
       Strip filler words (the, a, an, to, for, with, and, of). Example: "Security audit API" -> "security-audit-api"
    2. Get compact date: YYMMDD (e.g., 260317)

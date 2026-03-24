@@ -22,13 +22,15 @@ if (HOME) {
   PROTECTED_PATHS.push(path.join(HOME, '.gnupg') + '/');
 }
 
-// Sensitive file patterns (warning only)
+// Sensitive file patterns (warning only — matched on filename, triggers a caution message but does NOT block).
+// Pattern-based secret scanning below (SECRET_PATTERNS) does the actual blocking on critical/high severity.
 const SENSITIVE_PATTERNS = ['.env', 'credentials', 'secrets', 'private', '.pem', '.key', 'password'];
 
 // Build private key patterns dynamically to avoid self-detection
 const PK_BEGIN = '-----' + 'BEGIN ';
 const PK_END = 'PRIVATE KEY' + '-----';
 const PGP_END = 'PRIVATE KEY BLOCK' + '-----';
+const GCP_SA_PATTERN = '"type"\\s*:\\s*"service_account"[\\s\\S]*?"private_key"\\s*:\\s*"' + PK_BEGIN + 'RSA ' + PK_END;
 
 const SECRET_PATTERNS = [
   // GitHub
@@ -67,11 +69,40 @@ const SECRET_PATTERNS = [
   // Heroku (context-required)
   { pattern: /(?:HEROKU[_-]?API[_-]?KEY|heroku[_-]?api[_-]?key)[\s]*[=:]\s*["']?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}["']?/gi, name: 'Heroku API Key', severity: 'critical' },
   // JWT (low)
-  { pattern: /eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*/g, name: 'JWT Token', severity: 'low' }
+  { pattern: /eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*/g, name: 'JWT Token', severity: 'low' },
+  // Azure
+  { pattern: /DefaultEndpointsProtocol=https;AccountName=[^;]+;AccountKey=[a-zA-Z0-9+/=]{88}/g, name: 'Azure Storage Account Key', severity: 'critical' },
+  { pattern: /(?:client[_-]?secret|clientSecret)[\s]*[=:]\s*["']?([a-zA-Z0-9~._-]{34,40})["']?/gi, name: 'Azure AD Client Secret', severity: 'high' },
+  // GCP
+  { pattern: new RegExp(GCP_SA_PATTERN, 'g'), name: 'GCP Service Account JSON', severity: 'critical' },
+  // Supabase
+  { pattern: /sbp_[a-zA-Z0-9]{40}/g, name: 'Supabase Personal Access Token', severity: 'critical' },
+  // Vercel
+  { pattern: /vercel_[a-zA-Z0-9]{24,}/g, name: 'Vercel Token', severity: 'critical' },
+  // Cloudflare (named pattern BEFORE broad hex pattern)
+  { pattern: /(?:cloudflare[_-]?api[_-]?key|CF_API_KEY)[\s]*[=:]\s*["']?([a-zA-Z0-9]{37})["']?/gi, name: 'Cloudflare API Key', severity: 'critical' },
+  { pattern: /(?<![0-9a-f])[0-9a-f]{37}(?![0-9a-f])/g, name: 'Cloudflare API Token', severity: 'high' },
+  // GitLab
+  { pattern: /glpat-[a-zA-Z0-9_-]{20}/g, name: 'GitLab Personal Access Token', severity: 'critical' },
+  { pattern: /gldt-[a-zA-Z0-9_-]{20}/g, name: 'GitLab Deploy Token', severity: 'critical' },
+  { pattern: /glrt-[a-zA-Z0-9_-]{20}/g, name: 'GitLab Runner Token', severity: 'critical' },
+  // Terraform Cloud
+  { pattern: /atlasv1\.[a-zA-Z0-9_-]{50,}/g, name: 'Terraform Cloud Token', severity: 'critical' },
+  // HuggingFace
+  { pattern: /hf_[a-zA-Z0-9]{34,}/g, name: 'HuggingFace API Token', severity: 'critical' }
+];
+
+// Test file path patterns — scanned for real secrets, but placeholder tokens are suppressed
+const TEST_FILE_PATHS = [
+  /\.test\.[jt]sx?$/, /\.spec\.[jt]sx?$/, /__tests__\//, /test_.*\.py$/, /_test\.go$/
+];
+
+// Placeholder token patterns — suppress these in test files (explicit non-real tokens)
+const TEST_PLACEHOLDER_PATTERNS = [
+  /test_/i, /fake_/i, /example_/i, /your[_-]?key[_-]?here/i, /replace[_-]?me/i
 ];
 
 const FALSE_POSITIVE_PATHS = [
-  /\.test\.[jt]sx?$/, /\.spec\.[jt]sx?$/, /__tests__\//, /test_.*\.py$/, /_test\.go$/,
   /\.md$/, /docs?\//, /README/i,
   /package-lock\.json$/, /yarn\.lock$/, /pnpm-lock\.yaml$/,
   /example/i, /sample/i, /template/i, /mock/i, /fixture/i
@@ -85,6 +116,14 @@ function isPathFalsePositive(filePath) {
   return filePath && FALSE_POSITIVE_PATHS.some(p => p.test(filePath));
 }
 
+function isTestFile(filePath) {
+  return filePath && TEST_FILE_PATHS.some(p => p.test(filePath));
+}
+
+function isTestFilePlaceholder(matchValue) {
+  return TEST_PLACEHOLDER_PATTERNS.some(p => p.test(matchValue));
+}
+
 function isContentFalsePositive(content, match) {
   const idx = content.indexOf(match);
   const context = content.substring(Math.max(0, idx - 50), Math.min(content.length, idx + match.length + 50));
@@ -96,6 +135,7 @@ function scanForSecrets(content, filePath) {
     return { critical: [], high: [], medium: [], low: [] };
   }
 
+  const testFile = isTestFile(filePath);
   const findings = { critical: [], high: [], medium: [], low: [] };
 
   for (const secretType of SECRET_PATTERNS) {
@@ -103,6 +143,8 @@ function scanForSecrets(content, filePath) {
     let match;
     while ((match = secretType.pattern.exec(content)) !== null) {
       if (isContentFalsePositive(content, match[0])) continue;
+      // For test files, suppress placeholder tokens but scan real-looking tokens
+      if (testFile && isTestFilePlaceholder(match[0])) continue;
       const lines = content.substring(0, match.index).split('\n');
       const redacted = match[0].length > 10
         ? match[0].substring(0, 6) + '...' + match[0].substring(match[0].length - 4)
@@ -158,15 +200,9 @@ createHook('SecretDetection', async (input) => {
   }
 
   if (findings.medium.length > 0) {
-    const warnings = findings.medium.map(f => `${f.type} (line ${f.line})`).join(', ');
-    console.error(`[SecretDetection] WARNING: ${findings.medium.length} possible secret(s) in ${filePath}`);
-    return {
-      hookSpecificOutput: {
-        hookEventName: 'PreToolUse',
-        permissionDecision: 'ask',
-        permissionDecisionReason: `Possible secrets detected: ${warnings}. Review before committing.`
-      }
-    };
+    const findingsList = findings.medium.map(f => `- ${f.type} (line ${f.line}): ${f.redacted}`).join('\n');
+    console.error(`[SecretDetection] BLOCKED: Found ${findings.medium.length} possible secret(s) in ${filePath}`);
+    return { deny: true, reason: `Possible secret detected in file content:\n${findingsList}\n\nRemove secrets before writing. Use environment variables or .env files instead.` };
   }
 
   return null;

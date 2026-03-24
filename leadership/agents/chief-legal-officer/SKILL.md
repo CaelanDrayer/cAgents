@@ -1,5 +1,5 @@
 ---
-name: general-counsel
+name: chief-legal-officer
 domain: leadership
 tier: controller
 coordination_style: question_based

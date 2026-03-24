@@ -55,6 +55,26 @@ describe('session-catchup.cjs', () => {
     expect(result.hookSpecificOutput.additionalContext).toContain('self-register');
   });
 
+  describe('learning pattern loading', () => {
+    it('should load learning patterns without error', () => {
+      // The hook loads patterns from _knowledge/patterns/ if available.
+      // Verify the hook runs without crashing regardless of whether pattern files exist.
+      const result = runHook({});
+      expect(result.hookSpecificOutput).toBeDefined();
+      expect(result.hookSpecificOutput.hookEventName).toBe('SessionStart');
+      // The hook should not crash even if pattern files are missing
+      expect(result.continue).not.toBe(false);
+    });
+
+    it('should reference learning patterns in hook source', () => {
+      // Contract test: verify the pattern loading code path exists
+      const hookSource = readFileSync(HOOK_PATH, 'utf8');
+      expect(hookSource).toContain('success-patterns.yaml');
+      expect(hookSource).toContain('coordination-patterns.yaml');
+      expect(hookSource).toContain('_knowledge');
+    });
+  });
+
   describe('incomplete session detection', () => {
     it('should detect sessions with non-terminal phases', () => {
       // This test relies on actual session state. The hook scans Agent_Memory/sessions/.

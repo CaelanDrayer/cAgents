@@ -2,7 +2,7 @@
 #
 # cAgents CI Runner
 # Self-contained CI script for quality gates
-# Version: 10.22.4
+# Version: 10.22.7
 #
 # Usage:
 #   ./scripts/ci/cagents-ci.sh [command]
@@ -86,48 +86,47 @@ find_agents() {
 validate_agents() {
     log_section "AGENT VALIDATION"
 
+    # Delegate to validate-agents.sh which handles all domains with full schema validation.
+    # Falls back to basic frontmatter checks if validate-agents.sh is not found.
+    if [[ -f "$SCRIPT_DIR/validate-agents.sh" ]]; then
+        log_info "Running validate-agents.sh for all domains..."
+        if bash "$SCRIPT_DIR/validate-agents.sh" 2>&1; then
+            log_info "Agent validation passed"
+            return 0
+        else
+            log_error "Agent validation failed (see output above)"
+            return 1
+        fi
+    fi
+
+    # Fallback: basic frontmatter check when validate-agents.sh is unavailable
+    log_warn "validate-agents.sh not found — running basic frontmatter check"
     local total=0
     local passed=0
     local failed=0
 
-    # Validate agents in each domain
     for domain in core shared engineering creative business growth people service leadership; do
         log_info "Checking $domain domain..."
-
-        # Check for agent files
         local domain_dir="$PROJECT_ROOT/$domain/agents"
         if [[ ! -d "$domain_dir" ]]; then
             continue
         fi
 
-        # Find and validate each agent
         while IFS= read -r agent_path; do
             ((total++))
-
-            # Run validator if available
-            if [[ -f "$PROJECT_ROOT/scripts/validate_agent.js" ]]; then
-                if node "$PROJECT_ROOT/scripts/validate_agent.js" "$agent_path" > /dev/null 2>&1; then
+            if [[ -f "$agent_path/SKILL.md" ]]; then
+                if head -1 "$agent_path/SKILL.md" | grep -q "^---"; then
                     ((passed++))
                 else
-                    log_error "Validation failed: $agent_path"
+                    log_error "Missing frontmatter: $agent_path/SKILL.md"
                     ((failed++))
                 fi
-            else
-                # Basic validation: check for frontmatter
-                if [[ -f "$agent_path/SKILL.md" ]]; then
-                    if head -1 "$agent_path/SKILL.md" | grep -q "^---"; then
-                        ((passed++))
-                    else
-                        log_error "Missing frontmatter: $agent_path/SKILL.md"
-                        ((failed++))
-                    fi
-                elif [[ -f "$agent_path" ]] && [[ "$agent_path" == *.md ]]; then
-                    if head -1 "$agent_path" | grep -q "^---"; then
-                        ((passed++))
-                    else
-                        log_error "Missing frontmatter: $agent_path"
-                        ((failed++))
-                    fi
+            elif [[ -f "$agent_path" ]] && [[ "$agent_path" == *.md ]]; then
+                if head -1 "$agent_path" | grep -q "^---"; then
+                    ((passed++))
+                else
+                    log_error "Missing frontmatter: $agent_path"
+                    ((failed++))
                 fi
             fi
         done < <(find_agents "$domain")
@@ -388,7 +387,7 @@ main() {
     local command="${1:-all}"
     local exit_code=0
 
-    log_section "cAgents CI Runner v8.0.0"
+    log_section "cAgents CI Runner v10.22.7"
     log_info "Project root: $PROJECT_ROOT"
     log_info "Command: $command"
 

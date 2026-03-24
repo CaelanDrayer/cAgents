@@ -10,7 +10,8 @@ const TMP_DIR = join(process.cwd(), 'tests', 'fixtures', 'tmp_pwv');
 function runHook(input) {
   const result = execSync(
     `printf '%s' '${JSON.stringify(input).replace(/'/g, "'\\''")}' | node "${HOOK_PATH}"`,
-    { encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'] }
+    { encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env, CLAUDE_PROJECT_DIR: TMP_DIR } }
   );
   return JSON.parse(result.trim());
 }

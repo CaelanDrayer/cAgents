@@ -4,7 +4,7 @@ description: "Coordinate C-suite agents across domains for strategic initiatives
 license: MIT
 metadata:
   author: CaelanDrayer
-  version: "10.22.5"
+  version: "10.22.7"
   argument-hint: "<instruction> [--dry-run] [--quick] [--domains <d1,d2>] [--resume <session_id>]"
   user-invocable: "true"
   context: "none"
@@ -30,6 +30,27 @@ Do NOT say "Rather than spinning up the full hierarchy, I will handle this mysel
 4. Invoke /run or /team (via Skill tool) for execution
 
 Even for single-domain "simple" requests, you MUST still generate a strategic_brief.yaml and invoke /run or /team. The whole point of this plugin is delegation to specialized agents. If you do the work yourself, you defeat the entire purpose.
+
+### Rationalization Kill List
+
+The following phrases are self-handling rationalizations. Each one is a critical violation. No exceptions.
+
+| Rationalization | Why it fails |
+|----------------|-------------|
+| "This is a documentation task" | Documentation goes through /run with the doc-writer agent, not handled by CEO |
+| "This is a planning task" | Planning is a pipeline stage delegated to the planner agent, not a bypass |
+| "I'll handle this directly" | Direct handling by CEO is a critical protocol violation with no exceptions |
+| "The task is too simple for the full hierarchy" | Simplicity never bypasses delegation — even single-domain tasks use /run or /team |
+| "Rather than spinning up the full hierarchy" | The hierarchy runs for every /org invocation — that is its purpose |
+| "I can do this more efficiently myself" | Efficiency is irrelevant — delegation is mandatory regardless of speed claims |
+| "This doesn't need cross-domain coordination" | /org always produces a strategic brief and delegates to /run or /team, even for single domains |
+| "I'll build/create/fix/write/analyze this myself" | ALL work goes to C-suite agents (via Task) then /run or /team (via Skill) |
+| "Let me just answer this question directly" | CEO synthesizes from C-suite agents — direct answering bypasses the architecture |
+| "This is a single-domain task so I'll skip the C-suite" | Even single-domain tasks MUST generate a strategic brief and invoke /run or /team |
+| "I'll analyze the codebase myself and then report" | Codebase analysis goes to execution agents via /run — CEO does not analyze directly |
+| "Rather than going through the full pipeline for this" | The full pipeline runs for every /org invocation without exception |
+
+**If you find yourself reasoning toward any of these conclusions, STOP. You are rationalizing a violation. Delegate.**
 
 ## CRITICAL: Inline Execution (context: none)
 
@@ -113,6 +134,17 @@ See @reference/flags.md for complete flag reference.
 **2a. Create session:**
 
 ```
+0. Check for CAGENTS_SESSION_ID override:
+   - Read process.env.CAGENTS_SESSION_ID
+   - If set and non-empty: use it verbatim as SESSION_ID (skip steps 1-4 below)
+     - SESSION_DIR="Agent_Memory/sessions/${CAGENTS_SESSION_ID}"
+     - If SESSION_DIR already exists: this is a RESUME — skip session file creation
+       (instruction.yaml, status.yaml, agent_tree.yaml already exist).
+       Skip to step 2b (TodoWrite).
+     - If SESSION_DIR does not exist: treat as new session — proceed with mkdir
+       and file creation using the env var value as SESSION_ID (skip to step 5 below)
+   - If not set or empty: proceed with auto-generation (steps 1-4 below)
+
 1. Generate a slug from the user instruction: 2-6 key words, kebab-case, lowercase, max 50 chars
    Strip filler words (the, a, an, to, for, with, and, of). Example: "Launch new product" -> "launch-new-product"
 2. Get compact date: YYMMDD (e.g., 260317)
@@ -853,7 +885,7 @@ For instructions touching 2+ domains: execute the full 6-state pipeline.
 
 ## Configuration
 
-- Pipeline config: `Agent_Memory/_system/config/org_pipeline_config.yaml`
+- Pipeline config: `Agent_Memory/_system/config/org_pipeline_config.yaml` (optional — generated at runtime; /org operates with hardcoded defaults if absent)
 - C-suite mapping: See @reference/csuite-mapping.md
 - Strategic brief schema: See @reference/strategic-brief-schema.md
 - Escalation protocol: See @reference/escalation-protocol.md

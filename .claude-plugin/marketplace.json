@@ -10,7 +10,7 @@
     {
       "name": "cagents",
       "description": "214 agents across 8 business domains with 8 commands. /run auto-routes any task to specialist agents, /team runs parallel execution waves, /org coordinates cross-domain strategy via C-suite, /designer guides design exploration, /review audits quality, /optimize measures and improves performance, /helper recommends commands, /context persists project knowledge.",
-      "version": "10.22.6",
+      "version": "10.22.7",
       "author": {
         "name": "CaelanDrayer",
         "email": "caelan@caelandrayer.ca"
@@ -18,6 +18,36 @@
       "source": "./",
       "category": "workflows",
       "homepage": "https://github.com/CaelanDrayer/cAgents",
+      "keywords": [
+        "agents",
+        "ai",
+        "automation",
+        "controller-centric",
+        "question-based-delegation",
+        "orchestration",
+        "workflow",
+        "multi-domain",
+        "agent-teams",
+        "parallel-teams"
+      ],
+      "tags": [
+        "multi-agent",
+        "orchestration",
+        "workflow-automation",
+        "agent-teams",
+        "claude-code-plugin"
+      ],
+      "features": [
+        "214 specialized agents across 8 business domains",
+        "9 slash commands (/run, /team, /org, /designer, /review, /optimize, /helper, /context, /debug)",
+        "21 lifecycle hooks across 14 event types",
+        "N-wave parallel team execution with quality gates",
+        "Event-driven pipeline with revision routing (PASS/FAIL/REVISE)",
+        "Controller-centric question-based delegation",
+        "Two-stage code review (spec compliance + code quality)",
+        "Aggressive decomposition (30+ work items from simple requests)",
+        "CSV-based task inventory with 60-80% context savings"
+      ],
       "strict": false
     }
   ]

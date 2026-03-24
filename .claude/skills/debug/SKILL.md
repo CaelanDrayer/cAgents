@@ -4,7 +4,7 @@ description: "Use when a bug defies quick fixes, when 2+ attempted fixes have fa
 license: MIT
 metadata:
   author: CaelanDrayer
-  version: "10.22.5"
+  version: "10.22.7"
   argument-hint: "<bug description or error message> [--escalate] [--phase <1-4>]"
   user-invocable: "true"
   context: "none"
@@ -36,6 +36,17 @@ A structured 4-phase approach to root cause investigation. Inspired by the super
 **CRITICAL**: Create the session directory and metadata files BEFORE any debugging work, codebase exploration, or analysis. This ensures all debug artifacts have a home from the start.
 
 ```
+0. Check for CAGENTS_SESSION_ID override:
+   - Read process.env.CAGENTS_SESSION_ID
+   - If set and non-empty: use it verbatim as SESSION_ID (skip steps 1-4 below)
+     - SESSION_DIR="Agent_Memory/sessions/${CAGENTS_SESSION_ID}"
+     - If SESSION_DIR already exists: this is a RESUME — skip session file creation
+       (instruction.yaml, status.yaml, agent_tree.yaml already exist).
+       Skip to Phase 1 (Root Cause Investigation).
+     - If SESSION_DIR does not exist: treat as new session — proceed with mkdir
+       and file creation using the env var value as SESSION_ID (skip to step 5 below)
+   - If not set or empty: proceed with auto-generation (steps 1-4 below)
+
 1. Generate a slug from the bug description: 2-6 key words, kebab-case, lowercase, max 50 chars
    Strip filler words (the, a, an, to, for, with, and, of). Example: "Auth token expiry bug" -> "auth-token-expiry-bug"
 2. Get compact date: YYMMDD (e.g., 260317)

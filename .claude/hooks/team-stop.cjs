@@ -42,11 +42,25 @@ createHook('TeamStop', async (input) => {
   if (timingContent) {
     const startMatch = timingContent.match(/started_at:\s*"([^"]+)"/);
     if (startMatch) {
-      metrics.duration_seconds = Math.round((new Date() - new Date(startMatch[1])) / 1000);
+      const startMs = new Date(startMatch[1]).getTime();
+      // Guard against NaN/negative: only compute if startMs is a valid timestamp
+      if (!isNaN(startMs) && startMs > 0) {
+        const elapsed = Math.round((Date.now() - startMs) / 1000);
+        metrics.duration_seconds = elapsed >= 0 ? elapsed : 0;
+      }
     }
-    let updated = timingContent
-      .replace(/completed_at:\s*null/, `completed_at: "${now}"`)
-      .replace(/total_duration_seconds:\s*\d+/, `total_duration_seconds: ${metrics.duration_seconds}`);
+    // Validate structure before overwriting: apply defaults for missing fields
+    let updated = timingContent;
+    if (!updated.includes('completed_at:')) {
+      updated += `\ncompleted_at: "${now}"`;
+    } else {
+      updated = updated.replace(/completed_at:\s*null/, `completed_at: "${now}"`);
+    }
+    if (!updated.includes('total_duration_seconds:')) {
+      updated += `\ntotal_duration_seconds: ${metrics.duration_seconds}`;
+    } else {
+      updated = updated.replace(/total_duration_seconds:\s*\d+/, `total_duration_seconds: ${metrics.duration_seconds}`);
+    }
     try { fs.writeFileSync(timingFile, updated); } catch (e) {
       console.error(`[TeamStop] Failed to write timing: ${e.message}`);
     }
@@ -65,7 +79,8 @@ createHook('TeamStop', async (input) => {
   if (statusContent) {
     const success = metrics.items_completed === metrics.items_total && metrics.items_total > 0;
     statusContent = statusContent
-      .replace(/phase:\s*\w+/, 'phase: completed')
+      .replace(/^phase:\s*\w+/m, 'phase: completed')
+      .replace(/^pipeline_state:\s*\S+/m, 'pipeline_state: VALIDATED')
       .replace(/completed_at:\s*null/, `completed_at: "${now}"`)
       .replace(/result:\s*null/, `result: ${success ? 'success' : 'partial'}`);
     try { fs.writeFileSync(statusFile, statusContent); } catch (e) {

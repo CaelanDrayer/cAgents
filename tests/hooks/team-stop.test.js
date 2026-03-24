@@ -53,6 +53,24 @@ describe('team-stop.cjs', () => {
     expect(status).toContain('phase: completed');
   });
 
+  it('should update pipeline_state to VALIDATED when status uses pipeline_state field', () => {
+    // Simulate a /run session that writes pipeline_state instead of phase
+    writeFileSync(join(SESSION_DIR, 'status.yaml'),
+      'pipeline_state: COORDINATED\ncreated_at: "2026-03-17T10:00:00Z"\ncompleted_at: null\nresult: null\n');
+    runHook({ session_id: TEST_SESSION });
+    const status = readFileSync(join(SESSION_DIR, 'status.yaml'), 'utf8');
+    expect(status).toContain('pipeline_state: VALIDATED');
+  });
+
+  it('should handle status with both phase and pipeline_state fields', () => {
+    writeFileSync(join(SESSION_DIR, 'status.yaml'),
+      'phase: executing\npipeline_state: COORDINATED\ncreated_at: "2026-03-17T10:00:00Z"\ncompleted_at: null\nresult: null\n');
+    runHook({ session_id: TEST_SESSION });
+    const status = readFileSync(join(SESSION_DIR, 'status.yaml'), 'utf8');
+    expect(status).toContain('phase: completed');
+    expect(status).toContain('pipeline_state: VALIDATED');
+  });
+
   it('should return summary with work item counts', () => {
     const result = runHook({ session_id: TEST_SESSION });
     expect(result.continue).toBe(true);

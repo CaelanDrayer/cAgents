@@ -16,12 +16,17 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findActiveSession, safeRead, extractYamlValue, AGENT_MEMORY_DIR, MAX_ATTENTION_CHARS } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, safeRead, extractYamlValue, withFileLock, AGENT_MEMORY_DIR, MAX_ATTENTION_CHARS } = require('./hook-utils.cjs');
 
 // Tool call counter for strategic compaction suggestions (v10.6.0)
 // Tracks calls per session to suggest /compact at phase transitions.
 const COMPACTION_THRESHOLD = 50; // Suggest compaction after this many tool calls
 const toolCallCountFile = path.join(AGENT_MEMORY_DIR, '_system', 'tool_call_count.json');
+
+// Injection cooldown: minimum tool calls between systemMessage injections (v10.22.6)
+// Prevents attention spam on every Write/Edit/Bash call during high-frequency workflows.
+const INJECTION_COOLDOWN = 5; // Minimum tool calls between injections
+const injectionCooldownFile = path.join(AGENT_MEMORY_DIR, '_system', 'injection_cooldown.json');
 
 function getToolCallCount(sessionId) {
   try {
@@ -35,18 +40,58 @@ function getToolCallCount(sessionId) {
 }
 
 function incrementToolCallCount(sessionId) {
-  let counts = {};
-  try {
-    const data = safeRead(toolCallCountFile);
-    if (data) counts = JSON.parse(data);
-  } catch { /* ignore */ }
-  counts[sessionId] = (counts[sessionId] || 0) + 1;
-  try {
-    const dir = path.dirname(toolCallCountFile);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(toolCallCountFile, JSON.stringify(counts));
-  } catch { /* ignore */ }
-  return counts[sessionId];
+  return withFileLock(toolCallCountFile, () => {
+    let counts = {};
+    try {
+      const data = safeRead(toolCallCountFile);
+      if (data) counts = JSON.parse(data);
+    } catch { /* ignore */ }
+    counts[sessionId] = (counts[sessionId] || 0) + 1;
+    try {
+      const dir = path.dirname(toolCallCountFile);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(toolCallCountFile, JSON.stringify(counts));
+    } catch { /* ignore */ }
+    return counts[sessionId];
+  });
+}
+
+function incrementInjectionCooldown(sessionId) {
+  return withFileLock(injectionCooldownFile, () => {
+    let counts = {};
+    try {
+      const data = safeRead(injectionCooldownFile);
+      if (data) counts = JSON.parse(data);
+    } catch { /* ignore */ }
+    // If undefined (first call for session), start at INJECTION_COOLDOWN + 1 so the
+    // very first injection fires immediately. After reset, subsequent calls increment
+    // from 0, reaching INJECTION_COOLDOWN on the 5th call.
+    counts[sessionId] = counts[sessionId] === undefined
+      ? INJECTION_COOLDOWN + 1
+      : counts[sessionId] + 1;
+    try {
+      const dir = path.dirname(injectionCooldownFile);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(injectionCooldownFile, JSON.stringify(counts));
+    } catch { /* ignore */ }
+    return counts[sessionId];
+  });
+}
+
+function resetInjectionCooldown(sessionId) {
+  withFileLock(injectionCooldownFile, () => {
+    let counts = {};
+    try {
+      const data = safeRead(injectionCooldownFile);
+      if (data) counts = JSON.parse(data);
+    } catch { /* ignore */ }
+    counts[sessionId] = 0;
+    try {
+      const dir = path.dirname(injectionCooldownFile);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(injectionCooldownFile, JSON.stringify(counts));
+    } catch { /* ignore */ }
+  });
 }
 
 /**
@@ -77,6 +122,17 @@ function extractPlanSummary(planContent) {
   return summary.length > 0 ? summary.join('\n') : null;
 }
 
+/**
+ * Strip control characters (char codes < 32) from a string and cap at maxLen.
+ * Prevents injection of escape sequences or ANSI codes from plan.yaml fields.
+ */
+function sanitizeField(value, maxLen = 200) {
+  if (!value) return value;
+  // eslint-disable-next-line no-control-regex
+  const stripped = value.replace(/[\x00-\x1F\x7F]/g, '');
+  return stripped.length > maxLen ? stripped.slice(0, maxLen) : stripped;
+}
+
 createHook('AttentionInjection', async (input) => {
   const toolName = input.tool_name || '';
 
@@ -91,10 +147,10 @@ createHook('AttentionInjection', async (input) => {
   const planContent = safeRead(planPath);
   if (!planContent) return null;
 
-  // Extract key fields
-  const mission = extractYamlValue(planContent, 'mission') || extractYamlValue(planContent, 'request');
-  const domain = extractYamlValue(planContent, 'domain') || extractYamlValue(planContent, 'super_domain');
-  const controller = extractYamlValue(planContent, 'primary') || extractYamlValue(planContent, 'controller');
+  // Extract key fields — sanitize to prevent control char injection, cap at 200 chars each
+  const mission = sanitizeField(extractYamlValue(planContent, 'mission') || extractYamlValue(planContent, 'request'));
+  const domain = sanitizeField(extractYamlValue(planContent, 'domain') || extractYamlValue(planContent, 'super_domain'));
+  const controller = sanitizeField(extractYamlValue(planContent, 'primary') || extractYamlValue(planContent, 'controller'));
 
   // Build concise goal reminder
   const planSummary = extractPlanSummary(planContent);
@@ -109,8 +165,26 @@ createHook('AttentionInjection', async (input) => {
   const coordPath = path.join(sessionDir, 'workflow', 'coordination_log.yaml');
   const coordContent = safeRead(coordPath);
   if (coordContent) {
-    const status = extractYamlValue(coordContent, 'status');
+    const rawStatus = extractYamlValue(coordContent, 'status');
+    const status = sanitizeField(rawStatus);
     if (status) reminder += `\nCoordination: ${status}`;
+  }
+
+  // Delegation mandate injection for pre-COORDINATED states (V10.22.6)
+  // Pipeline states before COORDINATED are phases where agents have not yet been spawned.
+  // Injecting a delegation reminder during these phases prevents self-handling rationalizations
+  // on every Write/Edit/Bash call before the controller gets to work.
+  const PRE_COORDINATED_STATES = ['INIT', 'ORCHESTRATED', 'PLANNED', 'DECOMPOSED', 'PROMPTS_READY'];
+  const statusPath = path.join(sessionDir, 'status.yaml');
+  const statusContent = safeRead(statusPath);
+  if (statusContent) {
+    const pipelineState = extractYamlValue(statusContent, 'pipeline_state');
+    if (pipelineState && PRE_COORDINATED_STATES.includes(pipelineState)) {
+      reminder += '\n[DELEGATION MANDATE] Pipeline state: ' + pipelineState + '. ' +
+        'Self-handling is FORBIDDEN. ALL work must be delegated to subagents via the Task tool. ' +
+        'Do NOT write code, edit files, or implement anything directly. ' +
+        'Spawn the next pipeline agent and wait for its output.';
+    }
   }
 
   // Only inject if we have meaningful content
@@ -120,6 +194,13 @@ createHook('AttentionInjection', async (input) => {
   // Track tool calls and suggest /compact at phase transitions
   const sessionId = path.basename(sessionDir);
   const callCount = incrementToolCallCount(sessionId);
+
+  // Injection cooldown (v10.22.6): skip systemMessage if fewer than INJECTION_COOLDOWN
+  // calls have elapsed since the last injection. Prevents attention spam on busy workflows.
+  const callsSinceLastInjection = await incrementInjectionCooldown(sessionId);
+  if (callsSinceLastInjection < INJECTION_COOLDOWN) {
+    return null;
+  }
 
   if (callCount > 0 && callCount % COMPACTION_THRESHOLD === 0) {
     // Check if we're at a phase transition (status just changed)
@@ -137,6 +218,9 @@ createHook('AttentionInjection', async (input) => {
   if (reminder.length > MAX_ATTENTION_CHARS) {
     reminder = reminder.slice(0, MAX_ATTENTION_CHARS - 3) + '...';
   }
+
+  // Reset injection cooldown — we're injecting now. Next INJECTION_COOLDOWN calls will be skipped.
+  resetInjectionCooldown(sessionId);
 
   return {
     continue: true,

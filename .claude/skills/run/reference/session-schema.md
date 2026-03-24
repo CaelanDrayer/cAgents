@@ -41,18 +41,45 @@ Slug generation: extract 2-6 key words from user request, kebab-case, strip fill
 
 Backward compatible: old sessions (`run_20260316_143022`) remain valid. The hook sorting logic extracts the last 2 underscore segments, which works for both old and new formats.
 
-## instruction.yaml (Required, All 6 Skills)
+## CAGENTS_SESSION_ID Environment Variable
+
+All 7 skills that create sessions (`/run`, `/org`, `/team`, `/designer`, `/review`, `/optimize`, `/debug`) check `process.env.CAGENTS_SESSION_ID` during session initialization before auto-generating a session ID.
+
+### Behavior
+
+| Condition | Action |
+|-----------|--------|
+| `CAGENTS_SESSION_ID` not set or empty | Auto-generate session ID using `{command}_{slug}_{YYMMDD}_{NNN}` format |
+| `CAGENTS_SESSION_ID` set, directory does not exist | Use env var value as SESSION_ID verbatim; create new session directory and write `instruction.yaml`, `status.yaml`, `agent_tree.yaml` |
+| `CAGENTS_SESSION_ID` set, directory already exists | Use env var value as SESSION_ID; **resume** the existing session -- skip creating `instruction.yaml`, `status.yaml`, `agent_tree.yaml` (they already exist) and proceed directly to skill work |
+
+### Use Cases
+
+- **AgentPath integration**: AgentPath spawns skills with a known session ID so it can display the session in the UI before execution begins
+- **Pipeline chaining**: Parent skills (e.g., `/org`) can pre-create a session ID and pass it to child skills
+- **Test fixtures**: Automated tests can inject deterministic session IDs for predictable artifact paths
+
+### Contract for instruction.yaml
+
+When `CAGENTS_SESSION_ID` is set and the directory does not exist (new session), the `session_id` field in `instruction.yaml` MUST match the env var value exactly:
+
+```yaml
+session_id: "{CAGENTS_SESSION_ID value}"   # Matches env var verbatim
+```
+
+## instruction.yaml (Required, All 7 Skills)
 
 Every skill writes this file with an identical schema at session creation.
 
 ```yaml
 session_id: "{SESSION_ID}"           # REQUIRED: Unique session identifier
-session_type: run|org|team|designer|optimize|review  # REQUIRED: Skill type
-command: /run|/org|/team|/designer|/optimize|/review  # REQUIRED: Skill command
+session_type: run|org|team|designer|optimize|review|debug  # REQUIRED: Skill type
+command: /run|/org|/team|/designer|/optimize|/review|/debug  # REQUIRED: Skill command
 request: "{user_request}"            # REQUIRED: Original user request text
 created_at: "{ISO_TIMESTAMP}"        # REQUIRED: ISO 8601 timestamp
 flags: {parsed_flags}                # REQUIRED: Object of parsed CLI flags
 parent_session_id: "{id}" | null     # REQUIRED: Parent session if nested, null otherwise
+issue_id: "{issue_id}" | null        # OPTIONAL: AgentPath issue ID (set from AGENTPATH_ISSUE_ID env var by session-catchup.cjs)
 metadata:
   working_directory: "{CWD}"         # REQUIRED: Working directory at session creation
 ```
@@ -66,7 +93,7 @@ metadata:
 - **/optimize**: Same as standard.
 - **/review**: Same as standard.
 
-## status.yaml (Required, All 6 Skills)
+## status.yaml (Required, All 7 Skills)
 
 Tracks the current pipeline/phase state and full state history with timing.
 
@@ -285,7 +312,7 @@ claude --plugin-dir ${config.cAgentsPluginDir} /run "request"
 
 This ensures the cAgents plugin is loaded and all skills, hooks, and agents are available. Without `--plugin-dir`, spawned sessions would not have access to cAgents capabilities.
 
-**Implementation reference**: `/home/PathingIT/Company/agentpath/server/src/services/execution-service.ts` lines 160-165.
+**Implementation reference**: `agentpath/server/src/services/execution-service.ts` lines 160-165.
 
 ---
 

@@ -1,37 +1,41 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, rmSync, writeFileSync, mkdtempSync } from 'fs';
 import { join } from 'path';
+import { tmpdir } from 'os';
 import { execSync } from 'child_process';
 
 const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
 const HOOK_PATH = join(HOOKS_DIR, 'teammate-idle-handler.cjs');
-const AGENT_MEMORY = join(process.cwd(), 'Agent_Memory');
 const TEST_SESSION = 'team_test-idle_260317_999';
-const SESSION_DIR = join(AGENT_MEMORY, 'sessions', TEST_SESSION);
+
+let TEST_ROOT;
+let SESSION_DIR;
 
 function runHook(input) {
   const result = execSync(
     `printf '%s' '${JSON.stringify(input).replace(/'/g, "'\\''")}' | node "${HOOK_PATH}"`,
-    { encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'] }
+    { encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'], env: { ...process.env, CLAUDE_PROJECT_DIR: TEST_ROOT } }
   );
   return JSON.parse(result.trim());
 }
 
 describe('teammate-idle-handler.cjs', () => {
   beforeEach(() => {
+    TEST_ROOT = mkdtempSync(join(tmpdir(), 'cagents-idle-test-'));
+    SESSION_DIR = join(TEST_ROOT, 'Agent_Memory', 'sessions', TEST_SESSION);
     mkdirSync(join(SESSION_DIR, 'team'), { recursive: true });
     writeFileSync(join(SESSION_DIR, 'status.yaml'), 'phase: executing\n');
   });
 
   afterEach(() => {
-    rmSync(SESSION_DIR, { recursive: true, force: true });
+    rmSync(TEST_ROOT, { recursive: true, force: true });
   });
 
   it('should exist', () => {
     expect(existsSync(HOOK_PATH)).toBe(true);
   });
 
-  it('should return continue true when no team session', () => {
+  it('should return continue true when no team session found', () => {
     rmSync(SESSION_DIR, { recursive: true, force: true });
     const result = runHook({});
     expect(result.continue).toBe(true);
@@ -65,9 +69,7 @@ describe('teammate-idle-handler.cjs', () => {
     writeFileSync(join(SESSION_DIR, 'team', 'task_list.yaml'),
       `items:\n  - id: "WI-01"\n    name: "Blocker"\n    status: in_progress\n    dependencies: []\n  - id: "WI-02"\n    name: "Blocked"\n    status: available\n    dependencies: ["WI-01"]\n`);
     const result = runHook({ session_id: TEST_SESSION, teammate_name: 'worker-1' });
-    // WI-02 is blocked by WI-01 (in_progress), so no available items
     expect(result.continue).toBe(true);
-    // Should not suggest WI-02 since its dependency is not completed
     if (result.systemMessage) {
       expect(result.systemMessage).not.toContain('WI-02');
     }

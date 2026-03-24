@@ -1,3 +1,11 @@
+---
+paths:
+  - "**/agents/**/*.md"
+  - ".claude/skills/**"
+  - "Agent_Memory/sessions/**/workflow/coordination_log.yaml"
+  - "Agent_Memory/sessions/**/workflow/plan.yaml"
+---
+
 # Controller Coordination Guidelines
 
 Question-based delegation patterns for controllers with v10 agent chaining support.
@@ -206,6 +214,16 @@ implementation_tasks:
 ## Agent ID Tracking
 
 When controllers spawn execution agents via Task tool, they MUST record the returned `agent_id` in the coordination_log's `implementation_tasks` entry. This links work items to `agent_tree.yaml` entries, enabling AgentPath to show which agent handled which work item.
+
+When calling the Task tool to spawn an execution agent, include `subagent_type` set to the `cagents:{name}` identifier. This ensures the SubagentTracker hook can record the agent type in the audit trail without falling back to description parsing.
+
+```
+Task(
+  description: "...",
+  subagent_type: "cagents:backend-developer",  # REQUIRED: enables full audit trail
+  ...
+)
+```
 
 ```yaml
 implementation_tasks:

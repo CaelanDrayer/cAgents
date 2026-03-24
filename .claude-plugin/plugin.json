@@ -1,6 +1,7 @@
 {
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "cagents",
-  "version": "10.22.6",
+  "version": "10.22.7",
   "description": "214 agents across 8 domains. /run executes any task, /team runs parallel agents, /org coordinates cross-domain strategy, /designer explores before building, /review audits quality, /optimize improves performance, /helper guides usage, /context shares knowledge.",
   "author": {
     "name": "CaelanDrayer",
@@ -222,7 +223,7 @@
     "./leadership/agents/cro/SKILL.md",
     "./leadership/agents/cso/SKILL.md",
     "./leadership/agents/cto/SKILL.md",
-    "./leadership/agents/general-counsel/SKILL.md",
+    "./leadership/agents/chief-legal-officer/SKILL.md",
     "./shared/agents/bi-specialist/SKILL.md",
     "./shared/agents/competitive-intelligence-analyst/SKILL.md",
     "./shared/agents/data-scientist/SKILL.md",

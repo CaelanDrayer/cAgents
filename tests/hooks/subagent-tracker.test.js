@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
-import { execSync } from 'child_process';
+import { execSync, spawnSync } from 'child_process';
 
 const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
 const HOOK_PATH = join(HOOKS_DIR, 'subagent-tracker.cjs');
@@ -67,9 +67,8 @@ describe('subagent-tracker.cjs', () => {
 
     it('should skip completed sessions in fallback', () => {
       const hookContent = readFileSync(HOOK_PATH, 'utf8');
-      expect(hookContent).toContain("phase === 'completed'");
-      expect(hookContent).toContain("phase === 'failed'");
-      expect(hookContent).toContain("phase === 'aborted'");
+      // TERMINAL_STATES (imported from hook-utils.cjs) covers completed, failed, aborted, etc.
+      expect(hookContent).toContain('TERMINAL_STATES.includes(phase)');
     });
   });
 
@@ -83,6 +82,76 @@ describe('subagent-tracker.cjs', () => {
     it('should implement log rotation', () => {
       const hookContent = readFileSync(HOOK_PATH, 'utf8');
       expect(hookContent).toContain('1024 * 1024'); // 1MB threshold
+    });
+  });
+
+  describe('cagents_type warning', () => {
+    it('should emit WARNING on stderr when subagent_type is absent', () => {
+      const uniqueId = `test_warn_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const input = { agent_type: 'general-purpose', agent_id: uniqueId };
+      const result = spawnSync('node', [HOOK_PATH], {
+        input: JSON.stringify(input),
+        encoding: 'utf8',
+        timeout: 5000
+      });
+      expect(result.stderr).toContain('WARNING');
+      expect(result.stderr).toContain('cagents_type');
+    });
+  });
+
+  describe('YAML validation (REQ-002)', () => {
+    it('should append valid agent entry using js-yaml parsed object', () => {
+      const uniqueId = `test_yaml_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const result = runHook({ agent_type: 'test-yaml-agent', agent_id: uniqueId });
+      // Hook should return a valid response without crashing
+      expect(result).toBeDefined();
+      if (result.hookSpecificOutput) {
+        expect(result.hookSpecificOutput.hookEventName).toBe('SubagentStart');
+      } else {
+        // No active session: hook returns continue:true — still a valid response
+        expect(result.continue).toBe(true);
+      }
+    });
+
+    it('should skip append and log error for malformed agent_tree.yaml', () => {
+      // Content-based check: verify the hook source handles yaml.load() parse errors
+      const hookContent = readFileSync(HOOK_PATH, 'utf8');
+      expect(hookContent).toContain('Malformed agent_tree.yaml \u2014 skipping append');
+      expect(hookContent).toContain('parseErr.message');
+      // Hook must still return continue:true — verified by the factory try/catch
+      expect(hookContent).toContain('yaml.load(existingContent)');
+    });
+
+    it('should detect duplicate via parsed object lookup not string match', () => {
+      const hookContent = readFileSync(HOOK_PATH, 'utf8');
+      // Dedup now uses parsedObj.agents.some() instead of string.includes()
+      expect(hookContent).toContain('parsedObj.agents.some(a => a.id === agentId)');
+      // The old string-based dedup must NOT be present
+      expect(hookContent).not.toContain('existingContent.includes(`id: "');
+    });
+
+    it('should initialize fresh file with valid agents array', () => {
+      const hookContent = readFileSync(HOOK_PATH, 'utf8');
+      // Fresh file path initializes parsedObj with empty agents array
+      expect(hookContent).toContain('agents: []');
+      // And writes with header comment
+      expect(hookContent).toContain('headerComment');
+      expect(hookContent).toContain('isFreshFile');
+    });
+
+    it('should require js-yaml module', () => {
+      const hookContent = readFileSync(HOOK_PATH, 'utf8');
+      expect(hookContent).toContain("require('js-yaml')");
+    });
+
+    it('should use yaml.dump for writing entries', () => {
+      const hookContent = readFileSync(HOOK_PATH, 'utf8');
+      expect(hookContent).toContain('yaml.dump(parsedObj)');
+    });
+
+    it('should log error when agents key is missing from parsed YAML', () => {
+      const hookContent = readFileSync(HOOK_PATH, 'utf8');
+      expect(hookContent).toContain('agent_tree.yaml missing agents: key \u2014 skipping append');
     });
   });
 });

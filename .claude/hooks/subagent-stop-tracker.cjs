@@ -141,13 +141,27 @@ createHook('SubagentStopTracker', async (input) => {
       }
 
       if (insertedStop) {
-        // PC-12: Structured completion_summary with outcome field
+        // PC-12: Structured completion_summary with outcome, key_decisions, and detail fields
         const summaryLines = [];
         if (lastMessage) {
           const firstSentence = lastMessage.split(/[.!?\n]/)[0].trim().slice(0, 100);
           const outcome = firstSentence || 'Completed';
           summaryLines.push(`    completion_summary:`);
           summaryLines.push(`      outcome: "${outcome.replace(/"/g, '\\"')}"`);
+          // Extract key decisions from bullet/numbered items in the message
+          const decisionLines = lastMessage.split('\n')
+            .filter(l => /^\s*[-*\d]/.test(l))
+            .map(l => l.replace(/^\s*[-*\d.]+\s*/, '').trim().slice(0, 80))
+            .filter(Boolean)
+            .slice(0, 3);
+          if (decisionLines.length > 0) {
+            summaryLines.push(`      key_decisions:`);
+            for (const d of decisionLines) {
+              summaryLines.push(`        - "${d.replace(/"/g, '\\"')}"`);
+            }
+          } else {
+            summaryLines.push(`      key_decisions: []`);
+          }
           summaryLines.push(`      detail: "${lastMessage.replace(/"/g, '\\"').slice(0, 300)}"`);
         }
         // Calculate duration from spawned_at if available
@@ -173,7 +187,15 @@ createHook('SubagentStopTracker', async (input) => {
         if (lastMessage) {
           const firstSentence = lastMessage.split(/[.!?\n]/)[0].trim().slice(0, 100);
           const outcome = firstSentence || 'Completed';
-          extra = `\n    completion_summary:\n      outcome: "${outcome.replace(/"/g, '\\"')}"\n      detail: "${lastMessage.replace(/"/g, '\\"').slice(0, 300)}"`;
+          const decisionLines = lastMessage.split('\n')
+            .filter(l => /^\s*[-*\d]/.test(l))
+            .map(l => l.replace(/^\s*[-*\d.]+\s*/, '').trim().slice(0, 80))
+            .filter(Boolean)
+            .slice(0, 3);
+          const keyDecisionsYaml = decisionLines.length > 0
+            ? `\n      key_decisions:\n${decisionLines.map(d => `        - "${d.replace(/"/g, '\\"')}"`).join('\n')}`
+            : `\n      key_decisions: []`;
+          extra = `\n    completion_summary:\n      outcome: "${outcome.replace(/"/g, '\\"')}"${keyDecisionsYaml}\n      detail: "${lastMessage.replace(/"/g, '\\"').slice(0, 300)}"`;
         }
         fs.appendFileSync(treeFile, `    stopped_at: "${now}"${extra}\n`);
         console.error(`[SubagentStopTracker] Agent ${agentId} (${subagentType}) stopped (appended)`);
@@ -182,6 +204,44 @@ createHook('SubagentStopTracker', async (input) => {
       console.error(`[SubagentStopTracker] Agent ${agentId} not found in agent_tree.yaml, logging stop event only`);
     }
   });
+
+  // --- Agent performance JSONL logging ---
+  try {
+    const knowledgeDir = path.join(AGENT_MEMORY_DIR, '_knowledge', 'learning');
+    fs.mkdirSync(knowledgeDir, { recursive: true });
+
+    // Read agent_tree to extract duration and cagents_type for this agent
+    let durationSeconds = null;
+    let cagentsType = null;
+    if (sessionDir) {
+      const treeContent = safeRead(path.join(sessionDir, 'workflow', 'agent_tree.yaml'));
+      if (treeContent) {
+        const agentBlockMatch = treeContent.match(new RegExp(`id: "${agentId}"[\\s\\S]*?(?=\\n  - id:|$)`));
+        if (agentBlockMatch) {
+          const block = agentBlockMatch[0];
+          const durationMatch = block.match(/duration_seconds:\s*(\d+)/);
+          if (durationMatch) durationSeconds = parseInt(durationMatch[1], 10);
+          const cagentsMatch = block.match(/cagents_type:\s*"?([^"\n]+)"?/);
+          if (cagentsMatch) cagentsType = cagentsMatch[1].trim();
+        }
+      }
+    }
+
+    const sessionName = sessionDir ? path.basename(sessionDir) : (input.session_id || 'unknown');
+    const perfEntry = {
+      agent_type: subagentType,
+      cagents_type: cagentsType || null,
+      duration_seconds: durationSeconds,
+      session_id: sessionName,
+      completion_summary: (lastMessage || '').slice(0, 200),
+      timestamp: now
+    };
+
+    const perfFile = path.join(knowledgeDir, 'agent_performance.jsonl');
+    fs.appendFileSync(perfFile, JSON.stringify(perfEntry) + '\n');
+  } catch (err) {
+    console.error(`[SubagentStopTracker] Performance logging failed (non-fatal): ${err.message}`);
+  }
 
   return null;
 });

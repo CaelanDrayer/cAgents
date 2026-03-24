@@ -1,7 +1,23 @@
 {
-  "name": "cagents-people",
-  "version": "10.22.6",
+  "name": "@cagents/people",
+  "version": "10.22.7",
   "description": "cAgents people domain - 19 HR, talent acquisition, culture, and people operations agents",
+  "author": {
+    "name": "CaelanDrayer",
+    "email": "caelan@caelandrayer.ca",
+    "url": "https://github.com/CaelanDrayer"
+  },
+  "homepage": "https://github.com/CaelanDrayer/cAgents",
+  "repository": "https://github.com/CaelanDrayer/cAgents",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "people",
+    "hr",
+    "talent-acquisition",
+    "culture",
+    "employee-relations"
+  ],
   "agents": [
     "./agents/benefits-administrator/SKILL.md",
     "./agents/compensation-analyst/SKILL.md",

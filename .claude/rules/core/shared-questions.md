@@ -1,3 +1,10 @@
+---
+paths:
+  - "**/config/planner_config.yaml"
+  - "**/config/domain_overrides.yaml"
+  - "core/agents/universal-planner/**"
+---
+
 # Shared Question Patterns
 
 Standard questions used across all controllers in planner_config.yaml files.

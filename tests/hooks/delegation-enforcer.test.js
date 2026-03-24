@@ -7,10 +7,12 @@ const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
 const HOOK_PATH = join(HOOKS_DIR, 'delegation-enforcer.cjs');
 
 function runHook(input) {
-  const result = execSync(
-    `printf '%s' '${JSON.stringify(input).replace(/'/g, "'\\''")}' | node "${HOOK_PATH}"`,
-    { encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'] }
-  );
+  const result = execSync(`node "${HOOK_PATH}"`, {
+    encoding: 'utf8',
+    timeout: 5000,
+    input: JSON.stringify(input),
+    stdio: ['pipe', 'pipe', 'pipe']
+  });
   return JSON.parse(result.trim());
 }
 
@@ -19,61 +21,91 @@ describe('delegation-enforcer.cjs', () => {
     expect(existsSync(HOOK_PATH)).toBe(true);
   });
 
-  it('should return continue true for non-Task tools', () => {
-    const result = runHook({ tool_name: 'Bash', tool_input: {} });
-    expect(result.continue).toBe(true);
+  describe('/run invocation detection', () => {
+    it('should inject delegation mandate for /run', () => {
+      const result = runHook({ user_prompt: '/run Fix auth bug' });
+      expect(result.hookSpecificOutput).toBeDefined();
+      expect(result.hookSpecificOutput.hookEventName).toBe('UserPromptSubmit');
+      expect(result.hookSpecificOutput.additionalContext).toContain('DELEGATION ENFORCEMENT ACTIVE');
+      expect(result.hookSpecificOutput.additionalContext).toContain('/run');
+    });
+
+    it('should inject delegation mandate for bare /run', () => {
+      const result = runHook({ user_prompt: '/run' });
+      expect(result.hookSpecificOutput.additionalContext).toContain('PIPELINE MANDATORY');
+    });
   });
 
-  it('should pass through non-cagents agents', () => {
-    const result = runHook({
-      tool_name: 'Task',
-      tool_input: { subagent_type: 'custom-agent', description: 'test' }
+  describe('/team invocation detection', () => {
+    it('should inject delegation mandate for /team', () => {
+      const result = runHook({ user_prompt: '/team Build dashboard with tests' });
+      expect(result.hookSpecificOutput).toBeDefined();
+      expect(result.hookSpecificOutput.additionalContext).toContain('DELEGATION ENFORCEMENT ACTIVE');
+      expect(result.hookSpecificOutput.additionalContext).toContain('/team');
     });
-    expect(result.continue).toBe(true);
   });
 
-  it('should pass through when no model specified', () => {
-    const result = runHook({
-      tool_name: 'Task',
-      tool_input: { subagent_type: 'cagents:backend-developer', description: 'test' }
+  describe('/org invocation detection', () => {
+    it('should inject delegation mandate for /org', () => {
+      const result = runHook({ user_prompt: '/org Launch new product' });
+      expect(result.hookSpecificOutput).toBeDefined();
+      expect(result.hookSpecificOutput.additionalContext).toContain('DELEGATION ENFORCEMENT ACTIVE');
+      expect(result.hookSpecificOutput.additionalContext).toContain('/org');
     });
-    expect(result.continue).toBe(true);
   });
 
-  it('should pass through correct model for execution agent', () => {
-    const result = runHook({
-      tool_name: 'Task',
-      tool_input: { subagent_type: 'cagents:backend-developer', model: 'sonnet', description: 'test' }
+  describe('non-skill prompts', () => {
+    it('should no-op for regular prompts', () => {
+      const result = runHook({ user_prompt: 'Fix the auth bug in login.ts' });
+      expect(result).toEqual({ continue: true });
     });
-    expect(result.continue).toBe(true);
-    expect(result.systemMessage).toBeUndefined();
+
+    it('should no-op for empty prompts', () => {
+      const result = runHook({ user_prompt: '' });
+      expect(result).toEqual({ continue: true });
+    });
+
+    it('should no-op for non-enforced skills', () => {
+      const result = runHook({ user_prompt: '/review Check code quality' });
+      expect(result).toEqual({ continue: true });
+    });
+
+    it('should no-op when no prompt field exists', () => {
+      const result = runHook({});
+      expect(result).toEqual({ continue: true });
+    });
   });
 
-  it('should warn on wrong model for execution agent', () => {
-    const result = runHook({
-      tool_name: 'Task',
-      tool_input: { subagent_type: 'cagents:backend-developer', model: 'haiku', description: 'test' }
+  describe('rationalization kill list content', () => {
+    it('should include rationalization phrases in the mandate', () => {
+      const result = runHook({ user_prompt: '/run Build testing framework' });
+      const ctx = result.hookSpecificOutput.additionalContext;
+      expect(ctx).toContain('documentation task');
+      expect(ctx).toContain('planning task');
+      expect(ctx).toContain('handle this directly');
+      expect(ctx).toContain('too simple');
+      expect(ctx).toContain('spinning up agents');
+      expect(ctx).toContain('more efficiently myself');
     });
-    expect(result.continue).toBe(true);
-    expect(result.systemMessage).toContain('DelegationEnforcer');
-    expect(result.systemMessage).toContain('routing advisory');
+
+    it('should include violation consequence warning', () => {
+      const result = runHook({ user_prompt: '/run Fix typo' });
+      const ctx = result.hookSpecificOutput.additionalContext;
+      expect(ctx).toContain('VIOLATION CONSEQUENCE');
+      expect(ctx).toContain('critical protocol failure');
+    });
   });
 
-  it('should pass through correct model for controller', () => {
-    const result = runHook({
-      tool_name: 'Task',
-      tool_input: { subagent_type: 'cagents:engineering-manager', model: 'opusplan', description: 'test' }
+  describe('prompt format edge cases', () => {
+    it('should detect /run with leading whitespace', () => {
+      const result = runHook({ user_prompt: '  /run Fix something' });
+      expect(result.hookSpecificOutput).toBeDefined();
+      expect(result.hookSpecificOutput.additionalContext).toContain('DELEGATION ENFORCEMENT ACTIVE');
     });
-    expect(result.continue).toBe(true);
-    expect(result.systemMessage).toBeUndefined();
-  });
 
-  it('should warn on wrong model for controller', () => {
-    const result = runHook({
-      tool_name: 'Task',
-      tool_input: { subagent_type: 'cagents:engineering-manager', model: 'haiku', description: 'test' }
+    it('should detect /run with newline after command', () => {
+      const result = runHook({ user_prompt: '/run\nFix the auth module' });
+      expect(result.hookSpecificOutput).toBeDefined();
     });
-    expect(result.continue).toBe(true);
-    expect(result.systemMessage).toContain('routing advisory');
   });
 });

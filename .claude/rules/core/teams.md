@@ -4,6 +4,7 @@ paths:
   - ".claude/skills/team/**"
   - ".claude/hooks/team-*.cjs"
   - ".claude/hooks/teammate-*.cjs"
+  - "Agent_Memory/sessions/team_*/**"
 ---
 
 # Team Coordination Patterns

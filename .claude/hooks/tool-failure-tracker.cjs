@@ -13,7 +13,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findActiveSession, safeRead, ensureDir } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, safeRead, ensureDir, withFileLock } = require('./hook-utils.cjs');
 
 const TOOL_ALTERNATIVES = {
   'Bash': 'Consider using Read/Write/Glob/Grep dedicated tools instead of shell commands.',
@@ -109,11 +109,13 @@ createHook('ToolFailureTracker', async (input) => {
   const filePathLine = filePath ? `\n  file_path: "${filePath.replace(/"/g, "'")}"` : '';
   const newEntry = `\n- tool: "${toolName}"${filePathLine}\n  error: "${safeError}"\n  timestamp: "${now}"\n  agent_id: "${agentId}"\n  recoverable: ${isRecoverable}\n`;
 
-  if (!existingContent) {
-    fs.writeFileSync(failureFile, `# Tool Failure Log\n# Session: ${path.basename(sessionDir)}\n\nfailures:${newEntry}`);
-  } else {
-    fs.appendFileSync(failureFile, newEntry);
-  }
+  withFileLock(failureFile, () => {
+    if (!existingContent) {
+      fs.writeFileSync(failureFile, `# Tool Failure Log\n# Session: ${path.basename(sessionDir)}\n\nfailures:${newEntry}`);
+    } else {
+      fs.appendFileSync(failureFile, newEntry);
+    }
+  });
 
   console.error(`[ToolFailureTracker] ${toolName} failed: ${safeError.slice(0, 80)}`);
 

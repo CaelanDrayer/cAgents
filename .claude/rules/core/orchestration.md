@@ -1,3 +1,12 @@
+---
+paths:
+  - ".claude/skills/run/**"
+  - ".claude/skills/org/**"
+  - ".claude/skills/team/**"
+  - "Agent_Memory/_system/config/pipeline_config.yaml"
+  - "core/agents/**"
+---
+
 # Orchestration Patterns
 
 Workflow orchestration guidelines for cAgents.

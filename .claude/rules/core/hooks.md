@@ -6,13 +6,13 @@ paths:
 
 # cAgents Hook System
 
-V10.18.0 CJS-only hook architecture with 18 registered hooks + 1 CLI tool across 15 event types (of 17 total Claude Code event types), `createHook()` factory pattern, agent audit trail with completion summaries, attention injection for goal refresh, magic keywords (UserPromptSubmit), delegation enforcer (PreToolUse[Task]), sentinel gate factchecking, plan-scoped learning capture, context auto-check, clean team lifecycle (`continue:false` + `stopReason` for TeammateIdle/TaskCompleted), and resilient path resolution. Supports command, http, prompt, and agent hook types, async execution, and matcher-based filtering.
+V10.18.0 CJS-only hook architecture with 21 registered hooks + 1 CLI tool across 14 event types (of 17 total Claude Code event types), `createHook()` factory pattern, agent audit trail with completion summaries, attention injection for goal refresh, magic keywords (UserPromptSubmit), model routing advisor (PreToolUse[Task]), session init gate (PreToolUse[Task]), approval gate (PreToolUse[Bash|Write|Edit]), delegation enforcer (UserPromptSubmit), sentinel gate factchecking, plan-scoped learning capture, context auto-check, clean team lifecycle (`continue:false` + `stopReason` for TeammateIdle/TaskCompleted), and resilient path resolution. Supports command, http, prompt, and agent hook types, async execution, and matcher-based filtering.
 
 ## Architecture
 
 cAgents uses a unified CJS hook system configured in `.claude/settings.json`:
 
-- **CJS hooks** (`.claude/hooks/`): 21 `.cjs` files -- 1 shared utility module (`hook-utils.cjs`) + 1 hook launcher (`run-hook.cjs`) + 18 registered hooks + 1 standalone CLI tool (`eval-runner.cjs`). All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output).
+- **CJS hooks** (`.claude/hooks/`): 24 `.cjs` files -- 1 shared utility module (`hook-utils.cjs`) + 1 hook launcher (`run-hook.cjs`) + 21 registered hooks + 1 standalone CLI tool (`eval-runner.cjs`). All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output).
 - **Prompt hooks**: None currently active. The Stop prompt hook was removed in V9.6.2 due to unreliable LLM JSON responses causing recurring validation failures. The `verify-completion.cjs` command hook provides equivalent file-based verification.
 - **Self-contained invocation via run-hook.cjs**: All hooks are called via `bash -c 'R="${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"; node "$R/.claude/hooks/run-hook.cjs" <hook-name>'` -- a bash wrapper with a 3-tier fallback chain that resolves the plugin root, then launches `run-hook.cjs` which resolves the target hook path using `__dirname`. V9.17.1 switched from bare `node "${CLAUDE_PLUGIN_ROOT}"/.claude/hooks/run-hook.cjs` (which fails with MODULE_NOT_FOUND when `CLAUDE_PLUGIN_ROOT` is not expanded) to a `bash -c` wrapper with fallback chain: `CLAUDE_PLUGIN_ROOT` (official plugin env var) -> `CLAUDE_PROJECT_DIR` (user's project dir, works for local dev) -> `pwd` (last resort). Previous V9.13 approach used `${CLAUDE_PLUGIN_ROOT}` directly in the command string, but this fails when the env var is not set (e.g., in certain subagent contexts, SessionEnd events, or non-plugin installations).
 
@@ -46,14 +46,14 @@ The V9.5 refactoring eliminates the dual shell+JS architecture that caused recur
 
 ## Hook Types Overview
 
-Claude Code supports 17 hook event types. cAgents implements 18 registered hooks across 15 of these events. Two events (`ConfigChange`, `WorktreeCreate`, `WorktreeRemove`) have no cAgents hooks but are available for custom use.
+Claude Code supports 17 hook event types. cAgents implements 21 registered hooks across 14 of these events. Three events (`ConfigChange`, `WorktreeCreate`, `WorktreeRemove`) have no cAgents hooks but are available for custom use.
 
 | Hook Type | Trigger | cAgents Hook | Purpose |
 |-----------|---------|--------------|---------|
 | `SessionStart` | Session begins/resumes | `session-catchup.cjs` | Initialize state, detect incomplete sessions, inject cAgents context, context auto-check |
 | `SessionEnd` | Session ends | `team-stop.cjs` | Finalize metrics, update status |
-| `UserPromptSubmit` | User submits prompt | `magic-keywords.cjs` | Natural language routing suggestions (build->run, review->review, etc.) |
-| `PreToolUse` | Before tool execution | `bash-validator.cjs`, `secret-detection.cjs`, `attention-injection.cjs`, `delegation-enforcer.cjs` | Validate, block dangerous operations, refresh goals, model routing advisory |
+| `UserPromptSubmit` | User submits prompt | `delegation-enforcer.cjs`, `magic-keywords.cjs` | Enforce delegation rules, natural language routing suggestions (build->run, review->review, etc.) |
+| `PreToolUse` | Before tool execution | `bash-validator.cjs`, `secret-detection.cjs`, `attention-injection.cjs`, `approval-gate.cjs`, `session-init-gate.cjs`, `model-routing-advisor.cjs` | Validate, block dangerous operations, refresh goals, enforce approval gates, session init guard, model routing advisory |
 | `PermissionRequest` | Permission dialog | `permission-handler.cjs` | Auto-approve safe patterns, HITL gates |
 | `PostToolUse` | After tool execution | `post-write-validator.cjs` | Validate JSON/YAML syntax, audit file changes |
 | `PostToolUseFailure` | Tool execution fails | `tool-failure-tracker.cjs` | Track failures, detect patterns, suggest recovery |
@@ -139,12 +139,15 @@ createHook('MyHook', async (input) => {
 - **Matcher**: `Bash`
 - **Purpose**: Block dangerous bash commands
 - **Blocked** (deny): `rm -rf /`, `rm -rf ~`, fork bombs, `mkfs`, `dd if=/dev/zero`, `> /dev/sda`, `sudo`
+- **Blocked** (deny, data exfiltration): `curl` with POST data, `wget --post-file`, `nc`/`netcat` pipes, `socat`
+- **Blocked** (deny, obfuscation): `base64 -d | bash/sh`, `eval "$(..."`, `python3 -c` with `os.system` or `subprocess`, `perl -e` with `system`
+- **Obfuscation detection limitation**: Patterns use static regex matching against the literal command string. Runtime-constructed obfuscation (e.g., variables holding command fragments, heredoc-built payloads, or multi-step obfuscation across separate commands) cannot be detected. Only known static patterns are caught.
 - **Warned** (allow + message): destructive git commands (`--force`, `reset --hard`, `clean -fd`)
 
 #### PreToolUse[Write|Edit]: secret-detection.cjs
 - **Matcher**: `Write|Edit`
 - **Purpose**: Block writes to protected paths and detect secrets
-- **Three phases**: (1) Protected path check, (2) Sensitive file warning, (3) Secret scanning
+- **Three phases**: (1) Protected path check, (2) Sensitive file warning (`.env` and similar filenames — warns only, does not block), (3) Secret scanning (pattern matching — blocks on critical/high severity)
 - **Blocked**: System paths (`/etc/`, `/usr/`, `~/.ssh/`), files with critical/high secrets
 
 #### PreToolUse[Write|Edit|Bash]: attention-injection.cjs
@@ -393,11 +396,15 @@ The secret detection hook (`secret-detection.cjs`) blocks these patterns:
 
 ### False Positive Filtering
 
-Skipped for:
-- Test files (`*.test.js`, `*.spec.ts`, etc.)
-- Documentation files (`*.md`, `README`, etc.)
-- Lock files (`package-lock.json`, etc.)
-- Example/sample/template/mock files
+Blanket-excluded (entire file skipped):
+- Documentation files (`*.md`, `README`, docs/ directories)
+- Lock files (`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`)
+- Example/sample/template/mock/fixture files (by filename pattern)
+
+Test file scanning (targeted suppression, not blanket exclusion):
+- Test files (`*.test.js`, `*.spec.ts`, `__tests__/`, etc.) ARE scanned for real secrets
+- Explicit placeholder tokens suppressed: `test_`, `fake_`, `example_`, `your_key_here`, `REPLACE_ME` (matched against the token itself)
+- Realistic-looking tokens in test files trigger alerts normally
 
 ## Creating Custom Hooks
 

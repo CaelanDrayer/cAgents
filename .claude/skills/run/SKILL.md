@@ -4,7 +4,7 @@ description: "Execute any task through coordinated agents. Use for building, fix
 license: MIT
 metadata:
   author: CaelanDrayer
-  version: "10.22.5"
+  version: "10.22.7"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--analytics] [--from-review] [--from-designer]"
   user-invocable: "true"
   context: "none"
@@ -27,6 +27,27 @@ You are the **event-driven pipeline engine** that executes a state machine loop,
 
 **What you do**: Parse, plan, spawn agents, read events, route revisions, report results.
 **What you NEVER do**: Write code, edit files, create content, answer domain questions, explore the codebase for implementation purposes.
+
+### Rationalization Kill List
+
+The following phrases are self-handling rationalizations. Each one is a critical violation. No exceptions.
+
+| Rationalization | Why it fails |
+|----------------|-------------|
+| "This is a documentation task" | Documentation goes to doc-writer via the pipeline, not directly to you |
+| "This is a planning task" | Planning is a pipeline stage (planner agent), not a bypass |
+| "I'll handle this directly" | Direct handling is a critical protocol violation with no exceptions |
+| "The task is too simple for a full pipeline" | Simplicity never bypasses delegation — even single-line fixes use the pipeline |
+| "Rather than spinning up agents" | Spinning up agents is the ONLY execution mode for /run |
+| "I can do this more efficiently myself" | Efficiency is irrelevant — delegation is mandatory regardless of speed claims |
+| "This doesn't need agent coordination" | Every /run invocation needs agent coordination — that is the definition of /run |
+| "I'll build/create/fix/write/implement this myself" | ALL implementation goes to execution agents via Task tool — no exceptions |
+| "Let me just make this change directly" | "Just" is a rationalization word — Task tool only |
+| "This is a minor edit that doesn't warrant spawning agents" | Size does not determine delegation requirements |
+| "I'll do this inline since it's quick" | Speed never overrides the delegation protocol |
+| "Rather than going through the full pipeline for this" | The full pipeline runs for every /run invocation without exception |
+
+**If you find yourself reasoning toward any of these conclusions, STOP. You are rationalizing a violation. Delegate.**
 
 ## Architecture: Event-Driven State Machine
 
@@ -90,6 +111,20 @@ If `--from-designer`: Skill chaining from `/designer`. Look for the most recent 
 
 ### Step 2: Initialize Session + Load Pipeline Config
 
+**ACTION 0 -- Check for CAGENTS_SESSION_ID override:**
+
+```
+0. Read process.env.CAGENTS_SESSION_ID
+   - If set and non-empty: use it verbatim as SESSION_ID (skip steps 1-4 below)
+     - SESSION_DIR="Agent_Memory/sessions/${CAGENTS_SESSION_ID}"
+     - If SESSION_DIR already exists: this is a RESUME — skip session file creation
+       (instruction.yaml, status.yaml, agent_tree.yaml already exist).
+       Skip to ACTION 2 (Load pipeline config).
+     - If SESSION_DIR does not exist: treat as new session — proceed with mkdir
+       and file creation using the env var value as SESSION_ID (skip to step 5 below)
+   - If not set or empty: proceed with auto-generation (steps 1-4 below)
+```
+
 **ACTION 1 -- Create session files:**
 
 ```
@@ -151,9 +186,9 @@ Note: /run uses the `pipeline_state` field (not `phase`). Hooks check both field
 
 Note: `duration_ms` is computed at state transition time (ms between `entered_at` and the next state's `entered_at`). The current (latest) state has `duration_ms: null` until the next transition.
 
-**ACTION 2 -- Load pipeline config:**
+**ACTION 2 -- Load pipeline config (optional):**
 
-Read `Agent_Memory/_system/config/pipeline_config.yaml` to get the state machine definition.
+Try to read `Agent_Memory/_system/config/pipeline_config.yaml` to get the state machine definition. This file is generated at runtime and may not exist in fresh installs or CI environments. If the file does not exist, proceed with the hardcoded state machine defined in this SKILL.md (INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED -> VALIDATED). Do not error or halt if the file is missing.
 
 **ACTION 3 -- Call TodoWrite NOW (mandatory):**
 
@@ -184,7 +219,7 @@ If `--session` was provided, check which enrichment files already exist:
 - `plan.yaml` exists -> skip INIT+ORCHESTRATED, start from PLANNED
 - `work_items.yaml` exists -> skip through PLANNED, start from DECOMPOSED
 
-Set `current_state` to the first state that needs execution based on pre-enrichment detection. Use the `pre_enrichment.skip_if_exists` mapping from pipeline_config.yaml.
+Set `current_state` to the first state that needs execution based on pre-enrichment detection. Use the `pre_enrichment.skip_if_exists` mapping from pipeline_config.yaml if that file was loaded; otherwise apply the default skip logic described above.
 
 **3b. Route domain and tier (inline, during INIT processing):**
 
@@ -431,7 +466,7 @@ After the state machine loop exits (whether success, failure, or max revisions):
 
 1. **Read final state** from status.yaml
 2. **Compute final duration_ms** for the last state_history entry
-3. **ALWAYS write execution_summary.yaml** — this is mandatory even on failure or interruption:
+3. **ALWAYS write execution_summary.yaml** — this is mandatory even on failure or interruption. The `verify-completion.cjs` hook warns at session stop if this file is absent.
 
 ```yaml
 session_id: {SESSION_ID}
@@ -470,7 +505,10 @@ session_log:
 After appending, recalculate aggregate metrics (total_sessions, success_rate, avg_duration, by_domain, by_tier, bottlenecks). Keep the last 500 sessions in the log; archive older entries.
 
 6. **Clean up tasks**: Call `TaskList` and mark all session tasks as `completed` or `deleted` via `TaskUpdate`. Never leave stale in_progress tasks behind.
-7. **Report results** to user
+7. **Report results** to user. Pre-report checklist:
+   - `workflow/execution_summary.yaml` written (verify-completion.cjs warns if absent)
+   - `status.yaml` in terminal pipeline state
+   - All session tasks marked completed or deleted
 
 If pipeline failed after max revisions:
 - Report what completed vs what remains
@@ -670,7 +708,7 @@ See @reference/flags.md for complete flag reference with defaults and examples.
 
 ## Configuration
 
-- Pipeline config: `Agent_Memory/_system/config/pipeline_config.yaml`
+- Pipeline config: `Agent_Memory/_system/config/pipeline_config.yaml` (optional — generated at runtime; /run operates with hardcoded defaults if absent)
 - Planner configs: `{domain}/config/planner_config.yaml`
 - Event template: `Agent_Memory/_system/templates/event.yaml`
 - Session folder: `Agent_Memory/sessions/run_{slug}_{YYMMDD}_{NNN}/`

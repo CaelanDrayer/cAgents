@@ -1,3 +1,10 @@
+---
+paths:
+  - "**/agents/**/*.md"
+  - ".claude/skills/**"
+  - "Agent_Memory/sessions/**/workflow/work_items.yaml"
+---
+
 # Execution Agent Patterns
 
 Guidelines for tier 3 execution agents.

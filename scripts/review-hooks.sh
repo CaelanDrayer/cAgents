@@ -35,8 +35,8 @@ except Exception as e:
     if [ -n "$hooks" ]; then
         while IFS='|' read -r hook_type command; do
             if [ -n "$command" ]; then
-                # Resolve $CLAUDE_PROJECT_DIR
-                resolved_command="${command//\$CLAUDE_PROJECT_DIR/\/home\/PathingIT\/cAgents}"
+                # Resolve $CLAUDE_PROJECT_DIR using the actual repo root
+                resolved_command="${command//\$CLAUDE_PROJECT_DIR/$REPO_ROOT}"
                 
                 # Extract executable path (first word)
                 executable=$(echo "$resolved_command" | awk '{print $1}')

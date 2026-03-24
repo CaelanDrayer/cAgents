@@ -7,6 +7,11 @@ import path from 'path';
 const SCHEMAS_DIR = path.join(__dirname, 'schemas');
 const FIXTURES_DIR = path.join(__dirname, 'fixtures', 'sessions');
 
+// Skip all contract tests when AgentPath schemas have not been fetched.
+// Run `scripts/ci/fetch-schemas.sh` to populate the schemas directory.
+const schemasAvailable = fs.existsSync(SCHEMAS_DIR) &&
+  fs.readdirSync(SCHEMAS_DIR).some(f => f.endsWith('.schema.json'));
+
 const SESSION_TYPES = ['run_sample', 'team_sample', 'org_sample', 'designer_sample'];
 
 // Load all schemas
@@ -24,7 +29,9 @@ function loadFixture(sessionType, ...segments) {
 // Create Ajv instance
 const ajv = new Ajv({ allErrors: true });
 
-describe('Contract Tests: Session YAML ↔ JSON Schema', () => {
+const describeOrSkip = schemasAvailable ? describe : describe.skip;
+
+describeOrSkip('Contract Tests: Session YAML ↔ JSON Schema', () => {
   const instructionSchema = loadSchema('instruction.schema.json');
   const statusSchema = loadSchema('status.schema.json');
   const workItemsSchema = loadSchema('work-items.schema.json');

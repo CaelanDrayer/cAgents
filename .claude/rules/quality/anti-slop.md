@@ -1,3 +1,12 @@
+---
+paths:
+  - "creative/agents/**"
+  - "**/agents/copywriter/**"
+  - "**/agents/technical-writer/**"
+  - "**/agents/content-*/**"
+  - ".claude/skills/*/SKILL.md"
+---
+
 # Anti-Slop Writing Rules
 
 Rules for eliminating predictable AI writing patterns from all agent output. Adapted from [stop-slop](https://github.com/hardikpandya/stop-slop) (MIT, Hardik Pandya) for the cAgents framework.

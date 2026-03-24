@@ -4,7 +4,7 @@ description: "Guided design exploration that produces implementation-ready docum
 license: MIT
 metadata:
   author: CaelanDrayer
-  version: "10.22.5"
+  version: "10.22.7"
   argument-hint: "[<topic>] [--deep] [--resume <id>] [--template <name>] [--brief <path>] [--iterate <session_id>]"
   user-invocable: "true"
   context: "none"
@@ -82,6 +82,17 @@ If `--iterate <session_id>` is provided, load the completed design from the prev
 **CRITICAL**: Create the session directory and metadata files BEFORE spawning any agents, doing any analysis, or asking any questions. This ensures all session artifacts have a home from the start.
 
 ```
+0. Check for CAGENTS_SESSION_ID override:
+   - Read process.env.CAGENTS_SESSION_ID
+   - If set and non-empty: use it verbatim as SESSION_ID (skip steps 1-4 below)
+     - SESSION_DIR="Agent_Memory/sessions/${CAGENTS_SESSION_ID}"
+     - If SESSION_DIR already exists: this is a RESUME — skip session file creation
+       (instruction.yaml, status.yaml, agent_tree.yaml already exist).
+       Skip to Subagent Question Preparation.
+     - If SESSION_DIR does not exist: treat as new session — proceed with mkdir
+       and file creation using the env var value as SESSION_ID (skip to step 5 below)
+   - If not set or empty: proceed with auto-generation (steps 1-4 below)
+
 1. Generate a slug from the topic: 2-6 key words, kebab-case, lowercase, max 50 chars
    Strip filler words (the, a, an, to, for, with, and, of). Example: "Redo session names" -> "redo-session-names"
 2. Get compact date: YYMMDD (e.g., 260317)

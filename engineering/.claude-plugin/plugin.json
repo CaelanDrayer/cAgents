@@ -1,7 +1,25 @@
 {
-  "name": "cagents-engineering",
-  "version": "10.22.6",
+  "name": "@cagents/engineering",
+  "version": "10.22.7",
   "description": "cAgents engineering domain - 32 software engineering, infrastructure, security, QA, and game programming agents",
+  "author": {
+    "name": "CaelanDrayer",
+    "email": "caelan@caelandrayer.ca",
+    "url": "https://github.com/CaelanDrayer"
+  },
+  "homepage": "https://github.com/CaelanDrayer/cAgents",
+  "repository": "https://github.com/CaelanDrayer/cAgents",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "engineering",
+    "software-development",
+    "infrastructure",
+    "security",
+    "qa",
+    "devops",
+    "game-programming"
+  ],
   "agents": [
     "./agents/accessibility-checker/SKILL.md",
     "./agents/architect/SKILL.md",

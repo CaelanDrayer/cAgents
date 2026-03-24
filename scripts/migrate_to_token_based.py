@@ -120,7 +120,7 @@ def migrate_planner_config(file_path):
 
 def main():
     """Main migration function."""
-    base_path = Path("/home/PathingIT/cAgents/Agent_Memory/_system/domains")
+    base_path = Path(__file__).resolve().parent.parent / "Agent_Memory" / "_system" / "domains"
     domains = ["software", "business", "creative", "planning", "sales", "marketing",
                "finance", "operations", "hr", "legal", "support"]
 

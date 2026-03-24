@@ -1,5 +1,5 @@
 #!/bin/bash
-# Validate version consistency across ALL 14 cAgents locations
+# Validate version consistency across ALL 24 cAgents locations
 # Exit with error if versions don't match
 
 set -e
@@ -7,7 +7,7 @@ set -e
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$PROJECT_DIR"
 
-echo "Validating version consistency across 14 locations..."
+echo "Validating version consistency across 24 locations..."
 echo ""
 
 # Source of truth
@@ -34,8 +34,17 @@ check_version() {
             version=$(grep -m1 '"version"' "$file" | grep -v schema | sed 's/.*"version": "\(.*\)".*/\1/')
             ;;
         *.md)
-            # Match "Version: X.Y.Z" or "**Version**: X.Y.Z" in CLAUDE.md
-            version=$(grep -m1 -oP '(?:Version[*]*: )\K[0-9]+\.[0-9]+\.[0-9]+' "$file" 2>/dev/null || echo "")
+            # SKILL.md frontmatter: `  version: "X.Y.Z"` (2-space indent, quoted)
+            # CLAUDE.md: "Version: X.Y.Z" or "**Version**: X.Y.Z"
+            version=$(grep -m1 -oP '(?:version: "|Version[*]*: )\K[0-9]+\.[0-9]+\.[0-9]+' "$file" 2>/dev/null || echo "")
+            ;;
+        *.cjs)
+            # session-catchup.cjs: `cAgents V{version} session initialized`
+            version=$(grep -oP 'cAgents V\K[0-9]+\.[0-9]+\.[0-9]+(?= session initialized)' "$file" 2>/dev/null | head -1 || echo "")
+            ;;
+        *.sh)
+            # cagents-ci.sh: `# Version: {version}` header
+            version=$(grep -oP '# Version: \K[0-9]+\.[0-9]+\.[0-9]+' "$file" 2>/dev/null | head -1 || echo "")
             ;;
     esac
 
@@ -52,7 +61,7 @@ check_version() {
     fi
 }
 
-echo "Checking 14 locations:"
+echo "Checking 24 locations:"
 echo ""
 
 # 1. package.json (source of truth)
@@ -76,6 +85,22 @@ check_version "core/.claude-plugin/plugin.json" "11. core/plugin.json"
 check_version "leadership/.claude-plugin/plugin.json" "12. leadership/plugin.json"
 check_version "shared/.claude-plugin/plugin.json" "13. shared/plugin.json"
 
+# 15-22. SKILL.md frontmatter versions
+check_version ".claude/skills/run/SKILL.md" "15. .claude/skills/run/SKILL.md"
+check_version ".claude/skills/org/SKILL.md" "16. .claude/skills/org/SKILL.md"
+check_version ".claude/skills/team/SKILL.md" "17. .claude/skills/team/SKILL.md"
+check_version ".claude/skills/review/SKILL.md" "18. .claude/skills/review/SKILL.md"
+check_version ".claude/skills/optimize/SKILL.md" "19. .claude/skills/optimize/SKILL.md"
+check_version ".claude/skills/designer/SKILL.md" "20. .claude/skills/designer/SKILL.md"
+check_version ".claude/skills/debug/SKILL.md" "21. .claude/skills/debug/SKILL.md"
+check_version ".claude/skills/helper/SKILL.md" "22. .claude/skills/helper/SKILL.md"
+
+# 23. session-catchup.cjs version string
+check_version ".claude/hooks/session-catchup.cjs" "23. .claude/hooks/session-catchup.cjs"
+
+# 24. cagents-ci.sh version header
+check_version "scripts/ci/cagents-ci.sh" "24. scripts/ci/cagents-ci.sh"
+
 # 14. Settings (env var)
 if [ -f ".claude/settings.json" ]; then
     SETTINGS_VERSION=$(grep -oP '"CAGENTS_VERSION":\s*"\K[0-9]+\.[0-9]+\.[0-9]+' .claude/settings.json 2>/dev/null || echo "")
@@ -93,7 +118,7 @@ if [ -f ".claude/settings.json" ]; then
 fi
 
 echo ""
-echo "Checked $CHECKED locations, $ERRORS mismatches"
+echo "Checked $CHECKED/24 locations, $ERRORS mismatches"
 
 if [ "$ERRORS" -gt 0 ]; then
     echo "FAIL: Version sync errors found. Run scripts/ci/sync-versions.sh to fix."

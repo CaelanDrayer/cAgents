@@ -1,3 +1,9 @@
+---
+paths:
+  - "**/agents/**/*.md"
+  - "**/agents/**/SKILL.md"
+---
+
 # Claude Search Optimization (CSO) Guidelines
 
 Best practices for writing agent and skill descriptions that maximize AI discoverability in cAgents. Inspired by the superpowers framework's approach to skill description design.

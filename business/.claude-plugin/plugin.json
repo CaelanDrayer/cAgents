@@ -1,7 +1,24 @@
 {
-  "name": "cagents-business",
-  "version": "10.22.6",
+  "name": "@cagents/business",
+  "version": "10.22.7",
   "description": "cAgents business domain - Strategy, product management, operations, finance, and planning agents",
+  "author": {
+    "name": "CaelanDrayer",
+    "email": "caelan@caelandrayer.ca",
+    "url": "https://github.com/CaelanDrayer"
+  },
+  "homepage": "https://github.com/CaelanDrayer/cAgents",
+  "repository": "https://github.com/CaelanDrayer/cAgents",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "business",
+    "strategy",
+    "product-management",
+    "operations",
+    "finance",
+    "planning"
+  ],
   "agents": [
     "./agents/agile-coach/SKILL.md",
     "./agents/business-analyst/SKILL.md",

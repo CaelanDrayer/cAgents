@@ -40,6 +40,15 @@ const AGENT_MEMORY_DIR = path.join(PROJECT_ROOT, 'Agent_Memory');
 
 const SESSION_PREFIXES = ['run_', 'optimize_', 'review_', 'designer_', 'team_', 'org_'];
 
+// Canonical list of terminal pipeline/phase states (single source of truth).
+const TERMINAL_STATES = ['completed', 'complete', 'failed', 'aborted', 'COMPLETE', 'VALIDATED'];
+
+// Grace period for accepting sessions without status.yaml (handles the race condition where
+// the trigger agent hasn't written status.yaml yet). 5 minutes covers typical pipeline init time.
+// Design intent: long enough to bridge session dir creation → first status write gap,
+// short enough not to surface truly abandoned sessions as "active".
+const SESSION_DISCOVERY_GRACE_PERIOD_MS = 5 * 60 * 1000;
+
 // Character budgets for context injection (v10.6.0)
 // These constants prevent hooks from injecting unbounded context into the model's window.
 const MAX_SESSION_START_CHARS = 1500;  // Max chars for SessionStart additionalContext
@@ -49,7 +58,7 @@ const MAX_ATTENTION_CHARS = 500;       // Max chars for attention-injection syst
  * Read JSON from stdin with timeout.
  * Returns parsed object or {} on any failure.
  */
-function readStdin() {
+function readStdin(hookName) {
   return new Promise((resolve) => {
     let data = '';
     let resolved = false;
@@ -74,7 +83,7 @@ function readStdin() {
     process.stdin.on('error', () => done({}));
 
     setTimeout(() => {
-      if (!resolved) console.error('[hook-utils] readStdin timeout after 3s');
+      if (!resolved) console.error(hookName ? `[Hook] stdin reading timed out for hook: ${hookName}` : '[hook-utils] readStdin timeout after 3s');
       done({});
     }, 3000);
   });
@@ -144,8 +153,7 @@ function findActiveSession(sessionHint) {
       const content = safeRead(statusFile) || safeRead(path.join(hintDir, 'session.yaml'));
       if (content) {
         const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase') || extractYamlValue(content, 'pipeline_state');
-        const terminalStates = ['completed', 'complete', 'failed', 'aborted', 'COMPLETE', 'VALIDATED'];
-        if (phase && !terminalStates.includes(phase)) {
+        if (phase && !TERMINAL_STATES.includes(phase)) {
           _cachedActiveSession = hintDir;
           return _cachedActiveSession;
         }
@@ -182,8 +190,7 @@ function findActiveSession(sessionHint) {
     if (!content) continue;
 
     const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase') || extractYamlValue(content, 'pipeline_state');
-    const terminalStates = ['completed', 'complete', 'failed', 'aborted', 'COMPLETE', 'VALIDATED'];
-    if (phase && !terminalStates.includes(phase)) {
+    if (phase && !TERMINAL_STATES.includes(phase)) {
       _cachedActiveSession = path.join(sessionsDir, session);
       return _cachedActiveSession;
     }
@@ -192,7 +199,7 @@ function findActiveSession(sessionHint) {
   // Second pass: look for recently-created sessions without status.yaml
   // (handles the race condition where trigger agent hasn't written status.yaml yet,
   //  AND /org sessions that wrote strategic_brief.yaml before instruction.yaml/status.yaml)
-  const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+  const graceCutoff = Date.now() - SESSION_DISCOVERY_GRACE_PERIOD_MS;
   for (const session of sessions) {
     const sessionPath = path.join(sessionsDir, session);
     const statusFile = path.join(sessionPath, 'status.yaml');
@@ -207,7 +214,7 @@ function findActiveSession(sessionHint) {
 
       if (hasInstruction || hasBrief || hasAgentTree) {
         const stat = fs.statSync(sessionPath);
-        if (stat.mtimeMs > fiveMinutesAgo) {
+        if (stat.mtimeMs > graceCutoff) {
           console.error(`[findActiveSession] Found recent session without status.yaml: ${session} (has: ${hasInstruction ? 'instruction' : hasBrief ? 'brief' : 'agent_tree'})`);
           _cachedActiveSession = sessionPath;
           return _cachedActiveSession;
@@ -219,27 +226,36 @@ function findActiveSession(sessionHint) {
   // Third pass: scan org session subdirectories for nested team/domain sessions.
   // When /team runs inside /org, its session dir is nested (e.g., org_xxx/engineering/).
   // These subdirs have their own status.yaml and are not found by the top-level scan.
-  const orgSessions = sessions.filter(s => s.startsWith('org_'));
-  for (const orgSession of orgSessions) {
-    const orgPath = path.join(sessionsDir, orgSession);
-    try {
-      const subdirs = fs.readdirSync(orgPath).filter(d => {
-        try { return fs.statSync(path.join(orgPath, d)).isDirectory(); } catch { return false; }
-      });
-      for (const subdir of subdirs) {
-        const nestedPath = path.join(orgPath, subdir);
-        const nestedStatus = path.join(nestedPath, 'status.yaml');
-        const content = safeRead(nestedStatus);
-        if (!content) continue;
-        const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase') || extractYamlValue(content, 'pipeline_state');
-        const terminalStates = ['completed', 'complete', 'failed', 'aborted', 'COMPLETE', 'VALIDATED'];
-        if (phase && !terminalStates.includes(phase)) {
-          console.error(`[findActiveSession] Found nested session: ${orgSession}/${subdir}`);
-          _cachedActiveSession = nestedPath;
-          return _cachedActiveSession;
+  // Wrapped in withFileLock to prevent concurrent hook processes from both discovering
+  // the same nested session (discovery-only lock scope per REQ-013).
+  const nestedDiscoveryLockPath = path.join(AGENT_MEMORY_DIR, '_system', 'nested_session_discovery');
+  const nestedResult = withFileLock(nestedDiscoveryLockPath, () => {
+    const orgSessions = sessions.filter(s => s.startsWith('org_'));
+    for (const orgSession of orgSessions) {
+      const orgPath = path.join(sessionsDir, orgSession);
+      try {
+        const subdirs = fs.readdirSync(orgPath).filter(d => {
+          try { return fs.statSync(path.join(orgPath, d)).isDirectory(); } catch { return false; }
+        });
+        for (const subdir of subdirs) {
+          const nestedPath = path.join(orgPath, subdir);
+          const nestedStatus = path.join(nestedPath, 'status.yaml');
+          const content = safeRead(nestedStatus);
+          if (!content) continue;
+          const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase') || extractYamlValue(content, 'pipeline_state');
+          if (phase && !TERMINAL_STATES.includes(phase)) {
+            console.error(`[findActiveSession] Found nested session: ${orgSession}/${subdir}`);
+            return nestedPath;
+          }
         }
-      }
-    } catch { /* skip unreadable org dirs */ }
+      } catch { /* skip unreadable org dirs */ }
+    }
+    return null;
+  });
+
+  if (nestedResult) {
+    _cachedActiveSession = nestedResult;
+    return _cachedActiveSession;
   }
 
   _cachedActiveSession = null;
@@ -280,8 +296,7 @@ function findTeamSession(input = {}) {
     if (!content) continue;
 
     const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'pipeline_state');
-    const terminalStates = ['completed', 'complete', 'failed', 'aborted', 'COMPLETE', 'VALIDATED'];
-    if (phase && !terminalStates.includes(phase)) {
+    if (phase && !TERMINAL_STATES.includes(phase)) {
       return path.join(sessionsDir, session);
     }
   }
@@ -311,8 +326,7 @@ function findTeamSession(input = {}) {
           const content = safeRead(nestedStatus);
           if (!content) continue;
           const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'pipeline_state');
-          const terminalStates = ['completed', 'complete', 'failed', 'aborted', 'COMPLETE', 'VALIDATED'];
-          if (phase && !terminalStates.includes(phase)) {
+          if (phase && !TERMINAL_STATES.includes(phase)) {
             console.error(`[findTeamSession] Found nested session: ${orgSession}/${subdir}`);
             return nestedPath;
           }
@@ -470,27 +484,52 @@ function withFileLock(filePath, fn) {
   const lockDir = filePath + '.lock';
   const maxRetries = 100;
   const retryDelayMs = 20;
-  const staleLockMs = 10000; // 10s stale lock threshold
+  const staleLockMs = 10000; // 10s mtime-based fallback stale threshold
 
   for (let i = 0; i < maxRetries; i++) {
     try {
       fs.mkdirSync(lockDir);
-      // Lock acquired
+      // Lock acquired - write PID for liveness detection (REQ-014)
+      try { fs.writeFileSync(path.join(lockDir, 'pid'), String(process.pid)); } catch { /* best effort */ }
       try {
         return fn();
       } finally {
-        try { fs.rmdirSync(lockDir); } catch { /* best effort */ }
+        // Remove lock dir and PID file atomically
+        try { fs.rmSync(lockDir, { recursive: true, force: true }); } catch { /* best effort */ }
       }
     } catch (err) {
       if (err.code === 'EEXIST') {
-        // Lock held by another process - check for stale lock
+        // Lock held by another process - PID-based liveness check (REQ-014)
+        let lockIsStale = false;
         try {
-          const stat = fs.statSync(lockDir);
-          if (Date.now() - stat.mtimeMs > staleLockMs) {
-            try { fs.rmdirSync(lockDir); } catch { /* another process may have cleared it */ }
-            continue; // Retry immediately after clearing stale lock
+          const pidContent = safeRead(path.join(lockDir, 'pid'));
+          if (pidContent) {
+            const pid = parseInt(pidContent.trim(), 10);
+            if (!isNaN(pid)) {
+              try {
+                process.kill(pid, 0); // Signal 0: check liveness without sending a signal
+                // Process alive — lock is live, don't remove
+              } catch (killErr) {
+                if (killErr.code === 'ESRCH') {
+                  // Process dead — stale lock
+                  lockIsStale = true;
+                }
+                // EPERM: process exists but owned by different user — treat as live
+              }
+            }
+          } else {
+            // No PID file — fall back to mtime-based stale check
+            const stat = fs.statSync(lockDir);
+            if (Date.now() - stat.mtimeMs > staleLockMs) {
+              lockIsStale = true;
+            }
           }
         } catch { /* lock dir gone, retry */ continue; }
+
+        if (lockIsStale) {
+          try { fs.rmSync(lockDir, { recursive: true, force: true }); } catch { /* another process may have cleared it */ }
+          continue; // Retry immediately after clearing stale lock
+        }
         // Busy-wait (synchronous, hooks are short-lived)
         const start = Date.now();
         while (Date.now() - start < retryDelayMs) { /* spin */ }
@@ -577,10 +616,46 @@ function warnWithReason({ what, why, fix, hook }) {
  * @param {string} name - Hook name for logging (e.g., "SessionCatchup")
  * @param {function} handler - async (input) => result object
  */
+/**
+ * Atomic dedup guard for plugin + project double-load scenarios.
+ * When cAgents is both the active project AND an installed marketplace plugin,
+ * Claude Code loads hooks from both paths, causing every hook to fire twice.
+ * This guard uses fs.openSync('wx') (exclusive create) on a temp file keyed by
+ * hook name + input content hash. First caller wins; second caller no-ops.
+ * Temp files auto-clean after 2 seconds.
+ */
+function dedupGuard(hookName, input) {
+  try {
+    const crypto = require('crypto');
+    const os = require('os');
+    // Key on hook name + first 200 chars of stringified input (captures tool_name, session_id, etc.)
+    const inputSnippet = JSON.stringify(input).slice(0, 200);
+    const hash = crypto.createHash('md5').update(hookName + inputSnippet).digest('hex').slice(0, 12);
+    const dedupFile = path.join(os.tmpdir(), `cagents-dedup-${hookName}-${hash}`);
+
+    // Exclusive create: fails with EEXIST if another invocation already created it
+    const fd = fs.openSync(dedupFile, 'wx');
+    fs.closeSync(fd);
+
+    // Schedule cleanup (2s is enough — hooks complete in <5s)
+    setTimeout(() => { try { fs.unlinkSync(dedupFile); } catch {} }, 2000);
+    return false; // Not a duplicate — proceed
+  } catch (e) {
+    if (e.code === 'EEXIST') return true; // Duplicate invocation — skip
+    return false; // On any other error, proceed (don't block hooks on dedup failure)
+  }
+}
+
 function createHook(name, handler) {
   async function run() {
     try {
-      const input = await readStdin();
+      const input = await readStdin(name);
+
+      // Dedup guard: skip if another invocation of the same hook with the same input is already running
+      if (dedupGuard(name, input)) {
+        console.log(JSON.stringify({ continue: true }));
+        return;
+      }
 
       try {
         const result = await handler(input);
@@ -648,9 +723,12 @@ module.exports = {
   PLUGIN_ROOT,
   AGENT_MEMORY_DIR,
   SESSION_PREFIXES,
+  TERMINAL_STATES,
+  SESSION_DISCOVERY_GRACE_PERIOD_MS,
   MAX_SESSION_START_CHARS,
   MAX_ATTENTION_CHARS,
   createHook,
+  dedupGuard,
   readStdin,
   safeRead,
   extractYamlValue,

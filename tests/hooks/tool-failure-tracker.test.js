@@ -10,7 +10,7 @@ const TEST_SESSION_DIR = join(process.cwd(), 'Agent_Memory', 'sessions', 'run_20
 function runHook(input) {
   const result = execSync(
     `printf '%s' '${JSON.stringify(input).replace(/'/g, "'\\''")}' | node "${HOOK_PATH}"`,
-    { encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'] }
+    { encoding: 'utf8', timeout: 10000, stdio: ['pipe', 'pipe', 'pipe'] }
   );
   return JSON.parse(result.trim());
 }

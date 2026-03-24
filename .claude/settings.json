@@ -1,11 +1,11 @@
 {
-  "$comment": "Hook configuration - cAgents V10.22.6 - Progressive pipeline (3 paths), agent chaining, structured error format, attention injection, magic keywords, delegation enforcer. 21 CJS files (18 registered hooks + utils + launcher + eval CLI) across 15 event types. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd).",
+  "$comment": "Hook configuration - cAgents V10.22.7 - Progressive pipeline (3 paths), agent chaining, structured error format, attention injection, magic keywords, model routing advisor, delegation enforcer, approval gate, session init gate. 24 CJS files (21 registered hooks + utils + launcher + eval CLI) across 14 event types. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd).",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
   "teammateMode": "tmux",
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CAGENTS_VERSION": "10.22.6"
+    "CAGENTS_VERSION": "10.22.7"
   },
   "permissions": {
     "allow": [
@@ -22,6 +22,10 @@
       "Write(/etc/**)",
       "Write(~/.ssh/**)"
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/statusline.cjs\"'"
   },
   "hooks": {
     "SessionStart": [
@@ -121,11 +125,26 @@
         ]
       },
       {
+        "matcher": "Bash|Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" approval-gate'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
         "matcher": "Task",
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" delegation-enforcer'",
+            "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" session-init-gate'",
+            "timeout": 3
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" model-routing-advisor'",
             "timeout": 3
           }
         ]
@@ -203,6 +222,11 @@
     "UserPromptSubmit": [
       {
         "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" delegation-enforcer'",
+            "timeout": 3
+          },
           {
             "type": "command",
             "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" magic-keywords'",

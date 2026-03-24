@@ -3,6 +3,7 @@
 # Usage: ./scripts/sync-versions.sh <new-version>
 #
 # Updates version in all 24 locations (see .claude/rules/core/version-registry.md):
+# Location #24: scripts/ci/cagents-ci.sh (header comment + log_section banner)
 #   .claude-plugin/plugin.json, .claude-plugin/marketplace.json, package.json,
 #   CLAUDE.md, .claude/settings.json, 9 domain plugin.json files (core,
 #   engineering, creative, business, growth, people, service, leadership, shared),
@@ -106,8 +107,9 @@ for skill in "${SKILLS[@]}"; do
     continue
   fi
 
-  # Match "  version: x.y.z" in YAML frontmatter (indented, no quotes)
-  if sed -i "s/^  version: [0-9]*\.[0-9]*\.[0-9]*/  version: $VERSION/" "$skill"; then
+  # Match "  version: x.y.z" or "  version: \"x.y.z\"" in YAML frontmatter (indented, quoted or unquoted)
+  if sed -i "s/^  version: \"[0-9]*\.[0-9]*\.[0-9]*\"/  version: \"$VERSION\"/" "$skill" && \
+     sed -i "s/^  version: [0-9]*\.[0-9]*\.[0-9]*$/  version: $VERSION/" "$skill"; then
     rel="${skill#$ROOT/}"
     echo "  OK: $rel"
     UPDATED=$((UPDATED + 1))
@@ -130,6 +132,21 @@ if [ -f "$CATCHUP" ]; then
   fi
 else
   echo "SKIP: .claude/hooks/session-catchup.cjs (not found)"
+fi
+
+# Update cagents-ci.sh header comment + log_section banner (#24)
+CAGENTS_CI="$ROOT/scripts/ci/cagents-ci.sh"
+if [ -f "$CAGENTS_CI" ]; then
+  if sed -i "s/^# Version: [0-9]*\.[0-9]*\.[0-9]*/# Version: $VERSION/" "$CAGENTS_CI" && \
+     sed -i "s/cAgents CI Runner v[0-9]*\.[0-9]*\.[0-9]*/cAgents CI Runner v$VERSION/" "$CAGENTS_CI"; then
+    echo "  OK: scripts/ci/cagents-ci.sh"
+    UPDATED=$((UPDATED + 1))
+  else
+    echo "FAIL: scripts/ci/cagents-ci.sh"
+    FAILED=$((FAILED + 1))
+  fi
+else
+  echo "SKIP: scripts/ci/cagents-ci.sh (not found)"
 fi
 
 echo ""

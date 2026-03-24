@@ -1,7 +1,23 @@
 {
-  "name": "cagents-service",
-  "version": "10.22.6",
+  "name": "@cagents/service",
+  "version": "10.22.7",
   "description": "cAgents service domain - 32 customer support, CX, legal, compliance, and governance agents",
+  "author": {
+    "name": "CaelanDrayer",
+    "email": "caelan@caelandrayer.ca",
+    "url": "https://github.com/CaelanDrayer"
+  },
+  "homepage": "https://github.com/CaelanDrayer/cAgents",
+  "repository": "https://github.com/CaelanDrayer/cAgents",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "service",
+    "customer-support",
+    "legal",
+    "compliance",
+    "governance"
+  ],
   "agents": [
     "./agents/account-manager/SKILL.md",
     "./agents/chat-support-specialist/SKILL.md",

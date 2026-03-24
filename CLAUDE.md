@@ -295,6 +295,7 @@ TaskUpdate({ taskId: "N", status: "completed" })
 | `/optimize` | `fork` | `true` | Performance optimization with before/after metrics and rollback |
 | `/helper` | `none` | `false` | Command guide that recommends the right skill for your task |
 | `/context` | `none` | `false` | Shared product context that persists across all sessions |
+| `/debug` | `none` | `false` | Systematic 4-phase debugging for bugs that resist quick fixes |
 
 **Built-in**: `/memory` (view/edit memory files), `/init` (bootstrap project CLAUDE.md)
 
@@ -339,37 +340,7 @@ V9.29 additions:
 
 ## Team Mode
 
-N-wave parallel team execution using Claude Code's built-in agent teams. Encourages maximum wave decomposition for better quality gating. More waves = more checkpoints = higher quality.
-
-```
-/team <request>
-  Wave 0 (Lead): Enrichment + bootstrap
-  Wave 1..N-1 (Teammates, per-wave spawn): Each wave spawns fresh teammates
-    Wave 1: Research/analysis    Wave 2: Design/architecture
-    Wave 3: Core implementation  Wave 4: Supporting features
-    Wave 5: Testing/QA           Wave 6+: As needed
-  Wave N (Lead): Integration + final validation
-  GATE sentinels enforce wave ordering via TaskCreate dependencies
-```
-
-**CRITICAL**: /team MUST call TeamCreate AND spawn teammates via Task tool. Creating tasks without teammates is the primary failure mode.
-
-**Wave Execution**: Teammates spawned per-wave, shut down after each wave. Lead validates GATE between waves. Prefer 5-7 waves over 2-3.
-
-| Tier | Minimum waves | Typical waves |
-|------|---------------|---------------|
-| 2 | 3 | 3-4 |
-| 3 | 5 | 5-7 |
-| 4 | 6 | 6-10 |
-
-**Display Modes** (`teammateMode` in settings.json): `auto` (default), `tmux` (split panes), `in-process` (main terminal)
-
-**Use /team for**: Tier 3+ complex workflows, multiple parallelizable items, time-sensitive delivery.
-**Use /run for**: Tier 2 simple coordination, sequential workflows, small changes.
-
-**Fallback**: Unsuitable requests (<3 items or all sequential) auto-delegate to `/run`.
-
-See `docs/TEAM_MODE.md` and `.claude/rules/core/teams.md` for full documentation.
+N-wave parallel team execution using Claude Code's built-in agent teams. Use `/team` for tier 3+ workflows (40-60% faster). See @.claude/rules/core/teams.md for wave structure, GATE sentinels, display modes, and troubleshooting.
 
 ## Agent Memory
 
@@ -392,26 +363,11 @@ Agent_Memory/
 
 **Recursive Workflows**: Complex tasks spawn child workflows (max depth: 5, max children: 100). Each child follows objectives -> controller -> questions -> synthesis -> implementation.
 
-## Creating Agents
+## Creating Agents / Domains
 
-See @.claude/rules/core/execution.md for execution agent guidelines.
+See @.claude/rules/core/skill-format.md and @.claude/rules/core/execution.md for full agent authoring guidelines.
 
-1. Choose tier (controller or execution) and domain (engineering, creative, business, people, service)
-2. Create `{domain}/agents/my-agent/SKILL.md` with YAML frontmatter (include `tier`, `domain`, `name`)
-3. Add to `{domain}/.claude-plugin/plugin.json` and root `.claude-plugin/plugin.json`
-4. Test: `claude --plugin-dir .` and `bash scripts/ci/validate-agents.sh`
-
-**Controller frontmatter**: `tier: controller`, `coordination_style: question_based`, `typical_questions: [...]`
-**Execution frontmatter**: `tier: execution`, `answers_questions: [...]`, `executes_tasks: [...]`
-
-## Creating Domains
-
-1. Create `{domain}/config/domain_overrides.yaml` with `controller_catalog` and `router.keywords`
-2. Create controller + execution agents in `{domain}/agents/`
-3. Create `{domain}/.claude-plugin/plugin.json`
-4. Update root `.claude-plugin/plugin.json`
-
-No code required -- universal agents load configs automatically.
+**Quick steps**: Choose tier+domain → create `{domain}/agents/my-agent/SKILL.md` with YAML frontmatter → add to plugin.json → test with `bash scripts/ci/validate-agents.sh`.
 
 ## Directory Structure
 
@@ -420,7 +376,7 @@ cAgents/
 +-- CLAUDE.md                # Main project memory (this file)
 +-- .claude/
 |   +-- skills/              # Skills (org, run, team, designer, review, optimize, helper, context)
-|   +-- hooks/               # 21 .cjs files (18 hooks + utils + launcher + eval CLI)
+|   +-- hooks/               # 24 .cjs files (21 hooks + utils + launcher + eval CLI)
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (24 files, 5 categories)
 |   +-- settings.json        # Hook registration + permissions + env
@@ -429,7 +385,7 @@ cAgents/
 +-- business/                # Business domain (31 agents)
 +-- people/                  # People domain (19 agents)
 +-- service/                 # Service domain (32 agents)
-+-- leadership/              # Leadership domain (10 C-suite agents)
++-- leadership/              # Leadership domain (11 C-suite agents)
 +-- core/                    # Core infrastructure (15 agents)
 +-- shared/                  # Cross-domain specialists (4 agents)
 +-- growth/                  # Growth domain (39 agents: marketing, sales, revenue ops)
@@ -442,29 +398,7 @@ cAgents/
 
 ## Hooks System
 
-**Architecture**: CJS-only hooks with `createHook()` factory. Supports 4 handler types (command, http, prompt, agent). All invoked via `bash -c` wrapper with 3-tier fallback chain (`CLAUDE_PLUGIN_ROOT` -> `CLAUDE_PROJECT_DIR` -> `pwd`) for resilient path resolution. See @.claude/rules/core/hooks.md for full documentation.
-
-**21 .cjs files**: `hook-utils.cjs` (factory), `run-hook.cjs` (launcher), `eval-runner.cjs` (CLI), + 18 registered hooks across 15 event types:
-
-| Event Type | Hook(s) |
-|------------|---------|
-| `SessionStart` | `session-catchup.cjs` |
-| `SessionEnd` | `team-stop.cjs` |
-| `Stop` | `verify-completion.cjs` |
-| `SubagentStart` | `subagent-tracker.cjs`, `team-start.cjs` |
-| `SubagentStop` | `subagent-stop-tracker.cjs` |
-| `UserPromptSubmit` | `magic-keywords.cjs` |
-| `PreToolUse[Bash]` | `bash-validator.cjs` |
-| `PreToolUse[Write\|Edit]` | `secret-detection.cjs` |
-| `PreToolUse[Write\|Edit\|Bash]` | `attention-injection.cjs` |
-| `PreToolUse[Task]` | `delegation-enforcer.cjs` |
-| `PostToolUse[Write\|Edit]` | `post-write-validator.cjs` |
-| `PostToolUseFailure` | `tool-failure-tracker.cjs` |
-| `TeammateIdle` | `teammate-idle-handler.cjs` |
-| `TaskCompleted` | `team-task-complete.cjs` |
-| `PermissionRequest` | `permission-handler.cjs` |
-| `PreCompact` | `pre-compact-save.cjs` |
-| `Notification` | `notification.cjs` |
+**Architecture**: CJS-only hooks with `createHook()` factory. 24 .cjs files across 14 event types. See @.claude/rules/core/hooks.md for full documentation.
 
 ## Plugin Architecture
 
@@ -524,15 +458,15 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Skills**: `/org`, `/run`, `/team`, `/designer`, `/review`, `/optimize`, `/helper`, `/context` (in `.claude/skills/`)
 **Built-in**: `/memory`, `/init` (Claude Code native)
 **Agents**: 214 total (16 core + 4 shared + 11 leadership + 183 domain specialists)
-**Domains**: Engineering (32), Creative (30), Business (31), Growth (39), People (19), Service (32), Leadership (10), Core (15), Shared (4)
+**Domains**: Engineering (32), Creative (30), Business (31), Growth (39), People (19), Service (32), Leadership (11), Core (15), Shared (4)
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/domain_overrides.yaml`, `Agent_Memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (session YAML contract for AgentPath)
-**Hooks**: 15 event types (17 supported by Claude Code), 18 registered CJS hooks (21 .cjs files), invoked via `run-hook.cjs` launcher
+**Hooks**: 14 event types (17 supported by Claude Code), 21 registered CJS hooks (24 .cjs files), invoked via `run-hook.cjs` launcher
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 351 Vitest tests (hooks + config validation)
-**Version**: 10.22.6
+**Version**: 10.22.7
 
 ## Troubleshooting
 
@@ -544,10 +478,6 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 | Agent not found | Check agent has tier field in frontmatter |
 | Workflow stuck in coordinating | Check controller is asking questions and synthesizing |
 | Memory not loading | Run `/memory` to view loaded files |
-| Team not spawning | Ensure `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in settings.json, verify work items >= 3 |
-| Teammates not appearing | Use Shift+Down to cycle, check task complexity |
-| tmux panes not showing | Install tmux, set `teammateMode: "tmux"`, use supported terminal |
-| Orphaned team resources | TeamDelete or remove `~/.claude/teams/{name}/` and `~/.claude/tasks/{name}/` |
 | Hook not running | Check `.claude/settings.json` registration, verify `node` in PATH |
 | Hook blocks unexpectedly | Test: `echo '{}' \| node .claude/hooks/<name>.cjs` |
 | `SessionEnd hook...team-stop...failed: Hook cancelled` | Expected when cancelling a session — Claude Code terminates hooks during teardown before they finish. No data is lost or corrupted. |
