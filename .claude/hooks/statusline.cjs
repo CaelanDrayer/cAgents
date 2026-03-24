@@ -9,7 +9,7 @@
  *   [cAgents v10.22.6] fix-auth │ COORDINATED │ ██░░░ 2/5
  *
  * Output format (idle):
- *   [cAgents v10.22.6] idle
+ *   [cAgents v10.22.7] No Active Sessions | Waiting | 0/0
  */
 
 const fs = require('fs');
@@ -122,7 +122,7 @@ function buildStatusLine() {
   const tag = C.cyan(`[cAgents v${version}]`);
 
   if (!session) {
-    return `${tag} ${C.dim('idle')}`;
+    return `${tag} ${C.dim('No Active Sessions | Waiting | 0/0')}`;
   }
 
   const slug = extractSlug(session.id);

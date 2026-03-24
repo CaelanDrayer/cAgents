@@ -40,11 +40,11 @@ describe('statusline.cjs', () => {
     expect(output).toContain('[cAgents v');
   });
 
-  it('should show idle when no active session', () => {
+  it('should show idle format when no active session', () => {
     const output = stripAnsi(runHook());
-    // In CI / test env there is no active session, so idle is expected.
+    // In CI / test env there is no active session, so the idle format is expected.
     // If an active session happens to exist, a slug (not a full session ID) appears.
-    const hasIdle = output.includes('idle');
+    const hasIdle = output.includes('No Active Sessions | Waiting | 0/0');
     const hasSlug = /[a-z][-a-z0-9]+/.test(output.replace('[cAgents v', '').replace(/[\d.]+]/, ''));
     expect(hasIdle || hasSlug).toBeTruthy();
   });
