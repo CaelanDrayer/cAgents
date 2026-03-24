@@ -77,9 +77,10 @@ describe('extractSlug()', () => {
     expect(callFn('extractSlug', 'run_fix-auth_260317_001')).toBe('fix-auth');
   });
 
-  it('extracts multi-word slug', () => {
+  it('extracts multi-word slug (truncated if over 20 chars)', () => {
+    // 'implement-statusline-redesign' is 29 chars -> truncated to 19 chars + '…'
     expect(callFn('extractSlug', 'run_implement-statusline-redesign_260323_003'))
-      .toBe('implement-statusline-redesign');
+      .toBe('implement-statuslin…');
   });
 
   it('handles team session IDs', () => {
@@ -93,6 +94,26 @@ describe('extractSlug()', () => {
   it('handles designer session IDs', () => {
     expect(callFn('extractSlug', 'designer_review-statusline_260323_001'))
       .toBe('review-statusline');
+  });
+
+  it('truncates slug longer than 20 chars with ellipsis', () => {
+    // 'review-statusline-generation' is 28 chars -> slice(0,19) + '…' = 20 chars total
+    const result = callFn('extractSlug', 'run_review-statusline-generation_260323_005');
+    expect(result).toBe('review-statusline-g…');
+    expect(result.length).toBe(20);
+  });
+
+  it('does not truncate slug exactly 20 chars', () => {
+    // 'fix-exactly-20-chars' is 20 chars -> no truncation
+    const result = callFn('extractSlug', 'run_fix-exactly-20-chars_260323_001');
+    expect(result).toBe('fix-exactly-20-chars');
+    expect(result.length).toBe(20);
+  });
+
+  it('does not truncate slug under 20 chars', () => {
+    const result = callFn('extractSlug', 'run_short-slug_260323_001');
+    expect(result).toBe('short-slug');
+    expect(result.length).toBeLessThan(20);
   });
 });
 

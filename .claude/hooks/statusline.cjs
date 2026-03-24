@@ -55,7 +55,10 @@ function extractSlug(sessionId) {
   const parts = sessionId.split('_');
   // Drop first (command type) and last 2 (date, counter)
   const slugParts = parts.slice(1, parts.length - 2);
-  return slugParts.join('_');
+  const slug = slugParts.join('_');
+  // Truncate long slugs to keep the status line compact
+  const MAX_SLUG = 20;
+  return slug.length > MAX_SLUG ? slug.slice(0, MAX_SLUG - 1) + '…' : slug;
 }
 
 // ---------------------------------------------------------------------------
@@ -151,19 +154,28 @@ function main() {
     return;
   }
 
+  // Guard against double-output: both stdin 'end' and setTimeout can fire.
+  // Whichever fires first wins; the other is a no-op.
+  let done = false;
+  function writeOnce() {
+    if (done) return;
+    done = true;
+    process.stdout.write(buildStatusLine());
+  }
+
   process.stdin.setEncoding('utf8');
   process.stdin.on('data', (chunk) => { data += chunk; });
   process.stdin.on('end', () => {
     // We read stdin to consume it, but don't depend on its contents
-    process.stdout.write(buildStatusLine());
+    writeOnce();
   });
   process.stdin.on('error', () => {
-    process.stdout.write(buildStatusLine());
+    writeOnce();
   });
 
   // Safety timeout — don't hang if stdin never closes
   setTimeout(() => {
-    process.stdout.write(buildStatusLine());
+    writeOnce();
     process.exit(0);
   }, 2000);
 }
