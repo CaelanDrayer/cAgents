@@ -19,45 +19,46 @@ describe('permission-handler.cjs', () => {
     expect(existsSync(HOOK_PATH)).toBe(true);
   });
 
-  describe('always-safe tools', () => {
-    it('should auto-approve Read', () => {
+  describe('always-safe tools (pass-through)', () => {
+    // Post CC 2.1.77: safe tools return null (pass-through) instead of explicit allow,
+    // because explicit allow could bypass deny rules from other hooks.
+    it('should pass-through Read', () => {
       const result = runHook({ tool_name: 'Read', tool_input: {} });
-      expect(result.hookSpecificOutput.hookEventName).toBe('PermissionRequest');
-      expect(result.hookSpecificOutput.decision.behavior).toBe('allow');
+      expect(result.continue).toBe(true);
     });
 
-    it('should auto-approve Grep', () => {
+    it('should pass-through Grep', () => {
       const result = runHook({ tool_name: 'Grep', tool_input: {} });
-      expect(result.hookSpecificOutput.decision.behavior).toBe('allow');
+      expect(result.continue).toBe(true);
     });
 
-    it('should auto-approve Glob', () => {
+    it('should pass-through Glob', () => {
       const result = runHook({ tool_name: 'Glob', tool_input: {} });
-      expect(result.hookSpecificOutput.decision.behavior).toBe('allow');
+      expect(result.continue).toBe(true);
     });
 
-    it('should auto-approve TaskList', () => {
+    it('should pass-through TaskList', () => {
       const result = runHook({ tool_name: 'TaskList', tool_input: {} });
-      expect(result.hookSpecificOutput.decision.behavior).toBe('allow');
+      expect(result.continue).toBe(true);
     });
 
-    it('should auto-approve TaskGet', () => {
+    it('should pass-through TaskGet', () => {
       const result = runHook({ tool_name: 'TaskGet', tool_input: {} });
-      expect(result.hookSpecificOutput.decision.behavior).toBe('allow');
+      expect(result.continue).toBe(true);
     });
   });
 
-  describe('Agent_Memory writes', () => {
-    it('should auto-approve Write to Agent_Memory', () => {
+  describe('Agent_Memory writes (pass-through)', () => {
+    it('should pass-through Write to Agent_Memory', () => {
       const amPath = join(process.cwd(), 'Agent_Memory', 'sessions', 'test.yaml');
       const result = runHook({ tool_name: 'Write', tool_input: { file_path: amPath } });
-      expect(result.hookSpecificOutput.decision.behavior).toBe('allow');
+      expect(result.continue).toBe(true);
     });
 
-    it('should auto-approve Edit to Agent_Memory', () => {
+    it('should pass-through Edit to Agent_Memory', () => {
       const amPath = join(process.cwd(), 'Agent_Memory', 'sessions', 'test.yaml');
       const result = runHook({ tool_name: 'Edit', tool_input: { file_path: amPath } });
-      expect(result.hookSpecificOutput.decision.behavior).toBe('allow');
+      expect(result.continue).toBe(true);
     });
   });
 

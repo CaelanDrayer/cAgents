@@ -451,6 +451,8 @@ quality_gate:
   verification_method: file_exists
 ```
 
+See @.claude/rules/core/controllers.md for detailed validation checkpoint specifications and guard command patterns.
+
 ## Interface Contracts
 
 Contracts define interfaces between teams -- agreements established in one wave and consumed in the next.

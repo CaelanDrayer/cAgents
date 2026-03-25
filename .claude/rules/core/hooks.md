@@ -164,6 +164,11 @@ createHook('MyHook', async (input) => {
 - **Output**: systemMessage with concise goal reminder (mission + domain + coordination status)
 - **No-op when**: No active session, no plan.yaml, or writing to planning files
 
+#### PreToolUse[Task]: model-routing-advisor.cjs
+- **Matcher**: `Task`
+- **Purpose**: Advisory hook that suggests optimal model selection before agent spawns
+- **Configuration**: @.claude/rules/infrastructure/model-routing.md for model routing configuration and aliases.
+
 ### Workflow Events
 
 #### Stop: verify-completion.cjs

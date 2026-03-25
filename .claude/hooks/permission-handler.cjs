@@ -26,14 +26,14 @@ createHook('PermissionHandler', async (input) => {
   const toolInput = input.tool_input || {};
   const filePath = toolInput.file_path || toolInput.path || '';
 
-  // Always-safe tools - use PermissionRequest decision format
+  // Always-safe tools - pass through to normal permission handling
   if (ALWAYS_SAFE_TOOLS.has(toolName)) {
-    return { allow: true, hookEvent: 'PermissionRequest' };
+    return null;
   }
 
-  // Write/Edit to Agent_Memory - use PermissionRequest decision format
+  // Write/Edit to Agent_Memory - pass through to normal permission handling
   if ((toolName === 'Write' || toolName === 'Edit') && isAgentMemoryPath(filePath)) {
-    return { allow: true, hookEvent: 'PermissionRequest' };
+    return null;
   }
 
   // Check for HITL context - deny permission so user must approve

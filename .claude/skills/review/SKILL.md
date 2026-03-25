@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.24.0"
+  version: "10.24.1"
   argument-hint: "<target> [--focus <area>] [--auto-fix] [--severity <level>] [--format <type>] [--profile <name>] [--baseline] [--suppress <id>]"
   user-invocable: "true"
   context: "fork"

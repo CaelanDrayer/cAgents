@@ -42,12 +42,27 @@ const SECRET_PATTERNS = [
   { pattern: /github_pat_[a-zA-Z0-9]{22}_[a-zA-Z0-9]{59}/g, name: 'GitHub Fine-grained PAT', severity: 'critical' },
   // AWS
   { pattern: /AKIA[0-9A-Z]{16}/g, name: 'AWS Access Key ID', severity: 'critical' },
+  { pattern: /ASIA[0-9A-Z]{16,}/g, name: 'AWS STS Session Token', severity: 'critical' },
   { pattern: /aws[_-]?secret[_-]?access[_-]?key[\s]*[=:]\s*["']?([a-zA-Z0-9/+=]{40})["']?/gi, name: 'AWS Secret Access Key', severity: 'critical' },
   // Private Keys
   { pattern: new RegExp(PK_BEGIN + '(?:RSA |DSA |EC |OPENSSH )?' + PK_END, 'g'), name: 'Private Key', severity: 'critical' },
   { pattern: new RegExp(PK_BEGIN + 'PGP ' + PGP_END, 'g'), name: 'PGP Private Key', severity: 'critical' },
   // Google
   { pattern: /AIza[0-9A-Za-z_-]{35}/g, name: 'Google API Key', severity: 'high' },
+  // Twilio
+  { pattern: /SK[0-9a-f]{32}/g, name: 'Twilio Auth Token', severity: 'high' },
+  // SendGrid
+  { pattern: /SG\.[a-zA-Z0-9_-]{20,}/g, name: 'SendGrid API Key', severity: 'high' },
+  // HashiCorp Vault
+  { pattern: /hvs\.[a-zA-Z0-9_-]{20,}/g, name: 'HashiCorp Vault Token', severity: 'high' },
+  // DigitalOcean
+  { pattern: /dop_v1_[a-zA-Z0-9]{32,}/g, name: 'DigitalOcean Token', severity: 'high' },
+  // CircleCI
+  { pattern: /circle-[a-zA-Z0-9]{30,}/g, name: 'CircleCI Token', severity: 'high' },
+  // Mailgun
+  { pattern: /key-[0-9a-f]{32}/g, name: 'Mailgun API Key', severity: 'high' },
+  // Datadog
+  { pattern: /(?:DD_API_KEY|DD_APP_KEY|DATADOG_API_KEY)[^\S\r\n]*[:=][^\S\r\n]*['"]?([0-9a-f]{32})['"]?/gi, name: 'Datadog API Key', severity: 'high' },
   // Slack
   { pattern: /xox[baprs]-[0-9a-zA-Z]{10,48}/g, name: 'Slack Token', severity: 'critical' },
   // Stripe

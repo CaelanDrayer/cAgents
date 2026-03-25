@@ -20,7 +20,8 @@ const BLOCKED_STRINGS = [
   'mkfs',
   'sudo ',
   'su ',              // Switch user (space prevents matching 'sudo'/'sum')
-  'su -'             // Switch user with login shell
+  'su -',            // Switch user with login shell
+  'crontab'          // Cron persistence mechanism
 ];
 
 // Regex patterns for more precise matching
@@ -40,6 +41,10 @@ const BLOCKED_REGEXES = [
   { pattern: /eval\s+["']?\$\(/, label: 'command obfuscation detected' },                                // eval with command substitution (quoted or unquoted)
   { pattern: /python3?\s+-c\b.*\b(os\.system|subprocess)/s, label: 'command obfuscation detected' },    // python3 -c with dangerous imports
   { pattern: /perl\s+-e\b.*\bsystem\b/s, label: 'command obfuscation detected' },                       // perl -e with system call
+  { pattern: /\b(curl|wget)\b.*\|\s*(bash|sh|zsh)\b/s, label: 'pipe-to-shell detected (curl/wget piped to shell interpreter)' },  // curl/wget piped to shell
+  { pattern: /\bnode\s+-e\b.*\b(child_process|\.exec\(|\.spawn\()/s, label: 'command obfuscation detected' },                     // node -e with child_process/exec/spawn
+  { pattern: /\bruby\s+-e\b.*\b(exec|system|`)/s, label: 'command obfuscation detected' },                                        // ruby -e with exec/system/backtick
+  { pattern: /\bphp\s+-r\b.*\b(exec|system|shell_exec|passthru)/s, label: 'command obfuscation detected' },                       // php -r with dangerous functions
 ];
 
 const GIT_WARNING_PATTERNS = [
