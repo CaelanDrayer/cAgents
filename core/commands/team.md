@@ -268,7 +268,7 @@ Agent_Memory/sessions/team_{timestamp}/
 ```javascript
 TodoWrite({
   todos: [
-    {content: "[team-trigger] Initialize team and analyze parallelism", status: "in_progress", activeForm: "[team-trigger] Initializing team and analyzing parallelism"},
+    {content: "[team-trigger] Initialize team and analyze parallelism", status: "in_progress", activeForm: "[team-trigger] Initializing team and analyzing parallelism"},  // activeForm is optional
     {content: "[team-trigger] Spawn team members", status: "pending", activeForm: "[team-trigger] Spawning team members"},
     {content: "[team-lead] Execute parallel tasks", status: "pending", activeForm: "[team-lead] Executing parallel tasks"},
     {content: "[team-lead] Aggregate results and validate", status: "pending", activeForm: "[team-lead] Aggregating results and validating"}

@@ -305,7 +305,7 @@ group3.forEach(result => streamFindings(result));
 ```javascript
 TodoWrite({
   todos: [
-    {content: "[review] Initialize review (detecting framework, analyzing scope)", status: "in_progress", activeForm: "[review] Initializing review"},
+    {content: "[review] Initialize review (detecting framework, analyzing scope)", status: "in_progress", activeForm: "[review] Initializing review"},  // activeForm is optional
     {content: "[review] Run parallel review agents (0/7 groups complete)", status: "pending", activeForm: "[review] Running parallel review agents"},
     {content: "[review] Aggregate findings with confidence scoring", status: "pending", activeForm: "[review] Aggregating findings"},
     {content: "[review] Generate and validate auto-fixes", status: "pending", activeForm: "[review] Generating auto-fixes"},

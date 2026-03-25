@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.23.0"
+  version: "10.24.0"
   argument-hint: "<target> [--focus <area>] [--auto-fix] [--severity <level>] [--format <type>] [--profile <name>] [--baseline] [--suppress <id>]"
   user-invocable: "true"
   context: "fork"
@@ -308,7 +308,7 @@ Aggregate results from all groups, then generate report directly. Do NOT delegat
 ```javascript
 TodoWrite({
   todos: [
-    {content: "[review] Initialize review (detecting framework, analyzing scope)", status: "in_progress", activeForm: "[review] Initializing review"},
+    {content: "[review] Initialize review (detecting framework, analyzing scope)", status: "in_progress", activeForm: "[review] Initializing review"},  // activeForm is optional
     {content: "[review] Run parallel review agents (0/N groups complete)", status: "pending", activeForm: "[review] Running parallel review agents"},
     {content: "[review] Aggregate findings with confidence scoring", status: "pending", activeForm: "[review] Aggregating findings"},
     {content: "[review] Generate and validate auto-fixes", status: "pending", activeForm: "[review] Generating auto-fixes"},

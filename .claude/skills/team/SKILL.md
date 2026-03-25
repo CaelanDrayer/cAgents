@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.23.0"
+  version: "10.24.0"
   argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--no-template] [--waves <n>]"
   user-invocable: "true"
   context: "fork"
@@ -330,7 +330,7 @@ For each work item:
 TaskCreate({
   subject: "TASK-{N}: <description>",
   description: "Wave {W}. Work item from decomposition. <details and acceptance criteria>",
-  activeForm: "Executing TASK-{N}"
+  activeForm: "Executing TASK-{N}"  // optional
 })
 ```
 
@@ -341,7 +341,7 @@ For each wave transition (wave K -> wave K+1), create a gate:
 TaskCreate({
   subject: "GATE-{K}: Quality gate after wave {K}",
   description: "Quality gate. Lead validates all wave {K} outputs before wave {K+1} starts. Criteria: <gate criteria from decomposition>",
-  activeForm: "Validating GATE-{K}"
+  activeForm: "Validating GATE-{K}"  // optional
 })
 ```
 

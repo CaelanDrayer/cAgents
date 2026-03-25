@@ -25,6 +25,8 @@ As of February 2026, the latest Claude models are:
 
 All models support text/image input, extended thinking, and adaptive thinking (except Haiku). Opus 4.6 and Sonnet 4.6 support 1M token context windows via beta header.
 
+> **Note (CC 2.1.77)**: Opus 4.6 has a **64K default output limit** with a **128K upper bound**. The upper bound requires extended output headers. Sonnet 4.6 has a 64K maximum output.
+
 ## Configuration Location
 
 ```
@@ -184,6 +186,27 @@ Claude Code provides several native model configuration mechanisms:
 | `haiku` | Fast, efficient Haiku |
 | `sonnet[1m]` | Sonnet with 1M token context window |
 | `opusplan` | Opus during plan mode, Sonnet for execution |
+
+### modelOverrides Setting (CC 2.1.73)
+
+The `modelOverrides` setting in `settings.json` allows project-level model overrides without environment variables:
+
+```json
+{
+  "modelOverrides": {
+    "weakModel": "claude-haiku-4-5",
+    "backgroundModel": "claude-haiku-4-5"
+  }
+}
+```
+
+| Key | Purpose |
+|-----|---------|
+| `weakModel` | Override the model used for lightweight/background tasks |
+| `backgroundModel` | Override the model used for background agent operations |
+| `summaryModel` | Override the model used for context summarization |
+
+This is equivalent to `CLAUDE_CODE_SUBAGENT_MODEL` but scoped to specific model roles and configurable per-project via settings.json.
 
 ### Effort Levels (Claude Code Native)
 

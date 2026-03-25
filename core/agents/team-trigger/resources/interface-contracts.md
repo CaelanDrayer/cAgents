@@ -84,7 +84,7 @@ TaskCreate({
     Contract: Consumes "Database Schema & Models" from platform team.
     Reference: schema.prisma, src/models/, src/types/
     Acceptance: Endpoints use established models, no schema drift.`,
-  activeForm: "Building user API endpoints"
+  activeForm: "Building user API endpoints"  // optional
 })
 ```
 

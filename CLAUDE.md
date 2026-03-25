@@ -376,7 +376,7 @@ cAgents/
 +-- CLAUDE.md                # Main project memory (this file)
 +-- .claude/
 |   +-- skills/              # Skills (org, run, team, designer, review, optimize, helper, context)
-|   +-- hooks/               # 24 .cjs files (21 hooks + utils + launcher + eval CLI)
+|   +-- hooks/               # 29 .cjs files (26 hooks + utils + launcher + eval CLI)
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (24 files, 5 categories)
 |   +-- settings.json        # Hook registration + permissions + env
@@ -398,7 +398,7 @@ cAgents/
 
 ## Hooks System
 
-**Architecture**: CJS-only hooks with `createHook()` factory. 24 .cjs files across 14 event types. See @.claude/rules/core/hooks.md for full documentation.
+**Architecture**: CJS-only hooks with `createHook()` factory. 29 .cjs files across 19 event types. See @.claude/rules/core/hooks.md for full documentation.
 
 ## Plugin Architecture
 
@@ -460,13 +460,13 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Agents**: 214 total (16 core + 4 shared + 11 leadership + 183 domain specialists)
 **Domains**: Engineering (32), Creative (30), Business (31), Growth (39), People (19), Service (32), Leadership (11), Core (15), Shared (4)
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/domain_overrides.yaml`, `Agent_Memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (session YAML contract for AgentPath)
-**Hooks**: 14 event types (22 supported by Claude Code), 21 registered CJS hooks (24 .cjs files), invoked via `run-hook.cjs` launcher
+**Hooks**: 19 event types (24 supported by Claude Code), 26 registered CJS hooks (29 .cjs files), invoked via `run-hook.cjs` launcher
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
-**Tests**: `npm test` runs 351 Vitest tests (hooks + config validation)
-**Version**: 10.23.0
+**Tests**: `npm test` runs 685 Vitest tests (hooks + config validation)
+**Version**: 10.24.0
 
 ## Troubleshooting
 

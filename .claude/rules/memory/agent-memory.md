@@ -22,7 +22,15 @@ File-based memory organization for cAgents. Aligned with Claude Code's memory hi
 
 **Loading Order**: Managed -> User -> Project -> Project Rules -> Project Local (later = higher priority)
 
-**Auto Memory**: Persistent directory at `~/.claude/projects/<project>/memory/MEMORY.md`. Toggle with `/memory`. Separate from Agent_Memory/.
+**Auto Memory**: Persistent directory at `~/.claude/projects/<project>/memory/MEMORY.md`. Toggle with `/memory`. Separate from Agent_Memory/. Configure with `autoMemoryDirectory` setting to point auto memory at a custom path — for example, `Agent_Memory/_knowledge/` to share learnings across agents in the same project:
+
+```json
+{
+  "autoMemoryDirectory": "Agent_Memory/_knowledge/"
+}
+```
+
+This lets multiple agents write to a shared knowledge store, enabling cross-session pattern accumulation.
 
 **Path-Specific Rules**: Add `paths:` YAML frontmatter with glob patterns. Rules without `paths` apply unconditionally.
 

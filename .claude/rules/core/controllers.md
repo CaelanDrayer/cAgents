@@ -304,6 +304,28 @@ implementation_tasks:
     agent_id: "{agent_id from Task result}"  # REQUIRED: links to agent_tree.yaml
 ```
 
+### Task Result Metadata (CC 2.1.30)
+
+The Task tool returns rich metadata alongside the agent result. Controllers SHOULD capture and log this metadata in the coordination_log:
+
+```yaml
+implementation_tasks:
+  - task_id: WI-1
+    assigned_to: cagents:backend-developer
+    agent_id: "{agent_id from Task result}"
+    # CC 2.1.30 metadata fields:
+    token_count:
+      input: 4521
+      output: 892
+      cache_read: 3100
+    tool_uses: 12          # Number of tool calls made
+    duration_seconds: 47   # Wall-clock time
+```
+
+**Why capture this**: Token counts enable cost tracking per work item. Tool use counts indicate agent efficiency (high counts may signal thrashing). Duration enables SLA tracking and helps identify stuck agents (Check 10 in mid-execution validation).
+
+Controllers record this in `coordination_log.yaml` under the matching `implementation_tasks` entry.
+
 ## Confidence Tiers
 
 Every completed work item MUST include `confidence` (0.0-1.0) and `confidence_rationale`. Items < 0.7 trigger additional scrutiny.

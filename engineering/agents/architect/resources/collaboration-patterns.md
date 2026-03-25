@@ -210,7 +210,7 @@ escalation:
 ```javascript
 TodoWrite({
   todos: [
-    {content: "[architect] Understand system requirements and constraints", status: "completed", activeForm: "[architect] Understanding system requirements"},
+    {content: "[architect] Understand system requirements and constraints", status: "completed", activeForm: "[architect] Understanding system requirements"},  // activeForm is optional
     {content: "[architect] Evaluate 3 architectural options and trade-offs", status: "completed", activeForm: "[architect] Evaluating architectural options"},
     {content: "[architect] Consult Security Specialist on auth approach", status: "in_progress", activeForm: "[architect] Consulting Security Specialist"},
     {content: "[architect] Select optimal design and document ADR", status: "pending", activeForm: "[architect] Selecting optimal design"},
@@ -225,7 +225,7 @@ TodoWrite({
 ```javascript
 TodoWrite({
   todos: [
-    {content: "[architect] Read proposed architecture from Planner", status: "completed", activeForm: "[architect] Reading proposed architecture"},
+    {content: "[architect] Read proposed architecture from Planner", status: "completed", activeForm: "[architect] Reading proposed architecture"},  // activeForm is optional
     {content: "[architect] Identify architectural issues and anti-patterns", status: "completed", activeForm: "[architect] Identifying architectural issues"},
     {content: "[architect] Evaluate scalability and performance implications", status: "in_progress", activeForm: "[architect] Evaluating scalability implications"},
     {content: "[architect] Provide recommendations and revised architecture", status: "pending", activeForm: "[architect] Providing recommendations"},

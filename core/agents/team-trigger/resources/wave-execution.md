@@ -32,7 +32,7 @@ TaskCreate({ subject: "TASK-01: Setup project structure", ... })   // -> task #1
 TaskCreate({ subject: "TASK-02: Define database schema", ... })    // -> task #2
 
 // Gate 0: Sentinel blocked by all wave-0 tasks
-TaskCreate({ subject: "GATE-0: Foundation Ready", description: "Quality gate. Validate: project structure, schema, contracts.", activeForm: "Validating foundation" })
+TaskCreate({ subject: "GATE-0: Foundation Ready", description: "Quality gate. Validate: project structure, schema, contracts.", activeForm: "Validating foundation" /* optional */ })
 TaskUpdate({ taskId: "3", addBlockedBy: ["1", "2"] })             // GATE-0 blocked by TASK-01, TASK-02
 
 // Wave 1: Parallel build tasks (blocked by GATE-0)

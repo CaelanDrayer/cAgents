@@ -113,9 +113,21 @@ Key behaviors:
 - **Task dependencies**: Tasks can block other tasks. Blocked tasks auto-unblock when dependencies complete.
 - **Self-claiming**: After finishing, teammates pick up next unassigned, unblocked task autonomously.
 - **In-process navigation**: Shift+Down to cycle teammates, Enter to view, Escape to interrupt, Ctrl+T for task list.
+- **Worktree isolation with sparse checkout**: Use `isolation: "worktree"` when spawning teammates for parallel file safety. In monorepos, add `worktree.sparsePaths` to settings to limit each teammate's checkout to only the modules it needs:
+
+```json
+{
+  "worktree": {
+    "sparsePaths": ["src/module-a/", "shared/"]
+  }
+}
+```
+
+This dramatically reduces checkout time and prevents teammates from accidentally modifying files outside their assigned module.
 
 ### Limitations (Claude Code Enforced)
 - **No session resumption**: `/resume` and `/rewind` do not restore in-process teammates
+- **SendMessage auto-resume**: A stopped teammate CAN be re-activated by sending it a message via SendMessage. Use this for follow-up work without spawning a fresh agent.
 - **No nested teams**: Teammates cannot spawn their own teams. Only the lead manages the team.
 - **One team per session**: Clean up current team before starting a new one.
 - **Lead is fixed**: Cannot promote a teammate to lead or transfer leadership.
@@ -214,7 +226,7 @@ TeamCreate({
 TaskCreate({
   subject: "TASK-01: Implement user model",
   description: "Execute via /run: ...",
-  activeForm: "Implementing user model"
+  activeForm: "Implementing user model"  // optional
 })
 
 // Set dependencies
@@ -240,6 +252,19 @@ SendMessage({
   content: "All work complete."
 })
 ```
+
+**SendMessage auto-resume** (CC 2.1.77): Sending a message to a stopped teammate automatically resumes it. The team lead can use this to re-activate a teammate that completed its wave work without needing to spawn a new agent instance:
+
+```javascript
+// Resume a stopped teammate by sending it a message
+SendMessage({
+  type: "direct",
+  recipient: "teammate-2",
+  content: "New work available: TASK-07 is now unblocked. Please claim and execute."
+})
+```
+
+Update the teammate lifecycle expectations accordingly: teammates that finish a wave and stop are NOT gone — they can be re-activated via SendMessage for follow-up work items.
 
 ### Cleanup
 

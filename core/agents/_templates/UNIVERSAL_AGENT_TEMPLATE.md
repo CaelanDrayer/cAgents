@@ -140,7 +140,7 @@ See template at: `Agent_Memory/_system/domains/_template/{agent_type}_config.yam
 ```javascript
 TodoWrite({
   todos: [
-    {content: "[{agent-name}] {Step 1}", status: "in_progress", activeForm: "[{agent-name}] {Doing step 1}"},
+    {content: "[{agent-name}] {Step 1}", status: "in_progress", activeForm: "[{agent-name}] {Doing step 1}"},  // activeForm is optional
     {content: "[{agent-name}] {Step 2}", status: "pending", activeForm: "[{agent-name}] {Doing step 2}"},
     ...
   ]

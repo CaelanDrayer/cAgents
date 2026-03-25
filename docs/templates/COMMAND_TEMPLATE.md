@@ -84,7 +84,7 @@ Create minimal todo for visibility. **Prefix each task with the executing agent 
 ```javascript
 TodoWrite({
   todos: [
-    {content: "[{agent-name}] Process request", status: "in_progress", activeForm: "[{agent-name}] Processing request"},
+    {content: "[{agent-name}] Process request", status: "in_progress", activeForm: "[{agent-name}] Processing request"},  // activeForm is optional
     {content: "[{agent-name}] Complete workflow", status: "pending", activeForm: "[{agent-name}] Completing workflow"}
   ]
 })

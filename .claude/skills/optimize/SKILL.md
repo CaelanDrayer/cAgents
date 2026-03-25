@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.23.0"
+  version: "10.24.0"
   argument-hint: "[<target>] [--type <type>] [--dry-run] [--interactive] [--rollback]"
   user-invocable: "true"
   context: "fork"
@@ -247,7 +247,7 @@ AskUserQuestion: "Optimizations applied. Want to review quality? Run: /review ${
 ```javascript
 TodoWrite({
   todos: [
-    {content: "[optimizer] Detect optimization type and scan project", status: "in_progress", activeForm: "[optimizer] Detecting optimization opportunities"},
+    {content: "[optimizer] Detect optimization type and scan project", status: "in_progress", activeForm: "[optimizer] Detecting optimization opportunities"},  // activeForm is optional
     {content: "[optimizer] Analyze baseline and identify opportunities", status: "pending", activeForm: "[optimizer] Analyzing baseline metrics"},
     {content: "[optimizer] Plan and prioritize optimizations", status: "pending", activeForm: "[optimizer] Planning optimizations"},
     {content: "[optimizer] Execute optimizations atomically", status: "pending", activeForm: "[optimizer] Executing optimizations"},

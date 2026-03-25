@@ -28,6 +28,7 @@ maxTurns: 40                       # V9.0: Maximum agentic turns
 permissionMode: "bypassPermissions" # V9.0: For infrastructure + controllers
 memory: {"project": true}          # V9.0: Persistent memory for learning agents
 disallowedTools: ["Task"]          # V9.0: For support agents (prevent delegation)
+initialPrompt: "Load session state and summarize active work items before starting"  # Optional: Prompt run automatically on agent spawn
 ---
 ```
 
@@ -86,6 +87,13 @@ disallowedTools: ["Task"]          # V9.0: For support agents (prevent delegatio
 ### disallowedTools (V9.0)
 - `["Task"]` for support agents to prevent unauthorized delegation
 - Enforces tier boundaries
+
+### initialPrompt
+- String prompt that runs automatically when the agent is spawned
+- Use cases: loading session state, bootstrapping context, running pre-checks, summarizing prior work before main task
+- The prompt executes before any user/controller input is processed
+- Keep it concise (under 200 tokens) — it runs on every spawn
+- Example: `"Read workflow/plan.yaml and summarize the current phase and objectives"`
 
 ### coordination_style (Controllers only)
 - `question_based`: Uses question delegation pattern
@@ -301,6 +309,8 @@ When `context: fork` is set:
 
 Available agent types: `Explore` (read-only, haiku), `Plan` (read-only), `general-purpose` (all tools), or any custom subagent name.
 
+The `ExitWorktree` tool (CC 2.1.72) is available within worktree-isolated subagents to explicitly exit the worktree and return to the parent context. Use it when the subagent has finished its isolated work and needs to signal completion cleanly.
+
 ### Skill Location Precedence
 
 | Location | Scope | Priority |
@@ -384,6 +394,7 @@ capabilities:
   - risk_assessment
   - team_coordination
 tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+initialPrompt: "Read Agent_Memory/sessions/*/workflow/plan.yaml if it exists and note the current phase."
 ---
 
 # Engineering Manager

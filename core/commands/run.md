@@ -306,7 +306,7 @@ Create TodoWrite at session start with generic placeholders, then **progressivel
 ```javascript
 TodoWrite({
   todos: [
-    {content: "[/run] Route request to domain and tier", status: "in_progress", activeForm: "[/run] Routing request to domain and tier"},
+    {content: "[/run] Route request to domain and tier", status: "in_progress", activeForm: "[/run] Routing request to domain and tier"},  // activeForm is optional
     {content: "[/run] Plan objectives and select controller", status: "pending", activeForm: "[/run] Planning objectives and selecting controller"},
     {content: "[controller] Coordinate work via question-based delegation", status: "pending", activeForm: "[controller] Coordinating work via question-based delegation"},
     {content: "[/run] Validate outputs and quality", status: "pending", activeForm: "[/run] Validating outputs and quality"}
@@ -319,7 +319,7 @@ TodoWrite({
 TodoWrite({
   todos: [
     {content: "[/run] Route request to domain and tier", status: "completed"},
-    {content: "[/run] Plan objectives and select controller", status: "in_progress", activeForm: "[/run] Planning objectives and selecting controller"},
+    {content: "[/run] Plan objectives and select controller", status: "in_progress", activeForm: "[/run] Planning objectives and selecting controller"},  // activeForm is optional
     {content: "[engineering-manager] Coordinate work via question-based delegation", status: "pending", activeForm: "[engineering-manager] Coordinating work via question-based delegation"},
     {content: "[/run] Validate outputs and quality", status: "pending", activeForm: "[/run] Validating outputs and quality"}
   ]
@@ -333,7 +333,7 @@ TodoWrite({
   todos: [
     {content: "[/run] Route request to domain and tier", status: "completed"},
     {content: "[/run] Plan objectives and select controller", status: "completed"},
-    {content: "[engineering-manager] Coordinate: ask questions and synthesize", status: "in_progress", activeForm: "[engineering-manager] Coordinating work"},
+    {content: "[engineering-manager] Coordinate: ask questions and synthesize", status: "in_progress", activeForm: "[engineering-manager] Coordinating work"},  // activeForm is optional
     {content: "[backend-developer] Implement authentication fix", status: "pending", activeForm: "[backend-developer] Implementing authentication fix"},
     {content: "[qa-tester] Create regression tests", status: "pending", activeForm: "[qa-tester] Creating regression tests"},
     {content: "[/run] Validate outputs and quality", status: "pending", activeForm: "[/run] Validating outputs and quality"}

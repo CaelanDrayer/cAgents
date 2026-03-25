@@ -37,9 +37,9 @@ for (const group of independentGroups) {
     })
   )
 
-  // Wait for all in group (with timeout)
+  // Read result files after tasks complete
   const results = await Promise.all(
-    taskIds.map(id => TaskOutput({task_id: id, block: true, timeout: 300000}))
+    group.map(opt => Read({ file_path: `optimizations/${opt.id}/result.yaml` }))
   )
 
   // Check for failures, rollback group if any fail

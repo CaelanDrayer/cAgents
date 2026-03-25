@@ -340,7 +340,7 @@ completed_at: 2026-01-12T11:30:00Z
 TodoWrite({
   todos: [
     // ... completed routing/planning entries ...
-    {content: "[{controller-name}] Coordinate: ask questions and synthesize", status: "in_progress", activeForm: "[{controller-name}] Coordinating work"},
+    {content: "[{controller-name}] Coordinate: ask questions and synthesize", status: "in_progress", activeForm: "[{controller-name}] Coordinating work"},  // activeForm is optional
     {content: "[backend-developer] Implement OAuth2 endpoints", status: "pending", activeForm: "[backend-developer] Implementing OAuth2 endpoints"},
     {content: "[qa-lead] Create OAuth2 tests", status: "pending", activeForm: "[qa-lead] Creating OAuth2 tests"},
     {content: "[security-specialist] Security review of implementation", status: "pending", activeForm: "[security-specialist] Reviewing security"},
