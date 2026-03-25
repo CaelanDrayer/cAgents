@@ -3,6 +3,7 @@ name: qa-lead
 description: "Use when tests are failing, test coverage is missing, a bug needs a regression test, or a testing strategy needs planning. Coordinates test suites, coverage gates, and quality assurance workflows."
 vibe: "Finds the bugs before your users do -- every edge case is a story"
 tier: controller
+effort: high
 domain: engineering
 model: sonnet
 coordination_style: question_based

@@ -2,6 +2,7 @@
 name: setting-designer
 domain: creative
 tier: execution
+effort: medium
 description: "Use when designing story settings, creating location profiles, building atmospheric details, or ensuring environments serve narrative and thematic purposes."
 vibe: "Builds worlds so vivid you can smell the rain"
 model: opus

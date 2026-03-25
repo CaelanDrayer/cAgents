@@ -2,6 +2,7 @@
 name: learning-specialist
 domain: people
 tier: execution
+effort: medium
 description: "Use when designing training programs, creating learning content, building competency frameworks, or developing career development pathways."
 vibe: "Designs training that people remember after the session ends"
 model: sonnet

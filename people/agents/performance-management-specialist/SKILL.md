@@ -2,6 +2,7 @@
 name: performance-management-specialist
 domain: people
 tier: execution
+effort: medium
 description: "Use when designing performance review processes, building goal-setting frameworks, developing feedback systems, or calibrating performance ratings."
 vibe: "Makes performance reviews useful instead of dreaded"
 model: sonnet

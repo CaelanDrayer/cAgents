@@ -3,6 +3,7 @@ name: cco
 description: "Use for creative vision, narrative strategy, artistic direction, tier 3-4 creative projects, or major creative decisions. Chief Creative Officer."
 vibe: "Sets the creative standard that defines the company's voice"
 tier: controller
+effort: high
 domain: leadership
 model: "opusplan"
 color: gold

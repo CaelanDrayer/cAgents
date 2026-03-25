@@ -3,6 +3,7 @@ name: dba
 description: "Use when designing database schemas, optimizing query performance, managing migrations, configuring replication, or troubleshooting database issues."
 vibe: "Keeps databases fast, safe, and ready for whatever you throw at them"
 tier: execution
+effort: medium
 domain: engineering
 model: sonnet
 color: bright_cyan

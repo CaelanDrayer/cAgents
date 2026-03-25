@@ -2,6 +2,7 @@
 name: task-consolidator
 domain: core
 tier: infrastructure
+effort: high
 description: "Use when reducing task inventory context overhead, merging related tasks, or achieving 40-88% context savings for large workflows."
 vibe: "Turns 100 scattered tasks into a clean, actionable list"
 model: opus

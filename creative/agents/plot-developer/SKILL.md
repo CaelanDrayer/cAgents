@@ -2,6 +2,7 @@
 name: plot-developer
 domain: creative
 tier: execution
+effort: medium
 description: "Use when developing plot mechanics, engineering twists and reversals, designing subplot resonance, or building escalation curves that drive narrative momentum."
 vibe: "Builds plots with the precision of a watchmaker"
 model: opus

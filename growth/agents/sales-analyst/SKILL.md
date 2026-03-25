@@ -2,6 +2,7 @@
 name: sales-analyst
 domain: growth
 tier: execution
+effort: medium
 description: "Use when analyzing sales pipeline data, forecasting revenue, identifying deal patterns, or providing data-driven insights to improve sales performance."
 vibe: "Finds the patterns in pipeline data that predict next quarter"
 model: sonnet

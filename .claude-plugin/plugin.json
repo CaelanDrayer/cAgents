@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "cagents",
-  "version": "10.22.7",
-  "description": "214 agents across 8 domains. /run executes any task, /team runs parallel agents, /org coordinates cross-domain strategy, /designer explores before building, /review audits quality, /optimize improves performance, /helper guides usage, /context shares knowledge.",
+  "version": "10.23.0",
+  "description": "Universal multi-domain agent orchestration framework. 214 specialized agents across 8 business domains, coordinated by an intelligent pipeline. 9 skills: /run routes any task through controller + specialist agents, /team runs parallel agent waves, /org coordinates cross-domain strategy, /designer guides design exploration, /review audits quality, /optimize improves performance, /helper guides usage, /context shares knowledge, /debug diagnoses bugs.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",
@@ -13,6 +13,7 @@
   "license": "MIT",
   "skills": "./.claude/skills/",
   "hooks": "./.claude/settings.json",
+  "outputStyles": "./output-styles",
   "agents": [
     "./engineering/agents/accessibility-checker/SKILL.md",
     "./engineering/agents/architect/SKILL.md",

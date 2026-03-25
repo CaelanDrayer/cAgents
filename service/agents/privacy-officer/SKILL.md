@@ -2,6 +2,7 @@
 name: privacy-officer
 domain: service
 tier: execution
+effort: medium
 description: "Use when developing privacy policies, conducting privacy impact assessments, managing GDPR/CCPA compliance, or handling data subject access requests."
 vibe: "Guards user data like every record is their own"
 model: sonnet

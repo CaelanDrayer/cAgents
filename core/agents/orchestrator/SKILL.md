@@ -2,6 +2,7 @@
 name: orchestrator
 domain: core
 tier: infrastructure
+effort: high
 description: "Use when enriching request context at pipeline start, detecting domain and complexity, or preparing enriched_context.yaml for downstream agents."
 vibe: "The conductor who ensures every instrument enters on cue"
 model: opus

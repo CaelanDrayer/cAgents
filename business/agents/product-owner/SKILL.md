@@ -3,6 +3,7 @@ name: product-owner
 description: "Use when features need prioritization, product roadmap needs planning, user stories need refinement, or scope decisions need a product perspective. Balances user needs with technical constraints."
 vibe: "Says no to good ideas so great ideas get shipped"
 tier: controller
+effort: high
 domain: business
 coordination_style: question_based
 typical_questions:

@@ -3,6 +3,7 @@ name: finance-manager
 description: "Use when managing budgets, tracking financial performance, creating forecasts, analyzing cost structures, or producing financial reports."
 vibe: "Counts every dollar so the company can spend the right ones"
 tier: controller
+effort: high
 domain: business
 coordination_style: question_based
 typical_questions:

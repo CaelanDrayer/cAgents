@@ -2,6 +2,7 @@
 name: narrative-designer
 domain: creative
 tier: execution
+effort: medium
 description: "Use when engineering reading experience, designing narrative flow at micro and macro scales, optimizing scene/sequel pacing, or crafting information revelation sequences."
 vibe: "Architects the story so every path feels intentional"
 model: opus

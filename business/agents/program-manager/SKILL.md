@@ -2,6 +2,7 @@
 name: program-manager
 domain: business
 tier: controller
+effort: high
 coordination_style: question_based
 typical_questions:
   - "What projects are in this program?"

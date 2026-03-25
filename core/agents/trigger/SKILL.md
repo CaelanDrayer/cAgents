@@ -1,6 +1,7 @@
 ---
 name: trigger
 tier: infrastructure
+effort: high
 description: "Use when entering the pipeline as the initial entry point, parsing user requests, and routing to the appropriate skill or workflow."
 vibe: "The front door that sends every request to exactly the right room"
 allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"

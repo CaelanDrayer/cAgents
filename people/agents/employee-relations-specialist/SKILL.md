@@ -2,6 +2,7 @@
 name: employee-relations-specialist
 domain: people
 tier: execution
+effort: medium
 description: "Use when handling workplace conflicts, conducting investigations, advising on disciplinary actions, or mediating employee-manager disputes."
 vibe: "Resolves workplace issues before they become workplace problems"
 model: sonnet

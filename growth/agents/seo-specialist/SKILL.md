@@ -2,6 +2,7 @@
 name: seo-specialist
 domain: growth
 tier: execution
+effort: medium
 description: "Use when optimizing search rankings, conducting keyword research, performing technical SEO audits, building backlink strategies, or improving organic traffic."
 vibe: "Gets pages to rank by understanding what Google actually wants"
 model: sonnet

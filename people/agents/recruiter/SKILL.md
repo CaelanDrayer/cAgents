@@ -2,6 +2,7 @@
 name: recruiter
 domain: people
 tier: execution
+effort: medium
 description: "Use when sourcing candidates, screening resumes, conducting initial interviews, managing candidate pipelines, or coordinating hiring logistics."
 vibe: "Finds the candidates who aren't looking but should be"
 model: sonnet

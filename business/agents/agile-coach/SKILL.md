@@ -2,6 +2,7 @@
 name: agile-coach
 domain: business
 tier: execution
+effort: medium
 description: "Use when setting up sprint processes, managing backlogs, tracking velocity, or coaching teams on Agile and Scrum practices."
 vibe: "Turns standup theater into shipping velocity"
 model: sonnet

@@ -2,6 +2,7 @@
 name: prompt-engineer
 domain: core
 tier: execution
+effort: medium
 description: "Use when crafting optimized delegation prompts between decomposition and controller execution, or when prompt quality affects downstream agent performance."
 vibe: "Crafts the perfect prompt so agents deliver on the first try"
 model: sonnet

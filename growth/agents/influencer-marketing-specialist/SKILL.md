@@ -2,6 +2,7 @@
 name: influencer-marketing-specialist
 domain: growth
 tier: execution
+effort: medium
 description: "Use when identifying influencers, managing influencer partnerships, coordinating sponsored content, or measuring influencer campaign impact."
 vibe: "Connects brands with voices their audience already trusts"
 model: sonnet

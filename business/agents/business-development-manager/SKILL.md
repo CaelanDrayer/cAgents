@@ -2,6 +2,7 @@
 name: business-development-manager
 domain: business
 tier: execution
+effort: medium
 description: "Use when developing strategic partnerships, exploring new market opportunities, evaluating alliances, or planning business expansion."
 vibe: "Opens doors that competitors don't know exist"
 model: sonnet

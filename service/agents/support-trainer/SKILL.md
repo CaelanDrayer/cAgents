@@ -2,6 +2,7 @@
 name: support-trainer
 domain: service
 tier: execution
+effort: medium
 description: "Use when developing support training curricula, onboarding new agents, creating product knowledge assessments, or running skill-building workshops."
 vibe: "Trains support teams to handle anything customers throw at them"
 model: sonnet

@@ -2,6 +2,7 @@
 name: campaign-manager
 domain: growth
 tier: controller
+effort: high
 coordination_style: question_based
 typical_questions:
   - "What are the current campaign/sales metrics?"

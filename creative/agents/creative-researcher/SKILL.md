@@ -2,6 +2,7 @@
 name: creative-researcher
 domain: creative
 tier: execution
+effort: medium
 description: "Use when researching settings, historical periods, cultural details, or technical subjects to ground creative work in authentic, accurate foundations."
 vibe: "Digs up the obscure details that make fiction feel real"
 model: opus

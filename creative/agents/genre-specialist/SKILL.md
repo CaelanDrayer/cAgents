@@ -2,6 +2,7 @@
 name: genre-specialist
 domain: creative
 tier: execution
+effort: medium
 description: "Use when working within specific genre conventions, subverting genre expectations, blending genres, or ensuring work meets audience expectations for its category."
 vibe: "Knows every genre's rules well enough to break them right"
 model: opus

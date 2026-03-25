@@ -1,6 +1,7 @@
 ---
 name: optimizer
 tier: infrastructure
+effort: high
 domain: core
 description: "Use when a workflow needs performance tuning, token reduction, or execution path optimization across pipeline stages."
 vibe: "Squeezes performance from places nobody thought to look"

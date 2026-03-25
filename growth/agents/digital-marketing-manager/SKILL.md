@@ -2,6 +2,7 @@
 name: digital-marketing-manager
 domain: growth
 tier: execution
+effort: medium
 description: "Use when coordinating digital marketing channels, managing paid and organic campaigns, optimizing digital spend, or tracking online engagement metrics."
 vibe: "Masters every digital channel so the right message finds the right person"
 model: sonnet

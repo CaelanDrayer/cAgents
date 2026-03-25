@@ -3,6 +3,7 @@ name: tech-lead
 description: "Use for leading technical direction on projects, making architecture decisions, coordinating engineering teams, or balancing technical debt with feature delivery."
 vibe: "Sets technical direction and unblocks the team before they're stuck"
 tier: controller
+effort: high
 domain: engineering
 model: "opusplan"
 coordination_style: question_based

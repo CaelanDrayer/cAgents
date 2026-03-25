@@ -2,6 +2,7 @@
 name: okr-specialist
 domain: business
 tier: execution
+effort: medium
 description: "Use when setting OKRs, defining objectives and key results, tracking goal progress, or coaching teams on OKR methodology and alignment."
 vibe: "Turns ambitious goals into measurable, achievable milestones"
 model: sonnet

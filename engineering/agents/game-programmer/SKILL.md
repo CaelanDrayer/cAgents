@@ -2,6 +2,7 @@
 name: game-programmer
 domain: engineering
 tier: execution
+effort: medium
 description: "Use when implementing gameplay mechanics, writing game logic, building AI systems for games, or integrating game systems with engine frameworks."
 vibe: "Writes the code that makes impossible game mechanics possible"
 model: sonnet

@@ -2,6 +2,7 @@
 name: growth-marketer
 domain: growth
 tier: execution
+effort: medium
 description: "Use when running growth experiments, optimizing acquisition channels, improving activation and retention metrics, or building viral loops and referral programs."
 vibe: "Tests 10 things, finds the one that scales, then doubles down"
 model: sonnet

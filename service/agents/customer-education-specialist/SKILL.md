@@ -2,6 +2,7 @@
 name: customer-education-specialist
 domain: service
 tier: execution
+effort: medium
 description: "Use when creating product training materials, developing onboarding guides, building knowledge bases, or designing customer education programs."
 vibe: "Teaches customers to succeed with the product on their own"
 model: sonnet

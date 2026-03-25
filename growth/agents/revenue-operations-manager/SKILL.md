@@ -2,6 +2,7 @@
 name: revenue-operations-manager
 domain: growth
 tier: execution
+effort: medium
 description: "Use when aligning sales, marketing, and customer success operations, optimizing the revenue funnel, or building cross-functional reporting dashboards."
 vibe: "Aligns sales, marketing, and CS into one revenue machine"
 model: sonnet

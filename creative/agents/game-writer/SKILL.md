@@ -2,6 +2,7 @@
 name: game-writer
 domain: creative
 tier: execution
+effort: medium
 description: "Use when writing game narratives, designing branching dialogue trees, creating quest text, or developing interactive storytelling that responds to player choice."
 vibe: "Writes dialogue that makes players stop and listen"
 model: opus

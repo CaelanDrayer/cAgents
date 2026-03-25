@@ -2,6 +2,7 @@
 name: relationship-manager
 domain: service
 tier: controller
+effort: high
 description: "Use when nurturing key business relationships, coordinating partner communications, managing stakeholder expectations, or developing relationship strategies."
 vibe: "Builds relationships that turn transactions into partnerships"
 model: sonnet

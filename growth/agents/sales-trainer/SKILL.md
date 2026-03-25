@@ -2,6 +2,7 @@
 name: sales-trainer
 domain: growth
 tier: execution
+effort: medium
 description: "Use when designing sales training programs, coaching reps on methodology, running role-play exercises, or measuring training effectiveness and skill gaps."
 vibe: "Trains reps until objection handling becomes second nature"
 model: sonnet

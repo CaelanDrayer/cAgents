@@ -2,6 +2,7 @@
 name: universal-self-correct
 domain: core
 tier: infrastructure
+effort: high
 description: "Use when an agent is stuck, when 3+ tool failures occur in sequence, or when the 6-step recovery ladder needs activation."
 vibe: "Fixes what the validators flagged before anyone has to ask"
 model: opus

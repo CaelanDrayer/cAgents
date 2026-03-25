@@ -2,6 +2,7 @@
 name: support-quality-analyst
 domain: service
 tier: execution
+effort: medium
 description: "Use when auditing support interactions, scoring agent performance, identifying quality gaps, or developing quality assurance standards and calibration processes."
 vibe: "Scores support interactions to raise the bar for everyone"
 model: sonnet

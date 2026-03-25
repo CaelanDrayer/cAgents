@@ -2,6 +2,7 @@
 name: data-scientist
 domain: shared
 tier: controller
+effort: high
 description: "Use when building statistical models, performing exploratory data analysis, designing experiments, or extracting insights from structured and unstructured datasets."
 vibe: "Turns messy data into clear decisions"
 model: "opusplan"

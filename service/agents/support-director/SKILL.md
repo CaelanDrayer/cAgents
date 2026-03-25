@@ -2,6 +2,7 @@
 name: support-director
 domain: service
 tier: controller
+effort: high
 description: "Use when setting support strategy, managing support team structure, defining SLA targets, or coordinating support operations across channels and tiers."
 vibe: "Leads the support org to deliver experiences customers talk about"
 model: "opusplan"

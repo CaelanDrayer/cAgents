@@ -2,6 +2,7 @@
 name: planning-operations-manager
 domain: business
 tier: execution
+effort: medium
 description: "Use when optimizing planning processes, developing planning templates, managing planning tools, or coordinating planning governance across teams."
 vibe: "Keeps planning on track when the plan keeps changing"
 model: sonnet

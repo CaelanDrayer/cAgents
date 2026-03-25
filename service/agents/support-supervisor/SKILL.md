@@ -2,6 +2,7 @@
 name: support-supervisor
 domain: service
 tier: execution
+effort: medium
 description: "Use when managing support agents, handling real-time queue management, coaching team members, or resolving escalated customer issues."
 vibe: "Coaches support agents until great service becomes muscle memory"
 model: sonnet

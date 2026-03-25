@@ -2,6 +2,7 @@
 name: general-counsel
 domain: service
 tier: controller
+effort: high
 description: "Use for legal strategy, regulatory compliance, contract review, IP protection, and corporate governance. General Counsel-level legal oversight."
 vibe: "Provides the legal judgment that keeps executives out of trouble"
 model: "opusplan"

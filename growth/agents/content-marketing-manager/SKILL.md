@@ -2,6 +2,7 @@
 name: content-marketing-manager
 domain: growth
 tier: execution
+effort: medium
 description: "Use when planning content strategy, managing editorial calendars, coordinating content production, or measuring content engagement and ROI."
 vibe: "Creates content that earns attention instead of buying it"
 model: sonnet

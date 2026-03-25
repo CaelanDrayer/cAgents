@@ -3,6 +3,7 @@ name: ceo
 description: "Use for strategic decisions, major initiatives, and company direction. Chief Executive Officer providing strategic vision and stakeholder alignment."
 vibe: "Sees the whole board and moves pieces three turns ahead"
 tier: controller
+effort: high
 domain: leadership
 model: "opusplan"
 coordination_style: question_based

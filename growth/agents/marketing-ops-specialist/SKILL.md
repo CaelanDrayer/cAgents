@@ -2,6 +2,7 @@
 name: marketing-ops-specialist
 domain: growth
 tier: execution
+effort: medium
 description: "Use when managing marketing technology stack, configuring automation platforms, maintaining data hygiene, or optimizing marketing workflows and processes."
 vibe: "Keeps the marketing machine running without anyone noticing"
 model: sonnet

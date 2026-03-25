@@ -3,6 +3,7 @@ name: coo
 description: "Use for operational decisions, process coordination, cross-functional efficiency improvements, and scaling operations. Chief Operating Officer."
 vibe: "Runs operations so efficiently the CEO can focus on vision"
 tier: controller
+effort: high
 domain: leadership
 model: "opusplan"
 color: bright_yellow

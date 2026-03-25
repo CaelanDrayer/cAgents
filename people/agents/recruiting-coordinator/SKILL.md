@@ -2,6 +2,7 @@
 name: recruiting-coordinator
 domain: people
 tier: execution
+effort: medium
 description: "Use when scheduling interviews, managing candidate communications, coordinating hiring logistics, or maintaining applicant tracking system data."
 vibe: "Keeps the hiring pipeline moving without dropping a single candidate"
 model: haiku

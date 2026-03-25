@@ -2,6 +2,7 @@
 name: planning-analyst
 domain: business
 tier: execution
+effort: medium
 description: "Use when analyzing planning metrics, forecasting trends, tracking KPIs, or providing data-driven insights for strategic and operational planning."
 vibe: "Spots the gap between the plan and reality before it hurts"
 model: sonnet

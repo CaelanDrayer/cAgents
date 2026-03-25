@@ -3,6 +3,7 @@ name: it-support
 description: "Use when troubleshooting IT infrastructure, managing system configurations, resolving network issues, or setting up development environments."
 vibe: "Fixes the thing before you finish describing the problem"
 tier: execution
+effort: medium
 domain: engineering
 model: sonnet
 color: bright_yellow

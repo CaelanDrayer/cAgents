@@ -3,6 +3,7 @@ name: marketing-strategist
 description: "Use when planning marketing campaigns, defining target audiences, selecting channels, or developing go-to-market strategy. Handles brand positioning, content strategy, and competitive analysis."
 vibe: "Plans the marketing playbook three quarters ahead"
 tier: controller
+effort: high
 domain: growth
 model: opusplan
 color: bright_green

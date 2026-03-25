@@ -3,6 +3,7 @@ name: data-lead
 description: "Use for coordinating data engineering work, reviewing data pipeline architecture, managing data quality standards, or overseeing data infrastructure decisions."
 vibe: "Owns the data layer from schema design to query optimization"
 tier: controller
+effort: high
 domain: engineering
 model: sonnet
 coordination_style: question_based

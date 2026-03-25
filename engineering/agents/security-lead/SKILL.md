@@ -3,6 +3,7 @@ name: security-lead
 description: "Use when checking for security vulnerabilities, reviewing auth flows, auditing input validation, or preparing for a security assessment. Handles threat modeling, penetration testing, and compliance checks."
 vibe: "Leads the security team like a general defending the castle"
 tier: controller
+effort: high
 domain: engineering
 model: sonnet
 coordination_style: question_based

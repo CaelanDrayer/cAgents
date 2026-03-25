@@ -2,6 +2,7 @@
 name: demand-generation-manager
 domain: growth
 tier: execution
+effort: medium
 description: "Use when building demand generation pipelines, planning lead nurture campaigns, optimizing MQL-to-SQL conversion, or managing inbound marketing programs."
 vibe: "Fills the pipeline with leads that actually convert"
 model: sonnet

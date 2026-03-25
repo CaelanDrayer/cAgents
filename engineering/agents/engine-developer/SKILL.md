@@ -2,6 +2,7 @@
 name: engine-developer
 domain: engineering
 tier: execution
+effort: medium
 description: "Use when building game engine systems, implementing rendering pipelines, developing physics engines, or creating low-level engine infrastructure."
 vibe: "Builds the engine that makes the game run at 60fps"
 model: sonnet

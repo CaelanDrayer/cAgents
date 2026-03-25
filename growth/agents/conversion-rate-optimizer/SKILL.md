@@ -2,6 +2,7 @@
 name: conversion-rate-optimizer
 domain: growth
 tier: execution
+effort: medium
 description: "Use when improving conversion funnels, running A/B tests, analyzing user drop-off points, or optimizing landing pages and checkout flows."
 vibe: "Obsessively tests every pixel because a 2% lift compounds into millions"
 model: sonnet

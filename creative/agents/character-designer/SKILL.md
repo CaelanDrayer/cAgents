@@ -2,6 +2,7 @@
 name: character-designer
 domain: creative
 tier: execution
+effort: medium
 description: "Use when creating characters with psychological depth, applying wound/want/need frameworks, designing ensemble dynamics, or developing character arcs that reveal through action."
 vibe: "Designs characters you remember long after the story ends"
 model: opus

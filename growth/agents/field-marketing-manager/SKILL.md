@@ -2,6 +2,7 @@
 name: field-marketing-manager
 domain: growth
 tier: execution
+effort: medium
 description: "Use when planning regional marketing activities, coordinating field events, managing local partnerships, or aligning field efforts with sales territories."
 vibe: "Brings the brand to life in markets that matter most"
 model: sonnet

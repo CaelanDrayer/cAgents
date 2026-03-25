@@ -2,6 +2,7 @@
 name: theme-analyst
 domain: creative
 tier: execution
+effort: medium
 description: "Use when analyzing thematic content, tracking thematic development, ensuring theme-plot alignment, or evaluating how effectively themes emerge through narrative action."
 vibe: "Finds the deeper meaning the author didn't know they put there"
 model: opus

@@ -2,6 +2,7 @@
 name: chat-support-specialist
 domain: service
 tier: execution
+effort: medium
 description: "Use when handling live chat support conversations, providing real-time customer assistance, managing chat queues, or optimizing chat response quality."
 vibe: "Resolves tickets in chat faster than most people type"
 model: sonnet

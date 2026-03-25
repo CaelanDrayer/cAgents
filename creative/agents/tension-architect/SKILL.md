@@ -2,6 +2,7 @@
 name: tension-architect
 domain: creative
 tier: execution
+effort: medium
 description: "Use when designing tension and suspense structures, engineering emotional escalation, building dramatic irony, or crafting sequences that maximize reader anxiety."
 vibe: "Ratchets tension until the reader forgets to breathe"
 model: opus

@@ -2,6 +2,7 @@
 name: brand-manager
 domain: growth
 tier: execution
+effort: medium
 description: "Use when developing brand strategy, maintaining brand consistency, creating brand guidelines, or managing brand perception across channels."
 vibe: "Guards the brand voice like it's the company's reputation"
 model: sonnet

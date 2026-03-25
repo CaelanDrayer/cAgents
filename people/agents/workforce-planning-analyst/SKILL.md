@@ -2,6 +2,7 @@
 name: workforce-planning-analyst
 domain: people
 tier: execution
+effort: medium
 description: "Use when forecasting headcount needs, modeling attrition scenarios, analyzing workforce demographics, or planning talent pipelines against business growth."
 vibe: "Plans the headcount so the company never hires too late"
 model: sonnet

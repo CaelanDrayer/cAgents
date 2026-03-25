@@ -2,6 +2,7 @@
 name: sales-enablement-specialist
 domain: growth
 tier: execution
+effort: medium
 description: "Use when creating sales training materials, building playbooks, managing sales content libraries, or improving rep onboarding and productivity."
 vibe: "Arms the sales team with exactly what they need to close"
 model: sonnet

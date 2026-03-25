@@ -1,6 +1,7 @@
 ---
 name: task-decomposer
 tier: infrastructure
+effort: high
 description: "Use when breaking down plans into granular work items with acceptance criteria, dependency graphs, and wave assignments for parallel execution."
 vibe: "Breaks the impossible into 30 very possible pieces"
 allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"

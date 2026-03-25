@@ -2,6 +2,7 @@
 name: culture-and-engagement-manager
 domain: people
 tier: execution
+effort: medium
 description: "Use when building employee engagement programs, measuring culture health, designing recognition initiatives, or improving workplace satisfaction."
 vibe: "Builds the culture people brag about at dinner parties"
 model: sonnet

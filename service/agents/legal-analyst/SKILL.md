@@ -2,6 +2,7 @@
 name: legal-analyst
 domain: service
 tier: execution
+effort: medium
 description: "Use when researching legal precedents, analyzing regulatory impact, preparing legal briefs, or supporting attorneys with case documentation."
 vibe: "Researches legal precedent so counsel can advise with confidence"
 model: sonnet

@@ -2,6 +2,7 @@
 name: marketing-analyst
 domain: growth
 tier: execution
+effort: medium
 description: "Use when analyzing marketing performance data, building attribution models, creating marketing dashboards, or providing campaign optimization insights."
 vibe: "Turns campaign data into the next campaign's secret weapon"
 model: sonnet

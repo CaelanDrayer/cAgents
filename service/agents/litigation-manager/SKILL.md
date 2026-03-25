@@ -2,6 +2,7 @@
 name: litigation-manager
 domain: service
 tier: execution
+effort: medium
 description: "Use when managing active litigation, coordinating with outside counsel, developing litigation strategy, or tracking case milestones and deadlines."
 vibe: "Manages litigation strategy so the company fights the right battles"
 model: sonnet

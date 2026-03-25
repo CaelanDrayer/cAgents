@@ -2,6 +2,7 @@
 name: proposal-specialist
 domain: growth
 tier: execution
+effort: medium
 description: "Use when writing RFP responses, creating sales proposals, developing pricing packages, or producing technical solution documents for prospects."
 vibe: "Writes proposals that win by making the decision obvious"
 model: sonnet

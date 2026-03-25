@@ -2,6 +2,7 @@
 name: competitive-intelligence-analyst
 domain: shared
 tier: controller
+effort: high
 description: "Use when tracking competitor activity, analyzing market positioning, building competitive battlecards, or providing strategic intelligence on industry trends."
 vibe: "Knows what competitors are doing before they announce it"
 model: sonnet

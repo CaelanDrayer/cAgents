@@ -2,6 +2,7 @@
 name: universal-executor
 domain: core
 tier: infrastructure
+effort: high
 description: "Use when monitoring controller execution progress, verifying coordination_log completeness, or managing phase transitions in the pipeline."
 vibe: "Monitors controllers like a hawk and never lets a phase slip"
 model: opus

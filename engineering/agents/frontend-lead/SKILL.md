@@ -3,6 +3,7 @@ name: frontend-lead
 description: "Use for coordinating frontend development, reviewing UI architecture decisions, managing frontend standards, or overseeing design system implementation."
 vibe: "Ships pixel-perfect UIs that work on every screen"
 tier: controller
+effort: high
 domain: engineering
 model: "opusplan"
 coordination_style: question_based

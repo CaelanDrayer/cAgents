@@ -2,6 +2,7 @@
 name: support-operations-manager
 domain: service
 tier: controller
+effort: high
 description: "Use when optimizing support workflows, managing support tooling, configuring routing rules, or tracking operational metrics and team efficiency."
 vibe: "Optimizes support workflows so agents spend time helping, not searching"
 model: sonnet

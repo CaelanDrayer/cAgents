@@ -1,0 +1,46 @@
+{
+  "_comment": "MCP server configuration for cAgents. Add MCP servers here to extend agent capabilities with external tools. See https://modelcontextprotocol.io for the full server registry.",
+  "_usage": "Copy an entry from _examples into the top level, configure as needed, and remove the underscore-prefixed metadata fields.",
+  "_examples": {
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"],
+      "_description": "Browser automation for web scraping, testing, and interaction. No auth required."
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-filesystem@latest", "/path/to/allowed/dir"],
+      "_description": "Exposes a local filesystem directory to agents. Replace /path/to/allowed/dir."
+    },
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "headers": {
+        "Authorization": "Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      },
+      "_description": "GitHub API access via MCP. Requires GITHUB_PERSONAL_ACCESS_TOKEN env var."
+    },
+    "fetch": {
+      "command": "uvx",
+      "args": ["mcp-server-fetch"],
+      "_description": "HTTP fetch tool for retrieving web pages and APIs. Requires uv/uvx installed."
+    },
+    "postgres": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-postgres@latest"],
+      "env": {
+        "DATABASE_URL": "${DATABASE_URL}"
+      },
+      "_description": "PostgreSQL query access. Set DATABASE_URL env var to your connection string."
+    },
+    "slack": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-slack@latest"],
+      "env": {
+        "SLACK_BOT_TOKEN": "${SLACK_BOT_TOKEN}",
+        "SLACK_TEAM_ID": "${SLACK_TEAM_ID}"
+      },
+      "_description": "Slack workspace access for reading/posting messages. Requires bot token."
+    }
+  }
+}

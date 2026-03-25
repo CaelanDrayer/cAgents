@@ -2,6 +2,7 @@
 name: hris-administrator
 domain: people
 tier: execution
+effort: medium
 description: "Use when managing HR information systems, configuring HRIS workflows, maintaining employee data integrity, or generating HR reports from system data."
 vibe: "Keeps the HR systems running so people get paid on time"
 model: haiku

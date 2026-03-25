@@ -2,6 +2,7 @@
 name: regulatory-affairs-specialist
 domain: service
 tier: execution
+effort: medium
 description: "Use when navigating regulatory submissions, tracking regulatory changes, preparing compliance documentation, or managing regulatory agency relationships."
 vibe: "Stays ahead of regulations so the company is never scrambling"
 model: sonnet

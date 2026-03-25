@@ -3,6 +3,7 @@ name: accessibility-checker
 description: "Use when auditing web or app accessibility, running WCAG compliance checks, identifying accessibility barriers, or testing with assistive technology."
 vibe: "Makes sure every user can use what you shipped"
 tier: support
+effort: low
 domain: engineering
 model: "haiku"
 color: bright_magenta

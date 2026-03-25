@@ -1,6 +1,7 @@
 ---
 name: universal-planner
 tier: infrastructure
+effort: high
 description: "Use when creating plan.yaml with objectives, controller assignments, temporal analysis, and scope boundaries from enriched context."
 vibe: "Plans the work, works the plan, adapts when reality disagrees"
 allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"

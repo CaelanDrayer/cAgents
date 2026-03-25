@@ -2,6 +2,7 @@
 name: social-media-manager
 domain: growth
 tier: execution
+effort: medium
 description: "Use when managing social media accounts, creating social content calendars, engaging communities, or tracking social media analytics and sentiment."
 vibe: "Builds communities that talk about the brand even when it's not posting"
 model: sonnet

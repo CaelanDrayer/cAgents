@@ -2,6 +2,7 @@
 name: game-designer
 domain: business
 tier: controller
+effort: high
 coordination_style: question_based
 typical_questions:
   - "What are the core gameplay mechanics for this feature?"

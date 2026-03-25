@@ -2,6 +2,7 @@
 name: customer-success-manager
 domain: service
 tier: controller
+effort: high
 description: "Use when onboarding customers, managing customer health scores, driving product adoption, preventing churn, or planning customer expansion strategies."
 vibe: "Turns customers into advocates before they know they need help"
 model: sonnet

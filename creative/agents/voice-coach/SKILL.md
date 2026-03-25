@@ -2,6 +2,7 @@
 name: voice-coach
 domain: creative
 tier: execution
+effort: medium
 description: "Use when developing authorial or character voice, training consistent tone, diagnosing voice inconsistencies, or coaching writers on voice distinction techniques."
 vibe: "Gives every character a voice you'd recognize in a crowd"
 model: opus

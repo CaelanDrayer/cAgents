@@ -2,6 +2,7 @@
 name: facilities-manager
 domain: business
 tier: execution
+effort: medium
 description: "Use when managing office operations, coordinating facility maintenance, planning space allocation, or handling vendor relationships for physical infrastructure."
 vibe: "Keeps the lights on so everyone else can keep shipping"
 model: sonnet

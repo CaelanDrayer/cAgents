@@ -2,6 +2,7 @@
 name: customer-advocacy-manager
 domain: service
 tier: controller
+effort: high
 description: "Use when building customer advocacy programs, managing reference customers, creating case studies, or developing customer community initiatives."
 vibe: "Gives the customer a seat at every internal table"
 model: sonnet

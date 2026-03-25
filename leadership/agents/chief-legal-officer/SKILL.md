@@ -2,6 +2,7 @@
 name: chief-legal-officer
 domain: leadership
 tier: controller
+effort: high
 coordination_style: question_based
 typical_questions:
   - "What is the legal and compliance exposure for this initiative?"

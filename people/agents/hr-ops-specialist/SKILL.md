@@ -2,6 +2,7 @@
 name: hr-ops-specialist
 domain: people
 tier: execution
+effort: medium
 description: "Use when optimizing HR operations, streamlining people processes, managing payroll coordination, or improving HR service delivery efficiency."
 vibe: "Runs HR operations like a well-documented, repeatable process"
 model: sonnet

@@ -2,6 +2,7 @@
 name: universal-router
 domain: core
 tier: infrastructure
+effort: high
 description: "Use when classifying request complexity into tiers 2-4, detecting domain from keywords, or routing to the appropriate controller catalog."
 vibe: "Sends every request to exactly the right agent, every time"
 model: opus

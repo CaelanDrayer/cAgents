@@ -2,6 +2,7 @@
 name: story-architect
 domain: creative
 tier: controller
+effort: high
 coordination_style: question_based
 typical_questions:
   - "What is the core conflict and stakes?"

@@ -2,6 +2,7 @@
 name: concept-artist
 domain: creative
 tier: execution
+effort: medium
 description: "Use when creating visual concepts for characters, environments, props, or vehicles. Translates narrative descriptions into visual reference art and style guides."
 vibe: "Paints the world before anyone builds it"
 model: opus

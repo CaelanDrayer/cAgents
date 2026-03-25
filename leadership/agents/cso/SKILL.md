@@ -2,6 +2,7 @@
 name: cso
 domain: leadership
 tier: controller
+effort: high
 coordination_style: question_based
 typical_questions:
   - "What is the strategic business impact of this initiative?"

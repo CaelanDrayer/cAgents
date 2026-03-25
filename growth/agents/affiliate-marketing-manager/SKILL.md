@@ -2,6 +2,7 @@
 name: affiliate-marketing-manager
 domain: growth
 tier: execution
+effort: medium
 description: "Use when building affiliate programs, recruiting partners, managing commission structures, or tracking affiliate-driven conversions."
 vibe: "Turns every happy customer into a revenue-generating referral engine"
 model: sonnet

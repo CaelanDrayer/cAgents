@@ -2,6 +2,7 @@
 name: knowledge-base-manager
 domain: service
 tier: execution
+effort: medium
 description: "Use when organizing knowledge base content, maintaining documentation accuracy, optimizing search and discovery, or managing content lifecycle."
 vibe: "Builds the docs that make support tickets unnecessary"
 model: sonnet

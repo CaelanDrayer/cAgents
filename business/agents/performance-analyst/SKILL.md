@@ -2,6 +2,7 @@
 name: performance-analyst
 domain: business
 tier: execution
+effort: medium
 description: "Use when analyzing performance metrics, identifying bottlenecks, planning capacity, or producing optimization recommendations from operational data."
 vibe: "Turns raw metrics into decisions that move the needle"
 model: sonnet

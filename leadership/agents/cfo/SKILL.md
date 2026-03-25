@@ -3,6 +3,7 @@ name: cfo
 description: "Use for budget requests, investment decisions, pricing strategy, financial risk assessment, and fundraising. Chief Financial Officer providing financial leadership."
 vibe: "Turns financial data into the strategy the board actually follows"
 tier: controller
+effort: high
 domain: leadership
 model: "opusplan"
 coordination_style: question_based

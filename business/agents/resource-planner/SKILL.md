@@ -2,6 +2,7 @@
 name: resource-planner
 domain: business
 tier: execution
+effort: medium
 description: "Use when planning resource allocation, forecasting capacity needs, optimizing team utilization, or balancing workload across projects."
 vibe: "Puts the right people on the right work at the right time"
 model: sonnet

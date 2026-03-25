@@ -2,6 +2,7 @@
 name: architecture-reviewer
 domain: engineering
 tier: support
+effort: low
 description: "Use when evaluating system architecture decisions, reviewing design patterns, assessing scalability concerns, or validating technical approach before implementation."
 vibe: "Reviews architecture like a building inspector -- nothing passes without proof"
 model: "haiku"

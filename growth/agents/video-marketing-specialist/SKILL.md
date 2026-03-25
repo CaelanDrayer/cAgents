@@ -2,6 +2,7 @@
 name: video-marketing-specialist
 domain: growth
 tier: execution
+effort: medium
 description: "Use when producing marketing videos, planning video content strategy, optimizing video for platforms, or measuring video engagement and conversion."
 vibe: "Knows the first three seconds decide everything and plans accordingly"
 model: sonnet

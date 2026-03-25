@@ -2,9 +2,11 @@
 name: context
 description: "Create and manage shared product context for consistent agent enrichment. Use to persist project knowledge across sessions. TRIGGER: context, product context, project knowledge. NOT for: running tasks or reviewing work."
 license: MIT
+compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
   version: "10.22.5"
+  argument-hint: "[--show] [--reset] [--edit]"
   user-invocable: "true"
   context: "none"
   agent: "false"

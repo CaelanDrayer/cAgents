@@ -2,6 +2,7 @@
 name: animator
 domain: creative
 tier: execution
+effort: medium
 description: "Use when creating character animations, designing motion systems, building animation state machines, or crafting movement that conveys personality and emotion."
 vibe: "Brings still frames to life one keyframe at a time"
 model: opus

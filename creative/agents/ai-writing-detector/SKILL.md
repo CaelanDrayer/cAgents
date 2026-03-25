@@ -2,6 +2,7 @@
 name: ai-writing-detector
 domain: creative
 tier: execution
+effort: medium
 description: "Use when detecting AI-generated text patterns, analyzing writing for synthetic markers, or evaluating content authenticity against human authorship baselines."
 vibe: "Spots the AI fingerprint that humans can't see"
 model: opus

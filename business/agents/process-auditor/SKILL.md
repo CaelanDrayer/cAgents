@@ -2,6 +2,7 @@
 name: process-auditor
 domain: business
 tier: execution
+effort: medium
 description: "Use when conducting process audits, verifying compliance with standards, testing internal controls, or producing audit reports and recommendations."
 vibe: "Finds the waste hiding in processes everyone assumes work"
 model: sonnet

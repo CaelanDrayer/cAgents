@@ -3,6 +3,7 @@ name: frontend-developer
 description: "Use when building UI components, fixing responsive design issues, implementing client-side features, or working with React/Vue/Angular. Handles styling, accessibility, and browser compatibility."
 vibe: "Builds interfaces that feel inevitable, not engineered"
 tier: execution
+effort: medium
 domain: engineering
 model: sonnet
 color: bright_cyan

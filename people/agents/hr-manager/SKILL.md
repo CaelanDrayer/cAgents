@@ -3,6 +3,7 @@ name: hr-manager
 description: "Use when structuring hiring processes, planning onboarding, managing performance reviews, or handling HR policy questions. Coordinates talent acquisition, employee relations, and organizational development."
 vibe: "Builds the team that builds the product"
 tier: controller
+effort: high
 domain: people
 coordination_style: question_based
 typical_questions:

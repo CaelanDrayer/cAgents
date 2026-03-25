@@ -1,6 +1,7 @@
 ---
 name: team-lead-adapter
 tier: infrastructure
+effort: high
 description: "Use when wrapping a controller agent as a team lead for /team wave execution, bridging controller coordination with team teammate protocols."
 vibe: "Wraps any controller in team-lead armor for parallel execution"
 allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"

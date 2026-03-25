@@ -3,6 +3,7 @@ name: senior-developer
 description: "Use when implementing complex features across the full stack, refactoring large codebases, mentoring on design patterns, or making technical decisions."
 vibe: "Writes the code that junior devs learn from for years"
 tier: execution
+effort: medium
 domain: engineering
 model: opus
 answers_questions:

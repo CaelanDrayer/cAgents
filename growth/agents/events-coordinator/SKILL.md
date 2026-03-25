@@ -2,6 +2,7 @@
 name: events-coordinator
 domain: growth
 tier: execution
+effort: medium
 description: "Use when planning events, managing logistics for conferences or webinars, coordinating speakers and sponsors, or tracking event ROI."
 vibe: "Runs events so smoothly attendees think they planned themselves"
 model: sonnet

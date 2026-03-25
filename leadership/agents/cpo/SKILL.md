@@ -3,6 +3,7 @@ name: cpo
 description: "Use for strategic planning oversight, cross-functional alignment, tier 3-4 strategic plans, or complex multi-domain planning. Chief Planning Officer."
 vibe: "Ships the product roadmap that customers and revenue both love"
 tier: controller
+effort: high
 domain: leadership
 model: "opusplan"
 coordination_style: question_based

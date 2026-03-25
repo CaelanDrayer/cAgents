@@ -2,6 +2,7 @@
 name: sales-ops-specialist
 domain: growth
 tier: execution
+effort: medium
 description: "Use when managing CRM configuration, building sales reports, optimizing sales processes, or maintaining pipeline hygiene and forecasting accuracy."
 vibe: "Keeps CRM clean and forecasts honest"
 model: sonnet

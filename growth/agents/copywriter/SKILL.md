@@ -2,6 +2,7 @@
 name: copywriter
 domain: growth
 tier: execution
+effort: medium
 description: "Use when writing marketing copy, crafting headlines, creating ad text, developing email sequences, or producing persuasive sales content."
 vibe: "Writes copy that converts browsers into buyers"
 model: sonnet

@@ -2,6 +2,7 @@
 name: literary-critic
 domain: creative
 tier: execution
+effort: medium
 description: "Use when analyzing narrative craft, evaluating prose quality, providing substantive editorial feedback, or assessing work against literary standards."
 vibe: "Reads like a surgeon -- finds what works, excises what doesn't"
 model: opus

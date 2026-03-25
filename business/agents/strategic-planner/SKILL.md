@@ -2,6 +2,7 @@
 name: strategic-planner
 domain: business
 tier: controller
+effort: high
 coordination_style: question_based
 typical_questions:
   - "What is the strategic vision and objectives?"

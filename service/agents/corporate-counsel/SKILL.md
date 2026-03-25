@@ -2,6 +2,7 @@
 name: corporate-counsel
 domain: service
 tier: execution
+effort: medium
 description: "Use when advising on corporate transactions, reviewing corporate governance, handling M&A due diligence, or managing corporate legal matters."
 vibe: "Protects the company with legal strategy, not just legal caution"
 model: sonnet

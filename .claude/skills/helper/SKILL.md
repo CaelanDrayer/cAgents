@@ -2,9 +2,10 @@
 name: helper
 description: "Explains cAgents commands and recommends the right one for your task. Use when choosing between skills or learning how they work. TRIGGER: help, which command, how do I, what can cAgents do. NOT for: executing tasks directly."
 license: MIT
+compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.22.7"
+  version: "10.23.0"
   argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--topic <topic>] [--troubleshoot <command>]"
   user-invocable: "true"
   context: "none"

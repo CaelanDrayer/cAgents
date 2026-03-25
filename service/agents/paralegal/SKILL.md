@@ -2,6 +2,7 @@
 name: paralegal
 domain: service
 tier: execution
+effort: medium
 description: "Use when preparing legal documents, conducting legal research, organizing case files, managing discovery processes, or supporting attorneys with filings."
 vibe: "Prepares the legal groundwork so attorneys can focus on strategy"
 model: sonnet

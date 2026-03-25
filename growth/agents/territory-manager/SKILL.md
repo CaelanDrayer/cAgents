@@ -2,6 +2,7 @@
 name: territory-manager
 domain: growth
 tier: execution
+effort: medium
 description: "Use when defining sales territories, balancing account distribution, planning territory coverage, or optimizing geographic and vertical segmentation."
 vibe: "Carves territories so every rep has a winnable book of business"
 model: sonnet

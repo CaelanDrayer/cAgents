@@ -6,7 +6,7 @@ paths:
 
 # cAgents Hook System
 
-V10.18.0 CJS-only hook architecture with 21 registered hooks + 1 CLI tool across 14 event types (of 17 total Claude Code event types), `createHook()` factory pattern, agent audit trail with completion summaries, attention injection for goal refresh, magic keywords (UserPromptSubmit), model routing advisor (PreToolUse[Task]), session init gate (PreToolUse[Task]), approval gate (PreToolUse[Bash|Write|Edit]), delegation enforcer (UserPromptSubmit), sentinel gate factchecking, plan-scoped learning capture, context auto-check, clean team lifecycle (`continue:false` + `stopReason` for TeammateIdle/TaskCompleted), and resilient path resolution. Supports command, http, prompt, and agent hook types, async execution, and matcher-based filtering.
+V10.18.0 CJS-only hook architecture with 21 registered hooks + 1 CLI tool across 14 event types (of 22 total Claude Code event types), `createHook()` factory pattern, agent audit trail with completion summaries, attention injection for goal refresh, magic keywords (UserPromptSubmit), model routing advisor (PreToolUse[Task]), session init gate (PreToolUse[Task]), approval gate (PreToolUse[Bash|Write|Edit]), delegation enforcer (UserPromptSubmit), sentinel gate factchecking, plan-scoped learning capture, context auto-check, clean team lifecycle (`continue:false` + `stopReason` for TeammateIdle/TaskCompleted), and resilient path resolution. Supports command, http, prompt, and agent hook types, async execution, and matcher-based filtering.
 
 ## Architecture
 
@@ -46,7 +46,7 @@ The V9.5 refactoring eliminates the dual shell+JS architecture that caused recur
 
 ## Hook Types Overview
 
-Claude Code supports 17 hook event types. cAgents implements 21 registered hooks across 14 of these events. Three events (`ConfigChange`, `WorktreeCreate`, `WorktreeRemove`) have no cAgents hooks but are available for custom use.
+Claude Code supports 22 hook event types. cAgents implements 21 registered hooks across 14 of these events. Eight events (`StopFailure`, `InstructionsLoaded`, `PostCompact`, `Elicitation`, `ElicitationResult`, `ConfigChange`, `WorktreeCreate`, `WorktreeRemove`) have no cAgents hooks but are available for custom use.
 
 | Hook Type | Trigger | cAgents Hook | Purpose |
 |-----------|---------|--------------|---------|
@@ -61,12 +61,17 @@ Claude Code supports 17 hook event types. cAgents implements 21 registered hooks
 | `SubagentStart` | Subagent spawned | `subagent-tracker.cjs`, `team-start.cjs` | Log spawns, initialize team monitoring, inject self-registration context |
 | `SubagentStop` | Subagent finishes | `subagent-stop-tracker.cjs` | Log completion, capture summaries + duration, update agent tree |
 | `Stop` | Claude stops responding | `verify-completion.cjs` | Verify completion criteria |
+| `StopFailure` | Claude fails to stop cleanly | *(none)* | Available for custom stop-failure handling |
 | `TeammateIdle` | Teammate goes idle | `teammate-idle-handler.cjs` | Find available work or stop teammate (`continue:false`) when all items done |
 | `TaskCompleted` | Task finishes | `team-task-complete.cjs` | Update task list, unblock dependencies, stop teammate (`continue:false`) when all items done |
+| `InstructionsLoaded` | Instructions/CLAUDE.md loaded | *(none)* | Available for custom instruction-load handling |
 | `ConfigChange` | Config file changes | *(none)* | Available for custom config change handling |
 | `WorktreeCreate` | Worktree being created | *(none)* | Available for custom VCS-agnostic worktree setup |
 | `WorktreeRemove` | Worktree being removed | *(none)* | Available for custom worktree cleanup |
 | `PreCompact` | Before context compaction | `pre-compact-save.cjs` | Save critical state + coordination state |
+| `PostCompact` | After context compaction | *(none)* | Available for custom post-compaction handling |
+| `Elicitation` | Elicitation request initiated | *(none)* | Available for custom elicitation handling |
+| `ElicitationResult` | Elicitation response received | *(none)* | Available for custom elicitation result handling |
 
 ### Matcher Patterns by Event
 
@@ -79,7 +84,7 @@ Claude Code supports 17 hook event types. cAgents implements 21 registered hooks
 | `SubagentStart`, `SubagentStop` | Agent type name | `Bash`, `Explore`, `Plan`, custom agent names |
 | `PreCompact` | Compaction trigger | `manual`, `auto` |
 | `ConfigChange` | Config source | `user_settings`, `project_settings`, `local_settings`, `skills` |
-| `UserPromptSubmit`, `Stop`, `TeammateIdle`, `TaskCompleted`, `WorktreeCreate`, `WorktreeRemove` | *(no matcher)* | Always fires on every occurrence |
+| `UserPromptSubmit`, `Stop`, `StopFailure`, `TeammateIdle`, `TaskCompleted`, `InstructionsLoaded`, `WorktreeCreate`, `WorktreeRemove`, `PostCompact`, `Elicitation`, `ElicitationResult` | *(no matcher)* | Always fires on every occurrence |
 
 ## createHook() Factory
 
@@ -262,8 +267,8 @@ Hooks output JSON to stdout:
 
 - `0`: Success -- JSON parsed from stdout. Use `permissionDecision: "deny"` in hookSpecificOutput to block PreToolUse operations. For most events, stdout is only shown in verbose mode (Ctrl+O). Exceptions: `UserPromptSubmit` and `SessionStart` add stdout as context Claude can see.
 - `2`: Blocking error -- Claude Code ignores stdout JSON and feeds stderr to the model. The effect depends on the event:
-  - **Can block**: `PreToolUse` (blocks tool call), `PermissionRequest` (denies permission), `UserPromptSubmit` (blocks prompt), `Stop` (prevents stopping), `SubagentStop` (prevents stop), `TeammateIdle` (keeps working), `TaskCompleted` (prevents completion), `ConfigChange` (blocks change), `WorktreeCreate` (fails creation)
-  - **Cannot block**: `PostToolUse`, `PostToolUseFailure`, `Notification`, `SubagentStart`, `SessionStart`, `SessionEnd`, `PreCompact`, `WorktreeRemove` -- stderr shown to user only
+  - **Can block**: `PreToolUse` (blocks tool call), `PermissionRequest` (denies permission), `UserPromptSubmit` (blocks prompt), `Stop` (prevents stopping), `StopFailure` (prevents stop-failure handling), `SubagentStop` (prevents stop), `TeammateIdle` (keeps working), `TaskCompleted` (prevents completion), `ConfigChange` (blocks change), `WorktreeCreate` (fails creation), `Elicitation` (blocks elicitation)
+  - **Cannot block**: `PostToolUse`, `PostToolUseFailure`, `Notification`, `SubagentStart`, `SessionStart`, `SessionEnd`, `PreCompact`, `PostCompact`, `InstructionsLoaded`, `WorktreeRemove`, `ElicitationResult` -- stderr shown to user only
 - Any other exit code: Non-blocking error, stderr shown in verbose mode, execution continues.
 
 ## Hook Handler Types
@@ -317,8 +322,9 @@ Spawn a subagent with tool access (Read, Grep, Glob) to verify conditions.
 - `UserPromptSubmit`, `Stop`, `SubagentStop`, `TaskCompleted`
 
 **Command hooks only** (http/prompt/agent NOT supported):
-- `SessionStart`, `SessionEnd`, `SubagentStart`, `PreCompact`, `Notification`
-- `TeammateIdle`, `ConfigChange`, `WorktreeCreate`, `WorktreeRemove`
+- `SessionStart`, `SessionEnd`, `SubagentStart`, `PreCompact`, `PostCompact`, `Notification`
+- `TeammateIdle`, `InstructionsLoaded`, `ConfigChange`, `WorktreeCreate`, `WorktreeRemove`
+- `ElicitationResult`
 
 ```json
 {

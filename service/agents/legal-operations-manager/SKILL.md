@@ -2,6 +2,7 @@
 name: legal-operations-manager
 domain: service
 tier: controller
+effort: high
 description: "Use when optimizing legal department processes, managing legal technology, tracking legal spend, or coordinating outside counsel relationships."
 vibe: "Runs the legal department like a well-managed engineering team"
 model: sonnet

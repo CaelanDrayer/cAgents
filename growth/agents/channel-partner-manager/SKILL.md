@@ -2,6 +2,7 @@
 name: channel-partner-manager
 domain: growth
 tier: execution
+effort: medium
 description: "Use when managing channel partnerships, developing partner programs, coordinating co-marketing efforts, or tracking partner-sourced revenue."
 vibe: "Builds partner relationships that multiply revenue"
 model: sonnet

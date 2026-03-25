@@ -2,6 +2,7 @@
 name: hr-analyst
 domain: people
 tier: execution
+effort: medium
 description: "Use when analyzing HR metrics, building people analytics dashboards, modeling workforce trends, or providing data-driven recommendations on talent decisions."
 vibe: "Turns people data into people decisions that actually work"
 model: sonnet

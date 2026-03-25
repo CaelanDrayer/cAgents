@@ -2,6 +2,7 @@
 name: account-executive
 domain: growth
 tier: execution
+effort: medium
 description: "Use when managing sales deals through pipeline stages, conducting discovery calls, building proposals, or closing enterprise accounts."
 vibe: "Closes deals by solving problems, not pushing products"
 model: sonnet

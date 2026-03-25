@@ -2,6 +2,7 @@
 name: chro
 domain: leadership
 tier: controller
+effort: high
 coordination_style: question_based
 typical_questions:
   - "What are the current team dynamics and gaps?"

@@ -2,9 +2,10 @@
 name: review
 description: "Quality review with parallel specialist agents and optional auto-fix. Use for reviewing code, docs, content, or infrastructure. TRIGGER: review, audit, check quality, code review. NOT for: optimization (/optimize) or new implementation (/run)."
 license: MIT
+compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.22.7"
+  version: "10.23.0"
   argument-hint: "<target> [--focus <area>] [--auto-fix] [--severity <level>] [--format <type>] [--profile <name>] [--baseline] [--suppress <id>]"
   user-invocable: "true"
   context: "fork"

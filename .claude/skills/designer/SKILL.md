@@ -2,9 +2,10 @@
 name: designer
 description: "Guided design exploration that produces implementation-ready documents through structured Q&A. Use before building to clarify requirements. TRIGGER: design, plan this, think through, architecture. NOT for: implementation (/run) or review (/review)."
 license: MIT
+compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.22.7"
+  version: "10.23.0"
   argument-hint: "[<topic>] [--deep] [--resume <id>] [--template <name>] [--brief <path>] [--iterate <session_id>]"
   user-invocable: "true"
   context: "none"

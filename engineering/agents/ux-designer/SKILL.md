@@ -3,6 +3,7 @@ name: ux-designer
 description: "Use when designing user experiences, creating wireframes, building user flows, conducting usability analysis, or improving interaction patterns."
 vibe: "Designs experiences that feel obvious -- after weeks of iteration"
 tier: execution
+effort: medium
 domain: engineering
 model: sonnet
 color: bright_magenta

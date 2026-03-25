@@ -2,6 +2,7 @@
 name: sensitivity-reader
 domain: creative
 tier: execution
+effort: medium
 description: "Use when reviewing content for cultural sensitivity, identifying potentially harmful representations, ensuring authentic diverse portrayal, or flagging stereotypes."
 vibe: "Catches what the author missed because they never had to think about it"
 model: opus

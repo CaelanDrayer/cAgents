@@ -2,6 +2,7 @@
 name: technical-support-engineer
 domain: service
 tier: execution
+effort: medium
 description: "Use when debugging technical customer issues, analyzing logs and error traces, reproducing bugs, or providing advanced troubleshooting for product defects."
 vibe: "Debugs customer issues with the precision of a senior engineer"
 model: sonnet

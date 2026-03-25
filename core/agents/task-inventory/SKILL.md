@@ -2,6 +2,7 @@
 name: task-inventory
 domain: core
 tier: infrastructure
+effort: high
 description: "Use when managing CSV-based task state for large-scale workflows with 20+ items, achieving 60-80% context savings over inline tracking."
 vibe: "Tracks every task in CSV so nothing falls through the cracks"
 model: opus

@@ -2,6 +2,7 @@
 name: narrative-game-designer
 domain: creative
 tier: execution
+effort: medium
 description: "Use when designing interactive narrative systems, creating branching story structures, building player agency frameworks, or integrating story with game mechanics."
 vibe: "Weaves player choice and narrative into something seamless"
 model: opus

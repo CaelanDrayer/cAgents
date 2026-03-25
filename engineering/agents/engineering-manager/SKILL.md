@@ -3,6 +3,7 @@ name: engineering-manager
 description: "Use when work requires coordination across multiple engineers, when a complex task needs decomposition into parallel subtasks, or when a tier 3-4 project needs strategic oversight and risk assessment."
 vibe: "Coordinates the orchestra so every engineer plays their best note"
 tier: controller
+effort: high
 domain: engineering
 model: "opusplan"
 coordination_style: question_based

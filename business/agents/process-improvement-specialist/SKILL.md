@@ -2,6 +2,7 @@
 name: process-improvement-specialist
 domain: business
 tier: execution
+effort: medium
 description: "Use when optimizing processes using Lean, Six Sigma, or continuous improvement methodologies to reduce waste and increase efficiency."
 vibe: "Makes good processes great and bad processes gone"
 model: sonnet

@@ -2,6 +2,7 @@
 name: narrative-director
 domain: creative
 tier: controller
+effort: high
 coordination_style: question_based
 typical_questions:
   - "What is the current implementation of this feature?"

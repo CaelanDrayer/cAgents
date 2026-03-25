@@ -2,6 +2,7 @@
 name: contracts-manager
 domain: service
 tier: execution
+effort: medium
 description: "Use when drafting contracts, negotiating terms, managing contract lifecycle, or ensuring contractual compliance and renewal tracking."
 vibe: "Negotiates contracts where both sides walk away satisfied"
 model: sonnet

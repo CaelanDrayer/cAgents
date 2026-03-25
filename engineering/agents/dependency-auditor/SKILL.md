@@ -3,6 +3,7 @@ name: dependency-auditor
 description: "Use when auditing dependency health, checking for outdated packages, identifying security vulnerabilities in dependencies, or evaluating dependency upgrade risk."
 vibe: "Finds the vulnerable dependency before the CVE does"
 tier: support
+effort: low
 domain: engineering
 model: "haiku"
 color: bright_magenta

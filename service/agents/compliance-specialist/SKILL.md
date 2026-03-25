@@ -2,6 +2,7 @@
 name: compliance-specialist
 domain: service
 tier: execution
+effort: medium
 description: "Use when performing compliance audits, tracking regulatory changes, documenting compliance procedures, or testing controls against standards."
 vibe: "Tracks regulatory changes so the company is never surprised"
 model: sonnet

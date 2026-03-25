@@ -2,6 +2,7 @@
 name: bi-specialist
 domain: shared
 tier: controller
+effort: high
 description: "Use when building business intelligence dashboards, creating data visualizations, designing ETL pipelines, or transforming raw data into actionable insights."
 vibe: "Builds dashboards that answer the question before it's asked"
 model: sonnet

@@ -2,6 +2,7 @@
 name: sales-development-rep
 domain: growth
 tier: execution
+effort: medium
 description: "Use when generating outbound leads, crafting cold outreach sequences, qualifying prospects, or building top-of-funnel pipeline for sales teams."
 vibe: "Generates qualified meetings from cold outreach at scale"
 model: sonnet

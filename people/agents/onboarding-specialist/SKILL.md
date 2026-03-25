@@ -2,6 +2,7 @@
 name: onboarding-specialist
 domain: people
 tier: execution
+effort: medium
 description: "Use when designing onboarding programs, creating new hire experiences, building 30/60/90 day plans, or improving time-to-productivity for new employees."
 vibe: "Gets new hires productive before their welcome swag arrives"
 model: sonnet

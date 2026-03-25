@@ -2,6 +2,7 @@
 name: compliance-officer
 domain: service
 tier: controller
+effort: high
 description: "Use when establishing compliance frameworks, conducting compliance assessments, managing regulatory requirements, or developing compliance training programs."
 vibe: "Makes sure the company follows every rule it agreed to follow"
 model: sonnet

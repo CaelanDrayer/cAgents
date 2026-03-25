@@ -3,6 +3,7 @@ name: performance-analyzer
 description: "Use when profiling application performance, identifying bottlenecks, measuring latency, or analyzing resource utilization to optimize throughput."
 vibe: "Finds the bottleneck hiding in the hot path"
 tier: support
+effort: low
 domain: engineering
 model: "haiku"
 color: bright_yellow

@@ -2,6 +2,7 @@
 name: support-analyst
 domain: service
 tier: execution
+effort: medium
 description: "Use when analyzing support ticket trends, identifying common issues, building support dashboards, or providing data-driven recommendations to reduce ticket volume."
 vibe: "Mines support data to find the patterns that prevent future tickets"
 model: sonnet

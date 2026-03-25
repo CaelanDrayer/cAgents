@@ -3,6 +3,7 @@ name: devops-lead
 description: "Use when setting up CI/CD pipelines, configuring infrastructure, debugging deployment failures, or managing containerized environments. Coordinates DevOps workflows across staging and production."
 vibe: "Runs infrastructure like code and deploys like clockwork"
 tier: controller
+effort: high
 domain: engineering
 model: sonnet
 coordination_style: question_based

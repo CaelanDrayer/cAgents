@@ -2,6 +2,7 @@
 name: quality-manager
 domain: business
 tier: controller
+effort: high
 description: "Use when establishing quality standards, managing QA processes, implementing Six Sigma or ISO compliance, or coordinating continuous improvement across domains."
 vibe: "Quality isn't a phase -- it's every single decision"
 model: sonnet

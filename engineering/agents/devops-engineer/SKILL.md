@@ -3,6 +3,7 @@ name: devops-engineer
 description: "Use when setting up CI/CD pipelines, configuring infrastructure as code, managing containers and orchestration, or automating deployment processes."
 vibe: "Automates the boring stuff so deploys are a non-event"
 tier: execution
+effort: medium
 domain: engineering
 model: sonnet
 color: bright_magenta

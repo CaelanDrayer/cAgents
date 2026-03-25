@@ -2,6 +2,7 @@
 name: talent-acquisition-manager
 domain: people
 tier: controller
+effort: high
 coordination_style: question_based
 typical_questions:
   - "What are the role requirements and hiring timeline?"

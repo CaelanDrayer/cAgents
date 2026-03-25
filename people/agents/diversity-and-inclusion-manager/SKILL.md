@@ -2,6 +2,7 @@
 name: diversity-and-inclusion-manager
 domain: people
 tier: execution
+effort: medium
 description: "Use when developing DEI strategies, designing inclusion programs, analyzing demographic data, or building frameworks for equitable hiring and promotion."
 vibe: "Makes belonging a feature of the workplace, not an afterthought"
 model: sonnet

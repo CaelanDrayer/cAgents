@@ -2,6 +2,7 @@
 name: character-psychologist
 domain: creative
 tier: execution
+effort: medium
 description: "Use when analyzing character motivations, diagnosing inconsistencies in character behavior, mapping psychological profiles, or ensuring emotional authenticity in character responses."
 vibe: "Knows why your characters do what they do, even when they don't"
 model: opus

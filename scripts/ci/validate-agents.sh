@@ -2,7 +2,7 @@
 #
 # cAgents Agent Schema Validation
 # Validates all agent SKILL.md files across all 8 domains
-# Version: 10.22.4
+# Version: 10.23.0
 #
 # Usage:
 #   ./scripts/ci/validate-agents.sh           # Validate all domains
@@ -338,9 +338,9 @@ validate_hooks() {
         echo -e "  ${GREEN}All $hook_count registered hooks have matching .cjs files${NC}"
     fi
 
-    # Verify hook count matches expected (18 registered hooks across 15 event types)
-    if [[ $hook_count -gt 0 ]] && [[ $hook_count -ne 18 ]]; then
-        log_warn "Hook count mismatch: found $hook_count registered hooks, expected 18"
+    # Verify hook count matches expected (21 registered hooks across 14 event types)
+    if [[ $hook_count -gt 0 ]] && [[ $hook_count -ne 21 ]]; then
+        log_warn "Hook count mismatch: found $hook_count registered hooks, expected 21"
     fi
 }
 

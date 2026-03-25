@@ -3,6 +3,7 @@ name: risk-assessment
 description: "Use when assessing technical risk for proposed changes, evaluating blast radius of refactors, or identifying potential failure modes before implementation."
 vibe: "Quantifies technical risk so teams can make informed bets"
 tier: support
+effort: low
 domain: engineering
 layer: intelligence
 model: "haiku"

@@ -2,6 +2,7 @@
 name: scenario-planner
 domain: business
 tier: execution
+effort: medium
 description: "Use when developing future scenarios, identifying strategic uncertainties, creating contingency plans, or stress-testing strategies against possible outcomes."
 vibe: "Plans for the futures everyone hopes won't happen"
 model: sonnet

@@ -2,6 +2,7 @@
 name: pr-specialist
 domain: growth
 tier: execution
+effort: medium
 description: "Use when managing media relations, writing press releases, coordinating press events, or handling crisis communications and reputation management."
 vibe: "Gets the right story in front of the right journalist at the right time"
 model: sonnet

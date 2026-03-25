@@ -2,6 +2,7 @@
 name: cro
 domain: leadership
 tier: controller
+effort: high
 coordination_style: question_based
 typical_questions:
   - "What is the current revenue performance vs targets?"

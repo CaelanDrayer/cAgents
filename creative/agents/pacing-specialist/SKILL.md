@@ -2,6 +2,7 @@
 name: pacing-specialist
 domain: creative
 tier: execution
+effort: medium
 description: "Use when optimizing narrative pacing, balancing action with reflection, adjusting scene length and rhythm, or diagnosing sections that drag or rush."
 vibe: "Controls the rhythm so readers can't stop turning pages"
 model: opus

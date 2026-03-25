@@ -2,6 +2,7 @@
 name: music-composer
 domain: creative
 tier: execution
+effort: medium
 description: "Use when composing game music, designing adaptive music systems, developing leitmotifs, or creating scores that loop, layer, and branch in response to gameplay."
 vibe: "Scores the moments that make the audience feel everything"
 model: opus

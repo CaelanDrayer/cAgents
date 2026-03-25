@@ -2,6 +2,7 @@
 name: technical-writer
 domain: service
 tier: execution
+effort: medium
 description: "Use when writing technical documentation, creating API references, developing user guides, or maintaining documentation accuracy and consistency."
 vibe: "Writes documentation so clear even the author learns something"
 model: sonnet

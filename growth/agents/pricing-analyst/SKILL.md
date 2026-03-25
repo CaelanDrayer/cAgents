@@ -2,6 +2,7 @@
 name: pricing-analyst
 domain: growth
 tier: execution
+effort: medium
 description: "Use when analyzing pricing strategies, modeling price elasticity, evaluating competitive pricing, or recommending pricing changes based on market data."
 vibe: "Finds the price point where value meets willingness to pay"
 model: sonnet

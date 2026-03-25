@@ -2,8 +2,9 @@
 # Sync version across all cAgents manifest files
 # Usage: ./scripts/sync-versions.sh <new-version>
 #
-# Updates version in all 24 locations (see .claude/rules/core/version-registry.md):
+# Updates version in all 25 locations (see .claude/rules/core/version-registry.md):
 # Location #24: scripts/ci/cagents-ci.sh (header comment + log_section banner)
+# Location #25: scripts/ci/validate-agents.sh (# Version: header)
 #   .claude-plugin/plugin.json, .claude-plugin/marketplace.json, package.json,
 #   CLAUDE.md, .claude/settings.json, 9 domain plugin.json files (core,
 #   engineering, creative, business, growth, people, service, leadership, shared),
@@ -147,6 +148,20 @@ if [ -f "$CAGENTS_CI" ]; then
   fi
 else
   echo "SKIP: scripts/ci/cagents-ci.sh (not found)"
+fi
+
+# Update validate-agents.sh header comment (#25)
+VALIDATE_AGENTS="$ROOT/scripts/ci/validate-agents.sh"
+if [ -f "$VALIDATE_AGENTS" ]; then
+  if sed -i "s/^# Version: [0-9]*\.[0-9]*\.[0-9]*/# Version: $VERSION/" "$VALIDATE_AGENTS"; then
+    echo "  OK: scripts/ci/validate-agents.sh"
+    UPDATED=$((UPDATED + 1))
+  else
+    echo "FAIL: scripts/ci/validate-agents.sh"
+    FAILED=$((FAILED + 1))
+  fi
+else
+  echo "SKIP: scripts/ci/validate-agents.sh (not found)"
 fi
 
 echo ""

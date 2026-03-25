@@ -2,6 +2,7 @@
 name: change-management-specialist
 domain: business
 tier: execution
+effort: medium
 description: "Use when planning organizational changes, developing training programs, deploying internal communications, or tracking adoption of new processes."
 vibe: "Makes the org actually want the change, not just tolerate it"
 model: sonnet

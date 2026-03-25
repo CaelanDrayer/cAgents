@@ -1,6 +1,7 @@
 ---
 name: team-trigger
 tier: infrastructure
+effort: high
 description: "Use when initializing team-mode execution, creating TeamCreate calls, and bootstrapping wave-based parallel workflows."
 vibe: "Fires up the team and gets every pane humming"
 allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"

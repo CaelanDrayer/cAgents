@@ -2,6 +2,7 @@
 name: community-manager
 domain: service
 tier: execution
+effort: medium
 description: "Use when building community programs, moderating forums, engaging with user communities, or developing community content and events strategy."
 vibe: "Builds communities where users help each other before support does"
 model: sonnet

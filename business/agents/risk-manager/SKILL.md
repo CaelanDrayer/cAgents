@@ -2,6 +2,7 @@
 name: risk-manager
 domain: business
 tier: execution
+effort: medium
 description: "Use when identifying enterprise risks, assessing threat impact, developing mitigation strategies, or building business continuity plans."
 vibe: "Names the risks nobody wants to talk about, then mitigates them"
 model: sonnet

@@ -3,6 +3,7 @@ name: vp-engineering
 description: "Use for engineering organization strategy, cross-team coordination, technical roadmap alignment, or managing engineering leadership across multiple teams."
 vibe: "Sets the engineering vision and clears the path to get there"
 tier: controller
+effort: high
 domain: engineering
 model: "opusplan"
 color: bright_cyan

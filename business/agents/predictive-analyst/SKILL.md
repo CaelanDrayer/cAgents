@@ -2,6 +2,7 @@
 name: predictive-analyst
 domain: business
 tier: execution
+effort: medium
 description: "Use when building predictive models, creating forecasts from historical data, or providing data-driven planning insights and trend analysis."
 vibe: "Sees what's coming by reading what already happened"
 model: sonnet

@@ -3,6 +3,7 @@ name: backend-lead
 description: "Use for coordinating backend development across multiple engineers, reviewing backend architecture decisions, or managing backend technical debt and standards."
 vibe: "Runs the backend team like a well-oiled distributed system"
 tier: controller
+effort: high
 domain: engineering
 model: sonnet
 coordination_style: question_based

@@ -2,6 +2,7 @@
 name: email-marketing-specialist
 domain: growth
 tier: execution
+effort: medium
 description: "Use when designing email campaigns, building automation workflows, segmenting audiences, optimizing open and click rates, or managing email deliverability."
 vibe: "Writes emails people actually open and click"
 model: sonnet

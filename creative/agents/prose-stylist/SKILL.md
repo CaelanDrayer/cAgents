@@ -2,6 +2,7 @@
 name: prose-stylist
 domain: creative
 tier: execution
+effort: medium
 description: "Use when refining prose style, developing distinctive voice, improving sentence rhythm and imagery, or elevating writing craft at the sentence and paragraph level."
 vibe: "Writes sentences that make readers forget they are reading"
 model: opus

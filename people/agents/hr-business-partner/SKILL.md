@@ -3,6 +3,7 @@ name: hr-business-partner
 description: "Use when aligning HR strategy with business unit goals, advising leaders on people decisions, managing organizational change, or supporting strategic workforce planning."
 vibe: "Bridges the gap between what HR offers and what the business needs"
 tier: controller
+effort: high
 domain: people
 coordination_style: question_based
 typical_questions:

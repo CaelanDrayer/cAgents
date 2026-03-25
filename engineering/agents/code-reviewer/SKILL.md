@@ -19,6 +19,7 @@ model: "haiku"
 color: bright_magenta
 layer: workflow
 tier: support
+effort: low
 maxTurns: 10
 disallowedTools: ["Task"]
 not-my-scope: ["Initial implementation", "architecture design", "deployment", "content creation"]

@@ -2,6 +2,7 @@
 name: worldbuilder
 domain: creative
 tier: execution
+effort: medium
 description: "Use when constructing fictional universes, designing world systems (cosmology, culture, economics, ecology), or building interconnected settings where every element resonates with internal logic."
 vibe: "Builds worlds with rules so consistent you could live in them"
 model: opus

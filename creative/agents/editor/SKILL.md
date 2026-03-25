@@ -2,6 +2,7 @@
 name: editor
 domain: creative
 tier: controller
+effort: high
 coordination_style: question_based
 typical_questions:
   - "What are the structural and architectural issues in this manuscript?"

@@ -2,6 +2,7 @@
 name: market-research-analyst
 domain: shared
 tier: controller
+effort: high
 description: "Use when conducting market research, analyzing customer segments, evaluating market size and growth, or producing competitive landscape assessments."
 vibe: "Reads the market so the company can write its own future"
 model: sonnet

@@ -2,6 +2,7 @@
 name: account-manager
 domain: service
 tier: controller
+effort: high
 description: "Use when managing client relationships, conducting account reviews, identifying upsell opportunities, or ensuring customer satisfaction and retention."
 vibe: "Keeps clients happy enough to renew without being asked"
 model: sonnet

@@ -2,6 +2,7 @@
 name: hr-compliance-specialist
 domain: people
 tier: execution
+effort: medium
 description: "Use when ensuring compliance with labor laws, auditing HR practices, managing regulatory requirements, or developing compliant HR policies and procedures."
 vibe: "Keeps the company on the right side of every employment law"
 model: sonnet

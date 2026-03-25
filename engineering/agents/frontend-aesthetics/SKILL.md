@@ -3,6 +3,7 @@ name: frontend-aesthetics
 description: "Use when evaluating visual design quality, reviewing UI consistency, assessing accessibility compliance, or improving frontend polish and user experience."
 vibe: "Makes interfaces that users love before they understand why"
 tier: execution
+effort: medium
 domain: engineering
 model: sonnet
 color: bright_magenta

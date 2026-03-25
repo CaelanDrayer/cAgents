@@ -2,6 +2,7 @@
 name: ai-writing-rewriter
 domain: creative
 tier: execution
+effort: medium
 description: "Use when transforming AI-generated text into natural prose, removing synthetic patterns, injecting human voice, or making generated content indistinguishable from human writing."
 vibe: "Makes AI prose read like a human wrote it on their best day"
 model: opus

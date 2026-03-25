@@ -2,6 +2,7 @@
 name: game-producer
 domain: business
 tier: controller
+effort: high
 coordination_style: question_based
 typical_questions:
   - "What is the current status of this milestone?"

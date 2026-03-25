@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "10.22.7",
-  "description": "214 agents across 8 business domains. Multi-agent orchestration with 8 commands for engineering, creative, business, and more.",
+  "version": "10.23.0",
+  "description": "Universal multi-domain agent orchestration framework. 214 specialized agents across 8 business domains with 9 skills.",
   "type": "module",
   "engines": {
     "node": ">=20"
@@ -49,6 +49,26 @@
     "game-production",
     "narrative-design",
     "game-dev-pipeline"
+  ],
+  "files": [
+    "engineering/",
+    "creative/",
+    "business/",
+    "growth/",
+    "people/",
+    "service/",
+    "leadership/",
+    "core/",
+    "shared/",
+    ".claude/",
+    ".claude-plugin/",
+    "scripts/",
+    "CLAUDE.md",
+    "README.md",
+    "CONTRIBUTING.md",
+    "GETTING_STARTED.md",
+    "SECURITY.md",
+    "LICENSE"
   ],
   "author": "CaelanDrayer",
   "license": "MIT",

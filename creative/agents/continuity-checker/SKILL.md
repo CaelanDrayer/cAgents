@@ -2,6 +2,7 @@
 name: continuity-checker
 domain: creative
 tier: execution
+effort: medium
 description: "Use when verifying narrative consistency, tracking timeline accuracy, checking character detail continuity, or identifying contradictions across story chapters or episodes."
 vibe: "Catches the plot holes before your readers do"
 model: opus

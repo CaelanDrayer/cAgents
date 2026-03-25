@@ -3,6 +3,7 @@ name: scribe
 description: "Use when documenting meeting notes, creating structured summaries, maintaining project records, or producing clear written records from verbal or unstructured inputs."
 vibe: "Documents decisions so nobody can say we never agreed to that"
 tier: execution
+effort: medium
 domain: business
 model: sonnet
 color: bright_white

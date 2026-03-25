@@ -2,6 +2,7 @@
 name: business-researcher
 domain: business
 tier: execution
+effort: medium
 description: "Use when researching market opportunities, analyzing industry trends, conducting competitive analysis, or gathering data to support business strategy."
 vibe: "Digs until the data tells a story worth betting on"
 model: sonnet

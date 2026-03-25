@@ -2,6 +2,7 @@
 name: portfolio-manager
 domain: business
 tier: execution
+effort: medium
 description: "Use when managing project portfolios, prioritizing initiatives, balancing resource allocation across programs, or evaluating portfolio performance."
 vibe: "Balances bets across projects like a seasoned card counter"
 model: sonnet

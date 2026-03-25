@@ -3,6 +3,7 @@ name: dependency-analyzer
 description: "Use when analyzing dependency trees, identifying version conflicts, evaluating security vulnerabilities in dependencies, or planning dependency upgrades."
 vibe: "Maps every dependency so upgrades don't become disasters"
 tier: support
+effort: low
 domain: engineering
 model: "haiku"
 color: bright_blue

@@ -2,6 +2,7 @@
 name: partnership-marketing-manager
 domain: growth
 tier: execution
+effort: medium
 description: "Use when developing co-marketing partnerships, creating joint campaigns, managing partner content, or tracking partnership-driven pipeline."
 vibe: "Creates partnerships where both sides win bigger together"
 model: sonnet

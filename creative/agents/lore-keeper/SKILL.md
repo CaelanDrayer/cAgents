@@ -2,6 +2,7 @@
 name: lore-keeper
 domain: creative
 tier: execution
+effort: medium
 description: "Use when maintaining fictional world consistency, managing lore databases, resolving canon conflicts, or ensuring new content aligns with established world rules."
 vibe: "Guards the canon like it's the last copy of the sacred text"
 model: opus

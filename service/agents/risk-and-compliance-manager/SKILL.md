@@ -2,6 +2,7 @@
 name: risk-and-compliance-manager
 domain: service
 tier: execution
+effort: medium
 description: "Use when building risk and compliance frameworks, conducting risk assessments, managing audit findings, or coordinating compliance across business units."
 vibe: "Balances risk appetite with compliance requirements"
 model: sonnet

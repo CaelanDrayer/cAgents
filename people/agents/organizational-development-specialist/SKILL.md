@@ -2,6 +2,7 @@
 name: organizational-development-specialist
 domain: people
 tier: execution
+effort: medium
 description: "Use when designing organizational structures, facilitating team development, managing change initiatives, or improving organizational effectiveness."
 vibe: "Redesigns the org chart so the work actually flows"
 model: sonnet

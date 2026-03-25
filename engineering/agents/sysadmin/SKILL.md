@@ -3,6 +3,7 @@ name: sysadmin
 description: "Use when managing Linux/Unix systems, configuring servers, automating system administration tasks, or maintaining system reliability and security."
 vibe: "Keeps servers running so everyone else can keep sleeping"
 tier: execution
+effort: medium
 domain: engineering
 model: sonnet
 color: bright_yellow

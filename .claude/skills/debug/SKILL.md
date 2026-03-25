@@ -2,9 +2,10 @@
 name: debug
 description: "Use when a bug defies quick fixes, when 2+ attempted fixes have failed, or when root cause is unclear. Systematic 4-phase debugging: root cause investigation, pattern analysis, hypothesis testing, implementation. TRIGGER: debug, root cause, why does this fail, can't figure out, keeps breaking, intermittent bug. NOT for: known simple fixes (/run) or code review (/review)."
 license: MIT
+compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.22.7"
+  version: "10.23.0"
   argument-hint: "<bug description or error message> [--escalate] [--phase <1-4>]"
   user-invocable: "true"
   context: "none"

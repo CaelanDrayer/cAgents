@@ -2,6 +2,7 @@
 name: employment-attorney
 domain: service
 tier: execution
+effort: medium
 description: "Use when advising on employment law, reviewing HR policies, handling workplace disputes, or ensuring compliance with labor regulations."
 vibe: "Navigates employment law so the company doesn't have to guess"
 model: sonnet

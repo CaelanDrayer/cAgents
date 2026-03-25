@@ -2,6 +2,7 @@
 name: procurement-specialist
 domain: business
 tier: execution
+effort: medium
 description: "Use when sourcing vendors, negotiating contracts, managing purchase orders, or optimizing procurement processes and supplier relationships."
 vibe: "Gets more value for less money without cutting corners"
 model: sonnet

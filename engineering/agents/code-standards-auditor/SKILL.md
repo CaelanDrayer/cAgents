@@ -3,6 +3,7 @@ name: code-standards-auditor
 description: "Use when auditing codebase compliance with coding standards, checking for convention violations, or generating compliance reports against style guides."
 vibe: "Enforces the standards that keep the codebase sane at scale"
 tier: support
+effort: low
 domain: engineering
 layer: qa
 model: "haiku"

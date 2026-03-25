@@ -2,6 +2,7 @@
 name: inside-sales-rep
 domain: growth
 tier: execution
+effort: medium
 description: "Use when qualifying inbound leads, conducting outbound prospecting, managing high-volume sales outreach, or booking meetings for account executives."
 vibe: "Works the phones and inbox until the pipeline overflows"
 model: sonnet

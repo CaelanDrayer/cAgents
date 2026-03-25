@@ -2,6 +2,7 @@
 name: compensation-analyst
 domain: people
 tier: execution
+effort: medium
 description: "Use when analyzing compensation structures, benchmarking salaries against market data, designing pay bands, or evaluating equity and incentive programs."
 vibe: "Designs comp packages that attract talent and respect budgets"
 model: sonnet

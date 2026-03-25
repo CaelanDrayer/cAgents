@@ -2,6 +2,7 @@
 name: benefits-administrator
 domain: people
 tier: execution
+effort: medium
 description: "Use when managing employee benefits programs, processing enrollment, coordinating with insurance providers, or analyzing benefits utilization and costs."
 vibe: "Makes sure every employee gets the benefits they earned"
 model: haiku

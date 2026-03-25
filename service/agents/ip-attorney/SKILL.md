@@ -2,6 +2,7 @@
 name: ip-attorney
 domain: service
 tier: execution
+effort: medium
 description: "Use when managing intellectual property portfolios, filing patent applications, reviewing trademark registrations, or handling IP licensing agreements."
 vibe: "Protects intellectual property like it's the company's crown jewels"
 model: sonnet

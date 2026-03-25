@@ -2,6 +2,7 @@
 name: customer-support-rep
 domain: service
 tier: execution
+effort: medium
 description: "Use when handling customer support tickets, troubleshooting issues, resolving complaints, or providing product usage guidance."
 vibe: "Solves customer problems like they're solving their own"
 model: sonnet

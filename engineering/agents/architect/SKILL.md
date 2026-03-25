@@ -3,6 +3,7 @@ name: architect
 description: "Use when making system design decisions, evaluating technical approaches, designing API contracts, or planning migrations. Provides architecture diagrams, tradeoff analysis, and pattern recommendations."
 vibe: "Designs systems that are boring to operate and a joy to extend"
 tier: controller
+effort: high
 domain: engineering
 model: "opusplan"
 coordination_style: question_based

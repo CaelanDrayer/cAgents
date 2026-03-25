@@ -2,6 +2,7 @@
 name: sound-designer
 domain: creative
 tier: execution
+effort: medium
 description: "Use when designing game audio, creating sound effects and Foley, building spatial audio systems, or crafting interactive soundscapes that reinforce gameplay emotion."
 vibe: "Creates the sounds that make you believe the impossible"
 model: opus

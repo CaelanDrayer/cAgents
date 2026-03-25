@@ -3,6 +3,7 @@ name: data-analyst
 description: "Use when analyzing datasets, building queries, creating data visualizations, or extracting insights from structured data using SQL, Python, or BI tools."
 vibe: "Turns messy data into clean insights that drive decisions"
 tier: execution
+effort: medium
 domain: engineering
 model: sonnet
 color: bright_green

@@ -2,6 +2,7 @@
 name: hitl
 domain: core
 tier: infrastructure
+effort: high
 description: "Use when a workflow requires human approval, when automated decisions need manual override, or when tier 4 escalation gates must be resolved."
 vibe: "The human in the loop when machines need a gut check"
 model: sonnet

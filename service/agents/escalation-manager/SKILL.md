@@ -2,6 +2,7 @@
 name: escalation-manager
 domain: service
 tier: execution
+effort: medium
 description: "Use when managing escalated customer issues, coordinating cross-team resolution, tracking SLA adherence, or developing escalation procedures."
 vibe: "Takes the toughest tickets and turns them into saves"
 model: sonnet

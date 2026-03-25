@@ -2,6 +2,7 @@
 name: customer-marketing-manager
 domain: growth
 tier: execution
+effort: medium
 description: "Use when developing customer advocacy programs, creating case studies, managing reference programs, or driving expansion within existing accounts."
 vibe: "Turns happy customers into the best marketing channel"
 model: sonnet

@@ -2,6 +2,7 @@
 name: planning-facilitator
 domain: business
 tier: execution
+effort: medium
 description: "Use when facilitating strategic planning sessions, running workshops, building consensus across stakeholders, or managing group decision-making dynamics."
 vibe: "Gets 10 people aligned in the time it usually takes 2"
 model: sonnet

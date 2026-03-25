@@ -3,6 +3,7 @@ name: security-engineer
 description: "Use when implementing security controls, conducting penetration tests, hardening systems, or reviewing code for security vulnerabilities."
 vibe: "Builds security into the architecture, not bolted on after"
 tier: execution
+effort: medium
 domain: engineering
 model: sonnet
 color: bright_white

@@ -2,6 +2,7 @@
 name: media-buyer
 domain: growth
 tier: execution
+effort: medium
 description: "Use when planning media buys across channels, negotiating ad placements, optimizing ad spend allocation, or managing programmatic advertising campaigns."
 vibe: "Stretches every ad dollar until it screams, then squeezes out one more conversion"
 model: sonnet

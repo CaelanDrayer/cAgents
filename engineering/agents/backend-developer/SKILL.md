@@ -3,6 +3,7 @@ name: backend-developer
 description: "Use when building REST/GraphQL APIs, writing database queries, implementing server-side logic, fixing backend bugs, or optimizing query performance. Handles Node.js, Python, Go, and database operations."
 vibe: "Ships clean APIs that survive production traffic at 3 AM"
 tier: execution
+effort: medium
 domain: engineering
 model: sonnet
 color: bright_yellow

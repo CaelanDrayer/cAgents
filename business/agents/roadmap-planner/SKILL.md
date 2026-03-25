@@ -2,6 +2,7 @@
 name: roadmap-planner
 domain: business
 tier: execution
+effort: medium
 description: "Use when creating product or technology roadmaps, prioritizing features, managing cross-team dependencies, or aligning roadmap to business strategy."
 vibe: "Draws the map from here to shipped, including the detours"
 model: sonnet
