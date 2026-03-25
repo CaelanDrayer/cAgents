@@ -10,6 +10,16 @@
  *
  * Output format (idle):
  *   [cAgents v10.22.7] No Active Sessions | Waiting | 0/0
+ *
+ * State resolution priority (most current first):
+ *   1. Latest EVT-N.yaml state_to field (real-time, written after each phase completes)
+ *   2. status.yaml pipeline_state (written before each phase starts)
+ *   3. status.yaml phase / current_phase (legacy fallback)
+ *
+ * Progress resolution priority:
+ *   1. coordination_log.yaml completed count vs work_items.yaml total (controller phase)
+ *   2. EVT file count vs 6 pipeline stages (pre-controller pipeline phases)
+ *   3. task_list.yaml completed count (team sessions)
  */
 
 const fs = require('fs');
@@ -57,8 +67,42 @@ function extractSlug(sessionId) {
   const slugParts = parts.slice(1, parts.length - 2);
   const slug = slugParts.join('_');
   // Truncate long slugs to keep the status line compact
-  const MAX_SLUG = 20;
+  // 28 chars allows descriptive task names without excessive truncation
+  const MAX_SLUG = 28;
   return slug.length > MAX_SLUG ? slug.slice(0, MAX_SLUG - 1) + '…' : slug;
+}
+
+// ---------------------------------------------------------------------------
+// 2b. Find latest EVT state from events directory
+//     Returns { state, evtCount } or { state: null, evtCount: 0 }
+//     EVT files: workflow/events/EVT-1.yaml, EVT-2.yaml, ...
+//     state_to in the latest EVT is more current than status.yaml (written AFTER phase completes)
+//
+//     NOTE: Uses fs directly (not safeRead/extractYamlValue) so this function works
+//     correctly even in test contexts where hook-utils is stubbed.
+// ---------------------------------------------------------------------------
+function getLatestEventState(sessionDir) {
+  const eventsDir = path.join(sessionDir, 'workflow', 'events');
+  try {
+    if (!fs.existsSync(eventsDir)) return { state: null, evtCount: 0 };
+    const evtFiles = fs.readdirSync(eventsDir)
+      .filter(f => /^EVT-\d+\.yaml$/.test(f))
+      .sort((a, b) => {
+        const numA = parseInt(a.match(/\d+/)[0], 10);
+        const numB = parseInt(b.match(/\d+/)[0], 10);
+        return numB - numA; // descending: latest first
+      });
+    if (evtFiles.length === 0) return { state: null, evtCount: 0 };
+    let state = null;
+    try {
+      const content = fs.readFileSync(path.join(eventsDir, evtFiles[0]), 'utf8');
+      const m = content.match(/^state_to:\s*["']?([^"'\n]+)["']?/m);
+      if (m) state = m[1].trim();
+    } catch { /* file unreadable */ }
+    return { state, evtCount: evtFiles.length };
+  } catch {
+    return { state: null, evtCount: 0 };
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -84,12 +128,20 @@ function getSessionInfo() {
   const sessionId = path.basename(sessionDir);
   const info = { id: sessionId, state: null, wiDone: 0, wiTotal: 0 };
 
-  // status.yaml -> pipeline_state or phase
+  // status.yaml -> pipeline_state or phase (fallback; may be stale during long phases)
   const status = safeRead(path.join(sessionDir, 'status.yaml'));
   if (status) {
     info.state = extractYamlValue(status, 'pipeline_state')
       || extractYamlValue(status, 'phase')
       || extractYamlValue(status, 'current_phase');
+  }
+
+  // EVT files -> more current state (written AFTER each phase completes, not before)
+  // Priority: latest EVT state_to overrides status.yaml (state machine writes status BEFORE
+  // spawning agent; EVT is written AFTER agent returns, giving true current state)
+  const { state: evtState, evtCount } = getLatestEventState(sessionDir);
+  if (evtState) {
+    info.state = evtState;
   }
 
   // work_items.yaml -> total work items (count "- id:" lines)
@@ -98,14 +150,22 @@ function getSessionInfo() {
     info.wiTotal = countPattern(workItems, /- id:\s/g);
   }
 
-  // task_list.yaml -> completed count, or fall back to coordination_log
-  const taskList = safeRead(path.join(sessionDir, 'team', 'task_list.yaml'));
-  if (taskList) {
-    info.wiDone = countPattern(taskList, /status:\s*["']?completed/g);
+  // Progress counting — priority order:
+  // 1. coordination_log.yaml completed count (most accurate during controller phase)
+  // 2. task_list.yaml completed count (team sessions)
+  // 3. EVT file count vs 6 pipeline stages (pre-controller pipeline progress)
+  const coordLog = safeRead(path.join(sessionDir, 'workflow', 'coordination_log.yaml'));
+  if (coordLog) {
+    info.wiDone = countPattern(coordLog, /status:\s*["']?completed/g);
   } else {
-    const coordLog = safeRead(path.join(sessionDir, 'workflow', 'coordination_log.yaml'));
-    if (coordLog) {
-      info.wiDone = countPattern(coordLog, /status:\s*["']?completed/g);
+    const taskList = safeRead(path.join(sessionDir, 'team', 'task_list.yaml'));
+    if (taskList) {
+      info.wiDone = countPattern(taskList, /status:\s*["']?completed/g);
+    } else if (evtCount > 0 && info.wiTotal === 0) {
+      // No work items yet (pre-decomposition phases) — show pipeline stage progress
+      // 6 stages: INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED
+      info.wiDone = evtCount;
+      info.wiTotal = 6;
     }
   }
 
@@ -184,4 +244,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { extractSlug, progressBar, buildStatusLine };
+module.exports = { extractSlug, progressBar, buildStatusLine, getLatestEventState };
