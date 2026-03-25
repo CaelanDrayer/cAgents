@@ -219,6 +219,22 @@ If some work items incomplete:
 4. **Fail fast** - If evidence is missing, fail early in validation
 5. **Be specific** - Evidence must be concrete (file paths, test outputs, metrics)
 
+## Workflow YAML Schema Validation (V10.23.0)
+
+Every workflow YAML file MUST conform to its schema. Five schema files are validated:
+
+**plan.yaml**: plan_id, tier (2-4), domain, mission (len>10), objectives (>=1), controller_assignment (primary field required), success_criteria (>=1 each with verification_method)
+
+**work_items.yaml**: work_items array (>=1) with id (WI-N format), title (len>5), type (understand|design|build|verify|document), acceptance_criteria (>=1), assigned_to (cagents:{name}), dependencies (valid WI-N refs)
+
+**coordination_log.yaml**: schema_version ("1"), controller (cagents:{name}), objectives, implementation_tasks (>=1 each with task_id, assigned_to, status), status (completed|in_progress|failed)
+
+**execution_summary.yaml**: session_id, final_state (VALIDATED|FAILED|INTERRUPTED), status, revision_rounds_used (0-5), states_executed, total_duration_ms
+
+**status.yaml**: pipeline_state, revision_round (0-5), validation_cycles, created_at (ISO 8601), state_history (>=1 each with state + entered_at)
+
+See @resources/workflow-yaml-schemas.md for field-by-field validation rules and quick-check approach.
+
 ---
 
 **Part of**: cAgents Completion Validation Framework

@@ -2,6 +2,7 @@
 name: team
 description: "Parallel multi-agent execution with wave-based quality gates. Use for complex tasks with 3+ parallelizable items. TRIGGER: team, parallel, swarm, complex multi-part. NOT for: simple tasks (/run) or cross-domain strategy (/org)."
 license: MIT
+compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
   version: "10.22.7"
@@ -815,7 +816,7 @@ scaling_events:
 
 ## GATE Validation Standards
 
-GATE validation criteria are standardized by wave type. The lead uses these criteria when validating each gate (Step 5d). See @reference/gate-standards.md for the full standard.
+GATE validation criteria are standardized by wave type. The lead uses these criteria when validating each gate (Step 5d). See @reference/gate-standards.md for the full standard. For the mandatory 7-check evidence-based protocol that wraps these standards, see the **Evidence-Based Gate Validation Protocol (V10.23.0)** section below.
 
 | Wave Type | Validation Criteria | Method |
 |-----------|-------------------|--------|
@@ -836,6 +837,72 @@ GATE validation criteria are standardized by wave type. The lead uses these crit
    - Score < 0.7 or critical failures: **FAIL** (attempt fix-up or escalate)
 
 **Conditional pass**: If blocked items caused the gap, log the gaps and proceed. The integration wave (final) accounts for these gaps in its validation.
+
+## Evidence-Based Gate Validation Protocol (V10.23.0)
+
+Before marking ANY gate (GATE-0, GATE-1, ...) as complete, the team lead MUST run ALL 7 gate validation checks. No gate passes without 7/7 checks passing.
+
+### Gate Validation Checklist
+
+| # | Check | What It Verifies | Failure Action |
+|---|-------|-----------------|----------------|
+| 1 | Task Completion | All wave tasks marked completed in TaskList | HOLD -- wait for remaining tasks |
+| 2 | Evidence Presence | Every completed task has non-empty evidence | HOLD -- request evidence from teammate |
+| 3 | Evidence Specificity | Evidence cites file:line, not vague descriptions | WARN -- request re-verification |
+| 4 | Acceptance Criteria Coverage | Every acceptance criterion has matching evidence | FAIL -- task not actually complete |
+| 5 | Contract Fulfillment | All inter-wave contracts have artifacts | HOLD -- contract provider must deliver |
+| 6 | Regression Check | Guard commands pass (tests, lint, type check) | FAIL -- regression introduced |
+| 7 | Cross-Wave Consistency | New wave outputs don't contradict previous wave | WARN -- review for conflicts |
+
+### Gate Validation YAML Template
+
+```yaml
+gate_validation:
+  gate_id: "GATE-1"
+  wave: 1
+  checks:
+    task_completion: {passed: true, total: 3, completed: 3}
+    evidence_presence: {passed: true, items_checked: 3, items_with_evidence: 3}
+    evidence_specificity: {passed: true, avg_score: 2.7}
+    acceptance_coverage: {passed: true, criteria_total: 9, criteria_covered: 9}
+    contract_fulfillment: {passed: true, contracts_checked: 2, fulfilled: 2}
+    regression_check: {passed: true, command: "npm test", result: "45/45 passed"}
+    cross_wave_consistency: {passed: true, conflicts_found: 0}
+  overall: PASS  # PASS only if all 7 checks pass
+  timestamp: "{ISO_TIMESTAMP}"
+```
+
+### Gate Validation TodoWrite
+
+When validating a gate, the team lead MUST add a validation TodoWrite entry:
+
+```
+TodoWrite([
+  {"content": "[team-lead] GATE-1 validation\n  [team-lead] Task completion: 3/3 done\n  [team-lead] Evidence: 3/3 with file:line citations\n  [team-lead] Criteria coverage: 9/9 covered\n  [team-lead] Contracts: 2/2 fulfilled\n  [team-lead] Regression: npm test 45/45 passed\n  [team-lead] Consistency: no conflicts\n  [team-lead] GATE-1: PASS (7/7 checks)", "status": "completed", "id": "gate-1-validation"}
+])
+```
+
+### Gate Validation Storage
+
+Gate validation results are appended to `${SESSION_DIR}/workflow/gate_validations.yaml`:
+
+```yaml
+gate_validations:
+  - gate_id: "GATE-0"
+    wave: 0
+    overall: PASS
+    checks: {task_completion: {passed: true}, ...}
+    timestamp: "..."
+  - gate_id: "GATE-1"
+    wave: 1
+    overall: PASS
+    checks: {task_completion: {passed: true}, ...}
+    timestamp: "..."
+```
+
+### Integration with Gate Validation Algorithm (Step 5d)
+
+The 7-check protocol supersedes the simple score-based gate validation. When running Step 5d, execute the 7 checks in order. If any check returns FAIL, the gate fails regardless of other checks. If any check returns HOLD, pause until the hold condition is resolved. If checks return only PASS and WARN, the gate passes (WARNs are logged but do not block).
 
 ## Partial Results on Failure
 

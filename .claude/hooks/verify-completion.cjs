@@ -287,6 +287,144 @@ function verifyCompletion(sessionDir) {
     warnings.push('Missing workflow/execution_summary.yaml (required at pipeline completion per /run Step 4)');
   }
 
+  // ====================================================================
+  // V10.23.0 Enhanced Validation Checks (A through E)
+  // These checks add deeper validation without blocking — warnings only.
+  // ====================================================================
+  let totalChecks = 5; // Base checks (1-5 above)
+  const coordLogPath = path.join(sessionDir, 'workflow', 'coordination_log.yaml');
+  const coordLogContent = safeRead(coordLogPath);
+
+  // Check A: Evidence Completeness Scoring (V10.23.0)
+  // Score each completed work item's evidence on a 0-3 scale:
+  // 0 = no evidence, 1 = vague ("looks good"), 2 = specific but unverifiable, 3 = file:line citations
+  totalChecks++;
+  if (coordLogContent) {
+    const vaguePatterns = ['looks good', 'seems correct', 'probably works', 'should be fine', 'appears to work', 'implemented as expected'];
+    const specificPatterns = [/\w+\.\w+:\d+/, /src\//, /tests?\s+pass/i, /\d+\/\d+\s+pass/i];
+
+    // Extract evidence blocks from implementation_tasks entries
+    const evidenceBlocks = [];
+    const taskSections = coordLogContent.split(/- task_id:/);
+    for (let i = 1; i < taskSections.length; i++) {
+      const section = taskSections[i];
+      // Only score completed items
+      if (/status:\s*completed/i.test(section)) {
+        const evidenceMatch = section.match(/evidence:\s*(?:\|[\s\S]*?)(?=\n\s*\w+:|$)|evidence:\s*"([^"]*)"|evidence:\s*'([^']*)'|evidence:\s*([^\n]+)/);
+        evidenceBlocks.push(evidenceMatch ? (evidenceMatch[1] || evidenceMatch[2] || evidenceMatch[3] || evidenceMatch[0]) : '');
+      }
+    }
+
+    if (evidenceBlocks.length > 0) {
+      let totalScore = 0;
+      for (const evidence of evidenceBlocks) {
+        if (!evidence || evidence.trim() === '' || evidence.trim() === '[]' || evidence.trim() === 'null') {
+          // Score 0: no evidence
+          totalScore += 0;
+        } else if (vaguePatterns.some(vp => evidence.toLowerCase().includes(vp))) {
+          // Score 1: vague evidence
+          totalScore += 1;
+        } else if (specificPatterns.some(sp => sp.test(evidence))) {
+          // Score 3: file:line citations or specific test results
+          totalScore += 3;
+        } else {
+          // Score 2: specific but unverifiable
+          totalScore += 2;
+        }
+      }
+      const avgScore = totalScore / evidenceBlocks.length;
+      if (avgScore < 2.0) {
+        warnings.push(`Evidence quality: average score ${avgScore.toFixed(1)}/3.0 across ${evidenceBlocks.length} completed item(s). ` +
+          `Score < 2.0 indicates vague or missing evidence. Provide file:line citations and test results for higher confidence.`);
+      }
+    }
+  }
+
+  // Check B: Acceptance Criteria Coverage (V10.23.0)
+  // Verify that coordination_log has evidence for EVERY acceptance criterion, not just some
+  totalChecks++;
+  const workItemsPath = path.join(sessionDir, 'workflow', 'work_items.yaml');
+  const workItemsContent = safeRead(workItemsPath);
+  if (workItemsContent && coordLogContent) {
+    // Count acceptance criteria in work_items.yaml
+    const acMatches = workItemsContent.match(/acceptance_criteria:/g);
+    const totalCriteria = acMatches ? acMatches.length : 0;
+
+    // Count individual criterion entries (lines starting with - under acceptance_criteria)
+    const criterionLines = workItemsContent.match(/acceptance_criteria:\s*\n((?:\s+-\s+[^\n]+\n?)*)/g);
+    let totalCriterionItems = 0;
+    if (criterionLines) {
+      for (const block of criterionLines) {
+        const items = block.match(/^\s+-\s+/gm);
+        totalCriterionItems += items ? items.length : 0;
+      }
+    }
+
+    // Count evidence entries in coordination_log.yaml
+    const evidenceEntries = coordLogContent.match(/evidence:/g);
+    const totalEvidence = evidenceEntries ? evidenceEntries.length : 0;
+
+    // Also count individual criterion-level evidence (MET/NOT MET/PARTIAL)
+    const criterionResults = coordLogContent.match(/\b(?:MET|NOT MET|PARTIAL)\b/g);
+    const totalCriterionResults = criterionResults ? criterionResults.length : 0;
+
+    if (totalCriteria > 0 && totalEvidence < totalCriteria) {
+      const coverage = Math.round((totalEvidence / totalCriteria) * 100);
+      warnings.push(`Acceptance criteria coverage: ${totalEvidence}/${totalCriteria} work items have evidence (${coverage}%). ` +
+        `Every work item should have documented evidence of criteria being met.`);
+    }
+
+    if (totalCriterionItems > 0 && totalCriterionResults > 0 && totalCriterionResults < totalCriterionItems) {
+      const coverage = Math.round((totalCriterionResults / totalCriterionItems) * 100);
+      warnings.push(`Criterion-level coverage: ${totalCriterionResults}/${totalCriterionItems} individual criteria have MET/NOT MET/PARTIAL status (${coverage}%).`);
+    }
+  }
+
+  // Check C: Schema Validation for Workflow YAML (V10.23.0)
+  // Verify required fields in key workflow files
+  totalChecks++;
+  const schemaChecks = [
+    { file: 'workflow/plan.yaml', required: ['mission', 'objectives', 'controller_assignment'] },
+    { file: 'workflow/coordination_log.yaml', required: ['schema_version', 'controller', 'status'] },
+    { file: 'workflow/execution_summary.yaml', required: ['session_id', 'final_state', 'status'] },
+  ];
+  for (const check of schemaChecks) {
+    const filePath = path.join(sessionDir, check.file);
+    if (fs.existsSync(filePath)) {
+      const content = fs.readFileSync(filePath, 'utf8');
+      for (const field of check.required) {
+        if (!content.includes(field + ':')) {
+          warnings.push(`Schema: ${check.file} missing required field '${field}'`);
+        }
+      }
+    }
+  }
+
+  // Check D: Self-Validation Report (V10.23.0)
+  // Verify execution agents included self-validation in their responses
+  totalChecks++;
+  if (coordLogContent) {
+    if (!coordLogContent.includes('self_validation') && !coordLogContent.includes('validation_checkpoints')) {
+      warnings.push('No self-validation reports found in coordination_log. Execution agents may not have run self-validation checklist.');
+    }
+  }
+
+  // Check E: Validation Checkpoint Presence (V10.23.0)
+  // Verify that pre-execution and mid-execution checkpoints were recorded
+  totalChecks++;
+  if (coordLogContent) {
+    if (!coordLogContent.includes('pre_execution')) {
+      warnings.push('No pre-execution validation checkpoint found. Controller may have skipped input validation.');
+    }
+    if (!coordLogContent.includes('mid_execution')) {
+      warnings.push('No mid-execution checkpoint found. Controller may have skipped progress validation.');
+    }
+  }
+
+  // Validation summary
+  const validationSummary = `Completion validation: ${totalChecks} checks run, ${warnings.length} warnings`;
+  console.error(`[VerifyCompletion] ${validationSummary}`);
+
   return { issues, warnings };
 }
 

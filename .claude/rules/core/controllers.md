@@ -211,6 +211,78 @@ implementation_tasks:
 
 **When to skip guards**: Bootstrap/scaffolding work items (no tests yet), pure documentation, design artifacts. Controllers use judgment but default to running guards when a command is available.
 
+### Regression Validation Chain (V10.23.0)
+
+Controllers SHOULD chain multiple guard commands for comprehensive regression detection. Run ALL applicable guards, not just the first one.
+
+#### Guard Command Chain
+
+```yaml
+regression_validation_chain:
+  - name: "Test Suite"
+    command: "npm test"
+    required_for: [code_changes]
+    severity: CRITICAL
+  - name: "Type Check"
+    command: "tsc --noEmit"
+    required_for: [typescript_changes]
+    severity: CRITICAL
+  - name: "Lint Check"
+    command: "npm run lint"
+    required_for: [code_changes]
+    severity: HIGH
+  - name: "YAML Syntax"
+    command: "node -e \"const yaml=require('yaml'); yaml.parse(require('fs').readFileSync('{file}','utf8'))\""
+    required_for: [yaml_changes]
+    severity: HIGH
+  - name: "JSON Syntax"
+    command: "node -e \"JSON.parse(require('fs').readFileSync('{file}','utf8'))\""
+    required_for: [json_changes]
+    severity: HIGH
+  - name: "Import Check"
+    command: "node -e \"require('{entry_point}')\""
+    required_for: [module_changes]
+    severity: MEDIUM
+```
+
+#### Guard Chain Result
+
+```yaml
+guard_chain_result:
+  total_guards: 4
+  passed: 4
+  failed: 0
+  skipped: 2  # not applicable to this work item type
+  results:
+    - name: "Test Suite"
+      result: PASS
+      output: "45/45 tests passed"
+      duration_ms: 3200
+    - name: "Type Check"
+      result: PASS
+      output: "No errors"
+      duration_ms: 1100
+    - name: "Lint Check"
+      result: PASS
+      output: "0 errors, 0 warnings"
+      duration_ms: 800
+    - name: "YAML Syntax"
+      result: PASS
+      output: "Valid YAML"
+      duration_ms: 50
+```
+
+#### Guard Chain Failure Escalation
+
+| Guards Failed | Action |
+|--------------|--------|
+| 0 | PASS -- proceed to next work item |
+| 1 MEDIUM | WARN -- note in coordination_log, proceed |
+| 1 HIGH | REVISE -- send guard output as feedback |
+| 1 CRITICAL | REVISE -- must fix before proceeding |
+| 2+ any severity | REVISE -- prioritize CRITICAL, then HIGH, then MEDIUM |
+| 2 CRITICAL after rework | dead_letter -- escalate to user |
+
 ## Agent ID Tracking
 
 When controllers spawn execution agents via Task tool, they MUST record the returned `agent_id` in the coordination_log's `implementation_tasks` entry. This links work items to `agent_tree.yaml` entries, enabling AgentPath to show which agent handled which work item.
@@ -243,6 +315,16 @@ Controllers MUST re-read plan objectives before major decisions to combat attent
 > Before synthesis and before spawning execution agents, re-read plan.yaml objectives to refresh goals in the attention window.
 
 **When to re-read**: Before synthesizing answers, before spawning executors, after 5+ delegated questions, before writing coordination_log.
+
+## Pre-Execution and Mid-Execution Validation (V10.23.0)
+
+Controllers MUST run validation checkpoints at two points:
+
+**Pre-Execution** (6 checks): Before spawning any executor — plan completeness, work item criteria, dependency acyclicity, agent existence, referenced file existence, coordination log schema.
+
+**Mid-Execution** (5 checks): After every 3 completed work items — evidence capture, stuck item detection, timestamp monotonicity, evidence spot-check (random verification), dependency satisfaction.
+
+See @resources/controller-validation-checklist.md for detailed check descriptions and failure handling.
 
 ## Decision Log Protocol (V10.6.0)
 

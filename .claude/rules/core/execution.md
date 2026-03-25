@@ -221,6 +221,23 @@ When implementing work items that modify existing code, use the commit-before-ve
 | `git reset --hard` on failure | `git reset HEAD~1` preserves your staged changes |
 | Skip verification for "obvious" fixes | Always verify - obvious fixes break production |
 
+## Mandatory Self-Validation Protocol (V10.23.0)
+
+Before reporting ANY status (DONE, DONE_WITH_CONCERNS), execution agents MUST complete a self-validation checklist. A failed check automatically changes DONE to DONE_WITH_CONCERNS with failed checks listed as concerns.
+
+**15 checks across 5 categories**: Acceptance Criteria (3), Side Effects (3), Completeness (3), Evidence Freshness (3), Regression (3).
+
+Key checks:
+- Every criterion has specific file:line or command output evidence
+- Evidence was gathered AFTER implementation (fresh, not recycled)
+- All claimed output files exist on disk
+- No broken imports or test regressions introduced
+- Code compiles/parses cleanly, no TODO/FIXME/HACK in new code
+
+**Auto-downgrade rule**: If 1+ acceptance criteria check fails OR 4+ total checks fail → DONE becomes DONE_WITH_CONCERNS with failed checks listed.
+
+See @resources/execution-self-validation.md for the full 15-check checklist and YAML template.
+
 ---
 
 ## See Also

@@ -2,6 +2,7 @@
 name: org
 description: "Coordinate C-suite agents across domains for strategic initiatives. Use when work spans 2+ business domains or needs executive analysis. TRIGGER: org, strategic, cross-domain, company-wide. NOT for: single-domain tasks (/run or /team)."
 license: MIT
+compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
   version: "10.22.7"
@@ -875,6 +876,228 @@ For instructions touching 2+ domains: execute the full 6-state pipeline.
 9. **TaskCreate per subagent** -- every background Agent/Task spawn MUST have a `TaskCreate` call BEFORE the spawn, and a `TaskUpdate(status: completed)` when it returns. This gives users per-agent visibility in the task list UI.
 10. **Never expose state machine names in tasks** -- TaskCreate subjects and TodoWrite content MUST NOT use internal state names (INIT, ANALYZED, DELIBERATED, BRIEFED, EXECUTED, INTEGRATED, COMPLETE) as primary content. Users see these in the UI — describe the WORK being done, not the state. Bad: `[/org CEO] ANALYZED: C-suite domain analysis`. Good: `[org > cto] Engineering domain analysis`.
 11. **No slash prefix on command names** -- Use `[org]`, not `[/org]` or `[/org CEO]`. The `[org]` prefix is sufficient context. `CEO` is implied since /org IS the CEO.
+
+## Cross-Domain Validation Protocol (V10.23.0)
+
+Every state transition in the /org pipeline MUST include structured validation. The CEO validates outputs at 5 checkpoints to ensure cross-domain consistency and completeness.
+
+### Validation Point 1: Pre-Deliberation (after ANALYZED)
+
+Verify all C-suite analyses are complete and non-empty before drafting the strategic brief.
+
+```yaml
+pre_deliberation_validation:
+  checkpoint: "after_analyzed"
+  checks:
+    all_analyses_present:
+      expected: [{domain_key_1}, {domain_key_2}, ...]
+      found: [{domain_key_1}, {domain_key_2}, ...]
+      passed: true
+    all_analyses_non_empty:
+      checked: [{domain_key}: {word_count}, ...]
+      min_word_count: 50
+      passed: true
+    wave2_peer_context_used:
+      agents_checked: [{csuite_agent}: {peer_analyses_reviewed_count}, ...]
+      min_peer_reads: 1
+      passed: true
+  overall: PASS
+  timestamp: "{ISO_TIMESTAMP}"
+```
+
+**TodoWrite entry:**
+```
+TodoWrite([
+  {"content": "[org] Pre-deliberation validation\n  [org] Analyses: {N}/{N} domains complete, all non-empty\n  [org] Peer context: Wave 2 agents reviewed {N} peer analyses\n  [org] Validation: PASS (3/3 checks)", "status": "completed", "id": "validate_analyzed"}
+])
+```
+
+### Validation Point 2: Post-Deliberation (after DELIBERATED)
+
+Verify objections were addressed and no contradictions remain between domains.
+
+```yaml
+post_deliberation_validation:
+  checkpoint: "after_deliberated"
+  checks:
+    all_objections_reviewed:
+      total_objections: {N}
+      blocking_objections: {N}
+      blocking_resolved: {N}
+      passed: true  # all blocking objections resolved
+    no_cross_domain_contradictions:
+      contradiction_pairs_checked: [{domain_a}-{domain_b}, ...]
+      contradictions_found: 0
+      passed: true
+    dependency_coverage:
+      dependencies_declared: {N}
+      dependencies_addressed_in_brief: {N}
+      passed: true
+  overall: PASS
+  timestamp: "{ISO_TIMESTAMP}"
+```
+
+**TodoWrite entry:**
+```
+TodoWrite([
+  {"content": "[org] Post-deliberation validation\n  [org] Objections: {N} blocking resolved, {N} suggestions incorporated\n  [org] Contradictions: 0 cross-domain conflicts\n  [org] Dependencies: {N}/{N} addressed in brief\n  [org] Validation: PASS (3/3 checks)", "status": "completed", "id": "validate_deliberated"}
+])
+```
+
+### Validation Point 3: Strategic Brief (after BRIEFED)
+
+Verify the brief has all required fields and is internally consistent.
+
+```yaml
+strategic_brief_validation:
+  checkpoint: "after_briefed"
+  checks:
+    required_fields_present:
+      mission: true
+      success_criteria: true
+      domain_assignments: true
+      cross_domain_dependencies: true
+      risk_register: true
+      passed: true
+    success_criteria_measurable:
+      total_criteria: {N}
+      measurable_criteria: {N}
+      passed: true  # all criteria are measurable
+    domain_assignments_complete:
+      domains_in_routing: [{domain_keys}]
+      domains_in_assignments: [{domain_keys}]
+      all_domains_assigned: true
+      passed: true
+    dependency_graph_acyclic:
+      edges: {N}
+      cycles_found: 0
+      passed: true
+  overall: PASS
+  timestamp: "{ISO_TIMESTAMP}"
+```
+
+**TodoWrite entry:**
+```
+TodoWrite([
+  {"content": "[org] Strategic brief validation\n  [org] Fields: mission, criteria, assignments, deps, risks — all present\n  [org] Criteria: {N}/{N} measurable\n  [org] Assignments: {N}/{N} domains assigned\n  [org] Dependencies: acyclic ({N} edges, 0 cycles)\n  [org] Validation: PASS (4/4 checks)", "status": "completed", "id": "validate_briefed"}
+])
+```
+
+### Validation Point 4: Post-Execution (after EXECUTED)
+
+Verify all domain execution results align with the strategic brief.
+
+```yaml
+post_execution_validation:
+  checkpoint: "after_executed"
+  checks:
+    all_domains_executed:
+      expected: [{domain_keys}]
+      completed: [{domain_keys}]
+      partial: []
+      failed: []
+      passed: true
+    success_criteria_coverage:
+      total_criteria: {N}
+      criteria_with_evidence: {N}
+      criteria_without_evidence: []
+      passed: true
+    work_items_complete:
+      total_wis: {N}
+      completed_wis: {N}
+      blocked_wis: 0
+      passed: true
+    escalations_resolved:
+      total_escalations: {N}
+      resolved: {N}
+      unresolved: 0
+      passed: true
+  overall: PASS
+  timestamp: "{ISO_TIMESTAMP}"
+```
+
+**TodoWrite entry:**
+```
+TodoWrite([
+  {"content": "[org] Post-execution validation\n  [org] Domains: {N}/{N} executed successfully\n  [org] Success criteria: {N}/{N} with evidence\n  [org] Work items: {N}/{N} complete, 0 blocked\n  [org] Escalations: {N}/{N} resolved\n  [org] Validation: PASS (4/4 checks)", "status": "completed", "id": "validate_executed"}
+])
+```
+
+### Validation Point 5: Integration (after INTEGRATED)
+
+Verify cross-domain deliverables are consistent and all contracts fulfilled.
+
+```yaml
+integration_validation:
+  checkpoint: "after_integrated"
+  checks:
+    cross_domain_dependencies_satisfied:
+      total_dependencies: {N}
+      satisfied: {N}
+      unsatisfied: []
+      passed: true
+    output_consistency:
+      domains_checked: [{domain_pair}: {consistent: true}, ...]
+      conflicts_found: 0
+      passed: true
+    deliverables_complete:
+      expected_outputs: [{path_1}, {path_2}, ...]
+      present_outputs: [{path_1}, {path_2}, ...]
+      missing_outputs: []
+      passed: true
+    brief_success_criteria_final:
+      total_criteria: {N}
+      met: {N}
+      unmet: 0
+      passed: true
+  overall: PASS
+  timestamp: "{ISO_TIMESTAMP}"
+```
+
+**TodoWrite entry:**
+```
+TodoWrite([
+  {"content": "[org] Integration validation\n  [org] Cross-domain deps: {N}/{N} satisfied\n  [org] Consistency: 0 conflicts between domain outputs\n  [org] Deliverables: {N}/{N} present\n  [org] Success criteria: {N}/{N} met\n  [org] Validation: PASS (4/4 checks)", "status": "completed", "id": "validate_integrated"}
+])
+```
+
+### Validation Storage
+
+All validation results are appended to `${SESSION_DIR}/workflow/org_validations.yaml`:
+
+```yaml
+org_validations:
+  - checkpoint: "after_analyzed"
+    overall: PASS
+    checks: {...}
+    timestamp: "..."
+  - checkpoint: "after_deliberated"
+    overall: PASS
+    checks: {...}
+    timestamp: "..."
+  - checkpoint: "after_briefed"
+    overall: PASS
+    checks: {...}
+    timestamp: "..."
+  - checkpoint: "after_executed"
+    overall: PASS
+    checks: {...}
+    timestamp: "..."
+  - checkpoint: "after_integrated"
+    overall: PASS
+    checks: {...}
+    timestamp: "..."
+```
+
+### Validation Failure Handling
+
+| Checkpoint | Failure Action |
+|-----------|---------------|
+| Pre-deliberation | Re-spawn missing/empty C-suite agents (1 retry). If still fails, proceed with available analyses and note gaps. |
+| Post-deliberation | Re-run objection phase for domains with unresolved blocking objections (1 retry). If contradictions persist, escalate to user. |
+| Strategic brief | Fix missing fields inline. If criteria are unmeasurable, add measurement methods. If dependency graph is cyclic, break cycles by reordering. |
+| Post-execution | For incomplete domains: report partial results. For unmet criteria: check if evidence exists but was not mapped. For unresolved escalations: escalate to user. |
+| Integration | For unsatisfied dependencies: check if outputs exist in unexpected locations. For conflicts: CEO resolves by priority. For missing deliverables: document gaps in integration_report.yaml. |
 
 ## Error Handling
 
