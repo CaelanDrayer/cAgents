@@ -678,6 +678,33 @@ for domain in {domain_keys}:
 
 For each domain (in priority order from strategic_brief.yaml):
 
+**Before each Skill invocation — write a manual agent_tree entry (GAP-2 fix):**
+
+The Skill tool fork is invisible to SubagentStart hooks (it is a Skill fork, not a Task subagent). Before invoking `/team` for each domain, write a manual entry to the org session's `workflow/agent_tree.yaml` so the /team invocation is visible in the agent hierarchy:
+
+```yaml
+# Append to ${SESSION_DIR}/workflow/agent_tree.yaml before each Skill(team) call:
+- id: "skill-fork-{domain_key}-{ISO_TIMESTAMP_COMPACT}"
+  type: "skill-fork"
+  cagents_type: "cagents:team"
+  short_role: "Team Execution ({domain_key})"
+  parent: "pipeline"
+  depth: 1
+  spawned_at: "{ISO_TIMESTAMP}"
+  stopped_at: null
+  team_session_id: "{SESSION_ID}/{domain_key}"
+  role_description: "Sequential /team execution for {domain_key} domain"
+  session: "{SESSION_ID}"
+```
+
+Use `js-yaml` (if available) or append the YAML block directly. After writing the entry, set `CAGENTS_ACTIVE_SESSION` to the team session path so the /team fork's hooks route correctly:
+
+```bash
+export CAGENTS_ACTIVE_SESSION="{SESSION_ID}/{domain_key}"
+```
+
+Then invoke /team:
+
 ```
 Skill({
   skill: "team",
@@ -686,6 +713,18 @@ Skill({
 ```
 
 After each /team returns:
+
+**After each Skill returns — update the agent_tree entry:**
+```yaml
+# Update stopped_at for the skill-fork entry written above
+stopped_at: "{ISO_TIMESTAMP}"
+```
+Also restore `CAGENTS_ACTIVE_SESSION` to the org session ID so subsequent hooks route back to the org session:
+```bash
+export CAGENTS_ACTIVE_SESSION="{ORG_SESSION_ID}"
+```
+
+After each /team returns (continued):
 - Read `{SESSION_DIR}/{domain_key}/outputs/` to check results
 - Update domain_status in strategic_brief.yaml (progress, completed_wis)
 - Check for cross-domain outputs that the next domain may need

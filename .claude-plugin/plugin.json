@@ -13,6 +13,7 @@
   "license": "MIT",
   "skills": "./.claude/skills/",
   "hooks": "./.claude/settings.json",
+  "$statusLine_note": "Plugin consumers must add statusLine manually to ~/.claude/settings.json — Claude Code does not propagate statusLine from plugin hook files (only the 'hooks' key is extracted). See docs/GETTING_STARTED.md for the exact JSON block to copy.",
   "outputStyles": "./output-styles",
   "agents": [
     "./engineering/agents/accessibility-checker/SKILL.md",

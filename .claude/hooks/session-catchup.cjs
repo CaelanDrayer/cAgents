@@ -197,6 +197,34 @@ createHook('SessionCatchup', async (input) => {
     }
   } catch { /* context check is best-effort */ }
 
+  // StatusLine Advisory (WI-1/WI-2): Detect missing statusLine config for plugin consumers.
+  // Claude Code only extracts the "hooks" key from plugin settings — statusLine is silently ignored.
+  // Emit a one-time advisory so plugin users know to add it to their ~/.claude/settings.json.
+  try {
+    const alreadyShown = fs.existsSync(path.join(AGENT_MEMORY_DIR, '_system', '.statusline_advisory_shown'));
+    if (!alreadyShown) {
+      // Check if statusLine is configured via env var (set by Claude Code when active)
+      const envConfigured = !!process.env.CLAUDE_STATUSLINE;
+      // Check user settings file for statusLine key
+      const userSettingsPath = path.join(process.env.HOME || process.env.USERPROFILE || '', '.claude', 'settings.json');
+      const userSettings = safeRead(userSettingsPath) || '';
+      // Check project settings file for statusLine key
+      const projectSettingsPath = path.join(PROJECT_ROOT, '.claude', 'settings.json');
+      const projectSettings = safeRead(projectSettingsPath) || '';
+      const settingsConfigured = userSettings.includes('"statusLine"') || projectSettings.includes('"statusLine"');
+
+      if (!envConfigured && !settingsConfigured) {
+        const advisory = ' Status line not showing? Add to ~/.claude/settings.json: "statusLine":{"type":"command","command":"bash -c \'R=\\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\\"; node \\"$R/.claude/hooks/statusline.cjs\\"\'"}';
+        cagentsContext += advisory;
+        // Write marker so we only show this once
+        try {
+          ensureDir(path.join(AGENT_MEMORY_DIR, '_system'));
+          fs.writeFileSync(path.join(AGENT_MEMORY_DIR, '_system', '.statusline_advisory_shown'), new Date().toISOString());
+        } catch { /* best effort */ }
+      }
+    }
+  } catch { /* statusLine advisory is best-effort, never block session start */ }
+
   // Update check (non-blocking, best-effort)
   try {
     const { spawn } = require('child_process');

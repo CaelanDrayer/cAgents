@@ -207,6 +207,21 @@ state_history:
 
 Note: /team uses the `phase` field (not `pipeline_state`). Hooks check both fields as fallback. See `.claude/skills/run/reference/session-schema.md` for the canonical session YAML contract.
 
+**2a-2. Set CAGENTS_ACTIVE_SESSION env var (hook routing):**
+
+After writing `status.yaml`, set the environment variable so that all hooks spawned within this team pipeline resolve to the correct session without heuristic discovery:
+
+```
+process.env.CAGENTS_ACTIVE_SESSION = SESSION_ID;
+```
+
+This is critical for correct agent tracking when /team runs under /org concurrently with other domain teams. The `findActiveSession()` helper in hook-utils.cjs checks this env var first (Pass 0) and returns the exact session directory immediately, bypassing the directory-scan heuristics that can misroute SubagentStart/SubagentStop events to the wrong session's agent_tree.yaml.
+
+When using Bash tool to create the session directory:
+```bash
+export CAGENTS_ACTIVE_SESSION="{SESSION_ID}"
+```
+
 **2b. Classify domain and tier (inline):**
 
 | Domain | Keywords |

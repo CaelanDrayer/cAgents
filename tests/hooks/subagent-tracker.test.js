@@ -66,9 +66,11 @@ describe('subagent-tracker.cjs', () => {
     });
 
     it('should skip completed sessions in fallback', () => {
-      const hookContent = readFileSync(HOOK_PATH, 'utf8');
-      // TERMINAL_STATES (imported from hook-utils.cjs) covers completed, failed, aborted, etc.
-      expect(hookContent).toContain('TERMINAL_STATES.includes(phase)');
+      // findMostRecentSessionDir was moved to hook-utils.cjs (GAP-4 fix: shared between
+      // subagent-tracker and subagent-stop-tracker). Check the shared implementation.
+      const utilsPath = join(HOOKS_DIR, 'hook-utils.cjs');
+      const utilsContent = readFileSync(utilsPath, 'utf8');
+      expect(utilsContent).toContain('TERMINAL_STATES.includes(phase)');
     });
   });
 

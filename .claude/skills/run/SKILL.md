@@ -187,6 +187,21 @@ Note: /run uses the `pipeline_state` field (not `phase`). Hooks check both field
 
 Note: `duration_ms` is computed at state transition time (ms between `entered_at` and the next state's `entered_at`). The current (latest) state has `duration_ms: null` until the next transition.
 
+**ACTION 1b -- Set CAGENTS_ACTIVE_SESSION env var (hook routing):**
+
+After writing `status.yaml`, set the environment variable so that all hooks spawned within this pipeline resolve to the correct session without heuristic discovery:
+
+```
+process.env.CAGENTS_ACTIVE_SESSION = SESSION_ID;
+```
+
+This is critical for correct agent tracking when /run is invoked concurrently with other sessions (e.g., when /org spawns multiple /team instances). The `findActiveSession()` helper in hook-utils.cjs checks this env var first (Pass 0) and returns the exact session directory immediately, bypassing the directory-scan heuristics that can misroute SubagentStart/SubagentStop events to the wrong session's agent_tree.yaml.
+
+When using Bash tool to create the session directory:
+```bash
+export CAGENTS_ACTIVE_SESSION="{SESSION_ID}"
+```
+
 **ACTION 2 -- Load pipeline config (optional):**
 
 Try to read `Agent_Memory/_system/config/pipeline_config.yaml` to get the state machine definition. This file is generated at runtime and may not exist in fresh installs or CI environments. If the file does not exist, proceed with the hardcoded state machine defined in this SKILL.md (INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED -> VALIDATED). Do not error or halt if the file is missing.

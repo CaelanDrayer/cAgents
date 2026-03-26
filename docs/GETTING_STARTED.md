@@ -135,6 +135,23 @@ Agent_Memory/
         └── outputs/
 ```
 
+### Status Line Setup
+
+cAgents includes a status line that displays the current session phase, domain, and agent activity at the bottom of your terminal. When running cAgents as a **plugin** (via `--plugin-dir` or `claude plugin install`), you need to add the status line config manually to your own settings — Claude Code only propagates `hooks` from the plugin settings file, not `statusLine`.
+
+Add the following to `~/.claude/settings.json` (user-level, applies to all projects) or `.claude/settings.json` (project-level):
+
+```json
+"statusLine": {
+  "type": "command",
+  "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/statusline.cjs\"'"
+}
+```
+
+**Why manual setup is needed**: Claude Code's plugin system reads the `hooks` key from the plugin's referenced settings file but silently ignores `statusLine` — it is not a supported field in `plugin.json` and is not propagated to consumers. This is a Claude Code limitation, not a cAgents bug.
+
+If you installed cAgents by cloning the repo and running directly (`cd cAgents && claude`), the status line works automatically — no manual step needed.
+
 ### Project Memory
 
 ```

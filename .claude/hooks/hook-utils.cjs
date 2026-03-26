@@ -131,6 +131,17 @@ let _cachedActiveSession = undefined;
 let _cachedHint = undefined;
 
 function findActiveSession(sessionHint) {
+  // Pass 0: Env-var fast path — /run and /team set this for precise routing.
+  // This eliminates heuristic discovery for any agent spawned within a /run or /team
+  // pipeline, completely preventing session misrouting under concurrent /org + /team.
+  const envSession = process.env.CAGENTS_ACTIVE_SESSION;
+  if (envSession) {
+    const envDir = path.join(AGENT_MEMORY_DIR, 'sessions', envSession);
+    if (fs.existsSync(envDir)) return envDir;
+    // Env var set but directory doesn't exist yet — fall through to heuristic discovery
+    console.error(`[findActiveSession] CAGENTS_ACTIVE_SESSION="${envSession}" set but directory not found, falling through to heuristic`);
+  }
+
   // If we have a hint and it differs from cached, invalidate cache
   if (sessionHint && sessionHint !== _cachedHint) {
     _cachedActiveSession = undefined;
@@ -169,7 +180,15 @@ function findActiveSession(sessionHint) {
   const sessions = fs.readdirSync(sessionsDir)
     .filter(d => SESSION_PREFIXES.some(p => d.startsWith(p)))
     .sort((a, b) => {
-      // Extract last 2 underscore-separated segments as sort key
+      // GAP-3 fix: team_* sessions sort BEFORE org_* flat sessions.
+      // When /org spawns /team concurrently, the flat team_* session must be
+      // discovered by the status pass before the org_* session is considered.
+      // This prevents the nested org scan from overriding an active team session.
+      const aIsTeam = a.startsWith('team_');
+      const bIsTeam = b.startsWith('team_');
+      if (aIsTeam && !bIsTeam) return -1;
+      if (!aIsTeam && bIsTeam) return 1;
+      // Within same prefix group: sort newest-first by last 2 underscore-separated segments
       // Works for both old format (run_20260317_040624 -> 20260317_040624)
       // and new format (run_fix-auth_260317_001 -> 260317_001)
       const partsA = a.split('_');
@@ -336,6 +355,92 @@ function findTeamSession(input = {}) {
   } catch { /* skip */ }
 
   return null;
+}
+
+/**
+ * Find the most recently modified active session directory as a fallback
+ * when findActiveSession() returns null. This handles the race condition
+ * where a session dir exists but status.yaml hasn't been written yet.
+ *
+ * Includes nested org subdir scanning (e.g., org_xxx/engineering/ when
+ * /team runs inside /org). Used by both subagent-tracker.cjs and
+ * subagent-stop-tracker.cjs for consistent session discovery on fallback.
+ *
+ * GAP-4 fix: exported from hook-utils.cjs so start and stop trackers share
+ * the same implementation, guaranteeing events land in the same agent_tree.yaml.
+ */
+function findMostRecentSessionDir() {
+  const sessionsDir = path.join(AGENT_MEMORY_DIR, 'sessions');
+  if (!fs.existsSync(sessionsDir)) return null;
+
+  let bestDir = null;
+  let bestMtime = 0;
+  let entries = [];
+
+  try {
+    entries = fs.readdirSync(sessionsDir)
+      .filter(d => SESSION_PREFIXES.some(p => d.startsWith(p)));
+
+    for (const entry of entries) {
+      const fullPath = path.join(sessionsDir, entry);
+      try {
+        const stat = fs.statSync(fullPath);
+        if (stat.isDirectory() && stat.mtimeMs > bestMtime) {
+          // Skip sessions that are clearly completed/aborted
+          const statusFile = path.join(fullPath, 'status.yaml');
+          const statusContent = safeRead(statusFile);
+          if (statusContent) {
+            const phaseMatch = statusContent.match(/(?:phase|pipeline_state):\s*(\S+)/);
+            if (phaseMatch) {
+              const phase = phaseMatch[1];
+              if (TERMINAL_STATES.includes(phase)) {
+                continue; // Skip finished sessions
+              }
+            }
+          }
+          // No status.yaml or non-terminal phase: eligible
+          bestMtime = stat.mtimeMs;
+          bestDir = fullPath;
+        }
+      } catch { /* skip unreadable entries */ }
+    }
+  } catch { /* sessions dir unreadable */ }
+
+  // Also scan org session subdirectories for nested team/domain sessions.
+  // (e.g., org_xxx/engineering/ when /team runs inside /org)
+  // Only scan org subdirs if no flat session was found (bestDir is null),
+  // to prevent an org_*/subdir/ from overriding a flat active team session.
+  if (!bestDir) {
+    const orgDirs = entries.filter(d => d.startsWith('org_'));
+    for (const orgDir of orgDirs) {
+      const orgPath = path.join(sessionsDir, orgDir);
+      try {
+        const subdirs = fs.readdirSync(orgPath).filter(d => {
+          try { return fs.statSync(path.join(orgPath, d)).isDirectory(); } catch { return false; }
+        });
+        for (const subdir of subdirs) {
+          const nestedPath = path.join(orgPath, subdir);
+          try {
+            const stat = fs.statSync(nestedPath);
+            if (stat.mtimeMs > bestMtime) {
+              const statusContent = safeRead(path.join(nestedPath, 'status.yaml'));
+              if (statusContent) {
+                const phaseMatch = statusContent.match(/(?:phase|pipeline_state):\s*(\S+)/);
+                if (phaseMatch) {
+                  const phase = phaseMatch[1];
+                  if (TERMINAL_STATES.includes(phase)) continue;
+                }
+              }
+              bestMtime = stat.mtimeMs;
+              bestDir = nestedPath;
+            }
+          } catch { /* skip */ }
+        }
+      } catch { /* skip */ }
+    }
+  }
+
+  return bestDir;
 }
 
 /**
@@ -734,6 +839,7 @@ module.exports = {
   extractYamlValue,
   countPattern,
   findActiveSession,
+  findMostRecentSessionDir,
   findTeamSession,
   ensureDir,
   getTimestampSlug,

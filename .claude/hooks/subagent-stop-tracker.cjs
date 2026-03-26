@@ -13,49 +13,10 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findActiveSession, safeRead, ensureDir, withFileLock, AGENT_MEMORY_DIR, SESSION_PREFIXES } = require('./hook-utils.cjs');
-
-/**
- * Find the most recently modified session directory as a fallback.
- * Same logic as subagent-tracker.cjs.
- */
-function findMostRecentSessionDir() {
-  const sessionsDir = path.join(AGENT_MEMORY_DIR, 'sessions');
-  if (!fs.existsSync(sessionsDir)) return null;
-
-  let bestDir = null;
-  let bestMtime = 0;
-  let entries = [];
-
-  try {
-    entries = fs.readdirSync(sessionsDir)
-      .filter(d => SESSION_PREFIXES.some(p => d.startsWith(p)));
-
-    for (const entry of entries) {
-      const fullPath = path.join(sessionsDir, entry);
-      try {
-        const stat = fs.statSync(fullPath);
-        if (stat.isDirectory() && stat.mtimeMs > bestMtime) {
-          const statusFile = path.join(fullPath, 'status.yaml');
-          const statusContent = safeRead(statusFile);
-          if (statusContent) {
-            const phaseMatch = statusContent.match(/phase:\s*(\S+)/);
-            if (phaseMatch) {
-              const phase = phaseMatch[1];
-              if (phase === 'completed' || phase === 'complete' || phase === 'failed' || phase === 'aborted') {
-                continue;
-              }
-            }
-          }
-          bestMtime = stat.mtimeMs;
-          bestDir = fullPath;
-        }
-      } catch { /* skip */ }
-    }
-  } catch { /* skip */ }
-
-  return bestDir;
-}
+// GAP-4 fix: import findMostRecentSessionDir from hook-utils.cjs (shared with subagent-tracker.cjs).
+// This ensures start and stop events use identical session discovery logic,
+// including env-var fast path (Pass 0) and nested org subdir scanning.
+const { createHook, findActiveSession, findMostRecentSessionDir, safeRead, ensureDir, withFileLock, AGENT_MEMORY_DIR } = require('./hook-utils.cjs');
 
 createHook('SubagentStopTracker', async (input) => {
   const subagentType = input.agent_type || 'unknown';

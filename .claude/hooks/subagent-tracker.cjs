@@ -23,82 +23,10 @@
 const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
-const { createHook, findActiveSession, safeRead, ensureDir, withFileLock, AGENT_MEMORY_DIR, SESSION_PREFIXES, TERMINAL_STATES } = require('./hook-utils.cjs');
-
-/**
- * Find the most recently modified session directory as a fallback
- * when findActiveSession() returns null. This handles the race condition
- * where a session dir exists but status.yaml hasn't been written yet.
- */
-function findMostRecentSessionDir() {
-  const sessionsDir = path.join(AGENT_MEMORY_DIR, 'sessions');
-  if (!fs.existsSync(sessionsDir)) return null;
-
-  let bestDir = null;
-  let bestMtime = 0;
-  let entries = [];
-
-  try {
-    entries = fs.readdirSync(sessionsDir)
-      .filter(d => SESSION_PREFIXES.some(p => d.startsWith(p)));
-
-    for (const entry of entries) {
-      const fullPath = path.join(sessionsDir, entry);
-      try {
-        const stat = fs.statSync(fullPath);
-        if (stat.isDirectory() && stat.mtimeMs > bestMtime) {
-          // Skip sessions that are clearly completed/aborted
-          const statusFile = path.join(fullPath, 'status.yaml');
-          const statusContent = safeRead(statusFile);
-          if (statusContent) {
-            const phaseMatch = statusContent.match(/(?:phase|pipeline_state):\s*(\S+)/);
-            if (phaseMatch) {
-              const phase = phaseMatch[1];
-              if (TERMINAL_STATES.includes(phase)) {
-                continue; // Skip finished sessions
-              }
-            }
-          }
-          // No status.yaml or non-terminal phase: eligible
-          bestMtime = stat.mtimeMs;
-          bestDir = fullPath;
-        }
-      } catch { /* skip unreadable entries */ }
-    }
-  } catch { /* sessions dir unreadable */ }
-
-  // Also scan org session subdirectories for nested team/domain sessions
-  // (e.g., org_xxx/engineering/ when /team runs inside /org)
-  const orgDirs = (bestDir ? [] : entries).filter(d => d.startsWith('org_'));
-  for (const orgDir of orgDirs) {
-    const orgPath = path.join(sessionsDir, orgDir);
-    try {
-      const subdirs = fs.readdirSync(orgPath).filter(d => {
-        try { return fs.statSync(path.join(orgPath, d)).isDirectory(); } catch { return false; }
-      });
-      for (const subdir of subdirs) {
-        const nestedPath = path.join(orgPath, subdir);
-        try {
-          const stat = fs.statSync(nestedPath);
-          if (stat.mtimeMs > bestMtime) {
-            const statusContent = safeRead(path.join(nestedPath, 'status.yaml'));
-            if (statusContent) {
-              const phaseMatch = statusContent.match(/(?:phase|pipeline_state):\s*(\S+)/);
-              if (phaseMatch) {
-                const phase = phaseMatch[1];
-                if (TERMINAL_STATES.includes(phase)) continue;
-              }
-            }
-            bestMtime = stat.mtimeMs;
-            bestDir = nestedPath;
-          }
-        } catch { /* skip */ }
-      }
-    } catch { /* skip */ }
-  }
-
-  return bestDir;
-}
+// GAP-4 fix: import findMostRecentSessionDir from hook-utils.cjs (shared with subagent-stop-tracker.cjs).
+// This ensures start and stop events use identical session discovery logic,
+// including env-var fast path (Pass 0) and nested org subdir scanning.
+const { createHook, findActiveSession, findMostRecentSessionDir, safeRead, ensureDir, withFileLock, AGENT_MEMORY_DIR } = require('./hook-utils.cjs');
 
 /**
  * Append a line to the global agent spawns audit log.
