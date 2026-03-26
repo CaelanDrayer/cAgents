@@ -114,7 +114,7 @@ function verifyCompletion(sessionDir) {
 
     if (pipelineState) {
       // /org and /run pipeline_state sessions
-      const activeStates = ['INIT', 'ANALYZED', 'DELIBERATED', 'BRIEFED', 'EXECUTED', 'PLANNED', 'DECOMPOSED', 'PROMPTS_READY', 'COORDINATED'];
+      const activeStates = ['INIT', 'ORCHESTRATED', 'ANALYZED', 'DELIBERATED', 'BRIEFED', 'EXECUTED', 'PLANNED', 'DECOMPOSED', 'PROMPTS_READY', 'COORDINATED'];
       if (activeStates.includes(pipelineState)) {
         // Check if pipeline is actively running (recent state transition).
         // Claude Code fires Stop events between response turns while waiting

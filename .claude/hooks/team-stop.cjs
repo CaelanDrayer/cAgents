@@ -77,7 +77,7 @@ createHook('TeamStop', async (input) => {
   const statusFile = path.join(sessionDir, 'status.yaml');
   let statusContent = safeRead(statusFile);
   if (statusContent) {
-    const success = metrics.items_completed === metrics.items_total && metrics.items_total > 0;
+    const success = metrics.items_total > 0 ? (metrics.items_completed === metrics.items_total) : true;
     statusContent = statusContent
       .replace(/^phase:\s*\w+/m, 'phase: completed')
       .replace(/^pipeline_state:\s*\S+/m, 'pipeline_state: VALIDATED')

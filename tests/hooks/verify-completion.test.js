@@ -145,6 +145,17 @@ describe('verify-completion.cjs', () => {
       expect(summary).toMatch(/Validation status: FAIL/i);
     });
 
+    it('should warn (not block) when pipeline_state is ORCHESTRATED with recent transition (regression: BUG-1)', () => {
+      const recentTimestamp = new Date(Date.now() - 2 * 60 * 1000).toISOString(); // 2 minutes ago
+      writeFileSync(join(TEST_SESSION_DIR, 'status.yaml'), `pipeline_state: ORCHESTRATED\nstate_history:\n  - state: ORCHESTRATED\n    entered_at: "${recentTimestamp}"\n    duration_ms: null\n`);
+      const result = runHook({ session_id: TEST_SESSION });
+      // ORCHESTRATED is an active pipeline state with a recent transition — hook must
+      // downgrade to warning (continue: true) rather than blocking. If 'ORCHESTRATED'
+      // is removed from activeStates in the hook, this assertion will fail.
+      expect(result.decision).not.toBe('block');
+      expect(result.continue).toBe(true);
+    });
+
     it('ignores validation_report.yaml placed in old validation/ path (regression: WI-2 path fix)', () => {
       writeFileSync(join(TEST_SESSION_DIR, 'status.yaml'), 'phase: validating\n');
       // Write FAIL report only at the old wrong path — hook must NOT pick it up

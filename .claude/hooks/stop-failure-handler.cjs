@@ -21,6 +21,11 @@ const {
   PROJECT_ROOT
 } = require('./hook-utils.cjs');
 
+function extractNestedController(content) {
+  const match = content.match(/controller_assignment:\s*\n\s+primary:\s*["']?([^\s"'\n]+)/);
+  return match ? match[1] : null;
+}
+
 createHook('StopFailureHandler', async (input) => {
   // Extract error details gracefully -- StopFailure input shape may vary
   const errorMessage = (input && (input.error || input.error_message || input.reason || '')) || '';
@@ -54,7 +59,10 @@ createHook('StopFailureHandler', async (input) => {
     : 'unknown';
 
   const controller = planContent
-    ? (extractYamlValue(planContent, 'controller') || extractYamlValue(planContent, 'primary_controller') || 'unknown')
+    ? (extractYamlValue(planContent, 'controller') ||
+       extractYamlValue(planContent, 'primary_controller') ||
+       extractNestedController(planContent) ||
+       'unknown')
     : 'unknown';
 
   const coordStatus = coordContent

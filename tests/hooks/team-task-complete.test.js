@@ -116,6 +116,47 @@ describe('team-task-complete.cjs', () => {
     expect(result.stopReason).toContain('completed');
   });
 
+  it('should not signal stop when pending or blocked items remain', () => {
+    // task_list with one in_progress (WI-01), one pending (WI-02), one blocked (WI-03)
+    const content = `# Task List
+summary:
+  total: 3
+  completed: 0
+  in_progress: 1
+  available: 0
+  updated_at: "2026-03-25T10:00:00Z"
+
+items:
+  - id: "WI-01"
+    name: "First task"
+    status: in_progress
+    claimed_by: "worker-1"
+    completed_at: null
+    dependencies: []
+  - id: "WI-02"
+    name: "Second task"
+    status: pending
+    claimed_by: null
+    completed_at: null
+    dependencies: []
+  - id: "WI-03"
+    name: "Third task"
+    status: blocked
+    claimed_by: null
+    completed_at: null
+    dependencies: ["WI-02"]
+`;
+    writeFileSync(join(SESSION_DIR, 'team', 'task_list.yaml'), content);
+
+    const result = runHook({ session_id: TEST_SESSION, task_subject: 'WI-01 done', teammate_name: 'w1' });
+    // totalCount must be 3 (1 completed + 0 in_progress + 0 available + 1 pending + 1 blocked)
+    // completedCount (1) !== totalCount (3) => must NOT stop
+    expect(result.continue).toBe(true);
+    expect(result.stopReason).toBeUndefined();
+    // systemMessage should show 1/3, not 1/1
+    expect(result.systemMessage).toContain('1/3');
+  });
+
   it('should handle special characters in task IDs', () => {
     // Use a task list with a special-char ID
     const specialContent = TASK_LIST_CONTENT.replace('"WI-01"', '"WI-01.a"')

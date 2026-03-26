@@ -71,6 +71,15 @@ describe('team-stop.cjs', () => {
     expect(status).toContain('pipeline_state: VALIDATED');
   });
 
+  it('should report result: success (not partial) when no task_list.yaml exists (non-team session)', () => {
+    // No task_list.yaml is written — simulates a /run session (not a team session)
+    // The status.yaml has result: null which should become result: success
+    runHook({ session_id: TEST_SESSION });
+    const status = readFileSync(join(SESSION_DIR, 'status.yaml'), 'utf8');
+    expect(status).toContain('result: success');
+    expect(status).not.toContain('result: partial');
+  });
+
   it('should return summary with work item counts', () => {
     const result = runHook({ session_id: TEST_SESSION });
     expect(result.continue).toBe(true);

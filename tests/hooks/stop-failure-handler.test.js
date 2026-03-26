@@ -163,6 +163,39 @@ describe('stop-failure-handler.cjs', () => {
     });
   });
 
+  describe('nested controller_assignment extraction', () => {
+    beforeEach(() => {
+      mkdirSync(WORKFLOW_DIR, { recursive: true });
+      writeFileSync(join(TEST_SESSION_DIR, 'status.yaml'), [
+        'pipeline_state: COORDINATED',
+        'updated_at: "2026-01-01T12:00:00.000Z"'
+      ].join('\n'));
+      // plan.yaml using nested controller_assignment format
+      writeFileSync(join(WORKFLOW_DIR, 'plan.yaml'), [
+        'domain: engineering',
+        'controller_assignment:',
+        '  primary: cagents:engineering-manager',
+        'tier: 2'
+      ].join('\n'));
+    });
+
+    afterEach(() => {
+      try { rmSync(TEST_SESSION_DIR, { recursive: true, force: true }); } catch {}
+    });
+
+    it('should extract controller from nested controller_assignment.primary', () => {
+      runHook({ session_id: 'run_test-stop-failure_260101_001' });
+      const content = readFileSync(join(WORKFLOW_DIR, 'recovery_state.yaml'), 'utf8');
+      expect(content).toContain('controller: "cagents:engineering-manager"');
+    });
+
+    it('should NOT fall back to unknown when nested format is used', () => {
+      runHook({ session_id: 'run_test-stop-failure_260101_001' });
+      const content = readFileSync(join(WORKFLOW_DIR, 'recovery_state.yaml'), 'utf8');
+      expect(content).not.toContain('controller: "unknown"');
+    });
+  });
+
   describe('settings.json registration', () => {
     it('should be registered under StopFailure event', () => {
       const settingsPath = join(process.cwd(), '.claude', 'settings.json');

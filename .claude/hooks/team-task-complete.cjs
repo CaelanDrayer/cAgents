@@ -59,7 +59,9 @@ createHook('TeamTaskComplete', async (input) => {
   const completedCount = countPattern(content, /status:\s*completed/gi);
   const inProgressCount = countPattern(content, /status:\s*in_progress/gi);
   const availableCount = countPattern(content, /status:\s*available/gi);
-  const totalCount = completedCount + inProgressCount + availableCount;
+  const pendingCount = countPattern(content, /status:\s*pending/gi);
+  const blockedCount = countPattern(content, /status:\s*blocked/gi);
+  const totalCount = completedCount + inProgressCount + availableCount + pendingCount + blockedCount;
 
   content = content.replace(/completed:\s*\d+/, `completed: ${completedCount}`);
   content = content.replace(/in_progress:\s*\d+/, `in_progress: ${inProgressCount}`);
