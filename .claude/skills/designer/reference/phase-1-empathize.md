@@ -70,43 +70,37 @@ Write to: ${session_dir}/question_prep/empathize_stakeholders.yaml`
 
 Without `--deep`, use inline analysis (Glob/Grep/Read) to gather basic context.
 
-## Step 3: User Understanding
+## Steps 3 & 4: User Understanding + Pain Points
 
-Ask who the users/stakeholders are and what problems they face. Always include the defer option.
-
-```javascript
-AskUserQuestion({
-  questions: [{
-    question: "Who are the primary users or stakeholders for this design?",
-    header: "Users",
-    options: [
-      {label: "End users", description: "People who interact with the product directly"},
-      {label: "Internal team", description: "Developers, ops, or internal staff"},
-      {label: "Both", description: "Internal and external users"},
-      {label: "Research this for me", description: "Dispatch a subagent to analyze your codebase for user types"}
-    ],
-    multiSelect: false
-  }]
-})
-```
-
-## Step 4: Context & Pain Points
-
-Understand the environment, existing tools, frustrations, and emotional context:
+Ask who the users/stakeholders are and what problems they face in a single batched call — these two questions are closely related (same empathy concern: who is affected and how). Always include the defer option on each question.
 
 ```javascript
+// Batch users + pain points together — same empathy phase concern, reduces round-trips
 AskUserQuestion({
-  questions: [{
-    question: "What's the biggest pain point or frustration this design should address?",
-    header: "Pain point",
-    options: [
-      {label: "Slow/inefficient", description: "Current process is too slow or manual"},
-      {label: "Missing capability", description: "Something needed doesn't exist yet"},
-      {label: "Poor experience", description: "It works but users struggle with it"},
-      {label: "Research this for me", description: "Dispatch a subagent to investigate existing issues"}
-    ],
-    multiSelect: false
-  }]
+  questions: [
+    {
+      question: "Who are the primary users or stakeholders for this design?",
+      header: "Users",
+      options: [
+        {label: "End users", description: "People who interact with the product directly"},
+        {label: "Internal team", description: "Developers, ops, or internal staff"},
+        {label: "Both", description: "Internal and external users"},
+        {label: "Research this for me", description: "Dispatch a subagent to analyze your codebase for user types"}
+      ],
+      multiSelect: false
+    },
+    {
+      question: "What's the biggest pain point or frustration this design should address?",
+      header: "Pain point",
+      options: [
+        {label: "Slow/inefficient", description: "Current process is too slow or manual"},
+        {label: "Missing capability", description: "Something needed doesn't exist yet"},
+        {label: "Poor experience", description: "It works but users struggle with it"},
+        {label: "Research this for me", description: "Dispatch a subagent to investigate existing issues"}
+      ],
+      multiSelect: false
+    }
+  ]
 })
 ```
 

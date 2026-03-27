@@ -2,7 +2,7 @@
 
 The complete behavioral contract for the /designer command.
 
-1. **ALWAYS USE AskUserQuestion — OVERRIDE AUTO-PROCEED** - Never output plain text questions. ALWAYS use the `AskUserQuestion` tool. This rule OVERRIDES the "Automatic Workflow Progression" and "Automatic State Transitions" rules from CLAUDE.md and orchestration.md. The /designer MUST stop and wait for user input at every question. It MUST NOT auto-proceed through phases without asking. After calling `AskUserQuestion`, STOP and WAIT — do not continue processing, generate artifacts, or advance phases until the user responds.
+1. **ALWAYS USE AskUserQuestion — OVERRIDE AUTO-PROCEED** - Never output plain text questions. ALWAYS use the `AskUserQuestion` tool. This rule OVERRIDES the "Automatic Workflow Progression" and "Automatic State Transitions" rules from CLAUDE.md and orchestration.md. The /designer MUST stop and wait for user input at every question. It MUST NOT auto-proceed through phases without asking. After calling `AskUserQuestion`, STOP and WAIT — do not continue processing, generate artifacts, or advance phases until the user responds. **Multi-question calls (2-4 questions per call) are the preferred pattern** — batch related questions together for conversational efficiency rather than asking one at a time.
 
 2. **FOLLOW THE 6 PHASES** - Empathize -> Define -> Conceptualize -> Ideation -> Refinement -> Specification. Don't skip phases. Each phase builds on the previous.
 
@@ -10,7 +10,7 @@ The complete behavioral contract for the /designer command.
 
 4. **READ QUESTION_PREP FILES BEFORE PRESENTING** - When research is enabled for a phase, read the question_prep files before asking any question. Build a question pool from research findings. Fall back to chunk templates if research is unavailable.
 
-5. **ACT AS CONTROLLER** - Select questions from the pre-prepared pool based on priority, dependencies, and category clustering. Do not generate questions from scratch when a research-prepared pool exists.
+5. **ACT AS CONTROLLER** - Select questions from the pre-prepared pool based on priority, dependencies, and category clustering. Do not generate questions from scratch when a research-prepared pool exists. **When presenting questions, batch related questions from the pool into a single AskUserQuestion call (2-4 questions per call)** — group by topic area (e.g., user type + pain points together, constraints + success criteria together). This reduces round-trips and creates a more natural conversation flow.
 
 6. **ADAPT QUESTIONS BASED ON ANSWERS** - After each user answer: reorder remaining questions if user shows expertise or emphasis on a topic; skip questions already answered by previous responses; enrich upcoming questions with user's stated context.
 
@@ -24,7 +24,7 @@ The complete behavioral contract for the /designer command.
 
 11. **BUILD ON ANSWERS** - Each question should connect to what the user said. Never ask questions in a vacuum.
 
-12. **MULTIPLE QUESTIONS ALLOWED** - The designer may ask multiple questions at a time by including multiple entries in the `questions` array of a single AskUserQuestion call. Always use the AskUserQuestion tool, never plain text.
+12. **BATCH RELATED QUESTIONS** - The designer SHOULD ask 2-4 related questions per AskUserQuestion call. Batching related questions is the preferred pattern — it reduces the number of interaction rounds and creates a more natural conversational flow. Batch by topic area (users + pain points; constraints + success criteria; domain + scope). Use a single question ONLY when it is a standalone decision point unrelated to adjacent questions (e.g., a go/no-go gate or a binary fork in approach). Never use plain text questions — always use the AskUserQuestion tool.
 
 13. **GENERATE ARTIFACTS INLINE** - Build the design document as you go. Show diagrams, user stories, and specs forming in real-time during refinement and specification phases.
 

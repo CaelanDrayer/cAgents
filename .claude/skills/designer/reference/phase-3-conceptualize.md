@@ -40,43 +40,37 @@ Which framing resonates most with your vision?`,
 })
 ```
 
-## Step 3: Domain Framing
+## Steps 3 & 4: Domain Framing + Scope Boundaries
 
-Determine the design domain and orient subsequent phases:
-
-```javascript
-AskUserQuestion({
-  questions: [{
-    question: "What type of design are we working on?",
-    header: "Domain",
-    options: [
-      {label: "Software design", description: "Technical architecture, APIs, data models, code"},
-      {label: "Business design", description: "Processes, workflows, operations, strategy"},
-      {label: "Creative design", description: "Stories, content, campaigns, creative work"},
-      {label: "Research this for me", description: "Dispatch a subagent to determine the best domain from your project"}
-    ],
-    multiSelect: false
-  }]
-})
-```
-
-## Step 4: Scope Boundaries
-
-Establish what is IN scope and what is OUT of scope:
+Determine the design domain and scope in a single batched call — these two questions establish the shape of the solution together (what kind of thing are we building + how much of it). Always include the defer option on each question.
 
 ```javascript
+// Batch domain + scope together — both orient the solution direction, same conceptualize concern
 AskUserQuestion({
-  questions: [{
-    question: "Let's set scope boundaries. Which areas should this design cover?",
-    header: "Scope",
-    options: [
-      {label: "Core feature only", description: "Just the essential functionality"},
-      {label: "Feature + integration", description: "Core feature plus how it connects to existing systems"},
-      {label: "Full system", description: "End-to-end including deployment, testing, monitoring"},
-      {label: "Research this for me", description: "Dispatch a subagent to recommend scope based on your codebase complexity"}
-    ],
-    multiSelect: false
-  }]
+  questions: [
+    {
+      question: "What type of design are we working on?",
+      header: "Domain",
+      options: [
+        {label: "Software design", description: "Technical architecture, APIs, data models, code"},
+        {label: "Business design", description: "Processes, workflows, operations, strategy"},
+        {label: "Creative design", description: "Stories, content, campaigns, creative work"},
+        {label: "Research this for me", description: "Dispatch a subagent to determine the best domain from your project"}
+      ],
+      multiSelect: false
+    },
+    {
+      question: "Let's set scope boundaries. Which areas should this design cover?",
+      header: "Scope",
+      options: [
+        {label: "Core feature only", description: "Just the essential functionality"},
+        {label: "Feature + integration", description: "Core feature plus how it connects to existing systems"},
+        {label: "Full system", description: "End-to-end including deployment, testing, monitoring"},
+        {label: "Research this for me", description: "Dispatch a subagent to recommend scope based on your codebase complexity"}
+      ],
+      multiSelect: false
+    }
+  ]
 })
 ```
 

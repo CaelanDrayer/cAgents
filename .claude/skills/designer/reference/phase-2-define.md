@@ -55,43 +55,37 @@ Does this capture the core problem?`,
 })
 ```
 
-## Step 3: Constraints
+## Steps 3 & 4: Constraints + Success Criteria
 
-Identify technical, business, and resource constraints:
-
-```javascript
-AskUserQuestion({
-  questions: [{
-    question: "What are the key constraints for this design?",
-    header: "Constraints",
-    options: [
-      {label: "Technical", description: "Must work with specific tech, APIs, or platforms"},
-      {label: "Timeline", description: "Need it by a specific date"},
-      {label: "Resources", description: "Limited team size or budget"},
-      {label: "Research this for me", description: "Dispatch a subagent to discover technical constraints from the codebase"}
-    ],
-    multiSelect: true
-  }]
-})
-```
-
-## Step 4: Success Criteria
-
-Define measurable success criteria:
+Identify constraints and success criteria in a single batched call — these two questions are the problem definition pair (what limits the solution + how to know it worked). Always include the defer option on each question.
 
 ```javascript
+// Batch constraints + success criteria together — both define the solution space, same phase concern
 AskUserQuestion({
-  questions: [{
-    question: "How will we know this design is successful? What does 'done' look like?",
-    header: "Success",
-    options: [
-      {label: "Feature works correctly", description: "Functional correctness is the main goal"},
-      {label: "Performance targets", description: "Speed, scale, or efficiency metrics matter"},
-      {label: "User satisfaction", description: "Users find it easy/pleasant to use"},
-      {label: "Research this for me", description: "Dispatch a subagent to analyze existing success metrics in the project"}
-    ],
-    multiSelect: true
-  }]
+  questions: [
+    {
+      question: "What are the key constraints for this design?",
+      header: "Constraints",
+      options: [
+        {label: "Technical", description: "Must work with specific tech, APIs, or platforms"},
+        {label: "Timeline", description: "Need it by a specific date"},
+        {label: "Resources", description: "Limited team size or budget"},
+        {label: "Research this for me", description: "Dispatch a subagent to discover technical constraints from the codebase"}
+      ],
+      multiSelect: true
+    },
+    {
+      question: "How will we know this design is successful? What does 'done' look like?",
+      header: "Success",
+      options: [
+        {label: "Feature works correctly", description: "Functional correctness is the main goal"},
+        {label: "Performance targets", description: "Speed, scale, or efficiency metrics matter"},
+        {label: "User satisfaction", description: "Users find it easy/pleasant to use"},
+        {label: "Research this for me", description: "Dispatch a subagent to analyze existing success metrics in the project"}
+      ],
+      multiSelect: true
+    }
+  ]
 })
 ```
 

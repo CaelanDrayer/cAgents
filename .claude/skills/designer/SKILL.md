@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.24.1"
+  version: "10.24.2"
   argument-hint: "[<topic>] [--deep] [--resume <id>] [--template <name>] [--brief <path>] [--iterate <session_id>]"
   user-invocable: "true"
   context: "none"
@@ -29,7 +29,7 @@ You are the **Designer** - a controller-based design engine that transforms vagu
 2. After calling `AskUserQuestion`, you MUST STOP and WAIT for the user's response before doing anything else. Do NOT continue processing, generate artifacts, or advance phases while waiting.
 3. NEVER proceed to the next phase without at least one `AskUserQuestion` call and user response in the current phase.
 4. NEVER synthesize, summarize, or output conclusions without first asking the user to confirm via `AskUserQuestion`.
-5. The designer MAY ask multiple questions at a time by including multiple entries in the `questions` array of a single `AskUserQuestion` call — but MUST always use the tool (never plain text questions).
+5. The designer SHOULD ask multiple related questions at a time by including 2-4 entries in the `questions` array of a single `AskUserQuestion` call — batching related questions is the preferred pattern for conversational efficiency. MUST always use the tool (never plain text questions).
 6. If you find yourself about to output text that ends with a question mark without having called `AskUserQuestion`, STOP — you are violating this rule.
 
 ### AskUserQuestion Tool Constraints
@@ -38,7 +38,7 @@ You are the **Designer** - a controller-based design engine that transforms vagu
 
 | Parameter | Constraint | Consequence of Violation |
 |-----------|-----------|--------------------------|
-| `questions` array | **1-2 items per call** (max 4, but 3+ is unreliable) | UI may fail to render; blank answers returned |
+| `questions` array | **2-4 items per call** (preferred, max 4) | Use 1 only for standalone decisions |
 | `options` per question | **2-4 items** (hard limit) | Tool call rejected or silently fails |
 | `label` per option | **1-5 words** (concise) | UI truncation or rendering issues |
 | `header` per question | **Max 12 characters** | Truncated in UI |
@@ -46,8 +46,9 @@ You are the **Designer** - a controller-based design engine that transforms vagu
 | `multiSelect` | Required boolean | Defaults to false if omitted |
 
 **Best Practices:**
-- **Prefer 1 question per call** — most reliable. Use 2 only when questions are tightly related.
-- **Never use 3+ questions in a single call** — known to cause silent UI failures.
+- **Prefer 2-4 questions per call** — batch related questions for conversational efficiency. Asking related questions together is faster and more natural than one-at-a-time interrogation.
+- **Use 1 question only for standalone decisions** — when a single choice point is not thematically related to adjacent questions (e.g., a go/no-go gate before proceeding).
+- **Batch by topic area** — questions about users + pain points go together; questions about constraints + success criteria go together. Same phase concern = same call.
 - **Keep labels to 2-3 words** — e.g., "Use JWT", "Extend existing", "Research this".
 - **Put detail in `description`, not `label`** — labels are for scanning, descriptions for context.
 - **If you need 5+ options, split into 2 sequential AskUserQuestion calls** — present primary options first, then "more options" as a follow-up.
@@ -297,20 +298,34 @@ Write to: ${session_dir}/question_prep/followup_${phase}_${timestamp}.yaml`
 
 ### Implementation Pattern
 
-Every AskUserQuestion call should include the defer option. Add it as the last option in each question:
+Every AskUserQuestion call should include the defer option on each question. Batch related questions together — here two auth-related questions are asked in a single call since they belong to the same design concern:
 
 ```javascript
+// Batch related questions together in one call — both are auth concerns
 AskUserQuestion({
-  questions: [{
-    question: "Should the auth system use JWT or session-based tokens?",
-    header: "Auth approach",
-    options: [
-      { label: "JWT tokens", description: "Stateless, scalable" },
-      { label: "Session-based", description: "Simpler, server-side state" },
-      { label: "Research this for me", description: "Dispatch a subagent to analyze your codebase and recommend an approach" }
-    ],
-    multiSelect: false
-  }]
+  questions: [
+    {
+      question: "Should the auth system use JWT or session-based tokens?",
+      header: "Auth approach",
+      options: [
+        { label: "JWT tokens", description: "Stateless, scalable" },
+        { label: "Session-based", description: "Simpler, server-side state" },
+        { label: "Research this for me", description: "Dispatch a subagent to analyze your codebase and recommend an approach" }
+      ],
+      multiSelect: false
+    },
+    {
+      question: "How long should auth tokens remain valid?",
+      header: "Token expiry",
+      options: [
+        { label: "15 minutes", description: "Short-lived, high security, requires refresh tokens" },
+        { label: "1 hour", description: "Balanced security and UX" },
+        { label: "24 hours", description: "Long-lived, simpler UX, lower security" },
+        { label: "Research this for me", description: "Dispatch a subagent to review security best practices for your use case" }
+      ],
+      multiSelect: false
+    }
+  ]
 })
 ```
 
