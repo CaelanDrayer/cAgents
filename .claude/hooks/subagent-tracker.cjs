@@ -143,6 +143,30 @@ createHook('SubagentTracker', async (input) => {
     }
   }
 
+  // Pass 3: Prompt-based session resolution (Fix C from bug report)
+  // When Task-spawned subagents carry SESSION_DIR or CAGENTS_SESSION_ID in their prompt,
+  // parse that hint to reliably resolve the correct session directory.
+  // This handles the case where CAGENTS_ACTIVE_SESSION env var is not inherited by
+  // Task-spawned subprocesses (teammates, execution agents, reviewers).
+  if (!sessionDir) {
+    const promptText = ((input.tool_input || {}).prompt || '');
+    const sessionMatch =
+      promptText.match(/SESSION[_ ]DIR[:\s]+([^\s\n]+)/i) ||
+      promptText.match(/CAGENTS_SESSION_ID[:\s]+([^\s\n]+)/i);
+    if (sessionMatch) {
+      const hint = sessionMatch[1].replace(/["']/g, '').trim();
+      // hint may be a full path (e.g. Agent_Memory/sessions/team_foo_260317_001) or just a name
+      const sessionName = path.basename(hint);
+      const candidateDir = path.join(AGENT_MEMORY_DIR, 'sessions', sessionName);
+      if (fs.existsSync(candidateDir)) {
+        sessionDir = candidateDir;
+        console.error(`[SubagentTracker] Resolved session from prompt hint: ${sessionName}`);
+      } else {
+        console.error(`[SubagentTracker] Prompt hint session not found on disk: ${sessionName}`);
+      }
+    }
+  }
+
   // C-03/C-04: Infer parent from session context instead of relying on input.parent_agent
   // Claude Code does NOT provide parent_agent in SubagentStart events, so we infer it
   const parentAgent = inferParentAgent(sessionDir, subagentType, agentId);
