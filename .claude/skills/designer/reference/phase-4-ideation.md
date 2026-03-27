@@ -55,55 +55,47 @@ Which approach interests you most?`,
 })
 ```
 
-## Step 3: Pattern Recommendations (Controller-Adapted)
+## Steps 3 & 4: Pattern Recommendations + Trade-off Exploration (Controller-Adapted)
 
-When the user selects an approach, present pattern recommendations:
+When the user selects an approach, present pattern recommendation and key trade-off in a single batched call — these two questions share the same "how should we proceed with the selected approach" concern and are always asked together.
 
 ```javascript
+// Batch pattern recommendation + trade-off together — both refine the selected approach, same ideation concern
 AskUserQuestion({
-  questions: [{
-    question: `For this approach, I recommend the "${pattern_name}" pattern:
+  questions: [
+    {
+      question: `For this approach, I recommend the "${pattern_name}" pattern:
 
 ${pattern_details}
 
 ${context_about_how_pattern_fits}
 
 Should we design with this pattern?`,
-    header: "Pattern",
-    options: [
-      {label: "Use this pattern (Recommended)", description: pattern_summary},
-      {label: "Simpler approach", description: "Something less complex"},
-      {label: "More complex", description: "More capability but more work"},
-      {label: "Research this for me", description: "Dispatch a subagent to evaluate this pattern against your codebase"}
-    ],
-    multiSelect: false
-  }]
+      header: "Pattern",
+      options: [
+        {label: "Use this pattern (Recommended)", description: pattern_summary},
+        {label: "Simpler approach", description: "Something less complex"},
+        {label: "More complex", description: "More capability but more work"},
+        {label: "Research this for me", description: "Dispatch a subagent to evaluate this pattern against your codebase"}
+      ],
+      multiSelect: false
+    },
+    {
+      question: "This decision involves a key trade-off. Which matters more for your situation?",
+      header: "Trade-off",
+      options: [
+        {label: "Simplicity", description: "Easier to build and maintain, fewer moving parts"},
+        {label: "Scalability", description: "Handles growth, but more complex upfront"},
+        {label: "Speed to market", description: "Ship fast, iterate later"},
+        {label: "Research this for me", description: "Dispatch a subagent to analyze which trade-off best fits your project"}
+      ],
+      multiSelect: false
+    }
+  ]
 })
 ```
 
-**Controller adaptation after answer**: If user picks "Simpler approach", reorder remaining questions to focus on simplicity trade-offs. If "More complex", promote advanced architecture questions.
-
-## Step 4: Trade-off Exploration
-
-For key decisions, present trade-offs:
-
-```javascript
-AskUserQuestion({
-  questions: [{
-    question: "This decision involves a key trade-off. Which matters more for your situation?",
-    header: "Trade-off",
-    options: [
-      {label: "Simplicity", description: "Easier to build and maintain, fewer moving parts"},
-      {label: "Scalability", description: "Handles growth, but more complex upfront"},
-      {label: "Speed to market", description: "Ship fast, iterate later"},
-      {label: "Research this for me", description: "Dispatch a subagent to analyze which trade-off best fits your project"}
-    ],
-    multiSelect: false
-  }]
-})
-```
-
-**Follow-up dispatch**: If user's trade-off choice significantly changes the design direction, dispatch a follow-up research agent to re-assess approach feasibility.
+**Controller adaptation after answer**: If user picks "Simpler approach" for pattern, reorder remaining questions to focus on simplicity. If trade-off answer significantly changes the design direction, dispatch a follow-up research agent to re-assess approach feasibility.
 
 ## Ideation Phase Gate + Phase-Overlap
 

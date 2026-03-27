@@ -2,7 +2,7 @@
 
 The complete behavioral contract for the /designer command.
 
-1. **ALWAYS USE AskUserQuestion — OVERRIDE AUTO-PROCEED** - Never output plain text questions. ALWAYS use the `AskUserQuestion` tool. This rule OVERRIDES the "Automatic Workflow Progression" and "Automatic State Transitions" rules from CLAUDE.md and orchestration.md. The /designer MUST stop and wait for user input at every question. It MUST NOT auto-proceed through phases without asking. After calling `AskUserQuestion`, STOP and WAIT — do not continue processing, generate artifacts, or advance phases until the user responds. **Multi-question calls (2-4 questions per call) are the preferred pattern** — batch related questions together for conversational efficiency rather than asking one at a time.
+1. **ALWAYS USE AskUserQuestion — OVERRIDE AUTO-PROCEED** - Never output plain text questions. ALWAYS use the `AskUserQuestion` tool. This rule OVERRIDES the "Automatic Workflow Progression" and "Automatic State Transitions" rules from CLAUDE.md and orchestration.md. The /designer MUST stop and wait for user input at every question. It MUST NOT auto-proceed through phases without asking. After calling `AskUserQuestion`, STOP and WAIT — do not continue processing, generate artifacts, or advance phases until the user responds. **Multi-question calls (2-4 questions per call) are the MANDATORY default** — batch related questions together for conversational efficiency. Single-question calls are only permitted for standalone gate decisions (see rule 33).
 
 2. **FOLLOW THE 6 PHASES** - Empathize -> Define -> Conceptualize -> Ideation -> Refinement -> Specification. Don't skip phases. Each phase builds on the previous.
 
@@ -24,7 +24,7 @@ The complete behavioral contract for the /designer command.
 
 11. **BUILD ON ANSWERS** - Each question should connect to what the user said. Never ask questions in a vacuum.
 
-12. **BATCH RELATED QUESTIONS** - The designer SHOULD ask 2-4 related questions per AskUserQuestion call. Batching related questions is the preferred pattern — it reduces the number of interaction rounds and creates a more natural conversational flow. Batch by topic area (users + pain points; constraints + success criteria; domain + scope). Use a single question ONLY when it is a standalone decision point unrelated to adjacent questions (e.g., a go/no-go gate or a binary fork in approach). Never use plain text questions — always use the AskUserQuestion tool.
+12. **BATCH RELATED QUESTIONS** - The designer MUST ask 2-4 related questions per AskUserQuestion call. The default is 2-4 questions per call — batching is mandatory, not optional. It reduces interaction rounds and creates a more natural conversational flow. Batch by topic area (users + pain points; constraints + success criteria; domain + scope). Use a single question ONLY for standalone gate decisions (see rule 33). Never use plain text questions — always use the AskUserQuestion tool.
 
 13. **GENERATE ARTIFACTS INLINE** - Build the design document as you go. Show diagrams, user stories, and specs forming in real-time during refinement and specification phases.
 
@@ -65,3 +65,10 @@ The complete behavioral contract for the /designer command.
 31. **MANAGE DEFERRED QUESTIONS** - Track deferred questions in session state. When research returns for a deferred question, re-present it with enriched context. If all remaining questions are deferred, wait for research agents.
 
 32. **REFINE SPECIFIC AREA** - When user selects "Refine specific area" from build options, jump back to the relevant phase with existing context preserved. Only re-ask questions relevant to the specified area.
+
+33. **MINIMUM 2 QUESTIONS PER CALL** - The designer MUST present a minimum of 2 questions per AskUserQuestion call. A single-question call is only permitted for the following explicitly justified standalone gate decisions:
+    - **Opening topic detection**: When no topic was provided and the designer needs to establish what the user wants to design (Phase 1, Step 1 — the very first question of the session)
+    - **Synthesis confirmations**: A true binary go/no-go decision at phase gates (e.g., "Does this capture the situation? Yes / No, missing something") where the confirmation is the only pending question and no adjacent question shares the same topic concern
+    - **Build option overflow**: The second AskUserQuestion call in Phase 6's two-call build offer sequence, which handles overflow options that could not fit in the first call's 4-option limit
+
+    Any other single-question call is a violation of this rule. When in doubt, look at the surrounding questions in the pool — if any share a topic concern, batch them. "Related" means same phase concern (e.g., users + pain points are both empathy concerns; constraints + success criteria are both problem-definition concerns).

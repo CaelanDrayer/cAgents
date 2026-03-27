@@ -42,21 +42,35 @@ Build question pool from all research files. Merge with domain-specific refineme
 
 ## Step 3: Present Research-Enriched Questions
 
-Use the controller pattern to present questions from the pool. Always include "Research this for me":
+Use the controller pattern to present questions from the pool. Always include "Research this for me". Batch adjacent questions that share a refinement concern — for example, API design and data model questions go together since both affect the backend contract:
 
 ```javascript
+// Batch API design + data model together — both define backend contracts, same refinement concern
 AskUserQuestion({
-  questions: [{
-    question: "Your existing API uses RESTful routes with /api/v1/ prefix and camelCase response fields (found in src/routes/). Should the new endpoints follow the same conventions?",
-    header: "API Design",
-    options: [
-      {label: "Follow existing patterns", description: "Match /api/v1/ prefix, camelCase, existing error format"},
-      {label: "New API version", description: "Create /api/v2/ with updated conventions"},
-      {label: "GraphQL alongside REST", description: "Add GraphQL for new features, keep REST for existing"},
-      {label: "Research this for me", description: "Dispatch a subagent to analyze API patterns in depth"}
-    ],
-    multiSelect: false
-  }]
+  questions: [
+    {
+      question: "Your existing API uses RESTful routes with /api/v1/ prefix and camelCase response fields (found in src/routes/). Should the new endpoints follow the same conventions?",
+      header: "API Design",
+      options: [
+        {label: "Follow existing patterns", description: "Match /api/v1/ prefix, camelCase, existing error format"},
+        {label: "New API version", description: "Create /api/v2/ with updated conventions"},
+        {label: "GraphQL alongside REST", description: "Add GraphQL for new features, keep REST for existing"},
+        {label: "Research this for me", description: "Dispatch a subagent to analyze API patterns in depth"}
+      ],
+      multiSelect: false
+    },
+    {
+      question: "How should the new feature store its data? Your project uses Prisma with PostgreSQL and 12 existing models (found in prisma/schema.prisma).",
+      header: "Data Model",
+      options: [
+        {label: "Extend existing models", description: "Add fields to current schema, minimal migration"},
+        {label: "New dedicated tables", description: "Separate tables for the new feature, cleaner isolation"},
+        {label: "Hybrid approach", description: "Extend some, add new tables where isolation matters"},
+        {label: "Research this for me", description: "Dispatch a subagent to analyze the existing schema and recommend an approach"}
+      ],
+      multiSelect: false
+    }
+  ]
 })
 ```
 
