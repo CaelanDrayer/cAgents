@@ -12,7 +12,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findActiveSession, TERMINAL_STATES, extractYamlValue, safeRead, countPattern, ensureDir, PROJECT_ROOT } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, TERMINAL_STATES, extractYamlValue, safeRead, countPattern, ensureDir, PROJECT_ROOT, AGENT_MEMORY_DIR, withFileLock } = require('./hook-utils.cjs');
 
 /**
  * Extract the most recent entered_at timestamp from state_history in status.yaml.
@@ -97,6 +97,133 @@ function finalizeSessionLifecycle(sessionDir) {
   } catch (e) {
     console.error(`[VerifyCompletion] Error computing duration_ms: ${e.message}`);
   }
+}
+
+/**
+ * VALIDATED→complete safety net.
+ *
+ * When a session's pipeline_state or phase is 'validated' or 'VALIDATED',
+ * the pipeline has passed validation but the agent stopped before writing the
+ * final 'complete' transition.  This function patches status.yaml to:
+ *   1. Compute duration_ms for the current (VALIDATED) state_history entry.
+ *   2. Append a new state_history entry for 'complete'.
+ *   3. Update pipeline_state / phase to 'complete'.
+ *
+ * For non-terminal mid-execution states (prompts_ready, coordinated) the
+ * function only logs a note — those indicate the pipeline genuinely stopped
+ * mid-execution and should NOT be auto-completed.
+ *
+ * Must run BEFORE verifyCompletion() so the session is in a terminal state
+ * when the completion checks execute.
+ */
+function applyValidatedToCompleteTransition(sessionDir) {
+  const statusFile = path.join(sessionDir, 'status.yaml');
+  const raw = safeRead(statusFile);
+  if (!raw) return;
+
+  const pipelineState = extractYamlValue(raw, 'pipeline_state');
+  const phase = extractYamlValue(raw, 'phase') || extractYamlValue(raw, 'current_phase');
+  const currentState = pipelineState || phase;
+  if (!currentState) return;
+
+  const normalised = currentState.toLowerCase();
+
+  // Note non-terminal mid-execution states (but do NOT auto-complete them)
+  const midExecutionStates = ['prompts_ready', 'coordinated'];
+  if (midExecutionStates.includes(normalised)) {
+    console.error(
+      `[VerifyCompletion] Session stopped in mid-execution state '${currentState}' — ` +
+      `this indicates the pipeline genuinely stopped before completion. Not auto-completing.`
+    );
+    return;
+  }
+
+  // Only auto-complete VALIDATED sessions
+  if (normalised !== 'validated') return;
+
+  const now = new Date();
+  const nowISO = now.toISOString();
+  const sessionName = path.basename(sessionDir);
+
+  console.error(`[VerifyCompletion] VALIDATED→complete safety net triggered for ${sessionName}`);
+
+  // Use file lock to prevent concurrent hooks from double-patching
+  const lockPath = statusFile + '-validated-transition';
+  withFileLock(lockPath, () => {
+    // Re-read inside lock (another process may have already patched)
+    let content = safeRead(statusFile);
+    if (!content) return;
+
+    const reCheckState = extractYamlValue(content, 'pipeline_state') || extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase');
+    if (!reCheckState || reCheckState.toLowerCase() !== 'validated') {
+      console.error(`[VerifyCompletion] State already changed to '${reCheckState}' by another process, skipping`);
+      return;
+    }
+
+    // (a) Compute duration_ms for the last state_history entry (the VALIDATED entry).
+    //     Find the last entered_at with duration_ms: null.
+    const lastNullDuration = content.match(
+      /[\s\S]*(entered_at:\s*"([^"]+)"[\s\S]*?duration_ms:\s*)null/
+    );
+    if (lastNullDuration) {
+      const enteredAt = lastNullDuration[2];
+      const startMs = new Date(enteredAt).getTime();
+      if (!isNaN(startMs) && startMs > 0) {
+        const durationMs = Math.max(0, now.getTime() - startMs);
+        if (durationMs < 24 * 60 * 60 * 1000) { // sanity: < 24h
+          content = content.replace(
+            lastNullDuration[0],
+            lastNullDuration[0].replace(
+              lastNullDuration[1] + 'null',
+              lastNullDuration[1] + String(durationMs)
+            )
+          );
+          console.error(`[VerifyCompletion] Set VALIDATED duration_ms: ${durationMs}`);
+        }
+      }
+    }
+
+    // (b) Append a new state_history entry for 'complete'.
+    //     Insert before the end of the state_history block (before the next top-level key or EOF).
+    const completeEntry =
+      `  - state: complete\n` +
+      `    entered_at: "${nowISO}"\n` +
+      `    duration_ms: null`;
+
+    // Strategy: find the last state_history entry's duration_ms line and append after it.
+    // The last duration_ms line in state_history is the one we just patched (or the last one).
+    const durationLines = [...content.matchAll(/^(\s+duration_ms:\s*\S+)$/gm)];
+    if (durationLines.length > 0) {
+      const lastDurationMatch = durationLines[durationLines.length - 1];
+      const insertPos = lastDurationMatch.index + lastDurationMatch[0].length;
+      content = content.slice(0, insertPos) + '\n' + completeEntry + content.slice(insertPos);
+    } else {
+      // Fallback: append at the end of state_history by finding it
+      const shIndex = content.indexOf('state_history:');
+      if (shIndex !== -1) {
+        // Append at end of file (state_history is typically the last block)
+        content = content.trimEnd() + '\n' + completeEntry + '\n';
+      }
+    }
+
+    // (c) Update pipeline_state or phase to 'complete'.
+    const stateField = pipelineState ? 'pipeline_state' : 'phase';
+    content = content.replace(
+      new RegExp(`(${stateField}:\\s*)\\S+`),
+      `$1complete`
+    );
+
+    // (d) Update updated_at timestamp if present
+    if (content.includes('updated_at:')) {
+      content = content.replace(
+        /(updated_at:\s*)"[^"]*"/,
+        `$1"${nowISO}"`
+      );
+    }
+
+    fs.writeFileSync(statusFile, content);
+    console.error(`[VerifyCompletion] Successfully transitioned ${sessionName} from VALIDATED to complete`);
+  });
 }
 
 function verifyCompletion(sessionDir) {
@@ -464,6 +591,11 @@ createHook('VerifyCompletion', async (input) => {
     console.error(`[VerifyCompletion] Skipping session without status.yaml: ${path.basename(sessionDir)}`);
     return null;
   }
+
+  // VALIDATED→complete safety net: if the session is in VALIDATED state,
+  // transition it to 'complete' before running verification checks.
+  // This ensures the session is in a terminal state when checked.
+  applyValidatedToCompleteTransition(sessionDir);
 
   const result = verifyCompletion(sessionDir);
 

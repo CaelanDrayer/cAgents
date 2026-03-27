@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 /**
- * Team Stop Hook - Cleanup and archive team session
- * cAgents V9.10 - Refactored (also replaces on-session-end.sh cleanup)
+ * Session Stop Hook - Cleanup agent trees for ALL session types + team metrics
+ * cAgents V10.24.3 - Extended from team-only to all session types
  *
- * Runs on SessionEnd to finalize team metrics and update status.
+ * Runs on SessionEnd to:
+ * 1. Clean up agent_tree.yaml for ANY active session (run_*, team_*, org_*, designer_*, etc.)
+ *    by marking unstopped agents with stopped_at timestamps and computing durations.
+ * 2. Finalize team-specific metrics and update status (team_* sessions only).
  *
  * NOTE: When a user cancels a session, Claude Code may terminate this hook
  * before it completes, producing "Hook cancelled" in the output. This is
@@ -16,19 +19,121 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findTeamSession, safeRead, extractYamlValue, countPattern } = require('./hook-utils.cjs');
+const yaml = require('js-yaml');
+const { createHook, findTeamSession, findActiveSession, safeRead, extractYamlValue, countPattern, withFileLock } = require('./hook-utils.cjs');
 
-createHook('TeamStop', async (input) => {
-  const sessionDir = findTeamSession(input);
-  if (!sessionDir) return null;
+/**
+ * Clean up agent_tree.yaml: mark all unstopped agents with stopped_at,
+ * compute duration_seconds from spawned_at, and set a cleanup summary.
+ * Uses js-yaml for proper YAML parsing instead of regex replacement.
+ *
+ * @param {string} sessionDir - Session directory path
+ * @param {string} now - ISO timestamp for stopped_at
+ * @returns {number} Number of agents cleaned up
+ */
+function cleanupAgentTree(sessionDir, now) {
+  const treeFile = path.join(sessionDir, 'workflow', 'agent_tree.yaml');
+  const treeContent = safeRead(treeFile);
+  if (!treeContent) return 0;
 
-  const metricsDir = path.join(sessionDir, 'team', 'metrics');
+  // Quick check: if no unstopped agents, skip parsing
+  if (!treeContent.includes('stopped_at: null')) return 0;
+
+  let cleanedCount = 0;
+
+  withFileLock(treeFile, () => {
+    // Re-read inside lock to avoid TOCTOU race
+    const lockedContent = safeRead(treeFile);
+    if (!lockedContent || !lockedContent.includes('stopped_at: null')) return;
+
+    let parsed;
+    try {
+      parsed = yaml.load(lockedContent);
+    } catch (parseErr) {
+      console.error(`[SessionStop] Malformed agent_tree.yaml — falling back to regex cleanup: ${parseErr.message}`);
+      // Fallback: regex replacement (original M-07 behavior)
+      const cleaned = lockedContent.replace(/stopped_at: null/g, `stopped_at: "${now}"`);
+      try { fs.writeFileSync(treeFile, cleaned); } catch (e) {
+        console.error(`[SessionStop] Failed regex fallback write: ${e.message}`);
+      }
+      return;
+    }
+
+    if (!parsed || !Array.isArray(parsed.agents)) return;
+
+    const nowMs = new Date(now).getTime();
+
+    for (const agent of parsed.agents) {
+      if (agent.stopped_at === null || agent.stopped_at === undefined) {
+        agent.stopped_at = now;
+        agent.completion_summary = 'Session ended — stop event cleanup';
+
+        // Compute duration from spawned_at if available
+        if (agent.spawned_at) {
+          const spawnedMs = new Date(agent.spawned_at).getTime();
+          if (!isNaN(spawnedMs) && spawnedMs > 0) {
+            agent.duration_seconds = Math.max(0, Math.round((nowMs - spawnedMs) / 1000));
+          }
+        }
+
+        cleanedCount++;
+      }
+    }
+
+    if (cleanedCount > 0) {
+      try {
+        fs.writeFileSync(treeFile, yaml.dump(parsed));
+      } catch (e) {
+        console.error(`[SessionStop] Failed to write cleaned agent_tree: ${e.message}`);
+      }
+    }
+  });
+
+  return cleanedCount;
+}
+
+createHook('SessionStop', async (input) => {
   const now = new Date().toISOString();
+  let summary = '';
+
+  // --- Phase 1: Agent tree cleanup for ANY session type ---
+  // Use findActiveSession() which searches all prefixes (run_*, team_*, org_*, designer_*, etc.)
+  const anySession = findActiveSession(input.session_id);
+  let agentTreeSessionDir = null;
+
+  if (anySession) {
+    agentTreeSessionDir = anySession;
+    const cleanedCount = cleanupAgentTree(anySession, now);
+    if (cleanedCount > 0) {
+      console.error(`[SessionStop] Cleaned ${cleanedCount} unstopped agent(s) in ${path.basename(anySession)}`);
+      summary += `Agent tree cleanup: ${cleanedCount} agent(s) marked stopped in ${path.basename(anySession)}\n`;
+    }
+  }
+
+  // --- Phase 2: Team-specific metrics and status (team_* sessions only) ---
+  const teamSessionDir = findTeamSession(input);
+  if (!teamSessionDir) {
+    // No team session — return agent tree cleanup summary if any
+    if (summary) {
+      return { continue: true, systemMessage: summary };
+    }
+    return null;
+  }
+
+  // If team session differs from the session already cleaned, also clean its agent tree
+  if (teamSessionDir !== agentTreeSessionDir) {
+    const teamCleaned = cleanupAgentTree(teamSessionDir, now);
+    if (teamCleaned > 0) {
+      console.error(`[SessionStop] Cleaned ${teamCleaned} unstopped agent(s) in team session ${path.basename(teamSessionDir)}`);
+    }
+  }
+
+  const metricsDir = path.join(teamSessionDir, 'team', 'metrics');
 
   // Calculate metrics
   const metrics = { items_completed: 0, items_total: 0, duration_seconds: 0, speedup_factor: 0 };
 
-  const taskContent = safeRead(path.join(sessionDir, 'team', 'task_list.yaml'));
+  const taskContent = safeRead(path.join(teamSessionDir, 'team', 'task_list.yaml'));
   if (taskContent) {
     const completedMatch = taskContent.match(/completed:\s*(\d+)/);
     const totalMatch = taskContent.match(/total:\s*(\d+)/);
@@ -62,7 +167,7 @@ createHook('TeamStop', async (input) => {
       updated = updated.replace(/total_duration_seconds:\s*\d+/, `total_duration_seconds: ${metrics.duration_seconds}`);
     }
     try { fs.writeFileSync(timingFile, updated); } catch (e) {
-      console.error(`[TeamStop] Failed to write timing: ${e.message}`);
+      console.error(`[SessionStop] Failed to write timing: ${e.message}`);
     }
   }
 
@@ -74,7 +179,7 @@ createHook('TeamStop', async (input) => {
   }
 
   // Update status
-  const statusFile = path.join(sessionDir, 'status.yaml');
+  const statusFile = path.join(teamSessionDir, 'status.yaml');
   let statusContent = safeRead(statusFile);
   if (statusContent) {
     const success = metrics.items_total > 0 ? (metrics.items_completed === metrics.items_total) : true;
@@ -84,23 +189,13 @@ createHook('TeamStop', async (input) => {
       .replace(/completed_at:\s*null/, `completed_at: "${now}"`)
       .replace(/result:\s*null/, `result: ${success ? 'success' : 'partial'}`);
     try { fs.writeFileSync(statusFile, statusContent); } catch (e) {
-      console.error(`[TeamStop] Failed to write status: ${e.message}`);
+      console.error(`[SessionStop] Failed to write status: ${e.message}`);
     }
   }
 
-  // M-07: Mark all agents with stopped_at: null as stopped (cleanup for unreliable SubagentStop)
-  const treeFile = path.join(sessionDir, 'workflow', 'agent_tree.yaml');
-  const treeContent = safeRead(treeFile);
-  if (treeContent && treeContent.includes('stopped_at: null')) {
-    const cleaned = treeContent.replace(/stopped_at: null/g, `stopped_at: "${now}"`);
-    try { fs.writeFileSync(treeFile, cleaned); } catch (e) {
-      console.error(`[TeamStop] Failed to clean up agent_tree: ${e.message}`);
-    }
-  }
+  console.error(`[SessionStop] Finalized ${path.basename(teamSessionDir)}: ${metrics.items_completed}/${metrics.items_total}`);
 
-  console.error(`[TeamStop] Finalized ${path.basename(sessionDir)}: ${metrics.items_completed}/${metrics.items_total}`);
-
-  let summary = `## Team Session Complete: ${path.basename(sessionDir)}\n\n`;
+  summary += `## Team Session Complete: ${path.basename(teamSessionDir)}\n\n`;
   summary += `**Work Items**: ${metrics.items_completed}/${metrics.items_total} completed\n`;
   summary += `**Duration**: ${metrics.duration_seconds} seconds\n`;
   if (metrics.speedup_factor > 1) {

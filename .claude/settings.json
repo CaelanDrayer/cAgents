@@ -70,8 +70,7 @@
           {
             "type": "command",
             "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" subagent-tracker'",
-            "timeout": 5,
-            "async": true
+            "timeout": 5
           },
           {
             "type": "command",
@@ -87,8 +86,7 @@
           {
             "type": "command",
             "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" subagent-stop-tracker'",
-            "timeout": 5,
-            "async": true
+            "timeout": 5
           }
         ]
       }

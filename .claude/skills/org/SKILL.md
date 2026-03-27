@@ -725,6 +725,7 @@ export CAGENTS_ACTIVE_SESSION="{ORG_SESSION_ID}"
 ```
 
 After each /team returns (continued):
+- **Immediately call `TaskList`** to verify that the org-level task for this domain execution is still accessible. If the task for this domain (e.g., "[org > team] Executing {domain} domain") is still listed as `in_progress`, mark it `completed` now via `TaskUpdate`. Do not wait until Step 9c — task IDs from before the Skill fork are most reliable immediately after the fork returns, before further tool calls shift the namespace.
 - Read `{SESSION_DIR}/{domain_key}/outputs/` to check results
 - Update domain_status in strategic_brief.yaml (progress, completed_wis)
 - Check for cross-domain outputs that the next domain may need
@@ -849,7 +850,11 @@ TodoWrite([
 ])
 ```
 
-**9c. Clean up tasks:** Call `TaskList` and mark all session tasks as `completed` or `deleted` via `TaskUpdate`. Never leave stale in_progress tasks behind.
+**9c. Clean up tasks (MANDATORY — hard gate before stopping):**
+
+Call `TaskList` to get the CURRENT task inventory. Do NOT rely on task IDs remembered from earlier in the session — IDs may have shifted after Skill invocations (e.g., after a TeamDelete inside /team, the active namespace may change and previously-known IDs may no longer resolve). For EVERY task that is `in_progress` or `pending`, call `TaskUpdate({ taskId: "{id}", status: "completed" })`. If TaskUpdate returns "Task not found", the task was in a different namespace (expected after TeamDelete) — log it and continue.
+
+**Cleanup guard**: Before producing any final output or stopping, call `TaskList` one more time and verify it shows zero `in_progress` tasks. If any remain, mark them completed. This is a hard gate — do not stop with stale tasks.
 
 **9c-1. Write `execution_summary.yaml`:**
 

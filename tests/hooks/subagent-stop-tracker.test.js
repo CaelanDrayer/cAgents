@@ -58,7 +58,8 @@ describe('subagent-stop-tracker.cjs', () => {
     runHook({ agent_id: 'agent-123', agent_type: 'test', session_id: TEST_SESSION }, { CLAUDE_PROJECT_DIR: tmpDir });
     const tree = readFileSync(join(sessionDir, 'workflow', 'agent_tree.yaml'), 'utf8');
     expect(tree).not.toContain('stopped_at: null');
-    expect(tree).toMatch(/stopped_at: "\d{4}-\d{2}-\d{2}/);
+    // yaml.dump() may produce quoted or unquoted timestamps — accept both formats
+    expect(tree).toMatch(/stopped_at: '?\d{4}-\d{2}-\d{2}/);
   });
 
   it('should calculate duration_seconds from spawned_at', () => {

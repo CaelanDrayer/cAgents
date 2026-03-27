@@ -742,7 +742,11 @@ function dedupGuard(hookName, input) {
     const fd = fs.openSync(dedupFile, 'wx');
     fs.closeSync(fd);
 
-    // Schedule cleanup (2s is enough — hooks complete in <5s)
+    // Schedule cleanup: both on process exit (for short-lived subprocess invocations
+    // where process exits before the timer fires) and via timeout fallback.
+    // Without process.on('exit'), tests that run the hook via execSync would leave
+    // stale dedup files that cause the next identical invocation to be skipped.
+    process.on('exit', () => { try { fs.unlinkSync(dedupFile); } catch {} });
     setTimeout(() => { try { fs.unlinkSync(dedupFile); } catch {} }, 2000);
     return false; // Not a duplicate — proceed
   } catch (e) {

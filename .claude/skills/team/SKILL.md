@@ -655,7 +655,11 @@ Update the lead agent entry to set:
 - `completion_summary`: `"Completed {N}/{total} work items across {N} waves"`
 - `duration_seconds`: `{computed from spawned_at to now}`
 
-3. **Clean up tasks**: Call `TaskList` and mark all session tasks as `completed` or `deleted` via `TaskUpdate`. Never leave stale in_progress tasks behind.
+3. **Clean up tasks (MANDATORY — hard gate before stopping):**
+
+Call `TaskList` to get the CURRENT task inventory. For EVERY task that is `in_progress` or `pending`, call `TaskUpdate({ taskId: "{id}", status: "completed" })`. If TaskUpdate returns "Task not found", the task was in the team namespace already cleaned by TeamDelete — log it and continue.
+
+**Cleanup guard**: Before producing any final output, call `TaskList` one more time and verify it shows zero `in_progress` or `pending` tasks (excluding tasks owned by other agents). This is a hard gate — do not stop with stale tasks.
 
 3b. **Compute duration_ms for the final status.yaml state_history entry:**
 ```
