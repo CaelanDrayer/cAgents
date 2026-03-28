@@ -35,6 +35,12 @@ Categorized examples for `/helper --examples`.
 /team Implement complete user authentication with Google, GitHub, and email
 /team Build the admin dashboard with user management, analytics, and settings widgets
 /run Build user profile with avatar, settings, and activity log --team
+
+# Systematic debugging when quick fixes fail
+/debug Auth token expiry causes random logouts --escalate
+
+# Initialize project context
+/context init
 ```
 
 ### Creative Writing Examples
@@ -105,6 +111,27 @@ Categorized examples for `/helper --examples`.
 # Legal
 /run Review the SaaS agreement for compliance issues
 /run Create privacy policy update for GDPR compliance
+```
+
+### Debug and Context Examples
+
+```bash
+# Systematic debugging (use when 2+ quick fixes have failed)
+/debug Auth token expiry causes random logouts after 30 minutes
+/debug Payment tests fail 1 in 5 runs with "connection timeout"
+/debug Race condition in WebSocket reconnect --escalate
+/debug Memory leak in event listener -- phase 3
+
+# Product context management
+/context init                    # Initialize for new project
+/context show                    # Check current context
+/context update                  # Update after framework change
+/context clear                   # Remove and start fresh
+
+# Debug-then-Fix pipeline
+/debug Fix the intermittent 500 error in checkout
+# (after root cause identified)
+/run Fix the race condition in session token refresh
 ```
 
 ## By Workflow Pattern

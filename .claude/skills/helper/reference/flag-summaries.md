@@ -257,3 +257,35 @@ Complete flag tables for all commands, used by `/helper --flags <command>`.
 | `business_ops` | COO | operations, process, supply chain, logistics, efficiency |
 | `people` | CHRO | hire, recruit, onboard, culture, HR, talent, performance |
 | `service` | General Counsel | support, legal, compliance, customer, SLA, contract |
+
+---
+
+## /debug Flags
+
+| Flag | Type | Description | Default | Example |
+|------|------|-------------|---------|---------|
+| `--escalate` | Boolean | Force escalation report after investigation | false | `/debug auth bug --escalate` |
+| `--phase <1-4>` | Number | Start at specific debugging phase | 1 | `/debug issue --phase 3` |
+
+### /debug Phases
+
+| Phase | Name | What Happens |
+|-------|------|-------------|
+| 1 | Root Cause Investigation | Reproduce bug, read stack trace, check recent changes, trace data flow |
+| 2 | Pattern Analysis | Classify bug type (state mutation, type mismatch, timing, data flow, config, integration) |
+| 3 | Hypothesis Testing | Form + test hypotheses one at a time (max 5 before escalation) |
+| 4 | Implementation | Write failing test, implement fix, verify full suite, commit |
+
+---
+
+## /context Flags
+
+| Flag / Subcommand | Type | Description | Default | Example |
+|-------------------|------|-------------|---------|---------|
+| `init` | Subcommand | Auto-detect and initialize context | -- | `/context init` |
+| `show` | Subcommand | Display current context | -- | `/context show` |
+| `update` | Subcommand | Interactively update context | -- | `/context update` |
+| `clear` | Subcommand | Remove context document | -- | `/context clear` |
+| `--show` | Boolean | Same as `show` subcommand | false | `/context --show` |
+| `--reset` | Boolean | Same as `clear` subcommand | false | `/context --reset` |
+| `--edit` | Boolean | Open context for manual editing | false | `/context --edit` |

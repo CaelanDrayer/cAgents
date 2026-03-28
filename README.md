@@ -2,7 +2,16 @@
 
 **Your AI Workforce for Claude Code**
 
-Deploy 214 specialized agents across 8 business domains through an intelligent pipeline that routes your request, plans execution, decomposes work, coordinates specialists, reviews outputs, and validates quality — automatically. Ship code, launch campaigns, craft narratives, scale teams: one command drives any work to completion.
+Deploy 214 specialized agents across 8 business domains through an intelligent pipeline that routes your request, plans execution, decomposes work, coordinates specialists, reviews outputs, and validates quality — automatically.
+
+| Stat | Value |
+|------|-------|
+| Agents | 214 across 8 business domains |
+| Skills | 9 slash commands |
+| Hooks | 26 lifecycle hooks across 19 event types |
+| Models | Opus 4.6 (controllers) · Sonnet 4.6 (execution) · Haiku 4.5 (support) |
+
+---
 
 ## Is cAgents Right for You?
 
@@ -14,24 +23,30 @@ Deploy 214 specialized agents across 8 business domains through an intelligent p
 - Reviewer loops, confidence scoring, and revision routing built into every run
 
 **cAgents is NOT for you if:**
-- You need a quick single-file fix — use Claude Code directly, it's faster and cheaper
-- You want minimal token usage — cAgents consumes 10-50x more tokens per request for orchestration overhead (see Usage Warning below)
-- You only need one domain — consider a focused plugin like `cagents-engineering` instead of the full platform
+- You need a quick single-file fix — use Claude Code directly, it is faster and cheaper
+- You want minimal token usage — cAgents consumes 10-50x more tokens per request for orchestration overhead
+- You only need one domain — consider a focused sub-plugin like `cagents-engineering` instead of the full platform
+
+---
 
 ## Usage Warning
 
-cAgents spawns multiple subagents per request (3-10+). Each consumes API tokens independently. A single `/run` can use 10-50x more tokens than a direct Claude Code interaction. `/team` and `/org` amplify this further. Monitor usage closely.
+cAgents spawns 3-10+ subagents per request. Each consumes API tokens independently. A single `/run` can use 10-50x more tokens than a direct Claude Code interaction. `/team` and `/org` amplify this further. Monitor usage closely.
+
+---
 
 ## Requirements
 
 - **Claude Code 2.1.69+** (required)
-- **Node.js** (recommended) -- powers 21 registered hooks (25 .cjs files) for session management, secret detection, team coordination, and completion verification
+- **Node.js** (recommended) — powers 26 registered hooks for session management, secret detection, team coordination, and completion verification
 
 | cAgents | Min Claude Code | Highlights |
 |---------|----------------|------------|
 | 10.6.0+ | 2.1.69+ | Confidence tiers, blind review, handoff documents |
 | 10.5.0+ | 2.1.69+ | Clean team lifecycle, hook reliability |
-| 10.0-10.4 | 2.1.47+ | Custom model routing in teammates |
+| 10.0–10.4 | 2.1.47+ | Custom model routing in teammates |
+
+---
 
 ## Installation
 
@@ -44,225 +59,398 @@ git clone https://github.com/CaelanDrayer/cAgents.git
 cd cAgents && ./setup.sh
 ```
 
-## Quick Wins
+---
 
-Three commands. Three different capabilities.
+## Quick Start
+
+Five commands. Five different capabilities.
+
+```bash
+# Route a bug fix to the engineering domain automatically
+/run Fix the authentication bug in src/auth.ts
+
+# Build a feature with parallel agent waves
+/team Build the user onboarding flow
+
+# Plan strategy with C-suite analysis
+/org Plan our Q3 product roadmap
+
+# Review code quality with parallel specialists
+/review src/api/ --fix
+
+# Explore a design problem interactively
+/designer Redesign the checkout flow
+```
+
+The pipeline detects the domain, selects the appropriate controller, decomposes the work into items with acceptance criteria, and coordinates specialist agents — without you specifying a single agent name.
+
+---
+
+## Skills Reference
+
+### `/run` — Task Execution Pipeline
+
+Routes any request through the full pipeline: orchestrator enriches context, planner defines objectives, decomposer breaks work into items with acceptance criteria, prompt-engineer crafts delegation prompts, a controller coordinates specialists, and a validator confirms quality.
 
 ```bash
 /run Fix the auth bug in src/auth.ts
+/run Write a sci-fi short story set on a generation ship
+/run Plan Q4 product launch campaign
+/run Design onboarding program for new engineers
+/run Create knowledge base article on our refund policy
+/run Fix auth bug --analytics    # Show execution metrics after run
 ```
-Routes to the engineering domain automatically. An engineering-manager controller spawns a backend-developer, runs reviewer loops against acceptance criteria, and delivers a validated fix — without you specifying a single agent.
+
+The domain routes automatically based on request content. Engineering requests go to an engineering-manager controller; creative requests go to a narrative-director; business requests go to an operations-manager or strategic-planner.
+
+### `/team` — N-Wave Parallel Execution
+
+Decomposes work into parallel waves. Teammates execute simultaneously within each wave; a quality gate validates before the next wave starts. Tier 3+ defaults to 5-7 waves.
 
 ```bash
-/team Build the user dashboard
+/team Implement OAuth2 authentication
+/team Build user dashboard --waves 8   # Force minimum 8 waves
+/team Build feature --dry-run          # Preview wave structure before running
+/run Build feature --team              # Team mode via flag on /run
 ```
-Decomposes the work into parallel waves. Multiple specialist agents execute simultaneously across components (data layer, UI, tests), each validated at a quality gate before the next wave starts. 40-60% faster than sequential execution.
+
+Each teammate is a controller that spawns execution agents directly. Wave 0 handles scaffolding and interface contracts; middle waves parallelize implementation; the final wave handles integration and validation.
+
+### `/org` — Corporate Hierarchy Orchestration
+
+Fires the full executive layer. CEO logic runs inline, C-suite agents analyze independently, then deliberate with cross-domain context before producing a unified strategic brief. Domain teams execute sequentially using that brief as shared context.
 
 ```bash
-/org Plan our Q3 product roadmap
+/org Launch new product with campaign
+/org Fix auth bug                        # Routes to single /run with strategic brief
+/org Restructure engineering team
+/org Migrate to microservices --dry-run  # Preview routing decision
 ```
-Triggers the full executive layer. CTO, CPO, and CFO each analyze independently, then deliberate with cross-domain context, surface conflicts, and produce a unified strategic brief — before handing off to engineering and business teams for execution.
+
+Smart routing applies: a single-domain simple request routes to `/run`, a single-domain complex request routes to `/team`, and multi-domain requests trigger the full C-suite hierarchy.
+
+### `/designer` — Interactive Design Exploration
+
+Guides design exploration through structured Q&A before building anything. Research agents pre-build context-rich question lists per phase. Unlike other skills, `/designer` waits for your responses at each step — it does not auto-proceed.
+
+```bash
+/designer Redesign the checkout flow
+/designer Plan the data model for a multi-tenant SaaS
+/designer Define the API contract for the notifications service
+```
+
+A 4-dimension clarity score tracks readiness; implementation does not begin until ambiguity drops below 20%. Phase overlap starts next-phase research during the current phase to reduce wait time.
+
+### `/review` — Quality Review
+
+Runs parallel specialist reviewers — security-engineer, code-reviewer, performance-analyzer — each reporting findings with CRITICAL/HIGH/LOW severity. Add `--fix` to route each CRITICAL finding through an execution agent for patching.
+
+```bash
+/review src/auth/
+/review src/api/ --fix               # Auto-patch CRITICAL findings
+/review . --profile security         # Focus on security-specific checks
+/review src/ --baseline              # Establish a quality baseline
+/review src/ --suppress baseline     # Show only regressions from baseline
+```
+
+Tier 3+ review uses blind review: multiple independent reviewers assess without seeing each other's findings, then a Devil's Advocate round challenges unanimous PASS verdicts.
+
+### `/optimize` — Performance Optimization
+
+Measures before, optimizes, measures after, and provides rollback if the change degrades performance.
+
+```bash
+/optimize src/db/queries.ts
+/optimize api/search --benchmark    # Run custom benchmark suite
+/optimize src/ --history            # Show past optimization attempts and outcomes
+```
+
+Optimization history tracks pattern effectiveness across sessions so the same approach is not repeated when it has already failed.
+
+### `/helper` — Command Guidance
+
+Recommends the right skill based on your task description. Use it when you are unsure whether to reach for `/run`, `/team`, or `/org`.
+
+```bash
+/helper
+/helper I need to refactor the entire auth module
+/helper --troubleshoot              # Diagnose why a previous skill run failed
+```
+
+### `/context` — Shared Product Context
+
+Writes project context (architecture decisions, coding standards, domain glossary) that persists across all sessions and is injected into agent prompts automatically.
+
+```bash
+/context
+/context We use PostgreSQL with Drizzle ORM. All queries go through the db package.
+/context Our API follows REST conventions with JSON:API response format.
+```
+
+### `/debug` — Systematic Debugging
+
+Four-phase debugging for bugs that resist quick fixes: reproduce, isolate, hypothesize, verify. Each phase uses specialist agents before moving to the next.
+
+```bash
+/debug The login form silently fails when the email contains a plus sign
+/debug Memory usage grows unbounded after 100 API calls
+/debug Tests pass locally but fail in CI on the date-formatting module
+```
+
+---
+
+## Domain Breakdown
+
+| Domain | Agents | Scope |
+|--------|--------|-------|
+| **Engineering** | 32 | Backend, frontend, DevOps, QA, security, game dev, accessibility |
+| **Creative** | 30 | Writing, narrative design, literary criticism, game art, audio |
+| **Business** | 31 | Strategy, product, operations, finance, project management |
+| **Growth** | 39 | Marketing, sales, SEO, demand generation, revenue operations |
+| **People** | 19 | HR, talent acquisition, culture, compensation, compliance |
+| **Service** | 32 | Customer support, CX, legal, compliance, governance |
+| **Leadership** | 11 | C-suite executives (CEO, CTO, CPO, CMO, CFO, COO, CRO, CHRO, CCO, CSO, CLO) — used by `/org` |
+| **Shared** | 4 | Cross-domain intelligence: BI, data science, market research |
+
+These 8 domains total 198 user-facing agents. The remaining 16 are Core pipeline infrastructure (orchestrator, planner, decomposer, validator, router) that run automatically and are not directly invoked — bringing the full catalog to 214 agents.
+
+**Engineering (32)** handles the full software stack: backend-developer, frontend-developer, devops-engineer, security-engineer, qa-lead, architect, dba, performance-analyzer, and 24 more. Use `/run Fix the bug` or `/team Build the feature` and the pipeline routes here automatically for software tasks.
+
+**Creative (30)** covers long-form and short-form writing: prose-stylist, dialogue-specialist, plot-developer, narrative-director, character-psychologist, worldbuilder, and 24 more. Use `/run Write a mystery short story` and the narrative-director controller coordinates the right specialists.
+
+**Growth (39)** is the largest domain: copywriter, marketing-strategist, seo-specialist, campaign-manager, demand-generation-manager, sales-strategist, and 33 more. Use `/run Plan the Q4 content calendar` and the marketing-strategist controller coordinates the campaign team.
+
+**Service (32)** covers support and legal: customer-success-manager, general-counsel, compliance-officer, technical-writer, legal-analyst, and 27 more. Use `/run Draft an EULA for our SaaS product` and the general-counsel controller coordinates the legal team.
+
+---
+
+## Architecture
+
+### `/run` — Event-Driven Pipeline
+
+`/run` is a config-driven state machine. Each stage writes a file that triggers the next stage.
+
+```
+User Request
+  |
+  +-> /run  (state machine loop, reads pipeline_config.yaml)
+        |
+        INIT          -> orchestrator     -> enriched_context.yaml
+        ORCHESTRATED  -> planner          -> plan.yaml
+        PLANNED       -> decomposer       -> work_items.yaml
+        DECOMPOSED    -> prompt-engineer  -> delegation_prompts.yaml
+        PROMPTS_READY -> controller
+              |
+              +-> execution agent  (implements work item)
+              |     +-> reviewer   Stage 1: spec compliance
+              |                    Stage 2: code quality
+              |                    REVISE -> back to execution agent (max 3 rounds)
+              |
+              +-> (repeat per work item, dependency-ordered)
+        COORDINATED   -> validator        -> validation_report.yaml
+              PASS   -> complete
+              FAIL   -> re-run controller   (max 5 cycles)
+              REVISE -> re-run planner      (max 5 cycles)
+```
+
+Controllers never implement. They ask questions of specialist agents, synthesize answers, and coordinate work items in dependency order. A two-stage review runs on every work item: Stage 1 checks spec compliance against acceptance criteria; Stage 2 checks code quality only after Stage 1 passes.
+
+### `/team` — N-Wave Parallel Execution
+
+```
+/team request
+  |
+  Wave 0   Lead (sequential)
+  |         enrichment, scaffolding, interface contracts
+  |
+  Wave 1..N-1   Teammates (parallel within each wave)
+  |   +-> Teammate A (controller) -> execution agent -> reviewer
+  |   +-> Teammate B (controller) -> execution agent -> reviewer
+  |   +-> Teammate C (controller) -> execution agent -> reviewer
+  |
+  |         GATE: quality validated before next wave starts
+  |
+  Wave N   Lead (sequential)
+            integration, final validation, report
+```
+
+More waves produce more quality gates. Tier 3+ defaults to 5-7 waves. Use `--waves N` to set a minimum. Each teammate is a controller that spawns execution agents via the Task tool — teammates never implement directly.
+
+### Complexity Tiers
+
+| Tier | Coordination | When It Applies |
+|------|-------------|-----------------|
+| **2** (Moderate) | 1 controller | Bug fix, answer a question, single-file change |
+| **3** (Complex) | 1 primary + 1-2 supporting | Add a feature, create a subsystem |
+| **4** (Expert) | Executive + primary + supporting + HITL | Major refactor, architecture migration |
+
+The pipeline detects tier automatically via 9-signal complexity scoring. Tier 2 uses a fast path that skips 3 enrichment agents to keep simple requests lean.
+
+---
+
+## Key Features
+
+### Goal Drift Prevention
+
+Before every Write, Edit, and Bash operation, the `attention-injection.cjs` hook reads the active `plan.yaml` and injects a concise goal reminder into the model's context window. An agent given 30 work items 40 tool calls ago still acts on the original objectives — not on whatever the most recent subtask left in its attention window.
+
+This fires automatically — no prompt engineering required. It is a no-op when there is no active session, so it does not affect ordinary Claude Code usage.
+
+### 26 Lifecycle Hooks
+
+cAgents registers 26 hooks across 19 of Claude Code's 24 event types:
+
+| Event | Hook | Purpose |
+|-------|------|---------|
+| SessionStart | session-catchup.cjs | Detect incomplete sessions, inject cAgents context |
+| PreToolUse[Bash] | bash-validator.cjs | Block dangerous commands and data exfiltration attempts |
+| PreToolUse[Write\|Edit] | secret-detection.cjs | Block writes containing API keys, tokens, credentials |
+| PreToolUse[Write\|Edit\|Bash] | attention-injection.cjs | Inject plan objectives before every file operation |
+| PreToolUse[Task] | model-routing-advisor.cjs | Suggest optimal model before agent spawns |
+| SubagentStart | subagent-tracker.cjs | Log agent spawns to agent_tree.yaml with audit trail |
+| SubagentStop | subagent-stop-tracker.cjs | Capture completion summaries and duration metrics |
+| TeammateIdle | teammate-idle-handler.cjs | Find available work or cleanly stop idle teammates |
+| TaskCompleted | team-task-complete.cjs | Update task list, unblock dependencies |
+| PreCompact | pre-compact-save.cjs | Save workflow state before context compaction |
+| PostCompact | post-compact-restore.cjs | Re-inject workflow context after compaction |
+| Stop | verify-completion.cjs | Verify completion criteria before allowing stop |
+
+### Confidence Scoring
+
+Every completed work item includes a confidence score (0.0–1.0) and rationale. Items below 0.7 trigger additional scrutiny: the reviewer applies stricter criteria and the controller flags them in the coordination log.
+
+### Two-Stage Review Protocol
+
+The reviewer loop runs two distinct stages in strict order:
+
+1. **Stage 1 — Spec Compliance**: Does the implementation meet every acceptance criterion? Evidence must cite specific file:line. No quality judgments at this stage.
+2. **Stage 2 — Code Quality**: Is the implementation well-written and maintainable? Runs only after Stage 1 passes. Findings are severity-tagged (CRITICAL/HIGH/LOW). REVISE triggers only for CRITICAL or two or more HIGH findings.
+
+This prevents marking work complete when it looks clean but misses requirements.
+
+### Aggressive Decomposition
+
+The decomposer breaks even simple requests into 30+ work items with explicit acceptance criteria, dependency graphs, and agent assignments. Work items execute in topological order; independent items execute in parallel.
+
+---
 
 ## Choose Your Entry Point
 
-Load the full platform or a domain-specific sub-plugin depending on your team's needs. Each domain has its own `.claude-plugin/` for independent loading.
+Load the full platform or a domain sub-plugin depending on your team's needs.
 
-| Package | Agents | Skills | Target Audience |
-|---------|--------|--------|-----------------|
+| Package | Agents | Skills | Audience |
+|---------|--------|--------|----------|
 | **cAgents** (Full Platform) | 214 | 9 | Teams wanting the complete AI workforce across all domains |
 | **cagents-engineering** | 32 | 9 | Software development teams: backend, frontend, DevOps, QA, security |
 | **cagents-creative** | 30 | 9 | Content and creative teams: writing, narrative, game art, audio |
 | **cagents-business** | 42 | 9 | Strategy and product teams: business (31) + leadership (11) agents |
 | **cagents-growth** | 39 | 9 | Marketing and sales teams: campaigns, SEO, demand gen, revenue ops |
 
-Each domain sub-plugin loads independently via its own `.claude-plugin/` manifest. Use the full platform to access all 214 agents, or load only the domain(s) your team needs to keep context lean.
+Each sub-plugin loads via its own `.claude-plugin/` manifest. Use the full platform to access all 214 agents, or load only the domain your team needs to keep context lean.
 
-## Quick Start
+---
 
-```bash
-/run Fix the authentication bug          # Engineering
-/run Write a sci-fi short story          # Creative
-/run Plan Q4 product launch campaign     # Business
-/run Design onboarding program           # People
-/run Create knowledge base article       # Service
-```
+## Performance Benchmarks
 
-The system automatically detects domain, selects controllers, and orchestrates specialist agents through the full pipeline.
-
-## Commands
-
-| Command | What it does |
+| Feature | Measurement |
 |---------|-------------|
-| `/run` | Execute any task through auto-routed specialist agents |
-| `/team` | Parallel multi-agent execution with wave-based quality gates |
-| `/org` | Cross-domain strategy via C-suite agents and sequential teams |
-| `/designer` | Interactive design exploration with guided Q&A |
-| `/review` | Quality review with parallel specialists and auto-fix |
-| `/optimize` | Performance optimization with before/after metrics |
-| `/helper` | Command guide that recommends the right skill |
-| `/context` | Shared product context that persists across sessions |
+| Aggressive Decomposition | 30+ work items from a simple request |
+| Controller Pattern | 30-40% simpler planning, 20-30% fewer tokens vs direct delegation |
+| Parallel Execution | 50x speedup (swarm mode), 80%+ parallelism efficiency |
+| Task Inventory | 60-80% context savings for workflows with 20+ tasks |
+| Team Mode | 40-60% execution time reduction for tier 3+ |
 
-## Architecture
-
-### /run — Event-Driven Pipeline
-
-```
-User Request
-  └─> /run  (config-driven state machine)
-        |
-        |-> Orchestrator      enrich context, detect domain + tier
-        |-> Planner           define objectives, select controller
-        |-> Decomposer        break into work items with acceptance criteria
-        |-> Prompt Engineer   craft optimized delegation prompts
-        |
-        └─> Controller        coordinate via question-based delegation
-              |
-              |-> Execution Agent   implement work item
-              |     └─> Reviewer    Stage 1: spec compliance
-              |                     Stage 2: code quality
-              |                     └─> REVISE --> back to Execution Agent (max 3 rounds)
-              |
-              └─> (repeat per work item ...)
-        |
-        └─> Validator
-              PASS    -->  complete
-              FAIL    -->  re-run controller   (max 5 cycles)
-              REVISE  -->  re-run planner      (max 5 cycles)
-```
-
-Controllers never implement — they ask questions of specialist agents, synthesize answers, and coordinate work items in dependency order.
-
-### /team — N-Wave Parallel Execution
-
-```
-/team request
-  |
-  └─> Wave 0   Lead (sequential)
-  |             enrichment, scaffolding, interface contracts
-  |
-  └─> Wave 1..N-1   Teammates (parallel within each wave)
-  |   |-> Teammate A (controller) -> Execution Agent -> Reviewer
-  |   |-> Teammate B (controller) -> Execution Agent -> Reviewer
-  |   └─> Teammate C (controller) -> Execution Agent -> Reviewer
-  |                  |
-  |             GATE: quality validated before next wave starts
-  |
-  └─> Wave N   Lead (sequential)
-                integration, final validation, report
-```
-
-More waves = more quality gates. Tier 3+ defaults to 5-7 waves; use `--waves N` to set a minimum.
-
-### Domains
-
-| Domain | Agents | Scope |
-|--------|--------|-------|
-| **Engineering** | 32 | Software, infrastructure, security, QA, game dev |
-| **Creative** | 30 | Writing, narrative, literary criticism, game art, audio |
-| **Business** | 31 | Strategy, product, operations, finance |
-| **Growth** | 39 | Marketing, sales, revenue operations |
-| **People** | 19 | HR, talent acquisition, culture |
-| **Service** | 32 | Customer support, CX, legal, compliance |
-| **Leadership** | 11 | C-suite executives (used by /org) |
-| **Core** | 16 | Pipeline infrastructure agents |
-| **Shared** | 4 | Cross-domain intelligence |
-
-### Complexity Tiers
-
-| Tier | Coordination | Example |
-|------|-------------|---------|
-| 2 (Moderate) | 1 controller | Fix a bug, answer a question |
-| 3 (Complex) | 1 primary + 1-2 supporting | Add a feature, create a system |
-| 4 (Expert) | Executive + primary + supporting + HITL | Major refactor, architecture migration |
-
-## How cAgents Prevents Goal Drift
-
-Every Write, Edit, and Bash operation is preceded by an attention injection hook. Before the model touches a file, the hook reads the active `plan.yaml` — specifically the mission, domain, and current coordination status — and injects a concise goal reminder into the model's context window.
-
-This is Manus-inspired goal refresh, implemented as a Claude Code `PreToolUse` hook (`attention-injection.cjs`). It fires automatically; no prompt engineering required. The result: agents that were given 30 work items 40 tool calls ago still act on the original objectives, not on whatever the most recent subtask put into their attention window.
-
-The hook is a no-op when there is no active session or no plan.yaml, so it does not affect ordinary Claude Code usage.
-
-## Key Features
-
-- **Event-driven pipeline** -- config-driven state machine with revision routing
-- **Controller-centric coordination** -- question-based delegation to specialists
-- **Reviewer loops** -- acceptance criteria validation with blind review for tier 3+
-- **N-wave parallel teams** -- 40-60% time reduction with per-wave quality gates
-- **Confidence scoring** -- 0.0-1.0 per work item, low scores trigger extra scrutiny
-- **21 registered hooks** -- session management, secret detection, attention injection, team lifecycle (25 total .cjs files)
+---
 
 ## How cAgents Compares
 
 | Dimension | cAgents | Official feature-dev plugin | Official code-review plugin |
 |-----------|---------|----------------------------|----------------------------|
-| **Agent count** | 214 | 3-5 | 3-5 |
-| **Business domains** | 8 (engineering, creative, business, growth, people, service, leadership, shared) | 1 (engineering) | 1 (engineering) |
-| **Pipeline state machine** | Yes — config-driven loop with PASS/FAIL/REVISE revision routing (max 5 cycles) | No | No |
-| **Team / parallel execution** | Yes — N-wave parallel teams with per-wave quality gates (40-60% time reduction) | No | No |
-| **Revision loops** | Yes — executor → reviewer (spec compliance then code quality), max 3 rounds per work item | No | No |
-| **Hook lifecycle** | 21 registered hooks across 14 event types (session, secrets, attention, team, completion) | 1-4 hooks | 1-4 hooks |
-| **Test coverage** | 351 Vitest tests (hooks + config validation) | CLI validate only | CLI validate only |
-| **Controller coordination** | Question-based delegation: controller asks specialists, synthesizes, coordinates | Direct invocation | Direct invocation |
+| **Agent count** | 214 | 3–5 | 3–5 |
+| **Business domains** | 8 | 1 (engineering) | 1 (engineering) |
+| **Pipeline state machine** | Yes — PASS/FAIL/REVISE routing, max 5 cycles | No | No |
+| **Parallel team execution** | Yes — N-wave with per-wave quality gates | No | No |
+| **Revision loops** | Yes — executor + reviewer, max 3 rounds per work item | No | No |
+| **Two-stage review** | Yes — spec compliance then code quality | No | No |
+| **Hook lifecycle** | 26 hooks across 19 event types | 1–4 hooks | 1–4 hooks |
+| **Goal drift prevention** | Yes — attention injection on every Write/Edit/Bash | No | No |
+| **Confidence scoring** | Yes — 0.0–1.0 per work item, low scores trigger scrutiny | No | No |
+| **Cross-domain orchestration** | Yes — /org fires full C-suite hierarchy | No | No |
 
-Numbers for cAgents reflect current release. Official plugin figures are approximate based on publicly available descriptions.
+Numbers for cAgents reflect the current release. Official plugin figures are approximate based on publicly available descriptions.
 
-## What cAgents Built
+---
 
-Three real workflows that show the platform end-to-end.
+## Real Workflow Examples
 
-**Multi-domain strategy: `/org Plan Q3 product launch`**
+### Multi-Domain Strategy: `/org Plan Q3 product launch`
 
-The CEO agent fires first and determines which C-suite agents are needed. CTO, CPO, and CMO each analyze the request independently (Wave 1), then read each other's analyses before a deliberation phase where they surface conflicts and cross-domain dependencies (Wave 2). The result is a unified strategic brief. cAgents then runs sequential `/team` executions per domain: the engineering team plans the feature work, the marketing team plans the campaign, both using the strategic brief as shared context.
+The CEO agent fires first and determines which C-suite agents are needed: CTO for technical feasibility, CPO for roadmap fit, CMO for go-to-market.
 
-**Full-stack feature: `/team Build user dashboard`**
+CTO, CPO, and CMO each analyze the request independently, writing their analyses to separate YAML files. Each then reads the others' analyses before a deliberation phase where they surface conflicts and cross-domain dependencies. The CMO flags that the marketing timeline assumes a launch date the CTO says is unrealistic. The deliberation resolves this with a phased launch plan.
 
-Wave 0 (lead): scaffolding, interface contracts between frontend and backend, database schema decisions. Wave 1 (parallel): backend-developer builds the API endpoints, frontend-developer builds the component tree, dba validates the schema. Wave 2 (parallel): qa-lead writes integration tests, accessibility-checker audits the UI. Wave 3 (lead): integration, final test run, validation report. Each wave is gated — the next wave does not start until the current wave's quality criteria are met. Total execution time: 40-60% less than sequential.
+The result is a unified strategic brief. cAgents then runs sequential `/team` executions per domain: the engineering team plans the feature work, the marketing team plans the campaign, each using the strategic brief as shared context.
 
-**Quality review: `/review src/auth/`**
+### Full-Stack Feature: `/team Build user dashboard`
 
-Three reviewers run in parallel: security-engineer (injection, auth bypass, token handling), code-reviewer (naming, structure, DRY, complexity), performance-analyzer (N+1 queries, unnecessary allocations). Each reports findings with CRITICAL/HIGH/LOW severity. The lead synthesizes findings, deduplicates overlapping concerns, and produces a prioritized list. Add `--fix` and the pipeline routes each CRITICAL finding back through an execution agent to be patched.
+Wave 0 (lead, sequential): scaffolding, interface contracts between frontend and backend, database schema decisions written to a contracts file that all subsequent waves read.
+
+Wave 1 (parallel, 3 teammates): backend-developer builds the API endpoints against the contract, frontend-developer builds the component tree consuming that API contract, dba validates the schema against query patterns.
+
+Wave 2 (parallel, 2 teammates): qa-lead writes integration tests covering the API and UI, accessibility-checker audits the component tree.
+
+Wave 3 (lead, sequential): integration, final test run, validation report. Each wave is gated — the next wave does not start until the current wave's quality criteria pass. Total execution time: 40-60% less than sequential.
+
+### Quality Review: `/review src/auth/ --fix`
+
+Three reviewers run in parallel: security-engineer (injection, auth bypass, token handling), code-reviewer (naming, structure, DRY, complexity), performance-analyzer (N+1 queries, unnecessary allocations). Each reports findings with CRITICAL/HIGH/LOW severity, citing specific file:line evidence.
+
+The lead synthesizes findings, deduplicates overlapping concerns, and produces a prioritized list. Because `--fix` was passed, each CRITICAL finding routes through an execution agent to be patched. The patches re-enter the review pipeline to confirm the finding is resolved before the overall review marks complete.
+
+---
+
+## AgentPath — Session Visualizer
+
+[AgentPath](https://github.com/CaelanDrayer/AgentPath) is a companion web UI for visualizing cAgents session data. It reads from `Agent_Memory/sessions/` and renders agent trees, pipeline timelines, work item DAGs, and file change logs in real time. Useful for understanding what happened in complex `/org` or `/team` runs where dozens of agents executed across multiple waves.
+
+---
 
 ## Documentation
 
 | Resource | Content |
 |----------|---------|
-| `CLAUDE.md` | Complete architecture and agent reference |
-| `docs/` | 28 guides and references (architecture, commands, skills, team mode, etc.) |
-| `.claude/rules/` | 20 modular topic-specific rules |
+| `CLAUDE.md` | Complete architecture reference and agent inventory |
+| `docs/ARCHITECTURE.md` | Pipeline design, state machine, and domain structure |
+| `docs/SKILLS.md` | Full skill reference with all flags and options |
+| `docs/TEAM_MODE.md` | N-wave execution, wave types, gate sentinels, templates |
+| `docs/GETTING_STARTED.md` | First-run guide and environment setup |
+| `docs/RELEASE_NOTES.md` | Detailed version history |
+| `.claude/rules/` | 24 modular topic-specific rules loaded by agents |
 | `SECURITY.md` | Security policy and vulnerability reporting |
-
-## Version History
-
-See `docs/RELEASE_NOTES.md` for detailed history. Recent:
-
-- **V10.22.7** -- Hook dedup guard, 4 new hooks (statusline, session-init-gate, model-routing-advisor, approval-gate), production blockers fixed
-- **V10.22.6** -- Agent Skills spec compliance: frontmatter aligned with agentskills.io spec
-- **V10.22.5** -- Plugin manifest aligned with Anthropic ecosystem patterns
-- **V10.22.0** -- Two-stage review protocol (spec compliance then code quality), 5 superpowers-inspired pipeline improvements
-- **V10.21.0** -- Stale agent count fixes, plugin audit improvements
-- **V10.20.0** -- 23 agent communication gap fixes from system-wide audit, 4 missing growth agents added (Growth 35->39)
-- **V10.18.0** -- Vibe field on all 214 agents, agent export script, worktree isolation, guard command pattern, skill chaining, commit-before-verify, when-stuck protocol
-- **V10.16.0** -- Session ID naming overhaul with readable slugs, agent_id linking in coordination_log for AgentPath
-- **V10.15.0** -- Redesigned TodoWrite templates with hierarchy, indentation, and granularity
-- **V10.14.0** -- Post-completion follow-up handling in /run pipeline
-- **V10.13.0** -- Standardize session tracking schemas across all 6 skills
-- **V10.12.0** -- AgentPath plugin integration with 15 session visualization improvements
-- **V10.11.0** -- Agent reorganization (5 consolidations, 11 renames, 3 tier fixes), gstack-inspired improvements
-- **V10.9.0** -- Documentation overhaul, concise help text, version-registry rule
-- **V10.6.0** -- Confidence tiers, blind review, dead-letter queue, handoff documents, signal file intervention
-- **V10.5.0** -- Clean team lifecycle, hook reliability
-- **V10.3.0** -- Creative domain overhaul (24->30 agents, all on Opus 4.6)
-- **V10.0.0** -- 8 business domains, agent chaining with topological execution
-
-## AgentPath - Session Visualizer
-
-[AgentPath](https://github.com/CaelanDrayer/AgentPath) *(incoming)* is a companion web UI for visualizing cAgents session data. It reads from `Agent_Memory/sessions/` and renders agent trees, pipeline timelines, work item DAGs, and file change logs in real time.
-
-## License
-
-MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | 214 agents across 8 business domains | Powered by Claude Opus 4.6, Sonnet 4.6, and Haiku 4.5
+## Version History
+
+See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights:
+
+- **V10.24.3** — Current release
+- **V10.23.0** — 29-check validation framework, regression validation chain, mandatory self-validation protocol for execution agents
+- **V10.22.0** — Two-stage review protocol (spec compliance then code quality), 5 pipeline improvements
+- **V10.20.0** — 23 agent communication gap fixes, Growth domain expanded from 35 to 39 agents
+- **V10.18.0** — Vibe field on all 214 agents, worktree isolation, guard command pattern, skill chaining, commit-before-verify pattern
+- **V10.16.0** — Session ID naming overhaul with readable slugs, agent_id linking in coordination_log for AgentPath
+- **V10.12.0** — AgentPath plugin integration with 15 session visualization improvements
+- **V10.6.0** — Confidence tiers, blind review, dead-letter queue, handoff documents
+- **V10.3.0** — Creative domain overhaul (24 to 30 agents, all on Opus 4.6)
+- **V10.0.0** — 8 business domains, agent chaining with topological execution
+
+---
+
+## License
+
+MIT License — see [LICENSE](LICENSE) for details.
+
+---
+
+**Built with Claude Code** | 214 agents across 8 business domains | Opus 4.6 · Sonnet 4.6 · Haiku 4.5

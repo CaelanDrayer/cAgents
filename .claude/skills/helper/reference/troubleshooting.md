@@ -173,3 +173,51 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 - **Likely cause**: Reference files in /helper are out of sync with actual SKILL.md files
 - **Check**: Compare `/helper --flags run` output against `.claude/skills/run/SKILL.md`
 - **Fix**: Reference files need to be updated to match current skill definitions
+
+---
+
+## /debug Troubleshooting
+
+### 1. Debug keeps cycling through hypotheses without resolution
+- **Symptom**: 5+ hypotheses tested, none confirmed, no root cause found
+- **Likely cause**: Bug is in a dependency, external service, or requires architecture knowledge not accessible
+- **Check**: Review the list of falsified hypotheses -- what did they rule out?
+- **Fix**: Use `--escalate` to generate an escalation report with all findings. Then seek domain expert review.
+- **Prevention**: Use `--escalate` from the start if the bug has already resisted 3+ attempts
+
+### 2. Phase 4 test fails to reproduce the bug
+- **Symptom**: Wrote a test, but it passes even without the fix
+- **Likely cause**: Test does not reproduce the actual conditions (timing, state, environment)
+- **Check**: Verify the test exercises the exact code path in the stack trace
+- **Fix**: Return to Phase 1 and strengthen the reproduction steps. The test must fail FIRST.
+
+### 3. Debug session lost context mid-investigation
+- **Symptom**: /debug seems to "forget" previous phases or hypotheses after long sessions
+- **Likely cause**: Context compaction cleared working memory during a long investigation
+- **Check**: Look for waypoint files in `Agent_Memory/sessions/debug_{id}/waypoints/`
+- **Fix**: Resume from findings.md -- the 2-Action Findings Capture Rule should have persisted key discoveries
+
+### 4. /debug vs /run confusion
+- **Symptom**: User uses /run for a hard bug and it fails; user uses /debug for a known simple fix
+- **Rule**: If a quick fix attempt fails once, try /run again with more detail. After 2 failures, use /debug.
+- **Fix**: `/debug` is for bugs that have resisted fixes. For known fixes, use `/run Fix {description}`.
+
+---
+
+## /context Troubleshooting
+
+### 1. Context not being picked up by /run
+- **Symptom**: /run still makes wrong assumptions about project structure despite /context init
+- **Likely cause**: Context file not found at expected path, or project hash mismatch
+- **Check**: Run `/context show` to verify context exists and has correct project_root
+- **Fix**: Run `/context init` again from the project root directory
+
+### 2. Context has stale information after migration
+- **Symptom**: Context says "jest" but project migrated to vitest; agents use wrong test runner
+- **Fix**: Run `/context update` to interactively refresh the relevant fields
+- **Prevention**: Run `update` after any significant technology change
+
+### 3. Context init detects wrong framework
+- **Symptom**: `/context init` auto-detects wrong framework or language
+- **Likely cause**: Multiple framework config files present (e.g., both React and Vue configs)
+- **Fix**: Run `/context update` immediately after init to correct the detected values

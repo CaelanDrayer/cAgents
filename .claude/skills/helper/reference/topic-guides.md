@@ -128,9 +128,9 @@ Use when the design decomposes into 3+ parallel work items.
 
 ### The 8 Business Domains
 
-cAgents organizes 213 agents into 8 business domains. When you use `/run` or `/team`, the system automatically detects which domain to route to.
+cAgents organizes 214 agents into 8 business domains. When you use `/run` or `/team`, the system automatically detects which domain to route to.
 
-#### Engineering (33 agents)
+#### Engineering (32 agents)
 
 Software engineering, infrastructure, security, QA:
 - Backend, frontend, DevOps, architecture, security, game programming
@@ -144,14 +144,14 @@ Creative writing, narrative design, game art, audio:
 
 **Example requests**: "Write a novel", "Design game mechanics", "Create character backstory"
 
-#### Business (69 agents)
+#### Business (31 agents)
 
-Strategy, product, operations, finance, marketing, sales:
-- Product management, operations, finance, procurement, marketing, sales
+Strategy, product, operations, finance:
+- Product management, operations, finance, procurement
 
 **Example requests**: "Plan product roadmap", "Create Q4 budget", "Plan marketing campaign"
 
-#### Growth (36 agents)
+#### Growth (39 agents)
 
 Revenue and customer acquisition:
 - Marketing campaigns, SEO, sales strategy, demand generation
@@ -165,14 +165,14 @@ HR, talent acquisition, culture:
 
 **Example requests**: "Hire software engineer", "Design onboarding workflow", "Plan team event"
 
-#### Service (33 agents)
+#### Service (32 agents)
 
 Customer support, legal, compliance:
 - Customer experience, support, legal, contracts, compliance, governance
 
 **Example requests**: "Handle customer complaint", "Review contract", "Create privacy policy"
 
-#### Leadership (10 agents)
+#### Leadership (11 agents)
 
 C-suite executives (used by /org, not directly routable):
 - CTO, CRO, CFO, COO, CHRO, CEO, chief-of-staff, strategy-director
@@ -278,11 +278,11 @@ Every request is classified into a complexity tier, which determines how many ag
 
 ## Topic: agents
 
-### The 213 Agents and How They Are Organized
+### The 214 Agents and How They Are Organized
 
-cAgents has 213 specialized agents organized in a 4-tier hierarchy:
+cAgents has 214 specialized agents organized in a 4-tier hierarchy:
 
-#### Tier 1: Core Infrastructure (15 agents)
+#### Tier 1: Core Infrastructure (16 agents)
 
 These are the backbone -- they manage workflows, not tasks:
 - **trigger** -- Entry point, domain detection

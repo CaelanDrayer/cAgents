@@ -635,7 +635,7 @@ Result: All domains complete, integrated deliverable
 ### How It Works (Simplified)
 
 ```
-/helper                     -> Full overview of all 6 commands
+/helper                     -> Full overview of all 9 commands
 /helper run                 -> Deep dive into /run
 /helper how do I fix a bug  -> "Use /run. Here's how..."
 /helper --compare           -> Side-by-side comparison table
@@ -687,3 +687,173 @@ Result: All domains complete, integrated deliverable
 3. **Check flags before running**: `/helper --flags run` shows every flag with examples
 4. **Compare when unsure**: `/helper --compare` shows exactly when each command is best
 5. **Explore topics**: Use `--topic` for deep dives into domains, tiers, agents, teams, etc.
+
+---
+
+## /debug - Systematic Debugging Methodology
+
+### What It Does
+
+`/debug` is a structured 4-phase debugging tool for bugs that resist quick fixes. It guides you through Root Cause Investigation, Pattern Analysis, Hypothesis Testing, and Implementation -- enforcing evidence-based debugging rather than guessing. Think of it as "find the actual root cause, not just the symptom."
+
+### When to Use /debug
+
+- **Bug has resisted 2+ fix attempts**: If you've tried multiple fixes and the bug persists
+- **Intermittent or non-deterministic failure**: Flaky tests, works-sometimes bugs
+- **Unclear root cause**: Error message exists but cause is unknown
+- **Performance regression**: Something got slower but you don't know why
+- **"It works on my machine"**: Environment-specific failures
+
+### When NOT to Use /debug
+
+- **Known simple fixes**: Typo, missing import, obvious one-line fix -- use `/run` instead
+- **Code quality review**: Use `/review` for quality analysis, not /debug
+- **Building features**: Use `/run` for new development
+
+### How It Works (Simplified)
+
+```
+Phase 1: Root Cause Investigation
+  -> Reproduce the exact bug
+  -> Read the full stack trace (not just the message)
+  -> Check recent git changes
+  -> Trace the data flow
+
+Phase 2: Pattern Analysis
+  -> Classify: state mutation? type mismatch? timing/async? data flow? config?
+  -> Match patterns to known bug categories
+
+Phase 3: Hypothesis Testing (one at a time)
+  -> State hypothesis: "The bug occurs because X causes Y when Z"
+  -> Test with minimal reproduction
+  -> Record: confirmed or falsified (with evidence)
+  -> Max 5 hypotheses before escalation
+
+Phase 4: Implementation
+  -> Write a FAILING TEST first (mandatory)
+  -> Implement the minimal fix
+  -> Run failing test (must now pass)
+  -> Run full test suite (no regressions)
+  -> Verify original reproduction scenario
+```
+
+### Key Flags
+
+| Flag | What It Does | Example |
+|------|-------------|---------|
+| `--escalate` | Force escalation report after investigation | `/debug auth bug --escalate` |
+| `--phase <1-4>` | Start at specific phase | `/debug known issue --phase 3` |
+
+### Real Examples
+
+```bash
+# Debug a complex authentication bug
+/debug Auth token expiry causes random logouts after 30 minutes
+
+# Debug intermittent test failures
+/debug Payment tests fail 1 in 5 runs with "connection timeout"
+
+# Force escalation if 3+ fixes already tried
+/debug Race condition in WebSocket reconnect --escalate
+
+# Start at hypothesis testing (root cause already known)
+/debug Memory leak in event listener cleanup --phase 3
+```
+
+### Integration
+
+- **After /run fails**: If `/run Fix bug` creates more bugs, escalate to `/debug`
+- **Feeds back into /run**: After confirming root cause, use `/run` to implement if simpler
+- **CLAUDE.md bug-driven testing**: /debug Phase 4 enforces the mandatory regression test requirement from CLAUDE.md
+
+### Tips
+
+1. **Trust the process**: Phase 1 reproduction is not optional, even if you think you know the cause
+2. **One hypothesis at a time**: Testing multiple hypotheses simultaneously invalidates results
+3. **Write the test FIRST in Phase 4**: This is not optional -- the test IS the verification
+4. **Use --escalate proactively**: If 3+ attempts have already failed, add --escalate at the start
+5. **Record falsified hypotheses**: Knowing what is NOT the cause is valuable information
+
+---
+
+## /context - Product Context Manager
+
+### What It Does
+
+`/context` creates and manages a shared product context document that persists across all sessions. The context is automatically read by the orchestrator during every `/run` pipeline, enriching all agent work with project-specific knowledge. Think of it as "one-time project setup that makes every /run smarter."
+
+### When to Use /context
+
+- **Starting a new project**: Initialize context so all future /run calls have project knowledge
+- **Project conventions changed**: Update the context to reflect new frameworks, test runners, or conventions
+- **Agents making wrong assumptions**: If /run keeps guessing your project structure wrong
+- **Team consistency**: Ensure all team members' /run calls use the same project knowledge
+
+### When NOT to Use /context
+
+- **Running tasks**: Use `/run` to execute work
+- **Reviewing code**: Use `/review` for quality analysis
+- **One-time enrichment**: For single-session context, just describe it in the /run request
+
+### How It Works (Simplified)
+
+```
+/context init
+  -> Scan project structure (package.json, config files, directories)
+  -> Auto-detect: language, framework, test runner, formatter, linter
+  -> Create Agent_Memory/_projects/{hash}/product_context.yaml
+  -> Show detected context for review
+
+/context show
+  -> Display current context document
+  -> Show when last updated
+
+/context update
+  -> Present current values
+  -> Ask what to update
+  -> Merge updates (append-only for domain_knowledge)
+
+/context clear
+  -> Remove product_context.yaml
+```
+
+### Key Flags / Subcommands
+
+| Command / Flag | What It Does | Example |
+|----------------|-------------|---------|
+| `init` | Auto-detect and initialize context | `/context init` |
+| `show` / `--show` | Display current context | `/context show` |
+| `update` | Interactively update context | `/context update` |
+| `clear` / `--reset` | Remove context | `/context clear` |
+| `--edit` | Open context file for manual editing | `/context --edit` |
+
+### Real Examples
+
+```bash
+# Initialize context for a new project
+/context init
+
+# Check what context is currently set
+/context show
+
+# Update context after switching to TypeScript
+/context update
+
+# Clear context to start fresh
+/context clear
+```
+
+### Integration
+
+- **Enriches /run pipeline**: Every `/run` call reads the context during orchestration
+- **Enriches /team**: Team execution benefits from project context in each teammate's work
+- **Persistent across sessions**: Unlike in-prompt context, this survives session restarts
+- **Reduces repetition**: No need to explain project conventions in every /run request
+
+### Tips
+
+1. **Run `init` once per project**: A one-time setup that improves all future /run calls
+2. **Check with `show` before troubleshooting**: Wrong context can mislead agents
+3. **Update after major changes**: Framework migrations, test runner changes, new integrations
+4. **Keep domain_knowledge growing**: Add key facts as you discover them with `update`
+5. **Context is project-scoped**: Different projects get different context documents automatically

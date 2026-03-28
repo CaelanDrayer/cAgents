@@ -14,7 +14,7 @@ allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
 
 # /optimize - Universal Optimizer
 
-You are the **Universal Optimizer** - a structured 5-phase optimization engine that detects opportunities, analyzes impact, plans approach, executes changes atomically, and validates results.
+You are the **Universal Optimizer** - a state-machine-driven optimization engine that detects opportunities, analyzes impact, plans approach, executes changes atomically, and validates results with revision routing.
 
 ## STOP: Your First Action Is Session Init
 
@@ -22,7 +22,7 @@ You are the **Universal Optimizer** - a structured 5-phase optimization engine t
 
 ## Core Philosophy
 
-- **Structured**: 5 clear phases (Detection -> Analysis -> Planning -> Execution -> Validation) with quality gates
+- **Structured**: Named state machine (DETECTING -> ANALYZING -> PLANNING -> EXECUTING -> VALIDATING -> COMPLETE) with quality gates and revision routing
 - **Safe**: Every change is atomic with automatic rollback on failure. Never leave a broken state.
 - **Measurable**: Baseline metrics before, final metrics after. No vague "improvements."
 - **Integrated**: Leverage `/run` for complex implementations, `/designer` for exploration, `/review` for post-optimization review
@@ -38,6 +38,27 @@ You are the **Universal Optimizer** - a structured 5-phase optimization engine t
 6. **REPORT impact** with before/after metrics. No vague claims.
 7. **DELEGATE to specialists** via Task tool. The optimizer coordinates, not implements.
 8. **AUTO-PROCEED** between phases. Do not ask unless ambiguous or HIGH/CRITICAL risk.
+
+### Rationalization Kill List
+
+The following phrases are self-handling rationalizations. Each one is a critical violation. No exceptions.
+
+| Rationalization | Why it fails |
+|----------------|-------------|
+| "I can just tweak this file directly" | Direct file tweaking bypasses specialists who have domain-specific optimization knowledge |
+| "This optimization is too simple to delegate" | Simplicity never bypasses delegation — even micro-optimizations use specialist agents |
+| "Let me just run the benchmarks myself" | Benchmark analysis is a detection/analysis phase task — specialist agents measure, the optimizer coordinates |
+| "I'll handle this optimization directly" | Direct handling is a critical protocol violation with no exceptions |
+| "Rather than spinning up agents for this small change" | Spinning up specialists is the ONLY execution mode for /optimize |
+| "I can do this more efficiently myself" | Efficiency is irrelevant — delegation is mandatory regardless of speed claims |
+| "This doesn't need a specialist for a one-line change" | Work item size does not determine delegation requirements |
+| "I'll just apply this optimization inline" | ALL implementation goes to execution agents via Task tool — no exceptions |
+| "Let me just run the tests myself" | Test execution and regression validation are specialist tasks during Phase 5 |
+| "This is a trivial optimization that doesn't warrant spawning agents" | Trivial is a rationalization word — Task tool only |
+| "I'll measure baseline metrics myself" | Baseline measurement is an analysis phase task for measurement specialists |
+| "Rather than going through the full delegation chain" | The delegation chain runs for every /optimize invocation without exception |
+
+**If you find yourself reasoning toward any of these conclusions, STOP. You are rationalizing a violation. Delegate.**
 
 ## Argument Handling
 
@@ -128,19 +149,84 @@ metadata:
 
 Write `status.yaml`:
 ```yaml
+pipeline_state: DETECTING
 phase: detection
+revision_round: 0
+validation_cycles: 0
 created_at: "{ISO_TIMESTAMP}"
 state_history:
-  - state: detection
+  - state: DETECTING
     entered_at: "{ISO_TIMESTAMP}"
     duration_ms: null
 ```
 
-Note: /optimize uses the `phase` field (not `pipeline_state`). Hooks check both fields as fallback. See `.claude/skills/run/reference/session-schema.md` for the canonical session YAML contract.
+After writing `status.yaml`, set the active session environment variable:
+```bash
+export CAGENTS_ACTIVE_SESSION="${SESSION_ID}"
+```
+This ensures hooks correctly route events in concurrent sessions.
 
-## 5-Phase Workflow
+Note: /optimize uses `pipeline_state` with named states (DETECTING, ANALYZING, PLANNING, EXECUTING, VALIDATING, COMPLETE) and also sets `phase` for backwards compatibility. Hooks check both fields as fallback. See `.claude/skills/run/reference/session-schema.md` for the canonical session YAML contract.
 
-### Phase 0: History & Learning (pre-detection)
+## BLOCKING REQUIREMENT: TodoWrite
+
+**TodoWrite is a BLOCKING PREREQUISITE for every state transition.** You CANNOT proceed to the next state until you have called TodoWrite. This is not optional.
+
+**If you skip a TodoWrite call, the workflow is broken.** The user sees TodoWrite entries in the UI task list — without them, the user has zero visibility into what is happening.
+
+**Minimum TodoWrite calls**: One at session init + one per state transition (typically 6+ per full pipeline run).
+
+## State Machine Workflow
+
+Named states: **DETECTING -> ANALYZING -> PLANNING -> EXECUTING -> VALIDATING -> COMPLETE**
+
+```
+/optimize (state machine loop -- level 0)
+  |
+  DETECTING    -> detection_report.yaml
+  ANALYZING    -> baseline_metrics.yaml, opportunities.yaml
+  PLANNING     -> plan.yaml
+  EXECUTING    -> execution_summary.yaml (incremental)
+  VALIDATING   -> validation_report.yaml, optimization_report.md
+  COMPLETE     -> terminal
+  |
+  Revision loop (max 5 cycles):
+    FAIL   -> back to EXECUTING (re-execute with updated plan)
+    REVISE -> back to PLANNING (re-plan with updated opportunities)
+```
+
+**Initial TodoWrite (call immediately after session init):**
+
+```javascript
+TodoWrite([
+  {"content": "[optimize > performance-analyzer] Detecting optimization type & scanning project\n  [performance-analyzer] Auto-detect framework, type, opportunities\n  [optimize] Detection validation: detection_report.yaml written, type confirmed", "status": "in_progress", "id": "detecting"},
+  {"content": "[optimize > performance-analyzer] Analyzing baseline metrics & classifying opportunities\n  [performance-analyzer] Measure baseline, scan for opportunities, classify risk (SAFE/LOW/MEDIUM/HIGH/CRITICAL)\n  [optimize] Analysis validation: baseline_metrics.yaml + opportunities.yaml written", "status": "pending", "id": "analyzing"},
+  {"content": "[optimize > {specialist}] Planning optimizations by ROI\n  [{specialist}] Prioritize by (impact x ease x confidence) / risk, group independent items\n  [optimize] Plan validation: plan.yaml written, success criteria defined", "status": "pending", "id": "planning"},
+  {"content": "[optimize > {specialist}] Executing optimizations atomically\n  [{specialist}] git snapshot -> apply -> validate -> keep/rollback per optimization\n  [optimize] Execution tracking: execution_summary.yaml updated incrementally", "status": "pending", "id": "executing"},
+  {"content": "[optimize > performance-analyzer] Validating results & measuring impact\n  [performance-analyzer] Re-measure metrics, run regression tests, check quality gates\n  [optimize] Validation: before/after metrics, test pass/fail, gate check", "status": "pending", "id": "validating"},
+  {"content": "[optimize] COMPLETE — optimization_report.md written, learning data updated", "status": "pending", "id": "complete"}
+])
+```
+
+### State Machine Loop
+
+```
+while current_state is not terminal (COMPLETE):
+  1. Look up current_state -> determine agent(s) to spawn
+  2. Spawn specialist agent(s) via Task tool
+  3. After agent(s) return, read outputs from session workflow/ directory
+  4. Update status.yaml with new state:
+     a. Set pipeline_state to next_state
+     b. Also update phase to matching lowercase name (detecting/analyzing/planning/executing/validating/complete)
+     c. Compute duration_ms for the PREVIOUS state_history entry:
+        duration_ms = (now_ms - previous_entered_at_ms)
+     d. Append new state_history entry: {state: NEXT_STATE, entered_at: now, duration_ms: null}
+  5. Call TodoWrite to reflect progress (mark completed state, set next in_progress)
+  6. Check for revision: if VALIDATING returned FAIL or REVISE, route accordingly
+  7. Advance to next_state
+```
+
+### Phase 0: History & Learning (pre-detection, runs before DETECTING state)
 
 **If `--history` flag**: Display past optimization sessions and outcomes, then exit.
 
@@ -166,7 +252,10 @@ patterns:
 At session start, read `pattern_effectiveness.yaml` and adjust confidence scores for known patterns.
 At session end, write outcome to `optimization_history.yaml` and update `pattern_effectiveness.yaml`.
 
-### Phase 1: Detection (15%)
+### State: DETECTING (15%)
+
+**Agent**: Spawn `cagents:performance-analyzer` for detection and scanning.
+
 1. Parse `$ARGUMENTS` for target, type, and flags
 2. If no explicit type: auto-scan project structure for optimization indicators
 3. Detect frameworks from project files
@@ -175,7 +264,21 @@ At session end, write outcome to `optimization_history.yaml` and update `pattern
 6. If `--interactive`: ask user preferences via AskUserQuestion (target, safety level, apply mode)
 7. Write `detection_report.yaml`
 
-### Phase 2: Analysis (25%)
+**State transition**: DETECTING -> ANALYZING
+```yaml
+pipeline_state: ANALYZING
+phase: analyzing
+state_history:
+  # previous: {state: DETECTING, entered_at: ..., duration_ms: {computed_ms}}
+  - state: ANALYZING
+    entered_at: "{ISO_TIMESTAMP}"
+    duration_ms: null
+```
+
+### State: ANALYZING (25%)
+
+**Agent**: Spawn `cagents:performance-analyzer` for baseline measurement and opportunity scan.
+
 1. **Measure baseline** metrics relevant to optimization type
    - If `--benchmark <tool>` specified, use that tool for baseline measurement:
      - `lighthouse`: `npx lighthouse {url} --output json` for web performance (FCP, LCP, CLS, TBT, SI)
@@ -192,7 +295,12 @@ At session end, write outcome to `optimization_history.yaml` and update `pattern
 See @reference/risk-classification.md for risk levels and auto-apply rules.
 See @reference/cross-file-analysis.md for cross-file analysis patterns.
 
-### Phase 3: Planning (20%)
+**State transition**: ANALYZING -> PLANNING
+
+### State: PLANNING (20%)
+
+**Agent**: Spawn domain-appropriate specialist based on optimization type.
+
 1. **Prioritize** by ROI: `(impact x ease x confidence) / risk`
 2. **Group** by file independence for parallel execution
 3. **Select controller** + specialists based on optimization type
@@ -201,15 +309,25 @@ See @reference/cross-file-analysis.md for cross-file analysis patterns.
 6. If `--plan-only`: output plan and trigger `/run`
 7. Write `plan.yaml`
 
-### Phase 4: Execution (25%)
+**State transition**: PLANNING -> EXECUTING
+
+### State: EXECUTING (25%)
+
+**Agent**: Spawn specialist agent(s) based on optimization type. Launch independent optimizations in parallel.
+
 1. For each optimization: **snapshot** (git), **apply** (specialist), **validate**, **keep or rollback**
 2. Launch independent optimizations in parallel
-3. Track progress with TodoWrite
+3. Update TodoWrite after each optimization completes
 4. Write `execution_summary.yaml` incrementally
 
 See @reference/phase-details.md for atomic execution pattern.
 
-### Phase 5: Validation (15%)
+**State transition**: EXECUTING -> VALIDATING
+
+### State: VALIDATING (15%)
+
+**Agent**: Spawn `cagents:performance-analyzer` to re-measure and compare.
+
 1. Re-measure all baseline metrics
 2. Compare before/after per metric
 3. Run regression tests
@@ -220,6 +338,55 @@ See @reference/phase-details.md for atomic execution pattern.
 8. **Re-run benchmark** if `--benchmark` was used: Compare baseline vs. final benchmark results
 9. **Update learning data**: Write session outcome to `optimization_history.yaml` and update `pattern_effectiveness.yaml` with success/failure per pattern applied
 10. Write `validation_report.yaml` and `optimization_report.md`
+
+**Validation verdict**:
+- **PASS**: Advance to COMPLETE (terminal). All quality gates passed.
+- **FAIL**: Route back to EXECUTING. Pass failure context to execution specialist. Max 5 total revision cycles.
+- **REVISE**: Route back to PLANNING. Pass feedback to planner (e.g., risk classification was wrong, new opportunities discovered). Max 5 total revision cycles.
+
+### Revision Routing
+
+After VALIDATING, read `workflow/validation_report.yaml`:
+
+- **PASS**: Advance to COMPLETE. Pipeline done.
+- **FAIL**: Route back to EXECUTING. Increment `revision_round` and `validation_cycles` in status.yaml.
+- **REVISE**: Route back to PLANNING. Increment `revision_round` and `validation_cycles` in status.yaml.
+
+If `revision_round >= 5`: Escalate to user (HITL). Report what completed and what failed.
+
+Update status.yaml on FAIL/REVISE:
+```yaml
+pipeline_state: EXECUTING  # or PLANNING for REVISE
+phase: executing           # or planning
+revision_round: {N}        # incremented
+validation_cycles: {N}     # incremented (total FAIL+REVISE loops)
+```
+
+Update TodoWrite on revision:
+```javascript
+TodoWrite([
+  // ...completed states marked completed...
+  {"content": "[optimize] Revision {N}/5: Re-{executing|planning} due to validation feedback\n  [optimize] Trigger: {FAIL|REVISE}, feedback: {summary}\n  [optimize] Target: re-{execute|plan} with updated inputs", "status": "in_progress", "id": "revision"},
+  // ...remaining states...
+])
+```
+
+### State: COMPLETE
+
+Terminal state. Write `execution_summary.yaml`:
+
+```yaml
+session_id: {SESSION_ID}
+final_state: COMPLETE  # or FAILED, INTERRUPTED
+status: completed | failed | interrupted
+revision_rounds_used: {N}
+states_executed: [DETECTING, ANALYZING, PLANNING, EXECUTING, VALIDATING, COMPLETE]
+states_skipped: [{list}]
+total_agents_spawned: {count}
+total_duration_ms: {elapsed_ms}
+started_at: "{ISO_TIMESTAMP}"
+completed_at: "{ISO_TIMESTAMP}"
+```
 
 ## Cross-Skill Integration
 
@@ -238,22 +405,6 @@ AskUserQuestion: "Want to explore design options first? Run: /designer Explore o
 ### /review Handoff (--review-after)
 ```
 AskUserQuestion: "Optimizations applied. Want to review quality? Run: /review ${optimizedFiles} --focus quality"
-```
-
-## TodoWrite Pattern
-
-**Prefix each task with the executing agent name in brackets:**
-
-```javascript
-TodoWrite({
-  todos: [
-    {content: "[optimizer] Detect optimization type and scan project", status: "in_progress", activeForm: "[optimizer] Detecting optimization opportunities"},  // activeForm is optional
-    {content: "[optimizer] Analyze baseline and identify opportunities", status: "pending", activeForm: "[optimizer] Analyzing baseline metrics"},
-    {content: "[optimizer] Plan and prioritize optimizations", status: "pending", activeForm: "[optimizer] Planning optimizations"},
-    {content: "[optimizer] Execute optimizations atomically", status: "pending", activeForm: "[optimizer] Executing optimizations"},
-    {content: "[optimizer] Validate results and generate report", status: "pending", activeForm: "[optimizer] Validating optimization results"}
-  ]
-})
 ```
 
 ## Session Management
