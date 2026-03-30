@@ -1,12 +1,56 @@
 # Shared domain overrides
-# Cross-cutting specialists used by multiple domains
+# Cross-domain intelligence, data science, and market analysis specialists
 domain: shared
 description: "Cross-domain intelligence and data specialists"
 
 planner:
-  note: "Shared agents are referenced by controllers in other domains, not routed to directly"
-  controller_catalog: {}
+  controller_catalog:
+    tier_2: [bi-specialist]
+    tier_3: [data-scientist, competitive-intelligence-analyst]
+
+  specialist_routing:
+    business_intelligence:
+      keywords: [business intelligence, BI, dashboard, data visualization, KPI, metrics, reporting, analytics dashboard]
+      agents: [bi-specialist]
+      description: "Business intelligence, dashboards, KPI tracking, and data visualization"
+    data_science:
+      keywords: [data science, machine learning, ML, statistical analysis, predictive, forecasting, modeling, regression, classification, clustering, neural network, deep learning, NLP, A/B test, experiment analysis]
+      agents: [data-scientist]
+      description: "Data science, machine learning, statistical modeling, and experiment analysis"
+    market_research:
+      keywords: [market research, market analysis, segmentation, consumer insights, survey, focus group, market sizing, TAM, SAM, SOM]
+      agents: [market-research-analyst]
+      description: "Market research, consumer segmentation, and market sizing"
+    competitive_intelligence:
+      keywords: [competitive analysis, competitive intelligence, competitor, market positioning, SWOT, benchmarking, industry analysis]
+      agents: [competitive-intelligence-analyst]
+      description: "Competitive intelligence, competitor analysis, and market positioning"
 
 router:
-  note: "Shared agents are invoked by controllers, not by direct routing"
-  keywords: []
+  note: "Shared agents can be routed directly for data science and analytics requests"
+  keywords:
+    - data science
+    - machine learning
+    - ML
+    - analytics
+    - business intelligence
+    - BI
+    - visualization
+    - dataset
+    - statistics
+    - modeling
+    - prediction
+    - NLP
+    - natural language processing
+    - computer vision
+    - A/B test
+    - experiment
+    - ETL
+    - data pipeline
+    - dashboard
+    - regression
+    - classification
+    - forecasting model
+    - predictive
+    - market research
+    - competitive intelligence

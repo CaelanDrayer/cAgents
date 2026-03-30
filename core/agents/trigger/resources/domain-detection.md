@@ -66,7 +66,21 @@ domain_score = (
 |------------|--------|
 | >= 0.7 | Auto-proceed (high confidence) |
 | 0.5-0.7 | Ask user with top 3 candidates |
-| < 0.5 | Escalate to HITL (low confidence) |
+| < 0.5 | Apply multi-signal fallback (see strategy below) |
+
+## Low-Confidence Fallback Strategy
+
+When primary detection confidence < 0.5, apply these steps in order:
+
+1. **Expanded Keyword Scan**: Run a broad keyword match across ALL domain `router_keywords` from each domain's `domain_overrides.yaml`. Score each domain by keyword overlap with the request.
+   - If any domain scores > 0.4: route to that domain
+   - If top 2 domains are within 0.1 of each other: present both as candidates with reasoning
+
+2. **Capability Matching**: If no domain scores > 0.4, check agent capability descriptions in the top-scoring domains. Match request intent against agent capabilities.
+   - Route to the domain whose agent capabilities best match the request intent
+
+3. **User Disambiguation**: Only if steps 1 and 2 both fail to produce a confident match, present the user with the top 3 domain candidates, each with a one-sentence description of why it might apply.
+   - Never default to engineering without applying steps 1 and 2 first
 
 ## Multi-Domain Handling
 

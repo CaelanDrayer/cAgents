@@ -241,14 +241,22 @@ Set `current_state` to the first state that needs execution based on pre-enrichm
 
 Before spawning the orchestrator, classify domain and tier inline:
 
-| Domain | Keywords |
-|--------|----------|
-| Engineering | fix, bug, implement, code, api, database, build, refactor, test, deploy, backend, frontend, devops, security, infrastructure |
-| Creative | write, story, content, narrative, novel, script, poem, game art, audio, animation, character design, worldbuild |
-| Business | budget, cost, forecast, operations, process, supply chain, procurement, strategy, product, roadmap, planning |
-| Growth | campaign, marketing, sales, conversion, SEO, funnel, leads, revenue, growth, advertising, ads, paid, social media, email marketing, content marketing, demand gen, pipeline |
-| People | hire, recruit, onboard, culture, HR, talent, performance review, benefits, compensation, diversity |
-| Service | support, legal, compliance, customer, SLA, contract, privacy, governance, ticket, escalation |
+**Domain Detection Keywords**: Domain-specific router keywords are defined in each domain's configuration file:
+`{domain}/config/domain_overrides.yaml` → `router_keywords` array.
+
+Available domains and their config locations:
+| Domain | Config Path |
+|--------|------------|
+| Engineering | engineering/config/domain_overrides.yaml |
+| Creative | creative/config/domain_overrides.yaml |
+| Business | business/config/domain_overrides.yaml |
+| Growth | growth/config/domain_overrides.yaml |
+| People | people/config/domain_overrides.yaml |
+| Service | service/config/domain_overrides.yaml |
+| Shared | shared/config/domain_overrides.yaml |
+
+The orchestrator and router read these files at runtime to perform keyword-based domain detection.
+To add or update routing keywords, edit the `router_keywords` array in the relevant domain_overrides.yaml file.
 
 Load domain controller catalog from `{domain}/config/domain_overrides.yaml`.
 

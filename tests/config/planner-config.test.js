@@ -53,10 +53,14 @@ describe('domain_overrides.yaml files', () => {
       const content = loadOverrides('leadership');
       expect(content).toContain('keywords: []');
     });
+  });
 
-    it('shared should have empty keywords', () => {
+  describe('shared domain is directly routable', () => {
+    it('shared should have router keywords', () => {
       const content = loadOverrides('shared');
-      expect(content).toContain('keywords: []');
+      expect(content).toContain('keywords:');
+      const keywordLines = content.split('\n').filter(l => /^\s+-\s+/.test(l));
+      expect(keywordLines.length).toBeGreaterThanOrEqual(5);
     });
   });
 
@@ -107,9 +111,13 @@ describe('domain_overrides.yaml files', () => {
       expect(content).toContain('cfo');
     });
 
-    it('shared should have empty controller_catalog', () => {
+    it('shared should have controller_catalog with tier_2 and tier_3', () => {
       const content = loadOverrides('shared');
-      expect(content).toContain('controller_catalog: {}');
+      expect(content).toContain('controller_catalog:');
+      expect(content).toContain('tier_2:');
+      expect(content).toContain('tier_3:');
+      expect(content).toContain('bi-specialist');
+      expect(content).toContain('data-scientist');
     });
 
     it('growth should have campaign-manager as tier_2 controller', () => {

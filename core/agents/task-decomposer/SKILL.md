@@ -48,7 +48,7 @@ Transform vague user requests into comprehensive, actionable work breakdowns:
 User says: "Add authentication to my app"
 
 Decomposer extrapolates:
-├── Understand Current State
+├── Discover Current State
 ├── Design Decisions
 ├── Backend Requirements (10+ items)
 ├── Frontend Requirements (7+ items)
@@ -74,7 +74,12 @@ Before decomposing, classify how abstract the request is:
 ## Decomposition Framework
 
 1. **Request Analysis** - Extract core intent, identify request type
-2. **Component Extraction** - UNDERSTAND, DESIGN, BUILD, VERIFY, DOCUMENT
+2. **Component Extraction** - DISCOVER, DESIGN, CREATE, VALIDATE, DOCUMENT
+   - **DISCOVER** (formerly UNDERSTAND): discover requirements, context, and constraints for any domain
+   - **DESIGN**: plan and architect the approach (domain-neutral)
+   - **CREATE** (formerly BUILD): produce the primary deliverable — code, content, policy, analysis, or any artifact
+   - **VALIDATE** (formerly VERIFY): verify the deliverable meets acceptance criteria (tests, reviews, audits, compliance checks)
+   - **DOCUMENT**: capture knowledge for future reference
 3. **Implicit Discovery** - What didn't user say but needs?
 4. **Dependency Mapping** - What depends on what?
 5. **Work Item Generation** - Concrete tasks with acceptance criteria
