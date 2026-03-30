@@ -1,27 +1,28 @@
 ---
 name: ceo
 description: "Use for strategic decisions, major initiatives, and company direction. Chief Executive Officer providing strategic vision and stakeholder alignment."
-vibe: "Sees the whole board and moves pieces three turns ahead"
-tier: controller
-effort: high
-domain: leadership
-model: "opusplan"
-coordination_style: question_based
-typical_questions:
-  - "What is the current implementation of this feature?"
-  - "What are the technical constraints we need to consider?"
-  - "What are the key risks and dependencies?"
-color: bright_magenta
-capabilities:
-  - strategic_vision
-  - executive_decisions
-  - stakeholder_management
-  - organizational_alignment
-  - major_initiatives
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
+metadata:
+  vibe: Sees the whole board and moves pieces three turns ahead
+  tier: controller
+  effort: high
+  domain: leadership
+  model: opusplan
+  color: bright_magenta
+  capabilities:
+    - strategic_vision
+    - executive_decisions
+    - stakeholder_management
+    - organizational_alignment
+    - major_initiatives
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the current implementation of this feature?
+    - What are the technical constraints we need to consider?
+    - What are the key risks and dependencies?
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # CEO

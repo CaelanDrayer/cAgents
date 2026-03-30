@@ -1,24 +1,25 @@
 ---
 name: business-development-manager
-domain: business
-tier: execution
-effort: medium
 description: "Use when developing strategic partnerships, exploring new market opportunities, evaluating alliances, or planning business expansion."
-vibe: "Opens doors that competitors don't know exist"
-model: sonnet
-color: bright_blue
-capabilities:
-  - partnership_development
-  - deal_sourcing
-  - market_expansion
-  - ecosystem_building
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: strategic-planner
-    type: coordinated_by
-  - name: channel-partner-manager
-    type: cross_domain
+metadata:
+  vibe: "Opens doors that competitors don't know exist"
+  tier: execution
+  effort: medium
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - partnership_development
+    - deal_sourcing
+    - market_expansion
+    - ecosystem_building
+  maxTurns: 30
+  related_agents:
+    - name: strategic-planner
+      type: coordinated_by
+    - name: channel-partner-manager
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Business Development Manager

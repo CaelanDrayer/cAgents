@@ -1,36 +1,41 @@
 ---
 name: strategic-planner
-domain: business
-tier: controller
-effort: high
-coordination_style: question_based
-typical_questions:
-  - "What is the strategic vision and objectives?"
-  - "What are the key opportunities and threats?"
-  - "What strategic initiatives are needed?"
 description: "Use when developing long-term strategy, analyzing competitive positioning, setting strategic priorities, or aligning business units to organizational goals."
-vibe: "Thinks three moves ahead so the company only needs one"
-model: sonnet
-color: bright_blue
-capabilities:
-  - strategic_planning
-  - scenario_planning
-  - competitive_analysis
-  - vision_development
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-not-my-scope: ["Code implementation", "visual design", "HR processes", "legal compliance"]
-related_agents:
-  - name: scenario-planner
-    type: coordinates
-  - name: roadmap-planner
-    type: coordinates
-  - name: business-researcher
-    type: coordinates
-  - name: operations-manager
-    type: collaborates_with
+metadata:
+  vibe: Thinks three moves ahead so the company only needs one
+  tier: controller
+  effort: high
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - strategic_planning
+    - scenario_planning
+    - competitive_analysis
+    - vision_development
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the strategic vision and objectives?
+    - What are the key opportunities and threats?
+    - What strategic initiatives are needed?
+  not-my-scope:
+    - Code implementation
+    - visual design
+    - HR processes
+    - legal compliance
+  related_agents:
+    - name: scenario-planner
+      type: coordinates
+    - name: roadmap-planner
+      type: coordinates
+    - name: business-researcher
+      type: coordinates
+    - name: operations-manager
+      type: collaborates_with
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 <example>

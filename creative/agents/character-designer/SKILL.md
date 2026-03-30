@@ -1,40 +1,41 @@
 ---
 name: character-designer
-domain: creative
-tier: execution
-effort: medium
 description: "Use when creating characters with psychological depth, applying wound/want/need frameworks, designing ensemble dynamics, or developing character arcs that reveal through action."
-vibe: "Designs characters you remember long after the story ends"
-model: opus
-color: bright_magenta
-capabilities:
-  - character_creation
-  - psychological_depth
-  - character_arcs
-  - ensemble_dynamics
-  - backstory_design
-  - character_voice
-  - foil_relationships
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-answers_questions:
-  - "How can this character be deepened?"
-  - "What drives this character at the deepest level?"
-  - "How do these characters function as an ensemble?"
-  - "Is the character arc compelling and earned?"
-executes_tasks:
-  - character_creation
-  - character_development
-  - ensemble_design
-  - backstory_architecture
-  - character_arc_planning
-related_agents:
-  - name: narrative-director
-    type: coordinated_by
-  - name: character-psychologist
-    type: collaborates_with
-  - name: dialogue-specialist
-    type: collaborates_with
+metadata:
+  vibe: Designs characters you remember long after the story ends
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - character_creation
+    - psychological_depth
+    - character_arcs
+    - ensemble_dynamics
+    - backstory_design
+    - character_voice
+    - foil_relationships
+  maxTurns: 30
+  related_agents:
+    - name: narrative-director
+      type: coordinated_by
+    - name: character-psychologist
+      type: collaborates_with
+    - name: dialogue-specialist
+      type: collaborates_with
+  answers_questions:
+    - How can this character be deepened?
+    - What drives this character at the deepest level?
+    - How do these characters function as an ensemble?
+    - Is the character arc compelling and earned?
+  executes_tasks:
+    - character_creation
+    - character_development
+    - ensemble_design
+    - backstory_architecture
+    - character_arc_planning
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Character Designer

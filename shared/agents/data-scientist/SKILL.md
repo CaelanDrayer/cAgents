@@ -1,39 +1,40 @@
 ---
 name: data-scientist
-domain: shared
-tier: controller
-effort: high
 description: "Use when building statistical models, performing exploratory data analysis, designing experiments, or extracting insights from structured and unstructured datasets."
-vibe: "Turns messy data into clear decisions"
-model: "opusplan"
-color: bright_white
-coordination_style: question_based
-typical_questions:
-  - "What is the business problem we're solving with ML?"
-  - "What data is available and what is its quality?"
-  - "What are the key performance metrics and success criteria?"
-capabilities:
-  - machine_learning
-  - predictive_modeling
-  - statistical_analysis
-  - feature_engineering
-  - model_deployment
-  - ab_testing
-  - nlp
-  - computer_vision
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: bi-specialist
-    type: collaborates_with
-  - name: marketing-data-analyst
-    type: cross_domain
-  - name: hr-analyst
-    type: cross_domain
-  - name: predictive-analyst
-    type: cross_domain
+metadata:
+  vibe: Turns messy data into clear decisions
+  tier: controller
+  effort: high
+  domain: shared
+  model: opusplan
+  color: bright_white
+  capabilities:
+    - machine_learning
+    - predictive_modeling
+    - statistical_analysis
+    - feature_engineering
+    - model_deployment
+    - ab_testing
+    - nlp
+    - computer_vision
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - "What is the business problem we're solving with ML?"
+    - What data is available and what is its quality?
+    - What are the key performance metrics and success criteria?
+  related_agents:
+    - name: bi-specialist
+      type: collaborates_with
+    - name: marketing-data-analyst
+      type: cross_domain
+    - name: hr-analyst
+      type: cross_domain
+    - name: predictive-analyst
+      type: cross_domain
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Data Scientist

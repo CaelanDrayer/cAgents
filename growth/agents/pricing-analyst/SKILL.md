@@ -1,24 +1,25 @@
 ---
 name: pricing-analyst
-domain: growth
-tier: execution
-effort: medium
 description: "Use when analyzing pricing strategies, modeling price elasticity, evaluating competitive pricing, or recommending pricing changes based on market data."
-vibe: "Finds the price point where value meets willingness to pay"
-model: sonnet
-color: bright_green
-capabilities:
-  - pricing_analysis
-  - packaging_design
-  - deal_desk
-  - discount_optimization
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: sales-strategist
-    type: coordinated_by
-  - name: finance-manager
-    type: cross_domain
+metadata:
+  vibe: Finds the price point where value meets willingness to pay
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - pricing_analysis
+    - packaging_design
+    - deal_desk
+    - discount_optimization
+  maxTurns: 30
+  related_agents:
+    - name: sales-strategist
+      type: coordinated_by
+    - name: finance-manager
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Pricing Analyst

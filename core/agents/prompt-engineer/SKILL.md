@@ -1,38 +1,42 @@
 ---
 name: prompt-engineer
-domain: core
-tier: execution
-effort: medium
 description: "Use when crafting optimized delegation prompts between decomposition and controller execution, or when prompt quality affects downstream agent performance."
-vibe: "Crafts the perfect prompt so agents deliver on the first try"
-model: sonnet
-color: bright_green
-capabilities:
-  - prompt_optimization
-  - context_assembly
-  - codebase_analysis
-  - constraint_extraction
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 20
-permissionMode: "bypassPermissions"
-memory:
-  project: true
-answers_questions:
-  - "What context does this controller need?"
-  - "What codebase files are relevant for this work item?"
-  - "What anti-patterns should the controller avoid?"
-executes_tasks:
-  - "Craft optimized delegation prompt for controller"
-  - "Assemble context package with code snippets"
-  - "Define acceptance criteria verification methods"
-related_agents:
-  - name: task-decomposer
-    type: collaborates_with
-  - name: universal-planner
-    type: collaborates_with
-  - name: orchestrator
-    type: coordinated_by
-not-my-scope: ["Direct implementation", "validation", "test execution", "content creation"]
+metadata:
+  vibe: Crafts the perfect prompt so agents deliver on the first try
+  tier: execution
+  effort: medium
+  domain: core
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - prompt_optimization
+    - context_assembly
+    - codebase_analysis
+    - constraint_extraction
+  maxTurns: 20
+  memory:
+    project: true
+  not-my-scope:
+    - Direct implementation
+    - validation
+    - test execution
+    - content creation
+  related_agents:
+    - name: task-decomposer
+      type: collaborates_with
+    - name: universal-planner
+      type: collaborates_with
+    - name: orchestrator
+      type: coordinated_by
+  answers_questions:
+    - What context does this controller need?
+    - What codebase files are relevant for this work item?
+    - What anti-patterns should the controller avoid?
+  executes_tasks:
+    - Craft optimized delegation prompt for controller
+    - Assemble context package with code snippets
+    - Define acceptance criteria verification methods
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Prompt Engineer

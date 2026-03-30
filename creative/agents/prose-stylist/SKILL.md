@@ -1,42 +1,43 @@
 ---
 name: prose-stylist
-domain: creative
-tier: execution
-effort: medium
 description: "Use when refining prose style, developing distinctive voice, improving sentence rhythm and imagery, or elevating writing craft at the sentence and paragraph level."
-vibe: "Writes sentences that make readers forget they are reading"
-model: opus
-color: bright_magenta
-capabilities:
-  - prose_composition
-  - rhetorical_craft
-  - figurative_language
-  - rhythm_and_cadence
-  - narrative_distance
-  - scene_writing
-  - style_analysis
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-answers_questions:
-  - "What is the prose quality of this passage?"
-  - "How can this writing be elevated stylistically?"
-  - "What rhetorical techniques would strengthen this scene?"
-  - "Is the narrative voice consistent and effective?"
-executes_tasks:
-  - chapter_composition
-  - scene_writing
-  - prose_revision
-  - style_analysis
-  - voice_refinement
-related_agents:
-  - name: narrative-director
-    type: coordinated_by
-  - name: dialogue-specialist
-    type: collaborates_with
-  - name: voice-coach
-    type: collaborates_with
-  - name: copy-editor
-    type: reviewed_by
+metadata:
+  vibe: Writes sentences that make readers forget they are reading
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - prose_composition
+    - rhetorical_craft
+    - figurative_language
+    - rhythm_and_cadence
+    - narrative_distance
+    - scene_writing
+    - style_analysis
+  maxTurns: 30
+  related_agents:
+    - name: narrative-director
+      type: coordinated_by
+    - name: dialogue-specialist
+      type: collaborates_with
+    - name: voice-coach
+      type: collaborates_with
+    - name: copy-editor
+      type: reviewed_by
+  answers_questions:
+    - What is the prose quality of this passage?
+    - How can this writing be elevated stylistically?
+    - What rhetorical techniques would strengthen this scene?
+    - Is the narrative voice consistent and effective?
+  executes_tasks:
+    - chapter_composition
+    - scene_writing
+    - prose_revision
+    - style_analysis
+    - voice_refinement
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Prose Stylist

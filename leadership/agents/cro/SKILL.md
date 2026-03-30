@@ -1,26 +1,27 @@
 ---
 name: cro
-domain: leadership
-tier: controller
-effort: high
-coordination_style: question_based
-typical_questions:
-  - "What is the current revenue performance vs targets?"
-  - "Where are the conversion bottlenecks in the funnel?"
-  - "What sales and marketing alignment issues exist?"
 description: "Use for revenue strategy, sales and marketing alignment, pipeline optimization, and go-to-market execution. CRO-level revenue leadership."
-vibe: "Owns the number and builds the machine to hit it every quarter"
-model: "opusplan"
-color: gold
-capabilities:
-  - revenue_strategy
-  - sales_marketing_alignment
-  - pipeline_management
-  - executive_leadership
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
+metadata:
+  vibe: Owns the number and builds the machine to hit it every quarter
+  tier: controller
+  effort: high
+  domain: leadership
+  model: opusplan
+  color: bright_yellow
+  capabilities:
+    - revenue_strategy
+    - sales_marketing_alignment
+    - pipeline_management
+    - executive_leadership
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the current revenue performance vs targets?
+    - Where are the conversion bottlenecks in the funnel?
+    - What sales and marketing alignment issues exist?
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Chief Revenue Officer

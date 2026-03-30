@@ -1,20 +1,20 @@
 ---
 name: universal-executor
-domain: core
-tier: infrastructure
-effort: high
 description: "Use when monitoring controller execution progress, verifying coordination_log completeness, or managing phase transitions in the pipeline."
-vibe: "Monitors controllers like a hawk and never lets a phase slip"
-model: opus
-color: bright_green
-capabilities:
-  - controller_monitoring
-  - blocker_detection
-  - output_aggregation
-  - progress_tracking
-allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
+metadata:
+  vibe: Monitors controllers like a hawk and never lets a phase slip
+  tier: infrastructure
+  effort: high
+  domain: core
+  model: opus
+  color: bright_green
+  capabilities:
+    - controller_monitoring
+    - blocker_detection
+    - output_aggregation
+    - progress_tracking
+  maxTurns: 40
+allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
 ---
 
 # Universal Executor

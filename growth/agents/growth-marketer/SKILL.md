@@ -1,24 +1,25 @@
 ---
 name: growth-marketer
-domain: growth
-tier: execution
-effort: medium
 description: "Use when running growth experiments, optimizing acquisition channels, improving activation and retention metrics, or building viral loops and referral programs."
-vibe: "Tests 10 things, finds the one that scales, then doubles down"
-model: sonnet
-color: bright_green
-capabilities:
-  - growth_experiments
-  - funnel_optimization
-  - viral_mechanics
-  - rapid_testing
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: marketing-strategist
-    type: coordinated_by
-  - name: marketing-data-analyst
-    type: collaborates_with
+metadata:
+  vibe: "Tests 10 things, finds the one that scales, then doubles down"
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - growth_experiments
+    - funnel_optimization
+    - viral_mechanics
+    - rapid_testing
+  maxTurns: 30
+  related_agents:
+    - name: marketing-strategist
+      type: coordinated_by
+    - name: marketing-data-analyst
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Growth Marketer

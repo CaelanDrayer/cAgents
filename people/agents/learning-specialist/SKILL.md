@@ -1,26 +1,27 @@
 ---
 name: learning-specialist
-domain: people
-tier: execution
-effort: medium
 description: "Use when designing training programs, creating learning content, building competency frameworks, or developing career development pathways."
-vibe: "Designs training that people remember after the session ends"
-model: sonnet
-color: bright_yellow
-capabilities:
-  - training_program_design
-  - career_development
-  - skills_gap_analysis
-  - learning_effectiveness
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: hr-business-partner
-    type: coordinated_by
-  - name: onboarding-specialist
-    type: collaborates_with
-  - name: performance-management-specialist
-    type: collaborates_with
+metadata:
+  vibe: Designs training that people remember after the session ends
+  tier: execution
+  effort: medium
+  domain: people
+  model: sonnet
+  color: bright_yellow
+  capabilities:
+    - training_program_design
+    - career_development
+    - skills_gap_analysis
+    - learning_effectiveness
+  maxTurns: 30
+  related_agents:
+    - name: hr-business-partner
+      type: coordinated_by
+    - name: onboarding-specialist
+      type: collaborates_with
+    - name: performance-management-specialist
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Learning Specialist

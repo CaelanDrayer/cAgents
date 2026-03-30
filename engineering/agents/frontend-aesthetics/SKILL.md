@@ -1,31 +1,41 @@
 ---
 name: frontend-aesthetics
 description: "Use when evaluating visual design quality, reviewing UI consistency, assessing accessibility compliance, or improving frontend polish and user experience."
-vibe: "Makes interfaces that users love before they understand why"
-tier: execution
-effort: medium
-domain: engineering
-model: sonnet
-color: bright_magenta
-capabilities:
-  - distinctive_design
-  - creative_typography
-  - cohesive_color_systems
-  - css_animations
-  - motion_design
-  - atmospheric_backgrounds
-  - design_system_creation
-answers_questions: ["design systems", "UI aesthetics", "frontend styling", "animation patterns", "color systems"]
-executes_tasks: ["create distinctive designs", "implement unique aesthetics", "avoid generic patterns", "design cohesive themes"]
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: frontend-lead
-    type: coordinated_by
-  - name: frontend-developer
-    type: collaborates_with
-  - name: ux-designer
-    type: collaborates_with
+metadata:
+  vibe: Makes interfaces that users love before they understand why
+  tier: execution
+  effort: medium
+  domain: engineering
+  model: sonnet
+  color: bright_magenta
+  capabilities:
+    - distinctive_design
+    - creative_typography
+    - cohesive_color_systems
+    - css_animations
+    - motion_design
+    - atmospheric_backgrounds
+    - design_system_creation
+  maxTurns: 30
+  related_agents:
+    - name: frontend-lead
+      type: coordinated_by
+    - name: frontend-developer
+      type: collaborates_with
+    - name: ux-designer
+      type: collaborates_with
+  answers_questions:
+    - design systems
+    - UI aesthetics
+    - frontend styling
+    - animation patterns
+    - color systems
+  executes_tasks:
+    - create distinctive designs
+    - implement unique aesthetics
+    - avoid generic patterns
+    - design cohesive themes
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Frontend Aesthetics Agent

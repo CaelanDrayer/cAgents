@@ -1,28 +1,29 @@
 ---
 name: game-programmer
-domain: engineering
-tier: execution
-effort: medium
 description: "Use when implementing gameplay mechanics, writing game logic, building AI systems for games, or integrating game systems with engine frameworks."
-vibe: "Writes the code that makes impossible game mechanics possible"
-model: sonnet
-color: bright_yellow
-capabilities:
-  - gameplay_programming
-  - player_controller_implementation
-  - physics_systems
-  - game_state_management
-  - state_machines
-  - input_handling
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: engineering-manager
-    type: coordinated_by
-  - name: engine-developer
-    type: collaborates_with
-  - name: game-designer
-    type: cross_domain
+metadata:
+  vibe: Writes the code that makes impossible game mechanics possible
+  tier: execution
+  effort: medium
+  domain: engineering
+  model: sonnet
+  color: bright_yellow
+  capabilities:
+    - gameplay_programming
+    - player_controller_implementation
+    - physics_systems
+    - game_state_management
+    - state_machines
+    - input_handling
+  maxTurns: 30
+  related_agents:
+    - name: engineering-manager
+      type: coordinated_by
+    - name: engine-developer
+      type: collaborates_with
+    - name: game-designer
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Game Programmer

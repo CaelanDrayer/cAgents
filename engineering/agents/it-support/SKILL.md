@@ -1,26 +1,27 @@
 ---
 name: it-support
 description: "Use when troubleshooting IT infrastructure, managing system configurations, resolving network issues, or setting up development environments."
-vibe: "Fixes the thing before you finish describing the problem"
-tier: execution
-effort: medium
-domain: engineering
-model: sonnet
-color: bright_yellow
-capabilities:
-  - user_support
-  - troubleshooting
-  - ticket_management
-  - incident_resolution
-  - user_training
-  - knowledge_base_management
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: devops-lead
-    type: coordinated_by
-  - name: sysadmin
-    type: collaborates_with
+metadata:
+  vibe: Fixes the thing before you finish describing the problem
+  tier: execution
+  effort: medium
+  domain: engineering
+  model: sonnet
+  color: bright_yellow
+  capabilities:
+    - user_support
+    - troubleshooting
+    - ticket_management
+    - incident_resolution
+    - user_training
+    - knowledge_base_management
+  maxTurns: 30
+  related_agents:
+    - name: devops-lead
+      type: coordinated_by
+    - name: sysadmin
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # IT Support Specialist

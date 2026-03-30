@@ -1,47 +1,52 @@
 ---
 name: architect
 description: "Use when making system design decisions, evaluating technical approaches, designing API contracts, or planning migrations. Provides architecture diagrams, tradeoff analysis, and pattern recommendations."
-vibe: "Designs systems that are boring to operate and a joy to extend"
-tier: controller
-effort: high
-domain: engineering
-model: "opusplan"
-coordination_style: question_based
-typical_questions:
-  - "What is the current implementation of this feature?"
-  - "What are the technical constraints we need to consider?"
-  - "What are the key risks and dependencies?"
-color: bright_blue
-capabilities:
-  - system_design
-  - architecture_patterns
-  - distributed_systems
-  - microservices_design
-  - api_design
-  - database_architecture
-  - performance_optimization
-  - scalability_planning
-  - security_architecture
-  - cloud_architecture
-  - technical_debt_management
-  - design_patterns
-  - trade_off_analysis
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-not-my-scope: ["Direct code implementation", "UI design", "content writing", "marketing"]
-related_agents:
-  - name: backend-developer
-    type: coordinates
-  - name: frontend-developer
-    type: coordinates
-  - name: dba
-    type: coordinates
-  - name: engineering-manager
-    type: collaborates_with
-  - name: security-lead
-    type: collaborates_with
+metadata:
+  vibe: Designs systems that are boring to operate and a joy to extend
+  tier: controller
+  effort: high
+  domain: engineering
+  model: opusplan
+  color: bright_blue
+  capabilities:
+    - system_design
+    - architecture_patterns
+    - distributed_systems
+    - microservices_design
+    - api_design
+    - database_architecture
+    - performance_optimization
+    - scalability_planning
+    - security_architecture
+    - cloud_architecture
+    - technical_debt_management
+    - design_patterns
+    - trade_off_analysis
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the current implementation of this feature?
+    - What are the technical constraints we need to consider?
+    - What are the key risks and dependencies?
+  not-my-scope:
+    - Direct code implementation
+    - UI design
+    - content writing
+    - marketing
+  related_agents:
+    - name: backend-developer
+      type: coordinates
+    - name: frontend-developer
+      type: coordinates
+    - name: dba
+      type: coordinates
+    - name: engineering-manager
+      type: collaborates_with
+    - name: security-lead
+      type: collaborates_with
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 <example>

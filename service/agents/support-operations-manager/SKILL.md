@@ -1,35 +1,36 @@
 ---
 name: support-operations-manager
-domain: service
-tier: controller
-effort: high
 description: "Use when optimizing support workflows, managing support tooling, configuring routing rules, or tracking operational metrics and team efficiency."
-vibe: "Optimizes support workflows so agents spend time helping, not searching"
-model: sonnet
-color: bright_red
-coordination_style: question_based
-typical_questions:
-  - "What are the current operational pain points?"
-  - "What efficiency gains can automation provide?"
-  - "What capacity do we need for projected volume?"
-capabilities:
-  - process_optimization
-  - tool_implementation
-  - workflow_automation
-  - operational_efficiency
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: support-analyst
-    type: coordinates
-  - name: support-quality-analyst
-    type: coordinates
-  - name: support-trainer
-    type: coordinates
-  - name: knowledge-base-manager
-    type: coordinates
+metadata:
+  vibe: "Optimizes support workflows so agents spend time helping, not searching"
+  tier: controller
+  effort: high
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - process_optimization
+    - tool_implementation
+    - workflow_automation
+    - operational_efficiency
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What are the current operational pain points?
+    - What efficiency gains can automation provide?
+    - What capacity do we need for projected volume?
+  related_agents:
+    - name: support-analyst
+      type: coordinates
+    - name: support-quality-analyst
+      type: coordinates
+    - name: support-trainer
+      type: coordinates
+    - name: knowledge-base-manager
+      type: coordinates
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Support Operations Manager

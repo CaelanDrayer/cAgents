@@ -1,22 +1,23 @@
 ---
 name: planning-operations-manager
-domain: business
-tier: execution
-effort: medium
 description: "Use when optimizing planning processes, developing planning templates, managing planning tools, or coordinating planning governance across teams."
-vibe: "Keeps planning on track when the plan keeps changing"
-model: sonnet
-color: bright_blue
-capabilities:
-  - process_optimization
-  - template_development
-  - tool_management
-  - planning_operations
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: operations-manager
-    type: coordinated_by
+metadata:
+  vibe: Keeps planning on track when the plan keeps changing
+  tier: execution
+  effort: medium
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - process_optimization
+    - template_development
+    - tool_management
+    - planning_operations
+  maxTurns: 30
+  related_agents:
+    - name: operations-manager
+      type: coordinated_by
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Planning Operations Manager

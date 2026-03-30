@@ -4,7 +4,7 @@
 
 ## Detection Methods
 
-### Method 1: Keyword-Based (30% weight)
+### Method 1: Keyword-Based (50% weight)
 
 Match keywords from user request against domain patterns:
 
@@ -15,8 +15,53 @@ Match keywords from user request against domain patterns:
 | Revenue | campaign, marketing, sales, conversion |
 | Finance | budget, cost, revenue, forecast |
 | People | hire, recruit, onboard, culture |
+| Business | strategy, operations, product, project, budget, forecast, process |
+| Growth | campaign, marketing, sales, conversion, SEO, leads, pipeline |
+| Service | support, legal, compliance, customer, SLA, contract, privacy |
+| Shared | data, analytics, research, statistics, intelligence |
+| Science | physics, chemistry, biology, math, mathematics, calculus, algebra, theorem, proof, hypothesis, experiment, research, lab, laboratory, molecule, atom, equation, scientific, quantum, genetics, ecology, statistics, geology, astronomy, biochemistry |
+| Health | medical, health, wellness, fitness, nutrition, mental health, therapy, diagnosis, treatment, medication, symptoms, exercise, diet, workout, clinical, pharmacy, counseling, mindfulness, rehabilitation, preventive, chronic, acute, BMI, calories |
+| Education | teach, learn, tutor, curriculum, lesson, student, exam, study, academic, school, university, course, training, pedagogy, assessment, grade, homework, lecture, syllabus, scholarship, SAT, GRE, STEM, literacy, classroom |
+| Personal | career, personal, life coach, goals, productivity, personal finance, budget, retirement, relationship, coaching, self-improvement, habits, motivation, time management, resume, interview, salary, savings, investing, work-life balance, mindset, procrastination, journaling, gratitude |
+| Arts | painting, photography, film, filmmaking, music production, visual art, gallery, composition, sculpture, performing arts, instrument, recording, mixing, mastering, watercolor, oil painting, cinematography, directing, art history, portfolio, exhibition |
+| Trades | cooking, recipe, culinary, construction, automotive, repair, plumbing, electrical, farming, agriculture, fashion, sewing, woodworking, welding, HVAC, roofing, gardening, landscaping, baking, sourdough, mechanic, carpentry, masonry, irrigation |
 
-### Method 2: Context-Based (40% weight)
+## Qualifier-Based Disambiguation
+
+When a keyword matches multiple domains, check for qualifying context to resolve:
+
+| Keyword | Qualifier | Domain | Example |
+|---------|-----------|--------|---------|
+| review | code, PR, pull request, diff | engineering | "review my code" |
+| review | text, essay, prose, manuscript | creative | "review my essay" |
+| review | performance, employee | people | "review employee performance" |
+| design | system, API, database, architecture | engineering | "design the API" |
+| design | character, world, narrative | creative | "design a character" |
+| design | game mechanics, levels | business | "design game mechanics" |
+| design | visual, graphic, UI, UX | arts | "design a logo" |
+| write | copy, email, ad, landing page | growth | "write ad copy" |
+| write | story, novel, poem, script | creative | "write a short story" |
+| write | documentation, technical, API docs | engineering | "write API docs" |
+| analyze | data, code, performance, logs | engineering | "analyze server logs" |
+| analyze | market, business, competitive | business | "analyze the market" |
+| analyze | statistical, survey, experiment | shared | "analyze survey results" |
+| plan | strategic, business, quarterly | business | "plan Q4 strategy" |
+| plan | campaign, marketing, launch | growth | "plan product launch" |
+| plan | workforce, hiring, headcount | people | "plan hiring for Q3" |
+| manage | project, sprint, backlog | business | "manage this project" |
+| manage | performance, talent, reviews | people | "manage performance reviews" |
+| manage | support, tickets, SLA | service | "manage support queue" |
+| pipeline | CI/CD, deploy, build | engineering | "fix the CI pipeline" |
+| pipeline | sales, leads, funnel | growth | "optimize sales pipeline" |
+| test | unit, integration, e2e, QA | engineering | "write unit tests" |
+| test | A/B, split, experiment | growth | "run an A/B test" |
+
+Resolution algorithm:
+1. If qualifier words appear near the keyword (within 5 words): route to qualified domain
+2. If no qualifier: use keyword weight + context for disambiguation
+3. If still ambiguous: present top-2 candidates to user
+
+### Method 2: Context-Based (20% weight)
 
 Analyze project structure, git history, and file distribution:
 
@@ -54,8 +99,8 @@ Detect specific frameworks and apply domain associations:
 
 ```
 domain_score = (
-  keyword_score * 0.3 +
-  context_score * 0.4 +
+  keyword_score * 0.5 +
+  context_score * 0.2 +
   framework_score * 0.3
 ) + historical_adjustment
 ```
@@ -64,9 +109,11 @@ domain_score = (
 
 | Confidence | Action |
 |------------|--------|
-| >= 0.7 | Auto-proceed (high confidence) |
-| 0.5-0.7 | Ask user with top 3 candidates |
+| >= 0.75 | Auto-proceed (high confidence) |
+| 0.5-0.75 | Show top-3 candidates with scores |
 | < 0.5 | Apply multi-signal fallback (see strategy below) |
+
+**Close-score rule**: If any two domains score within 0.15 of each other AND both are above 0.5, always show top-3 candidates regardless of the top score. This prevents routing errors when domains are close.
 
 ## Low-Confidence Fallback Strategy
 
@@ -87,6 +134,8 @@ When primary detection confidence < 0.5, apply these steps in order:
 If 2+ domains score > 0.6: Create multi-domain workflow with parent and child workflows per domain.
 
 ## Example Detection Result
+
+Detection runs across all 15 domains: Engineering, Creative, Revenue, Finance, People, Business, Growth, Service, Shared, Science, Health, Education, Personal, Arts, Trades.
 
 ```yaml
 method: context_aware

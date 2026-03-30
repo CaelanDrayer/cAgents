@@ -1,245 +1,94 @@
-# Getting Started with cAgents V10.1.0
+# Getting Started with cAgents
 
-Quick start guide for the cAgents universal multi-domain agent system.
+Five minutes from install to your first orchestrated result.
 
-## Prerequisites
+## 1. Install
 
-- Claude Code CLI installed
-- Git repository (recommended)
-- Node.js (optional, recommended for advanced hooks)
-
-## Quick Start
-
-### 1. Install cAgents
-
+**From the Claude Code Marketplace** (recommended):
 ```bash
-# Clone the repository
-git clone https://github.com/CaelanDrayer/cAgents.git
-cd cAgents
-./setup.sh  # Configures hooks based on Node.js availability
+/plugin CaelanDrayer/cAgents
+```
 
-# Or add as a plugin to existing project
+**Manual install**:
+```bash
+git clone https://github.com/CaelanDrayer/cAgents.git
 claude --plugin-dir /path/to/cAgents
 ```
 
-### 2. Run Your First Workflow
+Requires Claude Code 2.1.69+ and Node.js (for hooks).
+
+## 2. Your First Command
 
 ```bash
-# Basic usage - auto-detects domain
-/run Fix the login bug
-
-# Creative work
-/run Write a marketing email
-
-# Complex task
-/run Add user authentication
+/run Fix the typo in README.md
 ```
 
-### 3. Understand the Output
+That's it. cAgents handles everything else.
 
-cAgents will:
-1. **Detect domain** (engineering, creative, business, growth, people, service, leadership)
-2. **Classify tier** (2-4 based on complexity, minimum tier 2 enforced)
-3. **Select controllers** (coordinate work via questions)
-4. **Execute workflow** (routing -> planning -> coordinating -> executing -> validating)
-5. **Report results** (validation status and outputs)
+## 3. What Just Happened
 
-## Core Commands
+Behind the scenes, the pipeline ran automatically:
 
-| Command | Purpose | Example |
-|---------|---------|---------|
-| `/run` | Universal workflow entry point | `/run Fix auth bug` |
-| `/team` | Parallel team execution | `/team Build user dashboard` |
-| `/designer` | Interactive design exploration | `/designer` |
-| `/review` | Code and content review | `/review src/` |
-| `/optimize` | Universal optimization | `/optimize` |
-| `/helper` | Interactive command guide | `/helper` |
+1. **Router** detected this is an engineering task, tier 2 (moderate complexity)
+2. **Orchestrator** enriched context — project structure, file locations, relevant patterns
+3. **Planner** defined objectives and selected an `engineering-manager` controller
+4. **Decomposer** broke the task into work items with acceptance criteria
+5. **Prompt Engineer** crafted optimized delegation prompts
+6. **Controller** (`engineering-manager`) asked a `backend-developer` to locate and fix the typo
+7. **Reviewer** validated the fix against acceptance criteria (spec compliance, then code quality)
+8. **Validator** confirmed the output meets quality gates — PASS
 
-## Understanding Workflows
+You got a validated fix without specifying a single agent or writing a single prompt.
 
-### Complexity Tiers
+## 4. Check the Session Artifacts
 
-| Tier | Type | Duration | Example |
-|------|------|----------|---------|
-| 2 | Moderate | 15-45 min | "Fix bug", "What is X?", "Fix typo" |
-| 3 | Complex | 1-4 hours | "Add feature" |
-| 4 | Expert | 4+ hours | "Major refactor" |
-
-**Note**: Tiers 0-1 are deprecated and automatically upgraded to Tier 2.
-
-### Workflow Phases
+Every run writes structured artifacts to `Agent_Memory/sessions/`:
 
 ```
-routing -> planning -> coordinating -> executing -> validating
+Agent_Memory/sessions/run_fix-typo-readme_YYMMDD_001/
+├── workflow/
+│   ├── enriched_context.yaml   # What the orchestrator discovered
+│   ├── plan.yaml               # Objectives and controller selection
+│   ├── work_items.yaml         # Decomposed tasks with acceptance criteria
+│   └── coordination_log.yaml  # Controller Q&A, synthesis, and results
+└── status.yaml                 # Pipeline state and completion status
 ```
 
-1. **Routing**: Detects domain, classifies complexity tier
-2. **Planning**: Defines objectives, selects controllers
-3. **Coordinating**: Controllers ask questions, synthesize answers
-4. **Executing**: Implementation based on coordinated solution
-5. **Validating**: Quality gates verify outputs
+These are readable YAML files. Inspect them to understand exactly what each agent did and why.
 
-## Business Domains
+## 5. Next Steps
 
-cAgents supports 8 business domains:
-
-| Domain | Agents | Keywords | Example Requests |
-|--------|--------|----------|-----------------|
-| **engineering** | 33 | fix, bug, feature, code, api, database, architecture | "Fix auth bug", "Add user model" |
-| **creative** | 24 | write, story, content, narrative, game, design | "Write a novel", "Design game levels" |
-| **business** | 33 | budget, forecast, operations, procurement, product | "Create annual budget", "Plan product roadmap" |
-| **growth** | 36 | campaign, sales, marketing, SEO, leads | "Plan Q4 launch", "Improve conversions" |
-| **people** | 19 | recruit, onboard, culture, HR, talent | "Design onboarding program" |
-| **service** | 33 | support, legal, compliance, contract | "Review vendor contract" |
-| **leadership** | 10 | strategy, C-suite, executive decisions | "Align executive strategy" |
-| **shared** | 4 | cross-domain utilities | (auto-selected) |
-
-## Agent Architecture
-
-```
-Tier 1: Core Infrastructure (15 agents)
-  - orchestrator, trigger, hitl, optimizer, team-trigger, team-lead-adapter,
-    universal-router, universal-planner, universal-executor, universal-validator,
-    universal-self-correct, task-consolidator, task-decomposer, task-inventory,
-    prompt-engineer
-
-Tier 2: Controllers
-  - engineering-manager, architect, campaign-manager...
-
-Tier 3: Execution
-  - backend-developer, copywriter, financial-analyst...
-
-Tier 4: Support
-  - scribe, data-extractor...
-```
-
-**Total**: 213 agents (15 core + 4 shared + 10 leadership + 184 domain specialists)
-
-**Key Concept**: Controllers coordinate work via question-based delegation. They ask questions to specialists, synthesize answers, and coordinate implementation.
-
-**Event-Driven Pipeline (V9.23+)**: `/run` is a config-driven state machine reading `pipeline_config.yaml`. Each enrichment agent runs sequentially at level 1. Controllers spawn executors and reviewers at level 2 with revision loops.
-
-## Configuration
-
-### Agent Memory Structure
-
-```
-Agent_Memory/
-├── _system/           # Registry, configs
-├── _knowledge/        # Patterns, learnings
-└── sessions/          # Per-command sessions (standardized)
-    └── {command}_{slug}_{YYMMDD}_{NNN}/
-        ├── instruction.yaml
-        ├── status.yaml
-        ├── workflow/
-        └── outputs/
-```
-
-### Status Line Setup
-
-cAgents includes a status line that displays the current session phase, domain, and agent activity at the bottom of your terminal. When running cAgents as a **plugin** (via `--plugin-dir` or `claude plugin install`), you need to add the status line config manually to your own settings — Claude Code only propagates `hooks` from the plugin settings file, not `statusLine`.
-
-Add the following to `~/.claude/settings.json` (user-level, applies to all projects) or `.claude/settings.json` (project-level):
-
-```json
-"statusLine": {
-  "type": "command",
-  "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/statusline.cjs\"'"
-}
-```
-
-**Why manual setup is needed**: Claude Code's plugin system reads the `hooks` key from the plugin's referenced settings file but silently ignores `statusLine` — it is not a supported field in `plugin.json` and is not propagated to consumers. This is a Claude Code limitation, not a cAgents bug.
-
-If you installed cAgents by cloning the repo and running directly (`cd cAgents && claude`), the status line works automatically — no manual step needed.
-
-### Project Memory
-
-```
-.claude/
-├── rules/             # Modular rules (20 files across 5 categories)
-├── hooks/             # CJS hook implementations (18 files: 15 hooks + utils + launcher + eval CLI)
-├── skills/            # Skill definitions (run, team, designer, review, optimize, helper)
-└── settings.json      # Hook registration, permissions, and environment
-```
-
-## Advanced Usage
-
-### Advanced Flags
-
+**Parallel execution** — complex tasks with multiple independent components:
 ```bash
-# Dry run (preview without executing)
-/run Add feature --dry-run
-
-# Interactive mode (asks preferences)
-/run Refactor auth --interactive
-
-# Template-based
-/run Fix bug --template bug_fix
-
-# Stream progress
-/run Deploy --stream
+/team Build a user authentication system
 ```
+Spawns multiple specialist agents in parallel waves, each validated before the next wave starts. 40-60% faster than sequential execution for tier 3+ work.
 
-### Hooks
-
-cAgents uses a CJS-only hook system (V9.5+) with the `createHook()` factory pattern:
-
-```
-.claude/hooks/
-├── hook-utils.cjs         # Shared utilities and createHook() factory
-├── run-hook.cjs           # Hook launcher (all hooks invoked via this)
-├── session-catchup.cjs    # SessionStart: detect incomplete sessions
-├── team-stop.cjs          # SessionEnd: finalize team metrics
-├── verify-completion.cjs  # Stop: verify completion criteria
-├── bash-validator.cjs     # PreToolUse[Bash]: block dangerous commands
-├── secret-detection.cjs   # PreToolUse[Write|Edit]: detect secrets
-├── subagent-tracker.cjs   # SubagentStart: log agent spawns
-├── ...                    # + 7 more hooks (15 total)
-└── eval-runner.cjs        # CLI tool: quality evaluations
-```
-
-Hook registration is in `.claude/settings.json`. See `.claude/rules/core/hooks.md` for full documentation.
-
-### Scripts
-
-Bash utilities for programmatic access:
-
+**Strategic coordination** — work that spans multiple business domains:
 ```bash
-# Initialize workflow
-./scripts/commands/trigger-init.sh "Fix bug"
+/org Plan our Q3 product roadmap
+```
+Triggers CTO, CPO, and CFO analysis, cross-domain deliberation, and a unified strategic brief — then hands off to engineering and business teams for execution.
 
-# Discover agents
-./scripts/utils/agent-discovery.sh count
+**Interactive design** — clarify requirements before building:
+```bash
+/designer Build a payment processing integration
+```
+Guides you through structured Q&A to produce an implementation-ready design document before any code is written.
 
-# Generate manifests
-./scripts/utils/manifest-generator.sh all
+**Review existing work**:
+```bash
+/review src/auth/
+```
+Parallel specialist agents audit for security, correctness, maintainability, and style. Optional `--fix` flag applies fixes automatically.
+
+**Not sure which command to use?**
+```bash
+/helper
 ```
 
-## Best Practices
+## Token Budget Reminder
 
-1. **Use /run for all workflows** - It auto-routes to the right domain
-2. **Start with --interactive** for new workflow types
-3. **Use --dry-run** to preview complex workflows
-4. **Don't ask Claude for permission** - Workflows proceed automatically
-5. **Check Agent_Memory/** for workflow state and outputs
+cAgents uses 10-50x more tokens than direct Claude Code interaction. `/team` and `/org` amplify this further. Check your usage in Claude Code's settings if you're on a metered plan.
 
-## Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| Wrong domain detected | Use explicit domain keywords |
-| Workflow stuck | Check `Agent_Memory/{id}/status.yaml` |
-| No progress updates | Ensure TodoWrite is being used |
-| Missing outputs | Check `Agent_Memory/{id}/outputs/` |
-
-## Next Steps
-
-1. Read [CLAUDE.md](../CLAUDE.md) for full architecture details
-2. Explore [ARCHITECTURE.md](ARCHITECTURE.md) for architecture design
-3. Check [workflow_agent_interactions.md](../workflow_agent_interactions.md) for patterns
-4. Review domain-specific agents in `{domain}/agents/`
-
----
-
-**Version**: 10.1.0
-**Questions?** Check the troubleshooting guide or explore the codebase.
+For quick, single-file fixes, use Claude Code directly — cAgents is optimized for multi-step, multi-agent coordination.

@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.24.3"
+  version: "10.25.0"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--analytics] [--from-review] [--from-designer]"
   user-invocable: "true"
   context: "none"
@@ -245,15 +245,23 @@ Before spawning the orchestrator, classify domain and tier inline:
 `{domain}/config/domain_overrides.yaml` → `router_keywords` array.
 
 Available domains and their config locations:
-| Domain | Config Path |
-|--------|------------|
-| Engineering | engineering/config/domain_overrides.yaml |
-| Creative | creative/config/domain_overrides.yaml |
-| Business | business/config/domain_overrides.yaml |
-| Growth | growth/config/domain_overrides.yaml |
-| People | people/config/domain_overrides.yaml |
-| Service | service/config/domain_overrides.yaml |
-| Shared | shared/config/domain_overrides.yaml |
+| Domain | Keywords (examples) | Config Path |
+|--------|---------------------|------------|
+| Engineering | code, bug, API, backend, frontend, database, deploy | engineering/config/domain_overrides.yaml |
+| Creative | write, story, narrative, content, design, brand, copy | creative/config/domain_overrides.yaml |
+| Business | strategy, product, operations, finance, OKR, roadmap | business/config/domain_overrides.yaml |
+| Growth | marketing, sales, campaign, SEO, revenue, conversion | growth/config/domain_overrides.yaml |
+| People | HR, hiring, onboarding, culture, performance, talent | people/config/domain_overrides.yaml |
+| Service | support, customer, legal, compliance, contract, CX | service/config/domain_overrides.yaml |
+| Shared | data, analytics, BI, market research, intelligence | shared/config/domain_overrides.yaml |
+| Science | physics, chemistry, biology, math, research, experiment, hypothesis, theorem, proof, lab, molecule, equation, scientific | science/config/domain_overrides.yaml |
+| Health | medical, health, wellness, fitness, nutrition, mental health, therapy, diagnosis, treatment, medication, symptoms, exercise | health/config/domain_overrides.yaml |
+| Education | teach, learn, tutor, curriculum, lesson, student, exam, study, academic, school, university, course, training | education/config/domain_overrides.yaml |
+| Personal | career, personal, life, goals, productivity, finance, budget, retirement, relationship, coaching, self-improvement | personal/config/domain_overrides.yaml |
+| Arts | painting, photography, film, music, visual art, gallery, composition, sculpture, performing arts, instrument | arts/config/domain_overrides.yaml |
+| Trades | cooking, recipe, construction, automotive, repair, plumbing, electrical, farming, agriculture, fashion, sewing | trades/config/domain_overrides.yaml |
+
+> **Note**: The Leadership domain (`leadership/`) is `/org`-only and not included in `/run` routing. Use `/org` for cross-domain strategic initiatives involving C-suite agents.
 
 The orchestrator and router read these files at runtime to perform keyword-based domain detection.
 To add or update routing keywords, edit the `router_keywords` array in the relevant domain_overrides.yaml file.

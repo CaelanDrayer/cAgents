@@ -1,26 +1,27 @@
 ---
 name: social-media-manager
-domain: growth
-tier: execution
-effort: medium
 description: "Use when managing social media accounts, creating social content calendars, engaging communities, or tracking social media analytics and sentiment."
-vibe: "Builds communities that talk about the brand even when it's not posting"
-model: sonnet
-color: bright_green
-capabilities:
-  - social_strategy
-  - content_calendars
-  - community_management
-  - social_analytics
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: campaign-manager
-    type: coordinated_by
-  - name: copywriter
-    type: collaborates_with
-  - name: community-manager
-    type: cross_domain
+metadata:
+  vibe: "Builds communities that talk about the brand even when it's not posting"
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - social_strategy
+    - content_calendars
+    - community_management
+    - social_analytics
+  maxTurns: 30
+  related_agents:
+    - name: campaign-manager
+      type: coordinated_by
+    - name: copywriter
+      type: collaborates_with
+    - name: community-manager
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Social Media Manager

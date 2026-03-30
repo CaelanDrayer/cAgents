@@ -1,24 +1,25 @@
 ---
 name: scenario-planner
-domain: business
-tier: execution
-effort: medium
 description: "Use when developing future scenarios, identifying strategic uncertainties, creating contingency plans, or stress-testing strategies against possible outcomes."
-vibe: "Plans for the futures everyone hopes won't happen"
-model: sonnet
-color: bright_blue
-capabilities:
-  - scenario_development
-  - strategic_foresight
-  - contingency_planning
-  - strategy_stress_testing
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: strategic-planner
-    type: coordinated_by
-  - name: risk-manager
-    type: collaborates_with
+metadata:
+  vibe: "Plans for the futures everyone hopes won't happen"
+  tier: execution
+  effort: medium
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - scenario_development
+    - strategic_foresight
+    - contingency_planning
+    - strategy_stress_testing
+  maxTurns: 30
+  related_agents:
+    - name: strategic-planner
+      type: coordinated_by
+    - name: risk-manager
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Scenario Planner

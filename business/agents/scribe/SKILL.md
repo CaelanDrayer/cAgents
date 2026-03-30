@@ -1,23 +1,24 @@
 ---
 name: scribe
 description: "Use when documenting meeting notes, creating structured summaries, maintaining project records, or producing clear written records from verbal or unstructured inputs."
-vibe: "Documents decisions so nobody can say we never agreed to that"
-tier: execution
-effort: medium
-domain: business
-model: sonnet
-color: bright_white
-capabilities:
-  - documentation
-  - decision_capture
-  - knowledge_management
-  - technical_writing
-  - learning_documentation
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: technical-writer
-    type: cross_domain
+metadata:
+  vibe: Documents decisions so nobody can say we never agreed to that
+  tier: execution
+  effort: medium
+  domain: business
+  model: sonnet
+  color: bright_white
+  capabilities:
+    - documentation
+    - decision_capture
+    - knowledge_management
+    - technical_writing
+    - learning_documentation
+  maxTurns: 30
+  related_agents:
+    - name: technical-writer
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Scribe Agent

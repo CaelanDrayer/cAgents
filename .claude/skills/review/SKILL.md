@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.24.3"
+  version: "10.25.0"
   argument-hint: "<target> [--focus <area>] [--auto-fix] [--severity <level>] [--format <type>] [--profile <name>] [--baseline] [--suppress <id>]"
   user-invocable: "true"
   context: "fork"
@@ -433,6 +433,27 @@ validation_cycles: {N}    # incremented
    | **Process** | Workflows, SOPs | Efficiency, clarity, risk, compliance |
    | **Data** | .csv, .json, databases | Quality, completeness, consistency, schema |
    | **Infrastructure** | docker, k8s, terraform | Security, scalability, reliability, cost |
+
+### Content-Type Detection
+
+Before selecting review agents, detect the content type of the target:
+
+| Content Type | Detection Pattern | Review Agents |
+|-------------|-------------------|---------------|
+| **Code** | .js/.ts/.py/.go/.rs/.java files, src/ dirs | code-reviewer, security-engineer, architecture-reviewer |
+| **Prose/Text** | .md/.txt (non-docs dir), essay, article, story | editor, copy-editor, literary-critic |
+| **Documentation** | docs/ dir, README, API docs, CHANGELOG | technical-writer |
+| **Data** | .csv/.json/.yaml datasets, data/ dir | data-analyst, bi-specialist |
+| **Design** | .fig/.sketch, wireframes, mockups | ux-designer, accessibility-checker |
+
+**Detection Algorithm:**
+1. If `$ARGUMENTS` contains file paths: detect by extension and directory
+2. If `$ARGUMENTS` is a directory: scan for majority file type
+3. If `$ARGUMENTS` is descriptive (no paths): match keywords ("code" -> Code, "essay" -> Prose, etc.)
+4. Default to Code if ambiguous (existing behavior preserved)
+
+**Multi-type handling:** If review target spans multiple content types (e.g., a PR with both code and docs), spawn agents for each detected type.
+
 10. Detect framework (if code): check package.json, requirements.txt, etc.
 11. Load framework-specific patterns from `Agent_Memory/_system/commands/review/framework_patterns.yaml`
 12. If `--baseline`: load `Agent_Memory/_system/commands/review/baseline.yaml` into session context for Phase 3 filtering
@@ -441,8 +462,16 @@ validation_cycles: {N}    # incremented
 15. Write `scope_analysis.yaml` and `execution_strategy.yaml`
 
 ### State: REVIEWING
-Run agents in parallel groups. See @reference/agent-groups.md for group composition.
+Run agents in parallel groups based on the content type detected in SCOPING. See @reference/agent-groups.md for group composition.
 See @reference/framework-patterns.md for framework-specific agent enhancement.
+
+**Agent selection by content type** (from Content-Type Detection table in SCOPING):
+- **Code**: Use code-reviewer, security-engineer, architecture-reviewer as the primary group
+- **Prose/Text**: Use editor, copy-editor, literary-critic as the primary group
+- **Documentation**: Use technical-writer as the primary agent
+- **Data**: Use data-analyst, bi-specialist as the primary group
+- **Design**: Use ux-designer, accessibility-checker as the primary group
+- **Multi-type**: Spawn parallel groups for each detected content type; aggregate findings across all groups
 
 Stream critical findings immediately as agents complete. Update TodoWrite after each group.
 

@@ -1,24 +1,25 @@
 ---
 name: contracts-manager
-domain: service
-tier: execution
-effort: medium
 description: "Use when drafting contracts, negotiating terms, managing contract lifecycle, or ensuring contractual compliance and renewal tracking."
-vibe: "Negotiates contracts where both sides walk away satisfied"
-model: sonnet
-color: bright_red
-capabilities:
-  - contract_drafting
-  - contract_negotiation
-  - risk_analysis
-  - contract_lifecycle_management
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: legal-operations-manager
-    type: coordinated_by
-  - name: procurement-specialist
-    type: cross_domain
+metadata:
+  vibe: Negotiates contracts where both sides walk away satisfied
+  tier: execution
+  effort: medium
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - contract_drafting
+    - contract_negotiation
+    - risk_analysis
+    - contract_lifecycle_management
+  maxTurns: 30
+  related_agents:
+    - name: legal-operations-manager
+      type: coordinated_by
+    - name: procurement-specialist
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Contracts Manager

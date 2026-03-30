@@ -1,26 +1,27 @@
 ---
 name: channel-partner-manager
-domain: growth
-tier: execution
-effort: medium
 description: "Use when managing channel partnerships, developing partner programs, coordinating co-marketing efforts, or tracking partner-sourced revenue."
-vibe: "Builds partner relationships that multiply revenue"
-model: sonnet
-color: bright_green
-capabilities:
-  - partner_recruitment
-  - partner_enablement
-  - co_selling
-  - partner_management
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: sales-strategist
-    type: coordinated_by
-  - name: partnership-marketing-manager
-    type: collaborates_with
-  - name: business-development-manager
-    type: cross_domain
+metadata:
+  vibe: Builds partner relationships that multiply revenue
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - partner_recruitment
+    - partner_enablement
+    - co_selling
+    - partner_management
+  maxTurns: 30
+  related_agents:
+    - name: sales-strategist
+      type: coordinated_by
+    - name: partnership-marketing-manager
+      type: collaborates_with
+    - name: business-development-manager
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Channel Partner Manager

@@ -1,30 +1,31 @@
 ---
 name: compliance-specialist
-domain: service
-tier: execution
-effort: medium
 description: "Use when performing compliance audits, tracking regulatory changes, documenting compliance procedures, or testing controls against standards."
-vibe: "Tracks regulatory changes so the company is never surprised"
-model: sonnet
-color: bright_red
-capabilities:
-  - regulatory_compliance
-  - audit_management
-  - compliance_programs
-  - risk_assessment
-  - ethics_program_management
-  - compliance_investigations
-  - code_of_conduct
-  - whistleblower_programs
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: compliance-officer
-    type: coordinated_by
-  - name: regulatory-affairs-specialist
-    type: collaborates_with
-  - name: hr-compliance-specialist
-    type: cross_domain
+metadata:
+  vibe: Tracks regulatory changes so the company is never surprised
+  tier: execution
+  effort: medium
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - regulatory_compliance
+    - audit_management
+    - compliance_programs
+    - risk_assessment
+    - ethics_program_management
+    - compliance_investigations
+    - code_of_conduct
+    - whistleblower_programs
+  maxTurns: 30
+  related_agents:
+    - name: compliance-officer
+      type: coordinated_by
+    - name: regulatory-affairs-specialist
+      type: collaborates_with
+    - name: hr-compliance-specialist
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Compliance Specialist

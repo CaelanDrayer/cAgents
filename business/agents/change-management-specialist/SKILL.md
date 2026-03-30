@@ -1,38 +1,39 @@
 ---
 name: change-management-specialist
-domain: business
-tier: execution
-effort: medium
 description: "Use when planning organizational changes, developing training programs, deploying internal communications, or tracking adoption of new processes."
-vibe: "Makes the org actually want the change, not just tolerate it"
-model: sonnet
-color: bright_blue
-answers_questions:
-  - "What is the change readiness level?"
-  - "What training and support is needed?"
-  - "What resistance points exist and how to address them?"
-executes_tasks:
-  - execute_change_plans
-  - deliver_training_programs
-  - deploy_communications
-  - provide_transition_support
-  - manage_resistance
-  - track_adoption_metrics
-capabilities:
-  - change_implementation
-  - training_delivery
-  - communication_execution
-  - change_support
-  - resistance_handling
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: planning-facilitator
-    type: collaborates_with
-  - name: organizational-development-specialist
-    type: cross_domain
+metadata:
+  vibe: "Makes the org actually want the change, not just tolerate it"
+  tier: execution
+  effort: medium
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - change_implementation
+    - training_delivery
+    - communication_execution
+    - change_support
+    - resistance_handling
+  maxTurns: 40
+  memory:
+    project: true
+  related_agents:
+    - name: planning-facilitator
+      type: collaborates_with
+    - name: organizational-development-specialist
+      type: cross_domain
+  answers_questions:
+    - What is the change readiness level?
+    - What training and support is needed?
+    - What resistance points exist and how to address them?
+  executes_tasks:
+    - execute_change_plans
+    - deliver_training_programs
+    - deploy_communications
+    - provide_transition_support
+    - manage_resistance
+    - track_adoption_metrics
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Change Management Specialist

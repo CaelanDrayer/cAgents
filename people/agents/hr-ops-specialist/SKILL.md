@@ -1,24 +1,25 @@
 ---
 name: hr-ops-specialist
-domain: people
-tier: execution
-effort: medium
 description: "Use when optimizing HR operations, streamlining people processes, managing payroll coordination, or improving HR service delivery efficiency."
-vibe: "Runs HR operations like a well-documented, repeatable process"
-model: sonnet
-color: bright_yellow
-capabilities:
-  - hr_process_optimization
-  - vendor_management
-  - operational_excellence
-  - systems_integration
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: hr-manager
-    type: coordinated_by
-  - name: hris-administrator
-    type: collaborates_with
+metadata:
+  vibe: "Runs HR operations like a well-documented, repeatable process"
+  tier: execution
+  effort: medium
+  domain: people
+  model: sonnet
+  color: bright_yellow
+  capabilities:
+    - hr_process_optimization
+    - vendor_management
+    - operational_excellence
+    - systems_integration
+  maxTurns: 30
+  related_agents:
+    - name: hr-manager
+      type: coordinated_by
+    - name: hris-administrator
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # HR Ops Specialist

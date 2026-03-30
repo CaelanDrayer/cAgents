@@ -1,30 +1,31 @@
 ---
 name: worldbuilder
-domain: creative
-tier: execution
-effort: medium
 description: "Use when constructing fictional universes, designing world systems (cosmology, culture, economics, ecology), or building interconnected settings where every element resonates with internal logic."
-vibe: "Builds worlds with rules so consistent you could live in them"
-model: opus
-color: bright_magenta
-capabilities:
-  - iceberg_worldbuilding
-  - economic_systems
-  - political_structures
-  - magic_technology_systems
-  - cultural_creation
-  - linguistic_worldbuilding
-  - ecological_thinking
-  - world_as_character
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: narrative-director
-    type: coordinated_by
-  - name: setting-designer
-    type: collaborates_with
-  - name: lore-keeper
-    type: collaborates_with
+metadata:
+  vibe: Builds worlds with rules so consistent you could live in them
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - iceberg_worldbuilding
+    - economic_systems
+    - political_structures
+    - magic_technology_systems
+    - cultural_creation
+    - linguistic_worldbuilding
+    - ecological_thinking
+    - world_as_character
+  maxTurns: 30
+  related_agents:
+    - name: narrative-director
+      type: coordinated_by
+    - name: setting-designer
+      type: collaborates_with
+    - name: lore-keeper
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Worldbuilder

@@ -1,24 +1,25 @@
 ---
 name: sales-enablement-specialist
-domain: growth
-tier: execution
-effort: medium
 description: "Use when creating sales training materials, building playbooks, managing sales content libraries, or improving rep onboarding and productivity."
-vibe: "Arms the sales team with exactly what they need to close"
-model: sonnet
-color: bright_green
-capabilities:
-  - sales_enablement
-  - playbook_creation
-  - content_development
-  - training_design
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: product-marketing-manager
-    type: coordinated_by
-  - name: sales-trainer
-    type: collaborates_with
+metadata:
+  vibe: Arms the sales team with exactly what they need to close
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - sales_enablement
+    - playbook_creation
+    - content_development
+    - training_design
+  maxTurns: 30
+  related_agents:
+    - name: product-marketing-manager
+      type: coordinated_by
+    - name: sales-trainer
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Sales Enablement Specialist

@@ -1,26 +1,27 @@
 ---
 name: test-coverage-validator
 description: "Use when analyzing test coverage, identifying untested code paths, validating coverage thresholds, or recommending areas that need additional test cases."
-vibe: "Ensures every critical path has a test standing guard"
-tier: support
-effort: low
-domain: engineering
-model: "haiku"
-color: bright_green
-layer: qa
-capabilities:
-  - coverage_analysis
-  - test_validation
-  - gap_identification
-  - test_quality
-allowed-tools: "Read Grep Glob"
-maxTurns: 10
-disallowedTools: ["Task"]
-related_agents:
-  - name: qa-lead
-    type: coordinated_by
-  - name: backend-developer
-    type: reviews
+metadata:
+  vibe: Ensures every critical path has a test standing guard
+  tier: support
+  effort: low
+  domain: engineering
+  model: haiku
+  color: bright_green
+  capabilities:
+    - coverage_analysis
+    - test_validation
+    - gap_identification
+    - test_quality
+  maxTurns: 10
+  disallowedTools: ["Task"]
+  related_agents:
+    - name: qa-lead
+      type: coordinated_by
+    - name: backend-developer
+      type: reviews
+  layer: qa
+allowed-tools: Read Grep Glob
 ---
 
 # Test Coverage Validator Agent

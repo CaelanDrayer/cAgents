@@ -1,27 +1,28 @@
 ---
 name: cfo
 description: "Use for budget requests, investment decisions, pricing strategy, financial risk assessment, and fundraising. Chief Financial Officer providing financial leadership."
-vibe: "Turns financial data into the strategy the board actually follows"
-tier: controller
-effort: high
-domain: leadership
-model: "opusplan"
-coordination_style: question_based
-typical_questions:
-  - "What is the current implementation of this feature?"
-  - "What are the technical constraints we need to consider?"
-  - "What are the key risks and dependencies?"
-color: bright_green
-capabilities:
-  - financial_strategy
-  - budget_management
-  - fundraising
-  - investment_decisions
-  - financial_risk_assessment
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
+metadata:
+  vibe: Turns financial data into the strategy the board actually follows
+  tier: controller
+  effort: high
+  domain: leadership
+  model: opusplan
+  color: bright_green
+  capabilities:
+    - financial_strategy
+    - budget_management
+    - fundraising
+    - investment_decisions
+    - financial_risk_assessment
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the current implementation of this feature?
+    - What are the technical constraints we need to consider?
+    - What are the key risks and dependencies?
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # CFO

@@ -1,37 +1,42 @@
 ---
 name: devops-lead
 description: "Use when setting up CI/CD pipelines, configuring infrastructure, debugging deployment failures, or managing containerized environments. Coordinates DevOps workflows across staging and production."
-vibe: "Runs infrastructure like code and deploys like clockwork"
-tier: controller
-effort: high
-domain: engineering
-model: sonnet
-coordination_style: question_based
-typical_questions:
-  - "What is the current implementation of this feature?"
-  - "What are the technical constraints we need to consider?"
-  - "What are the key risks and dependencies?"
-color: bright_magenta
-capabilities:
-  - infrastructure_as_code
-  - cicd_pipeline_management
-  - deployment_automation
-  - monitoring_alerting
-  - container_orchestration
-  - security_infrastructure
-  - disaster_recovery
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-not-my-scope: ["Application business logic", "UI components", "content strategy", "user research"]
-related_agents:
-  - name: devops-engineer
-    type: coordinates
-  - name: sysadmin
-    type: coordinates
-  - name: architect
-    type: collaborates_with
+metadata:
+  vibe: Runs infrastructure like code and deploys like clockwork
+  tier: controller
+  effort: high
+  domain: engineering
+  model: sonnet
+  color: bright_magenta
+  capabilities:
+    - infrastructure_as_code
+    - cicd_pipeline_management
+    - deployment_automation
+    - monitoring_alerting
+    - container_orchestration
+    - security_infrastructure
+    - disaster_recovery
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the current implementation of this feature?
+    - What are the technical constraints we need to consider?
+    - What are the key risks and dependencies?
+  not-my-scope:
+    - Application business logic
+    - UI components
+    - content strategy
+    - user research
+  related_agents:
+    - name: devops-engineer
+      type: coordinates
+    - name: sysadmin
+      type: coordinates
+    - name: architect
+      type: collaborates_with
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 <example>

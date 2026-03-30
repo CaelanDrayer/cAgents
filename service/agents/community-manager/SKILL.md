@@ -1,24 +1,25 @@
 ---
 name: community-manager
-domain: service
-tier: execution
-effort: medium
 description: "Use when building community programs, moderating forums, engaging with user communities, or developing community content and events strategy."
-vibe: "Builds communities where users help each other before support does"
-model: sonnet
-color: bright_red
-capabilities:
-  - community_building
-  - forum_moderation
-  - user_engagement
-  - peer_support_facilitation
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: customer-advocacy-manager
-    type: coordinated_by
-  - name: social-media-manager
-    type: cross_domain
+metadata:
+  vibe: Builds communities where users help each other before support does
+  tier: execution
+  effort: medium
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - community_building
+    - forum_moderation
+    - user_engagement
+    - peer_support_facilitation
+  maxTurns: 30
+  related_agents:
+    - name: customer-advocacy-manager
+      type: coordinated_by
+    - name: social-media-manager
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Community Manager

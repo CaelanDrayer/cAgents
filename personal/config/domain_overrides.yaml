@@ -1,0 +1,89 @@
+# Personal domain overrides
+domain: personal
+description: "Personal development, career guidance, life coaching, personal finance, and productivity"
+
+planner:
+  controller_catalog:
+    tier_2: [personal-coach-lead]
+    tier_3: [personal-coach-lead]
+    tier_4: [personal-coach-lead]
+
+  specialist_routing:
+    life_coaching:
+      keywords: [life coach, life goals, purpose, fulfillment, happiness, well-being, self-discovery, values, meaning]
+      agents: [life-coach]
+      description: "Holistic life coaching for purpose, direction, and personal fulfillment"
+    career:
+      keywords: [career, job search, resume, cover letter, interview, salary negotiation, promotion, career change, LinkedIn]
+      agents: [career-counselor]
+      description: "Career planning, job search strategy, and professional advancement"
+    finance:
+      keywords: [personal finance, budget, savings, investing, retirement, debt, 401k, IRA, emergency fund, net worth]
+      agents: [personal-finance-advisor]
+      description: "Personal financial planning, budgeting, and investment guidance"
+    relationships:
+      keywords: [relationship, communication, conflict, dating, marriage, family, boundaries, social skills, friendship]
+      agents: [relationship-coach]
+      description: "Relationship coaching and interpersonal communication skills"
+    productivity:
+      keywords: [productivity, time management, habits, procrastination, focus, GTD, routines, goal setting, organization]
+      agents: [productivity-coach]
+      description: "Productivity systems, habit formation, and time management coaching"
+
+router:
+  keywords:
+    - career
+    - personal
+    - life
+    - goals
+    - productivity
+    - personal finance
+    - budget
+    - retirement
+    - relationship
+    - coaching
+    - self-improvement
+    - habits
+    - motivation
+    - time management
+    - resume
+    - interview
+    - salary
+    - savings
+    - investing
+    - work-life
+    - mindset
+    - procrastination
+    - journaling
+    - gratitude
+    - self-care
+    - personal development
+    - life coach
+    - well-being
+    - fulfillment
+    - purpose
+    - values
+    - boundaries
+    - communication skills
+    - conflict resolution
+    - dating
+    - marriage
+    - family
+    - social anxiety
+    - confidence
+    - job search
+    - cover letter
+    - LinkedIn
+    - promotion
+    - career change
+    - debt
+    - 401k
+    - IRA
+    - emergency fund
+    - net worth
+    - financial planning
+    - GTD
+    - focus
+    - deep work
+    - morning routine
+    - habit tracker

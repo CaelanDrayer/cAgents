@@ -1,24 +1,25 @@
 ---
 name: dependency-analyzer
 description: "Use when analyzing dependency trees, identifying version conflicts, evaluating security vulnerabilities in dependencies, or planning dependency upgrades."
-vibe: "Maps every dependency so upgrades don't become disasters"
-tier: support
-effort: low
-domain: engineering
-model: "haiku"
-color: bright_blue
-layer: intelligence
-capabilities:
-  - dependency_mapping
-  - circular_reference_detection
-  - execution_optimization
-  - prerequisite_validation
-allowed-tools: "Read Grep Glob"
-maxTurns: 10
-disallowedTools: ["Task"]
-related_agents:
-  - name: architect
-    type: collaborates_with
+metadata:
+  vibe: "Maps every dependency so upgrades don't become disasters"
+  tier: support
+  effort: low
+  domain: engineering
+  model: haiku
+  color: bright_blue
+  capabilities:
+    - dependency_mapping
+    - circular_reference_detection
+    - execution_optimization
+    - prerequisite_validation
+  maxTurns: 10
+  disallowedTools: ["Task"]
+  related_agents:
+    - name: architect
+      type: collaborates_with
+  layer: intelligence
+allowed-tools: Read Grep Glob
 ---
 
 # Dependency Analyzer Agent

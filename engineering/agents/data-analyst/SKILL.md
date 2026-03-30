@@ -1,28 +1,29 @@
 ---
 name: data-analyst
 description: "Use when analyzing datasets, building queries, creating data visualizations, or extracting insights from structured data using SQL, Python, or BI tools."
-vibe: "Turns messy data into clean insights that drive decisions"
-tier: execution
-effort: medium
-domain: engineering
-model: sonnet
-color: bright_green
-capabilities:
-  - data_pipeline_development
-  - etl_design
-  - analytics_reporting
-  - data_quality
-  - business_intelligence
-  - data_visualization
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: data-lead
-    type: coordinated_by
-  - name: dba
-    type: collaborates_with
-  - name: bi-specialist
-    type: cross_domain
+metadata:
+  vibe: Turns messy data into clean insights that drive decisions
+  tier: execution
+  effort: medium
+  domain: engineering
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - data_pipeline_development
+    - etl_design
+    - analytics_reporting
+    - data_quality
+    - business_intelligence
+    - data_visualization
+  maxTurns: 30
+  related_agents:
+    - name: data-lead
+      type: coordinated_by
+    - name: dba
+      type: collaborates_with
+    - name: bi-specialist
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Data Analyst / Data Engineer Agent

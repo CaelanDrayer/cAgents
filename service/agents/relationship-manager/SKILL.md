@@ -1,33 +1,34 @@
 ---
 name: relationship-manager
-domain: service
-tier: controller
-effort: high
 description: "Use when nurturing key business relationships, coordinating partner communications, managing stakeholder expectations, or developing relationship strategies."
-vibe: "Builds relationships that turn transactions into partnerships"
-model: sonnet
-color: bright_red
-coordination_style: question_based
-typical_questions:
-  - "Who are the key stakeholders and what are their priorities?"
-  - "What is the current health of this relationship?"
-  - "What value can we create for this relationship?"
-capabilities:
-  - relationship_building
-  - stakeholder_management
-  - partner_management
-  - ecosystem_development
-  - strategic_relationships
-  - networking
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: account-manager
-    type: collaborates_with
-  - name: customer-success-manager
-    type: collaborates_with
+metadata:
+  vibe: Builds relationships that turn transactions into partnerships
+  tier: controller
+  effort: high
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - relationship_building
+    - stakeholder_management
+    - partner_management
+    - ecosystem_development
+    - strategic_relationships
+    - networking
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - Who are the key stakeholders and what are their priorities?
+    - What is the current health of this relationship?
+    - What value can we create for this relationship?
+  related_agents:
+    - name: account-manager
+      type: collaborates_with
+    - name: customer-success-manager
+      type: collaborates_with
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Relationship Manager

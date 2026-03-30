@@ -1,36 +1,37 @@
 ---
 name: compliance-officer
-domain: service
-tier: controller
-effort: high
 description: "Use when establishing compliance frameworks, conducting compliance assessments, managing regulatory requirements, or developing compliance training programs."
-vibe: "Makes sure the company follows every rule it agreed to follow"
-model: sonnet
-color: bright_red
-coordination_style: question_based
-typical_questions:
-  - "What regulations apply to this activity?"
-  - "What compliance risks exist?"
-  - "What controls are needed?"
-capabilities:
-  - regulatory_compliance
-  - policy_development
-  - compliance_monitoring
-  - risk_assessment
-  - compliance_training
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: compliance-manager
-    type: coordinates
-  - name: ethics-and-compliance-officer
-    type: coordinates
-  - name: risk-and-compliance-manager
-    type: coordinates
-  - name: regulatory-affairs-specialist
-    type: coordinates
+metadata:
+  vibe: Makes sure the company follows every rule it agreed to follow
+  tier: controller
+  effort: high
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - regulatory_compliance
+    - policy_development
+    - compliance_monitoring
+    - risk_assessment
+    - compliance_training
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What regulations apply to this activity?
+    - What compliance risks exist?
+    - What controls are needed?
+  related_agents:
+    - name: compliance-manager
+      type: coordinates
+    - name: ethics-and-compliance-officer
+      type: coordinates
+    - name: risk-and-compliance-manager
+      type: coordinates
+    - name: regulatory-affairs-specialist
+      type: coordinates
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Compliance Officer

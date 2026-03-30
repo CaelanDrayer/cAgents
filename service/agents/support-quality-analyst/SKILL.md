@@ -1,26 +1,27 @@
 ---
 name: support-quality-analyst
-domain: service
-tier: execution
-effort: medium
 description: "Use when auditing support interactions, scoring agent performance, identifying quality gaps, or developing quality assurance standards and calibration processes."
-vibe: "Scores support interactions to raise the bar for everyone"
-model: sonnet
-color: bright_red
-capabilities:
-  - quality_assurance
-  - ticket_review
-  - coaching
-  - standards_development
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: support-operations-manager
-    type: coordinated_by
-  - name: support-supervisor
-    type: collaborates_with
-  - name: customer-support-rep
-    type: reviews
+metadata:
+  vibe: Scores support interactions to raise the bar for everyone
+  tier: execution
+  effort: medium
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - quality_assurance
+    - ticket_review
+    - coaching
+    - standards_development
+  maxTurns: 30
+  related_agents:
+    - name: support-operations-manager
+      type: coordinated_by
+    - name: support-supervisor
+      type: collaborates_with
+    - name: customer-support-rep
+      type: reviews
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Support Quality Analyst

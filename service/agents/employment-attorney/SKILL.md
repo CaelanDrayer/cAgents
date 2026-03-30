@@ -1,26 +1,27 @@
 ---
 name: employment-attorney
-domain: service
-tier: execution
-effort: medium
 description: "Use when advising on employment law, reviewing HR policies, handling workplace disputes, or ensuring compliance with labor regulations."
-vibe: "Navigates employment law so the company doesn't have to guess"
-model: sonnet
-color: bright_red
-capabilities:
-  - employment_law
-  - workplace_investigations
-  - policy_development
-  - dispute_resolution
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: general-counsel
-    type: coordinated_by
-  - name: employee-relations-specialist
-    type: cross_domain
-  - name: hr-compliance-specialist
-    type: cross_domain
+metadata:
+  vibe: "Navigates employment law so the company doesn't have to guess"
+  tier: execution
+  effort: medium
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - employment_law
+    - workplace_investigations
+    - policy_development
+    - dispute_resolution
+  maxTurns: 30
+  related_agents:
+    - name: general-counsel
+      type: coordinated_by
+    - name: employee-relations-specialist
+      type: cross_domain
+    - name: hr-compliance-specialist
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Employment Attorney

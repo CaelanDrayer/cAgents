@@ -1,31 +1,35 @@
 ---
 name: universal-planner
-tier: infrastructure
-effort: high
 description: "Use when creating plan.yaml with objectives, controller assignments, temporal analysis, and scope boundaries from enriched context."
-vibe: "Plans the work, works the plan, adapts when reality disagrees"
-allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
-model: opus
-color: bright_blue
-domain: core
-capabilities:
-  - aggressive_decomposition
-  - implicit_discovery
-  - dependency_mapping
-  - work_item_generation
-  - controller_selection
-maxTurns: 40
-permissionMode: "bypassPermissions"
-related_agents:
-  - name: orchestrator
-    type: coordinated_by
-  - name: task-decomposer
-    type: collaborates_with
-  - name: prompt-engineer
-    type: collaborates_with
-  - name: universal-validator
-    type: collaborates_with
-not-my-scope: ["Direct implementation", "code review", "content creation", "test execution"]
+metadata:
+  vibe: "Plans the work, works the plan, adapts when reality disagrees"
+  tier: infrastructure
+  effort: high
+  domain: core
+  model: opus
+  color: bright_blue
+  capabilities:
+    - aggressive_decomposition
+    - implicit_discovery
+    - dependency_mapping
+    - work_item_generation
+    - controller_selection
+  maxTurns: 40
+  not-my-scope:
+    - Direct implementation
+    - code review
+    - content creation
+    - test execution
+  related_agents:
+    - name: orchestrator
+      type: coordinated_by
+    - name: task-decomposer
+      type: collaborates_with
+    - name: prompt-engineer
+      type: collaborates_with
+    - name: universal-validator
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
 ---
 
 <example>

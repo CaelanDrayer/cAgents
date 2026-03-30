@@ -1,21 +1,21 @@
 ---
 name: task-inventory
-domain: core
-tier: infrastructure
-effort: high
 description: "Use when managing CSV-based task state for large-scale workflows with 20+ items, achieving 60-80% context savings over inline tracking."
-vibe: "Tracks every task in CSV so nothing falls through the cracks"
-model: opus
-color: bright_white
-capabilities:
-  - csv_state_management
-  - batch_delegation
-  - checkpoint_resume
-  - progress_reporting
-  - parallel_tracking
-allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
-maxTurns: 30
-permissionMode: "bypassPermissions"
+metadata:
+  vibe: Tracks every task in CSV so nothing falls through the cracks
+  tier: infrastructure
+  effort: high
+  domain: core
+  model: opus
+  color: bright_white
+  capabilities:
+    - csv_state_management
+    - batch_delegation
+    - checkpoint_resume
+    - progress_reporting
+    - parallel_tracking
+  maxTurns: 30
+allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
 ---
 
 # Task Inventory Manager

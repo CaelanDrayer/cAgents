@@ -1,34 +1,35 @@
 ---
 name: security-engineer
 description: "Use when implementing security controls, conducting penetration tests, hardening systems, or reviewing code for security vulnerabilities."
-vibe: "Builds security into the architecture, not bolted on after"
-tier: execution
-effort: medium
-domain: engineering
-model: sonnet
-color: bright_white
-capabilities:
-  - vulnerability_assessment
-  - secure_coding
-  - auth_review
-  - threat_analysis
-  - owasp_top10_assessment
-  - encryption_review
-  - secrets_management
-  - penetration_testing
-  - vulnerability_scanning
-  - security_review
-  - owasp_compliance
-  - secrets_detection
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: security-lead
-    type: coordinated_by
-  - name: backend-developer
-    type: collaborates_with
-  - name: code-reviewer
-    type: collaborates_with
+metadata:
+  vibe: "Builds security into the architecture, not bolted on after"
+  tier: execution
+  effort: medium
+  domain: engineering
+  model: sonnet
+  color: bright_white
+  capabilities:
+    - vulnerability_assessment
+    - secure_coding
+    - auth_review
+    - threat_analysis
+    - owasp_top10_assessment
+    - encryption_review
+    - secrets_management
+    - penetration_testing
+    - vulnerability_scanning
+    - security_review
+    - owasp_compliance
+    - secrets_detection
+  maxTurns: 30
+  related_agents:
+    - name: security-lead
+      type: coordinated_by
+    - name: backend-developer
+      type: collaborates_with
+    - name: code-reviewer
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Security Engineer

@@ -1,27 +1,28 @@
 ---
 name: cco
 description: "Use for creative vision, narrative strategy, artistic direction, tier 3-4 creative projects, or major creative decisions. Chief Creative Officer."
-vibe: "Sets the creative standard that defines the company's voice"
-tier: controller
-effort: high
-domain: leadership
-model: "opusplan"
-color: gold
-coordination_style: question_based
-typical_questions:
-  - "What is the current implementation of this feature?"
-  - "What are the technical constraints we need to consider?"
-  - "What are the key risks and dependencies?"
-capabilities:
-  - creative_vision
-  - narrative_strategy
-  - artistic_direction
-  - brand_identity
-  - creative_quality
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
+metadata:
+  vibe: "Sets the creative standard that defines the company's voice"
+  tier: controller
+  effort: high
+  domain: leadership
+  model: opusplan
+  color: bright_yellow
+  capabilities:
+    - creative_vision
+    - narrative_strategy
+    - artistic_direction
+    - brand_identity
+    - creative_quality
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the current implementation of this feature?
+    - What are the technical constraints we need to consider?
+    - What are the key risks and dependencies?
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Chief Creative Officer (CCO)

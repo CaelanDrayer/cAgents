@@ -1,31 +1,36 @@
 ---
 name: ux-designer
 description: "Use when designing user experiences, creating wireframes, building user flows, conducting usability analysis, or improving interaction patterns."
-vibe: "Designs experiences that feel obvious -- after weeks of iteration"
-tier: execution
-effort: medium
-domain: engineering
-model: sonnet
-color: bright_magenta
-capabilities:
-  - user_research
-  - interface_design
-  - design_systems
-  - usability_testing
-  - accessibility
-  - prototyping
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-not-my-scope: ["Backend code", "database schema", "server infrastructure", "financial analysis"]
-related_agents:
-  - name: frontend-lead
-    type: coordinated_by
-  - name: frontend-developer
-    type: collaborates_with
-  - name: frontend-aesthetics
-    type: collaborates_with
-  - name: product-owner
-    type: cross_domain
+metadata:
+  vibe: Designs experiences that feel obvious -- after weeks of iteration
+  tier: execution
+  effort: medium
+  domain: engineering
+  model: sonnet
+  color: bright_magenta
+  capabilities:
+    - user_research
+    - interface_design
+    - design_systems
+    - usability_testing
+    - accessibility
+    - prototyping
+  maxTurns: 30
+  not-my-scope:
+    - Backend code
+    - database schema
+    - server infrastructure
+    - financial analysis
+  related_agents:
+    - name: frontend-lead
+      type: coordinated_by
+    - name: frontend-developer
+      type: collaborates_with
+    - name: frontend-aesthetics
+      type: collaborates_with
+    - name: product-owner
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # UX Designer Agent

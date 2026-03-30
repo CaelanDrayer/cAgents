@@ -1,36 +1,37 @@
 ---
 name: market-research-analyst
-domain: shared
-tier: controller
-effort: high
 description: "Use when conducting market research, analyzing customer segments, evaluating market size and growth, or producing competitive landscape assessments."
-vibe: "Reads the market so the company can write its own future"
-model: sonnet
-color: bright_white
-coordination_style: question_based
-typical_questions:
-  - "What are the research objectives and key questions?"
-  - "Who is the target audience for this research?"
-  - "What research methods are most appropriate?"
-capabilities:
-  - market_research
-  - customer_research
-  - industry_analysis
-  - market_sizing
-  - survey_design
-  - focus_groups
-  - competitive_research
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: competitive-intelligence-analyst
-    type: collaborates_with
-  - name: marketing-strategist
-    type: cross_domain
-  - name: business-researcher
-    type: cross_domain
+metadata:
+  vibe: Reads the market so the company can write its own future
+  tier: controller
+  effort: high
+  domain: shared
+  model: sonnet
+  color: bright_white
+  capabilities:
+    - market_research
+    - customer_research
+    - industry_analysis
+    - market_sizing
+    - survey_design
+    - focus_groups
+    - competitive_research
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What are the research objectives and key questions?
+    - Who is the target audience for this research?
+    - What research methods are most appropriate?
+  related_agents:
+    - name: competitive-intelligence-analyst
+      type: collaborates_with
+    - name: marketing-strategist
+      type: cross_domain
+    - name: business-researcher
+      type: cross_domain
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Market Research Analyst

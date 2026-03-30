@@ -1,24 +1,25 @@
 ---
 name: corporate-counsel
-domain: service
-tier: execution
-effort: medium
 description: "Use when advising on corporate transactions, reviewing corporate governance, handling M&A due diligence, or managing corporate legal matters."
-vibe: "Protects the company with legal strategy, not just legal caution"
-model: sonnet
-color: bright_red
-capabilities:
-  - corporate_law
-  - ma_transactions
-  - corporate_governance
-  - securities_compliance
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: general-counsel
-    type: coordinated_by
-  - name: contracts-manager
-    type: collaborates_with
+metadata:
+  vibe: "Protects the company with legal strategy, not just legal caution"
+  tier: execution
+  effort: medium
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - corporate_law
+    - ma_transactions
+    - corporate_governance
+    - securities_compliance
+  maxTurns: 30
+  related_agents:
+    - name: general-counsel
+      type: coordinated_by
+    - name: contracts-manager
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Corporate Counsel

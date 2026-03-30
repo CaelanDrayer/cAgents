@@ -1,0 +1,91 @@
+# DOMAIN_NAME domain overrides
+# Copy to {domain}/config/domain_overrides.yaml and replace all DOMAIN_NAME/KEYWORD/AGENT placeholders.
+domain: DOMAIN_NAME
+description: "Brief description of domain scope and capabilities"
+
+planner:
+  controller_catalog:
+    tier_2:
+      # Single primary controller for moderate tasks
+      - DOMAIN-coordinator
+    tier_3:
+      # Primary + 1-2 supporting controllers for complex tasks
+      - DOMAIN-coordinator
+      - DOMAIN-specialist-lead
+    tier_4:
+      # Executive + primary + supporting for expert/HITL tasks
+      - c-suite-executive
+      - DOMAIN-coordinator
+      - DOMAIN-specialist-lead
+
+  specialist_routing:
+    # Map capability areas to specific agents
+    # Each area needs: keywords (for detection), agents (to route to), description
+    area_1:
+      keywords:
+        # Minimum 5 keywords per area; domain needs 20+ total for reliable routing
+        - keyword1
+        - keyword2
+        - keyword3
+        - keyword4
+        - keyword5
+      agents: [agent-name-1]
+      description: "What this routing area handles"
+
+    area_2:
+      keywords:
+        - keyword6
+        - keyword7
+        - keyword8
+        - keyword9
+        - keyword10
+      agents: [agent-name-2, agent-name-3]
+      description: "What this routing area handles (multiple agents for sub-routing)"
+
+    area_3:
+      keywords:
+        - keyword11
+        - keyword12
+        - keyword13
+        - keyword14
+        - keyword15
+      agents: [agent-name-4]
+      description: "What this routing area handles"
+
+    # Add more areas until total unique keywords >= 20
+    # area_4, area_5, ...
+
+router_keywords:
+  # Flat list of all keywords for domain-level detection (union of all area keywords + extras)
+  # Minimum 20 for reliable routing
+  - keyword1
+  - keyword2
+  - keyword3
+  - keyword4
+  - keyword5
+  - keyword6
+  - keyword7
+  - keyword8
+  - keyword9
+  - keyword10
+  - keyword11
+  - keyword12
+  - keyword13
+  - keyword14
+  - keyword15
+  - domain_name        # Always include the domain name itself
+  - DOMAIN_NAME        # Uppercase variant
+  - domain-synonym-1   # Common synonyms
+  - domain-synonym-2
+  - domain-synonym-3   # Ensures >= 20 total
+
+# Optional: cross-domain escalation rules
+cross_domain:
+  # When to escalate to a different domain's controller
+  escalation_rules:
+    - condition: "task involves legal compliance"
+      escalate_to: "service"
+      reason: "Legal/compliance handled by service domain"
+    - condition: "task involves financial analysis"
+      escalate_to: "shared"
+      reason: "Financial analysis uses shared data-scientist"

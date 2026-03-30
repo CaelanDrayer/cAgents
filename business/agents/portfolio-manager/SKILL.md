@@ -1,24 +1,25 @@
 ---
 name: portfolio-manager
-domain: business
-tier: execution
-effort: medium
 description: "Use when managing project portfolios, prioritizing initiatives, balancing resource allocation across programs, or evaluating portfolio performance."
-vibe: "Balances bets across projects like a seasoned card counter"
-model: sonnet
-color: bright_blue
-capabilities:
-  - portfolio_planning
-  - initiative_prioritization
-  - resource_optimization
-  - value_maximization
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: program-manager
-    type: coordinated_by
-  - name: strategic-planner
-    type: collaborates_with
+metadata:
+  vibe: Balances bets across projects like a seasoned card counter
+  tier: execution
+  effort: medium
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - portfolio_planning
+    - initiative_prioritization
+    - resource_optimization
+    - value_maximization
+  maxTurns: 30
+  related_agents:
+    - name: program-manager
+      type: coordinated_by
+    - name: strategic-planner
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Portfolio Manager

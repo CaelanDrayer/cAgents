@@ -1,26 +1,27 @@
 ---
 name: revenue-operations-manager
-domain: growth
-tier: execution
-effort: medium
 description: "Use when aligning sales, marketing, and customer success operations, optimizing the revenue funnel, or building cross-functional reporting dashboards."
-vibe: "Aligns sales, marketing, and CS into one revenue machine"
-model: sonnet
-color: bright_green
-capabilities:
-  - revenue_alignment
-  - systems_integration
-  - revenue_analytics
-  - process_automation
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: sales-strategist
-    type: coordinated_by
-  - name: marketing-ops-specialist
-    type: collaborates_with
-  - name: customer-success-manager
-    type: cross_domain
+metadata:
+  vibe: "Aligns sales, marketing, and CS into one revenue machine"
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - revenue_alignment
+    - systems_integration
+    - revenue_analytics
+    - process_automation
+  maxTurns: 30
+  related_agents:
+    - name: sales-strategist
+      type: coordinated_by
+    - name: marketing-ops-specialist
+      type: collaborates_with
+    - name: customer-success-manager
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Revenue Operations Manager

@@ -1,0 +1,85 @@
+# Education domain overrides
+domain: education
+description: "Teaching, tutoring, curriculum design, academic support, and learning facilitation"
+
+planner:
+  controller_catalog:
+    tier_2: [education-coordinator]
+    tier_3: [education-coordinator]
+    tier_4: [education-coordinator]
+
+  specialist_routing:
+    tutoring:
+      keywords: [tutor, tutoring, explain, help understand, one-on-one, homework help, practice problems]
+      agents: [academic-tutor]
+      description: "Personalized tutoring and subject-specific academic support"
+    curriculum:
+      keywords: [curriculum, lesson plan, syllabus, course design, learning objectives, instructional design, unit plan]
+      agents: [curriculum-designer]
+      description: "Curriculum and instructional design for courses and programs"
+    teaching:
+      keywords: [teaching, pedagogy, classroom management, teacher training, instructional strategy, differentiation]
+      agents: [teacher-coach]
+      description: "Teacher professional development and pedagogical coaching"
+    languages:
+      keywords: [language learning, ESL, EFL, Spanish, French, Mandarin, grammar, vocabulary, pronunciation, fluency]
+      agents: [language-tutor]
+      description: "Language acquisition and foreign language instruction"
+    research:
+      keywords: [academic research, literature review, thesis, dissertation, citation, academic writing, scholarly]
+      agents: [academic-researcher]
+      description: "Academic research support and scholarly writing guidance"
+
+router:
+  keywords:
+    - teach
+    - learn
+    - tutor
+    - curriculum
+    - lesson
+    - student
+    - exam
+    - study
+    - academic
+    - school
+    - university
+    - course
+    - training
+    - pedagogy
+    - assessment
+    - grade
+    - homework
+    - lecture
+    - syllabus
+    - scholarship
+    - SAT
+    - GRE
+    - STEM
+    - literacy
+    - classroom
+    - education
+    - subject
+    - quiz
+    - test prep
+    - flashcard
+    - study guide
+    - reading comprehension
+    - math help
+    - science
+    - history
+    - essay writing
+    - college prep
+    - K-12
+    - undergraduate
+    - graduate
+    - PhD
+    - accreditation
+    - learning disability
+    - IEP
+    - differentiated instruction
+    - e-learning
+    - online course
+    - MOOC
+    - certification
+    - continuing education
+    - professional development

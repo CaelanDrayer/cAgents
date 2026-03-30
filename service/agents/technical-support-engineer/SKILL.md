@@ -1,28 +1,29 @@
 ---
 name: technical-support-engineer
-domain: service
-tier: execution
-effort: medium
 description: "Use when debugging technical customer issues, analyzing logs and error traces, reproducing bugs, or providing advanced troubleshooting for product defects."
-vibe: "Debugs customer issues with the precision of a senior engineer"
-model: sonnet
-color: bright_red
-capabilities:
-  - technical_troubleshooting
-  - system_debugging
-  - log_analysis
-  - engineering_coordination
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: support-director
-    type: coordinated_by
-  - name: customer-support-rep
-    type: pipeline_prev
-  - name: escalation-manager
-    type: pipeline_next
-  - name: backend-developer
-    type: cross_domain
+metadata:
+  vibe: Debugs customer issues with the precision of a senior engineer
+  tier: execution
+  effort: medium
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - technical_troubleshooting
+    - system_debugging
+    - log_analysis
+    - engineering_coordination
+  maxTurns: 30
+  related_agents:
+    - name: support-director
+      type: coordinated_by
+    - name: customer-support-rep
+      type: pipeline_prev
+    - name: escalation-manager
+      type: pipeline_next
+    - name: backend-developer
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Technical Support Engineer

@@ -1,24 +1,25 @@
 ---
 name: okr-specialist
-domain: business
-tier: execution
-effort: medium
 description: "Use when setting OKRs, defining objectives and key results, tracking goal progress, or coaching teams on OKR methodology and alignment."
-vibe: "Turns ambitious goals into measurable, achievable milestones"
-model: sonnet
-color: bright_blue
-capabilities:
-  - okr_planning
-  - objective_setting
-  - key_result_definition
-  - okr_tracking
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: strategic-planner
-    type: coordinated_by
-  - name: performance-management-specialist
-    type: cross_domain
+metadata:
+  vibe: "Turns ambitious goals into measurable, achievable milestones"
+  tier: execution
+  effort: medium
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - okr_planning
+    - objective_setting
+    - key_result_definition
+    - okr_tracking
+  maxTurns: 30
+  related_agents:
+    - name: strategic-planner
+      type: coordinated_by
+    - name: performance-management-specialist
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # OKR Specialist

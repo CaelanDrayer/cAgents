@@ -1,24 +1,25 @@
 ---
 name: dependency-auditor
 description: "Use when auditing dependency health, checking for outdated packages, identifying security vulnerabilities in dependencies, or evaluating dependency upgrade risk."
-vibe: "Finds the vulnerable dependency before the CVE does"
-tier: support
-effort: low
-domain: engineering
-model: "haiku"
-color: bright_magenta
-layer: qa
-capabilities:
-  - dependency_scanning
-  - vulnerability_detection
-  - version_checking
-  - license_compliance
-allowed-tools: "Read Grep Glob"
-maxTurns: 10
-disallowedTools: ["Task"]
-related_agents:
-  - name: code-reviewer
-    type: coordinated_by
+metadata:
+  vibe: Finds the vulnerable dependency before the CVE does
+  tier: support
+  effort: low
+  domain: engineering
+  model: haiku
+  color: bright_magenta
+  capabilities:
+    - dependency_scanning
+    - vulnerability_detection
+    - version_checking
+    - license_compliance
+  maxTurns: 10
+  disallowedTools: ["Task"]
+  related_agents:
+    - name: code-reviewer
+      type: coordinated_by
+  layer: qa
+allowed-tools: Read Grep Glob
 ---
 
 # Dependency Auditor Agent

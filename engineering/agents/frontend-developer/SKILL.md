@@ -1,33 +1,38 @@
 ---
 name: frontend-developer
 description: "Use when building UI components, fixing responsive design issues, implementing client-side features, or working with React/Vue/Angular. Handles styling, accessibility, and browser compatibility."
-vibe: "Builds interfaces that feel inevitable, not engineered"
-tier: execution
-effort: medium
-domain: engineering
-model: sonnet
-color: bright_cyan
-capabilities:
-  - ui_component_development
-  - react_vue_angular
-  - responsive_design
-  - accessibility_wcag
-  - state_management
-  - frontend_performance
-  - typescript
-  - design_systems
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-not-my-scope: ["Database schema", "server infrastructure", "API architecture", "backend business logic"]
-related_agents:
-  - name: frontend-lead
-    type: coordinated_by
-  - name: backend-developer
-    type: collaborates_with
-  - name: ux-designer
-    type: collaborates_with
-  - name: code-reviewer
-    type: reviewed_by
+metadata:
+  vibe: "Builds interfaces that feel inevitable, not engineered"
+  tier: execution
+  effort: medium
+  domain: engineering
+  model: sonnet
+  color: bright_cyan
+  capabilities:
+    - ui_component_development
+    - react_vue_angular
+    - responsive_design
+    - accessibility_wcag
+    - state_management
+    - frontend_performance
+    - typescript
+    - design_systems
+  maxTurns: 30
+  not-my-scope:
+    - Database schema
+    - server infrastructure
+    - API architecture
+    - backend business logic
+  related_agents:
+    - name: frontend-lead
+      type: coordinated_by
+    - name: backend-developer
+      type: collaborates_with
+    - name: ux-designer
+      type: collaborates_with
+    - name: code-reviewer
+      type: reviewed_by
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 <example>

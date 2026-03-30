@@ -1,33 +1,34 @@
 ---
 name: project-manager
-domain: business
-tier: controller
-effort: high
-coordination_style: question_based
-typical_questions:
-  - "What is the project scope and timeline?"
-  - "What resources are needed?"
-  - "What are the key risks?"
 description: "Use when defining project scope, creating timelines, allocating resources, managing risks, or tracking project progress toward delivery milestones."
-vibe: "Ships on time by planning for everything that could go wrong"
-model: sonnet
-color: bright_blue
-capabilities:
-  - project_planning
-  - timeline_planning
-  - resource_allocation
-  - risk_management
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: resource-planner
-    type: coordinates
-  - name: risk-manager
-    type: collaborates_with
-  - name: agile-coach
-    type: collaborates_with
+metadata:
+  vibe: Ships on time by planning for everything that could go wrong
+  tier: controller
+  effort: high
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - project_planning
+    - timeline_planning
+    - resource_allocation
+    - risk_management
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the project scope and timeline?
+    - What resources are needed?
+    - What are the key risks?
+  related_agents:
+    - name: resource-planner
+      type: coordinates
+    - name: risk-manager
+      type: collaborates_with
+    - name: agile-coach
+      type: collaborates_with
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Project Manager

@@ -1,24 +1,25 @@
 ---
 name: recruiting-coordinator
-domain: people
-tier: execution
-effort: medium
 description: "Use when scheduling interviews, managing candidate communications, coordinating hiring logistics, or maintaining applicant tracking system data."
-vibe: "Keeps the hiring pipeline moving without dropping a single candidate"
-model: haiku
-color: bright_yellow
-capabilities:
-  - interview_scheduling
-  - candidate_communications
-  - recruiting_operations
-  - process_optimization
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: talent-acquisition-manager
-    type: coordinated_by
-  - name: recruiter
-    type: collaborates_with
+metadata:
+  vibe: Keeps the hiring pipeline moving without dropping a single candidate
+  tier: execution
+  effort: medium
+  domain: people
+  model: haiku
+  color: bright_yellow
+  capabilities:
+    - interview_scheduling
+    - candidate_communications
+    - recruiting_operations
+    - process_optimization
+  maxTurns: 30
+  related_agents:
+    - name: talent-acquisition-manager
+      type: coordinated_by
+    - name: recruiter
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Recruiting Coordinator

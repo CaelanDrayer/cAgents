@@ -1,32 +1,33 @@
 ---
 name: data-lead
 description: "Use for coordinating data engineering work, reviewing data pipeline architecture, managing data quality standards, or overseeing data infrastructure decisions."
-vibe: "Owns the data layer from schema design to query optimization"
-tier: controller
-effort: high
-domain: engineering
-model: sonnet
-coordination_style: question_based
-typical_questions:
-  - "What is the current implementation of this feature?"
-  - "What are the technical constraints we need to consider?"
-  - "What are the key risks and dependencies?"
-color: bright_yellow
-capabilities:
-  - database_architecture
-  - schema_design
-  - etl_pipeline_design
-  - query_optimization
-  - analytics_strategy
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: dba
-    type: coordinates
-  - name: data-analyst
-    type: coordinates
+metadata:
+  vibe: Owns the data layer from schema design to query optimization
+  tier: controller
+  effort: high
+  domain: engineering
+  model: sonnet
+  color: bright_yellow
+  capabilities:
+    - database_architecture
+    - schema_design
+    - etl_pipeline_design
+    - query_optimization
+    - analytics_strategy
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the current implementation of this feature?
+    - What are the technical constraints we need to consider?
+    - What are the key risks and dependencies?
+  related_agents:
+    - name: dba
+      type: coordinates
+    - name: data-analyst
+      type: coordinates
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Data Lead Agent

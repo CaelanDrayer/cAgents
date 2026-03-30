@@ -1,22 +1,22 @@
 ---
 name: orchestrator
-domain: core
-tier: infrastructure
-effort: high
 description: "Use when enriching request context at pipeline start, detecting domain and complexity, or preparing enriched_context.yaml for downstream agents."
-vibe: "The conductor who ensures every instrument enters on cue"
-model: opus
-color: bright_magenta
-capabilities:
-  - phase_control
-  - workflow_coordination
-  - checkpoint_resume
-  - inventory_management
-  - adaptive_execution
-  - team_mode_support
-allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
-maxTurns: 50
-permissionMode: "bypassPermissions"
+metadata:
+  vibe: The conductor who ensures every instrument enters on cue
+  tier: infrastructure
+  effort: high
+  domain: core
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - phase_control
+    - workflow_coordination
+    - checkpoint_resume
+    - inventory_management
+    - adaptive_execution
+    - team_mode_support
+  maxTurns: 50
+allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
 ---
 
 # Orchestrator

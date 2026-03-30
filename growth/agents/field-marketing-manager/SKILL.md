@@ -1,24 +1,25 @@
 ---
 name: field-marketing-manager
-domain: growth
-tier: execution
-effort: medium
 description: "Use when planning regional marketing activities, coordinating field events, managing local partnerships, or aligning field efforts with sales territories."
-vibe: "Brings the brand to life in markets that matter most"
-model: sonnet
-color: bright_green
-capabilities:
-  - regional_marketing
-  - local_events
-  - territory_support
-  - geo_targeting
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: campaign-manager
-    type: coordinated_by
-  - name: territory-manager
-    type: collaborates_with
+metadata:
+  vibe: Brings the brand to life in markets that matter most
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - regional_marketing
+    - local_events
+    - territory_support
+    - geo_targeting
+  maxTurns: 30
+  related_agents:
+    - name: campaign-manager
+      type: coordinated_by
+    - name: territory-manager
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Field Marketing Manager

@@ -1,24 +1,25 @@
 ---
 name: proposal-specialist
-domain: growth
-tier: execution
-effort: medium
 description: "Use when writing RFP responses, creating sales proposals, developing pricing packages, or producing technical solution documents for prospects."
-vibe: "Writes proposals that win by making the decision obvious"
-model: sonnet
-color: bright_green
-capabilities:
-  - rfp_response
-  - proposal_writing
-  - bid_coordination
-  - sow_development
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: sales-strategist
-    type: coordinated_by
-  - name: account-executive
-    type: collaborates_with
+metadata:
+  vibe: Writes proposals that win by making the decision obvious
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - rfp_response
+    - proposal_writing
+    - bid_coordination
+    - sow_development
+  maxTurns: 30
+  related_agents:
+    - name: sales-strategist
+      type: coordinated_by
+    - name: account-executive
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Proposal Specialist

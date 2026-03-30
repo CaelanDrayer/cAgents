@@ -1,24 +1,25 @@
 ---
 name: influencer-marketing-specialist
-domain: growth
-tier: execution
-effort: medium
 description: "Use when identifying influencers, managing influencer partnerships, coordinating sponsored content, or measuring influencer campaign impact."
-vibe: "Connects brands with voices their audience already trusts"
-model: sonnet
-color: bright_green
-capabilities:
-  - influencer_campaigns
-  - creator_partnerships
-  - ambassador_programs
-  - influencer_roi
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: campaign-manager
-    type: coordinated_by
-  - name: social-media-manager
-    type: collaborates_with
+metadata:
+  vibe: Connects brands with voices their audience already trusts
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - influencer_campaigns
+    - creator_partnerships
+    - ambassador_programs
+    - influencer_roi
+  maxTurns: 30
+  related_agents:
+    - name: campaign-manager
+      type: coordinated_by
+    - name: social-media-manager
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Influencer Marketing Specialist

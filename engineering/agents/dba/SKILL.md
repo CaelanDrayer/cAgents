@@ -1,29 +1,34 @@
 ---
 name: dba
 description: "Use when designing database schemas, optimizing query performance, managing migrations, configuring replication, or troubleshooting database issues."
-vibe: "Keeps databases fast, safe, and ready for whatever you throw at them"
-tier: execution
-effort: medium
-domain: engineering
-model: sonnet
-color: bright_cyan
-capabilities:
-  - database_design
-  - performance_tuning
-  - backup_recovery
-  - data_migration
-  - query_optimization
-  - database_security
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-not-my-scope: ["Frontend code", "UI components", "content writing", "business strategy"]
-related_agents:
-  - name: data-lead
-    type: coordinated_by
-  - name: backend-developer
-    type: collaborates_with
-  - name: data-analyst
-    type: collaborates_with
+metadata:
+  vibe: "Keeps databases fast, safe, and ready for whatever you throw at them"
+  tier: execution
+  effort: medium
+  domain: engineering
+  model: sonnet
+  color: bright_cyan
+  capabilities:
+    - database_design
+    - performance_tuning
+    - backup_recovery
+    - data_migration
+    - query_optimization
+    - database_security
+  maxTurns: 30
+  not-my-scope:
+    - Frontend code
+    - UI components
+    - content writing
+    - business strategy
+  related_agents:
+    - name: data-lead
+      type: coordinated_by
+    - name: backend-developer
+      type: collaborates_with
+    - name: data-analyst
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Database Administrator Agent

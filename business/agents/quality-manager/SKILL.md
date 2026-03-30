@@ -1,37 +1,38 @@
 ---
 name: quality-manager
-domain: business
-tier: controller
-effort: high
 description: "Use when establishing quality standards, managing QA processes, implementing Six Sigma or ISO compliance, or coordinating continuous improvement across domains."
-vibe: "Quality isn't a phase -- it's every single decision"
-model: sonnet
-color: bright_blue
-coordination_style: question_based
-typical_questions:
-  - "What are the current quality standards and metrics?"
-  - "What quality issues or gaps need to be addressed?"
-  - "What continuous improvement opportunities exist?"
-capabilities:
-  - quality_management
-  - qa_processes
-  - quality_standards
-  - continuous_improvement
-  - quality_metrics
-  - root_cause_analysis
-  - quality_assurance
-  - quality_control
-  - process_improvement
-  - iso_compliance
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: process-auditor
-    type: collaborates_with
-  - name: process-improvement-specialist
-    type: collaborates_with
+metadata:
+  vibe: "Quality isn't a phase -- it's every single decision"
+  tier: controller
+  effort: high
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - quality_management
+    - qa_processes
+    - quality_standards
+    - continuous_improvement
+    - quality_metrics
+    - root_cause_analysis
+    - quality_assurance
+    - quality_control
+    - process_improvement
+    - iso_compliance
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What are the current quality standards and metrics?
+    - What quality issues or gaps need to be addressed?
+    - What continuous improvement opportunities exist?
+  related_agents:
+    - name: process-auditor
+      type: collaborates_with
+    - name: process-improvement-specialist
+      type: collaborates_with
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Quality Manager

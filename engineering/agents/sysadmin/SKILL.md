@@ -1,29 +1,30 @@
 ---
 name: sysadmin
 description: "Use when managing Linux/Unix systems, configuring servers, automating system administration tasks, or maintaining system reliability and security."
-vibe: "Keeps servers running so everyone else can keep sleeping"
-tier: execution
-effort: medium
-domain: engineering
-model: sonnet
-color: bright_yellow
-capabilities:
-  - infrastructure_management
-  - server_administration
-  - deployment_coordination
-  - monitoring_setup
-  - incident_response
-  - disaster_recovery
-  - cloud_infrastructure
-  - security_hardening
-  - capacity_planning
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: devops-lead
-    type: coordinated_by
-  - name: devops-engineer
-    type: collaborates_with
+metadata:
+  vibe: Keeps servers running so everyone else can keep sleeping
+  tier: execution
+  effort: medium
+  domain: engineering
+  model: sonnet
+  color: bright_yellow
+  capabilities:
+    - infrastructure_management
+    - server_administration
+    - deployment_coordination
+    - monitoring_setup
+    - incident_response
+    - disaster_recovery
+    - cloud_infrastructure
+    - security_hardening
+    - capacity_planning
+  maxTurns: 30
+  related_agents:
+    - name: devops-lead
+      type: coordinated_by
+    - name: devops-engineer
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Systems Administrator

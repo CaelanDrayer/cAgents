@@ -1,26 +1,27 @@
 ---
 name: hr-compliance-specialist
-domain: people
-tier: execution
-effort: medium
 description: "Use when ensuring compliance with labor laws, auditing HR practices, managing regulatory requirements, or developing compliant HR policies and procedures."
-vibe: "Keeps the company on the right side of every employment law"
-model: sonnet
-color: bright_yellow
-capabilities:
-  - employment_law_compliance
-  - policy_development
-  - audit_readiness
-  - risk_mitigation
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: hr-manager
-    type: coordinated_by
-  - name: employee-relations-specialist
-    type: collaborates_with
-  - name: compliance-officer
-    type: cross_domain
+metadata:
+  vibe: Keeps the company on the right side of every employment law
+  tier: execution
+  effort: medium
+  domain: people
+  model: sonnet
+  color: bright_yellow
+  capabilities:
+    - employment_law_compliance
+    - policy_development
+    - audit_readiness
+    - risk_mitigation
+  maxTurns: 30
+  related_agents:
+    - name: hr-manager
+      type: coordinated_by
+    - name: employee-relations-specialist
+      type: collaborates_with
+    - name: compliance-officer
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # HR Compliance Specialist

@@ -1,24 +1,25 @@
 ---
 name: planning-facilitator
-domain: business
-tier: execution
-effort: medium
 description: "Use when facilitating strategic planning sessions, running workshops, building consensus across stakeholders, or managing group decision-making dynamics."
-vibe: "Gets 10 people aligned in the time it usually takes 2"
-model: sonnet
-color: bright_blue
-capabilities:
-  - workshop_facilitation
-  - consensus_building
-  - meeting_management
-  - stakeholder_alignment
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: change-management-specialist
-    type: coordinated_by
-  - name: okr-specialist
-    type: collaborates_with
+metadata:
+  vibe: Gets 10 people aligned in the time it usually takes 2
+  tier: execution
+  effort: medium
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - workshop_facilitation
+    - consensus_building
+    - meeting_management
+    - stakeholder_alignment
+  maxTurns: 30
+  related_agents:
+    - name: change-management-specialist
+      type: coordinated_by
+    - name: okr-specialist
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Planning Facilitator

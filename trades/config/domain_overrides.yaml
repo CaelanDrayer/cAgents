@@ -1,0 +1,72 @@
+# Trades domain overrides
+domain: trades
+description: "Culinary arts, construction, automotive, agriculture, fashion, and applied trade skills"
+
+planner:
+  controller_catalog:
+    tier_2: [trades-coordinator]
+    tier_3: [trades-coordinator]
+    tier_4: [trades-coordinator]
+
+  specialist_routing:
+    culinary:
+      keywords: [cooking, recipe, culinary, baking, sourdough, kitchen, chef, food, meal prep, fermentation, pastry, nutrition]
+      agents: [chef]
+      description: "Culinary arts, recipes, and cooking technique"
+    construction:
+      keywords: [construction, building, plumbing, electrical, HVAC, roofing, framing, renovation, home improvement, DIY, carpentry, masonry, drywall]
+      agents: [construction-advisor]
+      description: "Construction, renovation, and home improvement"
+    automotive:
+      keywords: [automotive, mechanic, car repair, engine, transmission, brake, oil change, tire, vehicle, diagnostic]
+      agents: [automotive-technician]
+      description: "Automotive repair and maintenance"
+    fashion:
+      keywords: [fashion, sewing, garment, pattern, textile, clothing design, tailoring, embroidery, knitting, crochet]
+      agents: [fashion-designer]
+      description: "Fashion design, sewing, and textile craft"
+    agriculture:
+      keywords: [farming, agriculture, gardening, landscaping, irrigation, soil, crop, planting, harvest, permaculture, composting]
+      agents: [agronomist]
+      description: "Agriculture, farming, and gardening"
+    woodworking:
+      keywords: [woodworking, welding, metalworking, lathe, joinery, furniture, workshop, tool]
+      agents: [trades-coordinator]
+      description: "Woodworking and metalworking routed through trades-coordinator"
+
+router:
+  keywords:
+    - cooking
+    - recipe
+    - culinary
+    - construction
+    - automotive
+    - repair
+    - plumbing
+    - electrical
+    - farming
+    - agriculture
+    - fashion
+    - sewing
+    - woodworking
+    - welding
+    - HVAC
+    - roofing
+    - gardening
+    - landscaping
+    - baking
+    - sourdough
+    - mechanic
+    - carpentry
+    - masonry
+    - irrigation
+    - DIY
+    - home improvement
+    - renovation
+    - chef
+    - tailoring
+    - garment
+    - composting
+    - permaculture
+    - fermentation
+    - metalworking

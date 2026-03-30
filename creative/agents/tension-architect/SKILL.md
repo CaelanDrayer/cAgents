@@ -1,43 +1,44 @@
 ---
 name: tension-architect
-domain: creative
-tier: execution
-effort: medium
 description: "Use when designing tension and suspense structures, engineering emotional escalation, building dramatic irony, or crafting sequences that maximize reader anxiety."
-vibe: "Ratchets tension until the reader forgets to breathe"
-model: opus
-color: bright_magenta
-capabilities:
-  - tension_analysis
-  - conflict_architecture
-  - suspense_design
-  - stakes_escalation
-  - dramatic_irony
-  - micro_tension
-  - promise_payoff_cycles
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-answers_questions:
-  - "Is there sufficient tension on every page?"
-  - "Are the stakes clear, personal, and escalating?"
-  - "Does the conflict architecture support the story's dramatic needs?"
-  - "Where does tension sag or become monotonous?"
-  - "Is dramatic irony being used effectively?"
-  - "Are promise/payoff cycles satisfying?"
-executes_tasks:
-  - tension_analysis
-  - conflict_restructuring
-  - stakes_escalation_design
-  - suspense_revision
-  - micro_tension_enhancement
-  - dramatic_irony_implementation
-related_agents:
-  - name: story-architect
-    type: coordinated_by
-  - name: pacing-specialist
-    type: collaborates_with
-  - name: plot-developer
-    type: collaborates_with
+metadata:
+  vibe: Ratchets tension until the reader forgets to breathe
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - tension_analysis
+    - conflict_architecture
+    - suspense_design
+    - stakes_escalation
+    - dramatic_irony
+    - micro_tension
+    - promise_payoff_cycles
+  maxTurns: 30
+  related_agents:
+    - name: story-architect
+      type: coordinated_by
+    - name: pacing-specialist
+      type: collaborates_with
+    - name: plot-developer
+      type: collaborates_with
+  answers_questions:
+    - Is there sufficient tension on every page?
+    - "Are the stakes clear, personal, and escalating?"
+    - "Does the conflict architecture support the story's dramatic needs?"
+    - Where does tension sag or become monotonous?
+    - Is dramatic irony being used effectively?
+    - Are promise/payoff cycles satisfying?
+  executes_tasks:
+    - tension_analysis
+    - conflict_restructuring
+    - stakes_escalation_design
+    - suspense_revision
+    - micro_tension_enhancement
+    - dramatic_irony_implementation
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Tension Architect

@@ -1,37 +1,42 @@
 ---
 name: customer-success-manager
-domain: service
-tier: controller
-effort: high
 description: "Use when onboarding customers, managing customer health scores, driving product adoption, preventing churn, or planning customer expansion strategies."
-vibe: "Turns customers into advocates before they know they need help"
-model: sonnet
-color: bright_red
-coordination_style: question_based
-typical_questions:
-  - "What is the current customer health score and engagement level?"
-  - "What adoption milestones have been achieved vs planned?"
-  - "What are the key risks to customer success?"
-capabilities:
-  - customer_onboarding
-  - adoption_management
-  - success_planning
-  - health_monitoring
-  - proactive_support
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-not-my-scope: ["Code implementation", "product development", "financial strategy", "HR policies"]
-related_agents:
-  - name: account-manager
-    type: collaborates_with
-  - name: customer-education-specialist
-    type: coordinates
-  - name: customer-advocacy-manager
-    type: collaborates_with
-  - name: customer-marketing-manager
-    type: cross_domain
+metadata:
+  vibe: Turns customers into advocates before they know they need help
+  tier: controller
+  effort: high
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - customer_onboarding
+    - adoption_management
+    - success_planning
+    - health_monitoring
+    - proactive_support
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the current customer health score and engagement level?
+    - What adoption milestones have been achieved vs planned?
+    - What are the key risks to customer success?
+  not-my-scope:
+    - Code implementation
+    - product development
+    - financial strategy
+    - HR policies
+  related_agents:
+    - name: account-manager
+      type: collaborates_with
+    - name: customer-education-specialist
+      type: coordinates
+    - name: customer-advocacy-manager
+      type: collaborates_with
+    - name: customer-marketing-manager
+      type: cross_domain
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 <example>

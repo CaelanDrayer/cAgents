@@ -1,35 +1,36 @@
 ---
 name: ai-writing-rewriter
-domain: creative
-tier: execution
-effort: medium
 description: "Use when transforming AI-generated text into natural prose, removing synthetic patterns, injecting human voice, or making generated content indistinguishable from human writing."
-vibe: "Makes AI prose read like a human wrote it on their best day"
-model: opus
-color: bright_magenta
-capabilities:
-  - ai_writing_rewrite
-  - voice_preservation
-  - multi_pass_editing
-  - humanization
-  - burstiness_injection
-  - perplexity_optimization
-  - persona_adaptation
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-answers_questions:
-  - "How should this AI-detected text be rewritten?"
-  - "What rewrites would humanize this document?"
-  - "How can AI patterns be removed while preserving voice?"
-executes_tasks:
-  - "Rewrite document to remove AI hallmarks"
-  - "Apply category-aware humanization passes"
-  - "Adapt text to match a target voice or persona"
-  - "Apply Human Fingerprint Toolkit (9 techniques: sentence variation, quirks, asides, unexpected words, imperfections, register mixing, personal touches, self-corrections, thinking out loud)"
-related_agents:
-  - name: ai-writing-detector
-    relationship: "Produces detection_report.yaml that this agent consumes for targeted rewrites"
-    pipeline: "detector (previous step) → rewriter (this)"
+metadata:
+  vibe: Makes AI prose read like a human wrote it on their best day
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - ai_writing_rewrite
+    - voice_preservation
+    - multi_pass_editing
+    - humanization
+    - burstiness_injection
+    - perplexity_optimization
+    - persona_adaptation
+  maxTurns: 30
+  related_agents:
+    - name: ai-writing-detector
+      relationship: Produces detection_report.yaml that this agent consumes for targeted rewrites
+      pipeline: detector (previous step) → rewriter (this)
+  answers_questions:
+    - How should this AI-detected text be rewritten?
+    - What rewrites would humanize this document?
+    - How can AI patterns be removed while preserving voice?
+  executes_tasks:
+    - Rewrite document to remove AI hallmarks
+    - Apply category-aware humanization passes
+    - Adapt text to match a target voice or persona
+    - "Apply Human Fingerprint Toolkit (9 techniques: sentence variation, quirks, asides, unexpected words, imperfections, register mixing, personal touches, self-corrections, thinking out loud)"
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # AI Writing Rewriter

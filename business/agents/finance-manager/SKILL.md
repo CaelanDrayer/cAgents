@@ -1,33 +1,34 @@
 ---
 name: finance-manager
 description: "Use when managing budgets, tracking financial performance, creating forecasts, analyzing cost structures, or producing financial reports."
-vibe: "Counts every dollar so the company can spend the right ones"
-tier: controller
-effort: high
-domain: business
-coordination_style: question_based
-typical_questions:
-  - "What is the current budget allocation and spend rate?"
-  - "What is the expected ROI and payback period?"
-  - "What are the cost risks and financial constraints?"
-model: sonnet
-color: bright_green
-capabilities:
-  - budget_management
-  - cost_analysis
-  - roi_assessment
-  - vendor_management
-  - financial_forecasting
-  - resource_allocation
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 30
-related_agents:
-  - name: procurement-specialist
-    type: coordinates
-  - name: resource-planner
-    type: collaborates_with
-  - name: operations-manager
-    type: collaborates_with
+metadata:
+  vibe: Counts every dollar so the company can spend the right ones
+  tier: controller
+  effort: high
+  domain: business
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - budget_management
+    - cost_analysis
+    - roi_assessment
+    - vendor_management
+    - financial_forecasting
+    - resource_allocation
+  maxTurns: 30
+  coordination_style: question_based
+  typical_questions:
+    - What is the current budget allocation and spend rate?
+    - What is the expected ROI and payback period?
+    - What are the cost risks and financial constraints?
+  related_agents:
+    - name: procurement-specialist
+      type: coordinates
+    - name: resource-planner
+      type: collaborates_with
+    - name: operations-manager
+      type: collaborates_with
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Finance Manager

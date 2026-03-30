@@ -1,24 +1,25 @@
 ---
 name: risk-and-compliance-manager
-domain: service
-tier: execution
-effort: medium
 description: "Use when building risk and compliance frameworks, conducting risk assessments, managing audit findings, or coordinating compliance across business units."
-vibe: "Balances risk appetite with compliance requirements"
-model: sonnet
-color: bright_red
-capabilities:
-  - enterprise_risk_management
-  - compliance_frameworks
-  - risk_assessment
-  - integrated_governance
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: compliance-officer
-    type: coordinated_by
-  - name: risk-manager
-    type: cross_domain
+metadata:
+  vibe: Balances risk appetite with compliance requirements
+  tier: execution
+  effort: medium
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - enterprise_risk_management
+    - compliance_frameworks
+    - risk_assessment
+    - integrated_governance
+  maxTurns: 30
+  related_agents:
+    - name: compliance-officer
+      type: coordinated_by
+    - name: risk-manager
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Risk and Compliance Manager

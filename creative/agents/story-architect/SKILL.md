@@ -1,40 +1,41 @@
 ---
 name: story-architect
-domain: creative
-tier: controller
-effort: high
-coordination_style: question_based
-typical_questions:
-  - "What is the core conflict and stakes?"
-  - "What are the key plot turning points?"
-  - "How do character arcs align with plot?"
-  - "What structural model best serves this narrative?"
-  - "Where are the load-bearing scenes?"
 description: "Use when evaluating story structure, designing narrative architecture, identifying load-bearing plot elements, or building frameworks that balance surprise with inevitability."
-vibe: "Blueprints narratives that hold up under their own weight"
-model: "opusplan"
-color: bright_magenta
-capabilities:
-  - structural_analysis
-  - multi_act_design
-  - genre_structure
-  - nonlinear_architecture
-  - series_planning
-  - ensemble_structure
-  - pov_architecture
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: plot-developer
-    type: coordinates
-  - name: narrative-designer
-    type: coordinates
-  - name: pacing-specialist
-    type: coordinates
-  - name: tension-architect
-    type: coordinates
+metadata:
+  vibe: Blueprints narratives that hold up under their own weight
+  tier: controller
+  effort: high
+  domain: creative
+  model: opusplan
+  color: bright_magenta
+  capabilities:
+    - structural_analysis
+    - multi_act_design
+    - genre_structure
+    - nonlinear_architecture
+    - series_planning
+    - ensemble_structure
+    - pov_architecture
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the core conflict and stakes?
+    - What are the key plot turning points?
+    - How do character arcs align with plot?
+    - What structural model best serves this narrative?
+    - Where are the load-bearing scenes?
+  related_agents:
+    - name: plot-developer
+      type: coordinates
+    - name: narrative-designer
+      type: coordinates
+    - name: pacing-specialist
+      type: coordinates
+    - name: tension-architect
+      type: coordinates
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Story Architect

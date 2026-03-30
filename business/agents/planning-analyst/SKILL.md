@@ -1,24 +1,25 @@
 ---
 name: planning-analyst
-domain: business
-tier: execution
-effort: medium
 description: "Use when analyzing planning metrics, forecasting trends, tracking KPIs, or providing data-driven insights for strategic and operational planning."
-vibe: "Spots the gap between the plan and reality before it hurts"
-model: sonnet
-color: bright_blue
-capabilities:
-  - metrics_analysis
-  - trend_forecasting
-  - planning_insights
-  - kpi_tracking
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: performance-analyst
-    type: coordinated_by
-  - name: predictive-analyst
-    type: collaborates_with
+metadata:
+  vibe: Spots the gap between the plan and reality before it hurts
+  tier: execution
+  effort: medium
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - metrics_analysis
+    - trend_forecasting
+    - planning_insights
+    - kpi_tracking
+  maxTurns: 30
+  related_agents:
+    - name: performance-analyst
+      type: coordinated_by
+    - name: predictive-analyst
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Planning Analyst

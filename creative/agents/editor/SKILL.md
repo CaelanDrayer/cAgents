@@ -1,40 +1,41 @@
 ---
 name: editor
-domain: creative
-tier: controller
-effort: high
-coordination_style: question_based
-typical_questions:
-  - "What are the structural and architectural issues in this manuscript?"
-  - "Where does the prose need line-level attention for rhythm, precision, or voice?"
-  - "What consistency, continuity, or pacing problems exist across the work?"
 description: "Use when content needs polish, prose is awkward, writing is too long, or tone needs adjustment. Cuts filler, strengthens structure, fixes voice issues, and improves readability."
-vibe: "Sees what the manuscript is reaching for and helps it get there"
-model: "opusplan"
-color: bright_magenta
-capabilities:
-  - developmental_editing
-  - structural_analysis
-  - character_arc_assessment
-  - line_editing
-  - pacing_diagnosis
-  - revision_strategy
-  - editorial_letter_craft
-  - genre_sensitive_editing
-  - manuscript_coordination
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: copy-editor
-    type: coordinates
-  - name: continuity-checker
-    type: coordinates
-  - name: prose-stylist
-    type: coordinates
-  - name: literary-critic
-    type: collaborates_with
+metadata:
+  vibe: Sees what the manuscript is reaching for and helps it get there
+  tier: controller
+  effort: high
+  domain: creative
+  model: opusplan
+  color: bright_magenta
+  capabilities:
+    - developmental_editing
+    - structural_analysis
+    - character_arc_assessment
+    - line_editing
+    - pacing_diagnosis
+    - revision_strategy
+    - editorial_letter_craft
+    - genre_sensitive_editing
+    - manuscript_coordination
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What are the structural and architectural issues in this manuscript?
+    - "Where does the prose need line-level attention for rhythm, precision, or voice?"
+    - "What consistency, continuity, or pacing problems exist across the work?"
+  related_agents:
+    - name: copy-editor
+      type: coordinates
+    - name: continuity-checker
+      type: coordinates
+    - name: prose-stylist
+      type: coordinates
+    - name: literary-critic
+      type: collaborates_with
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 <example>

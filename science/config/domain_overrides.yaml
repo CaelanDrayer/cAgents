@@ -1,0 +1,56 @@
+domain: science
+controller_catalog:
+  tier_2:
+    primary: "science-coordinator"
+  tier_3:
+    primary: "science-coordinator"
+    supporting: ["statistician"]
+  tier_4:
+    primary: "science-coordinator"
+    supporting: ["statistician", "academic-researcher"]
+router_keywords:
+  - physics
+  - chemistry
+  - biology
+  - math
+  - mathematics
+  - calculus
+  - algebra
+  - theorem
+  - proof
+  - hypothesis
+  - experiment
+  - research
+  - laboratory
+  - molecule
+  - atom
+  - equation
+  - scientific
+  - quantum
+  - genetics
+  - ecology
+  - statistics
+  - geology
+  - astronomy
+  - biochemistry
+  - ecology
+  - formula
+  - periodic
+  - evolution
+  - entropy
+  - gravity
+  - photosynthesis
+  - genome
+  - climate
+  - simulation
+  - data analysis
+specialist_routing:
+  mathematics: mathematician
+  physics: physicist
+  chemistry: chemist
+  biology: biologist
+  statistics: statistician
+  astronomy: astronomer
+  geology: geoscientist
+  biochemistry: biochemist
+  ecology: ecologist

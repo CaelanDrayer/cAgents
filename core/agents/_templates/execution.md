@@ -8,7 +8,6 @@ description: >
   Use for {X}, {Y}, {Z}.
 
 model: sonnet
-permissionMode: bypassPermissions
 color: bright_green
 
 capabilities:

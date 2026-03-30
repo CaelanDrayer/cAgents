@@ -1,21 +1,21 @@
 ---
 name: universal-self-correct
-domain: core
-tier: infrastructure
-effort: high
 description: "Use when an agent is stuck, when 3+ tool failures occur in sequence, or when the 6-step recovery ladder needs activation."
-vibe: "Fixes what the validators flagged before anyone has to ask"
-model: opus
-color: bright_magenta
-capabilities:
-  - validation_fix
-  - coordination_correction
-  - auto_recovery
-  - pattern_learning
-  - subagent_recovery
-allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
+metadata:
+  vibe: Fixes what the validators flagged before anyone has to ask
+  tier: infrastructure
+  effort: high
+  domain: core
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - validation_fix
+    - coordination_correction
+    - auto_recovery
+    - pattern_learning
+    - subagent_recovery
+  maxTurns: 40
+allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
 ---
 
 # Universal Self-Correct

@@ -1,0 +1,54 @@
+domain: health
+controller_catalog:
+  tier_2:
+    primary: "health-coordinator"
+  tier_3:
+    primary: "health-coordinator"
+    supporting: ["medical-advisor"]
+  tier_4:
+    primary: "health-coordinator"
+    supporting: ["medical-advisor", "mental-health-advisor"]
+router_keywords:
+  - medical
+  - health
+  - wellness
+  - fitness
+  - nutrition
+  - mental health
+  - therapy
+  - diagnosis
+  - treatment
+  - medication
+  - symptoms
+  - exercise
+  - diet
+  - workout
+  - clinical
+  - pharmacy
+  - counseling
+  - mindfulness
+  - rehabilitation
+  - preventive
+  - chronic
+  - calories
+  - vitamins
+  - supplements
+  - anatomy
+  - physiology
+  - cardiology
+  - oncology
+  - neurology
+  - sleep
+  - stress
+  - immunity
+  - vaccine
+  - allergy
+  - inflammation
+  - dosage
+  - prognosis
+specialist_routing:
+  medicine: medical-advisor
+  mental_health: mental-health-advisor
+  nutrition: nutritionist
+  fitness: fitness-coach
+  pharmacy: pharmacist

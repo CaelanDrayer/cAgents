@@ -13,6 +13,12 @@
 | operate_ops | COO | `cagents:coo` | Operate | Process, logistics, operational execution, supply chain |
 | people | CHRO | `cagents:chro` | People | Talent, hiring, culture, org structure, L&D |
 | service | General Counsel | `cagents:general-counsel` | Serve | Legal, compliance, customer support, privacy |
+| science | CTO | `cagents:cto` | Make | Research methodology, experiment design, data analysis, scientific rigor |
+| health | CHRO | `cagents:chro` | People | Wellness programs, medical research synthesis, health recommendations, safety |
+| education | CPO | `cagents:cpo` | Business | Learning experience design, curriculum, pedagogy, instructional strategy |
+| personal | CHRO | `cagents:chro` | People | Individual development, goal-setting, habit formation, life coaching |
+| arts | CCO | `cagents:cco` | Make | Fine arts direction, medium guidance, composition, critique, style |
+| trades | COO | `cagents:coo` | Operate | Practical execution, safety compliance, procedural guidance, materials |
 
 ## Keyword Detection
 
@@ -39,6 +45,24 @@ Primary: `hire`, `recruit`, `onboard`, `culture`, `HR`, `talent`, `performance r
 
 ### service (General Counsel)
 Primary: `support`, `legal`, `compliance`, `customer`, `SLA`, `contract`, `privacy`, `GDPR`, `regulation`, `liability`, `dispute`, `escalation`
+
+### science (CTO)
+Primary: `research`, `experiment`, `hypothesis`, `methodology`, `data collection`, `peer review`, `laboratory`, `scientific`, `study`, `evidence`, `replication`, `protocol`, `field study`
+
+### health (CHRO)
+Primary: `wellness`, `medical`, `health`, `symptom`, `treatment`, `fitness`, `mental health`, `therapy`, `nutrition`, `clinical`, `patient`, `healthcare`, `wellbeing`, `exercise`
+
+### education (CPO)
+Primary: `learn`, `teach`, `curriculum`, `lesson`, `course`, `student`, `pedagogy`, `training`, `assessment`, `educational`, `instructional design`, `learning objective`, `classroom`, `tutor`
+
+### personal (CHRO)
+Primary: `personal development`, `self-improvement`, `goals`, `habits`, `productivity`, `life coaching`, `career planning`, `personal growth`, `motivation`, `mindset`, `journaling`, `routine`
+
+### arts (CCO)
+Primary: `painting`, `drawing`, `sculpture`, `performance`, `gallery`, `exhibition`, `artistic`, `fine arts`, `visual art`, `craft`, `portfolio`, `technique`, `composition`, `medium`
+
+### trades (COO)
+Primary: `plumbing`, `electrical`, `carpentry`, `HVAC`, `welding`, `construction`, `installation`, `repair`, `tools`, `safety`, `code compliance`, `permits`, `materials`, `procedure`
 
 ## Multi-Domain Detection
 

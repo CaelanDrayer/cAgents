@@ -1,30 +1,31 @@
 ---
 name: marketing-analyst
-domain: growth
-tier: execution
-effort: medium
 description: "Use when analyzing marketing performance data, building attribution models, creating marketing dashboards, or providing campaign optimization insights."
-vibe: "Turns campaign data into the next campaign's secret weapon"
-model: sonnet
-color: bright_green
-capabilities:
-  - marketing_analytics
-  - attribution
-  - dashboards
-  - roi_analysis
-  - predictive_modeling
-  - customer_segmentation
-  - marketing_mix_modeling
-  - statistical_analysis
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: campaign-manager
-    type: coordinated_by
-  - name: marketing-strategist
-    type: coordinated_by
-  - name: data-scientist
-    type: cross_domain
+metadata:
+  vibe: "Turns campaign data into the next campaign's secret weapon"
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - marketing_analytics
+    - attribution
+    - dashboards
+    - roi_analysis
+    - predictive_modeling
+    - customer_segmentation
+    - marketing_mix_modeling
+    - statistical_analysis
+  maxTurns: 30
+  related_agents:
+    - name: campaign-manager
+      type: coordinated_by
+    - name: marketing-strategist
+      type: coordinated_by
+    - name: data-scientist
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Marketing Analyst

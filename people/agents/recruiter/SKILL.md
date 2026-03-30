@@ -1,26 +1,27 @@
 ---
 name: recruiter
-domain: people
-tier: execution
-effort: medium
 description: "Use when sourcing candidates, screening resumes, conducting initial interviews, managing candidate pipelines, or coordinating hiring logistics."
-vibe: "Finds the candidates who aren't looking but should be"
-model: sonnet
-color: bright_yellow
-capabilities:
-  - candidate_sourcing
-  - screening_interviews
-  - candidate_engagement
-  - offer_negotiation
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: talent-acquisition-manager
-    type: coordinated_by
-  - name: recruiting-coordinator
-    type: collaborates_with
-  - name: onboarding-specialist
-    type: pipeline_next
+metadata:
+  vibe: "Finds the candidates who aren't looking but should be"
+  tier: execution
+  effort: medium
+  domain: people
+  model: sonnet
+  color: bright_yellow
+  capabilities:
+    - candidate_sourcing
+    - screening_interviews
+    - candidate_engagement
+    - offer_negotiation
+  maxTurns: 30
+  related_agents:
+    - name: talent-acquisition-manager
+      type: coordinated_by
+    - name: recruiting-coordinator
+      type: collaborates_with
+    - name: onboarding-specialist
+      type: pipeline_next
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Recruiter

@@ -1,26 +1,30 @@
 ---
 name: reviewer
-domain: core
-tier: execution
-effort: medium
 description: "Use when validating work item outputs against acceptance criteria, performing spec compliance checks, or conducting code quality review in controller loops."
-vibe: "The impartial judge who only cares about acceptance criteria"
-model: sonnet
-color: bright_cyan
-capabilities:
-  - acceptance_criteria_evaluation
-  - cross_domain_review
-  - evidence_based_assessment
-  - revision_feedback
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 15
-permissionMode: "bypassPermissions"
-related_agents:
-  - name: code-reviewer
-    type: collaborates_with
-  - name: universal-validator
-    type: collaborates_with
-not-my-scope: ["Implementation", "planning", "coordination", "content creation"]
+metadata:
+  vibe: The impartial judge who only cares about acceptance criteria
+  tier: execution
+  effort: medium
+  domain: core
+  model: sonnet
+  color: bright_cyan
+  capabilities:
+    - acceptance_criteria_evaluation
+    - cross_domain_review
+    - evidence_based_assessment
+    - revision_feedback
+  maxTurns: 15
+  not-my-scope:
+    - Implementation
+    - planning
+    - coordination
+    - content creation
+  related_agents:
+    - name: code-reviewer
+      type: collaborates_with
+    - name: universal-validator
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Reviewer Agent

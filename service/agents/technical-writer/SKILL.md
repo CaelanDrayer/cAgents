@@ -1,26 +1,27 @@
 ---
 name: technical-writer
-domain: service
-tier: execution
-effort: medium
 description: "Use when writing technical documentation, creating API references, developing user guides, or maintaining documentation accuracy and consistency."
-vibe: "Writes documentation so clear even the author learns something"
-model: sonnet
-color: bright_red
-capabilities:
-  - technical_writing
-  - documentation
-  - content_editing
-  - api_documentation
-allowed-tools: "Read Grep Glob Write Edit"
-maxTurns: 30
-related_agents:
-  - name: support-operations-manager
-    type: coordinated_by
-  - name: knowledge-base-manager
-    type: collaborates_with
-  - name: scribe
-    type: cross_domain
+metadata:
+  vibe: Writes documentation so clear even the author learns something
+  tier: execution
+  effort: medium
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - technical_writing
+    - documentation
+    - content_editing
+    - api_documentation
+  maxTurns: 30
+  related_agents:
+    - name: support-operations-manager
+      type: coordinated_by
+    - name: knowledge-base-manager
+      type: collaborates_with
+    - name: scribe
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit
 ---
 
 # Technical Writer

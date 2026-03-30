@@ -1,35 +1,36 @@
 ---
 name: product-marketing-manager
-domain: growth
-tier: controller
-effort: high
-coordination_style: question_based
-typical_questions:
-  - "What are the current campaign/sales metrics?"
-  - "What is the target audience and positioning?"
-  - "What are the conversion bottlenecks?"
 description: "Use when positioning products, creating go-to-market strategies, developing competitive battlecards, or crafting product messaging and launch plans."
-vibe: "Positions the product so it sells the story customers need to hear"
-model: sonnet
-color: bright_green
-capabilities:
-  - product_positioning
-  - launch_planning
-  - competitive_intelligence
-  - sales_enablement
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: sales-enablement-specialist
-    type: coordinates
-  - name: copywriter
-    type: coordinates
-  - name: competitive-intelligence-analyst
-    type: cross_domain
-  - name: marketing-strategist
-    type: collaborates_with
+metadata:
+  vibe: Positions the product so it sells the story customers need to hear
+  tier: controller
+  effort: high
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - product_positioning
+    - launch_planning
+    - competitive_intelligence
+    - sales_enablement
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What are the current campaign/sales metrics?
+    - What is the target audience and positioning?
+    - What are the conversion bottlenecks?
+  related_agents:
+    - name: sales-enablement-specialist
+      type: coordinates
+    - name: copywriter
+      type: coordinates
+    - name: competitive-intelligence-analyst
+      type: cross_domain
+    - name: marketing-strategist
+      type: collaborates_with
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Product Marketing Manager

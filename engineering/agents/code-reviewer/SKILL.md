@@ -1,39 +1,44 @@
 ---
 name: code-reviewer
-domain: engineering
 description: "Use when reviewing code changes for quality, security, performance, and maintainability. Identifies bugs, anti-patterns, and style violations before merge."
-vibe: "Reviews code like a mentor, not a gatekeeper -- finds the bugs you almost shipped"
-capabilities:
-  - parallel-execution
-  - framework-patterns
-  - confidence-scoring
-  - enhanced-auto-fix
-  - quality-gates
-  - intelligent-agent-selection
-  - severity-based-early-reporting
-  - context-aware-analysis
-  - diff-aware-review
-  - pattern-learning
-allowed-tools: "Read Grep Glob"
-model: "haiku"
-color: bright_magenta
-layer: workflow
-tier: support
-effort: low
-maxTurns: 10
-disallowedTools: ["Task"]
-not-my-scope: ["Initial implementation", "architecture design", "deployment", "content creation"]
-related_agents:
-  - name: architecture-reviewer
-    type: coordinates
-  - name: performance-analyzer
-    type: coordinates
-  - name: security-analyst
-    type: coordinates
-  - name: backend-developer
-    type: reviews
-  - name: frontend-developer
-    type: reviews
+metadata:
+  vibe: "Reviews code like a mentor, not a gatekeeper -- finds bugs you almost shipped"
+  tier: support
+  effort: low
+  domain: engineering
+  model: haiku
+  color: bright_magenta
+  capabilities:
+    - parallel-execution
+    - framework-patterns
+    - confidence-scoring
+    - enhanced-auto-fix
+    - quality-gates
+    - intelligent-agent-selection
+    - severity-based-early-reporting
+    - context-aware-analysis
+    - diff-aware-review
+    - pattern-learning
+  maxTurns: 10
+  disallowedTools: ["Task"]
+  not-my-scope:
+    - Initial implementation
+    - architecture design
+    - deployment
+    - content creation
+  related_agents:
+    - name: architecture-reviewer
+      type: coordinates
+    - name: performance-analyzer
+      type: coordinates
+    - name: security-analyst
+      type: coordinates
+    - name: backend-developer
+      type: reviews
+    - name: frontend-developer
+      type: reviews
+  layer: workflow
+allowed-tools: Read Grep Glob
 ---
 
 # V3.0 Enhanced Code Reviewer Agent

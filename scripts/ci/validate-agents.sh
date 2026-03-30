@@ -2,7 +2,7 @@
 #
 # cAgents Agent Schema Validation
 # Validates all agent SKILL.md files across all 8 domains
-# Version: 10.24.3
+# Version: 10.25.0
 #
 # Usage:
 #   ./scripts/ci/validate-agents.sh           # Validate all domains
@@ -118,21 +118,43 @@ validate_agent() {
     local frontmatter
     frontmatter=$(sed -n '2,/^---$/p' "$skill_md" | head -n -1)
 
-    # Check 3: Required field - name
+    # Helper: get a field value from frontmatter, checking top-level AND metadata: block
+    # Usage: get_fm_field "tier" "$frontmatter"
+    get_fm_field() {
+        local field="$1" fm="$2"
+        # Top-level: ^field:
+        local val
+        val=$(echo "$fm" | grep "^${field}:" | head -1 | sed "s/^${field}:[[:space:]]*//" | tr -d '"' | tr -d "'")
+        if [[ -z "$val" ]]; then
+            # Inside metadata: block (2-space indent): ^  field:
+            val=$(echo "$fm" | grep "^  ${field}:" | head -1 | sed "s/^  ${field}:[[:space:]]*//" | tr -d '"' | tr -d "'")
+        fi
+        echo "$val"
+    }
+
+    # Helper: check if a field exists at top-level or inside metadata: block
+    has_fm_field() {
+        local field="$1" fm="$2"
+        echo "$fm" | grep -q "^${field}:" && return 0
+        echo "$fm" | grep -q "^  ${field}:" && return 0
+        return 1
+    }
+
+    # Check 3: Required field - name (always top-level per spec)
     if ! echo "$frontmatter" | grep -q "^name:"; then
         log_fail "Missing 'name' field: $relative_path"
         return
     fi
 
-    # Check 4: Required field - tier (ERROR - tier is mandatory)
-    if ! echo "$frontmatter" | grep -q "^tier:"; then
+    # Check 4: Required field - tier (may now be inside metadata:)
+    if ! has_fm_field "tier" "$frontmatter"; then
         log_fail "Missing 'tier' field (required): $relative_path"
         return
     fi
 
     # Check 5: Valid tier value
     local tier_value
-    tier_value=$(echo "$frontmatter" | grep "^tier:" | sed 's/^tier:\s*//' | tr -d '[:space:]' | tr -d '"' | tr -d "'")
+    tier_value=$(get_fm_field "tier" "$frontmatter" | tr -d '[:space:]')
     case "$tier_value" in
         controller|execution|support|executive|infrastructure)
             ;;
@@ -155,7 +177,7 @@ validate_agent() {
     local name_value
     name_value=$(echo "$frontmatter" | grep "^name:" | sed 's/^name:\s*//' | tr -d '[:space:]' | tr -d '"' | tr -d "'")
     local domain_value
-    domain_value=$(echo "$frontmatter" | grep "^domain:" | sed 's/^domain:\s*//' | tr -d '[:space:]' | tr -d '"' | tr -d "'")
+    domain_value=$(get_fm_field "domain" "$frontmatter" | tr -d '[:space:]')
     local dir_domain
     dir_domain=$(echo "$relative_path" | cut -d'/' -f1)
     local dir_name
@@ -196,13 +218,15 @@ validate_agent() {
     fi
 
     # Check 14: Legacy related-agents field rejection (prefer related_agents structured format)
-    if echo "$frontmatter" | grep -q "^related-agents:"; then
+    # Check both top-level (pre-migration) and inside metadata: (post-migration)
+    if echo "$frontmatter" | grep -q "^related-agents:" || echo "$frontmatter" | grep -q "^  related-agents:"; then
         log_warn "Legacy 'related-agents' field found (use 'related_agents' structured format instead): $relative_path"
     fi
 
     # Check 9: related_agents resolution (referenced agents must exist)
+    # After migration, related_agents lives inside metadata: block (indented)
     local related_agents
-    related_agents=$(echo "$frontmatter" | grep -A 20 "^related_agents:" | grep "^\s*-\s*name:" | sed 's/^\s*-\s*name:\s*//' | tr -d '"' | tr -d "'")
+    related_agents=$(echo "$frontmatter" | grep -A 20 -E "^related_agents:|^  related_agents:" | grep "^\s*-\s*name:" | sed 's/^\s*-\s*name:\s*//' | tr -d '"' | tr -d "'")
     if [[ -n "$related_agents" ]]; then
         while IFS= read -r related; do
             related=$(echo "$related" | tr -d '[:space:]')
@@ -225,17 +249,19 @@ validate_agent() {
     fi
 
     # Check 10: Vibe field presence (WARN if missing - advisory)
-    if ! echo "$frontmatter" | grep -q "^vibe:"; then
-        : # silent pass for now
-    fi
+    # After migration, vibe lives inside metadata: block
+    # Silent pass for now - vibe is advisory
+    : # no-op
 
     # Check 15b: Model field presence (WARN if missing)
-    if ! echo "$frontmatter" | grep -q "^model:"; then
+    # After migration, model lives inside metadata: block
+    if ! has_fm_field "model" "$frontmatter"; then
         log_warn "Missing 'model' field (recommended per Agent Skills spec): $relative_path"
     fi
 
     # Check 15c: Color field presence (WARN if missing)
-    if ! echo "$frontmatter" | grep -q "^color:"; then
+    # After migration, color lives inside metadata: block
+    if ! has_fm_field "color" "$frontmatter"; then
         log_warn "Missing 'color' field (recommended per Anthropic convention): $relative_path"
     fi
 

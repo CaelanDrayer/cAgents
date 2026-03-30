@@ -1,34 +1,35 @@
 ---
 name: competitive-intelligence-analyst
-domain: shared
-tier: controller
-effort: high
 description: "Use when tracking competitor activity, analyzing market positioning, building competitive battlecards, or providing strategic intelligence on industry trends."
-vibe: "Knows what competitors are doing before they announce it"
-model: sonnet
-color: bright_white
-coordination_style: question_based
-typical_questions:
-  - "Who are the key competitors in this space?"
-  - "Why are we winning or losing against competitors?"
-  - "What are competitor strengths and weaknesses?"
-capabilities:
-  - competitor_analysis
-  - competitive_monitoring
-  - win_loss_analysis
-  - competitive_positioning
-  - battle_cards
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: market-research-analyst
-    type: collaborates_with
-  - name: product-marketing-manager
-    type: cross_domain
-  - name: sales-enablement-specialist
-    type: cross_domain
+metadata:
+  vibe: Knows what competitors are doing before they announce it
+  tier: controller
+  effort: high
+  domain: shared
+  model: sonnet
+  color: bright_white
+  capabilities:
+    - competitor_analysis
+    - competitive_monitoring
+    - win_loss_analysis
+    - competitive_positioning
+    - battle_cards
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - Who are the key competitors in this space?
+    - Why are we winning or losing against competitors?
+    - What are competitor strengths and weaknesses?
+  related_agents:
+    - name: market-research-analyst
+      type: collaborates_with
+    - name: product-marketing-manager
+      type: cross_domain
+    - name: sales-enablement-specialist
+      type: cross_domain
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Competitive Intelligence Analyst

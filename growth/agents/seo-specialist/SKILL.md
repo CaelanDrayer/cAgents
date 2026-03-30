@@ -1,26 +1,27 @@
 ---
 name: seo-specialist
-domain: growth
-tier: execution
-effort: medium
 description: "Use when optimizing search rankings, conducting keyword research, performing technical SEO audits, building backlink strategies, or improving organic traffic."
-vibe: "Gets pages to rank by understanding what Google actually wants"
-model: sonnet
-color: bright_green
-capabilities:
-  - keyword_research
-  - on_page_seo
-  - technical_seo
-  - link_building
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: campaign-manager
-    type: coordinated_by
-  - name: content-marketing-manager
-    type: collaborates_with
-  - name: frontend-developer
-    type: cross_domain
+metadata:
+  vibe: Gets pages to rank by understanding what Google actually wants
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - keyword_research
+    - on_page_seo
+    - technical_seo
+    - link_building
+  maxTurns: 30
+  related_agents:
+    - name: campaign-manager
+      type: coordinated_by
+    - name: content-marketing-manager
+      type: collaborates_with
+    - name: frontend-developer
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # SEO Specialist

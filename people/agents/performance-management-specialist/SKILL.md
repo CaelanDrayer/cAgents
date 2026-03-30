@@ -1,26 +1,27 @@
 ---
 name: performance-management-specialist
-domain: people
-tier: execution
-effort: medium
 description: "Use when designing performance review processes, building goal-setting frameworks, developing feedback systems, or calibrating performance ratings."
-vibe: "Makes performance reviews useful instead of dreaded"
-model: sonnet
-color: bright_yellow
-capabilities:
-  - performance_review_design
-  - goal_frameworks
-  - calibration_facilitation
-  - feedback_systems
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: hr-business-partner
-    type: coordinated_by
-  - name: learning-specialist
-    type: collaborates_with
-  - name: okr-specialist
-    type: cross_domain
+metadata:
+  vibe: Makes performance reviews useful instead of dreaded
+  tier: execution
+  effort: medium
+  domain: people
+  model: sonnet
+  color: bright_yellow
+  capabilities:
+    - performance_review_design
+    - goal_frameworks
+    - calibration_facilitation
+    - feedback_systems
+  maxTurns: 30
+  related_agents:
+    - name: hr-business-partner
+      type: coordinated_by
+    - name: learning-specialist
+      type: collaborates_with
+    - name: okr-specialist
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Performance Management Specialist

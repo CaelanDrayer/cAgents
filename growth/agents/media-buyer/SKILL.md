@@ -1,35 +1,36 @@
 ---
 name: media-buyer
-domain: growth
-tier: execution
-effort: medium
 description: "Use when planning media buys across channels, negotiating ad placements, optimizing ad spend allocation, or managing programmatic advertising campaigns."
-vibe: "Stretches every ad dollar until it screams, then squeezes out one more conversion"
-model: sonnet
-color: bright_green
-capabilities:
-  - programmatic_advertising
-  - media_planning
-  - ad_spend_optimization
-  - rtb_management
-  - media_negotiations
-  - cross_platform_buying
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: campaign-manager
-    type: coordinated_by
-  - name: digital-marketing-manager
-    type: collaborates_with
-  - name: marketing-analyst
-    type: shares_data_with
-  - name: creative-director
-    type: receives_assets_from
-not-my-scope:
-  - Organic content creation
-  - SEO
-  - Sales operations
-  - PR and media relations
+metadata:
+  vibe: "Stretches every ad dollar until it screams, squeezes out one more conversion"
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - programmatic_advertising
+    - media_planning
+    - ad_spend_optimization
+    - rtb_management
+    - media_negotiations
+    - cross_platform_buying
+  maxTurns: 30
+  not-my-scope:
+    - Organic content creation
+    - SEO
+    - Sales operations
+    - PR and media relations
+  related_agents:
+    - name: campaign-manager
+      type: coordinated_by
+    - name: digital-marketing-manager
+      type: collaborates_with
+    - name: marketing-analyst
+      type: shares_data_with
+    - name: creative-director
+      type: receives_assets_from
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Media Buyer

@@ -1,38 +1,39 @@
 ---
 name: animator
-domain: creative
-tier: execution
-effort: medium
 description: "Use when creating character animations, designing motion systems, building animation state machines, or crafting movement that conveys personality and emotion."
-vibe: "Brings still frames to life one keyframe at a time"
-model: opus
-color: bright_magenta
-capabilities:
-  - character_rigging
-  - skeletal_animation
-  - locomotion_systems
-  - combat_animations
-  - cinematic_animation
-  - motion_design
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-answers_questions:
-  - "How should this character move to express their personality?"
-  - "What animation approach best serves this gameplay mechanic?"
-  - "How do we make this movement feel weighty and believable?"
-  - "What is the right timing for this attack to be readable but responsive?"
-executes_tasks:
-  - "Design character animation specifications and state machines"
-  - "Create locomotion system documentation (walk/run/transitions)"
-  - "Develop combat animation specifications with timing data"
-  - "Write cinematic animation direction and performance notes"
-related_agents:
-  - name: narrative-director
-    type: coordinated_by
-  - name: concept-artist
-    type: collaborates_with
-  - name: game-programmer
-    type: cross_domain
+metadata:
+  vibe: Brings still frames to life one keyframe at a time
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - character_rigging
+    - skeletal_animation
+    - locomotion_systems
+    - combat_animations
+    - cinematic_animation
+    - motion_design
+  maxTurns: 30
+  related_agents:
+    - name: narrative-director
+      type: coordinated_by
+    - name: concept-artist
+      type: collaborates_with
+    - name: game-programmer
+      type: cross_domain
+  answers_questions:
+    - How should this character move to express their personality?
+    - What animation approach best serves this gameplay mechanic?
+    - How do we make this movement feel weighty and believable?
+    - What is the right timing for this attack to be readable but responsive?
+  executes_tasks:
+    - Design character animation specifications and state machines
+    - Create locomotion system documentation (walk/run/transitions)
+    - Develop combat animation specifications with timing data
+    - Write cinematic animation direction and performance notes
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Animator

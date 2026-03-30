@@ -1,26 +1,27 @@
 ---
 name: email-marketing-specialist
-domain: growth
-tier: execution
-effort: medium
 description: "Use when designing email campaigns, building automation workflows, segmenting audiences, optimizing open and click rates, or managing email deliverability."
-vibe: "Writes emails people actually open and click"
-model: sonnet
-color: bright_green
-capabilities:
-  - email_campaigns
-  - marketing_automation
-  - segmentation
-  - deliverability
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: campaign-manager
-    type: coordinated_by
-  - name: copywriter
-    type: collaborates_with
-  - name: marketing-ops-specialist
-    type: collaborates_with
+metadata:
+  vibe: Writes emails people actually open and click
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - email_campaigns
+    - marketing_automation
+    - segmentation
+    - deliverability
+  maxTurns: 30
+  related_agents:
+    - name: campaign-manager
+      type: coordinated_by
+    - name: copywriter
+      type: collaborates_with
+    - name: marketing-ops-specialist
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Email Marketing Specialist

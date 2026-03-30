@@ -1,24 +1,25 @@
 ---
 name: support-analyst
-domain: service
-tier: execution
-effort: medium
 description: "Use when analyzing support ticket trends, identifying common issues, building support dashboards, or providing data-driven recommendations to reduce ticket volume."
-vibe: "Mines support data to find the patterns that prevent future tickets"
-model: sonnet
-color: bright_red
-capabilities:
-  - data_analysis
-  - metrics_reporting
-  - trend_identification
-  - performance_insights
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: support-operations-manager
-    type: coordinated_by
-  - name: support-quality-analyst
-    type: collaborates_with
+metadata:
+  vibe: Mines support data to find the patterns that prevent future tickets
+  tier: execution
+  effort: medium
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - data_analysis
+    - metrics_reporting
+    - trend_identification
+    - performance_insights
+  maxTurns: 30
+  related_agents:
+    - name: support-operations-manager
+      type: coordinated_by
+    - name: support-quality-analyst
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Support Analyst

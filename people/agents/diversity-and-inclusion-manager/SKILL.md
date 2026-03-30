@@ -1,26 +1,27 @@
 ---
 name: diversity-and-inclusion-manager
-domain: people
-tier: execution
-effort: medium
 description: "Use when developing DEI strategies, designing inclusion programs, analyzing demographic data, or building frameworks for equitable hiring and promotion."
-vibe: "Makes belonging a feature of the workplace, not an afterthought"
-model: sonnet
-color: bright_yellow
-capabilities:
-  - dei_strategy
-  - inclusive_hiring
-  - erg_support
-  - equity_analysis
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: hr-manager
-    type: coordinated_by
-  - name: culture-and-engagement-manager
-    type: collaborates_with
-  - name: sensitivity-reader
-    type: cross_domain
+metadata:
+  vibe: "Makes belonging a feature of the workplace, not an afterthought"
+  tier: execution
+  effort: medium
+  domain: people
+  model: sonnet
+  color: bright_yellow
+  capabilities:
+    - dei_strategy
+    - inclusive_hiring
+    - erg_support
+    - equity_analysis
+  maxTurns: 30
+  related_agents:
+    - name: hr-manager
+      type: coordinated_by
+    - name: culture-and-engagement-manager
+      type: collaborates_with
+    - name: sensitivity-reader
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Diversity and Inclusion Manager

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://agentskills.io/plugin-schema/v1",
+  "$comment": "Domain sub-plugin template. Note: domain sub-plugins (business/.claude-plugin/, engineering/.claude-plugin/, etc.) were removed in cAgents V11 Phase 0B. The root .claude-plugin/plugin.json is now the single manifest. This template is retained as a reference for restoring domain-level modularity if needed.",
+  "name": "cagents-DOMAIN_NAME",
+  "version": "1.0.0",
+  "description": "DOMAIN_NAME domain agents for cAgents",
+  "agents": [
+    "agents/AGENT_NAME_1/SKILL.md",
+    "agents/AGENT_NAME_2/SKILL.md",
+    "agents/AGENT_NAME_3/SKILL.md"
+  ],
+  "settings": {
+    "agent": {
+      "permissions": {
+        "allow": [
+          "Read",
+          "Grep",
+          "Glob"
+        ]
+      }
+    }
+  }
+}

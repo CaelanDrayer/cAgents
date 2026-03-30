@@ -1,35 +1,36 @@
 ---
 name: ai-writing-detector
-domain: creative
-tier: execution
-effort: medium
 description: "Use when detecting AI-generated text patterns, analyzing writing for synthetic markers, or evaluating content authenticity against human authorship baselines."
-vibe: "Spots the AI fingerprint that humans can't see"
-model: opus
-color: bright_magenta
-capabilities:
-  - ai_writing_detection
-  - pattern_analysis
-  - document_scanning
-  - detection_reporting
-  - cross_category_analysis
-  - calibration_profiling
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-answers_questions:
-  - "Does this document contain AI writing hallmarks?"
-  - "What AI patterns are present in this text?"
-  - "How likely is this text to be AI-generated?"
-  - "Which specific passages show AI characteristics?"
-executes_tasks:
-  - "Scan document for AI writing patterns"
-  - "Generate AI detection report"
-  - "Analyze text across 14 categories plus cross-category signals"
-  - "Calibrate detection for genre-specific false positive rates"
-related_agents:
-  - name: ai-writing-rewriter
-    relationship: "Consumes detection_report.yaml to apply targeted humanization rewrites"
-    pipeline: "detector (this) → rewriter (next step)"
+metadata:
+  vibe: "Spots the AI fingerprint that humans can't see"
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - ai_writing_detection
+    - pattern_analysis
+    - document_scanning
+    - detection_reporting
+    - cross_category_analysis
+    - calibration_profiling
+  maxTurns: 30
+  related_agents:
+    - name: ai-writing-rewriter
+      relationship: Consumes detection_report.yaml to apply targeted humanization rewrites
+      pipeline: detector (this) → rewriter (next step)
+  answers_questions:
+    - Does this document contain AI writing hallmarks?
+    - What AI patterns are present in this text?
+    - How likely is this text to be AI-generated?
+    - Which specific passages show AI characteristics?
+  executes_tasks:
+    - Scan document for AI writing patterns
+    - Generate AI detection report
+    - Analyze text across 14 categories plus cross-category signals
+    - Calibrate detection for genre-specific false positive rates
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # AI Writing Detector

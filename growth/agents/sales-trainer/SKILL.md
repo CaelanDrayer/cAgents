@@ -1,24 +1,25 @@
 ---
 name: sales-trainer
-domain: growth
-tier: execution
-effort: medium
 description: "Use when designing sales training programs, coaching reps on methodology, running role-play exercises, or measuring training effectiveness and skill gaps."
-vibe: "Trains reps until objection handling becomes second nature"
-model: sonnet
-color: bright_green
-capabilities:
-  - sales_training
-  - coaching
-  - onboarding
-  - performance_development
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: sales-strategist
-    type: coordinated_by
-  - name: sales-enablement-specialist
-    type: collaborates_with
+metadata:
+  vibe: Trains reps until objection handling becomes second nature
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - sales_training
+    - coaching
+    - onboarding
+    - performance_development
+  maxTurns: 30
+  related_agents:
+    - name: sales-strategist
+      type: coordinated_by
+    - name: sales-enablement-specialist
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Sales Trainer

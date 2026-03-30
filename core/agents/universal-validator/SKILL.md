@@ -1,21 +1,21 @@
 ---
 name: universal-validator
-tier: infrastructure
-effort: high
 description: "Use when performing final quality gate validation, checking acceptance criteria evidence chains, or producing PASS/FAIL/REVISE verdicts."
-vibe: "Trust but verify -- every claim needs evidence, every shortcut gets caught"
-allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
-model: opus
-color: bright_cyan
-domain: core
-capabilities:
-  - coordination_validation
-  - quality_gates
-  - delegation_compliance
-  - acceptance_verification
-  - evidence_chain
-maxTurns: 40
-permissionMode: "bypassPermissions"
+metadata:
+  vibe: "Trust but verify -- every claim needs evidence, every shortcut gets caught"
+  tier: infrastructure
+  effort: high
+  domain: core
+  model: opus
+  color: bright_cyan
+  capabilities:
+    - coordination_validation
+    - quality_gates
+    - delegation_compliance
+    - acceptance_verification
+    - evidence_chain
+  maxTurns: 40
+allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
 ---
 
 <example>

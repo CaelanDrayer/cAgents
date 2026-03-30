@@ -1,24 +1,25 @@
 ---
 name: escalation-manager
-domain: service
-tier: execution
-effort: medium
 description: "Use when managing escalated customer issues, coordinating cross-team resolution, tracking SLA adherence, or developing escalation procedures."
-vibe: "Takes the toughest tickets and turns them into saves"
-model: sonnet
-color: bright_red
-capabilities:
-  - escalation_management
-  - incident_command
-  - cross_functional_coordination
-  - customer_recovery
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: support-director
-    type: coordinated_by
-  - name: technical-support-engineer
-    type: pipeline_prev
+metadata:
+  vibe: Takes the toughest tickets and turns them into saves
+  tier: execution
+  effort: medium
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - escalation_management
+    - incident_command
+    - cross_functional_coordination
+    - customer_recovery
+  maxTurns: 30
+  related_agents:
+    - name: support-director
+      type: coordinated_by
+    - name: technical-support-engineer
+      type: pipeline_prev
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Escalation Manager

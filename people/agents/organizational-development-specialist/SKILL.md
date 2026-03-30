@@ -1,24 +1,25 @@
 ---
 name: organizational-development-specialist
-domain: people
-tier: execution
-effort: medium
 description: "Use when designing organizational structures, facilitating team development, managing change initiatives, or improving organizational effectiveness."
-vibe: "Redesigns the org chart so the work actually flows"
-model: sonnet
-color: bright_yellow
-capabilities:
-  - org_design
-  - change_management
-  - team_effectiveness
-  - transformation_leadership
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: hr-business-partner
-    type: coordinated_by
-  - name: change-management-specialist
-    type: cross_domain
+metadata:
+  vibe: Redesigns the org chart so the work actually flows
+  tier: execution
+  effort: medium
+  domain: people
+  model: sonnet
+  color: bright_yellow
+  capabilities:
+    - org_design
+    - change_management
+    - team_effectiveness
+    - transformation_leadership
+  maxTurns: 30
+  related_agents:
+    - name: hr-business-partner
+      type: coordinated_by
+    - name: change-management-specialist
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Organizational Development Specialist

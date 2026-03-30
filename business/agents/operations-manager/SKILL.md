@@ -1,36 +1,41 @@
 ---
 name: operations-manager
-domain: business
-tier: controller
-effort: high
-coordination_style: question_based
-typical_questions:
-  - "What are the current operational metrics?"
-  - "What are the efficiency bottlenecks?"
-  - "What are the compliance requirements?"
 description: "Use when optimizing operational processes, improving efficiency, managing workflows, or coordinating cross-functional operational decisions."
-vibe: "Runs the machine that runs the business"
-model: sonnet
-color: bright_blue
-capabilities:
-  - operations_planning
-  - process_management
-  - performance_optimization
-  - continuous_improvement
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-not-my-scope: ["Code implementation", "visual design", "HR policies", "legal review"]
-related_agents:
-  - name: process-improvement-specialist
-    type: coordinates
-  - name: facilities-manager
-    type: coordinates
-  - name: supply-chain-manager
-    type: collaborates_with
-  - name: strategic-planner
-    type: collaborates_with
+metadata:
+  vibe: Runs the machine that runs the business
+  tier: controller
+  effort: high
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - operations_planning
+    - process_management
+    - performance_optimization
+    - continuous_improvement
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What are the current operational metrics?
+    - What are the efficiency bottlenecks?
+    - What are the compliance requirements?
+  not-my-scope:
+    - Code implementation
+    - visual design
+    - HR policies
+    - legal review
+  related_agents:
+    - name: process-improvement-specialist
+      type: coordinates
+    - name: facilities-manager
+      type: coordinates
+    - name: supply-chain-manager
+      type: collaborates_with
+    - name: strategic-planner
+      type: collaborates_with
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 <example>

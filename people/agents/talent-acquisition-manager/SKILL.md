@@ -1,31 +1,32 @@
 ---
 name: talent-acquisition-manager
-domain: people
-tier: controller
-effort: high
-coordination_style: question_based
-typical_questions:
-  - "What are the role requirements and hiring timeline?"
-  - "What is the current talent pipeline and sourcing strategy?"
-  - "What are the key risks and market constraints?"
 description: "Use when planning hiring pipelines, developing sourcing strategies, building employer brand, or coordinating talent acquisition across multiple roles."
-vibe: "Builds the recruiting engine that fills roles before they're painful"
-model: sonnet
-color: bright_yellow
-capabilities:
-  - recruiting_strategy
-  - pipeline_management
-  - hiring_manager_partnership
-  - talent_market_analysis
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 30
-related_agents:
-  - name: recruiter
-    type: coordinates
-  - name: recruiting-coordinator
-    type: coordinates
-  - name: hr-manager
-    type: collaborates_with
+metadata:
+  vibe: "Builds the recruiting engine that fills roles before they're painful"
+  tier: controller
+  effort: high
+  domain: people
+  model: sonnet
+  color: bright_yellow
+  capabilities:
+    - recruiting_strategy
+    - pipeline_management
+    - hiring_manager_partnership
+    - talent_market_analysis
+  maxTurns: 30
+  coordination_style: question_based
+  typical_questions:
+    - What are the role requirements and hiring timeline?
+    - What is the current talent pipeline and sourcing strategy?
+    - What are the key risks and market constraints?
+  related_agents:
+    - name: recruiter
+      type: coordinates
+    - name: recruiting-coordinator
+      type: coordinates
+    - name: hr-manager
+      type: collaborates_with
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Talent Acquisition Manager

@@ -1,45 +1,50 @@
 ---
 name: narrative-director
-domain: creative
-tier: controller
-effort: high
-coordination_style: question_based
-typical_questions:
-  - "What is the current implementation of this feature?"
-  - "What are the technical constraints we need to consider?"
-  - "What are the key risks and dependencies?"
-  - "What is the target audience and tone?"
-  - "What creative constraints apply?"
-  - "What existing assets or style guides should we follow?"
 description: "Use when a story needs structural guidance, pacing feels off, character arcs need development, or creative vision needs direction. Coordinates writers, editors, and story architects for cohesive narratives."
-vibe: "Holds the vision so every contributor builds the same cathedral"
-model: opusplan
-color: bright_magenta
-capabilities:
-  - creative_vision_and_direction
-  - tonal_control_and_calibration
-  - cross_agent_creative_coordination
-  - quality_calibration_and_editorial_instinct
-  - creative_brief_development
-  - creative_risk_assessment
-  - narrative_architecture
-  - feedback_and_revision_direction
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-not-my-scope: ["Code implementation", "financial analysis", "HR management", "infrastructure"]
-related_agents:
-  - name: story-architect
-    type: coordinates
-  - name: editor
-    type: coordinates
-  - name: prose-stylist
-    type: coordinates
-  - name: voice-coach
-    type: coordinates
-  - name: theme-analyst
-    type: coordinates
+metadata:
+  vibe: Holds the vision so every contributor builds the same cathedral
+  tier: controller
+  effort: high
+  domain: creative
+  model: opusplan
+  color: bright_magenta
+  capabilities:
+    - creative_vision_and_direction
+    - tonal_control_and_calibration
+    - cross_agent_creative_coordination
+    - quality_calibration_and_editorial_instinct
+    - creative_brief_development
+    - creative_risk_assessment
+    - narrative_architecture
+    - feedback_and_revision_direction
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the current implementation of this feature?
+    - What are the technical constraints we need to consider?
+    - What are the key risks and dependencies?
+    - What is the target audience and tone?
+    - What creative constraints apply?
+    - What existing assets or style guides should we follow?
+  not-my-scope:
+    - Code implementation
+    - financial analysis
+    - HR management
+    - infrastructure
+  related_agents:
+    - name: story-architect
+      type: coordinates
+    - name: editor
+      type: coordinates
+    - name: prose-stylist
+      type: coordinates
+    - name: voice-coach
+      type: coordinates
+    - name: theme-analyst
+      type: coordinates
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 <example>

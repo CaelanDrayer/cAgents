@@ -1,41 +1,42 @@
 ---
 name: literary-critic
-domain: creative
-tier: execution
-effort: medium
 description: "Use when analyzing narrative craft, evaluating prose quality, providing substantive editorial feedback, or assessing work against literary standards."
-vibe: "Reads like a surgeon -- finds what works, excises what doesn't"
-model: opus
-color: bright_magenta
-capabilities:
-  - critical_analysis
-  - prose_evaluation
-  - thematic_analysis
-  - structural_assessment
-  - narrative_craft_evaluation
-  - constructive_critique
-  - genre_criticism
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-answers_questions:
-  - "What is the literary quality of this manuscript?"
-  - "How effective is the thematic development?"
-  - "Does the narrative structure serve the story?"
-  - "What is the single most important thing this writer needs to hear?"
-executes_tasks:
-  - manuscript_evaluation
-  - prose_quality_assessment
-  - thematic_analysis
-  - structural_critique
-  - comparative_literary_analysis
-  - genre_convention_assessment
-related_agents:
-  - name: editor
-    type: collaborates_with
-  - name: theme-analyst
-    type: collaborates_with
-  - name: prose-stylist
-    type: reviews
+metadata:
+  vibe: "Reads like a surgeon -- finds what works, excises what doesn't"
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - critical_analysis
+    - prose_evaluation
+    - thematic_analysis
+    - structural_assessment
+    - narrative_craft_evaluation
+    - constructive_critique
+    - genre_criticism
+  maxTurns: 30
+  related_agents:
+    - name: editor
+      type: collaborates_with
+    - name: theme-analyst
+      type: collaborates_with
+    - name: prose-stylist
+      type: reviews
+  answers_questions:
+    - What is the literary quality of this manuscript?
+    - How effective is the thematic development?
+    - Does the narrative structure serve the story?
+    - What is the single most important thing this writer needs to hear?
+  executes_tasks:
+    - manuscript_evaluation
+    - prose_quality_assessment
+    - thematic_analysis
+    - structural_critique
+    - comparative_literary_analysis
+    - genre_convention_assessment
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Literary Critic

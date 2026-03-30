@@ -1,38 +1,43 @@
 ---
 name: hr-manager
 description: "Use when structuring hiring processes, planning onboarding, managing performance reviews, or handling HR policy questions. Coordinates talent acquisition, employee relations, and organizational development."
-vibe: "Builds the team that builds the product"
-tier: controller
-effort: high
-domain: people
-coordination_style: question_based
-typical_questions:
-  - "What are the current team dynamics and gaps?"
-  - "What are the cultural considerations?"
-  - "What are the retention and engagement metrics?"
-model: sonnet
-color: bright_yellow
-capabilities:
-  - hr_operations
-  - employee_lifecycle
-  - people_team_coordination
-  - policy_management
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-not-my-scope: ["Code implementation", "technical architecture", "marketing campaigns", "financial auditing"]
-related_agents:
-  - name: recruiter
-    type: coordinates
-  - name: employee-relations-specialist
-    type: coordinates
-  - name: hr-ops-specialist
-    type: coordinates
-  - name: benefits-administrator
-    type: coordinates
-  - name: talent-acquisition-manager
-    type: collaborates_with
+metadata:
+  vibe: Builds the team that builds the product
+  tier: controller
+  effort: high
+  domain: people
+  model: sonnet
+  color: bright_yellow
+  capabilities:
+    - hr_operations
+    - employee_lifecycle
+    - people_team_coordination
+    - policy_management
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What are the current team dynamics and gaps?
+    - What are the cultural considerations?
+    - What are the retention and engagement metrics?
+  not-my-scope:
+    - Code implementation
+    - technical architecture
+    - marketing campaigns
+    - financial auditing
+  related_agents:
+    - name: recruiter
+      type: coordinates
+    - name: employee-relations-specialist
+      type: coordinates
+    - name: hr-ops-specialist
+      type: coordinates
+    - name: benefits-administrator
+      type: coordinates
+    - name: talent-acquisition-manager
+      type: collaborates_with
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 <example>

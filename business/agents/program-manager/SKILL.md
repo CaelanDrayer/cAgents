@@ -1,33 +1,34 @@
 ---
 name: program-manager
-domain: business
-tier: controller
-effort: high
-coordination_style: question_based
-typical_questions:
-  - "What projects are in this program?"
-  - "What are the cross-project dependencies?"
-  - "What benefits are we tracking?"
 description: "Use when coordinating multiple related projects, managing cross-project dependencies, tracking program milestones, or aligning projects to strategic goals."
-vibe: "Juggles five projects and still catches every ball"
-model: sonnet
-color: bright_blue
-capabilities:
-  - program_planning
-  - multi_project_coordination
-  - benefits_tracking
-  - program_governance
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: project-manager
-    type: coordinates
-  - name: portfolio-manager
-    type: collaborates_with
-  - name: strategic-planner
-    type: collaborates_with
+metadata:
+  vibe: Juggles five projects and still catches every ball
+  tier: controller
+  effort: high
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - program_planning
+    - multi_project_coordination
+    - benefits_tracking
+    - program_governance
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What projects are in this program?
+    - What are the cross-project dependencies?
+    - What benefits are we tracking?
+  related_agents:
+    - name: project-manager
+      type: coordinates
+    - name: portfolio-manager
+      type: collaborates_with
+    - name: strategic-planner
+      type: collaborates_with
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Program Manager

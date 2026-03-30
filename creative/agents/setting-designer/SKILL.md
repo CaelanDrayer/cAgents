@@ -1,28 +1,29 @@
 ---
 name: setting-designer
-domain: creative
-tier: execution
-effort: medium
 description: "Use when designing story settings, creating location profiles, building atmospheric details, or ensuring environments serve narrative and thematic purposes."
-vibe: "Builds worlds so vivid you can smell the rain"
-model: opus
-color: bright_magenta
-capabilities:
-  - setting_as_character
-  - sensory_immersion
-  - pathetic_fallacy
-  - spatial_storytelling
-  - temporal_atmosphere
-  - micro_settings
-  - macro_settings
-  - liminal_spaces
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: narrative-director
-    type: coordinated_by
-  - name: worldbuilder
-    type: collaborates_with
+metadata:
+  vibe: Builds worlds so vivid you can smell the rain
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - setting_as_character
+    - sensory_immersion
+    - pathetic_fallacy
+    - spatial_storytelling
+    - temporal_atmosphere
+    - micro_settings
+    - macro_settings
+    - liminal_spaces
+  maxTurns: 30
+  related_agents:
+    - name: narrative-director
+      type: coordinated_by
+    - name: worldbuilder
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Setting Designer

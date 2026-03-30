@@ -1,26 +1,27 @@
 ---
 name: genre-specialist
-domain: creative
-tier: execution
-effort: medium
 description: "Use when working within specific genre conventions, subverting genre expectations, blending genres, or ensuring work meets audience expectations for its category."
-vibe: "Knows every genre's rules well enough to break them right"
-model: opus
-color: bright_magenta
-capabilities:
-  - multi_genre_expertise
-  - genre_convention_analysis
-  - trope_identification_and_subversion
-  - reader_expectation_management
-  - cross_genre_hybridization
-  - genre_specific_structural_patterns
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: narrative-director
-    type: coordinated_by
-  - name: story-architect
-    type: collaborates_with
+metadata:
+  vibe: "Knows every genre's rules well enough to break them right"
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - multi_genre_expertise
+    - genre_convention_analysis
+    - trope_identification_and_subversion
+    - reader_expectation_management
+    - cross_genre_hybridization
+    - genre_specific_structural_patterns
+  maxTurns: 30
+  related_agents:
+    - name: narrative-director
+      type: coordinated_by
+    - name: story-architect
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Genre Specialist

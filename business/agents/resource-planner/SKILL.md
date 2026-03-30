@@ -1,24 +1,25 @@
 ---
 name: resource-planner
-domain: business
-tier: execution
-effort: medium
 description: "Use when planning resource allocation, forecasting capacity needs, optimizing team utilization, or balancing workload across projects."
-vibe: "Puts the right people on the right work at the right time"
-model: sonnet
-color: bright_blue
-capabilities:
-  - resource_allocation
-  - capacity_planning
-  - resource_forecasting
-  - utilization_optimization
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: project-manager
-    type: coordinated_by
-  - name: finance-manager
-    type: collaborates_with
+metadata:
+  vibe: Puts the right people on the right work at the right time
+  tier: execution
+  effort: medium
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - resource_allocation
+    - capacity_planning
+    - resource_forecasting
+    - utilization_optimization
+  maxTurns: 30
+  related_agents:
+    - name: project-manager
+      type: coordinated_by
+    - name: finance-manager
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Resource Planner

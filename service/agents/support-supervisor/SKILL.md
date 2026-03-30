@@ -1,26 +1,27 @@
 ---
 name: support-supervisor
-domain: service
-tier: execution
-effort: medium
 description: "Use when managing support agents, handling real-time queue management, coaching team members, or resolving escalated customer issues."
-vibe: "Coaches support agents until great service becomes muscle memory"
-model: sonnet
-color: bright_red
-capabilities:
-  - team_management
-  - performance_coaching
-  - workflow_optimization
-  - resource_allocation
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: support-director
-    type: coordinated_by
-  - name: support-quality-analyst
-    type: collaborates_with
-  - name: support-trainer
-    type: collaborates_with
+metadata:
+  vibe: Coaches support agents until great service becomes muscle memory
+  tier: execution
+  effort: medium
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - team_management
+    - performance_coaching
+    - workflow_optimization
+    - resource_allocation
+  maxTurns: 30
+  related_agents:
+    - name: support-director
+      type: coordinated_by
+    - name: support-quality-analyst
+      type: collaborates_with
+    - name: support-trainer
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Support Supervisor

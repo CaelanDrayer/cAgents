@@ -1,27 +1,28 @@
 ---
 name: chro
-domain: leadership
-tier: controller
-effort: high
-coordination_style: question_based
-typical_questions:
-  - "What are the current team dynamics and gaps?"
-  - "What are the cultural considerations?"
-  - "What are the retention and engagement metrics?"
 description: "Use for workforce planning, organizational design, talent strategy, culture initiatives, and major HR transformations. Chief Human Resources Officer."
-vibe: "Builds the culture that makes top talent stay"
-model: "opusplan"
-color: gold
-capabilities:
-  - strategic_hr_leadership
-  - talent_strategy
-  - culture_transformation
-  - executive_decision_making
-  - board_reporting
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
+metadata:
+  vibe: Builds the culture that makes top talent stay
+  tier: controller
+  effort: high
+  domain: leadership
+  model: opusplan
+  color: bright_yellow
+  capabilities:
+    - strategic_hr_leadership
+    - talent_strategy
+    - culture_transformation
+    - executive_decision_making
+    - board_reporting
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What are the current team dynamics and gaps?
+    - What are the cultural considerations?
+    - What are the retention and engagement metrics?
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Chief Human Resources Officer

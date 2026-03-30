@@ -1,33 +1,34 @@
 ---
 name: creative-director
-domain: growth
-tier: controller
-effort: high
-coordination_style: question_based
-typical_questions:
-  - "What are the current campaign/sales metrics?"
-  - "What is the target audience and positioning?"
-  - "What are the conversion bottlenecks?"
 description: "Use when setting creative vision, reviewing campaign concepts, directing visual identity, or coordinating creative output across marketing channels."
-vibe: "Sets the creative vision and holds the bar impossibly high"
-model: sonnet
-color: bright_green
-capabilities:
-  - creative_strategy
-  - visual_design
-  - brand_expression
-  - campaign_creative
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: copywriter
-    type: coordinates
-  - name: brand-manager
-    type: coordinates
-  - name: concept-artist
-    type: cross_domain
+metadata:
+  vibe: Sets the creative vision and holds the bar impossibly high
+  tier: controller
+  effort: high
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - creative_strategy
+    - visual_design
+    - brand_expression
+    - campaign_creative
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What are the current campaign/sales metrics?
+    - What is the target audience and positioning?
+    - What are the conversion bottlenecks?
+  related_agents:
+    - name: copywriter
+      type: coordinates
+    - name: brand-manager
+      type: coordinates
+    - name: concept-artist
+      type: cross_domain
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Creative Director

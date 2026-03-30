@@ -1,26 +1,27 @@
 ---
 name: performance-analyzer
 description: "Use when profiling application performance, identifying bottlenecks, measuring latency, or analyzing resource utilization to optimize throughput."
-vibe: "Finds the bottleneck hiding in the hot path"
-tier: support
-effort: low
-domain: engineering
-model: "haiku"
-color: bright_yellow
-layer: qa
-capabilities:
-  - performance_analysis
-  - bottleneck_detection
-  - optimization
-  - profiling
-allowed-tools: "Read Grep Glob"
-maxTurns: 10
-disallowedTools: ["Task"]
-related_agents:
-  - name: code-reviewer
-    type: coordinated_by
-  - name: backend-developer
-    type: reviews
+metadata:
+  vibe: Finds the bottleneck hiding in the hot path
+  tier: support
+  effort: low
+  domain: engineering
+  model: haiku
+  color: bright_yellow
+  capabilities:
+    - performance_analysis
+    - bottleneck_detection
+    - optimization
+    - profiling
+  maxTurns: 10
+  disallowedTools: ["Task"]
+  related_agents:
+    - name: code-reviewer
+      type: coordinated_by
+    - name: backend-developer
+      type: reviews
+  layer: qa
+allowed-tools: Read Grep Glob
 ---
 
 # Performance Analyzer Agent

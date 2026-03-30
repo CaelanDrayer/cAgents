@@ -1,35 +1,36 @@
 ---
 name: support-director
-domain: service
-tier: controller
-effort: high
 description: "Use when setting support strategy, managing support team structure, defining SLA targets, or coordinating support operations across channels and tiers."
-vibe: "Leads the support org to deliver experiences customers talk about"
-model: "opusplan"
-color: bright_red
-coordination_style: question_based
-typical_questions:
-  - "What are the current support metrics and satisfaction trends?"
-  - "What are the escalation bottlenecks and customer pain points?"
-  - "What team structure changes would improve service quality?"
-capabilities:
-  - support_strategy
-  - customer_experience_leadership
-  - escalation_management
-  - team_development
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: support-operations-manager
-    type: coordinates
-  - name: customer-success-manager
-    type: coordinates
-  - name: escalation-manager
-    type: coordinates
-  - name: support-supervisor
-    type: coordinates
+metadata:
+  vibe: Leads the support org to deliver experiences customers talk about
+  tier: controller
+  effort: high
+  domain: service
+  model: opusplan
+  color: bright_red
+  capabilities:
+    - support_strategy
+    - customer_experience_leadership
+    - escalation_management
+    - team_development
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What are the current support metrics and satisfaction trends?
+    - What are the escalation bottlenecks and customer pain points?
+    - What team structure changes would improve service quality?
+  related_agents:
+    - name: support-operations-manager
+      type: coordinates
+    - name: customer-success-manager
+      type: coordinates
+    - name: escalation-manager
+      type: coordinates
+    - name: support-supervisor
+      type: coordinates
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Support Director

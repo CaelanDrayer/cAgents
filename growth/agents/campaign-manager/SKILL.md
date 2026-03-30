@@ -1,37 +1,38 @@
 ---
 name: campaign-manager
-domain: growth
-tier: controller
-effort: high
-coordination_style: question_based
-typical_questions:
-  - "What are the current campaign/sales metrics?"
-  - "What is the target audience and positioning?"
-  - "What are the conversion bottlenecks?"
 description: "Use when planning marketing campaigns, coordinating cross-channel execution, managing campaign budgets, or analyzing campaign performance metrics."
-vibe: "Orchestrates campaigns that hit every channel at the right time"
-model: opusplan
-color: bright_green
-capabilities:
-  - campaign_planning
-  - campaign_execution
-  - performance_optimization
-  - multi_channel_coordination
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: copywriter
-    type: coordinates
-  - name: email-marketing-specialist
-    type: coordinates
-  - name: social-media-manager
-    type: coordinates
-  - name: digital-marketing-manager
-    type: coordinates
-  - name: marketing-ops-specialist
-    type: coordinates
+metadata:
+  vibe: Orchestrates campaigns that hit every channel at the right time
+  tier: controller
+  effort: high
+  domain: growth
+  model: opusplan
+  color: bright_green
+  capabilities:
+    - campaign_planning
+    - campaign_execution
+    - performance_optimization
+    - multi_channel_coordination
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What are the current campaign/sales metrics?
+    - What is the target audience and positioning?
+    - What are the conversion bottlenecks?
+  related_agents:
+    - name: copywriter
+      type: coordinates
+    - name: email-marketing-specialist
+      type: coordinates
+    - name: social-media-manager
+      type: coordinates
+    - name: digital-marketing-manager
+      type: coordinates
+    - name: marketing-ops-specialist
+      type: coordinates
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 <example>

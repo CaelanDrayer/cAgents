@@ -1,24 +1,25 @@
 ---
 name: predictive-analyst
-domain: business
-tier: execution
-effort: medium
 description: "Use when building predictive models, creating forecasts from historical data, or providing data-driven planning insights and trend analysis."
-vibe: "Sees what's coming by reading what already happened"
-model: sonnet
-color: bright_blue
-capabilities:
-  - predictive_modeling
-  - forecasting
-  - trend_analysis
-  - data_analysis
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: performance-analyst
-    type: coordinated_by
-  - name: data-scientist
-    type: cross_domain
+metadata:
+  vibe: "Sees what's coming by reading what already happened"
+  tier: execution
+  effort: medium
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - predictive_modeling
+    - forecasting
+    - trend_analysis
+    - data_analysis
+  maxTurns: 30
+  related_agents:
+    - name: performance-analyst
+      type: coordinated_by
+    - name: data-scientist
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Predictive Analyst

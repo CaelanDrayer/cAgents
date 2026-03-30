@@ -1,24 +1,25 @@
 ---
 name: demand-generation-manager
-domain: growth
-tier: execution
-effort: medium
 description: "Use when building demand generation pipelines, planning lead nurture campaigns, optimizing MQL-to-SQL conversion, or managing inbound marketing programs."
-vibe: "Fills the pipeline with leads that actually convert"
-model: sonnet
-color: bright_green
-capabilities:
-  - lead_generation
-  - nurture_programs
-  - funnel_optimization
-  - abm
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: campaign-manager
-    type: coordinated_by
-  - name: sales-development-rep
-    type: pipeline_next
+metadata:
+  vibe: Fills the pipeline with leads that actually convert
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - lead_generation
+    - nurture_programs
+    - funnel_optimization
+    - abm
+  maxTurns: 30
+  related_agents:
+    - name: campaign-manager
+      type: coordinated_by
+    - name: sales-development-rep
+      type: pipeline_next
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Demand Generation Manager

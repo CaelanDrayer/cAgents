@@ -1,28 +1,29 @@
 ---
 name: code-standards-auditor
 description: "Use when auditing codebase compliance with coding standards, checking for convention violations, or generating compliance reports against style guides."
-vibe: "Enforces the standards that keep the codebase sane at scale"
-tier: support
-effort: low
-domain: engineering
-layer: qa
-model: "haiku"
-color: bright_yellow
-capabilities:
-  - style_checking
-  - convention_enforcement
-  - best_practices
-  - code_quality
-allowed-tools: "Read Grep Glob"
-maxTurns: 10
-disallowedTools: ["Task"]
-related_agents:
-  - name: code-reviewer
-    type: coordinated_by
-  - name: backend-developer
-    type: reviews
-  - name: frontend-developer
-    type: reviews
+metadata:
+  vibe: Enforces the standards that keep the codebase sane at scale
+  tier: support
+  effort: low
+  domain: engineering
+  model: haiku
+  color: bright_yellow
+  capabilities:
+    - style_checking
+    - convention_enforcement
+    - best_practices
+    - code_quality
+  maxTurns: 10
+  disallowedTools: ["Task"]
+  related_agents:
+    - name: code-reviewer
+      type: coordinated_by
+    - name: backend-developer
+      type: reviews
+    - name: frontend-developer
+      type: reviews
+  layer: qa
+allowed-tools: Read Grep Glob
 ---
 
 # Code Standards Auditor Agent

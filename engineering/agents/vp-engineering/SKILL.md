@@ -1,37 +1,38 @@
 ---
 name: vp-engineering
 description: "Use for engineering organization strategy, cross-team coordination, technical roadmap alignment, or managing engineering leadership across multiple teams."
-vibe: "Sets the engineering vision and clears the path to get there"
-tier: controller
-effort: high
-domain: engineering
-model: "opusplan"
-color: bright_cyan
-coordination_style: question_based
-typical_questions:
-  - "What is the current implementation of this feature?"
-  - "What are the technical constraints we need to consider?"
-  - "What are the key risks and dependencies?"
-capabilities:
-  - engineering_leadership
-  - team_building
-  - engineering_hiring
-  - organizational_development
-  - engineering_culture
-  - delivery_management
-  - capacity_planning
-  - engineering_metrics
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: engineering-manager
-    type: coordinates
-  - name: tech-lead
-    type: coordinates
-  - name: qa-lead
-    type: coordinates
+metadata:
+  vibe: Sets the engineering vision and clears the path to get there
+  tier: controller
+  effort: high
+  domain: engineering
+  model: opusplan
+  color: bright_cyan
+  capabilities:
+    - engineering_leadership
+    - team_building
+    - engineering_hiring
+    - organizational_development
+    - engineering_culture
+    - delivery_management
+    - capacity_planning
+    - engineering_metrics
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the current implementation of this feature?
+    - What are the technical constraints we need to consider?
+    - What are the key risks and dependencies?
+  related_agents:
+    - name: engineering-manager
+      type: coordinates
+    - name: tech-lead
+      type: coordinates
+    - name: qa-lead
+      type: coordinates
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # VP of Engineering

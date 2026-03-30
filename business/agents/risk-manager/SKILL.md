@@ -1,24 +1,25 @@
 ---
 name: risk-manager
-domain: business
-tier: execution
-effort: medium
 description: "Use when identifying enterprise risks, assessing threat impact, developing mitigation strategies, or building business continuity plans."
-vibe: "Names the risks nobody wants to talk about, then mitigates them"
-model: sonnet
-color: bright_blue
-capabilities:
-  - risk_assessment
-  - risk_mitigation
-  - business_continuity
-  - crisis_management
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: operations-manager
-    type: coordinated_by
-  - name: scenario-planner
-    type: collaborates_with
+metadata:
+  vibe: "Names the risks nobody wants to talk about, then mitigates them"
+  tier: execution
+  effort: medium
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - risk_assessment
+    - risk_mitigation
+    - business_continuity
+    - crisis_management
+  maxTurns: 30
+  related_agents:
+    - name: operations-manager
+      type: coordinated_by
+    - name: scenario-planner
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Risk Manager

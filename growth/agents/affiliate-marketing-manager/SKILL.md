@@ -1,35 +1,36 @@
 ---
 name: affiliate-marketing-manager
-domain: growth
-tier: execution
-effort: medium
 description: "Use when building affiliate programs, recruiting partners, managing commission structures, or tracking affiliate-driven conversions."
-vibe: "Turns every happy customer into a revenue-generating referral engine"
-model: sonnet
-color: bright_green
-capabilities:
-  - affiliate_program_design
-  - commission_structures
-  - partner_recruitment
-  - affiliate_network_management
-  - referral_programs
-  - affiliate_performance_tracking
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: campaign-manager
-    type: coordinated_by
-  - name: partnership-marketing-manager
-    type: collaborates_with
-  - name: channel-partner-manager
-    type: collaborates_with
-  - name: revenue-operations-manager
-    type: reports_to
-not-my-scope:
-  - Direct sales closing
-  - Brand strategy
-  - Content creation
-  - PR and media relations
+metadata:
+  vibe: Turns every happy customer into a revenue-generating referral engine
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - affiliate_program_design
+    - commission_structures
+    - partner_recruitment
+    - affiliate_network_management
+    - referral_programs
+    - affiliate_performance_tracking
+  maxTurns: 30
+  not-my-scope:
+    - Direct sales closing
+    - Brand strategy
+    - Content creation
+    - PR and media relations
+  related_agents:
+    - name: campaign-manager
+      type: coordinated_by
+    - name: partnership-marketing-manager
+      type: collaborates_with
+    - name: channel-partner-manager
+      type: collaborates_with
+    - name: revenue-operations-manager
+      type: reports_to
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Affiliate Marketing Manager

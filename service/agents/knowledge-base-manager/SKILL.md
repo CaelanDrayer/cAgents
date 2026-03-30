@@ -1,24 +1,25 @@
 ---
 name: knowledge-base-manager
-domain: service
-tier: execution
-effort: medium
 description: "Use when organizing knowledge base content, maintaining documentation accuracy, optimizing search and discovery, or managing content lifecycle."
-vibe: "Builds the docs that make support tickets unnecessary"
-model: sonnet
-color: bright_red
-capabilities:
-  - content_strategy
-  - taxonomy_design
-  - search_optimization
-  - knowledge_curation
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: support-operations-manager
-    type: coordinated_by
-  - name: technical-writer
-    type: collaborates_with
+metadata:
+  vibe: Builds the docs that make support tickets unnecessary
+  tier: execution
+  effort: medium
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - content_strategy
+    - taxonomy_design
+    - search_optimization
+    - knowledge_curation
+  maxTurns: 30
+  related_agents:
+    - name: support-operations-manager
+      type: coordinated_by
+    - name: technical-writer
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Knowledge Base Manager

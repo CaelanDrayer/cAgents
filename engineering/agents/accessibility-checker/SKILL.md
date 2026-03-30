@@ -1,26 +1,27 @@
 ---
 name: accessibility-checker
 description: "Use when auditing web or app accessibility, running WCAG compliance checks, identifying accessibility barriers, or testing with assistive technology."
-vibe: "Makes sure every user can use what you shipped"
-tier: support
-effort: low
-domain: engineering
-model: "haiku"
-color: bright_magenta
-layer: qa
-capabilities:
-  - wcag_compliance
-  - accessibility_checking
-  - a11y_validation
-  - aria_review
-allowed-tools: "Read Grep Glob"
-maxTurns: 10
-disallowedTools: ["Task"]
-related_agents:
-  - name: code-reviewer
-    type: coordinated_by
-  - name: frontend-developer
-    type: reviews
+metadata:
+  vibe: Makes sure every user can use what you shipped
+  tier: support
+  effort: low
+  domain: engineering
+  model: haiku
+  color: bright_magenta
+  capabilities:
+    - wcag_compliance
+    - accessibility_checking
+    - a11y_validation
+    - aria_review
+  maxTurns: 10
+  disallowedTools: ["Task"]
+  related_agents:
+    - name: code-reviewer
+      type: coordinated_by
+    - name: frontend-developer
+      type: reviews
+  layer: qa
+allowed-tools: Read Grep Glob
 ---
 
 # Accessibility Checker Agent

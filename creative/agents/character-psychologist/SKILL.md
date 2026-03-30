@@ -1,38 +1,39 @@
 ---
 name: character-psychologist
-domain: creative
-tier: execution
-effort: medium
 description: "Use when analyzing character motivations, diagnosing inconsistencies in character behavior, mapping psychological profiles, or ensuring emotional authenticity in character responses."
-vibe: "Knows why your characters do what they do, even when they don't"
-model: opus
-color: bright_magenta
-capabilities:
-  - psychological_profiling
-  - attachment_theory
-  - trauma_informed_writing
-  - defense_mechanisms
-  - personality_frameworks
-  - relationship_dynamics
-  - developmental_psychology
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-answers_questions:
-  - "Is this character psychologically authentic?"
-  - "What psychological framework best explains this character's behavior?"
-  - "How would trauma manifest in this character's life?"
-  - "What defense mechanisms would this character use?"
-executes_tasks:
-  - psychological_profile
-  - trauma_integration
-  - behavioral_authenticity_review
-  - relationship_dynamics_design
-  - character_psychology_consultation
-related_agents:
-  - name: narrative-director
-    type: coordinated_by
-  - name: character-designer
-    type: collaborates_with
+metadata:
+  vibe: "Knows why your characters do what they do, even when they don't"
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - psychological_profiling
+    - attachment_theory
+    - trauma_informed_writing
+    - defense_mechanisms
+    - personality_frameworks
+    - relationship_dynamics
+    - developmental_psychology
+  maxTurns: 30
+  related_agents:
+    - name: narrative-director
+      type: coordinated_by
+    - name: character-designer
+      type: collaborates_with
+  answers_questions:
+    - Is this character psychologically authentic?
+    - "What psychological framework best explains this character's behavior?"
+    - "How would trauma manifest in this character's life?"
+    - What defense mechanisms would this character use?
+  executes_tasks:
+    - psychological_profile
+    - trauma_integration
+    - behavioral_authenticity_review
+    - relationship_dynamics_design
+    - character_psychology_consultation
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Character Psychologist

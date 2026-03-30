@@ -1,35 +1,40 @@
 ---
 name: security-lead
 description: "Use when checking for security vulnerabilities, reviewing auth flows, auditing input validation, or preparing for a security assessment. Handles threat modeling, penetration testing, and compliance checks."
-vibe: "Leads the security team like a general defending the castle"
-tier: controller
-effort: high
-domain: engineering
-model: sonnet
-coordination_style: question_based
-typical_questions:
-  - "What is the current implementation of this feature?"
-  - "What are the technical constraints we need to consider?"
-  - "What are the key risks and dependencies?"
-color: bright_red
-capabilities:
-  - threat_modeling
-  - security_architecture_review
-  - penetration_testing
-  - compliance_auditing
-  - vulnerability_assessment
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-not-my-scope: ["Feature development", "UI design", "content creation", "marketing strategy"]
-related_agents:
-  - name: security-specialist
-    type: coordinates
-  - name: security-analyst
-    type: collaborates_with
-  - name: architect
-    type: collaborates_with
+metadata:
+  vibe: Leads the security team like a general defending the castle
+  tier: controller
+  effort: high
+  domain: engineering
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - threat_modeling
+    - security_architecture_review
+    - penetration_testing
+    - compliance_auditing
+    - vulnerability_assessment
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the current implementation of this feature?
+    - What are the technical constraints we need to consider?
+    - What are the key risks and dependencies?
+  not-my-scope:
+    - Feature development
+    - UI design
+    - content creation
+    - marketing strategy
+  related_agents:
+    - name: security-specialist
+      type: coordinates
+    - name: security-analyst
+      type: collaborates_with
+    - name: architect
+      type: collaborates_with
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 <example>

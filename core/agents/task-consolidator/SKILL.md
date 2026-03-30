@@ -1,20 +1,20 @@
 ---
 name: task-consolidator
-domain: core
-tier: infrastructure
-effort: high
 description: "Use when reducing task inventory context overhead, merging related tasks, or achieving 40-88% context savings for large workflows."
-vibe: "Turns 100 scattered tasks into a clean, actionable list"
-model: opus
-color: bright_yellow
-capabilities:
-  - task_decomposition
-  - parallel_execution
-  - result_consolidation
-  - context_optimization
-allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
-maxTurns: 30
-permissionMode: "bypassPermissions"
+metadata:
+  vibe: "Turns 100 scattered tasks into a clean, actionable list"
+  tier: infrastructure
+  effort: high
+  domain: core
+  model: opus
+  color: bright_yellow
+  capabilities:
+    - task_decomposition
+    - parallel_execution
+    - result_consolidation
+    - context_optimization
+  maxTurns: 30
+allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
 ---
 
 # Task Consolidator

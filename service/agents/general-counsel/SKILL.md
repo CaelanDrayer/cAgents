@@ -1,38 +1,39 @@
 ---
 name: general-counsel
-domain: service
-tier: controller
-effort: high
 description: "Use for legal strategy, regulatory compliance, contract review, IP protection, and corporate governance. General Counsel-level legal oversight."
-vibe: "Provides the legal judgment that keeps executives out of trouble"
-model: "opusplan"
-color: bright_red
-coordination_style: question_based
-typical_questions:
-  - "What is the current legal exposure or risk level?"
-  - "What are the regulatory requirements that apply?"
-  - "What are the key contractual or legal constraints?"
-capabilities:
-  - legal_strategy
-  - litigation_oversight
-  - corporate_governance
-  - transaction_management
-  - risk_coordination
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: corporate-counsel
-    type: coordinates
-  - name: litigation-manager
-    type: coordinates
-  - name: ip-attorney
-    type: coordinates
-  - name: compliance-officer
-    type: coordinates
-  - name: legal-operations-manager
-    type: coordinates
+metadata:
+  vibe: Provides the legal judgment that keeps executives out of trouble
+  tier: controller
+  effort: high
+  domain: service
+  model: opusplan
+  color: bright_red
+  capabilities:
+    - legal_strategy
+    - litigation_oversight
+    - corporate_governance
+    - transaction_management
+    - risk_coordination
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the current legal exposure or risk level?
+    - What are the regulatory requirements that apply?
+    - What are the key contractual or legal constraints?
+  related_agents:
+    - name: corporate-counsel
+      type: coordinates
+    - name: litigation-manager
+      type: coordinates
+    - name: ip-attorney
+      type: coordinates
+    - name: compliance-officer
+      type: coordinates
+    - name: legal-operations-manager
+      type: coordinates
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # General Counsel

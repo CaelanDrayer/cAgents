@@ -1,36 +1,37 @@
 ---
 name: game-designer
-domain: business
-tier: controller
-effort: high
-coordination_style: question_based
-typical_questions:
-  - "What are the core gameplay mechanics for this feature?"
-  - "How does this system interact with other game systems?"
-  - "What is the player experience flow for this content?"
 description: "Use when designing game mechanics, creating reward systems, balancing gameplay loops, developing progression systems, or designing player engagement frameworks."
-vibe: "Designs mechanics that make players forget to eat"
-model: "opusplan"
-color: bright_cyan
-capabilities:
-  - game_mechanics_design
-  - systems_design
-  - player_experience_design
-  - game_loop_architecture
-  - design_documentation
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: game-programmer
-    type: cross_domain
-  - name: narrative-game-designer
-    type: cross_domain
-  - name: game-writer
-    type: cross_domain
-  - name: game-producer
-    type: collaborates_with
+metadata:
+  vibe: Designs mechanics that make players forget to eat
+  tier: controller
+  effort: high
+  domain: business
+  model: opusplan
+  color: bright_cyan
+  capabilities:
+    - game_mechanics_design
+    - systems_design
+    - player_experience_design
+    - game_loop_architecture
+    - design_documentation
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What are the core gameplay mechanics for this feature?
+    - How does this system interact with other game systems?
+    - What is the player experience flow for this content?
+  related_agents:
+    - name: game-programmer
+      type: cross_domain
+    - name: narrative-game-designer
+      type: cross_domain
+    - name: game-writer
+      type: cross_domain
+    - name: game-producer
+      type: collaborates_with
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Game Designer

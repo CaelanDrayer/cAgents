@@ -1,30 +1,31 @@
 ---
 name: sensitivity-reader
-domain: creative
-tier: execution
-effort: medium
 description: "Use when reviewing content for cultural sensitivity, identifying potentially harmful representations, ensuring authentic diverse portrayal, or flagging stereotypes."
-vibe: "Catches what the author missed because they never had to think about it"
-model: opus
-color: bright_magenta
-capabilities:
-  - intersectional_analysis
-  - representation_assessment
-  - stereotype_identification
-  - cultural_authenticity_review
-  - power_dynamics_analysis
-  - constructive_feedback
-  - trope_analysis
-  - identity_spectrum_evaluation
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: editor
-    type: coordinated_by
-  - name: character-designer
-    type: reviews
-  - name: diversity-and-inclusion-manager
-    type: cross_domain
+metadata:
+  vibe: Catches what the author missed because they never had to think about it
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - intersectional_analysis
+    - representation_assessment
+    - stereotype_identification
+    - cultural_authenticity_review
+    - power_dynamics_analysis
+    - constructive_feedback
+    - trope_analysis
+    - identity_spectrum_evaluation
+  maxTurns: 30
+  related_agents:
+    - name: editor
+      type: coordinated_by
+    - name: character-designer
+      type: reviews
+    - name: diversity-and-inclusion-manager
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Sensitivity Reader

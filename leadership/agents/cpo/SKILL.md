@@ -1,27 +1,28 @@
 ---
 name: cpo
 description: "Use for strategic planning oversight, cross-functional alignment, tier 3-4 strategic plans, or complex multi-domain planning. Chief Planning Officer."
-vibe: "Ships the product roadmap that customers and revenue both love"
-tier: controller
-effort: high
-domain: leadership
-model: "opusplan"
-coordination_style: question_based
-typical_questions:
-  - "What is the current implementation of this feature?"
-  - "What are the technical constraints we need to consider?"
-  - "What are the key risks and dependencies?"
-color: bright_magenta
-capabilities:
-  - strategic_planning
-  - okr_framework
-  - roadmapping
-  - change_management
-  - planning_governance
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
+metadata:
+  vibe: Ships the product roadmap that customers and revenue both love
+  tier: controller
+  effort: high
+  domain: leadership
+  model: opusplan
+  color: bright_magenta
+  capabilities:
+    - strategic_planning
+    - okr_framework
+    - roadmapping
+    - change_management
+    - planning_governance
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the current implementation of this feature?
+    - What are the technical constraints we need to consider?
+    - What are the key risks and dependencies?
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Chief Planning Officer (CPO)

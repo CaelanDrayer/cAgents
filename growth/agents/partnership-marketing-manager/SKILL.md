@@ -1,24 +1,25 @@
 ---
 name: partnership-marketing-manager
-domain: growth
-tier: execution
-effort: medium
 description: "Use when developing co-marketing partnerships, creating joint campaigns, managing partner content, or tracking partnership-driven pipeline."
-vibe: "Creates partnerships where both sides win bigger together"
-model: sonnet
-color: bright_green
-capabilities:
-  - co_marketing
-  - partner_enablement
-  - alliance_marketing
-  - channel_programs
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: campaign-manager
-    type: coordinated_by
-  - name: channel-partner-manager
-    type: collaborates_with
+metadata:
+  vibe: Creates partnerships where both sides win bigger together
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - co_marketing
+    - partner_enablement
+    - alliance_marketing
+    - channel_programs
+  maxTurns: 30
+  related_agents:
+    - name: campaign-manager
+      type: coordinated_by
+    - name: channel-partner-manager
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Partnership Marketing Manager

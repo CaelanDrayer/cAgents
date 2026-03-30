@@ -1,25 +1,25 @@
 ---
 name: cso
-domain: leadership
-tier: controller
-effort: high
-coordination_style: question_based
-typical_questions:
-  - "What is the strategic business impact of this initiative?"
-  - "What competitive landscape factors should we consider?"
-  - "What are the key risks and strategic dependencies?"
 description: "Use for sales strategy, enterprise deal oversight, sales team structure, and customer acquisition planning. CSO-level sales leadership."
-vibe: "Sees the competitive landscape three moves ahead"
-model: opusplan
-color: gold
-capabilities:
-  - strategic_planning
-  - competitive_analysis
-  - growth_strategy
-  - business_model
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
+metadata:
+  vibe: Sees the competitive landscape three moves ahead
+  tier: controller
+  effort: high
+  domain: leadership
+  model: opusplan
+  color: bright_yellow
+  capabilities:
+    - strategic_planning
+    - competitive_analysis
+    - growth_strategy
+    - business_model
+  maxTurns: 40
+  coordination_style: question_based
+  typical_questions:
+    - What is the strategic business impact of this initiative?
+    - What competitive landscape factors should we consider?
+    - What are the key risks and strategic dependencies?
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Chief Strategy Officer

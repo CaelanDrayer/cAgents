@@ -1,26 +1,27 @@
 ---
 name: hr-analyst
-domain: people
-tier: execution
-effort: medium
 description: "Use when analyzing HR metrics, building people analytics dashboards, modeling workforce trends, or providing data-driven recommendations on talent decisions."
-vibe: "Turns people data into people decisions that actually work"
-model: sonnet
-color: bright_yellow
-capabilities:
-  - people_analytics
-  - hr_reporting
-  - data_visualization
-  - predictive_modeling
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: hr-manager
-    type: coordinated_by
-  - name: workforce-planning-analyst
-    type: collaborates_with
-  - name: data-scientist
-    type: cross_domain
+metadata:
+  vibe: Turns people data into people decisions that actually work
+  tier: execution
+  effort: medium
+  domain: people
+  model: sonnet
+  color: bright_yellow
+  capabilities:
+    - people_analytics
+    - hr_reporting
+    - data_visualization
+    - predictive_modeling
+  maxTurns: 30
+  related_agents:
+    - name: hr-manager
+      type: coordinated_by
+    - name: workforce-planning-analyst
+      type: collaborates_with
+    - name: data-scientist
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # HR Analyst

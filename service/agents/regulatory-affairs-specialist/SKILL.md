@@ -1,24 +1,25 @@
 ---
 name: regulatory-affairs-specialist
-domain: service
-tier: execution
-effort: medium
 description: "Use when navigating regulatory submissions, tracking regulatory changes, preparing compliance documentation, or managing regulatory agency relationships."
-vibe: "Stays ahead of regulations so the company is never scrambling"
-model: sonnet
-color: bright_red
-capabilities:
-  - regulatory_filings
-  - agency_relations
-  - regulatory_strategy
-  - industry_compliance
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: compliance-officer
-    type: coordinated_by
-  - name: compliance-manager
-    type: collaborates_with
+metadata:
+  vibe: Stays ahead of regulations so the company is never scrambling
+  tier: execution
+  effort: medium
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - regulatory_filings
+    - agency_relations
+    - regulatory_strategy
+    - industry_compliance
+  maxTurns: 30
+  related_agents:
+    - name: compliance-officer
+      type: coordinated_by
+    - name: compliance-manager
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Regulatory Affairs Specialist

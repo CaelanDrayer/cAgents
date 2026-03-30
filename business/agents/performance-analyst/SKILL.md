@@ -1,41 +1,42 @@
 ---
 name: performance-analyst
-domain: business
-tier: execution
-effort: medium
 description: "Use when analyzing performance metrics, identifying bottlenecks, planning capacity, or producing optimization recommendations from operational data."
-vibe: "Turns raw metrics into decisions that move the needle"
-model: sonnet
-color: bright_blue
-answers_questions:
-  - "What are the current performance metrics and baselines?"
-  - "Where are the bottlenecks in the system/process?"
-  - "What are the performance requirements and targets?"
-executes_tasks:
-  - analyze_performance_metrics
-  - identify_bottlenecks
-  - conduct_performance_tests
-  - produce_optimization_recommendations
-  - plan_capacity
-  - forecast_performance_trends
-capabilities:
-  - performance_monitoring
-  - performance_optimization
-  - bottleneck_identification
-  - capacity_analysis
-  - performance_testing
-  - metrics_analysis
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: planning-analyst
-    type: collaborates_with
-  - name: predictive-analyst
-    type: collaborates_with
-  - name: operations-manager
-    type: collaborates_with
+metadata:
+  vibe: Turns raw metrics into decisions that move the needle
+  tier: execution
+  effort: medium
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - performance_monitoring
+    - performance_optimization
+    - bottleneck_identification
+    - capacity_analysis
+    - performance_testing
+    - metrics_analysis
+  maxTurns: 40
+  memory:
+    project: true
+  related_agents:
+    - name: planning-analyst
+      type: collaborates_with
+    - name: predictive-analyst
+      type: collaborates_with
+    - name: operations-manager
+      type: collaborates_with
+  answers_questions:
+    - What are the current performance metrics and baselines?
+    - Where are the bottlenecks in the system/process?
+    - What are the performance requirements and targets?
+  executes_tasks:
+    - analyze_performance_metrics
+    - identify_bottlenecks
+    - conduct_performance_tests
+    - produce_optimization_recommendations
+    - plan_capacity
+    - forecast_performance_trends
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Performance Analyst

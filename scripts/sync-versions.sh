@@ -2,12 +2,11 @@
 # Sync version across all cAgents manifest files
 # Usage: ./scripts/sync-versions.sh <new-version>
 #
-# Updates version in all 25 locations (see .claude/rules/core/version-registry.md):
-# Location #24: scripts/ci/cagents-ci.sh (header comment + log_section banner)
-# Location #25: scripts/ci/validate-agents.sh (# Version: header)
+# Updates version in all 16 locations (see .claude/rules/core/version-registry.md):
+# Location #15: scripts/ci/cagents-ci.sh (header comment + log_section banner)
+# Location #16: scripts/ci/validate-agents.sh (# Version: header)
 #   .claude-plugin/plugin.json, .claude-plugin/marketplace.json, package.json,
-#   CLAUDE.md, .claude/settings.json, 9 domain plugin.json files (core,
-#   engineering, creative, business, growth, people, service, leadership, shared),
+#   CLAUDE.md, .claude/settings.json,
 #   8 skill SKILL.md frontmatter versions, and session-catchup.cjs context string
 
 set -euo pipefail
@@ -28,15 +27,6 @@ MANIFESTS=(
   "$ROOT/.claude-plugin/plugin.json"
   "$ROOT/.claude-plugin/marketplace.json"
   "$ROOT/package.json"
-  "$ROOT/core/.claude-plugin/plugin.json"
-  "$ROOT/engineering/.claude-plugin/plugin.json"
-  "$ROOT/creative/.claude-plugin/plugin.json"
-  "$ROOT/business/.claude-plugin/plugin.json"
-  "$ROOT/growth/.claude-plugin/plugin.json"
-  "$ROOT/people/.claude-plugin/plugin.json"
-  "$ROOT/service/.claude-plugin/plugin.json"
-  "$ROOT/leadership/.claude-plugin/plugin.json"
-  "$ROOT/shared/.claude-plugin/plugin.json"
 )
 
 UPDATED=0

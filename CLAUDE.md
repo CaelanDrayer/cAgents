@@ -34,7 +34,7 @@ Core architecture and development guidance for cAgents.
 - `archive/docs/` - Historical documentation (local only)
 - `Agent_Memory/` - Runtime state (excluded from git)
 - `.claude/skills/run/reference/session-schema.md` - Session YAML contract (canonical schema for AgentPath)
-- `workflow_agent_interactions.md` - Agent interaction patterns (root-level exception)
+- `docs/workflow_agent_interactions.md` - Agent interaction patterns
 
 ## Version Management
 
@@ -81,10 +81,10 @@ quality/        # completion, validation-framework, implicit-discovery (3 files)
 - **Tier 2**: Controllers (coordinate via batch delegation)
 - **Tier 3**: Execution agents (implement work items)
 - **Tier 4**: Support agents (foundational services)
-- **Total**: 214 agents across 8 business domains
+- **Total**: 262 agents across 15 domains
 - **Execution**: Event-driven pipeline with progressive paths (minimal/medium/full), revision routing, reviewer loops
 
-**Business Domains** (8):
+**Domains** (15):
 | Domain | Dir | Agents | Capability |
 |--------|-----|--------|------------|
 | **Engineering** | `engineering/` | 32 | Software engineering, infrastructure, security, QA, game programming |
@@ -95,7 +95,13 @@ quality/        # completion, validation-framework, implicit-discovery (3 files)
 | **Service** | `service/` | 32 | Customer support, CX, legal, compliance, governance |
 | **Leadership** | `leadership/` | 11 | C-suite executives + general-counsel (used by /org, not directly routable) |
 | **Core** | `core/` | 16 | Infrastructure agents (trigger, orchestrator, planner, reviewer, etc.) |
-| **Shared** | `shared/` | 4 | Cross-domain intelligence (BI, data science, market research) |
+| **Shared** | `shared/` | 12 | Cross-domain intelligence (BI, data science, market research, social science) |
+| **Science** | `science/` | 10 | STEM research, scientific analysis |
+| **Health** | `health/` | 6 | Medical, wellness, fitness, nutrition |
+| **Education** | `education/` | 6 | Teaching, tutoring, academic support |
+| **Personal** | `personal/` | 6 | Career, life coaching, personal finance |
+| **Arts** | `arts/` | 6 | Visual arts, music, film, performing arts |
+| **Trades** | `trades/` | 6 | Culinary, construction, automotive, agriculture |
 
 **Config**: Each domain has `{domain}/config/domain_overrides.yaml` with controller_catalog and router keywords.
 
@@ -233,7 +239,7 @@ User Request -> /run (state machine loop, reads pipeline_config.yaml)
   REVISE -> back to PLANNED (re-plan, max 5 cycles)
 ```
 
-**Subagent Architecture**: Agents delegate to specialists via Task tool. Pattern: "Use {subagent} to {task}". Up to 50 concurrent. See `workflow_agent_interactions.md`.
+**Subagent Architecture**: Agents delegate to specialists via Task tool. Pattern: "Use {subagent} to {task}". Up to 50 concurrent. See `docs/workflow_agent_interactions.md`.
 
 ## Task Completion Protocol
 
@@ -386,9 +392,15 @@ cAgents/
 +-- people/                  # People domain (19 agents)
 +-- service/                 # Service domain (32 agents)
 +-- leadership/              # Leadership domain (11 C-suite agents)
-+-- core/                    # Core infrastructure (15 agents)
-+-- shared/                  # Cross-domain specialists (4 agents)
++-- core/                    # Core infrastructure (16 agents)
++-- shared/                  # Cross-domain specialists (12 agents)
 +-- growth/                  # Growth domain (39 agents: marketing, sales, revenue ops)
++-- science/                 # Science domain (10 agents)
++-- health/                  # Health domain (6 agents)
++-- education/               # Education domain (6 agents)
++-- personal/                # Personal domain (6 agents)
++-- arts/                    # Arts domain (6 agents)
++-- trades/                  # Trades domain (6 agents)
 +-- scripts/                 # Version sync, validation, CI scripts
 +-- tests/                   # Vitest test suite (hooks + config)
 +-- docs/                    # Project documentation
@@ -412,7 +424,7 @@ cAgents is distributed as a Claude Code plugin. See `.claude-plugin/plugin.json`
 ```
 
 **Key Manifest Fields**:
-- `agents`: Array of SKILL.md paths (214 agents registered)
+- `agents`: Array of SKILL.md paths (262 agents registered)
 - `skills`: Path to skills directory (`.claude/skills/`)
 - `hooks`: Path to settings.json for hook registration
 - `settings.json`: Default settings applied when plugin loads (under `agent` key for subagent defaults)
@@ -440,7 +452,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 
 ## V10.18.0 Highlights
 
-- **Vibe field on all 214 agents**: Personality one-liners for every agent in the catalog
+- **Vibe field on all 262 agents**: Personality one-liners for every agent in the catalog
 - **Agent export script**: `scripts/export-agents.sh` converts SKILL.md to Cursor rules, markdown, or bundle format
 - **Worktree isolation**: `/team` teammates can use `isolation: "worktree"` for parallel file safety
 - **Ambiguity scoring**: `/designer` tracks 4-dimension clarity score with readiness gate (< 20% to proceed)
@@ -457,8 +469,8 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 
 **Skills**: `/org`, `/run`, `/team`, `/designer`, `/review`, `/optimize`, `/helper`, `/context` (in `.claude/skills/`)
 **Built-in**: `/memory`, `/init` (Claude Code native)
-**Agents**: 214 total (16 core + 4 shared + 11 leadership + 183 domain specialists)
-**Domains**: Engineering (32), Creative (30), Business (31), Growth (39), People (19), Service (32), Leadership (11), Core (15), Shared (4)
+**Agents**: 262 total (16 core + 12 shared + 11 leadership + 223 domain specialists)
+**Domains**: Engineering (32), Creative (30), Business (31), Growth (39), People (19), Service (32), Leadership (11), Core (16), Shared (12), Science (10), Health (6), Education (6), Personal (6), Arts (6), Trades (6)
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/domain_overrides.yaml`, `Agent_Memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (session YAML contract for AgentPath)
 **Hooks**: 19 event types (24 supported by Claude Code), 26 registered CJS hooks (29 .cjs files), invoked via `run-hook.cjs` launcher
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
@@ -466,7 +478,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 685 Vitest tests (hooks + config validation)
-**Version**: 10.24.3
+**Version**: 10.25.0
 
 ## Troubleshooting
 

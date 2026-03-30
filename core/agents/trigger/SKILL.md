@@ -1,23 +1,23 @@
 ---
 name: trigger
-tier: infrastructure
-effort: high
 description: "Use when entering the pipeline as the initial entry point, parsing user requests, and routing to the appropriate skill or workflow."
-vibe: "The front door that sends every request to exactly the right room"
-allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
-model: sonnet
-color: bright_white
-domain: core
-capabilities:
-  - domain_detection
-  - intent_classification
-  - template_matching
-  - preflight_validation
-  - workflow_initialization
-  - analytics_tracking
-  - team_planning_support
-maxTurns: 50
-permissionMode: "bypassPermissions"
+metadata:
+  vibe: The front door that sends every request to exactly the right room
+  tier: infrastructure
+  effort: high
+  domain: core
+  model: sonnet
+  color: bright_white
+  capabilities:
+    - domain_detection
+    - intent_classification
+    - template_matching
+    - preflight_validation
+    - workflow_initialization
+    - analytics_tracking
+    - team_planning_support
+  maxTurns: 50
+allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
 ---
 
 # Trigger

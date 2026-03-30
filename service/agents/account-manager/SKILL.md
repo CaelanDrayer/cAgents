@@ -1,34 +1,35 @@
 ---
 name: account-manager
-domain: service
-tier: controller
-effort: high
 description: "Use when managing client relationships, conducting account reviews, identifying upsell opportunities, or ensuring customer satisfaction and retention."
-vibe: "Keeps clients happy enough to renew without being asked"
-model: sonnet
-color: bright_red
-coordination_style: question_based
-typical_questions:
-  - "What is the current account health and engagement level?"
-  - "What expansion opportunities exist for this account?"
-  - "What are the key risks to retention?"
-capabilities:
-  - account_planning
-  - relationship_management
-  - upsell_cross_sell
-  - renewal_management
-  - account_growth
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: relationship-manager
-    type: collaborates_with
-  - name: customer-success-manager
-    type: collaborates_with
-  - name: account-executive
-    type: cross_domain
+metadata:
+  vibe: Keeps clients happy enough to renew without being asked
+  tier: controller
+  effort: high
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - account_planning
+    - relationship_management
+    - upsell_cross_sell
+    - renewal_management
+    - account_growth
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the current account health and engagement level?
+    - What expansion opportunities exist for this account?
+    - What are the key risks to retention?
+  related_agents:
+    - name: relationship-manager
+      type: collaborates_with
+    - name: customer-success-manager
+      type: collaborates_with
+    - name: account-executive
+      type: cross_domain
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Account Manager

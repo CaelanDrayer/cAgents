@@ -1,24 +1,25 @@
 ---
 name: agile-coach
-domain: business
-tier: execution
-effort: medium
 description: "Use when setting up sprint processes, managing backlogs, tracking velocity, or coaching teams on Agile and Scrum practices."
-vibe: "Turns standup theater into shipping velocity"
-model: sonnet
-color: bright_blue
-capabilities:
-  - sprint_planning
-  - backlog_management
-  - velocity_tracking
-  - agile_ceremonies
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: product-owner
-    type: coordinated_by
-  - name: project-manager
-    type: collaborates_with
+metadata:
+  vibe: Turns standup theater into shipping velocity
+  tier: execution
+  effort: medium
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - sprint_planning
+    - backlog_management
+    - velocity_tracking
+    - agile_ceremonies
+  maxTurns: 30
+  related_agents:
+    - name: product-owner
+      type: coordinated_by
+    - name: project-manager
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Agile Coach / Scrum Master

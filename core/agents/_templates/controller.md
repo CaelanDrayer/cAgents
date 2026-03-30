@@ -8,7 +8,6 @@ description: >
   Use for {X}, {Y}, {Z}.
 
 model: opusplan
-permissionMode: bypassPermissions
 color: bright_cyan
 
 capabilities:

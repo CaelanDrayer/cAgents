@@ -1,26 +1,27 @@
 ---
 name: onboarding-specialist
-domain: people
-tier: execution
-effort: medium
 description: "Use when designing onboarding programs, creating new hire experiences, building 30/60/90 day plans, or improving time-to-productivity for new employees."
-vibe: "Gets new hires productive before their welcome swag arrives"
-model: sonnet
-color: bright_yellow
-capabilities:
-  - onboarding_program_design
-  - new_hire_experience
-  - pre_boarding
-  - integration_tracking
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: hr-manager
-    type: coordinated_by
-  - name: recruiter
-    type: pipeline_prev
-  - name: learning-specialist
-    type: collaborates_with
+metadata:
+  vibe: Gets new hires productive before their welcome swag arrives
+  tier: execution
+  effort: medium
+  domain: people
+  model: sonnet
+  color: bright_yellow
+  capabilities:
+    - onboarding_program_design
+    - new_hire_experience
+    - pre_boarding
+    - integration_tracking
+  maxTurns: 30
+  related_agents:
+    - name: hr-manager
+      type: coordinated_by
+    - name: recruiter
+      type: pipeline_prev
+    - name: learning-specialist
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Onboarding Specialist

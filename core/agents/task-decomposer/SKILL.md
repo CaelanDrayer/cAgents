@@ -1,29 +1,33 @@
 ---
 name: task-decomposer
-tier: infrastructure
-effort: high
 description: "Use when breaking down plans into granular work items with acceptance criteria, dependency graphs, and wave assignments for parallel execution."
-vibe: "Breaks the impossible into 30 very possible pieces"
-allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
-model: opus
-color: bright_yellow
-domain: core
-capabilities:
-  - abstraction_classification
-  - component_extraction
-  - implicit_discovery
-  - dependency_mapping
-  - work_breakdown_generation
-maxTurns: 30
-permissionMode: "bypassPermissions"
-related_agents:
-  - name: universal-planner
-    type: collaborates_with
-  - name: prompt-engineer
-    type: collaborates_with
-  - name: orchestrator
-    type: coordinated_by
-not-my-scope: ["Implementation", "validation", "coordination", "content creation"]
+metadata:
+  vibe: Breaks the impossible into 30 very possible pieces
+  tier: infrastructure
+  effort: high
+  domain: core
+  model: opus
+  color: bright_yellow
+  capabilities:
+    - abstraction_classification
+    - component_extraction
+    - implicit_discovery
+    - dependency_mapping
+    - work_breakdown_generation
+  maxTurns: 30
+  not-my-scope:
+    - Implementation
+    - validation
+    - coordination
+    - content creation
+  related_agents:
+    - name: universal-planner
+      type: collaborates_with
+    - name: prompt-engineer
+      type: collaborates_with
+    - name: orchestrator
+      type: coordinated_by
+allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
 ---
 
 # Task Decomposer

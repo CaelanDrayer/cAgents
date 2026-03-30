@@ -1,39 +1,40 @@
 ---
 name: dialogue-specialist
-domain: creative
-tier: execution
-effort: medium
 description: "Use when writing or improving dialogue, developing distinct character voices, crafting subtext, or ensuring conversations advance both plot and character."
-vibe: "Hears the conversation beneath the conversation"
-model: opus
-color: bright_magenta
-capabilities:
-  - dialogue_writing
-  - subtext_craft
-  - character_voice_dialogue
-  - dialect_creation
-  - power_dynamics
-  - conversation_design
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-answers_questions:
-  - "How can this dialogue be improved?"
-  - "Do characters sound distinct from each other?"
-  - "Is subtext working effectively?"
-  - "Does the dialogue reveal character and advance story?"
-executes_tasks:
-  - dialogue_writing
-  - dialogue_revision
-  - character_voice_development
-  - conversation_design
-  - dialect_creation
-related_agents:
-  - name: narrative-director
-    type: coordinated_by
-  - name: character-designer
-    type: collaborates_with
-  - name: prose-stylist
-    type: collaborates_with
+metadata:
+  vibe: Hears the conversation beneath the conversation
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - dialogue_writing
+    - subtext_craft
+    - character_voice_dialogue
+    - dialect_creation
+    - power_dynamics
+    - conversation_design
+  maxTurns: 30
+  related_agents:
+    - name: narrative-director
+      type: coordinated_by
+    - name: character-designer
+      type: collaborates_with
+    - name: prose-stylist
+      type: collaborates_with
+  answers_questions:
+    - How can this dialogue be improved?
+    - Do characters sound distinct from each other?
+    - Is subtext working effectively?
+    - Does the dialogue reveal character and advance story?
+  executes_tasks:
+    - dialogue_writing
+    - dialogue_revision
+    - character_voice_development
+    - conversation_design
+    - dialect_creation
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Dialogue Specialist

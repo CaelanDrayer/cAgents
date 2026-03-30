@@ -1,31 +1,32 @@
 ---
 name: coo
 description: "Use for operational decisions, process coordination, cross-functional efficiency improvements, and scaling operations. Chief Operating Officer."
-vibe: "Runs operations so efficiently the CEO can focus on vision"
-tier: controller
-effort: high
-domain: leadership
-model: "opusplan"
-color: bright_yellow
-coordination_style: question_based
-typical_questions:
-  - "What is the current implementation of this feature?"
-  - "What are the technical constraints we need to consider?"
-  - "What are the key risks and dependencies?"
-  - "What are the current operational processes and bottlenecks?"
-  - "What resource allocation changes are needed?"
-  - "What cross-functional dependencies exist?"
-capabilities:
-  - operational_execution
-  - process_optimization
-  - cross_functional_coordination
-  - resource_allocation
-  - performance_management
-  - question_based_delegation
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
+metadata:
+  vibe: Runs operations so efficiently the CEO can focus on vision
+  tier: controller
+  effort: high
+  domain: leadership
+  model: opusplan
+  color: bright_yellow
+  capabilities:
+    - operational_execution
+    - process_optimization
+    - cross_functional_coordination
+    - resource_allocation
+    - performance_management
+    - question_based_delegation
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the current implementation of this feature?
+    - What are the technical constraints we need to consider?
+    - What are the key risks and dependencies?
+    - What are the current operational processes and bottlenecks?
+    - What resource allocation changes are needed?
+    - What cross-functional dependencies exist?
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # COO

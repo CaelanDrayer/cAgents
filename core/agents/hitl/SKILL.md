@@ -1,21 +1,21 @@
 ---
 name: hitl
-domain: core
-tier: infrastructure
-effort: high
 description: "Use when a workflow requires human approval, when automated decisions need manual override, or when tier 4 escalation gates must be resolved."
-vibe: "The human in the loop when machines need a gut check"
-model: sonnet
-color: bright_red
-capabilities:
-  - context_preparation
-  - options_presentation
-  - decision_capture
-  - pattern_learning
-  - workflow_pause_resume
-allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
-maxTurns: 15
-permissionMode: "bypassPermissions"
+metadata:
+  vibe: The human in the loop when machines need a gut check
+  tier: infrastructure
+  effort: high
+  domain: core
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - context_preparation
+    - options_presentation
+    - decision_capture
+    - pattern_learning
+    - workflow_pause_resume
+  maxTurns: 15
+allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
 ---
 
 # HITL Agent

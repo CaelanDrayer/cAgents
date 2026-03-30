@@ -89,6 +89,12 @@ function validateAgent(agentDir) {
     return { errors, warnings };
   }
 
+  // Helper: read a field from top-level OR metadata: map (backward-compat)
+  const meta = frontmatter.metadata || {};
+  function fm(field) {
+    return frontmatter[field] !== undefined ? frontmatter[field] : meta[field];
+  }
+
   // Validate required fields
   if (!frontmatter.name) {
     errors.push("Missing 'name' in frontmatter");
@@ -100,28 +106,31 @@ function validateAgent(agentDir) {
     warnings.push("Description should be at least 20 characters");
   }
 
-  // Validate tier
+  // Validate tier (may be inside metadata: after migration)
   const validTiers = ['infrastructure', 'controller', 'execution', 'support'];
-  if (!frontmatter.tier) {
+  const tier = fm('tier');
+  if (!tier) {
     warnings.push("Missing 'tier' in frontmatter (infrastructure/controller/execution/support)");
-  } else if (!validTiers.includes(frontmatter.tier)) {
-    warnings.push(`Invalid tier '${frontmatter.tier}' - should be one of: ${validTiers.join(', ')}`);
+  } else if (!validTiers.includes(tier)) {
+    warnings.push(`Invalid tier '${tier}' - should be one of: ${validTiers.join(', ')}`);
   }
 
-  // Validate domain
+  // Validate domain (may be inside metadata: after migration)
   const validDomains = ['core', 'shared', 'engineering', 'creative', 'business', 'growth', 'people', 'service', 'leadership'];
-  if (!frontmatter.domain) {
+  const domain = fm('domain');
+  if (!domain) {
     warnings.push("Missing 'domain' in frontmatter");
-  } else if (!validDomains.includes(frontmatter.domain)) {
-    warnings.push(`Unusual domain '${frontmatter.domain}' - standard domains are: ${validDomains.join(', ')}`);
+  } else if (!validDomains.includes(domain)) {
+    warnings.push(`Unusual domain '${domain}' - standard domains are: ${validDomains.join(', ')}`);
   }
 
-  // Validate model
-  const validModels = ['opus', 'sonnet', 'haiku', 'inherit'];
-  if (!frontmatter.model) {
+  // Validate model (may be inside metadata: after migration)
+  const validModels = ['opus', 'opusplan', 'sonnet', 'haiku', 'inherit'];
+  const model = fm('model');
+  if (!model) {
     warnings.push("Missing 'model' in frontmatter - will default to session model");
-  } else if (!validModels.includes(frontmatter.model)) {
-    warnings.push(`Invalid model '${frontmatter.model}' - should be one of: ${validModels.join(', ')}`);
+  } else if (!validModels.includes(model)) {
+    warnings.push(`Invalid model '${model}' - should be one of: ${validModels.join(', ')}`);
   }
 
   // Check for common issues in body
@@ -225,11 +234,13 @@ console.log('VALIDATION PASSED');
 console.log('');
 
 if (frontmatter) {
+  const metaOut = frontmatter.metadata || {};
+  const fmGet = (k) => frontmatter[k] !== undefined ? frontmatter[k] : metaOut[k];
   console.log('Frontmatter:');
   console.log(`  name: ${frontmatter.name}`);
-  console.log(`  tier: ${frontmatter.tier || '(not set)'}`);
-  console.log(`  domain: ${frontmatter.domain || '(not set)'}`);
-  console.log(`  model: ${frontmatter.model || '(not set)'}`);
+  console.log(`  tier: ${fmGet('tier') || '(not set)'}`);
+  console.log(`  domain: ${fmGet('domain') || '(not set)'}`);
+  console.log(`  model: ${fmGet('model') || '(not set)'}`);
   console.log('');
 }
 

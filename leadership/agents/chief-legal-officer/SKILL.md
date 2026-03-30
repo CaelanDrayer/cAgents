@@ -1,36 +1,37 @@
 ---
 name: chief-legal-officer
-domain: leadership
-tier: controller
-effort: high
-coordination_style: question_based
-typical_questions:
-  - "What is the legal and compliance exposure for this initiative?"
-  - "What regulatory requirements apply across all affected domains?"
-  - "What are the key contractual, privacy, and governance constraints?"
 description: "Use for legal strategy, regulatory compliance, contract review, IP protection, and corporate governance. General Counsel-level legal oversight."
-vibe: "Provides the legal judgment that keeps executives out of trouble"
-model: opusplan
-color: gold
-capabilities:
-  - strategic_legal_oversight
-  - cross_domain_compliance
-  - executive_deliberation
-  - risk_assessment
-  - regulatory_strategy
-  - governance_coordination
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: compliance-officer
-    type: coordinates
-  - name: privacy-officer
-    type: coordinates
-  - name: general-counsel
-    domain: service
-    type: delegates_to
+metadata:
+  vibe: Provides the legal judgment that keeps executives out of trouble
+  tier: controller
+  effort: high
+  domain: leadership
+  model: opusplan
+  color: bright_yellow
+  capabilities:
+    - strategic_legal_oversight
+    - cross_domain_compliance
+    - executive_deliberation
+    - risk_assessment
+    - regulatory_strategy
+    - governance_coordination
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the legal and compliance exposure for this initiative?
+    - What regulatory requirements apply across all affected domains?
+    - "What are the key contractual, privacy, and governance constraints?"
+  related_agents:
+    - name: compliance-officer
+      type: coordinates
+    - name: privacy-officer
+      type: coordinates
+    - name: general-counsel
+      domain: service
+      type: delegates_to
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 <example>

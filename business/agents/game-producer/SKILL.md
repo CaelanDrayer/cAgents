@@ -1,34 +1,35 @@
 ---
 name: game-producer
-domain: business
-tier: controller
-effort: high
-coordination_style: question_based
-typical_questions:
-  - "What is the current status of this milestone?"
-  - "What blockers are preventing progress?"
-  - "What resources are needed to complete this feature?"
 description: "Use when managing game production schedules, coordinating cross-discipline teams, tracking milestone delivery, or managing scope and resource allocation for game projects."
-vibe: "Ships games on time without shipping the team's sanity"
-model: "opusplan"
-color: bright_white
-capabilities:
-  - production_management
-  - milestone_planning
-  - resource_allocation
-  - team_coordination
-  - risk_management
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: game-designer
-    type: collaborates_with
-  - name: game-programmer
-    type: cross_domain
-  - name: project-manager
-    type: collaborates_with
+metadata:
+  vibe: "Ships games on time without shipping the team's sanity"
+  tier: controller
+  effort: high
+  domain: business
+  model: opusplan
+  color: bright_white
+  capabilities:
+    - production_management
+    - milestone_planning
+    - resource_allocation
+    - team_coordination
+    - risk_management
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the current status of this milestone?
+    - What blockers are preventing progress?
+    - What resources are needed to complete this feature?
+  related_agents:
+    - name: game-designer
+      type: collaborates_with
+    - name: game-programmer
+      type: cross_domain
+    - name: project-manager
+      type: collaborates_with
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Game Producer

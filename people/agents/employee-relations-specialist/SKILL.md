@@ -1,26 +1,27 @@
 ---
 name: employee-relations-specialist
-domain: people
-tier: execution
-effort: medium
 description: "Use when handling workplace conflicts, conducting investigations, advising on disciplinary actions, or mediating employee-manager disputes."
-vibe: "Resolves workplace issues before they become workplace problems"
-model: sonnet
-color: bright_yellow
-capabilities:
-  - conflict_resolution
-  - investigations
-  - policy_interpretation
-  - employee_advocacy
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: hr-manager
-    type: coordinated_by
-  - name: hr-compliance-specialist
-    type: collaborates_with
-  - name: employment-attorney
-    type: cross_domain
+metadata:
+  vibe: Resolves workplace issues before they become workplace problems
+  tier: execution
+  effort: medium
+  domain: people
+  model: sonnet
+  color: bright_yellow
+  capabilities:
+    - conflict_resolution
+    - investigations
+    - policy_interpretation
+    - employee_advocacy
+  maxTurns: 30
+  related_agents:
+    - name: hr-manager
+      type: coordinated_by
+    - name: hr-compliance-specialist
+      type: collaborates_with
+    - name: employment-attorney
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Employee Relations Specialist

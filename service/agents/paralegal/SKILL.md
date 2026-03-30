@@ -1,24 +1,25 @@
 ---
 name: paralegal
-domain: service
-tier: execution
-effort: medium
 description: "Use when preparing legal documents, conducting legal research, organizing case files, managing discovery processes, or supporting attorneys with filings."
-vibe: "Prepares the legal groundwork so attorneys can focus on strategy"
-model: sonnet
-color: bright_red
-capabilities:
-  - document_preparation
-  - legal_research
-  - filing_coordination
-  - matter_support
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: legal-operations-manager
-    type: coordinated_by
-  - name: litigation-manager
-    type: collaborates_with
+metadata:
+  vibe: Prepares the legal groundwork so attorneys can focus on strategy
+  tier: execution
+  effort: medium
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - document_preparation
+    - legal_research
+    - filing_coordination
+    - matter_support
+  maxTurns: 30
+  related_agents:
+    - name: legal-operations-manager
+      type: coordinated_by
+    - name: litigation-manager
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Paralegal

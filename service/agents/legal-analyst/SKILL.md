@@ -1,24 +1,25 @@
 ---
 name: legal-analyst
-domain: service
-tier: execution
-effort: medium
 description: "Use when researching legal precedents, analyzing regulatory impact, preparing legal briefs, or supporting attorneys with case documentation."
-vibe: "Researches legal precedent so counsel can advise with confidence"
-model: sonnet
-color: bright_red
-capabilities:
-  - legal_analytics
-  - spend_analysis
-  - risk_quantification
-  - legal_metrics
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: legal-operations-manager
-    type: coordinated_by
-  - name: compliance-manager
-    type: collaborates_with
+metadata:
+  vibe: Researches legal precedent so counsel can advise with confidence
+  tier: execution
+  effort: medium
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - legal_analytics
+    - spend_analysis
+    - risk_quantification
+    - legal_metrics
+  maxTurns: 30
+  related_agents:
+    - name: legal-operations-manager
+      type: coordinated_by
+    - name: compliance-manager
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Legal Analyst

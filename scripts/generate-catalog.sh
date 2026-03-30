@@ -53,17 +53,30 @@ for domain_dir in "${DOMAINS[@]}"; do
     frontmatter=$(sed -n '/^---$/,/^---$/p' "$SKILL_FILE" | sed '1d;$d')
 
     # Extract fields from frontmatter
+    # Checks top-level AND inside metadata: block (Agent Skills spec migration)
     extract_field() {
       local field="$1"
       local fm="$2"
-      echo "$fm" | { grep -E "^${field}:" || true; } | head -1 | sed "s/^${field}:[[:space:]]*//" | sed 's/^"//' | sed 's/"$//' | tr -d '\r'
+      # Try top-level first
+      local val
+      val=$(echo "$fm" | { grep -E "^${field}:" || true; } | head -1 | sed "s/^${field}:[[:space:]]*//" | sed 's/^"//' | sed 's/"$//' | tr -d '\r')
+      if [[ -z "$val" ]]; then
+        # Try inside metadata: block (2-space indent)
+        val=$(echo "$fm" | { grep -E "^  ${field}:" || true; } | head -1 | sed "s/^  ${field}:[[:space:]]*//" | sed 's/^"//' | sed 's/"$//' | tr -d '\r')
+      fi
+      echo "$val"
     }
 
     extract_array() {
       local field="$1"
       local fm="$2"
       local val
+      # Try top-level first
       val=$(echo "$fm" | { grep -E "^${field}:" || true; } | head -1 | sed "s/^${field}:[[:space:]]*//" | tr -d '\r')
+      if [[ -z "$val" ]]; then
+        # Try inside metadata: block
+        val=$(echo "$fm" | { grep -E "^  ${field}:" || true; } | head -1 | sed "s/^  ${field}:[[:space:]]*//" | tr -d '\r')
+      fi
       # Remove brackets and clean up
       echo "$val" | sed 's/^\[//' | sed 's/\]$//' | sed 's/"//g' | sed "s/'//g" | tr -s ' '
     }
@@ -79,8 +92,8 @@ for domain_dir in "${DOMAINS[@]}"; do
     max_turns=$(extract_field "maxTurns" "$frontmatter")
     perm_mode=$(extract_field "permissionMode" "$frontmatter")
 
-    # Extract capabilities (multi-line YAML list)
-    capabilities=$(echo "$frontmatter" | sed -n '/^capabilities:/,/^[a-z]/p' | { grep '^\s*-' || true; } | sed 's/^\s*-\s*//' | tr '\n' ';' | sed 's/;$//')
+    # Extract capabilities (multi-line YAML list - may be inside metadata: block)
+    capabilities=$(echo "$frontmatter" | sed -n '/^\s*capabilities:/,/^\s*[a-z]/p' | { grep '^\s*-' || true; } | sed 's/^\s*-\s*//' | tr '\n' ';' | sed 's/;$//')
 
     # Default domain from directory if not in frontmatter
     if [[ -z "$domain" ]]; then

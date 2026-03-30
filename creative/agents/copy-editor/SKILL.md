@@ -1,29 +1,30 @@
 ---
 name: copy-editor
-domain: creative
-tier: execution
-effort: medium
 description: "Use when polishing prose for grammar, style, clarity, and consistency. Handles line editing, fact-checking references, and enforcing style guide compliance."
-vibe: "Polishes prose until every comma earns its place"
-model: opus
-color: bright_magenta
-capabilities:
-  - style_guide_mastery
-  - voice_preservation
-  - consistency_tracking
-  - fiction_copyediting
-  - fact_verification
-  - query_system
-  - dialect_and_voice_navigation
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: editor
-    type: coordinated_by
-  - name: prose-stylist
-    type: reviews
-  - name: continuity-checker
-    type: collaborates_with
+metadata:
+  vibe: Polishes prose until every comma earns its place
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - style_guide_mastery
+    - voice_preservation
+    - consistency_tracking
+    - fiction_copyediting
+    - fact_verification
+    - query_system
+    - dialect_and_voice_navigation
+  maxTurns: 30
+  related_agents:
+    - name: editor
+      type: coordinated_by
+    - name: prose-stylist
+      type: reviews
+    - name: continuity-checker
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Copy Editor

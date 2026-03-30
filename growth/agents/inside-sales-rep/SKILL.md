@@ -1,24 +1,25 @@
 ---
 name: inside-sales-rep
-domain: growth
-tier: execution
-effort: medium
 description: "Use when qualifying inbound leads, conducting outbound prospecting, managing high-volume sales outreach, or booking meetings for account executives."
-vibe: "Works the phones and inbox until the pipeline overflows"
-model: sonnet
-color: bright_green
-capabilities:
-  - inbound_sales
-  - trial_conversion
-  - quick_demos
-  - high_velocity
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: sales-strategist
-    type: coordinated_by
-  - name: account-executive
-    type: pipeline_next
+metadata:
+  vibe: Works the phones and inbox until the pipeline overflows
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - inbound_sales
+    - trial_conversion
+    - quick_demos
+    - high_velocity
+  maxTurns: 30
+  related_agents:
+    - name: sales-strategist
+      type: coordinated_by
+    - name: account-executive
+      type: pipeline_next
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Inside Sales Rep

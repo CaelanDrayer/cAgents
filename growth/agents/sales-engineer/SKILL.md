@@ -1,26 +1,27 @@
 ---
 name: sales-engineer
-domain: growth
-tier: execution
-effort: medium
 description: "Use when delivering technical demos, answering prospect technical questions, building proof-of-concept solutions, or supporting complex enterprise deals."
-vibe: "Demos the product so well the prospect sells themselves"
-model: sonnet
-color: bright_green
-capabilities:
-  - technical_discovery
-  - solution_design
-  - demos
-  - poc_management
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: sales-strategist
-    type: coordinated_by
-  - name: account-executive
-    type: collaborates_with
-  - name: backend-developer
-    type: cross_domain
+metadata:
+  vibe: Demos the product so well the prospect sells themselves
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - technical_discovery
+    - solution_design
+    - demos
+    - poc_management
+  maxTurns: 30
+  related_agents:
+    - name: sales-strategist
+      type: coordinated_by
+    - name: account-executive
+      type: collaborates_with
+    - name: backend-developer
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Sales Engineer

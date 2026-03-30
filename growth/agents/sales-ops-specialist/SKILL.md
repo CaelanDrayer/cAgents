@@ -1,24 +1,25 @@
 ---
 name: sales-ops-specialist
-domain: growth
-tier: execution
-effort: medium
 description: "Use when managing CRM configuration, building sales reports, optimizing sales processes, or maintaining pipeline hygiene and forecasting accuracy."
-vibe: "Keeps CRM clean and forecasts honest"
-model: sonnet
-color: bright_green
-capabilities:
-  - crm_administration
-  - territory_design
-  - quota_allocation
-  - process_optimization
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: sales-strategist
-    type: coordinated_by
-  - name: revenue-operations-manager
-    type: collaborates_with
+metadata:
+  vibe: Keeps CRM clean and forecasts honest
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - crm_administration
+    - territory_design
+    - quota_allocation
+    - process_optimization
+  maxTurns: 30
+  related_agents:
+    - name: sales-strategist
+      type: coordinated_by
+    - name: revenue-operations-manager
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Sales Ops Specialist

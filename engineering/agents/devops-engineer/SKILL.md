@@ -1,31 +1,32 @@
 ---
 name: devops-engineer
 description: "Use when setting up CI/CD pipelines, configuring infrastructure as code, managing containers and orchestration, or automating deployment processes."
-vibe: "Automates the boring stuff so deploys are a non-event"
-tier: execution
-effort: medium
-domain: engineering
-model: sonnet
-color: bright_magenta
-capabilities:
-  - cicd_automation
-  - ci_cd_pipeline_design
-  - infrastructure_as_code
-  - terraform_management
-  - container_orchestration
-  - docker_containerization
-  - kubernetes_deployment
-  - build_automation
-  - release_engineering
-  - deployment_strategies
-  - gitops_workflows
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: devops-lead
-    type: coordinated_by
-  - name: sysadmin
-    type: collaborates_with
+metadata:
+  vibe: Automates the boring stuff so deploys are a non-event
+  tier: execution
+  effort: medium
+  domain: engineering
+  model: sonnet
+  color: bright_magenta
+  capabilities:
+    - cicd_automation
+    - ci_cd_pipeline_design
+    - infrastructure_as_code
+    - terraform_management
+    - container_orchestration
+    - docker_containerization
+    - kubernetes_deployment
+    - build_automation
+    - release_engineering
+    - deployment_strategies
+    - gitops_workflows
+  maxTurns: 30
+  related_agents:
+    - name: devops-lead
+      type: coordinated_by
+    - name: sysadmin
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # DevOps Engineer

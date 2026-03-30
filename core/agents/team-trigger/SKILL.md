@@ -1,22 +1,22 @@
 ---
 name: team-trigger
-tier: infrastructure
-effort: high
 description: "Use when initializing team-mode execution, creating TeamCreate calls, and bootstrapping wave-based parallel workflows."
-vibe: "Fires up the team and gets every pane humming"
-allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
-model: sonnet
-color: bright_cyan
-domain: core
-capabilities:
-  - team_detection
-  - parallelism_analysis
-  - team_initialization
-  - fallback_handling
-  - session_management
-  - run_delegation
-maxTurns: 30
-permissionMode: "bypassPermissions"
+metadata:
+  vibe: Fires up the team and gets every pane humming
+  tier: infrastructure
+  effort: high
+  domain: core
+  model: sonnet
+  color: bright_cyan
+  capabilities:
+    - team_detection
+    - parallelism_analysis
+    - team_initialization
+    - fallback_handling
+    - session_management
+    - run_delegation
+  maxTurns: 30
+allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
 ---
 
 # Team Trigger

@@ -1,30 +1,31 @@
 ---
 name: narrative-designer
-domain: creative
-tier: execution
-effort: medium
 description: "Use when engineering reading experience, designing narrative flow at micro and macro scales, optimizing scene/sequel pacing, or crafting information revelation sequences."
-vibe: "Architects the story so every path feels intentional"
-model: opus
-color: bright_magenta
-capabilities:
-  - scene_sequel_design
-  - mru_construction
-  - opening_strategy
-  - chapter_architecture
-  - transition_craft
-  - information_revelation
-  - narrative_momentum
-  - pacing_engineering
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: story-architect
-    type: coordinated_by
-  - name: pacing-specialist
-    type: collaborates_with
-  - name: tension-architect
-    type: collaborates_with
+metadata:
+  vibe: Architects the story so every path feels intentional
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - scene_sequel_design
+    - mru_construction
+    - opening_strategy
+    - chapter_architecture
+    - transition_craft
+    - information_revelation
+    - narrative_momentum
+    - pacing_engineering
+  maxTurns: 30
+  related_agents:
+    - name: story-architect
+      type: coordinated_by
+    - name: pacing-specialist
+      type: collaborates_with
+    - name: tension-architect
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Narrative Designer

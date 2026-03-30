@@ -1,24 +1,25 @@
 ---
 name: sales-analyst
-domain: growth
-tier: execution
-effort: medium
 description: "Use when analyzing sales pipeline data, forecasting revenue, identifying deal patterns, or providing data-driven insights to improve sales performance."
-vibe: "Finds the patterns in pipeline data that predict next quarter"
-model: sonnet
-color: bright_green
-capabilities:
-  - pipeline_analytics
-  - forecast_modeling
-  - performance_analysis
-  - trend_identification
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: sales-strategist
-    type: coordinated_by
-  - name: revenue-operations-manager
-    type: collaborates_with
+metadata:
+  vibe: Finds the patterns in pipeline data that predict next quarter
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - pipeline_analytics
+    - forecast_modeling
+    - performance_analysis
+    - trend_identification
+  maxTurns: 30
+  related_agents:
+    - name: sales-strategist
+      type: coordinated_by
+    - name: revenue-operations-manager
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Sales Analyst

@@ -1,24 +1,25 @@
 ---
 name: culture-and-engagement-manager
-domain: people
-tier: execution
-effort: medium
 description: "Use when building employee engagement programs, measuring culture health, designing recognition initiatives, or improving workplace satisfaction."
-vibe: "Builds the culture people brag about at dinner parties"
-model: sonnet
-color: bright_yellow
-capabilities:
-  - engagement_programs
-  - culture_initiatives
-  - recognition_systems
-  - employee_experience
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: hr-manager
-    type: coordinated_by
-  - name: diversity-and-inclusion-manager
-    type: collaborates_with
+metadata:
+  vibe: Builds the culture people brag about at dinner parties
+  tier: execution
+  effort: medium
+  domain: people
+  model: sonnet
+  color: bright_yellow
+  capabilities:
+    - engagement_programs
+    - culture_initiatives
+    - recognition_systems
+    - employee_experience
+  maxTurns: 30
+  related_agents:
+    - name: hr-manager
+      type: coordinated_by
+    - name: diversity-and-inclusion-manager
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Culture and Engagement Manager

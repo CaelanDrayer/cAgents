@@ -1,21 +1,21 @@
 ---
 name: team-lead-adapter
-tier: infrastructure
-effort: high
 description: "Use when wrapping a controller agent as a team lead for /team wave execution, bridging controller coordination with team teammate protocols."
-vibe: "Wraps any controller in team-lead armor for parallel execution"
-allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
-model: opus
-color: bright_yellow
-domain: core
-capabilities:
-  - delegate_mode
-  - team_coordination
-  - task_distribution
-  - peer_messaging
-  - result_aggregation
-maxTurns: 30
-permissionMode: "bypassPermissions"
+metadata:
+  vibe: Wraps any controller in team-lead armor for parallel execution
+  tier: infrastructure
+  effort: high
+  domain: core
+  model: opus
+  color: bright_yellow
+  capabilities:
+    - delegate_mode
+    - team_coordination
+    - task_distribution
+    - peer_messaging
+    - result_aggregation
+  maxTurns: 30
+allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
 ---
 
 # Team Lead Adapter

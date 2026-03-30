@@ -1,29 +1,30 @@
 ---
 name: copywriter
-domain: growth
-tier: execution
-effort: medium
 description: "Use when writing marketing copy, crafting headlines, creating ad text, developing email sequences, or producing persuasive sales content."
-vibe: "Writes copy that converts browsers into buyers"
-model: sonnet
-color: bright_green
-capabilities:
-  - ad_copy
-  - landing_pages
-  - email_copy
-  - social_media
-  - brand_voice
-allowed-tools: "Read Grep Glob Write Edit"
-maxTurns: 30
-related_agents:
-  - name: campaign-manager
-    type: coordinated_by
-  - name: creative-director
-    type: coordinated_by
-  - name: brand-manager
-    type: collaborates_with
-  - name: seo-specialist
-    type: collaborates_with
+metadata:
+  vibe: Writes copy that converts browsers into buyers
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - ad_copy
+    - landing_pages
+    - email_copy
+    - social_media
+    - brand_voice
+  maxTurns: 30
+  related_agents:
+    - name: campaign-manager
+      type: coordinated_by
+    - name: creative-director
+      type: coordinated_by
+    - name: brand-manager
+      type: collaborates_with
+    - name: seo-specialist
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit
 ---
 
 <example>

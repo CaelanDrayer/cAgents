@@ -1,26 +1,27 @@
 ---
 name: procurement-specialist
-domain: business
-tier: execution
-effort: medium
 description: "Use when sourcing vendors, negotiating contracts, managing purchase orders, or optimizing procurement processes and supplier relationships."
-vibe: "Gets more value for less money without cutting corners"
-model: sonnet
-color: bright_blue
-capabilities:
-  - strategic_sourcing
-  - vendor_management
-  - contract_negotiation
-  - cost_optimization
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: finance-manager
-    type: coordinated_by
-  - name: supply-chain-manager
-    type: coordinated_by
-  - name: contracts-manager
-    type: cross_domain
+metadata:
+  vibe: Gets more value for less money without cutting corners
+  tier: execution
+  effort: medium
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - strategic_sourcing
+    - vendor_management
+    - contract_negotiation
+    - cost_optimization
+  maxTurns: 30
+  related_agents:
+    - name: finance-manager
+      type: coordinated_by
+    - name: supply-chain-manager
+      type: coordinated_by
+    - name: contracts-manager
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Procurement Specialist

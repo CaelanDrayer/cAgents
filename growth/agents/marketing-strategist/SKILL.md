@@ -1,36 +1,37 @@
 ---
 name: marketing-strategist
 description: "Use when planning marketing campaigns, defining target audiences, selecting channels, or developing go-to-market strategy. Handles brand positioning, content strategy, and competitive analysis."
-vibe: "Plans the marketing playbook three quarters ahead"
-tier: controller
-effort: high
-domain: growth
-model: opusplan
-color: bright_green
-coordination_style: question_based
-typical_questions:
-  - "What are the current campaign/sales metrics?"
-  - "What is the target audience and positioning?"
-  - "What are the conversion bottlenecks?"
-capabilities:
-  - marketing_strategy
-  - competitive_analysis
-  - market_research
-  - strategic_planning
-  - go_to_market
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: brand-manager
-    type: coordinates
-  - name: content-marketing-manager
-    type: coordinates
-  - name: digital-marketing-manager
-    type: coordinates
-  - name: campaign-manager
-    type: collaborates_with
+metadata:
+  vibe: Plans the marketing playbook three quarters ahead
+  tier: controller
+  effort: high
+  domain: growth
+  model: opusplan
+  color: bright_green
+  capabilities:
+    - marketing_strategy
+    - competitive_analysis
+    - market_research
+    - strategic_planning
+    - go_to_market
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What are the current campaign/sales metrics?
+    - What is the target audience and positioning?
+    - What are the conversion bottlenecks?
+  related_agents:
+    - name: brand-manager
+      type: coordinates
+    - name: content-marketing-manager
+      type: coordinates
+    - name: digital-marketing-manager
+      type: coordinates
+    - name: campaign-manager
+      type: collaborates_with
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 <example>

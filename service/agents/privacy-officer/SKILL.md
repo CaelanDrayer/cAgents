@@ -1,25 +1,26 @@
 ---
 name: privacy-officer
-domain: service
-tier: execution
-effort: medium
 description: "Use when developing privacy policies, conducting privacy impact assessments, managing GDPR/CCPA compliance, or handling data subject access requests."
-vibe: "Guards user data like every record is their own"
-model: sonnet
-color: bright_red
-capabilities:
-  - data_privacy
-  - gdpr_compliance
-  - ccpa_compliance
-  - privacy_by_design
-  - data_governance
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: compliance-officer
-    type: coordinated_by
-  - name: security-lead
-    type: cross_domain
+metadata:
+  vibe: Guards user data like every record is their own
+  tier: execution
+  effort: medium
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - data_privacy
+    - gdpr_compliance
+    - ccpa_compliance
+    - privacy_by_design
+    - data_governance
+  maxTurns: 30
+  related_agents:
+    - name: compliance-officer
+      type: coordinated_by
+    - name: security-lead
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Privacy Officer

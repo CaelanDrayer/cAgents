@@ -1,41 +1,42 @@
 ---
 name: process-auditor
-domain: business
-tier: execution
-effort: medium
 description: "Use when conducting process audits, verifying compliance with standards, testing internal controls, or producing audit reports and recommendations."
-vibe: "Finds the waste hiding in processes everyone assumes work"
-model: sonnet
-color: bright_blue
-answers_questions:
-  - "What processes and controls are in scope for this audit?"
-  - "What compliance gaps exist in the current process?"
-  - "What evidence confirms control effectiveness?"
-executes_tasks:
-  - conduct_process_audits
-  - verify_compliance
-  - test_controls
-  - produce_audit_reports
-  - assess_process_maturity
-  - identify_improvements
-capabilities:
-  - process_auditing
-  - compliance_verification
-  - control_testing
-  - audit_reporting
-  - process_assessment
-  - improvement_identification
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: process-improvement-specialist
-    type: collaborates_with
-  - name: quality-manager
-    type: collaborates_with
-  - name: compliance-officer
-    type: cross_domain
+metadata:
+  vibe: Finds the waste hiding in processes everyone assumes work
+  tier: execution
+  effort: medium
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - process_auditing
+    - compliance_verification
+    - control_testing
+    - audit_reporting
+    - process_assessment
+    - improvement_identification
+  maxTurns: 40
+  memory:
+    project: true
+  related_agents:
+    - name: process-improvement-specialist
+      type: collaborates_with
+    - name: quality-manager
+      type: collaborates_with
+    - name: compliance-officer
+      type: cross_domain
+  answers_questions:
+    - What processes and controls are in scope for this audit?
+    - What compliance gaps exist in the current process?
+    - What evidence confirms control effectiveness?
+  executes_tasks:
+    - conduct_process_audits
+    - verify_compliance
+    - test_controls
+    - produce_audit_reports
+    - assess_process_maturity
+    - identify_improvements
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Process Auditor

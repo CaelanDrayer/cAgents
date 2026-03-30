@@ -1,36 +1,37 @@
 ---
 name: sound-designer
-domain: creative
-tier: execution
-effort: medium
 description: "Use when designing game audio, creating sound effects and Foley, building spatial audio systems, or crafting interactive soundscapes that reinforce gameplay emotion."
-vibe: "Creates the sounds that make you believe the impossible"
-model: opus
-color: bright_magenta
-capabilities:
-  - sound_effect_design
-  - ambient_soundscapes
-  - foley_recording
-  - spatial_audio
-  - interactive_audio_systems
-  - emotional_sound_design
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-answers_questions:
-  - "What should this game moment sound like?"
-  - "How should the audio communicate this gameplay state?"
-  - "What spatial audio approach does this environment need?"
-  - "How do we build an emotional soundscape for this scene?"
-executes_tasks:
-  - "Design sound effect specifications and audio asset lists"
-  - "Create ambient soundscape layer documentation"
-  - "Develop spatial audio implementation guides"
-  - "Write interactive audio system specifications"
-related_agents:
-  - name: narrative-director
-    type: coordinated_by
-  - name: music-composer
-    type: collaborates_with
+metadata:
+  vibe: Creates the sounds that make you believe the impossible
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - sound_effect_design
+    - ambient_soundscapes
+    - foley_recording
+    - spatial_audio
+    - interactive_audio_systems
+    - emotional_sound_design
+  maxTurns: 30
+  related_agents:
+    - name: narrative-director
+      type: coordinated_by
+    - name: music-composer
+      type: collaborates_with
+  answers_questions:
+    - What should this game moment sound like?
+    - How should the audio communicate this gameplay state?
+    - What spatial audio approach does this environment need?
+    - How do we build an emotional soundscape for this scene?
+  executes_tasks:
+    - Design sound effect specifications and audio asset lists
+    - Create ambient soundscape layer documentation
+    - Develop spatial audio implementation guides
+    - Write interactive audio system specifications
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Sound Designer

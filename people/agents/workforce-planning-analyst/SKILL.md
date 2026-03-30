@@ -1,26 +1,27 @@
 ---
 name: workforce-planning-analyst
-domain: people
-tier: execution
-effort: medium
 description: "Use when forecasting headcount needs, modeling attrition scenarios, analyzing workforce demographics, or planning talent pipelines against business growth."
-vibe: "Plans the headcount so the company never hires too late"
-model: sonnet
-color: bright_yellow
-capabilities:
-  - workforce_forecasting
-  - capacity_planning
-  - scenario_modeling
-  - headcount_budgeting
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: hr-manager
-    type: coordinated_by
-  - name: hr-analyst
-    type: collaborates_with
-  - name: resource-planner
-    type: cross_domain
+metadata:
+  vibe: Plans the headcount so the company never hires too late
+  tier: execution
+  effort: medium
+  domain: people
+  model: sonnet
+  color: bright_yellow
+  capabilities:
+    - workforce_forecasting
+    - capacity_planning
+    - scenario_modeling
+    - headcount_budgeting
+  maxTurns: 30
+  related_agents:
+    - name: hr-manager
+      type: coordinated_by
+    - name: hr-analyst
+      type: collaborates_with
+    - name: resource-planner
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Workforce Planning Analyst

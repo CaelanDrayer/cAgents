@@ -1,42 +1,43 @@
 ---
 name: pacing-specialist
-domain: creative
-tier: execution
-effort: medium
 description: "Use when optimizing narrative pacing, balancing action with reflection, adjusting scene length and rhythm, or diagnosing sections that drag or rush."
-vibe: "Controls the rhythm so readers can't stop turning pages"
-model: opus
-color: bright_magenta
-capabilities:
-  - micro_pacing
-  - scene_pacing
-  - chapter_pacing
-  - story_level_pacing
-  - tension_release_cycles
-  - rhythm_analysis
-  - reading_speed_control
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-answers_questions:
-  - "Is the pacing appropriate for this scene's dramatic needs?"
-  - "Where does the narrative drag or rush?"
-  - "How can tension/release cycles be improved?"
-  - "Is the chapter structure serving the reader's experience?"
-  - "Does the story-level pacing maintain momentum across its arc?"
-executes_tasks:
-  - pacing_analysis
-  - rhythm_revision
-  - scene_sequel_structuring
-  - chapter_restructuring
-  - tension_release_mapping
-  - tempo_adjustment
-related_agents:
-  - name: story-architect
-    type: coordinated_by
-  - name: tension-architect
-    type: collaborates_with
-  - name: narrative-designer
-    type: collaborates_with
+metadata:
+  vibe: "Controls the rhythm so readers can't stop turning pages"
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - micro_pacing
+    - scene_pacing
+    - chapter_pacing
+    - story_level_pacing
+    - tension_release_cycles
+    - rhythm_analysis
+    - reading_speed_control
+  maxTurns: 30
+  related_agents:
+    - name: story-architect
+      type: coordinated_by
+    - name: tension-architect
+      type: collaborates_with
+    - name: narrative-designer
+      type: collaborates_with
+  answers_questions:
+    - "Is the pacing appropriate for this scene's dramatic needs?"
+    - Where does the narrative drag or rush?
+    - How can tension/release cycles be improved?
+    - "Is the chapter structure serving the reader's experience?"
+    - Does the story-level pacing maintain momentum across its arc?
+  executes_tasks:
+    - pacing_analysis
+    - rhythm_revision
+    - scene_sequel_structuring
+    - chapter_restructuring
+    - tension_release_mapping
+    - tempo_adjustment
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Pacing Specialist

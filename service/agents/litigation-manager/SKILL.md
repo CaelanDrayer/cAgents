@@ -1,24 +1,25 @@
 ---
 name: litigation-manager
-domain: service
-tier: execution
-effort: medium
 description: "Use when managing active litigation, coordinating with outside counsel, developing litigation strategy, or tracking case milestones and deadlines."
-vibe: "Manages litigation strategy so the company fights the right battles"
-model: sonnet
-color: bright_red
-capabilities:
-  - litigation_management
-  - discovery
-  - settlement_negotiation
-  - trial_strategy
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: general-counsel
-    type: coordinated_by
-  - name: paralegal
-    type: collaborates_with
+metadata:
+  vibe: Manages litigation strategy so the company fights the right battles
+  tier: execution
+  effort: medium
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - litigation_management
+    - discovery
+    - settlement_negotiation
+    - trial_strategy
+  maxTurns: 30
+  related_agents:
+    - name: general-counsel
+      type: coordinated_by
+    - name: paralegal
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Litigation Manager

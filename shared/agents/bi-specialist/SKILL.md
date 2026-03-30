@@ -1,35 +1,36 @@
 ---
 name: bi-specialist
-domain: shared
-tier: controller
-effort: high
 description: "Use when building business intelligence dashboards, creating data visualizations, designing ETL pipelines, or transforming raw data into actionable insights."
-vibe: "Builds dashboards that answer the question before it's asked"
-model: sonnet
-color: bright_white
-coordination_style: question_based
-typical_questions:
-  - "What are the key business questions to answer?"
-  - "What data sources need to be integrated?"
-  - "What self-service capabilities do users need?"
-capabilities:
-  - bi_strategy
-  - enterprise_dashboards
-  - data_warehousing
-  - etl_pipelines
-  - semantic_layer
-  - self_service_analytics
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: data-analyst
-    type: cross_domain
-  - name: marketing-data-analyst
-    type: cross_domain
-  - name: data-scientist
-    type: collaborates_with
+metadata:
+  vibe: "Builds dashboards that answer the question before it's asked"
+  tier: controller
+  effort: high
+  domain: shared
+  model: sonnet
+  color: bright_white
+  capabilities:
+    - bi_strategy
+    - enterprise_dashboards
+    - data_warehousing
+    - etl_pipelines
+    - semantic_layer
+    - self_service_analytics
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What are the key business questions to answer?
+    - What data sources need to be integrated?
+    - What self-service capabilities do users need?
+  related_agents:
+    - name: data-analyst
+      type: cross_domain
+    - name: marketing-data-analyst
+      type: cross_domain
+    - name: data-scientist
+      type: collaborates_with
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Business Intelligence Specialist

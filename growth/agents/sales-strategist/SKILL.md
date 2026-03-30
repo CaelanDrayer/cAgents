@@ -1,35 +1,36 @@
 ---
 name: sales-strategist
-domain: growth
-tier: controller
-effort: high
-coordination_style: question_based
-typical_questions:
-  - "What are the current campaign/sales metrics?"
-  - "What is the target audience and positioning?"
-  - "What are the conversion bottlenecks?"
 description: "Use when developing sales strategies, defining target segments, planning territory coverage, or designing compensation and incentive structures."
-vibe: "Designs the sales playbook that turns reps into closers"
-model: sonnet
-color: bright_green
-capabilities:
-  - gtm_strategy
-  - market_segmentation
-  - competitive_positioning
-  - sales_model_design
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: account-executive
-    type: coordinates
-  - name: sales-development-rep
-    type: coordinates
-  - name: sales-ops-specialist
-    type: coordinates
-  - name: territory-manager
-    type: coordinates
+metadata:
+  vibe: Designs the sales playbook that turns reps into closers
+  tier: controller
+  effort: high
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - gtm_strategy
+    - market_segmentation
+    - competitive_positioning
+    - sales_model_design
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What are the current campaign/sales metrics?
+    - What is the target audience and positioning?
+    - What are the conversion bottlenecks?
+  related_agents:
+    - name: account-executive
+      type: coordinates
+    - name: sales-development-rep
+      type: coordinates
+    - name: sales-ops-specialist
+      type: coordinates
+    - name: territory-manager
+      type: coordinates
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Sales Strategist

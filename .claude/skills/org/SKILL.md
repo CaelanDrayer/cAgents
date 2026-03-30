@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.24.3"
+  version: "10.25.0"
   argument-hint: "<instruction> [--dry-run] [--quick] [--domains <d1,d2>] [--resume <session_id>]"
   user-invocable: "true"
   context: "none"
@@ -262,6 +262,12 @@ Analyze the instruction to determine routing:
 | business | CPO/CRO/CFO/COO | business/ | campaign, marketing, sales, budget, cost, forecast, operations, process, product, strategy, revenue, ROI |
 | people | CHRO | people/ | hire, recruit, onboard, culture, HR, talent, performance review, team, retention, DEI |
 | service | General Counsel | service/ | support, legal, compliance, customer, SLA, contract, privacy, escalation, GDPR |
+| science | CTO | science/ | research, experiment, hypothesis, methodology, data collection, peer review, laboratory, scientific, analysis, study |
+| health | CHRO | health/ | wellness, medical, health, symptom, treatment, fitness, mental health, therapy, nutrition, clinical |
+| education | CPO | education/ | learn, teach, curriculum, lesson, course, student, pedagogy, training, assessment, educational, instructional |
+| personal | CHRO | personal/ | personal development, self-improvement, goals, habits, productivity, life coaching, career planning, personal growth |
+| arts | CCO | arts/ | painting, drawing, sculpture, performance, gallery, exhibition, artistic, fine arts, visual art, craft |
+| trades | COO | trades/ | plumbing, electrical, carpentry, HVAC, welding, construction, installation, repair, tools, safety, tradespeople |
 
 **Multi-C-Suite for Business domain**: The business domain consolidates product, growth, finance, and operations. When business is touched, activate the most relevant C-suite agent(s) based on keywords:
 - Product/strategy keywords -> CPO

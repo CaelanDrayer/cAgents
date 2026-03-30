@@ -1,24 +1,25 @@
 ---
 name: support-trainer
-domain: service
-tier: execution
-effort: medium
 description: "Use when developing support training curricula, onboarding new agents, creating product knowledge assessments, or running skill-building workshops."
-vibe: "Trains support teams to handle anything customers throw at them"
-model: sonnet
-color: bright_red
-capabilities:
-  - training_delivery
-  - curriculum_development
-  - onboarding
-  - skill_assessment
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: support-operations-manager
-    type: coordinated_by
-  - name: support-quality-analyst
-    type: collaborates_with
+metadata:
+  vibe: Trains support teams to handle anything customers throw at them
+  tier: execution
+  effort: medium
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - training_delivery
+    - curriculum_development
+    - onboarding
+    - skill_assessment
+  maxTurns: 30
+  related_agents:
+    - name: support-operations-manager
+      type: coordinated_by
+    - name: support-quality-analyst
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Support Trainer

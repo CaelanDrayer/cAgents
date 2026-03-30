@@ -1,24 +1,25 @@
 ---
 name: pr-specialist
-domain: growth
-tier: execution
-effort: medium
 description: "Use when managing media relations, writing press releases, coordinating press events, or handling crisis communications and reputation management."
-vibe: "Gets the right story in front of the right journalist at the right time"
-model: sonnet
-color: bright_green
-capabilities:
-  - pr_strategy
-  - media_relations
-  - press_releases
-  - thought_leadership
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: marketing-strategist
-    type: coordinated_by
-  - name: brand-manager
-    type: collaborates_with
+metadata:
+  vibe: Gets the right story in front of the right journalist at the right time
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - pr_strategy
+    - media_relations
+    - press_releases
+    - thought_leadership
+  maxTurns: 30
+  related_agents:
+    - name: marketing-strategist
+      type: coordinated_by
+    - name: brand-manager
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # PR Specialist

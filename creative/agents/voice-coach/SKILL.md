@@ -1,42 +1,43 @@
 ---
 name: voice-coach
-domain: creative
-tier: execution
-effort: medium
 description: "Use when developing authorial or character voice, training consistent tone, diagnosing voice inconsistencies, or coaching writers on voice distinction techniques."
-vibe: "Gives every character a voice you'd recognize in a crowd"
-model: opus
-color: bright_magenta
-capabilities:
-  - voice_development
-  - narrative_mode_selection
-  - style_analysis
-  - voice_consistency
-  - pov_management
-  - voice_differentiation
-  - authorial_voice_coaching
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-answers_questions:
-  - "What narrative voice best serves this story?"
-  - "Is the voice consistent throughout the manuscript?"
-  - "How can I differentiate character voices in a multi-POV novel?"
-  - "What makes this author's voice distinctive and how can I develop my own?"
-executes_tasks:
-  - voice_analysis
-  - narrative_mode_recommendation
-  - voice_consistency_audit
-  - character_voice_differentiation
-  - authorial_voice_development
-  - pov_structure_design
-  - style_coaching
-related_agents:
-  - name: narrative-director
-    type: coordinated_by
-  - name: prose-stylist
-    type: collaborates_with
-  - name: dialogue-specialist
-    type: collaborates_with
+metadata:
+  vibe: "Gives every character a voice you'd recognize in a crowd"
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - voice_development
+    - narrative_mode_selection
+    - style_analysis
+    - voice_consistency
+    - pov_management
+    - voice_differentiation
+    - authorial_voice_coaching
+  maxTurns: 30
+  related_agents:
+    - name: narrative-director
+      type: coordinated_by
+    - name: prose-stylist
+      type: collaborates_with
+    - name: dialogue-specialist
+      type: collaborates_with
+  answers_questions:
+    - What narrative voice best serves this story?
+    - Is the voice consistent throughout the manuscript?
+    - How can I differentiate character voices in a multi-POV novel?
+    - "What makes this author's voice distinctive and how can I develop my own?"
+  executes_tasks:
+    - voice_analysis
+    - narrative_mode_recommendation
+    - voice_consistency_audit
+    - character_voice_differentiation
+    - authorial_voice_development
+    - pov_structure_design
+    - style_coaching
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Voice Coach

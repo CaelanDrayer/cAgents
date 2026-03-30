@@ -1,30 +1,31 @@
 ---
 name: game-writer
-domain: creative
-tier: execution
-effort: medium
 description: "Use when writing game narratives, designing branching dialogue trees, creating quest text, or developing interactive storytelling that responds to player choice."
-vibe: "Writes dialogue that makes players stop and listen"
-model: opus
-color: bright_magenta
-capabilities:
-  - branching_dialogue_writing
-  - bark_and_ambient_dialogue
-  - environmental_storytelling
-  - quest_narrative_design
-  - in_world_writing
-  - cinematic_scripting
-  - character_voice_in_interactive_contexts
-  - localization_aware_writing
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: narrative-director
-    type: coordinated_by
-  - name: narrative-game-designer
-    type: collaborates_with
-  - name: game-designer
-    type: cross_domain
+metadata:
+  vibe: Writes dialogue that makes players stop and listen
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - branching_dialogue_writing
+    - bark_and_ambient_dialogue
+    - environmental_storytelling
+    - quest_narrative_design
+    - in_world_writing
+    - cinematic_scripting
+    - character_voice_in_interactive_contexts
+    - localization_aware_writing
+  maxTurns: 30
+  related_agents:
+    - name: narrative-director
+      type: coordinated_by
+    - name: narrative-game-designer
+      type: collaborates_with
+    - name: game-designer
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Game Writer

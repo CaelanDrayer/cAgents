@@ -1,34 +1,35 @@
 ---
 name: backend-lead
 description: "Use for coordinating backend development across multiple engineers, reviewing backend architecture decisions, or managing backend technical debt and standards."
-vibe: "Runs the backend team like a well-oiled distributed system"
-tier: controller
-effort: high
-domain: engineering
-model: sonnet
-coordination_style: question_based
-typical_questions:
-  - "What is the current implementation of this feature?"
-  - "What are the technical constraints we need to consider?"
-  - "What are the key risks and dependencies?"
-color: bright_green
-capabilities:
-  - tactical_planning_backend
-  - api_design_leadership
-  - database_coordination
-  - backend_architecture_decisions
-  - team_mentoring
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: backend-developer
-    type: coordinates
-  - name: senior-developer
-    type: coordinates
-  - name: dba
-    type: collaborates_with
+metadata:
+  vibe: Runs the backend team like a well-oiled distributed system
+  tier: controller
+  effort: high
+  domain: engineering
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - tactical_planning_backend
+    - api_design_leadership
+    - database_coordination
+    - backend_architecture_decisions
+    - team_mentoring
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the current implementation of this feature?
+    - What are the technical constraints we need to consider?
+    - What are the key risks and dependencies?
+  related_agents:
+    - name: backend-developer
+      type: coordinates
+    - name: senior-developer
+      type: coordinates
+    - name: dba
+      type: collaborates_with
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Backend Lead Agent

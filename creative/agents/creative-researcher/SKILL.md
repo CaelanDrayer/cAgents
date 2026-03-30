@@ -1,41 +1,42 @@
 ---
 name: creative-researcher
-domain: creative
-tier: execution
-effort: medium
 description: "Use when researching settings, historical periods, cultural details, or technical subjects to ground creative work in authentic, accurate foundations."
-vibe: "Digs up the obscure details that make fiction feel real"
-model: opus
-color: bright_magenta
-capabilities:
-  - historical_research
-  - cultural_authenticity
-  - technical_verisimilitude
-  - scientific_plausibility
-  - source_evaluation
-  - research_integration
-  - period_detail_selection
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-answers_questions:
-  - "What historical details are needed for this period and setting?"
-  - "Is this cultural representation authentic and respectful?"
-  - "Are the technical/professional details in this scene accurate?"
-  - "How should research be integrated without creating info-dumps?"
-executes_tasks:
-  - historical_research
-  - cultural_authenticity_review
-  - technical_accuracy_check
-  - scientific_plausibility_assessment
-  - period_detail_curation
-  - research_brief_creation
-related_agents:
-  - name: narrative-director
-    type: coordinated_by
-  - name: worldbuilder
-    type: collaborates_with
-  - name: setting-designer
-    type: collaborates_with
+metadata:
+  vibe: Digs up the obscure details that make fiction feel real
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - historical_research
+    - cultural_authenticity
+    - technical_verisimilitude
+    - scientific_plausibility
+    - source_evaluation
+    - research_integration
+    - period_detail_selection
+  maxTurns: 30
+  related_agents:
+    - name: narrative-director
+      type: coordinated_by
+    - name: worldbuilder
+      type: collaborates_with
+    - name: setting-designer
+      type: collaborates_with
+  answers_questions:
+    - What historical details are needed for this period and setting?
+    - Is this cultural representation authentic and respectful?
+    - Are the technical/professional details in this scene accurate?
+    - How should research be integrated without creating info-dumps?
+  executes_tasks:
+    - historical_research
+    - cultural_authenticity_review
+    - technical_accuracy_check
+    - scientific_plausibility_assessment
+    - period_detail_curation
+    - research_brief_creation
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Creative Researcher

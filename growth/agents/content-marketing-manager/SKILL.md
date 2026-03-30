@@ -1,26 +1,27 @@
 ---
 name: content-marketing-manager
-domain: growth
-tier: execution
-effort: medium
 description: "Use when planning content strategy, managing editorial calendars, coordinating content production, or measuring content engagement and ROI."
-vibe: "Creates content that earns attention instead of buying it"
-model: sonnet
-color: bright_green
-capabilities:
-  - content_strategy
-  - editorial_planning
-  - content_production
-  - seo_content
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: marketing-strategist
-    type: coordinated_by
-  - name: seo-specialist
-    type: collaborates_with
-  - name: copywriter
-    type: collaborates_with
+metadata:
+  vibe: Creates content that earns attention instead of buying it
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - content_strategy
+    - editorial_planning
+    - content_production
+    - seo_content
+  maxTurns: 30
+  related_agents:
+    - name: marketing-strategist
+      type: coordinated_by
+    - name: seo-specialist
+      type: collaborates_with
+    - name: copywriter
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Content Marketing Manager

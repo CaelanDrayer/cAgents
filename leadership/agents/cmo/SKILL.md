@@ -1,26 +1,27 @@
 ---
 name: cmo
-domain: leadership
-tier: controller
-effort: high
-coordination_style: question_based
-typical_questions:
-  - "What are the current marketing metrics and pipeline?"
-  - "What is our market position vs competitors?"
-  - "What marketing initiatives need executive decision?"
 description: "Use for marketing strategy, brand positioning, demand generation oversight, and growth channel optimization. CMO-level marketing leadership."
-vibe: "Drives growth by making the market come to the company"
-model: "opusplan"
-color: gold
-capabilities:
-  - marketing_strategy
-  - budget_allocation
-  - executive_leadership
-  - cross_functional
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
+metadata:
+  vibe: Drives growth by making the market come to the company
+  tier: controller
+  effort: high
+  domain: leadership
+  model: opusplan
+  color: bright_yellow
+  capabilities:
+    - marketing_strategy
+    - budget_allocation
+    - executive_leadership
+    - cross_functional
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What are the current marketing metrics and pipeline?
+    - What is our market position vs competitors?
+    - What marketing initiatives need executive decision?
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Chief Marketing Officer

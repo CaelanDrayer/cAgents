@@ -1,45 +1,46 @@
 ---
 name: tech-lead
 description: "Use for leading technical direction on projects, making architecture decisions, coordinating engineering teams, or balancing technical debt with feature delivery."
-vibe: "Sets technical direction and unblocks the team before they're stuck"
-tier: controller
-effort: high
-domain: engineering
-model: "opusplan"
-coordination_style: question_based
-typical_questions:
-  - "What is the current implementation of this feature?"
-  - "What are the technical constraints we need to consider?"
-  - "What are the key risks and dependencies?"
-color: bright_magenta
-capabilities:
-  - delivery_leadership
-  - sprint_planning
-  - team_coordination
-  - task_delegation
-  - workflow_orchestration
-  - strategic_decisions
-  - escalation_handling
-  - priority_management
-  - risk_assessment
-  - quality_enforcement
-  - cross_functional_collaboration
-  - conflict_resolution
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: backend-lead
-    type: coordinates
-  - name: frontend-lead
-    type: coordinates
-  - name: data-lead
-    type: coordinates
-  - name: devops-lead
-    type: coordinates
-  - name: security-lead
-    type: coordinates
+metadata:
+  vibe: "Sets technical direction and unblocks the team before they're stuck"
+  tier: controller
+  effort: high
+  domain: engineering
+  model: opusplan
+  color: bright_magenta
+  capabilities:
+    - delivery_leadership
+    - sprint_planning
+    - team_coordination
+    - task_delegation
+    - workflow_orchestration
+    - strategic_decisions
+    - escalation_handling
+    - priority_management
+    - risk_assessment
+    - quality_enforcement
+    - cross_functional_collaboration
+    - conflict_resolution
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the current implementation of this feature?
+    - What are the technical constraints we need to consider?
+    - What are the key risks and dependencies?
+  related_agents:
+    - name: backend-lead
+      type: coordinates
+    - name: frontend-lead
+      type: coordinates
+    - name: data-lead
+      type: coordinates
+    - name: devops-lead
+      type: coordinates
+    - name: security-lead
+      type: coordinates
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Tech Lead Agent

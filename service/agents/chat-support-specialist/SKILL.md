@@ -1,24 +1,25 @@
 ---
 name: chat-support-specialist
-domain: service
-tier: execution
-effort: medium
 description: "Use when handling live chat support conversations, providing real-time customer assistance, managing chat queues, or optimizing chat response quality."
-vibe: "Resolves tickets in chat faster than most people type"
-model: sonnet
-color: bright_red
-capabilities:
-  - live_chat_support
-  - concurrent_conversation_management
-  - rapid_response
-  - chat_efficiency
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: support-director
-    type: coordinated_by
-  - name: customer-support-rep
-    type: collaborates_with
+metadata:
+  vibe: Resolves tickets in chat faster than most people type
+  tier: execution
+  effort: medium
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - live_chat_support
+    - concurrent_conversation_management
+    - rapid_response
+    - chat_efficiency
+  maxTurns: 30
+  related_agents:
+    - name: support-director
+      type: coordinated_by
+    - name: customer-support-rep
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Chat Support Specialist

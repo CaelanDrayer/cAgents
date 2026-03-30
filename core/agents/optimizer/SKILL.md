@@ -1,24 +1,24 @@
 ---
 name: optimizer
-tier: infrastructure
-effort: high
-domain: core
 description: "Use when a workflow needs performance tuning, token reduction, or execution path optimization across pipeline stages."
-vibe: "Squeezes performance from places nobody thought to look"
-allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
-model: "opusplan"
-color: bright_yellow
-capabilities:
-  - parallel_execution
-  - atomic_rollback
-  - predictive_impact
-  - pattern_detection
-  - framework_specific
-  - quality_gates
-  - cross_file_analysis
-  - session_resilience
-maxTurns: 50
-permissionMode: "bypassPermissions"
+metadata:
+  vibe: Squeezes performance from places nobody thought to look
+  tier: infrastructure
+  effort: high
+  domain: core
+  model: opusplan
+  color: bright_yellow
+  capabilities:
+    - parallel_execution
+    - atomic_rollback
+    - predictive_impact
+    - pattern_detection
+    - framework_specific
+    - quality_gates
+    - cross_file_analysis
+    - session_resilience
+  maxTurns: 50
+allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
 ---
 
 # Universal Optimizer

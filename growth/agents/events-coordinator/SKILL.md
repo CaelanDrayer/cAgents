@@ -1,24 +1,25 @@
 ---
 name: events-coordinator
-domain: growth
-tier: execution
-effort: medium
 description: "Use when planning events, managing logistics for conferences or webinars, coordinating speakers and sponsors, or tracking event ROI."
-vibe: "Runs events so smoothly attendees think they planned themselves"
-model: sonnet
-color: bright_green
-capabilities:
-  - event_planning
-  - event_logistics
-  - webinar_production
-  - event_roi
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: campaign-manager
-    type: coordinated_by
-  - name: field-marketing-manager
-    type: collaborates_with
+metadata:
+  vibe: Runs events so smoothly attendees think they planned themselves
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - event_planning
+    - event_logistics
+    - webinar_production
+    - event_roi
+  maxTurns: 30
+  related_agents:
+    - name: campaign-manager
+      type: coordinated_by
+    - name: field-marketing-manager
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Events Coordinator

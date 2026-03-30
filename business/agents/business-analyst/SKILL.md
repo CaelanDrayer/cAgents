@@ -1,35 +1,36 @@
 ---
 name: business-analyst
-domain: business
-tier: controller
-effort: high
-coordination_style: question_based
-typical_questions:
-  - "What are the current operational metrics?"
-  - "What are the efficiency bottlenecks?"
-  - "What are the compliance requirements?"
 description: "Use when gathering requirements, performing gap analysis, defining acceptance criteria, designing solutions, or bridging business needs with technical implementation."
-vibe: "Finds the signal in spreadsheets everyone else ignores"
-model: sonnet
-color: bright_blue
-capabilities:
-  - requirements_analysis
-  - process_analysis
-  - solution_design
-  - stakeholder_management
-  - requirements_gathering
-  - gap_analysis
-  - acceptance_criteria
-  - business_case_development
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: product-owner
-    type: collaborates_with
-  - name: process-improvement-specialist
-    type: collaborates_with
+metadata:
+  vibe: Finds the signal in spreadsheets everyone else ignores
+  tier: controller
+  effort: high
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - requirements_analysis
+    - process_analysis
+    - solution_design
+    - stakeholder_management
+    - requirements_gathering
+    - gap_analysis
+    - acceptance_criteria
+    - business_case_development
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What are the current operational metrics?
+    - What are the efficiency bottlenecks?
+    - What are the compliance requirements?
+  related_agents:
+    - name: product-owner
+      type: collaborates_with
+    - name: process-improvement-specialist
+      type: collaborates_with
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Business Analyst

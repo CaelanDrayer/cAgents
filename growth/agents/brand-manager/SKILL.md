@@ -1,27 +1,28 @@
 ---
 name: brand-manager
-domain: growth
-tier: execution
-effort: medium
 description: "Use when developing brand strategy, maintaining brand consistency, creating brand guidelines, or managing brand perception across channels."
-vibe: "Guards the brand voice like it's the company's reputation"
-model: sonnet
-color: bright_green
-capabilities:
-  - brand_strategy
-  - brand_identity
-  - brand_guidelines
-  - positioning
-  - brand_voice
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: creative-director
-    type: coordinated_by
-  - name: marketing-strategist
-    type: coordinated_by
-  - name: copywriter
-    type: collaborates_with
+metadata:
+  vibe: "Guards the brand voice like it's the company's reputation"
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - brand_strategy
+    - brand_identity
+    - brand_guidelines
+    - positioning
+    - brand_voice
+  maxTurns: 30
+  related_agents:
+    - name: creative-director
+      type: coordinated_by
+    - name: marketing-strategist
+      type: coordinated_by
+    - name: copywriter
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Brand Manager

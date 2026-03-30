@@ -1,26 +1,27 @@
 ---
 name: risk-assessment
 description: "Use when assessing technical risk for proposed changes, evaluating blast radius of refactors, or identifying potential failure modes before implementation."
-vibe: "Quantifies technical risk so teams can make informed bets"
-tier: support
-effort: low
-domain: engineering
-layer: intelligence
-model: "haiku"
-color: bright_red
-capabilities:
-  - risk_analysis
-  - vulnerability_detection
-  - failure_prediction
-  - proactive_mitigation
-allowed-tools: "Read Grep Glob"
-maxTurns: 10
-disallowedTools: ["Task"]
-related_agents:
-  - name: engineering-manager
-    type: collaborates_with
-  - name: architect
-    type: collaborates_with
+metadata:
+  vibe: Quantifies technical risk so teams can make informed bets
+  tier: support
+  effort: low
+  domain: engineering
+  model: haiku
+  color: bright_red
+  capabilities:
+    - risk_analysis
+    - vulnerability_detection
+    - failure_prediction
+    - proactive_mitigation
+  maxTurns: 10
+  disallowedTools: ["Task"]
+  related_agents:
+    - name: engineering-manager
+      type: collaborates_with
+    - name: architect
+      type: collaborates_with
+  layer: intelligence
+allowed-tools: Read Grep Glob
 ---
 
 # Risk Assessment Agent

@@ -1,26 +1,27 @@
 ---
 name: engine-developer
-domain: engineering
-tier: execution
-effort: medium
 description: "Use when building game engine systems, implementing rendering pipelines, developing physics engines, or creating low-level engine infrastructure."
-vibe: "Builds the engine that makes the game run at 60fps"
-model: sonnet
-color: bright_blue
-capabilities:
-  - engine_architecture
-  - core_systems_development
-  - memory_management
-  - rendering_pipeline
-  - platform_optimization
-  - threading_systems
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: engineering-manager
-    type: coordinated_by
-  - name: game-programmer
-    type: collaborates_with
+metadata:
+  vibe: Builds the engine that makes the game run at 60fps
+  tier: execution
+  effort: medium
+  domain: engineering
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - engine_architecture
+    - core_systems_development
+    - memory_management
+    - rendering_pipeline
+    - platform_optimization
+    - threading_systems
+  maxTurns: 30
+  related_agents:
+    - name: engineering-manager
+      type: coordinated_by
+    - name: game-programmer
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Engine Developer

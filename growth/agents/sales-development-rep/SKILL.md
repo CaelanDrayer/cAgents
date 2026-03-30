@@ -1,26 +1,27 @@
 ---
 name: sales-development-rep
-domain: growth
-tier: execution
-effort: medium
 description: "Use when generating outbound leads, crafting cold outreach sequences, qualifying prospects, or building top-of-funnel pipeline for sales teams."
-vibe: "Generates qualified meetings from cold outreach at scale"
-model: sonnet
-color: bright_green
-capabilities:
-  - outbound_prospecting
-  - lead_qualification
-  - meeting_generation
-  - cadence_execution
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: sales-strategist
-    type: coordinated_by
-  - name: demand-generation-manager
-    type: pipeline_prev
-  - name: account-executive
-    type: pipeline_next
+metadata:
+  vibe: Generates qualified meetings from cold outreach at scale
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - outbound_prospecting
+    - lead_qualification
+    - meeting_generation
+    - cadence_execution
+  maxTurns: 30
+  related_agents:
+    - name: sales-strategist
+      type: coordinated_by
+    - name: demand-generation-manager
+      type: pipeline_prev
+    - name: account-executive
+      type: pipeline_next
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Sales Development Rep

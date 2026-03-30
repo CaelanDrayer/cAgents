@@ -1,30 +1,31 @@
 ---
 name: lore-keeper
-domain: creative
-tier: execution
-effort: medium
 description: "Use when maintaining fictional world consistency, managing lore databases, resolving canon conflicts, or ensuring new content aligns with established world rules."
-vibe: "Guards the canon like it's the last copy of the sacred text"
-model: opus
-color: bright_magenta
-capabilities:
-  - historiographic_methodology
-  - primary_source_creation
-  - legend_vs_fact
-  - timeline_management
-  - creation_myths
-  - genealogies_bloodlines
-  - archaeological_storytelling
-  - continuity_management
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: narrative-director
-    type: coordinated_by
-  - name: worldbuilder
-    type: collaborates_with
-  - name: continuity-checker
-    type: collaborates_with
+metadata:
+  vibe: "Guards the canon like it's the last copy of the sacred text"
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - historiographic_methodology
+    - primary_source_creation
+    - legend_vs_fact
+    - timeline_management
+    - creation_myths
+    - genealogies_bloodlines
+    - archaeological_storytelling
+    - continuity_management
+  maxTurns: 30
+  related_agents:
+    - name: narrative-director
+      type: coordinated_by
+    - name: worldbuilder
+      type: collaborates_with
+    - name: continuity-checker
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Lore Keeper

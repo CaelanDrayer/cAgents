@@ -1,28 +1,29 @@
 ---
 name: continuity-checker
-domain: creative
-tier: execution
-effort: medium
 description: "Use when verifying narrative consistency, tracking timeline accuracy, checking character detail continuity, or identifying contradictions across story chapters or episodes."
-vibe: "Catches the plot holes before your readers do"
-model: opus
-color: bright_magenta
-capabilities:
-  - story_bible_construction
-  - character_knowledge_tracking
-  - chekhov_gun_tracking
-  - timeline_verification
-  - physical_continuity
-  - world_logic_verification
-  - series_continuity
-  - contradiction_detection
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: editor
-    type: coordinated_by
-  - name: lore-keeper
-    type: collaborates_with
+metadata:
+  vibe: Catches the plot holes before your readers do
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - story_bible_construction
+    - character_knowledge_tracking
+    - chekhov_gun_tracking
+    - timeline_verification
+    - physical_continuity
+    - world_logic_verification
+    - series_continuity
+    - contradiction_detection
+  maxTurns: 30
+  related_agents:
+    - name: editor
+      type: coordinated_by
+    - name: lore-keeper
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Continuity Checker

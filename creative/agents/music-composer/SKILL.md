@@ -1,28 +1,29 @@
 ---
 name: music-composer
-domain: creative
-tier: execution
-effort: medium
 description: "Use when composing game music, designing adaptive music systems, developing leitmotifs, or creating scores that loop, layer, and branch in response to gameplay."
-vibe: "Scores the moments that make the audience feel everything"
-model: opus
-color: bright_magenta
-capabilities:
-  - adaptive_music_composition
-  - leitmotif_development
-  - orchestration
-  - horizontal_resequencing
-  - vertical_layering
-  - thematic_scoring
-  - interactive_music_systems
-  - music_production
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: narrative-director
-    type: coordinated_by
-  - name: sound-designer
-    type: collaborates_with
+metadata:
+  vibe: Scores the moments that make the audience feel everything
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - adaptive_music_composition
+    - leitmotif_development
+    - orchestration
+    - horizontal_resequencing
+    - vertical_layering
+    - thematic_scoring
+    - interactive_music_systems
+    - music_production
+  maxTurns: 30
+  related_agents:
+    - name: narrative-director
+      type: coordinated_by
+    - name: sound-designer
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Music Composer

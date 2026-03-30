@@ -1,22 +1,23 @@
 ---
 name: facilities-manager
-domain: business
-tier: execution
-effort: medium
 description: "Use when managing office operations, coordinating facility maintenance, planning space allocation, or handling vendor relationships for physical infrastructure."
-vibe: "Keeps the lights on so everyone else can keep shipping"
-model: sonnet
-color: bright_blue
-capabilities:
-  - space_management
-  - building_maintenance
-  - vendor_coordination
-  - safety_compliance
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: operations-manager
-    type: coordinated_by
+metadata:
+  vibe: Keeps the lights on so everyone else can keep shipping
+  tier: execution
+  effort: medium
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - space_management
+    - building_maintenance
+    - vendor_coordination
+    - safety_compliance
+  maxTurns: 30
+  related_agents:
+    - name: operations-manager
+      type: coordinated_by
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Facilities Manager

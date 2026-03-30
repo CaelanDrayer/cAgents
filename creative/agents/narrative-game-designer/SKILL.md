@@ -1,30 +1,31 @@
 ---
 name: narrative-game-designer
-domain: creative
-tier: execution
-effort: medium
 description: "Use when designing interactive narrative systems, creating branching story structures, building player agency frameworks, or integrating story with game mechanics."
-vibe: "Weaves player choice and narrative into something seamless"
-model: opus
-color: bright_magenta
-capabilities:
-  - branching_narrative_architecture
-  - state_tracking_and_consequence_systems
-  - player_agency_design
-  - ludonarrative_consonance
-  - dynamic_narrative_systems
-  - emergent_narrative_design
-  - choice_architecture
-  - narrative_system_documentation
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: narrative-director
-    type: coordinated_by
-  - name: game-writer
-    type: collaborates_with
-  - name: game-designer
-    type: cross_domain
+metadata:
+  vibe: Weaves player choice and narrative into something seamless
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - branching_narrative_architecture
+    - state_tracking_and_consequence_systems
+    - player_agency_design
+    - ludonarrative_consonance
+    - dynamic_narrative_systems
+    - emergent_narrative_design
+    - choice_architecture
+    - narrative_system_documentation
+  maxTurns: 30
+  related_agents:
+    - name: narrative-director
+      type: coordinated_by
+    - name: game-writer
+      type: collaborates_with
+    - name: game-designer
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Narrative Game Designer

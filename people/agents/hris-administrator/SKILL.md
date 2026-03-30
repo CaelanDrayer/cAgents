@@ -1,24 +1,25 @@
 ---
 name: hris-administrator
-domain: people
-tier: execution
-effort: medium
 description: "Use when managing HR information systems, configuring HRIS workflows, maintaining employee data integrity, or generating HR reports from system data."
-vibe: "Keeps the HR systems running so people get paid on time"
-model: haiku
-color: bright_yellow
-capabilities:
-  - hris_administration
-  - data_management
-  - system_configuration
-  - user_support
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: hr-ops-specialist
-    type: coordinated_by
-  - name: hr-analyst
-    type: collaborates_with
+metadata:
+  vibe: Keeps the HR systems running so people get paid on time
+  tier: execution
+  effort: medium
+  domain: people
+  model: haiku
+  color: bright_yellow
+  capabilities:
+    - hris_administration
+    - data_management
+    - system_configuration
+    - user_support
+  maxTurns: 30
+  related_agents:
+    - name: hr-ops-specialist
+      type: coordinated_by
+    - name: hr-analyst
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # HRIS Administrator

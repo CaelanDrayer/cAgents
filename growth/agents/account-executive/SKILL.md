@@ -1,26 +1,23 @@
 ---
 name: account-executive
-domain: growth
-tier: execution
-effort: medium
 description: "Use when managing sales deals through pipeline stages, conducting discovery calls, building proposals, or closing enterprise accounts."
-vibe: "Closes deals by solving problems, not pushing products"
-model: sonnet
-color: bright_green
-capabilities:
-  - opportunity_management
-  - demos
-  - negotiation
-  - closing
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: sales-strategist
-    type: coordinated_by
-  - name: sales-engineer
-    type: collaborates_with
-  - name: proposal-specialist
-    type: collaborates_with
+metadata:
+  vibe: "Closes deals by solving problems, not pushing products"
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities: ["opportunity_management","demos","negotiation","closing"]
+  maxTurns: 30
+  related_agents:
+    - name: sales-strategist
+      type: coordinated_by
+    - name: sales-engineer
+      type: collaborates_with
+    - name: proposal-specialist
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Account Executive

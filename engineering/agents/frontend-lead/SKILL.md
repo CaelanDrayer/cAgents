@@ -1,37 +1,38 @@
 ---
 name: frontend-lead
 description: "Use for coordinating frontend development, reviewing UI architecture decisions, managing frontend standards, or overseeing design system implementation."
-vibe: "Ships pixel-perfect UIs that work on every screen"
-tier: controller
-effort: high
-domain: engineering
-model: "opusplan"
-coordination_style: question_based
-typical_questions:
-  - "What is the current frontend architecture?"
-  - "Which team members have the right skills for this task?"
-  - "What are the performance requirements?"
-  - "How does this integrate with existing components?"
-capabilities:
-  - frontend_architecture
-  - team_coordination
-  - code_review
-  - performance_optimization
-  - component_design
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-color: bright_cyan
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: frontend-developer
-    type: coordinates
-  - name: frontend-aesthetics
-    type: coordinates
-  - name: ux-designer
-    type: coordinates
-  - name: accessibility-checker
-    type: collaborates_with
+metadata:
+  vibe: Ships pixel-perfect UIs that work on every screen
+  tier: controller
+  effort: high
+  domain: engineering
+  model: opusplan
+  color: bright_cyan
+  capabilities:
+    - frontend_architecture
+    - team_coordination
+    - code_review
+    - performance_optimization
+    - component_design
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the current frontend architecture?
+    - Which team members have the right skills for this task?
+    - What are the performance requirements?
+    - How does this integrate with existing components?
+  related_agents:
+    - name: frontend-developer
+      type: coordinates
+    - name: frontend-aesthetics
+      type: coordinates
+    - name: ux-designer
+      type: coordinates
+    - name: accessibility-checker
+      type: collaborates_with
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Frontend Lead

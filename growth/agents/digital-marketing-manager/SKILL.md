@@ -1,26 +1,27 @@
 ---
 name: digital-marketing-manager
-domain: growth
-tier: execution
-effort: medium
 description: "Use when coordinating digital marketing channels, managing paid and organic campaigns, optimizing digital spend, or tracking online engagement metrics."
-vibe: "Masters every digital channel so the right message finds the right person"
-model: sonnet
-color: bright_green
-capabilities:
-  - paid_campaigns
-  - performance_marketing
-  - conversion_optimization
-  - channel_management
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: campaign-manager
-    type: coordinated_by
-  - name: marketing-analyst
-    type: collaborates_with
-  - name: seo-specialist
-    type: collaborates_with
+metadata:
+  vibe: Masters every digital channel so the right message finds the right person
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - paid_campaigns
+    - performance_marketing
+    - conversion_optimization
+    - channel_management
+  maxTurns: 30
+  related_agents:
+    - name: campaign-manager
+      type: coordinated_by
+    - name: marketing-analyst
+      type: collaborates_with
+    - name: seo-specialist
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Digital Marketing Manager

@@ -1,20 +1,20 @@
 ---
 name: universal-router
-domain: core
-tier: infrastructure
-effort: high
 description: "Use when classifying request complexity into tiers 2-4, detecting domain from keywords, or routing to the appropriate controller catalog."
-vibe: "Sends every request to exactly the right agent, every time"
-model: opus
-color: bright_cyan
-capabilities:
-  - tier_classification
-  - template_matching
-  - controller_requirement
-  - scope_adjustment
-allowed-tools: "Read Grep Glob Write Edit Bash Task TodoWrite"
-maxTurns: 15
-permissionMode: "bypassPermissions"
+metadata:
+  vibe: "Sends every request to exactly the right agent, every time"
+  tier: infrastructure
+  effort: high
+  domain: core
+  model: opus
+  color: bright_cyan
+  capabilities:
+    - tier_classification
+    - template_matching
+    - controller_requirement
+    - scope_adjustment
+  maxTurns: 15
+allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
 ---
 
 # Universal Router

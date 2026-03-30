@@ -8,7 +8,6 @@ description: >
   Use for {X}, {Y}, {Z}.
 
 model: haiku
-permissionMode: bypassPermissions
 color: bright_yellow
 
 capabilities:

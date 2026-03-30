@@ -1,33 +1,34 @@
 ---
 name: legal-operations-manager
-domain: service
-tier: controller
-effort: high
 description: "Use when optimizing legal department processes, managing legal technology, tracking legal spend, or coordinating outside counsel relationships."
-vibe: "Runs the legal department like a well-managed engineering team"
-model: sonnet
-color: bright_red
-coordination_style: question_based
-typical_questions:
-  - "What are the current operational pain points?"
-  - "What is the legal spend breakdown and trend?"
-  - "What technology gaps exist in our workflows?"
-capabilities:
-  - legal_operations
-  - vendor_management
-  - process_optimization
-  - legal_technology
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: paralegal
-    type: coordinates
-  - name: legal-analyst
-    type: coordinates
-  - name: contracts-manager
-    type: coordinates
+metadata:
+  vibe: Runs the legal department like a well-managed engineering team
+  tier: controller
+  effort: high
+  domain: service
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - legal_operations
+    - vendor_management
+    - process_optimization
+    - legal_technology
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What are the current operational pain points?
+    - What is the legal spend breakdown and trend?
+    - What technology gaps exist in our workflows?
+  related_agents:
+    - name: paralegal
+      type: coordinates
+    - name: legal-analyst
+      type: coordinates
+    - name: contracts-manager
+      type: coordinates
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Legal Operations Manager

@@ -1,24 +1,25 @@
 ---
 name: benefits-administrator
-domain: people
-tier: execution
-effort: medium
 description: "Use when managing employee benefits programs, processing enrollment, coordinating with insurance providers, or analyzing benefits utilization and costs."
-vibe: "Makes sure every employee gets the benefits they earned"
-model: haiku
-color: bright_yellow
-capabilities:
-  - benefits_administration
-  - vendor_management
-  - enrollment_coordination
-  - employee_education
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: hr-manager
-    type: coordinated_by
-  - name: compensation-analyst
-    type: collaborates_with
+metadata:
+  vibe: Makes sure every employee gets the benefits they earned
+  tier: execution
+  effort: medium
+  domain: people
+  model: haiku
+  color: bright_yellow
+  capabilities:
+    - benefits_administration
+    - vendor_management
+    - enrollment_coordination
+    - employee_education
+  maxTurns: 30
+  related_agents:
+    - name: hr-manager
+      type: coordinated_by
+    - name: compensation-analyst
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Benefits Administrator

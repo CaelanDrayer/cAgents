@@ -1,29 +1,30 @@
 ---
 name: plot-developer
-domain: creative
-tier: execution
-effort: medium
 description: "Use when developing plot mechanics, engineering twists and reversals, designing subplot resonance, or building escalation curves that drive narrative momentum."
-vibe: "Builds plots with the precision of a watchmaker"
-model: opus
-color: bright_magenta
-capabilities:
-  - plot_structure_design
-  - twist_engineering
-  - subplot_architecture
-  - midpoint_craft
-  - escalation_theory
-  - climax_construction
-  - foreshadowing_systems
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: story-architect
-    type: coordinated_by
-  - name: tension-architect
-    type: collaborates_with
-  - name: pacing-specialist
-    type: collaborates_with
+metadata:
+  vibe: Builds plots with the precision of a watchmaker
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - plot_structure_design
+    - twist_engineering
+    - subplot_architecture
+    - midpoint_craft
+    - escalation_theory
+    - climax_construction
+    - foreshadowing_systems
+  maxTurns: 30
+  related_agents:
+    - name: story-architect
+      type: coordinated_by
+    - name: tension-architect
+      type: collaborates_with
+    - name: pacing-specialist
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Plot Developer

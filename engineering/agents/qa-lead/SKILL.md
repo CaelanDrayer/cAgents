@@ -1,42 +1,47 @@
 ---
 name: qa-lead
 description: "Use when tests are failing, test coverage is missing, a bug needs a regression test, or a testing strategy needs planning. Coordinates test suites, coverage gates, and quality assurance workflows."
-vibe: "Finds the bugs before your users do -- every edge case is a story"
-tier: controller
-effort: high
-domain: engineering
-model: sonnet
-coordination_style: question_based
-typical_questions:
-  - "What is the current implementation of this feature?"
-  - "What are the technical constraints we need to consider?"
-  - "What are the key risks and dependencies?"
-color: bright_red
-capabilities:
-  - tactical_planning_qa
-  - test_strategy_design
-  - test_implementation
-  - test_automation
-  - quality_gate_enforcement
-  - unit_testing
-  - integration_testing
-  - e2e_testing
-  - performance_testing
-  - security_testing
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-not-my-scope: ["Feature implementation", "architecture decisions", "UI design", "deployment"]
-related_agents:
-  - name: test-coverage-validator
-    type: coordinates
-  - name: code-standards-auditor
-    type: collaborates_with
-  - name: backend-developer
-    type: reviews
-  - name: frontend-developer
-    type: reviews
+metadata:
+  vibe: Finds the bugs before your users do -- every edge case is a story
+  tier: controller
+  effort: high
+  domain: engineering
+  model: sonnet
+  color: bright_red
+  capabilities:
+    - tactical_planning_qa
+    - test_strategy_design
+    - test_implementation
+    - test_automation
+    - quality_gate_enforcement
+    - unit_testing
+    - integration_testing
+    - e2e_testing
+    - performance_testing
+    - security_testing
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the current implementation of this feature?
+    - What are the technical constraints we need to consider?
+    - What are the key risks and dependencies?
+  not-my-scope:
+    - Feature implementation
+    - architecture decisions
+    - UI design
+    - deployment
+  related_agents:
+    - name: test-coverage-validator
+      type: coordinates
+    - name: code-standards-auditor
+      type: collaborates_with
+    - name: backend-developer
+      type: reviews
+    - name: frontend-developer
+      type: reviews
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 <example>

@@ -620,6 +620,497 @@ cross_domain_decomposition:
     - integration_summary
 ```
 
+## Science Domain Patterns
+
+### Research Decomposition
+
+```yaml
+science_research_decomposition:
+  understand:
+    - literature_review
+    - methodology_assessment
+    - hypothesis_formation
+    - data_source_identification
+  design:
+    - experiment_design
+    - control_variable_definition
+    - measurement_protocol
+    - statistical_analysis_plan
+  build:
+    - data_collection
+    - experiment_execution
+    - data_processing
+    - analysis_execution
+  verify:
+    - peer_review_simulation
+    - statistical_validation
+    - reproducibility_check
+  document:
+    - research_report
+    - methodology_notes
+    - data_appendix
+```
+
+### Scientific Analysis Decomposition
+
+```yaml
+science_analysis_decomposition:
+  understand:
+    - research_question_definition
+    - existing_evidence_review
+    - scope_and_boundaries
+  design:
+    - analysis_methodology
+    - evidence_quality_framework
+    - synthesis_approach
+  build:
+    - evidence_collection
+    - data_synthesis
+    - findings_development
+  verify:
+    - statistical_validation
+    - bias_assessment
+    - alternative_hypothesis_check
+  document:
+    - findings_report
+    - confidence_intervals
+    - limitations_and_caveats
+```
+
+### Experiment Planning Decomposition
+
+```yaml
+science_experiment_decomposition:
+  understand:
+    - problem_statement
+    - prior_research_review
+    - resource_constraints
+  design:
+    - experimental_protocol
+    - control_group_design
+    - sample_size_calculation
+  build:
+    - protocol_documentation
+    - materials_preparation
+    - data_collection_instruments
+  verify:
+    - protocol_peer_review
+    - ethics_review
+    - feasibility_check
+  document:
+    - experimental_protocol
+    - pre_registration
+    - materials_list
+```
+
+## Health Domain Patterns
+
+### Health Research Decomposition
+
+```yaml
+health_research_decomposition:
+  understand:
+    - symptom_or_condition_analysis
+    - medical_literature_review
+    - patient_context_assessment
+  design:
+    - evidence_evaluation_framework
+    - treatment_option_mapping
+    - risk_benefit_analysis
+  build:
+    - treatment_plan_research
+    - lifestyle_recommendations
+    - resource_identification
+  verify:
+    - evidence_quality_assessment
+    - disclaimer_and_safety_review
+    - professional_referral_check
+  document:
+    - health_summary
+    - recommendation_rationale
+    - caveats_and_limitations
+```
+
+### Wellness Program Decomposition
+
+```yaml
+health_wellness_decomposition:
+  understand:
+    - current_health_baseline
+    - wellness_goals_clarification
+    - lifestyle_constraints
+  design:
+    - program_framework
+    - intervention_selection
+    - progress_tracking_plan
+  build:
+    - program_documentation
+    - habit_schedule_creation
+    - resource_curation
+  verify:
+    - safety_review
+    - evidence_based_validation
+    - accessibility_check
+  document:
+    - wellness_plan
+    - milestone_markers
+    - safety_guidelines
+```
+
+### Health Education Decomposition
+
+```yaml
+health_education_decomposition:
+  understand:
+    - audience_health_literacy
+    - topic_scope_definition
+    - accuracy_requirements
+  design:
+    - content_structure
+    - plain_language_approach
+    - visual_aid_plan
+  build:
+    - content_drafting
+    - accuracy_checking
+    - accessibility_formatting
+  verify:
+    - medical_accuracy_review
+    - readability_assessment
+    - disclaimer_inclusion
+  document:
+    - educational_material
+    - source_citations
+    - update_schedule
+```
+
+## Education Domain Patterns
+
+### Curriculum Design Decomposition
+
+```yaml
+education_curriculum_decomposition:
+  understand:
+    - learning_objectives_definition
+    - student_level_assessment
+    - subject_matter_scope
+    - instructional_constraints
+  design:
+    - curriculum_framework
+    - lesson_sequence_design
+    - assessment_strategy
+    - differentiation_plan
+  build:
+    - lesson_plan_creation
+    - material_development
+    - assessment_design
+    - resource_curation
+  verify:
+    - pedagogical_review
+    - accessibility_check
+    - alignment_to_standards
+  document:
+    - curriculum_guide
+    - lesson_plans
+    - assessment_rubrics
+```
+
+### Lesson Development Decomposition
+
+```yaml
+education_lesson_decomposition:
+  understand:
+    - learning_outcome_definition
+    - prerequisite_knowledge_check
+    - time_and_format_constraints
+  design:
+    - lesson_structure
+    - engagement_activities
+    - formative_assessment_plan
+  build:
+    - lesson_content_creation
+    - activity_development
+    - supporting_materials
+  verify:
+    - pedagogical_effectiveness_review
+    - clarity_check
+    - inclusive_design_validation
+  document:
+    - lesson_plan
+    - teacher_notes
+    - student_handouts
+```
+
+### Training Program Decomposition
+
+```yaml
+education_training_decomposition:
+  understand:
+    - skill_gap_analysis
+    - learner_profile
+    - delivery_constraints
+  design:
+    - competency_framework
+    - module_sequence
+    - practice_activity_design
+  build:
+    - training_content
+    - exercises_and_scenarios
+    - knowledge_checks
+  verify:
+    - subject_matter_expert_review
+    - learner_comprehension_testing
+    - completion_criteria_validation
+  document:
+    - training_guide
+    - facilitator_notes
+    - evaluation_metrics
+```
+
+## Personal Domain Patterns
+
+### Personal Development Decomposition
+
+```yaml
+personal_development_decomposition:
+  understand:
+    - goals_clarification
+    - current_situation_assessment
+    - values_and_priorities_mapping
+  design:
+    - action_plan_framework
+    - milestone_definition
+    - obstacle_anticipation
+  build:
+    - action_plan_creation
+    - resource_identification
+    - habit_design
+  verify:
+    - feasibility_review
+    - motivation_alignment_check
+    - accountability_structure_validation
+  document:
+    - personal_development_plan
+    - milestone_tracker
+    - reflection_prompts
+```
+
+### Goal-Setting Decomposition
+
+```yaml
+personal_goal_decomposition:
+  understand:
+    - desired_outcome_clarification
+    - current_baseline_assessment
+    - constraint_identification
+  design:
+    - smart_goal_formulation
+    - sub_goal_breakdown
+    - progress_measurement_plan
+  build:
+    - goal_documentation
+    - roadmap_creation
+    - support_system_identification
+  verify:
+    - goal_feasibility_review
+    - milestone_realism_check
+    - alignment_to_values
+  document:
+    - goal_plan
+    - progress_journal_template
+    - review_schedule
+```
+
+### Life Planning Decomposition
+
+```yaml
+personal_life_planning_decomposition:
+  understand:
+    - life_area_assessment
+    - priorities_ranking
+    - timeline_preferences
+  design:
+    - life_vision_framework
+    - category_goals
+    - balance_strategy
+  build:
+    - life_plan_document
+    - short_term_action_items
+    - resource_and_support_list
+  verify:
+    - holistic_balance_review
+    - feasibility_assessment
+    - values_alignment_check
+  document:
+    - life_plan
+    - quarterly_review_template
+    - key_commitments
+```
+
+## Arts Domain Patterns
+
+### Creative Project Decomposition
+
+```yaml
+arts_creative_project_decomposition:
+  understand:
+    - creative_brief_clarification
+    - medium_and_format_assessment
+    - reference_gathering
+    - audience_and_context
+  design:
+    - concept_development
+    - composition_planning
+    - technique_selection
+    - style_exploration
+  build:
+    - technique_guidance
+    - composition_development
+    - iterative_refinement
+    - finishing_decisions
+  verify:
+    - artistic_critique
+    - style_consistency_review
+    - intent_alignment_check
+  document:
+    - artist_statement
+    - process_notes
+    - reference_documentation
+```
+
+### Portfolio Development Decomposition
+
+```yaml
+arts_portfolio_decomposition:
+  understand:
+    - portfolio_purpose_and_audience
+    - existing_work_inventory
+    - presentation_format
+  design:
+    - curation_strategy
+    - narrative_arc
+    - presentation_format_design
+  build:
+    - work_selection_and_sequencing
+    - artist_statement_drafting
+    - presentation_preparation
+  verify:
+    - coherence_review
+    - audience_fit_check
+    - technical_presentation_quality
+  document:
+    - portfolio_structure
+    - artist_biography
+    - work_descriptions
+```
+
+### Arts Education Decomposition
+
+```yaml
+arts_education_decomposition:
+  understand:
+    - skill_level_assessment
+    - medium_and_topic_scope
+    - learning_goals
+  design:
+    - technique_progression
+    - exercise_sequence
+    - critique_framework
+  build:
+    - instructional_content
+    - practice_exercises
+    - demonstration_guides
+  verify:
+    - pedagogical_effectiveness
+    - technique_accuracy_review
+    - accessibility_check
+  document:
+    - instructional_guide
+    - exercise_library
+    - assessment_criteria
+```
+
+## Trades Domain Patterns
+
+### Trade Procedure Decomposition
+
+```yaml
+trades_procedure_decomposition:
+  understand:
+    - requirements_assessment
+    - safety_review
+    - materials_and_tools_list
+    - code_and_permit_requirements
+  design:
+    - step_by_step_procedure
+    - safety_checkpoints
+    - quality_standards_definition
+  build:
+    - procedure_documentation
+    - technique_guidance
+    - troubleshooting_guide
+  verify:
+    - safety_validation
+    - code_compliance_check
+    - quality_inspection_criteria
+  document:
+    - procedure_guide
+    - safety_checklist
+    - materials_specification
+```
+
+### Trade Project Planning Decomposition
+
+```yaml
+trades_project_decomposition:
+  understand:
+    - project_scope_definition
+    - site_assessment
+    - regulatory_requirements
+    - budget_estimation
+  design:
+    - project_phasing_plan
+    - materials_specification
+    - contractor_or_diy_decision
+  build:
+    - project_plan_documentation
+    - procurement_list
+    - timeline_creation
+  verify:
+    - permit_compliance_review
+    - safety_plan_validation
+    - cost_estimate_validation
+  document:
+    - project_plan
+    - permit_checklist
+    - inspection_readiness
+```
+
+### Trade Troubleshooting Decomposition
+
+```yaml
+trades_troubleshooting_decomposition:
+  understand:
+    - symptom_identification
+    - system_assessment
+    - safety_hazard_check
+  design:
+    - diagnostic_approach
+    - repair_options_analysis
+    - parts_and_tools_needed
+  build:
+    - diagnostic_steps
+    - repair_procedure
+    - testing_procedure
+  verify:
+    - safety_validation
+    - functional_testing
+    - code_compliance_check
+  document:
+    - troubleshooting_log
+    - repair_record
+    - follow_up_items
+```
+
 ## Request Type Classification
 
 | Type | Indicators | Strategy |

@@ -1,40 +1,41 @@
 ---
 name: theme-analyst
-domain: creative
-tier: execution
-effort: medium
 description: "Use when analyzing thematic content, tracking thematic development, ensuring theme-plot alignment, or evaluating how effectively themes emerge through narrative action."
-vibe: "Finds the deeper meaning the author didn't know they put there"
-model: opus
-color: bright_magenta
-capabilities:
-  - thematic_analysis
-  - symbolic_systems
-  - motif_development
-  - allegorical_structure
-  - thematic_layering
-  - metaphorical_frameworks
-  - subtext_architecture
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-answers_questions:
-  - "What are the thematic underpinnings of this story?"
-  - "How can thematic elements be deepened or made more resonant?"
-  - "Is the symbolism organic or heavy-handed?"
-  - "Are motifs being used effectively across the narrative?"
-  - "Does the story operate on multiple levels of meaning?"
-executes_tasks:
-  - thematic_analysis
-  - symbolic_system_design
-  - motif_mapping
-  - thematic_revision
-  - allegorical_development
-  - subtext_strengthening
-related_agents:
-  - name: narrative-director
-    type: coordinated_by
-  - name: literary-critic
-    type: collaborates_with
+metadata:
+  vibe: "Finds the deeper meaning the author didn't know they put there"
+  tier: execution
+  effort: medium
+  domain: creative
+  model: opus
+  color: bright_magenta
+  capabilities:
+    - thematic_analysis
+    - symbolic_systems
+    - motif_development
+    - allegorical_structure
+    - thematic_layering
+    - metaphorical_frameworks
+    - subtext_architecture
+  maxTurns: 30
+  related_agents:
+    - name: narrative-director
+      type: coordinated_by
+    - name: literary-critic
+      type: collaborates_with
+  answers_questions:
+    - What are the thematic underpinnings of this story?
+    - How can thematic elements be deepened or made more resonant?
+    - Is the symbolism organic or heavy-handed?
+    - Are motifs being used effectively across the narrative?
+    - Does the story operate on multiple levels of meaning?
+  executes_tasks:
+    - thematic_analysis
+    - symbolic_system_design
+    - motif_mapping
+    - thematic_revision
+    - allegorical_development
+    - subtext_strengthening
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Theme Analyst

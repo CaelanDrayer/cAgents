@@ -1,24 +1,25 @@
 ---
 name: marketing-ops-specialist
-domain: growth
-tier: execution
-effort: medium
 description: "Use when managing marketing technology stack, configuring automation platforms, maintaining data hygiene, or optimizing marketing workflows and processes."
-vibe: "Keeps the marketing machine running without anyone noticing"
-model: sonnet
-color: bright_green
-capabilities:
-  - marketing_automation
-  - lead_management
-  - martech_stack
-  - campaign_operations
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: campaign-manager
-    type: coordinated_by
-  - name: revenue-operations-manager
-    type: collaborates_with
+metadata:
+  vibe: Keeps the marketing machine running without anyone noticing
+  tier: execution
+  effort: medium
+  domain: growth
+  model: sonnet
+  color: bright_green
+  capabilities:
+    - marketing_automation
+    - lead_management
+    - martech_stack
+    - campaign_operations
+  maxTurns: 30
+  related_agents:
+    - name: campaign-manager
+      type: coordinated_by
+    - name: revenue-operations-manager
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Marketing Ops Specialist

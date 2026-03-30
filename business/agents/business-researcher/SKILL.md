@@ -1,24 +1,25 @@
 ---
 name: business-researcher
-domain: business
-tier: execution
-effort: medium
 description: "Use when researching market opportunities, analyzing industry trends, conducting competitive analysis, or gathering data to support business strategy."
-vibe: "Digs until the data tells a story worth betting on"
-model: sonnet
-color: bright_blue
-capabilities:
-  - research_methodology
-  - data_gathering
-  - synthesis_analysis
-  - report_writing
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: strategic-planner
-    type: coordinated_by
-  - name: market-research-analyst
-    type: cross_domain
+metadata:
+  vibe: Digs until the data tells a story worth betting on
+  tier: execution
+  effort: medium
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - research_methodology
+    - data_gathering
+    - synthesis_analysis
+    - report_writing
+  maxTurns: 30
+  related_agents:
+    - name: strategic-planner
+      type: coordinated_by
+    - name: market-research-analyst
+      type: cross_domain
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Business Researcher

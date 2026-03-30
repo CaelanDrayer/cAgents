@@ -1,31 +1,32 @@
 ---
 name: supply-chain-manager
-domain: business
-tier: controller
-effort: high
-coordination_style: question_based
-typical_questions:
-  - "What are the current operational metrics?"
-  - "What are the efficiency bottlenecks?"
-  - "What are the compliance requirements?"
 description: "Use when optimizing supply chain operations, managing inventory levels, coordinating logistics, or improving end-to-end delivery reliability and cost."
-vibe: "Keeps the supply chain moving when the world stops cooperating"
-model: sonnet
-color: bright_blue
-capabilities:
-  - supply_planning
-  - inventory_management
-  - vendor_management
-  - logistics_optimization
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-related_agents:
-  - name: procurement-specialist
-    type: coordinates
-  - name: operations-manager
-    type: collaborates_with
+metadata:
+  vibe: Keeps the supply chain moving when the world stops cooperating
+  tier: controller
+  effort: high
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - supply_planning
+    - inventory_management
+    - vendor_management
+    - logistics_optimization
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What are the current operational metrics?
+    - What are the efficiency bottlenecks?
+    - What are the compliance requirements?
+  related_agents:
+    - name: procurement-specialist
+      type: coordinates
+    - name: operations-manager
+      type: collaborates_with
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Supply Chain Manager

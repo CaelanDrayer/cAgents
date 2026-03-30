@@ -2,11 +2,11 @@
 
 **Your AI Workforce for Claude Code**
 
-Deploy 214 specialized agents across 8 business domains through an intelligent pipeline that routes your request, plans execution, decomposes work, coordinates specialists, reviews outputs, and validates quality — automatically.
+Deploy 262 specialized agents across 15 domains through an intelligent pipeline that routes your request, plans execution, decomposes work, coordinates specialists, reviews outputs, and validates quality — automatically.
 
 | Stat | Value |
 |------|-------|
-| Agents | 214 across 8 business domains |
+| Agents | 262 across 15 domains |
 | Skills | 9 slash commands |
 | Hooks | 26 lifecycle hooks across 19 event types |
 | Models | Opus 4.6 (controllers) · Sonnet 4.6 (execution) · Haiku 4.5 (support) |
@@ -19,7 +19,7 @@ Deploy 214 specialized agents across 8 business domains through an intelligent p
 - Multi-step task orchestration with automatic routing, planning, and coordination
 - Cross-domain work (engineering + business + creative + growth in one request)
 - Parallel execution with quality-gated waves (40-60% faster for complex tasks)
-- Consistent delegation patterns across 8 business domains and 214 specialists
+- Consistent delegation patterns across 15 domains and 262 specialists
 - Reviewer loops, confidence scoring, and revision routing built into every run
 
 **cAgents is NOT for you if:**
@@ -56,7 +56,7 @@ cAgents spawns 3-10+ subagents per request. Each consumes API tokens independent
 
 # Manual
 git clone https://github.com/CaelanDrayer/cAgents.git
-cd cAgents && ./setup.sh
+cd cAgents && ./scripts/setup.sh
 ```
 
 ---
@@ -210,9 +210,15 @@ Four-phase debugging for bugs that resist quick fixes: reproduce, isolate, hypot
 | **People** | 19 | HR, talent acquisition, culture, compensation, compliance |
 | **Service** | 32 | Customer support, CX, legal, compliance, governance |
 | **Leadership** | 11 | C-suite executives (CEO, CTO, CPO, CMO, CFO, COO, CRO, CHRO, CCO, CSO, CLO) — used by `/org` |
-| **Shared** | 4 | Cross-domain intelligence: BI, data science, market research |
+| **Shared** | 12 | Cross-domain intelligence: BI, data science, market research, social science |
+| **Science** | 10 | STEM research, scientific analysis |
+| **Health** | 6 | Medical, wellness, fitness, nutrition |
+| **Education** | 6 | Teaching, tutoring, academic support |
+| **Personal** | 6 | Career, life coaching, personal finance |
+| **Arts** | 6 | Visual arts, music, film, performing arts |
+| **Trades** | 6 | Culinary, construction, automotive, agriculture |
 
-These 8 domains total 198 user-facing agents. The remaining 16 are Core pipeline infrastructure (orchestrator, planner, decomposer, validator, router) that run automatically and are not directly invoked — bringing the full catalog to 214 agents.
+These 15 domains total 246 user-facing agents. The remaining 16 are Core pipeline infrastructure (orchestrator, planner, decomposer, validator, router) that run automatically and are not directly invoked — bringing the full catalog to 262 agents.
 
 **Engineering (32)** handles the full software stack: backend-developer, frontend-developer, devops-engineer, security-engineer, qa-lead, architect, dba, performance-analyzer, and 24 more. Use `/run Fix the bug` or `/team Build the feature` and the pipeline routes here automatically for software tasks.
 
@@ -340,13 +346,13 @@ Load the full platform or a domain sub-plugin depending on your team's needs.
 
 | Package | Agents | Skills | Audience |
 |---------|--------|--------|----------|
-| **cAgents** (Full Platform) | 214 | 9 | Teams wanting the complete AI workforce across all domains |
+| **cAgents** (Full Platform) | 262 | 9 | Teams wanting the complete AI workforce across all domains |
 | **cagents-engineering** | 32 | 9 | Software development teams: backend, frontend, DevOps, QA, security |
 | **cagents-creative** | 30 | 9 | Content and creative teams: writing, narrative, game art, audio |
 | **cagents-business** | 42 | 9 | Strategy and product teams: business (31) + leadership (11) agents |
 | **cagents-growth** | 39 | 9 | Marketing and sales teams: campaigns, SEO, demand gen, revenue ops |
 
-Each sub-plugin loads via its own `.claude-plugin/` manifest. Use the full platform to access all 214 agents, or load only the domain your team needs to keep context lean.
+Each sub-plugin loads via its own `.claude-plugin/` manifest. Use the full platform to access all 262 agents, or load only the domain your team needs to keep context lean.
 
 ---
 
@@ -366,8 +372,8 @@ Each sub-plugin loads via its own `.claude-plugin/` manifest. Use the full platf
 
 | Dimension | cAgents | Official feature-dev plugin | Official code-review plugin |
 |-----------|---------|----------------------------|----------------------------|
-| **Agent count** | 214 | 3–5 | 3–5 |
-| **Business domains** | 8 | 1 (engineering) | 1 (engineering) |
+| **Agent count** | 262 | 3–5 | 3–5 |
+| **Business domains** | 15 | 1 (engineering) | 1 (engineering) |
 | **Pipeline state machine** | Yes — PASS/FAIL/REVISE routing, max 5 cycles | No | No |
 | **Parallel team execution** | Yes — N-wave with per-wave quality gates | No | No |
 | **Revision loops** | Yes — executor + reviewer, max 3 rounds per work item | No | No |
@@ -426,7 +432,7 @@ The lead synthesizes findings, deduplicates overlapping concerns, and produces a
 | `docs/GETTING_STARTED.md` | First-run guide and environment setup |
 | `docs/RELEASE_NOTES.md` | Detailed version history |
 | `.claude/rules/` | 24 modular topic-specific rules loaded by agents |
-| `SECURITY.md` | Security policy and vulnerability reporting |
+| `docs/SECURITY.md` | Security policy and vulnerability reporting |
 
 ---
 
@@ -453,4 +459,4 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | 214 agents across 8 business domains | Opus 4.6 · Sonnet 4.6 · Haiku 4.5
+**Built with Claude Code** | 262 agents across 15 domains | Opus 4.6 · Sonnet 4.6 · Haiku 4.5

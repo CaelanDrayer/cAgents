@@ -1,24 +1,25 @@
 ---
 name: process-improvement-specialist
-domain: business
-tier: execution
-effort: medium
 description: "Use when optimizing processes using Lean, Six Sigma, or continuous improvement methodologies to reduce waste and increase efficiency."
-vibe: "Makes good processes great and bad processes gone"
-model: sonnet
-color: bright_blue
-capabilities:
-  - process_analysis
-  - lean_six_sigma
-  - waste_elimination
-  - kaizen
-allowed-tools: "Read Grep Glob Write Edit Bash"
-maxTurns: 30
-related_agents:
-  - name: operations-manager
-    type: coordinated_by
-  - name: quality-manager-business
-    type: collaborates_with
+metadata:
+  vibe: Makes good processes great and bad processes gone
+  tier: execution
+  effort: medium
+  domain: business
+  model: sonnet
+  color: bright_blue
+  capabilities:
+    - process_analysis
+    - lean_six_sigma
+    - waste_elimination
+    - kaizen
+  maxTurns: 30
+  related_agents:
+    - name: operations-manager
+      type: coordinated_by
+    - name: quality-manager-business
+      type: collaborates_with
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Process Improvement Specialist

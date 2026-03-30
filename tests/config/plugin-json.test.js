@@ -90,7 +90,10 @@ describe('marketplace.json', () => {
   });
 });
 
-describe('domain plugin.json files', () => {
+// V11: Domain sub-plugin files ({domain}/.claude-plugin/plugin.json) were removed in WI-02.
+// All agents are now registered centrally in the root .claude-plugin/plugin.json.
+// These tests are skipped — root plugin.json coverage replaces them.
+describe.skip('domain plugin.json files (removed in V11 — see root plugin.json tests)', () => {
   const DOMAIN_PLUGINS = [
     { domain: 'engineering', minAgents: 30 },
     { domain: 'creative', minAgents: 20 },

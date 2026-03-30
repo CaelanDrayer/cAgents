@@ -1,44 +1,49 @@
 ---
 name: engineering-manager
 description: "Use when work requires coordination across multiple engineers, when a complex task needs decomposition into parallel subtasks, or when a tier 3-4 project needs strategic oversight and risk assessment."
-vibe: "Coordinates the orchestra so every engineer plays their best note"
-tier: controller
-effort: high
-domain: engineering
-model: "opusplan"
-coordination_style: question_based
-typical_questions:
-  - "What is the current implementation of this feature?"
-  - "What are the technical constraints we need to consider?"
-  - "What are the key risks and dependencies?"
-color: bright_white
-capabilities:
-  - strategic_oversight
-  - risk_assessment
-  - go_no_go_decisions
-  - multi_instruction_prioritization
-  - resource_allocation_strategy
-  - milestone_tracking
-  - escalation_management
-  - technical_leadership
-  - team_capacity_planning
-  - quality_assurance_oversight
-allowed-tools: "Task Read Grep Glob Write Edit Bash TodoWrite"
-maxTurns: 40
-permissionMode: "bypassPermissions"
-memory: {"project": true}
-not-my-scope: ["Direct code implementation", "visual design", "content creation", "financial analysis"]
-related_agents:
-  - name: architect
-    type: coordinates
-  - name: backend-lead
-    type: coordinates
-  - name: frontend-lead
-    type: coordinates
-  - name: devops-lead
-    type: coordinates
-  - name: security-lead
-    type: coordinates
+metadata:
+  vibe: Coordinates the orchestra so every engineer plays their best note
+  tier: controller
+  effort: high
+  domain: engineering
+  model: opusplan
+  color: bright_white
+  capabilities:
+    - strategic_oversight
+    - risk_assessment
+    - go_no_go_decisions
+    - multi_instruction_prioritization
+    - resource_allocation_strategy
+    - milestone_tracking
+    - escalation_management
+    - technical_leadership
+    - team_capacity_planning
+    - quality_assurance_oversight
+  maxTurns: 40
+  memory:
+    project: true
+  coordination_style: question_based
+  typical_questions:
+    - What is the current implementation of this feature?
+    - What are the technical constraints we need to consider?
+    - What are the key risks and dependencies?
+  not-my-scope:
+    - Direct code implementation
+    - visual design
+    - content creation
+    - financial analysis
+  related_agents:
+    - name: architect
+      type: coordinates
+    - name: backend-lead
+      type: coordinates
+    - name: frontend-lead
+      type: coordinates
+    - name: devops-lead
+      type: coordinates
+    - name: security-lead
+      type: coordinates
+allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 <example>

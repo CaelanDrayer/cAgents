@@ -82,11 +82,20 @@ find_agents() {
 }
 
 # Extract frontmatter field value
+# Checks top-level AND inside metadata: block (Agent Skills spec migration)
 extract_field() {
   local file="$1"
   local field="$2"
-  # Read between --- markers, find field
-  awk '/^---$/{n++; next} n==1{print}' "$file" | grep "^${field}:" | head -1 | sed "s/^${field}:[[:space:]]*//" | sed 's/^"//' | sed 's/"$//'
+  local fm
+  fm=$(awk '/^---$/{n++; next} n==1{print}' "$file")
+  # Try top-level first: ^field:
+  local val
+  val=$(echo "$fm" | grep "^${field}:" | head -1 | sed "s/^${field}:[[:space:]]*//" | sed 's/^"//' | sed 's/"$//')
+  if [[ -z "$val" ]]; then
+    # Try inside metadata: block (2-space indent): ^  field:
+    val=$(echo "$fm" | grep "^  ${field}:" | head -1 | sed "s/^  ${field}:[[:space:]]*//" | sed 's/^"//' | sed 's/"$//')
+  fi
+  echo "$val"
 }
 
 # Extract body (everything after second ---)
@@ -96,12 +105,17 @@ extract_body() {
 }
 
 # Strip cAgents-specific frontmatter fields, keep universal ones
+# After migration, cAgents fields live inside metadata: - strip the whole block
 strip_frontmatter() {
   local file="$1"
   awk '/^---$/{n++; if(n==1){print; next} if(n==2){print; next}} n==1{
-    # Skip cAgents-specific fields
-    if ($0 ~ /^(tier|domain|coordination_style|typical_questions|permissionMode|maxTurns|disallowedTools|related-agents|not-my-scope|related_agents|layer|color|memory):/) next
-    # Keep universal fields
+    # Skip top-level cAgents-specific fields (pre-migration compat)
+    if ($0 ~ /^(tier|domain|coordination_style|typical_questions|permissionMode|maxTurns|disallowedTools|related-agents|not-my-scope|related_agents|layer|color|memory|vibe|effort|capabilities):/) next
+    # Skip metadata: block (post-migration: metadata and all its indented content)
+    if ($0 ~ /^metadata:/) { skip_meta=1; next }
+    if (skip_meta && $0 ~ /^  /) { next }
+    if (skip_meta && $0 !~ /^  /) { skip_meta=0 }
+    # Keep universal fields (name, description, allowed-tools, license, compatibility)
     print
   } n>=2{print}' "$file"
 }
