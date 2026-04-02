@@ -19,7 +19,9 @@
 
 const fs = require('fs');
 const path = require('path');
-const yaml = require('js-yaml');
+// Defensive: js-yaml is a declared dependency but guard against missing install
+let yaml;
+try { yaml = require('js-yaml'); } catch { yaml = null; }
 const { createHook, findTeamSession, findActiveSession, safeRead, extractYamlValue, countPattern, withFileLock, ensureDir } = require('./hook-utils.cjs');
 
 /**
@@ -48,9 +50,10 @@ function cleanupAgentTree(sessionDir, now) {
 
     let parsed;
     try {
+      if (!yaml) throw new Error('js-yaml not available');
       parsed = yaml.load(lockedContent);
     } catch (parseErr) {
-      console.error(`[SessionStop] Malformed agent_tree.yaml — falling back to regex cleanup: ${parseErr.message}`);
+      console.error(`[SessionStop] Malformed agent_tree.yaml or js-yaml unavailable — falling back to regex cleanup: ${parseErr.message}`);
       // Fallback: regex replacement (original M-07 behavior)
       const cleaned = lockedContent.replace(/stopped_at: null/g, `stopped_at: "${now}"`);
       try { fs.writeFileSync(treeFile, cleaned); } catch (e) {

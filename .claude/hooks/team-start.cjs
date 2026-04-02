@@ -80,12 +80,18 @@ total_duration_seconds: 0
 `);
   }
 
-  const teamsAvailable = process.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS === '1';
-  console.error(`[TeamStart] Initialized team monitoring for ${path.basename(sessionDir)}`);
+  // Defensive: treat any truthy value as enabled (handles '1', 'true', 'yes')
+  const envVal = (process.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS || '').trim();
+  const teamsAvailable = envVal === '1' || envVal.toLowerCase() === 'true';
+  console.error(`[TeamStart] Initialized team monitoring for ${path.basename(sessionDir)} (AGENT_TEAMS=${envVal || '<not set>'})`);
+
+  if (!envVal) {
+    console.error('[TeamStart] WARNING: CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS env var is not set. TeamCreate/SendMessage may not be available. Ensure settings.json env block is propagated by your Claude Code version.');
+  }
 
   const msg = teamsAvailable
     ? 'Team session initialized with full Agent Teams support.'
-    : 'Team session initialized in fallback mode (parallel Tasks).';
+    : 'Team session initialized in fallback mode (parallel Tasks). CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS is not enabled — TeamCreate/SendMessage/SendMessage may not be available. Check settings.json env propagation.';
 
   return {
     hookSpecificOutput: {
