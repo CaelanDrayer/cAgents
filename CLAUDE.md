@@ -121,16 +121,16 @@ quality/        # completion, validation-framework, implicit-discovery (3 files)
   +-> orchestrator (level 1)    -> enriched_context.yaml
   +-> planner (level 1)         -> plan.yaml
   +-> decomposer (level 1)      -> work_items.yaml
-  +-> prompt-engineer (level 1)  -> delegation_prompts.yaml
+  +-> prompt-engineer (level 1)  -> delegation_prompts.yaml (optional, skipped by adaptive pipeline)
   +-> controller (level 1)
        +-> executor (level 2)   -> implementation
        +-> reviewer (level 2)   -> review_report.yaml
   +-> validator (level 1)       -> validation_report.yaml (PASS/FAIL/REVISE)
 ```
 
-V9.23: `/run` is now a config-driven state machine reading `pipeline_config.yaml`. Each enrichment agent runs sequentially at level 1. Controllers spawn executors and reviewers at level 2 with revision loops (max 3 internal rounds). The validator outputs PASS/FAIL/REVISE to drive revision routing (max 5 total cycles). A new `prompt-engineer` agent crafts optimized delegation prompts between decomposition and controller execution.
+V9.23: `/run` is now a config-driven state machine reading `pipeline_config.yaml`. Each enrichment agent runs sequentially at level 1. Controllers spawn executors and reviewers at level 2 with revision loops (max 3 internal rounds). The validator outputs PASS/FAIL/REVISE to drive revision routing (max 5 total cycles). The `prompt-engineer` agent crafts optimized delegation prompts between decomposition and controller execution, but is routinely skipped by the adaptive pipeline for tier 2 fast path (see V9.27 adaptive pipeline).
 
-**Enrichment Agents** (level 1): orchestrator, planner, decomposer, prompt-engineer
+**Enrichment Agents** (level 1): orchestrator, planner, decomposer, prompt-engineer (optional)
 **Coordination Agents** (level 1, ONLY coordinate): controllers (engineering-manager, architect, etc.)
 **Execution Agents** (level 2, DO the work): backend-developer, frontend-developer, copywriter, qa-tester, etc.
 **Review Agents** (level 2, via controller): reviewer evaluates against acceptance criteria
@@ -158,7 +158,7 @@ Workflows proceed automatically through phases WITHOUT asking permission. See `d
 
 **Universal Workflow** (5): `universal-router` (tier 2-4 classification), `universal-planner` (decomposition + controller selection), `universal-executor` (monitor controllers), `universal-validator` (quality gates with PASS/FAIL/REVISE), `universal-self-correct` (adaptive recovery)
 
-**Pipeline** (1): `prompt-engineer` (crafts optimized delegation prompts between decomposer and controller)
+**Pipeline** (1): `prompt-engineer` (crafts optimized delegation prompts between decomposer and controller; optional — skipped by adaptive pipeline for tier 2)
 
 **Task Management** (3): `task-consolidator` (40-88% context reduction), `task-decomposer` (aggressive decomposition), `task-inventory` (CSV-based state, 60-80% savings)
 
@@ -231,8 +231,9 @@ User Request -> /run (state machine loop, reads pipeline_config.yaml)
   INIT -> orchestrator -> enriched_context.yaml
   ORCHESTRATED -> planner -> plan.yaml
   PLANNED -> decomposer -> work_items.yaml
-  DECOMPOSED -> prompt-engineer -> delegation_prompts.yaml
+  DECOMPOSED -> prompt-engineer -> delegation_prompts.yaml (optional, often skipped)
   PROMPTS_READY -> controller -> coordination_log.yaml (with executor+reviewer loops)
+  Note: Adaptive pipeline (V9.27) skips DECOMPOSED->PROMPTS_READY for tier 2, jumping directly to controller.
   COORDINATED -> validator -> validation_report.yaml
   VALIDATED -> Complete
   FAIL -> back to PROMPTS_READY (re-run controller, max 5 cycles)
@@ -316,7 +317,7 @@ CEO inline logic (`context: none`) with dependency-ordered C-suite analysis via 
 Skill: `.claude/skills/org/SKILL.md` + `reference/`
 
 ### /run - Event-Driven Pipeline Engine (V9.23, V9.27)
-State machine loop reading pipeline_config.yaml. Sequential enrichment (orchestrator, planner, decomposer, prompt-engineer), nested execution (controller + executor + reviewer), revision routing (FAIL/REVISE). V9.27: Adaptive pipeline (tier 2 fast path skips 3 agents), domain/tier confirmation display, execution analytics (`--analytics`).
+State machine loop reading pipeline_config.yaml. Sequential enrichment (orchestrator, planner, decomposer, prompt-engineer — prompt-engineer is optional), nested execution (controller + executor + reviewer), revision routing (FAIL/REVISE). V9.27: Adaptive pipeline (tier 2 fast path skips prompt-engineer and other enrichment agents), domain/tier confirmation display, execution analytics (`--analytics`). In practice, `delegation_prompts.yaml` is only produced when prompt-engineer runs; controllers fall back to standard prompts when it is skipped.
 ```bash
 /run Fix auth bug              # -> Engineering (tier 2: engineering-manager)
 /run Write fantasy story       # -> Creative (tier 2: narrative-director)
@@ -478,7 +479,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 685 Vitest tests (hooks + config validation)
-**Version**: 10.25.0
+**Version**: 10.25.1
 
 ## Troubleshooting
 

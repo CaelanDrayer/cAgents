@@ -12,7 +12,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findActiveSession, TERMINAL_STATES, extractYamlValue, safeRead, countPattern, ensureDir, PROJECT_ROOT, AGENT_MEMORY_DIR, withFileLock } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, findMostRecentSessionDir, TERMINAL_STATES, extractYamlValue, safeRead, countPattern, ensureDir, PROJECT_ROOT, AGENT_MEMORY_DIR, withFileLock } = require('./hook-utils.cjs');
 
 /**
  * Extract the most recent entered_at timestamp from state_history in status.yaml.
@@ -185,10 +185,22 @@ function applyValidatedToCompleteTransition(sessionDir) {
 
     // (b) Append a new state_history entry for 'complete'.
     //     Insert before the end of the state_history block (before the next top-level key or EOF).
+    //     Compute duration_ms from the previous state's entered_at to avoid leaving null.
+    let completeDurationMs = 0;
+    const allEnteredAts = content.match(/entered_at:\s*"([^"]+)"/g);
+    if (allEnteredAts && allEnteredAts.length > 0) {
+      const lastEnteredAtMatch = allEnteredAts[allEnteredAts.length - 1].match(/entered_at:\s*"([^"]+)"/);
+      if (lastEnteredAtMatch) {
+        const prevMs = new Date(lastEnteredAtMatch[1]).getTime();
+        if (!isNaN(prevMs) && prevMs > 0) {
+          completeDurationMs = Math.max(0, now.getTime() - prevMs);
+        }
+      }
+    }
     const completeEntry =
       `  - state: complete\n` +
       `    entered_at: "${nowISO}"\n` +
-      `    duration_ms: null`;
+      `    duration_ms: ${completeDurationMs}`;
 
     // Strategy: find the last state_history entry's duration_ms line and append after it.
     // The last duration_ms line in state_history is the one we just patched (or the last one).
@@ -271,7 +283,36 @@ function verifyCompletion(sessionDir) {
     }
   }
 
-  // 2. Delegation violation check (V10.22.6)
+  // 2. Coordination log presence enforcement (F-01)
+  // If plan.yaml exists (indicating a /run or /team session with a planning phase),
+  // and the session has progressed past coordinating, coordination_log.yaml MUST exist.
+  // Skip this check for /org and /review sessions which don't use plan.yaml.
+  const planFile = path.join(sessionDir, 'workflow', 'plan.yaml');
+  const hasPlan = fs.existsSync(planFile);
+  if (hasPlan) {
+    const coordLogForEnforcement = path.join(sessionDir, 'workflow', 'coordination_log.yaml');
+    const hasCoordLog = fs.existsSync(coordLogForEnforcement);
+    if (!hasCoordLog) {
+      // Only enforce if we're past the coordinating phase
+      const postCoordinatingStates = [
+        'executing', 'EXECUTED', 'validating', 'VALIDATED',
+        'coordinated', 'COORDINATED', 'completed', 'complete', 'COMPLETE',
+        'failed', 'aborted'
+      ];
+      const currentStateForCoord = statusContent
+        ? (extractYamlValue(statusContent, 'pipeline_state') || extractYamlValue(statusContent, 'phase') || extractYamlValue(statusContent, 'current_phase'))
+        : null;
+      if (currentStateForCoord && postCoordinatingStates.includes(currentStateForCoord)) {
+        issues.push(
+          `coordination_log.yaml is missing but plan.yaml exists and session is in '${currentStateForCoord}' state. ` +
+          `Controllers MUST write coordination_log.yaml to document their decision-making. ` +
+          `Without it, the controller's work is unauditable.`
+        );
+      }
+    }
+  }
+
+  // 3. Delegation violation check (V10.22.6)
   // If the session stopped in a pre-COORDINATED state with no agent_tree.yaml
   // child entries (depth 0), flag it as a delegation violation.
   // This detects self-handling bypasses: the model stopped without spawning any agents.
@@ -311,7 +352,7 @@ function verifyCompletion(sessionDir) {
     }
   }
 
-  // 3. Sentinel Gate Factchecking (V10.17.0)
+  // 4. Sentinel Gate Factchecking (V10.17.0)
   // Verify that claimed deliverables actually exist on disk.
   const coordFileForSentinel = path.join(sessionDir, 'workflow', 'coordination_log.yaml');
   const coordForSentinel = safeRead(coordFileForSentinel);
@@ -366,8 +407,8 @@ function verifyCompletion(sessionDir) {
     }
   }
 
-  // 4. Check coordination_log.yaml for work item completion
-  // (renumbered from 2 after sentinel gate insertion, then from 3 after delegation check)
+  // 5. Check coordination_log.yaml for work item completion
+  // (renumbered from 2 after sentinel gate insertion, then from 3 after delegation check, then from 4 after coord_log enforcement)
   // For /org sessions, also check integration_report.yaml and per-domain coordination logs
   const coordFile = path.join(sessionDir, 'workflow', 'coordination_log.yaml');
   let coordContent = safeRead(coordFile);
@@ -390,7 +431,7 @@ function verifyCompletion(sessionDir) {
     if (emptyEvidence > 0) warnings.push(`${emptyEvidence} work item(s) missing completion evidence`);
   }
 
-  // 4. Check validation report (only if session reached a state where validation is expected)
+  // 6. Check validation report (only if session reached a state where validation is expected)
   const validationFile = path.join(sessionDir, 'workflow', 'validation_report.yaml');
   const valContent = safeRead(validationFile);
   // Only warn about missing validation if the session has a status.yaml indicating
@@ -408,7 +449,7 @@ function verifyCompletion(sessionDir) {
     if (status && status !== 'PASS') warnings.push(`Validation status: ${status} (expected: PASS)`);
   }
 
-  // 5. Check execution_summary.yaml exists (REQ-012)
+  // 7. Check execution_summary.yaml exists (REQ-012)
   // /run SKILL.md Step 4 item 3 mandates this file even on failure or interruption.
   if (shouldHaveValidation && !fs.existsSync(path.join(sessionDir, 'workflow', 'execution_summary.yaml'))) {
     warnings.push('Missing workflow/execution_summary.yaml (required at pipeline completion per /run Step 4)');
@@ -418,7 +459,7 @@ function verifyCompletion(sessionDir) {
   // V10.23.0 Enhanced Validation Checks (A through E)
   // These checks add deeper validation without blocking — warnings only.
   // ====================================================================
-  let totalChecks = 5; // Base checks (1-5 above)
+  let totalChecks = 7; // Base checks (1-7 above, including coord_log enforcement)
   const coordLogPath = path.join(sessionDir, 'workflow', 'coordination_log.yaml');
   const coordLogContent = safeRead(coordLogPath);
 
@@ -562,7 +603,16 @@ createHook('VerifyCompletion', async (input) => {
     return null;
   }
 
-  const sessionDir = findActiveSession(input.session_id);
+  let sessionDir = findActiveSession(input.session_id);
+  // Fallback: the session may already be in a terminal state (skill wrote 'complete'
+  // before stopping), so findActiveSession skips it. Use findMostRecentSessionDir
+  // with includeTerminal to find recently-completed sessions for lifecycle finalization.
+  if (!sessionDir) {
+    sessionDir = findMostRecentSessionDir({ includeTerminal: true });
+    if (sessionDir) {
+      console.error(`[VerifyCompletion] findActiveSession returned null, using terminal-inclusive fallback: ${path.basename(sessionDir)}`);
+    }
+  }
   if (!sessionDir) return null;
 
   // Skip stale sessions (>24h old) - they're abandoned, not actively running

@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.25.0"
+  version: "10.25.1"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--analytics] [--from-review] [--from-designer]"
   user-invocable: "true"
   context: "none"
@@ -13,6 +13,8 @@ allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
 ---
 
 # /run - Event-Driven Pipeline Engine
+
+**Current timestamp**: !`date -u +%Y-%m-%dT%H:%M:%SZ`
 
 You are the **event-driven pipeline engine** that executes a state machine loop, spawning agents sequentially at level 1 based on `pipeline_config.yaml`. Controllers spawn executors and reviewers at level 2. Revision loops at both levels ensure quality. This replaces the previous fixed 6-step workflow with a config-driven state machine.
 
@@ -182,6 +184,8 @@ state_history:
     entered_at: "{ISO_TIMESTAMP}"
     duration_ms: null
 ```
+
+**CRITICAL: `{ISO_TIMESTAMP}` must be the REAL current time.** Use the timestamp from "Current timestamp" at the top of this document, or run `date -u +%Y-%m-%dT%H:%M:%SZ` via Bash. NEVER fabricate timestamps like `T00:00:00Z` or `T12:00:00Z` — these are detectable fakes that break session timeline analysis.
 
 Note: /run uses the `pipeline_state` field (not `phase`). Hooks check both fields as fallback. See @reference/session-schema.md for the canonical session YAML contract.
 

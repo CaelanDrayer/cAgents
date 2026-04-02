@@ -10,7 +10,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findTeamSession, safeRead, countPattern, ensureDir, getTimestampSlug, parseTaskList, areDependenciesMet } = require('./hook-utils.cjs');
+const { createHook, findTeamSession, safeRead, countPattern, ensureDir, getTimestampSlug, parseTaskList, areDependenciesMet, withFileLock } = require('./hook-utils.cjs');
 
 function extractWorkItemId(input) {
   // Primary: use task_id directly from official TaskCompleted schema
@@ -40,35 +40,74 @@ createHook('TeamTaskComplete', async (input) => {
 
   const memberName = input.teammate_name || (input.tool_input?.subagent_type || '').split(':').pop() || 'unknown';
   const taskListFile = path.join(sessionDir, 'team', 'task_list.yaml');
-  let content = safeRead(taskListFile);
-  if (!content) return null;
-
-  // Update work item status
-  const escapedId = workItemId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const itemPattern = new RegExp(`(- id:\\s*["']?${escapedId}["']?[\\s\\S]*?status:\\s*)\\w+`, 'i');
-  if (!itemPattern.test(content)) return null;
-
+  const taskSubject = input.task_subject || workItemId;
   const now = new Date().toISOString();
-  content = content.replace(itemPattern, '$1completed');
 
-  // Update completed_at
-  const completedAtPattern = new RegExp(`(- id:\\s*["']?${escapedId}["']?[\\s\\S]*?completed_at:\\s*)(?:null|"[^"]*")`, 'i');
-  content = content.replace(completedAtPattern, `$1"${now}"`);
+  // Persist task completion to session task_list.yaml with file lock for concurrent safety
+  let completedCount = 0;
+  let totalCount = 0;
 
-  // Update summary counts
-  const completedCount = countPattern(content, /status:\s*completed/gi);
-  const inProgressCount = countPattern(content, /status:\s*in_progress/gi);
-  const availableCount = countPattern(content, /status:\s*available/gi);
-  const pendingCount = countPattern(content, /status:\s*pending/gi);
-  const blockedCount = countPattern(content, /status:\s*blocked/gi);
-  const totalCount = completedCount + inProgressCount + availableCount + pendingCount + blockedCount;
+  withFileLock(taskListFile, () => {
+    let content = safeRead(taskListFile);
 
-  content = content.replace(/completed:\s*\d+/, `completed: ${completedCount}`);
-  content = content.replace(/in_progress:\s*\d+/, `in_progress: ${inProgressCount}`);
-  content = content.replace(/available:\s*\d+/, `available: ${availableCount}`);
-  content = content.replace(/updated_at:\s*"[^"]+"/, `updated_at: "${now}"`);
+    if (!content) {
+      // File doesn't exist — create it with header and first completion entry
+      ensureDir(path.join(sessionDir, 'team'));
+      content = [
+        '# Task List',
+        'summary:',
+        '  total: 1',
+        '  completed: 1',
+        '  in_progress: 0',
+        '  available: 0',
+        `  updated_at: "${now}"`,
+        '',
+        'completions:',
+        `  - task_id: "${workItemId}"`,
+        `    subject: "${taskSubject}"`,
+        '    status: completed',
+        `    completed_at: "${now}"`,
+        ''
+      ].join('\n');
+      fs.writeFileSync(taskListFile, content);
+      completedCount = 1;
+      totalCount = 1;
+      return;
+    }
 
-  fs.writeFileSync(taskListFile, content);
+    // Try to update existing entry in structured items list
+    const escapedId = workItemId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const itemPattern = new RegExp(`(- id:\\s*["']?${escapedId}["']?[\\s\\S]*?status:\\s*)\\w+`, 'i');
+
+    if (itemPattern.test(content)) {
+      // Update existing entry status
+      content = content.replace(itemPattern, '$1completed');
+      const completedAtPattern = new RegExp(`(- id:\\s*["']?${escapedId}["']?[\\s\\S]*?completed_at:\\s*)(?:null|"[^"]*")`, 'i');
+      content = content.replace(completedAtPattern, `$1"${now}"`);
+    } else {
+      // Entry not found in structured list — append to completions section
+      if (content.includes('completions:')) {
+        content = content.replace(/(completions:\n)/, `$1  - task_id: "${workItemId}"\n    subject: "${taskSubject}"\n    status: completed\n    completed_at: "${now}"\n`);
+      } else {
+        content += `\ncompletions:\n  - task_id: "${workItemId}"\n    subject: "${taskSubject}"\n    status: completed\n    completed_at: "${now}"\n`;
+      }
+    }
+
+    // Update summary counts
+    completedCount = countPattern(content, /status:\s*completed/gi);
+    const inProgressCount = countPattern(content, /status:\s*in_progress/gi);
+    const availableCount = countPattern(content, /status:\s*available/gi);
+    const pendingCount = countPattern(content, /status:\s*pending/gi);
+    const blockedCount = countPattern(content, /status:\s*blocked/gi);
+    totalCount = completedCount + inProgressCount + availableCount + pendingCount + blockedCount;
+
+    content = content.replace(/completed:\s*\d+/, `completed: ${completedCount}`);
+    content = content.replace(/in_progress:\s*\d+/, `in_progress: ${inProgressCount}`);
+    content = content.replace(/available:\s*\d+/, `available: ${availableCount}`);
+    content = content.replace(/updated_at:\s*"[^"]+"/, `updated_at: "${now}"`);
+
+    fs.writeFileSync(taskListFile, content);
+  });
 
   // Record completion message
   const messagesDir = ensureDir(path.join(sessionDir, 'team', 'messages'));

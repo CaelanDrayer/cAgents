@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.25.0"
+  version: "10.25.1"
   argument-hint: "[<target>] [--type <type>] [--dry-run] [--interactive] [--rollback]"
   user-invocable: "true"
   context: "fork"
@@ -13,6 +13,8 @@ allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
 ---
 
 # /optimize - Universal Optimizer
+
+**Current timestamp**: !`date -u +%Y-%m-%dT%H:%M:%SZ`
 
 You are the **Universal Optimizer** - a state-machine-driven optimization engine that detects opportunities, analyzes impact, plans approach, executes changes atomically, and validates results with revision routing.
 

@@ -71,6 +71,8 @@ When `teammateMode: "tmux"` is configured:
 - True visual parallelism -- watch all agents work at once
 - Claude Code manages the panes automatically
 
+> **tmux required**: Install with `brew install tmux` (macOS) or `sudo apt install tmux` (Ubuntu/Debian). See the [tmux wiki](https://github.com/tmux/tmux/wiki) for full documentation.
+
 ### Teammates Spawn Controllers Directly
 Every team member spawns its assigned controller directly via Task tool:
 - The team lead assigns a controller per work item during decomposition

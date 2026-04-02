@@ -24,12 +24,25 @@ createHook('PostCompactRestore', async (input) => {
 
   // Read plan.yaml for mission and domain
   const planContent = safeRead(path.join(sessionDir, 'workflow', 'plan.yaml'));
+
+  // Fallback: read strategic_brief.yaml for org/review sessions that lack plan.yaml
+  let briefContent = null;
+  if (!planContent) {
+    briefContent = safeRead(path.join(sessionDir, 'workflow', 'strategic_brief.yaml'))
+      || safeRead(path.join(sessionDir, 'strategic_brief.yaml'));
+  }
+  function extractBriefField(content, key) {
+    const regex = new RegExp(`^\\s+${key}:\\s*["']?([^"'\\n]+)["']?`, 'm');
+    const match = content.match(regex);
+    return match ? match[1].trim() : null;
+  }
+
   const mission = planContent
     ? (extractYamlValue(planContent, 'mission') || extractYamlValue(planContent, 'request') || null)
-    : null;
+    : (briefContent ? extractBriefField(briefContent, 'mission') : null);
   const domain = planContent
     ? (extractYamlValue(planContent, 'domain') || extractYamlValue(planContent, 'super_domain') || null)
-    : null;
+    : (briefContent ? (extractBriefField(briefContent, 'domain') || extractBriefField(briefContent, 'super_domain')) : null);
 
   // Read status.yaml for current phase
   const statusContent = safeRead(path.join(sessionDir, 'status.yaml'));
@@ -77,7 +90,7 @@ createHook('PostCompactRestore', async (input) => {
     }
   }
 
-  lines.push('Resume from current phase. Read plan.yaml + coordination_log.yaml if context is needed.');
+  lines.push(`Resume from current phase. Read ${planContent ? 'plan.yaml' : 'strategic_brief.yaml'} + coordination_log.yaml if context is needed.`);
 
   return {
     continue: true,

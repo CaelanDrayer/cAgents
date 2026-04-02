@@ -15,7 +15,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findActiveSession, ensureDir, safeRead, AGENT_MEMORY_DIR, PROJECT_ROOT, withFileLock } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, ensureDir, safeRead, extractYamlValue, AGENT_MEMORY_DIR, PROJECT_ROOT, withFileLock, updateStatusHeartbeat } = require('./hook-utils.cjs');
 
 // Auto-format detection cache (v10.6.0)
 let _formatterCache = null;
@@ -182,6 +182,49 @@ createHook('PostWriteValidator', async (input) => {
     }
   }
 
+  // Auto-generate event files on status.yaml state transitions (v10.25.0)
+  if (basename === 'status.yaml') {
+    const statusContent = safeRead(filePath);
+    if (statusContent) {
+      const pipelineState = extractYamlValue(statusContent, 'pipeline_state')
+        || extractYamlValue(statusContent, 'phase');
+      if (pipelineState) {
+        // Derive the session dir from the status.yaml path (it lives at {sessionDir}/status.yaml)
+        const statusSessionDir = path.dirname(filePath);
+        const eventsDir = path.join(statusSessionDir, 'workflow', 'events');
+        try {
+          // Check for existing event file for this state to avoid duplicates
+          let alreadyExists = false;
+          if (fs.existsSync(eventsDir)) {
+            const existing = fs.readdirSync(eventsDir);
+            alreadyExists = existing.some(f => f.startsWith(`EVT-${pipelineState}_`));
+          }
+          if (!alreadyExists) {
+            ensureDir(eventsDir);
+            const now = new Date().toISOString();
+            const safeTimestamp = now.replace(/[:.]/g, '-');
+            const eventFileName = `EVT-${pipelineState}_${safeTimestamp}.yaml`;
+            const eventContent = [
+              `event_id: EVT-${pipelineState}`,
+              `type: state_transition`,
+              `state: ${pipelineState}`,
+              `agent: auto-generated`,
+              `timestamp: "${now}"`,
+              ''
+            ].join('\n');
+            fs.writeFileSync(path.join(eventsDir, eventFileName), eventContent);
+          }
+        } catch { /* best effort - don't block on event file failures */ }
+      }
+
+      // Update heartbeat timestamp for stuck session detection
+      try {
+        const statusSessionDir = path.dirname(filePath);
+        updateStatusHeartbeat(statusSessionDir);
+      } catch { /* best effort */ }
+    }
+  }
+
   // Log to session audit trail
   const sessionDir = findActiveSession(input.session_id);
   if (sessionDir) {
@@ -194,7 +237,7 @@ createHook('PostWriteValidator', async (input) => {
       const line = JSON.stringify({
         timestamp: now,
         tool: toolName,
-        status: status === 'OK' ? 'success' : status === 'WARN' ? 'success' : 'failure',
+        status: status === 'OK' ? 'success' : status === 'WARN' ? 'warn' : 'failure',
         file_path: filePath
       }) + '\n';
       withFileLock(auditFile, () => { fs.appendFileSync(auditFile, line); });

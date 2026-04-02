@@ -15,6 +15,8 @@ allowed-tools: Read, Grep, Glob, Write, Bash, TodoWrite, AskUserQuestion
 
 # /context - Shared Product Context Manager
 
+**Current timestamp**: !`date -u +%Y-%m-%dT%H:%M:%SZ`
+
 Manage persistent product context documents that enrich all cAgents workflows with project-specific knowledge.
 
 ## Purpose

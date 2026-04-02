@@ -157,6 +157,38 @@ items:
     expect(result.systemMessage).toContain('1/3');
   });
 
+  it('should create task_list.yaml when file does not exist', () => {
+    // Remove the task_list.yaml file
+    rmSync(join(SESSION_DIR, 'team', 'task_list.yaml'));
+    const result = runHook({ session_id: TEST_SESSION, task_subject: 'WI-01 done', teammate_name: 'w1' });
+    // File should be created
+    expect(existsSync(join(SESSION_DIR, 'team', 'task_list.yaml'))).toBe(true);
+    const content = readFileSync(join(SESSION_DIR, 'team', 'task_list.yaml'), 'utf8');
+    expect(content).toContain('task_id: "WI-01"');
+    expect(content).toContain('status: completed');
+    expect(content).toContain('completed_at:');
+    expect(content).toContain('subject:');
+    // With only 1 item total and it's completed, hook signals stop
+    expect(result.continue).toBe(false);
+    expect(result.stopReason).toContain('1/1');
+  });
+
+  it('should append to completions when entry not in structured list', () => {
+    // WI-99 is not in the task list
+    const result = runHook({ session_id: TEST_SESSION, task_subject: 'WI-99 done', teammate_name: 'w1' });
+    const content = readFileSync(join(SESSION_DIR, 'team', 'task_list.yaml'), 'utf8');
+    expect(content).toContain('task_id: "WI-99"');
+    expect(content).toContain('status: completed');
+    expect(content).toContain('completions:');
+  });
+
+  it('should persist task_subject in task_list.yaml', () => {
+    rmSync(join(SESSION_DIR, 'team', 'task_list.yaml'));
+    runHook({ session_id: TEST_SESSION, task_subject: 'WI-01 Implement auth module', teammate_name: 'w1' });
+    const content = readFileSync(join(SESSION_DIR, 'team', 'task_list.yaml'), 'utf8');
+    expect(content).toContain('subject: "WI-01 Implement auth module"');
+  });
+
   it('should handle special characters in task IDs', () => {
     // Use a task list with a special-char ID
     const specialContent = TASK_LIST_CONTENT.replace('"WI-01"', '"WI-01.a"')

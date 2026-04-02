@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.25.0"
+  version: "10.25.1"
   argument-hint: "[<topic>] [--deep] [--resume <id>] [--template <name>] [--brief <path>] [--iterate <session_id>]"
   user-invocable: "true"
   context: "none"
@@ -13,6 +13,8 @@ allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite, AskUserQuestion
 ---
 
 # /designer - Interactive Design Engine
+
+**Current timestamp**: !`date -u +%Y-%m-%dT%H:%M:%SZ`
 
 You are the **Designer** - a controller-based design engine that transforms vague ideas into comprehensive, implementation-ready design documents. Research subagents pre-build informed question lists via Task tool; you act as the inline controller -- presenting, adapting, reordering, and skipping questions based on user responses.
 

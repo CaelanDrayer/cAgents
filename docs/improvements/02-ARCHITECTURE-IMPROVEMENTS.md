@@ -31,7 +31,7 @@ Structural and systemic improvements to cAgents' pipeline, memory, coordination,
   5. Load relevant knowledge during orchestrator enrichment phase using tag-based lookup
   6. Start simple (file-based YAML) before investing in database-backed storage
 
-### 2. Searchable Memory Kernel (SQLite + FTS5)
+### 2. Searchable Memory Kernel ([SQLite](https://sqlite.org/) + FTS5)
 
 - **Source repo(s)**: purple-directive-violet, claude-mem
 - **Priority**: P1 (high)
@@ -41,7 +41,7 @@ Structural and systemic improvements to cAgents' pipeline, memory, coordination,
 - **Implementation notes**:
   - Short-term: Add an index file to `_knowledge/` with tagged summaries that agents can grep
   - Medium-term: Build a lightweight SQLite store (zero external dependencies, built-in Node.js sqlite3 or better-sqlite3)
-  - Long-term: Consider an MCP memory server for remote access and multi-machine sharing
+  - Long-term: Consider an [MCP](https://modelcontextprotocol.io/) memory server for remote access and multi-machine sharing
   - The compiler pattern from purple-directive (extract -> classify -> embed -> store) could run as a SessionEnd hook
 
 ### 3. Project-Level Persistent Memory

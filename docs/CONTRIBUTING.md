@@ -2,6 +2,8 @@
 
 ## Getting Started
 
+**Prerequisites:** You'll need [Node.js](https://nodejs.org/) and [npm](https://docs.npmjs.com/) installed.
+
 ```bash
 git clone <repo>
 cd cAgents

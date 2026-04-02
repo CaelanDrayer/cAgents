@@ -123,7 +123,53 @@ function inferParentAgent(sessionDir, subagentType, agentId) {
     }
   }
 
-  return 'root';
+  // Strategy 4: Use status.yaml phase and known agent names to infer parent role
+  // Known enrichment agents are pipeline-level (parent = 'pipeline')
+  const ENRICHMENT_AGENTS = ['orchestrator', 'planner', 'decomposer', 'prompt-engineer', 'validator',
+    'universal-planner', 'universal-router', 'universal-validator', 'universal-executor', 'universal-self-correct'];
+  const agentBaseName = subagentType.replace(/^cagents:/, '');
+  if (ENRICHMENT_AGENTS.includes(agentBaseName)) {
+    return 'pipeline';
+  }
+
+  // Check status.yaml phase/pipeline_state to infer role context
+  const statusFile = path.join(sessionDir, 'status.yaml');
+  const statusContent = safeRead(statusFile);
+  if (statusContent) {
+    const phaseMatch = statusContent.match(/(?:phase|pipeline_state):\s*["']?([^"'\n]+)["']?/);
+    if (phaseMatch) {
+      const phase = phaseMatch[1].trim().toUpperCase();
+      // Early pipeline phases: agent is likely an enrichment agent, parent = 'pipeline'
+      if (['INIT', 'ORCHESTRATED', 'PLANNED', 'DECOMPOSED', 'PROMPTS_READY'].includes(phase)) {
+        return 'pipeline';
+      }
+      // Execution phases: agent is likely spawned by a controller
+      if (['COORDINATED', 'COORDINATING', 'EXECUTING'].includes(phase)) {
+        // Try to find the most recent controller from agent_tree
+        const treeFile = path.join(sessionDir, 'workflow', 'agent_tree.yaml');
+        const treeContent = safeRead(treeFile);
+        if (treeContent) {
+          // Find the last agent with a controller-like cagents_type
+          const controllerMatches = [...treeContent.matchAll(/id:\s*["']?([^"'\n]+)["']?[\s\S]*?cagents_type:\s*["']?cagents:([^"'\n]+)["']?/g)];
+          const CONTROLLER_NAMES = ['engineering-manager', 'architect', 'narrative-director', 'story-architect',
+            'operations-manager', 'product-owner', 'strategic-planner', 'marketing-strategist', 'campaign-manager',
+            'hr-manager', 'talent-acquisition-manager', 'customer-success-manager', 'general-counsel',
+            'support-director', 'compliance-officer'];
+          for (let i = controllerMatches.length - 1; i >= 0; i--) {
+            const matchedName = controllerMatches[i][2].trim();
+            if (CONTROLLER_NAMES.includes(matchedName)) {
+              return controllerMatches[i][1].trim();
+            }
+          }
+          // No known controller found, but we're in execution phase — use 'controller' as generic parent
+          return 'controller';
+        }
+      }
+    }
+  }
+
+  // Default: most agents are pipeline agents, 'pipeline' is more accurate than 'root'
+  return 'pipeline';
 }
 
 createHook('SubagentTracker', async (input) => {
@@ -133,6 +179,12 @@ createHook('SubagentTracker', async (input) => {
   const subagentType = input.agent_type || 'unknown';
   const agentId = input.agent_id || `agent_${Date.now()}`;
   const now = new Date().toISOString();
+
+  // Filter out test agents (test_* IDs) to prevent polluting real session agent trees
+  if (/^test_/.test(agentId)) {
+    console.error(`[SubagentTracker] Skipping test agent: ${agentId}`);
+    return null;
+  }
 
   // Try to find active session, with fallback to most-recent-modified
   let sessionDir = findActiveSession(input.session_id);
@@ -304,10 +356,17 @@ createHook('SubagentTracker', async (input) => {
 
   // Return context injection with agent info (cagents_type is now auto-populated at spawn time via PC-01)
   const roleInfo = cagentsType ? ` (${shortRole})` : '';
+  // F-15: Only ask for self-registration when cagents_type was NOT already captured by the hook.
+  // When the hook already wrote cagents_type (from subagent_type param or description parsing),
+  // asking the agent to self-register causes duplicate cagents_type fields in agent_tree.yaml
+  // because the hook writes structured YAML but self-registration appends raw YAML lines.
+  const selfRegisterPrompt = cagentsType
+    ? '' // Already captured — do NOT ask for self-registration
+    : ` IMPORTANT: If you are a cAgents agent (spawned with subagent_type "cagents:{name}"), self-register by appending your cagents agent name to ${treeFile} using this format:\n    cagents_type: "cagents:{your-name}"\n    role_description: "{what you are doing}"\nAppend these two lines after the last spawned_at line for your agent_id "${agentId}". WARNING: First check if your entry already has a cagents_type field — if it does, do NOT add another one.`;
   return {
     hookSpecificOutput: {
       hookEventName: 'SubagentStart',
-      additionalContext: `Agent tree: ${total} agents spawned in session ${path.basename(sessionDir)} (latest: ${subagentType}${roleInfo}, id: ${agentId}, depth: ${depth}). IMPORTANT: If you are a cAgents agent (spawned with subagent_type "cagents:{name}"), self-register by appending your cagents agent name to ${treeFile} using this format:\n    cagents_type: "cagents:{your-name}"\n    role_description: "{what you are doing}"\nAppend these two lines after the last spawned_at line for your agent_id "${agentId}".`
+      additionalContext: `Agent tree: ${total} agents spawned in session ${path.basename(sessionDir)} (latest: ${subagentType}${roleInfo}, id: ${agentId}, depth: ${depth}).${selfRegisterPrompt}`
     }
   };
 });

@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "cagents",
-  "version": "10.25.0",
+  "version": "10.25.1",
   "description": "Universal multi-domain agent orchestration framework. 262 specialized agents across 15 domains, coordinated by an intelligent pipeline. 9 skills: /run routes any task through controller + specialist agents, /team runs parallel agent waves, /org coordinates cross-domain strategy, /designer guides design exploration, /review audits quality, /optimize improves performance, /helper guides usage, /context shares knowledge, /debug diagnoses bugs.",
   "author": {
     "name": "CaelanDrayer",

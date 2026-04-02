@@ -76,7 +76,7 @@ session_id: "{SESSION_ID}"           # REQUIRED: Unique session identifier
 session_type: run|org|team|designer|optimize|review|debug  # REQUIRED: Skill type
 command: /run|/org|/team|/designer|/optimize|/review|/debug  # REQUIRED: Skill command
 request: "{user_request}"            # REQUIRED: Original user request text
-created_at: "{ISO_TIMESTAMP}"        # REQUIRED: ISO 8601 timestamp
+created_at: "{ISO_TIMESTAMP}"        # REQUIRED: ISO 8601 timestamp — use `date -u +%Y-%m-%dT%H:%M:%SZ` or the injected "Current timestamp", NEVER fabricate
 flags: {parsed_flags}                # REQUIRED: Object of parsed CLI flags
 parent_session_id: "{id}" | null     # REQUIRED: Parent session if nested, null otherwise
 issue_id: "{issue_id}" | null        # OPTIONAL: AgentPath issue ID (set from AGENTPATH_ISSUE_ID env var by session-catchup.cjs)
@@ -148,7 +148,7 @@ state_history:                       # REQUIRED: Ordered list of state transitio
 - `workflow/enriched_context.yaml` - Orchestrator output
 - `workflow/plan.yaml` - Planner output with objectives, controller assignment
 - `workflow/work_items.yaml` - Decomposer output
-- `workflow/delegation_prompts.yaml` - Prompt-engineer output (aspirational — may not exist in all sessions)
+- `workflow/delegation_prompts.yaml` - Prompt-engineer output (optional — routinely skipped by adaptive pipeline for tier 2; only present when prompt-engineer runs)
 - `workflow/coordination_log.yaml` - Controller coordination record (MUST include `schema_version: "1"`, `implementation_tasks[].agent_id` linking to agent_tree.yaml)
 - `workflow/validation_report.yaml` - Validator output (PASS/FAIL/REVISE)
 - `workflow/execution_summary.yaml` - **ALWAYS written** by /run, even on failure/interruption

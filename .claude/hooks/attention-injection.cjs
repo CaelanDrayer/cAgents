@@ -145,15 +145,41 @@ createHook('AttentionInjection', async (input) => {
   // Check if session has a plan.yaml (active pipeline)
   const planPath = path.join(sessionDir, 'workflow', 'plan.yaml');
   const planContent = safeRead(planPath);
-  if (!planContent) return null;
+
+  // Fallback: read strategic_brief.yaml for org/review sessions that lack plan.yaml
+  let briefContent = null;
+  if (!planContent) {
+    briefContent = safeRead(path.join(sessionDir, 'workflow', 'strategic_brief.yaml'))
+      || safeRead(path.join(sessionDir, 'strategic_brief.yaml'));
+    if (!briefContent) return null;
+  }
+
+  // Helper to extract indented fields from strategic_brief.yaml
+  function extractBriefField(content, key) {
+    const regex = new RegExp(`^\\s+${key}:\\s*["']?([^"'\\n]+)["']?`, 'm');
+    const match = content.match(regex);
+    return match ? match[1].trim() : null;
+  }
 
   // Extract key fields — sanitize to prevent control char injection, cap at 200 chars each
-  const mission = sanitizeField(extractYamlValue(planContent, 'mission') || extractYamlValue(planContent, 'request'));
-  const domain = sanitizeField(extractYamlValue(planContent, 'domain') || extractYamlValue(planContent, 'super_domain'));
-  const controller = sanitizeField(extractYamlValue(planContent, 'primary') || extractYamlValue(planContent, 'controller'));
+  const mission = sanitizeField(
+    planContent
+      ? (extractYamlValue(planContent, 'mission') || extractYamlValue(planContent, 'request'))
+      : extractBriefField(briefContent, 'mission')
+  );
+  const domain = sanitizeField(
+    planContent
+      ? (extractYamlValue(planContent, 'domain') || extractYamlValue(planContent, 'super_domain'))
+      : extractBriefField(briefContent, 'domain')
+  );
+  const controller = sanitizeField(
+    planContent
+      ? (extractYamlValue(planContent, 'primary') || extractYamlValue(planContent, 'controller'))
+      : extractBriefField(briefContent, 'controller')
+  );
 
   // Build concise goal reminder
-  const planSummary = extractPlanSummary(planContent);
+  const planSummary = planContent ? extractPlanSummary(planContent) : null;
   if (!planSummary && !mission) return null;
 
   let reminder = '[cAgents Goal Refresh]';

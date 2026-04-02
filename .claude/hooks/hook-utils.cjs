@@ -369,7 +369,8 @@ function findTeamSession(input = {}) {
  * GAP-4 fix: exported from hook-utils.cjs so start and stop trackers share
  * the same implementation, guaranteeing events land in the same agent_tree.yaml.
  */
-function findMostRecentSessionDir() {
+function findMostRecentSessionDir(options) {
+  const includeTerminal = options && options.includeTerminal;
   const sessionsDir = path.join(AGENT_MEMORY_DIR, 'sessions');
   if (!fs.existsSync(sessionsDir)) return null;
 
@@ -389,7 +390,7 @@ function findMostRecentSessionDir() {
           // Skip sessions that are clearly completed/aborted
           const statusFile = path.join(fullPath, 'status.yaml');
           const statusContent = safeRead(statusFile);
-          if (statusContent) {
+          if (statusContent && !includeTerminal) {
             const phaseMatch = statusContent.match(/(?:phase|pipeline_state):\s*(\S+)/);
             if (phaseMatch) {
               const phase = phaseMatch[1];
@@ -398,7 +399,7 @@ function findMostRecentSessionDir() {
               }
             }
           }
-          // No status.yaml or non-terminal phase: eligible
+          // No status.yaml or non-terminal phase (or includeTerminal): eligible
           bestMtime = stat.mtimeMs;
           bestDir = fullPath;
         }
@@ -423,12 +424,14 @@ function findMostRecentSessionDir() {
           try {
             const stat = fs.statSync(nestedPath);
             if (stat.mtimeMs > bestMtime) {
-              const statusContent = safeRead(path.join(nestedPath, 'status.yaml'));
-              if (statusContent) {
-                const phaseMatch = statusContent.match(/(?:phase|pipeline_state):\s*(\S+)/);
-                if (phaseMatch) {
-                  const phase = phaseMatch[1];
-                  if (TERMINAL_STATES.includes(phase)) continue;
+              if (!includeTerminal) {
+                const statusContent = safeRead(path.join(nestedPath, 'status.yaml'));
+                if (statusContent) {
+                  const phaseMatch = statusContent.match(/(?:phase|pipeline_state):\s*(\S+)/);
+                  if (phaseMatch) {
+                    const phase = phaseMatch[1];
+                    if (TERMINAL_STATES.includes(phase)) continue;
+                  }
                 }
               }
               bestMtime = stat.mtimeMs;
@@ -827,6 +830,36 @@ function createHook(name, handler) {
   run();
 }
 
+/**
+ * Update last_updated_at heartbeat in a session's status.yaml.
+ * Called by hooks that write/modify status.yaml to enable stuck session detection.
+ *
+ * @param {string} sessionDir - Path to the session directory
+ */
+function updateStatusHeartbeat(sessionDir) {
+  const statusFile = path.join(sessionDir, 'status.yaml');
+  const content = safeRead(statusFile);
+  if (!content) return;
+
+  const now = new Date().toISOString();
+
+  withFileLock(statusFile, () => {
+    // Re-read inside lock for safety
+    let current = safeRead(statusFile);
+    if (!current) return;
+
+    if (current.includes('last_updated_at:')) {
+      // Replace existing value
+      current = current.replace(/^last_updated_at:.*$/m, `last_updated_at: "${now}"`);
+    } else {
+      // Append at the end
+      current = current.trimEnd() + `\nlast_updated_at: "${now}"\n`;
+    }
+
+    fs.writeFileSync(statusFile, current);
+  });
+}
+
 module.exports = {
   PROJECT_ROOT,
   PLUGIN_ROOT,
@@ -856,5 +889,6 @@ module.exports = {
   withFileLock,
   formatError,
   denyWithReason,
-  warnWithReason
+  warnWithReason,
+  updateStatusHeartbeat
 };

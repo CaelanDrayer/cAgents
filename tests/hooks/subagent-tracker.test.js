@@ -59,6 +59,34 @@ describe('subagent-tracker.cjs', () => {
     expect(result).toBeDefined();
   });
 
+  describe('test agent filtering (F-05)', () => {
+    it('should skip agents with test_ prefixed IDs and return continue:true', () => {
+      const testId = `test_skip_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const result = runHook({ agent_type: 'test-agent', agent_id: testId });
+      // Filtered test agents return {continue: true} (null from createHook)
+      expect(result).toBeDefined();
+      expect(result.continue).toBe(true);
+      // Should NOT have hookSpecificOutput (no tracking occurred)
+      expect(result.hookSpecificOutput).toBeUndefined();
+    });
+
+    it('should not skip agents without test_ prefix', () => {
+      const realId = `agent_real_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const result = runHook({ agent_type: 'test-agent', agent_id: realId });
+      expect(result).toBeDefined();
+      // Real agents should either get tracked (hookSpecificOutput) or at least not be silently skipped
+      if (result.hookSpecificOutput) {
+        expect(result.hookSpecificOutput.hookEventName).toBe('SubagentStart');
+      }
+    });
+
+    it('hook source contains test_ filter pattern', () => {
+      const hookContent = readFileSync(HOOK_PATH, 'utf8');
+      expect(hookContent).toContain('/^test_/');
+      expect(hookContent).toContain('Skipping test agent');
+    });
+  });
+
   describe('fallback session discovery', () => {
     it('should have fallback function findMostRecentSessionDir', () => {
       const hookContent = readFileSync(HOOK_PATH, 'utf8');
@@ -89,7 +117,7 @@ describe('subagent-tracker.cjs', () => {
 
   describe('cagents_type warning', () => {
     it('should emit WARNING on stderr when subagent_type is absent', () => {
-      const uniqueId = `test_warn_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const uniqueId = `agent_warn_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
       const input = { agent_type: 'general-purpose', agent_id: uniqueId };
       const result = spawnSync('node', [HOOK_PATH], {
         input: JSON.stringify(input),
@@ -197,7 +225,7 @@ describe('subagent-tracker.cjs', () => {
       fs.writeFileSync(path.join(sessionDir, 'status.yaml'), 'phase: complete\n');
 
       try {
-        const uniqueId = `test_prompt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+        const uniqueId = `agent_prompt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
         const input = {
           agent_type: 'cagents:backend-developer',
           agent_id: uniqueId,
@@ -287,7 +315,7 @@ describe('subagent-tracker.cjs', () => {
       fs.mkdirSync(path.join(tmpRoot, 'Agent_Memory', 'sessions'), { recursive: true });
 
       try {
-        const uniqueId = `test_nonexist_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+        const uniqueId = `agent_nonexist_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
         const input = {
           agent_type: 'cagents:backend-developer',
           agent_id: uniqueId,

@@ -1,6 +1,6 @@
 ---
 name: ai-writing-rewriter
-description: "Use when transforming AI-generated text into natural prose, removing synthetic patterns, injecting human voice, or making generated content indistinguishable from human writing."
+description: "Use when transforming AI-generated text into natural prose, removing synthetic patterns, injecting human voice, making generated content indistinguishable from human writing, improving writing quality, polishing prose, or making content more engaging and natural."
 metadata:
   vibe: Makes AI prose read like a human wrote it on their best day
   tier: execution

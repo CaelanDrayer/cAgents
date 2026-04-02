@@ -436,6 +436,19 @@ The lead synthesizes findings, deduplicates overlapping concerns, and produces a
 
 ---
 
+## External Resources
+
+Key external tools and libraries that cAgents depends on:
+
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) — Anthropic's CLI for Claude, required runtime for cAgents
+- [Node.js](https://nodejs.org/) — JavaScript runtime powering cAgents hooks and scripts
+- [Vitest](https://vitest.dev/) — Test framework used by the cAgents test suite
+- [tmux](https://github.com/tmux/tmux/wiki) — Terminal multiplexer used for team mode split panes
+- [js-yaml](https://github.com/nodeca/js-yaml) — YAML parser used throughout session state management
+- [ajv](https://ajv.js.org/) — JSON Schema validator used for configuration validation
+
+---
+
 ## Version History
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights:

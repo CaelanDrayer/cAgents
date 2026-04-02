@@ -53,6 +53,8 @@ See `agent-memory-reference.md` for full directory structure and session folder 
 
 ## Three-File Pattern (V8.0)
 
+> **Note**: This pattern is aspirational/historical. It was designed as a best practice for context-efficient session tracking but is not enforced or consistently used in practice. Sessions typically rely on `workflow/` artifacts (plan.yaml, coordination_log.yaml) and waypoints instead. Agents MAY use this pattern but are not required to.
+
 Compact session tracking that survives context compaction (60-80% savings vs full logs):
 
 1. **task_plan.md** (500-2000 tokens): Work item breakdown with completion status
@@ -79,4 +81,4 @@ Snapshots created at phase transitions and before context compaction. Types: `ph
 - **Parallel-safe**: Multiple sessions simultaneously
 - **Pause/resume**: Via waypoints
 - **Git-ignored**: Agent_Memory/ excluded from version control
-- **Context-efficient**: Three-file pattern reduces load by 60-80%
+- **Context-efficient**: Workflow artifacts and waypoints provide context recovery; three-file pattern is an optional supplement

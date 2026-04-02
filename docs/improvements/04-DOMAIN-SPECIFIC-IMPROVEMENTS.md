@@ -148,7 +148,7 @@ Improvements targeted at specific cAgents domains and cross-domain capabilities.
 
 ## Business Domain
 
-### 10. SaaS Integration via MCP
+### 10. SaaS Integration via [MCP](https://modelcontextprotocol.io/)
 
 - **Source repo(s)**: awesome-claude-skills, marketingskills
 - **Priority**: P2 (medium)

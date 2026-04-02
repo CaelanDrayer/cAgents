@@ -93,8 +93,25 @@ createHook('PreCompact', async (input) => {
   const coordState = extractCoordinationState(coordContent);
 
   const planContent = safeRead(path.join(sessionDir, 'workflow', 'plan.yaml'));
-  const tier = planContent ? extractYamlValue(planContent, 'tier') : null;
-  const domain = planContent ? (extractYamlValue(planContent, 'domain') || extractYamlValue(planContent, 'super_domain')) : null;
+
+  // Fallback: read strategic_brief.yaml for org/review sessions that lack plan.yaml
+  let briefContent = null;
+  if (!planContent) {
+    briefContent = safeRead(path.join(sessionDir, 'workflow', 'strategic_brief.yaml'))
+      || safeRead(path.join(sessionDir, 'strategic_brief.yaml'));
+  }
+  function extractBriefField(content, key) {
+    const regex = new RegExp(`^\\s+${key}:\\s*["']?([^"'\\n]+)["']?`, 'm');
+    const match = content.match(regex);
+    return match ? match[1].trim() : null;
+  }
+
+  const tier = planContent
+    ? extractYamlValue(planContent, 'tier')
+    : (briefContent ? extractBriefField(briefContent, 'tier') : null);
+  const domain = planContent
+    ? (extractYamlValue(planContent, 'domain') || extractYamlValue(planContent, 'super_domain'))
+    : (briefContent ? (extractBriefField(briefContent, 'domain') || extractBriefField(briefContent, 'super_domain')) : null);
 
   // Team state
   const taskItems = parseTaskList(path.join(sessionDir, 'team', 'task_list.yaml'));
@@ -128,7 +145,9 @@ trigger: context_compaction
   // 5-Question Reboot Check (inspired by planning-with-files Manus pattern)
   // Answers: Where am I? Where am I going? What's the goal? What have I learned? What have I done?
   // planContent already declared above (line 92) - reuse it
-  const goal = planContent ? (extractYamlValue(planContent, 'mission') || extractYamlValue(planContent, 'request') || 'See plan.yaml') : 'No plan.yaml found';
+  const goal = planContent
+    ? (extractYamlValue(planContent, 'mission') || extractYamlValue(planContent, 'request') || 'See plan.yaml')
+    : (briefContent ? (extractBriefField(briefContent, 'mission') || 'See strategic_brief.yaml') : 'No plan.yaml or strategic_brief.yaml found');
 
   const remainingPhases = [];
   if (phase === 'routing' || phase === 'INIT') remainingPhases.push('planning', 'coordinating', 'executing', 'validating');
@@ -136,6 +155,8 @@ trigger: context_compaction
   else if (phase === 'coordinating' || phase === 'PROMPTS_READY' || phase === 'DECOMPOSED') remainingPhases.push('executing', 'validating');
   else if (phase === 'executing' || phase === 'COORDINATED') remainingPhases.push('validating');
 
+  // Three-file pattern (findings.md, progress.md) is aspirational -- most sessions
+  // don't create these files. safeRead() returns null gracefully when absent.
   const findingsPath = path.join(sessionDir, 'findings.md');
   const findingsContent = safeRead(findingsPath);
   const hasFindings = findingsContent && findingsContent.length > 50;

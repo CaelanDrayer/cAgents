@@ -12,17 +12,21 @@ planner:
   # the controller should delegate to these specific execution agents
   specialist_routing:
     ai_writing_detection:
-      keywords: [detect AI, AI writing, AI detection, scan for AI, AI patterns, AI generated, AI check]
+      keywords: [detect AI, AI writing, AI detection, scan for AI, AI patterns, AI generated, AI check, write, blog, article, copy, draft, content, email, prose, documentation, post, write blog, write article, create content, draft email, write copy]
       agents: [ai-writing-detector]
-      description: "Scan documents for AI writing hallmarks across 14 categories"
+      description: "Scan documents for AI writing hallmarks across 14 categories and assess general writing quality"
     ai_writing_humanization:
-      keywords: [humanize, humanization, rewrite AI, remove AI, fingerprint, make human, sound human, less AI]
+      keywords: [humanize, humanization, rewrite AI, remove AI, fingerprint, make human, sound human, less AI, improve writing, polish, refine writing, rewrite, clean up writing, better writing, polish prose, tighten writing]
       agents: [ai-writing-rewriter]
-      description: "Rewrite AI-detected text to sound naturally human"
+      description: "Rewrite AI-detected text to sound naturally human and improve general writing quality"
     ai_writing_pipeline:
-      keywords: [detect and rewrite, detect and humanize, full AI scan, AI cleanup]
+      keywords: [detect and rewrite, detect and humanize, full AI scan, AI cleanup, write and review, content quality, writing quality, full writing review]
       agents: [ai-writing-detector, ai-writing-rewriter]
-      description: "Full pipeline: detect AI patterns then rewrite to humanize"
+      description: "Full pipeline: detect AI patterns then rewrite to humanize, or review and improve writing quality"
+    writing_quality:
+      keywords: [writing quality, content review, writing review, quality check writing, improve content, writing assessment]
+      agents: [ai-writing-detector, ai-writing-rewriter]
+      description: "Assess writing quality and improve content using detection and rewriting agents"
     fiction_writing:
       keywords: [novel, fiction, chapter, scene, character, plot, story writing]
       agents: [prose-stylist, character-designer]

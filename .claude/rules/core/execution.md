@@ -74,11 +74,13 @@ Benefits: Modularity, specialization, parallelization (up to 50 concurrent)
 
 ## 2-Action Findings Capture Rule
 
-Inspired by Manus-style context engineering: execution agents must persist findings to session files after every 2 research operations to prevent information loss during context compaction.
+> **Note**: This rule is an aspirational best practice, not a mandatory requirement. It was designed to prevent information loss during context compaction but is not enforced or consistently followed in practice. Agents SHOULD capture findings when practical but are not required to follow the strict 2-action cadence.
 
-### Rule
+Inspired by Manus-style context engineering: execution agents should persist findings to session files periodically to prevent information loss during context compaction.
 
-> After every 2 view/search/read operations, IMMEDIATELY save key findings to session files.
+### Recommended Practice
+
+> When performing multiple research operations, periodically save key findings to session files to guard against context compaction.
 
 ### Why
 

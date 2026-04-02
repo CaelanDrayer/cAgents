@@ -94,7 +94,7 @@ describe('domain_overrides.yaml', () => {
 
 ## CI Validation
 
-Additional validation scripts beyond Vitest:
+Additional validation scripts beyond [Vitest](https://vitest.dev/):
 
 ```bash
 bash scripts/ci/validate-agents.sh          # Agent schema validation

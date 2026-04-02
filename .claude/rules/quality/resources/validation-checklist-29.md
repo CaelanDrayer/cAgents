@@ -1,10 +1,37 @@
-# 29-Check Comprehensive Validation Framework
+# 29-Check Comprehensive Validation Framework (Aspirational)
 
 Four-phase validation covering the entire workflow lifecycle from planning to final validation.
 
-## Phase 1: Pre-Execution Validation (8 checks)
+> **Status: ASPIRATIONAL TARGET** — This framework describes the intended validation architecture, not current enforcement. See [Current Enforcement Status](#current-enforcement-status) and [Graduation Roadmap](#graduation-roadmap) below.
 
-Run by **Controller** BEFORE spawning any execution agents.
+## Current Enforcement Status
+
+| Phase | Checks | Status | Enforcement Mechanism |
+|-------|--------|--------|----------------------|
+| **Phase 4: Cross-Cutting** | 25-29 | **ACTIVE** | Enforced by existing hooks (`subagent-stop-tracker.cjs`, `post-write-validator.cjs`, `attention-injection.cjs`, `verify-completion.cjs`) |
+| **Phase 1: Pre-Execution** | 1-8 | ASPIRATIONAL | Requires controller agents to run checks before spawning executors — not yet enforced |
+| **Phase 2: Mid-Execution** | 9-15 | ASPIRATIONAL | Requires controller agents to run checks after every 3 completions — not yet enforced |
+| **Phase 3: Post-Execution** | 16-24 | ASPIRATIONAL | Requires universal-validator agent to run checks after completion — not yet enforced |
+
+Phase 4 checks are active because they are implemented as hook-based automation that runs regardless of agent behavior. Phases 1-3 depend on agents voluntarily executing validation logic, which does not yet happen in practice.
+
+## Graduation Roadmap
+
+Priority order for graduating aspirational checks to enforced status:
+
+| Priority | Check(s) | Description | Enforcement Path |
+|----------|----------|-------------|-----------------|
+| **P1 (next)** | 16 | All Items Complete | Add to `verify-completion.cjs` — check work_items.yaml status before allowing session stop |
+| **P2** | 20 | Coordination Log Complete | Schema validation in `post-write-validator.cjs` when coordination_log.yaml is written |
+| **P3** | 17, 21, 22 | Evidence chain, no red flag language, fresh evidence | Enhance universal-validator agent prompts to enforce these checks |
+| **P4** | 1-3, 6-7 | Plan completeness, work item criteria, dependency acyclicity, schema, session structure | Add pre-execution validation hook or gate in `session-init-gate.cjs` |
+| **Future** | 4-5, 8-15, 18-19, 23-24 | Remaining agent-dependent checks | Graduate as agent reliability improves and patterns stabilize |
+
+Each check should be graduated only when it can be reliably enforced without false positives that block legitimate workflows.
+
+## Phase 1: Pre-Execution Validation (8 checks) — ASPIRATIONAL
+
+Run by **Controller** BEFORE spawning any execution agents. *Not yet enforced — see [Graduation Roadmap](#graduation-roadmap).*
 
 | # | Check | What It Validates | When | Failure Action |
 |---|-------|------------------|------|----------------|
@@ -19,9 +46,9 @@ Run by **Controller** BEFORE spawning any execution agents.
 
 ---
 
-## Phase 2: Mid-Execution Validation (7 checks)
+## Phase 2: Mid-Execution Validation (7 checks) — ASPIRATIONAL
 
-Run by **Controller** AFTER EVERY 3 COMPLETED WORK ITEMS.
+Run by **Controller** AFTER EVERY 3 COMPLETED WORK ITEMS. *Not yet enforced — see [Graduation Roadmap](#graduation-roadmap).*
 
 | # | Check | What It Validates | When | Failure Action |
 |---|-------|------------------|------|----------------|
@@ -35,9 +62,9 @@ Run by **Controller** AFTER EVERY 3 COMPLETED WORK ITEMS.
 
 ---
 
-## Phase 3: Post-Execution Validation (9 checks)
+## Phase 3: Post-Execution Validation (9 checks) — ASPIRATIONAL
 
-Run by **Universal-Validator** AFTER all work items are complete.
+Run by **Universal-Validator** AFTER all work items are complete. *Not yet enforced — see [Graduation Roadmap](#graduation-roadmap).*
 
 | # | Check | What It Validates | When | Failure Action |
 |---|-------|------------------|------|----------------|
@@ -53,9 +80,9 @@ Run by **Universal-Validator** AFTER all work items are complete.
 
 ---
 
-## Phase 4: Cross-Cutting Validation (5 checks)
+## Phase 4: Cross-Cutting Validation (5 checks) — ACTIVE
 
-Run at various points by **Multiple Agents** throughout the workflow.
+Run at various points by **Multiple Agents** throughout the workflow. **These checks are currently enforced by hooks.**
 
 | # | Check | What It Validates | Who Runs It | When | Failure Action |
 |---|-------|------------------|-------------|------|----------------|
@@ -91,8 +118,9 @@ Run at various points by **Multiple Agents** throughout the workflow.
 
 ## Key Principles
 
-1. **Controller runs Phases 1-2**: Pre-execution and mid-execution validation ensure correct setup and early detection of issues
-2. **Validator runs Phase 3**: Post-execution validation ensures completeness and correctness before marking workflow done
-3. **Hooks run Phase 4**: Cross-cutting checks run continuously throughout the workflow to catch file changes, syntax errors, and context drift
+1. **Hooks run Phase 4** (ACTIVE): Cross-cutting checks run continuously throughout the workflow to catch file changes, syntax errors, and context drift
+2. **Controller runs Phases 1-2** (ASPIRATIONAL): Pre-execution and mid-execution validation would ensure correct setup and early detection of issues
+3. **Validator runs Phase 3** (ASPIRATIONAL): Post-execution validation would ensure completeness and correctness before marking workflow done
 4. **Fail fast**: Critical checks block workflow; high checks warn but allow continuation; medium checks log only
 5. **Evidence-first**: All completion claims must cite specific artifacts (files, test outputs, metrics) — vague claims are rejected
+6. **Graduate incrementally**: Checks should be promoted from aspirational to enforced one at a time, with false-positive risk assessed before each graduation

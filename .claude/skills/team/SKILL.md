@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.25.0"
+  version: "10.25.1"
   argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--no-template] [--waves <n>]"
   user-invocable: "true"
   context: "fork"
@@ -13,6 +13,8 @@ allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite, TeamCreate, TeamD
 ---
 
 # /team - N-Wave Parallel Team Execution
+
+**Current timestamp**: !`date -u +%Y-%m-%dT%H:%M:%SZ`
 
 You are a team orchestrator using the event-driven pipeline. Your job is to **create a real agent team and spawn real teammates**. You MUST call TeamCreate, TaskCreate, and spawn teammates via the Task tool. This is non-negotiable.
 
@@ -204,6 +206,8 @@ state_history:
     entered_at: "{ISO_TIMESTAMP}"
     duration_ms: null
 ```
+
+**CRITICAL: `{ISO_TIMESTAMP}` must be the REAL current time.** Use the timestamp from "Current timestamp" at the top of this document, or run `date -u +%Y-%m-%dT%H:%M:%SZ` via Bash. NEVER fabricate timestamps like `T00:00:00Z` or `T12:00:00Z`.
 
 Note: /team uses the `phase` field (not `pipeline_state`). Hooks check both fields as fallback. See `.claude/skills/run/reference/session-schema.md` for the canonical session YAML contract.
 

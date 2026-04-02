@@ -1,6 +1,6 @@
 ---
 name: ai-writing-detector
-description: "Use when detecting AI-generated text patterns, analyzing writing for synthetic markers, or evaluating content authenticity against human authorship baselines."
+description: "Use when detecting AI-generated text patterns, analyzing writing for synthetic markers, evaluating content authenticity against human authorship baselines, assessing general writing quality, reviewing content for quality patterns, or evaluating prose quality."
 metadata:
   vibe: "Spots the AI fingerprint that humans can't see"
   tier: execution

@@ -15,7 +15,7 @@ Workflow orchestration guidelines for cAgents.
 
 **NEVER ASK USER FOR PERMISSION TO PROCEED BETWEEN STATES**
 
-All state transitions are AUTOMATIC: INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED -> VALIDATED. FAIL routes to PROMPTS_READY, REVISE routes to PLANNED.
+All state transitions are AUTOMATIC: INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY (optional) -> COORDINATED -> VALIDATED. FAIL routes to PROMPTS_READY, REVISE routes to PLANNED. The adaptive pipeline (V9.27) skips the DECOMPOSED->PROMPTS_READY transition for tier 2 fast path, jumping directly to controller.
 
 **Only ask user when**: Tier 4 HITL gates, unrecoverable errors, ambiguous requirements, max revision cycles (5) exhausted.
 
@@ -40,15 +40,16 @@ At VALIDATED/COMPLETE: call TaskList, mark completed work via TaskUpdate, delete
 ### State Machine
 
 ```
-INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED -> VALIDATED
+INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY (optional) -> COORDINATED -> VALIDATED
                                                                         FAIL -> PROMPTS_READY
+Note: Adaptive pipeline skips DECOMPOSED->PROMPTS_READY for tier 2 fast path.
                                                                         REVISE -> PLANNED
 ```
 
 ### Nesting Model
 
 ```
-/run (level 0) -> orchestrator, planner, decomposer, prompt-engineer (level 1)
+/run (level 0) -> orchestrator, planner, decomposer, prompt-engineer [optional] (level 1)
               -> controller (level 1) -> executor + reviewer (level 2, max 3 rounds)
               -> validator (level 1) -> PASS/FAIL/REVISE
 ```
@@ -57,7 +58,7 @@ INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED ->
 - **Orchestrator** (INIT): enriched_context.yaml
 - **Universal-planner** (ORCHESTRATED): plan.yaml
 - **Task-decomposer** (PLANNED): work_items.yaml
-- **Prompt-engineer** (DECOMPOSED): delegation_prompts.yaml
+- **Prompt-engineer** (DECOMPOSED): delegation_prompts.yaml (optional — skipped by adaptive pipeline for tier 2 fast path)
 - **Controller** (PROMPTS_READY): coordination_log.yaml with `schema_version: "1"` (with executor+reviewer loops)
 - **Universal-validator** (COORDINATED): validation_report.yaml
 

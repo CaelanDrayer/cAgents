@@ -2,6 +2,15 @@
 
 Five minutes from install to your first orchestrated result.
 
+## Prerequisites
+
+| Tool | Version | Official Documentation |
+|------|---------|----------------------|
+| Claude Code | latest | [docs.anthropic.com](https://docs.anthropic.com/en/docs/claude-code) |
+| Node.js | >= 20 | [nodejs.org](https://nodejs.org/) |
+| npm | comes with Node.js | [docs.npmjs.com](https://docs.npmjs.com/) |
+| git | latest | [git-scm.com](https://git-scm.com/doc) |
+
 ## 1. Install
 
 **From the Claude Code Marketplace** (recommended):

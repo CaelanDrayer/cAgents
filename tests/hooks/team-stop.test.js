@@ -9,12 +9,17 @@ const AGENT_MEMORY = join(process.cwd(), 'Agent_Memory');
 const TEST_SESSION = 'team_test-stop_260317_999';
 const SESSION_DIR = join(AGENT_MEMORY, 'sessions', TEST_SESSION);
 
-function runHook(input) {
-  const result = execSync(
-    `printf '%s' '${JSON.stringify(input).replace(/'/g, "'\\''")}' | node "${HOOK_PATH}"`,
-    { encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'] }
-  );
-  return JSON.parse(result.trim());
+function runHook(input, opts = {}) {
+  try {
+    const result = execSync(
+      `printf '%s' '${JSON.stringify(input).replace(/'/g, "'\\''")}' | node "${HOOK_PATH}"`,
+      { encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'], env: { ...process.env, CAGENTS_ACTIVE_SESSION: '' } }
+    );
+    return JSON.parse(result.trim());
+  } catch (e) {
+    if (e.stdout) return JSON.parse(e.stdout.toString().trim());
+    throw e;
+  }
 }
 
 describe('team-stop.cjs', () => {
@@ -85,5 +90,75 @@ describe('team-stop.cjs', () => {
     expect(result.continue).toBe(true);
     expect(result.systemMessage).toContain('Team Session Complete');
     expect(result.systemMessage).toContain('Duration');
+  });
+
+  describe('execution_summary.yaml generation', () => {
+    it('should generate execution_summary.yaml when missing', () => {
+      runHook({ session_id: TEST_SESSION });
+      const summaryPath = join(SESSION_DIR, 'workflow', 'execution_summary.yaml');
+      expect(existsSync(summaryPath)).toBe(true);
+      const content = readFileSync(summaryPath, 'utf8');
+      expect(content).toContain('session_id:');
+      expect(content).toContain('final_state:');
+      expect(content).toContain('status:');
+      expect(content).toContain('agent_count:');
+      expect(content).toContain('duration_seconds:');
+      expect(content).toContain('started_at:');
+      expect(content).toContain('completed_at:');
+      expect(content).toContain('generated_by: session-stop-hook');
+    });
+
+    it('should not overwrite existing execution_summary.yaml', () => {
+      mkdirSync(join(SESSION_DIR, 'workflow'), { recursive: true });
+      writeFileSync(join(SESSION_DIR, 'workflow', 'execution_summary.yaml'),
+        'session_id: "existing"\ngenerated_by: run-skill\n');
+      runHook({ session_id: TEST_SESSION });
+      const content = readFileSync(join(SESSION_DIR, 'workflow', 'execution_summary.yaml'), 'utf8');
+      expect(content).toContain('generated_by: run-skill');
+      expect(content).not.toContain('generated_by: session-stop-hook');
+    });
+
+    it('should include agent count from agent_tree.yaml', () => {
+      mkdirSync(join(SESSION_DIR, 'workflow'), { recursive: true });
+      writeFileSync(join(SESSION_DIR, 'workflow', 'agent_tree.yaml'),
+        'agents:\n- agent_id: "a1"\n  type: backend-developer\n- agent_id: "a2"\n  type: reviewer\n- agent_id: "a3"\n  type: qa-lead\n');
+      runHook({ session_id: TEST_SESSION });
+      const content = readFileSync(join(SESSION_DIR, 'workflow', 'execution_summary.yaml'), 'utf8');
+      expect(content).toContain('agent_count: 3');
+    });
+
+    it('should use pipeline_state for final_state when available', () => {
+      writeFileSync(join(SESSION_DIR, 'status.yaml'),
+        'pipeline_state: COORDINATED\ncreated_at: "2026-03-17T10:00:00Z"\ncompleted_at: null\nresult: null\n');
+      runHook({ session_id: TEST_SESSION });
+      const content = readFileSync(join(SESSION_DIR, 'workflow', 'execution_summary.yaml'), 'utf8');
+      expect(content).toContain('final_state: COORDINATED');
+    });
+
+    it('should work for run_ session prefix', () => {
+      const runSession = 'run_test-summary_260317_999';
+      const runDir = join(AGENT_MEMORY, 'sessions', runSession);
+      mkdirSync(join(runDir, 'workflow'), { recursive: true });
+      writeFileSync(join(runDir, 'status.yaml'),
+        'pipeline_state: VALIDATED\nsession_id: "' + runSession + '"\ncreated_at: "2026-03-17T10:00:00Z"\ncompleted_at: null\nresult: null\n');
+      try {
+        runHook({ session_id: runSession });
+        const summaryPath = join(runDir, 'workflow', 'execution_summary.yaml');
+        expect(existsSync(summaryPath)).toBe(true);
+        const content = readFileSync(summaryPath, 'utf8');
+        expect(content).toContain(`session_id: "${runSession}"`);
+        expect(content).toContain('final_state: VALIDATED');
+      } finally {
+        rmSync(runDir, { recursive: true, force: true });
+      }
+    });
+
+    it('should set status to failed when result is failed', () => {
+      writeFileSync(join(SESSION_DIR, 'status.yaml'),
+        'phase: failed\ncreated_at: "2026-03-17T10:00:00Z"\ncompleted_at: null\nresult: failed\n');
+      runHook({ session_id: TEST_SESSION });
+      const content = readFileSync(join(SESSION_DIR, 'workflow', 'execution_summary.yaml'), 'utf8');
+      expect(content).toContain('status: failed');
+    });
   });
 });

@@ -21,4 +21,4 @@ state_history:
     duration_ms: 8000
   - state: complete
     entered_at: "2026-01-01T10:02:58Z"
-    duration_ms: null
+    duration_ms: 0

@@ -54,6 +54,8 @@ Agent_Memory/sessions/{session_id}/
 └── validation/                   # validation_report.yaml
 ```
 
+> **Note**: The three-file pattern (task_plan.md, findings.md, progress.md) is aspirational. Most sessions rely on `workflow/` artifacts instead. These files are shown for completeness but are not required.
+
 ## Three-File Pattern Examples
 
 ### task_plan.md (500-2000 tokens)

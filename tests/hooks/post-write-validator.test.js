@@ -203,6 +203,72 @@ describe('post-write-validator.cjs', () => {
     });
   });
 
+  describe('event file auto-generation on status.yaml transitions', () => {
+    // Use isolated temp dirs to avoid interference with the shared TMP_DIR lifecycle
+    const EVT_TMP = '/tmp/cagents_evt_test_' + process.pid;
+
+    function runHookEvt(input) {
+      const result = execSync(
+        `printf '%s' '${JSON.stringify(input).replace(/'/g, "'\\''")}' | node "${HOOK_PATH}"`,
+        { encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'],
+          env: { ...process.env, CLAUDE_PROJECT_DIR: EVT_TMP } }
+      );
+      return JSON.parse(result.trim());
+    }
+
+    beforeEach(() => {
+      mkdirSync(EVT_TMP, { recursive: true });
+    });
+
+    afterEach(() => {
+      try { rmSync(EVT_TMP, { recursive: true, force: true }); } catch {}
+    });
+
+    it('should create event file when status.yaml has pipeline_state', () => {
+      const sessionDir = join(EVT_TMP, 'Agent_Memory', 'sessions', 'run_test_260331_001');
+      mkdirSync(join(sessionDir, 'workflow'), { recursive: true });
+      const statusPath = join(sessionDir, 'status.yaml');
+      writeFileSync(statusPath, 'pipeline_state: PLANNED\nsession_id: run_test_260331_001\n');
+      const result = runHookEvt({ tool_name: 'Write', tool_input: { file_path: statusPath } });
+      expect(result.continue).toBe(true);
+      const eventsDir = join(sessionDir, 'workflow', 'events');
+      expect(existsSync(eventsDir)).toBe(true);
+      const files = require('fs').readdirSync(eventsDir);
+      const eventFile = files.find(f => f.startsWith('EVT-PLANNED_'));
+      expect(eventFile).toBeDefined();
+      const content = readFileSync(join(eventsDir, eventFile), 'utf8');
+      expect(content).toContain('event_id: EVT-PLANNED');
+      expect(content).toContain('type: state_transition');
+      expect(content).toContain('state: PLANNED');
+    });
+
+    it('should not create duplicate event files for same state', () => {
+      const sessionDir = join(EVT_TMP, 'Agent_Memory', 'sessions', 'run_dedup_260331_001');
+      const eventsDir = join(sessionDir, 'workflow', 'events');
+      mkdirSync(eventsDir, { recursive: true });
+      writeFileSync(join(eventsDir, 'EVT-PLANNED_2026-03-31T00-00-00-000Z.yaml'), 'event_id: EVT-PLANNED\n');
+      const statusPath = join(sessionDir, 'status.yaml');
+      writeFileSync(statusPath, 'pipeline_state: PLANNED\n');
+      runHookEvt({ tool_name: 'Write', tool_input: { file_path: statusPath } });
+      const files = require('fs').readdirSync(eventsDir);
+      const plannedFiles = files.filter(f => f.startsWith('EVT-PLANNED_'));
+      expect(plannedFiles.length).toBe(1);
+    });
+
+    it('should create event file using phase field as fallback', () => {
+      const sessionDir = join(EVT_TMP, 'Agent_Memory', 'sessions', 'run_phase_260331_001');
+      mkdirSync(join(sessionDir, 'workflow'), { recursive: true });
+      const statusPath = join(sessionDir, 'status.yaml');
+      writeFileSync(statusPath, 'phase: coordinating\nsession_id: run_phase_260331_001\n');
+      runHookEvt({ tool_name: 'Write', tool_input: { file_path: statusPath } });
+      const eventsDir = join(sessionDir, 'workflow', 'events');
+      expect(existsSync(eventsDir)).toBe(true);
+      const files = require('fs').readdirSync(eventsDir);
+      const eventFile = files.find(f => f.startsWith('EVT-coordinating_'));
+      expect(eventFile).toBeDefined();
+    });
+  });
+
   describe('non-validated files', () => {
     it('should pass through .js files without validation', () => {
       const jsPath = join(TMP_DIR, 'test.js');

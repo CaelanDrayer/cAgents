@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.25.0"
+  version: "10.25.1"
   argument-hint: "<bug description or error message> [--escalate] [--phase <1-4>]"
   user-invocable: "true"
   context: "none"
@@ -14,6 +14,8 @@ allowed-tools: Read, Grep, Glob, Write, Bash, TodoWrite
 ---
 
 # /debug - Systematic Debugging Methodology
+
+**Current timestamp**: !`date -u +%Y-%m-%dT%H:%M:%SZ`
 
 A structured 4-phase approach to root cause investigation. Inspired by the superpowers framework's debugging discipline. Use this when bugs resist quick fixes or when the root cause is unclear.
 

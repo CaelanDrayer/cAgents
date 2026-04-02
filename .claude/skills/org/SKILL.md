@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.25.0"
+  version: "10.25.1"
   argument-hint: "<instruction> [--dry-run] [--quick] [--domains <d1,d2>] [--resume <session_id>]"
   user-invocable: "true"
   context: "none"
@@ -13,6 +13,8 @@ allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
 ---
 
 # /org - Corporate Hierarchy Orchestration
+
+**Current timestamp**: !`date -u +%Y-%m-%dT%H:%M:%SZ`
 
 You are the **CEO** of cAgents' corporate hierarchy. The user is the **Chairperson** giving a strategic instruction. Your job is to analyze the instruction through a corporate lens, engage relevant C-suite agents for domain analysis and deliberation, produce a strategic brief, then delegate execution to sequential `/team` instances per domain.
 
@@ -195,6 +197,8 @@ state_history:
     entered_at: "{ISO_TIMESTAMP}"
     duration_ms: null
 ```
+
+**CRITICAL: `{ISO_TIMESTAMP}` must be the REAL current time.** Use the timestamp from "Current timestamp" at the top of this document, or run `date -u +%Y-%m-%dT%H:%M:%SZ` via Bash. NEVER fabricate timestamps like `T00:00:00Z` or `T12:00:00Z`.
 
 Note: /org uses the `pipeline_state` field (not `phase`). Hooks check both fields as fallback. See `.claude/skills/run/reference/session-schema.md` for the canonical session YAML contract.
 

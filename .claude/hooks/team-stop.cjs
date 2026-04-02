@@ -20,7 +20,7 @@
 const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
-const { createHook, findTeamSession, findActiveSession, safeRead, extractYamlValue, countPattern, withFileLock } = require('./hook-utils.cjs');
+const { createHook, findTeamSession, findActiveSession, safeRead, extractYamlValue, countPattern, withFileLock, ensureDir } = require('./hook-utils.cjs');
 
 /**
  * Clean up agent_tree.yaml: mark all unstopped agents with stopped_at,
@@ -92,6 +92,75 @@ function cleanupAgentTree(sessionDir, now) {
   return cleanedCount;
 }
 
+/**
+ * Generate a minimal execution_summary.yaml from status.yaml + agent_tree.yaml
+ * if one does not already exist. Works for all session types.
+ *
+ * @param {string} sessionDir - Session directory path
+ * @param {string} now - ISO timestamp
+ */
+function generateExecutionSummary(sessionDir, now) {
+  const summaryPath = path.join(sessionDir, 'workflow', 'execution_summary.yaml');
+  // Don't overwrite skill-generated summaries
+  if (fs.existsSync(summaryPath)) return;
+
+  const statusContent = safeRead(path.join(sessionDir, 'status.yaml'));
+  if (!statusContent) return;
+
+  // Extract fields from status.yaml
+  const sessionId = extractYamlValue(statusContent, 'session_id') || path.basename(sessionDir);
+  const pipelineState = extractYamlValue(statusContent, 'pipeline_state');
+  const phase = extractYamlValue(statusContent, 'phase');
+  const finalState = pipelineState || phase || 'unknown';
+  const createdAt = extractYamlValue(statusContent, 'created_at');
+  const result = extractYamlValue(statusContent, 'result');
+
+  // Determine status string
+  let status = 'completed';
+  if (result === 'failed' || finalState === 'failed' || finalState === 'FAILED') {
+    status = 'failed';
+  } else if (result === 'partial') {
+    status = 'partial';
+  }
+
+  // Count agents from agent_tree.yaml
+  let agentCount = 0;
+  const treeContent = safeRead(path.join(sessionDir, 'workflow', 'agent_tree.yaml'));
+  if (treeContent) {
+    // Count occurrences of "- agent_id:" which marks each agent entry
+    const matches = treeContent.match(/- agent_id:/g);
+    agentCount = matches ? matches.length : 0;
+  }
+
+  // Compute duration
+  let durationSeconds = 0;
+  if (createdAt) {
+    const startMs = new Date(createdAt).getTime();
+    if (!isNaN(startMs) && startMs > 0) {
+      durationSeconds = Math.max(0, Math.round((Date.now() - startMs) / 1000));
+    }
+  }
+
+  const summaryYaml = [
+    `session_id: "${sessionId}"`,
+    `final_state: ${finalState}`,
+    `status: ${status}`,
+    `agent_count: ${agentCount}`,
+    `duration_seconds: ${durationSeconds}`,
+    `started_at: "${createdAt || now}"`,
+    `completed_at: "${now}"`,
+    `generated_by: session-stop-hook`,
+  ].join('\n') + '\n';
+
+  try {
+    ensureDir(path.join(sessionDir, 'workflow'));
+    fs.writeFileSync(summaryPath, summaryYaml);
+    console.error(`[SessionStop] Generated execution_summary.yaml for ${path.basename(sessionDir)}`);
+  } catch (e) {
+    console.error(`[SessionStop] Failed to write execution_summary.yaml: ${e.message}`);
+  }
+}
+
 createHook('SessionStop', async (input) => {
   const now = new Date().toISOString();
   let summary = '';
@@ -108,6 +177,11 @@ createHook('SessionStop', async (input) => {
       console.error(`[SessionStop] Cleaned ${cleanedCount} unstopped agent(s) in ${path.basename(anySession)}`);
       summary += `Agent tree cleanup: ${cleanedCount} agent(s) marked stopped in ${path.basename(anySession)}\n`;
     }
+  }
+
+  // --- Phase 1b: Generate execution_summary.yaml if missing (ALL session types) ---
+  if (anySession) {
+    generateExecutionSummary(anySession, now);
   }
 
   // --- Phase 2: Team-specific metrics and status (team_* sessions only) ---
