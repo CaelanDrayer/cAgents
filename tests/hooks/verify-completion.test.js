@@ -174,6 +174,86 @@ describe('verify-completion.cjs', () => {
     });
   });
 
+  describe('team session pre-execution blocking (regression: team enrichment hang)', () => {
+    // Regression test: /team stops after enrichment (planner + decomposer finish)
+    // but TeamCreate never runs because verify-completion.cjs only warns for INIT phase.
+    // Fix: block when team_ session has pre-exec phase + enrichment artifacts exist.
+    const TEAM_SESSION = 'team_20260101_000001_test_vc';
+    const TEAM_SESSION_DIR = join(TEST_SESSIONS_DIR, TEAM_SESSION);
+
+    beforeEach(() => {
+      mkdirSync(join(TEAM_SESSION_DIR, 'workflow'), { recursive: true });
+    });
+
+    afterEach(() => {
+      try { rmSync(TEAM_SESSION_DIR, { recursive: true, force: true }); } catch {}
+    });
+
+    it('should block when team session has phase INIT and plan.yaml exists (no coordination_log)', () => {
+      writeFileSync(join(TEAM_SESSION_DIR, 'status.yaml'),
+        `phase: INIT\ncreated_at: "${new Date().toISOString()}"\n`);
+      writeFileSync(join(TEAM_SESSION_DIR, 'workflow', 'plan.yaml'),
+        'plan_id: test\ntier: 3\ndomain: engineering\nmission: "Test team"\n');
+      const result = runHook({ session_id: TEAM_SESSION });
+      expect(result.decision).toBe('block');
+      expect(result.reason).toContain('TeamCreate');
+    });
+
+    it('should block when team session has phase ENRICHING and work_items.yaml exists', () => {
+      writeFileSync(join(TEAM_SESSION_DIR, 'status.yaml'),
+        `phase: ENRICHING\ncreated_at: "${new Date().toISOString()}"\n`);
+      writeFileSync(join(TEAM_SESSION_DIR, 'workflow', 'work_items.yaml'),
+        'work_items:\n  - id: WI-1\n    title: "Test"\n');
+      const result = runHook({ session_id: TEAM_SESSION });
+      expect(result.decision).toBe('block');
+      expect(result.reason).toContain('TeamCreate');
+    });
+
+    it('should block when team session has phase ENRICHED and plan.yaml exists', () => {
+      writeFileSync(join(TEAM_SESSION_DIR, 'status.yaml'),
+        `phase: ENRICHED\ncreated_at: "${new Date().toISOString()}"\n`);
+      writeFileSync(join(TEAM_SESSION_DIR, 'workflow', 'plan.yaml'),
+        'plan_id: test\ntier: 3\ndomain: engineering\nmission: "Test team"\n');
+      const result = runHook({ session_id: TEAM_SESSION });
+      expect(result.decision).toBe('block');
+      expect(result.reason).toContain('TeamCreate');
+    });
+
+    it('should NOT block team session in INIT if no enrichment artifacts exist', () => {
+      writeFileSync(join(TEAM_SESSION_DIR, 'status.yaml'),
+        `phase: INIT\ncreated_at: "${new Date().toISOString()}"\n`);
+      // No plan.yaml or work_items.yaml — enrichment hasn't run yet
+      const result = runHook({ session_id: TEAM_SESSION });
+      // Should warn (not block) since there are no enrichment artifacts
+      expect(result.decision).not.toBe('block');
+    });
+
+    it('should NOT block team session if coordination_log.yaml exists (past TeamCreate)', () => {
+      writeFileSync(join(TEAM_SESSION_DIR, 'status.yaml'),
+        `phase: ENRICHED\ncreated_at: "${new Date().toISOString()}"\n`);
+      writeFileSync(join(TEAM_SESSION_DIR, 'workflow', 'plan.yaml'),
+        'plan_id: test\ntier: 3\n');
+      writeFileSync(join(TEAM_SESSION_DIR, 'workflow', 'coordination_log.yaml'),
+        'schema_version: "1"\nstatus: completed\n');
+      const result = runHook({ session_id: TEAM_SESSION });
+      // coordination_log exists = past TeamCreate, so should NOT block with the team message
+      expect(result.decision).not.toBe('block');
+    });
+
+    it('should NOT block non-team session in INIT with plan.yaml', () => {
+      // run_ session (not team_) should use existing warning behavior, not the new block
+      writeFileSync(join(TEST_SESSION_DIR, 'status.yaml'),
+        `phase: INIT\ncreated_at: "${new Date().toISOString()}"\n`);
+      writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'plan.yaml'),
+        'plan_id: test\ntier: 2\n');
+      const result = runHook({ session_id: TEST_SESSION });
+      // run_ sessions should NOT trigger the team-specific block
+      if (result.decision === 'block' && result.reason) {
+        expect(result.reason).not.toContain('TeamCreate');
+      }
+    });
+  });
+
   describe('learning JSONL store', () => {
     it('should append session outcome to session_outcomes.jsonl', () => {
       // Set up a session with validating phase so the hook processes it fully

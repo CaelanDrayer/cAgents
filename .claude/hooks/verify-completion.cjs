@@ -278,8 +278,28 @@ function verifyCompletion(sessionDir) {
       warnings.push('No phase defined in status.yaml');
     } else if (phase === 'planning' || phase === 'coordinating' || phase === 'executing') {
       issues.push(`Workflow stopping in '${phase}' phase (expected: completed or validating)`);
-    } else if (phase !== 'completed' && phase !== 'complete' && phase !== 'validating') {
-      warnings.push(`Workflow stopping in '${phase}' phase (expected: complete/completed or validating)`);
+    } else {
+      // Team session pre-execution detection (V10.25.1):
+      // When a team_ session has phase INIT/ENRICHING/ENRICHED and enrichment
+      // artifacts exist (plan.yaml or work_items.yaml), the session completed
+      // enrichment but never reached TeamCreate. Block instead of warn to force
+      // the LLM to continue to TeamCreate.
+      const sessionName = path.basename(sessionDir);
+      const isTeamSession = sessionName.startsWith('team_');
+      const teamPreExecPhases = ['INIT', 'ENRICHING', 'ENRICHED'];
+      const hasEnrichmentArtifacts = fs.existsSync(path.join(sessionDir, 'workflow', 'plan.yaml'))
+        || fs.existsSync(path.join(sessionDir, 'workflow', 'work_items.yaml'));
+      const noCoordLog = !fs.existsSync(path.join(sessionDir, 'workflow', 'coordination_log.yaml'));
+
+      if (isTeamSession && teamPreExecPhases.includes(phase) && hasEnrichmentArtifacts && noCoordLog) {
+        issues.push(
+          `Team session '${sessionName}' stopping in '${phase}' phase after enrichment completed. ` +
+          `Enrichment artifacts exist (plan.yaml/work_items.yaml) but TeamCreate was never called. ` +
+          `You MUST continue to Step 3 (TeamCreate) and execute the team waves. Do NOT stop here.`
+        );
+      } else if (phase !== 'completed' && phase !== 'complete' && phase !== 'validating') {
+        warnings.push(`Workflow stopping in '${phase}' phase (expected: complete/completed or validating)`);
+      }
     }
   }
 

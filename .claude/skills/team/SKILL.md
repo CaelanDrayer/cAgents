@@ -285,6 +285,11 @@ Task({
 })
 ```
 
+**CRITICAL: Update phase to ENRICHING after orchestrator returns.** This prevents the Stop hook from allowing early termination. Use Bash to update status.yaml:
+```bash
+sed -i 's/^phase: .*/phase: ENRICHING/' "{SESSION_DIR}/status.yaml"
+```
+
 **2d. Spawn planner:**
 
 ```
@@ -295,6 +300,11 @@ Task({
 })
 ```
 
+**CRITICAL: Update phase to ENRICHED after planner returns.** This signals enrichment is complete but team execution has not started:
+```bash
+sed -i 's/^phase: .*/phase: ENRICHED/' "{SESSION_DIR}/status.yaml"
+```
+
 **2e. Spawn decomposer (with wave maximization):**
 
 ```
@@ -303,6 +313,11 @@ Task({
   description: "PLANNED: Decompose into work items with maximum wave granularity",
   prompt: "You are the task-decomposer in the event-driven pipeline.\n\nREQUEST: {user_request}\nSESSION: {SESSION_DIR}/\nDOMAIN: {domain} | TIER: {tier}\n\nRead workflow/plan.yaml. Decompose into work items with acceptance criteria.\n\nCRITICAL WAVE MAXIMIZATION:\n- Assign each work item a wave number (0, 1, 2, 3, ...)\n- Wave 0 = foundation/bootstrap (lead executes)\n- Maximize the number of waves by separating work into natural dependency layers\n- If item B depends on item A's output, they MUST be in different waves\n- Even items that COULD run in the same wave SHOULD be split into separate waves if they represent distinct phases (e.g., research vs implementation vs testing vs documentation)\n- Prefer 5-10 waves over 2-3 waves\n- Each wave should have a clear quality gate with verifiable criteria\n- The final wave is always integration/validation (lead executes)\n\nWave assignment strategy:\n  Wave 0: Scaffolding, schemas, contracts, project setup\n  Wave 1: Research, analysis, information gathering\n  Wave 2: Design, architecture decisions, interface definitions\n  Wave 3: Core implementation (primary features)\n  Wave 4: Supporting implementation (secondary features, integrations)\n  Wave 5: Testing, QA, security validation\n  Wave 6: Documentation, cleanup, optimization\n  Wave 7+: Additional phases as needed\n\nWrite workflow/work_items.yaml with wave assignments and a completion event to workflow/events/EVT-3.yaml."
 })
+```
+
+**CRITICAL: Update phase to ENRICHED after decomposer returns** (confirms all enrichment is complete):
+```bash
+sed -i 's/^phase: .*/phase: ENRICHED/' "{SESSION_DIR}/status.yaml"
 ```
 
 After decomposer returns, read `workflow/work_items.yaml` to get the work items and their wave assignments.
@@ -336,6 +351,11 @@ TeamCreate({
   team_name: "cagents-team-<YYYYMMDD-HHMMSS>",
   description: "Parallel execution: <summary of request>"
 })
+```
+
+**CRITICAL: Update phase to TEAM_CREATED after TeamCreate returns.** This confirms the team was created and prevents the Stop hook from blocking:
+```bash
+sed -i 's/^phase: .*/phase: TEAM_CREATED/' "{SESSION_DIR}/status.yaml"
 ```
 
 ### Step 4: Create Tasks for ALL Work Items with Wave Gates (TaskCreate)
