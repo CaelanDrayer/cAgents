@@ -196,7 +196,7 @@ describe('verify-completion.cjs', () => {
         'plan_id: test\ntier: 3\ndomain: engineering\nmission: "Test team"\n');
       const result = runHook({ session_id: TEAM_SESSION });
       expect(result.decision).toBe('block');
-      expect(result.reason).toContain('TeamCreate');
+      expect(result.reason).toContain('coordination is incomplete');
     });
 
     it('should block when team session has phase ENRICHING and work_items.yaml exists', () => {
@@ -206,7 +206,7 @@ describe('verify-completion.cjs', () => {
         'work_items:\n  - id: WI-1\n    title: "Test"\n');
       const result = runHook({ session_id: TEAM_SESSION });
       expect(result.decision).toBe('block');
-      expect(result.reason).toContain('TeamCreate');
+      expect(result.reason).toContain('coordination is incomplete');
     });
 
     it('should block when team session has phase ENRICHED and plan.yaml exists', () => {
@@ -216,7 +216,7 @@ describe('verify-completion.cjs', () => {
         'plan_id: test\ntier: 3\ndomain: engineering\nmission: "Test team"\n');
       const result = runHook({ session_id: TEAM_SESSION });
       expect(result.decision).toBe('block');
-      expect(result.reason).toContain('TeamCreate');
+      expect(result.reason).toContain('coordination is incomplete');
     });
 
     it('should NOT block team session in INIT if no enrichment artifacts exist', () => {

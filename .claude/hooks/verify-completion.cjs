@@ -291,13 +291,16 @@ function verifyCompletion(sessionDir) {
         || fs.existsSync(path.join(sessionDir, 'workflow', 'work_items.yaml'));
       const noCoordLog = !fs.existsSync(path.join(sessionDir, 'workflow', 'coordination_log.yaml'));
 
-      if (isTeamSession && teamPreExecPhases.includes(phase) && hasEnrichmentArtifacts && noCoordLog) {
+      if (hasEnrichmentArtifacts && noCoordLog) {
+        // Any session (team or run) that has enrichment artifacts but no coordination_log
+        // is mid-pipeline and must not stop. Block to force continuation.
+        const sessionType = isTeamSession ? 'Team' : 'Pipeline';
         issues.push(
-          `Team session '${sessionName}' stopping in '${phase}' phase after enrichment completed. ` +
-          `Enrichment artifacts exist (plan.yaml/work_items.yaml) but TeamCreate was never called. ` +
-          `You MUST continue to Step 3 (TeamCreate) and execute the team waves. Do NOT stop here.`
+          `${sessionType} session '${sessionName}' stopping in '${phase}' phase after enrichment completed. ` +
+          `Enrichment artifacts exist (plan.yaml/work_items.yaml) but coordination is incomplete. ` +
+          `You MUST continue executing the pipeline. Do NOT stop here.`
         );
-      } else if (phase !== 'completed' && phase !== 'complete' && phase !== 'validating') {
+      } else if (phase !== 'completed' && phase !== 'complete' && phase !== 'validating' && phase !== 'TEAM_CREATED') {
         warnings.push(`Workflow stopping in '${phase}' phase (expected: complete/completed or validating)`);
       }
     }

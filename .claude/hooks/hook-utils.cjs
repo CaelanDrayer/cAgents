@@ -134,12 +134,33 @@ function findActiveSession(sessionHint) {
   // Pass 0: Env-var fast path — /run and /team set this for precise routing.
   // This eliminates heuristic discovery for any agent spawned within a /run or /team
   // pipeline, completely preventing session misrouting under concurrent /org + /team.
+  // V10.25.2 fix: also verify the env var session is NOT in a terminal state.
+  // When /run completes and /team starts in the same conversation, the env var
+  // may still point to the old /run session. Returning a completed session causes
+  // hooks (especially verify-completion) to check the wrong session.
   const envSession = process.env.CAGENTS_ACTIVE_SESSION;
   if (envSession) {
     const envDir = path.join(AGENT_MEMORY_DIR, 'sessions', envSession);
-    if (fs.existsSync(envDir)) return envDir;
-    // Env var set but directory doesn't exist yet — fall through to heuristic discovery
-    console.error(`[findActiveSession] CAGENTS_ACTIVE_SESSION="${envSession}" set but directory not found, falling through to heuristic`);
+    if (fs.existsSync(envDir)) {
+      // Verify the session is not terminal before returning
+      const envStatus = safeRead(path.join(envDir, 'status.yaml'));
+      if (envStatus) {
+        const envPhase = extractYamlValue(envStatus, 'pipeline_state')
+          || extractYamlValue(envStatus, 'phase')
+          || extractYamlValue(envStatus, 'current_phase');
+        if (envPhase && TERMINAL_STATES.includes(envPhase)) {
+          console.error(`[findActiveSession] CAGENTS_ACTIVE_SESSION="${envSession}" is in terminal state "${envPhase}", falling through to heuristic`);
+          // Don't return — fall through to heuristic discovery
+        } else {
+          return envDir;
+        }
+      } else {
+        // No status.yaml yet — session just created, trust the env var
+        return envDir;
+      }
+    } else {
+      console.error(`[findActiveSession] CAGENTS_ACTIVE_SESSION="${envSession}" set but directory not found, falling through to heuristic`);
+    }
   }
 
   // If we have a hint and it differs from cached, invalidate cache
