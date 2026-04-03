@@ -37,14 +37,14 @@ router:
     - BI
     - visualization
     - dataset
-    - statistics
+    - statistical modeling  # cross-domain: "statistics" alone routes to science/
     - modeling
     - prediction
     - NLP
     - natural language processing
     - computer vision
     - A/B test
-    - experiment
+    - A/B experiment  # cross-domain: "experiment" alone routes to science/; use "A/B test" for shared/
     - ETL
     - data pipeline
     - dashboard

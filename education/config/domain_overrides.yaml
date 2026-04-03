@@ -65,7 +65,7 @@ router:
     - study guide
     - reading comprehension
     - math help
-    - science
+    - science education  # cross-domain: "science" alone routes to science/ domain
     - history
     - essay writing
     - college prep

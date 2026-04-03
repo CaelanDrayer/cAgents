@@ -127,7 +127,7 @@ router:
     - game design
     - OKR
     - KPI
-    - analytics
+    - business analytics  # cross-domain: "analytics" alone routes to shared/ (data specialists)
     - metrics
     - report
     - project
@@ -137,7 +137,7 @@ router:
     - sprint
     - risk
     - quality
-    - audit
+    - process audit  # cross-domain: "audit" alone routes to service/ (compliance)
     - stakeholder
     - vendor
     - invoice

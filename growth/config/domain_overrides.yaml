@@ -152,10 +152,10 @@ router:
     - advertising
     - PPC
     - newsletter
-    - engagement
-    - retention
+    - engagement  # intentional cross-domain: marketing engagement (growth/) vs employee engagement (people/)
+    - retention  # intentional cross-domain: customer retention (growth/) vs employee retention (people/)
     - churn
-    - NPS
+    - net promoter  # cross-domain: "NPS" routes to service/ (CX metric primary home)
     - pricing
     - proposal
     - outreach
@@ -165,7 +165,7 @@ router:
     - enablement
     - copy
     - copywriting
-    - pipeline
+    - pipeline  # intentional cross-domain: sales pipeline (growth/) vs CI/CD pipeline (engineering/)
     - campaigns
     - affiliate
     - influencer

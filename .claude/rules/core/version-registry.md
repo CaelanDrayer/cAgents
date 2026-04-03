@@ -11,7 +11,7 @@ paths:
 
 All locations where the cAgents version number appears. Keep ALL locations in sync on every release.
 
-## Version Locations (16 total)
+## Version Locations (18 total)
 
 | # | File | Field/Line | Updated By |
 |---|------|-----------|------------|
@@ -28,13 +28,15 @@ All locations where the cAgents version number appears. Keep ALL locations in sy
 | 11 | `.claude/skills/designer/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
 | 12 | `.claude/skills/debug/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
 | 13 | `.claude/skills/helper/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
-| 14 | `.claude/hooks/session-catchup.cjs` | `cAgents V{version} session initialized` | `scripts/sync-versions.sh` |
-| 15 | `scripts/ci/cagents-ci.sh` | `# Version:` header + `log_section` banner | `scripts/sync-versions.sh` |
-| 16 | `scripts/ci/validate-agents.sh` | `# Version:` header | `scripts/sync-versions.sh` |
+| 14 | `.claude/skills/context/SKILL.md` | metadata `version:` | `scripts/sync-versions.sh` |
+| 15 | `.claude/skills/hookify/SKILL.md` | metadata `version:` | `scripts/sync-versions.sh` |
+| 16 | `.claude/hooks/session-catchup.cjs` | `cAgents V{version} session initialized` | `scripts/sync-versions.sh` |
+| 17 | `scripts/ci/cagents-ci.sh` | `# Version:` header + `log_section` banner | `scripts/sync-versions.sh` |
+| 18 | `scripts/ci/validate-agents.sh` | `# Version:` header | `scripts/sync-versions.sh` |
 
 ## Sync Tool
 
-`scripts/sync-versions.sh <version>` updates all 16 locations (3 JSON files + CLAUDE.md + settings.json + 8 SKILL.md frontmatters + session-catchup.cjs + cagents-ci.sh + validate-agents.sh).
+`scripts/sync-versions.sh <version>` updates all 18 locations (3 JSON files + CLAUDE.md + settings.json + 10 SKILL.md frontmatters + session-catchup.cjs + cagents-ci.sh + validate-agents.sh).
 
 ## Version Bump Procedure
 

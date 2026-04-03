@@ -77,14 +77,13 @@ router:
     - promotion
     - HRIS
     - L&D
-    - retention
-    - engagement
+    - retention  # intentional cross-domain: employee retention (people/) vs customer retention (growth/)
+    - engagement  # intentional cross-domain: employee engagement (people/) vs marketing engagement (growth/)
     - survey
     - labor
     - hiring
     - DEI
     - recruiting
-    - onboarding
     - interview
     - performance management
     - talent acquisition

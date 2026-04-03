@@ -371,7 +371,7 @@ run_tests() {
     fi
 
     log_info "Running Vitest test suite..."
-    if cd "$PROJECT_ROOT" && npx vitest run --reporter=verbose 2>&1; then
+    if cd "$PROJECT_ROOT" && npx vitest run --config tests/vitest.config.js --reporter=verbose 2>&1; then
         log_info "All tests passed"
         return 0
     else

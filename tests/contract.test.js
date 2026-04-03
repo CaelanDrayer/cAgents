@@ -7,6 +7,14 @@ import path from 'path';
 const SCHEMAS_DIR = path.join(__dirname, 'schemas');
 const FIXTURES_DIR = path.join(__dirname, 'fixtures', 'sessions');
 
+// TODO: 16/21 schemas lack fixture-based validation. Only 5 schemas have fixture data:
+// instruction, status, agent-tree, coordination-log, work-items. The remaining 16 schemas
+// compile and validate structurally but have no session fixture files to test against.
+// To improve coverage, add fixture YAML files for: enriched-context, plan, validation-report,
+// execution-summary, delegation-prompts, event, decomposition, strategic-brief, routing-decision,
+// domain-analysis, objection, integration-report, team-manifest, gate-validation,
+// partial-results, child-controllers.
+
 // Skip all contract tests when AgentPath schemas have not been fetched.
 // Run `scripts/ci/fetch-schemas.sh` to populate the schemas directory.
 const schemasAvailable = fs.existsSync(SCHEMAS_DIR) &&
@@ -58,25 +66,10 @@ describeOrSkip('Contract Tests: Session YAML ↔ JSON Schema', () => {
   });
 
   describe('status.yaml validation', () => {
-    // run_sample uses pipeline_state (matches schema directly)
-    it('run_sample/status.yaml matches status schema', () => {
-      const data = loadFixture('run_sample', 'status.yaml');
-      const valid = validateStatus(data);
-      if (!valid) {
-        console.error('Validation errors for run_sample/status.yaml:', validateStatus.errors);
-      }
-      expect(valid).toBe(true);
-    });
-
-    // team/org/designer use "phase" instead of "pipeline_state"
-    // The schema requires pipeline_state, so we validate by mapping phase -> pipeline_state
-    for (const session of ['team_sample', 'org_sample', 'designer_sample']) {
-      it(`${session}/status.yaml matches status schema (phase mapped to pipeline_state)`, () => {
+    for (const session of SESSION_TYPES) {
+      it(`${session}/status.yaml matches status schema`, () => {
         const data = loadFixture(session, 'status.yaml');
-        // These sessions use "phase" instead of "pipeline_state"
-        // Map phase to pipeline_state for schema validation while keeping additional properties
-        const mapped = { ...data, pipeline_state: data.phase };
-        const valid = validateStatus(mapped);
+        const valid = validateStatus(data);
         if (!valid) {
           console.error(`Validation errors for ${session}/status.yaml:`, validateStatus.errors);
         }

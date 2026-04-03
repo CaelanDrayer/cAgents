@@ -75,7 +75,7 @@ router:
     - migrate
     - migration
     - CI/CD
-    - pipeline
+    - pipeline  # intentional cross-domain: CI/CD pipeline (engineering/) vs sales pipeline (growth/)
     - Docker
     - container
     - Kubernetes
@@ -87,8 +87,7 @@ router:
     - monitor
     - debug
     - review
-    - PR
-    - pull request
+    - pull request  # cross-domain: "PR" removed (ambiguous with public relations in growth/)
     - microservice
     - serverless
     - terraform

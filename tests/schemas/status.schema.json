@@ -7,6 +7,9 @@
         "pipeline_state": {
           "type": "string"
         },
+        "phase": {
+          "type": "string"
+        },
         "state_history": {
           "type": "array",
           "items": {
@@ -34,8 +37,9 @@
           "default": []
         }
       },
-      "required": [
-        "pipeline_state"
+      "anyOf": [
+        { "required": ["pipeline_state"] },
+        { "required": ["phase"] }
       ],
       "additionalProperties": true
     }

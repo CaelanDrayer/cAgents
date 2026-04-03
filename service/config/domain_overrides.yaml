@@ -132,7 +132,7 @@ router:
     - warranty
     - feedback
     - CRM
-    - retention
+    - customer retention  # cross-domain: "retention" alone is ambiguous (people/ = employee, growth/ = customer)
     - chat support
     - customer success
     - NPS

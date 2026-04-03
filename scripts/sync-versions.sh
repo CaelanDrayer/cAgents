@@ -2,12 +2,12 @@
 # Sync version across all cAgents manifest files
 # Usage: ./scripts/sync-versions.sh <new-version>
 #
-# Updates version in all 16 locations (see .claude/rules/core/version-registry.md):
-# Location #15: scripts/ci/cagents-ci.sh (header comment + log_section banner)
-# Location #16: scripts/ci/validate-agents.sh (# Version: header)
+# Updates version in all 18 locations (see .claude/rules/core/version-registry.md):
+# Location #17: scripts/ci/cagents-ci.sh (header comment + log_section banner)
+# Location #18: scripts/ci/validate-agents.sh (# Version: header)
 #   .claude-plugin/plugin.json, .claude-plugin/marketplace.json, package.json,
 #   CLAUDE.md, .claude/settings.json,
-#   8 skill SKILL.md frontmatter versions, and session-catchup.cjs context string
+#   10 skill SKILL.md frontmatter versions, and session-catchup.cjs context string
 
 set -euo pipefail
 
@@ -90,6 +90,8 @@ SKILLS=(
   "$ROOT/.claude/skills/designer/SKILL.md"
   "$ROOT/.claude/skills/debug/SKILL.md"
   "$ROOT/.claude/skills/helper/SKILL.md"
+  "$ROOT/.claude/skills/context/SKILL.md"
+  "$ROOT/.claude/skills/hookify/SKILL.md"
 )
 
 for skill in "${SKILLS[@]}"; do

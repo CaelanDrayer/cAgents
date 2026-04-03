@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # cAgents Agent Schema Validation
-# Validates all agent SKILL.md files across all 8 domains
+# Validates all agent SKILL.md files across all 15 domains
 # Version: 10.25.1
 #
 # Usage:
@@ -51,8 +51,8 @@ STRICT=false
 COUNT_ONLY=false
 FILTER_DOMAIN=""
 
-# All v10 domains
-DOMAINS=(engineering creative business growth people service leadership shared core)
+# All v11 domains (15 total)
+DOMAINS=(engineering creative business growth people service leadership shared core science health education personal arts trades)
 
 log_pass() {
     if [[ $COUNT_ONLY != true ]]; then
