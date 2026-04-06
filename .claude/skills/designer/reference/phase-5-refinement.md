@@ -146,9 +146,9 @@ Research agents prepare QUESTIONS. Specialists validate ANSWERS. For complex des
 
 ```
 Specialist delegation for VALIDATION (in addition to research agents for PREPARATION):
-  designer -> Task(cagents:architect, "Validate proposed architecture against {constraints}")
-  designer -> Task(cagents:security-specialist, "Validate security design for {sensitive_areas}")
-  designer -> Task(cagents:qa-lead, "Validate testability of proposed design")
+  designer -> Agent(cagents:architect, "Validate proposed architecture against {constraints}")
+  designer -> Agent(cagents:security-specialist, "Validate security design for {sensitive_areas}")
+  designer -> Agent(cagents:qa-lead, "Validate testability of proposed design")
 
 Trigger criteria:
   - Design involves system architecture decisions (spawn architect)
@@ -164,7 +164,7 @@ Keep specialist prompts under 300 tokens. Include: the question, where to look, 
 Throughout Refinement, dispatch follow-up research when user reveals unexpected information:
 
 ```javascript
-Task({
+Agent({
   subagent_type: "cagents:architect",
   description: "Follow-up research: real-time architecture",
   prompt: `Follow-up research for /designer Refinement.
@@ -190,7 +190,7 @@ Before advancing to Specification, verify:
 **Phase-Overlap**: At ~60% completion (5+ refinement questions answered), spawn Specification research agents:
 
 ```javascript
-Task({
+Agent({
   subagent_type: "cagents:backend-developer",
   description: "Research: Codebase compatibility for Specification phase",
   prompt: `Research agent for Specification codebase compatibility.

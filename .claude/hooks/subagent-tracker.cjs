@@ -54,7 +54,7 @@ function appendToGlobalAuditLog(entry) {
 
 /**
  * Infer parent agent from pending_spawns.yaml or coordination_log.yaml.
- * When a controller spawns an agent via Task tool, the hook can match
+ * When a controller spawns an agent via Agent tool, the hook can match
  * by checking pending spawns or the most recently active controller.
  */
 function inferParentAgent(sessionDir, subagentType, agentId) {
@@ -233,7 +233,7 @@ createHook('SubagentTracker', async (input) => {
     return {
       hookSpecificOutput: {
         hookEventName: 'SubagentStart',
-        additionalContext: `Agent spawned: ${subagentType} (id: ${agentId}). No active session found for tracking. IMPORTANT: When you are a cAgents agent spawned via Task tool with subagent_type "cagents:{name}", please write your agent name to the session workflow/agent_tree.yaml if a session path is provided in your prompt.`
+        additionalContext: `Agent spawned: ${subagentType} (id: ${agentId}). No active session found for tracking. IMPORTANT: When you are a cAgents agent spawned via Agent tool with subagent_type "cagents:{name}", please write your agent name to the session workflow/agent_tree.yaml if a session path is provided in your prompt.`
       }
     };
   }
@@ -242,7 +242,7 @@ createHook('SubagentTracker', async (input) => {
   const treeFile = path.join(workflowDir, 'agent_tree.yaml');
 
   // C-04: Extract cagents_type from multiple sources
-  // Priority: (1) subagentType if it starts with 'cagents:', (2) input.subagent_type from Task tool,
+  // Priority: (1) subagentType if it starts with 'cagents:', (2) input.subagent_type from Agent tool,
   // (3) parse the task description/prompt for cagents: prefix
   let cagentsType = '';
   if (subagentType.startsWith('cagents:')) {
@@ -250,7 +250,7 @@ createHook('SubagentTracker', async (input) => {
   } else if (input.subagent_type && input.subagent_type.startsWith('cagents:')) {
     cagentsType = input.subagent_type;
   } else {
-    // Try to extract from tool_input (Task tool passes subagent_type)
+    // Try to extract from tool_input (Agent tool passes subagent_type)
     const toolInput = input.tool_input || {};
     if (toolInput.subagent_type && toolInput.subagent_type.startsWith('cagents:')) {
       cagentsType = toolInput.subagent_type;
@@ -312,11 +312,20 @@ createHook('SubagentTracker', async (input) => {
 
     // Compute depth from parent's depth using parsed object (root = 0)
     if (parentAgent && parentAgent !== 'root' && parsedObj.agents.length > 0) {
-      const parentEntry = parsedObj.agents.find(a => a.id === parentAgent);
-      if (parentEntry && typeof parentEntry.depth === 'number') {
-        depth = parentEntry.depth + 1;
+      // Map known sentinel parent values to fixed depths before tree lookup.
+      // inferParentAgent() returns these sentinels when no real agent ID is found:
+      //   'pipeline' -> depth 1 (enrichment agents are direct children of the pipeline)
+      //   'controller' -> depth 2 (execution agents spawned by a generic controller)
+      const SENTINEL_DEPTH_MAP = { pipeline: 1, controller: 2 };
+      if (SENTINEL_DEPTH_MAP.hasOwnProperty(parentAgent)) {
+        depth = SENTINEL_DEPTH_MAP[parentAgent];
       } else {
-        depth = 1; // Parent exists but no depth field yet (legacy entry), assume depth 1
+        const parentEntry = parsedObj.agents.find(a => a.id === parentAgent);
+        if (parentEntry && typeof parentEntry.depth === 'number') {
+          depth = parentEntry.depth + 1;
+        } else {
+          depth = 1; // Parent exists but no depth field yet (legacy entry), assume depth 1
+        }
       }
     }
 

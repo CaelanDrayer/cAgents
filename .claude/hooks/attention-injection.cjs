@@ -196,20 +196,28 @@ createHook('AttentionInjection', async (input) => {
     if (status) reminder += `\nCoordination: ${status}`;
   }
 
-  // Delegation mandate injection for pre-COORDINATED states (V10.22.6)
-  // Pipeline states before COORDINATED are phases where agents have not yet been spawned.
+  // Delegation mandate injection for pipeline states requiring delegation (V10.22.6, V10.25.3)
+  // Pre-COORDINATED states are phases where agents have not yet been spawned.
+  // COORDINATED is the phase where controllers are actively working and MUST delegate to execution agents.
   // Injecting a delegation reminder during these phases prevents self-handling rationalizations
-  // on every Write/Edit/Bash call before the controller gets to work.
-  const PRE_COORDINATED_STATES = ['INIT', 'ORCHESTRATED', 'PLANNED', 'DECOMPOSED', 'PROMPTS_READY'];
+  // on every Write/Edit/Bash call throughout the delegation-required pipeline states.
+  const DELEGATION_MANDATE_STATES = ['INIT', 'ORCHESTRATED', 'PLANNED', 'DECOMPOSED', 'PROMPTS_READY', 'COORDINATED'];
   const statusPath = path.join(sessionDir, 'status.yaml');
   const statusContent = safeRead(statusPath);
   if (statusContent) {
     const pipelineState = extractYamlValue(statusContent, 'pipeline_state');
-    if (pipelineState && PRE_COORDINATED_STATES.includes(pipelineState)) {
-      reminder += '\n[DELEGATION MANDATE] Pipeline state: ' + pipelineState + '. ' +
-        'Self-handling is FORBIDDEN. ALL work must be delegated to subagents via the Task tool. ' +
-        'Do NOT write code, edit files, or implement anything directly. ' +
-        'Spawn the next pipeline agent and wait for its output.';
+    if (pipelineState && DELEGATION_MANDATE_STATES.includes(pipelineState)) {
+      if (pipelineState === 'COORDINATED') {
+        reminder += '\n[DELEGATION MANDATE] Pipeline state: COORDINATED. ' +
+          'You are a CONTROLLER — you MUST delegate ALL work to execution agents via the Agent tool. ' +
+          'Do NOT write code, edit files, or implement directly. ' +
+          'Spawn cagents:{specialist} execution agents for each work item and cagents:reviewer to validate.';
+      } else {
+        reminder += '\n[DELEGATION MANDATE] Pipeline state: ' + pipelineState + '. ' +
+          'Self-handling is FORBIDDEN. ALL work must be delegated to subagents via the Agent tool. ' +
+          'Do NOT write code, edit files, or implement anything directly. ' +
+          'Spawn the next pipeline agent and wait for its output.';
+      }
     }
   }
 

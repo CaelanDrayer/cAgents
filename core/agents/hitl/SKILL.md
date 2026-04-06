@@ -15,7 +15,7 @@ metadata:
     - pattern_learning
     - workflow_pause_resume
   maxTurns: 15
-allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
 ---
 
 # HITL Agent

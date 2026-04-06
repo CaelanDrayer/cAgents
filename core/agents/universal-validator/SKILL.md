@@ -15,7 +15,7 @@ metadata:
     - acceptance_verification
     - evidence_chain
   maxTurns: 40
-allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
 ---
 
 <example>
@@ -75,7 +75,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
 - Validate coherence and actionability
 
 ### Phase 4: Delegation Compliance Validation
-- Verify controller delegated ALL work via Task tool
+- Verify controller delegated ALL work via Agent tool
 - Detect self-answered questions (BLOCKED if > 0)
 - Check minimum subagent usage per objective
 
@@ -235,7 +235,7 @@ validation_dashboard:
       details: "Synthesis addresses all objectives"
     - phase: 4
       result: PASS
-      details: "All work delegated via Task tool"
+      details: "All work delegated via Agent tool"
     - phase: 5
       result: PASS
       details: "All implementation tasks aligned with objectives"

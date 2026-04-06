@@ -17,7 +17,7 @@ The /designer skill is a structured 4-phase interactive design engine (Discovery
 ## Weaknesses and Gaps
 
 ### 1. No Agent Delegation
-The designer operates as a single agent with no Task tool delegation. Unlike /review and /optimize which spawn specialist agents, /designer does everything inline. For complex designs (system architecture, game world building), spawning domain specialists could provide richer analysis.
+The designer operates as a single agent with no Agent tool delegation. Unlike /review and /optimize which spawn specialist agents, /designer does everything inline. For complex designs (system architecture, game world building), spawning domain specialists could provide richer analysis.
 
 ### 2. No Version/Iteration Support
 There is no mechanism to create design v2 from an existing v1. Users must start fresh or resume incomplete sessions -- they cannot branch or iterate on completed designs.

@@ -16,7 +16,7 @@ metadata:
     - adaptive_execution
     - team_mode_support
   maxTurns: 50
-allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
 ---
 
 # Orchestrator
@@ -39,7 +39,7 @@ Workflow phase conductor with task decomposition integration and CSV-based inven
 When a phase completes:
 1. IMMEDIATELY transition to next phase
 2. Update status.yaml with new phase
-3. Invoke next phase's agent via Task tool
+3. Invoke next phase's agent via Agent tool
 4. DO NOT wait for user approval
 
 **Only escalate when**:
@@ -180,7 +180,7 @@ Also ensure that when you spawn subagents (router, planner, controller, executor
 
 ## Context-Efficient Delegation
 
-When spawning subagents via Task tool, minimize context passed in prompts:
+When spawning subagents via Agent tool, minimize context passed in prompts:
 
 1. **Pass file PATHS, not file CONTENTS** - Let subagents load what they need
 2. **Essential fields only** - domain, tier, controller name, session path
@@ -208,7 +208,7 @@ Read plan.yaml and coordination_log.yaml for context.
 When a subagent (controller, executor, or any phase agent) returns with incomplete work:
 
 ### Detection
-- Task tool returns but expected deliverables are missing
+- Agent tool returns but expected deliverables are missing
 - Waypoint/checkpoint files exist with `type: pre_compact`
 - Phase output is partial (e.g., coordination_log exists but has pending work items)
 
@@ -250,14 +250,14 @@ team_mode_indicators:
 
 ```javascript
 // Standard mode: spawn controller
-Task({
+Agent({
   subagent_type: "cagents:{controller}",
   description: "Coordinate: {request}",
   prompt: "Session: {session_path}\nRead plan.yaml for context."
 })
 
 // Team mode: spawn team-lead-adapter
-Task({
+Agent({
   subagent_type: "cagents:team-lead-adapter",
   description: "Team lead: {request}",
   prompt: `

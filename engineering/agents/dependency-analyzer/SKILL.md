@@ -14,7 +14,7 @@ metadata:
     - execution_optimization
     - prerequisite_validation
   maxTurns: 10
-  disallowedTools: ["Task"]
+  disallowedTools: ["Agent"]
   related_agents:
     - name: architect
       type: collaborates_with

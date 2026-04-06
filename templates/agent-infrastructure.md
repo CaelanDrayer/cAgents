@@ -15,7 +15,7 @@ metadata:
     - context_enrichment
   maxTurns: 50
   permissionMode: bypassPermissions
-allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
 ---
 
 # Infrastructure Agent Name

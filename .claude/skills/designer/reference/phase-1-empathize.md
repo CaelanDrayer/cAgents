@@ -45,7 +45,7 @@ AskUserQuestion({
 If `--deep` flag is set, spawn research agents to analyze user-facing code and stakeholder landscape:
 
 ```javascript
-Task({
+Agent({
   subagent_type: "cagents:ux-designer",
   description: "Research: UX patterns and user context for Empathize",
   prompt: `Research agent for /designer Empathize phase.
@@ -56,7 +56,7 @@ Identify: user types, interaction patterns, pain points visible in code/config.
 Write to: ${session_dir}/question_prep/empathize_ux.yaml`
 })
 
-Task({
+Agent({
   subagent_type: "cagents:business-analyst",
   description: "Research: Stakeholder landscape for Empathize",
   prompt: `Research agent for /designer Empathize phase.

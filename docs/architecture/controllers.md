@@ -2,7 +2,7 @@
 
 ## Overview
 
-Controllers are tier 2 agents that coordinate work between planning and execution. They NEVER do direct work -- all implementation is delegated to execution agents via the Task tool.
+Controllers are tier 2 agents that coordinate work between planning and execution. They NEVER do direct work -- all implementation is delegated to execution agents via the Agent tool.
 
 ## Question-Based Delegation
 
@@ -10,7 +10,7 @@ Controllers are tier 2 agents that coordinate work between planning and executio
 1. Controller receives objectives from plan.yaml
 2. Breaks objectives into specific questions
 3. Identifies execution agents to delegate to
-4. Delegates questions via Task tool
+4. Delegates questions via Agent tool
 5. Execution agents provide expert answers
 6. Controller synthesizes answers into solution
 7. Creates implementation tasks

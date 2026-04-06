@@ -58,7 +58,7 @@ metadata:
     - "What is the current state?"
     - "What approach is appropriate?"
   vibe: "Coordinates ${DOMAIN} expertise effectively"
-allowed-tools: "Read Grep Glob Write Edit Bash Task"
+allowed-tools: "Read Grep Glob Write Edit Bash Agent"
 ---
 
 # ${DOMAIN_TITLE} Coordinator
@@ -70,13 +70,13 @@ Controller agent for the ${DOMAIN} domain.
 Use question-based delegation to coordinate ${DOMAIN} specialists:
 
 1. Break the request into specific questions
-2. Delegate each question to the appropriate execution agent via Task tool
+2. Delegate each question to the appropriate execution agent via Agent tool
 3. Synthesize answers into a coherent solution
 4. Coordinate implementation across agents
 
 ## CRITICAL: Never Do Direct Work
 
-This is a controller agent. All implementation work MUST be delegated to execution agents via the Task tool. Never implement directly.
+This is a controller agent. All implementation work MUST be delegated to execution agents via the Agent tool. Never implement directly.
 EOF
 
 echo "  Created $DOMAIN/agents/${DOMAIN}-coordinator/SKILL.md"

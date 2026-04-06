@@ -14,7 +14,7 @@ metadata:
     - output_aggregation
     - progress_tracking
   maxTurns: 40
-allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
 ---
 
 # Universal Executor
@@ -49,7 +49,7 @@ The executor monitors controllers, doesn't manage teams:
 ## Workflow Phases
 
 1. **Initialization**: Read plan.yaml, verify controller
-2. **Handoff**: Invoke controller via Task tool
+2. **Handoff**: Invoke controller via Agent tool
 3. **Monitoring**: Poll coordination_log.yaml every 5 min
 4. **Blocker Detection**: Identify unanswered questions, timeouts
 5. **Output Aggregation**: Collect outputs when controller complete
@@ -78,7 +78,7 @@ When a controller or execution agent exhausts its context:
 
 ### Detection Signals
 - Controller's coordination_log.yaml has `status: in_progress` (not `completed`)
-- Expected output files missing after Task tool returns
+- Expected output files missing after Agent tool returns
 - Checkpoint/waypoint created by pre-compact hook
 
 ### Recovery Protocol

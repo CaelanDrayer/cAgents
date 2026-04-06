@@ -14,7 +14,7 @@ metadata:
     - gap_identification
     - test_quality
   maxTurns: 10
-  disallowedTools: ["Task"]
+  disallowedTools: ["Agent"]
   related_agents:
     - name: qa-lead
       type: coordinated_by

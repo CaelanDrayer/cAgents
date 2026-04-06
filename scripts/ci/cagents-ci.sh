@@ -2,7 +2,7 @@
 #
 # cAgents CI Runner
 # Self-contained CI script for quality gates
-# Version: 10.25.2
+# Version: 10.25.3
 #
 # Usage:
 #   ./scripts/ci/cagents-ci.sh [command]
@@ -105,7 +105,7 @@ validate_agents() {
     local passed=0
     local failed=0
 
-    for domain in core shared engineering creative business growth people service leadership; do
+    for domain in core shared engineering creative business growth people service leadership science health education personal arts trades; do
         log_info "Checking $domain domain..."
         local domain_dir="$PROJECT_ROOT/$domain/agents"
         if [[ ! -d "$domain_dir" ]]; then
@@ -150,7 +150,7 @@ lint_docs() {
 
     # Check for TODO/FIXME in production agents
     log_info "Checking for TODO/FIXME in agents..."
-    for domain in core shared engineering creative business growth people service leadership; do
+    for domain in core shared engineering creative business growth people service leadership science health education personal arts trades; do
         local domain_dir="$PROJECT_ROOT/$domain/agents"
         if [[ -d "$domain_dir" ]]; then
             while IFS= read -r file; do
@@ -164,7 +164,7 @@ lint_docs() {
 
     # Check for placeholder text
     log_info "Checking for placeholder text..."
-    for domain in core shared engineering creative business growth people service leadership; do
+    for domain in core shared engineering creative business growth people service leadership science health education personal arts trades; do
         local domain_dir="$PROJECT_ROOT/$domain/agents"
         if [[ -d "$domain_dir" ]]; then
             while IFS= read -r file; do
@@ -178,7 +178,7 @@ lint_docs() {
 
     # Check for required sections in agents
     log_info "Checking required sections..."
-    for domain in core shared engineering creative business growth people service leadership; do
+    for domain in core shared engineering creative business growth people service leadership science health education personal arts trades; do
         local domain_dir="$PROJECT_ROOT/$domain/agents"
         if [[ -d "$domain_dir" ]]; then
             while IFS= read -r file; do
@@ -387,7 +387,7 @@ main() {
     local command="${1:-all}"
     local exit_code=0
 
-    log_section "cAgents CI Runner v10.25.2"
+    log_section "cAgents CI Runner v10.25.3"
     log_info "Project root: $PROJECT_ROOT"
     log_info "Command: $command"
 

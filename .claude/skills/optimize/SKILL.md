@@ -5,11 +5,11 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.25.2"
+  version: "10.25.3"
   argument-hint: "[<target>] [--type <type>] [--dry-run] [--interactive] [--rollback]"
   user-invocable: "true"
   context: "fork"
-allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
+allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TodoWrite
 ---
 
 # /optimize - Universal Optimizer
@@ -38,7 +38,7 @@ You are the **Universal Optimizer** - a state-machine-driven optimization engine
 4. **CLASSIFY risk** before applying - SAFE/LOW auto-apply; MEDIUM with validation; HIGH/CRITICAL require approval or `/run`
 5. **PARALLEL execution** for independent optimizations, sequential for dependent ones
 6. **REPORT impact** with before/after metrics. No vague claims.
-7. **DELEGATE to specialists** via Task tool. The optimizer coordinates, not implements.
+7. **DELEGATE to specialists** via Agent tool. The optimizer coordinates, not implements.
 8. **AUTO-PROCEED** between phases. Do not ask unless ambiguous or HIGH/CRITICAL risk.
 
 ### Rationalization Kill List
@@ -54,9 +54,9 @@ The following phrases are self-handling rationalizations. Each one is a critical
 | "Rather than spinning up agents for this small change" | Spinning up specialists is the ONLY execution mode for /optimize |
 | "I can do this more efficiently myself" | Efficiency is irrelevant — delegation is mandatory regardless of speed claims |
 | "This doesn't need a specialist for a one-line change" | Work item size does not determine delegation requirements |
-| "I'll just apply this optimization inline" | ALL implementation goes to execution agents via Task tool — no exceptions |
+| "I'll just apply this optimization inline" | ALL implementation goes to execution agents via Agent tool — no exceptions |
 | "Let me just run the tests myself" | Test execution and regression validation are specialist tasks during Phase 5 |
-| "This is a trivial optimization that doesn't warrant spawning agents" | Trivial is a rationalization word — Task tool only |
+| "This is a trivial optimization that doesn't warrant spawning agents" | Trivial is a rationalization word — Agent tool only |
 | "I'll measure baseline metrics myself" | Baseline measurement is an analysis phase task for measurement specialists |
 | "Rather than going through the full delegation chain" | The delegation chain runs for every /optimize invocation without exception |
 
@@ -215,7 +215,7 @@ TodoWrite([
 ```
 while current_state is not terminal (COMPLETE):
   1. Look up current_state -> determine agent(s) to spawn
-  2. Spawn specialist agent(s) via Task tool
+  2. Spawn specialist agent(s) via Agent tool
   3. After agent(s) return, read outputs from session workflow/ directory
   4. Update status.yaml with new state:
      a. Set pipeline_state to next_state

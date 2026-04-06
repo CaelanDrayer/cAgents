@@ -7,7 +7,7 @@
 If `--deep` flag is set, spawn research agents to analyze tech stack, architecture, and constraints:
 
 ```javascript
-Task({
+Agent({
   subagent_type: "cagents:architect",
   description: "Research: Architecture analysis for Define questions",
   prompt: `Research agent for /designer Define phase.
@@ -18,7 +18,7 @@ Analyze: module boundaries, integration points, architectural constraints, techn
 Write to: ${session_dir}/question_prep/define_architecture.yaml`
 })
 
-Task({
+Agent({
   subagent_type: "cagents:backend-developer",
   description: "Research: Tech stack analysis for Define questions",
   prompt: `Research agent for /designer Define phase.
@@ -129,7 +129,7 @@ If any are missing, ask targeted questions to fill gaps. Do NOT advance with gap
 **Phase-Overlap**: During synthesis, spawn Conceptualize research agents if `--deep`:
 
 ```javascript
-Task({
+Agent({
   subagent_type: "cagents:architect",
   description: "Research: High-level patterns for Conceptualize questions",
   prompt: `Research agent for Conceptualize phase.

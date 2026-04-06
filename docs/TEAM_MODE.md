@@ -74,9 +74,9 @@ When `teammateMode: "tmux"` is configured:
 > **tmux required**: Install with `brew install tmux` (macOS) or `sudo apt install tmux` (Ubuntu/Debian). See the [tmux wiki](https://github.com/tmux/tmux/wiki) for full documentation.
 
 ### Teammates Spawn Controllers Directly
-Every team member spawns its assigned controller directly via Task tool:
+Every team member spawns its assigned controller directly via Agent tool:
 - The team lead assigns a controller per work item during decomposition
-- Each teammate spawns `Task({ subagent_type: "cagents:{controller_name}" })` directly
+- Each teammate spawns `Agent({ subagent_type: "cagents:{controller_name}" })` directly
 - The controller creates execution agents (e.g., engineering-manager -> backend-developer, qa-tester)
 - Each teammate is an orchestration node, not a direct implementer
 - Teammates NEVER implement work directly -- they coordinate through controllers

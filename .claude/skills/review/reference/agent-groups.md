@@ -97,23 +97,23 @@ Report findings with: file:line location, severity (critical/high/medium/low), m
 ```javascript
 // Group 1 - Structural (independent)
 const group1 = await Promise.all([
-  Task({ subagent_type: "cagents:architecture-reviewer", prompt: `Review architecture of ${targetPath}...` }),
-  Task({ subagent_type: "cagents:code-standards-auditor", prompt: `Audit code standards for ${targetPath}...` }),
-  Task({ subagent_type: "cagents:technical-writer", prompt: `Review documentation in ${targetPath}...` }),
+  Agent({ subagent_type: "cagents:architecture-reviewer", prompt: `Review architecture of ${targetPath}...` }),
+  Agent({ subagent_type: "cagents:code-standards-auditor", prompt: `Audit code standards for ${targetPath}...` }),
+  Agent({ subagent_type: "cagents:technical-writer", prompt: `Review documentation in ${targetPath}...` }),
 ]);
 
 // Group 2 - Security & Performance (uses Group 1 context)
 const group2 = await Promise.all([
-  Task({ subagent_type: "cagents:security-engineer", prompt: `Security audit ${targetPath}. Architecture context: ${group1Results}` }),
-  Task({ subagent_type: "cagents:performance-analyzer", prompt: `Analyze performance of ${targetPath}. Architecture context: ${group1Results}` }),
-  Task({ subagent_type: "cagents:test-coverage-validator", prompt: `Validate test coverage for ${targetPath}.` }),
+  Agent({ subagent_type: "cagents:security-engineer", prompt: `Security audit ${targetPath}. Architecture context: ${group1Results}` }),
+  Agent({ subagent_type: "cagents:performance-analyzer", prompt: `Analyze performance of ${targetPath}. Architecture context: ${group1Results}` }),
+  Agent({ subagent_type: "cagents:test-coverage-validator", prompt: `Validate test coverage for ${targetPath}.` }),
 ]);
 
 // Group 3 - Specialized (conditional, uses Groups 1-2)
 const group3 = await Promise.all([
-  Task({ subagent_type: "cagents:senior-developer", prompt: `Cross-cutting review of ${targetPath}. Prior findings: ${group1and2Results}` }),
-  hasUIComponents ? Task({ subagent_type: "cagents:accessibility-checker", prompt: `WCAG audit of ${targetPath}...` }) : null,
-  hasRegulatedData ? Task({ subagent_type: "cagents:compliance-specialist", prompt: `Compliance review of ${targetPath}...` }) : null,
+  Agent({ subagent_type: "cagents:senior-developer", prompt: `Cross-cutting review of ${targetPath}. Prior findings: ${group1and2Results}` }),
+  hasUIComponents ? Agent({ subagent_type: "cagents:accessibility-checker", prompt: `WCAG audit of ${targetPath}...` }) : null,
+  hasRegulatedData ? Agent({ subagent_type: "cagents:compliance-specialist", prompt: `Compliance review of ${targetPath}...` }) : null,
 ].filter(Boolean));
 ```
 
@@ -196,22 +196,22 @@ Report findings with: file:line location, severity (critical/high/medium/low), W
 ```javascript
 // Group 1 - Content Quality (independent)
 const group1 = await Promise.all([
-  Task({ subagent_type: "cagents:technical-writer", prompt: `Review documentation in ${targetPath}...` }),
-  Task({ subagent_type: "cagents:copy-editor", prompt: `Edit ${targetPath} for language quality...` }),
-  Task({ subagent_type: "cagents:editor", prompt: `Review document structure of ${targetPath}...` }),
+  Agent({ subagent_type: "cagents:technical-writer", prompt: `Review documentation in ${targetPath}...` }),
+  Agent({ subagent_type: "cagents:copy-editor", prompt: `Edit ${targetPath} for language quality...` }),
+  Agent({ subagent_type: "cagents:editor", prompt: `Review document structure of ${targetPath}...` }),
 ]);
 
 // Group 2 - Technical Accuracy (uses Group 1 context)
 const group2 = await Promise.all([
-  Task({ subagent_type: "cagents:architecture-reviewer", prompt: `Verify technical accuracy of ${targetPath}. Content issues: ${group1Results}` }),
-  Task({ subagent_type: "cagents:code-standards-auditor", prompt: `Validate code examples in ${targetPath}. Known issues: ${group1Results}` }),
-  Task({ subagent_type: "cagents:compliance-specialist", prompt: `Check required legal/compliance notices in ${targetPath}.` }),
+  Agent({ subagent_type: "cagents:architecture-reviewer", prompt: `Verify technical accuracy of ${targetPath}. Content issues: ${group1Results}` }),
+  Agent({ subagent_type: "cagents:code-standards-auditor", prompt: `Validate code examples in ${targetPath}. Known issues: ${group1Results}` }),
+  Agent({ subagent_type: "cagents:compliance-specialist", prompt: `Check required legal/compliance notices in ${targetPath}.` }),
 ]);
 
 // Group 3 - Accessibility (uses Groups 1-2)
 const group3 = await Promise.all([
-  Task({ subagent_type: "cagents:accessibility-checker", prompt: `Audit documentation accessibility in ${targetPath}. Structure context: ${group1and2Results}` }),
-  Task({ subagent_type: "cagents:ux-designer", prompt: `Evaluate information architecture of ${targetPath}. Context: ${group1and2Results}` }),
+  Agent({ subagent_type: "cagents:accessibility-checker", prompt: `Audit documentation accessibility in ${targetPath}. Structure context: ${group1and2Results}` }),
+  Agent({ subagent_type: "cagents:ux-designer", prompt: `Evaluate information architecture of ${targetPath}. Context: ${group1and2Results}` }),
 ]);
 ```
 
@@ -285,22 +285,22 @@ Report findings with: location, severity (critical/high/medium/low), impact on c
 ```javascript
 // Group 1 - Writing Quality (independent)
 const group1 = await Promise.all([
-  Task({ subagent_type: "cagents:copy-editor", prompt: `Edit content in ${targetPath}...` }),
-  Task({ subagent_type: "cagents:prose-stylist", prompt: `Evaluate writing style of ${targetPath}...` }),
-  Task({ subagent_type: "cagents:editor", prompt: `Review content structure of ${targetPath}...` }),
+  Agent({ subagent_type: "cagents:copy-editor", prompt: `Edit content in ${targetPath}...` }),
+  Agent({ subagent_type: "cagents:prose-stylist", prompt: `Evaluate writing style of ${targetPath}...` }),
+  Agent({ subagent_type: "cagents:editor", prompt: `Review content structure of ${targetPath}...` }),
 ]);
 
 // Group 2 - Audience & Brand (uses Group 1 context)
 const group2 = await Promise.all([
-  Task({ subagent_type: "cagents:content-marketing-manager", prompt: `Review content strategy of ${targetPath}. Writing quality: ${group1Results}` }),
-  Task({ subagent_type: "cagents:copywriter", prompt: `Review persuasive effectiveness of ${targetPath}. Style context: ${group1Results}` }),
-  Task({ subagent_type: "cagents:compliance-specialist", prompt: `Check marketing compliance in ${targetPath}.` }),
+  Agent({ subagent_type: "cagents:content-marketing-manager", prompt: `Review content strategy of ${targetPath}. Writing quality: ${group1Results}` }),
+  Agent({ subagent_type: "cagents:copywriter", prompt: `Review persuasive effectiveness of ${targetPath}. Style context: ${group1Results}` }),
+  Agent({ subagent_type: "cagents:compliance-specialist", prompt: `Check marketing compliance in ${targetPath}.` }),
 ]);
 
 // Group 3 - Distribution & Effectiveness (uses Groups 1-2)
 const group3 = await Promise.all([
-  Task({ subagent_type: "cagents:content-marketing-manager", prompt: `Evaluate SEO and distribution readiness of ${targetPath}. Context: ${group1and2Results}` }),
-  Task({ subagent_type: "cagents:ux-designer", prompt: `Review content layout and visual hierarchy of ${targetPath}. Context: ${group1and2Results}` }),
+  Agent({ subagent_type: "cagents:content-marketing-manager", prompt: `Evaluate SEO and distribution readiness of ${targetPath}. Context: ${group1and2Results}` }),
+  Agent({ subagent_type: "cagents:ux-designer", prompt: `Review content layout and visual hierarchy of ${targetPath}. Context: ${group1and2Results}` }),
 ]);
 ```
 
@@ -376,22 +376,22 @@ Report findings with: component location, severity (critical/high/medium/low), a
 ```javascript
 // Group 1 - Visual & UX (independent)
 const group1 = await Promise.all([
-  Task({ subagent_type: "cagents:ux-designer", prompt: `Review UX design of ${targetPath}...` }),
-  Task({ subagent_type: "cagents:frontend-developer", prompt: `Assess implementation feasibility of ${targetPath}...` }),
-  Task({ subagent_type: "cagents:accessibility-checker", prompt: `Audit design accessibility of ${targetPath}...` }),
+  Agent({ subagent_type: "cagents:ux-designer", prompt: `Review UX design of ${targetPath}...` }),
+  Agent({ subagent_type: "cagents:frontend-developer", prompt: `Assess implementation feasibility of ${targetPath}...` }),
+  Agent({ subagent_type: "cagents:accessibility-checker", prompt: `Audit design accessibility of ${targetPath}...` }),
 ]);
 
 // Group 2 - Consistency & Brand (uses Group 1 context)
 const group2 = await Promise.all([
-  Task({ subagent_type: "cagents:prose-stylist", prompt: `Review microcopy in ${targetPath}. UX context: ${group1Results}` }),
-  Task({ subagent_type: "cagents:content-marketing-manager", prompt: `Validate brand alignment in ${targetPath}. Context: ${group1Results}` }),
-  Task({ subagent_type: "cagents:compliance-specialist", prompt: `Check design compliance in ${targetPath}. Accessibility: ${group1Results}` }),
+  Agent({ subagent_type: "cagents:prose-stylist", prompt: `Review microcopy in ${targetPath}. UX context: ${group1Results}` }),
+  Agent({ subagent_type: "cagents:content-marketing-manager", prompt: `Validate brand alignment in ${targetPath}. Context: ${group1Results}` }),
+  Agent({ subagent_type: "cagents:compliance-specialist", prompt: `Check design compliance in ${targetPath}. Accessibility: ${group1Results}` }),
 ]);
 
 // Group 3 - Technical Integration (uses Groups 1-2)
 const group3 = await Promise.all([
-  Task({ subagent_type: "cagents:architecture-reviewer", prompt: `Review design system architecture of ${targetPath}. Context: ${group1and2Results}` }),
-  Task({ subagent_type: "cagents:frontend-developer", prompt: `Review design-to-code handoff for ${targetPath}. Context: ${group1and2Results}` }),
+  Agent({ subagent_type: "cagents:architecture-reviewer", prompt: `Review design system architecture of ${targetPath}. Context: ${group1and2Results}` }),
+  Agent({ subagent_type: "cagents:frontend-developer", prompt: `Review design-to-code handoff for ${targetPath}. Context: ${group1and2Results}` }),
 ]);
 ```
 
@@ -477,22 +477,22 @@ Report findings with: step location, severity (critical/high/medium/low), clarit
 ```javascript
 // Group 1 - Process Quality (independent)
 const group1 = await Promise.all([
-  Task({ subagent_type: "cagents:operations-manager", prompt: `Review process efficiency of ${targetPath}...` }),
-  Task({ subagent_type: "cagents:process-improvement-specialist", prompt: `Analyze improvement opportunities in ${targetPath}...` }),
-  Task({ subagent_type: "cagents:risk-manager", prompt: `Assess process risks in ${targetPath}...` }),
+  Agent({ subagent_type: "cagents:operations-manager", prompt: `Review process efficiency of ${targetPath}...` }),
+  Agent({ subagent_type: "cagents:process-improvement-specialist", prompt: `Analyze improvement opportunities in ${targetPath}...` }),
+  Agent({ subagent_type: "cagents:risk-manager", prompt: `Assess process risks in ${targetPath}...` }),
 ]);
 
 // Group 2 - Compliance & Governance (uses Group 1 context)
 const group2 = await Promise.all([
-  Task({ subagent_type: "cagents:compliance-officer", prompt: `Audit process compliance of ${targetPath}. Risk context: ${group1Results}` }),
-  Task({ subagent_type: "cagents:compliance-specialist", prompt: `Check governance requirements in ${targetPath}. Context: ${group1Results}` }),
-  Task({ subagent_type: "cagents:risk-assessment", prompt: `Evaluate risk mitigation in ${targetPath}. Risk findings: ${group1Results}` }),
+  Agent({ subagent_type: "cagents:compliance-officer", prompt: `Audit process compliance of ${targetPath}. Risk context: ${group1Results}` }),
+  Agent({ subagent_type: "cagents:compliance-specialist", prompt: `Check governance requirements in ${targetPath}. Context: ${group1Results}` }),
+  Agent({ subagent_type: "cagents:risk-assessment", prompt: `Evaluate risk mitigation in ${targetPath}. Risk findings: ${group1Results}` }),
 ]);
 
 // Group 3 - Implementation & Adoption (uses Groups 1-2)
 const group3 = await Promise.all([
-  Task({ subagent_type: "cagents:technical-writer", prompt: `Review process documentation clarity of ${targetPath}. Compliance requirements: ${group2Results}` }),
-  Task({ subagent_type: "cagents:ux-designer", prompt: `Evaluate process usability of ${targetPath}. Context: ${group1and2Results}` }),
+  Agent({ subagent_type: "cagents:technical-writer", prompt: `Review process documentation clarity of ${targetPath}. Compliance requirements: ${group2Results}` }),
+  Agent({ subagent_type: "cagents:ux-designer", prompt: `Evaluate process usability of ${targetPath}. Context: ${group1and2Results}` }),
 ]);
 ```
 
@@ -579,22 +579,22 @@ Report findings with: location, severity (critical/high/medium/low), regulation,
 ```javascript
 // Group 1 - Schema & Quality (independent)
 const group1 = await Promise.all([
-  Task({ subagent_type: "cagents:dba", prompt: `Review database schema in ${targetPath}...` }),
-  Task({ subagent_type: "cagents:data-analyst", prompt: `Assess data quality patterns in ${targetPath}...` }),
-  Task({ subagent_type: "cagents:data-scientist", prompt: `Review data properties of ${targetPath}...` }),
+  Agent({ subagent_type: "cagents:dba", prompt: `Review database schema in ${targetPath}...` }),
+  Agent({ subagent_type: "cagents:data-analyst", prompt: `Assess data quality patterns in ${targetPath}...` }),
+  Agent({ subagent_type: "cagents:data-scientist", prompt: `Review data properties of ${targetPath}...` }),
 ]);
 
 // Group 2 - Security & Compliance (uses Group 1 context)
 const group2 = await Promise.all([
-  Task({ subagent_type: "cagents:security-engineer", prompt: `Audit data security in ${targetPath}. Schema context: ${group1Results}` }),
-  Task({ subagent_type: "cagents:compliance-specialist", prompt: `Check data compliance in ${targetPath}. Context: ${group1Results}` }),
-  Task({ subagent_type: "cagents:bi-specialist", prompt: `Validate data lineage in ${targetPath}. Context: ${group1Results}` }),
+  Agent({ subagent_type: "cagents:security-engineer", prompt: `Audit data security in ${targetPath}. Schema context: ${group1Results}` }),
+  Agent({ subagent_type: "cagents:compliance-specialist", prompt: `Check data compliance in ${targetPath}. Context: ${group1Results}` }),
+  Agent({ subagent_type: "cagents:bi-specialist", prompt: `Validate data lineage in ${targetPath}. Context: ${group1Results}` }),
 ]);
 
 // Group 3 - Performance & Integration (uses Groups 1-2)
 const group3 = await Promise.all([
-  Task({ subagent_type: "cagents:performance-analyzer", prompt: `Evaluate query performance in ${targetPath}. Schema + security: ${group1and2Results}` }),
-  Task({ subagent_type: "cagents:dba", prompt: `Review migration safety and integration in ${targetPath}. Context: ${group1and2Results}` }),
+  Agent({ subagent_type: "cagents:performance-analyzer", prompt: `Evaluate query performance in ${targetPath}. Schema + security: ${group1and2Results}` }),
+  Agent({ subagent_type: "cagents:dba", prompt: `Review migration safety and integration in ${targetPath}. Context: ${group1and2Results}` }),
 ]);
 ```
 
@@ -690,22 +690,22 @@ Report findings with: component location, severity (critical/high/medium/low), r
 ```javascript
 // Group 1 - Security & Configuration (independent)
 const group1 = await Promise.all([
-  Task({ subagent_type: "cagents:security-engineer", prompt: `Audit infrastructure security of ${targetPath}...` }),
-  Task({ subagent_type: "cagents:devops-engineer", prompt: `Review infrastructure configuration of ${targetPath}...` }),
-  Task({ subagent_type: "cagents:sysadmin", prompt: `Review system configuration of ${targetPath}...` }),
+  Agent({ subagent_type: "cagents:security-engineer", prompt: `Audit infrastructure security of ${targetPath}...` }),
+  Agent({ subagent_type: "cagents:devops-engineer", prompt: `Review infrastructure configuration of ${targetPath}...` }),
+  Agent({ subagent_type: "cagents:sysadmin", prompt: `Review system configuration of ${targetPath}...` }),
 ]);
 
 // Group 2 - Reliability & Scalability (uses Group 1 context)
 const group2 = await Promise.all([
-  Task({ subagent_type: "cagents:devops-lead", prompt: `Assess infrastructure reliability of ${targetPath}. Security context: ${group1Results}` }),
-  Task({ subagent_type: "cagents:performance-analyzer", prompt: `Evaluate infrastructure performance of ${targetPath}. Context: ${group1Results}` }),
-  Task({ subagent_type: "cagents:architecture-reviewer", prompt: `Review infrastructure architecture of ${targetPath}. Context: ${group1Results}` }),
+  Agent({ subagent_type: "cagents:devops-lead", prompt: `Assess infrastructure reliability of ${targetPath}. Security context: ${group1Results}` }),
+  Agent({ subagent_type: "cagents:performance-analyzer", prompt: `Evaluate infrastructure performance of ${targetPath}. Context: ${group1Results}` }),
+  Agent({ subagent_type: "cagents:architecture-reviewer", prompt: `Review infrastructure architecture of ${targetPath}. Context: ${group1Results}` }),
 ]);
 
 // Group 3 - Cost & Compliance (uses Groups 1-2)
 const group3 = await Promise.all([
-  Task({ subagent_type: "cagents:compliance-specialist", prompt: `Check infrastructure compliance of ${targetPath}. Context: ${group1and2Results}` }),
-  Task({ subagent_type: "cagents:risk-manager", prompt: `Evaluate operational risk of ${targetPath}. Context: ${group1and2Results}` }),
+  Agent({ subagent_type: "cagents:compliance-specialist", prompt: `Check infrastructure compliance of ${targetPath}. Context: ${group1and2Results}` }),
+  Agent({ subagent_type: "cagents:risk-manager", prompt: `Evaluate operational risk of ${targetPath}. Context: ${group1and2Results}` }),
 ]);
 ```
 

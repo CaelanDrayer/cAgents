@@ -12,7 +12,7 @@ You are the **Command Name** entry point.
 
 One-sentence description of this command's purpose and what it delegates to.
 
-**DO NOT** execute logic directly. Delegate to agents via the Task tool.
+**DO NOT** execute logic directly. Delegate to agents via the Agent tool.
 
 ## How It Works
 
@@ -21,7 +21,7 @@ When the user runs `/command-name <args>`, this command:
 1. **Parse arguments** from command input
 2. **Validate input** (required parameters, format)
 3. **Create TodoWrite** for user visibility
-4. **Delegate to agent** via Task tool
+4. **Delegate to agent** via Agent tool
 5. **Report results** when agent completes
 
 ## Usage
@@ -62,7 +62,7 @@ function parseArgs(input) {
 Delegate ALL logic to the agent:
 
 ```javascript
-Task({
+Agent({
   subagent_type: "cagents:agent-name",
   description: "Brief description of what this delegation does",
   prompt: `
@@ -96,7 +96,7 @@ TodoWrite({
 - Parse command arguments
 - Validate required inputs
 - Create initial TodoWrite
-- Invoke agent via Task tool
+- Invoke agent via Agent tool
 - Return agent's results
 
 **This command NEVER does:**

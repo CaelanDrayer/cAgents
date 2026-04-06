@@ -5,8 +5,8 @@ description: "STEM research, scientific analysis, mathematics, and data interpre
 planner:
   controller_catalog:
     tier_2: [science-coordinator]
-    tier_3: [science-coordinator, statistician]
-    tier_4: [science-coordinator, statistician, academic-researcher]
+    tier_3: [science-coordinator]
+    tier_4: [science-coordinator]
 
   specialist_routing:
     mathematics:

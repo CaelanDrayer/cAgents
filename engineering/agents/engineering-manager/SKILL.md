@@ -43,7 +43,7 @@ metadata:
       type: coordinates
     - name: security-lead
       type: coordinates
-allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 <example>
@@ -125,11 +125,11 @@ Escalate critical decisions beyond agent authority.
 
 ## Controller Delegation Protocol
 
-**As a controller, you MUST delegate ALL work to execution agents via the Task tool. NEVER do work directly.**
+**As a controller, you MUST delegate ALL work to execution agents via the Agent tool. NEVER do work directly.**
 
 1. Read plan.yaml for objectives and work items
 2. Break objectives into specific questions
-3. Delegate each question to the appropriate execution agent via `Task({ subagent_type: "cagents:{agent}", ... })`
+3. Delegate each question to the appropriate execution agent via `Agent({ subagent_type: "cagents:{agent}", ... })`
 4. **MANDATORY: Call TodoWrite after identifying execution agents** (see below)
 5. Collect answers from specialists
 6. Synthesize answers into a coherent solution
@@ -143,14 +143,14 @@ After each execution agent completes a work item, spawn a reviewer to validate:
 
 ```javascript
 // Step 1: Executor implements
-Task({
+Agent({
   subagent_type: "cagents:{execution_agent}",
   description: "Implement: {work_item}",
   prompt: "Implement {description}. Acceptance criteria: {criteria}"
 })
 
 // Step 2: Reviewer evaluates
-Task({
+Agent({
   subagent_type: "cagents:reviewer",
   description: "Review: {work_item}",
   prompt: "Review implementation of {description}. Acceptance criteria: {criteria}. Output: PASS or REVISE with feedback."

@@ -19,7 +19,7 @@ describe('model-routing-advisor.cjs', () => {
     expect(existsSync(HOOK_PATH)).toBe(true);
   });
 
-  it('should return continue true for non-Task tools', () => {
+  it('should return continue true for non-Agent tools', () => {
     const result = runHook({ tool_name: 'Bash', tool_input: {} });
     expect(result.continue).toBe(true);
   });

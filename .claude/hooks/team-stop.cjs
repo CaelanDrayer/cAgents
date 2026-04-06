@@ -8,10 +8,9 @@
  *    by marking unstopped agents with stopped_at timestamps and computing durations.
  * 2. Finalize team-specific metrics and update status (team_* sessions only).
  *
- * NOTE: When a user cancels a session, Claude Code may terminate this hook
- * before it completes, producing "Hook cancelled" in the output. This is
- * expected behavior — no data is lost or corrupted. All writeFileSync calls
- * are individually try-catch guarded to handle partial teardown gracefully.
+ * NOTE: SessionEnd hooks have configurable timeout via CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS.
+ * All writeFileSync calls are individually try-catch guarded for resilience
+ * against partial failures or context truncation.
  *
  * Input (stdin): JSON with session context
  * Output (stdout): JSON with system message

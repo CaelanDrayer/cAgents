@@ -280,7 +280,7 @@ Controllers never implement. They ask questions of specialist agents, synthesize
             integration, final validation, report
 ```
 
-More waves produce more quality gates. Tier 3+ defaults to 5-7 waves. Use `--waves N` to set a minimum. Each teammate is a controller that spawns execution agents via the Task tool — teammates never implement directly.
+More waves produce more quality gates. Tier 3+ defaults to 5-7 waves. Use `--waves N` to set a minimum. Each teammate is a controller that spawns execution agents via the Agent tool — teammates never implement directly.
 
 ### Complexity Tiers
 

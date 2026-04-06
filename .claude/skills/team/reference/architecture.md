@@ -69,8 +69,8 @@ The /team skill decomposes the request directly instead of delegating to trigger
 ## CRITICAL: Create Teams AND Teammates
 
 The two most common failure modes are:
-1. Creating tasks (TaskCreate) without spawning teammates (Task tool) to execute them
-2. Skipping TeamCreate entirely and just using Task tool subagents
+1. Creating tasks (TaskCreate) without spawning teammates (Agent tool) to execute them
+2. Skipping TeamCreate entirely and just using Agent tool subagents
 
 Both are wrong. The correct sequence is ALWAYS:
 ```
@@ -108,10 +108,10 @@ Configure in settings.json:
 
 ## Teammate Execution Model
 
-Each teammate spawns its assigned controller directly via Task tool. This eliminates the extra Skill fork level, keeping nesting within Claude Code's supported limits:
+Each teammate spawns its assigned controller directly via Agent tool. This eliminates the extra Skill fork level, keeping nesting within Claude Code's supported limits:
 
 ```
-Teammate (full session) -> Task({subagent_type: "cagents:{controller_name}"})
+Teammate (full session) -> Agent({subagent_type: "cagents:{controller_name}"})
   -> controller (e.g., engineering-manager) -> execution agents (e.g., backend-developer)
   -> validated output returned to teammate
 ```
@@ -127,7 +127,7 @@ Teammates are spawned per-wave and shut down when their wave completes:
 ```
 Wave K starts:
   1. Lead spawns teammates for all wave K work items (parallel)
-  2. Each teammate IS a controller agent that delegates to execution agents via Task tool
+  2. Each teammate IS a controller agent that delegates to execution agents via Agent tool
   3. Teammates write outputs to SESSION_DIR/outputs/task-{N}/
   4. Teammates send completion messages to lead
   5. Lead validates GATE-K quality criteria

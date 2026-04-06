@@ -33,7 +33,7 @@ describe('session-init-gate.cjs', () => {
     expect(existsSync(HOOK_PATH)).toBe(true);
   });
 
-  it('should allow non-Task tool calls', () => {
+  it('should allow non-Agent tool calls', () => {
     const result = runHook(
       { tool_name: 'Write', tool_input: {} },
       { CLAUDE_PROJECT_DIR: tmpDir }
@@ -41,9 +41,9 @@ describe('session-init-gate.cjs', () => {
     expect(result.continue).toBe(true);
   });
 
-  it('should deny Task spawn when no active session exists', () => {
+  it('should deny Agent spawn when no active session exists', () => {
     const result = runHook(
-      { tool_name: 'Task', tool_input: { subagent_type: 'cagents:backend-developer' } },
+      { tool_name: 'Agent', tool_input: { subagent_type: 'cagents:backend-developer' } },
       { CLAUDE_PROJECT_DIR: tmpDir }
     );
     expect(result.hookSpecificOutput).toBeDefined();
@@ -52,7 +52,7 @@ describe('session-init-gate.cjs', () => {
 
   it('deny message includes expected session directory path with status.yaml', () => {
     const result = runHook(
-      { tool_name: 'Task', tool_input: {} },
+      { tool_name: 'Agent', tool_input: {} },
       { CLAUDE_PROJECT_DIR: tmpDir }
     );
     const reason = result.hookSpecificOutput?.permissionDecisionReason || '';
@@ -60,7 +60,7 @@ describe('session-init-gate.cjs', () => {
     expect(reason).toContain('status.yaml');
   });
 
-  it('should allow Task spawn when active session with status.yaml exists', () => {
+  it('should allow Agent spawn when active session with status.yaml exists', () => {
     const sessionId = 'run_test-gate_260320_999';
     const sessionDir = join(tmpDir, 'Agent_Memory', 'sessions', sessionId);
     mkdirSync(sessionDir, { recursive: true });
@@ -70,7 +70,7 @@ describe('session-init-gate.cjs', () => {
     );
 
     const result = runHook(
-      { tool_name: 'Task', tool_input: {}, session_id: sessionId },
+      { tool_name: 'Agent', tool_input: {}, session_id: sessionId },
       { CLAUDE_PROJECT_DIR: tmpDir }
     );
     expect(result.continue).toBe(true);
@@ -79,13 +79,13 @@ describe('session-init-gate.cjs', () => {
   it('should bypass gate when CAGENTS_SESSION_ID env var is set', () => {
     // No session dir exists — but CAGENTS_SESSION_ID signals skill is creating it now
     const result = runHook(
-      { tool_name: 'Task', tool_input: { subagent_type: 'cagents:backend-developer' } },
+      { tool_name: 'Agent', tool_input: { subagent_type: 'cagents:backend-developer' } },
       { CLAUDE_PROJECT_DIR: tmpDir, CAGENTS_SESSION_ID: 'run_test_260320_001' }
     );
     expect(result.continue).toBe(true);
   });
 
-  it('should allow Task spawn when CAGENTS_SESSION_ID is set and session dir already exists with valid status.yaml', () => {
+  it('should allow Agent spawn when CAGENTS_SESSION_ID is set and session dir already exists with valid status.yaml', () => {
     // Dir exists with valid status — standard findActiveSession check finds it, so spawn is allowed
     const sessionId = 'run_test-gate-env_260322_001';
     const sessionDir = join(tmpDir, 'Agent_Memory', 'sessions', sessionId);
@@ -96,13 +96,13 @@ describe('session-init-gate.cjs', () => {
     );
 
     const result = runHook(
-      { tool_name: 'Task', tool_input: { subagent_type: 'cagents:backend-developer' }, session_id: sessionId },
+      { tool_name: 'Agent', tool_input: { subagent_type: 'cagents:backend-developer' }, session_id: sessionId },
       { CLAUDE_PROJECT_DIR: tmpDir, CAGENTS_SESSION_ID: sessionId }
     );
     expect(result.continue).toBe(true);
   });
 
-  it('should deny Task spawn when CAGENTS_SESSION_ID is set and session dir exists but findActiveSession finds no active session', () => {
+  it('should deny Agent spawn when CAGENTS_SESSION_ID is set and session dir exists but findActiveSession finds no active session', () => {
     // Dir exists but findActiveSession cannot find any non-terminal session —
     // no session_id hint is passed in the tool input, and the dir has no status.yaml
     // or any other recognisable session file, so the gate denies the spawn.
@@ -119,7 +119,7 @@ describe('session-init-gate.cjs', () => {
     utimesSync(sessionDir, pastTime, pastTime);
 
     const result = runHook(
-      { tool_name: 'Task', tool_input: { subagent_type: 'cagents:backend-developer' } },
+      { tool_name: 'Agent', tool_input: { subagent_type: 'cagents:backend-developer' } },
       { CLAUDE_PROJECT_DIR: tmpDir, CAGENTS_SESSION_ID: sessionId }
     );
     expect(result.hookSpecificOutput).toBeDefined();

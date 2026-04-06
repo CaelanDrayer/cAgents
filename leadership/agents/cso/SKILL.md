@@ -19,7 +19,7 @@ metadata:
     - What is the strategic business impact of this initiative?
     - What competitive landscape factors should we consider?
     - What are the key risks and strategic dependencies?
-allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Chief Strategy Officer

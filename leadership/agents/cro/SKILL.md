@@ -21,7 +21,7 @@ metadata:
     - What is the current revenue performance vs targets?
     - Where are the conversion bottlenecks in the funnel?
     - What sales and marketing alignment issues exist?
-allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # Chief Revenue Officer
@@ -65,11 +65,11 @@ See @resources/revenue-frameworks.md for strategic templates.
 
 ## Controller Delegation Protocol
 
-**As a controller, you MUST delegate ALL work to execution agents via the Task tool. NEVER do work directly.**
+**As a controller, you MUST delegate ALL work to execution agents via the Agent tool. NEVER do work directly.**
 
 1. Read plan.yaml for objectives and work items
 2. Break objectives into specific questions
-3. Delegate each question to the appropriate execution agent via `Task({ subagent_type: "cagents:{agent}", ... })`
+3. Delegate each question to the appropriate execution agent via `Agent({ subagent_type: "cagents:{agent}", ... })`
 4. **MANDATORY: Call TodoWrite after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required TodoWrite pattern
 5. Collect answers from specialists
 6. Synthesize answers into a coherent solution

@@ -74,7 +74,7 @@
 
 **2. COO Controller Promotion**
 - `make/agents/coo/SKILL.md`: tier changed from `execution` to `controller`
-- Added Task tool to allowed tools list
+- Added Agent tool to allowed tools list
 - Added `coordination_style: question_based` and `typical_questions`
 - Added /org integration section for operate_ops domain analysis
 - Added to `make/config/planner_config.yaml` controller_catalog as tier_3
@@ -160,13 +160,13 @@ All 10 version files bumped: 9.25.0 -> 9.26.0
 
 **Breaking Changes**:
 - `/run` SKILL.md: `context: fork` changed to `context: none`. /run now runs inline in the current conversation context instead of forking a subagent. This eliminates one nesting level.
-- `/team` teammate prompts: Teammates now spawn controllers directly via Task tool instead of invoking /run as a nested Skill fork. Team lead assigns controllers during decomposition.
+- `/team` teammate prompts: Teammates now spawn controllers directly via Agent tool instead of invoking /run as a nested Skill fork. Team lead assigns controllers during decomposition.
 
 **Changes**:
 - `/run` context changed from `fork` to `none` (minimizes subagent nesting per Claude Code constraints)
 - `/team` Step 2 now assigns a controller per work item during decomposition
 - `/team` Steps 5/8 (wave 0/2) use direct controller delegation instead of Skill("run")
-- `/team` Step 6 teammate prompt spawns assigned controller directly via Task tool
+- `/team` Step 6 teammate prompt spawns assigned controller directly via Agent tool
 - New `post-write-validator.cjs` PostToolUse hook validates JSON/YAML syntax after Write/Edit
 - Enhanced `subagent-stop-tracker.cjs` captures `last_assistant_message` summary and `duration_seconds`
 - Agent audit trail now includes `completion_summary` and `duration_seconds` per agent in `agent_tree.yaml`
@@ -236,7 +236,7 @@ All 10 version files bumped: 9.25.0 -> 9.26.0
 - Only controller and execution agents are spawned as subagents (2 levels instead of 5)
 - Hook path resolution: bash -c wrapper with 3-tier fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd)
 - TodoWrite progressive refinement: controllers update TodoWrite entries as execution agents are identified
-- V9.18 replaced the 5-level chain that caused Task tool unavailability, context exhaustion, and empty session directories
+- V9.18 replaced the 5-level chain that caused Agent tool unavailability, context exhaustion, and empty session directories
 
 ---
 
@@ -358,7 +358,7 @@ All 10 version files bumped: 9.25.0 -> 9.26.0
 
 **Changes**:
 - Enforced strict delegation policy: /run NEVER handles requests directly
-- All requests delegated to subagents via Task tool without exception
+- All requests delegated to subagents via Agent tool without exception
 - If delegation fails, /run reports failure rather than falling back to direct handling
 
 ---
@@ -434,7 +434,7 @@ All 10 version files bumped: 9.25.0 -> 9.26.0
 **Changes**:
 - /team now calls TeamCreate directly instead of delegating to team-trigger
 - Simplified team creation pipeline for reliability
-- Teammates spawned via Task tool with explicit /run Skill invocation
+- Teammates spawned via Agent tool with explicit /run Skill invocation
 
 ---
 
@@ -1439,7 +1439,7 @@ See full V7.0.0 release notes in archive/docs/ for complete details.
 
 **Key V9.22 Features**:
 - /run context: none (inline execution, eliminates fork nesting level)
-- /team teammates spawn controllers directly via Task tool
+- /team teammates spawn controllers directly via Agent tool
 - PostToolUse[Write|Edit] validation hook (post-write-validator.cjs)
 - SubagentStop captures completion_summary and duration_seconds
 - File change audit trail (workflow/file_changes.log)

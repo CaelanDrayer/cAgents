@@ -72,11 +72,12 @@ describe('team-task-complete.cjs', () => {
 
   it('should return continue true when no work item ID found', () => {
     const result = runHook({ session_id: TEST_SESSION, task_subject: 'no wi pattern' });
+    // No task_id and no tool_input with WI/TASK pattern => null => continue:true
     expect(result.continue).toBe(true);
   });
 
   it('should update task status to completed', () => {
-    runHook({ session_id: TEST_SESSION, task_subject: 'WI-01 done', teammate_name: 'w1' });
+    runHook({ session_id: TEST_SESSION, task_id: 'WI-01', task_subject: 'WI-01 done', teammate_name: 'w1' });
     const content = readFileSync(join(SESSION_DIR, 'team', 'task_list.yaml'), 'utf8');
     // Check the WI-01 entry has status completed
     const wi01Block = content.split('- id:').find(b => b.includes('"WI-01"'));
@@ -84,14 +85,14 @@ describe('team-task-complete.cjs', () => {
   });
 
   it('should report newly unblocked dependencies', () => {
-    const result = runHook({ session_id: TEST_SESSION, task_subject: 'WI-01 done', teammate_name: 'w1' });
+    const result = runHook({ session_id: TEST_SESSION, task_id: 'WI-01', task_subject: 'WI-01 done', teammate_name: 'w1' });
     // WI-02 depends on WI-01, should be unblocked
     expect(result.systemMessage).toContain('WI-02');
     expect(result.systemMessage).toContain('Unblocked');
   });
 
   it('should write completion message file', () => {
-    runHook({ session_id: TEST_SESSION, task_subject: 'WI-01 done', teammate_name: 'worker-1' });
+    runHook({ session_id: TEST_SESSION, task_id: 'WI-01', task_subject: 'WI-01 done', teammate_name: 'worker-1' });
     const messagesDir = join(SESSION_DIR, 'team', 'messages');
     const files = require('fs').readdirSync(messagesDir);
     const completionFiles = files.filter(f => f.includes('WI-01'));
@@ -99,7 +100,7 @@ describe('team-task-complete.cjs', () => {
   });
 
   it('should update timing metrics', () => {
-    runHook({ session_id: TEST_SESSION, task_subject: 'WI-01 done', teammate_name: 'w1' });
+    runHook({ session_id: TEST_SESSION, task_id: 'WI-01', task_subject: 'WI-01 done', teammate_name: 'w1' });
     const timing = readFileSync(join(SESSION_DIR, 'team', 'metrics', 'timing.yaml'), 'utf8');
     expect(timing).toContain('WI-01');
   });
@@ -111,7 +112,7 @@ describe('team-task-complete.cjs', () => {
       .replace('completed: 0', 'completed: 2');
     writeFileSync(join(SESSION_DIR, 'team', 'task_list.yaml'), content);
 
-    const result = runHook({ session_id: TEST_SESSION, task_subject: 'WI-01 done', teammate_name: 'w1' });
+    const result = runHook({ session_id: TEST_SESSION, task_id: 'WI-01', task_subject: 'WI-01 done', teammate_name: 'w1' });
     expect(result.continue).toBe(false);
     expect(result.stopReason).toContain('completed');
   });
@@ -148,7 +149,7 @@ items:
 `;
     writeFileSync(join(SESSION_DIR, 'team', 'task_list.yaml'), content);
 
-    const result = runHook({ session_id: TEST_SESSION, task_subject: 'WI-01 done', teammate_name: 'w1' });
+    const result = runHook({ session_id: TEST_SESSION, task_id: 'WI-01', task_subject: 'WI-01 done', teammate_name: 'w1' });
     // totalCount must be 3 (1 completed + 0 in_progress + 0 available + 1 pending + 1 blocked)
     // completedCount (1) !== totalCount (3) => must NOT stop
     expect(result.continue).toBe(true);
@@ -160,7 +161,7 @@ items:
   it('should create task_list.yaml when file does not exist', () => {
     // Remove the task_list.yaml file
     rmSync(join(SESSION_DIR, 'team', 'task_list.yaml'));
-    const result = runHook({ session_id: TEST_SESSION, task_subject: 'WI-01 done', teammate_name: 'w1' });
+    const result = runHook({ session_id: TEST_SESSION, task_id: 'WI-01', task_subject: 'WI-01 done', teammate_name: 'w1' });
     // File should be created
     expect(existsSync(join(SESSION_DIR, 'team', 'task_list.yaml'))).toBe(true);
     const content = readFileSync(join(SESSION_DIR, 'team', 'task_list.yaml'), 'utf8');
@@ -174,8 +175,8 @@ items:
   });
 
   it('should append to completions when entry not in structured list', () => {
-    // WI-99 is not in the task list
-    const result = runHook({ session_id: TEST_SESSION, task_subject: 'WI-99 done', teammate_name: 'w1' });
+    // WI-99 is not in the task list — pass task_id directly since regex fallback was removed
+    const result = runHook({ session_id: TEST_SESSION, task_id: 'WI-99', task_subject: 'WI-99 done', teammate_name: 'w1' });
     const content = readFileSync(join(SESSION_DIR, 'team', 'task_list.yaml'), 'utf8');
     expect(content).toContain('task_id: "WI-99"');
     expect(content).toContain('status: completed');
@@ -184,7 +185,7 @@ items:
 
   it('should persist task_subject in task_list.yaml', () => {
     rmSync(join(SESSION_DIR, 'team', 'task_list.yaml'));
-    runHook({ session_id: TEST_SESSION, task_subject: 'WI-01 Implement auth module', teammate_name: 'w1' });
+    runHook({ session_id: TEST_SESSION, task_id: 'WI-01', task_subject: 'WI-01 Implement auth module', teammate_name: 'w1' });
     const content = readFileSync(join(SESSION_DIR, 'team', 'task_list.yaml'), 'utf8');
     expect(content).toContain('subject: "WI-01 Implement auth module"');
   });
@@ -194,9 +195,9 @@ items:
     const specialContent = TASK_LIST_CONTENT.replace('"WI-01"', '"WI-01.a"')
       .replace('WI-01', 'WI-01.a');
     writeFileSync(join(SESSION_DIR, 'team', 'task_list.yaml'), specialContent);
-    // Should not crash - the regex escaping should handle the dot
-    const result = runHook({ session_id: TEST_SESSION, task_subject: 'WI-01.a done', teammate_name: 'w1' });
-    // May or may not find it depending on pattern, but should not throw
+    // Pass task_id directly — regex fallback was removed, so task_id is the primary path
+    const result = runHook({ session_id: TEST_SESSION, task_id: 'WI-01.a', task_subject: 'WI-01.a done', teammate_name: 'w1' });
+    // Should not crash - the regex escaping should handle the dot in the task list update
     expect(result).toBeDefined();
   });
 });

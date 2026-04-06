@@ -86,7 +86,7 @@ If any are missing, ask targeted questions to fill gaps. Do NOT advance with gap
 **Phase-Overlap**: During synthesis, spawn Ideation research agents if `--deep`:
 
 ```javascript
-Task({
+Agent({
   subagent_type: "cagents:architect",
   description: "Research: Design alternatives for Ideation questions",
   prompt: `Research agent for Ideation phase.
@@ -97,7 +97,7 @@ Research: 2-4 concrete design alternatives, relevant patterns, trade-off dimensi
 Write to: ${session_dir}/question_prep/ideation_patterns.yaml`
 })
 
-Task({
+Agent({
   subagent_type: "cagents:backend-developer",
   description: "Research: Feasibility analysis for Ideation questions",
   prompt: `Research agent for Ideation feasibility.

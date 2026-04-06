@@ -14,7 +14,7 @@ The complete behavioral contract for the /designer command.
 
 6. **ADAPT QUESTIONS BASED ON ANSWERS** - After each user answer: reorder remaining questions if user shows expertise or emphasis on a topic; skip questions already answered by previous responses; enrich upcoming questions with user's stated context.
 
-7. **DISPATCH FOLLOW-UP RESEARCH** - When user reveals information not covered by initial research (new constraints, unexpected context, additional systems), spawn a follow-up research agent via Task tool to investigate. Integrate results into the question pool.
+7. **DISPATCH FOLLOW-UP RESEARCH** - When user reveals information not covered by initial research (new constraints, unexpected context, additional systems), spawn a follow-up research agent via Agent tool to investigate. Integrate results into the question pool.
 
 8. **PHASE-OVERLAP RESEARCH** - During each phase's synthesis/confirmation step, spawn research agents for the NEXT phase (when research is enabled for it). This eliminates dead time at phase transitions.
 

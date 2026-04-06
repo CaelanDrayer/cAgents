@@ -5,13 +5,13 @@
 ### 1.1 Add Specialist Agent Delegation for Complex Designs
 
 **Current**: Designer handles all analysis inline.
-**Proposed**: For tier 3+ designs, spawn domain specialists via Task tool during Refinement.
+**Proposed**: For tier 3+ designs, spawn domain specialists via Agent tool during Refinement.
 
 ```
 Phase 3 (Refinement) -- Enhanced:
-  designer -> Task(cagents:architect, "Evaluate proposed architecture for {constraints}")
-  designer -> Task(cagents:security-specialist, "Assess security implications of {design}")
-  designer -> Task(cagents:backend-developer, "Evaluate data model feasibility")
+  designer -> Agent(cagents:architect, "Evaluate proposed architecture for {constraints}")
+  designer -> Agent(cagents:security-specialist, "Assess security implications of {design}")
+  designer -> Agent(cagents:backend-developer, "Evaluate data model feasibility")
 ```
 
 **Implementation**:

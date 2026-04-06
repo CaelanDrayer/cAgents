@@ -35,7 +35,7 @@ metadata:
       type: coordinates
     - name: REVIEWER_AGENT
       type: coordinates
-allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
 ---
 
 # Controller Name

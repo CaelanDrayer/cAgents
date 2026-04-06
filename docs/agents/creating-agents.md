@@ -62,7 +62,7 @@ Description of what the agent does.
 - Coordinates work via question-based delegation
 - NEVER does direct work
 - Synthesizes answers from specialists
-- Spawns execution agents via Task tool
+- Spawns execution agents via Agent tool
 
 ### Execution (Tier 3)
 - Answers questions with domain expertise

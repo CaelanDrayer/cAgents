@@ -6,16 +6,16 @@ paths:
 
 # Built-in Subagent Alignment
 
-Alignment between cAgents subagent types and official Claude Code Task tool patterns.
+Alignment between cAgents subagent types and official Claude Code Agent tool patterns.
 
 ## Overview
 
-Claude Code's Task tool supports various subagent patterns. This document maps cAgents agent types to these patterns for optimal integration.
+Claude Code's Agent tool supports various subagent patterns. This document maps cAgents agent types to these patterns for optimal integration.
 
 ## Official Task Tool Parameters
 
 ```javascript
-Task({
+Agent({
   description: "Brief task description",
   prompt: "Detailed instructions for the subagent",
   // Optional parameters
@@ -76,16 +76,16 @@ Set `isolation: "worktree"` to run a subagent in a temporary git worktree, givin
 
 ### Subagent Spawning Restrictions
 
-Use `Task(agent_type)` syntax in the `tools` field to restrict which subagents can be spawned:
+Use `Agent(agent_type)` syntax in the `tools` field to restrict which subagents can be spawned:
 
 ```yaml
-tools: Task(worker, researcher), Read, Bash  # Only worker and researcher allowed
+tools: Agent(worker, researcher), Read, Bash  # Only worker and researcher allowed
 ```
 
-To disable specific subagents, add `Task(AgentName)` to the `deny` permission array:
+To disable specific subagents, add `Agent(AgentName)` to the `deny` permission array:
 
 ```json
-{ "permissions": { "deny": ["Task(Explore)", "Task(my-agent)"] } }
+{ "permissions": { "deny": ["Agent(Explore)", "Agent(my-agent)"] } }
 ```
 
 ### Resuming Subagents
@@ -98,7 +98,7 @@ Subagents support automatic context compaction at ~95% capacity. Override trigge
 
 ## cAgents Subagent Type Format
 
-cAgents registers all agents under the `cagents` plugin namespace. The Task tool uses `cagents:{agent-name}`:
+cAgents registers all agents under the `cagents` plugin namespace. The Agent tool uses `cagents:{agent-name}`:
 
 ```
 Format: "cagents:{agent-name}"
@@ -118,7 +118,7 @@ Examples:
 
 **Claude Code Native**:
 ```javascript
-Task({
+Agent({
   description: "Research authentication patterns",
   prompt: "Analyze current auth implementations and identify best practices..."
 })
@@ -126,7 +126,7 @@ Task({
 
 **cAgents Equivalent**:
 ```javascript
-Task({
+Agent({
   subagent_type: "cagents:architect",
   description: "Research authentication patterns",
   prompt: "Question from controller: What authentication approach should we use?..."
@@ -137,7 +137,7 @@ Task({
 
 **Claude Code Native**:
 ```javascript
-Task({
+Agent({
   description: "Implement user authentication",
   prompt: "Create the authentication module with login/logout functionality..."
 })
@@ -145,7 +145,7 @@ Task({
 
 **cAgents Equivalent**:
 ```javascript
-Task({
+Agent({
   subagent_type: "cagents:backend-developer",
   description: "Implement user authentication",
   prompt: "Implementation task from engineering-manager:\n\nWork Item: TASK-03...\nAcceptance Criteria: ..."
@@ -156,7 +156,7 @@ Task({
 
 **Claude Code Native**:
 ```javascript
-Task({
+Agent({
   description: "Review code changes",
   prompt: "Review the pull request for code quality, security, and best practices..."
 })
@@ -164,7 +164,7 @@ Task({
 
 **cAgents Equivalent**:
 ```javascript
-Task({
+Agent({
   subagent_type: "cagents:qa-lead",
   description: "Review authentication implementation",
   prompt: "Validation task:\n\nVerify TASK-03 acceptance criteria:\n- Tests pass\n- Security scan clean..."
@@ -253,13 +253,13 @@ Please synthesize into:
 
 ```javascript
 // Good - matches plugin namespace
-Task({ subagent_type: "cagents:backend-developer", ... })
+Agent({ subagent_type: "cagents:backend-developer", ... })
 
 // Bad - domain prefix doesn't match registered namespace, falls back to generic agent
-Task({ subagent_type: "make:backend-developer", ... })
+Agent({ subagent_type: "make:backend-developer", ... })
 
 // Bad - no prefix, ambiguous
-Task({ subagent_type: "backend-developer", ... })
+Agent({ subagent_type: "backend-developer", ... })
 ```
 
 ### 2. Match Agent to Task Type

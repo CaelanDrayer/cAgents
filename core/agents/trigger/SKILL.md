@@ -17,7 +17,7 @@ metadata:
     - analytics_tracking
     - team_planning_support
   maxTurns: 50
-allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
 ---
 
 # Trigger
@@ -48,7 +48,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
 5. Template matching for common workflows
 6. Pre-flight validation (4 levels: context, feasibility, resources, conflicts)
 7. Generate unique instruction ID and initialize Agent Memory structure
-8. Hand off to orchestrator via Task tool
+8. Hand off to orchestrator via Agent tool
 9. **If mode == team_planning_only**: Execute routing + planning only, write plan.yaml + decomposition.yaml, then STOP (do not proceed to coordinating/executing)
 
 ## CRITICAL: Always Expand and Delegate -- ZERO EXCEPTIONS
@@ -81,7 +81,7 @@ See @resources/todowrite-patterns.md for progress tracking patterns.
 
 The session directory and its key files MUST be created in this exact order, BEFORE spawning any subagents. The SubagentStart hook (`subagent-tracker.cjs`) uses `findActiveSession()` to locate the session directory. If `status.yaml` does not exist when the first subagent spawns, the hook cannot find the session and agent tracking fails silently.
 
-**Required creation order** (all BEFORE any Task tool calls):
+**Required creation order** (all BEFORE any Agent tool calls):
 1. Create session directory: `Agent_Memory/sessions/run_{slug}_{YYMMDD}_{NNN}/`
 2. Create `instruction.yaml` with request metadata
 3. Create `status.yaml` with `phase: routing` (MUST exist before spawning orchestrator)

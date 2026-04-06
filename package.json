@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "10.25.2",
+  "version": "10.25.3",
   "description": "Universal multi-domain agent orchestration framework. 214 specialized agents across 8 business domains with 9 skills.",
   "type": "module",
   "engines": {
@@ -60,6 +60,12 @@
     "leadership/",
     "core/",
     "shared/",
+    "science/",
+    "health/",
+    "education/",
+    "personal/",
+    "arts/",
+    "trades/",
     ".claude/",
     ".claude-plugin/",
     "scripts/",

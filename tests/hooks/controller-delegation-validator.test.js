@@ -1,0 +1,330 @@
+import { describe, it, expect, beforeEach, afterEach, afterAll } from 'vitest';
+import { existsSync, mkdirSync, writeFileSync, rmSync, readdirSync, unlinkSync } from 'fs';
+import { join } from 'path';
+import { execSync } from 'child_process';
+
+const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
+const HOOK_PATH = join(HOOKS_DIR, 'controller-delegation-validator.cjs');
+const AGENT_MEMORY_DIR = join(process.cwd(), 'Agent_Memory');
+const TEST_SESSION = 'test_delegation_validator_260406_001';
+const SESSION_DIR = join(AGENT_MEMORY_DIR, 'sessions', TEST_SESSION);
+const WORKFLOW_DIR = join(SESSION_DIR, 'workflow');
+
+// Agent tree YAML with an active controller (stopped_at: null)
+const ACTIVE_CONTROLLER_TREE = `agents:
+  - agent_id: "agent-001"
+    cagents_type: "cagents:engineering-manager"
+    spawned_at: "2026-04-06T10:00:00Z"
+    stopped_at: null
+    description: "Coordinate auth fix"
+`;
+
+// Agent tree with no active controller (all stopped)
+const NO_ACTIVE_CONTROLLER_TREE = `agents:
+  - agent_id: "agent-001"
+    cagents_type: "cagents:engineering-manager"
+    spawned_at: "2026-04-06T10:00:00Z"
+    stopped_at: "2026-04-06T10:05:00Z"
+    description: "Coordinate auth fix"
+`;
+
+const STATUS_YAML = `pipeline_state: coordinating
+phase: coordinating
+current_phase: coordinating
+`;
+
+/**
+ * Clear dedup guard files to prevent false pass-throughs between tests.
+ */
+function clearDedupFiles() {
+  try {
+    const files = readdirSync('/tmp').filter(f => f.startsWith('cagents-dedup-ControllerDelegationValidator-'));
+    files.forEach(f => { try { unlinkSync('/tmp/' + f); } catch {} });
+  } catch {}
+}
+
+/**
+ * Run the hook with given input and optional env overrides.
+ */
+function runHook(input, env = {}) {
+  clearDedupFiles();
+  const result = execSync(`node "${HOOK_PATH}"`, {
+    encoding: 'utf8',
+    timeout: 5000,
+    input: JSON.stringify(input),
+    stdio: ['pipe', 'pipe', 'pipe'],
+    env: { ...process.env, ...env }
+  });
+  return JSON.parse(result.trim());
+}
+
+/**
+ * Create the test session directory with agent_tree.yaml and status.yaml.
+ */
+function setupTestSession(agentTree = ACTIVE_CONTROLLER_TREE) {
+  mkdirSync(WORKFLOW_DIR, { recursive: true });
+  writeFileSync(join(WORKFLOW_DIR, 'agent_tree.yaml'), agentTree);
+  writeFileSync(join(SESSION_DIR, 'status.yaml'), STATUS_YAML);
+}
+
+/**
+ * Remove the test session directory.
+ */
+function cleanupTestSession() {
+  try { rmSync(SESSION_DIR, { recursive: true, force: true }); } catch {}
+}
+
+/** Implementation file write input — triggers violation when controller is active */
+function implFileInput() {
+  return {
+    tool_name: 'Write',
+    tool_input: { file_path: '/project/src/auth/login.ts', content: 'export function login() {}' }
+  };
+}
+
+/** Workflow file write input — should always bypass enforcement */
+function workflowFileInput() {
+  return {
+    tool_name: 'Write',
+    tool_input: { file_path: join(SESSION_DIR, 'workflow', 'coordination_log.yaml'), content: 'status: completed' }
+  };
+}
+
+/** Agent_Memory file write input — should always bypass enforcement */
+function agentMemoryFileInput() {
+  return {
+    tool_name: 'Edit',
+    tool_input: { file_path: join(AGENT_MEMORY_DIR, 'sessions', 'run_test', 'status.yaml'), old_string: 'a', new_string: 'b' }
+  };
+}
+
+/** YAML file write input — allowed by ALLOWED_PATTERNS */
+function yamlFileInput() {
+  return {
+    tool_name: 'Write',
+    tool_input: { file_path: '/project/config/plan.yaml', content: 'plan_id: test' }
+  };
+}
+
+describe('controller-delegation-validator.cjs', () => {
+  it('should exist', () => {
+    expect(existsSync(HOOK_PATH)).toBe(true);
+  });
+
+  describe('enforcement mode: warn (default)', () => {
+    beforeEach(() => {
+      setupTestSession();
+    });
+    afterEach(() => {
+      cleanupTestSession();
+    });
+
+    it('returns systemMessage warning for implementation file writes', () => {
+      const result = runHook(implFileInput(), {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: ''
+      });
+      // warn mode: continue true, systemMessage with warning
+      expect(result.continue).toBe(true);
+      expect(result.systemMessage).toBeDefined();
+      expect(result.systemMessage).toContain('CONTROLLER DELEGATION WARNING');
+      expect(result.systemMessage).toContain('engineering-manager');
+      // Must NOT have deny/block
+      expect(result.hookSpecificOutput).toBeUndefined();
+    });
+
+    it('defaults to warn when env var is unset', () => {
+      const env = { CAGENTS_ACTIVE_SESSION: TEST_SESSION };
+      // Explicitly remove the enforcement env var
+      delete env.CAGENTS_DELEGATION_ENFORCEMENT;
+      const result = runHook(implFileInput(), env);
+      expect(result.continue).toBe(true);
+      if (result.systemMessage) {
+        expect(result.systemMessage).toContain('CONTROLLER DELEGATION WARNING');
+      }
+    });
+  });
+
+  describe('enforcement mode: block', () => {
+    beforeEach(() => {
+      setupTestSession();
+    });
+    afterEach(() => {
+      cleanupTestSession();
+    });
+
+    it('returns deny decision for implementation file writes', () => {
+      const result = runHook(implFileInput(), {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'block'
+      });
+      // block mode: hookSpecificOutput with permissionDecision deny
+      expect(result.hookSpecificOutput).toBeDefined();
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+      expect(result.hookSpecificOutput.permissionDecisionReason).toContain('CONTROLLER DELEGATION BLOCKED');
+      expect(result.hookSpecificOutput.permissionDecisionReason).toContain('engineering-manager');
+    });
+
+    it('block mode is case-insensitive', () => {
+      const result = runHook(implFileInput(), {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'BLOCK'
+      });
+      expect(result.hookSpecificOutput).toBeDefined();
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+    });
+  });
+
+  describe('enforcement mode: off', () => {
+    beforeEach(() => {
+      setupTestSession();
+    });
+    afterEach(() => {
+      cleanupTestSession();
+    });
+
+    it('returns no-op (continue: true) even for implementation file writes', () => {
+      const result = runHook(implFileInput(), {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'off'
+      });
+      expect(result.continue).toBe(true);
+      expect(result.systemMessage).toBeUndefined();
+      expect(result.hookSpecificOutput).toBeUndefined();
+    });
+  });
+
+  describe('settings.json fallback', () => {
+    // The hook reads settings.json delegation_enforcement when env var is absent.
+    // We can't easily mock settings.json in the test, but we can verify that:
+    // 1. When env var IS set, it takes precedence over whatever settings.json says
+    // 2. When env var is set to invalid value, it falls through to settings.json
+
+    beforeEach(() => {
+      setupTestSession();
+    });
+    afterEach(() => {
+      cleanupTestSession();
+    });
+
+    it('env var takes precedence over settings.json', () => {
+      // Even if settings.json says block, env var 'off' should win
+      const result = runHook(implFileInput(), {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'off'
+      });
+      expect(result.continue).toBe(true);
+      expect(result.systemMessage).toBeUndefined();
+    });
+
+    it('invalid env var falls through to default warn behavior', () => {
+      const result = runHook(implFileInput(), {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'invalid_mode'
+      });
+      // Invalid env var -> falls through to settings.json or default 'warn'
+      // With active controller writing impl file, should warn (default)
+      expect(result.continue).toBe(true);
+      if (result.systemMessage) {
+        expect(result.systemMessage).toContain('CONTROLLER DELEGATION WARNING');
+      }
+    });
+  });
+
+  describe('allowed patterns bypass enforcement in ALL modes', () => {
+    beforeEach(() => {
+      setupTestSession();
+    });
+    afterEach(() => {
+      cleanupTestSession();
+    });
+
+    it('workflow/ files bypass in warn mode', () => {
+      const result = runHook(workflowFileInput(), {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'warn'
+      });
+      expect(result.continue).toBe(true);
+      expect(result.systemMessage).toBeUndefined();
+    });
+
+    it('workflow/ files bypass in block mode', () => {
+      const result = runHook(workflowFileInput(), {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'block'
+      });
+      expect(result.continue).toBe(true);
+      expect(result.hookSpecificOutput).toBeUndefined();
+    });
+
+    it('Agent_Memory/ files bypass in block mode', () => {
+      const result = runHook(agentMemoryFileInput(), {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'block'
+      });
+      expect(result.continue).toBe(true);
+      expect(result.hookSpecificOutput).toBeUndefined();
+    });
+
+    it('YAML files bypass in block mode', () => {
+      const result = runHook(yamlFileInput(), {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'block'
+      });
+      expect(result.continue).toBe(true);
+      expect(result.hookSpecificOutput).toBeUndefined();
+    });
+
+    it('workflow/ files bypass in off mode', () => {
+      const result = runHook(workflowFileInput(), {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'off'
+      });
+      expect(result.continue).toBe(true);
+      expect(result.systemMessage).toBeUndefined();
+    });
+  });
+
+  describe('no active controller — no enforcement', () => {
+    beforeEach(() => {
+      setupTestSession(NO_ACTIVE_CONTROLLER_TREE);
+    });
+    afterEach(() => {
+      cleanupTestSession();
+    });
+
+    it('no-ops when no controller is active, even in block mode', () => {
+      const result = runHook(implFileInput(), {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'block'
+      });
+      expect(result.continue).toBe(true);
+      expect(result.hookSpecificOutput).toBeUndefined();
+    });
+  });
+
+  describe('non-Write/Edit tools — no enforcement', () => {
+    it('no-ops for Read tool', () => {
+      const result = runHook({
+        tool_name: 'Read',
+        tool_input: { file_path: '/project/src/auth/login.ts' }
+      }, { CAGENTS_DELEGATION_ENFORCEMENT: 'block' });
+      expect(result.continue).toBe(true);
+      expect(result.hookSpecificOutput).toBeUndefined();
+    });
+
+    it('no-ops for Bash tool', () => {
+      const result = runHook({
+        tool_name: 'Bash',
+        tool_input: { command: 'npm test' }
+      }, { CAGENTS_DELEGATION_ENFORCEMENT: 'block' });
+      expect(result.continue).toBe(true);
+      expect(result.hookSpecificOutput).toBeUndefined();
+    });
+  });
+
+  afterAll(() => {
+    cleanupTestSession();
+    clearDedupFiles();
+  });
+});

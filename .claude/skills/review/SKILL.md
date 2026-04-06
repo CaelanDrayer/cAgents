@@ -5,11 +5,11 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.25.2"
+  version: "10.25.3"
   argument-hint: "<target> [--focus <area>] [--auto-fix] [--severity <level>] [--format <type>] [--profile <name>] [--baseline] [--suppress <id>]"
   user-invocable: "true"
   context: "fork"
-allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
+allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TodoWrite
 ---
 
 # /review - Universal Review Orchestrator
@@ -71,7 +71,7 @@ Spawns extra agents beyond the standard 3 groups and tightens all thresholds.
 
 ```javascript
 // Group 1 augmentation — add security-lead to standard Group 1
-Task({
+Agent({
   subagent_type: "cagents:security-lead",
   description: "Full attack surface mapping (paranoid)",
   prompt: `Map the complete attack surface for ${targetPath}. Assume adversarial input on every external boundary. List every trust boundary, injection vector, and privilege escalation path. Treat every line as potentially hiding a bug. Do not filter by confidence — report everything.`
@@ -79,12 +79,12 @@ Task({
 
 // New Group 2.5 — Race Conditions & Trust Boundaries (after Group 2, before Group 3)
 const paranoidGroup = await Promise.all([
-  Task({
+  Agent({
     subagent_type: "cagents:security-engineer",
     description: "Race condition analysis (paranoid)",
     prompt: `Analyze ${targetPath} for race conditions: TOCTOU vulnerabilities, concurrent access without locks, find-or-create patterns without unique constraints, optimistic locking gaps, double-checked locking errors, and shared mutable state without synchronization. Evidence: show the specific lines where races can occur and the interleaving that triggers them.`
   }),
-  Task({
+  Agent({
     subagent_type: "cagents:architecture-reviewer",
     description: "Trust boundary mapping (paranoid)",
     prompt: `Map all trust boundaries in ${targetPath}. For each layer (user->API, API->service, service->DB, external->internal, LLM output->application logic): what data crosses the boundary? What validation exists at the crossing point? What is implicitly trusted without verification? Identify any trust violations where data from a less-trusted zone is used in a more-trusted zone without sanitization.`
@@ -107,12 +107,12 @@ Replaces all 3 standard groups with a single fast group. Designed for rapid feed
 const changedFiles = await Bash("git diff --name-only main...HEAD")
 
 const quickGroup = await Promise.all([
-  Task({
+  Agent({
     subagent_type: "cagents:code-standards-auditor",
     description: "Quick style + obvious bugs scan",
     prompt: `Quick scan of these changed files ONLY: ${changedFiles}. Report only: obvious bugs (null dereference, wrong type, off-by-one, logic errors), style violations that would fail CI, dead code or unused imports. Skip architectural concerns, skip performance analysis, skip documentation. Max 10 findings. Confidence >= 0.7 only.`
   }),
-  Task({
+  Agent({
     subagent_type: "cagents:security-engineer",
     description: "High-confidence security scan",
     prompt: `High-confidence security scan of these changed files ONLY: ${changedFiles}. Report only findings with confidence >= 0.8: hardcoded secrets, SQL injection with string interpolation, XSS with unescaped output, command injection. Skip low-confidence or theoretical issues. Max 5 findings.`
@@ -135,17 +135,17 @@ Elevates security agents to first priority and enriches every finding with explo
 ```javascript
 // Security agents run FIRST (replaces standard Group 1):
 const securityFirst = await Promise.all([
-  Task({
+  Agent({
     subagent_type: "cagents:security-lead",
     description: "Threat model and attack surface",
     prompt: `Perform full threat model for ${targetPath}. Map: complete attack surface, all trust boundaries with data flow direction, every path from untrusted input to sensitive operation. Rate overall security posture (1-10). List top 5 critical threats with CVSS score estimates. Include supply chain risks from dependencies.`
   }),
-  Task({
+  Agent({
     subagent_type: "cagents:security-engineer",
     description: "Vulnerability audit with exploit scenarios",
     prompt: `Security audit ${targetPath} for: SQL injection, XSS (stored/reflected/DOM), CSRF, authentication bypass, insecure direct object references, secret exposure, mass assignment, SSRF, path traversal, deserialization attacks, and LLM output trust violations. For EACH finding provide: (1) concrete exploit scenario showing step-by-step how an attacker would exploit this, (2) CVSS score estimate, (3) specific fix with code example.`
   }),
-  Task({
+  Agent({
     subagent_type: "cagents:architecture-reviewer",
     description: "Security architecture review",
     prompt: `Review ${targetPath} architecture for security posture: privilege separation between components, defense in depth (how many layers must be breached), fail-safe defaults (what happens when a component fails), principle of least privilege (do components have minimal required permissions), and secure communication between services.`
@@ -172,12 +172,12 @@ Runs the full standard 3-group review, then adds a quality gate group to enforce
 // THEN add merge gate group (Group 4):
 
 const mergeGateGroup = await Promise.all([
-  Task({
+  Agent({
     subagent_type: "cagents:test-coverage-validator",
     description: "Test coverage gate for merge",
     prompt: `Validate test coverage for changed files in ${targetPath}. Check: (1) every new function/method has at least one test, (2) every new error path has an error test, (3) coverage >= 80% for changed files, (4) no test files were deleted without replacement, (5) integration tests exist for new API endpoints. List every uncovered code path with file:line.`
   }),
-  Task({
+  Agent({
     subagent_type: "cagents:qa-lead",
     description: "Merge readiness assessment",
     prompt: `Assess merge readiness for ${targetPath}. Check: (1) changelog/CHANGELOG.md updated for user-facing changes, (2) no console.log/debugger/print debug statements in production code, (3) no TODO/FIXME/HACK markers in new code, (4) naming consistent with existing codebase conventions, (5) backward compatibility preserved (no breaking changes without version bump), (6) migration scripts included if schema changed. Return: READY or NOT_READY with specific blockers list.`
@@ -207,7 +207,7 @@ const changedFilesList = changedFiles.trim().split('\n')
 // suffix: "Git diff context for changed lines:\n${gitDiff}\nInclude callers and imports of changed code in your analysis scope."
 
 // Example: Group 1 architecture-reviewer becomes:
-Task({
+Agent({
   subagent_type: "cagents:architecture-reviewer",
   description: "Architecture review (diff-aware)",
   prompt: `Focus ONLY on these changed files: ${changedFilesList.join(', ')}. Review architecture and design patterns. Check system design, coupling, module boundaries. Git diff context:\n${gitDiff}\nInclude callers and imports of changed code in your analysis scope.`
@@ -316,7 +316,7 @@ INITIALIZING -> SCOPING -> REVIEWING -> AGGREGATING -> FIXING -> GATING -> REPOR
 **State machine loop:**
 ```
 while phase is not COMPLETE:
-  1. Execute current state's work (spawn agents via Task tool)
+  1. Execute current state's work (spawn agents via Agent tool)
   2. Update status.yaml (phase, state_history with duration_ms)
   3. Call TodoWrite to reflect progress (BLOCKING PREREQUISITE)
   4. Check revision routing (see below)
@@ -740,7 +740,7 @@ quality_gate_result: passed | failed | skipped
 
 ## CRITICAL: You Are a Delegator, Not a Doer
 
-**You MUST delegate ALL review work to specialist agents via the Task tool. You NEVER read code, analyze files, or produce findings yourself.**
+**You MUST delegate ALL review work to specialist agents via the Agent tool. You NEVER read code, analyze files, or produce findings yourself.**
 
 /review is a review engine. It spawns specialist agents (architecture-reviewer, security-engineer, code-standards-auditor, etc.) and aggregates their outputs. It does NOT do their work. Even for "small" targets, you MUST spawn specialist agents. The whole point of this plugin is delegation to specialized reviewers. If you analyze code yourself, you defeat the entire purpose.
 
@@ -755,14 +755,14 @@ The following phrases are self-handling rationalizations. Each one is a critical
 |----------------|-------------|
 | "I can just read the code myself" | Code reading goes to specialist agents (code-standards-auditor, architecture-reviewer), not directly to you |
 | "This file is too small to need a specialist" | Size never bypasses delegation — even single-file reviews use specialist agents |
-| "I already know the security issues" | Security findings must come from cagents:security-engineer via Task tool, not from your priors |
+| "I already know the security issues" | Security findings must come from cagents:security-engineer via Agent tool, not from your priors |
 | "This is a documentation review, I'll handle it" | Documentation reviews go to cagents:copy-editor or cagents:technical-writer via the pipeline |
 | "I'll do a quick scan first before spawning agents" | Pre-scan inline analysis is a critical violation — spawn first, always |
 | "The target is too simple for parallel agents" | Simplicity never reduces delegation — even quick reviews spawn specialist agents |
 | "Rather than spinning up agents for this" | Spinning up agents is the ONLY execution mode for /review |
 | "I can do this more efficiently by reading directly" | Efficiency is irrelevant — specialist delegation is mandatory regardless of speed claims |
 | "This doesn't need a security review pass" | You do not decide which specialist agents to skip — run all applicable groups |
-| "Let me just check this file quickly" | "Just" is a rationalization word — Task tool only |
+| "Let me just check this file quickly" | "Just" is a rationalization word — Agent tool only |
 | "This is a minor style issue I can note directly" | ALL findings must come from specialist agents, never from inline analysis |
 | "I already reviewed similar code, I know what to look for" | Prior knowledge never substitutes for spawning the appropriate specialist agent |
 
@@ -770,28 +770,28 @@ The following phrases are self-handling rationalizations. Each one is a critical
 
 ## Task Tool Delegation
 
-For each parallel group, spawn review agents via Task tool:
+For each parallel group, spawn review agents via Agent tool:
 
 ```javascript
 // Group 1 - Independent structural analysis (parallel)
-Task({
+Agent({
   subagent_type: "cagents:architecture-reviewer",
   description: "Review architecture and design patterns",
   prompt: `Review architecture for: ${targetPath}. Check system design, patterns, coupling.`
 })
-Task({
+Agent({
   subagent_type: "cagents:code-standards-auditor",
   description: "Audit code standards and conventions",
   prompt: `Audit code standards for: ${targetPath}. Check style, naming, conventions.`
 })
-Task({
+Agent({
   subagent_type: "cagents:documentation-reviewer",
   description: "Review documentation quality",
   prompt: `Review documentation for: ${targetPath}. Check clarity, completeness, accuracy.`
 })
 
 // Group 2 - Context-dependent (after Group 1, parallel within group)
-Task({
+Agent({
   subagent_type: "cagents:performance-analyzer",
   description: "Analyze performance issues",
   prompt: `Analyze performance for: ${targetPath}. Architecture context: ${group1Results}.`

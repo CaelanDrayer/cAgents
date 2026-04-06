@@ -6,13 +6,13 @@ paths:
 
 # cAgents Hook System
 
-V10.18.0 CJS-only hook architecture with 26 registered hooks + 1 CLI tool across 19 event types (of 24 total Claude Code event types), `createHook()` factory pattern, agent audit trail with completion summaries, attention injection for goal refresh, magic keywords (UserPromptSubmit), model routing advisor (PreToolUse[Task]), session init gate (PreToolUse[Task]), approval gate (PreToolUse[Bash|Write|Edit]), delegation enforcer (UserPromptSubmit), sentinel gate factchecking, plan-scoped learning capture, context auto-check, clean team lifecycle (`continue:false` + `stopReason` for TeammateIdle/TaskCompleted), and resilient path resolution. Supports command, http, prompt, and agent hook types, async execution, and matcher-based filtering.
+V10.18.0 CJS-only hook architecture with 27 registered hooks + 1 CLI tool across 19 event types (of 24 total Claude Code event types), `createHook()` factory pattern, agent audit trail with completion summaries, attention injection for goal refresh, magic keywords (UserPromptSubmit), model routing advisor (PreToolUse[Agent]), session init gate (PreToolUse[Agent]), approval gate (PreToolUse[Bash|Write|Edit]), delegation enforcer (UserPromptSubmit), controller delegation validator (PreToolUse[Write|Edit]), sentinel gate factchecking, plan-scoped learning capture, context auto-check, clean team lifecycle (`continue:false` + `stopReason` for TeammateIdle/TaskCompleted), and resilient path resolution. Supports command, http, prompt, and agent hook types, async execution, and matcher-based filtering.
 
 ## Architecture
 
 cAgents uses a unified CJS hook system configured in `.claude/settings.json`:
 
-- **CJS hooks** (`.claude/hooks/`): 29 `.cjs` files -- 1 shared utility module (`hook-utils.cjs`) + 1 hook launcher (`run-hook.cjs`) + 26 registered hooks + 1 standalone CLI tool (`eval-runner.cjs`). All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output).
+- **CJS hooks** (`.claude/hooks/`): 30 `.cjs` files -- 1 shared utility module (`hook-utils.cjs`) + 1 hook launcher (`run-hook.cjs`) + 27 registered hooks + 1 standalone CLI tool (`eval-runner.cjs`). All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output).
 - **Prompt hooks**: None currently active. The Stop prompt hook was removed in V9.6.2 due to unreliable LLM JSON responses causing recurring validation failures. The `verify-completion.cjs` command hook provides equivalent file-based verification.
 - **Self-contained invocation via run-hook.cjs**: All hooks are called via `bash -c 'R="${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"; node "$R/.claude/hooks/run-hook.cjs" <hook-name>'` -- a bash wrapper with a 3-tier fallback chain that resolves the plugin root, then launches `run-hook.cjs` which resolves the target hook path using `__dirname`. V9.17.1 switched from bare `node "${CLAUDE_PLUGIN_ROOT}"/.claude/hooks/run-hook.cjs` (which fails with MODULE_NOT_FOUND when `CLAUDE_PLUGIN_ROOT` is not expanded) to a `bash -c` wrapper with fallback chain: `CLAUDE_PLUGIN_ROOT` (official plugin env var) -> `CLAUDE_PROJECT_DIR` (user's project dir, works for local dev) -> `pwd` (last resort). Previous V9.13 approach used `${CLAUDE_PLUGIN_ROOT}` directly in the command string, but this fails when the env var is not set (e.g., in certain subagent contexts, SessionEnd events, or non-plugin installations).
 
@@ -46,14 +46,14 @@ The V9.5 refactoring eliminates the dual shell+JS architecture that caused recur
 
 ## Hook Types Overview
 
-Claude Code supports 24 hook event types. cAgents implements 26 registered hooks across 19 of these events. Five events (`ConfigChange`, `WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `FileChanged`) have no cAgents hooks but are available for custom use.
+Claude Code supports 24 hook event types. cAgents implements 27 registered hooks across 19 of these events. Five events (`ConfigChange`, `WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `FileChanged`) have no cAgents hooks but are available for custom use.
 
 | Hook Type | Trigger | cAgents Hook | Purpose |
 |-----------|---------|--------------|---------|
 | `SessionStart` | Session begins/resumes | `session-catchup.cjs` | Initialize state, detect incomplete sessions, inject cAgents context, context auto-check |
 | `SessionEnd` | Session ends | `team-stop.cjs` | Finalize metrics, update status |
 | `UserPromptSubmit` | User submits prompt | `delegation-enforcer.cjs`, `magic-keywords.cjs` | Enforce delegation rules, natural language routing suggestions (build->run, review->review, etc.) |
-| `PreToolUse` | Before tool execution | `bash-validator.cjs`, `secret-detection.cjs`, `attention-injection.cjs`, `approval-gate.cjs`, `session-init-gate.cjs`, `model-routing-advisor.cjs` | Validate, block dangerous operations, refresh goals, enforce approval gates, session init guard, model routing advisory |
+| `PreToolUse` | Before tool execution | `bash-validator.cjs`, `secret-detection.cjs`, `controller-delegation-validator.cjs`, `attention-injection.cjs`, `approval-gate.cjs`, `session-init-gate.cjs`, `model-routing-advisor.cjs` | Validate, block dangerous operations, warn controller delegation violations, refresh goals, enforce approval gates, session init guard, model routing advisory |
 | `PermissionRequest` | Permission dialog | `permission-handler.cjs` | Auto-approve safe patterns, HITL gates |
 | `PostToolUse` | After tool execution | `post-write-validator.cjs` | Validate JSON/YAML syntax, audit file changes |
 | `PostToolUseFailure` | Tool execution fails | `tool-failure-tracker.cjs` | Track failures, detect patterns, suggest recovery |
@@ -144,18 +144,34 @@ createHook('MyHook', async (input) => {
 
 #### PreToolUse[Bash]: bash-validator.cjs
 - **Matcher**: `Bash`
-- **Purpose**: Block dangerous bash commands
-- **Blocked** (deny): `rm -rf /`, `rm -rf ~`, fork bombs, `mkfs`, `dd if=/dev/zero`, `> /dev/sda`, `sudo`
-- **Blocked** (deny, data exfiltration): `curl` with POST data, `wget --post-file`, `nc`/`netcat` pipes, `socat`
-- **Blocked** (deny, obfuscation): `base64 -d | bash/sh`, `eval "$(..."`, `python3 -c` with `os.system` or `subprocess`, `perl -e` with `system`
+- **Purpose**: Two-tier command safety -- auto-deny catastrophic commands, HITL confirmation for borderline-dangerous commands with safe alternative suggestions
+- **Tier 1 -- Blocked** (deny, auto-reject):
+  - **Destructive**: `rm -rf /`, `rm -rf ~`, fork bombs, `mkfs`, `dd if=/dev/zero`, `> /dev/sda`, `sudo`, `su`, `crontab`
+  - **Data exfiltration**: `curl` with POST data, `wget --post-file`, `nc`/`netcat` pipes, `socat`
+  - **Obfuscation**: `base64 -d | bash/sh`, `eval "$(..."`, `python3 -c` with `os.system`/`subprocess`, `perl -e` with `system`, `curl|wget` piped to shell, `node -e` with `child_process`, `ruby -e` with `exec`/`system`, `php -r` with `exec`/`system`
+- **Tier 2 -- HITL** (ask, user confirms with safe alternative shown):
+  - **Git destructive**: `--force` push (suggest `--force-with-lease`), `reset --hard` (suggest `stash`/`--soft`), `clean -fd`/`-fdx` (suggest `-n` preview)
+  - **SQL destructive**: `DROP TABLE/DATABASE/SCHEMA` (suggest backup), `TRUNCATE TABLE` (suggest `DELETE ... WHERE`), `DELETE FROM` without `WHERE` (suggest adding `WHERE`)
+  - **Permission escalation**: `chmod 777`/`-R 777`/`-R 666` (suggest `755`/`644`), `chown -R root` (suggest verifying path)
+  - **Process management**: `kill -9 -1` (suggest SIGTERM), `killall` (suggest specific PID), `pkill -9` (suggest SIGTERM first)
+  - **System control**: `shutdown`/`poweroff` (suggest `shutdown -c`), `reboot` (suggest saving work), `halt` (suggest `shutdown -h +1`)
+  - **Network/firewall**: `iptables -F` (suggest `iptables-save` first), `ufw disable` (suggest per-port rules)
+  - **Service management**: `systemctl stop/disable` (suggest checking dependents first)
+  - **Container cleanup**: `docker system prune -a` (suggest without `-a`), `docker volume prune` (suggest `volume ls` first)
+  - **Disk operations**: `mkswap` (suggest verifying device), `fdisk` (suggest backing up partition table)
 - **Obfuscation detection limitation**: Patterns use static regex matching against the literal command string. Runtime-constructed obfuscation (e.g., variables holding command fragments, heredoc-built payloads, or multi-step obfuscation across separate commands) cannot be detected. Only known static patterns are caught.
-- **Warned** (allow + message): destructive git commands (`--force`, `reset --hard`, `clean -fd`)
 
 #### PreToolUse[Write|Edit]: secret-detection.cjs
 - **Matcher**: `Write|Edit`
 - **Purpose**: Block writes to protected paths and detect secrets
 - **Three phases**: (1) Protected path check, (2) Sensitive file warning (`.env` and similar filenames — warns only, does not block), (3) Secret scanning (pattern matching — blocks on critical/high severity)
 - **Blocked**: System paths (`/etc/`, `/usr/`, `~/.ssh/`), files with critical/high secrets
+
+#### PreToolUse[Write|Edit]: controller-delegation-validator.cjs
+- **Matcher**: `Write|Edit`
+- **Purpose**: Warn when controller-tier agents write to implementation files instead of delegating
+- **Detects**: Active controller from agent_tree.yaml, implementation file patterns
+- **Output**: systemMessage warning (does not block — advisory only)
 
 #### PreToolUse[Write|Edit|Bash]: attention-injection.cjs
 - **Matcher**: `Write|Edit|Bash`
@@ -164,10 +180,15 @@ createHook('MyHook', async (input) => {
 - **Output**: systemMessage with concise goal reminder (mission + domain + coordination status)
 - **No-op when**: No active session, no plan.yaml, or writing to planning files
 
-#### PreToolUse[Task]: model-routing-advisor.cjs
-- **Matcher**: `Task`
+#### PreToolUse[Agent]: model-routing-advisor.cjs
+- **Matcher**: `Agent`
 - **Purpose**: Advisory hook that suggests optimal model selection before agent spawns
 - **Configuration**: @.claude/rules/infrastructure/model-routing.md for model routing configuration and aliases.
+
+#### PreToolUse[Agent]: session-init-gate.cjs
+- **Matcher**: `Agent`
+- **Purpose**: Guard that ensures session initialization is complete before allowing agent spawns
+- **Output**: Advisory systemMessage (does not block)
 
 ### Workflow Events
 
@@ -253,6 +274,13 @@ createHook('MyHook', async (input) => {
 - **Purpose**: Run quality evaluations on sessions (standalone CLI tool)
 - **Usage**: `node eval-runner.cjs --session <session_id>`
 - **Creates**: `sessions/{id}/evals/evaluation_report.yaml`
+
+### Status Line Provider
+
+#### statusLine: statusline.cjs
+- **Purpose**: Provide real-time status information in the Claude Code status bar
+- **Registration**: `statusLine` key in settings.json (not a hook event)
+- **Output**: Status text displayed in the terminal status line
 
 ## Hook Input/Output
 

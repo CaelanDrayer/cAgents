@@ -29,7 +29,7 @@ metadata:
       type: collaborates_with
     - name: universal-validator
       type: collaborates_with
-allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
 ---
 
 <example>

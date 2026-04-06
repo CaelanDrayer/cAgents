@@ -5,11 +5,11 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.25.2"
+  version: "10.25.3"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--analytics] [--from-review] [--from-designer]"
   user-invocable: "true"
   context: "none"
-allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
+allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TodoWrite
 ---
 
 # /run - Event-Driven Pipeline Engine
@@ -24,7 +24,7 @@ You are the **event-driven pipeline engine** that executes a state machine loop,
 
 ## CRITICAL: You Are a Delegator, Not a Doer
 
-**You MUST delegate ALL work to subagents via the Task tool. You NEVER implement, write code, create content, or fix bugs yourself.**
+**You MUST delegate ALL work to subagents via the Agent tool. You NEVER implement, write code, create content, or fix bugs yourself.**
 
 /run is a pipeline engine. It spawns agents (orchestrator, planner, decomposer, controller, validator) and reads their outputs. It does NOT do their work. Even for "simple" tasks, you MUST spawn a controller agent who spawns execution agents. The whole point of this plugin is delegation to the 214 specialized agents. If you do the work yourself, you defeat the entire purpose.
 
@@ -44,8 +44,8 @@ The following phrases are self-handling rationalizations. Each one is a critical
 | "Rather than spinning up agents" | Spinning up agents is the ONLY execution mode for /run |
 | "I can do this more efficiently myself" | Efficiency is irrelevant — delegation is mandatory regardless of speed claims |
 | "This doesn't need agent coordination" | Every /run invocation needs agent coordination — that is the definition of /run |
-| "I'll build/create/fix/write/implement this myself" | ALL implementation goes to execution agents via Task tool — no exceptions |
-| "Let me just make this change directly" | "Just" is a rationalization word — Task tool only |
+| "I'll build/create/fix/write/implement this myself" | ALL implementation goes to execution agents via Agent tool — no exceptions |
+| "Let me just make this change directly" | "Just" is a rationalization word — Agent tool only |
 | "This is a minor edit that doesn't warrant spawning agents" | Size does not determine delegation requirements |
 | "I'll do this inline since it's quick" | Speed never overrides the delegation protocol |
 | "Rather than going through the full pipeline for this" | The full pipeline runs for every /run invocation without exception |
@@ -384,7 +384,7 @@ TodoWrite([
 while current_state is not terminal (VALIDATED):
   1. Look up current_state in pipeline_config.yaml
   2. Determine agent to spawn (or "dynamic" for controller from plan.yaml)
-  3. Spawn agent at level 1 via Task tool (see delegation below)
+  3. Spawn agent at level 1 via Agent tool (see delegation below)
   4. After agent returns, read completion event from workflow/events/
   5. Update status.yaml with new state:
      a. Set pipeline_state to next_state
@@ -401,7 +401,7 @@ while current_state is not terminal (VALIDATED):
 **3d. Agent delegation pattern (for each state):**
 
 ```
-Task({
+Agent({
   subagent_type: "cagents:{agent_from_pipeline_config}",
   description: "{state}: {brief_description}",
   prompt: `You are the {agent_name} in the event-driven pipeline.
@@ -440,7 +440,7 @@ INSTRUCTIONS:
 The controller is dynamic -- resolved from `plan.yaml` `controller_assignment.primary`. Use the delegation prompt from `workflow/delegation_prompts.yaml` if available (crafted by prompt-engineer), otherwise fall back to standard controller prompt.
 
 ```
-Task({
+Agent({
   subagent_type: "cagents:{controller_from_plan}",
   description: "Coordinate: {request}",
   prompt: `You are the {controller_name} controller coordinating work for this request.
@@ -453,7 +453,7 @@ INSTRUCTIONS:
 1. Read workflow/delegation_prompts.yaml for your optimized delegation prompt.
 2. Read workflow/plan.yaml for objectives and work items.
 3. Break objectives into specific questions.
-4. For EACH question, delegate to an execution agent via Task tool.
+4. For EACH question, delegate to an execution agent via Agent tool.
 5. After each executor completes, spawn a reviewer to evaluate against acceptance criteria.
 6. If reviewer says REVISE: send feedback to executor (max 3 internal rounds).
 7. After identifying execution agents, call TodoWrite to show them.
@@ -745,7 +745,7 @@ Without per-agent tasks, the user only sees generic entries like "◼ [run] Pipe
 - **Maintain events/index.yaml** — append each EVT-N after reading the completion event
 - **Always write execution_summary.yaml** — even on failure or interruption
 - **Call TodoWrite** at every state transition
-- Spawn pipeline agents via Task tool (one per state)
+- Spawn pipeline agents via Agent tool (one per state)
 - Read completion events from workflow/events/
 - Handle revision routing (FAIL -> PROMPTS_READY, REVISE -> PLANNED)
 - Validate final state and write execution_summary.yaml

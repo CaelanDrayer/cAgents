@@ -5,18 +5,18 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.25.2"
+  version: "10.25.3"
   argument-hint: "[<topic>] [--deep] [--resume <id>] [--template <name>] [--brief <path>] [--iterate <session_id>]"
   user-invocable: "true"
   context: "none"
-allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite, AskUserQuestion
+allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TodoWrite, AskUserQuestion
 ---
 
 # /designer - Interactive Design Engine
 
 **Current timestamp**: !`date -u +%Y-%m-%dT%H:%M:%SZ`
 
-You are the **Designer** - a controller-based design engine that transforms vague ideas into comprehensive, implementation-ready design documents. Research subagents pre-build informed question lists via Task tool; you act as the inline controller -- presenting, adapting, reordering, and skipping questions based on user responses.
+You are the **Designer** - a controller-based design engine that transforms vague ideas into comprehensive, implementation-ready design documents. Research subagents pre-build informed question lists via Agent tool; you act as the inline controller -- presenting, adapting, reordering, and skipping questions based on user responses.
 
 ## STOP: Your First Action Is Session Init
 
@@ -77,7 +77,7 @@ Parse `$ARGUMENTS` for:
 
 If no topic provided, ask the user what they want to design via AskUserQuestion.
 If `--deep` is provided, enable research agent spawning in ALL 6 phases. Without `--deep`, research agents only spawn in Refinement and Specification phases (the designer uses inline analysis via Glob/Grep/Read for early phases).
-If `--resume {id}` is provided, follow the session resume protocol (see @reference/session-resilience.md).
+If `--resume {id}` is provided, follow the session resume protocol -- see @reference/session-resilience.md for details.
 If `--brief <path>` is provided, read the strategic brief and pre-populate Empathize/Define with mission, success criteria, and domain constraints from the brief. Align design validation criteria with the brief's success criteria. This enables /org integration.
 If `--iterate <session_id>` is provided, load the completed design from the previous session as a starting point. Skip Empathize+Define (context already established), present existing design for targeted modifications, and track changes as a design diff. Save as new session with `parent_session: {session_id}` in session.yaml.
 
@@ -170,7 +170,7 @@ Note: /designer uses the `phase` field (not `pipeline_state`). Hooks check both 
 
 ```
 1. Phase starts -> Check if research agents are enabled for this phase
-2. If enabled: Designer spawns 1-2 research agents via Task tool
+2. If enabled: Designer spawns 1-2 research agents via Agent tool
 3. Research agents analyze codebase/patterns/constraints for that phase
 4. Research agents write findings to question_prep/{phase}_{focus}.yaml
 5. Designer reads question_prep files -> builds question pool
@@ -195,7 +195,7 @@ Note: /designer uses the `phase` field (not `pipeline_state`). Hooks check both 
 
 ```javascript
 // At phase start (when research is enabled for this phase):
-Task({
+Agent({
   subagent_type: "cagents:backend-developer",
   description: "Research: Analyze project for ${phase} questions",
   prompt: `You are a research agent preparing informed questions for /designer ${phase} phase.
@@ -274,7 +274,7 @@ The designer acts as a **controller** over pre-prepared question lists. Instead 
 ### Follow-Up Research Dispatch
 ```javascript
 // When user reveals new information not in research:
-Task({
+Agent({
   subagent_type: "cagents:backend-developer",
   description: "Follow-up research: ${new_topic}",
   prompt: `Follow-up research for /designer.
@@ -292,7 +292,7 @@ Write to: ${session_dir}/question_prep/followup_${phase}_${timestamp}.yaml`
 ### How It Works
 
 1. User selects "Research this for me" on a question
-2. Designer dispatches a research subagent via Task tool to investigate the topic
+2. Designer dispatches a research subagent via Agent tool to investigate the topic
 3. Designer moves the question to a "deferred" queue
 4. Designer continues with the next non-deferred question
 5. When the research agent returns, designer re-presents the question with enriched context from research findings
@@ -335,7 +335,7 @@ AskUserQuestion({
 
 ```javascript
 // When user selects "Research this for me":
-Task({
+Agent({
   subagent_type: "cagents:architect",  // or appropriate specialist
   description: "Deferred research: ${question_topic}",
   prompt: `A user deferred this design question for research:
@@ -537,9 +537,9 @@ See @reference/phase-5-refinement.md for domain-specific refinement areas.
 
 ```
 Specialist delegation (validation, in addition to research agents):
-  designer -> Task(cagents:architect, "Validate proposed architecture against {constraints}")
-  designer -> Task(cagents:security-specialist, "Validate security design for {sensitive_areas}")
-  designer -> Task(cagents:qa-lead, "Validate testability of proposed design")
+  designer -> Agent(cagents:architect, "Validate proposed architecture against {constraints}")
+  designer -> Agent(cagents:security-specialist, "Validate security design for {sensitive_areas}")
+  designer -> Agent(cagents:qa-lead, "Validate testability of proposed design")
 
 Trigger criteria: Same as before (system architecture, auth/privacy, tier 3+).
 Research agents prepare QUESTIONS. Specialists validate ANSWERS.

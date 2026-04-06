@@ -30,7 +30,7 @@ domain: engineering
 ```
 
 ### Tier 2: Instructions (~200-500 tokens)
-**Loaded when agent is activated** (spawned via Task tool).
+**Loaded when agent is activated** (spawned via Agent tool).
 
 ```markdown
 # Agent Name
@@ -62,13 +62,13 @@ resources/
 In SKILL.md body, reference tier 3 resources:
 
 ```markdown
-## Risk Assessment
+## Validation Checklist
 
-For detailed criteria, see @resources/risk-framework.md
+For detailed criteria, see @resources/controller-validation-checklist.md
 
-## Examples
+## Self-Validation Protocol
 
-See @resources/examples.md for comprehensive examples.
+See @resources/execution-self-validation.md for the full checklist.
 ```
 
 The @path syntax triggers on-demand loading only when the resource is needed.
@@ -105,7 +105,7 @@ engineering/agents/copywriter.md       # All tiers in one file
 ## Loading Algorithm
 
 ```
-1. Agent referenced (Task tool or router)
+1. Agent referenced (Agent tool or router)
    → Load Tier 1 (frontmatter) [~50 tokens]
 
 2. Agent selected for activation

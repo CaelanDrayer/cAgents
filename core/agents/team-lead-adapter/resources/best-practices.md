@@ -5,7 +5,7 @@
 ## Design Principles
 
 - **Delegate Only, Never Implement**: The team lead adapter is a coordinator — it never writes code, creates content, or answers domain questions; every work item is executed by a spawned controller teammate
-- **Teammates Are Controllers**: Each teammate spawned via Task tool is a controller agent (e.g., engineering-manager) that in turn delegates to execution agents — the lead adapter coordinates controllers, not execution agents directly
+- **Teammates Are Controllers**: Each teammate spawned via Agent tool is a controller agent (e.g., engineering-manager) that in turn delegates to execution agents — the lead adapter coordinates controllers, not execution agents directly
 - **Immediate Execution**: As soon as the team and tasks are created, spawn all wave-1 teammates simultaneously — no pausing, no asking permission, no pre-flight checks beyond reading the manifest
 - **Built-In Tools Only**: Use SendMessage, TaskList, TaskUpdate, and TeamDelete from Claude Code's built-in agent teams — no custom coordination scripts or file-based polling loops
 - **Wave-Aware Gate Validation**: Only mark a gate sentinel complete after verifying all wave gate criteria — unverified gates produce cascading failures in subsequent waves
@@ -18,7 +18,7 @@
 - **Wave Loop Pattern**: Execute waves sequentially with parallel execution within each wave — bootstrap wave (sequential, lead executes), implementation waves (parallel, teammates execute), integration wave (sequential, lead executes)
 - **Gate Sentinel Pattern**: A gate task blocked by all wave tasks — when all wave tasks complete, validate gate criteria, then mark the gate complete to unblock the next wave's tasks
 - **Self-Claiming Work Distribution**: Teammates finish their assigned task, call TaskList to find the next unblocked unassigned task, and claim it via TaskUpdate — distributes work without requiring the lead to explicitly reassign
-- **Controller-as-Teammate Spawn**: Each teammate is spawned via Task tool with `subagent_type: "cagents:{controller_from_plan}"` — the controller receives instructions to spawn an execution agent and a reviewer directly, not to implement work itself
+- **Controller-as-Teammate Spawn**: Each teammate is spawned via Agent tool with `subagent_type: "cagents:{controller_from_plan}"` — the controller receives instructions to spawn an execution agent and a reviewer directly, not to implement work itself
 - **Two-Level Nesting Compliance**: The nesting hierarchy is lead adapter → controller teammate → execution agent (2 levels from the lead) — never instruct teammates to invoke /run via Skill tool as this would exceed Claude Code's 2-level nesting limit
 - **Result Aggregation Flow**: After all teammates complete, collect outputs from all tasks via TaskList + ReadFile, synthesize into coherent deliverables, write coordination_log.yaml with all contributions and metrics
 - **Contract Status Tracking**: For each interface contract in the team manifest, track status: established, consumed, fulfilled, or violated — record in coordination_log.yaml for audit purposes
@@ -54,7 +54,7 @@
 ## Anti-Patterns to Avoid
 
 - **Direct Implementation**: The lead adapter editing files, writing code, or creating content directly instead of spawning a controller teammate — violates delegate mode and loses the quality benefits of the reviewer loop
-- **SendMessage for Work Assignment**: Using SendMessage to tell a teammate what to do instead of spawning it as a controller via Task tool — SendMessage is for status updates; Task tool is for spawning agents with work
+- **SendMessage for Work Assignment**: Using SendMessage to tell a teammate what to do instead of spawning it as a controller via Agent tool — SendMessage is for status updates; Agent tool is for spawning agents with work
 - **/run Skill Invocation in Teammates**: Instructing teammates to call Skill({skill: "run"}) to execute their work items — this would add a third nesting level, exceeding Claude Code's 2-level limit
 - **Gate Validation Shortcuts**: Marking a gate complete without verifying gate criteria (file existence, contract artifacts, acceptance criteria) — produces a false "phase complete" signal that corrupts subsequent waves
 - **Forgetting TeamDelete**: Completing all work and coordination_log.yaml without calling TeamDelete — leaves orphaned team resources that can interfere with future sessions

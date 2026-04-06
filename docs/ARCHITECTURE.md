@@ -31,7 +31,7 @@ cAgents is a universal multi-domain agent system with controller-centric coordin
 routing -> planning -> coordinating -> executing -> validating
    |          |           |            |           |
   /run      /run      Controller    /run        /run
-(inline)  (inline)   (Task tool)  (monitors)  (inline)
+(inline)  (inline)   (Agent tool)  (monitors)  (inline)
 ```
 
 ### Phase Details

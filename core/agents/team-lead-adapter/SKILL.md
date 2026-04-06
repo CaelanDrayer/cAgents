@@ -15,7 +15,7 @@ metadata:
     - peer_messaging
     - result_aggregation
   maxTurns: 30
-allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
 ---
 
 # Team Lead Adapter
@@ -103,23 +103,23 @@ Teammate messages are delivered automatically -- no polling needed. Idle notific
 
 ## CRITICAL: Teammates ARE Controllers That Spawn Execution Agents Directly
 
-**Teammates are controller agents that delegate to execution agents directly via Task tool.** This is the core architecture. `/team` provides parallelism; controllers provide coordination quality.
+**Teammates are controller agents that delegate to execution agents directly via Agent tool.** This is the core architecture. `/team` provides parallelism; controllers provide coordination quality.
 
 ```
 /team decomposes -> work items -> each teammate (controller) -> Task(execution agent) -> Task(reviewer)
 ```
 
-**Each teammate IS a controller** (e.g., `cagents:engineering-manager`) spawned by the lead via Task tool. The controller then spawns execution agents and reviewers directly:
+**Each teammate IS a controller** (e.g., `cagents:engineering-manager`) spawned by the lead via Agent tool. The controller then spawns execution agents and reviewers directly:
 
 ```
 Teammate 1 (engineering-manager):
-  -> Task(cagents:backend-developer, "Implement TASK-01")
-  -> Task(cagents:reviewer, "Review TASK-01")
+  -> Agent(cagents:backend-developer, "Implement TASK-01")
+  -> Agent(cagents:reviewer, "Review TASK-01")
   -> PASS or REVISE (max 3 rounds)
 
 Teammate 2 (engineering-manager):
-  -> Task(cagents:frontend-developer, "Implement TASK-02")
-  -> Task(cagents:reviewer, "Review TASK-02")
+  -> Agent(cagents:frontend-developer, "Implement TASK-02")
+  -> Agent(cagents:reviewer, "Review TASK-02")
   -> PASS or REVISE (max 3 rounds)
 ```
 
@@ -127,13 +127,13 @@ Teammate 2 (engineering-manager):
 
 ## Teammate Communication
 
-### Assigning Work -- Teammates Are Spawned as Controllers via Task Tool
+### Assigning Work -- Teammates Are Spawned as Controllers via Agent Tool
 
-**CRITICAL: Teammates are NOT assigned work via SendMessage. They are spawned as controller agents via Task tool.** Each teammate receives its work item directly in the Task call.
+**CRITICAL: Teammates are NOT assigned work via SendMessage. They are spawned as controller agents via Agent tool.** Each teammate receives its work item directly in the Task call.
 
 ```javascript
 // Spawn a teammate as a controller that delegates to execution agents
-Task({
+Agent({
   subagent_type: "cagents:engineering-manager",
   name: "w1-task-1-engineering-manager",
   team_name: "{team_name}",
@@ -417,9 +417,9 @@ contracts:
 
 ## Key Principles
 
-1. **Teammates ARE controllers** - Every teammate is a controller agent spawned via Task tool that delegates to execution agents directly. Teammates NEVER implement directly and NEVER invoke /run.
-2. **Spawn teammates IMMEDIATELY** - Spawn controller teammates via Task tool the moment the team is created. Never pause or ask permission.
-3. **Direct Task delegation** - Teammates spawn execution agents and reviewers directly via Task tool (2-level nesting: lead -> controller teammate -> execution agent).
+1. **Teammates ARE controllers** - Every teammate is a controller agent spawned via Agent tool that delegates to execution agents directly. Teammates NEVER implement directly and NEVER invoke /run.
+2. **Spawn teammates IMMEDIATELY** - Spawn controller teammates via Agent tool the moment the team is created. Never pause or ask permission.
+3. **Direct Task delegation** - Teammates spawn execution agents and reviewers directly via Agent tool (2-level nesting: lead -> controller teammate -> execution agent).
 4. **Delegate only** - Never do direct implementation work
 5. **Built-in tools** - Use SendMessage, TaskList, TaskUpdate for all coordination
 6. **Parallel first** - Maximize concurrent work items via self-claiming

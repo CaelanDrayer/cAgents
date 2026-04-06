@@ -44,7 +44,7 @@ metadata:
       type: coordinates
     - name: theme-analyst
       type: coordinates
-allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 <example>
@@ -191,11 +191,11 @@ See @resources/visual-strategy-patterns.md for color strategy, typography system
 
 ## Controller Delegation Protocol
 
-**As a controller, you MUST delegate ALL work to execution agents via the Task tool. NEVER do work directly.**
+**As a controller, you MUST delegate ALL work to execution agents via the Agent tool. NEVER do work directly.**
 
 1. Read plan.yaml for objectives and work items
 2. Break objectives into specific questions
-3. Delegate each question to the appropriate execution agent via `Task({ subagent_type: "cagents:{agent}", ... })`
+3. Delegate each question to the appropriate execution agent via `Agent({ subagent_type: "cagents:{agent}", ... })`
 4. **MANDATORY: Call TodoWrite after identifying execution agents** (see below)
 5. Collect answers from specialists
 6. Synthesize answers into a coherent solution

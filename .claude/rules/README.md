@@ -19,11 +19,11 @@ Topic-specific rules organized for better maintainability.
 │   ├── hooks.md               # V8.0 hook system documentation
 │   ├── skill-format.md        # V8.0 SKILL.md agent format spec
 │   ├── progressive-disclosure.md # V8.0 three-tier loading pattern
-│   ├── subagent-alignment.md  # V8.0 Task tool alignment
+│   ├── subagent-alignment.md  # V8.0 Agent tool alignment
 │   ├── teams.md               # V9.2 Team coordination patterns (built-in agent teams)
 │   ├── controller-reference.md    # Detailed controller schemas and protocols
 │   ├── orchestration-reference.md # Detailed orchestration schemas
-│   └── version-registry.md       # Version synchronization (13 locations)
+│   └── version-registry.md       # Version synchronization (18 locations)
 ├── domains/        # Domain-specific guidelines
 │   ├── engineering.md      # Engineering domain (engineering/)
 │   ├── grow.md             # Business domain (business/, growth/)
@@ -87,11 +87,11 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 5. **core/hooks.md** - V10.0 hook system (22 event types, 4 hook types)
 6. **core/skill-format.md** - V9.0 SKILL.md format (maxTurns, permissionMode, memory, opusplan)
 7. **core/progressive-disclosure.md** - Three-tier loading (10/10 agents converted)
-8. **core/subagent-alignment.md** - Task tool alignment patterns
+8. **core/subagent-alignment.md** - Agent tool alignment patterns
 9. **core/teams.md** - V9.2 Team coordination patterns (built-in agent teams)
 10. **core/controller-reference.md** - Detailed controller schemas and protocols
 11. **core/orchestration-reference.md** - Detailed orchestration schemas
-12. **core/version-registry.md** - Version synchronization (13 locations)
+12. **core/version-registry.md** - Version synchronization (18 locations)
 
 ### Domains (5 files)
 13. **domains/engineering.md** - Engineering domain guidelines
@@ -131,7 +131,7 @@ New hooks added:
 - `eval-runner.js` - Quality evaluation runner
 
 ### subagent-alignment.md (New)
-Maps cAgents agent types to Claude Code Task tool patterns:
+Maps cAgents agent types to Claude Code Agent tool patterns:
 - Domain-qualified agent references (`make:backend-developer`)
 - Prompt templates for delegation
 - Best practices for agent selection

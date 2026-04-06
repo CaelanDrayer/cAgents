@@ -14,7 +14,7 @@ metadata:
     - best_practices
     - code_quality
   maxTurns: 10
-  disallowedTools: ["Task"]
+  disallowedTools: ["Agent"]
   related_agents:
     - name: code-reviewer
       type: coordinated_by

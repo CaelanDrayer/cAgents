@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.25.2"
+  version: "10.25.3"
   argument-hint: "<bug description or error message> [--escalate] [--phase <1-4>]"
   user-invocable: "true"
   context: "none"

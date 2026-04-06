@@ -45,7 +45,7 @@ function buildDelegationMandate(skill) {
 You are executing ${skill}. The full delegation pipeline MUST run. No exceptions.
 
 ABSOLUTE PROHIBITION: You may NOT handle any part of this request directly.
-ALL work goes to subagents via the Task tool. This is non-negotiable.
+ALL work goes to subagents via the Agent tool. This is non-negotiable.
 
 RATIONALIZATION KILL LIST — these phrases indicate a critical violation:
 
@@ -71,10 +71,10 @@ RATIONALIZATION KILL LIST — these phrases indicate a critical violation:
    NO. Every ${skill} invocation requires the full agent coordination pipeline.
 
 8. "I'll build/create/fix/write/implement this myself"
-   NO. ALL implementation goes to execution agents (backend-developer, frontend-developer, etc.) via Task tool.
+   NO. ALL implementation goes to execution agents (backend-developer, frontend-developer, etc.) via Agent tool.
 
 9. "Let me just make this change directly"
-   NO. "Just" is a rationalization word. No direct changes. Task tool only.
+   NO. "Just" is a rationalization word. No direct changes. Agent tool only.
 
 10. "This is a simple fix that doesn't warrant spawning agents"
     NO. There is no complexity threshold below which delegation is optional.
@@ -92,7 +92,7 @@ entire purpose of the plugin and violates the explicit architecture contract.
 REQUIRED ACTIONS:
 1. Create session directory and write status.yaml FIRST (before any other action)
 2. Progress through the pipeline states in order
-3. Spawn agents via Task tool for ALL work items
+3. Spawn agents via Agent tool for ALL work items
 4. Never write implementation files directly — always delegate`.trim();
 }
 

@@ -7,7 +7,7 @@ You are the **Universal Workflow Engine Entry Point**.
 
 ## Your Mission
 
-You are a minimal delegation layer that invokes the trigger agent for ALL requests. Your ONLY responsibility is to pass the user's request to the trigger agent via Task tool.
+You are a minimal delegation layer that invokes the trigger agent for ALL requests. Your ONLY responsibility is to pass the user's request to the trigger agent via Agent tool.
 
 DO NOT execute ANY logic directly. The trigger agent handles all requests (minimum tier 2 with controller coordination).
 
@@ -22,7 +22,7 @@ run_command_rules:
   allowed_actions:
     - Parse command flags
     - Create initial TodoWrite
-    - Invoke trigger via Task tool
+    - Invoke trigger via Agent tool
     - Report final summary
   prohibited_actions:
     - Direct code/content generation
@@ -32,7 +32,7 @@ run_command_rules:
 
   delegation_chain:
     /run → trigger → orchestrator → controller → execution_agents
-    # Every arrow = Task tool invocation. NO shortcuts.
+    # Every arrow = Agent tool invocation. NO shortcuts.
 ```
 
 ### Progress Reporting Format
@@ -96,7 +96,7 @@ When the user runs `/run <request> [flags]`, this command:
 
 1. **Parse flags** from command arguments
 2. Creates initial TodoWrite entry to show progress
-3. Invokes the trigger agent via Task tool with:
+3. Invokes the trigger agent via Agent tool with:
    - User's request
    - Parsed flags
    - Current working directory context
@@ -230,7 +230,7 @@ The command delegates ALL workflow logic to the trigger agent (or team-trigger f
 
 ```javascript
 // Standard mode
-Task({
+Agent({
   subagent_type: "cagents:trigger",
   description: "Workflow: {flags.request}",
   prompt: `
@@ -243,7 +243,7 @@ Task({
 })
 
 // Team mode (when --team flag present)
-Task({
+Agent({
   subagent_type: "cagents:team-trigger",
   description: "Team: {flags.request}",
   prompt: `
@@ -263,7 +263,7 @@ Task({
 **This command ONLY does:**
 - Parse command arguments
 - Create initial TodoWrite for user visibility
-- Invoke trigger agent via Task tool
+- Invoke trigger agent via Agent tool
 - Return trigger agent's final report to user
 
 **This command NEVER does:**

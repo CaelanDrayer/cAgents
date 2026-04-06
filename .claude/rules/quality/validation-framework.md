@@ -233,7 +233,7 @@ Every workflow YAML file MUST conform to its schema. Five schema files are valid
 
 **status.yaml**: pipeline_state, revision_round (0-5), validation_cycles, created_at (ISO 8601), state_history (>=1 each with state + entered_at)
 
-See @resources/workflow-yaml-schemas.md for field-by-field validation rules and quick-check approach.
+The schema summaries above document the required fields for each workflow YAML file.
 
 ---
 

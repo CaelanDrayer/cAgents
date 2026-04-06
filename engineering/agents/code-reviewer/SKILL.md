@@ -20,7 +20,7 @@ metadata:
     - diff-aware-review
     - pattern-learning
   maxTurns: 10
-  disallowedTools: ["Task"]
+  disallowedTools: ["Agent"]
   not-my-scope:
     - Initial implementation
     - architecture design

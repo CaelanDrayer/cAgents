@@ -5,18 +5,18 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.25.2"
+  version: "10.25.3"
   argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--no-template] [--waves <n>]"
   user-invocable: "true"
   context: "fork"
-allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite, TeamCreate, TeamDelete, TaskCreate, TaskUpdate, TaskList, TaskGet, SendMessage, Skill
+allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TodoWrite, TeamCreate, TeamDelete, TaskCreate, TaskUpdate, TaskList, TaskGet, SendMessage, Skill
 ---
 
 # /team - N-Wave Parallel Team Execution
 
 **Current timestamp**: !`date -u +%Y-%m-%dT%H:%M:%SZ`
 
-You are a team orchestrator using the event-driven pipeline. Your job is to **create a real agent team and spawn real teammates**. You MUST call TeamCreate, TaskCreate, and spawn teammates via the Task tool. This is non-negotiable.
+You are a team orchestrator using the event-driven pipeline. Your job is to **create a real agent team and spawn real teammates**. You MUST call TeamCreate, TaskCreate, and spawn teammates via the Agent tool. This is non-negotiable.
 
 ## STOP: Your First Action Is Session Init
 
@@ -24,7 +24,7 @@ You are a team orchestrator using the event-driven pipeline. Your job is to **cr
 
 ## CRITICAL: You Are a Delegator, Not a Doer
 
-**You MUST delegate ALL work to teammates via TeamCreate + Task tool. You NEVER implement, write code, create content, or fix bugs yourself.**
+**You MUST delegate ALL work to teammates via TeamCreate + Agent tool. You NEVER implement, write code, create content, or fix bugs yourself.**
 
 /team is a team orchestrator. It creates teams, spawns teammates, validates wave gates, and integrates results. It does NOT do the teammates' work. Even for "simple" items, you MUST spawn teammate agents. The whole point of this plugin is delegation to the 214 specialized agents. If you do the work yourself, you defeat the entire purpose.
 
@@ -44,8 +44,8 @@ The following phrases are self-handling rationalizations. Each one is a critical
 | "Rather than spinning up teammates" | Spinning up teammates is the ONLY execution mode for /team |
 | "I can do this more efficiently myself" | Efficiency is irrelevant — delegation is mandatory regardless of speed claims |
 | "This doesn't need wave coordination" | Every /team invocation needs wave coordination — that is the definition of /team |
-| "I'll build/create/fix/write/implement this myself" | ALL implementation goes to teammate agents via TeamCreate + Task tool |
-| "Let me just make this change directly" | "Just" is a rationalization word — TeamCreate + Task tool only |
+| "I'll build/create/fix/write/implement this myself" | ALL implementation goes to teammate agents via TeamCreate + Agent tool |
+| "Let me just make this change directly" | "Just" is a rationalization word — TeamCreate + Agent tool only |
 | "There aren't enough items to justify a team" | Minimum 3 items is a guideline, not a bypass — route to /run if fewer, do not self-handle |
 | "I'll handle the simple parts and delegate the complex ones" | You delegate ALL parts, simple and complex alike |
 | "Rather than going through the full wave structure" | The full wave structure runs for every /team invocation without exception |
@@ -102,7 +102,7 @@ Wave N (Lead, sequential): Integration + Final Validation
 
 ## MANDATORY: You MUST Execute These Steps
 
-**If you do not call TeamCreate and spawn teammates via Task tool, you have FAILED.** Do not just describe what you would do. Do not just create tasks without teammates. Actually execute the steps below.
+**If you do not call TeamCreate and spawn teammates via Agent tool, you have FAILED.** Do not just describe what you would do. Do not just create tasks without teammates. Actually execute the steps below.
 
 **EXCEPTION: Mandatory /run fallback.** If the request produces fewer than 3 work items or has no parallelizable items, you MUST pass the request to /run via `Skill({ skill: "run" })`. Never silently drop a request — either team-ize it or /run it.
 
@@ -278,7 +278,7 @@ TodoWrite([
 **2c. Spawn orchestrator (enrichment):**
 
 ```
-Task({
+Agent({
   subagent_type: "cagents:orchestrator",
   description: "INIT: Enrich context",
   prompt: "You are the orchestrator in the event-driven pipeline.\n\nREQUEST: {user_request}\nSESSION: {SESSION_DIR}/\nDOMAIN: {domain} | TIER: {tier}\n\nEnrich the request with domain context and project state. Write workflow/enriched_context.yaml and a completion event to workflow/events/EVT-1.yaml."
@@ -293,7 +293,7 @@ sed -i 's/^phase: .*/phase: ENRICHING/' "{SESSION_DIR}/status.yaml"
 **2d. Spawn planner:**
 
 ```
-Task({
+Agent({
   subagent_type: "cagents:universal-planner",
   description: "ORCHESTRATED: Plan objectives",
   prompt: "You are the universal-planner in the event-driven pipeline.\n\nREQUEST: {user_request}\nSESSION: {SESSION_DIR}/\nDOMAIN: {domain} | TIER: {tier}\n\nRead workflow/enriched_context.yaml. Define objectives, select controllers, write workflow/plan.yaml and a completion event to workflow/events/EVT-2.yaml."
@@ -308,7 +308,7 @@ sed -i 's/^phase: .*/phase: ENRICHED/' "{SESSION_DIR}/status.yaml"
 **2e. Spawn decomposer (with wave maximization):**
 
 ```
-Task({
+Agent({
   subagent_type: "cagents:task-decomposer",
   description: "PLANNED: Decompose into work items with maximum wave granularity",
   prompt: "You are the task-decomposer in the event-driven pipeline.\n\nREQUEST: {user_request}\nSESSION: {SESSION_DIR}/\nDOMAIN: {domain} | TIER: {tier}\n\nRead workflow/plan.yaml. Decompose into work items with acceptance criteria.\n\nCRITICAL WAVE MAXIMIZATION:\n- Assign each work item a wave number (0, 1, 2, 3, ...)\n- Wave 0 = foundation/bootstrap (lead executes)\n- Maximize the number of waves by separating work into natural dependency layers\n- If item B depends on item A's output, they MUST be in different waves\n- Even items that COULD run in the same wave SHOULD be split into separate waves if they represent distinct phases (e.g., research vs implementation vs testing vs documentation)\n- Prefer 5-10 waves over 2-3 waves\n- Each wave should have a clear quality gate with verifiable criteria\n- The final wave is always integration/validation (lead executes)\n\nWave assignment strategy:\n  Wave 0: Scaffolding, schemas, contracts, project setup\n  Wave 1: Research, analysis, information gathering\n  Wave 2: Design, architecture decisions, interface definitions\n  Wave 3: Core implementation (primary features)\n  Wave 4: Supporting implementation (secondary features, integrations)\n  Wave 5: Testing, QA, security validation\n  Wave 6: Documentation, cleanup, optimization\n  Wave 7+: Additional phases as needed\n\nWrite workflow/work_items.yaml with wave assignments and a completion event to workflow/events/EVT-3.yaml."
@@ -422,7 +422,7 @@ for each wave K from 1 to N-1:
       git worktree. This prevents file conflicts during parallel execution.
 
       ```
-      Task({
+      Agent({
         subagent_type: "cagents:{CONTROLLER_TYPE}",
         name: "w{K}-task-{N}-{CONTROLLER_TYPE}",
         team_name: "{team_name}",
@@ -460,7 +460,7 @@ for each wave K from 1 to N-1:
       for batch in chunk(items_in_wave, batch_size):
         # Spawn all items in this batch in parallel
         for each work_item in batch:
-          Task({...})  # one teammate per item
+          Agent({...})  # one teammate per item
         # Wait for batch to complete before spawning next batch
         # Apply early shutdown (5c-1) as each teammate finishes
       ```
@@ -484,8 +484,8 @@ for each wave K from 1 to N-1:
       #
       # NEVER use work_items.yaml's per-item `agent` field as subagent_type.
       # The `agent` field (e.g., "backend-developer", "senior-developer") is an
-      # EXECUTION agent -- it lacks the Task tool and CANNOT delegate work.
-      # Only controllers (engineering-manager, narrative-director, etc.) have Task tool.
+      # EXECUTION agent -- it lacks the Agent tool and CANNOT delegate work.
+      # Only controllers (engineering-manager, narrative-director, etc.) have Agent tool.
       #
       # VALIDATION: controller_type must match an entry in domain_overrides.yaml
       # controller_catalog. If it doesn't, something is wrong -- fall back to
@@ -496,7 +496,7 @@ for each wave K from 1 to N-1:
       # Override per wave if supporting controllers are available and wave items align
       # e.g., CONTROLLER_TYPE = "engineering-manager" (or "architect" for design waves)
 
-      Task({
+      Agent({
         subagent_type: "cagents:{CONTROLLER_TYPE}",  # MUST be the controller from plan.yaml, NEVER an execution agent
         name: "w{K}-task-{N}-{CONTROLLER_TYPE}",
         team_name: "{team_name}",
@@ -508,10 +508,10 @@ for each wave K from 1 to N-1:
       ACCEPTANCE CRITERIA: <criteria>
       SESSION DIR: {SESSION_DIR}  (contains enriched_context.yaml, plan.yaml, work_items.yaml)
       OUTPUTS FROM PREVIOUS WAVES: {SESSION_DIR}/outputs/  (read artifacts from earlier waves)
-      EXECUTION AGENT TO SPAWN: {agent_from_work_items}  (delegate to this agent via Task tool)
+      EXECUTION AGENT TO SPAWN: {agent_from_work_items}  (delegate to this agent via Agent tool)
 
       CRITICAL: You are a CONTROLLER agent. Your job is to coordinate execution, NOT implement directly.
-      Spawn the execution agent below via Task tool, then spawn a reviewer to validate.
+      Spawn the execution agent below via Agent tool, then spawn a reviewer to validate.
       Direct implementation without delegating to execution agents is a violation of the team protocol.
 
       SELF-REGISTRATION (belt-and-suspenders agent tree tracking):
@@ -537,7 +537,7 @@ for each wave K from 1 to N-1:
       1. Read outputs from previous waves if your work item depends on them
       2. Write your self-registration entry to {SESSION_DIR}/workflow/agent_tree.yaml (see above)
       3. Spawn the execution agent to implement the work item:
-         Task({
+         Agent({
            subagent_type: 'cagents:{agent_from_work_items}',
            description: 'Implement TASK-{N}: {short_description}',
            prompt: 'Implement TASK-{N}: {description}. Acceptance criteria: {criteria}. Write outputs to {SESSION_DIR}/outputs/task-{N}/
@@ -549,7 +549,7 @@ for each wave K from 1 to N-1:
       Use: node -e "const fs=require(\"fs\"),yaml=require(\"js-yaml\");const f=\"{SESSION_DIR}/workflow/agent_tree.yaml\";let o={agents:[]};try{o=yaml.load(fs.readFileSync(f,\"utf8\"))||{agents:[]}}catch(e){}if(!Array.isArray(o.agents))o.agents=[];const id=\"exec-{N}-\"+Date.now();if(!o.agents.some(a=>a.id===id)){o.agents.push({id,type:\"cagents:{agent_from_work_items}\",parent:\"teammate-{K}-{N}\",depth:2,spawned_at:new Date().toISOString(),stopped_at:null,cagents_type:\"cagents:{agent_from_work_items}\",short_role:\"{agent_from_work_items}\",role_description:\"Execute TASK-{N}\",session:\"{SESSION_ID}\"});fs.writeFileSync(f,yaml.dump(o))}"'
          })
       4. After execution agent returns, spawn a reviewer to validate:
-         Task({
+         Agent({
            subagent_type: 'cagents:reviewer',
            description: 'Review TASK-{N}',
            prompt: 'Review implementation of TASK-{N}. Acceptance criteria: {criteria}. Output: PASS or REVISE with feedback.
@@ -596,10 +596,10 @@ for each wave K from 1 to N-1:
 
       Recovery chain (max 2 retries per work item):
       1. RETRY: Spawn replacement teammate with error context:
-         Task({
+         Agent({
            description: "RETRY Wave {K} - TASK-{N}: <description>",
            prompt: "Previous attempt failed with: {error_context}. Avoid: {failure_cause}.
-                   CRITICAL: You are a controller agent. Spawn the assigned execution agent via Task tool to implement.
+                   CRITICAL: You are a controller agent. Spawn the assigned execution agent via Agent tool to implement.
                    Do NOT implement directly. Delegate to cagents:{agent_from_work_items} and spawn cagents:reviewer to validate.
                    ...",
            team_name: "{team_name}",
@@ -669,7 +669,7 @@ Run integration to merge cross-wave outputs:
 **6a. Spawn integration controller:**
 
 ```
-Task({
+Agent({
   subagent_type: "cagents:{primary_controller_from_plan}",
   description: "Integration: Merge outputs from all {N} waves",
   prompt: "You are the {controller_name} controller performing final integration.\n\nSESSION: {SESSION_DIR}/\n\nAll {N-1} execution waves are complete. Read workflow/coordination_log.yaml and outputs/ from each wave and WI. Merge cross-WI outputs, resolve conflicts, write final integrated outputs. Write coordination_log.yaml with integration results."
@@ -679,7 +679,7 @@ Task({
 **6b. Spawn final validator:**
 
 ```
-Task({
+Agent({
   subagent_type: "cagents:universal-validator",
   description: "Final validation: All waves and WIs complete",
   prompt: "You are the universal-validator performing final validation.\n\nSESSION: {SESSION_DIR}/\n\nAll {N} waves and integration are complete. Validate all acceptance criteria across all WIs and all wave gates. Write workflow/validation_report.yaml with PASS/FAIL/REVISE classification."
@@ -821,7 +821,7 @@ When a wave has more items than the initial `--members` cap, or when workload is
 # During wave K execution, if additional items are identified:
 1. Create TaskCreate for the new work item
 2. Spawn additional teammate:
-   Task({
+   Agent({
      subagent_type: "cagents:{CONTROLLER_TYPE}",
      name: "w{K}-task-{N}-{CONTROLLER_TYPE}-scaled",
      team_name: "{team_name}",
@@ -873,13 +873,13 @@ scaling_events:
 ## Key Rules
 
 1. **You MUST call TeamCreate.** No exceptions. This is what creates the team.
-2. **You MUST spawn teammates via Task tool.** This is what creates tmux panes.
+2. **You MUST spawn teammates via Agent tool.** This is what creates tmux panes.
 3. **Spawn teammates PER WAVE** -- each wave gets its own fresh round of teammates.
 4. **Within a wave, spawn ALL teammates at the same time** (parallel Task calls).
 5. **Validate each GATE before proceeding to the next wave.** Gates are quality checkpoints.
 6. **Shut down teammates individually as they complete (early shutdown), and shut down any remaining before spawning wave K+1.**
 7. **Maximize the number of waves.** More waves = better quality gating. There is nothing wrong with more waves.
-8. **Teammates ARE controller agents** that spawn execution agents directly via Task tool. Teammates NEVER implement directly -- they delegate to `cagents:{execution_agent}` and spawn `cagents:reviewer` to validate. This is non-negotiable.
+8. **Teammates ARE controller agents** that spawn execution agents directly via Agent tool. Teammates NEVER implement directly -- they delegate to `cagents:{execution_agent}` and spawn `cagents:reviewer` to validate. This is non-negotiable.
 9. **You (the lead) do Wave 0 (enrichment) and the final wave (integration)** -- teammates do all middle waves.
 10. **Never ask permission** between waves. Execute the full pipeline automatically.
 11. **Never just create tasks without spawning teammates** -- tasks without teammates are useless.
@@ -1085,7 +1085,7 @@ org_* session (level 0)     <- /org creates this
   team_* session (level 1)  <- /team creates this, parent_session_id = org_*
 ```
 
-There is no `org_* -> team_* -> run_*` chain. Claude Code enforces a 2-level subagent nesting limit, which means /team teammates spawn execution agents directly via Task tool rather than invoking /run as a Skill. As a result, controller work is tracked at the `team_*` session level, not in separate child sessions.
+There is no `org_* -> team_* -> run_*` chain. Claude Code enforces a 2-level subagent nesting limit, which means /team teammates spawn execution agents directly via Agent tool rather than invoking /run as a Skill. As a result, controller work is tracked at the `team_*` session level, not in separate child sessions.
 
 ### Controller Tracking
 

@@ -3,7 +3,7 @@
  * Session Init Gate Hook - PreToolUse[Task] Guard
  * cAgents V10.22.6
  *
- * Denies agent spawns (Task tool calls) when no active session directory
+ * Denies agent spawns (Agent tool calls) when no active session directory
  * with status.yaml exists. Enforces the V10.22.0 session initialization
  * gate: every skill must create its session dir before spawning agents.
  *
@@ -20,8 +20,8 @@ const { createHook, findActiveSession, AGENT_MEMORY_DIR, denyWithReason } = requ
 createHook('SessionInitGate', async (input) => {
   const toolName = input.tool_name || '';
 
-  // Only gate Task tool calls (agent spawns)
-  if (toolName !== 'Task') return null;
+  // Only gate Agent tool calls (agent spawns)
+  if (toolName !== 'Agent') return null;
 
   // Bypass only when the session dir doesn't exist yet — skill is bootstrapping
   if (process.env.CAGENTS_SESSION_ID) {

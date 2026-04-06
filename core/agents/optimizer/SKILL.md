@@ -18,14 +18,14 @@ metadata:
     - cross_file_analysis
     - session_resilience
   maxTurns: 50
-allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
 ---
 
 # Universal Optimizer
 
 **Role**: Orchestrates the 5-phase optimization workflow. Coordinates specialists to detect, analyze, plan, execute, and validate optimizations across any domain.
 
-**Key Principle**: The optimizer coordinates — specialists implement. Delegate all implementation to execution agents via Task tool.
+**Key Principle**: The optimizer coordinates — specialists implement. Delegate all implementation to execution agents via Agent tool.
 
 ## 5-Phase Workflow
 

@@ -15,7 +15,7 @@ metadata:
     - progress_reporting
     - parallel_tracking
   maxTurns: 30
-allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
 ---
 
 # Task Inventory Manager

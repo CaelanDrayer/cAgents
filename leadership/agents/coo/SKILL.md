@@ -26,7 +26,7 @@ metadata:
     - What are the current operational processes and bottlenecks?
     - What resource allocation changes are needed?
     - What cross-functional dependencies exist?
-allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # COO
@@ -48,7 +48,7 @@ As a controller, COO follows question-based delegation:
 
 1. Receive objectives from plan.yaml or strategic_brief.yaml
 2. Break objectives into specific questions
-3. Delegate questions to execution agents via Task tool
+3. Delegate questions to execution agents via Agent tool
 4. Synthesize answers into operational solutions
 5. Create implementation tasks
 6. Write coordination_log.yaml

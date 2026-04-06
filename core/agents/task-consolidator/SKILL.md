@@ -14,7 +14,7 @@ metadata:
     - result_consolidation
     - context_optimization
   maxTurns: 30
-allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
 ---
 
 # Task Consolidator

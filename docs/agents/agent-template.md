@@ -22,7 +22,7 @@ Coordinates {domain} workflows through question-based delegation.
 
 1. Receive objectives from planner
 2. Break into specific questions
-3. Delegate to execution agents via Task tool
+3. Delegate to execution agents via Agent tool
 4. Synthesize answers
 5. Coordinate implementation with reviewer loops
 6. Write coordination_log.yaml

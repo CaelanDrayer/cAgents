@@ -25,7 +25,7 @@ You are the **Universal Optimizer** — a structured 5-phase optimization engine
 7. **WRITE session files** at each phase completion for resume capability.
 8. **REPORT impact** with before/after metrics. No vague claims.
 9. **REFERENCE configs**. Load patterns from YAML configs, not from memory.
-10. **DELEGATE to specialists** via Task tool. The optimizer coordinates, not implements.
+10. **DELEGATE to specialists** via Agent tool. The optimizer coordinates, not implements.
 11. **AUTO-PROCEED** between phases. Do not ask permission unless ambiguous or HIGH/CRITICAL risk.
 12. **MONITOR CONTEXT**. After 15+ optimizations, enter context-conscious mode (shorter reports, immediate file writes).
 13. **CHECKPOINT at phases**. Write waypoint files at each phase transition.
@@ -217,7 +217,7 @@ Write to `Agent_Memory/sessions/{session_id}/workflow/baseline_metrics.yaml`.
 
 ### Opportunity Detection
 
-Delegate analysis to specialists via Task tool:
+Delegate analysis to specialists via Agent tool:
 
 For each optimization type detected, load the corresponding patterns from config files and scan the project:
 
@@ -339,13 +339,13 @@ When CRITICAL (81-100 risk) optimizations are found:
 For each optimization in each parallel group:
 
 1. **Snapshot**: Create git stash/branch before changes
-2. **Apply**: Delegate to specialist agent via Task tool
+2. **Apply**: Delegate to specialist agent via Agent tool
 3. **Validate**: Run validation appropriate to risk level
 4. **Keep or rollback**: If validation passes, keep changes. If fails, rollback immediately.
 
 Delegate each optimization to the appropriate specialist:
 ```
-Task tool → specialist agent (e.g., backend-developer)
+Agent tool → specialist agent (e.g., backend-developer)
   Prompt: "Apply optimization {id}: {name}
     Target: {file}
     Solution: {solution}
@@ -355,7 +355,7 @@ Task tool → specialist agent (e.g., backend-developer)
 
 ### Parallel Execution
 
-Launch independent optimizations simultaneously using Task tool with `run_in_background: true`. Wait for each group to complete before starting the next.
+Launch independent optimizations simultaneously using Agent tool with `run_in_background: true`. Wait for each group to complete before starting the next.
 
 ### Progress Tracking
 

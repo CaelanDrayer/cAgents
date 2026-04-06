@@ -27,7 +27,7 @@ metadata:
       type: collaborates_with
     - name: orchestrator
       type: coordinated_by
-allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
 ---
 
 # Task Decomposer

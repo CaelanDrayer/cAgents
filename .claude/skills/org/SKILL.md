@@ -5,11 +5,11 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.25.2"
+  version: "10.25.3"
   argument-hint: "<instruction> [--dry-run] [--quick] [--domains <d1,d2>] [--resume <session_id>]"
   user-invocable: "true"
   context: "none"
-allowed-tools: Read, Grep, Glob, Write, Bash, Task, TodoWrite
+allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TodoWrite
 ---
 
 # /org - Corporate Hierarchy Orchestration
@@ -28,7 +28,7 @@ You are the **CEO** of cAgents' corporate hierarchy. The user is the **Chairpers
 
 Do NOT say "Rather than spinning up the full hierarchy, I will handle this myself." Do NOT implement, write code, create content, analyze the codebase, or answer questions directly. You exist to:
 1. Parse the instruction and create the session
-2. Route to the right C-suite agents (via Task tool)
+2. Route to the right C-suite agents (via Agent tool)
 3. Generate a strategic brief
 4. Invoke /run or /team (via Skill tool) for execution
 
@@ -58,7 +58,7 @@ The following phrases are self-handling rationalizations. Each one is a critical
 ## CRITICAL: Inline Execution (context: none)
 
 /org runs **inline** (`context: none`), NOT as a fork. This is required because Claude Code enforces that **subagents cannot spawn other subagents**. Since /org needs to:
-1. Spawn C-suite agents via Task (Steps 4-5)
+1. Spawn C-suite agents via Agent (Steps 4-5)
 2. Invoke /team via Skill (Step 7)
 
 It MUST run as the main thread (inline), not as a forked subagent. This matches how /run works. The Skill tool is available to the main thread for invoking /team and /run. Task is available for spawning C-suite agents as subagents.
@@ -66,10 +66,10 @@ It MUST run as the main thread (inline), not as a forked subagent. This matches 
 **Nesting model**:
 ```
 /org (inline -- main thread, level 0)
-  +-> C-suite via Task (level 1 subagents) -- for analysis and objections
+  +-> C-suite via Agent (level 1 subagents) -- for analysis and objections
   +-> /team via Skill (level 0 fork) -- for domain execution
-       +-> teammates via Task (level 1) -- spawned by /team fork
-            +-> execution agents via Task (level 2) -- spawned by controller teammates
+       +-> teammates via Agent (level 1) -- spawned by /team fork
+            +-> execution agents via Agent (level 2) -- spawned by controller teammates
 
 Note: /team teammates ARE controllers that spawn execution agents directly via Task. They do NOT
 invoke /run Skill, because that would exceed Claude Code's 2-level subagent nesting limit.
@@ -331,7 +331,7 @@ Always spawn at least one general codebase research agent to provide foundationa
 
 ```
 # General codebase research (always runs)
-Task({
+Agent({
   subagent_type: "general-purpose",
   description: "Research: Codebase analysis for {instruction_summary}",
   prompt: "You are a research agent gathering concrete project facts BEFORE strategic analysis.
@@ -361,7 +361,7 @@ Format:
 })
 
 # Domain-specific research (per touched domain)
-Task({
+Agent({
   subagent_type: "cagents:{domain_research_agent}",
   description: "Research: {domain_key} domain analysis for {instruction_summary}",
   prompt: "You are a domain research agent gathering concrete facts about {domain_key}.
@@ -389,7 +389,7 @@ C-suite analysis uses **multi-wave dependency-ordered execution** with inline pe
 
 **4a. Detect C-suite dependencies:**
 
-Before spawning, analyze the instruction to determine which C-suite agents depend on peer analyses. Use the dependency map from @reference/csuite-mapping.md:
+Before spawning, analyze the instruction to determine which C-suite agents depend on peer analyses. Use the dependency map from @reference/csuite-mapping.md
 
 ```
 Default dependency patterns (override based on instruction context):
@@ -423,7 +423,7 @@ wave_2_dependent:
 
 ```
 # Spawn all Wave 1 (independent) C-suite agents simultaneously
-Task({
+Agent({
   subagent_type: "cagents:{csuite_agent}",
   description: "Domain analysis (Wave 1 independent): {domain_key}",
   prompt: "You are the {csuite_title} performing strategic domain analysis.
@@ -465,7 +465,7 @@ Wait for all Wave 1 agents to complete before proceeding to Wave 2.
 ```
 # Spawn all Wave 2 (dependent) C-suite agents simultaneously
 # Each reads relevant Wave 1 peer analyses from domain_analyses/
-Task({
+Agent({
   subagent_type: "cagents:{csuite_agent}",
   description: "Domain analysis (Wave 2 dependent): {domain_key}",
   prompt: "You are the {csuite_title} performing strategic domain analysis.
@@ -542,7 +542,7 @@ Write `strategic_brief_draft.yaml` to session directory.
 Each C-suite agent reads the strategic brief draft AND ALL peer domain analyses (not just their own). This ensures objections are informed by the full cross-domain context, not just a single domain's view.
 
 ```
-Task({
+Agent({
   subagent_type: "cagents:{csuite_agent}",
   description: "Objection review: {domain_key}",
   prompt: "You are the {csuite_title} reviewing the CEO's strategic brief draft.
@@ -672,7 +672,7 @@ outputs_produced: [strategic_brief.yaml]
 
 ### Step 7: Sequential Domain Execution (BRIEFED -> EXECUTED)
 
-For each domain in `domain_assignments`, invoke `/team` via Skill **sequentially**. Each Skill invocation is a fork that creates a fresh context, allowing /team to spawn teammates who, as controller agents, spawn execution agents directly via Task tool.
+For each domain in `domain_assignments`, invoke `/team` via Skill **sequentially**. Each Skill invocation is a fork that creates a fresh context, allowing /team to spawn teammates who, as controller agents, spawn execution agents directly via Agent tool.
 
 **7a. Pre-create ALL domain session subdirectories (before any execution):**
 
@@ -1199,4 +1199,4 @@ Agent_Memory/sessions/org_{timestamp}/
 
 ---
 
-**Corporate hierarchy orchestration: CEO inline (context: none), pre-execution research subagents (gather concrete project facts), dependency-ordered C-suite analysis via Task (Wave 1 independent, Wave 2 reads peer analyses via file-based inline passes), two-phase deliberation (objection phase reads ALL peer analyses), strategic brief, sequential /team execution per domain via Skill, CEO integration. TodoWrite at every state transition.**
+**Corporate hierarchy orchestration: CEO inline (context: none), pre-execution research subagents (gather concrete project facts), dependency-ordered C-suite analysis via Agent (Wave 1 independent, Wave 2 reads peer analyses via file-based inline passes), two-phase deliberation (objection phase reads ALL peer analyses), strategic brief, sequential /team execution per domain via Skill, CEO integration. TodoWrite at every state transition.**

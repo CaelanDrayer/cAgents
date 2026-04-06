@@ -39,7 +39,7 @@ metadata:
       type: coordinates
     - name: agronomist
       type: coordinates
-allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
 ---
 
 # Trades Coordinator

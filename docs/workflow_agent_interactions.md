@@ -13,7 +13,7 @@ How agents interact during workflow execution. For architecture, commands, and a
 ```
 User (Chairperson)
   +-- /org (CEO inline, context: none)
-        +-- C-suite agents via Task (parallel analysis)
+        +-- C-suite agents via Agent (parallel analysis)
         +-- Deliberation (objections + resolution)
         +-- Strategic brief
         +-- Sequential /team per domain via Skill
@@ -118,7 +118,7 @@ Controllers coordinate via questions, never implement directly:
 ```
 Controller receives objectives from plan.yaml
   -> Breaks into questions
-  -> Delegates each to execution agent via Task tool
+  -> Delegates each to execution agent via Agent tool
   -> Synthesizes answers
   -> Coordinates implementation
   -> Reviewer validates (max 3 rounds)

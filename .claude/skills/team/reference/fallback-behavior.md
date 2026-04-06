@@ -93,11 +93,11 @@ Current limitations of built-in agent teams:
 - **No session resumption with in-process teammates**: `/resume` and `/rewind` do not restore in-process teammates
 - **Task status can lag**: teammates may not always mark tasks as completed promptly
 - **One team per session**: a lead can only manage one team at a time
-- **No nested teams**: teammates cannot spawn their own *teams* (via TeamCreate), but teammates CAN and MUST spawn controllers directly (via Task tool)
+- **No nested teams**: teammates cannot spawn their own *teams* (via TeamCreate), but teammates CAN and MUST spawn controllers directly (via Agent tool)
 - **Lead is fixed**: cannot promote a teammate to lead
 - **Split panes require tmux**: not supported in VS Code terminal, Windows Terminal, or Ghostty
 
-**IMPORTANT distinction**: "No nested teams" means teammates cannot create sub-teams via TeamCreate. However, teammates CAN and MUST spawn controllers directly via the Task tool (e.g., `Task({ subagent_type: "cagents:engineering-manager" })`). Each teammate is a full Claude Code session that coordinates through its assigned controller. This avoids the extra nesting level that invoking /run as a Skill fork would create.
+**IMPORTANT distinction**: "No nested teams" means teammates cannot create sub-teams via TeamCreate. However, teammates CAN and MUST spawn controllers directly via the Agent tool (e.g., `Agent({ subagent_type: "cagents:engineering-manager" })`). Each teammate is a full Claude Code session that coordinates through its assigned controller. This avoids the extra nesting level that invoking /run as a Skill fork would create.
 
 ## Related Files
 

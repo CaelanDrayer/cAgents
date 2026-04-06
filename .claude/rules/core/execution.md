@@ -247,4 +247,4 @@ See @resources/execution-self-validation.md for the full 15-check checklist and 
 - **controllers.md** - Controller coordination patterns (tier 2)
 - **orchestration.md** - Workflow phases and transitions
 - **skill-format.md** - SKILL.md agent format specification
-- **subagent-alignment.md** - Task tool alignment patterns
+- **subagent-alignment.md** - Agent tool alignment patterns

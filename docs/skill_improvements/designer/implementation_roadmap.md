@@ -36,7 +36,7 @@
 ## Dependencies
 
 - Phase 1 has no dependencies
-- Phase 2 depends on Phase 1 (Task tool needed for export agents)
+- Phase 2 depends on Phase 1 (Agent tool needed for export agents)
 - Phase 3 can run in parallel with Phase 2
 - Phase 4 requires historical session data from Phases 1-3
 

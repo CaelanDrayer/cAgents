@@ -247,7 +247,7 @@ payload: {}                            # Type-specific data
 
 **Standardized event types:**
 - `state_transition` -- Pipeline state change (INIT -> ORCHESTRATED, etc.)
-- `agent_spawn` -- Agent spawned via Task tool
+- `agent_spawn` -- Agent spawned via Agent tool
 - `agent_complete` -- Agent finished execution
 - `validation_fail` -- Validator returned FAIL or REVISE
 - `wave_complete` -- Team wave completed (/team only)

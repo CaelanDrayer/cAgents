@@ -104,10 +104,10 @@ Transform objectives into specific questions targeting execution agents.
 
 ### Step 3: Delegate Questions
 
-For each question, spawn execution agent via Task tool:
+For each question, spawn execution agent via Agent tool:
 
 ```javascript
-Task({
+Agent({
   subagent_type: "cagents:{execution-agent}",
   description: "Answer {topic} question",
   prompt: `
@@ -133,7 +133,7 @@ Format answer in YAML for easy parsing.
 **Example: Ask Backend Developer**
 
 ```javascript
-Task({
+Agent({
   subagent_type: "cagents:backend-developer",
   description: "Answer current auth implementation question",
   prompt: `
@@ -235,7 +235,7 @@ Break synthesized solution into tasks and assign to execution agents:
 
 ```javascript
 // Task 1: Backend developer implements OAuth2 endpoints
-Task({
+Agent({
   subagent_type: "cagents:backend-developer",
   description: "Implement OAuth2 endpoints",
   prompt: `
@@ -263,7 +263,7 @@ Output to: Agent_Memory/{instruction_id}/outputs/partial/task_001/
 })
 
 // Task 2: QA lead creates tests
-Task({
+Agent({
   subagent_type: "cagents:qa-lead",
   description: "Create OAuth2 tests",
   prompt: `
@@ -282,7 +282,7 @@ Output to: Agent_Memory/{instruction_id}/outputs/partial/task_002/
 })
 
 // Task 3: Security specialist reviews
-Task({
+Agent({
   subagent_type: "cagents:security-specialist",
   description: "Security review of OAuth2 implementation",
   prompt: `

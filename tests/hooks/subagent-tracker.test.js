@@ -186,6 +186,232 @@ describe('subagent-tracker.cjs', () => {
   });
 
   // ---------------------------------------------------------------------------
+  // R3 Regression tests: SENTINEL_DEPTH_MAP depth tracking fix
+  // Bug: inferParentAgent() returns sentinel strings ('pipeline', 'controller')
+  //      which were passed to agents.find() and never matched, causing all
+  //      sentinel-parented agents to get depth=1 (unknown fallback).
+  // Fix: SENTINEL_DEPTH_MAP maps 'pipeline'->1, 'controller'->2 before find().
+  // ---------------------------------------------------------------------------
+  describe('depth tracking with SENTINEL_DEPTH_MAP (R3 regression)', () => {
+    const os = require('os');
+    const pathMod = require('path');
+    const fs = require('fs');
+    const yaml = require('js-yaml');
+
+    /**
+     * Helper: create an isolated temp Agent_Memory with a session directory,
+     * pre-populated agent_tree.yaml and status.yaml, then run the hook and
+     * return the depth of the newly added agent entry.
+     */
+    function runWithDepthCheck({ statusPhase, existingAgents, agentType, promptOverride }) {
+      const tmpRoot = fs.mkdtempSync(pathMod.join(os.tmpdir(), 'cagents-depth-'));
+      const sessionName = `run_depth-test_260101_001`;
+      const sessionDir = pathMod.join(tmpRoot, 'Agent_Memory', 'sessions', sessionName);
+      const workflowDir = pathMod.join(sessionDir, 'workflow');
+      fs.mkdirSync(workflowDir, { recursive: true });
+
+      // Write status.yaml to control inferParentAgent's phase-based logic
+      fs.writeFileSync(
+        pathMod.join(sessionDir, 'status.yaml'),
+        `phase: ${statusPhase}\npipeline_state: ${statusPhase}\n`
+      );
+
+      // Write agent_tree.yaml with existing agents (if any)
+      if (existingAgents && existingAgents.length > 0) {
+        fs.writeFileSync(
+          pathMod.join(workflowDir, 'agent_tree.yaml'),
+          yaml.dump({ agents: existingAgents })
+        );
+      }
+
+      // Also create Agent_Memory/_system/logs/ for audit log (avoids noise)
+      fs.mkdirSync(pathMod.join(tmpRoot, 'Agent_Memory', '_system', 'logs'), { recursive: true });
+
+      const uniqueId = `agent_depth_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const input = {
+        agent_type: agentType || 'cagents:backend-developer',
+        agent_id: uniqueId,
+        session_id: '550e8400-0000-0000-0000-000000000000',
+        tool_input: {
+          prompt: promptOverride || `SESSION DIR: ${sessionName}\nImplement the work item.`,
+          subagent_type: agentType || 'cagents:backend-developer'
+        }
+      };
+
+      const env = { ...process.env, CLAUDE_PROJECT_DIR: tmpRoot };
+      delete env.CAGENTS_ACTIVE_SESSION;
+
+      try {
+        const result = spawnSync('node', [HOOK_PATH], {
+          input: JSON.stringify(input),
+          encoding: 'utf8',
+          timeout: 8000,
+          env,
+        });
+
+        expect(result.status).toBe(0);
+
+        // Read back agent_tree.yaml and find our agent's depth
+        const treeFile = pathMod.join(workflowDir, 'agent_tree.yaml');
+        expect(fs.existsSync(treeFile)).toBe(true);
+        const treeContent = fs.readFileSync(treeFile, 'utf8');
+        const parsed = yaml.load(treeContent);
+        const ourAgent = parsed.agents.find(a => a.id === uniqueId);
+        expect(ourAgent).toBeDefined();
+        return { depth: ourAgent.depth, parent: ourAgent.parent, stderr: result.stderr };
+      } finally {
+        fs.rmSync(tmpRoot, { recursive: true, force: true });
+      }
+    }
+
+    it('sentinel parent "pipeline" produces depth=1', () => {
+      // Status phase INIT triggers inferParentAgent to return 'pipeline'
+      const result = runWithDepthCheck({
+        statusPhase: 'INIT',
+        existingAgents: [{ id: 'dummy-root', type: 'root', parent: null, depth: 0, spawned_at: '2026-01-01', stopped_at: null }],
+        agentType: 'cagents:orchestrator', // enrichment agent -> 'pipeline'
+      });
+      expect(result.parent).toBe('pipeline');
+      expect(result.depth).toBe(1);
+    });
+
+    it('sentinel parent "controller" produces depth=2', () => {
+      // Status phase COORDINATING with NO known controller in tree -> 'controller' sentinel
+      const result = runWithDepthCheck({
+        statusPhase: 'COORDINATING',
+        existingAgents: [
+          { id: 'some-unknown-agent', type: 'general-purpose', parent: 'pipeline', depth: 1, spawned_at: '2026-01-01', stopped_at: null }
+        ],
+        agentType: 'cagents:backend-developer', // execution agent, NOT enrichment
+      });
+      expect(result.parent).toBe('controller');
+      expect(result.depth).toBe(2);
+    });
+
+    it('real parent agent ID produces parent.depth + 1', () => {
+      // Status phase COORDINATING with a known controller in tree -> returns controller's agent_id
+      const controllerId = 'ctrl-em-abc123';
+      const result = runWithDepthCheck({
+        statusPhase: 'COORDINATING',
+        existingAgents: [
+          { id: controllerId, type: 'general-purpose', parent: 'pipeline', depth: 1,
+            cagents_type: 'cagents:engineering-manager', spawned_at: '2026-01-01', stopped_at: null }
+        ],
+        agentType: 'cagents:backend-developer',
+      });
+      // inferParentAgent should find the engineering-manager controller and return its ID
+      expect(result.parent).toBe(controllerId);
+      expect(result.depth).toBe(2); // parent depth 1 + 1
+    });
+
+    it('real parent at depth=3 produces depth=4 (deep nesting)', () => {
+      // Use a single controller entry at depth=3 to verify depth arithmetic
+      const controllerId = 'ctrl-deep-xyz789';
+      const result = runWithDepthCheck({
+        statusPhase: 'COORDINATING',
+        existingAgents: [
+          { id: controllerId, type: 'general-purpose', parent: 'pipeline', depth: 3,
+            cagents_type: 'cagents:engineering-manager', spawned_at: '2026-01-01', stopped_at: null }
+        ],
+        agentType: 'cagents:backend-developer',
+      });
+      expect(result.parent).toBe(controllerId);
+      expect(result.depth).toBe(4); // parent depth 3 + 1
+    });
+
+    it('unknown parent string (not in tree, not sentinel) falls back to depth=1', () => {
+      // We need a scenario where inferParentAgent returns a string that's neither
+      // a sentinel nor a real agent ID in the tree. This happens when pending_spawns.yaml
+      // references a parent_id that wasn't tracked yet.
+      const tmpRoot = fs.mkdtempSync(pathMod.join(os.tmpdir(), 'cagents-depth-unknown-'));
+      const sessionName = `run_depth-unknown_260101_001`;
+      const sessionDir = pathMod.join(tmpRoot, 'Agent_Memory', 'sessions', sessionName);
+      const workflowDir = pathMod.join(sessionDir, 'workflow');
+      fs.mkdirSync(workflowDir, { recursive: true });
+      fs.mkdirSync(pathMod.join(tmpRoot, 'Agent_Memory', '_system', 'logs'), { recursive: true });
+
+      fs.writeFileSync(pathMod.join(sessionDir, 'status.yaml'), 'phase: COORDINATING\n');
+
+      // Write pending_spawns.yaml that maps our agent to a parent that doesn't exist in tree
+      fs.writeFileSync(pathMod.join(workflowDir, 'pending_spawns.yaml'), yaml.dump([
+        { agent_type: 'cagents:backend-developer', parent_id: 'nonexistent-parent-id-999' }
+      ]));
+
+      // Pre-populate agent_tree with one entry so the depth logic branch triggers
+      fs.writeFileSync(pathMod.join(workflowDir, 'agent_tree.yaml'), yaml.dump({
+        agents: [{ id: 'some-other-agent', type: 'general-purpose', parent: 'pipeline', depth: 1, spawned_at: '2026-01-01', stopped_at: null }]
+      }));
+
+      const uniqueId = `agent_unknown_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const input = {
+        agent_type: 'cagents:backend-developer',
+        agent_id: uniqueId,
+        session_id: '550e8400-0000-0000-0000-000000000001',
+        tool_input: {
+          prompt: `SESSION DIR: ${sessionName}\nImplement the work item.`,
+          subagent_type: 'cagents:backend-developer'
+        }
+      };
+
+      const env = { ...process.env, CLAUDE_PROJECT_DIR: tmpRoot };
+      delete env.CAGENTS_ACTIVE_SESSION;
+
+      try {
+        const result = spawnSync('node', [HOOK_PATH], {
+          input: JSON.stringify(input),
+          encoding: 'utf8',
+          timeout: 8000,
+          env,
+        });
+
+        expect(result.status).toBe(0);
+        const treeFile = pathMod.join(workflowDir, 'agent_tree.yaml');
+        const parsed = yaml.load(fs.readFileSync(treeFile, 'utf8'));
+        const ourAgent = parsed.agents.find(a => a.id === uniqueId);
+        expect(ourAgent).toBeDefined();
+        // Parent is the nonexistent ID from pending_spawns.yaml
+        expect(ourAgent.parent).toBe('nonexistent-parent-id-999');
+        // Depth should be 1 (fallback for unknown parent not found in tree)
+        expect(ourAgent.depth).toBe(1);
+      } finally {
+        fs.rmSync(tmpRoot, { recursive: true, force: true });
+      }
+    });
+
+    it('parent "root" keeps depth=0', () => {
+      // inferParentAgent returns 'root' only when sessionDir is null (line 61).
+      // In the depth computation (line 314), 'root' is excluded from the branch,
+      // so depth stays at the initialized value of 0.
+      // We can test this by checking the source code logic directly.
+      const hookContent = readFileSync(HOOK_PATH, 'utf8');
+      // Verify the 'root' exclusion is present in the condition
+      expect(hookContent).toContain("parentAgent !== 'root'");
+    });
+
+    it('SENTINEL_DEPTH_MAP exists in hook source (regression guard)', () => {
+      // If someone removes the SENTINEL_DEPTH_MAP, this test fails immediately
+      const hookContent = readFileSync(HOOK_PATH, 'utf8');
+      expect(hookContent).toContain('SENTINEL_DEPTH_MAP');
+      expect(hookContent).toContain('pipeline: 1');
+      expect(hookContent).toContain('controller: 2');
+      expect(hookContent).toContain('SENTINEL_DEPTH_MAP.hasOwnProperty(parentAgent)');
+    });
+
+    it('sentinel depth is applied BEFORE agents.find() lookup', () => {
+      // The fix requires SENTINEL_DEPTH_MAP check happens before the find() call.
+      // If sentinels reach find(), they'd never match a real agent ID, falling through
+      // to the depth=1 fallback — which would be WRONG for 'controller' (should be 2).
+      const hookContent = readFileSync(HOOK_PATH, 'utf8');
+      const mapIndex = hookContent.indexOf('SENTINEL_DEPTH_MAP.hasOwnProperty');
+      const findIndex = hookContent.indexOf('parsedObj.agents.find(a => a.id === parentAgent)');
+      expect(mapIndex).toBeGreaterThan(-1);
+      expect(findIndex).toBeGreaterThan(-1);
+      // SENTINEL_DEPTH_MAP check MUST come before the find() call
+      expect(mapIndex).toBeLessThan(findIndex);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
   // WI-4 Regression tests: prompt-based session resolution (Fix C)
   // Bug: Task-spawned subagents cannot inherit CAGENTS_ACTIVE_SESSION env var.
   // Fix: Parse SESSION_DIR or CAGENTS_SESSION_ID from input.tool_input.prompt.

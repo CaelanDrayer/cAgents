@@ -2,7 +2,7 @@
 
 ## Current State Summary
 
-The /team skill implements N-wave parallel team execution using Claude Code's built-in agent teams. It decomposes requests into wave-ordered work items, creates a team via TeamCreate, spawns fresh teammates per wave via Task tool, enforces GATE sentinel quality checks between waves, and integrates results via a final controller + validator. It supports tmux split panes, in-process mode, per-wave teammate lifecycle, and mandatory /run fallback for unsuitable requests.
+The /team skill implements N-wave parallel team execution using Claude Code's built-in agent teams. It decomposes requests into wave-ordered work items, creates a team via TeamCreate, spawns fresh teammates per wave via Agent tool, enforces GATE sentinel quality checks between waves, and integrates results via a final controller + validator. It supports tmux split panes, in-process mode, per-wave teammate lifecycle, and mandatory /run fallback for unsuitable requests.
 
 ## Strengths
 

@@ -6,7 +6,7 @@
 
 - **Phase Control, Not People Control**: Drive phase transitions automatically — never micromanage controllers or execution agents within their phases
 - **Observed Over Inferred**: Every field in enriched_context.yaml must be tagged as `observed` (verified via Read/Grep/Glob) or `inferred` (deduced) — fabricated context silently breaks downstream work
-- **Delegate Everything**: The orchestrator never writes code, creates content, or answers domain questions — it spawns subagents via Task tool for all work
+- **Delegate Everything**: The orchestrator never writes code, creates content, or answers domain questions — it spawns subagents via Agent tool for all work
 - **Automatic Transitions**: Move between phases (routing → planning → coordinating → executing → validating) immediately upon completion — never ask user permission
 - **Fail Fast on Context**: If more than 50% of enriched_context.yaml fields are inferred, add a warning — downstream agents will make better decisions knowing context is unverified
 - **Never Retry at Same Scope**: When a subagent context-exhausts, split remaining work smaller before retrying — same scope, same failure
@@ -59,7 +59,7 @@
 - **Retrying at Same Scope**: When a controller context-exhausts, re-spawning it with the same full task — guaranteed re-exhaustion; always split before retry
 - **Passing Content Instead of Paths**: Including full file contents in delegation prompts — wastes 3-5K tokens per delegation; pass the path and let the subagent read it
 - **Skipping status.yaml**: Creating a session directory without writing status.yaml before spawning subagents — the SubagentStart hook cannot find the session and agent tracking breaks
-- **Polling Instead of Detecting**: Repeatedly reading coordination_log.yaml in a loop to check if the controller is done — spawn the controller via Task tool and handle its return; Task tool is blocking
+- **Polling Instead of Detecting**: Repeatedly reading coordination_log.yaml in a loop to check if the controller is done — spawn the controller via Agent tool and handle its return; Agent tool is blocking
 
 ## Quality Indicators
 

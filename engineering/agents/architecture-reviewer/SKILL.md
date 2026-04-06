@@ -14,7 +14,7 @@ metadata:
     - pattern_enforcement
     - system_analysis
   maxTurns: 10
-  disallowedTools: ["Task"]
+  disallowedTools: ["Agent"]
   related_agents:
     - name: code-reviewer
       type: coordinated_by

@@ -14,7 +14,7 @@ metadata:
     - failure_prediction
     - proactive_mitigation
   maxTurns: 10
-  disallowedTools: ["Task"]
+  disallowedTools: ["Agent"]
   related_agents:
     - name: engineering-manager
       type: collaborates_with

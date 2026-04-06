@@ -38,7 +38,7 @@ Core architecture and development guidance for cAgents.
 
 ## Version Management
 
-**CRITICAL: Always bump version on commits.** Run `scripts/sync-versions.sh <version>` to update all 23 locations. See @.claude/rules/core/version-registry.md for the canonical list.
+**CRITICAL: Always bump version on commits.** Run `scripts/sync-versions.sh <version>` to update all 18 locations. See @.claude/rules/core/version-registry.md for the canonical list.
 
 **Version Format**: `major.minor.patch` — patch (bug fix), minor (feature), major (breaking)
 
@@ -65,7 +65,7 @@ core/           # orchestration, controllers, execution, hooks, teams, etc. (12 
 domains/        # engineering, creative, business, people, service (5 files)
 infrastructure/ # model-routing (1 file)
 memory/         # agent-memory (2 files)
-quality/        # completion, validation-framework, implicit-discovery (3 files)
+quality/        # completion, validation-framework, implicit-discovery (5 files)
 ```
 
 **Import Syntax**: Use `@path/to/file` to include external content. View loaded files: `/memory`
@@ -77,7 +77,7 @@ quality/        # completion, validation-framework, implicit-discovery (3 files)
 **Key Features**: CSV Task Inventory, Batch Delegation (60-80% context reduction), Checkpoint/Resume, Aggressive Decomposition (30+ work items from simple requests), Controller-Centric coordination
 
 **Architecture**: Controller-Centric Coordination with Task Inventory
-- **Tier 1**: 15 core infrastructure agents (includes prompt-engineer)
+- **Tier 1**: 16 core infrastructure agents (includes prompt-engineer)
 - **Tier 2**: Controllers (coordinate via batch delegation)
 - **Tier 3**: Execution agents (implement work items)
 - **Tier 4**: Support agents (foundational services)
@@ -107,7 +107,7 @@ quality/        # completion, validation-framework, implicit-discovery (3 files)
 
 ## CRITICAL: Aggressive Delegation
 
-**Core Principle**: /org, /run, /team, and all coordination agents NEVER do direct work. ALL work delegated to subagents via Task tool or Skill tool. No exceptions.
+**Core Principle**: /org, /run, /team, and all coordination agents NEVER do direct work. ALL work delegated to subagents via Agent tool or Skill tool. No exceptions.
 
 **Zero Tolerance**: `/org`, `/run`, and `/team` are pure delegation proxies. They parse, plan, spawn agents, and read results. They do NOT write code, create content, explore the codebase for implementation purposes, or handle tasks themselves. If an orchestrator says "I will handle this myself" or "Rather than spinning up agents, I'll do this directly" — that is a critical violation. The user chose these skills specifically for agent orchestration; bypassing delegation defeats the entire purpose of the plugin.
 
@@ -240,7 +240,7 @@ User Request -> /run (state machine loop, reads pipeline_config.yaml)
   REVISE -> back to PLANNED (re-plan, max 5 cycles)
 ```
 
-**Subagent Architecture**: Agents delegate to specialists via Task tool. Pattern: "Use {subagent} to {task}". Up to 50 concurrent. See `docs/workflow_agent_interactions.md`.
+**Subagent Architecture**: Agents delegate to specialists via Agent tool. Pattern: "Use {subagent} to {task}". Up to 50 concurrent. See `docs/workflow_agent_interactions.md`.
 
 ## Task Completion Protocol
 
@@ -307,7 +307,7 @@ TaskUpdate({ taskId: "N", status: "completed" })
 **Built-in**: `/memory` (view/edit memory files), `/init` (bootstrap project CLAUDE.md)
 
 ### /org - Corporate Hierarchy Orchestration (V9.26, V9.30)
-CEO inline logic (`context: none`) with dependency-ordered C-suite analysis via Task (Wave 1 independent agents in parallel, Wave 2 dependent agents reading peer analyses via file-based inline passes), two-phase deliberation (objection phase reads ALL peer analyses for cross-domain context), strategic brief, and sequential /team execution per domain via Skill. Runs inline (not forked) because subagents cannot spawn other subagents. 6-state pipeline: INIT -> ANALYZED -> DELIBERATED -> BRIEFED -> EXECUTED -> INTEGRATED -> COMPLETE.
+CEO inline logic (`context: none`) with dependency-ordered C-suite analysis via Agent (Wave 1 independent agents in parallel, Wave 2 dependent agents reading peer analyses via file-based inline passes), two-phase deliberation (objection phase reads ALL peer analyses for cross-domain context), strategic brief, and sequential /team execution per domain via Skill. Runs inline (not forked) because subagents cannot spawn other subagents. 6-state pipeline: INIT -> ANALYZED -> DELIBERATED -> BRIEFED -> EXECUTED -> INTEGRATED -> COMPLETE.
 ```bash
 /org Launch new product with campaign    # -> Full hierarchy (engineering + business + people)
 /org Fix auth bug                        # -> Single /run with strategic brief
@@ -383,7 +383,7 @@ cAgents/
 +-- CLAUDE.md                # Main project memory (this file)
 +-- .claude/
 |   +-- skills/              # Skills (org, run, team, designer, review, optimize, helper, context)
-|   +-- hooks/               # 29 .cjs files (26 hooks + utils + launcher + eval CLI)
+|   +-- hooks/               # 30 .cjs files (27 hooks + utils + launcher + eval CLI)
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (24 files, 5 categories)
 |   +-- settings.json        # Hook registration + permissions + env
@@ -411,7 +411,7 @@ cAgents/
 
 ## Hooks System
 
-**Architecture**: CJS-only hooks with `createHook()` factory. 29 .cjs files across 19 event types. See @.claude/rules/core/hooks.md for full documentation.
+**Architecture**: CJS-only hooks with `createHook()` factory. 30 .cjs files across 19 event types. See @.claude/rules/core/hooks.md for full documentation.
 
 ## Plugin Architecture
 
@@ -436,8 +436,6 @@ cAgents is distributed as a Claude Code plugin. See `.claude-plugin/plugin.json`
 - **Hook Registration**: Hooks declared in `hooks/hooks.json` or referenced via `hooks` field in plugin.json
 - **Marketplace**: Submit via `marketplace.json` with `$schema`, owner, category, and version fields
 - **Multi-Plugin**: Multiple plugins loaded via `--plugin-dir` flags; settings merge with project settings
-
-**Domain Sub-Plugins**: Each domain has its own `{domain}/.claude-plugin/plugin.json` for modular loading.
 
 ## Performance Benchmarks
 
@@ -473,13 +471,13 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Agents**: 262 total (16 core + 12 shared + 11 leadership + 223 domain specialists)
 **Domains**: Engineering (32), Creative (30), Business (31), Growth (39), People (19), Service (32), Leadership (11), Core (16), Shared (12), Science (10), Health (6), Education (6), Personal (6), Arts (6), Trades (6)
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/domain_overrides.yaml`, `Agent_Memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (session YAML contract for AgentPath)
-**Hooks**: 19 event types (24 supported by Claude Code), 26 registered CJS hooks (29 .cjs files), invoked via `run-hook.cjs` launcher
+**Hooks**: 19 event types (24 supported by Claude Code), 27 registered CJS hooks (30 .cjs files), invoked via `run-hook.cjs` launcher
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 685 Vitest tests (hooks + config validation)
-**Version**: 10.25.2
+**Version**: 10.25.3
 
 ## Troubleshooting
 

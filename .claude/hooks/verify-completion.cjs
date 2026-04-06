@@ -375,6 +375,49 @@ function verifyCompletion(sessionDir) {
     }
   }
 
+  // 3b. Controller self-handling detection (V10.25.3)
+  // If coordination_log.yaml exists with status: completed, verify that the controller
+  // actually spawned execution agents (depth >= 2 in agent_tree.yaml).
+  // This catches controllers that do all work directly instead of delegating.
+  const coordLogForSelfCheck = safeRead(path.join(sessionDir, 'workflow', 'coordination_log.yaml'));
+  if (coordLogForSelfCheck) {
+    const coordStatusForSelfCheck = extractYamlValue(coordLogForSelfCheck, 'status');
+
+    if (coordStatusForSelfCheck === 'completed') {
+      // Count depth >= 2 agents (execution agents spawned by controllers)
+      let executorCount = 0;
+      if (agentTreeContent) {
+        const depth2Matches = agentTreeContent.match(/\bdepth:\s*([2-9]\d*)\b/g);
+        executorCount = depth2Matches ? depth2Matches.length : 0;
+      }
+
+      if (executorCount === 0) {
+        // Check for self-handling rationalization phrases in coordination_log
+        const selfHandlingPhrases = [
+          'executed all changes directly',
+          'handled directly',
+          'implemented directly',
+          'did the work myself',
+          'self-handled',
+          'without delegating',
+          'rather than spawning'
+        ];
+        const hasSelfHandlingAdmission = selfHandlingPhrases.some(phrase =>
+          coordLogForSelfCheck.toLowerCase().includes(phrase.toLowerCase())
+        );
+
+        const sessionName = path.basename(sessionDir);
+        const message = `CONTROLLER SELF-HANDLING: Session '${sessionName}' has coordination_log with status: completed ` +
+          `but no execution agents were spawned (0 agents at depth >= 2 in agent_tree.yaml). ` +
+          `Controllers MUST delegate to execution agents via Agent tool — direct implementation is a protocol violation.` +
+          (hasSelfHandlingAdmission ? ' The coordination_log contains an explicit admission of self-handling.' : '');
+
+        warnings.push(message);
+        console.error(`[VerifyCompletion] Controller self-handling detected: ${sessionName} completed coordination with 0 executors`);
+      }
+    }
+  }
+
   // 4. Sentinel Gate Factchecking (V10.17.0)
   // Verify that claimed deliverables actually exist on disk.
   const coordFileForSentinel = path.join(sessionDir, 'workflow', 'coordination_log.yaml');

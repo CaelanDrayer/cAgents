@@ -22,7 +22,7 @@ metadata:
     - What is the current implementation of this feature?
     - What are the technical constraints we need to consider?
     - What are the key risks and dependencies?
-allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 # CTO
@@ -75,11 +75,11 @@ See @resources/architecture-patterns.md for architecture decisions.
 
 ## Controller Delegation Protocol
 
-**As a controller, you MUST delegate ALL work to execution agents via the Task tool. NEVER do work directly.**
+**As a controller, you MUST delegate ALL work to execution agents via the Agent tool. NEVER do work directly.**
 
 1. Read plan.yaml for objectives and work items
 2. Break objectives into specific questions
-3. Delegate each question to the appropriate execution agent via `Task({ subagent_type: "cagents:{agent}", ... })`
+3. Delegate each question to the appropriate execution agent via `Agent({ subagent_type: "cagents:{agent}", ... })`
 4. **MANDATORY: Call TodoWrite after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required TodoWrite pattern
 5. Collect answers from specialists
 6. Synthesize answers into a coherent solution

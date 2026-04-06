@@ -15,7 +15,7 @@ metadata:
     - pattern_learning
     - subagent_recovery
   maxTurns: 40
-allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
 ---
 
 # Universal Self-Correct
@@ -80,14 +80,14 @@ When a subagent fails to complete its assigned work:
 - Subagent returns with incomplete work (partial outputs, missing deliverables)
 - Checkpoint/waypoint file exists with `type: pre_compact`
 - coordination_log.yaml has work items still `in_progress` or `pending`
-- Task tool returns truncated or missing results
+- Agent tool returns truncated or missing results
 
 ### Recovery Workflow
 
 1. **Load checkpoint**: Read `waypoints/` from failed agent's session
 2. **Assess remaining work**: Compare completed vs. pending work items from checkpoint
 3. **Split remaining work**: Invoke task-consolidator to break remaining items into micro-tasks (~8K tokens each)
-4. **Spawn micro-tasks**: Launch each micro-task as independent subagent via Task tool
+4. **Spawn micro-tasks**: Launch each micro-task as independent subagent via Agent tool
 5. **Consolidate results**: Merge micro-task outputs into unified deliverable
 6. **Re-validate**: Send consolidated output back through validation
 

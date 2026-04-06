@@ -16,14 +16,14 @@ After each executor completes, spawn a reviewer:
 
 ```javascript
 // Step 1: Executor implements
-Task({
+Agent({
   subagent_type: "cagents:{execution_agent}",
   description: "Implement: {work_item}",
   prompt: "Implement {work_item_description}.\nAcceptance criteria: {criteria}\n{feedback_from_previous_round if any}"
 })
 
 // Step 2: Reviewer evaluates
-Task({
+Agent({
   subagent_type: "cagents:reviewer",  // domain-agnostic reviewer (core/agents/reviewer/)
   description: "Review: {work_item}",
   prompt: "Review implementation of {work_item_description}.\nAcceptance criteria: {criteria}\nCheck: Does implementation meet all criteria?\nOutput: PASS or REVISE with specific feedback."
@@ -71,7 +71,7 @@ if majority == REVISE:
 
 **Devil's Advocate Prompt**:
 ```javascript
-Task({
+Agent({
   subagent_type: "cagents:reviewer",
   description: "Devil's Advocate review: {work_item}",
   prompt: "You are a Devil's Advocate reviewer. Your job is to find weaknesses.\n" +

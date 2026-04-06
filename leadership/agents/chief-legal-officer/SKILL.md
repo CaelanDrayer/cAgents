@@ -31,7 +31,7 @@ metadata:
     - name: general-counsel
       domain: service
       type: delegates_to
-allowed-tools: Task Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
 ---
 
 <example>

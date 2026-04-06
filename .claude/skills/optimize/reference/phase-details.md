@@ -48,7 +48,7 @@ Write to `workflow/baseline_metrics.yaml`.
 
 ### Opportunity Detection
 
-Delegate analysis to specialists via Task tool. For each opportunity record:
+Delegate analysis to specialists via Agent tool. For each opportunity record:
 - Pattern name and category
 - Current state (what was found)
 - Proposed solution
@@ -78,9 +78,9 @@ Write to `workflow/plan.yaml`.
 For each optimization in each parallel group:
 
 1. **Snapshot**: Create git stash/branch before changes
-2. **Apply**: Delegate to specialist agent via Task tool:
+2. **Apply**: Delegate to specialist agent via Agent tool:
    ```
-   Task tool -> specialist agent
+   Agent tool -> specialist agent
      Prompt: "Apply optimization {id}: {name}
        Target: {file}
        Solution: {solution}
@@ -92,7 +92,7 @@ For each optimization in each parallel group:
 
 ### Parallel Execution
 
-Launch independent optimizations simultaneously via Task tool. Wait for each group to complete before starting the next.
+Launch independent optimizations simultaneously via Agent tool. Wait for each group to complete before starting the next.
 
 ### Progress Tracking
 

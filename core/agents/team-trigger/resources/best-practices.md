@@ -6,8 +6,8 @@
 
 - **TeamCreate is Mandatory**: Without TeamCreate, no agent team exists — tasks without a team have no one to execute them; this is the single most critical step
 - **Decompose Directly**: Team-trigger breaks the request into work items itself — it does not delegate decomposition to another agent; speed and directness are essential at this entry point
-- **Spawn Teammates, Not Tasks**: Creating task entries without spawning controller teammates via Task tool is the primary failure mode — tasks need agents to execute them
-- **Controllers as Teammates**: Every teammate spawned is a controller agent (from plan.yaml's controller_assignment), not an execution agent — execution agents lack the Task tool and cannot delegate
+- **Spawn Teammates, Not Tasks**: Creating task entries without spawning controller teammates via Agent tool is the primary failure mode — tasks need agents to execute them
+- **Controllers as Teammates**: Every teammate spawned is a controller agent (from plan.yaml's controller_assignment), not an execution agent — execution agents lack the Agent tool and cannot delegate
 - **Wave 0 First, Then Parallel**: Bootstrap items execute sequentially before parallel teammates are spawned — foundation must exist before parallel work can begin
 - **Fallback Gracefully**: If the request produces fewer than 3 work items or all items are sequential, delegate to /run instead of creating a team with no parallelism benefit
 - **Immediate Execution**: Steps 3-6 (TeamCreate, TaskCreate, spawn teammates) happen without pausing or asking permission — auto-proceed is the default
@@ -21,7 +21,7 @@
 - **Template Auto-Selection**: Score team templates from `_index.yaml` against the request (keyword × 0.4 + domain × 0.2 + signal × 0.2 + items × 0.2) — select top scorer above 0.6 confidence threshold; use flat execution if no template qualifies
 - **Parallelism Analysis**: Build a dependency graph, identify root items (no blockers), group independent items into parallel groups, calculate critical path — quantify the parallelism score before deciding whether team mode is worth it
 - **Parent Session Linkage**: Each teammate's /run invocation creates a child session — link child sessions back to the parent team session via child_sessions.yaml for cross-session traceability
-- **Fan-Out Spawn Pattern**: Spawn all wave-1 teammates simultaneously in a single message (multiple Task tool calls) — sequential spawning serializes what should be parallel
+- **Fan-Out Spawn Pattern**: Spawn all wave-1 teammates simultaneously in a single message (multiple Agent tool calls) — sequential spawning serializes what should be parallel
 - **Self-Claim Enablement**: Structure task descriptions to include all context teammates need — teammates read TaskList and self-claim unblocked tasks after completing current work
 
 ## Domain Concepts & Terminology
@@ -54,7 +54,7 @@
 ## Anti-Patterns to Avoid
 
 - **Tasks Without TeamCreate**: Creating TaskCreate entries before calling TeamCreate — tasks exist in the list but no team exists to execute them; teammates cannot self-claim without a team context
-- **Execution Agent as subagent_type**: Using `"cagents:backend-developer"` or any execution agent as the teammate subagent_type — execution agents lack the Task tool and cannot spawn reviewers or other agents; they will implement directly without quality gates
+- **Execution Agent as subagent_type**: Using `"cagents:backend-developer"` or any execution agent as the teammate subagent_type — execution agents lack the Agent tool and cannot spawn reviewers or other agents; they will implement directly without quality gates
 - **Sequential Teammate Spawn**: Spawning wave-1 teammates one at a time in sequence — the entire point of team mode is parallel execution; spawn all simultaneously
 - **Skipping Wave 0**: Spawning parallel teammates before foundation work is complete — teammates begin work that depends on contracts, schemas, or scaffolding that doesn't exist yet
 - **No Fallback Check**: Attempting team mode for requests with <3 work items or all-sequential dependencies — wastes TeamCreate overhead for no parallelism benefit
@@ -74,5 +74,5 @@
 
 - **With trigger**: Team-trigger may invoke trigger in `team_planning_only` mode to leverage trigger's domain detection and planning infrastructure — trigger produces plan.yaml and decomposition.yaml, team-trigger takes over for team-specific execution
 - **With team-lead-adapter**: In more complex team executions, team-trigger bootstraps the session and hands off to team-lead-adapter for ongoing wave coordination — team-trigger initializes, adapter manages
-- **With domain controllers (as teammates)**: Team-trigger spawns domain controllers (engineering-manager, narrative-director, etc.) as teammates via Task tool — each controller then independently coordinates execution agents and reviewers for its assigned work item
+- **With domain controllers (as teammates)**: Team-trigger spawns domain controllers (engineering-manager, narrative-director, etc.) as teammates via Agent tool — each controller then independently coordinates execution agents and reviewers for its assigned work item
 - **With orchestrator**: In /run --team mode, orchestrator detects the team flag and spawns team-trigger instead of the domain controller — team-trigger handles all subsequent team coordination

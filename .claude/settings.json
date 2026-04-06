@@ -1,11 +1,11 @@
 {
-  "$comment": "Hook configuration - cAgents V10.25.2 - Progressive pipeline (3 paths), agent chaining, structured error format, attention injection, magic keywords, model routing advisor, delegation enforcer, approval gate, session init gate. 29 CJS files (26 registered hooks + utils + launcher + eval CLI) across 19 event types. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd).",
+  "$comment": "Hook configuration - cAgents V10.25.3 - Progressive pipeline (3 paths), agent chaining, structured error format, attention injection, magic keywords, model routing advisor, delegation enforcer, approval gate, session init gate. 30 CJS files (27 registered hooks + utils + launcher + eval CLI) across 19 event types. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd).",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
   "teammateMode": "tmux",
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CAGENTS_VERSION": "10.25.2"
+    "CAGENTS_VERSION": "10.25.3"
   },
   "permissions": {
     "allow": [
@@ -113,6 +113,16 @@
         ]
       },
       {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" controller-delegation-validator'",
+            "timeout": 3
+          }
+        ]
+      },
+      {
         "matcher": "Write|Edit|Bash",
         "hooks": [
           {
@@ -133,7 +143,7 @@
         ]
       },
       {
-        "matcher": "Task",
+        "matcher": "Agent",
         "hooks": [
           {
             "type": "command",

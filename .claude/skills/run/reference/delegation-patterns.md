@@ -42,7 +42,7 @@ Complexity scoring (9 weighted signals) determines which states to execute:
 The controller is selected from plan.yaml's `controller_assignment.primary`:
 
 ```javascript
-Task({
+Agent({
   subagent_type: "cagents:{controller_name}",
   description: "Coordinate: {request}",
   prompt: `
@@ -62,8 +62,8 @@ Task({
 ```
 Controller (level 1):
   for each work item:
-    1. Spawn execution agent via Task tool (level 2)
-    2. Spawn reviewer via Task tool (level 2)
+    1. Spawn execution agent via Agent tool (level 2)
+    2. Spawn reviewer via Agent tool (level 2)
     3. If REVISE: re-spawn executor with feedback (max 3 rounds)
     4. If PASS after round 3: mark as dead_letter
   Write coordination_log.yaml
@@ -95,7 +95,7 @@ Max 5 revision cycles before escalation to user.
 For `--team`, /run delegates to team-trigger which creates a real team:
 
 ```javascript
-Task({
+Agent({
   subagent_type: "cagents:team-trigger",
   description: "Team: {request}",
   prompt: `

@@ -50,7 +50,7 @@
 - **Classification**: **SIMPLIFY**
 - **Rationale**:
   - **Primary extraction (lines 17-18)** uses official TaskCompleted schema field `task_id`
-    - CC 2.1.83 ensures background agent Task tool calls complete properly with correct metadata
+    - CC 2.1.83 ensures background agent Agent tool calls complete properly with correct metadata
     - This tier remains reliable with the bug fix applied
     - **Keep this tier**
   - **Fallback 1 (lines 20-22)** parses WI-xxx/TASK-xxx from task_subject/description
@@ -173,10 +173,10 @@
 
 | Hook | Workaround | Classification | Upstream Fix | Recommendation |
 |------|-----------|-----------------|--------------|-----------------|
-| **team-stop.cjs** | Individual try-catch guards on writeFileSync | SIMPLIFY | CC 2.1.74 | Remove timeout comment (lines 8-11), keep guards for resilience |
+| **team-stop.cjs** | Individual try-catch guards on writeFileSync | RESOLVED | CC 2.1.74 | Remove timeout comment (lines 8-11), keep guards for resilience |
 | **team-stop.cjs** | Duration computation with NaN/negative guards | KEEP | CC 2.1.74 | No change |
 | **team-stop.cjs** | Structure validation before overwriting timing | KEEP | CC 2.1.74 | No change |
-| **team-task-complete.cjs** | Three-tier ID extraction fallback | SIMPLIFY | CC 2.1.83 | Remove Fallback 1 string parsing (lines 20-22), keep primary + tool_input only |
+| **team-task-complete.cjs** | Three-tier ID extraction fallback | RESOLVED | CC 2.1.83 | Remove Fallback 1 string parsing (lines 20-22), keep primary + tool_input only |
 | **team-task-complete.cjs** | Manual status count via regex | KEEP | CC 2.1.83 | No change |
 | **team-task-complete.cjs** | Dependency tracking via parseTaskList | KEEP | CC 2.1.83 | No change |
 | **teammate-idle-handler.cjs** | Wave detection from teammate name | KEEP | CC 2.1.83 | No change |
@@ -193,7 +193,8 @@
 
 **Total Workarounds Analyzed**: 13
 **REMOVE**: 0
-**SIMPLIFY**: 2
+**SIMPLIFY**: 0
+**RESOLVED**: 2
 **KEEP**: 11
 
 ### High-Impact Simplifications

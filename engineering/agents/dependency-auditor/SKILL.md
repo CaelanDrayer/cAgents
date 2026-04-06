@@ -14,7 +14,7 @@ metadata:
     - version_checking
     - license_compliance
   maxTurns: 10
-  disallowedTools: ["Task"]
+  disallowedTools: ["Agent"]
   related_agents:
     - name: code-reviewer
       type: coordinated_by

@@ -71,8 +71,8 @@ Cross-domain specialist that brings EXPERTISE_AREA to any domain that needs it. 
 Shared agents are typically invoked by domain controllers when a task requires cross-domain expertise:
 
 ```
-engineering-manager -> Task(shared/SHARED_AGENT_NAME) -> answer used in synthesis
-narrative-director  -> Task(shared/SHARED_AGENT_NAME) -> answer used in synthesis
+engineering-manager -> Agent(shared/SHARED_AGENT_NAME) -> answer used in synthesis
+narrative-director  -> Agent(shared/SHARED_AGENT_NAME) -> answer used in synthesis
 ```
 
 ### Routing from Trigger

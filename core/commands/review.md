@@ -441,7 +441,7 @@ Update TodoWrite:
 Hand off to the reviewer agent to execute the workflow:
 
 ```javascript
-Task({
+Agent({
   subagent_type: "cagents:review",
   description: "Execute autonomous universal review",
   prompt: `Execute comprehensive autonomous review.

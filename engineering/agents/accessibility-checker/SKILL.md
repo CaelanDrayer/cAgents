@@ -14,7 +14,7 @@ metadata:
     - a11y_validation
     - aria_review
   maxTurns: 10
-  disallowedTools: ["Task"]
+  disallowedTools: ["Agent"]
   related_agents:
     - name: code-reviewer
       type: coordinated_by

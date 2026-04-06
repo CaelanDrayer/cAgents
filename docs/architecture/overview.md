@@ -35,7 +35,7 @@ Three execution paths based on complexity scoring:
 Controllers never do direct work. They:
 1. Receive objectives from the planner
 2. Break objectives into specific questions
-3. Delegate questions to execution agents via Task tool
+3. Delegate questions to execution agents via Agent tool
 4. Synthesize answers into implementation plan
 5. Coordinate execution with reviewer loops
 

@@ -34,7 +34,7 @@
 
 ### Quality Gates
 - **Coordination File Gate**: coordination_log.yaml must exist, be structurally valid, and contain all required fields
-- **Delegation Compliance Gate**: All work must have been delegated via Task tool — self-answered questions and direct implementation are blocking failures
+- **Delegation Compliance Gate**: All work must have been delegated via Agent tool — self-answered questions and direct implementation are blocking failures
 - **Synthesis Quality Gate**: synthesized_solution must address all plan objectives, contain no placeholder text, and provide actionable implementation steps
 - **Acceptance Criteria Gate**: Each criterion in work_items.yaml has a MET/NOT MET verdict with specific evidence
 - **Implementation Tasks Gate**: Every work item in coordination_log's `implementation_tasks` has `status: completed`

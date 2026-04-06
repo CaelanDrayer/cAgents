@@ -14,7 +14,7 @@ metadata:
     - controller_requirement
     - scope_adjustment
   maxTurns: 15
-allowed-tools: Read Grep Glob Write Edit Bash Task TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
 ---
 
 # Universal Router

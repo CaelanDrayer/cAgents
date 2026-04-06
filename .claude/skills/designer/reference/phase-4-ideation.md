@@ -108,7 +108,7 @@ Before advancing to Refinement, verify:
 **Phase-Overlap**: During synthesis, ALWAYS spawn Refinement research agents (Refinement always uses research, regardless of `--deep`):
 
 ```javascript
-Task({
+Agent({
   subagent_type: "cagents:architect",
   description: "Research: Architecture deep-dive for Refinement questions",
   prompt: `Research agent for Refinement phase.
@@ -119,7 +119,7 @@ Deep-dive: component interactions, data flow, integration points, constraints.
 Write to: ${session_dir}/question_prep/refinement_architecture.yaml`
 })
 
-Task({
+Agent({
   subagent_type: "cagents:security-specialist",
   description: "Research: Security analysis for Refinement questions",
   prompt: `Research agent for Refinement security questions.
@@ -130,7 +130,7 @@ Analyze: auth patterns, data privacy, encryption needs, compliance, security gap
 Write to: ${session_dir}/question_prep/refinement_security.yaml`
 })
 
-Task({
+Agent({
   subagent_type: "cagents:qa-lead",
   description: "Research: Testing strategy for Refinement questions",
   prompt: `Research agent for Refinement testing questions.

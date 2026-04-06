@@ -1,6 +1,6 @@
 # Delegation Templates
 
-Task tool prompt templates for controller-to-execution-agent delegation.
+Agent tool prompt templates for controller-to-execution-agent delegation.
 
 ## Question Delegation
 
@@ -24,7 +24,7 @@ Please provide your expert answer focusing on {specific_area}.
 ### Example
 
 ```javascript
-Task({
+Agent({
   subagent_type: "cagents:backend-developer",
   description: "Answer: What is current auth implementation?",
   prompt: "What is the current authentication implementation? Check src/ for auth-related code. Report: method used, libraries, known issues."
@@ -54,7 +54,7 @@ Please implement and provide evidence of completion.
 ### Example
 
 ```javascript
-Task({
+Agent({
   subagent_type: "cagents:backend-developer",
   description: "Implement TASK-03: User model",
   prompt: "Implementation Task from engineering-manager:\n\nWork Item: TASK-03\nName: Implement user model\n\nAcceptance Criteria:\n- User model has password_hash field\n- Database migration created\n- Unit tests pass\n\nDependencies Completed: TASK-01 (analysis), TASK-02 (design)\n\nPlease implement and provide evidence of completion."

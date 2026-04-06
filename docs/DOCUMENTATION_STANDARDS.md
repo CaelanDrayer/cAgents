@@ -123,7 +123,7 @@ Keep under 10 lines. If longer → archive with reference.
 
 Link to archive instead of duplicating:
 ```markdown
-See `archive/docs/DETAILED_GUIDE.md` for comprehensive examples.
+See `archive/docs/` for comprehensive examples.
 ```
 
 ## What Goes to Archive

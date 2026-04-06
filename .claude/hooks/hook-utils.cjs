@@ -14,8 +14,8 @@
  * 100% Self-Contained: Uses only built-in Node.js modules.
  *
  * Path Resolution:
- * - PLUGIN_ROOT: Where cAgents is installed. Uses __dirname (always correct when
- *   hooks are executing) as primary, CLAUDE_PLUGIN_ROOT as fallback.
+ * - PLUGIN_ROOT: Where cAgents is installed. Uses __dirname resolution as primary
+ *   (verified via CLAUDE.md existence), CLAUDE_PLUGIN_ROOT as fallback, cwd as last resort.
  * - PROJECT_ROOT: Where the user's project lives (where Agent_Memory/ is created).
  *   Uses CLAUDE_PROJECT_DIR when running as a cross-project plugin, falls back to
  *   PLUGIN_ROOT for local dev (plugin IS the project).
@@ -25,9 +25,12 @@ const fs = require('fs');
 const path = require('path');
 
 // Resolve plugin root: where cAgents is installed (for finding plugin resources).
-// __dirname is .claude/hooks/ -- two levels up is the plugin root. Always correct.
-const PLUGIN_ROOT = path.resolve(__dirname, '../..')
-  || process.env.CLAUDE_PLUGIN_ROOT
+// __dirname is .claude/hooks/ -- two levels up is the plugin root.
+// Verify each candidate actually contains CLAUDE.md (proving it's the cAgents root).
+const _dirnameRoot = path.resolve(__dirname, '../..');
+const _envRoot = process.env.CLAUDE_PLUGIN_ROOT || '';
+const PLUGIN_ROOT = (fs.existsSync(path.join(_dirnameRoot, 'CLAUDE.md')) && _dirnameRoot)
+  || (_envRoot && fs.existsSync(path.join(_envRoot, 'CLAUDE.md')) && _envRoot)
   || process.cwd();
 
 // Resolve project root: the user's project directory (where Agent_Memory/ lives).

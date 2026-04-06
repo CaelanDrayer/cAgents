@@ -19,7 +19,7 @@ Controller receives work_items.yaml with agent assignments + dependency graph
   1. Topological sort by dependencies -> execution order
   2. For each work item in order:
      a. Gather output files from completed dependencies
-     b. Spawn assigned agent via Task tool with context from dependencies
+     b. Spawn assigned agent via Agent tool with context from dependencies
      c. Spawn reviewer to check against acceptance criteria
      d. If REVISE: re-spawn agent with feedback (max 3 rounds)
   3. Independent work items execute in parallel
@@ -28,12 +28,12 @@ Controller receives work_items.yaml with agent assignments + dependency graph
 
 ## CRITICAL: Controllers NEVER Do Direct Work
 
-**Controllers are COORDINATORS, not IMPLEMENTERS.** They MUST use Task tool for all work.
+**Controllers are COORDINATORS, not IMPLEMENTERS.** They MUST use Agent tool for all work.
 
 - **Allowed**: Ask questions, synthesize answers, create task lists, write coordination_log.yaml
 - **Prohibited**: Write code, create content, answer own questions, use Edit on implementation files
 
-For EVERY question: formulate -> spawn execution agent via Task -> record answer -> synthesize after all answered.
+For EVERY question: formulate -> spawn execution agent via Agent -> record answer -> synthesize after all answered.
 
 ### Context-Efficient Question Delegation
 
@@ -285,12 +285,12 @@ guard_chain_result:
 
 ## Agent ID Tracking
 
-When controllers spawn execution agents via Task tool, they MUST record the returned `agent_id` in the coordination_log's `implementation_tasks` entry. This links work items to `agent_tree.yaml` entries, enabling AgentPath to show which agent handled which work item.
+When controllers spawn execution agents via Agent tool, they MUST record the returned `agent_id` in the coordination_log's `implementation_tasks` entry. This links work items to `agent_tree.yaml` entries, enabling AgentPath to show which agent handled which work item.
 
-When calling the Task tool to spawn an execution agent, include `subagent_type` set to the `cagents:{name}` identifier. This ensures the SubagentTracker hook can record the agent type in the audit trail without falling back to description parsing.
+When calling the Agent tool to spawn an execution agent, include `subagent_type` set to the `cagents:{name}` identifier. This ensures the SubagentTracker hook can record the agent type in the audit trail without falling back to description parsing.
 
 ```
-Task(
+Agent(
   description: "...",
   subagent_type: "cagents:backend-developer",  # REQUIRED: enables full audit trail
   ...
@@ -306,7 +306,7 @@ implementation_tasks:
 
 ### Task Result Metadata (CC 2.1.30)
 
-The Task tool returns rich metadata alongside the agent result. Controllers SHOULD capture and log this metadata in the coordination_log:
+The Agent tool returns rich metadata alongside the agent result. Controllers SHOULD capture and log this metadata in the coordination_log:
 
 ```yaml
 implementation_tasks:

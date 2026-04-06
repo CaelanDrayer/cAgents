@@ -21,7 +21,7 @@ const independentGroups = groupByIndependence(opportunities)
 for (const group of independentGroups) {
   // Launch all tasks in group simultaneously
   const taskIds = group.map(opt =>
-    Task({
+    Agent({
       subagent_type: opt.specialist,
       description: `Apply ${opt.name}`,
       run_in_background: true,

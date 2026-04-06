@@ -13,7 +13,7 @@ Guidelines for parallel team execution in cAgents V9.2 using Claude Code's built
 
 ## Overview
 
-**Core Architecture**: `/team` decomposes the request into work items across as many waves as the work requires, creates a real agent team via TeamCreate, and spawns teammates per-wave who are controller agents that delegate to execution agents directly via Task tool. Each teammate appears as a tmux pane (when teammateMode=tmux). More waves = better quality gating.
+**Core Architecture**: `/team` decomposes the request into work items across as many waves as the work requires, creates a real agent team via TeamCreate, and spawns teammates per-wave who are controller agents that delegate to execution agents directly via Agent tool. Each teammate appears as a tmux pane (when teammateMode=tmux). More waves = better quality gating.
 
 Team Mode enables N-wave parallel execution with:
 - **Maximum wave decomposition**: /team breaks the request into work items across 3-10 waves (more waves preferred)
@@ -21,18 +21,18 @@ Team Mode enables N-wave parallel execution with:
 - **GATE sentinel quality checks**: Lead validates between waves before proceeding
 - **Built-in agent teams**: TeamCreate, SendMessage, TaskCreate/TaskList for coordination
 - **teammateMode: tmux**: Each teammate in its own tmux split pane (managed by Claude Code)
-- **Every work item via controller**: Teammates ARE controllers that spawn execution agents directly via Task tool
+- **Every work item via controller**: Teammates ARE controllers that spawn execution agents directly via Agent tool
 - **Shared task lists**: Built-in TaskCreate/TaskList at `~/.claude/tasks/{team-name}/`
 - **Independent contexts**: Each teammate has its own context window
 
 ## CRITICAL: Teammates ARE Controllers That Spawn Execution Agents Directly
 
-**This is the most important principle of team mode.** Teammates do NOT implement work items directly. Each teammate is spawned as a controller agent (e.g., `cagents:engineering-manager`) that delegates to execution agents directly via Task tool, then spawns `cagents:reviewer` to validate.
+**This is the most important principle of team mode.** Teammates do NOT implement work items directly. Each teammate is spawned as a controller agent (e.g., `cagents:engineering-manager`) that delegates to execution agents directly via Agent tool, then spawns `cagents:reviewer` to validate.
 
 ```
-Teammate (controller, e.g., engineering-manager) -> Task(cagents:backend-developer)
+Teammate (controller, e.g., engineering-manager) -> Agent(cagents:backend-developer)
   -> backend-developer implements work item
-  -> Task(cagents:reviewer) validates against acceptance criteria
+  -> Agent(cagents:reviewer) validates against acceptance criteria
   -> PASS or REVISE (max 3 rounds)
 ```
 
@@ -49,7 +49,7 @@ Teammate (controller, e.g., engineering-manager) -> Task(cagents:backend-develop
 **The most common failure mode is creating tasks without spawning real team members.** The `/team` skill MUST execute ALL THREE steps:
 1. **TeamCreate** -- Create a real agent team (NOT just a task list). This is what enables tmux panes.
 2. **TaskCreate** -- Create work items as shared tasks
-3. **Spawn teammates via Task tool** -- Each Task call creates a real Claude Code instance (appears as tmux pane)
+3. **Spawn teammates via Agent tool** -- Each Task call creates a real Claude Code instance (appears as tmux pane)
 
 All three steps are required. Creating tasks without spawning teammates to execute them is the primary bug that causes /team to "never spin out team members."
 
@@ -66,9 +66,9 @@ All three steps are required. Creating tasks without spawning teammates to execu
     |
     Step 6: FOR EACH Wave K (1 to N-1):
     |   +-- Spawn teammates for wave K (ALL at once, in parallel)
-    |   |   +-- Teammate 1 (controller): Task(execution agent) -> Task(reviewer) --> Complete
-    |   |   +-- Teammate 2 (controller): Task(execution agent) -> Task(reviewer) --> Complete
-    |   |   +-- Teammate 3 (controller): Task(execution agent) -> Task(reviewer) --> Complete
+    |   |   +-- Teammate 1 (controller): Agent(execution agent) -> Agent(reviewer) --> Complete
+    |   |   +-- Teammate 2 (controller): Agent(execution agent) -> Agent(reviewer) --> Complete
+    |   |   +-- Teammate 3 (controller): Agent(execution agent) -> Agent(reviewer) --> Complete
     |   |                    (parallel within wave -- each in own tmux pane)
     |   +-- Monitor wave K via TaskList + teammate messages
     |   +-- Validate GATE-K when all wave K items complete
@@ -235,7 +235,7 @@ TaskUpdate({ taskId: "3", addBlockedBy: ["1"] })
 
 ### Teammate Communication
 
-Teammates are spawned as controller agents via Task tool (not via SendMessage). Each teammate receives its work item prompt directly in the Task call. Communication between lead and teammates uses SendMessage for status updates and shutdown requests:
+Teammates are spawned as controller agents via Agent tool (not via SendMessage). Each teammate receives its work item prompt directly in the Task call. Communication between lead and teammates uses SendMessage for status updates and shutdown requests:
 
 ```javascript
 // Broadcast update (use sparingly)

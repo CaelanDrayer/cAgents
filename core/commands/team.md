@@ -13,7 +13,7 @@ description: Parallel team-based workflow execution via tmux split panes with /r
 
 ## Your Mission (LEGACY -- See .claude/skills/team/SKILL.md)
 
-The active `/team` skill is a **team orchestrator** that directly creates and manages agent teams. It uses TeamCreate, TaskCreate, and Task tool to spawn real team members who each invoke `/run` to spin out their own controllers and execution agents.
+The active `/team` skill is a **team orchestrator** that directly creates and manages agent teams. It uses TeamCreate, TaskCreate, and Agent tool to spawn real team members who each invoke `/run` to spin out their own controllers and execution agents.
 
 ## Execution Method Detection
 
@@ -36,7 +36,7 @@ When the user runs `/team <request> [flags]`:
 1. **Parse flags** from command arguments
 2. Create initial TodoWrite entry to show progress
 3. Check tmux availability (then Agent Teams, then parallel /run)
-4. Invoke team-trigger agent via Task tool
+4. Invoke team-trigger agent via Agent tool
 5. team-trigger creates tmux session with split panes per work item
 6. Each tmux pane runs `claude /run` for its work item
 7. Report results when complete
@@ -94,7 +94,7 @@ function parseTeamFlags(commandString) {
 ## Delegation to Team-Trigger
 
 ```javascript
-Task({
+Agent({
   subagent_type: "cagents:team-trigger",
   description: "Team: {flags.request}",
   prompt: `
@@ -301,7 +301,7 @@ After `/run` completes, the team lead marks the item as completed in the shared 
 **This command ONLY does:**
 - Parse command arguments
 - Create initial TodoWrite
-- Invoke team-trigger via Task tool
+- Invoke team-trigger via Agent tool
 - Return final report to user
 
 **This command NEVER does:**

@@ -47,11 +47,50 @@ const BLOCKED_REGEXES = [
   { pattern: /\bphp\s+-r\b.*\b(exec|system|shell_exec|passthru)/s, label: 'command obfuscation detected' },                       // php -r with dangerous functions
 ];
 
-const GIT_WARNING_PATTERNS = [
-  { pattern: /git push.*--force/, message: 'Force push may cause data loss' },
-  { pattern: /git reset --hard/, message: 'Hard reset may cause data loss' },
-  { pattern: /git clean -fdx/, message: 'Git clean -fdx removes untracked and ignored files' },
-  { pattern: /git clean -fd/, message: 'Git clean may delete untracked files' }
+// HITL patterns: borderline-dangerous commands that require user confirmation.
+// Each pattern returns permissionDecision: 'ask' with a safe alternative suggestion.
+const HITL_PATTERNS = [
+  // Git destructive operations (existing)
+  { pattern: /git push.*--force/, message: 'Force push may cause data loss. Consider using --force-with-lease for safer force pushes.' },
+  { pattern: /git reset --hard/, message: 'Hard reset discards uncommitted changes. Consider git stash to save changes first, or git reset --soft to keep changes staged.' },
+  { pattern: /git clean -fdx/, message: 'Git clean -fdx removes untracked AND ignored files. Consider git clean -fd (without -x) to keep ignored files, or git clean -n to preview first.' },
+  { pattern: /git clean -fd/, message: 'Git clean -fd deletes untracked files. Consider git clean -n to preview what would be deleted first.' },
+
+  // SQL destructive operations
+  { pattern: /\bDROP\s+(TABLE|DATABASE|SCHEMA)\b/i, message: 'DROP TABLE/DATABASE permanently destroys data. Consider renaming the table first (ALTER TABLE ... RENAME), or use DROP ... IF EXISTS with a backup.' },
+  { pattern: /\bTRUNCATE\s+TABLE\b/i, message: 'TRUNCATE TABLE removes all rows irrecoverably. Consider DELETE FROM with a WHERE clause for selective removal, or create a backup first.' },
+  { pattern: /\bDELETE\s+FROM\b(?!\s.*\bWHERE\b)/is, message: 'DELETE FROM without WHERE clause removes all rows. Add a WHERE clause to target specific rows, or use TRUNCATE if you intend to remove everything.' },
+
+  // Permission escalation
+  { pattern: /\bchmod\s+777\b/, message: 'chmod 777 grants read/write/execute to everyone. Consider chmod 755 (owner rwx, others rx) or chmod 700 (owner-only) for better security.' },
+  { pattern: /\bchmod\s+-R\s+777\b/, message: 'Recursive chmod 777 makes entire directory trees world-writable. Consider chmod -R 755 or more restrictive permissions.' },
+  { pattern: /\bchmod\s+-R\s+666\b/, message: 'Recursive chmod 666 makes files world-writable. Consider chmod -R 644 (owner rw, others read-only).' },
+  { pattern: /\bchown\s+-R\s+root\b/, message: 'Recursive chown to root may lock you out of your own files. Verify the target path is correct before proceeding.' },
+
+  // Process management
+  { pattern: /\bkill\s+-9\s+-1\b/, message: 'kill -9 -1 sends SIGKILL to ALL your processes. Consider kill -15 (SIGTERM) for graceful shutdown, or target specific PIDs.' },
+  { pattern: /\bkillall\s+/, message: 'killall terminates all processes matching a name. Consider using kill with a specific PID from ps aux | grep instead.' },
+  { pattern: /\bpkill\s+-9\b/, message: 'pkill -9 sends SIGKILL to matching processes without graceful shutdown. Consider pkill (SIGTERM) first, then pkill -9 only if needed.' },
+
+  // System control
+  { pattern: /\b(shutdown|poweroff)\b/, message: 'This will shut down the system. Verify this is the intended target machine. Consider shutdown -c to cancel if triggered accidentally.' },
+  { pattern: /\breboot\b/, message: 'This will reboot the system. Verify this is the intended target machine and save all work first.' },
+  { pattern: /\bhalt\b/, message: 'halt stops the system immediately. Consider shutdown -h +1 to give users a 1-minute warning.' },
+
+  // Network/firewall
+  { pattern: /\biptables\s+-F\b/, message: 'iptables -F flushes all firewall rules, potentially exposing the system. Consider saving rules first with iptables-save, or flush only specific chains.' },
+  { pattern: /\bufw\s+disable\b/, message: 'Disabling the firewall exposes all ports. Consider ufw allow/deny for specific ports instead.' },
+
+  // Service management
+  { pattern: /\bsystemctl\s+(disable|stop)\s+/, message: 'Stopping/disabling a service may affect system stability. Verify the service name and check dependents with systemctl list-dependencies first.' },
+
+  // Container/Docker cleanup
+  { pattern: /\bdocker\s+system\s+prune\s+-a\b/, message: 'docker system prune -a removes ALL unused images, containers, and networks. Consider docker system prune (without -a) to keep tagged images, or docker image prune for images only.' },
+  { pattern: /\bdocker\s+volume\s+prune\b/, message: 'docker volume prune deletes all unused volumes and their data. Consider docker volume ls to review volumes first.' },
+
+  // Disk operations
+  { pattern: /\bmkswap\b/, message: 'mkswap reformats a partition as swap space, destroying existing data. Verify the target device is correct.' },
+  { pattern: /\bfdisk\b/, message: 'fdisk modifies disk partition tables. Verify the target device is correct and back up the partition table first.' },
 ];
 
 createHook('BashValidator', async (input) => {
@@ -76,8 +115,8 @@ createHook('BashValidator', async (input) => {
     }
   }
 
-  // Check for warning patterns - escalate to user confirmation via 'ask'
-  for (const { pattern, message } of GIT_WARNING_PATTERNS) {
+  // Check for HITL patterns - escalate to user confirmation via 'ask'
+  for (const { pattern, message } of HITL_PATTERNS) {
     if (pattern.test(command)) {
       console.error(`[BashValidator] WARNING: ${message}`);
       return {

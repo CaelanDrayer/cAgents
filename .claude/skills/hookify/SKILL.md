@@ -1,8 +1,10 @@
 ---
 name: hookify
 description: Generate Claude Code hooks from natural language. Describe the behavior you want ("warn me when I use rm -rf") and hookify creates a .cjs hook file and registers it in settings.json.
+license: MIT
+compatibility: "Claude Code >= 2.1.69"
 metadata:
-  version: "10.25.2"
+  version: "10.25.3"
   argument-hint: "<natural language description of the hook behavior>"
   user-invocable: "true"
   context: "none"
