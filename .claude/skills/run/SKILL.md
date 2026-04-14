@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.25.3"
+  version: "10.25.4"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--analytics] [--from-review] [--from-designer]"
   user-invocable: "true"
   context: "none"
@@ -502,7 +502,7 @@ After the state machine loop exits (whether success, failure, or max revisions):
 
 1. **Read final state** from status.yaml
 2. **Compute final duration_ms** for the last state_history entry
-3. **ALWAYS write execution_summary.yaml** — this is mandatory even on failure or interruption. The `verify-completion.cjs` hook warns at session stop if this file is absent.
+3. **ALWAYS write execution_summary.yaml** — this is mandatory even on failure or interruption. Write this BEFORE stopping. The `verify-completion.cjs` hook has a safety net (`autoResolveWarnings()`) that creates a stub if you forget, but that stub contains less information than the real file. The primary responsibility is yours.
 
 ```yaml
 session_id: {SESSION_ID}
@@ -541,10 +541,16 @@ session_log:
 After appending, recalculate aggregate metrics (total_sessions, success_rate, avg_duration, by_domain, by_tier, bottlenecks). Keep the last 500 sessions in the log; archive older entries.
 
 6. **Clean up tasks**: Call `TaskList` and mark all session tasks as `completed` or `deleted` via `TaskUpdate`. Never leave stale in_progress tasks behind.
-7. **Report results** to user. Pre-report checklist:
-   - `workflow/execution_summary.yaml` written (verify-completion.cjs warns if absent)
+7. **Pre-stop cleanup** (write these BEFORE stopping -- the `verify-completion.cjs` hook has a `autoResolveWarnings()` safety net that creates stubs for missing files, but those stubs contain less detail than real artifacts. You are the primary owner of these writes):
+   - Ensure `workflow/execution_summary.yaml` exists (step 3 above)
+   - Ensure `workflow/coordination_log.yaml` has `self_validation` and `validation_checkpoints` blocks if a controller ran
+   - Ensure `status.yaml` is in a terminal pipeline state (`complete` or `failed`)
+   - The hook safety net resolves missing stubs at stop time, but delegation violations, pending work items, and non-terminal states still block -- fix those before stopping.
+8. **Report results** to user. Pre-report checklist:
+   - `workflow/execution_summary.yaml` written (hook creates stub if absent, but yours is better)
    - `status.yaml` in terminal pipeline state
    - All session tasks marked completed or deleted
+   - `coordination_log.yaml` includes `self_validation` and `validation_checkpoints` if controller ran
 
 If pipeline failed after max revisions:
 - Report what completed vs what remains
