@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.25.4"
+  version: "10.25.5"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--analytics] [--from-review] [--from-designer]"
   user-invocable: "true"
   context: "none"
@@ -472,7 +472,7 @@ After each agent returns and a state transition occurs, call TodoWrite to update
 
 After the COORDINATED state, read `workflow/validation_report.yaml`:
 
-- **PASS**: Advance to VALIDATED (terminal). Pipeline complete.
+- **PASS**: Advance to VALIDATED (terminal). **The loop exits here — proceed IMMEDIATELY to Step 4 (MANDATORY). Do NOT stop.**
 - **FAIL**: Route back to PROMPTS_READY. Increment `revision_round` and `validation_cycles` in status.yaml. Pass feedback from validation_report.yaml to the controller. Max 5 total revision cycles.
 - **REVISE**: Route back to PLANNED. Increment `revision_round` and `validation_cycles` in status.yaml. Pass feedback to the planner. Max 5 total revision cycles.
 
@@ -496,13 +496,22 @@ TodoWrite([
 
 ---
 
-### Step 4: Report Results
+> **CRITICAL: DO NOT STOP HERE.** The state machine loop has exited, but the pipeline
+> is NOT complete. Step 4 below is MANDATORY. You MUST execute every item in the
+> checklist before stopping. The `verify-completion.cjs` Stop hook will block you
+> if you skip this step and execution_summary.yaml is missing or auto-generated.
+> Stopping after VALIDATED without completing Step 4 is the #1 cause of incomplete
+> pipeline runs.
 
-After the state machine loop exits (whether success, failure, or max revisions):
+### Step 4: MANDATORY — Report Results and Clean Up
 
-1. **Read final state** from status.yaml
-2. **Compute final duration_ms** for the last state_history entry
-3. **ALWAYS write execution_summary.yaml** — this is mandatory even on failure or interruption. Write this BEFORE stopping. The `verify-completion.cjs` hook has a safety net (`autoResolveWarnings()`) that creates a stub if you forget, but that stub contains less information than the real file. The primary responsibility is yours.
+**This step MUST execute after the state machine loop exits.** It is not optional,
+not deferrable, and not handled by any hook or safety net. You (/run) are the
+sole owner of this work. Execute the following checklist in order:
+
+- [ ] **4.1. Read final state** from status.yaml
+- [ ] **4.2. Compute final duration_ms** for the last state_history entry
+- [ ] **4.3. Write execution_summary.yaml** — MANDATORY even on failure or interruption. Write this BEFORE anything else. The `verify-completion.cjs` hook creates a stub if you forget, but that stub triggers a warning visible to the user and contains less information than the real file.
 
 ```yaml
 session_id: {SESSION_ID}
@@ -517,8 +526,8 @@ started_at: "{ISO_TIMESTAMP}"
 completed_at: "{ISO_TIMESTAMP}"
 ```
 
-4. **Update status.yaml**: set `pipeline_state` to terminal value, compute final `duration_ms`
-5. **Track execution analytics**: Append session metrics to `Agent_Memory/_system/metrics/pipeline_analytics.yaml`:
+- [ ] **4.4. Update status.yaml** to terminal state: set `pipeline_state` to `complete` (or `failed`), compute final `duration_ms`
+- [ ] **4.5. Track execution analytics**: Append session metrics to `Agent_Memory/_system/metrics/pipeline_analytics.yaml`:
 
 ```yaml
 # Append to session_log array
@@ -540,19 +549,18 @@ session_log:
 
 After appending, recalculate aggregate metrics (total_sessions, success_rate, avg_duration, by_domain, by_tier, bottlenecks). Keep the last 500 sessions in the log; archive older entries.
 
-6. **Clean up tasks**: Call `TaskList` and mark all session tasks as `completed` or `deleted` via `TaskUpdate`. Never leave stale in_progress tasks behind.
-7. **Pre-stop cleanup** (write these BEFORE stopping -- the `verify-completion.cjs` hook has a `autoResolveWarnings()` safety net that creates stubs for missing files, but those stubs contain less detail than real artifacts. You are the primary owner of these writes):
-   - Ensure `workflow/execution_summary.yaml` exists (step 3 above)
-   - Ensure `workflow/coordination_log.yaml` has `self_validation` and `validation_checkpoints` blocks if a controller ran
-   - Ensure `status.yaml` is in a terminal pipeline state (`complete` or `failed`)
-   - The hook safety net resolves missing stubs at stop time, but delegation violations, pending work items, and non-terminal states still block -- fix those before stopping.
-8. **Report results** to user. Pre-report checklist:
-   - `workflow/execution_summary.yaml` written (hook creates stub if absent, but yours is better)
-   - `status.yaml` in terminal pipeline state
-   - All session tasks marked completed or deleted
-   - `coordination_log.yaml` includes `self_validation` and `validation_checkpoints` if controller ran
+- [ ] **4.6. Clean up tasks**: Call `TaskList` and mark ALL session tasks as `completed` or `deleted` via `TaskUpdate`. These are the tasks YOU (/run) created before each Agent spawn (see "CRITICAL: TaskCreate Per Subagent" above). TaskUpdate only works on tasks you created — subagent-created tasks are in their own scope. Never leave stale in_progress tasks behind.
+- [ ] **4.7. Pre-stop verification** (confirm these BEFORE stopping):
+   - `workflow/execution_summary.yaml` exists and was written by YOU (not by the hook safety net)
+   - `workflow/coordination_log.yaml` has `self_validation` and `validation_checkpoints` blocks if a controller ran
+   - `status.yaml` is in a terminal pipeline state (`complete` or `failed`)
+   - All session tasks are marked completed or deleted (no stale in_progress tasks)
+- [ ] **4.8. Report results** to the user with a summary of what was accomplished, including:
+   - Final pipeline state and revision count
+   - Key deliverables produced
+   - Any warnings or issues from validation
 
-If pipeline failed after max revisions:
+**Do NOT stop before completing all 8 items above.** If the pipeline failed after max revisions:
 - Report what completed vs what remains
 - Suggest recovery: `/run --resume {SESSION_ID}`
 - Save progress in progress.md for resumption
@@ -725,20 +733,24 @@ TodoWrite([
 ])
 ```
 
-## CRITICAL: TaskCreate Per Subagent
+## CRITICAL: TaskCreate Per Subagent — /run Owns All Pipeline Tasks
 
-**Every background Agent/Task spawn MUST have a `TaskCreate` call BEFORE the spawn.** This gives users per-agent visibility in the task list UI.
+**/run (level 0) MUST own ALL TaskCreate calls for pipeline agents it spawns.** This means /run calls TaskCreate BEFORE each Agent spawn, and /run calls TaskUpdate(completed) AFTER each Agent returns. This is the only way task cleanup works in Step 4, because TaskUpdate only works on tasks created by the same agent scope.
+
+**Subagents (controllers, executors at level 1-2) MUST NOT call TaskCreate for pipeline-tracking tasks.** Tasks created by subagents live in the subagent's scope and cannot be updated by /run, causing "Task not found" errors during Step 4 cleanup. Subagents use TodoWrite for their own internal progress visibility instead.
 
 ```
-# Pattern for each background agent:
-TaskCreate({ subject: "WI-1: Fix auth module", description: "..." })
+# /run creates the task BEFORE spawning the agent:
+TaskCreate({ subject: "ORCHESTRATED: Context enrichment", description: "..." })
 TaskUpdate({ taskId: "N", status: "in_progress" })
-Agent({ description: "WI-1: Fix auth module", ..., run_in_background: true })
-# When notification arrives:
+Agent({ subagent_type: "cagents:orchestrator", description: "...", prompt: "..." })
+# /run updates the task AFTER the agent returns:
 TaskUpdate({ taskId: "N", status: "completed" })
 ```
 
-Without per-agent tasks, the user only sees generic entries like "◼ [run] Pipeline running" with no visibility into the 3-5 agents actually working in parallel. Each agent MUST be a separate task.
+**Why /run must own tasks**: TaskUpdate only works on tasks created by the same agent scope. If a controller at level 1 creates a task, /run at level 0 cannot update or clean up that task. This causes stale in_progress tasks visible to the user after the pipeline completes.
+
+Without per-agent tasks owned by /run, the user only sees generic entries like "[run] Pipeline running" with no visibility into the 3-5 agents actually working in parallel. Each pipeline agent MUST be a separate task created by /run.
 
 ## What /run Does Directly (Exhaustive List)
 

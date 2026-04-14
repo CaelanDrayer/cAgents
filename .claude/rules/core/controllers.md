@@ -53,9 +53,13 @@ Question prompts should be **under 300 tokens**. Include only: the question, whe
 9. Writes coordination_log.yaml
 ```
 
-## MANDATORY: TaskCreate + TodoWrite for Execution Agent Visibility
+## MANDATORY: TodoWrite for Execution Agent Visibility
 
-Every controller MUST call TodoWrite after identifying execution agents. Additionally, every background Agent/Task spawn MUST have a `TaskCreate` call BEFORE the spawn, and a `TaskUpdate(status: completed)` when it returns. This gives users per-agent visibility in the task list UI. Without per-agent tasks, the user only sees the controller's top-level task.
+Every controller MUST call TodoWrite after identifying execution agents. TodoWrite is the controller's primary tool for showing progress to the user.
+
+**TaskCreate scope boundary**: Pipeline-level tasks (tracking which pipeline agent is running) are owned by /run at level 0. Controllers do NOT create TaskCreate tasks that /run expects to clean up -- those tasks live in the controller's scope and /run cannot update them, causing "Task not found" errors during pipeline cleanup.
+
+Controllers MAY use TaskCreate for their OWN internal sub-spawns (e.g., tracking individual execution agents they spawn at level 2), but these are controller-scoped tasks that the controller itself must clean up before returning. They are invisible to /run's Step 4 task cleanup.
 
 Use `[{parent} > {agent-name}] {verb phrase}` when spawning an agent, then 2-space indented `[{agent-name}] {sub-task}` for that agent's own work. Never use state machine names (INIT, ORCHESTRATED, etc.). Replace placeholders with actual agent names as soon as known.
 
