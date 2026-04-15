@@ -1,17 +1,24 @@
 # Domain Structure (v10)
 
-## 8 Business Domains
+## 15 Domains (262 agents)
 
 | Domain | Directory | Agents | Description |
 |--------|-----------|--------|-------------|
-| Engineering | `engineering/` | 33 | Software engineering, infrastructure, security, QA, game programming |
-| Creative | `creative/` | 24 | Creative writing, narrative design, game art, audio, animation |
-| Business | `business/` | 69 | Strategy, product, operations, finance, marketing, sales |
+| Engineering | `engineering/` | 32 | Software engineering, infrastructure, security, QA, game programming |
+| Creative | `creative/` | 30 | Creative writing, narrative design, literary criticism, game art, audio |
+| Business | `business/` | 31 | Strategy, product, operations, finance |
+| Growth | `growth/` | 39 | Marketing, sales, revenue operations |
 | People | `people/` | 19 | HR, talent acquisition, culture, workforce planning |
 | Service | `service/` | 32 | Customer support, CX, legal, compliance, governance |
-| Leadership | `leadership/` | 10 | C-suite executives (CEO, CTO, CFO, CMO, CRO, COO, CCO, CPO, CHRO, CSO) |
-| Core | `core/` | 15 | Infrastructure (trigger, orchestrator, planner, validator, etc.) |
-| Shared | `shared/` | 4 | Cross-domain intelligence (BI, data science, market research) |
+| Leadership | `leadership/` | 11 | C-suite executives + general-counsel (used by /org, not directly routable) |
+| Core | `core/` | 16 | Infrastructure (trigger, orchestrator, planner, validator, etc.) |
+| Shared | `shared/` | 12 | Cross-domain intelligence (BI, data science, market research, social science) |
+| Science | `science/` | 10 | STEM research, scientific analysis |
+| Health | `health/` | 6 | Medical, wellness, fitness, nutrition |
+| Education | `education/` | 6 | Teaching, tutoring, academic support |
+| Personal | `personal/` | 6 | Career, life coaching, personal finance |
+| Arts | `arts/` | 6 | Visual arts, music, film, performing arts |
+| Trades | `trades/` | 6 | Culinary, construction, automotive, agriculture |
 
 ## Domain Configuration
 
@@ -61,7 +68,3 @@ Within a domain, the controller is selected based on complexity tier:
 - **Tier 2**: First controller in tier_2 list
 - **Tier 3**: Primary from tier_3 + supporting controllers
 - **Tier 4**: Executive lead from tier_4 + primary + supporting
-
-## Legacy Domains
-
-The `growth/` directory exists as a legacy redirect. Its agents were consolidated into `business/` during the v10 restructure. The `make/`, `grow/`, `operate/`, and `serve/` directories may still exist with legacy content but are not actively used.

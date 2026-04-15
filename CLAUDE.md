@@ -385,7 +385,7 @@ cAgents/
 |   +-- skills/              # Skills (org, run, team, designer, review, optimize, helper, context)
 |   +-- hooks/               # 30 .cjs files (27 hooks + utils + launcher + eval CLI)
 |   +-- plans/               # Saved execution plans
-|   +-- rules/               # Modular rules (24 files, 5 categories)
+|   +-- rules/               # Modular rules (26 files, 5 categories)
 |   +-- settings.json        # Hook registration + permissions + env
 +-- engineering/             # Engineering domain (32 agents, config, manifest)
 +-- creative/                # Creative domain (30 agents)
@@ -476,7 +476,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
-**Tests**: `npm test` runs 685 Vitest tests (hooks + config validation)
+**Tests**: `npm test` runs 816 Vitest tests (hooks + config validation)
 **Version**: 10.25.6
 
 ## Troubleshooting

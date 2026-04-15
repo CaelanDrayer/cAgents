@@ -113,7 +113,7 @@ function getLatestEventState(sessionDir) {
 function progressBar(done, total, width = 5) {
   if (total === 0) return '';
   const filled = Math.round((done / total) * width);
-  const empty = width - filled;
+  const empty = Math.max(0, width - filled);
   const bar = '█'.repeat(filled) + '░'.repeat(empty);
   return C.cyan(bar) + ` ${done}/${total}`;
 }

@@ -8,7 +8,7 @@ import { join } from 'path';
  * Validates:
  * 1. Parent session ID extraction logic from --session flag paths
  * 2. /team SKILL.md contains Session Hierarchy documentation section
- * 3. /org SKILL.md nesting diagram is accurate (no /run via Skill, has execution agents via Task)
+ * 3. /org SKILL.md nesting diagram is accurate (no /run via Skill, has execution agents via Agent)
  *
  * Related issues: ISSUE-001, ISSUE-002, ISSUE-004
  */
@@ -133,8 +133,8 @@ describe('/org SKILL.md nesting diagram', () => {
     expect(orgSkill).not.toContain('/run via Skill (level 0 fork)');
   });
 
-  it('nesting diagram shows execution agents via Task', () => {
-    expect(orgSkill).toContain('execution agents via Task');
+  it('nesting diagram shows execution agents via Agent', () => {
+    expect(orgSkill).toContain('execution agents via Agent');
   });
 
   it('nesting diagram shows level 2 for execution agents', () => {

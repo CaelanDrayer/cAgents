@@ -32,12 +32,12 @@ describe('root plugin.json', () => {
 
   it('should reference skills directory', () => {
     const plugin = loadPluginJson(PLUGIN_PATH);
-    expect(plugin.skills).toBe('./.claude/skills/');
+    expect(plugin.skills).toBe('../.claude/skills/');
   });
 
   it('should reference hooks settings', () => {
     const plugin = loadPluginJson(PLUGIN_PATH);
-    expect(plugin.hooks).toBe('./.claude/settings.json');
+    expect(plugin.hooks).toBe('../.claude/settings.json');
   });
 
   it('should have agents array with 200+ entries', () => {
@@ -50,21 +50,20 @@ describe('root plugin.json', () => {
     const plugin = loadPluginJson(PLUGIN_PATH);
     const missing = plugin.agents.filter(
       agentPath => {
-        const resolved = agentPath.startsWith('./')
-          ? join(PROJECT_ROOT, agentPath.slice(2))
-          : join(PROJECT_ROOT, agentPath);
+        // Paths are relative to .claude-plugin/ directory (../ prefix)
+        const resolved = join(PROJECT_ROOT, '.claude-plugin', agentPath);
         return !existsSync(resolved);
       }
     );
     expect(missing).toEqual([]);
   });
 
-  it('should include agents from all 8 domains', () => {
+  it('should include agents from all 15 domains', () => {
     const plugin = loadPluginJson(PLUGIN_PATH);
     const agents = plugin.agents;
-    const domains = ['engineering', 'creative', 'business', 'people', 'service', 'core', 'leadership', 'shared'];
+    const domains = ['engineering', 'creative', 'business', 'growth', 'people', 'service', 'core', 'leadership', 'shared', 'science', 'health', 'education', 'personal', 'arts', 'trades'];
     for (const domain of domains) {
-      const domainAgents = agents.filter(a => a.startsWith(`./${domain}/`));
+      const domainAgents = agents.filter(a => a.includes(`/${domain}/`));
       expect(domainAgents.length).toBeGreaterThan(0);
     }
   });

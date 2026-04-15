@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { existsSync, writeFileSync, mkdirSync, rmSync, readFileSync } from 'fs';
+import { existsSync, writeFileSync, mkdirSync, rmSync, readFileSync, readdirSync, unlinkSync } from 'fs';
 import { join } from 'path';
+import { tmpdir } from 'os';
 import { execSync } from 'child_process';
 
 const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
@@ -9,16 +10,32 @@ const TEST_SESSIONS_DIR = join(process.cwd(), 'Agent_Memory', 'sessions');
 const TEST_SESSION = 'run_20260101_000001_test_vc';
 const TEST_SESSION_DIR = join(TEST_SESSIONS_DIR, TEST_SESSION);
 
-function runHook(input) {
+function runHook(input, envOverrides = {}) {
   const result = execSync(
     `printf '%s' '${JSON.stringify(input).replace(/'/g, "'\\''")}' | node "${HOOK_PATH}"`,
-    { encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'] }
+    { encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env, ...envOverrides } }
   );
   return JSON.parse(result.trim());
 }
 
+// Clean stale dedup guard files left by prior test runs (killed processes don't clean up).
+// The dedupGuard in hook-utils.cjs creates /tmp/cagents-dedup-{hook}-{hash} files that
+// persist if the process is SIGKILL'd. Stale files cause the hook to silently skip execution.
+function cleanDedupFiles() {
+  try {
+    const tmp = tmpdir();
+    for (const f of readdirSync(tmp)) {
+      if (f.startsWith('cagents-dedup-VerifyCompletion-')) {
+        try { unlinkSync(join(tmp, f)); } catch {}
+      }
+    }
+  } catch {}
+}
+
 describe('verify-completion.cjs', () => {
   beforeEach(() => {
+    cleanDedupFiles();
     mkdirSync(join(TEST_SESSION_DIR, 'workflow'), { recursive: true });
     mkdirSync(join(TEST_SESSION_DIR, 'validation'), { recursive: true });
   });
@@ -194,7 +211,7 @@ describe('verify-completion.cjs', () => {
         `phase: INIT\ncreated_at: "${new Date().toISOString()}"\n`);
       writeFileSync(join(TEAM_SESSION_DIR, 'workflow', 'plan.yaml'),
         'plan_id: test\ntier: 3\ndomain: engineering\nmission: "Test team"\n');
-      const result = runHook({ session_id: TEAM_SESSION });
+      const result = runHook({ session_id: TEAM_SESSION }, { CAGENTS_ACTIVE_SESSION: '' });
       expect(result.decision).toBe('block');
       expect(result.reason).toContain('coordination is incomplete');
     });
@@ -204,7 +221,7 @@ describe('verify-completion.cjs', () => {
         `phase: ENRICHING\ncreated_at: "${new Date().toISOString()}"\n`);
       writeFileSync(join(TEAM_SESSION_DIR, 'workflow', 'work_items.yaml'),
         'work_items:\n  - id: WI-1\n    title: "Test"\n');
-      const result = runHook({ session_id: TEAM_SESSION });
+      const result = runHook({ session_id: TEAM_SESSION }, { CAGENTS_ACTIVE_SESSION: '' });
       expect(result.decision).toBe('block');
       expect(result.reason).toContain('coordination is incomplete');
     });
@@ -214,7 +231,7 @@ describe('verify-completion.cjs', () => {
         `phase: ENRICHED\ncreated_at: "${new Date().toISOString()}"\n`);
       writeFileSync(join(TEAM_SESSION_DIR, 'workflow', 'plan.yaml'),
         'plan_id: test\ntier: 3\ndomain: engineering\nmission: "Test team"\n');
-      const result = runHook({ session_id: TEAM_SESSION });
+      const result = runHook({ session_id: TEAM_SESSION }, { CAGENTS_ACTIVE_SESSION: '' });
       expect(result.decision).toBe('block');
       expect(result.reason).toContain('coordination is incomplete');
     });

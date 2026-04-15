@@ -12,18 +12,32 @@ cAgents is a universal multi-domain agent system with controller-centric coordin
 
 | Tier | Role | Count | Purpose |
 |------|------|-------|---------|
-| **1: Core** | Infrastructure | 14 | Workflow orchestration |
-| **2: Controller** | Coordination | ~53 | Question-based delegation |
-| **3: Execution** | Specialists | ~149 | Answer questions, execute tasks |
-| **4: Support** | Operations | ~19 | Foundational services |
+| **1: Core** | Infrastructure | 16 | Workflow orchestration |
+| **2: Controller** | Coordination | ~55 | Question-based delegation |
+| **3: Execution** | Specialists | ~175 | Answer questions, execute tasks |
+| **4: Support** | Operations | ~16 | Foundational services |
 
-### Super-Domains (5)
+### Domains (15)
 
-1. **Make** (111 agents): Creation - engineering, creative, product, game dev
-2. **Grow** (38 agents): Acquisition - marketing, sales
-3. **Operate** (13 agents): Operations - finance, operations
-4. **People** (20 agents): Talent - HR, culture
-5. **Serve** (28 agents): Support & Governance - customer experience, legal
+| Domain | Dir | Agents | Capability |
+|--------|-----|--------|------------|
+| Engineering | `engineering/` | 32 | Software engineering, infrastructure, security, QA, game programming |
+| Creative | `creative/` | 30 | Creative writing, narrative design, literary criticism, game art, audio |
+| Business | `business/` | 31 | Strategy, product, operations, finance |
+| Growth | `growth/` | 39 | Marketing, sales, revenue operations |
+| People | `people/` | 19 | HR, talent acquisition, culture |
+| Service | `service/` | 32 | Customer support, CX, legal, compliance, governance |
+| Leadership | `leadership/` | 11 | C-suite executives + general-counsel |
+| Core | `core/` | 16 | Infrastructure (trigger, orchestrator, planner, validator, etc.) |
+| Shared | `shared/` | 12 | Cross-domain intelligence (BI, data science, market research) |
+| Science | `science/` | 10 | STEM research, scientific analysis |
+| Health | `health/` | 6 | Medical, wellness, fitness, nutrition |
+| Education | `education/` | 6 | Teaching, tutoring, academic support |
+| Personal | `personal/` | 6 | Career, life coaching, personal finance |
+| Arts | `arts/` | 6 | Visual arts, music, film, performing arts |
+| Trades | `trades/` | 6 | Culinary, construction, automotive, agriculture |
+
+**Total: 262 agents across 15 domains**
 
 ## Workflow Phases
 
@@ -92,6 +106,6 @@ Agent_Memory/
 
 ---
 
-**Version**: V9.22.0
-**Last Updated**: 2026-02-27
+**Version**: 10.25.6
+**Last Updated**: 2026-04-15
 

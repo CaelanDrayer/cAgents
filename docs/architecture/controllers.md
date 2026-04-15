@@ -40,9 +40,10 @@ After each executor completes:
 |--------|--------|--------|--------|
 | Engineering | engineering-manager | + architect, security-lead | cto + engineering-manager |
 | Creative | narrative-director | + story-architect, editor | cco + narrative-director |
-| Business | operations-manager, campaign-manager | + strategic-planner, marketing-strategist | cpo + cfo |
+| Business | operations-manager | + strategic-planner | cpo + cfo |
+| Growth | campaign-manager | + marketing-strategist | cro + campaign-manager |
 | People | hr-manager | + talent-acquisition-manager | chro + hr-manager |
-| Service | customer-success-manager, legal-counsel | + support-director | general-counsel |
+| Service | customer-success-manager, general-counsel | + support-director | general-counsel |
 
 ## Coordination Log
 
