@@ -2,7 +2,7 @@
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "cagents",
   "version": "10.25.6",
-  "description": "Universal multi-domain agent orchestration framework. 262 specialized agents across 15 domains, coordinated by an intelligent pipeline. 9 skills: /run routes any task through controller + specialist agents, /team runs parallel agent waves, /org coordinates cross-domain strategy, /designer guides design exploration, /review audits quality, /optimize improves performance, /helper guides usage, /context shares knowledge, /debug diagnoses bugs.",
+  "description": "Universal multi-domain agent orchestration framework. 262 specialized agents across 15 domains, coordinated by an intelligent pipeline. 10 skills: /run routes any task through controller + specialist agents, /team runs parallel agent waves, /org coordinates cross-domain strategy, /designer guides design exploration, /review audits quality, /optimize improves performance, /helper guides usage, /context shares knowledge, /debug diagnoses bugs, /hookify generates hooks from natural language.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",
@@ -11,10 +11,10 @@
   "homepage": "https://github.com/CaelanDrayer/cAgents",
   "repository": "https://github.com/CaelanDrayer/cAgents",
   "license": "MIT",
-  "skills": "./.claude/skills/",
-  "hooks": "./.claude/settings.json",
+  "skills": "../.claude/skills/",
+  "hooks": "../.claude/settings.json",
   "$statusLine_note": "Plugin consumers must add statusLine manually to ~/.claude/settings.json — Claude Code does not propagate statusLine from plugin hook files (only the 'hooks' key is extracted). See docs/GETTING_STARTED.md for the exact JSON block to copy.",
-  "outputStyles": "./output-styles",
+  "outputStyles": "../output-styles",
   "agents": [
     "./arts/agents/arts-director/SKILL.md",
     "./arts/agents/film-director/SKILL.md",

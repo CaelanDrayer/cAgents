@@ -227,7 +227,7 @@ The /run workflow receives the full design document with all decisions, constrai
 ## /run - Universal Entry Point
 
 **Status**: Production-Ready
-**Domains**: All 8 business domains (engineering, creative, business, growth, people, service, leadership, shared)
+**Domains**: All 15 domains (engineering, creative, business, growth, people, service, leadership, shared, science, health, education, personal, arts, trades, core)
 **Complexity**: Tier 2-4 (auto-detected, minimum tier 2 enforced)
 
 ### Overview
@@ -381,7 +381,7 @@ Interactive command guide that explains cAgents skills and recommends the right 
 /helper --flags review         # Complete flag reference for /review
 /helper --examples             # Real-world usage examples by domain
 /helper --quick                # One-screen quick reference card
-/helper --topic domains        # Deep dive: the 8 business domains
+/helper --topic domains        # Deep dive: the 15 domains
 /helper --topic workflow       # Deep dive: agent orchestration
 /helper --topic tiers          # Deep dive: complexity tiers
 /helper --topic teams          # Deep dive: team mode
@@ -390,7 +390,7 @@ Interactive command guide that explains cAgents skills and recommends the right 
 
 ### Key Features
 
-1. **8 Modes**: Full guide, specific command, natural language, comparison, flags, examples, quick reference, topic deep dive
+1. **8 Modes**: Full guide, specific command, natural language, comparison, flags, examples, quick reference, topic deep-dive
 2. **Intent Classification**: Analyzes natural language to recommend the right command
 3. **Copy-Paste Examples**: All examples can be copied and used directly
 4. **Integration Awareness**: Shows how commands work together in pipelines

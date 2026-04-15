@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "cagents",
-      "description": "Universal multi-domain agent orchestration framework. Your AI workforce: 262 specialized agents across 15 business domains, coordinated by an intelligent pipeline. /run routes any task through controller + specialist agents, /team runs parallel execution waves, /org coordinates cross-domain strategy via C-suite, /designer guides design exploration, /review audits quality, /optimize measures and improves performance, /helper recommends commands, /context persists project knowledge, /debug systematically diagnoses bugs.",
+      "description": "Universal multi-domain agent orchestration framework. Your AI workforce: 262 specialized agents across 15 business domains, coordinated by an intelligent pipeline. /run routes any task through controller + specialist agents, /team runs parallel execution waves, /org coordinates cross-domain strategy via C-suite, /designer guides design exploration, /review audits quality, /optimize measures and improves performance, /helper recommends commands, /context persists project knowledge, /debug systematically diagnoses bugs, /hookify generates hooks from natural language.",
       "version": "10.25.6",
       "author": {
         "name": "CaelanDrayer",
@@ -39,8 +39,8 @@
       ],
       "features": [
         "262 specialized agents across 15 business domains",
-        "9 slash commands (/run, /team, /org, /designer, /review, /optimize, /helper, /context, /debug)",
-        "26 lifecycle hooks across 19 event types",
+        "10 slash commands (/run, /team, /org, /designer, /review, /optimize, /helper, /context, /debug, /hookify)",
+        "27 registered hooks across 19 event types",
         "N-wave parallel team execution with quality gates",
         "Event-driven pipeline with revision routing (PASS/FAIL/REVISE)",
         "Controller-centric question-based delegation",

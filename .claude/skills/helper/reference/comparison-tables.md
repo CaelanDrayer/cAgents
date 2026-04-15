@@ -11,9 +11,9 @@ Side-by-side comparison matrices for `/helper --compare`.
 | **Duration** | Varies (5min - hours) | 15-45 minutes | 3-10 minutes | 5-20 minutes | Varies (40-60% faster) | 25-60 minutes | Varies (15-60 min) | 1-2 min |
 | **Input** | Natural language request | Topic or none | Path or auto-detect | Target or natural language | Natural language request | Strategic instruction | Bug description | Subcommand or flag |
 | **Output** | Implementation + report | Design document + artifacts | Issue report + fixes | Before/after metrics | Aggregated results | Cross-domain integrated deliverable | Debug report + fix + test | product_context.yaml |
-| **Domains** | All 8 business domains | All (software/business/creative) | Code, docs, content, infra + 4 more | 8 types across domains | All (delegates to /run) | All (sequential /team per domain) | Engineering (primary) | All (enriches pipeline) |
+| **Domains** | All 15 domains | All (software/business/creative) | Code, docs, content, infra + 4 more | 8 types across domains | All (delegates to /run) | All (sequential /team per domain) | Engineering (primary) | All (enriches pipeline) |
 | **Context** | None (inline) | None (main context, for Q&A) | Fork | Fork | Fork | None (inline) | None (inline) | None (inline) |
-| **Agent count** | 214 available | 1+ (designer + specialists) | 9 parallel groups | Varies by type | Multiple teammates | C-suite + /team per domain | 1 (debugger) | 1 (context manager) |
+| **Agent count** | 262 available | 1+ (designer + specialists) | 9 parallel groups | Varies by type | Multiple teammates | C-suite + /team per domain | 1 (debugger) | 1 (context manager) |
 
 ## When-to-Use Decision Matrix
 

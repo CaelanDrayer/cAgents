@@ -11,7 +11,7 @@ Standard questions used across all controllers in planner_config.yaml files.
 
 ## Universal Controller Questions
 
-These 3 questions appear in ALL controller entries across all 8 business domains:
+These 3 questions appear in ALL controller entries across all 15 domains:
 
 ```yaml
 typical_questions:

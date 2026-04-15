@@ -126,9 +126,9 @@ Use when the design decomposes into 3+ parallel work items.
 
 ## Topic: domains
 
-### The 8 Business Domains
+### The 15 Domains
 
-cAgents organizes 214 agents into 8 business domains. When you use `/run` or `/team`, the system automatically detects which domain to route to.
+cAgents organizes 262 agents across 15 domains. When you use `/run` or `/team`, the system automatically detects which domain to route to.
 
 #### Engineering (32 agents)
 
@@ -278,9 +278,9 @@ Every request is classified into a complexity tier, which determines how many ag
 
 ## Topic: agents
 
-### The 214 Agents and How They Are Organized
+### The 262 Agents and How They Are Organized
 
-cAgents has 214 specialized agents organized in a 4-tier hierarchy:
+cAgents has 262 specialized agents organized in a 4-tier hierarchy:
 
 #### Tier 1: Core Infrastructure (16 agents)
 

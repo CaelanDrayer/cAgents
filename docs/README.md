@@ -20,7 +20,7 @@
 - `CLAUDE_CODE_HOOKS_SPECIFICATION.md` - Claude Code hooks API reference
 
 ### Commands and Skills
-- `COMMANDS.md` - All 8 cAgents commands reference
+- `COMMANDS.md` - All 10 cAgents skills reference
 - `COMMAND_SELECTION.md` - Guide for choosing the right command
 - `SKILLS.md` - Detailed skill documentation
 - `TEAM_MODE.md` - N-wave parallel team execution guide

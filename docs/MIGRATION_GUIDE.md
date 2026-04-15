@@ -4,12 +4,12 @@ How to move from single-purpose plugins (`feature-dev`, `code-review`) to cAgent
 
 ## Why Migrate?
 
-Single-purpose plugins handle one domain with a linear workflow. cAgents handles 8 domains with a config-driven state machine that routes, plans, decomposes, reviews, and revises — automatically.
+Single-purpose plugins handle one domain with a linear workflow. cAgents handles 15 domains with a config-driven state machine that routes, plans, decomposes, reviews, and revises — automatically.
 
 | Dimension | feature-dev | code-review | cAgents |
 |-----------|------------|------------|---------|
-| **Agent count** | ~3 | ~3 | 214 |
-| **Domains** | Engineering only | Engineering only | 8 (engineering, creative, business, growth, people, service, leadership, shared) |
+| **Agent count** | ~3 | ~3 | 262 |
+| **Domains** | Engineering only | Engineering only | 15 (engineering, creative, business, growth, people, service, leadership, shared, science, health, education, personal, arts, trades, core) |
 | **Workflow** | Linear, single-pass | Linear, single-pass | State machine: INIT → ORCHESTRATED → PLANNED → DECOMPOSED → COORDINATED → VALIDATED |
 | **Revision loops** | None | None | Executor → Reviewer (max 3 rounds per work item), PASS/FAIL/REVISE routing (max 5 cycles) |
 | **Parallel execution** | No | No | N-wave parallel teams with per-wave quality gates (40-60% faster) |

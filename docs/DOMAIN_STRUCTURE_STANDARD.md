@@ -50,23 +50,29 @@ Current official business domains:
 
 | Domain | Purpose | Agents | Key Controllers |
 |--------|---------|--------|-----------------|
-| **engineering** | Software engineering | 33 | engineering-manager, architect, tech-lead |
-| **creative** | Creative production | 24 | creative-director, game-designer, story-architect |
-| **business** | Business operations | 33 | operations-manager, business-analyst, product-owner |
-| **growth** | Revenue & acquisition | 36 | marketing-strategist, sales-strategist, campaign-manager |
-| **people** | Talent & culture | 19 | chro, hr-manager, talent-acquisition |
-| **service** | Support & governance | 33 | customer-success-manager, general-counsel, support-manager |
-| **leadership** | C-suite & strategy | 10 | cto, cro, cfo, coo, chro, ceo |
-| **shared** | Cross-domain utilities | 4 | compliance-officer, data-scientist |
-| **core** | Infrastructure | 15 | orchestrator, trigger, universal-* agents |
+| **engineering** | Software engineering | 32 | engineering-manager, architect, tech-lead |
+| **creative** | Creative production | 30 | narrative-director, story-architect, editor |
+| **business** | Business operations | 31 | operations-manager, product-owner, strategic-planner |
+| **growth** | Revenue & acquisition | 39 | marketing-strategist, sales-strategist, campaign-manager |
+| **people** | Talent & culture | 19 | hr-manager, talent-acquisition-manager |
+| **service** | Support & governance | 32 | customer-success-manager, general-counsel, support-director |
+| **leadership** | C-suite & strategy | 11 | cto, cro, cfo, coo, chro, ceo, cpo, cmo, cco, cso, chief-legal-officer |
+| **shared** | Cross-domain intelligence | 12 | bi-specialist, data-scientist, market-research-analyst |
+| **science** | STEM research | 10 | science-coordinator, physicist, biologist |
+| **health** | Medical & wellness | 6 | health-coordinator, medical-advisor |
+| **education** | Teaching & tutoring | 6 | education-coordinator, academic-tutor |
+| **personal** | Career & life coaching | 6 | personal-coach-lead, career-counselor |
+| **arts** | Visual arts & music | 6 | arts-director, music-producer |
+| **trades** | Culinary & construction | 6 | trades-coordinator, chef |
+| **core** | Infrastructure | 16 | orchestrator, trigger, universal-* agents |
 
-**Total**: 213 agents across 9 directories (7 business domains + shared + core)
+**Total**: 262 agents across 15 directories (13 business domains + shared + core)
 
 ---
 
 ## Domain Details
 
-### Engineering (33 agents)
+### Engineering (32 agents)
 Software engineering: backend, frontend, DevOps, QA, security
 
 **Includes**:
@@ -75,7 +81,7 @@ Software engineering: backend, frontend, DevOps, QA, security
 - Quality: qa-lead, qa-tester, reviewer
 - Security: security-specialist
 
-### Creative (24 agents)
+### Creative (30 agents)
 Creative production: storytelling, game development, design
 
 **Includes**:
@@ -83,7 +89,7 @@ Creative production: storytelling, game development, design
 - Game Dev: game-designer, level-designer, animator
 - Visual: ui-designer, ux-designer
 
-### Business (33 agents)
+### Business (31 agents)
 Business operations: product, finance, procurement, operations
 
 **Includes**:
@@ -92,7 +98,7 @@ Business operations: product, finance, procurement, operations
 - Operations: operations-manager, process-improvement-specialist
 - Supply Chain: supply-chain-manager, procurement-specialist
 
-### Growth (36 agents)
+### Growth (39 agents)
 Revenue & acquisition: marketing, sales, partnerships
 
 **Includes**:
@@ -108,7 +114,7 @@ Talent & culture: HR, talent acquisition, learning & development
 - Talent: recruiter, talent-acquisition-manager
 - Development: learning-specialist
 
-### Service (33 agents)
+### Service (32 agents)
 Support & governance: customer experience, legal, compliance
 
 **Includes**:
@@ -116,7 +122,7 @@ Support & governance: customer experience, legal, compliance
 - Legal: general-counsel, legal-analyst, contracts-manager
 - Compliance: compliance-manager, privacy-officer
 
-### Leadership (10 agents)
+### Leadership (11 agents)
 C-suite strategy and executive coordination
 
 **Includes**:
@@ -151,7 +157,7 @@ Base templates live in `shared/config/`:
 
 ## Legacy Directories (Removed)
 
-The v9.x super-domain directories (`make/`, `grow/`, `operate/`, `serve/`) were removed in v10.6.0. Their agents were redistributed into the 8 business domains during the v10.0.0 restructure.
+The v9.x super-domain directories (`make/`, `grow/`, `operate/`, `serve/`) were removed in v10.6.0. Their agents were redistributed into focused business domains during the v10.0.0 restructure. The platform has since expanded to 15 domains (13 business domains + shared + core).
 
 ---
 

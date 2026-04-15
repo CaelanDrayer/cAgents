@@ -7,8 +7,8 @@ Deploy 262 specialized agents across 15 domains through an intelligent pipeline 
 | Stat | Value |
 |------|-------|
 | Agents | 262 across 15 domains |
-| Skills | 9 slash commands |
-| Hooks | 26 lifecycle hooks across 19 event types |
+| Skills | 10 slash commands |
+| Hooks | 27 registered hooks across 19 event types |
 | Models | Opus 4.6 (controllers) · Sonnet 4.6 (execution) · Haiku 4.5 (support) |
 
 ---
@@ -38,7 +38,7 @@ cAgents spawns 3-10+ subagents per request. Each consumes API tokens independent
 ## Requirements
 
 - **Claude Code 2.1.69+** (required)
-- **Node.js** (recommended) — powers 26 registered hooks for session management, secret detection, team coordination, and completion verification
+- **Node.js** (recommended) — powers 27 registered hooks for session management, secret detection, team coordination, and completion verification
 
 | cAgents | Min Claude Code | Highlights |
 |---------|----------------|------------|
@@ -197,6 +197,16 @@ Four-phase debugging for bugs that resist quick fixes: reproduce, isolate, hypot
 /debug Tests pass locally but fail in CI on the date-formatting module
 ```
 
+### `/hookify` — Hook Generation
+
+Generates Claude Code hooks from natural language. Describe the behavior you want and hookify creates a `.cjs` hook file and registers it in `settings.json`.
+
+```bash
+/hookify Warn me when I use rm -rf
+/hookify Block writes to production config files
+/hookify Log every time a subagent is spawned
+```
+
 ---
 
 ## Domain Breakdown
@@ -302,24 +312,39 @@ Before every Write, Edit, and Bash operation, the `attention-injection.cjs` hook
 
 This fires automatically — no prompt engineering required. It is a no-op when there is no active session, so it does not affect ordinary Claude Code usage.
 
-### 26 Lifecycle Hooks
+### 27 Lifecycle Hooks
 
-cAgents registers 26 hooks across 19 of Claude Code's 24 event types:
+cAgents registers 27 hooks across 19 of Claude Code's 24 event types:
 
 | Event | Hook | Purpose |
 |-------|------|---------|
 | SessionStart | session-catchup.cjs | Detect incomplete sessions, inject cAgents context |
+| SessionEnd | team-stop.cjs | Finalize team metrics and update session status |
+| UserPromptSubmit | delegation-enforcer.cjs | Enforce delegation rules for controller agents |
+| UserPromptSubmit | magic-keywords.cjs | Natural language routing suggestions |
 | PreToolUse[Bash] | bash-validator.cjs | Block dangerous commands and data exfiltration attempts |
 | PreToolUse[Write\|Edit] | secret-detection.cjs | Block writes containing API keys, tokens, credentials |
+| PreToolUse[Write\|Edit] | controller-delegation-validator.cjs | Warn when controllers write implementation files |
 | PreToolUse[Write\|Edit\|Bash] | attention-injection.cjs | Inject plan objectives before every file operation |
-| PreToolUse[Task] | model-routing-advisor.cjs | Suggest optimal model before agent spawns |
+| PreToolUse[Write\|Edit\|Bash] | approval-gate.cjs | Enforce approval gates for sensitive operations |
+| PreToolUse[Agent] | model-routing-advisor.cjs | Suggest optimal model before agent spawns |
+| PreToolUse[Agent] | session-init-gate.cjs | Ensure session init complete before agent spawns |
+| PermissionRequest | permission-handler.cjs | Auto-approve safe patterns, HITL gates |
+| PostToolUse[Write\|Edit] | post-write-validator.cjs | Validate JSON/YAML syntax after writes |
+| PostToolUseFailure | tool-failure-tracker.cjs | Track failures, detect patterns, suggest recovery |
+| Notification | notification.cjs | Log notifications to daily files |
 | SubagentStart | subagent-tracker.cjs | Log agent spawns to agent_tree.yaml with audit trail |
+| SubagentStart | team-start.cjs | Initialize team monitoring directories |
 | SubagentStop | subagent-stop-tracker.cjs | Capture completion summaries and duration metrics |
+| Stop | verify-completion.cjs | Verify completion criteria before allowing stop |
+| StopFailure | stop-failure-handler.cjs | Save recovery state on unclean stop |
 | TeammateIdle | teammate-idle-handler.cjs | Find available work or cleanly stop idle teammates |
 | TaskCompleted | team-task-complete.cjs | Update task list, unblock dependencies |
+| InstructionsLoaded | instructions-loaded.cjs | Validate rules directory, inject session context |
 | PreCompact | pre-compact-save.cjs | Save workflow state before context compaction |
 | PostCompact | post-compact-restore.cjs | Re-inject workflow context after compaction |
-| Stop | verify-completion.cjs | Verify completion criteria before allowing stop |
+| Elicitation | elicitation-handler.cjs | Log MCP elicitation requests |
+| ElicitationResult | elicitation-handler.cjs | Log MCP elicitation responses |
 
 ### Confidence Scoring
 
@@ -346,11 +371,11 @@ Load the full platform or a domain sub-plugin depending on your team's needs.
 
 | Package | Agents | Skills | Audience |
 |---------|--------|--------|----------|
-| **cAgents** (Full Platform) | 262 | 9 | Teams wanting the complete AI workforce across all domains |
-| **cagents-engineering** | 32 | 9 | Software development teams: backend, frontend, DevOps, QA, security |
-| **cagents-creative** | 30 | 9 | Content and creative teams: writing, narrative, game art, audio |
-| **cagents-business** | 42 | 9 | Strategy and product teams: business (31) + leadership (11) agents |
-| **cagents-growth** | 39 | 9 | Marketing and sales teams: campaigns, SEO, demand gen, revenue ops |
+| **cAgents** (Full Platform) | 262 | 10 | Teams wanting the complete AI workforce across all domains |
+| **cagents-engineering** | 32 | 10 | Software development teams: backend, frontend, DevOps, QA, security |
+| **cagents-creative** | 30 | 10 | Content and creative teams: writing, narrative, game art, audio |
+| **cagents-business** | 42 | 10 | Strategy and product teams: business (31) + leadership (11) agents |
+| **cagents-growth** | 39 | 10 | Marketing and sales teams: campaigns, SEO, demand gen, revenue ops |
 
 Each sub-plugin loads via its own `.claude-plugin/` manifest. Use the full platform to access all 262 agents, or load only the domain your team needs to keep context lean.
 
@@ -378,7 +403,7 @@ Each sub-plugin loads via its own `.claude-plugin/` manifest. Use the full platf
 | **Parallel team execution** | Yes — N-wave with per-wave quality gates | No | No |
 | **Revision loops** | Yes — executor + reviewer, max 3 rounds per work item | No | No |
 | **Two-stage review** | Yes — spec compliance then code quality | No | No |
-| **Hook lifecycle** | 26 hooks across 19 event types | 1–4 hooks | 1–4 hooks |
+| **Hook lifecycle** | 27 hooks across 19 event types | 1–4 hooks | 1–4 hooks |
 | **Goal drift prevention** | Yes — attention injection on every Write/Edit/Bash | No | No |
 | **Confidence scoring** | Yes — 0.0–1.0 per work item, low scores trigger scrutiny | No | No |
 | **Cross-domain orchestration** | Yes — /org fires full C-suite hierarchy | No | No |
@@ -431,7 +456,7 @@ The lead synthesizes findings, deduplicates overlapping concerns, and produces a
 | `docs/TEAM_MODE.md` | N-wave execution, wave types, gate sentinels, templates |
 | `docs/GETTING_STARTED.md` | First-run guide and environment setup |
 | `docs/RELEASE_NOTES.md` | Detailed version history |
-| `.claude/rules/` | 24 modular topic-specific rules loaded by agents |
+| `.claude/rules/` | 29 modular topic-specific rules loaded by agents |
 | `docs/SECURITY.md` | Security policy and vulnerability reporting |
 
 ---
@@ -453,11 +478,11 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights:
 
-- **V10.24.3** — Current release
+- **V10.25.6** — Current release
 - **V10.23.0** — 29-check validation framework, regression validation chain, mandatory self-validation protocol for execution agents
 - **V10.22.0** — Two-stage review protocol (spec compliance then code quality), 5 pipeline improvements
 - **V10.20.0** — 23 agent communication gap fixes, Growth domain expanded from 35 to 39 agents
-- **V10.18.0** — Vibe field on all 214 agents, worktree isolation, guard command pattern, skill chaining, commit-before-verify pattern
+- **V10.18.0** — Vibe field on all 262 agents, worktree isolation, guard command pattern, skill chaining, commit-before-verify pattern
 - **V10.16.0** — Session ID naming overhaul with readable slugs, agent_id linking in coordination_log for AgentPath
 - **V10.12.0** — AgentPath plugin integration with 15 session visualization improvements
 - **V10.6.0** — Confidence tiers, blind review, dead-letter queue, handoff documents
