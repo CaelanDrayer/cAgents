@@ -76,8 +76,8 @@ for (const domain of DOMAIN_DIRS) {
 // Sort alphabetically
 agentPaths.sort();
 
-// Replace agents array with ./ prefix to match existing format
-plugin.agents = agentPaths.map(p => `./${p}`);
+// Replace agents array with ../ prefix (paths resolve from .claude-plugin/ directory)
+plugin.agents = agentPaths.map(p => `../${p}`);
 
 fs.writeFileSync(PLUGIN_JSON, JSON.stringify(plugin, null, 2) + '\n', 'utf8');
 
