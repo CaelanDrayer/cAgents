@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.25.5"
+  version: "10.25.6"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--analytics] [--from-review] [--from-designer]"
   user-invocable: "true"
   context: "none"
@@ -386,17 +386,28 @@ while current_state is not terminal (VALIDATED):
   2. Determine agent to spawn (or "dynamic" for controller from plan.yaml)
   3. Spawn agent at level 1 via Agent tool (see delegation below)
   4. After agent returns, read completion event from workflow/events/
-  5. Update status.yaml with new state:
+  5. **MANDATORY — Update status.yaml with new state (hooks depend on this for accurate state detection):**
      a. Set pipeline_state to next_state
      b. Compute duration_ms for the PREVIOUS state_history entry:
         duration_ms = (now_ms - previous_entered_at_ms)
      c. Append new state_history entry with entered_at=now, duration_ms=null
+     > **You MUST update status.yaml after EVERY state transition. The verify-completion.cjs hook, attention-injection.cjs hook, and session discovery all read pipeline_state from status.yaml. If you skip this update, hooks see stale state and cannot detect mid-pipeline stops.**
   6. Update events/index.yaml: read existing events list, append new EVT-{N}, write back
      (This is /run's responsibility — do NOT rely on spawned agents to maintain the index)
   7. Call TodoWrite to reflect progress
   8. Check for revision: if validator returned FAIL or REVISE, route accordingly
   9. Advance to next_state from event file
 ```
+
+> **LOOP EXITED. The state machine loop has ended. The terminal state was {current_state}. Whether this is VALIDATED (full/medium path) or COORDINATED (minimal path), you MUST now execute Step 4 below. Do NOT stop. Do NOT ask the user. Proceed to Step 4 NOW.**
+
+> **CRITICAL: DO NOT STOP HERE.** The state machine loop has exited (whether at
+> VALIDATED, COORDINATED, or any other terminal state), but the pipeline is NOT
+> complete. Step 4 below is MANDATORY. You MUST execute every item in the checklist
+> before stopping. The `verify-completion.cjs` Stop hook will block you if you skip
+> this step and execution_summary.yaml is missing or auto-generated. Stopping after
+> the loop exits at ANY terminal state without completing Step 4 is the #1 cause of
+> incomplete pipeline runs.
 
 **3d. Agent delegation pattern (for each state):**
 
@@ -495,13 +506,6 @@ TodoWrite([
 ```
 
 ---
-
-> **CRITICAL: DO NOT STOP HERE.** The state machine loop has exited, but the pipeline
-> is NOT complete. Step 4 below is MANDATORY. You MUST execute every item in the
-> checklist before stopping. The `verify-completion.cjs` Stop hook will block you
-> if you skip this step and execution_summary.yaml is missing or auto-generated.
-> Stopping after VALIDATED without completing Step 4 is the #1 cause of incomplete
-> pipeline runs.
 
 ### Step 4: MANDATORY — Report Results and Clean Up
 

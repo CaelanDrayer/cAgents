@@ -4,7 +4,7 @@ description: Generate Claude Code hooks from natural language. Describe the beha
 license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
-  version: "10.25.5"
+  version: "10.25.6"
   argument-hint: "<natural language description of the hook behavior>"
   user-invocable: "true"
   context: "none"

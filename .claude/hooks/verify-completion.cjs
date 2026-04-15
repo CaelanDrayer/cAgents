@@ -31,6 +31,58 @@ function getLastTransitionAgeMs(statusContent) {
 }
 
 /**
+ * Check if the expected next-stage agent was spawned for a given pipeline state.
+ * Maps pipeline states to expected next-stage agent types and checks agent_tree.yaml.
+ *
+ * Returns true if:
+ *   - The expected next agent is found in agent_tree.yaml (spawned or running), OR
+ *   - The pipeline state has no defined next agent (unknown state), OR
+ *   - agent_tree.yaml cannot be read (fail-open to avoid false blocks)
+ *
+ * Returns false if:
+ *   - The expected next agent is NOT found in agent_tree.yaml (pipeline stopped mid-execution)
+ */
+function checkNextStageAgentSpawned(sessionDir, pipelineState) {
+  // Map pipeline states to their expected next-stage agent types
+  const nextStageMap = {
+    'INIT': 'orchestrator',
+    'ORCHESTRATED': 'planner',
+    'PLANNED': 'decomposer',
+    'DECOMPOSED': 'prompt-engineer',
+    'PROMPTS_READY': null, // controller is dynamic — resolved from plan.yaml
+    'COORDINATED': 'validator',
+  };
+
+  const normalised = pipelineState.toUpperCase();
+  if (!(normalised in nextStageMap)) return true; // Unknown state — fail-open
+
+  const expectedAgent = nextStageMap[normalised];
+
+  try {
+    const agentTreeFile = path.join(sessionDir, 'workflow', 'agent_tree.yaml');
+    const agentTreeContent = safeRead(agentTreeFile);
+    if (!agentTreeContent) return true; // No agent_tree.yaml — fail-open
+
+    if (expectedAgent === null) {
+      // PROMPTS_READY: controller is dynamic. Check if ANY agent was spawned
+      // after the state that has no stopped_at yet (i.e., still running).
+      // For PROMPTS_READY, any running agent suggests the controller is active.
+      const hasRunningAgent = /stopped_at:\s*null/.test(agentTreeContent);
+      return hasRunningAgent;
+    }
+
+    // Check if the expected agent type appears in agent_tree.yaml
+    // Agent types are recorded as "cagents:{name}" or just the name in agent_type field
+    const agentPattern = new RegExp(`agent_type:\\s*["']?cagents:${expectedAgent}["']?`, 'i');
+    const descriptionPattern = new RegExp(`description:\\s*.*${expectedAgent}`, 'i');
+    return agentPattern.test(agentTreeContent) || descriptionPattern.test(agentTreeContent);
+  } catch (e) {
+    console.error(`[VerifyCompletion] Error checking agent_tree.yaml: ${e.message}`);
+    return true; // Fail-open on error
+  }
+}
+
+/**
  * Finalize agent lifecycle data for terminal sessions.
  * Sets stopped_at on the lead agent in agent_tree.yaml and computes
  * the final duration_ms in the last state_history entry of status.yaml.
@@ -412,10 +464,19 @@ function verifyCompletion(sessionDir) {
         const lastTransitionAge = getLastTransitionAgeMs(statusContent);
         const thirtyMinutes = 30 * 60 * 1000;
         if (lastTransitionAge !== null && lastTransitionAge < thirtyMinutes) {
-          // Pipeline actively running — downgrade to warning (no block)
+          // Pipeline recently active — but check if expected next-stage agent was spawned.
+          // If not, the pipeline genuinely stopped mid-execution (not actively transitioning).
+          const nextStageSpawned = checkNextStageAgentSpawned(sessionDir, pipelineState);
           const ageMin = Math.round(lastTransitionAge / 60000);
-          console.error(`[VerifyCompletion] Pipeline in '${pipelineState}' but actively running (last transition ${ageMin}min ago) — warning only`);
-          warnings.push(`Pipeline actively running in '${pipelineState}' state (last transition ${ageMin}min ago)`);
+          if (!nextStageSpawned) {
+            // No next-stage agent found in agent_tree.yaml — pipeline stopped mid-execution
+            console.error(`[VerifyCompletion] Pipeline in '${pipelineState}' — no next-stage agent spawned (last transition ${ageMin}min ago) — BLOCKING`);
+            issues.push(`Pipeline stopped in '${pipelineState}' state with no next-stage agent spawned. The pipeline exited the loop but did not advance. Expected next agent not found in agent_tree.yaml.`);
+          } else {
+            // Next-stage agent exists — pipeline is actively running
+            console.error(`[VerifyCompletion] Pipeline in '${pipelineState}' but actively running (last transition ${ageMin}min ago) — warning only`);
+            warnings.push(`Pipeline actively running in '${pipelineState}' state (last transition ${ageMin}min ago)`);
+          }
         } else {
           // Pipeline may be stuck (no recent transitions) — block
           issues.push(`Workflow stopping in '${pipelineState}' pipeline state (expected: COMPLETE or VALIDATED)`);
