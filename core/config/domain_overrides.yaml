@@ -1,0 +1,78 @@
+# Core domain overrides
+domain: core
+description: "Infrastructure agents powering the orchestration pipeline, routing, planning, validation, and task management"
+
+planner:
+  controller_catalog:
+    tier_2: [orchestrator, universal-planner, universal-executor]
+    tier_3: [orchestrator, universal-planner, universal-executor, universal-validator]
+    tier_4: [orchestrator, universal-planner, universal-executor, universal-validator, universal-self-correct]
+
+  specialist_routing:
+    orchestration:
+      keywords: [orchestrate, orchestration, pipeline, workflow, enrich, context]
+      agents: [orchestrator]
+      description: "Context enrichment and workflow orchestration"
+    planning:
+      keywords: [plan, decompose, objective, work item, breakdown, scope]
+      agents: [universal-planner, task-decomposer]
+      description: "Objective planning and task decomposition"
+    execution:
+      keywords: [execute, coordinate, monitor, track, delegate]
+      agents: [universal-executor]
+      description: "Execution monitoring and controller coordination"
+    validation:
+      keywords: [validate, verify, quality, gate, check, review]
+      agents: [universal-validator, reviewer]
+      description: "Quality validation and review gates"
+    routing:
+      keywords: [route, classify, tier, domain, detect]
+      agents: [universal-router]
+      description: "Request classification and domain routing"
+    recovery:
+      keywords: [recover, self-correct, retry, stuck, error, fallback]
+      agents: [universal-self-correct]
+      description: "Adaptive recovery and self-correction"
+    task_management:
+      keywords: [task, inventory, consolidate, batch, csv, checkpoint]
+      agents: [task-inventory, task-consolidator]
+      description: "Task inventory management and context consolidation"
+    optimization:
+      keywords: [optimize, improve, prompt, craft]
+      agents: [optimizer, prompt-engineer]
+      description: "Prompt optimization and workflow improvement"
+    team:
+      keywords: [team, teammate, wave, parallel, gate]
+      agents: [team-trigger, team-lead-adapter]
+      description: "Team creation and team lead coordination"
+    escalation:
+      keywords: [escalate, human, approval, hitl]
+      agents: [hitl]
+      description: "Human-in-the-loop escalation"
+
+router:
+  keywords:
+    - orchestrate
+    - pipeline
+    - workflow
+    - infrastructure
+    - routing
+    - core
+    - coordination
+    - meta
+    - validate
+    - plan
+    - decompose
+    - execute
+    - recover
+    - self-correct
+    - task inventory
+    - consolidate
+    - checkpoint
+    - review
+    - quality gate
+    - team
+    - escalate
+    - hitl
+    - prompt engineer
+    - optimize

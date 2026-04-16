@@ -325,6 +325,8 @@ Skills from `--add-dir` directories are also loaded and support live change dete
 
 ### Skill Chaining (V10.18.0)
 
+> **Status: ASPIRATIONAL** -- The `output_contract` and `input_from` frontmatter fields described below are designed but not yet implemented in any skill. No skill currently declares an `output_contract` or `input_from` field. The `--from-review` and `--from-designer` flags are not yet functional. This section documents the intended design for future implementation.
+
 Skills can declare output contracts and consume other skills' outputs, enabling pipelines like `/review -> /run --from-review -> /team`.
 
 **Output Contract** (in skill frontmatter):

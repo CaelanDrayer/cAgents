@@ -53,7 +53,7 @@ See [domains.md](domains.md) for the 15-domain breakdown.
 - Pipeline: `Agent_Memory/_system/config/pipeline_config.yaml`
 - Domains: `{domain}/config/domain_overrides.yaml`
 - Hooks: `.claude/settings.json`
-- Rules: `.claude/rules/` (20 files)
+- Rules: `.claude/rules/` (26 files)
 
 ## File-Based State
 

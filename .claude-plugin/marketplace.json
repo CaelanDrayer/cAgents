@@ -1,10 +1,11 @@
 {
-  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "cagents",
-  "description": "Universal multi-domain agent orchestration framework. 262 specialized agents across 15 business domains, coordinated by an intelligent pipeline.",
   "owner": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca"
+  },
+  "metadata": {
+    "description": "Universal multi-domain agent orchestration framework. 262 specialized agents across 15 business domains, coordinated by an intelligent pipeline."
   },
   "plugins": [
     {
@@ -36,17 +37,6 @@
         "workflow-automation",
         "agent-teams",
         "claude-code-plugin"
-      ],
-      "features": [
-        "262 specialized agents across 15 business domains",
-        "10 slash commands (/run, /team, /org, /designer, /review, /optimize, /helper, /context, /debug, /hookify)",
-        "27 registered hooks across 19 event types",
-        "N-wave parallel team execution with quality gates",
-        "Event-driven pipeline with revision routing (PASS/FAIL/REVISE)",
-        "Controller-centric question-based delegation",
-        "Two-stage code review (spec compliance + code quality)",
-        "Aggressive decomposition (30+ work items from simple requests)",
-        "Adaptive task inventory with 60-80% context savings"
       ],
       "strict": false
     }
