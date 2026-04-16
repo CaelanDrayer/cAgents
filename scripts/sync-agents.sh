@@ -76,8 +76,8 @@ for (const domain of DOMAIN_DIRS) {
 // Sort alphabetically
 agentPaths.sort();
 
-// Paths need ../ prefix because plugin.json is in .claude-plugin/ and paths resolve relative to it
-plugin.agents = agentPaths.map(p => '../' + p);
+// Paths use ./ prefix — plugin root is the project root (parent of .claude-plugin/)
+plugin.agents = agentPaths.map(p => './' + p);
 
 fs.writeFileSync(PLUGIN_JSON, JSON.stringify(plugin, null, 2) + '\n', 'utf8');
 
