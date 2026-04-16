@@ -17,7 +17,7 @@
         "name": "CaelanDrayer",
         "email": "caelan@caelandrayer.ca"
       },
-      "source": "../",
+      "source": "./",
       "category": "workflows",
       "homepage": "https://github.com/CaelanDrayer/cAgents",
       "keywords": [
