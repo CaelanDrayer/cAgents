@@ -76,8 +76,8 @@ for (const domain of DOMAIN_DIRS) {
 // Sort alphabetically
 agentPaths.sort();
 
-// Replace agents array with ../ prefix (paths resolve from .claude-plugin/ directory)
-plugin.agents = agentPaths.map(p => `../${p}`);
+// Paths are relative to project root (marketplace source: "../" makes project root the plugin root)
+plugin.agents = agentPaths;
 
 fs.writeFileSync(PLUGIN_JSON, JSON.stringify(plugin, null, 2) + '\n', 'utf8');
 

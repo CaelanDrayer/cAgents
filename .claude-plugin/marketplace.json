@@ -1,4 +1,5 @@
 {
+  "$schema": "https://cdn.jsdelivr.net/npm/@anthropic-ai/claude-code@latest/marketplace-plugin.schema.json",
   "name": "cagents",
   "owner": {
     "name": "CaelanDrayer",
@@ -11,12 +12,12 @@
     {
       "name": "cagents",
       "description": "Universal multi-domain agent orchestration framework. Your AI workforce: 262 specialized agents across 15 business domains, coordinated by an intelligent pipeline. /run routes any task through controller + specialist agents, /team runs parallel execution waves, /org coordinates cross-domain strategy via C-suite, /designer guides design exploration, /review audits quality, /optimize measures and improves performance, /helper recommends commands, /context persists project knowledge, /debug systematically diagnoses bugs, /hookify generates hooks from natural language.",
-      "version": "10.25.7",
+      "version": "10.25.8",
       "author": {
         "name": "CaelanDrayer",
         "email": "caelan@caelandrayer.ca"
       },
-      "source": "./",
+      "source": "../",
       "category": "workflows",
       "homepage": "https://github.com/CaelanDrayer/cAgents",
       "keywords": [
