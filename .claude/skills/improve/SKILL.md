@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.29"
+  version: "10.26.30"
   argument-hint: "[target] [--mode review|optimize|full] [flags]"
   user-invocable: "true"
   context: "fork"
@@ -127,6 +127,40 @@ opportunities set.
 (legacy `/optimize` DETECTING phase). See
 [`reference/optimize-mode.md`](reference/optimize-mode.md) for the full
 opportunity schema and per-scanner scope.
+
+## Optimize-Mode MEASURING (V10.26.30)
+
+After DETECTING, `--mode optimize` captures a baseline and loads pattern
+effectiveness before PLANNING.
+
+### Baseline Capture
+
+1. Detect benchmark tool from `--benchmark <tool>` or `auto` default:
+   - `lighthouse` for web projects (writes FCP, LCP, CLS, TBT, SI)
+   - `k6` for API projects (writes p95 latency, RPS, error rate)
+   - `hyperfine` for CLI projects (writes mean time, stddev)
+2. Invoke `.claude/hooks/benchmark-runner.cjs` (planned) with the
+   detected tool. Fall back to `auto` heuristic scan when no tool is
+   specified.
+3. Write captured metrics to
+   `Agent_Memory/_projects/{hash}/improve/baselines/{timestamp}.yaml`.
+4. Update `status.yaml.phase = measured`, `status.yaml.state = MEASURING`.
+
+### Pattern Effectiveness Migration
+
+Load historical pattern effectiveness for confidence adjustment during
+PLANNING. Migration rule (see
+[`reference/pattern-effectiveness-migration.md`](reference/pattern-effectiveness-migration.md)):
+
+1. **Primary**: `Agent_Memory/_projects/{hash}/improve/pattern_effectiveness.yaml`
+2. **Legacy fallback**: `Agent_Memory/_projects/{hash}/optimize/pattern_effectiveness.yaml`
+3. If primary exists, read it. If absent but legacy exists, read legacy
+   AND copy forward to primary (atomic write, legacy untouched). If
+   neither exists, treat as empty pattern table.
+4. All writes go to `improve/` only — the legacy `optimize/` path is
+   never written after V10.26.30.
+
+V11.0 removes the legacy-fallback read branch.
 
 ## Atomic Rollback Primitive (V10.26.29)
 

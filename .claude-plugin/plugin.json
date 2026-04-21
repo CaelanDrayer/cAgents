@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "10.26.29",
+  "version": "10.26.30",
   "description": "Universal multi-domain agent orchestration framework. 262 specialized agents across 15 domains, coordinated by an intelligent pipeline. 9 user skills + /context utility: /run routes any task through controller + specialist agents, /team runs parallel agent waves, /org coordinates cross-domain strategy, /designer guides design exploration, /review audits quality, /optimize improves performance, /improve previews unified review+optimize pipeline, /helper guides usage, /debug diagnoses bugs; /context is Claude-invoked during enrichment.",
   "author": {
     "name": "CaelanDrayer",

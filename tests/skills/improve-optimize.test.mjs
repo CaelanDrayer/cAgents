@@ -65,3 +65,58 @@ describe('V10.26.28 /improve --mode optimize DETECTING', () => {
     expect(pd).toMatch(/optimize-mode\.md/);
   });
 });
+
+describe('V10.26.30 /improve --mode optimize MEASURING + pattern migration', () => {
+  const content = readFileSync(IMPROVE_SKILL, 'utf8');
+  const PATTERN_MIG = resolve(
+    ROOT,
+    '.claude/skills/improve/reference/pattern-effectiveness-migration.md'
+  );
+
+  it('SKILL.md documents MEASURING for --mode optimize', () => {
+    expect(content).toMatch(/Optimize-Mode MEASURING.*V10\.26\.30/);
+  });
+
+  it('SKILL.md documents benchmark tool selection (auto/lighthouse/k6/hyperfine)', () => {
+    expect(content).toMatch(/lighthouse/);
+    expect(content).toMatch(/k6/);
+    expect(content).toMatch(/hyperfine/);
+  });
+
+  it('SKILL.md documents baseline path under _projects/{hash}/improve/baselines', () => {
+    expect(content).toMatch(/_projects\/\{hash\}\/improve\/baselines/);
+  });
+
+  it('SKILL.md documents pattern_effectiveness migration with legacy fallback', () => {
+    expect(content).toMatch(
+      /_projects\/\{hash\}\/improve\/pattern_effectiveness\.yaml/
+    );
+    expect(content).toMatch(
+      /_projects\/\{hash\}\/optimize\/pattern_effectiveness\.yaml/
+    );
+    expect(content).toMatch(/legacy/i);
+    expect(content).toMatch(/copy forward|copy-forward/i);
+  });
+
+  it('SKILL.md asserts writes go to improve/ only', () => {
+    expect(content).toMatch(/writes go to.*improve/i);
+  });
+
+  it('reference/pattern-effectiveness-migration.md exists', () => {
+    expect(existsSync(PATTERN_MIG)).toBe(true);
+  });
+
+  it('migration doc enforces primary preferred, legacy fallback, write improve-only', () => {
+    const m = readFileSync(PATTERN_MIG, 'utf8');
+    expect(m).toMatch(/Primary.*improve\/pattern_effectiveness\.yaml/);
+    expect(m).toMatch(/fallback.*optimize\/pattern_effectiveness\.yaml/i);
+    expect(m).toMatch(/Legacy is\s+NOT deleted|not deleted/i);
+    expect(m).toMatch(/All writes go to[\s\S]*improve/i);
+  });
+
+  it('migration doc declares V11.0 fallback removal', () => {
+    const m = readFileSync(PATTERN_MIG, 'utf8');
+    expect(m).toMatch(/V11\.0/);
+    expect(m).toMatch(/fallback removed|removes the legacy-fallback/i);
+  });
+});
