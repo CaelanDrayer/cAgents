@@ -1,11 +1,11 @@
 ---
 name: context
-description: "Create and manage shared product context for consistent agent enrichment. Use to persist project knowledge across sessions. TRIGGER: context, product context, project knowledge. NOT for: running tasks or reviewing work."
+description: "Internal utility: read/write Agent_Memory/_projects/{hash}/product_context.yaml. Claude-invoked by /run orchestrator enrichment and by the /run context passthrough (V10.26.9). Direct user invocation deprecated — use /run context show|init|update|clear instead."
 license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.9"
+  version: "10.26.10"
   argument-hint: "[init|show|update|clear] (Claude-invoked)"
   user-invocable: "false"
   context: "none"
@@ -13,9 +13,16 @@ metadata:
 allowed-tools: Read, Grep, Glob, Write, Bash, TodoWrite, AskUserQuestion
 ---
 
-# /context - Shared Product Context Manager
+# /context - Product Context Utility (Claude-invoked)
 
 **Current timestamp**: !`date -u +%Y-%m-%dT%H:%M:%SZ`
+
+> **Back-compat note**: If you typed `/context` expecting the old UX, use
+> `/run context show` (V10.26.9+). `/context` was demoted from a
+> user-invocable slash command to a Claude-invoked utility in V10.26.6, and
+> finalized in V10.26.10. The skill remains in place so Claude can still
+> invoke it during `/run` enrichment; the `/run context` passthrough gives
+> users a single CLI entry point.
 
 Manage persistent product context documents that enrich all cAgents workflows with project-specific knowledge.
 

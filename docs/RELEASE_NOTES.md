@@ -1,6 +1,6 @@
 # cAgents Release Notes
 
-**Current Version**: 10.26.9
+**Current Version**: 10.26.10
 **Release Date**: April 15, 2026
 **Status**: Production-Ready
 
@@ -69,6 +69,36 @@
 - [v9.1.1](#v911---february-7-2026) - tmux split pane refinements
 - [v9.1.0](#v910---february-7-2026) - tmux split panes for team execution
 - [v9.0.0](#v900---february-7-2026) - Platform Alignment Edition
+
+---
+
+## v10.26.6 – v10.26.10 - April 21, 2026
+
+**Theme**: `/context` utility demotion arc. Five-patch sequence that moves
+`/context` from a user-invocable slash command to a Claude-invoked utility,
+preserving the data file path `Agent_Memory/_projects/{hash}/product_context.yaml`
+at every step.
+
+| Bump | Change |
+|------|--------|
+| 10.26.6 | Hide `/context` from the `/` menu via frontmatter flip (`metadata.user-invocable: "false"`). `plugin.json` description reworded to "8 user skills + /context utility". |
+| 10.26.7 | Document the orchestrator's direct READ path in `core/agents/orchestrator/resources/product-context-loader.md`. No code change; formalizes the helper contract. |
+| 10.26.8 | Remove `/context` from `/helper` public catalog. New "Internal utilities (Claude-invoked)" subsection; comparison tables drop the `/context` column. Claims the "Planned" slot reserved in 10.26.4. |
+| 10.26.9 | Add `/run context show\|init\|update\|clear` passthrough subcommands. Front-door dispatch in Step 1 of `/run` skips the state machine and calls `Skill({ skill: "context", args: "<sub>" })`. |
+| 10.26.10 | Tighten `/context` description to utility-facing. Add back-compat pointer to `/run context show`. Finalize the demotion arc. |
+
+**Data invariant**: `Agent_Memory/_projects/{hash}/product_context.yaml` is
+unchanged across all five patches. Users who typed `/context` get a
+migration pointer to `/run context show`. The orchestrator continues to
+read the YAML directly during INIT-state enrichment per the
+`orchestration-reference.md:18,27` contract.
+
+**Regression coverage**: five new test files —
+`tests/skills/context-invocation.test.js` (V10.26.6),
+`tests/orchestrator/product-context-read.test.js` (V10.26.7),
+updated `tests/skills/helper-catalog.test.js` (V10.26.8),
+`tests/skills/run-context-passthrough.test.js` (V10.26.9), and
+`tests/skills/context-utility-final.test.js` (V10.26.10).
 
 ---
 
@@ -1597,6 +1627,6 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 10.26.9
+**Current Version**: 10.26.10
 **Release Date**: February 27, 2026
 **Git Tag**: v9.21.0

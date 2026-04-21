@@ -10,6 +10,32 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [10.26.10] - 2026-04-21
+
+### Changed
+- `.claude/skills/context/SKILL.md` description tightened to utility-facing:
+  "Internal utility: read/write Agent_Memory/_projects/{hash}/product_context.yaml.
+  Claude-invoked by /run orchestrator enrichment and by the /run context
+  passthrough (V10.26.9). Direct user invocation deprecated — use
+  /run context show|init|update|clear instead."
+- `.claude/skills/context/SKILL.md` body adds a "Back-compat note" directing
+  users who still type `/context` to `/run context show`. Heading renamed to
+  "/context - Product Context Utility (Claude-invoked)".
+- `docs/RELEASE_NOTES.md` adds a consolidated entry for the V10.26.6 –
+  V10.26.10 `/context` utility demotion arc.
+
+### Preserved
+- `.claude-plugin/plugin.json` description continues to say "8 user skills +
+  /context utility" (set in V10.26.6, no change required).
+- `metadata.user-invocable: "false"` preserved (set in V10.26.6).
+- Data file path `Agent_Memory/_projects/{hash}/product_context.yaml`
+  unchanged throughout the entire demotion arc.
+
+### Added
+- `tests/skills/context-utility-final.test.js` asserts the tightened
+  description, preserved frontmatter flags, back-compat pointer, and
+  plugin.json "/context utility" wording.
+
 ## [10.26.9] - 2026-04-21
 
 ### Added
