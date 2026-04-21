@@ -300,7 +300,9 @@ Phase 4: Specification (25% of session)
 
 ---
 
-## /optimize - Universal Optimizer
+## /optimize - Shim → /improve --mode optimize (since V10.26.32, removed V11.0.0)
+
+**As of V10.26.32, `/optimize` is a shim that forwards to `/improve --mode optimize`.** The unified /improve pipeline (V10.26.27–V10.26.31) now owns opportunity scanning, MEASURING (baseline + benchmark), EXECUTING (atomic apply), VALIDATING (before/after delta), and REPORTING. `/optimize` preserves zero behavior change — every flag forwards unchanged — but will be removed in V11.0.0. New invocations should use `/improve --mode optimize` directly.
 
 ### What It Does
 
