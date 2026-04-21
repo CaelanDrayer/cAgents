@@ -1,8 +1,14 @@
 # cAgents Release Notes
 
-**Current Version**: 10.26.1
+**Current Version**: 10.26.2
 **Release Date**: April 15, 2026
 **Status**: Production-Ready
+
+> Release discipline: cAgents evolves via **tiny bumps** — patch-level
+> increments that each ship exactly one coherent change. See the
+> "Tiny-Bump Cadence" section of `.claude/rules/core/version-registry.md`
+> for the six atomicity criteria. Per-bump entries live in `CHANGELOG.md`;
+> this file keeps the longer narrative history.
 
 ---
 
@@ -1591,6 +1597,6 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 10.26.1
+**Current Version**: 10.26.2
 **Release Date**: February 27, 2026
 **Git Tag**: v9.21.0

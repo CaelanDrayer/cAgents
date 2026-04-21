@@ -47,7 +47,54 @@ All locations where the cAgents version number appears. Keep ALL locations in sy
 2. Run `scripts/sync-versions.sh <new-version>`
 3. Verify: `grep -r '"version"' .claude-plugin/ package.json | grep -v node_modules`
 
+## Tiny-Bump Cadence
+
+A "tiny bump" is a patch-level version increment (x.y.Z+1) that ships exactly
+one coherent change. Tiny bumps are the preferred cadence for evolving cAgents
+because each increment is small, reviewable, and independently revertible.
+
+Every tiny bump MUST satisfy all six atomicity criteria:
+
+1. **One coherent change**: the bump addresses a single objective (one rule
+   tweak, one guard promotion, one catalog slot). If the change spans multiple
+   independent objectives, split it into two bumps.
+2. **CI-green**: `npm test` and `scripts/ci/cagents-ci.sh` both pass at HEAD
+   before the bump is merged. No red CI, no "I'll fix it in the next bump."
+3. **Commit-before-verify**: the commit lands first, then verification runs.
+   If a hook or test fails after commit, use `git reset HEAD~1` to undo the
+   commit (keeping changes staged), fix the issue, and re-commit as a NEW
+   commit — never amend.
+4. **Back-compat**: the bump must not remove or rename a public-facing
+   contract (skill, agent, hook event, memory path). Deprecations are allowed
+   (documented + warn-only); removals require a minor or major bump.
+5. **`scripts/sync-versions.sh` run**: all 21 registry locations agree with
+   the new version. `grep -r '"version"' .claude-plugin/ package.json` must
+   show the new version in every match.
+6. **Regression test per CLAUDE.md mandate**: per the Bug-Driven Testing
+   mandate in `CLAUDE.md`, every bump that fixes a bug ships a failing-before
+   / passing-after regression test. Feature or rule bumps ship a test that
+   asserts the new behavior exists.
+
+### When a bump is NOT a tiny bump
+
+- Multi-file refactors touching more than ~5 files outside the 21 sync
+  locations → should usually be a minor bump (x.Y+1.0).
+- Breaking changes (removed skill, renamed agent, altered hook contract)
+  → major bump (X+1.0.0).
+- Reverts of a prior bump → still a tiny bump; describe the revert in the
+  CHANGELOG entry and the commit message.
+
+### Enforcement
+
+- `scripts/ci/cagents-ci.sh` runs a `check_tiny_bump` stage that validates
+  CHANGELOG.md has an entry for the new version, the 21 registry locations
+  agree, and the non-sync diff is ≤5 files. The guard was warn-only in
+  10.26.3 and promoted to blocking in 10.26.5.
+- Reviewers cite this section when a bump violates the atomicity criteria.
+
 ## Related
 
 - `scripts/sync-versions.sh` -- Automated JSON version sync
 - `.claude/rules/core/version-registry.md` -- This file (canonical registry)
+- `CLAUDE.md` (Bug-Driven Testing section) -- regression test mandate
+- `CHANGELOG.md` -- per-bump entries (landed in 10.26.1)
