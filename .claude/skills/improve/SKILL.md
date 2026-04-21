@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.24"
+  version: "10.26.25"
   argument-hint: "[target] [--mode review|optimize|full] [flags]"
   user-invocable: "true"
   context: "fork"
@@ -114,22 +114,25 @@ structure that downstream patches will flesh out.
    `status.yaml.baseline_source = "placeholder"`.
 6. Update `status.yaml.phase = measured`, `status.yaml.state = MEASURING`.
 
-### Exit Behavior (V10.26.24)
+### Exit Behavior (V10.26.25 — feature complete)
 
-After PLANNING writes `findings.yaml`, the skill exits cleanly. Prints:
+After REPORTING writes `reports/final_report.md`, the skill exits cleanly.
+Prints:
 
 ```
-/improve --mode review: SCOPING + MEASURING + DETECTING + PLANNING complete.
+/improve --mode review: all 7 states complete.
   session_id: {session_id}
   baseline_source: {placeholder|primary|legacy_review_migrated}
   findings_count: {N}
-  next state: EXECUTING (lands in V10.26.25)
+  auto_fixes_applied: {M}
+  quality_gate: {PASS|FAIL}
+  quality_score: {0-100}
+  report: Agent_Memory/sessions/{session_id}/reports/final_report.md
 ```
 
-EXECUTING + VALIDATING + REPORTING are NOT yet wired. Running
-`/improve --mode review` in V10.26.24 produces a session directory with
-`instruction.yaml` + `status.yaml` + baseline + per-agent findings in
-`workflow/detection/` + aggregated `workflow/findings.yaml`.
+`/improve --mode review` is now artifact-equivalent to legacy `/review`:
+baseline.yaml, history.yaml, and the full `reports/*` set are written, with
+the `/review` shim landing in V10.26.26.
 
 ## Review-Mode DETECTING + PLANNING (V10.26.24)
 
@@ -195,6 +198,102 @@ by regression tests.
    ```
 
 6. Update `status.yaml.phase = planned`, `status.yaml.state = PLANNING`.
+
+## Review-Mode EXECUTING + VALIDATING + REPORTING (V10.26.25)
+
+### EXECUTING — Atomic Auto-Fix Loop
+
+Only runs when `--auto-fix` is set. Ported directly from
+`.claude/skills/review/reference/auto-fix-engine.md`. Per-fix algorithm:
+
+```
+for fix in planned_fixes (sorted by confidence desc):
+  snapshot = git_stash_push("improve-autofix-{fix.id}")  // or file backup
+  apply(fix)
+  guard_result = run_guard_chain(npm test, tsc --noEmit, lint)
+  if guard_result == PASS:
+    git_stash_drop(snapshot)
+    record(fix, status=applied)
+  else:
+    restore(snapshot)
+    record(fix, status=rolled_back, reason=guard_result.failure)
+    retry_count += 1
+    if retry_count < 3:
+      feedback_loop(fix, guard_result.failure)
+      continue
+    else:
+      record(fix, status=dead_letter)
+```
+
+Writes `workflow/auto_fixes_applied.yaml` with per-fix status
+(`applied | rolled_back | dead_letter`) and the guard output.
+
+### VALIDATING — 12 Prime Directives + Quality Gate
+
+Read the 12 prime directives from
+[`reference/directives.md`](reference/directives.md) (ported from
+`.claude/skills/review/reference/quality-gates.md`):
+
+1. No critical findings unresolved
+2. No high-severity security findings unresolved
+3. Test suite passes (if tests exist)
+4. Type check passes (if applicable)
+5. Lint passes (if applicable)
+6. No new file:line regressions vs baseline
+7. Quality score does not drop more than 5 points vs baseline
+8. Applied fixes did not introduce new findings
+9. Rolled-back fixes are documented with reason
+10. Dead-letter items escalated in the report
+11. Baseline-suppressed findings not re-surfaced silently
+12. Evidence chain complete (every finding has file:line)
+
+Quality gate formula:
+
+```
+score = max(0, 100 - 20*critical_count - 10*high_count - 5*medium_count - 1*low_count)
+verdict = PASS if score >= max(baseline_score - 5, threshold) else FAIL
+```
+
+Write `reports/quality_gates.yaml`:
+
+```yaml
+directives:
+  - id: D1
+    passed: true
+    evidence: "0 critical findings"
+  # ... D2-D12
+quality_score:
+  current: 87
+  baseline: 89
+  delta: -2
+  threshold: 70
+verdict: PASS
+```
+
+### REPORTING — Legacy Artifact Set
+
+Writes all four files that legacy `/review` produced:
+
+- `reports/aggregate.yaml` — merged findings with severity, confidence, file:line
+- `reports/auto_fixes.yaml` — applied/rolled-back/dead-letter fixes
+- `reports/quality_gates.yaml` — 12 directives + score + verdict
+- `reports/final_report.md` — human-readable summary
+
+Appends a run entry to `_projects/{hash}/improve/history.yaml`:
+
+```yaml
+runs:
+  - session_id: improve_src-auth_260421_001
+    mode: review
+    started_at: "2026-04-21T14:00:00Z"
+    finished_at: "2026-04-21T14:04:32Z"
+    verdict: PASS
+    findings_count: 18
+    auto_fixes_applied: 3
+    quality_score_delta: -2
+```
+
+Update `status.yaml.phase = complete`, `status.yaml.state = REPORTING`.
 
 ## State Machine (V10.26.22)
 

@@ -73,6 +73,75 @@ describe('V10.26.19 /improve skeleton', () => {
   });
 });
 
+describe('V10.26.25 /improve --mode review EXECUTING + VALIDATING + REPORTING', () => {
+  const content = readFileSync(IMPROVE_SKILL, 'utf8');
+  const DIRECTIVES = resolve(ROOT, '.claude/skills/improve/reference/directives.md');
+  const SUPPRESSION = resolve(
+    ROOT,
+    '.claude/skills/improve/reference/baseline-suppression.md'
+  );
+
+  it('SKILL.md documents EXECUTING atomic snapshot→apply→test→rollback loop', () => {
+    expect(content).toMatch(/snapshot/i);
+    expect(content).toMatch(/apply/i);
+    expect(content).toMatch(/rollback|restore/i);
+    expect(content).toMatch(/git_stash_push|git stash/i);
+  });
+
+  it('SKILL.md caps auto-fix retries at 3 rounds then dead_letter', () => {
+    expect(content).toMatch(/retry_count\s*<\s*3|max.*3|retry_count = 3/);
+    expect(content).toMatch(/dead_letter/);
+  });
+
+  it('SKILL.md documents 12 prime directives for VALIDATING', () => {
+    expect(content).toMatch(/12 [Pp]rime [Dd]irectives|12 prime|D1-D12|D1\.\.D12/);
+  });
+
+  it('SKILL.md documents quality gate formula', () => {
+    expect(content).toMatch(/score\s*=\s*max\(0,.*100.*critical_count.*high_count/);
+    expect(content).toMatch(/baseline_score/);
+  });
+
+  it('SKILL.md lists the legacy /review artifact set', () => {
+    expect(content).toMatch(/reports\/aggregate\.yaml/);
+    expect(content).toMatch(/reports\/auto_fixes\.yaml/);
+    expect(content).toMatch(/reports\/quality_gates\.yaml/);
+    expect(content).toMatch(/reports\/final_report\.md/);
+  });
+
+  it('SKILL.md documents history append to _projects/{hash}/improve/history.yaml', () => {
+    expect(content).toMatch(/_projects\/\{hash\}\/improve\/history\.yaml/);
+  });
+
+  it('reference/directives.md ports 12 numbered directives (D1-D12)', () => {
+    expect(existsSync(DIRECTIVES)).toBe(true);
+    const d = readFileSync(DIRECTIVES, 'utf8');
+    for (let i = 1; i <= 12; i++) {
+      expect(d).toMatch(new RegExp(`\\| D${i} \\|`));
+    }
+  });
+
+  it('reference/directives.md contains quality gate formula', () => {
+    const d = readFileSync(DIRECTIVES, 'utf8');
+    expect(d).toMatch(/score\s*=\s*max/);
+    expect(d).toMatch(/PASS if/);
+  });
+
+  it('reference/baseline-suppression.md wraps legacy /review spec with new path', () => {
+    expect(existsSync(SUPPRESSION)).toBe(true);
+    const s = readFileSync(SUPPRESSION, 'utf8');
+    expect(s).toMatch(/_projects\/\{hash\}\/improve\/baseline\.yaml/);
+    expect(s).toMatch(/_projects\/\{hash\}\/review\/baseline\.yaml/);
+    expect(s).toMatch(/--suppress/);
+  });
+
+  it('V10.26.25 final exit message declares feature-complete', () => {
+    expect(content).toMatch(/all 7 states complete/);
+    expect(content).toMatch(/auto_fixes_applied/);
+    expect(content).toMatch(/quality_gate/);
+  });
+});
+
 describe('V10.26.24 /improve --mode review DETECTING + PLANNING', () => {
   const content = readFileSync(IMPROVE_SKILL, 'utf8');
   const AGENT_GROUPS = resolve(

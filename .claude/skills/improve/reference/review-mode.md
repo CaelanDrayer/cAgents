@@ -26,6 +26,11 @@ Aggregate per-agent findings, dedupe, rank by severity × confidence. Attach
 baseline-suppression status (see `baseline-suppression.md`). Write
 `workflow/findings.yaml`.
 
+## Status
+
+All 7 steps are implemented as of V10.26.25. `/improve --mode review` is
+artifact-equivalent to legacy `/review`.
+
 ## Step 5: EXECUTING (V10.26.25 — implemented)
 
 Only if `--auto-fix` is set. Port of `/review`'s atomic engine:
