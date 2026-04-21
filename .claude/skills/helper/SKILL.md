@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.3"
+  version: "10.26.4"
   argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--all] [--topic <topic>] [--troubleshoot <command>]"
   user-invocable: "true"
   context: "none"
@@ -411,6 +411,46 @@ Need more detail? Try:
 **Key flags**: `--dry-run` (preview routing), `--quick` (skip deliberation), `--domains <d1,d2,...>` (force domains), `--resume <id>` (resume session)
 
 **Workflow**: CEO Routing -> C-Suite Analysis -> Deliberation -> Strategic Brief -> Sequential /team per domain -> Integration
+
+## Planned Commands (coming in V10.27+)
+
+These commands are catalog slots reserved by V10.26.4. They are not yet
+available; do not recommend running them. They are listed here so users
+asking /helper "how do I improve / debug / demote context?" see the roadmap.
+
+### /improve (planned, V10.29)
+
+**What** (planned): A unified quality pipeline that wraps /review + /optimize
+and applies CRITICAL findings via /run. One invocation for "look at this,
+make it better, measure the result."
+
+**TRIGGER keywords** (planned): `review`, `audit`, `optimize`, `speed up`,
+`improve`. These overlap with today's `/review` and `/optimize` triggers; when
+/improve ships, /helper will surface it alongside those two commands.
+
+**NOT for** (planned): new implementation (still `/run`), cross-domain
+strategy (still `/org`).
+
+**Status**: catalog slot reserved; SKILL.md not yet written. When /improve
+lands, this "Planned" entry becomes a real "## /improve" section under
+Command Detail Summaries.
+
+### /debug (migration, V10.28)
+
+**What** (planned): `/debug` will fold into `/run --mode debug`. The
+systematic 4-phase debugging protocol becomes a mode of `/run` rather than
+a standalone skill. Existing `/debug` invocations keep working via a shim
+in V10.28 and warn; in V11 the shim is removed. TRIGGER keywords stay the
+same so user prompts continue to route correctly.
+
+### /context (demotion, V10.27)
+
+**What** (planned): `/context` will demote from a top-level user-invocable
+skill to a utility called internally by `/run`, `/team`, and `/org` during
+enrichment. Users will still be able to view and edit product context, but
+via `/run context` or the new `/context-demote` helper — not a first-class
+skill. TRIGGER keywords remain in /helper so users searching for "product
+context" still find guidance.
 
 ## Command Integration Pipelines
 
