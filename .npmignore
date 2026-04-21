@@ -1,0 +1,13 @@
+archive/
+vendor_repos/
+node_modules/
+tests/
+scripts/ci/
+Agent_Memory/
+example/
+.claude/hooks/
+.claude/plans/
+*.test.js
+*.spec.js
+.git/
+.github/

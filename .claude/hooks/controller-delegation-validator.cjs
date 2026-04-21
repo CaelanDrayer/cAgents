@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Controller Delegation Validator Hook - Warn when controllers write implementation files
- * cAgents V10.25.2 - PreToolUse hook for enforcing delegation protocol
+ * cAgents V10.26.0 - PreToolUse hook for enforcing delegation protocol
  *
  * Detects when controller-tier agents attempt to write implementation files directly
  * instead of delegating to execution agents via Agent tool. Advisory only (warns, does not block).

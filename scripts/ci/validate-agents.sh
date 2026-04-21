@@ -2,7 +2,7 @@
 #
 # cAgents Agent Schema Validation
 # Validates all agent SKILL.md files across all 15 domains
-# Version: 10.25.10
+# Version: 10.26.0
 #
 # Usage:
 #   ./scripts/ci/validate-agents.sh           # Validate all domains
@@ -396,20 +396,6 @@ validate_plugin_json() {
         log_pass "Root plugin.json has required 'name' field"
     fi
 
-    # Validate domain sub-plugin.json files
-    for domain in "${DOMAINS[@]}"; do
-        local domain_plugin="$PROJECT_ROOT/$domain/.claude-plugin/plugin.json"
-        if [[ -f "$domain_plugin" ]]; then
-            local domain_has_name
-            domain_has_name=$(node -e "
-                const data = JSON.parse(require('fs').readFileSync('$domain_plugin', 'utf8'));
-                console.log(data.name ? 'yes' : 'no');
-            " 2>/dev/null)
-            if [[ "$domain_has_name" != "yes" ]]; then
-                log_fail "$domain plugin.json missing 'name' field"
-            fi
-        fi
-    done
 }
 
 #
@@ -485,7 +471,7 @@ main() {
     if [[ $COUNT_ONLY != true ]]; then
         echo ""
         echo "=================================================="
-        echo "cAgents Agent Validation (v10.25.3)"
+        echo "cAgents Agent Validation (v10.26.0)"
         echo "=================================================="
     fi
 

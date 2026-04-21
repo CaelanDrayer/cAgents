@@ -4,9 +4,9 @@ description: "Teaching, tutoring, curriculum design, academic support, and learn
 
 planner:
   controller_catalog:
-    tier_2: [education-coordinator]
-    tier_3: [education-coordinator]
-    tier_4: [education-coordinator]
+    tier_2: [generic-coordinator]
+    tier_3: [generic-coordinator]
+    tier_4: [generic-coordinator]
 
   specialist_routing:
     tutoring:

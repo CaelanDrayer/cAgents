@@ -3,7 +3,7 @@
  * Attention Injection Hook - Refresh goals before tool operations
  * cAgents V10.3.0 - PreToolUse hook for combating goal drift
  *
- * Inspired by planning-with-files' Manus-style attention manipulation:
+ * Uses the attention-injection pattern for goal drift prevention:
  * Before Write/Edit/Bash operations during active sessions, injects
  * plan objectives as additionalContext to keep goals in the attention window.
  *

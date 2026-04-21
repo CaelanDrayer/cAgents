@@ -5,8 +5,8 @@ description: "Customer support, CX, legal, compliance, and governance"
 planner:
   controller_catalog:
     tier_2: [customer-success-manager, general-counsel, account-manager, support-operations-manager]
-    tier_3: [support-director, general-counsel, compliance-officer, legal-operations-manager, relationship-manager]
-    tier_4: [general-counsel, support-director, compliance-officer, customer-advocacy-manager]
+    tier_3: [support-director, general-counsel, compliance-manager, legal-operations-manager, relationship-manager]
+    tier_4: [general-counsel, support-director, compliance-manager, customer-advocacy-manager]
 
   specialist_routing:
     legal:
@@ -15,7 +15,7 @@ planner:
       description: "Legal matters routed to general counsel"
     compliance:
       keywords: [compliance, audit, SOC2, HIPAA, risk, policy, governance]
-      agents: [compliance-officer, compliance-specialist]
+      agents: [compliance-manager]
       description: "Compliance monitoring and audit support"
     support:
       keywords: [support, ticket, escalation, help desk, CSAT, chat support]
@@ -51,7 +51,7 @@ planner:
       description: "Regulatory affairs and submissions"
     customer_support:
       keywords: [ticket, help desk, customer issue, troubleshoot, support queue]
-      agents: [customer-support-rep, technical-support-engineer, chat-support-specialist]
+      agents: [support-agent]
       description: "Frontline customer support"
     escalation:
       keywords: [escalation, critical issue, P1, outage, incident, urgent]
@@ -87,7 +87,7 @@ planner:
       description: "Legal research and analysis"
     risk_compliance:
       keywords: [risk management, compliance risk, enterprise risk, control framework]
-      agents: [risk-and-compliance-manager]
+      agents: [compliance-manager]
       description: "Risk and compliance management"
     support_analytics:
       keywords: [support metrics, CSAT, first response, resolution time, support data]

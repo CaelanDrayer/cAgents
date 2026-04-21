@@ -1,6 +1,6 @@
 # cAgents Documentation
 
-**Version**: 10.9.0
+**Version**: 10.26.0
 **Last Updated**: 2026-03-12
 
 ## Quick Navigation
@@ -47,9 +47,7 @@
 - `commands/` - Per-command deep dives
 - `config/` - Configuration reference
 - `hooks/` - Hook system details
-- `improvements/` - Improvement proposals
 - `migration/` - Migration guides
-- `skill_improvements/` - Per-skill analysis and improvement plans
 - `templates/` - Document templates
 - `testing/` - Test documentation
 

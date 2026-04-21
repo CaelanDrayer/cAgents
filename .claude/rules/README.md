@@ -23,7 +23,7 @@ Topic-specific rules organized for better maintainability.
 │   ├── teams.md               # V9.2 Team coordination patterns (built-in agent teams)
 │   ├── controller-reference.md    # Detailed controller schemas and protocols
 │   ├── orchestration-reference.md # Detailed orchestration schemas
-│   └── version-registry.md       # Version synchronization (18 locations)
+│   └── version-registry.md       # Version synchronization (20 locations)
 ├── domains/        # Domain-specific guidelines
 │   ├── engineering.md      # Engineering domain (engineering/)
 │   ├── grow.md             # Business domain (business/, growth/)
@@ -91,7 +91,7 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 9. **core/teams.md** - V9.2 Team coordination patterns (built-in agent teams)
 10. **core/controller-reference.md** - Detailed controller schemas and protocols
 11. **core/orchestration-reference.md** - Detailed orchestration schemas
-12. **core/version-registry.md** - Version synchronization (18 locations)
+12. **core/version-registry.md** - Version synchronization (20 locations)
 
 ### Domains (5 files)
 13. **domains/engineering.md** - Engineering domain guidelines

@@ -27,7 +27,7 @@ planner:
       description: "Search engine optimization"
     social_media:
       keywords: [social media, Instagram, LinkedIn, Twitter, TikTok, community, social]
-      agents: [social-media-manager]
+      agents: [channel-marketer]
       description: "Social media management (cross-domain: community-manager in service/)"
     public_relations:
       keywords: [PR, press release, media, journalist, thought leadership, publicity]
@@ -35,7 +35,7 @@ planner:
       description: "Public relations and media outreach"
     email:
       keywords: [email, newsletter, drip, nurture, automation, email campaign]
-      agents: [email-marketing-specialist]
+      agents: [channel-marketer]
       description: "Email marketing and automation"
     events:
       keywords: [event, conference, trade show, webinar, meetup, exhibition]
@@ -47,7 +47,7 @@ planner:
       description: "Demand generation and growth marketing"
     sales_development:
       keywords: [SDR, BDR, outbound, prospecting, cold email, cold call, pipeline]
-      agents: [sales-development-rep, inside-sales-rep]
+      agents: [sales-rep]
       description: "Sales development and outbound prospecting"
     sales_enablement:
       keywords: [sales training, playbook, battlecard, sales content, onboarding sales]
@@ -83,11 +83,11 @@ planner:
       description: "Revenue operations and CRM management"
     content_marketing:
       keywords: [content strategy, blog, whitepaper, content calendar, content marketing]
-      agents: [content-marketing-manager]
+      agents: [channel-marketer]
       description: "Content marketing strategy"
     digital_marketing:
       keywords: [digital marketing, PPC, paid ads, SEM, display, retargeting]
-      agents: [digital-marketing-manager]
+      agents: [channel-marketer]
       description: "Digital and paid marketing"
     marketing_analytics:
       keywords: [marketing analytics, attribution, marketing metrics, ROAS, CAC]
@@ -103,7 +103,7 @@ planner:
       description: "Channel and partner management"
     account_sales:
       keywords: [account executive, enterprise sales, strategic account, closing, negotiation]
-      agents: [account-executive]
+      agents: [sales-rep]
       description: "Enterprise and strategic account sales"
     sales_analytics:
       keywords: [sales analytics, win rate, pipeline analysis, sales metrics, forecast]

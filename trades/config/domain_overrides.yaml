@@ -4,9 +4,9 @@ description: "Culinary arts, construction, automotive, agriculture, fashion, and
 
 planner:
   controller_catalog:
-    tier_2: [trades-coordinator]
-    tier_3: [trades-coordinator]
-    tier_4: [trades-coordinator]
+    tier_2: [generic-coordinator]
+    tier_3: [generic-coordinator]
+    tier_4: [generic-coordinator]
 
   specialist_routing:
     culinary:
@@ -31,8 +31,8 @@ planner:
       description: "Agriculture, farming, and gardening"
     woodworking:
       keywords: [woodworking, welding, metalworking, lathe, joinery, furniture, workshop, tool]
-      agents: [trades-coordinator]
-      description: "Woodworking and metalworking routed through trades-coordinator"
+      agents: [generic-coordinator]
+      description: "Woodworking and metalworking routed through generic-coordinator"
 
 router:
   keywords:

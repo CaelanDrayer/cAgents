@@ -11,7 +11,7 @@ paths:
 
 All locations where the cAgents version number appears. Keep ALL locations in sync on every release.
 
-## Version Locations (18 total)
+## Version Locations (20 total)
 
 | # | File | Field/Line | Updated By |
 |---|------|-----------|------------|
@@ -29,14 +29,16 @@ All locations where the cAgents version number appears. Keep ALL locations in sy
 | 12 | `.claude/skills/debug/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
 | 13 | `.claude/skills/helper/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
 | 14 | `.claude/skills/context/SKILL.md` | metadata `version:` | `scripts/sync-versions.sh` |
-| 15 | `.claude/skills/hookify/SKILL.md` | metadata `version:` | `scripts/sync-versions.sh` |
-| 16 | `.claude/hooks/session-catchup.cjs` | `cAgents V{version} session initialized` | `scripts/sync-versions.sh` |
-| 17 | `scripts/ci/cagents-ci.sh` | `# Version:` header + `log_section` banner | `scripts/sync-versions.sh` |
-| 18 | `scripts/ci/validate-agents.sh` | `# Version:` header | `scripts/sync-versions.sh` |
+| 15 | `.claude/hooks/session-catchup.cjs` | `cAgents V{version} session initialized` | `scripts/sync-versions.sh` |
+| 16 | `scripts/ci/cagents-ci.sh` | `# Version:` header + `log_section` banner | `scripts/sync-versions.sh` |
+| 17 | `scripts/ci/validate-agents.sh` | `# Version:` header | `scripts/sync-versions.sh` |
+| 18 | `README.md` | Version History `**V{version}** — Current release` | `scripts/sync-versions.sh` |
+| 19 | `docs/README.md` | `**Version**:` header | `scripts/sync-versions.sh` |
+| 20 | `docs/RELEASE_NOTES.md` | `**Current Version**:` header | `scripts/sync-versions.sh` |
 
 ## Sync Tool
 
-`scripts/sync-versions.sh <version>` updates all 18 locations (3 JSON files + CLAUDE.md + settings.json + 10 SKILL.md frontmatters + session-catchup.cjs + cagents-ci.sh + validate-agents.sh).
+`scripts/sync-versions.sh <version>` updates all 20 locations (3 JSON files + CLAUDE.md + settings.json + 9 SKILL.md frontmatters + session-catchup.cjs + cagents-ci.sh + validate-agents.sh + README.md + docs/README.md + docs/RELEASE_NOTES.md).
 
 ## Version Bump Procedure
 

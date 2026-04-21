@@ -58,7 +58,7 @@ Delegate analysis to specialists via Agent tool. For each opportunity record:
 Config files to load:
 - `Agent_Memory/_system/optimize/scan_patterns.yaml`
 - `Agent_Memory/_system/optimize/framework_patterns.yaml`
-- `core/commands/optimize/cross_file_patterns.yaml`
+- `Agent_Memory/_system/optimize/cross_file_patterns.yaml`
 
 ## Phase 3: Planning
 

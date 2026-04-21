@@ -64,4 +64,4 @@ Write to `workflow/cross_file_analysis.yaml` and optionally `workflow/dependency
 
 ## Config
 
-Cross-file patterns loaded from: `core/commands/optimize/cross_file_patterns.yaml`
+Cross-file patterns loaded from: `Agent_Memory/_system/optimize/cross_file_patterns.yaml`

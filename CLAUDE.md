@@ -10,7 +10,7 @@ Core architecture and development guidance for cAgents.
 - [Project Overview](#project-overview)
 - [CRITICAL: Aggressive Delegation](#critical-aggressive-delegation)
 - [CRITICAL: Automatic Workflow Progression](#critical-automatic-workflow-progression)
-- [Core Infrastructure](#core-infrastructure-tier-1-14-agents)
+- [Core Infrastructure](#core-infrastructure-tier-1-17-agents)
 - [Aggressive Decomposition](#aggressive-decomposition)
 - [Controller-Centric Architecture](#controller-centric-architecture)
 - [Complexity Tiers](#complexity-tiers)
@@ -30,15 +30,15 @@ Core architecture and development guidance for cAgents.
 
 - `CLAUDE.md` - Architecture, commands, agents (this file)
 - `README.md` - Quick start
-- `docs/` - Project documentation (19 files including ARCHITECTURE.md, SKILLS.md, TEAM_MODE.md, RELEASE_NOTES.md, etc.)
+- `docs/` - Project documentation (25 files including ARCHITECTURE.md, SKILLS.md, TEAM_MODE.md, RELEASE_NOTES.md, etc.)
 - `archive/docs/` - Historical documentation (local only)
 - `Agent_Memory/` - Runtime state (excluded from git)
 - `.claude/skills/run/reference/session-schema.md` - Session YAML contract (canonical schema for AgentPath)
-- `docs/workflow_agent_interactions.md` - Agent interaction patterns
+- `docs/WORKFLOW_AGENT_INTERACTIONS.md` - Agent interaction patterns
 
 ## Version Management
 
-**CRITICAL: Always bump version on commits.** Run `scripts/sync-versions.sh <version>` to update all 18 locations. See @.claude/rules/core/version-registry.md for the canonical list.
+**CRITICAL: Always bump version on commits.** Run `scripts/sync-versions.sh <version>` to update all 20 locations. See @.claude/rules/core/version-registry.md for the canonical list.
 
 **Version Format**: `major.minor.patch` — patch (bug fix), minor (feature), major (breaking)
 
@@ -77,31 +77,31 @@ quality/        # completion, validation-framework, implicit-discovery (5 files)
 **Key Features**: CSV Task Inventory, Batch Delegation (60-80% context reduction), Checkpoint/Resume, Aggressive Decomposition (30+ work items from simple requests), Controller-Centric coordination
 
 **Architecture**: Controller-Centric Coordination with Task Inventory
-- **Tier 1**: 16 core infrastructure agents (includes prompt-engineer)
+- **Tier 1**: 17 core infrastructure agents (includes prompt-engineer, generic-coordinator)
 - **Tier 2**: Controllers (coordinate via batch delegation)
 - **Tier 3**: Execution agents (implement work items)
 - **Tier 4**: Support agents (foundational services)
-- **Total**: 262 agents across 15 domains
+- **Total**: 243 agents across 15 domains
 - **Execution**: Event-driven pipeline with progressive paths (minimal/medium/full), revision routing, reviewer loops
 
 **Domains** (15):
 | Domain | Dir | Agents | Capability |
 |--------|-----|--------|------------|
-| **Engineering** | `engineering/` | 32 | Software engineering, infrastructure, security, QA, game programming |
+| **Engineering** | `engineering/` | 31 | Software engineering, infrastructure, security, QA, game programming |
 | **Creative** | `creative/` | 30 | Creative writing, narrative design, literary criticism, game art, audio |
-| **Business** | `business/` | 31 | Strategy, product, operations, finance |
-| **Growth** | `growth/` | 39 | Marketing, sales, revenue operations |
-| **People** | `people/` | 19 | HR, talent acquisition, culture |
-| **Service** | `service/` | 32 | Customer support, CX, legal, compliance, governance |
+| **Business** | `business/` | 28 | Strategy, product, operations, finance |
+| **Growth** | `growth/` | 34 | Marketing, sales, revenue operations |
+| **People** | `people/` | 17 | HR, talent acquisition, culture |
+| **Service** | `service/` | 28 | Customer support, CX, legal, compliance, governance |
 | **Leadership** | `leadership/` | 11 | C-suite executives + general-counsel (used by /org, not directly routable) |
-| **Core** | `core/` | 16 | Infrastructure agents (trigger, orchestrator, planner, reviewer, etc.) |
+| **Core** | `core/` | 17 | Infrastructure agents (trigger, orchestrator, planner, reviewer, generic-coordinator, etc.) |
 | **Shared** | `shared/` | 12 | Cross-domain intelligence (BI, data science, market research, social science) |
 | **Science** | `science/` | 10 | STEM research, scientific analysis |
-| **Health** | `health/` | 6 | Medical, wellness, fitness, nutrition |
-| **Education** | `education/` | 6 | Teaching, tutoring, academic support |
-| **Personal** | `personal/` | 6 | Career, life coaching, personal finance |
-| **Arts** | `arts/` | 6 | Visual arts, music, film, performing arts |
-| **Trades** | `trades/` | 6 | Culinary, construction, automotive, agriculture |
+| **Health** | `health/` | 5 | Medical, wellness, fitness, nutrition (uses generic-coordinator from core) |
+| **Education** | `education/` | 5 | Teaching, tutoring, academic support (uses generic-coordinator from core) |
+| **Personal** | `personal/` | 5 | Career, life coaching, personal finance (uses generic-coordinator from core) |
+| **Arts** | `arts/` | 5 | Visual arts, music, film, performing arts (uses generic-coordinator from core) |
+| **Trades** | `trades/` | 5 | Culinary, construction, automotive, agriculture (uses generic-coordinator from core) |
 
 **Config**: Each domain has `{domain}/config/domain_overrides.yaml` with controller_catalog and router keywords.
 
@@ -150,7 +150,7 @@ Workflows proceed automatically through phases WITHOUT asking permission. See `d
 
 **If requirements are clear, PROCEED. Do not ask.** (Except /designer, which always asks.)
 
-## Core Infrastructure (Tier 1: 16 agents)
+## Core Infrastructure (Tier 1: 17 agents)
 
 **Orchestration** (4): `trigger` (entry point), `orchestrator` (context enrichment), `hitl` (human escalation), `optimizer` (universal optimization)
 
@@ -161,6 +161,8 @@ Workflows proceed automatically through phases WITHOUT asking permission. See `d
 **Pipeline** (1): `prompt-engineer` (crafts optimized delegation prompts between decomposer and controller; optional — skipped by adaptive pipeline for tier 2)
 
 **Task Management** (3): `task-consolidator` (40-88% context reduction), `task-decomposer` (aggressive decomposition), `task-inventory` (CSV-based state, 60-80% savings)
+
+**Coordination** (1): `generic-coordinator` (reusable coordinator for small domains — health, education, personal, arts, trades)
 
 **Config**: `{domain}/config/domain_overrides.yaml` (controller_catalog, router keywords)
 
@@ -240,7 +242,7 @@ User Request -> /run (state machine loop, reads pipeline_config.yaml)
   REVISE -> back to PLANNED (re-plan, max 5 cycles)
 ```
 
-**Subagent Architecture**: Agents delegate to specialists via Agent tool. Pattern: "Use {subagent} to {task}". Up to 50 concurrent. See `docs/workflow_agent_interactions.md`.
+**Subagent Architecture**: Agents delegate to specialists via Agent tool. Pattern: "Use {subagent} to {task}". Up to 50 concurrent. See `docs/WORKFLOW_AGENT_INTERACTIONS.md`.
 
 ## Task Completion Protocol
 
@@ -387,21 +389,21 @@ cAgents/
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (26 files, 5 categories)
 |   +-- settings.json        # Hook registration + permissions + env
-+-- engineering/             # Engineering domain (32 agents, config, manifest)
++-- engineering/             # Engineering domain (31 agents, config, manifest)
 +-- creative/                # Creative domain (30 agents)
-+-- business/                # Business domain (31 agents)
-+-- people/                  # People domain (19 agents)
-+-- service/                 # Service domain (32 agents)
++-- business/                # Business domain (28 agents)
++-- people/                  # People domain (17 agents)
++-- service/                 # Service domain (28 agents)
 +-- leadership/              # Leadership domain (11 C-suite agents)
-+-- core/                    # Core infrastructure (16 agents)
++-- core/                    # Core infrastructure (17 agents, includes generic-coordinator)
 +-- shared/                  # Cross-domain specialists (12 agents)
-+-- growth/                  # Growth domain (39 agents: marketing, sales, revenue ops)
++-- growth/                  # Growth domain (34 agents: marketing, sales, revenue ops)
 +-- science/                 # Science domain (10 agents)
-+-- health/                  # Health domain (6 agents)
-+-- education/               # Education domain (6 agents)
-+-- personal/                # Personal domain (6 agents)
-+-- arts/                    # Arts domain (6 agents)
-+-- trades/                  # Trades domain (6 agents)
++-- health/                  # Health domain (5 agents, uses generic-coordinator from core)
++-- education/               # Education domain (5 agents, uses generic-coordinator from core)
++-- personal/                # Personal domain (5 agents, uses generic-coordinator from core)
++-- arts/                    # Arts domain (5 agents, uses generic-coordinator from core)
++-- trades/                  # Trades domain (5 agents, uses generic-coordinator from core)
 +-- scripts/                 # Version sync, validation, CI scripts
 +-- tests/                   # Vitest test suite (hooks + config)
 +-- docs/                    # Project documentation
@@ -425,7 +427,7 @@ cAgents is distributed as a Claude Code plugin. See `.claude-plugin/plugin.json`
 ```
 
 **Key Manifest Fields**:
-- `agents`: Array of SKILL.md paths (262 agents registered)
+- `agents`: Array of SKILL.md paths (243 agents registered)
 - `skills`: Path to skills directory (`.claude/skills/`)
 - `hooks`: Path to settings.json for hook registration
 - `settings.json`: Default settings applied when plugin loads (under `agent` key for subagent defaults)
@@ -451,7 +453,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 
 ## V10.18.0 Highlights
 
-- **Vibe field on all 262 agents**: Personality one-liners for every agent in the catalog
+- **Vibe field on all 243 agents**: Personality one-liners for every agent in the catalog
 - **Agent export script**: `scripts/export-agents.sh` converts SKILL.md to Cursor rules, markdown, or bundle format
 - **Worktree isolation**: `/team` teammates can use `isolation: "worktree"` for parallel file safety
 - **Ambiguity scoring**: `/designer` tracks 4-dimension clarity score with readiness gate (< 20% to proceed)
@@ -468,16 +470,16 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 
 **Skills**: `/org`, `/run`, `/team`, `/designer`, `/review`, `/optimize`, `/helper`, `/context` (in `.claude/skills/`)
 **Built-in**: `/memory`, `/init` (Claude Code native)
-**Agents**: 262 total (16 core + 12 shared + 11 leadership + 223 domain specialists)
-**Domains**: Engineering (32), Creative (30), Business (31), Growth (39), People (19), Service (32), Leadership (11), Core (16), Shared (12), Science (10), Health (6), Education (6), Personal (6), Arts (6), Trades (6)
+**Agents**: 243 total (17 core + 12 shared + 11 leadership + 203 domain specialists)
+**Domains**: Engineering (31), Creative (30), Business (28), Growth (34), People (17), Service (28), Leadership (11), Core (17), Shared (12), Science (10), Health (5), Education (5), Personal (5), Arts (5), Trades (5)
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/domain_overrides.yaml`, `Agent_Memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (session YAML contract for AgentPath)
-**Hooks**: 19 event types (24 supported by Claude Code), 27 registered CJS hooks (30 .cjs files), invoked via `run-hook.cjs` launcher
+**Hooks**: 19 event types (24 supported by Claude Code), 26 unique hooks across 27 registrations (30 .cjs files), invoked via `run-hook.cjs` launcher
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 816 Vitest tests (hooks + config validation)
-**Version**: 10.25.10
+**Version**: 10.26.0
 
 ## Troubleshooting
 

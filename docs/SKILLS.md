@@ -353,7 +353,7 @@ Agent_Memory/sessions/optimize_{slug}_{YYMMDD}_{NNN}/
 └── validation/validation_report.yaml
 ```
 
-See `core/commands/optimize.md` for complete documentation.
+See `.claude/skills/optimize/SKILL.md` for complete documentation.
 
 ---
 

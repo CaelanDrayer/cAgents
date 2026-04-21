@@ -8,10 +8,10 @@
  * (pipeline phase, work item progress, domain) for a combined status line.
  *
  * Output format (active session):
- *   [cAgents v10.25.9] Opus | fix-auth | COORDINATED | ██░░░ 2/5 | 42% ctx | $0.12
+ *   [cAgents v10.26.0] Opus | fix-auth | COORDINATED | ██░░░ 2/5 | 42% ctx | $0.12
  *
  * Output format (idle):
- *   [cAgents v10.25.9] Opus | idle | 8% ctx | $0.03
+ *   [cAgents v10.26.0] Opus | idle | 8% ctx | $0.03
  *
  * Official stdin JSON schema (from Claude Code):
  *   model.id, model.display_name

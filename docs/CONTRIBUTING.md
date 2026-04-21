@@ -35,7 +35,7 @@ Ensure `node` is in your PATH — hooks rely on it.
    Optional but recommended: `model`, `vibe` (personality one-liner, max 80 chars), `capabilities`.
 
 3. **Register in plugin.json**:
-   Add the SKILL.md path to the `agents` array in `.claude-plugin/plugin.json` (and the domain's `{domain}/.claude-plugin/plugin.json`).
+   Add the SKILL.md path to the `agents` array in `.claude-plugin/plugin.json`.
 
 4. **Validate**:
    ```bash
@@ -187,6 +187,6 @@ All PRs require review. Checklist:
 | **Service** | `service/` | 32 | Support, CX, legal, compliance |
 | **Leadership** | `leadership/` | 11 | C-suite (used by `/org`, not directly routable) |
 | **Core** | `core/` | 16 | Pipeline infrastructure agents |
-| **Shared** | `shared/` | 4 | Cross-domain (BI, data science) |
+| **Shared** | `shared/` | 12 | Cross-domain (BI, data science) |
 
-Each domain has `{domain}/config/domain_overrides.yaml` (controller catalog, router keywords) and `{domain}/.claude-plugin/plugin.json` (domain sub-plugin manifest).
+Each domain has `{domain}/config/domain_overrides.yaml` (controller catalog, router keywords). All agents are registered in the centralized root `.claude-plugin/plugin.json`.

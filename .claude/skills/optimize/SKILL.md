@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.25.10"
+  version: "10.26.0"
   argument-hint: "[<target>] [--type <type>] [--dry-run] [--interactive] [--rollback]"
   user-invocable: "true"
   context: "fork"
@@ -423,7 +423,7 @@ Session path: `Agent_Memory/sessions/optimize_{YYYYMMDD_HHMMSS}/`
 | Intent patterns | `Agent_Memory/_system/optimize/intent_patterns.yaml` | Natural language intent parsing |
 | Framework patterns | `Agent_Memory/_system/optimize/framework_patterns.yaml` | Framework-specific optimizations |
 | Scan patterns | `Agent_Memory/_system/optimize/scan_patterns.yaml` | General opportunity detection |
-| Cross-file patterns | `core/commands/optimize/cross_file_patterns.yaml` | Multi-file analysis patterns |
+| Cross-file patterns | `Agent_Memory/_system/optimize/cross_file_patterns.yaml` | Multi-file analysis patterns |
 | Pattern effectiveness | `Agent_Memory/_system/optimize/learning/pattern_effectiveness.yaml` | Learning from past sessions |
 | Optimization history | `Agent_Memory/_system/optimize/learning/optimization_history.yaml` | Session outcome tracking |
 

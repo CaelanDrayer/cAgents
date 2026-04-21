@@ -8,7 +8,7 @@ Deploy 262 specialized agents across 15 domains through an intelligent pipeline 
 |------|-------|
 | Agents | 262 across 15 domains |
 | Skills | 10 slash commands |
-| Hooks | 27 registered hooks across 19 event types |
+| Hooks | 26 unique hooks across 27 registrations, 19 event types |
 | Models | Opus 4.6 (controllers) · Sonnet 4.6 (execution) · Haiku 4.5 (support) |
 
 ---
@@ -25,7 +25,7 @@ Deploy 262 specialized agents across 15 domains through an intelligent pipeline 
 **cAgents is NOT for you if:**
 - You need a quick single-file fix — use Claude Code directly, it is faster and cheaper
 - You want minimal token usage — cAgents consumes 10-50x more tokens per request for orchestration overhead
-- You only need one domain — consider a focused sub-plugin like `cagents-engineering` instead of the full platform
+- You only work in a single narrow area — the orchestration overhead may not be worth it for isolated tasks
 
 ---
 
@@ -38,7 +38,7 @@ cAgents spawns 3-10+ subagents per request. Each consumes API tokens independent
 ## Requirements
 
 - **Claude Code 2.1.69+** (required)
-- **Node.js** (recommended) — powers 27 registered hooks for session management, secret detection, team coordination, and completion verification
+- **Node.js** (recommended) — powers 26 registered hooks for session management, secret detection, team coordination, and completion verification
 
 | cAgents | Min Claude Code | Highlights |
 |---------|----------------|------------|
@@ -197,16 +197,6 @@ Four-phase debugging for bugs that resist quick fixes: reproduce, isolate, hypot
 /debug Tests pass locally but fail in CI on the date-formatting module
 ```
 
-### `/hookify` — Hook Generation
-
-Generates Claude Code hooks from natural language. Describe the behavior you want and hookify creates a `.cjs` hook file and registers it in `settings.json`.
-
-```bash
-/hookify Warn me when I use rm -rf
-/hookify Block writes to production config files
-/hookify Log every time a subagent is spawned
-```
-
 ---
 
 ## Domain Breakdown
@@ -312,9 +302,9 @@ Before every Write, Edit, and Bash operation, the `attention-injection.cjs` hook
 
 This fires automatically — no prompt engineering required. It is a no-op when there is no active session, so it does not affect ordinary Claude Code usage.
 
-### 27 Lifecycle Hooks
+### 26 Lifecycle Hooks
 
-cAgents registers 27 hooks across 19 of Claude Code's 24 event types:
+cAgents registers 26 unique hooks (27 registrations — `elicitation-handler.cjs` covers 2 events) across 19 of Claude Code's 24 event types:
 
 | Event | Hook | Purpose |
 |-------|------|---------|
@@ -365,19 +355,20 @@ The decomposer breaks even simple requests into 30+ work items with explicit acc
 
 ---
 
-## Choose Your Entry Point
+## Domain Routing
 
-Load the full platform or a domain sub-plugin depending on your team's needs.
+cAgents routes your request to the right domain automatically based on keywords. No configuration needed — just describe what you want.
 
-| Package | Agents | Skills | Audience |
-|---------|--------|--------|----------|
-| **cAgents** (Full Platform) | 262 | 10 | Teams wanting the complete AI workforce across all domains |
-| **cagents-engineering** | 32 | 10 | Software development teams: backend, frontend, DevOps, QA, security |
-| **cagents-creative** | 30 | 10 | Content and creative teams: writing, narrative, game art, audio |
-| **cagents-business** | 42 | 10 | Strategy and product teams: business (31) + leadership (11) agents |
-| **cagents-growth** | 39 | 10 | Marketing and sales teams: campaigns, SEO, demand gen, revenue ops |
+| Request | Routed To | Controller |
+|---------|-----------|------------|
+| `/run Fix the auth bug` | Engineering | engineering-manager |
+| `/run Write a blog post about AI` | Creative | narrative-director |
+| `/run Plan Q4 product launch` | Business | operations-manager |
+| `/run Build an email campaign` | Growth | marketing-strategist |
+| `/run Create onboarding program` | People | hr-manager |
+| `/run Draft our privacy policy` | Service | general-counsel |
 
-Each sub-plugin loads via its own `.claude-plugin/` manifest. Use the full platform to access all 262 agents, or load only the domain your team needs to keep context lean.
+For cross-domain work that spans multiple areas (e.g., launching a product requires engineering, marketing, and ops), use `/org` — it coordinates C-suite agents across domains automatically.
 
 ---
 
@@ -478,7 +469,7 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights:
 
-- **V10.25.6** — Current release
+- **V10.26.0** — Current release
 - **V10.23.0** — 29-check validation framework, regression validation chain, mandatory self-validation protocol for execution agents
 - **V10.22.0** — Two-stage review protocol (spec compliance then code quality), 5 pipeline improvements
 - **V10.20.0** — 23 agent communication gap fixes, Growth domain expanded from 35 to 39 agents

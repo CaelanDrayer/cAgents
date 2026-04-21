@@ -1,6 +1,6 @@
 # Skills Reference
 
-Complete reference for all 10 cAgents skills. Use `/helper` to get interactive guidance, or read this doc to understand the full ecosystem.
+Complete reference for all 9 cAgents skills. Use `/helper` to get interactive guidance, or read this doc to understand the full ecosystem.
 
 ## Overview Table
 
@@ -15,7 +15,6 @@ Complete reference for all 10 cAgents skills. Use `/helper` to get interactive g
 | `/debug` | Systematic 4-phase root cause investigation | `none` (inline) | Autonomous | Bugs that resist quick fixes, unknown root causes |
 | `/helper` | Interactive command guide and recommender | `none` (inline) | Interactive | Choosing the right skill, learning the ecosystem |
 | `/context` | Persistent product context manager | `none` (inline) | Semi-interactive | Persisting project knowledge across sessions |
-| `/hookify` | Generate Claude Code hooks from natural language | `none` (inline) | Semi-interactive | Creating custom hooks without writing CJS manually |
 
 ---
 

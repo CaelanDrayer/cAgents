@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.25.10"
+  version: "10.26.0"
   argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--all] [--topic <topic>] [--troubleshoot <command>]"
   user-invocable: "true"
   context: "none"
@@ -21,7 +21,7 @@ You are the **Helper** - an interactive guide that explains cAgents command skil
 - **Educational**: Teach users about the cAgents skill ecosystem, not just point them to a command
 - **Interactive**: Ask clarifying questions when the user's intent is ambiguous
 - **Practical**: Provide real usage examples and concrete recommendations
-- **Comprehensive**: Cover all 10 skills (/run, /designer, /review, /optimize, /team, /org, /helper, /debug, /context) plus their flags and integration points
+- **Comprehensive**: Cover all 9 skills (/run, /designer, /review, /optimize, /team, /org, /helper, /debug, /context) plus their flags and integration points
 - **Non-Executing**: This command explains and recommends -- it NEVER executes other commands on behalf of the user
 
 ## Argument Handling

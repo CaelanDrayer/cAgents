@@ -4,9 +4,9 @@ description: "Medical information, wellness, fitness, nutrition, and mental heal
 
 planner:
   controller_catalog:
-    tier_2: [health-coordinator]
-    tier_3: [health-coordinator]
-    tier_4: [health-coordinator]
+    tier_2: [generic-coordinator]
+    tier_3: [generic-coordinator]
+    tier_4: [generic-coordinator]
 
   specialist_routing:
     medicine:

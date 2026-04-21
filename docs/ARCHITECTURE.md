@@ -102,10 +102,10 @@ Agent_Memory/
 ## Related Documentation
 
 - [CLAUDE.md](../CLAUDE.md) - Main project memory
-- [workflow_agent_interactions.md](../workflow_agent_interactions.md) - Agent interaction patterns
+- [WORKFLOW_AGENT_INTERACTIONS.md](WORKFLOW_AGENT_INTERACTIONS.md) - Agent interaction patterns
 
 ---
 
-**Version**: 10.25.6
+**Version**: 10.26.0
 **Last Updated**: 2026-04-15
 

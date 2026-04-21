@@ -76,7 +76,7 @@ Benefits: Modularity, specialization, parallelization (up to 50 concurrent)
 
 > **Note**: This rule is an aspirational best practice, not a mandatory requirement. It was designed to prevent information loss during context compaction but is not enforced or consistently followed in practice. Agents SHOULD capture findings when practical but are not required to follow the strict 2-action cadence.
 
-Inspired by Manus-style context engineering: execution agents should persist findings to session files periodically to prevent information loss during context compaction.
+Inspired by the attention-injection pattern for context engineering: execution agents should persist findings to session files periodically to prevent information loss during context compaction.
 
 ### Recommended Practice
 

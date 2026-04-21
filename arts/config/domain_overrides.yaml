@@ -4,9 +4,9 @@ description: "Visual arts, performing arts, music production, photography, and f
 
 planner:
   controller_catalog:
-    tier_2: [arts-director]
-    tier_3: [arts-director]
-    tier_4: [arts-director]
+    tier_2: [generic-coordinator]
+    tier_3: [generic-coordinator]
+    tier_4: [generic-coordinator]
 
   specialist_routing:
     visual:
@@ -31,8 +31,8 @@ planner:
       description: "Music production, recording, and audio engineering"
     performing_arts:
       keywords: [dance, theater, performance, acting, stage, choreography, improv, musical theater]
-      agents: [arts-director]
-      description: "Performing arts routed through arts-director"
+      agents: [generic-coordinator]
+      description: "Performing arts routed through generic-coordinator"
 
 router:
   keywords:

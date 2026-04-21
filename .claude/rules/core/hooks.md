@@ -175,7 +175,7 @@ createHook('MyHook', async (input) => {
 
 #### PreToolUse[Write|Edit|Bash]: attention-injection.cjs
 - **Matcher**: `Write|Edit|Bash`
-- **Purpose**: Refresh plan objectives in attention window before tool operations (Manus-style goal drift prevention)
+- **Purpose**: Refresh plan objectives in attention window before tool operations (attention-injection pattern for goal drift prevention)
 - **Reads**: `workflow/plan.yaml` mission, domain, controller; `workflow/coordination_log.yaml` status
 - **Output**: systemMessage with concise goal reminder (mission + domain + coordination status)
 - **No-op when**: No active session, no plan.yaml, or writing to planning files

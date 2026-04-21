@@ -2,12 +2,12 @@
 # Sync version across all cAgents manifest files
 # Usage: ./scripts/sync-versions.sh <new-version>
 #
-# Updates version in all 18 locations (see .claude/rules/core/version-registry.md):
-# Location #17: scripts/ci/cagents-ci.sh (header comment + log_section banner)
-# Location #18: scripts/ci/validate-agents.sh (# Version: header)
+# Updates version in all 20 locations (see .claude/rules/core/version-registry.md):
+# Location #16: scripts/ci/cagents-ci.sh (header comment + log_section banner)
+# Location #17: scripts/ci/validate-agents.sh (# Version: header)
 #   .claude-plugin/plugin.json, .claude-plugin/marketplace.json, package.json,
 #   CLAUDE.md, .claude/settings.json,
-#   10 skill SKILL.md frontmatter versions, and session-catchup.cjs context string
+#   9 skill SKILL.md frontmatter versions, and session-catchup.cjs context string
 
 set -euo pipefail
 
@@ -91,7 +91,6 @@ SKILLS=(
   "$ROOT/.claude/skills/debug/SKILL.md"
   "$ROOT/.claude/skills/helper/SKILL.md"
   "$ROOT/.claude/skills/context/SKILL.md"
-  "$ROOT/.claude/skills/hookify/SKILL.md"
 )
 
 for skill in "${SKILLS[@]}"; do
@@ -154,6 +153,48 @@ if [ -f "$VALIDATE_AGENTS" ]; then
   fi
 else
   echo "SKIP: scripts/ci/validate-agents.sh (not found)"
+fi
+
+# Update README.md Version History "Current release" line (#19)
+README="$ROOT/README.md"
+if [ -f "$README" ]; then
+  if sed -i "s/\*\*V[0-9]*\.[0-9]*\.[0-9]*\*\* — Current release/\*\*V$VERSION\*\* — Current release/" "$README"; then
+    echo "  OK: README.md"
+    UPDATED=$((UPDATED + 1))
+  else
+    echo "FAIL: README.md"
+    FAILED=$((FAILED + 1))
+  fi
+else
+  echo "SKIP: README.md (not found)"
+fi
+
+# Update docs/README.md **Version**: line (#20)
+DOCS_README="$ROOT/docs/README.md"
+if [ -f "$DOCS_README" ]; then
+  if sed -i "s/\*\*Version\*\*: [0-9]*\.[0-9]*\.[0-9]*/\*\*Version\*\*: $VERSION/" "$DOCS_README"; then
+    echo "  OK: docs/README.md"
+    UPDATED=$((UPDATED + 1))
+  else
+    echo "FAIL: docs/README.md"
+    FAILED=$((FAILED + 1))
+  fi
+else
+  echo "SKIP: docs/README.md (not found)"
+fi
+
+# Update docs/RELEASE_NOTES.md **Current Version**: lines (#21)
+RELEASE_NOTES="$ROOT/docs/RELEASE_NOTES.md"
+if [ -f "$RELEASE_NOTES" ]; then
+  if sed -i "s/\*\*Current Version\*\*: [0-9]*\.[0-9]*\.[0-9]*/\*\*Current Version\*\*: $VERSION/g" "$RELEASE_NOTES"; then
+    echo "  OK: docs/RELEASE_NOTES.md"
+    UPDATED=$((UPDATED + 1))
+  else
+    echo "FAIL: docs/RELEASE_NOTES.md"
+    FAILED=$((FAILED + 1))
+  fi
+else
+  echo "SKIP: docs/RELEASE_NOTES.md (not found)"
 fi
 
 echo ""

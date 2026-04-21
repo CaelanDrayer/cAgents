@@ -1,6 +1,6 @@
 # cAgents Release Notes
 
-**Current Version**: 10.25.6
+**Current Version**: 10.26.0
 **Release Date**: April 15, 2026
 **Status**: Production-Ready
 
@@ -8,7 +8,8 @@
 
 ## Version History
 
-- [v10.25.6](#v10256---april-15-2026) - Documentation overhaul, 262 agents across 15 domains, 10 skills, 27 hooks (Current)
+- [v10.26.0](#v10260---april-16-2026) - Release polish and production readiness (Current)
+- [v10.25.6](#v10256---april-15-2026) - Documentation overhaul, 262 agents across 15 domains, 10 skills, 27 hooks
 - [v10.23.0](#v10230) - 29-check validation framework, regression validation chain, mandatory self-validation protocol
 - [v10.22.0](#v10220) - Two-stage review protocol (spec compliance then code quality), 5 pipeline improvements
 - [v10.20.0](#v10200) - 23 agent communication gap fixes, Growth domain expanded from 35 to 39 agents
@@ -62,6 +63,37 @@
 - [v9.1.1](#v911---february-7-2026) - tmux split pane refinements
 - [v9.1.0](#v910---february-7-2026) - tmux split panes for team execution
 - [v9.0.0](#v900---february-7-2026) - Platform Alignment Edition
+
+---
+
+## v10.26.0 - April 16, 2026
+
+**Theme**: Release polish and production readiness. Distribution cleanup removes internal strategy documents and legacy directories from git-tracked distribution. Version tracking expanded, templates consolidated, and branding standardized across all manifests.
+
+### Changes
+
+**Distribution Cleanup**
+- Removed competitive intelligence and internal strategy documents from git-tracked distribution (moved to archive/)
+- Removed legacy `core/commands/` directory (superseded by `.claude/skills/`)
+- Removed deprecated `settings.shell-only.json`
+
+**Version Tracking Expanded**
+- `sync-versions.sh` now covers 21 locations (up from 18), including `README.md`, `docs/README.md`, and `docs/RELEASE_NOTES.md`
+
+**Template Consolidation**
+- 3 template directories merged into canonical `docs/templates/` (10 templates)
+
+**Documentation Accuracy**
+- Fixed docs count, hook count, and file naming consistency in `CLAUDE.md`
+
+**Branding Standardization**
+- Consistent copyright (CaelanDrayer) and GitHub URLs across all manifests
+
+**Distribution Control**
+- Added `.npmignore` for controlled plugin distribution
+
+**README Improvements**
+- Replaced non-existent sub-plugin references with domain-routing guidance
 
 ---
 
@@ -133,7 +165,7 @@
 | File | Change |
 |------|--------|
 | `CLAUDE.md` | /org in skills table, quick reference, directory structure |
-| `workflow_agent_interactions.md` | /org section, updated commands overview and summary |
+| `WORKFLOW_AGENT_INTERACTIONS.md` | /org section, updated commands overview and summary |
 | `docs/RELEASE_NOTES.md` | This entry |
 
 ### Version Bump
@@ -1340,7 +1372,7 @@ v8.0.0
 - Archive V7.0.3 migration scripts (14 files)
 
 **Documentation**:
-- Clean root directory (3 markdown files: CLAUDE.md, README.md, workflow_agent_interactions.md)
+- Clean root directory (3 markdown files: CLAUDE.md, README.md, WORKFLOW_AGENT_INTERACTIONS.md)
 - Archive release documentation to archive/
 - Update architecture documentation
 
@@ -1488,7 +1520,7 @@ See full V7.0.0 release notes in archive/docs/ for complete details.
 
 **Git Clone** (Recommended):
 ```bash
-git clone https://github.com/PathingIT/cAgents.git
+git clone https://github.com/CaelanDrayer/cAgents.git
 cd cAgents
 ```
 
@@ -1539,7 +1571,7 @@ cat .claude-plugin/plugin.json | grep version
 
 ## Support
 
-**GitHub Repository**: https://github.com/PathingIT/cAgents
+**GitHub Repository**: https://github.com/CaelanDrayer/cAgents
 
 **Reporting Issues**:
 1. Check existing issues
@@ -1555,10 +1587,10 @@ cat .claude-plugin/plugin.json | grep version
 
 cAgents is released under the MIT License.
 
-Copyright (c) 2026 PathingIT
+Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 9.21.0
+**Current Version**: 10.26.0
 **Release Date**: February 27, 2026
 **Git Tag**: v9.21.0

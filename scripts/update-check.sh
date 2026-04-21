@@ -28,7 +28,7 @@ if [ -f "$CACHE_FILE" ]; then
 fi
 
 # Cache is stale or missing -- check GitHub (non-blocking)
-LATEST=$(curl -sf --max-time 5 "https://raw.githubusercontent.com/PathingIT/cAgents/main/package.json" 2>/dev/null | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')).version" 2>/dev/null || echo "")
+LATEST=$(curl -sf --max-time 5 "https://raw.githubusercontent.com/CaelanDrayer/cAgents/main/package.json" 2>/dev/null | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')).version" 2>/dev/null || echo "")
 
 if [ -z "$LATEST" ]; then
   # Network error or parse error -- skip silently

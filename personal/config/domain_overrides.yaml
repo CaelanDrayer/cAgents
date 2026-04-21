@@ -4,9 +4,9 @@ description: "Personal development, career guidance, life coaching, personal fin
 
 planner:
   controller_catalog:
-    tier_2: [personal-coach-lead]
-    tier_3: [personal-coach-lead]
-    tier_4: [personal-coach-lead]
+    tier_2: [generic-coordinator]
+    tier_3: [generic-coordinator]
+    tier_4: [generic-coordinator]
 
   specialist_routing:
     life_coaching:

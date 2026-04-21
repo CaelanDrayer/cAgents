@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.25.10"
+  version: "10.26.0"
   argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--no-template] [--waves <n>]"
   user-invocable: "true"
   context: "fork"
@@ -404,6 +404,14 @@ TaskUpdate({ taskId: "{gate1_id}", addBlockedBy: ["{wave1_item1_id}", "{wave1_it
 
 Also set up intra-wave dependencies from the decomposition's dependency graph.
 
+### Step 4b: Update Phase to EXECUTING
+
+Before spawning any wave teammates, update the session phase to EXECUTING. This prevents the Stop hook from seeing TEAM_CREATED during background wave execution and incorrectly treating the session as idle.
+
+```
+sed -i "s/^phase: .*/phase: EXECUTING/" "${SESSION_DIR}/status.yaml"
+```
+
 ### Step 5: Execute Waves 1..N-1 -- Spawn Teammates Per Wave (CRITICAL)
 
 **This is the core execution loop. For EACH wave, spawn a fresh round of teammates, wait for completion, validate the gate, then proceed to the next wave.**
@@ -701,6 +709,9 @@ SendMessage({ type: "shutdown_request", recipient: "<teammate_name>", content: "
 ```
 TeamDelete()
 ```
+
+2a. **Mark the initial orchestration task as completed:**
+First, mark the initial orchestration TaskCreate task (created before TeamCreate) as completed. This task lives in the main context, not the team namespace, so TeamDelete does not clean it up. Use `TaskUpdate({ taskId: "{initial_task_id}", status: "completed" })` to close it.
 
 2b. **Finalize lead agent in agent_tree.yaml:**
 Update the lead agent entry to set:

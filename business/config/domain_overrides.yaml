@@ -4,8 +4,8 @@ description: "Strategy, product management, operations, finance, marketing, sale
 
 planner:
   controller_catalog:
-    tier_2: [operations-manager, product-owner, project-manager, game-designer]
-    tier_3: [strategic-planner, finance-manager, program-manager, business-analyst, quality-manager, game-producer, supply-chain-manager]
+    tier_2: [operations-manager, product-owner, program-project-manager, game-designer]
+    tier_3: [strategic-planner, finance-manager, program-project-manager, business-analyst, quality-manager, game-producer, supply-chain-manager]
     tier_4: [cpo, cfo, strategic-planner, operations-manager]
 
   specialist_routing:
@@ -23,11 +23,11 @@ planner:
       description: "OKR and goal-setting frameworks"
     project_management:
       keywords: [project, milestone, timeline, deliverable, Gantt, WBS]
-      agents: [project-manager]
+      agents: [program-project-manager]
       description: "Project management and delivery"
     program_management:
       keywords: [program, portfolio, initiative, cross-project, PMO]
-      agents: [program-manager, portfolio-manager]
+      agents: [program-project-manager, portfolio-manager]
       description: "Program and portfolio management"
     risk:
       keywords: [risk, mitigation, contingency, business continuity, disaster recovery]
@@ -99,7 +99,7 @@ planner:
       description: "Operations management"
     planning_ops:
       keywords: [planning operations, planning cycle, planning process, forecasting]
-      agents: [planning-operations-manager, planning-analyst, planning-facilitator]
+      agents: [planning-specialist]
       description: "Planning operations and facilitation"
     predictive:
       keywords: [prediction, forecasting model, trend analysis, predictive analytics, simulation]
