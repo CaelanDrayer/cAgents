@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.28"
+  version: "10.26.29"
   argument-hint: "[target] [--mode review|optimize|full] [flags]"
   user-invocable: "true"
   context: "fork"
@@ -127,6 +127,20 @@ opportunities set.
 (legacy `/optimize` DETECTING phase). See
 [`reference/optimize-mode.md`](reference/optimize-mode.md) for the full
 opportunity schema and per-scanner scope.
+
+## Atomic Rollback Primitive (V10.26.29)
+
+Both `--mode review` (auto-fix EXECUTING) and `--mode optimize`
+(EXECUTING) share a single snapshot / apply / test / keep-or-rollback
+helper, documented at
+[`reference/atomic-rollback.md`](reference/atomic-rollback.md). The helper
+owns: git_stash_push snapshot, apply, guard chain, and byte-exact
+rollback on failure (`git diff --exit-code` post-condition).
+
+Callers do NOT inline git-snapshot logic. They invoke `apply_atomic(change)`
+and branch on the returned outcome (`kept | rolled_back | dead_letter`).
+Retry policy and dead-letter cap live at the call site — the primitive
+itself runs a single attempt.
 
 ## Review-Mode SCOPING + MEASURING (V10.26.23)
 
