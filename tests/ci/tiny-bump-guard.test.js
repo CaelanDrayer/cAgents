@@ -7,13 +7,23 @@
  */
 import { describe, it, expect } from 'vitest';
 import { execSync } from 'child_process';
+import { readFileSync } from 'fs';
 import { join } from 'path';
 
 const ROOT = process.cwd();
 const CI_SCRIPT = join(ROOT, 'scripts', 'ci', 'cagents-ci.sh');
+const CURRENT_VERSION = JSON.parse(
+  readFileSync(join(ROOT, 'package.json'), 'utf8'),
+).version;
 
 function runGuard(env = {}) {
-  const mergedEnv = { ...process.env, ...env };
+  // Start from a clean slate: drop any inherited CAGENTS_TINY_BUMP_* vars
+  // so the test controls them explicitly.
+  const cleanEnv = { ...process.env };
+  for (const key of Object.keys(cleanEnv)) {
+    if (key.startsWith('CAGENTS_TINY_BUMP_')) delete cleanEnv[key];
+  }
+  const mergedEnv = { ...cleanEnv, ...env };
   try {
     const stdout = execSync(`bash "${CI_SCRIPT}" tiny-bump`, {
       env: mergedEnv,
@@ -35,21 +45,25 @@ describe('tiny-bump CI guard', () => {
   // Case A: no version change (OLD == NEW) — skip path.
   it('skips with no-op when OLD == NEW', () => {
     const res = runGuard({
-      CAGENTS_TINY_BUMP_NEW: '10.26.2',
-      CAGENTS_TINY_BUMP_OLD: '10.26.2',
+      CAGENTS_TINY_BUMP_NEW: CURRENT_VERSION,
+      CAGENTS_TINY_BUMP_OLD: CURRENT_VERSION,
     });
     expect(res.code).toBe(0);
     expect(res.stdout).toMatch(/no version change/);
   });
 
-  // Case B: compliant bump (current repo HEAD is V10.26.2, CHANGELOG has it).
+  // Case B: compliant bump (current HEAD version vs a fabricated prior).
+  // Uses CURRENT_VERSION so the test tracks repo state instead of pinning
+  // a specific patch; CHANGELOG.md has an entry for every released version.
   it('passes compliant bump from prior version', () => {
     const res = runGuard({
-      CAGENTS_TINY_BUMP_NEW: '10.26.2',
-      CAGENTS_TINY_BUMP_OLD: '10.26.1',
+      CAGENTS_TINY_BUMP_NEW: CURRENT_VERSION,
+      CAGENTS_TINY_BUMP_OLD: '10.26.0',
     });
     expect(res.code).toBe(0);
-    expect(res.stdout).toMatch(/CHANGELOG entry for \[10\.26\.2\] present/);
+    expect(res.stdout).toContain(
+      `CHANGELOG entry for [${CURRENT_VERSION}] present`,
+    );
     expect(res.stdout).toMatch(/all criteria satisfied|criteria/);
   });
 
@@ -75,6 +89,18 @@ describe('tiny-bump CI guard', () => {
     });
     expect(res.code).not.toBe(0);
     expect(res.stdout).toMatch(/CHANGELOG\.md has no entry for \[99\.99\.99\]/);
+    expect(res.stdout).toMatch(/blocking/);
+  });
+
+  // Case F (V10.26.5): with no CAGENTS_TINY_BUMP_BLOCK set, the default is
+  // blocking. A missing-CHANGELOG violation should fail the guard by default.
+  it('defaults to block mode in V10.26.5+ (no explicit BLOCK var)', () => {
+    const res = runGuard({
+      CAGENTS_TINY_BUMP_NEW: '99.99.99',
+      CAGENTS_TINY_BUMP_OLD: '10.26.1',
+      // Deliberately do NOT set CAGENTS_TINY_BUMP_BLOCK.
+    });
+    expect(res.code).not.toBe(0);
     expect(res.stdout).toMatch(/blocking/);
   });
 

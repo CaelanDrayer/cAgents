@@ -86,10 +86,13 @@ Every tiny bump MUST satisfy all six atomicity criteria:
 
 ### Enforcement
 
-- `scripts/ci/cagents-ci.sh` runs a `check_tiny_bump` stage that validates
-  CHANGELOG.md has an entry for the new version, the 21 registry locations
-  agree, and the non-sync diff is ≤5 files. The guard was warn-only in
-  10.26.3 and promoted to blocking in 10.26.5.
+- `scripts/ci/cagents-ci.sh tiny-bump` runs the `check_tiny_bump` stage that
+  validates CHANGELOG.md has an entry for the new version, the 21 registry
+  locations agree, and the non-sync diff is ≤5 files.
+- **Blocking as of V10.26.5**: the guard defaults to blocking (exit 6 on
+  violation). Set `CAGENTS_TINY_BUMP_BLOCK=0` to opt back into warn-only mode
+  for local experiments. Four clean warn-only runs (10.26.1 through 10.26.4)
+  preceded the promotion.
 - Reviewers cite this section when a bump violates the atomicity criteria.
 
 ## Related

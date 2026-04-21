@@ -10,20 +10,54 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
-## [10.26.4] - 2026-04-21
+## [10.26.5] - 2026-04-21
 
 ### Changed
-- Version bump to 10.26.4. See commit message for details.
+- Promoted `check_tiny_bump` in `scripts/ci/cagents-ci.sh` from warn-only
+  to blocking. Four prior patches (10.26.1–10.26.4) ran clean under warn
+  mode; enforcement now lands so Cluster 2+ bumps merge only under the
+  full guard.
+- Set `CAGENTS_TINY_BUMP_BLOCK=0` to opt back into warn-only mode for
+  local experiments.
+
+### Added
+- Regression case in `tests/ci/tiny-bump-guard.test.js` asserting the
+  guard defaults to blocking when no `CAGENTS_TINY_BUMP_BLOCK` env var
+  is set.
+- `version-registry.md` notes the guard is enforced and links to the
+  opt-out env var.
+
+## [10.26.4] - 2026-04-21
+
+### Added
+- "Planned Commands (coming in V10.27+)" section in `.claude/skills/helper/SKILL.md`
+  reserving slots for `/improve` (V10.29), the `/debug` -> `/run --mode debug`
+  migration (V10.28), and the `/context` demotion (V10.27).
+- `tests/skills/helper-catalog.test.js` asserts all 9 current skills and the
+  three planned slots are present in the helper catalog.
 
 ## [10.26.3] - 2026-04-21
 
-### Changed
-- Version bump to 10.26.3. See commit message for details.
+### Added
+- `check_tiny_bump` stage in `scripts/ci/cagents-ci.sh` that validates
+  CHANGELOG entries, registry-location agreement (21 files), and
+  non-sync diff size (<=5 files). Warn-only for one release to surface
+  false positives before enforcement in 10.26.5.
+- `tests/ci/tiny-bump-guard.test.js` covers compliant bump, no-op,
+  warn-only, block-mode, and registry-drift paths.
+- `tiny-bump` subcommand added to the CI script CLI.
 
 ## [10.26.2] - 2026-04-21
 
-### Changed
-- Version bump to 10.26.2. See commit message for details.
+### Added
+- "Tiny-Bump Cadence" section in `.claude/rules/core/version-registry.md`
+  codifying the six atomicity criteria (one coherent change, CI-green,
+  commit-before-verify, back-compat, sync-versions run, regression test).
+- Cross-link from `docs/RELEASE_NOTES.md` header so readers discover the
+  discipline without hunting for it.
+- `tests/rules/version-registry-structure.test.js` asserts the cadence
+  heading, all six criteria, 21 numbered registry rows, and references to
+  the `CLAUDE.md` bug-driven-testing mandate.
 
 ## [10.26.1] - 2026-04-21
 

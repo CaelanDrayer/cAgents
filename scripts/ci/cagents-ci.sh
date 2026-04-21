@@ -2,7 +2,7 @@
 #
 # cAgents CI Runner
 # Self-contained CI script for quality gates
-# Version: 10.26.4
+# Version: 10.26.5
 #
 # Usage:
 #   ./scripts/ci/cagents-ci.sh [command]
@@ -14,8 +14,8 @@
 #   test        - Run Vitest test suite
 #   evals       - Run evaluations on recent sessions
 #   contract   - Run contract tests (schema compatibility)
-#   tiny-bump   - Run tiny-bump guard (warn-only by default; set
-#                 CAGENTS_TINY_BUMP_BLOCK=1 to promote to blocking)
+#   tiny-bump   - Run tiny-bump guard (BLOCKING as of V10.26.5; set
+#                 CAGENTS_TINY_BUMP_BLOCK=0 to fall back to warn-only)
 #   all         - Run all checks
 #
 # Exit codes:
@@ -25,7 +25,8 @@
 #   3 - Quality check failures
 #   4 - Test failures
 #   5 - Contract test failures
-#   6 - Tiny-bump guard failure (only when CAGENTS_TINY_BUMP_BLOCK=1)
+#   6 - Tiny-bump guard failure (blocking by default; set
+#       CAGENTS_TINY_BUMP_BLOCK=0 for warn-only)
 
 set -e
 
@@ -391,13 +392,14 @@ run_tests() {
 #   (2) all 21 registry locations agree on the new version
 #   (3) non-sync diff (files outside the 21 registry targets) is <= 5 files
 #
-# Set CAGENTS_TINY_BUMP_BLOCK=1 to treat findings as errors instead of warnings.
-# V10.26.3 ships warn-only; V10.26.5 flips the default to blocking.
+# V10.26.3 shipped warn-only; V10.26.5 flips the default to blocking.
+# Set CAGENTS_TINY_BUMP_BLOCK=0 to opt back into warn-only mode (useful for
+# local experiments where CHANGELOG entries haven't been written yet).
 #
 check_tiny_bump() {
     log_section "TINY-BUMP GUARD"
 
-    local block_mode="${CAGENTS_TINY_BUMP_BLOCK:-0}"
+    local block_mode="${CAGENTS_TINY_BUMP_BLOCK:-1}"
     local violation=0
 
     # Resolve old and new version. Prefer env overrides (set by tests),
@@ -529,7 +531,7 @@ main() {
     local command="${1:-all}"
     local exit_code=0
 
-    log_section "cAgents CI Runner v10.26.4"
+    log_section "cAgents CI Runner v10.26.5"
     log_info "Project root: $PROJECT_ROOT"
     log_info "Command: $command"
 
