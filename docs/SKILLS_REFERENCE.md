@@ -1,6 +1,6 @@
 # Skills Reference
 
-Complete reference for all 9 cAgents skills. Use `/helper` to get interactive guidance, or read this doc to understand the full ecosystem.
+Complete reference for cAgents skills. 8 user-invocable skills plus `/context` as a Claude-invoked utility (V10.26.6+). Use `/helper` to get interactive guidance, or read this doc to understand the full ecosystem.
 
 ## Overview Table
 
@@ -14,7 +14,12 @@ Complete reference for all 9 cAgents skills. Use `/helper` to get interactive gu
 | `/optimize` | Performance and efficiency improvements with metrics | `fork` | Autonomous | Speed, size, cost improvements with before/after proof |
 | `/debug` | Systematic 4-phase root cause investigation | `none` (inline) | Autonomous | Bugs that resist quick fixes, unknown root causes |
 | `/helper` | Interactive command guide and recommender | `none` (inline) | Interactive | Choosing the right skill, learning the ecosystem |
-| `/context` | Persistent product context manager | `none` (inline) | Semi-interactive | Persisting project knowledge across sessions |
+
+### Internal utilities (Claude-invoked only)
+
+| Skill | Description | Invocation |
+|-------|-------------|------------|
+| `/context` | Persistent product context manager (reads/writes `Agent_Memory/_projects/{hash}/product_context.yaml`) | Claude-invoked during `/run` enrichment; users access via `/run context show\|init\|update\|clear` (V10.26.9+) |
 
 ---
 

@@ -10,6 +10,27 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [10.26.6] - 2026-04-21
+
+### Changed
+- `.claude/skills/context/SKILL.md` frontmatter flips `metadata.user-invocable`
+  from `"true"` to `"false"` and updates `argument-hint` to
+  `"[init|show|update|clear] (Claude-invoked)"`. `/context` no longer appears
+  in the `/` menu; Claude can still invoke it for enrichment.
+- `.claude-plugin/plugin.json` description reworded to
+  "8 user skills + /context utility" to reflect the demotion.
+- `docs/SKILLS_REFERENCE.md` moves `/context` into a new
+  "Internal utilities (Claude-invoked only)" section.
+
+### Preserved
+- Data file path `Agent_Memory/_projects/{hash}/product_context.yaml` unchanged.
+- Orchestrator's direct read path (per `orchestration-reference.md:18,27`)
+  continues to work without going through the skill.
+
+### Added
+- `tests/skills/context-invocation.test.js` asserting the frontmatter flip
+  and that `metadata['user-invocable'] === "false"`.
+
 ## [10.26.5] - 2026-04-21
 
 ### Changed
