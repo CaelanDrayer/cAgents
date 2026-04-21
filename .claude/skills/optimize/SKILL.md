@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.34"
+  version: "10.26.35"
   argument-hint: "[<target>] [--type <type>] [--dry-run] [--interactive] [--rollback]"
   user-invocable: "true"
   context: "fork"
@@ -32,8 +32,10 @@ invocation:
 NOTE: /optimize is a shim as of V10.26.32. It forwards to /improve --mode optimize.
       /optimize will be removed in V11.0.0 — `/improve --mode optimize` is the
       canonical form. See .claude/skills/improve/SKILL.md for the unified
-      7-state pipeline and .claude/skills/improve/reference/optimize-mode.md
-      for the per-state spec.
+      7-state pipeline, .claude/skills/improve/reference/optimize-mode.md
+      for the per-state spec, and
+      https://github.com/CaelanDrayer/cAgents/blob/main/docs/RELEASE_NOTES.md
+      for the migration guide.
 ```
 
 The notice MUST NOT block execution. After printing it once, suppress it

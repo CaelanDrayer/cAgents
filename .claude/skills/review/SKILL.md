@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.34"
+  version: "10.26.35"
   argument-hint: "<target> [--focus <area>] [--auto-fix] [--severity <level>] [--format <type>] [--profile <name>] [--baseline] [--suppress <id>]"
   user-invocable: "true"
   context: "fork"
@@ -29,13 +29,15 @@ invocation:
 
 ```
 NOTE: /review is a shim as of V10.26.26. It forwards to /improve --mode review.
-      /review will be removed in V11.0 — `/improve --mode review` is the
+      /review will be removed in V11.0.0 — `/improve --mode review` is the
       canonical form. See .claude/skills/improve/SKILL.md for the unified
-      7-state pipeline.
+      7-state pipeline and https://github.com/CaelanDrayer/cAgents/blob/main/docs/RELEASE_NOTES.md
+      for the migration guide.
 ```
 
 The notice MUST NOT block execution. After printing it once, suppress it
-for the rest of the session.
+for the rest of the session. Idempotency key: `session_id`. Log the
+emission to `Agent_Memory/_system/logs/deprecations_{date}.log`.
 
 ## Shim Behavior
 

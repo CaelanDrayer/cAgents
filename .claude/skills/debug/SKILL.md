@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.34"
+  version: "10.26.35"
   argument-hint: "<bug description or error message> [--escalate] [--phase <1-4>]"
   user-invocable: "true"
   context: "none"
@@ -28,13 +28,16 @@ invocation:
 
 ```
 NOTE: /debug is a shim as of V10.26.18. It forwards to /run --mode debug.
-      /debug will be removed in V11.0 — `/run --mode debug` is the
+      /debug will be removed in V11.0.0 — `/run --mode debug` is the
       canonical form. See .claude/skills/debug/reference/methodology.md
-      for the preserved 4-phase reference.
+      for the preserved 4-phase reference and
+      https://github.com/CaelanDrayer/cAgents/blob/main/docs/RELEASE_NOTES.md
+      for the migration guide.
 ```
 
 The notice MUST NOT block execution. After printing it once, suppress it
-for the rest of the session.
+for the rest of the session. Idempotency key: `session_id`. Log the
+emission to `Agent_Memory/_system/logs/deprecations_{date}.log`.
 
 ## Shim Behavior
 

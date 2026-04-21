@@ -194,7 +194,7 @@ Phase 4: Specification (25% of session)
 
 ---
 
-## /review - Shim → /improve --mode review (since V10.26.26, deprecated V11.0)
+## /review - Shim → /improve --mode review (since V10.26.26, REMOVED IN V11.0.0)
 
 **As of V10.26.26, `/review` is a shim that forwards to `/improve --mode review`.** The unified /improve pipeline (V10.26.19–V10.26.25) now owns the 3-group parallel specialist execution, auto-fix engine, 12 prime directives, and quality gate. `/review` preserves zero behavior change — every flag forwards unchanged — but will be removed in V11.0. New invocations should use `/improve --mode review` directly.
 
@@ -300,9 +300,9 @@ Phase 4: Specification (25% of session)
 
 ---
 
-## /optimize - Shim → /improve --mode optimize (since V10.26.32, removed V11.0.0)
+## /optimize - Shim → /improve --mode optimize (since V10.26.32, REMOVED IN V11.0.0)
 
-**As of V10.26.32, `/optimize` is a shim that forwards to `/improve --mode optimize`.** The unified /improve pipeline (V10.26.27–V10.26.31) now owns opportunity scanning, MEASURING (baseline + benchmark), EXECUTING (atomic apply), VALIDATING (before/after delta), and REPORTING. `/optimize` preserves zero behavior change — every flag forwards unchanged — but will be removed in V11.0.0. New invocations should use `/improve --mode optimize` directly.
+**As of V10.26.32, `/optimize` is a shim that forwards to `/improve --mode optimize`. REMOVED IN V11.0.0.** The unified /improve pipeline (V10.26.27–V10.26.31) now owns opportunity scanning, MEASURING (baseline + benchmark), EXECUTING (atomic apply), VALIDATING (before/after delta), and REPORTING. `/optimize` preserves zero behavior change — every flag forwards unchanged — but will be removed in V11.0.0. New invocations should use `/improve --mode optimize` directly. See the [migration guide](https://github.com/CaelanDrayer/cAgents/blob/main/docs/RELEASE_NOTES.md).
 
 ### What It Does
 
@@ -721,7 +721,7 @@ Result: All domains complete, integrated deliverable
 
 ---
 
-## /debug - Systematic Debugging Methodology (V10.26.18+: shim → /run --mode debug, deprecated V11.0)
+## /debug - Shim → /run --mode debug (since V10.26.18, REMOVED IN V11.0.0, deprecated V11.0)
 
 ### What It Does
 

@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.34"
+  version: "10.26.35"
   argument-hint: "[init|show|update|clear] (Claude-invoked)"
   user-invocable: "false"
   context: "none"
@@ -23,6 +23,22 @@ allowed-tools: Read, Grep, Glob, Write, Bash, TodoWrite, AskUserQuestion
 > finalized in V10.26.10. The skill remains in place so Claude can still
 > invoke it during `/run` enrichment; the `/run context` passthrough gives
 > users a single CLI entry point.
+
+## Deprecation Notice (V10.26.35+)
+
+Emit this notice EXACTLY ONCE per session, on the first direct `/context`
+invocation:
+
+```
+NOTE: /context is a Claude-invoked utility as of V10.26.10. Direct user
+      invocation will be removed in V11.0.0 — use `/run context show|init|update|clear`
+      instead. See https://github.com/CaelanDrayer/cAgents/blob/main/docs/RELEASE_NOTES.md
+      for the migration guide.
+```
+
+The notice MUST NOT block execution. After printing it once, suppress it
+for the rest of the session. Idempotency key: `session_id`. Log the
+emission to `Agent_Memory/_system/logs/deprecations_{date}.log`.
 
 Manage persistent product context documents that enrich all cAgents workflows with project-specific knowledge.
 
