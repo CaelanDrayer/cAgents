@@ -224,6 +224,8 @@ When a subagent (controller, executor, or any phase agent) returns with incomple
 **Never retry the same scope at the same size.** Always split before retrying.
 
 See @resources/orchestration-frameworks.md for phase management and inventory patterns.
+See @resources/product-context-loader.md for the INIT-state read of
+`Agent_Memory/_projects/{hash}/product_context.yaml` into `enriched_context.project_summary`.
 
 ## Team Mode Execution
 

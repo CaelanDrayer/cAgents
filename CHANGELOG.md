@@ -10,6 +10,25 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [10.26.7] - 2026-04-21
+
+### Added
+- `core/agents/orchestrator/resources/product-context-loader.md` documenting
+  the INIT-state read of
+  `Agent_Memory/_projects/{hash}/product_context.yaml` into
+  `enriched_context.project_summary`. Codifies the 500-character budget from
+  `orchestration-reference.md:27` and the SHA-256 hash derivation from `pwd`.
+- `core/agents/orchestrator/SKILL.md` references the new resource via
+  `@resources/product-context-loader.md`.
+- `tests/orchestrator/product-context-read.test.js` verifies the helper doc
+  exists, cites the budget and the canonical data-file path, and is
+  referenced from orchestrator SKILL.md.
+
+### Preserved
+- No code path change. The orchestrator already reads the YAML directly; this
+  patch formalizes the contract so the `/context` skill can be demoted to a
+  utility in V10.26.10 without regressing enrichment.
+
 ## [10.26.6] - 2026-04-21
 
 ### Changed
