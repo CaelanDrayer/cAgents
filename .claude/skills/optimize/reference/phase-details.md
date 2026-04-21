@@ -1,5 +1,11 @@
 # Optimization Phase Details
 
+> **Ported to /improve (V10.26.28)**: The DETECTING logic documented
+> below was ported to `.claude/skills/improve/reference/optimize-mode.md`
+> under `/improve --mode optimize`. This doc remains in place during the
+> shim period so legacy `/optimize` references still resolve. The /optimize
+> shim lands in V10.26.32.
+
 ## Phase 1: Detection
 
 ### Auto-Detection (Default)

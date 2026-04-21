@@ -11,7 +11,7 @@
     {
       "name": "cagents",
       "description": "Universal multi-domain agent orchestration framework. Your AI workforce: 262 specialized agents across 15 business domains, coordinated by an intelligent pipeline. /run routes any task through controller + specialist agents, /team runs parallel execution waves, /org coordinates cross-domain strategy via C-suite, /designer guides design exploration, /review audits quality, /optimize measures and improves performance, /helper recommends commands, /context persists project knowledge, /debug systematically diagnoses bugs.",
-      "version": "10.26.27",
+      "version": "10.26.28",
       "author": {
         "name": "CaelanDrayer",
         "email": "caelan@caelandrayer.ca"

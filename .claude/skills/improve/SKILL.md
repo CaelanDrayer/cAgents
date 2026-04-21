@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.27"
+  version: "10.26.28"
   argument-hint: "[target] [--mode review|optimize|full] [flags]"
   user-invocable: "true"
   context: "fork"
@@ -99,6 +99,34 @@ When `--mode optimize` is parsed:
 No specialist agents are spawned. No `opportunities.yaml` is written. This
 patch isolates argument-parsing churn from state-machine churn; every
 later patch adds handler logic without revisiting the entry point.
+
+## Optimize-Mode DETECTING (V10.26.28)
+
+After SCOPING, `--mode optimize` advances to DETECTING. Spawn three
+opportunity scanner groups in parallel via the Agent tool (independent,
+read-only scans):
+
+- **Group 1: Performance Scanner** — `cagents:performance-analyzer` for
+  CPU hot paths, N+1 queries, blocking I/O, render thrash, bundle bloat.
+- **Group 2: Size Scanner** — `cagents:performance-analyzer` (`focus: size`)
+  for dead code, duplicate deps, unused imports, oversized assets.
+- **Group 3: Efficiency Scanner** — `cagents:code-standards-auditor`
+  (`focus: efficiency`) for algorithmic waste, repeated computation,
+  memory churn.
+
+Each scanner writes to `workflow/detection/{group}/{agent}.yaml`. After
+all three return, `/improve` deduplicates by `(file, line, category)`
+and writes aggregated `workflow/opportunities.yaml` keyed by `opp_id`.
+
+**Dry-run mode**: With `IMPROVE_DRY_AGENTS=1`, DETECTING does NOT spawn
+agents. It writes `workflow/detection/planned_spawns.yaml` listing the
+three scanner groups and advances to PLANNING with an empty
+opportunities set.
+
+**Ported from**: `.claude/skills/optimize/reference/phase-details.md`
+(legacy `/optimize` DETECTING phase). See
+[`reference/optimize-mode.md`](reference/optimize-mode.md) for the full
+opportunity schema and per-scanner scope.
 
 ## Review-Mode SCOPING + MEASURING (V10.26.23)
 
