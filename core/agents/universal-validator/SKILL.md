@@ -247,6 +247,37 @@ validation_dashboard:
       details: "Full traceability from request to artifacts"
 ```
 
+## Debug-Mode Detection (V10.26.14+)
+
+When the session was launched with `/run --mode debug`, the validator runs
+an extra branch of mode-specific checks. Detection and enforcement ship
+across V10.26.14–17; this section documents the detection entry point.
+
+### Detection
+
+1. Read `instruction.yaml` from the session root.
+2. Look for `flags.mode` (or top-level `mode`) set to `"debug"`.
+3. If set, emit the sentinel log line `debug mode detected` into
+   `validation_report.yaml` under a new top-level `mode_notes:` array.
+4. If not set, skip the debug-mode branch and produce a standard report.
+
+### V10.26.14 Behavior (log-only)
+
+V10.26.14 only records the detection signal. It does NOT add new PASS/FAIL
+conditions. Existing verdicts and routing are unchanged for both standard
+and debug runs. This keeps the detection hook-in point independently
+testable before V10.26.15–17 stack enforcement checks on top.
+
+### Upcoming Debug-Mode Checks
+
+| Version | Check | Severity |
+|---------|-------|----------|
+| V10.26.15 | `hypotheses_tested[]` array present in coordination_log | HIGH |
+| V10.26.16 | Failing-test artifact in evidence | HIGH |
+| V10.26.17 | ≥1 falsified hypothesis + BLOCKED at 3 falsifications | CRITICAL |
+
+See @resources/debug-mode-checks.md for the authoritative check catalog.
+
 ## Detailed Reference
 
 See @resources/coordination-validation.md for coordination quality checks.
