@@ -92,3 +92,45 @@ describe('V10.26.33 /improve --mode full (review + optimize synthesis)', () => {
     expect(content).toMatch(/filtered_findings\.yaml|filter[\s\S]*findings/i);
   });
 });
+
+describe('V10.26.34 /improve --mode full dry-run + --scope safety gate', () => {
+  const content = readFileSync(IMPROVE_SKILL, 'utf8');
+  const FULL_MODE = resolve(
+    ROOT,
+    '.claude/skills/improve/reference/full-mode.md'
+  );
+
+  it('SKILL.md declares --mode full REFUSES without --scope', () => {
+    expect(content).toMatch(/Full-Mode Safety Gate.*V10\.26\.34/);
+    expect(content).toMatch(/REFUSES to run without.*--scope/);
+  });
+
+  it('rejection exits cleanly with no session directory created', () => {
+    expect(content).toMatch(/no session directory created|no files\s+written/i);
+  });
+
+  it('SKILL.md documents --dry-run end-to-end for --mode full', () => {
+    expect(content).toMatch(/--dry-run.*Semantics/);
+    expect(content).toMatch(/planning-only/i);
+    expect(content).toMatch(/applied:\s*false/);
+  });
+
+  it('SKILL.md asserts --dry-run = zero git writes', () => {
+    expect(content).toMatch(/[Zz]ero git writes/);
+  });
+
+  it('SKILL.md asserts --dry-run + --scope is VALID invocation', () => {
+    expect(content).toMatch(/--dry-run[\s\S]*VALID|VALID[\s\S]*--dry-run/);
+  });
+
+  it('full-mode.md documents invariants table', () => {
+    const f = readFileSync(FULL_MODE, 'utf8');
+    expect(f).toMatch(/Invariants/);
+    expect(f).toMatch(/BLOCKED before any work/);
+    expect(f).toMatch(/no git writes/i);
+  });
+
+  it('SKILL.md example shows --mode full --scope src/ --dry-run', () => {
+    expect(content).toMatch(/--mode full --scope src\/ --dry-run/);
+  });
+});

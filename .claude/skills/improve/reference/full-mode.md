@@ -151,11 +151,42 @@ runs:
   report: Agent_Memory/sessions/{session_id}/outputs/improve_report.md
 ```
 
-## Safety
+## Safety Gate (V10.26.34)
 
-See `reference/full-mode.md#safety-gate` (V10.26.34) for the `--scope`
-requirement and `--dry-run` semantics. V10.26.33 ships the synthesis
-pipeline; V10.26.34 adds the safety rails.
+`--mode full` has the largest blast radius of any `/improve` mode.
+V10.26.34 adds two safety rails.
+
+### Required --scope
+
+`--mode full` REFUSES to run without `--scope <path>`. Rationale: an
+implicit whole-repo rewrite is too blast-heavy to be the default.
+Rejection exits before any session directory is created.
+
+### Dry-Run Semantics
+
+`--dry-run` makes `--mode full` plan without applying:
+
+- Review auto-fixes: listed in `auto_fixes_applied.yaml` with
+  `status: dry_run`. No `apply_atomic()` calls.
+- Optimize opportunities: listed in `execution_summary.yaml` with
+  `applied: false`. No git stash operations.
+- VALIDATING: delta-against-self is 0; verdict marked `DRY_RUN`.
+- REPORTING: unified report generated with `applied: false` on every
+  optimization row. Zero file writes outside `sessions/{id}/`.
+
+Example:
+
+```
+/improve --mode full --scope src/ --dry-run
+```
+
+### Invariants
+
+| Invocation | Result |
+|---|---|
+| `/improve --mode full` (no --scope) | BLOCKED before any work. No session dir, no files written. |
+| `/improve --mode full --scope src/` | Runs full pipeline end-to-end. |
+| `/improve --mode full --scope src/ --dry-run` | Runs plan phases, no apply, no git writes. |
 
 ## See Also
 

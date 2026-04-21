@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.33"
+  version: "10.26.34"
   argument-hint: "[target] [--mode review|optimize|full] [flags]"
   user-invocable: "true"
   context: "fork"
@@ -153,89 +153,63 @@ V11.0 removes the legacy-fallback read branch.
 
 ## Optimize-Mode EXECUTING + VALIDATING + REPORTING (V10.26.31)
 
-`--mode optimize` is feature-complete after this patch. The remaining
-three states wire ROI ranking, before/after delta verification, and
-report generation.
+`--mode optimize` is feature-complete after this patch. Full per-state
+spec lives at [`reference/optimize-mode.md`](reference/optimize-mode.md).
 
 ### EXECUTING — ROI Rank + Atomic Apply
 
-1. Read `workflow/opportunities.yaml` (produced by DETECTING).
-2. For each opportunity, compute ROI:
+Compute ROI per opportunity, select top N, apply via the shared
+atomic helper:
 
-   ```
-   roi = (impact_weight × confidence) / effort_weight
-   impact_weight: {high: 3, medium: 2, low: 1}
-   effort_weight: {low: 1, medium: 2, high: 3}
-   ```
+```
+roi = (impact_weight × confidence) / effort_weight
+impact_weight: {high: 3, medium: 2, low: 1}
+effort_weight: {low: 1, medium: 2, high: 3}
+```
 
-3. Adjust `confidence` for known patterns using
-   `_projects/{hash}/improve/pattern_effectiveness.yaml`
-   (read via the migration rule in
-   `reference/pattern-effectiveness-migration.md`).
-4. Sort descending by `roi` and select top N (default 10,
-   configurable via `--top-n <N>`).
-5. For each selected opportunity, call `apply_atomic(opp)` from
-   [`reference/atomic-rollback.md`](reference/atomic-rollback.md).
-   Outcomes: `kept | rolled_back | dead_letter`.
-6. Append each outcome to `workflow/execution_summary.yaml`
-   incrementally (do not batch).
+Confidence is adjusted for known patterns via
+`_projects/{hash}/improve/pattern_effectiveness.yaml`. Each opportunity
+is applied through `apply_atomic(opp)` from
+[`reference/atomic-rollback.md`](reference/atomic-rollback.md). Outcomes
+(`kept | rolled_back | dead_letter`) append to
+`workflow/execution_summary.yaml` incrementally.
 
 ### VALIDATING — Before/After Delta Verification
 
-1. Re-run the benchmark tool used in MEASURING (same tool for parity).
-2. Read `Agent_Memory/_projects/{hash}/improve/baselines/{timestamp}.yaml`
-   and compare per-metric.
-3. Compute deltas: `delta_pct = (after - before) / before × 100`.
-4. Apply kept/rolled-back rules per metric:
-   - **Kept** only when: tests pass AND target metric improved ≥ 5%
-     (or absolute threshold) AND no regressed metric > 2%.
-   - Otherwise roll back via atomic helper.
-5. Write `workflow/validation_report.yaml`:
+Re-run the same benchmark tool used in MEASURING. Compute per-metric
+`delta_pct = (after - before) / before × 100`. Keep rule:
 
-   ```yaml
-   verdict: PASS | FAIL | REVISE
-   metrics_before: { ... }
-   metrics_after:  { ... }
-   deltas:
-     lcp_ms: { before: 2400, after: 1900, delta_pct: -20.8, kept: true }
-   ```
+- Tests pass (regression guard) AND
+- Target metric improved ≥ 5% (or configured absolute threshold) AND
+- No metric regressed > 2%.
+
+Otherwise roll back via atomic helper. Write
+`workflow/validation_report.yaml` with `verdict`, `metrics_before`,
+`metrics_after`, and per-metric `deltas` (each with `kept: bool`).
 
 ### REPORTING — Optimization Report
 
-1. Write `outputs/optimization_report.md` with:
-   - Executive summary (scanned, applied, rolled-back counts)
-   - Per-opportunity detail (file, category, impact, before/after,
-     verdict)
-   - Appendix: pattern effectiveness updates
-2. Append a run entry to `_projects/{hash}/improve/history.yaml`:
+Write `outputs/optimization_report.md` with executive summary +
+per-opportunity detail. Append a run entry to
+`_projects/{hash}/improve/history.yaml`:
 
-   ```yaml
-   runs:
-     - session_id: improve_src_260421_001
-       mode: optimize
-       verdict: PASS
-       opportunities_scanned: 14
-       opportunities_applied: 4
-       opportunities_rolled_back: 1
-       metrics_delta:
-         lcp_ms_pct: -20.8
-   ```
+```yaml
+runs:
+  - session_id: improve_src_260421_001
+    mode: optimize
+    verdict: PASS
+    opportunities_scanned: 14
+    opportunities_applied: 4
+    opportunities_rolled_back: 1
+    metrics_delta:
+      lcp_ms_pct: -20.8
+```
 
-3. Update `_projects/{hash}/improve/pattern_effectiveness.yaml` with
-   success/failure increments per applied pattern.
-4. Update `status.yaml.phase = complete`, `status.yaml.state = REPORTING`.
-5. Print the final exit message:
-
-   ```
-   /improve --mode optimize: all 7 states complete.
-     session_id: {session_id}
-     opportunities_scanned: {N}
-     opportunities_applied: {M}
-     opportunities_rolled_back: {K}
-     verdict: {PASS|FAIL}
-     report: Agent_Memory/sessions/{session_id}/outputs/optimization_report.md
-   ```
-
+Update `_projects/{hash}/improve/pattern_effectiveness.yaml` with
+success/failure increments. Update `status.yaml.phase = complete`.
+Print the final exit message listing `session_id`,
+`opportunities_scanned`, `opportunities_applied`,
+`opportunities_rolled_back`, `verdict: PASS|FAIL`, and report path.
 `/improve --mode optimize` is now artifact-equivalent to legacy
 `/optimize`. The `/optimize` shim lands in V10.26.32.
 
@@ -300,6 +274,58 @@ counts.
 See [`reference/full-mode.md`](reference/full-mode.md) for the full
 predicate, synthesis schema, and exit message.
 
+## Full-Mode Safety Gate (V10.26.34)
+
+`--mode full` has the largest blast radius of any `/improve` mode (it
+can rewrite files across review auto-fix AND optimize EXECUTING in one
+run). V10.26.34 adds two safety rails.
+
+### Required `--scope <path>`
+
+`--mode full` REFUSES to run without an explicit `--scope <path>`
+argument. Un-scoped full-mode runs are rejected with:
+
+```
+/improve --mode full requires explicit --scope <path>.
+       Refusing to run against an implicit whole-repo scope.
+       Example: /improve --mode full --scope src/auth/
+```
+
+Rejection exits cleanly: no session directory created, no files
+written. The intent is to prevent accidental whole-repo rewrites.
+
+### `--dry-run` Semantics
+
+`--dry-run` is first-class for `--mode full`:
+
+- Review DETECTING + PLANNING run normally (produces findings).
+- Review EXECUTING runs in planning-only mode: auto-fixes are listed
+  but NOT applied. `workflow/auto_fixes_applied.yaml` has
+  `status: dry_run` on every entry.
+- Optimize DETECTING + PLANNING run normally (produces opportunities,
+  ROI ranking).
+- Optimize EXECUTING runs in planning-only mode: opportunities are
+  listed with `applied: false`. No `apply_atomic()` calls; no git
+  stash operations.
+- VALIDATING still runs: it compares the baseline against itself
+  (delta = 0) and marks verdict as `DRY_RUN`.
+- REPORTING writes the unified report with `applied: false` on every
+  optimization row. Zero git writes; zero file modifications outside
+  `Agent_Memory/sessions/{session_id}/`.
+
+Example:
+
+```
+/improve --mode full --scope src/ --dry-run
+```
+
+### Invariants
+
+- No `--scope`: BLOCKED before any work begins.
+- `--dry-run`: Zero git writes; every applied row is `applied: false`;
+  baseline is not re-measured.
+- Both: VALID. Use `--dry-run` to preview against a constrained scope.
+
 ## Atomic Rollback Primitive (V10.26.29)
 
 Both `--mode review` (auto-fix EXECUTING) and `--mode optimize`
@@ -318,43 +344,39 @@ itself runs a single attempt.
 
 ### SCOPING
 
-1. Resolve target (`$ARGUMENTS[0]` if not a flag, else `.`).
-2. Build slug: lowercase-hyphenated short description (derived from target
-   path basename, max 32 chars).
-3. Build session ID: `improve_{slug}_{YYMMDD}_{NNN}` where NNN is the next
-   unused 3-digit counter under `Agent_Memory/sessions/`.
-4. Create session directory `Agent_Memory/sessions/{session_id}/`.
-5. Write `instruction.yaml`:
+Resolve target (`$ARGUMENTS[0]` if not a flag, else `.`). Build slug
+(lowercase-hyphenated, max 32 chars from basename). Build session ID
+`improve_{slug}_{YYMMDD}_{NNN}` (NNN = next unused counter under
+`Agent_Memory/sessions/`). Create
+`Agent_Memory/sessions/{session_id}/` and write `instruction.yaml`:
 
-   ```yaml
-   skill: improve
-   mode: review
-   target: "{resolved_target_path}"
-   raw_arguments: "{$ARGUMENTS verbatim}"
-   created_at: "{ISO8601 UTC timestamp}"
-   session_id: "{session_id}"
-   ```
+```yaml
+skill: improve
+mode: review
+target: "{resolved_target_path}"
+raw_arguments: "{$ARGUMENTS verbatim}"
+created_at: "{ISO8601 UTC timestamp}"
+session_id: "{session_id}"
+```
 
-6. Write `status.yaml` with `phase: scoped`, `state: SCOPING`, timestamp.
+Write `status.yaml` with `phase: scoped`, `state: SCOPING`, timestamp.
 
 ### MEASURING — Baseline Discovery Rule
 
-1. Compute project hash (see
-   [`reference/baseline-migration.md`](reference/baseline-migration.md)).
-   Use the same hashing rule as `/review` and `/optimize` so the hash is
-   stable across skills.
-2. Look for baseline in this order:
-   a. **Primary**: `Agent_Memory/_projects/{hash}/improve/baseline.yaml`
-   b. **Legacy fallback**: `Agent_Memory/_projects/{hash}/review/baseline.yaml`
-3. If (a) exists, read it.
-4. If (a) does not exist but (b) exists: read (b), copy it forward to (a)
-   using atomic write (write to `{path}.tmp` then `rename`). The legacy
-   file is left untouched for back-compat with any still-running `/review`
-   shim. Set `status.yaml.baseline_source = "legacy_review_migrated"`.
-5. If neither exists: create (a) as a placeholder with
-   `{quality_score: null, last_measured: null}` and set
-   `status.yaml.baseline_source = "placeholder"`.
-6. Update `status.yaml.phase = measured`, `status.yaml.state = MEASURING`.
+Compute project hash (see
+[`reference/baseline-migration.md`](reference/baseline-migration.md) —
+same hashing rule as `/review` and `/optimize`). Baseline lookup order:
+
+1. **Primary**: `Agent_Memory/_projects/{hash}/improve/baseline.yaml`
+2. **Legacy fallback**: `Agent_Memory/_projects/{hash}/review/baseline.yaml`
+
+If (1) exists, read it. If (1) missing but (2) present: read (2),
+copy it forward to (1) using atomic write (`{path}.tmp` then `rename`);
+legacy file is left untouched; set
+`status.yaml.baseline_source = "legacy_review_migrated"`. If neither:
+create (1) as a placeholder with `{quality_score: null,
+last_measured: null}`; set `baseline_source = "placeholder"`.
+Update `phase = measured`, `state = MEASURING`.
 
 ### Exit Behavior (V10.26.25 — feature complete)
 
@@ -410,36 +432,28 @@ by regression tests.
 
 ### PLANNING — Aggregate, Dedupe, Rank
 
-1. Read all `workflow/detection/*/*.yaml` files produced by DETECTING.
-2. Deduplicate findings with identical `(file, line, category)` tuples;
-   keep the highest-confidence variant.
-3. Rank each finding by `severity_weight × confidence` where
-   `severity_weight = {critical: 4, high: 3, medium: 2, low: 1}`.
-4. Attach baseline-suppression status by checking if the finding ID matches
-   a suppressed entry in the baseline.
-5. Write `workflow/findings.yaml`:
+Read all `workflow/detection/*/*.yaml` files. Deduplicate findings with
+identical `(file, line, category)` tuples (highest confidence wins).
+Rank by `severity_weight × confidence` where
+`severity_weight = {critical: 4, high: 3, medium: 2, low: 1}`. Attach
+baseline-suppression status per finding ID. Write
+`workflow/findings.yaml`:
 
-   ```yaml
-   findings:
-     - id: FIND-001
-       file: src/auth.ts
-       line: 15
-       severity: critical
-       confidence: 0.9
-       category: security
-       message: "..."
-       suggestion: "..."
-       rank: 3.6
-       suppressed: false
-   counts:
-     critical: 2
-     high: 5
-     medium: 8
-     low: 3
-     total: 18
-   ```
+```yaml
+findings:
+  - id: FIND-001
+    file: src/auth.ts
+    line: 15
+    severity: critical
+    confidence: 0.9
+    category: security
+    message: "..."
+    rank: 3.6
+    suppressed: false
+counts: {critical: 2, high: 5, medium: 8, low: 3, total: 18}
+```
 
-6. Update `status.yaml.phase = planned`, `status.yaml.state = PLANNING`.
+Update `status.yaml.phase = planned`, `state = PLANNING`.
 
 ## Review-Mode EXECUTING + VALIDATING + REPORTING (V10.26.25)
 
@@ -496,21 +510,9 @@ score = max(0, 100 - 20*critical_count - 10*high_count - 5*medium_count - 1*low_
 verdict = PASS if score >= max(baseline_score - 5, threshold) else FAIL
 ```
 
-Write `reports/quality_gates.yaml`:
-
-```yaml
-directives:
-  - id: D1
-    passed: true
-    evidence: "0 critical findings"
-  # ... D2-D12
-quality_score:
-  current: 87
-  baseline: 89
-  delta: -2
-  threshold: 70
-verdict: PASS
-```
+Write `reports/quality_gates.yaml` with `directives[]` (D1..D12 with
+`passed` + `evidence`), `quality_score` (current, baseline, delta,
+threshold), and `verdict: PASS|FAIL`.
 
 ### REPORTING — Legacy Artifact Set
 
@@ -550,15 +552,19 @@ SCOPING → MEASURING → DETECTING → PLANNING → EXECUTING → VALIDATING �
 
 ### Per-State Mode Branches
 
+Per-state review/optimize/full behavior summary:
+
 | State | review | optimize | full |
 |-------|--------|----------|------|
-| **SCOPING** | Resolve target, create `sessions/improve_*/`, write `instruction.yaml` | Same | Same |
-| **MEASURING** | Read/init quality baseline from `_projects/{hash}/improve/baseline.yaml` (fallback: legacy `_projects/{hash}/review/baseline.yaml`) | Read/init perf/size baseline metrics | Both review + optimize baselines |
-| **DETECTING** | Spawn 3 parallel review groups (correctness, security, quality) | Spawn optimize scanners (8 optimization types) | Review groups, then optimize scanners |
-| **PLANNING** | Aggregate findings, rank severity × confidence, write `findings.yaml` | Rank opportunities by ROI, write `opportunities.yaml` | Unified plan: findings → fixes, opportunities → optimizations |
-| **EXECUTING** | Optional `--auto-fix` snapshot→apply→test→rollback loop | `--dry-run` or snapshot→apply→remeasure→keep-or-rollback | Review auto-fix first, then optimize patches |
-| **VALIDATING** | 12 prime directives + quality gate thresholds | Before/after metric comparison, regression guards | Both gate sets must pass |
-| **REPORTING** | Write `reports/aggregate.yaml`, `reports/auto_fixes.yaml`, `reports/quality_gates.yaml`, `reports/final_report.md`, append `_projects/{hash}/improve/history.yaml` | Write `optimization_report.md`, append `_projects/{hash}/improve/history.yaml` | Merged report with review section + optimize section |
+| SCOPING | session dir + instruction.yaml | same | same |
+| MEASURING | quality baseline (improve/, legacy review/ fallback) | perf baseline (improve/baselines/) | shared baseline captured ONCE |
+| DETECTING | 3 review groups (correctness, security, quality) | 3 scanners (perf, size, efficiency) | review groups, then seeded optimize scanners |
+| PLANNING | rank severity × confidence → findings.yaml | ROI rank → opportunities.yaml | unified plan: findings → fixes, opportunities → optimizations |
+| EXECUTING | optional --auto-fix via atomic helper | atomic apply top-N | review auto-fix first, then optimize patches |
+| VALIDATING | 12 prime directives + quality gate | before/after metric delta | both gate sets must pass |
+| REPORTING | reports/*.yaml + final_report.md | optimization_report.md | merged improve_report.md with review + optimize sections |
+
+All modes append to `_projects/{hash}/improve/history.yaml`.
 
 ### Artifact Locations
 
@@ -575,16 +581,12 @@ Transitions are strict: a state completes when its required output files exist
 on disk. See `reference/state-machine.md` for per-state entry/exit conditions
 and the error-recovery table.
 
-## Cross-Session Baseline Location
-
-Baselines persist at `Agent_Memory/_projects/{hash}/improve/baseline.yaml`.
-During the migration window (V10.26.23+), `/improve --mode review` falls back
-to reading `Agent_Memory/_projects/{hash}/review/baseline.yaml` if the new
-location is absent and copies the legacy file forward on first read.
-
 ## See Also
 
-- `/review` — legacy review skill (becomes shim in V10.26.26)
-- `/optimize` — legacy optimize skill (becomes shim in Cluster 5)
+- `/review` — shim over `/improve --mode review` (V10.26.26+)
+- `/optimize` — shim over `/improve --mode optimize` (V10.26.32+)
 - `/run` — canonical workflow engine
-- `Agent_Memory/sessions/team_consolidation-tiny-bumps_260421_001/outputs/cluster_4_roadmap.md` — full patch schedule
+- `reference/state-machine.md`, `reference/review-mode.md`,
+  `reference/optimize-mode.md`, `reference/full-mode.md`,
+  `reference/atomic-rollback.md`, `reference/baseline-migration.md`,
+  `reference/pattern-effectiveness-migration.md`

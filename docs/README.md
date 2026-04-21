@@ -1,6 +1,6 @@
 # cAgents Documentation
 
-**Version**: 10.26.33
+**Version**: 10.26.34
 **Last Updated**: 2026-03-12
 
 ## Quick Navigation
