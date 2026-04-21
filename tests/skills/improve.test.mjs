@@ -73,6 +73,77 @@ describe('V10.26.19 /improve skeleton', () => {
   });
 });
 
+describe('V10.26.23 /improve --mode review SCOPING + MEASURING', () => {
+  const content = readFileSync(IMPROVE_SKILL, 'utf8');
+  const REVIEW_MODE = resolve(
+    ROOT,
+    '.claude/skills/improve/reference/review-mode.md'
+  );
+  const BASELINE_MIG = resolve(
+    ROOT,
+    '.claude/skills/improve/reference/baseline-migration.md'
+  );
+
+  it('SKILL.md documents SCOPING: create session, write instruction.yaml', () => {
+    expect(content).toMatch(/SCOPING/);
+    expect(content).toMatch(/instruction\.yaml/);
+    expect(content).toMatch(/session_id/);
+    expect(content).toMatch(/improve_\{slug\}/);
+  });
+
+  it('SKILL.md documents MEASURING with two-path baseline lookup', () => {
+    expect(content).toMatch(/_projects\/\{hash\}\/improve\/baseline\.yaml/);
+    expect(content).toMatch(/_projects\/\{hash\}\/review\/baseline\.yaml/);
+    expect(content).toMatch(/legacy|Legacy/);
+  });
+
+  it('SKILL.md specifies copy-forward on legacy baseline read', () => {
+    expect(content).toMatch(/copy[ -]forward|copies? it forward|copy it forward/i);
+    expect(content).toMatch(/atomic/i);
+  });
+
+  it('SKILL.md documents three baseline_source values', () => {
+    expect(content).toMatch(/placeholder/);
+    expect(content).toMatch(/legacy_review_migrated/);
+    // primary is the default (new baseline exists)
+  });
+
+  it('SKILL.md exits after MEASURING in V10.26.23 (no DETECTING yet)', () => {
+    expect(content).toMatch(/SCOPING \+ MEASURING complete/);
+    expect(content).toMatch(/DETECTING.*V10\.26\.24/);
+  });
+
+  it('reference/review-mode.md exists and documents Steps 1-2 as implemented', () => {
+    expect(existsSync(REVIEW_MODE)).toBe(true);
+    const rm = readFileSync(REVIEW_MODE, 'utf8');
+    expect(rm).toMatch(/Step 1:.*SCOPING.*V10\.26\.23.*implemented/);
+    expect(rm).toMatch(/Step 2:.*MEASURING.*V10\.26\.23.*implemented/);
+  });
+
+  it('reference/baseline-migration.md exists and documents two-path lookup', () => {
+    expect(existsSync(BASELINE_MIG)).toBe(true);
+    const bm = readFileSync(BASELINE_MIG, 'utf8');
+    expect(bm).toMatch(/primary/);
+    expect(bm).toMatch(/legacy/);
+    expect(bm).toMatch(/placeholder/);
+    expect(bm).toMatch(/Atomic/);
+  });
+
+  it('baseline migration fallback rule: primary preferred, legacy fallback', () => {
+    const bm = readFileSync(BASELINE_MIG, 'utf8');
+    // Find the primary/legacy order in the lookup rule
+    const primaryIdx = bm.indexOf('primary = Agent_Memory/_projects/{hash}/improve');
+    const legacyIdx = bm.indexOf('legacy  = Agent_Memory/_projects/{hash}/review');
+    expect(primaryIdx).toBeGreaterThan(0);
+    expect(legacyIdx).toBeGreaterThan(primaryIdx);
+  });
+
+  it('baseline migration: legacy file is NOT deleted after copy-forward', () => {
+    const bm = readFileSync(BASELINE_MIG, 'utf8');
+    expect(bm).toMatch(/NOT deleted|not deleted|untouched/);
+  });
+});
+
 describe('V10.26.22 /improve 7-state unified machine', () => {
   const STATES = [
     'SCOPING',
@@ -147,9 +218,12 @@ describe('V10.26.21 /improve --mode flag parser', () => {
     expect(content).toMatch(/Defaults to.*review|default.*review/i);
   });
 
-  it('V10.26.21 parser stub exits without spawning agents or writing files', () => {
-    expect(content).toMatch(/handler not yet implemented in V10\.26\.21/);
+  it('V10.26.21 parser rejection path still exits without side effects', () => {
+    // After V10.26.23 wired --mode review, only the rejection path remains a
+    // no-op parser stub. The rejection message and no-side-effects guard
+    // stay in place (unknown --mode values must not create sessions).
     expect(content).toMatch(/Do NOT spawn agents, create sessions, or write/);
+    expect(content).toMatch(/unknown --mode value/);
   });
 
   it('reference/flags.md exists and references the --mode selector', () => {

@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.22"
+  version: "10.26.23"
   argument-hint: "[target] [--mode review|optimize|full] [flags]"
   user-invocable: "true"
   context: "fork"
@@ -58,17 +58,76 @@ Parse `$ARGUMENTS` as a whitespace-separated token list. Extract the first
 Exit cleanly after printing. Do NOT spawn agents, create sessions, or write any
 files. V10.26.21 is a parser-only patch.
 
-### V10.26.21 handler stub
+### V10.26.23 handler status
 
-After successful parsing, print:
+- `--mode review`: SCOPING + MEASURING implemented. See
+  [Review-Mode SCOPING + MEASURING](#review-mode-scoping--measuring-v102623)
+  below. Exits with status `measured` after MEASURING; DETECTING lands in
+  V10.26.24.
+- `--mode optimize`: Still a stub. Prints
+  `mode=optimize; handler lands in Cluster 5.` and exits.
+- `--mode full`: Still a stub. Prints
+  `mode=full; handler lands after Cluster 5.` and exits.
 
-```
-/improve: mode={mode}; handler not yet implemented in V10.26.21.
-          SCOPING + MEASURING land in V10.26.23.
-```
-
-And exit. See [`reference/flags.md`](reference/flags.md) for the flag catalog
+See [`reference/flags.md`](reference/flags.md) for the flag catalog
 structure that downstream patches will flesh out.
+
+## Review-Mode SCOPING + MEASURING (V10.26.23)
+
+### SCOPING
+
+1. Resolve target (`$ARGUMENTS[0]` if not a flag, else `.`).
+2. Build slug: lowercase-hyphenated short description (derived from target
+   path basename, max 32 chars).
+3. Build session ID: `improve_{slug}_{YYMMDD}_{NNN}` where NNN is the next
+   unused 3-digit counter under `Agent_Memory/sessions/`.
+4. Create session directory `Agent_Memory/sessions/{session_id}/`.
+5. Write `instruction.yaml`:
+
+   ```yaml
+   skill: improve
+   mode: review
+   target: "{resolved_target_path}"
+   raw_arguments: "{$ARGUMENTS verbatim}"
+   created_at: "{ISO8601 UTC timestamp}"
+   session_id: "{session_id}"
+   ```
+
+6. Write `status.yaml` with `phase: scoped`, `state: SCOPING`, timestamp.
+
+### MEASURING — Baseline Discovery Rule
+
+1. Compute project hash (see
+   [`reference/baseline-migration.md`](reference/baseline-migration.md)).
+   Use the same hashing rule as `/review` and `/optimize` so the hash is
+   stable across skills.
+2. Look for baseline in this order:
+   a. **Primary**: `Agent_Memory/_projects/{hash}/improve/baseline.yaml`
+   b. **Legacy fallback**: `Agent_Memory/_projects/{hash}/review/baseline.yaml`
+3. If (a) exists, read it.
+4. If (a) does not exist but (b) exists: read (b), copy it forward to (a)
+   using atomic write (write to `{path}.tmp` then `rename`). The legacy
+   file is left untouched for back-compat with any still-running `/review`
+   shim. Set `status.yaml.baseline_source = "legacy_review_migrated"`.
+5. If neither exists: create (a) as a placeholder with
+   `{quality_score: null, last_measured: null}` and set
+   `status.yaml.baseline_source = "placeholder"`.
+6. Update `status.yaml.phase = measured`, `status.yaml.state = MEASURING`.
+
+### Exit Behavior (V10.26.23)
+
+After MEASURING writes the baseline outcome, the skill exits cleanly. Prints:
+
+```
+/improve --mode review: SCOPING + MEASURING complete.
+  session_id: {session_id}
+  baseline_source: {placeholder|primary|legacy_review_migrated}
+  next state: DETECTING (lands in V10.26.24)
+```
+
+DETECTING + PLANNING + EXECUTING + VALIDATING + REPORTING are NOT yet wired.
+Running `/improve --mode review` in V10.26.23 produces a session directory
+with `instruction.yaml` + `status.yaml` + a baseline on disk but no findings.
 
 ## State Machine (V10.26.22)
 
