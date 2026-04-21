@@ -10,6 +10,27 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [10.26.9] - 2026-04-21
+
+### Added
+- `/run context show|init|update|clear` passthrough subcommands. When
+  `$ARGUMENTS` starts with `context` followed by one of the four recognized
+  subcommands, `/run` dispatches to the `/context` utility skill via the
+  Skill tool and skips the standard state machine.
+- `.claude/skills/run/reference/context-passthrough.md` documents the full
+  dispatch contract, data path, back-compat behavior, and edge cases.
+- `.claude/skills/run/SKILL.md` (Step 1) now includes the front-door
+  dispatch check before the state machine runs.
+- `tests/skills/run-context-passthrough.test.js` verifies the reference
+  doc exists, the four subcommands are documented, the dispatch target is
+  the `/context` skill, and the token-matching routing logic is correct.
+
+### Preserved
+- Data file path `Agent_Memory/_projects/{hash}/product_context.yaml`
+  unchanged — the passthrough touches the WRITE surface only.
+- Orchestrator's direct READ path (V10.26.7 contract) continues to work
+  without going through the skill or the passthrough.
+
 ## [10.26.8] - 2026-04-21
 
 ### Changed

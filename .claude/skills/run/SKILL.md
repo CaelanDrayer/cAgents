@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.8"
+  version: "10.26.9"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--analytics] [--from-review] [--from-designer]"
   user-invocable: "true"
   context: "none"
@@ -109,6 +109,31 @@ If `--brief <path>`: This request comes from `/org` with a strategic brief. Read
 If `--from-review`: Skill chaining from `/review`. Look for the most recent `workflow/review_report.yaml` in the current or parent session. Inject review findings into the orchestrator's enriched context as `review_findings`. The planner should auto-create fix work items for each finding (one work item per CRITICAL/HIGH finding, grouped work items for MEDIUM/LOW). Store the review session reference in `instruction.yaml` as `chained_from: review`.
 
 If `--from-designer`: Skill chaining from `/designer`. Look for the most recent `workflow/design_document.yaml` in the current or parent session. Inject the design spec into the orchestrator's enriched context as `design_spec`. The planner should use the design document's structure, decisions, and constraints as the implementation blueprint. Store the design session reference in `instruction.yaml` as `chained_from: designer`.
+
+**Context subcommand front-door (V10.26.9+)**: If the first positional token
+in `$ARGUMENTS` is `context` and the second token is one of `show`, `init`,
+`update`, or `clear`, STOP the standard state machine. Instead:
+
+1. Dispatch to the `/context` utility skill via the Skill tool, passing the
+   subcommand as the argument (e.g. `Skill({ skill: "context", args: "show" })`).
+2. Return the skill's output to the user verbatim.
+3. Do NOT create a session directory, run enrichment, or invoke the
+   orchestrator — the context utility is stateless for these subcommands.
+
+The four recognized subcommands are:
+
+| Subcommand | What it does |
+|-----------|--------------|
+| `/run context show` | Display current `Agent_Memory/_projects/{hash}/product_context.yaml` |
+| `/run context init` | Scan project, auto-detect conventions, write product_context.yaml |
+| `/run context update` | Interactively update existing product_context.yaml |
+| `/run context clear` | Remove product_context.yaml (keep `_projects/{hash}/` directory) |
+
+See @reference/context-passthrough.md for the full dispatch contract. This
+passthrough exists because V10.26.6 hid `/context` from the `/` menu
+(frontmatter `metadata.user-invocable: "false"`); users still need a CLI
+path to manage product context, and `/run` is the single user entry point
+for the framework.
 
 ---
 
