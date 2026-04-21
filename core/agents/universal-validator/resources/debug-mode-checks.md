@@ -15,7 +15,24 @@ measured in isolation before the next one lands.
 
 ## V10.26.15 — Coordination Log Must Declare `hypotheses_tested[]`
 
-> Placeholder. Concrete check spec lands with V10.26.15.
+- **Check**: `workflow/coordination_log.yaml` must contain a top-level
+  `hypotheses_tested:` list with at least one entry.
+- **Verification method**: `yaml_key_exists`
+- **Severity**: HIGH
+- **On missing/empty**: FIXABLE — emit finding
+  `"Debug mode requires hypotheses_tested[] (see .claude/skills/debug/SKILL.md Phase 3)"`.
+- **Rationale**: The 4-phase methodology requires hypothesis testing to
+  be recorded. Without the list, the controller cannot demonstrate that
+  Phase 3 was executed and the validator cannot assess falsification
+  counts (needed for V10.26.17).
+- **Entry shape (controllers MUST write)**:
+  ```yaml
+  hypotheses_tested:
+    - hypothesis: "…"
+      test: "…"
+      result: confirmed|falsified
+      evidence: "…"
+  ```
 
 ## V10.26.16 — Evidence Must Include a Failing-Test Artifact
 

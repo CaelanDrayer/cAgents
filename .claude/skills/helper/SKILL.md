@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.14"
+  version: "10.26.15"
   argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--all] [--topic <topic>] [--troubleshoot <command>]"
   user-invocable: "true"
   context: "none"

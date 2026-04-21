@@ -268,6 +268,21 @@ conditions. Existing verdicts and routing are unchanged for both standard
 and debug runs. This keeps the detection hook-in point independently
 testable before V10.26.15–17 stack enforcement checks on top.
 
+### V10.26.15 Check: `hypotheses_tested[]` Required
+
+When debug mode is detected, the validator additionally checks that
+`workflow/coordination_log.yaml` contains a top-level `hypotheses_tested:`
+list with at least one entry. Verification method: `yaml_key_exists` on
+the `hypotheses_tested` key.
+
+| Condition | Verdict |
+|-----------|---------|
+| `hypotheses_tested:` list present, ≥1 entry | Continue to other checks |
+| `hypotheses_tested:` missing or empty | Emit FIXABLE finding with severity HIGH: `"Debug mode requires hypotheses_tested[] (see .claude/skills/debug/SKILL.md Phase 3)"` |
+
+Non-debug runs skip this check entirely. The finding is FIXABLE (not
+BLOCKED) because the controller can populate the list on re-execution.
+
 ### Upcoming Debug-Mode Checks
 
 | Version | Check | Severity |
