@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.26"
+  version: "10.26.27"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--analytics] [--from-review] [--from-designer]"
   user-invocable: "true"
   context: "none"

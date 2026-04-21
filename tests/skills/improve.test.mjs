@@ -73,6 +73,27 @@ describe('V10.26.19 /improve skeleton', () => {
   });
 });
 
+describe('V10.26.27 /improve --mode optimize parser stub', () => {
+  const content = readFileSync(IMPROVE_SKILL, 'utf8');
+
+  it('SKILL.md declares optimize parser branch wired in V10.26.27', () => {
+    expect(content).toMatch(/Optimize-Mode Parser Branch.*V10\.26\.27/);
+  });
+
+  it('SKILL.md documents optimize session writes mode: optimize', () => {
+    expect(content).toMatch(/mode:\s*optimize/);
+  });
+
+  it('SKILL.md documents DETECTING_PENDING state for optimize stub', () => {
+    expect(content).toMatch(/DETECTING_PENDING/);
+  });
+
+  it('SKILL.md instructs stub to exit cleanly with one-time notice', () => {
+    expect(content).toMatch(/parser branch live.*V10\.26\.27/);
+    expect(content).toMatch(/No specialist agents are spawned/);
+  });
+});
+
 describe('V10.26.25 /improve --mode review EXECUTING + VALIDATING + REPORTING', () => {
   const content = readFileSync(IMPROVE_SKILL, 'utf8');
   const DIRECTIVES = resolve(ROOT, '.claude/skills/improve/reference/directives.md');

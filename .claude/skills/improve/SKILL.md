@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.26"
+  version: "10.26.27"
   argument-hint: "[target] [--mode review|optimize|full] [flags]"
   user-invocable: "true"
   context: "fork"
@@ -64,13 +64,41 @@ files. V10.26.21 is a parser-only patch.
   [Review-Mode SCOPING + MEASURING](#review-mode-scoping--measuring-v102623)
   below. Exits with status `measured` after MEASURING; DETECTING lands in
   V10.26.24.
-- `--mode optimize`: Still a stub. Prints
-  `mode=optimize; handler lands in Cluster 5.` and exits.
+- `--mode optimize`: Parser branch wired (V10.26.27). SCOPING creates the
+  session (`mode: optimize`) and writes `status.yaml` with
+  `state: DETECTING_PENDING`, then exits with a
+  `handler not yet implemented` notice. Full pipeline lands
+  V10.26.28–V10.26.31.
 - `--mode full`: Still a stub. Prints
   `mode=full; handler lands after Cluster 5.` and exits.
 
 See [`reference/flags.md`](reference/flags.md) for the flag catalog
 structure that downstream patches will flesh out.
+
+### Optimize-Mode Parser Branch (V10.26.27)
+
+When `--mode optimize` is parsed:
+
+1. Resolve target (first positional token that is not a flag; default `.`).
+2. Build slug from target basename (kebab-case, max 32 chars).
+3. Build session ID: `improve_{slug}_{YYMMDD}_{NNN}` — reuse the SCOPING
+   counter rule from `--mode review`.
+4. `mkdir -p Agent_Memory/sessions/{session_id}/`.
+5. Write `instruction.yaml` with `mode: optimize` and the raw arguments.
+6. Write `status.yaml` with `phase: scoped`, `state: DETECTING_PENDING`,
+   and an ISO8601 `created_at` timestamp.
+7. Print the following one-time notice and exit cleanly:
+
+   ```
+   /improve --mode optimize: parser branch live (V10.26.27).
+     session_id: {session_id}
+     state: DETECTING_PENDING
+     note: DETECTING + MEASURING + EXECUTING land V10.26.28–V10.26.31.
+   ```
+
+No specialist agents are spawned. No `opportunities.yaml` is written. This
+patch isolates argument-parsing churn from state-machine churn; every
+later patch adds handler logic without revisiting the entry point.
 
 ## Review-Mode SCOPING + MEASURING (V10.26.23)
 
