@@ -73,6 +73,55 @@ describe('V10.26.19 /improve skeleton', () => {
   });
 });
 
+describe('V10.26.22 /improve 7-state unified machine', () => {
+  const STATES = [
+    'SCOPING',
+    'MEASURING',
+    'DETECTING',
+    'PLANNING',
+    'EXECUTING',
+    'VALIDATING',
+    'REPORTING',
+  ];
+
+  it('SKILL.md enumerates all 7 canonical states', () => {
+    const content = readFileSync(IMPROVE_SKILL, 'utf8');
+    for (const state of STATES) {
+      expect(content).toMatch(new RegExp(`\\b${state}\\b`));
+    }
+  });
+
+  it('SKILL.md shows the linear flow SCOPING → ... → REPORTING', () => {
+    const content = readFileSync(IMPROVE_SKILL, 'utf8');
+    expect(content).toMatch(
+      /SCOPING\s*→\s*MEASURING\s*→\s*DETECTING\s*→\s*PLANNING\s*→\s*EXECUTING\s*→\s*VALIDATING\s*→\s*REPORTING/
+    );
+  });
+
+  it('SKILL.md documents per-mode branches (review/optimize/full) per state', () => {
+    const content = readFileSync(IMPROVE_SKILL, 'utf8');
+    // The state table has review/optimize/full columns
+    expect(content).toMatch(/review.*optimize.*full/);
+  });
+
+  it('reference/state-machine.md documents all 7 states with specs', () => {
+    const sm = readFileSync(STATE_MACHINE, 'utf8');
+    for (const state of STATES) {
+      expect(sm).toMatch(new RegExp(`\\b${state}\\b`));
+    }
+    // Verify per-state spec sections exist
+    expect(sm).toMatch(/### 1\. SCOPING/);
+    expect(sm).toMatch(/### 7\. REPORTING/);
+  });
+
+  it('reference/state-machine.md declares artifact locations', () => {
+    const sm = readFileSync(STATE_MACHINE, 'utf8');
+    expect(sm).toMatch(/_projects\/\{hash\}\/improve\/baseline\.yaml/);
+    expect(sm).toMatch(/_projects\/\{hash\}\/review\/baseline\.yaml/);
+    expect(sm).toMatch(/sessions\/improve_/);
+  });
+});
+
 describe('V10.26.21 /improve --mode flag parser', () => {
   const content = readFileSync(IMPROVE_SKILL, 'utf8');
   const FLAGS_MD = resolve(ROOT, '.claude/skills/improve/reference/flags.md');
