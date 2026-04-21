@@ -59,6 +59,12 @@ describe('root plugin.json', () => {
     expect(missing).toEqual([]);
   });
 
+  it('description enumerates /improve (V10.26.20 preview registration)', () => {
+    const plugin = loadPluginJson(PLUGIN_PATH);
+    expect(plugin.description).toMatch(/\/improve/);
+    expect(plugin.description).toMatch(/9 user skills/);
+  });
+
   it('should include agents from all 15 domains', () => {
     const plugin = loadPluginJson(PLUGIN_PATH);
     const agents = plugin.agents;
