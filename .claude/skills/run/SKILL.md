@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.10"
+  version: "10.26.11"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--analytics] [--from-review] [--from-designer]"
   user-invocable: "true"
   context: "none"
@@ -95,8 +95,15 @@ When the user runs `/run <request> [flags]`:
 
 Parse `$ARGUMENTS` for:
 - **Flags**: `--interactive`, `--dry-run`, `--quiet`/`-q`, `--stream`, `--skip-preflight`, `--team`, `--analytics`
-- **Value flags**: `--template <name>`, `--domain <domain>`, `--tier <N>`, `--confidence <N>`, `--brief <path>`, `--resume <session_id>`, `--session <session_dir>`, `--from-review`, `--from-designer`
+- **Value flags**: `--template <name>`, `--domain <domain>`, `--tier <N>`, `--confidence <N>`, `--brief <path>`, `--resume <session_id>`, `--session <session_dir>`, `--from-review`, `--from-designer`, `--mode <debug|standard>`
 - **Request**: Everything before the first `--` flag
+
+**--mode parser (V10.26.11+)**: If `--mode <value>` is present, stash the value
+into `flags.mode`. Accepted values are `standard` (default) and `debug`. Any
+other value MUST be rejected with an error: `unknown mode: {value}. Supported:
+standard, debug`. The parser only validates and stores the value; downstream
+state machine stages treat `flags.mode` as a no-op until later patches wire
+behavior onto it. Default when unset: `standard`.
 
 If `--analytics`: Read `Agent_Memory/_system/metrics/pipeline_analytics.yaml`, display the analytics dashboard (success rate, avg duration, by-domain, by-tier, bottlenecks), and exit without running a pipeline.
 

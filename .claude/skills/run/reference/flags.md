@@ -40,6 +40,7 @@ function parseCommandFlags(commandString) {
 | `--resume <id>` | String | Resume an interrupted workflow session | none | `/run --resume run_20260207_143022` |
 | `--analytics` | Boolean | Display pipeline analytics dashboard and exit | false | `/run --analytics` |
 | `--analytics domain` | String | Show per-domain analytics breakdown | none | `/run --analytics domain` |
+| `--mode <value>` | String | Pipeline execution mode (V10.26.11+). Accepts `standard` (default) or `debug`. `debug` enables the 4-phase debugging methodology on controllers and validator. Unknown values are rejected. | standard | `/run Reproduce flaky test --mode debug` |
 
 ## Plan Display Behavior
 
