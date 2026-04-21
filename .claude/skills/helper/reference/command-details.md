@@ -690,11 +690,13 @@ Result: All domains complete, integrated deliverable
 
 ---
 
-## /debug - Systematic Debugging Methodology
+## /debug - Systematic Debugging Methodology (V10.26.18+: shim → /run --mode debug, deprecated V11.0)
 
 ### What It Does
 
 `/debug` is a structured 4-phase debugging tool for bugs that resist quick fixes. It guides you through Root Cause Investigation, Pattern Analysis, Hypothesis Testing, and Implementation -- enforcing evidence-based debugging rather than guessing. Think of it as "find the actual root cause, not just the symptom."
+
+**As of V10.26.18, `/debug` is a back-compat shim that forwards to `/run --mode debug`.** The same 4-phase methodology runs; the `/debug` command preserves the user surface (including `--escalate` and `--phase`) but delegates all session creation and coordination to the canonical pipeline. `/debug` will be removed in V11.0 — prefer `/run --mode debug` for new invocations.
 
 ### When to Use /debug
 
