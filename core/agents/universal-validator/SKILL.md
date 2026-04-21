@@ -299,6 +299,28 @@ least one entry whose `criterion` OR `result` text mentions `failing test`,
 Non-debug runs skip this check entirely. The finding enforces cAgents'
 bug-driven testing mandate at the debug-mode gate.
 
+### V10.26.17 Check: Falsified Hypothesis + BLOCKED at 3
+
+When debug mode is detected, inspect the `hypotheses_tested[]` list from
+V10.26.15:
+
+1. Count entries with `result: falsified`.
+2. Require at least one such entry. If zero falsified hypotheses exist,
+   emit a FIXABLE finding with severity HIGH:
+   `"Debug mode requires at least one falsified hypothesis in hypotheses_tested[] (see .claude/skills/debug/SKILL.md Phase 3)"`.
+3. If the falsified count is `>= 3` AND no entry has
+   `result: confirmed` (i.e. no confirmed root cause), emit a new verdict
+   `BLOCKED` with severity CRITICAL and reason:
+   `"3+ falsified hypotheses without confirmed root cause — escalate per /debug Escalation Rules"`.
+
+BLOCKED is a new verdict value introduced by V10.26.17. It routes
+identically to FAIL in the pipeline (back to PROMPTS_READY), but /run's
+revision handling annotates the controller prompt with the falsification
+count to prevent infinite loops (see /run SKILL.md revision routing).
+
+Non-debug runs NEVER see verdict `BLOCKED` — the check and the verdict
+are fully gated behind `flags.mode === "debug"`.
+
 ### Upcoming Debug-Mode Checks
 
 | Version | Check | Severity |

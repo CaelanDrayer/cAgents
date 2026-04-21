@@ -59,7 +59,24 @@ measured in isolation before the next one lands.
 
 ## V10.26.17 — Falsified-Hypothesis Rule + BLOCKED Verdict
 
-> Placeholder. Concrete check spec lands with V10.26.17.
+- **Checks (two, evaluated in order)**:
+  1. `hypotheses_tested[]` must contain at least one entry with
+     `result: falsified`. Missing → FIXABLE, severity HIGH, finding:
+     `"Debug mode requires at least one falsified hypothesis in hypotheses_tested[] (see .claude/skills/debug/SKILL.md Phase 3)"`.
+  2. If falsified count `>= 3` AND no entry has `result: confirmed`,
+     emit verdict `BLOCKED`, severity CRITICAL, reason:
+     `"3+ falsified hypotheses without confirmed root cause — escalate per /debug Escalation Rules"`.
+- **Verification method**: `count_by_result`
+- **Severity**: HIGH (check 1), CRITICAL (check 2 / BLOCKED)
+- **New verdict**: `BLOCKED` is a new enum value. Pipeline routes it like
+  FAIL (back to PROMPTS_READY), with the falsification count annotated in
+  the revision prompt so /run can bail out instead of retrying forever.
+- **Gated**: Entirely behind `flags.mode === "debug"`. Non-debug runs
+  NEVER see verdict `BLOCKED` — this is a V10.26.17 invariant and the
+  regression test suite asserts it explicitly.
+- **Rationale**: `/debug` Escalation Rules require halting after 3
+  falsified hypotheses without a confirmed root cause. Enforcing this at
+  the validator prevents runaway debug sessions.
 
 ## Cross-Cutting Rules
 

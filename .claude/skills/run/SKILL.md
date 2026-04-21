@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.16"
+  version: "10.26.17"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--analytics] [--from-review] [--from-designer]"
   user-invocable: "true"
   context: "none"
@@ -528,6 +528,15 @@ After the COORDINATED state, read `workflow/validation_report.yaml`:
 - **PASS**: Advance to VALIDATED (terminal). **The loop exits here — proceed IMMEDIATELY to Step 4 (MANDATORY). Do NOT stop.**
 - **FAIL**: Route back to PROMPTS_READY. Increment `revision_round` and `validation_cycles` in status.yaml. Pass feedback from validation_report.yaml to the controller. Max 5 total revision cycles.
 - **REVISE**: Route back to PLANNED. Increment `revision_round` and `validation_cycles` in status.yaml. Pass feedback to the planner. Max 5 total revision cycles.
+- **BLOCKED** (V10.26.17+, debug-mode only): Route back to PROMPTS_READY
+  identically to FAIL for routing purposes, BUT annotate the controller
+  revision prompt with the falsification count from
+  `hypotheses_tested[]` (e.g. `"Validator BLOCKED: 3 falsified hypotheses
+  without confirmed root cause. Do not retry the same hypotheses; expand
+  scope or escalate."`). The annotation prevents infinite revision loops
+  on fundamentally stuck debug sessions. Max 5 total revision cycles
+  still apply; exhaustion escalates to HITL. Non-debug runs never see
+  verdict BLOCKED (validator gate enforces this).
 
 If `revision_round >= max_cycles` (5): Escalate to user (HITL). Report what completed and what failed.
 
