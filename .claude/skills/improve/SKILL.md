@@ -5,35 +5,22 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.32"
+  version: "10.26.33"
   argument-hint: "[target] [--mode review|optimize|full] [flags]"
   user-invocable: "true"
   context: "fork"
 allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TodoWrite
 ---
 
-# /improve — Unified Review + Optimize Engine (Preview)
+# /improve — Unified Review + Optimize Engine
 
-**Status**: Preview in V10.26.19. Mode handlers land across V10.26.20–V10.26.26.
-Until V10.26.23 lands the review-mode SCOPING+MEASURING implementation, this
-skill is inert and prints a "handler not yet implemented" notice.
-
-`/improve` consolidates the `/review` and `/optimize` skills into a single
-7-state state machine. The cut-over lands in V10.26.26 (`/review` becomes a
-shim → `/improve --mode review`). The `/optimize` shim follows in Cluster 5.
-
-## Coming Soon
-
-| Version | Delivery |
-|---------|----------|
-| V10.26.19 | Skeleton SKILL.md + helper catalog slot (this patch) |
-| V10.26.20 | Register in `.claude-plugin/plugin.json` description |
-| V10.26.21 | `--mode` flag parser (review/optimize/full, no-op handlers) |
-| V10.26.22 | 7-state unified machine documented (SCOPING → MEASURING → DETECTING → PLANNING → EXECUTING → VALIDATING → REPORTING) |
-| V10.26.23 | `--mode review` SCOPING + MEASURING with baseline migration |
-| V10.26.24 | `--mode review` DETECTING + PLANNING (3 parallel specialist groups) |
-| V10.26.25 | `--mode review` EXECUTING + VALIDATING + REPORTING (feature complete) |
-| V10.26.26 | `/review` → shim over `/improve --mode review` |
+`/improve` consolidates `/review` and `/optimize` into a single 7-state
+state machine: **SCOPING → MEASURING → DETECTING → PLANNING →
+EXECUTING → VALIDATING → REPORTING**. Mode selection via `--mode
+review|optimize|full`. Full delivery history: Cluster 4 (V10.26.19–
+V10.26.26) landed `--mode review` and the `/review` shim; Cluster 5
+(V10.26.27–V10.26.35) landed `--mode optimize`, `--mode full`, the
+`/optimize` shim, and uniform deprecation warnings.
 
 ## Argument Handling (V10.26.21)
 
@@ -69,8 +56,10 @@ files. V10.26.21 is a parser-only patch.
   `state: DETECTING_PENDING`, then exits with a
   `handler not yet implemented` notice. Full pipeline lands
   V10.26.28–V10.26.31.
-- `--mode full`: Still a stub. Prints
-  `mode=full; handler lands after Cluster 5.` and exits.
+- `--mode full`: Implemented in V10.26.33. Runs review-then-optimize
+  with a shared baseline and synthesizes a unified `improve_report.md`.
+  See [Full-Mode Pipeline](#full-mode-pipeline-v102633) below and
+  [`reference/full-mode.md`](reference/full-mode.md).
 
 See [`reference/flags.md`](reference/flags.md) for the flag catalog
 structure that downstream patches will flesh out.
@@ -249,6 +238,67 @@ report generation.
 
 `/improve --mode optimize` is now artifact-equivalent to legacy
 `/optimize`. The `/optimize` shim lands in V10.26.32.
+
+## Full-Mode Pipeline (V10.26.33)
+
+`--mode full` runs review-then-optimize with a single shared baseline
+and a synthesis step that produces a unified `improve_report.md`. This
+is the headline capability of `/improve`.
+
+### Order of Operations
+
+1. SCOPING + MEASURING: capture baseline ONCE (shared between both
+   modes). Storage: `_projects/{hash}/improve/baselines/{timestamp}.yaml`
+   with `shared: true`.
+2. Run `--mode review` DETECTING → PLANNING → EXECUTING. Produces
+   `workflow/findings.yaml` and `workflow/auto_fixes_applied.yaml`.
+3. **Filter findings** for perf-relevant subset using the predicate
+   below. Write `workflow/filtered_findings.yaml`.
+4. Run `--mode optimize` DETECTING with the filtered findings seeded as
+   pre-identified opportunities (`source: review_finding`). Continue
+   through PLANNING → EXECUTING against the shared baseline.
+5. VALIDATING runs BOTH gate sets: quality gate (review) AND delta
+   verification (optimize). Both must PASS for the overall verdict to
+   be PASS.
+6. REPORTING synthesizes `outputs/improve_report.md` with dedicated
+   `## Review Findings` and `## Optimizations Applied` sections.
+
+### Perf-Relevant Filter Predicate
+
+A finding feeds optimize if ANY of these holds:
+
+```
+finding.category ∈ {performance, perf, efficiency, bundle-size}
+finding.tags ⊇ {performance, slow, n+1, memory, cpu}
+finding.message matches /\b(slow|latency|bundle|memory|cpu|perf)\b/i
+```
+
+Security-only, standards-only, accessibility-only findings do NOT feed
+optimize. They remain in `findings.yaml` and appear in the Review
+Findings section of the unified report.
+
+### Shared-Baseline Contract
+
+The baseline is captured ONCE at mode-full start. Both review
+MEASURING and optimize MEASURING read the same baseline file; neither
+re-measures. This prevents double-measurement waste.
+
+### Synthesized Report
+
+`outputs/improve_report.md` contains:
+
+- `## Review Findings` (severity counts, auto-fixes applied)
+- `## Optimizations Applied` (opportunity table with before/after
+  deltas, seeded-from-review subset called out)
+- `## Quality Gate` (12 directives verdict)
+- `## Baseline` (shared baseline reference)
+
+Append a synthesized entry to `_projects/{hash}/improve/history.yaml`
+with `mode: full`, `baseline_shared: true`, and per-sub-pipeline
+counts.
+
+See [`reference/full-mode.md`](reference/full-mode.md) for the full
+predicate, synthesis schema, and exit message.
 
 ## Atomic Rollback Primitive (V10.26.29)
 
