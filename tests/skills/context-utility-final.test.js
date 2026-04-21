@@ -76,8 +76,9 @@ describe('V10.26.10 /context utility finalization', () => {
     expect(pluginJson.description).toMatch(/\/context utility/);
   });
 
-  it('plugin.json description says "8 user skills"', () => {
+  it('plugin.json description enumerates the user skill count (9 as of V10.26.20)', () => {
     const pluginJson = JSON.parse(readFileSync(PLUGIN_PATH, 'utf8'));
-    expect(pluginJson.description).toMatch(/8 user skills/);
+    // V10.26.20 bumped 8 → 9 when /improve landed as a preview (Cluster 4).
+    expect(pluginJson.description).toMatch(/9 user skills/);
   });
 });
