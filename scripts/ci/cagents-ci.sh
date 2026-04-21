@@ -2,7 +2,7 @@
 #
 # cAgents CI Runner
 # Self-contained CI script for quality gates
-# Version: 10.26.2
+# Version: 10.26.3
 #
 # Usage:
 #   ./scripts/ci/cagents-ci.sh [command]
@@ -13,7 +13,9 @@
 #   check       - Run quality checks
 #   test        - Run Vitest test suite
 #   evals       - Run evaluations on recent sessions
-#   contract    - Run contract tests (schema compatibility)
+#   contract   - Run contract tests (schema compatibility)
+#   tiny-bump   - Run tiny-bump guard (warn-only by default; set
+#                 CAGENTS_TINY_BUMP_BLOCK=1 to promote to blocking)
 #   all         - Run all checks
 #
 # Exit codes:
@@ -23,6 +25,7 @@
 #   3 - Quality check failures
 #   4 - Test failures
 #   5 - Contract test failures
+#   6 - Tiny-bump guard failure (only when CAGENTS_TINY_BUMP_BLOCK=1)
 
 set -e
 
@@ -381,13 +384,152 @@ run_tests() {
 }
 
 #
+# Tiny-bump guard (added in V10.26.3, warn-only)
+#
+# Validates on any version change that:
+#   (1) CHANGELOG.md has a new entry matching the new version
+#   (2) all 21 registry locations agree on the new version
+#   (3) non-sync diff (files outside the 21 registry targets) is <= 5 files
+#
+# Set CAGENTS_TINY_BUMP_BLOCK=1 to treat findings as errors instead of warnings.
+# V10.26.3 ships warn-only; V10.26.5 flips the default to blocking.
+#
+check_tiny_bump() {
+    log_section "TINY-BUMP GUARD"
+
+    local block_mode="${CAGENTS_TINY_BUMP_BLOCK:-0}"
+    local violation=0
+
+    # Resolve old and new version. Prefer env overrides (set by tests),
+    # otherwise read package.json at HEAD vs HEAD~1.
+    local new_version old_version
+    new_version="${CAGENTS_TINY_BUMP_NEW:-}"
+    old_version="${CAGENTS_TINY_BUMP_OLD:-}"
+
+    if [[ -z "$new_version" ]]; then
+        new_version="$(grep -E '^\s*"version":' "$PROJECT_ROOT/package.json" \
+            | head -1 | sed -E 's/.*"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/')"
+    fi
+    if [[ -z "$old_version" ]]; then
+        old_version="$(git -C "$PROJECT_ROOT" show HEAD~1:package.json 2>/dev/null \
+            | grep -E '^\s*"version":' | head -1 \
+            | sed -E 's/.*"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/')"
+    fi
+
+    if [[ -z "$new_version" ]]; then
+        log_warn "check_tiny_bump: could not parse current version; skipping"
+        return 0
+    fi
+
+    if [[ -z "$old_version" ]] || [[ "$old_version" == "$new_version" ]]; then
+        log_info "check_tiny_bump: no version change (current=$new_version); skipping"
+        return 0
+    fi
+
+    log_info "check_tiny_bump: $old_version -> $new_version"
+
+    # (1) CHANGELOG.md must have an entry for the new version.
+    local changelog="$PROJECT_ROOT/CHANGELOG.md"
+    if [[ ! -f "$changelog" ]]; then
+        log_warn "check_tiny_bump: CHANGELOG.md missing"
+        violation=1
+    elif ! grep -qE "^## \[$new_version\]" "$changelog"; then
+        log_warn "check_tiny_bump: CHANGELOG.md has no entry for [$new_version]"
+        violation=1
+    else
+        log_info "check_tiny_bump: CHANGELOG entry for [$new_version] present"
+    fi
+
+    # (2) Registry-location agreement.
+    local bad_locations=0
+    for f in "$PROJECT_ROOT/package.json" \
+             "$PROJECT_ROOT/.claude-plugin/plugin.json" \
+             "$PROJECT_ROOT/.claude-plugin/marketplace.json"; do
+        if [[ -f "$f" ]] && ! grep -qE "\"version\"\s*:\s*\"$new_version\"" "$f"; then
+            log_warn "check_tiny_bump: $f does not report version $new_version"
+            bad_locations=$((bad_locations + 1))
+        fi
+    done
+    if [[ -f "$PROJECT_ROOT/CLAUDE.md" ]] \
+       && ! grep -qE "^\*\*Version\*\*: $new_version" "$PROJECT_ROOT/CLAUDE.md"; then
+        log_warn "check_tiny_bump: CLAUDE.md does not report version $new_version"
+        bad_locations=$((bad_locations + 1))
+    fi
+    if [[ $bad_locations -gt 0 ]]; then
+        violation=1
+    else
+        log_info "check_tiny_bump: sampled registry locations agree on $new_version"
+    fi
+
+    # (3) Non-sync diff size: files changed on HEAD outside the 21 sync targets.
+    # The 21 registry files are auto-updated by sync-versions.sh; a tiny bump
+    # should touch <= 5 files beyond those.
+    local sync_targets=(
+        "package.json"
+        ".claude-plugin/plugin.json"
+        ".claude-plugin/marketplace.json"
+        "CLAUDE.md"
+        ".claude/settings.json"
+        ".claude/skills/run/SKILL.md"
+        ".claude/skills/org/SKILL.md"
+        ".claude/skills/team/SKILL.md"
+        ".claude/skills/review/SKILL.md"
+        ".claude/skills/optimize/SKILL.md"
+        ".claude/skills/designer/SKILL.md"
+        ".claude/skills/debug/SKILL.md"
+        ".claude/skills/helper/SKILL.md"
+        ".claude/skills/context/SKILL.md"
+        ".claude/hooks/session-catchup.cjs"
+        "scripts/ci/cagents-ci.sh"
+        "scripts/ci/validate-agents.sh"
+        "README.md"
+        "docs/README.md"
+        "docs/RELEASE_NOTES.md"
+        "CHANGELOG.md"
+    )
+    local changed_files
+    changed_files="$(git -C "$PROJECT_ROOT" diff --name-only HEAD~1..HEAD 2>/dev/null || true)"
+    local non_sync_count=0
+    while IFS= read -r f; do
+        [[ -z "$f" ]] && continue
+        local is_sync=0
+        for t in "${sync_targets[@]}"; do
+            if [[ "$f" == "$t" ]]; then is_sync=1; break; fi
+        done
+        if [[ $is_sync -eq 0 ]]; then
+            non_sync_count=$((non_sync_count + 1))
+        fi
+    done <<< "$changed_files"
+
+    if [[ $non_sync_count -gt 5 ]]; then
+        log_warn "check_tiny_bump: non-sync diff touches $non_sync_count files (>5)"
+        violation=1
+    else
+        log_info "check_tiny_bump: non-sync diff touches $non_sync_count files (<=5)"
+    fi
+
+    if [[ $violation -eq 0 ]]; then
+        log_info "check_tiny_bump: all criteria satisfied"
+        return 0
+    fi
+
+    if [[ "$block_mode" == "1" ]]; then
+        log_error "check_tiny_bump: violations above; blocking (CAGENTS_TINY_BUMP_BLOCK=1)"
+        return 6
+    else
+        log_warn "check_tiny_bump: violations above (warn-only)"
+        return 0
+    fi
+}
+
+#
 # Main execution
 #
 main() {
     local command="${1:-all}"
     local exit_code=0
 
-    log_section "cAgents CI Runner v10.26.2"
+    log_section "cAgents CI Runner v10.26.3"
     log_info "Project root: $PROJECT_ROOT"
     log_info "Command: $command"
 
@@ -410,16 +552,20 @@ main() {
         contract)
             run_contract_tests || exit_code=5
             ;;
+        tiny-bump)
+            check_tiny_bump || exit_code=6
+            ;;
         all)
             validate_agents || exit_code=1
             lint_docs || exit_code=$((exit_code > 0 ? exit_code : 2))
             quality_checks || exit_code=$((exit_code > 0 ? exit_code : 3))
             run_tests || exit_code=$((exit_code > 0 ? exit_code : 4))
             run_contract_tests || exit_code=$((exit_code > 0 ? exit_code : 5))
+            check_tiny_bump || exit_code=$((exit_code > 0 ? exit_code : 6))
             ;;
         *)
             echo "Unknown command: $command"
-            echo "Usage: $0 [validate|lint|check|contract|evals|all]"
+            echo "Usage: $0 [validate|lint|check|contract|evals|test|tiny-bump|all]"
             exit 1
             ;;
     esac
