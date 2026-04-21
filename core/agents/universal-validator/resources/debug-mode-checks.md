@@ -36,7 +36,26 @@ measured in isolation before the next one lands.
 
 ## V10.26.16 — Evidence Must Include a Failing-Test Artifact
 
-> Placeholder. Concrete check spec lands with V10.26.16.
+- **Check**: In debug mode, at least one entry in
+  `implementation_tasks[].evidence` must mention the phrase
+  `failing test`, `reproduction test`, or `regression test` AND cite a
+  path matching `tests/**`.
+- **Verification method**: `evidence_regex_match` on the union of
+  `criterion` and `result` text per evidence entry.
+- **Severity**: HIGH
+- **On missing**: FIXABLE — emit finding
+  `"Debug mode requires a failing-test artifact in evidence (see .claude/skills/debug/SKILL.md Phase 4 step 1)"`.
+- **Rationale**: `/debug` Phase 4 step 1 mandates writing a failing test
+  that reproduces the bug before implementing any fix. CLAUDE.md's
+  bug-driven testing rule requires every bug fix to ship with a regression
+  test. This check enforces both at the validator gate.
+- **Regex spec** (case-insensitive):
+  ```
+  /(failing|reproduction|regression)\s+test.*tests\//i
+  ```
+- **Isolated from V10.26.15**: This check uses a distinct verification
+  method (regex vs key existence), so it can be tuned without revisiting
+  the hypotheses_tested[] check.
 
 ## V10.26.17 — Falsified-Hypothesis Rule + BLOCKED Verdict
 

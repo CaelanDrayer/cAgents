@@ -283,6 +283,22 @@ the `hypotheses_tested` key.
 Non-debug runs skip this check entirely. The finding is FIXABLE (not
 BLOCKED) because the controller can populate the list on re-execution.
 
+### V10.26.16 Check: Failing-Test Artifact in Evidence
+
+When debug mode is detected, scan
+`workflow/coordination_log.yaml → implementation_tasks[].evidence` for at
+least one entry whose `criterion` OR `result` text mentions `failing test`,
+`reproduction test`, or `regression test` AND references a path matching
+`tests/**`. Verification method: `evidence_regex_match`.
+
+| Condition | Verdict |
+|-----------|---------|
+| At least one evidence entry matches | Continue to other checks |
+| No evidence entry matches | Emit FIXABLE finding with severity HIGH: `"Debug mode requires a failing-test artifact in evidence (see .claude/skills/debug/SKILL.md Phase 4 step 1)"` |
+
+Non-debug runs skip this check entirely. The finding enforces cAgents'
+bug-driven testing mandate at the debug-mode gate.
+
 ### Upcoming Debug-Mode Checks
 
 | Version | Check | Severity |
