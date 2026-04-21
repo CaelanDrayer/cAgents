@@ -120,3 +120,47 @@ describe('V10.26.30 /improve --mode optimize MEASURING + pattern migration', () 
     expect(m).toMatch(/fallback removed|removes the legacy-fallback/i);
   });
 });
+
+describe('V10.26.31 /improve --mode optimize EXECUTING + VALIDATING + REPORTING', () => {
+  const content = readFileSync(IMPROVE_SKILL, 'utf8');
+
+  it('SKILL.md documents EXECUTING + VALIDATING + REPORTING for optimize', () => {
+    expect(content).toMatch(
+      /Optimize-Mode EXECUTING \+ VALIDATING \+ REPORTING.*V10\.26\.31/
+    );
+  });
+
+  it('SKILL.md documents ROI formula with impact × confidence / effort', () => {
+    expect(content).toMatch(/roi\s*=\s*\(impact_weight\s*×\s*confidence\)\s*\/\s*effort_weight/);
+  });
+
+  it('SKILL.md references apply_atomic from atomic-rollback helper', () => {
+    expect(content).toMatch(/apply_atomic/);
+    expect(content).toMatch(/reference\/atomic-rollback\.md/);
+  });
+
+  it('SKILL.md documents before/after delta verification with thresholds', () => {
+    expect(content).toMatch(/delta_pct/);
+    expect(content).toMatch(/5%/);
+    expect(content).toMatch(/2%/);
+  });
+
+  it('SKILL.md declares optimization_report.md output path', () => {
+    expect(content).toMatch(/outputs\/optimization_report\.md/);
+  });
+
+  it('SKILL.md documents history.yaml append with mode: optimize', () => {
+    expect(content).toMatch(/_projects\/\{hash\}\/improve\/history\.yaml/);
+    expect(content).toMatch(/mode:\s*optimize/);
+  });
+
+  it('SKILL.md declares --mode optimize feature-complete in V10.26.31', () => {
+    expect(content).toMatch(/artifact-equivalent to legacy[\s\S]*\/optimize/);
+    expect(content).toMatch(/all 7 states complete/);
+  });
+
+  it('SKILL.md stays under 600 lines (progressive disclosure)', () => {
+    const lineCount = content.split('\n').length;
+    expect(lineCount).toBeLessThan(600);
+  });
+});

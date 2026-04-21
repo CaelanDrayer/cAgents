@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.30"
+  version: "10.26.31"
   argument-hint: "[target] [--mode review|optimize|full] [flags]"
   user-invocable: "true"
   context: "fork"
@@ -161,6 +161,94 @@ PLANNING. Migration rule (see
    never written after V10.26.30.
 
 V11.0 removes the legacy-fallback read branch.
+
+## Optimize-Mode EXECUTING + VALIDATING + REPORTING (V10.26.31)
+
+`--mode optimize` is feature-complete after this patch. The remaining
+three states wire ROI ranking, before/after delta verification, and
+report generation.
+
+### EXECUTING — ROI Rank + Atomic Apply
+
+1. Read `workflow/opportunities.yaml` (produced by DETECTING).
+2. For each opportunity, compute ROI:
+
+   ```
+   roi = (impact_weight × confidence) / effort_weight
+   impact_weight: {high: 3, medium: 2, low: 1}
+   effort_weight: {low: 1, medium: 2, high: 3}
+   ```
+
+3. Adjust `confidence` for known patterns using
+   `_projects/{hash}/improve/pattern_effectiveness.yaml`
+   (read via the migration rule in
+   `reference/pattern-effectiveness-migration.md`).
+4. Sort descending by `roi` and select top N (default 10,
+   configurable via `--top-n <N>`).
+5. For each selected opportunity, call `apply_atomic(opp)` from
+   [`reference/atomic-rollback.md`](reference/atomic-rollback.md).
+   Outcomes: `kept | rolled_back | dead_letter`.
+6. Append each outcome to `workflow/execution_summary.yaml`
+   incrementally (do not batch).
+
+### VALIDATING — Before/After Delta Verification
+
+1. Re-run the benchmark tool used in MEASURING (same tool for parity).
+2. Read `Agent_Memory/_projects/{hash}/improve/baselines/{timestamp}.yaml`
+   and compare per-metric.
+3. Compute deltas: `delta_pct = (after - before) / before × 100`.
+4. Apply kept/rolled-back rules per metric:
+   - **Kept** only when: tests pass AND target metric improved ≥ 5%
+     (or absolute threshold) AND no regressed metric > 2%.
+   - Otherwise roll back via atomic helper.
+5. Write `workflow/validation_report.yaml`:
+
+   ```yaml
+   verdict: PASS | FAIL | REVISE
+   metrics_before: { ... }
+   metrics_after:  { ... }
+   deltas:
+     lcp_ms: { before: 2400, after: 1900, delta_pct: -20.8, kept: true }
+   ```
+
+### REPORTING — Optimization Report
+
+1. Write `outputs/optimization_report.md` with:
+   - Executive summary (scanned, applied, rolled-back counts)
+   - Per-opportunity detail (file, category, impact, before/after,
+     verdict)
+   - Appendix: pattern effectiveness updates
+2. Append a run entry to `_projects/{hash}/improve/history.yaml`:
+
+   ```yaml
+   runs:
+     - session_id: improve_src_260421_001
+       mode: optimize
+       verdict: PASS
+       opportunities_scanned: 14
+       opportunities_applied: 4
+       opportunities_rolled_back: 1
+       metrics_delta:
+         lcp_ms_pct: -20.8
+   ```
+
+3. Update `_projects/{hash}/improve/pattern_effectiveness.yaml` with
+   success/failure increments per applied pattern.
+4. Update `status.yaml.phase = complete`, `status.yaml.state = REPORTING`.
+5. Print the final exit message:
+
+   ```
+   /improve --mode optimize: all 7 states complete.
+     session_id: {session_id}
+     opportunities_scanned: {N}
+     opportunities_applied: {M}
+     opportunities_rolled_back: {K}
+     verdict: {PASS|FAIL}
+     report: Agent_Memory/sessions/{session_id}/outputs/optimization_report.md
+   ```
+
+`/improve --mode optimize` is now artifact-equivalent to legacy
+`/optimize`. The `/optimize` shim lands in V10.26.32.
 
 ## Atomic Rollback Primitive (V10.26.29)
 
