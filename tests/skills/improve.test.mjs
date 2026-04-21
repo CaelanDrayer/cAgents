@@ -72,3 +72,41 @@ describe('V10.26.19 /improve skeleton', () => {
     expect(lineCount).toBeLessThan(600);
   });
 });
+
+describe('V10.26.21 /improve --mode flag parser', () => {
+  const content = readFileSync(IMPROVE_SKILL, 'utf8');
+  const FLAGS_MD = resolve(ROOT, '.claude/skills/improve/reference/flags.md');
+
+  it('documents accepted --mode review value', () => {
+    expect(content).toMatch(/--mode review.*Accepted/s);
+  });
+
+  it('documents accepted --mode optimize value', () => {
+    expect(content).toMatch(/--mode optimize.*Accepted/s);
+  });
+
+  it('documents accepted --mode full value', () => {
+    expect(content).toMatch(/--mode full.*Accepted/s);
+  });
+
+  it('rejects unknown --mode values with usage message', () => {
+    expect(content).toMatch(/unknown --mode value/);
+    expect(content).toMatch(/Accepted: review, optimize, full/);
+  });
+
+  it('defaults to --mode review when no flag is supplied', () => {
+    expect(content).toMatch(/Defaults to.*review|default.*review/i);
+  });
+
+  it('V10.26.21 parser stub exits without spawning agents or writing files', () => {
+    expect(content).toMatch(/handler not yet implemented in V10\.26\.21/);
+    expect(content).toMatch(/Do NOT spawn agents, create sessions, or write/);
+  });
+
+  it('reference/flags.md exists and references the --mode selector', () => {
+    expect(existsSync(FLAGS_MD)).toBe(true);
+    const flags = readFileSync(FLAGS_MD, 'utf8');
+    expect(flags).toMatch(/--mode/);
+    expect(flags).toMatch(/review.*optimize.*full/s);
+  });
+});
