@@ -2,12 +2,14 @@
 # Sync version across all cAgents manifest files
 # Usage: ./scripts/sync-versions.sh <new-version>
 #
-# Updates version in all 20 locations (see .claude/rules/core/version-registry.md):
+# Updates version in all 21 locations (see .claude/rules/core/version-registry.md):
 # Location #16: scripts/ci/cagents-ci.sh (header comment + log_section banner)
 # Location #17: scripts/ci/validate-agents.sh (# Version: header)
+# Location #21: CHANGELOG.md (insert new "## [VERSION] - DATE" header under [Unreleased])
 #   .claude-plugin/plugin.json, .claude-plugin/marketplace.json, package.json,
 #   CLAUDE.md, .claude/settings.json,
-#   9 skill SKILL.md frontmatter versions, and session-catchup.cjs context string
+#   9 skill SKILL.md frontmatter versions, session-catchup.cjs context string,
+#   and CHANGELOG.md tiny-bump landing zone.
 
 set -euo pipefail
 
@@ -183,7 +185,7 @@ else
   echo "SKIP: docs/README.md (not found)"
 fi
 
-# Update docs/RELEASE_NOTES.md **Current Version**: lines (#21)
+# Update docs/RELEASE_NOTES.md **Current Version**: lines (#20)
 RELEASE_NOTES="$ROOT/docs/RELEASE_NOTES.md"
 if [ -f "$RELEASE_NOTES" ]; then
   if sed -i "s/\*\*Current Version\*\*: [0-9]*\.[0-9]*\.[0-9]*/\*\*Current Version\*\*: $VERSION/g" "$RELEASE_NOTES"; then
@@ -195,6 +197,33 @@ if [ -f "$RELEASE_NOTES" ]; then
   fi
 else
   echo "SKIP: docs/RELEASE_NOTES.md (not found)"
+fi
+
+# Update CHANGELOG.md — insert new version header under [Unreleased] (#21)
+CHANGELOG="$ROOT/CHANGELOG.md"
+if [ -f "$CHANGELOG" ]; then
+  # Only insert a new header if one for this version does not already exist.
+  if grep -qE "^## \[$VERSION\]" "$CHANGELOG"; then
+    echo "  OK: CHANGELOG.md (## [$VERSION] already present)"
+    UPDATED=$((UPDATED + 1))
+  else
+    TODAY="$(date +%Y-%m-%d)"
+    # Insert new section after the [Unreleased] header.
+    if sed -i "/^## \[Unreleased\]/a\\
+\\
+## [$VERSION] - $TODAY\\
+\\
+### Changed\\
+- Version bump to $VERSION. See commit message for details." "$CHANGELOG"; then
+      echo "  OK: CHANGELOG.md (inserted ## [$VERSION] - $TODAY)"
+      UPDATED=$((UPDATED + 1))
+    else
+      echo "FAIL: CHANGELOG.md"
+      FAILED=$((FAILED + 1))
+    fi
+  fi
+else
+  echo "SKIP: CHANGELOG.md (not found)"
 fi
 
 echo ""

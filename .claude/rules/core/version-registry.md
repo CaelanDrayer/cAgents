@@ -11,7 +11,7 @@ paths:
 
 All locations where the cAgents version number appears. Keep ALL locations in sync on every release.
 
-## Version Locations (20 total)
+## Version Locations (21 total)
 
 | # | File | Field/Line | Updated By |
 |---|------|-----------|------------|
@@ -35,10 +35,11 @@ All locations where the cAgents version number appears. Keep ALL locations in sy
 | 18 | `README.md` | Version History `**V{version}** — Current release` | `scripts/sync-versions.sh` |
 | 19 | `docs/README.md` | `**Version**:` header | `scripts/sync-versions.sh` |
 | 20 | `docs/RELEASE_NOTES.md` | `**Current Version**:` header | `scripts/sync-versions.sh` |
+| 21 | `CHANGELOG.md` | `## [VERSION] - DATE` header inserted under `[Unreleased]` | `scripts/sync-versions.sh` |
 
 ## Sync Tool
 
-`scripts/sync-versions.sh <version>` updates all 20 locations (3 JSON files + CLAUDE.md + settings.json + 9 SKILL.md frontmatters + session-catchup.cjs + cagents-ci.sh + validate-agents.sh + README.md + docs/README.md + docs/RELEASE_NOTES.md).
+`scripts/sync-versions.sh <version>` updates all 21 locations (3 JSON files + CLAUDE.md + settings.json + 9 SKILL.md frontmatters + session-catchup.cjs + cagents-ci.sh + validate-agents.sh + README.md + docs/README.md + docs/RELEASE_NOTES.md + CHANGELOG.md).
 
 ## Version Bump Procedure
 
