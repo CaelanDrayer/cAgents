@@ -15,9 +15,10 @@ first read). See `baseline-migration.md`.
 
 ## Step 3: DETECTING (V10.26.24 — implemented)
 
-Spawn 3 parallel specialist groups (correctness, security, quality) per the
-shared `agent-groups.md`. Each group writes per-agent findings to
-`workflow/detection/{group}/{agent}.yaml`.
+Spawn 3 parallel specialist groups (structural, security/performance,
+specialized) per the shared `agent-groups.md`. Each group writes per-agent
+findings to `workflow/detection/{group}/{agent}.yaml`. With
+`IMPROVE_DRY_AGENTS=1`, writes `planned_spawns.yaml` and skips to PLANNING.
 
 ## Step 4: PLANNING (V10.26.24 — implemented)
 

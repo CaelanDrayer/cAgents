@@ -73,6 +73,67 @@ describe('V10.26.19 /improve skeleton', () => {
   });
 });
 
+describe('V10.26.24 /improve --mode review DETECTING + PLANNING', () => {
+  const content = readFileSync(IMPROVE_SKILL, 'utf8');
+  const AGENT_GROUPS = resolve(
+    ROOT,
+    '.claude/skills/improve/reference/agent-groups.md'
+  );
+
+  it('SKILL.md documents 3 parallel specialist groups', () => {
+    expect(content).toMatch(/Group 1.*Structural/);
+    expect(content).toMatch(/Group 2.*Security.*Performance/);
+    expect(content).toMatch(/Group 3.*Specialized/);
+  });
+
+  it('SKILL.md lists canonical review agent names with cagents: prefix', () => {
+    expect(content).toMatch(/cagents:architecture-reviewer/);
+    expect(content).toMatch(/cagents:code-standards-auditor/);
+    expect(content).toMatch(/cagents:security-engineer/);
+    expect(content).toMatch(/cagents:performance-analyzer/);
+    expect(content).toMatch(/cagents:test-coverage-validator/);
+  });
+
+  it('SKILL.md documents per-agent findings output path', () => {
+    expect(content).toMatch(/workflow\/detection\/\{group\}\/\{agent\}\.yaml/);
+  });
+
+  it('SKILL.md documents PLANNING aggregation with severity × confidence ranking', () => {
+    expect(content).toMatch(/severity_weight.*confidence|severity.*confidence.*rank/i);
+    expect(content).toMatch(/workflow\/findings\.yaml/);
+  });
+
+  it('SKILL.md documents dedupe step in PLANNING', () => {
+    expect(content).toMatch(/[Dd]eduplicat/);
+  });
+
+  it('SKILL.md documents IMPROVE_DRY_AGENTS=1 for test dry-run', () => {
+    expect(content).toMatch(/IMPROVE_DRY_AGENTS=1/);
+    expect(content).toMatch(/planned_spawns\.yaml/);
+  });
+
+  it('reference/agent-groups.md exists and points at /review source of truth', () => {
+    expect(existsSync(AGENT_GROUPS)).toBe(true);
+    const ag = readFileSync(AGENT_GROUPS, 'utf8');
+    expect(ag).toMatch(/review\/reference\/agent-groups\.md/);
+    expect(ag).toMatch(/@include/);
+  });
+
+  it('reference/agent-groups.md documents dry-run contract', () => {
+    const ag = readFileSync(AGENT_GROUPS, 'utf8');
+    expect(ag).toMatch(/IMPROVE_DRY_AGENTS=1/);
+    expect(ag).toMatch(/planned_spawns/);
+  });
+
+  it('review source file still exists (not yet moved; migration preserves /review)', () => {
+    const reviewSource = resolve(
+      ROOT,
+      '.claude/skills/review/reference/agent-groups.md'
+    );
+    expect(existsSync(reviewSource)).toBe(true);
+  });
+});
+
 describe('V10.26.23 /improve --mode review SCOPING + MEASURING', () => {
   const content = readFileSync(IMPROVE_SKILL, 'utf8');
   const REVIEW_MODE = resolve(
@@ -108,9 +169,11 @@ describe('V10.26.23 /improve --mode review SCOPING + MEASURING', () => {
     // primary is the default (new baseline exists)
   });
 
-  it('SKILL.md exits after MEASURING in V10.26.23 (no DETECTING yet)', () => {
-    expect(content).toMatch(/SCOPING \+ MEASURING complete/);
-    expect(content).toMatch(/DETECTING.*V10\.26\.24/);
+  it('SKILL.md still documents MEASURING completion and next-state hand-off', () => {
+    // After V10.26.24 the exit message advances to include DETECTING+PLANNING.
+    // The MEASURING step itself remains documented and reachable.
+    expect(content).toMatch(/MEASURING/);
+    expect(content).toMatch(/baseline_source/);
   });
 
   it('reference/review-mode.md exists and documents Steps 1-2 as implemented', () => {

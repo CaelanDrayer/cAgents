@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.23"
+  version: "10.26.24"
   argument-hint: "[target] [--mode review|optimize|full] [flags]"
   user-invocable: "true"
   context: "fork"
@@ -114,20 +114,87 @@ structure that downstream patches will flesh out.
    `status.yaml.baseline_source = "placeholder"`.
 6. Update `status.yaml.phase = measured`, `status.yaml.state = MEASURING`.
 
-### Exit Behavior (V10.26.23)
+### Exit Behavior (V10.26.24)
 
-After MEASURING writes the baseline outcome, the skill exits cleanly. Prints:
+After PLANNING writes `findings.yaml`, the skill exits cleanly. Prints:
 
 ```
-/improve --mode review: SCOPING + MEASURING complete.
+/improve --mode review: SCOPING + MEASURING + DETECTING + PLANNING complete.
   session_id: {session_id}
   baseline_source: {placeholder|primary|legacy_review_migrated}
-  next state: DETECTING (lands in V10.26.24)
+  findings_count: {N}
+  next state: EXECUTING (lands in V10.26.25)
 ```
 
-DETECTING + PLANNING + EXECUTING + VALIDATING + REPORTING are NOT yet wired.
-Running `/improve --mode review` in V10.26.23 produces a session directory
-with `instruction.yaml` + `status.yaml` + a baseline on disk but no findings.
+EXECUTING + VALIDATING + REPORTING are NOT yet wired. Running
+`/improve --mode review` in V10.26.24 produces a session directory with
+`instruction.yaml` + `status.yaml` + baseline + per-agent findings in
+`workflow/detection/` + aggregated `workflow/findings.yaml`.
+
+## Review-Mode DETECTING + PLANNING (V10.26.24)
+
+### DETECTING — Parallel Specialist Groups
+
+Spawn the 3 review groups from
+[`reference/agent-groups.md`](reference/agent-groups.md), which includes the
+canonical definitions from `.claude/skills/review/reference/agent-groups.md`.
+Groups run in dependency order (Group 1 parallel; Group 2 after Group 1;
+Group 3 after Group 2):
+
+- **Group 1: Structural Analysis** (parallel, independent)
+  - `cagents:architecture-reviewer`
+  - `cagents:code-standards-auditor`
+  - `cagents:technical-writer`
+- **Group 2: Security & Performance** (parallel within group, after Group 1)
+  - `cagents:security-engineer`
+  - `cagents:performance-analyzer`
+  - `cagents:test-coverage-validator`
+- **Group 3: Specialized Analysis** (parallel within group, after Group 2)
+  - `cagents:senior-developer`
+  - `cagents:accessibility-checker`
+  - `cagents:compliance-specialist`
+
+Each agent writes findings to `workflow/detection/{group}/{agent}.yaml` with
+schema: `{file, line, severity, confidence, category, message, suggestion}`.
+
+**Dry-run mode**: When the environment variable `IMPROVE_DRY_AGENTS=1` is
+set, DETECTING does NOT spawn agents. Instead, it writes a planned-spawn
+record to `workflow/detection/planned_spawns.yaml` listing the agents that
+would be spawned, and skips to PLANNING with an empty findings set. Used
+by regression tests.
+
+### PLANNING — Aggregate, Dedupe, Rank
+
+1. Read all `workflow/detection/*/*.yaml` files produced by DETECTING.
+2. Deduplicate findings with identical `(file, line, category)` tuples;
+   keep the highest-confidence variant.
+3. Rank each finding by `severity_weight × confidence` where
+   `severity_weight = {critical: 4, high: 3, medium: 2, low: 1}`.
+4. Attach baseline-suppression status by checking if the finding ID matches
+   a suppressed entry in the baseline.
+5. Write `workflow/findings.yaml`:
+
+   ```yaml
+   findings:
+     - id: FIND-001
+       file: src/auth.ts
+       line: 15
+       severity: critical
+       confidence: 0.9
+       category: security
+       message: "..."
+       suggestion: "..."
+       rank: 3.6
+       suppressed: false
+   counts:
+     critical: 2
+     high: 5
+     medium: 8
+     low: 3
+     total: 18
+   ```
+
+6. Update `status.yaml.phase = planned`, `status.yaml.state = PLANNING`.
 
 ## State Machine (V10.26.22)
 
