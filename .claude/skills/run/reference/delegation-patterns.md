@@ -37,6 +37,18 @@ Complexity scoring (9 weighted signals) determines which states to execute:
 | **Medium** | 0.25-0.65 | PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED -> VALIDATED | Moderate tasks, ~4 agents |
 | **Full** | > 0.65 | All 7 states | Complex tasks, all agents |
 
+## Debug-Mode Prefix Injection (V10.26.13+)
+
+When `/run` is invoked with `--mode debug`, the PROMPTS_READY controller
+spawn gets a prepended prefix block from
+`.claude/skills/run/reference/debug-mode-prompt.md`. The injection point is
+the controller spawn prompt only — enrichment agents (orchestrator,
+planner, decomposer, prompt-engineer) are unaffected. When
+`flags.mode === "standard"` (default), no prefix is added and behavior is
+identical to V10.26.12.
+
+See @debug-mode-prompt.md for the prefix text and sentinel requirements.
+
 ## Controller Delegation
 
 The controller is selected from plan.yaml's `controller_assignment.primary`:

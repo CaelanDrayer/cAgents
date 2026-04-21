@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "10.26.12",
+  "version": "10.26.13",
   "description": "Universal multi-domain agent orchestration framework. 262 specialized agents across 15 domains with 9 skills.",
   "type": "module",
   "engines": {

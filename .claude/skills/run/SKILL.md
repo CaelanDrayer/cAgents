@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.12"
+  version: "10.26.13"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--analytics] [--from-review] [--from-designer]"
   user-invocable: "true"
   context: "none"
@@ -481,6 +481,16 @@ INSTRUCTIONS:
 **For the PROMPTS_READY state (controller):**
 
 The controller is dynamic -- resolved from `plan.yaml` `controller_assignment.primary`. Use the delegation prompt from `workflow/delegation_prompts.yaml` if available (crafted by prompt-engineer), otherwise fall back to standard controller prompt.
+
+**Debug-mode prefix injection (V10.26.13+)**: If `flags.mode === "debug"`,
+read the contents of `.claude/skills/run/reference/debug-mode-prompt.md` and
+PREPEND its prefix text (the block quoted under "Prefix Text") to the
+controller spawn prompt above. The prefix instructs the controller to apply
+the 4-phase debugging methodology and to record `hypotheses_tested[]` and a
+`failing-test` artifact in its outputs. When `flags.mode === "standard"`
+(default), skip this injection — the standard controller prompt runs
+unmodified. This conditional block on `flags.mode === "debug"` is the only
+behavioral change introduced by V10.26.13.
 
 ```
 Agent({
