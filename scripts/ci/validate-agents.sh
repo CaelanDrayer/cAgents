@@ -2,7 +2,7 @@
 #
 # cAgents Agent Schema Validation
 # Validates all agent SKILL.md files across all 15 domains
-# Version: 10.26.25
+# Version: 10.26.26
 #
 # Usage:
 #   ./scripts/ci/validate-agents.sh           # Validate all domains

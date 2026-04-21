@@ -194,7 +194,11 @@ Phase 4: Specification (25% of session)
 
 ---
 
-## /review - Universal Review Orchestrator
+## /review - Shim → /improve --mode review (since V10.26.26, deprecated V11.0)
+
+**As of V10.26.26, `/review` is a shim that forwards to `/improve --mode review`.** The unified /improve pipeline (V10.26.19–V10.26.25) now owns the 3-group parallel specialist execution, auto-fix engine, 12 prime directives, and quality gate. `/review` preserves zero behavior change — every flag forwards unchanged — but will be removed in V11.0. New invocations should use `/improve --mode review` directly.
+
+
 
 ### What It Does
 
@@ -690,11 +694,11 @@ Result: All domains complete, integrated deliverable
 
 ---
 
-## /improve - Unified Review + Optimize Engine (preview; alias to /review until V10.26.26)
+## /improve - Unified Review + Optimize Engine (canonical since V10.26.26)
 
 ### What It Does
 
-`/improve` consolidates the `/review` and `/optimize` skills into a single 7-state state machine (`SCOPING → MEASURING → DETECTING → PLANNING → EXECUTING → VALIDATING → REPORTING`) with a `--mode` selector (`review|optimize|full`). Preview in V10.26.19; mode handlers land across V10.26.21–V10.26.26. Until V10.26.26, `/review` remains the canonical entry point. After V10.26.26, `/review` becomes a shim over `/improve --mode review`. `/optimize` follows in Cluster 5. `/improve` will be removed from this "preview" status and become the canonical engine in V11.0.
+`/improve` consolidates the legacy `/review` and `/optimize` skills into a single 7-state state machine (`SCOPING → MEASURING → DETECTING → PLANNING → EXECUTING → VALIDATING → REPORTING`) with a `--mode` selector (`review|optimize|full`). As of V10.26.26, `--mode review` is feature-complete and `/review` is a shim forwarding to it. `--mode optimize` lands in Cluster 5; `--mode full` lands after Cluster 5. `/improve` becomes the only entry point in V11.0 when the /review and /optimize shims are removed.
 
 ### When to Use /improve
 
