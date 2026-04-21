@@ -776,84 +776,19 @@ Phase 4: Implementation
 
 ---
 
-## /context - Product Context Manager
+## Internal utilities (Claude-invoked)
 
-### What It Does
+These skills are not surfaced in the `/` menu. Claude invokes them during
+enrichment. Users should not call them directly.
 
-`/context` creates and manages a shared product context document that persists across all sessions. The context is automatically read by the orchestrator during every `/run` pipeline, enriching all agent work with project-specific knowledge. Think of it as "one-time project setup that makes every /run smarter."
+### /context - Product Context Manager (utility)
 
-### When to Use /context
+Claude invokes `/context` automatically during `/run` enrichment to read
+`Agent_Memory/_projects/{hash}/product_context.yaml`. Users manage context via
+`/run context show|init|update|clear` (V10.26.9) or by editing
+`Agent_Memory/_projects/{hash}/product_context.yaml` directly.
 
-- **Starting a new project**: Initialize context so all future /run calls have project knowledge
-- **Project conventions changed**: Update the context to reflect new frameworks, test runners, or conventions
-- **Agents making wrong assumptions**: If /run keeps guessing your project structure wrong
-- **Team consistency**: Ensure all team members' /run calls use the same project knowledge
-
-### When NOT to Use /context
-
-- **Running tasks**: Use `/run` to execute work
-- **Reviewing code**: Use `/review` for quality analysis
-- **One-time enrichment**: For single-session context, just describe it in the /run request
-
-### How It Works (Simplified)
-
-```
-/context init
-  -> Scan project structure (package.json, config files, directories)
-  -> Auto-detect: language, framework, test runner, formatter, linter
-  -> Create Agent_Memory/_projects/{hash}/product_context.yaml
-  -> Show detected context for review
-
-/context show
-  -> Display current context document
-  -> Show when last updated
-
-/context update
-  -> Present current values
-  -> Ask what to update
-  -> Merge updates (append-only for domain_knowledge)
-
-/context clear
-  -> Remove product_context.yaml
-```
-
-### Key Flags / Subcommands
-
-| Command / Flag | What It Does | Example |
-|----------------|-------------|---------|
-| `init` | Auto-detect and initialize context | `/context init` |
-| `show` / `--show` | Display current context | `/context show` |
-| `update` | Interactively update context | `/context update` |
-| `clear` / `--reset` | Remove context | `/context clear` |
-| `--edit` | Open context file for manual editing | `/context --edit` |
-
-### Real Examples
-
-```bash
-# Initialize context for a new project
-/context init
-
-# Check what context is currently set
-/context show
-
-# Update context after switching to TypeScript
-/context update
-
-# Clear context to start fresh
-/context clear
-```
-
-### Integration
-
-- **Enriches /run pipeline**: Every `/run` call reads the context during orchestration
-- **Enriches /team**: Team execution benefits from project context in each teammate's work
-- **Persistent across sessions**: Unlike in-prompt context, this survives session restarts
-- **Reduces repetition**: No need to explain project conventions in every /run request
-
-### Tips
-
-1. **Run `init` once per project**: A one-time setup that improves all future /run calls
-2. **Check with `show` before troubleshooting**: Wrong context can mislead agents
-3. **Update after major changes**: Framework migrations, test runner changes, new integrations
-4. **Keep domain_knowledge growing**: Add key facts as you discover them with `update`
-5. **Context is project-scoped**: Different projects get different context documents automatically
+Status: demoted to utility in V10.26.6 (frontmatter
+`metadata.user-invocable: "false"`). Removed from the /helper public catalog
+in V10.26.8. Description tightened in V10.26.10. The `_projects/{hash}/product_context.yaml`
+data file path is unchanged throughout the demotion.

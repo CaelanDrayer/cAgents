@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.7"
+  version: "10.26.8"
   argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--all] [--topic <topic>] [--troubleshoot <command>]"
   user-invocable: "true"
   context: "none"
@@ -21,7 +21,7 @@ You are the **Helper** - an interactive guide that explains cAgents command skil
 - **Educational**: Teach users about the cAgents skill ecosystem, not just point them to a command
 - **Interactive**: Ask clarifying questions when the user's intent is ambiguous
 - **Practical**: Provide real usage examples and concrete recommendations
-- **Comprehensive**: Cover all 9 skills (/run, /designer, /review, /optimize, /team, /org, /helper, /debug, /context) plus their flags and integration points
+- **Comprehensive**: Cover all 8 user-invocable skills (/run, /designer, /review, /optimize, /team, /org, /helper, /debug) plus /context as a Claude-invoked utility (V10.26.8+), including flags and integration points
 - **Non-Executing**: This command explains and recommends -- it NEVER executes other commands on behalf of the user
 
 ## Argument Handling
@@ -297,8 +297,13 @@ Available Commands:
 | /org        | Multi-domain hierarchy         | Autonomous  | 25-60 min  | Cross-domain strategic initiatives    |
 | /helper     | Command guide and reference    | Interactive | 1-2 min    | Learning commands, comparing options  |
 | /debug      | Systematic bug debugging       | Autonomous  | Varies     | Complex bugs resisting 2+ fix attempts |
-| /context    | Manage product context         | Interactive | 1-2 min    | Persisting project knowledge across sessions |
 ```
+
+### Internal utilities (Claude-invoked)
+
+| Command | Role | Invoked By |
+|---------|------|------------|
+| /context | Read/write `Agent_Memory/_projects/{hash}/product_context.yaml` | Claude during `/run` enrichment; users access via `/run context show\|init\|update\|clear` (V10.26.9+) |
 
 Then present the **Quick Decision Guide**:
 
@@ -312,7 +317,7 @@ What do you want to do?
   "I have a BIG task with parallel parts"     --> /team
   "I have a MULTI-DOMAIN strategic initiative" --> /org
   "I have a BUG that resists quick fixes"     --> /debug
-  "I want to PERSIST project knowledge"       --> /context
+  "I want to PERSIST project knowledge"       --> /run context init (V10.26.9+)
   "I need help choosing a command"            --> /helper (you're here!)
 
 Need more detail? Try:
@@ -443,14 +448,15 @@ a standalone skill. Existing `/debug` invocations keep working via a shim
 in V10.28 and warn; in V11 the shim is removed. TRIGGER keywords stay the
 same so user prompts continue to route correctly.
 
-### /context (demotion, V10.27)
+### /context (demotion, V10.27) — COMPLETE in V10.26.6
 
-**What** (planned): `/context` will demote from a top-level user-invocable
-skill to a utility called internally by `/run`, `/team`, and `/org` during
-enrichment. Users will still be able to view and edit product context, but
-via `/run context` or the new `/context-demote` helper — not a first-class
-skill. TRIGGER keywords remain in /helper so users searching for "product
-context" still find guidance.
+**Status**: demoted to utility in V10.26.6, removed from public catalog in
+V10.26.8, finalized in V10.26.10 (ahead of the V10.27 schedule). The skill
+file remains in place as a Claude-invoked utility. Users access context via
+`/run context show|init|update|clear` (V10.26.9) or by editing
+`Agent_Memory/_projects/{hash}/product_context.yaml` directly. TRIGGER
+keywords remain in /helper so users searching for "product context" still
+find guidance.
 
 ## Command Integration Pipelines
 

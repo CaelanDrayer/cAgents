@@ -10,6 +10,26 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [10.26.8] - 2026-04-21
+
+### Changed
+- `.claude/skills/helper/reference/command-details.md` replaces the full
+  `## /context - Product Context Manager` section with a one-paragraph
+  "Internal utilities (Claude-invoked)" pointer directing users to
+  `/run context show|init|update|clear` (V10.26.9) or direct yaml edit.
+- `.claude/skills/helper/SKILL.md` moves `/context` out of the main
+  user-facing Command Overview table into a new "Internal utilities
+  (Claude-invoked)" subsection. "I want to PERSIST project knowledge"
+  decision-guide answer now points to `/run context init` (V10.26.9+).
+- `.claude/skills/helper/reference/comparison-tables.md` drops the
+  `/context` column from all user-facing comparison tables.
+- The "Planned Commands" `/context` slot reserved in V10.26.4 is claimed:
+  demotion is recorded as complete as of V10.26.6.
+- `tests/skills/helper-catalog.test.js` now asserts 8 user-invocable
+  skills in the main catalog and `/context` in the "Internal utilities"
+  subsection, with an explicit check that the user-facing overview table
+  no longer contains a `/context` row.
+
 ## [10.26.7] - 2026-04-21
 
 ### Added
