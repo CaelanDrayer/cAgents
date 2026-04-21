@@ -91,6 +91,7 @@ SKILLS=(
   "$ROOT/.claude/skills/optimize/SKILL.md"
   "$ROOT/.claude/skills/designer/SKILL.md"
   "$ROOT/.claude/skills/debug/SKILL.md"
+  "$ROOT/.claude/skills/improve/SKILL.md"
   "$ROOT/.claude/skills/helper/SKILL.md"
   "$ROOT/.claude/skills/context/SKILL.md"
 )

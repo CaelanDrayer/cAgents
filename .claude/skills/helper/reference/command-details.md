@@ -690,6 +690,31 @@ Result: All domains complete, integrated deliverable
 
 ---
 
+## /improve - Unified Review + Optimize Engine (preview; alias to /review until V10.26.26)
+
+### What It Does
+
+`/improve` consolidates the `/review` and `/optimize` skills into a single 7-state state machine (`SCOPING → MEASURING → DETECTING → PLANNING → EXECUTING → VALIDATING → REPORTING`) with a `--mode` selector (`review|optimize|full`). Preview in V10.26.19; mode handlers land across V10.26.21–V10.26.26. Until V10.26.26, `/review` remains the canonical entry point. After V10.26.26, `/review` becomes a shim over `/improve --mode review`. `/optimize` follows in Cluster 5. `/improve` will be removed from this "preview" status and become the canonical engine in V11.0.
+
+### When to Use /improve
+
+- **Not yet** — preview only. Continue to use `/review` (for auditing) or `/optimize` (for measurable improvement) until V10.26.26.
+- **After V10.26.26**: `/improve --mode review` is the canonical form; `/review` still works as a shim.
+- **After Cluster 5 lands**: `/improve --mode optimize` replaces `/optimize`, `/improve --mode full` does both.
+
+### Roadmap
+
+- V10.26.19: Skeleton + this catalog entry
+- V10.26.20: Registered in plugin.json description
+- V10.26.21: `--mode` flag parser
+- V10.26.22: 7-state machine documented
+- V10.26.23: `--mode review` SCOPING + MEASURING with baseline migration
+- V10.26.24: `--mode review` DETECTING + PLANNING
+- V10.26.25: `--mode review` EXECUTING + VALIDATING + REPORTING (feature-complete)
+- V10.26.26: `/review` → shim over `/improve --mode review`
+
+---
+
 ## /debug - Systematic Debugging Methodology (V10.26.18+: shim → /run --mode debug, deprecated V11.0)
 
 ### What It Does

@@ -469,7 +469,7 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights:
 
-- **V10.26.18** — Current release
+- **V10.26.19** — Current release
 - **V10.23.0** — 29-check validation framework, regression validation chain, mandatory self-validation protocol for execution agents
 - **V10.22.0** — Two-stage review protocol (spec compliance then code quality), 5 pipeline improvements
 - **V10.20.0** — 23 agent communication gap fixes, Growth domain expanded from 35 to 39 agents
