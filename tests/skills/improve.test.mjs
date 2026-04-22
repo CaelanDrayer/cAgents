@@ -215,12 +215,17 @@ describe('V10.26.24 /improve --mode review DETECTING + PLANNING', () => {
     expect(ag).toMatch(/planned_spawns/);
   });
 
-  it('review source file still exists (not yet moved; migration preserves /review)', () => {
-    const reviewSource = resolve(
+  it('agent-groups source is canonical at improve/reference (V11.0)', () => {
+    const improveSource = resolve(
+      ROOT,
+      '.claude/skills/improve/reference/agent-groups.md'
+    );
+    expect(existsSync(improveSource)).toBe(true);
+    const legacySource = resolve(
       ROOT,
       '.claude/skills/review/reference/agent-groups.md'
     );
-    expect(existsSync(reviewSource)).toBe(true);
+    expect(existsSync(legacySource)).toBe(false);
   });
 });
 

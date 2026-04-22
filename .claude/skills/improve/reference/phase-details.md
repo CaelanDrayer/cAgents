@@ -1,10 +1,8 @@
-# Optimization Phase Details
+# /improve --mode optimize Phase Details
 
-> **Ported to /improve (V10.26.28)**: The DETECTING logic documented
-> below was ported to `.claude/skills/improve/reference/optimize-mode.md`
-> under `/improve --mode optimize`. This doc remains in place during the
-> shim period so legacy `/optimize` references still resolve. The /optimize
-> shim lands in V10.26.32.
+Canonical per-phase reference for `/improve --mode optimize`. Ported from
+the legacy `/optimize` skill and integrated into the unified state machine.
+Cross-references `reference/optimize-mode.md` for per-state behavior.
 
 ## Phase 1: Detection
 

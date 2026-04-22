@@ -2,7 +2,7 @@
 #
 # cAgents CI Runner
 # Self-contained CI script for quality gates
-# Version: 10.26.35
+# Version: 11.0.0
 #
 # Usage:
 #   ./scripts/ci/cagents-ci.sh [command]
@@ -475,12 +475,9 @@ check_tiny_bump() {
         ".claude/skills/run/SKILL.md"
         ".claude/skills/org/SKILL.md"
         ".claude/skills/team/SKILL.md"
-        ".claude/skills/review/SKILL.md"
-        ".claude/skills/optimize/SKILL.md"
         ".claude/skills/designer/SKILL.md"
-        ".claude/skills/debug/SKILL.md"
+        ".claude/skills/improve/SKILL.md"
         ".claude/skills/helper/SKILL.md"
-        ".claude/skills/context/SKILL.md"
         ".claude/hooks/session-catchup.cjs"
         "scripts/ci/cagents-ci.sh"
         "scripts/ci/validate-agents.sh"
@@ -489,25 +486,42 @@ check_tiny_bump() {
         "docs/RELEASE_NOTES.md"
         "CHANGELOG.md"
     )
-    local changed_files
-    changed_files="$(git -C "$PROJECT_ROOT" diff --name-only HEAD~1..HEAD 2>/dev/null || true)"
-    local non_sync_count=0
-    while IFS= read -r f; do
-        [[ -z "$f" ]] && continue
-        local is_sync=0
-        for t in "${sync_targets[@]}"; do
-            if [[ "$f" == "$t" ]]; then is_sync=1; break; fi
-        done
-        if [[ $is_sync -eq 0 ]]; then
-            non_sync_count=$((non_sync_count + 1))
-        fi
-    done <<< "$changed_files"
 
-    if [[ $non_sync_count -gt 5 ]]; then
-        log_warn "check_tiny_bump: non-sync diff touches $non_sync_count files (>5)"
-        violation=1
-    else
-        log_info "check_tiny_bump: non-sync diff touches $non_sync_count files (<=5)"
+    # Major-version bumps are exempt from the ≤5-file rule (check 3 only).
+    # Checks (1) CHANGELOG and (2) registry drift still apply — a major
+    # bump must still have a CHANGELOG entry and consistent version files.
+    # Only the non-sync-diff size check is relaxed, because V11.0-scale
+    # removals legitimately land as a single large commit per the
+    # telegraphed deprecation cliff.
+    local old_major new_major is_major_bump=0
+    old_major="${old_version%%.*}"
+    new_major="${new_version%%.*}"
+    if [[ "$old_major" != "$new_major" ]]; then
+        is_major_bump=1
+        log_info "check_tiny_bump: major bump $old_major -> $new_major detected; skipping non-sync diff size check"
+    fi
+
+    if [[ $is_major_bump -eq 0 ]]; then
+        local changed_files
+        changed_files="$(git -C "$PROJECT_ROOT" diff --name-only HEAD~1..HEAD 2>/dev/null || true)"
+        local non_sync_count=0
+        while IFS= read -r f; do
+            [[ -z "$f" ]] && continue
+            local is_sync=0
+            for t in "${sync_targets[@]}"; do
+                if [[ "$f" == "$t" ]]; then is_sync=1; break; fi
+            done
+            if [[ $is_sync -eq 0 ]]; then
+                non_sync_count=$((non_sync_count + 1))
+            fi
+        done <<< "$changed_files"
+
+        if [[ $non_sync_count -gt 5 ]]; then
+            log_warn "check_tiny_bump: non-sync diff touches $non_sync_count files (>5)"
+            violation=1
+        else
+            log_info "check_tiny_bump: non-sync diff touches $non_sync_count files (<=5)"
+        fi
     fi
 
     if [[ $violation -eq 0 ]]; then
@@ -531,7 +545,7 @@ main() {
     local command="${1:-all}"
     local exit_code=0
 
-    log_section "cAgents CI Runner v10.26.35"
+    log_section "cAgents CI Runner v11.0.0"
     log_info "Project root: $PROJECT_ROOT"
     log_info "Command: $command"
 

@@ -11,7 +11,11 @@ paths:
 
 All locations where the cAgents version number appears. Keep ALL locations in sync on every release.
 
-## Version Locations (21 total)
+## Version Locations (17 total, V11.0)
+
+V11.0 removed four skill SKILL.md version locations
+(`context`, `debug`, `review`, `optimize`) when the corresponding
+skill directories were deleted.
 
 | # | File | Field/Line | Updated By |
 |---|------|-----------|------------|
@@ -23,23 +27,23 @@ All locations where the cAgents version number appears. Keep ALL locations in sy
 | 6 | `.claude/skills/run/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
 | 7 | `.claude/skills/org/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
 | 8 | `.claude/skills/team/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
-| 9 | `.claude/skills/review/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
-| 10 | `.claude/skills/optimize/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
-| 11 | `.claude/skills/designer/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
-| 12 | `.claude/skills/debug/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
-| 13 | `.claude/skills/helper/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
-| 14 | `.claude/skills/context/SKILL.md` | metadata `version:` | `scripts/sync-versions.sh` |
-| 15 | `.claude/hooks/session-catchup.cjs` | `cAgents V{version} session initialized` | `scripts/sync-versions.sh` |
-| 16 | `scripts/ci/cagents-ci.sh` | `# Version:` header + `log_section` banner | `scripts/sync-versions.sh` |
-| 17 | `scripts/ci/validate-agents.sh` | `# Version:` header | `scripts/sync-versions.sh` |
-| 18 | `README.md` | Version History `**V{version}** — Current release` | `scripts/sync-versions.sh` |
-| 19 | `docs/README.md` | `**Version**:` header | `scripts/sync-versions.sh` |
-| 20 | `docs/RELEASE_NOTES.md` | `**Current Version**:` header | `scripts/sync-versions.sh` |
-| 21 | `CHANGELOG.md` | `## [VERSION] - DATE` header inserted under `[Unreleased]` | `scripts/sync-versions.sh` |
+| 9 | `.claude/skills/designer/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
+| 10 | `.claude/skills/improve/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
+| 11 | `.claude/skills/helper/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
+| 12 | `.claude/hooks/session-catchup.cjs` | `cAgents V{version} session initialized` | `scripts/sync-versions.sh` |
+| 13 | `scripts/ci/cagents-ci.sh` | `# Version:` header + `log_section` banner | `scripts/sync-versions.sh` |
+| 14 | `scripts/ci/validate-agents.sh` | `# Version:` header | `scripts/sync-versions.sh` |
+| 15 | `README.md` | Version History `**V{version}** — Current release` | `scripts/sync-versions.sh` |
+| 16 | `docs/README.md` | `**Version**:` header | `scripts/sync-versions.sh` |
+| 17 | `docs/RELEASE_NOTES.md` | `**Current Version**:` header | `scripts/sync-versions.sh` |
+| 18 | `CHANGELOG.md` | `## [VERSION] - DATE` header inserted under `[Unreleased]` | `scripts/sync-versions.sh` |
 
 ## Sync Tool
 
-`scripts/sync-versions.sh <version>` updates all 21 locations (3 JSON files + CLAUDE.md + settings.json + 9 SKILL.md frontmatters + session-catchup.cjs + cagents-ci.sh + validate-agents.sh + README.md + docs/README.md + docs/RELEASE_NOTES.md + CHANGELOG.md).
+`scripts/sync-versions.sh <version>` updates all registry locations
+(3 JSON files + CLAUDE.md + settings.json + 6 SKILL.md frontmatters +
+session-catchup.cjs + cagents-ci.sh + validate-agents.sh + README.md +
+docs/README.md + docs/RELEASE_NOTES.md + CHANGELOG.md).
 
 ## Version Bump Procedure
 

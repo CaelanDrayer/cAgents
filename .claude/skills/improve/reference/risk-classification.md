@@ -1,12 +1,10 @@
 # Risk Classification
 
-> **Atomic primitive migrated (V10.26.29)**: The snapshot / apply / test /
-> keep-or-rollback primitive that lived here and in
-> `.claude/skills/review/reference/auto-fix-engine.md` is now a shared
-> helper at `.claude/skills/improve/reference/atomic-rollback.md`. Both
-> `/improve --mode review` (auto-fix) and `/improve --mode optimize`
-> (EXECUTING) reference the helper by path. Risk classification rules
-> below are unchanged.
+Canonical risk-classification rules for `/improve --mode optimize`.
+The snapshot / apply / test / keep-or-rollback primitive lives at
+`.claude/skills/improve/reference/atomic-rollback.md`; both
+`/improve --mode review` (auto-fix) and `/improve --mode optimize`
+(EXECUTING) reference it by path.
 
 ## Risk Levels
 

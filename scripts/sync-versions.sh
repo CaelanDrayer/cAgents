@@ -8,7 +8,7 @@
 # Location #21: CHANGELOG.md (insert new "## [VERSION] - DATE" header under [Unreleased])
 #   .claude-plugin/plugin.json, .claude-plugin/marketplace.json, package.json,
 #   CLAUDE.md, .claude/settings.json,
-#   9 skill SKILL.md frontmatter versions, session-catchup.cjs context string,
+#   6 skill SKILL.md frontmatter versions, session-catchup.cjs context string,
 #   and CHANGELOG.md tiny-bump landing zone.
 
 set -euo pipefail
@@ -87,13 +87,9 @@ SKILLS=(
   "$ROOT/.claude/skills/run/SKILL.md"
   "$ROOT/.claude/skills/org/SKILL.md"
   "$ROOT/.claude/skills/team/SKILL.md"
-  "$ROOT/.claude/skills/review/SKILL.md"
-  "$ROOT/.claude/skills/optimize/SKILL.md"
   "$ROOT/.claude/skills/designer/SKILL.md"
-  "$ROOT/.claude/skills/debug/SKILL.md"
   "$ROOT/.claude/skills/improve/SKILL.md"
   "$ROOT/.claude/skills/helper/SKILL.md"
-  "$ROOT/.claude/skills/context/SKILL.md"
 )
 
 for skill in "${SKILLS[@]}"; do

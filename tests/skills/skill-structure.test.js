@@ -5,14 +5,14 @@ import yaml from 'js-yaml';
 
 const SKILLS_DIR = join(process.cwd(), '.claude', 'skills');
 
+// V11.0: 6 surviving user-invocable skills. V10.26.x listed 10
+// (including context, debug, review, optimize + improve); those four
+// were removed in V11.0 and improve is now canonical.
 const SKILL_NAMES = [
-  'context',
-  'debug',
   'designer',
   'helper',
-  'optimize',
+  'improve',
   'org',
-  'review',
   'run',
   'team',
 ];

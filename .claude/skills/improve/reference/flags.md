@@ -12,10 +12,10 @@ when `--mode review` reaches feature-parity with legacy `/review`.
 Unknown values are rejected with a usage message. See the "Argument Handling"
 section of SKILL.md for the rejection format.
 
-## Review-Mode Flags (Ported from /review in V10.26.25)
+## Review-Mode Flags
 
-The full set ships in V10.26.25. Expected inventory (from
-`.claude/skills/review/reference/flags.md`):
+Canonical inventory (ported from the legacy `/review` skill; source of
+truth as of V11.0):
 
 - `--focus <area>`
 - `--auto-fix` / `--auto-fix safe`

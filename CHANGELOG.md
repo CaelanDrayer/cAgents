@@ -10,6 +10,77 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.0.0] - 2026-04-21 — BREAKING
+
+### Removed (migrate before upgrading)
+- `/context` slash command — use `/run context show|init|update|clear`
+  (the `/run context` passthrough has been available since V10.26.9).
+- `/debug` slash command — use `/run --mode debug`
+  (`--mode debug` wiring landed in V10.26.11–18).
+- `/review` slash command — use `/improve --mode review` (or just
+  `/improve`, since `review` is the default mode; shim was V10.26.26).
+- `/optimize` slash command — use `/improve --mode optimize`
+  (shim was V10.26.32).
+- Legacy migration fallback read paths:
+  `_projects/{hash}/review/baseline.yaml` and
+  `_projects/{hash}/optimize/pattern_effectiveness.yaml`. `/improve`
+  now reads and writes only under `_projects/{hash}/improve/`.
+
+### Added
+- `/improve --mode full` is the canonical headline capability: unified
+  review → optimize pipeline with a shared baseline captured once and a
+  synthesized `improve_report.md` (landed V10.26.33; no pre-V11
+  equivalent).
+- `docs/MIGRATION-V11.md` — complete user migration guide.
+- `tests/v11-removal.test.mjs` — regression test asserting the 4
+  removed skill dirs are gone, plugin.json description is clean, and
+  CLAUDE.md + /helper catalog list exactly the 6 surviving skills.
+
+### Changed
+- Skill menu reduced from 10 to 6: `/run`, `/team`, `/org`,
+  `/designer`, `/improve`, `/helper`.
+- `plugin.json` description updated to reflect the 6-skill catalog.
+- `CLAUDE.md` skill table, quick reference, and directory listing
+  updated to the V11 shape.
+- `/helper` SKILL.md and `reference/command-details.md` rewrote the
+  Available Commands table and added a "Removed in V11.0.0" section
+  pointing at `docs/MIGRATION-V11.md`.
+- `scripts/sync-versions.sh` now updates 6 SKILL.md frontmatter
+  versions (down from 10).
+- `scripts/ci/cagents-ci.sh` tiny-bump guard exempts major-version
+  bumps from the ≤5-file non-sync diff ceiling and updates its
+  sync-targets list to the 6 surviving SKILL.md paths.
+- `.claude/rules/core/version-registry.md` shrunk from 21 to 17
+  version-sync locations.
+
+### Removed (tests)
+- `tests/skills/review-shim.test.mjs`
+- `tests/skills/optimize-shim.test.mjs`
+- `tests/skills/debug-shim.test.mjs`
+- `tests/skills/deprecation-warnings.test.mjs`
+- `tests/skills/context-invocation.test.js`
+- `tests/skills/context-utility-final.test.js`
+
+Each of the removed tests exercised paths that no longer exist.
+Regression coverage is folded into `tests/v11-removal.test.mjs`.
+
+### Migration
+
+See `docs/MIGRATION-V11.md` for the complete command-by-command
+migration guide, including optional data-file migration for
+cross-session baselines and pattern-effectiveness history. Users who
+cannot migrate can pin to `^10.26`.
+
+### Bug / Rationale
+
+Bug: Deprecation shims accumulating parsing + deprecation-warning
+duplication across four skills.
+Root cause: Each shim re-implemented argument forwarding and one-shot
+warning logic, with subtle drift between them.
+Test added: `tests/v11-removal.test.mjs`.
+Could have caught by: contract test on `plugin.json` skills registry +
+filesystem invariant on `.claude/skills/` directory shape.
+
 ## [10.26.35] - 2026-04-21
 
 ### Changed

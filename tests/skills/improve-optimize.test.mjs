@@ -56,13 +56,17 @@ describe('V10.26.28 /improve --mode optimize DETECTING', () => {
     expect(om).toMatch(/confidence:/);
   });
 
-  it('legacy /optimize phase-details.md has ported-to-/improve banner', () => {
-    const pd = readFileSync(
-      resolve(ROOT, '.claude/skills/optimize/reference/phase-details.md'),
-      'utf8'
+  it('phase-details source is canonical at improve/reference (V11.0)', () => {
+    const canonical = resolve(
+      ROOT,
+      '.claude/skills/improve/reference/phase-details.md'
     );
-    expect(pd).toMatch(/Ported to \/improve.*V10\.26\.28/);
-    expect(pd).toMatch(/optimize-mode\.md/);
+    expect(existsSync(canonical)).toBe(true);
+    const legacy = resolve(
+      ROOT,
+      '.claude/skills/optimize/reference/phase-details.md'
+    );
+    expect(existsSync(legacy)).toBe(false);
   });
 });
 

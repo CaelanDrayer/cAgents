@@ -18,8 +18,10 @@ Per-state specification for `--mode optimize`. Companion to
 ## DETECTING — Opportunity Scanners (V10.26.28)
 
 DETECTING enumerates optimization opportunities across three specialist
-groups. Groups run in parallel since they are independent scans. Ported
-from the legacy `/optimize` DETECTING phase (`.claude/skills/optimize/reference/phase-details.md`).
+groups. Groups run in parallel since they are independent scans. Canonical
+phase spec now lives at
+[`reference/phase-details.md`](phase-details.md) (ported from the legacy
+`/optimize` skill; source of truth as of V11.0).
 
 ### Agent Groups
 

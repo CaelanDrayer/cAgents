@@ -38,7 +38,7 @@ Core architecture and development guidance for cAgents.
 
 ## Version Management
 
-**CRITICAL: Always bump version on commits.** Run `scripts/sync-versions.sh <version>` to update all 20 locations. See @.claude/rules/core/version-registry.md for the canonical list.
+**CRITICAL: Always bump version on commits.** Run `scripts/sync-versions.sh <version>` to update all registry locations. See @.claude/rules/core/version-registry.md for the canonical list (17 in V11.0, down from 21).
 
 **Version Format**: `major.minor.patch` — patch (bug fix), minor (feature), major (breaking)
 
@@ -297,14 +297,11 @@ TaskUpdate({ taskId: "N", status: "completed" })
 | Skill | Context | Agent | Description |
 |-------|---------|-------|-------------|
 | `/org` | `none` | `true` | Cross-domain strategy via C-suite agents and sequential team execution |
-| `/run` | `none` | `true` | Execute any task through auto-routed controller and specialist agents |
+| `/run` | `none` | `true` | Execute any task through auto-routed controller and specialist agents (passthroughs: `run context ...`, `--mode debug`) |
 | `/team` | `fork` | `true` | Parallel multi-agent execution with wave-based quality gates |
 | `/designer` | `none` | `false` | Interactive design exploration with guided Q&A before building |
-| `/review` | `fork` | `true` | Quality review with parallel specialist agents and auto-fix |
-| `/optimize` | `fork` | `true` | Performance optimization with before/after metrics and rollback |
+| `/improve` | `fork` | `true` | Unified review + optimize engine (`--mode review\|optimize\|full`) |
 | `/helper` | `none` | `false` | Command guide that recommends the right skill for your task |
-| `/context` | `none` | `false` | Shared product context that persists across all sessions |
-| `/debug` | `none` | `false` | Systematic 4-phase debugging for bugs that resist quick fixes |
 
 **Built-in**: `/memory` (view/edit memory files), `/init` (bootstrap project CLAUDE.md)
 
@@ -338,14 +335,13 @@ N-wave pipeline: **Wave 0 (lead: enrichment) -> Wave 1..N-1 (teammates: per-wave
 ```
 Config: `settings.json` (`teammateMode`: auto/tmux/in-process). See `docs/TEAM_MODE.md`.
 
-### /designer, /review, /optimize, /helper
+### /designer, /improve, /helper
 Each skill has `SKILL.md` + `reference/` directory with detailed docs. Use `/helper` for guidance.
 
-V9.29 additions:
+Highlights:
 - **/designer**: Subagent-delegated question preparation (research agents pre-build context-rich question lists per phase), inline controller pattern (select, reorder, skip, adapt questions), phase-overlap (next-phase research begins during current phase), follow-up research dispatch, graceful fallback, 28 behavioral rules
-- **/review**: Review baselines (`--baseline`, `--suppress`), review profiles (`--profile`), quality trend tracking, baseline-suppression reference
-- **/optimize**: Benchmark integration (`--benchmark`), optimization history/learning (`--history`), pattern effectiveness tracking
-- **/helper**: Full /org documentation, troubleshooting mode (`--troubleshoot`), updated comparison matrices
+- **/improve** (V11.0 consolidation): Single 7-state state machine (SCOPING → MEASURING → DETECTING → PLANNING → EXECUTING → VALIDATING → REPORTING) with `--mode review|optimize|full`. Review baselines (`--baseline`, `--suppress`), benchmark integration (`--benchmark`), pattern-effectiveness tracking, atomic rollback helper, unified `improve_report.md` for `--mode full`
+- **/helper**: Full /org documentation, troubleshooting mode (`--troubleshoot`), updated comparison matrices, V11.0 migration catalog
 
 ## Team Mode
 
@@ -384,7 +380,7 @@ See @.claude/rules/core/skill-format.md and @.claude/rules/core/execution.md for
 cAgents/
 +-- CLAUDE.md                # Main project memory (this file)
 +-- .claude/
-|   +-- skills/              # Skills (org, run, team, designer, review, optimize, helper, context)
+|   +-- skills/              # Skills (org, run, team, designer, improve, helper)
 |   +-- hooks/               # 30 .cjs files (27 hooks + utils + launcher + eval CLI)
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (26 files, 5 categories)
@@ -468,7 +464,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 
 ## Quick Reference
 
-**Skills**: `/org`, `/run`, `/team`, `/designer`, `/review`, `/optimize`, `/helper`, `/context` (in `.claude/skills/`)
+**Skills**: `/org`, `/run`, `/team`, `/designer`, `/improve`, `/helper` (in `.claude/skills/`; V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see `docs/MIGRATION-V11.md`)
 **Built-in**: `/memory`, `/init` (Claude Code native)
 **Agents**: 243 total (17 core + 12 shared + 11 leadership + 203 domain specialists)
 **Domains**: Engineering (31), Creative (30), Business (28), Growth (34), People (17), Service (28), Leadership (11), Core (17), Shared (12), Science (10), Health (5), Education (5), Personal (5), Arts (5), Trades (5)
@@ -479,7 +475,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 816 Vitest tests (hooks + config validation)
-**Version**: 10.26.35
+**Version**: 11.0.0
 
 ## Troubleshooting
 

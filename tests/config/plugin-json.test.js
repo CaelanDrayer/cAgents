@@ -59,10 +59,10 @@ describe('root plugin.json', () => {
     expect(missing).toEqual([]);
   });
 
-  it('description enumerates /improve (V10.26.20 preview registration)', () => {
+  it('description enumerates /improve and reflects V11.0 6-skill catalog', () => {
     const plugin = loadPluginJson(PLUGIN_PATH);
     expect(plugin.description).toMatch(/\/improve/);
-    expect(plugin.description).toMatch(/9 user skills/);
+    expect(plugin.description).toMatch(/6 user skills/);
   });
 
   it('should include agents from all 15 domains', () => {

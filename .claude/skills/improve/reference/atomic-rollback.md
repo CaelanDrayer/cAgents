@@ -112,17 +112,15 @@ test, V10.26.29).
 
 ## Historical Note
 
-This primitive lived inline inside `.claude/skills/optimize/SKILL.md`
-and `.claude/skills/review/reference/auto-fix-engine.md` through
-V10.26.28. V10.26.29 extracted it here so the V11.0 removal of legacy
-skills does not delete the shared logic. V10.26.31 wires
-`/improve --mode optimize` EXECUTING to call through this helper;
-`--mode review` EXECUTING (V10.26.25) already conforms to this contract.
+This primitive originally lived inline across legacy `/review` and
+`/optimize` skills. V10.26.29 extracted it here; V10.26.31 wired
+`/improve --mode optimize` EXECUTING through the helper. V11.0 removed
+the legacy skills; this helper remains the single canonical source.
 
 ## See Also
 
 - `reference/optimize-mode.md` — per-opportunity atomic apply
 - `reference/directives.md` — 12 directives including D9 (rolled-back
   fixes documented with reason)
-- `.claude/skills/optimize/reference/risk-classification.md` — legacy
-  risk-class doc (banner updated in V10.26.29)
+- `reference/risk-classification.md` — risk classification for
+  optimization candidates (ported from legacy `/optimize`)

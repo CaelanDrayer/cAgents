@@ -1,8 +1,8 @@
-// Contract test for V10.26.29 atomic rollback primitive.
-// Asserts that the shared helper exists, documents the required
-// snapshot/apply/test/keep-or-rollback contract, and is referenced by
-// both /improve SKILL.md and the legacy /optimize risk-classification
-// doc.
+// Contract test for V10.26.29 atomic rollback primitive, updated for
+// V11.0.0. Asserts that the shared helper exists, documents the
+// required snapshot/apply/test/keep-or-rollback contract, and is
+// referenced by /improve SKILL.md and the /improve risk-classification
+// doc (V11.0 moved this doc out of the deleted /optimize directory).
 
 import { describe, it, expect } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
@@ -14,9 +14,9 @@ const ATOMIC = resolve(
   '.claude/skills/improve/reference/atomic-rollback.md'
 );
 const IMPROVE_SKILL = resolve(ROOT, '.claude/skills/improve/SKILL.md');
-const OPTIMIZE_RISK = resolve(
+const IMPROVE_RISK = resolve(
   ROOT,
-  '.claude/skills/optimize/reference/risk-classification.md'
+  '.claude/skills/improve/reference/risk-classification.md'
 );
 
 describe('V10.26.29 atomic rollback primitive (shared helper)', () => {
@@ -67,9 +67,8 @@ describe('V10.26.29 atomic rollback primitive (shared helper)', () => {
     expect(s).toMatch(/do NOT inline git-snapshot logic/);
   });
 
-  it('legacy /optimize risk-classification.md has migrated-primitive banner', () => {
-    const r = readFileSync(OPTIMIZE_RISK, 'utf8');
-    expect(r).toMatch(/Atomic primitive migrated.*V10\.26\.29/);
+  it('improve risk-classification.md references the atomic-rollback helper', () => {
+    const r = readFileSync(IMPROVE_RISK, 'utf8');
     expect(r).toMatch(/improve\/reference\/atomic-rollback\.md/);
   });
 });

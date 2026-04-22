@@ -39,14 +39,14 @@ describe('magic-keywords.cjs', () => {
     expect(result.systemMessage).toContain('/run');
   });
 
-  it('should suggest /review for review keywords', () => {
+  it('should suggest /improve --mode review for review keywords', () => {
     const result = runHook({ user_prompt: 'review the auth module for security issues' });
-    expect(result.systemMessage).toContain('/review');
+    expect(result.systemMessage).toContain('/improve --mode review');
   });
 
-  it('should suggest /optimize for optimize keywords', () => {
+  it('should suggest /improve --mode optimize for optimize keywords', () => {
     const result = runHook({ user_prompt: 'optimize the database queries for performance' });
-    expect(result.systemMessage).toContain('/optimize');
+    expect(result.systemMessage).toContain('/improve --mode optimize');
   });
 
   it('should suggest /designer for design keywords', () => {

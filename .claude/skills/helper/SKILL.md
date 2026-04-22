@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.35"
+  version: "11.0.0"
   argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--all] [--topic <topic>] [--troubleshoot <command>]"
   user-invocable: "true"
   context: "none"
@@ -291,19 +291,30 @@ Available Commands:
 |-------------|--------------------------------|-------------|------------|---------------------------------------|
 | /run        | Execute any task               | Autonomous  | Varies     | Building, fixing, writing, analyzing  |
 | /designer   | Design before building         | 4-phase Q&A | 15-45 min  | Planning features, systems, stories   |
-| /review     | Quality review                 | Autonomous  | 3-10 min   | Code review, security, quality checks |
-| /optimize   | Improve existing work          | Autonomous  | 5-20 min   | Performance, cost, content quality    |
+| /improve    | Review + optimize engine       | Autonomous  | 3-20 min   | Quality audit, perf/size optimization |
 | /team       | Parallel team execution        | Autonomous  | Varies     | Large features with parallel work     |
 | /org        | Multi-domain hierarchy         | Autonomous  | 25-60 min  | Cross-domain strategic initiatives    |
 | /helper     | Command guide and reference    | Interactive | 1-2 min    | Learning commands, comparing options  |
-| /debug      | Systematic bug debugging       | Autonomous  | Varies     | Complex bugs resisting 2+ fix attempts |
 ```
 
-### Internal utilities (Claude-invoked)
+### Passthroughs (handled inside /run)
 
-| Command | Role | Invoked By |
-|---------|------|------------|
-| /context | Read/write `Agent_Memory/_projects/{hash}/product_context.yaml` | Claude during `/run` enrichment; users access via `/run context show\|init\|update\|clear` (V10.26.9+) |
+| Form | Replaces (V10.26.x) | Landed in |
+|------|---------------------|-----------|
+| `/run context show\|init\|update\|clear` | `/context` | V10.26.9 |
+| `/run --mode debug` | `/debug` | V10.26.11 |
+
+### Removed in V11.0.0
+
+`/review`, `/optimize`, `/context`, `/debug` were removed in V11.0.0
+after a 10-patch deprecation window. See
+[`docs/MIGRATION-V11.md`](../../docs/MIGRATION-V11.md) for command-by-
+command replacements. Summary:
+
+- `/review <target>` → `/improve --mode review <target>` (or just `/improve <target>`; `review` is the default mode)
+- `/optimize <target>` → `/improve --mode optimize <target>`
+- `/context <subcmd>` → `/run context <subcmd>`
+- `/debug <request>` → `/run --mode debug <request>`
 
 Then present the **Quick Decision Guide**:
 
@@ -312,12 +323,13 @@ What do you want to do?
 
   "I want to BUILD or FIX something"          --> /run
   "I want to PLAN before building"            --> /designer
-  "I want to CHECK quality of existing work"  --> /review
-  "I want to IMPROVE existing work"           --> /optimize
+  "I want to CHECK quality of existing work"  --> /improve (default --mode review)
+  "I want to IMPROVE existing work"           --> /improve --mode optimize
+  "I want BOTH at once with one baseline"     --> /improve --mode full --scope <path>
   "I have a BIG task with parallel parts"     --> /team
   "I have a MULTI-DOMAIN strategic initiative" --> /org
-  "I have a BUG that resists quick fixes"     --> /debug
-  "I want to PERSIST project knowledge"       --> /run context init (V10.26.9+)
+  "I have a BUG that resists quick fixes"     --> /run --mode debug
+  "I want to PERSIST project knowledge"       --> /run context init
   "I need help choosing a command"            --> /helper (you're here!)
 
 Need more detail? Try:

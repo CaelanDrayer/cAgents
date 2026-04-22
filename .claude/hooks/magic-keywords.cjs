@@ -29,13 +29,11 @@ const KEYWORD_ROUTES = [
   [/^(?:update|upgrade|modify|change|edit|adjust)\b/i, '/run', 'update via agent pipeline'],
   [/^(?:deploy|release|publish|ship)\b/i, '/run', 'deploy via agent pipeline'],
 
-  // /review triggers
-  [/^(?:review|audit|check|inspect|analyze|assess|evaluate)\b/i, '/review', 'review with specialist agents'],
-  [/^(?:code review|security review|performance review)\b/i, '/review', 'review with specialist agents'],
-
-  // /optimize triggers
-  [/^(?:optimize|speed up|improve performance|benchmark|profile|tune)\b/i, '/optimize', 'optimize with before/after metrics'],
-  [/^(?:reduce|minimize|compress|shrink)\b.*(?:size|bundle|latency|memory|load)/i, '/optimize', 'optimize with before/after metrics'],
+  // /improve triggers (V11.0: unified review + optimize entry point)
+  [/^(?:review|audit|check|inspect|analyze|assess|evaluate)\b/i, '/improve --mode review', 'review with specialist agents'],
+  [/^(?:code review|security review|performance review)\b/i, '/improve --mode review', 'review with specialist agents'],
+  [/^(?:optimize|speed up|improve performance|benchmark|profile|tune)\b/i, '/improve --mode optimize', 'optimize with before/after metrics'],
+  [/^(?:reduce|minimize|compress|shrink)\b.*(?:size|bundle|latency|memory|load)/i, '/improve --mode optimize', 'optimize with before/after metrics'],
 
   // /designer triggers
   [/^(?:design|explore|brainstorm|prototype|sketch|wireframe|mockup)\b/i, '/designer', 'interactive design exploration'],

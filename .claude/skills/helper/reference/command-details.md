@@ -194,224 +194,23 @@ Phase 4: Specification (25% of session)
 
 ---
 
-## /review - Shim → /improve --mode review (since V10.26.26, REMOVED IN V11.0.0)
 
-**As of V10.26.26, `/review` is a shim that forwards to `/improve --mode review`.** The unified /improve pipeline (V10.26.19–V10.26.25) now owns the 3-group parallel specialist execution, auto-fix engine, 12 prime directives, and quality gate. `/review` preserves zero behavior change — every flag forwards unchanged — but will be removed in V11.0. New invocations should use `/improve --mode review` directly.
+## Removed in V11.0.0
 
+The following slash commands were removed after the V10.26.19 → V10.26.35
+deprecation runway. See [](../../../../docs/MIGRATION-V11.md)
+for migration details.
 
+| Removed command | Replacement | First appeared as shim | Removed in |
+|-----------------|-------------|------------------------|------------|
+| `/review`     | `/improve --mode review`  | V10.26.26 | V11.0.0 |
+| `/optimize`   | `/improve --mode optimize`| V10.26.32 | V11.0.0 |
+| `/debug`      | `/run --mode debug`       | V10.26.18 | V11.0.0 |
+| `/context`    | `/run context show|init|update|clear` | V10.26.9 (passthrough) | V11.0.0 |
 
-### What It Does
-
-`/review` runs a multi-agent quality review on code, documentation, content, designs, processes, data, or infrastructure. It auto-detects the review type and framework, runs specialist agents in parallel groups, scores findings with confidence levels, generates auto-fix suggestions, and checks quality gates. It covers everything from architecture to accessibility to security.
-
-### When to Use /review
-
-- **Code review**: Check architecture, security, performance, standards, test coverage
-- **Pre-merge checks**: Review staged or changed files before committing
-- **Security audit**: Focus on vulnerabilities and security patterns
-- **Documentation review**: Check clarity, completeness, accuracy
-- **Infrastructure review**: Verify security, cost, reliability of infra configs
-- **Content review**: Check tone, grammar, messaging, audience fit
-
-### When NOT to Use /review
-
-- **You want to FIX things**: Use `/run` to implement fixes
-- **You want measurable improvements**: Use `/optimize` for before/after metrics
-- **You want to design**: Use `/designer` for planning
-
-### How It Works (Simplified)
-
-```
-[Initialize] Auto-detect review type (code/docs/content/...) + framework (Next.js/React/...)
-  |
-  v
-[Parallel Group 1] architecture-reviewer, code-standards-auditor, documentation-reviewer
-  |
-  v
-[Parallel Group 2] performance-analyzer, security-analyst, test-coverage-validator
-  |
-  v
-[Parallel Group 3] dependency-auditor, accessibility-checker, compliance-officer
-  |
-  v
-[Aggregate] Merge findings, add confidence scores (0.0-1.0), classify severity
-  |
-  v
-[Auto-Fix] Generate fix suggestions with confidence-based safety levels
-  |
-  v
-[Quality Gates] Check thresholds (strict/standard/relaxed)
-  |
-  v
-[Report] Final report with findings, fixes, recommendations
-```
-
-### Key Flags
-
-| Flag | What It Does | Example |
-|------|-------------|---------|
-| `--focus <area>` | Focus on specific area | `/review --focus security` |
-| `--scope changed` | Only review changed files | `/review --scope changed` |
-| `--auto-fix safe` | Generate safe auto-fixes | `/review --auto-fix safe` |
-| `--framework <name>` | Force framework detection | `/review --framework nextjs` |
-| `--quality-gate strict` | Strict quality thresholds | `/review --quality-gate strict` |
-| `--run-tests` | Run tests after auto-fix | `/review --auto-fix safe --run-tests` |
-| `--output <format>` | Output format | `/review --output summary` |
-| `--parallel` | Parallel agent execution (default) | `/review --parallel` |
-
-### Real Examples
-
-```bash
-# Review current directory
-/review
-
-# Review specific path
-/review src/auth/
-
-# Security-focused review
-/review --focus security
-
-# Review only changed files with auto-fix
-/review --scope changed --auto-fix safe --apply-safe-fixes
-
-# Strict quality gate with test validation
-/review --quality-gate strict --run-tests --rollback-on-failure
-
-# Framework-specific review
-/review --framework nextjs --focus performance
-
-# Review with detailed report saved to file
-/review --output detailed --save-report ./code-review.md
-```
-
-### Integration
-
-- **Feeds into /run**: Critical findings can be fixed via `/run`
-- **After /optimize**: Verify optimization quality with a review
-- **Pre-merge pipeline**: `/review --scope staged --quality-gate strict`
-
-### Tips
-
-1. **Use --scope changed for speed**: Don't review the entire codebase every time
-2. **Trust auto-detection**: It detects frameworks and review types accurately
-3. **Start with --focus security**: Security issues are the most impactful
-4. **Use --auto-fix safe**: Safe fixes are low-risk and save time
-5. **Check confidence scores**: Higher confidence = more reliable finding
-
----
-
-## /optimize - Shim → /improve --mode optimize (since V10.26.32, REMOVED IN V11.0.0)
-
-**As of V10.26.32, `/optimize` is a shim that forwards to `/improve --mode optimize`. REMOVED IN V11.0.0.** The unified /improve pipeline (V10.26.27–V10.26.31) now owns opportunity scanning, MEASURING (baseline + benchmark), EXECUTING (atomic apply), VALIDATING (before/after delta), and REPORTING. `/optimize` preserves zero behavior change — every flag forwards unchanged — but will be removed in V11.0.0. New invocations should use `/improve --mode optimize` directly. See the [migration guide](https://github.com/CaelanDrayer/cAgents/blob/main/docs/RELEASE_NOTES.md).
-
-### What It Does
-
-`/optimize` detects improvement opportunities in your code, content, processes, or infrastructure. It measures baselines, plans optimizations by ROI, executes changes atomically (with rollback on failure), and validates with before/after metrics. It supports 8 optimization types and can work across multiple files. Every optimization is measurable -- no vague claims.
-
-### When to Use /optimize
-
-- **Slow code**: Speed up API endpoints, reduce query time, improve FCP/LCP
-- **Large bundles**: Reduce bundle size, tree-shake unused code
-- **High costs**: Optimize infrastructure spending, reduce resource usage
-- **Poor content**: Improve readability scores, SEO rankings, engagement metrics
-- **Inefficient processes**: Streamline workflows, reduce manual steps
-- **Campaigns**: Improve conversion rates, click-through rates, engagement
-
-### When NOT to Use /optimize
-
-- **Building new features**: Use `/run` for new implementations
-- **Checking quality**: Use `/review` for quality analysis
-- **Planning**: Use `/designer` for design exploration
-- **The code is broken**: Fix bugs with `/run` first, then optimize
-
-### How It Works (Simplified)
-
-```
-[Detection] Scan project, detect type (code/content/process/...), classify opportunities
-  |
-  v
-[Analysis] Measure baseline metrics, identify improvement areas, classify risk
-  |
-  v
-[Planning] Prioritize by ROI, group for parallel execution, select specialists
-  |
-  v
-[Execution] For each optimization: snapshot -> apply -> validate -> keep or rollback
-  |
-  v
-[Validation] Re-measure all metrics, compare before/after, check quality gates
-  |
-  v
-[Report] "Bundle size: 2.8MB -> 1.8MB (-36%)", "Query time: 450ms -> 120ms (-73%)"
-```
-
-### Key Flags
-
-| Flag | What It Does | Example |
-|------|-------------|---------|
-| `--type <type>` | Force optimization type | `/optimize --type code` |
-| `--dry-run` | Preview without applying | `/optimize --dry-run` |
-| `--safety safe` | Only safe optimizations | `/optimize --safety safe` |
-| `--cross-file` | Multi-file dependency analysis | `/optimize --cross-file` |
-| `--plan-only` | Generate plan, hand off to /run | `/optimize --plan-only` |
-| `--review-after` | Trigger /review after optimizing | `/optimize --review-after` |
-| `--explore-first` | Start with /designer exploration | `/optimize --explore-first` |
-| `--focus performance` | Focus on specific goal | `/optimize --focus performance` |
-
-### 8 Optimization Types
-
-| Type | What It Optimizes | Example Metrics |
-|------|-------------------|-----------------|
-| `code` | Performance, bundles, algorithms | FCP, LCP, bundle size, query time |
-| `content` | Readability, SEO, engagement | Readability score, SEO score |
-| `process` | Workflow efficiency, automation | Cycle time, manual steps, error rate |
-| `infrastructure` | Cost, scaling, reliability | Monthly cost, utilization, uptime |
-| `data` | Query performance, ETL speed | Query time, ETL duration |
-| `campaign` | Conversion, engagement, targeting | Conversion %, CTR, open rate |
-| `creative` | Pacing, depth, structure | Engagement score, consistency |
-| `sales` | Sales cycle, win rate | Cycle length, win rate % |
-
-### Real Examples
-
-```bash
-# Auto-detect and optimize
-/optimize
-
-# Natural language goal
-/optimize "Make the homepage load faster"
-
-# Specific target and type
-/optimize src/ --type code --focus performance
-
-# Safe optimizations only with test validation
-/optimize --safety safe --require-tests-pass
-
-# Preview without applying changes
-/optimize --dry-run
-
-# Full optimization with post-review
-/optimize src/ --cross-file --review-after --validation comprehensive
-
-# Content SEO optimization
-/optimize blog/ --type content --focus quality
-
-# Generate plan only, hand off to /run for implementation
-/optimize --type code --plan-only
-```
-
-### Integration
-
-- **Flows into /review**: Use `--review-after` to verify quality
-- **Flows into /run**: Use `--plan-only` to hand off CRITICAL items to /run
-- **Flows from /designer**: Use `--explore-first` to design the optimization approach
-
-### Tips
-
-1. **Always start with --dry-run**: See what would change before committing
-2. **Use --safety safe first**: Low-risk optimizations are a good starting point
-3. **Check before/after metrics**: The report shows measurable impact
-4. **Use --cross-file for codebases**: Multi-file analysis catches architecture-level opportunities
-5. **Rollback is automatic**: If tests fail, changes are rolled back
+Additionally, V10.26.33 introduced `/improve --mode full` — a unified
+review → optimize pipeline with a shared baseline and synthesized
+`improve_report.md`. No pre-V11 equivalent existed.
 
 ---
 
@@ -696,132 +495,54 @@ Result: All domains complete, integrated deliverable
 
 ---
 
-## /improve - Unified Review + Optimize Engine (canonical since V10.26.26)
+## /improve - Unified Review + Optimize Engine (canonical as of V11.0)
 
 ### What It Does
 
-`/improve` consolidates the legacy `/review` and `/optimize` skills into a single 7-state state machine (`SCOPING → MEASURING → DETECTING → PLANNING → EXECUTING → VALIDATING → REPORTING`) with a `--mode` selector (`review|optimize|full`). As of V10.26.26, `--mode review` is feature-complete and `/review` is a shim forwarding to it. `--mode optimize` lands in Cluster 5; `--mode full` lands after Cluster 5. `/improve` becomes the only entry point in V11.0 when the /review and /optimize shims are removed.
+`/improve` is the canonical quality engine: a single 7-state state
+machine (`SCOPING → MEASURING → DETECTING → PLANNING → EXECUTING →
+VALIDATING → REPORTING`) with a `--mode` selector
+(`review|optimize|full`). V11.0 removed the legacy `/review`,
+`/optimize`, `/context`, and `/debug` slash commands; `/improve` now
+owns review, optimization, and the unified full pipeline.
 
 ### When to Use /improve
 
-- **Not yet** — preview only. Continue to use `/review` (for auditing) or `/optimize` (for measurable improvement) until V10.26.26.
-- **After V10.26.26**: `/improve --mode review` is the canonical form; `/review` still works as a shim.
-- **After Cluster 5 lands**: `/improve --mode optimize` replaces `/optimize`, `/improve --mode full` does both.
+- **Audit code, docs, content, infrastructure, or content quality**:
+  `/improve --mode review [target]` (or just `/improve [target]` —
+  `review` is the default mode).
+- **Measure then optimize**: `/improve --mode optimize [target]` for
+  performance / size / efficiency improvements with before/after
+  metric deltas and atomic rollback.
+- **Do both with a single shared baseline**: `/improve --mode full
+  --scope <path>` for review → optimize synthesis with a unified
+  `improve_report.md`.
 
-### Roadmap
+### Modes
 
-- V10.26.19: Skeleton + this catalog entry
-- V10.26.20: Registered in plugin.json description
-- V10.26.21: `--mode` flag parser
-- V10.26.22: 7-state machine documented
-- V10.26.23: `--mode review` SCOPING + MEASURING with baseline migration
-- V10.26.24: `--mode review` DETECTING + PLANNING
-- V10.26.25: `--mode review` EXECUTING + VALIDATING + REPORTING (feature-complete)
-- V10.26.26: `/review` → shim over `/improve --mode review`
-
----
-
-## /debug - Shim → /run --mode debug (since V10.26.18, REMOVED IN V11.0.0, deprecated V11.0)
-
-### What It Does
-
-`/debug` is a structured 4-phase debugging tool for bugs that resist quick fixes. It guides you through Root Cause Investigation, Pattern Analysis, Hypothesis Testing, and Implementation -- enforcing evidence-based debugging rather than guessing. Think of it as "find the actual root cause, not just the symptom."
-
-**As of V10.26.18, `/debug` is a back-compat shim that forwards to `/run --mode debug`.** The same 4-phase methodology runs; the `/debug` command preserves the user surface (including `--escalate` and `--phase`) but delegates all session creation and coordination to the canonical pipeline. `/debug` will be removed in V11.0 — prefer `/run --mode debug` for new invocations.
-
-### When to Use /debug
-
-- **Bug has resisted 2+ fix attempts**: If you've tried multiple fixes and the bug persists
-- **Intermittent or non-deterministic failure**: Flaky tests, works-sometimes bugs
-- **Unclear root cause**: Error message exists but cause is unknown
-- **Performance regression**: Something got slower but you don't know why
-- **"It works on my machine"**: Environment-specific failures
-
-### When NOT to Use /debug
-
-- **Known simple fixes**: Typo, missing import, obvious one-line fix -- use `/run` instead
-- **Code quality review**: Use `/review` for quality analysis, not /debug
-- **Building features**: Use `/run` for new development
-
-### How It Works (Simplified)
-
-```
-Phase 1: Root Cause Investigation
-  -> Reproduce the exact bug
-  -> Read the full stack trace (not just the message)
-  -> Check recent git changes
-  -> Trace the data flow
-
-Phase 2: Pattern Analysis
-  -> Classify: state mutation? type mismatch? timing/async? data flow? config?
-  -> Match patterns to known bug categories
-
-Phase 3: Hypothesis Testing (one at a time)
-  -> State hypothesis: "The bug occurs because X causes Y when Z"
-  -> Test with minimal reproduction
-  -> Record: confirmed or falsified (with evidence)
-  -> Max 5 hypotheses before escalation
-
-Phase 4: Implementation
-  -> Write a FAILING TEST first (mandatory)
-  -> Implement the minimal fix
-  -> Run failing test (must now pass)
-  -> Run full test suite (no regressions)
-  -> Verify original reproduction scenario
-```
+| Mode | What it does | Artifacts |
+|------|--------------|-----------|
+| `review` (default) | 3-group parallel specialist review; optional auto-fix; 12 prime directives | `reports/aggregate.yaml`, `reports/quality_gates.yaml`, `reports/auto_fixes.yaml`, `reports/final_report.md` |
+| `optimize` | Opportunity scanners; ROI rank; atomic apply top-N; before/after benchmark delta | `workflow/opportunities.yaml`, `workflow/baseline_metrics.yaml`, `outputs/optimization_report.md`, `_projects/{hash}/improve/history.yaml` |
+| `full` | Review → optimize with shared baseline; synthesis step | `improve_report.md` with `## Review Findings` and `## Optimizations Applied` sections |
 
 ### Key Flags
 
-| Flag | What It Does | Example |
-|------|-------------|---------|
-| `--escalate` | Force escalation report after investigation | `/debug auth bug --escalate` |
-| `--phase <1-4>` | Start at specific phase | `/debug known issue --phase 3` |
+| Flag | Description | Modes |
+|------|-------------|-------|
+| `--mode review\|optimize\|full` | Select pipeline branch | all |
+| `--scope <path>` | Required for `--mode full`; optional elsewhere | all |
+| `--dry-run` | Plan without applying changes | all |
+| `--auto-fix safe` | Apply safe auto-fixes (review only) | review |
+| `--baseline` / `--suppress <id>` | Baseline and suppression | review |
+| `--benchmark auto\|lighthouse\|k6\|hyperfine` | Benchmark tool | optimize, full |
+| `--history` | Append run to `_projects/{hash}/improve/history.yaml` | all |
 
-### Real Examples
+### Delivery History
 
-```bash
-# Debug a complex authentication bug
-/debug Auth token expiry causes random logouts after 30 minutes
-
-# Debug intermittent test failures
-/debug Payment tests fail 1 in 5 runs with "connection timeout"
-
-# Force escalation if 3+ fixes already tried
-/debug Race condition in WebSocket reconnect --escalate
-
-# Start at hypothesis testing (root cause already known)
-/debug Memory leak in event listener cleanup --phase 3
-```
-
-### Integration
-
-- **After /run fails**: If `/run Fix bug` creates more bugs, escalate to `/debug`
-- **Feeds back into /run**: After confirming root cause, use `/run` to implement if simpler
-- **CLAUDE.md bug-driven testing**: /debug Phase 4 enforces the mandatory regression test requirement from CLAUDE.md
-
-### Tips
-
-1. **Trust the process**: Phase 1 reproduction is not optional, even if you think you know the cause
-2. **One hypothesis at a time**: Testing multiple hypotheses simultaneously invalidates results
-3. **Write the test FIRST in Phase 4**: This is not optional -- the test IS the verification
-4. **Use --escalate proactively**: If 3+ attempts have already failed, add --escalate at the start
-5. **Record falsified hypotheses**: Knowing what is NOT the cause is valuable information
+- V10.26.19–26: Cluster 4 landed `--mode review` and the `/review` shim
+- V10.26.27–35: Cluster 5 landed `--mode optimize`, `--mode full`, the `/optimize` shim, and uniform deprecation warnings
+- V11.0.0: Removed `/review`, `/optimize`, `/context`, `/debug` skills; `/improve` is the canonical entry point
 
 ---
 
-## Internal utilities (Claude-invoked)
-
-These skills are not surfaced in the `/` menu. Claude invokes them during
-enrichment. Users should not call them directly.
-
-### /context - Product Context Manager (utility)
-
-Claude invokes `/context` automatically during `/run` enrichment to read
-`Agent_Memory/_projects/{hash}/product_context.yaml`. Users manage context via
-`/run context show|init|update|clear` (V10.26.9) or by editing
-`Agent_Memory/_projects/{hash}/product_context.yaml` directly.
-
-Status: demoted to utility in V10.26.6 (frontmatter
-`metadata.user-invocable: "false"`). Removed from the /helper public catalog
-in V10.26.8. Description tightened in V10.26.10. The `_projects/{hash}/product_context.yaml`
-data file path is unchanged throughout the demotion.

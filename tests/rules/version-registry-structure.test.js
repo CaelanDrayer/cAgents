@@ -44,13 +44,15 @@ describe('version-registry.md structure', () => {
     expect(content).toMatch(/21 (?:total|registry|locations|locations\.)/);
   });
 
-  it('registry table contains 21 numbered rows', () => {
-    // Matches table rows starting with | 1 | through | 21 |
+  it('registry table contains all numbered rows (V11.0: 18 locations)', () => {
+    // V11.0 shrunk the registry from 21 to 18 (removed 4 SKILL.md
+    // entries for context/debug/review/optimize, kept CHANGELOG).
+    // Updated for V11.0.0.
     const rowNumbers = [...content.matchAll(/^\|\s*(\d+)\s*\|/gm)].map((m) =>
       Number(m[1]),
     );
     const unique = new Set(rowNumbers);
-    for (let i = 1; i <= 21; i++) {
+    for (let i = 1; i <= 18; i++) {
       expect(unique.has(i)).toBe(true);
     }
   });

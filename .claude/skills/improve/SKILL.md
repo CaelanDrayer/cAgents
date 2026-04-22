@@ -1,11 +1,11 @@
 ---
 name: improve
-description: "Unified quality improvement engine combining /review auditing and /optimize measurable improvement. Use for auditing code, documentation, content, infrastructure, or performance. TRIGGER: improve, review, audit, optimize. Mode selection via --mode review|optimize|full. NOT for: new implementation (/run) or design exploration (/designer)."
+description: "Unified quality improvement engine for review and measurable optimization. Use for auditing code, documentation, content, infrastructure, or performance. TRIGGER: improve, review, audit, optimize. Mode selection via --mode review|optimize|full. NOT for: new implementation (/run) or design exploration (/designer)."
 license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "10.26.35"
+  version: "11.0.0"
   argument-hint: "[target] [--mode review|optimize|full] [flags]"
   user-invocable: "true"
   context: "fork"
@@ -14,13 +14,13 @@ allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TodoWrite
 
 # /improve — Unified Review + Optimize Engine
 
-`/improve` consolidates `/review` and `/optimize` into a single 7-state
-state machine: **SCOPING → MEASURING → DETECTING → PLANNING →
-EXECUTING → VALIDATING → REPORTING**. Mode selection via `--mode
-review|optimize|full`. Full delivery history: Cluster 4 (V10.26.19–
-V10.26.26) landed `--mode review` and the `/review` shim; Cluster 5
-(V10.26.27–V10.26.35) landed `--mode optimize`, `--mode full`, the
-`/optimize` shim, and uniform deprecation warnings.
+`/improve` is the unified quality engine: a single 7-state state
+machine — **SCOPING → MEASURING → DETECTING → PLANNING → EXECUTING →
+VALIDATING → REPORTING** — with mode selection via `--mode
+review|optimize|full`. V11.0 removed the legacy `/review`, `/optimize`,
+`/context`, and `/debug` slash commands after a two-version deprecation
+window (V10.26.19–V10.26.35); `/improve` is now the canonical entry
+point for review, optimization, and the unified full pipeline.
 
 ## Argument Handling (V10.26.21)
 
@@ -112,8 +112,8 @@ agents. It writes `workflow/detection/planned_spawns.yaml` listing the
 three scanner groups and advances to PLANNING with an empty
 opportunities set.
 
-**Ported from**: `.claude/skills/optimize/reference/phase-details.md`
-(legacy `/optimize` DETECTING phase). See
+**Source of truth**: [`reference/phase-details.md`](reference/phase-details.md)
+(ported from the legacy `/optimize` skill and now canonical). See
 [`reference/optimize-mode.md`](reference/optimize-mode.md) for the full
 opportunity schema and per-scanner scope.
 
@@ -135,21 +135,20 @@ effectiveness before PLANNING.
    `Agent_Memory/_projects/{hash}/improve/baselines/{timestamp}.yaml`.
 4. Update `status.yaml.phase = measured`, `status.yaml.state = MEASURING`.
 
-### Pattern Effectiveness Migration
+### Pattern Effectiveness Storage
 
 Load historical pattern effectiveness for confidence adjustment during
-PLANNING. Migration rule (see
-[`reference/pattern-effectiveness-migration.md`](reference/pattern-effectiveness-migration.md)):
+PLANNING. Canonical path (see
+[`reference/pattern-effectiveness-migration.md`](reference/pattern-effectiveness-migration.md)
+for the historical migration record):
 
 1. **Primary**: `Agent_Memory/_projects/{hash}/improve/pattern_effectiveness.yaml`
-2. **Legacy fallback**: `Agent_Memory/_projects/{hash}/optimize/pattern_effectiveness.yaml`
-3. If primary exists, read it. If absent but legacy exists, read legacy
-   AND copy forward to primary (atomic write, legacy untouched). If
-   neither exists, treat as empty pattern table.
-4. All writes go to `improve/` only — the legacy `optimize/` path is
-   never written after V10.26.30.
+2. If the primary exists, read it; otherwise treat as an empty pattern
+   table (new project).
+3. All writes go to `improve/` only.
 
-V11.0 removes the legacy-fallback read branch.
+V11.0 removed the V10.26.30–V10.26.35 read-only legacy fallback; the
+canonical `improve/` path is the single source of truth.
 
 ## Optimize-Mode EXECUTING + VALIDATING + REPORTING (V10.26.31)
 
@@ -210,8 +209,8 @@ success/failure increments. Update `status.yaml.phase = complete`.
 Print the final exit message listing `session_id`,
 `opportunities_scanned`, `opportunities_applied`,
 `opportunities_rolled_back`, `verdict: PASS|FAIL`, and report path.
-`/improve --mode optimize` is now artifact-equivalent to legacy
-`/optimize`. The `/optimize` shim lands in V10.26.32.
+`/improve --mode optimize` is the canonical optimization entry point as
+of V11.0.
 
 ## Full-Mode Pipeline (V10.26.33)
 
@@ -364,19 +363,19 @@ Write `status.yaml` with `phase: scoped`, `state: SCOPING`, timestamp.
 ### MEASURING — Baseline Discovery Rule
 
 Compute project hash (see
-[`reference/baseline-migration.md`](reference/baseline-migration.md) —
-same hashing rule as `/review` and `/optimize`). Baseline lookup order:
+[`reference/baseline-migration.md`](reference/baseline-migration.md)
+for the hashing rule). Baseline lookup:
 
-1. **Primary**: `Agent_Memory/_projects/{hash}/improve/baseline.yaml`
-2. **Legacy fallback**: `Agent_Memory/_projects/{hash}/review/baseline.yaml`
+1. **Canonical**: `Agent_Memory/_projects/{hash}/improve/baseline.yaml`
 
-If (1) exists, read it. If (1) missing but (2) present: read (2),
-copy it forward to (1) using atomic write (`{path}.tmp` then `rename`);
-legacy file is left untouched; set
-`status.yaml.baseline_source = "legacy_review_migrated"`. If neither:
-create (1) as a placeholder with `{quality_score: null,
+If it exists, read it; set
+`status.yaml.baseline_source = "primary"`. If it does not exist:
+create it as a placeholder with `{quality_score: null,
 last_measured: null}`; set `baseline_source = "placeholder"`.
 Update `phase = measured`, `state = MEASURING`.
+
+V11.0 removed the V10.26.23–V10.26.35 read-only `review/baseline.yaml`
+fallback; the canonical `improve/` path is the single source of truth.
 
 ### Exit Behavior (V10.26.25 — feature complete)
 
@@ -394,19 +393,17 @@ Prints:
   report: Agent_Memory/sessions/{session_id}/reports/final_report.md
 ```
 
-`/improve --mode review` is now artifact-equivalent to legacy `/review`:
-baseline.yaml, history.yaml, and the full `reports/*` set are written, with
-the `/review` shim landing in V10.26.26.
+`/improve --mode review` is the canonical review entry point as of V11.0.
+It writes `baseline.yaml`, `history.yaml`, and the full `reports/*` set.
 
 ## Review-Mode DETECTING + PLANNING (V10.26.24)
 
 ### DETECTING — Parallel Specialist Groups
 
 Spawn the 3 review groups from
-[`reference/agent-groups.md`](reference/agent-groups.md), which includes the
-canonical definitions from `.claude/skills/review/reference/agent-groups.md`.
-Groups run in dependency order (Group 1 parallel; Group 2 after Group 1;
-Group 3 after Group 2):
+[`reference/agent-groups.md`](reference/agent-groups.md) (canonical spec
+as of V11.0). Groups run in dependency order (Group 1 parallel; Group 2
+after Group 1; Group 3 after Group 2):
 
 - **Group 1: Structural Analysis** (parallel, independent)
   - `cagents:architecture-reviewer`
@@ -459,8 +456,9 @@ Update `status.yaml.phase = planned`, `state = PLANNING`.
 
 ### EXECUTING — Atomic Auto-Fix Loop
 
-Only runs when `--auto-fix` is set. Ported directly from
-`.claude/skills/review/reference/auto-fix-engine.md`. Per-fix algorithm:
+Only runs when `--auto-fix` is set. Canonical spec:
+[`reference/auto-fix-engine.md`](reference/auto-fix-engine.md). Per-fix
+algorithm:
 
 ```
 for fix in planned_fixes (sorted by confidence desc):
@@ -487,8 +485,9 @@ Writes `workflow/auto_fixes_applied.yaml` with per-fix status
 ### VALIDATING — 12 Prime Directives + Quality Gate
 
 Read the 12 prime directives from
-[`reference/directives.md`](reference/directives.md) (ported from
-`.claude/skills/review/reference/quality-gates.md`):
+[`reference/directives.md`](reference/directives.md) (canonical as of
+V11.0; formula and thresholds in
+[`reference/quality-gates.md`](reference/quality-gates.md)):
 
 1. No critical findings unresolved
 2. No high-severity security findings unresolved
@@ -514,9 +513,9 @@ Write `reports/quality_gates.yaml` with `directives[]` (D1..D12 with
 `passed` + `evidence`), `quality_score` (current, baseline, delta,
 threshold), and `verdict: PASS|FAIL`.
 
-### REPORTING — Legacy Artifact Set
+### REPORTING — Canonical Artifact Set
 
-Writes all four files that legacy `/review` produced:
+Writes the four canonical review artifacts:
 
 - `reports/aggregate.yaml` — merged findings with severity, confidence, file:line
 - `reports/auto_fixes.yaml` — applied/rolled-back/dead-letter fixes
@@ -557,7 +556,7 @@ Per-state review/optimize/full behavior summary:
 | State | review | optimize | full |
 |-------|--------|----------|------|
 | SCOPING | session dir + instruction.yaml | same | same |
-| MEASURING | quality baseline (improve/, legacy review/ fallback) | perf baseline (improve/baselines/) | shared baseline captured ONCE |
+| MEASURING | quality baseline (improve/baseline.yaml) | perf baseline (improve/baselines/) | shared baseline captured ONCE |
 | DETECTING | 3 review groups (correctness, security, quality) | 3 scanners (perf, size, efficiency) | review groups, then seeded optimize scanners |
 | PLANNING | rank severity × confidence → findings.yaml | ROI rank → opportunities.yaml | unified plan: findings → fixes, opportunities → optimizations |
 | EXECUTING | optional --auto-fix via atomic helper | atomic apply top-N | review auto-fix first, then optimize patches |
@@ -573,7 +572,7 @@ All modes append to `_projects/{hash}/improve/history.yaml`.
 | Per-session | `Agent_Memory/sessions/improve_{slug}_{YYMMDD}_{NNN}/` |
 | Cross-session baseline | `Agent_Memory/_projects/{hash}/improve/baseline.yaml` |
 | Cross-session history | `Agent_Memory/_projects/{hash}/improve/history.yaml` |
-| Migration fallback (read-only) | `Agent_Memory/_projects/{hash}/review/baseline.yaml` |
+| Cross-session pattern data | `Agent_Memory/_projects/{hash}/improve/pattern_effectiveness.yaml` |
 
 ### Transition Triggers
 
@@ -583,10 +582,16 @@ and the error-recovery table.
 
 ## See Also
 
-- `/review` — shim over `/improve --mode review` (V10.26.26+)
-- `/optimize` — shim over `/improve --mode optimize` (V10.26.32+)
-- `/run` — canonical workflow engine
+- `/run` — canonical workflow engine (implements features; also handles
+  `/run context ...` and `/run --mode debug`)
+- `/team` — parallel N-wave execution for tier 3+ work
+- `/designer` — structured design Q&A
+- `/helper` — command catalog and migration guidance
+- `docs/MIGRATION-V11.md` — V11.0 removal migration guide
 - `reference/state-machine.md`, `reference/review-mode.md`,
   `reference/optimize-mode.md`, `reference/full-mode.md`,
-  `reference/atomic-rollback.md`, `reference/baseline-migration.md`,
+  `reference/agent-groups.md`, `reference/auto-fix-engine.md`,
+  `reference/quality-gates.md`, `reference/phase-details.md`,
+  `reference/risk-classification.md`, `reference/atomic-rollback.md`,
+  `reference/baseline-migration.md`,
   `reference/pattern-effectiveness-migration.md`

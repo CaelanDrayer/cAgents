@@ -95,7 +95,7 @@ Each state has per-mode behavior markers:
 |--------|------|
 | **Inputs** | Modified files, applied-list, baseline |
 | **Outputs** | `reports/quality_gates.yaml`, `reports/regression_check.yaml` |
-| **review:** | 12 prime directives from `@.claude/skills/review/reference/quality-gates.md` |
+| **review:** | 12 prime directives from `reference/quality-gates.md` (see `reference/directives.md` for checklist form) |
 | **optimize:** | Before/after metric comparison; regression guard (tests/lint/type check) must pass |
 | **full:** | Both gate sets must pass for overall PASS |
 | **Exit trigger** | Gate report on disk with `verdict: PASS|FAIL` |

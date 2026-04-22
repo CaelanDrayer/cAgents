@@ -1,8 +1,7 @@
 # /improve — 12 Prime Directives for VALIDATING
 
-Ported in V10.26.25 from `.claude/skills/review/reference/quality-gates.md`
-(source of truth until V11.0). These directives gate the REPORTING step;
-all 12 must return PASS for the run verdict to be PASS.
+Canonical directives for the VALIDATING state. These directives gate
+REPORTING; all 12 must return PASS for the run verdict to be PASS.
 
 ## The 12 Directives
 
@@ -38,7 +37,6 @@ verdict = PASS if (score >= baseline_score - 5) AND (all D1-D12 PASS) else FAIL
 
 ## Source of Truth
 
-Until V11.0, the canonical quality-gate spec lives at
-`.claude/skills/review/reference/quality-gates.md`. V10.26.25 ports the
-directive summary here so `/improve` can be read standalone; the formula
-and gate thresholds stay identical.
+The canonical quality-gate spec lives at
+`.claude/skills/improve/reference/quality-gates.md` (V11.0+). This file
+summarizes the 12 directives in a gateable checklist form.
