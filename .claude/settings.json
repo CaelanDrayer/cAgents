@@ -1,11 +1,11 @@
 {
-  "$comment": "Hook configuration - cAgents V11.0.0 - Progressive pipeline (3 paths), agent chaining, structured error format, attention injection, magic keywords, model routing advisor, delegation enforcer, approval gate, session init gate. 30 CJS files (27 registered hooks + utils + launcher + eval CLI) across 19 event types. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd).",
+  "$comment": "Hook configuration - cAgents V11.0.1 - Progressive pipeline (3 paths), agent chaining, structured error format, attention injection, magic keywords, model routing advisor, delegation enforcer, approval gate, session init gate. 30 CJS files (27 registered hooks + utils + launcher + eval CLI) across 19 event types. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd).",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
   "teammateMode": "tmux",
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CAGENTS_VERSION": "11.0.0"
+    "CAGENTS_VERSION": "11.0.1"
   },
   "permissions": {
     "allow": [
@@ -22,11 +22,6 @@
       "Write(/etc/**)",
       "Write(~/.ssh/**)"
     ]
-  },
-  "statusLine": {
-    "type": "command",
-    "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/statusline.cjs\"'",
-    "refreshInterval": 5
   },
   "hooks": {
     "SessionStart": [

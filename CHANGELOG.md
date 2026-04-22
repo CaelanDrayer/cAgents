@@ -10,6 +10,25 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.0.1] - 2026-04-21
+
+### Removed
+- `statusLine` hook and the Claude Code status bar integration.
+  Deleted `.claude/hooks/statusline.cjs`, removed the `statusLine`
+  block from `.claude/settings.json`, removed the StatusLine Advisory
+  branch from `session-catchup.cjs`, and dropped the Status Line
+  Provider section from `.claude/rules/core/hooks.md`. The feature
+  was refactored twice in quick succession (V10.26.x and commit
+  2bf03f56) without delivering sustained value; the surface is
+  retired rather than maintained in its current shape.
+
+### Added
+- Regression test `tests/config/no-statusline.test.js` that pins the
+  removal: asserts settings.json has no `statusLine` key, the hook
+  file does not exist, the two former tests are gone, session-catchup
+  no longer mentions statusline, and hooks.md no longer documents the
+  provider.
+
 ## [11.0.0] - 2026-04-21 — BREAKING
 
 ### Removed (migrate before upgrading)

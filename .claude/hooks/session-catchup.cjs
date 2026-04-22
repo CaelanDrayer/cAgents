@@ -168,7 +168,7 @@ createHook('SessionCatchup', async (input) => {
 
   const incomplete = findIncompleteSessions();
 
-  let cagentsContext = 'cAgents V11.0.0 session initialized. Minimum Claude Code version: 2.1.69 (required for hook lifecycle events). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Agent tool subagent_type references. IMPORTANT: When spawned as a cAgents agent, self-register your agent type in workflow/agent_tree.yaml for audit trail (SubagentStart hook injects instructions). IMPORTANT: When invoking any skill (/run, /team, /org, /review, /optimize, /designer, /debug), your FIRST action must be creating the session directory and writing status.yaml. Do NOT explore the codebase, spawn agents, or analyze the request before session init. IMPORTANT: /org, /run, and /team NEVER handle tasks themselves. They ALWAYS delegate to subagents via Agent tool. No exceptions, no matter how simple the request.';
+  let cagentsContext = 'cAgents V11.0.1 session initialized. Minimum Claude Code version: 2.1.69 (required for hook lifecycle events). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Agent tool subagent_type references. IMPORTANT: When spawned as a cAgents agent, self-register your agent type in workflow/agent_tree.yaml for audit trail (SubagentStart hook injects instructions). IMPORTANT: When invoking any skill (/run, /team, /org, /review, /optimize, /designer, /debug), your FIRST action must be creating the session directory and writing status.yaml. Do NOT explore the codebase, spawn agents, or analyze the request before session init. IMPORTANT: /org, /run, and /team NEVER handle tasks themselves. They ALWAYS delegate to subagents via Agent tool. No exceptions, no matter how simple the request.';
 
   // Context Auto-Check (V10.17.0): Check for product-context.yaml
   // Inspired by impeccable's .impeccable.md auto-check pattern
@@ -196,34 +196,6 @@ createHook('SessionCatchup', async (input) => {
       }
     }
   } catch { /* context check is best-effort */ }
-
-  // StatusLine Advisory (WI-1/WI-2): Detect missing statusLine config for plugin consumers.
-  // Claude Code only extracts the "hooks" key from plugin settings — statusLine is silently ignored.
-  // Emit a one-time advisory so plugin users know to add it to their ~/.claude/settings.json.
-  try {
-    const alreadyShown = fs.existsSync(path.join(AGENT_MEMORY_DIR, '_system', '.statusline_advisory_shown'));
-    if (!alreadyShown) {
-      // Check if statusLine is configured via env var (set by Claude Code when active)
-      const envConfigured = !!process.env.CLAUDE_STATUSLINE;
-      // Check user settings file for statusLine key
-      const userSettingsPath = path.join(process.env.HOME || process.env.USERPROFILE || '', '.claude', 'settings.json');
-      const userSettings = safeRead(userSettingsPath) || '';
-      // Check project settings file for statusLine key
-      const projectSettingsPath = path.join(PROJECT_ROOT, '.claude', 'settings.json');
-      const projectSettings = safeRead(projectSettingsPath) || '';
-      const settingsConfigured = userSettings.includes('"statusLine"') || projectSettings.includes('"statusLine"');
-
-      if (!envConfigured && !settingsConfigured) {
-        const advisory = ' Status line not showing? Add to ~/.claude/settings.json: "statusLine":{"type":"command","command":"bash -c \'R=\\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\\"; node \\"$R/.claude/hooks/statusline.cjs\\"\'"}';
-        cagentsContext += advisory;
-        // Write marker so we only show this once
-        try {
-          ensureDir(path.join(AGENT_MEMORY_DIR, '_system'));
-          fs.writeFileSync(path.join(AGENT_MEMORY_DIR, '_system', '.statusline_advisory_shown'), new Date().toISOString());
-        } catch { /* best effort */ }
-      }
-    }
-  } catch { /* statusLine advisory is best-effort, never block session start */ }
 
   // Update check (non-blocking, best-effort)
   try {

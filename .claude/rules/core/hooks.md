@@ -275,13 +275,6 @@ createHook('MyHook', async (input) => {
 - **Usage**: `node eval-runner.cjs --session <session_id>`
 - **Creates**: `sessions/{id}/evals/evaluation_report.yaml`
 
-### Status Line Provider
-
-#### statusLine: statusline.cjs
-- **Purpose**: Provide real-time status information in the Claude Code status bar
-- **Registration**: `statusLine` key in settings.json (not a hook event)
-- **Output**: Status text displayed in the terminal status line
-
 ## Hook Input/Output
 
 ### Input (stdin)
