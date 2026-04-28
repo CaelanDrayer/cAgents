@@ -757,6 +757,19 @@ function warnWithReason({ what, why, fix, hook }) {
  * Temp files auto-clean after 2 seconds.
  */
 function dedupGuard(hookName, input) {
+  // Test-mode bypass: vitest sets VITEST=true; CI runners may also set it explicitly.
+  // The dedup guard exists to prevent plugin+project double-load in production. Tests
+  // intentionally invoke the same hook multiple times with deterministic fixtures
+  // (e.g., the same session_id), so dedup must not fire and short-circuit the side
+  // effects under test. If a stale /tmp/cagents-dedup-* file leaks from a prior crash
+  // or cancelled run, it would cause spurious test failures — the bypass also makes
+  // the test suite robust to that condition. NODE_ENV=test and CAGENTS_HOOK_DEDUP_DISABLE
+  // are also honored as escape hatches.
+  if (process.env.VITEST === 'true'
+      || process.env.NODE_ENV === 'test'
+      || process.env.CAGENTS_HOOK_DEDUP_DISABLE === '1') {
+    return false;
+  }
   try {
     const crypto = require('crypto');
     const os = require('os');

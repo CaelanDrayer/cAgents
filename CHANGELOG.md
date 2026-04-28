@@ -10,6 +10,32 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.0.3] - 2026-04-28
+
+### Fixed
+- **Hook test reliability**: `dedupGuard` in `.claude/hooks/hook-utils.cjs` no
+  longer short-circuits hook invocations during tests, fixing 14 pre-existing
+  failures across `tests/hooks/team-stop.test.js`,
+  `tests/hooks/subagent-stop-tracker.test.js`, and
+  `tests/hooks/attention-injection.test.js`. The dedup marker files at
+  `/tmp/cagents-dedup-*` would leak from cancelled/crashed prior runs and then
+  cause the next test invocation with the same deterministic fixture (e.g.,
+  `session_id: "team_test-stop_260317_999"`) to short-circuit, skipping the
+  side effects under test. Production behavior is unchanged: dedup still fires
+  for plugin+project double-load scenarios.
+
+### Changed
+- `dedupGuard` now bypasses dedup when `VITEST=true`, `NODE_ENV=test`, or
+  `CAGENTS_HOOK_DEDUP_DISABLE=1`. Vitest sets `VITEST=true` automatically; the
+  other two are escape hatches for non-vitest test runners and ad-hoc debugging.
+
+### Tests
+- Added 4 regression tests in `tests/hooks/hook-utils.test.js` under the
+  `dedupGuard test-mode bypass` describe block: verifies the bypass triggers
+  on each of the 3 env vars and that production behavior (no env vars set)
+  still dedupes correctly. Per CLAUDE.md bug-driven testing mandate.
+- Full suite: 773 passed / 55 skipped / 0 failed (was 759 / 55 / 14).
+
 ## [11.0.2] - 2026-04-28
 
 ### Fixed

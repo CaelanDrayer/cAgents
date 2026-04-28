@@ -248,4 +248,85 @@ describe('hook-utils.cjs', () => {
       expect(hookUtils.areDependenciesMet(item, allItems)).toBe(false);
     });
   });
+
+  // Regression test for the test-mode bypass added to dedupGuard.
+  // Bug: stale /tmp/cagents-dedup-* files (from crashed/cancelled prior runs) caused
+  //      hook tests with deterministic fixtures to short-circuit, skipping side effects
+  //      and producing 14 spurious failures across 3 test files.
+  // Fix:  dedupGuard returns false (not a duplicate) under VITEST=true, NODE_ENV=test,
+  //      or CAGENTS_HOOK_DEDUP_DISABLE=1.
+  // Could have caught by: unit test on hook-utils.cjs dedupGuard.
+  describe('dedupGuard test-mode bypass', () => {
+    it('should bypass dedup when VITEST is set', () => {
+      const orig = process.env.VITEST;
+      process.env.VITEST = 'true';
+      try {
+        // Even on the second invocation with identical input, should not be a duplicate
+        const first = hookUtils.dedupGuard('RegressionTest', { session_id: 'test-bypass' });
+        const second = hookUtils.dedupGuard('RegressionTest', { session_id: 'test-bypass' });
+        expect(first).toBe(false);
+        expect(second).toBe(false);
+      } finally {
+        if (orig === undefined) delete process.env.VITEST;
+        else process.env.VITEST = orig;
+      }
+    });
+
+    it('should bypass dedup when NODE_ENV is test', () => {
+      const origVitest = process.env.VITEST;
+      const origNodeEnv = process.env.NODE_ENV;
+      delete process.env.VITEST;
+      process.env.NODE_ENV = 'test';
+      try {
+        const result = hookUtils.dedupGuard('RegressionTest2', { session_id: 'test-nodeenv' });
+        expect(result).toBe(false);
+      } finally {
+        if (origVitest === undefined) delete process.env.VITEST;
+        else process.env.VITEST = origVitest;
+        if (origNodeEnv === undefined) delete process.env.NODE_ENV;
+        else process.env.NODE_ENV = origNodeEnv;
+      }
+    });
+
+    it('should bypass dedup when CAGENTS_HOOK_DEDUP_DISABLE=1', () => {
+      const origVitest = process.env.VITEST;
+      const origNodeEnv = process.env.NODE_ENV;
+      delete process.env.VITEST;
+      delete process.env.NODE_ENV;
+      process.env.CAGENTS_HOOK_DEDUP_DISABLE = '1';
+      try {
+        const result = hookUtils.dedupGuard('RegressionTest3', { session_id: 'test-escape' });
+        expect(result).toBe(false);
+      } finally {
+        if (origVitest === undefined) delete process.env.VITEST;
+        else process.env.VITEST = origVitest;
+        if (origNodeEnv === undefined) delete process.env.NODE_ENV;
+        else process.env.NODE_ENV = origNodeEnv;
+        delete process.env.CAGENTS_HOOK_DEDUP_DISABLE;
+      }
+    });
+
+    it('should NOT bypass dedup in production (no test env vars)', () => {
+      const origVitest = process.env.VITEST;
+      const origNodeEnv = process.env.NODE_ENV;
+      const origDisable = process.env.CAGENTS_HOOK_DEDUP_DISABLE;
+      delete process.env.VITEST;
+      delete process.env.NODE_ENV;
+      delete process.env.CAGENTS_HOOK_DEDUP_DISABLE;
+      try {
+        // Use a unique hook name to avoid colliding with concurrent tests
+        const uniqueName = 'ProdDedupTest_' + process.pid + '_' + Date.now();
+        const first = hookUtils.dedupGuard(uniqueName, { session_id: 'prod-test' });
+        const second = hookUtils.dedupGuard(uniqueName, { session_id: 'prod-test' });
+        expect(first).toBe(false);   // First call wins
+        expect(second).toBe(true);   // Second call is dedup'd
+      } finally {
+        if (origVitest === undefined) delete process.env.VITEST;
+        else process.env.VITEST = origVitest;
+        if (origNodeEnv === undefined) delete process.env.NODE_ENV;
+        else process.env.NODE_ENV = origNodeEnv;
+        if (origDisable !== undefined) process.env.CAGENTS_HOOK_DEDUP_DISABLE = origDisable;
+      }
+    });
+  });
 });
