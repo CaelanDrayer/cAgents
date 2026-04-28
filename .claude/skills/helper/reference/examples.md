@@ -2,6 +2,8 @@
 
 Categorized examples for `/helper --examples`.
 
+> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). All examples below use the V11 surface: `/improve --mode review|optimize|full`, `/run context init|show|update|clear`, and `/run --mode debug`._
+
 ## By Domain
 
 ### Engineering Examples
@@ -9,7 +11,6 @@ Categorized examples for `/helper --examples`.
 ```bash
 # Bug fixes
 /run Fix the authentication timeout when sessions expire after 30 minutes
-/run Debug why the payment webhook returns 500 errors
 /run Resolve the CORS issue blocking API calls from the frontend
 
 # Feature development
@@ -21,26 +22,29 @@ Categorized examples for `/helper --examples`.
 /designer payment gateway integration --focus security
 # (after design) auto-triggers: /run implement design from designer_20260204_143022
 
-# Code review
-/review src/auth/ --focus security
-/review --scope changed --auto-fix safe --apply-safe-fixes
-/review --framework nextjs --quality-gate strict --run-tests
+# Code review (V11: /review -> /improve --mode review)
+/improve --mode review src/auth/ --focus security
+/improve --mode review --scope changed --auto-fix safe --apply-safe-fixes
+/improve --mode review --framework nextjs --quality-gate strict --run-tests
 
-# Performance optimization
-/optimize src/ --type code --focus performance --safety safe
-/optimize "Reduce the API response time for the /users endpoint"
-/optimize --cross-file --require-tests-pass
+# Performance optimization (V11: /optimize -> /improve --mode optimize)
+/improve --mode optimize src/ --type code --focus performance --safety safe
+/improve --mode optimize "Reduce the API response time for the /users endpoint"
+/improve --mode optimize --cross-file --require-tests-pass
+
+# Review + optimize together with one shared baseline
+/improve --mode full --scope src/auth/
 
 # Parallel team execution
 /team Implement complete user authentication with Google, GitHub, and email
 /team Build the admin dashboard with user management, analytics, and settings widgets
 /run Build user profile with avatar, settings, and activity log --team
 
-# Systematic debugging when quick fixes fail
-/debug Auth token expiry causes random logouts --escalate
+# Systematic debugging when quick fixes fail (V11: /debug -> /run --mode debug)
+/run --mode debug "Auth token expiry causes random logouts" --escalate
 
-# Initialize project context
-/context init
+# Initialize project context (V11: /context init -> /run context init)
+/run context init
 ```
 
 ### Creative Writing Examples
@@ -56,8 +60,8 @@ Categorized examples for `/helper --examples`.
 /designer a game world with three warring factions and a neutral zone
 
 # Content optimization
-/optimize blog/ --type content --focus quality
-/optimize README.md --type content
+/improve --mode optimize blog/ --type content --focus quality
+/improve --mode optimize README.md --type content
 ```
 
 ### Marketing / Sales Examples
@@ -69,11 +73,11 @@ Categorized examples for `/helper --examples`.
 /run Write landing page copy for the premium tier
 
 # Review
-/review marketing/ --type content
+/improve --mode review marketing/ --type content
 
 # Optimization
-/optimize --type campaign --focus performance
-/optimize --type sales
+/improve --mode optimize --type campaign --focus performance
+/improve --mode optimize --type sales
 ```
 
 ### Finance / Operations Examples
@@ -85,8 +89,8 @@ Categorized examples for `/helper --examples`.
 /run Analyze last quarter's expenses vs budget
 
 # Process optimization
-/optimize --type process "Streamline the invoice approval workflow"
-/optimize --type infrastructure --focus cost
+/improve --mode optimize --type process "Streamline the invoice approval workflow"
+/improve --mode optimize --type infrastructure --focus cost
 ```
 
 ### HR / People Examples
@@ -113,23 +117,23 @@ Categorized examples for `/helper --examples`.
 /run Create privacy policy update for GDPR compliance
 ```
 
-### Debug and Context Examples
+### Debug-Mode and Context Examples
 
 ```bash
 # Systematic debugging (use when 2+ quick fixes have failed)
-/debug Auth token expiry causes random logouts after 30 minutes
-/debug Payment tests fail 1 in 5 runs with "connection timeout"
-/debug Race condition in WebSocket reconnect --escalate
-/debug Memory leak in event listener -- phase 3
+/run --mode debug "Auth token expiry causes random logouts after 30 minutes"
+/run --mode debug "Payment tests fail 1 in 5 runs with connection timeout"
+/run --mode debug "Race condition in WebSocket reconnect" --escalate
+/run --mode debug "Memory leak in event listener" --phase 3
 
-# Product context management
-/context init                    # Initialize for new project
-/context show                    # Check current context
-/context update                  # Update after framework change
-/context clear                   # Remove and start fresh
+# Product context management (V11 passthroughs)
+/run context init                    # Initialize for new project
+/run context show                    # Check current context
+/run context update                  # Update after framework change
+/run context clear                   # Remove and start fresh
 
 # Debug-then-Fix pipeline
-/debug Fix the intermittent 500 error in checkout
+/run --mode debug "Intermittent 500 error in checkout"
 # (after root cause identified)
 /run Fix the race condition in session token refresh
 ```
@@ -160,46 +164,30 @@ Categorized examples for `/helper --examples`.
 
 ```bash
 # Step 1: Review
-/review src/ --focus security --auto-fix safe
+/improve --mode review src/ --focus security --auto-fix safe
 # Reports: 3 critical, 7 high, 12 medium issues
 # Safe fixes auto-applied for 5 issues
 
 # Step 2: Fix remaining
-/run Fix the 3 critical security issues from review session review_20260204
+/run Fix the 3 critical security issues from improve session improve_20260204
 ```
 
-### Optimize-then-Review
+### Audit + Optimize Together
 
 ```bash
-# Step 1: Optimize
-/optimize src/ --type code --focus performance --review-after
-# -> automatically triggers review after optimization completes
-
-# Or manually:
-/optimize src/ --type code --focus performance
-# Then:
-/review src/ --focus quality
-```
-
-### Explore-then-Optimize
-
-```bash
-# Step 1: Explore optimization approach
-/optimize --explore-first
-# -> triggers /designer to explore options
-
-# Or:
-/designer performance optimization strategy for our API
-# Then:
-/optimize src/api/ --type code --focus performance
+# Single run with shared baseline
+/improve --mode full --scope src/api/
+# Produces unified improve_report.md with both review findings
+# and optimization deltas measured against the same baseline
 ```
 
 ### Plan-then-Run
 
 ```bash
-# Step 1: Generate optimization plan only
-/optimize src/ --type code --plan-only
-# -> generates plan and hands off to /run for implementation
+# Step 1: Generate optimization plan only (review mode auto-fix off, optimize mode --dry-run)
+/improve --mode optimize src/ --type code --dry-run
+# Step 2: Implement after review
+/run Apply the recommended optimizations from improve session improve_20260204
 ```
 
 ## By Complexity
@@ -210,8 +198,8 @@ Categorized examples for `/helper --examples`.
 /run Fix the typo on the about page
 /run What is the best caching strategy for our API?
 /run Update the README with installation instructions
-/review src/utils/helpers.ts
-/optimize src/utils/helpers.ts --type code
+/improve --mode review src/utils/helpers.ts
+/improve --mode optimize src/utils/helpers.ts --type code
 ```
 
 ### Moderate Tasks (Tier 2-3)
@@ -220,8 +208,8 @@ Categorized examples for `/helper --examples`.
 /run Add pagination to the user list endpoint
 /run Implement email verification for new signups
 /designer search functionality for the product catalog
-/review src/auth/ --focus security --auto-fix safe
-/optimize src/api/ --type code --cross-file
+/improve --mode review src/auth/ --focus security --auto-fix safe
+/improve --mode optimize src/api/ --type code --cross-file
 ```
 
 ### Complex Tasks (Tier 3-4)
@@ -230,8 +218,8 @@ Categorized examples for `/helper --examples`.
 /run Migrate from REST API to GraphQL
 /run Implement complete payment processing with Stripe
 /designer microservices architecture migration from monolith
-/review --quality-gate strict --run-tests --rollback-on-failure
-/optimize --type infrastructure --focus cost --validation comprehensive
+/improve --mode review --quality-gate strict --run-tests --rollback-on-failure
+/improve --mode optimize --type infrastructure --focus cost --validation comprehensive
 /team Build the complete admin panel with user management, analytics, and reporting
 ```
 
@@ -239,16 +227,16 @@ Categorized examples for `/helper --examples`.
 
 ```bash
 # Comprehensive security review with auto-fix and tests
-/review src/ --focus security --auto-fix safe --apply-safe-fixes --run-tests --rollback-on-failure
+/improve --mode review src/ --focus security --auto-fix safe --apply-safe-fixes --run-tests --rollback-on-failure
 
 # Fast review of recent changes
-/review --scope changed --parallel --stream --confidence 0.7
+/improve --mode review --scope changed --parallel --confidence 0.7
 
 # Full code optimization with cross-file analysis and post-review
-/optimize src/ --type code --cross-file --review-after --validation comprehensive --require-tests-pass
+/improve --mode full --scope src/ --cross-file --validation comprehensive --require-tests-pass
 
 # Safe incremental optimization
-/optimize --safety safe --incremental --dry-run
+/improve --mode optimize --safety safe --incremental --dry-run
 
 # Team execution with specific lead and display
 /team Build user authentication system --lead engineering-manager --members 4 --display --teammate-mode tmux
@@ -257,5 +245,5 @@ Categorized examples for `/helper --examples`.
 /run Implement payment gateway --interactive --template feature_addition
 
 # Preview optimization plan without executing
-/optimize src/ --type code --focus performance --dry-run
+/improve --mode optimize src/ --type code --focus performance --dry-run
 ```

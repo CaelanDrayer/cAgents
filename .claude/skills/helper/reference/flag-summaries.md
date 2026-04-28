@@ -2,6 +2,8 @@
 
 Complete flag tables for all commands, used by `/helper --flags <command>`.
 
+> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Their flag surfaces moved to `/improve` (review and optimize modes), `/run context` (passthrough), and `/run --mode debug` (debug mode)._
+
 ## /run Flags
 
 | Flag | Type | Description | Default | Example |
@@ -17,6 +19,20 @@ Complete flag tables for all commands, used by `/helper --flags <command>`.
 | `--tier <N>` | Number | Override tier (2-4) | auto-classify | `/run Migrate --tier 4` |
 | `--confidence <N>` | Number | Detection confidence threshold | 0.7 | `/run Request --confidence 0.6` |
 | `--resume <id>` | String | Resume an interrupted session | none | `/run --resume run_20260207_143022` |
+| `--mode debug` | Subcommand-flag | Run the systematic 4-phase debugging protocol (V11 replacement for `/debug`) | none | `/run --mode debug "Auth token expiry causes random logouts"` |
+| `--escalate` | Boolean | Used with `--mode debug`; force escalation report after investigation | false | `/run --mode debug ... --escalate` |
+| `--phase <1-4>` | Number | Used with `--mode debug`; start at a specific debugging phase | 1 | `/run --mode debug ... --phase 3` |
+
+### /run context Passthrough (V11 replacement for /context)
+
+| Form | Description |
+|------|-------------|
+| `/run context init` | Auto-detect and initialize product context |
+| `/run context show` | Display current product context |
+| `/run context update` | Interactively update product context |
+| `/run context clear` | Remove the product context document |
+
+The product context document lives at `Agent_Memory/_projects/{hash}/product_context.yaml`.
 
 ### /run Templates (12)
 
@@ -59,165 +75,63 @@ Complete flag tables for all commands, used by `/helper --flags <command>`.
 
 ---
 
-## /review Flags
+## /improve Flags
 
-### Scope
+`/improve` is the V11 replacement for `/review` and `/optimize`. Mode selection determines which subset of flags applies.
 
-| Flag | Description | Example |
-|------|-------------|---------|
-| `--scope changed` | Only changed files (git diff) | `/review --scope changed` |
-| `--scope staged` | Only staged files | `/review --scope staged` |
-| `--scope all` | Full codebase (default) | `/review --scope all` |
-
-### Type
+### Mode Selection
 
 | Flag | Description | Example |
 |------|-------------|---------|
-| `--type code` | Code review | `/review --type code` |
-| `--type documentation` | Documentation review | `/review --type documentation` |
-| `--type content` | Content review | `/review --type content` |
-| `--type design` | Design review | `/review --type design` |
-| `--type process` | Process review | `/review --type process` |
-| `--type data` | Data review | `/review --type data` |
-| `--type infrastructure` | Infrastructure review | `/review --type infrastructure` |
+| `--mode review` | Run review pipeline (default) | `/improve --mode review src/` |
+| `--mode optimize` | Run optimize pipeline | `/improve --mode optimize src/ --type code` |
+| `--mode full` | Run review + optimize with one shared baseline (requires `--scope`) | `/improve --mode full --scope src/` |
 
-### Focus
+### Common Flags (all modes)
 
 | Flag | Description | Example |
 |------|-------------|---------|
-| `--focus security` | Security analysis | `/review --focus security` |
-| `--focus architecture` | Architecture review | `/review --focus architecture` |
-| `--focus accessibility` | Accessibility check | `/review --focus accessibility` |
-| `--focus performance` | Performance analysis | `/review --focus performance` |
-| `--focus quality` | Code quality | `/review --focus quality` |
+| `--scope <path>` | Required for `--mode full`, optional otherwise | `/improve --mode full --scope src/auth/` |
+| `--dry-run` | Plan without applying changes | `/improve --mode optimize --dry-run` |
+| `--history` | Append run to `_projects/{hash}/improve/history.yaml` | `/improve --mode review --history` |
 
-### Framework
-
-| Flag | Description |
-|------|-------------|
-| `--framework nextjs` | Next.js patterns |
-| `--framework react` | React patterns |
-| `--framework vue` | Vue patterns |
-| `--framework angular` | Angular patterns |
-| `--framework django` | Django patterns |
-| `--framework fastapi` | FastAPI patterns |
-| `--framework express` | Express patterns |
-| `--framework flask` | Flask patterns |
-| `--framework rails` | Rails patterns |
-| `--framework springboot` | Spring Boot patterns |
-| `--framework laravel` | Laravel patterns |
-| `--framework .net` | .NET patterns |
-| `--auto-detect-framework` | Auto-detect (default) |
-
-### Auto-Fix
+### Review-Mode Flags
 
 | Flag | Description | Example |
 |------|-------------|---------|
-| `--auto-fix` | Generate fixes for all issues | `/review --auto-fix` |
-| `--auto-fix safe` | Only safe auto-fixes | `/review --auto-fix safe` |
-| `--auto-fix all` | All fixes including risky | `/review --auto-fix all` |
-| `--apply-safe-fixes` | Apply safe fixes automatically | `/review --apply-safe-fixes` |
-| `--dry-run` | Show what would be fixed | `/review --dry-run` |
+| `--scope changed\|staged\|all` | Scope filter | `/improve --mode review --scope changed` |
+| `--type code\|documentation\|content\|design\|process\|data\|infrastructure` | Review type | `/improve --mode review --type infrastructure` |
+| `--focus security\|architecture\|accessibility\|performance\|quality` | Focus area | `/improve --mode review --focus security` |
+| `--framework nextjs\|react\|vue\|...` | Force framework detection | `/improve --mode review --framework nextjs` |
+| `--auto-fix safe\|all` | Generate or apply auto-fixes | `/improve --mode review --auto-fix safe` |
+| `--apply-safe-fixes` | Apply safe auto-fixes automatically | `/improve --mode review --apply-safe-fixes` |
+| `--quality-gate strict\|standard\|relaxed` | Quality gate severity | `/improve --mode review --quality-gate strict` |
+| `--run-tests` | Run tests after auto-fix | `/improve --mode review --run-tests` |
+| `--rollback-on-failure` | Rollback if tests fail | `/improve --mode review --rollback-on-failure` |
+| `--baseline <id>` | Use named baseline | `/improve --mode review --baseline 2026-q1` |
+| `--suppress <id>` | Suppress findings tagged with id | `/improve --mode review --suppress finding-42` |
+| `--confidence <N>` | Only report findings above threshold | `/improve --mode review --confidence 0.8` |
+| `--show-confidence` | Display confidence scores | `/improve --mode review --show-confidence` |
+| `--git-hotspots` | Prioritize frequently changed files | `/improve --mode review --git-hotspots` |
+| `--pr-context <branch>` | Review against branch | `/improve --mode review --pr-context main` |
+| `--output json\|markdown\|summary\|detailed` | Output format | `/improve --mode review --output json` |
+| `--save-report <path>` | Save report to file | `/improve --mode review --save-report ./review.md` |
 
-### Quality Gates
-
-| Flag | Description | Example |
-|------|-------------|---------|
-| `--quality-gate strict` | Block on any critical | `/review --quality-gate strict` |
-| `--quality-gate standard` | Block on 3+ critical | `/review --quality-gate standard` |
-| `--quality-gate relaxed` | Warn only | `/review --quality-gate relaxed` |
-| `--run-tests` | Run tests after auto-fix | `/review --run-tests` |
-| `--rollback-on-failure` | Rollback if tests fail | `/review --rollback-on-failure` |
-
-### Execution
-
-| Flag | Description | Example |
-|------|-------------|---------|
-| `--parallel` | Parallel execution (default) | `/review --parallel` |
-| `--parallel-limit <N>` | Max simultaneous agents | `/review --parallel-limit 5` |
-| `--sequential` | Disable parallel | `/review --sequential` |
-
-### Confidence
+### Optimize-Mode Flags
 
 | Flag | Description | Example |
 |------|-------------|---------|
-| `--confidence <N>` | Only report above threshold | `/review --confidence 0.8` |
-| `--min-confidence <N>` | Minimum threshold | `/review --min-confidence 0.5` |
-| `--show-confidence` | Display confidence scores | `/review --show-confidence` |
-
-### Context
-
-| Flag | Description | Example |
-|------|-------------|---------|
-| `--git-hotspots` | Prioritize frequently changed files | `/review --git-hotspots` |
-| `--pr-context <branch>` | Review against branch | `/review --pr-context main` |
-| `--recent-changes <period>` | Focus on recent changes | `/review --recent-changes 7d` |
-| `--critical-first` | Security-critical files first | `/review --critical-first` |
-
-### Output
-
-| Flag | Description | Example |
-|------|-------------|---------|
-| `--output json` | JSON output | `/review --output json` |
-| `--output markdown` | Markdown report (default) | `/review --output markdown` |
-| `--output summary` | Executive summary only | `/review --output summary` |
-| `--output detailed` | Detailed with all findings | `/review --output detailed` |
-| `--save-report <path>` | Save report to file | `/review --save-report ./review.md` |
-
----
-
-## /optimize Flags
-
-### Type and Focus
-
-| Flag | Description | Example |
-|------|-------------|---------|
-| `--type code` | Code optimization | `/optimize --type code` |
-| `--type content` | Content optimization | `/optimize --type content` |
-| `--type process` | Process optimization | `/optimize --type process` |
-| `--type infrastructure` | Infrastructure optimization | `/optimize --type infrastructure` |
-| `--type data` | Data optimization | `/optimize --type data` |
-| `--type campaign` | Campaign optimization | `/optimize --type campaign` |
-| `--type creative` | Creative optimization | `/optimize --type creative` |
-| `--type sales` | Sales optimization | `/optimize --type sales` |
-| `--focus performance` | Focus on performance | `/optimize --focus performance` |
-| `--focus cost` | Focus on cost reduction | `/optimize --focus cost` |
-| `--focus quality` | Focus on quality | `/optimize --focus quality` |
-
-### Safety and Execution
-
-| Flag | Description | Example |
-|------|-------------|---------|
-| `--safety safe` | Only safe optimizations (0-20% risk) | `/optimize --safety safe` |
-| `--safety medium` | Up to medium risk (0-60%) | `/optimize --safety medium` |
-| `--dry-run` | Preview without applying | `/optimize --dry-run` |
-| `--incremental` | Apply one at a time | `/optimize --incremental` |
-| `--parallel` | Parallel execution (default) | `/optimize --parallel` |
-
-### Integration
-
-| Flag | Description | Example |
-|------|-------------|---------|
-| `--plan-only` | Generate plan, hand off to /run | `/optimize --plan-only` |
-| `--explore-first` | Start with /designer | `/optimize --explore-first` |
-| `--review-after` | Trigger /review after | `/optimize --review-after` |
-
-### Cross-File Analysis
-
-| Flag | Description | Example |
-|------|-------------|---------|
-| `--cross-file` | Enable cross-file analysis | `/optimize --cross-file` |
-| `--no-cross-file` | Skip cross-file (faster) | `/optimize --no-cross-file` |
-| `--cross-file-only` | Only cross-file analysis | `/optimize --cross-file-only` |
-| `--dependency-graph` | Generate dependency graph | `/optimize --dependency-graph` |
-
-### Validation
-
-| Flag | Description | Example |
-|------|-------------|---------|
-| `--validation comprehensive` | Full test suite + benchmarks | `/optimize --validation comprehensive` |
-| `--rollback automatic` | Auto-rollback on failure | `/optimize --rollback automatic` |
-| `--require-tests-pass` | Must pass all tests | `/optimize --require-tests-pass` |
+| `--type code\|content\|process\|infrastructure\|data\|campaign\|creative\|sales` | Optimization type | `/improve --mode optimize --type code` |
+| `--focus performance\|cost\|quality` | Focus area | `/improve --mode optimize --focus cost` |
+| `--safety safe\|medium` | Risk tolerance | `/improve --mode optimize --safety safe` |
+| `--incremental` | Apply one optimization at a time | `/improve --mode optimize --incremental` |
+| `--cross-file` | Enable cross-file analysis | `/improve --mode optimize --cross-file` |
+| `--no-cross-file` | Skip cross-file analysis (faster) | `/improve --mode optimize --no-cross-file` |
+| `--dependency-graph` | Generate dependency graph | `/improve --mode optimize --dependency-graph` |
+| `--benchmark auto\|lighthouse\|k6\|hyperfine` | Choose benchmark tool | `/improve --mode optimize --benchmark lighthouse` |
+| `--validation comprehensive` | Full test suite + benchmarks | `/improve --mode optimize --validation comprehensive` |
+| `--rollback automatic` | Auto-rollback on failure | `/improve --mode optimize --rollback automatic` |
+| `--require-tests-pass` | Must pass all tests | `/improve --mode optimize --require-tests-pass` |
 
 ---
 
@@ -234,6 +148,7 @@ Complete flag tables for all commands, used by `/helper --flags <command>`.
 | `--tier <N>` | Number | Override tier | auto | `/team Build system --tier 4` |
 | `--quiet` / `-q` | Boolean | Suppress output | false | `/team Build feature --quiet` |
 | `--teammate-mode <mode>` | String | Display: auto/tmux/in-process | auto | `/team Build app --teammate-mode tmux` |
+| `--waves <N>` | Number | Force minimum number of waves | auto | `/team Build feature --waves 8` |
 
 ---
 
@@ -257,35 +172,3 @@ Complete flag tables for all commands, used by `/helper --flags <command>`.
 | `business_ops` | COO | operations, process, supply chain, logistics, efficiency |
 | `people` | CHRO | hire, recruit, onboard, culture, HR, talent, performance |
 | `service` | General Counsel | support, legal, compliance, customer, SLA, contract |
-
----
-
-## /debug Flags
-
-| Flag | Type | Description | Default | Example |
-|------|------|-------------|---------|---------|
-| `--escalate` | Boolean | Force escalation report after investigation | false | `/debug auth bug --escalate` |
-| `--phase <1-4>` | Number | Start at specific debugging phase | 1 | `/debug issue --phase 3` |
-
-### /debug Phases
-
-| Phase | Name | What Happens |
-|-------|------|-------------|
-| 1 | Root Cause Investigation | Reproduce bug, read stack trace, check recent changes, trace data flow |
-| 2 | Pattern Analysis | Classify bug type (state mutation, type mismatch, timing, data flow, config, integration) |
-| 3 | Hypothesis Testing | Form + test hypotheses one at a time (max 5 before escalation) |
-| 4 | Implementation | Write failing test, implement fix, verify full suite, commit |
-
----
-
-## /context Flags
-
-| Flag / Subcommand | Type | Description | Default | Example |
-|-------------------|------|-------------|---------|---------|
-| `init` | Subcommand | Auto-detect and initialize context | -- | `/context init` |
-| `show` | Subcommand | Display current context | -- | `/context show` |
-| `update` | Subcommand | Interactively update context | -- | `/context update` |
-| `clear` | Subcommand | Remove context document | -- | `/context clear` |
-| `--show` | Boolean | Same as `show` subcommand | false | `/context --show` |
-| `--reset` | Boolean | Same as `clear` subcommand | false | `/context --reset` |
-| `--edit` | Boolean | Open context for manual editing | false | `/context --edit` |

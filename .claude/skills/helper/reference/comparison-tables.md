@@ -2,70 +2,69 @@
 
 Side-by-side comparison matrices for `/helper --compare`.
 
-V10.26.8: `/context` was moved out of the user-facing comparison tables
-because it was demoted to a Claude-invoked utility in V10.26.6. Users access
-product context via `/run context show|init|update|clear` (V10.26.9+) or by
-editing `Agent_Memory/_projects/{hash}/product_context.yaml` directly.
+> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Their functionality moved to `/improve`, `/run context`, and `/run --mode debug` (see migration mappings at the end of this file)._
 
 ## Core Comparison Matrix
 
-| Dimension | /run | /designer | /review | /optimize | /team | /org | /debug |
-|-----------|------|-----------|---------|-----------|-------|------|--------|
-| **Purpose** | Execute any task | Design before building | Quality analysis | Measurable improvement | Parallel execution | Multi-domain hierarchy | Root cause debugging |
-| **Interaction** | Autonomous | Interactive 4-phase Q&A | Autonomous | Autonomous (or interactive) | Autonomous | Auto (with deliberation) | Autonomous |
-| **Duration** | Varies (5min - hours) | 15-45 minutes | 3-10 minutes | 5-20 minutes | Varies (40-60% faster) | 25-60 minutes | Varies (15-60 min) |
-| **Input** | Natural language request | Topic or none | Path or auto-detect | Target or natural language | Natural language request | Strategic instruction | Bug description |
-| **Output** | Implementation + report | Design document + artifacts | Issue report + fixes | Before/after metrics | Aggregated results | Cross-domain integrated deliverable | Debug report + fix + test |
-| **Domains** | All 15 domains | All (software/business/creative) | Code, docs, content, infra + 4 more | 8 types across domains | All (delegates to /run) | All (sequential /team per domain) | Engineering (primary) |
-| **Context** | None (inline) | None (main context, for Q&A) | Fork | Fork | Fork | None (inline) | None (inline) |
-| **Agent count** | 262 available | 1+ (designer + specialists) | 9 parallel groups | Varies by type | Multiple teammates | C-suite + /team per domain | 1 (debugger) |
+| Dimension | /run | /designer | /improve | /team | /org | /helper |
+|-----------|------|-----------|----------|-------|------|---------|
+| **Purpose** | Execute any task | Design before building | Review + optimize engine | Parallel execution | Multi-domain hierarchy | Command guide |
+| **Interaction** | Autonomous | Interactive 4-phase Q&A | Autonomous | Autonomous | Auto (with deliberation) | Interactive |
+| **Duration** | Varies (5min - hours) | 15-45 minutes | 3-20 minutes | Varies (40-60% faster) | 25-60 minutes | 1-2 minutes |
+| **Input** | Natural language request | Topic or none | Path / target / natural language | Natural language request | Strategic instruction | Command name or question |
+| **Output** | Implementation + report | Design document + artifacts | Findings, optimizations, before/after metrics | Aggregated results | Cross-domain integrated deliverable | Recommendation |
+| **Domains** | All 15 domains | All (software/business/creative) | All (code, docs, content, infra, content) | All (delegates to /run) | All (sequential /team per domain) | n/a |
+| **Context** | None (inline) | None (main context, for Q&A) | Fork | Fork | None (inline) | None (inline) |
+| **Agent count** | 243 available | 1+ (designer + specialists) | Specialists per mode | Multiple teammates | C-suite + /team per domain | n/a |
 
 ## When-to-Use Decision Matrix
 
-| Scenario | /run | /designer | /review | /optimize | /team | /org | /debug |
-|----------|------|-----------|---------|-----------|-------|------|--------|
-| Fix a bug | Best | -- | -- | -- | -- | -- | -- |
-| Add a feature | Good | Best (plan first) | -- | -- | Good (if parallel) | -- | -- |
-| Large feature | Good | Best (plan first) | -- | -- | Best (parallel build) | -- | -- |
-| Multi-domain initiative | -- | -- | -- | -- | -- | Best | -- |
-| Product launch | -- | -- | -- | -- | -- | Best (eng + marketing + hiring) | -- |
-| Security check | -- | -- | Best | -- | -- | -- | -- |
-| Speed up code | -- | -- | Can detect | Best | -- | -- | -- |
-| Write content | Best | Good (if exploring) | Can review | Can optimize | -- | -- | -- |
-| Plan architecture | -- | Best | -- | -- | -- | -- | -- |
-| Pre-merge check | -- | -- | Best | -- | -- | -- | -- |
-| Reduce costs | -- | -- | Can detect | Best | -- | -- | -- |
-| Quick question | Best | -- | -- | -- | -- | -- | -- |
-| Cross-domain coordination | -- | -- | -- | -- | -- | Best | -- |
-| Debug stubborn bug | -- | -- | -- | -- | -- | -- | Best |
-| Persist project knowledge | `/run context init` (V10.26.9+) invokes the Claude-only `/context` utility | | | | | | |
+| Scenario | /run | /designer | /improve | /team | /org |
+|----------|------|-----------|----------|-------|------|
+| Fix a bug | Best | -- | -- | -- | -- |
+| Add a feature | Good | Best (plan first) | -- | Good (if parallel) | -- |
+| Large feature | Good | Best (plan first) | -- | Best (parallel build) | -- |
+| Multi-domain initiative | -- | -- | -- | -- | Best |
+| Product launch | -- | -- | -- | -- | Best (eng + marketing + hiring) |
+| Security check | -- | -- | Best (`--mode review --focus security`) | -- | -- |
+| Speed up code | -- | -- | Best (`--mode optimize`) | -- | -- |
+| Write content | Best | Good (if exploring) | Can review or optimize | -- | -- |
+| Plan architecture | -- | Best | -- | -- | -- |
+| Pre-merge check | -- | -- | Best (`--mode review`) | -- | -- |
+| Reduce costs | -- | -- | Best (`--mode optimize --type infrastructure`) | -- | -- |
+| Quick question | Best | -- | -- | -- | -- |
+| Cross-domain coordination | -- | -- | -- | -- | Best |
+| Debug stubborn bug | Best (`--mode debug`) | -- | -- | -- | -- |
+| Persist project knowledge | Best (`/run context init`) | -- | -- | -- | -- |
+| Audit + optimize together | -- | -- | Best (`--mode full`) | -- | -- |
 
 ## Flag Overlap Matrix
 
-| Flag | /run | /designer | /review | /optimize | /team | /org | /debug |
-|------|------|-----------|---------|-----------|-------|------|--------|
-| `--dry-run` | Yes | -- | Yes | Yes | Yes | Yes | -- |
-| `--interactive` | Yes | Always | Yes | Yes | -- | -- | -- |
-| `--quiet` / `-q` | Yes | -- | -- | -- | Yes | -- | -- |
-| `--domain` | Yes | -- | -- | -- | Yes | -- | -- |
-| `--domains` | -- | -- | -- | -- | -- | Yes | -- |
-| `--tier` | Yes | -- | -- | -- | Yes | -- | -- |
-| `--focus` | -- | Yes | Yes | Yes | -- | -- | -- |
-| `--template` | Yes | Yes | -- | -- | -- | -- | -- |
-| `--stream` | Yes | -- | Yes | -- | -- | -- | -- |
-| `--scope` | -- | -- | Yes | -- | -- | -- | -- |
-| `--auto-fix` | -- | -- | Yes | -- | -- | -- | -- |
-| `--safety` | -- | -- | -- | Yes | -- | -- | -- |
-| `--type` | -- | -- | Yes | Yes | -- | -- | -- |
-| `--cross-file` | -- | -- | -- | Yes | -- | -- | -- |
-| `--members` | -- | -- | -- | -- | Yes | -- | -- |
-| `--lead` | -- | -- | -- | -- | Yes | -- | -- |
-| `--team` | Yes | -- | -- | -- | N/A | -- | -- |
-| `--quick` | -- | -- | -- | -- | -- | Yes | -- |
-| `--brief` | Yes | Yes | -- | -- | -- | -- | -- |
-| `--resume` | Yes | Yes | -- | -- | -- | Yes | -- |
-| `--escalate` | -- | -- | -- | -- | -- | -- | Yes |
-| `--phase` | -- | -- | -- | -- | -- | -- | Yes |
+| Flag | /run | /designer | /improve | /team | /org |
+|------|------|-----------|----------|-------|------|
+| `--dry-run` | Yes | -- | Yes | Yes | Yes |
+| `--interactive` | Yes | Always | Yes | -- | -- |
+| `--quiet` / `-q` | Yes | -- | -- | Yes | -- |
+| `--domain` | Yes | -- | -- | Yes | -- |
+| `--domains` | -- | -- | -- | -- | Yes |
+| `--tier` | Yes | -- | -- | Yes | -- |
+| `--focus` | -- | Yes | Yes | -- | -- |
+| `--template` | Yes | Yes | -- | -- | -- |
+| `--stream` | Yes | -- | Yes | -- | -- |
+| `--scope` | -- | -- | Yes (required for `--mode full`) | -- | -- |
+| `--mode review\|optimize\|full` | -- | -- | Yes | -- | -- |
+| `--auto-fix` | -- | -- | Yes (review mode) | -- | -- |
+| `--baseline` / `--suppress` | -- | -- | Yes (review mode) | -- | -- |
+| `--benchmark` | -- | -- | Yes (optimize / full) | -- | -- |
+| `--type` | -- | -- | Yes | -- | -- |
+| `--cross-file` | -- | -- | Yes (optimize) | -- | -- |
+| `--members` | -- | -- | -- | Yes | -- |
+| `--lead` | -- | -- | -- | Yes | -- |
+| `--team` | Yes | -- | -- | N/A | -- |
+| `--quick` | -- | -- | -- | -- | Yes |
+| `--brief` | Yes | Yes | -- | -- | -- |
+| `--resume` | Yes | Yes | -- | -- | Yes |
+| `--mode debug` | Yes (`/run --mode debug`) | -- | -- | -- | -- |
 
 ## Integration Pipeline Matrix
 
@@ -73,10 +72,9 @@ editing `Agent_Memory/_projects/{hash}/product_context.yaml` directly.
 |------------|------|-----|
 | `/designer` | `/run` | Design thoroughly, then build. Most common pipeline. |
 | `/designer` | `/team` | Design thoroughly, then build in parallel. For big features. |
-| `/review` | `/run` | Find issues, then fix them. |
-| `/optimize` | `/review` | Optimize, then verify quality. Use `--review-after` flag. |
-| `/optimize` | `/run` | Optimizer creates plan, /run implements CRITICAL items. Use `--plan-only` flag. |
-| `/optimize` | `/designer` | Explore optimization approach first. Use `--explore-first` flag. |
+| `/improve --mode review` | `/run` | Find issues, then fix them. |
+| `/improve --mode full` | -- | Review + optimize together with one shared baseline. |
+| `/improve --mode optimize` | `/improve --mode review` | Optimize, then verify quality (or use `--mode full`). |
 | `/run --team` | -- | Shortcut: /run with parallel team execution. |
 | `/org` | `/team` (per domain) | CEO deliberation, then sequential /team per domain. For multi-domain initiatives. |
 | `/org` | `/run` | Single-domain routing with strategic brief context. |
@@ -84,19 +82,29 @@ editing `Agent_Memory/_projects/{hash}/product_context.yaml` directly.
 
 ## Complexity and Scope
 
-| Aspect | /run | /designer | /review | /optimize | /team | /org | /debug |
-|--------|------|-----------|---------|-----------|-------|------|--------|
-| **Minimum complexity** | Tier 2 (any request) | Any | Any | Any | Tier 3 (3+ work items) | Any (auto-routes simple) | Any |
-| **Maximum complexity** | Tier 4 (expert + HITL) | Any | Any | Tier 4 (CRITICAL -> /run) | Tier 4 | Tier 4 (multi-domain) | Tier 3 |
-| **Scope** | Single task | Single design | Single target | Single target | Multiple parallel tasks | Multi-domain coordinated | Single bug |
-| **Parallelism** | No (sequential) | No (interactive) | Yes (agent groups) | Yes (independent opts) | Yes (teammates) | Yes (/team per domain) | No (sequential phases) |
-| **Resumable** | Yes (--resume flag + waypoints) | Yes (--resume flag) | No | Yes (session waypoints) | No | Yes (--resume, per-domain) | No |
+| Aspect | /run | /designer | /improve | /team | /org |
+|--------|------|-----------|----------|-------|------|
+| **Minimum complexity** | Tier 2 (any request) | Any | Any | Tier 3 (3+ work items) | Any (auto-routes simple) |
+| **Maximum complexity** | Tier 4 (expert + HITL) | Any | Tier 4 (CRITICAL findings hand off to /run) | Tier 4 | Tier 4 (multi-domain) |
+| **Scope** | Single task | Single design | Single target (or `--scope` for `--mode full`) | Multiple parallel tasks | Multi-domain coordinated |
+| **Parallelism** | No (sequential) | No (interactive) | Yes (specialist groups + opportunity scanners) | Yes (teammates) | Yes (/team per domain) |
+| **Resumable** | Yes (--resume flag + waypoints) | Yes (--resume flag) | Yes (session waypoints) | No | Yes (--resume, per-domain) |
 
 ## Performance Characteristics
 
-| Metric | /run | /designer | /review | /optimize | /team | /org | /debug |
-|--------|------|-----------|---------|-----------|-------|------|--------|
-| **Startup time** | Fast (seconds) | Fast (immediate Q&A) | Fast (seconds) | Fast (seconds) | Medium (team setup) | Medium (C-suite analysis) | Fast (seconds) |
-| **Execution time** | Varies by task | 15-45 min (interactive) | 3-10 min | 5-20 min | 40-60% faster than /run | 25-60 min (multi-domain) | 15-60 min (varies by bug) |
-| **Token efficiency** | Standard | Context-conscious | Parallel (efficient) | Standard | Higher (multiple contexts) | High (C-suite + /team) | Standard |
-| **Context usage** | None (inline) | Main (for Q&A) | Fork (separate) | Fork (separate) | Fork (per teammate) | Fork (C-suite + /team) | None (inline) |
+| Metric | /run | /designer | /improve | /team | /org |
+|--------|------|-----------|----------|-------|------|
+| **Startup time** | Fast (seconds) | Fast (immediate Q&A) | Fast (seconds) | Medium (team setup) | Medium (C-suite analysis) |
+| **Execution time** | Varies by task | 15-45 min (interactive) | 3-20 min | 40-60% faster than /run | 25-60 min (multi-domain) |
+| **Token efficiency** | Standard | Context-conscious | Parallel (efficient) | Higher (multiple contexts) | High (C-suite + /team) |
+| **Context usage** | None (inline) | Main (for Q&A) | Fork (separate) | Fork (per teammate) | Fork (C-suite + /team) |
+
+## V10 → V11 Migration Quick Reference
+
+| V10 invocation | V11 replacement |
+|----------------|-----------------|
+| `/review <target>` | `/improve --mode review <target>` (or `/improve <target>`; `review` is the default mode) |
+| `/optimize <target>` | `/improve --mode optimize <target>` |
+| `/optimize <target> --review-after` | `/improve --mode full --scope <target>` |
+| `/context init\|show\|update\|clear` | `/run context init\|show\|update\|clear` |
+| `/debug <bug>` | `/run --mode debug <bug>` |

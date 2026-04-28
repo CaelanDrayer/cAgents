@@ -29,6 +29,8 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
 
 **Role**: Quality gate for all domains. Validates controller coordination and outputs.
 
+**Note on debug mode**: The validator's "debug mode" branch (detected from `instruction.yaml` `flags.mode: debug`) is orthogonal to the `/debug` skill removed in V11.0.0 — it is driven by `/run --mode debug` and remains fully active.
+
 **Use When**:
 - Executing phase complete, need to validate outputs
 - Coordination quality assessment required
@@ -278,7 +280,7 @@ the `hypotheses_tested` key.
 | Condition | Verdict |
 |-----------|---------|
 | `hypotheses_tested:` list present, ≥1 entry | Continue to other checks |
-| `hypotheses_tested:` missing or empty | Emit FIXABLE finding with severity HIGH: `"Debug mode requires hypotheses_tested[] (see .claude/skills/debug/SKILL.md Phase 3)"` |
+| `hypotheses_tested:` missing or empty | Emit FIXABLE finding with severity HIGH: `"Debug mode requires hypotheses_tested[] (see .claude/skills/run/reference/debug-mode-prompt.md Phase 3)"` |
 
 Non-debug runs skip this check entirely. The finding is FIXABLE (not
 BLOCKED) because the controller can populate the list on re-execution.
@@ -294,7 +296,7 @@ least one entry whose `criterion` OR `result` text mentions `failing test`,
 | Condition | Verdict |
 |-----------|---------|
 | At least one evidence entry matches | Continue to other checks |
-| No evidence entry matches | Emit FIXABLE finding with severity HIGH: `"Debug mode requires a failing-test artifact in evidence (see .claude/skills/debug/SKILL.md Phase 4 step 1)"` |
+| No evidence entry matches | Emit FIXABLE finding with severity HIGH: `"Debug mode requires a failing-test artifact in evidence (see .claude/skills/run/reference/debug-mode-prompt.md Phase 4 step 1)"` |
 
 Non-debug runs skip this check entirely. The finding enforces cAgents'
 bug-driven testing mandate at the debug-mode gate.
@@ -307,7 +309,7 @@ V10.26.15:
 1. Count entries with `result: falsified`.
 2. Require at least one such entry. If zero falsified hypotheses exist,
    emit a FIXABLE finding with severity HIGH:
-   `"Debug mode requires at least one falsified hypothesis in hypotheses_tested[] (see .claude/skills/debug/SKILL.md Phase 3)"`.
+   `"Debug mode requires at least one falsified hypothesis in hypotheses_tested[] (see .claude/skills/run/reference/debug-mode-prompt.md Phase 3)"`.
 3. If the falsified count is `>= 3` AND no entry has
    `result: confirmed` (i.e. no confirmed root cause), emit a new verdict
    `BLOCKED` with severity CRITICAL and reason:

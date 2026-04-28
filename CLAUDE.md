@@ -38,7 +38,7 @@ Core architecture and development guidance for cAgents.
 
 ## Version Management
 
-**CRITICAL: Always bump version on commits.** Run `scripts/sync-versions.sh <version>` to update all registry locations. See @.claude/rules/core/version-registry.md for the canonical list (17 in V11.0, down from 21).
+**CRITICAL: Always bump version on commits.** Run `scripts/sync-versions.sh <version>` to update all registry locations. See @.claude/rules/core/version-registry.md for the canonical list (18 in V11.0, down from 21).
 
 **Version Format**: `major.minor.patch` — patch (bug fix), minor (feature), major (breaking)
 
@@ -381,7 +381,7 @@ cAgents/
 +-- CLAUDE.md                # Main project memory (this file)
 +-- .claude/
 |   +-- skills/              # Skills (org, run, team, designer, improve, helper)
-|   +-- hooks/               # 30 .cjs files (27 hooks + utils + launcher + eval CLI)
+|   +-- hooks/               # 29 .cjs files (26 hooks + utils + launcher + eval CLI)
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (26 files, 5 categories)
 |   +-- settings.json        # Hook registration + permissions + env
@@ -409,7 +409,7 @@ cAgents/
 
 ## Hooks System
 
-**Architecture**: CJS-only hooks with `createHook()` factory. 30 .cjs files across 19 event types. See @.claude/rules/core/hooks.md for full documentation.
+**Architecture**: CJS-only hooks with `createHook()` factory. 29 .cjs files = 26 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI. See @.claude/rules/core/hooks.md for full documentation.
 
 ## Plugin Architecture
 
@@ -469,13 +469,13 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Agents**: 243 total (17 core + 12 shared + 11 leadership + 203 domain specialists)
 **Domains**: Engineering (31), Creative (30), Business (28), Growth (34), People (17), Service (28), Leadership (11), Core (17), Shared (12), Science (10), Health (5), Education (5), Personal (5), Arts (5), Trades (5)
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/domain_overrides.yaml`, `Agent_Memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (session YAML contract for AgentPath)
-**Hooks**: 19 event types (24 supported by Claude Code), 26 unique hooks across 27 registrations (30 .cjs files), invoked via `run-hook.cjs` launcher
+**Hooks**: 29 .cjs files = 26 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 816 Vitest tests (hooks + config validation)
-**Version**: 11.0.1
+**Version**: 11.0.2
 
 ## Troubleshooting
 

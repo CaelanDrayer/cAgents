@@ -1,24 +1,24 @@
 # Domain Structure (v10)
 
-## 15 Domains (262 agents)
+## 15 Domains (243 agents)
 
 | Domain | Directory | Agents | Description |
 |--------|-----------|--------|-------------|
-| Engineering | `engineering/` | 32 | Software engineering, infrastructure, security, QA, game programming |
+| Engineering | `engineering/` | 31 | Software engineering, infrastructure, security, QA, game programming |
 | Creative | `creative/` | 30 | Creative writing, narrative design, literary criticism, game art, audio |
-| Business | `business/` | 31 | Strategy, product, operations, finance |
-| Growth | `growth/` | 39 | Marketing, sales, revenue operations |
-| People | `people/` | 19 | HR, talent acquisition, culture, workforce planning |
-| Service | `service/` | 32 | Customer support, CX, legal, compliance, governance |
+| Business | `business/` | 28 | Strategy, product, operations, finance |
+| Growth | `growth/` | 34 | Marketing, sales, revenue operations |
+| People | `people/` | 17 | HR, talent acquisition, culture, workforce planning |
+| Service | `service/` | 28 | Customer support, CX, legal, compliance, governance |
 | Leadership | `leadership/` | 11 | C-suite executives + general-counsel (used by /org, not directly routable) |
-| Core | `core/` | 16 | Infrastructure (trigger, orchestrator, planner, validator, etc.) |
+| Core | `core/` | 17 | Infrastructure (trigger, orchestrator, planner, validator, generic-coordinator, etc.) |
 | Shared | `shared/` | 12 | Cross-domain intelligence (BI, data science, market research, social science) |
 | Science | `science/` | 10 | STEM research, scientific analysis |
-| Health | `health/` | 6 | Medical, wellness, fitness, nutrition |
-| Education | `education/` | 6 | Teaching, tutoring, academic support |
-| Personal | `personal/` | 6 | Career, life coaching, personal finance |
-| Arts | `arts/` | 6 | Visual arts, music, film, performing arts |
-| Trades | `trades/` | 6 | Culinary, construction, automotive, agriculture |
+| Health | `health/` | 5 | Medical, wellness, fitness, nutrition (uses generic-coordinator from core) |
+| Education | `education/` | 5 | Teaching, tutoring, academic support (uses generic-coordinator from core) |
+| Personal | `personal/` | 5 | Career, life coaching, personal finance (uses generic-coordinator from core) |
+| Arts | `arts/` | 5 | Visual arts, music, film, performing arts (uses generic-coordinator from core) |
+| Trades | `trades/` | 5 | Culinary, construction, automotive, agriculture (uses generic-coordinator from core) |
 
 ## Domain Configuration
 

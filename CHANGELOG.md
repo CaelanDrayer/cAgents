@@ -10,6 +10,51 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.0.2] - 2026-04-28
+
+### Fixed
+- **Bug-1**: `session-catchup.cjs` no longer suggests removed `/review`
+  and `/optimize` skills at session resume — re-mapped to
+  `/improve --mode review|optimize|full` (gap_analysis Bug-1).
+- **Bug-2**: `magic-keywords.cjs` natural-language router no longer
+  routes `"review"`/`"optimize"` to removed slash-commands — re-mapped
+  to `/improve --mode review|optimize` (gap_analysis Bug-2).
+- `model-routing-advisor.cjs:34`: stale "262 agents" comment →
+  "243 agents" (gap_analysis Gap-4).
+- `core/agents/reviewer/SKILL.md:106`: removed `/review` slash-command
+  reference (gap_analysis Gap-5).
+- `scripts/sync-versions.sh`: header self-description "21 locations" →
+  "18 locations" (gap_analysis NEW-5).
+- `docs/commands/helper.md`: recommendation table re-mapped from
+  `/review`/`/optimize` to `/improve --mode review|optimize`
+  (gap_analysis NEW-7).
+- `docs/CLAUDE.local.md.example`: `/optimize --dry-run` →
+  `/improve --mode optimize --dry-run` (gap_analysis NEW-8).
+- `docs/SKILLS.md`: replaced V10-era contents with redirect stub
+  pointing at `docs/SKILLS_REFERENCE.md` (gap_analysis NEW-2).
+- `docs/WORKFLOW_AGENT_INTERACTIONS.md`: `/review` and `/optimize`
+  workflow nodes (lines 68–107) updated to `/improve --mode`
+  equivalents (gap_analysis NEW-3).
+- `.claude/rules/README.md`: refreshed rule count (29 files) and added
+  V11.0 skill catalog table; removed live treatment of removed skills
+  (gap_analysis NEW-4).
+
+### Changed
+- **Schema deprecation comments**:
+  `.claude/skills/run/reference/session-schema.md`,
+  `.claude/rules/core/orchestration.md`, and
+  `.claude/rules/core/orchestration-reference.md` now carry inline
+  `DEPRECATED in V11.0` callouts above enum entries for `review_*`,
+  `optimize_*`, `context_*`, and `debug_*` prefixes. **No enum values
+  were removed** — preserved for AgentPath FileWatcher
+  backward-compatibility (cross-project contract).
+
+### Tests
+- Added `tests/hooks/session-catchup-v11.test.js` (7 tests) and
+  `tests/hooks/magic-keywords-v11.test.js` (9 tests) per CLAUDE.md
+  bug-driven testing mandate. Both files fail-before-fix and
+  pass-after-fix.
+
 ## [11.0.1] - 2026-04-21
 
 ### Removed

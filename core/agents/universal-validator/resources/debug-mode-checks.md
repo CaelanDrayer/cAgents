@@ -5,6 +5,8 @@ Authoritative catalog of checks the universal-validator runs when
 progressively across V10.26.14–17 so each enforcement step can be
 measured in isolation before the next one lands.
 
+**Note**: This debug-mode branch is orthogonal to the `/debug` skill removed in V11.0.0 — it is driven by `/run --mode debug` and remains fully active.
+
 ## V10.26.14 — Detection Only
 
 - **Check**: Emit `debug mode detected` into `validation_report.yaml`
@@ -20,7 +22,7 @@ measured in isolation before the next one lands.
 - **Verification method**: `yaml_key_exists`
 - **Severity**: HIGH
 - **On missing/empty**: FIXABLE — emit finding
-  `"Debug mode requires hypotheses_tested[] (see .claude/skills/debug/SKILL.md Phase 3)"`.
+  `"Debug mode requires hypotheses_tested[] (see .claude/skills/run/reference/debug-mode-prompt.md Phase 3)"`.
 - **Rationale**: The 4-phase methodology requires hypothesis testing to
   be recorded. Without the list, the controller cannot demonstrate that
   Phase 3 was executed and the validator cannot assess falsification
@@ -44,7 +46,7 @@ measured in isolation before the next one lands.
   `criterion` and `result` text per evidence entry.
 - **Severity**: HIGH
 - **On missing**: FIXABLE — emit finding
-  `"Debug mode requires a failing-test artifact in evidence (see .claude/skills/debug/SKILL.md Phase 4 step 1)"`.
+  `"Debug mode requires a failing-test artifact in evidence (see .claude/skills/run/reference/debug-mode-prompt.md Phase 4 step 1)"`.
 - **Rationale**: `/debug` Phase 4 step 1 mandates writing a failing test
   that reproduces the bug before implementing any fix. CLAUDE.md's
   bug-driven testing rule requires every bug fix to ship with a regression
@@ -62,7 +64,7 @@ measured in isolation before the next one lands.
 - **Checks (two, evaluated in order)**:
   1. `hypotheses_tested[]` must contain at least one entry with
      `result: falsified`. Missing → FIXABLE, severity HIGH, finding:
-     `"Debug mode requires at least one falsified hypothesis in hypotheses_tested[] (see .claude/skills/debug/SKILL.md Phase 3)"`.
+     `"Debug mode requires at least one falsified hypothesis in hypotheses_tested[] (see .claude/skills/run/reference/debug-mode-prompt.md Phase 3)"`.
   2. If falsified count `>= 3` AND no entry has `result: confirmed`,
      emit verdict `BLOCKED`, severity CRITICAL, reason:
      `"3+ falsified hypotheses without confirmed root cause — escalate per /debug Escalation Rules"`.

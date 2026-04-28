@@ -11,11 +11,14 @@ paths:
 
 All locations where the cAgents version number appears. Keep ALL locations in sync on every release.
 
-## Version Locations (17 total, V11.0)
+## Version Locations (18 total, V11.0)
 
 V11.0 removed four skill SKILL.md version locations
 (`context`, `debug`, `review`, `optimize`) when the corresponding
-skill directories were deleted.
+skill directories were deleted. The V10.x catalog had 21 locations;
+the current canonical count is 18. Any "21 registry locations"
+phrasing elsewhere in this file refers to the V10.x historical
+catalog and is retained only for back-reference.
 
 | # | File | Field/Line | Updated By |
 |---|------|-----------|------------|
@@ -40,7 +43,7 @@ skill directories were deleted.
 
 ## Sync Tool
 
-`scripts/sync-versions.sh <version>` updates all registry locations
+`scripts/sync-versions.sh <version>` updates all 18 registry locations
 (3 JSON files + CLAUDE.md + settings.json + 6 SKILL.md frontmatters +
 session-catchup.cjs + cagents-ci.sh + validate-agents.sh + README.md +
 docs/README.md + docs/RELEASE_NOTES.md + CHANGELOG.md).
@@ -71,9 +74,10 @@ Every tiny bump MUST satisfy all six atomicity criteria:
 4. **Back-compat**: the bump must not remove or rename a public-facing
    contract (skill, agent, hook event, memory path). Deprecations are allowed
    (documented + warn-only); removals require a minor or major bump.
-5. **`scripts/sync-versions.sh` run**: all 21 registry locations agree with
-   the new version. `grep -r '"version"' .claude-plugin/ package.json` must
-   show the new version in every match.
+5. **`scripts/sync-versions.sh` run**: all 18 registry locations agree with
+   the new version (the V10.x catalog had 21; the V11.0 canonical count is
+   18). `grep -r '"version"' .claude-plugin/ package.json` must show the
+   new version in every match.
 6. **Regression test per CLAUDE.md mandate**: per the Bug-Driven Testing
    mandate in `CLAUDE.md`, every bump that fixes a bug ships a failing-before
    / passing-after regression test. Feature or rule bumps ship a test that
@@ -81,7 +85,7 @@ Every tiny bump MUST satisfy all six atomicity criteria:
 
 ### When a bump is NOT a tiny bump
 
-- Multi-file refactors touching more than ~5 files outside the 21 sync
+- Multi-file refactors touching more than ~5 files outside the 18 sync
   locations → should usually be a minor bump (x.Y+1.0).
 - Breaking changes (removed skill, renamed agent, altered hook contract)
   → major bump (X+1.0.0).
@@ -91,7 +95,7 @@ Every tiny bump MUST satisfy all six atomicity criteria:
 ### Enforcement
 
 - `scripts/ci/cagents-ci.sh tiny-bump` runs the `check_tiny_bump` stage that
-  validates CHANGELOG.md has an entry for the new version, the 21 registry
+  validates CHANGELOG.md has an entry for the new version, the 18 registry
   locations agree, and the non-sync diff is ≤5 files.
 - **Blocking as of V10.26.5**: the guard defaults to blocking (exit 6 on
   violation). Set `CAGENTS_TINY_BUMP_BLOCK=0` to opt back into warn-only mode

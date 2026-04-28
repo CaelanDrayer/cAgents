@@ -8,10 +8,12 @@
  *
  * Examples:
  *   "build a login page" -> suggests /run
- *   "review the auth module" -> suggests /review
- *   "optimize database queries" -> suggests /optimize
+ *   "review the auth module" -> suggests /improve --mode review (V11.0)
+ *   "optimize database queries" -> suggests /improve --mode optimize (V11.0)
  *   "design a new dashboard" -> suggests /designer
  *   "team up to build the API" -> suggests /team
+ *
+ * V11.0: /review and /optimize were unified into /improve --mode <mode>.
  *
  * Advisory mode: suggests but does not auto-route.
  */

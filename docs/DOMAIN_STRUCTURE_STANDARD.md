@@ -50,29 +50,30 @@ Current official business domains:
 
 | Domain | Purpose | Agents | Key Controllers |
 |--------|---------|--------|-----------------|
-| **engineering** | Software engineering | 32 | engineering-manager, architect, tech-lead |
+| **engineering** | Software engineering | 31 | engineering-manager, architect, tech-lead |
 | **creative** | Creative production | 30 | narrative-director, story-architect, editor |
-| **business** | Business operations | 31 | operations-manager, product-owner, strategic-planner |
-| **growth** | Revenue & acquisition | 39 | marketing-strategist, sales-strategist, campaign-manager |
-| **people** | Talent & culture | 19 | hr-manager, talent-acquisition-manager |
-| **service** | Support & governance | 32 | customer-success-manager, general-counsel, support-director |
+| **business** | Business operations | 28 | operations-manager, product-owner, strategic-planner |
+| **growth** | Revenue & acquisition | 34 | marketing-strategist, sales-strategist, campaign-manager |
+| **people** | Talent & culture | 17 | hr-manager, talent-acquisition-manager |
+| **service** | Support & governance | 28 | customer-success-manager, general-counsel, support-director |
 | **leadership** | C-suite & strategy | 11 | cto, cro, cfo, coo, chro, ceo, cpo, cmo, cco, cso, chief-legal-officer |
 | **shared** | Cross-domain intelligence | 12 | bi-specialist, data-scientist, market-research-analyst |
 | **science** | STEM research | 10 | science-coordinator, physicist, biologist |
-| **health** | Medical & wellness | 6 | health-coordinator, medical-advisor |
-| **education** | Teaching & tutoring | 6 | education-coordinator, academic-tutor |
-| **personal** | Career & life coaching | 6 | personal-coach-lead, career-counselor |
-| **arts** | Visual arts & music | 6 | arts-director, music-producer |
-| **trades** | Culinary & construction | 6 | trades-coordinator, chef |
-| **core** | Infrastructure | 16 | orchestrator, trigger, universal-* agents |
+| **health** | Medical & wellness | 5 | health-coordinator, medical-advisor |
+| **education** | Teaching & tutoring | 5 | education-coordinator, academic-tutor |
+| **personal** | Career & life coaching | 5 | personal-coach-lead, career-counselor |
+| **arts** | Visual arts & music | 5 | arts-director, music-producer |
+| **trades** | Culinary & construction | 5 | trades-coordinator, chef |
+| **core** | Infrastructure | 17 | orchestrator, trigger, universal-* agents |
 
-**Total**: 262 agents across 15 directories (13 business domains + shared + core)
+**Total**: 243 agents across 15 directories (13 business domains + shared + core).
+Sum: 31+30+28+34+17+28+11+12+10+5+5+5+5+5+17 = 243.
 
 ---
 
 ## Domain Details
 
-### Engineering (32 agents)
+### Engineering (31 agents)
 Software engineering: backend, frontend, DevOps, QA, security
 
 **Includes**:
@@ -89,7 +90,7 @@ Creative production: storytelling, game development, design
 - Game Dev: game-designer, level-designer, animator
 - Visual: ui-designer, ux-designer
 
-### Business (31 agents)
+### Business (28 agents)
 Business operations: product, finance, procurement, operations
 
 **Includes**:
@@ -98,7 +99,7 @@ Business operations: product, finance, procurement, operations
 - Operations: operations-manager, process-improvement-specialist
 - Supply Chain: supply-chain-manager, procurement-specialist
 
-### Growth (39 agents)
+### Growth (34 agents)
 Revenue & acquisition: marketing, sales, partnerships
 
 **Includes**:
@@ -106,7 +107,7 @@ Revenue & acquisition: marketing, sales, partnerships
 - Sales: sales-strategist, account-executive, sales-ops-specialist
 - Growth: growth-marketer, demand-generation-manager
 
-### People (19 agents)
+### People (17 agents)
 Talent & culture: HR, talent acquisition, learning & development
 
 **Includes**:
@@ -114,7 +115,7 @@ Talent & culture: HR, talent acquisition, learning & development
 - Talent: recruiter, talent-acquisition-manager
 - Development: learning-specialist
 
-### Service (32 agents)
+### Service (28 agents)
 Support & governance: customer experience, legal, compliance
 
 **Includes**:

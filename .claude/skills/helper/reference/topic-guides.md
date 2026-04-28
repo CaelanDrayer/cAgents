@@ -14,12 +14,13 @@ Flags are optional modifiers that customize command behavior. They follow the co
 
 | Pattern | Commands | What It Does |
 |---------|----------|-------------|
-| `--dry-run` | /run, /review, /optimize, /team | Preview without executing |
-| `--interactive` | /run, /review, /optimize | Ask user preferences before starting |
+| `--dry-run` | /run, /improve, /team, /org | Preview without executing |
+| `--interactive` | /run, /improve | Ask user preferences before starting |
 | `--quiet` / `-q` | /run, /team | Suppress output/plan display |
 | `--domain <name>` | /run, /team | Override automatic domain detection |
 | `--tier <N>` | /run, /team | Override complexity tier (2-4) |
-| `--focus <area>` | /designer, /review, /optimize | Focus on specific area |
+| `--focus <area>` | /designer, /improve | Focus on specific area |
+| `--mode review\|optimize\|full` | /improve | Select pipeline branch (V11.0) |
 
 **Flag parsing rules:**
 - Flags start with `--` (or `-` for short versions like `-q`)
@@ -74,52 +75,31 @@ Use when the design decomposes into 3+ parallel work items.
 #### Review-Fix Pipeline
 
 ```
-/review src/ --focus security
+/improve --mode review src/ --focus security
   |
   Finds: 3 critical, 7 high issues
   |
   User decides to fix
   |
-  /run Fix critical security issues from review session {id}
+  /run Fix critical security issues from improve session {id}
 ```
 
-#### Optimize-Verify Pipeline
+#### Review + Optimize in One Run
 
 ```
-/optimize src/ --review-after
+/improve --mode full --scope src/
   |
-  Optimizations applied with before/after metrics
+  Single shared baseline measured
   |
-  /review auto-triggered to verify quality  <-- auto-triggered via flag
-```
-
-#### Explore-Optimize Pipeline
-
-```
-/optimize --explore-first
+  Review findings AND optimizations applied with before/after metrics
   |
-  /designer triggered to explore approach  <-- auto-triggered via flag
-  |
-  Design complete
-  |
-  /optimize applies the designed approach
-```
-
-#### Plan-Implement Pipeline
-
-```
-/optimize --plan-only
-  |
-  Optimization plan generated
-  |
-  /run auto-triggered for implementation  <-- auto-triggered via flag
+  Unified improve_report.md
 ```
 
 **Key integration flags:**
-- `--review-after` (on /optimize) -- triggers /review after optimization
-- `--plan-only` (on /optimize) -- generates plan, hands off to /run
-- `--explore-first` (on /optimize) -- starts with /designer
+- `--mode full --scope <path>` (on /improve) -- review + optimize with one shared baseline
 - `--team` (on /run) -- activates /team mode
+- `--mode debug` (on /run) -- systematic 4-phase debugging
 - Build offer (on /designer) -- auto-triggers /run or /team
 
 ---
@@ -128,9 +108,9 @@ Use when the design decomposes into 3+ parallel work items.
 
 ### The 15 Domains
 
-cAgents organizes 262 agents across 15 domains. When you use `/run` or `/team`, the system automatically detects which domain to route to.
+cAgents organizes 243 agents across 15 domains. When you use `/run` or `/team`, the system automatically detects which domain to route to.
 
-#### Engineering (32 agents)
+#### Engineering (31 agents)
 
 Software engineering, infrastructure, security, QA:
 - Backend, frontend, DevOps, architecture, security, game programming
@@ -144,28 +124,28 @@ Creative writing, narrative design, game art, audio:
 
 **Example requests**: "Write a novel", "Design game mechanics", "Create character backstory"
 
-#### Business (31 agents)
+#### Business (28 agents)
 
 Strategy, product, operations, finance:
 - Product management, operations, finance, procurement
 
 **Example requests**: "Plan product roadmap", "Create Q4 budget", "Plan marketing campaign"
 
-#### Growth (39 agents)
+#### Growth (34 agents)
 
 Revenue and customer acquisition:
 - Marketing campaigns, SEO, sales strategy, demand generation
 
 **Example requests**: "Plan Q4 campaign", "Create sales forecast", "Improve conversions"
 
-#### People (19 agents)
+#### People (17 agents)
 
 HR, talent acquisition, culture:
 - Recruiting, onboarding, compensation, team building, change management
 
 **Example requests**: "Hire software engineer", "Design onboarding workflow", "Plan team event"
 
-#### Service (32 agents)
+#### Service (28 agents)
 
 Customer support, legal, compliance:
 - Customer experience, support, legal, contracts, compliance, governance
@@ -177,10 +157,18 @@ Customer support, legal, compliance:
 C-suite executives (used by /org, not directly routable):
 - CTO, CRO, CFO, COO, CHRO, CEO, chief-of-staff, strategy-director
 
-#### Shared (4 agents)
+#### Core (17 agents)
+
+Infrastructure agents (trigger, orchestrator, planner, reviewer, validator, generic-coordinator, etc.).
+
+#### Shared (12 agents)
 
 Cross-domain intelligence utilities:
 - BI specialist, data scientist, market research, competitive intelligence
+
+#### Science, Health, Education, Personal, Arts, Trades (10 + 5 + 5 + 5 + 5 + 5 agents)
+
+Smaller domains served by `generic-coordinator` from `core/`. STEM research, medical/wellness, teaching, career/life coaching, visual arts/music/film, and culinary/construction/automotive/agriculture work routes here.
 
 #### Domain Detection
 
@@ -278,11 +266,11 @@ Every request is classified into a complexity tier, which determines how many ag
 
 ## Topic: agents
 
-### The 262 Agents and How They Are Organized
+### The 243 Agents and How They Are Organized
 
-cAgents has 262 specialized agents organized in a 4-tier hierarchy:
+cAgents has 243 specialized agents organized in a 4-tier hierarchy:
 
-#### Tier 1: Core Infrastructure (16 agents)
+#### Tier 1: Core Infrastructure (17 agents)
 
 These are the backbone -- they manage workflows, not tasks:
 - **trigger** -- Entry point, domain detection
@@ -373,9 +361,9 @@ Every command creates a session directory in `Agent_Memory/sessions/`.
 |---------|-------------------|---------|
 | `/run` | `run_{slug}_{YYMMDD}_{NNN}` | `run_fix-auth-module_260207_001` |
 | `/designer` | `designer_{slug}_{YYMMDD}_{NNN}` | `designer_redo-session-names_260207_001` |
-| `/review` | `review_{slug}_{YYMMDD}_{NNN}` | `review_security-audit-api_260207_001` |
-| `/optimize` | `optimize_{slug}_{YYMMDD}_{NNN}` | `optimize_reduce-bundle-size_260207_001` |
+| `/improve` | `improve_{slug}_{YYMMDD}_{NNN}` | `improve_reduce-bundle-size_260207_001` |
 | `/team` | `team_{slug}_{YYMMDD}_{NNN}` | `team_implement-oauth2_260207_001` |
+| `/org` | `org_{slug}_{YYMMDD}_{NNN}` | `org_launch-product_260207_001` |
 
 #### Key Session Files
 

@@ -2,7 +2,9 @@
 
 How agents interact during workflow execution. For architecture, commands, and agent reference, see `CLAUDE.md`.
 
-**Version**: 10.9.0
+**Version**: V11.0.1 current
+
+_V11.0 removed /review, /optimize, /context, /debug — see [MIGRATION-V11.md](./MIGRATION-V11.md). Review and optimization are now modes of `/improve` (`/improve --mode review`, `/improve --mode optimize`, `/improve --mode full`)._
 
 ---
 
@@ -65,7 +67,7 @@ Wave N (Lead): integration controller -> final validator
 4. Wave 3 (1 teammate): Integration tests + security audit -> GATE-3
 5. Wave 4 (Lead): Merge outputs, final validation -> PASS
 
-### /review -- Parallel Review
+### /improve --mode review -- Parallel Review
 
 ```
 Phase 1: Detect review type + framework
@@ -75,7 +77,7 @@ Phase 4: Auto-fix generation
 Phase 5: Quality gates
 ```
 
-### /optimize -- 5-Phase Optimization
+### /improve --mode optimize -- 5-Phase Optimization
 
 ```
 Phase 1 (15%): Detection -- auto-detect type, scan opportunities
@@ -83,6 +85,14 @@ Phase 2 (25%): Analysis -- baseline metrics, risk classification
 Phase 3 (20%): Planning -- prioritize by ROI
 Phase 4 (25%): Execution -- snapshot -> apply -> validate -> keep/rollback
 Phase 5 (15%): Validation -- before/after metrics, regression tests
+```
+
+### /improve --mode full -- Combined Review + Optimize
+
+```
+Stage 1: Review pass (auditing) -> findings + quality score
+Stage 2: Optimize pass (measurable improvements) -> before/after metrics
+Stage 3: Synthesized improve_report.md combining both
 ```
 
 ### /designer -- Interactive Design
@@ -100,13 +110,14 @@ Build offer: /run, /team, save, or continue refining
 ## Cross-Command Integration
 
 ```
-/org -> /team              Strategic brief -> domain execution
-/designer -> /run          Design then build
-/designer -> /team         Design then parallel build
-/review -> /run            Find issues then fix
-/optimize -> /review       Improve then verify
-/run --team                Shortcut for parallel execution
-/team (fallback) -> /run   Auto-delegates if <3 work items
+/org -> /team                          Strategic brief -> domain execution
+/designer -> /run                      Design then build
+/designer -> /team                     Design then parallel build
+/improve --mode review -> /run         Find issues then fix
+/improve --mode optimize -> /improve --mode review   Improve then verify
+/improve --mode full                   Single-pass review + optimize synthesis
+/run --team                            Shortcut for parallel execution
+/team (fallback) -> /run               Auto-delegates if <3 work items
 ```
 
 ---

@@ -21,6 +21,12 @@ Agent_Memory/sessions/{session_id}/
 
 Format: `{command}_{slug}_{YYMMDD}_{NNN}`
 
+> **DEPRECATED in V11.0**: The /review, /optimize, /context, /debug skills were removed in V11.0.
+> The `optimize`, `review`, `context`, and `debug` enum entries below (and `optimize_`, `review_`, `context_`, `debug_` session-type prefixes) are PRESERVED for AgentPath FileWatcher backward-compatibility — it consumes
+> session_type prefixes from historical session directories on disk. Do NOT remove these values.
+> Use /improve --mode review|optimize|full or /run --mode debug for V11+ workflows.
+> See [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md) for migration guidance.
+
 | Component | Description | Example |
 |-----------|-------------|---------|
 | `command` | Skill prefix | `run`, `org`, `team`, `designer`, `optimize`, `review` |
@@ -70,6 +76,13 @@ session_id: "{CAGENTS_SESSION_ID value}"   # Matches env var verbatim
 ## instruction.yaml (Required, All 7 Skills)
 
 Every skill writes this file with an identical schema at session creation.
+
+> **DEPRECATED in V11.0**: The /review, /optimize, /context, /debug skills were removed in V11.0.
+> The `optimize`, `review`, `debug` values in the `session_type` and `command` enums below are PRESERVED
+> for AgentPath FileWatcher backward-compatibility — it consumes session_type prefixes from historical
+> session directories on disk. Do NOT remove these values.
+> Use /improve --mode review|optimize|full or /run --mode debug for V11+ workflows.
+> See [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md) for migration guidance.
 
 ```yaml
 session_id: "{SESSION_ID}"           # REQUIRED: Unique session identifier

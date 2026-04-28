@@ -23,6 +23,13 @@ All state transitions are AUTOMATIC: INIT -> ORCHESTRATED -> PLANNED -> DECOMPOS
 
 ### CRITICAL: Session Initialization First (V10.22.0)
 
+> **DEPRECATED in V11.0**: The /review, /optimize, /context, /debug skills were removed in V11.0.
+> The `/review`, `/optimize`, `/debug` entries in the skill enumeration below are PRESERVED for
+> AgentPath FileWatcher backward-compatibility — it consumes session_type prefixes from historical
+> session directories on disk. Do NOT remove these values.
+> Use /improve --mode review|optimize|full or /run --mode debug for V11+ workflows.
+> See [docs/MIGRATION-V11.md](../../../docs/MIGRATION-V11.md) for migration guidance.
+
 **Every skill (/run, /team, /org, /review, /optimize, /designer, /debug) MUST create its session directory and write status.yaml BEFORE any other work.** No codebase exploration, no agent spawning, no analysis, no research — session directory first.
 
 **Rationale**: Without a session directory, hooks cannot track the session, agent_tree.yaml has no home, and artifacts have nowhere to be written. Session init is a prerequisite for all other operations.

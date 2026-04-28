@@ -1,6 +1,8 @@
 # Getting Started with cAgents
 
-Five minutes from install to your first orchestrated result.
+Five minutes from install to your first orchestrated result. This guide reflects **V11.0.1 current** — 243 agents across 15 domains and 6 user-invocable skills (`/designer`, `/helper`, `/improve`, `/org`, `/run`, `/team`).
+
+_V11.0 removed `/review`, `/optimize`, `/context`, and `/debug` — see [MIGRATION-V11.md](./MIGRATION-V11.md) for the migration path._
 
 ## Prerequisites
 
@@ -87,9 +89,9 @@ Guides you through structured Q&A to produce an implementation-ready design docu
 
 **Review existing work**:
 ```bash
-/review src/auth/
+/improve --mode review src/auth/
 ```
-Parallel specialist agents audit for security, correctness, maintainability, and style. Optional `--fix` flag applies fixes automatically.
+Parallel specialist agents audit for security, correctness, maintainability, and style. Use `/improve --mode optimize` to apply fixes with before/after metrics, or `/improve --mode full` to chain review then optimize with one baseline. See [docs/MIGRATION-V11.md](MIGRATION-V11.md) for V10 `/review` and `/optimize` migration.
 
 **Not sure which command to use?**
 ```bash

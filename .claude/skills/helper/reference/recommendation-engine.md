@@ -2,6 +2,8 @@
 
 Intent classification and command recommendation logic for `/helper` when given natural language input.
 
+> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Review intent now routes to `/improve --mode review`, optimize intent to `/improve --mode optimize`, context intent to `/run context ...`, and debug intent to `/run --mode debug`._
+
 ## Weighted Scoring Algorithm
 
 The recommendation engine uses 5 weighted signals to score each candidate command. The command with the highest total score is recommended.
@@ -13,22 +15,22 @@ The recommendation engine uses 5 weighted signals to score each candidate comman
 | Keyword match | 0.30 | Count matching keywords from the intent classification tables below. The command whose keyword set has the most matches gets the full 0.30; others get proportional fractions (e.g., 2 matches out of a leader's 4 = 0.15). |
 | Project context | 0.30 | Read project files to infer domain and scope (see project context checks below). |
 | Complexity estimate | 0.20 | Estimate scope from the request: single file or narrow fix favors `/run` (full 0.20); multi-component or cross-cutting favors `/team`; multi-domain favors `/org`. |
-| Explicit intent | 0.10 | If the user directly references a command name ("use /run", "I want to review"), give that command the full 0.10. Otherwise 0.00 for all. |
-| Request history | 0.10 | If the user recently mentioned planning or design in the same session, boost `/designer` by 0.10. If they mentioned review, boost `/review`. Otherwise 0.00. |
+| Explicit intent | 0.10 | If the user directly references a command name ("use /run", "I want to improve"), give that command the full 0.10. Otherwise 0.00 for all. |
+| Request history | 0.10 | If the user recently mentioned planning or design in the same session, boost `/designer` by 0.10. If they mentioned review or audit, boost `/improve --mode review`. Otherwise 0.00. |
 
 ### Project Context Checks (0.30 weight)
 
 These checks read project files to infer which commands are most relevant. Distribute the 0.30 weight across matching signals:
 
-1. **package.json exists** -- engineering domain hint -- add +0.06 to `/run`, `/review`, `/optimize`
+1. **package.json exists** -- engineering domain hint -- add +0.06 to `/run` and `/improve`
 2. **File count in target path** (if a path is mentioned in the request):
    - More than 20 files mentioned or implied -- add +0.06 to `/team`
    - Fewer than 5 files -- add +0.06 to `/run`
 3. **Current git branch name** (run `git branch --show-current`):
    - `feature/*`, `feat/*` branches -- add +0.06 to `/run` (building something)
-   - `main`, `master`, `release/*` -- add +0.06 to `/review` (diff-aware review hint)
-   - `fix/*`, `hotfix/*`, `bugfix/*` -- add +0.06 to `/run` or `/debug`
-4. **CLAUDE.md or .claude/ directory exists** -- cAgents-aware project -- no specific boost (all commands available)
+   - `main`, `master`, `release/*` -- add +0.06 to `/improve --mode review` (diff-aware review hint)
+   - `fix/*`, `hotfix/*`, `bugfix/*` -- add +0.06 to `/run` or `/run --mode debug`
+4. **CLAUDE.md or .claude/ directory exists** -- cAgents-aware project -- no specific boost (all six skills available)
 5. **Recent session context** -- if user previously asked about design or planning, add +0.06 to `/designer`
 
 ### Combining Scores
@@ -46,10 +48,10 @@ Request: "Build a REST API for user management"
 
 Signal 1 - Keyword match (0.30):
   "build" matches Build/Create intent -> /run gets 0.30
-  No matches for /review, /optimize, /team, /designer, /debug, /org
+  No matches for /improve, /team, /designer, /org
 
 Signal 2 - Project context (0.30):
-  package.json found -> engineering hint -> /run +0.06, /review +0.06, /optimize +0.06
+  package.json found -> engineering hint -> /run +0.06, /improve +0.06
   No target path mentioned -> skip file count
   Branch: feature/user-api -> /run +0.06
   .claude/ exists -> no specific boost
@@ -63,13 +65,12 @@ Signal 4 - Explicit intent (0.10):
   No command referenced -> 0.00 for all
 
 Signal 5 - Request history (0.10):
-  No prior design/review mentions -> 0.00 for all
+  No prior design or review mentions -> 0.00 for all
 
 Final scores:
   /run     = 0.30 + 0.12 + 0.16 + 0.00 + 0.00 = 0.58
   /team    = 0.00 + 0.00 + 0.04 + 0.00 + 0.00 = 0.04
-  /review  = 0.00 + 0.06 + 0.00 + 0.00 + 0.00 = 0.06
-  /optimize= 0.00 + 0.06 + 0.00 + 0.00 + 0.00 = 0.06
+  /improve = 0.00 + 0.06 + 0.00 + 0.00 + 0.00 = 0.06
 
 Recommendation: /run Build REST API for user management
   (clear winner at 0.58 vs next-best 0.06)
@@ -95,34 +96,35 @@ When the user provides a natural language description of what they want to do, c
 
 ### Fix / Debug Intent -> /run
 
-**Signal words**: fix, debug, resolve, repair, patch, hotfix, troubleshoot, correct, address, handle
+**Signal words**: fix, resolve, repair, patch, hotfix, troubleshoot, correct, address, handle
 
 **Examples**:
 - "Fix the login bug" -> `/run Fix the login bug`
-- "Debug the payment timeout" -> `/run Debug the payment timeout`
 - "Resolve the CORS error" -> `/run Resolve the CORS error`
 
-**Note**: For bugs with known fixes, use /run. For bugs that have resisted 2+ fixes or have unclear root cause, use /debug. If unsure, try /run first.
+**Note**: For bugs with known fixes, use `/run`. For bugs that have resisted 2+ fixes or have unclear root cause, use `/run --mode debug` (the V11 replacement for the removed `/debug` skill).
 
-### Debug / Investigate Intent -> /debug
+### Debug / Investigate Intent -> /run --mode debug
 
 **Signal words**: debug, root cause, why does this fail, can't figure out, keeps breaking, intermittent, flaky, it works on my machine, tried everything, resisted fixes, mysterious, unexplained
 
 **Examples**:
-- "I've tried 3 fixes, the bug is still there" -> `/debug {bug description}`
-- "Why does this fail intermittently?" -> `/debug Intermittent failure in {component}`
-- "Can't figure out the root cause of this crash" -> `/debug {error description}`
-- "It works locally but fails in CI" -> `/debug Works locally but fails in CI: {description}`
+- "I've tried 3 fixes, the bug is still there" -> `/run --mode debug {bug description}`
+- "Why does this fail intermittently?" -> `/run --mode debug Intermittent failure in {component}`
+- "Can't figure out the root cause of this crash" -> `/run --mode debug {error description}`
+- "It works locally but fails in CI" -> `/run --mode debug Works locally but fails in CI: {description}`
 
-### Context / Knowledge Intent -> /context
+### Context / Knowledge Intent -> /run context
 
 **Signal words**: context, product context, project knowledge, persist knowledge, remember project, project conventions, project settings, share knowledge between sessions
 
+The `/run context` passthrough provides the same `init|show|update|clear` subcommands the legacy `/context` skill exposed.
+
 **Examples**:
-- "Set up project context for this repo" -> `/context init`
-- "Show me the current project context" -> `/context show`
-- "Update the project knowledge" -> `/context update`
-- "Agents keep making wrong assumptions about my project" -> `/context init` (then /context update)
+- "Set up project context for this repo" -> `/run context init`
+- "Show me the current project context" -> `/run context show`
+- "Update the project knowledge" -> `/run context update`
+- "Agents keep making wrong assumptions about my project" -> `/run context init` (then `/run context update`)
 
 ### Plan / Design / Explore Intent -> /designer
 
@@ -134,25 +136,35 @@ When the user provides a natural language description of what they want to do, c
 - "I'm not sure which approach to use for caching" -> `/designer caching strategy`
 - "I want to explore microservices vs monolith" -> `/designer microservices vs monolith architecture`
 
-### Check / Review / Audit Intent -> /review
+### Check / Review / Audit Intent -> /improve --mode review
 
 **Signal words**: review, check, audit, inspect, analyze quality, verify, validate, scan, assess, evaluate code, test coverage, security check
 
 **Examples**:
-- "Check my code for security issues" -> `/review --focus security`
-- "Review the pull request" -> `/review --scope changed`
-- "Audit our infrastructure for cost savings" -> `/review --type infrastructure`
-- "Check if our docs are up to date" -> `/review docs/ --type documentation`
+- "Check my code for security issues" -> `/improve --mode review --focus security`
+- "Review the pull request" -> `/improve --mode review --scope changed`
+- "Audit our infrastructure for cost savings" -> `/improve --mode review --type infrastructure`
+- "Check if our docs are up to date" -> `/improve --mode review docs/ --type documentation`
 
-### Improve / Optimize / Speed Up Intent -> /optimize
+> Note: `review` is the default mode for `/improve`, so `/improve <target>` is equivalent to `/improve --mode review <target>`.
+
+### Improve / Optimize / Speed Up Intent -> /improve --mode optimize
 
 **Signal words**: optimize, improve, speed up, make faster, reduce, shrink, compress, streamline, enhance performance, tune, boost, accelerate
 
 **Examples**:
-- "Make the app faster" -> `/optimize "Make the app faster"`
-- "Reduce our bundle size" -> `/optimize --type code --focus performance`
-- "Improve our SEO rankings" -> `/optimize --type content --focus quality`
-- "Streamline the onboarding process" -> `/optimize --type process`
+- "Make the app faster" -> `/improve --mode optimize "Make the app faster"`
+- "Reduce our bundle size" -> `/improve --mode optimize --type code --focus performance`
+- "Improve our SEO rankings" -> `/improve --mode optimize --type content --focus quality`
+- "Streamline the onboarding process" -> `/improve --mode optimize --type process`
+
+### Audit + Optimize Together -> /improve --mode full
+
+When the user wants both review and optimization with a single shared baseline:
+
+**Examples**:
+- "Audit src/ and apply safe optimizations with one baseline" -> `/improve --mode full --scope src/`
+- "Review and tune the auth module" -> `/improve --mode full --scope src/auth/`
 
 ### Parallel / Big Task / Team Intent -> /team
 
@@ -163,6 +175,14 @@ When the user provides a natural language description of what they want to do, c
 - "I need this done fast -- can we parallelize?" -> `/team {task}`
 - "Implement all three auth providers simultaneously" -> `/team Implement Google, GitHub, and email auth`
 
+### Cross-Domain / Strategic Intent -> /org
+
+**Signal words**: launch, restructure, migrate, company-wide, cross-team, strategic, multi-domain, executive, C-suite
+
+**Examples**:
+- "Launch the new product across engineering, marketing, and hiring" -> `/org Launch new product`
+- "Restructure the engineering org" -> `/org Restructure engineering team`
+
 ## Multi-Intent Detection
 
 Some requests combine multiple intents. Recommend the primary command and mention the pipeline:
@@ -172,10 +192,10 @@ Some requests combine multiple intents. Recommend the primary command and mentio
 - "Think through and implement auth" -> `/designer authentication system` (builds via /run at the end)
 
 ### Review-then-Fix
-- "Find and fix security vulnerabilities" -> `/review --focus security --auto-fix safe` (auto-fixes safe issues, then use `/run` for complex ones)
+- "Find and fix security vulnerabilities" -> `/improve --mode review --focus security --auto-fix safe` (auto-fixes safe issues, then use `/run` for complex ones)
 
-### Optimize-then-Verify
-- "Optimize the codebase and verify nothing broke" -> `/optimize --review-after --require-tests-pass`
+### Review + Optimize Together
+- "Audit and tune the codebase with one baseline" -> `/improve --mode full --scope src/`
 
 ### Build-in-Parallel
 - "Build the full feature fast" -> `/team Build {feature}` (or `/run Build {feature} --team`)
@@ -186,21 +206,21 @@ When the intent is genuinely ambiguous, present options:
 
 ### "Improve the login page"
 Could mean:
-- **Optimize performance** -> `/optimize src/login/ --type code`
+- **Optimize performance** -> `/improve --mode optimize src/login/ --type code`
 - **Fix bugs** -> `/run Fix login page issues`
 - **Redesign it** -> `/designer login page redesign`
-- **Review quality** -> `/review src/login/`
+- **Review quality** -> `/improve --mode review src/login/`
 
-Present: "What kind of improvement? Performance (optimize), bug fixes (run), redesign (designer), or quality check (review)?"
+Present: "What kind of improvement? Performance (`/improve --mode optimize`), bug fixes (`/run`), redesign (`/designer`), or quality review (`/improve --mode review`)?"
 
 ### "Work on authentication"
 Could mean:
 - **Build it** -> `/run Implement authentication`
 - **Plan it** -> `/designer authentication system`
-- **Review it** -> `/review src/auth/`
-- **Optimize it** -> `/optimize src/auth/`
+- **Review it** -> `/improve --mode review src/auth/`
+- **Optimize it** -> `/improve --mode optimize src/auth/`
 
-Present: "What do you want to do with authentication? Build (run), design (designer), review (review), or optimize (optimize)?"
+Present: "What do you want to do with authentication? Build (`/run`), design (`/designer`), review (`/improve --mode review`), or optimize (`/improve --mode optimize`)?"
 
 ## Recommendation Output Format
 
@@ -223,17 +243,17 @@ Based on your request: "fix the authentication timeout bug"
 ```
 Based on your request: "improve the dashboard performance"
 
-  Recommended: /optimize src/dashboard/ --type code --focus performance
+  Recommended: /improve --mode optimize src/dashboard/ --type code --focus performance
 
-  Why: You want measurable performance improvements. /optimize will establish
-  baseline metrics, identify bottlenecks, apply optimizations atomically,
-  and show you before/after metrics.
+  Why: You want measurable performance improvements. /improve in optimize mode
+  will establish baseline metrics, identify bottlenecks, apply optimizations
+  atomically, and show you before/after metrics.
 
-  Alternative: /review src/dashboard/ --focus performance
+  Alternative: /improve --mode review src/dashboard/ --focus performance
   -- if you just want to identify issues without applying changes
 
   Ready to go? Just type:
-    /optimize src/dashboard/ --type code --focus performance
+    /improve --mode optimize src/dashboard/ --type code --focus performance
 ```
 
 ### Ambiguous Recommendation
@@ -249,10 +269,10 @@ Based on your request: "work on the payment system"
   2. /designer payment system
      -- if you want to PLAN the payment system first
 
-  3. /review src/payments/
+  3. /improve --mode review src/payments/
      -- if you want to CHECK the existing payment code
 
-  4. /optimize src/payments/
+  4. /improve --mode optimize src/payments/
      -- if you want to IMPROVE payment system performance
 
   Which fits best? Or give me more detail about what you need.

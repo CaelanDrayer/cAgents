@@ -168,7 +168,10 @@ createHook('SessionCatchup', async (input) => {
 
   const incomplete = findIncompleteSessions();
 
-  let cagentsContext = 'cAgents V11.0.1 session initialized. Minimum Claude Code version: 2.1.69 (required for hook lifecycle events). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Agent tool subagent_type references. IMPORTANT: When spawned as a cAgents agent, self-register your agent type in workflow/agent_tree.yaml for audit trail (SubagentStart hook injects instructions). IMPORTANT: When invoking any skill (/run, /team, /org, /review, /optimize, /designer, /debug), your FIRST action must be creating the session directory and writing status.yaml. Do NOT explore the codebase, spawn agents, or analyze the request before session init. IMPORTANT: /org, /run, and /team NEVER handle tasks themselves. They ALWAYS delegate to subagents via Agent tool. No exceptions, no matter how simple the request.';
+  // V11.0: removed-skill suggestions replaced with V11 canonical skill set.
+  // /review and /optimize were folded into /improve --mode review|optimize|full;
+  // /context and /debug were removed entirely. See docs/MIGRATION-V11.md.
+  let cagentsContext = 'cAgents V11.0.2 session initialized. Minimum Claude Code version: 2.1.69 (required for hook lifecycle events). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Agent tool subagent_type references. IMPORTANT: When spawned as a cAgents agent, self-register your agent type in workflow/agent_tree.yaml for audit trail (SubagentStart hook injects instructions). IMPORTANT: When invoking any skill (/run, /team, /org, /improve, /designer, /helper), your FIRST action must be creating the session directory and writing status.yaml. Do NOT explore the codebase, spawn agents, or analyze the request before session init. IMPORTANT: /org, /run, and /team NEVER handle tasks themselves. They ALWAYS delegate to subagents via Agent tool. No exceptions, no matter how simple the request. For review/optimize work, use /improve --mode review|optimize|full (V11.0 unified entry point).';
 
   // Context Auto-Check (V10.17.0): Check for product-context.yaml
   // Inspired by impeccable's .impeccable.md auto-check pattern
@@ -185,10 +188,13 @@ createHook('SessionCatchup', async (input) => {
         }
       }
     } else {
-      // Only suggest /context on first session (check for suggestion marker)
+      // V11.0: removed `/context` skill suggestion. The skill was removed
+      // in V11.0.0 and following the suggestion would fail. Product context
+      // is now created manually at .claude/context/product-context.yaml.
+      // Marker writes retained for back-compat (no-op for new sessions).
       const markerFile = path.join(AGENT_MEMORY_DIR, '_system', 'context_suggestion_shown');
       if (!fs.existsSync(markerFile)) {
-        cagentsContext += ' Tip: Run /context to set up shared product context that persists across sessions.';
+        cagentsContext += ' Tip: Create .claude/context/product-context.yaml to share product context across sessions.';
         try {
           ensureDir(path.join(AGENT_MEMORY_DIR, '_system'));
           fs.writeFileSync(markerFile, new Date().toISOString());

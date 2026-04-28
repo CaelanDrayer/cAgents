@@ -2,9 +2,9 @@
 
 ## Summary
 
-262 agents across 15 domains.
+243 agents across 15 domains.
 
-## Engineering (32 agents)
+## Engineering (31 agents)
 
 | Agent | Tier | Role |
 |-------|------|------|
@@ -71,15 +71,15 @@
 | ai-writing-detector | execution | AI content detection |
 | ai-writing-rewriter | execution | AI content rewriting |
 
-## Business (31 agents)
+## Business (28 agents)
 
-Consolidated from former Make (product/game design), Grow (marketing/sales), and Operate (finance/operations) domains. Includes: campaign-manager, marketing-strategist, sales-strategist, finance-manager, operations-manager, strategic-planner, product-owner, game-designer, copywriter, and 60+ more specialists.
+Strategy, product, operations, finance. Includes: campaign-manager, marketing-strategist, sales-strategist, finance-manager, operations-manager, strategic-planner, product-owner, game-designer, copywriter, and additional specialists.
 
-## People (19 agents)
+## People (17 agents)
 
 HR, talent acquisition, culture, workforce planning. Key agents: hr-manager, talent-acquisition-manager, recruiter, compensation-analyst, learning-specialist.
 
-## Service (32 agents)
+## Service (28 agents)
 
 Customer support, CX, legal, compliance, governance. Key agents: customer-success-manager, legal-counsel, support-director, general-counsel, compliance-director, compliance-officer.
 
@@ -87,15 +87,15 @@ Customer support, CX, legal, compliance, governance. Key agents: customer-succes
 
 C-suite executives used by /org: CEO, CTO, CFO, CMO, CRO, COO, CCO, CPO, CHRO, CSO.
 
-## Core (16 agents)
+## Core (17 agents)
 
-Pipeline infrastructure: trigger, orchestrator, universal-planner, task-decomposer, prompt-engineer, universal-executor, universal-validator, universal-router, universal-self-correct, hitl, optimizer, task-consolidator, task-inventory, team-trigger, team-lead-adapter.
+Pipeline infrastructure: trigger, orchestrator, universal-planner, task-decomposer, prompt-engineer, universal-executor, universal-validator, universal-router, universal-self-correct, hitl, optimizer, task-consolidator, task-inventory, team-trigger, team-lead-adapter, generic-coordinator, plus one additional core agent.
 
 ## Shared (12 agents)
 
 Cross-domain intelligence: bi-specialist, competitive-intelligence-analyst, data-scientist, economist, historian, linguist, market-research-analyst, philosopher, political-analyst, psychologist, sociologist, translator.
 
-## Growth (39 agents)
+## Growth (34 agents)
 
 Marketing, sales, revenue operations: account-executive, affiliate-marketing-manager, brand-manager, campaign-manager, channel-partner-manager, content-marketing-manager, conversion-rate-optimizer, copywriter, creative-director, customer-marketing-manager, demand-generation-manager, digital-marketing-manager, email-marketing-specialist, events-coordinator, field-marketing-manager, growth-marketer, influencer-marketing-specialist, inside-sales-rep, marketing-analyst, marketing-ops-specialist, marketing-strategist, media-buyer, partnership-marketing-manager, pr-specialist, pricing-analyst, product-marketing-manager, proposal-specialist, revenue-operations-manager, sales-analyst, sales-development-rep, sales-enablement-specialist, sales-engineer, sales-ops-specialist, sales-strategist, sales-trainer, seo-specialist, social-media-manager, territory-manager, video-marketing-specialist.
 
@@ -103,22 +103,22 @@ Marketing, sales, revenue operations: account-executive, affiliate-marketing-man
 
 STEM research: astronomer, biochemist, biologist, chemist, ecologist, geoscientist, mathematician, physicist, science-coordinator, statistician.
 
-## Health (6 agents)
+## Health (5 agents)
 
-Medical and wellness: fitness-coach, health-coordinator, medical-advisor, mental-health-advisor, nutritionist, pharmacist.
+Medical and wellness: fitness-coach, medical-advisor, mental-health-advisor, nutritionist, pharmacist. Uses generic-coordinator from core.
 
-## Education (6 agents)
+## Education (5 agents)
 
-Teaching and tutoring: academic-researcher, academic-tutor, curriculum-designer, education-coordinator, language-tutor, teacher-coach.
+Teaching and tutoring: academic-researcher, academic-tutor, curriculum-designer, language-tutor, teacher-coach. Uses generic-coordinator from core.
 
-## Personal (6 agents)
+## Personal (5 agents)
 
-Career and life coaching: career-counselor, life-coach, personal-coach-lead, personal-finance-advisor, productivity-coach, relationship-coach.
+Career and life coaching: career-counselor, life-coach, personal-finance-advisor, productivity-coach, relationship-coach. Uses generic-coordinator from core.
 
-## Arts (6 agents)
+## Arts (5 agents)
 
-Visual arts, music, film: arts-director, film-director, music-producer, music-teacher, photographer, visual-artist.
+Visual arts, music, film: arts-director, film-director, music-producer, photographer, visual-artist. Uses generic-coordinator from core.
 
-## Trades (6 agents)
+## Trades (5 agents)
 
-Culinary, construction, automotive: agronomist, automotive-technician, chef, construction-advisor, fashion-designer, trades-coordinator.
+Culinary, construction, automotive: agronomist, automotive-technician, chef, construction-advisor, fashion-designer. Uses generic-coordinator from core.

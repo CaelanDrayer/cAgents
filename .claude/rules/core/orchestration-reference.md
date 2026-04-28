@@ -24,6 +24,12 @@ project_context:
 enrichment_summary: "{brief_summary_of_context}"
 ```
 
+> **DEPRECATED in V11.0**: The /review, /optimize, /context, /debug skills were removed in V11.0.
+> The `/context init` reference below is PRESERVED for AgentPath FileWatcher backward-compatibility —
+> it consumes session_type prefixes from historical session directories on disk. Do NOT remove these
+> values. Use /improve --mode review|optimize|full or /run --mode debug for V11+ workflows.
+> See [docs/MIGRATION-V11.md](../../../docs/MIGRATION-V11.md) for migration guidance.
+
 The `project_summary` field is loaded from `Agent_Memory/_projects/{hash}/product_context.yaml` if it exists (created via `/context init`). Must fit within MAX_ATTENTION_CHARS budget (500 chars).
 
 ## Pipeline Configuration

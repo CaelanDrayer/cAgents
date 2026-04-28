@@ -103,4 +103,4 @@ confidence_rationale: "{why this confidence level}"
 | Model | sonnet | haiku |
 | Tools | Read, Grep, Glob, Bash | Read, Grep, Glob, Write, Bash |
 | Output | PASS/REVISE per criteria | Detailed review report with auto-fix |
-| Used by | All controllers in executor-reviewer loops | /review skill, engineering reviews |
+| Used by | All controllers in executor-reviewer loops | review process, engineering reviews |

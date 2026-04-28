@@ -12,7 +12,7 @@ cAgents is a universal multi-domain agent system with controller-centric coordin
 
 | Tier | Role | Count | Purpose |
 |------|------|-------|---------|
-| **1: Core** | Infrastructure | 16 | Workflow orchestration |
+| **1: Core** | Infrastructure | 17 | Workflow orchestration |
 | **2: Controller** | Coordination | ~55 | Question-based delegation |
 | **3: Execution** | Specialists | ~175 | Answer questions, execute tasks |
 | **4: Support** | Operations | ~16 | Foundational services |
@@ -21,23 +21,25 @@ cAgents is a universal multi-domain agent system with controller-centric coordin
 
 | Domain | Dir | Agents | Capability |
 |--------|-----|--------|------------|
-| Engineering | `engineering/` | 32 | Software engineering, infrastructure, security, QA, game programming |
+| Engineering | `engineering/` | 31 | Software engineering, infrastructure, security, QA, game programming |
 | Creative | `creative/` | 30 | Creative writing, narrative design, literary criticism, game art, audio |
-| Business | `business/` | 31 | Strategy, product, operations, finance |
-| Growth | `growth/` | 39 | Marketing, sales, revenue operations |
-| People | `people/` | 19 | HR, talent acquisition, culture |
-| Service | `service/` | 32 | Customer support, CX, legal, compliance, governance |
+| Business | `business/` | 28 | Strategy, product, operations, finance |
+| Growth | `growth/` | 34 | Marketing, sales, revenue operations |
+| People | `people/` | 17 | HR, talent acquisition, culture |
+| Service | `service/` | 28 | Customer support, CX, legal, compliance, governance |
 | Leadership | `leadership/` | 11 | C-suite executives + general-counsel |
-| Core | `core/` | 16 | Infrastructure (trigger, orchestrator, planner, validator, etc.) |
+| Core | `core/` | 17 | Infrastructure (trigger, orchestrator, planner, validator, etc.) |
 | Shared | `shared/` | 12 | Cross-domain intelligence (BI, data science, market research) |
 | Science | `science/` | 10 | STEM research, scientific analysis |
-| Health | `health/` | 6 | Medical, wellness, fitness, nutrition |
-| Education | `education/` | 6 | Teaching, tutoring, academic support |
-| Personal | `personal/` | 6 | Career, life coaching, personal finance |
-| Arts | `arts/` | 6 | Visual arts, music, film, performing arts |
-| Trades | `trades/` | 6 | Culinary, construction, automotive, agriculture |
+| Health | `health/` | 5 | Medical, wellness, fitness, nutrition |
+| Education | `education/` | 5 | Teaching, tutoring, academic support |
+| Personal | `personal/` | 5 | Career, life coaching, personal finance |
+| Arts | `arts/` | 5 | Visual arts, music, film, performing arts |
+| Trades | `trades/` | 5 | Culinary, construction, automotive, agriculture |
 
-**Total: 262 agents across 15 domains**
+**Total: 243 agents across 15 domains**
+
+> **Integration**: cAgents shares `Agent_Memory/sessions/` with its sister project AgentPath, a web-based session visualization and management platform. AgentPath watches the sessions directory via FileWatcher and streams workflow state changes to the UI over WebSocket. See the workspace-level [CLAUDE.md](../../CLAUDE.md) for the integration overview.
 
 ## Workflow Phases
 

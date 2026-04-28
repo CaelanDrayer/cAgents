@@ -2,13 +2,13 @@
 
 **Your AI Workforce for Claude Code**
 
-Deploy 262 specialized agents across 15 domains through an intelligent pipeline that routes your request, plans execution, decomposes work, coordinates specialists, reviews outputs, and validates quality — automatically.
+Deploy 243 specialized agents across 15 domains through an intelligent pipeline that routes your request, plans execution, decomposes work, coordinates specialists, reviews outputs, and validates quality — automatically.
 
 | Stat | Value |
 |------|-------|
-| Agents | 262 across 15 domains |
-| Skills | 10 slash commands |
-| Hooks | 26 unique hooks across 27 registrations, 19 event types |
+| Agents | 243 across 15 domains |
+| Skills | 6 slash commands |
+| Hooks | 29 .cjs files = 26 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI, across 19 event types |
 | Models | Opus 4.6 (controllers) · Sonnet 4.6 (execution) · Haiku 4.5 (support) |
 
 ---
@@ -19,7 +19,7 @@ Deploy 262 specialized agents across 15 domains through an intelligent pipeline 
 - Multi-step task orchestration with automatic routing, planning, and coordination
 - Cross-domain work (engineering + business + creative + growth in one request)
 - Parallel execution with quality-gated waves (40-60% faster for complex tasks)
-- Consistent delegation patterns across 15 domains and 262 specialists
+- Consistent delegation patterns across 15 domains and 243 specialists
 - Reviewer loops, confidence scoring, and revision routing built into every run
 
 **cAgents is NOT for you if:**
@@ -38,7 +38,7 @@ cAgents spawns 3-10+ subagents per request. Each consumes API tokens independent
 ## Requirements
 
 - **Claude Code 2.1.69+** (required)
-- **Node.js** (recommended) — powers 26 registered hooks for session management, secret detection, team coordination, and completion verification
+- **Node.js** (recommended) — powers 26 unique registered hooks (29 .cjs files = hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI) for session management, secret detection, team coordination, and completion verification
 
 | cAgents | Min Claude Code | Highlights |
 |---------|----------------|------------|
@@ -75,8 +75,8 @@ Five commands. Five different capabilities.
 # Plan strategy with C-suite analysis
 /org Plan our Q3 product roadmap
 
-# Review code quality with parallel specialists
-/review src/api/ --fix
+# Audit or improve code quality
+/improve src/api/ --mode review --fix
 
 # Explore a design problem interactively
 /designer Redesign the checkout flow
@@ -141,31 +141,22 @@ Guides design exploration through structured Q&A before building anything. Resea
 
 A 4-dimension clarity score tracks readiness; implementation does not begin until ambiguity drops below 20%. Phase overlap starts next-phase research during the current phase to reduce wait time.
 
-### `/review` — Quality Review
+### `/improve` — Quality Review and Optimization Engine
 
-Runs parallel specialist reviewers — security-engineer, code-reviewer, performance-analyzer — each reporting findings with CRITICAL/HIGH/LOW severity. Add `--fix` to route each CRITICAL finding through an execution agent for patching.
-
-```bash
-/review src/auth/
-/review src/api/ --fix               # Auto-patch CRITICAL findings
-/review . --profile security         # Focus on security-specific checks
-/review src/ --baseline              # Establish a quality baseline
-/review src/ --suppress baseline     # Show only regressions from baseline
-```
-
-Tier 3+ review uses blind review: multiple independent reviewers assess without seeing each other's findings, then a Devil's Advocate round challenges unanimous PASS verdicts.
-
-### `/optimize` — Performance Optimization
-
-Measures before, optimizes, measures after, and provides rollback if the change degrades performance.
+Unified quality engine combining review (findings + severity) and measurable optimization (measure → change → verify → rollback) in a single state machine. Mode selection via `--mode review|optimize|full`.
 
 ```bash
-/optimize src/db/queries.ts
-/optimize api/search --benchmark    # Run custom benchmark suite
-/optimize src/ --history            # Show past optimization attempts and outcomes
+/improve src/auth/ --mode review
+/improve src/api/ --mode review --fix              # Auto-patch CRITICAL findings
+/improve src/db/queries.ts --mode optimize         # Measure, change, verify
+/improve src/ --mode full                          # Review then optimize with synthesis
+/improve src/ --mode review --baseline             # Establish quality baseline
+/improve src/ --mode review --suppress baseline    # Show only regressions
 ```
 
-Optimization history tracks pattern effectiveness across sessions so the same approach is not repeated when it has already failed.
+Review mode runs parallel specialist reviewers (security-engineer, code-reviewer, performance-analyzer) and produces severity-tagged findings with file:line evidence. Optimize mode benchmarks before and after, rolls back on regression, and tracks pattern effectiveness across sessions.
+
+V11.0.0 consolidated `/review` and `/optimize` into `/improve`. For the full migration guide, see [docs/MIGRATION-V11.md](docs/MIGRATION-V11.md).
 
 ### `/helper` — Command Guidance
 
@@ -177,56 +168,36 @@ Recommends the right skill based on your task description. Use it when you are u
 /helper --troubleshoot              # Diagnose why a previous skill run failed
 ```
 
-### `/context` — Shared Product Context
-
-Writes project context (architecture decisions, coding standards, domain glossary) that persists across all sessions and is injected into agent prompts automatically.
-
-```bash
-/context
-/context We use PostgreSQL with Drizzle ORM. All queries go through the db package.
-/context Our API follows REST conventions with JSON:API response format.
-```
-
-### `/debug` — Systematic Debugging
-
-Four-phase debugging for bugs that resist quick fixes: reproduce, isolate, hypothesize, verify. Each phase uses specialist agents before moving to the next.
-
-```bash
-/debug The login form silently fails when the email contains a plus sign
-/debug Memory usage grows unbounded after 100 API calls
-/debug Tests pass locally but fail in CI on the date-formatting module
-```
-
 ---
 
 ## Domain Breakdown
 
 | Domain | Agents | Scope |
 |--------|--------|-------|
-| **Engineering** | 32 | Backend, frontend, DevOps, QA, security, game dev, accessibility |
+| **Engineering** | 31 | Backend, frontend, DevOps, QA, security, game dev, accessibility |
 | **Creative** | 30 | Writing, narrative design, literary criticism, game art, audio |
-| **Business** | 31 | Strategy, product, operations, finance, project management |
-| **Growth** | 39 | Marketing, sales, SEO, demand generation, revenue operations |
-| **People** | 19 | HR, talent acquisition, culture, compensation, compliance |
-| **Service** | 32 | Customer support, CX, legal, compliance, governance |
+| **Business** | 28 | Strategy, product, operations, finance, project management |
+| **Growth** | 34 | Marketing, sales, SEO, demand generation, revenue operations |
+| **People** | 17 | HR, talent acquisition, culture, compensation, compliance |
+| **Service** | 28 | Customer support, CX, legal, compliance, governance |
 | **Leadership** | 11 | C-suite executives (CEO, CTO, CPO, CMO, CFO, COO, CRO, CHRO, CCO, CSO, CLO) — used by `/org` |
 | **Shared** | 12 | Cross-domain intelligence: BI, data science, market research, social science |
 | **Science** | 10 | STEM research, scientific analysis |
-| **Health** | 6 | Medical, wellness, fitness, nutrition |
-| **Education** | 6 | Teaching, tutoring, academic support |
-| **Personal** | 6 | Career, life coaching, personal finance |
-| **Arts** | 6 | Visual arts, music, film, performing arts |
-| **Trades** | 6 | Culinary, construction, automotive, agriculture |
+| **Health** | 5 | Medical, wellness, fitness, nutrition |
+| **Education** | 5 | Teaching, tutoring, academic support |
+| **Personal** | 5 | Career, life coaching, personal finance |
+| **Arts** | 5 | Visual arts, music, film, performing arts |
+| **Trades** | 5 | Culinary, construction, automotive, agriculture |
 
-These 15 domains total 246 user-facing agents. The remaining 16 are Core pipeline infrastructure (orchestrator, planner, decomposer, validator, router) that run automatically and are not directly invoked — bringing the full catalog to 262 agents.
+These 15 domains total 226 user-facing agents. The remaining 17 are Core pipeline infrastructure (orchestrator, planner, decomposer, validator, router) that run automatically and are not directly invoked — bringing the full catalog to 243 agents.
 
-**Engineering (32)** handles the full software stack: backend-developer, frontend-developer, devops-engineer, security-engineer, qa-lead, architect, dba, performance-analyzer, and 24 more. Use `/run Fix the bug` or `/team Build the feature` and the pipeline routes here automatically for software tasks.
+**Engineering (31)** handles the full software stack: backend-developer, frontend-developer, devops-engineer, security-engineer, qa-lead, architect, dba, performance-analyzer, and 23 more. Use `/run Fix the bug` or `/team Build the feature` and the pipeline routes here automatically for software tasks.
 
 **Creative (30)** covers long-form and short-form writing: prose-stylist, dialogue-specialist, plot-developer, narrative-director, character-psychologist, worldbuilder, and 24 more. Use `/run Write a mystery short story` and the narrative-director controller coordinates the right specialists.
 
-**Growth (39)** is the largest domain: copywriter, marketing-strategist, seo-specialist, campaign-manager, demand-generation-manager, sales-strategist, and 33 more. Use `/run Plan the Q4 content calendar` and the marketing-strategist controller coordinates the campaign team.
+**Growth (34)** is the largest domain: copywriter, marketing-strategist, seo-specialist, campaign-manager, demand-generation-manager, sales-strategist, and 28 more. Use `/run Plan the Q4 content calendar` and the marketing-strategist controller coordinates the campaign team.
 
-**Service (32)** covers support and legal: customer-success-manager, general-counsel, compliance-officer, technical-writer, legal-analyst, and 27 more. Use `/run Draft an EULA for our SaaS product` and the general-counsel controller coordinates the legal team.
+**Service (28)** covers support and legal: customer-success-manager, general-counsel, compliance-officer, technical-writer, legal-analyst, and 23 more. Use `/run Draft an EULA for our SaaS product` and the general-counsel controller coordinates the legal team.
 
 ---
 
@@ -302,9 +273,9 @@ Before every Write, Edit, and Bash operation, the `attention-injection.cjs` hook
 
 This fires automatically — no prompt engineering required. It is a no-op when there is no active session, so it does not affect ordinary Claude Code usage.
 
-### 26 Lifecycle Hooks
+### Lifecycle Hooks
 
-cAgents registers 26 unique hooks (27 registrations — `elicitation-handler.cjs` covers 2 events) across 19 of Claude Code's 24 event types:
+cAgents ships 29 .cjs files = 26 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI. The 26 hooks span 27 registrations (`elicitation-handler.cjs` covers 2 events) and fire across 19 of Claude Code's 24 event types:
 
 | Event | Hook | Purpose |
 |-------|------|---------|
@@ -388,13 +359,13 @@ For cross-domain work that spans multiple areas (e.g., launching a product requi
 
 | Dimension | cAgents | Official feature-dev plugin | Official code-review plugin |
 |-----------|---------|----------------------------|----------------------------|
-| **Agent count** | 262 | 3–5 | 3–5 |
+| **Agent count** | 243 | 3–5 | 3–5 |
 | **Business domains** | 15 | 1 (engineering) | 1 (engineering) |
 | **Pipeline state machine** | Yes — PASS/FAIL/REVISE routing, max 5 cycles | No | No |
 | **Parallel team execution** | Yes — N-wave with per-wave quality gates | No | No |
 | **Revision loops** | Yes — executor + reviewer, max 3 rounds per work item | No | No |
 | **Two-stage review** | Yes — spec compliance then code quality | No | No |
-| **Hook lifecycle** | 27 hooks across 19 event types | 1–4 hooks | 1–4 hooks |
+| **Hook lifecycle** | 26 unique hooks / 27 registrations across 19 event types | 1–4 hooks | 1–4 hooks |
 | **Goal drift prevention** | Yes — attention injection on every Write/Edit/Bash | No | No |
 | **Confidence scoring** | Yes — 0.0–1.0 per work item, low scores trigger scrutiny | No | No |
 | **Cross-domain orchestration** | Yes — /org fires full C-suite hierarchy | No | No |
@@ -423,7 +394,7 @@ Wave 2 (parallel, 2 teammates): qa-lead writes integration tests covering the AP
 
 Wave 3 (lead, sequential): integration, final test run, validation report. Each wave is gated — the next wave does not start until the current wave's quality criteria pass. Total execution time: 40-60% less than sequential.
 
-### Quality Review: `/review src/auth/ --fix`
+### Quality Review: `/improve src/auth/ --mode review --fix`
 
 Three reviewers run in parallel: security-engineer (injection, auth bypass, token handling), code-reviewer (naming, structure, DRY, complexity), performance-analyzer (N+1 queries, unnecessary allocations). Each reports findings with CRITICAL/HIGH/LOW severity, citing specific file:line evidence.
 
@@ -469,11 +440,12 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights:
 
-- **V11.0.1** — Current release
+- **V11.0.2** — Current release. Removed statusLine hook and status bar integration.
+- **V11.0.0** — Removed deprecated skills `/review`, `/optimize`, `/context`, `/debug`. `/review` and `/optimize` consolidated into `/improve` (`--mode review|optimize|full`); `/context` replaced by `/run context …` passthrough; `/debug` replaced by `/run --mode debug`. See [docs/MIGRATION-V11.md](docs/MIGRATION-V11.md) for the migration guide.
 - **V10.23.0** — 29-check validation framework, regression validation chain, mandatory self-validation protocol for execution agents
 - **V10.22.0** — Two-stage review protocol (spec compliance then code quality), 5 pipeline improvements
 - **V10.20.0** — 23 agent communication gap fixes, Growth domain expanded from 35 to 39 agents
-- **V10.18.0** — Vibe field on all 262 agents, worktree isolation, guard command pattern, skill chaining, commit-before-verify pattern
+- **V10.18.0** — Vibe field on all 243 agents, worktree isolation, guard command pattern, skill chaining, commit-before-verify pattern
 - **V10.16.0** — Session ID naming overhaul with readable slugs, agent_id linking in coordination_log for AgentPath
 - **V10.12.0** — AgentPath plugin integration with 15 session visualization improvements
 - **V10.6.0** — Confidence tiers, blind review, dead-letter queue, handoff documents
@@ -488,4 +460,4 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | 262 agents across 15 domains | Opus 4.6 · Sonnet 4.6 · Haiku 4.5
+**Built with Claude Code** | 243 agents across 15 domains | Opus 4.6 · Sonnet 4.6 · Haiku 4.5

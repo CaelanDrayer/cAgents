@@ -2,6 +2,8 @@
 
 Comprehensive reference for all cAgents universal commands.
 
+> **V11.0 Migration Note**: `/review`, `/optimize`, `/context`, and `/debug` were removed in V11.0.0. Use `/improve --mode review|optimize|full` for review and optimization work; `/run context <subcmd>` for product context; `/run --mode debug <request>` for systematic debugging. See [docs/MIGRATION-V11.md](MIGRATION-V11.md) for the complete command-by-command migration.
+
 ## /designer - Interactive Design Engine
 
 **Status**: Production-Ready (V2.0)
@@ -245,104 +247,85 @@ See CLAUDE.md for complete /run documentation.
 
 ---
 
-## /review - Enhanced Review System
+## /improve - Unified Review and Optimization Engine
 
-**Status**: Production-Ready
+**Status**: Production-Ready (V11.0)
 **Domains**: Software, Docs, Content, Design, Process, Data, Infrastructure
-**Complexity**: Tier 2
-
-### Overview
-
-Universal review system with intelligent agent selection, severity-based reporting, auto-fix suggestions, and pattern learning.
-
-### Usage
-
-```bash
-/review                         # Review current directory
-/review src/                    # Review specific path
-/review --focus security        # Security-focused review
-```
-
-### Key Features
-
-- **30-50% faster** (intelligent agent selection)
-- **81% faster** to critical issues (severity-based early reporting)
-- **98% more actionable** (auto-fix suggestions included)
-- **78% pattern detection** (learns from previous reviews)
-
-See CLAUDE.md for complete /review documentation.
-
----
-
-## /optimize - Universal Optimizer
-
-**Status**: Production-Ready
-**Optimization Types**: 8 types (code, content, process, data, infrastructure, campaign, creative, sales)
 **Complexity**: Tier 2-4
+**Replaces**: `/review` and `/optimize` (removed in V11.0.0)
 
 ### Overview
 
-Universal 5-phase optimization engine that detects opportunities, measures baselines, plans approach, executes changes atomically with rollback, and validates results with before/after metrics. Supports 8 optimization types across all domains with cross-file analysis, parallel execution, and ML-ready pattern learning.
+Single 7-state state machine that consolidates quality review, measurable optimization, and combined audit-then-improve workflows. Mode selection via `--mode review|optimize|full` drives whether the engine reports findings, applies improvements, or chains both with a single baseline.
 
 ### Usage
 
 ```bash
-/optimize                              # Auto-detect and optimize
-/optimize "Make the app faster"        # Natural language goal
-/optimize --interactive                # Ask preferences via AskUserQuestion
-/optimize src/ --type code             # Specific target and type
-/optimize --dry-run                    # Preview without applying
-/optimize --type content blog/         # Content optimization
-/optimize --plan-only                  # Generate plan, trigger /run
-/optimize --cross-file                 # Cross-file dependency analysis
+/improve                               # Default: --mode review on auto-detected scope
+/improve src/                          # Review specific path
+/improve --mode review src/            # Explicit review (find issues, no fixes)
+/improve --mode optimize src/          # Optimize (apply improvements with metrics)
+/improve --mode full --scope src/auth/ # Review + optimize with shared baseline
+/improve --baseline                    # Establish review baseline
+/improve --suppress                    # Suppress baselined findings
+/improve --benchmark                   # Include before/after benchmark comparison
 ```
 
-### 5-Phase Workflow
+### Modes
+
+| Mode | What It Does | When to Use |
+|------|--------------|-------------|
+| `review` (default) | Detect findings, report severity, suggest fixes | Pre-merge audit, security scan, content QA |
+| `optimize` | Apply improvements atomically with before/after metrics | Performance tuning, refactoring, cost reduction |
+| `full` | Review + optimize chained with one baseline and unified report | End-to-end quality pipeline |
+
+### 7-State State Machine
 
 ```
-Detection → Analysis → Planning → Execution → Validation
-   ↓          ↓          ↓          ↓           ↓
- Type/    Baseline +   ROI +     Atomic +    Before/
- Intent   Opportunities  Groups   Rollback   After Metrics
+SCOPING → MEASURING → DETECTING → PLANNING → EXECUTING → VALIDATING → REPORTING
+   ↓          ↓           ↓           ↓           ↓            ↓             ↓
+ Target    Baseline    Findings    Approach    Atomic +     Quality      Unified
+ + scope   metrics     + severity  + ROI       rollback     gates        report
 ```
 
-### Key Features
+Each state has explicit entry and exit criteria. The engine pauses for `--baseline` work, branches between review-only and optimize paths based on `--mode`, and produces `improve_report.md` (single report for `--mode full`).
 
-1. **5-Phase Structured Workflow**: Detection → Analysis → Planning → Execution → Validation
-2. **8 Optimization Types**: Code, content, process, infrastructure, data, campaign, creative, sales
-3. **Atomic Execution**: Git snapshot before every change, automatic rollback on failure
-4. **Cross-File Analysis**: Dependency graphs, data flow analysis, architectural patterns, performance propagation
-5. **Risk Classification**: 5 levels (SAFE/LOW/MEDIUM/HIGH/CRITICAL) with appropriate auto-apply thresholds
-6. **Parallel Execution**: Independent optimizations run simultaneously for 3-10x speedup
-7. **Baseline Measurement**: Quantified before/after metrics for every optimization
-8. **Quality Gates**: Tests pass, no new lint errors, performance improved, bundle size maintained
-9. **Session Resilience**: Incremental saves, phase checkpoints, context monitoring, resume capability
-10. **ML-Ready Learning**: Track predicted vs actual impact, update pattern accuracy over time
-11. **Plugin Integration**: Auto-trigger `/run` for CRITICAL optimizations, `/designer` for exploration, `/review` for post-check
+### Key Flags
+
+- `--mode review|optimize|full` — select pipeline path
+- `--scope <path>` — restrict scope (replaces older `--scope changed|staged`)
+- `--baseline` — record current findings as the baseline
+- `--suppress` — suppress baselined findings on subsequent runs
+- `--benchmark` — capture before/after benchmark numbers (perf, size, cost)
+- `--dry-run` — preview plan without applying
+- `--focus security|performance|quality` — focus area
+- `--auto-fix safe` — apply only SAFE-tier fixes automatically
+- `--cross-file` — cross-file dependency analysis (optimize/full only)
+
+### Pattern Effectiveness Tracking
+
+`/improve` tracks predicted vs. actual impact for each pattern it applies. Over time the engine boosts patterns that consistently deliver and demotes ones that do not. Atomic rollback is preserved: every change is git-snapshotted, and any failed quality gate triggers automatic revert.
 
 ### Session Files
 
 ```
-Agent_Memory/sessions/optimize_{slug}_{YYMMDD}_{NNN}/
-├── status.yaml                    # Current phase + history
-├── task_plan.md                   # Three-file pattern: work items
-├── findings.md                    # Three-file pattern: discoveries
-├── progress.md                    # Three-file pattern: status/resume
+Agent_Memory/sessions/improve_{slug}_{YYMMDD}_{NNN}/
+├── status.yaml                    # Current state + history
 ├── workflow/
-│   ├── detection_report.yaml      # Phase 1 output
-│   ├── baseline_metrics.yaml      # Phase 2 baseline
-│   ├── opportunities.yaml         # Phase 2 opportunities
-│   ├── cross_file_analysis.yaml   # Phase 2 cross-file (if enabled)
-│   ├── plan.yaml                  # Phase 3 plan
-│   ├── execution_summary.yaml     # Phase 4 results
+│   ├── scope_analysis.yaml        # SCOPING output
+│   ├── baseline_metrics.yaml      # MEASURING output
+│   ├── findings.yaml              # DETECTING output (review)
+│   ├── opportunities.yaml         # DETECTING output (optimize)
+│   ├── plan.yaml                  # PLANNING output
+│   ├── execution_summary.yaml     # EXECUTING results
+│   ├── validation_report.yaml     # VALIDATING gates
 │   └── coordination_log.yaml      # Controller Q&A
-├── optimizations/{opt_id}/        # Per-optimization snapshots + results
-├── waypoints/                     # Phase transition checkpoints
-├── outputs/optimization_report.md # Final report
-└── validation/validation_report.yaml
+├── changes/{change_id}/           # Per-change snapshots + results
+├── waypoints/                     # State transition checkpoints
+└── outputs/improve_report.md      # Unified final report
 ```
 
-See `core/commands/optimize.md` for complete documentation.
+See [docs/MIGRATION-V11.md](MIGRATION-V11.md) for migration notes from `/review` and `/optimize`.
 
 ---
 
@@ -352,8 +335,7 @@ See `core/commands/optimize.md` for complete documentation.
 |---------|---------|----------|-------------|--------|
 | **/designer** | Structured design | 15-45 min | 4-phase Q&A | Design doc + artifacts + diagrams + validation |
 | **/run** | Implementation | Varies | Autonomous | Working implementation |
-| **/review** | Quality review | 3-10 min | Autonomous | Issue report + fixes |
-| **/optimize** | Universal optimization | 5-20 min | Autonomous (or interactive) | Before/after metrics + optimized output |
+| **/improve** | Quality review + optimization | 3-20 min | Autonomous (or interactive) | Findings, fixes, before/after metrics |
 
 ---
 
@@ -362,8 +344,9 @@ See `core/commands/optimize.md` for complete documentation.
 - **Full Architecture**: See `CLAUDE.md` for complete system documentation
 - **Getting Started**: See `docs/GETTING_STARTED.md` for quick start guide
 - **Architecture**: See `docs/ARCHITECTURE.md` for architecture design
+- **V11 Migration**: See [docs/MIGRATION-V11.md](MIGRATION-V11.md) for `/review`, `/optimize`, `/context`, `/debug` replacements
 
 ---
 
-**Commands**: /run, /designer, /review, /optimize
-**Last Updated**: 2026-02-04
+**Commands**: /run, /designer, /improve, /team, /org, /helper
+**Last Updated**: 2026-04-27

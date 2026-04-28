@@ -31,7 +31,7 @@ const MODEL_EXPECTATIONS = {
   executive: { expected: 'opusplan', alternatives: ['opus'] },
 };
 
-// Known agent-to-tier mappings for all 262 agents (static map, generated from SKILL.md frontmatter)
+// Known agent-to-tier mappings for all 243 agents (static map, generated from SKILL.md frontmatter)
 const KNOWN_AGENTS = {
   // Core / Infrastructure (16 agents)
   'hitl': 'infrastructure',

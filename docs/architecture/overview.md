@@ -2,14 +2,14 @@
 
 ## System Architecture
 
-cAgents is a multi-domain agent orchestration system built as a Claude Code plugin. It coordinates 262 specialized agents across 15 domains using a controller-centric delegation pattern.
+cAgents is a multi-domain agent orchestration system built as a Claude Code plugin. It coordinates 243 specialized agents across 15 domains using a controller-centric delegation pattern.
 
 ## Key Concepts
 
 ### Agent Tiers
 | Tier | Role | Count | Examples |
 |------|------|-------|---------|
-| Core Infrastructure | Pipeline agents | 16 | trigger, orchestrator, planner, validator |
+| Core Infrastructure | Pipeline agents | 17 | trigger, orchestrator, planner, validator |
 | Controller (Tier 2) | Coordination | ~30 | engineering-manager, campaign-manager |
 | Execution (Tier 3) | Implementation | ~150 | backend-developer, copywriter |
 | Support (Tier 4) | Services | ~10 | scribe, data-extractor |

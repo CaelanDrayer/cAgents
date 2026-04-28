@@ -12,18 +12,21 @@ Topic-specific rules organized for better maintainability.
 ```
 .claude/rules/
 ├── core/           # Core architecture patterns
-│   ├── orchestration.md       # Workflow phases and orchestration
-│   ├── controllers.md         # Question-based delegation patterns
-│   ├── execution.md           # Execution agent patterns
-│   ├── shared-questions.md    # Universal controller question patterns
-│   ├── hooks.md               # V8.0 hook system documentation
-│   ├── skill-format.md        # V8.0 SKILL.md agent format spec
-│   ├── progressive-disclosure.md # V8.0 three-tier loading pattern
-│   ├── subagent-alignment.md  # V8.0 Agent tool alignment
-│   ├── teams.md               # V9.2 Team coordination patterns (built-in agent teams)
+│   ├── orchestration.md           # Workflow phases and orchestration
+│   ├── controllers.md             # Question-based delegation patterns
+│   ├── execution.md               # Execution agent patterns
+│   ├── shared-questions.md        # Universal controller question patterns
+│   ├── hooks.md                   # Hook system documentation (19 event types)
+│   ├── skill-format.md            # SKILL.md agent format spec (V10.22.5)
+│   ├── progressive-disclosure.md  # Three-tier loading pattern
+│   ├── subagent-alignment.md      # Agent tool alignment
+│   ├── teams.md                   # Team coordination (built-in agent teams)
 │   ├── controller-reference.md    # Detailed controller schemas and protocols
 │   ├── orchestration-reference.md # Detailed orchestration schemas
-│   └── version-registry.md       # Version synchronization (20 locations)
+│   ├── version-registry.md        # Version synchronization (17 locations)
+│   └── resources/
+│       ├── controller-validation-checklist.md  # Pre/mid-execution controller checks
+│       └── execution-self-validation.md        # 15-check executor self-validation
 ├── domains/        # Domain-specific guidelines
 │   ├── engineering.md      # Engineering domain (engineering/)
 │   ├── grow.md             # Business domain (business/, growth/)
@@ -36,9 +39,13 @@ Topic-specific rules organized for better maintainability.
 │   ├── agent-memory.md           # Agent_Memory/ structure and usage
 │   └── agent-memory-reference.md # Detailed memory patterns and examples
 └── quality/        # Quality and completion
-    ├── completion.md           # Task completion protocol
-    ├── validation-framework.md # End-to-end completion traceability
-    └── implicit-discovery.md   # Handling abstract requests
+    ├── completion.md            # Task completion protocol
+    ├── validation-framework.md  # End-to-end completion traceability
+    ├── implicit-discovery.md    # Handling abstract requests
+    ├── cso-guidelines.md        # Claude Search Optimization
+    ├── anti-slop.md             # Anti-AI-slop writing rules
+    └── resources/
+        └── validation-checklist-29.md  # 29-check validation framework
 ```
 
 ## Purpose
@@ -77,45 +84,61 @@ Import rules into CLAUDE.md or other docs:
 See @.claude/rules/core/orchestration.md for workflow patterns.
 ```
 
-## Current Rules (26 files)
+## Current Rules (29 files)
 
-### Core (12 files)
+### Core (14 files)
 1. **core/orchestration.md** - Workflow phases (routing -> validating)
 2. **core/controllers.md** - Question-based delegation patterns
 3. **core/execution.md** - Execution agent patterns
 4. **core/shared-questions.md** - Universal controller question patterns
-5. **core/hooks.md** - V10.0 hook system (22 event types, 4 hook types)
-6. **core/skill-format.md** - V9.0 SKILL.md format (maxTurns, permissionMode, memory, opusplan)
-7. **core/progressive-disclosure.md** - Three-tier loading (10/10 agents converted)
+5. **core/hooks.md** - V10.18 hook system (19 event types of 24 supported, 4 hook types)
+6. **core/skill-format.md** - V10.22.5 SKILL.md format (maxTurns, permissionMode, memory, opusplan, vibe, allowed-tools)
+7. **core/progressive-disclosure.md** - Three-tier loading pattern
 8. **core/subagent-alignment.md** - Agent tool alignment patterns
-9. **core/teams.md** - V9.2 Team coordination patterns (built-in agent teams)
+9. **core/teams.md** - V9.2+ team coordination patterns (built-in agent teams)
 10. **core/controller-reference.md** - Detailed controller schemas and protocols
 11. **core/orchestration-reference.md** - Detailed orchestration schemas
-12. **core/version-registry.md** - Version synchronization (20 locations)
+12. **core/version-registry.md** - Version synchronization (17 locations in V11.0)
+13. **core/resources/controller-validation-checklist.md** - Pre/mid-execution controller validation checks
+14. **core/resources/execution-self-validation.md** - 15-check executor self-validation protocol
 
 ### Domains (5 files)
-13. **domains/engineering.md** - Engineering domain guidelines
-14. **domains/grow.md** - Grow (marketing/sales) guidelines
-15. **domains/operate.md** - Operate (finance/operations) guidelines
-16. **domains/people.md** - People (HR/culture) guidelines
-17. **domains/serve.md** - Serve (support/legal) guidelines
+15. **domains/engineering.md** - Engineering domain guidelines
+16. **domains/grow.md** - Grow (marketing/sales) guidelines
+17. **domains/operate.md** - Operate (finance/operations) guidelines
+18. **domains/people.md** - People (HR/culture) guidelines
+19. **domains/serve.md** - Serve (support/legal) guidelines
 
 ### Infrastructure (1 file)
-18. **infrastructure/model-routing.md** - Model routing guidelines and project overrides
+20. **infrastructure/model-routing.md** - Model routing guidelines and project overrides
 
 ### Memory (2 files)
-19. **memory/agent-memory.md** - Agent_Memory/ structure (V8.0: three-file pattern, waypoints)
-20. **memory/agent-memory-reference.md** - Detailed memory patterns and examples
+21. **memory/agent-memory.md** - Agent_Memory/ structure (three-file pattern, waypoints)
+22. **memory/agent-memory-reference.md** - Detailed memory patterns and examples
 
-### Quality (5 files)
-21. **quality/completion.md** - Task completion protocol (V10.22.0: red flags, rationalization counters, fresh evidence)
-22. **quality/validation-framework.md** - End-to-end completion traceability
-23. **quality/implicit-discovery.md** - Handling abstract requests
-24. **quality/cso-guidelines.md** - Claude Search Optimization for agent descriptions
-25. **quality/anti-slop.md** - Anti-AI-slop writing rules (V10.22.1: false agency, vague declaratives, passive voice, throat-clearing, business jargon)
+### Quality (6 files)
+23. **quality/completion.md** - Task completion protocol (V10.22.0: red flags, rationalization counters, fresh evidence)
+24. **quality/validation-framework.md** - End-to-end completion traceability
+25. **quality/implicit-discovery.md** - Handling abstract requests
+26. **quality/cso-guidelines.md** - Claude Search Optimization for agent descriptions
+27. **quality/anti-slop.md** - Anti-AI-slop writing rules (V10.22.1)
+28. **quality/resources/validation-checklist-29.md** - 29-check four-phase validation framework
 
 ### Meta (1 file)
-26. **README.md** - This index file
+29. **README.md** - This index file
+
+## V11.0 Skill Catalog
+
+The rules in this directory support the six V11.0 skills. Skills `/review`, `/optimize`, `/context`, and `/debug` were **removed in V11.0** — see `docs/MIGRATION-V11.md` for replacements.
+
+| Skill | Replaces (V11 removal) | Purpose |
+|-------|------------------------|---------|
+| `/run` | `/context`, `/debug` (via `--mode debug`) | Single-domain task execution |
+| `/team` | — | Parallel multi-agent execution with wave-based gates |
+| `/org` | — | Cross-domain C-suite strategic coordination |
+| `/designer` | — | Interactive design exploration via Q&A |
+| `/improve` | `/review`, `/optimize` (via `--mode review\|optimize\|full`) | Unified review + optimize engine |
+| `/helper` | — | Command guide and skill recommender |
 
 ## V8.0 Additions
 

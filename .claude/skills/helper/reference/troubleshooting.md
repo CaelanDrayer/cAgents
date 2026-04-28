@@ -2,6 +2,8 @@
 
 Common issues and diagnostic flows for each command. Used by `/helper --troubleshoot <command>`.
 
+> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Their troubleshooting now lives under `/improve` (review and optimize) and `/run` (debug mode and `run context` passthroughs)._
+
 ## /run Troubleshooting
 
 ### 1. Wrong domain detected
@@ -36,6 +38,19 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 - **Check**: Verify agent file exists in `{domain}/agents/{name}.md` with `tier:` in frontmatter
 - **Fix**: Check agent naming matches the reference in planner_config.yaml
 
+### 6. Debug mode keeps cycling through hypotheses without resolution
+- **Symptom**: `/run --mode debug` runs 5+ hypotheses, none confirmed, no root cause found
+- **Likely cause**: Bug is in a dependency, external service, or requires architecture knowledge not accessible
+- **Check**: Review the list of falsified hypotheses in the session findings file
+- **Fix**: Use `--escalate` to generate an escalation report: `/run --mode debug --escalate "..."`. Then seek domain expert review.
+- **Prevention**: Use `--escalate` from the start if the bug has already resisted 3+ attempts
+
+### 7. `/run context` not picked up by subsequent /run
+- **Symptom**: /run still makes wrong assumptions about project structure despite `/run context init`
+- **Likely cause**: Context file not found at expected path, or project hash mismatch
+- **Check**: Run `/run context show` to verify context exists and has the correct project_root
+- **Fix**: Run `/run context init` again from the project root directory; if frameworks/dependencies have changed, run `/run context update`
+
 ---
 
 ## /designer Troubleshooting
@@ -60,54 +75,56 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 
 ---
 
-## /review Troubleshooting
+## /improve Troubleshooting
 
-### 1. Review finding everything but the issue
+`/improve` covers both review and optimize work via `--mode review|optimize|full`. The defaults below cover both modes; mode-specific items are tagged.
+
+### 1. Review finding everything but the issue (review mode)
 - **Symptom**: Lots of findings but none related to the actual problem
 - **Likely cause**: Review scope too broad or wrong focus area
-- **Fix**: Use `--focus security|performance|quality` to narrow: `/review --focus security`
+- **Fix**: Use `--focus security|performance|quality` to narrow: `/improve --mode review --focus security`
 - **Prevention**: Use `--scope changed` to review only modified files
 
-### 2. Auto-fix broke something
-- **Symptom**: Code fails after auto-fix was applied
-- **Likely cause**: Auto-fix was MEDIUM or RISKY severity and had unintended side effects
-- **Check**: Review the auto-fix report in session outputs
-- **Fix**: If `--rollback-on-failure` was set, changes should auto-revert. Otherwise, git restore
+### 2. Auto-fix broke something (review mode)
+- **Symptom**: Code fails after `--auto-fix safe` was applied
+- **Likely cause**: Auto-fix had unintended side effects
+- **Check**: Review the auto-fix report under `reports/auto_fixes.yaml` in the session directory
+- **Fix**: If `--rollback-on-failure` was set, changes auto-revert. Otherwise, `git restore`
 - **Prevention**: Start with `--auto-fix safe` and `--run-tests` to catch issues
 
-### 3. Framework not detected
+### 3. Framework not detected (review mode)
 - **Symptom**: Review misses framework-specific patterns (e.g., Next.js SSR issues)
 - **Likely cause**: Framework detection failed to identify the project type
-- **Fix**: Force framework: `/review --framework nextjs`
+- **Fix**: Force framework: `/improve --mode review --framework nextjs`
 - **Check**: Verify package.json or framework config files exist in the review target
 
-### 4. Quality gate blocking incorrectly
+### 4. Quality gate blocking incorrectly (review mode)
 - **Symptom**: Strict quality gate fails on acceptable findings
 - **Likely cause**: Gate threshold too strict for the project's maturity level
 - **Fix**: Use `--quality-gate standard` or `--quality-gate relaxed`
 
----
-
-## /optimize Troubleshooting
-
-### 1. No optimizations detected
+### 5. No optimizations detected (optimize mode)
 - **Symptom**: Detection phase finds zero opportunities
 - **Likely cause**: Target path is wrong, or optimization type does not match the content
 - **Check**: Verify target path exists and contains files of the expected type
-- **Fix**: Specify type explicitly: `/optimize src/ --type code`
+- **Fix**: Specify type explicitly: `/improve --mode optimize src/ --type code`
 
-### 2. Optimization made things worse
+### 6. Optimization made things worse (optimize mode)
 - **Symptom**: Metrics regressed after optimization
 - **Likely cause**: Interaction effects between multiple optimizations, or incorrect baseline
-- **Check**: Read the before/after metrics in the session report
-- **Fix**: Rollback should be automatic if `--rollback automatic` was set. Otherwise, git restore
+- **Check**: Read the before/after metrics in `outputs/optimization_report.md`
+- **Fix**: Rollback should be automatic if `--rollback automatic` was set. Otherwise, `git restore`
 - **Prevention**: Use `--dry-run` first, then `--safety safe` for low-risk changes only
 
-### 3. Rollback failed
-- **Symptom**: Attempted rollback but files are still modified
-- **Likely cause**: Git snapshot was not taken before optimization (rare)
-- **Check**: Check git status for unstaged changes
-- **Fix**: `git stash` or `git checkout .` to restore all files
+### 7. `--mode full` rejects the run
+- **Symptom**: `/improve --mode full` reports "scope is required"
+- **Likely cause**: `--mode full` requires `--scope <path>` so review and optimize share the same baseline
+- **Fix**: Re-run with `--scope`: `/improve --mode full --scope src/`
+
+### 8. Baseline mismatch between runs
+- **Symptom**: Suppressions from a prior run no longer apply
+- **Likely cause**: Baseline ID changed because the scope or framework changed between runs
+- **Fix**: Re-baseline with `/improve --mode review --baseline <new-id>` and re-suppress with `--suppress <id>`
 
 ---
 
@@ -173,51 +190,3 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 - **Likely cause**: Reference files in /helper are out of sync with actual SKILL.md files
 - **Check**: Compare `/helper --flags run` output against `.claude/skills/run/SKILL.md`
 - **Fix**: Reference files need to be updated to match current skill definitions
-
----
-
-## /debug Troubleshooting
-
-### 1. Debug keeps cycling through hypotheses without resolution
-- **Symptom**: 5+ hypotheses tested, none confirmed, no root cause found
-- **Likely cause**: Bug is in a dependency, external service, or requires architecture knowledge not accessible
-- **Check**: Review the list of falsified hypotheses -- what did they rule out?
-- **Fix**: Use `--escalate` to generate an escalation report with all findings. Then seek domain expert review.
-- **Prevention**: Use `--escalate` from the start if the bug has already resisted 3+ attempts
-
-### 2. Phase 4 test fails to reproduce the bug
-- **Symptom**: Wrote a test, but it passes even without the fix
-- **Likely cause**: Test does not reproduce the actual conditions (timing, state, environment)
-- **Check**: Verify the test exercises the exact code path in the stack trace
-- **Fix**: Return to Phase 1 and strengthen the reproduction steps. The test must fail FIRST.
-
-### 3. Debug session lost context mid-investigation
-- **Symptom**: /debug seems to "forget" previous phases or hypotheses after long sessions
-- **Likely cause**: Context compaction cleared working memory during a long investigation
-- **Check**: Look for waypoint files in `Agent_Memory/sessions/debug_{id}/waypoints/`
-- **Fix**: Resume from findings.md -- the 2-Action Findings Capture Rule should have persisted key discoveries
-
-### 4. /debug vs /run confusion
-- **Symptom**: User uses /run for a hard bug and it fails; user uses /debug for a known simple fix
-- **Rule**: If a quick fix attempt fails once, try /run again with more detail. After 2 failures, use /debug.
-- **Fix**: `/debug` is for bugs that have resisted fixes. For known fixes, use `/run Fix {description}`.
-
----
-
-## /context Troubleshooting
-
-### 1. Context not being picked up by /run
-- **Symptom**: /run still makes wrong assumptions about project structure despite /context init
-- **Likely cause**: Context file not found at expected path, or project hash mismatch
-- **Check**: Run `/context show` to verify context exists and has correct project_root
-- **Fix**: Run `/context init` again from the project root directory
-
-### 2. Context has stale information after migration
-- **Symptom**: Context says "jest" but project migrated to vitest; agents use wrong test runner
-- **Fix**: Run `/context update` to interactively refresh the relevant fields
-- **Prevention**: Run `update` after any significant technology change
-
-### 3. Context init detects wrong framework
-- **Symptom**: `/context init` auto-detects wrong framework or language
-- **Likely cause**: Multiple framework config files present (e.g., both React and Vue configs)
-- **Fix**: Run `/context update` immediately after init to correct the detected values

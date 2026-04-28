@@ -1,6 +1,10 @@
 # Migration Guide
 
-How to move from single-purpose plugins (`feature-dev`, `code-review`) to cAgents.
+> **Current cAgents version**: V11.0.1 — 243 agents across 15 domains, unified `/improve` engine, V10.x commands `/review`, `/optimize`, `/context`, and `/debug` removed.
+
+How to move from single-purpose plugins (`feature-dev`, `code-review`) to cAgents V11.0.1.
+
+> **V11.0 Note**: This guide covers migrating from external plugins to cAgents. For users upgrading from cAgents V10.x to V11.0+ (where `/review`, `/optimize`, `/context`, and `/debug` were removed and consolidated under `/improve`), see [docs/MIGRATION-V11.md](MIGRATION-V11.md) for command-by-command replacements.
 
 ## Why Migrate?
 
@@ -8,7 +12,7 @@ Single-purpose plugins handle one domain with a linear workflow. cAgents handles
 
 | Dimension | feature-dev | code-review | cAgents |
 |-----------|------------|------------|---------|
-| **Agent count** | ~3 | ~3 | 262 |
+| **Agent count** | ~3 | ~3 | 243 |
 | **Domains** | Engineering only | Engineering only | 15 (engineering, creative, business, growth, people, service, leadership, shared, science, health, education, personal, arts, trades, core) |
 | **Workflow** | Linear, single-pass | Linear, single-pass | State machine: INIT → ORCHESTRATED → PLANNED → DECOMPOSED → COORDINATED → VALIDATED |
 | **Revision loops** | None | None | Executor → Reviewer (max 3 rounds per work item), PASS/FAIL/REVISE routing (max 5 cycles) |
@@ -36,23 +40,23 @@ What changes:
 - A reviewer validates spec compliance then code quality before the work is marked done
 - If validation fails, the pipeline re-runs the controller (up to 5 cycles) instead of stopping
 
-### code-review → /review
+### code-review → /improve --mode review
 
-`/review` is the direct replacement for code-review plugins. It runs parallel specialist agents instead of a single sequential pass.
+`/improve --mode review` is the direct replacement for code-review plugins. It runs parallel specialist agents instead of a single sequential pass. (V11.0 unified the previous `/review` and `/optimize` skills under `/improve`; see [docs/MIGRATION-V11.md](MIGRATION-V11.md) for the V10→V11 mapping.)
 
 ```bash
 # code-review plugin
 /code-review src/auth/
 
-# cAgents equivalent
-/review src/auth/
+# cAgents equivalent (V11+)
+/improve --mode review src/auth/
 ```
 
 What changes:
 - Security, code quality, and performance reviewers run in parallel instead of sequentially
 - Each reviewer reports findings with CRITICAL/HIGH/LOW severity tiers
-- `/review` can auto-fix findings via `--fix` flag
-- Review baselines suppress known issues via `--baseline`
+- `/improve --mode optimize` (or `--mode full`) applies fixes with before/after metrics and atomic rollback
+- Review baselines suppress known issues via `--baseline` and `--suppress`
 
 ### No Equivalent → /team, /org
 
@@ -88,11 +92,11 @@ These have no feature-dev or code-review counterpart. Use them when you need:
 
 ### Upgrade from code-review if you need:
 
-**Parallel specialist review**: `/review` runs security, quality, and performance reviewers simultaneously instead of one reviewer making all calls.
+**Parallel specialist review**: `/improve --mode review` runs security, quality, and performance reviewers simultaneously instead of one reviewer making all calls.
 
-**Auto-fix**: `/review --fix` routes findings back into the pipeline to be fixed, not just reported.
+**Apply-and-measure pipeline**: `/improve --mode optimize` (or `--mode full`) carries findings through into atomic, rollback-safe changes with before/after metrics — not just a report.
 
-**Review baselines**: `/review --baseline` records known issues so repeat runs only surface new findings.
+**Review baselines**: `/improve --baseline` records known issues so repeat runs only surface new findings (use `--suppress` to silence baselined findings).
 
 **Tier 3+ blind review**: For complex work, multiple reviewers evaluate independently and a Devil's Advocate challenges unanimous PASS decisions.
 
@@ -126,13 +130,13 @@ When work spans engineering + business + people or needs executive-level analysi
 /org Decide on our API versioning strategy
 ```
 
-### 4. Replace code-review with /review
+### 4. Replace code-review with /improve
 
 ```bash
-/review src/                           # Full codebase review
-/review src/auth/ --fix                # Review auth module and auto-fix findings
-/review src/ --baseline                # First run: establish baseline
-/review src/ --baseline --suppress     # Subsequent runs: suppress known issues
+/improve --mode review src/                          # Full codebase review
+/improve --mode full --scope src/auth/               # Review auth module then apply fixes with metrics
+/improve --mode review src/ --baseline               # First run: establish baseline
+/improve --mode review src/ --baseline --suppress    # Subsequent runs: suppress known issues
 ```
 
 ## Token Usage
@@ -154,6 +158,6 @@ This overhead buys automatic routing, reviewer loops, revision routing, and qual
 
 **Too many tokens for simple tasks**: Use Claude Code directly for single-file fixes. cAgents is designed for multi-step, multi-agent work.
 
-**Review finds no issues**: If the codebase is genuinely clean, `/review` will report a passing score. Use `--profile strict` for stricter thresholds.
+**Review finds no issues**: If the codebase is genuinely clean, `/improve --mode review` will report a passing score. Use `--focus security` (or another focus area) to narrow scrutiny.
 
 **Pipeline stalls in coordinating phase**: The controller is waiting for execution agents. Check that the session directory exists under `Agent_Memory/sessions/` and that `coordination_log.yaml` is being written.

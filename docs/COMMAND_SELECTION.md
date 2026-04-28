@@ -2,6 +2,10 @@
 
 Guide for choosing the right cAgents skill for your task.
 
+_V11.0 removed /review, /optimize, /context, /debug — see [MIGRATION-V11.md](./MIGRATION-V11.md)._
+
+This decision matrix routes review and optimization work to `/improve --mode review|optimize|full`, product context to `/run context <subcmd>`, and systematic debugging to `/run --mode debug`.
+
 ## Quick Decision Tree
 
 ```
@@ -12,23 +16,25 @@ Is this a multi-domain strategic initiative?
            NO  -> Is this an interactive design session?
                     YES -> /designer
                     NO  -> Is this a review of existing code/content?
-                             YES -> /review
+                             YES -> /improve --mode review
                              NO  -> Is this an optimization of existing work?
-                                      YES -> /optimize
-                                      NO  -> /run
+                                      YES -> /improve --mode optimize
+                                      NO  -> Want both review and optimize with one baseline?
+                                               YES -> /improve --mode full
+                                               NO  -> /run
 ```
 
 ## Decision Matrix
 
-| Criteria | /run | /team | /org | /designer | /review | /optimize |
-|----------|------|-------|------|-----------|---------|-----------|
-| **Scope** | Single domain | Single domain | Multi-domain | Single artifact | Existing code/content | Existing system |
-| **Work items** | 1-5 | 3+ parallel | 5+ cross-domain | 1 design | Varies | Varies |
-| **Execution** | Sequential | N-wave parallel | Corporate hierarchy | Interactive Q&A | Parallel agents | 5-phase pipeline |
-| **Speed** | Fastest for simple | 40-60% faster for complex | Slowest (full hierarchy) | User-paced | Fast (parallel) | Moderate |
+| Criteria | /run | /team | /org | /designer | /improve | /helper |
+|----------|------|-------|------|-----------|----------|---------|
+| **Scope** | Single domain | Single domain | Multi-domain | Single artifact | Existing code/content/system | Any |
+| **Work items** | 1-5 | 3+ parallel | 5+ cross-domain | 1 design | Varies | N/A |
+| **Execution** | Sequential | N-wave parallel | Corporate hierarchy | Interactive Q&A | 7-state state machine | Reference only |
+| **Speed** | Fastest for simple | 40-60% faster for complex | Slowest (full hierarchy) | User-paced | Fast (parallel review) to moderate (full mode) | Instant |
 | **Min complexity** | Tier 2 | Tier 2 (3+ items) | Tier 3+ | Any | Any | Any |
-| **Context mode** | Inline (none) | Fork | Inline (none) | Inline (none) | Fork | Fork |
-| **User interaction** | None (auto-proceed) | None (auto-proceed) | None (auto-proceed) | Every step (mandatory) | None | None |
+| **Context mode** | Inline (none) | Fork | Inline (none) | Inline (none) | Fork | Inline (none) |
+| **User interaction** | None (auto-proceed) | None (auto-proceed) | None (auto-proceed) | Every step (mandatory) | None | Interactive (recommendations) |
 
 ## When to Use Each
 
@@ -36,6 +42,7 @@ Is this a multi-domain strategic initiative?
 - **Best for**: Bug fixes, single features, simple changes, sequential work
 - **Examples**: "Fix auth bug", "Add user endpoint", "Write unit tests"
 - **Characteristics**: Event-driven pipeline, single controller, fastest for simple tasks
+- **Passthroughs**: `/run context show|init|update|clear` (product context), `/run --mode debug <bug>` (systematic debugging)
 - **Avoid when**: Work has 3+ parallelizable items (use /team instead)
 
 ### /team - Parallel Team Execution
@@ -54,20 +61,24 @@ Is this a multi-domain strategic initiative?
 ### /designer - Interactive Design
 - **Best for**: Design documents, architecture specs, creative briefs that need user input
 - **Examples**: "Design the API for user management", "Create technical spec for auth system"
-- **Characteristics**: 6-phase interactive engine, asks user at every step, endless refinement
+- **Characteristics**: 4-phase interactive engine, asks user at every step, endless refinement
 - **Avoid when**: You want autonomous execution (designer always asks)
 
-### /review - Code/Content Review
-- **Best for**: Reviewing existing code, content, or systems for quality issues
-- **Examples**: "Review PR #123", "Audit security of auth module"
-- **Characteristics**: Parallel agent review, review profiles, baseline suppression
-- **Avoid when**: Creating new work (use /run instead)
+### /improve - Unified Review + Optimization Engine
+- **Best for**: Reviewing existing code/content, applying optimizations with metrics, or both with a shared baseline
+- **Examples**:
+  - `/improve --mode review src/auth/` — audit auth module for security/quality issues
+  - `/improve --mode optimize src/api/` — reduce response times with before/after benchmarks
+  - `/improve --mode full --scope src/checkout/` — review then optimize with one baseline
+- **Characteristics**: Single 7-state state machine (SCOPING → MEASURING → DETECTING → PLANNING → EXECUTING → VALIDATING → REPORTING), atomic rollback, pattern-effectiveness tracking, unified `improve_report.md`
+- **Mode selection**: `--mode review` (find issues), `--mode optimize` (apply changes), `--mode full` (chained)
+- **Avoid when**: Creating new work (use /run instead) or designing before building (use /designer)
 
-### /optimize - System Optimization
-- **Best for**: Optimizing existing systems, performance tuning, refactoring
-- **Examples**: "Optimize database queries", "Reduce bundle size"
-- **Characteristics**: 5-phase pipeline with atomic rollback, benchmark integration
-- **Avoid when**: Building new features (use /run instead)
+### /helper - Command Reference
+- **Best for**: Choosing between skills, learning what each does, comparing flags
+- **Examples**: `/helper`, `/helper --compare`, `/helper improve`
+- **Characteristics**: Interactive decision tree, deep dives per command, recommendations
+- **Avoid when**: Executing tasks directly — /helper only explains, never runs
 
 ## Complexity Tier Reference
 
@@ -81,12 +92,15 @@ Is this a multi-domain strategic initiative?
 
 | Flag | Skills | Effect |
 |------|--------|--------|
-| `--dry-run` | /run, /team, /org | Preview plan without executing |
+| `--dry-run` | /run, /team, /org, /improve | Preview plan without executing |
 | `--team` | /run | Force team mode from /run |
 | `--waves N` | /team | Set minimum wave count |
 | `--members N` | /team | Max teammates per wave |
 | `--analytics` | /run | Show execution analytics |
-| `--baseline` | /review | Set review baseline |
-| `--profile` | /review | Use review profile |
-| `--benchmark` | /optimize | Include benchmark comparison |
-| `--history` | /optimize | Show optimization history |
+| `--mode review\|optimize\|full` | /improve | Select review, optimize, or chained mode |
+| `--mode debug` | /run | Systematic 4-phase debugging passthrough |
+| `--scope <path>` | /improve | Restrict scope to a path |
+| `--baseline` | /improve | Establish review baseline |
+| `--suppress` | /improve | Suppress baselined findings |
+| `--benchmark` | /improve | Capture before/after benchmark numbers |
+| `--focus <area>` | /designer, /improve | Focus on a specific area |

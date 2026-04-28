@@ -2,7 +2,7 @@
 # Sync version across all cAgents manifest files
 # Usage: ./scripts/sync-versions.sh <new-version>
 #
-# Updates version in all 21 locations (see .claude/rules/core/version-registry.md):
+# Updates version in all 18 locations (see .claude/rules/core/version-registry.md):
 # Location #16: scripts/ci/cagents-ci.sh (header comment + log_section banner)
 # Location #17: scripts/ci/validate-agents.sh (# Version: header)
 # Location #21: CHANGELOG.md (insert new "## [VERSION] - DATE" header under [Unreleased])

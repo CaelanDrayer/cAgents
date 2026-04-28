@@ -1,10 +1,10 @@
-# Migration Guide — cAgents V11.0.0
+# Migration Guide — cAgents V11.0.1
 
-V11.0.0 is a breaking-change release that removes four previously-
-deprecated slash commands. The removal was telegraphed across a
-35-patch deprecation runway (V10.26.1 → V10.26.35). This guide covers
-the mechanical replacements you need to make when upgrading from any
-V10.26.x release to V11.0.0.
+V11.0.0 is the breaking-change release that removed four previously-
+deprecated slash commands; V11.0.1 is the current patch on the V11.0
+line. The removal was telegraphed across a 35-patch deprecation runway
+(V10.26.1 → V10.26.35). This guide covers the mechanical replacements
+you need to make when upgrading from any V10.26.x release to V11.0.x.
 
 ## Summary Table
 
