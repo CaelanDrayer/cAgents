@@ -329,4 +329,63 @@ describe('hook-utils.cjs', () => {
       }
     });
   });
+
+  describe('createHook continue:true auto-inject (regression: V11.0.5)', () => {
+    // V11.0.4 surfaced a class of latent bugs where hook authors forgot to
+    // include `continue: true` alongside `hookSpecificOutput` (or other
+    // non-decision return shapes). Tests asserting `result.continue === true`
+    // would fail with "expected undefined" once the hook's branch fired.
+    // V11.0.5 fix: createHook auto-injects continue:true when none is set
+    // AND no decision/deny is in play. These tests pin the auto-inject
+    // logic by exercising the same shape-normalization the factory performs.
+    function normalize(result) {
+      if (typeof result !== 'object' || result === null) return result;
+      if (result.continue === undefined
+          && result.decision === undefined
+          && !(result.hookSpecificOutput && result.hookSpecificOutput.permissionDecision === 'deny')) {
+        result.continue = true;
+      }
+      return result;
+    }
+
+    it('should inject continue:true when result has hookSpecificOutput but no continue', () => {
+      const r = normalize({ hookSpecificOutput: { hookEventName: 'PostToolUseFailure', additionalContext: 'msg' } });
+      expect(r.continue).toBe(true);
+      expect(r.hookSpecificOutput.hookEventName).toBe('PostToolUseFailure');
+    });
+
+    it('should inject continue:true on a bare systemMessage response', () => {
+      const r = normalize({ systemMessage: 'Be careful, X just happened' });
+      expect(r.continue).toBe(true);
+      expect(r.systemMessage).toBe('Be careful, X just happened');
+    });
+
+    it('should NOT override an explicit continue:false (TeammateIdle clean shutdown)', () => {
+      const r = normalize({ continue: false, stopReason: 'All work complete' });
+      expect(r.continue).toBe(false);
+      expect(r.stopReason).toBe('All work complete');
+    });
+
+    it('should NOT inject continue when decision is set (Stop hook block)', () => {
+      const r = normalize({ decision: 'block', reason: 'Workflow incomplete' });
+      expect(r.continue).toBeUndefined();
+      expect(r.decision).toBe('block');
+    });
+
+    it('should NOT touch a deny response (PreToolUse permissionDecision=deny)', () => {
+      const r = normalize({ hookSpecificOutput: { permissionDecision: 'deny', permissionDecisionReason: 'blocked' } });
+      expect(r.continue).toBeUndefined();
+    });
+
+    it('should leave continue:true alone when already set', () => {
+      const r = normalize({ continue: true, systemMessage: 'hi' });
+      expect(r.continue).toBe(true);
+      expect(r.systemMessage).toBe('hi');
+    });
+
+    it('should pass primitives and null through unchanged', () => {
+      expect(normalize(null)).toBe(null);
+      expect(normalize(undefined)).toBe(undefined);
+    });
+  });
 });

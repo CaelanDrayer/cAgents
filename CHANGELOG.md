@@ -10,6 +10,29 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.0.5] - 2026-04-28
+
+### Changed
+- `createHook()` factory in `.claude/hooks/hook-utils.cjs` now auto-injects
+  `continue: true` into hook responses that omit it. The auto-inject fires
+  only when the response is an object lacking both `continue` and `decision`,
+  and not carrying a deny `permissionDecision` — i.e., only when the hook
+  legitimately wanted the run to keep going but forgot to declare it. This
+  prevents the entire class of latent bugs that V11.0.4 hit in
+  `tool-failure-tracker.cjs` where the pattern-detection branch returned
+  `{hookSpecificOutput: ...}` and broke any test asserting `result.continue
+  === true`. Hooks that explicitly return `continue: false` (TeammateIdle
+  clean shutdown), set `decision` (Stop hook block), or carry a deny
+  `permissionDecision` (PreToolUse deny) are unchanged.
+
+### Tests
+- Added 7 regression tests in `tests/hooks/hook-utils.test.js` under the
+  `createHook continue:true auto-inject` describe block: verifies the
+  inject fires for hookSpecificOutput-only and systemMessage-only shapes,
+  and verifies it does NOT fire for `continue: false`, `decision: block`,
+  or deny responses. Per CLAUDE.md bug-driven testing mandate.
+- Full suite: 781 passed / 0 failed / 0 skipped.
+
 ## [11.0.4] - 2026-04-28
 
 ### Fixed

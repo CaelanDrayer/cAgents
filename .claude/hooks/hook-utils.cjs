@@ -851,6 +851,25 @@ function createHook(name, handler) {
           return;
         }
 
+        // V11.0.5: Auto-inject `continue: true` when the hook returns a
+        // shape that legitimately wants the run to keep going but forgot to
+        // declare it. The Claude Code hook protocol expects responses to
+        // carry an explicit signal — without one, downstream consumers get
+        // an `undefined` field and assertions like `result.continue === true`
+        // fail spuriously (see V11.0.4 tool-failure-tracker bug). We do NOT
+        // override hooks that explicitly set `continue: false`, return a
+        // `decision` (Stop hook block), or carry a deny `permissionDecision`
+        // — those have intentional semantics. The deny/allow shorthands
+        // above already returned, so by the time we reach this branch the
+        // result is some other shape.
+        if (typeof result === 'object'
+            && result !== null
+            && result.continue === undefined
+            && result.decision === undefined
+            && !(result.hookSpecificOutput && result.hookSpecificOutput.permissionDecision === 'deny')) {
+          result.continue = true;
+        }
+
         console.log(JSON.stringify(result));
 
       } catch (error) {
