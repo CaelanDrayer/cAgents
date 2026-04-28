@@ -10,6 +10,35 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.0.4] - 2026-04-28
+
+### Fixed
+- `tool-failure-tracker.cjs` pattern-detection branch now returns
+  `continue: true` alongside `hookSpecificOutput`. Previously, after 3+
+  failures of the same tool accumulated in a session's
+  `tool_failures.yaml`, the hook returned a `{hookSpecificOutput: ...}`
+  response missing the `continue` field — causing latent failures in
+  `tests/hooks/tool-failure-tracker.test.js` whenever prior runs left
+  enough state behind to trigger the pattern path. Discovered as flake
+  during full-suite stress runs (1/6 fail rate); the failure was
+  deterministic in isolation (5/5 fail) once Bash failures had built up.
+
+### Changed
+- `.gitignore` now excludes `.claude/*.lock` (covers
+  `.claude/scheduled_tasks.lock` and any future lock-file runtime
+  artifacts).
+- `tests/config/plugin-json.test.js` deleted the V10-era domain
+  `plugin.json` `describe.skip` block (55 dead skipped tests). V11.0
+  removed domain sub-plugin files; the root `plugin.json` coverage
+  earlier in the same file replaces the deleted suite.
+
+### Tests
+- Added `'should include continue:true even in the pattern-detection
+  branch'` regression test in `tests/hooks/tool-failure-tracker.test.js`
+  to pin the fix. Per CLAUDE.md bug-driven testing mandate.
+- Full suite: 773 passed / 0 failed / 0 skipped (3 consecutive runs).
+  Was 773 / flake / 55 skipped after V11.0.3.
+
 ## [11.0.3] - 2026-04-28
 
 ### Fixed

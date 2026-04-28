@@ -127,6 +127,7 @@ createHook('ToolFailureTracker', async (input) => {
       : '';
     console.error(`[ToolFailureTracker] Pattern: ${recentCount + 1} failures of ${toolName} [${classification.type}]`);
     return {
+      continue: true,
       hookSpecificOutput: {
         hookEventName: 'PostToolUseFailure',
         additionalContext: `Tool failure pattern detected: "${toolName}" has failed ${recentCount + 1} times recently.\n${suggestion}${taxonomyHint}`

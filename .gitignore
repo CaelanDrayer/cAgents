@@ -73,6 +73,7 @@ CLAUDE.local.md
 # Claude Code sessions and plans (runtime data)
 .claude/sessions/
 .claude/plans/
+.claude/*.lock
 
 # Python virtual environment
 .venv/

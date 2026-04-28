@@ -74,4 +74,21 @@ describe('tool-failure-tracker.cjs', () => {
       expect(hookContent).toContain('.slice(0, 200)');
     });
   });
+
+  describe('return shape compliance (regression: V11.0.4)', () => {
+    // Bug: when the pattern-detection branch fired (3+ failures of same tool
+    // accumulated in a session's tool_failures.yaml), the hook returned
+    // {hookSpecificOutput: ...} without continue:true. Tests calling the
+    // hook against a session with prior failures would receive a response
+    // missing `continue`, causing assertions like
+    // `expect(result.continue).toBe(true)` to fail with "expected undefined".
+    // Fix: include continue:true alongside hookSpecificOutput.
+    it('should include continue:true even in the pattern-detection branch', () => {
+      const hookContent = readFileSync(HOOK_PATH, 'utf8');
+      // Find the pattern-detection return statement and verify continue:true is present
+      const patternBlock = hookContent.split('Pattern detection')[1] || '';
+      const returnBlock = patternBlock.split('hookSpecificOutput')[0] || '';
+      expect(returnBlock).toContain('continue: true');
+    });
+  });
 });
