@@ -1,13 +1,20 @@
 ---
 paths:
-  - "**/agents/**/*.md"
-  - "**/agents/**/SKILL.md"
+  - "developer/**/SKILL.md"
+  - "operator/**/SKILL.md"
+  - "advisor/**/SKILL.md"
+  - "analyst/**/SKILL.md"
+  - "creator/**/SKILL.md"
+  - "writer/**/SKILL.md"
+  - "strategist/**/SKILL.md"
+  - "core/**/SKILL.md"
+  - "leadership/**/SKILL.md"
   - ".claude/skills/**"
 ---
 
 # SKILL.md Agent and Skill Format Specification
 
-V10.22.5 agent/skill format based on official Claude Code SKILL.md, subagent specification, and the [Agent Skills spec](https://agentskills.io).
+V11.1.0 agent/skill format based on official Claude Code SKILL.md, subagent specification, and the [Agent Skills spec](https://agentskills.io). The v11.1.0 builder-role archetype tree replaced the per-domain `{domain}/agents/` layout — agents now live under one of 9 archetype roots, with a `branch:` segment for the three 3-level archetypes.
 
 ## Frontmatter Schema
 
@@ -15,9 +22,10 @@ V10.22.5 agent/skill format based on official Claude Code SKILL.md, subagent spe
 ---
 name: agent-name                    # Required: Unique identifier (kebab-case)
 description: "Brief description"    # Required: 1-2 sentence purpose statement
+archetype: developer|operator|advisor|analyst|creator|writer|strategist|core|leadership  # Required: builder-role archetype (top-level)
+branch: <branch-name>               # Required ONLY for 3-level archetypes (developer, operator, advisor)
 vibe: "One-liner personality hook"  # Optional: Agent essence/tagline (max 80 chars)
 tier: controller|execution|support  # Required: Agent tier classification
-domain: engineering|creative|business|growth|people|service|leadership|shared|core  # Required: Business domain
 model: opus|opusplan|sonnet|haiku  # Optional: Preferred model (see model_routing.yaml)
 coordination_style: question_based  # Optional: For controllers only
 typical_questions: [...]           # Optional: For controllers only
@@ -51,9 +59,24 @@ initialPrompt: "Load session state and summarize active work items before starti
 - `support`: Tier 4 agents providing foundational services
 - `infrastructure`: Core pipeline agents (orchestrator, planner, decomposer, validator, etc.) that form the execution backbone. Used by the 16 agents in `core/`.
 
-### domain
-- One of: `engineering`, `creative`, `business`, `growth`, `people`, `service`, `leadership`, `shared`, `core`
-- Determines which planner_config.yaml is loaded
+### archetype
+- One of 9 builder-role archetype roots (top-level required field, since v11.1.0):
+  `developer`, `operator`, `advisor`, `analyst`, `creator`, `writer`, `strategist`,
+  `core`, `leadership`
+- Must match the directory immediately under the project root. Validated by
+  `scripts/ci/validate-agents.sh` and `scripts/lint-agents.sh`.
+
+### branch
+- Required ONLY for 3-level archetypes (`developer`, `operator`, `advisor`).
+- Must match the directory immediately above the agent's leaf directory.
+- Valid branches per 3-level archetype:
+  - `developer`: `backend`, `frontend`, `fullstack`, `infrastructure`, `quality`
+  - `operator`: `support`, `business-ops`, `people-ops`, `marketing-sales`, `content`
+  - `advisor`: `legal`, `health`, `education`, `personal`
+- Omitted for 2-level archetypes (`analyst`, `creator`, `writer`, `strategist`) and flat archetype roots (`core`, `leadership`).
+
+### domain (REMOVED in v11.1.0)
+The top-level `domain:` field was replaced by `archetype:` (and `branch:` for 3-level archetypes) in the v11.1.0 builder-role-tree migration. See [CHANGELOG entry for 11.1.0](../../../CHANGELOG.md). New agents MUST NOT include a top-level `domain:` field — `validate-agents.sh` rejects it as an error. Legacy `domain:` inside the `metadata:` block is tolerated for now (still present in many agent files) but is not load-bearing and should be considered deprecated.
 
 ## Optional Fields
 
@@ -137,7 +160,7 @@ developer/fullstack/engineering-manager/
 loading_tiers:
   tier_1:  # Always loaded (~50 tokens)
     - frontmatter metadata
-    - name, description, tier, domain
+    - name, description, tier, archetype, (branch if 3-level)
 
   tier_2:  # When agent activated (~200-500 tokens)
     - SKILL.md body content
@@ -169,30 +192,23 @@ The `@path` syntax triggers on-demand loading when the resource is needed.
 
 ## Migration Path
 
-### Single File Agent (Current)
+### Pre-v11.1.0 Single-File Agent (legacy — REMOVED)
 
-```markdown
----
-name: backend-developer
-tier: execution
-domain: engineering
----
+For historical reference only. The legacy schema used a top-level `domain:` field instead of `archetype:`/`branch:`. New agents MUST use the v11.1.0 schema below (validate-agents.sh rejects top-level `domain:` as an error).
 
-# Backend Developer Agent
-
-[Full content here - 500+ tokens]
-```
-
-### Directory Agent (V8.0)
+### Post-v11.1.0 Directory Agent (current)
 
 ```
 developer/backend/backend-developer/
 ├── SKILL.md (~200 tokens)
 │   ---
 │   name: backend-developer
+│   archetype: developer
+│   branch: backend
 │   description: "Implements backend services..."
-│   tier: execution
-│   domain: engineering
+│   metadata:
+│     tier: execution
+│     model: sonnet
 │   ---
 │   # Backend Developer
 │   Core instructions here.
@@ -204,16 +220,30 @@ developer/backend/backend-developer/
     └── testing-guide.md       # Testing best practices
 ```
 
+For a 2-level archetype (e.g. `analyst`), the path is `analyst/{agent-name}/SKILL.md` and only `archetype:` is required (no `branch:`):
+
+```
+analyst/data-scientist/
+└── SKILL.md
+    ---
+    name: data-scientist
+    archetype: analyst
+    description: "..."
+    ---
+```
+
 ## Conversion Checklist
 
-When converting agent to directory structure:
+When creating a new agent in the v11.1.0 archetype tree:
 
-- [ ] Create `agents/{agent-name}/` directory
-- [ ] Move agent content to `SKILL.md`
-- [ ] Add `description` field to frontmatter
+- [ ] Pick the archetype root (`developer`, `operator`, `advisor`, `analyst`, `creator`, `writer`, `strategist`, `core`, `leadership`)
+- [ ] If 3-level archetype, pick the branch (see valid branches above)
+- [ ] Create `{archetype}/{branch?}/{agent-name}/SKILL.md`
+- [ ] Frontmatter: `name`, `archetype`, `branch` (3-level only), `description` at top level; `tier` in `metadata:`
 - [ ] Extract detailed content to `resources/`
 - [ ] Add `@path` references in SKILL.md body
-- [ ] Update plugin.json path reference
+- [ ] Run `bash scripts/sync-agents.sh` to register the agent in `.claude-plugin/plugin.json`
+- [ ] Run `bash scripts/lint-agents.sh` and `bash scripts/ci/validate-agents.sh` to verify
 - [ ] Test agent loading
 - [ ] Measure token savings
 
@@ -377,26 +407,30 @@ input_from:
 /run Fix review findings --from-review  # Reads findings, creates fix work items
 ```
 
-## Example: Full Controller SKILL.md
+## Example: Full Controller SKILL.md (v11.1.0+)
+
+Lives at `developer/fullstack/engineering-manager/SKILL.md`:
 
 ```yaml
 ---
 name: engineering-manager
+archetype: developer
+branch: fullstack
 description: "Coordinates engineering work via question-based delegation. Use for tier 2+ engineering tasks requiring multi-specialist coordination."
-tier: controller
-domain: engineering
-model: opus
-coordination_style: question_based
-typical_questions:
-  - "What is the current implementation?"
-  - "What are the technical constraints?"
-  - "What are the key risks?"
-color: bright_white
-capabilities:
-  - strategic_oversight
-  - risk_assessment
-  - team_coordination
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+metadata:
+  tier: controller
+  model: opus
+  coordination_style: question_based
+  typical_questions:
+    - "What is the current implementation?"
+    - "What are the technical constraints?"
+    - "What are the key risks?"
+  color: bright_white
+  capabilities:
+    - strategic_oversight
+    - risk_assessment
+    - team_coordination
+allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
 initialPrompt: "Read cagents-memory/sessions/*/workflow/plan.yaml if it exists and note the current phase."
 ---
 

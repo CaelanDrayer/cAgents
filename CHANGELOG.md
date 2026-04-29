@@ -10,6 +10,19 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.1.2] - 2026-04-29
+
+### Docs
+- **`.claude/rules/core/skill-format.md` updated for v11.1.0 frontmatter schema.**
+  Replaced `domain:` documentation with `archetype:` (top-level, all agents) and
+  `branch:` (top-level, required for 3-level archetypes only). Listed valid branches
+  per 3-level archetype: `developer` → backend/frontend/fullstack/infrastructure/quality;
+  `operator` → support/business-ops/people-ops/marketing-sales/content;
+  `advisor` → legal/health/education/personal. Updated path-conditional `paths:`
+  glob from `**/agents/**/SKILL.md` to per-archetype globs. Migration-path examples
+  and the full controller SKILL.md example now use the new schema. Marked legacy
+  `domain:` field as REMOVED with a deprecation note. Refs FU-2.
+
 ## [11.1.1] - 2026-04-29
 
 ### Fixed
