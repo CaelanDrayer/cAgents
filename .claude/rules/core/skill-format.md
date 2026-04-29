@@ -49,7 +49,7 @@ initialPrompt: "Load session state and summarize active work items before starti
 - `controller`: Tier 2 agents that coordinate work through questions
 - `execution`: Tier 3 agents that implement work and answer questions
 - `support`: Tier 4 agents providing foundational services
-- `infrastructure`: Core pipeline agents (orchestrator, planner, decomposer, validator, etc.) that form the execution backbone. Used by the 16 agents in `core/agents/`.
+- `infrastructure`: Core pipeline agents (orchestrator, planner, decomposer, validator, etc.) that form the execution backbone. Used by the 16 agents in `core/`.
 
 ### domain
 - One of: `engineering`, `creative`, `business`, `growth`, `people`, `service`, `leadership`, `shared`, `core`
@@ -123,7 +123,7 @@ initialPrompt: "Load session state and summarize active work items before starti
 ### Directory Structure (High-Value Agents)
 
 ```
-engineering/agents/engineering-manager/
+developer/fullstack/engineering-manager/
 ├── SKILL.md                    # Tier 1 + 2: Frontmatter + Instructions
 └── resources/
     ├── typical-questions.md    # Tier 3: Full question catalog
@@ -186,7 +186,7 @@ domain: engineering
 ### Directory Agent (V8.0)
 
 ```
-engineering/agents/backend-developer/
+developer/backend/backend-developer/
 ├── SKILL.md (~200 tokens)
 │   ---
 │   name: backend-developer
@@ -397,7 +397,7 @@ capabilities:
   - risk_assessment
   - team_coordination
 tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
-initialPrompt: "Read Agent_Memory/sessions/*/workflow/plan.yaml if it exists and note the current phase."
+initialPrompt: "Read cagents-memory/sessions/*/workflow/plan.yaml if it exists and note the current phase."
 ---
 
 # Engineering Manager

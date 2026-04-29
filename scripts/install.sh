@@ -57,15 +57,15 @@ else
     print_status "error" "Hooks directory not found: .claude/hooks/"
 fi
 
-# Step 3: Create Agent_Memory directory structure
+# Step 3: Create cagents-memory directory structure
 echo ""
-echo "Step 3: Creating Agent_Memory directory structure..."
-mkdir -p "$CAGENTS_ROOT/Agent_Memory/_system/domains"
-mkdir -p "$CAGENTS_ROOT/Agent_Memory/_system/config"
-mkdir -p "$CAGENTS_ROOT/Agent_Memory/_system/trigger"
-mkdir -p "$CAGENTS_ROOT/Agent_Memory/_knowledge"
-mkdir -p "$CAGENTS_ROOT/Agent_Memory/_archive"
-print_status "ok" "Agent_Memory directories created"
+echo "Step 3: Creating cagents-memory directory structure..."
+mkdir -p "$CAGENTS_ROOT/cagents-memory/_system/domains"
+mkdir -p "$CAGENTS_ROOT/cagents-memory/_system/config"
+mkdir -p "$CAGENTS_ROOT/cagents-memory/_system/trigger"
+mkdir -p "$CAGENTS_ROOT/cagents-memory/_knowledge"
+mkdir -p "$CAGENTS_ROOT/cagents-memory/_archive"
+print_status "ok" "cagents-memory directories created"
 
 # Step 4: Verify settings.json hook configuration
 echo ""

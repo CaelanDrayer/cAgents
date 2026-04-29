@@ -1,10 +1,10 @@
 ---
 paths:
-  - "core/agents/team-*/**"
+  - "core/team-*/**"
   - ".claude/skills/team/**"
   - ".claude/hooks/team-*.cjs"
   - ".claude/hooks/teammate-*.cjs"
-  - "Agent_Memory/sessions/team_*/**"
+  - "cagents-memory/sessions/team_*/**"
 ---
 
 # Team Coordination Patterns
@@ -337,7 +337,7 @@ If the request is unsuitable for team execution (tier 2, too few work items, all
 ## Session Structure
 
 ```
-Agent_Memory/sessions/team_{timestamp}/
+cagents-memory/sessions/team_{timestamp}/
 +-- instruction.yaml
 +-- status.yaml
 +-- team/
@@ -403,7 +403,7 @@ Override with flags: `--template <id>`, `--no-template`, `--waves <N>`
 
 ### Template Location
 
-`Agent_Memory/_system/templates/teams/` with `_index.yaml` catalog.
+`cagents-memory/_system/templates/teams/` with `_index.yaml` catalog.
 
 ## Wave Execution
 
@@ -489,7 +489,7 @@ contracts:
 **Templates with wave execution are the DEFAULT for tier 3+ requests.** Auto-selection runs automatically. Only fall back to flat execution when:
 - `--no-template` flag is explicitly used
 - No template scores above the confidence threshold (0.6)
-- No templates exist in `Agent_Memory/_system/templates/teams/`
+- No templates exist in `cagents-memory/_system/templates/teams/`
 
 When flat execution is used, the system behaves as a simple parallel distribution without waves or gates.
 

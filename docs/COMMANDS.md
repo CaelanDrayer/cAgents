@@ -174,7 +174,7 @@ Sessions survive context compaction and can resume from any point:
 ### Session Files
 
 ```
-Agent_Memory/sessions/designer_20260204_143022/
+cagents-memory/sessions/designer_20260204_143022/
 ├── session.yaml                    # Master state (updated per question)
 ├── qa_log.yaml                     # Active phase Q&A only (completed phases summarized)
 ├── phases/                         # Phase outputs (written at completion)
@@ -309,7 +309,7 @@ Each state has explicit entry and exit criteria. The engine pauses for `--baseli
 ### Session Files
 
 ```
-Agent_Memory/sessions/improve_{slug}_{YYMMDD}_{NNN}/
+cagents-memory/sessions/improve_{slug}_{YYMMDD}_{NNN}/
 ├── status.yaml                    # Current state + history
 ├── workflow/
 │   ├── scope_analysis.yaml        # SCOPING output

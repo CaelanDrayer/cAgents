@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "11.0.5"
+  version: "11.1.0"
   argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--no-template] [--waves <n>]"
   user-invocable: "true"
   context: "fork"
@@ -128,7 +128,7 @@ Run the enrichment pipeline sequentially. All three stages always run (consisten
 0. Check for CAGENTS_SESSION_ID override:
    - Read process.env.CAGENTS_SESSION_ID
    - If set and non-empty: use it verbatim as SESSION_ID (skip steps 1-4 below)
-     - SESSION_DIR="Agent_Memory/sessions/${CAGENTS_SESSION_ID}"
+     - SESSION_DIR="cagents-memory/sessions/${CAGENTS_SESSION_ID}"
      - If SESSION_DIR already exists: this is a RESUME — skip session file creation
        (instruction.yaml, status.yaml, agent_tree.yaml already exist).
        Skip to step 2b (classify domain and tier).
@@ -139,10 +139,10 @@ Run the enrichment pipeline sequentially. All three stages always run (consisten
 1. Generate a slug from the user request: 2-6 key words, kebab-case, lowercase, max 50 chars
    Strip filler words (the, a, an, to, for, with, and, of). Example: "Implement OAuth2 flow" -> "implement-oauth2-flow"
 2. Get compact date: YYMMDD (e.g., 260317)
-3. Scan Agent_Memory/sessions/ for dirs matching team_*_{YYMMDD}_* to find highest NNN, increment by 1 (start at 001)
+3. Scan cagents-memory/sessions/ for dirs matching team_*_{YYMMDD}_* to find highest NNN, increment by 1 (start at 001)
 4. Compose: SESSION_ID="team_{slug}_{YYMMDD}_{NNN}"
    Example: SESSION_ID="team_implement-oauth2-flow_260317_001"
-5. SESSION_DIR="Agent_Memory/sessions/${SESSION_ID}"
+5. SESSION_DIR="cagents-memory/sessions/${SESSION_ID}"
 6. mkdir -p "${SESSION_DIR}/workflow/events" "${SESSION_DIR}/outputs"
 7. Write self-registration to `${SESSION_DIR}/workflow/agent_tree.yaml`:
    ```yaml
@@ -180,15 +180,15 @@ metadata:
 
 When /team is invoked via /org using the `--session` flag, extract the parent session ID from the path:
 
-- The `--session` flag provides a path like: `Agent_Memory/sessions/{PARENT_SESSION_ID}/{domain_key}`
+- The `--session` flag provides a path like: `cagents-memory/sessions/{PARENT_SESSION_ID}/{domain_key}`
 - Pattern: split path by `/`, find the component immediately after `sessions/` — that is the `parent_session_id`
-- Example: `--session Agent_Memory/sessions/org_launch-product_260317_001/engineering`
+- Example: `--session cagents-memory/sessions/org_launch-product_260317_001/engineering`
   → `parent_session_id = "org_launch-product_260317_001"`
 - If no `--session` flag is provided, or the path has no `sessions/` segment, set `parent_session_id: null`
 
 Extraction logic:
 ```
-session_flag = flags["session"]  # e.g., "Agent_Memory/sessions/org_foo_260317_001/engineering"
+session_flag = flags["session"]  # e.g., "cagents-memory/sessions/org_foo_260317_001/engineering"
 if session_flag:
   parts = session_flag.split("/")
   sessions_index = parts.index("sessions") if "sessions" in parts else -1
@@ -999,7 +999,7 @@ Team execution partially complete:
   Wave 3 (Testing):        PARTIAL  - 2/3 items done, 1 blocked
   Wave 4 (Documentation):  NOT STARTED (blocked by Wave 3 gap)
 
-Completed outputs: Agent_Memory/sessions/{id}/outputs/
+Completed outputs: cagents-memory/sessions/{id}/outputs/
   - task-01/ through task-07/: COMPLETE
   - task-08/ and task-09/:     COMPLETE
   - task-10/:                 BLOCKED (test framework incompatibility)
@@ -1130,7 +1130,7 @@ controllers:
 
 ### Parent Session ID Extraction
 
-When invoked by /org with `--session Agent_Memory/sessions/org_foo_260317_001/engineering`, the `team_*` session stores:
+When invoked by /org with `--session cagents-memory/sessions/org_foo_260317_001/engineering`, the `team_*` session stores:
 ```yaml
 parent_session_id: "org_foo_260317_001"
 ```
@@ -1138,8 +1138,8 @@ This is extracted from the `--session` path (see Parent Session Extraction in St
 
 ## Configuration
 
-- Pipeline config: `Agent_Memory/_system/config/pipeline_config.yaml`
-- Org pipeline config: `Agent_Memory/_system/config/org_pipeline_config.yaml`
+- Pipeline config: `cagents-memory/_system/config/pipeline_config.yaml`
+- Org pipeline config: `cagents-memory/_system/config/org_pipeline_config.yaml`
 - `teammateMode` in settings.json controls display: `"tmux"` (split panes), `"auto"`, `"in-process"`
 - `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` must be `"1"` in settings.json env
 - Both are already configured in this project's settings.json

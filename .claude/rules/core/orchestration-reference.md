@@ -1,9 +1,9 @@
 ---
 paths:
-  - "core/agents/orchestrator/**"
-  - "core/agents/universal-*/**"
+  - "core/orchestrator/**"
+  - "core/universal-*/**"
   - ".claude/skills/run/**"
-  - "Agent_Memory/_system/config/**"
+  - "cagents-memory/_system/config/**"
 ---
 
 # Orchestration Reference Details
@@ -30,11 +30,11 @@ enrichment_summary: "{brief_summary_of_context}"
 > values. Use /improve --mode review|optimize|full or /run --mode debug for V11+ workflows.
 > See [docs/MIGRATION-V11.md](../../../docs/MIGRATION-V11.md) for migration guidance.
 
-The `project_summary` field is loaded from `Agent_Memory/_projects/{hash}/product_context.yaml` if it exists (created via `/context init`). Must fit within MAX_ATTENTION_CHARS budget (500 chars).
+The `project_summary` field is loaded from `cagents-memory/_projects/{hash}/product_context.yaml` if it exists (created via `/context init`). Must fit within MAX_ATTENTION_CHARS budget (500 chars).
 
 ## Pipeline Configuration
 
-The state machine is defined in `Agent_Memory/_system/config/pipeline_config.yaml`:
+The state machine is defined in `cagents-memory/_system/config/pipeline_config.yaml`:
 
 ```yaml
 states:
@@ -104,7 +104,7 @@ Agent: cagents:{agent_name}
 
 ## Signal File Intervention Protocol
 
-The pipeline supports graceful intervention via signal files at `Agent_Memory/sessions/{session_id}/signals/`.
+The pipeline supports graceful intervention via signal files at `cagents-memory/sessions/{session_id}/signals/`.
 
 | Signal | Effect | State Machine Action |
 |--------|--------|---------------------|
@@ -131,9 +131,9 @@ before_transition(current_state, next_state):
 ### User Interaction
 
 ```bash
-touch Agent_Memory/sessions/{session_id}/signals/PAUSE   # Pause
-touch Agent_Memory/sessions/{session_id}/signals/STOP     # Stop
-touch Agent_Memory/sessions/{session_id}/signals/RESUME   # Resume
+touch cagents-memory/sessions/{session_id}/signals/PAUSE   # Pause
+touch cagents-memory/sessions/{session_id}/signals/STOP     # Stop
+touch cagents-memory/sessions/{session_id}/signals/RESUME   # Resume
 ```
 
 ### Pipeline Config Integration

@@ -57,4 +57,4 @@ Detect frameworks from project files:
 
 ## Config Location
 
-Framework patterns loaded from: `Agent_Memory/_system/commands/review/framework_patterns.yaml`
+Framework patterns loaded from: `cagents-memory/_system/commands/review/framework_patterns.yaml`

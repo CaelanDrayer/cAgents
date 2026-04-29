@@ -212,13 +212,13 @@ def test_no_duplicate_controller_names(super_domains, project_root):
 # HITL Calibration Tests
 def test_unified_hitl_calibration_exists(project_root):
     """Verify unified HITL calibration file exists"""
-    hitl_path = project_root / "Agent_Memory" / "_system" / "hitl_calibration.yaml"
+    hitl_path = project_root / "cagents-memory" / "_system" / "hitl_calibration.yaml"
     assert hitl_path.exists(), f"Missing unified HITL calibration: {hitl_path}"
 
 
 def test_hitl_calibration_has_all_domains(super_domains, project_root):
     """Verify HITL calibration includes all super-domains"""
-    hitl_path = project_root / "Agent_Memory" / "_system" / "hitl_calibration.yaml"
+    hitl_path = project_root / "cagents-memory" / "_system" / "hitl_calibration.yaml"
 
     with open(hitl_path) as f:
         hitl_config = yaml.safe_load(f)
@@ -232,7 +232,7 @@ def test_hitl_calibration_has_all_domains(super_domains, project_root):
 
 def test_hitl_calibration_structure(super_domains, project_root):
     """Validate HITL calibration structure per super-domain"""
-    hitl_path = project_root / "Agent_Memory" / "_system" / "hitl_calibration.yaml"
+    hitl_path = project_root / "cagents-memory" / "_system" / "hitl_calibration.yaml"
 
     with open(hitl_path) as f:
         hitl_config = yaml.safe_load(f)
@@ -262,7 +262,7 @@ def test_no_old_domain_configs_remain(project_root):
                    'customer-experience', 'legal-compliance', 'legal', 'support']
 
     for old_domain in old_domains:
-        old_path = project_root / "Agent_Memory" / "_system" / "domains" / old_domain
+        old_path = project_root / "cagents-memory" / "_system" / "domains" / old_domain
         assert not old_path.exists(), \
             f"Old domain config still exists: {old_path}"
 

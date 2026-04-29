@@ -22,7 +22,7 @@ function runHook(input) {
 describe('teammate-idle-handler.cjs', () => {
   beforeEach(() => {
     TEST_ROOT = mkdtempSync(join(tmpdir(), 'cagents-idle-test-'));
-    SESSION_DIR = join(TEST_ROOT, 'Agent_Memory', 'sessions', TEST_SESSION);
+    SESSION_DIR = join(TEST_ROOT, 'cagents-memory', 'sessions', TEST_SESSION);
     mkdirSync(join(SESSION_DIR, 'team'), { recursive: true });
     writeFileSync(join(SESSION_DIR, 'status.yaml'), 'phase: executing\n');
   });

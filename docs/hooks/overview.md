@@ -38,7 +38,7 @@ Hooks use structured error messages (What/Why/Fix):
 [HookName]
 WHAT: File write blocked
 WHY: Path is in protected system directory
-FIX: Move the file to Agent_Memory/ or project directory
+FIX: Move the file to cagents-memory/ or project directory
 ```
 
 ## Testing

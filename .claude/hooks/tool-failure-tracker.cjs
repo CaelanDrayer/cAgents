@@ -17,7 +17,7 @@ const { createHook, findActiveSession, safeRead, ensureDir, withFileLock } = req
 
 const TOOL_ALTERNATIVES = {
   'Bash': 'Consider using Read/Write/Glob/Grep dedicated tools instead of shell commands.',
-  'Write': 'Check file path permissions. Try writing to Agent_Memory/ instead.',
+  'Write': 'Check file path permissions. Try writing to cagents-memory/ instead.',
   'Edit': 'Verify the old_string matches exactly. Try Read first to confirm content.',
   'Task': 'Check subagent_type is valid. Try a simpler prompt or different agent.',
   'WebFetch': 'URL may be unreachable. Try WebSearch or check URL format.',

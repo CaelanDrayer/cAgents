@@ -22,7 +22,7 @@ Critical Issues Require Immediate Action:
 2. [CRITICAL] SQL injection in src/api/users.ts:78
 ...
 
-Full report: Agent_Memory/sessions/review_20260105_143022/reports/final_report.md
+Full report: cagents-memory/sessions/review_20260105_143022/reports/final_report.md
 ```
 
 ## Documentation Review Report
@@ -48,7 +48,7 @@ Critical Documentation Gaps:
 3. [CRITICAL] Error handling section incomplete
 ...
 
-Full report: Agent_Memory/sessions/review_20260105_143055/reports/final_report.md
+Full report: cagents-memory/sessions/review_20260105_143055/reports/final_report.md
 ```
 
 ## Content Review Report
@@ -76,7 +76,7 @@ Recommendations:
 3. Fix passive voice in paragraphs 5, 8, 12
 ...
 
-Full report: Agent_Memory/sessions/review_20260105_144012/reports/final_report.md
+Full report: cagents-memory/sessions/review_20260105_144012/reports/final_report.md
 ```
 
 ## Design Review Report
@@ -102,7 +102,7 @@ Critical Issues:
 3. [HIGH] Mobile layout breaks on screens <360px
 ...
 
-Full report: Agent_Memory/sessions/review_20260105_144130/reports/final_report.md
+Full report: cagents-memory/sessions/review_20260105_144130/reports/final_report.md
 ```
 
 ## Business Process Review Report
@@ -129,7 +129,7 @@ Critical Issues:
 3. [HIGH] No rollback procedure if onboarding fails
 ...
 
-Full report: Agent_Memory/sessions/review_20260105_144245/reports/final_report.md
+Full report: cagents-memory/sessions/review_20260105_144245/reports/final_report.md
 ```
 
 ## Enhanced Report Elements
@@ -150,7 +150,7 @@ The full markdown report includes:
 ## Session Structure
 
 ```
-Agent_Memory/sessions/review_{slug}_{YYMMDD}_{NNN}/
+cagents-memory/sessions/review_{slug}_{YYMMDD}_{NNN}/
 +-- instruction.yaml
 +-- status.yaml
 +-- scope_analysis.yaml

@@ -189,7 +189,7 @@ optimization:
 
     # Smart caching
     - name: smart_caching
-      description: "Cache frequently accessed info in Agent_Memory"
+      description: "Cache frequently accessed info in cagents-memory"
       savings: 10-15%
 
 # Recursive Workflow Context Handling

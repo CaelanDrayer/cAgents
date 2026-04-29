@@ -225,7 +225,7 @@ describe('post-write-validator.cjs', () => {
     });
 
     it('should create event file when status.yaml has pipeline_state', () => {
-      const sessionDir = join(EVT_TMP, 'Agent_Memory', 'sessions', 'run_test_260331_001');
+      const sessionDir = join(EVT_TMP, 'cagents-memory', 'sessions', 'run_test_260331_001');
       mkdirSync(join(sessionDir, 'workflow'), { recursive: true });
       const statusPath = join(sessionDir, 'status.yaml');
       writeFileSync(statusPath, 'pipeline_state: PLANNED\nsession_id: run_test_260331_001\n');
@@ -243,7 +243,7 @@ describe('post-write-validator.cjs', () => {
     });
 
     it('should not create duplicate event files for same state', () => {
-      const sessionDir = join(EVT_TMP, 'Agent_Memory', 'sessions', 'run_dedup_260331_001');
+      const sessionDir = join(EVT_TMP, 'cagents-memory', 'sessions', 'run_dedup_260331_001');
       const eventsDir = join(sessionDir, 'workflow', 'events');
       mkdirSync(eventsDir, { recursive: true });
       writeFileSync(join(eventsDir, 'EVT-PLANNED_2026-03-31T00-00-00-000Z.yaml'), 'event_id: EVT-PLANNED\n');
@@ -256,7 +256,7 @@ describe('post-write-validator.cjs', () => {
     });
 
     it('should create event file using phase field as fallback', () => {
-      const sessionDir = join(EVT_TMP, 'Agent_Memory', 'sessions', 'run_phase_260331_001');
+      const sessionDir = join(EVT_TMP, 'cagents-memory', 'sessions', 'run_phase_260331_001');
       mkdirSync(join(sessionDir, 'workflow'), { recursive: true });
       const statusPath = join(sessionDir, 'status.yaml');
       writeFileSync(statusPath, 'phase: coordinating\nsession_id: run_phase_260331_001\n');

@@ -33,7 +33,7 @@ This agent handles requests for ANY installed domain:
 
 **How it works**:
 1. Reads `instruction.yaml` to determine domain
-2. Loads `Agent_Memory/_system/domains/{domain}/{agent_type}_config.yaml`
+2. Loads `cagents-memory/_system/domains/{domain}/{agent_type}_config.yaml`
 3. Applies domain-specific logic from configuration
 4. Executes using domain-appropriate rules
 
@@ -57,7 +57,7 @@ This agent's behavior is controlled by domain configuration files:
 
 ### Configuration File Structure
 ```yaml
-# Agent_Memory/_system/domains/{domain}/{agent_type}_config.yaml
+# cagents-memory/_system/domains/{domain}/{agent_type}_config.yaml
 
 domain: {domain_name}
 version: 1.0
@@ -70,10 +70,10 @@ description: "{Agent type} configuration for {domain}"
 
 ```python
 # Pseudocode for config loading
-instruction = read_yaml("Agent_Memory/{inst_id}/instruction.yaml")
+instruction = read_yaml("cagents-memory/{inst_id}/instruction.yaml")
 domain = instruction['domain']
 
-config_path = f"Agent_Memory/_system/domains/{domain}/{agent_type}_config.yaml"
+config_path = f"cagents-memory/_system/domains/{domain}/{agent_type}_config.yaml"
 
 if config_exists(config_path):
     config = read_yaml(config_path)
@@ -94,7 +94,7 @@ else:
 
 ## Response Approach
 
-1. **Read instruction** - Load from Agent_Memory/{inst_id}/instruction.yaml
+1. **Read instruction** - Load from cagents-memory/{inst_id}/instruction.yaml
 2. **Detect domain** - Extract domain field
 3. **Load domain config** - Read config from _system/domains/{domain}/
 4. **Validate config** - Ensure all required fields present
@@ -105,7 +105,7 @@ else:
 
 ## Domain Configuration Reference
 
-See template at: `Agent_Memory/_system/domains/_template/{agent_type}_config.yaml.template`
+See template at: `cagents-memory/_system/domains/_template/{agent_type}_config.yaml.template`
 
 ### Required Configuration Sections
 
@@ -156,12 +156,12 @@ See `shared/patterns/todo_write_helper.md` for the full Progressive Refinement P
 ## Memory Ownership
 
 ### This agent owns/writes:
-- `Agent_Memory/{instruction_id}/{outputs specific to this agent}`
+- `cagents-memory/{instruction_id}/{outputs specific to this agent}`
 - {Add agent-specific ownership}
 
 ### Read access:
-- `Agent_Memory/{instruction_id}/instruction.yaml` - Domain and request details
-- `Agent_Memory/_system/domains/{domain}/{agent_type}_config.yaml` - Domain config
+- `cagents-memory/{instruction_id}/instruction.yaml` - Domain and request details
+- `cagents-memory/_system/domains/{domain}/{agent_type}_config.yaml` - Domain config
 - {Add agent-specific reads}
 
 ## Collaboration Patterns
@@ -192,7 +192,7 @@ Instruction:
   intent: fix_bug
 
 Config Loaded:
-  Agent_Memory/_system/domains/software/{agent_type}_config.yaml
+  cagents-memory/_system/domains/software/{agent_type}_config.yaml
 
 Domain Logic Applied:
   {Software-specific logic example}
@@ -209,7 +209,7 @@ Instruction:
   intent: create_forecast
 
 Config Loaded:
-  Agent_Memory/_system/domains/business/{agent_type}_config.yaml
+  cagents-memory/_system/domains/business/{agent_type}_config.yaml
 
 Domain Logic Applied:
   {Business-specific logic example}

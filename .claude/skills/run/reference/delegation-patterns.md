@@ -59,7 +59,7 @@ Agent({
   description: "Coordinate: {request}",
   prompt: `
     Request: {user_request}
-    Session: Agent_Memory/sessions/{SESSION_ID}/
+    Session: cagents-memory/sessions/{SESSION_ID}/
     Domain: {domain} | Tier: {tier}
     Read plan.yaml and work_items.yaml.
     Coordinate via question-based delegation to execution agents.
@@ -112,7 +112,7 @@ Agent({
   description: "Team: {request}",
   prompt: `
     Request: {request}
-    Session: Agent_Memory/sessions/{SESSION_ID}/
+    Session: cagents-memory/sessions/{SESSION_ID}/
     Mode: team_execution
     Plan at: workflow/plan.yaml
     Work items at: workflow/work_items.yaml
@@ -123,7 +123,7 @@ Agent({
 ## Session Structure
 
 ```
-Agent_Memory/sessions/run_{slug}_{YYMMDD}_{NNN}/
+cagents-memory/sessions/run_{slug}_{YYMMDD}_{NNN}/
 +-- instruction.yaml
 +-- status.yaml
 +-- workflow/
@@ -143,6 +143,6 @@ Agent_Memory/sessions/run_{slug}_{YYMMDD}_{NNN}/
 
 | Config | Path | Purpose |
 |--------|------|---------|
-| Pipeline config | `Agent_Memory/_system/config/pipeline_config.yaml` | State machine definition |
+| Pipeline config | `cagents-memory/_system/config/pipeline_config.yaml` | State machine definition |
 | Domain overrides | `{domain}/config/domain_overrides.yaml` | Controller catalog |
 | Domain detection | Keywords in SKILL.md (inline) | Domain routing |

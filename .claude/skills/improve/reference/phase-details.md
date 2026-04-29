@@ -13,7 +13,7 @@ When user runs `/optimize` without explicit type:
 1. **Scan project structure** for optimization indicators
 2. **Detect frameworks** from project files
 3. **Parse natural language** if user provides a goal:
-   - Load `Agent_Memory/_system/optimize/intent_patterns.yaml`
+   - Load `cagents-memory/_system/optimize/intent_patterns.yaml`
    - Match keywords to intent categories (performance, cost, quality, SEO, efficiency, engagement, scalability, reliability)
    - Support multi-intent: "Make the app faster and more scalable" -> [performance, scalability]
    - If confidence < 30%: default to comprehensive scan
@@ -60,9 +60,9 @@ Delegate analysis to specialists via Agent tool. For each opportunity record:
 - Affected files and dependencies
 
 Config files to load:
-- `Agent_Memory/_system/optimize/scan_patterns.yaml`
-- `Agent_Memory/_system/optimize/framework_patterns.yaml`
-- `Agent_Memory/_system/optimize/cross_file_patterns.yaml`
+- `cagents-memory/_system/optimize/scan_patterns.yaml`
+- `cagents-memory/_system/optimize/framework_patterns.yaml`
+- `cagents-memory/_system/optimize/cross_file_patterns.yaml`
 
 ## Phase 3: Planning
 
@@ -136,12 +136,12 @@ Remaining Opportunities:
 2. [HIGH] Fix circular dependencies
    -> Run: /optimize --cross-file-only
 
-Full report: Agent_Memory/sessions/optimize_20260204_143022/outputs/optimization_report.md
+Full report: cagents-memory/sessions/optimize_20260204_143022/outputs/optimization_report.md
 ```
 
 ### Learning & History
 
 After completion, record optimization outcomes:
-- Write to `Agent_Memory/_system/optimize/learning/`
+- Write to `cagents-memory/_system/optimize/learning/`
 - Track: pattern_id, predicted_impact, actual_impact, confidence, success/failure
 - Update pattern accuracy scores over time

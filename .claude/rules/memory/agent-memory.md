@@ -1,6 +1,6 @@
 ---
 paths:
-  - "Agent_Memory/**"
+  - "cagents-memory/**"
   - ".claude/hooks/**"
   - ".claude/skills/**"
 ---
@@ -22,11 +22,11 @@ File-based memory organization for cAgents. Aligned with Claude Code's memory hi
 
 **Loading Order**: Managed -> User -> Project -> Project Rules -> Project Local (later = higher priority)
 
-**Auto Memory**: Persistent directory at `~/.claude/projects/<project>/memory/MEMORY.md`. Toggle with `/memory`. Separate from Agent_Memory/. Configure with `autoMemoryDirectory` setting to point auto memory at a custom path — for example, `Agent_Memory/_knowledge/` to share learnings across agents in the same project:
+**Auto Memory**: Persistent directory at `~/.claude/projects/<project>/memory/MEMORY.md`. Toggle with `/memory`. Separate from cagents-memory/. Configure with `autoMemoryDirectory` setting to point auto memory at a custom path — for example, `cagents-memory/_knowledge/` to share learnings across agents in the same project:
 
 ```json
 {
-  "autoMemoryDirectory": "Agent_Memory/_knowledge/"
+  "autoMemoryDirectory": "cagents-memory/_knowledge/"
 }
 ```
 
@@ -36,10 +36,10 @@ This lets multiple agents write to a shared knowledge store, enabling cross-sess
 
 **Recursive Lookup**: CLAUDE.md files read recursively up directory tree. Child directory files load on demand.
 
-## cAgents Agent_Memory Overview
+## cAgents cagents-memory Overview
 
 ```
-Agent_Memory/
+cagents-memory/
 ├── _system/          # configs, commands/, domains/, metrics/, evals/, templates/
 ├── _knowledge/       # semantic, procedural, calibration, analytics
 ├── _archive/         # Completed sessions
@@ -80,5 +80,5 @@ Snapshots created at phase transitions and before context compaction. Types: `ph
 - **Session-scoped**: Isolated per command invocation
 - **Parallel-safe**: Multiple sessions simultaneously
 - **Pause/resume**: Via waypoints
-- **Git-ignored**: Agent_Memory/ excluded from version control
+- **Git-ignored**: cagents-memory/ excluded from version control
 - **Context-efficient**: Workflow artifacts and waypoints provide context recovery; three-file pattern is an optional supplement

@@ -290,8 +290,8 @@ describe('V10.26.23 /improve --mode review SCOPING + MEASURING', () => {
   it('baseline migration fallback rule: primary preferred, legacy fallback', () => {
     const bm = readFileSync(BASELINE_MIG, 'utf8');
     // Find the primary/legacy order in the lookup rule
-    const primaryIdx = bm.indexOf('primary = Agent_Memory/_projects/{hash}/improve');
-    const legacyIdx = bm.indexOf('legacy  = Agent_Memory/_projects/{hash}/review');
+    const primaryIdx = bm.indexOf('primary = cagents-memory/_projects/{hash}/improve');
+    const legacyIdx = bm.indexOf('legacy  = cagents-memory/_projects/{hash}/review');
     expect(primaryIdx).toBeGreaterThan(0);
     expect(legacyIdx).toBeGreaterThan(primaryIdx);
   });

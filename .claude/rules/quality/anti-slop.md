@@ -1,6 +1,6 @@
 ---
 paths:
-  - "creative/agents/**"
+  - "writer/**"
   - "**/agents/copywriter/**"
   - "**/agents/technical-writer/**"
   - "**/agents/content-*/**"

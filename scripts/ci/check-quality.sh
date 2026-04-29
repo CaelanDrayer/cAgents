@@ -59,7 +59,7 @@ check_yaml_syntax() {
 
     local issues=0
 
-    # Find all yaml files in Agent_Memory/_system
+    # Find all yaml files in cagents-memory/_system
     while IFS= read -r file; do
         # Basic YAML validation: check for common issues
         if grep -E '^\s+[a-zA-Z_]+:[^ ]' "$file" > /dev/null 2>&1; then
@@ -72,7 +72,7 @@ check_yaml_syntax() {
             log_warn "Tab characters in YAML file: $file"
             ((issues++))
         fi
-    done < <(find "$PROJECT_ROOT/Agent_Memory/_system" -name "*.yaml" -o -name "*.yml" 2>/dev/null)
+    done < <(find "$PROJECT_ROOT/cagents-memory/_system" -name "*.yaml" -o -name "*.yml" 2>/dev/null)
 
     if [[ $issues -eq 0 ]]; then
         log_pass "YAML syntax OK"
@@ -261,8 +261,8 @@ check_required_files() {
         ".claude-plugin/plugin.json"
         ".claude-plugin/marketplace.json"
         ".claude/settings.json"
-        "core/agents/trigger/SKILL.md"
-        "core/agents/orchestrator/SKILL.md"
+        "core/trigger/SKILL.md"
+        "core/orchestrator/SKILL.md"
     )
 
     local missing=0

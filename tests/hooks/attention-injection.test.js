@@ -22,7 +22,7 @@ describe('attention-injection.cjs', () => {
 
   beforeEach(() => {
     tmpDir = mkdtempSync(join(tmpdir(), 'attention-injection-test-'));
-    sessionDir = join(tmpDir, 'Agent_Memory', 'sessions', TEST_SESSION);
+    sessionDir = join(tmpDir, 'cagents-memory', 'sessions', TEST_SESSION);
     mkdirSync(join(sessionDir, 'workflow'), { recursive: true });
     writeFileSync(join(sessionDir, 'status.yaml'), 'phase: executing\npipeline_state: COORDINATED\n');
     writeFileSync(join(sessionDir, 'workflow', 'plan.yaml'),

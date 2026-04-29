@@ -293,7 +293,7 @@ Completed: tasks 1-9 (all critical tasks done)
 Partial: task_10 (design phase complete, implementation pending)
 Pending: tasks 11-12
 
-Saved to: Agent_Memory/{instruction_id}/outputs/partial/
+Saved to: cagents-memory/{instruction_id}/outputs/partial/
 Continuation plan: continuation_plan.yaml
 Escalated to: HITL for review and next steps
 ```
@@ -394,7 +394,7 @@ Every task reads config.yaml (2K each)
 
 **Do this**:
 ```javascript
-// Cache in Agent_Memory
+// Cache in cagents-memory
 Cache config.yaml in _cache/ (2K once)
 All tasks reference cache
 // Total: 2K tokens (80% savings)

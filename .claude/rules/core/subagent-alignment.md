@@ -1,6 +1,6 @@
 ---
 paths:
-  - "core/agents/**"
+  - "core/**"
   - ".claude/skills/**"
 ---
 
@@ -305,7 +305,7 @@ If specified agent can't handle the request:
 
 ## Related Files
 
-- `Agent_Memory/_system/agent_aliases.yaml` - Agent name mappings
+- `cagents-memory/_system/agent_aliases.yaml` - Agent name mappings
 - `{domain}/config/planner_config.yaml` - Controller catalogs
 - `.claude/rules/core/controllers.md` - Controller patterns
 - `.claude/rules/core/execution.md` - Execution agent patterns

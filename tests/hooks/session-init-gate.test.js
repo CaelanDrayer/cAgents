@@ -20,7 +20,7 @@ describe('session-init-gate.cjs', () => {
   let tmpDir;
 
   beforeEach(() => {
-    // Isolated project root with no Agent_Memory — findActiveSession returns null
+    // Isolated project root with no cagents-memory — findActiveSession returns null
     tmpDir = join(tmpdir(), 'cagents-test-sig-' + Date.now());
     mkdirSync(tmpDir, { recursive: true });
   });
@@ -62,7 +62,7 @@ describe('session-init-gate.cjs', () => {
 
   it('should allow Agent spawn when active session with status.yaml exists', () => {
     const sessionId = 'run_test-gate_260320_999';
-    const sessionDir = join(tmpDir, 'Agent_Memory', 'sessions', sessionId);
+    const sessionDir = join(tmpDir, 'cagents-memory', 'sessions', sessionId);
     mkdirSync(sessionDir, { recursive: true });
     writeFileSync(
       join(sessionDir, 'status.yaml'),
@@ -88,7 +88,7 @@ describe('session-init-gate.cjs', () => {
   it('should allow Agent spawn when CAGENTS_SESSION_ID is set and session dir already exists with valid status.yaml', () => {
     // Dir exists with valid status — standard findActiveSession check finds it, so spawn is allowed
     const sessionId = 'run_test-gate-env_260322_001';
-    const sessionDir = join(tmpDir, 'Agent_Memory', 'sessions', sessionId);
+    const sessionDir = join(tmpDir, 'cagents-memory', 'sessions', sessionId);
     mkdirSync(sessionDir, { recursive: true });
     writeFileSync(
       join(sessionDir, 'status.yaml'),
@@ -107,7 +107,7 @@ describe('session-init-gate.cjs', () => {
     // no session_id hint is passed in the tool input, and the dir has no status.yaml
     // or any other recognisable session file, so the gate denies the spawn.
     const sessionId = 'run_test-gate-env-deny_260322_002';
-    const sessionDir = join(tmpDir, 'Agent_Memory', 'sessions', sessionId);
+    const sessionDir = join(tmpDir, 'cagents-memory', 'sessions', sessionId);
     mkdirSync(sessionDir, { recursive: true });
     // No status.yaml, instruction.yaml, or agent_tree.yaml — only the bare directory
 

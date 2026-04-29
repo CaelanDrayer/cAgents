@@ -1,6 +1,6 @@
 # cAgents Release Notes
 
-**Current Version**: 11.0.5
+**Current Version**: 11.1.0
 **Release Date**: April 15, 2026
 **Status**: Production-Ready
 
@@ -76,18 +76,18 @@
 
 **Theme**: `/context` utility demotion arc. Five-patch sequence that moves
 `/context` from a user-invocable slash command to a Claude-invoked utility,
-preserving the data file path `Agent_Memory/_projects/{hash}/product_context.yaml`
+preserving the data file path `cagents-memory/_projects/{hash}/product_context.yaml`
 at every step.
 
 | Bump | Change |
 |------|--------|
 | 10.26.6 | Hide `/context` from the `/` menu via frontmatter flip (`metadata.user-invocable: "false"`). `plugin.json` description reworded to "8 user skills + /context utility". |
-| 10.26.7 | Document the orchestrator's direct READ path in `core/agents/orchestrator/resources/product-context-loader.md`. No code change; formalizes the helper contract. |
+| 10.26.7 | Document the orchestrator's direct READ path in `core/orchestrator/resources/product-context-loader.md`. No code change; formalizes the helper contract. |
 | 10.26.8 | Remove `/context` from `/helper` public catalog. New "Internal utilities (Claude-invoked)" subsection; comparison tables drop the `/context` column. Claims the "Planned" slot reserved in 10.26.4. |
 | 10.26.9 | Add `/run context show\|init\|update\|clear` passthrough subcommands. Front-door dispatch in Step 1 of `/run` skips the state machine and calls `Skill({ skill: "context", args: "<sub>" })`. |
 | 10.26.10 | Tighten `/context` description to utility-facing. Add back-compat pointer to `/run context show`. Finalize the demotion arc. |
 
-**Data invariant**: `Agent_Memory/_projects/{hash}/product_context.yaml` is
+**Data invariant**: `cagents-memory/_projects/{hash}/product_context.yaml` is
 unchanged across all five patches. Users who typed `/context` get a
 migration pointer to `/run context show`. The orchestrator continues to
 read the YAML directly during INIT-state enrichment per the
@@ -190,7 +190,7 @@ updated `tests/skills/helper-catalog.test.js` (V10.26.8),
 
 | File | Change |
 |------|--------|
-| `Agent_Memory/_system/config/org_pipeline_config.yaml` | New: 6-state machine, C-suite config, routing rules |
+| `cagents-memory/_system/config/org_pipeline_config.yaml` | New: 6-state machine, C-suite config, routing rules |
 | `make/agents/coo/SKILL.md` | Modified: execution -> controller tier |
 | `make/config/planner_config.yaml` | Modified: COO added to tier_3 controllers |
 | `.claude/skills/run/SKILL.md` | Modified: --brief flag added |
@@ -221,12 +221,12 @@ All 10 version files bumped: 9.25.0 -> 9.26.0
 **Theme**: Event-driven agent pipeline -- Replace one-shot delegation with state machine engine. Each agent enriches the user's request before passing downstream. Revision loops at both controller and pipeline levels ensure quality. New prompt-engineer agent crafts optimized delegation prompts.
 
 **New Agent**:
-- `prompt-engineer` (core/agents/prompt-engineer/SKILL.md): Sits between decomposer and controller. Reads work items, analyzes codebase, crafts optimized delegation prompts with code snippets, constraints, and anti-patterns. Registered in core and root plugin.json.
+- `prompt-engineer` (core/prompt-engineer/SKILL.md): Sits between decomposer and controller. Reads work items, analyzes codebase, crafts optimized delegation prompts with code snippets, constraints, and anti-patterns. Registered in core and root plugin.json.
 - Agent count: 238 -> 239 (15 core + 14 shared + 210 domain)
 
 **New Files**:
-- `Agent_Memory/_system/config/pipeline_config.yaml`: State machine definition (INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED -> VALIDATED), revision routing, model routing, controller revision settings
-- `Agent_Memory/_system/templates/event.yaml`: Event schema template for pipeline agents
+- `cagents-memory/_system/config/pipeline_config.yaml`: State machine definition (INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED -> VALIDATED), revision routing, model routing, controller revision settings
+- `cagents-memory/_system/templates/event.yaml`: Event schema template for pipeline agents
 
 **Major Rewrites**:
 - `/run` SKILL.md: Replaced 6-step fixed workflow with state machine loop reading pipeline_config.yaml. /run spawns agents sequentially at level 1, reads completion events to advance state. Supports revision routing (FAIL -> PROMPTS_READY, REVISE -> PLANNED, max 5 cycles). Detects pre-enrichment for /team teammate flows via --session flag.
@@ -246,7 +246,7 @@ All 10 version files bumped: 9.25.0 -> 9.26.0
 - CLAUDE.md: Updated architecture (state machine), delegation chain, core infrastructure (15 agents), workflow execution, skills descriptions, team mode, quick reference
 - Version bump: 9.22.0 -> 9.23.0 across all 10 version files
 
-**Design Source**: `Agent_Memory/sessions/designer_20260227_082000/design_document.md`
+**Design Source**: `cagents-memory/sessions/designer_20260227_082000/design_document.md`
 
 ---
 
@@ -355,7 +355,7 @@ All 10 version files bumped: 9.25.0 -> 9.26.0
 - Added `subagent-stop-tracker.cjs` hook for SubagentStop events
 - Agent tree now records `stopped_at` timestamps when agents finish
 - Fixed race condition in session discovery when status.yaml hasn't been written yet
-- Global audit log at `Agent_Memory/_system/logs/agent_spawns.log`
+- Global audit log at `cagents-memory/_system/logs/agent_spawns.log`
 
 ---
 
@@ -947,7 +947,7 @@ Agents converted to modular SKILL.md format with resources/ directories:
 
 Additional cross-domain agents:
 - grow/agents/marketing-strategist
-- people/agents/hr-business-partner
+- operator/people-ops/hr-business-partner
 
 **Structure**:
 ```
@@ -962,7 +962,7 @@ SKILL.md/
 **Benefits**: 40-60% context reduction for simple tasks
 
 #### 3. 4-Tier Model Routing
-**Files**: `Agent_Memory/_system/config/model_routing.yaml`
+**Files**: `cagents-memory/_system/config/model_routing.yaml`
 
 Dynamic model selection based on:
 - Task complexity tier (0-4)
@@ -981,7 +981,7 @@ Dynamic model selection based on:
 **Expected Savings**: 30-50% cost reduction
 
 #### 4. Comprehensive Security Review
-**Files**: `Agent_Memory/_system/config/secret_detection.yaml`
+**Files**: `cagents-memory/_system/config/secret_detection.yaml`
 
 20+ secret detection patterns:
 - API keys (AWS, GCP, Azure, Stripe, etc.)
@@ -997,14 +997,14 @@ Dynamic model selection based on:
 ### Phase 2: Operations (15 Improvements)
 
 #### 5-7. Session Management System
-**Files**: `Agent_Memory/_system/config/session_management.yaml`, `scripts/session/*.sh`
+**Files**: `cagents-memory/_system/config/session_management.yaml`, `scripts/session/*.sh`
 
 - **Waypoint System**: Named checkpoints for workflow recovery
 - **Recovery Protocol**: 4-level recovery (checkpoint, phase, session, manual)
 - **Three-File Pattern**: status.yaml, plan.yaml, coordination_log.yaml
 
 #### 8-10. Metrics Infrastructure
-**Files**: `Agent_Memory/_system/config/metrics_config.yaml`, `Agent_Memory/_system/metrics/`
+**Files**: `cagents-memory/_system/config/metrics_config.yaml`, `cagents-memory/_system/metrics/`
 
 - **Config**: Metric definitions, collection rules
 - **Session Tracking**: Per-session metrics collection
@@ -1017,7 +1017,7 @@ Dynamic model selection based on:
 - Quality metrics (validation scores, rework rate)
 
 #### 11-13. Evaluation Framework
-**Files**: `Agent_Memory/_system/evals/`
+**Files**: `cagents-memory/_system/evals/`
 
 - **Quality Evaluations**: Output quality scoring
 - **Completeness Evaluations**: Task completion verification
@@ -1085,7 +1085,7 @@ disable_opus: true  # Strict cost control
 - disable_opus / disable_haiku
 
 #### 21-23. Internal Tool Registry
-**Files**: `Agent_Memory/_system/tools/registry.js`, `file-tools.js`, `yaml-tools.js`
+**Files**: `cagents-memory/_system/tools/registry.js`, `file-tools.js`, `yaml-tools.js`
 
 Fast internal operations without spawning external processes:
 
@@ -1102,7 +1102,7 @@ Fast internal operations without spawning external processes:
 **Benefit**: 30-40% faster internal operations
 
 #### 24-25. Instinct-Based Pattern Learning
-**Files**: `Agent_Memory/_knowledge/patterns/*.yaml`, `Agent_Memory/_knowledge/learning/`
+**Files**: `cagents-memory/_knowledge/patterns/*.yaml`, `cagents-memory/_knowledge/learning/`
 
 Pattern extraction from successful workflows:
 
@@ -1175,7 +1175,7 @@ hooks/
 ├── pre-subagent.sh
 └── post-subagent.sh
 
-Agent_Memory/_system/
+cagents-memory/_system/
 ├── config/
 │   ├── model_routing.yaml (updated v2.0)
 │   ├── secret_detection.yaml
@@ -1190,7 +1190,7 @@ Agent_Memory/_system/
 └── evals/
     └── ...
 
-Agent_Memory/_knowledge/
+cagents-memory/_knowledge/
 ├── patterns/
 │   ├── decomposition-patterns.yaml
 │   ├── coordination-patterns.yaml
@@ -1204,7 +1204,7 @@ scripts/
 │   ├── run-evals.sh
 │   └── check-quality.sh
 ├── knowledge/
-│   └── pattern-extractor.cjs    # moved from Agent_Memory/_knowledge/learning/ (now version-controlled)
+│   └── pattern-extractor.cjs    # moved from cagents-memory/_knowledge/learning/ (now version-controlled)
 ├── session/
 │   └── ...
 └── skills/
@@ -1627,6 +1627,6 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 11.0.5
+**Current Version**: 11.1.0
 **Release Date**: February 27, 2026
 **Git Tag**: v9.21.0

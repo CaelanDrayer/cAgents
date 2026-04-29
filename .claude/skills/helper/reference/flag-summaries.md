@@ -32,7 +32,7 @@ Complete flag tables for all commands, used by `/helper --flags <command>`.
 | `/run context update` | Interactively update product context |
 | `/run context clear` | Remove the product context document |
 
-The product context document lives at `Agent_Memory/_projects/{hash}/product_context.yaml`.
+The product context document lives at `cagents-memory/_projects/{hash}/product_context.yaml`.
 
 ### /run Templates (12)
 

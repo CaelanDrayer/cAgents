@@ -563,7 +563,7 @@ def main():
     exit_code = linter.print_results()
 
     # Generate compliance report
-    report_file = project_root / "Agent_Memory" / "_system" / "agent_compliance_report.md"
+    report_file = project_root / "cagents-memory" / "_system" / "agent_compliance_report.md"
     linter.generate_compliance_report(report_file)
 
     sys.exit(exit_code)

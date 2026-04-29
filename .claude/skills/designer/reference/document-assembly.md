@@ -160,4 +160,4 @@ artifacts/
 +-- risk_register.md
 ```
 
-Save to: `Agent_Memory/sessions/{session_id}/design_document.md`
+Save to: `cagents-memory/sessions/{session_id}/design_document.md`

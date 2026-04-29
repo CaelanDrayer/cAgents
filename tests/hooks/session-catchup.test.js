@@ -77,15 +77,15 @@ describe('session-catchup.cjs', () => {
 
   describe('incomplete session detection', () => {
     it('should detect sessions with non-terminal phases', () => {
-      // This test relies on actual session state. The hook scans Agent_Memory/sessions/.
+      // This test relies on actual session state. The hook scans cagents-memory/sessions/.
       // In test env, there may be existing sessions. We verify the hook doesn't crash.
       const result = runHook({});
       expect(result.hookSpecificOutput).toBeDefined();
       expect(result.hookSpecificOutput.hookEventName).toBe('SessionStart');
     });
 
-    it('should handle missing Agent_Memory/sessions/ gracefully', () => {
-      // The hook should not crash even if Agent_Memory doesn't exist
+    it('should handle missing cagents-memory/sessions/ gracefully', () => {
+      // The hook should not crash even if cagents-memory doesn't exist
       // (it uses fs.existsSync checks internally)
       const result = runHook({});
       expect(result.hookSpecificOutput).toBeDefined();

@@ -190,7 +190,7 @@ Step 1: TRIGGER (domain detection)
   - Validates feasibility
 
 Step 2: ORCHESTRATOR (phase conductor)
-  - Creates session in Agent_Memory/sessions/
+  - Creates session in cagents-memory/sessions/
   - Proceeds through 5 phases automatically
 
 Step 3: ROUTING PHASE
@@ -353,7 +353,7 @@ Instead of running work items one after another (sequential), team mode runs the
 
 ### Session Management, Resume, and Recovery
 
-Every command creates a session directory in `Agent_Memory/sessions/`.
+Every command creates a session directory in `cagents-memory/sessions/`.
 
 #### Session Naming
 
@@ -368,7 +368,7 @@ Every command creates a session directory in `Agent_Memory/sessions/`.
 #### Key Session Files
 
 ```
-Agent_Memory/sessions/{session_id}/
+cagents-memory/sessions/{session_id}/
 +-- instruction.yaml        # What the user asked
 +-- status.yaml              # Current phase and progress
 +-- task_plan.md             # Work item breakdown

@@ -6,7 +6,7 @@ import { execSync } from 'child_process';
 
 const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
 const HOOK_PATH = join(HOOKS_DIR, 'verify-completion.cjs');
-const TEST_SESSIONS_DIR = join(process.cwd(), 'Agent_Memory', 'sessions');
+const TEST_SESSIONS_DIR = join(process.cwd(), 'cagents-memory', 'sessions');
 const TEST_SESSION = 'run_20260101_000001_test_vc';
 const TEST_SESSION_DIR = join(TEST_SESSIONS_DIR, TEST_SESSION);
 
@@ -56,7 +56,7 @@ describe('verify-completion.cjs', () => {
   it('should allow stop when no active session found', () => {
     // Use a temp project dir so findActiveSession doesn't find real active sessions
     const tmpDir = join(TEST_SESSIONS_DIR, '..', '..', '_test_isolated_vc');
-    mkdirSync(join(tmpDir, 'Agent_Memory', 'sessions'), { recursive: true });
+    mkdirSync(join(tmpDir, 'cagents-memory', 'sessions'), { recursive: true });
     try {
       const result = execSync(
         `printf '%s' '${JSON.stringify({ session_id: 'nonexistent_session_999' }).replace(/'/g, "'\\''")}' | CLAUDE_PROJECT_DIR="${tmpDir}" node "${HOOK_PATH}"`,
@@ -280,7 +280,7 @@ describe('verify-completion.cjs', () => {
 
       runHook({ session_id: TEST_SESSION });
 
-      // The hook writes session_outcomes.jsonl under Agent_Memory/_knowledge/learning/
+      // The hook writes session_outcomes.jsonl under cagents-memory/_knowledge/learning/
       const jsonlPath = join(TEST_SESSIONS_DIR, '..', '_knowledge', 'learning', 'session_outcomes.jsonl');
       if (existsSync(jsonlPath)) {
         const content = readFileSync(jsonlPath, 'utf8');

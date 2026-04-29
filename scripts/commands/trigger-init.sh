@@ -17,7 +17,7 @@ source "$LIB_DIR/logging.sh"
 source "$LIB_DIR/json.sh"
 
 # Configuration
-readonly AGENT_MEMORY_DIR="${CAGENTS_AGENT_MEMORY:-Agent_Memory}"
+readonly AGENT_MEMORY_DIR="${CAGENTS_AGENT_MEMORY:-cagents-memory}"
 
 #######################################
 # Generate instruction ID

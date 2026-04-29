@@ -1,5 +1,5 @@
 # Agent Team Registry Template
-# Used by init-memory.sh to create Agent_Memory/_system/registry.yaml
+# Used by init-memory.sh to create cagents-memory/_system/registry.yaml
 # Version: 4.0.0
 
 registry:

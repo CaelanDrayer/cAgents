@@ -22,7 +22,7 @@ describe('post-compact-restore.cjs', () => {
 
   beforeEach(() => {
     tmpDir = mkdtempSync(join(tmpdir(), 'post-compact-restore-test-'));
-    sessionDir = join(tmpDir, 'Agent_Memory', 'sessions', TEST_SESSION);
+    sessionDir = join(tmpDir, 'cagents-memory', 'sessions', TEST_SESSION);
     mkdirSync(join(sessionDir, 'workflow'), { recursive: true });
     writeFileSync(join(sessionDir, 'status.yaml'), 'phase: coordinating\n');
     writeFileSync(

@@ -46,7 +46,7 @@ After (V11.0.0):
 ```
 
 The underlying data file at
-`Agent_Memory/_projects/{hash}/product_context.yaml` is unchanged; only
+`cagents-memory/_projects/{hash}/product_context.yaml` is unchanged; only
 the invocation moves. `/run` detected the `context` subcommand and
 passed through since V10.26.9, so no data migration is needed.
 
@@ -138,14 +138,14 @@ you want to carry forward, move it once:
 
 | Legacy path | V11.0 canonical path |
 |-------------|----------------------|
-| `Agent_Memory/_projects/{hash}/review/baseline.yaml` | `Agent_Memory/_projects/{hash}/improve/baseline.yaml` |
-| `Agent_Memory/_projects/{hash}/optimize/pattern_effectiveness.yaml` | `Agent_Memory/_projects/{hash}/improve/pattern_effectiveness.yaml` |
+| `cagents-memory/_projects/{hash}/review/baseline.yaml` | `cagents-memory/_projects/{hash}/improve/baseline.yaml` |
+| `cagents-memory/_projects/{hash}/optimize/pattern_effectiveness.yaml` | `cagents-memory/_projects/{hash}/improve/pattern_effectiveness.yaml` |
 
 Move command (adjust `{hash}` to your project hash, which is printed at
 the top of each `/improve` run):
 
 ```bash
-PROJ=Agent_Memory/_projects/{hash}
+PROJ=cagents-memory/_projects/{hash}
 mkdir -p "$PROJ/improve"
 # Move baseline if it exists:
 [ -f "$PROJ/review/baseline.yaml" ] && mv "$PROJ/review/baseline.yaml" "$PROJ/improve/baseline.yaml"

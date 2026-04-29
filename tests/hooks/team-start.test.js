@@ -27,7 +27,7 @@ describe('team-start.cjs', () => {
 
   beforeEach(() => {
     tmpDir = mkdtempSync(join(tmpdir(), 'team-start-test-'));
-    sessionDir = join(tmpDir, 'Agent_Memory', 'sessions', TEST_SESSION);
+    sessionDir = join(tmpDir, 'cagents-memory', 'sessions', TEST_SESSION);
     mkdirSync(sessionDir, { recursive: true });
     writeFileSync(
       join(sessionDir, 'status.yaml'),

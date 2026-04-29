@@ -50,14 +50,14 @@ See [domains.md](domains.md) for the 15-domain breakdown.
 
 ## Configuration
 
-- Pipeline: `Agent_Memory/_system/config/pipeline_config.yaml`
+- Pipeline: `cagents-memory/_system/config/pipeline_config.yaml`
 - Domains: `{domain}/config/domain_overrides.yaml`
 - Hooks: `.claude/settings.json`
 - Rules: `.claude/rules/` (26 files)
 
 ## File-Based State
 
-All workflow state persists to `Agent_Memory/sessions/{session_id}/`:
+All workflow state persists to `cagents-memory/sessions/{session_id}/`:
 - `instruction.yaml` - User request
 - `status.yaml` - Current phase
 - `workflow/plan.yaml` - Objectives

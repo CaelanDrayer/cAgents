@@ -13,7 +13,7 @@
       "Glob(**)",
       "Grep(**)",
       "Bash(git *)",
-      "Write(Agent_Memory/**)"
+      "Write(cagents-memory/**)"
     ],
     "deny": [
       "Bash(rm -rf /)",

@@ -32,7 +32,7 @@ Core architecture and development guidance for cAgents.
 - `README.md` - Quick start
 - `docs/` - Project documentation (25 files including ARCHITECTURE.md, SKILLS.md, TEAM_MODE.md, RELEASE_NOTES.md, etc.)
 - `archive/docs/` - Historical documentation (local only)
-- `Agent_Memory/` - Runtime state (excluded from git)
+- `cagents-memory/` - Runtime state (excluded from git)
 - `.claude/skills/run/reference/session-schema.md` - Session YAML contract (canonical schema for AgentPath)
 - `docs/WORKFLOW_AGENT_INTERACTIONS.md` - Agent interaction patterns
 
@@ -203,7 +203,7 @@ Controllers are the coordination hub between planning and execution. See @.claud
 3. Execution agents implement, controller tracks completion and verifies acceptance criteria
 4. Controller writes coordination_log.yaml; orchestrator detects completion
 
-**Coordination Log** (`Agent_Memory/sessions/{session_id}/workflow/coordination_log.yaml`):
+**Coordination Log** (`cagents-memory/sessions/{session_id}/workflow/coordination_log.yaml`):
 ```yaml
 schema_version: "1"
 controller: cagents:engineering-manager
@@ -352,7 +352,7 @@ N-wave parallel team execution using Claude Code's built-in agent teams. Use `/t
 **Full Structure**: See @.claude/rules/memory/agent-memory.md
 
 ```
-Agent_Memory/
+cagents-memory/
 +-- _system/       # configs, commands/, templates/
 +-- _knowledge/    # patterns, calibration, learnings
 +-- _archive/      # completed sessions
@@ -404,7 +404,7 @@ cAgents/
 +-- tests/                   # Vitest test suite (hooks + config)
 +-- docs/                    # Project documentation
 +-- .claude-plugin/          # Root manifest
-+-- Agent_Memory/            # Runtime state (git-ignored)
++-- cagents-memory/            # Runtime state (git-ignored)
 ```
 
 ## Hooks System
@@ -468,14 +468,14 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Built-in**: `/memory`, `/init` (Claude Code native)
 **Agents**: 243 total (17 core + 12 shared + 11 leadership + 203 domain specialists)
 **Domains**: Engineering (31), Creative (30), Business (28), Growth (34), People (17), Service (28), Leadership (11), Core (17), Shared (12), Science (10), Health (5), Education (5), Personal (5), Arts (5), Trades (5)
-**Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/domain_overrides.yaml`, `Agent_Memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (session YAML contract for AgentPath)
+**Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/domain_overrides.yaml`, `cagents-memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (session YAML contract for AgentPath)
 **Hooks**: 29 .cjs files = 26 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 816 Vitest tests (hooks + config validation)
-**Version**: 11.0.5
+**Version**: 11.1.0
 
 ## Troubleshooting
 

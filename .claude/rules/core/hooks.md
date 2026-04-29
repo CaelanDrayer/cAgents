@@ -132,7 +132,7 @@ createHook('MyHook', async (input) => {
 #### SessionStart: session-catchup.cjs
 - **Purpose**: Detect incomplete sessions on startup, offer resume options, inject cAgents behavioral context
 - **Also**: Initializes session state (replaces on-session-start.sh); includes prompt guidance previously in a separate prompt hook (prompt hooks not supported for SessionStart)
-- **Creates**: `Agent_Memory/_system/incomplete_sessions.json`
+- **Creates**: `cagents-memory/_system/incomplete_sessions.json`
 - **Output**: `{"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "..."}}`
 
 #### SessionEnd: team-stop.cjs
@@ -235,7 +235,7 @@ createHook('MyHook', async (input) => {
 
 #### PermissionRequest: permission-handler.cjs
 - **Purpose**: Auto-approve safe patterns (Read, Grep, Glob), HITL gates for tier 4
-- **Auto-approved**: Read, Grep, Glob, TaskList, TaskGet; Write/Edit to Agent_Memory
+- **Auto-approved**: Read, Grep, Glob, TaskList, TaskGet; Write/Edit to cagents-memory
 
 ### State Management
 
@@ -246,7 +246,7 @@ createHook('MyHook', async (input) => {
 
 #### Notification: notification.cjs
 - **Purpose**: Log notifications to daily files with 1MB rotation
-- **Creates**: `Agent_Memory/_system/logs/notifications_{date}.log`
+- **Creates**: `cagents-memory/_system/logs/notifications_{date}.log`
 
 ### New Event Hooks
 
@@ -265,7 +265,7 @@ createHook('MyHook', async (input) => {
 
 #### Elicitation + ElicitationResult: elicitation-handler.cjs
 - **Purpose**: Log MCP elicitation requests and user responses to a daily log file; warns on unrecognized MCP server names
-- **Creates**: `Agent_Memory/_system/logs/elicitations_{date}.log`
+- **Creates**: `cagents-memory/_system/logs/elicitations_{date}.log`
 - **Output**: Pass-through only (never blocks)
 
 ### CLI Tool (Not a registered hook)
@@ -548,7 +548,7 @@ The `bash -c` wrapper provides a 3-tier fallback chain for resolving the plugin 
 4. **Clear logging**: Use `console.error()` for logs (stderr), `createHook()` handles stdout
 5. **Idempotent**: Hooks may run multiple times
 6. **Self-contained**: No external dependencies (100% built-in Node.js)
-7. **State in files**: Store state in Agent_Memory, not memory
+7. **State in files**: Store state in cagents-memory, not memory
 8. **Single JSON output**: createHook() guarantees exactly one JSON output to stdout
 
 ## Troubleshooting
@@ -585,9 +585,9 @@ The `bash -c` wrapper provides a 3-tier fallback chain for resolving the plugin 
 
 - `.claude/settings.json` - Hook registration (active configuration)
 - `.claude/hooks/hook-utils.cjs` - Shared utilities and createHook() factory
-- `Agent_Memory/_system/config/hooks.yaml` - Hook behavior config
+- `cagents-memory/_system/config/hooks.yaml` - Hook behavior config
 - `scripts/ci/check-quality.sh` - Hook validation in CI
-- `Agent_Memory/_system/evals/` - Evaluation framework
+- `cagents-memory/_system/evals/` - Evaluation framework
 
 **Removed in V9.5** (no longer present in codebase):
 - `hooks/` directory - Legacy shell hooks (replaced by `.claude/hooks/*.cjs`)

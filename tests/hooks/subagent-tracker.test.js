@@ -199,14 +199,14 @@ describe('subagent-tracker.cjs', () => {
     const yaml = require('js-yaml');
 
     /**
-     * Helper: create an isolated temp Agent_Memory with a session directory,
+     * Helper: create an isolated temp cagents-memory with a session directory,
      * pre-populated agent_tree.yaml and status.yaml, then run the hook and
      * return the depth of the newly added agent entry.
      */
     function runWithDepthCheck({ statusPhase, existingAgents, agentType, promptOverride }) {
       const tmpRoot = fs.mkdtempSync(pathMod.join(os.tmpdir(), 'cagents-depth-'));
       const sessionName = `run_depth-test_260101_001`;
-      const sessionDir = pathMod.join(tmpRoot, 'Agent_Memory', 'sessions', sessionName);
+      const sessionDir = pathMod.join(tmpRoot, 'cagents-memory', 'sessions', sessionName);
       const workflowDir = pathMod.join(sessionDir, 'workflow');
       fs.mkdirSync(workflowDir, { recursive: true });
 
@@ -224,8 +224,8 @@ describe('subagent-tracker.cjs', () => {
         );
       }
 
-      // Also create Agent_Memory/_system/logs/ for audit log (avoids noise)
-      fs.mkdirSync(pathMod.join(tmpRoot, 'Agent_Memory', '_system', 'logs'), { recursive: true });
+      // Also create cagents-memory/_system/logs/ for audit log (avoids noise)
+      fs.mkdirSync(pathMod.join(tmpRoot, 'cagents-memory', '_system', 'logs'), { recursive: true });
 
       const uniqueId = `agent_depth_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
       const input = {
@@ -325,10 +325,10 @@ describe('subagent-tracker.cjs', () => {
       // references a parent_id that wasn't tracked yet.
       const tmpRoot = fs.mkdtempSync(pathMod.join(os.tmpdir(), 'cagents-depth-unknown-'));
       const sessionName = `run_depth-unknown_260101_001`;
-      const sessionDir = pathMod.join(tmpRoot, 'Agent_Memory', 'sessions', sessionName);
+      const sessionDir = pathMod.join(tmpRoot, 'cagents-memory', 'sessions', sessionName);
       const workflowDir = pathMod.join(sessionDir, 'workflow');
       fs.mkdirSync(workflowDir, { recursive: true });
-      fs.mkdirSync(pathMod.join(tmpRoot, 'Agent_Memory', '_system', 'logs'), { recursive: true });
+      fs.mkdirSync(pathMod.join(tmpRoot, 'cagents-memory', '_system', 'logs'), { recursive: true });
 
       fs.writeFileSync(pathMod.join(sessionDir, 'status.yaml'), 'phase: COORDINATING\n');
 
@@ -438,12 +438,12 @@ describe('subagent-tracker.cjs', () => {
     });
 
     it('resolves session from SESSION_DIR in prompt — behavioral test using isolated temp dir', () => {
-      // Create an isolated temp Agent_Memory so the hook has no other active sessions to find.
+      // Create an isolated temp cagents-memory so the hook has no other active sessions to find.
       // This ensures Pass 1 (findActiveSession) and Pass 2 (findMostRecentSessionDir) both return
       // null, so Pass 3 (prompt-based) is exercised.
       const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'cagents-test-'));
       const sessionName = `team_prompt-resolution-test_260101_001`;
-      const sessionDir = path.join(tmpRoot, 'Agent_Memory', 'sessions', sessionName);
+      const sessionDir = path.join(tmpRoot, 'cagents-memory', 'sessions', sessionName);
       const workflowDir = path.join(sessionDir, 'workflow');
       fs.mkdirSync(workflowDir, { recursive: true });
       // Write status.yaml so the session dir looks legitimate but is "complete" (not active)
@@ -500,7 +500,7 @@ describe('subagent-tracker.cjs', () => {
       // Use an isolated temp dir so no active sessions exist → Pass 1 and Pass 2 return null
       const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'cagents-test-nohint-'));
       // Create sessions dir but leave it empty
-      fs.mkdirSync(path.join(tmpRoot, 'Agent_Memory', 'sessions'), { recursive: true });
+      fs.mkdirSync(path.join(tmpRoot, 'cagents-memory', 'sessions'), { recursive: true });
 
       try {
         const uniqueId = `test_nohint_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -538,7 +538,7 @@ describe('subagent-tracker.cjs', () => {
     it('does not use prompt hint when session directory does not exist on disk', () => {
       // Isolated temp dir with no sessions
       const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'cagents-test-nonexist-'));
-      fs.mkdirSync(path.join(tmpRoot, 'Agent_Memory', 'sessions'), { recursive: true });
+      fs.mkdirSync(path.join(tmpRoot, 'cagents-memory', 'sessions'), { recursive: true });
 
       try {
         const uniqueId = `agent_nonexist_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -547,7 +547,7 @@ describe('subagent-tracker.cjs', () => {
           agent_id: uniqueId,
           session_id: '550e8400-e29b-41d4-a716-446655440002',
           tool_input: {
-            // References a session name that doesn't exist in tmpRoot's Agent_Memory/sessions/
+            // References a session name that doesn't exist in tmpRoot's cagents-memory/sessions/
             prompt: 'SESSION DIR: team_this_session_does_not_exist_260101_999\nDo the work.'
           }
         };

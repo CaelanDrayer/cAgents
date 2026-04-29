@@ -154,4 +154,4 @@ When `--resume <id> --domain <key>` is used, ONLY the specified domain is re-exe
 ## Template Location
 
 A blank strategic_brief.yaml template is available at:
-`Agent_Memory/_system/templates/strategic_brief.yaml`
+`cagents-memory/_system/templates/strategic_brief.yaml`

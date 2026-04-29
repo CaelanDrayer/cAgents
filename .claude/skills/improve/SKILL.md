@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "11.0.5"
+  version: "11.1.0"
   argument-hint: "[target] [--mode review|optimize|full] [flags]"
   user-invocable: "true"
   context: "fork"
@@ -72,7 +72,7 @@ When `--mode optimize` is parsed:
 2. Build slug from target basename (kebab-case, max 32 chars).
 3. Build session ID: `improve_{slug}_{YYMMDD}_{NNN}` — reuse the SCOPING
    counter rule from `--mode review`.
-4. `mkdir -p Agent_Memory/sessions/{session_id}/`.
+4. `mkdir -p cagents-memory/sessions/{session_id}/`.
 5. Write `instruction.yaml` with `mode: optimize` and the raw arguments.
 6. Write `status.yaml` with `phase: scoped`, `state: DETECTING_PENDING`,
    and an ISO8601 `created_at` timestamp.
@@ -132,7 +132,7 @@ effectiveness before PLANNING.
    detected tool. Fall back to `auto` heuristic scan when no tool is
    specified.
 3. Write captured metrics to
-   `Agent_Memory/_projects/{hash}/improve/baselines/{timestamp}.yaml`.
+   `cagents-memory/_projects/{hash}/improve/baselines/{timestamp}.yaml`.
 4. Update `status.yaml.phase = measured`, `status.yaml.state = MEASURING`.
 
 ### Pattern Effectiveness Storage
@@ -142,7 +142,7 @@ PLANNING. Canonical path (see
 [`reference/pattern-effectiveness-migration.md`](reference/pattern-effectiveness-migration.md)
 for the historical migration record):
 
-1. **Primary**: `Agent_Memory/_projects/{hash}/improve/pattern_effectiveness.yaml`
+1. **Primary**: `cagents-memory/_projects/{hash}/improve/pattern_effectiveness.yaml`
 2. If the primary exists, read it; otherwise treat as an empty pattern
    table (new project).
 3. All writes go to `improve/` only.
@@ -310,7 +310,7 @@ written. The intent is to prevent accidental whole-repo rewrites.
   (delta = 0) and marks verdict as `DRY_RUN`.
 - REPORTING writes the unified report with `applied: false` on every
   optimization row. Zero git writes; zero file modifications outside
-  `Agent_Memory/sessions/{session_id}/`.
+  `cagents-memory/sessions/{session_id}/`.
 
 Example:
 
@@ -346,8 +346,8 @@ itself runs a single attempt.
 Resolve target (`$ARGUMENTS[0]` if not a flag, else `.`). Build slug
 (lowercase-hyphenated, max 32 chars from basename). Build session ID
 `improve_{slug}_{YYMMDD}_{NNN}` (NNN = next unused counter under
-`Agent_Memory/sessions/`). Create
-`Agent_Memory/sessions/{session_id}/` and write `instruction.yaml`:
+`cagents-memory/sessions/`). Create
+`cagents-memory/sessions/{session_id}/` and write `instruction.yaml`:
 
 ```yaml
 skill: improve
@@ -366,7 +366,7 @@ Compute project hash (see
 [`reference/baseline-migration.md`](reference/baseline-migration.md)
 for the hashing rule). Baseline lookup:
 
-1. **Canonical**: `Agent_Memory/_projects/{hash}/improve/baseline.yaml`
+1. **Canonical**: `cagents-memory/_projects/{hash}/improve/baseline.yaml`
 
 If it exists, read it; set
 `status.yaml.baseline_source = "primary"`. If it does not exist:
@@ -390,7 +390,7 @@ Prints:
   auto_fixes_applied: {M}
   quality_gate: {PASS|FAIL}
   quality_score: {0-100}
-  report: Agent_Memory/sessions/{session_id}/reports/final_report.md
+  report: cagents-memory/sessions/{session_id}/reports/final_report.md
 ```
 
 `/improve --mode review` is the canonical review entry point as of V11.0.
@@ -569,10 +569,10 @@ All modes append to `_projects/{hash}/improve/history.yaml`.
 
 | Scope | Path |
 |-------|------|
-| Per-session | `Agent_Memory/sessions/improve_{slug}_{YYMMDD}_{NNN}/` |
-| Cross-session baseline | `Agent_Memory/_projects/{hash}/improve/baseline.yaml` |
-| Cross-session history | `Agent_Memory/_projects/{hash}/improve/history.yaml` |
-| Cross-session pattern data | `Agent_Memory/_projects/{hash}/improve/pattern_effectiveness.yaml` |
+| Per-session | `cagents-memory/sessions/improve_{slug}_{YYMMDD}_{NNN}/` |
+| Cross-session baseline | `cagents-memory/_projects/{hash}/improve/baseline.yaml` |
+| Cross-session history | `cagents-memory/_projects/{hash}/improve/history.yaml` |
+| Cross-session pattern data | `cagents-memory/_projects/{hash}/improve/pattern_effectiveness.yaml` |
 
 ### Transition Triggers
 

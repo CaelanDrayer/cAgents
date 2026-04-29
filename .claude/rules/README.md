@@ -36,7 +36,7 @@ Topic-specific rules organized for better maintainability.
 ├── infrastructure/ # Infrastructure configuration
 │   └── model-routing.md    # Model routing guidelines
 ├── memory/         # Memory and state management
-│   ├── agent-memory.md           # Agent_Memory/ structure and usage
+│   ├── agent-memory.md           # cagents-memory/ structure and usage
 │   └── agent-memory-reference.md # Detailed memory patterns and examples
 └── quality/        # Quality and completion
     ├── completion.md            # Task completion protocol
@@ -67,8 +67,8 @@ Add YAML frontmatter to apply rules conditionally:
 ```markdown
 ---
 paths:
-  - "core/agents/**/*.md"
-  - "shared/agents/**/*.md"
+  - "core/**/*.md"
+  - "analyst/**/*.md"
 ---
 
 # Agent Development Rules
@@ -113,7 +113,7 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 20. **infrastructure/model-routing.md** - Model routing guidelines and project overrides
 
 ### Memory (2 files)
-21. **memory/agent-memory.md** - Agent_Memory/ structure (three-file pattern, waypoints)
+21. **memory/agent-memory.md** - cagents-memory/ structure (three-file pattern, waypoints)
 22. **memory/agent-memory-reference.md** - Detailed memory patterns and examples
 
 ### Quality (6 files)
@@ -184,7 +184,7 @@ Adds V8.0 session management features:
 - `.claude/hooks/notification.cjs` - Status notification logging
 
 ### Metrics & Evals
-- `Agent_Memory/_system/metrics/` - Workflow metrics
-- `Agent_Memory/_system/evals/` - Quality evaluation framework
+- `cagents-memory/_system/metrics/` - Workflow metrics
+- `cagents-memory/_system/evals/` - Quality evaluation framework
 
 **Token Savings**: 40-60% average across agent catalog via progressive disclosure

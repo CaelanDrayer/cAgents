@@ -1,9 +1,9 @@
 ---
 paths:
-  - "core/agents/universal-validator/**"
-  - "core/agents/universal-planner/**"
+  - "core/universal-validator/**"
+  - "core/universal-planner/**"
   - ".claude/skills/run/**"
-  - "Agent_Memory/sessions/**/workflow/**"
+  - "cagents-memory/sessions/**/workflow/**"
 ---
 
 # Task Completion Protocol
@@ -194,7 +194,7 @@ See @resources/validation-checklist-29.md for full details, failure actions, and
 
 ## Protocol Location
 
-`Agent_Memory/_system/task_completion_protocol.yaml`
+`cagents-memory/_system/task_completion_protocol.yaml`
 
 ---
 

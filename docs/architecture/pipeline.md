@@ -66,7 +66,7 @@ Controllers include internal reviewer loops:
 
 ## Configuration
 
-Pipeline is defined in `Agent_Memory/_system/config/pipeline_config.yaml`:
+Pipeline is defined in `cagents-memory/_system/config/pipeline_config.yaml`:
 ```yaml
 version: "2.0"
 states:

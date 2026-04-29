@@ -18,7 +18,7 @@ Use research findings to:
 
 ## Artifact Generation
 
-Reference: `Agent_Memory/_system/templates/designer/artifact_generator.yaml`
+Reference: `cagents-memory/_system/templates/designer/artifact_generator.yaml`
 
 ### Software Design Artifacts
 
@@ -87,7 +87,7 @@ Reference: `Agent_Memory/_system/templates/designer/artifact_generator.yaml`
 
 ## Design Validation
 
-Reference: `Agent_Memory/_system/templates/designer/validation_framework.yaml`
+Reference: `cagents-memory/_system/templates/designer/validation_framework.yaml`
 
 Run 5-level validation on the completed design:
 
@@ -216,7 +216,7 @@ Enter continuous refinement mode:
 
 If user saves for later, tell them:
 ```
-Your design is saved at: Agent_Memory/sessions/{session_id}/
+Your design is saved at: cagents-memory/sessions/{session_id}/
 
 To implement later:
   /run implement design from {session_id}

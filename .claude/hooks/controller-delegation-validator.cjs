@@ -52,7 +52,7 @@ const IMPLEMENTATION_PATTERNS = [
 
 // Workflow/session files controllers ARE allowed to write
 const ALLOWED_PATTERNS = [
-  /workflow\//, /Agent_Memory\//, /coordination_log/, /plan\.yaml/,
+  /workflow\//, /cagents-memory\//, /coordination_log/, /plan\.yaml/,
   /status\.yaml/, /agent_tree/, /\.md$/, /\.yaml$/, /\.yml$/
 ];
 

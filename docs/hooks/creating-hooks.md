@@ -103,4 +103,4 @@ Add to `.claude/settings.json`:
 3. Use `console.error()` for logs (stderr)
 4. Make hooks idempotent
 5. No external dependencies (built-in Node.js only)
-6. Store state in Agent_Memory, not memory
+6. Store state in cagents-memory, not memory

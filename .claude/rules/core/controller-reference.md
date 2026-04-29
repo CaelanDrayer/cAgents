@@ -1,8 +1,8 @@
 ---
 paths:
-  - "core/agents/universal-planner/**"
-  - "core/agents/universal-executor/**"
-  - "core/agents/universal-validator/**"
+  - "core/universal-planner/**"
+  - "core/universal-executor/**"
+  - "core/universal-validator/**"
   - "**/config/planner_config.yaml"
 ---
 
@@ -24,7 +24,7 @@ Agent({
 
 // Step 2: Reviewer evaluates
 Agent({
-  subagent_type: "cagents:reviewer",  // domain-agnostic reviewer (core/agents/reviewer/)
+  subagent_type: "cagents:reviewer",  // domain-agnostic reviewer (core/reviewer/)
   description: "Review: {work_item}",
   prompt: "Review implementation of {work_item_description}.\nAcceptance criteria: {criteria}\nCheck: Does implementation meet all criteria?\nOutput: PASS or REVISE with specific feedback."
 })
@@ -207,8 +207,8 @@ Controllers maintain append-only decision logs during coordination.
 ### File Locations
 
 ```
-Agent_Memory/_projects/{project_hash}/DECISIONS.md   # Persistent across sessions
-Agent_Memory/_projects/{project_hash}/CORRECTIONS.md  # Persistent across sessions
+cagents-memory/_projects/{project_hash}/DECISIONS.md   # Persistent across sessions
+cagents-memory/_projects/{project_hash}/CORRECTIONS.md  # Persistent across sessions
 workflow/DECISIONS.md                                  # Session-scoped copy
 workflow/CORRECTIONS.md                                # Session-scoped copy
 ```

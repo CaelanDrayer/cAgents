@@ -171,7 +171,7 @@ hitl_approval_gates:
   - "Go-live decision (before final migration)"
 ```
 
-**Message**: "Architecture design complete. HITL approval required before implementation. Please review Agent_Memory/{instruction_id}/outputs/architecture_design.md"
+**Message**: "Architecture design complete. HITL approval required before implementation. Please review cagents-memory/{instruction_id}/outputs/architecture_design.md"
 
 ### 2. Unrecoverable Errors or Blockers
 
@@ -205,7 +205,7 @@ hitl_approval_gates:
 - Breaking API change detected
 - Data loss risk identified
 
-**Message**: "Validation BLOCKED: Security audit detected critical vulnerability (SQL injection). Cannot auto-fix. Please review security report at Agent_Memory/{instruction_id}/validation/security_audit.yaml"
+**Message**: "Validation BLOCKED: Security audit detected critical vulnerability (SQL injection). Cannot auto-fix. Please review security report at cagents-memory/{instruction_id}/validation/security_audit.yaml"
 
 ## What NOT to Ask
 
@@ -232,7 +232,7 @@ hitl_approval_gates:
 
 **RIGHT**:
 - ✅ Create outputs and proceed automatically
-- ✅ User can review outputs at any time via Agent_Memory
+- ✅ User can review outputs at any time via cagents-memory
 - ✅ Validation will catch any issues
 
 ## User Experience Examples
@@ -251,8 +251,8 @@ hitl_approval_gates:
 ✓ Complete: Authentication timeout bug fixed successfully!
 
 Outputs:
-- Agent_Memory/inst_20260115_001/outputs/bug_fix_summary.md
-- Agent_Memory/inst_20260115_001/outputs/test_results.yaml
+- cagents-memory/inst_20260115_001/outputs/bug_fix_summary.md
+- cagents-memory/inst_20260115_001/outputs/test_results.yaml
 ```
 
 **No permission requests** - workflow completed autonomously.
@@ -278,10 +278,10 @@ Outputs:
 ✓ Complete: OAuth2 authentication implemented successfully!
 
 Outputs:
-- Agent_Memory/inst_20260115_002/outputs/oauth2_architecture.md
-- Agent_Memory/inst_20260115_002/outputs/implementation_summary.md
-- Agent_Memory/inst_20260115_002/outputs/test_results.yaml
-- Agent_Memory/inst_20260115_002/outputs/security_audit.yaml
+- cagents-memory/inst_20260115_002/outputs/oauth2_architecture.md
+- cagents-memory/inst_20260115_002/outputs/implementation_summary.md
+- cagents-memory/inst_20260115_002/outputs/test_results.yaml
+- cagents-memory/inst_20260115_002/outputs/security_audit.yaml
 ```
 
 **No permission requests** - workflow completed autonomously.
@@ -308,7 +308,7 @@ Outputs:
 
 ⏸ HITL Approval Gate 1: Architecture Design
    "Architecture design complete. HITL approval required before implementation.
-    Please review: Agent_Memory/inst_20260115_003/outputs/architecture_design.md"
+    Please review: cagents-memory/inst_20260115_003/outputs/architecture_design.md"
 
    [User reviews and approves]
 
@@ -317,7 +317,7 @@ Outputs:
 
 ⏸ HITL Approval Gate 2: Security Review
    "Security review complete. HITL approval required before production deployment.
-    Please review: Agent_Memory/inst_20260115_003/validation/security_audit.yaml"
+    Please review: cagents-memory/inst_20260115_003/validation/security_audit.yaml"
 
    [User reviews and approves]
 
@@ -326,7 +326,7 @@ Outputs:
 
 ⏸ HITL Approval Gate 3: Go-Live Decision
    "All services deployed to staging. HITL approval required for go-live.
-    Please verify: Agent_Memory/inst_20260115_003/outputs/deployment_verification.yaml"
+    Please verify: cagents-memory/inst_20260115_003/outputs/deployment_verification.yaml"
 
    [User reviews and approves final go-live]
 
@@ -375,7 +375,7 @@ When creating or modifying agents, follow these patterns:
 
 After creating plan.yaml:
 
-1. Write plan.yaml to Agent_Memory/{instruction_id}/workflow/plan.yaml
+1. Write plan.yaml to cagents-memory/{instruction_id}/workflow/plan.yaml
 2. Signal completion to orchestrator (plan.yaml exists = completion signal)
 3. EXIT - do not ask user anything
 
@@ -415,7 +415,7 @@ When HITL approval gate reached (tier 4 only):
 Example HITL message:
 "Architecture design complete. HITL approval required before implementation.
 
-Review: Agent_Memory/inst_20260115_003/outputs/architecture_design.md
+Review: cagents-memory/inst_20260115_003/outputs/architecture_design.md
 
 Approve to proceed with implementation, or reject to halt workflow."
 ```

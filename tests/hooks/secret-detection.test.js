@@ -150,8 +150,8 @@ describe('secret-detection.cjs', () => {
       expect(result.continue).toBe(true);
     });
 
-    it('should allow Agent_Memory writes', () => {
-      const result = runHook({ tool_input: { file_path: '/tmp/Agent_Memory/sessions/test.yaml', content: 'phase: completed' } });
+    it('should allow cagents-memory writes', () => {
+      const result = runHook({ tool_input: { file_path: '/tmp/cagents-memory/sessions/test.yaml', content: 'phase: completed' } });
       expect(result.continue).toBe(true);
     });
   });

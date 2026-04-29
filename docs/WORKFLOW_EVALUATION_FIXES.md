@@ -17,14 +17,14 @@ Conducted comprehensive evaluation of complex task workflows (tier 3-4) with the
 **Impact**: Tasks fail because agents don't know to create verification records.
 
 **Fix**:
-- Updated `core/agents/universal-planner.md` with mandatory verification section
+- Updated `core/universal-planner.md` with mandatory verification section
 - Added verification requirement to every task's acceptance criteria
 - Added manifest.yaml to outputs_expected for every task
 - Adjusted context budgets: +2K tokens per task for verification
 - Updated tier budgets to include verification overhead
 
 **Files Modified**:
-- `core/agents/universal-planner.md` (+65 lines)
+- `core/universal-planner.md` (+65 lines)
 
 ### Issue 2: Missing Manifest Template ✓ FIXED
 
@@ -33,13 +33,13 @@ Conducted comprehensive evaluation of complex task workflows (tier 3-4) with the
 **Impact**: Agents create incomplete or incorrectly formatted manifests.
 
 **Fix**:
-- Created comprehensive manifest template: `Agent_Memory/_system/templates/task_manifest_template.yaml`
+- Created comprehensive manifest template: `cagents-memory/_system/templates/task_manifest_template.yaml`
 - Includes all required sections with examples
 - Shows GOOD vs BAD evidence examples
 - Provides completion checklist
 
 **Files Created**:
-- `Agent_Memory/_system/templates/task_manifest_template.yaml` (150+ lines)
+- `cagents-memory/_system/templates/task_manifest_template.yaml` (150+ lines)
 
 ### Issue 3: Context Budget Underestimation ✓ FIXED
 
@@ -74,7 +74,7 @@ Tier 4: 100-130K base + 20-30K verification = 120-160K total
 - Self-correct can generate synthetic manifest from available evidence
 
 **Files Modified**:
-- `core/agents/universal-validator.md` (+25 lines)
+- `core/universal-validator.md` (+25 lines)
 
 ### Issue 5: Executor Prompt Lacked Template Reference ✓ FIXED
 
@@ -84,12 +84,12 @@ Tier 4: 100-130K base + 20-30K verification = 120-160K total
 
 **Fix**:
 - Updated executor subagent prompt to reference template file
-- Included exact path: `Agent_Memory/_system/templates/task_manifest_template.yaml`
+- Included exact path: `cagents-memory/_system/templates/task_manifest_template.yaml`
 - Listed required sections explicitly
 - Referenced template's good vs bad evidence examples
 
 **Files Modified**:
-- `core/agents/universal-executor.md` (+10 lines)
+- `core/universal-executor.md` (+10 lines)
 
 ### Issue 6: Documentation Gap ✓ FIXED
 
@@ -108,23 +108,23 @@ Tier 4: 100-130K base + 20-30K verification = 120-160K total
 ## Summary of Changes
 
 ### Files Created (1)
-1. `Agent_Memory/_system/templates/task_manifest_template.yaml` (150+ lines)
+1. `cagents-memory/_system/templates/task_manifest_template.yaml` (150+ lines)
    - Comprehensive template with all required sections
    - Examples of good vs bad evidence
    - Completion checklist
 
 ### Files Modified (4)
-1. `core/agents/universal-planner.md` (+65 lines)
+1. `core/universal-planner.md` (+65 lines)
    - Added mandatory verification requirements section
    - Updated workflow to include verification step
    - Adjusted tier context budgets
    - Added verification-aware planning example
 
-2. `core/agents/universal-executor.md` (+10 lines)
+2. `core/universal-executor.md` (+10 lines)
    - Updated subagent prompt with template reference
    - Listed required manifest sections explicitly
 
-3. `core/agents/universal-validator.md` (+25 lines)
+3. `core/universal-validator.md` (+25 lines)
    - Added severity levels for verification failures
    - Implemented graceful failure handling
    - Added recovery logic for missing manifests
@@ -202,13 +202,13 @@ Tier 4: 100-130K base + 20-30K verification = 120-160K total
 ## Files in This Update
 
 **Created**:
-- `Agent_Memory/_system/templates/task_manifest_template.yaml`
+- `cagents-memory/_system/templates/task_manifest_template.yaml`
 - `WORKFLOW_EVALUATION_FIXES.md` (this file)
 
 **Modified**:
-- `core/agents/universal-planner.md`
-- `core/agents/universal-executor.md`
-- `core/agents/universal-validator.md`
+- `core/universal-planner.md`
+- `core/universal-executor.md`
+- `core/universal-validator.md`
 - `CLAUDE.md`
 
 Total: +168 lines added, addressing all 6 critical issues identified in workflow evaluation.

@@ -10,7 +10,7 @@ shared_questions: &people_questions
 controller_catalog:
   tier_2:
     - name: hr-manager
-      agent_path: people/agents/hr-manager/SKILL.md
+      agent_path: operator/people-ops/hr-manager/SKILL.md
       coordination_style: question_based
       typical_questions:
         - "What are the current HR operations and process gaps?"
@@ -24,7 +24,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: hr-business-partner
-      agent_path: people/agents/hr-business-partner/SKILL.md
+      agent_path: operator/people-ops/hr-business-partner/SKILL.md
       coordination_style: question_based
       typical_questions: *people_questions
       use_when:
@@ -39,7 +39,7 @@ controller_catalog:
 
   tier_3:
     - name: hr-manager
-      agent_path: people/agents/hr-manager/SKILL.md
+      agent_path: operator/people-ops/hr-manager/SKILL.md
       coordination_style: question_based
       typical_questions: *people_questions
       use_when:
@@ -57,7 +57,7 @@ controller_catalog:
       complexity: tier_3
 
     - name: hr-business-partner
-      agent_path: people/agents/hr-business-partner/SKILL.md
+      agent_path: operator/people-ops/hr-business-partner/SKILL.md
       coordination_style: question_based
       typical_questions: *people_questions
       use_when:
@@ -67,7 +67,7 @@ controller_catalog:
 
   tier_4:
     - name: chro
-      agent_path: leadership/agents/chro/SKILL.md
+      agent_path: leadership/chro/SKILL.md
       coordination_style: question_based
       typical_questions: *people_questions
       use_when:
@@ -86,9 +86,9 @@ objectives_templates:
     - "Create {deliverable} for people use case"
 
 # Success criteria - references shared template
-# See: Agent_Memory/_system/templates/shared_success_criteria.yaml for full patterns
+# See: cagents-memory/_system/templates/shared_success_criteria.yaml for full patterns
 success_criteria_patterns:
-  _shared: "@Agent_Memory/_system/templates/shared_success_criteria.yaml"
+  _shared: "@cagents-memory/_system/templates/shared_success_criteria.yaml"
   # Domain-specific additions for people super-domain
   people_specific:
     - "HR policies comply with employment regulations"

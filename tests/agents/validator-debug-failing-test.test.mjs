@@ -10,11 +10,11 @@ import { resolve } from 'node:path';
 
 const VALIDATOR_SKILL = resolve(
   process.cwd(),
-  'core/agents/universal-validator/SKILL.md'
+  'core/universal-validator/SKILL.md'
 );
 const CHECKS_DOC = resolve(
   process.cwd(),
-  'core/agents/universal-validator/resources/debug-mode-checks.md'
+  'core/universal-validator/resources/debug-mode-checks.md'
 );
 
 describe('V10.26.16 validator failing-test artifact requirement', () => {

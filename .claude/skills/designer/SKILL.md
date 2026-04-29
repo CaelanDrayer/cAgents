@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "11.0.5"
+  version: "11.1.0"
   argument-hint: "[<topic>] [--deep] [--resume <id>] [--template <name>] [--brief <path>] [--iterate <session_id>]"
   user-invocable: "true"
   context: "none"
@@ -89,7 +89,7 @@ If `--iterate <session_id>` is provided, load the completed design from the prev
 0. Check for CAGENTS_SESSION_ID override:
    - Read process.env.CAGENTS_SESSION_ID
    - If set and non-empty: use it verbatim as SESSION_ID (skip steps 1-4 below)
-     - SESSION_DIR="Agent_Memory/sessions/${CAGENTS_SESSION_ID}"
+     - SESSION_DIR="cagents-memory/sessions/${CAGENTS_SESSION_ID}"
      - If SESSION_DIR already exists: this is a RESUME — skip session file creation
        (instruction.yaml, status.yaml, agent_tree.yaml already exist).
        Skip to Subagent Question Preparation.
@@ -100,10 +100,10 @@ If `--iterate <session_id>` is provided, load the completed design from the prev
 1. Generate a slug from the topic: 2-6 key words, kebab-case, lowercase, max 50 chars
    Strip filler words (the, a, an, to, for, with, and, of). Example: "Redo session names" -> "redo-session-names"
 2. Get compact date: YYMMDD (e.g., 260317)
-3. Scan Agent_Memory/sessions/ for dirs matching designer_*_{YYMMDD}_* to find highest NNN, increment by 1 (start at 001)
+3. Scan cagents-memory/sessions/ for dirs matching designer_*_{YYMMDD}_* to find highest NNN, increment by 1 (start at 001)
 4. Compose: SESSION_ID="designer_{slug}_{YYMMDD}_{NNN}"
    Example: SESSION_ID="designer_redo-session-names_260317_001"
-5. SESSION_DIR="Agent_Memory/sessions/${SESSION_ID}"
+5. SESSION_DIR="cagents-memory/sessions/${SESSION_ID}"
 6. mkdir -p "${SESSION_DIR}/workflow/events" "${SESSION_DIR}/outputs" "${SESSION_DIR}/question_prep"
 7. Write self-registration to `${SESSION_DIR}/workflow/agent_tree.yaml`:
    ```yaml
@@ -675,7 +675,7 @@ endless_refinement:
 
 ## Session State Management
 
-Save progress in `Agent_Memory/sessions/designer_{slug}_{YYMMDD}_{NNN}/`:
+Save progress in `cagents-memory/sessions/designer_{slug}_{YYMMDD}_{NNN}/`:
 
 **session.yaml** - Updated after every question (phase, question_count, progress_percentage, controller_state, deferred_questions)
 **qa_log.yaml** - Only active phase Q&A (completed phases summarized with pointer to phase file)
@@ -720,14 +720,14 @@ Key rules:
 
 | Config | Path | Purpose |
 |--------|------|---------|
-| Context Discovery | `Agent_Memory/_system/templates/designer/context_discovery_patterns.yaml` | Project context discovery |
-| Software Chunks | `Agent_Memory/_system/templates/designer/software_chunks.yaml` | Software domain questions |
-| Business Chunks | `Agent_Memory/_system/templates/designer/business_chunks.yaml` | Business domain questions |
-| Creative Chunks | `Agent_Memory/_system/templates/designer/creative_chunks.yaml` | Creative domain questions |
-| Artifact Generator | `Agent_Memory/_system/templates/designer/artifact_generator.yaml` | Artifact generation |
-| Validation Framework | `Agent_Memory/_system/templates/designer/validation_framework.yaml` | 5-level validation |
-| Pattern Library | `Agent_Memory/_system/templates/designer/patterns/design_patterns_library.yaml` | Design patterns |
-| Templates | `Agent_Memory/_system/templates/designer/templates/*.yaml` | Pre-built templates |
+| Context Discovery | `cagents-memory/_system/templates/designer/context_discovery_patterns.yaml` | Project context discovery |
+| Software Chunks | `cagents-memory/_system/templates/designer/software_chunks.yaml` | Software domain questions |
+| Business Chunks | `cagents-memory/_system/templates/designer/business_chunks.yaml` | Business domain questions |
+| Creative Chunks | `cagents-memory/_system/templates/designer/creative_chunks.yaml` | Creative domain questions |
+| Artifact Generator | `cagents-memory/_system/templates/designer/artifact_generator.yaml` | Artifact generation |
+| Validation Framework | `cagents-memory/_system/templates/designer/validation_framework.yaml` | 5-level validation |
+| Pattern Library | `cagents-memory/_system/templates/designer/patterns/design_patterns_library.yaml` | Design patterns |
+| Templates | `cagents-memory/_system/templates/designer/templates/*.yaml` | Pre-built templates |
 
 ---
 

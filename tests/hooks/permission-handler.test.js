@@ -48,15 +48,15 @@ describe('permission-handler.cjs', () => {
     });
   });
 
-  describe('Agent_Memory writes (pass-through)', () => {
-    it('should pass-through Write to Agent_Memory', () => {
-      const amPath = join(process.cwd(), 'Agent_Memory', 'sessions', 'test.yaml');
+  describe('cagents-memory writes (pass-through)', () => {
+    it('should pass-through Write to cagents-memory', () => {
+      const amPath = join(process.cwd(), 'cagents-memory', 'sessions', 'test.yaml');
       const result = runHook({ tool_name: 'Write', tool_input: { file_path: amPath } });
       expect(result.continue).toBe(true);
     });
 
-    it('should pass-through Edit to Agent_Memory', () => {
-      const amPath = join(process.cwd(), 'Agent_Memory', 'sessions', 'test.yaml');
+    it('should pass-through Edit to cagents-memory', () => {
+      const amPath = join(process.cwd(), 'cagents-memory', 'sessions', 'test.yaml');
       const result = runHook({ tool_name: 'Edit', tool_input: { file_path: amPath } });
       expect(result.continue).toBe(true);
     });
@@ -68,7 +68,7 @@ describe('permission-handler.cjs', () => {
       expect(result.continue).toBe(true);
     });
 
-    it('should pass through Write to non-Agent_Memory paths', () => {
+    it('should pass through Write to non-cagents-memory paths', () => {
       const result = runHook({ tool_name: 'Write', tool_input: { file_path: '/tmp/test.txt' } });
       expect(result.continue).toBe(true);
     });

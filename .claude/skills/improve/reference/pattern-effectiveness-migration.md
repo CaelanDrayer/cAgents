@@ -7,7 +7,7 @@ is removed — `improve/` is the single canonical path.
 
 ## Canonical Path
 
-`Agent_Memory/_projects/{hash}/improve/pattern_effectiveness.yaml`
+`cagents-memory/_projects/{hash}/improve/pattern_effectiveness.yaml`
 
 Project hash is computed exactly as described in
 [`reference/baseline-migration.md`](baseline-migration.md).

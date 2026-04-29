@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "11.0.5"
+  version: "11.1.0"
   argument-hint: "<instruction> [--dry-run] [--quick] [--domains <d1,d2>] [--resume <session_id>]"
   user-invocable: "true"
   context: "none"
@@ -140,7 +140,7 @@ See @reference/flags.md for complete flag reference.
 0. Check for CAGENTS_SESSION_ID override:
    - Read process.env.CAGENTS_SESSION_ID
    - If set and non-empty: use it verbatim as SESSION_ID (skip steps 1-4 below)
-     - SESSION_DIR="Agent_Memory/sessions/${CAGENTS_SESSION_ID}"
+     - SESSION_DIR="cagents-memory/sessions/${CAGENTS_SESSION_ID}"
      - If SESSION_DIR already exists: this is a RESUME — skip session file creation
        (instruction.yaml, status.yaml, agent_tree.yaml already exist).
        Skip to step 2b (TodoWrite).
@@ -151,10 +151,10 @@ See @reference/flags.md for complete flag reference.
 1. Generate a slug from the user instruction: 2-6 key words, kebab-case, lowercase, max 50 chars
    Strip filler words (the, a, an, to, for, with, and, of). Example: "Launch new product" -> "launch-new-product"
 2. Get compact date: YYMMDD (e.g., 260317)
-3. Scan Agent_Memory/sessions/ for dirs matching org_*_{YYMMDD}_* to find highest NNN, increment by 1 (start at 001)
+3. Scan cagents-memory/sessions/ for dirs matching org_*_{YYMMDD}_* to find highest NNN, increment by 1 (start at 001)
 4. Compose: SESSION_ID="org_{slug}_{YYMMDD}_{NNN}"
    Example: SESSION_ID="org_launch-new-product_260317_001"
-5. SESSION_DIR="Agent_Memory/sessions/${SESSION_ID}"
+5. SESSION_DIR="cagents-memory/sessions/${SESSION_ID}"
 6. mkdir -p "${SESSION_DIR}/workflow/events" "${SESSION_DIR}/outputs" "${SESSION_DIR}/domain_analyses" "${SESSION_DIR}/objections"
 7. Write self-registration to `${SESSION_DIR}/workflow/agent_tree.yaml`:
    ```yaml
@@ -1162,7 +1162,7 @@ org_validations:
 
 ## Configuration
 
-- Pipeline config: `Agent_Memory/_system/config/org_pipeline_config.yaml` (optional — generated at runtime; /org operates with hardcoded defaults if absent)
+- Pipeline config: `cagents-memory/_system/config/org_pipeline_config.yaml` (optional — generated at runtime; /org operates with hardcoded defaults if absent)
 - C-suite mapping: See @reference/csuite-mapping.md
 - Strategic brief schema: See @reference/strategic-brief-schema.md
 - Escalation protocol: See @reference/escalation-protocol.md
@@ -1170,7 +1170,7 @@ org_validations:
 ## Session Directory
 
 ```
-Agent_Memory/sessions/org_{timestamp}/
+cagents-memory/sessions/org_{timestamp}/
 +-- instruction.yaml
 +-- status.yaml
 +-- routing_decision.yaml

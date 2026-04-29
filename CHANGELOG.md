@@ -10,6 +10,56 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.1.0] - 2026-04-29
+
+### Breaking
+- **Catalog reorganized into builder-role archetype tree.** All 243 agents physically moved from
+  flat `{domain}/agents/{name}/` to `{archetype}/{branch?}/{name}/` paths.
+  - 9 root archetypes: `developer/` (3 levels), `operator/` (3 levels), `advisor/` (3 levels),
+    `analyst/`, `creator/`, `writer/`, `strategist/`, `core/` (flat infrastructure),
+    `leadership/` (flat C-suite).
+  - 3-level archetypes use branches:
+    - `developer/` → `backend, frontend, fullstack, infrastructure, quality`
+    - `operator/` → `support, business-ops, people-ops, marketing-sales, content`
+    - `advisor/` → `legal, health, education, personal`
+  - Old `{domain}/agents/` directories removed; `{domain}/config/` directories retained for
+    router keyword resolution.
+- **`Agent_Memory/` folder renamed to `cagents-memory/`** to disambiguate from Claude Code's
+  built-in `~/.claude/projects/<project>/memory/` auto-memory. 444 string references swept
+  across 688 files (hooks, skills, scripts, docs, rules).
+- **`SKILL.md` frontmatter schema change.** `domain:` field replaced by `archetype:` (and
+  `branch:` for 3-level archetypes). All 243 agent files updated.
+- **`plugin.json` agent paths rewritten** (246 entries) to point at new tree paths.
+- Agent identifiers (`cagents:NAME`) unchanged — invocation strings still work; only the
+  underlying SKILL.md paths moved.
+
+### Changed
+- Skill catalog still 6 user skills; routing and pipelines unchanged. The restructure is
+  organizational, not behavioral.
+- `tests/config/plugin-json.test.js` updated to assert archetype roots instead of legacy
+  domain roots.
+
+### Known Follow-ups (deferred to v11.1.x)
+- `scripts/ci/validate-agents.sh` rewrite for archetype tree (currently iterates legacy
+  `{domain}/agents/` glob; non-blocking — Vitest is the runtime gate).
+- `.claude/rules/core/skill-format.md` documentation update for new frontmatter spec
+  (`archetype:`/`branch:` instead of `domain:`).
+- 7 stale agent references discovered during migration (in `shared/config/planner_config.yaml`,
+  `people/config/planner_config.yaml`, `scripts/fix-resource-frontmatter.sh`) — pre-existing
+  bugs pointing at `compliance-officer`, `talent-acquisition-manager`,
+  `content-marketing-manager`, `security-specialist` which never existed. Cleanup in v11.1.1.
+
+### Migration Tooling
+- `scripts/migrate-v11.1.0.sh` — generates the file-move table from `plugin.json`.
+- `scripts/migrate-v11.1.0-execute.sh` — Stages A-E (file moves, frontmatter swap,
+  `plugin.json` rewrite, config sweep, cleanup).
+- `scripts/migrate-v11.1.0-rename.sh` — Stage F (`Agent_Memory` → `cagents-memory` rename).
+
+### Notes
+- Atomic single-commit migration per project owner direction. Standard semver would suggest
+  v12.0.0 (breaking changes); bumped to v11.1.0 by explicit owner override (solo project,
+  no public API contract). Tests: 781/781 Vitest passing pre and post migration.
+
 ## [11.0.5] - 2026-04-28
 
 ### Changed
@@ -99,7 +149,7 @@ Each entry corresponds to one atomic tiny-bump commit. See
   to `/improve --mode review|optimize` (gap_analysis Bug-2).
 - `model-routing-advisor.cjs:34`: stale "262 agents" comment →
   "243 agents" (gap_analysis Gap-4).
-- `core/agents/reviewer/SKILL.md:106`: removed `/review` slash-command
+- `core/reviewer/SKILL.md:106`: removed `/review` slash-command
   reference (gap_analysis Gap-5).
 - `scripts/sync-versions.sh`: header self-description "21 locations" →
   "18 locations" (gap_analysis NEW-5).
@@ -352,7 +402,7 @@ filesystem invariant on `.claude/skills/` directory shape.
 
 ### Changed
 - `.claude/skills/context/SKILL.md` description tightened to utility-facing:
-  "Internal utility: read/write Agent_Memory/_projects/{hash}/product_context.yaml.
+  "Internal utility: read/write cagents-memory/_projects/{hash}/product_context.yaml.
   Claude-invoked by /run orchestrator enrichment and by the /run context
   passthrough (V10.26.9). Direct user invocation deprecated — use
   /run context show|init|update|clear instead."
@@ -366,7 +416,7 @@ filesystem invariant on `.claude/skills/` directory shape.
 - `.claude-plugin/plugin.json` description continues to say "8 user skills +
   /context utility" (set in V10.26.6, no change required).
 - `metadata.user-invocable: "false"` preserved (set in V10.26.6).
-- Data file path `Agent_Memory/_projects/{hash}/product_context.yaml`
+- Data file path `cagents-memory/_projects/{hash}/product_context.yaml`
   unchanged throughout the entire demotion arc.
 
 ### Added
@@ -390,7 +440,7 @@ filesystem invariant on `.claude/skills/` directory shape.
   the `/context` skill, and the token-matching routing logic is correct.
 
 ### Preserved
-- Data file path `Agent_Memory/_projects/{hash}/product_context.yaml`
+- Data file path `cagents-memory/_projects/{hash}/product_context.yaml`
   unchanged — the passthrough touches the WRITE surface only.
 - Orchestrator's direct READ path (V10.26.7 contract) continues to work
   without going through the skill or the passthrough.
@@ -418,12 +468,12 @@ filesystem invariant on `.claude/skills/` directory shape.
 ## [10.26.7] - 2026-04-21
 
 ### Added
-- `core/agents/orchestrator/resources/product-context-loader.md` documenting
+- `core/orchestrator/resources/product-context-loader.md` documenting
   the INIT-state read of
-  `Agent_Memory/_projects/{hash}/product_context.yaml` into
+  `cagents-memory/_projects/{hash}/product_context.yaml` into
   `enriched_context.project_summary`. Codifies the 500-character budget from
   `orchestration-reference.md:27` and the SHA-256 hash derivation from `pwd`.
-- `core/agents/orchestrator/SKILL.md` references the new resource via
+- `core/orchestrator/SKILL.md` references the new resource via
   `@resources/product-context-loader.md`.
 - `tests/orchestrator/product-context-read.test.js` verifies the helper doc
   exists, cites the budget and the canonical data-file path, and is
@@ -447,7 +497,7 @@ filesystem invariant on `.claude/skills/` directory shape.
   "Internal utilities (Claude-invoked only)" section.
 
 ### Preserved
-- Data file path `Agent_Memory/_projects/{hash}/product_context.yaml` unchanged.
+- Data file path `cagents-memory/_projects/{hash}/product_context.yaml` unchanged.
 - Orchestrator's direct read path (per `orchestration-reference.md:18,27`)
   continues to work without going through the skill.
 

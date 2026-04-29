@@ -115,7 +115,7 @@ TodoWrite({
 ## Important Notes
 
 - This command is a thin wrapper - all logic is in agents
-- See `core/agents/agent-name.md` for complete logic
+- See `core/agent-name.md` for complete logic
 - Delegate to agents. Let them handle complexity.
 
 ---

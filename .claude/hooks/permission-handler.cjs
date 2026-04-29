@@ -31,7 +31,7 @@ createHook('PermissionHandler', async (input) => {
     return null;
   }
 
-  // Write/Edit to Agent_Memory - pass through to normal permission handling
+  // Write/Edit to cagents-memory - pass through to normal permission handling
   if ((toolName === 'Write' || toolName === 'Edit') && isAgentMemoryPath(filePath)) {
     return null;
   }

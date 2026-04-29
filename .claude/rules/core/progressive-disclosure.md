@@ -78,7 +78,7 @@ The @path syntax triggers on-demand loading only when the resource is needed.
 ### High-Value Agents (Directory Structure)
 
 ```
-engineering/agents/engineering-manager/
+developer/fullstack/engineering-manager/
 ├── SKILL.md                    # Tier 1 + 2
 └── resources/
     ├── risk-framework.md       # Tier 3
@@ -89,7 +89,7 @@ engineering/agents/engineering-manager/
 ### Simple Agents (Single File)
 
 ```
-engineering/agents/copywriter.md       # All tiers in one file
+writer/copywriter/SKILL.md       # All tiers in one file
 ```
 
 **Conversion criteria**: Convert to directory if agent file > 500 tokens
@@ -121,13 +121,13 @@ engineering/agents/copywriter.md       # All tiers in one file
 
 ```bash
 # Find agents > 500 tokens (lines * ~5 tokens/line)
-wc -l engineering/agents/*.md | awk '$1 > 100'
+wc -l developer/**/*.md | awk '$1 > 100'
 ```
 
 ### Step 2: Create Directory
 
 ```bash
-mkdir -p engineering/agents/{agent-name}/resources
+mkdir -p developer/{branch}/{agent-name}/resources
 ```
 
 ### Step 3: Split Content

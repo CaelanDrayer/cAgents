@@ -53,10 +53,10 @@ You got a validated fix without specifying a single agent or writing a single pr
 
 ## 4. Check the Session Artifacts
 
-Every run writes structured artifacts to `Agent_Memory/sessions/`:
+Every run writes structured artifacts to `cagents-memory/sessions/`:
 
 ```
-Agent_Memory/sessions/run_fix-typo-readme_YYMMDD_001/
+cagents-memory/sessions/run_fix-typo-readme_YYMMDD_001/
 ├── workflow/
 │   ├── enriched_context.yaml   # What the orchestrator discovered
 │   ├── plan.yaml               # Objectives and controller selection

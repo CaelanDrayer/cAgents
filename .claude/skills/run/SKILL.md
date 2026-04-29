@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "11.0.5"
+  version: "11.1.0"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--analytics] [--from-review] [--from-designer]"
   user-invocable: "true"
   context: "none"
@@ -105,9 +105,9 @@ standard, debug`. The parser only validates and stores the value; downstream
 state machine stages treat `flags.mode` as a no-op until later patches wire
 behavior onto it. Default when unset: `standard`.
 
-If `--analytics`: Read `Agent_Memory/_system/metrics/pipeline_analytics.yaml`, display the analytics dashboard (success rate, avg duration, by-domain, by-tier, bottlenecks), and exit without running a pipeline.
+If `--analytics`: Read `cagents-memory/_system/metrics/pipeline_analytics.yaml`, display the analytics dashboard (success rate, avg duration, by-domain, by-tier, bottlenecks), and exit without running a pipeline.
 
-If `--resume <session_id>`: Load session from `Agent_Memory/sessions/{session_id}/progress.md` and resume from last checkpoint.
+If `--resume <session_id>`: Load session from `cagents-memory/sessions/{session_id}/progress.md` and resume from last checkpoint.
 
 If `--session <session_dir>`: This is a pre-enriched session (from /team). Skip to pre-enrichment detection in Step 3.
 
@@ -131,7 +131,7 @@ The four recognized subcommands are:
 
 | Subcommand | What it does |
 |-----------|--------------|
-| `/run context show` | Display current `Agent_Memory/_projects/{hash}/product_context.yaml` |
+| `/run context show` | Display current `cagents-memory/_projects/{hash}/product_context.yaml` |
 | `/run context init` | Scan project, auto-detect conventions, write product_context.yaml |
 | `/run context update` | Interactively update existing product_context.yaml |
 | `/run context clear` | Remove product_context.yaml (keep `_projects/{hash}/` directory) |
@@ -151,7 +151,7 @@ for the framework.
 ```
 0. Read process.env.CAGENTS_SESSION_ID
    - If set and non-empty: use it verbatim as SESSION_ID (skip steps 1-4 below)
-     - SESSION_DIR="Agent_Memory/sessions/${CAGENTS_SESSION_ID}"
+     - SESSION_DIR="cagents-memory/sessions/${CAGENTS_SESSION_ID}"
      - If SESSION_DIR already exists: this is a RESUME — skip session file creation
        (instruction.yaml, status.yaml, agent_tree.yaml already exist).
        Skip to ACTION 2 (Load pipeline config).
@@ -166,10 +166,10 @@ for the framework.
 1. Generate a slug from the user request: 2-6 key words, kebab-case, lowercase, max 50 chars
    Strip filler words (the, a, an, to, for, with, and, of). Example: "Fix auth module JWT" -> "fix-auth-module-jwt"
 2. Get compact date: YYMMDD (e.g., 260317)
-3. Scan Agent_Memory/sessions/ for dirs matching run_*_{YYMMDD}_* to find highest NNN, increment by 1 (start at 001)
+3. Scan cagents-memory/sessions/ for dirs matching run_*_{YYMMDD}_* to find highest NNN, increment by 1 (start at 001)
 4. Compose: SESSION_ID="run_{slug}_{YYMMDD}_{NNN}"
    Example: SESSION_ID="run_fix-auth-module-jwt_260317_001"
-5. SESSION_DIR="Agent_Memory/sessions/${SESSION_ID}"
+5. SESSION_DIR="cagents-memory/sessions/${SESSION_ID}"
 6. mkdir -p "${SESSION_DIR}/workflow/events" "${SESSION_DIR}/outputs"
 7. Write self-registration to `${SESSION_DIR}/workflow/agent_tree.yaml`:
    ```yaml
@@ -240,7 +240,7 @@ export CAGENTS_ACTIVE_SESSION="{SESSION_ID}"
 
 **ACTION 2 -- Load pipeline config (optional):**
 
-Try to read `Agent_Memory/_system/config/pipeline_config.yaml` to get the state machine definition. This file is generated at runtime and may not exist in fresh installs or CI environments. If the file does not exist, proceed with the hardcoded state machine defined in this SKILL.md (INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED -> VALIDATED). Do not error or halt if the file is missing.
+Try to read `cagents-memory/_system/config/pipeline_config.yaml` to get the state machine definition. This file is generated at runtime and may not exist in fresh installs or CI environments. If the file does not exist, proceed with the hardcoded state machine defined in this SKILL.md (INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED -> VALIDATED). Do not error or halt if the file is missing.
 
 **ACTION 3 -- Call TodoWrite NOW (mandatory):**
 
@@ -450,7 +450,7 @@ Agent({
   prompt: `You are the {agent_name} in the event-driven pipeline.
 
 REQUEST: {user_request}
-SESSION: Agent_Memory/sessions/{SESSION_ID}/
+SESSION: cagents-memory/sessions/{SESSION_ID}/
 DOMAIN: {domain} | TIER: {tier}
 CURRENT STATE: {current_state}
 
@@ -499,7 +499,7 @@ Agent({
   prompt: `You are the {controller_name} controller coordinating work for this request.
 
 REQUEST: {user_request}
-SESSION: Agent_Memory/sessions/{SESSION_ID}/
+SESSION: cagents-memory/sessions/{SESSION_ID}/
 DOMAIN: {domain} | TIER: {tier}
 
 INSTRUCTIONS:
@@ -582,7 +582,7 @@ completed_at: "{ISO_TIMESTAMP}"
 ```
 
 - [ ] **4.4. Update status.yaml** to terminal state: set `pipeline_state` to `complete` (or `failed`), compute final `duration_ms`
-- [ ] **4.5. Track execution analytics**: Append session metrics to `Agent_Memory/_system/metrics/pipeline_analytics.yaml`:
+- [ ] **4.5. Track execution analytics**: Append session metrics to `cagents-memory/_system/metrics/pipeline_analytics.yaml`:
 
 ```yaml
 # Append to session_log array
@@ -844,7 +844,7 @@ If an agent fails or returns incomplete:
 4. **If retry fails**: Save progress to progress.md, suggest `--resume {SESSION_ID}`
 
 If context is exhausted mid-workflow:
-1. Session state is preserved in Agent_Memory/sessions/
+1. Session state is preserved in cagents-memory/sessions/
 2. pre-compact-save hook creates waypoints automatically
 3. User can resume with `/run --resume {SESSION_ID}`
 4. Resume detects completed states from events/ and skips them
@@ -855,13 +855,13 @@ See @reference/flags.md for complete flag reference with defaults and examples.
 
 ## Configuration
 
-- Pipeline config: `Agent_Memory/_system/config/pipeline_config.yaml` (optional — generated at runtime; /run operates with hardcoded defaults if absent)
+- Pipeline config: `cagents-memory/_system/config/pipeline_config.yaml` (optional — generated at runtime; /run operates with hardcoded defaults if absent)
 - Planner configs: `{domain}/config/planner_config.yaml`
-- Event template: `Agent_Memory/_system/templates/event.yaml`
-- Session folder: `Agent_Memory/sessions/run_{slug}_{YYMMDD}_{NNN}/`
-- Agent audit trail: `Agent_Memory/sessions/{session_id}/workflow/agent_tree.yaml`
-- Global audit log: `Agent_Memory/_system/logs/agent_spawns.log`
-- Pipeline analytics: `Agent_Memory/_system/metrics/pipeline_analytics.yaml`
+- Event template: `cagents-memory/_system/templates/event.yaml`
+- Session folder: `cagents-memory/sessions/run_{slug}_{YYMMDD}_{NNN}/`
+- Agent audit trail: `cagents-memory/sessions/{session_id}/workflow/agent_tree.yaml`
+- Global audit log: `cagents-memory/_system/logs/agent_spawns.log`
+- Pipeline analytics: `cagents-memory/_system/metrics/pipeline_analytics.yaml`
 
 ## Agent Audit Trail
 

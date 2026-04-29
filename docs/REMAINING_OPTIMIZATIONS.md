@@ -267,7 +267,7 @@
 - **Migration Script**: `scripts/migrate_agent.sh`
 - **Validation Script**: `scripts/verify-skill-migration.sh`
 - **Reference Template**: `make/agents/architect/` (93% savings achieved)
-- **Completion Guide**: `Agent_Memory/sessions/run_20260129_010237/outputs/final/MIGRATION_COMPLETION_GUIDE.md`
+- **Completion Guide**: `cagents-memory/sessions/run_20260129_010237/outputs/final/MIGRATION_COMPLETION_GUIDE.md`
 - **Progressive Disclosure Spec**: `.claude/rules/core/progressive-disclosure.md`
 - **SKILL Format Spec**: `.claude/rules/core/skill-format.md`
 
@@ -281,7 +281,7 @@
 
 ## Questions?
 
-- Migration guide: `cat Agent_Memory/sessions/run_20260129_010237/outputs/final/MIGRATION_COMPLETION_GUIDE.md`
+- Migration guide: `cat cagents-memory/sessions/run_20260129_010237/outputs/final/MIGRATION_COMPLETION_GUIDE.md`
 - Check status: `./scripts/migrate_agent.sh make <agent-name>`
 - Review template: `cat make/agents/architect/SKILL.md`
 

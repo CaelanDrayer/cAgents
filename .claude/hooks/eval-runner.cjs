@@ -27,7 +27,7 @@ try {
 } catch {
   // Minimal inline fallbacks
   utils = {
-    AGENT_MEMORY_DIR: path.join(process.cwd(), 'Agent_Memory'),
+    AGENT_MEMORY_DIR: path.join(process.cwd(), 'cagents-memory'),
     extractYamlValue: (content, key) => {
       const regex = new RegExp(`^${key}:\\s*["']?([^"'\\n]+)["']?`, 'm');
       const match = content.match(regex);

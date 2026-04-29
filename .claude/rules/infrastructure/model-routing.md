@@ -327,7 +327,7 @@ Project override files are validated at workflow start:
 ## System Config
 
 System-level routing configuration:
-`Agent_Memory/_system/config/model_routing.yaml`
+`cagents-memory/_system/config/model_routing.yaml`
 
 This file defines:
 - Model definitions and capabilities

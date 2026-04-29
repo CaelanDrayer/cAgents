@@ -7,7 +7,7 @@
  *
  * Usage:
  *   node validate_agent.js <agent-dir>
- *   node validate_agent.js engineering/agents/backend-developer/
+ *   node validate_agent.js developer/backend/backend-developer/
  */
 
 const fs = require('fs');
@@ -199,8 +199,8 @@ if (args.length === 0) {
   console.log('Usage: node validate_agent.js <agent-dir>');
   console.log('');
   console.log('Examples:');
-  console.log('  node validate_agent.js engineering/agents/backend-developer/');
-  console.log('  node validate_agent.js engineering/agents/backend-developer.md');
+  console.log('  node validate_agent.js developer/backend/backend-developer/');
+  console.log('  node validate_agent.js developer/backend/backend-developer.md');
   process.exit(0);
 }
 

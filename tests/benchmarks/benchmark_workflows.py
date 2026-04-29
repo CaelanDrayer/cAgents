@@ -74,7 +74,7 @@ def test_total_file_count_reduction(project_root):
 
 def test_hitl_calibration_unification(project_root):
     """Verify HITL calibration is unified"""
-    hitl_files = list(project_root.glob("Agent_Memory/_system/**/hitl*.yaml"))
+    hitl_files = list(project_root.glob("cagents-memory/_system/**/hitl*.yaml"))
 
     # After consolidation, should be exactly 1
     if len(hitl_files) == 1:

@@ -563,7 +563,7 @@ Result: 83% completion vs 0% completion
 Scenario: Consolidation phase fails
 
 Safety Net:
-  - All micro-task outputs saved in Agent_Memory
+  - All micro-task outputs saved in cagents-memory
   - Retry consolidation with different strategy
   - If retry fails, escalate to HITL with:
     - All micro-task outputs (work preserved)

@@ -73,7 +73,7 @@ Complexity is determined by a 9-signal scoring system evaluating: component coun
 ## Plugin.json Changes
 
 ### Root Manifest
-- Agent paths changed from `make/agents/...` to `engineering/agents/...`, `creative/agents/...`, etc.
+- Agent paths changed from `make/agents/...` to `developer/{branch}/...`, `writer/...`, etc.
 - All domain plugin.json files updated with new paths
 - Agent count: 239 -> 206 (33 removed through consolidation)
 

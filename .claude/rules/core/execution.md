@@ -2,7 +2,7 @@
 paths:
   - "**/agents/**/*.md"
   - ".claude/skills/**"
-  - "Agent_Memory/sessions/**/workflow/work_items.yaml"
+  - "cagents-memory/sessions/**/workflow/work_items.yaml"
 ---
 
 # Execution Agent Patterns

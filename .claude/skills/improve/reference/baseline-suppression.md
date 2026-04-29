@@ -5,7 +5,7 @@ Track acknowledged findings across reviews to eliminate finding fatigue. Users f
 ## Baseline File Schema
 
 ```yaml
-# Agent_Memory/_system/commands/review/baseline.yaml
+# cagents-memory/_system/commands/review/baseline.yaml
 version: 1
 last_updated: "{ISO_TIMESTAMP}"
 last_session: review_{slug}_{YYMMDD}_{NNN}

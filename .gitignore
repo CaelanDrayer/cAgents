@@ -41,8 +41,9 @@ coverage/
 playwright-report/
 playwright/.cache/
 
-# Agent Memory - Exclude entire directory (runtime data, not part of source)
-Agent_Memory/
+# cAgents runtime memory - Exclude entire directory (runtime data, not part of source)
+cagents-memory/
+cagents-memory-staging/
 
 # Archive - Documentation archive (not part of source control)
 archive/

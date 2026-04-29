@@ -109,7 +109,7 @@ AskUserQuestion({
 })
 ```
 
-**Available Templates** (reference: `Agent_Memory/_system/templates/designer/templates/`):
+**Available Templates** (reference: `cagents-memory/_system/templates/designer/templates/`):
 1. `product_feature_template` - Product features with user stories
 2. `uiux_design_template` - UI/UX with wireframes and flows
 3. `system_architecture_template` - Full system architecture

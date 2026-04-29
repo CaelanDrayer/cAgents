@@ -4,10 +4,10 @@ Canonical reference for session YAML files written by all 6 cAgents skills (/run
 
 ## Session Directory Structure
 
-Every skill creates a session directory under `Agent_Memory/sessions/`:
+Every skill creates a session directory under `cagents-memory/sessions/`:
 
 ```
-Agent_Memory/sessions/{session_id}/
+cagents-memory/sessions/{session_id}/
 +-- instruction.yaml    # REQUIRED: Session metadata and request
 +-- status.yaml         # REQUIRED: Current state and state history
 +-- workflow/
@@ -43,7 +43,7 @@ Format: `{command}_{slug}_{YYMMDD}_{NNN}`
 | /optimize | `optimize_` | `optimize_reduce-bundle-size_260317_001` |
 | /review | `review_` | `review_security-audit-api_260317_001` |
 
-Slug generation: extract 2-6 key words from user request, kebab-case, strip filler words (the, a, an, to, for, with, and, of). Index: scan `Agent_Memory/sessions/` for dirs matching `{command}_*_{YYMMDD}_*`, find highest NNN, increment (start at 001).
+Slug generation: extract 2-6 key words from user request, kebab-case, strip filler words (the, a, an, to, for, with, and, of). Index: scan `cagents-memory/sessions/` for dirs matching `{command}_*_{YYMMDD}_*`, find highest NNN, increment (start at 001).
 
 Backward compatible: old sessions (`run_20260316_143022`) remain valid. The hook sorting logic extracts the last 2 underscore segments, which works for both old and new formats.
 
@@ -268,7 +268,7 @@ payload: {}                            # Type-specific data
 
 ## Hook Integration
 
-Hooks discover active sessions by scanning `Agent_Memory/sessions/` for directories matching known prefixes (`run_`, `org_`, `team_`, `designer_`, `optimize_`, `review_`). The `SESSION_PREFIXES` array in `hook-utils.cjs` must include all session type prefixes.
+Hooks discover active sessions by scanning `cagents-memory/sessions/` for directories matching known prefixes (`run_`, `org_`, `team_`, `designer_`, `optimize_`, `review_`). The `SESSION_PREFIXES` array in `hook-utils.cjs` must include all session type prefixes.
 
 ### Key Hook Behaviors
 

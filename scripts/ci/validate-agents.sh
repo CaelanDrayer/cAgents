@@ -2,7 +2,7 @@
 #
 # cAgents Agent Schema Validation
 # Validates all agent SKILL.md files across all 15 domains
-# Version: 11.0.5
+# Version: 11.1.0
 #
 # Usage:
 #   ./scripts/ci/validate-agents.sh           # Validate all domains
@@ -165,7 +165,7 @@ validate_agent() {
     esac
 
     # Check 6: Registered in root plugin.json
-    # plugin.json uses "./" prefix (e.g., "./engineering/agents/foo/SKILL.md")
+    # plugin.json uses "./" prefix (e.g., "./developer/{branch}/foo/SKILL.md")
     if [[ -n "$REGISTERED_AGENTS" ]]; then
         if ! echo "$REGISTERED_AGENTS" | grep -qF "./${relative_path}"; then
             log_warn "Not in root plugin.json: $relative_path"

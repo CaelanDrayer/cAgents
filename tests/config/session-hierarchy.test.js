@@ -29,13 +29,13 @@ function extractParentSessionId(sessionFlag) {
 
 describe('Parent Session ID Extraction', () => {
   it('extracts session ID from a full org->engineering path', () => {
-    const input = 'Agent_Memory/sessions/org_launch-product_260317_001/engineering';
+    const input = 'cagents-memory/sessions/org_launch-product_260317_001/engineering';
     expect(extractParentSessionId(input)).toBe('org_launch-product_260317_001');
   });
 
   it('extracts session ID from a team session path with trailing slash', () => {
-    const input = 'Agent_Memory/sessions/team_bar_260317_001/';
-    // split('/') on trailing slash produces ['Agent_Memory','sessions','team_bar_260317_001','']
+    const input = 'cagents-memory/sessions/team_bar_260317_001/';
+    // split('/') on trailing slash produces ['cagents-memory','sessions','team_bar_260317_001','']
     // sessions is at index 1, candidate is at index 2 = 'team_bar_260317_001'
     expect(extractParentSessionId(input)).toBe('team_bar_260317_001');
   });
@@ -49,26 +49,26 @@ describe('Parent Session ID Extraction', () => {
   });
 
   it('returns null for path without sessions/ segment', () => {
-    const input = 'Agent_Memory/other/org_foo_260317_001/engineering';
+    const input = 'cagents-memory/other/org_foo_260317_001/engineering';
     expect(extractParentSessionId(input)).toBe(null);
   });
 
   it('extracts session ID from an absolute path', () => {
-    const input = '/home/user/cAgents/Agent_Memory/sessions/org_foo_260317_002/business';
+    const input = '/home/user/cAgents/cagents-memory/sessions/org_foo_260317_002/business';
     expect(extractParentSessionId(input)).toBe('org_foo_260317_002');
   });
 
   it('handles path with only sessions/ and a session ID (no subdirectory)', () => {
-    const input = 'Agent_Memory/sessions/org_foo_260317_001';
+    const input = 'cagents-memory/sessions/org_foo_260317_001';
     expect(extractParentSessionId(input)).toBe('org_foo_260317_001');
   });
 
   it('extracts from paths with different session type prefixes', () => {
-    expect(extractParentSessionId('Agent_Memory/sessions/run_fix-auth_260317_001/subdir'))
+    expect(extractParentSessionId('cagents-memory/sessions/run_fix-auth_260317_001/subdir'))
       .toBe('run_fix-auth_260317_001');
-    expect(extractParentSessionId('Agent_Memory/sessions/review_audit_260317_001/subdir'))
+    expect(extractParentSessionId('cagents-memory/sessions/review_audit_260317_001/subdir'))
       .toBe('review_audit_260317_001');
-    expect(extractParentSessionId('Agent_Memory/sessions/designer_ui_260317_001/subdir'))
+    expect(extractParentSessionId('cagents-memory/sessions/designer_ui_260317_001/subdir'))
       .toBe('designer_ui_260317_001');
   });
 });

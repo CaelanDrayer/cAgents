@@ -159,7 +159,7 @@ createHook('PostWriteValidator', async (input) => {
   const isTestOrExample = /\.(test|spec|example|sample|mock|fixture)\b/i.test(basename) ||
     filePath.includes('/tests/') || filePath.includes('/test/') ||
     filePath.includes('/fixtures/') || filePath.includes('/examples/');
-  const isAgentMemory = filePath.includes('Agent_Memory/');
+  const isAgentMemory = filePath.includes('cagents-memory/');
 
   if (isProseFile && !isTestOrExample && !isAgentMemory) {
     const content = safeRead(filePath);

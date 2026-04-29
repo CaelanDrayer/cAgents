@@ -1,7 +1,7 @@
 ---
 paths:
-  - "core/agents/universal-planner/**"
-  - "core/agents/task-decomposer/**"
+  - "core/universal-planner/**"
+  - "core/task-decomposer/**"
 ---
 
 # Implicit Requirement Discovery

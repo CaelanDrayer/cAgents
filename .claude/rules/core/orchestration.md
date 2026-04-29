@@ -3,8 +3,8 @@ paths:
   - ".claude/skills/run/**"
   - ".claude/skills/org/**"
   - ".claude/skills/team/**"
-  - "Agent_Memory/_system/config/pipeline_config.yaml"
-  - "core/agents/**"
+  - "cagents-memory/_system/config/pipeline_config.yaml"
+  - "core/**"
 ---
 
 # Orchestration Patterns

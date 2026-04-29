@@ -39,7 +39,7 @@
 
 ## Session Files
 
-Written to `Agent_Memory/sessions/run_{timestamp}/`:
+Written to `cagents-memory/sessions/run_{timestamp}/`:
 - `instruction.yaml`, `status.yaml`
 - `workflow/enriched_context.yaml`, `workflow/plan.yaml`
 - `workflow/work_items.yaml`, `workflow/delegation_prompts.yaml`

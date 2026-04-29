@@ -9,7 +9,7 @@
  *   node init_agent.js <agent-name> [--path <output-dir>] [--tier <tier>] [--domain <domain>]
  *
  * Examples:
- *   node init_agent.js backend-developer --path engineering/agents/ --tier execution --domain engineering
+ *   node init_agent.js backend-developer --path developer/{branch}/ --tier execution --domain engineering
  *   node init_agent.js engineering-manager --tier controller
  */
 
@@ -307,7 +307,7 @@ if (args.length === 0) {
   console.log('  --model <model> Model: opus, sonnet, haiku (default based on tier)');
   console.log('');
   console.log('Examples:');
-  console.log('  node init_agent.js backend-developer --path engineering/agents/ --tier execution');
+  console.log('  node init_agent.js backend-developer --path developer/{branch}/ --tier execution');
   console.log('  node init_agent.js engineering-manager --tier controller --domain engineering');
   process.exit(0);
 }

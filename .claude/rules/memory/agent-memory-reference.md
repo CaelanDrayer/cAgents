@@ -1,6 +1,6 @@
 ---
 paths:
-  - "Agent_Memory/**"
+  - "cagents-memory/**"
   - ".claude/hooks/**"
   - ".claude/skills/**"
 ---
@@ -12,7 +12,7 @@ Detailed directory structures, schemas, and examples. See `agent-memory.md` for 
 ## Full Directory Structure
 
 ```
-Agent_Memory/
+cagents-memory/
 ├── _system/
 │   ├── config/                       # Global configuration
 │   ├── commands/                     # Command-specific configs
@@ -33,7 +33,7 @@ Agent_Memory/
 ## Session Folder Structure
 
 ```
-Agent_Memory/sessions/{session_id}/
+cagents-memory/sessions/{session_id}/
 ├── instruction.yaml              # User request + metadata
 ├── status.yaml                   # Current phase, phase history
 ├── task_plan.md                  # Three-file pattern: work item breakdown
@@ -131,9 +131,9 @@ resume_hints:
 
 | Command | Config Path |
 |---------|------------|
-| `/run` | `Agent_Memory/_system/commands/run/` |
-| `/designer` | `Agent_Memory/_system/commands/designer/` |
-| `/review` | `Agent_Memory/_system/commands/review/` |
-| `/optimize` | `Agent_Memory/_system/commands/optimize/` |
+| `/run` | `cagents-memory/_system/commands/run/` |
+| `/designer` | `cagents-memory/_system/commands/designer/` |
+| `/review` | `cagents-memory/_system/commands/review/` |
+| `/optimize` | `cagents-memory/_system/commands/optimize/` |
 
 Each domain has 5 configs in `_system/domains/{domain}/`: router, planner, executor, validator, self_correct.

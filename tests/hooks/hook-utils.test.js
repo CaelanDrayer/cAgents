@@ -168,11 +168,11 @@ describe('hook-utils.cjs', () => {
       const msg = hookUtils.formatError({
         what: 'File write blocked',
         why: 'Path is in protected system directory',
-        fix: 'Move the file to Agent_Memory/ or project directory'
+        fix: 'Move the file to cagents-memory/ or project directory'
       });
       expect(msg).toContain('WHAT: File write blocked');
       expect(msg).toContain('WHY: Path is in protected system directory');
-      expect(msg).toContain('FIX: Move the file to Agent_Memory/');
+      expect(msg).toContain('FIX: Move the file to cagents-memory/');
     });
 
     it('should include hook name when provided', () => {

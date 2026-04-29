@@ -27,7 +27,7 @@ RESET = '\033[0m'
 class ConfigValidator:
     def __init__(self, project_root: Path):
         self.project_root = project_root
-        self.domains_config_path = project_root / "Agent_Memory" / "_system" / "domains"
+        self.domains_config_path = project_root / "cagents-memory" / "_system" / "domains"
         self.errors = []
         self.warnings = []
         self.successes = []
@@ -88,7 +88,7 @@ class ConfigValidator:
         """Validate all domain configurations. Returns (errors, warnings, successes)."""
 
         if not self.domains_config_path.exists():
-            print(f"{RED}Error: Agent_Memory/_system/domains/ not found{RESET}")
+            print(f"{RED}Error: cagents-memory/_system/domains/ not found{RESET}")
             return (1, 0, 0)
 
         domains = [d for d in self.domains_config_path.iterdir() if d.is_dir() and not d.name.startswith('_')]

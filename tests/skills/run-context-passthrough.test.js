@@ -25,7 +25,7 @@ describe('V10.26.9 /run context passthrough', () => {
 
   it('reference cites the canonical product_context.yaml path', () => {
     expect(refContent).toMatch(
-      /Agent_Memory\/_projects\/\{project_hash\}\/product_context\.yaml/
+      /cagents-memory\/_projects\/\{project_hash\}\/product_context\.yaml/
     );
   });
 

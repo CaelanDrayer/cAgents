@@ -5,7 +5,7 @@ import { execSync } from 'child_process';
 
 const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
 const HOOK_PATH = join(HOOKS_DIR, 'stop-failure-handler.cjs');
-const TEST_SESSION_DIR = join(process.cwd(), 'Agent_Memory', 'sessions', 'run_test-stop-failure_260101_001');
+const TEST_SESSION_DIR = join(process.cwd(), 'cagents-memory', 'sessions', 'run_test-stop-failure_260101_001');
 const WORKFLOW_DIR = join(TEST_SESSION_DIR, 'workflow');
 
 function runHook(input) {

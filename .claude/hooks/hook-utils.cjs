@@ -16,7 +16,7 @@
  * Path Resolution:
  * - PLUGIN_ROOT: Where cAgents is installed. Uses __dirname resolution as primary
  *   (verified via CLAUDE.md existence), CLAUDE_PLUGIN_ROOT as fallback, cwd as last resort.
- * - PROJECT_ROOT: Where the user's project lives (where Agent_Memory/ is created).
+ * - PROJECT_ROOT: Where the user's project lives (where cagents-memory/ is created).
  *   Uses CLAUDE_PROJECT_DIR when running as a cross-project plugin, falls back to
  *   PLUGIN_ROOT for local dev (plugin IS the project).
  */
@@ -33,13 +33,13 @@ const PLUGIN_ROOT = (fs.existsSync(path.join(_dirnameRoot, 'CLAUDE.md')) && _dir
   || (_envRoot && fs.existsSync(path.join(_envRoot, 'CLAUDE.md')) && _envRoot)
   || process.cwd();
 
-// Resolve project root: the user's project directory (where Agent_Memory/ lives).
+// Resolve project root: the user's project directory (where cagents-memory/ lives).
 // When loaded as a cross-project plugin, CLAUDE_PROJECT_DIR points to the user's project.
 // When running locally (plugin IS the project), fall back to PLUGIN_ROOT.
 const PROJECT_ROOT = process.env.CLAUDE_PROJECT_DIR
   || PLUGIN_ROOT;
 
-const AGENT_MEMORY_DIR = path.join(PROJECT_ROOT, 'Agent_Memory');
+const AGENT_MEMORY_DIR = path.join(PROJECT_ROOT, 'cagents-memory');
 
 const SESSION_PREFIXES = ['run_', 'optimize_', 'review_', 'designer_', 'team_', 'org_'];
 

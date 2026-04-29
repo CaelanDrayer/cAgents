@@ -30,7 +30,7 @@ function getPoliciesDir() {
   const memDir = process.env.AGENT_MEMORY_DIR;
   if (!memDir) return null;
 
-  // _data lives alongside sessions: Agent_Memory/_data/policies/
+  // _data lives alongside sessions: cagents-memory/_data/policies/
   const policiesDir = path.join(memDir, '..', '_data', 'policies');
   try {
     if (fs.existsSync(policiesDir)) return policiesDir;

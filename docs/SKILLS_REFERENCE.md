@@ -328,7 +328,7 @@ Skills can be composed by passing structured output from one to the next.
 
 ## Session Artifacts Summary
 
-All skills write artifacts to `Agent_Memory/sessions/{session_id}/`. Session IDs follow the pattern `{command}_{slug}_{YYMMDD}_{NNN}` (for example, `run_fix-auth_260317_001`).
+All skills write artifacts to `cagents-memory/sessions/{session_id}/`. Session IDs follow the pattern `{command}_{slug}_{YYMMDD}_{NNN}` (for example, `run_fix-auth_260317_001`).
 
 | Artifact | Written by | Consumed by |
 |----------|-----------|-------------|
@@ -367,7 +367,7 @@ V11.0 removed four skills after a two-version deprecation window (V10.26.19–V1
 |---------------|-------------|-----------------|
 | `/review` | `/improve --mode review` | Same review modes (`security`, `paranoid`, `quick`, `pre-merge`) reachable via `--focus` and `--mode` flags |
 | `/optimize` | `/improve --mode optimize` | Same optimization types and benchmark integrations; `--rollback` and `--benchmark` flags preserved |
-| `/context` | Built-in `/memory` plus the `Agent_Memory/_projects/{hash}/product_context.yaml` file | Manual or `/memory`-driven persistence replaces the auto-init flow |
+| `/context` | Built-in `/memory` plus the `cagents-memory/_projects/{hash}/product_context.yaml` file | Manual or `/memory`-driven persistence replaces the auto-init flow |
 | `/debug` | `/run` with explicit reproduction steps | The standard `/run` pipeline now handles root-cause investigation through controller question delegation |
 
 For full migration details, see [MIGRATION-V11.md](./MIGRATION-V11.md).

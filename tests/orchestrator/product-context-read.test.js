@@ -11,11 +11,11 @@ import { createHash } from 'node:crypto';
 
 const HELPER_PATH = resolve(
   process.cwd(),
-  'core/agents/orchestrator/resources/product-context-loader.md'
+  'core/orchestrator/resources/product-context-loader.md'
 );
 const ORCHESTRATOR_SKILL = resolve(
   process.cwd(),
-  'core/agents/orchestrator/SKILL.md'
+  'core/orchestrator/SKILL.md'
 );
 const ORCHESTRATION_REFERENCE = resolve(
   process.cwd(),
@@ -35,7 +35,7 @@ describe('V10.26.7 product_context loader helper', () => {
   it('helper cites the canonical data file path', () => {
     const content = readFileSync(HELPER_PATH, 'utf8');
     expect(content).toMatch(
-      /Agent_Memory\/_projects\/\{project_hash\}\/product_context\.yaml/
+      /cagents-memory\/_projects\/\{project_hash\}\/product_context\.yaml/
     );
   });
 
@@ -54,7 +54,7 @@ describe('V10.26.7 product_context loader helper', () => {
     const content = readFileSync(ORCHESTRATION_REFERENCE, 'utf8');
     expect(content).toMatch(/project_summary/);
     expect(content).toMatch(
-      /Agent_Memory\/_projects\/\{hash\}\/product_context\.yaml/
+      /cagents-memory\/_projects\/\{hash\}\/product_context\.yaml/
     );
   });
 
@@ -66,7 +66,7 @@ describe('V10.26.7 product_context loader helper', () => {
     const hash = createHash('sha256').update(pwd).digest('hex').slice(0, 8);
     const contextPath = resolve(
       fixtureRoot,
-      `Agent_Memory/_projects/${hash}/product_context.yaml`
+      `cagents-memory/_projects/${hash}/product_context.yaml`
     );
 
     try {

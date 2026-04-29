@@ -14,7 +14,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-AGENT_MEMORY="$PROJECT_ROOT/Agent_Memory"
+AGENT_MEMORY="$PROJECT_ROOT/cagents-memory"
 SESSIONS_DIR="$AGENT_MEMORY/sessions"
 EVAL_RUNNER="$PROJECT_ROOT/.claude/hooks/eval-runner.cjs"
 

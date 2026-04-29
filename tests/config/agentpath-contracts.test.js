@@ -15,7 +15,7 @@ import { join } from 'path';
  *   - instruction.yaml: session_id, session_type, request, created_at
  */
 
-const AGENT_MEMORY = join(process.cwd(), 'Agent_Memory');
+const AGENT_MEMORY = join(process.cwd(), 'cagents-memory');
 const TEST_SESSION = 'run_agentpath-test_260317_999';
 const SESSION_DIR = join(AGENT_MEMORY, 'sessions', TEST_SESSION);
 

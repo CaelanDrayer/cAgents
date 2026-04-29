@@ -33,7 +33,7 @@ describe('subagent-stop-tracker.cjs', () => {
 
   beforeEach(() => {
     tmpDir = mkdtempSync(join(tmpdir(), 'subagent-stop-tracker-test-'));
-    agentMemory = join(tmpDir, 'Agent_Memory');
+    agentMemory = join(tmpDir, 'cagents-memory');
     sessionDir = join(agentMemory, 'sessions', TEST_SESSION);
     mkdirSync(join(sessionDir, 'workflow'), { recursive: true });
     mkdirSync(join(agentMemory, '_system', 'logs'), { recursive: true });

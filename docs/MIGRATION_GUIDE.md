@@ -160,4 +160,4 @@ This overhead buys automatic routing, reviewer loops, revision routing, and qual
 
 **Review finds no issues**: If the codebase is genuinely clean, `/improve --mode review` will report a passing score. Use `--focus security` (or another focus area) to narrow scrutiny.
 
-**Pipeline stalls in coordinating phase**: The controller is waiting for execution agents. Check that the session directory exists under `Agent_Memory/sessions/` and that `coordination_log.yaml` is being written.
+**Pipeline stalls in coordinating phase**: The controller is waiting for execution agents. Check that the session directory exists under `cagents-memory/sessions/` and that `coordination_log.yaml` is being written.

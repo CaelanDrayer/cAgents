@@ -11,7 +11,7 @@ controller_catalog:
   tier_2:
     # Data & Analytics
     - name: data-scientist
-      agent_path: shared/agents/data-scientist/SKILL.md
+      agent_path: analyst/data-scientist/SKILL.md
       coordination_style: question_based
       typical_questions:
         - "What is the business problem we're solving with ML?"
@@ -25,7 +25,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: bi-specialist
-      agent_path: shared/agents/bi-specialist/SKILL.md
+      agent_path: analyst/bi-specialist/SKILL.md
       coordination_style: question_based
       typical_questions:
         - "What are the key business questions to answer?"
@@ -39,7 +39,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: market-research-analyst
-      agent_path: shared/agents/market-research-analyst/SKILL.md
+      agent_path: analyst/market-research-analyst/SKILL.md
       coordination_style: question_based
       typical_questions:
         - "What are the research objectives and key questions?"
@@ -53,7 +53,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: competitive-intelligence-analyst
-      agent_path: shared/agents/competitive-intelligence-analyst/SKILL.md
+      agent_path: analyst/competitive-intelligence-analyst/SKILL.md
       coordination_style: question_based
       typical_questions:
         - "Who are the key competitors in this space?"
@@ -68,7 +68,7 @@ controller_catalog:
 
     # Quality & Compliance
     - name: quality-manager
-      agent_path: business/agents/quality-manager/SKILL.md
+      agent_path: operator/business-ops/quality-manager/SKILL.md
       coordination_style: question_based
       typical_questions:
         - "What are the current quality standards and metrics?"
@@ -82,7 +82,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: process-auditor
-      agent_path: business/agents/process-auditor/SKILL.md
+      agent_path: analyst/process-auditor/SKILL.md
       coordination_style: question_based
       typical_questions:
         - "What processes and controls are in scope for this audit?"
@@ -110,7 +110,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: performance-analyst
-      agent_path: business/agents/performance-analyst/SKILL.md
+      agent_path: analyst/performance-analyst/SKILL.md
       coordination_style: question_based
       typical_questions:
         - "What are the current performance metrics and baselines?"
@@ -125,7 +125,7 @@ controller_catalog:
 
     # Customer
     - name: account-manager
-      agent_path: service/agents/account-manager/SKILL.md
+      agent_path: operator/support/account-manager/SKILL.md
       coordination_style: question_based
       typical_questions:
         - "What is the current account health and engagement level?"
@@ -139,7 +139,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: customer-success-manager
-      agent_path: service/agents/customer-success-manager/SKILL.md
+      agent_path: operator/support/customer-success-manager/SKILL.md
       coordination_style: question_based
       typical_questions:
         - "What is the current customer health score and engagement level?"
@@ -153,7 +153,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: customer-advocacy-manager
-      agent_path: service/agents/customer-advocacy-manager/SKILL.md
+      agent_path: operator/support/customer-advocacy-manager/SKILL.md
       coordination_style: question_based
       typical_questions:
         - "Which customers are good advocacy candidates?"
@@ -167,7 +167,7 @@ controller_catalog:
       complexity: tier_2
 
     - name: relationship-manager
-      agent_path: service/agents/relationship-manager/SKILL.md
+      agent_path: operator/support/relationship-manager/SKILL.md
       coordination_style: question_based
       typical_questions:
         - "Who are the key stakeholders and what are their priorities?"
@@ -182,7 +182,7 @@ controller_catalog:
 
     # Operations
     - name: change-management-specialist
-      agent_path: business/agents/change-management-specialist/SKILL.md
+      agent_path: operator/business-ops/change-management-specialist/SKILL.md
       coordination_style: question_based
       typical_questions:
         - "What is the change readiness level?"
@@ -206,7 +206,7 @@ objectives_templates:
 
 # Success criteria - references shared template
 success_criteria_patterns:
-  _shared: "@Agent_Memory/_system/templates/shared_success_criteria.yaml"
+  _shared: "@cagents-memory/_system/templates/shared_success_criteria.yaml"
   shared_specific:
     - "Cross-domain coordination requirements met"
     - "Shared expertise applied consistently across domains"

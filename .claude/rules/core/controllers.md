@@ -2,8 +2,8 @@
 paths:
   - "**/agents/**/*.md"
   - ".claude/skills/**"
-  - "Agent_Memory/sessions/**/workflow/coordination_log.yaml"
-  - "Agent_Memory/sessions/**/workflow/plan.yaml"
+  - "cagents-memory/sessions/**/workflow/coordination_log.yaml"
+  - "cagents-memory/sessions/**/workflow/plan.yaml"
 ---
 
 # Controller Coordination Guidelines
@@ -354,7 +354,7 @@ See @resources/controller-validation-checklist.md for detailed check description
 
 ## Decision Log Protocol (V10.6.0)
 
-Controllers MUST maintain append-only DECISIONS.md and CORRECTIONS.md logs during coordination. Entries include timestamp, context, rationale, and confidence. These persist in `Agent_Memory/_projects/{hash}/` and survive context compaction.
+Controllers MUST maintain append-only DECISIONS.md and CORRECTIONS.md logs during coordination. Entries include timestamp, context, rationale, and confidence. These persist in `cagents-memory/_projects/{hash}/` and survive context compaction.
 
 See `controller-reference.md` for examples and file location details.
 

@@ -22,7 +22,7 @@ describe('pre-compact-save.cjs', () => {
 
   beforeEach(() => {
     tmpDir = mkdtempSync(join(tmpdir(), 'pre-compact-save-test-'));
-    sessionDir = join(tmpDir, 'Agent_Memory', 'sessions', TEST_SESSION);
+    sessionDir = join(tmpDir, 'cagents-memory', 'sessions', TEST_SESSION);
     mkdirSync(join(sessionDir, 'workflow'), { recursive: true });
     writeFileSync(join(sessionDir, 'status.yaml'), 'phase: coordinating\npipeline_state: PROMPTS_READY\n');
     writeFileSync(join(sessionDir, 'workflow', 'plan.yaml'),

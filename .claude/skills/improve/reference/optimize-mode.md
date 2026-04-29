@@ -92,7 +92,7 @@ both review and optimize modes.
 ### Optimize-Specific Baseline
 
 Baseline metrics for `--mode optimize` are written to
-`Agent_Memory/_projects/{hash}/improve/baselines/{timestamp}.yaml` with
+`cagents-memory/_projects/{hash}/improve/baselines/{timestamp}.yaml` with
 schema:
 
 ```yaml

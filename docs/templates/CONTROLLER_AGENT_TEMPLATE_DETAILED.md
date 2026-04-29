@@ -56,7 +56,7 @@ Synthesize Answers → Create implementation plan → Coordinate execution
 Read plan from planner:
 
 ```yaml
-# Agent_Memory/{instruction_id}/workflow/plan.yaml
+# cagents-memory/{instruction_id}/workflow/plan.yaml
 
 objectives:
   - "Implement {feature}"
@@ -161,7 +161,7 @@ Provide answer in YAML format.
 Collect all answers and synthesize into coherent approach:
 
 ```yaml
-# Agent_Memory/{instruction_id}/workflow/coordination_log.yaml
+# cagents-memory/{instruction_id}/workflow/coordination_log.yaml
 
 coordination_id: coord_{instruction_id}
 controller: cagents:{controller-name}
@@ -241,7 +241,7 @@ Agent({
   prompt: `
 Implement OAuth2 endpoints for the API based on synthesized solution.
 
-Synthesized Solution: Agent_Memory/{instruction_id}/workflow/coordination_log.yaml
+Synthesized Solution: cagents-memory/{instruction_id}/workflow/coordination_log.yaml
 
 Implementation Steps (steps 1-6):
 1. Install passport-oauth2 and configure OAuth2 strategy
@@ -258,7 +258,7 @@ Acceptance Criteria:
 - Tokens encrypted at rest
 - Local auth still works
 
-Output to: Agent_Memory/{instruction_id}/outputs/partial/task_001/
+Output to: cagents-memory/{instruction_id}/outputs/partial/task_001/
 `
 })
 
@@ -276,7 +276,7 @@ Tests Required (from synthesized solution):
 - Security tests for CSRF protection
 - Backward compatibility tests for local auth
 
-Output to: Agent_Memory/{instruction_id}/outputs/partial/task_002/
+Output to: cagents-memory/{instruction_id}/outputs/partial/task_002/
 `,
   run_in_background: true
 })
@@ -295,7 +295,7 @@ Security Checklist (from synthesized solution):
 - Tokens encrypted at rest
 - No token leakage in logs/errors
 
-Output to: Agent_Memory/{instruction_id}/outputs/partial/task_003/
+Output to: cagents-memory/{instruction_id}/outputs/partial/task_003/
 `,
   run_in_background: true
 })

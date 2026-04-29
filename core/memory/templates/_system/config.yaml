@@ -1,5 +1,5 @@
 # Agent Memory System Configuration Template
-# Used by init-memory.sh to create Agent_Memory/_system/config.yaml
+# Used by init-memory.sh to create cagents-memory/_system/config.yaml
 # Version: 4.0.0
 
 config:
@@ -23,7 +23,7 @@ config:
 
   # Memory settings
   memory:
-    base_path: "Agent_Memory"
+    base_path: "cagents-memory"
     archive_after_days: 30
     prune_low_confidence_after_days: 90
     low_confidence_threshold: 0.3

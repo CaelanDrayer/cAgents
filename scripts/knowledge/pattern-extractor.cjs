@@ -10,7 +10,7 @@
  * Uses only built-in Node.js modules (fs, path)
  *
  * Canonical location: scripts/knowledge/pattern-extractor.js
- * (version-controlled; previously at Agent_Memory/_knowledge/learning/pattern-extractor.js)
+ * (version-controlled; previously at cagents-memory/_knowledge/learning/pattern-extractor.js)
  */
 
 const fs = require('fs');
@@ -20,8 +20,8 @@ const path = require('path');
 // Configuration
 // =============================================================================
 
-// Resolve Agent_Memory root relative to this file's location (scripts/knowledge/ -> ../../Agent_Memory/)
-const AGENT_MEMORY_ROOT = path.join(__dirname, '../../Agent_Memory');
+// Resolve cagents-memory root relative to this file's location (scripts/knowledge/ -> ../../cagents-memory/)
+const AGENT_MEMORY_ROOT = path.join(__dirname, '../../cagents-memory');
 
 const CONFIG = {
   sessionsDir: path.join(AGENT_MEMORY_ROOT, 'sessions'),

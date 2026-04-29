@@ -16,7 +16,7 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 ### 2. Stuck in coordinating phase
 - **Symptom**: /run appears to hang after planning, no progress updates
 - **Likely cause**: Controller waiting for execution agent response, or agent context exhaustion
-- **Check**: Look at `Agent_Memory/sessions/{id}/workflow/coordination_log.yaml`
+- **Check**: Look at `cagents-memory/sessions/{id}/workflow/coordination_log.yaml`
 - **Fix**: Use `--resume` to restart from last checkpoint: `/run --resume run_20260207_143022`
 - **Prevention**: Use `--stream` for real-time progress updates
 
@@ -29,7 +29,7 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 ### 4. Validation keeps failing (FAIL/REVISE loop)
 - **Symptom**: Pipeline cycles between COORDINATED and PROMPTS_READY or PLANNED repeatedly
 - **Likely cause**: Acceptance criteria too strict, or implementation approach fundamentally wrong
-- **Check**: Read `Agent_Memory/sessions/{id}/validation/validation_report.yaml` for specific failures
+- **Check**: Read `cagents-memory/sessions/{id}/validation/validation_report.yaml` for specific failures
 - **Fix**: After 5 cycles, /run escalates to user. Check what criteria are failing and adjust the request
 
 ### 5. Agent not found error
@@ -64,13 +64,13 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 ### 2. Design session lost after compaction
 - **Symptom**: Designer loses context about previous phases after long sessions
 - **Likely cause**: Context compaction cleared phase data from working memory
-- **Check**: Look for waypoint files in `Agent_Memory/sessions/{id}/waypoints/`
+- **Check**: Look for waypoint files in `cagents-memory/sessions/{id}/waypoints/`
 - **Fix**: Use `--resume {id}` which reads from disk, not memory
 
 ### 3. Template not loading
 - **Symptom**: Template specified but designer starts with generic questions
-- **Likely cause**: Template file not found in Agent_Memory templates directory
-- **Check**: Verify template exists in `Agent_Memory/_system/templates/designer/templates/`
+- **Likely cause**: Template file not found in cagents-memory templates directory
+- **Check**: Verify template exists in `cagents-memory/_system/templates/designer/templates/`
 - **Fix**: Use a valid template name: product-feature, system-architecture, api-design, ui-ux, business-process, creative-content
 
 ---

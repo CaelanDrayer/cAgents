@@ -31,7 +31,7 @@ output directly.
 The data file path is unchanged from pre-demotion behavior:
 
 ```
-Agent_Memory/_projects/{project_hash}/product_context.yaml
+cagents-memory/_projects/{project_hash}/product_context.yaml
 ```
 
 where `{project_hash}` is the first 8 characters of
@@ -99,7 +99,7 @@ If a user types `/context show` directly:
 - **V10.26.10** tightens the `/context` skill description to utility-facing
   and adds a back-compat pointer to this passthrough.
 
-The canonical data file `Agent_Memory/_projects/{hash}/product_context.yaml`
+The canonical data file `cagents-memory/_projects/{hash}/product_context.yaml`
 is unchanged across all five patches. That invariant is the cluster's
 data-loss-prevention guarantee.
 

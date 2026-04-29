@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
-const CONFIG_PATH = join(process.cwd(), 'Agent_Memory', '_system', 'config', 'pipeline_config.yaml');
+const CONFIG_PATH = join(process.cwd(), 'cagents-memory', '_system', 'config', 'pipeline_config.yaml');
 
 function loadConfig() {
   return readFileSync(CONFIG_PATH, 'utf8');

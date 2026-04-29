@@ -270,7 +270,7 @@ Claude creates teammates based on the work items. Each teammate is a full Claude
 Team sessions use enhanced session structure:
 
 ```
-Agent_Memory/sessions/team_{slug}_{YYMMDD}_{NNN}/
+cagents-memory/sessions/team_{slug}_{YYMMDD}_{NNN}/
 +-- instruction.yaml          # Request + team flags
 +-- status.yaml               # Phase + team status
 +-- team/
@@ -434,7 +434,7 @@ The highest-scoring template above its `confidence_threshold` (0.6) is selected.
 
 ### Template Location
 
-Templates are stored in `Agent_Memory/_system/templates/teams/` with `_index.yaml` as the catalog index.
+Templates are stored in `cagents-memory/_system/templates/teams/` with `_index.yaml` as the catalog index.
 
 ## Delivery Waves (V9.24)
 
@@ -606,7 +606,7 @@ contracts:
 All template/wave features are additive. When no template matches:
 - Low confidence score from auto-selection
 - `--no-template` flag used
-- No templates exist in `Agent_Memory/_system/templates/teams/`
+- No templates exist in `cagents-memory/_system/templates/teams/`
 
 The system behaves exactly as V9.2: flat parallel execution with no waves or contracts.
 
@@ -702,8 +702,8 @@ Team-specific hooks in `.claude/hooks/`:
 - **CLAUDE.md** - Main project documentation
 - **.claude/rules/core/teams.md** - Team coordination patterns
 - **.claude/skills/team/SKILL.md** - /team skill specification
-- **core/agents/team-trigger/SKILL.md** - Team initialization agent
-- **core/agents/team-lead-adapter/SKILL.md** - Controller wrapper
+- **core/team-trigger/SKILL.md** - Team initialization agent
+- **core/team-lead-adapter/SKILL.md** - Controller wrapper
 
 ---
 

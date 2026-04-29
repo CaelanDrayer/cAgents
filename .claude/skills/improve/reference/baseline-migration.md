@@ -23,7 +23,7 @@ migration users can manually move the file once if needed (see
 When `/improve --mode review` enters MEASURING:
 
 ```
-primary = Agent_Memory/_projects/{hash}/improve/baseline.yaml
+primary = cagents-memory/_projects/{hash}/improve/baseline.yaml
 
 if exists(primary):
     baseline = read(primary)

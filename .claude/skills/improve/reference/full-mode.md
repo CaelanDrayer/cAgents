@@ -39,7 +39,7 @@ same baseline is used by:
 - Review MEASURING (quality score baseline)
 - Optimize MEASURING (benchmark metrics baseline)
 
-Storage: `Agent_Memory/_projects/{hash}/improve/baselines/{timestamp}.yaml`
+Storage: `cagents-memory/_projects/{hash}/improve/baselines/{timestamp}.yaml`
 with a `shared: true` marker. Neither review nor optimize re-measures.
 
 **Why**: Double-measurement wastes time and introduces jitter. The shared
@@ -148,7 +148,7 @@ runs:
   seeded_from_review: {S}
   quality_gate: {PASS|FAIL}
   benchmark_delta: {summary}
-  report: Agent_Memory/sessions/{session_id}/outputs/improve_report.md
+  report: cagents-memory/sessions/{session_id}/outputs/improve_report.md
 ```
 
 ## Safety Gate (V10.26.34)

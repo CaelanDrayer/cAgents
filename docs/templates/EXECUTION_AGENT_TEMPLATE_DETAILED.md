@@ -132,7 +132,7 @@ When controller assigns implementation task, execute work.
 ```
 Implement {feature/fix} based on synthesized solution.
 
-Synthesized Solution: Agent_Memory/{instruction_id}/workflow/coordination_log.yaml
+Synthesized Solution: cagents-memory/{instruction_id}/workflow/coordination_log.yaml
 
 Implementation Steps:
 1. {step 1}
@@ -144,7 +144,7 @@ Acceptance Criteria:
 - {criterion 2}
 ...
 
-Output to: Agent_Memory/{instruction_id}/outputs/partial/{task_id}/
+Output to: cagents-memory/{instruction_id}/outputs/partial/{task_id}/
 ```
 
 **Execution Process**:
@@ -159,7 +159,7 @@ Output to: Agent_Memory/{instruction_id}/outputs/partial/{task_id}/
 **Deliverables Required**:
 
 ```
-Agent_Memory/{instruction_id}/outputs/partial/{task_id}/
+cagents-memory/{instruction_id}/outputs/partial/{task_id}/
 ├── {primary_deliverable}  # Code, content, analysis, etc.
 ├── manifest.yaml  # Task manifest with completion verification
 └── {additional_files}

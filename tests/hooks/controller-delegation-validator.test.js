@@ -5,7 +5,7 @@ import { execSync } from 'child_process';
 
 const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
 const HOOK_PATH = join(HOOKS_DIR, 'controller-delegation-validator.cjs');
-const AGENT_MEMORY_DIR = join(process.cwd(), 'Agent_Memory');
+const AGENT_MEMORY_DIR = join(process.cwd(), 'cagents-memory');
 const TEST_SESSION = 'test_delegation_validator_260406_001';
 const SESSION_DIR = join(AGENT_MEMORY_DIR, 'sessions', TEST_SESSION);
 const WORKFLOW_DIR = join(SESSION_DIR, 'workflow');
@@ -90,7 +90,7 @@ function workflowFileInput() {
   };
 }
 
-/** Agent_Memory file write input — should always bypass enforcement */
+/** cagents-memory file write input — should always bypass enforcement */
 function agentMemoryFileInput() {
   return {
     tool_name: 'Edit',
@@ -257,7 +257,7 @@ describe('controller-delegation-validator.cjs', () => {
       expect(result.hookSpecificOutput).toBeUndefined();
     });
 
-    it('Agent_Memory/ files bypass in block mode', () => {
+    it('cagents-memory/ files bypass in block mode', () => {
       const result = runHook(agentMemoryFileInput(), {
         CAGENTS_ACTIVE_SESSION: TEST_SESSION,
         CAGENTS_DELEGATION_ENFORCEMENT: 'block'

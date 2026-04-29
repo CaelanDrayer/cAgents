@@ -17,9 +17,9 @@ missing_files=(
   "$PROJECT_ROOT/make/agents/frontend-developer/resources/component-patterns.md"
   "$PROJECT_ROOT/make/agents/frontend-developer/resources/accessibility-guide.md"
   "$PROJECT_ROOT/make/agents/frontend-developer/resources/performance-tips.md"
-  "$PROJECT_ROOT/people/agents/hr-business-partner/resources/org-planning.md"
-  "$PROJECT_ROOT/people/agents/hr-business-partner/resources/change-management.md"
-  "$PROJECT_ROOT/people/agents/hr-business-partner/resources/talent-review.md"
+  "$PROJECT_ROOT/operator/people-ops/hr-business-partner/resources/org-planning.md"
+  "$PROJECT_ROOT/operator/people-ops/hr-business-partner/resources/change-management.md"
+  "$PROJECT_ROOT/operator/people-ops/hr-business-partner/resources/talent-review.md"
 )
 
 for file in "${missing_files[@]}"; do

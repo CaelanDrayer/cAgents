@@ -50,9 +50,9 @@ Run BEFORE spawning any execution agent.
 - `{domain}/agents/{agent-name}.md`
 
 **Example paths**:
-- engineering/agents/backend-developer/SKILL.md
-- core/agents/reviewer/SKILL.md
-- creative/agents/copywriter/SKILL.md
+- developer/backend/backend-developer/SKILL.md
+- core/reviewer/SKILL.md
+- writer/copywriter/SKILL.md
 
 **On failure**: WARN — "Agent cagents:{name} SKILL.md not found. Will attempt spawn but may fail."
 

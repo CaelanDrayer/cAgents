@@ -1,12 +1,12 @@
-# Agent_Memory Utilities
+# cagents-memory Utilities
 
-This document describes utility patterns for working with the Agent_Memory system across multiple domains.
+This document describes utility patterns for working with the cagents-memory system across multiple domains.
 
 ## Memory Location
 
-Agent_Memory is always at the PROJECT ROOT:
+cagents-memory is always at the PROJECT ROOT:
 ```
-{project_root}/Agent_Memory/
+{project_root}/cagents-memory/
 ```
 
 NOT inside the cAgents folder. This ensures:
@@ -19,46 +19,46 @@ NOT inside the cAgents folder. This ensures:
 ### System Paths
 ```yaml
 system:
-  registry: "Agent_Memory/_system/registry.yaml"
-  config: "Agent_Memory/_system/config.yaml"
-  domains: "Agent_Memory/_system/domains.yaml"
-  agent_status: "Agent_Memory/_system/agent_status.yaml"
+  registry: "cagents-memory/_system/registry.yaml"
+  config: "cagents-memory/_system/config.yaml"
+  domains: "cagents-memory/_system/domains.yaml"
+  agent_status: "cagents-memory/_system/agent_status.yaml"
 ```
 
 ### Knowledge Paths
 ```yaml
 knowledge:
-  semantic: "Agent_Memory/_knowledge/semantic/{domain}_{topic}.yaml"
-  procedural: "Agent_Memory/_knowledge/procedural/{domain}_{patterns}.yaml"
-  calibration: "Agent_Memory/_knowledge/calibration/{domain}_{type}.yaml"
+  semantic: "cagents-memory/_knowledge/semantic/{domain}_{topic}.yaml"
+  procedural: "cagents-memory/_knowledge/procedural/{domain}_{patterns}.yaml"
+  calibration: "cagents-memory/_knowledge/calibration/{domain}_{type}.yaml"
 ```
 
 ### Communication Paths
 ```yaml
 communication:
-  inbox: "Agent_Memory/_communication/inbox/{agent}/"
-  broadcast: "Agent_Memory/_communication/broadcast/"
+  inbox: "cagents-memory/_communication/inbox/{agent}/"
+  broadcast: "cagents-memory/_communication/broadcast/"
 ```
 
 ### Instruction Paths
 ```yaml
 instruction:
-  root: "Agent_Memory/{instruction_id}/"
-  instruction: "Agent_Memory/{instruction_id}/instruction.yaml"
-  status: "Agent_Memory/{instruction_id}/status.yaml"
+  root: "cagents-memory/{instruction_id}/"
+  instruction: "cagents-memory/{instruction_id}/instruction.yaml"
+  status: "cagents-memory/{instruction_id}/status.yaml"
   workflow:
-    plan: "Agent_Memory/{instruction_id}/workflow/plan.yaml"
+    plan: "cagents-memory/{instruction_id}/workflow/plan.yaml"
   tasks:
-    pending: "Agent_Memory/{instruction_id}/tasks/pending/"
-    in_progress: "Agent_Memory/{instruction_id}/tasks/in_progress/"
-    completed: "Agent_Memory/{instruction_id}/tasks/completed/"
-    blocked: "Agent_Memory/{instruction_id}/tasks/blocked/"
+    pending: "cagents-memory/{instruction_id}/tasks/pending/"
+    in_progress: "cagents-memory/{instruction_id}/tasks/in_progress/"
+    completed: "cagents-memory/{instruction_id}/tasks/completed/"
+    blocked: "cagents-memory/{instruction_id}/tasks/blocked/"
   outputs:
-    partial: "Agent_Memory/{instruction_id}/outputs/partial/"
-    final: "Agent_Memory/{instruction_id}/outputs/final/"
-  decisions: "Agent_Memory/{instruction_id}/decisions/"
-  reviews: "Agent_Memory/{instruction_id}/reviews/"
-  episodic: "Agent_Memory/{instruction_id}/episodic/"
+    partial: "cagents-memory/{instruction_id}/outputs/partial/"
+    final: "cagents-memory/{instruction_id}/outputs/final/"
+  decisions: "cagents-memory/{instruction_id}/decisions/"
+  reviews: "cagents-memory/{instruction_id}/reviews/"
+  episodic: "cagents-memory/{instruction_id}/episodic/"
 ```
 
 ## Common Operations
@@ -66,7 +66,7 @@ instruction:
 ### Read Instruction Status
 ```yaml
 # Read current instruction status
-file: "Agent_Memory/{instruction_id}/status.yaml"
+file: "cagents-memory/{instruction_id}/status.yaml"
 fields:
   - status: active | paused | completed | archived
   - phase: trigger | routing | planning | executing | validating | complete
@@ -77,15 +77,15 @@ fields:
 ### Update Task State
 ```yaml
 # Move task from pending to in_progress
-source: "Agent_Memory/{instruction_id}/tasks/pending/{task_id}.yaml"
-target: "Agent_Memory/{instruction_id}/tasks/in_progress/{task_id}.yaml"
+source: "cagents-memory/{instruction_id}/tasks/pending/{task_id}.yaml"
+target: "cagents-memory/{instruction_id}/tasks/in_progress/{task_id}.yaml"
 operation: mv
 ```
 
 ### Send Message to Agent
 ```yaml
 # Write message to agent inbox
-file: "Agent_Memory/_communication/inbox/{agent}/msg_{timestamp}_{type}.yaml"
+file: "cagents-memory/_communication/inbox/{agent}/msg_{timestamp}_{type}.yaml"
 content:
   id: "msg_{timestamp}_{type}"
   from: {sender_agent}
@@ -99,7 +99,7 @@ content:
 ### Log Decision
 ```yaml
 # Write decision to instruction folder
-file: "Agent_Memory/{instruction_id}/decisions/{timestamp}_{agent}.yaml"
+file: "cagents-memory/{instruction_id}/decisions/{timestamp}_{agent}.yaml"
 content:
   layer: {layer}
   type: {decision_type}

@@ -10,7 +10,7 @@ Read pre-prepared research files (spawned during Conceptualize phase-overlap if 
 
 Build a question pool from research findings. If research files are not yet available (agents still running, failed, or `--deep` not set), fall back to the design pattern library + inline analysis.
 
-**Pattern Library Reference**: `Agent_Memory/_system/templates/designer/patterns/design_patterns_library.yaml`
+**Pattern Library Reference**: `cagents-memory/_system/templates/designer/patterns/design_patterns_library.yaml`
 
 ## Step 2: Generate Alternatives
 

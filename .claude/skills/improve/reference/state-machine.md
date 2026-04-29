@@ -34,7 +34,7 @@ Each state has per-mode behavior markers:
 | Aspect | Spec |
 |--------|------|
 | **Inputs** | `$ARGUMENTS` (parsed `--mode`, target path, flags) |
-| **Outputs** | `Agent_Memory/sessions/improve_{slug}_{YYMMDD}_{NNN}/instruction.yaml`, `.../status.yaml` (phase: scoped) |
+| **Outputs** | `cagents-memory/sessions/improve_{slug}_{YYMMDD}_{NNN}/instruction.yaml`, `.../status.yaml` (phase: scoped) |
 | **review:** | Resolve target (default: `.`), compute slug, create session dir |
 | **optimize:** | Same. Plus: detect optimization type (code/content/process/infrastructure/data/campaign/creative/sales) |
 | **full:** | Same. Plus: run review detection first, then optimize detection |
@@ -46,7 +46,7 @@ Each state has per-mode behavior markers:
 | Aspect | Spec |
 |--------|------|
 | **Inputs** | Session dir, target path |
-| **Outputs** | `Agent_Memory/_projects/{hash}/improve/baseline.yaml`, session `status.yaml.phase == measured` |
+| **Outputs** | `cagents-memory/_projects/{hash}/improve/baseline.yaml`, session `status.yaml.phase == measured` |
 | **review:** | Read `_projects/{hash}/improve/baseline.yaml`. Fallback to legacy `_projects/{hash}/review/baseline.yaml`. If neither exists, create a fresh placeholder with `quality_score: null`. |
 | **optimize:** | Measure perf/size metrics appropriate to detected type (bundle size, FCP, query time, readability, etc.) |
 | **full:** | Both review baseline and optimize metric measurements |

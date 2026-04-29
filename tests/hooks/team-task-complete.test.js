@@ -5,7 +5,7 @@ import { execSync } from 'child_process';
 
 const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
 const HOOK_PATH = join(HOOKS_DIR, 'team-task-complete.cjs');
-const AGENT_MEMORY = join(process.cwd(), 'Agent_Memory');
+const AGENT_MEMORY = join(process.cwd(), 'cagents-memory');
 const TEST_SESSION = 'team_test-complete_260317_999';
 const SESSION_DIR = join(AGENT_MEMORY, 'sessions', TEST_SESSION);
 

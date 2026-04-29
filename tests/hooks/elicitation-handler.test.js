@@ -7,7 +7,7 @@ const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
 const HOOK_PATH = join(HOOKS_DIR, 'elicitation-handler.cjs');
 
 // Log dir created by the hook during tests
-const LOG_DIR = join(process.cwd(), 'Agent_Memory', '_system', 'logs');
+const LOG_DIR = join(process.cwd(), 'cagents-memory', '_system', 'logs');
 
 function runHook(input = {}) {
   const result = execSync(

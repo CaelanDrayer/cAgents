@@ -142,7 +142,7 @@ Controller receives objectives from plan.yaml
 
 ## Session Files
 
-Each command creates `Agent_Memory/sessions/{command}_{slug}_{YYMMDD}_{NNN}/` with:
+Each command creates `cagents-memory/sessions/{command}_{slug}_{YYMMDD}_{NNN}/` with:
 
 | File | Purpose |
 |------|---------|

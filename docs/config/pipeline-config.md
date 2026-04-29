@@ -2,7 +2,7 @@
 
 ## Location
 
-`Agent_Memory/_system/config/pipeline_config.yaml`
+`cagents-memory/_system/config/pipeline_config.yaml`
 
 ## Structure
 

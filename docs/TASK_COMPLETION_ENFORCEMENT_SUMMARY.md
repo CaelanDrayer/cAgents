@@ -28,7 +28,7 @@ This led to:
 
 ### 1. Universal-Executor (Primary Enforcement)
 
-**Location**: `core/agents/universal-executor.md`
+**Location**: `core/universal-executor.md`
 
 **Changes**:
 - Added MANDATORY COMPLETION PROTOCOL section (109 lines)
@@ -58,7 +58,7 @@ actual_context_used: 12450
 
 ### 2. Universal-Validator (Secondary Enforcement)
 
-**Location**: `core/agents/universal-validator.md`
+**Location**: `core/universal-validator.md`
 
 **Changes**:
 - Added "Task Completion Verification (MANDATORY FIRST STEP)" section
@@ -79,7 +79,7 @@ actual_context_used: 12450
 
 ### 3. Orchestrator (Phase Transition Enforcement)
 
-**Location**: `core/agents/orchestrator.md`
+**Location**: `core/orchestrator.md`
 
 **Changes**:
 - Added "MANDATORY: Execution Phase Completion Check" section
@@ -104,7 +104,7 @@ Before executing → validating transition:
 
 ### Software Domain Executor Config
 
-**Location**: `Agent_Memory/_system/domains/software/executor_config.yaml`
+**Location**: `cagents-memory/_system/domains/software/executor_config.yaml`
 
 **Changes**:
 - Added `task_completion_protocol` section (70 lines)
@@ -121,7 +121,7 @@ Before executing → validating transition:
 
 ### 1. Universal Task Completion Protocol
 
-**Location**: `Agent_Memory/_system/task_completion_protocol.yaml`
+**Location**: `cagents-memory/_system/task_completion_protocol.yaml`
 
 **Size**: 500+ lines comprehensive protocol document
 
@@ -246,15 +246,15 @@ actual_context_used: 12450  # tokens
 
 ## Files Modified
 
-1. `core/agents/universal-executor.md` - Added completion protocol (110+ lines)
-2. `core/agents/universal-validator.md` - Added verification checks (45+ lines)
-3. `core/agents/orchestrator.md` - Added phase transition checks (15+ lines)
-4. `Agent_Memory/_system/domains/software/executor_config.yaml` - Added protocol section (70+ lines)
+1. `core/universal-executor.md` - Added completion protocol (110+ lines)
+2. `core/universal-validator.md` - Added verification checks (45+ lines)
+3. `core/orchestrator.md` - Added phase transition checks (15+ lines)
+4. `cagents-memory/_system/domains/software/executor_config.yaml` - Added protocol section (70+ lines)
 5. `CLAUDE.md` - Added protocol reference and quick reference update
 
 ## Files Created
 
-1. `Agent_Memory/_system/task_completion_protocol.yaml` - Comprehensive protocol (500+ lines)
+1. `cagents-memory/_system/task_completion_protocol.yaml` - Comprehensive protocol (500+ lines)
 2. `TASK_COMPLETION_ENFORCEMENT_SUMMARY.md` - This document
 
 ## Testing Recommendations

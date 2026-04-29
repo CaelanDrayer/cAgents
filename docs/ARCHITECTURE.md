@@ -39,7 +39,7 @@ cAgents is a universal multi-domain agent system with controller-centric coordin
 
 **Total: 243 agents across 15 domains**
 
-> **Integration**: cAgents shares `Agent_Memory/sessions/` with its sister project AgentPath, a web-based session visualization and management platform. AgentPath watches the sessions directory via FileWatcher and streams workflow state changes to the UI over WebSocket. See the workspace-level [CLAUDE.md](../../CLAUDE.md) for the integration overview.
+> **Integration**: cAgents shares `cagents-memory/sessions/` with its sister project AgentPath, a web-based session visualization and management platform. AgentPath watches the sessions directory via FileWatcher and streams workflow state changes to the UI over WebSocket. See the workspace-level [CLAUDE.md](../../CLAUDE.md) for the integration overview.
 
 ## Workflow Phases
 
@@ -81,7 +81,7 @@ Controller writes coordination_log.yaml
 ## File Structure
 
 ```
-Agent_Memory/
+cagents-memory/
 ├── _system/              # System configs
 │   ├── domains/          # 5 config files per domain
 │   └── commands/         # Command-specific configs

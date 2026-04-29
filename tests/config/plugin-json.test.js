@@ -65,13 +65,13 @@ describe('root plugin.json', () => {
     expect(plugin.description).toMatch(/6 user skills/);
   });
 
-  it('should include agents from all 15 domains', () => {
+  it('should include agents from all 9 archetype roots (v11.1.0 builder-role tree)', () => {
     const plugin = loadPluginJson(PLUGIN_PATH);
     const agents = plugin.agents;
-    const domains = ['engineering', 'creative', 'business', 'growth', 'people', 'service', 'core', 'leadership', 'shared', 'science', 'health', 'education', 'personal', 'arts', 'trades'];
-    for (const domain of domains) {
-      const domainAgents = agents.filter(a => a.startsWith(`./${domain}/`) || a.includes(`/${domain}/`));
-      expect(domainAgents.length).toBeGreaterThan(0);
+    const archetypes = ['developer', 'operator', 'advisor', 'analyst', 'creator', 'writer', 'strategist', 'core', 'leadership'];
+    for (const archetype of archetypes) {
+      const archetypeAgents = agents.filter(a => a.startsWith(`./${archetype}/`));
+      expect(archetypeAgents.length, `archetype ${archetype} should have at least one agent`).toBeGreaterThan(0);
     }
   });
 });

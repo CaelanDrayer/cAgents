@@ -2,7 +2,7 @@
 #
 # cAgents CI Runner
 # Self-contained CI script for quality gates
-# Version: 11.0.5
+# Version: 11.1.0
 #
 # Usage:
 #   ./scripts/ci/cagents-ci.sh [command]
@@ -33,7 +33,7 @@ set -e
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-AGENT_MEMORY="$PROJECT_ROOT/Agent_Memory"
+AGENT_MEMORY="$PROJECT_ROOT/cagents-memory"
 
 # Colors for output
 RED='\033[0;31m'
@@ -545,7 +545,7 @@ main() {
     local command="${1:-all}"
     local exit_code=0
 
-    log_section "cAgents CI Runner v11.0.5"
+    log_section "cAgents CI Runner v11.1.0"
     log_info "Project root: $PROJECT_ROOT"
     log_info "Command: $command"
 

@@ -156,7 +156,7 @@ The /team skill acts as team lead. It ONLY coordinates:
 ## Session Structure
 
 ```
-Agent_Memory/sessions/team_{timestamp}/
+cagents-memory/sessions/team_{timestamp}/
 +-- instruction.yaml
 +-- status.yaml
 +-- team/

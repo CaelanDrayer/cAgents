@@ -30,7 +30,7 @@ Please include:
 - Secret leakage through agent outputs or session files
 - Path traversal allowing reads/writes outside the project directory
 - Agent prompt injection that causes unintended system modifications
-- Exposure of sensitive data in `Agent_Memory/` or session artifacts
+- Exposure of sensitive data in `cagents-memory/` or session artifacts
 
 ## What Does Not Qualify
 
@@ -60,7 +60,7 @@ cAgents includes several built-in security mechanisms:
 - **Bash validation** (`bash-validator.cjs`): Blocks dangerous shell commands (`rm -rf /`, fork bombs, `sudo`)
 - **Protected paths**: Prevents writes to system directories (`/etc/`, `/usr/`, `~/.ssh/`)
 - **Permission handler** (`permission-handler.cjs`): Auto-approves safe read operations, gates destructive ones
-- **Session isolation**: Each workflow session is scoped to `Agent_Memory/sessions/`
+- **Session isolation**: Each workflow session is scoped to `cagents-memory/sessions/`
 
 ## License
 
