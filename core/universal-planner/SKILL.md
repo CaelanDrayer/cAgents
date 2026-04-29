@@ -1,5 +1,6 @@
 ---
 name: universal-planner
+archetype: core
 description: "Use when creating plan.yaml with objectives, controller assignments, temporal analysis, and scope boundaries from enriched context."
 metadata:
   vibe: "Plans the work, works the plan, adapts when reality disagrees"

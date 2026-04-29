@@ -1,5 +1,6 @@
 ---
 name: universal-router
+archetype: core
 description: "Use when classifying request complexity into tiers 2-4, detecting domain from keywords, or routing to the appropriate controller catalog."
 metadata:
   vibe: "Sends every request to exactly the right agent, every time"

@@ -42,9 +42,10 @@ const VALID_COLORS  = new Set([
   'black','gray','grey',
 ]);
 const VALID_MODELS  = new Set(['opus','opusplan','sonnet','haiku']);
-const DOMAIN_DIRS   = [
-  'business','core','creative','engineering','growth',
-  'leadership','people','service','shared',
+// v11.1.0 archetype roots — SKILL.md files live at {archetype}/{branch?}/{agent}/SKILL.md
+const ARCHETYPE_DIRS = [
+  'developer','operator','advisor','analyst','creator',
+  'writer','strategist','core','leadership',
 ];
 
 // ─── Agent discovery ─────────────────────────────────────────────────────────
@@ -69,7 +70,7 @@ if (pathArgs.length > 0) {
     return findSkillMds(abs);
   });
 } else {
-  agentFiles = DOMAIN_DIRS.flatMap(d => findSkillMds(path.join(ROOT, d, 'agents')));
+  agentFiles = ARCHETYPE_DIRS.flatMap(d => findSkillMds(path.join(ROOT, d)));
 }
 
 agentFiles.sort();
@@ -209,12 +210,23 @@ function runChecks(filePath, parsed) {
     fail(6, `tier "${tier}" is invalid (expected: ${[...VALID_TIERS].join(', ')})`);
   }
 
-  // Check 7: domain exists and is valid
+  // Check 7 (post-v11.1.0): archetype field required at top-level.
+  // Legacy `domain:` field is tolerated (lives in metadata in the v11.1.0 schema)
+  // but no longer required. If present at top-level OR in metadata, it must be a
+  // recognized legacy domain.
+  const VALID_ARCHETYPES = new Set([
+    'developer','operator','advisor','analyst','creator',
+    'writer','strategist','core','leadership',
+  ]);
+  const archetype = fm['archetype'];  // top-level only — metadata.archetype is not the contract
+  if (!archetype) {
+    fail(7, 'archetype field missing (required at top-level since v11.1.0)');
+  } else if (!VALID_ARCHETYPES.has(archetype)) {
+    fail(7, `archetype "${archetype}" is not a recognized archetype (expected: ${[...VALID_ARCHETYPES].join(', ')})`);
+  }
   const domain = getField(fm, 'domain');
-  if (!domain) {
-    fail(7, 'domain field missing');
-  } else if (!VALID_DOMAINS.has(domain)) {
-    fail(7, `domain "${domain}" is not a recognized domain`);
+  if (domain && !VALID_DOMAINS.has(domain)) {
+    fail(7, `legacy domain "${domain}" is not a recognized domain`);
   }
 
   // Check 8: no permissionMode field

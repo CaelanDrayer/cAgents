@@ -1,32 +1,35 @@
 #!/bin/bash
 #
 # cAgents Agent Schema Validation
-# Validates all agent SKILL.md files across all 15 domains
-# Version: 11.1.0
+# Validates all agent SKILL.md files across all 9 archetype roots
+# Version: 11.1.1
 #
 # Usage:
-#   ./scripts/ci/validate-agents.sh           # Validate all domains
-#   ./scripts/ci/validate-agents.sh --domain engineering  # Validate one domain
-#   ./scripts/ci/validate-agents.sh --strict  # Fail on warnings
-#   ./scripts/ci/validate-agents.sh --count   # Just print counts
+#   ./scripts/ci/validate-agents.sh                    # Validate all archetypes
+#   ./scripts/ci/validate-agents.sh --archetype developer  # Validate one archetype
+#   ./scripts/ci/validate-agents.sh --domain developer     # back-compat alias for --archetype
+#   ./scripts/ci/validate-agents.sh --strict           # Fail on warnings
+#   ./scripts/ci/validate-agents.sh --count            # Just print counts
 #
 # Checks:
 #   1. SKILL.md exists for each agent directory
 #   2. Frontmatter starts with ---
-#   3. Required fields: name (WARN), tier (ERROR)
+#   3. Required fields: name (ERROR), tier (ERROR), archetype (ERROR)
 #   4. Tier value is valid (controller, execution, support, executive, infrastructure)
 #   5. Agent path matches plugin.json registration
 #   6. No orphan agents (in directory but not in plugin.json)
-#   7. Domain/name consistency (agent dir matches domain field)
-#   8. Description length validation (10-1024 chars)
-#   9. related-agents resolution (referenced agents must exist)
-#  10. Vibe field presence check (WARN if missing)
-#  11. Agent Skills spec: name max 64 chars
-#  12. Agent Skills spec: name matches directory name (ERROR)
-#  13. Agent Skills spec: description max 1024 chars
-#  14. Legacy related-agents field rejection (WARN)
-#  15. plugin.json structural validation (required: name field)
-#  16. domain_overrides.yaml agent reference validation
+#   7. Archetype/path consistency (top-level archetype matches dir-1)
+#   8. Branch field required for 3-level archetypes; must match dir-2
+#   9. Top-level `domain:` field forbidden (REMOVED in v11.1.0)
+#  10. Description length validation (10-1024 chars)
+#  11. related_agents resolution (referenced agents must exist somewhere in tree)
+#  12. Vibe field presence check (advisory)
+#  13. Agent Skills spec: name max 64 chars
+#  14. Agent Skills spec: name matches directory name (ERROR)
+#  15. Agent Skills spec: description max 1024 chars
+#  16. Legacy `related-agents` (hyphen) field warns -> use `related_agents` underscore
+#  17. plugin.json structural validation (required: name field)
+#  18. domain_overrides.yaml controller_catalog references resolve to existing agents
 
 set -e
 
@@ -49,10 +52,21 @@ ERRORS=0
 # Options
 STRICT=false
 COUNT_ONLY=false
-FILTER_DOMAIN=""
+FILTER_ARCHETYPE=""
 
-# All v11 domains (15 total)
-DOMAINS=(engineering creative business growth people service leadership shared core science health education personal arts trades)
+# v11.1.0 archetype roots (9 total)
+ARCHETYPES=(developer operator advisor analyst creator writer strategist core leadership)
+
+# 3-level archetypes (require `branch:` field)
+THREE_LEVEL_ARCHETYPES=(developer operator advisor)
+
+# Valid branches per 3-level archetype
+DEVELOPER_BRANCHES=(backend frontend fullstack infrastructure quality)
+OPERATOR_BRANCHES=(business-ops content marketing-sales people-ops support)
+ADVISOR_BRANCHES=(education health legal personal)
+
+# Legacy domain dirs (still hold config/domain_overrides.yaml for routing)
+LEGACY_DOMAINS=(engineering creative business growth people service leadership shared core science health education personal arts trades)
 
 log_pass() {
     if [[ $COUNT_ONLY != true ]]; then
@@ -76,6 +90,46 @@ log_fail() {
 }
 
 #
+# Test if value is in array (any-archetype lookup helper)
+#
+is_in_array() {
+    local needle="$1"; shift
+    local item
+    for item in "$@"; do
+        [[ "$item" == "$needle" ]] && return 0
+    done
+    return 1
+}
+
+#
+# Resolve valid branches for a 3-level archetype
+#
+get_branches_for() {
+    case "$1" in
+        developer) echo "${DEVELOPER_BRANCHES[@]}" ;;
+        operator)  echo "${OPERATOR_BRANCHES[@]}" ;;
+        advisor)   echo "${ADVISOR_BRANCHES[@]}" ;;
+        *)         echo "" ;;
+    esac
+}
+
+#
+# Build agent-name -> SKILL.md-path index for related_agents lookup.
+# Indexed once for performance (avoids 243*N find calls).
+#
+declare -A AGENT_INDEX
+build_agent_index() {
+    local archetype skill_md name dir
+    for archetype in "${ARCHETYPES[@]}"; do
+        [[ ! -d "$PROJECT_ROOT/$archetype" ]] && continue
+        while IFS= read -r skill_md; do
+            dir=$(basename "$(dirname "$skill_md")")
+            AGENT_INDEX[$dir]="$skill_md"
+        done < <(find "$PROJECT_ROOT/$archetype" -name SKILL.md -type f 2>/dev/null)
+    done
+}
+
+#
 # Load root plugin.json agent list for cross-reference
 #
 load_registered_agents() {
@@ -90,7 +144,7 @@ load_registered_agents() {
     " 2>/dev/null || echo ""
 }
 
-REGISTERED_AGENTS=$(load_registered_agents)
+REGISTERED_AGENTS=""
 
 #
 # Validate a single agent SKILL.md
@@ -118,15 +172,16 @@ validate_agent() {
     local frontmatter
     frontmatter=$(sed -n '2,/^---$/p' "$skill_md" | head -n -1)
 
-    # Helper: get a field value from frontmatter, checking top-level AND metadata: block
-    # Usage: get_fm_field "tier" "$frontmatter"
+    # Top-level frontmatter only (everything before `metadata:` block)
+    local top_level
+    top_level=$(echo "$frontmatter" | awk '/^metadata:/{exit} {print}')
+
+    # Helper: get a field value, checking top-level AND metadata: block
     get_fm_field() {
         local field="$1" fm="$2"
-        # Top-level: ^field:
         local val
         val=$(echo "$fm" | grep "^${field}:" | head -1 | sed "s/^${field}:[[:space:]]*//" | tr -d '"' | tr -d "'")
         if [[ -z "$val" ]]; then
-            # Inside metadata: block (2-space indent): ^  field:
             val=$(echo "$fm" | grep "^  ${field}:" | head -1 | sed "s/^  ${field}:[[:space:]]*//" | tr -d '"' | tr -d "'")
         fi
         echo "$val"
@@ -140,13 +195,19 @@ validate_agent() {
         return 1
     }
 
-    # Check 3: Required field - name (always top-level per spec)
-    if ! echo "$frontmatter" | grep -q "^name:"; then
+    # Helper: get a TOP-LEVEL only field (not inside metadata block)
+    get_top_field() {
+        local field="$1"
+        echo "$top_level" | grep "^${field}:" | head -1 | sed "s/^${field}:[[:space:]]*//" | tr -d '"' | tr -d "'" | tr -d '[:space:]'
+    }
+
+    # Check 3: Required field - name
+    if ! echo "$top_level" | grep -q "^name:"; then
         log_fail "Missing 'name' field: $relative_path"
         return
     fi
 
-    # Check 4: Required field - tier (may now be inside metadata:)
+    # Check 4: Required field - tier (may live inside metadata:)
     if ! has_fm_field "tier" "$frontmatter"; then
         log_fail "Missing 'tier' field (required): $relative_path"
         return
@@ -164,8 +225,7 @@ validate_agent() {
             ;;
     esac
 
-    # Check 6: Registered in root plugin.json
-    # plugin.json uses "./" prefix (e.g., "./developer/{branch}/foo/SKILL.md")
+    # Check 6: Registered in root plugin.json (only when populated)
     if [[ -n "$REGISTERED_AGENTS" ]]; then
         if ! echo "$REGISTERED_AGENTS" | grep -qF "./${relative_path}"; then
             log_warn "Not in root plugin.json: $relative_path"
@@ -173,24 +233,58 @@ validate_agent() {
         fi
     fi
 
-    # Check 7: Domain/name consistency
-    local name_value
-    name_value=$(echo "$frontmatter" | grep "^name:" | sed 's/^name:\s*//' | tr -d '[:space:]' | tr -d '"' | tr -d "'")
-    local domain_value
-    domain_value=$(get_fm_field "domain" "$frontmatter" | tr -d '[:space:]')
-    local dir_domain
-    dir_domain=$(echo "$relative_path" | cut -d'/' -f1)
-    local dir_name
+    # v11.1.0 path layout
+    local dir_archetype dir_branch dir_name
+    dir_archetype=$(echo "$relative_path" | cut -d'/' -f1)
     dir_name=$(basename "$(dirname "$skill_md")")
 
-    if [[ -n "$domain_value" ]] && [[ "$domain_value" != "$dir_domain" ]]; then
-        # Allow core agents to have non-core domain values (infrastructure agents)
-        if [[ "$dir_domain" != "core" ]] || [[ "$domain_value" != "core" && "$tier_value" != "infrastructure" ]]; then
-            log_warn "Domain mismatch: frontmatter says '$domain_value' but file is in '$dir_domain/': $relative_path"
+    # Check 7: archetype field required + must match directory
+    local archetype_value
+    archetype_value=$(get_top_field "archetype")
+    if [[ -z "$archetype_value" ]]; then
+        log_fail "Missing 'archetype' field (required, top-level): $relative_path"
+        return
+    fi
+    if ! is_in_array "$archetype_value" "${ARCHETYPES[@]}"; then
+        log_fail "Unknown archetype '$archetype_value' (must be one of: ${ARCHETYPES[*]}): $relative_path"
+        return
+    fi
+    if [[ "$archetype_value" != "$dir_archetype" ]]; then
+        log_fail "Archetype mismatch: frontmatter says '$archetype_value' but file is in '$dir_archetype/': $relative_path"
+        return
+    fi
+
+    # Check 8: branch field required for 3-level archetypes; must match dir-2
+    if is_in_array "$dir_archetype" "${THREE_LEVEL_ARCHETYPES[@]}"; then
+        dir_branch=$(echo "$relative_path" | cut -d'/' -f2)
+        local branch_value
+        branch_value=$(get_top_field "branch")
+        if [[ -z "$branch_value" ]]; then
+            log_fail "Missing 'branch' field (required for $dir_archetype): $relative_path"
+            return
+        fi
+        local valid_branches
+        valid_branches=$(get_branches_for "$dir_archetype")
+        if ! echo " $valid_branches " | grep -q " $branch_value "; then
+            log_fail "Unknown branch '$branch_value' for archetype '$dir_archetype' (valid: $valid_branches): $relative_path"
+            return
+        fi
+        if [[ "$branch_value" != "$dir_branch" ]]; then
+            log_fail "Branch mismatch: frontmatter says '$branch_value' but file is in '$dir_archetype/$dir_branch/': $relative_path"
+            return
         fi
     fi
 
-    # Check 11: Agent Skills spec - name max 64 chars
+    # Check 9: TOP-LEVEL `domain:` is forbidden (removed in v11.1.0; replaced by archetype)
+    # Note: `domain:` inside `metadata:` is legacy-tolerated (still present in many agents).
+    if echo "$top_level" | grep -q "^domain:"; then
+        log_fail "Forbidden top-level 'domain:' field (removed in v11.1.0; use 'archetype:'): $relative_path"
+        return
+    fi
+
+    # Check 13: Agent Skills spec - name max 64 chars
+    local name_value
+    name_value=$(echo "$top_level" | grep "^name:" | sed 's/^name:[[:space:]]*//' | tr -d '[:space:]' | tr -d '"' | tr -d "'")
     if [[ -n "$name_value" ]]; then
         local name_len=${#name_value}
         if [[ $name_len -gt 64 ]]; then
@@ -199,15 +293,15 @@ validate_agent() {
         fi
     fi
 
-    # Check 12: Agent Skills spec - name MUST match directory name (ERROR)
+    # Check 14: Agent Skills spec - name MUST match directory name (ERROR)
     if [[ -n "$name_value" ]] && [[ "$name_value" != "$dir_name" ]]; then
         log_fail "Name/directory mismatch: frontmatter name '$name_value' != directory '$dir_name': $relative_path"
         return
     fi
 
-    # Check 8: Description length validation (10-1024 chars)
+    # Check 10/15: Description length validation (10-1024 chars)
     local description
-    description=$(echo "$frontmatter" | grep "^description:" | sed 's/^description:\s*//' | tr -d '"' | tr -d "'")
+    description=$(echo "$top_level" | grep "^description:" | sed 's/^description:[[:space:]]*//' | tr -d '"' | tr -d "'")
     if [[ -n "$description" ]]; then
         local desc_len=${#description}
         if [[ $desc_len -lt 10 ]]; then
@@ -217,50 +311,35 @@ validate_agent() {
         fi
     fi
 
-    # Check 14: Legacy related-agents field rejection (prefer related_agents structured format)
-    # Check both top-level (pre-migration) and inside metadata: (post-migration)
+    # Check 16: Legacy related-agents (hyphen) field rejection (prefer related_agents underscore)
     if echo "$frontmatter" | grep -q "^related-agents:" || echo "$frontmatter" | grep -q "^  related-agents:"; then
         log_warn "Legacy 'related-agents' field found (use 'related_agents' structured format instead): $relative_path"
     fi
 
-    # Check 9: related_agents resolution (referenced agents must exist)
-    # After migration, related_agents lives inside metadata: block (indented)
+    # Check 11: related_agents resolution (referenced agents must exist anywhere in tree)
     local related_agents
-    related_agents=$(echo "$frontmatter" | grep -A 20 -E "^related_agents:|^  related_agents:" | grep "^\s*-\s*name:" | sed 's/^\s*-\s*name:\s*//' | tr -d '"' | tr -d "'")
+    related_agents=$(echo "$frontmatter" | grep -A 60 -E "^related_agents:|^  related_agents:" | grep -E "^\s*-\s*name:" | sed 's/^\s*-\s*name:\s*//' | tr -d '"' | tr -d "'")
     if [[ -n "$related_agents" ]]; then
         while IFS= read -r related; do
             related=$(echo "$related" | tr -d '[:space:]')
             [[ -z "$related" ]] && continue
-            # Strip common prefixes (e.g., "name:" from "name:backend-developer")
             related="${related#name:}"
             related="${related#cagents:}"
-            # Check if the referenced agent exists in any domain
-            local found=false
-            for check_domain in "${DOMAINS[@]}"; do
-                if [[ -f "$PROJECT_ROOT/$check_domain/agents/$related/SKILL.md" ]]; then
-                    found=true
-                    break
-                fi
-            done
-            if [[ "$found" != true ]]; then
-                log_warn "related-agent '$related' not found in any domain: $relative_path"
+            if [[ -z "${AGENT_INDEX[$related]:-}" ]]; then
+                log_warn "related_agents '$related' not found in any archetype: $relative_path"
             fi
         done <<< "$related_agents"
     fi
 
-    # Check 10: Vibe field presence (WARN if missing - advisory)
-    # After migration, vibe lives inside metadata: block
-    # Silent pass for now - vibe is advisory
-    : # no-op
+    # Check 12: Vibe field presence (advisory; lives in metadata:)
+    : # silent pass; advisory only
 
-    # Check 15b: Model field presence (WARN if missing)
-    # After migration, model lives inside metadata: block
+    # Recommended: Model field presence
     if ! has_fm_field "model" "$frontmatter"; then
         log_warn "Missing 'model' field (recommended per Agent Skills spec): $relative_path"
     fi
 
-    # Check 15c: Color field presence (WARN if missing)
-    # After migration, color lives inside metadata: block
+    # Recommended: Color field presence
     if ! has_fm_field "color" "$frontmatter"; then
         log_warn "Missing 'color' field (recommended per Anthropic convention): $relative_path"
     fi
@@ -269,24 +348,23 @@ validate_agent() {
 }
 
 #
-# Validate all agents in a domain
+# Validate all agents in an archetype tree (walks the whole tree)
 #
-validate_domain() {
-    local domain="$1"
-    local agents_dir="$PROJECT_ROOT/$domain/agents"
+validate_archetype() {
+    local archetype="$1"
+    local archetype_dir="$PROJECT_ROOT/$archetype"
 
-    if [[ ! -d "$agents_dir" ]]; then
+    if [[ ! -d "$archetype_dir" ]]; then
         return
     fi
 
     if [[ $COUNT_ONLY != true ]]; then
-        echo -e "\n${BLUE}[$domain]${NC}"
+        echo -e "\n${BLUE}[$archetype]${NC}"
     fi
 
-    # Find all SKILL.md files
     while IFS= read -r skill_md; do
         validate_agent "$skill_md"
-    done < <(find "$agents_dir" -name "SKILL.md" -type f 2>/dev/null | sort)
+    done < <(find "$archetype_dir" -name SKILL.md -type f 2>/dev/null | sort)
 }
 
 #
@@ -315,8 +393,7 @@ check_orphans() {
 }
 
 #
-# Validate hook registry (WI-22/WI-37/WI-38)
-# Verify all hooks referenced in settings.json actually exist as .cjs files
+# Validate hook registry: all hooks referenced in settings.json exist as .cjs files
 #
 validate_hooks() {
     local settings_json="$PROJECT_ROOT/.claude/settings.json"
@@ -329,7 +406,6 @@ validate_hooks() {
         echo -e "\n${BLUE}[hook registry]${NC}"
     fi
 
-    # Extract hook filenames from settings.json commands
     local hook_names
     hook_names=$(node -e "
         const data = JSON.parse(require('fs').readFileSync('$settings_json', 'utf8'));
@@ -364,14 +440,13 @@ validate_hooks() {
         echo -e "  ${GREEN}All $hook_count registered hooks have matching .cjs files${NC}"
     fi
 
-    # Verify hook count matches expected (27 registered hooks across 19 event types)
     if [[ $hook_count -gt 0 ]] && [[ $hook_count -ne 27 ]]; then
         log_warn "Hook count mismatch: found $hook_count registered hooks, expected 27"
     fi
 }
 
 #
-# Check 15: Validate plugin.json structural requirements
+# Validate plugin.json structural requirements
 #
 validate_plugin_json() {
     if [[ $COUNT_ONLY != true ]]; then
@@ -384,7 +459,6 @@ validate_plugin_json() {
         return
     fi
 
-    # Required field: name
     local has_name
     has_name=$(node -e "
         const data = JSON.parse(require('fs').readFileSync('$root_plugin', 'utf8'));
@@ -395,11 +469,12 @@ validate_plugin_json() {
     else
         log_pass "Root plugin.json has required 'name' field"
     fi
-
 }
 
 #
-# Check 16: Validate domain_overrides.yaml agent references
+# Validate domain_overrides.yaml controller_catalog references resolve to real agents.
+# domain_overrides files still live in {legacy_domain}/config/ — only the agents/ subdir was moved.
+# Agent references are by name; we look them up via the AGENT_INDEX (any archetype).
 #
 validate_domain_overrides() {
     if [[ $COUNT_ONLY != true ]]; then
@@ -409,28 +484,26 @@ validate_domain_overrides() {
     local overrides_found=0
     local overrides_errors=0
 
-    for domain in "${DOMAINS[@]}"; do
-        local overrides_file="$PROJECT_ROOT/$domain/config/domain_overrides.yaml"
+    for legacy_domain in "${LEGACY_DOMAINS[@]}"; do
+        local overrides_file="$PROJECT_ROOT/$legacy_domain/config/domain_overrides.yaml"
         if [[ ! -f "$overrides_file" ]]; then
             continue
         fi
         overrides_found=$((overrides_found + 1))
 
-        # Extract agent references from controller_catalog
+        # controller_catalog uses array form: tier_2: [agent-a, agent-b]
+        # Extract identifiers from any line of the form: tier_N: [a, b, c]
         local agent_refs
-        agent_refs=$(grep -E "^\s+name:" "$overrides_file" 2>/dev/null | sed 's/^\s*name:\s*//' | tr -d '"' | tr -d "'" | tr -d '[:space:]')
+        agent_refs=$(grep -E "^\s*tier_[0-9]+:\s*\[" "$overrides_file" 2>/dev/null \
+                      | sed -E 's/^[^[]*\[//; s/\].*$//' \
+                      | tr ',' '\n' \
+                      | tr -d '"' | tr -d "'" \
+                      | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+
         while IFS= read -r agent_ref; do
             [[ -z "$agent_ref" ]] && continue
-            # Check if agent directory exists in this domain or any domain
-            local found=false
-            for check_domain in "${DOMAINS[@]}"; do
-                if [[ -d "$PROJECT_ROOT/$check_domain/agents/$agent_ref" ]]; then
-                    found=true
-                    break
-                fi
-            done
-            if [[ "$found" != true ]]; then
-                log_warn "domain_overrides.yaml references agent '$agent_ref' not found in any domain: $domain/config/domain_overrides.yaml"
+            if [[ -z "${AGENT_INDEX[$agent_ref]:-}" ]]; then
+                log_warn "domain_overrides.yaml references agent '$agent_ref' not found in archetype tree: $legacy_domain/config/domain_overrides.yaml"
                 overrides_errors=$((overrides_errors + 1))
             fi
         done <<< "$agent_refs"
@@ -445,11 +518,10 @@ validate_domain_overrides() {
 # Main
 #
 main() {
-    # Parse arguments
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            --domain)
-                FILTER_DOMAIN="$2"
+            --archetype|--domain)
+                FILTER_ARCHETYPE="$2"
                 shift 2
                 ;;
             --strict)
@@ -462,7 +534,7 @@ main() {
                 ;;
             *)
                 echo "Unknown option: $1"
-                echo "Usage: $0 [--domain <name>] [--strict] [--count]"
+                echo "Usage: $0 [--archetype <name>] [--strict] [--count]"
                 exit 1
                 ;;
         esac
@@ -471,16 +543,18 @@ main() {
     if [[ $COUNT_ONLY != true ]]; then
         echo ""
         echo "=================================================="
-        echo "cAgents Agent Validation (v10.26.0)"
+        echo "cAgents Agent Validation (v11.1.1)"
         echo "=================================================="
     fi
 
-    # Validate domains
-    if [[ -n "$FILTER_DOMAIN" ]]; then
-        validate_domain "$FILTER_DOMAIN"
+    REGISTERED_AGENTS=$(load_registered_agents)
+    build_agent_index
+
+    if [[ -n "$FILTER_ARCHETYPE" ]]; then
+        validate_archetype "$FILTER_ARCHETYPE"
     else
-        for domain in "${DOMAINS[@]}"; do
-            validate_domain "$domain"
+        for archetype in "${ARCHETYPES[@]}"; do
+            validate_archetype "$archetype"
         done
         check_orphans
         validate_hooks
@@ -488,7 +562,6 @@ main() {
         validate_domain_overrides
     fi
 
-    # Summary
     echo ""
     echo "=================================================="
     echo "AGENT VALIDATION SUMMARY"

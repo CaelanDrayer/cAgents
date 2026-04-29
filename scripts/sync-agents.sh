@@ -1,6 +1,6 @@
 #!/bin/bash
 # sync-agents.sh — Auto-generate the `agents` array in .claude-plugin/plugin.json
-# by globbing all SKILL.md files from domain agents/ directories.
+# by globbing all SKILL.md files across the v11.1.0 archetype tree.
 #
 # Usage: ./scripts/sync-agents.sh
 #
@@ -20,23 +20,19 @@ const path = require('path');
 const ROOT = process.env.CAGENTS_ROOT;
 const PLUGIN_JSON = path.join(ROOT, '.claude-plugin', 'plugin.json');
 
-// Known domain directories — add new domains here as they are created
-const DOMAIN_DIRS = [
-  'arts',
-  'business',
+// v11.1.0 archetype roots (9 total). The new tree places SKILL.md files at
+// {archetype}/{branch?}/{agent}/SKILL.md — no `agents/` segment. We walk each
+// archetype root recursively to find every SKILL.md.
+const ARCHETYPE_DIRS = [
+  'developer',
+  'operator',
+  'advisor',
+  'analyst',
+  'creator',
+  'writer',
+  'strategist',
   'core',
-  'creative',
-  'education',
-  'engineering',
-  'growth',
-  'health',
   'leadership',
-  'people',
-  'personal',
-  'science',
-  'service',
-  'shared',
-  'trades',
 ];
 
 function findSkillMds(dir) {
@@ -63,10 +59,10 @@ const raw = fs.readFileSync(PLUGIN_JSON, 'utf8');
 const plugin = JSON.parse(raw);
 
 const agentPaths = [];
-for (const domain of DOMAIN_DIRS) {
-  const agentsDir = path.join(ROOT, domain, 'agents');
-  if (!fs.existsSync(agentsDir)) continue;
-  const found = findSkillMds(agentsDir);
+for (const archetype of ARCHETYPE_DIRS) {
+  const archetypeDir = path.join(ROOT, archetype);
+  if (!fs.existsSync(archetypeDir)) continue;
+  const found = findSkillMds(archetypeDir);
   for (const absPath of found) {
     const rel = path.relative(ROOT, absPath).replace(/\\/g, '/');
     agentPaths.push(rel);

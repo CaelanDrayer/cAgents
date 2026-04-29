@@ -10,6 +10,36 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.1.1] - 2026-04-29
+
+### Fixed
+- **Post-migration validation tooling rebuilt for the v11.1.0 archetype tree.** Five
+  scripts/files were left iterating the legacy `{domain}/agents/` glob and reported 0
+  agents on the new tree:
+  - `scripts/ci/validate-agents.sh` rewritten to walk the 9 archetype roots and
+    validate top-level `archetype:` (all agents) and `branch:` (3-level only) against
+    the directory layout. Top-level `domain:` is now forbidden (REMOVED in v11.1.0).
+    `--archetype` flag added; `--domain` retained as back-compat alias. Reports 243
+    agents, 0 errors.
+  - `scripts/sync-agents.sh` walks the archetype tree to regenerate
+    `.claude-plugin/plugin.json#agents`. Used by the pre-commit hook.
+  - `scripts/lint-agents.sh` walks the archetype tree; check 7 now requires top-level
+    `archetype:` instead of `domain:` (legacy domain in metadata is tolerated).
+- **`.claude-plugin/plugin.json` agents array repopulated** (243 entries). The v11.1.0
+  migration emptied the array even though CHANGELOG claimed 246 entries were rewritten;
+  `tests/config/plugin-json.test.js` was failing as a result. Restored.
+- **Top-level `archetype: core` added** to 4 core agents missed in the v11.1.0
+  migration sweep: `core/trigger`, `core/orchestrator`, `core/universal-router`,
+  `core/universal-planner`.
+- **`analyst/science-coordinator` gained the `allowed-tools:` field** that lint-agents
+  required but had been silently passing because the linter wasn't iterating any
+  agents.
+
+### Docs
+- Added `docs/migration/v11.1.0-followups.md` — execution spec for the v11.1.x
+  follow-ups (this bump satisfies FU-1).
+
+
 ## [11.1.0] - 2026-04-29
 
 ### Breaking

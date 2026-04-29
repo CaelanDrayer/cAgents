@@ -1,5 +1,6 @@
 ---
 name: trigger
+archetype: core
 description: "Use when entering the pipeline as the initial entry point, parsing user requests, and routing to the appropriate skill or workflow."
 metadata:
   vibe: The front door that sends every request to exactly the right room

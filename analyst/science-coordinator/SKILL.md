@@ -24,6 +24,7 @@ metadata:
     - What are the key variables and how do they interact?
     - What level of rigor and precision is required?
     - Are there competing theories or interpretations?
+allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
 ---
 
 # Science Coordinator

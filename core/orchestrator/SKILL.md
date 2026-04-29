@@ -1,5 +1,6 @@
 ---
 name: orchestrator
+archetype: core
 description: "Use when enriching request context at pipeline start, detecting domain and complexity, or preparing enriched_context.yaml for downstream agents."
 metadata:
   vibe: The conductor who ensures every instrument enters on cue
