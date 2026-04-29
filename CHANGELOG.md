@@ -10,6 +10,26 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.1.3] - 2026-04-29
+
+### Fixed
+- **Stale agent references discovered during v11.1.0 migration removed.** Three
+  config/script files pointed at agents that never had a backing SKILL.md:
+  - `shared/config/planner_config.yaml` — `compliance-officer` (path
+    `service/agents/compliance-officer/SKILL.md`) replaced with the real
+    `compliance-manager` (`advisor/legal/compliance-manager/SKILL.md`).
+  - `people/config/planner_config.yaml` — `talent-acquisition-manager` (path
+    `people/agents/talent-acquisition-manager/SKILL.md`) replaced with the real
+    `talent-recruiter` (`operator/people-ops/talent-recruiter/SKILL.md`).
+  - `scripts/fix-resource-frontmatter.sh` — dropped lines pointing at
+    `growth/agents/content-marketing-manager/...` and
+    `engineering/agents/security-specialist/...` (4 lines total). Both agents
+    never existed; the script processed nonexistent paths as no-ops.
+- Reduces remaining `{domain}/agents/` references in the working tree from ~21
+  (per CHANGELOG `[11.1.0]` known-follow-ups note) to 11 — only intentional
+  references remain (skill docs, the migration script, and the FU spec doc itself).
+- Refs FU-3.
+
 ## [11.1.2] - 2026-04-29
 
 ### Docs

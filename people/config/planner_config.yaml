@@ -35,7 +35,9 @@ controller_catalog:
       complexity: tier_2
 
   # Note: hr-ops-specialist is an execution agent (tier: execution in SKILL.md).
-  # talent-acquisition-manager is a controller listed in domain_overrides.yaml.
+  # talent-recruiter is the actual recruiter agent in the v11.1.0 archetype tree
+  # (was previously referred to as `talent-acquisition-manager` — that name never had
+  # a backing SKILL.md and was a stale planner config entry pre-FU-3).
 
   tier_3:
     - name: hr-manager
@@ -47,8 +49,8 @@ controller_catalog:
         - "Multi-team people management"
       complexity: tier_3
 
-    - name: talent-acquisition-manager
-      agent_path: people/agents/talent-acquisition-manager/SKILL.md
+    - name: talent-recruiter
+      agent_path: operator/people-ops/talent-recruiter/SKILL.md
       coordination_style: question_based
       typical_questions: *people_questions
       use_when:

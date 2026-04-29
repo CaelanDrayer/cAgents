@@ -440,7 +440,7 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights:
 
-- **V11.1.2** — Current release. Removed statusLine hook and status bar integration.
+- **V11.1.3** — Current release. Removed statusLine hook and status bar integration.
 - **V11.0.0** — Removed deprecated skills `/review`, `/optimize`, `/context`, `/debug`. `/review` and `/optimize` consolidated into `/improve` (`--mode review|optimize|full`); `/context` replaced by `/run context …` passthrough; `/debug` replaced by `/run --mode debug`. See [docs/MIGRATION-V11.md](docs/MIGRATION-V11.md) for the migration guide.
 - **V10.23.0** — 29-check validation framework, regression validation chain, mandatory self-validation protocol for execution agents
 - **V10.22.0** — Two-stage review protocol (spec compliance then code quality), 5 pipeline improvements

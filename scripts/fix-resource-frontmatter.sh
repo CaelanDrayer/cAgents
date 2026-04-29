@@ -4,9 +4,10 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# List of files with invalid frontmatter (resource files that shouldn't have it)
+# List of files with invalid frontmatter (resource files that shouldn't have it).
+# Stale entries from v11.1.0 cleanup (FU-3): the agents `content-marketing-manager`
+# and `security-specialist` never existed — those lines have been removed.
 files_to_fix=(
-"$PROJECT_ROOT/growth/agents/content-marketing-manager/resources/content-templates.md"
 "$PROJECT_ROOT/developer/fullstack/architect/resources/adr-template.md"
 "$PROJECT_ROOT/developer/fullstack/architect/resources/example-interactions.md"
 "$PROJECT_ROOT/developer/backend/backend-developer/resources/example-interactions.md"
@@ -15,10 +16,6 @@ files_to_fix=(
 "$PROJECT_ROOT/developer/frontend/frontend-lead/resources/example-interactions.md"
 "$PROJECT_ROOT/developer/quality/qa-lead/resources/examples.md"
 "$PROJECT_ROOT/developer/quality/code-reviewer/resources/report-template.md"
-"$PROJECT_ROOT/engineering/agents/security-specialist/resources/example-interactions.md"
-"$PROJECT_ROOT/engineering/agents/security-specialist/resources/owasp-top10.md"
-"$PROJECT_ROOT/engineering/agents/security-specialist/resources/review-checklist.md"
-"$PROJECT_ROOT/engineering/agents/security-specialist/resources/secure-coding.md"
 "$PROJECT_ROOT/developer/fullstack/senior-developer/resources/example-interactions.md"
 "$PROJECT_ROOT/developer/fullstack/tech-lead/resources/decision-frameworks.md"
 "$PROJECT_ROOT/developer/fullstack/tech-lead/resources/example-interactions.md"

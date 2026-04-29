@@ -95,8 +95,8 @@ controller_catalog:
         - "Audit reporting"
       complexity: tier_2
 
-    - name: compliance-officer
-      agent_path: service/agents/compliance-officer/SKILL.md
+    - name: compliance-manager
+      agent_path: advisor/legal/compliance-manager/SKILL.md
       coordination_style: question_based
       typical_questions:
         - "What regulations apply to this activity?"
