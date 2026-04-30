@@ -6,6 +6,15 @@ paths:
 
 # Business Domain Guidelines
 
+> **Overlay status (V11.1.0+)**: This file describes a legacy *domain*
+> overlay used for routing keywords and controller catalogs. The canonical
+> agent organization is the 9-archetype tree (`developer/`, `operator/`,
+> `advisor/`, `analyst/`, `creator/`, `writer/`, `strategist/`, `core/`,
+> `leadership/`). Domain-keyworded requests still resolve through this
+> overlay, but new agents live under archetype roots. See
+> `.claude/rules/core/skill-format.md` for the canonical schema.
+
+
 Domain-specific patterns for strategy, product, operations, finance, marketing, and sales workflows.
 
 ## Controller Selection

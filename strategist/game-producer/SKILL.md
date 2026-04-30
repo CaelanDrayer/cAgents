@@ -28,7 +28,7 @@ metadata:
       type: collaborates_with
     - name: game-programmer
       type: cross_domain
-    - name: project-manager
+    - name: program-project-manager
       type: collaborates_with
 allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
 ---

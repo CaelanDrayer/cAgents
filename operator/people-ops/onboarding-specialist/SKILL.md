@@ -19,7 +19,7 @@ metadata:
   related_agents:
     - name: hr-manager
       type: coordinated_by
-    - name: recruiter
+    - name: talent-recruiter
       type: pipeline_prev
     - name: learning-specialist
       type: collaborates_with

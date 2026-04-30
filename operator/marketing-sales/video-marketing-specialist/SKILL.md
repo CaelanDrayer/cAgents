@@ -26,9 +26,9 @@ metadata:
   related_agents:
     - name: campaign-manager
       type: coordinated_by
-    - name: social-media-manager
+    - name: campaign-manager
       type: collaborates_with
-    - name: content-marketing-manager
+    - name: campaign-manager
       type: collaborates_with
     - name: creative-director
       type: reviewed_by

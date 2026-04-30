@@ -1,6 +1,8 @@
 ---
 name: sociologist
 description: "Analyzes social structures, inequality, institutions, social movements, and group dynamics using sociological theory and research methods. Use when work requires understanding of how social forces shape behavior, organizations, or outcomes."
+model: sonnet
+color: bright_white
 vibe: "The personal is structural — always"
 tier: execution
 archetype: analyst
@@ -15,7 +17,9 @@ capabilities:
   - institutional_analysis
   - social_movements
   - cultural_analysis
-related-agents: ["psychologist", "political-analyst"]
+related_agents:
+  - name: psychologist
+  - name: political-analyst
 not-my-scope: ["individual therapy", "clinical diagnosis", "legal analysis"]
 allowed-tools: Read Grep Glob Write Edit Bash
 ---

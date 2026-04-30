@@ -1,6 +1,7 @@
 ---
 name: support-agent
 description: "Handles customer support across all channels including tickets, live chat, and technical troubleshooting with log analysis and bug reproduction."
+color: bright_white
 tier: execution
 archetype: operator
 branch: support

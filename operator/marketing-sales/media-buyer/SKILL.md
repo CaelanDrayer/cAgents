@@ -26,7 +26,7 @@ metadata:
   related_agents:
     - name: campaign-manager
       type: coordinated_by
-    - name: digital-marketing-manager
+    - name: marketing-strategist
       type: collaborates_with
     - name: marketing-analyst
       type: shares_data_with

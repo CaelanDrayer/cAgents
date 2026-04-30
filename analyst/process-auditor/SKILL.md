@@ -24,7 +24,7 @@ metadata:
       type: collaborates_with
     - name: quality-manager
       type: collaborates_with
-    - name: compliance-officer
+    - name: compliance-manager
       type: cross_domain
   answers_questions:
     - What processes and controls are in scope for this audit?

@@ -21,7 +21,7 @@ metadata:
       type: coordinated_by
     - name: employee-relations-specialist
       type: collaborates_with
-    - name: compliance-officer
+    - name: compliance-manager
       type: cross_domain
 allowed-tools: Read Grep Glob Write Edit Bash
 ---

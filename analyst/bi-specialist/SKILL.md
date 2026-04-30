@@ -27,7 +27,7 @@ metadata:
   related_agents:
     - name: data-analyst
       type: cross_domain
-    - name: marketing-data-analyst
+    - name: data-analyst
       type: cross_domain
     - name: data-scientist
       type: collaborates_with

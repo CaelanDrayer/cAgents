@@ -1,6 +1,7 @@
 ---
 name: academic-researcher
 description: "Academic literature review, research design, methodology selection, academic writing support, and grant proposal development. Use for scholars, graduate students, and research teams."
+model: sonnet
 vibe: "Turns a vague research question into a fundable, publishable study."
 tier: execution
 archetype: advisor
@@ -13,7 +14,9 @@ capabilities:
   - research_design
   - academic_writing
   - grant_writing
-related-agents: ["statistician", "academic-tutor"]
+related_agents:
+  - name: statistician
+  - name: academic-tutor
 not-my-scope: ["Data analysis execution", "Statistical modeling", "IRB administration"]
 allowed-tools: Read Grep Glob Write Edit Bash
 color: bright_blue

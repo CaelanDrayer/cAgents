@@ -30,9 +30,9 @@ metadata:
     - content creation
     - marketing strategy
   related_agents:
-    - name: security-specialist
+    - name: security-engineer
       type: coordinates
-    - name: security-analyst
+    - name: security-engineer
       type: collaborates_with
     - name: architect
       type: collaborates_with

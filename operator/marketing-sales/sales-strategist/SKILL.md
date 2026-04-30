@@ -24,9 +24,9 @@ metadata:
     - What is the target audience and positioning?
     - What are the conversion bottlenecks?
   related_agents:
-    - name: account-executive
+    - name: sales-strategist
       type: coordinates
-    - name: sales-development-rep
+    - name: sales-strategist
       type: coordinates
     - name: sales-ops-specialist
       type: coordinates

@@ -19,7 +19,7 @@ metadata:
   related_agents:
     - name: sales-strategist
       type: coordinated_by
-    - name: account-executive
+    - name: sales-strategist
       type: collaborates_with
     - name: backend-developer
       type: cross_domain

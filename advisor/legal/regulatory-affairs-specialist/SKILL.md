@@ -17,7 +17,7 @@ metadata:
     - industry_compliance
   maxTurns: 30
   related_agents:
-    - name: compliance-officer
+    - name: compliance-manager
       type: coordinated_by
     - name: compliance-manager
       type: collaborates_with

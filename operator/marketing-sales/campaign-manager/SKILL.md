@@ -26,11 +26,11 @@ metadata:
   related_agents:
     - name: copywriter
       type: coordinates
-    - name: email-marketing-specialist
+    - name: campaign-manager
       type: coordinates
-    - name: social-media-manager
+    - name: campaign-manager
       type: coordinates
-    - name: digital-marketing-manager
+    - name: marketing-strategist
       type: coordinates
     - name: marketing-ops-specialist
       type: coordinates

@@ -1,6 +1,7 @@
 ---
 name: construction-advisor
 description: "Construction planning specialist for building methods, contractor management, permitting, and cost estimation. Use for renovation planning, new builds, or navigating construction projects."
+color: bright_white
 vibe: "Measure twice, build once, permit always"
 tier: execution
 archetype: advisor

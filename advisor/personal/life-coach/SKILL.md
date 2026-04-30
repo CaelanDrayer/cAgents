@@ -1,6 +1,7 @@
 ---
 name: life-coach
 description: "Guides goal setting, values clarification, habit formation, and life transitions. Use when someone needs help defining their direction, building sustainable habits, or navigating major life changes."
+color: bright_white
 vibe: "Your potential, unlocked one step at a time"
 tier: execution
 archetype: advisor
@@ -11,10 +12,9 @@ capabilities:
   - habit_formation
   - values_work
   - transition_coaching
-related-agents:
-  - career-counselor
-  - productivity-coach
-  - mindfulness-coach
+related_agents:
+  - name: career-counselor
+  - name: productivity-coach
 not-my-scope:
   - Clinical therapy or mental health diagnosis
   - Financial or legal advice

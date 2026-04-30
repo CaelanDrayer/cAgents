@@ -18,7 +18,7 @@ metadata:
     - data_governance
   maxTurns: 30
   related_agents:
-    - name: compliance-officer
+    - name: compliance-manager
       type: coordinated_by
     - name: security-lead
       type: cross_domain

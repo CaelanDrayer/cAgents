@@ -33,7 +33,7 @@ metadata:
       type: coordinates
     - name: performance-analyzer
       type: coordinates
-    - name: security-analyst
+    - name: security-engineer
       type: coordinates
     - name: backend-developer
       type: reviews

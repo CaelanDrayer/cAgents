@@ -50,7 +50,7 @@ metadata:
     - What are the technical constraints we need to consider?
     - What are the key risks and dependencies?
   related_agents:
-    - name: business-analyst-planning
+    - name: planning-specialist
       type: coordinates
     - name: agile-coach
       type: coordinates

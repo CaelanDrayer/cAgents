@@ -10,6 +10,73 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.1.4] - 2026-04-29
+
+Comprehensive plugin health sweep. Closes the v11.1.0 migration cleanup and
+brings every documentation/config/script file into sync with the
+9-archetype catalog and the 18-slot version registry.
+
+### Fixed
+- **Hook-count drift**: `.claude/settings.json` `$comment` field claimed
+  "30 CJS files (27 registered hooks + utils + launcher + eval CLI)". Reality
+  is 29 .cjs files = 26 unique registered hooks + hook-utils.cjs +
+  run-hook.cjs launcher + eval-runner.cjs CLI. Comment now matches reality.
+- **Hook-count assertion**: `scripts/ci/validate-agents.sh:444` hardcoded
+  `expected 27`. Changed to `expected 26`. Resolves ISSUE-1.
+- **Extra PASS print (244/243)**: `scripts/ci/validate-agents.sh` `log_pass`
+  was being called from a non-agent location (plugin.json structure check),
+  bumping the agent-PASS counter by 1. The plugin.json check now uses a
+  direct echo so the counter reflects only agent-level passes. Validator
+  now reports `Total agents: 243, Passed: 243`. Resolves ISSUE-7.
+- **111 SKILL.md frontmatter warnings swept** (resolves ISSUE-2):
+  - 43 broken `related_agents` cross-references retargeted or removed.
+    Top offenders: `compliance-officer` (6×), `social-media-manager` (4×),
+    `digital-marketing-manager` (4×), `account-executive` (4×),
+    `project-manager` (3×). All retargets validated against the actual
+    archetype tree (no dangling targets).
+  - 26 legacy `related-agents` (hyphen, flat-list) fields renamed to
+    `related_agents` (underscore, structured `- name: foo` block).
+  - 28 missing `color` fields added (`color: bright_white` default).
+  - 13 missing `model` fields added (`model: sonnet` default for
+    execution-tier agents).
+  - Net effect: `validate-agents.sh` now reports 0 errors, 0 warnings,
+    243/243 PASS.
+- **Stale validator slots pruned** (resolves ISSUE-4):
+  `scripts/ci/validate-versions.sh` previously defined 24 slots, of which
+  10 referenced paths that no longer exist (e.g. `engineering/plugin.json`,
+  `.claude/skills/review/SKILL.md`). Pruned to track exactly the 18
+  canonical locations from `.claude/rules/core/version-registry.md`. Now
+  reports `Checked 18/18 locations, 0 mismatches, 0 skipped`.
+
+### Changed
+- **Archetype-canonical doc alignment** (resolves ISSUE-5):
+  Locked the v11.1.0 migration policy: 9 archetypes
+  (`developer`, `operator`, `advisor`, `analyst`, `creator`, `writer`,
+  `strategist`, `core`, `leadership`) are canonical. The 15-domain framing
+  is retained explicitly as a routing/config overlay (router_keywords +
+  controller_catalog files in 13 legacy domain dirs). `CLAUDE.md` and
+  `README.md` updated to lead with the archetype tree and document the
+  legacy domain dirs as overlay-only. Legacy domain dirs are NOT deleted
+  (they hold router config still loaded by the planner).
+- **Staging artifact archived** (resolves ISSUE-8):
+  `cagents-memory-staging/file-move-table.tsv` (v11.1.0 migration record)
+  moved to `archive/migration/v11.1.0/file-move-table.tsv`. The empty
+  `cagents-memory-staging/` directory removed. Both locations are
+  gitignored — no tracked git state changed.
+
+### Added
+- **`scripts/sync-agents.sh --check` dry-run flag** (resolves ISSUE-3):
+  CI-friendly drift detection. Exits 0 when `plugin.json` matches the
+  archetype-tree SKILL.md inventory, exits 1 on drift, never mutates
+  `plugin.json`. Includes `--help` documentation.
+- **Two regression tests (Bug-Driven Testing mandate)**:
+  - `tests/regression/related-agents-validation.test.js` — asserts 0 errors,
+    < 5 broken `related_agents` warnings, < 5 legacy-format warnings, < 10
+    total warnings (down from 111). Fails before sweep, passes after.
+  - `tests/regression/sync-agents-check.test.js` — exercises both `--check`
+    states (in-sync exits 0, drift exits 1) and asserts plugin.json mtime
+    is unchanged across `--check` invocations.
+
 ## [11.1.3] - 2026-04-29
 
 ### Fixed

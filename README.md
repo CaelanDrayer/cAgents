@@ -2,11 +2,11 @@
 
 **Your AI Workforce for Claude Code**
 
-Deploy 243 specialized agents across 15 domains through an intelligent pipeline that routes your request, plans execution, decomposes work, coordinates specialists, reviews outputs, and validates quality — automatically.
+Deploy 243 specialized agents across 9 builder-role archetypes (with a legacy 15-domain routing overlay) through an intelligent pipeline that routes your request, plans execution, decomposes work, coordinates specialists, reviews outputs, and validates quality — automatically.
 
 | Stat | Value |
 |------|-------|
-| Agents | 243 across 15 domains |
+| Agents | 243 across 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership) |
 | Skills | 6 slash commands |
 | Hooks | 29 .cjs files = 26 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI, across 19 event types |
 | Models | Opus 4.6 (controllers) · Sonnet 4.6 (execution) · Haiku 4.5 (support) |
@@ -19,7 +19,7 @@ Deploy 243 specialized agents across 15 domains through an intelligent pipeline 
 - Multi-step task orchestration with automatic routing, planning, and coordination
 - Cross-domain work (engineering + business + creative + growth in one request)
 - Parallel execution with quality-gated waves (40-60% faster for complex tasks)
-- Consistent delegation patterns across 15 domains and 243 specialists
+- Consistent delegation patterns across 9 archetypes (243 specialists) with a legacy 15-domain routing overlay
 - Reviewer loops, confidence scoring, and revision routing built into every run
 
 **cAgents is NOT for you if:**
@@ -172,24 +172,37 @@ Recommends the right skill based on your task description. Use it when you are u
 
 ## Domain Breakdown
 
-| Domain | Agents | Scope |
-|--------|--------|-------|
-| **Engineering** | 31 | Backend, frontend, DevOps, QA, security, game dev, accessibility |
-| **Creative** | 30 | Writing, narrative design, literary criticism, game art, audio |
-| **Business** | 28 | Strategy, product, operations, finance, project management |
-| **Growth** | 34 | Marketing, sales, SEO, demand generation, revenue operations |
-| **People** | 17 | HR, talent acquisition, culture, compensation, compliance |
-| **Service** | 28 | Customer support, CX, legal, compliance, governance |
-| **Leadership** | 11 | C-suite executives (CEO, CTO, CPO, CMO, CFO, COO, CRO, CHRO, CCO, CSO, CLO) — used by `/org` |
-| **Shared** | 12 | Cross-domain intelligence: BI, data science, market research, social science |
-| **Science** | 10 | STEM research, scientific analysis |
-| **Health** | 5 | Medical, wellness, fitness, nutrition |
-| **Education** | 5 | Teaching, tutoring, academic support |
-| **Personal** | 5 | Career, life coaching, personal finance |
-| **Arts** | 5 | Visual arts, music, film, performing arts |
-| **Trades** | 5 | Culinary, construction, automotive, agriculture |
+### Canonical: 9 Archetypes (V11.1.0+)
 
-These 15 domains total 226 user-facing agents. The remaining 17 are Core pipeline infrastructure (orchestrator, planner, decomposer, validator, router) that run automatically and are not directly invoked — bringing the full catalog to 243 agents.
+Since v11.1.0, the 243-agent catalog is organized as a builder-role archetype tree:
+
+| Archetype | Agents | Scope |
+|-----------|-------:|-------|
+| **Developer** | 31 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
+| **Operator** | 81 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
+| **Advisor** | 30 | Legal, health, education, personal (4 branches) |
+| **Analyst** | 27 | Data science, BI, research, social science |
+| **Writer** | 26 | Copy, narrative, technical, editorial |
+| **Creator** | 11 | Visual artists, designers, audiovisual creators |
+| **Strategist** | 9 | Product owners, portfolio managers, planners |
+| **Core** | 17 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, etc.) |
+| **Leadership** | 11 | C-suite executives — used by `/org` |
+| **TOTAL** | **243** | |
+
+### Legacy: 15-Domain Routing Overlay
+
+The router and planner still consume `{domain}/config/domain_overrides.yaml` (controller_catalog + router_keywords) from 13 legacy domain dirs. These dirs hold no SKILL.md files — they exist purely as a routing overlay so domain-keyworded requests still find the right archetype controller.
+
+| Legacy Domain | Maps to Archetypes |
+|---------------|---------------------|
+| **Engineering** (31 routing slots) | Most of `developer/` + parts of `operator/infrastructure` |
+| **Creative** (30 routing slots) | `creator/` + parts of `writer/` |
+| **Business** (28 routing slots) | `strategist/` + `operator/business-ops` |
+| **Growth** (34 routing slots) | `operator/marketing-sales` + parts of `writer/` |
+| **People** (17 routing slots) | `operator/people-ops` |
+| **Service** (28 routing slots) | `operator/support` + `advisor/legal` |
+| **Leadership** | `leadership/` (used by `/org`) |
+| **Shared/Science/Health/Education/Personal/Arts/Trades** | `analyst/` + `advisor/{health,education,personal}` + `creator/` |
 
 **Engineering (31)** handles the full software stack: backend-developer, frontend-developer, devops-engineer, security-engineer, qa-lead, architect, dba, performance-analyzer, and 23 more. Use `/run Fix the bug` or `/team Build the feature` and the pipeline routes here automatically for software tasks.
 
@@ -360,7 +373,7 @@ For cross-domain work that spans multiple areas (e.g., launching a product requi
 | Dimension | cAgents | Official feature-dev plugin | Official code-review plugin |
 |-----------|---------|----------------------------|----------------------------|
 | **Agent count** | 243 | 3–5 | 3–5 |
-| **Business domains** | 15 | 1 (engineering) | 1 (engineering) |
+| **Business domains** | 9 archetypes (15 legacy routing overlays) | 1 (engineering) | 1 (engineering) |
 | **Pipeline state machine** | Yes — PASS/FAIL/REVISE routing, max 5 cycles | No | No |
 | **Parallel team execution** | Yes — N-wave with per-wave quality gates | No | No |
 | **Revision loops** | Yes — executor + reviewer, max 3 rounds per work item | No | No |
@@ -440,7 +453,8 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights:
 
-- **V11.1.3** — Current release. Removed statusLine hook and status bar integration.
+- **V11.1.4** — Current release. Plugin health sweep: archetype-canonical doc alignment (9 archetypes canonical, 15 domains as routing overlay), 109 stale `related_agents` cross-references swept, hook-count assertions corrected (26 unique registered, 29 .cjs total), `sync-agents.sh --check` dry-run flag added, `validate-versions.sh` pruned to 18 canonical slots, regression tests added.
+- **V11.1.3** — Removed statusLine hook and status bar integration.
 - **V11.0.0** — Removed deprecated skills `/review`, `/optimize`, `/context`, `/debug`. `/review` and `/optimize` consolidated into `/improve` (`--mode review|optimize|full`); `/context` replaced by `/run context …` passthrough; `/debug` replaced by `/run --mode debug`. See [docs/MIGRATION-V11.md](docs/MIGRATION-V11.md) for the migration guide.
 - **V10.23.0** — 29-check validation framework, regression validation chain, mandatory self-validation protocol for execution agents
 - **V10.22.0** — Two-stage review protocol (spec compliance then code quality), 5 pipeline improvements
@@ -460,4 +474,4 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | 243 agents across 15 domains | Opus 4.6 · Sonnet 4.6 · Haiku 4.5
+**Built with Claude Code** | 243 agents across 9 archetypes | Opus 4.6 · Sonnet 4.6 · Haiku 4.5

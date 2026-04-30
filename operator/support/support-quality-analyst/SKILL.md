@@ -21,7 +21,7 @@ metadata:
       type: coordinated_by
     - name: support-supervisor
       type: collaborates_with
-    - name: customer-support-rep
+    - name: support-agent
       type: reviews
 allowed-tools: Read Grep Glob Write Edit Bash
 ---

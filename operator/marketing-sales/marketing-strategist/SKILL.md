@@ -27,9 +27,9 @@ metadata:
   related_agents:
     - name: brand-manager
       type: coordinates
-    - name: content-marketing-manager
+    - name: campaign-manager
       type: coordinates
-    - name: digital-marketing-manager
+    - name: marketing-strategist
       type: coordinates
     - name: campaign-manager
       type: collaborates_with

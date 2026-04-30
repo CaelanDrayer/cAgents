@@ -1,6 +1,7 @@
 ---
 name: academic-tutor
 description: "Subject-matter tutoring, concept explanation, problem solving, and exam preparation across all academic disciplines. Use for student support, concept clarification, and study coaching."
+model: sonnet
 vibe: "Makes hard concepts click — one question at a time."
 tier: execution
 archetype: advisor
@@ -13,7 +14,10 @@ capabilities:
   - problem_solving
   - study_coaching
   - exam_preparation
-related-agents: ["curriculum-designer", "language-tutor", "mathematician"]
+related_agents:
+  - name: curriculum-designer
+  - name: language-tutor
+  - name: mathematician
 not-my-scope: ["Curriculum design", "Classroom management", "Institutional policy"]
 allowed-tools: Read Grep Glob Write Edit Bash
 color: bright_cyan

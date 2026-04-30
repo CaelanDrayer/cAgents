@@ -16,7 +16,7 @@ metadata:
     - value_maximization
   maxTurns: 30
   related_agents:
-    - name: program-manager
+    - name: program-project-manager
       type: coordinated_by
     - name: strategic-planner
       type: collaborates_with

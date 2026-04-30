@@ -1,6 +1,7 @@
 ---
 name: talent-recruiter
 description: "Full-cycle talent acquisition covering sourcing, screening, interview coordination, pipeline management, employer branding, and hiring strategy. Use for any recruiting task from individual requisitions to org-wide hiring initiatives."
+color: bright_white
 tier: execution
 archetype: operator
 branch: people-ops

@@ -1,6 +1,7 @@
 ---
 name: curriculum-designer
 description: "K-12 and higher education curriculum development, learning objective creation, lesson planning, and assessment design aligned to standards. Use for building course frameworks and instructional sequences."
+model: sonnet
 vibe: "Architects learning journeys that take students somewhere real."
 tier: execution
 archetype: advisor
@@ -13,7 +14,9 @@ capabilities:
   - lesson_planning
   - assessment_creation
   - standards_alignment
-related-agents: ["teacher-coach", "academic-tutor"]
+related_agents:
+  - name: teacher-coach
+  - name: academic-tutor
 not-my-scope: ["Direct student tutoring", "Classroom delivery", "Grading individual work"]
 allowed-tools: Read Grep Glob Write Edit Bash
 color: bright_green

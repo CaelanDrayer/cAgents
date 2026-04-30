@@ -19,7 +19,7 @@ metadata:
   related_agents:
     - name: campaign-manager
       type: coordinated_by
-    - name: social-media-manager
+    - name: campaign-manager
       type: collaborates_with
 allowed-tools: Read Grep Glob Write Edit Bash
 ---

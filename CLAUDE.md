@@ -81,29 +81,25 @@ quality/        # completion, validation-framework, implicit-discovery (5 files)
 - **Tier 2**: Controllers (coordinate via batch delegation)
 - **Tier 3**: Execution agents (implement work items)
 - **Tier 4**: Support agents (foundational services)
-- **Total**: 243 agents across 15 domains
+- **Total**: 243 agents across 9 builder-role archetypes
 - **Execution**: Event-driven pipeline with progressive paths (minimal/medium/full), revision routing, reviewer loops
 
-**Domains** (15):
-| Domain | Dir | Agents | Capability |
-|--------|-----|--------|------------|
-| **Engineering** | `engineering/` | 31 | Software engineering, infrastructure, security, QA, game programming |
-| **Creative** | `creative/` | 30 | Creative writing, narrative design, literary criticism, game art, audio |
-| **Business** | `business/` | 28 | Strategy, product, operations, finance |
-| **Growth** | `growth/` | 34 | Marketing, sales, revenue operations |
-| **People** | `people/` | 17 | HR, talent acquisition, culture |
-| **Service** | `service/` | 28 | Customer support, CX, legal, compliance, governance |
-| **Leadership** | `leadership/` | 11 | C-suite executives + general-counsel (used by /org, not directly routable) |
-| **Core** | `core/` | 17 | Infrastructure agents (trigger, orchestrator, planner, reviewer, generic-coordinator, etc.) |
-| **Shared** | `shared/` | 12 | Cross-domain intelligence (BI, data science, market research, social science) |
-| **Science** | `science/` | 10 | STEM research, scientific analysis |
-| **Health** | `health/` | 5 | Medical, wellness, fitness, nutrition (uses generic-coordinator from core) |
-| **Education** | `education/` | 5 | Teaching, tutoring, academic support (uses generic-coordinator from core) |
-| **Personal** | `personal/` | 5 | Career, life coaching, personal finance (uses generic-coordinator from core) |
-| **Arts** | `arts/` | 5 | Visual arts, music, film, performing arts (uses generic-coordinator from core) |
-| **Trades** | `trades/` | 5 | Culinary, construction, automotive, agriculture (uses generic-coordinator from core) |
+**Canonical structure (V11.1.0+) — 9 archetypes**:
+| Archetype | Dir | Agents | Capability |
+|-----------|-----|-------:|------------|
+| **Developer** | `developer/` | 31 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
+| **Operator** | `operator/` | 81 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
+| **Advisor** | `advisor/` | 30 | Legal, health, education, personal (4 branches) |
+| **Analyst** | `analyst/` | 27 | Data, BI, research, social-science |
+| **Creator** | `creator/` | 11 | Visual artists, designers, audiovisual creators |
+| **Writer** | `writer/` | 26 | Copy, narrative, technical writing, editorial |
+| **Strategist** | `strategist/` | 9 | Product owners, portfolio managers, planners |
+| **Core** | `core/` | 17 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, etc.) |
+| **Leadership** | `leadership/` | 11 | C-suite executives (used by /org, not directly routable) |
 
-**Config**: Each domain has `{domain}/config/domain_overrides.yaml` with controller_catalog and router keywords.
+**Domain overlay (legacy — routing/config only)**: 13 legacy domain dirs (`engineering/`, `creative/`, `business/`, `growth/`, `people/`, `service/`, `shared/`, `science/`, `health/`, `education/`, `personal/`, `arts/`, `trades/`) survive on disk **without** SKILL.md files; they hold `config/domain_overrides.yaml` with router keywords + controller catalogs that the planner still consumes. Do NOT delete these — they are not orphans.
+
+**Config**: Each legacy domain has `{domain}/config/domain_overrides.yaml` with `controller_catalog` and `router_keywords`.
 
 ## CRITICAL: Aggressive Delegation
 
@@ -385,21 +381,16 @@ cAgents/
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (26 files, 5 categories)
 |   +-- settings.json        # Hook registration + permissions + env
-+-- engineering/             # Engineering domain (31 agents, config, manifest)
-+-- creative/                # Creative domain (30 agents)
-+-- business/                # Business domain (28 agents)
-+-- people/                  # People domain (17 agents)
-+-- service/                 # Service domain (28 agents)
-+-- leadership/              # Leadership domain (11 C-suite agents)
-+-- core/                    # Core infrastructure (17 agents, includes generic-coordinator)
-+-- shared/                  # Cross-domain specialists (12 agents)
-+-- growth/                  # Growth domain (34 agents: marketing, sales, revenue ops)
-+-- science/                 # Science domain (10 agents)
-+-- health/                  # Health domain (5 agents, uses generic-coordinator from core)
-+-- education/               # Education domain (5 agents, uses generic-coordinator from core)
-+-- personal/                # Personal domain (5 agents, uses generic-coordinator from core)
-+-- arts/                    # Arts domain (5 agents, uses generic-coordinator from core)
-+-- trades/                  # Trades domain (5 agents, uses generic-coordinator from core)
++-- developer/               # Developer archetype (31 agents — backend/frontend/fullstack/infrastructure/quality)
++-- operator/                # Operator archetype (81 agents — support/business-ops/people-ops/marketing-sales/content)
++-- advisor/                 # Advisor archetype (30 agents — legal/health/education/personal)
++-- analyst/                 # Analyst archetype (27 agents — data, BI, research, social science)
++-- creator/                 # Creator archetype (11 agents — visual, design, audiovisual)
++-- writer/                  # Writer archetype (26 agents — copy, narrative, technical, editorial)
++-- strategist/              # Strategist archetype (9 agents — product owners, portfolio, planning)
++-- core/                    # Core pipeline infrastructure (17 agents)
++-- leadership/              # Leadership archetype (11 C-suite agents — used by /org)
++-- {engineering,creative,business,growth,people,service,...}/  # Legacy domain dirs (config-only, router/planner overlay)
 +-- scripts/                 # Version sync, validation, CI scripts
 +-- tests/                   # Vitest test suite (hooks + config)
 +-- docs/                    # Project documentation
@@ -466,16 +457,16 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 
 **Skills**: `/org`, `/run`, `/team`, `/designer`, `/improve`, `/helper` (in `.claude/skills/`; V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see `docs/MIGRATION-V11.md`)
 **Built-in**: `/memory`, `/init` (Claude Code native)
-**Agents**: 243 total (17 core + 12 shared + 11 leadership + 203 domain specialists)
-**Domains**: Engineering (31), Creative (30), Business (28), Growth (34), People (17), Service (28), Leadership (11), Core (17), Shared (12), Science (10), Health (5), Education (5), Personal (5), Arts (5), Trades (5)
+**Agents**: 243 total across 9 archetypes (developer 31, operator 81, advisor 30, analyst 27, creator 11, writer 26, strategist 9, core 17, leadership 11)
+**Domain Overlay (legacy routing/config only)**: 13 dirs (engineering, creative, business, growth, people, service, shared, science, health, education, personal, arts, trades) hold `config/domain_overrides.yaml` — no SKILL.md files
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/domain_overrides.yaml`, `cagents-memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (session YAML contract for AgentPath)
 **Hooks**: 29 .cjs files = 26 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
-**Tests**: `npm test` runs 816 Vitest tests (hooks + config validation)
-**Version**: 11.1.3
+**Tests**: `npm test` runs 790 Vitest tests across 46 files (hooks + config validation + regression tests)
+**Version**: 11.1.4
 
 ## Troubleshooting
 

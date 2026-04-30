@@ -29,7 +29,7 @@ metadata:
   related_agents:
     - name: bi-specialist
       type: collaborates_with
-    - name: marketing-data-analyst
+    - name: data-analyst
       type: cross_domain
     - name: hr-analyst
       type: cross_domain

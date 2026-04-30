@@ -2,7 +2,7 @@
 #
 # cAgents Agent Schema Validation
 # Validates all agent SKILL.md files across all 9 archetype roots
-# Version: 11.1.3
+# Version: 11.1.4
 #
 # Usage:
 #   ./scripts/ci/validate-agents.sh                    # Validate all archetypes
@@ -440,8 +440,8 @@ validate_hooks() {
         echo -e "  ${GREEN}All $hook_count registered hooks have matching .cjs files${NC}"
     fi
 
-    if [[ $hook_count -gt 0 ]] && [[ $hook_count -ne 27 ]]; then
-        log_warn "Hook count mismatch: found $hook_count registered hooks, expected 27"
+    if [[ $hook_count -gt 0 ]] && [[ $hook_count -ne 26 ]]; then
+        log_warn "Hook count mismatch: found $hook_count registered hooks, expected 26"
     fi
 }
 
@@ -467,7 +467,11 @@ validate_plugin_json() {
     if [[ "$has_name" != "yes" ]]; then
         log_fail "plugin.json missing required 'name' field"
     else
-        log_pass "Root plugin.json has required 'name' field"
+        # Note: this PASS is non-agent (plugin.json structure check).
+        # Use direct echo so we don't bump the PASSED counter (which represents agent-level passes).
+        if [[ $COUNT_ONLY != true ]]; then
+            echo -e "  ${GREEN}PASS${NC} Root plugin.json has required 'name' field"
+        fi
     fi
 }
 

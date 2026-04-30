@@ -1,7 +1,7 @@
 # cAgents Release Notes
 
-**Current Version**: 11.1.3
-**Release Date**: April 15, 2026
+**Current Version**: 11.1.4
+**Release Date**: April 29, 2026
 **Status**: Production-Ready
 
 > Release discipline: cAgents evolves via **tiny bumps** — patch-level
@@ -14,7 +14,11 @@
 
 ## Version History
 
-- [v10.26.0](#v10260---april-16-2026) - Release polish and production readiness (Current)
+- [v11.1.4](#v1114---april-29-2026) - Plugin health sweep, archetype-canonical doc alignment (Current)
+- [v11.1.3](#v1113---april-29-2026) - Stale-agent-reference cleanup post-v11.1.0 migration
+- [v11.1.0](#v1110) - Builder-role archetype tree migration; cagents-memory rename
+- [v11.0.0](#v1100) - Skill consolidation (`/improve` replaces `/review`+`/optimize`); `/context`/`/debug` removed
+- [v10.26.0](#v10260---april-16-2026) - Release polish and production readiness
 - [v10.25.6](#v10256---april-15-2026) - Documentation overhaul, 262 agents across 15 domains, 10 skills, 27 hooks
 - [v10.23.0](#v10230) - 29-check validation framework, regression validation chain, mandatory self-validation protocol
 - [v10.22.0](#v10220) - Two-stage review protocol (spec compliance then code quality), 5 pipeline improvements
@@ -69,6 +73,104 @@
 - [v9.1.1](#v911---february-7-2026) - tmux split pane refinements
 - [v9.1.0](#v910---february-7-2026) - tmux split panes for team execution
 - [v9.0.0](#v900---february-7-2026) - Platform Alignment Edition
+
+---
+
+## v11.1.4 - April 29, 2026
+
+**Theme**: Comprehensive plugin health sweep. Closes the v11.1.0 archetype
+migration cleanup, brings every documentation, config, and validation script
+into sync with the canonical 9-archetype tree, and prunes stale slot
+definitions from the version registry tooling.
+
+### Highlights
+
+- **Archetype-canonical doc alignment**: 9 archetypes (`developer`, `operator`,
+  `advisor`, `analyst`, `creator`, `writer`, `strategist`, `core`,
+  `leadership`) are now explicitly documented as the canonical organization.
+  The 15-domain framing is preserved as a *routing/config overlay* — 13
+  legacy domain dirs survive on disk holding only `config/domain_overrides.yaml`
+  (router_keywords + controller_catalog) that the planner still consumes.
+  `CLAUDE.md` and `README.md` lead with the archetype tree and label the
+  legacy dirs explicitly.
+- **111 → 0 validator warnings**: A single script-driven sweep resolved the
+  full backlog of `validate-agents.sh` warnings — 43 broken `related_agents`
+  cross-references retargeted to existing agents (`compliance-officer` →
+  `compliance-manager`, `social-media-manager` → `campaign-manager`, etc.), 26
+  legacy `related-agents` (hyphen) fields migrated to the structured
+  `related_agents:` block, 28 missing `color` fields and 13 missing `model`
+  fields added with sensible defaults.
+- **Hook count corrections**: `.claude/settings.json` `$comment` field and
+  `validate-agents.sh:444` assertion both updated to match reality (29 .cjs
+  files = 26 unique registered hooks + utils + launcher + eval CLI). The
+  off-by-one PASS counter (244/243) caused by a non-agent `log_pass` call
+  was fixed; validator now reports 243/243.
+- **`sync-agents.sh --check` flag**: True dry-run that compares
+  `plugin.json` against the archetype-tree SKILL.md inventory without
+  mutation. Exits 0 in-sync, 1 on drift. Includes regression test
+  asserting `mtime` is unchanged across `--check` invocations.
+- **Version registry pruning**: `validate-versions.sh` previously listed
+  24 slots (10 stale: pointed at `engineering/plugin.json`,
+  `.claude/skills/review/SKILL.md`, etc., none of which exist post-V11.0).
+  Pruned to track exactly the 18 canonical slots from
+  `.claude/rules/core/version-registry.md`. Now reports
+  `Checked 18/18, 0 mismatches, 0 skipped`.
+- **Two regression tests added** (Bug-Driven Testing mandate):
+  - `tests/regression/related-agents-validation.test.js` — asserts the
+    sweep stays applied (warnings stay near zero on every CI run).
+  - `tests/regression/sync-agents-check.test.js` — asserts the `--check`
+    contract.
+- **Local cleanup**: `cagents-memory-staging/file-move-table.tsv` (v11.1.0
+  migration record) archived to `archive/migration/v11.1.0/`. Empty
+  `cagents-memory-staging/` directory removed. Both locations gitignored.
+
+### Validator status at HEAD
+
+```
+$ bash scripts/ci/validate-agents.sh
+Total agents: 243   Passed: 243   Warnings: 0   Errors: 0
+
+$ bash scripts/ci/validate-versions.sh
+Checked 18/18 locations, 0 mismatches, 0 skipped — PASS at 11.1.4
+
+$ bash scripts/lint-agents.sh
+243/243 agents pass schema validation
+```
+
+---
+
+## v11.1.3 - April 29, 2026
+
+**Theme**: Stale-agent-reference cleanup discovered during v11.1.0 migration.
+Replaced three orphan references (`compliance-officer` →
+`compliance-manager`, `talent-acquisition-manager` → `talent-recruiter`)
+in shared/people config files and dropped two nonexistent paths from
+`scripts/fix-resource-frontmatter.sh`.
+
+---
+
+## v11.1.0
+
+**Theme**: Builder-role archetype tree migration. The per-domain
+`{domain}/agents/` layout was replaced with a 9-archetype root system
+(`developer`, `operator`, `advisor`, `analyst`, `creator`, `writer`,
+`strategist`, `core`, `leadership`). 3-level archetypes (developer,
+operator, advisor) require a `branch:` field; 2-level archetypes
+(analyst, creator, writer, strategist) and flat archetypes (core,
+leadership) do not. The `cagents-memory/` directory was renamed (from
+`Agent_Memory/`) for project-local clarity. Top-level `domain:`
+frontmatter field was replaced by `archetype:` + optional `branch:`.
+
+---
+
+## v11.0.0
+
+**Theme**: Skill consolidation. `/review` and `/optimize` merged into
+`/improve` (`--mode review|optimize|full`). `/context` replaced by
+`/run context …` passthrough. `/debug` replaced by `/run --mode debug`.
+Six user-invocable skills remain: `/run`, `/team`, `/org`, `/designer`,
+`/improve`, `/helper`. See `docs/MIGRATION-V11.md` for the migration
+guide.
 
 ---
 
@@ -1627,6 +1729,6 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 11.1.3
+**Current Version**: 11.1.4
 **Release Date**: February 27, 2026
 **Git Tag**: v9.21.0

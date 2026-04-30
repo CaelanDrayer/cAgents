@@ -31,7 +31,7 @@ metadata:
       type: coordinates
     - name: ip-attorney
       type: coordinates
-    - name: compliance-officer
+    - name: compliance-manager
       type: coordinates
     - name: legal-operations-manager
       type: coordinates

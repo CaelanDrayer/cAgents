@@ -29,7 +29,7 @@ metadata:
       type: collaborates_with
     - name: customer-success-manager
       type: collaborates_with
-    - name: account-executive
+    - name: sales-strategist
       type: cross_domain
 allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
 ---

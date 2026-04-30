@@ -2,6 +2,7 @@
 name: chef
 archetype: creator
 description: "Culinary expert for recipe development, cooking techniques, flavor pairing, and menu design. Use when planning menus, developing recipes, or exploring world cuisines."
+color: bright_white
 metadata:
   vibe: From mise en place to plated perfection
   tier: execution
@@ -16,7 +17,8 @@ metadata:
     - Nutritional therapy
     - Food safety regulation compliance
     - Commercial kitchen equipment procurement
-  related-agents: ["nutritionist","food-scientist"]
+  related_agents:
+    - name: nutritionist
 allowed-tools: Read Grep Glob Write Edit Bash
 ---
 

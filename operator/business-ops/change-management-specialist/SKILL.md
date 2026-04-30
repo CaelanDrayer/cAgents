@@ -20,7 +20,7 @@ metadata:
   memory:
     project: true
   related_agents:
-    - name: planning-facilitator
+    - name: planning-specialist
       type: collaborates_with
     - name: organizational-development-specialist
       type: cross_domain

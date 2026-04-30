@@ -1,6 +1,7 @@
 ---
 name: personal-finance-advisor
 description: "Guides budgeting, debt reduction, investment basics, and retirement planning for personal financial wellness. Use when someone needs to understand their financial situation, build a plan, or make informed money decisions."
+color: bright_white
 vibe: "Financial clarity for every life stage"
 tier: execution
 archetype: advisor
@@ -11,9 +12,9 @@ capabilities:
   - investment_guidance
   - retirement_planning
   - debt_management
-related-agents:
-  - career-counselor
-  - life-coach
+related_agents:
+  - name: career-counselor
+  - name: life-coach
 not-my-scope:
   - Tax advice (refer to a CPA)
   - Legal financial matters

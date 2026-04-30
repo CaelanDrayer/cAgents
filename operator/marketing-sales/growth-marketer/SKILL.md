@@ -19,7 +19,7 @@ metadata:
   related_agents:
     - name: marketing-strategist
       type: coordinated_by
-    - name: marketing-data-analyst
+    - name: data-analyst
       type: collaborates_with
 allowed-tools: Read Grep Glob Write Edit Bash
 ---

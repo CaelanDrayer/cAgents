@@ -19,7 +19,7 @@ metadata:
   related_agents:
     - name: campaign-manager
       type: coordinated_by
-    - name: content-marketing-manager
+    - name: campaign-manager
       type: collaborates_with
     - name: frontend-developer
       type: cross_domain

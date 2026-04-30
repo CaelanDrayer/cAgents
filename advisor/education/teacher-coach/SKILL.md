@@ -1,6 +1,7 @@
 ---
 name: teacher-coach
 description: "Pedagogical coaching, instructional strategy development, classroom management support, and teacher professional development. Use to improve teaching practice and educator effectiveness."
+model: sonnet
 vibe: "Helps teachers become the teacher they always wanted to have."
 tier: execution
 archetype: advisor
@@ -13,7 +14,9 @@ capabilities:
   - classroom_management
   - instructional_design
   - teacher_development
-related-agents: ["curriculum-designer", "academic-tutor"]
+related_agents:
+  - name: curriculum-designer
+  - name: academic-tutor
 not-my-scope: ["Student tutoring", "Curriculum authoring", "Administrative policy"]
 allowed-tools: Read Grep Glob Write Edit Bash
 color: bright_yellow

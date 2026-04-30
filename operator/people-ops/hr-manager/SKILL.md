@@ -29,7 +29,7 @@ metadata:
     - marketing campaigns
     - financial auditing
   related_agents:
-    - name: recruiter
+    - name: talent-recruiter
       type: coordinates
     - name: employee-relations-specialist
       type: coordinates
@@ -37,7 +37,7 @@ metadata:
       type: coordinates
     - name: benefits-administrator
       type: coordinates
-    - name: talent-acquisition-manager
+    - name: talent-recruiter
       type: collaborates_with
 allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
 ---

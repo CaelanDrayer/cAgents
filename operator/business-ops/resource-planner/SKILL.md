@@ -17,7 +17,7 @@ metadata:
     - utilization_optimization
   maxTurns: 30
   related_agents:
-    - name: project-manager
+    - name: program-project-manager
       type: coordinated_by
     - name: finance-manager
       type: collaborates_with

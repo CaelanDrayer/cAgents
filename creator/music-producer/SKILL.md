@@ -1,6 +1,7 @@
 ---
 name: music-producer
 description: "Studio production specialist covering recording, mixing, mastering, and DAW workflows. Use for production decisions, session setup, mix troubleshooting, mastering guidance, or release preparation across genres."
+color: bright_white
 vibe: "The mix is finished when nothing is fighting — and everything is alive"
 tier: execution
 archetype: creator
@@ -10,7 +11,10 @@ capabilities:
   - mixing
   - mastering
   - daw_workflows
-related-agents: ["music-teacher", "music-composer", "sound-designer"]
+related_agents:
+  - name: music-teacher
+  - name: music-composer
+  - name: sound-designer
 not-my-scope: ["Live sound reinforcement", "Music theory pedagogy", "Film scoring (see music-composer)"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 ---

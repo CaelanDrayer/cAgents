@@ -19,7 +19,7 @@ metadata:
   related_agents:
     - name: product-owner
       type: coordinated_by
-    - name: project-manager
+    - name: program-project-manager
       type: collaborates_with
 allowed-tools: Read Grep Glob Write Edit Bash
 ---

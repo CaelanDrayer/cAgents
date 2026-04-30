@@ -11,6 +11,8 @@ paths:
 
 All locations where the cAgents version number appears. Keep ALL locations in sync on every release.
 
+**Last verified**: V11.1.4 — `scripts/ci/validate-versions.sh` reports `Checked 18/18 locations, 0 mismatches, 0 skipped`. The slot list in `validate-versions.sh` and `sync-versions.sh` matches this table exactly (paired-commit invariant enforced in v11.1.4).
+
 ## Version Locations (18 total, V11.0)
 
 V11.0 removed four skill SKILL.md version locations

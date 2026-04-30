@@ -28,7 +28,7 @@ metadata:
       type: coordinated_by
     - name: growth-marketer
       type: collaborates_with
-    - name: digital-marketing-manager
+    - name: marketing-strategist
       type: collaborates_with
     - name: marketing-analyst
       type: shares_data_with

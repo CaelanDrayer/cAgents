@@ -1,6 +1,7 @@
 ---
 name: planning-specialist
 description: "Planning analytics, forecasting, facilitation, and operations management. Use when analyzing planning metrics, facilitating planning sessions, or optimizing planning processes."
+color: bright_white
 tier: execution
 archetype: operator
 branch: business-ops

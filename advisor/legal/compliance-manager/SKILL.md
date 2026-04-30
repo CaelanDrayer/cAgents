@@ -1,6 +1,7 @@
 ---
 name: compliance-manager
 description: "Manages compliance frameworks, conducts audits, tracks regulatory changes, and coordinates risk-compliance programs across business units."
+color: bright_white
 tier: execution
 archetype: advisor
 branch: legal

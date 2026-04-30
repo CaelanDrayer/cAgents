@@ -20,7 +20,7 @@ metadata:
   memory:
     project: true
   related_agents:
-    - name: planning-analyst
+    - name: planning-specialist
       type: collaborates_with
     - name: predictive-analyst
       type: collaborates_with

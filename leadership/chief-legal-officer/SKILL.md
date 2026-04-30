@@ -25,7 +25,7 @@ metadata:
     - What regulatory requirements apply across all affected domains?
     - "What are the key contractual, privacy, and governance constraints?"
   related_agents:
-    - name: compliance-officer
+    - name: compliance-manager
       type: coordinates
     - name: privacy-officer
       type: coordinates

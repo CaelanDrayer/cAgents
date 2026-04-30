@@ -19,7 +19,7 @@ metadata:
   related_agents:
     - name: operations-manager
       type: coordinated_by
-    - name: quality-manager-business
+    - name: qa-lead
       type: collaborates_with
 allowed-tools: Read Grep Glob Write Edit Bash
 ---

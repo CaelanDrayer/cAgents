@@ -19,7 +19,7 @@ metadata:
   related_agents:
     - name: campaign-manager
       type: coordinated_by
-    - name: sales-development-rep
+    - name: sales-strategist
       type: pipeline_next
 allowed-tools: Read Grep Glob Write Edit Bash
 ---
