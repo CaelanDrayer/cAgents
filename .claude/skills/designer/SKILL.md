@@ -597,7 +597,9 @@ AskUserQuestion({
 })
 ```
 
-6. **Task cleanup**: Before ending the session, call `TaskList` and mark all tasks as `completed` or `deleted` via `TaskUpdate`. Never leave stale in_progress tasks behind.
+6. **Mark session complete**: Before task cleanup, write `phase: completed` to `status.yaml` (replacing whatever phase the session was in). This is the terminal phase value recognized by the verify-completion.cjs Stop hook. Apply this regardless of which build option the user picked (run/team/org/refine/endless/save) — even on "Save only", the designer session itself is complete; downstream skills manage their own session state.
+
+7. **Task cleanup**: Before ending the session, call `TaskList` and mark all tasks as `completed` or `deleted` via `TaskUpdate`. Never leave stale in_progress tasks behind.
 
 ## Build Integration
 

@@ -223,3 +223,7 @@ To implement later:
   /team implement design from {session_id}   (parallel, faster for large designs)
   /org implement design from {session_id}    (full hierarchy for cross-domain)
 ```
+
+### Terminal Phase Value
+
+After the build offer (or save-only path), write `phase: completed` to `cagents-memory/sessions/{session_id}/status.yaml`. The verify-completion.cjs Stop hook recognizes `complete`, `completed`, or `validating` as terminal phase values; any other value triggers a non-blocking warning. Apply this update regardless of whether the user chose to build, refine, or save-only.
