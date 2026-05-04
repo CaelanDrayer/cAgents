@@ -10,6 +10,41 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.1.5] - 2026-05-03
+
+Documentation accuracy patch + harness limitation rule. Six-wave /team audit
+discovered and resolved 16 defects (2 critical, 6 high, 5 medium, 3 low) and
+added a graceful-degradation rule for the empirically-observed Claude Code
+limitation that withholds the `Agent` tool from level-1 plugin subagents.
+
+### Fixed
+- **CRITICAL**: removed live `/context` skill dispatch from `.claude/skills/run/SKILL.md`
+  passthrough block. The /context skill was removed in V11.0; the dispatch
+  call would crash for any user typing `/run context show|init|update|clear`.
+- **CRITICAL**: rewrote `.claude/skills/run/reference/context-passthrough.md`
+  from live-contract to deprecation note (113 -> 75 lines).
+- **HIGH**: stale skill recommendations in `.claude/skills/{designer,helper}/SKILL.md`
+  and `helper/reference/command-details.md` rewritten to route to `/improve`
+  instead of removed `/review` and `/optimize` skills.
+- **MEDIUM**: stale `/review`/`/optimize` examples in
+  `docs/templates/QUICK_REFERENCE_TEMPLATE.md` updated to `/improve --mode {review,optimize}`.
+- **LOW**: `cAgents/CLAUDE.md` rules count corrected (26 -> 29 with breakdown);
+  stale domain-overlay file stems corrected.
+
+### Added
+- New "Known Harness Limitation: Agent Tool May Be Absent in Teammate Tool Surface"
+  section in `.claude/rules/core/teams.md` with a graceful-degradation rule:
+  when a /team teammate controller discovers the `Agent` tool is unavailable
+  in its runtime surface, it MUST execute the work item directly using
+  `Read`/`Write`/`Edit`/`Bash` and self-validate per the 15-check execution
+  self-validation protocol, rather than failing the work item. Cross-referenced
+  from `.claude/skills/team/SKILL.md`.
+
+### Verified
+- `validate-versions.sh`: 18/18 sync at 11.1.5
+- `validate-agents.sh`: 243/243 valid, 0 errors, 26/26 hooks registered, 15/15 domain_overrides
+- 16/16 defect resolutions confirmed via tailored grep verification
+
 ## [11.1.4] - 2026-04-29
 
 Comprehensive plugin health sweep. Closes the v11.1.0 migration cleanup and

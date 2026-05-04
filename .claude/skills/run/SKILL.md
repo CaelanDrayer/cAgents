@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "11.1.4"
+  version: "11.1.5"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--team] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--analytics] [--from-review] [--from-designer]"
   user-invocable: "true"
   context: "none"
@@ -117,30 +117,13 @@ If `--from-review`: Skill chaining from `/review`. Look for the most recent `wor
 
 If `--from-designer`: Skill chaining from `/designer`. Look for the most recent `workflow/design_document.yaml` in the current or parent session. Inject the design spec into the orchestrator's enriched context as `design_spec`. The planner should use the design document's structure, decisions, and constraints as the implementation blueprint. Store the design session reference in `instruction.yaml` as `chained_from: designer`.
 
-**Context subcommand front-door (V10.26.9+)**: If the first positional token
-in `$ARGUMENTS` is `context` and the second token is one of `show`, `init`,
-`update`, or `clear`, STOP the standard state machine. Instead:
-
-1. Dispatch to the `/context` utility skill via the Skill tool, passing the
-   subcommand as the argument (e.g. `Skill({ skill: "context", args: "show" })`).
-2. Return the skill's output to the user verbatim.
-3. Do NOT create a session directory, run enrichment, or invoke the
-   orchestrator — the context utility is stateless for these subcommands.
-
-The four recognized subcommands are:
-
-| Subcommand | What it does |
-|-----------|--------------|
-| `/run context show` | Display current `cagents-memory/_projects/{hash}/product_context.yaml` |
-| `/run context init` | Scan project, auto-detect conventions, write product_context.yaml |
-| `/run context update` | Interactively update existing product_context.yaml |
-| `/run context clear` | Remove product_context.yaml (keep `_projects/{hash}/` directory) |
-
-See @reference/context-passthrough.md for the full dispatch contract. This
-passthrough exists because V10.26.6 hid `/context` from the `/` menu
-(frontmatter `metadata.user-invocable: "false"`); users still need a CLI
-path to manage product context, and `/run` is the single user entry point
-for the framework.
+**Note (V11.0+)**: The `/context` skill was removed in V11.0, so the
+`/run context show|init|update|clear` passthrough no longer dispatches to a
+sibling skill. The orchestrator still READS
+`cagents-memory/_projects/{hash}/product_context.yaml` during INIT-state
+enrichment when present. To manage that file, edit it directly — there is no
+longer a `/run` subcommand for it. See @reference/context-passthrough.md for
+the historical contract.
 
 ---
 

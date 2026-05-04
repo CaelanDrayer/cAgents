@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "11.1.4"
+  version: "11.1.5"
   argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--all] [--topic <topic>] [--troubleshoot <command>]"
   user-invocable: "true"
   context: "none"
@@ -169,7 +169,7 @@ Instead of pure keyword matching, use 5 weighted signals to score each candidate
 | Project context | 0.30 | Read project files to infer domain and scope (see checks below). |
 | Complexity estimate | 0.20 | Estimate scope from the request: single file or narrow fix favors `/run`; multi-component or cross-cutting favors `/team`; multi-domain favors `/org`. |
 | Explicit intent | 0.10 | If the user directly references a command ("use /run", "I want to review"), give that command the full 0.10. |
-| Request history | 0.10 | If the user recently mentioned planning or design in the same session, boost `/designer`. If they mentioned review, boost `/review`. |
+| Request history | 0.10 | If the user recently mentioned planning or design in the same session, boost `/designer`. If they mentioned review, boost `/improve` (review is the default mode). |
 
 **Project Context Checks** (for the 0.30 project signal):
 1. `package.json` exists -- engineering domain hint -- boost `/run` and `/improve`

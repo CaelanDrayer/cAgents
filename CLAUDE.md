@@ -62,7 +62,7 @@ Core architecture and development guidance for cAgents.
 **Rules Structure** (`.claude/rules/`):
 ```
 core/           # orchestration, controllers, execution, hooks, teams, etc. (12 files)
-domains/        # engineering, creative, business, people, service (5 files)
+domains/        # engineering, grow, operate, people, serve (5 files)
 infrastructure/ # model-routing (1 file)
 memory/         # agent-memory (2 files)
 quality/        # completion, validation-framework, implicit-discovery (5 files)
@@ -379,7 +379,7 @@ cAgents/
 |   +-- skills/              # Skills (org, run, team, designer, improve, helper)
 |   +-- hooks/               # 29 .cjs files (26 hooks + utils + launcher + eval CLI)
 |   +-- plans/               # Saved execution plans
-|   +-- rules/               # Modular rules (26 files, 5 categories)
+|   +-- rules/               # Modular rules (29 files: 25 top-level across 5 categories + 1 README + 3 in resources/)
 |   +-- settings.json        # Hook registration + permissions + env
 +-- developer/               # Developer archetype (31 agents — backend/frontend/fullstack/infrastructure/quality)
 +-- operator/                # Operator archetype (81 agents — support/business-ops/people-ops/marketing-sales/content)
@@ -466,7 +466,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 790 Vitest tests across 46 files (hooks + config validation + regression tests)
-**Version**: 11.1.4
+**Version**: 11.1.5
 
 ## Troubleshooting
 

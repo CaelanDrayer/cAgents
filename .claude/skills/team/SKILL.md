@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "11.1.4"
+  version: "11.1.5"
   argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--no-template] [--waves <n>]"
   user-invocable: "true"
   context: "fork"
@@ -51,6 +51,19 @@ The following phrases are self-handling rationalizations. Each one is a critical
 | "Rather than going through the full wave structure" | The full wave structure runs for every /team invocation without exception |
 
 **If you find yourself reasoning toward any of these conclusions, STOP. You are rationalizing a violation. Delegate.**
+
+## Known Harness Limitation: Teammate Agent Tool May Be Absent
+
+**This rule applies to spawned teammates, not to the lead.** The lead always has the `Agent` tool and MUST delegate.
+
+For teammates: when a teammate controller (e.g., `cagents:engineering-manager` spawned via Agent at level 1) discovers that its runtime tool surface does NOT include `Agent` / `TodoWrite` / `TaskUpdate` (a known Claude Code platform behavior for plugin-namespaced subagents at depth >= 1, regardless of SKILL.md `allowed-tools`), it MUST gracefully degrade to direct execution rather than fail the work item:
+
+1. Execute the work item directly using `Read`, `Write`, `Edit`, `Bash`, `Grep`, `Glob`.
+2. Skip the `Agent(cagents:reviewer)` call (unavailable). Self-validate using the 15-check protocol in `.claude/rules/core/resources/execution-self-validation.md`.
+3. Write self-validation result to `outputs/task-{N}/self-validation.yaml`.
+4. The lead may run a follow-up wave with `Agent(cagents:reviewer)` if deeper review is needed.
+
+See `.claude/rules/core/teams.md` "Known Harness Limitation: Agent Tool May Be Absent in Teammate Tool Surface" for the full evidence chain and rationale.
 
 ## CRITICAL: Maximize Waves
 

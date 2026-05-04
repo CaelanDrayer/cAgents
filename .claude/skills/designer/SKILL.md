@@ -1,11 +1,11 @@
 ---
 name: designer
-description: "Guided design exploration that produces implementation-ready documents through structured Q&A. Use before building to clarify requirements. TRIGGER: design, plan this, think through, architecture. NOT for: implementation (/run) or review (/review)."
+description: "Guided design exploration that produces implementation-ready documents through structured Q&A. Use before building to clarify requirements. TRIGGER: design, plan this, think through, architecture. NOT for: implementation (/run) or review (/improve --mode review)."
 license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "11.1.4"
+  version: "11.1.5"
   argument-hint: "[<topic>] [--deep] [--resume <id>] [--template <name>] [--brief <path>] [--iterate <session_id>]"
   user-invocable: "true"
   context: "none"

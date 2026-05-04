@@ -27,7 +27,7 @@ Team Mode enables N-wave parallel execution with:
 
 ## CRITICAL: Teammates ARE Controllers That Spawn Execution Agents Directly
 
-**This is the most important principle of team mode.** Teammates do NOT implement work items directly. Each teammate is spawned as a controller agent (e.g., `cagents:engineering-manager`) that delegates to execution agents directly via Agent tool, then spawns `cagents:reviewer` to validate.
+**This is the principle of team mode when the harness exposes the Agent tool to teammates.** When Agent is available, teammates do NOT implement work items directly. Each teammate is spawned as a controller agent (e.g., `cagents:engineering-manager`) that delegates to execution agents via Agent tool, then spawns `cagents:reviewer` to validate.
 
 ```
 Teammate (controller, e.g., engineering-manager) -> Agent(cagents:backend-developer)
@@ -41,8 +41,31 @@ Teammate (controller, e.g., engineering-manager) -> Agent(cagents:backend-develo
 **Anti-patterns (NEVER DO):**
 - Telling a teammate to invoke /run (exceeds nesting limit)
 - Having the team lead do implementation work
-- Having teammates implement directly without spawning execution agents
-- Having teammates answer questions directly instead of delegating
+- Having teammates implement directly without spawning execution agents *(unless the Known Harness Limitation below applies)*
+- Having teammates answer questions directly instead of delegating *(unless Agent is unavailable)*
+
+## Known Harness Limitation: Agent Tool May Be Absent in Teammate Tool Surface
+
+**Empirically observed (CC 2.1.x, cAgents v11.1.4 and earlier):** When a controller agent (e.g., `cagents:engineering-manager`) is spawned as a /team teammate, the Claude Code runtime tool surface for that teammate may NOT include the `Agent` tool — even when the controller's SKILL.md frontmatter correctly declares `allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite`. The `TodoWrite` and `TaskUpdate` tools are also frequently absent at this nesting level.
+
+**Root cause:** Claude Code platform behavior for plugin-namespaced (`cagents:*`) subagents at depth >= 1. The 2-level subagent nesting limit (lead at level 0, teammates at level 1) is enforced upstream by withholding the spawning tool (`Agent`) from level-1 plugin subagents, regardless of what the SKILL.md `allowed-tools` declares. cAgents config (`.claude/settings.json`, `.claude-plugin/plugin.json`) cannot override this — there is no documented CC setting that re-exposes `Agent` to nested plugin subagents.
+
+**Evidence chain (session `team_doc-update-plugin-audit_260503_001`):**
+- 7 sampled controllers (engineering-manager, backend-lead, frontend-lead, architect, tech-lead, qa-lead, operations-manager) all declare `allowed-tools: Agent ...` in their SKILL.md frontmatter — verified correct.
+- Wave-1 controllers reported the missing-tool symptom directly (`outputs/audit/rules-count.yaml` lines 61-69).
+- Wave-2 and Wave-3 teammates independently confirmed the deferred-tools list excluded `Agent`, `TodoWrite`, and `TaskUpdate` at their nesting level.
+- `.claude/settings.json` contains no `agent` block restricting tools; `.claude-plugin/plugin.json` declares no per-agent tool restriction. The limit is enforced upstream by Claude Code, not by cAgents config.
+
+**Graceful degradation rule:** When a teammate controller discovers that the `Agent` tool is unavailable in its runtime surface, it MUST gracefully degrade to direct execution rather than failing the work item:
+
+1. **Direct execution**: The teammate executes the work item itself using the tools it does have (`Read`, `Write`, `Edit`, `Bash`, `Grep`, `Glob`).
+2. **Reviewer skip**: Skip the `Agent(cagents:reviewer)` validation call — it is not available. Instead, the teammate self-validates against acceptance criteria using the 15-check execution self-validation protocol (see `.claude/rules/core/resources/execution-self-validation.md`).
+3. **Self-validation logging**: Write the self-validation result to `outputs/task-{N}/self-validation.yaml` with the standard `status: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED` field.
+4. **Lead-side review (optional)**: The team lead, which DOES have Agent at level 0, can run a wave-N+1 review pass using `Agent(cagents:reviewer)` against any teammate output that needs deeper validation.
+
+**This degradation is acceptable for /team workflows.** It is NOT acceptable for `/run` workflows, where controllers run at level 1 with the lead-equivalent tool surface and Agent is available — there, the reviewer-loop pattern remains mandatory.
+
+**Future work:** If a future Claude Code version exposes `Agent` to plugin-namespaced level-1 subagents (or if a per-spawn `allowed-tools` flag becomes available on the Agent tool itself), this limitation block can be removed and the unconditional "Teammates ARE Controllers That Spawn Execution Agents" pattern restored. Until then, both patterns are valid: delegation when Agent is exposed, direct execution + self-validation when it is not.
 
 ## CRITICAL: Create Teams, Not Just Tasks
 

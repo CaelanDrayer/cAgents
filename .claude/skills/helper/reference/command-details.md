@@ -21,8 +21,8 @@ Detailed help content for each command when the user runs `/helper <command>`.
 ### When NOT to Use /run
 
 - **You want to PLAN first**: Use `/designer` to think through the design before building
-- **You want to CHECK existing work**: Use `/review` for quality analysis
-- **You want to IMPROVE metrics**: Use `/optimize` for measurable improvements
+- **You want to CHECK existing work**: Use `/improve --mode review` for quality analysis
+- **You want to IMPROVE metrics**: Use `/improve --mode optimize` for measurable improvements
 - **You have a LARGE task with parallel parts**: Use `/team` (or `/run --team`)
 
 ### How It Works (Simplified)
@@ -90,8 +90,8 @@ Result: Bug fixed, tests passing, outputs saved
 ### Integration
 
 - **After /designer**: `/designer` creates a design document, then triggers `/run` to build it
-- **After /review**: If review finds critical issues, `/run` fixes them
-- **After /optimize**: If optimizer finds CRITICAL opportunities, `/run` implements them
+- **After /improve --mode review**: If review finds critical issues, `/run` fixes them
+- **After /improve --mode optimize**: If optimizer finds CRITICAL opportunities, `/run` implements them
 - **With /team**: `/run --team` activates parallel team execution
 
 ### Tips
@@ -123,7 +123,7 @@ Result: Bug fixed, tests passing, outputs saved
 
 - **You already know what to build**: Go straight to `/run`
 - **Quick fixes**: Bug fixes and small changes don't need design sessions
-- **You want quality checks**: Use `/review` instead
+- **You want quality checks**: Use `/improve --mode review` instead
 - **Time-sensitive**: Design sessions take 15-45 minutes
 
 ### How It Works (Simplified)
@@ -444,7 +444,7 @@ Result: All domains complete, integrated deliverable
 /helper run                 -> Deep dive into /run
 /helper how do I fix a bug  -> "Use /run. Here's how..."
 /helper --compare           -> Side-by-side comparison table
-/helper --flags review      -> All /review flags with examples
+/helper --flags review      -> All `/improve --mode review` flags with examples
 /helper --quick             -> One-screen reference card
 /helper --topic domains     -> Deep dive into the 15 domains
 ```

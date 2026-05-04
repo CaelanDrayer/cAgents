@@ -22,8 +22,8 @@
 /run {example request 3}
 
 # Review/Optimize
-/review {target}
-/optimize {target}
+/improve --mode review {target}
+/improve --mode optimize {target}
 ```
 
 ### {Category 2} Workflows
