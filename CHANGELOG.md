@@ -10,6 +10,26 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.1.15] - 2026-05-06
+
+### Fixed
+- **`/doctor` `.mcp.json` schema rejection**: same root cause as 11.1.14
+  but in a different file. The repo root `.mcp.json` shipped a descriptive
+  `_examples` block with `_description` keys, which Claude Code's
+  `.mcp.json` validator rejects with
+  `mcpServers: Does not adhere to MCP server configuration schema`.
+  Replaced the file body with `{"mcpServers": {}}` (minimum valid schema)
+  so `/doctor` parses cleanly and so users can add their own servers
+  without scaffolding.
+
+### Added
+- `docs/MCP_SERVERS.md`: rehomed catalog of suggested MCP server configs
+  (playwright, filesystem, github, fetch, postgres, slack) with paste-ready
+  JSON blocks and a list of the agent-referenced servers that don't have
+  canonical reference configs yet (bigquery, redis, docker, jupyter, plaid,
+  zendesk, intercom, notion). Keeps the catalog discoverable without
+  re-introducing the schema-rejected shape.
+
 ## [11.1.14] - 2026-05-06
 
 ### Fixed
