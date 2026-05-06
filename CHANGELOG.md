@@ -10,6 +10,56 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.2.0] - 2026-05-06
+
+Reverts the v11.1.12 "MCP consumer pattern" experiment and codifies a
+**standalone contract**: cAgents must never depend on or suggest MCP
+servers. The plugin's value is that it works out of the box; coupling
+agents to external MCP services breaks that promise.
+
+### Removed
+- **`mcpServers` block**: already gone from `.claude-plugin/plugin.json`
+  (v11.1.14) and `.mcp.json` (v11.1.15); v11.2.0 deletes `.mcp.json`
+  entirely (it had nothing to add — `mcpServers: {}` is just scaffolding).
+- **`mcp__*` tool patterns**: stripped from `allowed-tools` in all 10
+  pilot agents that declared them — `developer/quality/security-owasp`,
+  `developer/quality/playwright-test-engineer`, `developer/quality/qa-lead`,
+  `analyst/data-scientist`, `developer/fullstack/data-analyst`,
+  `developer/backend/backend-developer`,
+  `developer/infrastructure/devops-engineer`,
+  `operator/support/support-agent`, `operator/support/technical-writer`,
+  `operator/business-ops/finance-manager`. Each agent now uses only
+  built-in Claude Code tools.
+- **`elicitation-handler.cjs`**: hook that logged MCP elicitation events
+  removed along with its `Elicitation` and `ElicitationResult` registrations
+  in `.claude/settings.json`. The events remain available for users who
+  want to register their own handlers.
+- **Documentation**: deleted `docs/MCP_SERVERS.md`, removed the
+  "MCP Tool Integration (Consumer Pattern)" section from
+  `.claude/rules/core/skill-format.md`, and replaced the
+  "MCP Integration (V11.1.12+)" section in `CLAUDE.md` with a firm
+  **Standalone Contract** section that codifies the rule.
+
+### Changed
+- **Hook count**: 29 → 28 .cjs files; 26 → 25 unique registered hooks;
+  19 → 17 event types. Updated in `.claude/rules/core/hooks.md`,
+  `CLAUDE.md`, and `README.md`.
+- **`core/team-trigger/SKILL.md`**: dropped the "and MCP servers" mention
+  from the teammate context-loading description.
+
+### Tests
+- Replaced `tests/skills/mcp-consumer-pattern.test.js` (which asserted the
+  presence of MCP scaffolding) with
+  `tests/skills/standalone-contract.test.js` (which asserts its absence).
+  Failing-before / passing-after the standalone contract.
+
+### Why a minor bump
+- Removes public-facing surface (`mcp__*` from 10 agents'
+  `allowed-tools`, two registered hook events, 1 doc page, 1 ruleset
+  section). Per the tiny-bump rule, "Multi-file refactors touching more
+  than ~5 files outside the 18 sync locations → minor bump." This bump
+  touches ~14 non-sync files.
+
 ## [11.1.15] - 2026-05-06
 
 ### Fixed

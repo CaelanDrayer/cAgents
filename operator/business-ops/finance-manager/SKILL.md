@@ -31,7 +31,7 @@ metadata:
       type: collaborates_with
     - name: operations-manager
       type: collaborates_with
-allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet mcp__plaid__*
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Finance Manager

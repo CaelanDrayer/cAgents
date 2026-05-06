@@ -40,7 +40,7 @@ metadata:
       type: cross_domain
     - name: predictive-analyst
       type: cross_domain
-allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet mcp__bigquery__* mcp__jupyter__*
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Data Scientist

@@ -1,5 +1,5 @@
 {
-  "$comment": "Hook configuration - cAgents V11.1.15 - Progressive pipeline (3 paths), agent chaining, structured error format, attention injection, magic keywords, model routing advisor, delegation enforcer, approval gate, session init gate. 29 .cjs files = 26 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI across 19 event types. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd).",
+  "$comment": "Hook configuration - cAgents V11.2.0 - Progressive pipeline (3 paths), agent chaining, structured error format, attention injection, magic keywords, model routing advisor, delegation enforcer, approval gate, session init gate. 29 .cjs files = 26 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI across 19 event types. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd).",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
   "teammateMode": "tmux",
@@ -23,7 +23,7 @@
   },
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CAGENTS_VERSION": "11.1.15"
+    "CAGENTS_VERSION": "11.2.0"
   },
   "permissions": {
     "allow": [
@@ -310,30 +310,6 @@
             "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" stop-failure-handler'",
             "timeout": 5,
             "statusMessage": "Saving recovery state after stop failure..."
-          }
-        ]
-      }
-    ],
-    "Elicitation": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" elicitation-handler'",
-            "timeout": 5,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "ElicitationResult": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" elicitation-handler'",
-            "timeout": 5,
-            "async": true
           }
         ]
       }

@@ -55,7 +55,7 @@ This agent uses Claude Code's **built-in agent teams**. The built-in system prov
 - **SendMessage**: Direct messaging between teammates and lead
 - **TaskCreate/TaskUpdate/TaskList**: Shared task coordination with dependency tracking
 - **teammateMode**: Display mode (`"auto"`, `"tmux"`, `"in-process"`) configured in settings.json
-- **Automatic context loading**: Teammates load CLAUDE.md, skills, and MCP servers automatically
+- **Automatic context loading**: Teammates load CLAUDE.md and skills automatically
 - **File-lock based task claiming**: Prevents race conditions when multiple teammates claim tasks
 
 When `teammateMode` is `"tmux"` (or `"auto"` inside a tmux session), each teammate gets its own tmux split pane managed by Claude Code.

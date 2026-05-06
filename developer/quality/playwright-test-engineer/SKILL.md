@@ -44,7 +44,7 @@ metadata:
       type: reviews
     - name: accessibility-checker
       type: collaborates_with
-allowed-tools: Read Write Edit Grep Glob Bash mcp__playwright__*
+allowed-tools: Read Write Edit Grep Glob Bash
 ---
 
 <example>

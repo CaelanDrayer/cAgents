@@ -8,7 +8,7 @@ Deploy 243 specialized agents across 9 builder-role archetypes (with a legacy 15
 |------|-------|
 | Agents | 243 across 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership) |
 | Skills | 6 slash commands |
-| Hooks | 29 .cjs files = 26 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI, across 19 event types |
+| Hooks | 28 .cjs files = 25 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI, across 17 event types |
 | Models | Opus 4.6 (controllers) · Sonnet 4.6 (execution) · Haiku 4.5 (support) |
 
 ---
@@ -38,7 +38,7 @@ cAgents spawns 3-10+ subagents per request. Each consumes API tokens independent
 ## Requirements
 
 - **Claude Code 2.1.69+** (required)
-- **Node.js** (recommended) — powers 26 unique registered hooks (29 .cjs files = hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI) for session management, secret detection, team coordination, and completion verification
+- **Node.js** (recommended) — powers 25 unique registered hooks (28 .cjs files = hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI) for session management, secret detection, team coordination, and completion verification
 
 | cAgents | Min Claude Code | Highlights |
 |---------|----------------|------------|
@@ -288,7 +288,7 @@ This fires automatically — no prompt engineering required. It is a no-op when 
 
 ### Lifecycle Hooks
 
-cAgents ships 29 .cjs files = 26 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI. The 26 hooks span 27 registrations (`elicitation-handler.cjs` covers 2 events) and fire across 19 of Claude Code's 24 event types:
+cAgents ships 28 .cjs files = 25 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI. The 25 hooks fire across 17 of Claude Code's 24 event types:
 
 | Event | Hook | Purpose |
 |-------|------|---------|
@@ -317,8 +317,6 @@ cAgents ships 29 .cjs files = 26 unique registered hooks + hook-utils.cjs + run-
 | InstructionsLoaded | instructions-loaded.cjs | Validate rules directory, inject session context |
 | PreCompact | pre-compact-save.cjs | Save workflow state before context compaction |
 | PostCompact | post-compact-restore.cjs | Re-inject workflow context after compaction |
-| Elicitation | elicitation-handler.cjs | Log MCP elicitation requests |
-| ElicitationResult | elicitation-handler.cjs | Log MCP elicitation responses |
 
 ### Confidence Scoring
 
@@ -378,7 +376,7 @@ For cross-domain work that spans multiple areas (e.g., launching a product requi
 | **Parallel team execution** | Yes — N-wave with per-wave quality gates | No | No |
 | **Revision loops** | Yes — executor + reviewer, max 3 rounds per work item | No | No |
 | **Two-stage review** | Yes — spec compliance then code quality | No | No |
-| **Hook lifecycle** | 26 unique hooks / 27 registrations across 19 event types | 1–4 hooks | 1–4 hooks |
+| **Hook lifecycle** | 25 unique hooks across 17 event types | 1–4 hooks | 1–4 hooks |
 | **Goal drift prevention** | Yes — attention injection on every Write/Edit/Bash | No | No |
 | **Confidence scoring** | Yes — 0.0–1.0 per work item, low scores trigger scrutiny | No | No |
 | **Cross-domain orchestration** | Yes — /org fires full C-suite hierarchy | No | No |
@@ -453,7 +451,7 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights:
 
-- **V11.1.15** — Current release. Plugin health sweep: archetype-canonical doc alignment (9 archetypes canonical, 15 domains as routing overlay), 109 stale `related_agents` cross-references swept, hook-count assertions corrected (26 unique registered, 29 .cjs total), `sync-agents.sh --check` dry-run flag added, `validate-versions.sh` pruned to 18 canonical slots, regression tests added.
+- **V11.2.0** — Current release. Plugin health sweep: archetype-canonical doc alignment (9 archetypes canonical, 15 domains as routing overlay), 109 stale `related_agents` cross-references swept, hook-count assertions corrected (26 unique registered, 29 .cjs total), `sync-agents.sh --check` dry-run flag added, `validate-versions.sh` pruned to 18 canonical slots, regression tests added.
 - **V11.1.3** — Removed statusLine hook and status bar integration.
 - **V11.0.0** — Removed deprecated skills `/review`, `/optimize`, `/context`, `/debug`. `/review` and `/optimize` consolidated into `/improve` (`--mode review|optimize|full`); `/context` replaced by `/run context …` passthrough; `/debug` replaced by `/run --mode debug`. See [docs/MIGRATION-V11.md](docs/MIGRATION-V11.md) for the migration guide.
 - **V10.23.0** — 29-check validation framework, regression validation chain, mandatory self-validation protocol for execution agents

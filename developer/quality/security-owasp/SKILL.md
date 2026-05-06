@@ -39,7 +39,7 @@ metadata:
       type: augments
     - name: qa-tester
       type: collaborates_with
-allowed-tools: Read Grep Glob Bash mcp__github__*
+allowed-tools: Read Grep Glob Bash
 ---
 
 # Security OWASP Agent

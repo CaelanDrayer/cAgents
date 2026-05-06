@@ -53,7 +53,7 @@ metadata:
       type: reviews
     - name: frontend-developer
       type: reviews
-allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet mcp__github__*
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 <example>

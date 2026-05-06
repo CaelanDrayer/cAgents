@@ -41,7 +41,7 @@ metadata:
       type: collaborates_with
     - name: code-reviewer
       type: reviewed_by
-allowed-tools: Read Grep Glob Write Edit Bash mcp__postgres__* mcp__redis__*
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 <example>

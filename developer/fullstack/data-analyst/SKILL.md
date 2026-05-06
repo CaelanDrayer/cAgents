@@ -26,7 +26,7 @@ metadata:
       type: collaborates_with
     - name: bi-specialist
       type: cross_domain
-allowed-tools: Read Grep Glob Write Edit Bash mcp__bigquery__* mcp__postgres__*
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Data Analyst / Data Engineer Agent

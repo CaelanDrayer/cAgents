@@ -35,7 +35,7 @@ metadata:
       type: coordinated_by
     - name: sysadmin
       type: collaborates_with
-allowed-tools: Read Grep Glob Write Edit Bash mcp__github__* mcp__docker__*
+allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # DevOps Engineer

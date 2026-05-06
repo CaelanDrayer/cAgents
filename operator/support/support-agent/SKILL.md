@@ -6,7 +6,7 @@ tier: execution
 archetype: operator
 branch: support
 model: sonnet
-allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet mcp__zendesk__* mcp__intercom__*
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 metadata:
   version: "1.0.0"
 ---

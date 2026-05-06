@@ -28,7 +28,7 @@ metadata:
       type: collaborates_with
     - name: scribe
       type: cross_domain
-allowed-tools: Read Grep Glob Write Edit mcp__github__* mcp__notion__*
+allowed-tools: Read Grep Glob Write Edit
 ---
 
 # Technical Writer

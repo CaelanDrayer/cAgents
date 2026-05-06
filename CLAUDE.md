@@ -377,7 +377,7 @@ cAgents/
 +-- CLAUDE.md                # Main project memory (this file)
 +-- .claude/
 |   +-- skills/              # Skills (org, run, team, designer, improve, helper)
-|   +-- hooks/               # 29 .cjs files (26 hooks + utils + launcher + eval CLI)
+|   +-- hooks/               # 28 .cjs files (25 hooks + utils + launcher + eval CLI)
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (29 files: 25 top-level across 5 categories + 1 README + 3 in resources/)
 |   +-- settings.json        # Hook registration + permissions + env
@@ -400,45 +400,55 @@ cAgents/
 
 ## Hooks System
 
-**Architecture**: CJS-only hooks with `createHook()` factory. 29 .cjs files = 26 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI. See @.claude/rules/core/hooks.md for full documentation.
+**Architecture**: CJS-only hooks with `createHook()` factory. 28 .cjs files = 25 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI. See @.claude/rules/core/hooks.md for full documentation.
 
-## MCP Integration (V11.1.12+)
+## Standalone Contract (V11.2.0+)
 
-cAgents v11.1.12 adopts the **Model Context Protocol (MCP) consumer pattern** (Stage 1).
-Selected agents declare `mcp__<server>__<tool>` patterns in their `allowed-tools` field
-to opt into MCP tool surfaces when users have those servers configured.
+**cAgents is standalone. It MUST NOT depend on MCP servers — neither bundled nor consumed.**
 
-**Stage**: cAgents is a CONSUMER (Stage 1). It declares which MCP tools its agents would
-use; it does NOT bundle or run any MCP servers. Users configure servers via Claude Code's
-`claude mcp add` command or the equivalent settings.json block.
+This is a load-bearing constraint, not a default. The plugin's value is that it works
+out of the box: install cAgents, get 255 agents and 6 skills with zero external service
+configuration. Coupling any agent or skill to an MCP server (the user must run a Postgres
+MCP, configure a GitHub MCP, etc.) breaks that contract — agents start failing in
+environments where the server isn't present, and the plugin's "install and go" promise
+turns into "install, configure 11 external services, and go."
 
-**Naming convention**: `mcp__<server>__<tool>` (e.g. `mcp__github__create_issue`,
-`mcp__postgres__query`, `mcp__github__*` for wildcard).
+### Rules
 
-**Declaring MCP tools on an agent**: append patterns to the agent's `allowed-tools` field
-(space-separated, alongside built-in tools). See `.claude/rules/core/skill-format.md` §
-"MCP Tool Integration (Consumer Pattern)" for the full schema, declaration syntax, and
-v1/v2 staging.
+1. **No `mcpServers` blocks** anywhere in the plugin (`plugin.json`, `.mcp.json`, any
+   shipped config). Both the plugin manifest and the project-level MCP config must be
+   absent or empty.
+2. **No `mcp__*` patterns in any agent's `allowed-tools`.** Agents declare only built-in
+   Claude Code tools (`Read`, `Write`, `Edit`, `Bash`, `Grep`, `Glob`, `Agent`,
+   `WebFetch`, `WebSearch`, `Task*`, etc.). Bash + WebFetch already cover the vast
+   majority of integrations agents need; if an agent's job genuinely requires a hosted
+   service, that's a sign the agent is mis-scoped.
+3. **No hooks specific to MCP protocol events.** Claude Code emits `Elicitation` and
+   `ElicitationResult` events when an MCP server is in use; cAgents does not register
+   handlers for these. They remain available for users who add their own hooks.
+4. **No MCP-suggesting docs** in CLAUDE.md, skill-format.md, README.md, or agent
+   SKILL.md prose (other than a security agent legitimately referencing MCP as an
+   *attack surface to audit*, which is content about MCP, not a dependency on it).
+5. **Bug-driven test mandate** (per CLAUDE.md): a regression test must enforce this
+   contract — any future PR that adds `mcp__*` to allowed-tools or adds a non-empty
+   `mcpServers` block fails CI.
 
-**Suggested servers**: `.claude-plugin/plugin.json` has a top-level `mcpServers` block
-documenting the 11 servers cAgents agents currently reference (github, postgres, bigquery,
-playwright, redis, docker, jupyter, plaid, zendesk, intercom, notion). Each entry has
-`stage: "consumer-suggestion"` to indicate cAgents v11.1.12 declares but does not bundle
-these servers.
+### What this means for users
 
-**Pilot agents (≥10)**: `developer/quality/security-owasp`, `developer/quality/playwright-test-engineer`,
-`developer/quality/qa-lead`, `analyst/data-scientist`, `developer/fullstack/data-analyst`,
-`developer/backend/backend-developer`, `developer/infrastructure/devops-engineer`,
-`operator/support/support-agent`, `operator/support/technical-writer`,
-`operator/business-ops/finance-manager`. Regression test:
-`tests/skills/mcp-consumer-pattern.test.js`.
+Users CAN configure their own MCP servers in their personal `~/.claude/settings.json`
+or project `.mcp.json` — Claude Code supports MCP independently of cAgents. cAgents
+agents simply won't have those tools in their declared `allowed-tools`, so they won't
+call MCP tools. If a user wants MCP-aware agents, they fork the plugin or override
+specific agents in their own setup. cAgents the upstream plugin stays standalone.
 
-**Back-compat**: agents WITHOUT `mcp__*` in `allowed-tools` work exactly as before — MCP
-integration is purely opt-in.
+### History
 
-**Stage 2 (deferred)**: bundling cAgents-authored MCP servers as plugin assets is
-deferred to a future major. The v1 schema is forward-compatible: future bundled servers
-will be marked with `stage: "bundled"` in `mcpServers`.
+V11.1.12 introduced an "MCP consumer pattern (Stage 1)" that violated this contract by
+adding `mcp__*` declarations to 10 agents and an `mcpServers` catalog to `plugin.json`.
+V11.1.14 removed the catalog after Claude Code's plugin validator rejected the
+descriptive shape (`mcpServers: Invalid input`). V11.1.15 fixed the same issue in
+`.mcp.json`. V11.2.0 reverts the consumer-pattern entirely and codifies this contract,
+because the standalone promise is more valuable than the optional integration was.
 
 ## Plugin Architecture
 
@@ -499,13 +509,13 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Agents**: 243 total across 9 archetypes (developer 31, operator 81, advisor 30, analyst 27, creator 11, writer 26, strategist 9, core 17, leadership 11)
 **Domain Overlay (legacy routing/config only)**: 13 dirs (engineering, creative, business, growth, people, service, shared, science, health, education, personal, arts, trades) hold `config/domain_overrides.yaml` — no SKILL.md files
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/domain_overrides.yaml`, `cagents-memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (session YAML contract for AgentPath)
-**Hooks**: 29 .cjs files = 26 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI
+**Hooks**: 28 .cjs files = 25 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 790 Vitest tests across 46 files (hooks + config validation + regression tests)
-**Version**: 11.1.15
+**Version**: 11.2.0
 
 ## Troubleshooting
 
