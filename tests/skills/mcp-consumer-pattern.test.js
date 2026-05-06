@@ -67,18 +67,28 @@ describe('Phase 9: MCP consumer pattern (V11.1.12+)', () => {
     expect(declarations.length).toBeGreaterThanOrEqual(10);
   });
 
-  test('(b) .claude-plugin/plugin.json has mcpServers block (object, non-empty)', () => {
+  test('(b) .claude-plugin/plugin.json mcpServers is absent OR uses Claude Code-valid schema', () => {
+    // V11.1.14: removed `mcpServers` consumer-suggestion catalog from plugin.json.
+    // Claude Code's plugin manifest validator rejects descriptive metadata
+    // ({description, stage}) — mcpServers entries must be real MCP server configs
+    // ({command, args, env, type, ...}). The consumer-suggestion catalog now lives
+    // only in CLAUDE.md and .claude/rules/core/skill-format.md.
+    // If a future bump re-introduces mcpServers, every entry MUST have `command` or `type`.
     const pluginJsonPath = join(ROOT, '.claude-plugin', 'plugin.json');
     expect(existsSync(pluginJsonPath)).toBe(true);
     const data = JSON.parse(readFileSync(pluginJsonPath, 'utf8'));
-    expect(data.mcpServers).toBeTruthy();
-    expect(typeof data.mcpServers).toBe('object');
-    expect(Array.isArray(data.mcpServers)).toBe(false);
-    expect(Object.keys(data.mcpServers).length).toBeGreaterThan(0);
-    // Each entry should have a description
-    for (const [name, entry] of Object.entries(data.mcpServers)) {
-      expect(typeof entry, `mcpServers.${name}`).toBe('object');
-      expect(entry.description, `mcpServers.${name}.description`).toBeTruthy();
+    if (data.mcpServers !== undefined) {
+      expect(typeof data.mcpServers).toBe('object');
+      expect(Array.isArray(data.mcpServers)).toBe(false);
+      for (const [name, entry] of Object.entries(data.mcpServers)) {
+        expect(typeof entry, `mcpServers.${name}`).toBe('object');
+        const hasCommand = typeof entry.command === 'string' && entry.command.length > 0;
+        const hasType = typeof entry.type === 'string' && entry.type.length > 0;
+        expect(
+          hasCommand || hasType,
+          `mcpServers.${name} must have 'command' or 'type' (Claude Code schema). Got keys: ${Object.keys(entry).join(',')}`
+        ).toBe(true);
+      }
     }
   });
 
@@ -117,9 +127,10 @@ describe('Phase 9: MCP consumer pattern (V11.1.12+)', () => {
     expect(content).toContain('mcp__');
   });
 
-  test('(g) Suggested servers in plugin.json cover the agents that reference them (sanity)', () => {
-    const pluginJsonPath = join(ROOT, '.claude-plugin', 'plugin.json');
-    const data = JSON.parse(readFileSync(pluginJsonPath, 'utf8'));
+  test('(g) Servers referenced by agents are documented in CLAUDE.md', () => {
+    // V11.1.14: catalog moved out of plugin.json (Claude Code schema rejection).
+    // Documentation in CLAUDE.md is now the source of truth for the suggested-server catalog.
+    const claudeMd = readFileSync(join(ROOT, 'CLAUDE.md'), 'utf8').toLowerCase();
     const declaredServers = new Set();
     for (const { mcpTokens } of declarations) {
       for (const token of mcpTokens) {
@@ -127,10 +138,11 @@ describe('Phase 9: MCP consumer pattern (V11.1.12+)', () => {
         if (m) declaredServers.add(m[1].toLowerCase());
       }
     }
-    const advertisedServers = new Set(Object.keys(data.mcpServers || {}).map((s) => s.toLowerCase()));
-    // Every server that an agent references should appear in the suggested-server catalog
     for (const server of declaredServers) {
-      expect(advertisedServers.has(server), `agent references mcp__${server}__* but plugin.json mcpServers does not list it`).toBe(true);
+      expect(
+        claudeMd.includes(server),
+        `agent references mcp__${server}__* but CLAUDE.md does not mention it`
+      ).toBe(true);
     }
   });
 });

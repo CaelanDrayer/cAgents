@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "11.1.13",
+  "version": "11.1.14",
   "description": "Universal multi-domain agent orchestration framework. 243 agents across 15 domains, coordinated by an intelligent pipeline. 6 user skills: /run routes any task through controller + specialist agents, /team runs parallel agent waves, /org coordinates cross-domain strategy, /designer guides design exploration, /improve audits and optimizes (modes: review, optimize, full), /helper guides usage.",
   "author": {
     "name": "CaelanDrayer",
@@ -13,52 +13,6 @@
   "skills": "./.claude/skills/",
   "hooks": "./.claude/settings.json",
   "outputStyles": "./output-styles",
-  "mcpServers": {
-    "github": {
-      "description": "GitHub repository operations (issues, PRs, code search)",
-      "stage": "consumer-suggestion"
-    },
-    "postgres": {
-      "description": "Postgres queries and schema introspection",
-      "stage": "consumer-suggestion"
-    },
-    "bigquery": {
-      "description": "BigQuery dataset queries",
-      "stage": "consumer-suggestion"
-    },
-    "playwright": {
-      "description": "Playwright browser automation",
-      "stage": "consumer-suggestion"
-    },
-    "redis": {
-      "description": "Redis cache inspection",
-      "stage": "consumer-suggestion"
-    },
-    "docker": {
-      "description": "Docker container ops",
-      "stage": "consumer-suggestion"
-    },
-    "jupyter": {
-      "description": "Jupyter notebook execution",
-      "stage": "consumer-suggestion"
-    },
-    "plaid": {
-      "description": "Plaid financial data",
-      "stage": "consumer-suggestion"
-    },
-    "zendesk": {
-      "description": "Zendesk ticket operations",
-      "stage": "consumer-suggestion"
-    },
-    "intercom": {
-      "description": "Intercom conversations",
-      "stage": "consumer-suggestion"
-    },
-    "notion": {
-      "description": "Notion docs and databases",
-      "stage": "consumer-suggestion"
-    }
-  },
   "agents": [
     "./advisor/education/academic-researcher/SKILL.md",
     "./advisor/education/academic-tutor/SKILL.md",

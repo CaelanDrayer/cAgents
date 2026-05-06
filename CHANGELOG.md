@@ -10,6 +10,27 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.1.14] - 2026-05-06
+
+### Fixed
+- **Plugin install blocker**: removed the `mcpServers` consumer-suggestion block
+  from `.claude-plugin/plugin.json`. Claude Code's plugin manifest validator
+  rejects entries with `{description, stage}` keys (`mcpServers: Invalid input`)
+  because the schema requires real MCP server configs (`command`, `args`, `env`,
+  `type`, ...). The descriptive catalog already lives in `CLAUDE.md` and
+  `.claude/rules/core/skill-format.md`, so removing it from `plugin.json` is
+  doc-only — agents still declare their MCP usage via
+  `allowed-tools: mcp__server__tool` patterns in their SKILL.md frontmatter,
+  which is unaffected.
+
+### Tests
+- `tests/skills/mcp-consumer-pattern.test.js`:
+  - Test (b): inverted to assert `mcpServers` is absent OR — if a future bump
+    re-introduces it — every entry has `command` or `type` per Claude Code's
+    schema. Prevents regression of the install-blocking shape.
+  - Test (g): rewritten to assert each agent-referenced server is documented
+    in `CLAUDE.md` (the new catalog source of truth) instead of `plugin.json`.
+
 ## [11.1.13] - 2026-05-05
 
 Wave 7 + Wave 8 closeout of the v11.1.5 → measurably-better release.
