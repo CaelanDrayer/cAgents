@@ -4,6 +4,7 @@ archetype: creator
 description: "Culinary expert for recipe development, cooking techniques, flavor pairing, and menu design. Use when planning menus, developing recipes, or exploring world cuisines."
 color: bright_white
 metadata:
+  version: "1.0.0"
   vibe: From mise en place to plated perfection
   tier: execution
   domain: trades

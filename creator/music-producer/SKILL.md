@@ -17,6 +17,8 @@ related_agents:
   - name: sound-designer
 not-my-scope: ["Live sound reinforcement", "Music theory pedagogy", "Film scoring (see music-composer)"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
+metadata:
+  version: "1.0.0"
 ---
 
 # Music Producer

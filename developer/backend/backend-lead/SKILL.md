@@ -4,6 +4,7 @@ archetype: developer
 branch: backend
 description: "Use for coordinating backend development across multiple engineers, reviewing backend architecture decisions, or managing backend technical debt and standards."
 metadata:
+  version: "1.0.0"
   vibe: Runs the backend team like a well-oiled distributed system
   tier: controller
   effort: high
@@ -31,7 +32,7 @@ metadata:
       type: coordinates
     - name: dba
       type: collaborates_with
-allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Backend Lead Agent
@@ -92,7 +93,7 @@ See @resources/code-review.md for review criteria.
 1. Read plan.yaml for objectives and work items
 2. Break objectives into specific questions
 3. Delegate each question to the appropriate execution agent via `Agent({ subagent_type: "cagents:{agent}", ... })`
-4. **MANDATORY: Call TodoWrite after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required TodoWrite pattern
+4. **MANDATORY: Call TaskCreate after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required task-tracking pattern (TaskCreate/TaskUpdate)
 5. Collect answers from specialists
 6. Synthesize answers into a coherent solution
 7. Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks

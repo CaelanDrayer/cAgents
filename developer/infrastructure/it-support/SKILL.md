@@ -4,6 +4,7 @@ archetype: developer
 branch: infrastructure
 description: "Use when troubleshooting IT infrastructure, managing system configurations, resolving network issues, or setting up development environments."
 metadata:
+  version: "1.0.0"
   vibe: Fixes the thing before you finish describing the problem
   tier: execution
   effort: medium

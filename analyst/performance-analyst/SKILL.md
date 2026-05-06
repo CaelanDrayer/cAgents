@@ -3,6 +3,7 @@ name: performance-analyst
 archetype: analyst
 description: "Use when analyzing performance metrics, identifying bottlenecks, planning capacity, or producing optimization recommendations from operational data."
 metadata:
+  version: "1.0.0"
   vibe: Turns raw metrics into decisions that move the needle
   tier: execution
   effort: medium

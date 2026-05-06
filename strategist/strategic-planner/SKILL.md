@@ -3,6 +3,7 @@ name: strategic-planner
 archetype: strategist
 description: "Use when developing long-term strategy, analyzing competitive positioning, setting strategic priorities, or aligning business units to organizational goals."
 metadata:
+  version: "1.0.0"
   vibe: Thinks three moves ahead so the company only needs one
   tier: controller
   effort: high
@@ -36,7 +37,7 @@ metadata:
       type: coordinates
     - name: operations-manager
       type: collaborates_with
-allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 <example>
@@ -81,7 +82,7 @@ See @resources/frameworks.md for strategic frameworks.
 1. Read plan.yaml for objectives and work items
 2. Break objectives into specific questions
 3. Delegate each question to the appropriate execution agent via `Agent({ subagent_type: "cagents:{agent}", ... })`
-4. **MANDATORY: Call TodoWrite after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required TodoWrite pattern
+4. **MANDATORY: Call TaskCreate after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required task-tracking pattern (TaskCreate/TaskUpdate)
 5. Collect answers from specialists
 6. Synthesize answers into a coherent solution
 7. Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks

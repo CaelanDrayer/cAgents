@@ -4,6 +4,7 @@ archetype: operator
 branch: people-ops
 description: "Use when optimizing HR operations, streamlining people processes, managing payroll coordination, or improving HR service delivery efficiency."
 metadata:
+  version: "1.0.0"
   vibe: "Runs HR operations like a well-documented, repeatable process"
   tier: execution
   effort: medium

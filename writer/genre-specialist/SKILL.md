@@ -3,6 +3,7 @@ name: genre-specialist
 archetype: writer
 description: "Use when working within specific genre conventions, subverting genre expectations, blending genres, or ensuring work meets audience expectations for its category."
 metadata:
+  version: "1.0.0"
   vibe: "Knows every genre's rules well enough to break them right"
   tier: execution
   effort: medium

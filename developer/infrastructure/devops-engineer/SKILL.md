@@ -4,11 +4,18 @@ archetype: developer
 branch: infrastructure
 description: "Use when setting up CI/CD pipelines, configuring infrastructure as code, managing containers and orchestration, or automating deployment processes."
 metadata:
+  version: "1.0.0"
   vibe: Automates the boring stuff so deploys are a non-event
   tier: execution
   effort: medium
   domain: engineering
   model: sonnet
+  paths:
+    - "Dockerfile*"
+    - "docker-compose*"
+    - ".github/**"
+    - "**/*.tf"
+    - "**/*.yaml"
   color: bright_magenta
   capabilities:
     - cicd_automation
@@ -28,7 +35,7 @@ metadata:
       type: coordinated_by
     - name: sysadmin
       type: collaborates_with
-allowed-tools: Read Grep Glob Write Edit Bash
+allowed-tools: Read Grep Glob Write Edit Bash mcp__github__* mcp__docker__*
 ---
 
 # DevOps Engineer

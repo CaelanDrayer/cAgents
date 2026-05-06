@@ -3,6 +3,7 @@ name: setting-designer
 archetype: writer
 description: "Use when designing story settings, creating location profiles, building atmospheric details, or ensuring environments serve narrative and thematic purposes."
 metadata:
+  version: "1.0.0"
   vibe: Builds worlds so vivid you can smell the rain
   tier: execution
   effort: medium

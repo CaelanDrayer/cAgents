@@ -4,6 +4,7 @@ archetype: operator
 branch: business-ops
 description: "Use when planning resource allocation, forecasting capacity needs, optimizing team utilization, or balancing workload across projects."
 metadata:
+  version: "1.0.0"
   vibe: Puts the right people on the right work at the right time
   tier: execution
   effort: medium

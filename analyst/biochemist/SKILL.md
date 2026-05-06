@@ -3,6 +3,7 @@ name: biochemist
 archetype: analyst
 description: "Use for biochemistry and molecular biology: protein structure and function, metabolic pathways, enzyme kinetics, molecular biology techniques, drug-target interactions, and omics data interpretation."
 metadata:
+  version: "1.0.0"
   vibe: "Where chemistry meets life, molecule by molecule"
   tier: execution
   domain: science

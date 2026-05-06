@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when planning regional marketing activities, coordinating field events, managing local partnerships, or aligning field efforts with sales territories."
 metadata:
+  version: "1.0.0"
   vibe: Brings the brand to life in markets that matter most
   tier: execution
   effort: medium

@@ -3,6 +3,7 @@ name: mathematician
 archetype: analyst
 description: "Use for pure and applied mathematics: proof writing, mathematical modeling, equation derivation, problem solving, and formal reasoning. Handles calculus, linear algebra, number theory, topology, statistics, and numerical methods."
 metadata:
+  version: "1.0.0"
   vibe: "Elegant proofs and practical solutions"
   tier: execution
   domain: science

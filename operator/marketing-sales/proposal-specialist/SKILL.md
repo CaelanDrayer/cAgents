@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when writing RFP responses, creating sales proposals, developing pricing packages, or producing technical solution documents for prospects."
 metadata:
+  version: "1.0.0"
   vibe: Writes proposals that win by making the decision obvious
   tier: execution
   effort: medium

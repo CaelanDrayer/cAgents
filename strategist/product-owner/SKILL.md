@@ -3,6 +3,7 @@ name: product-owner
 archetype: strategist
 description: "Use when features need prioritization, product roadmap needs planning, user stories need refinement, or scope decisions need a product perspective. Balances user needs with technical constraints."
 metadata:
+  version: "1.0.0"
   vibe: Says no to good ideas so great ideas get shipped
   tier: controller
   effort: high
@@ -58,7 +59,7 @@ metadata:
       type: collaborates_with
     - name: ux-designer
       type: cross_domain
-allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 <example>
@@ -105,7 +106,7 @@ See @resources/workflow-integration.md for role in each workflow phase.
 
 ## Progress Tracking
 
-Use TodoWrite to display progress:
+Use TaskCreate/TaskUpdate to display progress (TodoWrite in SDK only):
 
 ```javascript
 TodoWrite({
@@ -129,7 +130,7 @@ TodoWrite({
 1. Read plan.yaml for objectives and work items
 2. Break objectives into specific questions
 3. Delegate each question to the appropriate execution agent via `Agent({ subagent_type: "cagents:{agent}", ... })`
-4. **MANDATORY: Call TodoWrite after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required TodoWrite pattern
+4. **MANDATORY: Call TaskCreate after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required task-tracking pattern (TaskCreate/TaskUpdate)
 5. Collect answers from specialists
 6. Synthesize answers into a coherent solution
 7. Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks

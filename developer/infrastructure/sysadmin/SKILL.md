@@ -4,6 +4,7 @@ archetype: developer
 branch: infrastructure
 description: "Use when managing Linux/Unix systems, configuring servers, automating system administration tasks, or maintaining system reliability and security."
 metadata:
+  version: "1.0.0"
   vibe: Keeps servers running so everyone else can keep sleeping
   tier: execution
   effort: medium

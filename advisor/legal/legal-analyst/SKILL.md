@@ -4,6 +4,7 @@ archetype: advisor
 branch: legal
 description: "Use when researching legal precedents, analyzing regulatory impact, preparing legal briefs, or supporting attorneys with case documentation."
 metadata:
+  version: "1.0.0"
   vibe: Researches legal precedent so counsel can advise with confidence
   tier: execution
   effort: medium

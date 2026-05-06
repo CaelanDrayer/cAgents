@@ -3,6 +3,7 @@ name: cso
 archetype: leadership
 description: "Use for sales strategy, enterprise deal oversight, sales team structure, and customer acquisition planning. CSO-level sales leadership."
 metadata:
+  version: "1.0.0"
   vibe: Sees the competitive landscape three moves ahead
   tier: controller
   effort: high
@@ -20,7 +21,7 @@ metadata:
     - What is the strategic business impact of this initiative?
     - What competitive landscape factors should we consider?
     - What are the key risks and strategic dependencies?
-allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Chief Strategy Officer

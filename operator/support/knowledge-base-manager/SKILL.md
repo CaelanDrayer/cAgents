@@ -4,6 +4,7 @@ archetype: operator
 branch: support
 description: "Use when organizing knowledge base content, maintaining documentation accuracy, optimizing search and discovery, or managing content lifecycle."
 metadata:
+  version: "1.0.0"
   vibe: Builds the docs that make support tickets unnecessary
   tier: execution
   effort: medium

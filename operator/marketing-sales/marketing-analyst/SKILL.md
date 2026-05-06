@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when analyzing marketing performance data, building attribution models, creating marketing dashboards, or providing campaign optimization insights."
 metadata:
+  version: "1.0.0"
   vibe: "Turns campaign data into the next campaign's secret weapon"
   tier: execution
   effort: medium

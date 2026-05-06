@@ -3,6 +3,7 @@ name: biologist
 archetype: analyst
 description: "Use for biology analysis: cell biology, genetics, evolutionary biology, ecology, physiology, and lab methods. Interprets experimental data, explains biological mechanisms, designs studies, and writes scientific content."
 metadata:
+  version: "1.0.0"
   vibe: "Life's complexity made beautifully comprehensible"
   tier: execution
   domain: science

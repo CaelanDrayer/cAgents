@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when planning marketing campaigns, defining target audiences, selecting channels, or developing go-to-market strategy. Handles brand positioning, content strategy, and competitive analysis."
 metadata:
+  version: "1.0.0"
   vibe: Plans the marketing playbook three quarters ahead
   tier: controller
   effort: high
@@ -33,7 +34,7 @@ metadata:
       type: coordinates
     - name: campaign-manager
       type: collaborates_with
-allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 <example>
@@ -98,7 +99,7 @@ See @resources/gtm-template.md for go-to-market planning.
 1. Read plan.yaml for objectives and work items
 2. Break objectives into specific questions
 3. Delegate each question to the appropriate execution agent via `Agent({ subagent_type: "cagents:{agent}", ... })`
-4. **MANDATORY: Call TodoWrite after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required TodoWrite pattern
+4. **MANDATORY: Call TaskCreate after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required task-tracking pattern (TaskCreate/TaskUpdate)
 5. Collect answers from specialists
 6. Synthesize answers into a coherent solution
 7. Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks

@@ -4,6 +4,7 @@ archetype: developer
 branch: infrastructure
 description: "Use when implementing security controls, conducting penetration tests, hardening systems, or reviewing code for security vulnerabilities."
 metadata:
+  version: "1.0.0"
   vibe: "Builds security into the architecture, not bolted on after"
   tier: execution
   effort: medium

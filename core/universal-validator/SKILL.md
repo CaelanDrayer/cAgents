@@ -3,6 +3,7 @@ name: universal-validator
 archetype: core
 description: "Use when performing final quality gate validation, checking acceptance criteria evidence chains, or producing PASS/FAIL/REVISE verdicts."
 metadata:
+  version: "1.0.0"
   vibe: "Trust but verify -- every claim needs evidence, every shortcut gets caught"
   tier: infrastructure
   effort: high
@@ -16,7 +17,7 @@ metadata:
     - acceptance_verification
     - evidence_chain
   maxTurns: 40
-allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 <example>

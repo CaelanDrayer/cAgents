@@ -4,6 +4,7 @@ archetype: developer
 branch: frontend
 description: "Use when evaluating visual design quality, reviewing UI consistency, assessing accessibility compliance, or improving frontend polish and user experience."
 metadata:
+  version: "1.0.0"
   vibe: Makes interfaces that users love before they understand why
   tier: execution
   effort: medium

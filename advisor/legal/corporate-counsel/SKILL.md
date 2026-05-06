@@ -4,6 +4,7 @@ archetype: advisor
 branch: legal
 description: "Use when advising on corporate transactions, reviewing corporate governance, handling M&A due diligence, or managing corporate legal matters."
 metadata:
+  version: "1.0.0"
   vibe: "Protects the company with legal strategy, not just legal caution"
   tier: execution
   effort: medium

@@ -4,6 +4,7 @@ archetype: operator
 branch: people-ops
 description: "Use when forecasting headcount needs, modeling attrition scenarios, analyzing workforce demographics, or planning talent pipelines against business growth."
 metadata:
+  version: "1.0.0"
   vibe: Plans the headcount so the company never hires too late
   tier: execution
   effort: medium

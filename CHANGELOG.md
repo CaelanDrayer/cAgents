@@ -10,6 +10,288 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.1.13] - 2026-05-05
+
+Wave 7 + Wave 8 closeout of the v11.1.5 → measurably-better release.
+Squashed bump (Section B Option B2 precedent — W3, W5, W6 all squashed)
+covering Phase 12 (descoped academic research analysts), PHASE-N1
+(controller Agent-tool bug doc/audit), and Phase 13 deferral note.
+
+### Added
+- **Phase 12 (descoped)**: 3 new academic-research analyst agents under
+  `analyst/` — `literature-review-author`, `citation-graph-analyzer`,
+  `methodology-critic`. Each declares `archetype: analyst`,
+  `metadata.version: "1.0.0"`, allowed-tools tuned for research
+  (Read/Grep/Glob/Bash/WebFetch/WebSearch). Regression test
+  `tests/agents/academic-research-analysts.test.js` (6 cases).
+- **PHASE-N1**: Formal audit of the depth-1 plugin-subagent Agent-tool
+  stripping bug. `.claude/rules/core/teams.md` Known Harness Limitation
+  block extended with docs.claude.com null-finding citation
+  (claude-code-guide May 2026 consultation: no settings.json /
+  plugin.json / env-var / per-spawn knob exposes the depth-1 stripping).
+  `.claude/hooks/verify-completion.cjs` made context-aware: downgrades
+  controller-self-handling severity from "protocol violation" to
+  "graceful degradation (acceptable in /team mode)" when a `team_*`
+  session's coordination_log contains the marker phrase
+  "Agent/subagent-spawn tool was not available".
+  `.claude/rules/core/{controllers,execution}.md` pin the
+  graceful-degradation pattern (1-2 paragraphs each). Knowledge note
+  `cagents-memory/_knowledge/agent-tool-depth1-stripping.md` (formal
+  pattern + asks for Anthropic upstream). Regression test
+  `tests/agents/controller-allowed-tools.test.js` (3 cases) locks the
+  audit conclusion: all 7 canonical controllers correctly declare
+  `Agent` in `allowed-tools`.
+- **Phase 13 deferral planning note**:
+  `cagents-memory/_knowledge/v12-consolidation-plan.md` — outlines the
+  4-phase v12 consolidation plan (audit, consolidation, sunsetting,
+  per-agent quality bar) and the major-bump trigger. Planning artifact
+  only; no v12 work authorized by this note.
+
+### Changed
+- Agent count: 252 → 255 (+3 from Phase 12 descoped).
+- Version registry: all 18 locations now at 11.1.13.
+- Test count: 866 → 878 (+12: Phase 12 added 6 cases, PHASE-N1 audit added 3 cases, PHASE-N1 verify-completion graceful-degradation added 3 cases).
+
+### Notes
+- Squashed bump per Section B Option B2 (W3, W5, W6, W7+W8 all squashed
+  within their wave/window).
+- Closes the v11.1.5 → measurably-better release per the original
+  IMPLEMENT_AND_VALIDATE_PROMPT.md plan. v12 work is gated on user
+  request per the Phase 13 deferral note.
+
+## [11.1.12] - 2026-05-05
+
+Wave 6 of the v11.1.5 → measurably-better release. Squashed bump (Section B Option
+B2 precedent — W3, W5, W6 all squashed) covering all 7 W6 phase deltas (Phases 5,
+6, 9, 10, 11, NF-4, NF-5).
+
+### Added
+- **Phase 5**: 6 new SEO/GEO operator agents under `operator/marketing-sales/`
+  (seo-strategist controller + keyword-researcher, on-page-seo-auditor,
+  technical-seo-auditor, link-strategist, geo-strategist execution agents).
+  Domain config updated at `growth/config/domain_overrides.yaml`.
+- **Phase 6**: `metadata.paths` conditional activation schema (V11.1.12+ v1
+  declarative; v2 routing-boost deferred). 10 pilot agents declare paths.
+  Regression test `tests/skills/paths-conditional-activation.test.js`.
+- **Phase 9**: MCP consumer pattern (Stage 1 — consumer-only). 10 pilot
+  agents declare `mcp__*` in allowed-tools. `.claude-plugin/plugin.json`
+  mcpServers block (11 servers). Documentation in skill-format.md and
+  CLAUDE.md. Regression test `tests/skills/mcp-consumer-pattern.test.js`.
+- **Phase 10**: SKILL.md schema validator hook in
+  `.claude/hooks/post-write-validator.cjs` (in-process check for archetype,
+  branch, tier, name, metadata.version semver). Advisory only — never
+  blocks. `scripts/ci/validate-agents.sh --file <path>` flag for single-file
+  validation. Regression test `tests/hooks/post-write-validator-skill-schema.test.js`
+  (5/5).
+- **Phase 11**: Per-agent `metadata.version: "1.0.0"` field on all 252
+  agent SKILL.md files. `validate-agents.sh` Check 19 enforces semver.
+  `sync-versions.sh` documents the non-touch policy: per-agent versions
+  bump independently of the cAgents plugin version registry. Regression
+  test `tests/agents/per-agent-version-field.test.js` (5/5).
+- **NF-4**: `marketplace.json` top-level `$schema`, `categories`,
+  `compatibility` fields. Anthropic schema URL placeholder; revisit when
+  the canonical URL is published.
+- **NF-5**: `.claude/settings.json` top-level `worktree.sparsePaths` array
+  (14 entries — `.claude/`, `core/`, `cagents-memory/_system/`, the 9
+  archetype roots, `scripts/`, `tests/`, `docs/`). CLAUDE.md § "Plugin
+  Architecture" documents the worktree sparse-checkout integration for
+  `/team` teammates spawned with `isolation: "worktree"`.
+
+### Changed
+- Agent count: 246 → 252 (+6 from TASK-5 SEO/GEO operators).
+- Version registry: all 18 locations now at 11.1.12.
+- Test count: 843 → 866 (+13 from W6 W1, +10 from W2/W3 Phase 10/11).
+
+### Notes
+- Squashed bump per Section B Option B2 precedent (W3 11.1.8, W5 11.1.11,
+  W6 11.1.12 all squashed into a single bump per wave).
+- Harness limitation discovered in W6 W1 and confirmed in W6 W2:
+  plugin-namespaced subagents (`cagents:*`) crash at depth-1 spawn during
+  Claude Code terminal/Bun init. Direct lead execution + 15-check
+  self-validation used as workaround per `.claude/rules/core/teams.md` §
+  "Known Harness Limitation" graceful-degradation block. Phase 5 (TASK-5)
+  was the only W6 W1 spawn that completed under the teammate path; all
+  other phases used lead direct execution. Documented in
+  `cagents-memory/_knowledge/cc-plugin-subagent-spawn-bug.md`.
+
+## [11.1.11] - 2026-05-05
+
+Wave 5 of the v11.1.5 → measurably-better release. Phase 2 progressive-disclosure
+refactor of the six user-facing skill SKILL.md files. Bumps 11.1.11–11.1.16
+squashed into 11.1.11 per Section B Option B2 cadence concession.
+
+### Changed
+- `.claude/skills/org/SKILL.md` — 1202 → 228 lines (81% reduction). Detail content extracted to 5 new `.claude/skills/org/reference/` files: `csuite-deliberation.md`, `strategic-brief-format.md`, `cross-domain-integration.md`, `escalation-handling.md`, `command-flow-detail.md`.
+- `.claude/skills/team/SKILL.md` — 1185 → 225 lines (81% reduction). Detail extracted to 8 new `.claude/skills/team/reference/` files: `wave-execution-detail.md`, `gate-validation-protocol.md`, `dynamic-scaling.md`, `partial-results.md`, `parent-session-extraction.md`, `fallback-and-error-recovery.md`, `teammate-spawning-template.md`, `cross-version-compat.md`. The "Known Harness Limitation" block remains verbatim in the body — not extracted.
+- `.claude/skills/run/SKILL.md` — 861 → 295 lines (66% reduction). Augments existing 7 reference files with 7 new: `state-machine-detail.md`, `agent-tracking.md`, `session-id-format.md`, `adaptive-pipeline.md`, `strategic-brief-integration.md`, `task-tracking-rules.md`, `followup-handling.md`.
+- `.claude/skills/designer/SKILL.md` — 736 → 200 lines (73% reduction). Detail extracted to 6 new `.claude/skills/designer/reference/` files: `phase-research-protocol.md`, `inline-controller-pattern.md`, `phase-overlap.md`, `ambiguity-scoring.md`, `behavioral-rules.md`, `follow-up-research.md`. AskUserQuestion mandate and auto-proceed exemption preserved verbatim in body.
+- `.claude/skills/improve/SKILL.md` — 597 → 212 lines (64% reduction). Detail extracted to 5 new `.claude/skills/improve/reference/` files: `mode-review-detail.md`, `mode-optimize-detail.md`, `mode-full-detail.md`, `baselines-and-benchmarks.md`, `pattern-effectiveness.md`. Mode selection table and 7-state state machine summary preserved in body.
+- `.claude/skills/helper/SKILL.md` — 508 → 343 lines (32% reduction, lightest cut). Detail extracted to 3 new `.claude/skills/helper/reference/` files: `scoring-engine.md`, `command-summaries.md`, `v11-migration.md`. Skill comparison matrix and `--troubleshoot` reference preserved in body.
+- Total user-skill SKILL.md body size: 5089 → 1503 lines (70% reduction).
+
+### Added
+- `tests/skills/skill-size-progressive-disclosure.test.js` — 14-case Vitest regression test asserting each user-skill SKILL.md is ≤400 lines, each `reference/` directory exists with ≥1 file, the total body size stays ≤2400 lines, and no individual file regresses past its pre-refactor baseline. Failing-before / passing-after the Wave 5 refactor.
+- `cagents-memory/_knowledge/progressive-disclosure-refactor.md` — captures the Wave 5 refactor pattern for future skill authors (when to apply, what stays in body, what moves to reference, anti-patterns, regression-test pattern).
+
+### Notes
+- TaskCreate-only contract from PHASE-N2 (TodoWrite → TaskCreate sweep) preserved across all 6 refactored bodies. Where TodoWrite still appears, it is restricted to historical "(SDK only)" notes or the verbatim Known Harness Limitation block.
+- Frontmatter unchanged on all 6 skills (name, description, license, allowed-tools, compatibility, metadata blocks intact).
+- Cross-cutting CRITICAL preserved-verbatim blocks: STOP rules for session init, Rationalization Kill List, Known Harness Limitation (team), AskUserQuestion mandate (designer), mode selection table + 7-state machine (improve), skill comparison matrix (helper).
+
+## [11.1.10] - 2026-05-04
+
+### Added
+- **`metadata.requires` schema (advisory v1)**: documented in
+  `.claude/rules/core/skill-format.md` as an optional `metadata:` sub-block.
+  Sub-fields: `bins` (executable names), `env` (env var names), `files`
+  (relative paths), and optional `min_node_version` (semver string).
+- **session-init-gate hook extension**
+  (`.claude/hooks/session-init-gate.cjs`): after the existing session-presence
+  check, the hook now resolves the spawning agent's SKILL.md via the plugin
+  manifest, parses `metadata.requires`, runs `command -v` / `process.env` /
+  `fs.existsSync` checks, and emits an advisory `systemMessage` listing any
+  missing dependencies. The advisory does NOT deny the spawn — purely
+  informational. Agents without `metadata.requires` are unaffected.
+- **3 pilot agents declare `metadata.requires`**:
+  - `developer/quality/playwright-test-engineer/SKILL.md` (already declared
+    `bins: [npx, node]` opportunistically; schema is now codified — no SKILL
+    change needed for this pilot).
+  - `developer/quality/qa-lead/SKILL.md` — declares `bins: [node, npx]`,
+    `env: []`.
+  - `analyst/academic-paper-searcher/SKILL.md` — declares `bins: [curl, jq]`,
+    `env: []`.
+- **Regression test**:
+  `tests/hooks/session-init-gate-requires.test.js` (3 cases — missing bin
+  emits advisory, all-present passes through, no-requires ignored).
+
+### Notes
+- Back-compat with the prior opportunistic `metadata.requires.bins` usage in
+  `playwright-test-engineer`. The existing
+  `tests/hooks/session-init-gate.test.js` continues to pass (8/8) — no
+  regression to the V10.22.0 session presence gate.
+
+## [11.1.9] - 2026-05-04
+
+### Fixed
+- **tests/skills/run-context-passthrough.test.js**: three pre-existing failing
+  assertions referenced a "Context subcommand" section of
+  `.claude/skills/run/SKILL.md` that was removed in v11.1.5 when the
+  `/context` skill was deprecated. The reference document
+  `.claude/skills/run/reference/context-passthrough.md` still preserves the
+  historical contract; the SKILL.md file now carries a V11.0+ deprecation
+  note instead. Updated three assertions to verify the current deprecation
+  contract:
+  - "contains a Context subcommand section" → "acknowledges the V11.0
+    /context skill removal"
+  - "lists all four subcommands (show/init/update/clear)" → "documents the
+    historical subcommand syntax"
+  - "documents the dispatch-before-state-machine ordering" → "points users
+    at product_context.yaml for direct edits"
+
+  Reference-file assertions left intact — they continue to verify the
+  historical contract is preserved for AgentPath FileWatcher
+  backward-compatibility and traceability. All 10 tests in the file now
+  pass (was 7/10). Production code unmodified; no other test files
+  touched. Pre-existing failure since v11.1.5 baseline (commit 5966a3e8).
+
+## [11.1.8] - 2026-05-04
+
+Wave 3 absorptions: three new agents ported from external skill corpus into the
+cAgents archetype tree (Phase 3 paper-search, Phase 7 playwright-test-engineer,
+Phase 8 claude-code-owasp). Naturally grouped as a single coherent wave bump
+because all three were prepared in parallel and share the same plugin.json
+sync pass; the multi-phase nature is documented per-phase below. Per
+RESUME_IMPLEMENTATION_PROMPT.md Section B Option B2 cadence concession.
+
+### Added
+- **analyst/academic-paper-searcher** (Phase 3): absorbed `paper-search` agent
+  from `example/external-skills/ykdojo__paper-search/`. New 2-level analyst
+  archetype agent exposing OpenAlex (250M+ academic works, no API key) for
+  keyword search, DOI/OpenAlex-ID lookup, citation traversal, and abstract
+  retrieval via direct curl+jq invocations against `https://api.openalex.org`.
+  Total cAgents agent count: analyst archetype 27 → 28.
+- **developer/quality/playwright-test-engineer** (Phase 7): absorbed from
+  `testdino-hq/playwright-skill` (v2.2.0, MIT) and
+  `jeffallan/claude-skills/playwright-expert` (v1.1.0, MIT). New
+  execution-tier agent under the developer/quality branch for Playwright E2E,
+  API, component, visual regression, accessibility, and security browser
+  automation. Coordinated by `qa-lead`. Frontmatter declares
+  `metadata.requires.bins: [npx, node]` ahead of the Phase 4 declarative-deps
+  gate. Capabilities: e2e_testing, api_testing, component_testing,
+  visual_regression, accessibility_audit, browser_automation,
+  flaky_test_diagnosis, playwright_ci_integration.
+- **developer/quality/security-owasp** (Phase 8): absorbed from
+  `agamm__claude-code-owasp`. Test-focused security execution agent
+  covering OWASP Top 10:2025, OWASP Top 10 for LLM Applications (2025),
+  Agentic AI Security (OWASP 2026), and ASVS 5.0 tier mapping (L1/L2/L3).
+  Scope is distinct from `security-lead` (controller) and `security-engineer`
+  (controls/pentest); audits code against OWASP frameworks and produces
+  severity-tagged findings with file:line evidence and remediation guidance.
+  Allowed-tools: `Read Grep Glob Bash` (audit-only — no Write/Edit by design).
+- Total cAgents agent count: 243 → 246 (developer 31 → 33, analyst 27 → 28).
+- **tests/regressions/phase3-paper-search-absorbed.test.js** (10 cases),
+  **phase7-playwright-absorbed.test.js** (9 cases),
+  **phase8-owasp-absorbed.test.js** (10 cases): failing-before/passing-after
+  Vitest regressions for each absorption asserting v11.1.0 frontmatter,
+  archetype/branch correctness, allowed-tools posture, and ported-content
+  coverage. All 29 tests pass in <500ms aggregate.
+
+### Notes
+- Source repos under `example/external-skills/{owner}__{repo}/` remain
+  read-only per IMPLEMENT_AND_VALIDATE_PROMPT.md § G.3. No corpus files
+  modified.
+- `scripts/sync-agents.sh` re-run as part of this bump to register the three
+  new agents in `.claude-plugin/plugin.json`.
+
+## [11.1.7] - 2026-05-04
+
+TodoWrite -> TaskCreate sweep per official docs.claude.com deprecation. Per
+[docs.claude.com/docs/en/tools.md](https://docs.claude.com/docs/en/tools.md),
+TodoWrite is the Agent SDK / non-interactive equivalent of TaskCreate /
+TaskUpdate / TaskList / TaskGet. Interactive Claude Code sessions (the primary
+cAgents runtime) MUST use the TaskCreate family; TodoWrite remains valid only
+in SDK / non-interactive mode.
+
+### Changed
+- `.claude/rules/core/controllers.md`: rewrote MANDATORY block to specify
+  TaskCreate/TaskUpdate as the interactive-mode tools, with TodoWrite noted as
+  the SDK equivalent. Updated example code blocks to show both forms.
+- `.claude/rules/core/skill-format.md`: added deprecation note documenting that
+  interactive Claude Code MUST use TaskCreate/TaskUpdate/TaskList/TaskGet.
+- 73 agent SKILL.md files (developer/, operator/, advisor/, analyst/, creator/,
+  writer/, strategist/, core/, leadership/): replaced `TodoWrite` in
+  `allowed-tools` declarations with `TaskCreate TaskUpdate TaskList TaskGet`.
+- 50 agent SKILL.md prompt bodies: rewrote imperative TodoWrite directives
+  ("MUST call TodoWrite", "you MUST call TodoWrite", "Call TodoWrite BEFORE",
+  "TodoWrite discipline", etc.) as TaskCreate equivalents.
+- 6 user skill SKILL.md files (`org`, `team`, `run`, `designer`, `improve`,
+  `helper`): added TaskCreate to `allowed-tools`. Updated BLOCKING blocks in
+  `run` and `org` to specify TaskCreate as the interactive primary call.
+- `operator/business-ops/scribe/SKILL.md` and
+  `strategist/product-owner/SKILL.md`: rewrote "Use TodoWrite" body
+  instructions as TaskCreate/TaskUpdate equivalents.
+
+### Added
+- Regression test `tests/skills/no-todowrite-runtime-instructions.test.js`:
+  walks all SKILL.md files under `.claude/skills/` and the 9 archetype roots
+  and asserts no file contains imperative phrases like "call TodoWrite", "use
+  TodoWrite", or "MUST.*TodoWrite" without SDK contextualization. Allows
+  TodoWrite mentions when contextualized as "(SDK only)", "Agent SDK", or
+  comparative documentation.
+
+### Notes
+- Historical CHANGELOG/RELEASE_NOTES references to TodoWrite are preserved
+  unchanged.
+- TodoWrite remains in `allowed-tools` for the 6 user skills as an SDK
+  fallback. The regression test allows this; only imperative runtime
+  instructions in body text are forbidden.
+
+## [11.1.6] - 2026-05-04
+
+### Added
+- `skill-size-monitor` hook (`.claude/hooks/skill-size-monitor.cjs`): warns at 600 lines, blocks at 900 lines on `Write|Edit` of `SKILL.md` files to prevent AP-1 bloat regression. Thresholds env-configurable via `CAGENTS_SKILL_WARN_LINES` / `CAGENTS_SKILL_BLOCK_LINES`. Registered under `hooks.PostToolUse` in `.claude/settings.json`. Source pattern: `raintree-technology/claude-starter` `file-size-monitor.sh`.
+- Regression test `tests/hooks/skill-size-monitor.test.js` covering under-warn pass-through, warn at 700 lines, deny at 1000 lines, and non-SKILL.md pass-through (4 cases + existence check).
+
 ## [11.1.5] - 2026-05-03
 
 Documentation accuracy patch + harness limitation rule. Six-wave /team audit

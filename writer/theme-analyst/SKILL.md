@@ -3,6 +3,7 @@ name: theme-analyst
 archetype: writer
 description: "Use when analyzing thematic content, tracking thematic development, ensuring theme-plot alignment, or evaluating how effectively themes emerge through narrative action."
 metadata:
+  version: "1.0.0"
   vibe: "Finds the deeper meaning the author didn't know they put there"
   tier: execution
   effort: medium

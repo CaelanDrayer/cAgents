@@ -3,6 +3,7 @@ name: coo
 archetype: leadership
 description: "Use for operational decisions, process coordination, cross-functional efficiency improvements, and scaling operations. Chief Operating Officer."
 metadata:
+  version: "1.0.0"
   vibe: Runs operations so efficiently the CEO can focus on vision
   tier: controller
   effort: high
@@ -27,7 +28,7 @@ metadata:
     - What are the current operational processes and bottlenecks?
     - What resource allocation changes are needed?
     - What cross-functional dependencies exist?
-allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # COO

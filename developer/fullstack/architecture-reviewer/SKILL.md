@@ -4,6 +4,7 @@ archetype: developer
 branch: fullstack
 description: "Use when evaluating system architecture decisions, reviewing design patterns, assessing scalability concerns, or validating technical approach before implementation."
 metadata:
+  version: "1.0.0"
   vibe: Reviews architecture like a building inspector -- nothing passes without proof
   tier: support
   effort: low

@@ -3,6 +3,7 @@ name: tension-architect
 archetype: writer
 description: "Use when designing tension and suspense structures, engineering emotional escalation, building dramatic irony, or crafting sequences that maximize reader anxiety."
 metadata:
+  version: "1.0.0"
   vibe: Ratchets tension until the reader forgets to breathe
   tier: execution
   effort: medium

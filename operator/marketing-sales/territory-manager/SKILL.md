@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when defining sales territories, balancing account distribution, planning territory coverage, or optimizing geographic and vertical segmentation."
 metadata:
+  version: "1.0.0"
   vibe: Carves territories so every rep has a winnable book of business
   tier: execution
   effort: medium

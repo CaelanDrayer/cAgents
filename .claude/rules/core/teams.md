@@ -67,6 +67,26 @@ Teammate (controller, e.g., engineering-manager) -> Agent(cagents:backend-develo
 
 **Future work:** If a future Claude Code version exposes `Agent` to plugin-namespaced level-1 subagents (or if a per-spawn `allowed-tools` flag becomes available on the Agent tool itself), this limitation block can be removed and the unconditional "Teammates ARE Controllers That Spawn Execution Agents" pattern restored. Until then, both patterns are valid: delegation when Agent is exposed, direct execution + self-validation when it is not.
 
+### Upstream Configuration Null-Finding (PHASE-N1, V11.1.13)
+
+**Confirmed via `claude-code-guide` agent (May 2026):** the public Claude Code documentation at `docs.claude.com/docs/en/` exposes **no** documented mechanism for re-enabling the `Agent` tool on a depth-1 plugin-namespaced subagent. Specifically:
+
+- No `settings.json` key (project, user, or managed-policy scope) re-exposes `Agent` to nested plugin subagents.
+- No `.claude-plugin/plugin.json` field unlocks the spawning tool for `cagents:*` agents at depth ≥ 1.
+- No documented environment variable (e.g., `CLAUDE_CODE_*`) controls the depth-1 stripping behavior.
+- No per-spawn `allowed-tools` override on the Agent tool itself can re-add a stripped tool to the spawned agent's surface.
+
+This null-finding strengthens the "this is upstream Claude Code platform behavior, not cAgents config" position. Agents and reviewers MUST NOT propose `settings.json` / `plugin.json` / env-var fixes for the depth-1 Agent-tool stripping — the limitation is enforced in the Claude Code runtime, not in cAgents-controllable configuration. The graceful-degradation pattern above remains the only correct response.
+
+**Empirical reproduction count (as of V11.1.13):** 3 sessions —
+- `team_doc-update-plugin-audit_260503_001` (original W6 W1 audit, May 3 2026)
+- `team_continue-cagents-w6_260505_001` (W6 W1 spawn-crash reproduction, May 5 2026)
+- `team_phase11-w6-resume_260505_005` (W6 W2 graceful-degradation success, May 5 2026)
+
+Lead direct execution per W6 W2 completed in ~25 minutes vs. the projected 1.5-hour teammate path, demonstrating that direct execution is often *faster* than spawning teammates for mechanical work — the bug's practical delivery impact is bounded.
+
+See `cagents-memory/_knowledge/agent-tool-depth1-stripping.md` for the formal pattern + asks-for-Anthropic-upstream document, and `cagents-memory/_knowledge/cc-plugin-subagent-spawn-bug.md` for the original reproduction evidence.
+
 ## CRITICAL: Create Teams, Not Just Tasks
 
 **The most common failure mode is creating tasks without spawning real team members.** The `/team` skill MUST execute ALL THREE steps:

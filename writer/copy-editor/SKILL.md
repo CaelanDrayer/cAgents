@@ -3,6 +3,7 @@ name: copy-editor
 archetype: writer
 description: "Use when polishing prose for grammar, style, clarity, and consistency. Handles line editing, fact-checking references, and enforcing style guide compliance."
 metadata:
+  version: "1.0.0"
   vibe: Polishes prose until every comma earns its place
   tier: execution
   effort: medium

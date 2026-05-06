@@ -14,6 +14,8 @@ capabilities:
   - parts_identification
 not-my-scope: ["Emissions test certification", "Vehicle title/registration legal advice", "Insurance claim processing"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
+metadata:
+  version: "1.0.0"
 ---
 
 # Automotive Technician

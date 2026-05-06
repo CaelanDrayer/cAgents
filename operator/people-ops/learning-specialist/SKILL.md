@@ -4,6 +4,7 @@ archetype: operator
 branch: people-ops
 description: "Use when designing training programs, creating learning content, building competency frameworks, or developing career development pathways."
 metadata:
+  version: "1.0.0"
   vibe: Designs training that people remember after the session ends
   tier: execution
   effort: medium

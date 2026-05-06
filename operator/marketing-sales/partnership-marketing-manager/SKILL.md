@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when developing co-marketing partnerships, creating joint campaigns, managing partner content, or tracking partnership-driven pipeline."
 metadata:
+  version: "1.0.0"
   vibe: Creates partnerships where both sides win bigger together
   tier: execution
   effort: medium

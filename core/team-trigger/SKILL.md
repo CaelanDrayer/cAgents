@@ -3,6 +3,7 @@ name: team-trigger
 archetype: core
 description: "Use when initializing team-mode execution, creating TeamCreate calls, and bootstrapping wave-based parallel workflows."
 metadata:
+  version: "1.0.0"
   vibe: Fires up the team and gets every pane humming
   tier: infrastructure
   effort: high
@@ -17,7 +18,7 @@ metadata:
     - session_management
     - run_delegation
   maxTurns: 30
-allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Team Trigger

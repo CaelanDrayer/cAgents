@@ -3,6 +3,7 @@ name: statistician
 archetype: analyst
 description: "Use for statistical analysis: experimental design, hypothesis testing, regression modeling, Bayesian inference, power analysis, and data interpretation. Advises on appropriate statistical methods and interprets results rigorously."
 metadata:
+  version: "1.0.0"
   vibe: "Turning data uncertainty into confident conclusions"
   tier: execution
   domain: science

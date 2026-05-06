@@ -16,6 +16,8 @@ related_agents:
   - name: concept-artist
 not-my-scope: ["Digital UI/UX design", "Graphic design for branding", "3D modeling"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
+metadata:
+  version: "1.0.0"
 ---
 
 # Visual Artist

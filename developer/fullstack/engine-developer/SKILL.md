@@ -4,6 +4,7 @@ archetype: developer
 branch: fullstack
 description: "Use when building game engine systems, implementing rendering pipelines, developing physics engines, or creating low-level engine infrastructure."
 metadata:
+  version: "1.0.0"
   vibe: Builds the engine that makes the game run at 60fps
   tier: execution
   effort: medium

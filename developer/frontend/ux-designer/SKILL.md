@@ -4,6 +4,7 @@ archetype: developer
 branch: frontend
 description: "Use when designing user experiences, creating wireframes, building user flows, conducting usability analysis, or improving interaction patterns."
 metadata:
+  version: "1.0.0"
   vibe: Designs experiences that feel obvious -- after weeks of iteration
   tier: execution
   effort: medium

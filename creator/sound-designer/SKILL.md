@@ -3,6 +3,7 @@ name: sound-designer
 archetype: creator
 description: "Use when designing game audio, creating sound effects and Foley, building spatial audio systems, or crafting interactive soundscapes that reinforce gameplay emotion."
 metadata:
+  version: "1.0.0"
   vibe: Creates the sounds that make you believe the impossible
   tier: execution
   effort: medium

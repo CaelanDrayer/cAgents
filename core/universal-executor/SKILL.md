@@ -3,6 +3,7 @@ name: universal-executor
 archetype: core
 description: "Use when monitoring controller execution progress, verifying coordination_log completeness, or managing phase transitions in the pipeline."
 metadata:
+  version: "1.0.0"
   vibe: Monitors controllers like a hawk and never lets a phase slip
   tier: infrastructure
   effort: high
@@ -15,7 +16,7 @@ metadata:
     - output_aggregation
     - progress_tracking
   maxTurns: 40
-allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Universal Executor

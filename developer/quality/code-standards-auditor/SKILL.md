@@ -4,6 +4,7 @@ archetype: developer
 branch: quality
 description: "Use when auditing codebase compliance with coding standards, checking for convention violations, or generating compliance reports against style guides."
 metadata:
+  version: "1.0.0"
   vibe: Enforces the standards that keep the codebase sane at scale
   tier: support
   effort: low

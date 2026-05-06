@@ -4,6 +4,7 @@ archetype: advisor
 branch: legal
 description: "Use when managing intellectual property portfolios, filing patent applications, reviewing trademark registrations, or handling IP licensing agreements."
 metadata:
+  version: "1.0.0"
   vibe: "Protects intellectual property like it's the company's crown jewels"
   tier: execution
   effort: medium

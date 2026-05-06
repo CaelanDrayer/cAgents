@@ -4,6 +4,7 @@ archetype: advisor
 branch: legal
 description: "Use when developing privacy policies, conducting privacy impact assessments, managing GDPR/CCPA compliance, or handling data subject access requests."
 metadata:
+  version: "1.0.0"
   vibe: Guards user data like every record is their own
   tier: execution
   effort: medium

@@ -119,6 +119,75 @@ The top-level `domain:` field was replaced by `archetype:` (and `branch:` for 3-
 - Keep it concise (under 200 tokens) — it runs on every spawn
 - Example: `"Read workflow/plan.yaml and summarize the current phase and objectives"`
 
+### paths (V11.1.12+)
+
+Declares a list of glob patterns indicating which file types or directories the agent
+typically operates on. Lives inside the `metadata:` block (not at the top level) per the
+6-field Agent Skills spec.
+
+The `metadata.paths` field is a v1 declarative schema — agents publish their natural file
+scope as a hint for human reviewers and for future planner routing-boost integration.
+Routing-boost ingestion is **deferred to v2**; in v1, paths are declarative-only and
+back-compat is preserved (agents without `paths:` route exactly as before).
+
+```yaml
+metadata:
+  paths:
+    - "**/*.tsx"
+    - "**/*.jsx"
+    - "src/components/**"
+    - "**/*.css"
+```
+
+Sub-field semantics:
+- **Type**: array of strings (glob patterns, minimatch-compatible)
+- **Required**: NO; agents without `paths:` route as today (back-compat preserved)
+- **Glob syntax**: minimatch-compatible (same as `.gitignore`). `**` matches any depth;
+  `*` matches one path segment; bracket expressions `[abc]` and brace expansion `{a,b}` are supported
+- **Validation**: every entry must be a non-empty string; empty arrays are valid (signals
+  "no specific file scope" — equivalent to omitting the field)
+- **v1 vs v2**: v1 = declarative only, surfaced via SKILL.md frontmatter. v2 (deferred)
+  will introduce planner routing-boost: when the user request mentions files matching
+  an agent's `paths`, that agent gets a routing-priority boost; non-matching agents
+  are deprioritized (but not excluded — back-compat for agents without `paths:`).
+
+**Pilot agents (≥10 from V11.1.12)**: `developer/frontend/frontend-developer`,
+`developer/backend/backend-developer`, `developer/quality/qa-lead`,
+`developer/quality/playwright-test-engineer`, `developer/quality/security-owasp`,
+`developer/infrastructure/devops-engineer`, `operator/content/copywriter`,
+`operator/support/technical-writer`, `creator/concept-artist`,
+`analyst/data-scientist`. See `tests/skills/paths-conditional-activation.test.js` for
+the regression test enforcing the ≥10 floor.
+
+### requires (V11.1.10)
+
+Declares runtime dependencies that the agent needs in order to operate. Lives inside the `metadata:` block (not at the top level) so it conforms to the Agent Skills spec, which only allows 6 top-level frontmatter fields.
+
+The `metadata.requires` block is read by the **session-init-gate** PreToolUse[Agent] hook, which performs an **advisory** check before each agent spawn. Missing dependencies emit a `systemMessage` warning but **do NOT block** the spawn — this is a v1 advisory gate, not a hard block. Future versions may promote selected sub-fields (e.g., `bins`) to blocking enforcement.
+
+```yaml
+metadata:
+  requires:
+    bins: [npx, node]              # array of executable names checked via `command -v`
+    env: [API_KEY, DATABASE_URL]   # array of env var names checked via `process.env`
+    files: [config/foo.yaml]       # array of relative paths checked via `fs.existsSync`
+    min_node_version: "20.0.0"     # OPTIONAL string semver minimum
+```
+
+Sub-fields:
+- **`bins:`** *(array of strings, REQUIRED if `requires` present, may be `[]`)* — executable names checked with `command -v <name>`. The hook runs `command -v` synchronously and reports the bin as missing on non-zero exit.
+- **`env:`** *(array of strings, REQUIRED if `requires` present, may be `[]`)* — environment variable names. Each is checked for truthiness via `process.env[name]`.
+- **`files:`** *(array of strings, OPTIONAL)* — paths relative to the project root, checked with `fs.existsSync(path.join(rootDir, file))`.
+- **`min_node_version:`** *(string, OPTIONAL)* — minimum Node.js version as a semver string. Compared against `process.versions.node` (major-version digit comparison; full semver comparison is best-effort and may be tightened in a future bump).
+
+**Behavior**: When a `cagents:<name>` agent is about to spawn, the session-init-gate hook locates the agent's `SKILL.md` via the plugin manifest, parses `metadata.requires`, runs the four checks above, and if any dependency is missing emits:
+
+```
+[session-init-gate] Agent cagents:<name> declares metadata.requires but missing: <list>. Spawn proceeding (advisory only — not blocking).
+```
+
+The advisory does not change `permissionDecision` and never denies. Agents that do not declare `metadata.requires` are unaffected. The schema is back-compat with the prior opportunistic usage in `developer/quality/playwright-test-engineer/SKILL.md`, which has declared `requires.bins: [npx, node]` since v11.1.x.
+
 ### coordination_style (Controllers only)
 - `question_based`: Uses question delegation pattern
 - Controllers MUST have this field
@@ -140,6 +209,92 @@ The top-level `domain:` field was replaced by `archetype:` (and `branch:` for 3-
 ### color
 - Terminal display color for agent output
 - Options: bright_white, bright_blue, bright_green, bright_yellow, bright_red, bright_cyan, bright_magenta
+
+## MCP Tool Integration (Consumer Pattern, V11.1.12+)
+
+cAgents v11.1.12 adopts the Model Context Protocol consumer pattern. Agents may declare
+`mcp__<server>__<tool>` patterns in their `allowed-tools` field to opt into MCP tool surfaces
+when the user has those servers configured. This is **Stage 1 (consumer-only)**: cAgents
+declares which MCP tools its agents would use; it does NOT bundle or run any MCP servers.
+Stage 2 (provider — bundling cAgents-authored MCP servers) is deferred to a future major.
+
+### Naming Convention
+
+```
+mcp__<server>__<tool>
+```
+
+- `<server>` — lowercase server name (alphanumeric, hyphen, underscore allowed; e.g. `github`, `postgres`, `bigquery`).
+- `<tool>` — lowercase tool name on that server, OR `*` to allow all tools from the server.
+
+Examples:
+- `mcp__github__create_issue` — single specific tool
+- `mcp__github__*` — all GitHub tools
+- `mcp__postgres__query mcp__postgres__schema` — multiple specific tools
+
+### Declaration
+
+Append `mcp__*` patterns to the agent's `allowed-tools` field (space-separated, alongside
+existing built-in tools):
+
+```yaml
+---
+name: security-owasp
+archetype: developer
+branch: quality
+description: "Performs OWASP-aligned security review and vulnerability assessment"
+allowed-tools: Read Grep Glob Bash mcp__github__*
+metadata:
+  tier: execution
+  ...
+---
+```
+
+### Common Server Names
+
+The cAgents v11.1.12 pilot agents declare tools from these servers (suggested, not
+bundled — users configure their own MCP servers via `claude mcp add`):
+
+| Server | Description | Used By |
+|--------|-------------|---------|
+| `github` | Repository ops, issues, PRs, code search | security-owasp, qa-lead, devops-engineer, technical-writer |
+| `postgres` | Postgres queries and schema introspection | backend-developer, data-analyst |
+| `bigquery` | BigQuery dataset queries | data-analyst, data-scientist |
+| `playwright` | Browser automation | playwright-test-engineer |
+| `redis` | Cache inspection | backend-developer |
+| `docker` | Container operations | devops-engineer |
+| `jupyter` | Notebook execution | data-scientist |
+| `plaid` | Financial data | finance-manager |
+| `zendesk`, `intercom` | Ticket/conversation ops | support-agent |
+| `notion` | Docs and databases | technical-writer |
+
+The full suggested-server catalog lives in `.claude-plugin/plugin.json` under the top-level
+`mcpServers` block. Each entry has a `description` and a `stage: "consumer-suggestion"`
+marker indicating cAgents v11.1.12 declares but does not bundle the server.
+
+### Back-Compat
+
+Agents WITHOUT `mcp__*` in `allowed-tools` work exactly as today — no change in behavior
+for the 230+ agents in the catalog that have no MCP integration. The MCP consumer pattern
+is purely opt-in.
+
+### v1 vs v2
+
+- **v1 (V11.1.12, Stage 1 consumer-only)**: agents declare MCP tool surfaces; cAgents
+  ships no servers; users configure via `claude mcp add`; cAgents validates the naming
+  convention via `tests/skills/mcp-consumer-pattern.test.js`.
+- **v2 (Stage 2 provider, deferred)**: cAgents may bundle MCP servers as plugin assets,
+  expose them via `.claude-plugin/plugin.json` with `stage: "bundled"`, and document
+  configuration paths.
+
+### Pilot Agents (≥10 from V11.1.12)
+
+`developer/quality/security-owasp`, `developer/quality/playwright-test-engineer`,
+`developer/quality/qa-lead`, `analyst/data-scientist`, `developer/fullstack/data-analyst`,
+`developer/backend/backend-developer`, `developer/infrastructure/devops-engineer`,
+`operator/support/support-agent`, `operator/support/technical-writer`,
+`operator/business-ops/finance-manager`. See `tests/skills/mcp-consumer-pattern.test.js`
+for the regression test enforcing the ≥10 floor.
 
 ## Three-Tier Progressive Disclosure
 
@@ -430,11 +585,20 @@ metadata:
     - strategic_oversight
     - risk_assessment
     - team_coordination
-allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
 initialPrompt: "Read cagents-memory/sessions/*/workflow/plan.yaml if it exists and note the current phase."
 ---
 
 # Engineering Manager
+
+<!--
+  Note on task-tracking tools (V11.1.7+): Interactive Claude Code sessions MUST use
+  TaskCreate/TaskUpdate/TaskList/TaskGet for progress visibility. TodoWrite is the
+  Agent SDK / non-interactive equivalent (per docs.claude.com/docs/en/tools.md) and
+  remains valid only when the SDK is the runtime. Agents should declare TaskCreate
+  TaskUpdate TaskList TaskGet in `allowed-tools` for interactive runtimes.
+-->
+
 
 Strategic leader for engineering coordination.
 

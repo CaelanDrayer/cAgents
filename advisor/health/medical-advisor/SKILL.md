@@ -4,6 +4,7 @@ archetype: advisor
 branch: health
 description: "Clinical medicine information, symptom analysis support, differential diagnosis research, and medical literature review. Use for medical information, condition overviews, treatment research, and health education. NOT a substitute for professional medical advice."
 metadata:
+  version: "1.0.0"
   vibe: Evidence-based health guidance, responsibly delivered
   tier: execution
   domain: health

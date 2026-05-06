@@ -3,6 +3,7 @@ name: game-writer
 archetype: writer
 description: "Use when writing game narratives, designing branching dialogue trees, creating quest text, or developing interactive storytelling that responds to player choice."
 metadata:
+  version: "1.0.0"
   vibe: Writes dialogue that makes players stop and listen
   tier: execution
   effort: medium

@@ -3,6 +3,7 @@ name: predictive-analyst
 archetype: analyst
 description: "Use when building predictive models, creating forecasts from historical data, or providing data-driven planning insights and trend analysis."
 metadata:
+  version: "1.0.0"
   vibe: "Sees what's coming by reading what already happened"
   tier: execution
   effort: medium

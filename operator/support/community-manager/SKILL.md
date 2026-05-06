@@ -4,6 +4,7 @@ archetype: operator
 branch: support
 description: "Use when building community programs, moderating forums, engaging with user communities, or developing community content and events strategy."
 metadata:
+  version: "1.0.0"
   vibe: Builds communities where users help each other before support does
   tier: execution
   effort: medium

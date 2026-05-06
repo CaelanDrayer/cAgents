@@ -17,6 +17,8 @@ related_agents:
   - name: geoscientist
 not-my-scope: ["Agricultural commodity trading", "Farm legal/tax structure", "Food processing and packaging regulations"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
+metadata:
+  version: "1.0.0"
 ---
 
 # Agronomist

@@ -4,6 +4,7 @@ archetype: advisor
 branch: health
 description: "Meal planning, dietary analysis, macronutrient guidance, sports nutrition, and evidence-based nutrition science. Use for dietary planning, food choices, nutritional needs assessment, and sports performance nutrition. Recommends consulting a registered dietitian for medical nutrition therapy."
 metadata:
+  version: "1.0.0"
   vibe: Food is medicine — when the science is solid
   tier: execution
   domain: health

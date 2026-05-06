@@ -4,11 +4,18 @@ archetype: developer
 branch: frontend
 description: "Use when building UI components, fixing responsive design issues, implementing client-side features, or working with React/Vue/Angular. Handles styling, accessibility, and browser compatibility."
 metadata:
+  version: "1.0.0"
   vibe: "Builds interfaces that feel inevitable, not engineered"
   tier: execution
   effort: medium
   domain: engineering
   model: sonnet
+  paths:
+    - "**/*.tsx"
+    - "**/*.jsx"
+    - "**/*.css"
+    - "**/*.html"
+    - "**/*.scss"
   color: bright_cyan
   capabilities:
     - ui_component_development

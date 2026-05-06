@@ -3,6 +3,7 @@ name: portfolio-manager
 archetype: strategist
 description: "Use when managing project portfolios, prioritizing initiatives, balancing resource allocation across programs, or evaluating portfolio performance."
 metadata:
+  version: "1.0.0"
   vibe: Balances bets across projects like a seasoned card counter
   tier: execution
   effort: medium

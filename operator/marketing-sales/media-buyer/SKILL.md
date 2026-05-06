@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when planning media buys across channels, negotiating ad placements, optimizing ad spend allocation, or managing programmatic advertising campaigns."
 metadata:
+  version: "1.0.0"
   vibe: "Stretches every ad dollar until it screams, squeezes out one more conversion"
   tier: execution
   effort: medium

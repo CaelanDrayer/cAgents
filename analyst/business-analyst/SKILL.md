@@ -3,6 +3,7 @@ name: business-analyst
 archetype: analyst
 description: "Use when gathering requirements, performing gap analysis, defining acceptance criteria, designing solutions, or bridging business needs with technical implementation."
 metadata:
+  version: "1.0.0"
   vibe: Finds the signal in spreadsheets everyone else ignores
   tier: controller
   effort: high
@@ -31,7 +32,7 @@ metadata:
       type: collaborates_with
     - name: process-improvement-specialist
       type: collaborates_with
-allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Business Analyst
@@ -97,7 +98,7 @@ See @resources/gap-analysis-methods.md for current/desired state analysis, impac
 1. Read plan.yaml for objectives and work items
 2. Break objectives into specific questions
 3. Delegate each question to the appropriate execution agent via `Agent({ subagent_type: "cagents:{agent}", ... })`
-4. **MANDATORY: Call TodoWrite after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required TodoWrite pattern
+4. **MANDATORY: Call TaskCreate after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required task-tracking pattern (TaskCreate/TaskUpdate)
 5. Collect answers from specialists
 6. Synthesize answers into a coherent solution
 7. Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks

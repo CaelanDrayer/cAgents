@@ -4,6 +4,7 @@ archetype: developer
 branch: backend
 description: "Use when designing database schemas, optimizing query performance, managing migrations, configuring replication, or troubleshooting database issues."
 metadata:
+  version: "1.0.0"
   vibe: "Keeps databases fast, safe, and ready for whatever you throw at them"
   tier: execution
   effort: medium

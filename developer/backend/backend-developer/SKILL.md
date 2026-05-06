@@ -4,11 +4,18 @@ archetype: developer
 branch: backend
 description: "Use when building REST/GraphQL APIs, writing database queries, implementing server-side logic, fixing backend bugs, or optimizing query performance. Handles Node.js, Python, Go, and database operations."
 metadata:
+  version: "1.0.0"
   vibe: Ships clean APIs that survive production traffic at 3 AM
   tier: execution
   effort: medium
   domain: engineering
   model: sonnet
+  paths:
+    - "**/api/**"
+    - "**/server/**"
+    - "**/*.py"
+    - "**/*.go"
+    - "**/*.rs"
   color: bright_yellow
   capabilities:
     - api_development
@@ -34,7 +41,7 @@ metadata:
       type: collaborates_with
     - name: code-reviewer
       type: reviewed_by
-allowed-tools: Read Grep Glob Write Edit Bash
+allowed-tools: Read Grep Glob Write Edit Bash mcp__postgres__* mcp__redis__*
 ---
 
 <example>

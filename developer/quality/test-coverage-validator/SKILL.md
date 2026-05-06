@@ -4,6 +4,7 @@ archetype: developer
 branch: quality
 description: "Use when analyzing test coverage, identifying untested code paths, validating coverage thresholds, or recommending areas that need additional test cases."
 metadata:
+  version: "1.0.0"
   vibe: Ensures every critical path has a test standing guard
   tier: support
   effort: low

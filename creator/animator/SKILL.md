@@ -3,6 +3,7 @@ name: animator
 archetype: creator
 description: "Use when creating character animations, designing motion systems, building animation state machines, or crafting movement that conveys personality and emotion."
 metadata:
+  version: "1.0.0"
   vibe: Brings still frames to life one keyframe at a time
   tier: execution
   effort: medium

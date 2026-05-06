@@ -4,6 +4,7 @@ archetype: operator
 branch: people-ops
 description: "Use when analyzing HR metrics, building people analytics dashboards, modeling workforce trends, or providing data-driven recommendations on talent decisions."
 metadata:
+  version: "1.0.0"
   vibe: Turns people data into people decisions that actually work
   tier: execution
   effort: medium

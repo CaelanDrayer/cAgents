@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when designing sales training programs, coaching reps on methodology, running role-play exercises, or measuring training effectiveness and skill gaps."
 metadata:
+  version: "1.0.0"
   vibe: Trains reps until objection handling becomes second nature
   tier: execution
   effort: medium

@@ -4,6 +4,7 @@ archetype: developer
 branch: quality
 description: "Use when reviewing code changes for quality, security, performance, and maintainability. Identifies bugs, anti-patterns, and style violations before merge."
 metadata:
+  version: "1.0.0"
   vibe: "Reviews code like a mentor, not a gatekeeper -- finds bugs you almost shipped"
   tier: support
   effort: low

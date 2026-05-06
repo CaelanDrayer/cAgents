@@ -4,6 +4,7 @@ archetype: developer
 branch: fullstack
 description: "Use for coordinating data engineering work, reviewing data pipeline architecture, managing data quality standards, or overseeing data infrastructure decisions."
 metadata:
+  version: "1.0.0"
   vibe: Owns the data layer from schema design to query optimization
   tier: controller
   effort: high
@@ -29,7 +30,7 @@ metadata:
       type: coordinates
     - name: data-analyst
       type: coordinates
-allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Data Lead Agent
@@ -88,7 +89,7 @@ See @resources/code-review.md for review criteria.
 1. Read plan.yaml for objectives and work items
 2. Break objectives into specific questions
 3. Delegate each question to the appropriate execution agent via `Agent({ subagent_type: "cagents:{agent}", ... })`
-4. **MANDATORY: Call TodoWrite after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required TodoWrite pattern
+4. **MANDATORY: Call TaskCreate after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required task-tracking pattern (TaskCreate/TaskUpdate)
 5. Collect answers from specialists
 6. Synthesize answers into a coherent solution
 7. Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks

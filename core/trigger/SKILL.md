@@ -3,6 +3,7 @@ name: trigger
 archetype: core
 description: "Use when entering the pipeline as the initial entry point, parsing user requests, and routing to the appropriate skill or workflow."
 metadata:
+  version: "1.0.0"
   vibe: The front door that sends every request to exactly the right room
   tier: infrastructure
   effort: high
@@ -18,7 +19,7 @@ metadata:
     - analytics_tracking
     - team_planning_support
   maxTurns: 50
-allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Trigger
@@ -157,7 +158,7 @@ When invoked with `mode: team_planning_only` (by `/team` or team-trigger), the t
 2. Confidence-based routing with different thresholds
 3. Pre-flight validation catches issues early
 4. Template-driven efficiency for common patterns
-5. TodoWrite discipline for user visibility
+5. Task tracking discipline (TaskCreate/TaskUpdate) for user visibility
 6. **NEVER handle directly** - always route to specialists
 7. **team_planning_only mode** - truncate at planning, let `/team` handle execution
 

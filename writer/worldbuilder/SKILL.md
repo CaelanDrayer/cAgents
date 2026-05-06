@@ -3,6 +3,7 @@ name: worldbuilder
 archetype: writer
 description: "Use when constructing fictional universes, designing world systems (cosmology, culture, economics, ecology), or building interconnected settings where every element resonates with internal logic."
 metadata:
+  version: "1.0.0"
   vibe: Builds worlds with rules so consistent you could live in them
   tier: execution
   effort: medium

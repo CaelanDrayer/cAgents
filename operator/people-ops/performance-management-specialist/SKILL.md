@@ -4,6 +4,7 @@ archetype: operator
 branch: people-ops
 description: "Use when designing performance review processes, building goal-setting frameworks, developing feedback systems, or calibrating performance ratings."
 metadata:
+  version: "1.0.0"
   vibe: Makes performance reviews useful instead of dreaded
   tier: execution
   effort: medium

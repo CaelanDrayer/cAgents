@@ -4,6 +4,7 @@ archetype: developer
 branch: fullstack
 description: "Use when implementing complex features across the full stack, refactoring large codebases, mentoring on design patterns, or making technical decisions."
 metadata:
+  version: "1.0.0"
   vibe: Writes the code that junior devs learn from for years
   tier: execution
   effort: medium

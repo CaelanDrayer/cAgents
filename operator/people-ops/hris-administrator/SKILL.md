@@ -4,6 +4,7 @@ archetype: operator
 branch: people-ops
 description: "Use when managing HR information systems, configuring HRIS workflows, maintaining employee data integrity, or generating HR reports from system data."
 metadata:
+  version: "1.0.0"
   vibe: Keeps the HR systems running so people get paid on time
   tier: execution
   effort: medium

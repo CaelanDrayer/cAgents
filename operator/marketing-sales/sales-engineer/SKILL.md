@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when delivering technical demos, answering prospect technical questions, building proof-of-concept solutions, or supporting complex enterprise deals."
 metadata:
+  version: "1.0.0"
   vibe: Demos the product so well the prospect sells themselves
   tier: execution
   effort: medium

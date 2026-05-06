@@ -4,6 +4,7 @@ archetype: advisor
 branch: legal
 description: "Use when managing active litigation, coordinating with outside counsel, developing litigation strategy, or tracking case milestones and deadlines."
 metadata:
+  version: "1.0.0"
   vibe: Manages litigation strategy so the company fights the right battles
   tier: execution
   effort: medium

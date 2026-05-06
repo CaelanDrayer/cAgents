@@ -4,6 +4,7 @@ archetype: operator
 branch: business-ops
 description: "Use when optimizing processes using Lean, Six Sigma, or continuous improvement methodologies to reduce waste and increase efficiency."
 metadata:
+  version: "1.0.0"
   vibe: Makes good processes great and bad processes gone
   tier: execution
   effort: medium

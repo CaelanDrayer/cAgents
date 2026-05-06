@@ -3,6 +3,7 @@ name: character-designer
 archetype: writer
 description: "Use when creating characters with psychological depth, applying wound/want/need frameworks, designing ensemble dynamics, or developing character arcs that reveal through action."
 metadata:
+  version: "1.0.0"
   vibe: Designs characters you remember long after the story ends
   tier: execution
   effort: medium

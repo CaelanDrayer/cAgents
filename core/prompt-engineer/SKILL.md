@@ -3,6 +3,7 @@ name: prompt-engineer
 archetype: core
 description: "Use when crafting optimized delegation prompts between decomposition and controller execution, or when prompt quality affects downstream agent performance."
 metadata:
+  version: "1.0.0"
   vibe: Crafts the perfect prompt so agents deliver on the first try
   tier: execution
   effort: medium

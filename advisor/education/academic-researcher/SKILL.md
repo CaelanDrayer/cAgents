@@ -8,7 +8,7 @@ archetype: advisor
 branch: education
 metadata:
   author: cagents
-  version: "1.0"
+  version: "1.0.0"
 capabilities:
   - literature_review
   - research_design

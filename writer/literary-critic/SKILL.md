@@ -3,6 +3,7 @@ name: literary-critic
 archetype: writer
 description: "Use when analyzing narrative craft, evaluating prose quality, providing substantive editorial feedback, or assessing work against literary standards."
 metadata:
+  version: "1.0.0"
   vibe: "Reads like a surgeon -- finds what works, excises what doesn't"
   tier: execution
   effort: medium

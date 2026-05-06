@@ -4,6 +4,7 @@ archetype: operator
 branch: support
 description: "Use when managing support agents, handling real-time queue management, coaching team members, or resolving escalated customer issues."
 metadata:
+  version: "1.0.0"
   vibe: Coaches support agents until great service becomes muscle memory
   tier: execution
   effort: medium

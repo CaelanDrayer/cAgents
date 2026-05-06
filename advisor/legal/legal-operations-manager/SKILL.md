@@ -4,6 +4,7 @@ archetype: advisor
 branch: legal
 description: "Use when optimizing legal department processes, managing legal technology, tracking legal spend, or coordinating outside counsel relationships."
 metadata:
+  version: "1.0.0"
   vibe: Runs the legal department like a well-managed engineering team
   tier: controller
   effort: high
@@ -30,7 +31,7 @@ metadata:
       type: coordinates
     - name: contracts-manager
       type: coordinates
-allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Legal Operations Manager
@@ -85,7 +86,7 @@ See @resources/legal-ops-frameworks.md for budget templates and technology imple
 1. Read plan.yaml for objectives and work items
 2. Break objectives into specific questions
 3. Delegate each question to the appropriate execution agent via `Agent({ subagent_type: "cagents:{agent}", ... })`
-4. **MANDATORY: Call TodoWrite after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required TodoWrite pattern
+4. **MANDATORY: Call TaskCreate after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required task-tracking pattern (TaskCreate/TaskUpdate)
 5. Collect answers from specialists
 6. Synthesize answers into a coherent solution
 7. Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks

@@ -3,11 +3,17 @@ name: concept-artist
 archetype: creator
 description: "Use when creating visual concepts for characters, environments, props, or vehicles. Translates narrative descriptions into visual reference art and style guides."
 metadata:
+  version: "1.0.0"
   vibe: Paints the world before anyone builds it
   tier: execution
   effort: medium
   domain: creative
   model: opus
+  paths:
+    - "**/*.png"
+    - "**/*.jpg"
+    - "**/assets/**"
+    - "**/*.svg"
   color: bright_magenta
   capabilities:
     - character_concept_design

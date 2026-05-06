@@ -4,6 +4,7 @@ archetype: advisor
 branch: legal
 description: "Use when navigating regulatory submissions, tracking regulatory changes, preparing compliance documentation, or managing regulatory agency relationships."
 metadata:
+  version: "1.0.0"
   vibe: Stays ahead of regulations so the company is never scrambling
   tier: execution
   effort: medium

@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when optimizing search rankings, conducting keyword research, performing technical SEO audits, building backlink strategies, or improving organic traffic."
 metadata:
+  version: "1.0.0"
   vibe: Gets pages to rank by understanding what Google actually wants
   tier: execution
   effort: medium

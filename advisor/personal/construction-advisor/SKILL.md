@@ -14,6 +14,8 @@ capabilities:
   - contractor_management
 not-my-scope: ["Structural engineering stamp/sign-off", "Legal contract drafting", "Insurance underwriting"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
+metadata:
+  version: "1.0.0"
 ---
 
 # Construction Advisor

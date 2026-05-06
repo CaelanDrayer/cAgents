@@ -4,6 +4,7 @@ archetype: operator
 branch: business-ops
 description: "Use when managing office operations, coordinating facility maintenance, planning space allocation, or handling vendor relationships for physical infrastructure."
 metadata:
+  version: "1.0.0"
   vibe: Keeps the lights on so everyone else can keep shipping
   tier: execution
   effort: medium

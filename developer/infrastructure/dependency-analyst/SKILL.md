@@ -4,6 +4,7 @@ archetype: developer
 branch: infrastructure
 description: "Use when analyzing dependency trees, identifying version conflicts, evaluating security vulnerabilities in dependencies, planning dependency upgrades, auditing dependency health, checking for outdated packages, or evaluating dependency upgrade risk."
 metadata:
+  version: "1.0.0"
   vibe: "Maps every dependency and finds the CVE before your users do"
   tier: execution
   effort: low

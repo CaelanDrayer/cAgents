@@ -4,6 +4,7 @@ archetype: developer
 branch: quality
 description: "Use when auditing web or app accessibility, running WCAG compliance checks, identifying accessibility barriers, or testing with assistive technology."
 metadata:
+  version: "1.0.0"
   vibe: Makes sure every user can use what you shipped
   tier: support
   effort: low

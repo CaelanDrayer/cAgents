@@ -6,7 +6,9 @@ tier: execution
 archetype: advisor
 branch: legal
 model: sonnet
-allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
+metadata:
+  version: "1.0.0"
 ---
 
 # Compliance Manager

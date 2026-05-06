@@ -402,6 +402,44 @@ cAgents/
 
 **Architecture**: CJS-only hooks with `createHook()` factory. 29 .cjs files = 26 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI. See @.claude/rules/core/hooks.md for full documentation.
 
+## MCP Integration (V11.1.12+)
+
+cAgents v11.1.12 adopts the **Model Context Protocol (MCP) consumer pattern** (Stage 1).
+Selected agents declare `mcp__<server>__<tool>` patterns in their `allowed-tools` field
+to opt into MCP tool surfaces when users have those servers configured.
+
+**Stage**: cAgents is a CONSUMER (Stage 1). It declares which MCP tools its agents would
+use; it does NOT bundle or run any MCP servers. Users configure servers via Claude Code's
+`claude mcp add` command or the equivalent settings.json block.
+
+**Naming convention**: `mcp__<server>__<tool>` (e.g. `mcp__github__create_issue`,
+`mcp__postgres__query`, `mcp__github__*` for wildcard).
+
+**Declaring MCP tools on an agent**: append patterns to the agent's `allowed-tools` field
+(space-separated, alongside built-in tools). See `.claude/rules/core/skill-format.md` §
+"MCP Tool Integration (Consumer Pattern)" for the full schema, declaration syntax, and
+v1/v2 staging.
+
+**Suggested servers**: `.claude-plugin/plugin.json` has a top-level `mcpServers` block
+documenting the 11 servers cAgents agents currently reference (github, postgres, bigquery,
+playwright, redis, docker, jupyter, plaid, zendesk, intercom, notion). Each entry has
+`stage: "consumer-suggestion"` to indicate cAgents v11.1.12 declares but does not bundle
+these servers.
+
+**Pilot agents (≥10)**: `developer/quality/security-owasp`, `developer/quality/playwright-test-engineer`,
+`developer/quality/qa-lead`, `analyst/data-scientist`, `developer/fullstack/data-analyst`,
+`developer/backend/backend-developer`, `developer/infrastructure/devops-engineer`,
+`operator/support/support-agent`, `operator/support/technical-writer`,
+`operator/business-ops/finance-manager`. Regression test:
+`tests/skills/mcp-consumer-pattern.test.js`.
+
+**Back-compat**: agents WITHOUT `mcp__*` in `allowed-tools` work exactly as before — MCP
+integration is purely opt-in.
+
+**Stage 2 (deferred)**: bundling cAgents-authored MCP servers as plugin assets is
+deferred to a future major. The v1 schema is forward-compatible: future bundled servers
+will be marked with `stage: "bundled"` in `mcpServers`.
+
 ## Plugin Architecture
 
 cAgents is distributed as a Claude Code plugin. See `.claude-plugin/plugin.json` for the root manifest.
@@ -425,6 +463,7 @@ cAgents is distributed as a Claude Code plugin. See `.claude-plugin/plugin.json`
 - **Hook Registration**: Hooks declared in `hooks/hooks.json` or referenced via `hooks` field in plugin.json
 - **Marketplace**: Submit via `marketplace.json` with `$schema`, owner, category, and version fields
 - **Multi-Plugin**: Multiple plugins loaded via `--plugin-dir` flags; settings merge with project settings
+- **Worktree Sparse Checkout (V11.1.12+)**: `.claude/settings.json` declares `worktree.sparsePaths` (14 entries — `.claude/`, `core/`, `cagents-memory/_system/`, the 9 archetype roots, `scripts/`, `tests/`, `docs/`). When `/team` teammates spawn with `isolation: "worktree"`, only these paths populate the worktree, dramatically reducing checkout time and preventing teammates from modifying out-of-scope files.
 
 ## Performance Benchmarks
 
@@ -466,7 +505,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 790 Vitest tests across 46 files (hooks + config validation + regression tests)
-**Version**: 11.1.5
+**Version**: 11.1.13
 
 ## Troubleshooting
 

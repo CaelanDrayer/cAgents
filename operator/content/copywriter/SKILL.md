@@ -4,11 +4,16 @@ archetype: operator
 branch: content
 description: "Use when writing marketing copy, crafting headlines, creating ad text, developing email sequences, or producing persuasive sales content."
 metadata:
+  version: "1.0.0"
   vibe: Writes copy that converts browsers into buyers
   tier: execution
   effort: medium
   domain: growth
   model: sonnet
+  paths:
+    - "**/*.md"
+    - "**/*.mdx"
+    - "**/copy/**"
   color: bright_green
   capabilities:
     - ad_copy

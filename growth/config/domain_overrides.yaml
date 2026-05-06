@@ -4,8 +4,8 @@ description: "Marketing execution, sales operations, demand generation"
 
 planner:
   controller_catalog:
-    tier_2: [campaign-manager, creative-director, product-marketing-manager]
-    tier_3: [campaign-manager, marketing-strategist, sales-strategist, creative-director, product-marketing-manager]
+    tier_2: [campaign-manager, creative-director, product-marketing-manager, seo-strategist]
+    tier_3: [campaign-manager, marketing-strategist, sales-strategist, creative-director, product-marketing-manager, seo-strategist]
     tier_4: [cmo, cro, marketing-strategist]
 
   specialist_routing:
@@ -22,9 +22,13 @@ planner:
       agents: [product-marketing-manager]
       description: "Product marketing and launches"
     seo:
-      keywords: [SEO, search engine, organic, keyword research, ranking, backlink]
-      agents: [seo-specialist]
-      description: "Search engine optimization"
+      keywords: [SEO, search engine, organic, keyword research, ranking, backlink, site audit, technical SEO, schema markup, Core Web Vitals]
+      agents: [seo-strategist, seo-specialist, keyword-researcher, on-page-seo-auditor, technical-seo-auditor, link-strategist]
+      description: "Search engine optimization (seo-strategist coordinates; seo-specialist remains for lightweight execution)"
+    geo:
+      keywords: [GEO, generative engine optimization, AI search, AI Overviews, ChatGPT citation, Perplexity, llms.txt, AI citability, AI search visibility]
+      agents: [geo-strategist, seo-strategist]
+      description: "Generative Engine Optimization for ChatGPT, Claude, Perplexity, Google AI Overviews, Gemini"
     social_media:
       keywords: [social media, Instagram, LinkedIn, Twitter, TikTok, community, social]
       agents: [channel-marketer]
@@ -172,6 +176,15 @@ router:
     - referral program
     - paid media
     - organic search
+    - GEO
+    - generative engine optimization
+    - AI search
+    - AI Overviews
+    - llms.txt
+    - AI citability
+    - keyword research
+    - schema markup
+    - Core Web Vitals
     - ABM
     - CRO
     - ROAS

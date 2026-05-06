@@ -15,6 +15,8 @@ related_agents:
   - name: visual-artist
 not-my-scope: ["Retail buying and merchandise planning", "Fashion law and IP registration", "E-commerce platform setup"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
+metadata:
+  version: "1.0.0"
 ---
 
 # Fashion Designer

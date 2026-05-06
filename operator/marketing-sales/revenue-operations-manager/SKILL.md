@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when aligning sales, marketing, and customer success operations, optimizing the revenue funnel, or building cross-functional reporting dashboards."
 metadata:
+  version: "1.0.0"
   vibe: "Aligns sales, marketing, and CS into one revenue machine"
   tier: execution
   effort: medium

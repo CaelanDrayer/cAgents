@@ -17,6 +17,8 @@ related_agents:
   - name: narrative-director
 not-my-scope: ["Animation rigging", "VFX compositing", "Game engine cinematics"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
+metadata:
+  version: "1.0.0"
 ---
 
 # Film Director

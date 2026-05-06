@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when planning marketing campaigns, coordinating cross-channel execution, managing campaign budgets, or analyzing campaign performance metrics."
 metadata:
+  version: "1.0.0"
   vibe: Orchestrates campaigns that hit every channel at the right time
   tier: controller
   effort: high
@@ -34,7 +35,7 @@ metadata:
       type: coordinates
     - name: marketing-ops-specialist
       type: coordinates
-allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 <example>
@@ -94,7 +95,7 @@ See @resources/metrics-and-optimization.md for the metrics hierarchy, A/B testin
 1. Read plan.yaml for objectives and work items
 2. Break objectives into specific questions
 3. Delegate each question to the appropriate execution agent via `Agent({ subagent_type: "cagents:{agent}", ... })`
-4. **MANDATORY: Call TodoWrite after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required TodoWrite pattern
+4. **MANDATORY: Call TaskCreate after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required task-tracking pattern (TaskCreate/TaskUpdate)
 5. Collect answers from specialists
 6. Synthesize answers into a coherent solution
 7. **Run reviewer loop** for each work item (see Reviewer Loop below)

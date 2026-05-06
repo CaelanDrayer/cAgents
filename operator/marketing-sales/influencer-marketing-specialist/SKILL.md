@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when identifying influencers, managing influencer partnerships, coordinating sponsored content, or measuring influencer campaign impact."
 metadata:
+  version: "1.0.0"
   vibe: Connects brands with voices their audience already trusts
   tier: execution
   effort: medium

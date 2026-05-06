@@ -3,6 +3,7 @@ name: optimizer
 archetype: core
 description: "Use when a workflow needs performance tuning, token reduction, or execution path optimization across pipeline stages."
 metadata:
+  version: "1.0.0"
   vibe: Squeezes performance from places nobody thought to look
   tier: infrastructure
   effort: high
@@ -19,7 +20,7 @@ metadata:
     - cross_file_analysis
     - session_resilience
   maxTurns: 50
-allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Universal Optimizer

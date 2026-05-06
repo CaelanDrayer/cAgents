@@ -4,6 +4,7 @@ archetype: advisor
 branch: legal
 description: "Use when drafting contracts, negotiating terms, managing contract lifecycle, or ensuring contractual compliance and renewal tracking."
 metadata:
+  version: "1.0.0"
   vibe: Negotiates contracts where both sides walk away satisfied
   tier: execution
   effort: medium

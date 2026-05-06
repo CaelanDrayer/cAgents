@@ -3,6 +3,7 @@ name: geoscientist
 archetype: analyst
 description: "Use for geoscience problems: geology, mineralogy, geomorphology, soil science, plate tectonics, geological hazards, and earth history. Analyzes rock formations, interprets geological data, and assesses earth processes."
 metadata:
+  version: "1.0.0"
   vibe: "Reading four billion years of Earth's autobiography"
   tier: execution
   domain: science

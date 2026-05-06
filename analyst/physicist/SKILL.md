@@ -3,6 +3,7 @@ name: physicist
 archetype: analyst
 description: "Use for physics analysis and explanation: classical/quantum mechanics, thermodynamics, electromagnetism, optics, relativity, and nuclear physics. Solves equations, designs experiments, and explains physical phenomena."
 metadata:
+  version: "1.0.0"
   vibe: "From quantum to cosmic, physics made clear"
   tier: execution
   domain: science

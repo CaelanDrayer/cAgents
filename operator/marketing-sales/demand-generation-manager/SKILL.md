@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when building demand generation pipelines, planning lead nurture campaigns, optimizing MQL-to-SQL conversion, or managing inbound marketing programs."
 metadata:
+  version: "1.0.0"
   vibe: Fills the pipeline with leads that actually convert
   tier: execution
   effort: medium

@@ -16,6 +16,8 @@ related_agents:
   - name: music-composer
 not-my-scope: ["Studio recording", "Live sound engineering", "Music licensing"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
+metadata:
+  version: "1.0.0"
 ---
 
 # Music Teacher

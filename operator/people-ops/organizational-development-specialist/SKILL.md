@@ -4,6 +4,7 @@ archetype: operator
 branch: people-ops
 description: "Use when designing organizational structures, facilitating team development, managing change initiatives, or improving organizational effectiveness."
 metadata:
+  version: "1.0.0"
   vibe: Redesigns the org chart so the work actually flows
   tier: execution
   effort: medium

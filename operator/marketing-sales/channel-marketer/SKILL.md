@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Cross-channel marketing execution covering email campaigns, content strategy, digital advertising, and social media management. Plans, creates, distributes, and measures marketing across all owned and paid channels."
 metadata:
+  version: "1.0.0"
   vibe: "Puts the right message on the right channel at the right time"
   tier: execution
   effort: medium

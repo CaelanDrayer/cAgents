@@ -3,6 +3,7 @@ name: reviewer
 archetype: core
 description: "Use when validating work item outputs against acceptance criteria, performing spec compliance checks, or conducting code quality review in controller loops."
 metadata:
+  version: "1.0.0"
   vibe: The impartial judge who only cares about acceptance criteria
   tier: execution
   effort: medium

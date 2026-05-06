@@ -16,6 +16,8 @@ related_agents:
   - name: film-director
 not-my-scope: ["Video production", "Motion graphics", "3D rendering"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
+metadata:
+  version: "1.0.0"
 ---
 
 # Photographer

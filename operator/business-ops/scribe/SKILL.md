@@ -4,6 +4,7 @@ archetype: operator
 branch: business-ops
 description: "Use when documenting meeting notes, creating structured summaries, maintaining project records, or producing clear written records from verbal or unstructured inputs."
 metadata:
+  version: "1.0.0"
   vibe: Documents decisions so nobody can say we never agreed to that
   tier: execution
   effort: medium
@@ -78,7 +79,7 @@ See @resources/documentation-standards.md for writing guidelines and templates.
 
 ## Progress Tracking
 
-Use TodoWrite to display documentation progress in real-time.
+Use TaskCreate/TaskUpdate to display documentation progress in real-time (TodoWrite in SDK only).
 
 ---
 

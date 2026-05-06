@@ -4,6 +4,7 @@ archetype: operator
 branch: people-ops
 description: "Use when developing DEI strategies, designing inclusion programs, analyzing demographic data, or building frameworks for equitable hiring and promotion."
 metadata:
+  version: "1.0.0"
   vibe: "Makes belonging a feature of the workplace, not an afterthought"
   tier: execution
   effort: medium

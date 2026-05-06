@@ -4,6 +4,7 @@ archetype: operator
 branch: support
 description: "Use when auditing support interactions, scoring agent performance, identifying quality gaps, or developing quality assurance standards and calibration processes."
 metadata:
+  version: "1.0.0"
   vibe: Scores support interactions to raise the bar for everyone
   tier: execution
   effort: medium

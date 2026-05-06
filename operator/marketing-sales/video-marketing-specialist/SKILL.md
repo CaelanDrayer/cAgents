@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when producing marketing videos, planning video content strategy, optimizing video for platforms, or measuring video engagement and conversion."
 metadata:
+  version: "1.0.0"
   vibe: Knows the first three seconds decide everything and plans accordingly
   tier: execution
   effort: medium

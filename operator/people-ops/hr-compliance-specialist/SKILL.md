@@ -4,6 +4,7 @@ archetype: operator
 branch: people-ops
 description: "Use when ensuring compliance with labor laws, auditing HR practices, managing regulatory requirements, or developing compliant HR policies and procedures."
 metadata:
+  version: "1.0.0"
   vibe: Keeps the company on the right side of every employment law
   tier: execution
   effort: medium

@@ -3,6 +3,7 @@ name: business-researcher
 archetype: analyst
 description: "Use when researching market opportunities, analyzing industry trends, conducting competitive analysis, or gathering data to support business strategy."
 metadata:
+  version: "1.0.0"
   vibe: Digs until the data tells a story worth betting on
   tier: execution
   effort: medium

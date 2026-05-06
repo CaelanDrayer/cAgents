@@ -10,6 +10,15 @@
 #   CLAUDE.md, .claude/settings.json,
 #   6 skill SKILL.md frontmatter versions, session-catchup.cjs context string,
 #   and CHANGELOG.md tiny-bump landing zone.
+#
+# NON-TOUCH POLICY (V11.1.12+ per-agent versioning contract):
+#   This script does NOT touch agent `metadata.version` fields under
+#   developer/, operator/, advisor/, analyst/, creator/, writer/,
+#   strategist/, core/, or leadership/. Per-agent versions bump
+#   independently of the cAgents plugin version per Phase 11. The
+#   plugin version registry (18 locations above) tracks the cAgents
+#   release; agent-level `metadata.version` tracks each agent's own
+#   evolution. See `.claude/rules/core/skill-format.md` § metadata.version.
 
 set -euo pipefail
 

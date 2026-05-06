@@ -3,6 +3,7 @@ name: voice-coach
 archetype: writer
 description: "Use when developing authorial or character voice, training consistent tone, diagnosing voice inconsistencies, or coaching writers on voice distinction techniques."
 metadata:
+  version: "1.0.0"
   vibe: "Gives every character a voice you'd recognize in a crowd"
   tier: execution
   effort: medium

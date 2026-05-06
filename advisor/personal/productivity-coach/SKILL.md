@@ -21,7 +21,7 @@ not-my-scope:
   - Burnout requiring clinical intervention
 metadata:
   author: cagents
-  version: "11.0"
+  version: "11.0.0"
 allowed-tools: Read Grep Glob Write Edit Bash
 ---
 

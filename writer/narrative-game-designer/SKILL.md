@@ -3,6 +3,7 @@ name: narrative-game-designer
 archetype: writer
 description: "Use when designing interactive narrative systems, creating branching story structures, building player agency frameworks, or integrating story with game mechanics."
 metadata:
+  version: "1.0.0"
   vibe: Weaves player choice and narrative into something seamless
   tier: execution
   effort: medium

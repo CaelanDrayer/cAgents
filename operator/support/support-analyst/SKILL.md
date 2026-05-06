@@ -4,6 +4,7 @@ archetype: operator
 branch: support
 description: "Use when analyzing support ticket trends, identifying common issues, building support dashboards, or providing data-driven recommendations to reduce ticket volume."
 metadata:
+  version: "1.0.0"
   vibe: Mines support data to find the patterns that prevent future tickets
   tier: execution
   effort: medium

@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when improving conversion funnels, running A/B tests, analyzing user drop-off points, or optimizing landing pages and checkout flows."
 metadata:
+  version: "1.0.0"
   vibe: "Obsessively tests every pixel because a 2% lift compounds into millions"
   tier: execution
   effort: medium

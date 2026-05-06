@@ -3,6 +3,7 @@ name: editor
 archetype: writer
 description: "Use when content needs polish, prose is awkward, writing is too long, or tone needs adjustment. Cuts filler, strengthens structure, fixes voice issues, and improves readability."
 metadata:
+  version: "1.0.0"
   vibe: Sees what the manuscript is reaching for and helps it get there
   tier: controller
   effort: high
@@ -36,7 +37,7 @@ metadata:
       type: coordinates
     - name: literary-critic
       type: collaborates_with
-allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 <example>
@@ -176,7 +177,7 @@ See @resources/editing-guide.md for detailed editorial techniques and frameworks
 1. Read plan.yaml for objectives and work items
 2. Break objectives into specific questions
 3. Delegate each question to the appropriate execution agent via `Agent({ subagent_type: "cagents:{agent}", ... })`
-4. **MANDATORY: Call TodoWrite after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required TodoWrite pattern
+4. **MANDATORY: Call TaskCreate after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required task-tracking pattern (TaskCreate/TaskUpdate)
 5. Collect answers from specialists
 6. Synthesize answers into a coherent solution
 7. Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks

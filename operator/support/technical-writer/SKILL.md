@@ -4,11 +4,16 @@ archetype: operator
 branch: support
 description: "Use when writing technical documentation, creating API references, developing user guides, or maintaining documentation accuracy and consistency."
 metadata:
+  version: "1.0.0"
   vibe: Writes documentation so clear even the author learns something
   tier: execution
   effort: medium
   domain: service
   model: sonnet
+  paths:
+    - "docs/**"
+    - "**/*.md"
+    - "**/*.rst"
   color: bright_red
   capabilities:
     - technical_writing
@@ -23,7 +28,7 @@ metadata:
       type: collaborates_with
     - name: scribe
       type: cross_domain
-allowed-tools: Read Grep Glob Write Edit
+allowed-tools: Read Grep Glob Write Edit mcp__github__* mcp__notion__*
 ---
 
 # Technical Writer

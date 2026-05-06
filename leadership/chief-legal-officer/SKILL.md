@@ -3,6 +3,7 @@ name: chief-legal-officer
 archetype: leadership
 description: "Use for legal strategy, regulatory compliance, contract review, IP protection, and corporate governance. General Counsel-level legal oversight."
 metadata:
+  version: "1.0.0"
   vibe: Provides the legal judgment that keeps executives out of trouble
   tier: controller
   effort: high
@@ -32,7 +33,7 @@ metadata:
     - name: general-counsel
       domain: service
       type: delegates_to
-allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 <example>

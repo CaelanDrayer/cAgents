@@ -4,6 +4,7 @@ archetype: developer
 branch: infrastructure
 description: "Use when profiling application performance, identifying bottlenecks, measuring latency, or analyzing resource utilization to optimize throughput."
 metadata:
+  version: "1.0.0"
   vibe: Finds the bottleneck hiding in the hot path
   tier: support
   effort: low

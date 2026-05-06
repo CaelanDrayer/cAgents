@@ -4,6 +4,7 @@ archetype: operator
 branch: business-ops
 description: "Use when managing budgets, tracking financial performance, creating forecasts, analyzing cost structures, or producing financial reports."
 metadata:
+  version: "1.0.0"
   vibe: Counts every dollar so the company can spend the right ones
   tier: controller
   effort: high
@@ -30,7 +31,7 @@ metadata:
       type: collaborates_with
     - name: operations-manager
       type: collaborates_with
-allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet mcp__plaid__*
 ---
 
 # Finance Manager

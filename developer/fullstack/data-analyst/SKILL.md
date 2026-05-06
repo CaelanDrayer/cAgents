@@ -4,6 +4,7 @@ archetype: developer
 branch: fullstack
 description: "Use when analyzing datasets, building queries, creating data visualizations, or extracting insights from structured data using SQL, Python, or BI tools."
 metadata:
+  version: "1.0.0"
   vibe: Turns messy data into clean insights that drive decisions
   tier: execution
   effort: medium
@@ -25,7 +26,7 @@ metadata:
       type: collaborates_with
     - name: bi-specialist
       type: cross_domain
-allowed-tools: Read Grep Glob Write Edit Bash
+allowed-tools: Read Grep Glob Write Edit Bash mcp__bigquery__* mcp__postgres__*
 ---
 
 # Data Analyst / Data Engineer Agent

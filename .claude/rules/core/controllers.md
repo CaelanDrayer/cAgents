@@ -45,7 +45,7 @@ Question prompts should be **under 300 tokens**. Include only: the question, whe
 1. Controller receives objectives from plan.yaml
 2. Breaks into specific questions
 3. Identifies execution agents to delegate to
-4. Calls TodoWrite to show execution agents (MANDATORY)
+4. Calls TaskCreate to show execution agents (MANDATORY)
 5. Delegates questions to execution agents
 6. Synthesizes answers into solution
 7. Creates implementation tasks
@@ -53,9 +53,11 @@ Question prompts should be **under 300 tokens**. Include only: the question, whe
 9. Writes coordination_log.yaml
 ```
 
-## MANDATORY: TodoWrite for Execution Agent Visibility
+## MANDATORY: TaskCreate for Execution Agent Visibility
 
-Every controller MUST call TodoWrite after identifying execution agents. TodoWrite is the controller's primary tool for showing progress to the user.
+Every controller MUST call TaskCreate after identifying execution agents. TaskCreate (with TaskUpdate for status changes, TaskList for inventory, TaskGet for detail reads) is the controller's primary tool for showing progress to the user in interactive Claude Code sessions.
+
+**Note on TodoWrite (SDK only)**: TodoWrite is the equivalent tool in non-interactive mode and the Agent SDK (per docs.claude.com/docs/en/tools.md). Interactive Claude Code sessions — which is the primary cAgents runtime — MUST use TaskCreate/TaskUpdate/TaskList/TaskGet instead. Historical references to TodoWrite in legacy SKILL.md prompt bodies are being swept; treat any remaining reference as equivalent to TaskCreate unless explicitly marked "(SDK only)".
 
 **TaskCreate scope boundary**: Pipeline-level tasks (tracking which pipeline agent is running) are owned by /run at level 0. Controllers do NOT create TaskCreate tasks that /run expects to clean up -- those tasks live in the controller's scope and /run cannot update them, causing "Task not found" errors during pipeline cleanup.
 
@@ -70,7 +72,17 @@ Use `[{parent} > {agent-name}] {verb phrase}` when spawning an agent, then 2-spa
 - 2-space indent for children
 - Include contextual detail (file counts, component names, etc.)
 
-**Example:**
+**Example (interactive Claude Code — TaskCreate/TaskUpdate):**
+```
+TaskCreate({ subject: "[engineering-manager > backend-developer] Implementing auth module", description: "Creating JWT middleware; Writing unit tests (4 files)" })
+TaskCreate({ subject: "[engineering-manager > frontend-developer] Building login UI", description: "Creating login form component" })
+TaskCreate({ subject: "[engineering-manager] Synthesizing solution", description: "Combine answers from execution agents into coherent implementation plan" })
+# As work progresses:
+TaskUpdate({ taskId: "1", status: "in_progress" })
+TaskUpdate({ taskId: "1", status: "completed" })
+```
+
+**SDK / non-interactive equivalent (TodoWrite):**
 ```
 TodoWrite([
   {"content": "[engineering-manager > backend-developer] Implementing auth module\n  [backend-developer] Creating JWT middleware\n  [backend-developer] Writing unit tests (4 files)", "status": "in_progress", "id": "wi-1"},
@@ -79,7 +91,7 @@ TodoWrite([
 ])
 ```
 
-See `controller-reference.md` for additional good/bad TodoWrite examples.
+See `controller-reference.md` for additional good/bad task-tracking examples.
 
 ## Controller Selection by Tier
 
@@ -286,6 +298,18 @@ guard_chain_result:
 | 1 CRITICAL | REVISE -- must fix before proceeding |
 | 2+ any severity | REVISE -- prioritize CRITICAL, then HIGH, then MEDIUM |
 | 2 CRITICAL after rework | dead_letter -- escalate to user |
+
+## Graceful Degradation Under Harness Tool Stripping (PHASE-N1, V11.1.13)
+
+**Applies to: controllers spawned as `/team` teammates at depth ≥ 1.**
+
+When a controller agent (e.g., `cagents:engineering-manager`) is spawned by `/team` as a teammate, the Claude Code runtime may strip the `Agent` tool from the controller's tool surface — even when the controller's SKILL.md frontmatter correctly declares `allowed-tools: Agent ...`. This is upstream platform behavior, not a cAgents config issue (no `settings.json`, `plugin.json`, or env-var knob exposes the depth-1 stripping; see PHASE-N1 audit at `cagents-memory/_knowledge/agent-tool-depth1-stripping.md`).
+
+**Rule:** When a teammate controller discovers that `Agent` is unavailable, it MUST gracefully degrade to direct execution rather than fail the work item. The teammate uses the tools it does have (`Read`, `Write`, `Edit`, `Bash`, `Grep`, `Glob`), self-validates against acceptance criteria via the 15-check protocol in `.claude/rules/core/resources/execution-self-validation.md`, and writes the result to `outputs/task-{N}/self-validation.yaml` with the standard `status: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED` field.
+
+**Documentation requirement:** the coordination_log for the wave MUST include the literal sentence "Agent/subagent-spawn tool was not available" so that `verify-completion.cjs` recognizes the graceful-degradation pattern and downgrades the protocol-violation warning. See `.claude/rules/core/teams.md` § Known Harness Limitation for the full evidence chain and the upstream-config null-finding.
+
+**Scope boundary:** this degradation is acceptable for `/team` teammate workflows only. Controllers running under `/run` execute at level 1 with the Agent tool present and MUST delegate (the reviewer-loop pattern remains mandatory). Controllers running as `/org` C-suite agents at level 1 likewise have Agent and MUST delegate.
 
 ## Agent ID Tracking
 

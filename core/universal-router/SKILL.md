@@ -3,6 +3,7 @@ name: universal-router
 archetype: core
 description: "Use when classifying request complexity into tiers 2-4, detecting domain from keywords, or routing to the appropriate controller catalog."
 metadata:
+  version: "1.0.0"
   vibe: "Sends every request to exactly the right agent, every time"
   tier: infrastructure
   effort: high
@@ -15,7 +16,7 @@ metadata:
     - controller_requirement
     - scope_adjustment
   maxTurns: 15
-allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Universal Router

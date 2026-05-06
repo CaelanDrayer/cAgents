@@ -3,6 +3,7 @@ name: competitive-intelligence-analyst
 archetype: analyst
 description: "Use when tracking competitor activity, analyzing market positioning, building competitive battlecards, or providing strategic intelligence on industry trends."
 metadata:
+  version: "1.0.0"
   vibe: Knows what competitors are doing before they announce it
   tier: controller
   effort: high
@@ -30,7 +31,7 @@ metadata:
       type: cross_domain
     - name: sales-enablement-specialist
       type: cross_domain
-allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Competitive Intelligence Analyst
@@ -76,7 +77,7 @@ See @resources/competitive-frameworks.md for analysis templates and battle card 
 1. Read plan.yaml for objectives and work items
 2. Break objectives into specific questions
 3. Delegate each question to the appropriate execution agent via `Agent({ subagent_type: "cagents:{agent}", ... })`
-4. **MANDATORY: Call TodoWrite after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required TodoWrite pattern
+4. **MANDATORY: Call TaskCreate after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required task-tracking pattern (TaskCreate/TaskUpdate)
 5. Collect answers from specialists
 6. Synthesize answers into a coherent solution
 7. Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks

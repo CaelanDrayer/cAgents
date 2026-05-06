@@ -4,11 +4,16 @@ archetype: developer
 branch: quality
 description: "Use when tests are failing, test coverage is missing, a bug needs a regression test, or a testing strategy needs planning. Coordinates test suites, coverage gates, and quality assurance workflows."
 metadata:
+  version: "1.0.0"
   vibe: Finds the bugs before your users do -- every edge case is a story
   tier: controller
   effort: high
   domain: engineering
   model: sonnet
+  paths:
+    - "**/*.test.*"
+    - "**/*.spec.*"
+    - "tests/**"
   color: bright_red
   capabilities:
     - tactical_planning_qa
@@ -24,6 +29,11 @@ metadata:
   maxTurns: 40
   memory:
     project: true
+  requires:
+    bins:
+      - node
+      - npx
+    env: []
   coordination_style: question_based
   typical_questions:
     - What is the current implementation of this feature?
@@ -43,7 +53,7 @@ metadata:
       type: reviews
     - name: frontend-developer
       type: reviews
-allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet mcp__github__*
 ---
 
 <example>
@@ -137,7 +147,7 @@ See @resources/examples.md for detailed examples.
 1. Read plan.yaml for objectives and work items
 2. Break objectives into specific questions
 3. Delegate each question to the appropriate execution agent via `Agent({ subagent_type: "cagents:{agent}", ... })`
-4. **MANDATORY: Call TodoWrite after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required TodoWrite pattern
+4. **MANDATORY: Call TaskCreate after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required task-tracking pattern (TaskCreate/TaskUpdate)
 5. Collect answers from specialists
 6. Synthesize answers into a coherent solution
 7. Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks

@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Full-cycle sales execution from prospecting through close. Handles outbound lead generation, qualification, discovery calls, demos, proposals, and deal management across enterprise and SMB segments."
 metadata:
+  version: "1.0.0"
   vibe: "Fills the pipeline and closes the deals"
   tier: execution
   effort: medium

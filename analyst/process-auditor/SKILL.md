@@ -3,6 +3,7 @@ name: process-auditor
 archetype: analyst
 description: "Use when conducting process audits, verifying compliance with standards, testing internal controls, or producing audit reports and recommendations."
 metadata:
+  version: "1.0.0"
   vibe: Finds the waste hiding in processes everyone assumes work
   tier: execution
   effort: medium

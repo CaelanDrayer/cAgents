@@ -4,6 +4,7 @@ archetype: advisor
 branch: legal
 description: "Use when advising on employment law, reviewing HR policies, handling workplace disputes, or ensuring compliance with labor regulations."
 metadata:
+  version: "1.0.0"
   vibe: "Navigates employment law so the company doesn't have to guess"
   tier: execution
   effort: medium

@@ -3,6 +3,7 @@ name: hitl
 archetype: core
 description: "Use when a workflow requires human approval, when automated decisions need manual override, or when tier 4 escalation gates must be resolved."
 metadata:
+  version: "1.0.0"
   vibe: The human in the loop when machines need a gut check
   tier: infrastructure
   effort: high
@@ -16,7 +17,7 @@ metadata:
     - pattern_learning
     - workflow_pause_resume
   maxTurns: 15
-allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # HITL Agent

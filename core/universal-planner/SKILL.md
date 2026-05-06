@@ -3,6 +3,7 @@ name: universal-planner
 archetype: core
 description: "Use when creating plan.yaml with objectives, controller assignments, temporal analysis, and scope boundaries from enriched context."
 metadata:
+  version: "1.0.0"
   vibe: "Plans the work, works the plan, adapts when reality disagrees"
   tier: infrastructure
   effort: high
@@ -30,7 +31,7 @@ metadata:
       type: collaborates_with
     - name: universal-validator
       type: collaborates_with
-allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 <example>

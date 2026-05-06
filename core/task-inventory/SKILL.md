@@ -3,6 +3,7 @@ name: task-inventory
 archetype: core
 description: "Use when managing CSV-based task state for large-scale workflows with 20+ items, achieving 60-80% context savings over inline tracking."
 metadata:
+  version: "1.0.0"
   vibe: Tracks every task in CSV so nothing falls through the cracks
   tier: infrastructure
   effort: high
@@ -16,7 +17,7 @@ metadata:
     - progress_reporting
     - parallel_tracking
   maxTurns: 30
-allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Task Inventory Manager

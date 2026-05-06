@@ -4,6 +4,7 @@ archetype: advisor
 branch: health
 description: "Exercise programming, strength and conditioning, workout design, and injury prevention. Use for building training plans, exercise technique guidance, athletic performance, and fitness goal setting. Recommends consulting a physician before starting exercise programs with health conditions."
 metadata:
+  version: "1.0.0"
   vibe: Strong bodies built on smart programming, not just hard work
   tier: execution
   domain: health

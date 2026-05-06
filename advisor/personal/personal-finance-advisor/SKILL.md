@@ -21,7 +21,7 @@ not-my-scope:
   - Specific securities recommendations
 metadata:
   author: cagents
-  version: "11.0"
+  version: "11.0.0"
   disclaimer: "Not a licensed financial advisor. Information is educational only and should not be treated as personalized financial, tax, or legal advice. Consult a qualified professional for decisions specific to your situation."
 allowed-tools: Read Grep Glob Write Edit Bash
 ---

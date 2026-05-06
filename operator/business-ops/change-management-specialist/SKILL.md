@@ -4,6 +4,7 @@ archetype: operator
 branch: business-ops
 description: "Use when planning organizational changes, developing training programs, deploying internal communications, or tracking adoption of new processes."
 metadata:
+  version: "1.0.0"
   vibe: "Makes the org actually want the change, not just tolerate it"
   tier: execution
   effort: medium

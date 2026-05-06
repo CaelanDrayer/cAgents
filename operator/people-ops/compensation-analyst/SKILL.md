@@ -4,6 +4,7 @@ archetype: operator
 branch: people-ops
 description: "Use when analyzing compensation structures, benchmarking salaries against market data, designing pay bands, or evaluating equity and incentive programs."
 metadata:
+  version: "1.0.0"
   vibe: Designs comp packages that attract talent and respect budgets
   tier: execution
   effort: medium

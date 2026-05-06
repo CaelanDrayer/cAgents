@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when running growth experiments, optimizing acquisition channels, improving activation and retention metrics, or building viral loops and referral programs."
 metadata:
+  version: "1.0.0"
   vibe: "Tests 10 things, finds the one that scales, then doubles down"
   tier: execution
   effort: medium

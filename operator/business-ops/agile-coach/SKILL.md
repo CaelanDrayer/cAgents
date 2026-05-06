@@ -4,6 +4,7 @@ archetype: operator
 branch: business-ops
 description: "Use when setting up sprint processes, managing backlogs, tracking velocity, or coaching teams on Agile and Scrum practices."
 metadata:
+  version: "1.0.0"
   vibe: Turns standup theater into shipping velocity
   tier: execution
   effort: medium

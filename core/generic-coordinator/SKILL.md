@@ -3,6 +3,7 @@ name: generic-coordinator
 archetype: core
 description: "Parameterized controller for lightweight domains (health, education, personal, arts, trades). Reads domain_overrides.yaml at runtime to discover specialists. Use when the calling domain lacks a dedicated controller."
 metadata:
+  version: "1.0.0"
   vibe: "One coordinator to rule the small domains"
   tier: controller
   effort: high
@@ -30,7 +31,7 @@ metadata:
     - Direct instruction or advice delivery
     - Answering domain questions without delegation
   related_agents: []
-allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Generic Coordinator

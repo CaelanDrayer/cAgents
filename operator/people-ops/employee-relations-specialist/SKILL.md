@@ -4,6 +4,7 @@ archetype: operator
 branch: people-ops
 description: "Use when handling workplace conflicts, conducting investigations, advising on disciplinary actions, or mediating employee-manager disputes."
 metadata:
+  version: "1.0.0"
   vibe: Resolves workplace issues before they become workplace problems
   tier: execution
   effort: medium

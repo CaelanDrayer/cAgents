@@ -82,6 +82,102 @@ const SLOP_PHRASES = [
   "the results are promising",
 ];
 
+// SKILL.md schema validation (V11.1.12+, Phase 10)
+// In-process check that runs after Write/Edit on agent SKILL.md files.
+// Skips .claude/skills/ user-skill files (those use a different schema).
+// Returns advisory warnings only - does NOT block.
+const SKILL_VALID_ARCHETYPES = ['developer', 'operator', 'advisor', 'analyst', 'creator', 'writer', 'strategist', 'core', 'leadership'];
+const SKILL_THREE_LEVEL = { developer: ['backend','frontend','fullstack','infrastructure','quality'], operator: ['support','business-ops','people-ops','marketing-sales','content'], advisor: ['legal','health','education','personal'] };
+const SKILL_SEMVER_RE = /^[0-9]+\.[0-9]+\.[0-9]+$/;
+
+function isAgentSkillMd(filePath) {
+  // Must be a SKILL.md file
+  if (path.basename(filePath) !== 'SKILL.md') return false;
+  // Must NOT live under .claude/skills/ (those are user-skills, different schema)
+  if (filePath.includes('/.claude/skills/') || filePath.includes('\\.claude\\skills\\')) return false;
+  // Must live under one of the 9 archetype roots, relative to PROJECT_ROOT
+  const rel = path.relative(PROJECT_ROOT, filePath);
+  if (rel.startsWith('..')) return false;
+  const top = rel.split(path.sep)[0];
+  return SKILL_VALID_ARCHETYPES.includes(top);
+}
+
+function validateSkillSchema(filePath, content) {
+  const errors = [];
+  if (!content.startsWith('---\n')) {
+    errors.push('SKILL.md missing YAML frontmatter (must start with `---`)');
+    return errors;
+  }
+  const fmEnd = content.indexOf('\n---', 4);
+  if (fmEnd < 0) {
+    errors.push('SKILL.md frontmatter has no closing `---`');
+    return errors;
+  }
+  const fmText = content.slice(4, fmEnd);
+  let fm;
+  try {
+    const yaml = require('js-yaml');
+    fm = yaml.load(fmText);
+  } catch (err) {
+    errors.push(`SKILL.md frontmatter YAML parse error: ${err.message.split('\n')[0]}`);
+    return errors;
+  }
+  if (!fm || typeof fm !== 'object') {
+    errors.push('SKILL.md frontmatter is not a YAML object');
+    return errors;
+  }
+
+  const rel = path.relative(PROJECT_ROOT, filePath);
+  const dirArchetype = rel.split(path.sep)[0];
+  const dirBranch = rel.split(path.sep)[1];
+
+  // archetype field (top-level) required
+  if (!fm.archetype || typeof fm.archetype !== 'string') {
+    errors.push("SKILL.md missing required top-level 'archetype:' field");
+  } else if (!SKILL_VALID_ARCHETYPES.includes(fm.archetype)) {
+    errors.push(`SKILL.md unknown archetype '${fm.archetype}' (valid: ${SKILL_VALID_ARCHETYPES.join(', ')})`);
+  } else if (fm.archetype !== dirArchetype) {
+    errors.push(`SKILL.md archetype mismatch: frontmatter says '${fm.archetype}' but file is under '${dirArchetype}/'`);
+  }
+
+  // branch required for 3-level archetypes
+  if (SKILL_THREE_LEVEL[dirArchetype]) {
+    if (!fm.branch || typeof fm.branch !== 'string') {
+      errors.push(`SKILL.md missing required 'branch:' field for archetype '${dirArchetype}'`);
+    } else if (!SKILL_THREE_LEVEL[dirArchetype].includes(fm.branch)) {
+      errors.push(`SKILL.md unknown branch '${fm.branch}' for archetype '${dirArchetype}' (valid: ${SKILL_THREE_LEVEL[dirArchetype].join(', ')})`);
+    } else if (fm.branch !== dirBranch) {
+      errors.push(`SKILL.md branch mismatch: frontmatter says '${fm.branch}' but file is under '${dirArchetype}/${dirBranch}/'`);
+    }
+  }
+
+  // tier required (top-level OR inside metadata)
+  const tier = fm.tier || (fm.metadata && fm.metadata.tier);
+  if (!tier) {
+    errors.push("SKILL.md missing required 'tier:' field (top-level or inside metadata:)");
+  }
+
+  // name required
+  if (!fm.name || typeof fm.name !== 'string') {
+    errors.push("SKILL.md missing required 'name:' field");
+  }
+
+  // metadata.version required (V11.1.12+)
+  const version = fm.metadata && fm.metadata.version;
+  if (!version) {
+    errors.push("SKILL.md missing required 'metadata.version:' field (V11.1.12+ per-agent versioning)");
+  } else if (typeof version !== 'string' || !SKILL_SEMVER_RE.test(version)) {
+    errors.push(`SKILL.md invalid 'metadata.version' '${version}' (must match semver ^[0-9]+\\.[0-9]+\\.[0-9]+\$)`);
+  }
+
+  // top-level domain forbidden (removed in v11.1.0)
+  if (fm.domain) {
+    errors.push("SKILL.md has forbidden top-level 'domain:' field (removed in v11.1.0; use 'archetype:')");
+  }
+
+  return errors;
+}
+
 function detectSlopPatterns(content) {
   // Strip YAML frontmatter (between --- markers at file start)
   let prose = content;
@@ -147,6 +243,17 @@ createHook('PostWriteValidator', async (input) => {
           }
           topKeys.push(match[1]);
         }
+      }
+    }
+  }
+
+  // SKILL.md schema validation (V11.1.12+, Phase 10) - advisory only
+  if (isAgentSkillMd(filePath)) {
+    const content = safeRead(filePath);
+    if (content) {
+      const schemaErrors = validateSkillSchema(filePath, content);
+      for (const err of schemaErrors) {
+        warnings.push(`[skill-schema] ${err}`);
       }
     }
   }

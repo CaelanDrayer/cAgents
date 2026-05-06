@@ -4,6 +4,7 @@ archetype: operator
 branch: support
 description: "Use when managing escalated customer issues, coordinating cross-team resolution, tracking SLA adherence, or developing escalation procedures."
 metadata:
+  version: "1.0.0"
   vibe: Takes the toughest tickets and turns them into saves
   tier: execution
   effort: medium

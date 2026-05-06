@@ -4,6 +4,7 @@ archetype: developer
 branch: fullstack
 description: "Use when implementing gameplay mechanics, writing game logic, building AI systems for games, or integrating game systems with engine frameworks."
 metadata:
+  version: "1.0.0"
   vibe: Writes the code that makes impossible game mechanics possible
   tier: execution
   effort: medium

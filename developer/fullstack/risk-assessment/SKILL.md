@@ -4,6 +4,7 @@ archetype: developer
 branch: fullstack
 description: "Use when assessing technical risk for proposed changes, evaluating blast radius of refactors, or identifying potential failure modes before implementation."
 metadata:
+  version: "1.0.0"
   vibe: Quantifies technical risk so teams can make informed bets
   tier: support
   effort: low

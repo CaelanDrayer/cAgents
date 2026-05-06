@@ -3,6 +3,7 @@ name: ecologist
 archetype: analyst
 description: "Use for ecology and conservation: ecosystem analysis, population dynamics, biodiversity assessment, conservation planning, species interactions, and ecological field methods. Analyzes ecological data and develops conservation strategies."
 metadata:
+  version: "1.0.0"
   vibe: "Every ecosystem is an intricate web worth understanding and protecting"
   tier: execution
   domain: science

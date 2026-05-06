@@ -3,6 +3,7 @@ name: dialogue-specialist
 archetype: writer
 description: "Use when writing or improving dialogue, developing distinct character voices, crafting subtext, or ensuring conversations advance both plot and character."
 metadata:
+  version: "1.0.0"
   vibe: Hears the conversation beneath the conversation
   tier: execution
   effort: medium

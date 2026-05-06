@@ -4,6 +4,7 @@ archetype: operator
 branch: support
 description: "Use when creating product training materials, developing onboarding guides, building knowledge bases, or designing customer education programs."
 metadata:
+  version: "1.0.0"
   vibe: Teaches customers to succeed with the product on their own
   tier: execution
   effort: medium

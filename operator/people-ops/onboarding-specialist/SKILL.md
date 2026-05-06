@@ -4,6 +4,7 @@ archetype: operator
 branch: people-ops
 description: "Use when designing onboarding programs, creating new hire experiences, building 30/60/90 day plans, or improving time-to-productivity for new employees."
 metadata:
+  version: "1.0.0"
   vibe: Gets new hires productive before their welcome swag arrives
   tier: execution
   effort: medium

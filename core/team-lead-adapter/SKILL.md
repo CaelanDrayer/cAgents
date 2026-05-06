@@ -3,6 +3,7 @@ name: team-lead-adapter
 archetype: core
 description: "Use when wrapping a controller agent as a team lead for /team wave execution, bridging controller coordination with team teammate protocols."
 metadata:
+  version: "1.0.0"
   vibe: Wraps any controller in team-lead armor for parallel execution
   tier: infrastructure
   effort: high
@@ -16,7 +17,7 @@ metadata:
     - peer_messaging
     - result_aggregation
   maxTurns: 30
-allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Team Lead Adapter

@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when developing brand strategy, maintaining brand consistency, creating brand guidelines, or managing brand perception across channels."
 metadata:
+  version: "1.0.0"
   vibe: "Guards the brand voice like it's the company's reputation"
   tier: execution
   effort: medium

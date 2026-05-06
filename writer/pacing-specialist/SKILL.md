@@ -3,6 +3,7 @@ name: pacing-specialist
 archetype: writer
 description: "Use when optimizing narrative pacing, balancing action with reflection, adjusting scene length and rhythm, or diagnosing sections that drag or rush."
 metadata:
+  version: "1.0.0"
   vibe: "Controls the rhythm so readers can't stop turning pages"
   tier: execution
   effort: medium

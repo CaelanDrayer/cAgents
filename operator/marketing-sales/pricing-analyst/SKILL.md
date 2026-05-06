@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when analyzing pricing strategies, modeling price elasticity, evaluating competitive pricing, or recommending pricing changes based on market data."
 metadata:
+  version: "1.0.0"
   vibe: Finds the price point where value meets willingness to pay
   tier: execution
   effort: medium

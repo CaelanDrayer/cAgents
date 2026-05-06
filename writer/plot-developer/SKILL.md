@@ -3,6 +3,7 @@ name: plot-developer
 archetype: writer
 description: "Use when developing plot mechanics, engineering twists and reversals, designing subplot resonance, or building escalation curves that drive narrative momentum."
 metadata:
+  version: "1.0.0"
   vibe: Builds plots with the precision of a watchmaker
   tier: execution
   effort: medium

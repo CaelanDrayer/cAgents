@@ -3,6 +3,7 @@ name: creative-researcher
 archetype: writer
 description: "Use when researching settings, historical periods, cultural details, or technical subjects to ground creative work in authentic, accurate foundations."
 metadata:
+  version: "1.0.0"
   vibe: Digs up the obscure details that make fiction feel real
   tier: execution
   effort: medium

@@ -3,6 +3,7 @@ name: task-decomposer
 archetype: core
 description: "Use when breaking down plans into granular work items with acceptance criteria, dependency graphs, and wave assignments for parallel execution."
 metadata:
+  version: "1.0.0"
   vibe: Breaks the impossible into 30 very possible pieces
   tier: infrastructure
   effort: high
@@ -28,7 +29,7 @@ metadata:
       type: collaborates_with
     - name: orchestrator
       type: coordinated_by
-allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Task Decomposer

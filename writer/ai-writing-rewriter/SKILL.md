@@ -3,6 +3,7 @@ name: ai-writing-rewriter
 archetype: writer
 description: "Use when transforming AI-generated text into natural prose, removing synthetic patterns, injecting human voice, making generated content indistinguishable from human writing, improving writing quality, polishing prose, or making content more engaging and natural."
 metadata:
+  version: "1.0.0"
   vibe: Makes AI prose read like a human wrote it on their best day
   tier: execution
   effort: medium

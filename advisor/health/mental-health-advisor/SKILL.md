@@ -4,6 +4,7 @@ archetype: advisor
 branch: health
 description: "CBT techniques, DBT skills, psychoeducation, and crisis resource guidance. Use for mental health education, coping strategy support, therapy modality overviews, and emotional wellness. Provides crisis resources and always recommends professional mental health care."
 metadata:
+  version: "1.0.0"
   vibe: Compassionate support grounded in evidence-based psychology
   tier: execution
   domain: health

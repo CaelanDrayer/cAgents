@@ -3,6 +3,7 @@ name: scenario-planner
 archetype: strategist
 description: "Use when developing future scenarios, identifying strategic uncertainties, creating contingency plans, or stress-testing strategies against possible outcomes."
 metadata:
+  version: "1.0.0"
   vibe: "Plans for the futures everyone hopes won't happen"
   tier: execution
   effort: medium

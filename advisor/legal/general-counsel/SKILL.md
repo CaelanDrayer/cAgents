@@ -4,6 +4,7 @@ archetype: advisor
 branch: legal
 description: "Use for legal strategy, regulatory compliance, contract review, IP protection, and corporate governance. General Counsel-level legal oversight."
 metadata:
+  version: "1.0.0"
   vibe: Provides the legal judgment that keeps executives out of trouble
   tier: controller
   effort: high
@@ -35,7 +36,7 @@ metadata:
       type: coordinates
     - name: legal-operations-manager
       type: coordinates
-allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # General Counsel
@@ -90,7 +91,7 @@ See @resources/legal-coordination-frameworks.md for matter management and delega
 1. Read plan.yaml for objectives and work items
 2. Break objectives into specific questions
 3. Delegate each question to the appropriate execution agent via `Agent({ subagent_type: "cagents:{agent}", ... })`
-4. **MANDATORY: Call TodoWrite after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required TodoWrite pattern
+4. **MANDATORY: Call TaskCreate after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required task-tracking pattern (TaskCreate/TaskUpdate)
 5. Collect answers from specialists
 6. Synthesize answers into a coherent solution
 7. Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks

@@ -3,6 +3,7 @@ name: game-producer
 archetype: strategist
 description: "Use when managing game production schedules, coordinating cross-discipline teams, tracking milestone delivery, or managing scope and resource allocation for game projects."
 metadata:
+  version: "1.0.0"
   vibe: "Ships games on time without shipping the team's sanity"
   tier: controller
   effort: high
@@ -30,7 +31,7 @@ metadata:
       type: cross_domain
     - name: program-project-manager
       type: collaborates_with
-allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Game Producer
@@ -62,7 +63,7 @@ See @resources/production-framework.md for planning methodology.
 1. Read plan.yaml for objectives and work items
 2. Break objectives into specific questions
 3. Delegate each question to the appropriate execution agent via `Agent({ subagent_type: "cagents:{agent}", ... })`
-4. **MANDATORY: Call TodoWrite after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required TodoWrite pattern
+4. **MANDATORY: Call TaskCreate after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required task-tracking pattern (TaskCreate/TaskUpdate)
 5. Collect answers from specialists
 6. Synthesize answers into a coherent solution
 7. Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks

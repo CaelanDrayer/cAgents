@@ -4,6 +4,7 @@ archetype: operator
 branch: business-ops
 description: "Use when identifying enterprise risks, assessing threat impact, developing mitigation strategies, or building business continuity plans."
 metadata:
+  version: "1.0.0"
   vibe: "Names the risks nobody wants to talk about, then mitigates them"
   tier: execution
   effort: medium

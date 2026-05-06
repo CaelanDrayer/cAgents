@@ -2,7 +2,7 @@
 #
 # cAgents Agent Schema Validation
 # Validates all agent SKILL.md files across all 9 archetype roots
-# Version: 11.1.5
+# Version: 11.1.13
 #
 # Usage:
 #   ./scripts/ci/validate-agents.sh                    # Validate all archetypes
@@ -30,6 +30,7 @@
 #  16. Legacy `related-agents` (hyphen) field warns -> use `related_agents` underscore
 #  17. plugin.json structural validation (required: name field)
 #  18. domain_overrides.yaml controller_catalog references resolve to existing agents
+#  19. metadata.version present and matches semver ^[0-9]+\.[0-9]+\.[0-9]+$ (V11.1.12+)
 
 set -e
 
@@ -334,6 +335,18 @@ validate_agent() {
     # Check 12: Vibe field presence (advisory; lives in metadata:)
     : # silent pass; advisory only
 
+    # Check 19 (V11.1.12+): metadata.version present + valid semver
+    local version_value
+    version_value=$(echo "$frontmatter" | awk '/^metadata:/{m=1;next} m && /^[^ ]/{m=0} m && /^  version:/{sub(/^  version:[[:space:]]*/,""); gsub(/["'"'"']/,""); print; exit}')
+    if [[ -z "$version_value" ]]; then
+        log_fail "Missing 'metadata.version' field (required, V11.1.12+ per-agent versioning): $relative_path"
+        return
+    fi
+    if ! [[ "$version_value" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        log_fail "Invalid 'metadata.version' '$version_value' (must match semver ^[0-9]+\\.[0-9]+\\.[0-9]+\$): $relative_path"
+        return
+    fi
+
     # Recommended: Model field presence
     if ! has_fm_field "model" "$frontmatter"; then
         log_warn "Missing 'model' field (recommended per Agent Skills spec): $relative_path"
@@ -522,6 +535,7 @@ validate_domain_overrides() {
 # Main
 #
 main() {
+    local single_file=""
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --archetype|--domain)
@@ -536,13 +550,33 @@ main() {
                 COUNT_ONLY=true
                 shift
                 ;;
+            --file)
+                single_file="$2"
+                shift 2
+                ;;
             *)
                 echo "Unknown option: $1"
-                echo "Usage: $0 [--archetype <name>] [--strict] [--count]"
+                echo "Usage: $0 [--archetype <name>] [--strict] [--count] [--file <path>]"
                 exit 1
                 ;;
         esac
     done
+
+    # --file mode: validate a single SKILL.md and exit with status (0=pass, 1=fail)
+    if [[ -n "$single_file" ]]; then
+        if [[ ! -f "$single_file" ]]; then
+            echo "File not found: $single_file" >&2
+            exit 1
+        fi
+        REGISTERED_AGENTS=$(load_registered_agents)
+        build_agent_index
+        validate_agent "$single_file"
+        if [[ $ERRORS -gt 0 ]]; then
+            exit 1
+        else
+            exit 0
+        fi
+    fi
 
     if [[ $COUNT_ONLY != true ]]; then
         echo ""

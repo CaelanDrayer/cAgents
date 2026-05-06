@@ -3,6 +3,7 @@ name: roadmap-planner
 archetype: strategist
 description: "Use when creating product or technology roadmaps, prioritizing features, managing cross-team dependencies, or aligning roadmap to business strategy."
 metadata:
+  version: "1.0.0"
   vibe: "Draws the map from here to shipped, including the detours"
   tier: execution
   effort: medium

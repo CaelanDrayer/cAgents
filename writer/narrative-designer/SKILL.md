@@ -3,6 +3,7 @@ name: narrative-designer
 archetype: writer
 description: "Use when engineering reading experience, designing narrative flow at micro and macro scales, optimizing scene/sequel pacing, or crafting information revelation sequences."
 metadata:
+  version: "1.0.0"
   vibe: Architects the story so every path feels intentional
   tier: execution
   effort: medium

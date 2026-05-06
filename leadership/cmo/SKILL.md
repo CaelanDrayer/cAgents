@@ -3,6 +3,7 @@ name: cmo
 archetype: leadership
 description: "Use for marketing strategy, brand positioning, demand generation oversight, and growth channel optimization. CMO-level marketing leadership."
 metadata:
+  version: "1.0.0"
   vibe: Drives growth by making the market come to the company
   tier: controller
   effort: high
@@ -22,7 +23,7 @@ metadata:
     - What are the current marketing metrics and pipeline?
     - What is our market position vs competitors?
     - What marketing initiatives need executive decision?
-allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Chief Marketing Officer
@@ -71,7 +72,7 @@ See @resources/executive-frameworks.md for strategic planning templates.
 1. Read plan.yaml for objectives and work items
 2. Break objectives into specific questions
 3. Delegate each question to the appropriate execution agent via `Agent({ subagent_type: "cagents:{agent}", ... })`
-4. **MANDATORY: Call TodoWrite after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required TodoWrite pattern
+4. **MANDATORY: Call TaskCreate after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required task-tracking pattern (TaskCreate/TaskUpdate)
 5. Collect answers from specialists
 6. Synthesize answers into a coherent solution
 7. Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks

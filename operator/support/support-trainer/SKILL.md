@@ -4,6 +4,7 @@ archetype: operator
 branch: support
 description: "Use when developing support training curricula, onboarding new agents, creating product knowledge assessments, or running skill-building workshops."
 metadata:
+  version: "1.0.0"
   vibe: Trains support teams to handle anything customers throw at them
   tier: execution
   effort: medium

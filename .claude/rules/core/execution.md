@@ -223,6 +223,20 @@ When implementing work items that modify existing code, use the commit-before-ve
 | `git reset --hard` on failure | `git reset HEAD~1` preserves your staged changes |
 | Skip verification for "obvious" fixes | Always verify - obvious fixes break production |
 
+## Graceful Degradation Under Harness Tool Stripping (PHASE-N1, V11.1.13)
+
+**Applies to: execution agents spawned as `/team` teammates at depth ≥ 1.**
+
+The Claude Code runtime may strip tools from a `cagents:*` agent's surface at depth ≥ 1 — most notably `Agent`, `TodoWrite`, and `TaskUpdate`. The stripping is upstream platform behavior; cAgents config cannot override it (see `.claude/rules/core/teams.md` § Known Harness Limitation and `cagents-memory/_knowledge/agent-tool-depth1-stripping.md` for the evidence chain).
+
+**For an execution agent**, the practical consequences are limited (execution agents do not normally call `Agent`), but the following still applies:
+
+1. **Tool inventory check first.** Before reporting `BLOCKED` because a tool is missing, check whether the missing tool is `Agent`, `TodoWrite`, or `TaskUpdate` — these are commonly stripped at depth ≥ 1 and the work item should be completed without them. Only `BLOCKED` if a critical tool (e.g., `Bash`, `Write`, `Edit`) is genuinely absent.
+2. **TaskUpdate substitution.** When `TaskUpdate` is stripped, status reporting falls back to writing to `outputs/task-{N}/self-validation.yaml` with the standard `status:` field. The lead aggregates self-validation YAMLs at the wave gate.
+3. **No reviewer call.** Execution agents under teammate-stripping conditions do NOT call `Agent(cagents:reviewer)` — the lead may run a wave-N+1 review pass against the output if deeper validation is required.
+
+The full graceful-degradation pattern (rule, evidence, scope boundary) lives in `.claude/rules/core/controllers.md` § Graceful Degradation. Execution agents follow the same self-validation protocol regardless of teammate-stripping context.
+
 ## Mandatory Self-Validation Protocol (V10.23.0)
 
 Before reporting ANY status (DONE, DONE_WITH_CONCERNS), execution agents MUST complete a self-validation checklist. A failed check automatically changes DONE to DONE_WITH_CONCERNS with failed checks listed as concerns.

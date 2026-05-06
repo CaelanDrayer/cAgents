@@ -3,6 +3,7 @@ name: sensitivity-reader
 archetype: writer
 description: "Use when reviewing content for cultural sensitivity, identifying potentially harmful representations, ensuring authentic diverse portrayal, or flagging stereotypes."
 metadata:
+  version: "1.0.0"
   vibe: Catches what the author missed because they never had to think about it
   tier: execution
   effort: medium

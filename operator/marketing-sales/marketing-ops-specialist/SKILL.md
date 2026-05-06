@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when managing marketing technology stack, configuring automation platforms, maintaining data hygiene, or optimizing marketing workflows and processes."
 metadata:
+  version: "1.0.0"
   vibe: Keeps the marketing machine running without anyone noticing
   tier: execution
   effort: medium

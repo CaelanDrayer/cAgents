@@ -3,6 +3,7 @@ name: science-coordinator
 archetype: analyst
 description: "Coordinates STEM research and scientific analysis tasks via question-based delegation. Use for scientific questions, mathematical proofs, research methodology, data analysis, and cross-disciplinary science work."
 metadata:
+  version: "1.0.0"
   vibe: Turns curiosity into peer-reviewable answers
   tier: controller
   domain: science
@@ -24,7 +25,7 @@ metadata:
     - What are the key variables and how do they interact?
     - What level of rigor and precision is required?
     - Are there competing theories or interpretations?
-allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Science Coordinator

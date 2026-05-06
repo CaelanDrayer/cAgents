@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when managing CRM configuration, building sales reports, optimizing sales processes, or maintaining pipeline hygiene and forecasting accuracy."
 metadata:
+  version: "1.0.0"
   vibe: Keeps CRM clean and forecasts honest
   tier: execution
   effort: medium

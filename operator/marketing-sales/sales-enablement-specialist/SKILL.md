@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when creating sales training materials, building playbooks, managing sales content libraries, or improving rep onboarding and productivity."
 metadata:
+  version: "1.0.0"
   vibe: Arms the sales team with exactly what they need to close
   tier: execution
   effort: medium

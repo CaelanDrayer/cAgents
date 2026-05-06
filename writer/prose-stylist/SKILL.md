@@ -3,6 +3,7 @@ name: prose-stylist
 archetype: writer
 description: "Use when refining prose style, developing distinctive voice, improving sentence rhythm and imagery, or elevating writing craft at the sentence and paragraph level."
 metadata:
+  version: "1.0.0"
   vibe: Writes sentences that make readers forget they are reading
   tier: execution
   effort: medium

@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when building affiliate programs, recruiting partners, managing commission structures, or tracking affiliate-driven conversions."
 metadata:
+  version: "1.0.0"
   vibe: Turns every happy customer into a revenue-generating referral engine
   tier: execution
   effort: medium

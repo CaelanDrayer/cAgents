@@ -1,5 +1,8 @@
 {
+"$schema": "https://raw.githubusercontent.com/anthropics/claude-code/main/.claude-plugin/marketplace.schema.json",
 "name": "cagents",
+  "categories": ["workflows", "engineering", "creative", "business", "growth", "people", "service"],
+  "compatibility": "Claude Code >= 2.1.69",
   "owner": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca"
@@ -11,7 +14,7 @@
     {
       "name": "cagents",
       "description": "Universal multi-domain agent orchestration framework. Your AI workforce: 243 specialized agents across 15 business domains, coordinated by an intelligent pipeline. /run routes any task through controller + specialist agents, /team runs parallel execution waves, /org coordinates cross-domain strategy via C-suite, /designer guides design exploration, /improve unifies review and optimization, /helper recommends commands.",
-      "version": "11.1.5",
+      "version": "11.1.13",
       "author": {
         "name": "CaelanDrayer",
         "email": "caelan@caelandrayer.ca"

@@ -4,6 +4,7 @@ archetype: advisor
 branch: health
 description: "Medication counseling, drug interactions, dosage guidance, OTC vs prescription information, and pharmacy practice education. Use for understanding medications, potential interactions, side effects, and OTC product selection. Always recommends consulting a licensed pharmacist or physician for personal medication decisions."
 metadata:
+  version: "1.0.0"
   vibe: The right drug, the right dose, the right patient — every time
   tier: execution
   domain: health

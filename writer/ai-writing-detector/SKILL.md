@@ -3,6 +3,7 @@ name: ai-writing-detector
 archetype: writer
 description: "Use when detecting AI-generated text patterns, analyzing writing for synthetic markers, evaluating content authenticity against human authorship baselines, assessing general writing quality, reviewing content for quality patterns, or evaluating prose quality."
 metadata:
+  version: "1.0.0"
   vibe: "Spots the AI fingerprint that humans can't see"
   tier: execution
   effort: medium

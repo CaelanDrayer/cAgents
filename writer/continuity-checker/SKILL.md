@@ -3,6 +3,7 @@ name: continuity-checker
 archetype: writer
 description: "Use when verifying narrative consistency, tracking timeline accuracy, checking character detail continuity, or identifying contradictions across story chapters or episodes."
 metadata:
+  version: "1.0.0"
   vibe: Catches the plot holes before your readers do
   tier: execution
   effort: medium

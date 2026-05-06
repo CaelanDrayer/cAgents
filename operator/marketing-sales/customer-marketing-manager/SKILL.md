@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when developing customer advocacy programs, creating case studies, managing reference programs, or driving expansion within existing accounts."
 metadata:
+  version: "1.0.0"
   vibe: Turns happy customers into the best marketing channel
   tier: execution
   effort: medium

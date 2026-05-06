@@ -4,6 +4,7 @@ archetype: operator
 branch: people-ops
 description: "Use when managing employee benefits programs, processing enrollment, coordinating with insurance providers, or analyzing benefits utilization and costs."
 metadata:
+  version: "1.0.0"
   vibe: Makes sure every employee gets the benefits they earned
   tier: execution
   effort: medium

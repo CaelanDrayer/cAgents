@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Use when managing media relations, writing press releases, coordinating press events, or handling crisis communications and reputation management."
 metadata:
+  version: "1.0.0"
   vibe: Gets the right story in front of the right journalist at the right time
   tier: execution
   effort: medium

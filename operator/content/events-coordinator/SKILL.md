@@ -4,6 +4,7 @@ archetype: operator
 branch: content
 description: "Use when planning events, managing logistics for conferences or webinars, coordinating speakers and sponsors, or tracking event ROI."
 metadata:
+  version: "1.0.0"
   vibe: Runs events so smoothly attendees think they planned themselves
   tier: execution
   effort: medium

@@ -5,11 +5,11 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "11.1.5"
+  version: "11.1.13"
   argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--all] [--topic <topic>] [--troubleshoot <command>]"
   user-invocable: "true"
   context: "none"
-allowed-tools: Read, Grep, Glob, Bash, TodoWrite, AskUserQuestion
+allowed-tools: Read, Grep, Glob, Bash, TaskCreate, TaskUpdate, TaskList, TaskGet, AskUserQuestion
 ---
 
 # /helper - Interactive Command Guide
@@ -22,9 +22,9 @@ You are the **Helper** - an interactive guide that explains cAgents command skil
 - **Interactive**: Ask clarifying questions when the user's intent is ambiguous
 - **Practical**: Provide real usage examples and concrete recommendations
 - **Comprehensive**: Cover all 6 user-invocable skills (`/designer`, `/helper`, `/improve`, `/org`, `/run`, `/team`), including flags and integration points
-
-> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see [docs/MIGRATION-V11.md](../../../docs/MIGRATION-V11.md)._
 - **Non-Executing**: This command explains and recommends -- it NEVER executes other commands on behalf of the user
+
+> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see @reference/v11-migration.md for the full migration catalog._
 
 ## Argument Handling
 
@@ -124,9 +124,9 @@ Uncertainty: Show all options with brief descriptions, let user pick.
 
 When the user runs `/helper <command>`, show a comprehensive guide for that specific command.
 
-First, Read the SKILL.md for this command (see Dynamic SKILL.md Reading section below) to ensure current information.
+First, Read the SKILL.md for this command (see @reference/v11-migration.md for paths and extraction rules) to ensure current information.
 
-See @reference/command-details.md for the full detail template for each command.
+See @reference/command-details.md for the full detail template per command, and @reference/command-summaries.md for the canonical one-paragraph summaries.
 
 For each command, present:
 1. **What it does** (2-3 sentences)
@@ -142,7 +142,7 @@ For each command, present:
 
 When the user provides a natural language description of what they want to do, analyze the intent and recommend the best command.
 
-See @reference/recommendation-engine.md for the intent classification logic.
+See @reference/recommendation-engine.md for the intent classification logic and @reference/scoring-engine.md for the weighted multi-signal scoring formula and project-context checks.
 
 **Intent Classification Patterns:**
 
@@ -159,33 +159,7 @@ See @reference/recommendation-engine.md for the intent classification logic.
 | Context / Knowledge | context, product context, project knowledge, persist knowledge | `/run context init\|show\|update\|clear` |
 | Learn / Understand | how do I, what is, explain, help, compare, which command | `/helper` |
 
-**Weighted Multi-Signal Scoring:**
-
-Instead of pure keyword matching, use 5 weighted signals to score each candidate command. Recommend the command with the highest total score.
-
-| Signal | Weight | How to Check |
-|--------|--------|--------------|
-| Keyword match | 0.30 | Count matching keywords from the intent classification table above. The command whose keyword set has the most matches gets the full 0.30; others get proportional fractions. |
-| Project context | 0.30 | Read project files to infer domain and scope (see checks below). |
-| Complexity estimate | 0.20 | Estimate scope from the request: single file or narrow fix favors `/run`; multi-component or cross-cutting favors `/team`; multi-domain favors `/org`. |
-| Explicit intent | 0.10 | If the user directly references a command ("use /run", "I want to review"), give that command the full 0.10. |
-| Request history | 0.10 | If the user recently mentioned planning or design in the same session, boost `/designer`. If they mentioned review, boost `/improve` (review is the default mode). |
-
-**Project Context Checks** (for the 0.30 project signal):
-1. `package.json` exists -- engineering domain hint -- boost `/run` and `/improve`
-2. File count in target path (if a path is mentioned) -- if >20 files mentioned or implied, boost `/team`; if <5, boost `/run`
-3. Current git branch name (run `git branch --show-current`):
-   - `feature/*`, `feat/*` branches -- boost `/run` (building something)
-   - `main`, `master`, `release/*` -- boost `/improve --mode review` (diff-aware review hint)
-   - `fix/*`, `hotfix/*`, `bugfix/*` -- boost `/run Fix...` or `/run --mode debug`
-4. `CLAUDE.md` or `.claude/` directory exists -- cAgents-aware project -- all commands available
-5. Recent session context -- if user previously asked about design or planning, boost `/designer`
-
-**How to apply the scoring mentally:**
-
-For each candidate command, walk through the 5 signals and assign a partial score (0.0 to the signal's max weight). Sum the partial scores. The command with the highest total wins. If two commands are within 0.05 of each other, the intent is genuinely ambiguous -- present both options and ask the user to clarify.
-
-Always check for multi-command workflows (e.g., "plan then build" suggests `/designer` then `/run`). When a pipeline is detected, recommend the first command and mention the follow-up.
+Score each candidate command using the 5 weighted signals from @reference/scoring-engine.md (keyword 0.30, project context 0.30, complexity 0.20, explicit intent 0.10, request history 0.10). Recommend the highest scorer; if two are within 0.05, present both and ask the user to clarify. Always check for multi-command pipelines (e.g., "plan then build" -> `/designer` then `/run`).
 
 **Output format:**
 ```
@@ -211,7 +185,7 @@ See @reference/comparison-tables.md for the full comparison matrices.
 
 When the user runs `/helper --flags <command>`, show the complete flag reference for that command.
 
-First, Read the SKILL.md for this command (see Dynamic SKILL.md Reading section below) to ensure current information.
+First, Read the SKILL.md for this command (see @reference/v11-migration.md for paths) to ensure current information.
 
 See @reference/flag-summaries.md for consolidated flag tables.
 
@@ -301,25 +275,6 @@ Available Commands:
 | /helper     | Command guide and reference    | Interactive | 1-2 min    | Learning commands, comparing options  |
 ```
 
-### Passthroughs (handled inside /run)
-
-| Form | Replaces (V10.26.x) | Landed in |
-|------|---------------------|-----------|
-| `/run context show\|init\|update\|clear` | `/context` | V10.26.9 |
-| `/run --mode debug` | `/debug` | V10.26.11 |
-
-### Removed in V11.0.0
-
-`/review`, `/optimize`, `/context`, `/debug` were removed in V11.0.0
-after a 10-patch deprecation window. See
-[`docs/MIGRATION-V11.md`](../../../docs/MIGRATION-V11.md) for command-by-
-command replacements. Summary:
-
-- `/review <target>` → `/improve --mode review <target>` (or just `/improve <target>`; `review` is the default mode)
-- `/optimize <target>` → `/improve --mode optimize <target>`
-- `/context <subcmd>` → `/run context <subcmd>`
-- `/debug <request>` → `/run --mode debug <request>`
-
 Then present the **Quick Decision Guide**:
 
 ```
@@ -343,95 +298,11 @@ Need more detail? Try:
   /helper --examples   -- Real-world usage examples
 ```
 
-## Command Detail Summaries
+For per-command summaries (what/when/key flags/workflow), see @reference/command-summaries.md.
 
-### /run - Universal Workflow Engine
+## V10 -> V11 Migration
 
-**What**: The general-purpose command that handles any task. It detects the domain (engineering, creative, business, people, service), classifies complexity via a 9-signal scoring system, selects the optimal pipeline path (minimal/medium/full), coordinates specialist agents, and validates results. Think of it as "do this thing for me."
-
-**When to use**:
-- Fix a bug, add a feature, refactor code
-- Write content (stories, copy, documentation)
-- Create business deliverables (budgets, campaigns, reports)
-- Answer complex questions requiring expert analysis
-- Any task that needs to get DONE
-
-**Key flags**: `--interactive` (ask preferences), `--dry-run` (preview plan), `--quiet` (skip plan display), `--team` (parallel execution), `--domain` (force domain), `--tier` (force complexity)
-
-**Workflow**: routing -> planning -> coordinating -> executing -> validating
-
-### /designer - Interactive Design Engine
-
-**What**: A structured 4-phase design tool that transforms ideas into implementation-ready documents through guided questioning. It explores your problem, generates alternatives, refines details, and produces artifacts (specs, diagrams, user stories). Think of it as "help me think this through before building."
-
-**When to use**:
-- Planning a new feature before writing code
-- Designing system architecture
-- Exploring options when you are unsure of the approach
-- Creating design documents, tech specs, or story bibles
-- When you want to THINK before you BUILD
-
-**Key flags**: `--resume {id}` (continue session), `--template <name>` (use template), `--focus <area>` (focus direction), `--detail <level>` (detail depth)
-
-**Workflow**: Discovery (15%) -> Ideation (25%) -> Refinement (35%) -> Specification (25%) -> Build offer
-
-### /improve - Unified Review + Optimize Engine
-
-**What**: A single 7-state state machine (`SCOPING → MEASURING → DETECTING → PLANNING → EXECUTING → VALIDATING → REPORTING`) with a `--mode` selector that owns code, docs, and content review plus measurable optimization. Replaces the V10 `/review` and `/optimize` skills with one engine and one shared baseline. Think of it as "audit, improve, and prove the delta."
-
-**When to use**:
-- Audit code, docs, content, infrastructure (`/improve --mode review`)
-- Speed up slow code, reduce bundle size, cut costs with measured before/after metrics (`/improve --mode optimize`)
-- Do both with one shared baseline (`/improve --mode full --scope <path>`)
-
-**Modes**:
-
-| Mode | What it does |
-|------|--------------|
-| `review` (default) | 3-group parallel specialist review; optional auto-fix; 12 prime directives |
-| `optimize` | Opportunity scanners; ROI rank; atomic apply; before/after benchmark delta |
-| `full` | Review → optimize with shared baseline; unified `improve_report.md` |
-
-**Key flags**: `--mode review|optimize|full` (select branch), `--scope <path>` (required for `full`), `--baseline` / `--suppress <id>` (review baselines), `--benchmark auto|lighthouse|k6|hyperfine` (optimize benchmark tool), `--dry-run` (preview), `--auto-fix safe` (review only)
-
-**Workflow**: SCOPING → MEASURING → DETECTING → PLANNING → EXECUTING → VALIDATING → REPORTING
-
-> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see [docs/MIGRATION-V11.md](../../../docs/MIGRATION-V11.md). Migrate `/review` to `/improve --mode review`, `/optimize` to `/improve --mode optimize`, `/context` to `/run context`, and `/debug` to `/run --mode debug`._
-
-### /team - Parallel Team Execution
-
-**What**: A parallel execution layer that decomposes large tasks into work items and runs them simultaneously using Claude Code's built-in agent teams. Each teammate executes their work item via `/run` in their own context (with optional tmux split pane display). Think of it as "/run but parallel for big tasks."
-
-**When to use**:
-- Large features with 3+ independent components
-- Tier 3+ complex workflows that benefit from parallelism
-- Time-sensitive delivery requiring speedup
-- Multi-part tasks where pieces can run independently
-
-**Key flags**: `--dry-run` (preview team composition), `--members <N>` (limit team size), `--lead <agent>` (specify team lead), `--teammate-mode tmux|in-process` (display mode), `--display` (show team communication)
-
-**Workflow**: Decompose -> Create Team -> Spawn Teammates -> Parallel /run per item -> Aggregate Results
-
-### /org - Corporate Hierarchy Orchestration
-
-**What**: A corporate hierarchy orchestrator that coordinates multi-domain initiatives. A CEO (inline) engages C-suite agents for domain analysis, conducts deliberation with objection rounds, produces a strategic brief, then delegates to sequential /team invocations per domain (dependency-ordered). For single-domain tasks, it shortcuts to /run or /team. Think of it as "coordinate across multiple business domains."
-
-**When to use**:
-- Multi-domain initiatives (engineering + marketing + hiring)
-- Product launches requiring cross-domain coordination
-- Strategic-level tasks with risk registers and dependency management
-- Company restructures or major migrations spanning domains
-
-**Key flags**: `--dry-run` (preview routing), `--quick` (skip deliberation), `--domains <d1,d2,...>` (force domains), `--resume <id>` (resume session)
-
-**Workflow**: CEO Routing -> C-Suite Analysis -> Deliberation -> Strategic Brief -> Sequential /team per domain -> Integration
-
-## V11.0 Migration Notes
-
-V11.0.0 removed `/review`, `/optimize`, `/context`, and `/debug` after a
-10-patch deprecation window. See
-[`docs/MIGRATION-V11.md`](../../../docs/MIGRATION-V11.md) for the full
-migration guide. Quick lookup:
+V11.0.0 removed `/review`, `/optimize`, `/context`, and `/debug` after a 10-patch deprecation window. Quick lookup:
 
 | V10 invocation | V11 replacement |
 |----------------|-----------------|
@@ -440,6 +311,8 @@ migration guide. Quick lookup:
 | `/optimize <target> --review-after` | `/improve --mode full --scope <target>` |
 | `/context init\|show\|update\|clear` | `/run context init\|show\|update\|clear` |
 | `/debug <bug>` | `/run --mode debug <bug>` |
+
+See @reference/v11-migration.md for the full catalog including passthroughs and dynamic SKILL.md reading rules.
 
 ## Command Integration Pipelines
 
@@ -455,44 +328,6 @@ Commands are designed to work together:
 /org -> /run              Single-domain: strategic brief then /run
 ```
 
-## Dynamic SKILL.md Reading
-
-When answering questions about specific skills, **Read the actual SKILL.md file at runtime** rather than relying solely on static reference docs. This ensures answers are always current.
-
-### Skill File Paths
-
-| Skill | SKILL.md Path |
-|-------|---------------|
-| /run | `.claude/skills/run/SKILL.md` |
-| /designer | `.claude/skills/designer/SKILL.md` |
-| /improve | `.claude/skills/improve/SKILL.md` |
-| /team | `.claude/skills/team/SKILL.md` |
-| /org | `.claude/skills/org/SKILL.md` |
-| /helper | `.claude/skills/helper/SKILL.md` |
-
-### What to Extract by Query Type
-
-| Query Type | Where to Look | What to Extract |
-|------------|--------------|-----------------|
-| Flags / options | frontmatter `argument-hint` + "Argument Handling" / "Key flags" sections | Flag names, descriptions, examples |
-| Capabilities | "Key Capabilities", "What it does", workflow sections | Feature list, capabilities |
-| When to use | "When to use" / "When NOT to use" sections | Decision criteria |
-| Examples | "Examples" sections + `reference/examples.md` if present | Concrete usage examples |
-| Workflow | "Workflow", state machine diagrams, phase descriptions | Step-by-step process |
-
-### Response Format
-
-- State "Read live from `{path}`" at the top of flag/capability answers
-- Format 3+ flags as a table: Flag | Description | Example
-- For fallback: state "Using static reference (SKILL.md not found at `{path}`)"
-
-### Fallback Behavior
-
-If a SKILL.md cannot be read:
-1. Fall back to `reference/flag-summaries.md` for flags
-2. Fall back to `reference/command-details.md` for capabilities/examples
-3. Always note when using fallback: "(static reference -- may not reflect latest version)"
-
 ## Rules
 
 1. **NEVER execute commands** - Only explain and recommend. The user types the command themselves.
@@ -500,7 +335,7 @@ If a SKILL.md cannot be read:
 3. **Provide copy-paste examples** - Users should be able to copy examples directly.
 4. **Acknowledge uncertainty** - If the user's intent is ambiguous, present 2-3 options with tradeoffs.
 5. **Reference integration** - Always mention when commands work together.
-6. **Stay current** - Reference the actual flags and features from the SKILL.md files.
+6. **Stay current** - Read the actual SKILL.md files when answering specific flag/capability questions; see @reference/v11-migration.md for paths and fallback rules.
 7. **Be encouraging** - Guide users to try commands, not overwhelm them.
 
 ---

@@ -3,6 +3,7 @@ name: universal-self-correct
 archetype: core
 description: "Use when an agent is stuck, when 3+ tool failures occur in sequence, or when the 6-step recovery ladder needs activation."
 metadata:
+  version: "1.0.0"
   vibe: Fixes what the validators flagged before anyone has to ask
   tier: infrastructure
   effort: high
@@ -16,7 +17,7 @@ metadata:
     - pattern_learning
     - subagent_recovery
   maxTurns: 40
-allowed-tools: Read Grep Glob Write Edit Bash Agent TodoWrite
+allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Universal Self-Correct

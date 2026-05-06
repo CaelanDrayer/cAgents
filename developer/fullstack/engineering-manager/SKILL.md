@@ -4,6 +4,7 @@ archetype: developer
 branch: fullstack
 description: "Use when work requires coordination across multiple engineers, when a complex task needs decomposition into parallel subtasks, or when a tier 3-4 project needs strategic oversight and risk assessment."
 metadata:
+  version: "1.0.0"
   vibe: Coordinates the orchestra so every engineer plays their best note
   tier: controller
   effort: high
@@ -45,7 +46,7 @@ metadata:
       type: coordinates
     - name: security-lead
       type: coordinates
-allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite
+allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 <example>
@@ -132,7 +133,7 @@ Escalate critical decisions beyond agent authority.
 1. Read plan.yaml for objectives and work items
 2. Break objectives into specific questions
 3. Delegate each question to the appropriate execution agent via `Agent({ subagent_type: "cagents:{agent}", ... })`
-4. **MANDATORY: Call TodoWrite after identifying execution agents** (see below)
+4. **MANDATORY: Call TaskCreate after identifying execution agents** (see below)
 5. Collect answers from specialists
 6. Synthesize answers into a coherent solution
 7. **Run reviewer loop** for each work item (see below)
@@ -172,10 +173,22 @@ implementation_tasks:
     confidence: 0.9
 ```
 
-## MANDATORY: TodoWrite for Execution Agent Visibility
+## MANDATORY: TaskCreate (interactive) or TodoWrite (SDK only) for Execution Agent Visibility
 
-When you identify which execution agents you will delegate to, you MUST call TodoWrite to give the user visibility. This is not optional. Call TodoWrite BEFORE you start delegating questions.
+When you identify which execution agents you will delegate to, you MUST call TaskCreate to give the user visibility. This is not optional. Call TaskCreate BEFORE you start delegating questions.
 
+**Interactive Claude Code (preferred — TaskCreate/TaskUpdate):**
+```
+TaskCreate({ subject: "[/run] Route request to domain and tier", description: "Routing" })   # mark completed via TaskUpdate
+TaskCreate({ subject: "[/run] Plan objectives and select controller", description: "Planning" })
+TaskCreate({ subject: "[engineering-manager] Coordinate: ask questions and synthesize" })
+TaskCreate({ subject: "[{exec_agent_1}] {specific_task_1}" })
+TaskCreate({ subject: "[{exec_agent_2}] {specific_task_2}" })
+TaskCreate({ subject: "[/run] Validate outputs and quality" })
+TaskUpdate({ taskId: "<id>", status: "in_progress" })   # update as work progresses
+```
+
+**SDK / non-interactive equivalent (TodoWrite):**
 ```
 TodoWrite([
   {"content": "[/run] Route request to domain and tier", "status": "completed", "id": "route"},
@@ -189,7 +202,7 @@ TodoWrite([
 
 Replace `{exec_agent_1}`, `{exec_agent_2}` etc. with the actual agent names (e.g., `backend-developer`, `qa-tester`, `security-specialist`) and `{specific_task_1}` with what that agent will do.
 
-As each execution agent completes its work, update their TodoWrite entry to `completed` and mark the next as `in_progress`.
+As each execution agent completes its work, update their task entry (TaskUpdate) to `completed` and mark the next as `in_progress`.
 
 ---
 

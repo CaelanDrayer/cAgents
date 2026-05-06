@@ -3,6 +3,7 @@ name: character-psychologist
 archetype: writer
 description: "Use when analyzing character motivations, diagnosing inconsistencies in character behavior, mapping psychological profiles, or ensuring emotional authenticity in character responses."
 metadata:
+  version: "1.0.0"
   vibe: "Knows why your characters do what they do, even when they don't"
   tier: execution
   effort: medium

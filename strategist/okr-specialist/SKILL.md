@@ -3,6 +3,7 @@ name: okr-specialist
 archetype: strategist
 description: "Use when setting OKRs, defining objectives and key results, tracking goal progress, or coaching teams on OKR methodology and alignment."
 metadata:
+  version: "1.0.0"
   vibe: "Turns ambitious goals into measurable, achievable milestones"
   tier: execution
   effort: medium

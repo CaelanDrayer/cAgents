@@ -3,6 +3,7 @@ name: business-development-manager
 archetype: strategist
 description: "Use when developing strategic partnerships, exploring new market opportunities, evaluating alliances, or planning business expansion."
 metadata:
+  version: "1.0.0"
   vibe: "Opens doors that competitors don't know exist"
   tier: execution
   effort: medium

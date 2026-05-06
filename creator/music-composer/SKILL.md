@@ -3,6 +3,7 @@ name: music-composer
 archetype: creator
 description: "Use when composing game music, designing adaptive music systems, developing leitmotifs, or creating scores that loop, layer, and branch in response to gameplay."
 metadata:
+  version: "1.0.0"
   vibe: Scores the moments that make the audience feel everything
   tier: execution
   effort: medium
