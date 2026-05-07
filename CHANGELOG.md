@@ -10,6 +10,32 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.2.3] - 2026-05-07
+
+### Fixed
+- **hooks.md missing `skill-size-monitor.cjs` documentation**. The hook was added
+  in V11.1.13 (squashed commit 37b321e9 — "Skill-size monitor hook + per-agent
+  version-field test"), is registered in `.claude/settings.json`, and fires on
+  PreToolUse[Write|Edit] for any SKILL.md write — but `.claude/rules/core/hooks.md`
+  never mentioned it: not in the count claim, not in the Hook Type Overview table's
+  PreToolUse row, and not in the Active Hooks section. Users and contributors
+  reading hooks.md could not discover this hook exists. Added:
+  - count claim updated (28→29 .cjs / 25→26 unique registered)
+  - Hook Type Overview row for PreToolUse extended with `skill-size-monitor.cjs`
+  - new Active Hooks subsection with thresholds, behavior, and `CAGENTS_SKILL_*` env overrides
+
+### Added
+- **Regression test** `tests/regressions/hooks-md-skill-size-monitor.test.js` —
+  asserts hooks.md mentions skill-size-monitor.cjs by name, has the current
+  count claim, AND that EVERY .cjs file in `.claude/hooks/` is mentioned in
+  hooks.md. The fourth sub-test catches future hook additions that ship without
+  doc-coverage.
+
+Bug: skill-size-monitor.cjs hook undocumented in hooks.md
+Root cause: V11.1.13 added the hook but did not update hooks.md
+Test added: tests/regressions/hooks-md-skill-size-monitor.test.js (4 sub-tests)
+Could have caught by: hook-doc-coverage CI check that walks .claude/hooks/ vs hooks.md
+
 ## [11.2.2] - 2026-05-07
 
 ### Fixed
