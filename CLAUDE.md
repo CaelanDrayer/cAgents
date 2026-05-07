@@ -81,16 +81,16 @@ quality/        # completion, validation-framework, implicit-discovery (5 files)
 - **Tier 2**: Controllers (coordinate via batch delegation)
 - **Tier 3**: Execution agents (implement work items)
 - **Tier 4**: Support agents (foundational services)
-- **Total**: 243 agents across 9 builder-role archetypes
+- **Total**: 255 agents across 9 builder-role archetypes
 - **Execution**: Event-driven pipeline with progressive paths (minimal/medium/full), revision routing, reviewer loops
 
 **Canonical structure (V11.1.0+) — 9 archetypes**:
 | Archetype | Dir | Agents | Capability |
 |-----------|-----|-------:|------------|
-| **Developer** | `developer/` | 31 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
-| **Operator** | `operator/` | 81 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
+| **Developer** | `developer/` | 33 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
+| **Operator** | `operator/` | 87 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
 | **Advisor** | `advisor/` | 30 | Legal, health, education, personal (4 branches) |
-| **Analyst** | `analyst/` | 27 | Data, BI, research, social-science |
+| **Analyst** | `analyst/` | 31 | Data, BI, research, social-science |
 | **Creator** | `creator/` | 11 | Visual artists, designers, audiovisual creators |
 | **Writer** | `writer/` | 26 | Copy, narrative, technical writing, editorial |
 | **Strategist** | `strategist/` | 9 | Product owners, portfolio managers, planners |
@@ -377,14 +377,14 @@ cAgents/
 +-- CLAUDE.md                # Main project memory (this file)
 +-- .claude/
 |   +-- skills/              # Skills (org, run, team, designer, improve, helper)
-|   +-- hooks/               # 28 .cjs files (25 hooks + utils + launcher + eval CLI)
+|   +-- hooks/               # 29 .cjs files (26 hooks + utils + launcher + eval CLI)
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (29 files: 25 top-level across 5 categories + 1 README + 3 in resources/)
 |   +-- settings.json        # Hook registration + permissions + env
-+-- developer/               # Developer archetype (31 agents — backend/frontend/fullstack/infrastructure/quality)
-+-- operator/                # Operator archetype (81 agents — support/business-ops/people-ops/marketing-sales/content)
++-- developer/               # Developer archetype (33 agents — backend/frontend/fullstack/infrastructure/quality)
++-- operator/                # Operator archetype (87 agents — support/business-ops/people-ops/marketing-sales/content)
 +-- advisor/                 # Advisor archetype (30 agents — legal/health/education/personal)
-+-- analyst/                 # Analyst archetype (27 agents — data, BI, research, social science)
++-- analyst/                 # Analyst archetype (31 agents — data, BI, research, social science)
 +-- creator/                 # Creator archetype (11 agents — visual, design, audiovisual)
 +-- writer/                  # Writer archetype (26 agents — copy, narrative, technical, editorial)
 +-- strategist/              # Strategist archetype (9 agents — product owners, portfolio, planning)
@@ -400,7 +400,7 @@ cAgents/
 
 ## Hooks System
 
-**Architecture**: CJS-only hooks with `createHook()` factory. 28 .cjs files = 25 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI. See @.claude/rules/core/hooks.md for full documentation.
+**Architecture**: CJS-only hooks with `createHook()` factory. 29 .cjs files = 26 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI. See @.claude/rules/core/hooks.md for full documentation.
 
 ## Standalone Contract (V11.2.0+)
 
@@ -462,7 +462,7 @@ cAgents is distributed as a Claude Code plugin. See `.claude-plugin/plugin.json`
 ```
 
 **Key Manifest Fields**:
-- `agents`: Array of SKILL.md paths (243 agents registered)
+- `agents`: Array of SKILL.md paths (255 agents registered)
 - `skills`: Path to skills directory (`.claude/skills/`)
 - `hooks`: Path to settings.json for hook registration
 - `settings.json`: Default settings applied when plugin loads (under `agent` key for subagent defaults)
@@ -489,7 +489,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 
 ## V10.18.0 Highlights
 
-- **Vibe field on all 243 agents**: Personality one-liners for every agent in the catalog
+- **Vibe field on all 243 agents**: Personality one-liners for every agent in the catalog (V10.18.0 — total has since grown to 255)
 - **Agent export script**: `scripts/export-agents.sh` converts SKILL.md to Cursor rules, markdown, or bundle format
 - **Worktree isolation**: `/team` teammates can use `isolation: "worktree"` for parallel file safety
 - **Ambiguity scoring**: `/designer` tracks 4-dimension clarity score with readiness gate (< 20% to proceed)
@@ -506,16 +506,16 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 
 **Skills**: `/org`, `/run`, `/team`, `/designer`, `/improve`, `/helper` (in `.claude/skills/`; V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see `docs/MIGRATION-V11.md`)
 **Built-in**: `/memory`, `/init` (Claude Code native)
-**Agents**: 243 total across 9 archetypes (developer 31, operator 81, advisor 30, analyst 27, creator 11, writer 26, strategist 9, core 17, leadership 11)
+**Agents**: 255 total across 9 archetypes (developer 33, operator 87, advisor 30, analyst 31, creator 11, writer 26, strategist 9, core 17, leadership 11)
 **Domain Overlay (legacy routing/config only)**: 13 dirs (engineering, creative, business, growth, people, service, shared, science, health, education, personal, arts, trades) hold `config/domain_overrides.yaml` — no SKILL.md files
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/domain_overrides.yaml`, `cagents-memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (session YAML contract for AgentPath)
-**Hooks**: 28 .cjs files = 25 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI
+**Hooks**: 29 .cjs files = 26 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
-**Tests**: `npm test` runs 790 Vitest tests across 46 files (hooks + config validation + regression tests)
-**Version**: 11.2.1
+**Tests**: `npm test` runs 858+ Vitest tests across 60+ files (hooks + config validation + regression tests)
+**Version**: 11.2.2
 
 ## Troubleshooting
 

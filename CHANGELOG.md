@@ -10,6 +10,29 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.2.2] - 2026-05-07
+
+### Fixed
+- **CLAUDE.md count drift sweep**: multiple count claims drifted from code
+  reality after accumulated bumps without doc sync.
+  - "243 agents" → 255 agents (drift +12)
+  - Archetype distribution: developer 31→33, operator 81→87, analyst 27→31
+  - "28 .cjs files = 25 unique registered hooks" → "29 .cjs files = 26 unique"
+    (skill-size-monitor.cjs was added in V11.1.13 but not counted)
+  - "790 Vitest tests across 46 files" → "858+ tests across 60+ files"
+
+### Added
+- **Regression test** `tests/regressions/claude-md-counts-current.test.js` —
+  asserts CLAUDE.md contains the CURRENT agent count, hook .cjs file count, and
+  per-archetype distribution. If a future bump adds an agent or hook without
+  syncing CLAUDE.md, this test fails and forces the doc update. Prevents
+  count-drift from re-accumulating silently.
+
+Bug: CLAUDE.md count claims out of sync with reality
+Root cause: agent/hook/test additions in recent bumps did not propagate to CLAUDE.md
+Test added: tests/regressions/claude-md-counts-current.test.js (3 sub-tests)
+Could have caught by: count-validation test in CI alongside validate-versions.sh
+
 ## [11.2.1] - 2026-05-07
 
 ### Fixed
