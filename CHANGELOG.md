@@ -10,6 +10,30 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.2.4] - 2026-05-07
+
+### Fixed
+- **CLAUDE.md domain_overrides count clarification**. `validate-agents.sh`
+  reports "15 files checked" while CLAUDE.md states "13 legacy domain dirs".
+  The +2 is not drift: `core/` and `leadership/` archetype roots also ship
+  `config/domain_overrides.yaml` files (for pipeline/C-suite routing tables).
+  Without explanation, future readers either assumed drift or "fixed" something
+  that wasn't broken. Added a one-sentence clarification to the Project Overview
+  `**Config**:` paragraph naming both archetype-root configs and reconciling the
+  13-vs-15 delta as by-design.
+
+### Added
+- **Regression test** `tests/regressions/claude-md-domain-overrides-count.test.js` —
+  verifies all 13 legacy domain dirs still have `domain_overrides.yaml`,
+  verifies `core/` and `leadership/` archetype-root configs exist, and asserts
+  CLAUDE.md contains a co-located passage tying "15", "core", "leadership", and
+  "domain_overrides" together. Locks the clarification in place.
+
+Bug: 13-vs-15 domain_overrides count discrepancy unexplained in CLAUDE.md
+Root cause: archetype-root configs added without doc note
+Test added: tests/regressions/claude-md-domain-overrides-count.test.js (3 sub-tests)
+Could have caught by: domain-config doc audit (now codified)
+
 ## [11.2.3] - 2026-05-07
 
 ### Fixed

@@ -99,7 +99,7 @@ quality/        # completion, validation-framework, implicit-discovery (5 files)
 
 **Domain overlay (legacy — routing/config only)**: 13 legacy domain dirs (`engineering/`, `creative/`, `business/`, `growth/`, `people/`, `service/`, `shared/`, `science/`, `health/`, `education/`, `personal/`, `arts/`, `trades/`) survive on disk **without** SKILL.md files; they hold `config/domain_overrides.yaml` with router keywords + controller catalogs that the planner still consumes. Do NOT delete these — they are not orphans.
 
-**Config**: Each legacy domain has `{domain}/config/domain_overrides.yaml` with `controller_catalog` and `router_keywords`.
+**Config**: Each legacy domain has `{domain}/config/domain_overrides.yaml` with `controller_catalog` and `router_keywords`. Two archetype roots — `core/` and `leadership/` — also ship `config/domain_overrides.yaml` files (used for pipeline/C-suite routing tables), so `scripts/ci/validate-agents.sh` reports "15 files checked" (13 legacy + 2 archetype-root). The 13-vs-15 delta is by design, not drift: the legacy-domain count remains 13.
 
 ## CRITICAL: Aggressive Delegation
 
@@ -515,7 +515,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 858+ Vitest tests across 60+ files (hooks + config validation + regression tests)
-**Version**: 11.2.3
+**Version**: 11.2.4
 
 ## Troubleshooting
 
