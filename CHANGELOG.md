@@ -10,6 +10,28 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.2.1] - 2026-05-07
+
+### Fixed
+- **CRITICAL: removed broken symlink** at `.claude/skills/commit-changes` →
+  `../../skills/commit-changes`. The target never existed in the cAgents repo
+  or the parent workspace. The symlink was added in V11.1.13 (squashed commit)
+  intending to point to a workspace-level `skills/commit-changes/` that was
+  never created. The V11.1.13 commit message itself enumerates "6 skills
+  (designer/helper/improve/org/run/team)" — not including commit-changes.
+  Plugin loaders walking the skills directory could error on the broken link.
+
+### Added
+- **Regression test** `tests/skills/no-broken-symlinks.test.js` — walks
+  `.claude/skills/`, `.claude/hooks/`, `.claude/rules/`, and `.claude-plugin/`
+  and fails if any symlink target does not exist. Prevents this class of bug
+  from re-entering the shipped plugin tree.
+
+Bug: broken symlink in shipped plugin's skills directory
+Root cause: V11.1.13 introduced symlink with non-existent target
+Test added: tests/skills/no-broken-symlinks.test.js (4 sub-tests, one per scanned dir)
+Could have caught by: structural integrity test on .claude/ tree
+
 ## [11.2.0] - 2026-05-06
 
 Reverts the v11.1.12 "MCP consumer pattern" experiment and codifies a
