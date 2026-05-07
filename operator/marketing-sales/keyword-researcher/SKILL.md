@@ -26,8 +26,6 @@ metadata:
       type: coordinated_by
     - name: on-page-seo-auditor
       type: collaborates_with
-    - name: content-marketer
-      type: collaborates_with
     - name: copywriter
       type: collaborates_with
 allowed-tools: Read Grep Glob Write Edit Bash WebFetch WebSearch

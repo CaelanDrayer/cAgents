@@ -10,6 +10,34 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.2.5] - 2026-05-07
+
+### Fixed
+- **4 stale `related_agents` references resolved**:
+  - `developer/quality/playwright-test-engineer/SKILL.md` — removed `qa-tester`
+    (qa-lead already in list).
+  - `developer/quality/security-owasp/SKILL.md` — replaced `qa-tester` with
+    `qa-lead` (canonical).
+  - `operator/marketing-sales/keyword-researcher/SKILL.md` — removed
+    `content-marketer` (copywriter already in list, covers the role).
+  - `operator/marketing-sales/seo-strategist/SKILL.md` — replaced
+    `content-marketer` with `copywriter` (canonical for content collaboration).
+
+  All four were emitted as `WARN` by `validate-agents.sh` for some time;
+  warnings cleared (Total agents: 255, Errors: 0, Warnings: 0).
+
+### Added
+- **Regression test** `tests/regressions/related-agents-references-resolve.test.js`:
+  walks every `SKILL.md` in the 9 archetype roots, parses each agent's
+  `related_agents:` block, and asserts every referenced name resolves to an
+  existing agent. Catches future stale references the moment they're added —
+  much stronger than the existing WARN-level check in validate-agents.sh.
+
+Bug: 4 stale `related_agents` references to non-existent agents (qa-tester, content-marketer)
+Root cause: agents renamed/never-created without sweeping references; WARN-only validation let drift accumulate
+Test added: tests/regressions/related-agents-references-resolve.test.js (1 sub-test, walks all 255 agents)
+Could have caught by: promoting validate-agents.sh related_agents check from WARN to ERROR (now codified by regression test)
+
 ## [11.2.4] - 2026-05-07
 
 ### Fixed

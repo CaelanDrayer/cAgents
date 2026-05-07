@@ -38,8 +38,6 @@ metadata:
   related_agents:
     - name: qa-lead
       type: coordinates
-    - name: qa-tester
-      type: collaborates_with
     - name: frontend-developer
       type: reviews
     - name: accessibility-checker

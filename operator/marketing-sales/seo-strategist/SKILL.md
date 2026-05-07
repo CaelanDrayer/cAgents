@@ -49,7 +49,7 @@ metadata:
       type: coordinates
     - name: seo-specialist
       type: collaborates_with
-    - name: content-marketer
+    - name: copywriter
       type: collaborates_with
     - name: marketing-strategist
       type: collaborates_with

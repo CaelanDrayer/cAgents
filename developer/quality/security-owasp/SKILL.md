@@ -37,7 +37,7 @@ metadata:
       type: collaborates_with
     - name: code-reviewer
       type: augments
-    - name: qa-tester
+    - name: qa-lead
       type: collaborates_with
 allowed-tools: Read Grep Glob Bash
 ---
