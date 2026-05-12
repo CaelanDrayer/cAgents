@@ -10,6 +10,38 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.2.6] - 2026-05-12
+
+### Fixed
+- **Standalone-contract regression test added** (Q-001 from the v11.2.x
+  improvement-pass fix queue). New file `tests/regressions/standalone-contract.test.js`
+  enforces the V11.2.0 contract via 29 unit + integration assertions.
+
+Bug: V11.2.0 introduced the standalone contract (no MCP servers, no `mcp__*`
+     in `allowed-tools`, no `Elicitation*` hook registrations, no
+     MCP-suggesting prose in load-bearing docs) but did not add a regression
+     test. The contract could be silently re-violated by a future PR without
+     CI catching it.
+Root cause: missing regression test — the V11.2.0 mandate at CLAUDE.md
+     ("Bug-driven test mandate" — Rule 5 of the Standalone Contract) was
+     satisfied for prose but not for code.
+Test added: `tests/regressions/standalone-contract.test.js` — Vitest suite
+     using the function-extraction + string-concat pattern. Helper-function
+     unit tests prove the violation detectors work (synthetic-input fixtures
+     where contract-violation tokens like `mcp__`, `mcpServers`, and
+     `Elicitation` are assembled via string concat so they appear only as
+     test fixtures, never as declarations in production files). Production-
+     tree integration tests prove the current tree is clean
+     (`.claude-plugin/plugin.json`, `.mcp.json`, all 9 archetype roots,
+     `.claude/skills/`, `.claude/settings.json`). Failing-before evidence
+     captured by short-circuiting `scanForMcpServersBlock` and confirming 2
+     unit tests fail; see `cagents-memory/sessions/run_v11-2-6-fix-q001_260512_001/outputs/wave-3/failing-before.log`
+     and `passing-after.log` (29/29 passing after restore).
+Could have caught by: a CI regression test of the V11.2.0 contract — if such
+     a test had existed, the V11.1.12 consumer-pattern PR would have failed
+     CI immediately instead of requiring three follow-up bumps (V11.1.14,
+     V11.1.15, V11.2.0) to revert.
+
 ## [11.2.5] - 2026-05-07
 
 ### Fixed
