@@ -92,7 +92,6 @@ Quality management specialist ensuring quality across ALL domains, including dom
 Quality is everyone's responsibility. Establish standards, measure continuously, improve relentlessly. Prevention over detection.
 
 See @resources/quality-management-frameworks.md for quality systems and improvement methods.
-See @resources/quality-templates.md for improvement frameworks.
 
 ## Controller Delegation Protocol
 

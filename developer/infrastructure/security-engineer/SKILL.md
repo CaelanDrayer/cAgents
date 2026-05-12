@@ -52,7 +52,6 @@ Security expert identifying and preventing vulnerabilities, scanning for securit
 See @resources/owasp-top10.md for vulnerability patterns and OWASP compliance checks.
 See @resources/secure-coding.md for secure patterns.
 See @resources/review-checklist.md for review process.
-See @resources/security-checks.md for detection patterns.
 
 ## Review Criteria
 

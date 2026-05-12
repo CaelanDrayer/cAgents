@@ -84,4 +84,3 @@ Marketing analytics, measurement, and advanced data science.
 - Forecast accuracy
 
 See @resources/analytics-templates.md for reporting frameworks.
-See @resources/data-science-templates.md for modeling frameworks.

@@ -10,6 +10,49 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.2.8] - 2026-05-12
+
+### Fixed
+- Resolve 11 broken `@resources/` references across 5 agents (Q-003 / F-agents-001,
+  bundles dedup'd F-agents-002). The fix-queue entry estimated 6 affected agents;
+  empirical count was 5 (security-owasp held 6 of the 11 refs, accounting for the
+  delta).
+
+Bug: 11 `@resources/X.md` references across 5 SKILL.md files pointed to files
+     that never existed (or were never migrated during the v11.1 builder-role-tree
+     migration). Three-Tier Progressive Disclosure (`.claude/rules/core/skill-format.md`)
+     mandates these refs resolve, but no test enforced this — broken refs slipped past
+     `scripts/ci/validate-agents.sh` (which doesn't walk `@resources/` tokens).
+Root cause: missing CI gate. The v11.1 migration moved agents into archetype
+     directories; resources/ subdirs were migrated inconsistently. No regression
+     test caught the resulting drift, so refs accumulated over multiple bumps.
+Test added: `tests/regressions/agent-resources-references-resolve.test.js` —
+     walks all 9 archetype roots, extracts every `@resources/X.md` token from
+     every SKILL.md, asserts each resolves to a real file at
+     `{agent_dir}/resources/{filename}`. Failing-before evidence in
+     `cagents-memory/sessions/run_v11-2-8-fix-q003_260512_001/outputs/wave-5/failing-before.log`
+     (lists the 11 broken refs); passing-after in
+     `cagents-memory/sessions/run_v11-2-8-fix-q003_260512_001/outputs/wave-5/passing-after.log`.
+     Default action for each ref was OPTION B (remove the broken pointer) to
+     honor tiny-bump atomicity — creating 11 new tier-3 resource docs is
+     L-effort and exceeds one-coherent-change.
+Could have caught by: a CI regression test on `@resources/` reference
+     resolution — exactly what this PR adds. The test is now a permanent
+     CI gate.
+
+### Changed
+- Removed broken `@resources/` refs from:
+  - `analyst/business-analyst/SKILL.md` (2 refs: `requirements-gathering-framework.md`, `gap-analysis-methods.md`)
+  - `developer/infrastructure/security-engineer/SKILL.md` (1 ref: `security-checks.md`)
+  - `developer/quality/security-owasp/SKILL.md` (6 refs: `owasp-top-10-detail.md`,
+    `llm-security-detail.md`, `agentic-ai-security.md`, `asvs-5-checklist.md`,
+    `language-quirks.md`, `audit-workflow.md`)
+  - `operator/business-ops/quality-manager/SKILL.md` (1 ref: `quality-templates.md`)
+  - `operator/marketing-sales/marketing-analyst/SKILL.md` (1 ref: `data-science-templates.md`)
+  Each ref was a single "See @resources/X.md for ..." line removed cleanly. The
+  surrounding body content (tables, checklists, prose) remains self-contained in
+  every case; no agent left visibly underspecified after removal.
+
 ## [11.2.7] - 2026-05-12
 
 ### Fixed

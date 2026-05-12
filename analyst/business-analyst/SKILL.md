@@ -88,8 +88,6 @@ Requirements gathering, gap analysis, acceptance criteria, and solution design.
 - Requirements clarity and measurability
 
 See @resources/ba-templates.md for documentation frameworks.
-See @resources/requirements-gathering-framework.md for elicitation techniques, documentation templates, and prioritization methods.
-See @resources/gap-analysis-methods.md for current/desired state analysis, impact assessment, and gap tracking frameworks.
 
 ## Controller Delegation Protocol
 

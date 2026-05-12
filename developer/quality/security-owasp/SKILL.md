@@ -68,8 +68,6 @@ When invoked, return findings as a structured report with severity tags (CRITICA
 | A09 | Logging Failures | Log security events, structured format, alerting |
 | A10 | Exception Handling | Fail-closed, hide internals, log with context |
 
-See @resources/owasp-top-10-detail.md for per-category audit checklists, secure code patterns, and unsafe vs. safe examples (SQL injection, command injection, password storage, access control, error handling, fail-closed).
-
 ## OWASP Top 10 for LLM Applications (2025)
 
 | # | Risk | Key Mitigation |
@@ -84,8 +82,6 @@ See @resources/owasp-top-10-detail.md for per-category audit checklists, secure 
 | LLM08 | Vector and Embedding Weaknesses | Tenant-isolate vector stores, sign chunks against indirect prompt injection |
 | LLM09 | Misinformation | Cite sources, surface confidence, require grounding for high-stakes answers |
 | LLM10 | Unbounded Consumption | Rate-limit per user/key, cap tokens and tool calls per request, hard timeouts |
-
-See @resources/llm-security-detail.md for per-category audit patterns, code examples (prompt-injection prevention, output handling, excessive agency, unbounded consumption), and an LLM application security checklist.
 
 ## Agentic AI Security (OWASP 2026)
 
@@ -102,8 +98,6 @@ See @resources/llm-security-detail.md for per-category audit patterns, code exam
 | ASI09 Human-Agent Trust Exploitation | Over-trust leveraged to manipulate users | Label AI content, user education, verification steps |
 | ASI10 Rogue Agents | Compromised agents acting maliciously | Behavior monitoring, kill switches, anomaly detection |
 
-See @resources/agentic-ai-security.md for the agent security audit checklist and review patterns for tool surfaces, credential scoping, and human-approval gates.
-
 ## ASVS 5.0 Tier Mapping
 
 | Level | Use For | Key Requirements |
@@ -112,11 +106,11 @@ See @resources/agentic-ai-security.md for the agent security audit checklist and
 | L2 | Sensitive data | All L1 + MFA, key management, comprehensive logging, full input validation |
 | L3 | Critical systems | All L1/L2 + HSM keys, threat-modeling docs, advanced monitoring, pentest validation |
 
-When auditing, identify the application tier first, then apply the matching requirement set. See @resources/asvs-5-checklist.md for the per-level requirement breakdown.
+When auditing, identify the application tier first, then apply the matching requirement set.
 
 ## Language-Specific Anti-Pattern Scan
 
-Quick-reference pitfalls per language. The full table (20 languages with watch-for patterns and unsafe/safe code samples) lives in @resources/language-quirks.md.
+Quick-reference pitfalls per language.
 
 | Language | Top Risks |
 |----------|-----------|
@@ -142,8 +136,6 @@ For any language not listed above, apply the deep-analysis mindset: research its
 4. **Evidence capture**: every finding cites `file:line` and shows the offending snippet plus the safe alternative.
 5. **Severity tagging**: CRITICAL (must fix, blocks deploy), HIGH (should fix), MEDIUM (recommend fix), LOW (consider fix), INFO (observation).
 6. **Report**: structured findings list with OWASP-control mapping, remediation guidance, and a confidence score.
-
-See @resources/audit-workflow.md for the full audit-and-report template, severity rubric, and example outputs.
 
 ## Output Format
 
