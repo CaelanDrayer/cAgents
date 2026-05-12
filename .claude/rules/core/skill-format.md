@@ -422,59 +422,17 @@ The `ExitWorktree` tool (CC 2.1.72) is available within worktree-isolated subage
 
 Skills from `--add-dir` directories are also loaded and support live change detection.
 
-### Skill Chaining (V10.18.0)
+### Skill Chaining (removed in v11.2.10)
 
-> **Status: ASPIRATIONAL** -- The `output_contract` and `input_from` frontmatter fields described below are designed but not yet implemented in any skill. No skill currently declares an `output_contract` or `input_from` field. The `--from-review` and `--from-designer` flags are not yet functional. This section documents the intended design for future implementation.
-
-Skills can declare output contracts and consume other skills' outputs, enabling pipelines like `/review -> /run --from-review -> /team`.
-
-**Output Contract** (in skill frontmatter):
-```yaml
----
-name: review
-output_contract:
-  format: yaml
-  file: "workflow/review_report.yaml"
-  schema:
-    findings: "array of {file, line, severity, message, fix}"
-    summary: "string"
-    quality_score: "number 0-100"
----
-```
-
-**Input From** (consuming another skill's output):
-```yaml
----
-name: run
-input_from:
-  review:
-    file: "workflow/review_report.yaml"
-    flag: "--from-review"
-    inject_as: "review_findings"
-  designer:
-    file: "workflow/design_document.yaml"
-    flag: "--from-designer"
-    inject_as: "design_spec"
----
-```
-
-**Chaining Flags**:
-| Flag | Source Skill | What It Does |
-|------|-------------|-------------|
-| `--from-review` | `/review` | Reads review findings, auto-creates fix work items |
-| `--from-designer` | `/designer` | Reads design doc, uses as implementation spec |
-
-**How chaining works**:
-1. Source skill writes output to its declared `output_contract.file`
-2. Consumer skill checks for the file when invoked with the chaining flag
-3. If file exists, its content is injected into the enrichment context as `inject_as`
-4. The planner/decomposer uses the injected context to inform work items
-
-**Example pipeline**:
-```bash
-/review src/auth/          # Produces review_report.yaml with 5 findings
-/run Fix review findings --from-review  # Reads findings, creates fix work items
-```
+The `output_contract` / `input_from` skill-chaining pattern (previously
+described here with example YAML and a chaining-flag table) was prototyped in
+V10.18.0 but never implemented — no skill ever declared `output_contract` or
+`input_from` frontmatter blocks, and the corresponding /run flags silently
+no-op'd at runtime. The flag advertisements and design prose were removed in
+v11.2.10 (Q-005 of the v11.2.x improvement pass). The `--brief` flag, consumed
+from /org, remains the sole implemented skill-chain mechanism. See
+`cagents-memory/sessions/team_v11-2-improvement-pass_260507_001/outputs/wave-1/`
+for the design-vs-implementation gap analysis that triggered the removal.
 
 ## Example: Full Controller SKILL.md (v11.1.0+)
 

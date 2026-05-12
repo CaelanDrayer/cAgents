@@ -53,15 +53,13 @@ This lets /org track multi-domain progress and synthesize the cross-domain outco
 
 ## Skill Chaining via --brief
 
-The brief mechanism is one of three skill chaining patterns supported by /run:
-
-| Flag | Source Skill | Injected As |
-|------|-------------|-------------|
-| `--brief` | `/org` | `strategic_brief` (enriched_context.yaml) |
-| `--from-review` | `/review` | `review_findings` (auto-creates fix work items) |
-| `--from-designer` | `/designer` | `design_spec` (used as implementation blueprint) |
-
-For all chaining flags, /run looks for the source file in the current or parent session, injects content into the orchestrator's enriched context, and stores a `chained_from` reference in `instruction.yaml`.
+`--brief` is currently the only implemented skill-chaining flag for /run. The
+broader output_contract/input_from chaining pattern (previously paired with
+two additional review- and designer-fed chaining flags) was prototyped in
+V10.18.0 but never implemented; the corresponding flag advertisements were
+removed in v11.2.10 — see CHANGELOG entry for context. /run reads the brief
+file, injects its content into the orchestrator's enriched context, and stores
+a `chained_from` reference in `instruction.yaml`.
 
 ## Example Org -> Run Flow
 

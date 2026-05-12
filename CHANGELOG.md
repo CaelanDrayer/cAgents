@@ -10,6 +10,65 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.2.10] - 2026-05-12
+
+### Fixed
+- Remove non-functional `--from-review` and `--from-designer` flag advertisements
+  from /run (Q-005 / F-skills-001). The underlying `output_contract` / `input_from`
+  skill-chaining feature was tagged ASPIRATIONAL in
+  `.claude/rules/core/skill-format.md` and never implemented; the flags silently
+  no-op'd when used. OPTION B from triage (remove dead advertisements) chosen
+  over OPTION A (implement) because implementation exceeds tiny-bump atomicity.
+
+Bug: `--from-review` and `--from-designer` were advertised in three /run views
+     (`.claude/skills/run/SKILL.md` argument-hint + Step 1 body parser,
+     `.claude/skills/run/reference/flags.md` flag table,
+     `.claude/skills/run/reference/strategic-brief-integration.md` chaining
+     table) and in `.claude/rules/core/skill-format.md` § Skill Chaining
+     (V10.18.0). The underlying feature was never implemented — no skill
+     declares an `output_contract` or `input_from` frontmatter block — so the
+     flags silently no-op'd at runtime.
+Root cause: V10.18.0 designed the chaining pattern and added flag
+     advertisements assuming implementation would follow; implementation never
+     landed. V11.2.9 (Q-004) reconciled the three views but kept the dead flags
+     advertised. Q-005 removes them as the natural follow-up.
+Test added: `tests/regressions/no-aspirational-skill-chaining.test.js` —
+     scans the three /run views and `.claude/rules/core/skill-format.md`,
+     asserts no occurrence of `--from-review` or `--from-designer`. The test
+     will fail if anyone re-adds these flag advertisements without re-adding
+     the underlying implementation. Failing-before evidence at
+     `cagents-memory/sessions/run_v11-2-10-fix-q005_260512_001/outputs/test-before-fix.txt`
+     (9/9 failures at HEAD before fix); passing-after at `outputs/test-after-fix.txt`
+     (9/9 passing). The test is now a permanent CI gate.
+Could have caught by: a contract test on /run skill (set-equality across
+     argument-hint, body parser, and flags.md flag declarations — added in
+     v11.2.9 as Q-004) combined with a "no orphaned flags" lint rule asserting
+     every advertised flag has working code paths and a non-ASPIRATIONAL
+     implementation.
+
+### Changed
+- `.claude/skills/run/SKILL.md` argument-hint: dropped the two flags. Autocomplete
+  now reflects the 15 implemented flags instead of 17.
+- `.claude/skills/run/SKILL.md` Step 1 body parser: dropped both flags from the
+  value-flags enumeration and removed the "Special flag handling" bullet that
+  pointed at `@reference/strategic-brief-integration.md` for skill chaining.
+- `.claude/skills/run/reference/flags.md` Complete Flag Table: removed the two
+  ASPIRATIONAL rows. Table drops from 17 rows to 15.
+- `.claude/skills/run/reference/strategic-brief-integration.md` "Skill Chaining
+  via --brief" section: 3-row table (`--brief`, `--from-review`, `--from-designer`)
+  collapsed into a paragraph documenting `--brief` as the sole implemented
+  chaining flag, with a pointer to the v11.2.10 CHANGELOG for the removal
+  rationale.
+- `.claude/rules/core/skill-format.md` § Skill Chaining (V10.18.0): the ~55-line
+  ASPIRATIONAL section (output_contract/input_from prose, two example YAML
+  blocks, chaining-flag table, "How chaining works" steps, example pipeline)
+  replaced with a ~10-line postmortem note pointing to the v11.2.x
+  improvement-pass wave-1 findings for the design-vs-implementation gap analysis.
+
+The Q-004 cross-view consistency regression test
+(`tests/regressions/run-skill-flag-consistency.test.js`) remains green: the
+three views still agree, on the reduced 15-flag set instead of 17.
+
 ## [11.2.9] - 2026-05-12
 
 ### Fixed

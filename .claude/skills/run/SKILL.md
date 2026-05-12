@@ -5,8 +5,8 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "11.2.9"
-  argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--from-review] [--from-designer] [--mode <standard|debug>]"
+  version: "11.2.10"
+  argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--mode <standard|debug>]"
   user-invocable: "true"
   context: "none"
 allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TaskCreate, TaskUpdate, TaskList, TaskGet, TodoWrite
@@ -86,7 +86,7 @@ See @reference/task-tracking-rules.md for the full task tracking protocol, forma
 
 ## Step 1: Parse Arguments
 
-Parse `$ARGUMENTS` for flags (`--interactive`, `--dry-run`, `--quiet`, `--stream`, `--skip-preflight`, `--team`, `--analytics`) and value flags (`--template`, `--domain`, `--tier`, `--confidence`, `--brief`, `--resume`, `--session`, `--from-review`, `--from-designer`, `--mode`).
+Parse `$ARGUMENTS` for flags (`--interactive`, `--dry-run`, `--quiet`, `--stream`, `--skip-preflight`, `--team`, `--analytics`) and value flags (`--template`, `--domain`, `--tier`, `--confidence`, `--brief`, `--resume`, `--session`, `--mode`).
 
 The request is everything before the first `--` flag.
 
@@ -97,7 +97,6 @@ Special flag handling:
 - `--resume <session_id>`: Load session from `progress.md` and resume from last checkpoint.
 - `--session <session_dir>`: Pre-enriched session (from /team). Skip to pre-enrichment detection in Step 3.
 - `--brief <path>`: Strategic brief from /org. See @reference/strategic-brief-integration.md.
-- `--from-review` / `--from-designer`: Skill chaining. See @reference/strategic-brief-integration.md.
 - `--mode debug`: Enables debug-mode prefix injection for the controller. See @reference/debug-mode-prompt.md.
 
 See @reference/flags.md for the complete flag reference with defaults and examples.
