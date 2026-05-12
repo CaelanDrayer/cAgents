@@ -10,6 +10,48 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.2.9] - 2026-05-12
+
+### Fixed
+- Reconcile /run skill flag enumerations across three views: SKILL.md frontmatter
+  `argument-hint`, Step 1 body-parsing prose, and `reference/flags.md` canonical
+  table (Q-004 / F-skills-002).
+
+Bug: The /run skill advertised three different flag sets across its three views
+     of the same source-of-truth list. `argument-hint` (autocomplete display)
+     enumerated 10 flags; the Step 1 body parser enumerated 17 flags; the
+     canonical `reference/flags.md` Complete Flag Table enumerated 13 flags.
+     The drift hid 7 documented, functional flags from autocomplete
+     (`--stream`, `--skip-preflight`, `--template`, `--domain`, `--tier`,
+     `--confidence`, `--mode`) and left 4 flags undocumented in the canonical
+     reference (`--brief`, `--session`, `--from-review`, `--from-designer`).
+Root cause: no regression test enforced consistency between the three views.
+     Flags were added to the body parser and frontmatter on different commits
+     without back-syncing the table or autocomplete hint.
+Test added: `tests/regressions/run-skill-flag-consistency.test.js` — parses
+     all three sources, asserts pairwise set equality across every pair.
+     Failing-before evidence captured at
+     `cagents-memory/sessions/run_v11-2-9-fix-q004_260512_001/outputs/wave-6/failing-before.log`
+     (3 failed assertions naming all 11 drift flags); passing-after at
+     `outputs/wave-6/passing-after.log`. The test is now a permanent CI gate.
+Could have caught by: a CI regression test on cross-view flag-set consistency
+     for skill SKILL.md files (this PR adds it as a permanent gate).
+
+### Changed
+- Added 7 flags to `.claude/skills/run/SKILL.md` frontmatter `argument-hint`:
+  `--stream`, `--skip-preflight`, `--template <name>`, `--domain <name>`,
+  `--tier <N>`, `--confidence <N>`, `--mode <standard|debug>`. Autocomplete
+  now reflects the full 17-flag set the body parser already accepts.
+- Added 4 flag rows to `.claude/skills/run/reference/flags.md` Complete Flag
+  Table: `--session <dir>`, `--brief <path>`, `--from-review`, `--from-designer`.
+  Each row carries the same Type/Description/Default/Example shape as the
+  surrounding table. `--from-review` and `--from-designer` are tagged
+  ASPIRATIONAL in their description per `.claude/rules/core/skill-format.md`
+  Skill Chaining (the underlying `output_contract`/`input_from` feature is not
+  yet implemented; Q-005 in the fix-queue removes the aspirational
+  advertisements). For Q-004, they remain documented as currently-parsed
+  flags so the three views agree.
+
 ## [11.2.8] - 2026-05-12
 
 ### Fixed

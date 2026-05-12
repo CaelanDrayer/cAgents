@@ -38,6 +38,10 @@ function parseCommandFlags(commandString) {
 | `--confidence <N>` | Number | Set detection confidence threshold | 0.7 | `/run Request --confidence 0.6` |
 | `--team` | Boolean | Use parallel team execution via Agent Teams | false | `/run Build feature --team` |
 | `--resume <id>` | String | Resume an interrupted workflow session | none | `/run --resume run_20260207_143022` |
+| `--session <dir>` | String | Pre-enriched session directory (used by /team teammates) | none | `/run Implement feature --session cagents-memory/sessions/team_xyz_260512_001` |
+| `--brief <path>` | String | Strategic brief from /org (path to brief YAML) | none | `/run Launch product --brief cagents-memory/sessions/org_xyz/outputs/strategic_brief.yaml` |
+| `--from-review` | Boolean | Consume `/improve --mode review` output (ASPIRATIONAL — see skill-format.md Skill Chaining) | false | `/run Fix review findings --from-review` |
+| `--from-designer` | Boolean | Consume `/designer` output (ASPIRATIONAL — see skill-format.md Skill Chaining) | false | `/run Build design --from-designer` |
 | `--analytics` | Boolean | Display pipeline analytics dashboard and exit | false | `/run --analytics` |
 | `--analytics domain` | String | Show per-domain analytics breakdown | none | `/run --analytics domain` |
 | `--mode <value>` | String | Pipeline execution mode (V10.26.11+). Accepts `standard` (default) or `debug`. `debug` enables the 4-phase debugging methodology on controllers and validator. Unknown values are rejected. | standard | `/run Reproduce flaky test --mode debug` |
