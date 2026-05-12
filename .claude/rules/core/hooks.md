@@ -178,6 +178,11 @@ createHook('MyHook', async (input) => {
 - **Output**: systemMessage with concise goal reminder (mission + domain + coordination status)
 - **No-op when**: No active session, no plan.yaml, or writing to planning files
 
+#### PreToolUse[Bash|Write|Edit]: approval-gate.cjs
+- **Matcher**: `Bash|Write|Edit`
+- **Purpose**: Enforce explicit user-approval gates before sensitive Bash/Write/Edit operations land. Acts as a thin policy layer over `permissions.allow` / `permissions.deny` in `.claude/settings.json` — when a tool call is neither explicitly allowed nor explicitly denied, surface a structured approval prompt rather than silently passing through.
+- **Behavior**: returns `systemMessage` for advisory cases; non-blocking by default. Hard denials remain the responsibility of `bash-validator.cjs` (Bash) and `secret-detection.cjs` (Write/Edit).
+
 #### PreToolUse[Agent]: model-routing-advisor.cjs
 - **Matcher**: `Agent`
 - **Purpose**: Advisory hook that suggests optimal model selection before agent spawns
@@ -252,6 +257,14 @@ createHook('MyHook', async (input) => {
 #### Notification: notification.cjs
 - **Purpose**: Log notifications to daily files with 1MB rotation
 - **Creates**: `cagents-memory/_system/logs/notifications_{date}.log`
+
+#### UserPromptSubmit: delegation-enforcer.cjs
+- **Purpose**: Enforce the aggressive-delegation rule. When a user prompt looks like a direct request to implement work without going through a skill (`/run`, `/team`, `/org`, `/designer`, `/improve`), surface a systemMessage reminding the model to delegate via the appropriate skill rather than handle the task directly.
+- **Output**: Advisory systemMessage (does not block the prompt). Pairs with `delegation-enforcer` doc in CLAUDE.md § CRITICAL: Aggressive Delegation.
+
+#### UserPromptSubmit: magic-keywords.cjs
+- **Purpose**: Natural-language routing suggestions. Recognizes intent keywords in user prompts ("build X", "review Y", "design Z", "audit", "optimize") and emits a systemMessage suggesting the appropriate skill (`/run`, `/improve --mode review`, `/designer`, `/improve --mode optimize`).
+- **Output**: Advisory systemMessage (does not block the prompt). Complements `delegation-enforcer.cjs` — one nudges toward delegation, the other names which skill to delegate to.
 
 ### New Event Hooks
 

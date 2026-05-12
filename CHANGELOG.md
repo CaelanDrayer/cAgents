@@ -10,6 +10,53 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.2.7] - 2026-05-12
+
+### Fixed
+- Move `skill-size-monitor` hook from `PostToolUse[Write|Edit]` to
+  `PreToolUse[Write|Edit]` in `.claude/settings.json` so the 900-line
+  block threshold is functional (Q-002 from the v11.2.x improvement-pass
+  fix queue; bundles dedup'd finding F-hooks-002).
+
+Bug: `.claude/hooks/skill-size-monitor.cjs` returns `{ deny: true }` when
+     a `SKILL.md` exceeds 900 lines. The hook was registered under
+     `PostToolUse`, which `.claude/rules/core/hooks.md` documents as
+     "Cannot block" (only `PreToolUse` can block tool calls). The block
+     threshold was therefore a silent no-op: warnings still surfaced via
+     `systemMessage`, but the hard 900-line block never actually denied
+     a write.
+Root cause: registration/documentation drift — `hooks.md` prose correctly
+     documented the hook as `PreToolUse[Write|Edit]`, but
+     `.claude/settings.json` registered it as `PostToolUse[Write|Edit]`.
+     No regression test enforced consistency between the two.
+Test added: `tests/regressions/hooks-md-event-mapping.test.js` — parses
+     `.claude/settings.json` and `.claude/rules/core/hooks.md`, asserts
+     bidirectional consistency on `(event, matcher, hook_name)` tuples.
+     This catches any future drift, not just the skill-size-monitor
+     case. Failing-before evidence: at v11.2.6, the test FAILED with 4
+     settings-registered / 1 docs-only mismatches. Passing-after: at
+     v11.2.7, all 6 tuple-mapping assertions pass after (a) moving
+     `skill-size-monitor` to PreToolUse and (b) adding the missing
+     `####` subsection headings for `approval-gate.cjs`,
+     `delegation-enforcer.cjs`, and `magic-keywords.cjs` in `hooks.md`
+     (those hooks were already in the Hook Types Overview table but
+     lacked dedicated subsections). Failing-before and passing-after
+     logs in
+     `cagents-memory/sessions/run_v11-2-7-fix-q002_260512_001/outputs/wave-4/`.
+Could have caught by: a CI regression test on hook event/matcher
+     consistency between `settings.json` registrations and `hooks.md`
+     subsection headings — which is exactly what this PR adds. Bundles
+     dedup'd finding F-hooks-002 from the v11.2.x audit.
+
+### Changed
+- `.claude/rules/core/hooks.md` now has `####` subsection headings for
+  three hooks that were previously only mentioned in the Hook Types
+  Overview table: `approval-gate.cjs` (PreToolUse[Bash|Write|Edit]),
+  `delegation-enforcer.cjs` (UserPromptSubmit), and `magic-keywords.cjs`
+  (UserPromptSubmit). These are documentation additions only — the
+  hooks themselves have been registered and operational for several
+  prior bumps.
+
 ## [11.2.6] - 2026-05-12
 
 ### Fixed
