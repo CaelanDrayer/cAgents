@@ -10,6 +10,75 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.2.11] - 2026-05-12
+
+### Fixed
+- Trim `.claude/rules/quality/resources/validation-checklist-29.md` from 126 lines
+  to 35 lines, describing only the 5 actively-enforced Phase-4 cross-cutting
+  checks (25-29). The 23 aspirational checks (Phases 1-3) move verbatim to
+  `docs/FUTURE_VALIDATION_FRAMEWORK.md` (Q-006 / F-docs-003). The file lives
+  under `.claude/rules/`, so it auto-loaded into every agent's context on every
+  session — the trim removes ~91 lines of context-budget bloat per session for
+  validation checks that did not actually run in practice.
+
+Bug: `.claude/rules/quality/resources/validation-checklist-29.md` documented a
+     29-check four-phase validation framework but only 5 of those checks (Phase
+     4, IDs 25-29) were ever wired up to hooks (`subagent-stop-tracker.cjs`,
+     `post-write-validator.cjs`, `attention-injection.cjs`,
+     `verify-completion.cjs`). The other 23 (Phases 1-3, IDs 1-24) were
+     explicitly labeled "ASPIRATIONAL" and depended on agents voluntarily
+     running validation logic that did not happen in practice. The file's
+     Current Enforcement Status table already acknowledged this. Because the
+     file lives under `.claude/rules/quality/`, all 23 aspirational checks
+     shipped as agent-context bloat on every session.
+Root cause: The 29-check framework was designed as a target architecture in an
+     earlier phase but the graduation pipeline (P1: check 16 → P2: check 20 →
+     P3: checks 17/21/22 → P4: checks 1-3/6-7) was never executed. The
+     aspirational content stayed in the auto-loaded rules tree rather than
+     moving to `docs/` (which does not auto-load) until a check actually
+     graduated to enforced.
+Test added: `tests/regressions/validation-checklist-active.test.js` — asserts
+     the active file is < 100 lines, mentions exactly the 5 active check IDs
+     (25, 26, 27, 28, 29), contains no `ASPIRATIONAL` substring, and has no
+     `Current Enforcement Status` or `Graduation Roadmap` sections. Also asserts
+     `docs/FUTURE_VALIDATION_FRAMEWORK.md` exists and contains the moved
+     Phase-1/Phase-2/Phase-3 tables plus the Current Enforcement Status and
+     Graduation Roadmap sections. Failing-before evidence: 6/7 tests fail at
+     HEAD (v11.2.10) — the file is 126 lines, has 9 ASPIRATIONAL tokens, and
+     retains both deferred-section headings. Passing-after: 7/7 pass after the
+     trim.
+Could have caught by: unit test on validation-checklist file structure — a
+     line-count gate and ASPIRATIONAL-token-count gate on any file inside
+     `.claude/rules/` would have caught this pattern (and would catch future
+     regressions of the same kind in other rule files).
+
+### Changed
+- `.claude/rules/quality/resources/validation-checklist-29.md`: 126 → 35 lines.
+  Heading renamed from "29-Check Comprehensive Validation Framework
+  (Aspirational)" to "Active Validation Checklist (5 checks)". Retains the
+  filename `validation-checklist-29.md` so existing `@resources/` references at
+  `.claude/rules/quality/completion.md:193` and `.claude/rules/README.md` keep
+  resolving. Drops the Current Enforcement Status table, Graduation Roadmap,
+  Phase 1/2/3 tables, aspirational Severity Classification, aspirational
+  Summary Table, and any "ASPIRATIONAL" framing prose.
+- Active 5 checks (25-29) preserved verbatim in the Phase-4 Cross-Cutting
+  table. Severity Classification trimmed to just the active checks (HIGH for
+  25-27/29, MEDIUM for 28). Key Principles trimmed to just the 3 active-only
+  principles.
+
+### Added
+- `docs/FUTURE_VALIDATION_FRAMEWORK.md`: NEW. Receives the 23 ASPIRATIONAL
+  checks (Phases 1-3) verbatim, plus the Current Enforcement Status table and
+  Graduation Roadmap that describe how each aspirational check could graduate
+  to enforced status. File lives under `docs/`, which does NOT auto-load into
+  agent context — the content is preserved for future graduation work without
+  paying ongoing context budget.
+- `tests/regressions/validation-checklist-active.test.js`: NEW. 7 assertions
+  enforce the active-file structure (line count, exact 5 checks, no
+  ASPIRATIONAL token, no deferred sections, active-scope heading) and the
+  presence/structure of `docs/FUTURE_VALIDATION_FRAMEWORK.md`. Now a permanent
+  CI gate against re-bloat regression of the rules tree.
+
 ## [11.2.10] - 2026-05-12
 
 ### Fixed
