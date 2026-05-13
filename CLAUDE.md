@@ -487,21 +487,6 @@ cAgents is distributed as a Claude Code plugin. See `.claude-plugin/plugin.json`
 
 See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 
-## V10.18.0 Highlights
-
-- **Vibe field on all 243 agents**: Personality one-liners for every agent in the catalog (V10.18.0 — total has since grown to 255)
-- **Agent export script**: `scripts/export-agents.sh` converts SKILL.md to Cursor rules, markdown, or bundle format
-- **Worktree isolation**: `/team` teammates can use `isolation: "worktree"` for parallel file safety
-- **Ambiguity scoring**: `/designer` tracks 4-dimension clarity score with readiness gate (< 20% to proceed)
-- **Dynamic scaling**: `/team` lead can add/remove teammates mid-wave based on workload
-- **Guard command pattern**: Controllers run automated guards (tests, lint) after reviewer PASS
-- **When-stuck protocol**: `universal-self-correct` has 6-step recovery ladder for stuck agents
-- **Anti-pattern enforcement**: `code-reviewer` scans for language-specific forbidden patterns with quality scoring
-- **Crash recovery taxonomy**: 5 typed failure classes with specific recovery strategies in hooks + self-correct
-- **Simplicity override**: `code-reviewer` enforces "equal results + less code = KEEP"
-- **Skill chaining**: `/run --from-review` and `/run --from-designer` for output-to-input pipelines
-- **Commit-before-verify**: Documented pattern for clean rollback on test failure
-
 ## Quick Reference
 
 **Skills**: `/org`, `/run`, `/team`, `/designer`, `/improve`, `/helper` (in `.claude/skills/`; V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see `docs/MIGRATION-V11.md`)
@@ -515,7 +500,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 810+ Vitest tests across 72+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 11.2.14
+**Version**: 11.2.15
 
 ## Troubleshooting
 

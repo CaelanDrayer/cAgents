@@ -10,6 +10,22 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.2.15] - 2026-05-13
+
+### Fixed
+- Removed stale `## V10.18.0 Highlights` section from CLAUDE.md (Q-010 /
+  F-docs-002).
+  Bug: CLAUDE.md still advertised V10.18.0 highlights despite the project
+  being on V11.2.x — readers got pre-V11 release notes presented as current.
+  Root cause: section was added in V10.18.0 and never pruned across the
+  V10→V11 major bump.
+  Test added: `tests/regressions/claude-md-no-stale-version-highlights.test.js`
+  — parses the Quick Reference `**Version**:` line to extract the current
+  version, finds every `## V<N>.<M>.<P> Highlights` heading, and asserts
+  none is more than 2 minor versions behind the current version (cross-major
+  comparison is an automatic fail since major bumps reset the minor).
+  Could have caught by: regression test on documentation-currency invariants.
+
 ## [11.2.14] - 2026-05-12
 
 ### Fixed
