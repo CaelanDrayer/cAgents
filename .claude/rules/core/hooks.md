@@ -6,7 +6,7 @@ paths:
 
 # cAgents Hook System
 
-V10.18.0 CJS-only hook architecture with 29 .cjs files = 26 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI across 17 event types (of 24 total Claude Code event types), `createHook()` factory pattern, agent audit trail with completion summaries, attention injection for goal refresh, magic keywords (UserPromptSubmit), model routing advisor (PreToolUse[Agent]), session init gate (PreToolUse[Agent]), approval gate (PreToolUse[Bash|Write|Edit]), delegation enforcer (UserPromptSubmit), controller delegation validator (PreToolUse[Write|Edit]), skill-size monitor (PreToolUse[Write|Edit]), sentinel gate factchecking, plan-scoped learning capture, context auto-check, clean team lifecycle (`continue:false` + `stopReason` for TeammateIdle/TaskCompleted), and resilient path resolution. Supports command, http, prompt, and agent hook types, async execution, and matcher-based filtering.
+29 .cjs files implementing 26 unique hooks across 17 event types via the `createHook()` factory. See the Hook Types Overview below for per-event mapping.
 
 ## Architecture
 

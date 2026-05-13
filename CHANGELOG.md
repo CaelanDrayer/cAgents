@@ -10,6 +10,31 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.2.12] - 2026-05-12
+
+### Fixed
+- Trim `.claude/rules/core/hooks.md` intro paragraph (line 9) from a 540-char
+  per-event enumeration to a 2-line summary directing readers to the Hook Types
+  Overview table beneath it. The previous intro duplicated every
+  hook-event-matcher tuple already documented in the table, requiring dual-edit
+  on every hook add/remove and creating a drift surface. The trim removes
+  ~770 chars of redundant prose from a rules file that auto-loads into every
+  agent's context on every session.
+
+Bug: `.claude/rules/core/hooks.md` intro paragraph at line 9 duplicates the
+     Hook Types Overview table beneath it, requiring dual-edit on every hook
+     add/remove (drift surface).
+Root cause: Intro evolved into a 540-char enumeration over many versions
+     instead of staying a 2-line summary. No regression test enforced an
+     upper bound on intro prose length.
+Test added: `tests/regressions/hooks-md-intro-length.test.js` asserts intro
+     paragraph (first non-heading prose after frontmatter and h1) is < 250
+     chars and contains no per-event `[Matcher]` tuple enumeration. Failing
+     before fix (intro 923 chars, contained `PreToolUse[Agent]`), passing
+     after.
+Could have caught by: regression test on `.claude/rules/core/hooks.md` prose
+     structure.
+
 ## [11.2.11] - 2026-05-12
 
 ### Fixed
