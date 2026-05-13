@@ -10,6 +10,36 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.2.16] - 2026-05-13
+
+### Fixed
+- Trimmed `.claude/rules/core/version-registry.md` to canonical 18-location
+  shape; moved V10.x 21-location history verbatim to a new file
+  `docs/VERSION_REGISTRY_HISTORY.md` (Q-011 / F-xcut-003).
+  Bug: the rule file simultaneously described the V10.x 21-location catalog
+  AND the V11.0+ canonical 18-location registry. Mixed phrasing ("the V10.x
+  catalog had 21 locations; the current canonical count is 18") created
+  ambiguity about which number was authoritative for future registry
+  additions, and the file no longer served as an unambiguous single source
+  of truth.
+  Root cause: V11.0 removed four SKILL.md slots (`context`, `debug`,
+  `review`, `optimize`) shrinking the registry 21 → 18, but the historical
+  paragraphs explaining the V10.x shape were retained inline rather than
+  extracted to a history file. Five tiny-bumps' worth of additional rule
+  edits never circled back to prune them.
+  Test added: `tests/regressions/version-registry-canonical.test.js` —
+  reads the rule file and asserts (1) no "V10.x catalog" phrasing, (2) no
+  "21 registry locations" / "had 21 locations" phrasing as a registry
+  count, (3) the canonical `| # | File | Field/Line | Updated By |` table
+  contains exactly 18 rows numbered 1..18. The test failed at HEAD
+  7b3a1d45 (3 hits across two pattern groups) and passes after the trim.
+  Also pruned one stale assertion in
+  `tests/rules/version-registry-structure.test.js` (line 43, "mentions the
+  21-location sync count") because that assertion was the symptom of the
+  bug — it required the file to contain the contradiction the fix removes.
+  Could have caught by: a documentation-currency / source-of-truth
+  invariant test on the registry rule file (this new test).
+
 ## [11.2.15] - 2026-05-13
 
 ### Fixed

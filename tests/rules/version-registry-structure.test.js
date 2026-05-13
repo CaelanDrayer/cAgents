@@ -40,11 +40,7 @@ describe('version-registry.md structure', () => {
     });
   }
 
-  it('mentions the 21-location sync count', () => {
-    expect(content).toMatch(/21 (?:total|registry|locations|locations\.)/);
-  });
-
-  it('registry table contains all numbered rows (V11.0: 18 locations)', () => {
+  it('registry table contains all numbered rows (V11.0+: 18 locations)', () => {
     // V11.0 shrunk the registry from 21 to 18 (removed 4 SKILL.md
     // entries for context/debug/review/optimize, kept CHANGELOG).
     // Updated for V11.0.0.

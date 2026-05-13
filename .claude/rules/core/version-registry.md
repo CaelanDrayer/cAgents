@@ -13,14 +13,9 @@ All locations where the cAgents version number appears. Keep ALL locations in sy
 
 **Last verified**: V11.1.4 — `scripts/ci/validate-versions.sh` reports `Checked 18/18 locations, 0 mismatches, 0 skipped`. The slot list in `validate-versions.sh` and `sync-versions.sh` matches this table exactly (paired-commit invariant enforced in v11.1.4).
 
-## Version Locations (18 total, V11.0)
+## Version Locations (18 total)
 
-V11.0 removed four skill SKILL.md version locations
-(`context`, `debug`, `review`, `optimize`) when the corresponding
-skill directories were deleted. The V10.x catalog had 21 locations;
-the current canonical count is 18. Any "21 registry locations"
-phrasing elsewhere in this file refers to the V10.x historical
-catalog and is retained only for back-reference.
+See `docs/VERSION_REGISTRY_HISTORY.md` for V10.x history.
 
 | # | File | Field/Line | Updated By |
 |---|------|-----------|------------|
@@ -77,9 +72,8 @@ Every tiny bump MUST satisfy all six atomicity criteria:
    contract (skill, agent, hook event, memory path). Deprecations are allowed
    (documented + warn-only); removals require a minor or major bump.
 5. **`scripts/sync-versions.sh` run**: all 18 registry locations agree with
-   the new version (the V10.x catalog had 21; the V11.0 canonical count is
-   18). `grep -r '"version"' .claude-plugin/ package.json` must show the
-   new version in every match.
+   the new version. `grep -r '"version"' .claude-plugin/ package.json` must
+   show the new version in every match.
 6. **Regression test per CLAUDE.md mandate**: per the Bug-Driven Testing
    mandate in `CLAUDE.md`, every bump that fixes a bug ships a failing-before
    / passing-after regression test. Feature or rule bumps ship a test that
@@ -99,10 +93,9 @@ Every tiny bump MUST satisfy all six atomicity criteria:
 - `scripts/ci/cagents-ci.sh tiny-bump` runs the `check_tiny_bump` stage that
   validates CHANGELOG.md has an entry for the new version, the 18 registry
   locations agree, and the non-sync diff is ≤5 files.
-- **Blocking as of V10.26.5**: the guard defaults to blocking (exit 6 on
-  violation). Set `CAGENTS_TINY_BUMP_BLOCK=0` to opt back into warn-only mode
-  for local experiments. Four clean warn-only runs (10.26.1 through 10.26.4)
-  preceded the promotion.
+- **Blocking**: the guard defaults to blocking (exit 6 on violation). Set
+  `CAGENTS_TINY_BUMP_BLOCK=0` to opt back into warn-only mode for local
+  experiments.
 - Reviewers cite this section when a bump violates the atomicity criteria.
 
 ## Related

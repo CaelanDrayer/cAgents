@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "11.2.15"
+  version: "11.2.16"
   argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--no-template] [--waves <n>]"
   user-invocable: "true"
   context: "fork"
