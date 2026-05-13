@@ -10,6 +10,35 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.2.13] - 2026-05-12
+
+### Fixed
+- Convert `.claude/skills/improve/SKILL.md` internal resource references
+  from the `[`reference/X.md`](reference/X.md)` markdown-link form to the
+  `@reference/X.md` form used by every other user-invocable cAgents skill
+  (`/run`, `/team`, `/org`, `/designer`, `/helper`). 18 occurrences across
+  lines 55–168 converted. The "Reference catalog" bullet list at lines
+  200–212 was left intact — those are listing-style file-name mentions,
+  not links, and are out of Q-008 scope.
+
+Bug: `/improve` SKILL.md was the lone outlier in the 6-skill catalog,
+     using `[`reference/X.md`](reference/X.md)` markdown-link form for 18
+     internal resource refs while the other 5 skills uniformly used the
+     `@reference/X.md` progressive-disclosure form.
+Root cause: `/improve` SKILL.md was authored before the `@path`
+     convention was adopted across skills; never refactored during the
+     V11.0 review/optimize consolidation that produced the current
+     `/improve` skill.
+Test added: `tests/regressions/skill-at-path-consistency.test.js` walks
+     `.claude/skills/{run,team,org,designer,improve,helper}/SKILL.md`
+     and asserts no SKILL.md uses the markdown-link form for reference
+     resources; also asserts `/improve` uses the `@reference/` form at
+     least once. Failing before fix (improve had 18 markdown-link refs,
+     0 `@reference/` refs); passing after (0 markdown-link refs, 18
+     `@reference/` refs).
+Could have caught by: contract test on `.claude/skills/` formatting
+     consistency — this regression test IS that contract test.
+
 ## [11.2.12] - 2026-05-12
 
 ### Fixed

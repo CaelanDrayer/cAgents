@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "11.2.12"
+  version: "11.2.13"
   argument-hint: "[target] [--mode review|optimize|full] [flags]"
   user-invocable: "true"
   context: "fork"
@@ -52,14 +52,14 @@ Parse `$ARGUMENTS` as a whitespace-separated token list. Extract the first
 Exit cleanly after printing. Do NOT spawn agents, create sessions, or write any
 files when the mode is rejected.
 
-See [`reference/flags.md`](reference/flags.md) for the full flag catalog.
+See @reference/flags.md for the full flag catalog.
 
 ## State Machine
 
 The unified pipeline is a 7-state linear machine with per-mode behavior
 markers. States are visited in order; a mode determines which work runs
 inside each state. Full per-state artifacts and transition rules live in
-[`reference/state-machine.md`](reference/state-machine.md).
+@reference/state-machine.md.
 
 ```
 SCOPING → MEASURING → DETECTING → PLANNING → EXECUTING → VALIDATING → REPORTING
@@ -82,7 +82,7 @@ All modes append to `_projects/{hash}/improve/history.yaml`.
 ### Transition Triggers
 
 Transitions are strict: a state completes when its required output files exist
-on disk. See [`reference/state-machine.md`](reference/state-machine.md) for
+on disk. See @reference/state-machine.md for
 per-state entry/exit conditions and the error-recovery table.
 
 ## Mode: Review
@@ -96,10 +96,10 @@ a quality-gate verdict.
 Canonical artifacts: `reports/aggregate.yaml`, `reports/auto_fixes.yaml`,
 `reports/quality_gates.yaml`, `reports/final_report.md`. Full per-state
 behavior, dry-run mode, and exit messaging live in
-[`reference/mode-review-detail.md`](reference/mode-review-detail.md).
-Specialist group spec: [`reference/agent-groups.md`](reference/agent-groups.md).
-Quality-gate formula: [`reference/quality-gates.md`](reference/quality-gates.md).
-12 directives: [`reference/directives.md`](reference/directives.md).
+@reference/mode-review-detail.md.
+Specialist group spec: @reference/agent-groups.md.
+Quality-gate formula: @reference/quality-gates.md.
+12 directives: @reference/directives.md.
 
 ## Mode: Optimize
 
@@ -109,10 +109,10 @@ opportunity that regresses tests or metrics.
 
 Canonical artifact: `outputs/optimization_report.md`. Full per-state
 behavior, scanner groups, ROI math, and exit messaging live in
-[`reference/mode-optimize-detail.md`](reference/mode-optimize-detail.md).
+@reference/mode-optimize-detail.md.
 Opportunity schema and per-scanner scope:
-[`reference/optimize-mode.md`](reference/optimize-mode.md). Phase
-contract source-of-truth: [`reference/phase-details.md`](reference/phase-details.md).
+@reference/optimize-mode.md. Phase
+contract source-of-truth: @reference/phase-details.md.
 
 ## Mode: Full
 
@@ -126,8 +126,8 @@ Findings`, `## Optimizations Applied`, `## Quality Gate`, and
 `## Baseline` sections. Full pipeline, perf-relevant filter predicate,
 shared-baseline contract, safety gate (`--scope` required), and
 `--dry-run` semantics live in
-[`reference/mode-full-detail.md`](reference/mode-full-detail.md) and
-[`reference/full-mode.md`](reference/full-mode.md).
+@reference/mode-full-detail.md and
+@reference/full-mode.md.
 
 ## Atomic Rollback Primitive
 
@@ -140,7 +140,7 @@ Callers do NOT inline git-snapshot logic. They invoke
 `apply_atomic(change)` and branch on the returned outcome
 (`kept | rolled_back | dead_letter`). Retry policy and dead-letter
 cap live at the call site — the primitive itself runs a single attempt.
-Full helper contract: [`reference/atomic-rollback.md`](reference/atomic-rollback.md).
+Full helper contract: @reference/atomic-rollback.md.
 
 ## Baselines, Benchmarks, and Suppression
 
@@ -151,9 +151,9 @@ default to `auto` heuristic detection (lighthouse for web, k6 for
 APIs, hyperfine for CLI). Suppression marks findings as
 non-counting toward the quality gate while keeping them visible in
 the report. Full flag detail and gate math:
-[`reference/baselines-and-benchmarks.md`](reference/baselines-and-benchmarks.md),
-[`reference/baseline-suppression.md`](reference/baseline-suppression.md),
-[`reference/baseline-migration.md`](reference/baseline-migration.md).
+@reference/baselines-and-benchmarks.md,
+@reference/baseline-suppression.md,
+@reference/baseline-migration.md.
 
 ## Pattern Effectiveness Tracking
 
@@ -164,8 +164,8 @@ Patterns with high historical success rates get a confidence bump;
 patterns that have rolled back repeatedly get penalized. Modifier
 update uses exponential smoothing to prevent single bad runs from
 over-correcting. Full scoring math, modifier update rule, and
-inspection commands: [`reference/pattern-effectiveness.md`](reference/pattern-effectiveness.md).
-Historical migration record: [`reference/pattern-effectiveness-migration.md`](reference/pattern-effectiveness-migration.md).
+inspection commands: @reference/pattern-effectiveness.md.
+Historical migration record: @reference/pattern-effectiveness-migration.md.
 
 ## Output Contract
 

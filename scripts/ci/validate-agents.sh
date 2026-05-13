@@ -2,7 +2,7 @@
 #
 # cAgents Agent Schema Validation
 # Validates all agent SKILL.md files across all 9 archetype roots
-# Version: 11.2.12
+# Version: 11.2.13
 #
 # Usage:
 #   ./scripts/ci/validate-agents.sh                    # Validate all archetypes
