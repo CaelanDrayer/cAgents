@@ -10,6 +10,40 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [11.2.14] - 2026-05-12
+
+### Fixed
+- Refresh stale `CLAUDE.md` test-count claim from `858+ Vitest tests across 60+
+  files` to `810+ Vitest tests across 72+ files` (with explanatory parenthetical
+  that the figure is a static lower-bound; runtime `numTotalTests` is higher
+  because `it.each` rows expand to multiple tests at runtime — 932 at
+  baseline). Extends `tests/regressions/claude-md-counts-current.test.js` with
+  a 4th sub-test that statically counts `it(...)` / `test(...)` invocations
+  across `tests/**/*.test.js` (mirroring the include/exclude rules in
+  `tests/vitest.config.js`), asserts `claim_tests <= static_lower_bound` AND
+  `static_lower_bound - claim_tests <= 20`, and the same lower-bound +
+  5-file freshness window for the file count. The sub-test fails on the
+  pre-fix claim (858 > 816 static lower-bound) and passes after the bump.
+
+Bug: `CLAUDE.md` line 517 Quick Reference Tests row was 74 runtime tests /
+     12 files behind reality. The `+` suffix kept the claim technically true
+     (under-counts are permitted), but the lower bound was so stale that the
+     order-of-magnitude was misleading for anyone using the Quick Reference
+     to size the suite.
+Root cause: bumps that added regression tests (V11.2.x's Q-001/Q-002/Q-003/
+     Q-006/Q-007/Q-008 each shipped a new `tests/regressions/*.test.js` file)
+     did not refresh the CLAUDE.md test-count claim. No regression test
+     existed for the test-count specifically — the V11.2.2 count-current
+     test covers agents, hooks, and per-archetype distributions but not the
+     test-count claim.
+Test added: `tests/regressions/claude-md-counts-current.test.js` extended
+     with a 4th sub-test "test-count claim is within freshness window of
+     statically-counted suite size (Q-009)". Fails before, passes after.
+Could have caught by: an extension of the existing CLAUDE.md count-currency
+     test to cover the test-count Quick Reference row. The same pattern that
+     guards the agent count and hook-file count would have caught this; the
+     coverage gap was simply unimplemented.
+
 ## [11.2.13] - 2026-05-12
 
 ### Fixed
