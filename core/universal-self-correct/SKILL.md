@@ -55,11 +55,12 @@ Adaptive recovery specialist for all domains.
 ## Workflow
 
 1. **Load**: Read validation_report.yaml, identify FIXABLE issues
-2. **Analyze**: Categorize issues, check correction strategies
-3. **Verify Fixability**: Est. time <= 60 min, strategies exist
-4. **Execute Fixes**: Invoke agents or auto-fix
-5. **Re-Validate**: Invoke universal-validator
-6. **Handle Result**: PASS (done), FIXABLE (retry), BLOCKED (escalate)
+2. **Load /goal evaluator signal (V11.3.0)**: If `workflow/goal_evaluator_log.yaml` exists in the active session, read the most recent 3-5 `entries[].evaluator_reason` values. Treat them as additional FIXABLE signal alongside validation_report findings. The evaluator runs Haiku against the transcript every turn while `/goal` is active, so its reasons surface ambiguity, missing evidence, or unfinished work that the file-based validator may not have flagged. When self-correct dispatches a fix, include the latest evaluator reason in the dispatched prompt as "Goal evaluator noted: {reason}".
+3. **Analyze**: Categorize issues, check correction strategies
+4. **Verify Fixability**: Est. time <= 60 min, strategies exist
+5. **Execute Fixes**: Invoke agents or auto-fix
+6. **Re-Validate**: Invoke universal-validator
+7. **Handle Result**: PASS (done), FIXABLE (retry), BLOCKED (escalate)
 
 ## Retry Logic
 

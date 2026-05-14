@@ -5,8 +5,8 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "11.2.16"
-  argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--mode <standard|debug>]"
+  version: "11.3.0"
+  argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--mode <standard|debug>] [--no-goal]"
   user-invocable: "true"
   context: "none"
 allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TaskCreate, TaskUpdate, TaskList, TaskGet, TodoWrite
@@ -86,7 +86,7 @@ See @reference/task-tracking-rules.md for the full task tracking protocol, forma
 
 ## Step 1: Parse Arguments
 
-Parse `$ARGUMENTS` for flags (`--interactive`, `--dry-run`, `--quiet`, `--stream`, `--skip-preflight`, `--team`, `--analytics`) and value flags (`--template`, `--domain`, `--tier`, `--confidence`, `--brief`, `--resume`, `--session`, `--mode`).
+Parse `$ARGUMENTS` for flags (`--interactive`, `--dry-run`, `--quiet`, `--stream`, `--skip-preflight`, `--team`, `--analytics`, `--no-goal`) and value flags (`--template`, `--domain`, `--tier`, `--confidence`, `--brief`, `--resume`, `--session`, `--mode`).
 
 The request is everything before the first `--` flag.
 
@@ -122,6 +122,21 @@ See @reference/agent-tracking.md for agent_tree.yaml format and lineage fields.
 **ACTION 2**: Try to read `cagents-memory/_system/config/pipeline_config.yaml`. If absent, use the hardcoded state machine. Do not error.
 
 **ACTION 3**: Call TaskCreate (or TodoWrite in SDK). See @reference/task-tracking-rules.md for the initial task list template.
+
+**ACTION 4 (V11.3.0 — /goal auto-anchor)**: Derive a `/goal` condition and offer to set it via Bash, **unless** any of the following opt-out conditions hold:
+
+- `--no-goal` flag is present in `$ARGUMENTS`
+- The invocation came from `/designer` context (designer is interactive-by-contract and exempt from auto-anchoring; mirrors the existing "/designer is EXEMPT from auto-proceed" rule)
+- `process.env.CAGENTS_NO_GOAL` is set to a truthy value
+- `/goal` is already active in the current session (status indicator visible) — do not replace user-set goals
+
+When NOT opted out, surface this Bash invocation as an optional setup step:
+
+```bash
+claude /goal "cagents-memory/sessions/{SESSION_ID}/workflow/completion_summary.yaml exists with status: COMPLETED AND cagents-memory/sessions/{SESSION_ID}/workflow/execution_summary.yaml exists; AND all TaskList session tasks are completed or deleted; or stop after 8 revision cycles"
+```
+
+The condition references verifiable end state (file existence + status field + clean TaskList) and includes a turn-cap clause for bounded execution. Goal evaluator reasons are captured by `.claude/hooks/goal-evaluator-logger.cjs` and consumed by `cagents:universal-self-correct` as additional revision signal.
 
 Proceed to Step 3.
 

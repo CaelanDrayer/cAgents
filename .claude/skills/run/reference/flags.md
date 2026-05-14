@@ -43,6 +43,7 @@ function parseCommandFlags(commandString) {
 | `--analytics` | Boolean | Display pipeline analytics dashboard and exit | false | `/run --analytics` |
 | `--analytics domain` | String | Show per-domain analytics breakdown | none | `/run --analytics domain` |
 | `--mode <value>` | String | Pipeline execution mode (V10.26.11+). Accepts `standard` (default) or `debug`. `debug` enables the 4-phase debugging methodology on controllers and validator. Unknown values are rejected. | standard | `/run Reproduce flaky test --mode debug` |
+| `--no-goal` | Boolean | Opt out of the V11.3.0 `/goal` auto-anchor in Step 1. By default `/run` derives a `/goal` condition referencing `completion_summary.yaml` and clean TaskList state, with a turn cap. Use `--no-goal` to skip this (useful for `/designer` flows, scripted runs with their own continuation logic, or when an active `/goal` is already set). Also opt out by setting `CAGENTS_NO_GOAL=1` in the environment. | false | `/run Fix typo --no-goal` |
 
 ## Plan Display Behavior
 

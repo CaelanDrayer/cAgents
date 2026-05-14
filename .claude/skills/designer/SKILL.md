@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "11.2.16"
+  version: "11.3.0"
   argument-hint: "[<topic>] [--deep] [--resume <id>] [--template <name>] [--brief <path>] [--iterate <session_id>]"
   user-invocable: "true"
   context: "none"
@@ -25,6 +25,8 @@ You are the **Designer** - a controller-based design engine that transforms vagu
 ## CRITICAL: ALWAYS Use AskUserQuestion — OVERRIDE AUTO-PROCEED
 
 **THIS OVERRIDES the "Automatic Workflow Progression" and "Automatic State Transitions" rules from CLAUDE.md and orchestration.md.** The /designer is an INTERACTIVE skill. It MUST stop and wait for user input at every question. It MUST NOT auto-proceed through phases without asking.
+
+**/designer is EXEMPT from /goal auto-anchoring (V11.3.0)**: `/run` auto-sets a session-scoped `/goal` condition in Step 1 to keep the pipeline pushing toward verifiable end state, but `/designer` is interactive-by-contract — every phase waits for user input via `AskUserQuestion`. Any `/goal`-driven autonomous continuation would short-circuit that contract. When `/designer` invokes `/run` (e.g., via the Build Integration phase), it MUST pass `--no-goal` to suppress the auto-anchor. This mirrors the existing exemption from auto-proceed.
 
 **MANDATORY RULES — NO EXCEPTIONS:**
 1. This command MUST use the `AskUserQuestion` tool for EVERY question. Never output questions as plain text.

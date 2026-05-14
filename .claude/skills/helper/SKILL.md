@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "11.2.16"
+  version: "11.3.0"
   argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--all] [--topic <topic>] [--troubleshoot <command>]"
   user-invocable: "true"
   context: "none"
@@ -299,6 +299,32 @@ Need more detail? Try:
 ```
 
 For per-command summaries (what/when/key flags/workflow), see @reference/command-summaries.md.
+
+## Autonomous Execution Triad: /goal + /run + Auto-mode
+
+cAgents users have three Claude Code primitives that compose into an autonomous-execution loop. Most users know `/run` but not `/goal` — naming the triad here closes that gap.
+
+`/goal <condition>` is Claude Code's session-scoped continuation primitive. Set it once, and after every turn a small fast model evaluates whether the condition holds against the transcript. If not, Claude starts another turn automatically with the evaluator's reason injected as guidance. If yes, the goal clears with an "achieved" entry. Implemented as a wrapper around a session-scoped prompt-based Stop hook. Limits: one goal per session (replacing on re-set), 4,000 character condition cap, evaluator cannot call tools (only judges the transcript). Active goals restore on `--resume`. `/goal clear` cancels — aliases: `stop`, `off`, `reset`, `none`, `cancel`.
+
+`/run` is the cAgents pipeline engine that spawns agents, decomposes work, and runs validator loops. `/goal` and `/run` compose: `/run` provides the structured workflow, `/goal` keeps the model pushing until verifiable end state. `/run` from v11.3.0 auto-anchors `/goal` to a derived condition referencing `completion_summary.yaml` and clean TaskList state; `--no-goal` opts out. `/designer` is exempt (interactive-by-contract).
+
+Auto-mode is orthogonal: it removes per-tool approval prompts. `/goal` removes per-turn prompts. Pair them for fully autonomous headless runs.
+
+### Comparison Matrix
+
+| Approach | Next turn starts when | Stops when | cAgents use |
+|----------|----------------------|------------|-------------|
+| `/goal` | Previous turn finishes | Evaluator confirms condition met (or turn cap hit) | `/run` step 1 auto-anchor, headless completion |
+| `/loop <interval>` | Time interval elapses | User stops or Claude judges done | Polling / babysit patterns |
+| Stop hook | Previous turn finishes | Custom script/prompt decides | cAgents `verify-completion.cjs` file-based checks |
+
+### Headless Example
+
+```bash
+claude -p "/goal 'cagents-memory/sessions/run_*/workflow/completion_summary.yaml exists with status: COMPLETED and all TaskList session tasks completed/deleted; or stop after 8 turns'"
+```
+
+Single-shot non-interactive run. The session runs to completion (or turn cap) then exits.
 
 ## V10 -> V11 Migration
 

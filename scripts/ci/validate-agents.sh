@@ -2,7 +2,7 @@
 #
 # cAgents Agent Schema Validation
 # Validates all agent SKILL.md files across all 9 archetype roots
-# Version: 11.2.16
+# Version: 11.3.0
 #
 # Usage:
 #   ./scripts/ci/validate-agents.sh                    # Validate all archetypes
@@ -453,8 +453,8 @@ validate_hooks() {
         echo -e "  ${GREEN}All $hook_count registered hooks have matching .cjs files${NC}"
     fi
 
-    if [[ $hook_count -gt 0 ]] && [[ $hook_count -ne 26 ]]; then
-        log_warn "Hook count mismatch: found $hook_count registered hooks, expected 26"
+    if [[ $hook_count -gt 0 ]] && [[ $hook_count -ne 27 ]]; then
+        log_warn "Hook count mismatch: found $hook_count registered hooks, expected 27"
     fi
 }
 

@@ -6,7 +6,7 @@ paths:
 
 # cAgents Hook System
 
-29 .cjs files implementing 26 unique hooks across 17 event types via the `createHook()` factory. See the Hook Types Overview below for per-event mapping.
+30 .cjs files implementing 27 unique hooks across 17 event types via the `createHook()` factory. See the Hook Types Overview below for per-event mapping.
 
 ## Architecture
 
@@ -60,7 +60,7 @@ Claude Code supports 24 hook event types. cAgents implements 26 unique registere
 | `Notification` | Status notification | `notification.cjs` | Log and track |
 | `SubagentStart` | Subagent spawned | `subagent-tracker.cjs`, `team-start.cjs` | Log spawns, initialize team monitoring, inject self-registration context |
 | `SubagentStop` | Subagent finishes | `subagent-stop-tracker.cjs` | Log completion, capture summaries + duration, update agent tree |
-| `Stop` | Claude stops responding | `verify-completion.cjs` | Verify completion criteria |
+| `Stop` | Claude stops responding | `verify-completion.cjs`, `goal-evaluator-logger.cjs` | Verify completion criteria; capture `/goal` evaluator reasons |
 | `StopFailure` | Claude fails to stop cleanly | `stop-failure-handler.cjs` | Save recovery state when Claude fails to stop cleanly |
 | `TeammateIdle` | Teammate goes idle | `teammate-idle-handler.cjs` | Find available work or stop teammate (`continue:false`) when all items done |
 | `TaskCompleted` | Task finishes | `team-task-complete.cjs` | Update task list, unblock dependencies, stop teammate (`continue:false`) when all items done |
@@ -207,6 +207,12 @@ createHook('MyHook', async (input) => {
 - **Also**: Stop-workflow cleanup (replaces stop-workflow.sh)
 - **Creates**: `completion_summary.yaml`
 - **Can block**: Returns `{decision: "block", reason: "..."}` for incomplete workflows
+
+#### Stop: goal-evaluator-logger.cjs
+- **Purpose**: Capture the latest `/goal` evaluator reason into the active session's `workflow/goal_evaluator_log.yaml` so `cagents:universal-self-correct` can consume it as additional revision signal (V11.3.0, REC-4 from goal.md integration).
+- **Activation**: Only when `/goal` is active in the Stop hook payload (`input.goal.active === true` or `input.goal_state.active === true` with an `evaluator_reason` present). Non-blocking. No-op when `/goal` inactive, no active cAgents session, or no reason to capture.
+- **Creates / appends**: `cagents-memory/sessions/{active}/workflow/goal_evaluator_log.yaml` (YAML list under `entries:` with timestamp, condition, evaluator_reason, turn, verdict).
+- **Consumed by**: `core/universal-self-correct/SKILL.md` Step 2 (reads most recent 3-5 entries as revision signal).
 
 #### SubagentStart: subagent-tracker.cjs + team-start.cjs
 - **subagent-tracker.cjs**: Logs agent spawns to `workflow/agent_tree.yaml` and global audit log (`_system/logs/agent_spawns.log`). Includes fallback session discovery for the race condition where `status.yaml` hasn't been written yet. Injects `additionalContext` asking cAgents agents to self-register their `cagents:{name}` type, since Claude Code's `agent_type` field reports "general-purpose" for plugin agents.
