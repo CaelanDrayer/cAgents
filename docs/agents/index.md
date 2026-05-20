@@ -30,7 +30,7 @@
 | ux-designer | execution | User experience design |
 | performance-analyzer | execution | Performance profiling |
 | accessibility-checker | execution | Accessibility audit |
-| architecture-reviewer | execution | Architecture review |
+| architect --review | controller | Architecture review (mode flag on architect; absorbed architecture-reviewer in v12.0.0) |
 | code-standards-auditor | execution | Code standards |
 | dependency-analyzer | execution | Dependency analysis |
 | dependency-auditor | execution | Dependency security |

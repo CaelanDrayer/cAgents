@@ -30,8 +30,9 @@ metadata:
     - deployment
     - content creation
   related_agents:
-    - name: architecture-reviewer
+    - name: architect
       type: coordinates
+      mode: review
     - name: performance-analyzer
       type: coordinates
     - name: security-engineer
@@ -54,7 +55,7 @@ Orchestrates comprehensive code reviews with V3.0 enhancements: parallel executi
 
 ### 1. Intelligent Agent Selection
 Dynamically select QA agents based on review context:
-- `architecture-reviewer`: Always for code reviews
+- `architect --review`: Always for code reviews
 - `performance-analyzer`: If loops, large data, heavy computation
 - `security-analyst`: If auth, data handling, external input
 - `accessibility-checker`: If React/Vue/Angular components

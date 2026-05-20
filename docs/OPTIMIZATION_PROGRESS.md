@@ -106,7 +106,7 @@ Planning agents (12):
 - [ ] roadmap-planner, scenario-planner, strategic-planner
 
 Other (6):
-- [ ] architecture-reviewer
+- [x] ~~architecture-reviewer~~ (absorbed into architect --review in v12.0.0)
 
 **Phase 3 Total**: 23/45 explicit conversions + 21 pre-existing = 44/45 managed
 - Batch 1+2 This Session: 2,219 lines saved (64% avg)

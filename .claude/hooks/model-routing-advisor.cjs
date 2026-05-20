@@ -53,7 +53,7 @@ const KNOWN_AGENTS = {
   // Engineering (32 agents)
   'accessibility-checker': 'support',
   'architect': 'controller',
-  'architecture-reviewer': 'support',
+  // 'architecture-reviewer' absorbed into 'architect --review' in v12.0.0
   'backend-developer': 'execution',
   'backend-lead': 'controller',
   'code-reviewer': 'support',
