@@ -10,6 +10,14 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.0.1] - 2026-05-20
+
+### Added
+- `AGENTS.md` at repo root — multi-tool routing convention documenting how
+  Cursor, Aider, Windsurf, Gemini-CLI, OpenCode and other non-Claude-Code
+  agentic tools can discover cAgents skills + agents. Pure documentation;
+  no behavioral change. (REC-2 from session team_external-samples-update_260520_003)
+
 ## [12.0.0] - 2026-05-20
 
 Major consolidation release. Branch `revamp/v12-rc`. Total agents 251 -> 238.
