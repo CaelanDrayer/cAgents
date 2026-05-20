@@ -137,9 +137,9 @@ quality/        # completion, validation-framework, implicit-discovery (5 files)
 | **Core** | `core/` | 15 | Pipeline infrastructure (trigger, orchestrator, universal-planner, reviewer, etc.) |
 | **Leadership** | `leadership/` | 12 | C-suite executives (used by /org, not directly routable) |
 
-**Domain overlay (legacy — routing/config only)**: 13 legacy domain dirs (`engineering/`, `creative/`, `business/`, `growth/`, `people/`, `service/`, `shared/`, `science/`, `health/`, `education/`, `personal/`, `arts/`, `trades/`) survive on disk **without** SKILL.md files; they hold `config/domain_overrides.yaml` with router keywords + controller catalogs that the planner still consumes. Do NOT delete these — they are not orphans.
+**Domain overlay (legacy — routing/config only)**: 2 legacy domain dirs (`people/`, `shared/`) survive on disk **without** SKILL.md files; they hold `config/domain_overrides.yaml` with router keywords + controller catalogs that the planner still consumes. The other 11 legacy dirs (`engineering/`, `creative/`, `business/`, `growth/`, `service/`, `science/`, `health/`, `education/`, `personal/`, `arts/`, `trades/`) were deleted in v12 W4.2 and their router keywords + controller catalogs consolidated into `cagents-memory/_system/config/routing.yaml`. Do NOT delete `people/` or `shared/` — they are not orphans.
 
-**Config**: Each legacy domain has `{domain}/config/domain_overrides.yaml` with `controller_catalog` and `router_keywords`. Two archetype roots — `core/` and `leadership/` — also ship `config/domain_overrides.yaml` files (used for pipeline/C-suite routing tables), so `scripts/ci/validate-agents.sh` reports "15 files checked" (13 legacy + 2 archetype-root). The 13-vs-15 delta is by design, not drift: the legacy-domain count remains 13.
+**Config**: `people/` and `shared/` keep their own `{domain}/config/domain_overrides.yaml`. The 11 deleted legacy domains live in `cagents-memory/_system/config/routing.yaml` under `domains.<name>` (with the same `controller_catalog` + `router.keywords` schema, just nested). Two archetype roots — `core/` and `leadership/` — also ship `config/domain_overrides.yaml` files (used for pipeline/C-suite routing tables), so `scripts/ci/validate-agents.sh` now reports 4 files checked (2 legacy retained + 2 archetype-root). The pre-v12 layout had 13 legacy domain_overrides.yaml files; v12 W4.2 consolidated 11 of them into the single _system routing.yaml.
 
 ## CRITICAL: Aggressive Delegation
 
@@ -531,8 +531,8 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Skills**: `/org`, `/run`, `/team`, `/designer`, `/improve`, `/helper` (in `.claude/skills/`; V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see `docs/MIGRATION-V11.md`)
 **Built-in**: `/memory`, `/init` (Claude Code native)
 **Agents**: 238 total across 9 archetypes (developer 30, operator 73, advisor 30, analyst 31, creator 11, writer 26, strategist 9, core 15, leadership 12)
-**Domain Overlay (legacy routing/config only)**: 13 dirs (engineering, creative, business, growth, people, service, shared, science, health, education, personal, arts, trades) hold `config/domain_overrides.yaml` — no SKILL.md files
-**Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/domain_overrides.yaml`, `cagents-memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (session YAML contract for AgentPath)
+**Domain Overlay (legacy routing/config only)**: 2 dirs (`people/`, `shared/`) hold `config/domain_overrides.yaml` — no SKILL.md files. The other 11 legacy domains (engineering, creative, business, growth, service, science, health, education, personal, arts, trades) were deleted in v12 W4.2 and consolidated into `cagents-memory/_system/config/routing.yaml`.
+**Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `people/config/domain_overrides.yaml`, `shared/config/domain_overrides.yaml`, `cagents-memory/_system/config/routing.yaml`, `cagents-memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (session YAML contract for AgentPath)
 **Hooks**: 30 .cjs files = 27 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)

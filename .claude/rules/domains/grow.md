@@ -70,4 +70,4 @@ Common business execution agents:
 
 ## Config Location
 
-`business/config/domain_overrides.yaml`
+`cagents-memory/_system/config/routing.yaml` (under `domains.business` and `domains.growth`; consolidated in v12 W4.2 — the legacy `business/config/domain_overrides.yaml` and `growth/config/domain_overrides.yaml` paths no longer exist)

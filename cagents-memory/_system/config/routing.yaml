@@ -1,0 +1,1179 @@
+# Consolidated routing config (v12.0.0)
+#
+# This file replaces the 11 legacy domain dirs deleted in WI-W4.2:
+#   engineering/, creative/, business/, growth/, service/,
+#   science/, health/, education/, personal/, arts/, trades/
+#
+# Per cagents-memory/sessions/run_full-plugin-revamp-plan_260520_001/outputs/revamp-design-v2.md
+# § 6a: "11 of 13 legacy dirs deletable after consolidation. 2 (`people/`, `shared/`)
+# survive."
+#
+# The router consults this file's `router.<domain>.keywords` to score domain match.
+# The planner consults `planner.<domain>.controller_catalog` and
+# `planner.<domain>.specialist_routing` for tier-based controller selection and
+# specialist agent delegation.
+#
+# people/ and shared/ keep their own config/domain_overrides.yaml (they're more
+# active and ship with additional config). The 2 archetype-roots core/ and
+# leadership/ also keep their own config files.
+#
+# Schema is the union of the deleted files' fields, namespaced by domain.
+
+schema_version: "1"
+generated_by: "v12 W4.2 consolidation"
+
+domains:
+  engineering:
+    description: "Software engineering, infrastructure, security, QA, and game programming"
+    planner:
+      controller_catalog:
+        tier_2: [tech-lead, qa-lead]
+        tier_3: [tech-lead, architect, security-lead, backend-lead, frontend-lead, data-lead]
+        tier_4: [cto, tech-lead, architect, infrastructure-lead, vp-engineering]
+      specialist_routing:
+        frontend:
+          keywords: [frontend, UI, UX, component, CSS, styling, responsive, design system, wireframe, accessibility]
+          agents: [frontend-lead]
+          description: "Frontend architecture and UI/UX coordination"
+        backend:
+          keywords: [backend, API, database, server, microservice, REST, GraphQL]
+          agents: [backend-lead]
+          description: "Backend architecture and API coordination"
+        data:
+          keywords: [data pipeline, ETL, data warehouse, analytics, data model]
+          agents: [data-lead]
+          description: "Data engineering and pipeline coordination"
+        devops:
+          keywords: [CI/CD, pipeline, Docker, container, Kubernetes, deploy, terraform, ansible, cloud, AWS, GCP, Azure]
+          agents: [infrastructure-lead]
+          description: "DevOps and infrastructure coordination"
+        game_programming:
+          keywords: [game programming, game engine, gameplay, physics engine, Unity, Unreal, Godot, shader, rendering]
+          agents: [tech-lead]
+          description: "Game programming routed through tech-lead to game-programmer"
+        security:
+          keywords: [security, vulnerability, penetration, OWASP, CVE, threat, authentication security]
+          agents: [security-lead, security-engineer]
+          description: "Security assessment, vulnerability analysis, and threat modeling"
+        testing:
+          keywords: [test, QA, quality assurance, unit test, integration test, e2e, coverage]
+          agents: [qa-lead]
+          description: "Testing strategy, QA coordination, and coverage analysis"
+        architecture:
+          keywords: [architecture, system design, patterns, microservice, monolith, event-driven]
+          agents: [architect]
+          description: "System architecture and design pattern guidance"
+        code_review:
+          keywords: [code review, PR review, pull request, review code]
+          agents: [code-reviewer]
+          description: "Code review and pull request evaluation"
+        database:
+          keywords: [database, schema, migration, query optimization, SQL, NoSQL, index]
+          agents: [dba]
+          description: "Database design, schema management, and query optimization"
+        performance:
+          keywords: [performance, optimize, profiling, bottleneck, latency, throughput]
+          agents: [performance-analyzer]
+          description: "Performance profiling, bottleneck identification, and optimization"
+    router:
+      keywords:
+        - fix
+        - bug
+        - implement
+        - code
+        - api
+        - database
+        - build
+        - refactor
+        - test
+        - deploy
+        - backend
+        - frontend
+        - devops
+        - security
+        - infrastructure
+        - architecture
+        - migrate
+        - migration
+        - CI/CD
+        - pipeline  # intentional cross-domain: CI/CD pipeline (engineering) vs sales pipeline (growth)
+        - Docker
+        - container
+        - Kubernetes
+        - cloud
+        - AWS
+        - GCP
+        - Azure
+        - performance
+        - monitor
+        - debug
+        - review
+        - pull request  # cross-domain: "PR" removed (ambiguous with public relations in growth)
+        - microservice
+        - serverless
+        - terraform
+        - ansible
+        - lint
+        - type check
+        - schema
+        - UX
+        - UI
+        - design system
+        - accessibility
+        - responsive
+        - wireframe
+        - component
+        - CSS
+        - styling
+        - game programming
+        - game engine
+        - gameplay
+        - physics engine
+        - Unity
+        - Unreal
+        - Godot
+        - shader
+        - rendering
+
+  creative:
+    description: "Creative writing, narrative design, fiction, literary criticism, content creation, game art and audio, AI writing detection and humanization"
+    planner:
+      controller_catalog:
+        tier_2: [narrative-director, editor]
+        tier_3: [narrative-director, story-architect, editor]
+        tier_4: [cco, narrative-director, story-architect]
+      specialist_routing:
+        ai_writing_detection:
+          keywords: [detect AI, AI writing, AI detection, scan for AI, AI patterns, AI generated, AI check, write, blog, article, copy, draft, content, email, prose, documentation, post, write blog, write article, create content, draft email, write copy]
+          agents: [ai-writing-detector]
+          description: "Scan documents for AI writing hallmarks across 14 categories and assess general writing quality"
+        ai_writing_humanization:
+          keywords: [humanize, humanization, rewrite AI, remove AI, fingerprint, make human, sound human, less AI, improve writing, polish, refine writing, rewrite, clean up writing, better writing, polish prose, tighten writing]
+          agents: [ai-writing-rewriter]
+          description: "Rewrite AI-detected text to sound naturally human and improve general writing quality"
+        ai_writing_pipeline:
+          keywords: [detect and rewrite, detect and humanize, full AI scan, AI cleanup, write and review, content quality, writing quality, full writing review]
+          agents: [ai-writing-detector, ai-writing-rewriter]
+          description: "Full pipeline: detect AI patterns then rewrite to humanize, or review and improve writing quality"
+        writing_quality:
+          keywords: [writing quality, content review, writing review, quality check writing, improve content, writing assessment]
+          agents: [ai-writing-detector, ai-writing-rewriter]
+          description: "Assess writing quality and improve content using detection and rewriting agents"
+        fiction_writing:
+          keywords: [novel, fiction, chapter, scene, character, plot, story writing]
+          agents: [prose-stylist, character-designer]
+          description: "Fiction writing, scene crafting, and character development"
+        editing:
+          keywords: [edit, proofread, copy edit, manuscript review, line edit]
+          agents: [editor, copy-editor]
+          description: "Manuscript editing, proofreading, and copy editing"
+        worldbuilding:
+          keywords: [world, setting, lore, magic system, geography, culture, history]
+          agents: [worldbuilder, lore-keeper, setting-designer]
+          description: "World creation, lore development, and setting design"
+        dialogue:
+          keywords: [dialogue, conversation, voice, speech, dialect]
+          agents: [dialogue-specialist, voice-coach]
+          description: "Dialogue writing, voice coaching, and speech patterns"
+        game_narrative:
+          keywords: [game story, game writing, branching narrative, quest, interactive fiction]
+          agents: [game-writer, narrative-game-designer]
+          description: "Game narrative design, branching stories, and quest writing"
+        game_art:
+          keywords: [concept art, character design visual, environment art, style guide]
+          agents: [concept-artist, animator]
+          description: "Concept art, character visual design, and animation"
+        music_audio:
+          keywords: [soundtrack, music, sound effect, audio, score, composition]
+          agents: [music-composer, sound-designer]
+          description: "Music composition, sound design, and audio production"
+        literary_analysis:
+          keywords: [critique, literary analysis, review manuscript, evaluate writing]
+          agents: [literary-critic]
+          description: "Literary criticism, manuscript evaluation, and writing analysis"
+        research:
+          keywords: [research, fact check, historical accuracy, reference material]
+          agents: [creative-researcher]
+          description: "Research, fact-checking, and reference material gathering"
+    router:
+      keywords:
+        - write
+        - story
+        - content
+        - design
+        - creative
+        - novel
+        - script
+        - poem
+        - narrative
+        - game art
+        - audio
+        - animation
+        - character
+        - worldbuild
+        - critique
+        - literary
+        - dialogue
+        - prose
+        - edit
+        - fiction
+        - plot
+        - theme
+        - pacing
+        - tension
+        - voice
+        - genre
+        - lore
+        - AI writing
+        - AI detection
+        - AI detect
+        - humanize
+
+  business:
+    description: "Strategy, product management, operations, finance, marketing, sales, and business execution"
+    planner:
+      controller_catalog:
+        tier_2: [operations-manager, product-owner, program-project-manager, game-designer]
+        tier_3: [strategic-planner, finance-manager, program-project-manager, business-analyst, quality-manager, game-producer, supply-chain-manager]
+        tier_4: [cpo, cfo, strategic-planner, operations-manager]
+      specialist_routing:
+        game_development:
+          keywords: [game, game design, game mechanics, game balance, level design, game system]
+          agents: [game-designer, game-producer]
+          description: "Game design and production coordination (cross-domain: game-programmer in engineering, game-writer in creative)"
+        agile:
+          keywords: [agile, scrum, sprint, kanban, velocity, retrospective, standup]
+          agents: [agile-coach]
+          description: "Agile coaching and scrum facilitation"
+        okr:
+          keywords: [OKR, objective, key result, goal setting, quarterly planning]
+          agents: [okr-specialist]
+          description: "OKR and goal-setting frameworks"
+        project_management:
+          keywords: [project, milestone, timeline, deliverable, Gantt, WBS]
+          agents: [program-project-manager]
+          description: "Project management and delivery"
+        program_management:
+          keywords: [program, portfolio, initiative, cross-project, PMO]
+          agents: [program-project-manager, portfolio-manager]
+          description: "Program and portfolio management"
+        risk:
+          keywords: [risk, mitigation, contingency, business continuity, disaster recovery]
+          agents: [risk-manager, scenario-planner]
+          description: "Risk management and scenario planning"
+        procurement:
+          keywords: [procurement, vendor, sourcing, RFP, supplier, contract negotiation]
+          agents: [procurement-specialist]
+          description: "Procurement and vendor management"
+        process:
+          keywords: [process improvement, lean, six sigma, kaizen, efficiency, automation]
+          agents: [process-improvement-specialist]
+          description: "Process improvement and optimization"
+        facilities:
+          keywords: [facilities, office, workspace, maintenance, safety, building]
+          agents: [facilities-manager]
+          description: "Facilities and workspace management"
+        finance:
+          keywords: [budget, forecast, P&L, revenue, expense, financial model, ROI]
+          agents: [finance-manager]
+          description: "Financial planning and analysis"
+        data_analytics:
+          keywords: [dashboard, report, analytics, BI, business intelligence, data visualization]
+          agents: [business-analyst]
+          description: "Business analytics and reporting (cross-domain: bi-specialist in shared)"
+        research:
+          keywords: [market research, competitive analysis, industry analysis, benchmarking]
+          agents: [business-researcher]
+          description: "Business and market research"
+        planning:
+          keywords: [strategic planning, roadmap, long-term plan, multi-year, vision]
+          agents: [strategic-planner, roadmap-planner]
+          description: "Strategic planning and roadmapping"
+        resource:
+          keywords: [resource allocation, capacity planning, staffing, utilization]
+          agents: [resource-planner]
+          description: "Resource allocation and capacity planning"
+        quality:
+          keywords: [quality, ISO, Six Sigma, DMAIC, quality audit, process quality]
+          agents: [quality-manager]
+          description: "Quality management and process quality"
+        supply_chain:
+          keywords: [supply chain, inventory, logistics, warehouse, fulfillment]
+          agents: [supply-chain-manager]
+          description: "Supply chain and logistics management"
+        change_management:
+          keywords: [change management, transformation, adoption, organizational change, transition]
+          agents: [change-management-specialist]
+          description: "Change management and organizational transformation"
+        performance:
+          keywords: [performance metrics, KPI, balanced scorecard, performance review, benchmarking]
+          agents: [performance-analyst]
+          description: "Performance analysis and KPI tracking"
+        process_audit:
+          keywords: [process audit, compliance audit, internal audit, gap analysis, assessment]
+          agents: [process-auditor]
+          description: "Process auditing and gap analysis"
+        business_development:
+          keywords: [business development, partnership, strategic alliance, expansion, new market]
+          agents: [business-development-manager]
+          description: "Business development and strategic partnerships"
+        product:
+          keywords: [product, backlog, user story, feature, product requirements, PRD]
+          agents: [product-owner]
+          description: "Product ownership and backlog management"
+        operations:
+          keywords: [operations, operational efficiency, workflow, standard operating procedure, SOP]
+          agents: [operations-manager]
+          description: "Operations management"
+        planning_ops:
+          keywords: [planning operations, planning cycle, planning process, forecasting]
+          agents: [planning-specialist]
+          description: "Planning operations and facilitation"
+        predictive:
+          keywords: [prediction, forecasting model, trend analysis, predictive analytics, simulation]
+          agents: [predictive-analyst, scenario-planner]
+          description: "Predictive analytics and scenario modeling"
+        documentation:
+          keywords: [documentation, decision log, knowledge capture, technical writing, meeting notes]
+          agents: [scribe]
+          description: "Documentation and knowledge capture"
+    router:
+      keywords:
+        - budget
+        - cost
+        - forecast
+        - operations
+        - process
+        - supply chain
+        - procurement
+        - strategy
+        - product
+        - roadmap
+        - planning
+        - game
+        - game design
+        - OKR
+        - KPI
+        - business analytics  # cross-domain: "analytics" alone routes to shared (data specialists)
+        - metrics
+        - report
+        - project
+        - program
+        - agile
+        - scrum
+        - sprint
+        - risk
+        - quality
+        - process audit  # cross-domain: "audit" alone routes to service (compliance)
+        - stakeholder
+        - vendor
+        - invoice
+        - ROI
+        - inventory
+        - logistics
+        - finance
+        - forecasting
+        - P&L
+        - backlog
+        - business case
+        - PMO
+        - change management
+        - transformation
+        - capacity planning
+        - benchmarking
+        - documentation
+        - decision
+
+  growth:
+    description: "Marketing execution, sales operations, demand generation"
+    planner:
+      controller_catalog:
+        tier_2: [marketing-strategist, creative-director]
+        tier_3: [marketing-strategist, sales-strategist, creative-director]
+        tier_4: [cmo, cro, marketing-strategist]
+      specialist_routing:
+        sales:
+          keywords: [sales, quota, territory, pipeline, deal, close, prospect, SDR, account executive]
+          agents: [sales-strategist]
+          description: "Sales strategy and operations"
+        content:
+          keywords: [content, creative, brand, copy, copywriting, social media]
+          agents: [creative-director]
+          description: "Content and creative marketing"
+        product_marketing:
+          keywords: [positioning, messaging, launch, go-to-market, competitive, GTM]
+          agents: [marketing-strategist]
+          description: "Product marketing and launches (v12: product-marketing-manager absorbed into marketing-strategist)"
+        seo:
+          keywords: [SEO, search engine, organic, keyword research, ranking, backlink, site audit, technical SEO, schema markup, Core Web Vitals]
+          agents: [marketing-strategist, seo-specialist]
+          description: "Search engine optimization (v12: seo-strategist absorbed into marketing-strategist for tier 2+ coordination; seo-specialist remains as execution agent)"
+        geo:
+          keywords: [GEO, generative engine optimization, AI search, AI Overviews, ChatGPT citation, Perplexity, llms.txt, AI citability, AI search visibility]
+          agents: [geo-strategist, marketing-strategist]
+          description: "Generative Engine Optimization for ChatGPT, Claude, Perplexity, Google AI Overviews, Gemini"
+        social_media:
+          keywords: [social media, Instagram, LinkedIn, Twitter, TikTok, community, social]
+          agents: [channel-marketer]
+          description: "Social media management (cross-domain: community-manager in service)"
+        public_relations:
+          keywords: [PR, press release, media, journalist, thought leadership, publicity]
+          agents: [pr-specialist]
+          description: "Public relations and media outreach"
+        email:
+          keywords: [email, newsletter, drip, nurture, automation, email campaign]
+          agents: [channel-marketer]
+          description: "Email marketing and automation"
+        events:
+          keywords: [event, conference, trade show, webinar, meetup, exhibition]
+          agents: [events-coordinator, field-marketing-manager]
+          description: "Event planning and field marketing"
+        demand_gen:
+          keywords: [demand generation, lead gen, pipeline, MQL, funnel, conversion]
+          agents: [demand-generation-manager, growth-marketer]
+          description: "Demand generation and growth marketing"
+        sales_development:
+          keywords: [SDR, BDR, outbound, prospecting, cold email, cold call, pipeline]
+          agents: [sales-rep]
+          description: "Sales development and outbound prospecting"
+        sales_enablement:
+          keywords: [sales training, playbook, battlecard, sales content, onboarding sales]
+          agents: [sales-enablement-specialist]
+          description: "Sales enablement and training (sales-trainer absorbed in v12)"
+        sales_engineering:
+          keywords: [demo, POC, proof of concept, technical sales, solution design, pre-sales]
+          agents: [sales-engineer]
+          description: "Technical sales and solution engineering"
+        pricing:
+          keywords: [pricing, discount, deal desk, packaging, monetization]
+          agents: [pricing-analyst]
+          description: "Pricing strategy and deal desk"
+        territory:
+          keywords: [territory, region, quota, field sales, district]
+          agents: [territory-manager]
+          description: "Territory and field sales management"
+        influencer:
+          keywords: [influencer, creator, ambassador, UGC, partnership marketing]
+          agents: [partnership-marketing-manager]
+          description: "Influencer and partnership marketing (influencer-marketing-specialist absorbed in v12)"
+        proposals:
+          keywords: [proposal, RFP, RFI, bid, pitch deck]
+          agents: [proposal-specialist]
+          description: "Proposal and RFP management"
+        brand:
+          keywords: [brand, brand identity, brand guidelines, visual identity, brand voice]
+          agents: [brand-manager]
+          description: "Brand strategy and identity"
+        revenue_ops:
+          keywords: [RevOps, revenue operations, CRM, Salesforce, HubSpot, pipeline analytics]
+          agents: [revenue-operations-manager, marketing-ops-specialist]
+          description: "Revenue operations and CRM management (sales-ops-specialist absorbed in v12)"
+        content_marketing:
+          keywords: [content strategy, blog, whitepaper, content calendar, content marketing]
+          agents: [channel-marketer]
+          description: "Content marketing strategy"
+        digital_marketing:
+          keywords: [digital marketing, PPC, paid ads, SEM, display, retargeting]
+          agents: [channel-marketer]
+          description: "Digital and paid marketing"
+        marketing_analytics:
+          keywords: [marketing analytics, attribution, marketing metrics, ROAS, CAC]
+          agents: [marketing-analyst]
+          description: "Marketing analytics and attribution"
+        customer_marketing:
+          keywords: [customer marketing, advocacy, case study, testimonial, reference]
+          agents: [growth-marketer]
+          description: "Customer marketing and advocacy (customer-marketing-manager absorbed in v12)"
+        channel_partners:
+          keywords: [channel, partner, reseller, distributor, channel sales, alliance]
+          agents: [partnership-marketing-manager]
+          description: "Channel and partner management (channel-partner-manager absorbed in v12)"
+        account_sales:
+          keywords: [account executive, enterprise sales, strategic account, closing, negotiation]
+          agents: [sales-rep]
+          description: "Enterprise and strategic account sales"
+        sales_analytics:
+          keywords: [sales analytics, win rate, pipeline analysis, sales metrics, forecast]
+          agents: [sales-analyst]
+          description: "Sales analytics and forecasting"
+        copywriting:
+          keywords: [copywriting, ad copy, landing page copy, email copy, marketing copy, tagline]
+          agents: [copywriter]
+          description: "Marketing copy and content creation"
+        affiliate:
+          keywords: [affiliate, referral, commission, partner program, affiliate network, referral program]
+          agents: [partnership-marketing-manager]
+          description: "Affiliate programs and partner referrals (affiliate-marketing-manager absorbed in v12)"
+        cro:
+          keywords: [CRO, A/B test, conversion, landing page, funnel optimization, split test, multivariate, experiment]
+          agents: [conversion-rate-optimizer]
+          description: "Conversion rate optimization and experimentation"
+        video:
+          keywords: [video, YouTube, TikTok, Reels, webinar, video marketing, short-form, Shorts]
+          agents: [video-marketing-specialist]
+          description: "Video content strategy and channel management"
+        media_buying:
+          keywords: [media buy, programmatic, RTB, ad spend, media plan, display advertising, ad network, DSP]
+          agents: [media-buyer]
+          description: "Programmatic advertising and media buying"
+    router:
+      keywords:
+        - campaign
+        - marketing
+        - sales
+        - conversion
+        - SEO
+        - funnel
+        - leads
+        - revenue
+        - growth
+        - demand
+        - acquisition
+        - brand
+        - social media
+        - email
+        - content marketing
+        - PR
+        - public relations
+        - advertising
+        - PPC
+        - newsletter
+        - engagement  # intentional cross-domain: marketing engagement (growth) vs employee engagement (people)
+        - retention  # intentional cross-domain: customer retention (growth) vs employee retention (people)
+        - churn
+        - net promoter  # cross-domain: "NPS" routes to service (CX metric primary home)
+        - pricing
+        - proposal
+        - outreach
+        - demo
+        - territory
+        - quota
+        - enablement
+        - copy
+        - copywriting
+        - pipeline  # intentional cross-domain: sales pipeline (growth) vs CI/CD pipeline (engineering)
+        - campaigns
+        - affiliate
+        - influencer
+        - referral program
+        - paid media
+        - organic search
+        - GEO
+        - generative engine optimization
+        - AI search
+        - AI Overviews
+        - llms.txt
+        - AI citability
+        - keyword research
+        - schema markup
+        - Core Web Vitals
+        - ABM
+        - CRO
+        - ROAS
+        - CAC
+        - LTV
+        - RevOps
+        - GTM
+        - go-to-market
+        - media buying
+        - programmatic
+
+  service:
+    description: "Customer support, CX, legal, compliance, and governance"
+    planner:
+      controller_catalog:
+        tier_2: [customer-success-manager, general-counsel, account-manager, support-operations-manager]
+        tier_3: [support-director, general-counsel, compliance-manager, legal-operations-manager, relationship-manager]
+        tier_4: [general-counsel, support-director, compliance-manager, customer-advocacy-manager]
+      specialist_routing:
+        legal:
+          keywords: [legal, lawsuit, contract, IP, patent, trademark, litigation, corporate law]
+          agents: [general-counsel]
+          description: "Legal matters routed to general counsel"
+        compliance:
+          keywords: [compliance, audit, SOC2, HIPAA, risk, policy, governance]
+          agents: [compliance-manager]
+          description: "Compliance monitoring and audit support"
+        support:
+          keywords: [support, ticket, escalation, help desk, CSAT, chat support]
+          agents: [support-director]
+          description: "Customer support operations"
+        legal_corporate:
+          keywords: [corporate law, M&A, securities, entity, incorporation]
+          agents: [corporate-counsel]
+          description: "Corporate law and M&A"
+        legal_ip:
+          keywords: [patent, trademark, copyright, trade secret, licensing, IP]
+          agents: [ip-attorney]
+          description: "Intellectual property law"
+        legal_employment:
+          keywords: [employment law, labor law, workplace, wrongful termination, discrimination]
+          agents: [employment-attorney]
+          description: "Employment and labor law"
+        litigation:
+          keywords: [lawsuit, litigation, discovery, settlement, trial, dispute]
+          agents: [litigation-manager]
+          description: "Litigation management and dispute resolution"
+        contracts:
+          keywords: [contract, agreement, NDA, MSA, terms, negotiation]
+          agents: [contracts-manager]
+          description: "Contract drafting and negotiation"
+        privacy:
+          keywords: [privacy, GDPR, CCPA, data protection, PII, consent]
+          agents: [privacy-officer]
+          description: "Privacy and data protection"
+        regulatory:
+          keywords: [regulatory, regulation, FDA, FCC, submission, agency]
+          agents: [regulatory-affairs-specialist]
+          description: "Regulatory affairs and submissions"
+        customer_support:
+          keywords: [ticket, help desk, customer issue, troubleshoot, support queue]
+          agents: [support-agent]
+          description: "Frontline customer support"
+        escalation:
+          keywords: [escalation, critical issue, P1, outage, incident, urgent]
+          agents: [escalation-manager]
+          description: "Escalation and critical issue management"
+        knowledge_base:
+          keywords: [knowledge base, FAQ, documentation, self-service, help article]
+          agents: [knowledge-base-manager, technical-writer]
+          description: "Knowledge base and self-service content"
+        support_training:
+          keywords: [support training, agent coaching, onboarding support, skills]
+          agents: [support-trainer, support-quality-analyst]
+          description: "Support team training and quality"
+        account_management:
+          keywords: [account, renewal, upsell, cross-sell, retention, churn prevention]
+          agents: [account-manager, customer-advocacy-manager]
+          description: "Account management and retention"
+        customer_education:
+          keywords: [tutorial, webinar, certification, customer training, academy]
+          agents: [customer-education-specialist]
+          description: "Customer education and training programs"
+        customer_success:
+          keywords: [customer success, onboarding, adoption, health score, NPS]
+          agents: [customer-success-manager, relationship-manager]
+          description: "Customer success and relationship management"
+        legal_operations:
+          keywords: [legal ops, legal technology, matter management, legal budget]
+          agents: [legal-operations-manager]
+          description: "Legal operations and technology"
+        legal_research:
+          keywords: [legal research, case law, precedent, due diligence, legal analysis]
+          agents: [legal-analyst, paralegal]
+          description: "Legal research and analysis"
+        risk_compliance:
+          keywords: [risk management, compliance risk, enterprise risk, control framework]
+          agents: [compliance-manager]
+          description: "Risk and compliance management"
+        support_analytics:
+          keywords: [support metrics, CSAT, first response, resolution time, support data]
+          agents: [support-analyst]
+          description: "Support analytics and metrics"
+        support_operations:
+          keywords: [support process, queue management, routing, SLA, support workflow]
+          agents: [support-operations-manager, support-supervisor]
+          description: "Support operations and process management"
+        community:
+          keywords: [community, forum, user group, community engagement, ambassador]
+          agents: [community-manager]
+          description: "Community management and engagement"
+    router:
+      keywords:
+        - support
+        - legal
+        - compliance
+        - customer
+        - SLA
+        - contract
+        - privacy
+        - governance
+        - ticket
+        - escalation
+        - knowledge base
+        - FAQ
+        - help desk
+        - CSAT
+        - dispute
+        - lawsuit
+        - litigation
+        - patent
+        - IP
+        - trademark
+        - GDPR
+        - HIPAA
+        - SOC2
+        - regulation
+        - audit
+        - warranty
+        - feedback
+        - CRM
+        - customer retention  # cross-domain: "retention" alone is ambiguous (people = employee, growth = customer)
+        - chat support
+        - customer success
+        - NPS
+        - CCPA
+        - risk management
+        - paralegal
+        - onboarding
+        - adoption
+        - churn prevention
+        - community
+        - case study
+        - reference customer
+        - support quality
+
+  science:
+    description: "STEM research, scientific analysis, mathematics, and data interpretation"
+    planner:
+      controller_catalog:
+        tier_2: [science-coordinator]
+        tier_3: [science-coordinator]
+        tier_4: [science-coordinator]
+      specialist_routing:
+        mathematics:
+          keywords: [math, mathematics, calculus, algebra, theorem, proof, equation, formula]
+          agents: [mathematician]
+          description: "Pure and applied mathematics, proofs, and mathematical modeling"
+        physics:
+          keywords: [physics, quantum, gravity, entropy, thermodynamics, mechanics, relativity]
+          agents: [physicist]
+          description: "Physics analysis, experiment design, and physical phenomena"
+        chemistry:
+          keywords: [chemistry, molecule, atom, periodic, reaction, synthesis, spectroscopy]
+          agents: [chemist]
+          description: "Chemistry problems, synthesis planning, and lab procedures"
+        biology:
+          keywords: [biology, genetics, evolution, genome, photosynthesis, cell, physiology]
+          agents: [biologist]
+          description: "Biology analysis, genetics, evolutionary biology, and lab methods"
+        statistics:
+          keywords: [statistics, hypothesis, data analysis, regression, inference, probability]
+          agents: [statistician]
+          description: "Statistical analysis, experimental design, and data interpretation"
+        astronomy:
+          keywords: [astronomy, celestial, stellar, cosmology, planetary, astrophysics]
+          agents: [astronomer]
+          description: "Astronomy and astrophysics, observational techniques, and cosmology"
+        geology:
+          keywords: [geology, mineral, geomorphology, soil, plate tectonics, rock]
+          agents: [geoscientist]
+          description: "Geoscience problems, geological hazards, and earth processes"
+        biochemistry:
+          keywords: [biochemistry, protein, enzyme, metabolic, molecular biology]
+          agents: [biochemist]
+          description: "Biochemistry, molecular biology, and protein structure analysis"
+        ecology:
+          keywords: [ecology, ecosystem, biodiversity, conservation, population dynamics, climate]
+          agents: [ecologist]
+          description: "Ecology, conservation planning, and ecosystem analysis"
+    router:
+      keywords:
+        - physics
+        - chemistry
+        - biology
+        - math
+        - mathematics
+        - calculus
+        - algebra
+        - theorem
+        - proof
+        - hypothesis
+        - experiment
+        - research
+        - laboratory
+        - molecule
+        - atom
+        - equation
+        - scientific
+        - quantum
+        - genetics
+        - ecology
+        - statistics
+        - geology
+        - astronomy
+        - biochemistry
+        - formula
+        - periodic
+        - evolution
+        - entropy
+        - gravity
+        - photosynthesis
+        - genome
+        - climate
+        - simulation
+        - data analysis
+
+  health:
+    description: "Medical information, wellness, fitness, nutrition, and mental health support"
+    planner:
+      controller_catalog:
+        tier_2: [generic-coordinator]
+        tier_3: [generic-coordinator]
+        tier_4: [generic-coordinator]
+      specialist_routing:
+        medicine:
+          keywords: [medical, diagnosis, treatment, symptoms, clinical, cardiology, oncology, neurology, anatomy, physiology, prognosis]
+          agents: [medical-advisor]
+          description: "Clinical medicine information, symptom analysis, and treatment research"
+        mental_health:
+          keywords: [mental health, therapy, counseling, mindfulness, stress, sleep, anxiety, depression, CBT, DBT]
+          agents: [mental-health-advisor]
+          description: "Mental health education, coping strategies, and therapy modality overviews"
+        nutrition:
+          keywords: [nutrition, diet, calories, vitamins, supplements, meal plan, macronutrient]
+          agents: [nutritionist]
+          description: "Meal planning, dietary analysis, and sports nutrition"
+        fitness:
+          keywords: [fitness, exercise, workout, strength, conditioning, rehabilitation]
+          agents: [fitness-coach]
+          description: "Exercise programming, workout design, and injury prevention"
+        pharmacy:
+          keywords: [pharmacy, medication, dosage, drug interaction, prescription, OTC, vaccine]
+          agents: [pharmacist]
+          description: "Medication counseling, drug interactions, and dosage guidance"
+    router:
+      keywords:
+        - medical
+        - health
+        - wellness
+        - fitness
+        - nutrition
+        - mental health
+        - therapy
+        - diagnosis
+        - treatment
+        - medication
+        - symptoms
+        - exercise
+        - diet
+        - workout
+        - clinical
+        - pharmacy
+        - counseling
+        - mindfulness
+        - rehabilitation
+        - preventive
+        - chronic
+        - calories
+        - vitamins
+        - supplements
+        - anatomy
+        - physiology
+        - cardiology
+        - oncology
+        - neurology
+        - sleep
+        - stress
+        - immunity
+        - vaccine
+        - allergy
+        - inflammation
+        - dosage
+        - prognosis
+
+  education:
+    description: "Teaching, tutoring, curriculum design, academic support, and learning facilitation"
+    planner:
+      controller_catalog:
+        tier_2: [generic-coordinator]
+        tier_3: [generic-coordinator]
+        tier_4: [generic-coordinator]
+      specialist_routing:
+        tutoring:
+          keywords: [tutor, tutoring, explain, help understand, one-on-one, homework help, practice problems]
+          agents: [academic-tutor]
+          description: "Personalized tutoring and subject-specific academic support"
+        curriculum:
+          keywords: [curriculum, lesson plan, syllabus, course design, learning objectives, instructional design, unit plan]
+          agents: [curriculum-designer]
+          description: "Curriculum and instructional design for courses and programs"
+        teaching:
+          keywords: [teaching, pedagogy, classroom management, teacher training, instructional strategy, differentiation]
+          agents: [teacher-coach]
+          description: "Teacher professional development and pedagogical coaching"
+        languages:
+          keywords: [language learning, ESL, EFL, Spanish, French, Mandarin, grammar, vocabulary, pronunciation, fluency]
+          agents: [language-tutor]
+          description: "Language acquisition and foreign language instruction"
+        research:
+          keywords: [academic research, literature review, thesis, dissertation, citation, academic writing, scholarly]
+          agents: [academic-researcher]
+          description: "Academic research support and scholarly writing guidance"
+    router:
+      keywords:
+        - teach
+        - learn
+        - tutor
+        - curriculum
+        - lesson
+        - student
+        - exam
+        - study
+        - academic
+        - school
+        - university
+        - course
+        - training
+        - pedagogy
+        - assessment
+        - grade
+        - homework
+        - lecture
+        - syllabus
+        - scholarship
+        - SAT
+        - GRE
+        - STEM
+        - literacy
+        - classroom
+        - education
+        - subject
+        - quiz
+        - test prep
+        - flashcard
+        - study guide
+        - reading comprehension
+        - math help
+        - science education
+        - history
+        - essay writing
+        - college prep
+        - K-12
+        - undergraduate
+        - graduate
+        - PhD
+        - accreditation
+        - learning disability
+        - IEP
+        - differentiated instruction
+        - e-learning
+        - online course
+        - MOOC
+        - certification
+        - continuing education
+        - professional development
+
+  personal:
+    description: "Personal development, career guidance, life coaching, personal finance, and productivity"
+    planner:
+      controller_catalog:
+        tier_2: [generic-coordinator]
+        tier_3: [generic-coordinator]
+        tier_4: [generic-coordinator]
+      specialist_routing:
+        life_coaching:
+          keywords: [life coach, life goals, purpose, fulfillment, happiness, well-being, self-discovery, values, meaning]
+          agents: [life-coach]
+          description: "Holistic life coaching for purpose, direction, and personal fulfillment"
+        career:
+          keywords: [career, job search, resume, cover letter, interview, salary negotiation, promotion, career change, LinkedIn]
+          agents: [career-counselor]
+          description: "Career planning, job search strategy, and professional advancement"
+        finance:
+          keywords: [personal finance, budget, savings, investing, retirement, debt, 401k, IRA, emergency fund, net worth]
+          agents: [personal-finance-advisor]
+          description: "Personal financial planning, budgeting, and investment guidance"
+        relationships:
+          keywords: [relationship, communication, conflict, dating, marriage, family, boundaries, social skills, friendship]
+          agents: [relationship-coach]
+          description: "Relationship coaching and interpersonal communication skills"
+        productivity:
+          keywords: [productivity, time management, habits, procrastination, focus, GTD, routines, goal setting, organization]
+          agents: [productivity-coach]
+          description: "Productivity systems, habit formation, and time management coaching"
+    router:
+      keywords:
+        - career
+        - personal
+        - life
+        - goals
+        - productivity
+        - personal finance
+        - budget
+        - retirement
+        - relationship
+        - coaching
+        - self-improvement
+        - habits
+        - motivation
+        - time management
+        - resume
+        - interview
+        - salary
+        - savings
+        - investing
+        - work-life
+        - mindset
+        - procrastination
+        - journaling
+        - gratitude
+        - self-care
+        - personal development
+        - life coach
+        - well-being
+        - fulfillment
+        - purpose
+        - values
+        - boundaries
+        - communication skills
+        - conflict resolution
+        - dating
+        - marriage
+        - family
+        - social anxiety
+        - confidence
+        - job search
+        - cover letter
+        - LinkedIn
+        - promotion
+        - career change
+        - debt
+        - 401k
+        - IRA
+        - emergency fund
+        - net worth
+        - financial planning
+        - GTD
+        - focus
+        - deep work
+        - morning routine
+        - habit tracker
+
+  arts:
+    description: "Visual arts, performing arts, music production, photography, and film"
+    planner:
+      controller_catalog:
+        tier_2: [generic-coordinator]
+        tier_3: [generic-coordinator]
+        tier_4: [generic-coordinator]
+      specialist_routing:
+        visual:
+          keywords: [painting, sculpture, watercolor, oil painting, drawing, illustration, portfolio, exhibition, art history, gallery, visual art]
+          agents: [visual-artist]
+          description: "Visual art creation and critique"
+        photography:
+          keywords: [photography, photo, camera, lightroom, composition, portrait, landscape, studio, editing]
+          agents: [photographer]
+          description: "Photography technique, editing, and composition"
+        film:
+          keywords: [film, filmmaking, cinematography, directing, screenplay, video production, editing, shot composition, storyboard]
+          agents: [film-director]
+          description: "Film direction, cinematography, and video production"
+        music_teaching:
+          keywords: [music theory, ear training, sight reading, instrument, lesson, practice, scales, chords, music education]
+          agents: [music-teacher]
+          description: "Music education, theory, and instrument instruction"
+        music_production:
+          keywords: [music production, recording, mixing, mastering, DAW, studio, beats, arrangement, sound design, audio engineering]
+          agents: [music-producer]
+          description: "Music production, recording, and audio engineering"
+        performing_arts:
+          keywords: [dance, theater, performance, acting, stage, choreography, improv, musical theater]
+          agents: [generic-coordinator]
+          description: "Performing arts routed through generic-coordinator"
+    router:
+      keywords:
+        - painting
+        - photography
+        - film
+        - filmmaking
+        - music production
+        - visual art
+        - gallery
+        - composition
+        - sculpture
+        - performing arts
+        - instrument
+        - recording
+        - mixing
+        - mastering
+        - watercolor
+        - oil painting
+        - cinematography
+        - directing
+        - art history
+        - portfolio
+        - exhibition
+        - music theory
+        - ear training
+        - sight reading
+        - dance
+        - theater
+        - storyboard
+        - illustration
+        - drawing
+        - studio
+        - audio engineering
+
+  trades:
+    description: "Culinary arts, construction, automotive, agriculture, fashion, and applied trade skills"
+    planner:
+      controller_catalog:
+        tier_2: [generic-coordinator]
+        tier_3: [generic-coordinator]
+        tier_4: [generic-coordinator]
+      specialist_routing:
+        culinary:
+          keywords: [cooking, recipe, culinary, baking, sourdough, kitchen, chef, food, meal prep, fermentation, pastry, nutrition]
+          agents: [chef]
+          description: "Culinary arts, recipes, and cooking technique"
+        construction:
+          keywords: [construction, building, plumbing, electrical, HVAC, roofing, framing, renovation, home improvement, DIY, carpentry, masonry, drywall]
+          agents: [construction-advisor]
+          description: "Construction, renovation, and home improvement"
+        automotive:
+          keywords: [automotive, mechanic, car repair, engine, transmission, brake, oil change, tire, vehicle, diagnostic]
+          agents: [automotive-technician]
+          description: "Automotive repair and maintenance"
+        fashion:
+          keywords: [fashion, sewing, garment, pattern, textile, clothing design, tailoring, embroidery, knitting, crochet]
+          agents: [fashion-designer]
+          description: "Fashion design, sewing, and textile craft"
+        agriculture:
+          keywords: [farming, agriculture, gardening, landscaping, irrigation, soil, crop, planting, harvest, permaculture, composting]
+          agents: [agronomist]
+          description: "Agriculture, farming, and gardening"
+        woodworking:
+          keywords: [woodworking, welding, metalworking, lathe, joinery, furniture, workshop, tool]
+          agents: [generic-coordinator]
+          description: "Woodworking and metalworking routed through generic-coordinator"
+    router:
+      keywords:
+        - cooking
+        - recipe
+        - culinary
+        - construction
+        - automotive
+        - repair
+        - plumbing
+        - electrical
+        - farming
+        - agriculture
+        - fashion
+        - sewing
+        - woodworking
+        - welding
+        - HVAC
+        - roofing
+        - gardening
+        - landscaping
+        - baking
+        - sourdough
+        - mechanic
+        - carpentry
+        - masonry
+        - irrigation
+        - DIY
+        - home improvement
+        - renovation
+        - chef
+        - tailoring
+        - garment
+        - composting
+        - permaculture
+        - fermentation
+        - metalworking
+
+# Note: people/, shared/, core/, leadership/ retain their own
+# config/domain_overrides.yaml files (not consolidated here).

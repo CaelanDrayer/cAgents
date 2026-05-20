@@ -50,4 +50,4 @@ For operations/finance requests within the business domain:
 
 ## Config Location
 
-`business/config/domain_overrides.yaml`
+`cagents-memory/_system/config/routing.yaml` (under `domains.business`; consolidated in v12 W4.2 — the legacy `business/config/domain_overrides.yaml` path no longer exists)

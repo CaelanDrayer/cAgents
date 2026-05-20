@@ -66,8 +66,11 @@ DEVELOPER_BRANCHES=(backend frontend fullstack infrastructure quality)
 OPERATOR_BRANCHES=(business-ops content marketing-sales people-ops support)
 ADVISOR_BRANCHES=(education health legal personal)
 
-# Legacy domain dirs (still hold config/domain_overrides.yaml for routing)
-LEGACY_DOMAINS=(engineering creative business growth people service leadership shared core science health education personal arts trades)
+# Legacy domain dirs that retain config/domain_overrides.yaml after v12 W4.2
+# consolidation. The 11 other legacy dirs (engineering, creative, business,
+# growth, service, science, health, education, personal, arts, trades) were
+# consolidated into cagents-memory/_system/config/routing.yaml.
+LEGACY_DOMAINS=(people shared leadership core)
 
 log_pass() {
     if [[ $COUNT_ONLY != true ]]; then

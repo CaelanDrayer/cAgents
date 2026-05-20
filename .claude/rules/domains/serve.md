@@ -64,4 +64,4 @@ Common serve execution agents:
 
 ## Config Location
 
-`service/config/domain_overrides.yaml`
+`cagents-memory/_system/config/routing.yaml` (under `domains.service`; consolidated in v12 W4.2 — the legacy `service/config/domain_overrides.yaml` path no longer exists)

@@ -65,4 +65,4 @@ Common engineering execution agents:
 
 ## Config Location
 
-`engineering/config/domain_overrides.yaml`
+`cagents-memory/_system/config/routing.yaml` (under `domains.engineering`; consolidated in v12 W4.2 — the legacy `engineering/config/domain_overrides.yaml` path no longer exists)
