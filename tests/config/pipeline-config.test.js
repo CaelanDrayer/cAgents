@@ -79,7 +79,7 @@ describe('pipeline_config.yaml', () => {
 
   describe('revision routing', () => {
     it('should define max_cycles', () => {
-      expect(loadConfig()).toContain('max_cycles: 5');
+      expect(loadConfig()).toContain('max_cycles: 3');
     });
 
     it('should route FAIL to PROMPTS_READY', () => {
