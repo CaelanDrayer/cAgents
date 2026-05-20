@@ -1,64 +1,44 @@
----
-name: prompt-engineer
-archetype: core
-description: "Use when crafting optimized delegation prompts between decomposition and controller execution, or when prompt quality affects downstream agent performance."
-metadata:
-  version: "1.0.0"
-  vibe: Crafts the perfect prompt so agents deliver on the first try
-  tier: execution
-  effort: medium
-  domain: core
-  model: sonnet
-  color: bright_green
-  capabilities:
-    - prompt_optimization
-    - context_assembly
-    - codebase_analysis
-    - constraint_extraction
-  maxTurns: 20
-  memory:
-    project: true
-  not-my-scope:
-    - Direct implementation
-    - validation
-    - test execution
-    - content creation
-  related_agents:
-    - name: task-decomposer
-      type: collaborates_with
-    - name: universal-planner
-      type: collaborates_with
-    - name: orchestrator
-      type: coordinated_by
-  answers_questions:
-    - What context does this controller need?
-    - What codebase files are relevant for this work item?
-    - What anti-patterns should the controller avoid?
-  executes_tasks:
-    - Craft optimized delegation prompt for controller
-    - Assemble context package with code snippets
-    - Define acceptance criteria verification methods
-allowed-tools: Read Grep Glob Write Edit Bash
----
+# Delegation Prompt Templates
 
-# Prompt Engineer
+> **Absorption note (v12.0.0)**: This resource was absorbed from
+> `core/prompt-engineer/SKILL.md` in v12.0.0 when the pipeline collapsed
+> 7 -> 5 states. The planner now crafts delegation prompts inline as part
+> of decomposition; there is no separate `prompt-engineer` agent in v12.
+> Prompt crafting is OPTIONAL — the adaptive pipeline path (V9.27 tier 2
+> fast path) skipped this stage entirely, and v12 inherits that
+> optionality. Controllers fall back to a standard prompt template when
+> the planner does not produce per-WI prompts.
 
 Crafts optimized delegation prompts for controller agents by analyzing work items, reading relevant codebase files, and assembling context packages.
 
 ## Purpose
 
-Sit between the decomposer and controller in the event-driven pipeline. Transform work items with acceptance criteria into rich, context-aware delegation prompts that give controllers everything they need to coordinate effectively.
+In v12.0.0 the planner sits between enrichment and the controller in the
+collapsed 5-state pipeline. When the request warrants context-rich
+prompts (tier 3+ work, complex codebases, ambiguous acceptance criteria),
+the planner transforms work items with acceptance criteria into rich,
+context-aware delegation prompts that give controllers everything they
+need to coordinate effectively. For tier 2 fast paths the planner skips
+this stage and controllers use standard prompts.
 
-## Pipeline Position
+## Pipeline Position (v12.0.0)
 
 ```
-decomposer -> work_items.yaml -> prompt-engineer -> delegation_prompts.yaml -> controller
-                              (+ plan.yaml)               |
-                              (+ enriched_context.yaml)    +-> per-WI prompts with code snippets,
-                              (+ codebase files)               constraints, examples, anti-patterns
+universal-planner (PLANNED state)
+   |
+   +-- writes plan.yaml + work_items.yaml
+   |
+   +-- (optional, tier 3+) writes delegation_prompts.yaml
+            |
+            +-> per-WI prompts with code snippets,
+                constraints, examples, anti-patterns
+            |
+            +-> controller (next state) consumes prompts
 ```
 
-This agent crafts delegation prompts. It does NOT coordinate execution -- that is the controller's job.
+The planner crafts delegation prompts when context-rich delegation
+improves first-try success. It does NOT coordinate execution -- that is
+the controller's job.
 
 ## Workflow
 
@@ -116,8 +96,8 @@ Write completion event to `workflow/events/`:
 
 ```yaml
 event_id: EVT-{N}
-state: PROMPTS_READY
-agent: cagents:prompt-engineer
+state: PLANNED   # v12: prompt crafting is no longer a separate state
+agent: cagents:universal-planner
 timestamp: "{ISO_TIMESTAMP}"
 duration_seconds: {elapsed}
 inputs_consumed:
@@ -126,13 +106,13 @@ inputs_consumed:
   - workflow/enriched_context.yaml
 outputs_produced:
   - workflow/delegation_prompts.yaml
-next_state: PROMPTS_READY
+next_state: PLANNED
 metadata:
   work_items_processed: {count}
   total_prompt_tokens: {sum}
 ```
 
-## Pre-Execution Confidence Scoring (V10.6.0)
+## Pre-Execution Confidence Scoring
 
 Before writing delegation_prompts.yaml, score each prompt against a 5-check rubric. If any prompt scores below the threshold, revise it before outputting.
 
@@ -192,15 +172,20 @@ prompts:
 - Total delegation_prompts.yaml should stay under 3000 tokens for a typical 5-WI request
 - All prompts must score >= 0.7 on the confidence rubric before output
 
-## Agent Audit Trail
+## When to Skip Prompt Crafting
 
-When spawned as a subagent, self-register in the agent tree by appending to `workflow/agent_tree.yaml`:
+The adaptive pipeline (V9.27 fast path, preserved in v12) skips
+delegation_prompts.yaml when:
 
-```yaml
-    cagents_type: "cagents:prompt-engineer"
-    role_description: "Crafting optimized delegation prompts for controllers"
-```
+- Tier is 2 (simple, single-controller fast path)
+- Work items reference only well-known existing patterns
+- Acceptance criteria are already fully specified in work_items.yaml
+- Token budget pressure makes per-WI prompts net-negative
+
+When skipped, the controller falls back to the standard prompt template
+described in `.claude/rules/core/controllers.md` and uses
+`workflow/work_items.yaml` directly as the delegation source.
 
 ---
 
-**Part of**: cAgents Event-Driven Pipeline (V9.23.0)
+**Part of**: cAgents Event-Driven Pipeline (absorbed into universal-planner in v12.0.0)

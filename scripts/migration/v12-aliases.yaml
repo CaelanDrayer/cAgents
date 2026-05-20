@@ -19,19 +19,27 @@ source_version: "11.3.0"
 
 aliases:
   # ---------------------------------------------------------------------------
-  # Q1: Pipeline collapse — agents absorbed into core/planner/resources/
+  # Q1: Pipeline collapse — agents absorbed into core/universal-planner/resources/
+  # NOTE: alias target uses the canonical v12 name `cagents:planner`. Physical
+  # absorption files currently live under core/universal-planner/resources/
+  # because the universal-planner agent dir has not yet been renamed; the
+  # router fallback maps cagents:planner -> cagents:universal-planner via the
+  # standard agent-resolution chain. If a later WI renames
+  # core/universal-planner/ -> core/planner/, no alias change is needed.
   # ---------------------------------------------------------------------------
   - old: cagents:task-decomposer
     new: cagents:planner
     type: absorb
     decision: Q1
-    notes: "Content folded into core/planner/resources/decomposition.md (Three-Tier Progressive Disclosure). Router fallback resolves cagents:task-decomposer -> cagents:planner."
+    notes: "Content folded into core/universal-planner/resources/decomposition.md (Three-Tier Progressive Disclosure). Router fallback resolves cagents:task-decomposer -> cagents:planner (which currently maps to core/universal-planner/). Source dir core/task-decomposer/ scheduled for deletion by lead after sync-agents.sh."
+    new_path: core/universal-planner/resources/decomposition.md
 
   - old: cagents:prompt-engineer
     new: cagents:planner
     type: absorb
     decision: Q1
-    notes: "Content folded into core/planner/resources/prompt-templates.md. Router fallback resolves cagents:prompt-engineer -> cagents:planner."
+    notes: "Content folded into core/universal-planner/resources/prompt-templates.md (Three-Tier Progressive Disclosure). Router fallback resolves cagents:prompt-engineer -> cagents:planner (which currently maps to core/universal-planner/). Source dir core/prompt-engineer/ scheduled for deletion by lead after sync-agents.sh."
+    new_path: core/universal-planner/resources/prompt-templates.md
 
   # ---------------------------------------------------------------------------
   # Q2: Agent moves to developer/backend/

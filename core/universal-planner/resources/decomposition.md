@@ -1,50 +1,22 @@
----
-name: task-decomposer
-archetype: core
-description: "Use when breaking down plans into granular work items with acceptance criteria, dependency graphs, and wave assignments for parallel execution."
-metadata:
-  version: "1.0.0"
-  vibe: Breaks the impossible into 30 very possible pieces
-  tier: infrastructure
-  effort: high
-  domain: core
-  model: opus
-  color: bright_yellow
-  capabilities:
-    - abstraction_classification
-    - component_extraction
-    - implicit_discovery
-    - dependency_mapping
-    - work_breakdown_generation
-  maxTurns: 30
-  not-my-scope:
-    - Implementation
-    - validation
-    - coordination
-    - content creation
-  related_agents:
-    - name: universal-planner
-      type: collaborates_with
-    - name: prompt-engineer
-      type: collaborates_with
-    - name: orchestrator
-      type: coordinated_by
-allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
----
+# Aggressive Task Decomposition
 
-# Task Decomposer
+> **Absorption note (v12.0.0)**: This resource was absorbed from
+> `core/task-decomposer/SKILL.md` in v12.0.0 when the pipeline collapsed
+> 7 -> 5 states. The planner now handles decomposition inline — there is
+> no separate decomposer agent in v12. The Three-Tier Progressive
+> Disclosure pattern (see `.claude/rules/core/skill-format.md`) keeps the
+> SKILL.md body small while preserving the full decomposition guidance
+> here for on-demand loading.
 
-**Role**: Aggressive task decomposition specialist. When user says "I want X", extrapolate EVERYTHING needed to produce X successfully.
+**Role**: Aggressive task decomposition specialist. When a user says "I want X", extrapolate EVERYTHING needed to produce X successfully.
 
-**Philosophy**: Users state outcomes, not requirements. Your job is to unpack what they actually need.
+**Philosophy**: Users state outcomes, not requirements. The planner's job is to unpack what they actually need.
 
 **Use When**:
-- Called by universal-planner for tier 3+ complex decomposition
-- Called by task-consolidator for re-decomposition of consolidated tasks
+- Tier 3+ complex decomposition is needed inline during planning
+- Re-decomposition of consolidated tasks (formerly task-consolidator collaboration)
 - Request has implicit requirements that must be made explicit
 - Dependencies and prerequisites need discovery
-
-**Relationship with universal-planner**: Task-decomposer is the decomposition engine. Universal-planner orchestrates the planning phase and delegates decomposition here for complex requests. Planner writes plan.yaml; decomposer writes decomposition.yaml.
 
 ## Core Mission
 
@@ -53,7 +25,7 @@ Transform vague user requests into comprehensive, actionable work breakdowns:
 ```
 User says: "Add authentication to my app"
 
-Decomposer extrapolates:
+Planner extrapolates:
 ├── Discover Current State
 ├── Design Decisions
 ├── Backend Requirements (10+ items)
@@ -77,7 +49,7 @@ Before decomposing, classify how abstract the request is:
 
 **The more abstract, the more we must fill in on behalf of the user.**
 
-## Decomposition Framework
+## Decomposition Framework — The 5 Steps
 
 1. **Request Analysis** - Extract core intent, identify request type
 2. **Component Extraction** - DISCOVER, DESIGN, CREATE, VALIDATE, DOCUMENT
@@ -90,11 +62,11 @@ Before decomposing, classify how abstract the request is:
 4. **Dependency Mapping** - What depends on what?
 5. **Work Item Generation** - Concrete tasks with acceptance criteria
 
-## Detailed Reference
-
-See @resources/abstraction-handling.md for handling vague requests.
-See @resources/domain-patterns.md for domain-specific decomposition.
-See @resources/unsaid-framework.md for implicit requirement discovery.
+See also:
+- `@resources/component-extraction.md` for the 5-type component breakdown.
+- `@resources/dependency-mapping.md` for dependency graph creation.
+- `@resources/work-item-generation.md` for work item format and quality.
+- `.claude/rules/quality/implicit-discovery.md` for the Unsaid Framework that powers step 3.
 
 ## Critical Rules
 
@@ -106,25 +78,7 @@ See @resources/unsaid-framework.md for implicit requirement discovery.
 6. **CONTEXT is king** - Search codebase, understand current state
 7. **FILL IN THE BLANKS** - User states outcome, we determine requirements
 
-## Event-Driven Pipeline Integration (V9.23.0)
-
-When spawned by /run's state machine loop, the task-decomposer is the PLANNED state agent. Your job is to decompose the plan into work items with acceptance criteria.
-
-### Pipeline Role
-
-```
-/run state machine -> PLANNED -> task-decomposer -> work_items.yaml + event file
-```
-
-### Inputs
-
-Read `workflow/plan.yaml` for objectives and controller assignment.
-
-### Outputs
-
-Write `workflow/work_items.yaml` with the v10 enhanced format and `workflow/dependency_graph.yaml`.
-
-### v10 Enhanced Work Item Format (Agent Chaining)
+## v10 Enhanced Work Item Format (Agent Chaining)
 
 Each work item MUST include:
 - `agent`: Specific agent assignment (e.g., `cagents:architect`, `cagents:backend-developer`)
@@ -157,48 +111,54 @@ work_items:
 
 The controller uses this to execute work items in topological order, passing file outputs from completed dependencies as context to downstream agents.
 
-### Adaptive Chain Depth
+## Adaptive Chain Depth
 
 Chain depth adapts to pipeline path:
 - **Minimal**: 2-3 agents (planner -> executor -> reviewer)
 - **Medium**: 3-5 agents (planner -> architect -> executor -> qa -> reviewer)
 - **Full**: 5-8 agents (full specialist chain)
 
-### Write Completion Event
+## Pipeline Integration (v12.0.0)
 
-After writing work_items.yaml, write a completion event to `workflow/events/`:
+In v12.0.0 the pipeline collapses 7 -> 5 states. The planner is the
+single state owner for both PLANNED (plan.yaml) and the previously-separate
+DECOMPOSED (work_items.yaml) state. The planner now writes BOTH artifacts in
+one pass:
 
-```yaml
-event_id: EVT-3
-state: DECOMPOSED
-agent: cagents:task-decomposer
-timestamp: "{ISO_TIMESTAMP}"
-duration_seconds: {elapsed}
-inputs_consumed:
-  - workflow/plan.yaml
-outputs_produced:
-  - workflow/work_items.yaml
-  - workflow/dependency_graph.yaml
-next_state: DECOMPOSED
+```
+/run state machine (v12) -> PLANNED -> universal-planner -> plan.yaml + work_items.yaml + event file
 ```
 
-Create the events directory if it does not exist: `mkdir -p workflow/events/`
+### Inputs
+
+- `workflow/enriched_context.yaml` - domain, constraints, project context
+- `workflow/plan.yaml` - if previously written this session (revision routing)
+- Codebase files via Grep/Glob - context discovery
+- `{domain}/config/planner_config.yaml` - domain controller catalog and patterns
+
+### Outputs
+
+- `workflow/plan.yaml` - objectives, controller assignment, temporal analysis, not-in-scope, existing-code, diagrams
+- `workflow/work_items.yaml` - v10 enhanced work item format with agent chaining
+- `workflow/dependency_graph.yaml` - explicit dependency mappings (if non-trivial)
+- `workflow/events/EVT-{N}.yaml` - completion event with `next_state: PLANNED`
 
 ## Memory Operations
 
 ### Writes
-- `workflow/decomposition.yaml` - Full decomposition output
-- `workflow/work_items.yaml` - Pipeline-standard decomposition output (same content)
-- `workflow/work_items/` - Individual work item files
-- `workflow/dependency_graph.yaml` - Dependency mappings
+- `workflow/plan.yaml` - Plan with objectives and controller assignment
+- `workflow/work_items.yaml` - Pipeline-standard decomposition output
+- `workflow/decomposition.yaml` - Optional full decomposition artifact (legacy filename; same content as work_items.yaml)
+- `workflow/work_items/` - Individual work item files (optional, for very large breakdowns)
+- `workflow/dependency_graph.yaml` - Dependency mappings (when non-trivial)
 - `workflow/events/EVT-{N}.yaml` - Completion event
 
 ### Reads
 - `instruction.yaml` - User request
-- `workflow/plan.yaml` - Plan objectives and controller assignment
+- `workflow/enriched_context.yaml` - Orchestrator's output
 - Codebase files via Grep/Glob - Context discovery
 - `{domain}/config/planner_config.yaml` - Domain controller catalog and patterns
 
 ---
 
-**Part of**: cAgents Aggressive Task Decomposition
+**Part of**: cAgents Aggressive Task Decomposition (absorbed into universal-planner in v12.0.0)

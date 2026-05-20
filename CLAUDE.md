@@ -511,7 +511,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 
 **Skills**: `/org`, `/run`, `/team`, `/designer`, `/improve`, `/helper` (in `.claude/skills/`; V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see `docs/MIGRATION-V11.md`)
 **Built-in**: `/memory`, `/init` (Claude Code native)
-**Agents**: 255 total across 9 archetypes (developer 33, operator 87, advisor 30, analyst 31, creator 11, writer 26, strategist 9, core 17, leadership 11)
+**Agents**: 255 total across 9 archetypes (developer 33, operator 87, advisor 30, analyst 31, creator 11, writer 26, strategist 9, core 15, leadership 11)
 **Domain Overlay (legacy routing/config only)**: 13 dirs (engineering, creative, business, growth, people, service, shared, science, health, education, personal, arts, trades) hold `config/domain_overrides.yaml` — no SKILL.md files
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/domain_overrides.yaml`, `cagents-memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (session YAML contract for AgentPath)
 **Hooks**: 30 .cjs files = 27 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI
