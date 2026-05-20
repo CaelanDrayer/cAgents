@@ -66,7 +66,7 @@ const REQUIRED_ENGINEERING_OLDS = [
   // Q3 rename
   'cagents:chief-legal-officer',
   // Q4 merge / fold
-  'cagents:tech-lead',
+  'cagents:engineering-manager',
   'cagents:architecture-reviewer',
   // Q7 move + rename
   'cagents:devops-lead',
@@ -187,8 +187,8 @@ describe('v12-aliases.yaml engineering coverage (Q1..Q7)', () => {
     expect(clo.decision).toBe('Q3');
   });
 
-  it('Q4 merges tech-lead -> tech-lead', () => {
-    const em = aliasesByOld.get('cagents:tech-lead');
+  it('Q4 merges engineering-manager -> tech-lead', () => {
+    const em = aliasesByOld.get('cagents:engineering-manager');
     expect(em.new).toBe('cagents:tech-lead');
     expect(em.type).toBe('rename_and_merge');
     expect(em.decision).toBe('Q4');
