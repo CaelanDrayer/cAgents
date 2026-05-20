@@ -139,7 +139,7 @@ AI systems build a model of "who/what is this brand". Signals across the open we
 GEO requires that AI crawlers can actually read the site. Check robots.txt for:
 - Are training crawlers allowed (`GPTBot`, `ClaudeBot`, `Bytespider`, `Google-Extended`)?
 - Are real-time browsing crawlers allowed (`ChatGPT-User`, `PerplexityBot`)?
-- Does the policy match the business intent? (See seo-specialist @resources/technical-audit.md for crawler taxonomy.)
+- Does the policy match the business intent? (See seo-specialist's resources/technical-audit.md for crawler taxonomy.)
 
 Blocking everything = invisible to AI search. This is a strategic choice, not a default.
 

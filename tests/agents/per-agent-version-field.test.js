@@ -50,8 +50,8 @@ function parseFrontmatter(content) {
 describe('Phase 11: per-agent metadata.version field (V11.1.12+)', () => {
   const skillFiles = findAllSkillMd();
 
-  test('finds the expected agent count (≥246 minimum baseline)', () => {
-    expect(skillFiles.length).toBeGreaterThanOrEqual(246);
+  test('finds the expected agent count (≥238 minimum baseline)', () => {
+    expect(skillFiles.length).toBeGreaterThanOrEqual(238);
   });
 
   test('(a) every agent SKILL.md declares metadata.version', () => {

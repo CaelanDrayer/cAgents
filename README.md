@@ -2,11 +2,11 @@
 
 **Your AI Workforce for Claude Code**
 
-Deploy 243 specialized agents across 9 builder-role archetypes (with a legacy 15-domain routing overlay) through an intelligent pipeline that routes your request, plans execution, decomposes work, coordinates specialists, reviews outputs, and validates quality — automatically.
+Deploy 238 specialized agents across 9 builder-role archetypes through an intelligent pipeline that routes your request, plans execution, decomposes work, coordinates specialists, reviews outputs, and validates quality — automatically.
 
 | Stat | Value |
 |------|-------|
-| Agents | 243 across 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership) |
+| Agents | 238 across 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership) |
 | Skills | 6 slash commands |
 | Hooks | 28 .cjs files = 25 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI, across 17 event types |
 | Models | Opus 4.6 (controllers) · Sonnet 4.6 (execution) · Haiku 4.5 (support) |
@@ -19,7 +19,7 @@ Deploy 243 specialized agents across 9 builder-role archetypes (with a legacy 15
 - Multi-step task orchestration with automatic routing, planning, and coordination
 - Cross-domain work (engineering + business + creative + growth in one request)
 - Parallel execution with quality-gated waves (40-60% faster for complex tasks)
-- Consistent delegation patterns across 9 archetypes (243 specialists) with a legacy 15-domain routing overlay
+- Consistent delegation patterns across 9 archetypes (238 specialists)
 - Reviewer loops, confidence scoring, and revision routing built into every run
 
 **cAgents is NOT for you if:**
@@ -174,20 +174,20 @@ Recommends the right skill based on your task description. Use it when you are u
 
 ### Canonical: 9 Archetypes (V11.1.0+)
 
-Since v11.1.0, the 243-agent catalog is organized as a builder-role archetype tree:
+Since v11.1.0, the agent catalog (238 agents as of v12.0.0) is organized as a builder-role archetype tree:
 
 | Archetype | Agents | Scope |
 |-----------|-------:|-------|
-| **Developer** | 31 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
-| **Operator** | 81 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
+| **Developer** | 30 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
+| **Operator** | 74 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
 | **Advisor** | 30 | Legal, health, education, personal (4 branches) |
-| **Analyst** | 27 | Data science, BI, research, social science |
+| **Analyst** | 31 | Data science, BI, research, social science |
 | **Writer** | 26 | Copy, narrative, technical, editorial |
 | **Creator** | 11 | Visual artists, designers, audiovisual creators |
 | **Strategist** | 9 | Product owners, portfolio managers, planners |
-| **Core** | 17 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, etc.) |
-| **Leadership** | 11 | C-suite executives — used by `/org` |
-| **TOTAL** | **243** | |
+| **Core** | 15 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, etc.) |
+| **Leadership** | 12 | C-suite executives — used by `/org` |
+| **TOTAL** | **238** | |
 
 ### Legacy: 15-Domain Routing Overlay
 
@@ -370,7 +370,7 @@ For cross-domain work that spans multiple areas (e.g., launching a product requi
 
 | Dimension | cAgents | Official feature-dev plugin | Official code-review plugin |
 |-----------|---------|----------------------------|----------------------------|
-| **Agent count** | 243 | 3–5 | 3–5 |
+| **Agent count** | 238 | 3–5 | 3–5 |
 | **Business domains** | 9 archetypes (15 legacy routing overlays) | 1 (engineering) | 1 (engineering) |
 | **Pipeline state machine** | Yes — PASS/FAIL/REVISE routing, max 5 cycles | No | No |
 | **Parallel team execution** | Yes — N-wave with per-wave quality gates | No | No |
@@ -473,4 +473,4 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | 243 agents across 9 archetypes | Opus 4.6 · Sonnet 4.6 · Haiku 4.5
+**Built with Claude Code** | 238 agents across 9 archetypes | Opus 4.6 · Sonnet 4.6 · Haiku 4.5
