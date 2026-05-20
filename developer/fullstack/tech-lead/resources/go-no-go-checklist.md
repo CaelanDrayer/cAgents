@@ -60,7 +60,7 @@ rationale: |
 
   All other criteria met. Safe to deploy.
 
-approved_by: engineering-manager
+approved_by: tech-lead
 approved_at: 2026-01-20T14:00:00Z
 ```
 

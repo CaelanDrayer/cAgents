@@ -12,10 +12,10 @@ The cAgents codebase is mid-flight on the v11.3.0 -> v12.0.0 revamp on branch
   the planner. The new sequence is `INIT -> ORCHESTRATED -> PLANNED -> COORDINATED ->
   VALIDATED`. Decomposition becomes a planner sub-responsibility; prompt-engineering
   becomes controller-side prompt assembly.
-- **Controller merge (engineering-manager -> tech-lead)**: The two engineering controllers
-  consolidate into a single fullstack `tech-lead`. The 214 doc references to
-  `engineering-manager` will be swept to `tech-lead` in W2.4. Until then, the alias is
-  preserved via `scripts/migration/v12-aliases.yaml`.
+- **Controller merge (engineering-manager -> tech-lead) [v12.0.0]**: The two engineering
+  controllers consolidated into a single fullstack `tech-lead` in W2.4. All active
+  references were swept; the `engineering-manager -> tech-lead` alias is preserved via
+  `scripts/migration/v12-aliases.yaml` for backward compatibility.
 - **Planner-fold**: `task-decomposer` and `prompt-engineer` are absorbed into the
   planner. Their output schemas (`work_items.yaml`, `delegation_prompts.yaml`) remain
   but are written by the planner directly, eliminating two pipeline transitions.

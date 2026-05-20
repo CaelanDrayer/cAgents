@@ -1,6 +1,6 @@
 # TodoWrite Patterns for /run Workflow
 
-Progress tracking throughout all phases. **All tasks MUST be prefixed with the agent name in brackets** (e.g., `[/run]`, `[engineering-manager]`) so the user can see which agent is executing each task.
+Progress tracking throughout all phases. **All tasks MUST be prefixed with the agent name in brackets** (e.g., `[/run]`, `[tech-lead]`) so the user can see which agent is executing each task.
 
 ## Initial Task List (Step 2 of /run)
 
@@ -28,7 +28,7 @@ TodoWrite([
 ])
 ```
 
-Replace `{controller_name}` with the actual controller (e.g., `engineering-manager`, `creative-director`).
+Replace `{controller_name}` with the actual controller (e.g., `tech-lead`, `creative-director`).
 
 ## Before Controller Delegation (Step 5 of /run)
 
@@ -64,7 +64,7 @@ When the controller identifies execution agents, it calls TodoWrite to add speci
 TodoWrite([
   {"content": "[/run] Route request to domain and tier", "status": "completed", "id": "route"},
   {"content": "[/run] Plan objectives and select controller", "status": "completed", "id": "plan"},
-  {"content": "[engineering-manager] Coordinate: ask questions and synthesize", "status": "in_progress", "id": "coordinate"},
+  {"content": "[tech-lead] Coordinate: ask questions and synthesize", "status": "in_progress", "id": "coordinate"},
   {"content": "[backend-developer] Implement authentication fix", "status": "pending", "id": "exec1"},
   {"content": "[security-specialist] Review security implications", "status": "pending", "id": "exec2"},
   {"content": "[qa-tester] Create regression tests", "status": "pending", "id": "exec3"},

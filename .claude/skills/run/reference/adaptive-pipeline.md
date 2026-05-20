@@ -103,6 +103,6 @@ I detected this as a {domain} task (Tier {tier}). Is that right?
 If not interactive, just display and proceed. Include an override hint:
 
 ```
-Detected: Domain=Make (Engineering), Tier=2, Controller=engineering-manager
+Detected: Domain=Make (Engineering), Tier=2, Controller=tech-lead
   (Override with: --domain <domain> --tier <N>)
 ```

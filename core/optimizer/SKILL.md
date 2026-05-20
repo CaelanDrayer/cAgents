@@ -41,11 +41,11 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 
 | Type | Controller | Specialists |
 |------|-----------|-------------|
-| code | engineering-manager | backend-developer, frontend-developer, architect |
+| code | tech-lead | backend-developer, frontend-developer, architect |
 | content | content-marketing-manager | copywriter, seo-specialist |
 | process | operations-manager | operations-analyst |
 | infrastructure | infrastructure-lead | backend-developer, architect |
-| data | engineering-manager | dba, backend-developer |
+| data | tech-lead | dba, backend-developer |
 | campaign | campaign-manager | copywriter, growth-hacker |
 | creative | creative-director | game-writer, copywriter |
 | sales | sales-ops-specialist | sales-rep |

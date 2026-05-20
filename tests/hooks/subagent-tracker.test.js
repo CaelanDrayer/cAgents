@@ -295,11 +295,11 @@ describe('subagent-tracker.cjs', () => {
         statusPhase: 'COORDINATING',
         existingAgents: [
           { id: controllerId, type: 'general-purpose', parent: 'pipeline', depth: 1,
-            cagents_type: 'cagents:engineering-manager', spawned_at: '2026-01-01', stopped_at: null }
+            cagents_type: 'cagents:tech-lead', spawned_at: '2026-01-01', stopped_at: null }
         ],
         agentType: 'cagents:backend-developer',
       });
-      // inferParentAgent should find the engineering-manager controller and return its ID
+      // inferParentAgent should find the tech-lead controller and return its ID
       expect(result.parent).toBe(controllerId);
       expect(result.depth).toBe(2); // parent depth 1 + 1
     });
@@ -311,7 +311,7 @@ describe('subagent-tracker.cjs', () => {
         statusPhase: 'COORDINATING',
         existingAgents: [
           { id: controllerId, type: 'general-purpose', parent: 'pipeline', depth: 3,
-            cagents_type: 'cagents:engineering-manager', spawned_at: '2026-01-01', stopped_at: null }
+            cagents_type: 'cagents:tech-lead', spawned_at: '2026-01-01', stopped_at: null }
         ],
         agentType: 'cagents:backend-developer',
       });

@@ -42,7 +42,7 @@
 - **Level 5 (Pure Outcome)**: Full extrapolation — "make it better"; planner discovers everything from scratch
 
 ### Controller Selection Criteria
-- **Tier 2**: Single primary controller — engineering-manager for engineering, narrative-director for creative, operations-manager for business
+- **Tier 2**: Single primary controller — tech-lead for engineering, narrative-director for creative, operations-manager for business
 - **Tier 3**: Primary + 1-2 supporting controllers — adds architect or security-lead for complex engineering
 - **Tier 4**: Executive + primary + 2-4 supporting + HITL — for architectural migrations and company-wide changes
 - **Domain Override**: Each domain's `domain_overrides.yaml` provides the controller catalog — always use this, never guess

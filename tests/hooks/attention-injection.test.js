@@ -26,7 +26,7 @@ describe('attention-injection.cjs', () => {
     mkdirSync(join(sessionDir, 'workflow'), { recursive: true });
     writeFileSync(join(sessionDir, 'status.yaml'), 'phase: executing\npipeline_state: COORDINATED\n');
     writeFileSync(join(sessionDir, 'workflow', 'plan.yaml'),
-      'mission: "Fix authentication bug"\ndomain: engineering\nprimary: engineering-manager\ntier: 2\n');
+      'mission: "Fix authentication bug"\ndomain: engineering\nprimary: tech-lead\ntier: 2\n');
   });
 
   afterEach(() => {
@@ -62,12 +62,12 @@ describe('attention-injection.cjs', () => {
   it('should include domain and controller in reminder', () => {
     const result = runHook({ tool_name: 'Write', session_id: TEST_SESSION }, { CLAUDE_PROJECT_DIR: tmpDir });
     expect(result.systemMessage).toContain('engineering');
-    expect(result.systemMessage).toContain('engineering-manager');
+    expect(result.systemMessage).toContain('tech-lead');
   });
 
   it('should include coordination status when available', () => {
     writeFileSync(join(sessionDir, 'workflow', 'coordination_log.yaml'),
-      'status: in_progress\ncontroller: engineering-manager\n');
+      'status: in_progress\ncontroller: tech-lead\n');
     const result = runHook({ tool_name: 'Write', session_id: TEST_SESSION }, { CLAUDE_PROJECT_DIR: tmpDir });
     expect(result.systemMessage).toContain('Coordination');
   });
@@ -91,7 +91,7 @@ describe('attention-injection.cjs', () => {
     // Write a very long mission to test truncation
     const longMission = 'A'.repeat(600);
     writeFileSync(join(sessionDir, 'workflow', 'plan.yaml'),
-      `mission: "${longMission}"\ndomain: engineering\nprimary: engineering-manager\n`);
+      `mission: "${longMission}"\ndomain: engineering\nprimary: tech-lead\n`);
     const result = runHook({ tool_name: 'Write', session_id: TEST_SESSION }, { CLAUDE_PROJECT_DIR: tmpDir });
     expect(result.systemMessage.length).toBeLessThanOrEqual(500);
   });

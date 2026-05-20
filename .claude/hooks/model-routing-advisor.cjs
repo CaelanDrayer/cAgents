@@ -66,7 +66,7 @@ const KNOWN_AGENTS = {
   'devops-engineer': 'execution',
   'infrastructure-lead': 'controller',
   'engine-developer': 'execution',
-  'engineering-manager': 'controller',
+  'tech-lead': 'controller',
   'frontend-aesthetics': 'execution',
   'frontend-developer': 'execution',
   'frontend-lead': 'controller',

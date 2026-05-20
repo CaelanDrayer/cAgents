@@ -58,7 +58,7 @@ WORK BREAKDOWN (12 items):
 - VERIFY: 3 items
 
 CONTROLLERS:
-- Primary: engineering-manager
+- Primary: tech-lead
 
 Proceeding to coordination...
 ======================================
@@ -244,7 +244,7 @@ hitl_approval_gates:
 **Workflow** (fully automatic):
 ```
 ✓ Routing: Classified as tier 2, engineering domain
-✓ Planning: Objectives defined, engineering-manager selected as controller
+✓ Planning: Objectives defined, tech-lead selected as controller
 ✓ Coordinating: Engineering-manager asked 5 questions, synthesized solution
 ✓ Executing: Bug fixed, tests added, documentation updated
 ✓ Validating: All tests pass, no regressions detected
@@ -264,7 +264,7 @@ Outputs:
 **Workflow** (fully automatic):
 ```
 ✓ Routing: Classified as tier 3, engineering domain
-✓ Planning: Objectives defined, controllers selected (engineering-manager + architect + security-specialist)
+✓ Planning: Objectives defined, controllers selected (tech-lead + architect + security-specialist)
 ✓ Coordinating:
   - Engineering-manager coordinated overall work
   - Architect designed OAuth2 architecture
@@ -295,7 +295,7 @@ Outputs:
 ✓ Routing: Classified as tier 4, engineering domain
 ✓ Planning:
   - Objectives defined
-  - Controllers selected (cto + engineering-manager + architect + infrastructure-lead + security-specialist + qa-lead)
+  - Controllers selected (cto + tech-lead + architect + infrastructure-lead + security-specialist + qa-lead)
   - HITL approval gates defined
 ✓ Coordinating:
   - CTO provided strategic oversight

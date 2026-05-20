@@ -205,7 +205,7 @@ Step 4: PLANNING PHASE
   - Writes plan.yaml and decomposition.yaml
 
 Step 5: COORDINATING PHASE
-  - Controller (e.g., engineering-manager) takes over
+  - Controller (e.g., tech-lead) takes over
   - Asks specialist questions via execution agents:
     "What is the current auth implementation?" -> backend-developer
     "What security risks exist?" -> security-specialist
@@ -285,7 +285,7 @@ These are the backbone -- they manage workflows, not tasks:
 #### Tier 2: Controllers
 
 Controllers coordinate work through question-based delegation:
-- **engineering-manager**, **architect** -- Engineering
+- **tech-lead**, **architect** -- Engineering
 - **narrative-director** -- Creative
 - **operations-manager**, **campaign-manager** -- Business
 - **hr-manager** -- People

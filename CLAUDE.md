@@ -147,7 +147,7 @@ quality/        # completion, validation-framework, implicit-discovery (5 files)
 V9.23: `/run` is now a config-driven state machine reading `pipeline_config.yaml`. Each enrichment agent runs sequentially at level 1. Controllers spawn executors and reviewers at level 2 with revision loops (max 3 internal rounds). The validator outputs PASS/FAIL/REVISE to drive revision routing (max 5 total cycles). The `prompt-engineer` agent crafts optimized delegation prompts between decomposition and controller execution, but is routinely skipped by the adaptive pipeline for tier 2 fast path (see V9.27 adaptive pipeline).
 
 **Enrichment Agents** (level 1): orchestrator, planner, decomposer, prompt-engineer (optional)
-**Coordination Agents** (level 1, ONLY coordinate): controllers (engineering-manager, architect, etc.)
+**Coordination Agents** (level 1, ONLY coordinate): controllers (tech-lead, architect, etc.)
 **Execution Agents** (level 2, DO the work): backend-developer, frontend-developer, copywriter, qa-tester, etc.
 **Review Agents** (level 2, via controller): reviewer evaluates against acceptance criteria
 **Validation Agent** (level 1): universal-validator with PASS/FAIL/REVISE output
@@ -205,7 +205,7 @@ Controllers are the coordination hub between planning and execution. See @.claud
 **Controllers by Domain**:
 | Domain | Tier 2 | Tier 3 | Tier 4 |
 |--------|--------|--------|--------|
-| **Engineering** | engineering-manager | + architect, security-lead | cto + engineering-manager + architect |
+| **Engineering** | tech-lead | + architect, security-lead | cto + tech-lead + architect |
 | **Creative** | narrative-director | + story-architect, editor | cco + narrative-director |
 | **Business** | operations-manager, product-owner | + strategic-planner, marketing-strategist | cpo + cfo + strategic-planner |
 | **People** | hr-manager | + talent-acquisition-manager | chro + hr-manager |
@@ -222,7 +222,7 @@ Controllers are the coordination hub between planning and execution. See @.claud
 **Coordination Log** (`cagents-memory/sessions/{session_id}/workflow/coordination_log.yaml`):
 ```yaml
 schema_version: "1"
-controller: cagents:engineering-manager
+controller: cagents:tech-lead
 objectives: [...]
 questions_asked: [{question, delegated_to, answer}, ...]
 synthesized_solution: {approach, rationale, implementation_steps, risks}
@@ -334,7 +334,7 @@ Skill: `.claude/skills/org/SKILL.md` + `reference/`
 ### /run - Event-Driven Pipeline Engine (V9.23, V9.27)
 State machine loop reading pipeline_config.yaml. Sequential enrichment (orchestrator, planner, decomposer, prompt-engineer — prompt-engineer is optional), nested execution (controller + executor + reviewer), revision routing (FAIL/REVISE). V9.27: Adaptive pipeline (tier 2 fast path skips prompt-engineer and other enrichment agents), domain/tier confirmation display, execution analytics (`--analytics`). In practice, `delegation_prompts.yaml` is only produced when prompt-engineer runs; controllers fall back to standard prompts when it is skipped.
 ```bash
-/run Fix auth bug              # -> Engineering (tier 2: engineering-manager)
+/run Fix auth bug              # -> Engineering (tier 2: tech-lead)
 /run Write fantasy story       # -> Creative (tier 2: narrative-director)
 /run Plan Q4 campaign          # -> Business (tier 3: marketing-strategist)
 /run Design game mechanics     # -> Business (tier 2: game-designer)

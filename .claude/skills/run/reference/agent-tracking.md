@@ -42,7 +42,7 @@ Each entry in `agents:` includes:
 |-------|-------------|
 | `id` | Unique identifier within the session |
 | `type` | Agent type as reported by Claude Code (e.g., "general-purpose") |
-| `cagents_type` | Plugin-namespaced type (e.g., "cagents:engineering-manager") |
+| `cagents_type` | Plugin-namespaced type (e.g., "cagents:tech-lead") |
 | `parent` | id of the spawning agent ("root" for /run) |
 | `depth` | Nesting depth: 0 = /run, 1 = pipeline agent, 2 = controller's executor |
 | `spawned_at` | ISO timestamp of spawn |

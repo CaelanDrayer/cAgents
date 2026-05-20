@@ -44,7 +44,7 @@ initialPrompt: "Load session state and summarize active work items before starti
 
 ### name
 - Unique identifier in kebab-case format
-- Must match filename (e.g., `engineering-manager.md` -> `name: engineering-manager`)
+- Must match filename (e.g., `tech-lead.md` -> `name: tech-lead`)
 - Used for agent routing and references
 
 ### description
@@ -215,7 +215,7 @@ The advisory does not change `permissionDecision` and never denies. Agents that 
 ### Directory Structure (High-Value Agents)
 
 ```
-developer/fullstack/engineering-manager/
+developer/fullstack/tech-lead/
 ├── SKILL.md                    # Tier 1 + 2: Frontmatter + Instructions
 └── resources/
     ├── typical-questions.md    # Tier 3: Full question catalog
@@ -436,11 +436,11 @@ for the design-vs-implementation gap analysis that triggered the removal.
 
 ## Example: Full Controller SKILL.md (v11.1.0+)
 
-Lives at `developer/fullstack/engineering-manager/SKILL.md`:
+Lives at `developer/fullstack/tech-lead/SKILL.md`:
 
 ```yaml
 ---
-name: engineering-manager
+name: tech-lead
 archetype: developer
 branch: fullstack
 description: "Coordinates engineering work via question-based delegation. Use for tier 2+ engineering tasks requiring multi-specialist coordination."

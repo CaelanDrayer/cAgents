@@ -8,7 +8,7 @@
 
 | Agent | Tier | Role |
 |-------|------|------|
-| engineering-manager | controller | Day-to-day engineering coordination |
+| tech-lead | controller | Day-to-day engineering coordination |
 | architect | controller | System design, architectural decisions |
 | security-lead | controller | Security coordination |
 | backend-developer | execution | API, database, business logic |

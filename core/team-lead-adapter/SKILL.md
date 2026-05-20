@@ -111,15 +111,15 @@ Teammate messages are delivered automatically -- no polling needed. Idle notific
 /team decomposes -> work items -> each teammate (controller) -> Task(execution agent) -> Task(reviewer)
 ```
 
-**Each teammate IS a controller** (e.g., `cagents:engineering-manager`) spawned by the lead via Agent tool. The controller then spawns execution agents and reviewers directly:
+**Each teammate IS a controller** (e.g., `cagents:tech-lead`) spawned by the lead via Agent tool. The controller then spawns execution agents and reviewers directly:
 
 ```
-Teammate 1 (engineering-manager):
+Teammate 1 (tech-lead):
   -> Agent(cagents:backend-developer, "Implement TASK-01")
   -> Agent(cagents:reviewer, "Review TASK-01")
   -> PASS or REVISE (max 3 rounds)
 
-Teammate 2 (engineering-manager):
+Teammate 2 (tech-lead):
   -> Agent(cagents:frontend-developer, "Implement TASK-02")
   -> Agent(cagents:reviewer, "Review TASK-02")
   -> PASS or REVISE (max 3 rounds)
@@ -136,8 +136,8 @@ Teammate 2 (engineering-manager):
 ```javascript
 // Spawn a teammate as a controller that delegates to execution agents
 Agent({
-  subagent_type: "cagents:engineering-manager",
-  name: "w1-task-1-engineering-manager",
+  subagent_type: "cagents:tech-lead",
+  name: "w1-task-1-tech-lead",
   team_name: "{team_name}",
   description: "Wave 1 - Execute TASK-01: Implement user model",
   prompt: "You are a controller teammate. Spawn cagents:backend-developer to implement TASK-01, then spawn cagents:reviewer to validate. Acceptance criteria: model exists with password_hash field, migration created, unit tests pass."
@@ -270,13 +270,13 @@ aggregation_process:
 # workflow/coordination_log.yaml
 
 controller: team-lead-adapter
-wrapped_controller: cagents:engineering-manager
+wrapped_controller: cagents:tech-lead
 mode: team_execution
 execution_method: built_in_agent_teams
 
 team:
   name: cagents-team_20260206_143022
-  lead: engineering-manager
+  lead: tech-lead
   teammate_mode: tmux
   members:
     - name: teammate-1

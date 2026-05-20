@@ -33,7 +33,7 @@ TodoWrite([
 ])
 ```
 
-**Note**: Replace `[controller]` with the actual controller name once known (e.g., `[engineering-manager]`, `[creative-director]`). Before the controller is selected, use `[controller]` as a placeholder.
+**Note**: Replace `[controller]` with the actual controller name once known (e.g., `[tech-lead]`, `[creative-director]`). Before the controller is selected, use `[controller]` as a placeholder.
 
 ## Progressive Refinement Pattern (Agent Routing Updates)
 
@@ -53,12 +53,12 @@ TodoWrite([
 ])
 ```
 
-**Step 2 -- After routing selects controller** (e.g., `engineering-manager`):
+**Step 2 -- After routing selects controller** (e.g., `tech-lead`):
 ```
 TodoWrite([
   {"content": "[/run] Route request to domain and tier", "status": "completed", "id": "route"},
   {"content": "[/run] Plan objectives and select controller", "status": "in_progress", "id": "plan"},
-  {"content": "[engineering-manager] Coordinate work via question-based delegation", "status": "pending", "id": "coordinate"},
+  {"content": "[tech-lead] Coordinate work via question-based delegation", "status": "pending", "id": "coordinate"},
   {"content": "[/run] Validate outputs and quality", "status": "pending", "id": "validate"}
 ])
 ```
@@ -68,7 +68,7 @@ TodoWrite([
 TodoWrite([
   {"content": "[/run] Route request to domain and tier", "status": "completed", "id": "route"},
   {"content": "[/run] Plan objectives and select controller", "status": "completed", "id": "plan"},
-  {"content": "[engineering-manager] Coordinate: ask questions and synthesize", "status": "in_progress", "id": "coordinate"},
+  {"content": "[tech-lead] Coordinate: ask questions and synthesize", "status": "in_progress", "id": "coordinate"},
   {"content": "[backend-developer] Implement authentication fix", "status": "pending", "id": "exec1"},
   {"content": "[qa-tester] Create regression tests", "status": "pending", "id": "exec2"},
   {"content": "[security-specialist] Review security implications", "status": "pending", "id": "exec3"},
@@ -78,7 +78,7 @@ TodoWrite([
 
 ### Rules for Progressive Refinement
 
-1. **Replace placeholders immediately**: As soon as an agent is identified, update `[controller]` to `[engineering-manager]`, etc.
+1. **Replace placeholders immediately**: As soon as an agent is identified, update `[controller]` to `[tech-lead]`, etc.
 2. **Show all executors**: When a controller delegates to multiple execution agents, add a separate TodoWrite entry for EACH one with the specific agent name
 3. **Preserve completed entries**: Never remove completed entries -- only update pending/in_progress entries
 4. **One update per routing decision**: Issue a TodoWrite update each time an agent routing decision is made
@@ -89,7 +89,7 @@ TodoWrite([
 | Workflow Agent | Updates TodoWrite When | What Changes |
 |----------------|----------------------|--------------|
 | `/run` (Step 2) | Session initialized | Initial 4-item task list |
-| `/run` (Step 3) | Controller identified | `[controller]` -> `[engineering-manager]` |
+| `/run` (Step 3) | Controller identified | `[controller]` -> `[tech-lead]` |
 | `/run` (Step 5) | Before delegation | Mark coordination as in_progress |
 | Controller | Execution agents identified | Add individual `[backend-developer]`, `[qa-tester]`, etc. entries |
 | `/run` (Step 6) | After controller returns | Mark all tasks completed |
@@ -121,10 +121,10 @@ After identifying execution agents, update the TodoWrite to add specific executo
 TodoWrite([
   {"content": "[/run] Route request to domain and tier", "status": "completed", "id": "route"},
   {"content": "[/run] Plan objectives and select controller", "status": "completed", "id": "plan"},
-  {"content": "[engineering-manager] Coordinate: ask questions and synthesize", "status": "in_progress", "id": "coordinate"},
+  {"content": "[tech-lead] Coordinate: ask questions and synthesize", "status": "in_progress", "id": "coordinate"},
   {"content": "[backend-developer] Answer: What is current auth implementation?", "status": "pending", "id": "exec1"},
   {"content": "[qa-tester] Answer: What test coverage exists?", "status": "pending", "id": "exec2"},
-  {"content": "[engineering-manager] Synthesize answers into solution", "status": "pending", "id": "synthesize"},
+  {"content": "[tech-lead] Synthesize answers into solution", "status": "pending", "id": "synthesize"},
   {"content": "[/run] Validate outputs and quality", "status": "pending", "id": "validate"}
 ])
 ```

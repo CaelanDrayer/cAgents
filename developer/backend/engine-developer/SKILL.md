@@ -20,7 +20,7 @@ metadata:
     - threading_systems
   maxTurns: 30
   related_agents:
-    - name: engineering-manager
+    - name: tech-lead
       type: coordinated_by
     - name: game-programmer
       type: collaborates_with

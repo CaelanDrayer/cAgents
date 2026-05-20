@@ -4,9 +4,9 @@ description: "Software engineering, infrastructure, security, QA, and game progr
 
 planner:
   controller_catalog:
-    tier_2: [engineering-manager, tech-lead, qa-lead]
-    tier_3: [engineering-manager, architect, security-lead, backend-lead, frontend-lead, data-lead]
-    tier_4: [cto, engineering-manager, architect, infrastructure-lead, vp-engineering]
+    tier_2: [tech-lead, qa-lead]
+    tier_3: [tech-lead, architect, security-lead, backend-lead, frontend-lead, data-lead]
+    tier_4: [cto, tech-lead, architect, infrastructure-lead, vp-engineering]
 
   specialist_routing:
     frontend:
@@ -27,8 +27,8 @@ planner:
       description: "DevOps and infrastructure coordination"
     game_programming:
       keywords: [game programming, game engine, gameplay, physics engine, Unity, Unreal, Godot, shader, rendering]
-      agents: [engineering-manager]
-      description: "Game programming routed through engineering-manager to game-programmer"
+      agents: [tech-lead]
+      description: "Game programming routed through tech-lead to game-programmer"
     security:
       keywords: [security, vulnerability, penetration, OWASP, CVE, threat, authentication security]
       agents: [security-lead, security-engineer]

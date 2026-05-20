@@ -56,7 +56,7 @@ The following phrases are self-handling rationalizations. Each one is a critical
 
 **This rule applies to spawned teammates, not to the lead.** The lead always has the `Agent` tool and MUST delegate.
 
-For teammates: when a teammate controller (e.g., `cagents:engineering-manager` spawned via Agent at level 1) discovers that its runtime tool surface does NOT include `Agent` / `TodoWrite` / `TaskUpdate` (a known Claude Code platform behavior for plugin-namespaced subagents at depth >= 1, regardless of SKILL.md `allowed-tools`), it MUST gracefully degrade to direct execution rather than fail the work item:
+For teammates: when a teammate controller (e.g., `cagents:tech-lead` spawned via Agent at level 1) discovers that its runtime tool surface does NOT include `Agent` / `TodoWrite` / `TaskUpdate` (a known Claude Code platform behavior for plugin-namespaced subagents at depth >= 1, regardless of SKILL.md `allowed-tools`), it MUST gracefully degrade to direct execution rather than fail the work item:
 
 1. Execute the work item directly using `Read`, `Write`, `Edit`, `Bash`, `Grep`, `Glob`.
 2. Skip the `Agent(cagents:reviewer)` call (unavailable). Self-validate using the 15-check protocol in `.claude/rules/core/resources/execution-self-validation.md`.

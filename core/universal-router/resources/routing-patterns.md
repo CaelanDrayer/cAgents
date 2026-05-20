@@ -45,7 +45,7 @@ routing_decision:
     tier_upgrade: "Upgraded from tier 0 to tier 2"
     controller_logic: |
       Questions get comprehensive expert answers via controller.
-      engineering-manager will coordinate architect for explanation.
+      tech-lead will coordinate architect for explanation.
 ```
 
 ### Tier 2: Simple Edit (Upgraded from Tier 1)
@@ -62,7 +62,7 @@ routing_decision:
     tier_upgrade: "Upgraded from tier 1 to tier 2"
     controller_logic: |
       Simple edits get specialist + editor review.
-      engineering-manager coordinates frontend-developer + editor.
+      tech-lead coordinates frontend-developer + editor.
 ```
 
 ### Tier 2: Bug Fix
@@ -79,7 +79,7 @@ routing_decision:
     scope_adjustment: 0
     controller_logic: |
       Bug fix requires investigation, diagnosis, fix, testing.
-      engineering-manager coordinates via question-based delegation.
+      tech-lead coordinates via question-based delegation.
 ```
 
 ### Tier 3: Feature Addition
@@ -95,7 +95,7 @@ routing_decision:
     initial_tier: 2
     scope_adjustment: +1  # External integration, security critical
     controller_logic: |
-      Primary: engineering-manager
+      Primary: tech-lead
       Supporting: architect (design), security-specialist (payments)
 ```
 
@@ -114,7 +114,7 @@ routing_decision:
     controller_logic: |
       Executive: CTO (strategic decision)
       Primary: architect (migration design)
-      Supporting: engineering-manager, infrastructure-lead
+      Supporting: tech-lead, infrastructure-lead
       HITL approval required
 ```
 
@@ -163,5 +163,5 @@ routing_decision:
   multi_controller: true
   controllers:
     - cagents:legal-counsel (privacy policy)
-    - cagents:engineering-manager (UI update)
+    - cagents:tech-lead (UI update)
 ```

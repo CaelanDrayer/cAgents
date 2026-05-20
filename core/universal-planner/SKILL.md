@@ -106,7 +106,7 @@ objectives:
   - "Ensure security best practices"
 
 controller_assignment:
-  primary: cagents:engineering-manager
+  primary: cagents:tech-lead
   supporting: [cagents:architect, cagents:security-specialist]
 
 temporal_analysis:

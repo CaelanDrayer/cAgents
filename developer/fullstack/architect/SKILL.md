@@ -45,7 +45,7 @@ metadata:
       type: coordinates
     - name: dba
       type: coordinates
-    - name: engineering-manager
+    - name: tech-lead
       type: collaborates_with
     - name: security-lead
       type: collaborates_with

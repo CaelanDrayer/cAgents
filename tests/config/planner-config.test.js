@@ -70,7 +70,7 @@ describe('domain_overrides.yaml files', () => {
       expect(content).toContain('tier_2:');
       expect(content).toContain('tier_3:');
       expect(content).toContain('tier_4:');
-      expect(content).toContain('engineering-manager');
+      expect(content).toContain('tech-lead');
     });
 
     it('creative should have narrative-director as tier_2 controller', () => {

@@ -53,7 +53,7 @@ function parseTeamFlags(commandString) {
 ```bash
 /team Fix auth + add tests + update docs --parallel     # Force parallel
 /team Implement search feature --dry-run                 # Preview team
-/team Build dashboard --lead engineering-manager         # Specify lead
+/team Build dashboard --lead tech-lead         # Specify lead
 /team Create campaign --members 4                        # Limit team size
 /team Add API endpoints --display                        # Show communication
 /team Implement feature --teammate-mode tmux             # Force tmux split panes
@@ -87,7 +87,7 @@ This maps to Claude Code's built-in `teammateMode` setting. The flag overrides t
 
 | Workflow Type | Team Lead Controller |
 |--------------|---------------------|
-| Engineering | `engineering-manager` |
+| Engineering | `tech-lead` |
 | Creative | `creative-director` |
 | Marketing | `campaign-manager` |
 | Operations | `operations-manager` |

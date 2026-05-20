@@ -85,7 +85,7 @@ Controller (level 1):
 
 | Request Type | Domain | Controller |
 |-------------|--------|-----------|
-| "Fix auth bug" | Engineering | engineering-manager |
+| "Fix auth bug" | Engineering | tech-lead |
 | "Write fantasy story" | Creative | narrative-director |
 | "Plan Q4 campaign" | Growth | campaign-manager / marketing-strategist |
 | "Create budget" | Business | operations-manager / finance-manager |

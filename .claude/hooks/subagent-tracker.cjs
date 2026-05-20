@@ -151,7 +151,7 @@ function inferParentAgent(sessionDir, subagentType, agentId) {
         if (treeContent) {
           // Find the last agent with a controller-like cagents_type
           const controllerMatches = [...treeContent.matchAll(/id:\s*["']?([^"'\n]+)["']?[\s\S]*?cagents_type:\s*["']?cagents:([^"'\n]+)["']?/g)];
-          const CONTROLLER_NAMES = ['engineering-manager', 'architect', 'narrative-director', 'story-architect',
+          const CONTROLLER_NAMES = ['tech-lead', 'architect', 'narrative-director', 'story-architect',
             'operations-manager', 'product-owner', 'strategic-planner', 'marketing-strategist', 'campaign-manager',
             'hr-manager', 'talent-acquisition-manager', 'customer-success-manager', 'general-counsel',
             'support-director', 'compliance-officer'];
@@ -268,7 +268,7 @@ createHook('SubagentTracker', async (input) => {
     console.error(`[SubagentTracker] WARNING: cagents_type undetermined for agent ${agentId} (fallback description: "${fallbackDesc}"). Spawn this agent with subagent_type: 'cagents:{name}' for full audit trail.`);
   }
 
-  // PC-11: Derive short_role from cagents_type (e.g., "cagents:engineering-manager" -> "Engineering Manager")
+  // PC-11: Derive short_role from cagents_type (e.g., "cagents:tech-lead" -> "Engineering Manager")
   let shortRole = '';
   if (cagentsType) {
     shortRole = cagentsType.replace('cagents:', '')

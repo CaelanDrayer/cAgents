@@ -141,7 +141,7 @@ The product context document lives at `cagents-memory/_projects/{hash}/product_c
 |------|------|-------------|---------|---------|
 | `--parallel` | Boolean | Force parallel execution | auto | `/team Build system --parallel` |
 | `--dry-run` | Boolean | Preview team composition | false | `/team Build feature --dry-run` |
-| `--lead <agent>` | String | Specify team lead | auto-detect | `/team Build API --lead engineering-manager` |
+| `--lead <agent>` | String | Specify team lead | auto-detect | `/team Build API --lead tech-lead` |
 | `--members <N>` | Number | Max team members | 8 | `/team Build system --members 4` |
 | `--display` | Boolean | Show team communication | false | `/team Build feature --display` |
 | `--domain <domain>` | String | Override domain | auto-detect | `/team Campaign --domain growth` |

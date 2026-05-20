@@ -20,7 +20,7 @@ metadata:
     - input_handling
   maxTurns: 30
   related_agents:
-    - name: engineering-manager
+    - name: tech-lead
       type: coordinated_by
     - name: engine-developer
       type: collaborates_with

@@ -239,7 +239,7 @@ Categorized examples for `/helper --examples`.
 /improve --mode optimize --safety safe --incremental --dry-run
 
 # Team execution with specific lead and display
-/team Build user authentication system --lead engineering-manager --members 4 --display --teammate-mode tmux
+/team Build user authentication system --lead tech-lead --members 4 --display --teammate-mode tmux
 
 # Interactive /run with template
 /run Implement payment gateway --interactive --template feature_addition

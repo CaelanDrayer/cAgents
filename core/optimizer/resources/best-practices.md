@@ -68,7 +68,7 @@
 
 ## Collaboration Touchpoints
 
-- **With domain controllers (engineering-manager, infrastructure-lead, etc.)**: Delegates execution of each optimization to the appropriate controller who spawns specialists — optimizer plans and coordinates, controller implements
+- **With domain controllers (tech-lead, infrastructure-lead, etc.)**: Delegates execution of each optimization to the appropriate controller who spawns specialists — optimizer plans and coordinates, controller implements
 - **With universal-validator**: After execution phase, validator re-runs quality gates and produces PASS/FAIL/REVISE; optimizer handles rollback on FAIL
 - **With universal-self-correct**: When an optimization execution fails (tool error, test regression), self-correct is invoked to attempt recovery before rollback is triggered
 - **With hitl**: High-risk (61-80) and critical (81-100) optimizations escalate to HITL for human approval before execution begins

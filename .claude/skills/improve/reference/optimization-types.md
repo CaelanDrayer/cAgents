@@ -6,7 +6,7 @@
 - **Domain**: Make
 - **What it optimizes**: Performance, bundle size, algorithms, memory, queries
 - **Key metrics**: FCP, LCP, bundle size, query time, memory usage
-- **Controller**: engineering-manager
+- **Controller**: tech-lead
 - **Specialists**: backend-developer, frontend-developer, architect
 - **Auto-detection**: Source code files (.js, .ts, .py, etc.)
 
@@ -38,7 +38,7 @@
 - **Domain**: Make/Operate
 - **What it optimizes**: Query performance, ETL speed, data quality
 - **Key metrics**: Query time, ETL duration, data completeness
-- **Controller**: engineering-manager
+- **Controller**: tech-lead
 - **Specialists**: dba, backend-developer
 - **Auto-detection**: ETL/pipeline scripts
 

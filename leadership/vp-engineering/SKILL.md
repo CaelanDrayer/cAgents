@@ -28,7 +28,7 @@ metadata:
     - What are the technical constraints we need to consider?
     - What are the key risks and dependencies?
   related_agents:
-    - name: engineering-manager
+    - name: tech-lead
       type: coordinates
     - name: tech-lead
       type: coordinates

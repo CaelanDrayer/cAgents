@@ -101,7 +101,7 @@ Routes any request through the full pipeline: orchestrator enriches context, pla
 /run Fix auth bug --analytics    # Show execution metrics after run
 ```
 
-The domain routes automatically based on request content. Engineering requests go to an engineering-manager controller; creative requests go to a narrative-director; business requests go to an operations-manager or strategic-planner.
+The domain routes automatically based on request content. Engineering requests go to an tech-lead controller; creative requests go to a narrative-director; business requests go to an operations-manager or strategic-planner.
 
 ### `/team` — N-Wave Parallel Execution
 
@@ -343,7 +343,7 @@ cAgents routes your request to the right domain automatically based on keywords.
 
 | Request | Routed To | Controller |
 |---------|-----------|------------|
-| `/run Fix the auth bug` | Engineering | engineering-manager |
+| `/run Fix the auth bug` | Engineering | tech-lead |
 | `/run Write a blog post about AI` | Creative | narrative-director |
 | `/run Plan Q4 product launch` | Business | operations-manager |
 | `/run Build an email campaign` | Growth | marketing-strategist |

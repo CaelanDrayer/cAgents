@@ -22,7 +22,7 @@ Execution agents are specialists that:
 ### Tier 2: Controllers
 - Coordinate work via question-based delegation
 - Synthesize answers from multiple specialists
-- Examples: engineering-manager, architect, campaign-manager
+- Examples: tech-lead, architect, campaign-manager
 
 ### Tier 3: Execution
 - Answer questions with domain expertise
@@ -38,7 +38,7 @@ Execution agents are specialists that:
 **Controller Agent**:
 ```yaml
 ---
-name: engineering-manager
+name: tech-lead
 tier: controller
 domain: engineering
 coordination_style: question_based

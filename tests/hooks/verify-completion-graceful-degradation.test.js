@@ -62,7 +62,7 @@ function setupSession(sessionId, coordinationLogContent) {
 
 const COORDINATION_LOG_BASE =
   'schema_version: "1"\n' +
-  'controller: cagents:engineering-manager\n' +
+  'controller: cagents:tech-lead\n' +
   'status: completed\n' +
   'implementation_tasks:\n' +
   '  - task_id: WI-1\n' +

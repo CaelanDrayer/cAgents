@@ -50,7 +50,7 @@ Current official business domains:
 
 | Domain | Purpose | Agents | Key Controllers |
 |--------|---------|--------|-----------------|
-| **engineering** | Software engineering | 31 | engineering-manager, architect, tech-lead |
+| **engineering** | Software engineering | 31 | tech-lead, architect, tech-lead |
 | **creative** | Creative production | 30 | narrative-director, story-architect, editor |
 | **business** | Business operations | 28 | operations-manager, product-owner, strategic-planner |
 | **growth** | Revenue & acquisition | 34 | marketing-strategist, sales-strategist, campaign-manager |

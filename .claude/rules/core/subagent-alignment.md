@@ -105,7 +105,7 @@ Format: "cagents:{agent-name}"
 
 Examples:
 - "cagents:backend-developer"
-- "cagents:engineering-manager"
+- "cagents:tech-lead"
 - "cagents:copywriter"
 - "cagents:business-analyst"
 ```
@@ -148,7 +148,7 @@ Agent({
 Agent({
   subagent_type: "cagents:backend-developer",
   description: "Implement user authentication",
-  prompt: "Implementation task from engineering-manager:\n\nWork Item: TASK-03...\nAcceptance Criteria: ..."
+  prompt: "Implementation task from tech-lead:\n\nWork Item: TASK-03...\nAcceptance Criteria: ..."
 })
 ```
 
@@ -179,7 +179,7 @@ Controllers coordinate work through question-based delegation:
 
 | cAgents Controller | Use Case | Delegates To |
 |-------------------|----------|--------------|
-| `cagents:engineering-manager` | Engineering work | backend-developer, frontend-developer, qa-lead |
+| `cagents:tech-lead` | Engineering work | backend-developer, frontend-developer, qa-lead |
 | `cagents:architect` | System design | engineer specialists, security-specialist |
 | `cagents:creative-director` | Creative work | copywriter, designer, content-strategist |
 | `cagents:campaign-manager` | Marketing campaigns | copywriter, seo-specialist, email-specialist |

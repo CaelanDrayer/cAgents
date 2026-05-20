@@ -5,7 +5,7 @@
 ## Design Principles
 
 - **Delegate Only, Never Implement**: The team lead adapter is a coordinator — it never writes code, creates content, or answers domain questions; every work item is executed by a spawned controller teammate
-- **Teammates Are Controllers**: Each teammate spawned via Agent tool is a controller agent (e.g., engineering-manager) that in turn delegates to execution agents — the lead adapter coordinates controllers, not execution agents directly
+- **Teammates Are Controllers**: Each teammate spawned via Agent tool is a controller agent (e.g., tech-lead) that in turn delegates to execution agents — the lead adapter coordinates controllers, not execution agents directly
 - **Immediate Execution**: As soon as the team and tasks are created, spawn all wave-1 teammates simultaneously — no pausing, no asking permission, no pre-flight checks beyond reading the manifest
 - **Built-In Tools Only**: Use SendMessage, TaskList, TaskUpdate, and TeamDelete from Claude Code's built-in agent teams — no custom coordination scripts or file-based polling loops
 - **Wave-Aware Gate Validation**: Only mark a gate sentinel complete after verifying all wave gate criteria — unverified gates produce cascading failures in subsequent waves
@@ -73,6 +73,6 @@
 ## Collaboration Touchpoints
 
 - **With team-trigger**: Team-trigger creates the team via TeamCreate and spawns the lead adapter — lead adapter receives team context, manifest, and task list from team-trigger and takes over wave coordination
-- **With domain controllers (as teammates)**: Each teammate IS a controller agent (engineering-manager, narrative-director, etc.) spawned by the lead adapter — the lead adapter coordinates controllers, and controllers coordinate execution agents
+- **With domain controllers (as teammates)**: Each teammate IS a controller agent (tech-lead, narrative-director, etc.) spawned by the lead adapter — the lead adapter coordinates controllers, and controllers coordinate execution agents
 - **With orchestrator**: Orchestrator routes team-mode requests to team-lead-adapter instead of directly to a controller — after team execution completes, orchestrator receives the coordination_log.yaml and advances to validation
 - **With universal-validator**: After team-lead-adapter writes coordination_log.yaml and all outputs, the validation phase runs against the aggregated results — the lead adapter's synthesis quality directly affects validation outcomes

@@ -77,7 +77,7 @@ When `teammateMode: "tmux"` is configured:
 Every team member spawns its assigned controller directly via Agent tool:
 - The team lead assigns a controller per work item during decomposition
 - Each teammate spawns `Agent({ subagent_type: "cagents:{controller_name}" })` directly
-- The controller creates execution agents (e.g., engineering-manager -> backend-developer, qa-tester)
+- The controller creates execution agents (e.g., tech-lead -> backend-developer, qa-tester)
 - Each teammate is an orchestration node, not a direct implementer
 - Teammates NEVER implement work directly -- they coordinate through controllers
 - `/team` provides parallelism; controllers provide multi-agent orchestration per item
@@ -246,7 +246,7 @@ Controllers become team leads based on domain:
 
 | Domain | Team Lead |
 |--------|-----------|
-| Engineering | engineering-manager |
+| Engineering | tech-lead |
 | Creative | creative-director |
 | Marketing | campaign-manager |
 | Sales | sales-strategist |

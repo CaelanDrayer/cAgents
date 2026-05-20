@@ -21,16 +21,16 @@ Domain-specific patterns for engineering workflows.
 ## Controller Selection
 
 **Tier 2** (Moderate complexity):
-- **engineering-manager**: Bug fixes, feature additions, moderate refactoring
+- **tech-lead**: Bug fixes, feature additions, moderate refactoring
 - **architect**: System design questions, architectural decisions
 
 **Tier 3** (Complex):
-- **Primary**: engineering-manager (day-to-day coordination)
+- **Primary**: tech-lead (day-to-day coordination)
 - **Supporting**: architect (design), security-specialist (security review)
 
 **Tier 4** (Expert):
 - **Executive**: cto (strategic oversight)
-- **Primary**: engineering-manager (coordination)
+- **Primary**: tech-lead (coordination)
 - **Supporting**: architect, infrastructure-lead, security-specialist, qa-lead
 
 ## Typical Questions

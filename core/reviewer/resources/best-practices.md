@@ -70,6 +70,6 @@
 ## Collaboration Touchpoints
 
 - **With execution agents (backend-developer, copywriter, etc.)**: The primary relationship — execution agents produce work, reviewers evaluate it; REVISE feedback must be specific enough for the execution agent to act without further clarification
-- **With controllers (engineering-manager, narrative-director, etc.)**: Controllers spawn reviewers after each execution round — reviewers report to the controller who decides whether to re-dispatch or dead-letter
+- **With controllers (tech-lead, narrative-director, etc.)**: Controllers spawn reviewers after each execution round — reviewers report to the controller who decides whether to re-dispatch or dead-letter
 - **With universal-validator**: Reviewer operates at the work-item level within a single controller loop; universal-validator operates at the full-pipeline level after all work items complete — they are complementary but independent quality gates
 - **With prompt-engineer**: Well-crafted delegation prompts produce clear acceptance criteria that make reviewer evaluations easier and more consistent — prompt quality directly affects review quality

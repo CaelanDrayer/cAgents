@@ -12,9 +12,9 @@ description: "Software engineering, infrastructure, security, QA"
 
 planner:
   controller_catalog:
-    tier_2: [engineering-manager]
-    tier_3: [engineering-manager, architect, security-lead]
-    tier_4: [cto, engineering-manager, architect, infrastructure-lead]
+    tier_2: [tech-lead]
+    tier_3: [tech-lead, architect, security-lead]
+    tier_4: [cto, tech-lead, architect, infrastructure-lead]
 
 router:
   keywords:

@@ -45,7 +45,7 @@ describe('stop-failure-handler.cjs', () => {
       // Write a plan.yaml
       writeFileSync(join(WORKFLOW_DIR, 'plan.yaml'), [
         'domain: engineering',
-        'controller: engineering-manager',
+        'controller: tech-lead',
         'tier: 2'
       ].join('\n'));
     });
@@ -98,7 +98,7 @@ describe('stop-failure-handler.cjs', () => {
     it('should capture controller from plan.yaml in recovery_state.yaml', () => {
       runHook({ session_id: 'run_test-stop-failure_260101_001' });
       const content = readFileSync(join(WORKFLOW_DIR, 'recovery_state.yaml'), 'utf8');
-      expect(content).toContain('controller: "engineering-manager"');
+      expect(content).toContain('controller: "tech-lead"');
     });
 
     it('should capture phase from status.yaml in recovery_state.yaml', () => {
@@ -174,7 +174,7 @@ describe('stop-failure-handler.cjs', () => {
       writeFileSync(join(WORKFLOW_DIR, 'plan.yaml'), [
         'domain: engineering',
         'controller_assignment:',
-        '  primary: cagents:engineering-manager',
+        '  primary: cagents:tech-lead',
         'tier: 2'
       ].join('\n'));
     });
@@ -186,7 +186,7 @@ describe('stop-failure-handler.cjs', () => {
     it('should extract controller from nested controller_assignment.primary', () => {
       runHook({ session_id: 'run_test-stop-failure_260101_001' });
       const content = readFileSync(join(WORKFLOW_DIR, 'recovery_state.yaml'), 'utf8');
-      expect(content).toContain('controller: "cagents:engineering-manager"');
+      expect(content).toContain('controller: "cagents:tech-lead"');
     });
 
     it('should NOT fall back to unknown when nested format is used', () => {

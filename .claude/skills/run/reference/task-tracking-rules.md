@@ -10,7 +10,7 @@ How /run uses TaskCreate/TaskUpdate (or TodoWrite in SDK) at every state transit
 4. **No slash prefix on command names**: Use `[run]`, `[org]`, `[team]` -- not `[/run]`, `[/org]`, `[/team]`.
 5. **[parent > child] on spawn, child-only for sub-tasks**: When spawning an agent, use `[run > orchestrator]`. For that agent's own sub-tasks, use just `[orchestrator]`.
 6. **2-space indent for children**: Sub-tasks under a parent entry are indented with 2 spaces.
-7. **Include contextual detail**: Add domain, tier, counts, controller names, wave numbers -- e.g., `[run > planner] Planning approach\n  [planner] Controller: engineering-manager`.
+7. **Include contextual detail**: Add domain, tier, counts, controller names, wave numbers -- e.g., `[run > planner] Planning approach\n  [planner] Controller: tech-lead`.
 8. **Granular sub-tasks per agent**: Each agent gets 1-2 sub-tasks showing real progress, not just a single line.
 9. **Never have zero tasks `in_progress`** -- always transition one to `completed` and the next to `in_progress` in the same call.
 10. **On revision, add a revision entry** showing round number and what is being re-executed.
@@ -70,10 +70,10 @@ Every pipeline phase transition MUST include at least one validation TaskCreate 
 ```
 TodoWrite([
   {"content": "[run > orchestrator] Context enrichment complete\n  [orchestrator] Domain: engineering, Tier: 3\n  [run] Pre-flight validation: enriched_context.yaml valid (3/3 fields)", "status": "completed", "id": "init"},
-  {"content": "[run > planner] Plan complete: 5 objectives, engineering-manager\n  [run] Plan validation: 5 objectives with criteria, controller assigned, DAG valid", "status": "completed", "id": "orchestrated"},
+  {"content": "[run > planner] Plan complete: 5 objectives, tech-lead\n  [run] Plan validation: 5 objectives with criteria, controller assigned, DAG valid", "status": "completed", "id": "orchestrated"},
   {"content": "[run > decomposer] 12 work items decomposed\n  [run] Decomposition validation: 12/12 WIs have criteria, deps acyclic, 4 agents verified", "status": "completed", "id": "planned"},
   {"content": "[run > prompt-engineer] Delegation prompts crafted\n  [run] Prompt validation: 12/12 WIs have prompts, all reference acceptance criteria", "status": "completed", "id": "decomposed"},
-  {"content": "[run > engineering-manager] Coordination complete\n  [engineering-manager] Pre-execution: 6/6 input checks passed\n  [engineering-manager] Mid-execution: 4 checkpoints, 0 issues\n  [engineering-manager] 12/12 WIs complete with evidence\n  [run] Coordination validation: evidence score 2.8/3.0, no stale items", "status": "completed", "id": "prompts_ready"},
+  {"content": "[run > tech-lead] Coordination complete\n  [tech-lead] Pre-execution: 6/6 input checks passed\n  [tech-lead] Mid-execution: 4 checkpoints, 0 issues\n  [tech-lead] 12/12 WIs complete with evidence\n  [run] Coordination validation: evidence score 2.8/3.0, no stale items", "status": "completed", "id": "prompts_ready"},
   {"content": "[run > validator] Validation verdict: PASS\n  [validator] Phase 1-5: all passed\n  [validator] Phase 6 automated: 12/12 files verified\n  [validator] Phase 7 traceability: 100% coverage\n  [run] Final validation: overall score 0.97, PASS", "status": "completed", "id": "coordinated"},
   {"content": "[run] Pipeline complete -- all validation gates passed", "status": "completed", "id": "validated"}
 ])
