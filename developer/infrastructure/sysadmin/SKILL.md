@@ -23,7 +23,7 @@ metadata:
     - capacity_planning
   maxTurns: 30
   related_agents:
-    - name: devops-lead
+    - name: infrastructure-lead
       type: coordinated_by
     - name: devops-engineer
       type: collaborates_with
@@ -90,7 +90,6 @@ See @resources/infrastructure-tools.md for tooling reference.
 
 **Reads**:
 - `cagents-memory/{instruction_id}/tasks/` - Deployment and infrastructure tasks
-- `cagents-memory/_communication/inbox/sysadmin/` - Deployment requests, alerts
 
 **Writes**:
 - `cagents-memory/{instruction_id}/outputs/partial/deployment_report_{timestamp}.yaml`

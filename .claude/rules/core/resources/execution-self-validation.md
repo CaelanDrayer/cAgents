@@ -1,81 +1,49 @@
 # Execution Agent Self-Validation Protocol
 
-15-check self-validation checklist for execution agents before reporting DONE or DONE_WITH_CONCERNS status.
+5 hook-verifiable checks for execution agents before reporting DONE or DONE_WITH_CONCERNS status.
 
-## The 15 Checks
+## Why 5 (Not 15) — Honesty Reduction (v12.0.0)
 
-### Category 1: Acceptance Criteria (3 checks)
+The previous version of this file defined fifteen checks grouped into five categories (Acceptance Criteria, Side Effects, Completeness, Evidence Freshness, Regression). Per the v12 trigger doc (`revamp-design-v2.md` Q8 "Validation honesty"), most of those 15 were aspirational — agents were asked to claim them in `self_validation` YAML but no hook ever verified the claims, and `post-write-validator.cjs` / `verify-completion.cjs` only had logic for a small subset. Aspirational checks are worse than honest absence: they create the appearance of rigor without the substance, and they inflate every agent's context.
 
-**Check 1**: Every acceptance criterion has cited evidence
-- List each criterion + evidence
-- Failure: Report DONE_WITH_CONCERNS with "missing evidence for criterion N"
+The v12 contract drops to exactly 5 checks, all of which are mechanically verifiable by hooks (current or planned). Each check ties to a concrete verification mechanism — timestamps, `fs.existsSync`, exit codes, `git status`, or `grep`/`sed` content checks — not to subjective judgment. If a future check cannot be verified by a hook, it does not belong in this protocol; it belongs in reviewer/validator prose or a code-quality gate elsewhere.
 
-**Check 2**: Evidence cites specific file:line or command output
-- Check format: "src/auth.ts:15 - validateToken()" not "auth module works"
-- Failure: Report DONE_WITH_CONCERNS if any evidence is vague (generic phrases like "looks correct", "seems fine")
+## The 5 Hook-Verifiable Checks
 
-**Check 3**: Evidence was gathered AFTER implementation (fresh)
-- Evidence should reference current session outputs, not pre-implementation files
-- Failure: Report DONE_WITH_CONCERNS if evidence is stale or predates implementation
+### Check 1: Acceptance criteria evidence freshness
 
-### Category 2: Side Effects (3 checks)
+Every piece of evidence cited in the `self_validation` YAML was gathered AFTER implementation began. Hook verification: compare evidence-collection timestamp against the work item's `started_at` field; reject evidence with a timestamp earlier than the work item start.
 
-**Check 4**: No files modified outside stated scope
-- Compare modified files vs. work item description
-- Failure: Report DONE_WITH_CONCERNS if out-of-scope files changed
+- **Verification mechanism**: timestamp comparison (`evidence.collected_at >= work_item.started_at`)
+- **Failure**: Report DONE_WITH_CONCERNS with `concerns: ["Stale evidence for criterion N (collected_at predates started_at)"]`
 
-**Check 5**: No broken imports/references introduced
-- Run: `node -e "require('./index')"` or equivalent language import check
-- Failure: Report DONE_WITH_CONCERNS if imports are broken
+### Check 2: File existence claims
 
-**Check 6**: No test regressions introduced by changes
-- Run test suite if available (npm test, pytest, etc.)
-- Failure: Report DONE_WITH_CONCERNS if new test failures found
+Every file path cited as "exists" or "created" in evidence actually exists on disk at the time of self-validation. Hook verification: for each `file_exists` claim, run `fs.existsSync(path)`; fail if any claimed file is missing.
 
-### Category 3: Completeness (3 checks)
+- **Verification mechanism**: `fs.existsSync(absolute_path)`
+- **Failure**: Report NEEDS_CONTEXT with `missing_context: ["Claimed file path does not exist: {path}"]` (the agent likely needs to re-run the create step)
 
-**Check 7**: All files mentioned in acceptance criteria exist on disk
-- Use `ls` or `stat` to verify each claimed output file
-- Failure: Report NEEDS_CONTEXT with "Expected output files missing: {list}"
+### Check 3: Test/lint/typecheck exit codes
 
-**Check 8**: All code changes compile or parse cleanly
-- Run: `tsc --noEmit` (TypeScript), `python -m py_compile` (Python), or syntax check for other languages
-- Failure: Report DONE_WITH_CONCERNS if compilation errors exist
+If any guard command (`npm test`, `npx vitest run`, `tsc --noEmit`, `npm run lint`, etc.) was run as part of this work item, its exit code is captured AND equals 0 (PASS). Hook verification: parse the recorded `guard_results[]` array; reject any entry with `exit_code != 0` or `exit_code: null` when a guard was claimed to run.
 
-**Check 9**: No TODO/FIXME/HACK markers in newly added code
-- Run: `grep -n "TODO\|FIXME\|HACK" {modified_files}`
-- Failure: Report DONE_WITH_CONCERNS if markers found (these indicate incomplete work)
+- **Verification mechanism**: exit-code check on recorded guard command results
+- **Failure**: Report DONE_WITH_CONCERNS with `concerns: ["Guard command {cmd} failed with exit_code {N}"]`
 
-### Category 4: Evidence Freshness (3 checks)
+### Check 4: Git working-tree state
 
-**Check 10**: All evidence gathered AFTER implementation started
-- Cross-reference evidence timestamps with implementation order
-- Example: If implementation started at 10:00, all evidence must be >= 10:00
-- Failure: Report DONE_WITH_CONCERNS if evidence predates changes
+The staged/unstaged status reported in `git_state` matches the actual `git status --porcelain` output at the time of self-validation. Hook verification: re-run `git status --porcelain` and compare against the agent's reported `files_changed`/`files_staged` lists.
 
-**Check 11**: Test outputs are from the current session
-- Verify test output includes current-session file paths or timestamps
-- Not acceptable: "tests passed earlier" or recycled output from prior context
-- Failure: Report DONE_WITH_CONCERNS if test output is recycled
+- **Verification mechanism**: `git status --porcelain` diff against reported state
+- **Failure**: Report DONE_WITH_CONCERNS with `concerns: ["Git state mismatch: reported {X} but actual is {Y}"]`
 
-**Check 12**: File paths cited actually contain the claimed content
-- Re-read each cited file:line to verify content matches claim
-- Example: If claiming "src/auth.ts:15 has bcrypt.hash()", actually read line 15
-- Failure: Report DONE_WITH_CONCERNS if content doesn't match claim
+### Check 5: Referenced file:line accuracy
 
-### Category 5: Regression (3 checks)
+Every "src/foo.ts:42" style citation in evidence actually points to the content the agent claims is there. Hook verification: for each `file:line` evidence entry with a `claimed_content` substring, run `sed -n '{line}p' {file}` (or equivalent) and verify the claimed substring appears in the actual line.
 
-**Check 13**: Existing tests still pass after changes
-- Run full test suite (`npm test`, `pytest`, etc.)
-- Failure: Report DONE_WITH_CONCERNS if pre-existing tests now fail
-
-**Check 14**: No new linting errors introduced
-- Run linter on modified files (`npm run lint`, `ruff check`, etc.)
-- Failure: Report DONE_WITH_CONCERNS if new lint errors found
-
-**Check 15**: Type checking passes if applicable
-- Run: `tsc --noEmit` or equivalent for your language
-- Failure: Report DONE_WITH_CONCERNS if new type errors detected
+- **Verification mechanism**: `sed -n '{N}p' {file}` content match against `claimed_content`
+- **Failure**: Report DONE_WITH_CONCERNS with `concerns: ["File:line citation incorrect: {file}:{line} does not contain {claimed_content}"]`
 
 ---
 
@@ -85,58 +53,71 @@ Before reporting DONE or DONE_WITH_CONCERNS, fill this template:
 
 ```yaml
 self_validation:
-  # Category 1: Acceptance Criteria
-  acceptance_criteria_check:
-    - criterion: "{exact text of criterion 1}"
-      evidence: "{file:line or command output}"
-      fresh: true              # Gathered AFTER implementation?
-      evidence_valid: true     # Cited location contains claimed content?
-    - criterion: "{exact text of criterion 2}"
-      evidence: "{file:line or command output}"
-      fresh: true
-      evidence_valid: true
-    # ... one entry per acceptance criterion
+  schema_version: "2"   # bumped from "1" (15-check) to "2" (5-check) at v12.0.0
 
-  # Category 2: Side Effects
-  side_effect_check:
-    unintended_modifications: []    # Any unexpected files changed?
-    broken_imports: false           # Are any imports now broken?
-    test_regressions: false         # Any previously-passing tests now fail?
-    out_of_scope_changes: []        # Files changed outside stated scope?
-
-  # Category 3: Completeness
-  completeness_check:
-    all_files_exist: true           # All claimed output files on disk?
-    code_compiles: true             # No compilation/parse errors?
-    no_todo_markers: true           # No TODO/FIXME/HACK in new code?
-    missing_files: []               # List if all_files_exist: false
-
-  # Category 4: Evidence Freshness
+  # Check 1: Acceptance criteria evidence freshness
   evidence_freshness:
-    all_post_implementation: true   # All evidence after implementation?
-    session_current: true           # Evidence from current session?
-    file_contents_verified: true    # Each cited file:line verified?
-    stale_evidence: []              # List stale items if any
+    work_item_started_at: "2026-05-20T08:00:00Z"
+    evidence:
+      - criterion: "{exact text of criterion 1}"
+        citation: "src/foo.ts:42"
+        collected_at: "2026-05-20T08:15:00Z"
+        fresh: true   # collected_at >= work_item_started_at
+      - criterion: "{exact text of criterion 2}"
+        citation: "npm test output"
+        collected_at: "2026-05-20T08:30:00Z"
+        fresh: true
 
-  # Category 5: Regression
-  regression_check:
-    tests_pass: true                # All tests pass?
-    no_new_lint_errors: true        # No new linting errors?
-    type_check_pass: true           # Type checking passes?
-    test_output: "{actual test command output}"
+  # Check 2: File existence claims
+  file_existence:
+    files_claimed_to_exist:
+      - path: "src/foo.ts"
+        exists: true   # verified via fs.existsSync at self-validation time
+      - path: "tests/foo.test.js"
+        exists: true
+    missing_files: []   # if any file_existence entry has exists: false, list here
+
+  # Check 3: Test/lint/typecheck exit codes
+  guard_results:
+    - name: "npm test"
+      command: "npx vitest run tests/v12/validation-honesty-contract.test.js --no-coverage"
+      exit_code: 0
+      ran_at: "2026-05-20T08:25:00Z"
+      output_excerpt: "Tests  4 passed (4)"
+    # If no guards were run for this work item, leave list empty:
+    # guard_results: []
+
+  # Check 4: Git working-tree state
+  git_state:
+    branch: "revamp/v12-rc"
+    files_staged: []   # files agent staged via `git add` (lead commits, so usually empty)
+    files_modified:    # `git status --porcelain` modified lines
+      - ".claude/rules/core/resources/execution-self-validation.md"
+      - ".claude/rules/quality/completion.md"
+      - ".claude/rules/core/controllers.md"
+    files_created:
+      - "tests/v12/validation-honesty-contract.test.js"
+    matches_actual: true   # re-verified at self-validation time
+
+  # Check 5: Referenced file:line accuracy
+  file_line_citations:
+    - citation: "src/foo.ts:42"
+      claimed_content: "validateToken("
+      verified: true   # sed -n '42p' src/foo.ts contained "validateToken("
+    # All file:line entries from evidence must appear here with verified: true
 
   # Summary
-  checks_passed: 15
+  checks_passed: 5
   checks_failed: 0
-  checks_total: 15
-  auto_downgrade: false   # true if DONE should become DONE_WITH_CONCERNS due to failures
+  checks_total: 5
+  auto_downgrade: false   # true if ANY 1 of the 5 checks failed
 ```
 
 ---
 
 ## Integration with Subagent Status Protocol
 
-Include self_validation in your completion response:
+Include `self_validation` in your completion response:
 
 ```yaml
 status: DONE                    # One of: DONE, DONE_WITH_CONCERNS, NEEDS_CONTEXT, BLOCKED
@@ -145,42 +126,45 @@ evidence:
   - criterion: "Auth middleware validates tokens"
     result: "src/middleware/auth.ts:15 - validateToken() checks expiry, signature, and issuer"
   - criterion: "Tests pass"
-    result: "npm test: 23/23 passed"
+    result: "npx vitest run: 23/23 passed"
 concerns: []                    # For DONE_WITH_CONCERNS: list specific concerns
 missing_context: []             # For NEEDS_CONTEXT: list what is needed
 blocker: null                   # For BLOCKED: describe the blocking factor
 self_validation:                # REQUIRED for DONE and DONE_WITH_CONCERNS
-  checks_passed: 15
+  schema_version: "2"
+  checks_passed: 5
   checks_failed: 0
-  checks_total: 15
+  checks_total: 5
   auto_downgrade: false
-  acceptance_criteria_check: [...]
-  side_effect_check: {...}
-  completeness_check: {...}
   evidence_freshness: {...}
-  regression_check: {...}
+  file_existence: {...}
+  guard_results: [...]
+  git_state: {...}
+  file_line_citations: [...]
 ```
 
 ---
 
-## Auto-Downgrade Rules
+## Auto-Downgrade Rule
+
+**Any 1 of the 5 checks failing -> DONE becomes DONE_WITH_CONCERNS.**
+
+There is no graded scale — the v12 contract is binary per check. The previous "1-3 vs 4+ failures" matrix was a workaround for the 15-check protocol's noise floor; with 5 honest checks, every failure is material.
 
 | Condition | Status Change |
 |-----------|---------------|
-| checks_failed == 0 | Keep DONE as-is |
-| 1-3 checks failed (Category 3/4 only) | DONE → DONE_WITH_CONCERNS, list failed checks |
-| checks_failed >= 4 OR any Category 1/2/5 failure | DONE → DONE_WITH_CONCERNS, list all failures |
-| acceptance_criteria_check has evidence_valid: false | DONE → DONE_WITH_CONCERNS: "Evidence verification failed" |
-| completeness_check.all_files_exist: false | DONE → NEEDS_CONTEXT: "Expected output files missing: {list}" |
-| regression_check.tests_pass: false | DONE → DONE_WITH_CONCERNS: "Test regressions detected" |
+| All 5 checks pass (`checks_failed == 0`) | Keep DONE as-is |
+| Any 1 of the 5 checks failing | DONE -> DONE_WITH_CONCERNS, list failed check(s) in `concerns[]` |
+| `file_existence.missing_files` non-empty | DONE -> NEEDS_CONTEXT, list missing files in `missing_context[]` (the agent likely needs to re-run the create step) |
+| `guard_results[]` has any `exit_code != 0` | DONE -> DONE_WITH_CONCERNS, list failing guard in `concerns[]` |
 
 ---
 
 ## When to Skip Self-Validation
 
-Checks 5, 6, 8, 13, 14, 15 (test/compile/lint checks) MAY be skipped with documented justification ONLY if:
-- No test suite exists (new project with zero tests)
-- Work item type is pure documentation (no code changes)
-- Work item type is design artifact only
+The 5 checks are minimal enough that skipping is rarely justified, but these narrow exceptions apply:
 
-**Checks 1, 2, 3, 7, 10, 12 (evidence and completeness) are NEVER skippable.**
+- **Check 3 (guard exit codes)**: skippable when the work item type genuinely has no guard (e.g., pure documentation work with no link-check, design artifacts with no validation tool). Record `guard_results: []` explicitly — don't omit the field.
+- **Check 5 (file:line accuracy)**: skippable when evidence contains no `file:line` citations (e.g., evidence is entirely command output). Record `file_line_citations: []` explicitly.
+
+**Checks 1, 2, and 4 (evidence freshness, file existence, git state) are NEVER skippable.** These are the hook-verifiable core of the v12 honesty contract.

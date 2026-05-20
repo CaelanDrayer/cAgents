@@ -20,7 +20,7 @@ metadata:
     - knowledge_base_management
   maxTurns: 30
   related_agents:
-    - name: devops-lead
+    - name: infrastructure-lead
       type: coordinated_by
     - name: sysadmin
       type: collaborates_with
@@ -93,7 +93,6 @@ See @resources/user-communication.md for communication best practices.
 ## Memory Ownership
 
 **Reads**:
-- `cagents-memory/_communication/inbox/it-support/` - Support requests
 - `cagents-memory/_knowledge/procedural/` - Troubleshooting guides
 
 **Writes**:

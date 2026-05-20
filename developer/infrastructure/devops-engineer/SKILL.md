@@ -31,7 +31,7 @@ metadata:
     - gitops_workflows
   maxTurns: 30
   related_agents:
-    - name: devops-lead
+    - name: infrastructure-lead
       type: coordinated_by
     - name: sysadmin
       type: collaborates_with
@@ -86,7 +86,6 @@ See @resources/container-orchestration.md for Docker/Kubernetes patterns.
 
 **Reads**:
 - `cagents-memory/{instruction_id}/tasks/` - CI/CD and infrastructure tasks
-- `cagents-memory/_communication/inbox/devops-engineer/` - Pipeline requests, build failures
 
 **Writes**:
 - `cagents-memory/{instruction_id}/outputs/partial/pipeline_config_{timestamp}.yaml`

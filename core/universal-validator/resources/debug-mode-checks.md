@@ -71,8 +71,8 @@ measured in isolation before the next one lands.
 - **Verification method**: `count_by_result`
 - **Severity**: HIGH (check 1), CRITICAL (check 2 / BLOCKED)
 - **New verdict**: `BLOCKED` is a new enum value. Pipeline routes it like
-  FAIL (back to PROMPTS_READY), with the falsification count annotated in
-  the revision prompt so /run can bail out instead of retrying forever.
+  FAIL (v12.0.0: back to PLANNED; pre-v12: back to PROMPTS_READY, a state collapsed into PLANNED in v12.0.0),
+  with the falsification count annotated in the revision prompt so /run can bail out instead of retrying forever.
 - **Gated**: Entirely behind `flags.mode === "debug"`. Non-debug runs
   NEVER see verdict `BLOCKED` — this is a V10.26.17 invariant and the
   regression test suite asserts it explicitly.

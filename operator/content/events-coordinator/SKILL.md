@@ -18,7 +18,7 @@ metadata:
     - event_roi
   maxTurns: 30
   related_agents:
-    - name: campaign-manager
+    - name: marketing-strategist
       type: coordinated_by
     - name: field-marketing-manager
       type: collaborates_with

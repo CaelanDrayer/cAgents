@@ -9,7 +9,7 @@
 
 ## Summary
 
-Controller subagents (e.g. `cagents:engineering-manager`) report
+Controller subagents (e.g. `cagents:tech-lead`) report
 "Agent/subagent-spawn tool not available in this runtime" when `/run`
 delegates to them, forcing them to self-handle execution instead of
 spawning `backend-developer` + `code-reviewer` at depth 2.
@@ -20,8 +20,8 @@ spawning `backend-developer` + `code-reviewer` at depth 2.
    ```
    /run add a small new tool to <any project> and write tests for it
    ```
-2. `/run` correctly spawns `cagents:engineering-manager` at depth 1.
-3. The engineering-manager returns a completion summary that
+2. `/run` correctly spawns `cagents:tech-lead` at depth 1.
+3. The tech-lead returns a completion summary that
    includes the literal string: *"the Agent/subagent-spawn tool was
    not available in this runtime, so the controller executed each
    work item directly"*.
@@ -44,7 +44,7 @@ spawning `backend-developer` + `code-reviewer` at depth 2.
 └── completion_summary.yaml           # see warnings[0]
 ```
 
-Two separate engineering-manager spawns both hit this:
+Two separate tech-lead spawns both hit this:
 - `a7c2e9e6a17ed49c3` — initial implementation (3 work items)
 - `a247d709091626213` — scoped rename follow-up
 
@@ -52,7 +52,7 @@ Both reported the same Agent-tool-unavailable error.
 
 ## Expected behavior
 
-`cagents:engineering-manager` (and every cagents controller agent) should
+`cagents:tech-lead` (and every cagents controller agent) should
 have the `Agent` tool exposed in its tool manifest so it can spawn
 `backend-developer`, `code-reviewer`, etc. per the controller-centric
 delegation pattern documented in `/run`.
@@ -60,7 +60,7 @@ delegation pattern documented in `/run`.
 ## Likely root cause to investigate (priority order)
 
 1. **Controller agent definition missing Agent in `tools:` frontmatter.**
-   The `engineering-manager.md` (or similar) agent file in the cagents
+   The `tech-lead.md` (or similar) agent file in the cagents
    plugin likely declares an explicit `tools:` array that omits `Agent`.
    When `tools:` is set, Claude Code restricts the agent to only those
    tools — the default Agent tool is dropped.

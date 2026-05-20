@@ -10,6 +10,81 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.0.0] - 2026-05-20
+
+Major consolidation release. Branch `revamp/v12-rc`. Total agents 251 -> 238.
+Pipeline transitions 7 -> 5. Legacy domain dirs 13 -> 2. Execution
+self-validation checks 15 -> 5.
+
+### Added
+- `scripts/migration/v12-aliases.yaml` — back-compat alias map for all v11 ->
+  v12 agent renames and merges (W1.1). Resolves `engineering-manager`,
+  `architecture-reviewer`, `chief-legal-officer`, `devops-lead`,
+  `task-decomposer`, `prompt-engineer`, and the 13 marketing-sales fold
+  sources to their v12 targets.
+- `outputs/v12-migration/migration-state.yaml` and burndown chart (W0.3) —
+  per-wave tracking against locked decisions Q1..Q8.
+- Tar backup of 11 legacy domain dirs at
+  `outputs/v12-migration/legacy-dirs-backup.tar.gz` (W0.4) — pre-deletion
+  snapshot for recovery.
+
+### Changed
+- **Pipeline state machine collapsed (7 -> 5 states)** (W2.1, W3.1, W3.2).
+  `/run` sequence is now `INIT -> ORCHESTRATED -> PLANNED -> COORDINATED ->
+  VALIDATED`. `task-decomposer` and `prompt-engineer` folded into
+  `universal-planner`; their output schemas (`work_items.yaml`,
+  `delegation_prompts.yaml`) preserved but written by planner directly.
+- **engineering-manager merged into tech-lead** (W2.4). Two engineering
+  controllers consolidated into a single fullstack `tech-lead`. 222 active
+  references swept across SKILL.md, rules, tests, and config. Alias
+  preserved.
+- **architecture-reviewer collapsed into `architect --review` mode flag**
+  (W2.5). Removes a standalone agent and absorbs review responsibility into
+  the `architect` controller with an explicit mode toggle.
+- **Marketing-sales consolidation (38 -> 25)** (W3.3-W3.6). 13 agents
+  absorbed across 6 groups (G1-G6). All 13 fold sources aliased.
+- **chief-legal-officer renamed to clo** (W2.2). Standardized C-suite
+  naming. Alias preserved.
+- **vp-engineering moved to `leadership/` archetype** (W2.2). Co-located
+  with other C-suite agents.
+- **devops-lead renamed to infrastructure-lead** (W2.3). Moved to
+  `developer/infrastructure/`.
+- **engine-developer and game-programmer moved to `developer/backend/`**
+  (W2.2).
+- **max_revision_cycles 5 -> 3** (W1.4). Tightened revision budget in
+  `pipeline_config.yaml` per audit.
+- **Execution self-validation reduced 15 -> 5 hook-verifiable checks**
+  (W1.2). The aspirational 15-check protocol replaced with 5
+  mechanically-verifiable checks: evidence freshness, file existence,
+  guard exit codes, git state, file:line accuracy. Aspirational checks
+  moved to `docs/FUTURE_VALIDATION_FRAMEWORK.md`.
+- Top-level docs (CLAUDE.md, README.md, docs/ARCHITECTURE.md,
+  docs/RELEASE_NOTES.md) updated for v12.0.0 release content (W4.3).
+- Version bumped 11.3.0 -> 12.0.0 across all 18 registry locations
+  (W4.3).
+
+### Removed
+- `task-decomposer` agent — folded into `universal-planner` (W2.1).
+- `prompt-engineer` agent — folded into `universal-planner` (W2.1).
+- `engineering-manager` agent — merged into `tech-lead` (W2.4).
+- `architecture-reviewer` agent — collapsed into `architect --review`
+  (W2.5).
+- 13 marketing-sales agents absorbed across G1-G6 groups (W3.3-W3.6).
+- 11 legacy domain dirs: `engineering/`, `creative/`, `business/`,
+  `growth/`, `service/`, `science/`, `health/`, `education/`,
+  `personal/`, `arts/`, `trades/` (W4.2). `people/` and `shared/`
+  retained as routing-config-only overlays.
+- `cagents-memory/_communication/` directory and 58 stale SKILL.md
+  references (W4.1).
+
+### Migration
+- Pre-v12 agent names continue to resolve via
+  `scripts/migration/v12-aliases.yaml`. Existing session artifacts (org_*,
+  team_*, run_*) referencing old names work unchanged.
+- Could-have-caught-by: end-to-end pipeline-state-count regression test,
+  agent-count invariant test, and zombie-ref scanner — all landed in W1.2
+  and W4.4.
+
 ## [11.3.0] - 2026-05-13
 
 ### Added

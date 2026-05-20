@@ -62,7 +62,7 @@ describe('model-routing-advisor.cjs', () => {
   it('should pass through correct model for controller', () => {
     const result = runHook({
       tool_name: 'Task',
-      tool_input: { subagent_type: 'cagents:engineering-manager', model: 'opusplan', description: 'test' }
+      tool_input: { subagent_type: 'cagents:tech-lead', model: 'opusplan', description: 'test' }
     });
     expect(result.continue).toBe(true);
     expect(result.systemMessage).toBeUndefined();
@@ -71,7 +71,7 @@ describe('model-routing-advisor.cjs', () => {
   it('should warn on wrong model for controller', () => {
     const result = runHook({
       tool_name: 'Task',
-      tool_input: { subagent_type: 'cagents:engineering-manager', model: 'haiku', description: 'test' }
+      tool_input: { subagent_type: 'cagents:tech-lead', model: 'haiku', description: 'test' }
     });
     expect(result.continue).toBe(true);
     expect(result.systemMessage).toContain('routing advisory');

@@ -23,7 +23,7 @@ metadata:
     - brand_voice
   maxTurns: 30
   related_agents:
-    - name: campaign-manager
+    - name: marketing-strategist
       type: coordinated_by
     - name: creative-director
       type: coordinated_by

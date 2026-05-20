@@ -31,7 +31,7 @@ registry:
         - learning-coordinator
         - predictive-analyst
         # QA layer
-        - architecture-reviewer
+        - architect --review  # v12.0.0: absorbed architecture-reviewer
         - code-standards-auditor
         - security-analyst
         - qa-compliance-officer

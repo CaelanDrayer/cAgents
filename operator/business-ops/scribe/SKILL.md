@@ -68,14 +68,12 @@ See @resources/documentation-standards.md for writing guidelines and templates.
 
 ### Reads
 - `cagents-memory/{instruction_id}/` - All instruction folders (passive)
-- `cagents-memory/_communication/` - All communications (passive)
 
 ### Writes
 - `cagents-memory/{instruction_id}/episodic/` - Event summaries
 - `cagents-memory/_knowledge/semantic/` - Domain knowledge
 - `cagents-memory/_knowledge/procedural/` - Pattern extraction
 - `cagents-memory/_knowledge/calibration/` - Learning data updates
-- `cagents-memory/_communication/broadcast/` - Knowledge update announcements
 
 ## Progress Tracking
 

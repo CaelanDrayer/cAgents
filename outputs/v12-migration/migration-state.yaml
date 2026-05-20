@@ -1,0 +1,179 @@
+schema_version: "1"
+session_id: team_v12-revamp-phase-abc_260520_002
+generated_at: "2026-05-20T07:48:30Z"
+purpose: |
+  Burndown chart tracking the 8 locked decisions (Q1..Q8) and 6 marketing-sales
+  merge groups (G1..G6) for the cAgents v11.3.0 -> v12.0.0 revamp. Updated after
+  every commit. SC-7 verifies all 14 statuses == executed at GATE-4.
+
+target_version: 12.0.0
+source_version: 11.3.0
+branch: revamp/v12-rc
+target_commits: "18-22"
+
+# 8 locked decisions from final-decisions.yaml
+decisions:
+  - id: Q1
+    title: "Pipeline collapse 7 -> 5 states (fold task-decomposer + prompt-engineer into planner)"
+    status: in_progress
+    target_waves: [W2, W3]
+    work_items: [WI-W2.1, WI-W3.1, WI-W3.2]
+    notes: "WI-W2.1 (planner-fold) and WI-W3.1 (config + docs) complete. WI-W3.2 implementation half (state machine loop in /run) still pending; will complete Q1 at GATE-3."
+
+  - id: Q2
+    title: "Agent moves: engine-developer + game-programmer -> developer/backend/"
+    status: pending
+    target_waves: [W2]
+    work_items: [WI-W2.2]
+    notes: ""
+
+  - id: Q3
+    title: "Rename chief-legal-officer -> clo"
+    status: pending
+    target_waves: [W2]
+    work_items: [WI-W2.2]
+    notes: ""
+
+  - id: Q4
+    title: "Engineering-manager -> tech-lead merge; architecture-reviewer -> architect --review mode flag"
+    status: pending
+    target_waves: [W2]
+    work_items: [WI-W2.4, WI-W2.5]
+    notes: "214-ref refactor for em -> tech-lead; 33-ref refactor for ar -> mode flag"
+
+  - id: Q5
+    title: "Marketing-sales merges: 38 -> 22 agents (6 merge groups, 16 removals)"
+    status: pending
+    target_waves: [W3]
+    work_items: [WI-W3.3, WI-W3.4, WI-W3.5, WI-W3.6]
+    notes: "See merge_groups[] below for per-group tracking"
+
+  - id: Q6
+    title: "Lower max_revision_cycles 5 -> 3 (per revision-distribution.yaml audit)"
+    status: executed
+    target_waves: [W1]
+    work_items: [WI-W1.4]
+    notes: "WI-W1.4 complete: revision.max_cycles lowered 5 -> 3 in cagents-memory/_system/config/pipeline_config.yaml with audit-citation comment; regression test tests/v12/revision-cap.test.js (4 tests) passing."
+
+  - id: Q7
+    title: "Vp-engineering -> leadership/; devops-lead -> developer/infrastructure/infrastructure-lead"
+    status: pending
+    target_waves: [W2]
+    work_items: [WI-W2.2, WI-W2.3]
+    notes: ""
+
+  - id: Q8
+    title: "Validation honesty: 15 -> 5 hook-verifiable checks; prose dedupe"
+    status: executed
+    target_waves: [W1]
+    work_items: [WI-W1.2]
+    notes: "WI-W1.2 complete. execution-self-validation.md rewritten with 5 hook-verifiable checks (evidence freshness, file existence, guard exit codes, git state, file:line accuracy). completion.md updated to reflect ~24 checks total (was 29). controllers.md + execution.md prose-deduped to reference @resources/execution-self-validation.md. Regression test tests/v12/validation-honesty-contract.test.js (7 tests, all PASS) guards the 5-check contract."
+
+# 6 marketing-sales merge groups from marketing-sales-audit.md
+merge_groups:
+  - id: G1
+    title: "SEO collapse 6 -> 2"
+    description: "seo-specialist absorbs keyword-researcher + on-page-seo-auditor + technical-seo-auditor + link-strategist. geo-strategist stays."
+    agents_removed: 4
+    target_wave: W3
+    work_item: WI-W3.3
+    status: pending
+
+  - id: G2
+    title: "Controller bloat 5 -> 2"
+    description: "Collapse marketing-strategist + campaign-manager + product-marketing-manager. Fold seo-strategist under marketing-strategist."
+    agents_removed: 3
+    target_wave: W3
+    work_item: WI-W3.4
+    status: pending
+
+  - id: G3
+    title: "Partnerships 4 -> 1"
+    description: "Merge affiliate-marketing-manager + channel-partner-manager + partnership-marketing-manager + influencer-marketing-specialist."
+    agents_removed: 3
+    target_wave: W3
+    work_item: WI-W3.5
+    status: pending
+
+  - id: G4
+    title: "Ops merge 2 -> 1"
+    description: "sales-ops-specialist -> revenue-operations-manager (strict superset)"
+    agents_removed: 1
+    target_wave: W3
+    work_item: WI-W3.6
+    status: pending
+
+  - id: G5
+    title: "Enablement merge 2 -> 1"
+    description: "sales-trainer -> sales-enablement-specialist"
+    agents_removed: 1
+    target_wave: W3
+    work_item: WI-W3.6
+    status: pending
+
+  - id: G6
+    title: "Customer-marketing fold 1 -> 0"
+    description: "customer-marketing-manager -> growth-marketer"
+    agents_removed: 1
+    target_wave: W3
+    work_item: WI-W3.6
+    status: pending
+
+# Wave-level tracking
+waves:
+  - id: W0
+    name: "Bootstrap + triage (lead, sequential)"
+    gate: GATE-0
+    status: in_progress
+    started_at: "2026-05-20T07:48:00Z"
+  - id: W1
+    name: "Foundations (Phase A)"
+    gate: GATE-1
+    status: pending
+  - id: W2
+    name: "Structural moves (Phase B safer half)"
+    gate: GATE-2
+    status: pending
+  - id: W3
+    name: "Pipeline collapse + marketing-sales merges (Phase B harder half)"
+    gate: GATE-3
+    status: pending
+  - id: W4
+    name: "Cleanup + final polish (Phase C)"
+    gate: GATE-4
+    status: pending
+
+# Wave-level work item progress
+wave_progress:
+  W1.1:
+    status: complete
+    output: scripts/migration/v12-aliases.yaml
+    test: "tests/v12/alias-map-coverage.test.js (24/24 passed)"
+    commit_pending: true
+  W1.2:
+    status: complete
+    output: "3 rule files modified (execution-self-validation.md rewritten 15->5 checks; completion.md + controllers.md + execution.md prose-deduped)"
+    test: "tests/v12/validation-honesty-contract.test.js (7/7 passed)"
+    commit_pending: true
+  W1.3:
+    status: complete
+    output: 4 docs scaffolded
+    commit_pending: true
+  W1.4:
+    status: complete
+    output: pipeline_config.yaml modified
+    commit_pending: true
+  W3.1:
+    status: complete
+    output: "5-state pipeline config (pipeline_config.yaml: DECOMPOSED + PROMPTS_READY removed, on_fail re-routed to PLANNED; orchestration.md, run/SKILL.md, team/SKILL.md updated)"
+    test: "tests/v12/pipeline-state-machine.test.js (23/23 passed); tests/config/pipeline-config.test.js (16/16 passed after 2 assertions updated); tests/skills/run-debug-wiring.test.mjs (6/6 passed after PROMPTS_READY -> PLANNED rewire)"
+    commit_pending: true
+
+# Final acceptance summary (filled at GATE-4)
+final:
+  commits_landed: 0
+  gates_passed: []
+  version_synced: false
+  marketing_sales_count: 38  # baseline; target 22
+  legacy_domain_dirs: 13     # baseline; target 2
+  pipeline_states: 7          # baseline; target 5

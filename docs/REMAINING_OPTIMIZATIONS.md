@@ -33,10 +33,10 @@
 ## Current Status: 22 Agents Fully Migrated ✅
 
 **Make Domain SKILL.md Agents** (22 total):
-1. engineering-manager
+1. tech-lead
 2. architect ⭐ (reference template)
 3. backend-developer
-4. devops-lead
+4. infrastructure-lead
 5. frontend-developer
 6. security-specialist
 7. tech-lead

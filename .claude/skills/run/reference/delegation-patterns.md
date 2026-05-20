@@ -1,49 +1,50 @@
-# /run Delegation Patterns (V9.23+ Event-Driven Pipeline)
+# /run Delegation Patterns (v12.0.0 — 5-State Pipeline)
 
-## Delegation Chain (V9.23)
+## Delegation Chain (v12.0.0)
 
-The event-driven pipeline architecture uses a state machine with sequential enrichment agents and nested controller execution:
+The event-driven pipeline architecture uses a 5-state machine with sequential enrichment and nested controller execution:
 
 ```
 /run (state machine loop, level 0)
-  +-> orchestrator (level 1)    -> enriched_context.yaml
-  +-> planner (level 1)         -> plan.yaml
-  +-> decomposer (level 1)      -> work_items.yaml
-  +-> prompt-engineer (level 1)  -> delegation_prompts.yaml
+  +-> orchestrator (level 1)         -> enriched_context.yaml
+  +-> universal-planner (level 1)    -> plan.yaml + work_items.yaml (decomposition inline)
   +-> controller (level 1)
-       +-> executor (level 2)   -> implementation
-       +-> reviewer (level 2)   -> review_report.yaml
-  +-> validator (level 1)       -> validation_report.yaml (PASS/FAIL/REVISE)
+       +-> executor (level 2)        -> implementation
+       +-> reviewer (level 2)        -> review_report.yaml
+  +-> validator (level 1)            -> validation_report.yaml (PASS/FAIL/REVISE)
 ```
 
-## What /run Does Inline
+**v12.0.0 collapse**: `task-decomposer` and `prompt-engineer` no longer exist as separate stages. `cagents:universal-planner` produces both `plan.yaml` and `work_items.yaml` inline. Controllers fall back to standard delegation prompts (no `delegation_prompts.yaml` artifact).
+
+## What /run Does Inline (v12.0.0)
 
 | Phase | Agent | Output |
 |-------|-------|--------|
 | **INIT** | orchestrator | enriched_context.yaml |
-| **ORCHESTRATED** | universal-planner | plan.yaml |
-| **PLANNED** | task-decomposer | work_items.yaml |
-| **DECOMPOSED** | prompt-engineer | delegation_prompts.yaml |
-| **PROMPTS_READY** | controller (from plan.yaml) | coordination_log.yaml |
+| **ORCHESTRATED** | universal-planner | plan.yaml + work_items.yaml |
+| **PLANNED** | controller (from plan.yaml) | coordination_log.yaml |
 | **COORDINATED** | universal-validator | validation_report.yaml |
+| **VALIDATED** | (terminal) | execution_summary.yaml |
 
-## Progressive Pipeline (3 Paths)
+## Progressive Pipeline (3 Paths, v12.0.0)
 
 Complexity scoring (9 weighted signals) determines which states to execute:
 
 | Path | Score | States | Description |
 |------|-------|--------|-------------|
-| **Minimal** | < 0.25 | PLANNED -> PROMPTS_READY -> COORDINATED | Simple tasks, ~3 agents |
-| **Medium** | 0.25-0.65 | PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED -> VALIDATED | Moderate tasks, ~4 agents |
-| **Full** | > 0.65 | All 7 states | Complex tasks, all agents |
+| **Minimal** | < 0.25 | PLANNED -> COORDINATED | Simple tasks, controller only (~2 agents) |
+| **Medium** | 0.25-0.65 | ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED | Moderate tasks (~3 agents) |
+| **Full** | > 0.65 | All 5 states | Complex tasks, all agents |
+
+Pre-v12 paths referenced DECOMPOSED and PROMPTS_READY; those states no longer exist and the corresponding agents (decomposer, prompt-engineer) have been folded into universal-planner.
 
 ## Debug-Mode Prefix Injection (V10.26.13+)
 
-When `/run` is invoked with `--mode debug`, the PROMPTS_READY controller
+When `/run` is invoked with `--mode debug`, the **PLANNED** state controller
 spawn gets a prepended prefix block from
 `.claude/skills/run/reference/debug-mode-prompt.md`. The injection point is
 the controller spawn prompt only — enrichment agents (orchestrator,
-planner, decomposer, prompt-engineer) are unaffected. When
+universal-planner) are unaffected. When
 `flags.mode === "standard"` (default), no prefix is added and behavior is
 identical to V10.26.12.
 
@@ -85,22 +86,22 @@ Controller (level 1):
 
 | Request Type | Domain | Controller |
 |-------------|--------|-----------|
-| "Fix auth bug" | Engineering | engineering-manager |
+| "Fix auth bug" | Engineering | tech-lead |
 | "Write fantasy story" | Creative | narrative-director |
-| "Plan Q4 campaign" | Growth | campaign-manager / marketing-strategist |
+| "Plan Q4 campaign" | Growth | marketing-strategist |
 | "Create budget" | Business | operations-manager / finance-manager |
 | "Hire software engineer" | People | hr-manager |
 | "Handle customer complaint" | Service | customer-success-manager |
 
-## Revision Routing
+## Revision Routing (v12.0.0)
 
 | Validator Output | Route To | Description |
 |-----------------|----------|-------------|
 | PASS | Complete | Pipeline finished |
-| FAIL | PROMPTS_READY | Re-run controller with feedback |
-| REVISE | PLANNED | Re-plan (more fundamental issue) |
+| FAIL | PLANNED | Re-run controller with feedback |
+| REVISE | PLANNED | Re-plan (planner re-runs, may also re-run orchestrator) |
 
-Max 5 revision cycles before escalation to user.
+Max 3 revision cycles (lowered from 5 in v12.0.0) before escalation to user.
 
 ## Team Mode Delegation
 
@@ -120,7 +121,7 @@ Agent({
 })
 ```
 
-## Session Structure
+## Session Structure (v12.0.0)
 
 ```
 cagents-memory/sessions/run_{slug}_{YYMMDD}_{NNN}/
@@ -130,7 +131,6 @@ cagents-memory/sessions/run_{slug}_{YYMMDD}_{NNN}/
 |   +-- enriched_context.yaml
 |   +-- plan.yaml
 |   +-- work_items.yaml
-|   +-- delegation_prompts.yaml
 |   +-- coordination_log.yaml
 |   +-- validation_report.yaml
 |   +-- agent_tree.yaml
@@ -139,10 +139,12 @@ cagents-memory/sessions/run_{slug}_{YYMMDD}_{NNN}/
 +-- outputs/
 ```
 
+Pre-v12 sessions also wrote `workflow/delegation_prompts.yaml` (produced by prompt-engineer). v12 sessions omit this file; controllers fall back to standard delegation prompts.
+
 ## Configuration Files
 
 | Config | Path | Purpose |
 |--------|------|---------|
-| Pipeline config | `cagents-memory/_system/config/pipeline_config.yaml` | State machine definition |
+| Pipeline config | `cagents-memory/_system/config/pipeline_config.yaml` | State machine definition (5 states) |
 | Domain overrides | `{domain}/config/domain_overrides.yaml` | Controller catalog |
 | Domain detection | Keywords in SKILL.md (inline) | Domain routing |

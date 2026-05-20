@@ -6,7 +6,7 @@
 - **Domain**: Make
 - **What it optimizes**: Performance, bundle size, algorithms, memory, queries
 - **Key metrics**: FCP, LCP, bundle size, query time, memory usage
-- **Controller**: engineering-manager
+- **Controller**: tech-lead
 - **Specialists**: backend-developer, frontend-developer, architect
 - **Auto-detection**: Source code files (.js, .ts, .py, etc.)
 
@@ -30,7 +30,7 @@
 - **Domain**: Make/Operate
 - **What it optimizes**: Cost, scaling, reliability, monitoring
 - **Key metrics**: Monthly cost, utilization %, uptime, response time
-- **Controller**: devops-lead
+- **Controller**: infrastructure-lead
 - **Specialists**: backend-developer, architect
 - **Auto-detection**: Infrastructure configs (docker, k8s, terraform)
 
@@ -38,7 +38,7 @@
 - **Domain**: Make/Operate
 - **What it optimizes**: Query performance, ETL speed, data quality
 - **Key metrics**: Query time, ETL duration, data completeness
-- **Controller**: engineering-manager
+- **Controller**: tech-lead
 - **Specialists**: dba, backend-developer
 - **Auto-detection**: ETL/pipeline scripts
 
@@ -46,7 +46,7 @@
 - **Domain**: Grow
 - **What it optimizes**: Conversion rates, engagement, targeting
 - **Key metrics**: Conversion %, bounce rate, CTR, open rate
-- **Controller**: campaign-manager
+- **Controller**: marketing-strategist
 - **Specialists**: copywriter, growth-hacker
 - **Auto-detection**: Campaign/marketing files
 
@@ -62,7 +62,7 @@
 - **Domain**: Grow
 - **What it optimizes**: Sales cycle, win rate, follow-up completion
 - **Key metrics**: Cycle length, win rate %, follow-up completion %
-- **Controller**: sales-ops-specialist
+- **Controller**: revenue-operations-manager
 - **Specialists**: sales-rep
 - **Auto-detection**: Sales docs/CRM configs
 

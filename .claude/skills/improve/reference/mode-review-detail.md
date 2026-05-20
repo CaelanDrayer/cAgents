@@ -44,7 +44,7 @@ as of V11.0). Groups run in dependency order (Group 1 parallel; Group 2
 after Group 1; Group 3 after Group 2):
 
 - **Group 1: Structural Analysis** (parallel, independent)
-  - `cagents:architecture-reviewer`
+  - `cagents:architect` (invoked with `--review`)
   - `cagents:code-standards-auditor`
   - `cagents:technical-writer`
 - **Group 2: Security & Performance** (parallel within group, after Group 1)

@@ -103,7 +103,6 @@ See @resources/budget-templates.md for reporting templates.
 
 **Reads**:
 - `cagents-memory/{instruction_id}/tasks/` - Resource requests, spending proposals
-- `cagents-memory/_communication/inbox/finance-manager/` - Budget requests
 
 **Writes**:
 - `cagents-memory/{instruction_id}/decisions/{timestamp}_finance_manager.yaml`

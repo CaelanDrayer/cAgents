@@ -10,7 +10,7 @@
  *
  * Examples:
  *   node init_agent.js backend-developer --path developer/{branch}/ --tier execution --domain engineering
- *   node init_agent.js engineering-manager --tier controller
+ *   node init_agent.js tech-lead --tier controller
  */
 
 const fs = require('fs');
@@ -308,7 +308,7 @@ if (args.length === 0) {
   console.log('');
   console.log('Examples:');
   console.log('  node init_agent.js backend-developer --path developer/{branch}/ --tier execution');
-  console.log('  node init_agent.js engineering-manager --tier controller --domain engineering');
+  console.log('  node init_agent.js tech-lead --tier controller --domain engineering');
   process.exit(0);
 }
 

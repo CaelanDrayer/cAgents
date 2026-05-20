@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "11.3.0"
+  version: "12.0.0"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--mode <standard|debug>] [--no-goal]"
   user-invocable: "true"
   context: "none"
@@ -26,7 +26,7 @@ You are the **event-driven pipeline engine** that executes a state machine loop,
 
 **You MUST delegate ALL work to subagents via the Agent tool. You NEVER implement, write code, create content, or fix bugs yourself.**
 
-/run is a pipeline engine. It spawns agents (orchestrator, planner, decomposer, controller, validator) and reads their outputs. It does NOT do their work. Even for "simple" tasks, you MUST spawn a controller agent who spawns execution agents. The whole point of this plugin is delegation to specialized agents. If you do the work yourself, you defeat the entire purpose.
+/run is a pipeline engine. It spawns agents (orchestrator, planner, controller, validator) and reads their outputs. It does NOT do their work. Even for "simple" tasks, you MUST spawn a controller agent who spawns execution agents. The whole point of this plugin is delegation to specialized agents. If you do the work yourself, you defeat the entire purpose.
 
 **What you do**: Parse, plan, spawn agents, read events, route revisions, report results.
 **What you NEVER do**: Write code, edit files, create content, answer domain questions, explore the codebase for implementation purposes.
@@ -52,21 +52,21 @@ The following phrases are self-handling rationalizations. Each one is a critical
 
 **If you find yourself reasoning toward any of these conclusions, STOP. You are rationalizing a violation. Delegate.**
 
-## Architecture: Event-Driven State Machine
+## Architecture: Event-Driven State Machine (v12.0.0)
 
 ```
-INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED -> VALIDATED
-                                                              FAIL -> PROMPTS_READY
-                                                            REVISE -> PLANNED
+INIT -> ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED
+                                            FAIL -> PLANNED
+                                          REVISE -> PLANNED
 ```
 
 | Phase | Level | Agents | Output |
 |-------|-------|--------|--------|
-| Enrichment | 1 | orchestrator, planner, decomposer, prompt-engineer (optional) | enriched_context.yaml, plan.yaml, work_items.yaml, delegation_prompts.yaml |
+| Enrichment | 1 | orchestrator, universal-planner (decomposition inline) | enriched_context.yaml, plan.yaml, work_items.yaml |
 | Coordination | 1 + 2 | controller (level 1) -> executor + reviewer (level 2, max 3 rounds) | coordination_log.yaml |
 | Validation | 1 | validator | validation_report.yaml (PASS/FAIL/REVISE) |
 
-Pipeline-level revision loop: max 5 cycles total.
+Pipeline-level revision loop: max 3 cycles total (lowered from 5 in v12.0.0). v12.0.0 collapse: task-decomposer and prompt-engineer absorbed into universal-planner; controllers fall back to standard delegation prompts.
 
 See @reference/state-machine-detail.md for full per-state contracts, event file format, revision routing semantics, and the BLOCKED verdict (debug-mode only).
 
@@ -150,7 +150,7 @@ This is the core loop -- spawn pipeline agents one state at a time, advance via 
 
 **3b. Route domain and tier inline** before spawning the orchestrator. Domain detection uses `{domain}/config/domain_overrides.yaml` -> `router_keywords` array. See @reference/domain-coverage.md for the full domain table.
 
-**3c. Compute complexity score and select pipeline path** (Minimal / Medium / Full). For tier 2 with clear scope, the adaptive pipeline skips orchestrator, decomposer, and prompt-engineer. See @reference/adaptive-pipeline.md for the 9-signal scoring rubric, path-selection thresholds, and tier-2 fast-path skip behavior.
+**3c. Compute complexity score and select pipeline path** (Minimal / Medium / Full). For tier 2 with clear scope, the adaptive pipeline skips the orchestrator. (v12.0.0: decomposer and prompt-engineer no longer exist as separate stages — universal-planner handles decomposition inline.) See @reference/adaptive-pipeline.md for the 9-signal scoring rubric, path-selection thresholds, and tier-2 fast-path skip behavior.
 
 **3d. Display domain/tier confirmation**:
 
@@ -185,7 +185,7 @@ INSTRUCTIONS:
 })
 ```
 
-For the **PROMPTS_READY state (controller)**, the controller is dynamic -- resolved from `plan.yaml` `controller_assignment.primary`. Use the delegation prompt from `workflow/delegation_prompts.yaml` if available, otherwise fall back to standard controller prompt.
+For the **PLANNED state (controller)**, the controller is dynamic -- resolved from `plan.yaml` `controller_assignment.primary`. (v12.0.0: PROMPTS_READY removed; universal-planner produces work_items.yaml inline and controllers fall back to standard delegation prompts.)
 
 **Debug-mode prefix injection (V10.26.13+)**: If `flags.mode === "debug"`, read `.claude/skills/run/reference/debug-mode-prompt.md` and PREPEND its prefix text to the controller spawn prompt. See @reference/debug-mode-prompt.md.
 
@@ -194,11 +194,11 @@ For the **PROMPTS_READY state (controller)**, the controller is dynamic -- resol
 | Verdict | Action |
 |---------|--------|
 | PASS | Advance to VALIDATED. **Loop exits -- proceed IMMEDIATELY to Step 4.** Do NOT stop. |
-| FAIL | Route back to PROMPTS_READY. Pass validation feedback to controller. |
+| FAIL | Route back to PLANNED. Pass validation feedback to controller. (v12.0.0: PROMPTS_READY removed; controller re-runs from PLANNED.) |
 | REVISE | Route back to PLANNED. Pass feedback to planner. |
-| BLOCKED (debug only) | Route to PROMPTS_READY with falsification annotation. |
+| BLOCKED (debug only) | Route to PLANNED with falsification annotation. |
 
-Increment `revision_round` and `validation_cycles` in status.yaml. Max 5 total revision cycles before HITL escalation.
+Increment `revision_round` and `validation_cycles` in status.yaml. Max 3 total revision cycles before HITL escalation (lowered from 5 in v12.0.0).
 
 > **CRITICAL: DO NOT STOP HERE.** When the loop exits at ANY terminal state, Step 4 is MANDATORY. The verify-completion.cjs Stop hook will block stopping if execution_summary.yaml is missing or auto-generated.
 
@@ -219,7 +219,7 @@ session_id: {SESSION_ID}
 final_state: VALIDATED  # or FAILED, INTERRUPTED
 status: completed | failed | interrupted
 revision_rounds_used: {N}
-states_executed: [INIT, ORCHESTRATED, PLANNED, DECOMPOSED, PROMPTS_READY, COORDINATED, VALIDATED]
+states_executed: [INIT, ORCHESTRATED, PLANNED, COORDINATED, VALIDATED]
 states_skipped: [{list}]
 total_agents_spawned: {count}
 total_duration_ms: {elapsed_ms}
@@ -266,13 +266,13 @@ If `--dry-run` with `--team`: Display plan summary and team composition, then ST
 | /run does directly | /run delegates |
 |--------------------|----------------|
 | Parse flags, create session dir, write instruction.yaml + status.yaml | Orchestrator (level 1) -> enriched_context.yaml |
-| Load pipeline_config, read strategic_brief.yaml | Universal-planner (level 1) -> plan.yaml |
-| Domain detection + tier classification (inline) | Task-decomposer (level 1) -> work_items.yaml |
-| Compute duration_ms at each state transition | Prompt-engineer (level 1, optional) -> delegation_prompts.yaml |
-| Maintain events/index.yaml | Controller (level 1, dynamic) -> coordination_log.yaml |
-| Always write execution_summary.yaml | Universal-validator (level 1) -> validation_report.yaml |
-| Call TaskCreate/TaskUpdate at every transition | Execution agents (level 2, via controller): implementation work |
-| Spawn pipeline agents via Agent tool | Reviewer (level 2, via controller): acceptance criteria review |
+| Load pipeline_config, read strategic_brief.yaml | Universal-planner (level 1) -> plan.yaml + work_items.yaml (decomposition inline, v12.0.0) |
+| Domain detection + tier classification (inline) | Controller (level 1, dynamic) -> coordination_log.yaml |
+| Compute duration_ms at each state transition | Universal-validator (level 1) -> validation_report.yaml |
+| Maintain events/index.yaml | Execution agents (level 2, via controller): implementation work |
+| Always write execution_summary.yaml | Reviewer (level 2, via controller): acceptance criteria review |
+| Call TaskCreate/TaskUpdate at every transition | |
+| Spawn pipeline agents via Agent tool | |
 | Read completion events, handle revision routing | |
 | Validate final state, report results | |
 

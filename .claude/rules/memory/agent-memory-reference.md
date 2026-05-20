@@ -26,7 +26,6 @@ cagents-memory/
 │   └── templates/                    # waypoint.yaml, session_files.yaml
 ├── _knowledge/                       # semantic/, procedural/, calibration/, analytics/
 ├── _archive/                         # Completed sessions
-├── _communication/                   # inbox/{agent}/, broadcast/
 └── sessions/                         # run_*, designer_*, review_*, optimize_*
 ```
 

@@ -17,7 +17,7 @@ const { createHook, findTeamSession, findAvailableWork, parseTaskList, safeRead,
  * Teammate names follow pattern: w{K}-task-{N}-{controller}
  */
 function detectCurrentWave(teammateName, taskListPath) {
-  // Try to extract wave from teammate name pattern (w1-task-3-engineering-manager)
+  // Try to extract wave from teammate name pattern (w1-task-3-tech-lead)
   const waveMatch = (teammateName || '').match(/^w(\d+)-/);
   if (waveMatch) return parseInt(waveMatch[1], 10);
 

@@ -30,13 +30,9 @@ describe('pipeline_config.yaml', () => {
       expect(loadConfig()).toContain('PLANNED:');
     });
 
-    it('should define DECOMPOSED state', () => {
-      expect(loadConfig()).toContain('DECOMPOSED:');
-    });
-
-    it('should define PROMPTS_READY state', () => {
-      expect(loadConfig()).toContain('PROMPTS_READY:');
-    });
+    // v12.0.0: DECOMPOSED and PROMPTS_READY removed
+    // (task-decomposer + prompt-engineer absorbed into universal-planner).
+    // See tests/v12/pipeline-state-machine.test.js for the 5-state contract.
 
     it('should define COORDINATED state', () => {
       expect(loadConfig()).toContain('COORDINATED:');
@@ -79,11 +75,12 @@ describe('pipeline_config.yaml', () => {
 
   describe('revision routing', () => {
     it('should define max_cycles', () => {
-      expect(loadConfig()).toContain('max_cycles: 5');
+      expect(loadConfig()).toContain('max_cycles: 3');
     });
 
-    it('should route FAIL to PROMPTS_READY', () => {
-      expect(loadConfig()).toContain('on_fail: PROMPTS_READY');
+    // v12.0.0: PROMPTS_READY removed; FAIL now routes to PLANNED.
+    it('should route FAIL to PLANNED (v12.0.0; was PROMPTS_READY)', () => {
+      expect(loadConfig()).toContain('on_fail: PLANNED');
     });
 
     it('should route REVISE to PLANNED', () => {

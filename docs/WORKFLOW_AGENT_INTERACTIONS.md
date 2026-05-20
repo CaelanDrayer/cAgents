@@ -48,7 +48,7 @@ User (Chairperson)
 
 **Example** (`/run Fix login auth bug`):
 1. Domain=Engineering, tier=2. Orchestrator enriches (JWT auth, Express, React)
-2. Planner selects engineering-manager. Decomposer creates 3 work items
+2. Planner selects tech-lead. Decomposer creates 3 work items
 3. Engineering-manager asks: "Current auth implementation?" -> backend-developer. "Test coverage?" -> qa-tester
 4. Synthesizes fix, delegates implementation, reviewer validates -> PASS
 
@@ -159,4 +159,4 @@ Each command creates `cagents-memory/sessions/{command}_{slug}_{YYMMDD}_{NNN}/` 
 
 ## Agent Namespace
 
-All agents registered under `cagents:` prefix. Use `cagents:engineering-manager`, not `engineering:engineering-manager`.
+All agents registered under `cagents:` prefix. Use `cagents:tech-lead`, not `engineering:tech-lead`.

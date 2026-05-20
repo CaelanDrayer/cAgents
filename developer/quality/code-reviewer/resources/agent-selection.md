@@ -6,7 +6,7 @@ Dynamic agent selection based on review context.
 
 ```yaml
 agent_selection:
-  architecture-reviewer: true    # Always for code reviews
+  architect --review: true       # Always for code reviews
   performance-analyzer: ${hasPerformanceConcerns}
   code-standards-auditor: true   # Always for code reviews
   documentation-reviewer: ${hasPublicAPI}
@@ -63,7 +63,7 @@ const priority =
 ## Example Selection Report
 
 ```
-✅ architecture-reviewer (always)
+✅ architect --review (always)
 ✅ performance-analyzer (detected: loops, large arrays)
 ✅ security-analyst (detected: auth code, user input)
 ✅ accessibility-checker (detected: React components)

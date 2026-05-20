@@ -10,7 +10,7 @@ cAgents is a multi-domain agent orchestration system built as a Claude Code plug
 | Tier | Role | Count | Examples |
 |------|------|-------|---------|
 | Core Infrastructure | Pipeline agents | 17 | trigger, orchestrator, planner, validator |
-| Controller (Tier 2) | Coordination | ~30 | engineering-manager, campaign-manager |
+| Controller (Tier 2) | Coordination | ~30 | tech-lead, marketing-strategist |
 | Execution (Tier 3) | Implementation | ~150 | backend-developer, copywriter |
 | Support (Tier 4) | Services | ~10 | scribe, data-extractor |
 

@@ -22,7 +22,7 @@ Progressive disclosure reduces token usage by loading agent content on-demand in
 ```yaml
 # Frontmatter only
 ---
-name: engineering-manager
+name: tech-lead
 description: "Strategic oversight..."
 tier: controller
 domain: engineering
@@ -78,7 +78,7 @@ The @path syntax triggers on-demand loading only when the resource is needed.
 ### High-Value Agents (Directory Structure)
 
 ```
-developer/fullstack/engineering-manager/
+developer/fullstack/tech-lead/
 ├── SKILL.md                    # Tier 1 + 2
 └── resources/
     ├── risk-framework.md       # Tier 3
@@ -159,20 +159,20 @@ Update plugin.json if needed to reference new path.
 
 | Agent | Before | After | Savings |
 |-------|--------|-------|---------|
-| engineering-manager | 816 tokens | 298 tokens | 63% |
+| tech-lead | 816 tokens | 298 tokens | 63% |
 | architect | 892 tokens | 312 tokens | 65% |
 | backend-developer | 980 tokens | 287 tokens | 71% |
 | qa-lead | 854 tokens | 305 tokens | 64% |
 
 ## Implementation Status
 
-- [x] engineering-manager (converted V8.0)
+- [x] tech-lead (converted V8.0)
 - [x] architect (converted V8.0)
 - [x] backend-developer (converted V8.0)
 - [x] qa-lead (converted V8.0)
 - [x] creative-director (converted V9.0)
 - [x] game-designer (converted V9.0)
-- [x] campaign-manager (converted V9.0)
+- [x] campaign-manager (converted V9.0; absorbed into marketing-strategist in v12)
 - [x] marketing-strategist (converted V9.0)
 - [x] hr-manager (converted V9.0)
 - [x] customer-success-manager (converted V9.0)

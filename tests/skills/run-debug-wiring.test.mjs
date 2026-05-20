@@ -1,8 +1,10 @@
 // Regression test for V10.26.13 — wire debug-mode prefix into controller spawn
-// Asserts SKILL.md PROMPTS_READY section references debug-mode-prompt.md, gated
+// Asserts SKILL.md PLANNED controller section references debug-mode-prompt.md, gated
 // on flags.mode === "debug".
 // Failing-before: V10.26.12 added the prefix file but nothing referenced it;
 // this test locks in the wiring so /run --mode debug actually injects the prefix.
+// v12.0.0: PROMPTS_READY collapsed into PLANNED — controller now lives in the
+// PLANNED state. The wiring paragraph stays in the controller-state block.
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -25,14 +27,17 @@ describe('V10.26.13 debug-mode prefix wiring', () => {
     expect(runContent).toMatch(/flags\.mode === "debug"/);
   });
 
-  it('SKILL.md locates wiring in the PROMPTS_READY controller section', () => {
-    // Confirm the wiring paragraph sits within the PROMPTS_READY controller block.
-    const promptsReadyIdx = runContent.indexOf(
-      'For the PROMPTS_READY state (controller):'
+  it('SKILL.md locates wiring in the PLANNED controller section (v12.0.0)', () => {
+    // v12.0.0: PROMPTS_READY collapsed into PLANNED. The wiring paragraph now
+    // sits within the PLANNED controller block. The earlier mention at flag
+    // parsing (line ~100) is a forward reference; the wiring paragraph itself
+    // sits after the controller-state heading, so use lastIndexOf.
+    const controllerIdx = runContent.indexOf(
+      'For the **PLANNED state (controller)**'
     );
-    const wiringIdx = runContent.indexOf('debug-mode-prompt.md');
-    expect(promptsReadyIdx).toBeGreaterThan(-1);
-    expect(wiringIdx).toBeGreaterThan(promptsReadyIdx);
+    const wiringIdx = runContent.lastIndexOf('debug-mode-prompt.md');
+    expect(controllerIdx).toBeGreaterThan(-1);
+    expect(wiringIdx).toBeGreaterThan(controllerIdx);
   });
 
   it('SKILL.md documents the injection as V10.26.13 change', () => {

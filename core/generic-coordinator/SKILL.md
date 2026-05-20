@@ -45,25 +45,26 @@ Parameterized controller agent that serves any lightweight domain. Discovers ava
 **Before doing anything else**, read the domain configuration to discover available specialists:
 
 1. Identify the calling domain from `workflow/plan.yaml` field `domain:` (e.g., `health`, `education`, `personal`, `arts`, `trades`)
-2. Read `{domain}/config/domain_overrides.yaml` to discover:
-   - `planner.specialist_routing` -- maps specialty areas to execution agents
-   - Each routing entry has `keywords`, `agents`, and `description`
-3. Build a dynamic specialist table from the routing entries
-4. Use this table for all subsequent delegation decisions
+2. Discover the specialist routing block for that domain. Lookup order (v12.0.0+):
+   - If domain is `people` or `shared` (retained legacy dirs) -> read `{domain}/config/domain_overrides.yaml`
+   - Otherwise (engineering, creative, business, growth, service, science, health, education, personal, arts, trades) -> read `cagents-memory/_system/config/routing.yaml` and use `domains.{domain}` (consolidated in v12 W4.2)
+3. From the resolved block, use `planner.specialist_routing` -- maps specialty areas to execution agents. Each routing entry has `keywords`, `agents`, and `description`.
+4. Build a dynamic specialist table from the routing entries
+5. Use this table for all subsequent delegation decisions
 
-**Example**: If domain is `health`, read `health/config/domain_overrides.yaml` and discover:
+**Example**: If domain is `health`, read `cagents-memory/_system/config/routing.yaml` and use `domains.health.planner.specialist_routing` to discover:
 - `medicine` -> `medical-advisor`
 - `mental_health` -> `mental-health-advisor`
 - `nutrition` -> `nutritionist`
 - `fitness` -> `fitness-coach`
 - `pharmacy` -> `pharmacist`
 
-If the domain_overrides.yaml cannot be found, report BLOCKED status.
+If neither the consolidated routing.yaml nor the legacy `{domain}/config/domain_overrides.yaml` can be found, report BLOCKED status.
 
 ## Delegation Protocol
 
 1. Read `workflow/plan.yaml` to refresh objectives before starting
-2. **Read `{domain}/config/domain_overrides.yaml`** to discover specialists (Step 0)
+2. **Discover specialists** from `cagents-memory/_system/config/routing.yaml` (for consolidated domains) or `{domain}/config/domain_overrides.yaml` (for `people`/`shared`) (Step 0)
 3. Break objectives into specific, answerable questions
 4. Match each question to the appropriate specialist from domain_overrides
 5. Call `TodoWrite` to show delegation plan (MANDATORY before spawning)
@@ -143,7 +144,7 @@ domain: "{domain}"  # The active domain this instance is serving
 specialists_discovered:
   - agent: "{agent-name}"
     area: "{specialty-area}"
-    source: "{domain}/config/domain_overrides.yaml"
+    source: "cagents-memory/_system/config/routing.yaml#domains.{domain}  # OR {domain}/config/domain_overrides.yaml for people/shared"
 objectives: [...]
 questions_asked:
   - question: "..."

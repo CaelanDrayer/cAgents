@@ -308,9 +308,9 @@ describe('verify-completion.cjs', () => {
       writeFileSync(join(TEST_SESSION_DIR, 'status.yaml'),
         'pipeline_state: complete\nupdated_at: "' + new Date().toISOString() + '"\n');
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'coordination_log.yaml'),
-        'schema_version: "1"\ncontroller: cagents:engineering-manager\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: completed\n    evidence: "done"\n');
+        'schema_version: "1"\ncontroller: cagents:tech-lead\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: completed\n    evidence: "done"\n');
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'plan.yaml'),
-        'plan_id: test\ntier: 2\ndomain: engineering\nmission: "Test"\nobjectives:\n  - id: OBJ-1\n    description: "Test"\ncontroller_assignment:\n  primary: "cagents:engineering-manager"\nsuccess_criteria:\n  - "Test"\n');
+        'plan_id: test\ntier: 2\ndomain: engineering\nmission: "Test"\nobjectives:\n  - id: OBJ-1\n    description: "Test"\ncontroller_assignment:\n  primary: "cagents:tech-lead"\nsuccess_criteria:\n  - "Test"\n');
 
       // No execution_summary.yaml — autoResolveWarnings should create it
       const result = runHook({ session_id: TEST_SESSION });
@@ -326,7 +326,7 @@ describe('verify-completion.cjs', () => {
       writeFileSync(join(TEST_SESSION_DIR, 'status.yaml'),
         'pipeline_state: complete\nupdated_at: "' + new Date().toISOString() + '"\n');
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'coordination_log.yaml'),
-        'schema_version: "1"\ncontroller: cagents:engineering-manager\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: completed\n    evidence: "done"\n');
+        'schema_version: "1"\ncontroller: cagents:tech-lead\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: completed\n    evidence: "done"\n');
 
       // No validation_report.yaml — autoResolveWarnings should create it
       const result = runHook({ session_id: TEST_SESSION });
@@ -340,7 +340,7 @@ describe('verify-completion.cjs', () => {
       writeFileSync(join(TEST_SESSION_DIR, 'status.yaml'),
         'pipeline_state: complete\nupdated_at: "' + new Date().toISOString() + '"\n');
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'coordination_log.yaml'),
-        'schema_version: "1"\ncontroller: cagents:engineering-manager\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: completed\n    evidence: "done"\n');
+        'schema_version: "1"\ncontroller: cagents:tech-lead\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: completed\n    evidence: "done"\n');
 
       runHook({ session_id: TEST_SESSION });
       const content = readFileSync(join(TEST_SESSION_DIR, 'workflow', 'coordination_log.yaml'), 'utf8');
@@ -352,7 +352,7 @@ describe('verify-completion.cjs', () => {
       writeFileSync(join(TEST_SESSION_DIR, 'status.yaml'),
         'pipeline_state: complete\nupdated_at: "' + new Date().toISOString() + '"\n');
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'coordination_log.yaml'),
-        'schema_version: "1"\ncontroller: cagents:engineering-manager\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: completed\n    evidence: "done"\n');
+        'schema_version: "1"\ncontroller: cagents:tech-lead\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: completed\n    evidence: "done"\n');
 
       runHook({ session_id: TEST_SESSION });
       const content = readFileSync(join(TEST_SESSION_DIR, 'workflow', 'coordination_log.yaml'), 'utf8');
@@ -365,7 +365,7 @@ describe('verify-completion.cjs', () => {
       writeFileSync(join(TEST_SESSION_DIR, 'status.yaml'),
         'pipeline_state: COORDINATED\nupdated_at: "' + new Date().toISOString() + '"\n');
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'coordination_log.yaml'),
-        'schema_version: "1"\ncontroller: cagents:engineering-manager\nstatus: completed\n');
+        'schema_version: "1"\ncontroller: cagents:tech-lead\nstatus: completed\n');
 
       runHook({ session_id: TEST_SESSION });
       // execution_summary.yaml should NOT be auto-created for non-terminal state
@@ -394,7 +394,7 @@ describe('verify-completion.cjs', () => {
       writeFileSync(join(TEST_SESSION_DIR, 'status.yaml'),
         'pipeline_state: complete\nupdated_at: "' + new Date().toISOString() + '"\n');
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'coordination_log.yaml'),
-        'schema_version: "1"\ncontroller: cagents:engineering-manager\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: pending\n');
+        'schema_version: "1"\ncontroller: cagents:tech-lead\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: pending\n');
 
       const result = runHook({ session_id: TEST_SESSION });
       // Pending work items produce a blocking issue — autoResolveWarnings should NOT suppress it
@@ -406,7 +406,7 @@ describe('verify-completion.cjs', () => {
       writeFileSync(join(TEST_SESSION_DIR, 'status.yaml'),
         'pipeline_state: complete\nupdated_at: "' + new Date().toISOString() + '"\n');
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'coordination_log.yaml'),
-        'schema_version: "1"\ncontroller: cagents:engineering-manager\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: in_progress\n');
+        'schema_version: "1"\ncontroller: cagents:tech-lead\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: in_progress\n');
 
       const result = runHook({ session_id: TEST_SESSION });
       // In-progress work items produce a blocking issue — must NOT be auto-resolved
@@ -420,7 +420,7 @@ describe('verify-completion.cjs', () => {
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'execution_summary.yaml'),
         'session_id: "original"\nfinal_state: complete\nstatus: completed\n');
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'coordination_log.yaml'),
-        'schema_version: "1"\ncontroller: cagents:engineering-manager\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: completed\n    evidence: "done"\n');
+        'schema_version: "1"\ncontroller: cagents:tech-lead\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: completed\n    evidence: "done"\n');
 
       runHook({ session_id: TEST_SESSION });
       const content = readFileSync(join(TEST_SESSION_DIR, 'workflow', 'execution_summary.yaml'), 'utf8');
@@ -434,7 +434,7 @@ describe('verify-completion.cjs', () => {
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'validation_report.yaml'),
         'overall_status: FAIL\nreason: "real failure"\n');
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'coordination_log.yaml'),
-        'schema_version: "1"\ncontroller: cagents:engineering-manager\nstatus: completed\n');
+        'schema_version: "1"\ncontroller: cagents:tech-lead\nstatus: completed\n');
 
       runHook({ session_id: TEST_SESSION });
       const content = readFileSync(join(TEST_SESSION_DIR, 'workflow', 'validation_report.yaml'), 'utf8');
@@ -446,7 +446,7 @@ describe('verify-completion.cjs', () => {
       writeFileSync(join(TEST_SESSION_DIR, 'status.yaml'),
         'pipeline_state: complete\nupdated_at: "' + new Date().toISOString() + '"\n');
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'coordination_log.yaml'),
-        'schema_version: "1"\ncontroller: cagents:engineering-manager\nstatus: completed\nself_validation:\n  checks_passed: 15\n');
+        'schema_version: "1"\ncontroller: cagents:tech-lead\nstatus: completed\nself_validation:\n  checks_passed: 15\n');
 
       runHook({ session_id: TEST_SESSION });
       const content = readFileSync(join(TEST_SESSION_DIR, 'workflow', 'coordination_log.yaml'), 'utf8');
@@ -464,7 +464,7 @@ describe('verify-completion.cjs', () => {
       writeFileSync(join(TEST_SESSION_DIR, 'status.yaml'),
         'pipeline_state: complete\nupdated_at: "' + new Date().toISOString() + '"\n');
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'coordination_log.yaml'),
-        'schema_version: "1"\ncontroller: cagents:engineering-manager\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: completed\n');
+        'schema_version: "1"\ncontroller: cagents:tech-lead\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: completed\n');
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'execution_summary.yaml'),
         'session_id: "' + TEST_SESSION + '"\nfinal_state: complete\nstatus: completed\ngenerated_by: verify-completion-hook-safety-net\ngenerated_at: "' + new Date().toISOString() + '"\n');
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'validation_report.yaml'),
@@ -483,7 +483,7 @@ describe('verify-completion.cjs', () => {
       writeFileSync(join(TEST_SESSION_DIR, 'status.yaml'),
         'pipeline_state: complete\nupdated_at: "' + new Date().toISOString() + '"\n');
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'coordination_log.yaml'),
-        'schema_version: "1"\ncontroller: cagents:engineering-manager\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: completed\n');
+        'schema_version: "1"\ncontroller: cagents:tech-lead\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: completed\n');
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'execution_summary.yaml'),
         'session_id: "' + TEST_SESSION + '"\nfinal_state: VALIDATED\nstatus: completed\nrevision_rounds_used: 0\nstates_executed: [INIT, ORCHESTRATED, PLANNED, PROMPTS_READY, COORDINATED, VALIDATED]\ntotal_agents_spawned: 5\n');
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'validation_report.yaml'),

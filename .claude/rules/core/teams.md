@@ -27,10 +27,10 @@ Team Mode enables N-wave parallel execution with:
 
 ## CRITICAL: Teammates ARE Controllers That Spawn Execution Agents Directly
 
-**This is the principle of team mode when the harness exposes the Agent tool to teammates.** When Agent is available, teammates do NOT implement work items directly. Each teammate is spawned as a controller agent (e.g., `cagents:engineering-manager`) that delegates to execution agents via Agent tool, then spawns `cagents:reviewer` to validate.
+**This is the principle of team mode when the harness exposes the Agent tool to teammates.** When Agent is available, teammates do NOT implement work items directly. Each teammate is spawned as a controller agent (e.g., `cagents:tech-lead`) that delegates to execution agents via Agent tool, then spawns `cagents:reviewer` to validate.
 
 ```
-Teammate (controller, e.g., engineering-manager) -> Agent(cagents:backend-developer)
+Teammate (controller, e.g., tech-lead) -> Agent(cagents:backend-developer)
   -> backend-developer implements work item
   -> Agent(cagents:reviewer) validates against acceptance criteria
   -> PASS or REVISE (max 3 rounds)
@@ -46,12 +46,12 @@ Teammate (controller, e.g., engineering-manager) -> Agent(cagents:backend-develo
 
 ## Known Harness Limitation: Agent Tool May Be Absent in Teammate Tool Surface
 
-**Empirically observed (CC 2.1.x, cAgents v11.1.4 and earlier):** When a controller agent (e.g., `cagents:engineering-manager`) is spawned as a /team teammate, the Claude Code runtime tool surface for that teammate may NOT include the `Agent` tool — even when the controller's SKILL.md frontmatter correctly declares `allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite`. The `TodoWrite` and `TaskUpdate` tools are also frequently absent at this nesting level.
+**Empirically observed (CC 2.1.x, cAgents v11.1.4 and earlier):** When a controller agent (e.g., `cagents:tech-lead`) is spawned as a /team teammate, the Claude Code runtime tool surface for that teammate may NOT include the `Agent` tool — even when the controller's SKILL.md frontmatter correctly declares `allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite`. The `TodoWrite` and `TaskUpdate` tools are also frequently absent at this nesting level.
 
 **Root cause:** Claude Code platform behavior for plugin-namespaced (`cagents:*`) subagents at depth >= 1. The 2-level subagent nesting limit (lead at level 0, teammates at level 1) is enforced upstream by withholding the spawning tool (`Agent`) from level-1 plugin subagents, regardless of what the SKILL.md `allowed-tools` declares. cAgents config (`.claude/settings.json`, `.claude-plugin/plugin.json`) cannot override this — there is no documented CC setting that re-exposes `Agent` to nested plugin subagents.
 
 **Evidence chain (session `team_doc-update-plugin-audit_260503_001`):**
-- 7 sampled controllers (engineering-manager, backend-lead, frontend-lead, architect, tech-lead, qa-lead, operations-manager) all declare `allowed-tools: Agent ...` in their SKILL.md frontmatter — verified correct.
+- 7 sampled controllers (tech-lead, backend-lead, frontend-lead, architect, tech-lead, qa-lead, operations-manager) all declare `allowed-tools: Agent ...` in their SKILL.md frontmatter — verified correct.
 - Wave-1 controllers reported the missing-tool symptom directly (`outputs/audit/rules-count.yaml` lines 61-69).
 - Wave-2 and Wave-3 teammates independently confirmed the deferred-tools list excluded `Agent`, `TodoWrite`, and `TaskUpdate` at their nesting level.
 - `.claude/settings.json` contains no `agent` block restricting tools; `.claude-plugin/plugin.json` declares no per-agent tool restriction. The limit is enforced upstream by Claude Code, not by cAgents config.

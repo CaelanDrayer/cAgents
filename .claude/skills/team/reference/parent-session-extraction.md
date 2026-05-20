@@ -38,7 +38,7 @@ When invoked by `/org`, the session directory may contain a `strategic_brief.yam
    - If the brief contains `domain_assignments.{domain_key}.work_required`, use those items directly as work items instead of running the decomposer from scratch
    - Map each `work_required` entry to a TASK-N with the brief's acceptance criteria
    - The planner still runs to assign wave numbers and dependencies, but starts from brief work items rather than deriving from scratch
-   - If `domain_assignments.{domain_key}.csuite` is specified, use that C-suite agent's recommended controller as a controller override hint (e.g., if CTO recommended engineering-manager, prefer that over auto-detection)
+   - If `domain_assignments.{domain_key}.csuite` is specified, use that C-suite agent's recommended controller as a controller override hint (e.g., if CTO recommended tech-lead, prefer that over auto-detection)
 
 3. **Pass brief context to enrichment agents** — include mission, success criteria, and the C-suite domain analysis summary in orchestrator and planner prompts for richer context.
 
@@ -96,19 +96,19 @@ After each wave completes, the lead appends completed controllers to `workflow/c
 ```yaml
 controllers:
   - wave: 1
-    name: "w1-task-1-engineering-manager"
+    name: "w1-task-1-tech-lead"
     work_item: "TASK-1"
-    agent_type: "cagents:engineering-manager"
+    agent_type: "cagents:tech-lead"
     status: completed
   - wave: 1
-    name: "w1-task-2-engineering-manager"
+    name: "w1-task-2-tech-lead"
     work_item: "TASK-2"
-    agent_type: "cagents:engineering-manager"
+    agent_type: "cagents:tech-lead"
     status: completed
   - wave: 2
-    name: "w2-task-3-engineering-manager"
+    name: "w2-task-3-tech-lead"
     work_item: "TASK-3"
-    agent_type: "cagents:engineering-manager"
+    agent_type: "cagents:tech-lead"
     status: completed
 ```
 

@@ -42,10 +42,10 @@ Behind the scenes, the pipeline ran automatically:
 
 1. **Router** detected this is an engineering task, tier 2 (moderate complexity)
 2. **Orchestrator** enriched context — project structure, file locations, relevant patterns
-3. **Planner** defined objectives and selected an `engineering-manager` controller
+3. **Planner** defined objectives and selected an `tech-lead` controller
 4. **Decomposer** broke the task into work items with acceptance criteria
 5. **Prompt Engineer** crafted optimized delegation prompts
-6. **Controller** (`engineering-manager`) asked a `backend-developer` to locate and fix the typo
+6. **Controller** (`tech-lead`) asked a `backend-developer` to locate and fix the typo
 7. **Reviewer** validated the fix against acceptance criteria (spec compliance, then code quality)
 8. **Validator** confirmed the output meets quality gates — PASS
 

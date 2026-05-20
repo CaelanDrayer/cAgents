@@ -12,7 +12,7 @@ Each type has 3+ groups with explicit dependencies.
 **Focus areas**: Architecture, security, performance, standards, test coverage, accessibility
 
 ### Group 1: Structural Analysis (independent, run in parallel)
-- **cagents:architecture-reviewer** -- Evaluates system design patterns, coupling/cohesion, separation of concerns, module boundaries, and dependency direction violations
+- **cagents:architect --review** -- Evaluates system design patterns, coupling/cohesion, separation of concerns, module boundaries, and dependency direction violations
 - **cagents:code-standards-auditor** -- Validates naming conventions, style consistency, linting compliance, anti-pattern detection, and language-specific forbidden patterns
 - **cagents:technical-writer** -- Reviews inline documentation, JSDoc/docstring completeness, README accuracy, and API contract descriptions
 
@@ -30,7 +30,7 @@ Dependencies: Uses security findings and architecture context from Groups 1-2 to
 
 ### Agent Prompt Templates
 
-#### cagents:architecture-reviewer
+#### cagents:architect --review
 ```
 Review architecture of ${targetPath} as a senior architect. Focus on:
 1. Module boundaries — are responsibilities cleanly separated? Any god classes or god modules?
@@ -99,7 +99,7 @@ Report findings with: file:line location, severity (critical/high/medium/low), m
 ```javascript
 // Group 1 - Structural (independent)
 const group1 = await Promise.all([
-  Agent({ subagent_type: "cagents:architecture-reviewer", prompt: `Review architecture of ${targetPath}...` }),
+  Agent({ subagent_type: "cagents:architect", prompt: `--review: Review architecture of ${targetPath}...` }),
   Agent({ subagent_type: "cagents:code-standards-auditor", prompt: `Audit code standards for ${targetPath}...` }),
   Agent({ subagent_type: "cagents:technical-writer", prompt: `Review documentation in ${targetPath}...` }),
 ]);
@@ -132,7 +132,7 @@ const group3 = await Promise.all([
 - **cagents:editor** -- Assesses overall document structure, logical flow, heading hierarchy, cross-reference integrity, and narrative coherence
 
 ### Group 2: Technical Accuracy & Standards (after Group 1, uses content quality context)
-- **cagents:architecture-reviewer** -- Verifies architecture diagrams match actual code, API docs reflect current endpoints, and system descriptions are accurate
+- **cagents:architect --review** -- Verifies architecture diagrams match actual code, API docs reflect current endpoints, and system descriptions are accurate
 - **cagents:code-standards-auditor** -- Validates code examples compile/run, import paths are correct, version numbers are current, and CLI commands are accurate
 - **cagents:compliance-specialist** -- Checks for required legal notices, license headers, privacy policy references, and regulatory disclaimers
 Dependencies: Uses content quality findings from Group 1 to focus on accuracy issues rather than style
@@ -174,7 +174,7 @@ Review document structure of ${targetPath} as a managing editor. Focus on:
 Report findings with: file:line location, severity (critical/high/medium/low), impact, and restructuring suggestion.
 ```
 
-#### cagents:architecture-reviewer
+#### cagents:architect --review
 ```
 Verify technical accuracy of documentation in ${targetPath} as an architect. Focus on:
 1. Architecture diagrams — do they reflect the actual system topology and data flows?
@@ -205,7 +205,7 @@ const group1 = await Promise.all([
 
 // Group 2 - Technical Accuracy (uses Group 1 context)
 const group2 = await Promise.all([
-  Agent({ subagent_type: "cagents:architecture-reviewer", prompt: `Verify technical accuracy of ${targetPath}. Content issues: ${group1Results}` }),
+  Agent({ subagent_type: "cagents:architect", prompt: `--review: Verify technical accuracy of ${targetPath}. Content issues: ${group1Results}` }),
   Agent({ subagent_type: "cagents:code-standards-auditor", prompt: `Validate code examples in ${targetPath}. Known issues: ${group1Results}` }),
   Agent({ subagent_type: "cagents:compliance-specialist", prompt: `Check required legal/compliance notices in ${targetPath}.` }),
 ]);
@@ -325,7 +325,7 @@ const group3 = await Promise.all([
 Dependencies: Uses UX and accessibility findings from Group 1 to assess brand compliance with full interaction context
 
 ### Group 3: Technical Integration & Polish (after Group 2, specialized)
-- **cagents:architecture-reviewer** -- Evaluates design system architecture, component hierarchy, token structure, and cross-platform consistency strategy
+- **cagents:architect --review** -- Evaluates design system architecture, component hierarchy, token structure, and cross-platform consistency strategy
 - **cagents:frontend-developer** -- Reviews design-to-code handoff clarity, asset export specifications, responsive breakpoint definitions, and interaction specifications
 Dependencies: Uses UX, accessibility, and brand findings from Groups 1-2 for holistic design-engineering alignment
 
@@ -364,7 +364,7 @@ Audit design accessibility of ${targetPath}. Focus on:
 Report findings with: component location, severity (critical/high/medium/low), WCAG criterion, and fix suggestion.
 ```
 
-#### cagents:architecture-reviewer
+#### cagents:architect --review
 ```
 Review design system architecture of ${targetPath} as a design systems architect. Focus on:
 1. Component hierarchy — are atoms, molecules, organisms properly layered?
@@ -392,7 +392,7 @@ const group2 = await Promise.all([
 
 // Group 3 - Technical Integration (uses Groups 1-2)
 const group3 = await Promise.all([
-  Agent({ subagent_type: "cagents:architecture-reviewer", prompt: `Review design system architecture of ${targetPath}. Context: ${group1and2Results}` }),
+  Agent({ subagent_type: "cagents:architect", prompt: `--review: Review design system architecture of ${targetPath}. Context: ${group1and2Results}` }),
   Agent({ subagent_type: "cagents:frontend-developer", prompt: `Review design-to-code handoff for ${targetPath}. Context: ${group1and2Results}` }),
 ]);
 ```
@@ -613,9 +613,9 @@ const group3 = await Promise.all([
 - **cagents:sysadmin** -- Reviews system-level concerns: file permissions, log rotation, disk management, cron scheduling, and system service configuration
 
 ### Group 2: Reliability & Scalability (after Group 1, uses security context)
-- **cagents:devops-lead** -- Assesses high-availability design, failover mechanisms, disaster recovery readiness, backup strategies, and multi-region considerations
+- **cagents:infrastructure-lead** -- Assesses high-availability design, failover mechanisms, disaster recovery readiness, backup strategies, and multi-region considerations
 - **cagents:performance-analyzer** -- Evaluates resource allocation efficiency, auto-scaling triggers, cache configuration, connection pooling, and throughput bottlenecks
-- **cagents:architecture-reviewer** -- Reviews infrastructure architecture: service mesh design, load balancing strategy, database topology, and network segmentation
+- **cagents:architect --review** -- Reviews infrastructure architecture: service mesh design, load balancing strategy, database topology, and network segmentation
 Dependencies: Uses security findings from Group 1 to assess reliability with full threat awareness
 
 ### Group 3: Cost & Compliance (after Group 2, specialized)
@@ -657,7 +657,7 @@ Review system configuration of ${targetPath} as a senior systems administrator. 
 Report findings with: file:line location, severity (critical/high/medium/low), operational impact, and fix suggestion.
 ```
 
-#### cagents:devops-lead
+#### cagents:infrastructure-lead
 ```
 Assess infrastructure reliability of ${targetPath} as a DevOps director. Focus on:
 1. High availability — is there redundancy at every layer? What is the blast radius of a single failure?
@@ -699,9 +699,9 @@ const group1 = await Promise.all([
 
 // Group 2 - Reliability & Scalability (uses Group 1 context)
 const group2 = await Promise.all([
-  Agent({ subagent_type: "cagents:devops-lead", prompt: `Assess infrastructure reliability of ${targetPath}. Security context: ${group1Results}` }),
+  Agent({ subagent_type: "cagents:infrastructure-lead", prompt: `Assess infrastructure reliability of ${targetPath}. Security context: ${group1Results}` }),
   Agent({ subagent_type: "cagents:performance-analyzer", prompt: `Evaluate infrastructure performance of ${targetPath}. Context: ${group1Results}` }),
-  Agent({ subagent_type: "cagents:architecture-reviewer", prompt: `Review infrastructure architecture of ${targetPath}. Context: ${group1Results}` }),
+  Agent({ subagent_type: "cagents:architect", prompt: `--review: Review infrastructure architecture of ${targetPath}. Context: ${group1Results}` }),
 ]);
 
 // Group 3 - Cost & Compliance (uses Groups 1-2)
@@ -717,12 +717,12 @@ const group3 = await Promise.all([
 
 | Review Type | Group 1 Agents | Group 2 Agents | Group 3 Agents | Total Agents |
 |-------------|----------------|----------------|----------------|--------------|
-| **Code** | architecture-reviewer, code-standards-auditor, technical-writer | security-engineer, performance-analyzer, test-coverage-validator | senior-developer, accessibility-checker*, compliance-specialist* | 6-9 |
-| **Documentation** | technical-writer, copy-editor, editor | architecture-reviewer, code-standards-auditor, compliance-specialist | accessibility-checker, ux-designer | 8 |
+| **Code** | architect --review, code-standards-auditor, technical-writer | security-engineer, performance-analyzer, test-coverage-validator | senior-developer, accessibility-checker*, compliance-specialist* | 6-9 |
+| **Documentation** | technical-writer, copy-editor, editor | architect --review, code-standards-auditor, compliance-specialist | accessibility-checker, ux-designer | 8 |
 | **Content** | copy-editor, prose-stylist, editor | content-marketing-manager, copywriter, compliance-specialist | content-marketing-manager, ux-designer | 8 |
-| **Design** | ux-designer, frontend-developer, accessibility-checker | prose-stylist, content-marketing-manager, compliance-specialist | architecture-reviewer, frontend-developer | 8 |
+| **Design** | ux-designer, frontend-developer, accessibility-checker | prose-stylist, content-marketing-manager, compliance-specialist | architect --review, frontend-developer | 8 |
 | **Process** | operations-manager, process-improvement-specialist, risk-manager | compliance-officer, compliance-specialist, risk-assessment | technical-writer, ux-designer | 8 |
 | **Data** | dba, data-analyst, data-scientist | security-engineer, compliance-specialist, bi-specialist | performance-analyzer, dba | 8 |
-| **Infrastructure** | security-engineer, devops-engineer, sysadmin | devops-lead, performance-analyzer, architecture-reviewer | compliance-specialist, risk-manager | 8 |
+| **Infrastructure** | security-engineer, devops-engineer, sysadmin | infrastructure-lead, performance-analyzer, architect --review | compliance-specialist, risk-manager | 8 |
 
 *Conditional agents (starred) are only spawned when relevant (UI components, regulated data).

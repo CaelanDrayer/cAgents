@@ -226,7 +226,7 @@ workflow/CORRECTIONS.md                                # Session-scoped copy
 TodoWrite([
   {"content": "[orchestrator] Enriching request context", "status": "completed", "id": "route"},
   {"content": "[universal-planner] Planning objectives and selecting controller", "status": "completed", "id": "plan"},
-  {"content": "[engineering-manager] Coordinating implementation with execution agents", "status": "in_progress", "id": "coordinate"},
+  {"content": "[tech-lead] Coordinating implementation with execution agents", "status": "in_progress", "id": "coordinate"},
   {"content": "[backend-developer] Implementing user authentication endpoint", "status": "pending", "id": "exec1"},
   {"content": "[qa-tester] Validating auth endpoint against acceptance criteria", "status": "pending", "id": "exec2"},
   {"content": "[universal-validator] Validating outputs against acceptance criteria", "status": "pending", "id": "validate"}

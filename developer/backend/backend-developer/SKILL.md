@@ -97,11 +97,9 @@ See @resources/examples.md for detailed implementation examples.
 
 ### Reads
 - `cagents-memory/{instruction_id}/tasks/`
-- `cagents-memory/_communication/inbox/backend-developer/`
 
 ### Writes
 - `cagents-memory/{instruction_id}/outputs/partial/`
-- `cagents-memory/_communication/inbox/{agent}/`
 
 ---
 

@@ -32,8 +32,8 @@ function getEnforcementMode() {
 
 // Known controller agent types (tier: controller in their SKILL.md)
 const CONTROLLER_TYPES = [
-  'engineering-manager', 'architect', 'tech-lead', 'vp-engineering',
-  'backend-lead', 'frontend-lead', 'devops-lead', 'security-lead', 'qa-lead', 'data-lead',
+  'tech-lead', 'architect', 'tech-lead', 'vp-engineering',
+  'backend-lead', 'frontend-lead', 'infrastructure-lead', 'security-lead', 'qa-lead', 'data-lead',
   'narrative-director', 'story-architect', 'editor',
   'operations-manager', 'product-owner', 'strategic-planner', 'marketing-strategist',
   'hr-manager', 'talent-acquisition-manager',

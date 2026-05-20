@@ -1,4 +1,4 @@
-# Adaptive Pipeline (V9.27+)
+# Adaptive Pipeline (V9.27+, updated for v12.0.0)
 
 Tier-based and complexity-based pipeline path selection that skips enrichment agents when they add minimal value.
 
@@ -20,13 +20,13 @@ A complexity score (0.0 to 1.0) is computed inline using 9 weighted signals:
 
 `complexity_score = sum(signal_score * weight)`
 
-## Pipeline Path Selection
+## Pipeline Path Selection (v12.0.0 — 5 states)
 
 | Path | Score Range | States | Skip Agents |
 |------|-----------|--------|-------------|
-| **Minimal** | < 0.25 | PLANNED -> PROMPTS_READY -> COORDINATED | orchestrator, decomposer, prompt-engineer, validator |
-| **Medium** | 0.25 - 0.65 | PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED -> VALIDATED | orchestrator, prompt-engineer |
-| **Full** | >= 0.65 or tier 4 | All 7 states | none |
+| **Minimal** | < 0.25 | PLANNED -> COORDINATED | orchestrator, validator |
+| **Medium** | 0.25 - 0.65 | ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED | (none — all 4 non-INIT agents run) |
+| **Full** | >= 0.65 or tier 4 | All 5 states | none |
 
 Display the selected path:
 
@@ -46,42 +46,42 @@ After the planner runs, if plan.yaml contains `complexity_escalation: medium` or
 | 3 | Multiple components, external deps | 1 primary + 1-2 supporting |
 | 4 | Strategic/architectural, company-wide | Executive + HITL |
 
-## Adaptive Pipeline (Tier-Based State Skipping)
+## Adaptive Pipeline (Tier-Based State Skipping, v12.0.0)
 
 For **tier 2** requests with clear scope, skip enrichment agents that add minimal value:
 
 | State | Tier 2 (Simple) | Tier 3+ (Complex) |
 |-------|-----------------|-------------------|
-| INIT (orchestrator) | **SKIP** -- /run does inline enrichment | Execute |
-| ORCHESTRATED (planner) | Execute (always needed) | Execute |
-| PLANNED (decomposer) | **SKIP** -- single work item from plan.yaml | Execute |
-| DECOMPOSED (prompt-engineer) | **SKIP** -- use default delegation prompt | Execute |
-| PROMPTS_READY (controller) | Execute | Execute |
+| INIT (orchestrator) | **SKIP** — /run does inline enrichment | Execute |
+| ORCHESTRATED (universal-planner) | Execute (always needed; produces plan + work_items inline) | Execute |
+| PLANNED (controller) | Execute | Execute |
 | COORDINATED (validator) | Execute | Execute |
+| VALIDATED (terminal) | Terminal | Terminal |
 
-## Tier 2 Fast Path
+**v12.0.0 collapse**: The previous DECOMPOSED and PROMPTS_READY states no longer exist. `task-decomposer` and `prompt-engineer` were absorbed into `cagents:universal-planner`, which handles decomposition inline.
+
+## Tier 2 Fast Path (v12.0.0)
 
 ```
-/run -> inline enrichment -> planner -> controller -> validator -> DONE
+/run -> inline enrichment -> universal-planner -> controller -> validator -> DONE
 ```
 
-This saves 3 agent spawns (orchestrator, decomposer, prompt-engineer) for simple tasks, reducing execution time by ~40%.
+This saves 1 agent spawn (orchestrator) for simple tasks. Versus the pre-v12 fast path which saved 3 spawns (orchestrator, decomposer, prompt-engineer), the v12 fast path saves only 1 because decomposer and prompt-engineer are no longer separate agents to skip — they were folded into universal-planner. Net pipeline length still dropped 7 states -> 5 states.
 
 ## Skip Behavior Specifics
 
 For tier 2, when skipping INIT:
 - Write a minimal `enriched_context.yaml` inline with the user request, domain, tier, and working directory context.
-- This becomes the planner's input.
+- This becomes the universal-planner's input.
 
-For tier 2, when skipping DECOMPOSED:
-- Extract the single work item from plan.yaml objectives directly.
-- Write a minimal `work_items.yaml` with one work item.
+For tier 2 ORCHESTRATED state (universal-planner):
+- The planner produces both `plan.yaml` and `work_items.yaml` inline.
+- For simple tier 2 requests, `work_items.yaml` may contain a single work item derived from plan.yaml objectives.
+- No separate decomposition or prompt-engineering step runs.
 
-For tier 2, when skipping PROMPTS_READY prompt-engineer:
-- Use a default delegation prompt template instead of a crafted one.
-- Write a minimal `delegation_prompts.yaml` with the standard controller prompt.
-
-In practice, `delegation_prompts.yaml` is only produced when the prompt-engineer runs; controllers fall back to standard prompts when it is skipped.
+For tier 2 PLANNED state (controller):
+- Controllers use the standard delegation prompt template (no crafted `delegation_prompts.yaml` artifact in v12).
+- Pre-v12 sessions produced `delegation_prompts.yaml` via the prompt-engineer agent; v12 sessions omit this file.
 
 ## Domain/Tier Confirmation Display
 
@@ -103,6 +103,6 @@ I detected this as a {domain} task (Tier {tier}). Is that right?
 If not interactive, just display and proceed. Include an override hint:
 
 ```
-Detected: Domain=Make (Engineering), Tier=2, Controller=engineering-manager
+Detected: Domain=Make (Engineering), Tier=2, Controller=tech-lead
   (Override with: --domain <domain> --tier <N>)
 ```

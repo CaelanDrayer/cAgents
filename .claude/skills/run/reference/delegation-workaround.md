@@ -31,7 +31,7 @@ The correct tool call for spawning a subagent is:
 Agent({
   subagent_type: "cagents:backend-developer",
   description: "WI-1: Implement auth middleware",
-  prompt: "Implementation task from engineering-manager:\n\nWork Item: WI-1\n..."
+  prompt: "Implementation task from tech-lead:\n\nWork Item: WI-1\n..."
 })
 ```
 
@@ -57,7 +57,7 @@ Until the full rename is completed, controllers can use a **delegation plan** pa
 
 ```yaml
 schema_version: "1"
-controller: "cagents:engineering-manager"
+controller: "cagents:tech-lead"
 delegation_requests:
   - task_id: WI-1
     agent: "cagents:backend-developer"

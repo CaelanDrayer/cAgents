@@ -13,7 +13,7 @@ const WORKFLOW_DIR = join(SESSION_DIR, 'workflow');
 // Agent tree YAML with an active controller (stopped_at: null)
 const ACTIVE_CONTROLLER_TREE = `agents:
   - agent_id: "agent-001"
-    cagents_type: "cagents:engineering-manager"
+    cagents_type: "cagents:tech-lead"
     spawned_at: "2026-04-06T10:00:00Z"
     stopped_at: null
     description: "Coordinate auth fix"
@@ -22,7 +22,7 @@ const ACTIVE_CONTROLLER_TREE = `agents:
 // Agent tree with no active controller (all stopped)
 const NO_ACTIVE_CONTROLLER_TREE = `agents:
   - agent_id: "agent-001"
-    cagents_type: "cagents:engineering-manager"
+    cagents_type: "cagents:tech-lead"
     spawned_at: "2026-04-06T10:00:00Z"
     stopped_at: "2026-04-06T10:05:00Z"
     description: "Coordinate auth fix"
@@ -128,7 +128,7 @@ describe('controller-delegation-validator.cjs', () => {
       expect(result.continue).toBe(true);
       expect(result.systemMessage).toBeDefined();
       expect(result.systemMessage).toContain('CONTROLLER DELEGATION WARNING');
-      expect(result.systemMessage).toContain('engineering-manager');
+      expect(result.systemMessage).toContain('tech-lead');
       // Must NOT have deny/block
       expect(result.hookSpecificOutput).toBeUndefined();
     });
@@ -162,7 +162,7 @@ describe('controller-delegation-validator.cjs', () => {
       expect(result.hookSpecificOutput).toBeDefined();
       expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
       expect(result.hookSpecificOutput.permissionDecisionReason).toContain('CONTROLLER DELEGATION BLOCKED');
-      expect(result.hookSpecificOutput.permissionDecisionReason).toContain('engineering-manager');
+      expect(result.hookSpecificOutput.permissionDecisionReason).toContain('tech-lead');
     });
 
     it('block mode is case-insensitive', () => {

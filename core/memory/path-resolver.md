@@ -60,26 +60,6 @@ software_instruction: "cagents-memory/inst_20260105_001/"
 creative_instruction: "cagents-memory/inst_20260105_002/"
 ```
 
-### Communication Paths
-
-Agent inboxes are at cagents-memory root:
-
-```yaml
-# Core agent inboxes
-trigger_inbox: "cagents-memory/_communication/inbox/trigger/"
-orchestrator_inbox: "cagents-memory/_communication/inbox/orchestrator/"
-hitl_inbox: "cagents-memory/_communication/inbox/hitl/"
-
-# Software domain agent inboxes
-router_inbox: "cagents-memory/_communication/inbox/router/"
-planner_inbox: "cagents-memory/_communication/inbox/planner/"
-executor_inbox: "cagents-memory/_communication/inbox/executor/"
-
-# Creative domain agent inboxes (future)
-creative_router_inbox: "cagents-memory/_communication/inbox/creative-router/"
-creative_planner_inbox: "cagents-memory/_communication/inbox/creative-planner/"
-```
-
 ### Knowledge Paths
 
 Knowledge is domain-prefixed but at cagents-memory root:
@@ -145,10 +125,6 @@ def find_project_root():
 # When router needs to read instruction:
 read_path: "cagents-memory/inst_20260105_001/instruction.yaml"
 # Resolves to: /home/user/my-project/cagents-memory/inst_20260105_001/instruction.yaml
-
-# When router needs to write to inbox:
-write_path: "cagents-memory/_communication/inbox/planner/delegation_123.yaml"
-# Resolves to: /home/user/my-project/cagents-memory/_communication/inbox/planner/delegation_123.yaml
 ```
 
 ### Creative Domain Agent (creative-router.md) - Future
@@ -164,26 +140,13 @@ read_path: "cagents-memory/inst_20260105_002/instruction.yaml"
 # Same cagents-memory, different instruction folder
 ```
 
-## Cross-Domain Communication
-
-When agents from different domains need to communicate, they use the shared cagents-memory/_communication/ folder:
-
-```yaml
-# Software agent sending to Creative agent (future)
-# Software architect wants story context from creative team:
-
-message_path: "cagents-memory/_communication/inbox/story-architect/consultation_123.yaml"
-# Same cagents-memory, different inbox folder
-```
-
 ## Key Rules
 
 1. **cagents-memory is at project root** - Never inside cAgents/
 2. **All paths are relative to cagents-memory/** - Start paths from there
 3. **Domains share the same cagents-memory** - Single source of truth
 4. **Knowledge is domain-prefixed** - software_*, creative_*, etc.
-5. **Inboxes use agent names** - Not domain prefixes
-6. **Instructions are domain-tagged** - domain field in instruction.yaml, not folder location
+5. **Instructions are domain-tagged** - domain field in instruction.yaml, not folder location
 
 ## Backward Compatibility
 
@@ -194,14 +157,12 @@ old_structure:
   # agent-design v3.x
   cagents-memory/_system/registry.yaml  # Same
   cagents-memory/inst_*/                # Same
-  cagents-memory/_communication/        # Same
 
 new_structure:
   # cAgents v4.0
   cagents-memory/_system/registry.yaml  # Same
   cagents-memory/_system/domains.yaml   # NEW: Domain tracking
   cagents-memory/inst_*/                # Same (now has domain field)
-  cagents-memory/_communication/        # Same (more agent inboxes)
 ```
 
 The migration adds new files without changing existing paths.

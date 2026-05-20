@@ -18,7 +18,6 @@ The `CLAUDE_PLUGIN_DATA` environment variable is set by Claude Code to point to 
 ### Keep in cagents-memory/ (ephemeral, session-scoped)
 
 - `sessions/` — All session artifacts (`plan.yaml`, `coordination_log.yaml`, etc.)
-- `_communication/` — Agent-to-agent messages (per-session)
 - `_archive/` — Completed session snapshots
 - `_system/logs/` — Daily log files
 
@@ -187,9 +186,9 @@ function saveCalibration(domain, tier, durationMs) {
 PLUGIN SOURCE (git)           PLUGIN DATA (~/.claude/plugins/data/)   AGENT_MEMORY/ (ephemeral)
 ─────────────────────         ────────────────────────────────────     ─────────────────────────
 SKILL.md files                knowledge/patterns/                      sessions/
-hook .cjs files               knowledge/calibration/                   _communication/
-config YAML templates         knowledge/learnings/                     _archive/
-domain overrides              knowledge/analytics/                     _system/logs/
+hook .cjs files               knowledge/calibration/                   _archive/
+config YAML templates         knowledge/learnings/                     _system/logs/
+domain overrides              knowledge/analytics/
 plugin.json                   config/  (user overrides)
                               evals/   (baselines)
 ```

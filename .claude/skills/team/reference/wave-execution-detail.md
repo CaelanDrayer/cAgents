@@ -65,21 +65,21 @@ for batch in chunk(items_in_wave, batch_size):
 
 ```
 DEFAULT: Read plan.yaml -> controller_assignment -> primary
-Example: plan.yaml says "primary: cagents:engineering-manager"
-  -> CONTROLLER_TYPE = "engineering-manager"
+Example: plan.yaml says "primary: cagents:tech-lead"
+  -> CONTROLLER_TYPE = "tech-lead"
 
 WAVE-SPECIFIC CONTROLLERS: If plan.yaml has supporting controllers
 (controller_assignment.supporting), different waves MAY use different
 controllers based on the work items' domain alignment:
   - If ALL items in wave K match the primary controller's domain: use primary
   - If items in wave K match a supporting controller's domain: use that controller
-  - Example: tier 3 with primary=engineering-manager, supporting=[architect]
-    Wave 1 (design): use architect; Waves 2-3 (implementation): use engineering-manager
+  - Example: tier 3 with primary=tech-lead, supporting=[architect]
+    Wave 1 (design): use architect; Waves 2-3 (implementation): use tech-lead
 
 NEVER use work_items.yaml's per-item `agent` field as subagent_type.
 The `agent` field (e.g., "backend-developer", "senior-developer") is an
 EXECUTION agent — it lacks the Agent tool and CANNOT delegate work.
-Only controllers (engineering-manager, narrative-director, etc.) have Agent tool.
+Only controllers (tech-lead, narrative-director, etc.) have Agent tool.
 
 VALIDATION: controller_type must match an entry in domain_overrides.yaml
 controller_catalog. If it doesn't, fall back to the tier_2 default

@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "11.3.0"
+  version: "12.0.0"
   argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--no-template] [--waves <n>]"
   user-invocable: "true"
   context: "fork"
@@ -56,7 +56,7 @@ The following phrases are self-handling rationalizations. Each one is a critical
 
 **This rule applies to spawned teammates, not to the lead.** The lead always has the `Agent` tool and MUST delegate.
 
-For teammates: when a teammate controller (e.g., `cagents:engineering-manager` spawned via Agent at level 1) discovers that its runtime tool surface does NOT include `Agent` / `TodoWrite` / `TaskUpdate` (a known Claude Code platform behavior for plugin-namespaced subagents at depth >= 1, regardless of SKILL.md `allowed-tools`), it MUST gracefully degrade to direct execution rather than fail the work item:
+For teammates: when a teammate controller (e.g., `cagents:tech-lead` spawned via Agent at level 1) discovers that its runtime tool surface does NOT include `Agent` / `TodoWrite` / `TaskUpdate` (a known Claude Code platform behavior for plugin-namespaced subagents at depth >= 1, regardless of SKILL.md `allowed-tools`), it MUST gracefully degrade to direct execution rather than fail the work item:
 
 1. Execute the work item directly using `Read`, `Write`, `Edit`, `Bash`, `Grep`, `Glob`.
 2. Skip the `Agent(cagents:reviewer)` call (unavailable). Self-validate using the 15-check protocol in `.claude/rules/core/resources/execution-self-validation.md`.
@@ -80,7 +80,7 @@ See `.claude/rules/core/teams.md` "Known Harness Limitation: Agent Tool May Be A
 
 ```
 Wave 0 (Lead, sequential): Enrichment + Foundation
-  INIT -> orchestrator -> planner -> decomposer
+  INIT -> orchestrator -> universal-planner (decomposition inline, v12.0.0)
   Output: enriched_context.yaml, plan.yaml, work_items.yaml
   Lead may also execute bootstrap work items (scaffolding, schemas, contracts)
 
@@ -148,9 +148,9 @@ Tier classification: 2 (single component), 3 (multi-component, external deps), 4
 
 **2b-2. Call TaskCreate (mandatory)** for init, enrichment stages, each planned wave, integration, and complete entries. Update with TaskUpdate as each phase completes. Per-wave entries are added once decomposer returns. (TodoWrite is the SDK-only equivalent.)
 
-**2c-2e. Spawn enrichment agents in order**: `cagents:orchestrator` (writes enriched_context.yaml + EVT-1.yaml; update phase to ENRICHING), `cagents:universal-planner` (writes plan.yaml + EVT-2.yaml; update phase to ENRICHED), `cagents:task-decomposer` (writes work_items.yaml with wave assignments + EVT-3.yaml). Use `sed -i 's/^phase: .*/phase: <PHASE>/' "{SESSION_DIR}/status.yaml"` to advance phase.
+**2c-2e. Spawn enrichment agents in order**: `cagents:orchestrator` (writes enriched_context.yaml + EVT-1.yaml; update phase to ENRICHING), `cagents:universal-planner` (writes plan.yaml AND work_items.yaml with wave assignments + EVT-2.yaml; update phase to ENRICHED). (v12.0.0: task-decomposer absorbed into universal-planner; the planner now emits both plan.yaml and work_items.yaml in a single stage.) Use `sed -i 's/^phase: .*/phase: <PHASE>/' "{SESSION_DIR}/status.yaml"` to advance phase.
 
-The decomposer prompt MUST instruct: assign each work item a wave number; maximize the number of waves by separating into natural dependency layers; if item B depends on item A, they must be in different waves; prefer 5-10 waves over 2-3; final wave is always integration/validation (lead executes).
+The planner prompt MUST instruct: assign each work item a wave number; maximize the number of waves by separating into natural dependency layers; if item B depends on item A, they must be in different waves; prefer 5-10 waves over 2-3; final wave is always integration/validation (lead executes).
 
 **work_items.yaml vs task_list.yaml**: `workflow/work_items.yaml` is the **canonical work item source** with descriptions, acceptance criteria, wave assignments, dependencies, agent assignments. `team/task_list.yaml` is a **status-only overlay** for team coordination — it does NOT duplicate the rich metadata.
 

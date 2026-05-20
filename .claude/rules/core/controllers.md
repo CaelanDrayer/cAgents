@@ -66,17 +66,17 @@ Controllers MAY use TaskCreate for their OWN internal sub-spawns (e.g., tracking
 Use `[{parent} > {agent-name}] {verb phrase}` when spawning an agent, then 2-space indented `[{agent-name}] {sub-task}` for that agent's own work. Never use state machine names (INIT, ORCHESTRATED, etc.). Replace placeholders with actual agent names as soon as known.
 
 **Format rules:**
-- No slash prefix: `[engineering-manager]` not `[/engineering-manager]`
-- Parent > child on spawn: `[engineering-manager > backend-developer] Implementing auth module`
+- No slash prefix: `[tech-lead]` not `[/tech-lead]`
+- Parent > child on spawn: `[tech-lead > backend-developer] Implementing auth module`
 - Child-only for sub-tasks: `  [backend-developer] Writing unit tests`
 - 2-space indent for children
 - Include contextual detail (file counts, component names, etc.)
 
 **Example (interactive Claude Code — TaskCreate/TaskUpdate):**
 ```
-TaskCreate({ subject: "[engineering-manager > backend-developer] Implementing auth module", description: "Creating JWT middleware; Writing unit tests (4 files)" })
-TaskCreate({ subject: "[engineering-manager > frontend-developer] Building login UI", description: "Creating login form component" })
-TaskCreate({ subject: "[engineering-manager] Synthesizing solution", description: "Combine answers from execution agents into coherent implementation plan" })
+TaskCreate({ subject: "[tech-lead > backend-developer] Implementing auth module", description: "Creating JWT middleware; Writing unit tests (4 files)" })
+TaskCreate({ subject: "[tech-lead > frontend-developer] Building login UI", description: "Creating login form component" })
+TaskCreate({ subject: "[tech-lead] Synthesizing solution", description: "Combine answers from execution agents into coherent implementation plan" })
 # As work progresses:
 TaskUpdate({ taskId: "1", status: "in_progress" })
 TaskUpdate({ taskId: "1", status: "completed" })
@@ -85,9 +85,9 @@ TaskUpdate({ taskId: "1", status: "completed" })
 **SDK / non-interactive equivalent (TodoWrite):**
 ```
 TodoWrite([
-  {"content": "[engineering-manager > backend-developer] Implementing auth module\n  [backend-developer] Creating JWT middleware\n  [backend-developer] Writing unit tests (4 files)", "status": "in_progress", "id": "wi-1"},
-  {"content": "[engineering-manager > frontend-developer] Building login UI\n  [frontend-developer] Creating login form component", "status": "pending", "id": "wi-2"},
-  {"content": "[engineering-manager] Synthesizing solution", "status": "pending", "id": "synthesis"}
+  {"content": "[tech-lead > backend-developer] Implementing auth module\n  [backend-developer] Creating JWT middleware\n  [backend-developer] Writing unit tests (4 files)", "status": "in_progress", "id": "wi-1"},
+  {"content": "[tech-lead > frontend-developer] Building login UI\n  [frontend-developer] Creating login form component", "status": "pending", "id": "wi-2"},
+  {"content": "[tech-lead] Synthesizing solution", "status": "pending", "id": "synthesis"}
 ])
 ```
 
@@ -97,9 +97,9 @@ See `controller-reference.md` for additional good/bad task-tracking examples.
 
 | Tier | Controllers | Example |
 |------|------------|---------|
-| **2** (Moderate) | 1 primary | engineering-manager for bug fixes |
-| **3** (Complex) | 1 primary + 1-2 supporting | engineering-manager + architect + security |
-| **4** (Expert) | 1 executive + 1 primary + 2-4 supporting + HITL | cto + engineering-manager + architect |
+| **2** (Moderate) | 1 primary | tech-lead for bug fixes |
+| **3** (Complex) | 1 primary + 1-2 supporting | tech-lead + architect + security |
+| **4** (Expert) | 1 executive + 1 primary + 2-4 supporting + HITL | cto + tech-lead + architect |
 
 ## Key Guidelines
 
@@ -303,9 +303,9 @@ guard_chain_result:
 
 **Applies to: controllers spawned as `/team` teammates at depth ≥ 1.**
 
-When a controller agent (e.g., `cagents:engineering-manager`) is spawned by `/team` as a teammate, the Claude Code runtime may strip the `Agent` tool from the controller's tool surface — even when the controller's SKILL.md frontmatter correctly declares `allowed-tools: Agent ...`. This is upstream platform behavior, not a cAgents config issue (no `settings.json`, `plugin.json`, or env-var knob exposes the depth-1 stripping; see PHASE-N1 audit at `cagents-memory/_knowledge/agent-tool-depth1-stripping.md`).
+When a controller agent (e.g., `cagents:tech-lead`) is spawned by `/team` as a teammate, the Claude Code runtime may strip the `Agent` tool from the controller's tool surface — even when the controller's SKILL.md frontmatter correctly declares `allowed-tools: Agent ...`. This is upstream platform behavior, not a cAgents config issue (no `settings.json`, `plugin.json`, or env-var knob exposes the depth-1 stripping; see PHASE-N1 audit at `cagents-memory/_knowledge/agent-tool-depth1-stripping.md`).
 
-**Rule:** When a teammate controller discovers that `Agent` is unavailable, it MUST gracefully degrade to direct execution rather than fail the work item. The teammate uses the tools it does have (`Read`, `Write`, `Edit`, `Bash`, `Grep`, `Glob`), self-validates against acceptance criteria via the 15-check protocol in `.claude/rules/core/resources/execution-self-validation.md`, and writes the result to `outputs/task-{N}/self-validation.yaml` with the standard `status: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED` field.
+**Rule:** When a teammate controller discovers that `Agent` is unavailable, it MUST gracefully degrade to direct execution rather than fail the work item. The teammate uses the tools it does have (`Read`, `Write`, `Edit`, `Bash`, `Grep`, `Glob`), self-validates against acceptance criteria via the 5 hook-verifiable checks in @resources/execution-self-validation.md, and writes the result to `outputs/task-{N}/self-validation.yaml` with the standard `status: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED` field.
 
 **Documentation requirement:** the coordination_log for the wave MUST include the literal sentence "Agent/subagent-spawn tool was not available" so that `verify-completion.cjs` recognizes the graceful-degradation pattern and downgrades the protocol-violation warning. See `.claude/rules/core/teams.md` § Known Harness Limitation for the full evidence chain and the upstream-config null-finding.
 

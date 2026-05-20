@@ -22,7 +22,7 @@ Execution agents are specialists that:
 ### Tier 2: Controllers
 - Coordinate work via question-based delegation
 - Synthesize answers from multiple specialists
-- Examples: engineering-manager, architect, campaign-manager
+- Examples: tech-lead, architect, marketing-strategist
 
 ### Tier 3: Execution
 - Answer questions with domain expertise
@@ -38,7 +38,7 @@ Execution agents are specialists that:
 **Controller Agent**:
 ```yaml
 ---
-name: engineering-manager
+name: tech-lead
 tier: controller
 domain: engineering
 coordination_style: question_based
@@ -237,22 +237,13 @@ The Claude Code runtime may strip tools from a `cagents:*` agent's surface at de
 
 The full graceful-degradation pattern (rule, evidence, scope boundary) lives in `.claude/rules/core/controllers.md` § Graceful Degradation. Execution agents follow the same self-validation protocol regardless of teammate-stripping context.
 
-## Mandatory Self-Validation Protocol (V10.23.0)
+## Mandatory Self-Validation Protocol (V12.0.0)
 
-Before reporting ANY status (DONE, DONE_WITH_CONCERNS), execution agents MUST complete a self-validation checklist. A failed check automatically changes DONE to DONE_WITH_CONCERNS with failed checks listed as concerns.
+Before reporting ANY status (DONE, DONE_WITH_CONCERNS), execution agents MUST complete a 5-check hook-verifiable self-validation. Any 1 of the 5 checks failing automatically changes DONE to DONE_WITH_CONCERNS with the failing check listed as a concern.
 
-**15 checks across 5 categories**: Acceptance Criteria (3), Side Effects (3), Completeness (3), Evidence Freshness (3), Regression (3).
+**5 hook-verifiable checks**: evidence freshness, file existence, guard exit codes, git state, file:line accuracy.
 
-Key checks:
-- Every criterion has specific file:line or command output evidence
-- Evidence was gathered AFTER implementation (fresh, not recycled)
-- All claimed output files exist on disk
-- No broken imports or test regressions introduced
-- Code compiles/parses cleanly, no TODO/FIXME/HACK in new code
-
-**Auto-downgrade rule**: If 1+ acceptance criteria check fails OR 4+ total checks fail → DONE becomes DONE_WITH_CONCERNS with failed checks listed.
-
-See @resources/execution-self-validation.md for the full 15-check checklist and YAML template.
+See @resources/execution-self-validation.md for the full check list, YAML template, integration with the subagent status protocol, and auto-downgrade rule. The canonical contract lives in that file — do not duplicate the check list here.
 
 ---
 

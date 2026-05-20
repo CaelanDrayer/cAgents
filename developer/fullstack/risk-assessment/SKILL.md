@@ -19,7 +19,7 @@ metadata:
   maxTurns: 10
   disallowedTools: ["Agent"]
   related_agents:
-    - name: engineering-manager
+    - name: tech-lead
       type: collaborates_with
     - name: architect
       type: collaborates_with

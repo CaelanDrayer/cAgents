@@ -36,7 +36,7 @@ Single-purpose plugins handle one domain with a linear workflow. cAgents handles
 
 What changes:
 - cAgents auto-detects the engineering domain — no manual domain selection
-- An `engineering-manager` controller coordinates the work via question-based delegation instead of direct invocation
+- An `tech-lead` controller coordinates the work via question-based delegation instead of direct invocation
 - A reviewer validates spec compliance then code quality before the work is marked done
 - If validation fails, the pipeline re-runs the controller (up to 5 cycles) instead of stopping
 

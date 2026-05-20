@@ -24,12 +24,18 @@ metadata:
       type: collaborates_with
     - name: customer-success-manager
       type: cross_domain
+  absorbed_in_v12:
+    - sales-ops-specialist
 allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Revenue Operations Manager
 
 Revenue alignment and operations.
+
+> **v12 fold note**: Absorbed `sales-ops-specialist` (strict subset — sales-only
+> operations is now handled here, with sales-specific operational detail in
+> @resources/sales-operations.md).
 
 ## Responsibilities
 
@@ -64,3 +70,4 @@ Revenue alignment and operations.
 - Forecast accuracy (±10%)
 
 See @resources/revops-frameworks.md for alignment templates.
+See @resources/sales-operations.md for sales-only operations (CRM, territory, quota, forecast accuracy).

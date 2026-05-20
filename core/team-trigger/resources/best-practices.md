@@ -47,7 +47,7 @@
 - **Integration Wave (final)**: Merge, final testing, polish — executed by the lead after teammates complete
 
 ### Teammate Spawn Context
-- **subagent_type**: Must be the controller from plan.yaml (e.g., "cagents:engineering-manager") — never an execution agent
+- **subagent_type**: Must be the controller from plan.yaml (e.g., "cagents:tech-lead") — never an execution agent
 - **Execution Agent in Prompt**: The specific execution agent (e.g., "cagents:backend-developer") is specified inside the teammate's prompt — the teammate (controller) spawns it via its own Task call
 - **Work Item Context**: Each teammate receives its specific TASK-ID, description, acceptance criteria, and the execution agent to spawn — complete context in the initial prompt
 
@@ -74,5 +74,5 @@
 
 - **With trigger**: Team-trigger may invoke trigger in `team_planning_only` mode to leverage trigger's domain detection and planning infrastructure — trigger produces plan.yaml and decomposition.yaml, team-trigger takes over for team-specific execution
 - **With team-lead-adapter**: In more complex team executions, team-trigger bootstraps the session and hands off to team-lead-adapter for ongoing wave coordination — team-trigger initializes, adapter manages
-- **With domain controllers (as teammates)**: Team-trigger spawns domain controllers (engineering-manager, narrative-director, etc.) as teammates via Agent tool — each controller then independently coordinates execution agents and reviewers for its assigned work item
+- **With domain controllers (as teammates)**: Team-trigger spawns domain controllers (tech-lead, narrative-director, etc.) as teammates via Agent tool — each controller then independently coordinates execution agents and reviewers for its assigned work item
 - **With orchestrator**: In /run --team mode, orchestrator detects the team flag and spawns team-trigger instead of the domain controller — team-trigger handles all subsequent team coordination

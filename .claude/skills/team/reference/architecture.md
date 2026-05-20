@@ -112,7 +112,7 @@ Each teammate spawns its assigned controller directly via Agent tool. This elimi
 
 ```
 Teammate (full session) -> Agent({subagent_type: "cagents:{controller_name}"})
-  -> controller (e.g., engineering-manager) -> execution agents (e.g., backend-developer)
+  -> controller (e.g., tech-lead) -> execution agents (e.g., backend-developer)
   -> validated output returned to teammate
 ```
 

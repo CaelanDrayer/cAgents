@@ -71,7 +71,7 @@ Cross-domain specialist that brings EXPERTISE_AREA to any domain that needs it. 
 Shared agents are typically invoked by domain controllers when a task requires cross-domain expertise:
 
 ```
-engineering-manager -> Agent(shared/SHARED_AGENT_NAME) -> answer used in synthesis
+tech-lead -> Agent(shared/SHARED_AGENT_NAME) -> answer used in synthesis
 narrative-director  -> Agent(shared/SHARED_AGENT_NAME) -> answer used in synthesis
 ```
 
@@ -81,8 +81,8 @@ For user requests that directly map to this agent's expertise regardless of doma
 ## Examples
 
 <example>
-<context>Called by engineering-manager for a DOMAIN_A use case</context>
-<user>Question or task from the engineering-manager controller</user>
+<context>Called by tech-lead for a DOMAIN_A use case</context>
+<user>Question or task from the tech-lead controller</user>
 <agent>Agent applies cross-domain expertise, returns answer with specific evidence</agent>
 </example>
 

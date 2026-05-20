@@ -81,7 +81,7 @@ Delegate to frontend specialists:
 
 ## Escalation Triggers
 
-Escalate to architect or engineering-manager when:
+Escalate to architect or tech-lead when:
 - Cross-team dependencies emerge
 - Major architecture decisions needed
 - Resource conflicts between teams

@@ -53,7 +53,7 @@ QA Lead: Adjusts test plan -> Implements comprehensive test suite
 ### Outbound: Consultation to Backend Developer
 
 ```yaml
-# cagents-memory/_communication/inbox/backend-developer/consultation_{timestamp}.yaml
+# cagents-memory/sessions/{session_id}/messages/backend-developer/consultation_{timestamp}.yaml
 type: consultation
 from: qa-lead
 to: backend-developer
@@ -89,7 +89,7 @@ expected_response_time: 1h
 ### Outbound: Consultation to Security Specialist
 
 ```yaml
-# cagents-memory/_communication/inbox/security-specialist/consultation_{timestamp}.yaml
+# cagents-memory/sessions/{session_id}/messages/security-specialist/consultation_{timestamp}.yaml
 type: consultation
 from: qa-lead
 to: security-specialist
@@ -122,7 +122,7 @@ expected_response_time: 2h
 ### Inbound: Consultation Response from Developer
 
 ```yaml
-# cagents-memory/_communication/inbox/qa-lead/consultation_response_{timestamp}.yaml
+# cagents-memory/sessions/{session_id}/messages/qa-lead/consultation_response_{timestamp}.yaml
 type: consultation_response
 from: backend-developer
 to: qa-lead
@@ -171,7 +171,7 @@ completion_time: 30m
 ### Inbound: Task Assignment from Executor
 
 ```yaml
-# cagents-memory/_communication/inbox/qa-lead/task_{timestamp}.yaml
+# cagents-memory/sessions/{session_id}/messages/qa-lead/task_{timestamp}.yaml
 type: delegation
 from: executor
 to: qa-lead
@@ -213,7 +213,7 @@ deadline: 2026-01-03T18:00:00Z
 ### Outbound: Escalation to Tech Lead
 
 ```yaml
-# cagents-memory/_communication/inbox/tech-lead/escalation_{timestamp}.yaml
+# cagents-memory/sessions/{session_id}/messages/tech-lead/escalation_{timestamp}.yaml
 type: escalation
 from: qa-lead
 to: tech-lead
@@ -307,7 +307,7 @@ notes_for_validator:
 ### Inbound: Guidance from Security Specialist
 
 ```yaml
-# cagents-memory/_communication/inbox/qa-lead/consultation_response_{timestamp}.yaml
+# cagents-memory/sessions/{session_id}/messages/qa-lead/consultation_response_{timestamp}.yaml
 type: consultation_response
 from: security-specialist
 to: qa-lead
@@ -377,12 +377,12 @@ completion_time: 1h
 **Reads**:
 - `cagents-memory/{instruction_id}/tasks/` - Assigned testing tasks
 - `cagents-memory/{instruction_id}/outputs/partial/` - Code to test
-- `cagents-memory/_communication/inbox/qa-lead/` - Task assignments
+- `cagents-memory/sessions/{session_id}/messages/qa-lead/` - Task assignments
 
 **Writes**:
 - `cagents-memory/{instruction_id}/outputs/partial/tests/` - Test files
 - `cagents-memory/{instruction_id}/decisions/` - Test strategy decisions
-- `cagents-memory/_communication/inbox/{developer}/` - Consultations
+- `cagents-memory/sessions/{session_id}/messages/{developer}/` - Consultations
 
 ## Progress Tracking with TodoWrite
 

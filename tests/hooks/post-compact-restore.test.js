@@ -73,7 +73,7 @@ describe('post-compact-restore.cjs', () => {
       join(sessionDir, 'workflow', 'coordination_log.yaml'),
       [
         'schema_version: "1"',
-        'controller: cagents:engineering-manager',
+        'controller: cagents:tech-lead',
         'status: in_progress',
         'implementation_tasks:',
         '  - task_id: WI-1',
@@ -94,16 +94,16 @@ describe('post-compact-restore.cjs', () => {
   it('should include controller name when coordination_log exists', () => {
     writeFileSync(
       join(sessionDir, 'workflow', 'coordination_log.yaml'),
-      'schema_version: "1"\ncontroller: cagents:engineering-manager\nstatus: completed\n'
+      'schema_version: "1"\ncontroller: cagents:tech-lead\nstatus: completed\n'
     );
     const result = runHook({ session_id: TEST_SESSION }, { CLAUDE_PROJECT_DIR: tmpDir });
-    expect(result.systemMessage).toContain('cagents:engineering-manager');
+    expect(result.systemMessage).toContain('cagents:tech-lead');
   });
 
   it('should keep systemMessage under 500 tokens (~2000 chars)', () => {
     writeFileSync(
       join(sessionDir, 'workflow', 'coordination_log.yaml'),
-      'schema_version: "1"\ncontroller: cagents:engineering-manager\nstatus: in_progress\n'
+      'schema_version: "1"\ncontroller: cagents:tech-lead\nstatus: in_progress\n'
     );
     const result = runHook({ session_id: TEST_SESSION }, { CLAUDE_PROJECT_DIR: tmpDir });
     // 500 tokens ~ 2000 chars conservatively; message should be well under

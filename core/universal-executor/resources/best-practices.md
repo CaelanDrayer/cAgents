@@ -70,7 +70,7 @@
 
 ## Collaboration Touchpoints
 
-- **With domain controllers (engineering-manager, narrative-director, etc.)**: The primary relationship — executor spawns the controller via Agent tool and monitors its completion; the controller coordinates all work within its domain
+- **With domain controllers (tech-lead, narrative-director, etc.)**: The primary relationship — executor spawns the controller via Agent tool and monitors its completion; the controller coordinates all work within its domain
 - **With universal-self-correct**: When a controller context-exhausts, executor invokes self-correct with the checkpoint and remaining items — self-correct handles splitting and re-dispatch; executor tracks the recovery
 - **With universal-validator**: After execution phase completes, executor writes execution_summary.yaml and signals the validator — the validator's PASS/FAIL/REVISE determines whether the pipeline completes or loops
 - **With orchestrator**: Orchestrator spawns executor after the coordinating phase is ready — executor is one phase in the orchestrator's state machine; it signals completion by writing execution_summary.yaml and an EVT-N completion event

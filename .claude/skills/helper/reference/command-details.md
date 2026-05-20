@@ -37,7 +37,7 @@ You: /run Fix auth bug
 [Orchestrator] Creates plan with objectives
   |
   v
-[Controller: engineering-manager] Asks specialists questions:
+[Controller: tech-lead] Asks specialists questions:
   - "What is the current auth implementation?" -> backend-developer
   - "What are the key risks?" -> security-specialist
   - "What tests are needed?" -> qa-lead
@@ -267,7 +267,7 @@ You: /team Implement OAuth2 with Google, GitHub, and email login
 |------|-------------|---------|
 | `--dry-run` | Preview team composition | `/team Build feature --dry-run` |
 | `--members <N>` | Limit team size | `/team Build system --members 4` |
-| `--lead <agent>` | Specify team lead | `/team Build API --lead engineering-manager` |
+| `--lead <agent>` | Specify team lead | `/team Build API --lead tech-lead` |
 | `--teammate-mode <mode>` | Display mode (tmux/in-process) | `/team Build app --teammate-mode tmux` |
 | `--display` | Show team communication | `/team Build feature --display` |
 | `--quiet` / `-q` | Suppress progress output | `/team Build feature --quiet` |

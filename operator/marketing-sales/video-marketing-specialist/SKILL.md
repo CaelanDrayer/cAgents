@@ -25,11 +25,11 @@ metadata:
     - PR and media relations
     - Email marketing
   related_agents:
-    - name: campaign-manager
+    - name: marketing-strategist
       type: coordinated_by
-    - name: campaign-manager
+    - name: marketing-strategist
       type: collaborates_with
-    - name: campaign-manager
+    - name: marketing-strategist
       type: collaborates_with
     - name: creative-director
       type: reviewed_by

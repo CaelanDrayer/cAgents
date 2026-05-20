@@ -43,7 +43,6 @@ cagents-memory/
 ├── _system/          # configs, commands/, domains/, metrics/, evals/, templates/
 ├── _knowledge/       # semantic, procedural, calibration, analytics
 ├── _archive/         # Completed sessions
-├── _communication/   # inbox/{agent}/, broadcast/
 └── sessions/         # run_*, designer_*, review_*, optimize_*, team_*, org_*
 ```
 

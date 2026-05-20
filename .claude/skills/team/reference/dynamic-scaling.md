@@ -57,9 +57,9 @@ scaling_events:
   - wave: 2
     type: scale_up
     reason: "Additional sub-items from TASK-5 decomposition"
-    new_teammate: "w2-task-5b-engineering-manager-scaled"
+    new_teammate: "w2-task-5b-tech-lead-scaled"
   - wave: 3
     type: scale_down
     reason: "TASK-8 completed early"
-    stopped_teammate: "w3-task-8-engineering-manager"
+    stopped_teammate: "w3-task-8-tech-lead"
 ```

@@ -88,7 +88,7 @@ This controller typically delegates to:
 - **architect**: Design decisions
 - **qa-lead**: Testing strategy
 - **security-specialist**: Security review
-- **devops-lead**: Deployment concerns
+- **infrastructure-lead**: Deployment concerns
 
 ## Outputs
 

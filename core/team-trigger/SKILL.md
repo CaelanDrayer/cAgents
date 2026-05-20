@@ -163,13 +163,13 @@ Spawn teammates using the Agent tool. Each teammate is spawned as the **controll
 ```
 # Read plan.yaml -> controller_assignment -> primary
 # This is ALWAYS the subagent_type for ALL teammates.
-# Example: plan.yaml says "primary: cagents:engineering-manager"
-#   -> CONTROLLER_TYPE = "engineering-manager"
+# Example: plan.yaml says "primary: cagents:tech-lead"
+#   -> CONTROLLER_TYPE = "tech-lead"
 #
 # NEVER use work_items.yaml's per-item `agent` field as subagent_type.
 # The `agent` field (e.g., "backend-developer", "senior-developer") is an
 # EXECUTION agent -- it lacks the Agent tool and CANNOT delegate work.
-# Only controllers (engineering-manager, narrative-director, etc.) have Agent tool.
+# Only controllers (tech-lead, narrative-director, etc.) have Agent tool.
 CONTROLLER_TYPE = plan.yaml -> controller_assignment -> primary
 ```
 
@@ -217,7 +217,7 @@ Agent({ subagent_type: "cagents:backend-developer", ... })
 TaskCreate({ subject: "TASK-01: Implement user model" })  // No one to execute it!
 
 # RIGHT: Controller as subagent_type, execution agent inside the delegation prompt
-Agent({ subagent_type: "cagents:engineering-manager", prompt: "...Agent({subagent_type:'cagents:backend-developer', ...})..." })
+Agent({ subagent_type: "cagents:tech-lead", prompt: "...Agent({subagent_type:'cagents:backend-developer', ...})..." })
 ```
 
 ### Step 7: Monitor and Aggregate

@@ -22,7 +22,7 @@
 - **Controller Catalog Lookup**: Read `{domain}/config/domain_overrides.yaml` to find the controller catalog for the detected domain and tier — never guess controller names
 - **Context Budget Enforcement**: plan.yaml < 80 lines (~800 tokens); decomposition.yaml < 150 lines (~1500 tokens) — enforce these limits by removing verbose descriptions and keeping acceptance criteria concise
 - **No-Duplicate Criteria Rule**: Define acceptance criteria once in decomposition.yaml — do not repeat them in plan.yaml objectives; cross-reference by TASK-ID from plan to decomposition
-- **Event Completion Signal**: After writing plan.yaml, write EVT-2 to `workflow/events/` — the /run state machine reads this event to advance to DECOMPOSED state
+- **Event Completion Signal**: After writing plan.yaml AND work_items.yaml, write EVT-2 to `workflow/events/` — the /run state machine reads this event to advance from ORCHESTRATED to PLANNED. (v12.0.0: universal-planner produces both artifacts inline; pre-v12 the state advanced to DECOMPOSED after a separate task-decomposer ran, but that state no longer exists.)
 
 ## Domain Concepts & Terminology
 
@@ -42,7 +42,7 @@
 - **Level 5 (Pure Outcome)**: Full extrapolation — "make it better"; planner discovers everything from scratch
 
 ### Controller Selection Criteria
-- **Tier 2**: Single primary controller — engineering-manager for engineering, narrative-director for creative, operations-manager for business
+- **Tier 2**: Single primary controller — tech-lead for engineering, narrative-director for creative, operations-manager for business
 - **Tier 3**: Primary + 1-2 supporting controllers — adds architect or security-lead for complex engineering
 - **Tier 4**: Executive + primary + 2-4 supporting + HITL — for architectural migrations and company-wide changes
 - **Domain Override**: Each domain's `domain_overrides.yaml` provides the controller catalog — always use this, never guess

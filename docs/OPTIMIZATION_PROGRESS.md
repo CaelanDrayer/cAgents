@@ -63,8 +63,8 @@ These agents already have directory structure with SKILL.md:
 - [x] data-analyst (106 lines)
 - [x] dba (118 lines)
 - [x] devops (79 lines)
-- [x] devops-lead (83 lines)
-- [x] engineering-manager (92 lines)
+- [x] infrastructure-lead (83 lines)
+- [x] tech-lead (92 lines)
 - [x] finance-manager (95 lines)
 - [x] frontend-aesthetics (95 lines)
 - [x] frontend-developer (68 lines)
@@ -106,7 +106,7 @@ Planning agents (12):
 - [ ] roadmap-planner, scenario-planner, strategic-planner
 
 Other (6):
-- [ ] architecture-reviewer
+- [x] ~~architecture-reviewer~~ (absorbed into architect --review in v12.0.0)
 
 **Phase 3 Total**: 23/45 explicit conversions + 21 pre-existing = 44/45 managed
 - Batch 1+2 This Session: 2,219 lines saved (64% avg)

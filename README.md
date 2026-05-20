@@ -2,11 +2,11 @@
 
 **Your AI Workforce for Claude Code**
 
-Deploy 243 specialized agents across 9 builder-role archetypes (with a legacy 15-domain routing overlay) through an intelligent pipeline that routes your request, plans execution, decomposes work, coordinates specialists, reviews outputs, and validates quality — automatically.
+Deploy 238 specialized agents across 9 builder-role archetypes through an intelligent pipeline that routes your request, plans execution, decomposes work, coordinates specialists, reviews outputs, and validates quality — automatically.
 
 | Stat | Value |
 |------|-------|
-| Agents | 243 across 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership) |
+| Agents | 238 across 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership) |
 | Skills | 6 slash commands |
 | Hooks | 28 .cjs files = 25 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI, across 17 event types |
 | Models | Opus 4.6 (controllers) · Sonnet 4.6 (execution) · Haiku 4.5 (support) |
@@ -19,7 +19,7 @@ Deploy 243 specialized agents across 9 builder-role archetypes (with a legacy 15
 - Multi-step task orchestration with automatic routing, planning, and coordination
 - Cross-domain work (engineering + business + creative + growth in one request)
 - Parallel execution with quality-gated waves (40-60% faster for complex tasks)
-- Consistent delegation patterns across 9 archetypes (243 specialists) with a legacy 15-domain routing overlay
+- Consistent delegation patterns across 9 archetypes (238 specialists)
 - Reviewer loops, confidence scoring, and revision routing built into every run
 
 **cAgents is NOT for you if:**
@@ -101,7 +101,7 @@ Routes any request through the full pipeline: orchestrator enriches context, pla
 /run Fix auth bug --analytics    # Show execution metrics after run
 ```
 
-The domain routes automatically based on request content. Engineering requests go to an engineering-manager controller; creative requests go to a narrative-director; business requests go to an operations-manager or strategic-planner.
+The domain routes automatically based on request content. Engineering requests go to an tech-lead controller; creative requests go to a narrative-director; business requests go to an operations-manager or strategic-planner.
 
 ### `/team` — N-Wave Parallel Execution
 
@@ -174,20 +174,20 @@ Recommends the right skill based on your task description. Use it when you are u
 
 ### Canonical: 9 Archetypes (V11.1.0+)
 
-Since v11.1.0, the 243-agent catalog is organized as a builder-role archetype tree:
+Since v11.1.0, the agent catalog (238 agents as of v12.0.0) is organized as a builder-role archetype tree:
 
 | Archetype | Agents | Scope |
 |-----------|-------:|-------|
-| **Developer** | 31 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
-| **Operator** | 81 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
+| **Developer** | 30 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
+| **Operator** | 74 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
 | **Advisor** | 30 | Legal, health, education, personal (4 branches) |
-| **Analyst** | 27 | Data science, BI, research, social science |
+| **Analyst** | 31 | Data science, BI, research, social science |
 | **Writer** | 26 | Copy, narrative, technical, editorial |
 | **Creator** | 11 | Visual artists, designers, audiovisual creators |
 | **Strategist** | 9 | Product owners, portfolio managers, planners |
-| **Core** | 17 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, etc.) |
-| **Leadership** | 11 | C-suite executives — used by `/org` |
-| **TOTAL** | **243** | |
+| **Core** | 15 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, etc.) |
+| **Leadership** | 12 | C-suite executives — used by `/org` |
+| **TOTAL** | **238** | |
 
 ### Legacy: 15-Domain Routing Overlay
 
@@ -208,7 +208,7 @@ The router and planner still consume `{domain}/config/domain_overrides.yaml` (co
 
 **Creative (30)** covers long-form and short-form writing: prose-stylist, dialogue-specialist, plot-developer, narrative-director, character-psychologist, worldbuilder, and 24 more. Use `/run Write a mystery short story` and the narrative-director controller coordinates the right specialists.
 
-**Growth (34)** is the largest domain: copywriter, marketing-strategist, seo-specialist, campaign-manager, demand-generation-manager, sales-strategist, and 28 more. Use `/run Plan the Q4 content calendar` and the marketing-strategist controller coordinates the campaign team.
+**Growth (34)** is the largest domain: copywriter, marketing-strategist, seo-specialist, demand-generation-manager, sales-strategist, and 29 more. Use `/run Plan the Q4 content calendar` and the marketing-strategist controller coordinates the campaign team.
 
 **Service (28)** covers support and legal: customer-success-manager, general-counsel, compliance-officer, technical-writer, legal-analyst, and 23 more. Use `/run Draft an EULA for our SaaS product` and the general-counsel controller coordinates the legal team.
 
@@ -343,7 +343,7 @@ cAgents routes your request to the right domain automatically based on keywords.
 
 | Request | Routed To | Controller |
 |---------|-----------|------------|
-| `/run Fix the auth bug` | Engineering | engineering-manager |
+| `/run Fix the auth bug` | Engineering | tech-lead |
 | `/run Write a blog post about AI` | Creative | narrative-director |
 | `/run Plan Q4 product launch` | Business | operations-manager |
 | `/run Build an email campaign` | Growth | marketing-strategist |
@@ -370,7 +370,7 @@ For cross-domain work that spans multiple areas (e.g., launching a product requi
 
 | Dimension | cAgents | Official feature-dev plugin | Official code-review plugin |
 |-----------|---------|----------------------------|----------------------------|
-| **Agent count** | 243 | 3–5 | 3–5 |
+| **Agent count** | 238 | 3–5 | 3–5 |
 | **Business domains** | 9 archetypes (15 legacy routing overlays) | 1 (engineering) | 1 (engineering) |
 | **Pipeline state machine** | Yes — PASS/FAIL/REVISE routing, max 5 cycles | No | No |
 | **Parallel team execution** | Yes — N-wave with per-wave quality gates | No | No |
@@ -451,7 +451,8 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights:
 
-- **V11.3.0** — Current release. Plugin health sweep: archetype-canonical doc alignment (9 archetypes canonical, 15 domains as routing overlay), 109 stale `related_agents` cross-references swept, hook-count assertions corrected (26 unique registered, 29 .cjs total), `sync-agents.sh --check` dry-run flag added, `validate-versions.sh` pruned to 18 canonical slots, regression tests added.
+- **V12.0.0** — Current release. Consolidation release: pipeline collapse 7->5 states (task-decomposer + prompt-engineer folded into universal-planner), engineering-manager merged into tech-lead, architecture-reviewer collapsed into `architect --review` mode flag, 13 marketing-sales agents absorbed (38->25), chief-legal-officer renamed to clo, 11 legacy domain dirs deleted, `cagents-memory/_communication/` removed, max_revision_cycles 5->3, execution self-validation reduced 15->5 hook-verifiable checks. Total agents 251->238.
+- **V11.3.0** — Plugin health sweep: archetype-canonical doc alignment (9 archetypes canonical, 15 domains as routing overlay), 109 stale `related_agents` cross-references swept, hook-count assertions corrected (26 unique registered, 29 .cjs total), `sync-agents.sh --check` dry-run flag added, `validate-versions.sh` pruned to 18 canonical slots, regression tests added.
 - **V11.1.3** — Removed statusLine hook and status bar integration.
 - **V11.0.0** — Removed deprecated skills `/review`, `/optimize`, `/context`, `/debug`. `/review` and `/optimize` consolidated into `/improve` (`--mode review|optimize|full`); `/context` replaced by `/run context …` passthrough; `/debug` replaced by `/run --mode debug`. See [docs/MIGRATION-V11.md](docs/MIGRATION-V11.md) for the migration guide.
 - **V10.23.0** — 29-check validation framework, regression validation chain, mandatory self-validation protocol for execution agents
@@ -472,4 +473,4 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | 243 agents across 9 archetypes | Opus 4.6 · Sonnet 4.6 · Haiku 4.5
+**Built with Claude Code** | 238 agents across 9 archetypes | Opus 4.6 · Sonnet 4.6 · Haiku 4.5

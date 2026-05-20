@@ -139,7 +139,8 @@ state_history:                       # REQUIRED: Ordered list of state transitio
 
 | Skill | States (in order) |
 |-------|-------------------|
-| /run | INIT, ORCHESTRATED, PLANNED, DECOMPOSED, PROMPTS_READY, COORDINATED, VALIDATED, FOLLOWUP_{TYPE}_{N} |
+| /run (v12.0.0+) | INIT, ORCHESTRATED, PLANNED, COORDINATED, VALIDATED, FOLLOWUP_{TYPE}_{N} |
+| /run (pre-v12, historical) | INIT, ORCHESTRATED, PLANNED, DECOMPOSED, PROMPTS_READY, COORDINATED, VALIDATED, FOLLOWUP_{TYPE}_{N} (DECOMPOSED/PROMPTS_READY collapsed into ORCHESTRATED in v12.0.0; archived sessions retain these names) |
 | /org | INIT, ANALYZED, DELIBERATED, BRIEFED, EXECUTED, INTEGRATED, COMPLETE |
 | /team | INIT, (wave states vary) |
 | /designer | empathize, define, conceptualize, ideation, refinement, specification |
@@ -159,9 +160,9 @@ state_history:                       # REQUIRED: Ordered list of state transitio
 
 ### /run
 - `workflow/enriched_context.yaml` - Orchestrator output
-- `workflow/plan.yaml` - Planner output with objectives, controller assignment
-- `workflow/work_items.yaml` - Decomposer output
-- `workflow/delegation_prompts.yaml` - Prompt-engineer output (optional — routinely skipped by adaptive pipeline for tier 2; only present when prompt-engineer runs)
+- `workflow/plan.yaml` - Universal-planner output: objectives + controller assignment
+- `workflow/work_items.yaml` - Universal-planner output: decomposition (v12.0.0: produced inline by universal-planner, not by a separate decomposer agent)
+- `workflow/delegation_prompts.yaml` - **HISTORICAL (pre-v12.0.0 only)**. Produced by the prompt-engineer agent before v12. v12 sessions do NOT write this file — controllers fall back to standard delegation prompts. Retained in schema for backward-compat with pre-v12 archived sessions.
 - `workflow/coordination_log.yaml` - Controller coordination record (MUST include `schema_version: "1"`, `implementation_tasks[].agent_id` linking to agent_tree.yaml)
 - `workflow/validation_report.yaml` - Validator output (PASS/FAIL/REVISE)
 - `workflow/execution_summary.yaml` - **ALWAYS written** by /run, even on failure/interruption
@@ -288,15 +289,17 @@ A session is considered complete when its status.yaml state matches one of:
 
 Note: `VALIDATED` may be followed by `FOLLOWUP_{TYPE}_{N}` states if the user provides post-completion feedback. The session re-enters the pipeline and eventually returns to `VALIDATED`. No limit on follow-up rounds.
 
-### Follow-Up Types (/run only)
+### Follow-Up Types (/run only, v12.0.0)
 
-| Type | Re-entry Point | Use Case |
+| Type | Re-entry Point (v12.0.0) | Use Case |
 |------|---------------|----------|
-| `ADJUSTMENT` | PROMPTS_READY | Targeted change (rename, tweak, modify) |
-| `REWORK` | PLANNED | Significant redo (wrong approach, rewrite) |
-| `EXTENSION` | DECOMPOSED | Add new scope (also add, extend, include) |
-| `FIX` | PROMPTS_READY | Bug fix (broken, error, failing) |
+| `ADJUSTMENT` | PLANNED | Targeted change (rename, tweak, modify) — controller re-runs |
+| `REWORK` | ORCHESTRATED | Significant redo (wrong approach, rewrite) — planner re-runs |
+| `EXTENSION` | ORCHESTRATED | Add new scope (also add, extend, include) — planner re-decomposes inline |
+| `FIX` | PLANNED | Bug fix (broken, error, failing) — controller re-runs |
 | `REVIEW` | COORDINATED | Re-validate (check, verify, test) |
+
+**v12.0.0 change**: Pre-v12 used `PROMPTS_READY` for ADJUSTMENT/FIX and `DECOMPOSED` for EXTENSION. With those states removed, re-entry now lands at `PLANNED` (controller layer) or `ORCHESTRATED` (planner layer). Pre-v12 archived sessions retain the old re-entry state names in their event logs.
 
 ---
 

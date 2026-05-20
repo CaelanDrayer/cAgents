@@ -59,7 +59,7 @@ agents:
     depth: 0
     spawned_at: "2026-03-17T10:00:00Z"
     stopped_at: null
-    cagents_type: "cagents:engineering-manager"
+    cagents_type: "cagents:tech-lead"
 `;
       writeFileSync(join(SESSION_DIR, 'workflow', 'agent_tree.yaml'), treeContent);
       const content = readFileSync(join(SESSION_DIR, 'workflow', 'agent_tree.yaml'), 'utf8');

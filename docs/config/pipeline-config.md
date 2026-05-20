@@ -4,7 +4,11 @@
 
 `cagents-memory/_system/config/pipeline_config.yaml`
 
-## Structure
+## Structure (v12.0.0 — 5-state collapse)
+
+In v12.0.0 the pipeline collapsed from 7 states to 5. `task-decomposer` and
+`prompt-engineer` were absorbed into `universal-planner` per Q1 of the v12
+revamp. Legacy names are preserved via `scripts/migration/v12-aliases.yaml`.
 
 ```yaml
 version: "2.0"
@@ -18,44 +22,35 @@ states:
     agent: cagents:universal-planner
     next: PLANNED
     inputs: [enriched_context.yaml]
-    outputs: [plan.yaml]
+    outputs: [plan.yaml, objectives.yaml]
   PLANNED:
-    agent: cagents:task-decomposer
-    next: DECOMPOSED
-    inputs: [plan.yaml]
-    outputs: [work_items.yaml]
-  DECOMPOSED:
-    agent: cagents:prompt-engineer
-    next: PROMPTS_READY
-    inputs: [work_items.yaml]
-    outputs: [delegation_prompts.yaml]
-  PROMPTS_READY:
-    agent: "{controller_from_plan}"
+    agent: dynamic  # resolved from plan.yaml controller_assignment
     next: COORDINATED
-    inputs: [delegation_prompts.yaml, work_items.yaml]
+    inputs: [plan.yaml, work_items.yaml]
     outputs: [coordination_log.yaml]
+    nested_execution: true
   COORDINATED:
     agent: cagents:universal-validator
     next: VALIDATED
-    inputs: [coordination_log.yaml]
+    inputs: [coordination_log.yaml, work_items.yaml]
     outputs: [validation_report.yaml]
   VALIDATED:
     terminal: true
 
-progressive_pipeline:
+paths:
   minimal:
     threshold: 0.25
-    stages: [INIT, PROMPTS_READY, COORDINATED, VALIDATED]
+    states: [PLANNED, COORDINATED, VALIDATED]
   medium:
     threshold: 0.65
-    stages: [INIT, ORCHESTRATED, PROMPTS_READY, COORDINATED, VALIDATED]
+    states: [PLANNED, COORDINATED, VALIDATED]
   full:
     threshold: 1.0
-    stages: [INIT, ORCHESTRATED, PLANNED, DECOMPOSED, PROMPTS_READY, COORDINATED, VALIDATED]
+    states: [INIT, ORCHESTRATED, PLANNED, COORDINATED, VALIDATED]
 
 revision:
-  max_cycles: 5
-  on_fail: PROMPTS_READY
+  max_cycles: 3  # lowered 5 -> 3 in v12.0.0 (audit basis: lower-cap-safe)
+  on_fail: PLANNED
   on_revise: PLANNED
   escalation: user_hitl
 ```
@@ -64,5 +59,8 @@ revision:
 
 - **States**: Each state has an agent, inputs, outputs, and next state
 - **Progressive paths**: Complexity scoring determines which states to skip
-- **Revision routing**: FAIL re-executes, REVISE re-plans
+- **Revision routing**: FAIL re-executes from PLANNED, REVISE re-plans
 - **Terminal state**: VALIDATED ends the pipeline
+- **v12 absorption**: `task-decomposer` and `prompt-engineer` were folded into
+  `universal-planner`'s resources/ in v12.0.0; controllers fall back to
+  standard prompts (formerly produced by prompt-engineer).

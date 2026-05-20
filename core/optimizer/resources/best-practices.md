@@ -30,11 +30,11 @@
 - **Code Optimization**: Performance, readability, or complexity improvements to source code — delegates to backend-developer, frontend-developer, or architect
 - **Content Optimization**: Clarity, length, or SEO improvements to written content — delegates to copywriter or seo-specialist
 - **Process Optimization**: Workflow efficiency improvements — delegates to operations-manager
-- **Infrastructure Optimization**: Deployment, scaling, or resource efficiency — delegates to devops-lead
+- **Infrastructure Optimization**: Deployment, scaling, or resource efficiency — delegates to infrastructure-lead
 - **Data Optimization**: Query performance, schema efficiency, or indexing — delegates to dba or backend-developer
-- **Campaign Optimization**: Marketing performance improvements — delegates to campaign-manager
+- **Campaign Optimization**: Marketing performance improvements — delegates to marketing-strategist
 - **Creative Optimization**: Narrative pacing, structural improvements — delegates to creative-director
-- **Sales Optimization**: Pipeline or conversion rate improvements — delegates to sales-ops-specialist
+- **Sales Optimization**: Pipeline or conversion rate improvements — delegates to revenue-operations-manager
 
 ### Measurement Concepts
 - **Baseline Metrics**: The pre-optimization measurements against which gains are compared — must be captured before any changes
@@ -68,7 +68,7 @@
 
 ## Collaboration Touchpoints
 
-- **With domain controllers (engineering-manager, devops-lead, etc.)**: Delegates execution of each optimization to the appropriate controller who spawns specialists — optimizer plans and coordinates, controller implements
+- **With domain controllers (tech-lead, infrastructure-lead, etc.)**: Delegates execution of each optimization to the appropriate controller who spawns specialists — optimizer plans and coordinates, controller implements
 - **With universal-validator**: After execution phase, validator re-runs quality gates and produces PASS/FAIL/REVISE; optimizer handles rollback on FAIL
 - **With universal-self-correct**: When an optimization execution fails (tool error, test regression), self-correct is invoked to attempt recovery before rollback is triggered
 - **With hitl**: High-risk (61-80) and critical (81-100) optimizations escalate to HITL for human approval before execution begins

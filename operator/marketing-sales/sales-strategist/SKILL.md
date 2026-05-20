@@ -29,7 +29,7 @@ metadata:
       type: coordinates
     - name: sales-strategist
       type: coordinates
-    - name: sales-ops-specialist
+    - name: revenue-operations-manager
       type: coordinates
     - name: territory-manager
       type: coordinates

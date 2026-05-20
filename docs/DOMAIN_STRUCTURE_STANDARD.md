@@ -50,13 +50,13 @@ Current official business domains:
 
 | Domain | Purpose | Agents | Key Controllers |
 |--------|---------|--------|-----------------|
-| **engineering** | Software engineering | 31 | engineering-manager, architect, tech-lead |
+| **engineering** | Software engineering | 31 | tech-lead, architect, tech-lead |
 | **creative** | Creative production | 30 | narrative-director, story-architect, editor |
 | **business** | Business operations | 28 | operations-manager, product-owner, strategic-planner |
-| **growth** | Revenue & acquisition | 34 | marketing-strategist, sales-strategist, campaign-manager |
+| **growth** | Revenue & acquisition | 34 | marketing-strategist, sales-strategist, creative-director |
 | **people** | Talent & culture | 17 | hr-manager, talent-acquisition-manager |
 | **service** | Support & governance | 28 | customer-success-manager, general-counsel, support-director |
-| **leadership** | C-suite & strategy | 11 | cto, cro, cfo, coo, chro, ceo, cpo, cmo, cco, cso, chief-legal-officer |
+| **leadership** | C-suite & strategy | 12 | cto, cro, cfo, coo, chro, ceo, cpo, cmo, cco, cso, clo, vp-engineering |
 | **shared** | Cross-domain intelligence | 12 | bi-specialist, data-scientist, market-research-analyst |
 | **science** | STEM research | 10 | science-coordinator, physicist, biologist |
 | **health** | Medical & wellness | 5 | health-coordinator, medical-advisor |
@@ -104,7 +104,7 @@ Revenue & acquisition: marketing, sales, partnerships
 
 **Includes**:
 - Marketing: marketing-strategist, content-marketing-manager, seo-specialist
-- Sales: sales-strategist, account-executive, sales-ops-specialist
+- Sales: sales-strategist, account-executive, revenue-operations-manager
 - Growth: growth-marketer, demand-generation-manager
 
 ### People (17 agents)

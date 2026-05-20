@@ -38,10 +38,10 @@ After each executor completes:
 
 | Domain | Tier 2 | Tier 3 | Tier 4 |
 |--------|--------|--------|--------|
-| Engineering | engineering-manager | + architect, security-lead | cto + engineering-manager |
+| Engineering | tech-lead | + architect, security-lead | cto + tech-lead |
 | Creative | narrative-director | + story-architect, editor | cco + narrative-director |
 | Business | operations-manager | + strategic-planner | cpo + cfo |
-| Growth | campaign-manager | + marketing-strategist | cro + campaign-manager |
+| Growth | marketing-strategist | + sales-strategist | cro + marketing-strategist |
 | People | hr-manager | + talent-acquisition-manager | chro + hr-manager |
 | Service | customer-success-manager, general-counsel | + support-director | general-counsel |
 
@@ -49,7 +49,7 @@ After each executor completes:
 
 Output written to `workflow/coordination_log.yaml`:
 ```yaml
-controller: cagents:engineering-manager
+controller: cagents:tech-lead
 objectives: [...]
 questions_asked:
   - question: "What is the current auth implementation?"
