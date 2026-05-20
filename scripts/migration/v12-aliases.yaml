@@ -1,0 +1,228 @@
+schema_version: "1"
+generated_at: "2026-05-20T07:53:44Z"
+purpose: "Maps v11.3.0 agent names to v12.0.0 names/locations. Consumed by router fallback to preserve back-compat after renames/merges."
+target_version: "12.0.0"
+source_version: "11.3.0"
+
+# Engineering moves/renames + Q1 absorbs (8 entries excluding the 2 absorbed agents)
+# Marketing-sales merges from team_v12-audits-only_260520_001 audit (16 entries)
+# Plus the 2 Q1 "absorbed" entries (task-decomposer, prompt-engineer) marked type: absorb
+# Total: 8 engineering + 2 absorb + 16 marketing-sales = 26 alias entries
+#
+# Alias types:
+#   rename            - Same location, new name only
+#   rename_and_merge  - Renamed AND merged into another existing agent
+#   move              - Same name, new directory location
+#   move_and_rename   - Moved to new dir AND renamed
+#   absorb            - Agent deleted; content folded into another agent's resources/
+#   fold              - Agent deleted; capabilities folded into existing agent (merge)
+
+aliases:
+  # ---------------------------------------------------------------------------
+  # Q1: Pipeline collapse — agents absorbed into core/planner/resources/
+  # ---------------------------------------------------------------------------
+  - old: cagents:task-decomposer
+    new: cagents:planner
+    type: absorb
+    decision: Q1
+    notes: "Content folded into core/planner/resources/decomposition.md (Three-Tier Progressive Disclosure). Router fallback resolves cagents:task-decomposer -> cagents:planner."
+
+  - old: cagents:prompt-engineer
+    new: cagents:planner
+    type: absorb
+    decision: Q1
+    notes: "Content folded into core/planner/resources/prompt-templates.md. Router fallback resolves cagents:prompt-engineer -> cagents:planner."
+
+  # ---------------------------------------------------------------------------
+  # Q2: Agent moves to developer/backend/
+  # ---------------------------------------------------------------------------
+  - old: cagents:engine-developer
+    new: cagents:engine-developer
+    type: move
+    decision: Q2
+    notes: "Moved to developer/backend/engine-developer/. Name unchanged; only directory location changes."
+    new_path: developer/backend/engine-developer/SKILL.md
+
+  - old: cagents:game-programmer
+    new: cagents:game-programmer
+    type: move
+    decision: Q2
+    notes: "Moved to developer/backend/game-programmer/. Name unchanged; only directory location changes."
+    new_path: developer/backend/game-programmer/SKILL.md
+
+  # ---------------------------------------------------------------------------
+  # Q3: Leadership acronym rename
+  # ---------------------------------------------------------------------------
+  - old: cagents:chief-legal-officer
+    new: cagents:clo
+    type: rename
+    decision: Q3
+    notes: "Renamed to acronym form to match ceo/cto/cpo/cco/cfo/chro/cso/cmo/cro/coo. Location stays in leadership/."
+    new_path: leadership/clo/SKILL.md
+
+  # ---------------------------------------------------------------------------
+  # Q4: engineering-manager -> tech-lead controller merge
+  #     architecture-reviewer -> architect --review mode flag
+  # ---------------------------------------------------------------------------
+  - old: cagents:engineering-manager
+    new: cagents:tech-lead
+    type: rename_and_merge
+    decision: Q4
+    notes: "Controller merge: engineering-manager + tech-lead consolidated into single tech-lead controller. 214 references across rules/skills/agents require sweep in WI-W2.4."
+
+  - old: cagents:architecture-reviewer
+    new: cagents:architect
+    type: fold
+    decision: Q4
+    notes: "Architecture-reviewer absorbed by architect agent. Review behavior surfaces via --review mode flag. 33 references require sweep in WI-W2.5."
+    mode_flag: "--review"
+
+  # ---------------------------------------------------------------------------
+  # Q7: devops-lead -> infrastructure-lead (move + rename)
+  #     vp-engineering -> leadership/
+  # ---------------------------------------------------------------------------
+  - old: cagents:devops-lead
+    new: cagents:infrastructure-lead
+    type: move_and_rename
+    decision: Q7
+    notes: "Moved from developer/fullstack/ to developer/infrastructure/ AND renamed to avoid collision with existing developer/infrastructure/devops-engineer execution agent."
+    new_path: developer/infrastructure/infrastructure-lead/SKILL.md
+
+  - old: cagents:vp-engineering
+    new: cagents:vp-engineering
+    type: move
+    decision: Q7
+    notes: "Moved from developer/fullstack/ to leadership/. Already has C-suite-level memory/model/coordination. Name unchanged."
+    new_path: leadership/vp-engineering/SKILL.md
+
+  # ---------------------------------------------------------------------------
+  # Q5 / G1: SEO collapse 6 -> 2 (4 removals; geo-strategist stays)
+  # ---------------------------------------------------------------------------
+  - old: cagents:keyword-researcher
+    new: cagents:seo-specialist
+    type: fold
+    decision: Q5
+    merge_group: G1
+    notes: "Folded into seo-specialist. Content becomes operator/marketing-sales/seo-specialist/resources/keyword.md per progressive disclosure."
+
+  - old: cagents:on-page-seo-auditor
+    new: cagents:seo-specialist
+    type: fold
+    decision: Q5
+    merge_group: G1
+    notes: "Folded into seo-specialist. Content becomes operator/marketing-sales/seo-specialist/resources/on-page.md."
+
+  - old: cagents:technical-seo-auditor
+    new: cagents:seo-specialist
+    type: fold
+    decision: Q5
+    merge_group: G1
+    notes: "Folded into seo-specialist. Content becomes operator/marketing-sales/seo-specialist/resources/technical.md."
+
+  - old: cagents:link-strategist
+    new: cagents:seo-specialist
+    type: fold
+    decision: Q5
+    merge_group: G1
+    notes: "Folded into seo-specialist. Content becomes operator/marketing-sales/seo-specialist/resources/link.md."
+
+  # ---------------------------------------------------------------------------
+  # Q5 / G2: Controller bloat 5 -> 2 (3 removals: campaign-mgr, product-marketing-mgr, seo-strategist)
+  # ---------------------------------------------------------------------------
+  - old: cagents:campaign-manager
+    new: cagents:marketing-strategist
+    type: fold
+    decision: Q5
+    merge_group: G2
+    notes: "Controller fold: campaign-manager collapsed into marketing-strategist. Same GTM/campaign-coordination scope."
+
+  - old: cagents:product-marketing-manager
+    new: cagents:marketing-strategist
+    type: fold
+    decision: Q5
+    merge_group: G2
+    notes: "Controller fold: product-marketing-manager collapsed into marketing-strategist. Same positioning/GTM scope."
+
+  - old: cagents:seo-strategist
+    new: cagents:marketing-strategist
+    type: fold
+    decision: Q5
+    merge_group: G2
+    notes: "Controller fold: seo-strategist eliminated. SEO coordination now under marketing-strategist; merged seo-specialist (G1) is direct execution agent under it."
+
+  # ---------------------------------------------------------------------------
+  # Q5 / G3: Partnerships 4 -> 1 (3 removals; partnership-marketing-manager is target)
+  # ---------------------------------------------------------------------------
+  - old: cagents:affiliate-marketing-manager
+    new: cagents:partnership-marketing-manager
+    type: fold
+    decision: Q5
+    merge_group: G3
+    notes: "Folded into partnership-marketing-manager as 'affiliate' sub-mode. Verbatim scope overlap on partner relationships + sponsored revenue."
+
+  - old: cagents:channel-partner-manager
+    new: cagents:partnership-marketing-manager
+    type: fold
+    decision: Q5
+    merge_group: G3
+    notes: "Folded into partnership-marketing-manager as 'channel' sub-mode."
+
+  - old: cagents:influencer-marketing-specialist
+    new: cagents:partnership-marketing-manager
+    type: fold
+    decision: Q5
+    merge_group: G3
+    notes: "Folded into partnership-marketing-manager as 'influencer' sub-mode. Identify external party + structure partnership + measure attribution is structurally identical."
+
+  # ---------------------------------------------------------------------------
+  # Q5 / G4: Ops merge 2 -> 1 (1 removal)
+  # ---------------------------------------------------------------------------
+  - old: cagents:sales-ops-specialist
+    new: cagents:revenue-operations-manager
+    type: fold
+    decision: Q5
+    merge_group: G4
+    notes: "Folded into revenue-operations-manager (strict superset — sales + marketing + CS ops)."
+
+  # ---------------------------------------------------------------------------
+  # Q5 / G5: Enablement merge 2 -> 1 (1 removal)
+  # ---------------------------------------------------------------------------
+  - old: cagents:sales-trainer
+    new: cagents:sales-enablement-specialist
+    type: fold
+    decision: Q5
+    merge_group: G5
+    notes: "Folded into sales-enablement-specialist. Enablement creates materials + delivers training; capabilities compose cleanly."
+
+  # ---------------------------------------------------------------------------
+  # Q5 / G6: Customer-marketing fold 1 -> 0 (1 removal)
+  # ---------------------------------------------------------------------------
+  - old: cagents:customer-marketing-manager
+    new: cagents:growth-marketer
+    type: fold
+    decision: Q5
+    merge_group: G6
+    notes: "Folded into growth-marketer. growth-marketer's activation/retention/viral-loop scope subsumes case-study + advocacy work."
+
+# Coverage summary (also asserted by tests/v12/alias-map-coverage.test.js)
+coverage:
+  engineering_moves_renames: 7      # Q2 (2) + Q3 (1) + Q4 (2) + Q7 (2)
+  q1_absorbs: 2                     # task-decomposer, prompt-engineer
+  marketing_sales_merges: 13        # G1 (4) + G2 (3) + G3 (3) + G4 (1) + G5 (1) + G6 (1)
+  marketing_sales_breakdown:
+    G1_seo_collapse: 4
+    G2_controller_bloat: 3
+    G3_partnerships: 3
+    G4_ops_merge: 1
+    G5_enablement: 1
+    G6_customer_marketing: 1
+  total_aliases: 22                 # 9 engineering (incl. Q1 absorbs) + 13 marketing-sales
+
+# Notes for router consumers
+# - Router fallback semantics: on receiving an old name, log a deprecation warning
+#   citing decision id (Q1..Q7), then resolve to the new name. Hard removal of
+#   fallback resolution is scheduled for v13.0.0.
+# - `move` and `move_and_rename` entries additionally publish `new_path` so the
+#   plugin manifest sync (scripts/sync-agents.sh) can locate the agent.
+# - `absorb` and `fold` entries imply the old SKILL.md is deleted; only the
+#   alias mapping survives in v12-aliases.yaml.
