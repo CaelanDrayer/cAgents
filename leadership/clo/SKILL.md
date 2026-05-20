@@ -1,5 +1,5 @@
 ---
-name: chief-legal-officer
+name: clo
 archetype: leadership
 description: "Use for legal strategy, regulatory compliance, contract review, IP protection, and corporate governance. General Counsel-level legal oversight."
 metadata:

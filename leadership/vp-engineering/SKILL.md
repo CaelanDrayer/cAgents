@@ -1,7 +1,6 @@
 ---
 name: vp-engineering
-archetype: developer
-branch: fullstack
+archetype: leadership
 description: "Use for engineering organization strategy, cross-team coordination, technical roadmap alignment, or managing engineering leadership across multiple teams."
 metadata:
   version: "1.0.0"

@@ -1,7 +1,7 @@
 ---
 name: game-programmer
 archetype: developer
-branch: fullstack
+branch: backend
 description: "Use when implementing gameplay mechanics, writing game logic, building AI systems for games, or integrating game systems with engine frameworks."
 metadata:
   version: "1.0.0"
