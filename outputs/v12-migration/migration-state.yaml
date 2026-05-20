@@ -15,10 +15,10 @@ target_commits: "18-22"
 decisions:
   - id: Q1
     title: "Pipeline collapse 7 -> 5 states (fold task-decomposer + prompt-engineer into planner)"
-    status: pending
+    status: in_progress
     target_waves: [W2, W3]
     work_items: [WI-W2.1, WI-W3.1, WI-W3.2]
-    notes: ""
+    notes: "WI-W2.1 (planner-fold) and WI-W3.1 (config + docs) complete. WI-W3.2 implementation half (state machine loop in /run) still pending; will complete Q1 at GATE-3."
 
   - id: Q2
     title: "Agent moves: engine-developer + game-programmer -> developer/backend/"
@@ -162,6 +162,11 @@ wave_progress:
   W1.4:
     status: complete
     output: pipeline_config.yaml modified
+    commit_pending: true
+  W3.1:
+    status: complete
+    output: "5-state pipeline config (pipeline_config.yaml: DECOMPOSED + PROMPTS_READY removed, on_fail re-routed to PLANNED; orchestration.md, run/SKILL.md, team/SKILL.md updated)"
+    test: "tests/v12/pipeline-state-machine.test.js (23/23 passed); tests/config/pipeline-config.test.js (16/16 passed after 2 assertions updated); tests/skills/run-debug-wiring.test.mjs (6/6 passed after PROMPTS_READY -> PLANNED rewire)"
     commit_pending: true
 
 # Final acceptance summary (filled at GATE-4)

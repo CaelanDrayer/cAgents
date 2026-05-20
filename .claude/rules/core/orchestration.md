@@ -11,13 +11,23 @@ paths:
 
 Workflow orchestration guidelines for cAgents.
 
+## v12.0.0 State-Machine Collapse
+
+**v12.0.0 collapsed the pipeline from 7 states to 5 states.** The `DECOMPOSED` and `PROMPTS_READY` states were removed and their work absorbed into `cagents:universal-planner`, which now handles decomposition inline. Controllers fall back to standard delegation prompts. The post-v12 state machine is:
+
+```
+INIT -> ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED
+```
+
+See `cagents-memory/sessions/team_v12-revamp-phase-abc_260520_002/outputs/v12-migration/revamp-design-v2.md` Q1 for the rationale. Historical references to `DECOMPOSED` / `PROMPTS_READY` in archived sessions remain valid for pre-v12 artifacts; new sessions use the 5-state machine.
+
 ## CRITICAL: Automatic State Transitions
 
 **NEVER ASK USER FOR PERMISSION TO PROCEED BETWEEN STATES**
 
-All state transitions are AUTOMATIC: INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY (optional) -> COORDINATED -> VALIDATED. FAIL routes to PROMPTS_READY, REVISE routes to PLANNED. The adaptive pipeline (V9.27) skips the DECOMPOSED->PROMPTS_READY transition for tier 2 fast path, jumping directly to controller.
+All state transitions are AUTOMATIC: INIT -> ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED. FAIL and REVISE both route back to PLANNED (the controller and/or planner re-runs with validator feedback).
 
-**Only ask user when**: Tier 4 HITL gates, unrecoverable errors, ambiguous requirements, max revision cycles (5) exhausted.
+**Only ask user when**: Tier 4 HITL gates, unrecoverable errors, ambiguous requirements, max revision cycles (3) exhausted.
 
 **Exception**: /designer is EXEMPT from auto-proceed. It MUST use AskUserQuestion at every step.
 
@@ -44,29 +54,26 @@ At VALIDATED/COMPLETE: call TaskList, mark completed work via TaskUpdate, delete
 
 `/run` is a state machine engine reading `pipeline_config.yaml`. Each agent writes a completion event to `workflow/events/EVT-{N}.yaml` that /run reads to advance state.
 
-### State Machine
+### State Machine (v12.0.0)
 
 ```
-INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY (optional) -> COORDINATED -> VALIDATED
-                                                                        FAIL -> PROMPTS_READY
-Note: Adaptive pipeline skips DECOMPOSED->PROMPTS_READY for tier 2 fast path.
-                                                                        REVISE -> PLANNED
+INIT -> ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED
+                                            FAIL -> PLANNED
+                                          REVISE -> PLANNED
 ```
 
 ### Nesting Model
 
 ```
-/run (level 0) -> orchestrator, planner, decomposer, prompt-engineer [optional] (level 1)
+/run (level 0) -> orchestrator, planner (level 1)
               -> controller (level 1) -> executor + reviewer (level 2, max 3 rounds)
               -> validator (level 1) -> PASS/FAIL/REVISE
 ```
 
 ### Pipeline Agents (Level 1)
 - **Orchestrator** (INIT): enriched_context.yaml
-- **Universal-planner** (ORCHESTRATED): plan.yaml
-- **Task-decomposer** (PLANNED): work_items.yaml
-- **Prompt-engineer** (DECOMPOSED): delegation_prompts.yaml (optional — skipped by adaptive pipeline for tier 2 fast path)
-- **Controller** (PROMPTS_READY): coordination_log.yaml with `schema_version: "1"` (with executor+reviewer loops)
+- **Universal-planner** (ORCHESTRATED): plan.yaml AND work_items.yaml. (v12.0.0: task-decomposer and prompt-engineer were absorbed into universal-planner. The planner now produces decomposition inline; controllers fall back to standard delegation prompts.)
+- **Controller** (PLANNED): coordination_log.yaml with `schema_version: "1"` (with executor+reviewer loops)
 - **Universal-validator** (COORDINATED): validation_report.yaml
 
 ### Canonical File Roles
@@ -81,9 +88,9 @@ See `orchestration-reference.md` for format and schemas.
 
 ## Revision Routing
 
-- **FAIL**: Route to PROMPTS_READY, controller re-runs with validation feedback
-- **REVISE**: Route to PLANNED, planner and subsequent agents re-run
-- **Escalation**: After 5 cycles, escalate to user with `/run --resume` suggestion
+- **FAIL**: Route to PLANNED. The controller re-runs with validation feedback. (v12.0.0: PROMPTS_READY removed — FAIL no longer has a dedicated re-prompt stage; the controller picks up validation feedback directly from the existing plan.)
+- **REVISE**: Route to PLANNED, planner re-decomposes and the controller re-runs.
+- **Escalation**: After 3 cycles (lowered from 5 in v12.0.0), escalate to user with `/run --resume` suggestion.
 
 ## /team Integration
 
