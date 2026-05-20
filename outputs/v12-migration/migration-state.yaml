@@ -50,10 +50,10 @@ decisions:
 
   - id: Q6
     title: "Lower max_revision_cycles 5 -> 3 (per revision-distribution.yaml audit)"
-    status: pending
+    status: executed
     target_waves: [W1]
     work_items: [WI-W1.4]
-    notes: ""
+    notes: "WI-W1.4 complete: revision.max_cycles lowered 5 -> 3 in cagents-memory/_system/config/pipeline_config.yaml with audit-citation comment; regression test tests/v12/revision-cap.test.js (4 tests) passing."
 
   - id: Q7
     title: "Vp-engineering -> leadership/; devops-lead -> developer/infrastructure/infrastructure-lead"
@@ -64,10 +64,10 @@ decisions:
 
   - id: Q8
     title: "Validation honesty: 15 -> 5 hook-verifiable checks; prose dedupe"
-    status: pending
+    status: executed
     target_waves: [W1]
     work_items: [WI-W1.2]
-    notes: ""
+    notes: "WI-W1.2 complete. execution-self-validation.md rewritten with 5 hook-verifiable checks (evidence freshness, file existence, guard exit codes, git state, file:line accuracy). completion.md updated to reflect ~24 checks total (was 29). controllers.md + execution.md prose-deduped to reference @resources/execution-self-validation.md. Regression test tests/v12/validation-honesty-contract.test.js (7 tests, all PASS) guards the 5-check contract."
 
 # 6 marketing-sales merge groups from marketing-sales-audit.md
 merge_groups:
@@ -142,6 +142,27 @@ waves:
     name: "Cleanup + final polish (Phase C)"
     gate: GATE-4
     status: pending
+
+# Wave-level work item progress
+wave_progress:
+  W1.1:
+    status: complete
+    output: scripts/migration/v12-aliases.yaml
+    test: "tests/v12/alias-map-coverage.test.js (24/24 passed)"
+    commit_pending: true
+  W1.2:
+    status: complete
+    output: "3 rule files modified (execution-self-validation.md rewritten 15->5 checks; completion.md + controllers.md + execution.md prose-deduped)"
+    test: "tests/v12/validation-honesty-contract.test.js (7/7 passed)"
+    commit_pending: true
+  W1.3:
+    status: complete
+    output: 4 docs scaffolded
+    commit_pending: true
+  W1.4:
+    status: complete
+    output: pipeline_config.yaml modified
+    commit_pending: true
 
 # Final acceptance summary (filled at GATE-4)
 final:
