@@ -119,7 +119,6 @@ optional_suggestions: [...]
 
 ### Reads
 - Code files for security review
-- `cagents-memory/_communication/inbox/security-engineer/`
 
 ### Writes
 - `cagents-memory/{instruction_id}/reviews/security_review_*.yaml`

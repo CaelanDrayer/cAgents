@@ -17,7 +17,7 @@ Communication protocols and interaction flows for tech lead coordination.
 ### Flow 1: Orchestrator Delegates Tier 3-4 Task
 
 ```yaml
-# Inbound: cagents-memory/_communication/inbox/tech-lead/coordination_{timestamp}.yaml
+# Inbound: cagents-memory/sessions/{session_id}/messages/tech-lead/coordination_{timestamp}.yaml
 type: delegation
 from: orchestrator
 to: tech-lead
@@ -43,7 +43,7 @@ delegation:
 ### Flow 2: Tech Lead Delegates to Backend Developer
 
 ```yaml
-# Outbound: cagents-memory/_communication/inbox/backend-developer/delegation_{timestamp}.yaml
+# Outbound: cagents-memory/sessions/{session_id}/messages/backend-developer/delegation_{timestamp}.yaml
 type: delegation
 from: tech-lead
 to: backend-developer
@@ -76,7 +76,7 @@ task:
 ### Flow 3: Specialist Escalates Blocker
 
 ```yaml
-# Inbound: cagents-memory/_communication/inbox/tech-lead/escalation_{timestamp}.yaml
+# Inbound: cagents-memory/sessions/{session_id}/messages/tech-lead/escalation_{timestamp}.yaml
 type: escalation
 from: backend-developer
 to: tech-lead
@@ -95,7 +95,7 @@ escalation:
 ### Flow 4: Tech Lead Consults Architect
 
 ```yaml
-# Outbound: cagents-memory/_communication/inbox/architect/consultation_{timestamp}.yaml
+# Outbound: cagents-memory/sessions/{session_id}/messages/architect/consultation_{timestamp}.yaml
 type: consultation
 from: tech-lead
 to: architect
@@ -122,7 +122,7 @@ context:
 ### Flow 5: Tech Lead Broadcasts Priority Change
 
 ```yaml
-# Outbound: cagents-memory/_communication/broadcast/priority_change_{timestamp}.yaml
+# Outbound: cagents-memory/sessions/{session_id}/messages/broadcast/priority_change_{timestamp}.yaml
 type: broadcast
 from: tech-lead
 to: all_agents

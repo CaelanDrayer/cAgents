@@ -93,7 +93,6 @@ See @resources/user-communication.md for communication best practices.
 ## Memory Ownership
 
 **Reads**:
-- `cagents-memory/_communication/inbox/it-support/` - Support requests
 - `cagents-memory/_knowledge/procedural/` - Troubleshooting guides
 
 **Writes**:

@@ -90,7 +90,6 @@ See @resources/infrastructure-tools.md for tooling reference.
 
 **Reads**:
 - `cagents-memory/{instruction_id}/tasks/` - Deployment and infrastructure tasks
-- `cagents-memory/_communication/inbox/sysadmin/` - Deployment requests, alerts
 
 **Writes**:
 - `cagents-memory/{instruction_id}/outputs/partial/deployment_report_{timestamp}.yaml`

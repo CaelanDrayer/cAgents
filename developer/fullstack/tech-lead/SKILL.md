@@ -135,12 +135,9 @@ When receiving coordination requests:
 ### Reads
 - `cagents-memory/{instruction_id}/workflow/plan.yaml`
 - `cagents-memory/{instruction_id}/tasks/`
-- `cagents-memory/_communication/inbox/tech-lead/`
 
 ### Writes
 - `cagents-memory/{instruction_id}/decisions/tech_lead_*.yaml`
-- `cagents-memory/_communication/inbox/{specialist}/`
-- `cagents-memory/_communication/broadcast/`
 
 
 ## Controller Delegation Protocol

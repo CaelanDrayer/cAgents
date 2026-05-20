@@ -98,7 +98,6 @@ See @resources/culture-building.md for engineering culture initiatives.
 
 **Reads**:
 - `cagents-memory/{instruction_id}/` - All instruction folders for oversight
-- `cagents-memory/_communication/inbox/vp-engineering/` - Delivery requests
 - Engineering dashboards, sprint data, team health metrics
 
 **Writes**:

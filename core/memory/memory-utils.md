@@ -33,13 +33,6 @@ knowledge:
   calibration: "cagents-memory/_knowledge/calibration/{domain}_{type}.yaml"
 ```
 
-### Communication Paths
-```yaml
-communication:
-  inbox: "cagents-memory/_communication/inbox/{agent}/"
-  broadcast: "cagents-memory/_communication/broadcast/"
-```
-
 ### Instruction Paths
 ```yaml
 instruction:
@@ -80,20 +73,6 @@ fields:
 source: "cagents-memory/{instruction_id}/tasks/pending/{task_id}.yaml"
 target: "cagents-memory/{instruction_id}/tasks/in_progress/{task_id}.yaml"
 operation: mv
-```
-
-### Send Message to Agent
-```yaml
-# Write message to agent inbox
-file: "cagents-memory/_communication/inbox/{agent}/msg_{timestamp}_{type}.yaml"
-content:
-  id: "msg_{timestamp}_{type}"
-  from: {sender_agent}
-  to: {recipient_agent}
-  type: consultation | delegation | review | escalation
-  timestamp: {ISO8601}
-  instruction_id: {instruction_id}
-  content: {...}
 ```
 
 ### Log Decision
@@ -141,7 +120,6 @@ Domains can add their own folders within instruction folders:
 
 ### Read Access
 - All agents can read _system/, _archive/, _knowledge/
-- Agents can only check their own inbox
 - All assigned agents can read instruction folders
 
 ### Write Access
@@ -149,7 +127,6 @@ Domains can add their own folders within instruction folders:
 - Each agent updates their own status
 - Domains write knowledge prefixed by their name
 - Task transitions follow workflow rules
-- Messages go to recipient's inbox only
 
 ## Multi-Domain Coordination
 
@@ -171,7 +148,4 @@ status.yaml:
       progress: 0.4
 ```
 
-Cross-domain communication uses _communication/ only:
-- No direct file access between domains
-- Messages via inbox system
-- Broadcast for announcements
+Cross-domain coordination is session-scoped via `cagents-memory/sessions/{session_id}/workflow/` artifacts (plan.yaml, coordination_log.yaml). Agents read/write within the active session; no shared inbox folder.

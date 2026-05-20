@@ -16,7 +16,7 @@ Communication protocols and interaction patterns for the Architect agent.
 ### Planner Consults Architect on Technical Approach
 
 ```yaml
-# Inbound: cagents-memory/_communication/inbox/architect/consultation_{timestamp}.yaml
+# Inbound: cagents-memory/sessions/{session_id}/messages/architect/consultation_{timestamp}.yaml
 type: consultation
 from: planner
 to: architect
@@ -48,7 +48,7 @@ context:
 ### Architect Provides Consultation Response
 
 ```yaml
-# Outbound: cagents-memory/_communication/inbox/planner/consultation_response_{timestamp}.yaml
+# Outbound: cagents-memory/sessions/{session_id}/messages/planner/consultation_response_{timestamp}.yaml
 type: consultation_response
 from: architect
 to: planner
@@ -89,7 +89,7 @@ confidence: 0.95
 ### Architect Reviews Planner's Architecture for Tier 3 Task
 
 ```yaml
-# Inbound: cagents-memory/_communication/inbox/architect/review_{timestamp}.yaml
+# Inbound: cagents-memory/sessions/{session_id}/messages/architect/review_{timestamp}.yaml
 type: review
 from: planner
 to: architect
@@ -159,7 +159,7 @@ review:
 ### Architect Escalates Conflicting Requirements
 
 ```yaml
-# Outbound: cagents-memory/_communication/inbox/tech-lead/escalation_{timestamp}.yaml
+# Outbound: cagents-memory/sessions/{session_id}/messages/tech-lead/escalation_{timestamp}.yaml
 type: escalation
 from: architect
 to: tech-lead
