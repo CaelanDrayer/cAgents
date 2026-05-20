@@ -2,28 +2,52 @@
 
 > This document provides detailed architecture design for cAgents. For a quick overview, see CLAUDE.md.
 
-## v12.0.0 (in progress) — Architecture Changes
+## v12.0.0 — Architecture Changes
 
-The cAgents codebase is mid-flight on the v11.3.0 -> v12.0.0 revamp on branch
-`revamp/v12-rc`. Major architectural changes coming in v12:
+cAgents v12.0.0 is the major consolidation release. Architectural changes:
 
 - **Pipeline state-machine reduction (7 -> 5 states)**: The `/run` event-driven pipeline
   collapses from 7 states to 5 by folding `task-decomposer` and `prompt-engineer` into
-  the planner. The new sequence is `INIT -> ORCHESTRATED -> PLANNED -> COORDINATED ->
-  VALIDATED`. Decomposition becomes a planner sub-responsibility; prompt-engineering
-  becomes controller-side prompt assembly.
-- **Controller merge (engineering-manager -> tech-lead) [v12.0.0]**: The two engineering
-  controllers consolidated into a single fullstack `tech-lead` in W2.4. All active
-  references were swept; the `engineering-manager -> tech-lead` alias is preserved via
-  `scripts/migration/v12-aliases.yaml` for backward compatibility.
+  the `universal-planner`. The new sequence is `INIT -> ORCHESTRATED -> PLANNED ->
+  COORDINATED -> VALIDATED`. Decomposition becomes a planner sub-responsibility;
+  prompt-engineering becomes controller-side prompt assembly. The previously separate
+  DECOMPOSED and PROMPTS_READY states are eliminated.
+- **Controller merge (engineering-manager -> tech-lead)**: The two engineering
+  controllers consolidated into a single fullstack `tech-lead`. All 222 active
+  references were swept across SKILL.md files, rules, tests, and config; the
+  `engineering-manager -> tech-lead` alias is preserved via
+  `scripts/migration/v12-aliases.yaml` for backward compatibility with archived
+  session artifacts.
 - **Planner-fold**: `task-decomposer` and `prompt-engineer` are absorbed into the
   planner. Their output schemas (`work_items.yaml`, `delegation_prompts.yaml`) remain
-  but are written by the planner directly, eliminating two pipeline transitions.
+  but are written by the planner directly, eliminating two pipeline transitions and
+  two agent spawns per /run invocation.
 - **Architecture-reviewer mode flag**: `architecture-reviewer` is removed as a standalone
   agent and becomes `architect --review` mode flag, reducing agent-catalog duplication.
+- **Marketing-sales consolidation (38 -> 25)**: 13 marketing-sales agents absorbed across
+  6 groups (G1-G6). Aliases preserved for all 13 fold sources.
+- **chief-legal-officer -> clo**: Standardized leadership naming. Alias preserved.
+- **vp-engineering moved**: Relocated to `leadership/` archetype.
+- **devops-lead renamed**: Now `infrastructure-lead`, moved to
+  `developer/infrastructure/`.
+- **max_revision_cycles 5 -> 3**: Tightened revision budget in
+  `pipeline_config.yaml` per audit recommendation. Validator REVISE/FAIL routing
+  capped at 3 cycles instead of 5.
+- **Execution self-validation (15 -> 5 hook-verifiable checks)**: The aspirational
+  15-check protocol in @.claude/rules/core/resources/execution-self-validation.md
+  replaced with 5 mechanically-verifiable checks: evidence freshness, file
+  existence, guard exit codes, git state, file:line accuracy.
+- **Legacy directory cleanup**: 11 of 13 legacy domain dirs removed
+  (`engineering/`, `creative/`, `business/`, `growth/`, `service/`, `science/`,
+  `health/`, `education/`, `personal/`, `arts/`, `trades/`). `people/` and
+  `shared/` retained as routing-config-only overlays.
+- **`cagents-memory/_communication/` removed**: Unused agent-messaging
+  inbox/broadcast directory deleted.
 
-Cross-reference: `revamp-design-v2.md` and `outputs/v12-migration/migration-state.yaml`
-track per-wave progress against locked decisions Q1..Q8.
+Net effect: total agents 251 -> 238, pipeline transitions 7 -> 5, agent
+self-validation noise floor reduced from 15 to 5 checks. Cross-reference:
+`outputs/v12-migration/migration-state.yaml` tracks per-wave progress against
+locked decisions Q1..Q8.
 
 ## Overview
 
@@ -40,27 +64,31 @@ cAgents is a universal multi-domain agent system with controller-centric coordin
 | **3: Execution** | Specialists | ~175 | Answer questions, execute tasks |
 | **4: Support** | Operations | ~16 | Foundational services |
 
-### Domains (15)
+### Archetypes (9, canonical since v11.1.0)
 
-| Domain | Dir | Agents | Capability |
-|--------|-----|--------|------------|
-| Engineering | `engineering/` | 31 | Software engineering, infrastructure, security, QA, game programming |
-| Creative | `creative/` | 30 | Creative writing, narrative design, literary criticism, game art, audio |
-| Business | `business/` | 28 | Strategy, product, operations, finance |
-| Growth | `growth/` | 34 | Marketing, sales, revenue operations |
-| People | `people/` | 17 | HR, talent acquisition, culture |
-| Service | `service/` | 28 | Customer support, CX, legal, compliance, governance |
-| Leadership | `leadership/` | 11 | C-suite executives + general-counsel |
-| Core | `core/` | 17 | Infrastructure (trigger, orchestrator, planner, validator, etc.) |
-| Shared | `shared/` | 12 | Cross-domain intelligence (BI, data science, market research) |
-| Science | `science/` | 10 | STEM research, scientific analysis |
-| Health | `health/` | 5 | Medical, wellness, fitness, nutrition |
-| Education | `education/` | 5 | Teaching, tutoring, academic support |
-| Personal | `personal/` | 5 | Career, life coaching, personal finance |
-| Arts | `arts/` | 5 | Visual arts, music, film, performing arts |
-| Trades | `trades/` | 5 | Culinary, construction, automotive, agriculture |
+| Archetype | Dir | Agents | Capability |
+|-----------|-----|-------:|------------|
+| **Developer** | `developer/` | 30 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
+| **Operator** | `operator/` | 73 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
+| **Advisor** | `advisor/` | 30 | Legal, health, education, personal (4 branches) |
+| **Analyst** | `analyst/` | 31 | Data, BI, research, social-science |
+| **Creator** | `creator/` | 11 | Visual artists, designers, audiovisual creators |
+| **Writer** | `writer/` | 26 | Copy, narrative, technical writing, editorial |
+| **Strategist** | `strategist/` | 9 | Product owners, portfolio managers, planners |
+| **Core** | `core/` | 15 | Pipeline infrastructure (trigger, orchestrator, universal-planner, reviewer, etc.) |
+| **Leadership** | `leadership/` | 12 | C-suite executives (used by /org, not directly routable) |
 
-**Total: 243 agents across 15 domains**
+**Total: 238 agents across 9 archetypes (v12.0.0)**
+
+### Legacy domain overlay (config-only)
+
+Since v12.0.0, only `people/` and `shared/` legacy domain dirs remain on
+disk — both retained as routing-config-only overlays holding
+`config/domain_overrides.yaml` (controller_catalog + router_keywords). The
+11 other legacy dirs (`engineering/`, `creative/`, `business/`, `growth/`,
+`service/`, `science/`, `health/`, `education/`, `personal/`, `arts/`,
+`trades/`) were deleted in W4.2; their routing keywords are absorbed by the
+archetype-level routing tables in `core/` and `leadership/`.
 
 > **Integration**: cAgents shares `cagents-memory/sessions/` with its sister project AgentPath, a web-based session visualization and management platform. AgentPath watches the sessions directory via FileWatcher and streams workflow state changes to the UI over WebSocket. See the workspace-level [CLAUDE.md](../../CLAUDE.md) for the integration overview.
 

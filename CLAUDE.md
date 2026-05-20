@@ -2,25 +2,45 @@
 
 Core architecture and development guidance for cAgents.
 
-## v12.0.0 (in progress)
+## v12.0.0 (consolidation release)
 
-This codebase is mid-flight on the v11.3.0 -> v12.0.0 revamp on branch
-`revamp/v12-rc`. Major changes coming in v12:
-- Pipeline collapse: 7 -> 5 states (task-decomposer + prompt-engineer fold into planner)
-- Engineering-manager merged into tech-lead (single fullstack controller)
-- architecture-reviewer becomes architect --review mode flag
-- 16 marketing-sales agents merged (38 -> 22)
-- chief-legal-officer renamed to clo
-- 11 of 13 legacy domain dirs deleted (people/ + shared/ retained)
-- cagents-memory/_communication/ deleted
-- max_revision_cycles 5 -> 3 (per audit)
-- execution self-validation reduced 15 -> 5 hook-verifiable checks
+cAgents v12.0.0 is the major consolidation release shipped from branch
+`revamp/v12-rc`. Highlights:
 
-All renames preserved via scripts/migration/v12-aliases.yaml. Track progress
-in outputs/v12-migration/migration-state.yaml.
+- **Pipeline collapse: 7 -> 5 states.** `task-decomposer` and `prompt-engineer`
+  folded into `universal-planner`. The /run state machine is now `INIT ->
+  ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED`. Decomposition becomes
+  a planner sub-responsibility; prompt-engineering becomes controller-side
+  prompt assembly.
+- **Controller merge: engineering-manager -> tech-lead.** Two engineering
+  controllers consolidated into a single fullstack `tech-lead`. All 222
+  active references were swept; alias preserved via
+  `scripts/migration/v12-aliases.yaml`.
+- **Architecture-reviewer collapsed.** `architecture-reviewer` removed as a
+  standalone agent and reborn as `architect --review` mode flag.
+- **Marketing-sales consolidation: 38 -> 25.** Thirteen marketing-sales
+  agents absorbed across 6 groups (G1-G6).
+- **chief-legal-officer -> clo.** Standardized leadership naming.
+- **max_revision_cycles 5 -> 3.** Tighter revision budget per audit
+  recommendation.
+- **Execution self-validation: 15 -> 5 hook-verifiable checks.** The
+  aspirational 15-check protocol replaced with 5 mechanically-verifiable
+  checks (evidence freshness, file existence, guard exit codes, git state,
+  file:line accuracy). See @.claude/rules/core/resources/execution-self-validation.md.
+- **Legacy directory cleanup.** 11 of 13 legacy domain dirs removed
+  (`engineering/`, `creative/`, `business/`, `growth/`, `service/`,
+  `science/`, `health/`, `education/`, `personal/`, `arts/`, `trades/`);
+  `people/` and `shared/` retained as routing-config-only overlays.
+- **`cagents-memory/_communication/` removed.** Unused agent-messaging
+  inbox/broadcast directory deleted.
+- **Total agents: 251 -> 238.** Net 13 agents removed via 4 controller
+  consolidations (task-decomposer, prompt-engineer, engineering-manager,
+  architecture-reviewer) and 13 marketing-sales merges, partially offset by
+  the chief-legal-officer -> clo rename and vp-engineering moving into
+  leadership.
 
-**Do not reference v12 names in stable docs until W4.3** — main and tagged
-releases stay on v11.3.0 conventions.
+All renames preserved via `scripts/migration/v12-aliases.yaml` so existing
+session artifacts referencing pre-v12 agent names continue to resolve.
 
 ## Table of Contents
 
@@ -97,25 +117,25 @@ quality/        # completion, validation-framework, implicit-discovery (5 files)
 **Key Features**: CSV Task Inventory, Batch Delegation (60-80% context reduction), Checkpoint/Resume, Aggressive Decomposition (30+ work items from simple requests), Controller-Centric coordination
 
 **Architecture**: Controller-Centric Coordination with Task Inventory
-- **Tier 1**: 17 core infrastructure agents (includes prompt-engineer, generic-coordinator)
+- **Tier 1**: 15 core infrastructure agents (v12.0.0: task-decomposer + prompt-engineer folded into universal-planner)
 - **Tier 2**: Controllers (coordinate via batch delegation)
 - **Tier 3**: Execution agents (implement work items)
 - **Tier 4**: Support agents (foundational services)
-- **Total**: 251 agents across 9 builder-role archetypes
-- **Execution**: Event-driven pipeline with progressive paths (minimal/medium/full), revision routing, reviewer loops
+- **Total**: 238 agents across 9 builder-role archetypes
+- **Execution**: Event-driven pipeline (5-state machine) with progressive paths (minimal/medium/full), revision routing, reviewer loops
 
-**Canonical structure (V11.1.0+) — 9 archetypes**:
+**Canonical structure (v12.0.0) — 9 archetypes**:
 | Archetype | Dir | Agents | Capability |
 |-----------|-----|-------:|------------|
-| **Developer** | `developer/` | 33 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
-| **Operator** | `operator/` | 87 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
+| **Developer** | `developer/` | 30 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
+| **Operator** | `operator/` | 73 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
 | **Advisor** | `advisor/` | 30 | Legal, health, education, personal (4 branches) |
 | **Analyst** | `analyst/` | 31 | Data, BI, research, social-science |
 | **Creator** | `creator/` | 11 | Visual artists, designers, audiovisual creators |
 | **Writer** | `writer/` | 26 | Copy, narrative, technical writing, editorial |
 | **Strategist** | `strategist/` | 9 | Product owners, portfolio managers, planners |
-| **Core** | `core/` | 17 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, etc.) |
-| **Leadership** | `leadership/` | 11 | C-suite executives (used by /org, not directly routable) |
+| **Core** | `core/` | 15 | Pipeline infrastructure (trigger, orchestrator, universal-planner, reviewer, etc.) |
+| **Leadership** | `leadership/` | 12 | C-suite executives (used by /org, not directly routable) |
 
 **Domain overlay (legacy — routing/config only)**: 13 legacy domain dirs (`engineering/`, `creative/`, `business/`, `growth/`, `people/`, `service/`, `shared/`, `science/`, `health/`, `education/`, `personal/`, `arts/`, `trades/`) survive on disk **without** SKILL.md files; they hold `config/domain_overrides.yaml` with router keywords + controller catalogs that the planner still consumes. Do NOT delete these — they are not orphans.
 
@@ -372,7 +392,6 @@ cagents-memory/
 +-- _system/       # configs, commands/, templates/
 +-- _knowledge/    # patterns, calibration, learnings
 +-- _archive/      # completed sessions
-+-- _communication/# agent messaging
 +-- sessions/      # org_*, run_*, team_*, designer_*, review_*, optimize_*
 ```
 
@@ -511,7 +530,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 
 **Skills**: `/org`, `/run`, `/team`, `/designer`, `/improve`, `/helper` (in `.claude/skills/`; V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see `docs/MIGRATION-V11.md`)
 **Built-in**: `/memory`, `/init` (Claude Code native)
-**Agents**: 251 total across 9 archetypes (developer 30, operator 87, advisor 30, analyst 31, creator 11, writer 26, strategist 9, core 15, leadership 12)
+**Agents**: 238 total across 9 archetypes (developer 30, operator 73, advisor 30, analyst 31, creator 11, writer 26, strategist 9, core 15, leadership 12)
 **Domain Overlay (legacy routing/config only)**: 13 dirs (engineering, creative, business, growth, people, service, shared, science, health, education, personal, arts, trades) hold `config/domain_overrides.yaml` — no SKILL.md files
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `{domain}/config/domain_overrides.yaml`, `cagents-memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (session YAML contract for AgentPath)
 **Hooks**: 30 .cjs files = 27 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI

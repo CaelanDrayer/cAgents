@@ -4,19 +4,79 @@
 **Release Date**: April 29, 2026
 **Status**: Production-Ready
 
-## V12.0.0 (in progress)
+## V12.0.0 — May 20, 2026 (Consolidation Release)
 
-- Pipeline collapse: 7 -> 5 states (task-decomposer + prompt-engineer fold into planner)
-- Engineering-manager merged into tech-lead (single fullstack controller)
-- architecture-reviewer becomes architect --review mode flag
-- 16 marketing-sales agents merged (38 -> 22)
-- chief-legal-officer renamed to clo
-- 11 of 13 legacy domain dirs deleted (people/ + shared/ retained)
-- cagents-memory/_communication/ deleted
-- max_revision_cycles 5 -> 3 (per audit)
-- execution self-validation reduced 15 -> 5 hook-verifiable checks
+v12.0.0 is the major consolidation release. Total agents 251 -> 238;
+pipeline transitions 7 -> 5; legacy domain dirs 13 -> 2; execution
+self-validation checks 15 -> 5.
 
-Status: under active development on branch `revamp/v12-rc`. Not yet released.
+### Pipeline & Controller Consolidation
+
+- **Pipeline collapse (7 -> 5 states)**: `/run` state machine reduced
+  from `INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY ->
+  COORDINATED -> VALIDATED` to `INIT -> ORCHESTRATED -> PLANNED ->
+  COORDINATED -> VALIDATED`. `task-decomposer` and `prompt-engineer`
+  folded into `universal-planner` as sub-responsibilities. Output schemas
+  (`work_items.yaml`, `delegation_prompts.yaml`) preserved but written by
+  planner directly.
+- **engineering-manager -> tech-lead merge**: Two engineering controllers
+  consolidated into a single fullstack `tech-lead`. 222 active references
+  swept across SKILL.md, rules, tests, and config. Alias preserved in
+  `scripts/migration/v12-aliases.yaml`.
+- **architecture-reviewer collapsed**: Removed as standalone agent; reborn
+  as `architect --review` mode flag.
+
+### Agent Catalog Changes
+
+- **Marketing-sales consolidation (38 -> 25)**: 13 marketing-sales agents
+  absorbed across 6 groups (G1-G6). All 13 fold sources aliased.
+- **chief-legal-officer -> clo**: Standardized C-suite naming.
+- **vp-engineering moved to `leadership/`**: Now lives alongside other
+  C-suite agents.
+- **devops-lead -> infrastructure-lead**: Renamed and relocated to
+  `developer/infrastructure/`.
+- **engine-developer, game-programmer moved**: Relocated to
+  `developer/backend/`.
+- **Net agent count: 251 -> 238** (13 deletions: task-decomposer,
+  prompt-engineer, engineering-manager, architecture-reviewer, 13
+  marketing-sales merges; offset by vp-engineering move and clo rename).
+
+### Quality & Configuration
+
+- **max_revision_cycles 5 -> 3**: Tightened revision budget in
+  `pipeline_config.yaml` per audit. Validator REVISE/FAIL routing capped
+  at 3 cycles.
+- **Execution self-validation (15 -> 5 hook-verifiable checks)**: The
+  aspirational 15-check protocol replaced with 5 mechanically-verifiable
+  checks: evidence freshness, file existence, guard exit codes, git state,
+  file:line accuracy. Aspirational checks moved to
+  `docs/FUTURE_VALIDATION_FRAMEWORK.md` for graduation tracking. See
+  `.claude/rules/core/resources/execution-self-validation.md` for the new
+  honesty contract.
+
+### Filesystem Cleanup
+
+- **11 legacy domain dirs deleted**: `engineering/`, `creative/`,
+  `business/`, `growth/`, `service/`, `science/`, `health/`, `education/`,
+  `personal/`, `arts/`, `trades/`. `people/` and `shared/` retained as
+  routing-config-only overlays.
+- **`cagents-memory/_communication/` removed**: Unused agent-messaging
+  inbox/broadcast directory deleted; 58 stale SKILL.md references swept.
+
+### Migration
+
+All v11 -> v12 agent renames and merges are preserved via
+`scripts/migration/v12-aliases.yaml` so existing session artifacts
+referencing pre-v12 agent names continue to resolve. Tracking lives at
+`outputs/v12-migration/migration-state.yaml`.
+
+> Release discipline: cAgents evolves via **tiny bumps** — patch-level
+> increments that each ship exactly one coherent change. See the
+> "Tiny-Bump Cadence" section of `.claude/rules/core/version-registry.md`
+> for the six atomicity criteria. v12.0.0 ships as a major bump because
+> the pipeline state-machine reduction and controller merges constitute
+> public-contract changes; per-bump entries during the revamp live in
+> `CHANGELOG.md`.
 
 > Release discipline: cAgents evolves via **tiny bumps** — patch-level
 > increments that each ship exactly one coherent change. See the
