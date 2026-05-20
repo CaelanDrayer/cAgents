@@ -10,6 +10,22 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.0.3] - 2026-05-20
+
+### Added
+- `.claude/skills/_MODE_REGISTRY.md` — single source of truth for all skill
+  modes, flags, and phases across /run, /team, /org, /designer, /improve, /helper.
+  Replaces inline mode definitions in improve/SKILL.md and team/SKILL.md to
+  prevent documentation drift. (REC-3)
+- `tests/v12/mode-registry-coverage.test.js` — regression test enforcing
+  registry coverage of all documented flags.
+
+### Changed
+- `.claude/skills/improve/SKILL.md` — flag definitions now reference
+  `_MODE_REGISTRY.md § /improve` instead of redefining inline.
+- `.claude/skills/team/SKILL.md` — flag definitions now reference
+  `_MODE_REGISTRY.md § /team` instead of redefining inline.
+
 ## [12.0.2] - 2026-05-20
 
 ### Changed

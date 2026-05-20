@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.0.2"
+  version: "12.0.3"
   argument-hint: "[target] [--mode review|optimize|full] [flags]"
   user-invocable: "true"
   context: "fork"
@@ -31,28 +31,25 @@ until `instruction.yaml` and `status.yaml` exist on disk.
 
 ## Mode Selection
 
-Parse `$ARGUMENTS` as a whitespace-separated token list. Extract the first
-`--mode <value>` pair and validate:
+For mode and flag definitions see `.claude/skills/_MODE_REGISTRY.md § /improve`.
+This SKILL.md covers behavior-defining workflows below; the registry is the
+single source of truth for which flags exist and what they mean.
 
-| Mode | Accepted value | Behavior |
-|------|----------------|----------|
-| review | `--mode review` | Audit + optional auto-fix. Quality-gate verdict. |
-| optimize | `--mode optimize` | Measure, scan, ROI-rank, atomic-apply, before/after delta. |
-| full | `--mode full` | Review-then-optimize with shared baseline + unified report. |
-| default (no flag) | — | Defaults to `review`. |
-| unknown | anything else | Rejected with usage message. |
+Parse `$ARGUMENTS` as a whitespace-separated token list. Extract the first
+`--mode <value>` pair, validate against the registry, and default to `review`
+when omitted.
 
 ### Rejection message for unknown modes
 
 ```
 /improve: unknown --mode value "{value}". Accepted: review, optimize, full.
-         Default: review. See reference/flags.md.
+         Default: review. See .claude/skills/_MODE_REGISTRY.md § /improve.
 ```
 
 Exit cleanly after printing. Do NOT spawn agents, create sessions, or write any
 files when the mode is rejected.
 
-See @reference/flags.md for the full flag catalog.
+See @reference/flags.md for extended per-flag detail beyond the registry summary.
 
 ## State Machine
 

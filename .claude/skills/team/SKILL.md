@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.0.2"
+  version: "12.0.3"
   argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--no-template] [--waves <n>]"
   user-invocable: "true"
   context: "fork"
@@ -116,7 +116,9 @@ Each wave is a DISTINCT spawn cycle. Spawn teammates for Wave K, wait for comple
 
 ### Step 1: Parse the Request
 
-Extract the user's request from `$ARGUMENTS`. Recognize flags: `--dry-run`, `--members <N>` (default 5), `--teammate-mode <mode>`, `--waves <N>`. The request is everything before the first `--` flag.
+Extract the user's request from `$ARGUMENTS`. For the canonical flag list and
+definitions see `.claude/skills/_MODE_REGISTRY.md § /team`. The request is
+everything before the first `--` flag.
 
 ### Step 2: Execute Wave 0 — Enrichment (Lead Does This)
 
