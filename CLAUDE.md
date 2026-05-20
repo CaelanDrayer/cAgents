@@ -2,6 +2,26 @@
 
 Core architecture and development guidance for cAgents.
 
+## v12.0.0 (in progress)
+
+This codebase is mid-flight on the v11.3.0 -> v12.0.0 revamp on branch
+`revamp/v12-rc`. Major changes coming in v12:
+- Pipeline collapse: 7 -> 5 states (task-decomposer + prompt-engineer fold into planner)
+- Engineering-manager merged into tech-lead (single fullstack controller)
+- architecture-reviewer becomes architect --review mode flag
+- 16 marketing-sales agents merged (38 -> 22)
+- chief-legal-officer renamed to clo
+- 11 of 13 legacy domain dirs deleted (people/ + shared/ retained)
+- cagents-memory/_communication/ deleted
+- max_revision_cycles 5 -> 3 (per audit)
+- execution self-validation reduced 15 -> 5 hook-verifiable checks
+
+All renames preserved via scripts/migration/v12-aliases.yaml. Track progress
+in outputs/v12-migration/migration-state.yaml.
+
+**Do not reference v12 names in stable docs until W4.3** — main and tagged
+releases stay on v11.3.0 conventions.
+
 ## Table of Contents
 
 - [Documentation Structure](#documentation-structure)
@@ -499,7 +519,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
-**Tests**: `npm test` runs 830+ Vitest tests across 75+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
+**Tests**: `npm test` runs 870+ Vitest tests across 80+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
 **Version**: 11.3.0
 
 ## Troubleshooting

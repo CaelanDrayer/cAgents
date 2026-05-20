@@ -451,6 +451,7 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights:
 
+- **V12.0.0** — *in progress* (consolidation release). Pipeline collapse 7->5 states, fullstack-controller merge, marketing-sales consolidation 38->22, legacy-dir cleanup. Tracked on revamp/v12-rc.
 - **V11.3.0** — Current release. Plugin health sweep: archetype-canonical doc alignment (9 archetypes canonical, 15 domains as routing overlay), 109 stale `related_agents` cross-references swept, hook-count assertions corrected (26 unique registered, 29 .cjs total), `sync-agents.sh --check` dry-run flag added, `validate-versions.sh` pruned to 18 canonical slots, regression tests added.
 - **V11.1.3** — Removed statusLine hook and status bar integration.
 - **V11.0.0** — Removed deprecated skills `/review`, `/optimize`, `/context`, `/debug`. `/review` and `/optimize` consolidated into `/improve` (`--mode review|optimize|full`); `/context` replaced by `/run context …` passthrough; `/debug` replaced by `/run --mode debug`. See [docs/MIGRATION-V11.md](docs/MIGRATION-V11.md) for the migration guide.

@@ -4,6 +4,20 @@
 **Release Date**: April 29, 2026
 **Status**: Production-Ready
 
+## V12.0.0 (in progress)
+
+- Pipeline collapse: 7 -> 5 states (task-decomposer + prompt-engineer fold into planner)
+- Engineering-manager merged into tech-lead (single fullstack controller)
+- architecture-reviewer becomes architect --review mode flag
+- 16 marketing-sales agents merged (38 -> 22)
+- chief-legal-officer renamed to clo
+- 11 of 13 legacy domain dirs deleted (people/ + shared/ retained)
+- cagents-memory/_communication/ deleted
+- max_revision_cycles 5 -> 3 (per audit)
+- execution self-validation reduced 15 -> 5 hook-verifiable checks
+
+Status: under active development on branch `revamp/v12-rc`. Not yet released.
+
 > Release discipline: cAgents evolves via **tiny bumps** — patch-level
 > increments that each ship exactly one coherent change. See the
 > "Tiny-Bump Cadence" section of `.claude/rules/core/version-registry.md`

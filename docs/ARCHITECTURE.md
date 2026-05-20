@@ -2,6 +2,29 @@
 
 > This document provides detailed architecture design for cAgents. For a quick overview, see CLAUDE.md.
 
+## v12.0.0 (in progress) — Architecture Changes
+
+The cAgents codebase is mid-flight on the v11.3.0 -> v12.0.0 revamp on branch
+`revamp/v12-rc`. Major architectural changes coming in v12:
+
+- **Pipeline state-machine reduction (7 -> 5 states)**: The `/run` event-driven pipeline
+  collapses from 7 states to 5 by folding `task-decomposer` and `prompt-engineer` into
+  the planner. The new sequence is `INIT -> ORCHESTRATED -> PLANNED -> COORDINATED ->
+  VALIDATED`. Decomposition becomes a planner sub-responsibility; prompt-engineering
+  becomes controller-side prompt assembly.
+- **Controller merge (engineering-manager -> tech-lead)**: The two engineering controllers
+  consolidate into a single fullstack `tech-lead`. The 214 doc references to
+  `engineering-manager` will be swept to `tech-lead` in W2.4. Until then, the alias is
+  preserved via `scripts/migration/v12-aliases.yaml`.
+- **Planner-fold**: `task-decomposer` and `prompt-engineer` are absorbed into the
+  planner. Their output schemas (`work_items.yaml`, `delegation_prompts.yaml`) remain
+  but are written by the planner directly, eliminating two pipeline transitions.
+- **Architecture-reviewer mode flag**: `architecture-reviewer` is removed as a standalone
+  agent and becomes `architect --review` mode flag, reducing agent-catalog duplication.
+
+Cross-reference: `revamp-design-v2.md` and `outputs/v12-migration/migration-state.yaml`
+track per-wave progress against locked decisions Q1..Q8.
+
 ## Overview
 
 cAgents is a universal multi-domain agent system with controller-centric coordination. Features CSV-based task inventory for large-scale workflows, progressive skill disclosure, CJS-only hooks system, Agent Teams for parallel execution, and Skills system.
