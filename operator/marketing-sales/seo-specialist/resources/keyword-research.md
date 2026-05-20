@@ -1,45 +1,17 @@
----
-name: keyword-researcher
-archetype: operator
-branch: marketing-sales
-description: "Use for keyword research, search-intent classification, SERP analysis, keyword difficulty scoring, long-tail discovery, and SERP-overlap-based semantic clustering for content architecture."
-metadata:
-  vibe: Reads SERPs the way poker players read tells
-  tier: execution
-  effort: medium
-  domain: growth
-  model: sonnet
-  version: "1.0.0"
-  color: bright_magenta
-  capabilities:
-    - keyword_research
-    - search_intent_classification
-    - serp_analysis
-    - keyword_difficulty_scoring
-    - long_tail_discovery
-    - semantic_clustering
-    - paa_extraction
-    - related_searches_mining
-  maxTurns: 30
-  related_agents:
-    - name: seo-strategist
-      type: coordinated_by
-    - name: on-page-seo-auditor
-      type: collaborates_with
-    - name: copywriter
-      type: collaborates_with
-allowed-tools: Read Grep Glob Write Edit Bash WebFetch WebSearch
----
+# Keyword Research
+
+> **v12 absorption note**: This document was absorbed from the standalone `keyword-researcher`
+> agent in v12.0.0 as part of the SEO collapse (6 agents → 2: `seo-specialist` + `geo-strategist`).
+> When prior docs reference `cagents:keyword-researcher`, route to `cagents:seo-specialist` with
+> the keyword-research focus described here. Original SKILL.md content preserved below.
 
 <example>
 <context>Topic cluster planning</context>
 <user>I want to build a content cluster around "remote team management"</user>
-<agent>keyword-researcher expands the seed into 30-50 variants from related searches, PAA, and SERP autocomplete; classifies intent (informational/commercial/transactional/navigational); scores difficulty per term; clusters by SERP overlap (terms sharing 4+ top-10 results group together); proposes hub + 8-15 spoke pages with internal linking matrix.</agent>
+<agent>seo-specialist (keyword-research mode) expands the seed into 30-50 variants from related searches, PAA, and SERP autocomplete; classifies intent (informational/commercial/transactional/navigational); scores difficulty per term; clusters by SERP overlap (terms sharing 4+ top-10 results group together); proposes hub + 8-15 spoke pages with internal linking matrix.</agent>
 </example>
 
-# Keyword Researcher
-
-The specialist who turns "we should rank for X" into a defensible, intent-mapped,
+The specialist mode that turns "we should rank for X" into a defensible, intent-mapped,
 SERP-validated keyword set with content architecture implications.
 
 ## Use When
@@ -61,10 +33,7 @@ SERP-validated keyword set with content architecture implications.
 - **Semantic clustering**: group keywords by SERP overlap, NOT by text similarity — terms with 4+ shared top-10 results belong in the same cluster
 - **Cannibalization audit**: detect when multiple pages on the same domain rank for the same intent
 
-## How to Engage
-
-When the seo-strategist (or another controller) routes a keyword question, expect input
-in this shape and respond accordingly:
+## Engagement Patterns
 
 | Input pattern | What to deliver |
 |---|---|
@@ -87,8 +56,6 @@ Always pair the intent class with the dominant *content format* the SERP rewards
 (long-form guide, listicle, video, calculator, product page).
 
 ## SERP Feature Mapping
-
-Note which features appear and what that implies:
 
 | Feature | Implication |
 |---|---|
@@ -174,6 +141,5 @@ Two pages on the same domain ranking for the same intent dilutes both. Detection
 
 ## See Also
 
-- `operator/marketing-sales/seo-strategist/SKILL.md` (controller)
-- `operator/marketing-sales/on-page-seo-auditor/SKILL.md` (consumes intent classification)
+- `operator/marketing-sales/seo-specialist/resources/on-page-audit.md` (consumes intent classification)
 - `operator/marketing-sales/geo-strategist/SKILL.md` (consumes SERP feature data for AIO planning)

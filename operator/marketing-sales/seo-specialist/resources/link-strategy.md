@@ -1,47 +1,17 @@
----
-name: link-strategist
-archetype: operator
-branch: marketing-sales
-description: "Use for link strategy: internal linking architecture, external backlink prospecting, anchor diversity audit, toxic-link detection, competitor link gap analysis, and disavow recommendations."
-metadata:
-  vibe: Maps influence the way a network analyst maps power
-  tier: execution
-  effort: medium
-  domain: growth
-  model: sonnet
-  version: "1.0.0"
-  color: bright_magenta
-  capabilities:
-    - internal_linking_architecture
-    - backlink_profile_analysis
-    - link_prospecting
-    - anchor_diversity_audit
-    - toxic_link_detection
-    - competitor_link_gap
-    - disavow_strategy
-    - link_velocity_analysis
-  maxTurns: 30
-  related_agents:
-    - name: seo-strategist
-      type: coordinated_by
-    - name: keyword-researcher
-      type: collaborates_with
-    - name: pr-specialist
-      type: collaborates_with
-    - name: partnership-marketing-manager
-      type: collaborates_with
-allowed-tools: Read Grep Glob Write Edit Bash WebFetch WebSearch
----
+# Link Strategy
+
+> **v12 absorption note**: This document was absorbed from the standalone `link-strategist`
+> agent in v12.0.0 as part of the SEO collapse (6 agents → 2: `seo-specialist` + `geo-strategist`).
+> When prior docs reference `cagents:link-strategist`, route to `cagents:seo-specialist` with
+> the link-strategy focus described here. Original SKILL.md content preserved below.
 
 <example>
 <context>Link profile audit</context>
 <user>I think we have toxic links pulling us down — can you check?</user>
-<agent>link-strategist pulls referring domains, scores anchor distribution (red flag: >50% exact-match), flags spam signals (PBN footprints, low-quality directories, foreign-language sites mismatched with brand market), separates legitimate but low-value links from genuinely toxic, and produces a disavow file recommendation only for the latter — disavow is a last resort, not a first.</agent>
+<agent>seo-specialist (link-strategy mode) pulls referring domains, scores anchor distribution (red flag: >50% exact-match), flags spam signals (PBN footprints, low-quality directories, foreign-language sites mismatched with brand market), separates legitimate but low-value links from genuinely toxic, and produces a disavow file recommendation only for the latter — disavow is a last resort, not a first.</agent>
 </example>
 
-# Link Strategist
-
-The strategist who treats links — internal and external — as a network engineering
+The strategy that treats links — internal and external — as a network engineering
 problem. Internal links shape how authority flows inside the site. External links shape
 how the site is perceived from outside. Both can be planned, audited, and improved.
 
@@ -115,7 +85,7 @@ Anchor patterns to flag:
 | Many anchors in a foreign language unrelated to brand | High — likely unsolicited spam |
 | Many "click here" / "read more" generic anchors | Low — wastes signal but not harmful |
 
-## How to Engage
+## Engagement Patterns
 
 | Input | Output |
 |---|---|
@@ -190,7 +160,6 @@ Avoid date-archive depth blowing past 3 clicks for high-value evergreen
 
 ## See Also
 
-- `operator/marketing-sales/seo-strategist/SKILL.md` (controller)
-- `operator/marketing-sales/keyword-researcher/SKILL.md` (cluster architecture informs internal linking)
+- `operator/marketing-sales/seo-specialist/resources/keyword-research.md` (cluster architecture informs internal linking)
 - `operator/marketing-sales/pr-specialist/SKILL.md` (digital PR partner)
 - `operator/marketing-sales/partnership-marketing-manager/SKILL.md` (partnership-driven links)

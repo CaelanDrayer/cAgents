@@ -18,7 +18,7 @@ metadata:
     - campaign_operations
   maxTurns: 30
   related_agents:
-    - name: campaign-manager
+    - name: marketing-strategist
       type: coordinated_by
     - name: revenue-operations-manager
       type: collaborates_with

@@ -248,7 +248,7 @@ Controllers become team leads based on domain:
 |--------|-----------|
 | Engineering | tech-lead |
 | Creative | creative-director |
-| Marketing | campaign-manager |
+| Marketing | marketing-strategist |
 | Sales | sales-strategist |
 | Finance | finance-manager |
 | Operations | operations-manager |

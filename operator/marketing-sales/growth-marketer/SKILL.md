@@ -22,12 +22,18 @@ metadata:
       type: coordinated_by
     - name: data-analyst
       type: collaborates_with
+  absorbed_in_v12:
+    - customer-marketing-manager
 allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Growth Marketer
 
 Growth strategy and experimentation.
+
+> **v12 fold note**: Absorbed `customer-marketing-manager` (post-acquisition
+> lifecycle — Retention, Referral, expansion, advocacy). See
+> @resources/customer-marketing.md for the existing-customer side of AARRR.
 
 ## Responsibilities
 
@@ -63,3 +69,4 @@ Growth strategy and experimentation.
 - Growth ROI
 
 See @resources/growth-frameworks.md for experimentation templates.
+See @resources/customer-marketing.md for lifecycle, expansion, and advocacy (absorbed from customer-marketing-manager).

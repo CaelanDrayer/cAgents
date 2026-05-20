@@ -32,9 +32,9 @@
 - **Process Optimization**: Workflow efficiency improvements — delegates to operations-manager
 - **Infrastructure Optimization**: Deployment, scaling, or resource efficiency — delegates to infrastructure-lead
 - **Data Optimization**: Query performance, schema efficiency, or indexing — delegates to dba or backend-developer
-- **Campaign Optimization**: Marketing performance improvements — delegates to campaign-manager
+- **Campaign Optimization**: Marketing performance improvements — delegates to marketing-strategist
 - **Creative Optimization**: Narrative pacing, structural improvements — delegates to creative-director
-- **Sales Optimization**: Pipeline or conversion rate improvements — delegates to sales-ops-specialist
+- **Sales Optimization**: Pipeline or conversion rate improvements — delegates to revenue-operations-manager
 
 ### Measurement Concepts
 - **Baseline Metrics**: The pre-optimization measurements against which gains are compared — must be captured before any changes

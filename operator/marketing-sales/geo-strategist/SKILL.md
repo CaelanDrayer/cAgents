@@ -23,13 +23,9 @@ metadata:
     - schema_for_citation
   maxTurns: 30
   related_agents:
-    - name: seo-strategist
+    - name: marketing-strategist
       type: coordinated_by
-    - name: keyword-researcher
-      type: collaborates_with
-    - name: on-page-seo-auditor
-      type: collaborates_with
-    - name: technical-seo-auditor
+    - name: seo-specialist
       type: collaborates_with
     - name: copywriter
       type: collaborates_with
@@ -143,7 +139,7 @@ AI systems build a model of "who/what is this brand". Signals across the open we
 GEO requires that AI crawlers can actually read the site. Check robots.txt for:
 - Are training crawlers allowed (`GPTBot`, `ClaudeBot`, `Bytespider`, `Google-Extended`)?
 - Are real-time browsing crawlers allowed (`ChatGPT-User`, `PerplexityBot`)?
-- Does the policy match the business intent? (See technical-seo-auditor for crawler taxonomy.)
+- Does the policy match the business intent? (See seo-specialist @resources/technical-audit.md for crawler taxonomy.)
 
 Blocking everything = invisible to AI search. This is a strategic choice, not a default.
 
@@ -227,8 +223,6 @@ attribution = citation candidate.
 
 ## See Also
 
-- `operator/marketing-sales/seo-strategist/SKILL.md` (controller)
-- `operator/marketing-sales/on-page-seo-auditor/SKILL.md` (on-page foundation)
-- `operator/marketing-sales/technical-seo-auditor/SKILL.md` (AI crawler robots.txt policy)
-- `operator/marketing-sales/keyword-researcher/SKILL.md` (SERP feature data → AIO targeting)
+- `operator/marketing-sales/marketing-strategist/SKILL.md` (controller)
+- `operator/marketing-sales/seo-specialist/SKILL.md` (on-page foundation, AI crawler robots.txt policy, SERP feature data → AIO targeting; covers keyword research, on-page, technical SEO, link strategy modes)
 - `writer/copywriter/SKILL.md` (rewriting toward citability patterns)

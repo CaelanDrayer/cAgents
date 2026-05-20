@@ -41,7 +41,7 @@ After each executor completes:
 | Engineering | tech-lead | + architect, security-lead | cto + tech-lead |
 | Creative | narrative-director | + story-architect, editor | cco + narrative-director |
 | Business | operations-manager | + strategic-planner | cpo + cfo |
-| Growth | campaign-manager | + marketing-strategist | cro + campaign-manager |
+| Growth | marketing-strategist | + sales-strategist | cro + marketing-strategist |
 | People | hr-manager | + talent-acquisition-manager | chro + hr-manager |
 | Service | customer-success-manager, general-counsel | + support-director | general-counsel |
 

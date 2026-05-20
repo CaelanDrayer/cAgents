@@ -18,16 +18,20 @@ metadata:
     - training_design
   maxTurns: 30
   related_agents:
-    - name: product-marketing-manager
+    - name: marketing-strategist
       type: coordinated_by
-    - name: sales-trainer
-      type: collaborates_with
+  absorbed_in_v12:
+    - sales-trainer
 allowed-tools: Read Grep Glob Write Edit Bash
 ---
 
 # Sales Enablement Specialist
 
 Sales enablement and productivity.
+
+> **v12 fold note**: Absorbed `sales-trainer` (training delivery and coaching
+> mechanics). See @resources/sales-training.md for the live-delivery side
+> (onboarding cohorts, role-plays, 1:1 coaching, competency assessments).
 
 ## Responsibilities
 
@@ -63,3 +67,4 @@ Sales enablement and productivity.
 - Performance improvement (+10-15%)
 
 See @resources/enablement-templates.md for playbook frameworks.
+See @resources/sales-training.md for training delivery and coaching (absorbed from sales-trainer).

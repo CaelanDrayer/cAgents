@@ -208,7 +208,7 @@ The router and planner still consume `{domain}/config/domain_overrides.yaml` (co
 
 **Creative (30)** covers long-form and short-form writing: prose-stylist, dialogue-specialist, plot-developer, narrative-director, character-psychologist, worldbuilder, and 24 more. Use `/run Write a mystery short story` and the narrative-director controller coordinates the right specialists.
 
-**Growth (34)** is the largest domain: copywriter, marketing-strategist, seo-specialist, campaign-manager, demand-generation-manager, sales-strategist, and 28 more. Use `/run Plan the Q4 content calendar` and the marketing-strategist controller coordinates the campaign team.
+**Growth (34)** is the largest domain: copywriter, marketing-strategist, seo-specialist, demand-generation-manager, sales-strategist, and 29 more. Use `/run Plan the Q4 content calendar` and the marketing-strategist controller coordinates the campaign team.
 
 **Service (28)** covers support and legal: customer-success-manager, general-counsel, compliance-officer, technical-writer, legal-analyst, and 23 more. Use `/run Draft an EULA for our SaaS product` and the general-counsel controller coordinates the legal team.
 

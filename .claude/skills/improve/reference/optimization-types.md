@@ -46,7 +46,7 @@
 - **Domain**: Grow
 - **What it optimizes**: Conversion rates, engagement, targeting
 - **Key metrics**: Conversion %, bounce rate, CTR, open rate
-- **Controller**: campaign-manager
+- **Controller**: marketing-strategist
 - **Specialists**: copywriter, growth-hacker
 - **Auto-detection**: Campaign/marketing files
 
@@ -62,7 +62,7 @@
 - **Domain**: Grow
 - **What it optimizes**: Sales cycle, win rate, follow-up completion
 - **Key metrics**: Cycle length, win rate %, follow-up completion %
-- **Controller**: sales-ops-specialist
+- **Controller**: revenue-operations-manager
 - **Specialists**: sales-rep
 - **Auto-detection**: Sales docs/CRM configs
 

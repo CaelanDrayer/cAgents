@@ -46,9 +46,9 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 | process | operations-manager | operations-analyst |
 | infrastructure | infrastructure-lead | backend-developer, architect |
 | data | tech-lead | dba, backend-developer |
-| campaign | campaign-manager | copywriter, growth-hacker |
+| campaign | marketing-strategist | copywriter, growth-marketer |
 | creative | creative-director | game-writer, copywriter |
-| sales | sales-ops-specialist | sales-rep |
+| sales | revenue-operations-manager | sales-rep |
 
 ## Risk Classification
 

@@ -18,7 +18,7 @@ metadata:
     - geo_targeting
   maxTurns: 30
   related_agents:
-    - name: campaign-manager
+    - name: marketing-strategist
       type: coordinated_by
     - name: territory-manager
       type: collaborates_with

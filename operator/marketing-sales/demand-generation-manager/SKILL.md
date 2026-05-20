@@ -18,7 +18,7 @@ metadata:
     - abm
   maxTurns: 30
   related_agents:
-    - name: campaign-manager
+    - name: marketing-strategist
       type: coordinated_by
     - name: sales-strategist
       type: pipeline_next

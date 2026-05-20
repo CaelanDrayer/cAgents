@@ -318,8 +318,8 @@ V10.26.15:
    `"3+ falsified hypotheses without confirmed root cause — escalate per /debug Escalation Rules"`.
 
 BLOCKED is a new verdict value introduced by V10.26.17. It routes
-identically to FAIL in the pipeline (back to PROMPTS_READY), but /run's
-revision handling annotates the controller prompt with the falsification
+identically to FAIL in the pipeline (v12.0.0: back to PLANNED; pre-v12: back to PROMPTS_READY),
+but /run's revision handling annotates the controller prompt with the falsification
 count to prevent infinite loops (see /run SKILL.md revision routing).
 
 Non-debug runs NEVER see verdict `BLOCKED` — the check and the verdict
@@ -349,11 +349,12 @@ The validator now outputs three classifications that drive /run's revision routi
 |----------------|------------|-----------------|
 | **PASS** | All gates pass, criteria met | Advance to VALIDATED (pipeline complete) |
 | **PARTIAL_PASS** | Most gates pass, dead-letter items exist | Advance to VALIDATED (maps to PASS, dead-letter items reported) |
-| **FAIL** | Fixable issues, re-execution needed | Route back to PROMPTS_READY (re-run controller) |
-| **REVISE** | Fundamental issues, re-planning needed | Route back to PLANNED (re-plan with feedback) |
+| **FAIL** | Fixable issues, re-execution needed | Route back to PLANNED (re-run controller with feedback) |
+| **REVISE** | Fundamental issues, re-planning needed | Route back to PLANNED (universal-planner re-runs with feedback) |
 
 **Previous FIXABLE is now FAIL** (triggers controller re-execution with feedback).
-**Previous BLOCKED is escalated** after max revision cycles (5) are exhausted.
+**Previous BLOCKED is escalated** after max revision cycles (3 in v12.0.0, lowered from 5) are exhausted.
+**v12.0.0**: Both FAIL and REVISE route to PLANNED. Pre-v12 FAIL routed to PROMPTS_READY (a state that no longer exists); the controller now picks up validator feedback directly at PLANNED.
 
 ### Validation Report Output
 
@@ -377,7 +378,7 @@ low_confidence_items:          # V10.6.0: Items needing extra scrutiny
   - task_id: TASK-{N}
     confidence: 0.6
     reason: "{why confidence is low}"
-revision_target: PROMPTS_READY|PLANNED  # only present for FAIL/REVISE
+revision_target: PLANNED  # only present for FAIL/REVISE (v12.0.0: both verdicts route to PLANNED; pre-v12 FAIL routed to PROMPTS_READY which no longer exists)
 ```
 
 ### Write Completion Event
@@ -398,7 +399,7 @@ outputs_produced:
 next_state: VALIDATED
 metadata:
   classification: PASS|FAIL|REVISE
-  revision_target: PROMPTS_READY|PLANNED  # only for FAIL/REVISE
+  revision_target: PLANNED  # only for FAIL/REVISE (v12.0.0: both verdicts route to PLANNED)
 ```
 
 If FAIL or REVISE, the event's `metadata.classification` tells /run where to route. /run reads this event, checks the classification, and either completes or loops back.

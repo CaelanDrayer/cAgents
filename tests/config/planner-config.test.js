@@ -120,10 +120,10 @@ describe('domain_overrides.yaml files', () => {
       expect(content).toContain('data-scientist');
     });
 
-    it('growth should have campaign-manager as tier_2 controller', () => {
+    it('growth should have marketing-strategist as tier_2 controller', () => {
       const content = loadOverrides('growth');
       expect(content).toContain('tier_2:');
-      expect(content).toContain('campaign-manager');
+      expect(content).toContain('marketing-strategist');
     });
   });
 });

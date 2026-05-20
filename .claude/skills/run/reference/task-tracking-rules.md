@@ -10,11 +10,11 @@ How /run uses TaskCreate/TaskUpdate (or TodoWrite in SDK) at every state transit
 4. **No slash prefix on command names**: Use `[run]`, `[org]`, `[team]` -- not `[/run]`, `[/org]`, `[/team]`.
 5. **[parent > child] on spawn, child-only for sub-tasks**: When spawning an agent, use `[run > orchestrator]`. For that agent's own sub-tasks, use just `[orchestrator]`.
 6. **2-space indent for children**: Sub-tasks under a parent entry are indented with 2 spaces.
-7. **Include contextual detail**: Add domain, tier, counts, controller names, wave numbers -- e.g., `[run > planner] Planning approach\n  [planner] Controller: tech-lead`.
+7. **Include contextual detail**: Add domain, tier, counts, controller names, wave numbers -- e.g., `[run > universal-planner] Planning approach\n  [universal-planner] Controller: tech-lead`.
 8. **Granular sub-tasks per agent**: Each agent gets 1-2 sub-tasks showing real progress, not just a single line.
 9. **Never have zero tasks `in_progress`** -- always transition one to `completed` and the next to `in_progress` in the same call.
 10. **On revision, add a revision entry** showing round number and what is being re-executed.
-11. **Never expose internal state machine names** (INIT, ORCHESTRATED, PLANNED, DECOMPOSED, PROMPTS_READY, COORDINATED, VALIDATED) as primary task subject content. Users see these entries in the UI -- they should communicate meaningful work being done.
+11. **Never expose internal state machine names** (INIT, ORCHESTRATED, PLANNED, COORDINATED, VALIDATED) as primary task subject content. Users see these entries in the UI -- they should communicate meaningful work being done.
 
 ## TaskCreate vs TodoWrite
 
@@ -24,70 +24,68 @@ Per [docs.claude.com/docs/en/tools.md](https://docs.claude.com/docs/en/tools.md)
 
 If you skip the task call, the workflow is broken -- the user has zero visibility into what is happening.
 
-## Initial TaskCreate at Pipeline Start
+## Initial TaskCreate at Pipeline Start (v12.0.0 — 5 states)
 
 ```
 TodoWrite([
   {"content": "[run > orchestrator] Analyzing request & detecting domain\n  [orchestrator] Enriching context ({domain}, tier {N})\n  [run] Pre-flight validation: enriched_context.yaml schema valid, domain confirmed", "status": "in_progress", "id": "init"},
-  {"content": "[run > planner] Planning objectives & selecting controller\n  [planner] Controller selected: {controller_name}\n  [run] Plan validation: objectives have success_criteria, controller assigned, no orphan objectives", "status": "pending", "id": "orchestrated"},
-  {"content": "[run > decomposer] Decomposing into work items\n  [decomposer] {N} work items created ({N} parallel groups)\n  [run] Decomposition validation: all WIs have acceptance_criteria, dependency graph acyclic, agents exist", "status": "pending", "id": "planned"},
-  {"content": "[run > prompt-engineer] Crafting delegation prompts\n  [run] Prompt validation: {N}/{N} WIs have prompts, all reference acceptance criteria", "status": "pending", "id": "decomposed"},
-  {"content": "[run > {controller}] Coordinating implementation\n  [{controller} > {executor}] Implementing: {description}\n  [{controller}] Synthesizing solution\n  [run] Coordination validation: all WIs completed with evidence, no stale in_progress items", "status": "pending", "id": "prompts_ready"},
+  {"content": "[run > universal-planner] Planning objectives, decomposing work items, selecting controller\n  [universal-planner] Controller selected: {controller_name}\n  [universal-planner] {N} work items created ({N} parallel groups)\n  [run] Plan validation: objectives have success_criteria, controller assigned, all WIs have acceptance_criteria, DAG acyclic", "status": "pending", "id": "orchestrated"},
+  {"content": "[run > {controller}] Coordinating implementation\n  [{controller} > {executor}] Implementing: {description}\n  [{controller}] Synthesizing solution\n  [run] Coordination validation: all WIs completed with evidence, no stale in_progress items", "status": "pending", "id": "planned"},
   {"content": "[run > validator] Validating against {N} acceptance criteria\n  [run] Final validation: traceability 100%, evidence score >= 2.0, schema checks passed", "status": "pending", "id": "coordinated"},
   {"content": "[run] Pipeline complete -- all validation gates passed", "status": "pending", "id": "validated"}
 ])
 ```
 
-## Tier 2 Fast Path Tasks (Adaptive Pipeline)
+## Tier 2 Fast Path Tasks (Adaptive Pipeline, v12.0.0)
 
 ```
 TodoWrite([
-  {"content": "[run] Context enriched ({domain}, tier 2 fast path)\n  [run] Pre-flight validation: enriched_context.yaml valid, domain confirmed", "status": "completed", "id": "init"},
-  {"content": "[run > planner] Planning approach\n  [planner] Controller: {controller_name}\n  [run] Plan validation: objectives have success_criteria, controller assigned", "status": "in_progress", "id": "planned"},
-  {"content": "[run > {controller}] Coordinating implementation\n  [{controller} > {executor}] Implementing: {description}\n  [{controller}] Solution synthesized\n  [run] Coordination validation: all WIs completed with evidence, no stale items", "status": "pending", "id": "prompts_ready"},
+  {"content": "[run] Context enriched inline ({domain}, tier 2 fast path)\n  [run] Pre-flight validation: enriched_context.yaml valid, domain confirmed", "status": "completed", "id": "init"},
+  {"content": "[run > universal-planner] Planning & decomposition (inline)\n  [universal-planner] Controller: {controller_name}\n  [run] Plan validation: objectives have success_criteria, controller assigned, work items have criteria", "status": "in_progress", "id": "orchestrated"},
+  {"content": "[run > {controller}] Coordinating implementation\n  [{controller} > {executor}] Implementing: {description}\n  [{controller}] Solution synthesized\n  [run] Coordination validation: all WIs completed with evidence, no stale items", "status": "pending", "id": "planned"},
   {"content": "[run > validator] Validating against acceptance criteria\n  [run] Final validation: traceability 100%, evidence score >= 2.0", "status": "pending", "id": "coordinated"},
   {"content": "[run] Pipeline complete -- all validation gates passed", "status": "pending", "id": "validated"}
 ])
 ```
 
-## Validation Task Pattern (V10.23.0)
+## Validation Task Pattern (V10.23.0, v12.0.0)
 
 Every pipeline phase transition MUST include at least one validation TaskCreate entry. These entries confirm that the previous phase's outputs are valid before proceeding.
 
-### Required Validation Entries
+### Required Validation Entries (v12.0.0)
 
 | After Phase | Validation Entry | What It Checks |
 |-------------|-----------------|----------------|
 | INIT | `[run] Pre-flight: enriched_context valid` | enriched_context.yaml exists and has required fields |
-| ORCHESTRATED | `[run] Plan validation: {N} objectives, {N} criteria` | plan.yaml schema, objectives non-empty, success_criteria present |
-| PLANNED | `[run] Decomposition: {N} WIs, all have criteria, DAG valid` | work_items.yaml schema, acceptance_criteria on every WI, acyclic deps |
-| DECOMPOSED | `[run] Prompts: delegation prompts for {N} WIs` | delegation_prompts.yaml exists and covers all WIs |
-| PROMPTS_READY | `[run] Coordination: {N}/{N} WIs complete, evidence score {X}` | coordination_log complete, all evidence non-vague |
+| ORCHESTRATED | `[run] Plan + decomposition validation: {N} objectives, {N} WIs, DAG valid` | plan.yaml schema, work_items.yaml schema, acceptance_criteria on every WI, acyclic deps, controller assigned |
+| PLANNED | `[run] Coordination: {N}/{N} WIs complete, evidence score {X}` | coordination_log complete, all evidence non-vague |
 | COORDINATED | `[run] Validation: verdict={PASS/FAIL/REVISE}, score={X}` | validation_report.yaml exists with verdict |
 
-### Example: Full Pipeline with Validation Entries
+**v12.0.0 change**: The pre-v12 DECOMPOSED and PROMPTS_READY validation entries are no longer separate — the ORCHESTRATED entry now validates both plan.yaml AND work_items.yaml because universal-planner produces both inline.
+
+### Example: Full Pipeline with Validation Entries (v12.0.0)
 
 ```
 TodoWrite([
   {"content": "[run > orchestrator] Context enrichment complete\n  [orchestrator] Domain: engineering, Tier: 3\n  [run] Pre-flight validation: enriched_context.yaml valid (3/3 fields)", "status": "completed", "id": "init"},
-  {"content": "[run > planner] Plan complete: 5 objectives, tech-lead\n  [run] Plan validation: 5 objectives with criteria, controller assigned, DAG valid", "status": "completed", "id": "orchestrated"},
-  {"content": "[run > decomposer] 12 work items decomposed\n  [run] Decomposition validation: 12/12 WIs have criteria, deps acyclic, 4 agents verified", "status": "completed", "id": "planned"},
-  {"content": "[run > prompt-engineer] Delegation prompts crafted\n  [run] Prompt validation: 12/12 WIs have prompts, all reference acceptance criteria", "status": "completed", "id": "decomposed"},
-  {"content": "[run > tech-lead] Coordination complete\n  [tech-lead] Pre-execution: 6/6 input checks passed\n  [tech-lead] Mid-execution: 4 checkpoints, 0 issues\n  [tech-lead] 12/12 WIs complete with evidence\n  [run] Coordination validation: evidence score 2.8/3.0, no stale items", "status": "completed", "id": "prompts_ready"},
+  {"content": "[run > universal-planner] Plan + 12 work items complete\n  [universal-planner] Controller: tech-lead, 5 objectives\n  [run] Plan validation: 5 objectives with criteria, controller assigned, 12/12 WIs have criteria, DAG valid", "status": "completed", "id": "orchestrated"},
+  {"content": "[run > tech-lead] Coordination complete\n  [tech-lead] Pre-execution: 6/6 input checks passed\n  [tech-lead] Mid-execution: 4 checkpoints, 0 issues\n  [tech-lead] 12/12 WIs complete with evidence\n  [run] Coordination validation: evidence score 2.8/3.0, no stale items", "status": "completed", "id": "planned"},
   {"content": "[run > validator] Validation verdict: PASS\n  [validator] Phase 1-5: all passed\n  [validator] Phase 6 automated: 12/12 files verified\n  [validator] Phase 7 traceability: 100% coverage\n  [run] Final validation: overall score 0.97, PASS", "status": "completed", "id": "coordinated"},
   {"content": "[run] Pipeline complete -- all validation gates passed", "status": "completed", "id": "validated"}
 ])
 ```
 
-## Revision Task Updates
+## Revision Task Updates (v12.0.0)
 
 ```
 TodoWrite([
   ...completed_states...,
-  {"content": "[run] Revision {N}/5: Re-executing from {target_agent} due to validation feedback\n  [run] Revision trigger: {FAIL|REVISE}, feedback: {summary}\n  [run] Re-validation target: {phase} with updated inputs", "status": "in_progress", "id": "revision"},
+  {"content": "[run] Revision {N}/3: Re-executing from {target_agent} due to validation feedback\n  [run] Revision trigger: {FAIL|REVISE}, feedback: {summary}\n  [run] Re-validation target: PLANNED with updated inputs", "status": "in_progress", "id": "revision"},
   ...remaining_states...
 ])
 ```
+
+Max 3 revision cycles in v12.0.0 (lowered from 5). Both FAIL and REVISE route back to PLANNED.
 
 ## /run Owns All Pipeline Tasks
 
@@ -97,9 +95,9 @@ TodoWrite([
 
 ```
 # /run creates the task BEFORE spawning the agent:
-TaskCreate({ subject: "ORCHESTRATED: Context enrichment", description: "..." })
+TaskCreate({ subject: "ORCHESTRATED: Plan + decomposition (universal-planner)", description: "..." })
 TaskUpdate({ taskId: "N", status: "in_progress" })
-Agent({ subagent_type: "cagents:orchestrator", description: "...", prompt: "..." })
+Agent({ subagent_type: "cagents:universal-planner", description: "...", prompt: "..." })
 # /run updates the task AFTER the agent returns:
 TaskUpdate({ taskId: "N", status: "completed" })
 ```

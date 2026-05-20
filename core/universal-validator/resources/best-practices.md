@@ -22,14 +22,14 @@
 - **Anti-Pattern Detection**: Scan coordination_log for self-answered questions (controller answered its own delegation), direct implementation evidence (controller used Edit/Write on non-planning files), and circular delegation (controller → controller chains without execution agents)
 - **Test Execution Verification**: For engineering work items, run the actual test suite rather than trusting claimed results — `npm test`, `pytest`, or equivalent is the ground truth, not the agent's summary
 - **DECISIONS.md Check (Tier 3+)**: Tier 3 and above require a DECISIONS.md log with at least one entry per major coordination decision — missing DECISIONS.md triggers FAIL for tier 3+ workflows
-- **Revision Routing Intelligence**: FAIL routes back to PROMPTS_READY (re-run controller with the same plan but better-targeted prompts) — REVISE routes back to PLANNED (re-plan from scratch with validation feedback) — choose based on whether the issue is execution quality or planning quality
+- **Revision Routing Intelligence (v12.0.0)**: Both FAIL and REVISE route back to PLANNED. FAIL means the controller re-runs against the existing plan with validator feedback; REVISE means universal-planner re-runs to produce a new plan + work_items. Pre-v12 FAIL routed to PROMPTS_READY (a state collapsed into PLANNED in v12.0.0). Choose between FAIL and REVISE based on whether the issue is execution quality or planning quality.
 
 ## Domain Concepts & Terminology
 
 ### Validation Classifications
 - **PASS**: All quality gates pass, all acceptance criteria met with specific evidence — pipeline advances to VALIDATED (complete)
 - **PARTIAL_PASS**: Most quality gates pass; some work items entered dead-letter queue — advances to VALIDATED but dead-letter items are reported for user awareness
-- **FAIL**: Fixable issues that require re-executing the controller with feedback — routes back to PROMPTS_READY; examples: missing output files, test failures, incomplete synthesis
+- **FAIL**: Fixable issues that require re-executing the controller with feedback — routes back to PLANNED (v12.0.0; pre-v12 routed to PROMPTS_READY which no longer exists); examples: missing output files, test failures, incomplete synthesis
 - **REVISE**: Fundamental issues requiring re-planning — routes back to PLANNED; examples: wrong controller selected, objectives not achievable with current approach, scope definition issues
 
 ### Quality Gates
@@ -53,8 +53,8 @@
 - **Non-Evidence**: Vague claims ("implementation looks correct", "tests should pass") — automatically treated as NOT MET
 
 ### Revision Routing Logic
-- **Route to PROMPTS_READY (FAIL)**: Issues are in execution quality — wrong implementation, missing tests, incomplete output — re-running the controller with better prompts may fix them
-- **Route to PLANNED (REVISE)**: Issues are in planning quality — wrong controller selected, objectives not achievable, scope definition incorrect — re-running without re-planning would produce the same failure
+- **Route to PLANNED with FAIL (v12.0.0)**: Issues are in execution quality — wrong implementation, missing tests, incomplete output — re-running the controller against the existing plan with validator feedback may fix them. Pre-v12 this routed to PROMPTS_READY, a state collapsed into PLANNED in v12.0.0.
+- **Route to PLANNED with REVISE (v12.0.0)**: Issues are in planning quality — wrong controller selected, objectives not achievable, scope definition incorrect — universal-planner re-runs to produce a new plan + work_items before the controller re-runs.
 
 ## Anti-Patterns to Avoid
 
@@ -80,4 +80,4 @@
 - **With reviewer (work-item level)**: Reviewer validates individual work items within controller loops; universal-validator validates the full pipeline output after all work items are done — they are complementary but operate at different granularities
 - **With universal-self-correct**: FAIL classifications route to self-correct for automated correction attempts before the pipeline cycles — self-correct receives the validation feedback and attempts targeted fixes; if it succeeds, validator re-runs; if correction exhausts retries, HITL is invoked
 - **With hitl**: When validator returns BLOCKED (circular delegation, missing coordination_log, self-answered questions) after max revision cycles are exhausted, HITL receives the full validation report for human intervention
-- **With orchestrator**: Orchestrator reads the validation_report.yaml and the EVT-N completion event to determine pipeline routing — PASS → complete; FAIL → back to PROMPTS_READY; REVISE → back to PLANNED; the event's `metadata.classification` is the machine-readable routing signal
+- **With orchestrator (v12.0.0)**: Orchestrator reads the validation_report.yaml and the EVT-N completion event to determine pipeline routing — PASS → complete; FAIL → back to PLANNED (controller re-run); REVISE → back to PLANNED via universal-planner re-run; the event's `metadata.classification` is the machine-readable routing signal. Pre-v12 FAIL routed to PROMPTS_READY, a state that no longer exists.

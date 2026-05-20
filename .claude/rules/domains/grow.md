@@ -21,7 +21,7 @@ Domain-specific patterns for strategy, product, operations, finance, marketing, 
 
 **Tier 2** (Moderate complexity):
 - **operations-manager**: Process optimization, operational workflows
-- **campaign-manager**: Campaign execution, marketing tactics
+- **marketing-strategist**: Marketing strategy, campaigns, product marketing, SEO (v12: absorbed campaign-manager, product-marketing-manager, seo-strategist)
 
 **Tier 3** (Complex):
 - **Primary**: strategic-planner (business strategy coordination)

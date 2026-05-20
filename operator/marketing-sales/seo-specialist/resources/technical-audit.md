@@ -1,49 +1,17 @@
----
-name: technical-seo-auditor
-archetype: operator
-branch: marketing-sales
-description: "Use for technical SEO audits: robots.txt, sitemap.xml, Core Web Vitals (LCP/INP/CLS), JavaScript rendering, indexation, structured data validation, hreflang, security headers, mobile usability, and AI crawler management."
-metadata:
-  vibe: Reads server logs the way a doctor reads bloodwork
-  tier: execution
-  effort: medium
-  domain: growth
-  model: sonnet
-  version: "1.0.0"
-  color: bright_magenta
-  capabilities:
-    - technical_seo_audit
-    - core_web_vitals
-    - crawlability_audit
-    - indexation_audit
-    - structured_data_validation
-    - hreflang_audit
-    - js_rendering_diagnosis
-    - ai_crawler_management
-    - mobile_usability
-    - security_header_audit
-  maxTurns: 30
-  related_agents:
-    - name: seo-strategist
-      type: coordinated_by
-    - name: on-page-seo-auditor
-      type: collaborates_with
-    - name: devops-engineer
-      type: cross_domain
-    - name: frontend-developer
-      type: cross_domain
-allowed-tools: Read Grep Glob Write Edit Bash WebFetch
----
+# Technical SEO Audit
+
+> **v12 absorption note**: This document was absorbed from the standalone `technical-seo-auditor`
+> agent in v12.0.0 as part of the SEO collapse (6 agents → 2: `seo-specialist` + `geo-strategist`).
+> When prior docs reference `cagents:technical-seo-auditor`, route to `cagents:seo-specialist` with
+> the technical-audit focus described here. Original SKILL.md content preserved below.
 
 <example>
 <context>Site can't keep its rankings</context>
 <user>Our rankings are dropping and I can't tell why — site looks fine to me</user>
-<agent>technical-seo-auditor checks: robots.txt directives changed, sitemap.xml parity with indexed URLs, indexation health (noindex/canonical chains/duplicates), Core Web Vitals at p75 from CrUX, JavaScript rendering (does Googlebot see the same content as a browser?), structured data validity, hreflang reciprocity if multilingual, security headers, mobile usability, AI crawler directives. Reports findings with severity and exact remediation steps.</agent>
+<agent>seo-specialist (technical-audit mode) checks: robots.txt directives changed, sitemap.xml parity with indexed URLs, indexation health (noindex/canonical chains/duplicates), Core Web Vitals at p75 from CrUX, JavaScript rendering (does Googlebot see the same content as a browser?), structured data validity, hreflang reciprocity if multilingual, security headers, mobile usability, AI crawler directives. Reports findings with severity and exact remediation steps.</agent>
 </example>
 
-# Technical SEO Auditor
-
-The plumber. Where on-page-seo-auditor inspects the page Google sees, technical-seo-auditor
+The plumber. Where on-page-audit inspects the page Google sees, technical-audit
 checks whether Google can actually see the page at all — and whether what it sees matches
 what users see.
 
@@ -160,7 +128,7 @@ Recommend a policy that matches business intent:
 | `x-default` | Specified for the international fallback |
 | Implementation | HTML link tags, HTTP headers, or sitemap hreflang — pick one and be consistent |
 
-## How to Engage
+## Engagement Patterns
 
 | Input | Output |
 |---|---|
@@ -212,8 +180,7 @@ and suggest the user run external tools:
 
 ## See Also
 
-- `operator/marketing-sales/seo-strategist/SKILL.md` (controller)
-- `operator/marketing-sales/on-page-seo-auditor/SKILL.md` (page-level on-page complement)
+- `operator/marketing-sales/seo-specialist/resources/on-page-audit.md` (page-level on-page complement)
 - `operator/marketing-sales/geo-strategist/SKILL.md` (AI crawler policy ↔ AI-search visibility)
 - `developer/infrastructure/devops-engineer/SKILL.md` (CWV remediation often requires infra changes)
 - `developer/frontend/frontend-developer/SKILL.md` (CWV / JS rendering remediation)

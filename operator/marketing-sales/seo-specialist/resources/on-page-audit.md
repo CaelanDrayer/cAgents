@@ -1,48 +1,18 @@
----
-name: on-page-seo-auditor
-archetype: operator
-branch: marketing-sales
-description: "Use for on-page SEO audits: title tags, meta descriptions, heading hierarchy, internal anchor text, schema markup, image alt text, content quality (E-E-A-T), and Open Graph metadata."
-metadata:
-  vibe: Reads page source the way an editor reads page proofs
-  tier: execution
-  effort: medium
-  domain: growth
-  model: sonnet
-  version: "1.0.0"
-  color: bright_magenta
-  capabilities:
-    - on_page_audit
-    - title_meta_optimization
-    - heading_hierarchy_analysis
-    - schema_markup_validation
-    - image_seo
-    - internal_linking_audit
-    - content_quality_eeat
-    - open_graph_audit
-  maxTurns: 30
-  related_agents:
-    - name: seo-strategist
-      type: coordinated_by
-    - name: keyword-researcher
-      type: collaborates_with
-    - name: technical-seo-auditor
-      type: collaborates_with
-    - name: copywriter
-      type: collaborates_with
-allowed-tools: Read Grep Glob Write Edit Bash WebFetch
----
+# On-Page SEO Audit
+
+> **v12 absorption note**: This document was absorbed from the standalone `on-page-seo-auditor`
+> agent in v12.0.0 as part of the SEO collapse (6 agents → 2: `seo-specialist` + `geo-strategist`).
+> When prior docs reference `cagents:on-page-seo-auditor`, route to `cagents:seo-specialist` with
+> the on-page-audit focus described here. Original SKILL.md content preserved below.
 
 <example>
 <context>Single-page audit</context>
 <user>Audit https://example.com/pricing for on-page SEO</user>
-<agent>on-page-seo-auditor inspects: title (length, keyword, uniqueness), meta description, H1/H2/H3 hierarchy, body content quality and E-E-A-T markers, internal anchor text inbound and outbound, schema (Product, Offer, Organization), image alt text and file sizes, canonical, Open Graph and Twitter Card. Reports each finding with severity (Critical/High/Medium/Low) and fix.</agent>
+<agent>seo-specialist (on-page mode) inspects: title (length, keyword, uniqueness), meta description, H1/H2/H3 hierarchy, body content quality and E-E-A-T markers, internal anchor text inbound and outbound, schema (Product, Offer, Organization), image alt text and file sizes, canonical, Open Graph and Twitter Card. Reports each finding with severity (Critical/High/Medium/Low) and fix.</agent>
 </example>
 
-# On-Page SEO Auditor
-
-The element-by-element auditor of what's actually on the page. Where technical-seo-auditor
-asks "can Google crawl and index this site?", on-page-seo-auditor asks "once Google
+The element-by-element auditor of what's actually on the page. Where technical-audit
+asks "can Google crawl and index this site?", on-page-audit asks "once Google
 sees this page, is it set up to rank for what we want it to rank for?"
 
 ## Use When
@@ -67,7 +37,7 @@ sees this page, is it set up to rank for what we want it to rank for?"
 - **Canonical and meta robots**: correctly set, no accidental noindex
 - **Open Graph and Twitter Card**: complete and image-validated
 
-## How to Engage
+## Engagement Patterns
 
 | Input | Output |
 |---|---|
@@ -218,7 +188,6 @@ For the audited page:
 
 ## See Also
 
-- `operator/marketing-sales/seo-strategist/SKILL.md` (controller)
-- `operator/marketing-sales/keyword-researcher/SKILL.md` (intent input)
-- `operator/marketing-sales/technical-seo-auditor/SKILL.md` (complementary scope)
+- `operator/marketing-sales/seo-specialist/resources/keyword-research.md` (intent input)
+- `operator/marketing-sales/seo-specialist/resources/technical-audit.md` (complementary scope)
 - `operator/marketing-sales/geo-strategist/SKILL.md` (citability + answer-block patterns)

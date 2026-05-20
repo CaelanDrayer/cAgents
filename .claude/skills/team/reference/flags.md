@@ -89,7 +89,7 @@ This maps to Claude Code's built-in `teammateMode` setting. The flag overrides t
 |--------------|---------------------|
 | Engineering | `tech-lead` |
 | Creative | `creative-director` |
-| Marketing | `campaign-manager` |
+| Marketing | `marketing-strategist` |
 | Operations | `operations-manager` |
 | HR | `hr-manager` |
 | Support | `customer-success-manager` |

@@ -172,7 +172,7 @@ Update plugin.json if needed to reference new path.
 - [x] qa-lead (converted V8.0)
 - [x] creative-director (converted V9.0)
 - [x] game-designer (converted V9.0)
-- [x] campaign-manager (converted V9.0)
+- [x] campaign-manager (converted V9.0; absorbed into marketing-strategist in v12)
 - [x] marketing-strategist (converted V9.0)
 - [x] hr-manager (converted V9.0)
 - [x] customer-success-manager (converted V9.0)

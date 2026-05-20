@@ -2,15 +2,17 @@
 
 After /run reports results, the pipeline enters a listening state. If the user provides follow-up feedback in the same conversation, the pipeline re-enters execution within the SAME session rather than starting a new one.
 
-## Follow-Up Type Classification
+## Follow-Up Type Classification (v12.0.0)
 
 | Type | Trigger Keywords | Pipeline Re-entry Point | Scope |
 |------|-----------------|------------------------|-------|
-| **adjustment** | "change", "tweak", "update", "modify", "rename", "move" | PROMPTS_READY (controller only) | Targeted change to specific files/functions |
-| **rework** | "redo", "rewrite", "start over", "wrong approach", "rethink" | PLANNED (re-plan + re-execute) | Significant rework of one or more work items |
-| **extension** | "also add", "now add", "extend", "include", "plus" | DECOMPOSED (add work items, then execute) | New scope added to existing deliverable |
-| **fix** | "bug", "broken", "doesn't work", "error", "failing" | PROMPTS_READY (controller only) | Bug fix in delivered code |
+| **adjustment** | "change", "tweak", "update", "modify", "rename", "move" | PLANNED (controller only) | Targeted change to specific files/functions |
+| **rework** | "redo", "rewrite", "start over", "wrong approach", "rethink" | ORCHESTRATED (re-plan + re-execute) | Significant rework of one or more work items |
+| **extension** | "also add", "now add", "extend", "include", "plus" | ORCHESTRATED (re-plan to add work items, then execute) | New scope added to existing deliverable |
+| **fix** | "bug", "broken", "doesn't work", "error", "failing" | PLANNED (controller only) | Bug fix in delivered code |
 | **review** | "check", "review", "verify", "test", "validate" | COORDINATED (validator only) | Re-validate without re-executing |
+
+**v12.0.0 change**: Pre-v12 used `PROMPTS_READY` for adjustment/fix (controller re-entry) and `DECOMPOSED` for extension (add work items via decomposer). With those states removed, adjustment/fix now re-enter at `PLANNED` (controller picks up the existing plan + work_items and applies the targeted change), and extension re-enters at `ORCHESTRATED` (universal-planner re-decomposes inline to add new work items).
 
 ## Re-Entry Procedure
 
@@ -29,7 +31,7 @@ After /run reports results, the pipeline enters a listening state. If the user p
    payload:
      followup_type: adjustment|rework|extension|fix|review
      user_feedback: "{user's follow-up message}"
-     re_entry_state: PROMPTS_READY|PLANNED|DECOMPOSED|COORDINATED
+     re_entry_state: PLANNED|ORCHESTRATED|COORDINATED
      previous_state: VALIDATED
    ```
 
@@ -44,10 +46,9 @@ After /run reports results, the pipeline enters a listening state. If the user p
    ```
 
 4. Resume the state machine loop from the re-entry point:
-   - For adjustment/fix: spawn controller with the follow-up as a targeted sub-request
-   - For rework: re-invoke planner with feedback context
-   - For extension: re-invoke decomposer to add new work items
-   - For review: re-invoke validator
+   - For adjustment/fix: spawn controller with the follow-up as a targeted sub-request (re-enter at PLANNED)
+   - For rework/extension: re-invoke universal-planner with feedback context (re-enter at ORCHESTRATED). The planner re-produces plan.yaml + work_items.yaml; extensions add new work items, reworks revise existing ones.
+   - For review: re-invoke validator (re-enter at COORDINATED)
 
 5. After follow-up completes:
    - Update execution_summary.yaml with followup_rounds count
@@ -79,13 +80,13 @@ followup_history:
   - round: 1
     type: adjustment
     feedback: "change the auth to use JWT"
-    re_entry_state: PROMPTS_READY
+    re_entry_state: PLANNED
     outcome: completed
 ```
 
 ## Controller Receives Follow-Up Context
 
-When re-entering at PROMPTS_READY (controller), the controller prompt includes:
+When re-entering at PLANNED (controller), the controller prompt includes:
 - Original request + completion context from coordination_log.yaml
 - The user's follow-up feedback
 - Instruction to treat this as a scoped modification, not a full re-implementation

@@ -4,8 +4,8 @@ description: "Marketing execution, sales operations, demand generation"
 
 planner:
   controller_catalog:
-    tier_2: [campaign-manager, creative-director, product-marketing-manager, seo-strategist]
-    tier_3: [campaign-manager, marketing-strategist, sales-strategist, creative-director, product-marketing-manager, seo-strategist]
+    tier_2: [marketing-strategist, creative-director]
+    tier_3: [marketing-strategist, sales-strategist, creative-director]
     tier_4: [cmo, cro, marketing-strategist]
 
   specialist_routing:
@@ -19,15 +19,15 @@ planner:
       description: "Content and creative marketing"
     product_marketing:
       keywords: [positioning, messaging, launch, go-to-market, competitive, GTM]
-      agents: [product-marketing-manager]
-      description: "Product marketing and launches"
+      agents: [marketing-strategist]
+      description: "Product marketing and launches (v12: product-marketing-manager absorbed into marketing-strategist)"
     seo:
       keywords: [SEO, search engine, organic, keyword research, ranking, backlink, site audit, technical SEO, schema markup, Core Web Vitals]
-      agents: [seo-strategist, seo-specialist, keyword-researcher, on-page-seo-auditor, technical-seo-auditor, link-strategist]
-      description: "Search engine optimization (seo-strategist coordinates; seo-specialist remains for lightweight execution)"
+      agents: [marketing-strategist, seo-specialist]
+      description: "Search engine optimization (v12: seo-strategist absorbed into marketing-strategist for tier 2+ coordination; seo-specialist remains as execution agent)"
     geo:
       keywords: [GEO, generative engine optimization, AI search, AI Overviews, ChatGPT citation, Perplexity, llms.txt, AI citability, AI search visibility]
-      agents: [geo-strategist, seo-strategist]
+      agents: [geo-strategist, marketing-strategist]
       description: "Generative Engine Optimization for ChatGPT, Claude, Perplexity, Google AI Overviews, Gemini"
     social_media:
       keywords: [social media, Instagram, LinkedIn, Twitter, TikTok, community, social]
@@ -55,8 +55,8 @@ planner:
       description: "Sales development and outbound prospecting"
     sales_enablement:
       keywords: [sales training, playbook, battlecard, sales content, onboarding sales]
-      agents: [sales-enablement-specialist, sales-trainer]
-      description: "Sales enablement and training"
+      agents: [sales-enablement-specialist]
+      description: "Sales enablement and training (sales-trainer absorbed in v12)"
     sales_engineering:
       keywords: [demo, POC, proof of concept, technical sales, solution design, pre-sales]
       agents: [sales-engineer]
@@ -71,8 +71,8 @@ planner:
       description: "Territory and field sales management"
     influencer:
       keywords: [influencer, creator, ambassador, UGC, partnership marketing]
-      agents: [influencer-marketing-specialist, partnership-marketing-manager]
-      description: "Influencer and partnership marketing"
+      agents: [partnership-marketing-manager]
+      description: "Influencer and partnership marketing (influencer-marketing-specialist absorbed in v12)"
     proposals:
       keywords: [proposal, RFP, RFI, bid, pitch deck]
       agents: [proposal-specialist]
@@ -83,8 +83,8 @@ planner:
       description: "Brand strategy and identity"
     revenue_ops:
       keywords: [RevOps, revenue operations, CRM, Salesforce, HubSpot, pipeline analytics]
-      agents: [revenue-operations-manager, sales-ops-specialist, marketing-ops-specialist]
-      description: "Revenue operations and CRM management"
+      agents: [revenue-operations-manager, marketing-ops-specialist]
+      description: "Revenue operations and CRM management (sales-ops-specialist absorbed in v12)"
     content_marketing:
       keywords: [content strategy, blog, whitepaper, content calendar, content marketing]
       agents: [channel-marketer]
@@ -99,12 +99,12 @@ planner:
       description: "Marketing analytics and attribution"
     customer_marketing:
       keywords: [customer marketing, advocacy, case study, testimonial, reference]
-      agents: [customer-marketing-manager]
-      description: "Customer marketing and advocacy"
+      agents: [growth-marketer]
+      description: "Customer marketing and advocacy (customer-marketing-manager absorbed in v12)"
     channel_partners:
       keywords: [channel, partner, reseller, distributor, channel sales, alliance]
-      agents: [channel-partner-manager]
-      description: "Channel and partner management"
+      agents: [partnership-marketing-manager]
+      description: "Channel and partner management (channel-partner-manager absorbed in v12)"
     account_sales:
       keywords: [account executive, enterprise sales, strategic account, closing, negotiation]
       agents: [sales-rep]
@@ -119,8 +119,8 @@ planner:
       description: "Marketing copy and content creation"
     affiliate:
       keywords: [affiliate, referral, commission, partner program, affiliate network, referral program]
-      agents: [affiliate-marketing-manager]
-      description: "Affiliate programs and partner referrals"
+      agents: [partnership-marketing-manager]
+      description: "Affiliate programs and partner referrals (affiliate-marketing-manager absorbed in v12)"
     cro:
       keywords: [CRO, A/B test, conversion, landing page, funnel optimization, split test, multivariate, experiment]
       agents: [conversion-rate-optimizer]

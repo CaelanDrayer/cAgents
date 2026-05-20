@@ -32,7 +32,7 @@ role_description: "Event-driven pipeline engine - state machine loop"
 
 ## Child Agent Registration
 
-Each pipeline agent (orchestrator, planner, decomposer, prompt-engineer, controller, validator) is appended to agent_tree.yaml when spawned. The SubagentStart hook (`subagent-tracker.cjs`) handles this automatically when the Agent tool spawns the agent. The hook also injects an `additionalContext` instruction asking cAgents agents to self-register their `cagents:{name}` type.
+Each pipeline agent (orchestrator, universal-planner, controller, validator) is appended to agent_tree.yaml when spawned. The SubagentStart hook (`subagent-tracker.cjs`) handles this automatically when the Agent tool spawns the agent. The hook also injects an `additionalContext` instruction asking cAgents agents to self-register their `cagents:{name}` type. (v12.0.0: task-decomposer and prompt-engineer were absorbed into universal-planner, so they no longer appear as separate entries in agent_tree.yaml. Pre-v12 archived sessions will still show these entries.)
 
 ## Lineage Fields
 

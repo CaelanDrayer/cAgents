@@ -121,9 +121,11 @@ Chain depth adapts to pipeline path:
 ## Pipeline Integration (v12.0.0)
 
 In v12.0.0 the pipeline collapses 7 -> 5 states. The planner is the
-single state owner for both PLANNED (plan.yaml) and the previously-separate
-DECOMPOSED (work_items.yaml) state. The planner now writes BOTH artifacts in
-one pass:
+single state owner for the ORCHESTRATED -> PLANNED transition and produces
+BOTH `plan.yaml` AND `work_items.yaml` in one pass. (Pre-v12, the planner
+produced only plan.yaml and a separate task-decomposer produced
+work_items.yaml during a now-removed DECOMPOSED state.) The planner writes
+BOTH artifacts in one pass:
 
 ```
 /run state machine (v12) -> PLANNED -> universal-planner -> plan.yaml + work_items.yaml + event file

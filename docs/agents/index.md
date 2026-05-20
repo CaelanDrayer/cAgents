@@ -73,7 +73,7 @@
 
 ## Business (28 agents)
 
-Strategy, product, operations, finance. Includes: campaign-manager, marketing-strategist, sales-strategist, finance-manager, operations-manager, strategic-planner, product-owner, game-designer, copywriter, and additional specialists.
+Strategy, product, operations, finance. Includes: marketing-strategist (absorbed campaign-manager, product-marketing-manager, seo-strategist in v12), sales-strategist, finance-manager, operations-manager, strategic-planner, product-owner, game-designer, copywriter, and additional specialists.
 
 ## People (17 agents)
 
@@ -97,7 +97,7 @@ Cross-domain intelligence: bi-specialist, competitive-intelligence-analyst, data
 
 ## Growth (34 agents)
 
-Marketing, sales, revenue operations: account-executive, affiliate-marketing-manager, brand-manager, campaign-manager, channel-partner-manager, content-marketing-manager, conversion-rate-optimizer, copywriter, creative-director, customer-marketing-manager, demand-generation-manager, digital-marketing-manager, email-marketing-specialist, events-coordinator, field-marketing-manager, growth-marketer, influencer-marketing-specialist, inside-sales-rep, marketing-analyst, marketing-ops-specialist, marketing-strategist, media-buyer, partnership-marketing-manager, pr-specialist, pricing-analyst, product-marketing-manager, proposal-specialist, revenue-operations-manager, sales-analyst, sales-development-rep, sales-enablement-specialist, sales-engineer, sales-ops-specialist, sales-strategist, sales-trainer, seo-specialist, social-media-manager, territory-manager, video-marketing-specialist.
+Marketing, sales, revenue operations: account-executive, affiliate-marketing-manager, brand-manager, channel-partner-manager, content-marketing-manager, conversion-rate-optimizer, copywriter, creative-director, demand-generation-manager, digital-marketing-manager, email-marketing-specialist, events-coordinator, field-marketing-manager, growth-marketer, influencer-marketing-specialist, inside-sales-rep, marketing-analyst, marketing-ops-specialist, marketing-strategist (v12 absorbs campaign-manager, product-marketing-manager, seo-strategist), media-buyer, partnership-marketing-manager, pr-specialist, pricing-analyst, proposal-specialist, revenue-operations-manager, sales-analyst, sales-development-rep, sales-enablement-specialist, sales-engineer, sales-strategist, seo-specialist, social-media-manager, territory-manager, video-marketing-specialist.
 
 ## Science (10 agents)
 

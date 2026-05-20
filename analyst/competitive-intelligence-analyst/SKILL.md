@@ -27,7 +27,7 @@ metadata:
   related_agents:
     - name: market-research-analyst
       type: collaborates_with
-    - name: product-marketing-manager
+    - name: marketing-strategist
       type: cross_domain
     - name: sales-enablement-specialist
       type: cross_domain

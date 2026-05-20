@@ -287,7 +287,7 @@ These are the backbone -- they manage workflows, not tasks:
 Controllers coordinate work through question-based delegation:
 - **tech-lead**, **architect** -- Engineering
 - **narrative-director** -- Creative
-- **operations-manager**, **campaign-manager** -- Business
+- **operations-manager**, **marketing-strategist** -- Business
 - **hr-manager** -- People
 - **customer-success-manager**, **general-counsel** -- Service
 - And many more specialized controllers...

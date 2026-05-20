@@ -19,7 +19,7 @@ metadata:
   related_agents:
     - name: strategic-planner
       type: coordinated_by
-    - name: channel-partner-manager
+    - name: partnership-marketing-manager
       type: cross_domain
 allowed-tools: Read Grep Glob Write Edit Bash
 ---

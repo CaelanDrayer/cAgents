@@ -1,9 +1,10 @@
-# Debug-Mode Controller Prompt Prefix (V10.26.12+)
+# Debug-Mode Controller Prompt Prefix (V10.26.12+, updated for v12.0.0)
 
 Reusable prompt prefix injected into the controller spawn when `/run --mode debug`
-is active. Landed dormant in V10.26.12; V10.26.13 wires it into the
-PROMPTS_READY state. Subsequent patches (V10.26.14–17) extend the universal-validator
-to enforce the artifacts this prefix asks the controller to produce.
+is active. Landed dormant in V10.26.12; V10.26.13 wired it into the controller
+spawn (originally PROMPTS_READY state, now PLANNED state in v12.0.0). Subsequent
+patches (V10.26.14–17) extend the universal-validator to enforce the artifacts
+this prefix asks the controller to produce.
 
 ## Prefix Text
 
@@ -30,12 +31,14 @@ corresponding validator checks:
 
 ## Where It Is Consumed
 
-- V10.26.13 PROMPTS_READY controller spawn (see `delegation-patterns.md`)
+- v12.0.0 PLANNED controller spawn (see `delegation-patterns.md`). Pre-v12 sessions injected this prefix at the PROMPTS_READY controller spawn; that state was collapsed into PLANNED in v12.0.0.
 - V10.26.18 `/debug` shim invokes `/run --mode debug`, inheriting this prefix
 
 ## Authoring Notes
 
 Keep the prefix under 150 tokens so it fits cleanly into the controller spawn
-prompt without crowding out the delegation prompt crafted by the
-prompt-engineer agent. Revise copy before promoting checks — the prefix is the
-source of truth for what the validator enforces.
+prompt without crowding out the standard delegation prompt. (Pre-v12 the
+delegation prompt was crafted by the prompt-engineer agent; v12.0.0 controllers
+fall back to the standard delegation prompt template — the debug prefix is
+prepended in both cases.) Revise copy before promoting checks — the prefix is
+the source of truth for what the validator enforces.

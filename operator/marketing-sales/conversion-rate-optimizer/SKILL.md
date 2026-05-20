@@ -25,7 +25,7 @@ metadata:
     - Sales operations
     - PR and media
   related_agents:
-    - name: campaign-manager
+    - name: marketing-strategist
       type: coordinated_by
     - name: growth-marketer
       type: collaborates_with

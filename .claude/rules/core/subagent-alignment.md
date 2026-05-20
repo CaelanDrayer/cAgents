@@ -182,7 +182,7 @@ Controllers coordinate work through question-based delegation:
 | `cagents:tech-lead` | Engineering work | backend-developer, frontend-developer, qa-lead |
 | `cagents:architect` | System design | engineer specialists, security-specialist |
 | `cagents:creative-director` | Creative work | copywriter, designer, content-strategist |
-| `cagents:campaign-manager` | Marketing campaigns | copywriter, seo-specialist, email-specialist |
+| `cagents:marketing-strategist` | Marketing strategy + campaigns + PMM + SEO | copywriter, seo-specialist, marketing-analyst, media-buyer, sales-enablement-specialist |
 | `cagents:operations-manager` | Operations | operations-analyst, procurement-specialist |
 
 ### Execution Agents (Tier 3)

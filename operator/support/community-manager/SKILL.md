@@ -20,7 +20,7 @@ metadata:
   related_agents:
     - name: customer-advocacy-manager
       type: coordinated_by
-    - name: campaign-manager
+    - name: marketing-strategist
       type: cross_domain
 allowed-tools: Read Grep Glob Write Edit Bash
 ---

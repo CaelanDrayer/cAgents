@@ -152,7 +152,7 @@ function inferParentAgent(sessionDir, subagentType, agentId) {
           // Find the last agent with a controller-like cagents_type
           const controllerMatches = [...treeContent.matchAll(/id:\s*["']?([^"'\n]+)["']?[\s\S]*?cagents_type:\s*["']?cagents:([^"'\n]+)["']?/g)];
           const CONTROLLER_NAMES = ['tech-lead', 'architect', 'narrative-director', 'story-architect',
-            'operations-manager', 'product-owner', 'strategic-planner', 'marketing-strategist', 'campaign-manager',
+            'operations-manager', 'product-owner', 'strategic-planner', 'marketing-strategist',
             'hr-manager', 'talent-acquisition-manager', 'customer-success-manager', 'general-counsel',
             'support-director', 'compliance-officer'];
           for (let i = controllerMatches.length - 1; i >= 0; i--) {

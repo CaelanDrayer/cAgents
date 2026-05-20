@@ -37,7 +37,7 @@ metadata:
       type: coordinates
     - name: customer-advocacy-manager
       type: collaborates_with
-    - name: customer-marketing-manager
+    - name: growth-marketer
       type: cross_domain
 allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
