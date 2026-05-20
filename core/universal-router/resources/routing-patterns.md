@@ -114,7 +114,7 @@ routing_decision:
     controller_logic: |
       Executive: CTO (strategic decision)
       Primary: architect (migration design)
-      Supporting: engineering-manager, devops-lead
+      Supporting: engineering-manager, infrastructure-lead
       HITL approval required
 ```
 

@@ -295,7 +295,7 @@ Outputs:
 ✓ Routing: Classified as tier 4, engineering domain
 ✓ Planning:
   - Objectives defined
-  - Controllers selected (cto + engineering-manager + architect + devops-lead + security-specialist + qa-lead)
+  - Controllers selected (cto + engineering-manager + architect + infrastructure-lead + security-specialist + qa-lead)
   - HITL approval gates defined
 ✓ Coordinating:
   - CTO provided strategic oversight

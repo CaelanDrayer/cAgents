@@ -613,7 +613,7 @@ const group3 = await Promise.all([
 - **cagents:sysadmin** -- Reviews system-level concerns: file permissions, log rotation, disk management, cron scheduling, and system service configuration
 
 ### Group 2: Reliability & Scalability (after Group 1, uses security context)
-- **cagents:devops-lead** -- Assesses high-availability design, failover mechanisms, disaster recovery readiness, backup strategies, and multi-region considerations
+- **cagents:infrastructure-lead** -- Assesses high-availability design, failover mechanisms, disaster recovery readiness, backup strategies, and multi-region considerations
 - **cagents:performance-analyzer** -- Evaluates resource allocation efficiency, auto-scaling triggers, cache configuration, connection pooling, and throughput bottlenecks
 - **cagents:architecture-reviewer** -- Reviews infrastructure architecture: service mesh design, load balancing strategy, database topology, and network segmentation
 Dependencies: Uses security findings from Group 1 to assess reliability with full threat awareness
@@ -657,7 +657,7 @@ Review system configuration of ${targetPath} as a senior systems administrator. 
 Report findings with: file:line location, severity (critical/high/medium/low), operational impact, and fix suggestion.
 ```
 
-#### cagents:devops-lead
+#### cagents:infrastructure-lead
 ```
 Assess infrastructure reliability of ${targetPath} as a DevOps director. Focus on:
 1. High availability — is there redundancy at every layer? What is the blast radius of a single failure?
@@ -699,7 +699,7 @@ const group1 = await Promise.all([
 
 // Group 2 - Reliability & Scalability (uses Group 1 context)
 const group2 = await Promise.all([
-  Agent({ subagent_type: "cagents:devops-lead", prompt: `Assess infrastructure reliability of ${targetPath}. Security context: ${group1Results}` }),
+  Agent({ subagent_type: "cagents:infrastructure-lead", prompt: `Assess infrastructure reliability of ${targetPath}. Security context: ${group1Results}` }),
   Agent({ subagent_type: "cagents:performance-analyzer", prompt: `Evaluate infrastructure performance of ${targetPath}. Context: ${group1Results}` }),
   Agent({ subagent_type: "cagents:architecture-reviewer", prompt: `Review infrastructure architecture of ${targetPath}. Context: ${group1Results}` }),
 ]);
@@ -723,6 +723,6 @@ const group3 = await Promise.all([
 | **Design** | ux-designer, frontend-developer, accessibility-checker | prose-stylist, content-marketing-manager, compliance-specialist | architecture-reviewer, frontend-developer | 8 |
 | **Process** | operations-manager, process-improvement-specialist, risk-manager | compliance-officer, compliance-specialist, risk-assessment | technical-writer, ux-designer | 8 |
 | **Data** | dba, data-analyst, data-scientist | security-engineer, compliance-specialist, bi-specialist | performance-analyzer, dba | 8 |
-| **Infrastructure** | security-engineer, devops-engineer, sysadmin | devops-lead, performance-analyzer, architecture-reviewer | compliance-specialist, risk-manager | 8 |
+| **Infrastructure** | security-engineer, devops-engineer, sysadmin | infrastructure-lead, performance-analyzer, architecture-reviewer | compliance-specialist, risk-manager | 8 |
 
 *Conditional agents (starred) are only spawned when relevant (UI components, regulated data).

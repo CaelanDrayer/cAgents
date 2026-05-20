@@ -44,7 +44,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 | code | engineering-manager | backend-developer, frontend-developer, architect |
 | content | content-marketing-manager | copywriter, seo-specialist |
 | process | operations-manager | operations-analyst |
-| infrastructure | devops-lead | backend-developer, architect |
+| infrastructure | infrastructure-lead | backend-developer, architect |
 | data | engineering-manager | dba, backend-developer |
 | campaign | campaign-manager | copywriter, growth-hacker |
 | creative | creative-director | game-writer, copywriter |

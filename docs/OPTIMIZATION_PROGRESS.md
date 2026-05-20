@@ -63,7 +63,7 @@ These agents already have directory structure with SKILL.md:
 - [x] data-analyst (106 lines)
 - [x] dba (118 lines)
 - [x] devops (79 lines)
-- [x] devops-lead (83 lines)
+- [x] infrastructure-lead (83 lines)
 - [x] engineering-manager (92 lines)
 - [x] finance-manager (95 lines)
 - [x] frontend-aesthetics (95 lines)

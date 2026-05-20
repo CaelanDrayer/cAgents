@@ -15,7 +15,7 @@
 | frontend-developer | execution | UI components, state management |
 | senior-developer | execution | Complex implementation |
 | devops | execution | Deployment, CI/CD |
-| devops-lead | execution | Infrastructure coordination |
+| infrastructure-lead | execution | Infrastructure coordination |
 | qa-lead | execution | Testing strategy |
 | reviewer | execution | Code review |
 | security-specialist | execution | Security review |

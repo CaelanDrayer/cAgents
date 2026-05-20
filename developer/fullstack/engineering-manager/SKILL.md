@@ -42,7 +42,7 @@ metadata:
       type: coordinates
     - name: frontend-lead
       type: coordinates
-    - name: devops-lead
+    - name: infrastructure-lead
       type: coordinates
     - name: security-lead
       type: coordinates
@@ -58,7 +58,7 @@ allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskLi
 <example>
 <context>Bug fix requires investigation across multiple services</context>
 <user>Users are getting 500 errors intermittently on the checkout page</user>
-<agent>engineering-manager investigates: delegates root cause analysis to backend-developer, performance profiling to devops-lead, then coordinates the fix across affected services</agent>
+<agent>engineering-manager investigates: delegates root cause analysis to backend-developer, performance profiling to infrastructure-lead, then coordinates the fix across affected services</agent>
 </example>
 
 

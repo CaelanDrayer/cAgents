@@ -31,7 +31,7 @@ metadata:
     - gitops_workflows
   maxTurns: 30
   related_agents:
-    - name: devops-lead
+    - name: infrastructure-lead
       type: coordinated_by
     - name: sysadmin
       type: collaborates_with

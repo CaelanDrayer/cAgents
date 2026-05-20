@@ -31,7 +31,7 @@ Domain-specific patterns for engineering workflows.
 **Tier 4** (Expert):
 - **Executive**: cto (strategic oversight)
 - **Primary**: engineering-manager (coordination)
-- **Supporting**: architect, devops-lead, security-specialist, qa-lead
+- **Supporting**: architect, infrastructure-lead, security-specialist, qa-lead
 
 ## Typical Questions
 
@@ -57,7 +57,7 @@ Engineering controllers typically ask:
 Common engineering execution agents:
 - **backend-developer**: API endpoints, database, business logic
 - **frontend-developer**: UI components, state management, styling
-- **devops-lead**: Deployment, infrastructure, CI/CD
+- **infrastructure-lead**: Deployment, infrastructure, CI/CD
 - **qa-lead**: Testing strategy, test implementation, quality assurance
 - **security-specialist**: Security review, vulnerability assessment
 - **architect**: System design, architectural decisions

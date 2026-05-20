@@ -43,7 +43,7 @@ planner:
   controller_catalog:
     tier_2: [engineering-manager]
     tier_3: [engineering-manager, architect, security-lead]
-    tier_4: [cto, engineering-manager, architect, devops-lead]
+    tier_4: [cto, engineering-manager, architect, infrastructure-lead]
 
 router:
   keywords:

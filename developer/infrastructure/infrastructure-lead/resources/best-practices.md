@@ -1,4 +1,4 @@
-# Best Practices: DevOps Lead
+# Best Practices: Infrastructure Lead
 
 > Design principles, patterns, and frameworks that guide high-quality DevOps team coordination, infrastructure strategy, and delivery excellence.
 

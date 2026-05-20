@@ -39,7 +39,7 @@ metadata:
       type: coordinates
     - name: data-lead
       type: coordinates
-    - name: devops-lead
+    - name: infrastructure-lead
       type: coordinates
     - name: security-lead
       type: coordinates

@@ -64,7 +64,7 @@ const KNOWN_AGENTS = {
   'dependency-analyzer': 'support',
   'dependency-auditor': 'support',
   'devops-engineer': 'execution',
-  'devops-lead': 'controller',
+  'infrastructure-lead': 'controller',
   'engine-developer': 'execution',
   'engineering-manager': 'controller',
   'frontend-aesthetics': 'execution',

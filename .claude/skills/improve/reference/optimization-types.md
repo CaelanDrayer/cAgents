@@ -30,7 +30,7 @@
 - **Domain**: Make/Operate
 - **What it optimizes**: Cost, scaling, reliability, monitoring
 - **Key metrics**: Monthly cost, utilization %, uptime, response time
-- **Controller**: devops-lead
+- **Controller**: infrastructure-lead
 - **Specialists**: backend-developer, architect
 - **Auto-detection**: Infrastructure configs (docker, k8s, terraform)
 

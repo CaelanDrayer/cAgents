@@ -23,7 +23,7 @@ metadata:
     - capacity_planning
   maxTurns: 30
   related_agents:
-    - name: devops-lead
+    - name: infrastructure-lead
       type: coordinated_by
     - name: devops-engineer
       type: collaborates_with
