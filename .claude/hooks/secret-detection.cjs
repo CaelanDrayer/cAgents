@@ -12,7 +12,81 @@
  */
 
 const path = require('path');
-const { createHook, AGENT_MEMORY_DIR } = require('./hook-utils.cjs');
+const fs = require('fs');
+const crypto = require('crypto');
+const { createHook, AGENT_MEMORY_DIR, findActiveSession, ensureDir } = require('./hook-utils.cjs');
+
+// v12.0.4 (REC-1): opt-in sanitize-and-restore mode.
+// Default mode "block" preserves pre-v12.0.4 pure-deny semantics.
+// Mode "sanitize" replaces secrets with BLOCK_<hex> placeholders, backs up the
+// original content under cagents-memory/_system/secret-backups/{session}/, and
+// the companion Stop hook (secret-restore.cjs) restores files at session end.
+function getSecretMode() {
+  const raw = (process.env.CAGENTS_SECRET_MODE || 'block').toLowerCase();
+  return raw === 'sanitize' ? 'sanitize' : 'block';
+}
+
+function getSessionIdForBackup(input) {
+  // Prefer explicit session_id from hook input, then env, then discovered session dir.
+  if (input && typeof input.session_id === 'string' && input.session_id) {
+    return input.session_id;
+  }
+  if (process.env.CAGENTS_ACTIVE_SESSION) {
+    return process.env.CAGENTS_ACTIVE_SESSION;
+  }
+  const dir = findActiveSession();
+  if (dir) {
+    return path.basename(dir);
+  }
+  // Fallback: no session context — bucket under "_no-session" so the operator
+  // can still find backups if a sanitize-mode hook fires outside a session.
+  return '_no-session';
+}
+
+function getBackupDir(sessionId) {
+  return path.join(AGENT_MEMORY_DIR, '_system', 'secret-backups', sessionId);
+}
+
+function sanitizeContent(content, findings) {
+  // Sort findings by descending start index so replacements don't shift earlier ones.
+  const sorted = [...findings].sort((a, b) => b.index - a.index);
+  let out = content;
+  const placeholders = [];
+  for (const f of sorted) {
+    const hash = crypto.createHash('sha256').update(f.value).digest('hex').slice(0, 8);
+    const placeholder = `BLOCK_${hash}`;
+    out = out.slice(0, f.index) + placeholder + out.slice(f.index + f.value.length);
+    placeholders.push({
+      placeholder,
+      hash,
+      type: f.type,
+      severity: f.severity,
+      line: f.line
+    });
+  }
+  return { sanitized: out, placeholders };
+}
+
+function appendManifest(manifestPath, entry) {
+  let body = '';
+  if (fs.existsSync(manifestPath)) {
+    body = fs.readFileSync(manifestPath, 'utf8');
+  } else {
+    body = 'schema_version: "1"\nentries:\n';
+  }
+  // Append a YAML list entry — keep formatting trivial (no YAML lib).
+  const lines = [
+    `  - placeholder: "${entry.placeholder}"`,
+    `    file_path: "${entry.file_path}"`,
+    `    line_range: "${entry.line_range}"`,
+    `    hash: "${entry.hash}"`,
+    `    secret_type: "${entry.secret_type}"`,
+    `    severity: "${entry.severity}"`,
+    `    captured_at: "${entry.captured_at}"`,
+    ''
+  ].join('\n');
+  fs.writeFileSync(manifestPath, body + lines);
+}
 
 // Protected system paths (merged from pre-write.sh)
 const PROTECTED_PATHS = ['/etc/', '/usr/', '/bin/', '/sbin/', '/boot/', '/sys/', '/proc/'];
@@ -165,7 +239,9 @@ function scanForSecrets(content, filePath) {
         ? match[0].substring(0, 6) + '...' + match[0].substring(match[0].length - 4)
         : match[0].substring(0, 3) + '***';
       findings[secretType.severity].push({
-        type: secretType.name, severity: secretType.severity, line: lines.length, redacted
+        type: secretType.name, severity: secretType.severity, line: lines.length, redacted,
+        // v12.0.4: capture raw value + index for sanitize-mode (NEVER logged or persisted).
+        value: match[0], index: match.index
       });
     }
     // Early termination: skip lower severity if critical/high found
@@ -208,6 +284,78 @@ createHook('SecretDetection', async (input) => {
   const findings = scanForSecrets(content, filePath);
   const allSignificant = [...findings.critical, ...findings.high];
 
+  const mode = getSecretMode();
+
+  // ── SANITIZE MODE (v12.0.4, REC-1) ─────────────────────────────────────────
+  // Opt-in via CAGENTS_SECRET_MODE=sanitize. When secrets are detected:
+  //   1. Back up the original content (with secret) to a 0600 .orig file under
+  //      cagents-memory/_system/secret-backups/{session_id}/{hash}.orig
+  //   2. Write the SANITIZED content (with BLOCK_<hex> placeholders) to the
+  //      target file ourselves.
+  //   3. Append a manifest entry (hash + placeholder + file_path; NEVER the
+  //      secret value).
+  //   4. Deny the original Write/Edit so the model's secret-bearing payload
+  //      does not overwrite our sanitized version. The systemMessage in the
+  //      deny reason explains the substitution.
+  // Restore happens at Stop time via secret-restore.cjs.
+  if (mode === 'sanitize' && (allSignificant.length > 0 || findings.medium.length > 0)) {
+    const allFindings = [...findings.critical, ...findings.high, ...findings.medium];
+    try {
+      const sessionId = getSessionIdForBackup(input);
+      const backupDir = ensureDir(getBackupDir(sessionId));
+      const manifestPath = path.join(backupDir, 'manifest.yaml');
+
+      // Compute SHA256 of the FULL original content (used as the .orig filename).
+      // This guarantees no secret value is in the filename — only its hash.
+      const contentHash = crypto.createHash('sha256').update(content).digest('hex').slice(0, 16);
+      const origPath = path.join(backupDir, `${contentHash}.orig`);
+
+      // Sanitize content (replace each secret with BLOCK_<hex>).
+      const { sanitized, placeholders } = sanitizeContent(content, allFindings);
+
+      // 1. Back up original (0600 perms — owner read/write only).
+      fs.writeFileSync(origPath, content, { mode: 0o600 });
+      try { fs.chmodSync(origPath, 0o600); } catch { /* best-effort */ }
+
+      // 2. Write sanitized content to the target file path (use 0600 too —
+      //    user can chmod up after restore if needed).
+      try {
+        const targetDir = path.dirname(filePath);
+        if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
+        fs.writeFileSync(filePath, sanitized);
+      } catch (e) {
+        console.error(`[SecretDetection] sanitize-mode: failed to write sanitized content to ${filePath}: ${e.message}`);
+        // Fall through to block-mode behavior on failure.
+        return { deny: true, reason: `Sanitize mode failed to write to ${filePath}: ${e.message}. Falling back to deny.` };
+      }
+
+      // 3. Append manifest entry per placeholder (hash only — never secret value).
+      const capturedAt = new Date().toISOString();
+      for (const p of placeholders) {
+        appendManifest(manifestPath, {
+          placeholder: p.placeholder,
+          file_path: filePath,
+          line_range: `${p.line}`,
+          hash: p.hash,
+          secret_type: p.type,
+          severity: p.severity,
+          captured_at: capturedAt
+        });
+      }
+
+      // 4. Deny the original Write/Edit; sanitized file is already on disk.
+      console.error(`[SecretDetection] SANITIZED: ${placeholders.length} secret(s) in ${filePath} replaced with BLOCK_<hex> placeholders. Originals backed up to ${origPath}.`);
+      return {
+        deny: true,
+        reason: `[CAGENTS_SECRET_MODE=sanitize] ${placeholders.length} secret(s) detected and replaced with BLOCK_<hex> placeholders. Sanitized content was written to ${filePath} on your behalf; backup of original at ${origPath} (0600). Restore at session end via secret-restore.cjs.`
+      };
+    } catch (e) {
+      console.error(`[SecretDetection] sanitize-mode error: ${e.message}, falling back to block`);
+      // Fall through to block-mode behavior on unexpected error.
+    }
+  }
+
+  // ── BLOCK MODE (default, pre-v12.0.4 behavior) ─────────────────────────────
   if (allSignificant.length > 0) {
     const findingsList = allSignificant.map(f => `- ${f.type} (line ${f.line}): ${f.redacted}`).join('\n');
     console.error(`[SecretDetection] BLOCKED: Found ${allSignificant.length} secret(s) in ${filePath}`);

@@ -10,6 +10,25 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.0.4] - 2026-05-20
+
+### Added
+- `.claude/hooks/secret-restore.cjs` — new Stop hook that restores
+  sanitized-content files to their pre-sanitize state at session end.
+- `.claude/hooks/SECRET-SANITIZE.md` — protocol documentation for the
+  opt-in sanitize-and-restore mode.
+- `tests/v12/secret-sanitize-protocol.test.js` — regression tests covering
+  sanitize-mode behavior + restore idempotency.
+
+### Changed
+- `.claude/hooks/secret-detection.cjs` — extended with opt-in
+  `CAGENTS_SECRET_MODE=sanitize` mode that replaces secret content with
+  `BLOCK_<hex>` placeholders during the session. Default remains `block`
+  (no behavioral change for existing users).
+- `.claude/settings.json` — registered secret-restore.cjs as a Stop hook.
+
+(REC-1 from session team_external-samples-update_260520_003)
+
 ## [12.0.3] - 2026-05-20
 
 ### Added

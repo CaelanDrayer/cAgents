@@ -6,13 +6,13 @@ paths:
 
 # cAgents Hook System
 
-30 .cjs files implementing 27 unique hooks across 17 event types via the `createHook()` factory. See the Hook Types Overview below for per-event mapping.
+31 .cjs files implementing 28 unique hooks across 17 event types via the `createHook()` factory. See the Hook Types Overview below for per-event mapping.
 
 ## Architecture
 
 cAgents uses a unified CJS hook system configured in `.claude/settings.json`:
 
-- **CJS hooks** (`.claude/hooks/`): 29 `.cjs` files = 26 unique registered hooks + `hook-utils.cjs` + `run-hook.cjs` launcher + `eval-runner.cjs` CLI. All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output).
+- **CJS hooks** (`.claude/hooks/`): 31 `.cjs` files = 28 unique registered hooks + `hook-utils.cjs` + `run-hook.cjs` launcher + `eval-runner.cjs` CLI. All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output).
 - **Prompt hooks**: None currently active. The Stop prompt hook was removed in V9.6.2 due to unreliable LLM JSON responses causing recurring validation failures. The `verify-completion.cjs` command hook provides equivalent file-based verification.
 - **Self-contained invocation via run-hook.cjs**: All hooks are called via `bash -c 'R="${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"; node "$R/.claude/hooks/run-hook.cjs" <hook-name>'` -- a bash wrapper with a 3-tier fallback chain that resolves the plugin root, then launches `run-hook.cjs` which resolves the target hook path using `__dirname`. V9.17.1 switched from bare `node "${CLAUDE_PLUGIN_ROOT}"/.claude/hooks/run-hook.cjs` (which fails with MODULE_NOT_FOUND when `CLAUDE_PLUGIN_ROOT` is not expanded) to a `bash -c` wrapper with fallback chain: `CLAUDE_PLUGIN_ROOT` (official plugin env var) -> `CLAUDE_PROJECT_DIR` (user's project dir, works for local dev) -> `pwd` (last resort). Previous V9.13 approach used `${CLAUDE_PLUGIN_ROOT}` directly in the command string, but this fails when the env var is not set (e.g., in certain subagent contexts, SessionEnd events, or non-plugin installations).
 
@@ -46,7 +46,7 @@ The V9.5 refactoring eliminates the dual shell+JS architecture that caused recur
 
 ## Hook Types Overview
 
-Claude Code supports 24 hook event types. cAgents implements 26 unique registered hooks across 17 of these events. Seven events (`ConfigChange`, `WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `FileChanged`, `Elicitation`, `ElicitationResult`) have no cAgents hooks but are available for custom use.
+Claude Code supports 24 hook event types. cAgents implements 28 unique registered hooks across 17 of these events. Seven events (`ConfigChange`, `WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `FileChanged`, `Elicitation`, `ElicitationResult`) have no cAgents hooks but are available for custom use.
 
 | Hook Type | Trigger | cAgents Hook | Purpose |
 |-----------|---------|--------------|---------|
@@ -60,7 +60,7 @@ Claude Code supports 24 hook event types. cAgents implements 26 unique registere
 | `Notification` | Status notification | `notification.cjs` | Log and track |
 | `SubagentStart` | Subagent spawned | `subagent-tracker.cjs`, `team-start.cjs` | Log spawns, initialize team monitoring, inject self-registration context |
 | `SubagentStop` | Subagent finishes | `subagent-stop-tracker.cjs` | Log completion, capture summaries + duration, update agent tree |
-| `Stop` | Claude stops responding | `verify-completion.cjs`, `goal-evaluator-logger.cjs` | Verify completion criteria; capture `/goal` evaluator reasons |
+| `Stop` | Claude stops responding | `verify-completion.cjs`, `goal-evaluator-logger.cjs`, `secret-restore.cjs` | Verify completion criteria; capture `/goal` evaluator reasons; restore sanitized secrets |
 | `StopFailure` | Claude fails to stop cleanly | `stop-failure-handler.cjs` | Save recovery state when Claude fails to stop cleanly |
 | `TeammateIdle` | Teammate goes idle | `teammate-idle-handler.cjs` | Find available work or stop teammate (`continue:false`) when all items done |
 | `TaskCompleted` | Task finishes | `team-task-complete.cjs` | Update task list, unblock dependencies, stop teammate (`continue:false`) when all items done |
@@ -213,6 +213,14 @@ createHook('MyHook', async (input) => {
 - **Activation**: Only when `/goal` is active in the Stop hook payload (`input.goal.active === true` or `input.goal_state.active === true` with an `evaluator_reason` present). Non-blocking. No-op when `/goal` inactive, no active cAgents session, or no reason to capture.
 - **Creates / appends**: `cagents-memory/sessions/{active}/workflow/goal_evaluator_log.yaml` (YAML list under `entries:` with timestamp, condition, evaluator_reason, turn, verdict).
 - **Consumed by**: `core/universal-self-correct/SKILL.md` Step 2 (reads most recent 3-5 entries as revision signal).
+
+#### Stop: secret-restore.cjs
+- **Purpose**: Companion to `secret-detection.cjs` sanitize mode (v12.0.4, REC-1). When `CAGENTS_SECRET_MODE=sanitize` is active, the PreToolUse hook replaces secrets with `BLOCK_<hex>` placeholders during the session and backs up the original content. This Stop hook restores all backed-up files at session end so the workspace returns to its pre-sanitize state.
+- **Reads**: `cagents-memory/_system/secret-backups/{session_id}/manifest.yaml`
+- **Restores**: Each `file_path` listed in the manifest by reading the corresponding `.orig` file (0600 perms) and writing it back to the original path. Deletes consumed `.orig` files and the manifest after restore.
+- **Idempotent**: No-op when no manifest exists (clean session). Per-entry try/catch — partial failures log to `cagents-memory/_system/logs/secret-restore_{date}.log` but never fail the Stop.
+- **Output**: Always returns `{continue: true}`. Never blocks.
+- **Protocol doc**: See `.claude/hooks/SECRET-SANITIZE.md` for activation, lifecycle, hard guarantees, and crash-recovery semantics.
 
 #### SubagentStart: subagent-tracker.cjs + team-start.cjs
 - **subagent-tracker.cjs**: Logs agent spawns to `workflow/agent_tree.yaml` and global audit log (`_system/logs/agent_spawns.log`). Includes fallback session discovery for the race condition where `status.yaml` hasn't been written yet. Injects `additionalContext` asking cAgents agents to self-register their `cagents:{name}` type, since Claude Code's `agent_type` field reports "general-purpose" for plugin agents.
