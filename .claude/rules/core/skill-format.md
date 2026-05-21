@@ -316,6 +316,37 @@ When creating a new agent in the v11.1.0 archetype tree:
 - [ ] Test agent loading
 - [ ] Measure token savings
 
+## Deprecation: `_deprecated/` Bucket Pattern (v12.0.5+)
+
+Agents slated for removal should be moved to a `_deprecated/` bucket
+within their archetype root (e.g., `operator/_deprecated/old-agent/SKILL.md`).
+Agents under `_deprecated/`:
+
+- **Are kept on disk** — `scripts/migration/v12-aliases.yaml` can still
+  resolve old user references to the deprecated agent.
+- **Are excluded from `.claude-plugin/plugin.json`** — `scripts/sync-agents.sh`
+  skips them, so the planner and router will not select them for new work.
+- **Should not appear in CLAUDE.md catalog counts** — the catalog reflects
+  only active agents.
+
+### Promotion path
+
+An agent moved to `_deprecated/` can be restored by moving its directory
+back to its prior archetype/branch location. `scripts/sync-agents.sh` will
+pick it up on the next run.
+
+### Eventual removal
+
+After at least one minor-bump release cycle in `_deprecated/`, an agent
+may be physically removed. Its alias entry in `v12-aliases.yaml` remains
+so user references resolve gracefully even after disk deletion.
+
+### Why not just delete
+
+Pre-v12.0.5, deleted agents became silent 404s in user prompts that
+referenced them by name. The bucket pattern adds a graceful warn-then-remove
+path: deprecation period for visibility, then removal once references quiet.
+
 ## Token Savings Target
 
 | Agent Type | Before (tokens) | After (tokens) | Savings |

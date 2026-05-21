@@ -73,11 +73,16 @@ const ARCHETYPE_DIRS = [
   'leadership',
 ];
 
+// v12.0.5+: agents under `<archetype>/_deprecated/` are kept on disk for
+// alias resolution (via scripts/migration/v12-aliases.yaml) but excluded
+// from plugin registration so planners + routers won't select them.
 function findSkillMds(dir) {
   const results = [];
   if (!fs.existsSync(dir)) return results;
   const entries = fs.readdirSync(dir, { withFileTypes: true });
   for (const entry of entries) {
+    // Skip _deprecated/ bucket dirs at any depth (v12.0.5+ bucket pattern)
+    if (entry.isDirectory() && entry.name === '_deprecated') continue;
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       results.push(...findSkillMds(fullPath));

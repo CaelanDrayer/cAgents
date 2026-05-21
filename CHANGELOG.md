@@ -10,6 +10,18 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.0.5] - 2026-05-20
+
+### Added
+- `_deprecated/` bucket pattern for agent deprecation lifecycle.
+  `scripts/sync-agents.sh` now excludes `<archetype>/_deprecated/**` from
+  plugin.json registration while keeping the SKILL.md files on disk for
+  alias resolution via `scripts/migration/v12-aliases.yaml`. (REC-5)
+- `.claude/rules/core/skill-format.md` — new section documenting the
+  bucket pattern, promotion path, and eventual-removal semantics.
+- `tests/v12/deprecated-bucket-excluded.test.js` — regression test
+  enforcing that `_deprecated/` agents do not appear in plugin.json.
+
 ## [12.0.4] - 2026-05-20
 
 ### Added
