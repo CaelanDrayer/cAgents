@@ -10,6 +10,21 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.0.8] - 2026-05-20
+
+### Added
+- `docs/MULTI_TOOL_DEPLOYMENT.md` — design note (NOT implementation)
+  capturing the multi-tool deployment decision rationale. Covers what a
+  hypothetical `scripts/convert.sh` would emit, which of cAgents' 238 agents
+  round-trip cleanly vs lose semantics, maintenance cost estimates, and the
+  decision: DEFER (revisit when specific user demand emerges). (REC-8)
+
+### Closing note (final rec in v12.0.x improvement series)
+- This release closes the 8-rec improvement series from
+  `cagents-memory/sessions/team_external-samples-update_260520_003/outputs/wi-6/`.
+  Shipped: REC-2 (v12.0.1), REC-4 (v12.0.2), REC-3 (v12.0.3), REC-1 (v12.0.4),
+  REC-5 (v12.0.5), REC-7 (v12.0.6), REC-6 (v12.0.7), REC-8 (v12.0.8).
+
 ## [12.0.7] - 2026-05-20
 
 ### Added
