@@ -2,6 +2,8 @@
 
 > This document provides detailed architecture design for cAgents. For a quick overview, see CLAUDE.md.
 
+> See [12-FACTOR-COMPLIANCE.md](./12-FACTOR-COMPLIANCE.md) for cAgents' compliance map against the humanlayer 12-Factor Agents methodology (6 YES · 4 PARTIAL · 2 deliberate DIVERGENCE).
+
 ## v12.0.0 — Architecture Changes
 
 cAgents v12.0.0 is the major consolidation release. Architectural changes:

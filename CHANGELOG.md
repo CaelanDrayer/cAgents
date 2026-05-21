@@ -10,6 +10,15 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.0.7] - 2026-05-20
+
+### Added
+- `docs/12-FACTOR-COMPLIANCE.md` — positioning doc mapping cAgents against
+  humanlayer's 12-Factor Agents methodology. Score: 6 YES · 4 PARTIAL · 2
+  deliberate DIVERGENCE (Factor 5 unified state, Factor 12 stateless
+  reducer — both intentional architectural choices). (REC-6)
+- `docs/ARCHITECTURE.md` — cross-link to the new compliance doc.
+
 ## [12.0.6] - 2026-05-20
 
 ### Added
