@@ -10,6 +10,19 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.0.6] - 2026-05-20
+
+### Added
+- `metadata.data_access_level` advisory frontmatter field (REC-7).
+  Optional declarative trust tier: `trusted` | `verified` | `unverified`.
+  Agents that don't declare the field default to behavior-equivalent to
+  `unverified` (no warnings fired). Wired to `session-init-gate.cjs`
+  advisory check — warns when a `trusted` parent spawns an `unverified`
+  child. Does NOT block; matches v11.1.10 `metadata.requires` precedent.
+- `.claude/rules/core/skill-format.md` — new § documenting the field.
+- `tests/v12/data-access-level-advisory.test.js` — regression tests for
+  the advisory behavior matrix.
+
 ## [12.0.5] - 2026-05-20
 
 ### Added

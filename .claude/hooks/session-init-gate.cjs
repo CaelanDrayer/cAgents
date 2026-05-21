@@ -248,6 +248,87 @@ function checkRequires(requires, rootDir) {
   return missing;
 }
 
+// --- metadata.data_access_level helpers (V12.0.6) ---
+
+/**
+ * Extract metadata.data_access_level from SKILL.md frontmatter.
+ * Returns 'trusted' | 'verified' | 'unverified' | null.
+ */
+function parseDataAccessLevel(skillPath) {
+  let raw;
+  try {
+    raw = fs.readFileSync(skillPath, 'utf8');
+  } catch {
+    return null;
+  }
+  const fmMatch = raw.match(/^---\s*\n([\s\S]*?)\n---/);
+  if (!fmMatch) return null;
+  const fm = fmMatch[1];
+  const lines = fm.split('\n');
+  let inMetadata = false;
+  for (const line of lines) {
+    const indent = line.match(/^(\s*)/)[1].length;
+    const stripped = line.trim();
+    if (!inMetadata) {
+      if (/^metadata\s*:\s*$/.test(line)) inMetadata = true;
+      continue;
+    }
+    if (stripped !== '' && indent === 0) break; // left metadata block
+    const m = line.match(/^\s+data_access_level\s*:\s*["']?([a-zA-Z_]+)["']?\s*$/);
+    if (m) {
+      const val = m[1].toLowerCase();
+      if (val === 'trusted' || val === 'verified' || val === 'unverified') return val;
+      return null;
+    }
+  }
+  return null;
+}
+
+/**
+ * Find the most-recently-spawned still-active parent agent in agent_tree.yaml.
+ * Returns the cagents:<name> string, or null if none found.
+ * Heuristic: scan agent_tree.yaml lines for `agent_type:` entries lacking a
+ * matching `stopped_at:` and return the latest. Best-effort; never throws.
+ */
+function findActiveParentAgent(sessionDir) {
+  if (!sessionDir) return null;
+  const treePath = path.join(sessionDir, 'workflow', 'agent_tree.yaml');
+  if (!fs.existsSync(treePath)) return null;
+  let raw;
+  try {
+    raw = fs.readFileSync(treePath, 'utf8');
+  } catch {
+    return null;
+  }
+  const lines = raw.split('\n');
+  let lastActiveAgent = null;
+  let currentAgent = null;
+  let currentHasStop = false;
+  for (const line of lines) {
+    const atMatch = line.match(/^\s*-?\s*agent_type\s*:\s*["']?(cagents:[a-zA-Z0-9_\-]+)["']?\s*$/);
+    if (atMatch) {
+      // Flush previous
+      if (currentAgent && !currentHasStop) lastActiveAgent = currentAgent;
+      currentAgent = atMatch[1];
+      currentHasStop = false;
+      continue;
+    }
+    if (/^\s*stopped_at\s*:/.test(line)) currentHasStop = true;
+  }
+  if (currentAgent && !currentHasStop) lastActiveAgent = currentAgent;
+  return lastActiveAgent;
+}
+
+/**
+ * Determine whether a parent->child trust-tier downgrade should fire an advisory.
+ * Returns true for: trusted->unverified, verified->unverified.
+ */
+function isTrustDowngrade(parentLevel, childLevel) {
+  if (!parentLevel || !childLevel) return false;
+  if (childLevel !== 'unverified') return false;
+  return parentLevel === 'trusted' || parentLevel === 'verified';
+}
+
 createHook('SessionInitGate', async (input) => {
   const toolName = input.tool_name || '';
 
@@ -292,15 +373,42 @@ createHook('SessionInitGate', async (input) => {
   const skillPath = findAgentSkillPath(agentName, PROJECT_ROOT);
   if (!skillPath) return null; // Agent SKILL.md not found in manifest; skip silently
 
+  const advisories = [];
+
   const requires = parseRequires(skillPath);
-  if (!requires) return null; // No metadata.requires declared; skip
+  if (requires) {
+    const missing = checkRequires(requires, PROJECT_ROOT);
+    if (missing.length > 0) {
+      advisories.push(
+        `[session-init-gate] Agent ${subagentType} declares metadata.requires but missing: ${missing.join(', ')}. Spawn proceeding (advisory only — not blocking).`
+      );
+    }
+  }
 
-  const missing = checkRequires(requires, PROJECT_ROOT);
-  if (missing.length === 0) return null; // All deps satisfied
+  // ---- Phase 3: metadata.data_access_level advisory check (V12.0.6) ----
+  const childLevel = parseDataAccessLevel(skillPath);
+  if (childLevel === 'unverified') {
+    const sessionDir = findActiveSession(input.session_id);
+    const parentAgent = findActiveParentAgent(sessionDir);
+    if (parentAgent) {
+      const parentMatch = parentAgent.match(/^cagents:([a-zA-Z0-9_\-]+)$/);
+      if (parentMatch) {
+        const parentSkillPath = findAgentSkillPath(parentMatch[1], PROJECT_ROOT);
+        const parentLevel = parentSkillPath ? parseDataAccessLevel(parentSkillPath) : null;
+        if (isTrustDowngrade(parentLevel, childLevel)) {
+          advisories.push(
+            `[session-init-gate] Trust-tier downgrade: ${parentAgent} (${parentLevel}) -> ${subagentType} (${childLevel}). Spawn proceeding (advisory only — not blocking).`
+          );
+        }
+      }
+    }
+  }
 
-  // Advisory warning — does NOT block
+  if (advisories.length === 0) return null;
+
+  // Advisory warning(s) — does NOT block. permissionDecision unchanged.
   return {
     continue: true,
-    systemMessage: `[session-init-gate] Agent ${subagentType} declares metadata.requires but missing: ${missing.join(', ')}. Spawn proceeding (advisory only — not blocking).`
+    systemMessage: advisories.join('\n')
   };
 });
