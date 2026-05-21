@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.0.8"
+  version: "12.1.2"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--mode <standard|debug>] [--no-goal]"
   user-invocable: "true"
   context: "none"
@@ -86,11 +86,29 @@ See @reference/task-tracking-rules.md for the full task tracking protocol, forma
 
 ## Step 1: Parse Arguments
 
+### Step 1a: Improve-Mode Keyword Router (v12.1.2)
+
+**BEFORE flag parsing, BEFORE domain routing**, inspect the first whitespace-separated token of `$ARGUMENTS`. If it (case-insensitively) matches one of the four improve-family keywords, strip the keyword and set an internal `mode`:
+
+| First-word keyword | Inferred `mode` |
+|--------------------|-----------------|
+| `improve` | `full` |
+| `review` | `review` |
+| `audit` | `review` |
+| `optimize` | `optimize` |
+
+If no match, leave `mode` unset (or set by an explicit `--mode` flag in Step 1b). The keyword router collapsed the standalone `/improve` skill into `/run` in v12.1.2 — see @reference/improve-mode.md for the full contract, mode-specific controller behavior, atomic rollback pattern, and cross-session artifact layout.
+
+Example: `/run improve src/auth/` -> mode=`full`, request=`src/auth/`.
+Example: `/run review the auth module` -> mode=`review`, request=`the auth module`.
+
+### Step 1b: Parse Flags
+
 Parse `$ARGUMENTS` for flags (`--interactive`, `--dry-run`, `--quiet`, `--stream`, `--skip-preflight`, `--team`, `--analytics`, `--no-goal`) and value flags (`--template`, `--domain`, `--tier`, `--confidence`, `--brief`, `--resume`, `--session`, `--mode`).
 
 The request is everything before the first `--` flag.
 
-**--mode parser (V10.26.11+)**: Accepted values are `standard` (default) and `debug`. Any other value MUST be rejected: `unknown mode: {value}. Supported: standard, debug`. Default when unset: `standard`.
+**--mode parser (V10.26.11+, expanded v12.1.2)**: Accepted values are `standard` (default), `debug`, `review`, `optimize`, `full`. Any other value MUST be rejected: `unknown mode: {value}. Supported: standard, debug, review, optimize, full`. Default when unset (and no improve-keyword detected in Step 1a): `standard`. An explicit `--mode` value OVERRIDES any improve-keyword inference from Step 1a.
 
 Special flag handling:
 - `--analytics`: Read `cagents-memory/_system/metrics/pipeline_analytics.yaml`, display the dashboard, exit.

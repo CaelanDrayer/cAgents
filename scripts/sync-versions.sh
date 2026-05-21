@@ -2,7 +2,7 @@
 # Sync version across all cAgents manifest files
 # Usage: ./scripts/sync-versions.sh <new-version>
 #
-# Updates version in all 18 locations (see .claude/rules/core/version-registry.md):
+# Updates version in all 17 locations (see .claude/rules/core/version-registry.md):
 # Location #16: scripts/ci/cagents-ci.sh (header comment + log_section banner)
 # Location #17: scripts/ci/validate-agents.sh (# Version: header)
 # Location #21: CHANGELOG.md (insert new "## [VERSION] - DATE" header under [Unreleased])
@@ -16,7 +16,7 @@
 #   developer/, operator/, advisor/, analyst/, creator/, writer/,
 #   strategist/, core/, or leadership/. Per-agent versions bump
 #   independently of the cAgents plugin version per Phase 11. The
-#   plugin version registry (18 locations above) tracks the cAgents
+#   plugin version registry (17 locations above) tracks the cAgents
 #   release; agent-level `metadata.version` tracks each agent's own
 #   evolution. See `.claude/rules/core/skill-format.md` § metadata.version.
 
@@ -97,9 +97,9 @@ SKILLS=(
   "$ROOT/.claude/skills/org/SKILL.md"
   "$ROOT/.claude/skills/team/SKILL.md"
   "$ROOT/.claude/skills/designer/SKILL.md"
-  "$ROOT/.claude/skills/improve/SKILL.md"
   "$ROOT/.claude/skills/helper/SKILL.md"
 )
+# v12.1.2: /improve folded into /run via keyword router; SKILL.md removed.
 
 for skill in "${SKILLS[@]}"; do
   if [ ! -f "$skill" ]; then

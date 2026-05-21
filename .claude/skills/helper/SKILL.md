@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.0.8"
+  version: "12.1.2"
   argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--all] [--topic <topic>] [--troubleshoot <command>]"
   user-invocable: "true"
   context: "none"
@@ -21,10 +21,10 @@ You are the **Helper** - an interactive guide that explains cAgents command skil
 - **Educational**: Teach users about the cAgents skill ecosystem, not just point them to a command
 - **Interactive**: Ask clarifying questions when the user's intent is ambiguous
 - **Practical**: Provide real usage examples and concrete recommendations
-- **Comprehensive**: Cover all 6 user-invocable skills (`/designer`, `/helper`, `/improve`, `/org`, `/run`, `/team`), including flags and integration points
+- **Comprehensive**: Cover all 5 user-invocable skills (`/designer`, `/helper`, `/org`, `/run`, `/team`), including flags and integration points. `/improve` was folded into `/run` in v12.1.2 via a first-word keyword router (`improve|review|audit|optimize`)
 - **Non-Executing**: This command explains and recommends -- it NEVER executes other commands on behalf of the user
 
-> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see @reference/v11-migration.md for the full migration catalog._
+> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see @reference/v11-migration.md for the full migration catalog. v12.1.2 folded `/improve` into `/run` via keyword router: `/run improve|review|audit|optimize <target>` triggers the improve modes._
 
 ## Argument Handling
 
@@ -51,8 +51,8 @@ Use `AskUserQuestion` with:
 **Intent detection from free text** (if user types instead of selecting):
 - `build`, `create`, `implement`, `add`, `make` -> build intent
 - `fix`, `bug`, `error`, `broken`, `patch` -> fix intent
-- `review`, `check`, `audit`, `inspect` -> review intent (recommend `/improve --mode review`)
-- `optimize`, `improve`, `speed up`, `faster` -> optimize intent (recommend `/improve --mode optimize`)
+- `review`, `check`, `audit`, `inspect` -> review intent (recommend `/run review <target>` — keyword router triggers `--mode review`)
+- `optimize`, `improve`, `speed up`, `faster` -> optimize intent (recommend `/run optimize <target>` — keyword router triggers `--mode optimize`)
 - `plan`, `design`, `architect`, `explore`, `think through` -> plan intent
 - `debug`, `root cause`, `tried`, `resisted`, `can't figure out` -> debug intent (recommend `/run --mode debug`)
 - `learn`, `help`, `which`, `what`, `how do`, `compare` -> learn intent
@@ -105,8 +105,8 @@ Based on your answers:
 | fix | simple | -- | `/run Fix <description>` |
 | fix | moderate | -- | `/run Fix <description>` |
 | fix | complex | -- | `/team Fix <description>` |
-| review | -- | -- | `/improve --mode review [path or 'src/']` |
-| optimize | -- | -- | `/improve --mode optimize [target]` |
+| review | -- | -- | `/run review [path or 'src/']` (keyword router -> `--mode review`) |
+| optimize | -- | -- | `/run optimize [target]` (keyword router -> `--mode optimize`) |
 | plan | -- | -- | `/designer <topic>` |
 | debug | -- | -- | `/run --mode debug <bug description>` |
 | learn | -- | -- | Ask "Which command would you like to explore?" then show Mode 2 output |
@@ -151,8 +151,8 @@ See @reference/recommendation-engine.md for the intent classification logic and 
 | Fix / Debug | fix, bug, error, broken, crash, repair, patch | `/run` |
 | Build / Create | build, create, implement, add, make, write code, new feature | `/run` (simple) or `/team` (complex, 3+ components) |
 | Plan / Design | plan, design, architect, explore, think through, spec, prototype | `/designer` |
-| Review / Audit | review, audit, check, inspect, analyze quality, security scan | `/improve --mode review` |
-| Optimize / Improve | optimize, improve, speed up, reduce, faster, smaller, better | `/improve --mode optimize` |
+| Review / Audit | review, audit, check, inspect, analyze quality, security scan | `/run review <target>` (keyword router) |
+| Optimize / Improve | optimize, improve, speed up, reduce, faster, smaller, better | `/run optimize <target>` (keyword router) |
 | Coordinate / Multi-domain | launch, restructure, migrate, company-wide, cross-team, strategic | `/org` |
 | Parallel / Large | parallel, team, big feature, multiple components, time-sensitive | `/team` |
 | Debug / Root Cause | debug, root cause, why does this fail, can't figure out, keeps breaking | `/run --mode debug` |
@@ -203,8 +203,10 @@ When the user runs `/helper --quick`, show a minimal one-screen reference card.
 cAgents Quick Reference:
 
   /run <task>              Build, fix, write, analyze anything
+  /run review|audit <tgt>  Quality audit (keyword router -> --mode review)
+  /run optimize <target>   Measurable optimization (keyword router -> --mode optimize)
+  /run improve <target>    Combined review + optimize (keyword router -> --mode full)
   /designer [topic]        Interactive design before building
-  /improve [target]        Review + optimize engine (--mode review|optimize|full)
   /team <task>             Parallel execution for big tasks
   /org <instruction>       Multi-domain corporate hierarchy
   /helper                  This guide
@@ -214,7 +216,7 @@ Passthroughs (handled by /run):
   /run context [init|show|...]      Manage shared product context
 
 Flags: --dry-run (preview), --interactive (ask first), --quiet (silent)
-Combos: /designer -> /run (design then build), /improve --mode full (review + optimize together)
+Combos: /designer -> /run (design then build), /run improve <target> (review + optimize in one run)
         /org -> /team (multi-domain parallel), /run --team (parallel shortcut)
 Help: /helper <command> for details, /helper --compare for comparison
 Troubleshoot: /helper --troubleshoot <command> for common issues
@@ -265,14 +267,14 @@ Display the **Command Overview Table**:
 ```
 Available Commands:
 
-| Command     | Purpose                        | Interactive? | Duration   | Best For                              |
-|-------------|--------------------------------|-------------|------------|---------------------------------------|
-| /run        | Execute any task               | Autonomous  | Varies     | Building, fixing, writing, analyzing  |
-| /designer   | Design before building         | 4-phase Q&A | 15-45 min  | Planning features, systems, stories   |
-| /improve    | Review + optimize engine       | Autonomous  | 3-20 min   | Quality audit, perf/size optimization |
-| /team       | Parallel team execution        | Autonomous  | Varies     | Large features with parallel work     |
-| /org        | Multi-domain hierarchy         | Autonomous  | 25-60 min  | Cross-domain strategic initiatives    |
-| /helper     | Command guide and reference    | Interactive | 1-2 min    | Learning commands, comparing options  |
+| Command                       | Purpose                                  | Interactive? | Duration   | Best For                              |
+|-------------------------------|------------------------------------------|-------------|------------|---------------------------------------|
+| /run                          | Execute any task                          | Autonomous  | Varies     | Building, fixing, writing, analyzing  |
+| /run review\|audit\|optimize\|improve | Quality audit + optimization (keyword router) | Autonomous  | 3-20 min   | Quality audit, perf/size optimization |
+| /designer                     | Design before building                    | 4-phase Q&A | 15-45 min  | Planning features, systems, stories   |
+| /team                         | Parallel team execution                   | Autonomous  | Varies     | Large features with parallel work     |
+| /org                          | Multi-domain hierarchy                    | Autonomous  | 25-60 min  | Cross-domain strategic initiatives    |
+| /helper                       | Command guide and reference               | Interactive | 1-2 min    | Learning commands, comparing options  |
 ```
 
 Then present the **Quick Decision Guide**:
@@ -282,9 +284,9 @@ What do you want to do?
 
   "I want to BUILD or FIX something"          --> /run
   "I want to PLAN before building"            --> /designer
-  "I want to CHECK quality of existing work"  --> /improve (default --mode review)
-  "I want to IMPROVE existing work"           --> /improve --mode optimize
-  "I want BOTH at once with one baseline"     --> /improve --mode full --scope <path>
+  "I want to CHECK quality of existing work"  --> /run review <target> (keyword router)
+  "I want to IMPROVE existing work"           --> /run optimize <target> (keyword router)
+  "I want BOTH at once with one baseline"     --> /run improve <target> --scope <path>
   "I have a BIG task with parallel parts"     --> /team
   "I have a MULTI-DOMAIN strategic initiative" --> /org
   "I have a BUG that resists quick fixes"     --> /run --mode debug
@@ -332,11 +334,14 @@ V11.0.0 removed `/review`, `/optimize`, `/context`, and `/debug` after a 10-patc
 
 | V10 invocation | V11 replacement |
 |----------------|-----------------|
-| `/review <target>` | `/improve --mode review <target>` (or `/improve <target>`; `review` is the default mode) |
-| `/optimize <target>` | `/improve --mode optimize <target>` |
-| `/optimize <target> --review-after` | `/improve --mode full --scope <target>` |
+| `/review <target>` | `/run review <target>` (keyword router; v12.1.2 folded /improve into /run) |
+| `/optimize <target>` | `/run optimize <target>` (keyword router) |
+| `/optimize <target> --review-after` | `/run improve <target>` (keyword router triggers `--mode full`) |
 | `/context init\|show\|update\|clear` | `/run context init\|show\|update\|clear` |
 | `/debug <bug>` | `/run --mode debug <bug>` |
+| `/improve --mode review <target>` | `/run review <target>` |
+| `/improve --mode optimize <target>` | `/run optimize <target>` |
+| `/improve --mode full <target>` | `/run improve <target>` |
 
 See @reference/v11-migration.md for the full catalog including passthroughs and dynamic SKILL.md reading rules.
 
@@ -347,8 +352,8 @@ Commands are designed to work together:
 ```
 /designer -> /run         Design thoroughly, then build (most common pipeline)
 /designer -> /team        Design, then build in parallel (for big features)
-/improve --mode full      Review + optimize in one run with shared baseline
-/improve --mode review -> /run    Review finds issues, /run fixes them
+/run improve <target>     Review + optimize in one run with shared baseline (keyword router -> --mode full)
+/run review <target> -> /run    Review finds issues, /run fixes them (keyword router -> --mode review)
 /run --team               Shortcut: /run with parallel team execution
 /org -> /team (per domain) Multi-domain: CEO deliberation then sequential /team
 /org -> /run              Single-domain: strategic brief then /run

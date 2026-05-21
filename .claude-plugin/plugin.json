@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "12.0.8",
-  "description": "Universal multi-domain agent orchestration framework. 243 agents across 15 domains, coordinated by an intelligent pipeline. 6 user skills: /run routes any task through controller + specialist agents, /team runs parallel agent waves, /org coordinates cross-domain strategy, /designer guides design exploration, /improve audits and optimizes (modes: review, optimize, full), /helper guides usage.",
+  "version": "12.1.2",
+  "description": "Universal multi-domain agent orchestration framework. 243 agents across 15 domains, coordinated by an intelligent pipeline. 5 user skills: /run routes any task through controller + specialist agents (including review/audit/optimize/improve modes via keyword router), /team runs parallel agent waves, /org coordinates cross-domain strategy, /designer guides design exploration, /helper guides usage.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",
@@ -127,10 +127,12 @@
     "./developer/quality/accessibility-checker/SKILL.md",
     "./developer/quality/code-reviewer/SKILL.md",
     "./developer/quality/code-standards-auditor/SKILL.md",
+    "./developer/quality/coord-log-writer/SKILL.md",
     "./developer/quality/playwright-test-engineer/SKILL.md",
     "./developer/quality/qa-lead/SKILL.md",
     "./developer/quality/security-owasp/SKILL.md",
     "./developer/quality/test-coverage-validator/SKILL.md",
+    "./developer/quality/wave-reviewer/SKILL.md",
     "./leadership/cco/SKILL.md",
     "./leadership/ceo/SKILL.md",
     "./leadership/cfo/SKILL.md",

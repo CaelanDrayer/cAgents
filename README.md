@@ -7,7 +7,7 @@ Deploy 238 specialized agents across 9 builder-role archetypes through an intell
 | Stat | Value |
 |------|-------|
 | Agents | 238 across 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership) |
-| Skills | 6 slash commands |
+| Skills | 5 slash commands (v12.1.2: /improve folded into /run via keyword router) |
 | Hooks | 28 .cjs files = 25 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI, across 17 event types |
 | Models | Opus 4.6 (controllers) · Sonnet 4.6 (execution) · Haiku 4.5 (support) |
 
@@ -75,8 +75,8 @@ Five commands. Five different capabilities.
 # Plan strategy with C-suite analysis
 /org Plan our Q3 product roadmap
 
-# Audit or improve code quality
-/improve src/api/ --mode review --fix
+# Audit or improve code quality (v12.1.2: improve modes folded into /run via keyword router)
+/run review src/api/ --auto-fix
 
 # Explore a design problem interactively
 /designer Redesign the checkout flow
@@ -141,22 +141,23 @@ Guides design exploration through structured Q&A before building anything. Resea
 
 A 4-dimension clarity score tracks readiness; implementation does not begin until ambiguity drops below 20%. Phase overlap starts next-phase research during the current phase to reduce wait time.
 
-### `/improve` — Quality Review and Optimization Engine
+### Improve Modes inside `/run` — Quality Review and Optimization
 
-Unified quality engine combining review (findings + severity) and measurable optimization (measure → change → verify → rollback) in a single state machine. Mode selection via `--mode review|optimize|full`.
+Quality review and measurable optimization are available as modes on `/run`. The standalone `/improve` skill was folded into `/run` in v12.1.2 via a first-word keyword router. Mode selection via the keyword or via `--mode review|optimize|full`.
 
 ```bash
-/improve src/auth/ --mode review
-/improve src/api/ --mode review --fix              # Auto-patch CRITICAL findings
-/improve src/db/queries.ts --mode optimize         # Measure, change, verify
-/improve src/ --mode full                          # Review then optimize with synthesis
-/improve src/ --mode review --baseline             # Establish quality baseline
-/improve src/ --mode review --suppress baseline    # Show only regressions
+/run review src/auth/                              # = --mode review (audit only)
+/run audit src/auth/                               # = --mode review (alias for review)
+/run review src/api/ --auto-fix                    # Auto-patch CRITICAL findings
+/run optimize src/db/queries.ts                    # = --mode optimize (measure, change, verify)
+/run improve src/                                  # = --mode full (review then optimize)
+/run review src/ --baseline                        # Establish quality baseline
+/run review src/ --suppress baseline               # Show only regressions
 ```
 
 Review mode runs parallel specialist reviewers (security-engineer, code-reviewer, performance-analyzer) and produces severity-tagged findings with file:line evidence. Optimize mode benchmarks before and after, rolls back on regression, and tracks pattern effectiveness across sessions.
 
-V11.0.0 consolidated `/review` and `/optimize` into `/improve`. For the full migration guide, see [docs/MIGRATION-V11.md](docs/MIGRATION-V11.md).
+V11.0.0 consolidated `/review` and `/optimize` into `/improve`. v12.1.2 folded `/improve` into `/run` via the keyword router. See `.claude/skills/run/reference/improve-mode.md` for the full contract and [docs/MIGRATION-V11.md](docs/MIGRATION-V11.md) for the V11 migration baseline.
 
 ### `/helper` — Command Guidance
 
@@ -405,7 +406,7 @@ Wave 2 (parallel, 2 teammates): qa-lead writes integration tests covering the AP
 
 Wave 3 (lead, sequential): integration, final test run, validation report. Each wave is gated — the next wave does not start until the current wave's quality criteria pass. Total execution time: 40-60% less than sequential.
 
-### Quality Review: `/improve src/auth/ --mode review --fix`
+### Quality Review: `/run review src/auth/ --auto-fix`
 
 Three reviewers run in parallel: security-engineer (injection, auth bypass, token handling), code-reviewer (naming, structure, DRY, complexity), performance-analyzer (N+1 queries, unnecessary allocations). Each reports findings with CRITICAL/HIGH/LOW severity, citing specific file:line evidence.
 
@@ -451,7 +452,7 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights:
 
-- **V12.0.8** — Current release. Consolidation release: pipeline collapse 7->5 states (task-decomposer + prompt-engineer folded into universal-planner), engineering-manager merged into tech-lead, architecture-reviewer collapsed into `architect --review` mode flag, 13 marketing-sales agents absorbed (38->25), chief-legal-officer renamed to clo, 11 legacy domain dirs deleted, `cagents-memory/_communication/` removed, max_revision_cycles 5->3, execution self-validation reduced 15->5 hook-verifiable checks. Total agents 251->238.
+- **V12.1.2** — Current release. Consolidation release: pipeline collapse 7->5 states (task-decomposer + prompt-engineer folded into universal-planner), engineering-manager merged into tech-lead, architecture-reviewer collapsed into `architect --review` mode flag, 13 marketing-sales agents absorbed (38->25), chief-legal-officer renamed to clo, 11 legacy domain dirs deleted, `cagents-memory/_communication/` removed, max_revision_cycles 5->3, execution self-validation reduced 15->5 hook-verifiable checks. Total agents 251->238.
 - **V11.3.0** — Plugin health sweep: archetype-canonical doc alignment (9 archetypes canonical, 15 domains as routing overlay), 109 stale `related_agents` cross-references swept, hook-count assertions corrected (26 unique registered, 29 .cjs total), `sync-agents.sh --check` dry-run flag added, `validate-versions.sh` pruned to 18 canonical slots, regression tests added.
 - **V11.1.3** — Removed statusLine hook and status bar integration.
 - **V11.0.0** — Removed deprecated skills `/review`, `/optimize`, `/context`, `/debug`. `/review` and `/optimize` consolidated into `/improve` (`--mode review|optimize|full`); `/context` replaced by `/run context …` passthrough; `/debug` replaced by `/run --mode debug`. See [docs/MIGRATION-V11.md](docs/MIGRATION-V11.md) for the migration guide.

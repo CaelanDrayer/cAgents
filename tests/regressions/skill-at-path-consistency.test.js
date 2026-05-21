@@ -33,7 +33,8 @@ import { join } from 'path';
 
 const ROOT = process.cwd();
 const SKILLS_DIR = join(ROOT, '.claude', 'skills');
-const SKILL_NAMES = ['run', 'team', 'org', 'designer', 'improve', 'helper'];
+// v12.1.2: /improve folded into /run via keyword router; 5 user skills.
+const SKILL_NAMES = ['run', 'team', 'org', 'designer', 'helper'];
 
 // Matches: [`reference/anything.md`](reference/anything.md) and the
 // backtick-less variant [reference/anything.md](reference/anything.md).
@@ -42,7 +43,7 @@ const SKILL_NAMES = ['run', 'team', 'org', 'designer', 'improve', 'helper'];
 const MARKDOWN_LINK_PATTERN = /\]\(reference\/[^)]+\)/g;
 
 describe('skill-at-path-consistency (Q-008)', () => {
-  it('all 6 user-invocable SKILL.md files exist', () => {
+  it('all 5 user-invocable SKILL.md files exist (v12.1.2: /improve folded into /run)', () => {
     for (const name of SKILL_NAMES) {
       const p = join(SKILLS_DIR, name, 'SKILL.md');
       expect(existsSync(p), `Missing SKILL.md: ${p}`).toBe(true);
@@ -72,13 +73,14 @@ describe('skill-at-path-consistency (Q-008)', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('improve/SKILL.md uses @reference/ form at least once (positive assertion)', () => {
-    const p = join(SKILLS_DIR, 'improve', 'SKILL.md');
+  it('run/SKILL.md uses @reference/ form at least once (positive assertion)', () => {
+    // v12.1.2: improve folded into /run; the @reference/ check now applies to /run.
+    const p = join(SKILLS_DIR, 'run', 'SKILL.md');
     const content = readFileSync(p, 'utf8');
     const atRefCount = (content.match(/@reference\//g) || []).length;
     expect(
       atRefCount,
-      `Expected improve/SKILL.md to use @reference/ form for progressive disclosure; got ${atRefCount} matches.`,
+      `Expected run/SKILL.md to use @reference/ form for progressive disclosure; got ${atRefCount} matches.`,
     ).toBeGreaterThan(0);
   });
 });

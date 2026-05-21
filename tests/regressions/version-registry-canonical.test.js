@@ -8,14 +8,14 @@ import { join } from 'path';
  * Bug: `.claude/rules/core/version-registry.md` simultaneously described the
  * V10.x 21-location registry catalog AND the V11.0+ canonical 18-location
  * registry. The mixed wording ("the V10.x catalog had 21 locations; the
- * current canonical count is 18", "Any '21 registry locations' phrasing
+ * current canonical count is 17", "Any '21 registry locations' phrasing
  * elsewhere in this file refers to the V10.x historical catalog") creates
  * ambiguity for future registry additions and obscures the single source
  * of truth.
  *
  * Fix: All V10.x historical context was moved verbatim to
  * `docs/VERSION_REGISTRY_HISTORY.md`. The rule file retains ONLY the
- * canonical 18-row table + tiny-bump cadence rules + a single-line back-
+ * canonical 17-row table + tiny-bump cadence rules + a single-line back-
  * reference to the history file.
  *
  * This test asserts:
@@ -25,8 +25,8 @@ import { join } from 'path';
  *       other contexts — version numbers, line refs — but not as a
  *       registry-count claim).
  *   (3) The canonical 18-row markdown table (`| # | File | Field/Line |
- *       Updated By |`) still parses and contains exactly 18 numbered rows
- *       (1 through 18, in order).
+ *       Updated By |`) still parses and contains exactly 17 numbered rows
+ *       (1 through 17, in order).
  *
  * The test MUST FAIL at HEAD 7b3a1d45 (current state still has V10.x
  * cruft) and PASS after the fix lands. This is the failing-before /
@@ -50,7 +50,7 @@ describe('version-registry.md is canonical-only (Q-011)', () => {
   it('contains no "V10.x catalog" phrasing', () => {
     // "V10.x catalog" appears in the pre-fix rule file at two spots:
     //   - Top of "Version Locations" section ("The V10.x catalog had 21 locations").
-    //   - Inside tiny-bump criterion 5 ("the V10.x catalog had 21; the V11.0 canonical count is 18").
+    //   - Inside tiny-bump criterion 5 ("the V10.x catalog had 21; the V11.0 canonical count is 17").
     const matches = content.match(/V10\.x\s+catalog/gi) || [];
     expect(
       matches,
@@ -75,12 +75,12 @@ describe('version-registry.md is canonical-only (Q-011)', () => {
     }
     expect(
       hits,
-      `version-registry.md must contain no "21 registry locations" / "had 21 locations" phrasing — the canonical count is 18 and historical V10.x references belong in docs/VERSION_REGISTRY_HISTORY.md. Hits:\n` +
+      `version-registry.md must contain no "21 registry locations" / "had 21 locations" phrasing — the canonical count is 17 and historical V10.x references belong in docs/VERSION_REGISTRY_HISTORY.md. Hits:\n` +
         hits.map((h) => `  - ${h.pattern} matched "${h.match}"`).join('\n'),
     ).toEqual([]);
   });
 
-  it('canonical 18-row registry table parses with rows numbered 1..18', () => {
+  it('canonical 17-row registry table parses with rows numbered 1..18', () => {
     // Row shape: `| N | <path> | <field> | <updater> |` where N is 1-2 digits.
     // We extract every row in the canonical table and verify it covers 1..18
     // contiguously with no duplicates.
@@ -91,11 +91,11 @@ describe('version-registry.md is canonical-only (Q-011)', () => {
       numbers.push(parseInt(m[1], 10));
     }
 
-    // The canonical table has exactly 18 rows, numbered 1..18 in order.
+    // The canonical table has exactly 17 rows, numbered 1..17 in order.
     expect(
       numbers,
-      `version-registry.md must contain a markdown table with exactly 18 rows numbered 1..18.\n` +
+      `version-registry.md must contain a markdown table with exactly 17 rows numbered 1..17.\n` +
         `Extracted row numbers: [${numbers.join(', ')}]`,
-    ).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
+    ).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]);
   });
 });

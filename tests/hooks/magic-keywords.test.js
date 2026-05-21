@@ -39,14 +39,16 @@ describe('magic-keywords.cjs', () => {
     expect(result.systemMessage).toContain('/run');
   });
 
-  it('should suggest /improve --mode review for review keywords', () => {
+  // v12.1.2: /improve folded into /run via keyword router. The hook now suggests
+  // /run review (instead of /improve --mode review) and /run optimize.
+  it('should suggest /run review for review keywords (v12.1.2 keyword router)', () => {
     const result = runHook({ user_prompt: 'review the auth module for security issues' });
-    expect(result.systemMessage).toContain('/improve --mode review');
+    expect(result.systemMessage).toContain('/run review');
   });
 
-  it('should suggest /improve --mode optimize for optimize keywords', () => {
+  it('should suggest /run optimize for optimize keywords (v12.1.2 keyword router)', () => {
     const result = runHook({ user_prompt: 'optimize the database queries for performance' });
-    expect(result.systemMessage).toContain('/improve --mode optimize');
+    expect(result.systemMessage).toContain('/run optimize');
   });
 
   it('should suggest /designer for design keywords', () => {

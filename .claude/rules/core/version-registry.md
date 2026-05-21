@@ -11,9 +11,9 @@ paths:
 
 All locations where the cAgents version number appears. Keep ALL locations in sync on every release.
 
-**Last verified**: V11.1.4 — `scripts/ci/validate-versions.sh` reports `Checked 18/18 locations, 0 mismatches, 0 skipped`. The slot list in `validate-versions.sh` and `sync-versions.sh` matches this table exactly (paired-commit invariant enforced in v11.1.4).
+**Last verified**: v12.1.2 — `scripts/ci/validate-versions.sh` reports `Checked 17/17 locations, 0 mismatches, 0 skipped`. v12.1.2 removed slot #10 (`.claude/skills/improve/SKILL.md`) when `/improve` was folded into `/run` via the keyword router. Slots #11-#18 renumbered to #10-#17.
 
-## Version Locations (18 total)
+## Version Locations (17 total)
 
 See `docs/VERSION_REGISTRY_HISTORY.md` for V10.x history.
 
@@ -28,15 +28,14 @@ See `docs/VERSION_REGISTRY_HISTORY.md` for V10.x history.
 | 7 | `.claude/skills/org/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
 | 8 | `.claude/skills/team/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
 | 9 | `.claude/skills/designer/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
-| 10 | `.claude/skills/improve/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
-| 11 | `.claude/skills/helper/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
-| 12 | `.claude/hooks/session-catchup.cjs` | `cAgents V{version} session initialized` | `scripts/sync-versions.sh` |
-| 13 | `scripts/ci/cagents-ci.sh` | `# Version:` header + `log_section` banner | `scripts/sync-versions.sh` |
-| 14 | `scripts/ci/validate-agents.sh` | `# Version:` header | `scripts/sync-versions.sh` |
-| 15 | `README.md` | Version History `**V{version}** — Current release` | `scripts/sync-versions.sh` |
-| 16 | `docs/README.md` | `**Version**:` header | `scripts/sync-versions.sh` |
-| 17 | `docs/RELEASE_NOTES.md` | `**Current Version**:` header | `scripts/sync-versions.sh` |
-| 18 | `CHANGELOG.md` | `## [VERSION] - DATE` header inserted under `[Unreleased]` | `scripts/sync-versions.sh` |
+| 10 | `.claude/skills/helper/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
+| 11 | `.claude/hooks/session-catchup.cjs` | `cAgents V{version} session initialized` | `scripts/sync-versions.sh` |
+| 12 | `scripts/ci/cagents-ci.sh` | `# Version:` header + `log_section` banner | `scripts/sync-versions.sh` |
+| 13 | `scripts/ci/validate-agents.sh` | `# Version:` header | `scripts/sync-versions.sh` |
+| 14 | `README.md` | Version History `**V{version}** — Current release` | `scripts/sync-versions.sh` |
+| 15 | `docs/README.md` | `**Version**:` header | `scripts/sync-versions.sh` |
+| 16 | `docs/RELEASE_NOTES.md` | `**Current Version**:` header | `scripts/sync-versions.sh` |
+| 17 | `CHANGELOG.md` | `## [VERSION] - DATE` header inserted under `[Unreleased]` | `scripts/sync-versions.sh` |
 
 ## Sync Tool
 

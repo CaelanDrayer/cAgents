@@ -40,15 +40,15 @@ describe('version-registry.md structure', () => {
     });
   }
 
-  it('registry table contains all numbered rows (V11.0+: 18 locations)', () => {
-    // V11.0 shrunk the registry from 21 to 18 (removed 4 SKILL.md
+  it('registry table contains all numbered rows (v12.1.2+: 17 locations)', () => {
+    // V11.0 shrunk the registry from 21 to 17 (removed 4 SKILL.md
     // entries for context/debug/review/optimize, kept CHANGELOG).
     // Updated for V11.0.0.
     const rowNumbers = [...content.matchAll(/^\|\s*(\d+)\s*\|/gm)].map((m) =>
       Number(m[1]),
     );
     const unique = new Set(rowNumbers);
-    for (let i = 1; i <= 18; i++) {
+    for (let i = 1; i <= 17; i++) {
       expect(unique.has(i)).toBe(true);
     }
   });

@@ -8,12 +8,14 @@
  *
  * Examples:
  *   "build a login page" -> suggests /run
- *   "review the auth module" -> suggests /improve --mode review (V11.0)
- *   "optimize database queries" -> suggests /improve --mode optimize (V11.0)
+ *   "review the auth module" -> suggests /run review (v12.1.2 keyword router)
+ *   "optimize database queries" -> suggests /run optimize (v12.1.2 keyword router)
  *   "design a new dashboard" -> suggests /designer
  *   "team up to build the API" -> suggests /team
  *
  * V11.0: /review and /optimize were unified into /improve --mode <mode>.
+ * v12.1.2: /improve folded into /run via first-word keyword router
+ *          (`improve|review|audit|optimize <target>`).
  *
  * Advisory mode: suggests but does not auto-route.
  */
@@ -31,11 +33,11 @@ const KEYWORD_ROUTES = [
   [/^(?:update|upgrade|modify|change|edit|adjust)\b/i, '/run', 'update via agent pipeline'],
   [/^(?:deploy|release|publish|ship)\b/i, '/run', 'deploy via agent pipeline'],
 
-  // /improve triggers (V11.0: unified review + optimize entry point)
-  [/^(?:review|audit|check|inspect|analyze|assess|evaluate)\b/i, '/improve --mode review', 'review with specialist agents'],
-  [/^(?:code review|security review|performance review)\b/i, '/improve --mode review', 'review with specialist agents'],
-  [/^(?:optimize|speed up|improve performance|benchmark|profile|tune)\b/i, '/improve --mode optimize', 'optimize with before/after metrics'],
-  [/^(?:reduce|minimize|compress|shrink)\b.*(?:size|bundle|latency|memory|load)/i, '/improve --mode optimize', 'optimize with before/after metrics'],
+  // Improve modes inside /run (v12.1.2: /improve folded into /run via keyword router)
+  [/^(?:review|audit|check|inspect|analyze|assess|evaluate)\b/i, '/run review', 'review with specialist agents (keyword router -> --mode review)'],
+  [/^(?:code review|security review|performance review)\b/i, '/run review', 'review with specialist agents (keyword router -> --mode review)'],
+  [/^(?:optimize|speed up|improve performance|benchmark|profile|tune)\b/i, '/run optimize', 'optimize with before/after metrics (keyword router -> --mode optimize)'],
+  [/^(?:reduce|minimize|compress|shrink)\b.*(?:size|bundle|latency|memory|load)/i, '/run optimize', 'optimize with before/after metrics (keyword router -> --mode optimize)'],
 
   // /designer triggers
   [/^(?:design|explore|brainstorm|prototype|sketch|wireframe|mockup)\b/i, '/designer', 'interactive design exploration'],

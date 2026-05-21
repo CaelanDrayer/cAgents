@@ -5,13 +5,12 @@ import yaml from 'js-yaml';
 
 const SKILLS_DIR = join(process.cwd(), '.claude', 'skills');
 
-// V11.0: 6 surviving user-invocable skills. V10.26.x listed 10
-// (including context, debug, review, optimize + improve); those four
-// were removed in V11.0 and improve is now canonical.
+// v12.1.2: 5 surviving user-invocable skills. /improve was folded into
+// /run via a first-word keyword router (improve|review|audit|optimize)
+// in v12.1.2. V11.0 had already removed context, debug, review, optimize.
 const SKILL_NAMES = [
   'designer',
   'helper',
-  'improve',
   'org',
   'run',
   'team',

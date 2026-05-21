@@ -59,10 +59,12 @@ describe('root plugin.json', () => {
     expect(missing).toEqual([]);
   });
 
-  it('description enumerates /improve and reflects V11.0 6-skill catalog', () => {
+  it('description reflects v12.1.2 5-skill catalog (no standalone /improve)', () => {
     const plugin = loadPluginJson(PLUGIN_PATH);
-    expect(plugin.description).toMatch(/\/improve/);
-    expect(plugin.description).toMatch(/6 user skills/);
+    // v12.1.2: /improve folded into /run via keyword router; 5 user skills now.
+    expect(plugin.description).toMatch(/5 user skills/);
+    // The description should NOT advertise /improve as a standalone skill.
+    expect(plugin.description).not.toMatch(/\/improve audits/i);
   });
 
   it('should include agents from all 9 archetype roots (v11.1.0 builder-role tree)', () => {

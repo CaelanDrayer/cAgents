@@ -10,6 +10,180 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.1.2] - 2026-05-21
+
+Folds `/improve` into `/run` via a first-word keyword router and removes
+the standalone `/improve` skill. Tiny patch bump.
+
+### Removed
+- **`.claude/skills/improve/`** — entire directory deleted (SKILL.md plus
+  24 reference docs). The standalone `/improve` skill is gone.
+- **Version registry slot #10** — `.claude/skills/improve/SKILL.md`
+  removed from `scripts/sync-versions.sh`, `scripts/ci/validate-versions.sh`,
+  and `.claude/rules/core/version-registry.md`. Total slot count drops
+  from 18 to 17.
+
+### Changed
+- **/run SKILL.md keyword router (Step 1a)**: before flag parsing and
+  domain routing, `/run` now inspects the first whitespace-separated
+  token of `$ARGUMENTS`. If it (case-insensitively) matches one of the
+  four improve-family keywords, the keyword is stripped and an internal
+  `mode` is inferred: `improve` → `full`, `review`/`audit` → `review`,
+  `optimize` → `optimize`. Example: `/run review src/auth/` is now the
+  canonical replacement for `/improve --mode review src/auth/`.
+- **/run --mode parser**: accepted values expand from `{standard, debug}`
+  to `{standard, debug, review, optimize, full}`. An explicit `--mode`
+  flag overrides any keyword-router inference.
+- **magic-keywords.cjs**: route table updated. `review|audit|...` prompts
+  now suggest `/run review` (was `/improve --mode review`); `optimize|...`
+  prompts suggest `/run optimize` (was `/improve --mode optimize`).
+- **`_MODE_REGISTRY.md`**: the three improve modes (review/optimize/full)
+  and three flags (--baseline/--suppress/--benchmark) plus --scope and
+  --auto-fix are now listed under `## /run`. The `## /improve` section
+  is preserved as a REMOVED marker with redirection guidance.
+- **CLAUDE.md, README.md, docs/README.md, helper/SKILL.md**: skill
+  catalog reduced from 6 to 5. Skills table row for `/improve` removed;
+  prose mentions redirected to `/run review|audit|optimize|improve`.
+- **plugin.json + marketplace.json descriptions**: "6 user skills" →
+  "5 user skills"; `/improve` removed from the user-skill enumeration.
+
+### Added
+- **`.claude/skills/run/reference/improve-mode.md`**: full keyword router
+  contract, mode inference table, mode-specific controller behavior,
+  atomic rollback pattern, cross-session artifact layout.
+- **`.claude/skills/run/reference/improve-optimization-types.md`**,
+  **`improve-risk-classification.md`**, **`improve-pattern-effectiveness.md`**:
+  three keeper reference docs migrated from the deleted improve dir.
+- **`scripts/migration/v12-aliases.yaml`**: new `skill_aliases` and
+  `skill_invocation_aliases` sections mapping `/improve` and its mode-
+  specific invocations to the new `/run` equivalents.
+- **`tests/v12/improve-removed-keyword-routing.test.js`**: 11-assertion
+  regression test asserting the improve directory is gone, plugin.json
+  no longer references it, /run SKILL.md has the keyword router section,
+  the new reference doc exists, the --mode parser accepts review/optimize/full,
+  v12-aliases.yaml documents the migration, CHANGELOG has the v12.1.2
+  entry, and the version registry slot count is 17.
+
+### Migration
+- `/improve <target>` → `/run review <target>` (review is the default mode)
+- `/improve --mode review <target>` → `/run review <target>`
+- `/improve --mode optimize <target>` → `/run optimize <target>`
+- `/improve --mode full <target>` → `/run improve <target>`
+- `--baseline`, `--suppress`, `--benchmark`, `--scope`, `--auto-fix`
+  flags remain valid on `/run` when an improve mode is active.
+
+## [12.1.1] - 2026-05-21
+
+Three followups from v12.1.0 (`/team` context-discipline redesign) closing
+the documentation gap (FU-1), the planner emission gap (FU-2), and the
+static-validation gap (FU-3). Tiny patch bump.
+
+### Changed
+- **FU-1 (HIGH) — Graceful-degradation rule generalized to all skills.**
+  `.claude/rules/core/controllers.md`, `.claude/rules/core/execution.md`,
+  and `.claude/rules/core/teams.md` previously scoped the depth-1 Agent-tool
+  stripping rule to `/team` teammates only and asserted that `/run`
+  controllers retain Agent at level 1 and MUST delegate. The v12.1.0 spike
+  (session `run_improve-team-context_260521_001`) reproduced "Agent is not
+  available inside subagents." for `cagents:tech-lead` spawned by `/run` at
+  depth-1, falsifying that assertion. All three rule docs now state the
+  rule applies to ALL spawning skills (`/run`, `/team`, `/org`) and ALL
+  agent types (plugin-namespaced `cagents:*` AND built-in `general-purpose`/
+  `Explore`/`Plan`). The knowledge note at
+  `cagents-memory/_knowledge/agent-tool-depth1-stripping.md` adds the
+  v12.1.0 spike result as reproduction #5 and the v12.1.1 coordination
+  session as reproduction #6.
+
+- **FU-2 (MEDIUM) — universal-planner per-wave file emission contract.**
+  `core/universal-planner/SKILL.md` previously documented only the legacy
+  monolithic `workflow/work_items.yaml` emission. v12.1.0 documented the
+  per-wave schema (`work_meta.yaml` + `work_items_wave_{K}.yaml`) in
+  `.claude/skills/team/reference/per-wave-decomposition.md` and made the
+  team SKILL read from per-wave files, but the planner SKILL was not
+  updated. v12.1.1 closes the gap: planner SKILL now documents the
+  dual-emission contract (legacy `work_items.yaml` + new
+  `work_meta.yaml` + `work_items_wave_{K}.yaml`) with schema, algorithm,
+  and back-compat strategy through v12.1.x. The completion event template
+  lists all three artifact shapes.
+
+### Added
+- `tests/v12/graceful-degradation-scope-generalized.test.js` — regression
+  test (13 assertions, 5 invariants) asserting that controllers.md,
+  execution.md, and teams.md contain generalized scope language (mentions
+  `/run`, `/team`, `/org` in the graceful-degradation section + at least
+  one explicit generalization marker like "all skills" / "depth ≥ 1"),
+  do NOT retain the falsified narrow-scope assertions, and that the
+  knowledge note cites the v12.1.0 spike session. Locks the FU-1
+  generalization against future regression.
+- `tests/v12/planner-per-wave-emission.test.js` — regression test (13
+  assertions, 4 invariants) asserting that the universal-planner SKILL.md
+  documents the dual-emission contract (mentions `work_meta.yaml` +
+  `work_items_wave_`, preserves back-compat language, lists new artifacts
+  in completion event template) and that a fixture session with all
+  three emission shapes round-trips cleanly with back-compat preserved
+  (union of per-wave WI ids equals monolithic WI ids, same
+  `acceptance_criteria` schema).
+- `cagents-memory/_knowledge/team-v12-1-0-e2e-validation.md` — FU-3
+  static-validation findings. Inspects team SKILL.md (193 lines, ≤200
+  cap), wave-reviewer (7-check protocol, Agent-free tool surface),
+  coord-log-writer (reads dual-emission back-compat, Agent-free tool
+  surface). All static cross-agent contracts (invocation prompt shapes,
+  file paths, schema versions, 1-line reply discipline) PASS. Full E2E
+  observation deferred to first production /team invocation on v12.1.1+
+  — rationale: spawning a real /team from inside the current /run
+  controller hits the same depth-1 Agent-tool stripping documented in
+  FU-1, making in-session E2E execution non-viable.
+
+## [12.1.0] - 2026-05-20
+
+### Added
+- `developer/quality/wave-reviewer/` agent: validates a /team wave gate by running
+  the 7-check protocol against on-disk evidence and returns a 1-line verdict.
+  Frees the lead from holding raw gate evidence in context.
+- `developer/quality/coord-log-writer/` agent: assembles final `coordination_log.yaml`
+  from on-disk artifacts (task_list, EVT files, gate_validations, self-validations).
+  Lead receives a 1-line confirmation instead of re-reading N waves of WI status.
+- `.claude/skills/team/reference/per-wave-decomposition.md`: schema for `work_meta.yaml`
+  (lead reads once) + `work_items_wave_{K}.yaml` (lead reads only current wave).
+  Replaces monolithic `work_items.yaml` holding pattern.
+- `.claude/skills/team/reference/spawn-brief-schema.md`: disk-handoff spawn pattern
+  that drops per-teammate spawn prompts from ~600 tokens to ~80 tokens.
+- `.claude/skills/team/reference/integration-handoff.md`: contract for integration
+  controller writing `integrated_outputs.yaml` + `integration_summary.md` (≤200 tokens)
+  so the lead never re-reads raw per-wave outputs at finalization.
+- `tests/v12/team-context-discipline.test.js`: 15-test regression test enforcing
+  SKILL.md ≤200 lines, per-wave decomposition references, delegated gate validation,
+  delegated final assembly, disk-handoff spawn briefs, and plugin manifest membership
+  for the two new agents.
+- `cagents-memory/_knowledge/non-plugin-agent-depth1-test.md`: spike result documenting
+  that depth-1 Agent stripping applies to ALL subagents (not just `cagents:*`); under
+  `/run` as well as `/team`. Verdict: DISK_DISCIPLINE_CANONICAL — sub-lead pattern
+  not viable on current Claude Code runtime.
+
+### Changed
+- `.claude/skills/team/SKILL.md`: rewritten as thin event loop (244 → 193 lines, 21%
+  reduction). Detailed prose moved to `@reference/*.md` with `@path` lazy loading.
+  Lead now uses `cagents:wave-reviewer` for gate validation and `cagents:coord-log-writer`
+  for final log assembly instead of inline execution.
+- `core/team-trigger/SKILL.md`: documents the new per-wave decomposition emission
+  schema (`work_meta.yaml` + `work_items_wave_{K}.yaml`). Schema is back-compat with
+  legacy monolithic `work_items.yaml`; planner emits both during v12.1.x transition.
+- `.claude/skills/team/reference/teammate-spawning-template.md`: documents the
+  disk-handoff spawn pattern (preferred) and preserves the inline template for
+  back-compat / small-wave cases.
+
+### Agent catalog
+- Total agents: 238 → 240 (added wave-reviewer + coord-log-writer under
+  `developer/quality/`).
+
+### Context-discipline impact
+The /team lead can now complete 5-10 wave workflows without exhausting context:
+- Per-wave decomposition: ~70% reduction in WI-yaml tokens held by lead
+- Disk-handoff spawn briefs: ~73% reduction in per-spawn prompt tokens
+- Delegated gate validation: ~80% reduction at each gate
+- Delegated final assembly: lead receives 1-line confirmation instead of N waves
+- SKILL.md compression: ~50 tokens saved per /team invocation at skill load
+
 ## [12.0.8] - 2026-05-20
 
 ### Added

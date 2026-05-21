@@ -99,13 +99,12 @@ else
     CHECKED=$((CHECKED + 1))
 fi
 
-# 6-11. Skill SKILL.md frontmatter versions (6 active skills in V11.0)
+# 6-10. Skill SKILL.md frontmatter versions (5 active skills in v12.1.2; /improve folded into /run)
 check_version ".claude/skills/run/SKILL.md"      "6. .claude/skills/run/SKILL.md"
 check_version ".claude/skills/org/SKILL.md"      "7. .claude/skills/org/SKILL.md"
 check_version ".claude/skills/team/SKILL.md"     "8. .claude/skills/team/SKILL.md"
 check_version ".claude/skills/designer/SKILL.md" "9. .claude/skills/designer/SKILL.md"
-check_version ".claude/skills/improve/SKILL.md"  "10. .claude/skills/improve/SKILL.md"
-check_version ".claude/skills/helper/SKILL.md"   "11. .claude/skills/helper/SKILL.md"
+check_version ".claude/skills/helper/SKILL.md"   "10. .claude/skills/helper/SKILL.md"
 
 # 12. session-catchup.cjs version string
 check_version ".claude/hooks/session-catchup.cjs" "12. .claude/hooks/session-catchup.cjs"
@@ -158,7 +157,7 @@ else
 fi
 
 echo ""
-echo "Checked $CHECKED/18 locations, $ERRORS mismatches, $SKIPPED skipped"
+echo "Checked $CHECKED/17 locations, $ERRORS mismatches, $SKIPPED skipped"
 
 if [ "$ERRORS" -gt 0 ]; then
     echo "FAIL: Version sync errors found. Run scripts/sync-versions.sh <version> to fix."

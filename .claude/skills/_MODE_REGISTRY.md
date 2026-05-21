@@ -2,10 +2,10 @@
 
 Single source of truth for all skill modes, flags, and trigger phrases. Skill
 SKILL.md bodies SHOULD reference this registry rather than redefining modes inline.
-This prevents documentation drift across `team/`, `run/`, `improve/`, and the
+This prevents documentation drift across `team/`, `run/`, and the
 other 3 user skills.
 
-**Last regenerated**: 2026-05-20 (v12.0.3)
+**Last regenerated**: 2026-05-21 (v12.1.2 — `/improve` folded into `/run` via keyword router)
 **Reference pattern**: Imbad0202/academic-research-skills MODE_REGISTRY.md (Apache-2.0)
 
 ---
@@ -17,6 +17,15 @@ other 3 user skills.
 | (default) | mode | Standard pipeline — orchestrator → planner → controller → validator | "run X", "fix Y", "implement Z" |
 | `--mode standard` | mode | Explicit standard pipeline (same as default) | — |
 | `--mode debug` | mode | Debug-focused execution with verbose logging | "debug X", "trace Y" |
+| `--mode review` | mode | Audit + identify issues, no changes (v12.1.2: from absorbed /improve) | "review code", "audit docs" |
+| `--mode optimize` | mode | Measurable optimization with baselines (v12.1.2: from absorbed /improve) | "optimize bundle size", "reduce latency" |
+| `--mode full` | mode | Combined review + optimize with unified report (v12.1.2: from absorbed /improve) | "improve quality of X" |
+| Keyword router (first word) | mode | `improve`/`review`/`audit`/`optimize` as first token auto-sets mode | "review src/auth/", "optimize bundle.js" |
+| `--baseline <ref>` | flag | Reference baseline for diff/comparison (improve modes) | — |
+| `--suppress <pattern>` | flag | Suppress findings matching pattern (improve modes) | — |
+| `--benchmark <tool>` | flag | Run benchmarks before/after optimization (improve modes) | — |
+| `--scope <path>` | flag | Restrict improve operations to a path subset | — |
+| `--auto-fix` | flag | Apply atomic auto-fix during review mode | — |
 | `--team` | flag | Delegate to /team for parallel multi-agent execution | "run X in parallel" |
 | `--analytics` | flag | Capture execution analytics for review | "run X with metrics" |
 | `--resume <session_id>` | flag | Resume an existing session at its last checkpoint | "resume run_..." |
@@ -74,19 +83,21 @@ other 3 user skills.
 
 Interactive Q&A throughout. EXEMPT from auto-proceed per CLAUDE.md.
 
-## /improve
+## /improve (REMOVED in v12.1.2 — folded into /run)
 
-| Mode | Description | When to use |
-|------|-------------|-------------|
-| `--mode review` | Audit + identify issues, no changes | "review code", "audit docs" |
-| `--mode optimize` | Measurable optimization with baselines | "optimize bundle size", "reduce latency" |
-| `--mode full` | Combined review + optimize with unified report | "improve quality of X" |
+Removed in v12.1.2. The standalone `/improve` skill was folded into `/run`
+via a keyword router. The three modes and three flags are now available
+under `/run`:
 
-| Flag | Description |
-|------|-------------|
-| `--baseline <ref>` | Reference baseline for diff/comparison |
-| `--suppress <pattern>` | Suppress findings matching pattern |
-| `--benchmark <tool>` | Run benchmarks before/after optimization |
+- `/improve --mode review X` -> `/run review X` (or `/run X --mode review`)
+- `/improve --mode optimize X` -> `/run optimize X` (or `/run X --mode optimize`)
+- `/improve --mode full X` -> `/run improve X` (or `/run X --mode full`)
+- `--baseline`, `--suppress`, `--benchmark`, `--scope`, `--auto-fix` flags
+  remain valid on `/run` when an improve mode is active.
+
+See `## /run` section above for the full flag/mode catalog. See
+`.claude/skills/run/reference/improve-mode.md` for the keyword router
+contract and mode-specific behavior.
 
 ## /helper
 

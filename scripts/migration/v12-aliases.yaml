@@ -234,3 +234,34 @@ coverage:
 #   plugin manifest sync (scripts/sync-agents.sh) can locate the agent.
 # - `absorb` and `fold` entries imply the old SKILL.md is deleted; only the
 #   alias mapping survives in v12-aliases.yaml.
+
+# ---------------------------------------------------------------------------
+# v12.1.2: Skill-level aliases (separate namespace from agent aliases above).
+# /improve was folded into /run via a first-word keyword router.
+# ---------------------------------------------------------------------------
+skill_aliases:
+  - old: "/improve"
+    new: "/run"
+    type: keyword_router_fold
+    introduced: "12.1.2"
+    notes: |
+      The standalone /improve skill was folded into /run in v12.1.2. The
+      first word of /run's request is now inspected for the improve-family
+      keywords (improve, review, audit, optimize) and the matching --mode
+      is inferred. See .claude/skills/run/reference/improve-mode.md for
+      the full contract. Users who type "/improve X --mode review" should
+      now type "/run review X" or "/run X --mode review".
+
+skill_invocation_aliases:
+  - old: "/improve <target>"
+    new: "/run review <target>"
+    introduced: "12.1.2"
+  - old: "/improve --mode review <target>"
+    new: "/run review <target>"
+    introduced: "12.1.2"
+  - old: "/improve --mode optimize <target>"
+    new: "/run optimize <target>"
+    introduced: "12.1.2"
+  - old: "/improve --mode full <target>"
+    new: "/run improve <target>"
+    introduced: "12.1.2"

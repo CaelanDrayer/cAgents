@@ -333,10 +333,9 @@ TaskUpdate({ taskId: "N", status: "completed" })
 | Skill | Context | Agent | Description |
 |-------|---------|-------|-------------|
 | `/org` | `none` | `true` | Cross-domain strategy via C-suite agents and sequential team execution |
-| `/run` | `none` | `true` | Execute any task through auto-routed controller and specialist agents (passthroughs: `run context ...`, `--mode debug`) |
+| `/run` | `none` | `true` | Execute any task through auto-routed controller and specialist agents (passthroughs: `run context ...`, `--mode debug`; v12.1.2 keyword router: `run improve|review|audit|optimize ...` triggers improve modes) |
 | `/team` | `fork` | `true` | Parallel multi-agent execution with wave-based quality gates |
 | `/designer` | `none` | `false` | Interactive design exploration with guided Q&A before building |
-| `/improve` | `fork` | `true` | Unified review + optimize engine (`--mode review\|optimize\|full`) |
 | `/helper` | `none` | `false` | Command guide that recommends the right skill for your task |
 
 **Built-in**: `/memory` (view/edit memory files), `/init` (bootstrap project CLAUDE.md)
@@ -371,12 +370,12 @@ N-wave pipeline: **Wave 0 (lead: enrichment) -> Wave 1..N-1 (teammates: per-wave
 ```
 Config: `settings.json` (`teammateMode`: auto/tmux/in-process). See `docs/TEAM_MODE.md`.
 
-### /designer, /improve, /helper
+### /designer, /helper
 Each skill has `SKILL.md` + `reference/` directory with detailed docs. Use `/helper` for guidance.
 
 Highlights:
 - **/designer**: Subagent-delegated question preparation (research agents pre-build context-rich question lists per phase), inline controller pattern (select, reorder, skip, adapt questions), phase-overlap (next-phase research begins during current phase), follow-up research dispatch, graceful fallback, 28 behavioral rules
-- **/improve** (V11.0 consolidation): Single 7-state state machine (SCOPING → MEASURING → DETECTING → PLANNING → EXECUTING → VALIDATING → REPORTING) with `--mode review|optimize|full`. Review baselines (`--baseline`, `--suppress`), benchmark integration (`--benchmark`), pattern-effectiveness tracking, atomic rollback helper, unified `improve_report.md` for `--mode full`
+- **Improve modes inside /run (v12.1.2)**: `/improve` was folded into `/run` via a first-word keyword router. `/run improve X` -> `--mode full`. `/run review X` or `/run audit X` -> `--mode review`. `/run optimize X` -> `--mode optimize`. Review baselines (`--baseline`, `--suppress`), benchmark integration (`--benchmark`), pattern-effectiveness tracking, and atomic rollback helper remain available as flags on `/run`. See `.claude/skills/run/reference/improve-mode.md` for the keyword router contract
 - **/helper**: Full /org documentation, troubleshooting mode (`--troubleshoot`), updated comparison matrices, V11.0 migration catalog
 
 ## Team Mode
@@ -415,7 +414,7 @@ See @.claude/rules/core/skill-format.md and @.claude/rules/core/execution.md for
 cAgents/
 +-- CLAUDE.md                # Main project memory (this file)
 +-- .claude/
-|   +-- skills/              # Skills (org, run, team, designer, improve, helper)
+|   +-- skills/              # Skills (org, run, team, designer, helper) — /improve folded into /run in v12.1.2
 |   +-- hooks/               # 31 .cjs files (28 hooks + utils + launcher + eval CLI)
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (29 files: 25 top-level across 5 categories + 1 README + 3 in resources/)
@@ -528,7 +527,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 
 ## Quick Reference
 
-**Skills**: `/org`, `/run`, `/team`, `/designer`, `/improve`, `/helper` (in `.claude/skills/`; V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see `docs/MIGRATION-V11.md`)
+**Skills**: `/org`, `/run`, `/team`, `/designer`, `/helper` (in `.claude/skills/`; V11.0 removed `/review`, `/optimize`, `/context`, `/debug`; v12.1.2 folded `/improve` into `/run` via keyword router — see `docs/MIGRATION-V11.md` and CHANGELOG entry v12.1.2)
 **Built-in**: `/memory`, `/init` (Claude Code native)
 **Agents**: 238 total across 9 archetypes (developer 30, operator 74, advisor 30, analyst 31, creator 11, writer 26, strategist 9, core 15, leadership 12)
 **Domain Overlay (legacy routing/config only)**: 2 dirs (`people/`, `shared/`) hold `config/domain_overrides.yaml` — no SKILL.md files. The other 11 legacy domains (engineering, creative, business, growth, service, science, health, education, personal, arts, trades) were deleted in v12 W4.2 and consolidated into `cagents-memory/_system/config/routing.yaml`.
@@ -539,7 +538,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 928+ Vitest tests across 88+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.0.8
+**Version**: 12.1.2
 
 ## Troubleshooting
 

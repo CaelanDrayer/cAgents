@@ -25,7 +25,8 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const SKILLS_DIR = path.join(REPO_ROOT, '.claude', 'skills');
 const MAX_LINES = 400;
 
-const USER_SKILLS = ['org', 'team', 'run', 'designer', 'improve', 'helper'];
+// v12.1.2: /improve folded into /run via keyword router; 5 user skills.
+const USER_SKILLS = ['org', 'team', 'run', 'designer', 'helper'];
 
 function countLines(filePath) {
   const content = fs.readFileSync(filePath, 'utf8');
@@ -52,7 +53,7 @@ describe('user-skill SKILL.md progressive disclosure (Wave 5)', () => {
   }
 
   it('total user-skill SKILL.md body size is bounded', () => {
-    // Sum across all 6 user skills must stay well under 6 * MAX_LINES = 2400.
+    // Sum across all 5 user skills (v12.1.2) must stay well under 5 * MAX_LINES = 2000.
     // Wave 5 brought the total from 5089 → ~1503 lines (a 70% reduction).
     // Ceiling here is generous; tightening risks brittleness as docs evolve.
     const total = USER_SKILLS.reduce(
@@ -70,7 +71,7 @@ describe('user-skill SKILL.md progressive disclosure (Wave 5)', () => {
       team: 1185,
       run: 861,
       designer: 736,
-      improve: 597,
+      // improve: 597 — removed in v12.1.2 (folded into /run)
       helper: 508,
     };
     for (const [skill, baseline] of Object.entries(PRE_REFACTOR)) {

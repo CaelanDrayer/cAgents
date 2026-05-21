@@ -1,23 +1,19 @@
 /**
- * V11.0 regression test for magic-keywords.cjs
+ * Magic-keywords regression test for the V11 -> v12.1.2 routing migration.
  *
- * Bug-2 (gap_analysis.md §3): The natural-language keyword router's
- * docstring (lines 11-12) advertises mappings to removed slash-commands
- * (`"review" -> /review`, `"optimize" -> /optimize`). The actual route
- * table was already migrated to /improve --mode {review,optimize}, but
- * the docstring is misleading and reinforces the same first-impression
- * UX damage as Bug-1.
+ * History:
+ * - V11.0 unified /review and /optimize into /improve --mode {review,optimize}.
+ * - v12.1.2 folded /improve into /run via a first-word keyword router:
+ *   `/run review <target>` -> --mode review, `/run optimize <target>` ->
+ *   --mode optimize, `/run improve <target>` -> --mode full, `/run audit
+ *   <target>` -> --mode review.
  *
- * This test asserts BOTH:
- *  (a) live runtime behavior: routing a "review ..." or "optimize ..."
- *      prompt produces a /improve --mode ... suggestion (not /review or
- *      /optimize on its own)
- *  (b) source-level: the file's documentation/comments do not contain
- *      stale `-> /review` / `-> /optimize` mappings
- *
- * Failing-before / passing-after: (a) already passes against current main
- * because routes are correct; (b) must FAIL against current main and PASS
- * after Bug-2 is fixed.
+ * This test asserts the current (v12.1.2) routing target:
+ *  (a) live runtime behavior: routing a "review ..." / "optimize ..." /
+ *      "audit ..." prompt produces a /run review or /run optimize suggestion
+ *      (NOT a bare /review, /optimize, or /improve standalone target)
+ *  (b) source-level: the hook source documents the v12.1.2 keyword router
+ *      and does not retain stale "-> /review" or "-> /optimize" doc mappings
  */
 
 import { describe, it, expect } from 'vitest';
@@ -28,10 +24,8 @@ import { randomUUID } from 'crypto';
 
 const HOOK_PATH = join(process.cwd(), '.claude', 'hooks', 'magic-keywords.cjs');
 
-// The hook's dedup guard hashes on session_id; vary it per call so parallel
-// tests don't collide on the dedup file and silently short-circuit.
 function runHook(input = {}) {
-  const merged = { session_id: `v11-test-${randomUUID()}`, ...input };
+  const merged = { session_id: `v12-test-${randomUUID()}`, ...input };
   const result = execSync(
     `printf '%s' '${JSON.stringify(merged).replace(/'/g, "'\\''")}' | node "${HOOK_PATH}"`,
     { encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'] }
@@ -39,79 +33,58 @@ function runHook(input = {}) {
   return JSON.parse(result.trim());
 }
 
-describe('magic-keywords.cjs V11.0 keyword routing (Bug-2)', () => {
+describe('magic-keywords.cjs v12.1.2 keyword routing', () => {
   it('hook file exists', () => {
     expect(existsSync(HOOK_PATH)).toBe(true);
   });
 
   // ---------- (a) live runtime behavior ----------
 
-  it('routes "review ..." prompts to /improve --mode review (not /review)', () => {
+  it('routes "review ..." prompts to /run review (v12.1.2 keyword router)', () => {
     const result = runHook({ user_prompt: 'review the auth module for security issues' });
     expect(result.systemMessage).toBeDefined();
-    expect(result.systemMessage).toMatch(/\/improve --mode review/);
+    expect(result.systemMessage).toMatch(/\/run review/);
     // Must not suggest the removed /review skill on its own.
-    // (We check that "/review" is not used as a standalone command —
-    // any occurrence must be inside "/improve --mode review".)
-    const stripped = result.systemMessage.replace(/\/improve --mode review/g, '');
+    const stripped = result.systemMessage.replace(/\/run review/g, '');
     expect(stripped).not.toMatch(/(^|[^a-zA-Z0-9_-])\/review(?=[^a-zA-Z0-9_-]|$)/);
   });
 
-  it('routes "optimize ..." prompts to /improve --mode optimize (not /optimize)', () => {
+  it('routes "optimize ..." prompts to /run optimize (v12.1.2 keyword router)', () => {
     const result = runHook({ user_prompt: 'optimize the database queries for performance' });
     expect(result.systemMessage).toBeDefined();
-    expect(result.systemMessage).toMatch(/\/improve --mode optimize/);
-    const stripped = result.systemMessage.replace(/\/improve --mode optimize/g, '');
+    expect(result.systemMessage).toMatch(/\/run optimize/);
+    const stripped = result.systemMessage.replace(/\/run optimize/g, '');
     expect(stripped).not.toMatch(/(^|[^a-zA-Z0-9_-])\/optimize(?=[^a-zA-Z0-9_-]|$)/);
   });
 
-  it('routes "audit ..." prompts to /improve --mode review', () => {
+  it('routes "audit ..." prompts to /run review (audit is an alias for review)', () => {
     const result = runHook({ user_prompt: 'audit our authentication for vulnerabilities' });
     expect(result.systemMessage).toBeDefined();
-    expect(result.systemMessage).toMatch(/\/improve --mode review/);
+    expect(result.systemMessage).toMatch(/\/run review/);
   });
 
-  // ---------- (b) source-level: stale comments / docstrings ----------
+  // ---------- (b) source-level: documentation matches new target ----------
 
-  it('source does not contain stale "-> ... /review" doc mapping (bug-2 surface)', () => {
+  it('source documents the v12.1.2 keyword router target', () => {
     const src = readFileSync(HOOK_PATH, 'utf8');
-    // The bug surface: a stale arrow-style mapping in the JSDoc header that
-    // documents a removed skill as the routing target. Allow occurrences
-    // inside `/improve --mode review`. We match an arrow on the same line,
-    // followed by anything up to a /review token that is NOT part of
-    // `/improve --mode review`.
+    // The hook should mention the new v12.1.2 routing target.
+    expect(src).toMatch(/\/run review/);
+    expect(src).toMatch(/\/run optimize/);
+  });
+
+  it('source does not advertise standalone /improve as the routing target', () => {
+    const src = readFileSync(HOOK_PATH, 'utf8');
+    // The KEYWORD_ROUTES table should NOT route to /improve any longer.
+    // We allow historical references inside comments (e.g., V11.0 history),
+    // but the route-table entries (lines with a `[/regex/...]` pattern and
+    // a single-quoted target string) must not target /improve.
     const lines = src.split('\n');
-    const offending = lines.filter(line => {
-      // Look for arrow + bare `/review` on the same line.
-      if (!/->/.test(line)) return false;
-      if (!/(^|[^a-zA-Z0-9_-])\/review(?=[^a-zA-Z0-9_-]|$)/.test(line)) return false;
-      // Allow `/improve --mode review` style (no bare /review token then).
-      // Strip allowed substrings and re-check for bare /review.
-      const stripped = line.replace(/\/improve --mode review/g, '');
-      return /(^|[^a-zA-Z0-9_-])\/review(?=[^a-zA-Z0-9_-]|$)/.test(stripped);
-    });
-    expect(offending, `Lines mentioning stale -> /review mapping:\n${offending.join('\n')}`)
-      .toEqual([]);
-  });
-
-  it('source does not contain stale "-> ... /optimize" doc mapping (bug-2 surface)', () => {
-    const src = readFileSync(HOOK_PATH, 'utf8');
-    const lines = src.split('\n');
-    const offending = lines.filter(line => {
-      if (!/->/.test(line)) return false;
-      if (!/(^|[^a-zA-Z0-9_-])\/optimize(?=[^a-zA-Z0-9_-]|$)/.test(line)) return false;
-      const stripped = line.replace(/\/improve --mode optimize/g, '');
-      return /(^|[^a-zA-Z0-9_-])\/optimize(?=[^a-zA-Z0-9_-]|$)/.test(stripped);
-    });
-    expect(offending, `Lines mentioning stale -> /optimize mapping:\n${offending.join('\n')}`)
-      .toEqual([]);
-  });
-
-  it('source documents /improve --mode review and /improve --mode optimize', () => {
-    // Positive assertion: the migration target is documented somewhere
-    // in the file (either in routes or comments).
-    const src = readFileSync(HOOK_PATH, 'utf8');
-    expect(src).toMatch(/\/improve --mode review/);
-    expect(src).toMatch(/\/improve --mode optimize/);
+    const routeLines = lines.filter(line => /^\s*\[\/.+\/.*,\s*'\//.test(line));
+    const improveRouteLines = routeLines.filter(line =>
+      /,\s*'\/improve\b/.test(line)
+    );
+    expect(improveRouteLines,
+      `Found stale /improve route table entries:\n${improveRouteLines.join('\n')}`
+    ).toEqual([]);
   });
 });
