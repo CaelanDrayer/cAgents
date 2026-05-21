@@ -10,7 +10,7 @@ Instead of pure keyword matching, use 5 weighted signals to score each candidate
 |--------|--------|--------------|
 | Keyword match | 0.30 | Count matching keywords from the intent classification table. The command whose keyword set has the most matches gets the full 0.30; others get proportional fractions. |
 | Project context | 0.30 | Read project files to infer domain and scope (see checks below). |
-| Complexity estimate | 0.20 | Estimate scope from the request: single file or narrow fix favors `/run`; multi-component or cross-cutting favors `/team`; multi-domain favors `/org`. |
+| Complexity estimate | 0.20 | Estimate scope from the request: single file or narrow fix favors `/run`; multi-component or cross-cutting favors `/team`; multi-domain favors `/team --strategic` (v12.2.0+; pre-v12.2.0 multi-domain favored the now-removed `/org`). |
 | Explicit intent | 0.10 | If the user directly references a command ("use /run", "I want to review"), give that command the full 0.10. |
 | Request history | 0.10 | If the user recently mentioned planning or design in the same session, boost `/designer`. If they mentioned review, boost `/improve` (review is the default mode). |
 

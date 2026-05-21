@@ -116,18 +116,18 @@ Decomposes work into parallel waves. Teammates execute simultaneously within eac
 
 Each teammate is a controller that spawns execution agents directly. Wave 0 handles scaffolding and interface contracts; middle waves parallelize implementation; the final wave handles integration and validation.
 
-### `/org` — Corporate Hierarchy Orchestration
+### Cross-Domain Strategic Coordination via `/team --strategic` (v12.2.0+)
 
-Fires the full executive layer. CEO logic runs inline, C-suite agents analyze independently, then deliberate with cross-domain context before producing a unified strategic brief. Domain teams execute sequentially using that brief as shared context.
+`/org` was removed in v12.2.0 and absorbed into `/team` strategic mode. The full executive layer — CEO inline logic, parallel C-suite analysis, cross-domain deliberation, unified strategic brief, dependency-ordered per-domain dispatch — now runs inside `/team`. Strategic mode auto-enables when `universal-router.domain_count >= 2`; force-enable with `--strategic` (single-domain executive framing) or force-disable with `--no-strategic` (flat multi-wave).
 
 ```bash
-/org Launch new product with campaign
-/org Fix auth bug                        # Routes to single /run with strategic brief
-/org Restructure engineering team
-/org Migrate to microservices --dry-run  # Preview routing decision
+/team Launch new product with campaign          # auto-enables strategic mode (multi-domain)
+/team Fix auth bug                              # single-domain routes through flat /team
+/team Restructure engineering team --strategic  # force-enable for single-domain executive framing
+/team Migrate to microservices --dry-run        # preview routing decision
 ```
 
-Smart routing applies: a single-domain simple request routes to `/run`, a single-domain complex request routes to `/team`, and multi-domain requests trigger the full C-suite hierarchy.
+Single-domain simple requests still favor `/run`; single-domain complex work runs as flat parallel `/team`; multi-domain requests trigger Wave 0/1/2 C-suite deliberation plus Wave 3..N per-domain dispatch.
 
 ### `/designer` — Interactive Design Exploration
 
@@ -161,7 +161,7 @@ V11.0.0 consolidated `/review` and `/optimize` into `/improve`. v12.1.2 folded `
 
 ### `/helper` — Command Guidance
 
-Recommends the right skill based on your task description. Use it when you are unsure whether to reach for `/run`, `/team`, or `/org`.
+Recommends the right skill based on your task description. Use it when you are unsure whether to reach for `/run` or `/team` (with or without `--strategic`).
 
 ```bash
 /helper
@@ -187,7 +187,7 @@ Since v11.1.0, the agent catalog (238 agents as of v12.0.0) is organized as a bu
 | **Creator** | 11 | Visual artists, designers, audiovisual creators |
 | **Strategist** | 9 | Product owners, portfolio managers, planners |
 | **Core** | 15 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, etc.) |
-| **Leadership** | 12 | C-suite executives — used by `/org` |
+| **Leadership** | 12 | C-suite executives — used by `/team` strategic mode (v12.2.0+; pre-v12.2.0 used by `/org`) |
 | **TOTAL** | **238** | |
 
 ### Legacy: 15-Domain Routing Overlay
@@ -202,7 +202,7 @@ The router and planner still consume `{domain}/config/domain_overrides.yaml` (co
 | **Growth** (34 routing slots) | `operator/marketing-sales` + parts of `writer/` |
 | **People** (17 routing slots) | `operator/people-ops` |
 | **Service** (28 routing slots) | `operator/support` + `advisor/legal` |
-| **Leadership** | `leadership/` (used by `/org`) |
+| **Leadership** | `leadership/` (used by `/team` strategic mode in v12.2.0+; pre-v12.2.0 used by `/org`) |
 | **Shared/Science/Health/Education/Personal/Arts/Trades** | `analyst/` + `advisor/{health,education,personal}` + `creator/` |
 
 **Engineering (31)** handles the full software stack: backend-developer, frontend-developer, devops-engineer, security-engineer, qa-lead, architect, dba, performance-analyzer, and 23 more. Use `/run Fix the bug` or `/team Build the feature` and the pipeline routes here automatically for software tasks.
@@ -351,7 +351,7 @@ cAgents routes your request to the right domain automatically based on keywords.
 | `/run Create onboarding program` | People | hr-manager |
 | `/run Draft our privacy policy` | Service | general-counsel |
 
-For cross-domain work that spans multiple areas (e.g., launching a product requires engineering, marketing, and ops), use `/org` — it coordinates C-suite agents across domains automatically.
+For cross-domain work that spans multiple areas (e.g., launching a product requires engineering, marketing, and ops), use `/team` — strategic mode auto-engages when `universal-router` detects 2+ domains and coordinates C-suite agents across domains automatically (v12.2.0+; pre-v12.2.0 this was `/org`).
 
 ---
 
@@ -380,7 +380,7 @@ For cross-domain work that spans multiple areas (e.g., launching a product requi
 | **Hook lifecycle** | 25 unique hooks across 17 event types | 1–4 hooks | 1–4 hooks |
 | **Goal drift prevention** | Yes — attention injection on every Write/Edit/Bash | No | No |
 | **Confidence scoring** | Yes — 0.0–1.0 per work item, low scores trigger scrutiny | No | No |
-| **Cross-domain orchestration** | Yes — /org fires full C-suite hierarchy | No | No |
+| **Cross-domain orchestration** | Yes — `/team` strategic mode fires full C-suite hierarchy (auto-enabled when `domain_count >= 2`) | No | No |
 
 Numbers for cAgents reflect the current release. Official plugin figures are approximate based on publicly available descriptions.
 
@@ -388,13 +388,13 @@ Numbers for cAgents reflect the current release. Official plugin figures are app
 
 ## Real Workflow Examples
 
-### Multi-Domain Strategy: `/org Plan Q3 product launch`
+### Multi-Domain Strategy: `/team Plan Q3 product launch` (auto-enables strategic mode)
 
-The CEO agent fires first and determines which C-suite agents are needed: CTO for technical feasibility, CPO for roadmap fit, CMO for go-to-market.
+`/team` detects two or more domains in the request (engineering + business + growth) and auto-enables strategic mode. The CEO inline logic fires first and determines which C-suite agents are needed: CTO for technical feasibility, CPO for roadmap fit, CMO for go-to-market.
 
-CTO, CPO, and CMO each analyze the request independently, writing their analyses to separate YAML files. Each then reads the others' analyses before a deliberation phase where they surface conflicts and cross-domain dependencies. The CMO flags that the marketing timeline assumes a launch date the CTO says is unrealistic. The deliberation resolves this with a phased launch plan.
+CTO, CPO, and CMO each analyze the request independently in Wave 0/1, writing their analyses to separate YAML files. Each then reads the others' analyses before a Wave 2 deliberation phase where they surface conflicts and cross-domain dependencies. The CMO flags that the marketing timeline assumes a launch date the CTO says is unrealistic. The deliberation resolves this with a phased launch plan.
 
-The result is a unified strategic brief. cAgents then runs sequential `/team` executions per domain: the engineering team plans the feature work, the marketing team plans the campaign, each using the strategic brief as shared context.
+The result is a unified strategic brief. `/team` then dispatches Wave 3..N per-domain: the engineering team plans the feature work, the marketing team plans the campaign, each using the strategic brief as shared context. (Pre-v12.2.0 this workflow was `/org` invoking sequential `/team` runs per domain; v12.2.0 fused both steps into a single `/team` session with nested waves.)
 
 ### Full-Stack Feature: `/team Build user dashboard`
 
@@ -416,7 +416,7 @@ The lead synthesizes findings, deduplicates overlapping concerns, and produces a
 
 ## AgentPath — Session Visualizer
 
-[AgentPath](https://github.com/CaelanDrayer/AgentPath) is a companion web UI for visualizing cAgents session data. It reads from `cagents-memory/sessions/` and renders agent trees, pipeline timelines, work item DAGs, and file change logs in real time. Useful for understanding what happened in complex `/org` or `/team` runs where dozens of agents executed across multiple waves.
+[AgentPath](https://github.com/CaelanDrayer/AgentPath) is a companion web UI for visualizing cAgents session data. It reads from `cagents-memory/sessions/` and renders agent trees, pipeline timelines, work item DAGs, and file change logs in real time. Useful for understanding what happened in complex `/team` runs (including strategic-mode runs with C-suite Wave 0/1/2 plus per-domain Wave 3..N) where dozens of agents executed across multiple waves.
 
 ---
 
@@ -452,7 +452,8 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights:
 
-- **V12.1.2** — Current release. Consolidation release: pipeline collapse 7->5 states (task-decomposer + prompt-engineer folded into universal-planner), engineering-manager merged into tech-lead, architecture-reviewer collapsed into `architect --review` mode flag, 13 marketing-sales agents absorbed (38->25), chief-legal-officer renamed to clo, 11 legacy domain dirs deleted, `cagents-memory/_communication/` removed, max_revision_cycles 5->3, execution self-validation reduced 15->5 hook-verifiable checks. Total agents 251->238.
+- **V12.2.0** — Current release. BREAKING: `/org` skill removed; cross-domain coordination folded into `/team` with auto-enabled strategic mode (universal-router `domain_count` triggers Wave 0/1/2 C-suite deliberation + Wave 3..N per-domain dispatch). 12 leadership agents preserved at their existing locations. Plugin skill count 5->4. Migration: `/org X` → `/team X`.
+- **V12.1.2** — Folds `/improve` into `/run` via a first-word keyword router; removes the standalone `/improve` skill. Plugin skill count 6->5. Consolidation release: pipeline collapse 7->5 states (task-decomposer + prompt-engineer folded into universal-planner), engineering-manager merged into tech-lead, architecture-reviewer collapsed into `architect --review` mode flag, 13 marketing-sales agents absorbed (38->25), chief-legal-officer renamed to clo, 11 legacy domain dirs deleted, `cagents-memory/_communication/` removed, max_revision_cycles 5->3, execution self-validation reduced 15->5 hook-verifiable checks. Total agents 251->238.
 - **V11.3.0** — Plugin health sweep: archetype-canonical doc alignment (9 archetypes canonical, 15 domains as routing overlay), 109 stale `related_agents` cross-references swept, hook-count assertions corrected (26 unique registered, 29 .cjs total), `sync-agents.sh --check` dry-run flag added, `validate-versions.sh` pruned to 18 canonical slots, regression tests added.
 - **V11.1.3** — Removed statusLine hook and status bar integration.
 - **V11.0.0** — Removed deprecated skills `/review`, `/optimize`, `/context`, `/debug`. `/review` and `/optimize` consolidated into `/improve` (`--mode review|optimize|full`); `/context` replaced by `/run context …` passthrough; `/debug` replaced by `/run --mode debug`. See [docs/MIGRATION-V11.md](docs/MIGRATION-V11.md) for the migration guide.

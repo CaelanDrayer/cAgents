@@ -299,17 +299,20 @@ guard_chain_result:
 | 2+ any severity | REVISE -- prioritize CRITICAL, then HIGH, then MEDIUM |
 | 2 CRITICAL after rework | dead_letter -- escalate to user |
 
-## Graceful Degradation Under Harness Tool Stripping (PHASE-N1, V11.1.13)
+## Graceful Degradation Under Harness Tool Stripping (PHASE-N1, V11.1.13; generalized in v12.1.1)
 
-**Applies to: controllers spawned as `/team` teammates at depth ≥ 1.**
+**Applies to: all cAgents controllers and execution agents spawned at depth ≥ 1 by Claude Code, regardless of which skill spawned them (`/run`, `/team`, or `/org`).**
 
-When a controller agent (e.g., `cagents:tech-lead`) is spawned by `/team` as a teammate, the Claude Code runtime may strip the `Agent` tool from the controller's tool surface — even when the controller's SKILL.md frontmatter correctly declares `allowed-tools: Agent ...`. This is upstream platform behavior, not a cAgents config issue (no `settings.json`, `plugin.json`, or env-var knob exposes the depth-1 stripping; see PHASE-N1 audit at `cagents-memory/_knowledge/agent-tool-depth1-stripping.md`).
+When any cAgents agent (controller, execution, or otherwise) is spawned at nesting depth ≥ 1 by Claude Code, the runtime may strip the `Agent` tool from the spawned agent's tool surface — even when the agent's SKILL.md frontmatter correctly declares `allowed-tools: Agent ...`. This is upstream platform behavior, not a cAgents config issue (no `settings.json`, `plugin.json`, or env-var knob exposes the depth-1 stripping; see PHASE-N1 audit at `cagents-memory/_knowledge/agent-tool-depth1-stripping.md`).
 
-**Rule:** When a teammate controller discovers that `Agent` is unavailable, it MUST gracefully degrade to direct execution rather than fail the work item. The teammate uses the tools it does have (`Read`, `Write`, `Edit`, `Bash`, `Grep`, `Glob`), self-validates against acceptance criteria via the 5 hook-verifiable checks in @resources/execution-self-validation.md, and writes the result to `outputs/task-{N}/self-validation.yaml` with the standard `status: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED` field.
+**Rule:** When any spawned agent discovers that `Agent` is unavailable, it MUST gracefully degrade to direct execution rather than fail the work item. The agent uses the tools it does have (`Read`, `Write`, `Edit`, `Bash`, `Grep`, `Glob`), self-validates against acceptance criteria via the 5 hook-verifiable checks in @resources/execution-self-validation.md, and writes the result to `outputs/task-{N}/self-validation.yaml` with the standard `status: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED` field.
 
-**Documentation requirement:** the coordination_log for the wave MUST include the literal sentence "Agent/subagent-spawn tool was not available" so that `verify-completion.cjs` recognizes the graceful-degradation pattern and downgrades the protocol-violation warning. See `.claude/rules/core/teams.md` § Known Harness Limitation for the full evidence chain and the upstream-config null-finding.
+**Documentation requirement:** the coordination_log for the session/wave MUST include the literal sentence "Agent/subagent-spawn tool was not available" so that `verify-completion.cjs` recognizes the graceful-degradation pattern and downgrades the protocol-violation warning. See `.claude/rules/core/teams.md` § Known Harness Limitation for the full evidence chain and the upstream-config null-finding.
 
-**Scope boundary:** this degradation is acceptable for `/team` teammate workflows only. Controllers running under `/run` execute at level 1 with the Agent tool present and MUST delegate (the reviewer-loop pattern remains mandatory). Controllers running as `/org` C-suite agents at level 1 likewise have Agent and MUST delegate.
+**Scope (generalized in v12.1.1):** this degradation applies to all skills and all agent types. Previously this rule asserted that `/run` controllers retain Agent at level 1 and MUST delegate — that assertion was empirically falsified in session `run_improve-team-context_260521_001` (v12.1.0 WI-1 spike), where `cagents:tech-lead` spawned by `/run` at depth-1 received "Agent is not available inside subagents." The stripping behavior affects:
+- Plugin-namespaced agents (`cagents:*`) AND built-in agent types (`general-purpose`, `Explore`, `Plan`).
+- All spawning skills: `/run`, `/team` (teammates), and `/org` (C-suite agents spawned at depth ≥ 1).
+- Controllers AND execution agents — the only safe assumption is depth-0 (the skill's own loop) has `Agent`; depth ≥ 1 does not.
 
 ## Agent ID Tracking
 

@@ -1,7 +1,6 @@
 ---
 paths:
   - ".claude/skills/run/**"
-  - ".claude/skills/org/**"
   - ".claude/skills/team/**"
   - "cagents-memory/_system/config/pipeline_config.yaml"
   - "core/**"
@@ -40,7 +39,7 @@ All state transitions are AUTOMATIC: INIT -> ORCHESTRATED -> PLANNED -> COORDINA
 > Use /improve --mode review|optimize|full or /run --mode debug for V11+ workflows.
 > See [docs/MIGRATION-V11.md](../../../docs/MIGRATION-V11.md) for migration guidance.
 
-**Every skill (/run, /team, /org, /review, /optimize, /designer, /debug) MUST create its session directory and write status.yaml BEFORE any other work.** No codebase exploration, no agent spawning, no analysis, no research — session directory first.
+**Every skill (/run, /team, /designer; legacy /org, /review, /optimize, /debug session prefixes preserved for AgentPath FileWatcher back-compat) MUST create its session directory and write status.yaml BEFORE any other work.** No codebase exploration, no agent spawning, no analysis, no research — session directory first.
 
 **Rationale**: Without a session directory, hooks cannot track the session, agent_tree.yaml has no home, and artifacts have nowhere to be written. Session init is a prerequisite for all other operations.
 

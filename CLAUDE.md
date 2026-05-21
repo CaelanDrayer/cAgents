@@ -33,7 +33,7 @@ cAgents v12.0.0 is the major consolidation release shipped from branch
   `people/` and `shared/` retained as routing-config-only overlays.
 - **`cagents-memory/_communication/` removed.** Unused agent-messaging
   inbox/broadcast directory deleted.
-- **Total agents: 251 -> 238.** Net 13 agents removed via 4 controller
+- **Total agents: 251 -> 240.** Net 11 agents removed via 4 controller
   consolidations (task-decomposer, prompt-engineer, engineering-manager,
   architecture-reviewer) and 13 marketing-sales merges, partially offset by
   the chief-legal-officer -> clo rename and vp-engineering moving into
@@ -121,7 +121,7 @@ quality/        # completion, validation-framework, implicit-discovery (5 files)
 - **Tier 2**: Controllers (coordinate via batch delegation)
 - **Tier 3**: Execution agents (implement work items)
 - **Tier 4**: Support agents (foundational services)
-- **Total**: 238 agents across 9 builder-role archetypes
+- **Total**: 240 agents across 9 builder-role archetypes
 - **Execution**: Event-driven pipeline (5-state machine) with progressive paths (minimal/medium/full), revision routing, reviewer loops
 
 **Canonical structure (v12.0.0) — 9 archetypes**:
@@ -135,7 +135,7 @@ quality/        # completion, validation-framework, implicit-discovery (5 files)
 | **Writer** | `writer/` | 26 | Copy, narrative, technical writing, editorial |
 | **Strategist** | `strategist/` | 9 | Product owners, portfolio managers, planners |
 | **Core** | `core/` | 15 | Pipeline infrastructure (trigger, orchestrator, universal-planner, reviewer, etc.) |
-| **Leadership** | `leadership/` | 12 | C-suite executives (used by /org, not directly routable) |
+| **Leadership** | `leadership/` | 12 | C-suite executives (used by /team strategic mode, not directly routable) |
 
 **Domain overlay (legacy — routing/config only)**: 2 legacy domain dirs (`people/`, `shared/`) survive on disk **without** SKILL.md files; they hold `config/domain_overrides.yaml` with router keywords + controller catalogs that the planner still consumes. The other 11 legacy dirs (`engineering/`, `creative/`, `business/`, `growth/`, `service/`, `science/`, `health/`, `education/`, `personal/`, `arts/`, `trades/`) were deleted in v12 W4.2 and their router keywords + controller catalogs consolidated into `cagents-memory/_system/config/routing.yaml`. Do NOT delete `people/` or `shared/` — they are not orphans.
 
@@ -143,11 +143,11 @@ quality/        # completion, validation-framework, implicit-discovery (5 files)
 
 ## CRITICAL: Aggressive Delegation
 
-**Core Principle**: /org, /run, /team, and all coordination agents NEVER do direct work. ALL work delegated to subagents via Agent tool or Skill tool. No exceptions.
+**Core Principle**: /run, /team, and all coordination agents NEVER do direct work. ALL work delegated to subagents via Agent tool or Skill tool. No exceptions.
 
-**Zero Tolerance**: `/org`, `/run`, and `/team` are pure delegation proxies. They parse, plan, spawn agents, and read results. They do NOT write code, create content, explore the codebase for implementation purposes, or handle tasks themselves. If an orchestrator says "I will handle this myself" or "Rather than spinning up agents, I'll do this directly" — that is a critical violation. The user chose these skills specifically for agent orchestration; bypassing delegation defeats the entire purpose of the plugin.
+**Zero Tolerance**: `/run` and `/team` are pure delegation proxies. They parse, plan, spawn agents, and read results. They do NOT write code, create content, explore the codebase for implementation purposes, or handle tasks themselves. If an orchestrator says "I will handle this myself" or "Rather than spinning up agents, I'll do this directly" — that is a critical violation. The user chose these skills specifically for agent orchestration; bypassing delegation defeats the entire purpose of the plugin.
 
-**This applies to ALL request sizes**: Even for single-file bug fixes, /run MUST still spawn a controller who spawns an execution agent. Even for single-domain requests, /org MUST still generate a strategic brief and invoke /run or /team. There is no request small enough to justify self-handling.
+**This applies to ALL request sizes**: Even for single-file bug fixes, /run MUST still spawn a controller who spawns an execution agent. Even for cross-domain strategic requests, `/team` (with auto-strategic mode) MUST still spawn C-suite teammates in Wave 0/1 and synthesize a brief in Wave 2 before per-domain dispatch. There is no request small enough to justify self-handling.
 
 **Minimum Tier**: Always tier 2+ (controller coordination required). ALL requests use agents. NO exceptions. Former tier 0/1 automatically upgraded.
 
@@ -295,7 +295,7 @@ User Request -> /run (state machine loop, reads pipeline_config.yaml)
 **Rules**:
 1. When you create a task via `TaskCreate`, you OWN its lifecycle — mark it `completed` when done
 2. Before stopping or finishing a skill, check `TaskList` and resolve all your tasks
-3. `/run`, `/team`, `/org`, `/designer` MUST clean up all tasks at pipeline/session end
+3. `/run`, `/team`, `/designer` MUST clean up all tasks at pipeline/session end
 4. If a task is no longer needed, use `TaskUpdate(status: deleted)` — never leave it in_progress
 
 **Anti-patterns** (never do this):
@@ -322,9 +322,9 @@ TaskUpdate({ taskId: "N", status: "completed" })
 2. Task subject should match the agent's description for UI clarity
 3. Mark task `completed` when the agent notification arrives
 4. For foreground (blocking) agents, TaskCreate is optional but recommended for long-running work
-5. `/org`, `/run`, `/team` pipelines MUST create per-subagent tasks — not just top-level orchestration tasks
+5. `/run`, `/team` pipelines MUST create per-subagent tasks — not just top-level orchestration tasks
 
-**Why**: Without per-agent tasks, the user only sees generic orchestration entries (e.g., "◼ [org] Documentation update orchestration") with no visibility into the 4-5 agents actually doing work in parallel.
+**Why**: Without per-agent tasks, the user only sees generic orchestration entries (e.g., "◼ [team] Documentation update orchestration") with no visibility into the 4-5 agents actually doing work in parallel.
 
 ## Skills (Commands)
 
@@ -332,23 +332,12 @@ TaskUpdate({ taskId: "N", status: "completed" })
 
 | Skill | Context | Agent | Description |
 |-------|---------|-------|-------------|
-| `/org` | `none` | `true` | Cross-domain strategy via C-suite agents and sequential team execution |
 | `/run` | `none` | `true` | Execute any task through auto-routed controller and specialist agents (passthroughs: `run context ...`, `--mode debug`; v12.1.2 keyword router: `run improve|review|audit|optimize ...` triggers improve modes) |
-| `/team` | `fork` | `true` | Parallel multi-agent execution with wave-based quality gates |
+| `/team` | `fork` | `true` | Parallel multi-agent execution with wave-based quality gates; auto-enables strategic mode for cross-domain requests (v12.2.0+) |
 | `/designer` | `none` | `false` | Interactive design exploration with guided Q&A before building |
 | `/helper` | `none` | `false` | Command guide that recommends the right skill for your task |
 
 **Built-in**: `/memory` (view/edit memory files), `/init` (bootstrap project CLAUDE.md)
-
-### /org - Corporate Hierarchy Orchestration (V9.26, V9.30)
-CEO inline logic (`context: none`) with dependency-ordered C-suite analysis via Agent (Wave 1 independent agents in parallel, Wave 2 dependent agents reading peer analyses via file-based inline passes), two-phase deliberation (objection phase reads ALL peer analyses for cross-domain context), strategic brief, and sequential /team execution per domain via Skill. Runs inline (not forked) because subagents cannot spawn other subagents. 6-state pipeline: INIT -> ANALYZED -> DELIBERATED -> BRIEFED -> EXECUTED -> INTEGRATED -> COMPLETE.
-```bash
-/org Launch new product with campaign    # -> Full hierarchy (engineering + business + people)
-/org Fix auth bug                        # -> Single /run with strategic brief
-/org Restructure engineering team        # -> Full hierarchy (engineering + people)
-/org Migrate to microservices --dry-run  # -> Preview routing decision
-```
-Skill: `.claude/skills/org/SKILL.md` + `reference/`
 
 ### /run - Event-Driven Pipeline Engine (V9.23, V9.27)
 State machine loop reading pipeline_config.yaml. Sequential enrichment (orchestrator, planner, decomposer, prompt-engineer — prompt-engineer is optional), nested execution (controller + executor + reviewer), revision routing (FAIL/REVISE). V9.27: Adaptive pipeline (tier 2 fast path skips prompt-engineer and other enrichment agents), domain/tier confirmation display, execution analytics (`--analytics`). In practice, `delegation_prompts.yaml` is only produced when prompt-engineer runs; controllers fall back to standard prompts when it is skipped.
@@ -360,13 +349,15 @@ State machine loop reading pipeline_config.yaml. Sequential enrichment (orchestr
 ```
 Skill: `.claude/skills/run/SKILL.md` + `reference/`
 
-### /team - N-Wave Parallel Team Execution (V9.23, V9.27)
-N-wave pipeline: **Wave 0 (lead: enrichment) -> Wave 1..N-1 (teammates: per-wave spawn, parallel within wave) -> Wave N (lead: integration)**. Maximizes waves for quality gating. Each wave spawns fresh teammates, validates GATE, then proceeds. 40-60% execution time reduction for tier 3+. V9.27: Automatic teammate failure recovery (retry + simplify + escalate), GATE validation standards per wave type, partial results on failure.
+### /team - N-Wave Parallel Team Execution (V9.23, V9.27, v12.2.0)
+N-wave pipeline: **Wave 0 (lead: enrichment) -> Wave 1..N-1 (teammates: per-wave spawn, parallel within wave) -> Wave N (lead: integration)**. Maximizes waves for quality gating. Each wave spawns fresh teammates, validates GATE, then proceeds. 40-60% execution time reduction for tier 3+. V9.27: Automatic teammate failure recovery (retry + simplify + escalate), GATE validation standards per wave type, partial results on failure. **v12.2.0 Strategic Mode**: For cross-domain requests (`universal-router.domain_count >= 2`), /team auto-enables strategic mode — Wave 0/1 = C-suite analysis (12 leadership agents), Wave 2 = brief synthesis, Wave 3..N = per-domain dispatch. Override with `--strategic` / `--no-strategic`. See `.claude/skills/team/reference/strategic-mode.md`.
 ```bash
-/team Implement OAuth2 authentication    # Full team execution (5-7 waves)
-/team Build user dashboard --dry-run     # Preview wave structure
-/team Build feature --waves 8            # Force minimum 8 waves
-/run Build feature --team                # Team mode via flag
+/team Implement OAuth2 authentication           # Single-domain team execution (5-7 waves)
+/team Launch new product with campaign          # Cross-domain: auto-strategic mode (eng + business + people)
+/team Restructure engineering team --strategic  # Force strategic mode on
+/team Build user dashboard --dry-run            # Preview wave structure
+/team Build feature --waves 8                   # Force minimum 8 waves
+/run Build feature --team                       # Team mode via flag
 ```
 Config: `settings.json` (`teammateMode`: auto/tmux/in-process). See `docs/TEAM_MODE.md`.
 
@@ -376,7 +367,7 @@ Each skill has `SKILL.md` + `reference/` directory with detailed docs. Use `/hel
 Highlights:
 - **/designer**: Subagent-delegated question preparation (research agents pre-build context-rich question lists per phase), inline controller pattern (select, reorder, skip, adapt questions), phase-overlap (next-phase research begins during current phase), follow-up research dispatch, graceful fallback, 28 behavioral rules
 - **Improve modes inside /run (v12.1.2)**: `/improve` was folded into `/run` via a first-word keyword router. `/run improve X` -> `--mode full`. `/run review X` or `/run audit X` -> `--mode review`. `/run optimize X` -> `--mode optimize`. Review baselines (`--baseline`, `--suppress`), benchmark integration (`--benchmark`), pattern-effectiveness tracking, and atomic rollback helper remain available as flags on `/run`. See `.claude/skills/run/reference/improve-mode.md` for the keyword router contract
-- **/helper**: Full /org documentation, troubleshooting mode (`--troubleshoot`), updated comparison matrices, V11.0 migration catalog
+- **/helper**: Troubleshooting mode (`--troubleshoot`), updated comparison matrices, V11.0 migration catalog, v12.2.0 strategic-mode migration guidance (`/org X` → `/team X`)
 
 ## Team Mode
 
@@ -427,7 +418,7 @@ cAgents/
 +-- writer/                  # Writer archetype (26 agents — copy, narrative, technical, editorial)
 +-- strategist/              # Strategist archetype (9 agents — product owners, portfolio, planning)
 +-- core/                    # Core pipeline infrastructure (17 agents)
-+-- leadership/              # Leadership archetype (11 C-suite agents — used by /org)
++-- leadership/              # Leadership archetype (11 C-suite agents — used by /team strategic mode)
 +-- {engineering,creative,business,growth,people,service,...}/  # Legacy domain dirs (config-only, router/planner overlay)
 +-- scripts/                 # Version sync, validation, CI scripts
 +-- tests/                   # Vitest test suite (hooks + config)
@@ -445,7 +436,7 @@ cAgents/
 **cAgents is standalone. It MUST NOT depend on MCP servers — neither bundled nor consumed.**
 
 This is a load-bearing constraint, not a default. The plugin's value is that it works
-out of the box: install cAgents, get 238 agents and 6 skills with zero external service
+out of the box: install cAgents, get 240 agents and 4 skills with zero external service
 configuration. Coupling any agent or skill to an MCP server (the user must run a Postgres
 MCP, configure a GitHub MCP, etc.) breaks that contract — agents start failing in
 environments where the server isn't present, and the plugin's "install and go" promise
@@ -500,7 +491,7 @@ cAgents is distributed as a Claude Code plugin. See `.claude-plugin/plugin.json`
 ```
 
 **Key Manifest Fields**:
-- `agents`: Array of SKILL.md paths (238 agents registered)
+- `agents`: Array of SKILL.md paths (240 agents registered)
 - `skills`: Path to skills directory (`.claude/skills/`)
 - `hooks`: Path to settings.json for hook registration
 - `settings.json`: Default settings applied when plugin loads (under `agent` key for subagent defaults)
@@ -527,9 +518,9 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 
 ## Quick Reference
 
-**Skills**: `/org`, `/run`, `/team`, `/designer`, `/helper` (in `.claude/skills/`; V11.0 removed `/review`, `/optimize`, `/context`, `/debug`; v12.1.2 folded `/improve` into `/run` via keyword router — see `docs/MIGRATION-V11.md` and CHANGELOG entry v12.1.2)
+**Skills**: `/run`, `/team`, `/designer`, `/helper` (in `.claude/skills/`; V11.0 removed `/review`, `/optimize`, `/context`, `/debug`; v12.1.2 folded `/improve` into `/run` via keyword router; v12.2.0 removed `/org` and folded cross-domain coordination into `/team` strategic mode — see `docs/MIGRATION-V11.md` and CHANGELOG entries v12.1.2 / v12.2.0)
 **Built-in**: `/memory`, `/init` (Claude Code native)
-**Agents**: 238 total across 9 archetypes (developer 30, operator 74, advisor 30, analyst 31, creator 11, writer 26, strategist 9, core 15, leadership 12)
+**Agents**: 240 total across 9 archetypes (developer 32, operator 74, advisor 30, analyst 31, creator 11, writer 26, strategist 9, core 15, leadership 12)
 **Domain Overlay (legacy routing/config only)**: 2 dirs (`people/`, `shared/`) hold `config/domain_overrides.yaml` — no SKILL.md files. The other 11 legacy domains (engineering, creative, business, growth, service, science, health, education, personal, arts, trades) were deleted in v12 W4.2 and consolidated into `cagents-memory/_system/config/routing.yaml`.
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `people/config/domain_overrides.yaml`, `shared/config/domain_overrides.yaml`, `cagents-memory/_system/config/routing.yaml`, `cagents-memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (session YAML contract for AgentPath)
 **Hooks**: 31 .cjs files = 28 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI
@@ -537,8 +528,8 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
-**Tests**: `npm test` runs 928+ Vitest tests across 88+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.1.2
+**Tests**: `npm test` runs 983+ Vitest tests across 95+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
+**Version**: 12.2.0
 
 ## Troubleshooting
 

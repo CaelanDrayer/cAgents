@@ -46,7 +46,7 @@ strategic_brief:
   # Escalation contacts per domain
   escalation_contacts:
     {domain_key}: cagents:{csuite_agent}
-    ceo: /org
+    ceo: /team (strategic mode)
 
   # Real-time status tracking (updated during execution)
   domain_status:

@@ -119,6 +119,52 @@ If the request produces fewer than 3 work items or has no parallelizable items, 
 Skill({ skill: "run", args: "<the full request>" })
 ```
 
+### Per-Wave Decomposition Emission (v12.1.0+)
+
+To minimize lead context, decomposition is emitted as TWO artifact types instead of one monolithic `work_items.yaml`. See @../../.claude/skills/team/reference/per-wave-decomposition.md for the full schema.
+
+**1. `workflow/work_meta.yaml`** — wave skeleton, lead reads ONCE on init:
+
+```yaml
+schema_version: "1"
+session_id: "{session_id}"
+total_waves: N
+total_work_items: M
+waves:
+  - wave: 0
+    type: bootstrap
+    summary: "1-line description"
+    work_item_ids: [WI-1]
+    work_item_file: "workflow/work_items_wave_0.yaml"
+  - wave: 1
+    type: implementation
+    summary: "..."
+    work_item_ids: [WI-2, WI-3, ...]
+    work_item_file: "workflow/work_items_wave_1.yaml"
+dependency_graph:
+  critical_path: [WI-1, WI-2, ...]
+  cross_wave_dependencies:
+    - {from: WI-1, to: WI-2, type: blocks}
+```
+
+**2. `workflow/work_items_wave_{K}.yaml`** — per-wave detail, lead reads ON DEMAND when entering wave K:
+
+```yaml
+schema_version: "1"
+wave: K
+work_items:
+  - id: WI-N
+    title: "..."
+    description: "..."
+    assigned_to: cagents:{agent}
+    acceptance_criteria:
+      - criterion: "..."
+        verification_method: file_exists | file_contains | test_result | metric_check
+    dependencies: [WI-M, ...]
+```
+
+**Schema is back-compat** with legacy monolithic `work_items.yaml` — same field names, same acceptance_criteria schema, same verification_method enum. For one minor-version cycle (v12.1.x), the planner also emits the legacy file for downstream consumers not yet updated; v12.2.0 deprecates the monolithic file.
+
 ## Steps 3-6: Create Team and Spawn Teammates
 
 ### Step 3: Create the Agent Team

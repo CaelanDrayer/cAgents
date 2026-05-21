@@ -71,7 +71,7 @@ After writing `status.yaml`, /run sets the env var so hooks resolve to the corre
 process.env.CAGENTS_ACTIVE_SESSION = SESSION_ID;
 ```
 
-This is critical when /run runs concurrently with other sessions (e.g., /org spawning multiple /team instances). The `findActiveSession()` helper in hook-utils.cjs checks this env var first (Pass 0) and returns the exact session directory immediately, bypassing directory-scan heuristics that can misroute SubagentStart/SubagentStop events to the wrong session's agent_tree.yaml.
+This is critical when /run runs concurrently with other sessions (e.g., /team strategic mode spawning multiple per-domain waves, or pre-v12.2.0 /org spawning multiple /team instances). The `findActiveSession()` helper in hook-utils.cjs checks this env var first (Pass 0) and returns the exact session directory immediately, bypassing directory-scan heuristics that can misroute SubagentStart/SubagentStop events to the wrong session's agent_tree.yaml.
 
 ## Configuration Paths
 

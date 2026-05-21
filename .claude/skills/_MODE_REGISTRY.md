@@ -53,16 +53,25 @@ other 3 user skills.
 | `--waves <N>` | flag | Force minimum wave count (default per tier) | "use 8 waves" |
 | `--template <id>` | flag | Use a named team template (fullstack-app, etc.) | — |
 | `--no-template` | flag | Force flat execution, skip template selection | — |
+| `--strategic` | flag | Force-enable strategic mode (Wave 0/1/2 C-suite prefix) regardless of domain count | "strategic team", "cross-domain" |
+| `--no-strategic` | flag | Force-disable strategic mode regardless of domain count | "skip strategic", "no C-suite" |
 
-## /org
+## /org (REMOVED in v12.2.0 — absorbed into /team strategic mode)
 
-| Flag / Mode | Type | Description | Trigger phrases |
-|-------------|------|-------------|-----------------|
-| (default) | mode | C-suite hierarchy analysis + sequential /team execution per domain | "strategic X", "cross-domain Y" |
-| `--dry-run` | flag | Preview routing decision without invoking subskills | "preview org routing" |
-| `--quick` | flag | Skip deliberation phase, route directly | — |
-| `--domains <d1,d2>` | flag | Restrict to specific domain(s) | — |
-| `--resume <session_id>` | flag | Resume an existing org session | — |
+REMOVED. /org was absorbed into `/team` strategic mode in v12.2.0. Cross-domain
+strategic requests now flow through `/team`, which auto-enables strategic mode
+when `universal-router.domain_count >= 2`. Migration mapping:
+
+| Pre-v12.2.0 invocation | v12.2.0 replacement |
+|------------------------|---------------------|
+| `/org <request>` | `/team <request>` (strategic mode auto-enables for multi-domain) |
+| `/org <request> --dry-run` | `/team <request> --dry-run` |
+| `/org <request> --quick` | `/team <request> --no-strategic` (skip C-suite prefix) |
+| `/org <request> --domains <d1,d2>` | `/team <request>` (universal-router infers domains) |
+| `/org --resume <session_id>` | `/team --resume <session_id>` |
+
+See `## /team` section above for the full flag/mode catalog including
+`--strategic` / `--no-strategic` overrides.
 
 ## /designer
 

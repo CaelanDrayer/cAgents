@@ -33,8 +33,9 @@ import { join } from 'path';
 
 const ROOT = process.cwd();
 const SKILLS_DIR = join(ROOT, '.claude', 'skills');
-// v12.1.2: /improve folded into /run via keyword router; 5 user skills.
-const SKILL_NAMES = ['run', 'team', 'org', 'designer', 'helper'];
+// v12.2.0: /org absorbed into /team strategic mode; 4 user skills.
+// (v12.1.2 previously folded /improve into /run via keyword router.)
+const SKILL_NAMES = ['run', 'team', 'designer', 'helper'];
 
 // Matches: [`reference/anything.md`](reference/anything.md) and the
 // backtick-less variant [reference/anything.md](reference/anything.md).

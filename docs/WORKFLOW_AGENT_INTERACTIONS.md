@@ -2,33 +2,35 @@
 
 How agents interact during workflow execution. For architecture, commands, and agent reference, see `CLAUDE.md`.
 
-**Version**: V11.0.1 current
+**Version**: V12.2.0 current
 
-_V11.0 removed /review, /optimize, /context, /debug — see [MIGRATION-V11.md](./MIGRATION-V11.md). Review and optimization are now modes of `/improve` (`/improve --mode review`, `/improve --mode optimize`, `/improve --mode full`)._
+_V11.0 removed /review, /optimize, /context, /debug — see [MIGRATION-V11.md](./MIGRATION-V11.md). v12.1.2 folded /improve into /run via a first-word keyword router; review and optimization are now modes of `/run` (`/run review`, `/run optimize`, `/run improve` — or `--mode review|optimize|full`). v12.2.0 removed /org and absorbed cross-domain coordination into `/team` strategic mode (auto-enabled when `universal-router.domain_count >= 2`)._
 
 ---
 
 ## Command Flow Patterns
 
-### /org -- Corporate Hierarchy
+### /team Strategic Mode -- Cross-Domain Corporate Hierarchy (v12.2.0+; replaces /org)
 
 ```
 User (Chairperson)
-  +-- /org (CEO inline, context: none)
-        +-- C-suite agents via Agent (parallel analysis)
-        +-- Deliberation (objections + resolution)
-        +-- Strategic brief
-        +-- Sequential /team per domain via Skill
+  +-- /team (strategic mode auto-enables when domain_count >= 2)
+        +-- Wave 0 (Lead): orchestrator -> planner -> decomposer
+        +-- Wave 1 (Teammates): C-suite agents via Agent (parallel analysis)
+        +-- Wave 2 (Teammates): Deliberation (objections + resolution) -> Strategic brief
+        +-- Wave 3..N-1 (Teammates): Per-domain dispatch (nested waves per domain)
+        +-- Wave N (Lead): Integration controller -> final validator
 ```
 
-**States**: INIT -> ANALYZED -> DELIBERATED -> BRIEFED -> EXECUTED -> INTEGRATED -> COMPLETE
+**Trigger**: Strategic mode auto-enables when `universal-router.domain_count >= 2`. Force-enable with `--strategic`; force-disable with `--no-strategic`. (Pre-v12.2.0 this work ran under a separate `/org` skill, which was removed in v12.2.0 and folded into `/team` strategic mode.)
 
-**Routing**: 1 domain + simple scope -> /run with brief. 1 domain + complex -> /team. 2+ domains -> full hierarchy.
+**Routing**: 1 domain + simple scope -> /run. 1 domain + complex -> flat /team. 2+ domains -> /team strategic mode (Wave 0/1/2 C-suite deliberation + Wave 3..N per-domain dispatch in the same session).
 
-**Example** (`/org Launch analytics product by Q2`):
-1. CEO identifies 5 domains, spawns CTO, CCO, CRO, CFO, CHRO in parallel
-2. CFO objects (budget), CHRO flags (hiring timeline) -> CEO resolves with phased approach
-3. Strategic brief with domain assignments -> 5 sequential /team instances -> CEO merges outputs
+**Example** (`/team Launch analytics product by Q2`):
+1. Wave 0/1: universal-router identifies 5 domains, lead spawns CTO, CCO, CRO, CFO, CHRO as Wave 1 teammates in parallel
+2. Wave 2: CFO objects (budget), CHRO flags (hiring timeline) -> lead resolves with phased approach -> strategic brief written
+3. Wave 3..N: Per-domain dispatch (engineering, creative, growth, operations, people) executes against the strategic brief
+4. Wave N (Lead): integration + final validation
 
 ### /run -- Event-Driven Pipeline
 
@@ -67,7 +69,7 @@ Wave N (Lead): integration controller -> final validator
 4. Wave 3 (1 teammate): Integration tests + security audit -> GATE-3
 5. Wave 4 (Lead): Merge outputs, final validation -> PASS
 
-### /improve --mode review -- Parallel Review
+### /run review (or --mode review) -- Parallel Review (v12.1.2+; replaces standalone /improve --mode review)
 
 ```
 Phase 1: Detect review type + framework
@@ -77,7 +79,7 @@ Phase 4: Auto-fix generation
 Phase 5: Quality gates
 ```
 
-### /improve --mode optimize -- 5-Phase Optimization
+### /run optimize (or --mode optimize) -- 5-Phase Optimization (v12.1.2+; replaces standalone /improve --mode optimize)
 
 ```
 Phase 1 (15%): Detection -- auto-detect type, scan opportunities
@@ -87,7 +89,7 @@ Phase 4 (25%): Execution -- snapshot -> apply -> validate -> keep/rollback
 Phase 5 (15%): Validation -- before/after metrics, regression tests
 ```
 
-### /improve --mode full -- Combined Review + Optimize
+### /run improve (or --mode full) -- Combined Review + Optimize (v12.1.2+; replaces standalone /improve --mode full)
 
 ```
 Stage 1: Review pass (auditing) -> findings + quality score
@@ -110,12 +112,12 @@ Build offer: /run, /team, save, or continue refining
 ## Cross-Command Integration
 
 ```
-/org -> /team                          Strategic brief -> domain execution
+/team --strategic                      Strategic brief + per-domain dispatch in one session (v12.2.0+; replaces /org -> sequential /team chain)
 /designer -> /run                      Design then build
 /designer -> /team                     Design then parallel build
-/improve --mode review -> /run         Find issues then fix
-/improve --mode optimize -> /improve --mode review   Improve then verify
-/improve --mode full                   Single-pass review + optimize synthesis
+/run review <target> -> /run <fix>     Find issues then fix (v12.1.2+ keyword router)
+/run optimize -> /run review           Improve then verify
+/run improve <target>                  Single-pass review + optimize synthesis (= --mode full)
 /run --team                            Shortcut for parallel execution
 /team (fallback) -> /run               Auto-delegates if <3 work items
 ```

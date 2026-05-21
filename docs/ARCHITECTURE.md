@@ -78,7 +78,7 @@ cAgents is a universal multi-domain agent system with controller-centric coordin
 | **Writer** | `writer/` | 26 | Copy, narrative, technical writing, editorial |
 | **Strategist** | `strategist/` | 9 | Product owners, portfolio managers, planners |
 | **Core** | `core/` | 15 | Pipeline infrastructure (trigger, orchestrator, universal-planner, reviewer, etc.) |
-| **Leadership** | `leadership/` | 12 | C-suite executives (used by /org, not directly routable) |
+| **Leadership** | `leadership/` | 12 | C-suite executives (used by /team strategic mode, not directly routable) |
 
 **Total: 238 agents across 9 archetypes (v12.0.0)**
 

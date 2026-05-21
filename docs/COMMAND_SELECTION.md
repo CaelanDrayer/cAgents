@@ -2,39 +2,40 @@
 
 Guide for choosing the right cAgents skill for your task.
 
-_V11.0 removed /review, /optimize, /context, /debug — see [MIGRATION-V11.md](./MIGRATION-V11.md)._
+_V11.0 removed /review, /optimize, /context, /debug — see [MIGRATION-V11.md](./MIGRATION-V11.md). v12.1.2 folded /improve into /run via a first-word keyword router. v12.2.0 removed /org and absorbed it into /team strategic mode._
 
-This decision matrix routes review and optimization work to `/improve --mode review|optimize|full`, product context to `/run context <subcmd>`, and systematic debugging to `/run --mode debug`.
+This decision matrix routes review and optimization work to `/run review|optimize|improve <target>` (v12.1.2+ keyword router; or `/run --mode review|optimize|full`), product context to `/run context <subcmd>`, systematic debugging to `/run --mode debug`, and cross-domain coordination to `/team --strategic` (v12.2.0+; auto-enabled when `universal-router.domain_count >= 2`).
 
 ## Quick Decision Tree
 
 ```
 Is this a multi-domain strategic initiative?
-  YES -> /org
+  YES -> /team (strategic mode auto-enables; force with --strategic) [v12.2.0+]
+         (Pre-v12.2.0 this was /org, now absorbed into /team strategic mode.)
   NO  -> Is the work parallelizable with 3+ independent items?
            YES -> /team
            NO  -> Is this an interactive design session?
                     YES -> /designer
                     NO  -> Is this a review of existing code/content?
-                             YES -> /improve --mode review
+                             YES -> /run review <target>  (or /run --mode review)
                              NO  -> Is this an optimization of existing work?
-                                      YES -> /improve --mode optimize
+                                      YES -> /run optimize <target>  (or /run --mode optimize)
                                       NO  -> Want both review and optimize with one baseline?
-                                               YES -> /improve --mode full
+                                               YES -> /run improve <target>  (or /run --mode full)
                                                NO  -> /run
 ```
 
 ## Decision Matrix
 
-| Criteria | /run | /team | /org | /designer | /improve | /helper |
-|----------|------|-------|------|-----------|----------|---------|
-| **Scope** | Single domain | Single domain | Multi-domain | Single artifact | Existing code/content/system | Any |
-| **Work items** | 1-5 | 3+ parallel | 5+ cross-domain | 1 design | Varies | N/A |
-| **Execution** | Sequential | N-wave parallel | Corporate hierarchy | Interactive Q&A | 7-state state machine | Reference only |
-| **Speed** | Fastest for simple | 40-60% faster for complex | Slowest (full hierarchy) | User-paced | Fast (parallel review) to moderate (full mode) | Instant |
-| **Min complexity** | Tier 2 | Tier 2 (3+ items) | Tier 3+ | Any | Any | Any |
-| **Context mode** | Inline (none) | Fork | Inline (none) | Inline (none) | Fork | Inline (none) |
-| **User interaction** | None (auto-proceed) | None (auto-proceed) | None (auto-proceed) | Every step (mandatory) | None | Interactive (recommendations) |
+| Criteria | /run (incl. review/optimize/improve modes) | /team (incl. strategic mode) | /designer | /helper |
+|----------|--------------------------------------------|-------------------------------|-----------|---------|
+| **Scope** | Single domain (build) or single target (review/optimize/full) | Single domain (flat) or multi-domain (strategic mode) | Single artifact | Any |
+| **Work items** | 1-5 (build); varies (review/optimize) | 3+ parallel; 5+ cross-domain (strategic mode) | 1 design | N/A |
+| **Execution** | Sequential pipeline; 7-state for review/optimize/full | N-wave parallel; Wave 0/1/2 C-suite + 3..N per-domain in strategic mode | Interactive Q&A | Reference only |
+| **Speed** | Fastest for simple; fast (parallel review) for review/optimize/full | 40-60% faster for complex; slower with strategic-mode deliberation | User-paced | Instant |
+| **Min complexity** | Tier 2 | Tier 2 (3+ items); Tier 3+ for strategic mode | Any | Any |
+| **Context mode** | Inline (none) | Fork | Inline (none) | Inline (none) |
+| **User interaction** | None (auto-proceed) | None (auto-proceed) | Every step (mandatory) | Interactive (recommendations) |
 
 ## When to Use Each
 
@@ -52,11 +53,13 @@ Is this a multi-domain strategic initiative?
 - **Avoid when**: Fewer than 3 work items, fully sequential dependencies
 - **Falls back to**: /run if <3 items or no parallelism
 
-### /org - Corporate Hierarchy
+### /team --strategic - Cross-Domain Coordination (v12.2.0+; replaces /org)
 - **Best for**: Strategic initiatives spanning multiple business domains
 - **Examples**: "Launch new product", "Restructure engineering team", "Migrate to microservices"
-- **Characteristics**: CEO + C-suite analysis, cross-domain coordination, sequential /team per domain
-- **Avoid when**: Work fits in a single domain (use /run or /team instead)
+- **Characteristics**: CEO inline + C-suite Wave 0/1/2 analysis and deliberation, per-domain Wave 3..N dispatch — all inside a single `/team` session with nested waves
+- **Trigger**: Strategic mode auto-enables when `universal-router.domain_count >= 2`; force-enable with `--strategic`, force-disable with `--no-strategic`
+- **Avoid when**: Work fits in a single domain (use /run or flat /team instead)
+- **Migration**: Pre-v12.2.0 this was `/org`, which has been removed and absorbed here
 
 ### /designer - Interactive Design
 - **Best for**: Design documents, architecture specs, creative briefs that need user input
@@ -64,15 +67,16 @@ Is this a multi-domain strategic initiative?
 - **Characteristics**: 4-phase interactive engine, asks user at every step, endless refinement
 - **Avoid when**: You want autonomous execution (designer always asks)
 
-### /improve - Unified Review + Optimization Engine
+### /run review|optimize|improve - Review + Optimization Modes (v12.1.2+; replaces standalone /improve)
 - **Best for**: Reviewing existing code/content, applying optimizations with metrics, or both with a shared baseline
 - **Examples**:
-  - `/improve --mode review src/auth/` — audit auth module for security/quality issues
-  - `/improve --mode optimize src/api/` — reduce response times with before/after benchmarks
-  - `/improve --mode full --scope src/checkout/` — review then optimize with one baseline
+  - `/run review src/auth/` — audit auth module for security/quality issues (= `--mode review`)
+  - `/run optimize src/api/` — reduce response times with before/after benchmarks (= `--mode optimize`)
+  - `/run improve src/checkout/` — review then optimize with one baseline (= `--mode full`)
 - **Characteristics**: Single 7-state state machine (SCOPING → MEASURING → DETECTING → PLANNING → EXECUTING → VALIDATING → REPORTING), atomic rollback, pattern-effectiveness tracking, unified `improve_report.md`
-- **Mode selection**: `--mode review` (find issues), `--mode optimize` (apply changes), `--mode full` (chained)
-- **Avoid when**: Creating new work (use /run instead) or designing before building (use /designer)
+- **Mode selection**: keyword router (first word `review|audit|optimize|improve`) or explicit `--mode review|optimize|full`
+- **Migration**: Pre-v12.1.2 this was the standalone `/improve` skill, which was folded into `/run` via the keyword router
+- **Avoid when**: Creating new work (use plain `/run`) or designing before building (use `/designer`)
 
 ### /helper - Command Reference
 - **Best for**: Choosing between skills, learning what each does, comparing flags
@@ -86,13 +90,13 @@ Is this a multi-domain strategic initiative?
 |------|-------------|-------------------|
 | 2 (Moderate) | Single component, clear scope | /run |
 | 3 (Complex) | Multiple components, external deps | /team or /run |
-| 4 (Expert) | Strategic, company-wide | /org or /team |
+| 4 (Expert) | Strategic, company-wide | /team --strategic (v12.2.0+; replaces /org) |
 
 ## Flags Reference
 
 | Flag | Skills | Effect |
 |------|--------|--------|
-| `--dry-run` | /run, /team, /org, /improve | Preview plan without executing |
+| `--dry-run` | /run (incl. review/optimize/full modes), /team (incl. strategic mode) | Preview plan without executing |
 | `--team` | /run | Force team mode from /run |
 | `--waves N` | /team | Set minimum wave count |
 | `--members N` | /team | Max teammates per wave |

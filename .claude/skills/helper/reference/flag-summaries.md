@@ -152,16 +152,19 @@ The product context document lives at `cagents-memory/_projects/{hash}/product_c
 
 ---
 
-## /org Flags
+## /org Flags - REMOVED in v12.2.0
 
-| Flag | Type | Description | Default | Example |
-|------|------|-------------|---------|---------|
-| `--dry-run` | Boolean | Preview routing decision and C-suite engagement plan | false | `/org Launch product --dry-run` |
-| `--quick` | Boolean | Skip deliberation for single-domain routing | false | `/org Fix auth --quick` |
-| `--domains <d1,d2,...>` | String | Force specific domain scope | auto-detect | `/org Task --domains engineering,growth` |
-| `--resume <session_id>` | String | Resume interrupted /org session | none | `/org --resume org_20260227_143022` |
+`/org` was removed in v12.2.0; flags below map to `/team` strategic mode equivalents.
 
-### /org Domain Keys
+| Pre-v12.2.0 (/org) | v12.2.0+ (/team strategic mode) |
+|--------------------|---------------------------------|
+| `/org <request>` | `/team <request>` (strategic mode auto-enables when `universal-router.domain_count >= 2`) |
+| `/org <request> --quick` | `/team <request> --strategic` (force-enable for single-domain) |
+| `/org <request> --dry-run` | `/team <request> --dry-run` |
+| `/org <request> --domains <d1,d2>` | `/team <request>` (universal-router infers domains from request keywords) |
+| `/org --resume <session_id>` | `/team --resume <session_id>` |
+
+### Domain Keys (now consumed by universal-router for /team strategic-mode auto-detect)
 
 | Domain Key | C-Suite Agent | Example Keywords |
 |-----------|---------------|------------------|

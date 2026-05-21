@@ -45,12 +45,16 @@ describe('delegation-enforcer.cjs', () => {
     });
   });
 
-  describe('/org invocation detection', () => {
-    it('should inject delegation mandate for /org', () => {
-      const result = runHook({ user_prompt: '/org Launch new product' });
+  describe('/team strategic-mode invocation detection (v12.2.0)', () => {
+    // /org was absorbed into /team strategic mode in v12.2.0. Cross-domain
+    // strategic prompts now route through /team, which delegation-enforcer
+    // already covers above. This case asserts a strategic-flavor /team prompt
+    // still triggers the delegation mandate.
+    it('should inject delegation mandate for /team strategic-mode prompts', () => {
+      const result = runHook({ user_prompt: '/team Launch new product across engineering and marketing' });
       expect(result.hookSpecificOutput).toBeDefined();
       expect(result.hookSpecificOutput.additionalContext).toContain('DELEGATION ENFORCEMENT ACTIVE');
-      expect(result.hookSpecificOutput.additionalContext).toContain('/org');
+      expect(result.hookSpecificOutput.additionalContext).toContain('/team');
     });
   });
 

@@ -1,8 +1,53 @@
 # cAgents Release Notes
 
-**Current Version**: 12.1.2
-**Release Date**: April 29, 2026
+**Current Version**: 12.2.0
+**Release Date**: May 21, 2026
 **Status**: Production-Ready
+
+## V12.2.0 — May 21, 2026 (BREAKING: /org removed)
+
+v12.2.0 removes the `/org` skill and folds cross-domain coordination into
+`/team` via auto-enabled strategic mode. This is a BREAKING change with no
+back-compat alias — `/org X` invocations now fail with "skill not found".
+
+### Breaking Change: /org Skill Removed
+
+- **`/org` skill deleted.** The `.claude/skills/org/` directory is gone.
+  Cross-domain strategy is now handled by `/team` with auto-strategic mode:
+  Wave 0 = parallel C-suite analysis, Wave 1 = dependent C-suite analysis
+  + objections, Wave 2 = brief synthesis, Wave 3..N = per-domain dispatch.
+- **Auto-detection.** `/team` automatically enables strategic mode when
+  `universal-router.domain_count >= 2`. Users can override with
+  `--strategic` (force enable) or `--no-strategic` (force disable).
+- **Leadership agents preserved.** The 12 C-suite agents (CEO/CTO/CFO/CMO/
+  COO/CHRO/CCO/CSO/CRO/CPO/CLO/VP-Engineering) keep their existing
+  locations and SKILL.md schemas. Only the invoking skill changes.
+- **Migration.** Replace `/org X` with `/team X` (auto-detects strategic
+  mode for cross-domain requests).
+
+### Changed
+
+- `/team` SKILL.md grows a "Strategic Mode" section with reference docs
+  migrated from `org/reference/` to `team/reference/strategic-*.md`.
+- `core/universal-router/SKILL.md` extended with `domain_count` and
+  `detected_domains[]` output fields.
+- Plugin manifest skill count: 5 → 4.
+- `strategic_brief.yaml` schema adds `dependency_type` per domain entry.
+
+### AgentPath
+
+cAgents no longer treats AgentPath as a downstream consumer. Session
+schema references to AgentPath compatibility are removed.
+
+See [CHANGELOG](../CHANGELOG.md#1220---2026-05-21) for full details.
+
+## Historical Entries
+
+## V12.1.2 — April 29, 2026
+
+Previously marked Current Version. Folds `/improve` into `/run` via a
+first-word keyword router and removes the standalone `/improve` skill.
+See [CHANGELOG](../CHANGELOG.md) for details.
 
 ## V12.0.0 — May 20, 2026 (Consolidation Release)
 
@@ -1803,6 +1848,6 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.1.2
+**Current Version**: 12.2.0
 **Release Date**: February 27, 2026
 **Git Tag**: v9.21.0

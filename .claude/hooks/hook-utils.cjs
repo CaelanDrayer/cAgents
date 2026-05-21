@@ -136,7 +136,7 @@ let _cachedHint = undefined;
 function findActiveSession(sessionHint) {
   // Pass 0: Env-var fast path — /run and /team set this for precise routing.
   // This eliminates heuristic discovery for any agent spawned within a /run or /team
-  // pipeline, completely preventing session misrouting under concurrent /org + /team.
+  // pipeline, completely preventing session misrouting under concurrent legacy org_* + /team.
   // V10.25.2 fix: also verify the env var session is NOT in a terminal state.
   // When /run completes and /team starts in the same conversation, the env var
   // may still point to the old /run session. Returning a completed session causes
@@ -205,7 +205,7 @@ function findActiveSession(sessionHint) {
     .filter(d => SESSION_PREFIXES.some(p => d.startsWith(p)))
     .sort((a, b) => {
       // GAP-3 fix: team_* sessions sort BEFORE org_* flat sessions.
-      // When /org spawns /team concurrently, the flat team_* session must be
+      // When a legacy org_* session spawns /team concurrently, the flat team_* session must be
       // discovered by the status pass before the org_* session is considered.
       // This prevents the nested org scan from overriding an active team session.
       const aIsTeam = a.startsWith('team_');
@@ -241,7 +241,7 @@ function findActiveSession(sessionHint) {
 
   // Second pass: look for recently-created sessions without status.yaml
   // (handles the race condition where trigger agent hasn't written status.yaml yet,
-  //  AND /org sessions that wrote strategic_brief.yaml before instruction.yaml/status.yaml)
+  //  AND legacy org_* sessions that wrote strategic_brief.yaml before instruction.yaml/status.yaml)
   const graceCutoff = Date.now() - SESSION_DISCOVERY_GRACE_PERIOD_MS;
   for (const session of sessions) {
     const sessionPath = path.join(sessionsDir, session);
@@ -267,7 +267,7 @@ function findActiveSession(sessionHint) {
   }
 
   // Third pass: scan org session subdirectories for nested team/domain sessions.
-  // When /team runs inside /org, its session dir is nested (e.g., org_xxx/engineering/).
+  // When /team ran inside a legacy org_* session, its session dir was nested (e.g., org_xxx/engineering/).
   // These subdirs have their own status.yaml and are not found by the top-level scan.
   // Wrapped in withFileLock to prevent concurrent hook processes from both discovering
   // the same nested session (discovery-only lock scope per REQ-013).
@@ -345,7 +345,7 @@ function findTeamSession(input = {}) {
   }
 
   // H-11: Scan org session subdirectories for nested team sessions
-  // (e.g., org_xxx/engineering/ when /team runs inside /org)
+  // (e.g., org_xxx/engineering/ when /team ran inside a legacy org_* session)
   try {
     const orgSessions = fs.readdirSync(sessionsDir)
       .filter(d => d.startsWith('org_'))
@@ -387,7 +387,7 @@ function findTeamSession(input = {}) {
  * where a session dir exists but status.yaml hasn't been written yet.
  *
  * Includes nested org subdir scanning (e.g., org_xxx/engineering/ when
- * /team runs inside /org). Used by both subagent-tracker.cjs and
+ * /team ran inside a legacy org_* session). Used by both subagent-tracker.cjs and
  * subagent-stop-tracker.cjs for consistent session discovery on fallback.
  *
  * GAP-4 fix: exported from hook-utils.cjs so start and stop trackers share
@@ -432,7 +432,7 @@ function findMostRecentSessionDir(options) {
   } catch { /* sessions dir unreadable */ }
 
   // Also scan org session subdirectories for nested team/domain sessions.
-  // (e.g., org_xxx/engineering/ when /team runs inside /org)
+  // (e.g., org_xxx/engineering/ when /team ran inside a legacy org_* session)
   // Only scan org subdirs if no flat session was found (bestDir is null),
   // to prevent an org_*/subdir/ from overriding a flat active team session.
   if (!bestDir) {

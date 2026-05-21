@@ -40,8 +40,9 @@ describe('v12.1.2: /improve folded into /run via keyword router', () => {
     const pluginJsonPath = join(REPO_ROOT, '.claude-plugin', 'plugin.json');
     expect(existsSync(pluginJsonPath)).toBe(true);
     const pluginJson = JSON.parse(readFileSync(pluginJsonPath, 'utf8'));
-    // The description should advertise 5 user skills, not 6
-    expect(pluginJson.description).toMatch(/5 user skills/i);
+    // The description should advertise 4 user skills (v12.2.0 removed /org;
+    // v12.1.2 folded /improve into /run). Pre-v12.2.0 this was "5 user skills".
+    expect(pluginJson.description).toMatch(/4 user skills/i);
     // And it should NOT describe /improve as one of the user skills
     expect(pluginJson.description).not.toMatch(/\/improve audits/i);
   });

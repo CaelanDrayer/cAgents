@@ -1,6 +1,6 @@
 # Session Schema Contract
 
-Canonical reference for session YAML files written by all 6 cAgents skills (/run, /org, /team, /designer, /optimize, /review). This is the authoritative schema for AgentPath visualizer developers and hook authors.
+Canonical reference for session YAML files written by all 5 cAgents skills (/run, /team, /designer, /optimize, /review). This is the authoritative schema for AgentPath visualizer developers and hook authors.
 
 ## Session Directory Structure
 
@@ -29,7 +29,7 @@ Format: `{command}_{slug}_{YYMMDD}_{NNN}`
 
 | Component | Description | Example |
 |-----------|-------------|---------|
-| `command` | Skill prefix | `run`, `org`, `team`, `designer`, `optimize`, `review` |
+| `command` | Skill prefix | `run`, `team`, `designer`, `optimize`, `review` |
 | `slug` | AI-generated 2-6 word kebab-case summary, max 50 chars | `fix-auth-module-jwt` |
 | `YYMMDD` | Compact date (2-digit year) | `260317` |
 | `NNN` | Auto-increment index per command+date, 3 digits | `001` |
@@ -37,7 +37,6 @@ Format: `{command}_{slug}_{YYMMDD}_{NNN}`
 | Skill | Prefix | Example |
 |-------|--------|---------|
 | /run | `run_` | `run_fix-auth-module-jwt_260317_001` |
-| /org | `org_` | `org_launch-new-product_260317_001` |
 | /team | `team_` | `team_implement-oauth2-flow_260317_001` |
 | /designer | `designer_` | `designer_redo-session-names_260317_001` |
 | /optimize | `optimize_` | `optimize_reduce-bundle-size_260317_001` |
@@ -49,7 +48,7 @@ Backward compatible: old sessions (`run_20260316_143022`) remain valid. The hook
 
 ## CAGENTS_SESSION_ID Environment Variable
 
-All 7 skills that create sessions (`/run`, `/org`, `/team`, `/designer`, `/review`, `/optimize`, `/debug`) check `process.env.CAGENTS_SESSION_ID` during session initialization before auto-generating a session ID.
+All 6 skills that create sessions (`/run`, `/team`, `/designer`, `/review`, `/optimize`, `/debug`) check `process.env.CAGENTS_SESSION_ID` during session initialization before auto-generating a session ID.
 
 ### Behavior
 
@@ -62,7 +61,7 @@ All 7 skills that create sessions (`/run`, `/org`, `/team`, `/designer`, `/revie
 ### Use Cases
 
 - **AgentPath integration**: AgentPath spawns skills with a known session ID so it can display the session in the UI before execution begins
-- **Pipeline chaining**: Parent skills (e.g., `/org`) can pre-create a session ID and pass it to child skills
+- **Pipeline chaining**: Parent skills (e.g., `/team` strategic mode) can pre-create a session ID and pass it to child skills
 - **Test fixtures**: Automated tests can inject deterministic session IDs for predictable artifact paths
 
 ### Contract for instruction.yaml
@@ -73,7 +72,7 @@ When `CAGENTS_SESSION_ID` is set and the directory does not exist (new session),
 session_id: "{CAGENTS_SESSION_ID value}"   # Matches env var verbatim
 ```
 
-## instruction.yaml (Required, All 7 Skills)
+## instruction.yaml (Required, All 6 Skills)
 
 Every skill writes this file with an identical schema at session creation.
 
@@ -86,8 +85,8 @@ Every skill writes this file with an identical schema at session creation.
 
 ```yaml
 session_id: "{SESSION_ID}"           # REQUIRED: Unique session identifier
-session_type: run|org|team|designer|optimize|review|debug  # REQUIRED: Skill type
-command: /run|/org|/team|/designer|/optimize|/review|/debug  # REQUIRED: Skill command
+session_type: run|team|designer|optimize|review|debug  # REQUIRED: Skill type
+command: /run|/team|/designer|/optimize|/review|/debug  # REQUIRED: Skill command
 request: "{user_request}"            # REQUIRED: Original user request text
 created_at: "{ISO_TIMESTAMP}"        # REQUIRED: ISO 8601 timestamp — use `date -u +%Y-%m-%dT%H:%M:%SZ` or the injected "Current timestamp", NEVER fabricate
 flags: {parsed_flags}                # REQUIRED: Object of parsed CLI flags
@@ -99,14 +98,13 @@ metadata:
 
 ### Skill-Specific Extensions
 
-- **/run**: May include `strategic_brief_path` when invoked with `--brief` from /org.
-- **/org**: No extensions beyond the standard schema.
+- **/run**: May include `strategic_brief_path` when invoked with `--brief` from /team strategic mode.
 - **/team**: Same as standard.
 - **/designer**: Same as standard.
 - **/optimize**: Same as standard.
 - **/review**: Same as standard.
 
-## status.yaml (Required, All 7 Skills)
+## status.yaml (Required, All 6 Skills)
 
 Tracks the current pipeline/phase state and full state history with timing.
 
@@ -116,7 +114,7 @@ The state tracking field name varies by skill:
 
 | Skills | Field Name | Rationale |
 |--------|-----------|-----------|
-| /run, /org | `pipeline_state` | Event-driven pipeline engine with formal state machine |
+| /run | `pipeline_state` | Event-driven pipeline engine with formal state machine |
 | /team, /designer, /optimize, /review | `phase` | Phase-based workflow progression |
 
 Hooks (e.g., attention-injection.cjs, session-catchup.cjs) check BOTH `pipeline_state` AND `phase` as fallback to handle this variation.
@@ -124,7 +122,7 @@ Hooks (e.g., attention-injection.cjs, session-catchup.cjs) check BOTH `pipeline_
 ### Schema
 
 ```yaml
-pipeline_state: "{STATE}"  # /run, /org: INIT, ORCHESTRATED, PLANNED, etc.
+pipeline_state: "{STATE}"  # /run: INIT, ORCHESTRATED, PLANNED, etc.
 # OR
 phase: "{phase}"           # /team, /designer, /optimize, /review: INIT, detection, empathize, etc.
 
@@ -141,8 +139,7 @@ state_history:                       # REQUIRED: Ordered list of state transitio
 |-------|-------------------|
 | /run (v12.0.0+) | INIT, ORCHESTRATED, PLANNED, COORDINATED, VALIDATED, FOLLOWUP_{TYPE}_{N} |
 | /run (pre-v12, historical) | INIT, ORCHESTRATED, PLANNED, DECOMPOSED, PROMPTS_READY, COORDINATED, VALIDATED, FOLLOWUP_{TYPE}_{N} (DECOMPOSED/PROMPTS_READY collapsed into ORCHESTRATED in v12.0.0; archived sessions retain these names) |
-| /org | INIT, ANALYZED, DELIBERATED, BRIEFED, EXECUTED, INTEGRATED, COMPLETE |
-| /team | INIT, (wave states vary) |
+| /team | INIT, (wave states vary; strategic mode adds Wave 0/1/2 prefix when domain_count >= 2) |
 | /designer | empathize, define, conceptualize, ideation, refinement, specification |
 | /optimize | detection, analysis, planning, execution, validation |
 | /review | initializing, executing, aggregating, fixing, validating, reporting |
@@ -150,7 +147,6 @@ state_history:                       # REQUIRED: Ordered list of state transitio
 ### Skill-Specific Extensions
 
 - **/run**: Includes `revision_round: {N}` for pipeline revision cycles, `validation_cycles: {N}` for total FAIL/REVISE loop count, and `followup_round: {N}` for post-completion follow-ups. Follow-up states use the naming pattern `FOLLOWUP_{TYPE}_{N}` where TYPE is `ADJUSTMENT`, `REWORK`, `EXTENSION`, `FIX`, or `REVIEW`.
-- **/org**: No additional fields.
 - **/team**: No additional fields.
 - **/designer**: No additional fields.
 - **/optimize**: No additional fields.
@@ -173,15 +169,6 @@ state_history:                       # REQUIRED: Ordered list of state transitio
 - Maintain `events/index.yaml` after reading each completion event
 - Always write `execution_summary.yaml` at pipeline exit (success, failure, or interruption)
 
-### /org
-- `routing_decision.yaml` - CEO routing analysis
-- `domain_dependencies.yaml` - C-suite dependency ordering
-- `strategic_brief_draft.yaml` - Draft brief before deliberation
-- `strategic_brief.yaml` - Final strategic brief
-- `domain_analyses/` - Per-domain C-suite analysis files
-- `objections/` - Per-C-suite objection files
-- `integration_report.yaml` - Final integration summary
-
 ### /team
 - `team/messages/` - Inter-teammate messages
 - `team/metrics/timing.yaml` - Team timing metrics
@@ -190,6 +177,14 @@ state_history:                       # REQUIRED: Ordered list of state transitio
 - `workflow/wave_structure.yaml` - Wave execution plan with names, items, and gate criteria
 - `workflow/child_controllers.yaml` - Controller-to-work-item assignment audit trail
 - `workflow/partial_results.yaml` - Partial completion tracking (if applicable)
+- `outputs/strategic/strategic_brief.yaml` - Final strategic brief (strategic mode only)
+- `outputs/strategic/strategic_brief_draft.yaml` - Draft brief before deliberation (strategic mode only)
+- `outputs/strategic/domain_analyses/` - Per-domain C-suite analysis files (strategic mode only)
+- `outputs/strategic/objections/` - Per-C-suite objection files (strategic mode only)
+- `outputs/strategic/routing_decision.yaml` - CEO routing analysis (strategic mode only)
+- `outputs/strategic/domain_dependencies.yaml` - C-suite dependency ordering (strategic mode only)
+- `workflow/domain_status.yaml` - Per-domain completion status (strategic mode only)
+- `outputs/integration/integration_report.yaml` - Final integration summary (strategic mode only)
 
 ### /designer
 - `question_prep/` - Research agent question preparation per phase
@@ -269,7 +264,7 @@ payload: {}                            # Type-specific data
 
 ## Hook Integration
 
-Hooks discover active sessions by scanning `cagents-memory/sessions/` for directories matching known prefixes (`run_`, `org_`, `team_`, `designer_`, `optimize_`, `review_`). The `SESSION_PREFIXES` array in `hook-utils.cjs` must include all session type prefixes.
+Hooks discover active sessions by scanning `cagents-memory/sessions/` for directories matching known prefixes (`run_`, `team_`, `designer_`, `optimize_`, `review_`). The `SESSION_PREFIXES` array in `hook-utils.cjs` must include all active session type prefixes. The legacy `org_` prefix is retained in `hook-utils.cjs` only for backward-compat with archived sessions from pre-v12.2.0; no new sessions are created with that prefix.
 
 ### Key Hook Behaviors
 
@@ -285,7 +280,7 @@ A session is considered complete when its status.yaml state matches one of:
 - Lowercase: `completed`, `complete`, `failed`, `aborted`
 - Uppercase: `COMPLETE`, `VALIDATED`
 - /run: `VALIDATED` (final successful state) or after max revision cycles
-- /org: `COMPLETE`
+- /team: `COMPLETE` (final wave gate validated)
 
 Note: `VALIDATED` may be followed by `FOLLOWUP_{TYPE}_{N}` states if the user provides post-completion feedback. The session re-enters the pipeline and eventually returns to `VALIDATED`. No limit on follow-up rounds.
 
@@ -314,7 +309,7 @@ CAGENTS_SESSION_ID=run_fix-auth_260320_001 claude --plugin-dir ${CAGENTS_PLUGIN_
 ```
 
 **Contract**:
-- If `CAGENTS_SESSION_ID` is set, all skills (`/run`, `/team`, `/org`, etc.) MUST use it as the session ID instead of auto-generating one
+- If `CAGENTS_SESSION_ID` is set, all skills (`/run`, `/team`, etc.) MUST use it as the session ID instead of auto-generating one
 - This allows AgentPath to link triggered sessions back to the trigger that spawned them
 - The variable is set by `execution-service.ts` in the child process environment
 

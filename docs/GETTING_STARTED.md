@@ -1,8 +1,8 @@
 # Getting Started with cAgents
 
-Five minutes from install to your first orchestrated result. This guide reflects **V11.0.1 current** — 243 agents across 15 domains and 6 user-invocable skills (`/designer`, `/helper`, `/improve`, `/org`, `/run`, `/team`).
+Five minutes from install to your first orchestrated result. This guide reflects **V12.2.0 current** — 240 agents across 9 archetypes and 4 user-invocable skills (`/designer`, `/helper`, `/run`, `/team`).
 
-_V11.0 removed `/review`, `/optimize`, `/context`, and `/debug` — see [MIGRATION-V11.md](./MIGRATION-V11.md) for the migration path._
+_V11.0 removed `/review`, `/optimize`, `/context`, and `/debug` — see [MIGRATION-V11.md](./MIGRATION-V11.md) for the migration path. v12.1.2 folded `/improve` into `/run` via a first-word keyword router. v12.2.0 removed `/org` and absorbed cross-domain coordination into `/team` strategic mode._
 
 ## Prerequisites
 
@@ -75,11 +75,11 @@ These are readable YAML files. Inspect them to understand exactly what each agen
 ```
 Spawns multiple specialist agents in parallel waves, each validated before the next wave starts. 40-60% faster than sequential execution for tier 3+ work.
 
-**Strategic coordination** — work that spans multiple business domains:
+**Strategic coordination** — work that spans multiple business domains (v12.2.0+):
 ```bash
-/org Plan our Q3 product roadmap
+/team Plan our Q3 product roadmap
 ```
-Triggers CTO, CPO, and CFO analysis, cross-domain deliberation, and a unified strategic brief — then hands off to engineering and business teams for execution.
+Strategic mode auto-enables when `universal-router` detects 2+ domains. Triggers CTO, CPO, and CFO analysis in Wave 0/1, cross-domain deliberation in Wave 2, and per-domain dispatch in Wave 3..N — all inside a single `/team` session. Force-enable for single-domain executive framing with `--strategic`; force-disable with `--no-strategic`. (Pre-v12.2.0 this was `/org`, now absorbed into `/team` strategic mode.)
 
 **Interactive design** — clarify requirements before building:
 ```bash

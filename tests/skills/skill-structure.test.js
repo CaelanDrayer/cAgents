@@ -5,13 +5,13 @@ import yaml from 'js-yaml';
 
 const SKILLS_DIR = join(process.cwd(), '.claude', 'skills');
 
-// v12.1.2: 5 surviving user-invocable skills. /improve was folded into
-// /run via a first-word keyword router (improve|review|audit|optimize)
-// in v12.1.2. V11.0 had already removed context, debug, review, optimize.
+// v12.2.0: 4 surviving user-invocable skills. /org was absorbed into
+// /team strategic mode in v12.2.0. /improve was folded into /run via a
+// first-word keyword router (improve|review|audit|optimize) in v12.1.2.
+// V11.0 had already removed context, debug, review, optimize.
 const SKILL_NAMES = [
   'designer',
   'helper',
-  'org',
   'run',
   'team',
 ];
@@ -146,18 +146,6 @@ describe('/run SKILL.md content', () => {
   });
 });
 
-describe('/org SKILL.md content', () => {
-  it('contains Rationalization Kill List', () => {
-    const content = readSkill('org');
-    expect(content).toContain('Rationalization Kill List');
-  });
-
-  it('contains corporate hierarchy reference', () => {
-    const content = readSkill('org');
-    expect(content).toMatch(/C-suite|corporate hierarchy/i);
-  });
-});
-
 describe('/team SKILL.md content', () => {
   it('contains wave execution steps', () => {
     const content = readSkill('team');
@@ -172,5 +160,13 @@ describe('/team SKILL.md content', () => {
   it('contains TeamCreate reference', () => {
     const content = readSkill('team');
     expect(content).toContain('TeamCreate');
+  });
+
+  it('contains strategic mode reference (v12.2.0: absorbed /org)', () => {
+    // /org was absorbed into /team strategic mode in v12.2.0. The /team
+    // SKILL.md must surface strategic mode and the C-suite framing.
+    const content = readSkill('team');
+    expect(content).toMatch(/strategic mode|Strategic Mode/);
+    expect(content).toMatch(/C-suite|corporate hierarchy/i);
   });
 });

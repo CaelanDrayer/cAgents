@@ -1,6 +1,6 @@
 # cAgents Documentation
 
-**Version**: 12.1.2
+**Version**: 12.2.0
 **Last Updated**: 2026-03-12
 
 ## Quick Navigation
@@ -20,7 +20,7 @@
 - `CLAUDE_CODE_HOOKS_SPECIFICATION.md` - Claude Code hooks API reference
 
 ### Commands and Skills
-- `COMMANDS.md` - All 5 active cAgents skills reference (`/designer`, `/helper`, `/org`, `/run`, `/team`) — `/improve` folded into `/run` in v12.1.2 via keyword router
+- `COMMANDS.md` - All 4 active cAgents skills reference (`/designer`, `/helper`, `/run`, `/team`) — `/improve` folded into `/run` in v12.1.2 via keyword router; `/org` removed in v12.2.0 (folded into `/team` strategic mode)
 - `MIGRATION-V11.md` - Migration guide for users of removed skills (`/review`, `/optimize`, `/context`, `/debug` → `/improve` or `/run`); v12.1.2 further folded `/improve` into `/run` via keyword router (see CHANGELOG)
 - `COMMAND_SELECTION.md` - Guide for choosing the right command
 - `SKILLS.md` - Detailed skill documentation

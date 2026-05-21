@@ -157,7 +157,7 @@ AskUserQuestion({
     options: [
       {label: "Build it now (/run) (Recommended)", description: "Execute immediately with the pipeline engine"},
       {label: "Build with team (/team)", description: "Parallel team execution for complex designs"},
-      {label: "Build with org (/org)", description: "Full corporate hierarchy orchestration for cross-domain designs"},
+      {label: "Build with team --strategic", description: "Cross-domain coordination via /team strategic mode (C-suite Wave 0/1, per-domain Wave 3..N)"},
       {label: "Refine specific area", description: "Jump back to a specific phase or topic for targeted refinement"}
     ],
     multiSelect: false
@@ -189,10 +189,11 @@ When user selects "Build with team (/team)":
 Skill({ skill: "team", args: `implement design from ${session_id}` })
 ```
 
-When user selects "Build with org (/org)":
+When user selects "Build with team --strategic":
 ```javascript
-Skill({ skill: "org", args: `implement design from ${session_id}` })
+Skill({ skill: "team", args: `implement design from ${session_id} --strategic` })
 ```
+(v12.2.0+; pre-v12.2.0 this option invoked `/org`, which was absorbed into `/team` strategic mode.)
 
 When user selects "Refine specific area":
 ```
@@ -221,7 +222,7 @@ Your design is saved at: cagents-memory/sessions/{session_id}/
 To implement later:
   /run implement design from {session_id}
   /team implement design from {session_id}   (parallel, faster for large designs)
-  /org implement design from {session_id}    (full hierarchy for cross-domain)
+  /team implement design from {session_id} --strategic    (cross-domain coordination via C-suite Wave 0/1)
 ```
 
 ### Terminal Phase Value

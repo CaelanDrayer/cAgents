@@ -25,8 +25,9 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const SKILLS_DIR = path.join(REPO_ROOT, '.claude', 'skills');
 const MAX_LINES = 400;
 
-// v12.1.2: /improve folded into /run via keyword router; 5 user skills.
-const USER_SKILLS = ['org', 'team', 'run', 'designer', 'helper'];
+// v12.2.0: /org absorbed into /team strategic mode; 4 user skills.
+// (v12.1.2: /improve folded into /run via keyword router.)
+const USER_SKILLS = ['team', 'run', 'designer', 'helper'];
 
 function countLines(filePath) {
   const content = fs.readFileSync(filePath, 'utf8');
@@ -53,8 +54,9 @@ describe('user-skill SKILL.md progressive disclosure (Wave 5)', () => {
   }
 
   it('total user-skill SKILL.md body size is bounded', () => {
-    // Sum across all 5 user skills (v12.1.2) must stay well under 5 * MAX_LINES = 2000.
+    // Sum across all 4 user skills (v12.2.0) must stay well under 4 * MAX_LINES = 1600.
     // Wave 5 brought the total from 5089 → ~1503 lines (a 70% reduction).
+    // v12.2.0 removed /org SKILL.md entirely (~302 post-Wave-5 lines).
     // Ceiling here is generous; tightening risks brittleness as docs evolve.
     const total = USER_SKILLS.reduce(
       (sum, skill) => sum + countLines(path.join(SKILLS_DIR, skill, 'SKILL.md')),
@@ -67,7 +69,7 @@ describe('user-skill SKILL.md progressive disclosure (Wave 5)', () => {
     // Baseline = pre-Wave-5 line counts. If any skill grows back past its
     // baseline, we flag it. This catches "rolled back the refactor" regressions.
     const PRE_REFACTOR = {
-      org: 1202,
+      // org: 1202 — removed in v12.2.0 (absorbed into /team strategic mode)
       team: 1185,
       run: 861,
       designer: 736,

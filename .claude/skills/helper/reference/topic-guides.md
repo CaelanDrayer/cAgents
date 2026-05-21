@@ -14,7 +14,7 @@ Flags are optional modifiers that customize command behavior. They follow the co
 
 | Pattern | Commands | What It Does |
 |---------|----------|-------------|
-| `--dry-run` | /run, /improve, /team, /org | Preview without executing |
+| `--dry-run` | /run, /improve, /team (incl. strategic mode, v12.2.0+; pre-v12.2.0 also /org) | Preview without executing |
 | `--interactive` | /run, /improve | Ask user preferences before starting |
 | `--quiet` / `-q` | /run, /team | Suppress output/plan display |
 | `--domain <name>` | /run, /team | Override automatic domain detection |
@@ -154,7 +154,7 @@ Customer support, legal, compliance:
 
 #### Leadership (11 agents)
 
-C-suite executives (used by /org, not directly routable):
+C-suite executives (used by /team strategic mode in v12.2.0+; not directly routable):
 - CTO, CRO, CFO, COO, CHRO, CEO, chief-of-staff, strategy-director
 
 #### Core (17 agents)
@@ -363,7 +363,7 @@ Every command creates a session directory in `cagents-memory/sessions/`.
 | `/designer` | `designer_{slug}_{YYMMDD}_{NNN}` | `designer_redo-session-names_260207_001` |
 | `/improve` | `improve_{slug}_{YYMMDD}_{NNN}` | `improve_reduce-bundle-size_260207_001` |
 | `/team` | `team_{slug}_{YYMMDD}_{NNN}` | `team_implement-oauth2_260207_001` |
-| `/org` | `org_{slug}_{YYMMDD}_{NNN}` | `org_launch-product_260207_001` |
+| `/org` (pre-v12.2.0; removed) | `org_{slug}_{YYMMDD}_{NNN}` | `org_launch-product_260207_001` (legacy sessions on disk still recognized; new strategic-mode work uses `team_*` session IDs) |
 
 #### Key Session Files
 

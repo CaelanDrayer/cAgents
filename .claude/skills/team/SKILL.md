@@ -1,12 +1,12 @@
 ---
 name: team
-description: "Parallel multi-agent execution with wave-based quality gates. Use for complex tasks with 3+ parallelizable items. TRIGGER: team, parallel, swarm, complex multi-part. NOT for: simple tasks (/run) or cross-domain strategy (/org)."
+description: "Parallel multi-agent execution with wave-based quality gates. Use for complex tasks with 3+ parallelizable items, including cross-domain strategic work (via Strategic Mode). TRIGGER: team, parallel, swarm, complex multi-part, cross-domain, strategic. NOT for: simple single-domain tasks (/run)."
 license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.1.2"
-  argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--no-template] [--waves <n>]"
+  version: "12.2.0"
+  argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--no-template] [--waves <n>] [--strategic] [--no-strategic]"
   user-invocable: "true"
   context: "fork"
 allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TaskCreate, TaskUpdate, TaskList, TaskGet, TeamCreate, TeamDelete, SendMessage, Skill
@@ -68,9 +68,41 @@ Wave N (Lead, sequential):
   TeamDelete + task cleanup
 ```
 
+## Strategic Mode (auto-enabled for cross-domain requests)
+
+Strategic mode prepends three coordination waves (C-suite analysis → objection phase → brief synthesis) before the normal wave loop. v12.2.0 absorbed the former standalone corporate-hierarchy skill into `/team` strategic mode. The strategic prefix produces a `strategic_brief.yaml` that anchors the subsequent per-domain dispatch waves.
+
+**Auto-detect trigger.** In Step 1 / Step 2b, read `enriched_context.universal_router.domain_count` (set by `cagents:universal-router`). When `domain_count >= 2` AND `--no-strategic` is absent from `$ARGUMENTS`, prepend the strategic prefix:
+
+```
+Wave 0 (Lead): orchestrator + universal-planner + universal-router
+Wave 1 (Teammates, parallel): C-suite analysis (one teammate per assigned C-suite role from csuite-mapping.md)
+Wave 2 (Lead): Objection phase — peer reads + two-phase deliberation
+Wave 3 (Lead): Brief synthesis → outputs/strategic/strategic_brief.yaml
+Wave 4..N-1 (Teammates, parallel per wave): per-domain dispatch driven by domain_assignments
+Wave N (Lead): integration + validation (unchanged)
+```
+
+Single-domain (`domain_count <= 1`) and tier-2 requests skip the strategic prefix and run the standard wave loop directly.
+
+**Step 1 update**: Before extracting flags from `$ARGUMENTS`, read `universal-router.domain_count` from the orchestrator output. When `domain_count >= 2` AND `--no-strategic` absent: set internal `strategic_mode = true` and plan the Wave 0/1/2/3 strategic prefix. Otherwise: `strategic_mode = false`, proceed with standard waves.
+
+**Flag overrides:**
+
+| Flag | Effect |
+|------|--------|
+| `--strategic` | Force-enable strategic mode regardless of `domain_count` (useful for single-domain requests that warrant C-suite framing). |
+| `--no-strategic` | Force-disable strategic mode regardless of `domain_count` (skip the C-suite prefix, dispatch directly). |
+
+When neither flag is present, auto-detection from `domain_count` decides.
+
+See @reference/strategic-mode.md for the full wave-by-wave machinery (C-suite dependency ordering, two-phase deliberation, escalation chain). See @reference/strategic-brief-format.md for the `strategic_brief.yaml` schema and validation protocol. See @reference/csuite-deliberation.md, @reference/csuite-mapping.md, @reference/strategic-cross-domain.md, @reference/strategic-escalation.md, and @reference/strategic-examples.md for supporting detail.
+
 ## Step 1 — Parse Request
 
-Extract request from `$ARGUMENTS`. See `.claude/skills/_MODE_REGISTRY.md § /team` for canonical flags.
+Extract request from `$ARGUMENTS`. See `.claude/skills/_MODE_REGISTRY.md § /team` for canonical flags. Detect `--strategic` and `--no-strategic` flags here; defer the final strategic-mode decision until Step 2d when `universal-router.domain_count` is available.
+
+After Wave 0 enrichment completes (Step 2d), read `enriched_context.universal_router.domain_count`. If `--strategic` is present: set `strategic_mode = true`. Else if `--no-strategic` is present: set `strategic_mode = false`. Else: `strategic_mode = (domain_count >= 2)`. When `strategic_mode === true`, plan the Wave 0/1/2/3 strategic prefix (C-suite analysis → objection phase → brief synthesis) before the standard wave loop. See Strategic Mode above.
 
 ## Step 2 — Wave 0 Enrichment
 
@@ -183,11 +215,11 @@ Read 1-line confirmation only.
 
 ## Session Hierarchy
 
-`/team` creates `team_*` sessions. When `/org` invokes `/team` via `--session`, `parent_session_id` is set per @reference/parent-session-extraction.md. Max 2-level hierarchy (`org_*` → `team_*`); no `org_* → team_* → run_*` chain.
+`/team` creates `team_*` sessions. When `/team` strategic mode spawns child `/run` sessions via `--brief`, `parent_session_id` is set per @reference/parent-session-extraction.md. Max 2-level hierarchy (`team_*` → `run_*`).
 
 ## See Also
 
 - @reference/per-wave-decomposition.md, @reference/spawn-brief-schema.md, @reference/integration-handoff.md — v12.1 lead-context discipline contracts
 - @reference/wave-execution-detail.md, @reference/teammate-spawning-template.md, @reference/gate-validation-protocol.md — wave execution + spawn + gate detail
-- @reference/dynamic-scaling.md, @reference/partial-results.md, @reference/fallback-and-error-recovery.md, @reference/parent-session-extraction.md, @reference/cross-version-compat.md — scaling, partial results, fallback, /org integration, CC compat
+- @reference/dynamic-scaling.md, @reference/partial-results.md, @reference/fallback-and-error-recovery.md, @reference/parent-session-extraction.md, @reference/cross-version-compat.md — scaling, partial results, fallback, child-session integration, CC compat
 - `.claude/rules/core/teams.md`, `.claude/skills/run/reference/session-schema.md` — rules + canonical session schema

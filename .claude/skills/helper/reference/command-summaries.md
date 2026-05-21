@@ -69,16 +69,8 @@ Per-command summaries used by Mode 2 and Mode 10 of `/helper`. Read this when th
 
 **Workflow**: Decompose -> Create Team -> Spawn Teammates -> Parallel /run per item -> Aggregate Results
 
-## /org - Corporate Hierarchy Orchestration
+## /org - REMOVED in v12.2.0
 
-**What**: A corporate hierarchy orchestrator that coordinates multi-domain initiatives. A CEO (inline) engages C-suite agents for domain analysis, conducts deliberation with objection rounds, produces a strategic brief, then delegates to sequential /team invocations per domain (dependency-ordered). For single-domain tasks, it shortcuts to /run or /team. Think of it as "coordinate across multiple business domains."
+`/org` was removed in v12.2.0 and absorbed into `/team` strategic mode. Cross-domain coordination — CEO + C-suite deliberation, strategic brief, per-domain dispatch — now runs inside `/team` when `universal-router.domain_count >= 2`. The 12 leadership agents are preserved and act as Wave 0/1 teammates.
 
-**When to use**:
-- Multi-domain initiatives (engineering + marketing + hiring)
-- Product launches requiring cross-domain coordination
-- Strategic-level tasks with risk registers and dependency management
-- Company restructures or major migrations spanning domains
-
-**Key flags**: `--dry-run` (preview routing), `--quick` (skip deliberation), `--domains <d1,d2,...>` (force domains), `--resume <id>` (resume session)
-
-**Workflow**: CEO Routing -> C-Suite Analysis -> Deliberation -> Strategic Brief -> Sequential /team per domain -> Integration
+**Migration**: `/org X` -> `/team X` (strategic mode auto-enables for multi-domain). Force-enable via `--strategic`; force-disable via `--no-strategic`. See `command-details.md` § /org for the full migration table.

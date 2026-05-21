@@ -156,30 +156,32 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 
 ---
 
-## /org Troubleshooting
+## /team Strategic Mode Troubleshooting (v12.2.0+; replaces /org troubleshooting)
+
+`/org` was removed in v12.2.0 and absorbed into `/team` strategic mode. The strategic-mode symptoms below are direct successors of the historical `/org` troubleshooting cases.
 
 ### 1. Wrong domains detected
-- **Symptom**: /org engages unnecessary C-suite agents or misses relevant domains
-- **Likely cause**: Keyword-based detection is ambiguous for the request
-- **Fix**: Use `--domains make_eng,grow` to force specific domains
-- **Check**: Read `routing_decision.yaml` in the session directory
+- **Symptom**: /team strategic mode engages unnecessary C-suite agents or misses relevant domains
+- **Likely cause**: `universal-router.domain_count` keyword matching is ambiguous for the request
+- **Fix**: Rephrase the request with explicit domain keywords, or invoke `/team <request> --no-strategic` to force flat parallel execution (replaces pre-v12.2.0 `/org --domains <list>`)
+- **Check**: Read `routing_decision.yaml` in the team session directory
 
 ### 2. Deliberation deadlock
-- **Symptom**: C-suite agents keep raising blocking objections that cannot be resolved
+- **Symptom**: Wave 1/2 C-suite agents keep raising blocking objections that cannot be resolved
 - **Likely cause**: Fundamentally conflicting domain requirements
-- **Check**: Read objection files in `session/objections/`
-- **Fix**: After 2 rounds, /org escalates to user. Provide a directive to resolve the conflict
+- **Check**: Read objection files in `team_*/workflow/objections/`
+- **Fix**: After 2 rounds, the team lead escalates to user. Provide a directive to resolve the conflict (same behavior as pre-v12.2.0 /org)
 
 ### 3. Domain execution timeout
-- **Symptom**: One /team domain execution takes much longer than others
+- **Symptom**: One per-domain wave takes much longer than others
 - **Likely cause**: Complex domain with many work items or teammate failures
-- **Check**: Read the domain's session status in the domain subdirectory
-- **Fix**: Use `--resume org_{id}` to resume, which will skip completed domains
+- **Check**: Read the wave's task list and team manifest in the session directory
+- **Fix**: Use `/team --resume team_{id}` to resume, which will skip completed waves (replaces pre-v12.2.0 `/org --resume org_{id}`)
 
-### 4. Single-domain auto-routing unexpected
-- **Symptom**: Expected full hierarchy but got single /run or /team
-- **Likely cause**: Request only matched one domain's keywords
-- **Fix**: Use `--domains` to force multi-domain scope, or rephrase to include cross-domain keywords
+### 4. Strategic mode unexpectedly off
+- **Symptom**: Expected C-suite deliberation but got flat parallel /team
+- **Likely cause**: Request only matched one domain's keywords, so `domain_count < 2`
+- **Fix**: Add `--strategic` to force-enable strategic mode for a single-domain request, or rephrase to include cross-domain keywords
 
 ---
 

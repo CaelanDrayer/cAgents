@@ -1,11 +1,11 @@
 ---
 name: run
-description: "Execute any task through coordinated agents. Use for building, fixing, writing, or any single-domain work. TRIGGER: run, implement, fix, build, create. NOT for: parallel work (/team) or cross-domain strategy (/org)."
+description: "Execute any task through coordinated agents. Use for building, fixing, writing, or any single-domain work. TRIGGER: run, implement, fix, build, create. NOT for: parallel work or cross-domain strategy (use /team)."
 license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.1.2"
+  version: "12.2.0"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--mode <standard|debug>] [--no-goal]"
   user-invocable: "true"
   context: "none"
@@ -114,7 +114,7 @@ Special flag handling:
 - `--analytics`: Read `cagents-memory/_system/metrics/pipeline_analytics.yaml`, display the dashboard, exit.
 - `--resume <session_id>`: Load session from `progress.md` and resume from last checkpoint.
 - `--session <session_dir>`: Pre-enriched session (from /team). Skip to pre-enrichment detection in Step 3.
-- `--brief <path>`: Strategic brief from /org. See @reference/strategic-brief-integration.md.
+- `--brief <path>`: Strategic brief from /team strategic mode. See @reference/strategic-brief-integration.md.
 - `--mode debug`: Enables debug-mode prefix injection for the controller. See @reference/debug-mode-prompt.md.
 
 See @reference/flags.md for the complete flag reference with defaults and examples.
@@ -135,7 +135,7 @@ See @reference/session-id-format.md for slug rules, NNN counter generation, and 
 
 See @reference/agent-tracking.md for agent_tree.yaml format and lineage fields.
 
-**ACTION 1b**: After writing status.yaml, set `process.env.CAGENTS_ACTIVE_SESSION = SESSION_ID;` so hooks resolve to the correct session without heuristic discovery. Critical for concurrent /org-spawned /team instances.
+**ACTION 1b**: After writing status.yaml, set `process.env.CAGENTS_ACTIVE_SESSION = SESSION_ID;` so hooks resolve to the correct session without heuristic discovery. Critical for concurrent /team-spawned /run instances.
 
 **ACTION 2**: Try to read `cagents-memory/_system/config/pipeline_config.yaml`. If absent, use the hardcoded state machine. Do not error.
 

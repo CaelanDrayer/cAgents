@@ -14,8 +14,8 @@ The complete behavioral contract for /designer. See @reference/rules.md for the 
 8. MUST batch 2-4 related questions per AskUserQuestion call (use the `questions` array) — single-question calls are reserved for standalone gate decisions only
 9. Generate diagrams as design forms, not just at the end
 10. Write files incrementally — never hold full design in memory
-11. ALWAYS offer 6 build options when complete (run, team, org, refine, endless, save)
-12. Auto-trigger /run, /team, or /org when user selects build option
+11. ALWAYS offer 6 build options when complete (run, team, team --strategic, refine, endless, save)
+12. Auto-trigger /run or /team (with `--strategic` flag for cross-domain) when user selects build option
 13. Endless refinement loops until user explicitly exits
 
 ## Tool Constraint Rules

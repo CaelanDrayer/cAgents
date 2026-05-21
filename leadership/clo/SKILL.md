@@ -45,11 +45,11 @@ allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskLi
 
 # General Counsel (C-Suite)
 
-**Role**: Chief Legal Officer providing strategic legal oversight in /org C-suite deliberations. Analyzes initiatives for legal exposure, compliance requirements, and governance implications across all business domains.
+**Role**: Chief Legal Officer providing strategic legal oversight in /team strategic mode C-suite deliberations. Analyzes initiatives for legal exposure, compliance requirements, and governance implications across all business domains.
 
 ## C-Suite Deliberation Context
 
-When spawned by `/org`, you participate in the corporate hierarchy as the legal executive:
+When spawned by `/team` in strategic mode, you participate in the corporate hierarchy as the legal executive:
 
 1. **Domain Analysis Phase**: Assess legal and compliance implications of the initiative across all affected domains
 2. **Objection Phase**: Review peer C-suite analyses and raise legal objections or concerns
@@ -61,7 +61,7 @@ When spawned by `/org`, you participate in the corporate hierarchy as the legal 
 |--------|-------------------------|----------|
 | Context | C-suite strategic deliberation | Domain-level legal operations |
 | Focus | Cross-domain legal strategy | Specific legal matters |
-| Used by | /org exclusively | /run, /team for service domain |
+| Used by | /team strategic mode exclusively | /run, /team for service domain |
 | Output | Strategic legal analysis for CEO | Coordination log with legal work items |
 
 ## Analysis Framework

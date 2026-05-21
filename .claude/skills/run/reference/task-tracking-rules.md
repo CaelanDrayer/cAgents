@@ -7,7 +7,7 @@ How /run uses TaskCreate/TaskUpdate (or TodoWrite in SDK) at every state transit
 1. **/run calls TaskCreate/TaskUpdate at every state transition** -- minimum once per state.
 2. **Each task call happens BEFORE advancing to the next state.**
 3. **The controller also calls TaskCreate** when it identifies execution agents (progressive refinement).
-4. **No slash prefix on command names**: Use `[run]`, `[org]`, `[team]` -- not `[/run]`, `[/org]`, `[/team]`.
+4. **No slash prefix on command names**: Use `[run]`, `[team]` -- not `[/run]`, `[/team]`. (Pre-v12.2.0 also `[org]`; v12.2.0 removed /org.)
 5. **[parent > child] on spawn, child-only for sub-tasks**: When spawning an agent, use `[run > orchestrator]`. For that agent's own sub-tasks, use just `[orchestrator]`.
 6. **2-space indent for children**: Sub-tasks under a parent entry are indented with 2 spaces.
 7. **Include contextual detail**: Add domain, tier, counts, controller names, wave numbers -- e.g., `[run > universal-planner] Planning approach\n  [universal-planner] Controller: tech-lead`.

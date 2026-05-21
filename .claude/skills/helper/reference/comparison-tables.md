@@ -2,7 +2,9 @@
 
 Side-by-side comparison matrices for `/helper --compare`.
 
-> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Their functionality moved to `/improve`, `/run context`, and `/run --mode debug` (see migration mappings at the end of this file)._
+> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Their functionality moved to `/improve`, `/run context`, and `/run --mode debug`._
+>
+> _v12.2.0 removed `/org` and absorbed its responsibilities into `/team` strategic mode (auto-enabled when `universal-router.domain_count >= 2`; force via `--strategic` / `--no-strategic`). The `/org` columns in the matrices below are PRESERVED as historical reference for users migrating from pre-v12.2.0; treat any `/org` cell as "equivalent /team --strategic behavior" in v12.2.0+._
 
 ## Core Comparison Matrix
 
@@ -76,9 +78,9 @@ Side-by-side comparison matrices for `/helper --compare`.
 | `/improve --mode full` | -- | Review + optimize together with one shared baseline. |
 | `/improve --mode optimize` | `/improve --mode review` | Optimize, then verify quality (or use `--mode full`). |
 | `/run --team` | -- | Shortcut: /run with parallel team execution. |
-| `/org` | `/team` (per domain) | CEO deliberation, then sequential /team per domain. For multi-domain initiatives. |
-| `/org` | `/run` | Single-domain routing with strategic brief context. |
-| `/designer --brief` | `/org` | Design with strategic brief from /org for richer context. |
+| `/team --strategic` (v12.2.0+) | Per-domain dispatch (nested waves) | CEO/C-suite deliberation, then dependency-ordered per-domain dispatch. Replaces `/org` for multi-domain initiatives. |
+| `/team --strategic` | `/run` | Single-domain routing with strategic brief context (replaces `/org --quick`). |
+| `/designer --brief` | `/team --strategic` | Design with strategic brief feeding /team strategic mode (replaces pre-v12.2.0 `/designer --brief` -> `/org`). |
 
 ## Complexity and Scope
 

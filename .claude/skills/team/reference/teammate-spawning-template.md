@@ -2,7 +2,15 @@
 
 Full teammate spawn prompt template, self-registration block, and isolation/worktree details for /team.
 
-## Full Teammate Spawn Block
+## Disk-Handoff Spawn Pattern (Preferred, v12.1.0+)
+
+To minimize per-spawn token cost in the lead's context, write a per-wave `spawn_brief.md` to disk ONCE per wave and pass each teammate a short pointer prompt. See @spawn-brief-schema.md for the brief schema, short prompt template, and token savings (~73% on a 5-wave × 5-teammate run).
+
+When using the disk-handoff pattern, the lead writes `${SESSION_DIR}/outputs/wave-{K}/spawn_brief.md` before spawning the wave's teammates, then spawns each teammate with a ~80-token prompt that points to the brief plus the teammate's WI row in `work_items_wave_{K}.yaml`.
+
+The inline template below is preserved for back-compat and for cases where a wave has only 1-2 teammates (where the brief overhead exceeds savings).
+
+## Full Teammate Spawn Block (Legacy Inline Pattern)
 
 ```
 Agent({

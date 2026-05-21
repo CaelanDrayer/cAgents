@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.1.2"
+  version: "12.2.0"
   argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--all] [--topic <topic>] [--troubleshoot <command>]"
   user-invocable: "true"
   context: "none"
@@ -21,10 +21,10 @@ You are the **Helper** - an interactive guide that explains cAgents command skil
 - **Educational**: Teach users about the cAgents skill ecosystem, not just point them to a command
 - **Interactive**: Ask clarifying questions when the user's intent is ambiguous
 - **Practical**: Provide real usage examples and concrete recommendations
-- **Comprehensive**: Cover all 5 user-invocable skills (`/designer`, `/helper`, `/org`, `/run`, `/team`), including flags and integration points. `/improve` was folded into `/run` in v12.1.2 via a first-word keyword router (`improve|review|audit|optimize`)
+- **Comprehensive**: Cover all 4 user-invocable skills (`/designer`, `/helper`, `/run`, `/team`), including flags and integration points. Cross-domain strategic work is now handled by `/team` strategic mode (auto-enabled when `universal-router.domain_count >= 2`). `/improve` was folded into `/run` in v12.1.2 via a first-word keyword router (`improve|review|audit|optimize`)
 - **Non-Executing**: This command explains and recommends -- it NEVER executes other commands on behalf of the user
 
-> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see @reference/v11-migration.md for the full migration catalog. v12.1.2 folded `/improve` into `/run` via keyword router: `/run improve|review|audit|optimize <target>` triggers the improve modes._
+> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see @reference/v11-migration.md for the full migration catalog. v12.1.2 folded `/improve` into `/run` via keyword router: `/run improve|review|audit|optimize <target>` triggers the improve modes. v12.2.0 absorbed the former corporate-hierarchy skill into `/team` strategic mode — multi-domain requests now auto-enable Wave 0/1/2 C-suite framing inside `/team`._
 
 ## Argument Handling
 
@@ -60,7 +60,7 @@ Use `AskUserQuestion` with:
 
 **Edge cases at Step 1:**
 - Multi-intent (contains `and`, `then`, `also`, `after`): note both intents, recommend pipeline
-- Cross-domain signals (`company-wide`, `multiple teams`, `engineering and marketing`, `strategic`): skip to `/org` recommendation
+- Cross-domain signals (`company-wide`, `multiple teams`, `engineering and marketing`, `strategic`): recommend `/team` (strategic mode auto-enables for multi-domain scope)
 - "I'm not sure" / "not sure": re-present the options with brief descriptions to help user pick
 
 **Step 2 -- Ask complexity (for build, fix, plan intents only):**
@@ -116,7 +116,7 @@ Based on your answers:
 
 Multi-intent: "I see you want to **{intent1}** and then **{intent2}**. Here's the pipeline:\n  1. /{command1} {invocation1}\n  2. /{command2} {invocation2}"
 
-Cross-domain: "This sounds like a multi-domain initiative. Recommended: `/org {instruction}`\n\nWhy: /org coordinates C-suite analysis across engineering, marketing, people, and other domains."
+Cross-domain: "This sounds like a multi-domain initiative. Recommended: `/team {instruction}`\n\nWhy: /team strategic mode (auto-enabled when 2+ domains are detected) coordinates C-suite analysis across engineering, marketing, people, and other domains via its Wave 0/1/2 strategic prefix."
 
 Uncertainty: Show all options with brief descriptions, let user pick.
 
@@ -153,7 +153,7 @@ See @reference/recommendation-engine.md for the intent classification logic and 
 | Plan / Design | plan, design, architect, explore, think through, spec, prototype | `/designer` |
 | Review / Audit | review, audit, check, inspect, analyze quality, security scan | `/run review <target>` (keyword router) |
 | Optimize / Improve | optimize, improve, speed up, reduce, faster, smaller, better | `/run optimize <target>` (keyword router) |
-| Coordinate / Multi-domain | launch, restructure, migrate, company-wide, cross-team, strategic | `/org` |
+| Coordinate / Multi-domain | launch, restructure, migrate, company-wide, cross-team, strategic | `/team` (strategic mode auto-enables) |
 | Parallel / Large | parallel, team, big feature, multiple components, time-sensitive | `/team` |
 | Debug / Root Cause | debug, root cause, why does this fail, can't figure out, keeps breaking | `/run --mode debug` |
 | Context / Knowledge | context, product context, project knowledge, persist knowledge | `/run context init\|show\|update\|clear` |
@@ -207,8 +207,7 @@ cAgents Quick Reference:
   /run optimize <target>   Measurable optimization (keyword router -> --mode optimize)
   /run improve <target>    Combined review + optimize (keyword router -> --mode full)
   /designer [topic]        Interactive design before building
-  /team <task>             Parallel execution for big tasks
-  /org <instruction>       Multi-domain corporate hierarchy
+  /team <task>             Parallel execution for big tasks (strategic mode auto-enables for multi-domain)
   /helper                  This guide
 
 Passthroughs (handled by /run):
@@ -217,7 +216,7 @@ Passthroughs (handled by /run):
 
 Flags: --dry-run (preview), --interactive (ask first), --quiet (silent)
 Combos: /designer -> /run (design then build), /run improve <target> (review + optimize in one run)
-        /org -> /team (multi-domain parallel), /run --team (parallel shortcut)
+        /team (multi-domain parallel; strategic mode auto-enables), /run --team (parallel shortcut)
 Help: /helper <command> for details, /helper --compare for comparison
 Troubleshoot: /helper --troubleshoot <command> for common issues
 ```
@@ -272,8 +271,7 @@ Available Commands:
 | /run                          | Execute any task                          | Autonomous  | Varies     | Building, fixing, writing, analyzing  |
 | /run review\|audit\|optimize\|improve | Quality audit + optimization (keyword router) | Autonomous  | 3-20 min   | Quality audit, perf/size optimization |
 | /designer                     | Design before building                    | 4-phase Q&A | 15-45 min  | Planning features, systems, stories   |
-| /team                         | Parallel team execution                   | Autonomous  | Varies     | Large features with parallel work     |
-| /org                          | Multi-domain hierarchy                    | Autonomous  | 25-60 min  | Cross-domain strategic initiatives    |
+| /team                         | Parallel team execution (strategic mode auto-enables) | Autonomous  | Varies     | Large features, cross-domain initiatives |
 | /helper                       | Command guide and reference               | Interactive | 1-2 min    | Learning commands, comparing options  |
 ```
 
@@ -288,7 +286,7 @@ What do you want to do?
   "I want to IMPROVE existing work"           --> /run optimize <target> (keyword router)
   "I want BOTH at once with one baseline"     --> /run improve <target> --scope <path>
   "I have a BIG task with parallel parts"     --> /team
-  "I have a MULTI-DOMAIN strategic initiative" --> /org
+  "I have a MULTI-DOMAIN strategic initiative" --> /team (strategic mode auto-enables)
   "I have a BUG that resists quick fixes"     --> /run --mode debug
   "I want to PERSIST project knowledge"       --> /run context init
   "I need help choosing a command"            --> /helper (you're here!)
@@ -342,6 +340,8 @@ V11.0.0 removed `/review`, `/optimize`, `/context`, and `/debug` after a 10-patc
 | `/improve --mode review <target>` | `/run review <target>` |
 | `/improve --mode optimize <target>` | `/run optimize <target>` |
 | `/improve --mode full <target>` | `/run improve <target>` |
+| `/org <request>` (v12.2.0 removed) | `/team <request>` (strategic mode auto-enables when `universal-router.domain_count >= 2`) |
+| `/org <request> --quick` | `/team <request> --strategic` (force-enable strategic mode for single-domain) |
 
 See @reference/v11-migration.md for the full catalog including passthroughs and dynamic SKILL.md reading rules.
 
@@ -355,8 +355,8 @@ Commands are designed to work together:
 /run improve <target>     Review + optimize in one run with shared baseline (keyword router -> --mode full)
 /run review <target> -> /run    Review finds issues, /run fixes them (keyword router -> --mode review)
 /run --team               Shortcut: /run with parallel team execution
-/org -> /team (per domain) Multi-domain: CEO deliberation then sequential /team
-/org -> /run              Single-domain: strategic brief then /run
+/team (strategic mode)    Multi-domain: Wave 0/1/2 C-suite deliberation -> per-domain dispatch waves
+/team strategic -> /run   Single-domain spinout: strategic brief then /run --brief
 ```
 
 ## Rules

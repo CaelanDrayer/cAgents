@@ -10,6 +10,39 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.2.0] - 2026-05-21
+
+### Removed (BREAKING)
+
+- **`/org` skill removed.** Cross-domain coordination is now handled by `/team`
+  with auto-enabled strategic mode (Wave 0/1/2 = C-suite deliberation, Wave
+  3..N = per-domain dispatch). `/team` automatically detects multi-domain
+  requests via `universal-router.domain_count` and prepends strategic waves.
+  Users can override with `--strategic` (force enable) or `--no-strategic`
+  (force disable). The 12 leadership agents (CEO/CTO/CFO/CMO/COO/CHRO/CCO/
+  CSO/CRO/CPO/CLO/VP-Engineering) keep their existing locations and SKILL.md
+  schemas; only the invoking skill changes. No back-compat alias is provided —
+  `/org` invocations now fail with the standard Claude Code "skill not found"
+  error. Migration: replace `/org X` with `/team X` (auto-detects strategic
+  mode for cross-domain requests).
+
+### Changed
+
+- `/team` SKILL.md grows a "Strategic Mode" section pointing at new
+  `team/reference/strategic-{mode,brief-format,brief-schema,cross-domain,
+  escalation,examples}.md` reference docs (migrated from `org/reference/`).
+- `core/universal-router/SKILL.md` extended with `domain_count` and
+  `detected_domains[]` output fields.
+- Plugin manifest skill count: 5 → 4 (`/designer`, `/team`, `/run`, `/helper`).
+- `strategic_brief.yaml` schema adds `dependency_type` (independent |
+  dependent_on) per domain entry; Wave 2 brief-synthesizer infers the value
+  from cross-references in C-suite Wave 0/1 outputs.
+
+### AgentPath
+
+cAgents no longer treats AgentPath as a downstream consumer. Session schema
+references to AgentPath compatibility are removed.
+
 ## [12.1.2] - 2026-05-21
 
 Folds `/improve` into `/run` via a first-word keyword router and removes

@@ -313,108 +313,37 @@ You: /team Implement OAuth2 with Google, GitHub, and email login
 
 ---
 
-## /org - Corporate Hierarchy Orchestration
+## /org - REMOVED in v12.2.0 (absorbed into /team strategic mode)
 
-### What It Does
+`/org` was removed in v12.2.0. Cross-domain coordination — CEO + C-suite deliberation, strategic brief, dependency-ordered per-domain dispatch — is now handled by `/team` strategic mode. The 12 leadership agents (CEO, CTO, CCO, CRO, CFO, COO, CHRO, CMO, CSO, CPO, CLO, VP-Engineering) are preserved and act as Wave 0/1 teammates inside `/team` when strategic mode is engaged.
 
-`/org` orchestrates multi-domain tasks through a corporate hierarchy model. A CEO (inline) engages C-suite agents (CTO, CCO, CRO, CFO, COO, CHRO, General Counsel) for parallel domain analysis, conducts deliberation with objection rounds, produces a strategic brief, then delegates to sequential `/team` invocations per domain (dependency-ordered). For single-domain tasks, it shortcuts to `/run` or `/team` with a strategic brief for richer context.
+### Migration Table
 
-### When to Use /org
+| Pre-v12.2.0 (/org) | v12.2.0+ (/team strategic mode) |
+|--------------------|---------------------------------|
+| `/org <request>` | `/team <request>` (strategic mode auto-enables when `universal-router.domain_count >= 2`) |
+| `/org <request> --quick` | `/team <request> --strategic` (force-enable for single-domain) |
+| `/org <request> --dry-run` | `/team <request> --dry-run` |
+| `/org <request> --domains <d1,d2>` | `/team <request>` (universal-router infers domains from keywords) |
+| `/org --resume <session_id>` | `/team --resume <session_id>` |
 
-- **Multi-domain initiatives**: Engineering + marketing + hiring in one coordinated effort
-- **Strategic-level tasks**: Product launches, company restructures, major migrations
-- **Cross-domain coordination**: When domains need shared dependencies and risk management
-- **When you need a strategic brief**: Risk register, success criteria, cross-domain dependencies
+### Trigger for Strategic Mode in /team
 
-### When NOT to Use /org
+`/team` auto-detects cross-domain work via `universal-router.domain_count`. When two or more archetype catalogs match the request, strategic mode engages automatically:
 
-- **Single-domain tasks**: Use `/run` or `/team` directly -- /org adds overhead for single domains
-- **Simple bug fixes**: Use `/run` -- no need for C-suite analysis
-- **Parallel execution within one domain**: Use `/team` -- /org is for cross-domain parallelism
-- **Quick tasks**: /org's deliberation phase adds 5-15 minutes of strategic analysis
+- Wave 0/1: C-suite agents analyze in parallel; CEO drafts strategic brief.
+- Wave 2: Deliberation + objection rounds; brief finalized.
+- Wave 3..N: Per-domain dispatch (the equivalent of /org's per-domain /team invocations) runs as nested waves within the same `/team` session.
 
-### How It Works (Simplified)
+Override flags:
+- `--strategic`: force-enable strategic mode for a single-domain request (replaces `/org --quick`).
+- `--no-strategic`: force-disable strategic mode and run as a flat multi-wave /team (used when domain-count auto-detect is a false positive).
 
-```
-You: /org Launch new product with marketing campaign and hiring plan
-  |
-  v
-[CEO] Analyzes: 3 domains touched (make_eng, grow, people)
-  |
-  v
-[C-Suite Parallel Analysis] CTO, CRO, CHRO each analyze from their domain
-  |
-  v
-[Deliberation] CEO drafts strategic brief -> C-suite objects/approves
-  -> CEO resolves conflicts -> Final strategic brief
-  |
-  v
-[Parallel Execution] /team per domain (each runs independently)
-  -> /team make_eng: Build product features
-  -> /team grow: Create marketing campaign
-  -> /team people: Execute hiring plan
-  |
-  v
-[Integration] CEO merges all domain outputs, resolves cross-domain conflicts
-  |
-  v
-Result: All domains complete, integrated deliverable
-```
+See `.claude/skills/team/reference/strategic-mode.md` for the full protocol, brief schema, and escalation behavior.
 
-### Key Flags
+### When to Reach for Strategic Mode
 
-| Flag | What It Does | Example |
-|------|-------------|---------|
-| `--dry-run` | Preview routing decision and C-suite plan | `/org Launch product --dry-run` |
-| `--quick` | Skip deliberation for single-domain routing | `/org Fix auth --quick` |
-| `--domains <d1,d2,...>` | Force specific domain scope | `/org Task --domains make_eng,grow` |
-| `--resume <session_id>` | Resume an interrupted /org session | `/org --resume org_20260227_143022` |
-
-### Domain Detection
-
-| Domain Key | C-Suite | Keywords |
-|-----------|---------|----------|
-| make_eng | CTO | fix, build, implement, code, api, database, architecture |
-| make_cre | CCO | write, story, content, design, creative, brand, UX |
-| grow | CRO | campaign, marketing, sales, conversion, SEO, leads |
-| operate_fin | CFO | budget, cost, forecast, investment, ROI, financial |
-| operate_ops | COO | operations, process, supply chain, logistics, efficiency |
-| people | CHRO | hire, recruit, onboard, culture, HR, talent, performance |
-| serve | General Counsel | support, legal, compliance, customer, SLA, contract |
-
-### Real Examples
-
-```bash
-# Multi-domain: engineering + marketing + hiring
-/org Launch new product with marketing campaign and engineering build
-
-# Preview routing without executing
-/org Restructure engineering team --dry-run
-
-# Force specific domains
-/org Major initiative --domains make_eng,grow,people
-
-# Resume an interrupted session
-/org --resume org_20260227_143022
-
-# Single-domain (auto-routes to /run or /team with strategic brief)
-/org Fix critical auth bug
-```
-
-### Integration
-
-- **Delegates to /team**: Each domain executes via sequential `/team` invocations (dependency-ordered)
-- **Delegates to /run**: Single-domain simple tasks route through `/run` with strategic brief
-- **After /designer**: Use `/org` when a design spans multiple domains
-- **Strategic brief**: All downstream executions receive a strategic brief with mission, success criteria, and risk register
-
-### Tips
-
-1. **Multi-domain is the sweet spot**: /org shines when 2+ domains need coordinated work
-2. **Use --dry-run first**: See which domains and C-suite agents will be engaged
-3. **Be specific about scope**: "Launch product" is broad -- add specifics for better domain detection
-4. **Single-domain auto-routes**: /org smartly delegates to /run or /team when only one domain is needed
-5. **Check the strategic brief**: The brief in the session directory shows all decisions and risk analysis
+Same situations that previously called for `/org`: multi-domain initiatives, product launches, company restructures, major migrations, anything that needs a strategic brief with risk register, cross-domain success criteria, and dependency-ordered per-domain dispatch. The behavior is the same; the entry point is now `/team`.
 
 ---
 

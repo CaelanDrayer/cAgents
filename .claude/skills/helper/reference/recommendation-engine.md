@@ -14,7 +14,7 @@ The recommendation engine uses 5 weighted signals to score each candidate comman
 |--------|--------|--------------|
 | Keyword match | 0.30 | Count matching keywords from the intent classification tables below. The command whose keyword set has the most matches gets the full 0.30; others get proportional fractions (e.g., 2 matches out of a leader's 4 = 0.15). |
 | Project context | 0.30 | Read project files to infer domain and scope (see project context checks below). |
-| Complexity estimate | 0.20 | Estimate scope from the request: single file or narrow fix favors `/run` (full 0.20); multi-component or cross-cutting favors `/team`; multi-domain favors `/org`. |
+| Complexity estimate | 0.20 | Estimate scope from the request: single file or narrow fix favors `/run` (full 0.20); multi-component or cross-cutting favors `/team`; multi-domain favors `/team --strategic` (v12.2.0+; pre-v12.2.0 multi-domain favored the now-removed `/org`). |
 | Explicit intent | 0.10 | If the user directly references a command name ("use /run", "I want to improve"), give that command the full 0.10. Otherwise 0.00 for all. |
 | Request history | 0.10 | If the user recently mentioned planning or design in the same session, boost `/designer` by 0.10. If they mentioned review or audit, boost `/improve --mode review`. Otherwise 0.00. |
 
@@ -48,7 +48,7 @@ Request: "Build a REST API for user management"
 
 Signal 1 - Keyword match (0.30):
   "build" matches Build/Create intent -> /run gets 0.30
-  No matches for /improve, /team, /designer, /org
+  No matches for /improve, /team, /designer (pre-v12.2.0 also /org, now absorbed into /team strategic mode)
 
 Signal 2 - Project context (0.30):
   package.json found -> engineering hint -> /run +0.06, /improve +0.06
@@ -175,13 +175,15 @@ When the user wants both review and optimization with a single shared baseline:
 - "I need this done fast -- can we parallelize?" -> `/team {task}`
 - "Implement all three auth providers simultaneously" -> `/team Implement Google, GitHub, and email auth`
 
-### Cross-Domain / Strategic Intent -> /org
+### Cross-Domain / Strategic Intent -> /team strategic mode (v12.2.0+)
 
 **Signal words**: launch, restructure, migrate, company-wide, cross-team, strategic, multi-domain, executive, C-suite
 
 **Examples**:
-- "Launch the new product across engineering, marketing, and hiring" -> `/org Launch new product`
-- "Restructure the engineering org" -> `/org Restructure engineering team`
+- "Launch the new product across engineering, marketing, and hiring" -> `/team Launch new product` (strategic mode auto-enables when universal-router detects 2+ domains)
+- "Restructure the engineering org" -> `/team Restructure engineering team --strategic` (force-enable for single-domain when an executive frame is desired)
+
+(Pre-v12.2.0 these examples used `/org`; v12.2.0 absorbed /org into /team strategic mode.)
 
 ## Multi-Intent Detection
 

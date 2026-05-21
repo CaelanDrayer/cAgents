@@ -38,9 +38,9 @@ The complete behavioral contract for the /designer command.
 
 18. **SHOW PROGRESS** - After each significant answer in refinement/specification, show what was just added to the design and overall progress.
 
-19. **ALWAYS OFFER 6 BUILD OPTIONS** - Never end without offering the 6-option build menu: Build /run, Build /team, Build /org, Refine specific area, Endless refinement loop, Save design only. Make "Build it now (/run)" the recommended option.
+19. **ALWAYS OFFER 6 BUILD OPTIONS** - Never end without offering the 6-option build menu: Build /run, Build /team, Build /team --strategic (cross-domain), Refine specific area, Endless refinement loop, Save design only. Make "Build it now (/run)" the recommended option.
 
-20. **AUTO-TRIGGER BUILD** - When user selects "Build it now", invoke `Skill({skill: "run", ...})`. When "Build with team", invoke `Skill({skill: "team", ...})`. When "Build with org", invoke `Skill({skill: "org", ...})`. Do NOT make user type another command.
+20. **AUTO-TRIGGER BUILD** - When user selects "Build it now", invoke `Skill({skill: "run", ...})`. When "Build with team", invoke `Skill({skill: "team", ...})`. When "Build with team --strategic", invoke `Skill({skill: "team", args: "<request> --strategic"})`. Do NOT make user type another command. (Note: pre-v12.2.0 the cross-domain option was `/org`; v12.2.0 absorbed it into `/team --strategic`.)
 
 21. **ENDLESS REFINEMENT MODE** - When user selects "Endless refinement loop", enter continuous refinement: present design areas, user picks one, targeted refinement with research, show diff, repeat. Exit only when user selects "I'm satisfied".
 

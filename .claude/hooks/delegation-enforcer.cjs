@@ -3,7 +3,7 @@
  * Delegation Enforcer Hook - Hard delegation mandate for skill invocations
  * cAgents V10.22.6 - UserPromptSubmit hook
  *
- * Fires BEFORE SKILL.md loads when /run, /team, or /org is invoked.
+ * Fires BEFORE SKILL.md loads when /run or /team is invoked.
  * Injects a hard system message: the full delegation pipeline MUST execute.
  * Self-handling is a critical violation with no exceptions for task type or simplicity.
  *
@@ -17,10 +17,10 @@
 const { createHook } = require('./hook-utils.cjs');
 
 // Skills that require full pipeline delegation enforcement
-const ENFORCED_SKILLS = ['/run', '/team', '/org'];
+const ENFORCED_SKILLS = ['/run', '/team'];
 
 // Detect whether the user prompt is invoking an enforced skill.
-// Matches: "/run ...", "/team ...", "/org ..." at the start of the prompt
+// Matches: "/run ...", "/team ..." at the start of the prompt
 // (possibly after whitespace) or as a standalone invocation mid-prompt.
 function detectSkillInvocation(prompt) {
   if (!prompt) return null;

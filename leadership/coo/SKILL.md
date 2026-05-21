@@ -42,7 +42,7 @@ Translate strategy into execution, optimize processes, coordinate cross-function
 - Vendor selection and management
 - Process optimization or efficiency improvements
 - Organizational structure decisions
-- /org C-suite analysis for operate_ops domain
+- /team strategic mode C-suite analysis for operate_ops domain
 
 ## Controller Pattern
 
@@ -87,9 +87,9 @@ See @resources/operations.md for operational methodology.
 - **With CTO**: Define operational requirements
 - **With VP Engineering**: Coordinate engineering with other departments
 
-## /org Integration
+## /team Strategic Mode Integration
 
-When spawned by `/org` as the COO C-suite member:
+When spawned by `/team` in strategic mode as the COO C-suite member:
 - Performs domain analysis for operate_ops scope
 - Writes `domain_analysis_operate_ops.yaml`
 - Reviews strategic brief drafts and provides objections

@@ -453,7 +453,7 @@ function verifyCompletion(sessionDir) {
     const pipelineState = extractYamlValue(statusContent, 'pipeline_state');
 
     if (pipelineState) {
-      // /org and /run pipeline_state sessions
+      // /run pipeline_state sessions (also handles legacy org_* sessions)
       const activeStates = ['INIT', 'ORCHESTRATED', 'ANALYZED', 'DELIBERATED', 'BRIEFED', 'EXECUTED', 'PLANNED', 'DECOMPOSED', 'PROMPTS_READY', 'COORDINATED'];
       if (activeStates.includes(pipelineState)) {
         // Check if pipeline is actively running (recent state transition).
@@ -519,7 +519,7 @@ function verifyCompletion(sessionDir) {
   // 2. Coordination log presence enforcement (F-01)
   // If plan.yaml exists (indicating a /run or /team session with a planning phase),
   // and the session has progressed past coordinating, coordination_log.yaml MUST exist.
-  // Skip this check for /org and /review sessions which don't use plan.yaml.
+  // Skip this check for legacy org_* sessions and /review sessions which don't use plan.yaml.
   const planFile = path.join(sessionDir, 'workflow', 'plan.yaml');
   const hasPlan = fs.existsSync(planFile);
   if (hasPlan) {
@@ -717,14 +717,14 @@ function verifyCompletion(sessionDir) {
 
   // 5. Check coordination_log.yaml for work item completion
   // (renumbered from 2 after sentinel gate insertion, then from 3 after delegation check, then from 4 after coord_log enforcement)
-  // For /org sessions, also check integration_report.yaml and per-domain coordination logs
+  // For legacy org_* sessions, also check integration_report.yaml and per-domain coordination logs
   const coordFile = path.join(sessionDir, 'workflow', 'coordination_log.yaml');
   let coordContent = safeRead(coordFile);
 
-  // For /org sessions: check integration_report.yaml as the primary completion indicator
+  // For legacy org_* sessions: check integration_report.yaml as the primary completion indicator
   const integrationReport = safeRead(path.join(sessionDir, 'integration_report.yaml'));
   if (!coordContent && integrationReport) {
-    // /org session with integration report - check for unresolved issues
+    // Legacy org_* session with integration report - check for unresolved issues
     const unresolvedCount = countPattern(integrationReport, /status:\s*unresolved/g);
     if (unresolvedCount > 0) warnings.push(`${unresolvedCount} cross-domain issue(s) unresolved in integration report`);
   }
@@ -983,7 +983,7 @@ createHook('VerifyCompletion', async (input) => {
   const result = verifyCompletion(sessionDir);
 
   // Ensure pipeline_state is terminal so finalizeSessionLifecycle can run.
-  // Many sessions (especially /org) exit with pipeline_state still at "init"
+  // Many sessions (especially legacy org_* sessions) exit with pipeline_state still at "init"
   // because the agent didn't update status.yaml before stopping.
   try {
     const statusFile2 = path.join(sessionDir, 'status.yaml');

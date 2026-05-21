@@ -71,6 +71,18 @@ exceptions: none
 - Company-wide impact
 - Executive approval required
 
+## Domain Detection (Multi-Archetype Matching Pass)
+
+The keyword-matching pass scans the request against ALL archetype-root catalogs and tracks **every** archetype that matches, not just the single highest-scoring one. This enables downstream consumers (planner, /team strategic-mode auto-detection) to detect cross-domain requests without re-scanning. (Pre-v12.2.0 the downstream consumer was /org; v12.2.0 absorbed /org into /team strategic mode, which reads `domain_count` from universal-router to decide whether to engage C-suite Wave 0/1.)
+
+**Single-pass algorithm**:
+1. For each archetype root (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership), score the request against its keyword catalog.
+2. Record every archetype with a non-zero score in `detected_domains[]`.
+3. Set `domain` to the highest-scoring archetype (back-compat — unchanged semantics).
+4. Set `domain_count` to `len(detected_domains)`.
+
+A `domain_count >= 2` signals a cross-domain request and is consumed by the org-fold trigger in `/run` (v12.1.x+) to route the work through C-suite analysis before the standard pipeline.
+
 ## Routing Decision Format
 
 ```yaml
@@ -80,6 +92,11 @@ tier: {2-4}  # Minimum tier 2
 requires_controller: true  # ALWAYS true
 template: {template_name or "custom"}
 confidence: {0.0-1.0}
+
+# Domain detection (primary + multi-archetype tracking)
+domain: {highest_scoring_archetype}     # Back-compat — single highest-scoring archetype
+domain_count: {int}                     # NEW (v12.1.x): count of distinct archetype-root matches; equals len(detected_domains)
+detected_domains: [string]              # NEW (v12.1.x): full list of matched archetype roots, in score-descending order
 
 reasoning:
   template_matched: {yes/no}
@@ -96,5 +113,20 @@ workflow_configuration:
   requires_hitl_approval: {true for tier 4}
   coordination_approach: question_based
 ```
+
+### Example output (cross-domain request)
+
+```yaml
+# Request: "Launch new product with marketing campaign and engineering build-out"
+routing_decision:
+  tier: 3
+  domain: engineering           # primary (highest-scoring)
+  domain_count: 2               # two archetypes matched
+  detected_domains: [engineering, marketing]   # full match list
+```
+
+### Back-compat guarantee
+
+The `domain` field continues to return the **single highest-scoring archetype** exactly as in prior versions. Consumers that only read `domain` see unchanged behavior. `domain_count` and `detected_domains` are additive — agents that ignore them are unaffected.
 
 See @resources/routing-patterns.md for template matching and tier examples.

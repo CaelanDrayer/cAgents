@@ -47,8 +47,8 @@ const KEYWORD_ROUTES = [
   [/^(?:team|parallel|coordinate|orchestrate)\b/i, '/team', 'parallel multi-agent execution'],
   [/^(?:team up|work together|split up|divide and conquer)\b/i, '/team', 'parallel multi-agent execution'],
 
-  // /org triggers - strategic/company-wide
-  [/^(?:strategy|strategic|company-wide|cross-department|organization)\b/i, '/org', 'cross-domain C-suite orchestration'],
+  // /team strategic mode triggers - strategic/company-wide
+  [/^(?:strategy|strategic|company-wide|cross-department|organization)\b/i, '/team', 'cross-domain C-suite orchestration (strategic mode)'],
 ];
 
 // Phrases that should NOT trigger suggestions (questions, meta-commands, etc.)

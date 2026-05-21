@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.1.2"
+  version: "12.2.0"
   argument-hint: "[<topic>] [--deep] [--resume <id>] [--template <name>] [--brief <path>] [--iterate <session_id>]"
   user-invocable: "true"
   context: "none"
@@ -59,7 +59,7 @@ Parse `$ARGUMENTS` for:
 If no topic provided, ask the user what they want to design via AskUserQuestion.
 If `--deep` is provided, enable research agent spawning in ALL 6 phases. Without `--deep`, research agents only spawn in Refinement and Specification phases.
 If `--resume {id}` is provided, follow the session resume protocol — see @reference/session-resilience.md.
-If `--brief <path>` is provided, read the strategic brief and pre-populate Empathize/Define with mission, success criteria, and domain constraints from the brief. Align design validation criteria with the brief's success criteria. This enables /org integration.
+If `--brief <path>` is provided, read the strategic brief and pre-populate Empathize/Define with mission, success criteria, and domain constraints from the brief. Align design validation criteria with the brief's success criteria. This enables /team strategic-mode integration (v12.2.0+; pre-v12.2.0 the brief came from /org, which was absorbed into /team strategic mode).
 If `--iterate <session_id>` is provided, load the completed design from the previous session as a starting point. Skip Empathize+Define (context already established), present existing design for targeted modifications, and track changes as a design diff. Save as new session with `parent_session: {session_id}` in session.yaml.
 
 ## Initialize Session (FIRST — before any other work)
@@ -136,7 +136,7 @@ Detail the selected approach with architecture, flows, data models, security, te
 
 Generate production-ready artifacts from all gathered design information. Research agents ALWAYS spawned. **Do not enter this phase until ambiguity drops below 20%** — see @reference/ambiguity-scoring.md. Read pre-spawned `question_prep/specification_*.yaml`. Generate domain-specific artifacts (Software: user stories, technical spec, implementation checklist; Business: process flow, RACI, roadmap, change plan, risk register; Creative: story bible, character sheets, plot outline, world bible, style guide). Run 5-level validation (Completeness, Consistency, Feasibility, Quality, Codebase Compatibility). Assemble `design_document.md` from phase files (see @reference/document-assembly.md). Then offer to build via two sequential AskUserQuestion calls (max 4 options each):
 
-**Call 1** (build options): Build now (/run, recommended) | Build with team (/team) | Build with org (/org) | More options.
+**Call 1** (build options): Build now (/run, recommended) | Build with team (/team) | Build with team strategic mode (/team --strategic, cross-domain) | More options.
 
 **Call 2** (if "More options"): Refine area | Endless refine | Save only.
 

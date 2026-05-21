@@ -29,9 +29,9 @@ When answering questions about specific skills, **Read the actual SKILL.md file 
 |-------|---------------|
 | /run | `.claude/skills/run/SKILL.md` |
 | /designer | `.claude/skills/designer/SKILL.md` |
-| /improve | `.claude/skills/improve/SKILL.md` |
-| /team | `.claude/skills/team/SKILL.md` |
-| /org | `.claude/skills/org/SKILL.md` |
+| /improve | folded into `/run` via keyword router (v12.1.2; no separate SKILL.md) |
+| /team | `.claude/skills/team/SKILL.md` (includes strategic mode for cross-domain work in v12.2.0+) |
+| /org | REMOVED in v12.2.0 (absorbed into /team strategic mode; no SKILL.md) |
 | /helper | `.claude/skills/helper/SKILL.md` |
 
 ### What to Extract by Query Type

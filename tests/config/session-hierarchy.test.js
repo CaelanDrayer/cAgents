@@ -8,7 +8,12 @@ import { join } from 'path';
  * Validates:
  * 1. Parent session ID extraction logic from --session flag paths
  * 2. /team SKILL.md contains Session Hierarchy documentation section
- * 3. /org SKILL.md nesting diagram is accurate (no /run via Skill, has execution agents via Agent)
+ * 3. /team SKILL.md (strategic mode) nesting diagram is accurate
+ *    (no /run via Skill, has execution agents via Agent)
+ *
+ * v12.2.0: /org was absorbed into /team strategic mode. The historical
+ * /org-specific assertions are now exercised against /team SKILL.md (which
+ * houses the strategic-mode wave loop) and its strategic-mode reference docs.
  *
  * Related issues: ISSUE-001, ISSUE-002, ISSUE-004
  */
@@ -28,9 +33,9 @@ function extractParentSessionId(sessionFlag) {
 }
 
 describe('Parent Session ID Extraction', () => {
-  it('extracts session ID from a full org->engineering path', () => {
-    const input = 'cagents-memory/sessions/org_launch-product_260317_001/engineering';
-    expect(extractParentSessionId(input)).toBe('org_launch-product_260317_001');
+  it('extracts session ID from a full team->engineering path', () => {
+    const input = 'cagents-memory/sessions/team_launch-product_260317_001/engineering';
+    expect(extractParentSessionId(input)).toBe('team_launch-product_260317_001');
   });
 
   it('extracts session ID from a team session path with trailing slash', () => {
@@ -49,18 +54,18 @@ describe('Parent Session ID Extraction', () => {
   });
 
   it('returns null for path without sessions/ segment', () => {
-    const input = 'cagents-memory/other/org_foo_260317_001/engineering';
+    const input = 'cagents-memory/other/team_foo_260317_001/engineering';
     expect(extractParentSessionId(input)).toBe(null);
   });
 
   it('extracts session ID from an absolute path', () => {
-    const input = '/home/user/cAgents/cagents-memory/sessions/org_foo_260317_002/business';
-    expect(extractParentSessionId(input)).toBe('org_foo_260317_002');
+    const input = '/home/user/cAgents/cagents-memory/sessions/team_foo_260317_002/business';
+    expect(extractParentSessionId(input)).toBe('team_foo_260317_002');
   });
 
   it('handles path with only sessions/ and a session ID (no subdirectory)', () => {
-    const input = 'cagents-memory/sessions/org_foo_260317_001';
-    expect(extractParentSessionId(input)).toBe('org_foo_260317_001');
+    const input = 'cagents-memory/sessions/team_foo_260317_001';
+    expect(extractParentSessionId(input)).toBe('team_foo_260317_001');
   });
 
   it('extracts from paths with different session type prefixes', () => {
@@ -74,79 +79,101 @@ describe('Parent Session ID Extraction', () => {
 });
 
 // ============================================================
-// /team SKILL.md documentation contracts
+// /team documentation contracts (SKILL.md body + reference docs)
+//
+// Per Three-Tier Progressive Disclosure (.claude/rules/core/skill-format.md),
+// detailed content lives under .claude/skills/team/reference/ and is referenced
+// from SKILL.md via @reference/X.md links. The hierarchy-specific content sits
+// in reference/parent-session-extraction.md; SKILL.md keeps only the headline
+// link and short summary so the body stays under the size ceiling.
 // ============================================================
-describe('/team SKILL.md documentation', () => {
+describe('/team documentation (SKILL.md + reference docs)', () => {
   const teamSkill = readFileSync(
     join(process.cwd(), '.claude', 'skills', 'team', 'SKILL.md'),
     'utf8'
   );
+  const teamParentSessionDoc = readFileSync(
+    join(process.cwd(), '.claude', 'skills', 'team', 'reference', 'parent-session-extraction.md'),
+    'utf8'
+  );
 
-  it('contains a Session Hierarchy section', () => {
-    expect(teamSkill).toContain('## Session Hierarchy');
+  it('SKILL.md contains a Session Hierarchy section (or links to the reference doc)', () => {
+    expect(
+      teamSkill.includes('## Session Hierarchy') ||
+        teamSkill.includes('@reference/parent-session-extraction.md') ||
+        teamSkill.includes('parent-session-extraction.md'),
+      'team SKILL.md should either contain a Session Hierarchy section or @-link the reference doc'
+    ).toBe(true);
   });
 
   it('documents that /team creates team_ sessions (not run_)', () => {
-    // Check both the assertion about team_ and the explicit NOT run_ statement
-    expect(teamSkill).toContain('team_*');
-    expect(teamSkill).toMatch(/does NOT create.*run_|NOT create.*run_\*/);
+    // Either SKILL.md or the reference doc must state this contract.
+    const combined = teamSkill + '\n' + teamParentSessionDoc;
+    expect(combined).toContain('team_*');
+    expect(combined).toMatch(/does NOT create.*run_|NOT create.*run_\*/);
   });
 
   it('documents the max 2-level hierarchy constraint', () => {
-    expect(teamSkill).toMatch(/2-level|two-level|max 2 levels|max 2-level/i);
+    const combined = teamSkill + '\n' + teamParentSessionDoc;
+    expect(combined).toMatch(/2-level|two-level|max 2 levels|max 2-level/i);
   });
 
   it('documents controllers tracked via agent_tree.yaml', () => {
-    expect(teamSkill).toContain('agent_tree.yaml');
+    const combined = teamSkill + '\n' + teamParentSessionDoc;
+    expect(combined).toContain('agent_tree.yaml');
   });
 
   it('documents child_controllers.yaml manifest', () => {
-    expect(teamSkill).toContain('child_controllers.yaml');
+    const combined = teamSkill + '\n' + teamParentSessionDoc;
+    expect(combined).toContain('child_controllers.yaml');
   });
 
-  it('contains Parent Session Extraction subsection in Step 2a', () => {
-    expect(teamSkill).toContain('Parent Session Extraction');
+  it('contains Parent Session Extraction subsection', () => {
+    const combined = teamSkill + '\n' + teamParentSessionDoc;
+    expect(combined).toContain('Parent Session Extraction');
   });
 
   it('has updated instruction.yaml template with EXTRACTED_PARENT_SESSION_ID', () => {
-    expect(teamSkill).toContain('EXTRACTED_PARENT_SESSION_ID');
+    const combined = teamSkill + '\n' + teamParentSessionDoc;
+    expect(combined).toContain('EXTRACTED_PARENT_SESSION_ID');
   });
 
   it('documents the extraction logic for the --session flag path', () => {
     // Should mention splitting by / to find sessions/ segment
-    expect(teamSkill).toMatch(/split.*sessions|sessions.*split/i);
+    const combined = teamSkill + '\n' + teamParentSessionDoc;
+    expect(combined).toMatch(/split.*sessions|sessions.*split/i);
   });
 });
 
 // ============================================================
-// /org SKILL.md nesting diagram contracts
+// /team strategic mode nesting diagram contracts (v12.2.0)
+//
+// Pre-v12.2.0 these assertions lived against /org SKILL.md. v12.2.0 absorbed
+// /org into /team strategic mode; the nesting-model contract now lives in
+// /team SKILL.md + .claude/skills/team/reference/architecture.md.
 // ============================================================
-describe('/org SKILL.md nesting diagram', () => {
-  const orgSkill = readFileSync(
-    join(process.cwd(), '.claude', 'skills', 'org', 'SKILL.md'),
+describe('/team strategic mode nesting diagram (replaces /org)', () => {
+  const teamArchitecture = readFileSync(
+    join(process.cwd(), '.claude', 'skills', 'team', 'reference', 'architecture.md'),
     'utf8'
   );
 
-  it('nesting diagram does NOT show /run via Skill as a level', () => {
-    // The old incorrect diagram had '/run via Skill (level 0 fork)'
-    // This should no longer appear in the nesting model diagram
-    expect(orgSkill).not.toContain('/run via Skill (level 0 fork)');
+  it('nesting diagram does NOT show /run via Skill as a teammate-level fork', () => {
+    // The old incorrect /org diagram had '/run via Skill (level 0 fork)' for teammates.
+    // /team architecture explicitly documents why no Skill("run") fork is used.
+    expect(teamArchitecture).not.toContain('/run via Skill (level 0 fork)');
   });
 
-  it('nesting diagram shows execution agents via Agent', () => {
-    expect(orgSkill).toContain('execution agents via Agent');
+  it('nesting model documents execution agents via Agent tool', () => {
+    expect(teamArchitecture).toMatch(/execution agents.*via Agent/);
   });
 
-  it('nesting diagram shows level 2 for execution agents', () => {
-    expect(orgSkill).toContain('level 2');
+  it('nesting model documents 2-level depth (teammate -> controller -> execution)', () => {
+    expect(teamArchitecture).toMatch(/2 levels|2-level/);
   });
 
-  it('contains a note about the 2-level nesting constraint', () => {
-    expect(orgSkill).toMatch(/2-level.*nesting|nesting.*2-level/i);
-  });
-
-  it('Step 7 description does not reference /run invocation by teammates', () => {
-    // Old text: "each teammate to invoke /run without nesting issues"
-    expect(orgSkill).not.toContain('each teammate to invoke /run');
+  it('explicitly forbids teammates from invoking /run via Skill', () => {
+    // /team architecture must explain why teammates DON'T invoke /run via Skill.
+    expect(teamArchitecture).toMatch(/no Skill\("run"\) fork|teammates do NOT invoke \/run|Why no Skill/i);
   });
 });

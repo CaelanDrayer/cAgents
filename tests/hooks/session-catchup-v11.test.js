@@ -75,23 +75,22 @@ describe('session-catchup.cjs V11.0 removed-skill suggestions (Bug-1)', () => {
     expect(mentionsLiveSkill(ctx, '/debug')).toBe(false);
   });
 
-  it('emitted additionalContext still advertises live V11 skills', () => {
-    // After fix, the hook should still mention the canonical V11 skill set.
+  it('emitted additionalContext still advertises live V12 skills', () => {
+    // After fix, the hook should still mention the canonical V12 skill set.
+    // v12.2.0: /org was absorbed into /team strategic mode; /run and /team are
+    // the surviving orchestration skills that may never self-handle.
     const result = runHook({});
     const ctx = result?.hookSpecificOutput?.additionalContext || '';
-    // /run, /team, /org are listed as the orchestration skills that may
-    // never self-handle. /improve is the V11 unified review/optimize entry
-    // point — at least one of these must remain in the emitted context.
     expect(mentionsLiveSkill(ctx, '/run')).toBe(true);
     expect(mentionsLiveSkill(ctx, '/team')).toBe(true);
-    expect(mentionsLiveSkill(ctx, '/org')).toBe(true);
   });
 
-  it('emitted additionalContext mentions /improve (V11 unified entry point)', () => {
-    // /improve subsumes /review and /optimize in V11.0. The fix should
-    // re-route any removed-skill mentions to /improve --mode {review,optimize,full}.
+  it('emitted additionalContext does NOT advertise /org as a live skill (v12.2.0 removal)', () => {
+    // v12.2.0 removed /org (absorbed into /team strategic mode). The hook
+    // must not advertise it as a live skill — mirror the V11.0 removal
+    // assertions for /review, /optimize, /context, /debug above.
     const result = runHook({});
     const ctx = result?.hookSpecificOutput?.additionalContext || '';
-    expect(ctx).toMatch(/\/improve/);
+    expect(mentionsLiveSkill(ctx, '/org')).toBe(false);
   });
 });

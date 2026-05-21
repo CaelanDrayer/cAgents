@@ -135,7 +135,7 @@ The rules in this directory support the six V11.0 skills. Skills `/review`, `/op
 |-------|------------------------|---------|
 | `/run` | `/context`, `/debug` (via `--mode debug`) | Single-domain task execution |
 | `/team` | — | Parallel multi-agent execution with wave-based gates |
-| `/org` | — | Cross-domain C-suite strategic coordination |
+| ~~`/org`~~ (removed in v12.2.0) | absorbed into `/team` strategic mode | Cross-domain C-suite strategic coordination — now lives in `/team` (auto-enables when `universal-router.domain_count >= 2`; force via `--strategic` / `--no-strategic`) |
 | `/designer` | — | Interactive design exploration via Q&A |
 | `/improve` | `/review`, `/optimize` (via `--mode review\|optimize\|full`) | Unified review + optimize engine |
 | `/helper` | — | Command guide and skill recommender |

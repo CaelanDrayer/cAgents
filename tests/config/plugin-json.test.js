@@ -59,12 +59,15 @@ describe('root plugin.json', () => {
     expect(missing).toEqual([]);
   });
 
-  it('description reflects v12.1.2 5-skill catalog (no standalone /improve)', () => {
+  it('description reflects v12.2.0 4-skill catalog (no standalone /improve, no /org)', () => {
     const plugin = loadPluginJson(PLUGIN_PATH);
-    // v12.1.2: /improve folded into /run via keyword router; 5 user skills now.
-    expect(plugin.description).toMatch(/5 user skills/);
+    // v12.2.0: /org absorbed into /team strategic mode; 4 user skills now.
+    // (v12.1.2 had previously folded /improve into /run, leaving 5 skills.)
+    expect(plugin.description).toMatch(/4 user skills/);
     // The description should NOT advertise /improve as a standalone skill.
     expect(plugin.description).not.toMatch(/\/improve audits/i);
+    // The description should NOT advertise /org as a live skill (it was absorbed into /team).
+    expect(plugin.description).not.toMatch(/\/org\s+(?:routes|orchestrates|coordinates)/i);
   });
 
   it('should include agents from all 9 archetype roots (v11.1.0 builder-role tree)', () => {

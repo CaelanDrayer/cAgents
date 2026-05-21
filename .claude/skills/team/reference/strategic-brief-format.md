@@ -2,6 +2,8 @@
 
 The full schema for `strategic_brief.yaml` and the validation protocol that ensures it is complete, measurable, and acyclic.
 
+Used by `/team` in strategic mode (introduced in v12.2.0). The CEO role is played by the `/team` strategic-mode prefix waves (Wave 0 C-suite analysis, Wave 1 objection phase, Wave 2 brief synthesis); subsequent waves dispatch per-domain work according to the brief's `domain_assignments`.
+
 ## Step 6: Finalize Strategic Brief (DELIBERATED -> BRIEFED)
 
 Write final `strategic_brief.yaml` incorporating all resolutions.
@@ -16,10 +18,15 @@ strategic_brief:
     - "{measurable criterion 2}"
   domain_assignments:
     {domain_key}:
+      name: "{domain_key}"               # e.g., engineering, creative, growth
       csuite: cagents:{agent}
       scope: "{what this domain handles}"
       work_items: [TASK-xx, ...]
       priority: high|medium|low
+      work_required: ["{summary work item 1}", "{summary work item 2}"]
+      estimated_complexity: simple|moderate|complex
+      dependency_type: independent | dependent_on    # NEW (v12.2.0)
+      dependent_on: ["{upstream_domain_key_1}", ...] # NEW (v12.2.0) — present ONLY when dependency_type == dependent_on
   cross_domain_dependencies:
     - from: {domain}.{WI}
       to: {domain}.{WI}
@@ -32,7 +39,7 @@ strategic_brief:
       owner: cagents:{agent}
   escalation_contacts:
     {domain}: cagents:{csuite}
-    ceo: /org
+    ceo: /team (strategic mode)
   domain_status:
     {domain}:
       progress: 0
@@ -53,9 +60,59 @@ timestamp: "{ISO_TIMESTAMP}"
 outputs_produced: [strategic_brief.yaml]
 ```
 
+## domain_assignments Schema Extensions (v12.2.0)
+
+Two new fields position at the **top level of each `domain_assignments` entry** (peer to `name`, `priority`, `work_required`, etc.). These fields drive the post-brief dispatch logic in `/team` strategic mode: independent domains dispatch in parallel via the Agent tool, dependent domains dispatch sequentially via the Skill tool with `--brief` passing.
+
+### dependency_type (required)
+
+Allowed values: `independent` | `dependent_on`
+
+- **`independent`** — the domain's work items can begin immediately once the strategic brief is finalized. No upstream domain output is required as input. Independent domains are dispatched **in parallel** during the per-domain wave (Wave 3+ in /team strategic mode), using the Agent tool to spawn the domain controller.
+- **`dependent_on`** — the domain's work items require output from one or more upstream domains before they can begin. Dependent domains are dispatched **sequentially** after their upstream dependencies complete, via `Skill(/run --brief {strategic_brief.yaml} --domain {key})` so the upstream outputs are available as context.
+
+If `dependency_type` is omitted from an entry, the planner SHOULD treat the entry as `independent` and emit a warning that the field is missing (the field becomes required in v12.3.0).
+
+### dependent_on (optional — required when dependency_type == dependent_on)
+
+Allowed value: an array of `domain_key` strings naming upstream domains whose outputs the dependent domain needs.
+
+- Must contain at least one entry when `dependency_type` is `dependent_on`.
+- Each listed domain_key MUST exist as another entry in `domain_assignments` and MUST be either `independent` or upstream of this entry in the dependency graph (no cycles).
+- The dependency graph formed by `dependent_on` arrays MUST be acyclic. Cycle detection is performed during Validation Point 3 (`dependency_graph_acyclic` check below).
+
+Example:
+```yaml
+domain_assignments:
+  engineering:
+    name: engineering
+    csuite: cagents:cto
+    scope: "Backend API and database schema"
+    work_items: [TASK-01, TASK-02]
+    priority: high
+    dependency_type: independent
+  growth:
+    name: growth
+    csuite: cagents:cro
+    scope: "Launch campaign and SEO"
+    work_items: [TASK-05, TASK-06]
+    priority: high
+    dependency_type: dependent_on
+    dependent_on: [engineering, creative]
+  creative:
+    name: creative
+    csuite: cagents:cco
+    scope: "Brand visuals and copy"
+    work_items: [TASK-03, TASK-04]
+    priority: medium
+    dependency_type: independent
+```
+
+In this example, `engineering` and `creative` dispatch in parallel during the first per-domain wave; `growth` waits and dispatches after both complete (because `growth` depends on both per its `dependent_on` list).
+
 ## Cross-Domain Validation Protocol (V10.23.0)
 
-Every state transition in the /org pipeline MUST include structured validation. The CEO validates outputs at 5 checkpoints to ensure cross-domain consistency and completeness.
+Every state transition in the `/team` strategic-mode pipeline MUST include structured validation. The strategic-mode lead (formerly the CEO role) validates outputs at 5 checkpoints to ensure cross-domain consistency and completeness.
 
 ### Validation Point 1: Pre-Deliberation (after ANALYZED)
 
@@ -130,9 +187,19 @@ strategic_brief_validation:
       domains_in_assignments: [{domain_keys}]
       all_domains_assigned: true
       passed: true
+    domain_dependency_type_declared:        # NEW (v12.2.0)
+      entries_total: {N}
+      entries_with_dependency_type: {N}
+      entries_missing_dependency_type: []   # MUST be empty for PASS in v12.3.0+
+      passed: true
+    dependent_on_well_formed:                # NEW (v12.2.0)
+      entries_with_dependency_type_dependent_on: {N}
+      entries_with_non_empty_dependent_on: {N}
+      entries_referencing_unknown_domain: []
+      passed: true
     dependency_graph_acyclic:
       edges: {N}
-      cycles_found: 0
+      cycles_found: 0   # cycles detected in the dependent_on graph cause failure
       passed: true
   overall: PASS
   timestamp: "{ISO_TIMESTAMP}"
@@ -204,10 +271,10 @@ integration_validation:
 
 ### Validation Storage
 
-All validation results are appended to `${SESSION_DIR}/workflow/org_validations.yaml`:
+All validation results are appended to `${SESSION_DIR}/workflow/strategic_validations.yaml`:
 
 ```yaml
-org_validations:
+strategic_validations:
   - checkpoint: "after_analyzed"
     overall: PASS
     checks: {...}
@@ -236,6 +303,6 @@ org_validations:
 |-----------|---------------|
 | Pre-deliberation | Re-spawn missing/empty C-suite agents (1 retry). If still fails, proceed with available analyses and note gaps. |
 | Post-deliberation | Re-run objection phase for domains with unresolved blocking objections (1 retry). If contradictions persist, escalate to user. |
-| Strategic brief | Fix missing fields inline. If criteria are unmeasurable, add measurement methods. If dependency graph is cyclic, break cycles by reordering. |
+| Strategic brief | Fix missing fields inline. If criteria are unmeasurable, add measurement methods. If `dependency_type` is missing on any entry, default to `independent` and emit warning. If `dependent_on` references an unknown domain or forms a cycle, escalate to user — no auto-fix. |
 | Post-execution | For incomplete domains: report partial results. For unmet criteria: check if evidence exists but was not mapped. For unresolved escalations: escalate to user. |
-| Integration | For unsatisfied dependencies: check if outputs exist in unexpected locations. For conflicts: CEO resolves by priority. For missing deliverables: document gaps in integration_report.yaml. |
+| Integration | For unsatisfied dependencies: check if outputs exist in unexpected locations. For conflicts: strategic-mode lead resolves by priority. For missing deliverables: document gaps in integration_report.yaml. |

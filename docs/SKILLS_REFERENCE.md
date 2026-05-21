@@ -1,25 +1,23 @@
 # Skills Reference
 
-**Version**: V11.0.1 current
+**Version**: V12.2.0 current
 
-Complete reference for the 6 user-invocable skills shipped with cAgents: `/designer`, `/helper`, `/improve`, `/org`, `/run`, `/team`. Use `/helper` for interactive, in-terminal guidance, or read this document end-to-end to understand the full skill ecosystem.
+Complete reference for the 4 user-invocable skills shipped with cAgents (v12.2.0+): `/designer`, `/helper`, `/run`, `/team`. Use `/helper` for interactive, in-terminal guidance, or read this document end-to-end to understand the full skill ecosystem.
 
-_V11.0 removed `/review`, `/optimize`, `/context`, and `/debug` — see [MIGRATION-V11.md](./MIGRATION-V11.md). A summary of the migration paths is at the [end of this document](#removed-in-v110)._
+_V11.0 removed `/review`, `/optimize`, `/context`, and `/debug` — see [MIGRATION-V11.md](./MIGRATION-V11.md). v12.1.2 folded `/improve` into `/run` via a first-word keyword router. v12.2.0 removed `/org` and absorbed cross-domain coordination into `/team` strategic mode. A summary of removed skills and migration paths is at the [end of this document](#removed-in-v110-and-v12)._
 
 ---
 
 ## Overview
 
-cAgents ships exactly 6 user-invocable skills: `designer`, `helper`, `improve`, `org`, `run`, `team`. Every skill lives under `.claude/skills/{name}/SKILL.md` and is registered through `.claude-plugin/plugin.json`. All six skills run through the same event-driven pipeline architecture; they differ in scope, interactivity, and parallelism.
+cAgents v12.2.0+ ships exactly 4 user-invocable skills: `designer`, `helper`, `run`, `team`. Every skill lives under `.claude/skills/{name}/SKILL.md` and is registered through `.claude-plugin/plugin.json`. All four skills run through the same event-driven pipeline architecture; they differ in scope, interactivity, and parallelism. The `/improve` skill was folded into `/run` (v12.1.2 keyword router); the `/org` skill was absorbed into `/team` strategic mode (v12.2.0).
 
 | Skill | Context | Agent | Description |
 |-------|---------|-------|-------------|
 | `/designer` | `none` | `false` | Guided design exploration that produces implementation-ready documents through structured Q&A |
 | `/helper` | `none` | `false` | Explains cAgents commands and recommends the right one for your task |
-| `/improve` | `fork` | `true` | Unified quality engine for review, measurable optimization, and the combined full pipeline |
-| `/org` | `none` | `true` | Coordinates C-suite agents across domains for strategic, cross-domain initiatives |
-| `/run` | `none` | `true` | Executes any single-domain task through auto-routed controller and specialist agents |
-| `/team` | `fork` | `true` | Parallel multi-agent execution with wave-based quality gates |
+| `/run` | `none` | `true` | Executes any single-domain task through auto-routed controller and specialist agents; also handles review/optimize/full modes via the v12.1.2 keyword router (`run review …`, `run optimize …`, `run improve …`) |
+| `/team` | `fork` | `true` | Parallel multi-agent execution with wave-based quality gates; strategic mode (auto-enabled when `universal-router.domain_count >= 2`, or via `--strategic`) handles the cross-domain C-suite work previously done by `/org` |
 
 `Context` values are the literal `metadata.context` frontmatter values: `none` runs the skill inline in the main conversation; `fork` spawns the skill in an isolated subagent context. `Agent` indicates whether the skill spawns subagents to do its work.
 
@@ -33,18 +31,19 @@ Use the table below to pick the right skill at a glance. For a deeper interactiv
 |------|-------|
 | Build, fix, write, or implement single-domain work | `/run` |
 | Run 3+ work items in parallel with quality gates | `/team` |
-| Coordinate strategy across 2+ business domains | `/org` |
+| Coordinate strategy across 2+ business domains | `/team` (strategic mode auto-enables, or `--strategic` to force) |
 | Plan or design before building | `/designer` |
-| Audit code, content, or infrastructure (review only) | `/improve --mode review` |
-| Apply measurable performance, cost, or quality improvements | `/improve --mode optimize` |
-| Combine review and optimization in one pass | `/improve --mode full` |
+| Audit code, content, or infrastructure (review only) | `/run review <target>` (or `/run --mode review`) |
+| Apply measurable performance, cost, or quality improvements | `/run optimize <target>` (or `/run --mode optimize`) |
+| Combine review and optimization in one pass | `/run improve <target>` (or `/run --mode full`) |
 | Decide which skill to use | `/helper` |
 
 ### Decision tree
 
 ```
 Need a strategic, multi-domain initiative (engineering + marketing, etc.)?
-  YES -> /org
+  YES -> /team (strategic mode auto-enables; force with --strategic) [v12.2.0+]
+         (Pre-v12.2.0 this was /org, now absorbed into /team strategic mode.)
   NO  v
 
 Want to clarify requirements through Q&A before building?
@@ -66,7 +65,7 @@ Have 3+ independent work items that can run in parallel?
 
 ## Per-Skill Reference
 
-Each section below covers one skill. Skills are listed alphabetically: `/designer`, `/helper`, `/improve`, `/org`, `/run`, `/team`.
+Each section below covers one skill. Skills are listed alphabetically: `/designer`, `/helper`, `/run`, `/team`. (Pre-v12.2.0 also included `/improve` and `/org` — both removed; their replacements are documented in the [removed-skills section](#removed-in-v110-and-v12).)
 
 ### /designer
 
@@ -86,7 +85,7 @@ Each section below covers one skill. Skills are listed alphabetically: `/designe
 | `--resume <session_id>` | Resume a paused design session |
 | `--iterate <session_id>` | Load a completed design and apply targeted modifications |
 | `--template <name>` | Start from a built-in design template |
-| `--brief <path>` | Pre-populate from an `/org` strategic brief |
+| `--brief <path>` | Pre-populate from a strategic brief (produced by `/team` strategic mode in v12.2.0+, or pre-v12.2.0 `/org`) |
 
 **Example invocation**:
 
@@ -106,7 +105,7 @@ Each section below covers one skill. Skills are listed alphabetically: `/designe
 **Purpose**: Explains cAgents commands and recommends the right one for your task. `/helper` does not execute work — it teaches the skill ecosystem, offers natural-language recommendations, and shows side-by-side comparisons.
 
 **When to use**:
-- Choosing between `/run`, `/team`, `/org`, `/improve`, and `/designer`
+- Choosing between `/run`, `/team` (with or without strategic mode), and `/designer`
 - Looking up flags or examples for a specific skill
 - Diagnosing why a skill is not behaving as expected (`--troubleshoot`)
 - Onboarding a new user to cAgents
@@ -172,37 +171,21 @@ Each section below covers one skill. Skills are listed alphabetically: `/designe
 
 ---
 
-### /org
+### /org — REMOVED in v12.2.0
 
-**Purpose**: Routes strategic, cross-domain initiatives through a C-suite hierarchy. The CEO (the `/org` skill itself) engages dependency-ordered C-suite agents for domain analysis, runs a two-phase deliberation, produces a strategic brief, and then delegates to sequential `/team` runs per domain. Use when work spans 2+ business domains or requires executive analysis.
+`/org` was removed in v12.2.0 and absorbed into `/team` strategic mode. Cross-domain coordination — CEO + C-suite deliberation, strategic brief, dependency-ordered per-domain dispatch — now runs inside `/team` when `universal-router.domain_count >= 2`. The 12 leadership agents are preserved at their existing locations and act as Wave 0/1 teammates inside `/team` strategic mode.
 
-**When to use**:
-- Cross-domain initiatives (engineering + growth, engineering + people, etc.)
-- Org-wide planning, restructuring, or expansion
-- Producing a strategic brief that downstream `/team` runs can consume
-- Single-domain work that still needs executive framing (use `/org --quick`)
+**Migration**:
 
-**Key flags**:
+| Pre-v12.2.0 (/org) | v12.2.0+ (/team strategic mode) |
+|--------------------|---------------------------------|
+| `/org <request>` | `/team <request>` (strategic mode auto-enables for multi-domain) |
+| `/org <request> --quick` | `/team <request> --strategic` (force-enable for single-domain) |
+| `/org <request> --dry-run` | `/team <request> --dry-run` |
+| `/org <request> --domains <d1,d2>` | `/team <request>` (universal-router infers domains from request keywords) |
+| `/org --resume <session_id>` | `/team --resume <session_id>` |
 
-| Flag | Purpose |
-|------|---------|
-| `--dry-run` | Preview routing and C-suite selection |
-| `--quick` | Skip the deliberation phase, go directly to brief |
-| `--domains <d1,d2>` | Limit analysis to specific C-suite domains |
-| `--resume <session_id>` | Resume a previous `/org` session |
-
-**Example invocation**:
-
-```bash
-/org Launch new product with campaign
-/org Restructure engineering team
-/org --domains engineering,people Hire 10 senior developers
-```
-
-**Session artifacts**:
-- `workflow/strategic_brief.yaml` — CEO strategic brief consumed by downstream `/team` runs
-- Per-domain `analysis.yaml` from each engaged C-suite agent
-- Per-domain `/team` session output
+See `.claude/skills/team/reference/strategic-mode.md` for the full protocol, brief schema, escalation behavior, and examples.
 
 ---
 
@@ -227,7 +210,7 @@ Each section below covers one skill. Skills are listed alphabetically: `/designe
 | `--from-review` | Read `review_report.yaml` and create fix work items |
 | `--from-designer` | Read a design document and use it as the implementation spec |
 | `--resume <session_id>` | Resume a previous session from the last checkpoint |
-| `--brief <path>` | Load a strategic brief produced by `/org` |
+| `--brief <path>` | Load a strategic brief (produced by `/team` strategic mode in v12.2.0+, or pre-v12.2.0 `/org`) |
 | `--interactive` | Pause at decision points for user input |
 
 **Example invocation**:
@@ -283,14 +266,14 @@ Each section below covers one skill. Skills are listed alphabetically: `/designe
 
 ## Comparison Summary
 
-| Aspect | `/designer` | `/helper` | `/improve` | `/org` | `/run` | `/team` |
-|--------|-------------|-----------|------------|--------|--------|---------|
-| Interactive | Yes (mandatory) | Yes | No | No | No | No |
-| Spawns subagents | Yes (research) | No | Yes | Yes (C-suite + teams) | Yes | Yes (teammates) |
-| Parallel execution | No | No | Per-mode | Per-domain `/team` runs | No (use `--team`) | Yes (waves) |
-| Scope | Single design | Documentation | Single target | 2+ domains | Single domain | Single domain |
-| Context mode | `none` | `none` | `fork` | `none` | `none` | `fork` |
-| Output | Design document | Recommendations | Review and/or optimization report | Strategic brief + per-domain `/team` runs | Implementation + validation | Implementation + per-wave coordination |
+| Aspect | `/designer` | `/helper` | `/run` | `/team` |
+|--------|-------------|-----------|--------|---------|
+| Interactive | Yes (mandatory) | Yes | No | No |
+| Spawns subagents | Yes (research) | No | Yes | Yes (teammates; C-suite teammates in strategic mode) |
+| Parallel execution | No | No | No (use `--team` to upgrade) | Yes (waves) |
+| Scope | Single design | Documentation | Single domain (incl. review/optimize/full via keyword router) | Single or cross-domain (strategic mode for 2+ domains) |
+| Context mode | `none` | `none` | `none` | `fork` |
+| Output | Design document | Recommendations | Implementation + validation (and/or review/optimization report when run in review/optimize/full mode) | Implementation + per-wave coordination (plus strategic brief in strategic mode) |
 
 ---
 
@@ -316,9 +299,9 @@ Skills can be composed by passing structured output from one to the next.
 
 `/improve --mode review` writes `workflow/review_report.yaml`; `/run --from-review` reads it and auto-creates fix work items.
 
-### Org then team (automatic)
+### Strategic mode (cross-domain, automatic — v12.2.0+ replacement for the old /org -> /team chain)
 
-`/org` automatically generates `workflow/strategic_brief.yaml` and invokes `/team --brief <path>` per relevant domain. You do not invoke this chain manually.
+`/team` strategic mode auto-enables when `universal-router.domain_count >= 2`. The wave-0/1/2 C-suite deliberation produces `workflow/strategic_brief.yaml`, then waves 3..N execute per-domain (replacing the old `/org` -> sequential `/team --brief` chain with a single nested-wave run). You do not invoke this chain manually.
 
 ### Optimize then validate
 
@@ -341,7 +324,7 @@ All skills write artifacts to `cagents-memory/sessions/{session_id}/`. Session I
 | `workflow/review_report.yaml` | `/improve --mode review` | `/run --from-review` |
 | `workflow/optimization_report.yaml` | `/improve --mode optimize` | user |
 | `workflow/design_document.yaml` | `/designer` | `/run --from-designer` |
-| `workflow/strategic_brief.yaml` | `/org` | `/team --brief` |
+| `workflow/strategic_brief.yaml` | `/team` strategic mode (Wave 0/1/2 deliberation) — pre-v12.2.0 produced by `/org` | downstream per-domain waves; `/run --brief` for ad-hoc consumers |
 | `team/task_list.yaml` | `/team` | teammates, lead |
 
 ---
@@ -353,13 +336,13 @@ All skills write artifacts to `cagents-memory/sessions/{session_id}/`. Session I
 | `/designer` | `--deep`, `--resume <id>`, `--iterate <id>`, `--template <name>`, `--brief <path>` |
 | `/helper` | `--compare`, `--flags <cmd>`, `--examples`, `--quick`, `--topic <topic>`, `--troubleshoot <cmd>` |
 | `/improve` | `--mode review\|optimize\|full`, `--focus <area>`, `--auto-fix`, `--severity <level>`, `--baseline`, `--suppress <id>`, `--benchmark <tool>`, `--dry-run`, `--rollback` |
-| `/org` | `--dry-run`, `--quick`, `--domains <d1,d2>`, `--resume <id>` |
+| ~~`/org`~~ (removed v12.2.0; use `/team --strategic`) | n/a — flags migrated: `--dry-run` -> `/team --dry-run`; `--quick` -> `/team --strategic`; `--domains` -> auto-inferred by universal-router; `--resume` -> `/team --resume <team_session_id>` |
 | `/run` | `--dry-run`, `--quiet`, `--team`, `--analytics`, `--from-review`, `--from-designer`, `--resume <id>`, `--brief <path>`, `--interactive` |
 | `/team` | `--dry-run`, `--waves <n>`, `--members <n>`, `--teammate-mode tmux\|auto\|in-process`, `--no-template` |
 
 ---
 
-## Removed in V11.0
+## Removed in V11.0 and V12
 
 V11.0 removed four skills after a two-version deprecation window (V10.26.19–V10.26.35). The functionality has migrated to `/improve` or built-in Claude Code memory commands. **Do not invoke the removed skills** — they are not registered in `plugin.json` and will fall through to no-op or unrecognized-command handling.
 
@@ -369,8 +352,10 @@ V11.0 removed four skills after a two-version deprecation window (V10.26.19–V1
 | `/optimize` | `/improve --mode optimize` | Same optimization types and benchmark integrations; `--rollback` and `--benchmark` flags preserved |
 | `/context` | Built-in `/memory` plus the `cagents-memory/_projects/{hash}/product_context.yaml` file | Manual or `/memory`-driven persistence replaces the auto-init flow |
 | `/debug` | `/run` with explicit reproduction steps | The standard `/run` pipeline now handles root-cause investigation through controller question delegation |
+| `/improve` (v12.1.2) | `/run review`, `/run optimize`, `/run improve` (or `/run --mode review\|optimize\|full`) | First-word keyword router; all `/improve` flags (`--baseline`, `--suppress`, `--benchmark`, `--auto-fix`, `--severity`, etc.) remain available on `/run` |
+| `/org` (v12.2.0) | `/team` strategic mode | Auto-enables when `universal-router.domain_count >= 2`; force-enable with `--strategic`; force-disable with `--no-strategic`. The 12 leadership agents are preserved at their existing locations and act as Wave 0/1 teammates |
 
-For full migration details, see [MIGRATION-V11.md](./MIGRATION-V11.md).
+For full migration details, see [MIGRATION-V11.md](./MIGRATION-V11.md) (V11 removals) and the v12.1.2 / v12.2.0 entries in [CHANGELOG.md](../CHANGELOG.md).
 
 ---
 

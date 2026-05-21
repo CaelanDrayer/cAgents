@@ -1,10 +1,12 @@
-# Parent Session Extraction & /org Integration
+# Parent Session Extraction & Strategic-Mode Integration
 
-How /team integrates with /org's strategic brief, extracts parent_session_id, and writes child_controllers.yaml for AgentPath lineage.
+How /team integrates with strategic-mode's strategic brief (or a pre-v12.2.0 `/org` brief), extracts parent_session_id, and writes child_controllers.yaml for AgentPath lineage.
+
+> **v12.2.0 note**: Pre-v12.2.0, the `--session` flag was used by `/org` to invoke per-domain `/team` runs. v12.2.0 absorbed `/org` into `/team` strategic mode; strategic-mode now creates nested per-domain waves inside a single `/team` session rather than launching child `/team` sessions. The `--session` extraction logic below is preserved for back-compat with pre-v12.2.0 `org_*` sessions and for any external integrations (e.g., AgentPath) that still pass a session path.
 
 ## Parent Session Extraction
 
-When /team is invoked via /org using the `--session` flag, extract the parent session ID from the path:
+When /team is invoked with the `--session` flag (e.g., by a pre-v12.2.0 `/org` session, or by an external integration that pre-creates a session directory), extract the parent session ID from the path:
 
 - The `--session` flag provides a path like: `cagents-memory/sessions/{PARENT_SESSION_ID}/{domain_key}`
 - Pattern: split path by `/`, find the component immediately after `sessions/` — that is the `parent_session_id`
@@ -24,9 +26,9 @@ else:
   EXTRACTED_PARENT_SESSION_ID = null
 ```
 
-## Strategic Brief Awareness (/org Integration)
+## Strategic Brief Awareness (v12.2.0 strategic mode, or pre-v12.2.0 /org integration)
 
-When invoked by `/org`, the session directory may contain a `strategic_brief.yaml`. If present:
+When invoked with a `strategic_brief.yaml` in the session directory (written either by v12.2.0+ `/team` strategic mode's Wave 2 deliberation step, or by a pre-v12.2.0 `/org` CEO):
 
 1. **Read the brief** at session initialization (Step 2a, after creating session):
    ```
@@ -63,7 +65,7 @@ When invoked by `/org`, the session directory may contain a `strategic_brief.yam
 
 7. **Report completion** by setting domain_status to completed with 100% progress.
 
-This allows `/org`'s CEO to monitor domain execution progress and handle cross-domain escalations in real-time.
+This allows the `/team` strategic-mode lead (or pre-v12.2.0 `/org` CEO) to monitor domain execution progress and handle cross-domain escalations in real-time.
 
 ## Session Hierarchy
 
@@ -71,15 +73,19 @@ Understanding the session hierarchy is essential for correct lineage tracking in
 
 ### Session Types and Nesting
 
-/team creates `team_*` sessions (e.g., `team_implement-oauth2_260317_001`). It does NOT create `run_*` sessions. When /org invokes /team via the `--session` flag, the team session's `parent_session_id` is set to the org session ID.
+/team creates `team_*` sessions (e.g., `team_implement-oauth2_260317_001`). It does NOT create `run_*` sessions. When /team is invoked via the `--session` flag (by a pre-v12.2.0 `/org` session, or by an external integration), the team session's `parent_session_id` is set to the parent session ID extracted from the path.
 
 **Hierarchy depth (max 2 levels)**:
 ```
-org_* session (level 0)     <- /org creates this
+team_* session (level 0; v12.2.0+ strategic-mode entry point)
+  per-domain waves (level 1; nested inside the same team_* session)
+
+— or, pre-v12.2.0 historical form (legacy sessions still on disk):
+org_* session (level 0)     <- /org created this; no new sessions of this type after v12.2.0
   team_* session (level 1)  <- /team creates this, parent_session_id = org_*
 ```
 
-There is no `org_* -> team_* -> run_*` chain. Claude Code enforces a 2-level subagent nesting limit, which means /team teammates spawn execution agents directly via Agent tool rather than invoking /run as a Skill. As a result, controller work is tracked at the `team_*` session level, not in separate child sessions.
+There is no `team_* -> team_* -> run_*` chain. Claude Code enforces a 2-level subagent nesting limit, which means /team teammates spawn execution agents directly via Agent tool rather than invoking /run as a Skill. As a result, controller work is tracked at the `team_*` session level, not in separate child sessions. Strategic mode (v12.2.0+) extends this by running per-domain dispatch as additional waves *inside* the same team_* session, instead of launching separate child team_* sessions per domain (which is how pre-v12.2.0 `/org` -> `/team` chains worked).
 
 ## Controller Tracking
 
@@ -114,10 +120,10 @@ controllers:
 
 ## Parent Session ID in instruction.yaml
 
-When invoked by /org with `--session cagents-memory/sessions/org_foo_260317_001/engineering`, the `team_*` session stores:
+When invoked with `--session cagents-memory/sessions/<parent_session_id>/<subdir>` (e.g., pre-v12.2.0 `/org` setting `--session cagents-memory/sessions/org_foo_260317_001/engineering`, or an external integration pre-creating a session directory), the `team_*` session stores:
 
 ```yaml
 parent_session_id: "org_foo_260317_001"
 ```
 
-This is extracted from the `--session` path. If /team is invoked directly by a user (no `--session` flag), `parent_session_id` is `null`.
+This is extracted from the `--session` path. If /team is invoked directly by a user (no `--session` flag) — the default in v12.2.0+ strategic mode — `parent_session_id` is `null`.
