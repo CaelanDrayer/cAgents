@@ -18,10 +18,109 @@
 
 const fs = require('fs');
 const path = require('path');
+const { spawn } = require('child_process');
 // Defensive: js-yaml is a declared dependency but guard against missing install
 let yaml;
 try { yaml = require('js-yaml'); } catch { yaml = null; }
 const { createHook, findTeamSession, findActiveSession, safeRead, extractYamlValue, countPattern, withFileLock, ensureDir } = require('./hook-utils.cjs');
+
+// =============================================================================
+// P1-4: Pattern Extractor Runtime Wiring (24h throttle)
+// =============================================================================
+
+/**
+ * Resolve the cagents-memory root, honoring CAGENTS_TEST_ROOT for sandboxed tests.
+ * Production path is repo-root/cagents-memory; this file lives at
+ * .claude/hooks/team-stop.cjs so repo-root = ../../..
+ */
+function resolveMemoryRoot() {
+  if (process.env.CAGENTS_TEST_ROOT) {
+    return path.join(process.env.CAGENTS_TEST_ROOT, 'cagents-memory');
+  }
+  return path.join(__dirname, '..', '..', 'cagents-memory');
+}
+
+/**
+ * Resolve the pattern-extractor.cjs path. CAGENTS_PATTERN_EXTRACTOR_OVERRIDE
+ * is honored so tests can swap in a stub script.
+ */
+function resolveExtractorPath() {
+  if (process.env.CAGENTS_PATTERN_EXTRACTOR_OVERRIDE) {
+    return process.env.CAGENTS_PATTERN_EXTRACTOR_OVERRIDE;
+  }
+  return path.join(__dirname, '..', '..', 'scripts', 'knowledge', 'pattern-extractor.cjs');
+}
+
+const SENTINEL_THROTTLE_MS = 24 * 60 * 60 * 1000; // 24h
+
+/**
+ * Conditionally spawn pattern-extractor.cjs after team metrics finalize.
+ *
+ * Throttle: if `_knowledge/patterns/.last-extracted` was touched <24h ago,
+ * skip and log "throttled". Otherwise spawn the extractor detached/unref'd
+ * (fire-and-forget — never blocks team-stop) and touch the sentinel.
+ *
+ * Errors are swallowed — team-stop must never fail because of extraction.
+ *
+ * @returns {string} Status string for systemMessage: 'invoked', 'throttled',
+ *   'no-extractor', or 'error: <msg>'
+ */
+function maybeExtractPatterns() {
+  try {
+    const memoryRoot = resolveMemoryRoot();
+    const patternsDir = path.join(memoryRoot, '_knowledge', 'patterns');
+    const sentinelPath = path.join(patternsDir, '.last-extracted');
+    const extractorPath = resolveExtractorPath();
+
+    // Check extractor exists (precondition)
+    if (!fs.existsSync(extractorPath)) {
+      console.error(`[SessionStop] pattern-extractor not found at ${extractorPath} — skipping`);
+      return 'no-extractor';
+    }
+
+    // Sentinel throttle: skip if <24h old
+    if (fs.existsSync(sentinelPath)) {
+      try {
+        const mtimeMs = fs.statSync(sentinelPath).mtimeMs;
+        const ageMs = Date.now() - mtimeMs;
+        if (ageMs < SENTINEL_THROTTLE_MS) {
+          const hoursAgo = (ageMs / 3600000).toFixed(1);
+          console.error(`[SessionStop] pattern-extractor throttled (last run ${hoursAgo}h ago, <24h)`);
+          return 'throttled';
+        }
+      } catch (e) {
+        console.error(`[SessionStop] sentinel stat failed: ${e.message} — proceeding with extraction`);
+      }
+    }
+
+    // Ensure patterns dir exists before sentinel write
+    try {
+      ensureDir(patternsDir);
+    } catch (e) {
+      console.error(`[SessionStop] failed to ensure patterns dir: ${e.message}`);
+    }
+
+    // Spawn extractor detached + unref'd — fire-and-forget
+    try {
+      const child = spawn('node', [extractorPath, 'extract', '--save'], {
+        detached: true,
+        stdio: 'ignore',
+      });
+      child.unref();
+      // Touch sentinel immediately so concurrent team-stops don't double-fire
+      fs.writeFileSync(sentinelPath, new Date().toISOString() + '\n');
+      console.error(`[SessionStop] pattern-extractor spawned (pid=${child.pid})`);
+      return 'invoked';
+    } catch (e) {
+      console.error(`[SessionStop] pattern-extractor spawn failed: ${e.message}`);
+      return `error: ${e.message}`;
+    }
+  } catch (e) {
+    // Outer catch — never let extraction failures propagate
+    console.error(`[SessionStop] maybeExtractPatterns outer error: ${e.message}`);
+    return `error: ${e.message}`;
+  }
+}
 
 /**
  * Clean up agent_tree.yaml: mark all unstopped agents with stopped_at,
@@ -276,6 +375,14 @@ createHook('SessionStop', async (input) => {
   summary += `**Duration**: ${metrics.duration_seconds} seconds\n`;
   if (metrics.speedup_factor > 1) {
     summary += `**Speedup**: ${metrics.speedup_factor.toFixed(1)}x faster than sequential\n`;
+  }
+
+  // --- Phase 3: P1-4 pattern extraction (24h throttle, fire-and-forget) ---
+  const extractionStatus = maybeExtractPatterns();
+  if (extractionStatus === 'invoked') {
+    summary += `**Pattern extraction**: spawned (background)\n`;
+  } else if (extractionStatus === 'throttled') {
+    summary += `**Pattern extraction**: throttled (last run <24h ago)\n`;
   }
 
   return { continue: true, systemMessage: summary };
