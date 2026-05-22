@@ -336,29 +336,40 @@ describe('verify-completion.cjs', () => {
       expect(content).toContain('verify-completion-hook-safety-net');
     });
 
-    it('should add self_validation placeholder to coordination_log.yaml when absent', () => {
+    it('MUST NOT add self_validation placeholder to coordination_log.yaml when absent (P0-3)', () => {
+      // P0-3 (v12.7.x): the hook no longer stamps placeholders into
+      // coordination_log.yaml. Honest absence beats false claims —
+      // the hook surfaces the gap via stderr warning, not by writing
+      // a stub `self_validation:` block.
       writeFileSync(join(TEST_SESSION_DIR, 'status.yaml'),
         'pipeline_state: complete\nupdated_at: "' + new Date().toISOString() + '"\n');
-      writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'coordination_log.yaml'),
-        'schema_version: "1"\ncontroller: cagents:tech-lead\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: completed\n    evidence: "done"\n');
+      const original = 'schema_version: "1"\ncontroller: cagents:tech-lead\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: completed\n    evidence: "done"\n';
+      writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'coordination_log.yaml'), original);
 
       runHook({ session_id: TEST_SESSION });
       const content = readFileSync(join(TEST_SESSION_DIR, 'workflow', 'coordination_log.yaml'), 'utf8');
-      expect(content).toContain('self_validation');
-      expect(content).toContain('verify-completion-hook-safety-net');
+      // coordination_log.yaml must be byte-identical to the original.
+      expect(content).toBe(original);
+      expect(content).not.toContain('self_validation');
+      expect(content).not.toContain('verify-completion-hook-safety-net');
     });
 
-    it('should add validation_checkpoints placeholder when pre_execution/mid_execution absent', () => {
+    it('MUST NOT add validation_checkpoints placeholder when pre_execution/mid_execution absent (P0-3)', () => {
+      // P0-3 (v12.7.x): same contract as above — no placeholder stamping
+      // for validation_checkpoints either. Controllers either record real
+      // pre/mid-execution validation or the file accurately reflects that
+      // they did not.
       writeFileSync(join(TEST_SESSION_DIR, 'status.yaml'),
         'pipeline_state: complete\nupdated_at: "' + new Date().toISOString() + '"\n');
-      writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'coordination_log.yaml'),
-        'schema_version: "1"\ncontroller: cagents:tech-lead\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: completed\n    evidence: "done"\n');
+      const original = 'schema_version: "1"\ncontroller: cagents:tech-lead\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: completed\n    evidence: "done"\n';
+      writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'coordination_log.yaml'), original);
 
       runHook({ session_id: TEST_SESSION });
       const content = readFileSync(join(TEST_SESSION_DIR, 'workflow', 'coordination_log.yaml'), 'utf8');
-      expect(content).toContain('validation_checkpoints');
-      expect(content).toContain('pre_execution');
-      expect(content).toContain('mid_execution');
+      expect(content).toBe(original);
+      expect(content).not.toContain('validation_checkpoints');
+      expect(content).not.toContain('pre_execution');
+      expect(content).not.toContain('mid_execution');
     });
 
     it('should NOT auto-resolve when session is NOT in terminal state', () => {

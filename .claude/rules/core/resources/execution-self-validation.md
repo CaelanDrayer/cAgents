@@ -1,6 +1,6 @@
 # Execution Agent Self-Validation Protocol
 
-5 hook-verifiable checks for execution agents before reporting DONE or DONE_WITH_CONCERNS status.
+5 agent-self-reported checks (verifier hook deferred to a future bump) for execution agents before reporting DONE or DONE_WITH_CONCERNS status.
 
 ## Why 5 (Not 15) — Honesty Reduction (v12.0.0)
 

@@ -373,62 +373,34 @@ note: "Auto-generated stub — no validator agent ran for this session."
     }
   }
 
-  // 3. Add placeholder self_validation block to coordination_log.yaml (resolves Check D)
+  // 3 + 4. P0-3 (v12.7.x): coordination_log.yaml is NO LONGER mutated by this hook.
+  //
+  // Prior to P0-3, this block auto-appended empty `self_validation:` and
+  // `validation_checkpoints:` placeholders to coordination_log.yaml whenever
+  // controllers had not produced them. That pattern created false claims —
+  // a stamped "Placeholder — controller did not record ..." entry looked like
+  // self-validation data but contained no actual evidence. Honest absence is
+  // strictly preferable to a stamped no-op.
+  //
+  // The hook MUST NOT write to coordination_log.yaml. Instead, emit a stderr
+  // warning naming the missing fields so the gap is visible to operators
+  // (the verifyCompletion checks below will also surface this in warnings).
+  //
+  // See `.claude/rules/core/resources/execution-self-validation.md` for the
+  // v12.0.0 "5 agent-self-reported checks (verifier hook deferred)" contract.
   const coordLogFile = path.join(sessionDir, 'workflow', 'coordination_log.yaml');
   const coordContent = safeRead(coordLogFile);
-  if (coordContent && !coordContent.includes('self_validation')) {
-    try {
-      const selfValBlock = `\n# Auto-added by autoResolveWarnings() safety net
-self_validation:
-  note: "Placeholder — execution agents did not include self-validation reports"
-  generated_by: verify-completion-hook-safety-net
-`;
-      fs.appendFileSync(coordLogFile, selfValBlock);
-      resolved.push('self_validation placeholder');
-      console.error(`[AutoResolve] Added self_validation placeholder to coordination_log.yaml for ${sessionId}`);
-    } catch (e) {
-      console.error(`[AutoResolve] Failed to add self_validation block: ${e.message}`);
-    }
-  }
-
-  // 4. Add placeholder validation_checkpoints block to coordination_log.yaml (resolves Check E)
-  // Re-read after potential self_validation append
-  const coordContentRefresh = safeRead(coordLogFile);
-  if (coordContentRefresh) {
-    let needsPreExec = !coordContentRefresh.includes('pre_execution');
-    let needsMidExec = !coordContentRefresh.includes('mid_execution');
-
-    if (needsPreExec || needsMidExec) {
-      try {
-        let block = '';
-        if (!coordContentRefresh.includes('validation_checkpoints')) {
-          block += `\n# Auto-added by autoResolveWarnings() safety net
-validation_checkpoints:
-`;
-        }
-        if (needsPreExec) {
-          block += `  pre_execution:
-    note: "Placeholder — controller did not record pre-execution validation"
-    generated_by: verify-completion-hook-safety-net
-`;
-        }
-        if (needsMidExec) {
-          block += `  mid_execution:
-    note: "Placeholder — controller did not record mid-execution checkpoints"
-    generated_by: verify-completion-hook-safety-net
-`;
-        }
-        if (block) {
-          fs.appendFileSync(coordLogFile, block);
-          const parts = [];
-          if (needsPreExec) parts.push('pre_execution');
-          if (needsMidExec) parts.push('mid_execution');
-          resolved.push(`validation_checkpoints (${parts.join(', ')})`);
-          console.error(`[AutoResolve] Added validation_checkpoints placeholder to coordination_log.yaml for ${sessionId}`);
-        }
-      } catch (e) {
-        console.error(`[AutoResolve] Failed to add validation_checkpoints block: ${e.message}`);
-      }
+  if (coordContent) {
+    const missingFields = [];
+    if (!coordContent.includes('self_validation')) missingFields.push('self_validation');
+    if (!coordContent.includes('pre_execution')) missingFields.push('validation_checkpoints.pre_execution');
+    if (!coordContent.includes('mid_execution')) missingFields.push('validation_checkpoints.mid_execution');
+    if (missingFields.length > 0) {
+      console.error(
+        '[verify-completion] coordination_log.yaml missing fields: ' +
+        missingFields.join(', ') +
+        '. Hook will not stamp placeholders (P0-3).'
+      );
     }
   }
 
