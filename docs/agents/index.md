@@ -2,7 +2,7 @@
 
 ## Summary
 
-243 agents across 15 domains.
+144 agents across 9 builder-role archetypes (developer 26, operator 36, advisor 12, analyst 20, creator 5, writer 10, strategist 8, core 15, leadership 12). Post-v12.4.0 P2 compression from 240. The per-domain breakdowns below are LEGACY routing-overlay groupings (the 13-domain pre-v11.1.0 layout, kept for routing-keyword continuity); the canonical structure is the 9 archetypes.
 
 ## Engineering (31 agents)
 
@@ -75,21 +75,21 @@
 
 Strategy, product, operations, finance. Includes: marketing-strategist (absorbed campaign-manager, product-marketing-manager, seo-strategist in v12), sales-strategist, finance-manager, operations-manager, strategic-planner, product-owner, game-designer, copywriter, and additional specialists.
 
-## People (17 agents)
+## People (0 — config-only)
 
-HR, talent acquisition, culture, workforce planning. Key agents: hr-manager, talent-acquisition-manager, recruiter, compensation-analyst, learning-specialist.
+The legacy `people/` domain is **routing-overlay only** as of v11.1.0 — the directory holds `config/domain_overrides.yaml` (router keywords + controller catalog) but ships zero SKILL.md files. People-domain requests route through this overlay to active agents under the `operator/people-ops/` archetype branch (hr-manager, talent-acquisition-manager, recruiter, compensation-analyst, learning-specialist, etc.). See CLAUDE.md § "Domain overlay (legacy — routing/config only)" for the full overlay model.
 
 ## Service (28 agents)
 
 Customer support, CX, legal, compliance, governance. Key agents: customer-success-manager, legal-counsel, support-director, general-counsel, compliance-director, compliance-officer.
 
-## Leadership (11 agents)
+## Leadership (12 agents)
 
-C-suite executives used by /org: CEO, CTO, CFO, CMO, CRO, COO, CCO, CPO, CHRO, CSO.
+C-suite executives used by `/team` strategic mode (auto-enabled when `router.domain_count >= 2`; v12.2.0+). Pre-v12.2.0 these agents were invoked by the now-removed `/org` skill. The 12 agents: CEO, CTO, CFO, CMO, CRO, COO, CCO, CPO, CHRO, CSO, CLO, VP-Engineering.
 
-## Core (17 agents)
+## Core (15 agents)
 
-Pipeline infrastructure: trigger, orchestrator, universal-planner, task-decomposer, prompt-engineer, universal-executor, universal-validator, universal-router, universal-self-correct, hitl, optimizer, task-consolidator, task-inventory, team-trigger, team-lead-adapter, generic-coordinator, plus one additional core agent.
+Pipeline infrastructure: trigger, orchestrator, planner (absorbed `task-decomposer` and `prompt-engineer` in v12.0.0), executor, validator, router, self-correct, hitl, optimizer, task-merger, task-state, team (replaces the standalone `team-trigger` and `team-lead-adapter` agents removed in v12.0.0 — the `/team` skill loop now does this work inline), coordinator, reviewer, plus one additional core agent.
 
 ## Shared (12 agents)
 
@@ -105,20 +105,20 @@ STEM research: astronomer, biochemist, biologist, chemist, ecologist, geoscienti
 
 ## Health (5 agents)
 
-Medical and wellness: fitness-coach, medical-advisor, mental-health-advisor, nutritionist, pharmacist. Uses generic-coordinator from core.
+Medical and wellness: fitness-coach, medical-advisor, mental-health-advisor, nutritionist, pharmacist. Uses coordinator from core.
 
 ## Education (5 agents)
 
-Teaching and tutoring: academic-researcher, academic-tutor, curriculum-designer, language-tutor, teacher-coach. Uses generic-coordinator from core.
+Teaching and tutoring: academic-researcher, academic-tutor, curriculum-designer, language-tutor, teacher-coach. Uses coordinator from core.
 
 ## Personal (5 agents)
 
-Career and life coaching: career-counselor, life-coach, personal-finance-advisor, productivity-coach, relationship-coach. Uses generic-coordinator from core.
+Career and life coaching: career-counselor, life-coach, personal-finance-advisor, productivity-coach, relationship-coach. Uses coordinator from core.
 
 ## Arts (5 agents)
 
-Visual arts, music, film: arts-director, film-director, music-producer, photographer, visual-artist. Uses generic-coordinator from core.
+Visual arts, music, film: arts-director, film-director, music-producer, photographer, visual-artist. Uses coordinator from core.
 
 ## Trades (5 agents)
 
-Culinary, construction, automotive: agronomist, automotive-technician, chef, construction-advisor, fashion-designer. Uses generic-coordinator from core.
+Culinary, construction, automotive: agronomist, automotive-technician, chef, construction-advisor, fashion-designer. Uses coordinator from core.

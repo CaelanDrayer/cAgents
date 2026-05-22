@@ -2,7 +2,7 @@
 #
 # cAgents CI Runner
 # Self-contained CI script for quality gates
-# Version: 12.6.0
+# Version: 12.7.0
 #
 # Usage:
 #   ./scripts/ci/cagents-ci.sh [command]
@@ -505,6 +505,34 @@ check_tiny_bump() {
     fi
 }
 
+# check_counts: Run scripts/ci/validate-counts.sh to verify documented counts
+# (agents, hooks, archetypes, registry slots) match what is derived from disk.
+# Warn-only by default during the v12.7.0 stabilization window — set
+# CAGENTS_COUNTS_BLOCK=1 to make this stage blocking.
+check_counts() {
+    log_section "Counts-Derivation Check (P1-5)"
+
+    local script="$PROJECT_ROOT/scripts/ci/validate-counts.sh"
+    if [[ ! -x "$script" ]]; then
+        log_warn "check_counts: $script not executable; skipping"
+        return 0
+    fi
+
+    if bash "$script" >/tmp/validate-counts.out 2>&1; then
+        log_info "check_counts: doc counts match disk-derived counts"
+        return 0
+    fi
+
+    cat /tmp/validate-counts.out
+    if [[ "${CAGENTS_COUNTS_BLOCK:-0}" = "1" ]]; then
+        log_error "check_counts: doc-vs-disk mismatch (blocking)"
+        return 7
+    else
+        log_warn "check_counts: doc-vs-disk mismatch (warn-only — set CAGENTS_COUNTS_BLOCK=1 to block)"
+        return 0
+    fi
+}
+
 #
 # Main execution
 #
@@ -512,7 +540,7 @@ main() {
     local command="${1:-all}"
     local exit_code=0
 
-    log_section "cAgents CI Runner v12.6.0"
+    log_section "cAgents CI Runner v12.7.0"
     log_info "Project root: $PROJECT_ROOT"
     log_info "Command: $command"
 
@@ -538,6 +566,9 @@ main() {
         tiny-bump)
             check_tiny_bump || exit_code=6
             ;;
+        counts)
+            check_counts || exit_code=7
+            ;;
         all)
             validate_agents || exit_code=1
             lint_docs || exit_code=$((exit_code > 0 ? exit_code : 2))
@@ -545,10 +576,11 @@ main() {
             run_tests || exit_code=$((exit_code > 0 ? exit_code : 4))
             run_contract_tests || exit_code=$((exit_code > 0 ? exit_code : 5))
             check_tiny_bump || exit_code=$((exit_code > 0 ? exit_code : 6))
+            check_counts || exit_code=$((exit_code > 0 ? exit_code : 7))
             ;;
         *)
             echo "Unknown command: $command"
-            echo "Usage: $0 [validate|lint|check|contract|evals|test|tiny-bump|all]"
+            echo "Usage: $0 [validate|lint|check|contract|evals|test|tiny-bump|counts|all]"
             exit 1
             ;;
     esac

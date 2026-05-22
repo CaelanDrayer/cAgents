@@ -14,8 +14,8 @@
 
 | Factor | cAgents Status | One-Line Position |
 |--------|----------------|-------------------|
-| 1. Natural Language to Tool Calls | YES | `core/orchestrator` parses NL requests; `universal-router` routes to skills + agents |
-| 2. Own Your Prompts | YES | Optional `core/prompt-engineer` step assembles delegation prompts; SKILL.md bodies own all controller/executor prompts |
+| 1. Natural Language to Tool Calls | YES | `core/orchestrator` parses NL requests; `router` routes to skills + agents |
+| 2. Own Your Prompts | YES | Planner assembles delegation prompts internally (task-decomposer + prompt-engineer were folded into the planner in v12.0.0); SKILL.md bodies own all controller/executor prompts |
 | 3. Own Your Context Window | PARTIAL | Three-Tier Progressive Disclosure for SKILL.md + `PreCompact`/`PostCompact` hooks; no fine-grained per-tool token budget |
 | 4. Tools Are Structured Outputs | PARTIAL | Agents emit YAML artifacts (`coordination_log.yaml`, `validation_report.yaml`); per-tool typed-output schemas are not enforced |
 | 5. Unify Execution State and Business State | DIVERGENCE | cAgents intentionally separates execution-state (`status.yaml`, 5-state machine) from business-state (`work_items.yaml`, `coordination_log.yaml`) |
@@ -23,8 +23,8 @@
 | 7. Contact Humans with Tool Calls | PARTIAL | HITL gates via `core/hitl` + `approval-gate.cjs` hook; no out-of-band Slack/email/SMS channels |
 | 8. Own Your Control Flow | YES | `pipeline_config.yaml`-driven state machine; revision routing (FAIL/REVISE) is hand-coded, not LLM-decided |
 | 9. Compact Errors into Context Window | PARTIAL | `tool-failure-tracker.cjs` records failures but does not yet summarize for re-injection on retry |
-| 10. Small, Focused Agents | YES | 251 agents across 9 archetypes; per-agent SKILL.md scope guarded by `skill-size-monitor.cjs` |
-| 11. Trigger from Anywhere | PARTIAL | Triggers from `/run`, `/team`, `/org`, `/designer`, `/improve`, `/helper`; no webhook/cron/email/Slack triggers |
+| 10. Small, Focused Agents | YES | 144 agents across 9 archetypes (post-v12.4.0 P2 compression from 240); per-agent SKILL.md scope guarded by `skill-size-monitor.cjs` |
+| 11. Trigger from Anywhere | PARTIAL | Triggers from `/run`, `/team`, `/designer`, `/helper` (4 in-terminal skills; `/improve` folded into `/run` in v12.1.2, `/org` folded into `/team` strategic mode in v12.2.0); no webhook/cron/email/Slack triggers |
 | 12. Make Your Agent a Stateless Reducer | DIVERGENCE | Controllers carry state across reviewer-loop rounds; session state lives in `cagents-memory/sessions/{id}/` files by design |
 
 **Score**: 6 YES · 4 PARTIAL · 2 deliberate DIVERGENCE.
@@ -35,15 +35,15 @@
 
 ### Factor 1: Natural Language to Tool Calls — YES
 
-cAgents accepts natural-language requests at every skill entry point (`/run "fix the auth bug"`) and converts them into structured tool calls (Agent spawns, Bash, Write, Edit). The pipeline does this in two stages — `core/orchestrator` produces `enriched_context.yaml`, then `core/universal-router` selects domain + tier + controller.
+cAgents accepts natural-language requests at every skill entry point (`/run "fix the auth bug"`) and converts them into structured tool calls (Agent spawns, Bash, Write, Edit). The pipeline does this in two stages — `core/orchestrator` produces `enriched_context.yaml`, then `core/router` selects domain + tier + controller.
 
-**cAgents implementation**: `core/orchestrator/SKILL.md`, `core/universal-router/SKILL.md`, `.claude/skills/run/SKILL.md`.
+**cAgents implementation**: `core/orchestrator/SKILL.md`, `core/router/SKILL.md`, `.claude/skills/run/SKILL.md`.
 
 ### Factor 2: Own Your Prompts — YES
 
-Every prompt that goes to an LLM is checked into the repo. Controller prompts live in `{archetype}/{branch?}/{agent}/SKILL.md`; delegation prompts are assembled by the optional `core/prompt-engineer` step or fall back to controller-side templates. No prompts come from a hosted service.
+Every prompt that goes to an LLM is checked into the repo. Controller prompts live in `{archetype}/{branch?}/{agent}/SKILL.md`; delegation prompts are assembled by the planner (which absorbed the standalone `prompt-engineer` agent in v12.0.0) or fall back to controller-side templates. No prompts come from a hosted service.
 
-**cAgents implementation**: 251 SKILL.md files; `core/prompt-engineer/SKILL.md`; controller prompt-assembly logic in `.claude/rules/core/controllers.md`.
+**cAgents implementation**: 144 SKILL.md files (post-v12.4.0 P2 compression from 240); controller prompt-assembly logic in `.claude/rules/core/controllers.md`; planner's prompt-assembly sub-responsibility at `core/planner/SKILL.md`.
 
 ### Factor 3: Own Your Context Window — PARTIAL
 
@@ -55,7 +55,7 @@ cAgents controls SKILL.md loading via Three-Tier Progressive Disclosure (frontma
 
 Coordination and validation outputs are YAML with a documented schema (`coordination_log.yaml` carries `schema_version: "1"`; `validation_report.yaml` emits PASS/FAIL/REVISE). Tool outputs themselves (Bash stdout, Read results) flow as raw strings — there is no enforcement of typed-output schemas on a per-tool basis.
 
-**cAgents implementation**: `.claude/skills/run/reference/session-schema.md`; `core/universal-validator/SKILL.md`.
+**cAgents implementation**: `.claude/skills/run/reference/session-schema.md`; `core/validator/SKILL.md`.
 
 ### Factor 5: Unify Execution State and Business State — DELIBERATE DIVERGENCE
 
@@ -64,7 +64,7 @@ cAgents intentionally **separates** the two:
 - **Execution state**: `cagents-memory/sessions/{id}/status.yaml`, driven by a 5-state machine (`INIT -> ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED`). Owned by `/run` and pipeline hooks.
 - **Business state**: `workflow/work_items.yaml`, `coordination_log.yaml`, agent-emitted artifacts. Owned by controllers and execution agents.
 
-**Why we diverge**: (1) Execution-state churn (re-routes, REVISE cycles, max-5 revision budget) shouldn't pollute the audit trail of business decisions; (2) `universal-validator` reasons about execution states without parsing business-state schemas; (3) pipeline introspection (`/run --analytics`) operates on execution state alone.
+**Why we diverge**: (1) Execution-state churn (re-routes, REVISE cycles, max-5 revision budget) shouldn't pollute the audit trail of business decisions; (2) `validator` reasons about execution states without parsing business-state schemas; (3) pipeline introspection (`/run --analytics`) operates on execution state alone.
 
 **What we lose**: A single "where am I, what am I doing" view requires reading both `status.yaml` and the workflow artifacts. Reproducing a session from a single state blob is not possible — you need both. Tradeoff accepted; the separation has paid for itself in pipeline observability.
 
@@ -94,15 +94,15 @@ The `/run` state machine is config-driven, not LLM-driven. `cagents-memory/_syst
 
 ### Factor 10: Small, Focused Agents — YES (arguably over-shot)
 
-251 agents across 9 archetypes, each with a single SKILL.md scoped to one role. The `skill-size-monitor.cjs` `PreToolUse` hook warns at 600 lines and blocks at 900 to prevent SKILL.md bloat. Per `IMPROVEMENTS.md` GAP-12, the count may be over-fragmented for some domains — a future consolidation pass is on the roadmap — but the "small, focused" principle is honored.
+144 agents across 9 archetypes (post-v12.4.0 P2 compression from 240; 96 deprecated to `_deprecated/` buckets), each with a single SKILL.md scoped to one role. The `skill-size-monitor.cjs` `PreToolUse` hook warns at 600 lines and blocks at 900 to prevent SKILL.md bloat. Per `IMPROVEMENTS.md` GAP-12, the count may be over-fragmented for some domains — a future consolidation pass is on the roadmap — but the "small, focused" principle is honored.
 
-**cAgents implementation**: All 251 SKILL.md files; `.claude/hooks/skill-size-monitor.cjs`.
+**cAgents implementation**: All 144 SKILL.md files; `.claude/hooks/skill-size-monitor.cjs`.
 
 ### Factor 11: Trigger from Anywhere — PARTIAL
 
-cAgents triggers from six in-terminal skills (`/run`, `/team`, `/org`, `/designer`, `/improve`, `/helper`) plus Claude Code's native `/memory` and `/init`. The internal `team-trigger` agent decomposes inside `/team` but isn't a user-facing trigger. What's missing: webhook, cron, email, Slack, SMS, GitHub-issue, or PR-comment triggers. cAgents is a Claude Code plugin first; outer-loop triggers are a Phase-2 concern.
+cAgents triggers from four in-terminal skills (`/run`, `/team`, `/designer`, `/helper`) plus Claude Code's native `/memory` and `/init`. (`/improve` was folded into `/run` via the first-word keyword router in v12.1.2; `/org` was removed in v12.2.0 and absorbed into `/team` strategic mode.) Team initialization happens inline inside `/team` (the standalone `team-trigger` agent was removed in v12.0.0) but isn't a user-facing trigger. What's missing: webhook, cron, email, Slack, SMS, GitHub-issue, or PR-comment triggers. cAgents is a Claude Code plugin first; outer-loop triggers are a Phase-2 concern.
 
-**cAgents implementation**: `.claude/skills/{run,team,org,designer,improve,helper}/SKILL.md`.
+**cAgents implementation**: `.claude/skills/{run,team,designer,helper}/SKILL.md`.
 
 ### Factor 12: Make Your Agent a Stateless Reducer — DELIBERATE DIVERGENCE
 
