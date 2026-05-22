@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.6.0"
+  version: "12.7.0"
   argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--no-template] [--waves <n>] [--strategic] [--no-strategic]"
   user-invocable: "true"
   context: "fork"
@@ -19,6 +19,8 @@ allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TaskCreate, TaskUpdate, Tas
 You are a thin event loop. Your job: init session, run enrichment (Wave 0), then for each wave K: write spawn brief, spawn teammates, spawn `cagents:wave-reviewer`, mark gate. Finalize: spawn integration controller, spawn `cagents:coord-log-writer`, validate, cleanup.
 
 **You are a delegator, not a doer.** TeamCreate + Agent tool only. Never implement work items yourself.
+
+See @.claude/rules/core/delegation.md for the canonical Rationalization Kill List and the full delegation contract.
 
 ## STOP — Session Init First
 
@@ -50,7 +52,7 @@ Prefer more waves over fewer. Each wave = quality gate.
 ```
 Wave 0 (Lead, sequential):
   orchestrator → enriched_context.yaml
-  universal-planner → work_meta.yaml + work_items_wave_{K}.yaml per wave
+  planner → work_meta.yaml + work_items_wave_{K}.yaml per wave
   (legacy work_items.yaml also written during v12.1.x for back-compat)
 
 Waves 1..N-1 (Teammates, parallel per wave):
@@ -75,7 +77,7 @@ Strategic mode prepends three coordination waves (C-suite analysis → objection
 **Auto-detect trigger.** In Step 1 / Step 2b, read `enriched_context.universal_router.domain_count` (set by `cagents:router`). When `domain_count >= 2` AND `--no-strategic` is absent from `$ARGUMENTS`, prepend the strategic prefix:
 
 ```
-Wave 0 (Lead): orchestrator + universal-planner + universal-router
+Wave 0 (Lead): orchestrator + planner + router
 Wave 1 (Teammates, parallel): C-suite analysis (one teammate per assigned C-suite role from csuite-mapping.md)
 Wave 2 (Lead): Objection phase — peer reads + two-phase deliberation
 Wave 3 (Lead): Brief synthesis → outputs/strategic/strategic_brief.yaml
@@ -85,7 +87,7 @@ Wave N (Lead): integration + validation (unchanged)
 
 Single-domain (`domain_count <= 1`) and tier-2 requests skip the strategic prefix and run the standard wave loop directly.
 
-**Step 1 update**: Before extracting flags from `$ARGUMENTS`, read `universal-router.domain_count` from the orchestrator output. When `domain_count >= 2` AND `--no-strategic` absent: set internal `strategic_mode = true` and plan the Wave 0/1/2/3 strategic prefix. Otherwise: `strategic_mode = false`, proceed with standard waves.
+**Step 1 update**: Before extracting flags from `$ARGUMENTS`, read `router.domain_count` from the orchestrator output. When `domain_count >= 2` AND `--no-strategic` absent: set internal `strategic_mode = true` and plan the Wave 0/1/2/3 strategic prefix. Otherwise: `strategic_mode = false`, proceed with standard waves.
 
 **Flag overrides:**
 
@@ -100,7 +102,7 @@ See @reference/strategic-mode.md for the full wave-by-wave machinery (C-suite de
 
 ## Step 1 — Parse Request
 
-Extract request from `$ARGUMENTS`. See `.claude/skills/_MODE_REGISTRY.md § /team` for canonical flags. Detect `--strategic` and `--no-strategic` flags here; defer the final strategic-mode decision until Step 2d when `universal-router.domain_count` is available.
+Extract request from `$ARGUMENTS`. See `.claude/skills/_MODE_REGISTRY.md § /team` for canonical flags. Detect `--strategic` and `--no-strategic` flags here; defer the final strategic-mode decision until Step 2d when `router.domain_count` is available.
 
 After Wave 0 enrichment completes (Step 2d), read `enriched_context.universal_router.domain_count`. If `--strategic` is present: set `strategic_mode = true`. Else if `--no-strategic` is present: set `strategic_mode = false`. Else: `strategic_mode = (domain_count >= 2)`. When `strategic_mode === true`, plan the Wave 0/1/2/3 strategic prefix (C-suite analysis → objection phase → brief synthesis) before the standard wave loop. See Strategic Mode above.
 

@@ -42,9 +42,20 @@ const CONTROLLER_TYPES = [
   'personal-coach-lead', 'trades-coordinator', 'game-producer'
 ];
 
-// Implementation file patterns (files controllers should NOT write to directly)
+// HARD-DENY implementation paths (P1-7 promotion): writes to these prefixes
+// are always denied when a controller-class agent is active, AND are denied
+// unconditionally when CAGENTS_DELEGATION_ENFORCEMENT=block. These are the
+// canonical "you should never write here directly from a controller" paths.
+const HARD_DENY_PATTERNS = [
+  /(?:^|\/)src\//,
+  /(?:^|\/)lib\//,
+  /(?:^|\/)components\//,
+  /(?:^|\/)app\//,
+];
+
+// Softer implementation patterns (warn-only by default)
 const IMPLEMENTATION_PATTERNS = [
-  /\bsrc\//, /\blib\//, /\bcomponents\//, /\bservices\//, /\bmiddleware\//,
+  /\bservices\//, /\bmiddleware\//,
   /\bpages\//, /\broutes\//, /\butils\//, /\btests?\//, /\bspec\//,
   /\bgodot\//, /\bcontent\//, /\bscripts\/(?!ci\/)/,
   /\.(js|ts|tsx|jsx|py|rs|go|java|rb|php|cs|cpp|c|h)$/
@@ -71,11 +82,28 @@ createHook('ControllerDelegationValidator', async (input) => {
   // Skip if writing to allowed paths (workflow files, session files, YAML/MD)
   if (ALLOWED_PATTERNS.some(p => p.test(filePath))) return null;
 
-  // Check if writing to implementation files
-  const isImplementation = IMPLEMENTATION_PATTERNS.some(p => p.test(filePath));
+  // HARD-DENY PATH: src/, lib/, components/, app/ are off-limits whenever the
+  // skill-level enforcement mode is "block" (the default in v12.7.1). The deny
+  // is unconditional — we do not require agent_tree.yaml to show an active
+  // controller, because depth-1 stripping often prevents the tree from being
+  // updated reliably (see .claude/rules/core/teams.md § Known Harness
+  // Limitation). The previous warn-only path remains as a safety net below.
+  const isHardDeny = HARD_DENY_PATTERNS.some(p => p.test(filePath));
+  if (isHardDeny && mode === 'block') {
+    const fileName = path.basename(filePath);
+    const message = `Implementation path '${filePath}' is reserved for execution agents. ` +
+      `Controllers and pipeline skills (/run, /team) MUST delegate via the Agent tool. ` +
+      `See @.claude/rules/core/delegation.md for the canonical rule.`;
+    console.error(`[ControllerDelegationValidator] HARD-DENY: ${fileName}`);
+    return { deny: true, reason: `[CONTROLLER DELEGATION BLOCKED] ${message}` };
+  }
+
+  // Check if writing to softer implementation files (warn-only fallback)
+  const isImplementation =
+    isHardDeny || IMPLEMENTATION_PATTERNS.some(p => p.test(filePath));
   if (!isImplementation) return null;
 
-  // Find active session
+  // Find active session for the warn-mode path (existing behavior)
   const sessionDir = findActiveSession(input.session_id);
   if (!sessionDir) return null;
 
@@ -99,8 +127,9 @@ createHook('ControllerDelegationValidator', async (input) => {
   // Controller is active and writing to implementation file — enforce based on mode
   const fileName = path.basename(filePath);
   const message = `Controller "${activeControllerName}" is writing to implementation file: ${fileName}. ` +
-    `Controllers MUST delegate implementation to execution agents via Agent/Agent tool. ` +
-    `Spawn the appropriate execution agent (backend-developer, frontend-developer, etc.) instead.`;
+    `Controllers MUST delegate implementation to execution agents via the Agent tool. ` +
+    `Spawn the appropriate execution agent (backend-developer, frontend-developer, etc.) instead. ` +
+    `See @.claude/rules/core/delegation.md.`;
 
   if (mode === 'block') {
     console.error(`[ControllerDelegationValidator] BLOCKED: ${activeControllerName} -> ${fileName}`);

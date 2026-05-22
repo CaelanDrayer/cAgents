@@ -1,5 +1,5 @@
 {
-  "$comment": "Hook configuration - cAgents V12.6.0 - Progressive pipeline (3 paths), agent chaining, structured error format, attention injection, magic keywords, model routing advisor, delegation enforcer, approval gate, session init gate, /goal evaluator logger (V11.3.0). 30 .cjs files = 27 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI across 19 event types. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd).",
+  "$comment": "Hook configuration - cAgents V12.7.0 - Progressive pipeline (3 paths), agent chaining, structured error format, attention injection, magic keywords, model routing advisor, delegation enforcer, approval gate, session init gate, /goal evaluator logger (V11.3.0). 31 .cjs files = 28 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI across 17 event types. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd).",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
   "teammateMode": "tmux",
@@ -179,6 +179,11 @@
             "type": "command",
             "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" model-routing-advisor'",
             "timeout": 3
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" prompt-router'",
+            "timeout": 3
           }
         ]
       },
@@ -279,12 +284,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" delegation-enforcer'",
-            "timeout": 3
-          },
-          {
-            "type": "command",
-            "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" magic-keywords'",
+            "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" prompt-router'",
             "timeout": 3
           }
         ]

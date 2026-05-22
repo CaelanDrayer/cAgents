@@ -109,87 +109,28 @@ See `controller-reference.md` for additional good/bad task-tracking examples.
 
 ## Reviewer Loop
 
-Controllers include an internal reviewer loop (max 3 rounds). After each executor completes, spawn a reviewer to evaluate against acceptance criteria. PASS accepts, REVISE sends feedback back. After round 3, mark as dead_letter and continue.
+Controllers include an internal reviewer loop (max 3 rounds). After each executor completes, spawn a reviewer to evaluate against acceptance criteria. PASS accepts, REVISE sends feedback back.
 
 **Tier 2**: Single reviewer. **Tier 3+**: Blind review with 2-3 independent reviewers + Devil's Advocate on unanimous PASS.
 
-See `controller-reference.md` for reviewer spawning patterns, blind review protocol, dead-letter queue, and confidence tiers.
+### Dead-Letter Promotion Contract (P1-6, v12.6.x)
+
+When a work item fails 3 consecutive reviewer rounds, the controller MUST promote the item rather than silently retrying or claiming completion:
+
+1. **Set the underlying implementation_task status** to `dead_letter` (NOT `completed`, NOT `in_progress`) in `coordination_log.yaml`.
+2. **Append the item to `dead_letter_items[]`** in `coordination_log.yaml` with the schema documented in `controller-reference.md` (task_id, name, rounds_attempted, last_feedback, best_attempt_location, reason).
+3. **Continue with the remaining work items** — do NOT halt coordination on a single dead_letter. The pipeline classifies a session with `dead_letter_items.length > 0` as `PARTIAL_PASS` (which maps to PASS in `pipeline_config.yaml` and reports the dead-letter items to the user via `validation_report.yaml`).
+4. **Do NOT re-route to PLANNED** for individual dead_letter items. The outer FAIL/REVISE revision loop (max 3 cycles) is for whole-session validator verdicts, not for per-item reviewer failures. Re-promoting a dead_letter item back into the reviewer loop without controller-level intervention (new acceptance criteria, different executor, escalation to user) wastes revision budget.
+
+This contract is documented (here + in `controller-reference.md`'s dead-letter-queue section); enforcement is currently advisory. A future hook (tracked under LP-27, Wave 5) will mechanically verify that `review_rounds >= 3` items appear in `dead_letter_items[]` before the controller writes its terminal `status: completed` on the coordination log.
+
+See `controller-reference.md` for reviewer spawning patterns, blind review protocol, dead-letter queue schema, and confidence tiers.
 
 ### Two-Stage Review Protocol (V10.22.0)
 
-Every reviewer loop MUST use two distinct review stages, in strict order. No code quality review before spec compliance passes.
+Every reviewer loop runs two ordered stages: Stage 1 spec compliance (binary PASS/REVISE on acceptance criteria) before Stage 2 code quality (severity-tagged findings). No code quality review begins until spec compliance passes.
 
-**Stage 1: Spec Compliance Review**
-
-Does the implementation meet the acceptance criteria exactly?
-
-```
-Reviewer prompt (Stage 1):
-  "Review TASK-{N} for SPEC COMPLIANCE ONLY.
-   Acceptance criteria: {criteria from work_items.yaml}
-
-   For each criterion:
-   - MET: cite specific file:line evidence
-   - NOT MET: describe what is missing or incorrect
-   - PARTIAL: describe what is done and what remains
-
-   Verdict: PASS (all criteria MET) or REVISE (any NOT MET/PARTIAL)
-
-   DO NOT comment on code quality, style, or maintainability in this stage."
-```
-
-**Stage 1 checks**:
-- Every acceptance criterion has a MET/NOT MET/PARTIAL status
-- Evidence is specific (file paths, line numbers, test output)
-- No subjective quality judgments in this stage
-- Verdict is binary: all criteria MET = PASS, otherwise REVISE
-
-**If Stage 1 returns REVISE**: Send feedback to execution agent with the specific unmet criteria. Do NOT proceed to Stage 2. The execution agent must address all unmet criteria before code quality review begins.
-
-**Stage 2: Code Quality Review**
-
-Is the implementation well-written, maintainable, and secure?
-
-```
-Reviewer prompt (Stage 2):
-  "Review TASK-{N} for CODE QUALITY.
-   Spec compliance has PASSED -- all acceptance criteria are met.
-
-   Review for:
-   - Correctness: edge cases, error handling, null safety
-   - Maintainability: naming, structure, complexity, DRY
-   - Security: injection, auth bypass, data exposure, trust boundaries
-   - Performance: obvious inefficiencies, N+1 queries, memory leaks
-   - Conventions: project style guide, existing patterns, consistency
-
-   Verdict: PASS (acceptable quality) or REVISE (quality issues that should be fixed)
-   Severity per finding: CRITICAL (must fix) / HIGH (should fix) / LOW (nice to fix)
-
-   Only REVISE for CRITICAL or 2+ HIGH findings."
-```
-
-**Stage 2 checks**:
-- Only runs after Stage 1 PASS
-- Findings are severity-tagged (CRITICAL/HIGH/LOW)
-- REVISE threshold: any CRITICAL or 2+ HIGH findings
-- LOW findings are recorded but do not trigger REVISE
-
-**Why two stages**:
-- Prevents "code is beautiful but doesn't meet requirements" false passes
-- Ensures functional correctness before spending review budget on quality
-- Separates objective (spec compliance) from subjective (code quality) assessment
-- Reduces revision round waste (fixing quality issues in code that doesn't meet spec)
-
-**Coordination log format for two-stage review**:
-```yaml
-implementation_tasks:
-  - task_id: WI-1
-    assigned_to: cagents:backend-developer
-    stage_1_result: PASS    # spec compliance
-    stage_2_result: PASS    # code quality
-    review_result: PASS     # overall (both must PASS)
-    review_rounds: 1
-```
+See @.claude/rules/playbooks/pat-two-stage-review.md for the canonical pattern, reviewer prompts per stage, REVISE thresholds, why-two-stages rationale, and coordination-log format.
 
 ### Guard Command Pattern (V10.18.0)
 
@@ -301,18 +242,9 @@ guard_chain_result:
 
 ## Graceful Degradation Under Harness Tool Stripping (PHASE-N1, V11.1.13; generalized in v12.1.1)
 
-**Applies to: all cAgents controllers and execution agents spawned at depth ≥ 1 by Claude Code, regardless of which skill spawned them (`/run`, `/team`, or `/org`).**
+Applies to all cAgents controllers and execution agents spawned at depth >= 1 by Claude Code, regardless of which skill spawned them. When `Agent` is stripped, the spawned agent gracefully degrades to direct execution + self-validation rather than failing.
 
-When any cAgents agent (controller, execution, or otherwise) is spawned at nesting depth ≥ 1 by Claude Code, the runtime may strip the `Agent` tool from the spawned agent's tool surface — even when the agent's SKILL.md frontmatter correctly declares `allowed-tools: Agent ...`. This is upstream platform behavior, not a cAgents config issue (no `settings.json`, `plugin.json`, or env-var knob exposes the depth-1 stripping; see PHASE-N1 audit at `cagents-memory/_knowledge/agent-tool-depth1-stripping.md`).
-
-**Rule:** When any spawned agent discovers that `Agent` is unavailable, it MUST gracefully degrade to direct execution rather than fail the work item. The agent uses the tools it does have (`Read`, `Write`, `Edit`, `Bash`, `Grep`, `Glob`), self-validates against acceptance criteria via the 5 hook-verifiable checks in @resources/execution-self-validation.md, and writes the result to `outputs/task-{N}/self-validation.yaml` with the standard `status: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED` field.
-
-**Documentation requirement:** the coordination_log for the session/wave MUST include the literal sentence "Agent/subagent-spawn tool was not available" so that `verify-completion.cjs` recognizes the graceful-degradation pattern and downgrades the protocol-violation warning. See `.claude/rules/core/teams.md` § Known Harness Limitation for the full evidence chain and the upstream-config null-finding.
-
-**Scope (generalized in v12.1.1):** this degradation applies to all skills and all agent types. Previously this rule asserted that `/run` controllers retain Agent at level 1 and MUST delegate — that assertion was empirically falsified in session `run_improve-team-context_260521_001` (v12.1.0 WI-1 spike), where `cagents:tech-lead` spawned by `/run` at depth-1 received "Agent is not available inside subagents." The stripping behavior affects:
-- Plugin-namespaced agents (`cagents:*`) AND built-in agent types (`general-purpose`, `Explore`, `Plan`).
-- All spawning skills: `/run`, `/team` (teammates), and `/org` (C-suite agents spawned at depth ≥ 1).
-- Controllers AND execution agents — the only safe assumption is depth-0 (the skill's own loop) has `Agent`; depth ≥ 1 does not.
+See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md for the canonical pattern, scope, rule, documentation requirement, upstream-configuration null-finding, and empirical reproductions.
 
 ## Agent ID Tracking
 
@@ -387,30 +319,9 @@ See `controller-reference.md` for examples and file location details.
 
 ## Evidence-First Execution Pattern (V10.10.0)
 
-Controllers MUST require specific evidence from execution agents, not vague confirmations.
+Controllers MUST require specific evidence from execution agents (file paths, line numbers, test output, measured metrics) — not vague confirmations like "looks correct" or "reviewed code, all good".
 
-### Bad (vague):
-```yaml
-- criterion: "Auth is secure"
-  evidence: "Reviewed auth code, looks good"
-```
-
-### Good (specific):
-```yaml
-- criterion: "Auth is secure"
-  evidence: |
-    - Password hashing: bcrypt with cost=12 at src/auth/hash.ts:15
-    - Session tokens: 256-bit random via crypto.randomBytes at src/auth/session.ts:8
-    - CSRF protection: double-submit cookie pattern at src/middleware/csrf.ts:22
-    - Rate limiting: 5 attempts/15min window at src/auth/rate-limit.ts:30
-```
-
-### Execution Agent Response Requirements
-When controllers delegate questions, execution agents MUST respond with:
-1. **Specific file paths and line numbers** (not "in the auth module")
-2. **Actual code snippets** (not "it uses bcrypt")
-3. **Measured metrics** (not "performance is good")
-4. **Named failure modes** (not "it handles errors")
+See @.claude/rules/playbooks/pat-evidence-first-execution.md for the canonical pattern, bad-vs-good examples, and the four execution-agent response requirements.
 
 ## CRITICAL: Do Not Ask Permission
 

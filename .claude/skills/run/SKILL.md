@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.6.0"
+  version: "12.7.0"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--mode <standard|debug>] [--no-goal]"
   user-invocable: "true"
   context: "none"
@@ -31,26 +31,7 @@ You are the **event-driven pipeline engine** that executes a state machine loop,
 **What you do**: Parse, plan, spawn agents, read events, route revisions, report results.
 **What you NEVER do**: Write code, edit files, create content, answer domain questions, explore the codebase for implementation purposes.
 
-### Rationalization Kill List
-
-The following phrases are self-handling rationalizations. Each one is a critical violation. No exceptions.
-
-| Rationalization | Why it fails |
-|----------------|-------------|
-| "This is a documentation task" | Documentation goes to doc-writer via the pipeline, not directly to you |
-| "This is a planning task" | Planning is a pipeline stage (planner agent), not a bypass |
-| "I'll handle this directly" | Direct handling is a critical protocol violation with no exceptions |
-| "The task is too simple for a full pipeline" | Simplicity never bypasses delegation -- even single-line fixes use the pipeline |
-| "Rather than spinning up agents" | Spinning up agents is the ONLY execution mode for /run |
-| "I can do this more efficiently myself" | Efficiency is irrelevant -- delegation is mandatory regardless of speed claims |
-| "This doesn't need agent coordination" | Every /run invocation needs agent coordination |
-| "I'll build/create/fix/write/implement this myself" | ALL implementation goes to execution agents via Agent tool |
-| "Let me just make this change directly" | "Just" is a rationalization word -- Agent tool only |
-| "This is a minor edit that doesn't warrant spawning agents" | Size does not determine delegation requirements |
-| "I'll do this inline since it's quick" | Speed never overrides the delegation protocol |
-| "Rather than going through the full pipeline for this" | The full pipeline runs for every /run invocation without exception |
-
-**If you find yourself reasoning toward any of these conclusions, STOP. You are rationalizing a violation. Delegate.**
+See @.claude/rules/core/delegation.md for the canonical Rationalization Kill List and the full delegation contract. If you catch yourself reasoning toward any phrase in that list, STOP — you are rationalizing a violation. Delegate.
 
 ## Architecture: Event-Driven State Machine (v12.0.0)
 
@@ -62,11 +43,11 @@ INIT -> ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED
 
 | Phase | Level | Agents | Output |
 |-------|-------|--------|--------|
-| Enrichment | 1 | orchestrator, universal-planner (decomposition inline) | enriched_context.yaml, plan.yaml, work_items.yaml |
+| Enrichment | 1 | orchestrator, planner (decomposition inline) | enriched_context.yaml, plan.yaml, work_items.yaml |
 | Coordination | 1 + 2 | controller (level 1) -> executor + reviewer (level 2, max 3 rounds) | coordination_log.yaml |
 | Validation | 1 | validator | validation_report.yaml (PASS/FAIL/REVISE) |
 
-Pipeline-level revision loop: max 3 cycles total (lowered from 5 in v12.0.0). v12.0.0 collapse: task-decomposer and prompt-engineer absorbed into universal-planner; controllers fall back to standard delegation prompts.
+Pipeline-level revision loop: max 3 cycles total (lowered from 5 in v12.0.0). v12.0.0 collapse: task-decomposer and prompt-engineer absorbed into planner; controllers fall back to standard delegation prompts.
 
 See @reference/state-machine-detail.md for full per-state contracts, event file format, revision routing semantics, and the BLOCKED verdict (debug-mode only).
 
@@ -168,7 +149,7 @@ This is the core loop -- spawn pipeline agents one state at a time, advance via 
 
 **3b. Route domain and tier inline** before spawning the orchestrator. Domain detection uses `{domain}/config/domain_overrides.yaml` -> `router_keywords` array. See @reference/domain-coverage.md for the full domain table.
 
-**3c. Compute complexity score and select pipeline path** (Minimal / Medium / Full). For tier 2 with clear scope, the adaptive pipeline skips the orchestrator. (v12.0.0: decomposer and prompt-engineer no longer exist as separate stages — universal-planner handles decomposition inline.) See @reference/adaptive-pipeline.md for the 9-signal scoring rubric, path-selection thresholds, and tier-2 fast-path skip behavior.
+**3c. Compute complexity score and select pipeline path** (Minimal / Medium / Full). For tier 2 with clear scope, the adaptive pipeline skips the orchestrator. (v12.0.0: decomposer and prompt-engineer no longer exist as separate stages — planner handles decomposition inline.) See @reference/adaptive-pipeline.md for the 9-signal scoring rubric, path-selection thresholds, and tier-2 fast-path skip behavior.
 
 **3d. Display domain/tier confirmation**:
 
@@ -201,7 +182,7 @@ INSTRUCTIONS:
 })
 ```
 
-For the **PLANNED state (controller)**, the controller is dynamic -- resolved from `plan.yaml` `controller_assignment.primary`. (v12.0.0: PROMPTS_READY removed; universal-planner produces work_items.yaml inline and controllers fall back to standard delegation prompts.)
+For the **PLANNED state (controller)**, the controller is dynamic -- resolved from `plan.yaml` `controller_assignment.primary`. (v12.0.0: PROMPTS_READY removed; planner produces work_items.yaml inline and controllers fall back to standard delegation prompts.)
 
 **Debug-mode prefix injection (V10.26.13+)**: If `flags.mode === "debug"`, read `.claude/skills/run/reference/debug-mode-prompt.md` and PREPEND its prefix text to the controller spawn prompt. See @reference/debug-mode-prompt.md.
 
