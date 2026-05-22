@@ -206,6 +206,11 @@
             "type": "command",
             "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" post-write-validator'",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" validator-evidence-recheck'",
+            "timeout": 5
           }
         ]
       }
