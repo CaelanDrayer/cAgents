@@ -1,3 +1,15 @@
+# Runtime consumer (P0-2, v12.7.x):
+#   .claude/hooks/session-init-gate.cjs reads this file at PreToolUse[Agent]
+#   time. When a spawn's `tool_input.subagent_type` is `cagents:<old>` and
+#   <old> is not registered in `.claude-plugin/plugin.json`, the hook looks
+#   the name up here and emits an advisory systemMessage naming the new
+#   target. Updates to this map become live immediately (no rebuild).
+#
+#   Editors: keep entries normalized — both `old:` and `new:` MUST use the
+#   `cagents:` prefix, and identity moves (old == new) are skipped by the
+#   runtime lookup. See `aliasLookup()` in session-init-gate.cjs for the
+#   full normalization rules.
+#
 schema_version: "1"
 generated_at: "2026-05-20T07:53:44Z"
 purpose: "Maps v11.3.0 agent names to v12.0.0 names/locations. Consumed by router fallback to preserve back-compat after renames/merges."
