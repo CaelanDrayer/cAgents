@@ -76,17 +76,14 @@ metadata:
 
 ```yaml
 pipeline_state: INIT
-revision_round: 0
-validation_cycles: 0
 created_at: "{ISO_TIMESTAMP}"
 state_history:
   - state: INIT
     entered_at: "{ISO_TIMESTAMP}"
-    duration_ms: null
 ```
 
 `{ISO_TIMESTAMP}` MUST be the real current time. Never fabricate timestamps like `T00:00:00Z` or `T12:00:00Z` -- these are detectable fakes that break session timeline analysis. Use `date -u +%Y-%m-%dT%H:%M:%SZ` via Bash if needed.
 
-`duration_ms` is computed at state transition time (ms between `entered_at` and the next state's `entered_at`). The current (latest) state has `duration_ms: null` until the next transition.
+v12.6.0: `revision_round`, `validation_cycles`, and `state_history[].duration_ms` were external-UI-only fields and are no longer written. Track revision count in `/run`'s working state (max 3 cycles before HITL).
 
 Note: /run uses the `pipeline_state` field (not `phase`). Hooks check both fields as fallback. See @reference/session-schema.md for the canonical session YAML contract.

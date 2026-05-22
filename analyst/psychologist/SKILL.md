@@ -19,7 +19,6 @@ capabilities:
   - research_interpretation
 related_agents:
   - name: mental-health-advisor
-  - name: sociologist
 not-my-scope: ["clinical diagnosis", "therapy or counseling", "prescribing or recommending medication", "crisis intervention"]
 allowed-tools: Read Grep Glob Write Edit Bash
 ---

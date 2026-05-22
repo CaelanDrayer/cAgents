@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.2.0"
+  version: "12.6.0"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--mode <standard|debug>] [--no-goal]"
   user-invocable: "true"
   context: "none"
@@ -119,7 +119,7 @@ Special flag handling:
 
 See @reference/flags.md for the complete flag reference with defaults and examples.
 
-**`/run context show|init|update|clear`** — historical passthrough subcommands. Removed in V11.0; `/run` no longer dispatches to a sibling `/context` skill. The orchestrator still reads `cagents-memory/_projects/{project_hash}/product_context.yaml` during INIT enrichment, so users edit `product_context.yaml` directly. See @reference/context-passthrough.md for the full historical contract (preserved for AgentPath FileWatcher backward-compatibility).
+**`/run context show|init|update|clear`** — historical passthrough subcommands. Removed in V11.0; `/run` no longer dispatches to a sibling `/context` skill. The orchestrator still reads `cagents-memory/_projects/{project_hash}/product_context.yaml` during INIT enrichment, so users edit `product_context.yaml` directly. See @reference/context-passthrough.md for the full historical contract (preserved for archived-session back-compat).
 
 ---
 
@@ -154,7 +154,7 @@ When NOT opted out, surface this Bash invocation as an optional setup step:
 claude /goal "cagents-memory/sessions/{SESSION_ID}/workflow/completion_summary.yaml exists with status: COMPLETED AND cagents-memory/sessions/{SESSION_ID}/workflow/execution_summary.yaml exists; AND all TaskList session tasks are completed or deleted; or stop after 8 revision cycles"
 ```
 
-The condition references verifiable end state (file existence + status field + clean TaskList) and includes a turn-cap clause for bounded execution. Goal evaluator reasons are captured by `.claude/hooks/goal-evaluator-logger.cjs` and consumed by `cagents:universal-self-correct` as additional revision signal.
+The condition references verifiable end state (file existence + status field + clean TaskList) and includes a turn-cap clause for bounded execution. Goal evaluator reasons are captured by `.claude/hooks/goal-evaluator-logger.cjs` and consumed by `cagents:self-correct` as additional revision signal.
 
 Proceed to Step 3.
 
@@ -177,7 +177,7 @@ Detected: Domain={domain} ({super_domain}), Tier={tier}, Controller={controller_
   (Override with: --domain <domain> --tier <N>)
 ```
 
-**3e. Execute the state machine loop**: For each state, look up the agent in pipeline_config, spawn via Agent tool, read the completion event, update status.yaml AND events/index.yaml, call TaskUpdate, check for revision, advance.
+**3e. Execute the state machine loop**: For each state, look up the agent in pipeline_config, spawn via Agent tool, read the agent's primary output file (enriched_context.yaml / plan.yaml / coordination_log.yaml / validation_report.yaml), update status.yaml, call TaskUpdate, check for revision, advance. (v12.6.0: workflow/events/ emission removed — primary output files are the canonical state-advancement signal.)
 
 **MANDATORY**: Update status.yaml after EVERY state transition. The verify-completion.cjs and attention-injection.cjs hooks read pipeline_state from status.yaml. Skipping this update breaks hook-based session detection.
 
@@ -197,9 +197,7 @@ CURRENT STATE: {current_state}
 INSTRUCTIONS:
 1. Read your inputs from session workflow/.
 2. Perform your phase work.
-3. Write outputs to session workflow/.
-4. Write completion event to workflow/events/EVT-{N}.yaml.
-5. Update workflow/events/index.yaml with the ordered event list.`
+3. Write outputs to session workflow/ (your primary output file is the canonical state-advancement signal — see SKILL.md for which file your state owns).`
 })
 ```
 
@@ -216,7 +214,7 @@ For the **PLANNED state (controller)**, the controller is dynamic -- resolved fr
 | REVISE | Route back to PLANNED. Pass feedback to planner. |
 | BLOCKED (debug only) | Route to PLANNED with falsification annotation. |
 
-Increment `revision_round` and `validation_cycles` in status.yaml. Max 3 total revision cycles before HITL escalation (lowered from 5 in v12.0.0).
+Track revision cycles internally (max 3 total before HITL escalation; lowered from 5 in v12.0.0). v12.6.0: `revision_round` and `validation_cycles` are no longer written to status.yaml — these were external-UI-only fields. Hold the counter in working state and use it to enforce the 3-cycle cap.
 
 > **CRITICAL: DO NOT STOP HERE.** When the loop exits at ANY terminal state, Step 4 is MANDATORY. The verify-completion.cjs Stop hook will block stopping if execution_summary.yaml is missing or auto-generated.
 
@@ -229,21 +227,21 @@ See @reference/state-machine-detail.md for the full revision routing protocol an
 This step MUST execute after the state machine loop exits. Not optional, not deferrable, not handled by any hook.
 
 - [ ] **4.1**. Read final state from status.yaml
-- [ ] **4.2**. Compute final duration_ms for the last state_history entry
+- [ ] **4.2**. (v12.6.0: removed — `duration_ms` is no longer emitted to state_history. Skip this step.)
 - [ ] **4.3**. Write `execution_summary.yaml` -- MANDATORY even on failure or interruption. Write this BEFORE anything else. The verify-completion.cjs hook creates a stub if you forget, but that triggers a warning visible to the user.
 
 ```yaml
 session_id: {SESSION_ID}
 final_state: VALIDATED  # or FAILED, INTERRUPTED
 status: completed | failed | interrupted
-revision_rounds_used: {N}
 states_executed: [INIT, ORCHESTRATED, PLANNED, COORDINATED, VALIDATED]
 states_skipped: [{list}]
 total_agents_spawned: {count}
-total_duration_ms: {elapsed_ms}
 started_at: "{ISO_TIMESTAMP}"
 completed_at: "{ISO_TIMESTAMP}"
 ```
+
+Note: v12.6.0 dropped `revision_rounds_used` and `total_duration_ms` from execution_summary.yaml (external-UI-only fields).
 
 - [ ] **4.4**. Update status.yaml to terminal state (`complete` or `failed`).
 - [ ] **4.5**. Append session metrics to `cagents-memory/_system/metrics/pipeline_analytics.yaml`. Recalculate aggregates (success_rate, avg_duration, by_domain, by_tier). Keep the last 500 sessions in the log; archive older entries.
@@ -286,8 +284,8 @@ If `--dry-run` with `--team`: Display plan summary and team composition, then ST
 | Parse flags, create session dir, write instruction.yaml + status.yaml | Orchestrator (level 1) -> enriched_context.yaml |
 | Load pipeline_config, read strategic_brief.yaml | Universal-planner (level 1) -> plan.yaml + work_items.yaml (decomposition inline, v12.0.0) |
 | Domain detection + tier classification (inline) | Controller (level 1, dynamic) -> coordination_log.yaml |
-| Compute duration_ms at each state transition | Universal-validator (level 1) -> validation_report.yaml |
-| Maintain events/index.yaml | Execution agents (level 2, via controller): implementation work |
+| Track state transitions in status.yaml state_history (entered_at only; v12.6.0 dropped duration_ms) | Universal-validator (level 1) -> validation_report.yaml |
+| (v12.6.0: events/index.yaml emission removed — workflow/events/ is no longer maintained) | Execution agents (level 2, via controller): implementation work |
 | Always write execution_summary.yaml | Reviewer (level 2, via controller): acceptance criteria review |
 | Call TaskCreate/TaskUpdate at every transition | |
 | Spawn pipeline agents via Agent tool | |

@@ -9,7 +9,7 @@ import os from 'os';
  *
  * .claude/hooks/goal-evaluator-logger.cjs is a Stop hook that captures the
  * latest /goal evaluator reason into the active session's
- * workflow/goal_evaluator_log.yaml so cagents:universal-self-correct can
+ * workflow/goal_evaluator_log.yaml so cagents:self-correct can
  * consume it as additional revision signal.
  *
  * Contract:

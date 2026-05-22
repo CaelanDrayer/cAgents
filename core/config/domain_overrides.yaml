@@ -4,9 +4,9 @@ description: "Infrastructure agents powering the orchestration pipeline, routing
 
 planner:
   controller_catalog:
-    tier_2: [orchestrator, universal-planner, universal-executor]
-    tier_3: [orchestrator, universal-planner, universal-executor, universal-validator]
-    tier_4: [orchestrator, universal-planner, universal-executor, universal-validator, universal-self-correct]
+    tier_2: [orchestrator, planner, executor]
+    tier_3: [orchestrator, planner, executor, validator]
+    tier_4: [orchestrator, planner, executor, validator, self-correct]
 
   specialist_routing:
     orchestration:
@@ -15,27 +15,27 @@ planner:
       description: "Context enrichment and workflow orchestration"
     planning:
       keywords: [plan, decompose, objective, work item, breakdown, scope]
-      agents: [universal-planner, task-decomposer]
+      agents: [planner, task-decomposer]
       description: "Objective planning and task decomposition"
     execution:
       keywords: [execute, coordinate, monitor, track, delegate]
-      agents: [universal-executor]
+      agents: [executor]
       description: "Execution monitoring and controller coordination"
     validation:
       keywords: [validate, verify, quality, gate, check, review]
-      agents: [universal-validator, reviewer]
+      agents: [validator, reviewer]
       description: "Quality validation and review gates"
     routing:
       keywords: [route, classify, tier, domain, detect]
-      agents: [universal-router]
+      agents: [router]
       description: "Request classification and domain routing"
     recovery:
       keywords: [recover, self-correct, retry, stuck, error, fallback]
-      agents: [universal-self-correct]
+      agents: [self-correct]
       description: "Adaptive recovery and self-correction"
     task_management:
       keywords: [task, inventory, consolidate, batch, csv, checkpoint]
-      agents: [task-inventory, task-consolidator]
+      agents: [task-state, task-merger]
       description: "Task inventory management and context consolidation"
     optimization:
       keywords: [optimize, improve, prompt, craft]
@@ -43,7 +43,7 @@ planner:
       description: "Prompt optimization and workflow improvement"
     team:
       keywords: [team, teammate, wave, parallel, gate]
-      agents: [team-trigger, team-lead-adapter]
+      agents: [team, team-lead]
       description: "Team creation and team lead coordination"
     escalation:
       keywords: [escalate, human, approval, hitl]

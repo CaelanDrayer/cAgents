@@ -31,8 +31,6 @@ metadata:
       type: coordinates
     - name: escalation-manager
       type: coordinates
-    - name: support-supervisor
-      type: coordinates
 allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 

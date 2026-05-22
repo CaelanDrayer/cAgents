@@ -25,7 +25,7 @@ Detailed state-by-state semantics for the /run event-driven pipeline. The SKILL.
     REVISE -> back to Phase 1 (PLANNED, re-plan)
 ```
 
-**v12.0.0 collapse**: `task-decomposer` and `prompt-engineer` were absorbed into `cagents:universal-planner`. The planner produces both `plan.yaml` and `work_items.yaml` inline. Controllers fall back to standard delegation prompts (no separate `delegation_prompts.yaml` artifact). The DECOMPOSED and PROMPTS_READY states no longer exist.
+**v12.0.0 collapse**: `task-decomposer` and `prompt-engineer` were absorbed into `cagents:planner`. The planner produces both `plan.yaml` and `work_items.yaml` inline. Controllers fall back to standard delegation prompts (no separate `delegation_prompts.yaml` artifact). The DECOMPOSED and PROMPTS_READY states no longer exist.
 
 ## Per-State Contracts (v12.0.0)
 
@@ -44,17 +44,18 @@ while current_state is not terminal (VALIDATED):
   1. Look up current_state in pipeline_config.yaml
   2. Determine agent to spawn (or "dynamic" for controller from plan.yaml)
   3. Spawn agent at level 1 via Agent tool
-  4. After agent returns, read completion event from workflow/events/
+  4. After agent returns, read the agent's primary output file
+     (enriched_context.yaml / plan.yaml / coordination_log.yaml / validation_report.yaml)
   5. MANDATORY: Update status.yaml with new state
      a. Set pipeline_state to next_state
-     b. Compute duration_ms for the PREVIOUS state_history entry:
-        duration_ms = (now_ms - previous_entered_at_ms)
-     c. Append new state_history entry with entered_at=now, duration_ms=null
-  6. Update events/index.yaml: read existing events list, append new EVT-{N}, write back
-     (This is /run's responsibility -- do NOT rely on spawned agents to maintain the index)
+     b. Append new state_history entry with entered_at=now
+        (v12.6.0: duration_ms is NO LONGER emitted — drop the field)
+  6. (v12.6.0: workflow/events/ emission removed. The agent's primary output file
+     is the canonical signal for state advancement; do not write EVT-*.yaml or
+     events/index.yaml.)
   7. Call TaskUpdate to reflect progress
   8. Check for revision: if validator returned FAIL or REVISE, route accordingly
-  9. Advance to next_state from event file
+  9. Advance to next_state per pipeline_config.yaml
 ```
 
 The verify-completion.cjs hook, attention-injection.cjs hook, and session discovery all read pipeline_state from status.yaml. If you skip the status.yaml update, hooks see stale state and cannot detect mid-pipeline stops.
@@ -74,11 +75,11 @@ After the COORDINATED state, read `workflow/validation_report.yaml`:
 | Verdict | Action | Next State | Notes |
 |---------|--------|-----------|-------|
 | **PASS** | Advance to VALIDATED (terminal) | VALIDATED | Loop exits, proceed to Step 4 |
-| **FAIL** | Re-run controller with feedback | PLANNED | Increment revision_round and validation_cycles |
-| **REVISE** | Re-run planner with feedback | PLANNED (orchestrator may also re-run) | Increment revision_round and validation_cycles |
+| **FAIL** | Re-run controller with feedback | PLANNED | Increment in-memory revision counter (v12.6.0: not persisted to status.yaml) |
+| **REVISE** | Re-run planner with feedback | PLANNED (orchestrator may also re-run) | Increment in-memory revision counter (v12.6.0: not persisted to status.yaml) |
 | **BLOCKED** (V10.26.17+, debug-mode only) | Re-run controller with falsification annotation | PLANNED | Annotates controller prompt with hypotheses_tested[] count |
 
-Max 3 total revision cycles (lowered from 5 in v12.0.0). If `revision_round >= 3`: escalate to user (HITL). Report what completed and what failed.
+Max 3 total revision cycles (lowered from 5 in v12.0.0). If the in-memory revision counter reaches 3: escalate to user (HITL). Report what completed and what failed. (v12.6.0: the counter is held in `/run`'s working state, not persisted to status.yaml.)
 
 **v12.0.0 routing change**: FAIL and REVISE both route back to PLANNED. Previously FAIL routed to PROMPTS_READY (re-run controller with same plan) and REVISE routed to PLANNED (re-plan from scratch). With PROMPTS_READY removed, FAIL re-runs the controller from PLANNED using the existing plan plus validator feedback; REVISE re-runs the planner (and may also re-run the orchestrator) to produce a new plan.
 
@@ -93,42 +94,21 @@ Do not retry the same hypotheses; expand scope or escalate."
 
 This prevents infinite revision loops on fundamentally stuck debug sessions. Non-debug runs never see verdict BLOCKED (validator gate enforces this).
 
-## Status.yaml Updates on Revision (v12.0.0)
+## Status.yaml Updates on Revision (v12.6.0)
 
 ```yaml
-pipeline_state: PLANNED     # both FAIL and REVISE route here in v12.0.0
-revision_round: {N}         # incremented
-validation_cycles: {N}      # incremented (total FAIL+REVISE loops, max 3)
+pipeline_state: PLANNED     # both FAIL and REVISE route here in v12.0.0+
+# v12.6.0: revision_round and validation_cycles fields are NO LONGER written to status.yaml.
+# Track revision count in /run's working state; enforce the 3-cycle cap there.
 ```
 
 ## Loop Exit Contract
 
 When the loop exits at any terminal state (VALIDATED, COORDINATED in minimal path, or any other terminal), execute Step 4 (MANDATORY) in SKILL.md before stopping. The verify-completion.cjs Stop hook will block stop if execution_summary.yaml is missing or auto-generated. Stopping after the loop exits without completing Step 4 is the #1 cause of incomplete pipeline runs.
 
-## Event File Format
+## Event File Format (REMOVED in v12.6.0)
 
-Each pipeline agent writes a completion event to `workflow/events/EVT-{N}.yaml`:
-
-```yaml
-event_id: EVT-{N}
-type: "state_transition"
-agent_id: "{agent_id}"
-agent_type: "cagents:{agent_name}"
-timestamp: "{ISO_TIMESTAMP}"
-state_from: "{current_state}"
-state_to: "{next_state}"
-payload:
-  inputs_consumed: [{inputs}]
-  outputs_produced: [{outputs}]
-```
-
-After writing each event, the agent updates `workflow/events/index.yaml` with the ordered event list:
-
-```yaml
-events: [EVT-1, EVT-2, EVT-3, ...]
-```
-
-This provides authoritative event ordering without requiring numeric sort of filenames.
+Historical note: pre-v12.6 sessions wrote completion events to `workflow/events/EVT-{N}.yaml` and an index at `workflow/events/index.yaml`. These were external-UI-only signals — no cAgents hook or agent consumes them. v12.6.0 removed the emission entirely. State advancement is now driven by each agent's primary output file (`enriched_context.yaml`, `plan.yaml`, `coordination_log.yaml`, `validation_report.yaml`), which the `/run` loop reads at level 0. Archived pre-v12.6 sessions retain `workflow/events/` on disk for record.
 
 ## Historical Note: 7-State Machine (pre-v12.0.0)
 

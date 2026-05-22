@@ -1,7 +1,11 @@
 ---
 paths:
   - "core/orchestrator/**"
-  - "core/universal-*/**"
+  - "core/planner/**"
+  - "core/router/**"
+  - "core/executor/**"
+  - "core/validator/**"
+  - "core/self-correct/**"
   - ".claude/skills/run/**"
   - "cagents-memory/_system/config/**"
 ---
@@ -25,8 +29,8 @@ enrichment_summary: "{brief_summary_of_context}"
 ```
 
 > **DEPRECATED in V11.0**: The /review, /optimize, /context, /debug skills were removed in V11.0.
-> The `/context init` reference below is PRESERVED for AgentPath FileWatcher backward-compatibility —
-> it consumes session_type prefixes from historical session directories on disk. Do NOT remove these
+> The `/context init` reference below is PRESERVED for archived-session back-compat — hooks consume
+> session_type prefixes from historical session directories on disk. Do NOT remove these
 > values. Use /improve --mode review|optimize|full or /run --mode debug for V11+ workflows.
 > See [docs/MIGRATION-V11.md](../../../docs/MIGRATION-V11.md) for migration guidance.
 
@@ -43,7 +47,7 @@ states:
     next: ORCHESTRATED
     outputs: [enriched_context.yaml]
   ORCHESTRATED:
-    agent: cagents:universal-planner
+    agent: cagents:planner
     next: PLANNED
     inputs: [enriched_context.yaml]
     outputs: [plan.yaml]

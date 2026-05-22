@@ -19,8 +19,6 @@ metadata:
   related_agents:
     - name: strategic-planner
       type: coordinated_by
-    - name: risk-manager
-      type: collaborates_with
 allowed-tools: Read Grep Glob Write Edit Bash
 ---
 

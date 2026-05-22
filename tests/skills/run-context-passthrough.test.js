@@ -5,8 +5,8 @@
 // The /run context passthrough no longer dispatches to a sibling skill.
 // SKILL.md preserves a deprecation note pointing at the historical contract
 // in @reference/context-passthrough.md. The reference file still documents
-// the original four subcommands and dispatch behavior for AgentPath
-// FileWatcher backward-compatibility and historical traceability.
+// the original four subcommands and dispatch behavior for historical
+// traceability and back-compat with archived sessions.
 //
 // Tests below verify:
 //   - reference/context-passthrough.md retains the full historical contract

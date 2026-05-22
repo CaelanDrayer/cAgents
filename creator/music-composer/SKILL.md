@@ -23,8 +23,6 @@ metadata:
   related_agents:
     - name: narrative-director
       type: coordinated_by
-    - name: sound-designer
-      type: collaborates_with
 allowed-tools: Read Grep Glob Write Edit Bash
 ---
 

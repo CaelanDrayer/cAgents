@@ -33,8 +33,6 @@ metadata:
   related_agents:
     - name: infrastructure-lead
       type: coordinated_by
-    - name: sysadmin
-      type: collaborates_with
 allowed-tools: Read Grep Glob Write Edit Bash
 ---
 

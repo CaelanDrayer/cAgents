@@ -27,6 +27,9 @@ function findAllSkillMd() {
   function walk(dir) {
     if (!existsSync(dir)) return;
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      // Skip _deprecated/ buckets — those are culled agents kept on disk
+      // for alias resolution but not part of the active catalog.
+      if (entry.name === '_deprecated') continue;
       const full = join(dir, entry.name);
       if (entry.isDirectory()) walk(full);
       else if (entry.name === 'SKILL.md') results.push(full);
@@ -50,8 +53,12 @@ function parseFrontmatter(content) {
 describe('Phase 11: per-agent metadata.version field (V11.1.12+)', () => {
   const skillFiles = findAllSkillMd();
 
-  test('finds the expected agent count (≥238 minimum baseline)', () => {
-    expect(skillFiles.length).toBeGreaterThanOrEqual(238);
+  test('finds the expected agent count (v12.4.0 compression band [120,170])', () => {
+    // v12.4.0 P2 compression moved 96 agents to _deprecated/ buckets, taking
+    // the active catalog from 240 -> 144. The 238-baseline was an artifact
+    // of the pre-compression catalog; the v12.4.0 contract is [120, 170].
+    expect(skillFiles.length).toBeGreaterThanOrEqual(120);
+    expect(skillFiles.length).toBeLessThanOrEqual(170);
   });
 
   test('(a) every agent SKILL.md declares metadata.version', () => {

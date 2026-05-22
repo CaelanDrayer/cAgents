@@ -14,7 +14,6 @@ capabilities:
   - transition_coaching
 related_agents:
   - name: career-counselor
-  - name: productivity-coach
 not-my-scope:
   - Clinical therapy or mental health diagnosis
   - Financial or legal advice

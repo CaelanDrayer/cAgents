@@ -36,8 +36,6 @@ metadata:
       type: collaborates_with
     - name: data-analyst
       type: cross_domain
-    - name: hr-analyst
-      type: cross_domain
     - name: predictive-analyst
       type: cross_domain
 allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet

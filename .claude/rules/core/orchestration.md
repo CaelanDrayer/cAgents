@@ -12,7 +12,7 @@ Workflow orchestration guidelines for cAgents.
 
 ## v12.0.0 State-Machine Collapse
 
-**v12.0.0 collapsed the pipeline from 7 states to 5 states.** The `DECOMPOSED` and `PROMPTS_READY` states were removed and their work absorbed into `cagents:universal-planner`, which now handles decomposition inline. Controllers fall back to standard delegation prompts. The post-v12 state machine is:
+**v12.0.0 collapsed the pipeline from 7 states to 5 states.** The `DECOMPOSED` and `PROMPTS_READY` states were removed and their work absorbed into `cagents:planner`, which now handles decomposition inline. Controllers fall back to standard delegation prompts. The post-v12 state machine is:
 
 ```
 INIT -> ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED
@@ -34,12 +34,12 @@ All state transitions are AUTOMATIC: INIT -> ORCHESTRATED -> PLANNED -> COORDINA
 
 > **DEPRECATED in V11.0**: The /review, /optimize, /context, /debug skills were removed in V11.0.
 > The `/review`, `/optimize`, `/debug` entries in the skill enumeration below are PRESERVED for
-> AgentPath FileWatcher backward-compatibility — it consumes session_type prefixes from historical
-> session directories on disk. Do NOT remove these values.
+> archived-session back-compat — hooks consume session_type prefixes from historical session
+> directories on disk. Do NOT remove these values.
 > Use /improve --mode review|optimize|full or /run --mode debug for V11+ workflows.
 > See [docs/MIGRATION-V11.md](../../../docs/MIGRATION-V11.md) for migration guidance.
 
-**Every skill (/run, /team, /designer; legacy /org, /review, /optimize, /debug session prefixes preserved for AgentPath FileWatcher back-compat) MUST create its session directory and write status.yaml BEFORE any other work.** No codebase exploration, no agent spawning, no analysis, no research — session directory first.
+**Every skill (/run, /team, /designer; legacy /org, /review, /optimize, /debug session prefixes preserved for archived-session back-compat) MUST create its session directory and write status.yaml BEFORE any other work.** No codebase exploration, no agent spawning, no analysis, no research — session directory first.
 
 **Rationale**: Without a session directory, hooks cannot track the session, agent_tree.yaml has no home, and artifacts have nowhere to be written. Session init is a prerequisite for all other operations.
 

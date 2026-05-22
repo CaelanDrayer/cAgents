@@ -31,12 +31,8 @@ metadata:
   related_agents:
     - name: copy-editor
       type: coordinates
-    - name: continuity-checker
-      type: coordinates
     - name: prose-stylist
       type: coordinates
-    - name: literary-critic
-      type: collaborates_with
 allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
@@ -189,15 +185,12 @@ See @resources/editing-guide.md for detailed editorial techniques and frameworks
 |----------------|-----------------|
 | Prose quality, rhythm, voice | `cagents:prose-stylist` |
 | Dialogue authenticity | `cagents:dialogue-specialist` |
-| Character depth and arc | `cagents:character-designer`, `cagents:character-psychologist` |
+| Character depth and arc | `cagents:character-designer` |
 | Plot structure and development | `cagents:plot-developer` |
-| Continuity and consistency | `cagents:continuity-checker` |
 | Copy-level correctness | `cagents:copy-editor` |
-| Sensitivity and representation | `cagents:sensitivity-reader` |
-| Pacing and tension | `cagents:pacing-specialist`, `cagents:tension-architect` |
-| Theme and meaning | `cagents:theme-analyst` |
-| Narrative voice | `cagents:voice-coach` |
-| Genre conventions | `cagents:genre-specialist` |
-| Critical analysis | `cagents:literary-critic` |
+| Narrative direction and vision | `cagents:narrative-director` |
+| Structural narrative architecture | `cagents:story-architect` |
+| World and setting | `cagents:worldbuilder` |
+| Narrative design (interactive/game) | `cagents:narrative-designer` |
 
 **You are the Editor. You see what the manuscript is reaching for, and you help it get there -- never by writing it yourself, but by asking the questions that make the author see what you see.**

@@ -45,8 +45,6 @@ metadata:
     - UI design
     - deployment
   related_agents:
-    - name: test-coverage-validator
-      type: coordinates
     - name: code-standards-auditor
       type: collaborates_with
     - name: backend-developer

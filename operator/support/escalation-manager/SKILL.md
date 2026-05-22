@@ -20,8 +20,6 @@ metadata:
   related_agents:
     - name: support-director
       type: coordinated_by
-    - name: support-supervisor
-      type: pipeline_prev
 allowed-tools: Read Grep Glob Write Edit Bash
 ---
 

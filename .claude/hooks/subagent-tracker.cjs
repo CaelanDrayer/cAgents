@@ -126,7 +126,7 @@ function inferParentAgent(sessionDir, subagentType, agentId) {
   // Strategy 4: Use status.yaml phase and known agent names to infer parent role
   // Known enrichment agents are pipeline-level (parent = 'pipeline')
   const ENRICHMENT_AGENTS = ['orchestrator', 'planner', 'decomposer', 'prompt-engineer', 'validator',
-    'universal-planner', 'universal-router', 'universal-validator', 'universal-executor', 'universal-self-correct'];
+    'router', 'executor', 'self-correct'];
   const agentBaseName = subagentType.replace(/^cagents:/, '');
   if (ENRICHMENT_AGENTS.includes(agentBaseName)) {
     return 'pipeline';
@@ -140,7 +140,7 @@ function inferParentAgent(sessionDir, subagentType, agentId) {
     if (phaseMatch) {
       const phase = phaseMatch[1].trim().toUpperCase();
       // Early pipeline phases: agent is likely an enrichment agent, parent = 'pipeline'
-      if (['INIT', 'ORCHESTRATED', 'PLANNED', 'DECOMPOSED', 'PROMPTS_READY'].includes(phase)) {
+      if (['INIT', 'ORCHESTRATED', 'PLANNED'].includes(phase)) {
         return 'pipeline';
       }
       // Execution phases: agent is likely spawned by a controller

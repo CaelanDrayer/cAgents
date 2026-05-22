@@ -27,8 +27,6 @@ metadata:
   related_agents:
     - name: procurement-specialist
       type: coordinates
-    - name: resource-planner
-      type: collaborates_with
     - name: operations-manager
       type: collaborates_with
 allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet

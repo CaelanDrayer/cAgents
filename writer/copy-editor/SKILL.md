@@ -24,8 +24,6 @@ metadata:
       type: coordinated_by
     - name: prose-stylist
       type: reviews
-    - name: continuity-checker
-      type: collaborates_with
 allowed-tools: Read Grep Glob Write Edit Bash
 ---
 

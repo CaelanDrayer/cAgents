@@ -23,12 +23,6 @@ metadata:
   related_agents:
     - name: sales-strategist
       type: coordinated_by
-    - name: sales-engineer
-      type: collaborates_with
-    - name: proposal-specialist
-      type: collaborates_with
-    - name: demand-generation-manager
-      type: pipeline_prev
 allowed-tools: Read Grep Glob Write Edit Bash
 ---
 

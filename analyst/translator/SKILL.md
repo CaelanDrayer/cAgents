@@ -19,7 +19,6 @@ capabilities:
   - style_register_matching
 related_agents:
   - name: linguist
-  - name: language-tutor
 not-my-scope: ["certified legal document translation requiring notarization", "real-time interpretation services"]
 allowed-tools: Read Grep Glob Write Edit Bash
 ---

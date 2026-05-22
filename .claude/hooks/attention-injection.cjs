@@ -201,7 +201,7 @@ createHook('AttentionInjection', async (input) => {
   // COORDINATED is the phase where controllers are actively working and MUST delegate to execution agents.
   // Injecting a delegation reminder during these phases prevents self-handling rationalizations
   // on every Write/Edit/Bash call throughout the delegation-required pipeline states.
-  const DELEGATION_MANDATE_STATES = ['INIT', 'ORCHESTRATED', 'PLANNED', 'DECOMPOSED', 'PROMPTS_READY', 'COORDINATED'];
+  const DELEGATION_MANDATE_STATES = ['INIT', 'ORCHESTRATED', 'PLANNED', 'COORDINATED'];
   const statusPath = path.join(sessionDir, 'status.yaml');
   const statusContent = safeRead(statusPath);
   if (statusContent) {

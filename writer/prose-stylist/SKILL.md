@@ -24,8 +24,6 @@ metadata:
       type: coordinated_by
     - name: dialogue-specialist
       type: collaborates_with
-    - name: voice-coach
-      type: collaborates_with
     - name: copy-editor
       type: reviewed_by
   answers_questions:

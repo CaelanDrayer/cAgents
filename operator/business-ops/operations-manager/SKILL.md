@@ -30,10 +30,6 @@ metadata:
     - HR policies
     - legal review
   related_agents:
-    - name: process-improvement-specialist
-      type: coordinates
-    - name: facilities-manager
-      type: coordinates
     - name: supply-chain-manager
       type: collaborates_with
     - name: strategic-planner

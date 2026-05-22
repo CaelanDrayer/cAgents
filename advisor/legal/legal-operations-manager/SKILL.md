@@ -25,12 +25,6 @@ metadata:
     - What is the legal spend breakdown and trend?
     - What technology gaps exist in our workflows?
   related_agents:
-    - name: paralegal
-      type: coordinates
-    - name: legal-analyst
-      type: coordinates
-    - name: contracts-manager
-      type: coordinates
 allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 

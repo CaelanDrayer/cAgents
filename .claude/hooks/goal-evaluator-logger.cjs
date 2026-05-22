@@ -5,7 +5,7 @@
  *
  * Captures the latest /goal evaluator reason and appends it to the active
  * session's workflow/goal_evaluator_log.yaml. The captured reasons become a
- * free second-opinion signal that cagents:universal-self-correct consumes
+ * free second-opinion signal that cagents:self-correct consumes
  * during revision routing.
  *
  * Activation:
@@ -98,7 +98,7 @@ createHook('GoalEvaluatorLogger', async (input) => {
     if (!fs.existsSync(logFile)) {
       const header = '# /goal evaluator reason log (V11.3.0)\n'
         + '# Appended by .claude/hooks/goal-evaluator-logger.cjs on Stop events\n'
-        + '# Consumed by cagents:universal-self-correct as revision signal\n'
+        + '# Consumed by cagents:self-correct as revision signal\n'
         + 'entries:\n';
       fs.writeFileSync(logFile, header);
     }

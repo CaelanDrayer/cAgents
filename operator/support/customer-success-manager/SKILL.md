@@ -33,8 +33,6 @@ metadata:
   related_agents:
     - name: account-manager
       type: collaborates_with
-    - name: customer-education-specialist
-      type: coordinates
     - name: customer-advocacy-manager
       type: collaborates_with
     - name: growth-marketer

@@ -40,10 +40,14 @@ describe('root plugin.json', () => {
     expect(plugin.hooks).toBe('./.claude/settings.json');
   });
 
-  it('should have agents array with 200+ entries', () => {
+  it('should have agents array in v12.4.0 compression band [120, 170]', () => {
+    // v12.4.0 cull pass moved 96 never-spawned agents to {archetype}/_deprecated/
+    // buckets, taking the active catalog from 240 -> 144. The post-compression
+    // floor/ceiling is the design's [120, 170] target band.
     const plugin = loadPluginJson(PLUGIN_PATH);
     expect(Array.isArray(plugin.agents)).toBe(true);
-    expect(plugin.agents.length).toBeGreaterThanOrEqual(200);
+    expect(plugin.agents.length).toBeGreaterThanOrEqual(120);
+    expect(plugin.agents.length).toBeLessThanOrEqual(170);
   });
 
   it('all agent paths should point to existing SKILL.md files', () => {

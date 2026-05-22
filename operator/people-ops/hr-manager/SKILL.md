@@ -32,12 +32,6 @@ metadata:
   related_agents:
     - name: talent-recruiter
       type: coordinates
-    - name: employee-relations-specialist
-      type: coordinates
-    - name: hr-ops-specialist
-      type: coordinates
-    - name: benefits-administrator
-      type: coordinates
     - name: talent-recruiter
       type: collaborates_with
 allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet

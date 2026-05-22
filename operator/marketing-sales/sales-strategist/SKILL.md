@@ -31,8 +31,6 @@ metadata:
       type: coordinates
     - name: revenue-operations-manager
       type: coordinates
-    - name: territory-manager
-      type: coordinates
 allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 

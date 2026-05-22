@@ -10,6 +10,193 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.6.0] - 2026-05-21
+
+**Pillar 4 (final pillar of the 4-pillar arc): Drop external-UI session-schema contract.**
+
+### Changed (BREAKING)
+- Dropped the external-UI session-schema contract. Session YAML is now an internal-only cAgents contract (not a public API). See `.claude/skills/run/reference/session-schema.md` for the rescoped internal contract.
+- Removed UI-only emitter fields from `/run` and `/team` skills + `core/` agents:
+  - `status.yaml`: `state_history[].duration_ms`, `revision_round`, `validation_cycles`, `followup_round`
+  - `execution_summary.yaml`: `total_duration_ms`, `revision_rounds_used`, `followup_rounds_used`
+  - File emissions: `workflow/events/EVT-*.yaml`, `workflow/events/index.yaml`, `workflow/wave_structure.yaml`, `workflow/domain_status.yaml`, `workflow/partial_results.yaml`, `workflow/delegation_prompts.yaml`, `team/messages/`
+- Pre-v12 state names (`DECOMPOSED`, `PROMPTS_READY`) removed from active hook code paths (`verify-completion.cjs`, `pre-compact-save.cjs`, `subagent-tracker.cjs`, `attention-injection.cjs`). The v12 state machine is `INIT → ORCHESTRATED → PLANNED → COORDINATED → VALIDATED` only.
+- Removed the external-UI schema contract test (`tests/contract.test.js`), the schema fetcher (`scripts/ci/fetch-schemas.sh`), and the agentpath-contracts test (`tests/config/agentpath-contracts.test.js`).
+- Removed the `AGENTPATH_ISSUE_ID` injection block from `.claude/hooks/session-catchup.cjs`. Session catchup is now externally-unaware.
+- Swept 50+ AgentPath/agentpath references across `cAgents/` source (excluding CHANGELOG/docs/archive/_archive/_deprecated). Documented false-positive lowercase `agentPath` variable refs in path-handling code remain.
+
+### Added
+- `scripts/migration/v12-6-drop-ui-fields.sh` — one-shot best-effort migration script for pre-v12.6 sessions. Strips removed fields and files from `cagents-memory/sessions/*`. Idempotent. `--dry-run` flag prints planned removals without modifying anything. KEEP allowlist (`file_changes.log`, `agent_tree.yaml`, `team/metrics/*`, `child_controllers.yaml`, `outputs/strategic/*`) preserved.
+- Three regression tests under `tests/v12/`:
+  - `v12-6-no-removed-emitters.test.js` — 14 tests asserting no active emitter writes for removed fields in tier-1 SKILL.md files; no `DECOMPOSED`/`PROMPTS_READY` refs in 4 hooks; KEEP allowlist files still referenced.
+  - `v12-6-session-schema-internal.test.js` — 5 tests asserting `session-schema.md` has zero AgentPath refs and contains internal-only framing.
+  - `v12-6-no-agentpath-refs.test.js` — 7 tests asserting source-wide AgentPath sweep + migration script smoke (dry-run + idempotency on a fixture session).
+
+### Removed
+- `tests/contract.test.js` (external-UI schema contract test — no longer applicable).
+- `scripts/ci/fetch-schemas.sh` (schema fetcher — sole consumer deleted).
+- `tests/config/agentpath-contracts.test.js`.
+- `AGENTPATH_ISSUE_ID` injection block from `.claude/hooks/session-catchup.cjs`.
+- `run_contract_tests` CI subcommand reduced to a no-op stub for back-compat.
+
+### Notes
+- `session-schema.md` was rescoped to an internal-only contract — NOT deleted. Hook authors and agents still need the field reference. External consumers MUST treat the schema as private and stable only within a single cAgents version.
+- The external visualizer sibling repository is untouched. This bump removes the contract only on the cAgents side.
+- **4-pillar arc COMPLETE**: v12.3.0 (mandatory pipeline) + v12.4.0 (compression) + v12.5.0 (renames) + v12.6.0 (external-UI contract drop).
+
+## [12.5.0] - 2026-05-21
+
+### Pillar 3 (Naming Rename): 10 core infrastructure renames, hard cutover
+
+Naming-clarity release. Ten core infrastructure agents shed redundant or
+over-specified prefixes (`universal-*`, `generic-*`, `task-inventory`,
+`team-trigger`, `team-lead-adapter`, `task-consolidator`) for shorter,
+clearer canonical names. Hard cutover — no aliases added for these 10
+renames in `scripts/migration/v12-aliases.yaml` (existing v12.0.0 alias
+entries for `task-decomposer`/`prompt-engineer` -> `planner` were
+preserved and their internal path references updated to `core/planner/`).
+
+### Changed (BREAKING)
+- Renamed 10 core infrastructure agents (no aliases, hard cutover):
+  - `universal-router` -> `router`
+  - `universal-planner` -> `planner`
+  - `universal-validator` -> `validator`
+  - `universal-executor` -> `executor`
+  - `universal-self-correct` -> `self-correct`
+  - `generic-coordinator` -> `coordinator`
+  - `team-trigger` -> `team`
+  - `team-lead-adapter` -> `team-lead`
+  - `task-consolidator` -> `task-merger`
+  - `task-inventory` -> `task-state`
+- Operators referencing pre-rename names must apply the rename map.
+  Pre-v12.5.0 session artifacts referencing the old names will not
+  resolve and will surface as "agent not found" warnings in router
+  fallback.
+- `tests/v12_2/org-removed-cleanly.test.js`: marketplace version
+  assertion relaxed from `toBe('12.2.0')` to `toMatch(/^12\./)` so the
+  test no longer fails on each subsequent v12.x bump.
+
+### Added
+- 10 regression tests (`tests/v12/no-{old-name}-refs.test.js`) — each
+  asserts the deprecated name has zero references across `.md`/`.yaml`/
+  `.json`/`.cjs`/`.js`/`.ts`/`.sh` files (excluding CHANGELOG, docs/,
+  archive/, _deprecated/, sessions/, and the test's own scaffolding).
+
+### Internal
+- `core/config/domain_overrides.yaml`: controller catalog, specialist
+  routing, and team routing entries updated to the new canonical names.
+- `.claude/hooks/model-routing-advisor.cjs`: `KNOWN_AGENTS` map updated
+  to register the 10 new names (and a new `coordinator` entry).
+- `.claude/hooks/subagent-tracker.cjs`: `ENRICHMENT_AGENTS` list updated
+  to drop the `universal-*` legacy aliases.
+- `scripts/update-agent-frontmatter.cjs`: `INFRA_MAX_TURNS` table
+  updated to the new names.
+- `tests/v12/aliases-resolve.test.js`: `ROUTER_FALLBACK_LEAF` cleared
+  (no longer needed — all canonical v12 names resolve directly).
+
+## [12.4.0] - 2026-05-21
+
+### Pillar 2 (Compression): catalog audit + cull (240 -> 144)
+
+Compression release. The audit-extract-collapse pass shrank the active
+agent catalog from 240 to 144 while keeping the on-disk archive of culled
+agents reachable via the `_deprecated/` bucket pattern (v12.0.5+) for
+back-compat alias resolution.
+
+### Added
+- **`scripts/audit-agents.mjs`** — Node std-lib audit script (no npm deps).
+  Parses `cagents-memory/_system/logs/agent_spawns.log` and walks
+  `.claude-plugin/plugin.json` to produce a 4-section report:
+  auto-merge candidates (Jaccard >= 0.85), human-review candidates
+  (0.6-0.85), playbook-extraction candidates (>100 lines of duplicated
+  guidance), and cull candidates (0 spawns + no role-uniqueness).
+- **`.claude/rules/playbooks/README.md`** — Forward-looking landing zone
+  for future playbook extractions. Documents naming conventions
+  (`fw-`, `dom-`, `pat-`, `per-` prefixes), spec-compliant frontmatter,
+  and the `@.claude/rules/playbooks/{path}.md` reference protocol from
+  consumer SKILL.md files.
+- **`tests/v12/audit-script-runs.test.js`** — Regression test: audit
+  script exits 0 in <60s and writes a report with all 4 required sections.
+- **`tests/v12/playbook-frontmatter-valid.test.js`** — Regression test:
+  every playbook .md file has spec-compliant frontmatter (6 top-level
+  fields max).
+- **`tests/v12/no-orphaned-cagents-refs.test.js`** — Regression test:
+  no surviving `cagents:{name}` reference in the active tree for any
+  agent moved to a `_deprecated/` bucket.
+- **`cagents-memory/_knowledge/agent-audit-260521.md`** — Audit report
+  written by the new script. Documents the finding that the catalog was
+  already highly differentiated: 0 auto-merge candidates at J>=0.85,
+  0 human-review pairs, 0 playbook-extraction candidates >100 lines, and
+  161 cull candidates (0-spawn agents).
+
+### Changed (catalog compression)
+- **Active catalog 240 -> 144 agents.** 96 never-spawned agents moved to
+  `{archetype}/_deprecated/` buckets. Per-archetype breakdown post-cull:
+  developer 26, operator 36, advisor 12, analyst 20, creator 5, writer 10,
+  strategist 8, core 15, leadership 12. Survivors include all spawned-in-
+  log agents, all alias targets (per
+  `scripts/migration/v12-aliases.yaml`), all controller/infrastructure
+  tier agents, and a hand-curated set of canonical never-spawned
+  specialists per branch.
+- **Catalog size sits in design target band [120, 170].** The full-cull
+  projection (79) would have undershot the floor; the curated keep-list
+  preserves canonical specialists in each branch.
+- **CLAUDE.md counts updated** to reflect the new 144-agent catalog and
+  per-archetype distribution.
+- **Test-count claim updated** from "983+" to "1030+" Vitest tests across
+  101+ files (CLAUDE.md freshness window enforcement).
+- **Cleaned 65 dangling `related_agents:` entries** across 43 active
+  SKILL.md files (refs to agents now in `_deprecated/`). Wrote a script
+  (`/tmp/clean-related-v2.mjs`, not shipped) that walks the archetype
+  tree and removes entries that no longer resolve.
+- **`writer/editor/SKILL.md` delegation table trimmed** to active agents
+  only (removed refs to culled `prose-stylist` peers, etc.).
+- **`shared/resources/delegation-templates.md`** — replaced culled
+  `cagents:legal-analyst` example with `cagents:general-counsel`.
+
+### Updated tests
+- **`tests/config/plugin-json.test.js`** — agent-count assertion changed
+  from `>= 200` to `>= 120 && <= 170` (the v12.4.0 contract band).
+- **`tests/agents/per-agent-version-field.test.js`** — assertion changed
+  from `>= 238` to `>= 120 && <= 170`. The `findAllSkillMd` walker now
+  skips `_deprecated/` buckets.
+- **`tests/regressions/claude-md-counts-current.test.js`** — `countSkillMd`
+  walker now skips `_deprecated/` buckets so it counts active agents only.
+- **`tests/regressions/related-agents-references-resolve.test.js`** —
+  walker skips `_deprecated/`; sanity floor lowered from `> 200` to
+  `> 100` (matches the active-catalog floor).
+
+### Constraints honored
+- **Hard cutover, no aliases for newly-culled agents.** Per design doc
+  `release_constraints.hard_cutover=true`. Agents in `_deprecated/`
+  retain their on-disk SKILL.md so back-compat alias resolution still
+  works for pre-existing v12.x alias entries; new culls do NOT add
+  alias entries.
+- **`_deprecated/` bucket pattern (v12.0.5+) preserved.** The 96 culled
+  agents are reachable on disk but excluded from `.claude-plugin/plugin.json`
+  by `scripts/sync-agents.sh`, so the planner and router will not select
+  them for new work.
+- **Critical agents preserved.** `wave-reviewer` and `coord-log-writer`
+  (v12.1.0 team-context-discipline contract), all alias targets, and
+  the 3 Phase 12 academic-research analysts
+  (`literature-review-author`, `citation-graph-analyzer`,
+  `methodology-critic`) plus `academic-paper-searcher` survived the cull
+  via the keep-list.
+
+### Notes
+- The design's playbook-extraction step (WI-5) was a no-op for v12.4.0
+  because the audit found zero qualifying candidates (>100 lines of
+  duplicated guidance). Earlier v12.x consolidation work (v12.0.0
+  absorbed `engineering-manager` into `tech-lead`; collapsed
+  `architecture-reviewer` into `architect --review`) already extracted
+  the largest duplication clusters. The `.claude/rules/playbooks/`
+  directory and README ship as the forward-looking landing zone for
+  future extractions.
+- Net regression-test delta: +3 new test files (audit script, playbook
+  frontmatter, orphaned refs), -1 baseline failure
+  (`claude-md-counts-current.test.js` was failing on main before the
+  bump and passes now).
+
 ## [12.2.0] - 2026-05-21
 
 ### Removed (BREAKING)

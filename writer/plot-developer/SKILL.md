@@ -22,10 +22,6 @@ metadata:
   related_agents:
     - name: story-architect
       type: coordinated_by
-    - name: tension-architect
-      type: collaborates_with
-    - name: pacing-specialist
-      type: collaborates_with
 allowed-tools: Read Grep Glob Write Edit Bash
 ---
 

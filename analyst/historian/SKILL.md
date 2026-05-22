@@ -18,7 +18,6 @@ capabilities:
   - causal_analysis
   - archival_interpretation
 related_agents:
-  - name: philosopher
   - name: political-analyst
 not-my-scope: ["future forecasting", "legal history (defer to legal agents)", "genealogy services"]
 allowed-tools: Read Grep Glob Write Edit Bash

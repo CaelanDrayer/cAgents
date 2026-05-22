@@ -15,9 +15,6 @@ capabilities:
   - study_coaching
   - exam_preparation
 related_agents:
-  - name: curriculum-designer
-  - name: language-tutor
-  - name: mathematician
 not-my-scope: ["Curriculum design", "Classroom management", "Institutional policy"]
 allowed-tools: Read Grep Glob Write Edit Bash
 color: bright_cyan

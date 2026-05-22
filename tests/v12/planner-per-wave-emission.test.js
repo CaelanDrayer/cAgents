@@ -10,10 +10,10 @@
  * .claude/skills/team/reference/per-wave-decomposition.md and made the
  * team SKILL read from work_items_wave_{K}.yaml, but the planner kept
  * emitting only the monolithic file. v12.1.1 closes the gap by updating
- * core/universal-planner/SKILL.md to document the dual-emission contract.
+ * core/planner/SKILL.md to document the dual-emission contract.
  *
  * This test asserts:
- *   1. core/universal-planner/SKILL.md documents the per-wave emission
+ *   1. core/planner/SKILL.md documents the per-wave emission
  *      contract (mentions work_meta.yaml + work_items_wave_ + back-compat).
  *   2. The completion event template lists the new artifacts.
  *   3. A fixture session with all three shapes loaded from disk parses
@@ -39,12 +39,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 
-const PLANNER_SKILL = path.join(REPO_ROOT, 'core', 'universal-planner', 'SKILL.md');
+const PLANNER_SKILL = path.join(REPO_ROOT, 'core', 'planner', 'SKILL.md');
 const PER_WAVE_DECOMP_DOC = path.join(REPO_ROOT, '.claude', 'skills', 'team', 'reference', 'per-wave-decomposition.md');
 
 describe('FU-2 (v12.1.1): universal-planner per-wave emission contract', () => {
   describe('Invariant 1 — planner SKILL.md documents the dual-emission contract', () => {
-    it('core/universal-planner/SKILL.md exists', () => {
+    it('core/planner/SKILL.md exists', () => {
       expect(fs.existsSync(PLANNER_SKILL)).toBe(true);
     });
 
@@ -146,7 +146,7 @@ work_items:
 session_id: "test_fixture_001"
 total_waves: 2
 total_work_items: 3
-emitted_by: cagents:universal-planner
+emitted_by: cagents:planner
 emitted_at: "2026-05-21T22:00:00Z"
 waves:
   - wave: 0

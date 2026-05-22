@@ -14,7 +14,7 @@ The event-driven pipeline architecture uses a 5-state machine with sequential en
   +-> validator (level 1)            -> validation_report.yaml (PASS/FAIL/REVISE)
 ```
 
-**v12.0.0 collapse**: `task-decomposer` and `prompt-engineer` no longer exist as separate stages. `cagents:universal-planner` produces both `plan.yaml` and `work_items.yaml` inline. Controllers fall back to standard delegation prompts (no `delegation_prompts.yaml` artifact).
+**v12.0.0 collapse**: `task-decomposer` and `prompt-engineer` no longer exist as separate stages. `cagents:planner` produces both `plan.yaml` and `work_items.yaml` inline. Controllers fall back to standard delegation prompts (no `delegation_prompts.yaml` artifact).
 
 ## What /run Does Inline (v12.0.0)
 
@@ -109,7 +109,7 @@ For `--team`, /run delegates to team-trigger which creates a real team:
 
 ```javascript
 Agent({
-  subagent_type: "cagents:team-trigger",
+  subagent_type: "cagents:team",
   description: "Team: {request}",
   prompt: `
     Request: {request}

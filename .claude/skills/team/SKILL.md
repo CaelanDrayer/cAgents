@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.2.0"
+  version: "12.6.0"
   argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--no-template] [--waves <n>] [--strategic] [--no-strategic]"
   user-invocable: "true"
   context: "fork"
@@ -63,7 +63,7 @@ Waves 1..N-1 (Teammates, parallel per wave):
 Wave N (Lead, sequential):
   Spawn integration controller → writes outputs/integration/integrated_outputs.yaml + integration_summary.md (≤200 tokens)
   Read ONLY integration_summary.md
-  Spawn cagents:universal-validator → 1-line PASS/FAIL/REVISE
+  Spawn cagents:validator → 1-line PASS/FAIL/REVISE
   Spawn cagents:coord-log-writer → 1-line "coordination_log: N WIs mapped, status: X"
   TeamDelete + task cleanup
 ```
@@ -72,7 +72,7 @@ Wave N (Lead, sequential):
 
 Strategic mode prepends three coordination waves (C-suite analysis → objection phase → brief synthesis) before the normal wave loop. v12.2.0 absorbed the former standalone corporate-hierarchy skill into `/team` strategic mode. The strategic prefix produces a `strategic_brief.yaml` that anchors the subsequent per-domain dispatch waves.
 
-**Auto-detect trigger.** In Step 1 / Step 2b, read `enriched_context.universal_router.domain_count` (set by `cagents:universal-router`). When `domain_count >= 2` AND `--no-strategic` is absent from `$ARGUMENTS`, prepend the strategic prefix:
+**Auto-detect trigger.** In Step 1 / Step 2b, read `enriched_context.universal_router.domain_count` (set by `cagents:router`). When `domain_count >= 2` AND `--no-strategic` is absent from `$ARGUMENTS`, prepend the strategic prefix:
 
 ```
 Wave 0 (Lead): orchestrator + universal-planner + universal-router
@@ -106,7 +106,7 @@ After Wave 0 enrichment completes (Step 2d), read `enriched_context.universal_ro
 
 ## Step 2 — Wave 0 Enrichment
 
-**2a.** Initialize session. If `CAGENTS_SESSION_ID` set: use verbatim. Else: generate slug, scan `cagents-memory/sessions/` for next NNN, compose `SESSION_ID="team_{slug}_{YYMMDD}_{NNN}"`. `mkdir -p ${SESSION_DIR}/workflow/events ${SESSION_DIR}/outputs`. Write `instruction.yaml`, `status.yaml` (`phase: INIT`), and lead entry to `workflow/agent_tree.yaml`. Set `CAGENTS_ACTIVE_SESSION=${SESSION_ID}`.
+**2a.** Initialize session. If `CAGENTS_SESSION_ID` set: use verbatim. Else: generate slug, scan `cagents-memory/sessions/` for next NNN, compose `SESSION_ID="team_{slug}_{YYMMDD}_{NNN}"`. `mkdir -p ${SESSION_DIR}/workflow ${SESSION_DIR}/outputs` (v12.6.0: do NOT create `workflow/events/`). Write `instruction.yaml`, `status.yaml` (`phase: INIT`), and lead entry to `workflow/agent_tree.yaml`. Set `CAGENTS_ACTIVE_SESSION=${SESSION_ID}`.
 
 **2b.** Classify domain + tier inline. See @reference/wave-execution-detail.md § Domain & Tier.
 
@@ -114,7 +114,7 @@ After Wave 0 enrichment completes (Step 2d), read `enriched_context.universal_ro
 
 **2d.** Spawn enrichment agents sequentially:
 - `cagents:orchestrator` → `enriched_context.yaml` + EVT-1 (phase ENRICHING)
-- `cagents:universal-planner` → `plan.yaml` + `work_meta.yaml` + per-wave `work_items_wave_{K}.yaml` (+ legacy `work_items.yaml` for v12.1.x back-compat) + EVT-2 (phase ENRICHED)
+- `cagents:planner` → `plan.yaml` + `work_meta.yaml` + per-wave `work_items_wave_{K}.yaml` (+ legacy `work_items.yaml` for v12.1.x back-compat) + EVT-2 (phase ENRICHED)
 
 Use `sed -i 's/^phase: .*/phase: <PHASE>/' "{SESSION_DIR}/status.yaml"` to advance.
 
@@ -157,7 +157,7 @@ Agent({
 ```
 Read ONLY the 1-line reply. Do NOT open the gate_validations YAML or raw wave outputs.
 
-**5f.** If verdict is PASS or CONDITIONAL_PASS, mark GATE-{K} TaskUpdate completed, write `workflow/events/EVT-wave-{K}.yaml` with the 1-line verdict. If FAIL or HOLD, see @reference/fallback-and-error-recovery.md.
+**5f.** If verdict is PASS or CONDITIONAL_PASS, mark GATE-{K} TaskUpdate completed. (v12.6.0: `workflow/events/EVT-wave-{K}.yaml` emission removed — the GATE task's `completed` status is the canonical wave-gate signal.) If FAIL or HOLD, see @reference/fallback-and-error-recovery.md.
 
 **5g.** Drop wave K from active reads. Advance to wave K+1 automatically.
 
@@ -173,7 +173,7 @@ Agent({
 ```
 Read ONLY `outputs/integration/integration_summary.md` (≤200 tokens).
 
-**6b.** Spawn `cagents:universal-validator` pointed at `outputs/integration/`. Read 1-line PASS/FAIL/REVISE.
+**6b.** Spawn `cagents:validator` pointed at `outputs/integration/`. Read 1-line PASS/FAIL/REVISE.
 
 **6c.** Spawn `cagents:coord-log-writer`:
 ```
@@ -192,9 +192,9 @@ Read 1-line confirmation only.
 3. Mark initial orchestration TaskCreate completed.
 4. Finalize lead entry in `agent_tree.yaml` (`stopped_at`, `completion_summary`, `duration_seconds`).
 5. **Task cleanup (HARD GATE)**: `TaskList` → mark all `in_progress`/`pending` completed → `TaskList` → verify zero outstanding before stopping.
-6. Update final `state_history` entry's `duration_ms`.
+6. (v12.6.0: `state_history[].duration_ms` is no longer emitted — skip.)
 7. Write `team/metrics/parallelism.yaml` (wave_stats + totals).
-8. Write `workflow/execution_summary.yaml` (final_state, totals, durations).
+8. Write `workflow/execution_summary.yaml` (final_state, totals; v12.6.0: drop `total_duration_ms`).
 9. Report results to user: waves, items/wave, gate results, validation status, output locations.
 
 `workflow/coordination_log.yaml` is written by `cagents:coord-log-writer` in Step 6c — do NOT write it yourself.

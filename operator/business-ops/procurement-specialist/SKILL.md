@@ -22,8 +22,6 @@ metadata:
       type: coordinated_by
     - name: supply-chain-manager
       type: coordinated_by
-    - name: contracts-manager
-      type: cross_domain
 allowed-tools: Read Grep Glob Write Edit Bash
 ---
 

@@ -146,32 +146,15 @@ function findIncompleteSessions() {
 }
 
 createHook('SessionCatchup', async (input) => {
-  // AGENTPATH_ISSUE_ID injection (REQ-030):
-  // When AgentPath spawns a session with an associated issue, it sets this env var.
-  // If the active session's instruction.yaml exists and lacks issue_id, inject it.
-  const agentpathIssueId = process.env.AGENTPATH_ISSUE_ID;
-  if (agentpathIssueId) {
-    try {
-      const activeDir = findActiveSession(input && input.session_id);
-      if (activeDir) {
-        const instructionFile = path.join(activeDir, 'instruction.yaml');
-        const instContent = safeRead(instructionFile);
-        if (instContent && !instContent.includes('issue_id:')) {
-          fs.writeFileSync(instructionFile, instContent.trimEnd() + `\nissue_id: "${agentpathIssueId}"\n`);
-          console.error(`[SessionCatchup] Injected issue_id=${agentpathIssueId} into instruction.yaml`);
-        }
-      }
-    } catch (e) {
-      console.error(`[SessionCatchup] issue_id injection error: ${e.message}`);
-    }
-  }
+  // v12.6.0: external-UI issue-id injection block removed.
+  // Sessions are now internal-only; no external visualizer injects issue IDs.
 
   const incomplete = findIncompleteSessions();
 
   // V11.0: removed-skill suggestions replaced with V11 canonical skill set.
   // /review and /optimize were folded into /improve --mode review|optimize|full;
   // /context and /debug were removed entirely. See docs/MIGRATION-V11.md.
-  let cagentsContext = 'cAgents V12.2.0 session initialized. Minimum Claude Code version: 2.1.69 (required for hook lifecycle events). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Agent tool subagent_type references. IMPORTANT: When spawned as a cAgents agent, self-register your agent type in workflow/agent_tree.yaml for audit trail (SubagentStart hook injects instructions). IMPORTANT: When invoking any skill (/run, /team, /improve, /designer, /helper), your FIRST action must be creating the session directory and writing status.yaml. Do NOT explore the codebase, spawn agents, or analyze the request before session init. IMPORTANT: /run and /team NEVER handle tasks themselves. They ALWAYS delegate to subagents via Agent tool. No exceptions, no matter how simple the request. For review/optimize work, use /improve --mode review|optimize|full (V11.0 unified entry point). For cross-domain strategic work, use /team strategic mode.';
+  let cagentsContext = 'cAgents V12.6.0 session initialized. Minimum Claude Code version: 2.1.69 (required for hook lifecycle events). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Agent tool subagent_type references. IMPORTANT: When spawned as a cAgents agent, self-register your agent type in workflow/agent_tree.yaml for audit trail (SubagentStart hook injects instructions). IMPORTANT: When invoking any skill (/run, /team, /improve, /designer, /helper), your FIRST action must be creating the session directory and writing status.yaml. Do NOT explore the codebase, spawn agents, or analyze the request before session init. IMPORTANT: /run and /team NEVER handle tasks themselves. They ALWAYS delegate to subagents via Agent tool. No exceptions, no matter how simple the request. For review/optimize work, use /improve --mode review|optimize|full (V11.0 unified entry point). For cross-domain strategic work, use /team strategic mode.';
 
   // Context Auto-Check (V10.17.0): Check for product-context.yaml
   // Inspired by impeccable's .impeccable.md auto-check pattern

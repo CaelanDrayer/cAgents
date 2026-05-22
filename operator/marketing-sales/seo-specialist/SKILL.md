@@ -49,8 +49,6 @@ metadata:
       type: coordinated_by
     - name: marketing-strategist
       type: collaborates_with
-    - name: geo-strategist
-      type: collaborates_with
     - name: frontend-developer
       type: cross_domain
 allowed-tools: Read Grep Glob Write Edit Bash WebFetch WebSearch
@@ -60,7 +58,8 @@ allowed-tools: Read Grep Glob Write Edit Bash WebFetch WebSearch
 
 Organic search strategy and optimization. The single SEO execution agent covering
 keyword research, on-page audits, technical SEO, and link strategy. (GEO / AI-search
-visibility remains a separate concern handled by `cagents:geo-strategist`.)
+visibility was an adjacent specialty handled by `geo-strategist`, which was culled
+in v12.4.0 P2 compression; its scope now folds into this agent's remit.)
 
 ## v12 SEO Collapse Note
 
@@ -78,7 +77,7 @@ When older docs, controllers, or planners reference any of the four agent names 
 route to `cagents:seo-specialist`. The full pre-collapse alias map lives in
 `scripts/migration/v12-aliases.yaml`.
 
-`cagents:geo-strategist` (GEO / AI-search citation strategy) remains a separate agent.
+GEO / AI-search citation strategy (formerly the `geo-strategist` agent) folds into this agent's scope in v12.4.0.
 
 ## Responsibilities
 
@@ -137,7 +136,7 @@ Pick the right mode based on the input request:
 
 ## See Also
 
-- `operator/marketing-sales/geo-strategist/SKILL.md` — Generative Engine Optimization (AI-search visibility)
+- (`operator/marketing-sales/geo-strategist/` — culled in v12.4.0; AI-search visibility scope now part of this agent)
 - `operator/marketing-sales/marketing-strategist/SKILL.md` — controller that coordinates SEO with broader campaigns
 - `developer/frontend/frontend-developer/SKILL.md` — CWV / JS rendering remediation
 - `developer/infrastructure/devops-engineer/SKILL.md` — CWV / security header remediation

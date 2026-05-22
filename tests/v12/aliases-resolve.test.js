@@ -73,14 +73,10 @@ function indexAgentSkills() {
   return agentSkillByName;
 }
 
-// Some canonical v12 names resolve to a v11-era SKILL.md dir (renames not yet
-// applied at the file-system level — the router does the mapping). Per the
-// alias-map notes, `cagents:planner` resolves to `core/universal-planner/`
-// until a future WI physically renames the dir. Keep this list small and
-// documented; it should drain as renames land.
-const ROUTER_FALLBACK_LEAF = {
-  planner: 'universal-planner',
-};
+// Router fallback leaves: empty as of v12.5.0 (10 hard-cutover renames landed
+// universal-planner -> planner, universal-validator -> validator, etc).
+// All canonical v12 names now resolve directly to their own SKILL.md dir.
+const ROUTER_FALLBACK_LEAF = {};
 
 function resolveAgentName(name) {
   // name e.g. "cagents:tech-lead" -> "tech-lead"

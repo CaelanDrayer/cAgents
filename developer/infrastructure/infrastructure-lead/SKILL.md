@@ -35,8 +35,6 @@ metadata:
   related_agents:
     - name: devops-engineer
       type: coordinates
-    - name: sysadmin
-      type: coordinates
     - name: architect
       type: collaborates_with
 allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet

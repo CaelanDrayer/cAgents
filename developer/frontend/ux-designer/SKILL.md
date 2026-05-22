@@ -29,8 +29,6 @@ metadata:
       type: coordinated_by
     - name: frontend-developer
       type: collaborates_with
-    - name: frontend-aesthetics
-      type: collaborates_with
     - name: product-owner
       type: cross_domain
 allowed-tools: Read Grep Glob Write Edit Bash

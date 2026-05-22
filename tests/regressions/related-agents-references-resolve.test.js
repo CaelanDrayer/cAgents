@@ -38,6 +38,8 @@ function* walkSkillMd(dir) {
     return;
   }
   for (const entry of entries) {
+    // v12.4.0: skip _deprecated/ buckets (culled agents, not part of active catalog)
+    if (entry === '_deprecated') continue;
     const full = join(dir, entry);
     let stat;
     try { stat = statSync(full); } catch { continue; }
@@ -78,7 +80,7 @@ function extractRelatedAgentNames(skillContent) {
 describe('related_agents references resolve to real agents', () => {
   it('every related_agents name resolves to an existing agent', () => {
     const allAgents = collectAllAgentNames();
-    expect(allAgents.size).toBeGreaterThan(200);  // sanity: we have hundreds
+    expect(allAgents.size).toBeGreaterThan(100);  // sanity: v12.4.0 active catalog floor 120
 
     const broken = [];
     for (const arch of ARCHETYPES) {

@@ -22,8 +22,6 @@ metadata:
       type: coordinated_by
     - name: onboarding-specialist
       type: collaborates_with
-    - name: performance-management-specialist
-      type: collaborates_with
 allowed-tools: Read Grep Glob Write Edit Bash
 ---
 

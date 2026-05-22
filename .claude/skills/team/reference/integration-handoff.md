@@ -68,7 +68,7 @@ After spawning the integration controller, the lead:
 
 1. Receives the controller's stop message
 2. Reads `outputs/integration/integration_summary.md` (≤200 tokens)
-3. Spawns `cagents:universal-validator` with `validation_target: outputs/integration/`
+3. Spawns `cagents:validator` with `validation_target: outputs/integration/`
 4. Reads validator's 1-line PASS/FAIL/REVISE result
 5. Does NOT re-read any wave's outputs directly
 

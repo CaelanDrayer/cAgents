@@ -24,8 +24,6 @@ metadata:
   related_agents:
     - name: support-operations-manager
       type: coordinated_by
-    - name: knowledge-base-manager
-      type: collaborates_with
     - name: scribe
       type: cross_domain
 allowed-tools: Read Grep Glob Write Edit

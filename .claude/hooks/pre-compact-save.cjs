@@ -152,7 +152,7 @@ trigger: context_compaction
   const remainingPhases = [];
   if (phase === 'routing' || phase === 'INIT') remainingPhases.push('planning', 'coordinating', 'executing', 'validating');
   else if (phase === 'planning' || phase === 'ORCHESTRATED' || phase === 'PLANNED') remainingPhases.push('coordinating', 'executing', 'validating');
-  else if (phase === 'coordinating' || phase === 'PROMPTS_READY' || phase === 'DECOMPOSED') remainingPhases.push('executing', 'validating');
+  else if (phase === 'coordinating') remainingPhases.push('executing', 'validating');
   else if (phase === 'executing' || phase === 'COORDINATED') remainingPhases.push('validating');
 
   // Three-file pattern (findings.md, progress.md) is aspirational -- most sessions

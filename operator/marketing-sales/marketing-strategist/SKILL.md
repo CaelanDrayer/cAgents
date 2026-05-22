@@ -51,8 +51,6 @@ metadata:
       type: coordinates
     - name: copywriter
       type: coordinates
-    - name: media-buyer
-      type: coordinates
     - name: sales-enablement-specialist
       type: coordinates
     - name: seo-specialist

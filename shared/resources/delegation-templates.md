@@ -91,7 +91,7 @@ Examples:
 - "cagents:copywriter"
 - "cagents:business-analyst"
 - "cagents:recruiter"
-- "cagents:legal-analyst"
+- "cagents:general-counsel"
 ```
 
 **IMPORTANT**: Do NOT use `{domain}:{agent-name}` (e.g., `make:backend-developer`). The plugin registers all agents under the `cagents:` namespace. Using domain prefixes causes fallback to generic general-purpose agents.

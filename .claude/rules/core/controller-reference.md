@@ -1,8 +1,8 @@
 ---
 paths:
-  - "core/universal-planner/**"
-  - "core/universal-executor/**"
-  - "core/universal-validator/**"
+  - "core/planner/**"
+  - "core/executor/**"
+  - "core/validator/**"
   - "**/config/planner_config.yaml"
 ---
 
@@ -125,7 +125,7 @@ implementation_tasks:
   - task_id: TASK-01
     name: "{task_name}"
     assigned_to: cagents:{executor}
-    agent_id: "{agent_id}"          # REQUIRED: Links to agent_tree.yaml entry for AgentPath visualization
+    agent_id: "{agent_id}"          # REQUIRED: Links to agent_tree.yaml entry for audit-trail traceability
     acceptance_criteria: [...]
     status: completed
     confidence: 0.85

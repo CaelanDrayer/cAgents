@@ -2,7 +2,7 @@
 #
 # cAgents CI Runner
 # Self-contained CI script for quality gates
-# Version: 12.2.0
+# Version: 12.6.0
 #
 # Usage:
 #   ./scripts/ci/cagents-ci.sh [command]
@@ -13,7 +13,7 @@
 #   check       - Run quality checks
 #   test        - Run Vitest test suite
 #   evals       - Run evaluations on recent sessions
-#   contract   - Run contract tests (schema compatibility)
+#   contract   - (removed in v12.6.0; no-op for back-compat)
 #   tiny-bump   - Run tiny-bump guard (BLOCKING as of V10.26.5; set
 #                 CAGENTS_TINY_BUMP_BLOCK=0 to fall back to warn-only)
 #   all         - Run all checks
@@ -312,49 +312,16 @@ run_evals() {
 }
 
 #
-# Fetch schemas for contract tests
+# Contract tests removed in v12.6.0 (Pillar 4)
 #
-fetch_schemas() {
-    log_info "Fetching schemas for contract tests..."
-    if [[ -f "$SCRIPT_DIR/fetch-schemas.sh" ]]; then
-        if bash "$SCRIPT_DIR/fetch-schemas.sh" 2>&1; then
-            log_info "Schemas fetched successfully"
-        else
-            log_error "Schema fetch failed"
-            return 1
-        fi
-    else
-        log_warn "fetch-schemas.sh not found, skipping schema fetch"
-        return 1
-    fi
-}
-
-#
-# Run contract tests
+# The external-UI schema contract was dropped. tests/contract.test.js,
+# scripts/ci/fetch-schemas.sh, and the `contract` CI subcommand were removed.
+# Session YAML is now an internal-only contract; see
+# .claude/skills/run/reference/session-schema.md.
 #
 run_contract_tests() {
-    log_section "CONTRACT TESTS"
-
-    fetch_schemas || return 5
-
-    if [[ ! -f "$PROJECT_ROOT/tests/contract.test.js" ]]; then
-        log_warn "No contract test file found, skipping"
-        return 0
-    fi
-
-    if ! command -v npx &> /dev/null; then
-        log_warn "npx not available, skipping contract tests"
-        return 0
-    fi
-
-    log_info "Running contract test suite..."
-    if cd "$PROJECT_ROOT" && npx vitest run tests/contract.test.js --reporter=verbose 2>&1; then
-        log_info "All contract tests passed"
-        return 0
-    else
-        log_error "Contract tests failed"
-        return 5
-    fi
+    log_warn "Contract tests removed in v12.6.0 — skipping (no-op)"
+    return 0
 }
 
 #
@@ -545,7 +512,7 @@ main() {
     local command="${1:-all}"
     local exit_code=0
 
-    log_section "cAgents CI Runner v12.2.0"
+    log_section "cAgents CI Runner v12.6.0"
     log_info "Project root: $PROJECT_ROOT"
     log_info "Command: $command"
 

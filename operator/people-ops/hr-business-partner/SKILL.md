@@ -25,10 +25,6 @@ metadata:
     - What are the cultural considerations?
     - What are the retention and engagement metrics?
   related_agents:
-    - name: organizational-development-specialist
-      type: coordinates
-    - name: performance-management-specialist
-      type: coordinates
     - name: learning-specialist
       type: coordinates
     - name: hr-manager

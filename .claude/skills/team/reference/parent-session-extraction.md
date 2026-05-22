@@ -1,8 +1,8 @@
 # Parent Session Extraction & Strategic-Mode Integration
 
-How /team integrates with strategic-mode's strategic brief (or a pre-v12.2.0 `/org` brief), extracts parent_session_id, and writes child_controllers.yaml for AgentPath lineage.
+How /team integrates with strategic-mode's strategic brief (or a pre-v12.2.0 `/org` brief), extracts parent_session_id, and writes child_controllers.yaml for audit-trail lineage.
 
-> **v12.2.0 note**: Pre-v12.2.0, the `--session` flag was used by `/org` to invoke per-domain `/team` runs. v12.2.0 absorbed `/org` into `/team` strategic mode; strategic-mode now creates nested per-domain waves inside a single `/team` session rather than launching child `/team` sessions. The `--session` extraction logic below is preserved for back-compat with pre-v12.2.0 `org_*` sessions and for any external integrations (e.g., AgentPath) that still pass a session path.
+> **v12.2.0 note**: Pre-v12.2.0, the `--session` flag was used by `/org` to invoke per-domain `/team` runs. v12.2.0 absorbed `/org` into `/team` strategic mode; strategic-mode now creates nested per-domain waves inside a single `/team` session rather than launching child `/team` sessions. The `--session` extraction logic below is preserved for back-compat with pre-v12.2.0 `org_*` sessions and for any external caller that still pre-creates a session path.
 
 ## Parent Session Extraction
 
@@ -69,7 +69,7 @@ This allows the `/team` strategic-mode lead (or pre-v12.2.0 `/org` CEO) to monit
 
 ## Session Hierarchy
 
-Understanding the session hierarchy is essential for correct lineage tracking in AgentPath.
+Understanding the session hierarchy is essential for correct lineage tracking in audit trails.
 
 ### Session Types and Nesting
 

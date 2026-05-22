@@ -797,7 +797,7 @@ matches:
     category: keep_as_unrelated_prose
     rationale: "HTTP endpoint paths (/health/live, /health/ready), not directory references. Classic Kubernetes liveness/readiness probe pattern."
   - id: AM-107
-    file: core/generic-coordinator/SKILL.md
+    file: core/coordinator/SKILL.md
     line: 54
     context: "If domain is `health`, read `health/config/domain_overrides.yaml`"
     legacy_domain: health

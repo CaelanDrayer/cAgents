@@ -97,7 +97,7 @@ Max 3 revision cycles in v12.0.0 (lowered from 5). Both FAIL and REVISE route ba
 # /run creates the task BEFORE spawning the agent:
 TaskCreate({ subject: "ORCHESTRATED: Plan + decomposition (universal-planner)", description: "..." })
 TaskUpdate({ taskId: "N", status: "in_progress" })
-Agent({ subagent_type: "cagents:universal-planner", description: "...", prompt: "..." })
+Agent({ subagent_type: "cagents:planner", description: "...", prompt: "..." })
 # /run updates the task AFTER the agent returns:
 TaskUpdate({ taskId: "N", status: "completed" })
 ```

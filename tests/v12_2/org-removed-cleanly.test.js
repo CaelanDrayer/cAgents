@@ -49,14 +49,14 @@ describe('v12.2.0: /org removed cleanly', () => {
     expect(stringified).not.toMatch(/\/org\b/);
   });
 
-  it('marketplace.json declares version 12.2.0 (the fold-org release)', () => {
+  it('marketplace.json declares a v12.x version (fold-org landed in 12.2.0; later v12.x bumps allowed)', () => {
     const marketJson = JSON.parse(
       fs.readFileSync(path.join(ROOT, '.claude-plugin', 'marketplace.json'), 'utf8')
     );
     // marketplace.json nests version inside the first plugin entry.
     const plugins = marketJson.plugins || [];
     expect(plugins.length).toBeGreaterThan(0);
-    expect(plugins[0].version).toBe('12.2.0');
+    expect(plugins[0].version).toMatch(/^12\./);
   });
 
   it('.claude/skills/ contains exactly the 4 v12.2.0 user-invocable skills', () => {

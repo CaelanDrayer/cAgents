@@ -414,12 +414,6 @@ The lead synthesizes findings, deduplicates overlapping concerns, and produces a
 
 ---
 
-## AgentPath — Session Visualizer
-
-[AgentPath](https://github.com/CaelanDrayer/AgentPath) is a companion web UI for visualizing cAgents session data. It reads from `cagents-memory/sessions/` and renders agent trees, pipeline timelines, work item DAGs, and file change logs in real time. Useful for understanding what happened in complex `/team` runs (including strategic-mode runs with C-suite Wave 0/1/2 plus per-domain Wave 3..N) where dozens of agents executed across multiple waves.
-
----
-
 ## Documentation
 
 | Resource | Content |
@@ -452,7 +446,7 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights:
 
-- **V12.2.0** — Current release. BREAKING: `/org` skill removed; cross-domain coordination folded into `/team` with auto-enabled strategic mode (universal-router `domain_count` triggers Wave 0/1/2 C-suite deliberation + Wave 3..N per-domain dispatch). 12 leadership agents preserved at their existing locations. Plugin skill count 5->4. Migration: `/org X` → `/team X`.
+- **V12.6.0** — Current release. BREAKING: `/org` skill removed; cross-domain coordination folded into `/team` with auto-enabled strategic mode (universal-router `domain_count` triggers Wave 0/1/2 C-suite deliberation + Wave 3..N per-domain dispatch). 12 leadership agents preserved at their existing locations. Plugin skill count 5->4. Migration: `/org X` → `/team X`.
 - **V12.1.2** — Folds `/improve` into `/run` via a first-word keyword router; removes the standalone `/improve` skill. Plugin skill count 6->5. Consolidation release: pipeline collapse 7->5 states (task-decomposer + prompt-engineer folded into universal-planner), engineering-manager merged into tech-lead, architecture-reviewer collapsed into `architect --review` mode flag, 13 marketing-sales agents absorbed (38->25), chief-legal-officer renamed to clo, 11 legacy domain dirs deleted, `cagents-memory/_communication/` removed, max_revision_cycles 5->3, execution self-validation reduced 15->5 hook-verifiable checks. Total agents 251->238.
 - **V11.3.0** — Plugin health sweep: archetype-canonical doc alignment (9 archetypes canonical, 15 domains as routing overlay), 109 stale `related_agents` cross-references swept, hook-count assertions corrected (26 unique registered, 29 .cjs total), `sync-agents.sh --check` dry-run flag added, `validate-versions.sh` pruned to 18 canonical slots, regression tests added.
 - **V11.1.3** — Removed statusLine hook and status bar integration.
@@ -461,8 +455,8 @@ See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights:
 - **V10.22.0** — Two-stage review protocol (spec compliance then code quality), 5 pipeline improvements
 - **V10.20.0** — 23 agent communication gap fixes, Growth domain expanded from 35 to 39 agents
 - **V10.18.0** — Vibe field on all 243 agents, worktree isolation, guard command pattern, skill chaining, commit-before-verify pattern
-- **V10.16.0** — Session ID naming overhaul with readable slugs, agent_id linking in coordination_log for AgentPath
-- **V10.12.0** — AgentPath plugin integration with 15 session visualization improvements
+- **V10.16.0** — Session ID naming overhaul with readable slugs, agent_id linking in coordination_log
+- **V10.12.0** — External session-visualizer integration with 15 session-data improvements (contract dropped in v12.6.0)
 - **V10.6.0** — Confidence tiers, blind review, dead-letter queue, handoff documents
 - **V10.3.0** — Creative domain overhaul (24 to 30 agents, all on Opus 4.6)
 - **V10.0.0** — 8 business domains, agent chaining with topological execution

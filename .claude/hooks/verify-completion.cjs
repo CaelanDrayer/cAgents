@@ -43,13 +43,13 @@ function getLastTransitionAgeMs(statusContent) {
  *   - The expected next agent is NOT found in agent_tree.yaml (pipeline stopped mid-execution)
  */
 function checkNextStageAgentSpawned(sessionDir, pipelineState) {
-  // Map pipeline states to their expected next-stage agent types
+  // Map pipeline states to their expected next-stage agent types.
+  // v12.6.0: state machine is INIT → ORCHESTRATED → PLANNED → COORDINATED → VALIDATED.
+  // PLANNED uses a dynamic controller resolved from plan.yaml (no fixed next agent).
   const nextStageMap = {
     'INIT': 'orchestrator',
     'ORCHESTRATED': 'planner',
-    'PLANNED': 'decomposer',
-    'DECOMPOSED': 'prompt-engineer',
-    'PROMPTS_READY': null, // controller is dynamic — resolved from plan.yaml
+    'PLANNED': null, // controller is dynamic — resolved from plan.yaml
     'COORDINATED': 'validator',
   };
 
@@ -64,9 +64,9 @@ function checkNextStageAgentSpawned(sessionDir, pipelineState) {
     if (!agentTreeContent) return true; // No agent_tree.yaml — fail-open
 
     if (expectedAgent === null) {
-      // PROMPTS_READY: controller is dynamic. Check if ANY agent was spawned
+      // PLANNED: controller is dynamic. Check if ANY agent was spawned
       // after the state that has no stopped_at yet (i.e., still running).
-      // For PROMPTS_READY, any running agent suggests the controller is active.
+      // Any running agent suggests the controller is active.
       const hasRunningAgent = /stopped_at:\s*null/.test(agentTreeContent);
       return hasRunningAgent;
     }
@@ -454,7 +454,7 @@ function verifyCompletion(sessionDir) {
 
     if (pipelineState) {
       // /run pipeline_state sessions (also handles legacy org_* sessions)
-      const activeStates = ['INIT', 'ORCHESTRATED', 'ANALYZED', 'DELIBERATED', 'BRIEFED', 'EXECUTED', 'PLANNED', 'DECOMPOSED', 'PROMPTS_READY', 'COORDINATED'];
+      const activeStates = ['INIT', 'ORCHESTRATED', 'ANALYZED', 'DELIBERATED', 'BRIEFED', 'EXECUTED', 'PLANNED', 'COORDINATED'];
       if (activeStates.includes(pipelineState)) {
         // Check if pipeline is actively running (recent state transition).
         // Claude Code fires Stop events between response turns while waiting
@@ -550,7 +550,7 @@ function verifyCompletion(sessionDir) {
   // child entries (depth 0), flag it as a delegation violation.
   // This detects self-handling bypasses: the model stopped without spawning any agents.
   // Exception: sessions that reached VALIDATED/COMPLETE are not flagged (clean completion).
-  const PRE_COORDINATED_STATES_VC = ['INIT', 'ORCHESTRATED', 'PLANNED', 'DECOMPOSED', 'PROMPTS_READY'];
+  const PRE_COORDINATED_STATES_VC = ['INIT', 'ORCHESTRATED', 'PLANNED'];
   const agentTreeFile = path.join(sessionDir, 'workflow', 'agent_tree.yaml');
   const agentTreeContent = safeRead(agentTreeFile);
   if (statusContent) {
@@ -744,7 +744,7 @@ function verifyCompletion(sessionDir) {
   const valContent = safeRead(validationFile);
   // Only warn about missing validation if the session has a status.yaml indicating
   // it should have reached validation (terminal or near-terminal states).
-  // Early-stage sessions (INIT, PLANNED, DECOMPOSED, etc.) are not expected to have one.
+  // Early-stage sessions (INIT, ORCHESTRATED, PLANNED) are not expected to have one.
   const statesExpectingValidation = ['COORDINATED', 'VALIDATED', 'COMPLETE', 'completed', 'complete', 'validating'];
   const currentPhase = statusContent
     ? (extractYamlValue(statusContent, 'pipeline_state') || extractYamlValue(statusContent, 'phase') || extractYamlValue(statusContent, 'current_phase'))

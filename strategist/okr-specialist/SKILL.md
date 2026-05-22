@@ -19,8 +19,6 @@ metadata:
   related_agents:
     - name: strategic-planner
       type: coordinated_by
-    - name: performance-management-specialist
-      type: cross_domain
 allowed-tools: Read Grep Glob Write Edit Bash
 ---
 

@@ -26,10 +26,6 @@ metadata:
   related_agents:
     - name: narrative-director
       type: coordinated_by
-    - name: animator
-      type: collaborates_with
-    - name: setting-designer
-      type: collaborates_with
   answers_questions:
     - What visual direction should this project take?
     - "How should this character's design communicate their personality?"

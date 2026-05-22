@@ -58,7 +58,7 @@ For **tier 2** requests with clear scope, skip enrichment agents that add minima
 | COORDINATED (validator) | Execute | Execute |
 | VALIDATED (terminal) | Terminal | Terminal |
 
-**v12.0.0 collapse**: The previous DECOMPOSED and PROMPTS_READY states no longer exist. `task-decomposer` and `prompt-engineer` were absorbed into `cagents:universal-planner`, which handles decomposition inline.
+**v12.0.0 collapse**: The previous DECOMPOSED and PROMPTS_READY states no longer exist. `task-decomposer` and `prompt-engineer` were absorbed into `cagents:planner`, which handles decomposition inline.
 
 ## Tier 2 Fast Path (v12.0.0)
 

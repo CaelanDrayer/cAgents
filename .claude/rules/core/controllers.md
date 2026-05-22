@@ -316,7 +316,7 @@ When any cAgents agent (controller, execution, or otherwise) is spawned at nesti
 
 ## Agent ID Tracking
 
-When controllers spawn execution agents via Agent tool, they MUST record the returned `agent_id` in the coordination_log's `implementation_tasks` entry. This links work items to `agent_tree.yaml` entries, enabling AgentPath to show which agent handled which work item.
+When controllers spawn execution agents via Agent tool, they MUST record the returned `agent_id` in the coordination_log's `implementation_tasks` entry. This links work items to `agent_tree.yaml` entries for audit-trail traceability.
 
 When calling the Agent tool to spawn an execution agent, include `subagent_type` set to the `cagents:{name}` identifier. This ensures the SubagentTracker hook can record the agent type in the audit trail without falling back to description parsing.
 

@@ -34,18 +34,19 @@ const AGENT_DIRS = [
 const INFRA_MAX_TURNS = {
   'orchestrator': 50,
   'trigger': 50,
-  'task-consolidator': 30,
+  'task-merger': 30,
   'task-decomposer': 30,
-  'task-inventory': 30,
+  'task-state': 30,
   'hitl': 15,
-  'universal-router': 15,
-  'universal-planner': 40,
-  'universal-executor': 40,
-  'universal-validator': 40,
-  'universal-self-correct': 40,
+  'router': 15,
+  'planner': 40,
+  'executor': 40,
+  'validator': 40,
+  'self-correct': 40,
   'optimizer': 50,
-  'team-trigger': 30,
-  'team-lead-adapter': 30,
+  'team': 30,
+  'team-lead': 30,
+  'coordinator': 30,
 };
 
 // Stats tracking

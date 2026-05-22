@@ -2,7 +2,7 @@
 /**
  * Approval Gate Hook — Best-effort backstop (RD-14)
  *
- * Best-effort backstop. Primary enforcement is cooperative via AgentPath API.
+ * Best-effort backstop. Primary enforcement is cooperative via external policy APIs.
  *
  * On relevant tool calls (file writes, bash commands), reads _data/policies/
  * for deny rules. If a deny policy matches the action context, blocks with
@@ -124,7 +124,7 @@ createHook('ApprovalGate', async (input) => {
       return denyWithReason({
         what: `Action "${actionType}" blocked by policy`,
         why: `Deny rule in policy "${rule.policyName}" prohibits ${actionType} actions`,
-        fix: 'Request approval through AgentPath UI or remove the deny policy',
+        fix: 'Edit the deny policy in _data/policies/ or run with policy override',
         hook: 'ApprovalGate',
       });
     }

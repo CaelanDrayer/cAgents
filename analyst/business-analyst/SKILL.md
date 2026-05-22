@@ -30,8 +30,6 @@ metadata:
   related_agents:
     - name: product-owner
       type: collaborates_with
-    - name: process-improvement-specialist
-      type: collaborates_with
 allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 

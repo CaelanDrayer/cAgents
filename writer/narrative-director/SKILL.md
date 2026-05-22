@@ -42,10 +42,6 @@ metadata:
       type: coordinates
     - name: prose-stylist
       type: coordinates
-    - name: voice-coach
-      type: coordinates
-    - name: theme-analyst
-      type: coordinates
 allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 

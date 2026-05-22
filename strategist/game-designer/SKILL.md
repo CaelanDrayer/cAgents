@@ -27,10 +27,6 @@ metadata:
   related_agents:
     - name: game-programmer
       type: cross_domain
-    - name: narrative-game-designer
-      type: cross_domain
-    - name: game-writer
-      type: cross_domain
     - name: game-producer
       type: collaborates_with
 allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet

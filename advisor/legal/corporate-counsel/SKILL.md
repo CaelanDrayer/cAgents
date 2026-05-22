@@ -20,8 +20,6 @@ metadata:
   related_agents:
     - name: general-counsel
       type: coordinated_by
-    - name: contracts-manager
-      type: collaborates_with
 allowed-tools: Read Grep Glob Write Edit Bash
 ---
 

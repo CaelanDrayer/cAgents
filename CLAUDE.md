@@ -73,7 +73,7 @@ session artifacts referencing pre-v12 agent names continue to resolve.
 - `docs/` - Project documentation (25 files including ARCHITECTURE.md, SKILLS.md, TEAM_MODE.md, RELEASE_NOTES.md, etc.)
 - `archive/docs/` - Historical documentation (local only)
 - `cagents-memory/` - Runtime state (excluded from git)
-- `.claude/skills/run/reference/session-schema.md` - Session YAML contract (canonical schema for AgentPath)
+- `.claude/skills/run/reference/session-schema.md` - Session YAML contract (internal-only since v12.6.0)
 - `docs/WORKFLOW_AGENT_INTERACTIONS.md` - Agent interaction patterns
 
 ## Version Management
@@ -121,19 +121,19 @@ quality/        # completion, validation-framework, implicit-discovery (5 files)
 - **Tier 2**: Controllers (coordinate via batch delegation)
 - **Tier 3**: Execution agents (implement work items)
 - **Tier 4**: Support agents (foundational services)
-- **Total**: 240 agents across 9 builder-role archetypes
+- **Total**: 144 agents across 9 builder-role archetypes (post-v12.4.0 P2 compression; 96 culled to `_deprecated/` buckets)
 - **Execution**: Event-driven pipeline (5-state machine) with progressive paths (minimal/medium/full), revision routing, reviewer loops
 
 **Canonical structure (v12.0.0) — 9 archetypes**:
 | Archetype | Dir | Agents | Capability |
 |-----------|-----|-------:|------------|
-| **Developer** | `developer/` | 30 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
-| **Operator** | `operator/` | 73 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
-| **Advisor** | `advisor/` | 30 | Legal, health, education, personal (4 branches) |
-| **Analyst** | `analyst/` | 31 | Data, BI, research, social-science |
-| **Creator** | `creator/` | 11 | Visual artists, designers, audiovisual creators |
-| **Writer** | `writer/` | 26 | Copy, narrative, technical writing, editorial |
-| **Strategist** | `strategist/` | 9 | Product owners, portfolio managers, planners |
+| **Developer** | `developer/` | 26 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
+| **Operator** | `operator/` | 36 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
+| **Advisor** | `advisor/` | 12 | Legal, health, education, personal (4 branches) |
+| **Analyst** | `analyst/` | 20 | Data, BI, research, social-science |
+| **Creator** | `creator/` | 5 | Visual artists, designers, audiovisual creators |
+| **Writer** | `writer/` | 10 | Copy, narrative, technical writing, editorial |
+| **Strategist** | `strategist/` | 8 | Product owners, portfolio managers, planners |
 | **Core** | `core/` | 15 | Pipeline infrastructure (trigger, orchestrator, universal-planner, reviewer, etc.) |
 | **Leadership** | `leadership/` | 12 | C-suite executives (used by /team strategic mode, not directly routable) |
 
@@ -410,15 +410,15 @@ cAgents/
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (29 files: 25 top-level across 5 categories + 1 README + 3 in resources/)
 |   +-- settings.json        # Hook registration + permissions + env
-+-- developer/               # Developer archetype (33 agents — backend/frontend/fullstack/infrastructure/quality)
-+-- operator/                # Operator archetype (87 agents — support/business-ops/people-ops/marketing-sales/content)
-+-- advisor/                 # Advisor archetype (30 agents — legal/health/education/personal)
-+-- analyst/                 # Analyst archetype (31 agents — data, BI, research, social science)
-+-- creator/                 # Creator archetype (11 agents — visual, design, audiovisual)
-+-- writer/                  # Writer archetype (26 agents — copy, narrative, technical, editorial)
-+-- strategist/              # Strategist archetype (9 agents — product owners, portfolio, planning)
-+-- core/                    # Core pipeline infrastructure (17 agents)
-+-- leadership/              # Leadership archetype (11 C-suite agents — used by /team strategic mode)
++-- developer/               # Developer archetype (26 agents — backend/frontend/fullstack/infrastructure/quality; v12.4.0 cull)
++-- operator/                # Operator archetype (36 agents — support/business-ops/people-ops/marketing-sales/content; v12.4.0 cull)
++-- advisor/                 # Advisor archetype (12 agents — legal/health/education/personal; v12.4.0 cull)
++-- analyst/                 # Analyst archetype (20 agents — data, BI, research, social science; v12.4.0 cull)
++-- creator/                 # Creator archetype (5 agents — visual, design, audiovisual; v12.4.0 cull)
++-- writer/                  # Writer archetype (10 agents — copy, narrative, technical, editorial; v12.4.0 cull)
++-- strategist/              # Strategist archetype (8 agents — product owners, portfolio, planning; v12.4.0 cull)
++-- core/                    # Core pipeline infrastructure (15 agents)
++-- leadership/              # Leadership archetype (12 C-suite agents — used by /team strategic mode)
 +-- {engineering,creative,business,growth,people,service,...}/  # Legacy domain dirs (config-only, router/planner overlay)
 +-- scripts/                 # Version sync, validation, CI scripts
 +-- tests/                   # Vitest test suite (hooks + config)
@@ -436,7 +436,7 @@ cAgents/
 **cAgents is standalone. It MUST NOT depend on MCP servers — neither bundled nor consumed.**
 
 This is a load-bearing constraint, not a default. The plugin's value is that it works
-out of the box: install cAgents, get 240 agents and 4 skills with zero external service
+out of the box: install cAgents, get 144 agents and 4 skills with zero external service
 configuration. Coupling any agent or skill to an MCP server (the user must run a Postgres
 MCP, configure a GitHub MCP, etc.) breaks that contract — agents start failing in
 environments where the server isn't present, and the plugin's "install and go" promise
@@ -491,7 +491,7 @@ cAgents is distributed as a Claude Code plugin. See `.claude-plugin/plugin.json`
 ```
 
 **Key Manifest Fields**:
-- `agents`: Array of SKILL.md paths (240 agents registered)
+- `agents`: Array of SKILL.md paths (144 agents registered post-v12.4.0)
 - `skills`: Path to skills directory (`.claude/skills/`)
 - `hooks`: Path to settings.json for hook registration
 - `settings.json`: Default settings applied when plugin loads (under `agent` key for subagent defaults)
@@ -520,16 +520,16 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 
 **Skills**: `/run`, `/team`, `/designer`, `/helper` (in `.claude/skills/`; V11.0 removed `/review`, `/optimize`, `/context`, `/debug`; v12.1.2 folded `/improve` into `/run` via keyword router; v12.2.0 removed `/org` and folded cross-domain coordination into `/team` strategic mode — see `docs/MIGRATION-V11.md` and CHANGELOG entries v12.1.2 / v12.2.0)
 **Built-in**: `/memory`, `/init` (Claude Code native)
-**Agents**: 240 total across 9 archetypes (developer 32, operator 74, advisor 30, analyst 31, creator 11, writer 26, strategist 9, core 15, leadership 12)
+**Agents**: 144 total across 9 archetypes (developer 26, operator 36, advisor 12, analyst 20, creator 5, writer 10, strategist 8, core 15, leadership 12) — post-v12.4.0 P2 compression from 240
 **Domain Overlay (legacy routing/config only)**: 2 dirs (`people/`, `shared/`) hold `config/domain_overrides.yaml` — no SKILL.md files. The other 11 legacy domains (engineering, creative, business, growth, service, science, health, education, personal, arts, trades) were deleted in v12 W4.2 and consolidated into `cagents-memory/_system/config/routing.yaml`.
-**Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `people/config/domain_overrides.yaml`, `shared/config/domain_overrides.yaml`, `cagents-memory/_system/config/routing.yaml`, `cagents-memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (session YAML contract for AgentPath)
+**Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `people/config/domain_overrides.yaml`, `shared/config/domain_overrides.yaml`, `cagents-memory/_system/config/routing.yaml`, `cagents-memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (internal-only session YAML contract since v12.6.0)
 **Hooks**: 31 .cjs files = 28 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
-**Tests**: `npm test` runs 983+ Vitest tests across 95+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.2.0
+**Tests**: `npm test` runs 1030+ Vitest tests across 101+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
+**Version**: 12.6.0
 
 ## Troubleshooting
 

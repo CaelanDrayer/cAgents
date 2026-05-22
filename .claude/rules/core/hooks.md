@@ -209,10 +209,10 @@ createHook('MyHook', async (input) => {
 - **Can block**: Returns `{decision: "block", reason: "..."}` for incomplete workflows
 
 #### Stop: goal-evaluator-logger.cjs
-- **Purpose**: Capture the latest `/goal` evaluator reason into the active session's `workflow/goal_evaluator_log.yaml` so `cagents:universal-self-correct` can consume it as additional revision signal (V11.3.0, REC-4 from goal.md integration).
+- **Purpose**: Capture the latest `/goal` evaluator reason into the active session's `workflow/goal_evaluator_log.yaml` so `cagents:self-correct` can consume it as additional revision signal (V11.3.0, REC-4 from goal.md integration).
 - **Activation**: Only when `/goal` is active in the Stop hook payload (`input.goal.active === true` or `input.goal_state.active === true` with an `evaluator_reason` present). Non-blocking. No-op when `/goal` inactive, no active cAgents session, or no reason to capture.
 - **Creates / appends**: `cagents-memory/sessions/{active}/workflow/goal_evaluator_log.yaml` (YAML list under `entries:` with timestamp, condition, evaluator_reason, turn, verdict).
-- **Consumed by**: `core/universal-self-correct/SKILL.md` Step 2 (reads most recent 3-5 entries as revision signal).
+- **Consumed by**: `core/self-correct/SKILL.md` Step 2 (reads most recent 3-5 entries as revision signal).
 
 #### Stop: secret-restore.cjs
 - **Purpose**: Companion to `secret-detection.cjs` sanitize mode (v12.0.4, REC-1). When `CAGENTS_SECRET_MODE=sanitize` is active, the PreToolUse hook replaces secrets with `BLOCK_<hex>` placeholders during the session and backs up the original content. This Stop hook restores all backed-up files at session end so the workspace returns to its pre-sanitize state.

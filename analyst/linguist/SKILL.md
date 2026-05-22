@@ -19,7 +19,6 @@ capabilities:
   - etymology
 related_agents:
   - name: translator
-  - name: language-tutor
 not-my-scope: ["translation services (defer to translator)", "language teaching (defer to language-tutor)", "speech therapy"]
 allowed-tools: Read Grep Glob Write Edit Bash
 ---

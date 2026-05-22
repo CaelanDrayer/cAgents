@@ -33,10 +33,6 @@ metadata:
       type: coordinates
     - name: narrative-designer
       type: coordinates
-    - name: pacing-specialist
-      type: coordinates
-    - name: tension-architect
-      type: coordinates
 allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 

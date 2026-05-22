@@ -29,8 +29,6 @@ metadata:
   related_agents:
     - name: frontend-developer
       type: coordinates
-    - name: frontend-aesthetics
-      type: coordinates
     - name: ux-designer
       type: coordinates
     - name: accessibility-checker

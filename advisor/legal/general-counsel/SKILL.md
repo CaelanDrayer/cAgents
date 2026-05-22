@@ -28,10 +28,6 @@ metadata:
   related_agents:
     - name: corporate-counsel
       type: coordinates
-    - name: litigation-manager
-      type: coordinates
-    - name: ip-attorney
-      type: coordinates
     - name: compliance-manager
       type: coordinates
     - name: legal-operations-manager

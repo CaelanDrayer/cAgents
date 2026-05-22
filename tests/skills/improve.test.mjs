@@ -181,7 +181,9 @@ describe('V10.26.24 /improve --mode review DETECTING + PLANNING', () => {
     expect(content).toMatch(/cagents:code-standards-auditor/);
     expect(content).toMatch(/cagents:security-engineer/);
     expect(content).toMatch(/cagents:performance-analyzer/);
-    expect(content).toMatch(/cagents:test-coverage-validator/);
+    // v12.4.0: test-coverage-validator culled to developer/quality/_deprecated/
+    // (zero spawns in 90 days). Coverage validation now handled by qa-lead.
+    expect(content).toMatch(/cagents:qa-lead/);
   });
 
   it('SKILL.md documents per-agent findings output path', () => {

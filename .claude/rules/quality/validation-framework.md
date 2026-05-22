@@ -1,7 +1,7 @@
 ---
 paths:
-  - "core/universal-validator/**"
-  - "core/universal-executor/**"
+  - "core/validator/**"
+  - "core/executor/**"
 ---
 
 # Completion Validation Framework

@@ -18,22 +18,10 @@ After /run reports results, the pipeline enters a listening state. If the user p
 
 1. Update status.yaml:
    - Set pipeline_state back to the re-entry point
-   - Append state_history entry: `{ state: "FOLLOWUP_{TYPE}", entered_at, duration_ms: null }`
-   - Increment `followup_round: {N}`
+   - Append state_history entry: `{ state: "FOLLOWUP_{TYPE}", entered_at }`
+     (v12.6.0: duration_ms is NO LONGER written; track follow-up round count in `/run`'s working state, not in `followup_round` on disk)
 
-2. Write followup event to `workflow/events/EVT-{N}.yaml`:
-   ```yaml
-   event_id: EVT-{N}
-   type: "followup"
-   agent_id: "pipeline"
-   agent_type: "cagents:run"
-   timestamp: "{ISO_TIMESTAMP}"
-   payload:
-     followup_type: adjustment|rework|extension|fix|review
-     user_feedback: "{user's follow-up message}"
-     re_entry_state: PLANNED|ORCHESTRATED|COORDINATED
-     previous_state: VALIDATED
-   ```
+2. (v12.6.0: workflow/events/EVT-*.yaml emission removed. The re-entry state advance + status.yaml history entry are sufficient; the follow-up's resulting `coordination_log.yaml` or `validation_report.yaml` is the canonical signal for the next stage.)
 
 3. Update tasks (TaskUpdate) to show the follow-up:
    ```
@@ -51,8 +39,8 @@ After /run reports results, the pipeline enters a listening state. If the user p
    - For review: re-invoke validator (re-enter at COORDINATED)
 
 5. After follow-up completes:
-   - Update execution_summary.yaml with followup_rounds count
-   - Append followup details to state_history
+   - (v12.6.0: do NOT write followup_rounds_used to execution_summary.yaml — it was an external-UI field)
+   - Append followup details to state_history (state + entered_at only)
    - Report follow-up results to user
    - Return to listening state (allows chained follow-ups)
 
@@ -61,21 +49,17 @@ After /run reports results, the pipeline enters a listening state. If the user p
 - No limit on follow-up rounds -- the session stays alive as long as the user keeps providing feedback
 - Each follow-up is tracked in `state_history` as `FOLLOWUP_{TYPE}_{N}`
 
-## Session Schema Additions for Follow-Ups
+## Session Schema Additions for Follow-Ups (v12.6.0)
 
 ```yaml
 # status.yaml additions
-followup_round: {N}  # 0 = no follow-ups, incremented on each
 state_history:
   - state: VALIDATED
     entered_at: "..."
-    duration_ms: 120000
   - state: FOLLOWUP_ADJUSTMENT_1
     entered_at: "..."
-    duration_ms: null
 
 # execution_summary.yaml additions
-followup_rounds_used: {N}
 followup_history:
   - round: 1
     type: adjustment
@@ -83,6 +67,8 @@ followup_history:
     re_entry_state: PLANNED
     outcome: completed
 ```
+
+v12.6.0: `followup_round` (status.yaml), `followup_rounds_used` (execution_summary.yaml), and `state_history[].duration_ms` are no longer written. Track follow-up count via `length(followup_history)` instead.
 
 ## Controller Receives Follow-Up Context
 

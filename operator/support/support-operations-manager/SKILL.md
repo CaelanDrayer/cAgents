@@ -25,14 +25,6 @@ metadata:
     - What efficiency gains can automation provide?
     - What capacity do we need for projected volume?
   related_agents:
-    - name: support-analyst
-      type: coordinates
-    - name: support-quality-analyst
-      type: coordinates
-    - name: support-trainer
-      type: coordinates
-    - name: knowledge-base-manager
-      type: coordinates
 allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 

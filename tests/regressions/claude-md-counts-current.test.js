@@ -30,6 +30,8 @@ function countSkillMd(dir) {
   let count = 0;
   if (!existsSync(dir)) return 0;
   for (const entry of readdirSync(dir)) {
+    // v12.4.0: skip _deprecated/ buckets (culled agents kept for alias resolution)
+    if (entry === '_deprecated') continue;
     const full = join(dir, entry);
     let lst;
     try { lst = lstatSync(full); } catch { continue; }

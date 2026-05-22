@@ -25,10 +25,6 @@ metadata:
   related_agents:
     - name: science-coordinator
       type: coordinated_by
-    - name: mathematician
-      type: collaborates_with
-    - name: biologist
-      type: collaborates_with
     - name: data-scientist
       type: collaborates_with
 allowed-tools: Read Grep Glob Write Edit Bash

@@ -31,10 +31,6 @@ metadata:
     - What quality issues or gaps need to be addressed?
     - What continuous improvement opportunities exist?
   related_agents:
-    - name: process-auditor
-      type: collaborates_with
-    - name: process-improvement-specialist
-      type: collaborates_with
 allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 

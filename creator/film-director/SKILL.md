@@ -13,7 +13,6 @@ capabilities:
   - screenwriting
 related_agents:
   - name: photographer
-  - name: music-producer
   - name: narrative-director
 not-my-scope: ["Animation rigging", "VFX compositing", "Game engine cinematics"]
 allowed-tools: "Read Grep Glob Write Edit Bash"

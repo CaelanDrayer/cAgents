@@ -1,6 +1,6 @@
 ---
 paths:
-  - "core/universal-planner/**"
+  - "core/planner/**"
   - "core/task-decomposer/**"
 ---
 

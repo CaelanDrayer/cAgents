@@ -150,24 +150,9 @@ project_context:
 - Never cite a file path without confirming it exists (use Glob)
 - Never describe file contents without reading them (use Read)
 
-### Write Completion Event
+### State Advancement (v12.6.0)
 
-After writing enriched_context.yaml, write a completion event to `workflow/events/`:
-
-```yaml
-event_id: EVT-1
-state: ORCHESTRATED
-agent: cagents:orchestrator
-timestamp: "{ISO_TIMESTAMP}"
-duration_seconds: {elapsed}
-inputs_consumed:
-  - instruction.yaml
-outputs_produced:
-  - workflow/enriched_context.yaml
-next_state: ORCHESTRATED
-```
-
-Create the events directory if it does not exist: `mkdir -p workflow/events/`
+After writing enriched_context.yaml, return control to `/run`'s state machine. v12.6.0 removed the `workflow/events/EVT-*.yaml` completion event — `/run` advances state by reading `enriched_context.yaml` directly (the canonical ORCHESTRATED-state output). Do NOT create `workflow/events/`.
 
 ## Agent Audit Trail
 
@@ -262,7 +247,7 @@ Agent({
 
 // Team mode: spawn team-lead-adapter
 Agent({
-  subagent_type: "cagents:team-lead-adapter",
+  subagent_type: "cagents:team-lead",
   description: "Team lead: {request}",
   prompt: `
     Session: {session_path}
@@ -278,7 +263,7 @@ Agent({
 Instead of polling coordination_log.yaml:
 1. Read `team/task_list.yaml` for shared task statuses
 2. Check for completion: `summary.completed == summary.total`
-3. Monitor `team/messages/` for critical communications
+3. (v12.6.0: `team/messages/` removed — teammate communication uses SendMessage in-memory; lead aggregates via TaskList)
 4. Aggregate metrics from `team/metrics/`
 
 ### Team Mode Benefits
