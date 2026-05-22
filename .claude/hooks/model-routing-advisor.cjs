@@ -37,10 +37,10 @@ const KNOWN_AGENTS = {
   'hitl': 'infrastructure',
   'optimizer': 'infrastructure',
   'orchestrator': 'infrastructure',
-  'prompt-engineer': 'infrastructure',
+  // Pre-v12.0.0 decomposer + prompt-crafting agents were absorbed into 'planner'.
+  // Legacy spawns are routed to 'planner' via scripts/migration/v12-aliases.yaml.
   'reviewer': 'infrastructure',
   'task-merger': 'infrastructure',
-  'task-decomposer': 'infrastructure',
   'task-state': 'infrastructure',
   'team-lead': 'infrastructure',
   'team': 'infrastructure',
@@ -54,7 +54,7 @@ const KNOWN_AGENTS = {
   // Engineering (32 agents)
   'accessibility-checker': 'support',
   'architect': 'controller',
-  // 'architecture-reviewer' absorbed into 'architect --review' in v12.0.0
+  // Pre-v12.0.0 architecture-review agent absorbed into 'architect --review' in v12.0.0
   'backend-developer': 'execution',
   'backend-lead': 'controller',
   'code-reviewer': 'support',
@@ -249,7 +249,8 @@ const KNOWN_AGENTS = {
   'cro': 'controller',
   'cso': 'controller',
   'cto': 'controller',
-  'chief-legal-officer': 'controller',
+  // Pre-v12.0.0 long-form name was shortened to clo in v12.0.0
+  'clo': 'controller',
   // Shared (4 agents)
   'bi-specialist': 'controller',
   'competitive-intelligence-analyst': 'controller',

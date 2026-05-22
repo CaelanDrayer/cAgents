@@ -1,13 +1,13 @@
 # Delegation Prompt Templates
 
-> **Absorption note (v12.0.0)**: This resource was absorbed from
-> `core/prompt-engineer/SKILL.md` in v12.0.0 when the pipeline collapsed
-> 7 -> 5 states. The planner now crafts delegation prompts inline as part
-> of decomposition; there is no separate `prompt-engineer` agent in v12.
-> Prompt crafting is OPTIONAL — the adaptive pipeline path (V9.27 tier 2
-> fast path) skipped this stage entirely, and v12 inherits that
-> optionality. Controllers fall back to a standard prompt template when
-> the planner does not produce per-WI prompts.
+> **Absorption note (v12.0.0)**: This resource was absorbed from the
+> pre-v12.0.0 standalone prompt-engineer agent in v12.0.0 when the pipeline
+> collapsed 7 -> 5 states. The planner now crafts delegation prompts
+> inline as part of decomposition; there is no separate prompt-crafting
+> agent in v12. Prompt crafting is OPTIONAL — the adaptive pipeline path
+> (V9.27 tier 2 fast path) skipped this stage entirely, and v12 inherits
+> that optionality. Controllers fall back to a standard prompt template
+> when the planner does not produce per-WI prompts.
 
 Crafts optimized delegation prompts for controller agents by analyzing work items, reading relevant codebase files, and assembling context packages.
 

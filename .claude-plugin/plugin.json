@@ -1,7 +1,7 @@
 {
   "name": "cagents",
-  "version": "12.6.0",
-  "description": "Universal multi-domain agent orchestration framework. 243 agents across 15 domains, coordinated by an intelligent pipeline. 4 user skills: /run routes any task through controller + specialist agents (including review/audit/optimize/improve modes via keyword router; cross-domain strategic work via Strategic Mode in /team), /team runs parallel agent waves with optional Strategic Mode for cross-domain initiatives, /designer guides design exploration, /helper guides usage.",
+  "version": "12.7.0",
+  "description": "Universal multi-domain agent orchestration framework. 144 agents across 9 builder-role archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership), coordinated by an intelligent pipeline. 4 user skills: /run routes any task through controller + specialist agents (including review/audit/optimize/improve modes via keyword router; cross-domain strategic work via Strategic Mode in /team), /team runs parallel agent waves with optional Strategic Mode for cross-domain initiatives, /designer guides design exploration, /helper guides usage.",
   "author": {
     "name": "CaelanDrayer",
     "email": "caelan@caelandrayer.ca",

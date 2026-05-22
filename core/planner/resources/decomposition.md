@@ -1,9 +1,9 @@
 # Aggressive Task Decomposition
 
-> **Absorption note (v12.0.0)**: This resource was absorbed from
-> `core/task-decomposer/SKILL.md` in v12.0.0 when the pipeline collapsed
-> 7 -> 5 states. The planner now handles decomposition inline — there is
-> no separate decomposer agent in v12. The Three-Tier Progressive
+> **Absorption note (v12.0.0)**: This resource was absorbed from the
+> pre-v12.0.0 standalone decomposer agent in v12.0.0 when the pipeline
+> collapsed 7 -> 5 states. The planner now handles decomposition inline —
+> there is no separate decomposer agent in v12. The Three-Tier Progressive
 > Disclosure pattern (see `.claude/rules/core/skill-format.md`) keeps the
 > SKILL.md body small while preserving the full decomposition guidance
 > here for on-demand loading.

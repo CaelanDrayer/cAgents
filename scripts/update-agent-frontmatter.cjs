@@ -30,12 +30,13 @@ const AGENT_DIRS = [
   'shared/agents',
 ];
 
-// Infrastructure agent maxTurns overrides
+// Infrastructure agent maxTurns overrides.
+// Note: pre-v12.0.0 standalone decomposer + prompt-crafting agents were absorbed
+// into 'planner'; their old entries are no longer needed in this table.
 const INFRA_MAX_TURNS = {
   'orchestrator': 50,
   'trigger': 50,
   'task-merger': 30,
-  'task-decomposer': 30,
   'task-state': 30,
   'hitl': 15,
   'router': 15,

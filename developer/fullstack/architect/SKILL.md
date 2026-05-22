@@ -110,7 +110,12 @@ When invoked with `--review` (or when the task prompt explicitly asks for an arc
 4. Rate each finding Critical / High / Medium / Low; Critical and High block, Medium warns.
 5. Skip the controller delegation protocol below — review mode is single-agent (support-tier behavior). Use Read/Grep/Glob only.
 
-> **v12.0.0 absorption note**: In v12.0.0, the standalone `architecture-reviewer` agent (developer/fullstack/) was collapsed into this `--review` mode of `architect` per the archetype-consolidation pass. The full reviewer content lives in @resources/review-mode.md. Legacy references to `cagents:architecture-reviewer` map to `cagents:architect` (invoked with `--review`) via `scripts/migration/v12-aliases.yaml`.
+> **v12.0.0 absorption note**: In v12.0.0, the pre-v12.0.0 standalone
+> architecture-review agent (developer/fullstack/) was collapsed into this
+> `--review` mode of `architect` per the archetype-consolidation pass. The
+> full reviewer content lives in @resources/review-mode.md. Legacy spawns
+> by the old name map to `cagents:architect` (invoked with `--review`) via
+> `scripts/migration/v12-aliases.yaml`.
 
 ## Behavioral Traits
 

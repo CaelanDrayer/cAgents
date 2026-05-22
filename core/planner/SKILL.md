@@ -5,8 +5,11 @@ description: "Use when creating plan.yaml + work_items.yaml in the v12 collapsed
 metadata:
   version: "2.0.0"
   absorbed_in_v12:
-    - cagents:task-decomposer
-    - cagents:prompt-engineer
+    # Two pre-v12.0.0 agents whose responsibilities were folded into this planner
+    # when the pipeline collapsed 7 -> 5 states. Their old plugin names are
+    # preserved for traceability via scripts/migration/v12-aliases.yaml.
+    - decomposer-agent-pre-v12
+    - prompt-engineer-agent-pre-v12
   vibe: "Plans the work, decomposes the work, prompts the work — all in one pass"
   tier: infrastructure
   effort: high
@@ -29,7 +32,7 @@ metadata:
   related_agents:
     - name: orchestrator
       type: coordinated_by
-    - name: universal-validator
+    - name: validator
       type: collaborates_with
 allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
 ---
@@ -47,11 +50,12 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 
 **Philosophy**: Users state outcomes, not requirements. Your job is to unpack what they actually need.
 
-**Absorbed agents (v12.0.0)**: This agent absorbed `cagents:task-decomposer`
-and `cagents:prompt-engineer` in v12.0.0 when the pipeline collapsed
-7 -> 5 states. Their instructional content lives in
-`@resources/decomposition.md` and `@resources/prompt-templates.md` via
-the Three-Tier Progressive Disclosure pattern.
+**Absorbed agents (v12.0.0)**: This agent absorbed two pre-v12.0.0 standalone
+agents (decomposer + prompt-engineer) when the pipeline collapsed 7 -> 5
+states. Their instructional content lives in `@resources/decomposition.md`
+and `@resources/prompt-templates.md` via the Three-Tier Progressive
+Disclosure pattern. Legacy spawns by their old names are routed here via
+`scripts/migration/v12-aliases.yaml`.
 
 **Use When**:
 - Routing phase complete, need planning phase orchestration
@@ -82,8 +86,8 @@ See `.claude/rules/quality/implicit-discovery.md` for the Unsaid Framework.
 
 ## Detailed Reference
 
-See @resources/decomposition.md for the full aggressive-decomposition guidance absorbed from `core/task-decomposer/` in v12.0.0 (abstraction classification, 5-step framework, work item format, adaptive chain depth).
-See @resources/prompt-templates.md for the optional delegation-prompt crafting protocol absorbed from `core/prompt-engineer/` in v12.0.0 (5-check confidence rubric, prompt assembly, when to skip).
+See @resources/decomposition.md for the full aggressive-decomposition guidance absorbed from the pre-v12.0.0 decomposer agent (abstraction classification, 5-step framework, work item format, adaptive chain depth).
+See @resources/prompt-templates.md for the optional delegation-prompt crafting protocol absorbed from the pre-v12.0.0 prompt-engineer agent (5-check confidence rubric, prompt assembly, when to skip).
 See @resources/component-extraction.md for 5-type component breakdown.
 See @resources/work-item-generation.md for work item format and quality.
 See @resources/dependency-mapping.md for dependency graph creation.

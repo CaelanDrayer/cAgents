@@ -125,7 +125,8 @@ function inferParentAgent(sessionDir, subagentType, agentId) {
 
   // Strategy 4: Use status.yaml phase and known agent names to infer parent role
   // Known enrichment agents are pipeline-level (parent = 'pipeline')
-  const ENRICHMENT_AGENTS = ['orchestrator', 'planner', 'decomposer', 'prompt-engineer', 'validator',
+  // Pre-v12.0.0 decomposer + prompt-crafting agents were absorbed into 'planner'.
+  const ENRICHMENT_AGENTS = ['orchestrator', 'planner', 'validator',
     'router', 'executor', 'self-correct'];
   const agentBaseName = subagentType.replace(/^cagents:/, '');
   if (ENRICHMENT_AGENTS.includes(agentBaseName)) {
