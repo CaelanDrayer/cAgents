@@ -224,6 +224,51 @@ aliases:
     merge_group: G6
     notes: "Folded into growth-marketer. growth-marketer's activation/retention/viral-loop scope subsumes case-study + advocacy work."
 
+  # ---------------------------------------------------------------------------
+  # LP-12 (v12.7.x): Writer-trio consolidation (3 -> 1 via mode flag)
+  # Decision: keep `editor` as the primary (broadest scope; controller tier).
+  # copy-editor + prose-stylist absorbed into editor with mode: copy-edit /
+  # mode: prose-style. Source dirs moved to writer/_deprecated/.
+  # Note: `editor` -> `editor` is an identity move (no-op per file header
+  # normalization rules), so it is intentionally NOT listed here.
+  # ---------------------------------------------------------------------------
+  - old: cagents:copy-editor
+    new: cagents:editor
+    type: fold
+    decision: Q8
+    notes: "consolidated in LP-12, use mode: copy-edit. Absorbed into editor with grammar/consistency/style-guide/query-system capabilities. Source dir moved to writer/_deprecated/copy-editor/."
+    mode_flag: "mode: copy-edit"
+
+  - old: cagents:prose-stylist
+    new: cagents:editor
+    type: fold
+    decision: Q8
+    notes: "consolidated in LP-12, use mode: prose-style. Absorbed into editor with rhetorical-craft/figurative-language/rhythm/narrative-distance capabilities. Source dir moved to writer/_deprecated/prose-stylist/."
+    mode_flag: "mode: prose-style"
+
+  # ---------------------------------------------------------------------------
+  # LP-13 (v12.7.x): Academic research consolidation (4 analyst agents -> 2)
+  # Decision: keep `methodology-critic` standalone (unique adversarial rigor
+  # evaluation scope). literature-review-author + academic-paper-searcher
+  # absorbed into new `scholar` agent (analyst archetype) with mode: review /
+  # mode: search. Name `academic-researcher` was already taken by
+  # advisor/education/academic-researcher (advisory/lifecycle scope); `scholar`
+  # avoids naming collision and captures the technical execution scope.
+  # ---------------------------------------------------------------------------
+  - old: cagents:literature-review-author
+    new: cagents:scholar
+    type: fold
+    decision: LP-13
+    notes: "Folded into analyst/scholar with mode: review. Use 'cagents:scholar' for PRISMA-style synthesis and literature review work. Source dir moved to analyst/_deprecated/literature-review-author/."
+    mode_flag: "mode: review"
+
+  - old: cagents:academic-paper-searcher
+    new: cagents:scholar
+    type: fold
+    decision: LP-13
+    notes: "Folded into analyst/scholar with mode: search. Use 'cagents:scholar' for OpenAlex paper search and abstract retrieval. Source dir moved to analyst/_deprecated/academic-paper-searcher/."
+    mode_flag: "mode: search"
+
 # Coverage summary (also asserted by tests/v12/alias-map-coverage.test.js)
 coverage:
   engineering_moves_renames: 7      # Q2 (2) + Q3 (1) + Q4 (2) + Q7 (2)
@@ -236,7 +281,9 @@ coverage:
     G4_ops_merge: 1
     G5_enablement: 1
     G6_customer_marketing: 1
-  total_aliases: 22                 # 9 engineering (incl. Q1 absorbs) + 13 marketing-sales
+  lp12_writer_consolidations: 2    # copy-editor, prose-stylist -> editor (mode flag)
+  lp13_analyst_consolidations: 2   # literature-review-author, academic-paper-searcher -> scholar (mode flag)
+  total_aliases: 26                 # 9 engineering + 13 marketing-sales + 2 LP-12 + 2 LP-13
 
 # Notes for router consumers
 # - Router fallback semantics: on receiving an old name, log a deprecation warning

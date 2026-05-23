@@ -2,9 +2,23 @@
 
 Detailed specifications for pre-execution and mid-execution validation checks run by controllers.
 
-## Pre-Execution Validation Checklist (6 checks)
+## Pre-Execution Validation Checklist (7 checks)
 
 Run BEFORE spawning any execution agent.
+
+### Check 0: Planner Output Schema
+
+**What**: Validate that the planner-emitted YAML files (`workflow/plan.yaml` and `workflow/work_items.yaml`) parse and satisfy the minimum schema BEFORE any other check runs. If the planner output is malformed, every downstream check is operating on garbage — so we fail fast here.
+
+**Tool**: `scripts/ci/validate-planner-output.cjs --plan <plan.yaml> --work-items <work_items.yaml>` (added in LP-28, v12.7.x).
+
+**Schema contract** (intentionally minimal — broader semantic checks live in Checks 1–6):
+- `plan.yaml` must contain: `plan_id` (string), `tier` (2|3|4), `domain` (string), `mission` (string), `objectives[]` with `{id, description}`, `controller_assignment.primary` (string), `success_criteria[]` (at plan root OR on every objective).
+- `work_items.yaml` must contain `work_items[]` (or legacy `items[]`) where every entry has `{id, title, assigned_to, acceptance_criteria}` and `acceptance_criteria` is a non-empty list of strings (or `{criterion: string}` objects).
+
+**On failure**: BLOCKED — exit 1 from the validator. Controller must request planner re-run; do NOT proceed to Check 1. Stderr contains the specific schema violation (e.g., `plan.yaml: missing or empty controller_assignment.primary`).
+
+**Why Check 0 not Check 7**: this is a structural pre-flight. The numeric checks 1–6 assume the YAML is well-formed and the canonical fields exist; Check 0 makes that assumption explicit.
 
 ### Check 1: Plan Completeness
 
@@ -147,7 +161,7 @@ Add to coordination_log.yaml after each validation round:
 validation_checkpoints:
   pre_execution:
     passed: true
-    checks_run: 6
+    checks_run: 7
     checks_failed: 0
     failures: []
     timestamp: "{ISO_TIMESTAMP}"
@@ -167,6 +181,7 @@ validation_checkpoints:
 
 | Check | Severity | Action |
 |-------|----------|--------|
+| 0 — Planner Output Schema | CRITICAL | BLOCKED: re-run planner, do not proceed to Check 1 |
 | 1 — Plan Completeness | CRITICAL | BLOCKED: stop coordination, report field |
 | 2 — Acceptance Criteria | CRITICAL | BLOCKED: request re-decomposition |
 | 3 — Dependency Acyclicity | CRITICAL | BLOCKED: fix dependency graph |
