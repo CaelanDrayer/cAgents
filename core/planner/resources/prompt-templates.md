@@ -66,6 +66,48 @@ For each work item, create a delegation prompt containing:
 5. **Constraints**: Technical limitations, patterns to follow
 6. **Anti-patterns**: What NOT to do, common mistakes to avoid
 7. **Cross-references**: Related work items, dependencies
+8. **Prior learnings** (LP-21): `@`-references to relevant `cagents-memory/_knowledge/*.md` notes surfaced by the pre-emptive consultation scan (see § Pre-emptive Consultation below)
+
+### Pre-emptive Consultation (LP-21)
+
+After Step 2 codebase analysis and before assembling each prompt in Step 3, scan `cagents-memory/_knowledge/*.md` for notes relevant to this work item and append the top 1-3 matches as `@`-references in a `## Prior Learnings` section of the delegation prompt.
+
+**Matching heuristic**:
+- Build haystack: lowercased `wi.title + " " + wi.description`.
+- For each knowledge file, score by:
+  - **Filename tokens**: split `<name>.md` minus `.md` on `-` and `_`, drop tokens shorter than 3 chars. Any token appearing in the haystack scores +1.
+  - **Frontmatter `keywords:` array** (optional): if the note declares `keywords: [a, b, c]` in YAML frontmatter, each keyword appearing in the haystack scores +2 (weighted higher because frontmatter keywords are author-curated).
+- **Threshold**: include files with score >= 1. Sort by score descending; cap to top 3 to bound prompt bloat.
+
+**Example**:
+
+```
+WI: { title: "Implement graceful degradation for depth-1 agents",
+      description: "When the Agent tool is stripped at depth-1, agents must self-validate." }
+
+Candidate: agent-tool-depth1-stripping.md
+  filename tokens: [agent, tool, depth1, stripping]
+  matches in haystack: "agent" (yes), "tool" (yes), "depth1" (yes), "stripping" (yes)
+  score: 4
+  -> include as @cagents-memory/_knowledge/agent-tool-depth1-stripping.md
+```
+
+**Assembly**: append to the prompt:
+
+```
+## Prior Learnings (auto-surfaced by planner)
+
+See @cagents-memory/_knowledge/<filename>.md for <one-line summary from note's first paragraph or frontmatter description>.
+```
+
+**Skip conditions**:
+- No `cagents-memory/_knowledge/` directory present.
+- Work item description shorter than 10 chars (insufficient haystack).
+- No file scores >= 1 (no relevant notes — omit the section entirely; do NOT emit an empty header).
+
+**Token budget**: each `@`-reference + summary is ~30-60 tokens. With the top-3 cap, the Prior Learnings section adds at most ~180 tokens per prompt — well within the 300-600 token budget per work item.
+
+**Integration with the 5-check rubric**: the Pre-emptive Consultation does NOT add a 6th rubric check. Its surfaced references implicitly improve Check 1 (Context Sufficiency) because controllers receive prior-learning context without re-searching.
 
 ### Step 4: Write Output
 

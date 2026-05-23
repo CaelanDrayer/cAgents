@@ -84,6 +84,47 @@ See `.claude/rules/quality/implicit-discovery.md` for the Unsaid Framework.
 4. **Dependency Mapping** - What depends on what?
 5. **Work Item Generation** - Concrete tasks with acceptance criteria
 
+## Pre-emptive Consultation (LP-21, v12.7.x)
+
+After work items are generated but before delegation prompts are assembled, the planner MUST run a **pre-emptive consultation** scan against `cagents-memory/_knowledge/*.md` and surface relevant notes as `@`-references inside each work item's delegation prompt. This lets controllers and execution agents inherit prior learnings (depth-1 stripping, graceful degradation, pattern-fired recoveries, etc.) without re-discovering them.
+
+### Algorithm
+
+1. **List** every `.md` file under `cagents-memory/_knowledge/` (skip `_archive/` and dot-files).
+2. **For each work item**, build a haystack from `wi.title + " " + wi.description` (lowercased).
+3. **For each knowledge file**, compute a relevance score:
+   - **Filename tokens**: split the filename (minus `.md`) on `-`/`_`, drop tokens shorter than 3 chars, lowercase. Any token appearing in the haystack contributes to the score.
+   - **Frontmatter `keywords:` array** (when present): each keyword appearing in the haystack contributes to the score. Knowledge notes that do not declare `keywords:` rely on filename heuristics only — this is fine.
+4. **Threshold**: a file is "relevant" when at least one filename token OR one frontmatter keyword matches.
+5. **Include** the top 1-3 relevant notes (cap to prevent prompt bloat) as `@cagents-memory/_knowledge/<filename>.md` references in the work item's delegation prompt under a `## Prior Learnings` section.
+
+### Output Shape
+
+The assembled delegation prompt for a work item with matched knowledge notes looks like:
+
+```
+<existing role + request + criteria sections>
+
+## Prior Learnings (auto-surfaced by planner)
+
+See @cagents-memory/_knowledge/agent-tool-depth1-stripping.md for the depth-1 Agent-tool stripping pattern.
+See @cagents-memory/_knowledge/declarative-deps-pattern.md for the metadata.requires advisory schema.
+```
+
+When no knowledge note matches, omit the section entirely — do NOT emit an empty header.
+
+### When to Skip
+
+- Tier 2 fast path (planner skips per-WI prompt assembly anyway — knowledge surfacing also skipped).
+- `cagents-memory/_knowledge/` is empty or absent.
+- A work item's title + description is shorter than ~10 chars (insufficient haystack for reliable matching).
+
+### Why This Matters
+
+Knowledge notes accumulated by `subagent-stop-tracker` (LP-22) and prior sessions capture hard-won patterns that controllers re-discover painfully. Surfacing them at delegation time costs ~30-60 tokens per prompt and saves whole revision cycles.
+
+See @resources/prompt-templates.md § Pre-emptive Consultation for the per-WI assembly mechanics, scoring example, and integration with the existing 5-check confidence rubric.
+
 ## Detailed Reference
 
 See @resources/decomposition.md for the full aggressive-decomposition guidance absorbed from the pre-v12.0.0 decomposer agent (abstraction classification, 5-step framework, work item format, adaptive chain depth).
