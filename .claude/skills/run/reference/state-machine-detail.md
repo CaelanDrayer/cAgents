@@ -9,7 +9,7 @@ Detailed state-by-state semantics for the /run event-driven pipeline. The SKILL.
   |
   Phase 1: Sequential enrichment (all level 1, spawned by /run)
   +-> orchestrator (level 1)         -> enriched_context.yaml
-  +-> universal-planner (level 1)    -> plan.yaml + work_items.yaml (decomposition inline)
+  +-> planner (level 1)    -> plan.yaml + work_items.yaml (decomposition inline)
   |
   Phase 2: Nested execution (level 1 + 2)
   +-> controller (level 1)
@@ -32,9 +32,9 @@ Detailed state-by-state semantics for the /run event-driven pipeline. The SKILL.
 | State | Agent | Inputs | Outputs | Next State |
 |-------|-------|--------|---------|-----------|
 | INIT | orchestrator | instruction.yaml | enriched_context.yaml | ORCHESTRATED |
-| ORCHESTRATED | universal-planner | enriched_context.yaml | plan.yaml + work_items.yaml | PLANNED |
+| ORCHESTRATED | planner | enriched_context.yaml | plan.yaml + work_items.yaml | PLANNED |
 | PLANNED | controller (dynamic) | plan.yaml + work_items.yaml | coordination_log.yaml | COORDINATED |
-| COORDINATED | universal-validator | coordination_log.yaml + plan.yaml | validation_report.yaml | VALIDATED |
+| COORDINATED | validator | coordination_log.yaml + plan.yaml | validation_report.yaml | VALIDATED |
 | VALIDATED | (terminal) | validation_report.yaml | execution_summary.yaml | (none) |
 
 ## State Machine Loop Algorithm
@@ -50,6 +50,9 @@ while current_state is not terminal (VALIDATED):
      a. Set pipeline_state to next_state
      b. Append new state_history entry with entered_at=now
         (v12.6.0: duration_ms is NO LONGER emitted — drop the field)
+     c. If the state was skipped (orchestrator-skip enumerated allowlist),
+        also write `skipped: true` and `skipped_reason: <enum>` to the entry.
+        See `state_history Skip Fields (v12.7.0)` below.
   6. (v12.6.0: workflow/events/ emission removed. The agent's primary output file
      is the canonical signal for state advancement; do not write EVT-*.yaml or
      events/index.yaml.)
@@ -109,6 +112,35 @@ When the loop exits at any terminal state (VALIDATED, COORDINATED in minimal pat
 ## Event File Format (REMOVED in v12.6.0)
 
 Historical note: pre-v12.6 sessions wrote completion events to `workflow/events/EVT-{N}.yaml` and an index at `workflow/events/index.yaml`. These were external-UI-only signals — no cAgents hook or agent consumes them. v12.6.0 removed the emission entirely. State advancement is now driven by each agent's primary output file (`enriched_context.yaml`, `plan.yaml`, `coordination_log.yaml`, `validation_report.yaml`), which the `/run` loop reads at level 0. Archived pre-v12.6 sessions retain `workflow/events/` on disk for record.
+
+## state_history Skip Fields (v12.7.0)
+
+When a pipeline state is skipped via the orchestrator-skip enumerated
+allowlist (see `.claude/skills/run/SKILL.md` Step 3c and
+`reference/adaptive-pipeline.md`), the state_history entry MUST record
+the skip with two fields:
+
+```yaml
+state_history:
+  - state: INIT
+    entered_at: "{ISO_TIMESTAMP}"
+    skipped: true
+    skipped_reason: tier-2-fast-path
+```
+
+`skipped` is a boolean. `skipped_reason` is a closed enum:
+
+| Value | Meaning |
+|-------|---------|
+| `tier-2-clear` | General tier-2 + clear-domain skip label. |
+| `tier-2-fast-path` | Skip driven by the `fast` path selector (tier 2, unambiguous, non-debug). |
+| `disabled-by-flag` | Skip driven by an explicit CLI flag or env override. |
+
+The pre-v12.7 freeform `note` field on state_history entries is
+**deprecated**. New code MUST emit `skipped_reason`; readers SHOULD accept
+either for back-compat but prefer `skipped_reason` when both are present.
+Any value of `skipped_reason` outside the three listed above is a schema
+violation.
 
 ## Historical Note: 7-State Machine (pre-v12.0.0)
 

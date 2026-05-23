@@ -149,7 +149,25 @@ This is the core loop -- spawn pipeline agents one state at a time, advance via 
 
 **3b. Route domain and tier inline** before spawning the orchestrator. Domain detection uses `{domain}/config/domain_overrides.yaml` -> `router_keywords` array. See @reference/domain-coverage.md for the full domain table.
 
-**3c. Compute complexity score and select pipeline path** (Minimal / Medium / Full). For tier 2 with clear scope, the adaptive pipeline skips the orchestrator. (v12.0.0: decomposer and prompt-engineer no longer exist as separate stages — planner handles decomposition inline.) See @reference/adaptive-pipeline.md for the 9-signal scoring rubric, path-selection thresholds, and tier-2 fast-path skip behavior.
+**3c. Select pipeline path via enumerated orchestrator-skip allowlist** (v12.7.0). Two named paths exist: `fast` and `standard`. The orchestrator is skipped iff ALL of:
+
+- `tier == 2` AND
+- `!ambiguous_domain` (router returned a single high-confidence domain) AND
+- `mode != "debug"`
+
+When all three hold, select path `fast` and record `skipped: true, skipped_reason: tier-2-fast-path` in the INIT state_history entry. Otherwise select path `standard` and run the orchestrator. **Tier 3+ ALWAYS runs the orchestrator** regardless of any other signal — the allowlist is a closed enumeration, not a heuristic.
+
+The `skipped_reason` field is an enum with exactly three permitted values:
+
+| Value | When |
+|-------|------|
+| `tier-2-clear` | General tier-2 + clear-domain skip label. |
+| `tier-2-fast-path` | Skip driven by the `fast` path selector (the canonical case above). |
+| `disabled-by-flag` | Skip driven by an explicit CLI flag or env override (e.g., `--no-orchestrator`). |
+
+The freeform `note` field is deprecated as of v12.7.0 (it appeared in pre-v12.7 state_history entries). Writers MUST emit `skipped_reason` (one of the three enum values) instead of `note`; readers SHOULD accept either field for back-compat but prefer `skipped_reason` when both are present.
+
+See @reference/adaptive-pipeline.md for the full path catalog, schema additions, and tier-2 skip-behavior specifics. (v12.0.0: decomposer and prompt-engineer no longer exist as separate stages — planner handles decomposition inline.)
 
 **3d. Display domain/tier confirmation**:
 

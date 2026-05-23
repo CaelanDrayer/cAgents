@@ -1,42 +1,66 @@
-# Adaptive Pipeline (V9.27+, updated for v12.0.0)
+# Pipeline Paths (v12.7.0)
 
-Tier-based and complexity-based pipeline path selection that skips enrichment agents when they add minimal value.
+Two named pipeline paths drive `/run`: `fast` and `standard`. Path selection
+is governed by an enumerated orchestrator-skip allowlist, not freeform
+heuristics or complexity scoring. The pre-v12.7 names (Minimal, Medium,
+`Full`) and the prose "fast-path" / "adaptive" naming were collapsed in
+v12.7.0 to two unambiguous labels.
 
-## Complexity Scoring (9 Signals)
+## Path Catalog
 
-A complexity score (0.0 to 1.0) is computed inline using 9 weighted signals:
+| Path | States Executed | Orchestrator | When Selected |
+|------|-----------------|--------------|----------------|
+| `fast` | ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED | SKIPPED | tier == 2 AND !ambiguous_domain AND mode != "debug" |
+| `standard` | INIT -> ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED | RUNS | every other case (tier 3+, ambiguous tier-2, debug mode, disabled-by-flag) |
 
-| Signal | Weight | Scoring |
-|--------|--------|---------|
-| Request length | 0.15 | <10 words: 0, 10-30: 0.3, 30-60: 0.6, 60+: 1.0 |
-| Complexity keywords | 0.20 | "refactor", "migrate", "integrate", "redesign" each +0.25 (capped 1.0) |
-| Multi-component | 0.10 | "and", "then", "plus", "also" each +0.25 (capped 1.0) |
-| File references | 0.10 | Explicit file paths: +0.33 per file (capped 1.0) |
-| Domain breadth | 0.15 | Multi-domain keywords: 1 domain=0, 2+=1.0 |
-| Test requirements | 0.05 | "with tests", "ensure", "verify": 1.0 if present |
-| Security markers | 0.10 | "auth", "encryption", "RBAC", "security": 1.0 if present |
-| Architecture markers | 0.10 | "API", "database", "microservice", "schema": 1.0 if present |
-| Scale markers | 0.05 | "all", "every", "entire", "comprehensive": 1.0 if present |
+`standard` is the default. `fast` is the only condition under which the
+orchestrator is skipped. There are no other paths.
 
-`complexity_score = sum(signal_score * weight)`
+**v12.7.0 collapse note**: prior versions documented three paths
+(Minimal, Medium, `Full`) driven by a 9-signal complexity score. The
+score-based selector was deleted and Minimal+Medium consolidated into
+`fast`; the historical `Full` path is now `standard`. Existing session
+artifacts that reference the old labels remain valid for archived runs.
 
-## Pipeline Path Selection (v12.0.0 — 5 states)
+## Orchestrator-Skip Allowlist (Enumerated)
 
-| Path | Score Range | States | Skip Agents |
-|------|-----------|--------|-------------|
-| **Minimal** | < 0.25 | PLANNED -> COORDINATED | orchestrator, validator |
-| **Medium** | 0.25 - 0.65 | ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED | (none — all 4 non-INIT agents run) |
-| **Full** | >= 0.65 or tier 4 | All 5 states | none |
+The orchestrator is skipped iff ALL of:
 
-Display the selected path:
+1. `tier == 2`
+2. `ambiguous_domain == false` (router returned a single high-confidence domain)
+3. `mode != "debug"`
 
+If any condition fails, the orchestrator runs. Tier 3+ ALWAYS runs the
+orchestrator regardless of other signals. The rule is an enumerated
+allowlist, not a heuristic; the canonical statement lives in
+`.claude/skills/run/SKILL.md` Step 3c.
+
+## state_history Schema Additions (v12.7.0)
+
+Each `status.yaml` state_history entry MAY include two new fields when a
+state is skipped:
+
+```yaml
+state_history:
+  - state: INIT
+    entered_at: "{ISO_TIMESTAMP}"
+    skipped: true                       # bool, optional
+    skipped_reason: tier-2-fast-path    # enum, REQUIRED when skipped == true
 ```
-Pipeline: {path} (score: {score:.2f}), Domain={domain}, Tier={tier}, Controller={controller}
-```
 
-## Planner Escalation
+### `skipped_reason` Enum (closed set)
 
-After the planner runs, if plan.yaml contains `complexity_escalation: medium` or `complexity_escalation: full`, upgrade to the higher path. Never downgrade.
+| Value | Meaning |
+|-------|---------|
+| `tier-2-clear` | The skip was driven by tier 2 + clear domain heuristics (general path label). |
+| `tier-2-fast-path` | The skip was driven by the `fast` path selector (tier 2, unambiguous, non-debug). This is the canonical reason produced by the orchestrator-skip rule above. |
+| `disabled-by-flag` | A CLI flag (e.g., `--no-orchestrator`) or env override disabled orchestrator execution. |
+
+`skipped_reason` MUST be one of these three values when `skipped: true`.
+Any other value is a schema violation. The freeform `note` field that
+appeared in pre-v12.7 state_history entries is **deprecated**: writers
+should emit `skipped_reason` instead, and readers should accept either
+field but prefer `skipped_reason` when both are present.
 
 ## Tier Classification (minimum tier 2)
 
@@ -46,63 +70,51 @@ After the planner runs, if plan.yaml contains `complexity_escalation: medium` or
 | 3 | Multiple components, external deps | 1 primary + 1-2 supporting |
 | 4 | Strategic/architectural, company-wide | Executive + HITL |
 
-## Adaptive Pipeline (Tier-Based State Skipping, v12.0.0)
+`ambiguous_domain` is set by the router when domain confidence < 0.7 or
+when the request matches keywords from multiple domain catalogs. The
+router writes the flag to `enriched_context.yaml` (when the orchestrator
+runs) or `/run` computes it inline (when it does not).
 
-For **tier 2** requests with clear scope, skip enrichment agents that add minimal value:
+## Path Display
 
-| State | Tier 2 (Simple) | Tier 3+ (Complex) |
-|-------|-----------------|-------------------|
-| INIT (orchestrator) | **SKIP** — /run does inline enrichment | Execute |
-| ORCHESTRATED (universal-planner) | Execute (always needed; produces plan + work_items inline) | Execute |
-| PLANNED (controller) | Execute | Execute |
-| COORDINATED (validator) | Execute | Execute |
-| VALIDATED (terminal) | Terminal | Terminal |
-
-**v12.0.0 collapse**: The previous DECOMPOSED and PROMPTS_READY states no longer exist. `task-decomposer` and `prompt-engineer` were absorbed into `cagents:planner`, which handles decomposition inline.
-
-## Tier 2 Fast Path (v12.0.0)
+`/run` displays the selected path to the user after routing:
 
 ```
-/run -> inline enrichment -> universal-planner -> controller -> validator -> DONE
+Pipeline: {path}, Domain={domain}, Tier={tier}, Controller={controller}
 ```
 
-This saves 1 agent spawn (orchestrator) for simple tasks. Versus the pre-v12 fast path which saved 3 spawns (orchestrator, decomposer, prompt-engineer), the v12 fast path saves only 1 because decomposer and prompt-engineer are no longer separate agents to skip — they were folded into universal-planner. Net pipeline length still dropped 7 states -> 5 states.
+Example output:
+
+```
+Pipeline: fast, Domain=engineering, Tier=2, Controller=tech-lead
+Pipeline: standard, Domain=mixed, Tier=3, Controller=tech-lead
+```
 
 ## Skip Behavior Specifics
 
-For tier 2, when skipping INIT:
-- Write a minimal `enriched_context.yaml` inline with the user request, domain, tier, and working directory context.
-- This becomes the universal-planner's input.
+When `path == fast` (orchestrator skipped):
 
-For tier 2 ORCHESTRATED state (universal-planner):
-- The planner produces both `plan.yaml` and `work_items.yaml` inline.
-- For simple tier 2 requests, `work_items.yaml` may contain a single work item derived from plan.yaml objectives.
-- No separate decomposition or prompt-engineering step runs.
+- `/run` writes a minimal `enriched_context.yaml` inline with the user
+  request, detected domain, tier, and working-directory context. This
+  becomes the planner's input.
+- The state_history entry for INIT records `skipped: true,
+  skipped_reason: tier-2-fast-path`.
 
-For tier 2 PLANNED state (controller):
-- Controllers use the standard delegation prompt template (no crafted `delegation_prompts.yaml` artifact in v12).
-- Pre-v12 sessions produced `delegation_prompts.yaml` via the prompt-engineer agent; v12 sessions omit this file.
+When `path == standard` (orchestrator runs):
+
+- The orchestrator is spawned at level 1 and writes `enriched_context.yaml`
+  per the standard pipeline contract.
+- No `skipped` or `skipped_reason` fields appear in the INIT state_history
+  entry.
 
 ## Domain/Tier Confirmation Display
 
-After classifying domain and tier, display the classification to the user:
+After classifying domain and tier, display the classification:
 
 ```
 Detected: Domain={domain} ({super_domain}), Tier={tier}, Controller={controller_name}
-```
-
-If `--interactive`, ask for confirmation with override options:
-
-```
-I detected this as a {domain} task (Tier {tier}). Is that right?
-1. Yes, proceed
-2. Different domain: [specify]
-3. Higher complexity: Tier 3 or 4
-```
-
-If not interactive, just display and proceed. Include an override hint:
-
-```
-Detected: Domain=Make (Engineering), Tier=2, Controller=tech-lead
   (Override with: --domain <domain> --tier <N>)
 ```
+
+If `--interactive`, ask for confirmation with override options before
+applying the orchestrator-skip rule.
