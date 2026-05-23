@@ -5,47 +5,61 @@ paths:
 
 # cAgents Modular Rules
 
-Topic-specific rules organized for better maintainability.
+Topic-specific rules organized for better maintainability. Counts in this index are derived from disk at edit time:
+
+- **Rule files**: 36 (`find .claude/rules -name '*.md' -type f | wc -l`)
+- **Hook event types**: 18 (`jq -r '.hooks | keys | length' .claude/settings.json`)
+- **Version-registry slots**: 16 (post-v12.2.0; was 17 in v12.1.x, was 18 in V11.0)
+
+When rule files are added, removed, or renamed, re-derive these numbers and update this header. The `scripts/ci/validate-counts.sh` CI guard verifies the load-bearing counts elsewhere in the repo (CLAUDE.md, hooks.md, settings.json, version-registry.md, docs/agents/index.md, docs/12-FACTOR-COMPLIANCE.md); this README is not in its check matrix but should still stay aligned with disk reality.
 
 ## Directory Structure
 
 ```
 .claude/rules/
 ├── core/           # Core architecture patterns
-│   ├── orchestration.md           # Workflow phases and orchestration
 │   ├── controllers.md             # Question-based delegation patterns
+│   ├── controller-reference.md    # Detailed controller schemas and protocols
+│   ├── delegation.md              # Aggressive-delegation rules
 │   ├── execution.md               # Execution agent patterns
-│   ├── shared-questions.md        # Universal controller question patterns
-│   ├── hooks.md                   # Hook system documentation (19 event types)
-│   ├── skill-format.md            # SKILL.md agent format spec (V10.22.5)
+│   ├── hooks.md                   # Hook system documentation (18 event types)
+│   ├── orchestration.md           # Workflow phases and orchestration
+│   ├── orchestration-reference.md # Detailed orchestration schemas
 │   ├── progressive-disclosure.md  # Three-tier loading pattern
+│   ├── shared-questions.md        # Universal controller question patterns
+│   ├── skill-format.md            # SKILL.md agent format spec
 │   ├── subagent-alignment.md      # Agent tool alignment
 │   ├── teams.md                   # Team coordination (built-in agent teams)
-│   ├── controller-reference.md    # Detailed controller schemas and protocols
-│   ├── orchestration-reference.md # Detailed orchestration schemas
-│   ├── version-registry.md        # Version synchronization (17 locations)
+│   ├── version-registry.md        # Version synchronization (16 locations post-v12.2.0)
 │   └── resources/
 │       ├── controller-validation-checklist.md  # Pre/mid-execution controller checks
-│       └── execution-self-validation.md        # 15-check executor self-validation
-├── domains/        # Domain-specific guidelines
-│   ├── engineering.md      # Engineering domain (engineering/)
-│   ├── grow.md             # Business domain (business/, growth/)
-│   ├── operate.md          # Operations/Finance within business domain
-│   ├── people.md           # People domain (people/)
-│   └── serve.md            # Service domain (service/)
+│       ├── execution-self-validation.md        # 5-check executor self-validation (v12.0.0)
+│       └── hook-catalog.md                     # Detailed per-hook catalog
+├── domains/        # Domain-specific guidelines (legacy routing overlay)
+│   ├── engineering.md      # Engineering domain
+│   ├── grow.md             # Business / growth domain
+│   ├── operate.md          # Operations / finance
+│   ├── people.md           # People domain (config-only — no SKILL.md agents)
+│   └── serve.md            # Service domain
 ├── infrastructure/ # Infrastructure configuration
 │   └── model-routing.md    # Model routing guidelines
 ├── memory/         # Memory and state management
 │   ├── agent-memory.md           # cagents-memory/ structure and usage
 │   └── agent-memory-reference.md # Detailed memory patterns and examples
+├── playbooks/      # Extracted cross-agent guidance (referenced via @path)
+│   ├── README.md
+│   ├── pat-evidence-first-execution.md
+│   ├── pat-graceful-degradation-depth1.md
+│   ├── pat-subagent-status-protocol.md
+│   └── pat-two-stage-review.md
 └── quality/        # Quality and completion
-    ├── completion.md            # Task completion protocol
-    ├── validation-framework.md  # End-to-end completion traceability
-    ├── implicit-discovery.md    # Handling abstract requests
-    ├── cso-guidelines.md        # Claude Search Optimization
     ├── anti-slop.md             # Anti-AI-slop writing rules
+    ├── completion.md            # Task completion protocol
+    ├── cso-guidelines.md        # Claude Search Optimization
+    ├── implicit-discovery.md    # Handling abstract requests
+    ├── validation-framework.md  # End-to-end completion traceability
     └── resources/
-        └── validation-checklist-29.md  # 29-check validation framework
+        └── validation-checklist-29.md  # Active 5-check validation framework (filename retained for back-compat)
 ```
 
 ## Purpose
@@ -84,107 +98,101 @@ Import rules into CLAUDE.md or other docs:
 See @.claude/rules/core/orchestration.md for workflow patterns.
 ```
 
-## Current Rules (29 files)
+## Current Rules (36 files)
 
-### Core (14 files)
-1. **core/orchestration.md** - Workflow phases (routing -> validating)
-2. **core/controllers.md** - Question-based delegation patterns
-3. **core/execution.md** - Execution agent patterns
-4. **core/shared-questions.md** - Universal controller question patterns
-5. **core/hooks.md** - V10.18 hook system (19 event types of 24 supported, 4 hook types)
-6. **core/skill-format.md** - V10.22.5 SKILL.md format (maxTurns, permissionMode, memory, opusplan, vibe, allowed-tools)
-7. **core/progressive-disclosure.md** - Three-tier loading pattern
-8. **core/subagent-alignment.md** - Agent tool alignment patterns
-9. **core/teams.md** - V9.2+ team coordination patterns (built-in agent teams)
-10. **core/controller-reference.md** - Detailed controller schemas and protocols
-11. **core/orchestration-reference.md** - Detailed orchestration schemas
-12. **core/version-registry.md** - Version synchronization (17 locations in V11.0)
-13. **core/resources/controller-validation-checklist.md** - Pre/mid-execution controller validation checks
-14. **core/resources/execution-self-validation.md** - 15-check executor self-validation protocol
+### Core (16 files)
 
-### Domains (5 files)
-15. **domains/engineering.md** - Engineering domain guidelines
-16. **domains/grow.md** - Grow (marketing/sales) guidelines
-17. **domains/operate.md** - Operate (finance/operations) guidelines
-18. **domains/people.md** - People (HR/culture) guidelines
-19. **domains/serve.md** - Serve (support/legal) guidelines
+1. **core/controllers.md** — Question-based delegation patterns
+2. **core/controller-reference.md** — Detailed controller schemas and protocols
+3. **core/delegation.md** — Aggressive-delegation rules (`/run`, `/team`, `/designer` never do direct work)
+4. **core/execution.md** — Execution agent patterns
+5. **core/hooks.md** — Hook system (18 event types, 31 .cjs files, 28 unique registered hooks)
+6. **core/orchestration.md** — Workflow phases (routing → planning → coordinating → executing → validating)
+7. **core/orchestration-reference.md** — Detailed orchestration schemas
+8. **core/progressive-disclosure.md** — Three-tier SKILL.md loading pattern
+9. **core/shared-questions.md** — Universal controller question patterns
+10. **core/skill-format.md** — SKILL.md agent/skill frontmatter specification
+11. **core/subagent-alignment.md** — Agent tool alignment patterns
+12. **core/teams.md** — Team coordination via built-in agent teams (`/team`)
+13. **core/version-registry.md** — Version synchronization (16 locations post-v12.2.0)
+14. **core/resources/controller-validation-checklist.md** — Pre/mid-execution controller validation checks
+15. **core/resources/execution-self-validation.md** — 5-check executor self-validation protocol (v12.0.0; reduced from 15-check)
+16. **core/resources/hook-catalog.md** — Detailed per-hook catalog
+
+### Domains (5 files — legacy routing overlay)
+
+17. **domains/engineering.md** — Engineering guidelines
+18. **domains/grow.md** — Growth (marketing / sales) guidelines
+19. **domains/operate.md** — Operate (finance / operations) guidelines
+20. **domains/people.md** — People (HR / culture) guidelines (config-only; no SKILL.md agents under `people/`)
+21. **domains/serve.md** — Serve (support / legal) guidelines
 
 ### Infrastructure (1 file)
-20. **infrastructure/model-routing.md** - Model routing guidelines and project overrides
+
+22. **infrastructure/model-routing.md** — Model routing guidelines and project overrides
 
 ### Memory (2 files)
-21. **memory/agent-memory.md** - cagents-memory/ structure (three-file pattern, waypoints)
-22. **memory/agent-memory-reference.md** - Detailed memory patterns and examples
+
+23. **memory/agent-memory.md** — `cagents-memory/` structure (waypoints, three-file pattern)
+24. **memory/agent-memory-reference.md** — Detailed memory patterns and examples
+
+### Playbooks (5 files)
+
+25. **playbooks/README.md** — Playbook conventions and prefix taxonomy
+26. **playbooks/pat-evidence-first-execution.md** — Pattern: specific, verifiable evidence
+27. **playbooks/pat-graceful-degradation-depth1.md** — Pattern: degraded execution when `Agent` is stripped at depth ≥ 1
+28. **playbooks/pat-subagent-status-protocol.md** — Pattern: DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED status reporting
+29. **playbooks/pat-two-stage-review.md** — Pattern: spec-compliance review before code-quality review
 
 ### Quality (6 files)
-23. **quality/completion.md** - Task completion protocol (V10.22.0: red flags, rationalization counters, fresh evidence)
-24. **quality/validation-framework.md** - End-to-end completion traceability
-25. **quality/implicit-discovery.md** - Handling abstract requests
-26. **quality/cso-guidelines.md** - Claude Search Optimization for agent descriptions
-27. **quality/anti-slop.md** - Anti-AI-slop writing rules (V10.22.1)
-28. **quality/resources/validation-checklist-29.md** - 29-check four-phase validation framework
+
+30. **quality/anti-slop.md** — Anti-AI-slop writing rules
+31. **quality/completion.md** — Task completion protocol (evidence-first, red-flag detection)
+32. **quality/cso-guidelines.md** — Claude Search Optimization for agent descriptions
+33. **quality/implicit-discovery.md** — Handling abstract requests
+34. **quality/validation-framework.md** — End-to-end completion traceability
+35. **quality/resources/validation-checklist-29.md** — Active 5-check cross-cutting validation framework (filename retained for back-compat with `@` references; the 23 aspirational checks moved to `docs/FUTURE_VALIDATION_FRAMEWORK.md` in v12.x)
 
 ### Meta (1 file)
-29. **README.md** - This index file
 
-## V11.0 Skill Catalog
+36. **README.md** — This index file
 
-The rules in this directory support the six V11.0 skills. Skills `/review`, `/optimize`, `/context`, and `/debug` were **removed in V11.0** — see `docs/MIGRATION-V11.md` for replacements.
+## Current Skill Catalog (v12.2.0+)
 
-| Skill | Replaces (V11 removal) | Purpose |
-|-------|------------------------|---------|
-| `/run` | `/context`, `/debug` (via `--mode debug`) | Single-domain task execution |
-| `/team` | — | Parallel multi-agent execution with wave-based gates |
-| ~~`/org`~~ (removed in v12.2.0) | absorbed into `/team` strategic mode | Cross-domain C-suite strategic coordination — now lives in `/team` (auto-enables when `universal-router.domain_count >= 2`; force via `--strategic` / `--no-strategic`) |
-| `/designer` | — | Interactive design exploration via Q&A |
-| `/improve` | `/review`, `/optimize` (via `--mode review\|optimize\|full`) | Unified review + optimize engine |
-| `/helper` | — | Command guide and skill recommender |
+The rules in this directory support the four current skills shipped by cAgents. `/improve` was folded into `/run` via a first-word keyword router in v12.1.2 (`/run improve|review|audit|optimize ...`). `/org` was removed in v12.2.0 and its cross-domain C-suite coordination work absorbed into `/team` strategic mode (auto-enabled when `router.domain_count >= 2`; override with `--strategic` / `--no-strategic`). See `docs/MIGRATION-V11.md` and the v12.1.2 / v12.2.0 CHANGELOG entries.
 
-## V8.0 Additions
+| Skill | Purpose |
+|-------|---------|
+| `/run` | Single-domain task execution. Improve modes via keyword router: `/run improve X` → `--mode full`; `/run review X` or `/run audit X` → `--mode review`; `/run optimize X` → `--mode optimize`. |
+| `/team` | Parallel multi-agent execution with wave-based quality gates. Auto-enables strategic mode for cross-domain requests (12 leadership agents act as Wave 0/1 teammates). |
+| `/designer` | Interactive design exploration via guided Q&A (exempt from auto-proceed). |
+| `/helper` | Command guide and skill recommender. |
 
-### hooks.md (Enhanced)
-Documents all 22 Claude Code hook event types with cAgents implementations:
-- SessionStart, SessionEnd, Stop, StopFailure, SubagentStop
-- PreToolUse, PostToolUse, UserPromptSubmit
-- Notification, PreCompact, PostCompact, PermissionRequest
-- InstructionsLoaded, Elicitation, ElicitationResult
+Removed/folded skills (do not appear as current):
 
-New hooks added:
-- `session-catchup.js` - Detect and offer resume for incomplete sessions
-- `eval-runner.js` - Quality evaluation runner
+- `/improve` — folded into `/run` keyword router (v12.1.2). Use `/run improve ...`, `/run review ...`, `/run audit ...`, `/run optimize ...`.
+- `/org` — removed (v12.2.0). Use `/team <cross-domain request>` (auto-strategic) or `/team <request> --strategic`.
+- `/review`, `/optimize`, `/context`, `/debug` — removed in V11.0. See `docs/MIGRATION-V11.md` for replacements.
 
-### subagent-alignment.md (New)
-Maps cAgents agent types to Claude Code Agent tool patterns:
-- Domain-qualified agent references (`make:backend-developer`)
-- Prompt templates for delegation
-- Best practices for agent selection
+## Hook System Snapshot
 
-### agent-memory.md (Enhanced)
-Adds V8.0 session management features:
-- **Three-file pattern**: task_plan.md, findings.md, progress.md (60-80% context savings)
-- **Waypoints**: Checkpoint snapshots for pause/resume
-- **Metrics**: ROI and workflow tracking
-- **Evals**: Quality evaluation framework
+`core/hooks.md` is the canonical source. Summary: 18 distinct hook event types registered in `.claude/settings.json`; 31 `.cjs` files under `.claude/hooks/` (28 unique registered hooks + `hook-utils.cjs` + `run-hook.cjs` launcher + `eval-runner.cjs` CLI). All hooks use the `createHook()` factory. Events not currently used by cAgents (e.g., `ConfigChange`, `WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `FileChanged`, `Elicitation`, `ElicitationResult`) remain available for user-defined hooks.
 
-## V8.0 Infrastructure
+## Infrastructure References
 
-### Scripts
-- `scripts/init_agent.js` - Initialize new agents with SKILL.md structure
-- `scripts/validate_agent.js` - Validate agent configuration
-- `scripts/ci/cagents-ci.sh` - CI runner for quality gates
-- `scripts/ci/run-evals.sh` - Evaluation runner
-- `scripts/ci/check-quality.sh` - Pre-commit quality checks
+### Scripts (validation / sync)
 
-### Hooks
-- `.claude/hooks/session-catchup.cjs` - Session recovery
-- `.claude/hooks/pre-compact-save.cjs` - State preservation
-- `.claude/hooks/verify-completion.cjs` - Completion verification
-- `.claude/hooks/eval-runner.cjs` - Quality evaluation (CLI tool)
-- `.claude/hooks/secret-detection.cjs` - Secret detection for Write/Edit
-- `.claude/hooks/notification.cjs` - Status notification logging
+- `scripts/sync-versions.sh` — Update the 16 version-registry locations
+- `scripts/sync-agents.sh` — Rebuild `.claude-plugin/plugin.json` agent list
+- `scripts/ci/cagents-ci.sh` — Quality-gate CI runner (includes tiny-bump guard)
+- `scripts/ci/validate-agents.sh` — Agent frontmatter and archetype validation
+- `scripts/ci/validate-counts.sh` — Disk-derived counts guard (P1-5; checks CLAUDE.md, hooks.md, settings.json, version-registry.md, docs/agents/index.md, docs/12-FACTOR-COMPLIANCE.md)
+- `scripts/ci/check-quality.sh` — Pre-commit quality checks
 
-### Metrics & Evals
-- `cagents-memory/_system/metrics/` - Workflow metrics
-- `cagents-memory/_system/evals/` - Quality evaluation framework
+### Memory & Evals
 
-**Token Savings**: 40-60% average across agent catalog via progressive disclosure
+- `cagents-memory/_system/metrics/` — Workflow metrics
+- `cagents-memory/_system/evals/` — Quality evaluation framework
+- `cagents-memory/_knowledge/` — Cross-session learnings (patterns, calibration, post-mortems)
+
+**Token Savings**: 40-60% average across the active agent catalog (see `CLAUDE.md` for the current count, derived from `jq -r '.agents | length' .claude-plugin/plugin.json`) via progressive disclosure (tier-1 frontmatter always loaded; tier-2 SKILL.md body on activation; tier-3 `resources/` files on demand via `@path`).
