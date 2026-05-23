@@ -11,6 +11,7 @@ Each entry corresponds to one atomic tiny-bump commit. See
 ## [Unreleased]
 
 ### Changed
+- LP-16: auto-generate `KNOWN_AGENTS` in `.claude/hooks/model-routing-advisor.cjs` from `.claude-plugin/plugin.json`. Replaced the 230-line hand-maintained literal (which had drifted from the v12.4.0 culled catalog) with a `loadKnownAgents()` helper that walks the plugin manifest and parses `metadata.tier` from each agent's SKILL.md frontmatter. Memoized per-process. Regression test: `tests/v12/model-routing-advisor-autogen.test.js` (5 cases — file exists, helper exported, key-set equals plugin.json names, memoization, valid tier strings).
 - LP-23: populate-or-delete 5 empty cagents-memory dirs. Added READMEs to `cagents-memory/_knowledge/{semantic,calibration}/` (referenced by `core/memory/path-resolver.md`, `core/memory/memory-utils.md`, and several agent SKILL.md files as documented memory-write paths). Removed `cagents-memory/_system/metrics/{aggregates,daily,sessions}/` — empty since January 2026, zero writers in `.claude/hooks/` and `scripts/`, zero references in code or docs. (Note: `cagents-memory/` is git-ignored; the README files and rmdir actions persist on disk locally only — this CHANGELOG entry is the tracked artifact.)
 
 ## [12.7.0] - 2026-05-22

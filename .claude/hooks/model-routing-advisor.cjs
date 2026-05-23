@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Model Routing Advisor Hook - Model Routing Validation
- * cAgents V10.17.0
+ * cAgents (LP-16: KNOWN_AGENTS auto-generated from plugin.json)
  *
  * PreToolUse hook that validates model routing on agent/task spawns.
  * Ensures execution agents get sonnet, controllers get opusplan, support gets haiku
@@ -10,12 +10,16 @@
  * Advisory mode: warns on mismatches rather than blocking.
  * Logs all delegations for audit trail.
  *
- * Inspired by oh-my-claudecode's delegation enforcement pattern.
+ * KNOWN_AGENTS map is built once per process by reading `.claude-plugin/plugin.json`
+ * and parsing the `metadata.tier:` field from each agent's SKILL.md frontmatter.
+ * The hand-maintained literal previously diverged from the catalog (v12.4.0 cull
+ * moved 96 agents to _deprecated/ but the literal still listed 243 entries);
+ * auto-generation keeps the map in lock-step with the manifest.
  */
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findActiveSession, safeRead, ensureDir, AGENT_MEMORY_DIR } = require('./hook-utils.cjs');
+const { createHook, ensureDir, AGENT_MEMORY_DIR } = require('./hook-utils.cjs');
 
 // Expected model assignments by tier/role
 const MODEL_EXPECTATIONS = {
@@ -31,234 +35,128 @@ const MODEL_EXPECTATIONS = {
   executive: { expected: 'opusplan', alternatives: ['opus'] },
 };
 
-// Known agent-to-tier mappings for all 243 agents (static map, generated from SKILL.md frontmatter)
-const KNOWN_AGENTS = {
-  // Core / Infrastructure (16 agents)
-  'hitl': 'infrastructure',
-  'optimizer': 'infrastructure',
-  'orchestrator': 'infrastructure',
-  // Pre-v12.0.0 decomposer + prompt-crafting agents were absorbed into 'planner'.
-  // Legacy spawns are routed to 'planner' via scripts/migration/v12-aliases.yaml.
-  'reviewer': 'infrastructure',
-  'task-merger': 'infrastructure',
-  'task-state': 'infrastructure',
-  'team-lead': 'infrastructure',
-  'team': 'infrastructure',
-  'trigger': 'infrastructure',
-  'executor': 'infrastructure',
-  'planner': 'infrastructure',
-  'router': 'infrastructure',
-  'self-correct': 'infrastructure',
-  'validator': 'infrastructure',
-  'coordinator': 'infrastructure',
-  // Engineering (32 agents)
-  'accessibility-checker': 'support',
-  'architect': 'controller',
-  // Pre-v12.0.0 architecture-review agent absorbed into 'architect --review' in v12.0.0
-  'backend-developer': 'execution',
-  'backend-lead': 'controller',
-  'code-reviewer': 'support',
-  'code-standards-auditor': 'support',
-  'data-analyst': 'execution',
-  'data-lead': 'controller',
-  'dba': 'execution',
-  'dependency-analyzer': 'support',
-  'dependency-auditor': 'support',
-  'devops-engineer': 'execution',
-  'infrastructure-lead': 'controller',
-  'engine-developer': 'execution',
-  'tech-lead': 'controller',
-  'frontend-aesthetics': 'execution',
-  'frontend-developer': 'execution',
-  'frontend-lead': 'controller',
-  'game-programmer': 'execution',
-  'it-support': 'execution',
-  'performance-analyzer': 'support',
-  'qa-lead': 'controller',
-  'risk-assessment': 'support',
-  'security-engineer': 'execution',
-  'security-lead': 'controller',
-  'senior-developer': 'execution',
-  'sysadmin': 'execution',
-  'tech-lead': 'controller',
-  'test-coverage-validator': 'support',
-  'ux-designer': 'execution',
-  'vp-engineering': 'controller',
-  // Creative (30 agents)
-  'ai-writing-detector': 'execution',
-  'ai-writing-rewriter': 'execution',
-  'animator': 'execution',
-  'character-designer': 'execution',
-  'character-psychologist': 'execution',
-  'concept-artist': 'execution',
-  'continuity-checker': 'execution',
-  'copy-editor': 'execution',
-  'creative-researcher': 'execution',
-  'dialogue-specialist': 'execution',
-  'editor': 'controller',
-  'game-writer': 'execution',
-  'genre-specialist': 'execution',
-  'literary-critic': 'execution',
-  'lore-keeper': 'execution',
-  'music-composer': 'execution',
-  'narrative-designer': 'execution',
-  'narrative-director': 'controller',
-  'narrative-game-designer': 'execution',
-  'pacing-specialist': 'execution',
-  'plot-developer': 'execution',
-  'prose-stylist': 'execution',
-  'sensitivity-reader': 'execution',
-  'setting-designer': 'execution',
-  'sound-designer': 'execution',
-  'story-architect': 'controller',
-  'tension-architect': 'execution',
-  'theme-analyst': 'execution',
-  'voice-coach': 'execution',
-  'worldbuilder': 'execution',
-  // Business (31 agents)
-  'agile-coach': 'execution',
-  'business-analyst': 'controller',
-  'business-development-manager': 'execution',
-  'business-researcher': 'execution',
-  'change-management-specialist': 'execution',
-  'facilities-manager': 'execution',
-  'finance-manager': 'controller',
-  'game-designer': 'controller',
-  'game-producer': 'controller',
-  'okr-specialist': 'execution',
-  'operations-manager': 'controller',
-  'performance-analyst': 'execution',
-  'planning-analyst': 'execution',
-  'planning-facilitator': 'execution',
-  'planning-operations-manager': 'execution',
-  'portfolio-manager': 'execution',
-  'predictive-analyst': 'execution',
-  'process-auditor': 'execution',
-  'process-improvement-specialist': 'execution',
-  'procurement-specialist': 'execution',
-  'product-owner': 'controller',
-  'program-manager': 'controller',
-  'project-manager': 'controller',
-  'quality-manager': 'controller',
-  'resource-planner': 'execution',
-  'risk-manager': 'execution',
-  'roadmap-planner': 'execution',
-  'scenario-planner': 'execution',
-  'scribe': 'execution',
-  'strategic-planner': 'controller',
-  'supply-chain-manager': 'controller',
-  // Growth (39 agents)
-  'account-executive': 'execution',
-  'affiliate-marketing-manager': 'execution',
-  'brand-manager': 'execution',
-  'channel-partner-manager': 'execution',
-  'content-marketing-manager': 'execution',
-  'conversion-rate-optimizer': 'execution',
-  'copywriter': 'execution',
-  'creative-director': 'controller',
-  'customer-marketing-manager': 'execution',
-  'demand-generation-manager': 'execution',
-  'digital-marketing-manager': 'execution',
-  'email-marketing-specialist': 'execution',
-  'events-coordinator': 'execution',
-  'field-marketing-manager': 'execution',
-  'growth-marketer': 'execution',
-  'influencer-marketing-specialist': 'execution',
-  'inside-sales-rep': 'execution',
-  'marketing-analyst': 'execution',
-  'marketing-ops-specialist': 'execution',
-  'marketing-strategist': 'controller',
-  'media-buyer': 'execution',
-  'partnership-marketing-manager': 'execution',
-  'pricing-analyst': 'execution',
-  'proposal-specialist': 'execution',
-  'pr-specialist': 'execution',
-  'revenue-operations-manager': 'execution',
-  'sales-analyst': 'execution',
-  'sales-development-rep': 'execution',
-  'sales-enablement-specialist': 'execution',
-  'sales-engineer': 'execution',
-  'sales-ops-specialist': 'execution',
-  'sales-strategist': 'controller',
-  'sales-trainer': 'execution',
-  'seo-specialist': 'execution',
-  'social-media-manager': 'execution',
-  'territory-manager': 'execution',
-  'video-marketing-specialist': 'execution',
-  // People (19 agents)
-  'benefits-administrator': 'execution',
-  'compensation-analyst': 'execution',
-  'culture-and-engagement-manager': 'execution',
-  'diversity-and-inclusion-manager': 'execution',
-  'employee-relations-specialist': 'execution',
-  'hr-analyst': 'execution',
-  'hr-business-partner': 'controller',
-  'hr-compliance-specialist': 'execution',
-  'hris-administrator': 'execution',
-  'hr-manager': 'controller',
-  'hr-ops-specialist': 'execution',
-  'learning-specialist': 'execution',
-  'onboarding-specialist': 'execution',
-  'organizational-development-specialist': 'execution',
-  'performance-management-specialist': 'execution',
-  'recruiter': 'execution',
-  'recruiting-coordinator': 'execution',
-  'talent-acquisition-manager': 'controller',
-  'workforce-planning-analyst': 'execution',
-  // Service (32 agents)
-  'account-manager': 'controller',
-  'chat-support-specialist': 'execution',
-  'community-manager': 'execution',
-  'compliance-officer': 'controller',
-  'compliance-specialist': 'execution',
-  'contracts-manager': 'execution',
-  'corporate-counsel': 'execution',
-  'customer-advocacy-manager': 'controller',
-  'customer-education-specialist': 'execution',
-  'customer-success-manager': 'controller',
-  'customer-support-rep': 'execution',
-  'employment-attorney': 'execution',
-  'escalation-manager': 'execution',
-  'general-counsel': 'controller',
-  'ip-attorney': 'execution',
-  'knowledge-base-manager': 'execution',
-  'legal-analyst': 'execution',
-  'legal-operations-manager': 'controller',
-  'litigation-manager': 'execution',
-  'paralegal': 'execution',
-  'privacy-officer': 'execution',
-  'regulatory-affairs-specialist': 'execution',
-  'relationship-manager': 'controller',
-  'risk-and-compliance-manager': 'execution',
-  'support-analyst': 'execution',
-  'support-director': 'controller',
-  'support-operations-manager': 'controller',
-  'support-quality-analyst': 'execution',
-  'support-supervisor': 'execution',
-  'support-trainer': 'execution',
-  'technical-support-engineer': 'execution',
-  'technical-writer': 'execution',
-  // Leadership (11 agents)
-  'cco': 'controller',
-  'ceo': 'controller',
-  'cfo': 'controller',
-  'chro': 'controller',
-  'cmo': 'controller',
-  'coo': 'controller',
-  'cpo': 'controller',
-  'cro': 'controller',
-  'cso': 'controller',
-  'cto': 'controller',
-  // Pre-v12.0.0 long-form name was shortened to clo in v12.0.0
-  'clo': 'controller',
-  // Shared (4 agents)
-  'bi-specialist': 'controller',
-  'competitive-intelligence-analyst': 'controller',
-  'data-scientist': 'controller',
-  'market-research-analyst': 'controller',
-};
+const VALID_TIERS = new Set(['controller', 'execution', 'support', 'infrastructure', 'executive']);
 
-createHook('ModelRoutingAdvisor', async (input) => {
+// Per-process memoization
+let _knownAgentsCache = null;
+
+/**
+ * Resolve the cAgents repo root. Prefer CLAUDE_PLUGIN_ROOT (set by Claude Code
+ * when this hook is invoked via run-hook.cjs), fall back to walking up from
+ * this file's __dirname (.claude/hooks/ -> repo root).
+ */
+function resolveRepoRoot() {
+  const envRoot = process.env.CLAUDE_PLUGIN_ROOT || process.env.CLAUDE_PROJECT_DIR;
+  if (envRoot && fs.existsSync(path.join(envRoot, '.claude-plugin', 'plugin.json'))) {
+    return envRoot;
+  }
+  // __dirname is `<repo>/.claude/hooks`; go up two levels
+  const fromFile = path.resolve(__dirname, '..', '..');
+  if (fs.existsSync(path.join(fromFile, '.claude-plugin', 'plugin.json'))) {
+    return fromFile;
+  }
+  return process.cwd();
+}
+
+/**
+ * Extract the `metadata.tier` value from a SKILL.md file. Hand-rolled mini
+ * YAML walker (no external deps): finds the `metadata:` block in the
+ * frontmatter and returns the first `tier:` value scoped under it.
+ * Falls back to a top-level `tier:` if no metadata block exists.
+ * Returns null when the file is unreadable or has no recognizable tier.
+ */
+function parseSkillTier(skillPath) {
+  let src;
+  try {
+    src = fs.readFileSync(skillPath, 'utf8');
+  } catch {
+    return null;
+  }
+  // Frontmatter is between the first two `---` lines
+  const fmMatch = src.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!fmMatch) return null;
+  const frontmatter = fmMatch[1];
+
+  const lines = frontmatter.split(/\r?\n/);
+  let inMetadata = false;
+  let metadataIndent = -1;
+
+  for (const line of lines) {
+    // Skip blank/comment lines
+    if (!line.trim() || line.trim().startsWith('#')) continue;
+
+    const leading = line.match(/^( *)/)[1].length;
+
+    // Detect entering the metadata: block
+    if (/^metadata:\s*$/.test(line.trim()) && leading === 0) {
+      inMetadata = true;
+      metadataIndent = leading;
+      continue;
+    }
+    // If inside metadata and we hit a same-or-lower-indented key, exit metadata
+    if (inMetadata && leading <= metadataIndent && /^\S/.test(line)) {
+      inMetadata = false;
+    }
+    if (inMetadata) {
+      const m = line.match(/^\s+tier:\s*([A-Za-z][\w-]*)\s*$/);
+      if (m && VALID_TIERS.has(m[1])) return m[1];
+    }
+  }
+
+  // Fallback: top-level `tier:` (rare; legacy)
+  for (const line of lines) {
+    const m = line.match(/^tier:\s*([A-Za-z][\w-]*)\s*$/);
+    if (m && VALID_TIERS.has(m[1])) return m[1];
+  }
+  return null;
+}
+
+/**
+ * Build the {agent-name: tier} map by walking plugin.json's agents array.
+ * Memoized: subsequent calls return the same object reference until process exit.
+ * Excludes any `_deprecated/` paths (sync-agents.sh already excludes them from
+ * plugin.json, so this is defensive — the contract is "modulo _deprecated/").
+ */
+function loadKnownAgents() {
+  if (_knownAgentsCache !== null) return _knownAgentsCache;
+
+  const root = resolveRepoRoot();
+  const pluginPath = path.join(root, '.claude-plugin', 'plugin.json');
+  const result = {};
+
+  let plugin;
+  try {
+    plugin = JSON.parse(fs.readFileSync(pluginPath, 'utf8'));
+  } catch {
+    _knownAgentsCache = result; // empty map; hook degrades to pass-through
+    return _knownAgentsCache;
+  }
+
+  const agents = Array.isArray(plugin.agents) ? plugin.agents : [];
+  for (const rel of agents) {
+    if (typeof rel !== 'string') continue;
+    if (rel.indexOf('/_deprecated/') !== -1) continue;
+    const m = rel.match(/\/([^/]+)\/SKILL\.md$/);
+    if (!m) continue;
+    const agentName = m[1];
+
+    const skillPath = path.resolve(root, rel);
+    const tier = parseSkillTier(skillPath);
+    // Default to 'execution' when tier is unparseable so the hook still has
+    // a routing opinion (matches the previous literal's bias).
+    result[agentName] = tier || 'execution';
+  }
+
+  _knownAgentsCache = result;
+  return _knownAgentsCache;
+}
+
+// Test-only: reset memoization (not used by the hook itself)
+function _resetKnownAgentsCache() {
+  _knownAgentsCache = null;
+}
+
+const _hookHandler = async (input) => {
   const toolName = input.tool_name || '';
   const toolInput = input.tool_input || {};
 
@@ -283,7 +181,8 @@ createHook('ModelRoutingAdvisor', async (input) => {
   if (!agentMatch) return null; // Not a cAgents agent spawn
 
   const agentName = agentMatch[1];
-  const tier = KNOWN_AGENTS[agentName];
+  const known = loadKnownAgents();
+  const tier = known[agentName];
 
   // Log the delegation for audit trail
   try {
@@ -317,4 +216,17 @@ createHook('ModelRoutingAdvisor', async (input) => {
   }
 
   return null;
-});
+};
+
+// Only register the hook + read stdin when invoked as the main module.
+// When require()'d from a test, this guard prevents the eager stdin read so
+// the test can import `loadKnownAgents()` cheaply and synchronously.
+if (require.main === module) {
+  createHook('ModelRoutingAdvisor', _hookHandler);
+}
+
+// Export helpers for tests (LP-16).
+module.exports.loadKnownAgents = loadKnownAgents;
+module.exports._resetKnownAgentsCache = _resetKnownAgentsCache;
+module.exports.parseSkillTier = parseSkillTier;
+module.exports._hookHandler = _hookHandler;
