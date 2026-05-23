@@ -91,7 +91,7 @@ Agent({
 
 ## Dead-Letter Queue (V10.6.0)
 
-When a work item fails 3 reviewer rounds, it enters the dead-letter queue:
+When a work item fails 2 reviewer rounds (LP-27, v12.7.x: lowered from 3 — rounds-cap is `controller_revision.max_internal_rounds` in `pipeline_config.yaml`), it enters the dead-letter queue:
 
 ```yaml
 # In coordination_log.yaml
@@ -99,10 +99,10 @@ dead_letter_items:
   - task_id: TASK-{N}
     name: "{task_name}"
     status: dead_letter
-    rounds_attempted: 3
+    rounds_attempted: 2
     last_feedback: "{reviewer's final feedback}"
     best_attempt_location: "outputs/TASK-{N}_{name}.md"
-    reason: "Failed to meet acceptance criteria after 3 reviewer rounds"
+    reason: "Failed to meet acceptance criteria after 2 reviewer rounds"
 ```
 
 **Dead-letter behavior**:
@@ -225,11 +225,11 @@ workflow/CORRECTIONS.md                                # Session-scoped copy
 ```
 TodoWrite([
   {"content": "[orchestrator] Enriching request context", "status": "completed", "id": "route"},
-  {"content": "[universal-planner] Planning objectives and selecting controller", "status": "completed", "id": "plan"},
+  {"content": "[planner] Planning objectives and selecting controller", "status": "completed", "id": "plan"},
   {"content": "[tech-lead] Coordinating implementation with execution agents", "status": "in_progress", "id": "coordinate"},
   {"content": "[backend-developer] Implementing user authentication endpoint", "status": "pending", "id": "exec1"},
   {"content": "[qa-tester] Validating auth endpoint against acceptance criteria", "status": "pending", "id": "exec2"},
-  {"content": "[universal-validator] Validating outputs against acceptance criteria", "status": "pending", "id": "validate"}
+  {"content": "[validator] Validating outputs against acceptance criteria", "status": "pending", "id": "validate"}
 ])
 ```
 

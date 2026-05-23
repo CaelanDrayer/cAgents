@@ -34,7 +34,7 @@ Team Mode enables N-wave parallel execution with:
 Teammate (controller, e.g., tech-lead) -> Agent(cagents:backend-developer)
   -> backend-developer implements work item
   -> Agent(cagents:reviewer) validates against acceptance criteria
-  -> PASS or REVISE (max 3 rounds)
+  -> PASS or REVISE (max 2 rounds)
 ```
 
 **Teammates do NOT invoke /run via Skill tool.** Claude Code enforces a 2-level subagent nesting limit. Since /team teammates are already level 1 subagents, they spawn execution agents at level 2 directly.

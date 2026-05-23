@@ -65,13 +65,13 @@ INIT -> ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED
 
 ```
 /run (level 0) -> orchestrator, planner (level 1)
-              -> controller (level 1) -> executor + reviewer (level 2, max 3 rounds)
+              -> controller (level 1) -> executor + reviewer (level 2, max 2 rounds, LP-27: 3→2)
               -> validator (level 1) -> PASS/FAIL/REVISE
 ```
 
 ### Pipeline Agents (Level 1)
 - **Orchestrator** (INIT): enriched_context.yaml
-- **Universal-planner** (ORCHESTRATED): plan.yaml AND work_items.yaml. (v12.0.0: task-decomposer and prompt-engineer were absorbed into universal-planner. The planner now produces decomposition inline; controllers fall back to standard delegation prompts.)
+- **Universal-planner** (ORCHESTRATED): plan.yaml AND work_items.yaml. (v12.0.0: task-decomposer and prompt-engineer were absorbed into planner. The planner now produces decomposition inline; controllers fall back to standard delegation prompts.)
 - **Controller** (PLANNED): coordination_log.yaml with `schema_version: "1"` (with executor+reviewer loops)
 - **Universal-validator** (COORDINATED): validation_report.yaml
 

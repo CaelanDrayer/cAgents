@@ -21,7 +21,7 @@ Controller receives work_items.yaml with agent assignments + dependency graph
      a. Gather output files from completed dependencies
      b. Spawn assigned agent via Agent tool with context from dependencies
      c. Spawn reviewer to check against acceptance criteria
-     d. If REVISE: re-spawn agent with feedback (max 3 rounds)
+     d. If REVISE: re-spawn agent with feedback (max 2 rounds)
   3. Independent work items execute in parallel
   4. After all work items complete: write coordination_log.yaml
 ```
@@ -109,20 +109,20 @@ See `controller-reference.md` for additional good/bad task-tracking examples.
 
 ## Reviewer Loop
 
-Controllers include an internal reviewer loop (max 3 rounds). After each executor completes, spawn a reviewer to evaluate against acceptance criteria. PASS accepts, REVISE sends feedback back.
+Controllers include an internal reviewer loop (max 2 rounds). After each executor completes, spawn a reviewer to evaluate against acceptance criteria. PASS accepts, REVISE sends feedback back.
 
 **Tier 2**: Single reviewer. **Tier 3+**: Blind review with 2-3 independent reviewers + Devil's Advocate on unanimous PASS.
 
 ### Dead-Letter Promotion Contract (P1-6, v12.6.x)
 
-When a work item fails 3 consecutive reviewer rounds, the controller MUST promote the item rather than silently retrying or claiming completion:
+When a work item fails 2 consecutive reviewer rounds (rounds-cap reached per `controller_revision.max_internal_rounds: 2` in `pipeline_config.yaml`; lowered from 3 in LP-27, v12.7.x), the controller MUST promote the item rather than silently retrying or claiming completion:
 
 1. **Set the underlying implementation_task status** to `dead_letter` (NOT `completed`, NOT `in_progress`) in `coordination_log.yaml`.
 2. **Append the item to `dead_letter_items[]`** in `coordination_log.yaml` with the schema documented in `controller-reference.md` (task_id, name, rounds_attempted, last_feedback, best_attempt_location, reason).
 3. **Continue with the remaining work items** — do NOT halt coordination on a single dead_letter. The pipeline classifies a session with `dead_letter_items.length > 0` as `PARTIAL_PASS` (which maps to PASS in `pipeline_config.yaml` and reports the dead-letter items to the user via `validation_report.yaml`).
 4. **Do NOT re-route to PLANNED** for individual dead_letter items. The outer FAIL/REVISE revision loop (max 3 cycles) is for whole-session validator verdicts, not for per-item reviewer failures. Re-promoting a dead_letter item back into the reviewer loop without controller-level intervention (new acceptance criteria, different executor, escalation to user) wastes revision budget.
 
-This contract is documented (here + in `controller-reference.md`'s dead-letter-queue section); enforcement is currently advisory. A future hook (tracked under LP-27, Wave 5) will mechanically verify that `review_rounds >= 3` items appear in `dead_letter_items[]` before the controller writes its terminal `status: completed` on the coordination log.
+This contract is documented (here + in `controller-reference.md`'s dead-letter-queue section); enforcement is currently advisory. A future hook will mechanically verify that `review_rounds >= 2` items appear in `dead_letter_items[]` before the controller writes its terminal `status: completed` on the coordination log. (LP-27 in v12.7.x lowered the rounds-cap from 3 → 2 to save ~33% reviewer-call token budget per failed item; the promotion contract itself was unchanged.)
 
 See `controller-reference.md` for reviewer spawning patterns, blind review protocol, dead-letter queue schema, and confidence tiers.
 
