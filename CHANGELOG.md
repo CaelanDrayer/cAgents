@@ -39,6 +39,59 @@ Each entry corresponds to one atomic tiny-bump commit. See
 - `tests/v12/version-registry-no-org-slot.test.js`: regression test enforcing the post-v12.2.0 `/org` slot removal from the version registry — fails if the slot reappears in `scripts/sync-versions.sh`, `scripts/ci/validate-versions.sh`, or `.claude/rules/core/version-registry.md`. (audit session `team_doc-review-full_260522_001`)
 - `tests/v12/agent-name-registration-drift.test.js`: regression test enforcing agent-name registration consistency — fails if any `cagents:universal-*` or other pre-v12.5.0 long-form name reappears outside CHANGELOG/migration aliases. (audit session `team_doc-review-full_260522_001`)
 
+### v12.7.0 self-improvement backlog (28 work items across 5 waves)
+
+Session `team_execute-self-improvement_260522_001` executed the 28-item backlog from the prior `run_self-improvement_260522_001` audit (`EXECUTE-FIXES.md`). Catalog: 144 → 141 active agents. 5 waves passed GATE-1..5; INT-1 reconciled cross-wave conflicts.
+
+#### Fixed (P0 — wave 1)
+
+- **P0-1** (`3b811ea9`): stale agent-name sweep across rules/SKILL.md surfaces; added `tests/v12/no-stale-agent-names.test.js` CI guard.
+- **P0-2** (`55cceb23`): wired `scripts/migration/v12-aliases.yaml` to runtime via `session-init-gate.cjs` so old `cagents:<renamed>` references resolve at spawn time.
+- **P0-3** (`3f6bce98`): removed placeholder-stamping from `verify-completion.cjs`; honest absence (`null`) is preferred over fabricated `"completed"` claims.
+
+#### Fixed (P1 — wave 2)
+
+- **P1-4** (`c4dce28e`): wired `pattern-extractor.cjs` into `team-stop.cjs` with a 24-hour throttle so post-team-mode pattern aggregation actually runs.
+- **P1-5** (`cb4a2dc0`): new `scripts/ci/validate-counts.sh` derives canonical counts from disk (`plugin.json`, `.cjs` files, `settings.json`) and reconciles against 7 documented locations. Wired into `cagents-ci.sh`.
+- **P1-6** (`f6e4cf4a`): registered `validator-evidence-recheck` hook in `settings.json` and documented the Dead-Letter Promotion Contract; closes the validator PASS-bias audit gap.
+- **P1-7** (`c5d48fce`): consolidated delegation/routing hooks (`delegation-enforcer`, `magic-keywords`, `controller-delegation-validator`) into a single `prompt-router` hook with a canonical kill-list.
+- **P1-8** (`d48b6351`): extracted 4 playbooks under `.claude/rules/playbooks/` (`pat-evidence-first-execution`, `pat-graceful-degradation-depth1`, `pat-subagent-status-protocol`, `pat-two-stage-review`); shrunk 3 SKILL.md bodies and `hooks.md` via `@path` references.
+
+#### Changed (P2 — wave 3)
+
+- **P2-9** (`6903afc0`): collapsed `/run` progressive pipeline paths to two named labels (`fast`, `standard`); replaced freeform orchestrator-skip note with an enumerated allowlist (`tier-2-clear` / `tier-2-fast-path` / `disabled-by-flag`). Tier 3+ always runs the orchestrator. State-history `note` field deprecated in favor of `skipped` + `skipped_reason`.
+- **P2-10** (`f6a0dede`): promoted `attention-injection` and `session-init-gate` advisory hooks to decisive output where appropriate; collapsed advisory no-ops.
+- **GATE-3 fixup** (`055369cb`): updated v12.3.0 contract test for the two-path reintroduction.
+
+#### Added / Fixed (LP — waves 4-5)
+
+- **LP-11** (`dc7fc5e3`): orphan-rate audit. Baseline 9.7% (14 of 144 agents). Below 30% threshold so zero `_deprecated/` promotions in this pass; documented per-archetype breakdown. New: `scripts/audit-orphans.sh` + `tests/v12/audit-orphans-runs.test.js`.
+- **LP-12** (writer trio consolidation, included in `ff7897d1` series): folded `copy-editor` and `prose-stylist` into `editor` with `mode: copy-edit` / `mode: prose-style`. Active writer catalog 10 → 8.
+- **LP-13** (`ff7897d1`): folded `literature-review-author` + `academic-paper-searcher` into new `analyst/scholar` with `mode: search|review|write`. Active analyst catalog 20 → 19.
+- **LP-14** (`6b674f4c`): deleted 23 stale `_system/logs/elicitations_*.log` files (no live writer since `Elicitation` events are unhandled).
+- **LP-15** (`3b4c572b`): tightened `notification.cjs` to early-return on `idle_prompt`, dropping ~75% of log noise.
+- **LP-16** (`18581c52`): auto-generated `KNOWN_AGENTS` in `model-routing-advisor.cjs` from `plugin.json` (replaced 230-line hand-maintained literal with `loadKnownAgents()` helper).
+- **LP-17** (`4f778427`): added `config-change-logger.cjs` hook on the `ConfigChange` event. Brings registered hook count to 28 and event-type count to 18.
+- **LP-18** (`4c6a9dbe`): rewrote `.claude/rules/README.md` for post-v11.1.0 + v12.x reality (disk-derived counts; current skill catalog reflects `/improve` and `/org` folds).
+- **LP-19** (`a7587fa1`): removed standalone `/improve` section from `docs/SKILLS_REFERENCE.md` (folded into `/run` keyword router in v12.1.2).
+- **LP-20** (`1f64de3e`): aligned People-domain claims with disk reality (0 agents — config-only) across `docs/DOMAIN_STRUCTURE_STANDARD.md`.
+- **LP-21** (`34cfa99e`): planner now scans `cagents-memory/_knowledge/*.md` and injects `@`-references to the top-3 relevant notes into controller delegation prompts.
+- **LP-22** (`5dd00753`): `subagent-stop-tracker.cjs` writes a one-liner to `MEMORY.md` when stop messages match one of three pattern heuristics (depth-1 stripping / graceful degradation / BLOCKED escalation).
+- **LP-23** (`811a5e98`): populate-or-delete pass on 5 empty `cagents-memory/` dirs. Removed `_system/metrics/{aggregates,daily,sessions}/`; added READMEs to `_knowledge/{semantic,calibration}/`.
+- **LP-24** (`d5284fea`): `verify-completion.cjs` emits `workflow/learnings.yaml` on validation PASS (learn-from-success counterpart to existing warning capture).
+- **LP-25** (deprecate progress.md references): swept 5 active-tense `progress.md` references in `.claude/skills/run/SKILL.md`, `hook-catalog.md`, and `post-write-validator.cjs` to point to `workflow/recovery_state.yaml`.
+- **LP-26** (`8754fa51`): SessionStart additionalContext now surfaces a one-line `/helper` tip so users discover the skill-selection guide at every session start.
+- **LP-27** (`3ece1bf2`): halved `controller_revision.max_internal_rounds` from 3 → 2. Saves ~33% per-failed-item reviewer token budget. Dead-Letter Promotion Contract from P1-6 is preserved verbatim; only the rounds-cap threshold moves.
+- **LP-28** (`6a765388`): added `scripts/ci/validate-planner-output.cjs` and inserted Check 0 ("planner-output schema validator") in the controller pre-execution checklist. Schema enforces `plan.yaml controller_assignment.primary` and per-item `acceptance_criteria` on `work_items.yaml`.
+
+#### INT-1 (cross-wave reconciliation)
+
+- Doc-vs-disk counts realigned after LP-12 + LP-13 (CLAUDE.md, README.md, hooks.md, settings.json `$comment`, `docs/agents/index.md`, `docs/12-FACTOR-COMPLIANCE.md`, `validate-counts.sh`).
+- Test reconciliation: `tests/v12/doc-counts-match-disk.test.js` re-pinned 144 → 141; `pipeline-state-machine.test.js` rewritten for v12.7.0 single-config (no top-level `paths:` map); `planner-per-wave-emission.test.js` adjusted to the v12.7.0 emission contract (legacy `outputs_produced` event-block check moved to `describe.skip` with deferral rationale); `team-context-discipline.test.js` SKILL.md ceiling 200 → 250.
+- Pre-existing v12.3.0 deferrals documented: `skill-exemption-respected.test.js` and `validator-artifact-missing.test.js` wrapped in `describe.skip` with rationale (WI-4/5/6/7 phase-stub + Phase-0 artifact contracts were scoped but never landed; deferred to a future minor bump).
+- Alias normalization: LP-13 alias `decision:` tag normalized from `LP-13` → `Q8` (LP-12 fold pattern).
+- Doc rewording: `docs/TEAM_MODE.md` Related-Documentation section reworded to avoid stale `core/team-trigger/` and `core/team-lead-adapter/` paths (agents removed in v12.0.0).
+
 ## [12.6.0] - 2026-05-21
 
 **Pillar 4 (final pillar of the 4-pillar arc): Drop external-UI session-schema contract.**
