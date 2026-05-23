@@ -22,6 +22,14 @@ createHook('Notification', async (input) => {
     phase: input.phase || null
   };
 
+  // LP-15: idle_prompt notifications accounted for 75%+ of log volume in the
+  // audit and provide no diagnostic value to cAgents (teammate-idle-handler.cjs
+  // covers the work-routing path). Drop them at the front of the hook before
+  // any disk I/O so they don't accumulate noise in notifications_<date>.log.
+  if (notification.type === 'idle_prompt') {
+    return null;  // Non-blocking, no log write
+  }
+
   // Log to file
   const logsDir = path.join(AGENT_MEMORY_DIR, '_system', 'logs');
   try {
