@@ -1,9 +1,15 @@
 # Domain Structure Standard
 
-**Status**: Current Business Domain Standard (V10.1.0)
+**Status**: HISTORICAL (V10.1.0 — describes the pre-v11.1.0 13-domain layout)
 **Last Updated**: 2026-02-28
 
-## Business Domain Structure
+> **Outdated as of v11.1.0**: The 13-domain layout this document describes was replaced by the **9 builder-role archetype tree** in v11.1.0 (canonical since). For the current architecture, see:
+> - [docs/architecture/domains.md](architecture/domains.md) — 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership), 144 agents post-v12.4.0 P2 compression
+> - [`.claude/rules/core/skill-format.md`](../.claude/rules/core/skill-format.md) — the v11.1.0+ `archetype:` + `branch:` frontmatter schema (the legacy top-level `domain:` field was REMOVED in v11.1.0 and `validate-agents.sh` rejects it as an error)
+>
+> Two legacy domain dirs (`people/` and `shared/`) survive on disk as routing-config-only overlays; the other 11 were deleted in v12 W4.2 and consolidated into `cagents-memory/_system/config/routing.yaml`. This document is preserved for historical context only.
+
+## Business Domain Structure (V10.1.0 — historical)
 
 All domains follow this structure:
 
@@ -107,13 +113,8 @@ Revenue & acquisition: marketing, sales, partnerships
 - Sales: sales-strategist, account-executive, revenue-operations-manager
 - Growth: growth-marketer, demand-generation-manager
 
-### People (17 agents)
-Talent & culture: HR, talent acquisition, learning & development
-
-**Includes**:
-- HR: chro, hr-business-partner, hr-ops-specialist
-- Talent: recruiter, talent-acquisition-manager
-- Development: learning-specialist
+### People (0 agents — config-only)
+The legacy `people/` domain is **routing-overlay only** as of v11.1.0 — the directory holds `config/domain_overrides.yaml` (router keywords + controller catalog) but ships zero SKILL.md files. People-domain requests route through this overlay to active agents under the `operator/people-ops/` archetype branch (hr-manager, talent-acquisition-manager, recruiter, compensation-analyst, learning-specialist, etc.). See CLAUDE.md § "Domain overlay (legacy — routing/config only)" for the full overlay model.
 
 ### Service (28 agents)
 Support & governance: customer experience, legal, compliance
