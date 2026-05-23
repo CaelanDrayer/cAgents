@@ -107,7 +107,7 @@ Based on your answers:
 | fix | complex | -- | `/team Fix <description>` |
 | review | -- | -- | `/run review [path or 'src/']` (keyword router -> `--mode review`) |
 | optimize | -- | -- | `/run optimize [target]` (keyword router -> `--mode optimize`) |
-| plan | -- | -- | `/designer <topic>` |
+| plan | -- | -- | `/designer <topic>` (covers software AND non-software designs — research studies, curricula, board games, routines, etc.) |
 | debug | -- | -- | `/run --mode debug <bug description>` |
 | learn | -- | -- | Ask "Which command would you like to explore?" then show Mode 2 output |
 | show all | -- | -- | Show Command Overview Table + Quick Decision Guide (same as `--all`) |
@@ -344,6 +344,30 @@ V11.0.0 removed `/review`, `/optimize`, `/context`, and `/debug` after a 10-patc
 | `/org <request> --quick` | `/team <request> --strategic` (force-enable strategic mode for single-domain) |
 
 See @reference/v11-migration.md for the full catalog including passthroughs and dynamic SKILL.md reading rules.
+
+## /designer covers more than software (v12.7.x scope expansion)
+
+As of v12.7.x, `/designer` is a **"design ANYTHING"** tool, not a
+software-only design tool. The same 6-phase Q&A workflow now handles
+non-software design domains via tracked reference docs in
+`.claude/skills/designer/reference/domains/`. Examples of non-software
+triggers users should know about:
+
+- `/designer design a research study on caffeine and sleep latency`
+- `/designer design a 6-week curriculum on prompt engineering`
+- `/designer design my morning routine`
+- `/designer design a board game about supply-chain logistics`
+- `/designer design a wedding for 80 people on a $15k budget`
+- `/designer design a 3D-printed enclosure for an electronics project`
+- `/designer` (no arguments — novice topic-bootstrap path asks "design what
+  kind of thing — system / process / experience / artifact?")
+
+The eight domain branches `/designer` now recognizes are: Software,
+Business, Creative, Research, Education, Physical/Product, Personal,
+and Game. The build menu (Phase 6) also now offers non-implementation
+exits — Export PDF/Markdown, Share read-only link, Manual-execute
+checklist — for designs that don't get "built" by `/run` or `/team`
+(weddings, curricula, personal routines).
 
 ## Command Integration Pipelines
 

@@ -1,0 +1,231 @@
+# Education / Curriculum Domain Chunk Templates for /designer (v12.7.x)
+domain: education
+version: "1.0"
+description: "Chunk templates for course / curriculum / lesson design sessions"
+
+bootstrap_framings:
+  - experience
+  - process
+
+chunk_templates:
+  - chunk_id: chunk_001
+    topic: "Learner Personas & Prior Knowledge"
+    priority: critical
+    position: 1
+    estimated_questions: 3
+    phase: empathize
+    questions:
+      - question_template: "Who is the target learner — novice, intermediate, or expert in this topic?"
+        question_type: audience
+        expected_answers: enum
+        expertise_adaptation:
+          beginner: "Who are you teaching, and what do they already know?"
+          expert: "Map your learner persona to ZPD — what's the gap between current ability and target?"
+      - question_template: "What prior knowledge or prerequisites can you assume the learner brings?"
+        question_type: audience
+        expected_answers: open_ended
+      - question_template: "What motivation, time, and environment does the learner have to engage?"
+        question_type: context
+        expected_answers: open_ended
+    synthesis_threshold: 2
+    dependencies: []
+    unlock_condition: always
+
+  - chunk_id: chunk_002
+    topic: "Learning Outcomes (Bloom's-aligned)"
+    priority: critical
+    position: 2
+    estimated_questions: 3
+    phase: define
+    questions:
+      - question_template: "List 3-5 specific learning outcomes, each starting with an action verb at a Bloom's level (remember, understand, apply, analyze, evaluate, create)."
+        question_type: outcomes
+        expected_answers: open_ended
+        expertise_adaptation:
+          beginner: "What should the learner be able to DO at the end?"
+          expert: "Map your outcomes to Bloom's levels and revise any that are vague ('understand X' is not testable)."
+      - question_template: "Which outcomes are essential (every learner masters) vs. enriching (some go further)?"
+        question_type: outcomes
+        expected_answers: open_ended
+      - question_template: "What external requirement (accreditation, exam, role competency) constrains the outcome list?"
+        question_type: constraints
+        expected_answers: open_ended
+    synthesis_threshold: 2
+    dependencies: [chunk_001]
+    unlock_condition: always
+
+  - chunk_id: chunk_003
+    topic: "Pedagogical Framing"
+    priority: critical
+    position: 3
+    estimated_questions: 2
+    phase: conceptualize
+    questions:
+      - question_template: "Which pedagogical framing fits — direct instruction, inquiry, mastery, or project-based?"
+        question_type: framing
+        expected_answers: enum
+      - question_template: "Will the experience be synchronous, asynchronous, blended, or self-paced?"
+        question_type: framing
+        expected_answers: enum
+    synthesis_threshold: 1
+    dependencies: [chunk_002]
+    unlock_condition: always
+
+  - chunk_id: chunk_004
+    topic: "Assessment Design"
+    priority: high
+    position: 4
+    estimated_questions: 3
+    phase: refinement
+    questions:
+      - question_template: "How will you assess each learning outcome — what formative check during, what summative at end?"
+        question_type: assessment
+        expected_answers: open_ended
+      - question_template: "What does the rubric look like — criteria across the rows, performance levels across the columns?"
+        question_type: assessment
+        expected_answers: open_ended
+      - question_template: "How do you avoid common assessment failures (testing memory when you wanted analysis, or grading effort when you wanted outcome)?"
+        question_type: assessment
+        expected_answers: open_ended
+    synthesis_threshold: 2
+    dependencies: [chunk_002]
+    unlock_condition: always
+
+  - chunk_id: chunk_005
+    topic: "Lesson Sequence & Activity Structure"
+    priority: high
+    position: 5
+    estimated_questions: 3
+    phase: refinement
+    questions:
+      - question_template: "What is the activity sequence inside a single lesson (e.g. engage / explain / explore / elaborate / evaluate)?"
+        question_type: structure
+        expected_answers: open_ended
+      - question_template: "How long is one session, and what is the dose (sessions × weeks)?"
+        question_type: structure
+        expected_answers: open_ended
+      - question_template: "How does one lesson connect to the next — linear, spiral, modular, or branching?"
+        question_type: structure
+        expected_answers: enum
+    synthesis_threshold: 2
+    dependencies: [chunk_003]
+    unlock_condition: always
+
+  - chunk_id: chunk_006
+    topic: "Scaffolding & Differentiation"
+    priority: medium
+    position: 6
+    estimated_questions: 2
+    phase: refinement
+    questions:
+      - question_template: "What scaffolds support struggling learners — sentence stems, worked examples, partial completion, reduced complexity?"
+        question_type: pedagogy
+        expected_answers: open_ended
+      - question_template: "What extensions challenge advanced learners without holding the class back?"
+        question_type: pedagogy
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_005]
+    unlock_condition: always
+
+  - chunk_id: chunk_007
+    topic: "Accessibility & Universal Design"
+    priority: high
+    position: 7
+    estimated_questions: 2
+    phase: refinement
+    questions:
+      - question_template: "How does the design accommodate vision, hearing, motor, language-learner, and neurodivergent learners?"
+        question_type: accessibility
+        expected_answers: open_ended
+      - question_template: "Which Universal Design for Learning principles (multiple means of representation, action, engagement) does the design satisfy?"
+        question_type: accessibility
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_005]
+    unlock_condition: always
+
+  - chunk_id: chunk_008
+    topic: "Materials & Resources"
+    priority: medium
+    position: 8
+    estimated_questions: 2
+    phase: refinement
+    questions:
+      - question_template: "What materials does the learner consume (readings, videos, slides, kits) and what do they produce (essay, presentation, build)?"
+        question_type: materials
+        expected_answers: open_ended
+      - question_template: "What technology, space, or instructor expertise is required?"
+        question_type: materials
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_005]
+    unlock_condition: always
+
+  - chunk_id: chunk_009
+    topic: "Feedback Loops"
+    priority: medium
+    position: 9
+    estimated_questions: 2
+    phase: refinement
+    questions:
+      - question_template: "When and how does the instructor give feedback — immediate, end-of-lesson, end-of-unit?"
+        question_type: feedback
+        expected_answers: open_ended
+      - question_template: "When and how do learners self-assess or peer-assess?"
+        question_type: feedback
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_004]
+    unlock_condition: always
+
+  - chunk_id: chunk_010
+    topic: "Syllabus Assembly"
+    priority: high
+    position: 10
+    estimated_questions: 2
+    phase: specification
+    questions:
+      - question_template: "Does the syllabus cover outcomes, schedule, policies, materials, grading, and accessibility?"
+        question_type: artifact
+        expected_answers: enum
+      - question_template: "Is the syllabus readable by a learner before enrollment — does it set expectations without being intimidating?"
+        question_type: artifact
+        expected_answers: enum
+    synthesis_threshold: 1
+    dependencies: [chunk_002, chunk_005]
+    unlock_condition: always
+
+  - chunk_id: chunk_011
+    topic: "Lesson Plan Detail"
+    priority: high
+    position: 11
+    estimated_questions: 2
+    phase: specification
+    questions:
+      - question_template: "Does each lesson plan list the outcomes addressed, the activity timing, the materials, and the formative checks?"
+        question_type: artifact
+        expected_answers: enum
+      - question_template: "Could a substitute instructor run the lesson from the plan alone?"
+        question_type: artifact
+        expected_answers: enum
+    synthesis_threshold: 1
+    dependencies: [chunk_005, chunk_008]
+    unlock_condition: always
+
+  - chunk_id: chunk_012
+    topic: "Rubric Validation"
+    priority: medium
+    position: 12
+    estimated_questions: 2
+    phase: specification
+    questions:
+      - question_template: "Have you tested the rubric against 3-5 sample learner products — does it discriminate cleanly?"
+        question_type: artifact
+        expected_answers: enum
+      - question_template: "Would two independent graders score the same product within one level of each other?"
+        question_type: artifact
+        expected_answers: enum
+    synthesis_threshold: 1
+    dependencies: [chunk_004]
+    unlock_condition: always

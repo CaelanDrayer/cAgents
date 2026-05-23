@@ -114,7 +114,7 @@ Phase 6: Specification (20%)  -> User stories, specs, diagrams, checklists, vali
 
 ### Phase 1: Empathize (10% of session)
 
-Understand the users, their needs, pain points, and the context in which they operate. Research agents only with `--deep`. If no topic was provided, open by asking what the user wants to design. Identify users/stakeholders, current workflow, frustrations, and emotional context. Phase gate: at least one user/stakeholder identified, at least one pain point documented. Confirm empathy findings via AskUserQuestion before advancing. See @reference/phase-1-empathize.md for the detailed workflow.
+Understand the users, their needs, pain points, and the context in which they operate. Research agents only with `--deep`. If no topic was provided (or input is vague — `/^design\s*(something|anything|stuff)?\s*$/i` or fewer than 3 content words), run the **topic-bootstrap novice path** described in @reference/phase-1-empathize.md (Step 0) — a single high-level "design what kind of thing — system / process / experience / artifact?" question routes novice users to the right domain branch from the taxonomy table in Phase 3. Otherwise, open by asking what the user wants to design. Identify users/stakeholders (or, for the Personal domain, "whose life is affected, including yours"), current workflow, frustrations, and emotional context. Phase gate: at least one user/stakeholder identified, at least one pain point documented. Confirm empathy findings via AskUserQuestion before advancing. See @reference/phase-1-empathize.md for the detailed workflow.
 
 ### Phase 2: Define (10% of session)
 
@@ -122,7 +122,22 @@ Crystallize the problem statement, identify constraints, and establish success c
 
 ### Phase 3: Conceptualize (10% of session)
 
-Explore high-level concepts, mental models, and framings for the solution space. Research agents only with `--deep`. Present 2-3 high-level conceptual framings (NOT detailed solutions — mental models and approaches), determine the design domain (Software / Business / Creative), and establish what is IN scope and OUT of scope. Phase gate: domain identified, conceptual framing selected, scope boundaries set. Spawn Ideation research during synthesis if `--deep`. See @reference/phase-3-conceptualize.md.
+Explore high-level concepts, mental models, and framings for the solution space. Research agents only with `--deep`. Present 2-3 high-level conceptual framings (NOT detailed solutions — mental models and approaches), determine the **design domain** (see taxonomy table below), and establish what is IN scope and OUT of scope. Phase gate: domain identified, conceptual framing selected, scope boundaries set. Spawn Ideation research during synthesis if `--deep`. See @reference/phase-3-conceptualize.md.
+
+**Domain taxonomy (v12.7.x — "design ANYTHING" expansion)**. The eight domain branches `/designer` supports, with their reference docs and chunk YAMLs:
+
+| Domain | Example design | Reference doc | Chunk YAML |
+|--------|---------------|---------------|------------|
+| Software | "build an OAuth flow" | (legacy — Phase 3 description) | `cagents-memory/_system/templates/designer/software_chunks.yaml` |
+| Business | "redesign the procurement process" | (legacy — Phase 3 description) | `cagents-memory/_system/templates/designer/business_chunks.yaml` |
+| Creative | "write a six-episode mystery series" | (legacy — Phase 3 description) | `cagents-memory/_system/templates/designer/creative_chunks.yaml` |
+| Research / Scientific | "design a sleep-latency study" | @reference/domains/research.md | `templates/research_chunks.yaml` |
+| Education / Curriculum | "design a 6-week prompt-engineering course" | @reference/domains/education.md | `templates/education_chunks.yaml` |
+| Physical / Product | "design a 3D-printed enclosure" | @reference/domains/physical-product.md | `templates/physical_product_chunks.yaml` |
+| Personal / Life | "design my morning routine" | @reference/domains/personal.md | `templates/personal_chunks.yaml` |
+| Game | "design a deck-builder with hidden costs" | @reference/domains/game.md | `templates/game_chunks.yaml` |
+
+See @reference/domains/README.md for the full per-domain reference contract and the bootstrap-framing → domain routing table that the Phase 1 novice-path uses to pre-route the designer to the right branch.
 
 ### Phase 4: Ideation (20% of session)
 
@@ -138,7 +153,11 @@ Generate production-ready artifacts from all gathered design information. Resear
 
 **Call 1** (build options): Build now (/run, recommended) | Build with team (/team) | Build with team strategic mode (/team --strategic, cross-domain) | More options.
 
-**Call 2** (if "More options"): Refine area | Endless refine | Save only.
+**Call 2** (if "More options"): Refine area | Endless refine | Save only | Export / Share / Manual.
+
+**Call 3** (if "Export / Share / Manual" in Call 2): Export design (PDF/Markdown) | Share design (read-only link) | Manual execute (printable checklist) | Cancel.
+
+The Export, Share, and Manual-execute exits exist for designs that do not get "built" by `/run` or `/team` — weddings, curricula, research-study protocols, personal routines. See @reference/phase-6-specification.md for the cascade rules (AskUserQuestion's max-4-options-per-call constraint requires this three-call structure).
 
 After the build choice: write `phase: completed` to `status.yaml` (terminal phase recognized by the verify-completion.cjs Stop hook), then call `TaskList` and mark all tasks `completed` or `deleted` via `TaskUpdate`. See @reference/phase-6-specification.md.
 

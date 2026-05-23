@@ -1,0 +1,144 @@
+# Physical / Product Domain Chunk Templates for /designer (v12.7.x)
+domain: physical_product
+version: "1.0"
+description: "Chunk templates for physical-object / hardware / craft design sessions"
+
+bootstrap_framings:
+  - artifact
+
+chunk_templates:
+  - chunk_id: chunk_001
+    topic: "Use Context & User Body"
+    priority: critical
+    position: 1
+    estimated_questions: 2
+    phase: empathize
+    questions:
+      - question_template: "Where, how often, and for how long is this object used (indoor / outdoor / wet, daily / weekly, minutes / hours)?"
+        question_type: context
+        expected_answers: open_ended
+      - question_template: "What body dimensions and abilities does the user have (hand size, strength, vision, dexterity)?"
+        question_type: audience
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: []
+    unlock_condition: always
+
+  - chunk_id: chunk_002
+    topic: "Dimensional Envelope & Tolerances"
+    priority: critical
+    position: 2
+    estimated_questions: 2
+    phase: define
+    questions:
+      - question_template: "What is the dimensional envelope (L × W × H), and what tolerance does each dimension need?"
+        question_type: geometry
+        expected_answers: open_ended
+      - question_template: "What weight budget does the object have, and what does that imply for materials?"
+        question_type: constraints
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_001]
+    unlock_condition: always
+
+  - chunk_id: chunk_003
+    topic: "Fabrication Framing"
+    priority: critical
+    position: 3
+    estimated_questions: 2
+    phase: conceptualize
+    questions:
+      - question_template: "Which fabrication framing fits — monolithic, assembled, kit / flat-pack, or made-to-measure?"
+        question_type: framing
+        expected_answers: enum
+      - question_template: "What run size are you designing for (1 / 10 / 100 / 1000 / 10000+)?"
+        question_type: constraints
+        expected_answers: enum
+    synthesis_threshold: 1
+    dependencies: [chunk_002]
+    unlock_condition: always
+
+  - chunk_id: chunk_004
+    topic: "Materials Selection"
+    priority: high
+    position: 4
+    estimated_questions: 2
+    phase: refinement
+    questions:
+      - question_template: "What materials are you considering, and what does each cost per unit at your run size?"
+        question_type: materials
+        expected_answers: open_ended
+      - question_template: "What loads or stresses do the materials resist (static weight, impact, thermal, UV, moisture, chemical)?"
+        question_type: materials
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_003]
+    unlock_condition: always
+
+  - chunk_id: chunk_005
+    topic: "Fabrication Method"
+    priority: high
+    position: 5
+    estimated_questions: 2
+    phase: refinement
+    questions:
+      - question_template: "Which fabrication method fits your run size — hand, CNC, injection molding, additive (FDM/SLA/SLS), sewing, casting?"
+        question_type: fabrication
+        expected_answers: enum
+      - question_template: "What fixturing, machine time, or hand-skill does that method require?"
+        question_type: fabrication
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_004]
+    unlock_condition: always
+
+  - chunk_id: chunk_006
+    topic: "Joinery, Assembly & Finish"
+    priority: high
+    position: 6
+    estimated_questions: 2
+    phase: refinement
+    questions:
+      - question_template: "How are parts joined — screws, glue, weld, snap-fit, dovetail, stitch?"
+        question_type: assembly
+        expected_answers: open_ended
+      - question_template: "What finish does the user touch — raw, sanded, painted, anodized, glazed, sealed?"
+        question_type: assembly
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_005]
+    unlock_condition: always
+
+  - chunk_id: chunk_007
+    topic: "Regulatory & Safety"
+    priority: medium
+    position: 7
+    estimated_questions: 2
+    phase: refinement
+    questions:
+      - question_template: "What regulatory or safety standards apply (UL, CPSC, FDA contact, child-safe, food-safe)?"
+        question_type: regulatory
+        expected_answers: open_ended
+      - question_template: "What hazards exist during fabrication (dust, fumes, sharp, hot), and what PPE addresses them?"
+        question_type: regulatory
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_005]
+    unlock_condition: always
+
+  - chunk_id: chunk_008
+    topic: "End-of-Life & Sustainability"
+    priority: medium
+    position: 8
+    estimated_questions: 2
+    phase: specification
+    questions:
+      - question_template: "Is the object repairable, recyclable, or compostable at end of life?"
+        question_type: sustainability
+        expected_answers: open_ended
+      - question_template: "What share of the bill of materials comes from recycled or renewable inputs?"
+        question_type: sustainability
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_004]
+    unlock_condition: always

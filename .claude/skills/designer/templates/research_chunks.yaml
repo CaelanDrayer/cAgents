@@ -1,0 +1,238 @@
+# Research / Scientific Domain Chunk Templates for /designer (v12.7.x)
+domain: research
+version: "1.0"
+description: "Chunk templates for research / scientific study design sessions"
+
+# Bootstrap framings — Phase-1 novice path routes here from these framings
+bootstrap_framings:
+  - process
+  - system
+
+chunk_templates:
+  - chunk_id: chunk_001
+    topic: "Study Population & Stakeholders"
+    priority: critical
+    position: 1
+    estimated_questions: 3
+    phase: empathize
+    questions:
+      - question_template: "Who is the population this study draws inferences about?"
+        question_type: audience
+        expected_answers: open_ended
+        expertise_adaptation:
+          beginner: "Whose behavior or outcomes are you studying?"
+          expert: "What is the target population, and what sampling frame approximates it?"
+      - question_template: "Who funds, approves, or consumes the findings (PI, funder, IRB, downstream readers)?"
+        question_type: audience
+        expected_answers: open_ended
+        expertise_adaptation:
+          beginner: "Who needs to sign off, and who reads the results?"
+          expert: "Map your stakeholder roles — funding, governance, ethics, dissemination."
+      - question_template: "What prior work shapes how you think about this question?"
+        question_type: context
+        expected_answers: open_ended
+    synthesis_threshold: 2
+    dependencies: []
+    unlock_condition: always
+
+  - chunk_id: chunk_002
+    topic: "Research Question & Hypothesis"
+    priority: critical
+    position: 2
+    estimated_questions: 3
+    phase: define
+    questions:
+      - question_template: "State your primary research question in falsifiable form (X causes Y with effect size Z)."
+        question_type: purpose
+        expected_answers: open_ended
+        expertise_adaptation:
+          beginner: "What single question, if answered yes/no, would resolve this?"
+          expert: "PICO / PECO framing — population, intervention/exposure, comparator, outcome."
+      - question_template: "What null hypothesis are you trying to reject, and what alternative do you favor?"
+        question_type: purpose
+        expected_answers: open_ended
+      - question_template: "Will your study be confirmatory (pre-registered) or exploratory?"
+        question_type: constraints
+        expected_answers: enum
+    synthesis_threshold: 2
+    dependencies: [chunk_001]
+    unlock_condition: always
+
+  - chunk_id: chunk_003
+    topic: "Methodological Framing"
+    priority: critical
+    position: 3
+    estimated_questions: 2
+    phase: conceptualize
+    questions:
+      - question_template: "Which methodological framing fits — RCT, quasi-experimental, observational, or mixed methods?"
+        question_type: framing
+        expected_answers: enum
+      - question_template: "What ethical / IRB review level applies (exempt, expedited, full)?"
+        question_type: constraints
+        expected_answers: enum
+    synthesis_threshold: 1
+    dependencies: [chunk_002]
+    unlock_condition: always
+
+  - chunk_id: chunk_004
+    topic: "Variables & Measurement"
+    priority: high
+    position: 4
+    estimated_questions: 3
+    phase: refinement
+    questions:
+      - question_template: "What independent variables will you manipulate or observe, and at what levels?"
+        question_type: methodology
+        expected_answers: open_ended
+      - question_template: "What dependent variables will you measure, and with what instrument?"
+        question_type: methodology
+        expected_answers: open_ended
+      - question_template: "What confounders threaten internal validity, and how will you control or measure them?"
+        question_type: methodology
+        expected_answers: open_ended
+    synthesis_threshold: 3
+    dependencies: [chunk_003]
+    unlock_condition: always
+
+  - chunk_id: chunk_005
+    topic: "Sampling & Power"
+    priority: high
+    position: 5
+    estimated_questions: 3
+    phase: refinement
+    questions:
+      - question_template: "What is your unit of analysis (subject, session, observation, cluster)?"
+        question_type: methodology
+        expected_answers: open_ended
+      - question_template: "What sample size, effect size, and statistical power are you targeting (e.g. 80% power, d=0.5, alpha=0.05)?"
+        question_type: methodology
+        expected_answers: open_ended
+      - question_template: "How will you recruit subjects, and what inclusion / exclusion criteria apply?"
+        question_type: methodology
+        expected_answers: open_ended
+    synthesis_threshold: 2
+    dependencies: [chunk_004]
+    unlock_condition: always
+
+  - chunk_id: chunk_006
+    topic: "Analysis Plan"
+    priority: high
+    position: 6
+    estimated_questions: 3
+    phase: refinement
+    questions:
+      - question_template: "Which statistical tests will you run, and in what order?"
+        question_type: methodology
+        expected_answers: open_ended
+      - question_template: "How will you adjust for multiple comparisons (Bonferroni, FDR, hierarchical)?"
+        question_type: methodology
+        expected_answers: open_ended
+      - question_template: "What is your decision rule — pre-registered thresholds, sequential, or Bayesian posteriors?"
+        question_type: methodology
+        expected_answers: open_ended
+    synthesis_threshold: 2
+    dependencies: [chunk_005]
+    unlock_condition: always
+
+  - chunk_id: chunk_007
+    topic: "Data Management & Reproducibility"
+    priority: medium
+    position: 7
+    estimated_questions: 2
+    phase: refinement
+    questions:
+      - question_template: "Where is raw data stored, with what access controls and retention?"
+        question_type: methodology
+        expected_answers: open_ended
+      - question_template: "What artifacts go in the reproducibility pack (codebook, scripts, instruments)?"
+        question_type: methodology
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_006]
+    unlock_condition: always
+
+  - chunk_id: chunk_008
+    topic: "Stopping Rules & Missingness"
+    priority: medium
+    position: 8
+    estimated_questions: 2
+    phase: refinement
+    questions:
+      - question_template: "When does data collection end — fixed N, sequential, futility, or adaptive?"
+        question_type: methodology
+        expected_answers: enum
+      - question_template: "How will you handle missing data, outliers, and drop-outs?"
+        question_type: methodology
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_005]
+    unlock_condition: always
+
+  - chunk_id: chunk_009
+    topic: "Ethics & Risk"
+    priority: critical
+    position: 9
+    estimated_questions: 2
+    phase: refinement
+    questions:
+      - question_template: "What harms or burdens does the study impose on subjects, and how do you mitigate them?"
+        question_type: ethics
+        expected_answers: open_ended
+      - question_template: "What does informed consent look like — written, verbal, waived?"
+        question_type: ethics
+        expected_answers: enum
+    synthesis_threshold: 1
+    dependencies: [chunk_003]
+    unlock_condition: always
+
+  - chunk_id: chunk_010
+    topic: "Protocol Document"
+    priority: high
+    position: 10
+    estimated_questions: 2
+    phase: specification
+    questions:
+      - question_template: "Does your study protocol cover all sections (background, question, design, procedures, analysis, ethics)?"
+        question_type: artifact
+        expected_answers: enum
+      - question_template: "Is the protocol detailed enough that another researcher could replicate the study?"
+        question_type: artifact
+        expected_answers: enum
+    synthesis_threshold: 1
+    dependencies: [chunk_006, chunk_009]
+    unlock_condition: always
+
+  - chunk_id: chunk_011
+    topic: "Pre-Registration"
+    priority: medium
+    position: 11
+    estimated_questions: 2
+    phase: specification
+    questions:
+      - question_template: "Will you pre-register on OSF, AsPredicted, or a journal registered report?"
+        question_type: artifact
+        expected_answers: enum
+      - question_template: "Which hypotheses, analyses, and rules are locked vs. exploratory?"
+        question_type: artifact
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_010]
+    unlock_condition: always
+
+  - chunk_id: chunk_012
+    topic: "Dissemination Plan"
+    priority: low
+    position: 12
+    estimated_questions: 2
+    phase: specification
+    questions:
+      - question_template: "Where will findings be published or shared (journal, preprint, conference, internal)?"
+        question_type: artifact
+        expected_answers: open_ended
+      - question_template: "What lay summary or non-technical writeup accompanies the technical report?"
+        question_type: artifact
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_010]
+    unlock_condition: always

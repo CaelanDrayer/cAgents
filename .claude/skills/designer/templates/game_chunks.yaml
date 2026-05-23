@@ -1,0 +1,145 @@
+# Game Domain Chunk Templates for /designer (v12.7.x)
+domain: game
+version: "1.0"
+description: "Chunk templates for game system design sessions (board, card, RPG, video, hybrid)"
+
+bootstrap_framings:
+  - artifact
+  - experience
+
+chunk_templates:
+  - chunk_id: chunk_001
+    topic: "Players, Time Budget & Play Context"
+    priority: critical
+    position: 1
+    estimated_questions: 2
+    phase: empathize
+    questions:
+      - question_template: "What player count range, skill range, and time budget is this designed for (party vs. midweight vs. heavy)?"
+        question_type: audience
+        expected_answers: open_ended
+      - question_template: "What play context — couch co-op, table, online, async, mobile commute?"
+        question_type: context
+        expected_answers: enum
+    synthesis_threshold: 1
+    dependencies: []
+    unlock_condition: always
+
+  - chunk_id: chunk_002
+    topic: "Intended Player Experience"
+    priority: critical
+    position: 2
+    estimated_questions: 2
+    phase: define
+    questions:
+      - question_template: "What is the intended player feel — tense bluffing, satisfying combo, relaxed exploration, chaotic laughter?"
+        question_type: outcomes
+        expected_answers: open_ended
+      - question_template: "What complexity budget — how many distinct rules can a new player hold by turn 3?"
+        question_type: constraints
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_001]
+    unlock_condition: always
+
+  - chunk_id: chunk_003
+    topic: "Mechanic Framing"
+    priority: critical
+    position: 3
+    estimated_questions: 2
+    phase: conceptualize
+    questions:
+      - question_template: "Which mechanic family fits — engine-builder, resource-management, conflict / area-control, or narrative / role-play?"
+        question_type: framing
+        expected_answers: enum
+      - question_template: "What is the central mechanic — the decision a player makes on their turn that most defines the game?"
+        question_type: framing
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_002]
+    unlock_condition: always
+
+  - chunk_id: chunk_004
+    topic: "Win Conditions & Progression"
+    priority: high
+    position: 4
+    estimated_questions: 2
+    phase: refinement
+    questions:
+      - question_template: "What is the win condition, and how transparent is the path to it?"
+        question_type: mechanics
+        expected_answers: open_ended
+      - question_template: "What progression do players experience — do options open up, narrow, or stay constant over a game?"
+        question_type: mechanics
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_003]
+    unlock_condition: always
+
+  - chunk_id: chunk_005
+    topic: "Tension, Randomness & Catch-Up"
+    priority: high
+    position: 5
+    estimated_questions: 2
+    phase: refinement
+    questions:
+      - question_template: "Where is the tension peak, and what mechanic produces it?"
+        question_type: mechanics
+        expected_answers: open_ended
+      - question_template: "How does randomness enter (deck draw, dice, hidden info), and what catch-up mechanism (or deliberate lack) handles runaway leaders?"
+        question_type: mechanics
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_004]
+    unlock_condition: always
+
+  - chunk_id: chunk_006
+    topic: "Player-Count Scaling"
+    priority: medium
+    position: 6
+    estimated_questions: 2
+    phase: refinement
+    questions:
+      - question_template: "How does the game handle player counts at the edges (2-player vs. max-player rules variants)?"
+        question_type: mechanics
+        expected_answers: open_ended
+      - question_template: "Does any role / faction / character feel structurally weaker, and how do you address it?"
+        question_type: balance
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_005]
+    unlock_condition: always
+
+  - chunk_id: chunk_007
+    topic: "Playtest Protocol"
+    priority: high
+    position: 7
+    estimated_questions: 2
+    phase: refinement
+    questions:
+      - question_template: "What is the playtest protocol — solo, blind, mixed-skill, post-game interview?"
+        question_type: validation
+        expected_answers: open_ended
+      - question_template: "What signal would convince you to scrap or redesign the central mechanic?"
+        question_type: validation
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_005]
+    unlock_condition: always
+
+  - chunk_id: chunk_008
+    topic: "Rulebook & Component Outline"
+    priority: medium
+    position: 8
+    estimated_questions: 2
+    phase: specification
+    questions:
+      - question_template: "What is the section-by-section structure of the rulebook (setup, turn, win condition, edge cases, glossary)?"
+        question_type: artifact
+        expected_answers: open_ended
+      - question_template: "What is the complete component list (cards, tokens, board, dice, app, etc.) and rough cost-of-goods?"
+        question_type: artifact
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_006, chunk_007]
+    unlock_condition: always

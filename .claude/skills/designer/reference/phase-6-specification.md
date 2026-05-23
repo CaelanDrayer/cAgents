@@ -4,6 +4,51 @@
 
 **Research agents**: ALWAYS spawned (no `--deep` required).
 
+## Build Menu Sub-Call Cascade (v12.7.x)
+
+`AskUserQuestion` allows at most 4 options per call. Phase 6 ends with a
+build-menu question that — after the v12.7.x "design ANYTHING" expansion
+— surfaces 7+ terminal actions:
+
+```
+Call 1 (canonical, byte-for-byte stable):
+  Build now (/run, recommended) |
+  Build with team (/team) |
+  Build with team strategic mode (/team --strategic, cross-domain) |
+  More options
+
+Call 2 (only if user picks "More options"):
+  Refine specific area |
+  Endless refinement loop |
+  Save only |
+  Export / Share / Manual (non-implementation exits)
+
+Call 3 (only if user picks "Export / Share / Manual" in Call 2):
+  Export design (PDF/Markdown) |
+  Share design (read-only link) |
+  Manual execute (printable checklist) |
+  Cancel — back to Call 2
+```
+
+### Rules for the cascade
+
+1. **Call 1 is canonical and must not drift.** The literal option string
+   `Build now (/run, recommended) | Build with team (/team) | Build with team strategic mode (/team --strategic, cross-domain) | More options`
+   is locked in `tests/v12/designer-design-anything.test.js`. Any change
+   breaks the WI-6 byte-for-byte regression guard.
+2. **Call 2 is only reached when the user picks "More options".** Never
+   issue Call 2 unsolicited.
+3. **Call 3 is only reached when the user picks "Export / Share / Manual"
+   in Call 2.** Never collapse the cascade into a single 6+ option call —
+   `AskUserQuestion` will fail.
+4. The non-implementation exits (Export, Share, Manual) are for designs
+   that do not get "built" by `/run` or `/team` — weddings, curricula,
+   research-study protocols, personal routines. The user gets a
+   terminal action without forcing an `/run` invocation.
+5. After ANY Call 1 / Call 2 / Call 3 choice resolves, write
+   `phase: completed` to `status.yaml` and clean up tasks per the main
+   SKILL.md instructions.
+
 ## Step 1: Read Specification Research
 
 Read pre-prepared research files (spawned during Refinement phase-overlap):

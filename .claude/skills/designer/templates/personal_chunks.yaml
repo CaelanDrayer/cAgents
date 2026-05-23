@@ -1,0 +1,148 @@
+# Personal / Life Domain Chunk Templates for /designer (v12.7.x)
+domain: personal
+version: "1.0"
+description: "Chunk templates for personal routine / habit / life-decision design sessions"
+
+bootstrap_framings:
+  - process
+  - experience
+
+chunk_templates:
+  - chunk_id: chunk_001
+    topic: "Affected Lives (solo + circle)"
+    priority: critical
+    position: 1
+    estimated_questions: 2
+    phase: empathize
+    questions:
+      - question_template: "Whose life is affected by this design (including yours)?"
+        question_type: audience
+        expected_answers: open_ended
+        expertise_adaptation:
+          beginner: "Is this just for you, or does a partner / kid / roommate need to accommodate it?"
+          expert: "Map the affected radius — self, partner, household, social circle, professional."
+      - question_template: "What does your current state actually look like, not what you wish it looked like?"
+        question_type: context
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: []
+    unlock_condition: always
+
+  - chunk_id: chunk_002
+    topic: "Past Attempts & Failure Modes"
+    priority: high
+    position: 2
+    estimated_questions: 2
+    phase: empathize
+    questions:
+      - question_template: "What past attempts at this design failed, and why did they fail (be specific — week 2 boredom, social conflict, illness, travel)?"
+        question_type: context
+        expected_answers: open_ended
+      - question_template: "What design SHAPE has worked for you in the past, even if the topic was different?"
+        question_type: context
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_001]
+    unlock_condition: always
+
+  - chunk_id: chunk_003
+    topic: "Desired Behavior (measurable)"
+    priority: critical
+    position: 3
+    estimated_questions: 2
+    phase: define
+    questions:
+      - question_template: "What desired behavior, stated in observable terms (e.g. 'lights out by 11pm five nights a week'), is the target?"
+        question_type: outcomes
+        expected_answers: open_ended
+      - question_template: "What constraints bound it — work hours, kids' schedule, money, energy, environment?"
+        question_type: constraints
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_002]
+    unlock_condition: always
+
+  - chunk_id: chunk_004
+    topic: "Design Framing"
+    priority: critical
+    position: 4
+    estimated_questions: 2
+    phase: conceptualize
+    questions:
+      - question_template: "Which framing fits — habit-stack, environment-design, time-block, or decision-rule?"
+        question_type: framing
+        expected_answers: enum
+      - question_template: "What is the SMALLEST version of this design that still counts as success (the two-minute version)?"
+        question_type: framing
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_003]
+    unlock_condition: always
+
+  - chunk_id: chunk_005
+    topic: "Anchors, Cues & Friction"
+    priority: high
+    position: 5
+    estimated_questions: 2
+    phase: refinement
+    questions:
+      - question_template: "Where, when, and immediately after what existing behavior does the new behavior happen?"
+        question_type: implementation
+        expected_answers: open_ended
+      - question_template: "What environmental cues invite the new behavior, and what friction blocks the unwanted alternative?"
+        question_type: implementation
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_004]
+    unlock_condition: always
+
+  - chunk_id: chunk_006
+    topic: "Relapse-Resistant Protocols"
+    priority: high
+    position: 6
+    estimated_questions: 2
+    phase: refinement
+    questions:
+      - question_template: "What is the if-then rule for the most common derailment (travel, illness, social event, partner conflict)?"
+        question_type: implementation
+        expected_answers: open_ended
+      - question_template: "What is the kill-switch — under what condition do you abandon this design and try something else, rather than guilt-spiral?"
+        question_type: implementation
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_005]
+    unlock_condition: always
+
+  - chunk_id: chunk_007
+    topic: "Tracking Without Burden"
+    priority: medium
+    position: 7
+    estimated_questions: 2
+    phase: refinement
+    questions:
+      - question_template: "How will you measure progress without it turning into a chore (subjective rating, weekly review, simple yes/no log)?"
+        question_type: implementation
+        expected_answers: open_ended
+      - question_template: "Who, if anyone, holds you accountable, and at what cadence?"
+        question_type: implementation
+        expected_answers: open_ended
+    synthesis_threshold: 1
+    dependencies: [chunk_005]
+    unlock_condition: always
+
+  - chunk_id: chunk_008
+    topic: "Weekly Review & Iteration"
+    priority: medium
+    position: 8
+    estimated_questions: 2
+    phase: specification
+    questions:
+      - question_template: "What does the 5-minute weekly review template contain — what went well, what derailed, what to adjust?"
+        question_type: artifact
+        expected_answers: open_ended
+      - question_template: "How long does the design run before you re-evaluate (30 days, 90 days, one season)?"
+        question_type: artifact
+        expected_answers: enum
+    synthesis_threshold: 1
+    dependencies: [chunk_007]
+    unlock_condition: always

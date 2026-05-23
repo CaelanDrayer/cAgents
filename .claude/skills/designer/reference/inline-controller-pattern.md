@@ -70,6 +70,84 @@ AskUserQuestion({
 })
 ```
 
+### Non-software example blocks (v12.7.x — "design ANYTHING")
+
+The auth/JWT example above remains a valid Software-domain illustration.
+The patterns generalize to non-software domains. Two illustrations:
+
+#### Education / Curriculum domain — Refinement phase
+
+```javascript
+// Batch related questions together in one call — both are curriculum
+// pedagogy concerns (assessment + scaffolding)
+AskUserQuestion({
+  questions: [
+    {
+      question: "How will you assess the 'apply' Bloom's outcome — formative check during the lesson or summative at the end?",
+      header: "Assessment",
+      options: [
+        { label: "Formative", description: "Mid-lesson exit ticket: quick check the instructor reads in real time" },
+        { label: "Summative", description: "End-of-unit assessment: rubric-scored product the learner submits" },
+        { label: "Both", description: "Formative during, summative at end — fastest feedback loop but more workload" },
+        { label: "Research this for me", description: "Dispatch a subagent to look up assessment patterns for this outcome type" }
+      ],
+      multiSelect: false
+    },
+    {
+      question: "What scaffolding supports struggling learners on this lesson without holding back advanced ones?",
+      header: "Scaffolding",
+      options: [
+        { label: "Worked examples", description: "Show a fully-solved example before asking for one" },
+        { label: "Sentence stems", description: "Provide partial scaffolds the learner completes" },
+        { label: "Tiered tasks", description: "Three difficulty levels — learners pick or are assigned" },
+        { label: "Research this for me", description: "Dispatch a subagent to surface scaffolding patterns for this lesson type" }
+      ],
+      multiSelect: false
+    }
+  ]
+})
+```
+
+#### Personal / Life domain — Refinement phase (solo design, no stakeholders)
+
+```javascript
+// Batch related questions together in one call — both target the same
+// habit / routine design concern (anchor + derailment)
+AskUserQuestion({
+  questions: [
+    {
+      question: "Where, when, and immediately after what existing behavior does the new morning routine start?",
+      header: "Anchor",
+      options: [
+        { label: "After alarm", description: "Phone goes on the desk across the room; routine starts when alarm stops" },
+        { label: "After coffee", description: "Routine starts the moment the coffee mug is set down" },
+        { label: "After kids' bus", description: "Routine starts at 8:05 once kids are out the door" },
+        { label: "Research this for me", description: "Dispatch a subagent to review habit-anchor patterns relevant to your daily structure" }
+      ],
+      multiSelect: false
+    },
+    {
+      question: "What is the if-then rule for the most common derailment (travel, illness, social event)?",
+      header: "Derailment",
+      options: [
+        { label: "Shrink to 2-min", description: "If traveling, do the two-minute version — counts as success" },
+        { label: "Skip, no guilt", description: "If sick, skip cleanly; no make-up the next day" },
+        { label: "Reschedule to evening", description: "If morning is impossible, the same routine runs at 9pm" },
+        { label: "Research this for me", description: "Dispatch a subagent to surface relapse-resistant patterns from past attempts" }
+      ],
+      multiSelect: false
+    }
+  ]
+})
+```
+
+Both blocks above use the same controller behaviors (select / reorder /
+skip / adapt / dispatch / defer) and the same mandatory "Research this
+for me" defer option as the Software example. The mechanics generalize;
+the topic does not have to be software. Future domain reference files
+in `@reference/domains/` add similar domain-flavored examples without
+changing the pattern.
+
 ### Defer Dispatch Pattern
 
 ```javascript
