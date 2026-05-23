@@ -10,6 +10,34 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+### Changed
+- LP-23: populate-or-delete 5 empty cagents-memory dirs. Added READMEs to `cagents-memory/_knowledge/{semantic,calibration}/` (referenced by `core/memory/path-resolver.md`, `core/memory/memory-utils.md`, and several agent SKILL.md files as documented memory-write paths). Removed `cagents-memory/_system/metrics/{aggregates,daily,sessions}/` — empty since January 2026, zero writers in `.claude/hooks/` and `scripts/`, zero references in code or docs. (Note: `cagents-memory/` is git-ignored; the README files and rmdir actions persist on disk locally only — this CHANGELOG entry is the tracked artifact.)
+
+## [12.7.0] - 2026-05-22
+
+**Post-v12.6.0 documentation + wiring audit pass** (session `team_doc-review-full_260522_001`). 9 atomic doc/config fixes + 7 deferred-issue follow-ups (test repair, alias header refresh, marketplace categories, dynamic hook-count note, tiny-bump-cadence rule for audit sessions). 84 files patched across 5 waves; validate-versions 17/17 (1 skipped) → 16/16 (0 skipped); validate-agents warnings 61 → 0; 233 agent-name drift hits → 0. No behavioral or API changes.
+
+### Fixed
+- `.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json` descriptions corrected: agent count 143 → 144, "15 domains" → "9 archetypes" (aligns with post-v12.4.0 P2 compression and 9-archetype builder-role tree). (audit session `team_doc-review-full_260522_001`)
+- Version registry: `/org` slot removed after the v12.2.0 skill deletion. Registry locations 18 → 17 → 16 sync slots; `scripts/sync-versions.sh` and `scripts/ci/validate-versions.sh` updated to match. (audit session `team_doc-review-full_260522_001`)
+- `scripts/ci/validate-agents.sh`: added `_deprecated/` directory skip so culled v12.4.0 agents don't trigger spurious failures; hook expected count corrected 27 → 28 to match the registered hook inventory in `.claude/settings.json`. Warnings 61 → 0. (audit session `team_doc-review-full_260522_001`)
+- Stale skill references swept across 30 documentation files: removed dangling `/improve`, `/review`, and `/org` mentions left over from the v12.1.2 (improve-into-run keyword router) and v12.2.0 (`/org` removal) consolidations. (audit session `team_doc-review-full_260522_001`)
+- Dangling `@path` references resolved: `atomic-rollback` content inlined into `improve-risk-classification.md` after its source file was removed. (audit session `team_doc-review-full_260522_001`)
+- `.claude/settings.local.json`: stale `Bash` permission entries for removed skills (`/improve`, `/org`) pruned. (audit session `team_doc-review-full_260522_001`)
+- Agent-name drift sweep: 233 hits across 62 files reconciled — `universal-*` long-form references rewritten to v12.5.0 canonical short names (`router`, `planner`, `validator`, `executor`, `self-correct`). (audit session `team_doc-review-full_260522_001`)
+- `tests/v12/validator-artifact-missing.test.js`: 12 stale tests `.skip`'d — they exercised a `checkMandatoryPipelineArtifacts` Phase-0 contract that was intentionally removed during v12.4–v12.6 validator refactoring. Replaced with 3 passing assertions that guard the v12.7+ surface (`verifyCompletion`, `finalizeSessionLifecycle`, `autoResolveWarnings`) and assert the removed function does not silently return.
+- `scripts/migration/v12-aliases.yaml`: header comment refreshed — `target_version` 12.0.0 → 12.7.0, entry-inventory count corrected from 26 → 22 (verified via `yaml.parse`), drift note explaining why the 8 long-form names referenced in v11-era docs intentionally lack alias entries (WI-19 swept them instead).
+- `.claude-plugin/marketplace.json` categories array refreshed to match v12 archetype reality: dropped `"growth"`/`"people"`/`"service"` (absorbed in v12 builder-role tree); added `"marketing-sales"`/`"people-ops"`/`"support"`/`"analytics"`.
+
+### Changed
+- `.claude/skills/commit-changes/` broken symlink removed. (audit session `team_doc-review-full_260522_001`)
+- `.claude/rules/core/version-registry.md` Tiny-Bump Cadence: added a new "audit / consolidation sessions" item to the "When a bump is NOT a tiny bump" list. Audit sessions touching hundreds of files should always trigger a minor bump and document the audit session ID — bypassing the guard is not the right move.
+- `.claude/rules/core/hooks.md`: added a deferred-refactor note pointing out that the 31/28/17 hook counts are hardcoded in 4 surfaces (this file, `CLAUDE.md`, `validate-agents.sh`, `settings.json` `$comment`) and would benefit from a dynamic generator next time the counts shift.
+
+### Added
+- `tests/v12/version-registry-no-org-slot.test.js`: regression test enforcing the post-v12.2.0 `/org` slot removal from the version registry — fails if the slot reappears in `scripts/sync-versions.sh`, `scripts/ci/validate-versions.sh`, or `.claude/rules/core/version-registry.md`. (audit session `team_doc-review-full_260522_001`)
+- `tests/v12/agent-name-registration-drift.test.js`: regression test enforcing agent-name registration consistency — fails if any `cagents:universal-*` or other pre-v12.5.0 long-form name reappears outside CHANGELOG/migration aliases. (audit session `team_doc-review-full_260522_001`)
+
 ## [12.6.0] - 2026-05-21
 
 **Pillar 4 (final pillar of the 4-pillar arc): Drop external-UI session-schema contract.**
