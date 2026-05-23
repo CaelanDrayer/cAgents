@@ -1,7 +1,6 @@
 ---
 paths:
   - "core/planner/**"
-  - "core/task-decomposer/**"
 ---
 
 # Implicit Requirement Discovery

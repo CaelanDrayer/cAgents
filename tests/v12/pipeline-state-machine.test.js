@@ -103,24 +103,25 @@ describe('v12.0.0 pipeline state machine (5-state collapse)', () => {
   });
 
   describe('progressive pipeline paths reference only 5-state set', () => {
-    const VALID_STATES = new Set(['INIT', 'ORCHESTRATED', 'PLANNED', 'COORDINATED', 'VALIDATED']);
-
-    it.each(['minimal', 'medium', 'full'])('path %s lists only valid states', (pathName) => {
+    // v12.7.0 P2-9: pipeline_config.yaml no longer carries a `paths:` map.
+    // The 3-path Minimal/Medium/Full progressive structure was collapsed in
+    // v12.3.0 (deletion) and partially re-introduced in v12.7.0 P2-9 as two
+    // named paths (`fast`, `standard`) — BUT only described in
+    // .claude/skills/run/reference/adaptive-pipeline.md, NOT in the config.
+    // The config has a single unconditional 5-state machine; "fast" is an
+    // orchestrator-skip selector applied at runtime, not a separate config path.
+    // Therefore the path-validity check now asserts that no `paths:` map is
+    // present (matching mandatory-pipeline-contract AC-1.1).
+    it('pipeline_config.yaml has no top-level `paths:` map (v12.7.0 single-config)', () => {
       const config = loadConfig();
-      const path = config.paths[pathName];
-      expect(path).toBeDefined();
-      for (const state of path.states) {
-        expect(VALID_STATES.has(state)).toBe(true);
-      }
+      expect(config.paths).toBeUndefined();
     });
 
-    it('no path references DECOMPOSED or PROMPTS_READY', () => {
+    it('the only states in the config are the 5 canonical states (no DECOMPOSED/PROMPTS_READY)', () => {
       const config = loadConfig();
-      for (const pathName of Object.keys(config.paths)) {
-        const states = config.paths[pathName].states;
-        expect(states).not.toContain('DECOMPOSED');
-        expect(states).not.toContain('PROMPTS_READY');
-      }
+      const stateNames = Object.keys(config.states || {});
+      expect(stateNames).not.toContain('DECOMPOSED');
+      expect(stateNames).not.toContain('PROMPTS_READY');
     });
   });
 });

@@ -2,12 +2,12 @@
  * P1-5 regression: counts in docs MUST match what disk provides.
  *
  * The cAgents repo has 16+ documentation files claiming various counts:
- *   - 144 active agents across 9 archetypes
- *   - 26/36/12/20/5/10/8/15/12 per-archetype counts
+ *   - 141 active agents across 9 archetypes
+ *   - 26/36/12/19/5/8/8/15/12 per-archetype counts
  *   - 31 hook .cjs files
  *   - 28 unique registered hooks
- *   - 17 hook event types covered
- *   - 16 version-registry slots
+ *   - 18 hook event types covered
+ *   - 17 version-registry slots
  *
  * Historically, these counts drift: a single docs PR misses one location, and
  * "31 hooks" becomes a lie. The v12.6.0 audit found 233 drift hits across 84
@@ -58,9 +58,9 @@ describe('P1-5: validate-counts.sh enforces doc-vs-disk alignment', () => {
     // script against the temp dir via env override.
     const claudeMd = join(REPO_ROOT, 'CLAUDE.md');
     const original = readFileSync(claudeMd, 'utf8');
-    // Find "144 agents" claim and replace ALL occurrences with bogus 999.
-    // Replacing all ensures the script's grep finds no remaining 144 mention.
-    const mutated = original.replace(/\b144 agents\b/g, '999 agents');
+    // Find "141 agents" claim and replace ALL occurrences with bogus 999.
+    // Replacing all ensures the script's grep finds no remaining 141 mention.
+    const mutated = original.replace(/\b141 agents\b/g, '999 agents');
     expect(mutated).not.toBe(original); // must have actually mutated
 
     const backupPath = `${claudeMd}.p1-5-backup`;
@@ -82,7 +82,7 @@ describe('P1-5: validate-counts.sh enforces doc-vs-disk alignment', () => {
 
     expect(exitCode, 'validate-counts.sh exit code on mutated CLAUDE.md').toBe(1);
     expect(output, 'mismatch output should mention CLAUDE.md or the count').toMatch(
-      /CLAUDE\.md|144|999|agent/i
+      /CLAUDE\.md|141|999|agent/i
     );
   });
 
@@ -93,8 +93,8 @@ describe('P1-5: validate-counts.sh enforces doc-vs-disk alignment', () => {
     });
     // The --derive-only mode should print derived counts and exit 0 without
     // doing comparison.
-    expect(output, 'derive-only should print active_agents=144').toMatch(
-      /active_agents[=:]\s*144/
+    expect(output, 'derive-only should print active_agents=141').toMatch(
+      /active_agents[=:]\s*141/
     );
     expect(output, 'derive-only should print hook_files=31').toMatch(
       /hook_files[=:]\s*31/

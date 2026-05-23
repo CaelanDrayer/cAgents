@@ -23,7 +23,7 @@
 | 7. Contact Humans with Tool Calls | PARTIAL | HITL gates via `core/hitl` + `approval-gate.cjs` hook; no out-of-band Slack/email/SMS channels |
 | 8. Own Your Control Flow | YES | `pipeline_config.yaml`-driven state machine; revision routing (FAIL/REVISE) is hand-coded, not LLM-decided |
 | 9. Compact Errors into Context Window | PARTIAL | `tool-failure-tracker.cjs` records failures but does not yet summarize for re-injection on retry |
-| 10. Small, Focused Agents | YES | 144 agents across 9 archetypes (post-v12.4.0 P2 compression from 240); per-agent SKILL.md scope guarded by `skill-size-monitor.cjs` |
+| 10. Small, Focused Agents | YES | 141 agents across 9 archetypes (post-v12.7.0 LP-12 + LP-13 consolidation from 144); per-agent SKILL.md scope guarded by `skill-size-monitor.cjs` |
 | 11. Trigger from Anywhere | PARTIAL | Triggers from `/run`, `/team`, `/designer`, `/helper` (4 in-terminal skills; `/improve` folded into `/run` in v12.1.2, `/org` folded into `/team` strategic mode in v12.2.0); no webhook/cron/email/Slack triggers |
 | 12. Make Your Agent a Stateless Reducer | DIVERGENCE | Controllers carry state across reviewer-loop rounds; session state lives in `cagents-memory/sessions/{id}/` files by design |
 
@@ -94,9 +94,9 @@ The `/run` state machine is config-driven, not LLM-driven. `cagents-memory/_syst
 
 ### Factor 10: Small, Focused Agents — YES (arguably over-shot)
 
-144 agents across 9 archetypes (post-v12.4.0 P2 compression from 240; 96 deprecated to `_deprecated/` buckets), each with a single SKILL.md scoped to one role. The `skill-size-monitor.cjs` `PreToolUse` hook warns at 600 lines and blocks at 900 to prevent SKILL.md bloat. Per `IMPROVEMENTS.md` GAP-12, the count may be over-fragmented for some domains — a future consolidation pass is on the roadmap — but the "small, focused" principle is honored.
+141 agents across 9 archetypes (post-v12.7.0 LP-12 + LP-13 consolidation from 144; 99 deprecated to `_deprecated/` buckets), each with a single SKILL.md scoped to one role. The `skill-size-monitor.cjs` `PreToolUse` hook warns at 600 lines and blocks at 900 to prevent SKILL.md bloat. Per `IMPROVEMENTS.md` GAP-12, the count may be over-fragmented for some domains — a future consolidation pass is on the roadmap — but the "small, focused" principle is honored.
 
-**cAgents implementation**: All 144 SKILL.md files; `.claude/hooks/skill-size-monitor.cjs`.
+**cAgents implementation**: All 141 SKILL.md files; `.claude/hooks/skill-size-monitor.cjs`.
 
 ### Factor 11: Trigger from Anywhere — PARTIAL
 

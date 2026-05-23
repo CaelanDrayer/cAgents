@@ -175,7 +175,7 @@ Recommends the right skill based on your task description. Use it when you are u
 
 ### Canonical: 9 Archetypes (V11.1.0+)
 
-Since v11.1.0, the agent catalog (238 agents as of v12.0.0) is organized as a builder-role archetype tree:
+Since v11.1.0, the agent catalog (141 agents as of v12.7.0) is organized as a builder-role archetype tree:
 
 | Archetype | Agents | Scope |
 |-----------|-------:|-------|
@@ -469,4 +469,4 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | 238 agents across 9 archetypes | Opus 4.6 · Sonnet 4.6 · Haiku 4.5
+**Built with Claude Code** | 141 agents across 9 archetypes | Opus 4.6 · Sonnet 4.6 · Haiku 4.5

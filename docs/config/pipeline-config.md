@@ -19,7 +19,7 @@ states:
     next: ORCHESTRATED
     outputs: [enriched_context.yaml]
   ORCHESTRATED:
-    agent: cagents:universal-planner
+    agent: cagents:planner
     next: PLANNED
     inputs: [enriched_context.yaml]
     outputs: [plan.yaml, objectives.yaml]
@@ -30,7 +30,7 @@ states:
     outputs: [coordination_log.yaml]
     nested_execution: true
   COORDINATED:
-    agent: cagents:universal-validator
+    agent: cagents:validator
     next: VALIDATED
     inputs: [coordination_log.yaml, work_items.yaml]
     outputs: [validation_report.yaml]

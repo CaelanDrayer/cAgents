@@ -21,7 +21,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$REPO_ROOT"
 
 # ---- Derivation -------------------------------------------------------------
-# Active agent entries in plugin.json (post-v12.4.0 P2 compression: 144).
+# Active agent entries in plugin.json (post-v12.7.0 LP-12 + LP-13 consolidation: 141).
 ACTIVE_AGENTS=$(jq -r '.agents | length' .claude-plugin/plugin.json)
 
 # Per-archetype SKILL.md counts (excluding _deprecated/ buckets).

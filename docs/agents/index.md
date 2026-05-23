@@ -2,7 +2,7 @@
 
 ## Summary
 
-144 agents across 9 builder-role archetypes (developer 26, operator 36, advisor 12, analyst 20, creator 5, writer 10, strategist 8, core 15, leadership 12). Post-v12.4.0 P2 compression from 240. The per-domain breakdowns below are LEGACY routing-overlay groupings (the 13-domain pre-v11.1.0 layout, kept for routing-keyword continuity); the canonical structure is the 9 archetypes.
+141 agents across 9 builder-role archetypes (developer 26, operator 36, advisor 12, analyst 19, creator 5, writer 8, strategist 8, core 15, leadership 12). Post-v12.7.0 LP-12 + LP-13 consolidation from 144. The per-domain breakdowns below are LEGACY routing-overlay groupings (the 13-domain pre-v11.1.0 layout, kept for routing-keyword continuity); the canonical structure is the 9 archetypes.
 
 ## Engineering (31 agents)
 

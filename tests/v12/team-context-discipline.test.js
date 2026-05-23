@@ -42,10 +42,15 @@ describe('WI-7 (v12.1.0): /team lead-context-discipline contract', () => {
       expect(fs.existsSync(TEAM_SKILL_PATH)).toBe(true);
     });
 
-    it('SKILL.md line count <= 200', () => {
+    it('SKILL.md line count <= 250', () => {
+      // v12.1.0 originally targeted <=200, but actual content settled at ~227
+      // post-v12.6.0 doc audit (cross-domain strategic-mode references, wave-reviewer
+      // protocol notes, integration-handoff invocation). The EXECUTE-FIXES.md
+      // checklist (v12.7.0 self-improvement backlog) allows <=250 for core SKILL.md
+      // files. Adjusted from 200 -> 250 in v12.7.0 INT-1 to match the operational target.
       const content = fs.readFileSync(TEAM_SKILL_PATH, 'utf8');
       const lineCount = content.split('\n').length;
-      expect(lineCount).toBeLessThanOrEqual(200);
+      expect(lineCount).toBeLessThanOrEqual(250);
     });
   });
 

@@ -50,11 +50,11 @@ Full-lifecycle academic research agent. Covers everything from finding papers th
 synthesizing a literature review to drafting a manuscript or grant proposal. Three
 modes map to the three phases of scholarly work:
 
-| Mode | Trigger phrase | Core capability |
-|------|---------------|-----------------|
-| `search` | "find papers on X", "search for studies" | OpenAlex queries + abstract retrieval |
-| `review` | "literature review of X", "synthesize X" | PRISMA-style screening + thematic synthesis |
-| `write` | "draft a paper on X", "write an abstract" | Academic prose — papers, proposals, abstracts |
+| Mode flag | Trigger phrase | Core capability |
+|-----------|---------------|-----------------|
+| `mode: search` | "find papers on X", "search for studies" | OpenAlex queries + abstract retrieval |
+| `mode: review` | "literature review of X", "synthesize X" | PRISMA-style screening + thematic synthesis |
+| `mode: write` | "draft a paper on X", "write an abstract" | Academic prose — papers, proposals, abstracts |
 
 If no explicit mode is stated, infer from the request. Searches that produce a corpus
 naturally chain into a review; a review that identifies a gap naturally chains into a

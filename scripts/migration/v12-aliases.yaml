@@ -258,15 +258,15 @@ aliases:
   - old: cagents:literature-review-author
     new: cagents:scholar
     type: fold
-    decision: LP-13
-    notes: "Folded into analyst/scholar with mode: review. Use 'cagents:scholar' for PRISMA-style synthesis and literature review work. Source dir moved to analyst/_deprecated/literature-review-author/."
+    decision: Q8
+    notes: "LP-13 (v12.7.x): Folded into analyst/scholar with mode: review. Use 'cagents:scholar' for PRISMA-style synthesis and literature review work. Source dir moved to analyst/_deprecated/literature-review-author/."
     mode_flag: "mode: review"
 
   - old: cagents:academic-paper-searcher
     new: cagents:scholar
     type: fold
-    decision: LP-13
-    notes: "Folded into analyst/scholar with mode: search. Use 'cagents:scholar' for OpenAlex paper search and abstract retrieval. Source dir moved to analyst/_deprecated/academic-paper-searcher/."
+    decision: Q8
+    notes: "LP-13 (v12.7.x): Folded into analyst/scholar with mode: search. Use 'cagents:scholar' for OpenAlex paper search and abstract retrieval. Source dir moved to analyst/_deprecated/academic-paper-searcher/."
     mode_flag: "mode: search"
 
 # Coverage summary (also asserted by tests/v12/alias-map-coverage.test.js)

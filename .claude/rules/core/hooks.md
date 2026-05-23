@@ -6,9 +6,9 @@ paths:
 
 # cAgents Hook System
 
-30 .cjs files implementing 27 unique hooks across 17 event types via the `createHook()` factory. See @resources/hook-catalog.md for per-hook detail (purpose, matchers, inputs, outputs, side effects).
+31 .cjs files implementing 28 unique hooks across 18 event types via the `createHook()` factory. See @resources/hook-catalog.md for per-hook detail (purpose, matchers, inputs, outputs, side effects).
 
-> **Deferred refactor (v12.7.0)**: the counts (30 / 27 / 17) are hardcoded in
+> **Deferred refactor (v12.7.0)**: the counts (31 / 28 / 18) are hardcoded in
 > this doc, `CLAUDE.md`, `validate-agents.sh`, and the `settings.json`
 > `$comment` field. A dynamic count generator (e.g., `scripts/lint-hooks.sh`
 > output or a build-step that rewrites these counts from `ls .claude/hooks/*.cjs`
@@ -20,7 +20,7 @@ paths:
 
 cAgents uses a unified CJS hook system configured in `.claude/settings.json`:
 
-- **CJS hooks** (`.claude/hooks/`): 30 `.cjs` files = 27 unique registered hooks + `hook-utils.cjs` + `run-hook.cjs` launcher + `eval-runner.cjs` CLI. All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output).
+- **CJS hooks** (`.claude/hooks/`): 31 `.cjs` files = 28 unique registered hooks + `hook-utils.cjs` + `run-hook.cjs` launcher + `eval-runner.cjs` CLI. All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output).
 - **Prompt hooks**: None currently active. The Stop prompt hook was removed in V9.6.2 due to unreliable LLM JSON responses causing recurring validation failures. The `verify-completion.cjs` command hook provides equivalent file-based verification.
 - **Self-contained invocation via run-hook.cjs**: All hooks are called via `bash -c 'R="${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"; node "$R/.claude/hooks/run-hook.cjs" <hook-name>'` — a bash wrapper with a 3-tier fallback chain that resolves the plugin root (`CLAUDE_PLUGIN_ROOT` → `CLAUDE_PROJECT_DIR` → `pwd`), then launches `run-hook.cjs` which resolves the target hook path using `__dirname`.
 
@@ -30,7 +30,7 @@ The V9.5 refactoring eliminated the dual shell+JS architecture that caused recur
 
 ## Hook Types Overview
 
-Claude Code supports 24 hook event types. cAgents implements 27 unique registered hooks across 17 of these events. Seven events (`ConfigChange`, `WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `FileChanged`, `Elicitation`, `ElicitationResult`) have no cAgents hooks but are available for custom use.
+Claude Code supports 24 hook event types. cAgents implements 28 unique registered hooks across 18 of these events. Six events (`WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `FileChanged`, `Elicitation`, `ElicitationResult`) have no cAgents hooks but are available for custom use. (`ConfigChange` was wired in v12.7.0 LP-17.)
 
 | Hook Type | Trigger | cAgents Hook | Purpose |
 |-----------|---------|--------------|---------|

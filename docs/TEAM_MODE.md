@@ -702,8 +702,7 @@ Team-specific hooks in `.claude/hooks/`:
 - **CLAUDE.md** - Main project documentation
 - **.claude/rules/core/teams.md** - Team coordination patterns
 - **.claude/skills/team/SKILL.md** - /team skill specification
-- **core/team-trigger/SKILL.md** - Team initialization agent
-- **core/team-lead-adapter/SKILL.md** - Controller wrapper
+- *(Note: two standalone v11.x agents (one for team initialization, one as a controller wrapper) were removed in v12.0.0 — their work was inlined into the `/team` SKILL.md and the lead's delegate-mode wrapper pattern, respectively. See `scripts/migration/v12-aliases.yaml` for the alias resolution.)*
 
 ---
 
