@@ -17,7 +17,7 @@ cAgents v12.2.0+ ships exactly 4 user-invocable skills: `designer`, `helper`, `r
 | `/designer` | `none` | `false` | Guided design exploration that produces implementation-ready documents through structured Q&A |
 | `/helper` | `none` | `false` | Explains cAgents commands and recommends the right one for your task |
 | `/run` | `none` | `true` | Executes any single-domain task through auto-routed controller and specialist agents; also handles review/optimize/full modes via the v12.1.2 keyword router (`run review …`, `run optimize …`, `run improve …`) |
-| `/team` | `fork` | `true` | Parallel multi-agent execution with wave-based quality gates; strategic mode (auto-enabled when `universal-router.domain_count >= 2`, or via `--strategic`) handles the cross-domain C-suite work previously done by `/org` |
+| `/team` | `fork` | `true` | Parallel multi-agent execution with wave-based quality gates; strategic mode (auto-enabled when `router.domain_count >= 2`, or via `--strategic`) handles the cross-domain C-suite work previously done by `/org` |
 
 `Context` values are the literal `metadata.context` frontmatter values: `none` runs the skill inline in the main conversation; `fork` spawns the skill in an isolated subagent context. `Agent` indicates whether the skill spawns subagents to do its work.
 
@@ -131,49 +131,15 @@ Each section below covers one skill. Skills are listed alphabetically: `/designe
 
 ---
 
-### /improve
+### /improve — REMOVED in v12.1.2
 
-**Purpose**: A unified quality engine that runs a single 7-state state machine — `SCOPING -> MEASURING -> DETECTING -> PLANNING -> EXECUTING -> VALIDATING -> REPORTING` — with mode selection via `--mode review|optimize|full`. `/improve` is the V11 successor to the legacy `/review` and `/optimize` skills; it covers code, documentation, content, infrastructure, and performance.
-
-**When to use**:
-- Running a code review with parallel specialist agents (`--mode review`)
-- Applying measurable performance, cost, or quality improvements with before/after metrics (`--mode optimize`)
-- Running review and optimization back-to-back, with a unified report (`--mode full`)
-- Replacing legacy `/review` or `/optimize` invocations after the V11 migration
-
-**Key flags**:
-
-| Flag | Purpose |
-|------|---------|
-| `--mode review\|optimize\|full` | Select review-only, optimize-only, or combined pipeline |
-| `--focus <area>` | Scope the run to `security`, `performance`, `style`, or `docs` |
-| `--auto-fix` | Apply high-confidence fixes automatically (review mode) |
-| `--severity <level>` | Filter findings to `critical`, `high`, `medium`, or `low` |
-| `--baseline` | Save current findings as a baseline for future runs |
-| `--suppress <id>` | Suppress a specific finding ID |
-| `--benchmark <tool>` | Pick a benchmark integration (`auto`, `lighthouse`, `k6`, `hyperfine`) |
-| `--dry-run` | Preview opportunities without applying changes |
-| `--rollback` | Roll back the last optimization session |
-
-**Example invocation**:
-
-```bash
-/improve src/auth/ --mode review --focus security
-/improve src/api/ --mode optimize --benchmark auto
-/improve . --mode full
-```
-
-**Session artifacts**:
-- `workflow/improve_report.md` — Unified report (mode `full`)
-- `workflow/review_report.yaml` — Findings with evidence (consumed by `/run --from-review`)
-- `workflow/optimization_report.yaml` — Before/after metrics for every change
-- `workflow/rollback_manifest.yaml` — Git snapshots for safe rollback
+`/improve` was folded into `/run` via a first-word keyword router in v12.1.2. Use `/run improve|review|audit|optimize <request>` instead: `improve` → `--mode full`, `review`/`audit` → `--mode review`, `optimize` → `--mode optimize`. All prior flags (`--focus`, `--auto-fix`, `--severity`, `--baseline`, `--suppress`, `--benchmark`, `--dry-run`, `--rollback`) remain available as flags on `/run`. See `.claude/skills/run/reference/improve-mode.md` for the keyword router contract.
 
 ---
 
 ### /org — REMOVED in v12.2.0
 
-`/org` was removed in v12.2.0 and absorbed into `/team` strategic mode. Cross-domain coordination — CEO + C-suite deliberation, strategic brief, dependency-ordered per-domain dispatch — now runs inside `/team` when `universal-router.domain_count >= 2`. The 12 leadership agents are preserved at their existing locations and act as Wave 0/1 teammates inside `/team` strategic mode.
+`/org` was removed in v12.2.0 and absorbed into `/team` strategic mode. Cross-domain coordination — CEO + C-suite deliberation, strategic brief, dependency-ordered per-domain dispatch — now runs inside `/team` when `router.domain_count >= 2`. The 12 leadership agents are preserved at their existing locations and act as Wave 0/1 teammates inside `/team` strategic mode.
 
 **Migration**:
 
@@ -182,7 +148,7 @@ Each section below covers one skill. Skills are listed alphabetically: `/designe
 | `/org <request>` | `/team <request>` (strategic mode auto-enables for multi-domain) |
 | `/org <request> --quick` | `/team <request> --strategic` (force-enable for single-domain) |
 | `/org <request> --dry-run` | `/team <request> --dry-run` |
-| `/org <request> --domains <d1,d2>` | `/team <request>` (universal-router infers domains from request keywords) |
+| `/org <request> --domains <d1,d2>` | `/team <request>` (router infers domains from request keywords) |
 | `/org --resume <session_id>` | `/team --resume <session_id>` |
 
 See `.claude/skills/team/reference/strategic-mode.md` for the full protocol, brief schema, escalation behavior, and examples.
@@ -301,7 +267,7 @@ Skills can be composed by passing structured output from one to the next.
 
 ### Strategic mode (cross-domain, automatic — v12.2.0+ replacement for the old /org -> /team chain)
 
-`/team` strategic mode auto-enables when `universal-router.domain_count >= 2`. The wave-0/1/2 C-suite deliberation produces `workflow/strategic_brief.yaml`, then waves 3..N execute per-domain (replacing the old `/org` -> sequential `/team --brief` chain with a single nested-wave run). You do not invoke this chain manually.
+`/team` strategic mode auto-enables when `router.domain_count >= 2`. The wave-0/1/2 C-suite deliberation produces `workflow/strategic_brief.yaml`, then waves 3..N execute per-domain (replacing the old `/org` -> sequential `/team --brief` chain with a single nested-wave run). You do not invoke this chain manually.
 
 ### Optimize then validate
 
@@ -336,7 +302,7 @@ All skills write artifacts to `cagents-memory/sessions/{session_id}/`. Session I
 | `/designer` | `--deep`, `--resume <id>`, `--iterate <id>`, `--template <name>`, `--brief <path>` |
 | `/helper` | `--compare`, `--flags <cmd>`, `--examples`, `--quick`, `--topic <topic>`, `--troubleshoot <cmd>` |
 | `/improve` | `--mode review\|optimize\|full`, `--focus <area>`, `--auto-fix`, `--severity <level>`, `--baseline`, `--suppress <id>`, `--benchmark <tool>`, `--dry-run`, `--rollback` |
-| ~~`/org`~~ (removed v12.2.0; use `/team --strategic`) | n/a — flags migrated: `--dry-run` -> `/team --dry-run`; `--quick` -> `/team --strategic`; `--domains` -> auto-inferred by universal-router; `--resume` -> `/team --resume <team_session_id>` |
+| ~~`/org`~~ (removed v12.2.0; use `/team --strategic`) | n/a — flags migrated: `--dry-run` -> `/team --dry-run`; `--quick` -> `/team --strategic`; `--domains` -> auto-inferred by router; `--resume` -> `/team --resume <team_session_id>` |
 | `/run` | `--dry-run`, `--quiet`, `--team`, `--analytics`, `--from-review`, `--from-designer`, `--resume <id>`, `--brief <path>`, `--interactive` |
 | `/team` | `--dry-run`, `--waves <n>`, `--members <n>`, `--teammate-mode tmux\|auto\|in-process`, `--no-template` |
 
@@ -353,7 +319,7 @@ V11.0 removed four skills after a two-version deprecation window (V10.26.19–V1
 | `/context` | Built-in `/memory` plus the `cagents-memory/_projects/{hash}/product_context.yaml` file | Manual or `/memory`-driven persistence replaces the auto-init flow |
 | `/debug` | `/run` with explicit reproduction steps | The standard `/run` pipeline now handles root-cause investigation through controller question delegation |
 | `/improve` (v12.1.2) | `/run review`, `/run optimize`, `/run improve` (or `/run --mode review\|optimize\|full`) | First-word keyword router; all `/improve` flags (`--baseline`, `--suppress`, `--benchmark`, `--auto-fix`, `--severity`, etc.) remain available on `/run` |
-| `/org` (v12.2.0) | `/team` strategic mode | Auto-enables when `universal-router.domain_count >= 2`; force-enable with `--strategic`; force-disable with `--no-strategic`. The 12 leadership agents are preserved at their existing locations and act as Wave 0/1 teammates |
+| `/org` (v12.2.0) | `/team` strategic mode | Auto-enables when `router.domain_count >= 2`; force-enable with `--strategic`; force-disable with `--no-strategic`. The 12 leadership agents are preserved at their existing locations and act as Wave 0/1 teammates |
 
 For full migration details, see [MIGRATION-V11.md](./MIGRATION-V11.md) (V11 removals) and the v12.1.2 / v12.2.0 entries in [CHANGELOG.md](../CHANGELOG.md).
 
