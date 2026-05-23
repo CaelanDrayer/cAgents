@@ -93,7 +93,7 @@ The request is everything before the first `--` flag.
 
 Special flag handling:
 - `--analytics`: Read `cagents-memory/_system/metrics/pipeline_analytics.yaml`, display the dashboard, exit.
-- `--resume <session_id>`: Load session from `progress.md` and resume from last checkpoint.
+- `--resume <session_id>`: Load session from `workflow/recovery_state.yaml` (written by the `stop-failure-handler.cjs` hook on incomplete sessions) and resume from the last completed state.
 - `--session <session_dir>`: Pre-enriched session (from /team). Skip to pre-enrichment detection in Step 3.
 - `--brief <path>`: Strategic brief from /team strategic mode. See @reference/strategic-brief-integration.md.
 - `--mode debug`: Enables debug-mode prefix injection for the controller. See @reference/debug-mode-prompt.md.
@@ -248,7 +248,7 @@ Note: v12.6.0 dropped `revision_rounds_used` and `total_duration_ms` from execut
 - [ ] **4.7**. Pre-stop verification: confirm `execution_summary.yaml` exists, `coordination_log.yaml` has self_validation and validation_checkpoints blocks if a controller ran, `status.yaml` is in a terminal state, and no stale tasks remain.
 - [ ] **4.8**. Report results to the user with final pipeline state, revision count, key deliverables, and any validation warnings.
 
-If the pipeline failed after max revisions: report what completed vs what remains, suggest `/run --resume {SESSION_ID}`, save progress in progress.md.
+If the pipeline failed after max revisions: report what completed vs what remains, suggest `/run --resume {SESSION_ID}`, and ensure `workflow/recovery_state.yaml` captures phase, domain, controller, and pending/in-progress work items (the `stop-failure-handler.cjs` hook writes this on incomplete sessions).
 
 ---
 
@@ -299,7 +299,7 @@ If an agent fails or returns incomplete:
 1. Check for partial results in session workflow/
 2. Check for completion event in workflow/events/
 3. If no event: retry agent once with reduced scope
-4. If retry fails: save progress to progress.md, suggest `--resume {SESSION_ID}`
+4. If retry fails: ensure `workflow/recovery_state.yaml` exists (written by `stop-failure-handler.cjs`), suggest `--resume {SESSION_ID}`
 
 If context is exhausted mid-workflow:
 1. Session state is preserved in cagents-memory/sessions/

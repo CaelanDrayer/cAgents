@@ -362,7 +362,7 @@ createHook('PostWriteValidator', async (input) => {
         filePath.includes('task_plan.md') || filePath.includes('findings.md') || filePath.includes('progress.md') ||
         filePath.includes('status.yaml') || filePath.includes('waypoint');
       if (!isPlanningFile) {
-        planningReminder = '\n[planning-reminder] Implementation file updated. If this completes a phase or work item, update coordination_log.yaml status and progress.md.';
+        planningReminder = '\n[planning-reminder] Implementation file updated. If this completes a phase or work item, update coordination_log.yaml status.';
       }
     }
   }

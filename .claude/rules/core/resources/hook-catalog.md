@@ -126,7 +126,7 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 - **Matcher**: `Write|Edit`
 - **Purpose**: Validate file syntax after successful Write/Edit operations, nudge planning file updates.
 - **Validates**: JSON parsing, YAML tab detection, duplicate YAML top-level keys.
-- **Planning reminder**: During active sessions with `plan.yaml`, reminds to update `coordination_log`/`progress.md` after implementation file writes.
+- **Planning reminder**: During active sessions with `plan.yaml`, reminds to update `coordination_log.yaml` after implementation file writes.
 - **Logs**: All file changes to `workflow/file_changes.log` with timestamps and validation status.
 - **Output**: Warning systemMessage if syntax issues found; planning reminder for non-planning file writes.
 
