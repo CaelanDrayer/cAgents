@@ -18,9 +18,9 @@ Provides guidance on which cAgents command to use for a given task. Uses intent 
 | Fix/Debug | fix, bug, error, broken, crash | `/run` |
 | Build/Create | build, create, implement, add, new feature | `/run` or `/team` |
 | Plan/Design | plan, design, architect, spec | `/designer` |
-| Review/Audit | review, audit, check, inspect | `/improve --mode review` |
-| Optimize | optimize, improve, speed up, reduce | `/improve --mode optimize` |
-| Multi-domain | launch, restructure, company-wide | `/org` |
+| Review/Audit | review, audit, check, inspect | `/run review` (keyword router; v12.1.2+ — equivalent to legacy `/improve --mode review`) |
+| Optimize | optimize, improve, speed up, reduce | `/run optimize` or `/run improve` (keyword router; v12.1.2+ — equivalent to legacy `/improve --mode optimize` / `--mode full`) |
+| Multi-domain | launch, restructure, company-wide | `/team` (auto-enables strategic mode for multi-domain requests; v12.2.0+ — replaces removed `/org` skill) |
 | Parallel/Large | parallel, team, big feature | `/team` |
 | Learn/Help | how do I, what is, explain | `/helper` |
 

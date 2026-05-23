@@ -158,13 +158,13 @@ The product context document lives at `cagents-memory/_projects/{hash}/product_c
 
 | Pre-v12.2.0 (/org) | v12.2.0+ (/team strategic mode) |
 |--------------------|---------------------------------|
-| `/org <request>` | `/team <request>` (strategic mode auto-enables when `universal-router.domain_count >= 2`) |
+| `/org <request>` | `/team <request>` (strategic mode auto-enables when `router.domain_count >= 2`) |
 | `/org <request> --quick` | `/team <request> --strategic` (force-enable for single-domain) |
 | `/org <request> --dry-run` | `/team <request> --dry-run` |
-| `/org <request> --domains <d1,d2>` | `/team <request>` (universal-router infers domains from request keywords) |
+| `/org <request> --domains <d1,d2>` | `/team <request>` (router infers domains from request keywords) |
 | `/org --resume <session_id>` | `/team --resume <session_id>` |
 
-### Domain Keys (now consumed by universal-router for /team strategic-mode auto-detect)
+### Domain Keys (now consumed by router for /team strategic-mode auto-detect)
 
 | Domain Key | C-Suite Agent | Example Keywords |
 |-----------|---------------|------------------|

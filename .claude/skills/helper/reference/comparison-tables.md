@@ -4,7 +4,7 @@ Side-by-side comparison matrices for `/helper --compare`.
 
 > _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Their functionality moved to `/improve`, `/run context`, and `/run --mode debug`._
 >
-> _v12.2.0 removed `/org` and absorbed its responsibilities into `/team` strategic mode (auto-enabled when `universal-router.domain_count >= 2`; force via `--strategic` / `--no-strategic`). The `/org` columns in the matrices below are PRESERVED as historical reference for users migrating from pre-v12.2.0; treat any `/org` cell as "equivalent /team --strategic behavior" in v12.2.0+._
+> _v12.2.0 removed `/org` and absorbed its responsibilities into `/team` strategic mode (auto-enabled when `router.domain_count >= 2`; force via `--strategic` / `--no-strategic`). The `/org` columns in the matrices below are PRESERVED as historical reference for users migrating from pre-v12.2.0; treat any `/org` cell as "equivalent /team --strategic behavior" in v12.2.0+._
 
 ## Core Comparison Matrix
 

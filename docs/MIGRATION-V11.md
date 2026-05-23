@@ -1,7 +1,11 @@
-# Migration Guide — cAgents V11.0.1
+# Migration Guide — cAgents V10 → V11
+
+> **Note**: This guide covers V10 → V11 only. For V11 → V12 migrations, see also:
+> - **v12.1.2** — `/improve` folded into `/run` via the first-word keyword router. The flag surface from `/improve` (`--mode review|optimize|full`, `--baseline`, `--suppress`, `--benchmark`, `--scope`, `--auto-fix`, etc.) now lives on `/run`. See [CHANGELOG.md v12.1.2](../CHANGELOG.md) and [.claude/skills/run/reference/improve-mode.md](../.claude/skills/run/reference/improve-mode.md).
+> - **v12.2.0** — `/org` skill removed; cross-domain coordination folded into `/team` strategic mode (auto-enables when `router.domain_count >= 2`). See [CHANGELOG.md v12.2.0](../CHANGELOG.md).
 
 V11.0.0 is the breaking-change release that removed four previously-
-deprecated slash commands; V11.0.1 is the current patch on the V11.0
+deprecated slash commands; V11.0.1 was the patch on the V11.0
 line. The removal was telegraphed across a 35-patch deprecation runway
 (V10.26.1 → V10.26.35). This guide covers the mechanical replacements
 you need to make when upgrading from any V10.26.x release to V11.0.x.
@@ -209,7 +213,9 @@ in V10.26.26.
 ## Help
 
 - **Command catalog and usage**: `/helper <command>`
-- **Skill docs**: `.claude/skills/improve/SKILL.md` and
-  `.claude/skills/improve/reference/*`
+- **Skill docs**: `.claude/skills/run/SKILL.md` and
+  `.claude/skills/run/reference/improve-mode.md` (the V11 `/improve` skill was
+  folded into `/run` in v12.1.2; the legacy `.claude/skills/improve/` directory
+  no longer exists).
 - **Open an issue**:
   https://github.com/CaelanDrayer/cAgents/issues

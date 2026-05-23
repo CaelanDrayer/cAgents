@@ -1,10 +1,10 @@
 # Per-Wave Decomposition Emission
 
-How the planner / team-trigger emits decomposition so the lead reads only the current wave's WIs.
+How the planner / `/team` skill loop emits decomposition so the lead reads only the current wave's WIs (the standalone `team-trigger` agent was removed in v12.0.0).
 
 ## The Problem (CI-2 from enriched_context)
 
-Pre-v12.1, `core/team` (or the universal-planner) emitted a single `workflow/work_items.yaml` with ALL WIs across all waves. The lead read that file once at Wave 0 and held its full contents in context for the rest of the run. Wave 5's WI descriptions sat in lead context during Wave 1 — pure waste.
+Pre-v12.1, `core/team` (or the planner) emitted a single `workflow/work_items.yaml` with ALL WIs across all waves. The lead read that file once at Wave 0 and held its full contents in context for the rest of the run. Wave 5's WI descriptions sat in lead context during Wave 1 — pure waste.
 
 ## The Schema
 

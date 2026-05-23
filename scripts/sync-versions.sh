@@ -2,21 +2,21 @@
 # Sync version across all cAgents manifest files
 # Usage: ./scripts/sync-versions.sh <new-version>
 #
-# Updates version in all 17 locations (see .claude/rules/core/version-registry.md):
-# Location #16: scripts/ci/cagents-ci.sh (header comment + log_section banner)
-# Location #17: scripts/ci/validate-agents.sh (# Version: header)
-# Location #21: CHANGELOG.md (insert new "## [VERSION] - DATE" header under [Unreleased])
+# Updates version in all 16 locations (see .claude/rules/core/version-registry.md):
+# Slot #11: scripts/ci/cagents-ci.sh (header comment + log_section banner)
+# Slot #12: scripts/ci/validate-agents.sh (# Version: header)
+# Slot #16: CHANGELOG.md (insert new "## [VERSION] - DATE" header under [Unreleased])
 #   .claude-plugin/plugin.json, .claude-plugin/marketplace.json, package.json,
 #   CLAUDE.md, .claude/settings.json,
-#   6 skill SKILL.md frontmatter versions, session-catchup.cjs context string,
-#   and CHANGELOG.md tiny-bump landing zone.
+#   4 skill SKILL.md frontmatter versions (run, team, designer, helper),
+#   session-catchup.cjs context string, and CHANGELOG.md tiny-bump landing zone.
 #
 # NON-TOUCH POLICY (V11.1.12+ per-agent versioning contract):
 #   This script does NOT touch agent `metadata.version` fields under
 #   developer/, operator/, advisor/, analyst/, creator/, writer/,
 #   strategist/, core/, or leadership/. Per-agent versions bump
 #   independently of the cAgents plugin version per Phase 11. The
-#   plugin version registry (17 locations above) tracks the cAgents
+#   plugin version registry (16 locations above) tracks the cAgents
 #   release; agent-level `metadata.version` tracks each agent's own
 #   evolution. See `.claude/rules/core/skill-format.md` § metadata.version.
 
@@ -91,15 +91,15 @@ else
   echo "SKIP: CLAUDE.md (not found)"
 fi
 
-# Update skill SKILL.md frontmatter versions
+# Update skill SKILL.md frontmatter versions (4 active skills as of v12.2.0)
 SKILLS=(
   "$ROOT/.claude/skills/run/SKILL.md"
-  "$ROOT/.claude/skills/org/SKILL.md"
   "$ROOT/.claude/skills/team/SKILL.md"
   "$ROOT/.claude/skills/designer/SKILL.md"
   "$ROOT/.claude/skills/helper/SKILL.md"
 )
 # v12.1.2: /improve folded into /run via keyword router; SKILL.md removed.
+# v12.2.0: /org removed; cross-domain coordination folded into /team strategic mode.
 
 for skill in "${SKILLS[@]}"; do
   if [ ! -f "$skill" ]; then
@@ -134,7 +134,7 @@ else
   echo "SKIP: .claude/hooks/session-catchup.cjs (not found)"
 fi
 
-# Update cagents-ci.sh header comment + log_section banner (#24)
+# Update cagents-ci.sh header comment + log_section banner (slot #11)
 CAGENTS_CI="$ROOT/scripts/ci/cagents-ci.sh"
 if [ -f "$CAGENTS_CI" ]; then
   if sed -i "s/^# Version: [0-9]*\.[0-9]*\.[0-9]*/# Version: $VERSION/" "$CAGENTS_CI" && \
@@ -149,7 +149,7 @@ else
   echo "SKIP: scripts/ci/cagents-ci.sh (not found)"
 fi
 
-# Update validate-agents.sh header comment (#25)
+# Update validate-agents.sh header comment (slot #12)
 VALIDATE_AGENTS="$ROOT/scripts/ci/validate-agents.sh"
 if [ -f "$VALIDATE_AGENTS" ]; then
   if sed -i "s/^# Version: [0-9]*\.[0-9]*\.[0-9]*/# Version: $VERSION/" "$VALIDATE_AGENTS"; then
@@ -163,7 +163,7 @@ else
   echo "SKIP: scripts/ci/validate-agents.sh (not found)"
 fi
 
-# Update README.md Version History "Current release" line (#19)
+# Update README.md Version History "Current release" line (slot #13)
 README="$ROOT/README.md"
 if [ -f "$README" ]; then
   if sed -i "s/\*\*V[0-9]*\.[0-9]*\.[0-9]*\*\* — Current release/\*\*V$VERSION\*\* — Current release/" "$README"; then
@@ -177,7 +177,7 @@ else
   echo "SKIP: README.md (not found)"
 fi
 
-# Update docs/README.md **Version**: line (#20)
+# Update docs/README.md **Version**: line (slot #14)
 DOCS_README="$ROOT/docs/README.md"
 if [ -f "$DOCS_README" ]; then
   if sed -i "s/\*\*Version\*\*: [0-9]*\.[0-9]*\.[0-9]*/\*\*Version\*\*: $VERSION/" "$DOCS_README"; then
@@ -191,7 +191,7 @@ else
   echo "SKIP: docs/README.md (not found)"
 fi
 
-# Update docs/RELEASE_NOTES.md **Current Version**: lines (#20)
+# Update docs/RELEASE_NOTES.md **Current Version**: lines (slot #15)
 RELEASE_NOTES="$ROOT/docs/RELEASE_NOTES.md"
 if [ -f "$RELEASE_NOTES" ]; then
   if sed -i "s/\*\*Current Version\*\*: [0-9]*\.[0-9]*\.[0-9]*/\*\*Current Version\*\*: $VERSION/g" "$RELEASE_NOTES"; then
@@ -205,7 +205,7 @@ else
   echo "SKIP: docs/RELEASE_NOTES.md (not found)"
 fi
 
-# Update CHANGELOG.md — insert new version header under [Unreleased] (#21)
+# Update CHANGELOG.md — insert new version header under [Unreleased] (slot #16)
 CHANGELOG="$ROOT/CHANGELOG.md"
 if [ -f "$CHANGELOG" ]; then
   # Only insert a new header if one for this version does not already exist.

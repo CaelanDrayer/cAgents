@@ -321,15 +321,15 @@ You: /team Implement OAuth2 with Google, GitHub, and email login
 
 | Pre-v12.2.0 (/org) | v12.2.0+ (/team strategic mode) |
 |--------------------|---------------------------------|
-| `/org <request>` | `/team <request>` (strategic mode auto-enables when `universal-router.domain_count >= 2`) |
+| `/org <request>` | `/team <request>` (strategic mode auto-enables when `router.domain_count >= 2`) |
 | `/org <request> --quick` | `/team <request> --strategic` (force-enable for single-domain) |
 | `/org <request> --dry-run` | `/team <request> --dry-run` |
-| `/org <request> --domains <d1,d2>` | `/team <request>` (universal-router infers domains from keywords) |
+| `/org <request> --domains <d1,d2>` | `/team <request>` (router infers domains from keywords) |
 | `/org --resume <session_id>` | `/team --resume <session_id>` |
 
 ### Trigger for Strategic Mode in /team
 
-`/team` auto-detects cross-domain work via `universal-router.domain_count`. When two or more archetype catalogs match the request, strategic mode engages automatically:
+`/team` auto-detects cross-domain work via `router.domain_count`. When two or more archetype catalogs match the request, strategic mode engages automatically:
 
 - Wave 0/1: C-suite agents analyze in parallel; CEO drafts strategic brief.
 - Wave 2: Deliberation + objection rounds; brief finalized.

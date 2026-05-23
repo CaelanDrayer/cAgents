@@ -17,14 +17,14 @@ Conducted comprehensive evaluation of complex task workflows (tier 3-4) with the
 **Impact**: Tasks fail because agents don't know to create verification records.
 
 **Fix**:
-- Updated `core/universal-planner.md` with mandatory verification section
+- Updated `core/planner.md` with mandatory verification section
 - Added verification requirement to every task's acceptance criteria
 - Added manifest.yaml to outputs_expected for every task
 - Adjusted context budgets: +2K tokens per task for verification
 - Updated tier budgets to include verification overhead
 
 **Files Modified**:
-- `core/universal-planner.md` (+65 lines)
+- `core/planner.md` (+65 lines)
 
 ### Issue 2: Missing Manifest Template ✓ FIXED
 
@@ -74,7 +74,7 @@ Tier 4: 100-130K base + 20-30K verification = 120-160K total
 - Self-correct can generate synthetic manifest from available evidence
 
 **Files Modified**:
-- `core/universal-validator.md` (+25 lines)
+- `core/validator.md` (+25 lines)
 
 ### Issue 5: Executor Prompt Lacked Template Reference ✓ FIXED
 
@@ -89,7 +89,7 @@ Tier 4: 100-130K base + 20-30K verification = 120-160K total
 - Referenced template's good vs bad evidence examples
 
 **Files Modified**:
-- `core/universal-executor.md` (+10 lines)
+- `core/executor.md` (+10 lines)
 
 ### Issue 6: Documentation Gap ✓ FIXED
 
@@ -114,17 +114,17 @@ Tier 4: 100-130K base + 20-30K verification = 120-160K total
    - Completion checklist
 
 ### Files Modified (4)
-1. `core/universal-planner.md` (+65 lines)
+1. `core/planner.md` (+65 lines)
    - Added mandatory verification requirements section
    - Updated workflow to include verification step
    - Adjusted tier context budgets
    - Added verification-aware planning example
 
-2. `core/universal-executor.md` (+10 lines)
+2. `core/executor.md` (+10 lines)
    - Updated subagent prompt with template reference
    - Listed required manifest sections explicitly
 
-3. `core/universal-validator.md` (+25 lines)
+3. `core/validator.md` (+25 lines)
    - Added severity levels for verification failures
    - Implemented graceful failure handling
    - Added recovery logic for missing manifests
@@ -206,9 +206,9 @@ Tier 4: 100-130K base + 20-30K verification = 120-160K total
 - `WORKFLOW_EVALUATION_FIXES.md` (this file)
 
 **Modified**:
-- `core/universal-planner.md`
-- `core/universal-executor.md`
-- `core/universal-validator.md`
+- `core/planner.md`
+- `core/executor.md`
+- `core/validator.md`
 - `CLAUDE.md`
 
 Total: +168 lines added, addressing all 6 critical issues identified in workflow evaluation.

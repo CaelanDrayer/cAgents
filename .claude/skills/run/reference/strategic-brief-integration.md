@@ -65,7 +65,7 @@ a `chained_from` reference in `instruction.yaml`.
 
 ```
 1. /team "Launch product with marketing campaign"
-   -> universal-router detects domain_count >= 2 -> strategic mode auto-enabled
+   -> router detects domain_count >= 2 -> strategic mode auto-enabled
    -> Wave 0/1/2 C-suite deliberation
    -> writes strategic_brief.yaml to team_session/outputs/strategic/
    -> domain_assignments: [engineering, business, growth]

@@ -162,7 +162,7 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 
 ### 1. Wrong domains detected
 - **Symptom**: /team strategic mode engages unnecessary C-suite agents or misses relevant domains
-- **Likely cause**: `universal-router.domain_count` keyword matching is ambiguous for the request
+- **Likely cause**: `router.domain_count` keyword matching is ambiguous for the request
 - **Fix**: Rephrase the request with explicit domain keywords, or invoke `/team <request> --no-strategic` to force flat parallel execution (replaces pre-v12.2.0 `/org --domains <list>`)
 - **Check**: Read `routing_decision.yaml` in the team session directory
 

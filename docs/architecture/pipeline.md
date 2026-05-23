@@ -28,33 +28,32 @@ INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED ->
 | Timeline constraints | Low | Urgency of delivery |
 | Novelty | Low | How novel vs routine the work is |
 
-### Three Paths
+### Three Paths (v12.0.0 5-state pipeline)
 | Path | Score Range | Agents | Typical Use |
 |------|------------|--------|-------------|
 | **Minimal** | < 0.25 | orchestrator, controller, validator | Bug fixes, typos, simple answers |
 | **Medium** | 0.25 - 0.65 | orchestrator, planner, controller, validator | Feature additions, moderate changes |
-| **Full** | >= 0.65 | orchestrator, planner, decomposer, prompt-engineer, controller, validator | Complex systems, multi-component |
+| **Full** | >= 0.65 | orchestrator, planner, controller, validator (planner runs full decomposition + delegation-prompt assembly internally) | Complex systems, multi-component |
 
-## Pipeline Agents
+## Pipeline Agents (5-state machine since v12.0.0)
 
 | State | Agent | Output | Purpose |
 |-------|-------|--------|---------|
 | INIT | orchestrator | enriched_context.yaml | Context enrichment |
-| ORCHESTRATED | universal-planner | plan.yaml | Objectives + controller selection |
-| PLANNED | task-decomposer | work_items.yaml | Work item decomposition |
-| DECOMPOSED | prompt-engineer | delegation_prompts.yaml | Optimized delegation prompts |
-| PROMPTS_READY | controller | coordination_log.yaml | Question-based coordination |
-| COORDINATED | universal-validator | validation_report.yaml | Quality validation |
+| ORCHESTRATED | planner | plan.yaml + work_items.yaml (+ delegation_prompts.yaml on Full path) | Objectives + controller selection + decomposition + prompt assembly (task-decomposer and prompt-engineer were folded into the planner in v12.0.0) |
+| PLANNED | controller | coordination_log.yaml | Question-based coordination (executes work items via Agent tool delegation + reviewer loops) |
+| COORDINATED | validator | validation_report.yaml | Quality validation |
+| VALIDATED | — | (complete) | Pipeline terminal state |
 
 ## Revision Routing
 
 | Outcome | Route To | Max Cycles | Purpose |
 |---------|----------|------------|---------|
 | PASS | VALIDATED (complete) | - | All criteria met |
-| FAIL | PROMPTS_READY | 5 | Re-execute with feedback |
-| REVISE | PLANNED | 5 | Re-plan with feedback |
+| FAIL | PLANNED | 3 | Re-execute controller with feedback (max_revision_cycles tightened from 5 → 3 in v12.0.0 per audit) |
+| REVISE | ORCHESTRATED | 3 | Re-plan with feedback |
 
-After 5 cycles: escalate to user (HITL).
+After 3 cycles: escalate to user (HITL).
 
 ## Controller-Level Revision
 

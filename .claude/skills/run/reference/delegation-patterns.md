@@ -7,7 +7,7 @@ The event-driven pipeline architecture uses a 5-state machine with sequential en
 ```
 /run (state machine loop, level 0)
   +-> orchestrator (level 1)         -> enriched_context.yaml
-  +-> universal-planner (level 1)    -> plan.yaml + work_items.yaml (decomposition inline)
+  +-> planner (level 1)    -> plan.yaml + work_items.yaml (decomposition inline)
   +-> controller (level 1)
        +-> executor (level 2)        -> implementation
        +-> reviewer (level 2)        -> review_report.yaml
@@ -21,9 +21,9 @@ The event-driven pipeline architecture uses a 5-state machine with sequential en
 | Phase | Agent | Output |
 |-------|-------|--------|
 | **INIT** | orchestrator | enriched_context.yaml |
-| **ORCHESTRATED** | universal-planner | plan.yaml + work_items.yaml |
+| **ORCHESTRATED** | planner | plan.yaml + work_items.yaml |
 | **PLANNED** | controller (from plan.yaml) | coordination_log.yaml |
-| **COORDINATED** | universal-validator | validation_report.yaml |
+| **COORDINATED** | validator | validation_report.yaml |
 | **VALIDATED** | (terminal) | execution_summary.yaml |
 
 ## Progressive Pipeline (3 Paths, v12.0.0)
@@ -36,7 +36,7 @@ Complexity scoring (9 weighted signals) determines which states to execute:
 | **Medium** | 0.25-0.65 | ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED | Moderate tasks (~3 agents) |
 | **Full** | > 0.65 | All 5 states | Complex tasks, all agents |
 
-Pre-v12 paths referenced DECOMPOSED and PROMPTS_READY; those states no longer exist and the corresponding agents (decomposer, prompt-engineer) have been folded into universal-planner.
+Pre-v12 paths referenced DECOMPOSED and PROMPTS_READY; those states no longer exist and the corresponding agents (decomposer, prompt-engineer) have been folded into planner.
 
 ## Debug-Mode Prefix Injection (V10.26.13+)
 
@@ -44,7 +44,7 @@ When `/run` is invoked with `--mode debug`, the **PLANNED** state controller
 spawn gets a prepended prefix block from
 `.claude/skills/run/reference/debug-mode-prompt.md`. The injection point is
 the controller spawn prompt only — enrichment agents (orchestrator,
-universal-planner) are unaffected. When
+planner) are unaffected. When
 `flags.mode === "standard"` (default), no prefix is added and behavior is
 identical to V10.26.12.
 
@@ -105,7 +105,7 @@ Max 3 revision cycles (lowered from 5 in v12.0.0) before escalation to user.
 
 ## Team Mode Delegation
 
-For `--team`, /run delegates to team-trigger which creates a real team:
+For `--team`, /run delegates to the `cagents:team` agent which creates a real team (the standalone `team-trigger` agent was removed in v12.0.0; the `/team` skill loop now does this work inline):
 
 ```javascript
 Agent({

@@ -1,16 +1,28 @@
 ---
 name: controller-name
-tier: controller
-domain: make
-version: "1.0.0"
-description: Brief description of this controller's coordination focus
-coordination_style: question_based
-question_limit: 15
-typical_questions:
-  - "What is the current implementation of X?"
-  - "What are the constraints for Y?"
-  - "What risks exist for Z?"
+description: "Use when {trigger scenario}. Brief description of this controller's coordination focus."
+archetype: developer
+branch: fullstack
+metadata:
+  tier: controller
+  version: "1.0.0"
+  coordination_style: question_based
+  question_limit: 15
+  typical_questions:
+    - "What is the current implementation of X?"
+    - "What are the constraints for Y?"
+    - "What risks exist for Z?"
 ---
+
+<!--
+  Frontmatter notes (v11.1.0+ schema):
+  - Pre-v11.1.0 templates included a top-level `domain:` field (e.g., `domain: make`).
+    That field was REMOVED in v11.1.0 — validate-agents.sh rejects it as an error.
+  - The `make/` legacy domain itself was deleted in v10.0.0 and consolidated;
+    use `archetype: developer` + `branch: fullstack` (or another appropriate
+    archetype/branch) instead.
+-->
+
 
 # Controller Name
 

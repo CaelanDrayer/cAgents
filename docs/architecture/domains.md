@@ -1,24 +1,22 @@
-# Domain Structure (v10)
+# Domain Structure (v12.6.0)
 
-## 15 Domains (243 agents)
+## 9 Builder-Role Archetypes (144 agents, canonical since v11.1.0)
 
-| Domain | Directory | Agents | Description |
-|--------|-----------|--------|-------------|
-| Engineering | `engineering/` | 31 | Software engineering, infrastructure, security, QA, game programming |
-| Creative | `creative/` | 30 | Creative writing, narrative design, literary criticism, game art, audio |
-| Business | `business/` | 28 | Strategy, product, operations, finance |
-| Growth | `growth/` | 34 | Marketing, sales, revenue operations |
-| People | `people/` | 17 | HR, talent acquisition, culture, workforce planning |
-| Service | `service/` | 28 | Customer support, CX, legal, compliance, governance |
-| Leadership | `leadership/` | 11 | C-suite executives + general-counsel (used by /org, not directly routable) |
-| Core | `core/` | 17 | Infrastructure (trigger, orchestrator, planner, validator, generic-coordinator, etc.) |
-| Shared | `shared/` | 12 | Cross-domain intelligence (BI, data science, market research, social science) |
-| Science | `science/` | 10 | STEM research, scientific analysis |
-| Health | `health/` | 5 | Medical, wellness, fitness, nutrition (uses generic-coordinator from core) |
-| Education | `education/` | 5 | Teaching, tutoring, academic support (uses generic-coordinator from core) |
-| Personal | `personal/` | 5 | Career, life coaching, personal finance (uses generic-coordinator from core) |
-| Arts | `arts/` | 5 | Visual arts, music, film, performing arts (uses generic-coordinator from core) |
-| Trades | `trades/` | 5 | Culinary, construction, automotive, agriculture (uses generic-coordinator from core) |
+| Archetype | Directory | Agents | Description |
+|-----------|-----------|-------:|-------------|
+| Developer | `developer/` | 26 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
+| Operator | `operator/` | 36 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
+| Advisor | `advisor/` | 12 | Legal, health, education, personal (4 branches) |
+| Analyst | `analyst/` | 20 | Data, BI, research, social-science |
+| Creator | `creator/` | 5 | Visual artists, designers, audiovisual creators |
+| Writer | `writer/` | 10 | Copy, narrative, technical, editorial |
+| Strategist | `strategist/` | 8 | Product owners, portfolio managers, planners |
+| Core | `core/` | 15 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, validator, etc.) |
+| Leadership | `leadership/` | 12 | C-suite executives (used by /team strategic mode, not directly routable) |
+
+## Legacy Domain Routing Overlay (config-only)
+
+The router and planner still consume `controller_catalog` + `router_keywords` from a routing overlay. Two legacy domain directories survive on disk as routing-config-only overlays (no SKILL.md files): `people/` and `shared/`. The other 11 historical domain dirs (`engineering/`, `creative/`, `business/`, `growth/`, `service/`, `science/`, `health/`, `education/`, `personal/`, `arts/`, `trades/`) were deleted in v12 W4.2 and their router keywords + controller catalogs were consolidated into `cagents-memory/_system/config/routing.yaml`.
 
 ## Domain Configuration
 
@@ -55,11 +53,11 @@ router:
 
 ## Routing
 
-Requests are routed to domains based on keyword matching from `router.keywords` in each domain's `domain_overrides.yaml`. The universal-router evaluates the user's request against all domain keyword lists and selects the best match.
+Requests are routed to domains based on keyword matching from `router.keywords` in each domain's `domain_overrides.yaml`. The router evaluates the user's request against all domain keyword lists and selects the best match.
 
-### Non-Routable Domains
-- **Leadership**: C-suite agents invoked by `/org`, not directly by `/run`
-- **Shared**: Cross-domain agents invoked by controllers, not by direct routing
+### Non-Routable Archetypes
+- **Leadership**: C-suite agents invoked by `/team` strategic mode (auto-enabled when `router.domain_count >= 2`; pre-v12.2.0 this was the now-removed `/org` skill), not directly by `/run`
+- **Shared/People (legacy overlays)**: Routing-config dirs only — no SKILL.md files; their controllers/agents now live in other archetypes
 - **Core**: Infrastructure agents used internally by the pipeline
 
 ## Controller Selection

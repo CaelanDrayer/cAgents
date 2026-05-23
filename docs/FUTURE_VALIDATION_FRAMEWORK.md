@@ -13,7 +13,7 @@
 | **Phase 4: Cross-Cutting** | 25-29 | **ACTIVE** | Enforced by existing hooks (`subagent-stop-tracker.cjs`, `post-write-validator.cjs`, `attention-injection.cjs`, `verify-completion.cjs`) |
 | **Phase 1: Pre-Execution** | 1-8 | ASPIRATIONAL | Requires controller agents to run checks before spawning executors — not yet enforced |
 | **Phase 2: Mid-Execution** | 9-15 | ASPIRATIONAL | Requires controller agents to run checks after every 3 completions — not yet enforced |
-| **Phase 3: Post-Execution** | 16-24 | ASPIRATIONAL | Requires universal-validator agent to run checks after completion — not yet enforced |
+| **Phase 3: Post-Execution** | 16-24 | ASPIRATIONAL | Requires validator agent to run checks after completion — not yet enforced |
 
 Phase 4 checks are active because they are implemented as hook-based automation that runs regardless of agent behavior. Phases 1-3 depend on agents voluntarily executing validation logic, which does not yet happen in practice.
 
@@ -25,7 +25,7 @@ Priority order for graduating aspirational checks to enforced status:
 |----------|----------|-------------|-----------------|
 | **P1 (next)** | 16 | All Items Complete | Add to `verify-completion.cjs` — check work_items.yaml status before allowing session stop |
 | **P2** | 20 | Coordination Log Complete | Schema validation in `post-write-validator.cjs` when coordination_log.yaml is written |
-| **P3** | 17, 21, 22 | Evidence chain, no red flag language, fresh evidence | Enhance universal-validator agent prompts to enforce these checks |
+| **P3** | 17, 21, 22 | Evidence chain, no red flag language, fresh evidence | Enhance validator agent prompts to enforce these checks |
 | **P4** | 1-3, 6-7 | Plan completeness, work item criteria, dependency acyclicity, schema, session structure | Add pre-execution validation hook or gate in `session-init-gate.cjs` |
 | **Future** | 4-5, 8-15, 18-19, 23-24 | Remaining agent-dependent checks | Graduate as agent reliability improves and patterns stabilize |
 

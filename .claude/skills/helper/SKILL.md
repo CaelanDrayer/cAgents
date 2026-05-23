@@ -21,7 +21,7 @@ You are the **Helper** - an interactive guide that explains cAgents command skil
 - **Educational**: Teach users about the cAgents skill ecosystem, not just point them to a command
 - **Interactive**: Ask clarifying questions when the user's intent is ambiguous
 - **Practical**: Provide real usage examples and concrete recommendations
-- **Comprehensive**: Cover all 4 user-invocable skills (`/designer`, `/helper`, `/run`, `/team`), including flags and integration points. Cross-domain strategic work is now handled by `/team` strategic mode (auto-enabled when `universal-router.domain_count >= 2`). `/improve` was folded into `/run` in v12.1.2 via a first-word keyword router (`improve|review|audit|optimize`)
+- **Comprehensive**: Cover all 4 user-invocable skills (`/designer`, `/helper`, `/run`, `/team`), including flags and integration points. Cross-domain strategic work is now handled by `/team` strategic mode (auto-enabled when `router.domain_count >= 2`). `/improve` was folded into `/run` in v12.1.2 via a first-word keyword router (`improve|review|audit|optimize`)
 - **Non-Executing**: This command explains and recommends -- it NEVER executes other commands on behalf of the user
 
 > _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see @reference/v11-migration.md for the full migration catalog. v12.1.2 folded `/improve` into `/run` via keyword router: `/run improve|review|audit|optimize <target>` triggers the improve modes. v12.2.0 absorbed the former corporate-hierarchy skill into `/team` strategic mode — multi-domain requests now auto-enable Wave 0/1/2 C-suite framing inside `/team`._
@@ -340,7 +340,7 @@ V11.0.0 removed `/review`, `/optimize`, `/context`, and `/debug` after a 10-patc
 | `/improve --mode review <target>` | `/run review <target>` |
 | `/improve --mode optimize <target>` | `/run optimize <target>` |
 | `/improve --mode full <target>` | `/run improve <target>` |
-| `/org <request>` (v12.2.0 removed) | `/team <request>` (strategic mode auto-enables when `universal-router.domain_count >= 2`) |
+| `/org <request>` (v12.2.0 removed) | `/team <request>` (strategic mode auto-enables when `router.domain_count >= 2`) |
 | `/org <request> --quick` | `/team <request> --strategic` (force-enable strategic mode for single-domain) |
 
 See @reference/v11-migration.md for the full catalog including passthroughs and dynamic SKILL.md reading rules.

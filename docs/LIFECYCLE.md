@@ -84,13 +84,13 @@ execution plans. The "how" before any keystroke of implementation.*
 
 | Agent | Archetype | Description |
 |-------|-----------|-------------|
-| generic-coordinator | core | Parameterized controller for lightweight domains (health, education, personal, arts, trades) |
+| coordinator | core | Parameterized controller for lightweight domains (health, education, personal, arts, trades) |
 | orchestrator | core | Enriches request context at pipeline start, detects domain and complexity |
-| task-consolidator | core | Reduces task inventory context overhead, merging related tasks (40-88% reduction) |
-| task-inventory | core | Manages CSV-based task state for large-scale workflows with 20+ items |
-| team-trigger | core | Initializes team-mode execution, creating TeamCreate calls, bootstrapping wave plans |
+| task-merger | core | Reduces task inventory context overhead, merging related tasks (40-88% reduction) |
+| task-state | core | Manages CSV-based task state for large-scale workflows with 20+ items |
+| team | core | Initializes team-mode execution (TeamCreate, wave planning); replaces the standalone `team-trigger` agent removed in v12.0.0 — the `/team` skill loop now drives this inline |
 | trigger | core | Pipeline entry point — parses user requests, routes to /run or /team |
-| universal-planner | core | Creates plan.yaml + work_items.yaml + optional delegation_prompts.yaml |
+| planner | core | Creates plan.yaml + work_items.yaml + optional delegation_prompts.yaml |
 | fashion-designer | creator | Garment design, pattern making, textile selection, trend analysis |
 | film-director | creator | Cinematography, screenwriting, editing, production design |
 | music-producer | creator | Recording, mixing, mastering, and DAW workflows |
@@ -190,7 +190,7 @@ checks, sensitivity reviews.*
 | privacy-officer | advisor | Privacy policies, privacy impact assessments, GDPR management |
 | regulatory-affairs-specialist | advisor | Regulatory submissions, tracking regulatory changes, compliance reporting |
 | process-auditor | analyst | Process audits, verifying compliance with standards, testing internal controls |
-| universal-validator | core | Final quality gate validation, checking acceptance criteria evidence completeness |
+| validator | core | Final quality gate validation, checking acceptance criteria evidence completeness |
 | risk-assessment | developer | Technical risk for proposed changes, blast radius of refactors |
 | dependency-analyst | developer | Analyzing dependency trees, identifying version conflicts, security vulns |
 | performance-analyzer | developer | Profiling application performance, identifying bottlenecks, measuring latency |
@@ -231,8 +231,7 @@ judgment-based.*
 | literary-critic | writer | Analyzing narrative craft, evaluating prose quality, substantive editorial feedback |
 | prose-stylist | writer | Refining prose style, developing distinctive voice |
 
-*Note: `architect` also serves Review duty via `--review` mode flag (v12 consolidation
-of architecture-reviewer). See `developer/fullstack/architect/SKILL.md`.*
+*Note: `architect` also serves Review duty via `--review` mode flag. The standalone `architecture-reviewer` agent was collapsed into `architect --review` in v12.0.0; the mode flag now selects review-only behavior on `cagents:architect`. See `developer/fullstack/architect/SKILL.md`.*
 
 ---
 
@@ -279,27 +278,28 @@ launch, sales execution, customer-facing rollout, post-launch support enablement
 ## Cross-Cutting (~29 agents)
 
 *Support agents and C-suite executives that don't fit cleanly into a single lifecycle
-phase. The C-suite (`leadership/`) is invoked by `/org` for cross-domain strategic
-work; core pipeline agents (`core/`) underpin every phase.*
+phase. The C-suite (`leadership/`) is invoked by `/team` strategic mode (auto-enabled
+when `router.domain_count >= 2`; v12.2.0+ — pre-v12.2.0 this was the
+now-removed `/org` skill) for cross-domain strategic work; core pipeline agents
+(`core/`) underpin every phase.*
 
 | Agent | Archetype | Description |
 |-------|-----------|-------------|
 | general-counsel | advisor | Legal strategy, regulatory compliance, contract review, IP protection |
 | science-coordinator | analyst | Coordinates STEM research and scientific analysis tasks |
-| generic-coordinator | core | Parameterized controller for lightweight domains |
+| coordinator | core | Parameterized controller for lightweight domains |
 | hitl | core | Workflow requires human approval, automated decisions need manual override |
 | optimizer | core | Workflow needs performance tuning, token reduction, execution path optimization |
 | orchestrator | core | Enriches request context at pipeline start, detects domain and complexity |
-| task-consolidator | core | Reduces task inventory context overhead |
-| task-inventory | core | Manages CSV-based task state for large-scale workflows |
-| team-lead-adapter | core | Wraps a controller agent as a team lead for /team wave execution |
-| team-trigger | core | Initializes team-mode execution |
+| task-merger | core | Reduces task inventory context overhead |
+| task-state | core | Manages CSV-based task state for large-scale workflows |
+| team | core | Initializes team-mode execution and wraps a controller as the team lead (replaces the standalone `team-trigger` and `team-lead-adapter` agents removed in v12.0.0 — `/team` skill loop now drives this inline) |
 | trigger | core | Pipeline entry point |
-| universal-executor | core | Monitors controller execution progress, verifies coordination_log completeness |
-| universal-planner | core | Creates plan.yaml + work_items.yaml |
-| universal-router | core | Classifies request complexity into tiers 2-4, detects domain from keywords |
-| universal-self-correct | core | Agent is stuck, 3+ tool failures in sequence, 6-step recovery |
-| universal-validator | core | Final quality gate validation |
+| executor | core | Monitors controller execution progress, verifies coordination_log completeness |
+| planner | core | Creates plan.yaml + work_items.yaml |
+| router | core | Classifies request complexity into tiers 2-4, detects domain from keywords |
+| self-correct | core | Agent is stuck, 3+ tool failures in sequence, 6-step recovery |
+| validator | core | Final quality gate validation |
 | cco | leadership | Creative vision, narrative strategy, artistic direction (Chief Creative Officer) |
 | ceo | leadership | Strategic decisions, major initiatives, company direction (Chief Executive Officer) |
 | cfo | leadership | Budget requests, investment decisions, pricing strategy, financial risk |
@@ -327,12 +327,14 @@ work; core pipeline agents (`core/`) underpin every phase.*
   whether a phase was skipped.
 - **Diagnosing a problem?** Verify/Review agents (`qa-lead`, `code-reviewer`,
   `security-engineer`, `methodology-critic`, `reviewer`) are your first stop.
-- **Cross-domain strategic work?** Use `/org` — it engages the C-suite
-  (Cross-Cutting section) and routes to the right domain teams.
+- **Cross-domain strategic work?** Use `/team` — strategic mode auto-enables for
+  multi-domain requests (`router.domain_count >= 2`; v12.2.0+, replaces
+  the removed `/org` skill), engaging the C-suite (Cross-Cutting section) and
+  routing to the right domain teams.
 
 ## See also
 
 - `CLAUDE.md` — canonical archetype tree (Project Overview section)
 - `AGENTS.md` — multi-tool routing surface
 - `docs/ARCHITECTURE.md` — subsystem deep dives
-- `docs/SKILLS.md` — skill catalog (`/run`, `/team`, `/org`, `/designer`, `/improve`, `/helper`)
+- `docs/SKILLS.md` — skill catalog (`/run`, `/team`, `/designer`, `/helper`; `/improve` folded into `/run` in v12.1.2, `/org` folded into `/team` strategic mode in v12.2.0)

@@ -11,7 +11,7 @@ metadata:
 
 # Playbooks
 
-Playbooks are reusable guidance documents that agents reference via `@.claude/rules/playbooks/{path}.md`. They exist to keep individual `SKILL.md` files small (≤ 200 lines) by extracting cross-agent duplicated guidance to a single canonical source.
+Playbooks are reusable guidance documents that agents reference via the `@path` syntax — for example, an agent SKILL.md body would include a line like `See @.claude/rules/playbooks/<playbook-name>.md for the canonical pattern` (the `<playbook-name>` portion is a placeholder describing how to construct the reference, not a real file on disk). They exist to keep individual `SKILL.md` files small (≤ 200 lines) by extracting cross-agent duplicated guidance to a single canonical source.
 
 ## Current state (v12.4.0)
 
@@ -87,7 +87,7 @@ The reference MUST resolve to an existing file. The `tests/v12/playbook-frontmat
 1. **Verify candidacy**: the block being extracted appears in ≥ 2 SKILL.md files OR is >100 lines of guidance that warrants its own canonical source.
 2. **Pick a prefix** from the table above (or propose one in this README first).
 3. **Write the playbook** with valid spec frontmatter.
-4. **Replace** the duplicated block in every consumer SKILL.md with `See @.claude/rules/playbooks/{prefix}-{topic}.md for {topic}.`.
+4. **Replace** the duplicated block in every consumer SKILL.md with a reference of the form `See .claude/rules/playbooks/<prefix>-<topic>.md for <topic>.` — prepend the `@` sigil to make it a live import (the `<prefix>-<topic>` portion is a placeholder for the actual playbook filename; the literal text shown here is intentionally inert so the doc-sweep does not follow it).
 5. **Verify** consumer SKILL.md files still pass `bash scripts/ci/validate-agents.sh` and that each is ≤ 200 lines.
 6. **Run** `tests/v12/playbook-frontmatter-valid.test.js` to confirm the new playbook's frontmatter is spec-compliant.
 

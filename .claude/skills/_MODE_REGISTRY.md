@@ -60,14 +60,14 @@ other 3 user skills.
 
 REMOVED. /org was absorbed into `/team` strategic mode in v12.2.0. Cross-domain
 strategic requests now flow through `/team`, which auto-enables strategic mode
-when `universal-router.domain_count >= 2`. Migration mapping:
+when `router.domain_count >= 2`. Migration mapping:
 
 | Pre-v12.2.0 invocation | v12.2.0 replacement |
 |------------------------|---------------------|
 | `/org <request>` | `/team <request>` (strategic mode auto-enables for multi-domain) |
 | `/org <request> --dry-run` | `/team <request> --dry-run` |
 | `/org <request> --quick` | `/team <request> --no-strategic` (skip C-suite prefix) |
-| `/org <request> --domains <d1,d2>` | `/team <request>` (universal-router infers domains) |
+| `/org <request> --domains <d1,d2>` | `/team <request>` (router infers domains) |
 | `/org --resume <session_id>` | `/team --resume <session_id>` |
 
 See `## /team` section above for the full flag/mode catalog including

@@ -1,6 +1,6 @@
 # Getting Started with cAgents
 
-Five minutes from install to your first orchestrated result. This guide reflects **V12.2.0 current** — 240 agents across 9 archetypes and 4 user-invocable skills (`/designer`, `/helper`, `/run`, `/team`).
+Five minutes from install to your first orchestrated result. This guide reflects **v12.6.0 current** — 144 agents across 9 builder-role archetypes (post-v12.4.0 P2 compression from 240) and 4 user-invocable skills (`/designer`, `/helper`, `/run`, `/team`).
 
 _V11.0 removed `/review`, `/optimize`, `/context`, and `/debug` — see [MIGRATION-V11.md](./MIGRATION-V11.md) for the migration path. v12.1.2 folded `/improve` into `/run` via a first-word keyword router. v12.2.0 removed `/org` and absorbed cross-domain coordination into `/team` strategic mode._
 
@@ -79,7 +79,7 @@ Spawns multiple specialist agents in parallel waves, each validated before the n
 ```bash
 /team Plan our Q3 product roadmap
 ```
-Strategic mode auto-enables when `universal-router` detects 2+ domains. Triggers CTO, CPO, and CFO analysis in Wave 0/1, cross-domain deliberation in Wave 2, and per-domain dispatch in Wave 3..N — all inside a single `/team` session. Force-enable for single-domain executive framing with `--strategic`; force-disable with `--no-strategic`. (Pre-v12.2.0 this was `/org`, now absorbed into `/team` strategic mode.)
+Strategic mode auto-enables when `router` detects 2+ domains. Triggers CTO, CPO, and CFO analysis in Wave 0/1, cross-domain deliberation in Wave 2, and per-domain dispatch in Wave 3..N — all inside a single `/team` session. Force-enable for single-domain executive framing with `--strategic`; force-disable with `--no-strategic`. (Pre-v12.2.0 this was `/org`, now absorbed into `/team` strategic mode.)
 
 **Interactive design** — clarify requirements before building:
 ```bash
@@ -87,11 +87,11 @@ Strategic mode auto-enables when `universal-router` detects 2+ domains. Triggers
 ```
 Guides you through structured Q&A to produce an implementation-ready design document before any code is written.
 
-**Review existing work**:
+**Review existing work** (v12.1.2+: `/improve` was folded into `/run` via the first-word keyword router):
 ```bash
-/improve --mode review src/auth/
+/run review src/auth/
 ```
-Parallel specialist agents audit for security, correctness, maintainability, and style. Use `/improve --mode optimize` to apply fixes with before/after metrics, or `/improve --mode full` to chain review then optimize with one baseline. See [docs/MIGRATION-V11.md](MIGRATION-V11.md) for V10 `/review` and `/optimize` migration.
+Parallel specialist agents audit for security, correctness, maintainability, and style. Use `/run optimize src/auth/` to apply fixes with before/after metrics, or `/run improve src/auth/` (= `--mode full`) to chain review then optimize with one baseline. See [docs/MIGRATION-V11.md](MIGRATION-V11.md) for V10 `/review` and `/optimize` migration, and [CHANGELOG.md v12.1.2](../CHANGELOG.md) for the keyword-router contract.
 
 **Not sure which command to use?**
 ```bash

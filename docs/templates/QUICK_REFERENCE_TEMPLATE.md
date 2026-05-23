@@ -21,9 +21,9 @@
 # {Workflow 3}
 /run {example request 3}
 
-# Review/Optimize
-/improve --mode review {target}
-/improve --mode optimize {target}
+# Review/Optimize (v12.1.2+: /improve folded into /run via keyword router)
+/run review {target}
+/run optimize {target}
 ```
 
 ### {Category 2} Workflows

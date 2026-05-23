@@ -4,6 +4,8 @@
 **Release Date**: May 21, 2026
 **Status**: Production-Ready
 
+> **Note**: This file documents major releases only (V12.2.0 was the last `/org`-removal milestone). For v12.3 through v12.6 patch and feature notes, see the canonical [CHANGELOG.md](../CHANGELOG.md). The CHANGELOG is the source of truth for per-bump release notes; this file is summarized historical context.
+
 ## V12.2.0 — May 21, 2026 (BREAKING: /org removed)
 
 v12.2.0 removes the `/org` skill and folds cross-domain coordination into
@@ -17,7 +19,7 @@ back-compat alias — `/org X` invocations now fail with "skill not found".
   Wave 0 = parallel C-suite analysis, Wave 1 = dependent C-suite analysis
   + objections, Wave 2 = brief synthesis, Wave 3..N = per-domain dispatch.
 - **Auto-detection.** `/team` automatically enables strategic mode when
-  `universal-router.domain_count >= 2`. Users can override with
+  `router.domain_count >= 2`. Users can override with
   `--strategic` (force enable) or `--no-strategic` (force disable).
 - **Leadership agents preserved.** The 12 C-suite agents (CEO/CTO/CFO/CMO/
   COO/CHRO/CCO/CSO/CRO/CPO/CLO/VP-Engineering) keep their existing
@@ -29,7 +31,7 @@ back-compat alias — `/org X` invocations now fail with "skill not found".
 
 - `/team` SKILL.md grows a "Strategic Mode" section with reference docs
   migrated from `org/reference/` to `team/reference/strategic-*.md`.
-- `core/universal-router/SKILL.md` extended with `domain_count` and
+- `core/router/SKILL.md` extended with `domain_count` and
   `detected_domains[]` output fields.
 - Plugin manifest skill count: 5 → 4.
 - `strategic_brief.yaml` schema adds `dependency_type` per domain entry.
@@ -61,7 +63,7 @@ self-validation checks 15 -> 5.
   from `INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY ->
   COORDINATED -> VALIDATED` to `INIT -> ORCHESTRATED -> PLANNED ->
   COORDINATED -> VALIDATED`. `task-decomposer` and `prompt-engineer`
-  folded into `universal-planner` as sub-responsibilities. Output schemas
+  folded into `planner` as sub-responsibilities. Output schemas
   (`work_items.yaml`, `delegation_prompts.yaml`) preserved but written by
   planner directly.
 - **engineering-manager -> tech-lead merge**: Two engineering controllers
@@ -455,9 +457,9 @@ All 10 version files bumped: 9.25.0 -> 9.26.0
 
 **Updated Core Agents**:
 - `orchestrator`: Added event writing for enriched_context.yaml output
-- `universal-planner`: Added event writing for plan.yaml output
+- `planner`: Added event writing for plan.yaml output
 - `task-decomposer`: Added event writing for work_items.yaml output, pipeline-standard filename
-- `universal-validator`: Changed PASS/FIXABLE/BLOCKED to PASS/FAIL/REVISE classification. FAIL triggers controller re-execution, REVISE triggers re-planning. Added event writing with classification metadata.
+- `validator`: Changed PASS/FIXABLE/BLOCKED to PASS/FAIL/REVISE classification. FAIL triggers controller re-execution, REVISE triggers re-planning. Added event writing with classification metadata.
 
 **Updated Rules**:
 - `controllers.md`: Added reviewer loop section. After executor completes, controller spawns reviewer (max 3 internal rounds). review_rounds tracking in coordination_log.yaml. Controller writes completion event.
@@ -549,7 +551,7 @@ All 10 version files bumped: 9.25.0 -> 9.26.0
 **Theme**: Flattened /run to 2-level delegation chain + hook path fix + TodoWrite progressive refinement.
 
 **Changes**:
-- **Flattened architecture**: /run now performs routing, planning, and orchestration inline (no separate trigger, orchestrator, universal-router, universal-planner agents)
+- **Flattened architecture**: /run now performs routing, planning, and orchestration inline (no separate trigger, orchestrator, router, planner agents)
 - Only controller and execution agents are spawned as subagents (2 levels instead of 5)
 - Hook path resolution: bash -c wrapper with 3-tier fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd)
 - TodoWrite progressive refinement: controllers update TodoWrite entries as execution agents are identified
@@ -1483,7 +1485,7 @@ v8.0.0
 **Theme**: Task Inventory Edition - CSV-based workflow management
 
 **Major Features**:
-- **task-inventory agent**: CSV-based external state management for large workflows
+- **task-state agent**: CSV-based external state management for large workflows
 - **Batch delegation**: Assign 25 tasks per operation (vs 1 task per operation)
 - **Checkpoint/resume**: Full pause/resume capability at any workflow point
 - **Progress queries**: 500-token summaries instead of 10K+ task loads
@@ -1491,7 +1493,7 @@ v8.0.0
 
 **Enhancements**:
 - Orchestrator V6.1: Inventory integration, batch coordination
-- Core agents: 11 to 12 (task-inventory added)
+- Core agents: 11 to 12 (task-state added)
 - Total agents: 230 to 231
 
 **Inventory Features**:
@@ -1735,7 +1737,7 @@ See full V7.0.0 release notes in archive/docs/ for complete details.
 ## Current State (v9.22.0)
 
 **Total Agents**: 238
-- Core Infrastructure: 14 (trigger, team-trigger, team-lead-adapter, orchestrator, hitl, optimizer, universal-router, universal-planner, universal-executor, universal-validator, universal-self-correct, task-consolidator, task-decomposer, task-inventory)
+- Core Infrastructure: 14 (trigger, team-trigger, team-lead-adapter, orchestrator, hitl, optimizer, router, planner, executor, validator, self-correct, task-merger, task-decomposer, task-state)
 - Shared: 14 (cross-domain capabilities)
 - Make: 111 (engineering + creative + product + game development)
 - Grow: 38 (marketing + sales)

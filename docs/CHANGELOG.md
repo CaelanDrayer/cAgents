@@ -1,4 +1,23 @@
-# Changelog
+# Changelog (Moved)
+
+> **The canonical cAgents changelog has moved.** The historical entries below
+> only cover up through V10.0.0 and are preserved for cross-link continuity.
+>
+> For the current, complete changelog (V10.x through v12.6.0+), see the
+> repository root [CHANGELOG.md](../CHANGELOG.md).
+>
+> Major milestones since these entries:
+> - **v11.0.0** — V10 commands `/review`, `/optimize`, `/context`, `/debug` removed; consolidated under `/improve`
+> - **v11.1.0** — 13 business domains restructured into the 9 builder-role archetype tree; top-level frontmatter `domain:` field replaced by `archetype:` + `branch:`
+> - **v12.0.0** — Pipeline collapse 7 → 5 states (task-decomposer + prompt-engineer folded into planner); architecture-reviewer absorbed into `architect --review`; max_revision_cycles 5 → 3
+> - **v12.1.2** — `/improve` folded into `/run` via the first-word keyword router; standalone `/improve` skill removed
+> - **v12.2.0** — `/org` skill removed; cross-domain coordination folded into `/team` strategic mode
+> - **v12.4.0** — Pillar 2 (Compression): catalog audit + cull (240 → 144 agents)
+> - **v12.6.0** — Current release; mandatory pipeline + compression + renames + drop AgentPath (BREAKING)
+
+---
+
+## Historical Entries (up to V10.0.0)
 
 ## [10.0.0] - 2026-02-28
 
@@ -45,18 +64,18 @@
 
 ### Added
 - /designer subagent-delegated question preparation
-- /org dependency-ordered C-suite passes (Wave 1 independent, Wave 2 dependent)
+- /org dependency-ordered C-suite passes (Wave 1 independent, Wave 2 dependent) [/org removed in v12.2.0; folded into /team strategic mode]
 
 ## [9.28.0] - 2026-02-27
 
 ### Changed
 - Skill improvements across all 7 commands
-- Fixed /org inline execution
+- Fixed /org inline execution [/org removed in v12.2.0]
 
 ## [9.26.0] - 2026-02-27
 
 ### Added
-- /org command: corporate hierarchy orchestration
+- /org command: corporate hierarchy orchestration [/org removed in v12.2.0; folded into /team strategic mode]
 
 ## [9.25.0] - 2026-02-27
 
@@ -67,6 +86,6 @@
 
 ### Added
 - Event-driven pipeline engine for /run
-- prompt-engineer agent
+- prompt-engineer agent [folded into universal-planner in v12.0.0]
 - Reviewer loops in controllers
 - Revision routing (FAIL/REVISE)

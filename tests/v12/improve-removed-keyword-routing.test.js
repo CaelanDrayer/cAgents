@@ -114,10 +114,12 @@ describe('v12.1.2: /improve folded into /run via keyword router', () => {
     expect(content).toMatch(/## \[12\.1\.2\]|improve.*folded.*into.*run|keyword router/i);
   });
 
-  it('version-registry.md slot count reduced from 18 to 17 after improve removal', () => {
+  it('version-registry.md slot count reduced to 16 after improve + org removal', () => {
+    // v12.1.2 removed /improve slot (18 -> 17). v12.2.0 removed /org slot (17 -> 16).
+    // This test originally asserted "17 total"; updated for the v12.2.0 cumulative state.
     const registryPath = join(REPO_ROOT, '.claude', 'rules', 'core', 'version-registry.md');
     expect(existsSync(registryPath)).toBe(true);
     const content = readFileSync(registryPath, 'utf8');
-    expect(content).toMatch(/Version Locations \(17 total\)/);
+    expect(content).toMatch(/Version Locations \(16 total\)/);
   });
 });

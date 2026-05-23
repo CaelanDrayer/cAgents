@@ -71,6 +71,6 @@ Per-command summaries used by Mode 2 and Mode 10 of `/helper`. Read this when th
 
 ## /org - REMOVED in v12.2.0
 
-`/org` was removed in v12.2.0 and absorbed into `/team` strategic mode. Cross-domain coordination — CEO + C-suite deliberation, strategic brief, per-domain dispatch — now runs inside `/team` when `universal-router.domain_count >= 2`. The 12 leadership agents are preserved and act as Wave 0/1 teammates.
+`/org` was removed in v12.2.0 and absorbed into `/team` strategic mode. Cross-domain coordination — CEO + C-suite deliberation, strategic brief, per-domain dispatch — now runs inside `/team` when `router.domain_count >= 2`. The 12 leadership agents are preserved and act as Wave 0/1 teammates.
 
 **Migration**: `/org X` -> `/team X` (strategic mode auto-enables for multi-domain). Force-enable via `--strategic`; force-disable via `--no-strategic`. See `command-details.md` § /org for the full migration table.

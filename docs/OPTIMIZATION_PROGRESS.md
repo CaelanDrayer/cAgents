@@ -8,15 +8,15 @@
 
 Target: ~45% avg reduction, ~1,700 lines saved
 
-- [x] universal-executor-enhanced (648 -> 245, 62% reduction)
-- [x] universal-executor (647 -> 307, 53% reduction)
-- [x] universal-self-correct (613 -> 334, 46% reduction)
+- [x] executor-enhanced (648 -> 245, 62% reduction)
+- [x] executor (647 -> 307, 53% reduction)
+- [x] self-correct (613 -> 334, 46% reduction)
 - [x] optimizer (485 -> 275, 43% reduction)
-- [x] universal-validator (460 -> 180, 61% reduction)
+- [x] validator (460 -> 180, 61% reduction)
 - [x] trigger (456 -> 184, 60% reduction)
 - [x] orchestrator (403 -> 234, 42% reduction)
-- [x] universal-planner (367 -> 222, 40% reduction)
-- [x] universal-router (299 -> 176, 41% reduction)
+- [x] planner (367 -> 222, 40% reduction)
+- [x] router (299 -> 176, 41% reduction)
 
 **Phase 2 Total**: 9/9 complete, 2,221 lines saved (50.7% reduction)
 
@@ -131,7 +131,7 @@ Other (6):
 - [ ] 14 single-file agents
 
 ### core/agents (7 remaining single-file)
-- [ ] 7 single-file agents (hitl, task-inventory, task-consolidator, universal-executor, universal-router, universal-self-correct)
+- [ ] 7 single-file agents (hitl, task-state, task-merger, executor, router, self-correct)
 
 **Phase 4 Total**: 0/118 complete, 0 lines saved
 

@@ -3,7 +3,7 @@
 Reusable prompt prefix injected into the controller spawn when `/run --mode debug`
 is active. Landed dormant in V10.26.12; V10.26.13 wired it into the controller
 spawn (originally PROMPTS_READY state, now PLANNED state in v12.0.0). Subsequent
-patches (V10.26.14–17) extend the universal-validator to enforce the artifacts
+patches (V10.26.14–17) extend the validator to enforce the artifacts
 this prefix asks the controller to produce.
 
 ## Prefix Text

@@ -11,9 +11,9 @@ paths:
 
 All locations where the cAgents version number appears. Keep ALL locations in sync on every release.
 
-**Last verified**: v12.1.2 — `scripts/ci/validate-versions.sh` reports `Checked 17/17 locations, 0 mismatches, 0 skipped`. v12.1.2 removed slot #10 (`.claude/skills/improve/SKILL.md`) when `/improve` was folded into `/run` via the keyword router. Slots #11-#18 renumbered to #10-#17.
+**Last verified**: v12.6.0 — `scripts/ci/validate-versions.sh` reports `Checked 16/16 locations, 0 mismatches, 0 skipped`. v12.2.0 removed slot #7 (`.claude/skills/org/SKILL.md`) when `/org` was removed and cross-domain coordination folded into `/team` strategic mode. Slots #8-#17 renumbered to #7-#16. (Prior v12.1.2 removal: slot `.claude/skills/improve/SKILL.md` when `/improve` was folded into `/run` via the keyword router.)
 
-## Version Locations (17 total)
+## Version Locations (16 total)
 
 See `docs/VERSION_REGISTRY_HISTORY.md` for V10.x history.
 
@@ -25,22 +25,21 @@ See `docs/VERSION_REGISTRY_HISTORY.md` for V10.x history.
 | 4 | `CLAUDE.md` | Quick Reference section (`**Version**:`) | `scripts/sync-versions.sh` |
 | 5 | `.claude/settings.json` | `CAGENTS_VERSION` + `$comment` | `scripts/sync-versions.sh` |
 | 6 | `.claude/skills/run/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
-| 7 | `.claude/skills/org/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
-| 8 | `.claude/skills/team/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
-| 9 | `.claude/skills/designer/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
-| 10 | `.claude/skills/helper/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
-| 11 | `.claude/hooks/session-catchup.cjs` | `cAgents V{version} session initialized` | `scripts/sync-versions.sh` |
-| 12 | `scripts/ci/cagents-ci.sh` | `# Version:` header + `log_section` banner | `scripts/sync-versions.sh` |
-| 13 | `scripts/ci/validate-agents.sh` | `# Version:` header | `scripts/sync-versions.sh` |
-| 14 | `README.md` | Version History `**V{version}** — Current release` | `scripts/sync-versions.sh` |
-| 15 | `docs/README.md` | `**Version**:` header | `scripts/sync-versions.sh` |
-| 16 | `docs/RELEASE_NOTES.md` | `**Current Version**:` header | `scripts/sync-versions.sh` |
-| 17 | `CHANGELOG.md` | `## [VERSION] - DATE` header inserted under `[Unreleased]` | `scripts/sync-versions.sh` |
+| 7 | `.claude/skills/team/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
+| 8 | `.claude/skills/designer/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
+| 9 | `.claude/skills/helper/SKILL.md` | frontmatter `version:` | `scripts/sync-versions.sh` |
+| 10 | `.claude/hooks/session-catchup.cjs` | `cAgents V{version} session initialized` | `scripts/sync-versions.sh` |
+| 11 | `scripts/ci/cagents-ci.sh` | `# Version:` header + `log_section` banner | `scripts/sync-versions.sh` |
+| 12 | `scripts/ci/validate-agents.sh` | `# Version:` header | `scripts/sync-versions.sh` |
+| 13 | `README.md` | Version History `**V{version}** — Current release` | `scripts/sync-versions.sh` |
+| 14 | `docs/README.md` | `**Version**:` header | `scripts/sync-versions.sh` |
+| 15 | `docs/RELEASE_NOTES.md` | `**Current Version**:` header | `scripts/sync-versions.sh` |
+| 16 | `CHANGELOG.md` | `## [VERSION] - DATE` header inserted under `[Unreleased]` | `scripts/sync-versions.sh` |
 
 ## Sync Tool
 
-`scripts/sync-versions.sh <version>` updates all 18 registry locations
-(3 JSON files + CLAUDE.md + settings.json + 6 SKILL.md frontmatters +
+`scripts/sync-versions.sh <version>` updates all 16 registry locations
+(3 JSON files + CLAUDE.md + settings.json + 4 SKILL.md frontmatters +
 session-catchup.cjs + cagents-ci.sh + validate-agents.sh + README.md +
 docs/README.md + docs/RELEASE_NOTES.md + CHANGELOG.md).
 
@@ -70,7 +69,7 @@ Every tiny bump MUST satisfy all six atomicity criteria:
 4. **Back-compat**: the bump must not remove or rename a public-facing
    contract (skill, agent, hook event, memory path). Deprecations are allowed
    (documented + warn-only); removals require a minor or major bump.
-5. **`scripts/sync-versions.sh` run**: all 18 registry locations agree with
+5. **`scripts/sync-versions.sh` run**: all 16 registry locations agree with
    the new version. `grep -r '"version"' .claude-plugin/ package.json` must
    show the new version in every match.
 6. **Regression test per CLAUDE.md mandate**: per the Bug-Driven Testing
@@ -80,17 +79,24 @@ Every tiny bump MUST satisfy all six atomicity criteria:
 
 ### When a bump is NOT a tiny bump
 
-- Multi-file refactors touching more than ~5 files outside the 18 sync
+- Multi-file refactors touching more than ~5 files outside the 16 sync
   locations → should usually be a minor bump (x.Y+1.0).
 - Breaking changes (removed skill, renamed agent, altered hook contract)
   → major bump (X+1.0.0).
 - Reverts of a prior bump → still a tiny bump; describe the revert in the
   CHANGELOG entry and the commit message.
+- **Audit / consolidation sessions** that intentionally touch dozens-to-hundreds
+  of files across multiple surfaces (e.g., a doc + wiring + agent-name sweep)
+  → minor bump. The tiny-bump-guard will correctly block these on `cagents-ci.sh`;
+  bumping to `x.Y+1.0` is the proper response, not bypassing the guard. The
+  CHANGELOG entry should explicitly call out the audit session ID and the
+  surfaces touched. See `team_doc-review-full_260522_001` for the canonical
+  example (v12.6.0 → v12.7.0 with 84 files patched / 233 drift hits resolved).
 
 ### Enforcement
 
 - `scripts/ci/cagents-ci.sh tiny-bump` runs the `check_tiny_bump` stage that
-  validates CHANGELOG.md has an entry for the new version, the 18 registry
+  validates CHANGELOG.md has an entry for the new version, the 16 registry
   locations agree, and the non-sync diff is ≤5 files.
 - **Blocking**: the guard defaults to blocking (exit 6 on violation). Set
   `CAGENTS_TINY_BUMP_BLOCK=0` to opt back into warn-only mode for local

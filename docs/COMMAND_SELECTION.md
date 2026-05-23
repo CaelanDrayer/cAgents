@@ -4,7 +4,7 @@ Guide for choosing the right cAgents skill for your task.
 
 _V11.0 removed /review, /optimize, /context, /debug — see [MIGRATION-V11.md](./MIGRATION-V11.md). v12.1.2 folded /improve into /run via a first-word keyword router. v12.2.0 removed /org and absorbed it into /team strategic mode._
 
-This decision matrix routes review and optimization work to `/run review|optimize|improve <target>` (v12.1.2+ keyword router; or `/run --mode review|optimize|full`), product context to `/run context <subcmd>`, systematic debugging to `/run --mode debug`, and cross-domain coordination to `/team --strategic` (v12.2.0+; auto-enabled when `universal-router.domain_count >= 2`).
+This decision matrix routes review and optimization work to `/run review|optimize|improve <target>` (v12.1.2+ keyword router; or `/run --mode review|optimize|full`), product context to `/run context <subcmd>`, systematic debugging to `/run --mode debug`, and cross-domain coordination to `/team --strategic` (v12.2.0+; auto-enabled when `router.domain_count >= 2`).
 
 ## Quick Decision Tree
 
@@ -57,7 +57,7 @@ Is this a multi-domain strategic initiative?
 - **Best for**: Strategic initiatives spanning multiple business domains
 - **Examples**: "Launch new product", "Restructure engineering team", "Migrate to microservices"
 - **Characteristics**: CEO inline + C-suite Wave 0/1/2 analysis and deliberation, per-domain Wave 3..N dispatch — all inside a single `/team` session with nested waves
-- **Trigger**: Strategic mode auto-enables when `universal-router.domain_count >= 2`; force-enable with `--strategic`, force-disable with `--no-strategic`
+- **Trigger**: Strategic mode auto-enables when `router.domain_count >= 2`; force-enable with `--strategic`, force-disable with `--no-strategic`
 - **Avoid when**: Work fits in a single domain (use /run or flat /team instead)
 - **Migration**: Pre-v12.2.0 this was `/org`, which has been removed and absorbed here
 
@@ -101,10 +101,10 @@ Is this a multi-domain strategic initiative?
 | `--waves N` | /team | Set minimum wave count |
 | `--members N` | /team | Max teammates per wave |
 | `--analytics` | /run | Show execution analytics |
-| `--mode review\|optimize\|full` | /improve | Select review, optimize, or chained mode |
+| `--mode review\|optimize\|full` | /run | Select review, optimize, or chained mode (v12.1.2+: `/run review|optimize|improve` keyword router selects automatically) |
 | `--mode debug` | /run | Systematic 4-phase debugging passthrough |
-| `--scope <path>` | /improve | Restrict scope to a path |
-| `--baseline` | /improve | Establish review baseline |
-| `--suppress` | /improve | Suppress baselined findings |
-| `--benchmark` | /improve | Capture before/after benchmark numbers |
-| `--focus <area>` | /designer, /improve | Focus on a specific area |
+| `--scope <path>` | /run | Restrict scope to a path (for review/optimize modes) |
+| `--baseline` | /run | Establish review baseline (for review/optimize modes) |
+| `--suppress` | /run | Suppress baselined findings (for review/optimize modes) |
+| `--benchmark` | /run | Capture before/after benchmark numbers (for optimize/full modes) |
+| `--focus <area>` | /designer, /run | Focus on a specific area (for review/optimize modes on /run) |

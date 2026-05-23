@@ -128,7 +128,7 @@ Decomposed:
     # ... 4 more files
 
   consolidation:
-    agent: task-consolidator
+    agent: task-merger
     budget: 8000
     actions:
       - Merge all refactored files
@@ -169,7 +169,7 @@ Decomposed:
     # ... 6 more functions
 
   consolidation:
-    agent: task-consolidator
+    agent: task-merger
     budget: 10000
     actions:
       - Merge all optimizations into single file
@@ -214,7 +214,7 @@ Decomposed:
     # ... 3 more security checks
 
   consolidation:
-    agent: task-consolidator
+    agent: task-merger
     budget: 12000
     actions:
       - Aggregate all findings
@@ -257,7 +257,7 @@ Decomposed:
     # ... 3 more sections
 
   consolidation:
-    agent: task-consolidator
+    agent: task-merger
     budget: 12000
     actions:
       - Merge all sections
@@ -312,7 +312,7 @@ Decomposed:
       budget: 7000
 
   consolidation:
-    agent: task-consolidator
+    agent: task-merger
     budget: 12000
     actions:
       - Combine monthly analyses
@@ -483,7 +483,7 @@ for task in tasks:
 
         if decomposable:
             # Enable consolidation
-            task.agent = "task-consolidator"
+            task.agent = "task-merger"
             task.consolidation = {
                 "enabled": true,
                 "strategy": strategy,  # file_based, function_based, etc.
@@ -514,7 +514,7 @@ plan:
 
     - id: task_2
       name: "Implement 8 API endpoints"
-      agent: task-consolidator
+      agent: task-merger
       context_budget: 42000  # Increased for consolidation
       consolidation:
         enabled: true

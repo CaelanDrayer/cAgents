@@ -2,7 +2,12 @@
 
 Comprehensive reference for all cAgents universal commands.
 
-> **V11.0 Migration Note**: `/review`, `/optimize`, `/context`, and `/debug` were removed in V11.0.0. Use `/improve --mode review|optimize|full` for review and optimization work; `/run context <subcmd>` for product context; `/run --mode debug <request>` for systematic debugging. See [docs/MIGRATION-V11.md](MIGRATION-V11.md) for the complete command-by-command migration.
+> **Migration Note** (current as of v12.6.0):
+> - `/review`, `/optimize`, `/context`, `/debug` were removed in V11.0.0.
+> - `/improve` was folded into `/run` via the first-word keyword router in v12.1.2: use `/run review`, `/run optimize`, or `/run improve` (equivalent to `/run --mode review|optimize|full`); `/run context <subcmd>` for product context; `/run --mode debug <request>` for systematic debugging.
+> - `/org` was removed in v12.2.0 and absorbed into `/team` strategic mode (auto-enables when `router.domain_count >= 2`; override with `--strategic` / `--no-strategic`).
+>
+> See [docs/MIGRATION-V11.md](MIGRATION-V11.md) for the V10→V11 migration baseline and CHANGELOG entries v12.1.2 / v12.2.0 for the v12 follow-ups.
 
 ## /designer - Interactive Design Engine
 
@@ -247,85 +252,51 @@ See CLAUDE.md for complete /run documentation.
 
 ---
 
-## /improve - Unified Review and Optimization Engine
+## /run review|optimize|improve — Review and Optimization Modes (v12.1.2+)
 
-**Status**: Production-Ready (V11.0)
-**Domains**: Software, Docs, Content, Design, Process, Data, Infrastructure
-**Complexity**: Tier 2-4
-**Replaces**: `/review` and `/optimize` (removed in V11.0.0)
+**Status**: Folded into `/run` via keyword router (v12.1.2)
+**Predecessor**: standalone `/improve` skill (V11.0.0–v12.1.1); itself replaced `/review` + `/optimize` (V11.0.0)
 
 ### Overview
 
-Single 7-state state machine that consolidates quality review, measurable optimization, and combined audit-then-improve workflows. Mode selection via `--mode review|optimize|full` drives whether the engine reports findings, applies improvements, or chains both with a single baseline.
+Quality review and measurable optimization run inside `/run` via the first-word keyword router introduced in v12.1.2. Mode selection via the keyword (`review`/`audit`/`optimize`/`improve`) — or explicitly via `--mode review|optimize|full` — drives whether the engine reports findings, applies improvements, or chains both with a single baseline.
 
 ### Usage
 
 ```bash
-/improve                               # Default: --mode review on auto-detected scope
-/improve src/                          # Review specific path
-/improve --mode review src/            # Explicit review (find issues, no fixes)
-/improve --mode optimize src/          # Optimize (apply improvements with metrics)
-/improve --mode full --scope src/auth/ # Review + optimize with shared baseline
-/improve --baseline                    # Establish review baseline
-/improve --suppress                    # Suppress baselined findings
-/improve --benchmark                   # Include before/after benchmark comparison
+/run review src/                       # Find issues, no fixes
+/run audit src/                        # Alias for review
+/run optimize src/                     # Apply improvements with metrics
+/run improve src/                      # Review + optimize chained (= --mode full)
+/run review src/ --baseline            # Establish review baseline
+/run review src/ --suppress            # Suppress baselined findings
+/run optimize src/ --benchmark         # Capture before/after benchmark
 ```
 
 ### Modes
 
-| Mode | What It Does | When to Use |
-|------|--------------|-------------|
-| `review` (default) | Detect findings, report severity, suggest fixes | Pre-merge audit, security scan, content QA |
-| `optimize` | Apply improvements atomically with before/after metrics | Performance tuning, refactoring, cost reduction |
-| `full` | Review + optimize chained with one baseline and unified report | End-to-end quality pipeline |
-
-### 7-State State Machine
-
-```
-SCOPING → MEASURING → DETECTING → PLANNING → EXECUTING → VALIDATING → REPORTING
-   ↓          ↓           ↓           ↓           ↓            ↓             ↓
- Target    Baseline    Findings    Approach    Atomic +     Quality      Unified
- + scope   metrics     + severity  + ROI       rollback     gates        report
-```
-
-Each state has explicit entry and exit criteria. The engine pauses for `--baseline` work, branches between review-only and optimize paths based on `--mode`, and produces `improve_report.md` (single report for `--mode full`).
+| Mode | Keyword Trigger | What It Does | When to Use |
+|------|-----------------|--------------|-------------|
+| `review` | `review`, `audit` | Detect findings, report severity, suggest fixes | Pre-merge audit, security scan, content QA |
+| `optimize` | `optimize` | Apply improvements atomically with before/after metrics | Performance tuning, refactoring, cost reduction |
+| `full` | `improve` | Review + optimize chained with one baseline and unified report | End-to-end quality pipeline |
 
 ### Key Flags
 
-- `--mode review|optimize|full` — select pipeline path
-- `--scope <path>` — restrict scope (replaces older `--scope changed|staged`)
+- `--mode review|optimize|full` — explicit mode override (keyword router selects automatically)
+- `--scope <path>` — restrict scope
 - `--baseline` — record current findings as the baseline
 - `--suppress` — suppress baselined findings on subsequent runs
 - `--benchmark` — capture before/after benchmark numbers (perf, size, cost)
 - `--dry-run` — preview plan without applying
 - `--focus security|performance|quality` — focus area
 - `--auto-fix safe` — apply only SAFE-tier fixes automatically
-- `--cross-file` — cross-file dependency analysis (optimize/full only)
 
 ### Pattern Effectiveness Tracking
 
-`/improve` tracks predicted vs. actual impact for each pattern it applies. Over time the engine boosts patterns that consistently deliver and demotes ones that do not. Atomic rollback is preserved: every change is git-snapshotted, and any failed quality gate triggers automatic revert.
+The improve modes track predicted vs. actual impact for each pattern applied. Over time the engine boosts patterns that consistently deliver and demotes ones that do not. Atomic rollback is preserved: every change is git-snapshotted, and any failed quality gate triggers automatic revert.
 
-### Session Files
-
-```
-cagents-memory/sessions/improve_{slug}_{YYMMDD}_{NNN}/
-├── status.yaml                    # Current state + history
-├── workflow/
-│   ├── scope_analysis.yaml        # SCOPING output
-│   ├── baseline_metrics.yaml      # MEASURING output
-│   ├── findings.yaml              # DETECTING output (review)
-│   ├── opportunities.yaml         # DETECTING output (optimize)
-│   ├── plan.yaml                  # PLANNING output
-│   ├── execution_summary.yaml     # EXECUTING results
-│   ├── validation_report.yaml     # VALIDATING gates
-│   └── coordination_log.yaml      # Controller Q&A
-├── changes/{change_id}/           # Per-change snapshots + results
-├── waypoints/                     # State transition checkpoints
-└── outputs/improve_report.md      # Unified final report
-```
-
-See [docs/MIGRATION-V11.md](MIGRATION-V11.md) for migration notes from `/review` and `/optimize`.
+See [.claude/skills/run/reference/improve-mode.md](../.claude/skills/run/reference/improve-mode.md) for the full keyword-router contract and flag list.
 
 ---
 
@@ -334,8 +305,7 @@ See [docs/MIGRATION-V11.md](MIGRATION-V11.md) for migration notes from `/review`
 | Command | Purpose | Duration | Interaction | Output |
 |---------|---------|----------|-------------|--------|
 | **/designer** | Structured design | 15-45 min | 4-phase Q&A | Design doc + artifacts + diagrams + validation |
-| **/run** | Implementation | Varies | Autonomous | Working implementation |
-| **/improve** | Quality review + optimization | 3-20 min | Autonomous (or interactive) | Findings, fixes, before/after metrics |
+| **/run** | Implementation (incl. review/optimize/improve modes) | Varies | Autonomous | Working implementation, findings, fixes, before/after metrics |
 
 ---
 
@@ -344,9 +314,9 @@ See [docs/MIGRATION-V11.md](MIGRATION-V11.md) for migration notes from `/review`
 - **Full Architecture**: See `CLAUDE.md` for complete system documentation
 - **Getting Started**: See `docs/GETTING_STARTED.md` for quick start guide
 - **Architecture**: See `docs/ARCHITECTURE.md` for architecture design
-- **V11 Migration**: See [docs/MIGRATION-V11.md](MIGRATION-V11.md) for `/review`, `/optimize`, `/context`, `/debug` replacements
+- **V11 Migration**: See [docs/MIGRATION-V11.md](MIGRATION-V11.md) for `/review`, `/optimize`, `/context`, `/debug` replacements. (v12.1.2 further folded `/improve` into `/run`; v12.2.0 folded `/org` into `/team` strategic mode — see CHANGELOG entries for the v12 migrations.)
 
 ---
 
-**Commands**: /run, /designer, /improve, /team, /org, /helper
-**Last Updated**: 2026-04-27
+**Commands**: /run, /designer, /team, /helper (v12.2.0+). `/improve` was folded into `/run` in v12.1.2; `/org` was removed in v12.2.0 and absorbed into `/team` strategic mode.
+**Last Updated**: 2026-05-22

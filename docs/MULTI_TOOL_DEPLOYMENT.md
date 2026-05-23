@@ -18,7 +18,7 @@ Three out of six newly-cloned external-skill repos in May 2026 (msitarzewski/age
 
 Reference: `example/external-skills/msitarzewski__agency-agents/scripts/convert.sh` produces 11 tool-specific outputs from one source.
 
-For cAgents' 238 agents + 6 skills, a hypothetical converter would produce:
+For cAgents' 144 agents + 4 skills (post-v12.4.0 P2 compression; post-v12.2.0 `/org` removal), a hypothetical converter would produce:
 
 | Target Tool | Output Format | Round-Trip Quality |
 |-------------|---------------|---------------------|
@@ -33,17 +33,17 @@ For cAgents' 238 agents + 6 skills, a hypothetical converter would produce:
 
 ## Which cAgents agents round-trip cleanly
 
-### Round-trip cleanly (~150 of 238 agents)
+### Round-trip cleanly (~95 of 144 agents)
 
 - **Execution agents (tier 3)**: tier-3 specialists like `backend-developer`, `copywriter`, `qa-tester` have well-bounded scopes and prompt-like behaviors that translate naturally to most target tools.
 - **Most operator agents**: support/content/business-ops agents — single-task focus translates.
 - **Most writer + creator agents**: copywriter, technical-writer, narrative-director — pure prompt translation.
 
-### Lose semantics in translation (~88 of 238 agents)
+### Lose semantics in translation (~49 of 144 agents)
 
 - **Controllers (tier 2)** — `tech-lead`, `architect`, `marketing-strategist`, `narrative-director`: their value is question-based delegation + synthesis across multiple specialists. Target tools without subagent-spawning collapse them into single-pass prompts that lose the coordination value.
-- **Core pipeline (15)** — `orchestrator`, `universal-planner`, `universal-validator`: tightly coupled to cAgents' 5-state machine + hook system. Untranslatable without a state-machine substrate in the target tool.
-- **Leadership (12)** — C-suite agents used by `/org`: same coordination dependency as controllers.
+- **Core pipeline (15)** — `orchestrator`, `planner`, `validator`: tightly coupled to cAgents' 5-state machine + hook system. Untranslatable without a state-machine substrate in the target tool.
+- **Leadership (12)** — C-suite agents used by `/team` strategic mode (auto-enabled when `router.domain_count >= 2`; v12.2.0+, replaces the removed `/org` skill): same coordination dependency as controllers.
 
 ---
 
@@ -76,7 +76,7 @@ For 5 target tools, baseline overhead is ~10-15 hours/week steady-state. cAgents
 
 - **AGENTS.md** (shipped v12.0.1) already gives non-CC users a discoverability surface — they can read the catalog and route via their tool's existing mechanisms.
 - **No specific user demand has surfaced** (as of 2026-05-20) for any specific target-tool converter.
-- **Maintenance cost is the binding constraint**: cAgents' competitive advantage is depth (238 agents + state-machine pipeline + reviewer loops), not breadth across tools.
+- **Maintenance cost is the binding constraint**: cAgents' competitive advantage is depth (144 agents + state-machine pipeline + reviewer loops), not breadth across tools.
 - **Reversible decision**: if a specific tool's demand emerges (5+ user requests, 100+ stars on a community fork, a partner integration request), revisit. The converter is ~3-5 days to build.
 
 ## Trigger conditions to revisit this decision

@@ -1,38 +1,20 @@
-# /org - Corporate Hierarchy Orchestration
+# /org (Removed in v12.2.0)
 
-## Usage
-```bash
-/org <request>
-/org Launch new product with campaign     # Full hierarchy
-/org Fix auth bug                         # Single /run with strategic brief
-/org Restructure engineering team         # Multi-domain (engineering + people)
-/org Migrate to microservices --dry-run   # Preview routing decision
-```
+The `/org` skill was removed in **v12.2.0** and folded into `/team` strategic mode.
 
-## How It Works
+Cross-domain coordination — Wave 0/1 C-suite analysis, brief synthesis, per-domain dispatch — now runs inside `/team` automatically when `router.domain_count >= 2`. Override with `--strategic` (force enable for single-domain executive framing) or `--no-strategic` (force disable; flat multi-wave instead).
 
-1. CEO performs inline strategic analysis
-2. C-suite agents analyze in dependency order (Wave 1: independent, Wave 2: dependent)
-3. Two-phase deliberation (analysis phase + objection phase)
-4. Strategic brief generation
-5. Sequential /team execution per affected domain
+## Migration
 
-## 6-State Pipeline
-```
-INIT -> ANALYZED -> DELIBERATED -> BRIEFED -> EXECUTED -> INTEGRATED -> COMPLETE
-```
+| Pre-v12.2.0 | Post-v12.2.0 |
+|-------------|--------------|
+| `/org Plan Q3 product launch` | `/team Plan Q3 product launch` (strategic mode auto-enables for multi-domain requests) |
+| `/org Restructure engineering team` | `/team Restructure engineering team --strategic` |
+| `/org Fix auth bug` | `/run Fix auth bug` (single-domain → standard `/run`) |
+| `/org Migrate to microservices --dry-run` | `/team Migrate to microservices --strategic --dry-run` |
 
-## C-Suite Agents (leadership/)
-CEO, CTO, CFO, CMO, CRO, COO, CCO, CPO, CHRO, CSO
+## See Also
 
-## Domain Routing
-| Domain Key | C-Suite | Keywords |
-|-----------|---------|----------|
-| engineering | CTO | fix, bug, implement, code, api, deploy |
-| creative | CCO | write, story, content, design, narrative |
-| business | CPO/CRO/CFO/COO | campaign, marketing, sales, budget, product |
-| people | CHRO | hire, recruit, onboard, HR, culture |
-| service | General Counsel | support, legal, compliance, customer |
-
-## Context Mode
-`context: none` -- runs inline because subagents cannot spawn other subagents.
+- [CHANGELOG.md v12.2.0](../../CHANGELOG.md) for the full removal rationale + breaking-change notes
+- [.claude/skills/team/reference/strategic-mode.md](../../.claude/skills/team/reference/strategic-mode.md) for the strategic-mode protocol, brief schema, and examples
+- [docs/SKILLS_REFERENCE.md](../SKILLS_REFERENCE.md) for the current 4-skill catalog (run / team / designer / helper)

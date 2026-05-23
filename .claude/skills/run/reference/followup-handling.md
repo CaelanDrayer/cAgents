@@ -12,7 +12,7 @@ After /run reports results, the pipeline enters a listening state. If the user p
 | **fix** | "bug", "broken", "doesn't work", "error", "failing" | PLANNED (controller only) | Bug fix in delivered code |
 | **review** | "check", "review", "verify", "test", "validate" | COORDINATED (validator only) | Re-validate without re-executing |
 
-**v12.0.0 change**: Pre-v12 used `PROMPTS_READY` for adjustment/fix (controller re-entry) and `DECOMPOSED` for extension (add work items via decomposer). With those states removed, adjustment/fix now re-enter at `PLANNED` (controller picks up the existing plan + work_items and applies the targeted change), and extension re-enters at `ORCHESTRATED` (universal-planner re-decomposes inline to add new work items).
+**v12.0.0 change**: Pre-v12 used `PROMPTS_READY` for adjustment/fix (controller re-entry) and `DECOMPOSED` for extension (add work items via decomposer). With those states removed, adjustment/fix now re-enter at `PLANNED` (controller picks up the existing plan + work_items and applies the targeted change), and extension re-enters at `ORCHESTRATED` (planner re-decomposes inline to add new work items).
 
 ## Re-Entry Procedure
 
@@ -35,7 +35,7 @@ After /run reports results, the pipeline enters a listening state. If the user p
 
 4. Resume the state machine loop from the re-entry point:
    - For adjustment/fix: spawn controller with the follow-up as a targeted sub-request (re-enter at PLANNED)
-   - For rework/extension: re-invoke universal-planner with feedback context (re-enter at ORCHESTRATED). The planner re-produces plan.yaml + work_items.yaml; extensions add new work items, reworks revise existing ones.
+   - For rework/extension: re-invoke planner with feedback context (re-enter at ORCHESTRATED). The planner re-produces plan.yaml + work_items.yaml; extensions add new work items, reworks revise existing ones.
    - For review: re-invoke validator (re-enter at COORDINATED)
 
 5. After follow-up completes:

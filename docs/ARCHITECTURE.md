@@ -10,7 +10,7 @@ cAgents v12.0.0 is the major consolidation release. Architectural changes:
 
 - **Pipeline state-machine reduction (7 -> 5 states)**: The `/run` event-driven pipeline
   collapses from 7 states to 5 by folding `task-decomposer` and `prompt-engineer` into
-  the `universal-planner`. The new sequence is `INIT -> ORCHESTRATED -> PLANNED ->
+  the `planner`. The new sequence is `INIT -> ORCHESTRATED -> PLANNED ->
   COORDINATED -> VALIDATED`. Decomposition becomes a planner sub-responsibility;
   prompt-engineering becomes controller-side prompt assembly. The previously separate
   DECOMPOSED and PROMPTS_READY states are eliminated.
@@ -70,17 +70,17 @@ cAgents is a universal multi-domain agent system with controller-centric coordin
 
 | Archetype | Dir | Agents | Capability |
 |-----------|-----|-------:|------------|
-| **Developer** | `developer/` | 30 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
-| **Operator** | `operator/` | 73 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
-| **Advisor** | `advisor/` | 30 | Legal, health, education, personal (4 branches) |
-| **Analyst** | `analyst/` | 31 | Data, BI, research, social-science |
-| **Creator** | `creator/` | 11 | Visual artists, designers, audiovisual creators |
-| **Writer** | `writer/` | 26 | Copy, narrative, technical writing, editorial |
-| **Strategist** | `strategist/` | 9 | Product owners, portfolio managers, planners |
-| **Core** | `core/` | 15 | Pipeline infrastructure (trigger, orchestrator, universal-planner, reviewer, etc.) |
+| **Developer** | `developer/` | 26 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
+| **Operator** | `operator/` | 36 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
+| **Advisor** | `advisor/` | 12 | Legal, health, education, personal (4 branches) |
+| **Analyst** | `analyst/` | 20 | Data, BI, research, social-science |
+| **Creator** | `creator/` | 5 | Visual artists, designers, audiovisual creators |
+| **Writer** | `writer/` | 10 | Copy, narrative, technical writing, editorial |
+| **Strategist** | `strategist/` | 8 | Product owners, portfolio managers, planners |
+| **Core** | `core/` | 15 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, etc.) |
 | **Leadership** | `leadership/` | 12 | C-suite executives (used by /team strategic mode, not directly routable) |
 
-**Total: 238 agents across 9 archetypes (v12.0.0)**
+**Total: 144 agents across 9 archetypes (v12.4.0 P2 compression)**
 
 ### Legacy domain overlay (config-only)
 

@@ -24,7 +24,7 @@
 |------|-----------|--------|
 | Minimal | Simple fixes, typos | orchestrator -> controller -> validator |
 | Medium | Features, moderate | orchestrator -> planner -> controller -> validator |
-| Full | Complex systems | All 6 agents including decomposer + prompt-engineer |
+| Full | Complex systems | orchestrator -> planner (runs full decomposition + delegation-prompt assembly internally) -> controller -> validator (task-decomposer + prompt-engineer were folded into planner in v12.0.0; 5-state pipeline) |
 
 ## Options
 

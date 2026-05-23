@@ -184,7 +184,7 @@ Agent({
 Agent({
   subagent_type: "cagents:validator",
   description: "Final validation: All waves and WIs complete",
-  prompt: "You are the universal-validator performing final validation.\n\nSESSION: {SESSION_DIR}/\n\nAll {N} waves and integration are complete. Validate all acceptance criteria across all WIs and all wave gates. Write workflow/validation_report.yaml with PASS/FAIL/REVISE classification."
+  prompt: "You are the validator performing final validation.\n\nSESSION: {SESSION_DIR}/\n\nAll {N} waves and integration are complete. Validate all acceptance criteria across all WIs and all wave gates. Write workflow/validation_report.yaml with PASS/FAIL/REVISE classification."
 })
 ```
 

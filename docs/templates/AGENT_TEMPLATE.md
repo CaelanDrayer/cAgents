@@ -1,12 +1,27 @@
 ---
 name: {agent-name}
-tier: {controller|execution|support|infrastructure}
-domain: {engineering|creative|business|growth|people|service|leadership|shared|core}
-coordination_style: {question_based}  # For controllers only
-typical_questions: []  # For controllers only
-answers_questions: []  # For execution agents only
-executes_tasks: []     # For execution agents only
+description: "Use when {trigger scenario}. {What this agent does in 1-2 sentences.}"
+archetype: {developer|operator|advisor|analyst|creator|writer|strategist|core|leadership}
+branch: {valid-branch-for-3-level-archetype}   # REQUIRED only for developer, operator, advisor; OMIT for 2-level archetypes (analyst, creator, writer, strategist) and flat roots (core, leadership)
+metadata:
+  tier: {controller|execution|support|infrastructure}
+  coordination_style: {question_based}  # For controllers only
+  typical_questions: []  # For controllers only
+  answers_questions: []  # For execution agents only
+  executes_tasks: []     # For execution agents only
 ---
+
+<!--
+  Frontmatter notes (v11.1.0+ schema):
+  - The top-level `domain:` field was REMOVED in v11.1.0 — validate-agents.sh
+    rejects it as an error. Use `archetype:` (+ `branch:` for 3-level archetypes)
+    instead.
+  - Valid branches per 3-level archetype:
+      developer: backend | frontend | fullstack | infrastructure | quality
+      operator:  support | business-ops | people-ops | marketing-sales | content
+      advisor:   legal | health | education | personal
+-->
+
 
 # {Agent Name}
 
@@ -166,17 +181,22 @@ controller_catalog:
 
 ## Reference
 
-### Frontmatter Fields
+### Frontmatter Fields (v11.1.0+ schema)
 
 ```yaml
-name: {agent-name}          # Required: kebab-case name
-tier: {tier}                # Required: controller, execution, support, infrastructure
-domain: {domain}            # Required: business domain or core/shared
-coordination_style: {style} # Controllers: question_based
-typical_questions: []       # Controllers: list of question patterns
-answers_questions: []       # Execution: list of question types answered
-executes_tasks: []          # Execution: list of task types executed
+name: {agent-name}          # Required: kebab-case name, matches directory name
+description: "..."          # Required: 1-2 sentences ("Use when ...")
+archetype: {archetype}      # Required: developer|operator|advisor|analyst|creator|writer|strategist|core|leadership
+branch: {branch}            # Required only for 3-level archetypes (developer, operator, advisor)
+metadata:
+  tier: {tier}              # Required: controller, execution, support, infrastructure
+  coordination_style: {style} # Controllers: question_based
+  typical_questions: []     # Controllers: list of question patterns
+  answers_questions: []     # Execution: list of question types answered
+  executes_tasks: []        # Execution: list of task types executed
 ```
+
+Note: Pre-v11.1.0 templates included a top-level `domain:` field. That field was REMOVED in v11.1.0 and `validate-agents.sh` now rejects it as an error.
 
 ### Related Agents
 

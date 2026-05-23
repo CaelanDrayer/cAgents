@@ -7,12 +7,13 @@ This template provides the structure for creating universal workflow agents that
 ```markdown
 ---
 name: universal-{agent-type}
-description: {One-line description}. Works across ALL domains through configuration files.
-capabilities: [{capability1}, {capability2}, ...]
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
-model: opus  # or sonnet for lighter agents
-color: {color}
-domain: core  # Universal agents live in core
+description: {One-line description}. Works across ALL archetypes through configuration files.
+archetype: core   # Universal/pipeline agents live in core (v11.1.0+ schema; top-level `domain:` field was REMOVED in v11.1.0)
+metadata:
+  capabilities: [{capability1}, {capability2}, ...]
+  model: opus  # or sonnet for lighter agents
+  color: {color}
+allowed-tools: Read Grep Glob Write Bash Agent
 ---
 
 You are the **Universal {AgentType} Agent**, the {role} for ALL cAgents domains.

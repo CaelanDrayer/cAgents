@@ -2,34 +2,34 @@
 
 ## System Architecture
 
-cAgents is a multi-domain agent orchestration system built as a Claude Code plugin. It coordinates 243 specialized agents across 15 domains using a controller-centric delegation pattern.
+cAgents is a multi-domain agent orchestration system built as a Claude Code plugin. It coordinates 144 specialized agents across 9 builder-role archetypes (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership) using a controller-centric delegation pattern. The 9-archetype layout has been canonical since v11.1.0; the v12.4.0 P2 compression cut the catalog from 240 to 144.
 
 ## Key Concepts
 
 ### Agent Tiers
 | Tier | Role | Count | Examples |
 |------|------|-------|---------|
-| Core Infrastructure | Pipeline agents | 17 | trigger, orchestrator, planner, validator |
-| Controller (Tier 2) | Coordination | ~30 | tech-lead, marketing-strategist |
-| Execution (Tier 3) | Implementation | ~150 | backend-developer, copywriter |
+| Core Infrastructure | Pipeline agents | 15 | trigger, orchestrator, planner, reviewer, validator |
+| Controller (Tier 2) | Coordination | ~25 | tech-lead, marketing-strategist |
+| Execution (Tier 3) | Implementation | ~95 | backend-developer, copywriter |
 | Support (Tier 4) | Services | ~10 | scribe, data-extractor |
 
-### Delegation Chain
+### Delegation Chain (5-state pipeline since v12.0.0)
 ```
 User Request -> /run (state machine)
   -> orchestrator (context enrichment)
-  -> planner (objectives + controller selection)
-  -> decomposer (work items)
-  -> prompt-engineer (delegation prompts)
+  -> planner (objectives + controller selection + decomposition + prompt assembly)
   -> controller (coordination + reviewer loops)
   -> validator (quality gates)
 ```
 
+Decomposition and prompt-engineering are sub-responsibilities of the planner since v12.0.0 (task-decomposer + prompt-engineer were folded into the planner; architecture-reviewer was absorbed into `architect --review`).
+
 ### Progressive Pipeline
 Three execution paths based on complexity scoring:
-- **Minimal** (< 0.25): Skip decomposer + prompt-engineer
-- **Medium** (0.25 - 0.65): Skip prompt-engineer only
-- **Full** (>= 0.65): All pipeline agents
+- **Minimal** (< 0.25): Fast path — planner skips internal decomposition step
+- **Medium** (0.25 - 0.65): Adaptive — planner runs decomposition but skips delegation-prompt assembly
+- **Full** (>= 0.65): Full planner pipeline (decomposition + delegation prompts)
 
 ### Controller Pattern
 Controllers never do direct work. They:

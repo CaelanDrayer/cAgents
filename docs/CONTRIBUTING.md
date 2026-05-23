@@ -8,7 +8,7 @@
 git clone <repo>
 cd cAgents
 npm install
-npm test          # 351 Vitest tests
+npm test          # 1030+ Vitest tests across 101+ files
 ```
 
 Ensure `node` is in your PATH — hooks rely on it.
@@ -23,25 +23,27 @@ Ensure `node` is in your PATH — hooks rely on it.
    ```
    {domain}/agents/{name}/SKILL.md
    ```
-   Required frontmatter:
+   Required frontmatter (v11.1.0+ schema; the top-level `domain:` field was REMOVED in v11.1.0 — agents now declare `archetype:` instead, with `branch:` for 3-level archetypes):
    ```yaml
    ---
    name: my-agent           # kebab-case, matches directory name
    description: "..."       # 1-2 sentences: what it does, when to use it
-   tier: execution          # controller | execution | support | infrastructure
-   domain: engineering      # engineering | creative | business | growth | people | service | leadership | shared | core
+   archetype: developer     # one of: developer | operator | advisor | analyst | creator | writer | strategist | core | leadership
+   branch: backend          # REQUIRED for 3-level archetypes (developer, operator, advisor); see archetype table for valid branches
+   metadata:
+     tier: execution        # controller | execution | support | infrastructure
    ---
    ```
-   Optional but recommended: `model`, `vibe` (personality one-liner, max 80 chars), `capabilities`.
+   Optional but recommended: `model`, `vibe` (personality one-liner, max 80 chars), `capabilities` (also inside `metadata:`).
 
 3. **Register in plugin.json**:
-   Add the SKILL.md path to the `agents` array in `.claude-plugin/plugin.json`.
+   Run `bash scripts/sync-agents.sh` to register the agent in `.claude-plugin/plugin.json` automatically.
 
 4. **Validate**:
    ```bash
    bash scripts/ci/validate-agents.sh
    ```
-   All agents must pass before a PR is merged.
+   All agents must pass before a PR is merged. `validate-agents.sh` rejects top-level `domain:` as an error (legacy schema).
 
 ### Frontmatter Reference
 
@@ -108,7 +110,7 @@ Full hook reference: `.claude/rules/core/hooks.md`
 ## Running Tests
 
 ```bash
-npm test                    # All 351 Vitest tests (hooks + config)
+npm test                    # All 1030+ Vitest tests across 101+ files (hooks + config + regression)
 bash scripts/ci/validate-agents.sh   # Agent SKILL.md validation
 ```
 
@@ -175,18 +177,18 @@ All PRs require review. Checklist:
 
 ---
 
-## Domain Structure
+## Archetype Structure (v11.1.0+ canonical)
 
-| Domain | Dir | Agents | Scope |
-|--------|-----|--------|-------|
-| **Engineering** | `engineering/` | 32 | Software dev, infra, security, QA |
-| **Creative** | `creative/` | 30 | Writing, narrative, game art, audio |
-| **Business** | `business/` | 31 | Strategy, product, ops, finance |
-| **Growth** | `growth/` | 39 | Marketing, sales, revenue ops |
-| **People** | `people/` | 19 | HR, talent, culture |
-| **Service** | `service/` | 32 | Support, CX, legal, compliance |
-| **Leadership** | `leadership/` | 11 | C-suite (used by `/org`, not directly routable) |
-| **Core** | `core/` | 16 | Pipeline infrastructure agents |
-| **Shared** | `shared/` | 12 | Cross-domain (BI, data science) |
+| Archetype | Dir | Agents | Scope |
+|-----------|-----|-------:|-------|
+| **Developer** | `developer/` | 26 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
+| **Operator** | `operator/` | 36 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
+| **Advisor** | `advisor/` | 12 | Legal, health, education, personal (4 branches) |
+| **Analyst** | `analyst/` | 20 | Data, BI, research, social-science |
+| **Creator** | `creator/` | 5 | Visual, design, audiovisual |
+| **Writer** | `writer/` | 10 | Copy, narrative, technical, editorial |
+| **Strategist** | `strategist/` | 8 | Product owners, portfolio, planning |
+| **Core** | `core/` | 15 | Pipeline infrastructure agents |
+| **Leadership** | `leadership/` | 12 | C-suite (used by `/team` strategic mode, not directly routable) |
 
-Each domain has `{domain}/config/domain_overrides.yaml` (controller catalog, router keywords). All agents are registered in the centralized root `.claude-plugin/plugin.json`.
+Total: 144 agents (post-v12.4.0 P2 compression from 240). The legacy 13-domain layout (engineering/, creative/, business/, growth/, people/, service/, science/, health/, education/, personal/, arts/, trades/, shared/) was replaced by these 9 archetypes in v11.1.0. Two legacy dirs (`people/` and `shared/`) survive on disk as routing-config-only overlays (no SKILL.md files); the other 11 were deleted and consolidated into `cagents-memory/_system/config/routing.yaml`. All agents are registered in the centralized root `.claude-plugin/plugin.json`.

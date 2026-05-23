@@ -1,10 +1,10 @@
 # Migration Guide
 
-> **Current cAgents version**: V11.0.1 — 243 agents across 15 domains, unified `/improve` engine, V10.x commands `/review`, `/optimize`, `/context`, and `/debug` removed.
+> **Current cAgents version**: v12.6.0 — 144 agents across 9 builder-role archetypes (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership), 4 in-terminal skills (`/run`, `/team`, `/designer`, `/helper`). V10.x commands `/review`, `/optimize`, `/context`, `/debug` were removed in V11.0; `/improve` was folded into `/run` via the keyword router in v12.1.2; `/org` was removed in v12.2.0 and folded into `/team` strategic mode.
 
-How to move from single-purpose plugins (`feature-dev`, `code-review`) to cAgents V11.0.1.
+How to move from single-purpose plugins (`feature-dev`, `code-review`) to cAgents v12.x.
 
-> **V11.0 Note**: This guide covers migrating from external plugins to cAgents. For users upgrading from cAgents V10.x to V11.0+ (where `/review`, `/optimize`, `/context`, and `/debug` were removed and consolidated under `/improve`), see [docs/MIGRATION-V11.md](MIGRATION-V11.md) for command-by-command replacements.
+> **V11.0 Note**: This guide covers migrating from external plugins to cAgents. For users upgrading from cAgents V10.x to V11.0+ (where `/review`, `/optimize`, `/context`, and `/debug` were removed and consolidated under `/improve`), see [docs/MIGRATION-V11.md](MIGRATION-V11.md) for command-by-command replacements. For V11 → V12 migrations (v12.1.2 `/improve` fold, v12.2.0 `/org` removal), see [CHANGELOG.md](../CHANGELOG.md).
 
 ## Why Migrate?
 
@@ -40,25 +40,25 @@ What changes:
 - A reviewer validates spec compliance then code quality before the work is marked done
 - If validation fails, the pipeline re-runs the controller (up to 5 cycles) instead of stopping
 
-### code-review → /improve --mode review
+### code-review → /run review
 
-`/improve --mode review` is the direct replacement for code-review plugins. It runs parallel specialist agents instead of a single sequential pass. (V11.0 unified the previous `/review` and `/optimize` skills under `/improve`; see [docs/MIGRATION-V11.md](MIGRATION-V11.md) for the V10→V11 mapping.)
+`/run review` is the direct replacement for code-review plugins. It runs parallel specialist agents instead of a single sequential pass. (V11.0 unified the previous `/review` and `/optimize` skills under `/improve`; v12.1.2 folded `/improve` into `/run` via the first-word keyword router. See [docs/MIGRATION-V11.md](MIGRATION-V11.md) for the V10→V11 mapping and CHANGELOG entries for the v12 folds.)
 
 ```bash
 # code-review plugin
 /code-review src/auth/
 
-# cAgents equivalent (V11+)
-/improve --mode review src/auth/
+# cAgents equivalent (v12.1.2+)
+/run review src/auth/
 ```
 
 What changes:
 - Security, code quality, and performance reviewers run in parallel instead of sequentially
 - Each reviewer reports findings with CRITICAL/HIGH/LOW severity tiers
-- `/improve --mode optimize` (or `--mode full`) applies fixes with before/after metrics and atomic rollback
+- `/run optimize` (or `/run improve` = `--mode full`) applies fixes with before/after metrics and atomic rollback
 - Review baselines suppress known issues via `--baseline` and `--suppress`
 
-### No Equivalent → /team, /org
+### No Equivalent → /team (with strategic mode for cross-domain)
 
 These have no feature-dev or code-review counterpart. Use them when you need:
 
@@ -66,8 +66,8 @@ These have no feature-dev or code-review counterpart. Use them when you need:
 # Parallel execution with 5-7 quality-gated waves
 /team Build the user authentication system
 
-# Cross-domain strategy via C-suite agents
-/org Plan Q3 product launch
+# Cross-domain strategy via C-suite agents (strategic mode auto-enables for multi-domain requests)
+/team Plan Q3 product launch
 ```
 
 ## When to Upgrade
@@ -92,11 +92,11 @@ These have no feature-dev or code-review counterpart. Use them when you need:
 
 ### Upgrade from code-review if you need:
 
-**Parallel specialist review**: `/improve --mode review` runs security, quality, and performance reviewers simultaneously instead of one reviewer making all calls.
+**Parallel specialist review**: `/run review` runs security, quality, and performance reviewers simultaneously instead of one reviewer making all calls.
 
-**Apply-and-measure pipeline**: `/improve --mode optimize` (or `--mode full`) carries findings through into atomic, rollback-safe changes with before/after metrics — not just a report.
+**Apply-and-measure pipeline**: `/run optimize` (or `/run improve` = `--mode full`) carries findings through into atomic, rollback-safe changes with before/after metrics — not just a report.
 
-**Review baselines**: `/improve --baseline` records known issues so repeat runs only surface new findings (use `--suppress` to silence baselined findings).
+**Review baselines**: `/run review --baseline` records known issues so repeat runs only surface new findings (use `--suppress` to silence baselined findings).
 
 **Tier 3+ blind review**: For complex work, multiple reviewers evaluate independently and a Devil's Advocate challenges unanimous PASS decisions.
 
@@ -121,23 +121,27 @@ Any feature with 3+ independent components benefits from parallel wave execution
 /team Implement the billing module     # Stripe integration + UI + tests + docs
 ```
 
-### 3. Use /org for cross-domain strategy
+### 3. Use /team strategic mode for cross-domain strategy
 
-When work spans engineering + business + people or needs executive-level analysis:
-
-```bash
-/org Plan the new developer onboarding experience
-/org Decide on our API versioning strategy
-```
-
-### 4. Replace code-review with /improve
+When work spans engineering + business + people or needs executive-level analysis, `/team` auto-enables strategic mode (Wave 0/1/2 = C-suite deliberation, Wave 3..N = per-domain dispatch) when `router.domain_count >= 2`. Force-enable with `--strategic`:
 
 ```bash
-/improve --mode review src/                          # Full codebase review
-/improve --mode full --scope src/auth/               # Review auth module then apply fixes with metrics
-/improve --mode review src/ --baseline               # First run: establish baseline
-/improve --mode review src/ --baseline --suppress    # Subsequent runs: suppress known issues
+/team Plan the new developer onboarding experience
+/team Decide on our API versioning strategy --strategic
 ```
+
+(Pre-v12.2.0 this was `/org Plan ...` — the `/org` skill was removed in v12.2.0 and absorbed into `/team` strategic mode.)
+
+### 4. Replace code-review with /run review (v12.1.2+ keyword router)
+
+```bash
+/run review src/                          # Full codebase review
+/run improve --scope src/auth/            # Review auth module then apply fixes with metrics (= --mode full)
+/run review src/ --baseline               # First run: establish baseline
+/run review src/ --baseline --suppress    # Subsequent runs: suppress known issues
+```
+
+(Pre-v12.1.2 this was `/improve --mode review|optimize|full` — the `/improve` skill was folded into `/run` in v12.1.2 via the first-word keyword router; all original flags carried over.)
 
 ## Token Usage
 
@@ -147,8 +151,8 @@ cAgents uses more tokens than single-purpose plugins. Each subagent in the pipel
 |---------|----------------------------------------|
 | `/run` (tier 2) | 10-20x |
 | `/run` (tier 3) | 20-40x |
-| `/team` | 30-60x |
-| `/org` | 50-100x |
+| `/team` (standard) | 30-60x |
+| `/team --strategic` (cross-domain; auto-enables for multi-domain requests, replaces removed `/org`) | 50-100x |
 
 This overhead buys automatic routing, reviewer loops, revision routing, and quality-gated execution. For small single-file fixes, use Claude Code directly — cAgents is optimized for multi-step work that benefits from coordination.
 
@@ -158,6 +162,6 @@ This overhead buys automatic routing, reviewer loops, revision routing, and qual
 
 **Too many tokens for simple tasks**: Use Claude Code directly for single-file fixes. cAgents is designed for multi-step, multi-agent work.
 
-**Review finds no issues**: If the codebase is genuinely clean, `/improve --mode review` will report a passing score. Use `--focus security` (or another focus area) to narrow scrutiny.
+**Review finds no issues**: If the codebase is genuinely clean, `/run review` will report a passing score. Use `--focus security` (or another focus area) to narrow scrutiny.
 
 **Pipeline stalls in coordinating phase**: The controller is waiting for execution agents. Check that the session directory exists under `cagents-memory/sessions/` and that `coordination_log.yaml` is being written.

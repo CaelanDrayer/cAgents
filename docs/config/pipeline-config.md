@@ -7,7 +7,7 @@
 ## Structure (v12.0.0 — 5-state collapse)
 
 In v12.0.0 the pipeline collapsed from 7 states to 5. `task-decomposer` and
-`prompt-engineer` were absorbed into `universal-planner` per Q1 of the v12
+`prompt-engineer` were absorbed into `planner` per Q1 of the v12
 revamp. Legacy names are preserved via `scripts/migration/v12-aliases.yaml`.
 
 ```yaml
@@ -62,5 +62,5 @@ revision:
 - **Revision routing**: FAIL re-executes from PLANNED, REVISE re-plans
 - **Terminal state**: VALIDATED ends the pipeline
 - **v12 absorption**: `task-decomposer` and `prompt-engineer` were folded into
-  `universal-planner`'s resources/ in v12.0.0; controllers fall back to
+  `planner`'s resources/ in v12.0.0; controllers fall back to
   standard prompts (formerly produced by prompt-engineer).

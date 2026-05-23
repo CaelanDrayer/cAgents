@@ -180,7 +180,7 @@ When the user wants both review and optimization with a single shared baseline:
 **Signal words**: launch, restructure, migrate, company-wide, cross-team, strategic, multi-domain, executive, C-suite
 
 **Examples**:
-- "Launch the new product across engineering, marketing, and hiring" -> `/team Launch new product` (strategic mode auto-enables when universal-router detects 2+ domains)
+- "Launch the new product across engineering, marketing, and hiring" -> `/team Launch new product` (strategic mode auto-enables when router detects 2+ domains)
 - "Restructure the engineering org" -> `/team Restructure engineering team --strategic` (force-enable for single-domain when an executive frame is desired)
 
 (Pre-v12.2.0 these examples used `/org`; v12.2.0 absorbed /org into /team strategic mode.)

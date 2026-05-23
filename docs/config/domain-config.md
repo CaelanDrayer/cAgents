@@ -42,7 +42,7 @@ Maps complexity tiers to controller agents. The planner uses this to select the 
 - `tier_4`: Executive + primary + supporting for expert-level requests
 
 ### router.keywords
-Keywords that trigger routing to this domain. The universal-router matches user request text against these keywords.
+Keywords that trigger routing to this domain. The router matches user request text against these keywords.
 
 ## Special Domains
 

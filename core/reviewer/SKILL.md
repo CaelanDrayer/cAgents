@@ -24,7 +24,7 @@ metadata:
   related_agents:
     - name: code-reviewer
       type: collaborates_with
-    - name: universal-validator
+    - name: validator
       type: collaborates_with
 allowed-tools: Read Grep Glob Write Edit Bash
 ---

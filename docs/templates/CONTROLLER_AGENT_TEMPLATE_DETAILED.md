@@ -5,7 +5,7 @@ domain: {domain}
 description: Coordinates {domain} work through question-based delegation to execution agents
 specialization: [{capability-1}, {capability-2}]
 delegates_to: [{execution-agent-1}, {execution-agent-2}]
-reports_to: universal-executor
+reports_to: executor
 model: sonnet
 tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
 ---
@@ -365,7 +365,7 @@ TodoWrite({
 
 ## Reporting
 
-**To**: universal-executor
+**To**: executor
 
 **Format**: coordination_log.yaml
 

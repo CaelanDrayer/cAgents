@@ -1,10 +1,43 @@
 # Risk Classification
 
-Canonical risk-classification rules for `/improve --mode optimize`.
-The snapshot / apply / test / keep-or-rollback primitive lives at
-`.claude/skills/improve/reference/atomic-rollback.md`; both
-`/improve --mode review` (auto-fix) and `/improve --mode optimize`
-(EXECUTING) reference it by path.
+Canonical risk-classification rules for `/run improve --mode optimize` (and
+`/run review|audit` via the v12.1.2 keyword router). Both review-mode
+auto-fix and optimize-mode EXECUTING phases share a common
+snapshot / apply / test / keep-or-rollback primitive, inlined below.
+
+## Atomic Rollback Primitive
+
+The atomic-rollback primitive wraps every auto-applied change in a
+four-step transaction. It is the safety mechanism that makes auto-fix
+acceptable for SAFE / LOW / MEDIUM risk findings:
+
+1. **Snapshot**: Before applying any change, capture the pre-change
+   state. Two snapshot strategies are supported:
+   - **Git snapshot** (preferred): `git stash push -u -m "improve-{N}"`
+     creates a restore point that survives across files and includes
+     untracked additions.
+   - **File backup** (fallback when git unavailable or in a non-repo
+     working tree): copy the target file(s) to `cagents-memory/sessions/{id}/snapshots/improve-{N}/`.
+2. **Apply**: Make the change (Edit/Write/Bash). The change MUST be
+   confined to the files declared in the finding's `affected_files`
+   list — broader edits trigger an automatic rollback before the
+   verification step.
+3. **Test**: Run the verification chain appropriate to the risk tier
+   (see the Validation Required column in the Risk Levels table below).
+   The verification command MUST complete without errors AND produce
+   evidence (exit code 0 + matching output for `metric_check` /
+   `test_result` verifications).
+4. **Keep-or-rollback**: If verification PASSES, commit the change
+   (release the snapshot — `git stash drop` or remove the backup
+   directory). If verification FAILS, restore the snapshot
+   (`git stash pop` or copy the backup back) and mark the finding as
+   `rejected_by_guard` in the optimize report with the failing
+   command's output appended.
+
+The primitive is invoked once per finding. Multiple findings batched into
+one apply step are NOT supported — each finding gets its own snapshot
+and its own keep-or-rollback decision, so a single failing change does
+not block the remaining queue.
 
 ## Risk Levels
 

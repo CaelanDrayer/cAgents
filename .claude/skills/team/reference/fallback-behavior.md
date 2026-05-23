@@ -101,7 +101,6 @@ Current limitations of built-in agent teams:
 
 ## Related Files
 
-- `core/agents/team-trigger/SKILL.md` - Team initialization
-- `core/agents/team-lead-adapter/SKILL.md` - Controller-to-lead wrapper
+- `.claude/skills/team/SKILL.md` - Team init + lead wrapper inline (the standalone `team-trigger` and `team-lead-adapter` core agents were removed in v12.0.0; `/team` skill loop now does this work)
 - `.claude/rules/core/teams.md` - Team coordination patterns
 - `docs/TEAM_MODE.md` - Full documentation

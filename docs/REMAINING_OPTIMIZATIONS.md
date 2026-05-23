@@ -13,7 +13,7 @@
 - **Token savings**: 78-86% per agent
 
 ### v8.0.15: Core Infrastructure Agents (CRITICAL)
-- **5 largest core agents migrated** (trigger, optimizer, universal-planner, task-decomposer, universal-validator)
+- **5 largest core agents migrated** (trigger, optimizer, planner, task-decomposer, validator)
 - **73% average token savings** (7,275 tokens saved in baseline load)
 - **Quality**: ✅ APPROVED (comprehensive validation)
 - **15 resource files created** (3 per agent)
@@ -59,9 +59,9 @@
 **Core Domain SKILL.md Agents** (5 total):
 1. trigger
 2. optimizer
-3. universal-planner
+3. planner
 4. task-decomposer
-5. universal-validator
+5. validator
 
 **Total Migrated**: 27 agents (22 make + 5 core)
 

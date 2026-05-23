@@ -28,7 +28,7 @@ This led to:
 
 ### 1. Universal-Executor (Primary Enforcement)
 
-**Location**: `core/universal-executor.md`
+**Location**: `core/executor.md`
 
 **Changes**:
 - Added MANDATORY COMPLETION PROTOCOL section (109 lines)
@@ -58,7 +58,7 @@ actual_context_used: 12450
 
 ### 2. Universal-Validator (Secondary Enforcement)
 
-**Location**: `core/universal-validator.md`
+**Location**: `core/validator.md`
 
 **Changes**:
 - Added "Task Completion Verification (MANDATORY FIRST STEP)" section
@@ -246,8 +246,8 @@ actual_context_used: 12450  # tokens
 
 ## Files Modified
 
-1. `core/universal-executor.md` - Added completion protocol (110+ lines)
-2. `core/universal-validator.md` - Added verification checks (45+ lines)
+1. `core/executor.md` - Added completion protocol (110+ lines)
+2. `core/validator.md` - Added verification checks (45+ lines)
 3. `core/orchestrator.md` - Added phase transition checks (15+ lines)
 4. `cagents-memory/_system/domains/software/executor_config.yaml` - Added protocol section (70+ lines)
 5. `CLAUDE.md` - Added protocol reference and quick reference update

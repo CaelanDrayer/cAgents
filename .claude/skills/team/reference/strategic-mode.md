@@ -13,7 +13,7 @@ This document is the canonical wave-flow reference. For complementary topics:
 
 Strategic mode is activated by:
 - `/team --strategic <instruction>` explicit flag, OR
-- `/team <instruction>` when the universal-router detects multi-domain scope (2+ domains touched) and tier 3+ complexity
+- `/team <instruction>` when the router detects multi-domain scope (2+ domains touched) and tier 3+ complexity
 
 Single-domain or tier-2 requests do NOT enter strategic mode — they use the standard `/team` flat-wave or template-wave flow.
 

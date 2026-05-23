@@ -4,7 +4,7 @@ How agents interact during workflow execution. For architecture, commands, and a
 
 **Version**: V12.2.0 current
 
-_V11.0 removed /review, /optimize, /context, /debug — see [MIGRATION-V11.md](./MIGRATION-V11.md). v12.1.2 folded /improve into /run via a first-word keyword router; review and optimization are now modes of `/run` (`/run review`, `/run optimize`, `/run improve` — or `--mode review|optimize|full`). v12.2.0 removed /org and absorbed cross-domain coordination into `/team` strategic mode (auto-enabled when `universal-router.domain_count >= 2`)._
+_V11.0 removed /review, /optimize, /context, /debug — see [MIGRATION-V11.md](./MIGRATION-V11.md). v12.1.2 folded /improve into /run via a first-word keyword router; review and optimization are now modes of `/run` (`/run review`, `/run optimize`, `/run improve` — or `--mode review|optimize|full`). v12.2.0 removed /org and absorbed cross-domain coordination into `/team` strategic mode (auto-enabled when `router.domain_count >= 2`)._
 
 ---
 
@@ -22,12 +22,12 @@ User (Chairperson)
         +-- Wave N (Lead): Integration controller -> final validator
 ```
 
-**Trigger**: Strategic mode auto-enables when `universal-router.domain_count >= 2`. Force-enable with `--strategic`; force-disable with `--no-strategic`. (Pre-v12.2.0 this work ran under a separate `/org` skill, which was removed in v12.2.0 and folded into `/team` strategic mode.)
+**Trigger**: Strategic mode auto-enables when `router.domain_count >= 2`. Force-enable with `--strategic`; force-disable with `--no-strategic`. (Pre-v12.2.0 this work ran under a separate `/org` skill, which was removed in v12.2.0 and folded into `/team` strategic mode.)
 
 **Routing**: 1 domain + simple scope -> /run. 1 domain + complex -> flat /team. 2+ domains -> /team strategic mode (Wave 0/1/2 C-suite deliberation + Wave 3..N per-domain dispatch in the same session).
 
 **Example** (`/team Launch analytics product by Q2`):
-1. Wave 0/1: universal-router identifies 5 domains, lead spawns CTO, CCO, CRO, CFO, CHRO as Wave 1 teammates in parallel
+1. Wave 0/1: router identifies 5 domains, lead spawns CTO, CCO, CRO, CFO, CHRO as Wave 1 teammates in parallel
 2. Wave 2: CFO objects (budget), CHRO flags (hiring timeline) -> lead resolves with phased approach -> strategic brief written
 3. Wave 3..N: Per-domain dispatch (engineering, creative, growth, operations, people) executes against the strategic brief
 4. Wave N (Lead): integration + final validation
@@ -35,18 +35,16 @@ User (Chairperson)
 ### /run -- Event-Driven Pipeline
 
 ```
-/run (state machine, level 0)
+/run (state machine, level 0; 5-state pipeline since v12.0.0)
   +-> orchestrator (level 1)    -> enriched_context.yaml
-  +-> planner (level 1)         -> plan.yaml
-  +-> decomposer (level 1)      -> work_items.yaml
-  +-> prompt-engineer (level 1)  -> delegation_prompts.yaml
+  +-> planner (level 1)         -> plan.yaml + work_items.yaml (+ delegation_prompts.yaml on Full path; task-decomposer and prompt-engineer were folded into the planner in v12.0.0)
   +-> controller (level 1)
        +-> executor (level 2)   -> implementation
        +-> reviewer (level 2)   -> review_report.yaml
   +-> validator (level 1)       -> validation_report.yaml
 ```
 
-**Revision routing**: FAIL -> re-run controller (PROMPTS_READY). REVISE -> re-run planner (PLANNED). Max 5 cycles.
+**Revision routing**: FAIL -> re-run controller (PLANNED). REVISE -> re-run planner (ORCHESTRATED). Max 3 cycles (tightened from 5 in v12.0.0 per audit recommendation).
 
 **Example** (`/run Fix login auth bug`):
 1. Domain=Engineering, tier=2. Orchestrator enriches (JWT auth, Express, React)

@@ -371,7 +371,7 @@ When creating or modifying agents, follow these patterns:
 ### Pattern 1: Phase Completion Signal (Correct)
 
 ```markdown
-## Agent: universal-planner
+## Agent: planner
 
 After creating plan.yaml:
 

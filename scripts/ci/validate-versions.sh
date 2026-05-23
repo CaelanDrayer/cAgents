@@ -1,14 +1,14 @@
 #!/bin/bash
-# Validate version consistency across the 18 canonical cAgents locations.
+# Validate version consistency across the 16 canonical cAgents locations.
 # See .claude/rules/core/version-registry.md for the registry.
-# Paired with scripts/sync-versions.sh — both must track the same 18 slots.
+# Paired with scripts/sync-versions.sh — both must track the same 16 slots.
 
 set -e
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$PROJECT_DIR"
 
-echo "Validating version consistency across 18 canonical locations..."
+echo "Validating version consistency across 16 canonical locations..."
 echo ""
 
 # Source of truth
@@ -66,7 +66,7 @@ check_version() {
     fi
 }
 
-echo "Checking 18 canonical locations (per .claude/rules/core/version-registry.md):"
+echo "Checking 16 canonical locations (per .claude/rules/core/version-registry.md):"
 echo ""
 
 # 1. package.json (source of truth)
@@ -99,65 +99,66 @@ else
     CHECKED=$((CHECKED + 1))
 fi
 
-# 6-10. Skill SKILL.md frontmatter versions (5 active skills in v12.1.2; /improve folded into /run)
+# 6-9. Skill SKILL.md frontmatter versions (4 active skills as of v12.2.0;
+# /org removed in v12.2.0 and absorbed into /team strategic mode;
+# /improve removed in v12.1.2 and folded into /run)
 check_version ".claude/skills/run/SKILL.md"      "6. .claude/skills/run/SKILL.md"
-check_version ".claude/skills/org/SKILL.md"      "7. .claude/skills/org/SKILL.md"
-check_version ".claude/skills/team/SKILL.md"     "8. .claude/skills/team/SKILL.md"
-check_version ".claude/skills/designer/SKILL.md" "9. .claude/skills/designer/SKILL.md"
-check_version ".claude/skills/helper/SKILL.md"   "10. .claude/skills/helper/SKILL.md"
+check_version ".claude/skills/team/SKILL.md"     "7. .claude/skills/team/SKILL.md"
+check_version ".claude/skills/designer/SKILL.md" "8. .claude/skills/designer/SKILL.md"
+check_version ".claude/skills/helper/SKILL.md"   "9. .claude/skills/helper/SKILL.md"
 
-# 12. session-catchup.cjs version string
-check_version ".claude/hooks/session-catchup.cjs" "12. .claude/hooks/session-catchup.cjs"
+# 10. session-catchup.cjs version string
+check_version ".claude/hooks/session-catchup.cjs" "10. .claude/hooks/session-catchup.cjs"
 
-# 13. cagents-ci.sh version header
-check_version "scripts/ci/cagents-ci.sh" "13. scripts/ci/cagents-ci.sh"
+# 11. cagents-ci.sh version header
+check_version "scripts/ci/cagents-ci.sh" "11. scripts/ci/cagents-ci.sh"
 
-# 14. validate-agents.sh version header
-check_version "scripts/ci/validate-agents.sh" "14. scripts/ci/validate-agents.sh"
+# 12. validate-agents.sh version header
+check_version "scripts/ci/validate-agents.sh" "12. scripts/ci/validate-agents.sh"
 
-# 15. README.md Version History line
+# 13. README.md Version History line
 if [ -f "README.md" ]; then
     CHECKED=$((CHECKED + 1))
     README_VERSION=$(grep -m1 -oP '\*\*V\K[0-9]+\.[0-9]+\.[0-9]+(?=\*\* — Current release)' README.md 2>/dev/null || echo "")
     if [ -n "$README_VERSION" ]; then
         if [ "$README_VERSION" = "$PKG_VERSION" ]; then
-            echo "  OK    15. README.md: $README_VERSION"
+            echo "  OK    13. README.md: $README_VERSION"
         else
-            echo "  FAIL  15. README.md: $README_VERSION (expected $PKG_VERSION)"
+            echo "  FAIL  13. README.md: $README_VERSION (expected $PKG_VERSION)"
             ERRORS=$((ERRORS + 1))
         fi
     else
-        echo "  WARN  15. README.md (Version History line not found)"
+        echo "  WARN  13. README.md (Version History line not found)"
     fi
 else
-    echo "  SKIP  15. README.md (not found)"
+    echo "  SKIP  13. README.md (not found)"
     SKIPPED=$((SKIPPED + 1))
     CHECKED=$((CHECKED + 1))
 fi
 
-# 16. docs/README.md Version header
-check_version "docs/README.md" "16. docs/README.md"
+# 14. docs/README.md Version header
+check_version "docs/README.md" "14. docs/README.md"
 
-# 17. docs/RELEASE_NOTES.md Current Version header
-check_version "docs/RELEASE_NOTES.md" "17. docs/RELEASE_NOTES.md"
+# 15. docs/RELEASE_NOTES.md Current Version header
+check_version "docs/RELEASE_NOTES.md" "15. docs/RELEASE_NOTES.md"
 
-# 18. CHANGELOG.md - assert that ## [VERSION] header exists
+# 16. CHANGELOG.md - assert that ## [VERSION] header exists
 if [ -f "CHANGELOG.md" ]; then
     CHECKED=$((CHECKED + 1))
     if grep -qE "^## \[$PKG_VERSION\]" CHANGELOG.md; then
-        echo "  OK    18. CHANGELOG.md: ## [$PKG_VERSION] entry present"
+        echo "  OK    16. CHANGELOG.md: ## [$PKG_VERSION] entry present"
     else
-        echo "  FAIL  18. CHANGELOG.md: missing ## [$PKG_VERSION] entry"
+        echo "  FAIL  16. CHANGELOG.md: missing ## [$PKG_VERSION] entry"
         ERRORS=$((ERRORS + 1))
     fi
 else
-    echo "  SKIP  18. CHANGELOG.md (not found)"
+    echo "  SKIP  16. CHANGELOG.md (not found)"
     SKIPPED=$((SKIPPED + 1))
     CHECKED=$((CHECKED + 1))
 fi
 
 echo ""
-echo "Checked $CHECKED/17 locations, $ERRORS mismatches, $SKIPPED skipped"
+echo "Checked $CHECKED/16 locations, $ERRORS mismatches, $SKIPPED skipped"
 
 if [ "$ERRORS" -gt 0 ]; then
     echo "FAIL: Version sync errors found. Run scripts/sync-versions.sh <version> to fix."

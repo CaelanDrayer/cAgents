@@ -159,7 +159,7 @@ C-suite executives (used by /team strategic mode in v12.2.0+; not directly routa
 
 #### Core (17 agents)
 
-Infrastructure agents (trigger, orchestrator, planner, reviewer, validator, generic-coordinator, etc.).
+Infrastructure agents (trigger, orchestrator, planner, reviewer, validator, coordinator, etc.).
 
 #### Shared (12 agents)
 
@@ -168,7 +168,7 @@ Cross-domain intelligence utilities:
 
 #### Science, Health, Education, Personal, Arts, Trades (10 + 5 + 5 + 5 + 5 + 5 agents)
 
-Smaller domains served by `generic-coordinator` from `core/`. STEM research, medical/wellness, teaching, career/life coaching, visual arts/music/film, and culinary/construction/automotive/agriculture work routes here.
+Smaller domains served by `coordinator` from `core/`. STEM research, medical/wellness, teaching, career/life coaching, visual arts/music/film, and culinary/construction/automotive/agriculture work routes here.
 
 #### Domain Detection
 
@@ -275,12 +275,11 @@ cAgents has 243 specialized agents organized in a 4-tier hierarchy:
 These are the backbone -- they manage workflows, not tasks:
 - **trigger** -- Entry point, domain detection
 - **orchestrator** -- Phase conductor
-- **universal-router/planner/executor/validator/self-correct** -- Universal workflow agents
-- **task-decomposer/consolidator/inventory** -- Task management
-- **team-trigger/team-lead-adapter** -- Team coordination
+- **router/planner/executor/validator/self-correct** -- Universal workflow agents (planner absorbed `task-decomposer` and `prompt-engineer` in v12.0.0)
+- **task-merger/task-state** -- Task management (`task-decomposer` was absorbed into `planner` in v12.0.0)
+- **team** -- Team coordination (replaces the standalone `team-trigger` and `team-lead-adapter` agents removed in v12.0.0 — `/team` skill loop now does this work inline)
 - **hitl** -- Human escalation
 - **optimizer** -- Universal optimization
-- **prompt-engineer** -- Delegation prompt crafting
 
 #### Tier 2: Controllers
 

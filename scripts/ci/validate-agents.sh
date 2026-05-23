@@ -379,6 +379,13 @@ validate_archetype() {
     fi
 
     while IFS= read -r skill_md; do
+        # Skip _deprecated/ buckets — per `.claude/rules/core/skill-format.md`
+        # § Deprecation, agents under `_deprecated/` are intentionally excluded
+        # from `.claude-plugin/plugin.json` (alias-only) and must not be
+        # validated against the live registry.
+        case "$skill_md" in
+            */_deprecated/*) continue ;;
+        esac
         validate_agent "$skill_md"
     done < <(find "$archetype_dir" -name SKILL.md -type f 2>/dev/null | sort)
 }
@@ -456,8 +463,8 @@ validate_hooks() {
         echo -e "  ${GREEN}All $hook_count registered hooks have matching .cjs files${NC}"
     fi
 
-    if [[ $hook_count -gt 0 ]] && [[ $hook_count -ne 27 ]]; then
-        log_warn "Hook count mismatch: found $hook_count registered hooks, expected 27"
+    if [[ $hook_count -gt 0 ]] && [[ $hook_count -ne 28 ]]; then
+        log_warn "Hook count mismatch: found $hook_count registered hooks, expected 28"
     fi
 }
 
