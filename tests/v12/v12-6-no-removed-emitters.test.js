@@ -110,7 +110,8 @@ describe('v12.6.0 AC-4.1: no DECOMPOSED/PROMPTS_READY state names in hooks', () 
     '.claude/hooks/verify-completion.cjs',
     '.claude/hooks/pre-compact-save.cjs',
     '.claude/hooks/subagent-tracker.cjs',
-    '.claude/hooks/attention-injection.cjs',
+    // attention-injection.cjs removed in v12.7.0 (P2-10): 80% no-op rate;
+    // post-compact-restore.cjs covers the goal-restore use case.
   ];
 
   for (const hookRelPath of HOOK_FILES) {

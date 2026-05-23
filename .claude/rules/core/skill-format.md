@@ -159,35 +159,6 @@ Sub-field semantics:
 `analyst/data-scientist`. See `tests/skills/paths-conditional-activation.test.js` for
 the regression test enforcing the ≥10 floor.
 
-### requires (V11.1.10)
-
-Declares runtime dependencies that the agent needs in order to operate. Lives inside the `metadata:` block (not at the top level) so it conforms to the Agent Skills spec, which only allows 6 top-level frontmatter fields.
-
-The `metadata.requires` block is read by the **session-init-gate** PreToolUse[Agent] hook, which performs an **advisory** check before each agent spawn. Missing dependencies emit a `systemMessage` warning but **do NOT block** the spawn — this is a v1 advisory gate, not a hard block. Future versions may promote selected sub-fields (e.g., `bins`) to blocking enforcement.
-
-```yaml
-metadata:
-  requires:
-    bins: [npx, node]              # array of executable names checked via `command -v`
-    env: [API_KEY, DATABASE_URL]   # array of env var names checked via `process.env`
-    files: [config/foo.yaml]       # array of relative paths checked via `fs.existsSync`
-    min_node_version: "20.0.0"     # OPTIONAL string semver minimum
-```
-
-Sub-fields:
-- **`bins:`** *(array of strings, REQUIRED if `requires` present, may be `[]`)* — executable names checked with `command -v <name>`. The hook runs `command -v` synchronously and reports the bin as missing on non-zero exit.
-- **`env:`** *(array of strings, REQUIRED if `requires` present, may be `[]`)* — environment variable names. Each is checked for truthiness via `process.env[name]`.
-- **`files:`** *(array of strings, OPTIONAL)* — paths relative to the project root, checked with `fs.existsSync(path.join(rootDir, file))`.
-- **`min_node_version:`** *(string, OPTIONAL)* — minimum Node.js version as a semver string. Compared against `process.versions.node` (major-version digit comparison; full semver comparison is best-effort and may be tightened in a future bump).
-
-**Behavior**: When a `cagents:<name>` agent is about to spawn, the session-init-gate hook locates the agent's `SKILL.md` via the plugin manifest, parses `metadata.requires`, runs the four checks above, and if any dependency is missing emits:
-
-```
-[session-init-gate] Agent cagents:<name> declares metadata.requires but missing: <list>. Spawn proceeding (advisory only — not blocking).
-```
-
-The advisory does not change `permissionDecision` and never denies. Agents that do not declare `metadata.requires` are unaffected. The schema is back-compat with the prior opportunistic usage in `developer/quality/playwright-test-engineer/SKILL.md`, which has declared `requires.bins: [npx, node]` since v11.1.x.
-
 ### data_access_level (V12.0.6+)
 
 Declares the trust tier of data this agent is designed to operate on.

@@ -30,6 +30,6 @@ Run at various points by **Multiple Agents** throughout the workflow. **Enforced
 
 ## Key Principles
 
-1. **Hooks run all 5 checks**: Every check listed here runs automatically via the relevant hook (`subagent-stop-tracker.cjs`, `post-write-validator.cjs`, `attention-injection.cjs`, `verify-completion.cjs`) regardless of agent behavior.
+1. **Hooks run all 5 checks**: Every check listed here runs automatically via the relevant hook (`subagent-stop-tracker.cjs`, `post-write-validator.cjs`, `verify-completion.cjs`) regardless of agent behavior. (Goal-refresh injection moved from `attention-injection.cjs` to `post-compact-restore.cjs` in v12.7.0 — see P2-10.)
 2. **Evidence-first**: All completion claims must cite specific artifacts (files, test outputs, metrics) — vague claims are rejected.
 3. **Active-only here**: This file describes enforced checks only. Aspirational checks live in `docs/FUTURE_VALIDATION_FRAMEWORK.md` and should be graduated one at a time as the supporting hook or agent behavior lands.

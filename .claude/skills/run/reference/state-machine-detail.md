@@ -61,7 +61,7 @@ while current_state is not terminal (VALIDATED):
   9. Advance to next_state per pipeline_config.yaml
 ```
 
-The verify-completion.cjs hook, attention-injection.cjs hook, and session discovery all read pipeline_state from status.yaml. If you skip the status.yaml update, hooks see stale state and cannot detect mid-pipeline stops.
+The verify-completion.cjs hook, post-compact-restore.cjs hook, and session discovery all read pipeline_state from status.yaml. If you skip the status.yaml update, hooks see stale state and cannot detect mid-pipeline stops.
 
 ## Pre-Enrichment Detection (for /team teammate flows)
 

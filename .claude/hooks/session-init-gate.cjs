@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Session Init Gate Hook - PreToolUse[Agent] Guard
- * cAgents V11.1.10 (P0-2 v12.7.x: aliasLookup added)
+ * cAgents V11.1.10 (P0-2 v12.7.x: aliasLookup added; P2-10 v12.7.x: metadata.requires removed)
  *
  * Responsibilities (in order):
  *
@@ -23,22 +23,19 @@
  *    can rewrite the spawn under the new name. If not aliased, emit a
  *    Levenshtein-≤3 suggestion. Advisory only — never blocks.
  *
- * 3. METADATA.REQUIRES ADVISORY GATE (V11.1.10):
- *    After session presence is confirmed, looks up the spawning agent's SKILL.md
- *    via the plugin manifest, parses metadata.requires (bins/env/files/min_node_version),
- *    and emits an advisory systemMessage if any declared dependency is missing.
- *    DOES NOT BLOCK — purely advisory v1 enforcement. Agents without
- *    metadata.requires are unaffected.
+ * 3. METADATA.DATA_ACCESS_LEVEL ADVISORY (V12.0.6).
  *
- * 4. METADATA.DATA_ACCESS_LEVEL ADVISORY (V12.0.6).
+ * NOTE (P2-10 v12.7.x): The previous "metadata.requires" advisory block
+ * (parseRequires/checkRequires functions, bins/env/files/min_node_version
+ * checks) was removed because adoption was 4 agents (<5 threshold).
+ * The field is no longer documented in skill-format.md.
  */
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
 const { createHook, findActiveSession, AGENT_MEMORY_DIR, PROJECT_ROOT, denyWithReason } = require('./hook-utils.cjs');
 
-// --- metadata.requires helpers (V11.1.10) ---
+// --- SKILL.md lookup helper ---
 
 /**
  * Locate the SKILL.md for a `cagents:<name>` agent by scanning the plugin manifest.
@@ -70,193 +67,13 @@ function findAgentSkillPath(agentName, rootDir) {
   return null;
 }
 
-/**
- * Extract metadata.requires block from SKILL.md frontmatter.
- * Uses simple line-scan parsing (no js-yaml dependency at hook level for fast cold-start).
- * Returns { bins, env, files, min_node_version } object, or null if no `requires:` block.
- */
-function parseRequires(skillPath) {
-  let raw;
-  try {
-    raw = fs.readFileSync(skillPath, 'utf8');
-  } catch {
-    return null;
-  }
-  // Extract frontmatter between first two '---' lines
-  const fmMatch = raw.match(/^---\s*\n([\s\S]*?)\n---/);
-  if (!fmMatch) return null;
-  const fm = fmMatch[1];
-
-  // Find metadata: block (top-level key with no leading whitespace)
-  const lines = fm.split('\n');
-  let inMetadata = false;
-  let inRequires = false;
-  let requiresIndent = -1; // indent level of `requires:` key
-  const result = { bins: null, env: null, files: null, min_node_version: null };
-  let currentSubKey = null;       // 'bins' | 'env' | 'files' | null
-  let currentSubItems = [];       // accumulator for list items
-
-  function flushSubKey() {
-    if (currentSubKey && Array.isArray(currentSubItems)) {
-      result[currentSubKey] = currentSubItems.slice();
-    }
-    currentSubKey = null;
-    currentSubItems = [];
-  }
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    // Detect end-of-frontmatter (handled by regex), so we just iterate
-    const indent = line.match(/^(\s*)/)[1].length;
-    const stripped = line.trim();
-
-    if (!inMetadata) {
-      if (/^metadata\s*:\s*$/.test(line)) {
-        inMetadata = true;
-      }
-      continue;
-    }
-
-    // Inside metadata block: must be indented > 0 to remain inside
-    if (stripped !== '' && indent === 0) {
-      // Left metadata block (next top-level key at column 0)
-      flushSubKey();
-      break;
-    }
-
-    if (!inRequires) {
-      // Look for `requires:` as direct child of metadata (typically indent 2)
-      const reqMatch = line.match(/^(\s+)requires\s*:\s*$/);
-      if (reqMatch) {
-        requiresIndent = reqMatch[1].length;
-        inRequires = true;
-        continue;
-      }
-      // Inline form: `requires: { ... }` — skip (rare; handled via fallback)
-      const inlineReq = line.match(/^(\s+)requires\s*:\s*\{(.*)\}\s*$/);
-      if (inlineReq) {
-        // Best-effort inline parse: try JSON-like
-        try {
-          const obj = JSON.parse(inlineReq[2]
-            .replace(/(['"])?([a-zA-Z_][a-zA-Z0-9_]*)\1\s*:/g, '"$2":')
-            .replace(/'/g, '"'));
-          // Coerce
-          if (Array.isArray(obj.bins)) result.bins = obj.bins;
-          if (Array.isArray(obj.env)) result.env = obj.env;
-          if (Array.isArray(obj.files)) result.files = obj.files;
-          if (typeof obj.min_node_version === 'string') result.min_node_version = obj.min_node_version;
-        } catch {}
-        inRequires = true; // mark as found (no further block to parse)
-      }
-      continue;
-    }
-
-    // Inside requires block. Allowed indents:
-    // - sub-key at indent = requiresIndent + 2 (e.g. "    bins:")
-    // - list item at indent = requiresIndent + 4 (e.g. "      - npx")
-    if (stripped === '') continue;
-    if (indent <= requiresIndent) {
-      // Left requires block
-      flushSubKey();
-      inRequires = false;
-      // Re-process this line for metadata bounds
-      i--;
-      continue;
-    }
-
-    // Sub-key form: "<indent+2>bins:" or "<indent+2>bins: [a, b]"
-    const subKeyMatch = line.match(/^(\s+)(bins|env|files|min_node_version)\s*:\s*(.*)$/);
-    if (subKeyMatch && subKeyMatch[1].length === requiresIndent + 2) {
-      flushSubKey();
-      const key = subKeyMatch[2];
-      const inlineVal = subKeyMatch[3].trim();
-      if (key === 'min_node_version') {
-        // Strip quotes
-        const m = inlineVal.match(/^["']?([0-9.]+)["']?$/);
-        if (m) result.min_node_version = m[1];
-        continue;
-      }
-      // bins | env | files
-      if (inlineVal === '' || inlineVal === '[]') {
-        // Block list follows OR empty list
-        if (inlineVal === '[]') {
-          result[key] = [];
-        } else {
-          currentSubKey = key;
-          currentSubItems = [];
-        }
-        continue;
-      }
-      // Inline list: "[a, b, c]"
-      const inlineListMatch = inlineVal.match(/^\[(.*)\]$/);
-      if (inlineListMatch) {
-        const items = inlineListMatch[1]
-          .split(',')
-          .map(s => s.trim().replace(/^["']|["']$/g, ''))
-          .filter(s => s.length > 0);
-        result[key] = items;
-        continue;
-      }
-      continue;
-    }
-
-    // List item: "- value" at indent = requiresIndent + 4 (under bins/env/files)
-    const listItemMatch = line.match(/^(\s+)-\s*(.+)$/);
-    if (listItemMatch && currentSubKey && listItemMatch[1].length === requiresIndent + 4) {
-      const val = listItemMatch[2].trim().replace(/^["']|["']$/g, '');
-      currentSubItems.push(val);
-      continue;
-    }
-  }
-  flushSubKey();
-
-  // Return null if no requires block at all was found
-  const found = result.bins !== null || result.env !== null || result.files !== null || result.min_node_version !== null;
-  return found ? result : null;
-}
-
-/**
- * Check declared dependencies. Returns array of missing dependency strings.
- */
-function checkRequires(requires, rootDir) {
-  const missing = [];
-  if (Array.isArray(requires.bins)) {
-    for (const bin of requires.bins) {
-      if (!bin) continue;
-      try {
-        execSync(`command -v ${JSON.stringify(bin)}`, { stdio: 'ignore', shell: '/bin/bash' });
-      } catch {
-        missing.push(`bin:${bin}`);
-      }
-    }
-  }
-  if (Array.isArray(requires.env)) {
-    for (const ev of requires.env) {
-      if (!ev) continue;
-      if (!process.env[ev]) missing.push(`env:${ev}`);
-    }
-  }
-  if (Array.isArray(requires.files)) {
-    for (const f of requires.files) {
-      if (!f) continue;
-      const abs = path.isAbsolute(f) ? f : path.join(rootDir, f);
-      if (!fs.existsSync(abs)) missing.push(`file:${f}`);
-    }
-  }
-  if (typeof requires.min_node_version === 'string' && requires.min_node_version) {
-    const required = requires.min_node_version;
-    const actual = process.versions.node;
-    // Best-effort: compare major.minor.patch numerically
-    const parse = v => v.split('.').map(n => parseInt(n, 10) || 0);
-    const [rMaj, rMin, rPat] = parse(required);
-    const [aMaj, aMin, aPat] = parse(actual);
-    const ok = (aMaj > rMaj)
-      || (aMaj === rMaj && aMin > rMin)
-      || (aMaj === rMaj && aMin === rMin && aPat >= rPat);
-    if (!ok) missing.push(`node:${actual}<${required}`);
-  }
-  return missing;
-}
+// --- metadata.requires removed (P2-10 v12.7.x) ---
+// The previous parseRequires() / checkRequires() advisory block (V11.1.10)
+// was removed because metadata.requires adoption was 4 agents (below the
+// 5-agent threshold). The field is no longer documented in skill-format.md.
+// If adoption ever crosses 5+ agents again, promote the check to
+// permissionDecision: deny (not advisory) per the "decisive not advisory"
+// rule from P2-10. See git history for the removed implementation.
 
 // --- metadata.data_access_level helpers (V12.0.6) ---
 
@@ -551,25 +368,9 @@ createHook('SessionInitGate', async (input) => {
     // (router/orchestrator) sees it even if systemMessage is dropped from
     // the model's context. Does NOT deny — see return value below.
     aliasReason = aliasResult.message;
-    // For an alias hit, point the rest of the advisory checks at the NEW
-    // name's SKILL.md (so metadata.requires/data_access_level apply to the
-    // agent that will actually run after the rewrite).
-    if (aliasResult.kind === 'alias') {
-      const newSkillPath = findAgentSkillPath(aliasResult.newName, PROJECT_ROOT);
-      if (newSkillPath) {
-        // Fall through with the new path
-        const skillPath = newSkillPath;
-        const requires = parseRequires(skillPath);
-        if (requires) {
-          const missing = checkRequires(requires, PROJECT_ROOT);
-          if (missing.length > 0) {
-            advisories.push(
-              `[session-init-gate] Agent cagents:${aliasResult.newName} (rewritten from ${subagentType}) declares metadata.requires but missing: ${missing.join(', ')}. Spawn proceeding (advisory only — not blocking).`,
-            );
-          }
-        }
-      }
-    }
+    // (P2-10 v12.7.x) metadata.requires advisory removed — no per-alias
+    // dependency check is performed. data_access_level is still checked
+    // below in the post-alias-skip path, but only for non-aliased spawns.
     // For alias/suggest/unknown: skip the standard "find skill by old name" path
     // (the old name isn't in the manifest by definition), emit advisories, return.
     return {
@@ -582,22 +383,11 @@ createHook('SessionInitGate', async (input) => {
     };
   }
 
-  // ---- Phase 3: metadata.requires advisory check (V11.1.10) ----
-
   const skillPath = findAgentSkillPath(agentName, PROJECT_ROOT);
   if (!skillPath) return null; // Agent SKILL.md not found in manifest; skip silently
 
-  const requires = parseRequires(skillPath);
-  if (requires) {
-    const missing = checkRequires(requires, PROJECT_ROOT);
-    if (missing.length > 0) {
-      advisories.push(
-        `[session-init-gate] Agent ${subagentType} declares metadata.requires but missing: ${missing.join(', ')}. Spawn proceeding (advisory only — not blocking).`
-      );
-    }
-  }
-
-  // ---- Phase 4: metadata.data_access_level advisory check (V12.0.6) ----
+  // ---- Phase 3: metadata.data_access_level advisory check (V12.0.6) ----
+  // (Was Phase 4 prior to P2-10 v12.7.x — Phase 3 metadata.requires removed.)
   const childLevel = parseDataAccessLevel(skillPath);
   if (childLevel === 'unverified') {
     const sessionDir = findActiveSession(input.session_id);

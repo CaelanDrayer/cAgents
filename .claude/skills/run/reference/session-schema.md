@@ -2,7 +2,7 @@
 
 Internal contract for cAgents session YAML — consumed by cAgents hooks and agents. **NOT a public API. NOT consumed by external visualizers.** External consumers MUST treat the schema as private and stable only within a single cAgents version.
 
-v12.6.0 dropped the external visualizer-UI contract. Fields documented here are read by cAgents agents (planner, controller, validator) and hooks (verify-completion.cjs, attention-injection.cjs, subagent-tracker.cjs, post-write-validator.cjs). Any field NOT listed here is no longer written; see the v12.6.0 CHANGELOG entry for the full removal list.
+v12.6.0 dropped the external visualizer-UI contract. Fields documented here are read by cAgents agents (planner, controller, validator) and hooks (verify-completion.cjs, post-compact-restore.cjs, subagent-tracker.cjs, post-write-validator.cjs). Any field NOT listed here is no longer written; see the v12.6.0 CHANGELOG entry for the full removal list. (attention-injection.cjs removed in v12.7.0 per P2-10.)
 
 ## Session Directory Structure
 
@@ -90,7 +90,7 @@ Tracks the current pipeline/phase state and state history.
 | /run | `pipeline_state` | Event-driven pipeline engine with formal state machine |
 | /team, /designer | `phase` | Phase-based workflow progression |
 
-Hooks (`attention-injection.cjs`, `session-catchup.cjs`, `verify-completion.cjs`) check BOTH `pipeline_state` AND `phase` as fallback.
+Hooks (`session-catchup.cjs`, `verify-completion.cjs`, `post-compact-restore.cjs`) check BOTH `pipeline_state` AND `phase` as fallback.
 
 ### Schema (v12.6.0)
 
@@ -170,7 +170,7 @@ Hooks discover active sessions by scanning `cagents-memory/sessions/` for direct
 ### Key Hook Behaviors
 
 - **session-catchup.cjs** (SessionStart): Detects incomplete sessions by checking status.yaml for non-terminal states.
-- **attention-injection.cjs** (PreToolUse): Reads `pipeline_state` OR `phase` from status.yaml.
+- **post-compact-restore.cjs** (PostCompact): Reads `pipeline_state` OR `phase` from status.yaml and re-injects mission + phase summary after compaction (replaced `attention-injection.cjs` in v12.7.0).
 - **subagent-tracker.cjs** (SubagentStart): Writes to `workflow/agent_tree.yaml`.
 - **post-write-validator.cjs** (PostToolUse): Logs to `workflow/file_changes.log`.
 - **pre-compact-save.cjs** (PreCompact): Creates waypoints in `waypoints/`.

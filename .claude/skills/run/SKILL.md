@@ -178,7 +178,7 @@ Detected: Domain={domain} ({super_domain}), Tier={tier}, Controller={controller_
 
 **3e. Execute the state machine loop**: For each state, look up the agent in pipeline_config, spawn via Agent tool, read the agent's primary output file (enriched_context.yaml / plan.yaml / coordination_log.yaml / validation_report.yaml), update status.yaml, call TaskUpdate, check for revision, advance. (v12.6.0: workflow/events/ emission removed — primary output files are the canonical state-advancement signal.)
 
-**MANDATORY**: Update status.yaml after EVERY state transition. The verify-completion.cjs and attention-injection.cjs hooks read pipeline_state from status.yaml. Skipping this update breaks hook-based session detection.
+**MANDATORY**: Update status.yaml after EVERY state transition. The verify-completion.cjs hook (and post-compact-restore.cjs after compaction) reads pipeline_state from status.yaml. Skipping this update breaks hook-based session detection.
 
 **3f. Agent delegation pattern** for each state spawn:
 
