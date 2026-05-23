@@ -79,7 +79,7 @@ describe('root plugin.json', () => {
     const agents = plugin.agents;
     const archetypes = ['developer', 'operator', 'advisor', 'analyst', 'creator', 'writer', 'strategist', 'core', 'leadership'];
     for (const archetype of archetypes) {
-      const archetypeAgents = agents.filter(a => a.startsWith(`./${archetype}/`));
+      const archetypeAgents = agents.filter(a => a.startsWith(`./agents/${archetype}/`));
       expect(archetypeAgents.length, `archetype ${archetype} should have at least one agent`).toBeGreaterThan(0);
     }
   });

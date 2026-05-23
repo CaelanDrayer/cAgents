@@ -2,7 +2,7 @@
 #
 # cAgents Agent Schema Validation
 # Validates all agent SKILL.md files across all 9 archetype roots
-# Version: 12.7.0
+# Version: 12.8.0
 #
 # Usage:
 #   ./scripts/ci/validate-agents.sh                    # Validate all archetypes
@@ -55,7 +55,9 @@ STRICT=false
 COUNT_ONLY=false
 FILTER_ARCHETYPE=""
 
-# v11.1.0 archetype roots (9 total)
+# v12.8.0: archetypes live under agents/. Layout: agents/{archetype}/...
+ARCHETYPES_PARENT="agents"
+# 9 builder-role archetype roots
 ARCHETYPES=(developer operator advisor analyst creator writer strategist core leadership)
 
 # 3-level archetypes (require `branch:` field)
@@ -125,11 +127,11 @@ declare -A AGENT_INDEX
 build_agent_index() {
     local archetype skill_md name dir
     for archetype in "${ARCHETYPES[@]}"; do
-        [[ ! -d "$PROJECT_ROOT/$archetype" ]] && continue
+        [[ ! -d "$PROJECT_ROOT/$ARCHETYPES_PARENT/$archetype" ]] && continue
         while IFS= read -r skill_md; do
             dir=$(basename "$(dirname "$skill_md")")
             AGENT_INDEX[$dir]="$skill_md"
-        done < <(find "$PROJECT_ROOT/$archetype" -name SKILL.md -type f 2>/dev/null)
+        done < <(find "$PROJECT_ROOT/$ARCHETYPES_PARENT/$archetype" -name SKILL.md -type f 2>/dev/null)
     done
 }
 
@@ -239,7 +241,8 @@ validate_agent() {
 
     # v11.1.0 path layout
     local dir_archetype dir_branch dir_name
-    dir_archetype=$(echo "$relative_path" | cut -d'/' -f1)
+    # v12.8.0: paths are agents/{archetype}/..., so cut f2 (skip leading "agents/")
+    dir_archetype=$(echo "$relative_path" | cut -d'/' -f2)
     dir_name=$(basename "$(dirname "$skill_md")")
 
     # Check 7: archetype field required + must match directory
@@ -260,7 +263,8 @@ validate_agent() {
 
     # Check 8: branch field required for 3-level archetypes; must match dir-2
     if is_in_array "$dir_archetype" "${THREE_LEVEL_ARCHETYPES[@]}"; then
-        dir_branch=$(echo "$relative_path" | cut -d'/' -f2)
+        # v12.8.0: paths are agents/{archetype}/{branch}/..., so cut f3
+        dir_branch=$(echo "$relative_path" | cut -d'/' -f3)
         local branch_value
         branch_value=$(get_top_field "branch")
         if [[ -z "$branch_value" ]]; then
@@ -368,7 +372,7 @@ validate_agent() {
 #
 validate_archetype() {
     local archetype="$1"
-    local archetype_dir="$PROJECT_ROOT/$archetype"
+    local archetype_dir="$PROJECT_ROOT/$ARCHETYPES_PARENT/$archetype"
 
     if [[ ! -d "$archetype_dir" ]]; then
         return
@@ -512,8 +516,15 @@ validate_domain_overrides() {
     local overrides_errors=0
 
     for legacy_domain in "${LEGACY_DOMAINS[@]}"; do
-        local overrides_file="$PROJECT_ROOT/$legacy_domain/config/domain_overrides.yaml"
-        if [[ ! -f "$overrides_file" ]]; then
+        # v12.8.0: people/shared live under agents/_overlay/, leadership/core
+        # under agents/. Try both layouts.
+        local overrides_file=""
+        if [[ -f "$PROJECT_ROOT/$ARCHETYPES_PARENT/_overlay/$legacy_domain/config/domain_overrides.yaml" ]]; then
+            overrides_file="$PROJECT_ROOT/$ARCHETYPES_PARENT/_overlay/$legacy_domain/config/domain_overrides.yaml"
+        elif [[ -f "$PROJECT_ROOT/$ARCHETYPES_PARENT/$legacy_domain/config/domain_overrides.yaml" ]]; then
+            overrides_file="$PROJECT_ROOT/$ARCHETYPES_PARENT/$legacy_domain/config/domain_overrides.yaml"
+        fi
+        if [[ -z "$overrides_file" ]]; then
             continue
         fi
         overrides_found=$((overrides_found + 1))

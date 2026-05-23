@@ -4,7 +4,7 @@ import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from 'node
 import { join } from 'node:path';
 
 const ROOT = process.cwd();
-const FIXTURE_DIR = join(ROOT, 'operator', '_deprecated', '__test_deprecated_agent__');
+const FIXTURE_DIR = join(ROOT, 'agents', 'operator', '_deprecated', '__test_deprecated_agent__');
 const FIXTURE_SKILL = join(FIXTURE_DIR, 'SKILL.md');
 const PLUGIN_JSON = join(ROOT, '.claude-plugin', 'plugin.json');
 
@@ -23,7 +23,7 @@ describe('REC-5: _deprecated/ bucket excluded from plugin.json', () => {
   });
 
   afterAll(() => {
-    try { rmSync(join(ROOT, 'operator', '_deprecated'), { recursive: true, force: true }); } catch {}
+    try { rmSync(join(ROOT, 'agents', 'operator', '_deprecated'), { recursive: true, force: true }); } catch {}
   });
 
   it('sync-agents.sh does not enumerate _deprecated/ fixture as an agent', () => {

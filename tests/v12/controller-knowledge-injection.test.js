@@ -35,9 +35,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 
-const PLANNER_SKILL = path.join(REPO_ROOT, 'core', 'planner', 'SKILL.md');
+const PLANNER_SKILL = path.join(REPO_ROOT, 'agents', 'core', 'planner', 'SKILL.md');
 const PROMPT_TEMPLATES = path.join(
   REPO_ROOT,
+  'agents',
   'core',
   'planner',
   'resources',
@@ -47,7 +48,7 @@ const KNOWLEDGE_DIR = path.join(REPO_ROOT, 'cagents-memory', '_knowledge');
 
 describe('LP-21: knowledge-injection in controller delegation prompts', () => {
   describe('Invariant 1 — planner SKILL.md documents pre-emptive consultation', () => {
-    it('core/planner/SKILL.md exists', () => {
+    it('agents/core/planner/SKILL.md exists', () => {
       expect(fs.existsSync(PLANNER_SKILL)).toBe(true);
     });
 

@@ -55,7 +55,7 @@ function indexAgentSkills() {
     'leadership',
   ];
   for (const root of archetypes) {
-    const rootAbs = path.join(REPO_ROOT, root);
+    const rootAbs = path.join(REPO_ROOT, 'agents', root);
     if (!fs.existsSync(rootAbs)) continue;
     const out = execSync(`find "${rootAbs}" -type f -name SKILL.md 2>/dev/null || true`, {
       encoding: 'utf8',

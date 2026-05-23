@@ -54,7 +54,7 @@ function* walkSkillMd(dir) {
 function collectAllAgentNames() {
   const names = new Set();
   for (const arch of ARCHETYPES) {
-    for (const skillMd of walkSkillMd(join(ROOT, arch))) {
+    for (const skillMd of walkSkillMd(join(ROOT, 'agents', arch))) {
       const content = readFileSync(skillMd, 'utf8');
       const m = content.match(/^name:\s*([a-z0-9-]+)\s*$/m);
       if (m) names.add(m[1]);
@@ -84,7 +84,7 @@ describe('related_agents references resolve to real agents', () => {
 
     const broken = [];
     for (const arch of ARCHETYPES) {
-      for (const skillMd of walkSkillMd(join(ROOT, arch))) {
+      for (const skillMd of walkSkillMd(join(ROOT, 'agents', arch))) {
         const content = readFileSync(skillMd, 'utf8');
         const refs = extractRelatedAgentNames(content);
         for (const ref of refs) {

@@ -455,7 +455,7 @@ describe('Standalone Contract V11.2.0 — production tree is clean', () => {
   it('no agent SKILL.md declares mcp__ in allowed-tools', () => {
     const violations = [];
     for (const arch of ARCHETYPES) {
-      for (const skillMd of walkSkillMd(join(ROOT, arch))) {
+      for (const skillMd of walkSkillMd(join(ROOT, 'agents', arch))) {
         const content = readFileSync(skillMd, 'utf8');
         const block = extractAllowedToolsBlock(content);
         if (!block) continue;

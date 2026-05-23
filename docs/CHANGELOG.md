@@ -13,7 +13,7 @@
 > - **v12.1.2** — `/improve` folded into `/run` via the first-word keyword router; standalone `/improve` skill removed
 > - **v12.2.0** — `/org` skill removed; cross-domain coordination folded into `/team` strategic mode
 > - **v12.4.0** — Pillar 2 (Compression): catalog audit + cull (240 → 144 agents)
-> - **v12.6.0** — Current release; mandatory pipeline + compression + renames + drop AgentPath (BREAKING)
+> - **v12.6.0** — Current release; mandatory pipeline + compression + renames + drop external-UI contract (BREAKING)
 
 ---
 

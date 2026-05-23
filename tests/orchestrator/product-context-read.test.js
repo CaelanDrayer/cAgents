@@ -11,11 +11,11 @@ import { createHash } from 'node:crypto';
 
 const HELPER_PATH = resolve(
   process.cwd(),
-  'core/orchestrator/resources/product-context-loader.md'
+  'agents/core/orchestrator/resources/product-context-loader.md'
 );
 const ORCHESTRATOR_SKILL = resolve(
   process.cwd(),
-  'core/orchestrator/SKILL.md'
+  'agents/core/orchestrator/SKILL.md'
 );
 const ORCHESTRATION_REFERENCE = resolve(
   process.cwd(),

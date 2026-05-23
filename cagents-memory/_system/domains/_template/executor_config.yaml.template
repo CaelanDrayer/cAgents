@@ -1,5 +1,5 @@
 # Domain Executor Configuration Template
-# Copy this file to: Agent_Memory/_system/domains/{domain_name}/executor_config.yaml
+# Copy this file to: cagents-memory/_system/domains/{domain_name}/executor_config.yaml
 # Replace all {DOMAIN_NAME} placeholders with your domain name
 
 domain: {DOMAIN_NAME}

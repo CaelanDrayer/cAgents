@@ -35,7 +35,7 @@ function findAllSkillMd() {
       else if (entry.name === 'SKILL.md') results.push(full);
     }
   }
-  for (const a of ARCHETYPES) walk(join(ROOT, a));
+  for (const a of ARCHETYPES) walk(join(ROOT, 'agents', a));
   return results;
 }
 

@@ -42,7 +42,8 @@ const VALID_COLORS  = new Set([
   'black','gray','grey',
 ]);
 const VALID_MODELS  = new Set(['opus','opusplan','sonnet','haiku']);
-// v11.1.0 archetype roots — SKILL.md files live at {archetype}/{branch?}/{agent}/SKILL.md
+// v12.8.0 archetype roots — SKILL.md files live at agents/{archetype}/{branch?}/{agent}/SKILL.md
+const ARCHETYPES_PARENT = 'agents';
 const ARCHETYPE_DIRS = [
   'developer','operator','advisor','analyst','creator',
   'writer','strategist','core','leadership',
@@ -70,7 +71,7 @@ if (pathArgs.length > 0) {
     return findSkillMds(abs);
   });
 } else {
-  agentFiles = ARCHETYPE_DIRS.flatMap(d => findSkillMds(path.join(ROOT, d)));
+  agentFiles = ARCHETYPE_DIRS.flatMap(d => findSkillMds(path.join(ROOT, ARCHETYPES_PARENT, d)));
 }
 
 agentFiles.sort();

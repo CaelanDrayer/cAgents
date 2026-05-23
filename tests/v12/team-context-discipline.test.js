@@ -30,8 +30,8 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
 
 const TEAM_SKILL_PATH = path.join(REPO_ROOT, '.claude', 'skills', 'team', 'SKILL.md');
 const PLUGIN_JSON_PATH = path.join(REPO_ROOT, '.claude-plugin', 'plugin.json');
-const WAVE_REVIEWER_SKILL = path.join(REPO_ROOT, 'developer', 'quality', 'wave-reviewer', 'SKILL.md');
-const COORD_LOG_WRITER_SKILL = path.join(REPO_ROOT, 'developer', 'quality', 'coord-log-writer', 'SKILL.md');
+const WAVE_REVIEWER_SKILL = path.join(REPO_ROOT, 'agents', 'developer', 'quality', 'wave-reviewer', 'SKILL.md');
+const COORD_LOG_WRITER_SKILL = path.join(REPO_ROOT, 'agents', 'developer', 'quality', 'coord-log-writer', 'SKILL.md');
 const PER_WAVE_DECOMP_DOC = path.join(REPO_ROOT, '.claude', 'skills', 'team', 'reference', 'per-wave-decomposition.md');
 const SPAWN_BRIEF_DOC = path.join(REPO_ROOT, '.claude', 'skills', 'team', 'reference', 'spawn-brief-schema.md');
 const INTEGRATION_HANDOFF_DOC = path.join(REPO_ROOT, '.claude', 'skills', 'team', 'reference', 'integration-handoff.md');
@@ -131,7 +131,7 @@ describe('WI-7 (v12.1.0): /team lead-context-discipline contract', () => {
       // archetype path or a substring match for resilience.
       const found = agents.some((entry) => {
         const p = typeof entry === 'string' ? entry : entry?.path || '';
-        return p.includes('developer/quality/wave-reviewer');
+        return p.includes('agents/developer/quality/wave-reviewer');
       });
       expect(found).toBe(true);
     });
@@ -141,7 +141,7 @@ describe('WI-7 (v12.1.0): /team lead-context-discipline contract', () => {
       const agents = manifest.agents || [];
       const found = agents.some((entry) => {
         const p = typeof entry === 'string' ? entry : entry?.path || '';
-        return p.includes('developer/quality/coord-log-writer');
+        return p.includes('agents/developer/quality/coord-log-writer');
       });
       expect(found).toBe(true);
     });

@@ -31,7 +31,7 @@ function discoverCulledAgents() {
   const ARCHETYPES = ['developer', 'operator', 'advisor', 'analyst', 'creator', 'writer', 'strategist', 'core', 'leadership'];
   const culled = [];
   for (const arch of ARCHETYPES) {
-    const depDir = path.join(REPO_ROOT, arch, '_deprecated');
+    const depDir = path.join(REPO_ROOT, 'agents', arch, '_deprecated');
     if (!fs.existsSync(depDir)) continue;
     for (const e of fs.readdirSync(depDir)) {
       const stat = fs.statSync(path.join(depDir, e));

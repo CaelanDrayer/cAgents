@@ -31,7 +31,7 @@ const SEMVER_RE = /^[0-9]+\.[0-9]+\.[0-9]+$/;
 const MAX_LINES = 400;
 
 function agentPath(name) {
-  return join(ROOT, 'analyst', name, 'SKILL.md');
+  return join(ROOT, 'agents', 'analyst', name, 'SKILL.md');
 }
 
 function parseFrontmatter(content) {

@@ -1,6 +1,6 @@
 # cAgents Release Notes
 
-**Current Version**: 12.7.0
+**Current Version**: 12.8.0
 **Release Date**: May 21, 2026
 **Status**: Production-Ready
 
@@ -36,10 +36,11 @@ back-compat alias — `/org X` invocations now fail with "skill not found".
 - Plugin manifest skill count: 5 → 4.
 - `strategic_brief.yaml` schema adds `dependency_type` per domain entry.
 
-### AgentPath
+### External-UI consumer
 
-cAgents no longer treats AgentPath as a downstream consumer. Session
-schema references to AgentPath compatibility are removed.
+cAgents no longer treats any external visualizer as a downstream
+consumer. Session schema references to external-UI compatibility are
+removed.
 
 See [CHANGELOG](../CHANGELOG.md#1220---2026-05-21) for full details.
 
@@ -115,7 +116,7 @@ self-validation checks 15 -> 5.
 All v11 -> v12 agent renames and merges are preserved via
 `scripts/migration/v12-aliases.yaml` so existing session artifacts
 referencing pre-v12 agent names continue to resolve. Tracking lives at
-`outputs/v12-migration/migration-state.yaml`.
+`_archive/v12-migration/migration-state.yaml`.
 
 > Release discipline: cAgents evolves via **tiny bumps** — patch-level
 > increments that each ship exactly one coherent change. See the
@@ -145,8 +146,8 @@ referencing pre-v12 agent names continue to resolve. Tracking lives at
 - [v10.22.0](#v10220) - Two-stage review protocol (spec compliance then code quality), 5 pipeline improvements
 - [v10.20.0](#v10200) - 23 agent communication gap fixes, Growth domain expanded from 35 to 39 agents
 - [v10.18.0](#v10180) - Vibe field on all 262 agents, worktree isolation, guard command pattern, skill chaining
-- [v10.16.0](#v10160) - Session ID naming overhaul with readable slugs, agent_id linking for AgentPath
-- [v10.12.0](#v10120) - AgentPath plugin integration with 15 session visualization improvements
+- [v10.16.0](#v10160) - Session ID naming overhaul with readable slugs, agent_id linking
+- [v10.12.0](#v10120) - External-UI plugin integration with 15 session visualization improvements
 - [v10.6.0](#v1060) - Confidence tiers, blind review, dead-letter queue, handoff documents
 - [v10.3.0](#v1030) - Creative domain overhaul (24 to 30 agents, all on Opus 4.6)
 - [v10.0.0](#v1000) - 15 domains (expanded from 8), agent chaining with topological execution
@@ -1850,6 +1851,6 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.7.0
+**Current Version**: 12.8.0
 **Release Date**: February 27, 2026
 **Git Tag**: v9.21.0

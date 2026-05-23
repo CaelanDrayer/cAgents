@@ -27,13 +27,13 @@ const ROOT = resolve(__dirname, '..', '..');
 // cagents-memory/_knowledge/cc-plugin-subagent-spawn-bug.md.
 // If a controller is renamed or relocated, update this list.
 const CANONICAL_CONTROLLERS = [
-  'developer/fullstack/tech-lead/SKILL.md',
-  'developer/fullstack/architect/SKILL.md',
-  'developer/fullstack/tech-lead/SKILL.md',
-  'developer/backend/backend-lead/SKILL.md',
-  'developer/frontend/frontend-lead/SKILL.md',
-  'developer/quality/qa-lead/SKILL.md',
-  'operator/business-ops/operations-manager/SKILL.md',
+  'agents/developer/fullstack/tech-lead/SKILL.md',
+  'agents/developer/fullstack/architect/SKILL.md',
+  'agents/developer/fullstack/tech-lead/SKILL.md',
+  'agents/developer/backend/backend-lead/SKILL.md',
+  'agents/developer/frontend/frontend-lead/SKILL.md',
+  'agents/developer/quality/qa-lead/SKILL.md',
+  'agents/operator/business-ops/operations-manager/SKILL.md',
 ];
 
 function getAllowedToolsLine(content) {

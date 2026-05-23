@@ -27,8 +27,8 @@ ACTIVE_AGENTS=$(jq -r '.agents | length' .claude-plugin/plugin.json)
 # Per-archetype SKILL.md counts (excluding _deprecated/ buckets).
 declare -A ARCH_COUNTS
 for arch in developer operator advisor analyst creator writer strategist core leadership; do
-  if [ -d "$arch" ]; then
-    ARCH_COUNTS[$arch]=$(find "$arch" -name "SKILL.md" -not -path "*/_deprecated/*" 2>/dev/null | wc -l | tr -d ' ')
+  if [ -d "agents/$arch" ]; then
+    ARCH_COUNTS[$arch]=$(find "agents/$arch" -name "SKILL.md" -not -path "*/_deprecated/*" 2>/dev/null | wc -l | tr -d ' ')
   else
     ARCH_COUNTS[$arch]=0
   fi

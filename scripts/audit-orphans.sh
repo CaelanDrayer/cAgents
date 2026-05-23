@@ -77,11 +77,14 @@ const GREP_OUT = process.env.GREP_OUT;
 const PLUGIN = JSON.parse(fs.readFileSync(path.join(REPO, ".claude-plugin", "plugin.json"), "utf8"));
 
 // Build catalog: name -> { archetype, skillPath }
+// v12.8.0: paths are "./agents/{archetype}/{branch?}/{agent}/SKILL.md"
 const catalog = [];
 for (const rel of PLUGIN.agents) {
   if (rel.includes("/_deprecated/")) continue;
   const parts = rel.replace(/^\.\//, "").split("/");
-  const archetype = parts[0];
+  // parts[0] === "agents"; archetype is parts[1] under the new layout, parts[0]
+  // under the legacy layout. Tolerate both for forward-compat.
+  const archetype = parts[0] === "agents" ? parts[1] : parts[0];
   const name = parts[parts.length - 2];
   catalog.push({ name, archetype, skillPath: rel.replace(/^\.\//, "") });
 }
@@ -109,10 +112,10 @@ for (const line of grepText.split("\n")) {
 // agent under `agents:` lists or `tier_2|3|4:` lists.
 const ROUTING_FILES = [
   "cagents-memory/_system/config/routing.yaml",
-  "core/config/domain_overrides.yaml",
-  "leadership/config/domain_overrides.yaml",
-  "people/config/domain_overrides.yaml",
-  "shared/config/domain_overrides.yaml",
+  "agents/core/config/domain_overrides.yaml",
+  "agents/leadership/config/domain_overrides.yaml",
+  "agents/_overlay/people/config/domain_overrides.yaml",
+  "agents/_overlay/shared/config/domain_overrides.yaml",
 ];
 
 function collectRoutingMentions() {

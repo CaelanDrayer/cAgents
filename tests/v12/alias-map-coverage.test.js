@@ -198,12 +198,12 @@ describe('v12-aliases.yaml engineering coverage (Q1..Q7)', () => {
     const dl = aliasesByOld.get('cagents:devops-lead');
     expect(dl.new).toBe('cagents:infrastructure-lead');
     expect(dl.type).toBe('move_and_rename');
-    expect(dl.new_path).toContain('developer/infrastructure/infrastructure-lead');
+    expect(dl.new_path).toContain('agents/developer/infrastructure/infrastructure-lead');
 
     const vp = aliasesByOld.get('cagents:vp-engineering');
     expect(vp.new).toBe('cagents:vp-engineering');
     expect(vp.type).toBe('move');
-    expect(vp.new_path).toContain('leadership/vp-engineering');
+    expect(vp.new_path).toContain('agents/leadership/vp-engineering');
   });
 });
 

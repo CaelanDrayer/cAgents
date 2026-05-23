@@ -9,11 +9,11 @@ import { resolve } from 'node:path';
 
 const VALIDATOR_SKILL = resolve(
   process.cwd(),
-  'core/universal-validator/SKILL.md'
+  'agents/core/universal-validator/SKILL.md'
 );
 const CHECKS_DOC = resolve(
   process.cwd(),
-  'core/universal-validator/resources/debug-mode-checks.md'
+  'agents/core/universal-validator/resources/debug-mode-checks.md'
 );
 
 describe('V10.26.15 validator hypotheses_tested[] requirement', () => {

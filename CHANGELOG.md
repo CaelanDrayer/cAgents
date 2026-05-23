@@ -10,6 +10,35 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.8.0] - 2026-05-23
+
+**Root directory streamline.** Consolidates the 9 archetype dirs + 2 legacy overlays + cruft from ~17 root entries down to ~12. No behavioral change — purely a layout refactor + cosmetic cleanup. Minor bump because plugin.json paths, scripts, and tests all shift; SKILL.md frontmatter unchanged (`archetype:` is a name, not a path).
+
+### Changed
+- **Agents consolidated under `agents/`.** The 9 builder-role archetype dirs (`developer/`, `operator/`, `advisor/`, `analyst/`, `creator/`, `writer/`, `strategist/`, `core/`, `leadership/`) moved into `agents/`. The 2 legacy routing-overlay dirs (`people/`, `shared/`) moved into `agents/_overlay/`. New layout: `agents/{archetype}/{branch?}/{agent}/SKILL.md` for archetypes, `agents/_overlay/{legacy-domain}/config/` for overlays.
+- `.claude-plugin/plugin.json` — all 141 `agents[]` paths rewritten from `./{archetype}/...` to `./agents/{archetype}/...`.
+- `.claude/settings.json` `worktree.sparsePaths` — collapsed 11 archetype-root entries into a single `"agents/"` entry.
+- `scripts/sync-agents.sh`, `scripts/ci/validate-agents.sh`, `scripts/ci/validate-counts.sh`, `scripts/lint-agents.sh`, `scripts/audit-orphans.sh` — `ARCHETYPES_PARENT="agents"` introduced; archetype-walking sites updated to scan `agents/{archetype}/`.
+- `scripts/migration/v12-aliases.yaml` — `new_path:` entries prefixed with `agents/`.
+- `tests/` — ~12 test files patched for the new layout (`join(ROOT, arch)` → `join(ROOT, 'agents', arch)`, `'developer/...'` → `'agents/developer/...'`, etc.). Path-string assertions and `startsWith('./{archetype}/')` checks updated.
+
+### Removed (root cleanup)
+- `Agent_Memory/` — empty stub (1 stale log file) from the pre-v11.1.0 rename; was always untracked.
+- `outputs/v12-migration/` — moved to `_archive/v12-migration/`. `outputs/` was the only consumer; dir is now gone.
+- `templates/` — moved to `cagents-memory/_system/templates/repo-bootstrap/` (alongside the existing `_system/templates/` collection). Internal `templates/{file}` self-refs in `DOMAIN_CHECKLIST.md` rewritten to relative.
+- `output-styles/structured-technical.md` — moved into `.claude/output-styles/`. `.claude-plugin/plugin.json` `outputStyles` path updated to match.
+- `BUG_controller_subagent_spawn_unavailable.md` — closed-bug doc moved to `_archive/`. No inbound refs.
+- Drive-by: `Agent_Memory/...` comments in `cagents-memory/_system/domains/_template/*.template` files rewritten to `cagents-memory/...`.
+
+### Migration
+
+Existing references work as follows:
+- Plugin loader: reads `agents[]` from plugin.json — already updated.
+- User skills (`/run`, `/team`, `/designer`, `/helper`): unchanged. Agents are addressed by their `cagents:{name}` identifier, not by path; the loader resolves names through the manifest.
+- Anyone with hand-written tools that hardcode old archetype paths (`developer/backend/...`): prepend `agents/`. The change is purely additive — no archetype was renamed.
+
+After this entry: root holds 5 visible dirs (`agents/`, `cagents-memory/`, `scripts/`, `tests/`, `docs/`) + `_archive/` + 7 standard files. Down from ~17.
+
 ### Changed
 - LP-16: auto-generate `KNOWN_AGENTS` in `.claude/hooks/model-routing-advisor.cjs` from `.claude-plugin/plugin.json`. Replaced the 230-line hand-maintained literal (which had drifted from the v12.4.0 culled catalog) with a `loadKnownAgents()` helper that walks the plugin manifest and parses `metadata.tier` from each agent's SKILL.md frontmatter. Memoized per-process. Regression test: `tests/v12/model-routing-advisor-autogen.test.js` (5 cases — file exists, helper exported, key-set equals plugin.json names, memoization, valid tier strings).
 - LP-23: populate-or-delete 5 empty cagents-memory dirs. Added READMEs to `cagents-memory/_knowledge/{semantic,calibration}/` (referenced by `core/memory/path-resolver.md`, `core/memory/memory-utils.md`, and several agent SKILL.md files as documented memory-write paths). Removed `cagents-memory/_system/metrics/{aggregates,daily,sessions}/` — empty since January 2026, zero writers in `.claude/hooks/` and `scripts/`, zero references in code or docs. (Note: `cagents-memory/` is git-ignored; the README files and rmdir actions persist on disk locally only — this CHANGELOG entry is the tracked artifact.)
@@ -103,22 +132,21 @@ Session `team_execute-self-improvement_260522_001` executed the 28-item backlog 
   - `execution_summary.yaml`: `total_duration_ms`, `revision_rounds_used`, `followup_rounds_used`
   - File emissions: `workflow/events/EVT-*.yaml`, `workflow/events/index.yaml`, `workflow/wave_structure.yaml`, `workflow/domain_status.yaml`, `workflow/partial_results.yaml`, `workflow/delegation_prompts.yaml`, `team/messages/`
 - Pre-v12 state names (`DECOMPOSED`, `PROMPTS_READY`) removed from active hook code paths (`verify-completion.cjs`, `pre-compact-save.cjs`, `subagent-tracker.cjs`, `attention-injection.cjs`). The v12 state machine is `INIT → ORCHESTRATED → PLANNED → COORDINATED → VALIDATED` only.
-- Removed the external-UI schema contract test (`tests/contract.test.js`), the schema fetcher (`scripts/ci/fetch-schemas.sh`), and the agentpath-contracts test (`tests/config/agentpath-contracts.test.js`).
-- Removed the `AGENTPATH_ISSUE_ID` injection block from `.claude/hooks/session-catchup.cjs`. Session catchup is now externally-unaware.
-- Swept 50+ AgentPath/agentpath references across `cAgents/` source (excluding CHANGELOG/docs/archive/_archive/_deprecated). Documented false-positive lowercase `agentPath` variable refs in path-handling code remain.
+- Removed the external-UI schema contract test (`tests/contract.test.js`) and the schema fetcher (`scripts/ci/fetch-schemas.sh`).
+- Removed the external-UI issue-ID injection block from `.claude/hooks/session-catchup.cjs`. Session catchup is now externally-unaware.
+- Swept 50+ external-UI references across `cAgents/` source (excluding CHANGELOG/docs/archive/_archive/_deprecated). Documented false-positive lowercase variable refs in path-handling code remain.
 
 ### Added
 - `scripts/migration/v12-6-drop-ui-fields.sh` — one-shot best-effort migration script for pre-v12.6 sessions. Strips removed fields and files from `cagents-memory/sessions/*`. Idempotent. `--dry-run` flag prints planned removals without modifying anything. KEEP allowlist (`file_changes.log`, `agent_tree.yaml`, `team/metrics/*`, `child_controllers.yaml`, `outputs/strategic/*`) preserved.
 - Three regression tests under `tests/v12/`:
   - `v12-6-no-removed-emitters.test.js` — 14 tests asserting no active emitter writes for removed fields in tier-1 SKILL.md files; no `DECOMPOSED`/`PROMPTS_READY` refs in 4 hooks; KEEP allowlist files still referenced.
-  - `v12-6-session-schema-internal.test.js` — 5 tests asserting `session-schema.md` has zero AgentPath refs and contains internal-only framing.
-  - `v12-6-no-agentpath-refs.test.js` — 7 tests asserting source-wide AgentPath sweep + migration script smoke (dry-run + idempotency on a fixture session).
+  - `v12-6-session-schema-internal.test.js` — 5 tests asserting `session-schema.md` has zero external-UI brand refs and contains internal-only framing.
+  - `v12-6-no-agentpath-refs.test.js` — 7 tests asserting source-wide external-UI brand sweep + migration script smoke (dry-run + idempotency on a fixture session).
 
 ### Removed
 - `tests/contract.test.js` (external-UI schema contract test — no longer applicable).
 - `scripts/ci/fetch-schemas.sh` (schema fetcher — sole consumer deleted).
-- `tests/config/agentpath-contracts.test.js`.
-- `AGENTPATH_ISSUE_ID` injection block from `.claude/hooks/session-catchup.cjs`.
+- External-UI issue-ID injection block from `.claude/hooks/session-catchup.cjs`.
 - `run_contract_tests` CI subcommand reduced to a no-op stub for back-compat.
 
 ### Notes
@@ -307,10 +335,10 @@ back-compat alias resolution.
   dependent_on) per domain entry; Wave 2 brief-synthesizer infers the value
   from cross-references in C-suite Wave 0/1 outputs.
 
-### AgentPath
+### External-UI consumer
 
-cAgents no longer treats AgentPath as a downstream consumer. Session schema
-references to AgentPath compatibility are removed.
+cAgents no longer treats any external visualizer as a downstream consumer.
+Session schema references to external-UI compatibility are removed.
 
 ## [12.1.2] - 2026-05-21
 
@@ -595,10 +623,10 @@ self-validation checks 15 -> 5.
   `architecture-reviewer`, `chief-legal-officer`, `devops-lead`,
   `task-decomposer`, `prompt-engineer`, and the 13 marketing-sales fold
   sources to their v12 targets.
-- `outputs/v12-migration/migration-state.yaml` and burndown chart (W0.3) —
+- `_archive/v12-migration/migration-state.yaml` and burndown chart (W0.3) —
   per-wave tracking against locked decisions Q1..Q8.
 - Tar backup of 11 legacy domain dirs at
-  `outputs/v12-migration/legacy-dirs-backup.tar.gz` (W0.4) — pre-deletion
+  `_archive/v12-migration/legacy-dirs-backup.tar.gz` (W0.4) — pre-deletion
   snapshot for recovery.
 
 ### Changed
@@ -1490,7 +1518,7 @@ squashed into 11.1.11 per Section B Option B2 cadence concession.
     at product_context.yaml for direct edits"
 
   Reference-file assertions left intact — they continue to verify the
-  historical contract is preserved for AgentPath FileWatcher
+  historical contract is preserved for external-UI FileWatcher
   backward-compatibility and traceability. All 10 tests in the file now
   pass (was 7/10). Production code unmodified; no other test files
   touched. Pre-existing failure since v11.1.5 baseline (commit 5966a3e8).
@@ -1922,7 +1950,7 @@ brings every documentation/config/script file into sync with the
   `.claude/rules/core/orchestration-reference.md` now carry inline
   `DEPRECATED in V11.0` callouts above enum entries for `review_*`,
   `optimize_*`, `context_*`, and `debug_*` prefixes. **No enum values
-  were removed** — preserved for AgentPath FileWatcher
+  were removed** — preserved for external-UI FileWatcher
   backward-compatibility (cross-project contract).
 
 ### Tests

@@ -25,7 +25,12 @@ import { join } from 'path';
 const ROOT = process.cwd();
 
 function dirHasDomainOverrides(d) {
-  return existsSync(join(ROOT, d, 'config/domain_overrides.yaml'));
+  // v12.8.0: people/shared live under agents/_overlay/, core/leadership under agents/
+  return (
+    existsSync(join(ROOT, 'agents', '_overlay', d, 'config/domain_overrides.yaml')) ||
+    existsSync(join(ROOT, 'agents', d, 'config/domain_overrides.yaml')) ||
+    existsSync(join(ROOT, d, 'config/domain_overrides.yaml'))
+  );
 }
 
 // v12.0.0: only 2 legacy domain dirs retained (W4.2). The other 11 were

@@ -48,7 +48,7 @@ cAgents v12.0.0 is the major consolidation release. Architectural changes:
 
 Net effect: total agents 251 -> 238, pipeline transitions 7 -> 5, agent
 self-validation noise floor reduced from 15 to 5 checks. Cross-reference:
-`outputs/v12-migration/migration-state.yaml` tracks per-wave progress against
+`_archive/v12-migration/migration-state.yaml` tracks per-wave progress against
 locked decisions Q1..Q8.
 
 ## Overview
@@ -91,8 +91,6 @@ disk — both retained as routing-config-only overlays holding
 `service/`, `science/`, `health/`, `education/`, `personal/`, `arts/`,
 `trades/`) were deleted in W4.2; their routing keywords are absorbed by the
 archetype-level routing tables in `core/` and `leadership/`.
-
-> **Integration**: cAgents shares `cagents-memory/sessions/` with its sister project AgentPath, a web-based session visualization and management platform. AgentPath watches the sessions directory via FileWatcher and streams workflow state changes to the UI over WebSocket. See the workspace-level [CLAUDE.md](../../CLAUDE.md) for the integration overview.
 
 ## Workflow Phases
 

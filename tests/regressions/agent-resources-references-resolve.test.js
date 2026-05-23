@@ -77,7 +77,7 @@ describe('@resources/ references in agent SKILL.md files resolve to real files',
     let totalAgentsScanned = 0;
 
     for (const arch of ARCHETYPES) {
-      const archDir = join(ROOT, arch);
+      const archDir = join(ROOT, 'agents', arch);
       if (!existsSync(archDir)) continue;
       for (const skillMd of walkSkillMd(archDir)) {
         totalAgentsScanned += 1;

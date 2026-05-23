@@ -38,7 +38,7 @@ controller: DOMAIN_NAME-coordinator
 
 ## Phase 3: Config Files
 
-- [ ] Copy `templates/domain-overrides.yaml` → `DOMAIN_NAME/config/domain_overrides.yaml`
+- [ ] Copy `domain-overrides.yaml` → `DOMAIN_NAME/config/domain_overrides.yaml`
 - [ ] Fill in `domain:`, `description:`, `controller_catalog` (tier 2/3/4)
 - [ ] Fill in `specialist_routing` with keyword arrays (≥ 5 keywords per area)
 - [ ] Fill in `router_keywords` flat list (≥ 20 unique keywords)
@@ -53,10 +53,10 @@ For each agent in the domain:
 
 - [ ] Create agent directory: `DOMAIN_NAME/agents/AGENT_NAME/`
 - [ ] Copy appropriate template:
-  - Execution agent → `templates/agent-execution.md` → `SKILL.md`
-  - Controller agent → `templates/agent-controller.md` → `SKILL.md`
-  - Infrastructure agent → `templates/agent-infrastructure.md` → `SKILL.md`
-  - Shared/cross-domain agent → `templates/agent-shared.md` → `SKILL.md`
+  - Execution agent → `agent-execution.md` → `SKILL.md`
+  - Controller agent → `agent-controller.md` → `SKILL.md`
+  - Infrastructure agent → `agent-infrastructure.md` → `SKILL.md`
+  - Shared/cross-domain agent → `agent-shared.md` → `SKILL.md`
 - [ ] Fill in all UPPERCASE placeholders (name, description, vibe, capabilities, etc.)
 - [ ] Set correct `domain: DOMAIN_NAME` in metadata
 - [ ] Set correct `tier:` (execution / controller / infrastructure)

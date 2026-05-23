@@ -403,24 +403,29 @@ cAgents/
 +-- .claude/
 |   +-- skills/              # Skills (run, team, designer, helper) — /improve folded into /run in v12.1.2; /org removed in v12.2.0 (folded into /team strategic mode)
 |   +-- hooks/               # 31 .cjs files (28 hooks + utils + launcher + eval CLI)
+|   +-- output-styles/       # Output-style files (v12.8.0+)
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (30 files: 25 top-level across 5 categories + 2 READMEs (root + playbooks/) + 3 in resources/)
 |   +-- settings.json        # Hook registration + permissions + env
-+-- developer/               # Developer archetype (26 agents — backend/frontend/fullstack/infrastructure/quality; v12.4.0 cull)
-+-- operator/                # Operator archetype (36 agents — support/business-ops/people-ops/marketing-sales/content; v12.4.0 cull)
-+-- advisor/                 # Advisor archetype (12 agents — legal/health/education/personal; v12.4.0 cull)
-+-- analyst/                 # Analyst archetype (20 agents — data, BI, research, social science; v12.4.0 cull)
-+-- creator/                 # Creator archetype (5 agents — visual, design, audiovisual; v12.4.0 cull)
-+-- writer/                  # Writer archetype (10 agents — copy, narrative, technical, editorial; v12.4.0 cull)
-+-- strategist/              # Strategist archetype (8 agents — product owners, portfolio, planning; v12.4.0 cull)
-+-- core/                    # Core pipeline infrastructure (15 agents)
-+-- leadership/              # Leadership archetype (12 C-suite agents — used by /team strategic mode)
-+-- {engineering,creative,business,growth,people,service,...}/  # Legacy domain dirs (config-only, router/planner overlay)
++-- agents/                  # All 141 agents (v12.8.0+ consolidation — formerly 11 root dirs)
+|   +-- developer/           # Developer archetype (26 agents — backend/frontend/fullstack/infrastructure/quality)
+|   +-- operator/            # Operator archetype (36 agents — support/business-ops/people-ops/marketing-sales/content)
+|   +-- advisor/             # Advisor archetype (12 agents — legal/health/education/personal)
+|   +-- analyst/             # Analyst archetype (19 agents — data, BI, research, social science)
+|   +-- creator/             # Creator archetype (5 agents — visual, design, audiovisual)
+|   +-- writer/              # Writer archetype (8 agents — copy, narrative, technical, editorial)
+|   +-- strategist/          # Strategist archetype (8 agents — product owners, portfolio, planning)
+|   +-- core/                # Core pipeline infrastructure (15 agents)
+|   +-- leadership/          # Leadership archetype (12 C-suite agents — used by /team strategic mode)
+|   +-- _overlay/            # Legacy router/planner config overlays
+|       +-- people/          # config/domain_overrides.yaml only
+|       +-- shared/          # config/, patterns/, resources/
 +-- scripts/                 # Version sync, validation, CI scripts
 +-- tests/                   # Vitest test suite (hooks + config)
 +-- docs/                    # Project documentation
++-- _archive/                # Closed migration outputs, deprecated buckets, archived docs
 +-- .claude-plugin/          # Root manifest
-+-- cagents-memory/            # Runtime state (git-ignored)
++-- cagents-memory/          # Runtime state (git-ignored)
 ```
 
 ## Hooks System
@@ -525,7 +530,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 1158+ Vitest tests across 132+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.7.0
+**Version**: 12.8.0
 
 ## Troubleshooting
 

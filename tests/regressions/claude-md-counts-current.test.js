@@ -58,7 +58,7 @@ describe('CLAUDE.md count claims match reality', () => {
     let total = 0;
     const perArchetype = {};
     for (const arch of ARCHETYPES) {
-      const c = countSkillMd(join(ROOT, arch));
+      const c = countSkillMd(join(ROOT, 'agents', arch));
       perArchetype[arch] = c;
       total += c;
     }
@@ -75,7 +75,7 @@ describe('CLAUDE.md count claims match reality', () => {
   it('claim about archetype distribution lists current per-archetype counts', () => {
     const counts = {};
     for (const arch of ARCHETYPES) {
-      counts[arch] = countSkillMd(join(ROOT, arch));
+      counts[arch] = countSkillMd(join(ROOT, 'agents', arch));
     }
     // Each archetype's current count must appear adjacent to its name somewhere in CLAUDE.md
     // (allowing for either "developer 33" or "developer (33)" or similar formatting)

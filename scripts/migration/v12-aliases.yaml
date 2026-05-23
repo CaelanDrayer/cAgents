@@ -44,14 +44,14 @@ aliases:
     type: absorb
     decision: Q1
     notes: "Content folded into core/planner/resources/decomposition.md (Three-Tier Progressive Disclosure). Router fallback resolves cagents:task-decomposer -> cagents:planner (which currently maps to core/planner/). Source dir core/task-decomposer/ scheduled for deletion by lead after sync-agents.sh."
-    new_path: core/planner/resources/decomposition.md
+    new_path: agents/core/planner/resources/decomposition.md
 
   - old: cagents:prompt-engineer
     new: cagents:planner
     type: absorb
     decision: Q1
     notes: "Content folded into core/planner/resources/prompt-templates.md (Three-Tier Progressive Disclosure). Router fallback resolves cagents:prompt-engineer -> cagents:planner (which currently maps to core/planner/). Source dir core/prompt-engineer/ scheduled for deletion by lead after sync-agents.sh."
-    new_path: core/planner/resources/prompt-templates.md
+    new_path: agents/core/planner/resources/prompt-templates.md
 
   # ---------------------------------------------------------------------------
   # Q2: Agent moves to developer/backend/
@@ -61,14 +61,14 @@ aliases:
     type: move
     decision: Q2
     notes: "Moved to developer/backend/engine-developer/. Name unchanged; only directory location changes."
-    new_path: developer/backend/engine-developer/SKILL.md
+    new_path: agents/developer/backend/engine-developer/SKILL.md
 
   - old: cagents:game-programmer
     new: cagents:game-programmer
     type: move
     decision: Q2
     notes: "Moved to developer/backend/game-programmer/. Name unchanged; only directory location changes."
-    new_path: developer/backend/game-programmer/SKILL.md
+    new_path: agents/developer/backend/game-programmer/SKILL.md
 
   # ---------------------------------------------------------------------------
   # Q3: Leadership acronym rename
@@ -78,7 +78,7 @@ aliases:
     type: rename
     decision: Q3
     notes: "Renamed to acronym form to match ceo/cto/cpo/cco/cfo/chro/cso/cmo/cro/coo. Location stays in leadership/."
-    new_path: leadership/clo/SKILL.md
+    new_path: agents/leadership/clo/SKILL.md
 
   # ---------------------------------------------------------------------------
   # Q4: engineering-manager -> tech-lead controller merge
@@ -106,14 +106,14 @@ aliases:
     type: move_and_rename
     decision: Q7
     notes: "Moved from developer/fullstack/ to developer/infrastructure/ AND renamed to avoid collision with existing developer/infrastructure/devops-engineer execution agent."
-    new_path: developer/infrastructure/infrastructure-lead/SKILL.md
+    new_path: agents/developer/infrastructure/infrastructure-lead/SKILL.md
 
   - old: cagents:vp-engineering
     new: cagents:vp-engineering
     type: move
     decision: Q7
     notes: "Moved from developer/fullstack/ to leadership/. Already has C-suite-level memory/model/coordination. Name unchanged."
-    new_path: leadership/vp-engineering/SKILL.md
+    new_path: agents/leadership/vp-engineering/SKILL.md
 
   # ---------------------------------------------------------------------------
   # Q5 / G1: SEO collapse 6 -> 2 (4 removals; geo-strategist stays)

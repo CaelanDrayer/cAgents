@@ -1,5 +1,5 @@
 # Domain Self-Correct Configuration Template
-# Copy this file to: Agent_Memory/_system/domains/{domain_name}/self_correct_config.yaml
+# Copy this file to: cagents-memory/_system/domains/{domain_name}/self_correct_config.yaml
 # Replace all {DOMAIN_NAME} placeholders with your domain name
 
 domain: {DOMAIN_NAME}
@@ -167,7 +167,7 @@ learning:
 
   update_calibration:
     frequency: "After every 10 corrections"
-    target: "Agent_Memory/_knowledge/calibration/self_correct.yaml"
+    target: "cagents-memory/_knowledge/calibration/self_correct.yaml"
     metrics:
       - common_issues
       - effective_strategies

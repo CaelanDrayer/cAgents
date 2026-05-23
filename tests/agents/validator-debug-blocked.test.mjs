@@ -10,11 +10,11 @@ import { resolve } from 'node:path';
 
 const VALIDATOR_SKILL = resolve(
   process.cwd(),
-  'core/universal-validator/SKILL.md'
+  'agents/core/universal-validator/SKILL.md'
 );
 const CHECKS_DOC = resolve(
   process.cwd(),
-  'core/universal-validator/resources/debug-mode-checks.md'
+  'agents/core/universal-validator/resources/debug-mode-checks.md'
 );
 const RUN_SKILL = resolve(process.cwd(), '.claude/skills/run/SKILL.md');
 

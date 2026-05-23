@@ -58,9 +58,10 @@ const ROOT = process.env.CAGENTS_ROOT;
 const MODE = process.env.CAGENTS_SYNC_MODE || 'apply';
 const PLUGIN_JSON = path.join(ROOT, '.claude-plugin', 'plugin.json');
 
-// v11.1.0 archetype roots (9 total). The new tree places SKILL.md files at
-// {archetype}/{branch?}/{agent}/SKILL.md — no `agents/` segment. We walk each
+// v12.8.0 archetype roots (9 total). All archetypes live under `agents/`.
+// Layout: agents/{archetype}/{branch?}/{agent}/SKILL.md. We walk each
 // archetype root recursively to find every SKILL.md.
+const ARCHETYPES_PARENT = 'agents';
 const ARCHETYPE_DIRS = [
   'developer',
   'operator',
@@ -103,7 +104,7 @@ const plugin = JSON.parse(raw);
 
 const agentPaths = [];
 for (const archetype of ARCHETYPE_DIRS) {
-  const archetypeDir = path.join(ROOT, archetype);
+  const archetypeDir = path.join(ROOT, ARCHETYPES_PARENT, archetype);
   if (!fs.existsSync(archetypeDir)) continue;
   const found = findSkillMds(archetypeDir);
   for (const absPath of found) {

@@ -47,7 +47,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 
-const VALIDATOR_SKILL = path.join(REPO_ROOT, 'core', 'validator', 'SKILL.md');
+const VALIDATOR_SKILL = path.join(REPO_ROOT, 'agents', 'core', 'validator', 'SKILL.md');
 const VERIFY_HOOK = path.join(REPO_ROOT, '.claude', 'hooks', 'verify-completion.cjs');
 
 describe.skip('v12.3.0 Pillar 1: Validator Phase-0 artifact-presence check (DEFERRED — see file header)', () => {
