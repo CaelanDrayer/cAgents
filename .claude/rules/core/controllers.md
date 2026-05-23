@@ -242,7 +242,7 @@ guard_chain_result:
 
 ## Graceful Degradation Under Harness Tool Stripping (PHASE-N1, V11.1.13; generalized in v12.1.1)
 
-Applies to all cAgents controllers and execution agents spawned at depth >= 1 by Claude Code, regardless of which skill spawned them. When `Agent` is stripped, the spawned agent gracefully degrades to direct execution + self-validation rather than failing.
+Applies to all cAgents controllers and execution agents spawned at depth >= 1 by Claude Code, **regardless of which skill spawned them**. The v12.1.0 spike (session `run_improve-team-context_260521_001`) reproduced depth-1 Agent stripping under `/run`, falsifying the pre-v12.1.1 assertion that /run controllers retain Agent at level 1. The scope is now generalized: **all spawning skills** — `/run`, `/team` (teammates), and the historically-affected `/org` (absorbed into `/team` strategic mode in v12.2.0) — and **all agent types** (`cagents:*`, `general-purpose`, `Explore`, `Plan`). When `Agent` is stripped, the spawned agent gracefully degrades to direct execution + self-validation rather than failing.
 
 See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md for the canonical pattern, scope, rule, documentation requirement, upstream-configuration null-finding, and empirical reproductions.
 

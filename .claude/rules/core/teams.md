@@ -23,7 +23,7 @@ Team Mode enables N-wave parallel execution with:
 - **teammateMode: tmux**: Each teammate in its own tmux split pane (managed by Claude Code)
 - **Every work item via controller**: Teammates ARE controllers that spawn execution agents directly via Agent tool
 - **Shared task lists**: Built-in TaskCreate/TaskList at `~/.claude/tasks/{team-name}/`
-- **Strategic Mode (v12.2.0+)**: For cross-domain requests, `/team` auto-enables strategic mode (Wave 0/1/2 = C-suite deliberation, Wave 3..N = per-domain dispatch). Auto-detection is driven by `universal-router.domain_count >= 2`. Users can override with `--strategic` (force enable) or `--no-strategic` (force disable). The 12 leadership agents (CEO/CTO/CFO/CMO/COO/CHRO/CCO/CSO/CRO/CPO/CLO/VP-Engineering) act as Wave 0/1 teammates. See `.claude/skills/team/reference/strategic-mode.md` for the full protocol, brief schema, escalation, and examples.
+- **Strategic Mode (v12.2.0+)**: For cross-domain requests, `/team` auto-enables strategic mode (Wave 0/1/2 = C-suite deliberation, Wave 3..N = per-domain dispatch). Auto-detection is driven by `router.domain_count >= 2`. Users can override with `--strategic` (force enable) or `--no-strategic` (force disable). The 12 leadership agents (CEO/CTO/CFO/CMO/COO/CHRO/CCO/CSO/CRO/CPO/CLO/VP-Engineering) act as Wave 0/1 teammates. See `.claude/skills/team/reference/strategic-mode.md` for the full protocol, brief schema, escalation, and examples.
 - **Independent contexts**: Each teammate has its own context window
 
 ## CRITICAL: Teammates ARE Controllers That Spawn Execution Agents Directly
@@ -47,48 +47,11 @@ Teammate (controller, e.g., tech-lead) -> Agent(cagents:backend-developer)
 
 ## Known Harness Limitation: Agent Tool May Be Absent at Depth ≥ 1 (Applies to All Skills)
 
-**Empirically observed (CC 2.1.x, cAgents v11.1.4 through v12.1.0):** When any cAgents agent is spawned at depth ≥ 1 by Claude Code, the runtime tool surface for that spawned agent may NOT include the `Agent` tool — even when the agent's SKILL.md frontmatter correctly declares `allowed-tools: Agent Read Grep Glob Write Edit Bash TodoWrite`. The `TodoWrite` and `TaskUpdate` tools are also frequently absent at this nesting level. The depth-1 stripping behavior applies uniformly across:
-- **All spawning skills**: `/run` (controllers at depth-1), `/team` (teammates at depth-1, including C-suite agents in Wave 0/1 of strategic mode). The v12.1.0 spike (session `run_improve-team-context_260521_001`) reproduced the stripping under `/run` — a controller spawned by `/run` at depth-1 received "Agent is not available inside subagents." on attempting `Agent(subagent_type: "general-purpose")`. This corrects an earlier scope qualifier that incorrectly limited the limitation to `/team` teammates. (Pre-v12.2.0 the same stripping affected the now-removed `/org` skill; the limitation predates and survives /org's removal.)
-- **All agent types**: plugin-namespaced `cagents:*` subagents AND built-in agent types (`general-purpose`, `Explore`, `Plan`). The original audit (`team_doc-update-plugin-audit_260503_001`) and the v12.1.0 spike both confirmed the limitation is type-agnostic.
+When any cAgents agent is spawned at depth >= 1, the Claude Code runtime may strip the `Agent` (and `TodoWrite`, `TaskUpdate`) tools from their surface — even when SKILL.md frontmatter declares them. This is upstream platform behavior; cAgents config cannot override it.
 
-**Root cause:** Claude Code platform behavior for any subagent at depth >= 1. The 2-level subagent nesting limit (depth-0 = skill loop, depth-1 = spawned agent, no further nesting) is enforced upstream by withholding the spawning tool (`Agent`) from depth-1 agents, regardless of what the SKILL.md `allowed-tools` declares. cAgents config (`.claude/settings.json`, `.claude-plugin/plugin.json`) cannot override this — there is no documented CC setting that re-exposes `Agent` to depth-1 subagents.
+**Scope**: This limitation applies to **all spawning skills** (`/run` and `/team`, plus the historical `/org` absorbed into `/team` strategic mode in v12.2.0) and **all agent types** (plugin-namespaced `cagents:*` agents AND built-in agent types `general-purpose`, `Explore`, `Plan`). The v12.1.0 spike (session `run_improve-team-context_260521_001`) reproduced the stripping under `/run`. Teammate controllers in `/team`, controllers spawned by `/run`, and any depth-1 agent regardless of which skill spawned it MUST gracefully degrade to direct execution + self-validation when `Agent` is unavailable.
 
-**Evidence chain (session `team_doc-update-plugin-audit_260503_001`):**
-- 7 sampled controllers (tech-lead, backend-lead, frontend-lead, architect, tech-lead, qa-lead, operations-manager) all declare `allowed-tools: Agent ...` in their SKILL.md frontmatter — verified correct.
-- Wave-1 controllers reported the missing-tool symptom directly (`outputs/audit/rules-count.yaml` lines 61-69).
-- Wave-2 and Wave-3 teammates independently confirmed the deferred-tools list excluded `Agent`, `TodoWrite`, and `TaskUpdate` at their nesting level.
-- `.claude/settings.json` contains no `agent` block restricting tools; `.claude-plugin/plugin.json` declares no per-agent tool restriction. The limit is enforced upstream by Claude Code, not by cAgents config.
-
-**Graceful degradation rule:** When a teammate controller discovers that the `Agent` tool is unavailable in its runtime surface, it MUST gracefully degrade to direct execution rather than failing the work item:
-
-1. **Direct execution**: The teammate executes the work item itself using the tools it does have (`Read`, `Write`, `Edit`, `Bash`, `Grep`, `Glob`).
-2. **Reviewer skip**: Skip the `Agent(cagents:reviewer)` validation call — it is not available. Instead, the teammate self-validates against acceptance criteria using the 15-check execution self-validation protocol (see `.claude/rules/core/resources/execution-self-validation.md`).
-3. **Self-validation logging**: Write the self-validation result to `outputs/task-{N}/self-validation.yaml` with the standard `status: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED` field.
-4. **Lead-side review (optional)**: The team lead, which DOES have Agent at level 0, can run a wave-N+1 review pass using `Agent(cagents:reviewer)` against any teammate output that needs deeper validation.
-
-**This degradation is acceptable for all skills (`/run`, `/team`) when the depth-1 stripping is observed.** Prior versions of this rule asserted that `/run` controllers retain Agent at depth-1 and must delegate — that assertion was empirically falsified by the v12.1.0 spike (session `run_improve-team-context_260521_001`), which reproduced "Agent is not available inside subagents." for `cagents:tech-lead` spawned by `/run` at depth-1. The reviewer-loop pattern remains the preferred path **when Agent is actually present** (typically only at depth-0, i.e., the skill's own loop), but agents at depth-1 in any skill MUST gracefully degrade if they discover Agent is stripped.
-
-**Future work:** If a future Claude Code version exposes `Agent` to depth-1 subagents (plugin-namespaced or built-in) — or if a per-spawn `allowed-tools` flag becomes available on the Agent tool itself — this limitation block can be removed and the unconditional "spawned agents ARE delegators" pattern restored. Until then, both patterns are valid in every cAgents skill: delegation when Agent is exposed, direct execution + self-validation when it is not.
-
-### Upstream Configuration Null-Finding (PHASE-N1, V11.1.13)
-
-**Confirmed via `claude-code-guide` agent (May 2026):** the public Claude Code documentation at `docs.claude.com/docs/en/` exposes **no** documented mechanism for re-enabling the `Agent` tool on a depth-1 plugin-namespaced subagent. Specifically:
-
-- No `settings.json` key (project, user, or managed-policy scope) re-exposes `Agent` to nested plugin subagents.
-- No `.claude-plugin/plugin.json` field unlocks the spawning tool for `cagents:*` agents at depth ≥ 1.
-- No documented environment variable (e.g., `CLAUDE_CODE_*`) controls the depth-1 stripping behavior.
-- No per-spawn `allowed-tools` override on the Agent tool itself can re-add a stripped tool to the spawned agent's surface.
-
-This null-finding strengthens the "this is upstream Claude Code platform behavior, not cAgents config" position. Agents and reviewers MUST NOT propose `settings.json` / `plugin.json` / env-var fixes for the depth-1 Agent-tool stripping — the limitation is enforced in the Claude Code runtime, not in cAgents-controllable configuration. The graceful-degradation pattern above remains the only correct response.
-
-**Empirical reproduction count (as of V11.1.13):** 3 sessions —
-- `team_doc-update-plugin-audit_260503_001` (original W6 W1 audit, May 3 2026)
-- `team_continue-cagents-w6_260505_001` (W6 W1 spawn-crash reproduction, May 5 2026)
-- `team_phase11-w6-resume_260505_005` (W6 W2 graceful-degradation success, May 5 2026)
-
-Lead direct execution per W6 W2 completed in ~25 minutes vs. the projected 1.5-hour teammate path, demonstrating that direct execution is often *faster* than spawning teammates for mechanical work — the bug's practical delivery impact is bounded.
-
-See `cagents-memory/_knowledge/agent-tool-depth1-stripping.md` for the formal pattern + asks-for-Anthropic-upstream document, and `cagents-memory/_knowledge/cc-plugin-subagent-spawn-bug.md` for the original reproduction evidence.
+See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md for the canonical pattern, evidence chain, upstream-configuration null-finding, and empirical-reproduction record.
 
 ## CRITICAL: Create Teams, Not Just Tasks
 
@@ -542,8 +505,8 @@ When flat execution is used, the system behaves as a simple parallel distributio
 ## Integration Points
 
 - **trigger + router + planner**: Available for routing and planning (used by /run, optionally by /team via `mode: team_planning_only`)
-- **team-trigger**: Decomposes request directly, creates team via TeamCreate, spawns teammates, executes waves
-- **team-lead-adapter**: Wraps controller in delegate mode, validates gates, tracks contracts
+- **`/team` skill loop**: Decomposes request directly, creates team via TeamCreate, spawns teammates, executes waves (the standalone `team-trigger` agent was removed in v12.0.0 — this work is now inlined in the `/team` SKILL.md)
+- **controller delegate-mode wrapper**: The `/team` lead applies the delegate-mode pattern directly to its chosen controller, validates gates, and tracks contracts (the standalone `team-lead-adapter` agent was removed in v12.0.0 — this is now an inline pattern in `/team`)
 - **orchestrator**: Detects team mode, routes appropriately
 - **Hooks**: team-start.cjs, team-stop.cjs, team-task-complete.cjs, teammate-idle-handler.cjs
 

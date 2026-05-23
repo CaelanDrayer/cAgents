@@ -116,67 +116,9 @@ Inspired by the attention-injection pattern for context engineering: execution a
 
 ## Subagent Status Protocol (V10.22.0)
 
-Execution agents MUST report their completion status using one of four standardized statuses. Controllers MUST handle each status appropriately. Free-form completion messages are no longer acceptable.
+Execution agents MUST report completion via one of four standardized statuses (DONE, DONE_WITH_CONCERNS, NEEDS_CONTEXT, BLOCKED), with controller routing per status. Free-form completion messages are not acceptable.
 
-### The Four Statuses
-
-| Status | Meaning | When to Use |
-|--------|---------|-------------|
-| **DONE** | Work item fully complete, all acceptance criteria met with evidence | Clean completion, ready for review |
-| **DONE_WITH_CONCERNS** | Work item complete, but agent identified potential issues | Implementation works but has caveats the controller should assess |
-| **NEEDS_CONTEXT** | Cannot complete without additional information | Missing requirements, ambiguous criteria, need access to undiscovered resources |
-| **BLOCKED** | Cannot proceed due to external dependency or infrastructure issue | Dependency unavailable, permission denied, environment broken |
-
-### Reporting Format
-
-Execution agents MUST include status in their completion response:
-
-```yaml
-status: DONE                    # One of: DONE, DONE_WITH_CONCERNS, NEEDS_CONTEXT, BLOCKED
-summary: "Implemented JWT auth middleware with bcrypt hashing"
-evidence:
-  - criterion: "Auth middleware validates tokens"
-    result: "src/middleware/auth.ts:15 - validateToken() checks expiry, signature, and issuer"
-  - criterion: "Tests pass"
-    result: "npm test: 23/23 passed"
-concerns: []                    # For DONE_WITH_CONCERNS: list specific concerns
-missing_context: []             # For NEEDS_CONTEXT: list what is needed
-blocker: null                   # For BLOCKED: describe the blocking factor
-```
-
-### Controller Response by Status
-
-| Status | Controller Action |
-|--------|-------------------|
-| **DONE** | Proceed to reviewer loop (Stage 1: spec compliance) |
-| **DONE_WITH_CONCERNS** | Read concerns. If concerns affect acceptance criteria: request clarification. If concerns are informational: note in coordination_log and proceed to review. Never silently ignore concerns. |
-| **NEEDS_CONTEXT** | Provide the requested context and re-dispatch the agent. If context is unavailable: escalate to user or mark as BLOCKED. Never force retry without providing the missing context. |
-| **BLOCKED** | Assess the blocker. If resolvable: resolve and re-dispatch. If not resolvable: mark work item as blocked in coordination_log, document the blocker, and continue with other work items. |
-
-### Escalation Ladder for BLOCKED Status
-
-```
-1. Controller attempts to resolve the blocker (5 min max)
-2. If unresolvable: check if another execution agent can work around it
-3. If no workaround: escalate to lead/user with:
-   - What is blocked
-   - Why it is blocked
-   - What was tried to unblock it
-   - Impact on remaining work items
-4. If user provides resolution: re-dispatch agent
-5. If user cannot resolve: mark work item as blocked, continue with others
-```
-
-### CRITICAL: Never Ignore an Escalation
-
-**Never ignore an escalation or force retry without changes.** If an execution agent reports NEEDS_CONTEXT or BLOCKED, the controller MUST address the specific issue before re-dispatching. Sending the same prompt again without new information is a violation of the status protocol.
-
-| Anti-Pattern | Correct Approach |
-|-------------|------------------|
-| Re-dispatch with same prompt after NEEDS_CONTEXT | Provide the missing context, then re-dispatch |
-| Ignore DONE_WITH_CONCERNS and proceed | Read concerns, assess impact, document decision |
-| Force retry after BLOCKED without resolving blocker | Attempt resolution or escalate |
-| Treat BLOCKED as DONE and skip the work item silently | Document blocker in coordination_log, mark item status |
+See @.claude/rules/playbooks/pat-subagent-status-protocol.md for the canonical pattern: the four statuses, reporting format, controller response per status, BLOCKED escalation ladder, and never-ignore-an-escalation anti-patterns.
 
 ## Commit-Before-Verify Pattern (V10.18.0)
 
@@ -225,17 +167,9 @@ When implementing work items that modify existing code, use the commit-before-ve
 
 ## Graceful Degradation Under Harness Tool Stripping (PHASE-N1, V11.1.13; generalized in v12.1.1)
 
-**Applies to: all execution agents spawned at depth ≥ 1 by Claude Code, regardless of which skill spawned them (`/run`, `/team`, or `/org`).**
+Applies to **all execution agents** spawned at depth >= 1 by Claude Code, **regardless of which skill spawned them** — `/run` (controllers spawning execution agents), `/team` (teammates), and the historically-affected `/org` (absorbed into `/team` strategic mode in v12.2.0). The stripping applies uniformly across all spawning skills and all agent types (`cagents:*`, `general-purpose`, `Explore`, `Plan`). When `Agent`, `TodoWrite`, or `TaskUpdate` is stripped, execution agents complete the work item via the tools they do have and write self-validation YAML in place of TaskUpdate calls.
 
-The Claude Code runtime may strip tools from any agent's surface at depth ≥ 1 — most notably `Agent`, `TodoWrite`, and `TaskUpdate`. The stripping is upstream platform behavior; cAgents config cannot override it. It applies to plugin-namespaced (`cagents:*`) agents AND built-in agent types (`general-purpose`, `Explore`, `Plan`), and applies uniformly across all spawning skills (`/run`, `/team`, `/org`) — not just `/team` teammates. The v12.1.0 spike (session `run_improve-team-context_260521_001`) empirically confirmed depth-1 stripping under `/run`. See `.claude/rules/core/teams.md` § Known Harness Limitation and `cagents-memory/_knowledge/agent-tool-depth1-stripping.md` for the evidence chain.
-
-**For an execution agent**, the practical consequences are limited (execution agents do not normally call `Agent`), but the following still applies:
-
-1. **Tool inventory check first.** Before reporting `BLOCKED` because a tool is missing, check whether the missing tool is `Agent`, `TodoWrite`, or `TaskUpdate` — these are commonly stripped at depth ≥ 1 and the work item should be completed without them. Only `BLOCKED` if a critical tool (e.g., `Bash`, `Write`, `Edit`) is genuinely absent.
-2. **TaskUpdate substitution.** When `TaskUpdate` is stripped, status reporting falls back to writing to `outputs/task-{N}/self-validation.yaml` with the standard `status:` field. The controller/lead aggregates self-validation YAMLs at the wave or session gate.
-3. **No reviewer call.** Execution agents under depth-1 stripping conditions do NOT call `Agent(cagents:reviewer)` — the spawning skill's depth-0 loop may run a follow-up review pass against the output if deeper validation is required.
-
-The full graceful-degradation pattern (rule, evidence, scope boundary) lives in `.claude/rules/core/controllers.md` § Graceful Degradation. Execution agents follow the same self-validation protocol regardless of which skill spawned them.
+See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md for the canonical pattern (including the tool-inventory-check-before-BLOCKED rule, the TaskUpdate-substitution rule, and the no-reviewer-call rule for execution agents).
 
 ## Mandatory Self-Validation Protocol (V12.0.0)
 
