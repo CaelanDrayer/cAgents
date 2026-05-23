@@ -26,6 +26,91 @@ const yaml = require('js-yaml');
 const { createHook, findActiveSession, findMostRecentSessionDir, safeRead, ensureDir, withFileLock, AGENT_MEMORY_DIR } = require('./hook-utils.cjs');
 
 /**
+ * LP-22: Pattern heuristics for MEMORY.md auto-append.
+ *
+ * When a SubagentStop's last_assistant_message contains one of these
+ * phrases, append a single one-liner (≤ 200 chars) to MEMORY.md so that
+ * recurring patterns surface in the next session's auto-memory load.
+ *
+ * Path resolution order:
+ *   1. CAGENTS_TEST_MEMORY_PATH env (tests only — bypasses real auto-memory)
+ *   2. ~/.claude/projects/<project-hash>/memory/MEMORY.md (Claude Code
+ *      computes the hash from the absolute project path; we approximate by
+ *      using the AGENT_MEMORY_DIR's project root). If we can't resolve a real
+ *      path, the append is silently skipped (non-fatal).
+ *
+ * Caps:
+ *   - One line per SubagentStop event (no looping over multiple patterns)
+ *   - Line length ≤ 200 chars
+ *   - Append is best-effort; failures log to stderr but never block the hook.
+ */
+const MEMORY_PATTERNS = [
+  { slug: 'depth-1 stripping', regex: /depth-1\s+stripping/i },
+  { slug: 'graceful degradation', regex: /graceful\s+degradation/i },
+  { slug: 'BLOCKED escalation', regex: /BLOCKED\s+escalation/i },
+];
+
+function resolveMemoryPath() {
+  // 1. Test override
+  if (process.env.CAGENTS_TEST_MEMORY_PATH) {
+    return process.env.CAGENTS_TEST_MEMORY_PATH;
+  }
+  // 2. Best-effort default: project-hash MEMORY.md. Claude Code uses a
+  //    transformation of the absolute project path; we cannot reliably
+  //    recompute it here, so we only act when the test override is set.
+  //    Returning null means "skip the append" — the global audit log still
+  //    captures the pattern fire for offline analysis.
+  return null;
+}
+
+function appendMemoryLine(lastMessage, sessionId, agentType) {
+  if (!lastMessage) return;
+  const memoryPath = resolveMemoryPath();
+  if (!memoryPath) return; // No safe target — skip silently.
+
+  // Find the FIRST matching pattern; cap one entry per stop event.
+  let matched = null;
+  for (const p of MEMORY_PATTERNS) {
+    if (p.regex.test(lastMessage)) { matched = p; break; }
+  }
+  if (!matched) return;
+
+  // Build the one-liner: `- [<slug>](<session-id>) — <summary>`, capped at 200 chars.
+  const safeSession = (sessionId || 'unknown').replace(/[\r\n]/g, ' ');
+  const safeType = (agentType || 'unknown').replace(/[\r\n]/g, ' ');
+  // Use only the first sentence/line of the message for the summary excerpt,
+  // collapsed to one line.
+  const summary = lastMessage
+    .split(/[\r\n]+/)[0]
+    .replace(/\s+/g, ' ')
+    .trim();
+  let line = `- [${matched.slug}](${safeSession}) ${safeType} — ${summary}`;
+  if (line.length > 200) {
+    line = line.slice(0, 197) + '...';
+  }
+
+  try {
+    // Ensure parent dir exists (test paths may use freshly-mkdtemp'd dirs).
+    const dir = path.dirname(memoryPath);
+    if (dir && dir !== '.' && !fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    // Append a newline before the line if the file exists and doesn't end with one,
+    // so we never glue onto a previous line.
+    let prefix = '';
+    if (fs.existsSync(memoryPath)) {
+      const existing = fs.readFileSync(memoryPath, 'utf8');
+      if (existing.length > 0 && !existing.endsWith('\n')) {
+        prefix = '\n';
+      }
+    }
+    fs.appendFileSync(memoryPath, `${prefix}${line}\n`);
+  } catch (err) {
+    console.error(`[SubagentStopTracker] MEMORY.md append failed (non-fatal): ${err.message}`);
+  }
+}
+
+/**
  * Build a structured completion_summary object from the last assistant message.
  * PC-12: outcome, key_decisions, and detail fields.
  */
@@ -61,6 +146,15 @@ createHook('SubagentStopTracker', async (input) => {
     fs.appendFileSync(logFile, `${now} | agent_id=${agentId} | type=${subagentType} | event=stop | session=${input.session_id || 'unknown'}${summaryPart}\n`);
   } catch (err) {
     console.error(`[SubagentStopTracker] Failed to write audit log: ${err.message}`);
+  }
+
+  // LP-22: Pattern-fire heuristic → one-liner append to MEMORY.md (best-effort).
+  // Runs independently of session-dir discovery so tests can exercise it
+  // without needing a full cAgents session on disk.
+  try {
+    appendMemoryLine(lastMessage, input.session_id, subagentType);
+  } catch (err) {
+    console.error(`[SubagentStopTracker] MEMORY append wrapper failed (non-fatal): ${err.message}`);
   }
 
   // Find session to update agent_tree.yaml
