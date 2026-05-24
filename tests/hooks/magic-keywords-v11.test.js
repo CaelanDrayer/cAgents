@@ -22,7 +22,10 @@ import { join } from 'path';
 import { execSync } from 'child_process';
 import { randomUUID } from 'crypto';
 
-const HOOK_PATH = join(process.cwd(), '.claude', 'hooks', 'magic-keywords.cjs');
+// P1-7 (v12.7.1, c5d48fce) consolidated magic-keywords.cjs into prompt-router.cjs.
+// The v12.1.2 keyword-routing behavior (/run review, /run optimize, audit->review)
+// is preserved in prompt-router's KEYWORD_ROUTES, so this regression targets it.
+const HOOK_PATH = join(process.cwd(), '.claude', 'hooks', 'prompt-router.cjs');
 
 function runHook(input = {}) {
   const merged = { session_id: `v12-test-${randomUUID()}`, ...input };
@@ -33,7 +36,7 @@ function runHook(input = {}) {
   return JSON.parse(result.trim());
 }
 
-describe('magic-keywords.cjs v12.1.2 keyword routing', () => {
+describe('prompt-router.cjs v12.1.2 keyword routing (formerly magic-keywords.cjs)', () => {
   it('hook file exists', () => {
     expect(existsSync(HOOK_PATH)).toBe(true);
   });

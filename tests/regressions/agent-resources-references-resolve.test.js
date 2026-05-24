@@ -98,8 +98,11 @@ describe('@resources/ references in agent SKILL.md files resolve to real files',
       }
     }
 
-    // Sanity: we are actually scanning agents
-    expect(totalAgentsScanned).toBeGreaterThan(200);
+    // Sanity: we are actually scanning agents.
+    // v12.7.0 LP-12/LP-13 consolidation + v12.8.0 archetype move under agents/
+    // left 141 active agents on disk; floor kept well below that to stay
+    // meaningful without re-breaking on small catalog changes.
+    expect(totalAgentsScanned).toBeGreaterThan(100);
 
     if (broken.length > 0) {
       const msg = broken

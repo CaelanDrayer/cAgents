@@ -20,7 +20,7 @@ metadata:
     - validity_threat_assessment
   maxTurns: 30
   related_agents:
-    - name: literature-review-author
+    - name: scholar
       type: collaborates_with
     - name: citation-graph-analyzer
       type: collaborates_with
@@ -100,7 +100,7 @@ methodology actually carry the weight of the study's claims? Operates as the
 
 ## Anti-Patterns (When NOT To Use)
 
-- **"Tell me what this paper says"** — route to `literature-review-author`.
+- **"Tell me what this paper says"** — route to `scholar`.
   This agent reads papers adversarially, not summarily.
 - **"How influential is this paper?"** — route to `citation-graph-analyzer`.
   Influence and rigor are independent dimensions.
@@ -125,7 +125,7 @@ methodology actually carry the weight of the study's claims? Operates as the
 
 ## Collaboration
 
-- **With literature-review-author**: When the review identifies a
+- **With scholar**: When the review identifies a
   load-bearing paper, refer it for rigor critique. A weak-methodology
   paper at the foundation of a review changes the review's conclusion.
 - **With citation-graph-analyzer**: High-centrality + WEAK verdict =

@@ -1,6 +1,6 @@
 # Template Auto-Selection Algorithm
 
-Reference document for team-trigger's template matching logic.
+Reference document for the `/team` skill loop's template matching logic (formerly owned by the team-trigger agent, removed in v12.0.0 and inlined into the `/team` skill loop).
 
 ## Selection Flow
 

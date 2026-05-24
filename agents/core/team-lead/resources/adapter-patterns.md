@@ -2,10 +2,17 @@
 
 Patterns for wrapping domain controllers as team leads using Claude Code's built-in agent teams.
 
+> **Historical note (v12.0.0)**: The standalone `team-trigger` and
+> `team-lead-adapter` agents were removed in v12.0.0; their initialization and
+> wrapper work is now inlined into the `/team` skill loop. The "adapter"
+> patterns below describe the lead behavior the `/team` loop applies directly —
+> read "the lead" wherever older text said "team-lead-adapter", and "the /team
+> skill loop" wherever it said "team-trigger".
+
 ## Adapter Flow
 
 ```
-team-trigger -> team-lead-adapter -> SendMessage (assign work) -> teammates -> /run -> agents
+/team skill loop (formerly team-trigger -> team-lead-adapter) -> SendMessage (assign work) -> teammates -> agents
                      |
                      +-> TaskList (monitor) -> TaskUpdate (gate) -> SendMessage (next wave)
 ```

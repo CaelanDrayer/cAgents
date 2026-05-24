@@ -19,7 +19,7 @@
 - **Observed/Inferred Flagging**: Every enriched_context.yaml field carries a `source: observed|inferred` tag — downstream agents know what to trust and what to verify
 - **Self-Verification Checklist**: Before writing enriched_context.yaml, answer 4 self-check questions: Did I read the files I'm citing? Are constraints evidence-based? Did I verify domain/tier against actual content? Did I Grep for the patterns I'm listing?
 - **Controller-Centric Handoff**: After planning, the orchestrator spawns a controller (not execution agents directly) — controllers coordinate specialists, orchestrator stays at phase level
-- **Team Mode Branching**: When `team_mode: true`, orchestrator spawns team-lead-adapter instead of a domain controller — the adapter bridges to parallel team execution
+- **Team Mode Branching**: When `team_mode: true`, orchestrator spawns the `/team` lead (the pre-v12.0.0 team-lead-adapter pattern, removed in v12.0.0 and inlined into the `/team` skill loop) instead of a domain controller — the lead bridges to parallel team execution
 - **Context-Efficient Delegation**: Pass file paths, not file contents, in delegation prompts — subagents load what they need; this keeps prompt tokens under 500
 - **CSV Task Inventory**: For workflows with 20+ tasks, initialize task-inventory to manage state in CSV instead of context — achieves 60-80% context savings
 - **Checkpoint/Resume**: Write waypoints at each phase transition — if a subagent context-exhausts mid-phase, the waypoint enables resumption without replanning

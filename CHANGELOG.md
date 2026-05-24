@@ -10,6 +10,21 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.9.0] - 2026-05-23
+
+**Cleanup-and-fix pass** (session `run_big-cleanup-fix_260524_001`). Closes a small, evidence-backed set of loose ends left after the v12.8.0 streamline + the prior folder-cleanup session. Minor bump because the change spans 8+ non-sync files across multiple surfaces (agents, skills, docs, rules), which the tiny-bump-guard correctly blocks as a patch.
+
+### Fixed
+- **F1 (CRITICAL — CI-green):** Removed the dangling `.claude/skills/commit-changes` symlink (target `../../skills/commit-changes` did not exist; 0 plugin.json refs; recurrence of the v11.2.1 removal in commit a206aa17). `tests/skills/no-broken-symlinks.test.js` now passes 4/4 (was 1 broken-symlink failure).
+- **F4:** Repointed 4 orphaned `related_agents` cross-refs to their LP-12/LP-13 successors (`literature-review-author → scholar`, `prose-stylist → editor`, verified against `scripts/migration/v12-aliases.yaml`) across `analyst/citation-graph-analyzer`, `analyst/methodology-critic`, `writer/dialogue-specialist`, `writer/narrative-director` — frontmatter `name:` entries plus body-prose routing lines. Also removed a resulting duplicate `editor` entry in narrative-director. `validate-agents.sh`: 4 WARNs → 0.
+
+### Changed
+- **F2:** Staged the previously-untracked `_archive/README.md` (the rest of `_archive/` was already tracked) so the archive's move-only contract doc is committed alongside the archived content.
+- **F3 + F8 (count prose):** Refreshed stale figures in CLAUDE.md — Vitest test-file count `132+ → 148+`, and rule-file count `~30 → 36` with an internally-consistent breakdown (30 top-level across 6 categories + 2 READMEs + 4 resources). `validate-counts.sh` still exits 0.
+- **F5 (removed-skill reference triage):** Per-file judgment over `/improve`, `/org`, `/review` references (44/48/31 files). KEPT all router/migration/history references (improve-mode contract, `_MODE_REGISTRY.md` keyword-router tables, helper migration catalog, CHANGELOG/migration history). CLEANED 2 genuinely-stale references that presented removed standalone invocation forms as current: `designer/SKILL.md` description (`/improve --mode review` → `/run review`) and `docs/CLAUDE.local.md.example` (`/improve --mode optimize` → `/run optimize`). `tests/v12_2/org-removed-cleanly.test.js` still passes 6/6.
+- **F6 (consolidated-agent reference triage):** Cross-checked `engineering-manager`, `architecture-reviewer`, `chief-legal-officer`, `task-decomposer`, `prompt-engineer`, `team-trigger`, `team-lead-adapter` against `v12-aliases.yaml`. All references were legitimate migration/absorption notes EXCEPT 3 SKILL.md body lines (`core/trigger`, `core/orchestrator` ×2) that described the removed `team-trigger`/`team-lead-adapter` agents as live pipeline actors — rewrote those to reflect the v12.0.0 inline-absorption into the `/team` skill loop. Deeper `resources/*.md` integration prose (~34 mentions across ~13 files) is left as a documented follow-up.
+- **F7:** Verified `_MODE_REGISTRY.md` mode/flag tables against the 4 SKILL.md argument-hints (no flag drift) and refreshed the stale `Last regenerated` stamp (`v12.1.2` → `v12.9.0`). `mode-registry-coverage.test.js` passes 6/6.
+
 ## [12.8.0] - 2026-05-23
 
 **Root directory streamline.** Consolidates the 9 archetype dirs + 2 legacy overlays + cruft from ~17 root entries down to ~12. No behavioral change — purely a layout refactor + cosmetic cleanup. Minor bump because plugin.json paths, scripts, and tests all shift; SKILL.md frontmatter unchanged (`archetype:` is a name, not a path).

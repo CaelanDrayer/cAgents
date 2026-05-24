@@ -36,10 +36,11 @@ Claude Code supports 24 hook event types. cAgents implements 28 unique registere
 |-----------|---------|--------------|---------|
 | `SessionStart` | Session begins/resumes | `session-catchup.cjs` | Initialize state, detect incomplete sessions, inject cAgents context |
 | `SessionEnd` | Session ends | `team-stop.cjs` | Finalize metrics, update status |
-| `UserPromptSubmit` | User submits prompt | `delegation-enforcer.cjs`, `magic-keywords.cjs` | Enforce delegation rules, suggest routing |
-| `PreToolUse` | Before tool execution | 8 hooks (see catalog) | Validate, block dangerous ops, refresh goals, enforce approval gates |
+| `UserPromptSubmit` | User submits prompt | `prompt-router.cjs` | Enforce delegation rules + suggest routing (P1-7: consolidated the former `delegation-enforcer.cjs` + `magic-keywords.cjs`) |
+| `PreToolUse` | Before tool execution | `bash-validator.cjs`, `secret-detection.cjs`, `controller-delegation-validator.cjs`, `approval-gate.cjs`, `model-routing-advisor.cjs`, `session-init-gate.cjs`, `skill-size-monitor.cjs`, `prompt-router.cjs` (Agent matcher) — see catalog | Validate, block dangerous ops, refresh goals, enforce approval gates |
+| `ConfigChange` | Config file changed | `config-change-logger.cjs` | Log config changes (LP-17, v12.7.0) |
 | `PermissionRequest` | Permission dialog | `permission-handler.cjs` | Auto-approve safe patterns, HITL gates |
-| `PostToolUse` | After tool execution | `post-write-validator.cjs` | Validate JSON/YAML syntax, audit file changes |
+| `PostToolUse` | After tool execution | `post-write-validator.cjs`, `validator-evidence-recheck.cjs` | Validate JSON/YAML syntax, audit file changes, re-verify cited evidence |
 | `PostToolUseFailure` | Tool execution fails | `tool-failure-tracker.cjs` | Track failures, detect patterns, suggest recovery |
 | `Notification` | Status notification | `notification.cjs` | Log and track |
 | `SubagentStart` | Subagent spawned | `subagent-tracker.cjs`, `team-start.cjs` | Log spawns, initialize team monitoring |

@@ -139,7 +139,7 @@ child_sessions:
 
 ## Team Planning Only Mode
 
-When invoked with `mode: team_planning_only` (by `/team` or team-trigger), the trigger executes a **truncated workflow**:
+When invoked with `mode: team_planning_only` (by the `/team` skill loop, which absorbed the pre-v12.0.0 team-trigger agent's init work inline), the trigger executes a **truncated workflow**:
 
 1. **Routing phase**: Domain detection, tier classification, template matching (same as standard)
 2. **Planning phase**: Aggressive decomposition, work item generation, controller selection (same as standard)

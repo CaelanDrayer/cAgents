@@ -4,7 +4,11 @@ import { join } from 'path';
 import { execSync } from 'child_process';
 
 const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
-const HOOK_PATH = join(HOOKS_DIR, 'magic-keywords.cjs');
+// P1-7 (v12.7.1, commit c5d48fce) consolidated magic-keywords.cjs +
+// delegation-enforcer.cjs into prompt-router.cjs. The natural-language
+// keyword-routing behavior asserted here is preserved by prompt-router's
+// Layer 2 (KEYWORD_ROUTES), so this regression now targets prompt-router.cjs.
+const HOOK_PATH = join(HOOKS_DIR, 'prompt-router.cjs');
 
 function runHook(input) {
   const result = execSync(
@@ -14,7 +18,7 @@ function runHook(input) {
   return JSON.parse(result.trim());
 }
 
-describe('magic-keywords.cjs', () => {
+describe('prompt-router.cjs (keyword routing, formerly magic-keywords.cjs)', () => {
   it('should exist', () => {
     expect(existsSync(HOOK_PATH)).toBe(true);
   });

@@ -23,8 +23,14 @@ import yaml from 'js-yaml';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
+// academic-paper-searcher was culled in the LP-13 consolidation and archived
+// (v12.8.0 eef900a7) to _archive/_deprecated_pre_v12.6/analyst/. The absorbed
+// SKILL.md and its v11.1.0 frontmatter are preserved there; this regression
+// still asserts the absorption artifact remains intact at the archived path.
 const SKILL_PATH = path.join(
   REPO_ROOT,
+  '_archive',
+  '_deprecated_pre_v12.6',
   'analyst',
   'academic-paper-searcher',
   'SKILL.md',

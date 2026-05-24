@@ -66,7 +66,7 @@ routing -> planning -> [PLAN DISPLAY] -> [TEAM EXECUTING] -> validating
                                         (parallel exec)
 ```
 
-In team mode, the coordinating and executing phases are merged into team execution where the team-lead-adapter manages parallel work item distribution via Agent Teams.
+In team mode, the coordinating and executing phases are merged into team execution where the `/team` lead (which absorbed the pre-v12.0.0 team-lead-adapter pattern inline) manages parallel work item distribution via Agent Teams.
 
 ### Team Planning Only Mode
 ```
@@ -228,8 +228,8 @@ team_mode_indicators:
 
 ### Team Execution Flow
 
-1. **After Planning**: Instead of spawning controller directly, spawn team-lead-adapter
-2. **Team Lead Initialization**: Team-lead-adapter wraps selected controller in delegate mode
+1. **After Planning**: Instead of spawning controller directly, hand off to the `/team` lead (the pre-v12.0.0 team-lead-adapter pattern, now inlined in the `/team` skill loop)
+2. **Team Lead Initialization**: The `/team` lead wraps the selected controller in delegate mode
 3. **Parallel Execution**: Work items distributed to team members for parallel execution
 4. **Progress Monitoring**: Monitor `team/task_list.yaml` instead of polling controller
 5. **Aggregation**: Team lead aggregates results into coordination_log.yaml
@@ -245,7 +245,7 @@ Agent({
   prompt: "Session: {session_path}\nRead plan.yaml for context."
 })
 
-// Team mode: spawn team-lead-adapter
+// Team mode: spawn the team-lead (the pre-v12.0.0 team-lead-adapter pattern, now inlined)
 Agent({
   subagent_type: "cagents:team-lead",
   description: "Team lead: {request}",

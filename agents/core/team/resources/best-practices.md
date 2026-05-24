@@ -66,13 +66,19 @@
 - **TeamCreate Success Rate**: Percentage of team mode invocations that successfully create a team — target 100%; failures indicate tool permission or environment issues
 - **Parallel Wave Utilization**: Average number of teammates executing simultaneously during wave 1 — target >2 for meaningful parallelism
 - **Template Auto-Selection Accuracy**: Percentage of template selections the user would agree are appropriate — measures scoring algorithm quality
-- **Fallback Rate**: How often team-trigger decides to fall back to /run — should be rare; high rates suggest incorrect suitability assessment
+- **Fallback Rate**: How often the `/team` skill loop decides to fall back to /run — should be rare; high rates suggest incorrect suitability assessment
 - **Bootstrap Completion Before Spawn**: Percentage of sessions where wave 0 completes fully before wave 1 teammates are spawned — target 100%
 - **Teammate Controller Compliance**: Percentage of spawned teammates that correctly delegate to execution agents rather than implementing directly — measures spawn prompt quality
 
 ## Collaboration Touchpoints
 
-- **With trigger**: Team-trigger may invoke trigger in `team_planning_only` mode to leverage trigger's domain detection and planning infrastructure — trigger produces plan.yaml and decomposition.yaml, team-trigger takes over for team-specific execution
-- **With team-lead-adapter**: In more complex team executions, team-trigger bootstraps the session and hands off to team-lead-adapter for ongoing wave coordination — team-trigger initializes, adapter manages
-- **With domain controllers (as teammates)**: Team-trigger spawns domain controllers (tech-lead, narrative-director, etc.) as teammates via Agent tool — each controller then independently coordinates execution agents and reviewers for its assigned work item
-- **With orchestrator**: In /run --team mode, orchestrator detects the team flag and spawns team-trigger instead of the domain controller — team-trigger handles all subsequent team coordination
+> **Historical note (v12.0.0)**: The standalone `team-trigger` and
+> `team-lead-adapter` agents were removed in v12.0.0; their work is now inlined
+> into the `/team` skill loop. The touchpoints below describe the `/team` loop's
+> behavior — read "the `/team` skill loop" wherever older text said
+> "team-trigger", and "the lead" wherever it said "team-lead-adapter".
+
+- **With trigger**: The `/team` skill loop may invoke trigger in `team_planning_only` mode to leverage trigger's domain detection and planning infrastructure — trigger produces plan.yaml and decomposition.yaml, and the `/team` loop takes over for team-specific execution
+- **With the lead pattern**: In more complex team executions, the `/team` loop bootstraps the session and applies the lead pattern for ongoing wave coordination — the loop initializes, the lead manages (formerly the team-trigger -> team-lead-adapter handoff)
+- **With domain controllers (as teammates)**: The `/team` loop spawns domain controllers (tech-lead, narrative-director, etc.) as teammates via Agent tool — each controller then independently coordinates execution agents and reviewers for its assigned work item
+- **With orchestrator**: In /run --team mode, orchestrator detects the team flag and spawns the `/team` lead (formerly the team-trigger agent) instead of the domain controller — the `/team` loop handles all subsequent team coordination

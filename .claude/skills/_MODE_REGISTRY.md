@@ -5,7 +5,7 @@ SKILL.md bodies SHOULD reference this registry rather than redefining modes inli
 This prevents documentation drift across `team/`, `run/`, and the
 other 3 user skills.
 
-**Last regenerated**: 2026-05-21 (v12.1.2 — `/improve` folded into `/run` via keyword router)
+**Last regenerated**: 2026-05-23 (v12.9.0 — verified tables against the 4 SKILL.md bodies; no flag drift, stamp refreshed by run_big-cleanup-fix_260524_001)
 **Reference pattern**: Imbad0202/academic-research-skills MODE_REGISTRY.md (Apache-2.0)
 
 ---

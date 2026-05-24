@@ -45,31 +45,26 @@ describe('pipeline_config.yaml', () => {
     });
   });
 
-  describe('progressive pipeline paths', () => {
-    it('should define minimal path', () => {
-      expect(loadConfig()).toContain('minimal:');
+  // v12.3.0 removed pre-enrichment detection and the progressive
+  // minimal/medium/full path model. Every /run and /team session now
+  // unconditionally executes the full 5-state pipeline. The old
+  // 'progressive pipeline paths' block (asserting minimal/medium/full +
+  // 0.25/0.65/1.0 thresholds) asserted a removed feature; it is replaced
+  // here with assertions of the current unconditional-full-pipeline contract.
+  describe('unconditional full pipeline (v12.3.0)', () => {
+    it('documents that pre-enrichment detection was removed in v12.3.0', () => {
+      expect(loadConfig()).toContain('Pre-enrichment detection removed in v12.3.0');
     });
 
-    it('should define medium path', () => {
-      expect(loadConfig()).toContain('medium:');
+    it('every session unconditionally executes the full 5-state pipeline', () => {
+      expect(loadConfig()).toMatch(/unconditionally executes the full 5-state/);
     });
 
-    it('should define full path', () => {
-      expect(loadConfig()).toContain('full:');
-    });
-
-    it('should have minimal threshold of 0.25', () => {
+    it('no longer defines minimal/medium/full progressive path thresholds', () => {
       const content = loadConfig();
-      // Check minimal path section contains threshold 0.25
-      expect(content).toMatch(/minimal:[\s\S]*?threshold:\s*0\.25/);
-    });
-
-    it('should have medium threshold of 0.65', () => {
-      expect(loadConfig()).toMatch(/medium:[\s\S]*?threshold:\s*0\.65/);
-    });
-
-    it('should have full threshold of 1.0', () => {
-      expect(loadConfig()).toMatch(/full:[\s\S]*?threshold:\s*1\.0/);
+      expect(content).not.toMatch(/^\s*minimal:/m);
+      expect(content).not.toMatch(/^\s*medium:/m);
+      expect(content).not.toMatch(/threshold:\s*0\.25/);
     });
   });
 

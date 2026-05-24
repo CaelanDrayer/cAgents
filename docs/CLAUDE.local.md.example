@@ -55,5 +55,5 @@ validation_level: standard
 
 Add any personal notes or reminders here:
 - [ ] Remember to check Agent_Memory/sessions/ for debugging
-- [ ] Use /improve --mode optimize --dry-run before applying changes
+- [ ] Use /run optimize --dry-run before applying changes
 - [ ] Check docs/GETTING_STARTED.md for workflow patterns

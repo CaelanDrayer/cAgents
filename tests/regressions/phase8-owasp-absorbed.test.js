@@ -24,8 +24,11 @@ import { readFileSync, existsSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const REPO_ROOT = resolve(__dirname, '..', '..');
+// v12.8.0 (eef900a7) moved the archetype tree under agents/. The active
+// security-owasp agent now lives at agents/developer/quality/security-owasp/.
 const SKILL_PATH = resolve(
   REPO_ROOT,
+  'agents',
   'developer',
   'quality',
   'security-owasp',
@@ -114,8 +117,12 @@ describe('Phase 8 — claude-code-owasp absorbed as developer/quality/security-o
   });
 
   it('does not modify the read-only corpus source', () => {
+    // v12.8.0 (eef900a7) "streamline root" moved example/ under
+    // _archive/repo_root_scratch/. The read-only corpus now lives there.
     const corpusPath = resolve(
       REPO_ROOT,
+      '_archive',
+      'repo_root_scratch',
       'example',
       'external-skills',
       'agamm__claude-code-owasp',

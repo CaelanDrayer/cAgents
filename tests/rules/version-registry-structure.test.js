@@ -40,17 +40,20 @@ describe('version-registry.md structure', () => {
     });
   }
 
-  it('registry table contains all numbered rows (v12.1.2+: 17 locations)', () => {
-    // V11.0 shrunk the registry from 21 to 17 (removed 4 SKILL.md
-    // entries for context/debug/review/optimize, kept CHANGELOG).
-    // Updated for V11.0.0.
+  it('registry table contains all numbered rows (v12.2.0+: 16 locations)', () => {
+    // V11.0 shrunk the registry from 21 to 17 (removed 4 SKILL.md entries for
+    // context/debug/review/optimize, kept CHANGELOG). v12.1.2 then folded
+    // /improve into /run, and v12.2.0 removed the /org SKILL.md slot when /org
+    // was folded into /team strategic mode — leaving 16 canonical locations.
     const rowNumbers = [...content.matchAll(/^\|\s*(\d+)\s*\|/gm)].map((m) =>
       Number(m[1]),
     );
     const unique = new Set(rowNumbers);
-    for (let i = 1; i <= 17; i++) {
+    for (let i = 1; i <= 16; i++) {
       expect(unique.has(i)).toBe(true);
     }
+    // And no stale row 17 (would signal the registry drifted back up).
+    expect(unique.has(17)).toBe(false);
   });
 
   it('references CLAUDE.md Bug-Driven Testing mandate', () => {

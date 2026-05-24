@@ -45,8 +45,10 @@ const STALE_CURRENT_STATE_CLAIMS = [
   '15 domains',
 ];
 
+// v12.7.0 LP-12/LP-13 consolidation settled the catalog at 141 active agents
+// (was 144 at v12.6.0). The manifest descriptions must reflect the current count.
 const REQUIRED_CURRENT_STATE_TOKENS = {
-  count: ['144 agents', '144 specialized agents'],
+  count: ['141 agents', '141 specialized agents'],
   organization: ['9 archetypes', '9 builder-role archetypes'],
 };
 

@@ -18,7 +18,7 @@ metadata:
     - retraction_propagation_tracking
   maxTurns: 30
   related_agents:
-    - name: literature-review-author
+    - name: scholar
       type: collaborates_with
     - name: methodology-critic
       type: collaborates_with
@@ -64,7 +64,7 @@ retracted or weak results are still propagating.
 ## Default Workflow
 
 1. **Ingest the seed set** — accept a list of papers (DOI, arXiv ID, or
-   citation string) as input. Typical source: literature-review-author's
+   citation string) as input. Typical source: scholar's
    retained set.
 2. **Resolve identifiers** — normalize each paper to a canonical ID (DOI
    preferred, fall back to arXiv/Semantic Scholar ID).
@@ -99,7 +99,7 @@ retracted or weak results are still propagating.
 ## Anti-Patterns (When NOT To Use)
 
 - **Reading paper content** — for "what does this paper actually say?" route
-  to `literature-review-author`. This agent treats papers as nodes, not as
+  to `scholar`. This agent treats papers as nodes, not as
   documents whose content needs synthesis.
 - **Single-paper rigor critique** — for "is paper X's method sound?" route
   to `methodology-critic`. Network position says nothing about methodological
@@ -120,7 +120,7 @@ retracted or weak results are still propagating.
 
 ## Collaboration
 
-- **With literature-review-author**: Receive the retained-papers seed set.
+- **With scholar**: Receive the retained-papers seed set.
   Return the centrality-ranked list so the review can ensure coverage of
   load-bearing references.
 - **With methodology-critic**: When a high-centrality paper is identified,

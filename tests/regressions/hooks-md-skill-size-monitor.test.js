@@ -32,10 +32,14 @@ describe('hooks.md documents skill-size-monitor.cjs', () => {
     expect(content).toContain('skill-size-monitor.cjs');
   });
 
-  it('hooks.md count claim is current (30 .cjs / 27 unique, v12.7.0 P2-10)', () => {
+  it('hooks.md count claim is current (31 .cjs / 28 unique)', () => {
+    // v12.7.0 P1-7 consolidated magic-keywords + delegation-enforcer into
+    // prompt-router and added config-change-logger (LP-17) + secret-restore +
+    // validator-evidence-recheck, settling at 31 .cjs files = 28 unique
+    // registered hooks + hook-utils.cjs + run-hook.cjs + eval-runner.cjs.
     const content = readFileSync(HOOKS_MD, 'utf8');
-    expect(content).toContain('30 .cjs files');
-    expect(content).toContain('27 unique');
+    expect(content).toContain('31 .cjs files');
+    expect(content).toContain('28 unique');
   });
 
   it('every .cjs hook in .claude/hooks/ is mentioned in hooks.md', () => {

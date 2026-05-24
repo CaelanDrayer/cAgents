@@ -1,6 +1,6 @@
 # Wave Execution Loop
 
-Reference document for team-trigger's wave-based delivery pattern.
+Reference document for the `/team` skill loop's wave-based delivery pattern (formerly owned by the team-trigger agent, removed in v12.0.0 and inlined into the `/team` skill loop).
 
 ## CRITICAL: Waves Are the Default
 

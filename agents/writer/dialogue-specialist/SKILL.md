@@ -23,7 +23,7 @@ metadata:
       type: coordinated_by
     - name: character-designer
       type: collaborates_with
-    - name: prose-stylist
+    - name: editor
       type: collaborates_with
   answers_questions:
     - How can this dialogue be improved?

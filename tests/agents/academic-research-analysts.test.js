@@ -21,10 +21,18 @@ import yaml from 'js-yaml';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..', '..');
 
+// LP-13 consolidation culled literature-review-author; v12.8.0 (eef900a7)
+// archived it to _archive/_deprecated_pre_v12.6/analyst/. citation-graph-analyzer
+// and methodology-critic remain ACTIVE under agents/analyst/. The active-agent
+// assertions below run against the 2 survivors; the archived survivor is
+// asserted separately so coverage of the Phase 12 absorption is not lost.
 const PHASE_12_AGENTS = [
-  'literature-review-author',
   'citation-graph-analyzer',
   'methodology-critic',
+];
+
+const PHASE_12_ARCHIVED_AGENTS = [
+  'literature-review-author',
 ];
 
 const SEMVER_RE = /^[0-9]+\.[0-9]+\.[0-9]+$/;
@@ -32,6 +40,10 @@ const MAX_LINES = 400;
 
 function agentPath(name) {
   return join(ROOT, 'agents', 'analyst', name, 'SKILL.md');
+}
+
+function archivedAgentPath(name) {
+  return join(ROOT, '_archive', '_deprecated_pre_v12.6', 'analyst', name, 'SKILL.md');
 }
 
 function parseFrontmatter(content) {
@@ -46,11 +58,21 @@ function parseFrontmatter(content) {
 }
 
 describe('Phase 12 (V11.1.13): academic-research analyst agents', () => {
-  test('(a) All 3 Phase 12 SKILL.md files exist under analyst/', () => {
+  test('(a) The active Phase 12 SKILL.md files exist under analyst/', () => {
     for (const name of PHASE_12_AGENTS) {
       const p = agentPath(name);
       expect(existsSync(p), `Missing: ${p}`).toBe(true);
       expect(statSync(p).isFile(), `Not a file: ${p}`).toBe(true);
+    }
+  });
+
+  test('(a2) Culled Phase 12 agents are preserved in the v12.8.0 archive', () => {
+    for (const name of PHASE_12_ARCHIVED_AGENTS) {
+      const p = archivedAgentPath(name);
+      expect(existsSync(p), `Missing archived agent: ${p}`).toBe(true);
+      expect(statSync(p).isFile(), `Not a file: ${p}`).toBe(true);
+      // It must NOT linger in the active tree (Option B: not restored).
+      expect(existsSync(agentPath(name)), `${name} should not be active`).toBe(false);
     }
   });
 
@@ -87,7 +109,7 @@ describe('Phase 12 (V11.1.13): academic-research analyst agents', () => {
 
   test('(e) validate-agents.sh --file passes for each (back-compat preserved)', () => {
     for (const name of PHASE_12_AGENTS) {
-      const rel = `analyst/${name}/SKILL.md`;
+      const rel = `agents/analyst/${name}/SKILL.md`;
       let exitCode = 0;
       try {
         execSync(`bash scripts/ci/validate-agents.sh --file ${rel}`, {

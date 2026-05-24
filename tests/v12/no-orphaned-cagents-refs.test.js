@@ -1,15 +1,17 @@
 /**
  * WI-8 (v12.4.0): no orphaned cagents:{removed-agent} refs in active catalog
  *
- * For every agent culled in v12.4.0 P2 compression (moved to
- * {archetype}/_deprecated/), assert no surviving `cagents:{name}` reference
- * remains in the active cAgents/ tree.
+ * For every agent culled in v12.4.0 P2 compression (originally moved to
+ * {archetype}/_deprecated/, archived to _archive/_deprecated_pre_v12.6/{arch}/
+ * in v12.8.0), assert no surviving `cagents:{name}` reference remains in the
+ * active cAgents/ tree.
  *
  * Excluded paths (where stale refs are allowed by convention):
  *   - CHANGELOG.md      (historical record)
  *   - docs/             (release notes, migration guides)
  *   - archive/          (historical docs)
- *   - **\/_deprecated/  (the culled agents themselves)
+ *   - _archive/         (v12.8.0 archived buckets + repo-root scratch)
+ *   - **\/_deprecated/ and **\/_deprecated_pre_v12.6/  (the culled agents themselves)
  *   - cagents-memory/_knowledge/agent-audit-*.md  (the audit report lists culled agents)
  *
  * Bug-driven test mandate (CLAUDE.md): this test fails if a future PR adds
@@ -26,12 +28,20 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 
-// Discover culled agents by listing every {archetype}/_deprecated/{name}/ dir.
+// Discover culled agents.
+// v12.8.0 (eef900a7) "streamline root" moved the per-archetype _deprecated/
+// buckets out of agents/{arch}/_deprecated/ into the single archived location
+// _archive/_deprecated_pre_v12.6/{arch}/{name}/. Restoring those buckets to the
+// working tree buys nothing (alias resolution is name-based via plugin.json +
+// v12-aliases.yaml, never bucket SKILL.md files), so this helper now enumerates
+// the archived location instead.
+const DEPRECATED_ARCHIVE_DIR = path.join(REPO_ROOT, '_archive', '_deprecated_pre_v12.6');
+
 function discoverCulledAgents() {
   const ARCHETYPES = ['developer', 'operator', 'advisor', 'analyst', 'creator', 'writer', 'strategist', 'core', 'leadership'];
   const culled = [];
   for (const arch of ARCHETYPES) {
-    const depDir = path.join(REPO_ROOT, 'agents', arch, '_deprecated');
+    const depDir = path.join(DEPRECATED_ARCHIVE_DIR, arch);
     if (!fs.existsSync(depDir)) continue;
     for (const e of fs.readdirSync(depDir)) {
       const stat = fs.statSync(path.join(depDir, e));
@@ -55,7 +65,9 @@ describe('WI-8 (v12.4.0): no orphaned cagents:{removed} refs in active tree', ()
       '--glob', '!CHANGELOG.md',
       '--glob', '!docs/**',
       '--glob', '!archive/**',
+      '--glob', '!_archive/**',
       '--glob', '!**/_deprecated/**',
+      '--glob', '!**/_deprecated_pre_v12.6/**',
       '--glob', '!cagents-memory/_knowledge/agent-audit-*.md',
       '--glob', '!cagents-memory/sessions/**',
       '--glob', '!node_modules/**',
@@ -79,7 +91,7 @@ describe('WI-8 (v12.4.0): no orphaned cagents:{removed} refs in active tree', ()
           maxBuffer: 32 * 1024 * 1024,
         });
       } else {
-        result = spawnSync('grep', ['-rn', '-E', pattern, '.', '--exclude-dir=node_modules', '--exclude-dir=.git', '--exclude-dir=_deprecated', '--exclude-dir=docs', '--exclude-dir=archive', '--exclude-dir=sessions', '--exclude=CHANGELOG.md', '--exclude=v12-aliases.yaml', '--exclude=no-orphaned-cagents-refs.test.js'], {
+        result = spawnSync('grep', ['-rn', '-E', pattern, '.', '--exclude-dir=node_modules', '--exclude-dir=.git', '--exclude-dir=_deprecated', '--exclude-dir=_deprecated_pre_v12.6', '--exclude-dir=_archive', '--exclude-dir=docs', '--exclude-dir=archive', '--exclude-dir=sessions', '--exclude=CHANGELOG.md', '--exclude=v12-aliases.yaml', '--exclude=no-orphaned-cagents-refs.test.js'], {
           cwd: REPO_ROOT,
           encoding: 'utf8',
           maxBuffer: 32 * 1024 * 1024,
@@ -94,7 +106,7 @@ describe('WI-8 (v12.4.0): no orphaned cagents:{removed} refs in active tree', ()
         const colonIdx = line.indexOf(':');
         if (colonIdx < 0) continue;
         const file = line.slice(0, colonIdx);
-        if (file.includes('/_deprecated/') || file.includes('/agent-audit-')) continue;
+        if (file.includes('/_deprecated/') || file.includes('/_deprecated_pre_v12.6/') || file.includes('/_archive/') || file.includes('/agent-audit-')) continue;
         for (const m of line.matchAll(re)) {
           const agent = m[1];
           if (!offenders.has(agent)) offenders.set(agent, new Set());

@@ -27,11 +27,14 @@ import { join } from 'path';
 
 const ROOT = process.cwd();
 const SETTINGS_PATH = join(ROOT, '.claude', 'settings.json');
-const HOOKS_MD_PATH = join(ROOT, '.claude', 'rules', 'core', 'hooks.md');
+// v12.7.0 moved per-hook detail out of hooks.md into resources/hook-catalog.md.
+// The per-hook "### Event[Matcher]: name.cjs" headings now live in the catalog,
+// so the bidirectional registration/documentation consistency check parses it.
+const HOOKS_MD_PATH = join(ROOT, '.claude', 'rules', 'core', 'resources', 'hook-catalog.md');
 
 // Heading patterns inside the "CLI Tool (Not a registered hook)" subsection are
 // documented for tooling but not registered hooks. We must skip them.
-const CLI_TOOL_SECTION = '### CLI Tool (Not a registered hook)';
+const CLI_TOOL_SECTION = '## CLI Tool (Not a registered hook)';
 
 /**
  * Parse .claude/settings.json and return an array of
@@ -85,21 +88,19 @@ function parseHooksMdTuples(hooksMdContent) {
       inCliToolSection = true;
       continue;
     }
-    // Exit CLI Tool section on the next ### or ## heading.
-    if (inCliToolSection && /^#{1,3}\s/.test(line) && line.trim() !== CLI_TOOL_SECTION) {
-      // Sub-headings under CLI Tool start with #### — keep skipping those.
-      if (/^####\s/.test(line)) {
-        continue;
-      }
+    // Exit CLI Tool section on the next ## section heading (catalog uses ##
+    // for sections and ### for per-hook entries). Keep skipping ### entries
+    // (e.g. ### eval-runner.cjs) until the next ## section.
+    if (inCliToolSection && /^##\s/.test(line) && line.trim() !== CLI_TOOL_SECTION) {
       inCliToolSection = false;
     }
     if (inCliToolSection) continue;
-    // Match patterns like:
-    //   #### Event[Matcher]: hook-name.cjs
-    //   #### Event[Matcher]: hook-a.cjs + hook-b.cjs
-    //   #### Event: hook-name.cjs
-    //   #### Event: hook-a.cjs + hook-b.cjs
-    const heading = line.match(/^####\s+([A-Za-z]+)(?:\[([^\]]+)\])?:\s+(.+)\s*$/);
+    // Match per-hook heading patterns in resources/hook-catalog.md:
+    //   ### Event[Matcher]: hook-name.cjs
+    //   ### Event[Matcher]: hook-a.cjs + hook-b.cjs
+    //   ### Event: hook-name.cjs
+    //   ### Event: hook-a.cjs + hook-b.cjs
+    const heading = line.match(/^###\s+([A-Za-z]+)(?:\[([^\]]+)\])?:\s+(.+)\s*$/);
     if (!heading) continue;
     const event = heading[1];
     const matcher = heading[2] || null;

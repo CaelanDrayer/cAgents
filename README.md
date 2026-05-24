@@ -118,7 +118,7 @@ Each teammate is a controller that spawns execution agents directly. Wave 0 hand
 
 ### Cross-Domain Strategic Coordination via `/team --strategic` (v12.2.0+)
 
-`/org` was removed in v12.2.0 and absorbed into `/team` strategic mode. The full executive layer — CEO inline logic, parallel C-suite analysis, cross-domain deliberation, unified strategic brief, dependency-ordered per-domain dispatch — now runs inside `/team`. Strategic mode auto-enables when `universal-router.domain_count >= 2`; force-enable with `--strategic` (single-domain executive framing) or force-disable with `--no-strategic` (flat multi-wave).
+`/org` was removed in v12.2.0 and absorbed into `/team` strategic mode. The full executive layer — CEO inline logic, parallel C-suite analysis, cross-domain deliberation, unified strategic brief, dependency-ordered per-domain dispatch — now runs inside `/team`. Strategic mode auto-enables when `router.domain_count >= 2`; force-enable with `--strategic` (single-domain executive framing) or force-disable with `--no-strategic` (flat multi-wave).
 
 ```bash
 /team Launch new product with campaign          # auto-enables strategic mode (multi-domain)
@@ -351,7 +351,7 @@ cAgents routes your request to the right domain automatically based on keywords.
 | `/run Create onboarding program` | People | hr-manager |
 | `/run Draft our privacy policy` | Service | general-counsel |
 
-For cross-domain work that spans multiple areas (e.g., launching a product requires engineering, marketing, and ops), use `/team` — strategic mode auto-engages when `universal-router` detects 2+ domains and coordinates C-suite agents across domains automatically (v12.2.0+; pre-v12.2.0 this was `/org`).
+For cross-domain work that spans multiple areas (e.g., launching a product requires engineering, marketing, and ops), use `/team` — strategic mode auto-engages when `router` detects 2+ domains and coordinates C-suite agents across domains automatically (v12.2.0+; pre-v12.2.0 this was `/org`).
 
 ---
 
@@ -446,8 +446,8 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights:
 
-- **V12.8.0** — Current release. BREAKING: `/org` skill removed; cross-domain coordination folded into `/team` with auto-enabled strategic mode (universal-router `domain_count` triggers Wave 0/1/2 C-suite deliberation + Wave 3..N per-domain dispatch). 12 leadership agents preserved at their existing locations. Plugin skill count 5->4. Migration: `/org X` → `/team X`.
-- **V12.1.2** — Folds `/improve` into `/run` via a first-word keyword router; removes the standalone `/improve` skill. Plugin skill count 6->5. Consolidation release: pipeline collapse 7->5 states (task-decomposer + prompt-engineer folded into universal-planner), engineering-manager merged into tech-lead, architecture-reviewer collapsed into `architect --review` mode flag, 13 marketing-sales agents absorbed (38->25), chief-legal-officer renamed to clo, 11 legacy domain dirs deleted, `cagents-memory/_communication/` removed, max_revision_cycles 5->3, execution self-validation reduced 15->5 hook-verifiable checks. Total agents 251->238.
+- **V12.9.0** — Current release. BREAKING: `/org` skill removed; cross-domain coordination folded into `/team` with auto-enabled strategic mode (`router` `domain_count` triggers Wave 0/1/2 C-suite deliberation + Wave 3..N per-domain dispatch). 12 leadership agents preserved at their existing locations. Plugin skill count 5->4. Migration: `/org X` → `/team X`.
+- **V12.1.2** — Folds `/improve` into `/run` via a first-word keyword router; removes the standalone `/improve` skill. Plugin skill count 6->5. Consolidation release: pipeline collapse 7->5 states (task-decomposer + prompt-engineer folded into planner), engineering-manager merged into tech-lead, architecture-reviewer collapsed into `architect --review` mode flag, 13 marketing-sales agents absorbed (38->25), chief-legal-officer renamed to clo, 11 legacy domain dirs deleted, `cagents-memory/_communication/` removed, max_revision_cycles 5->3, execution self-validation reduced 15->5 hook-verifiable checks. Total agents 251->238.
 - **V11.3.0** — Plugin health sweep: archetype-canonical doc alignment (9 archetypes canonical, 15 domains as routing overlay), 109 stale `related_agents` cross-references swept, hook-count assertions corrected (26 unique registered, 29 .cjs total), `sync-agents.sh --check` dry-run flag added, `validate-versions.sh` pruned to 18 canonical slots, regression tests added.
 - **V11.1.3** — Removed statusLine hook and status bar integration.
 - **V11.0.0** — Removed deprecated skills `/review`, `/optimize`, `/context`, `/debug`. `/review` and `/optimize` consolidated into `/improve` (`--mode review|optimize|full`); `/context` replaced by `/run context …` passthrough; `/debug` replaced by `/run --mode debug`. See [docs/MIGRATION-V11.md](docs/MIGRATION-V11.md) for the migration guide.

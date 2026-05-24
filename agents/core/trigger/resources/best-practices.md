@@ -10,7 +10,7 @@
 - **Minimum Tier 2 Enforcement**: All requests are tier 2 or higher — even "fix a typo" benefits from specialist review; tier 0 and 1 are deprecated and auto-upgraded
 - **Pre-flight Before Delegation**: Validate feasibility, resource availability, and conflict absence before spawning the orchestrator — catch problems at the entry point, not mid-execution
 - **Session Files First**: Create status.yaml before spawning any subagent — the SubagentStart hook requires status.yaml to track agents; missing it causes silent audit trail failures
-- **Team Planning Only Mode**: When invoked by /team with `mode: team_planning_only`, execute routing and planning then stop — team-trigger takes over for execution
+- **Team Planning Only Mode**: When invoked by /team with `mode: team_planning_only`, execute routing and planning then stop — the `/team` skill loop takes over for execution (this handoff was previously owned by the `team-trigger` agent, removed in v12.0.0 and inlined into the `/team` skill loop)
 
 ## Key Patterns & Frameworks
 
@@ -76,6 +76,6 @@
 ## Collaboration Touchpoints
 
 - **With orchestrator**: Trigger is orchestrator's sole spawner in the standard pipeline — after creating session files and validating the request, trigger spawns orchestrator via Agent tool with session path and request context
-- **With team-trigger**: In `/run --team` mode, trigger routes to team-trigger instead of orchestrator after pre-flight validation — team-trigger handles TeamCreate and parallel execution
+- **With the `/team` skill loop**: In `/run --team` mode, trigger routes to the `/team` skill loop instead of orchestrator after pre-flight validation — the `/team` loop handles TeamCreate and parallel execution (the pre-v12.0.0 `team-trigger` agent that previously owned this was removed and inlined into the `/team` skill loop)
 - **With universal-router**: Router is the first agent orchestrator spawns — router's tier classification and domain confirmation are informed by trigger's initial detection; they should agree on domain and tier
 - **With hooks (subagent-tracker.cjs)**: The SubagentStart hook reads status.yaml to find the active session when the orchestrator spawns — trigger's session file creation order is a hard dependency for the audit trail to work correctly

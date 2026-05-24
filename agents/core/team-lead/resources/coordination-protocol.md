@@ -148,7 +148,7 @@ aggregation_process:
 ```yaml
 # workflow/coordination_log.yaml
 
-controller: team-lead-adapter
+controller: team-lead   # the pre-v12.0.0 team-lead-adapter pattern, now inlined into the /team skill loop
 wrapped_controller: cagents:tech-lead
 mode: team_execution
 execution_method: built_in_agent_teams

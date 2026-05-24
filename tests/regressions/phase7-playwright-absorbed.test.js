@@ -21,8 +21,12 @@ import path from 'node:path';
 import yaml from 'js-yaml';
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
+// v12.8.0 (eef900a7) moved the archetype tree under agents/. The active
+// playwright-test-engineer agent now lives at
+// agents/developer/quality/playwright-test-engineer/.
 const SKILL_PATH = path.join(
   REPO_ROOT,
+  'agents',
   'developer',
   'quality',
   'playwright-test-engineer',

@@ -168,15 +168,27 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 - **Purpose**: Log notifications to daily files with 1MB rotation.
 - **Creates**: `cagents-memory/_system/logs/notifications_{date}.log`
 
-### UserPromptSubmit: delegation-enforcer.cjs
+### UserPromptSubmit: prompt-router.cjs
 
-- **Purpose**: Enforce the aggressive-delegation rule. When a user prompt looks like a direct request to implement work without going through a skill (`/run`, `/team`, `/designer`, `/improve`), surface a systemMessage reminding the model to delegate via the appropriate skill rather than handle the task directly.
-- **Output**: Advisory systemMessage (does not block the prompt). Pairs with `delegation-enforcer` doc in CLAUDE.md § CRITICAL: Aggressive Delegation.
+- **Purpose**: Consolidated delegation enforcement + natural-language routing (P1-7, v12.7.1; replaced the former `delegation-enforcer.cjs` + `magic-keywords.cjs`). Layer 1: when a prompt invokes `/run` or `/team`, inject a concise delegation reminder referencing `@.claude/rules/core/delegation.md` (the canonical Rationalization Kill List). Layer 2: detect intent keywords ("build X", "fix Y", "review Z", "optimize", "design") at the start of ≤2-sentence prompts and emit a routing suggestion (`/run`, `/run review`, `/run optimize`, `/designer`, `/team`).
+- **Output**: Layer 1 → `hookSpecificOutput.additionalContext`; Layer 2 → advisory `systemMessage`. Neither blocks the prompt. Pairs with CLAUDE.md § CRITICAL: Aggressive Delegation.
 
-### UserPromptSubmit: magic-keywords.cjs
+### PreToolUse[Agent]: prompt-router.cjs
 
-- **Purpose**: Natural-language routing suggestions. Recognizes intent keywords in user prompts ("build X", "review Y", "design Z", "audit", "optimize") and emits a systemMessage suggesting the appropriate skill.
-- **Output**: Advisory systemMessage (does not block the prompt). Complements `delegation-enforcer.cjs`.
+- **Matcher**: `Agent`
+- **Purpose**: Pass-through (no-op) reserved for future controller-spawn validation. The same `prompt-router.cjs` handler registered under UserPromptSubmit also receives PreToolUse[Agent] events; for `Agent` tool calls it returns null. The Write/Edit deny path is handled by `controller-delegation-validator.cjs`.
+- **Output**: Pass-through (never blocks).
+
+### PostToolUse[Write|Edit]: validator-evidence-recheck.cjs
+
+- **Matcher**: `Write|Edit`
+- **Purpose**: Re-verify evidence cited in coordination_log / self-validation by re-running the cited verification methods (`fs.existsSync`, `grep`, `Bash`) after a write, downgrading verdicts when claimed evidence does not actually verify (evidence-first enforcement, see `pat-evidence-first-execution.md`).
+- **Output**: Advisory systemMessage on mismatch (does not block).
+
+### ConfigChange: config-change-logger.cjs
+
+- **Purpose**: Log configuration changes (user/project/local settings, skills) to an audit trail when Claude Code emits a `ConfigChange` event (wired in LP-17, v12.7.0).
+- **Output**: Pass-through (never blocks).
 
 ## New Event Hooks
 

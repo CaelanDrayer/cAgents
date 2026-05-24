@@ -19,17 +19,18 @@ import { join } from 'path';
  */
 
 const ROOT = process.cwd();
+// v12.8.0 (eef900a7) moved the 9 archetype roots under agents/.
 const SCAN_DIRS = [
   '.claude/skills',
-  'developer',
-  'operator',
-  'advisor',
-  'analyst',
-  'creator',
-  'writer',
-  'strategist',
-  'core',
-  'leadership',
+  'agents/developer',
+  'agents/operator',
+  'agents/advisor',
+  'agents/analyst',
+  'agents/creator',
+  'agents/writer',
+  'agents/strategist',
+  'agents/core',
+  'agents/leadership',
 ];
 
 // Imperative patterns that should not appear in agent/skill prompt bodies

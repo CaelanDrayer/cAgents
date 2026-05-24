@@ -40,8 +40,6 @@ metadata:
       type: coordinates
     - name: editor
       type: coordinates
-    - name: prose-stylist
-      type: coordinates
 allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
@@ -215,7 +213,7 @@ TodoWrite([
 ])
 ```
 
-Replace `{exec_agent_1}`, `{exec_agent_2}` etc. with the actual agent names (e.g., `prose-stylist`, `dialogue-specialist`, `plot-developer`) and `{specific_task_1}` with what that agent will do.
+Replace `{exec_agent_1}`, `{exec_agent_2}` etc. with the actual agent names (e.g., `editor`, `dialogue-specialist`, `plot-developer`) and `{specific_task_1}` with what that agent will do.
 
 As each execution agent completes its work, update their task entry (TaskUpdate) to `completed` and mark the next as `in_progress`.
 

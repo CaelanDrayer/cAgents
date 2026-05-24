@@ -80,10 +80,15 @@ describe('version-registry.md is canonical-only (Q-011)', () => {
     ).toEqual([]);
   });
 
-  it('canonical 17-row registry table parses with rows numbered 1..18', () => {
+  it('canonical 16-row registry table parses with rows numbered 1..16', () => {
     // Row shape: `| N | <path> | <field> | <updater> |` where N is 1-2 digits.
-    // We extract every row in the canonical table and verify it covers 1..18
+    // We extract every row in the canonical table and verify it covers 1..16
     // contiguously with no duplicates.
+    //
+    // v12.2.0 removed slot #7 (.claude/skills/org/SKILL.md) when /org was
+    // folded into /team strategic mode, shrinking the canonical registry from
+    // 17 -> 16 rows. The registry file is the source of truth; this expectation
+    // tracks it. (Prior shrink: v12.1.2 removed the /improve slot.)
     const rowRe = /^\|\s*(\d{1,2})\s*\|\s*[^|]+\|\s*[^|]+\|\s*[^|]+\|/gm;
     const numbers = [];
     let m;
@@ -91,11 +96,11 @@ describe('version-registry.md is canonical-only (Q-011)', () => {
       numbers.push(parseInt(m[1], 10));
     }
 
-    // The canonical table has exactly 17 rows, numbered 1..17 in order.
+    // The canonical table has exactly 16 rows, numbered 1..16 in order.
     expect(
       numbers,
-      `version-registry.md must contain a markdown table with exactly 17 rows numbered 1..17.\n` +
+      `version-registry.md must contain a markdown table with exactly 16 rows numbered 1..16.\n` +
         `Extracted row numbers: [${numbers.join(', ')}]`,
-    ).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]);
+    ).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
   });
 });

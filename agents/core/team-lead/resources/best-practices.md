@@ -72,7 +72,7 @@
 
 ## Collaboration Touchpoints
 
-- **With team-trigger**: Team-trigger creates the team via TeamCreate and spawns the lead adapter — lead adapter receives team context, manifest, and task list from team-trigger and takes over wave coordination
-- **With domain controllers (as teammates)**: Each teammate IS a controller agent (tech-lead, narrative-director, etc.) spawned by the lead adapter — the lead adapter coordinates controllers, and controllers coordinate execution agents
-- **With orchestrator**: Orchestrator routes team-mode requests to team-lead-adapter instead of directly to a controller — after team execution completes, orchestrator receives the coordination_log.yaml and advances to validation
-- **With universal-validator**: After team-lead-adapter writes coordination_log.yaml and all outputs, the validation phase runs against the aggregated results — the lead adapter's synthesis quality directly affects validation outcomes
+- **With the `/team` skill loop**: The `/team` skill loop creates the team via TeamCreate and applies the lead pattern — the lead receives team context, manifest, and task list and takes over wave coordination (the pre-v12.0.0 `team-trigger` + `team-lead-adapter` agents that previously owned this were removed in v12.0.0 and inlined into the `/team` skill loop)
+- **With domain controllers (as teammates)**: Each teammate IS a controller agent (tech-lead, narrative-director, etc.) spawned by the lead — the lead coordinates controllers, and controllers coordinate execution agents
+- **With orchestrator**: Orchestrator routes team-mode requests to the `/team` lead (formerly the team-lead-adapter agent, now inlined) instead of directly to a controller — after team execution completes, orchestrator receives the coordination_log.yaml and advances to validation
+- **With validator**: After the lead writes coordination_log.yaml and all outputs, the validation phase runs against the aggregated results — the lead's synthesis quality directly affects validation outcomes

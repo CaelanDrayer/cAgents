@@ -19,9 +19,20 @@ const ROUTING_YAML_PATH = join(
   'routing.yaml',
 );
 
+// v12.8.0 (eef900a7) moved the archetype tree + overlays under agents/:
+//   people/shared overlays -> agents/_overlay/{people,shared}/config/
+//   leadership              -> agents/leadership/config/
+// Map each retained domain to its current on-disk config path.
+function dirOverridesPath(domain) {
+  if (domain === 'leadership') {
+    return join(PROJECT_ROOT, 'agents', 'leadership', 'config', 'domain_overrides.yaml');
+  }
+  // people, shared
+  return join(PROJECT_ROOT, 'agents', '_overlay', domain, 'config', 'domain_overrides.yaml');
+}
+
 function loadDirOverrides(domain) {
-  const filePath = join(PROJECT_ROOT, domain, 'config', 'domain_overrides.yaml');
-  return readFileSync(filePath, 'utf8');
+  return readFileSync(dirOverridesPath(domain), 'utf8');
 }
 
 let _routing = null;
@@ -48,9 +59,8 @@ function domainContent(domain) {
 describe('domain_overrides config (v12.0.0)', () => {
   describe('retained dir domains', () => {
     for (const domain of RETAINED_DIR_DOMAINS) {
-      it(`should have ${domain}/config/domain_overrides.yaml`, () => {
-        const filePath = join(PROJECT_ROOT, domain, 'config', 'domain_overrides.yaml');
-        expect(existsSync(filePath)).toBe(true);
+      it(`should have ${domain} config/domain_overrides.yaml`, () => {
+        expect(existsSync(dirOverridesPath(domain))).toBe(true);
       });
     }
   });

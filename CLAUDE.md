@@ -101,12 +101,14 @@ session artifacts referencing pre-v12 agent names continue to resolve.
 
 **Rules Structure** (`.claude/rules/`):
 ```
-core/           # orchestration, controllers, execution, hooks, teams, etc. (12 files)
+core/           # orchestration, controllers, execution, hooks, teams, etc. (13 top-level + 3 resources/)
 domains/        # engineering, grow, operate, people, serve (5 files)
 infrastructure/ # model-routing (1 file)
 memory/         # agent-memory (2 files)
-quality/        # completion, validation-framework, implicit-discovery (5 files)
+quality/        # completion, validation-framework, implicit-discovery (5 top-level + 1 resources/)
+playbooks/      # pat-* reusable patterns (4 files)
 ```
+Total: 36 .md = 30 top-level across 6 categories + 2 READMEs (root + playbooks/) + 4 resources/.
 
 **Import Syntax**: Use `@path/to/file` to include external content. View loaded files: `/memory`
 
@@ -405,7 +407,7 @@ cAgents/
 |   +-- hooks/               # 31 .cjs files (28 hooks + utils + launcher + eval CLI)
 |   +-- output-styles/       # Output-style files (v12.8.0+)
 |   +-- plans/               # Saved execution plans
-|   +-- rules/               # Modular rules (30 files: 25 top-level across 5 categories + 2 READMEs (root + playbooks/) + 3 in resources/)
+|   +-- rules/               # Modular rules (36 files: 30 top-level across 6 categories + 2 READMEs (root + playbooks/) + 4 in resources/)
 |   +-- settings.json        # Hook registration + permissions + env
 +-- agents/                  # All 141 agents (v12.8.0+ consolidation — formerly 11 root dirs)
 |   +-- developer/           # Developer archetype (26 agents — backend/frontend/fullstack/infrastructure/quality)
@@ -529,8 +531,8 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
-**Tests**: `npm test` runs 1158+ Vitest tests across 132+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.8.0
+**Tests**: `npm test` runs 1170+ Vitest tests across 132+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
+**Version**: 12.9.0
 
 ## Troubleshooting
 

@@ -162,7 +162,13 @@ describe('controller-delegation-validator.cjs', () => {
       expect(result.hookSpecificOutput).toBeDefined();
       expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
       expect(result.hookSpecificOutput.permissionDecisionReason).toContain('CONTROLLER DELEGATION BLOCKED');
-      expect(result.hookSpecificOutput.permissionDecisionReason).toContain('tech-lead');
+      // P1-7 (v12.7.1): src/ is a HARD-DENY path. The deny message is
+      // path-based and unconditional — it cites the offending implementation
+      // path and the canonical delegation rule, NOT a specific controller
+      // name (depth-1 stripping makes agent_tree unreliable, so the HARD-DENY
+      // does not depend on / report an active controller).
+      expect(result.hookSpecificOutput.permissionDecisionReason).toContain('src/auth/login.ts');
+      expect(result.hookSpecificOutput.permissionDecisionReason).toContain('@.claude/rules/core/delegation.md');
     });
 
     it('block mode is case-insensitive', () => {
@@ -285,7 +291,7 @@ describe('controller-delegation-validator.cjs', () => {
     });
   });
 
-  describe('no active controller — no enforcement', () => {
+  describe('HARD-DENY paths are denied regardless of active controller (P1-7)', () => {
     beforeEach(() => {
       setupTestSession(NO_ACTIVE_CONTROLLER_TREE);
     });
@@ -293,13 +299,20 @@ describe('controller-delegation-validator.cjs', () => {
       cleanupTestSession();
     });
 
-    it('no-ops when no controller is active, even in block mode', () => {
+    // P1-7 (v12.7.1) promoted src/, lib/, components/, app/ to an
+    // UNCONDITIONAL hard-deny in block mode. The deny no longer requires an
+    // active controller in agent_tree.yaml, because depth-1 stripping often
+    // prevents the tree from being updated reliably (see teams.md § Known
+    // Harness Limitation). So even with all controllers stopped, a src/ write
+    // is denied in block mode.
+    it('denies src/ implementation writes in block mode even with no active controller', () => {
       const result = runHook(implFileInput(), {
         CAGENTS_ACTIVE_SESSION: TEST_SESSION,
         CAGENTS_DELEGATION_ENFORCEMENT: 'block'
       });
-      expect(result.continue).toBe(true);
-      expect(result.hookSpecificOutput).toBeUndefined();
+      expect(result.hookSpecificOutput).toBeDefined();
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+      expect(result.hookSpecificOutput.permissionDecisionReason).toContain('CONTROLLER DELEGATION BLOCKED');
     });
   });
 
