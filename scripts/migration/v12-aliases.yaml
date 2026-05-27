@@ -33,11 +33,10 @@ aliases:
   # ---------------------------------------------------------------------------
   # Q1: Pipeline collapse — agents absorbed into core/planner/resources/
   # NOTE: alias target uses the canonical v12 name `cagents:planner`. Physical
-  # absorption files currently live under core/planner/resources/
-  # because the universal-planner agent dir has not yet been renamed; the
-  # router fallback maps cagents:planner -> cagents:planner via the
-  # standard agent-resolution chain. If a later WI renames
-  # core/planner/ -> core/planner/, no alias change is needed.
+  # absorption files live under core/planner/resources/ — the planner agent dir
+  # has already been renamed to its short form core/planner/ (v12.5.0), so the
+  # router fallback resolves cagents:planner directly via the standard
+  # agent-resolution chain. No further dir rename is pending.
   # ---------------------------------------------------------------------------
   - old: cagents:task-decomposer
     new: cagents:planner

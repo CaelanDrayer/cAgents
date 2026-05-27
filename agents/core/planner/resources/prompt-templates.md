@@ -24,7 +24,7 @@ this stage and controllers use standard prompts.
 ## Pipeline Position (v12.0.0)
 
 ```
-universal-planner (PLANNED state)
+planner (PLANNED state)
    |
    +-- writes plan.yaml + work_items.yaml
    |
@@ -230,4 +230,4 @@ described in `.claude/rules/core/controllers.md` and uses
 
 ---
 
-**Part of**: cAgents Event-Driven Pipeline (absorbed into universal-planner in v12.0.0)
+**Part of**: cAgents Event-Driven Pipeline (absorbed into planner in v12.0.0)

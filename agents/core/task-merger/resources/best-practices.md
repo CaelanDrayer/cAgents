@@ -10,7 +10,7 @@
 - **Group by File Locality**: Work items touching the same file belong in the same micro-task — prevents merge conflicts and race conditions
 - **Minimum Viable Split**: Micro-tasks smaller than 2K tokens cost more in coordination overhead than they save — don't over-fragment
 - **Verify Against Original Criteria**: After merging micro-task outputs, re-check the original acceptance criteria — individual pieces passing does not guarantee the merged result passes
-- **Split Before Retry**: When invoked by universal-self-correct to recover an exhausted agent, always produce smaller micro-tasks than the original scope — same scope guarantees same exhaustion
+- **Split Before Retry**: When invoked by self-correct to recover an exhausted agent, always produce smaller micro-tasks than the original scope — same scope guarantees same exhaustion
 
 ## Key Patterns & Frameworks
 
@@ -71,7 +71,7 @@
 
 ## Collaboration Touchpoints
 
-- **With universal-self-correct**: Self-correct invokes task-consolidator when a subagent returns incomplete work — provides the checkpoint path and remaining work items; consolidator produces the micro-task definitions that self-correct then spawns
+- **With self-correct**: Self-correct invokes task-consolidator when a subagent returns incomplete work — provides the checkpoint path and remaining work items; consolidator produces the micro-task definitions that self-correct then spawns
 - **With execution agents**: Consolidator spawns micro-task agents (e.g., backend-developer, copywriter) in parallel — each receives a scoped prompt with specific files and acceptance criteria
 - **With orchestrator**: Orchestrator detects context exhaustion signals and routes to self-correct → task-consolidator; after consolidation, orchestrator resumes the coordinating or executing phase
-- **With universal-validator**: After all micro-tasks merge, the consolidated output goes through validator for final acceptance criteria checking — consolidator's merge validation is necessary but not sufficient
+- **With validator**: After all micro-tasks merge, the consolidated output goes through validator for final acceptance criteria checking — consolidator's merge validation is necessary but not sufficient

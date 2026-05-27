@@ -71,6 +71,6 @@
 ## Collaboration Touchpoints
 
 - **With orchestrator**: The router is the first agent the orchestrator spawns — orchestrator receives the routing_decision.yaml and uses tier and domain to configure subsequent planning and controller selection
-- **With universal-planner**: Planner reads routing_decision.yaml to confirm domain, tier, and template match before building plan.yaml — router's tier classification directly determines how many controllers the planner assigns
+- **With planner**: Planner reads routing_decision.yaml to confirm domain, tier, and template match before building plan.yaml — router's tier classification directly determines how many controllers the planner assigns
 - **With trigger**: Trigger performs initial domain detection before routing; the router performs a more structured tier classification using domain configs — the two detections should converge; significant disagreement indicates one detected incorrectly
 - **With hitl**: Tier 4 routing triggers `requires_hitl_approval: true` in the workflow configuration — the orchestrator ensures HITL gates are inserted before final execution for tier 4 workflows

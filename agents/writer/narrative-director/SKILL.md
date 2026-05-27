@@ -205,11 +205,11 @@ When you identify which execution agents you will delegate to, you MUST call Tas
 ```
 TodoWrite([
   {"content": "[orchestrator] Enriching request context", "status": "completed", "id": "route"},
-  {"content": "[universal-planner] Planning objectives and selecting controller", "status": "completed", "id": "plan"},
+  {"content": "[planner] Planning objectives and selecting controller", "status": "completed", "id": "plan"},
   {"content": "[narrative-director] Coordinating creative work with specialist agents", "status": "in_progress", "id": "coordinate"},
   {"content": "[{exec_agent_1}] {specific_task_1}", "status": "pending", "id": "exec1"},
   {"content": "[{exec_agent_2}] {specific_task_2}", "status": "pending", "id": "exec2"},
-  {"content": "[universal-validator] Validating outputs against acceptance criteria", "status": "pending", "id": "validate"}
+  {"content": "[validator] Validating outputs against acceptance criteria", "status": "pending", "id": "validate"}
 ])
 ```
 

@@ -59,7 +59,7 @@ Adaptive recovery specialist for all domains.
 3. **Analyze**: Categorize issues, check correction strategies
 4. **Verify Fixability**: Est. time <= 60 min, strategies exist
 5. **Execute Fixes**: Invoke agents or auto-fix
-6. **Re-Validate**: Invoke universal-validator
+6. **Re-Validate**: Invoke validator
 7. **Handle Result**: PASS (done), FIXABLE (retry), BLOCKED (escalate)
 
 ## Retry Logic

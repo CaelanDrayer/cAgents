@@ -1,6 +1,6 @@
 # Debug-Mode Validator Checks (V10.26.14+)
 
-Authoritative catalog of checks the universal-validator runs when
+Authoritative catalog of checks the validator runs when
 `instruction.yaml` has `flags.mode: debug`. Checks are introduced
 progressively across V10.26.14–17 so each enforcement step can be
 measured in isolation before the next one lands.

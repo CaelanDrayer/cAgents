@@ -10,6 +10,17 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.10.0] - 2026-05-27
+
+**FU-3 bare-prose `universal-*` rename** (session `run_fu3-universal-prose_260527_001`). Closes the gap left by the v12.5.0 pipeline-agent rename: the `cagents:universal-*` and `core/universal-*` shapes were swept then, but **bare prose mentions** (e.g. "With universal-validator: ...") were never cleaned because the five existing `no-universal-*-refs` guards only grep the prefixed shapes. Minor bump — the token-only prose sweep touched 25 `agents/**/*.md` files, exceeding the 5-file tiny-bump threshold per the tiny-bump-guard cadence.
+
+### Fixed
+- **Bare-prose rename (47 tokens / 25 files):** Token-only find-and-replace of `universal-router → router`, `universal-planner → planner`, `universal-validator → validator`, `universal-executor → executor`, `universal-self-correct → self-correct` across `agents/core/**` (executor, orchestrator, planner, validator, self-correct, router, reviewer, hitl, optimizer, task-merger, task-state, trigger) plus `agents/writer/narrative-director/SKILL.md` (the `[universal-planner]`/`[universal-validator]` TaskCreate example lines). Surrounding wording, casing, and backtick/code-block formatting preserved. `grep -rIn 'universal-(router|planner|validator|executor|self-correct)' agents/ --include='*.md'` now returns ZERO matches.
+- **Stale alias comment:** Fixed the comment at `scripts/migration/v12-aliases.yaml:~37` that falsely claimed "the universal-planner agent dir has not yet been renamed" — the dir is the short form `core/planner/` as of v12.5.0. Comment text only; no alias key/value/field changed.
+
+### Added
+- **Bug-driven regression guard:** New `tests/v12/no-bare-universal-prose-refs.test.js` (modeled on `no-universal-planner-refs.test.js`) fails on any bare `universal-<name>` token inside `agents/**/*.md`, excluding the guard test files themselves, `CHANGELOG.md`, `docs/CHANGELOG.md`, `scripts/migration/v12-aliases.yaml`, `_archive/**`, `cagents-memory/**`, and `node_modules/**`. Verified RED on the pre-rename tree (47 matches) and GREEN post-rename. The five existing `no-universal-*-refs` guards are untouched.
+
 ## [12.9.0] - 2026-05-23
 
 **Cleanup-and-fix pass** (session `run_big-cleanup-fix_260524_001`). Closes a small, evidence-backed set of loose ends left after the v12.8.0 streamline + the prior folder-cleanup session. Minor bump because the change spans 8+ non-sync files across multiple surfaces (agents, skills, docs, rules), which the tiny-bump-guard correctly blocks as a patch.

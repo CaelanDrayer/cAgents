@@ -63,7 +63,7 @@
 - **Evidence Specificity Rate**: Percentage of MET/NOT MET judgments backed by specific file path, line number, or test output — target 100%
 - **Round Convergence Rate**: Percentage of work items that pass within 2 rounds — high rates indicate good execution agents and clear acceptance criteria
 - **Dead Letter Rate**: Percentage of work items that exhaust 3 rounds without passing — target <5%; high rates signal unclear criteria or mismatched execution agent selection
-- **False Positive Rate**: Percentage of PASS verdicts that the universal-validator later finds incomplete — measures review thoroughness
+- **False Positive Rate**: Percentage of PASS verdicts that the validator later finds incomplete — measures review thoroughness
 - **Confidence Calibration**: Correlation between reviewer confidence scores and actual pass/fail outcomes at validation — well-calibrated reviewers have confidence that predicts correctness
 - **Stage 2 REVISE Rate**: How often code quality issues are found after Stage 1 passes — tracks how well the two-stage separation is working
 
@@ -71,5 +71,5 @@
 
 - **With execution agents (backend-developer, copywriter, etc.)**: The primary relationship — execution agents produce work, reviewers evaluate it; REVISE feedback must be specific enough for the execution agent to act without further clarification
 - **With controllers (tech-lead, narrative-director, etc.)**: Controllers spawn reviewers after each execution round — reviewers report to the controller who decides whether to re-dispatch or dead-letter
-- **With universal-validator**: Reviewer operates at the work-item level within a single controller loop; universal-validator operates at the full-pipeline level after all work items complete — they are complementary but independent quality gates
+- **With validator**: Reviewer operates at the work-item level within a single controller loop; validator operates at the full-pipeline level after all work items complete — they are complementary but independent quality gates
 - **With prompt-engineer**: Well-crafted delegation prompts produce clear acceptance criteria that make reviewer evaluations easier and more consistent — prompt quality directly affects review quality

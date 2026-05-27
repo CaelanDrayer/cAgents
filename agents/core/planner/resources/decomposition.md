@@ -128,7 +128,7 @@ work_items.yaml during a now-removed DECOMPOSED state.) The planner writes
 BOTH artifacts in one pass:
 
 ```
-/run state machine (v12) -> PLANNED -> universal-planner -> plan.yaml + work_items.yaml + event file
+/run state machine (v12) -> PLANNED -> planner -> plan.yaml + work_items.yaml + event file
 ```
 
 ### Inputs
@@ -163,4 +163,4 @@ BOTH artifacts in one pass:
 
 ---
 
-**Part of**: cAgents Aggressive Task Decomposition (absorbed into universal-planner in v12.0.0)
+**Part of**: cAgents Aggressive Task Decomposition (absorbed into planner in v12.0.0)

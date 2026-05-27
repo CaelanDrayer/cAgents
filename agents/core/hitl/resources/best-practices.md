@@ -69,7 +69,7 @@
 
 ## Collaboration Touchpoints
 
-- **With universal-self-correct**: Receives escalations after self-correct exhausts its 6-step recovery ladder — HITL is the final step, not the first response
-- **With universal-validator**: Validator escalates BLOCKED classifications to HITL when issues cannot be auto-resolved — HITL determines whether to re-plan, accept partial results, or abandon
+- **With self-correct**: Receives escalations after self-correct exhausts its 6-step recovery ladder — HITL is the final step, not the first response
+- **With validator**: Validator escalates BLOCKED classifications to HITL when issues cannot be auto-resolved — HITL determines whether to re-plan, accept partial results, or abandon
 - **With orchestrator**: Orchestrator pauses phase transitions and creates a waypoint when HITL is triggered — resumes the state machine after HITL resolves
 - **With trigger**: Trigger routes tier 4 requests to include a mandatory HITL checkpoint before final execution — HITL approves go/no-go for high-impact work

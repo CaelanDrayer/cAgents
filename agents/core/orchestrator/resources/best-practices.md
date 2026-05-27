@@ -49,7 +49,7 @@
 ### Context Exhaustion Recovery
 - **Context Exhaustion**: When a subagent uses its full context window before completing its assigned work — detected by missing output files or in_progress coordination_log
 - **Continuation**: A recovery attempt that resumes from a checkpoint with smaller scope — tracked in execution_state.yaml with max 5 continuations
-- **universal-self-correct Invocation**: The orchestrator's recovery tool for incomplete subagent work — receives checkpoint path and remaining items
+- **self-correct Invocation**: The orchestrator's recovery tool for incomplete subagent work — receives checkpoint path and remaining items
 
 ## Anti-Patterns to Avoid
 
@@ -73,7 +73,7 @@
 ## Collaboration Touchpoints
 
 - **With trigger**: Trigger initializes the session and session files before spawning the orchestrator — orchestrator relies on status.yaml existing when it starts
-- **With universal-planner**: Orchestrator spawns planner after enrichment completes — planner reads enriched_context.yaml as its primary input
+- **With planner**: Orchestrator spawns planner after enrichment completes — planner reads enriched_context.yaml as its primary input
 - **With domain controllers**: Orchestrator spawns the controller selected by the planner for the coordinating phase — orchestrator monitors at phase level, not work-item level
-- **With universal-validator**: After executing phase, orchestrator hands off to validator — validator's PASS/FAIL/REVISE drives whether orchestrator completes or re-routes
-- **With universal-self-correct**: When a subagent returns incomplete work, orchestrator invokes self-correct with the checkpoint path and remaining work items before deciding to escalate
+- **With validator**: After executing phase, orchestrator hands off to validator — validator's PASS/FAIL/REVISE drives whether orchestrator completes or re-routes
+- **With self-correct**: When a subagent returns incomplete work, orchestrator invokes self-correct with the checkpoint path and remaining work items before deciding to escalate

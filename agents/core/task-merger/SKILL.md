@@ -69,7 +69,7 @@ Context optimization specialist for large tasks.
 
 ## Work Item Splitting
 
-When invoked by `universal-self-correct` after subagent incomplete work:
+When invoked by `self-correct` after subagent incomplete work:
 
 ### Input
 - `checkpoint_path`: Path to waypoint

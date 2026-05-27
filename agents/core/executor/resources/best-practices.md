@@ -9,7 +9,7 @@
 - **Detect, Don't Prevent**: Identify blockers early and trigger recovery, but do not pre-emptively restrict what controllers do — early detection + auto-recovery is more effective than pre-flight restrictions
 - **Aggregate, Don't Synthesize**: When a controller signals completion, the executor collects outputs without re-synthesizing them — the controller already performed synthesis; re-synthesizing introduces drift
 - **Automatic Handoff**: After controller completion is confirmed, write execution_summary.yaml and signal the validator immediately — do not ask the user to review before validation proceeds
-- **Continuation Tracking**: Context exhaustion is recoverable — track continuations in execution_state.yaml and invoke universal-self-correct for recovery before escalating to HITL
+- **Continuation Tracking**: Context exhaustion is recoverable — track continuations in execution_state.yaml and invoke self-correct for recovery before escalating to HITL
 - **File-Based Completion Signals**: Do not poll the controller in a loop — spawn it via Agent tool (blocking call), then detect completion by checking coordination_log.yaml status field
 
 ## Key Patterns & Frameworks
@@ -18,7 +18,7 @@
 - **Coordination Log Completion Check**: After Agent tool returns, read coordination_log.yaml and verify `status: completed` — if the field is missing or `in_progress`, the controller context-exhausted before finishing
 - **Continuation Counter Protocol**: Track each recovery attempt in execution_state.yaml under `continuation_count` — after 5 continuations, escalate to HITL instead of retrying further
 - **Blocker Detection Signals**: A controller is blocked when: coordination_log exists but `status` is not completed, expected output files are missing, or waypoint files with `type: pre_compact` exist — all three are signs of context exhaustion, not abandonment
-- **Self-Correct Delegation Pattern**: When context exhaustion is detected, invoke universal-self-correct with `correction_type: subagent_incomplete`, `checkpoint_path`, and `remaining_work_items` — self-correct handles splitting and re-dispatch; executor monitors the recovery
+- **Self-Correct Delegation Pattern**: When context exhaustion is detected, invoke self-correct with `correction_type: subagent_incomplete`, `checkpoint_path`, and `remaining_work_items` — self-correct handles splitting and re-dispatch; executor monitors the recovery
 - **Output Aggregation Flow**: After controller completes, read all files in the `outputs/` directory, confirm coordination_log.yaml's `implementation_tasks` all show `status: completed`, then write execution_summary.yaml with a compact summary
 - **Question Limit Monitoring**: Track questions_asked count in coordination_log against the domain config limit — warn at 80% of the limit, error at 100% — controllers approaching the limit may need to consolidate questions
 - **Timeout Escalation**: If the controller's estimated duration is exceeded (read from plan.yaml), warn at 85% and escalate to HITL at 100% — timeouts indicate systemic issues, not just slowness
@@ -71,6 +71,6 @@
 ## Collaboration Touchpoints
 
 - **With domain controllers (tech-lead, narrative-director, etc.)**: The primary relationship — executor spawns the controller via Agent tool and monitors its completion; the controller coordinates all work within its domain
-- **With universal-self-correct**: When a controller context-exhausts, executor invokes self-correct with the checkpoint and remaining items — self-correct handles splitting and re-dispatch; executor tracks the recovery
-- **With universal-validator**: After execution phase completes, executor writes execution_summary.yaml and signals the validator — the validator's PASS/FAIL/REVISE determines whether the pipeline completes or loops
+- **With self-correct**: When a controller context-exhausts, executor invokes self-correct with the checkpoint and remaining items — self-correct handles splitting and re-dispatch; executor tracks the recovery
+- **With validator**: After execution phase completes, executor writes execution_summary.yaml and signals the validator — the validator's PASS/FAIL/REVISE determines whether the pipeline completes or loops
 - **With orchestrator**: Orchestrator spawns executor after the coordinating phase is ready — executor is one phase in the orchestrator's state machine; it signals completion by writing execution_summary.yaml and an EVT-N completion event

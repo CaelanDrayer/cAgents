@@ -45,7 +45,7 @@ Task:
 2. Check if auto-recoverable
 3. Attempt recovery action
 4. If recovery succeeds → continue monitoring
-5. If recovery fails → escalate to universal-self-correct
+5. If recovery fails → escalate to self-correct
 6. If self-correct fails → escalate to HITL
 ```
 

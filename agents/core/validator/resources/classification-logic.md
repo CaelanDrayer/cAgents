@@ -7,7 +7,7 @@ Deterministic PASS/FIXABLE/BLOCKED rules.
 | Classification | Conditions | Next Agent |
 |----------------|------------|------------|
 | **PASS** | All critical+major gates pass, criteria met, minor ≤ 3 | Complete (archive) |
-| **FIXABLE** | Fixable in <30min, no critical failures, structure complete | universal-self-correct |
+| **FIXABLE** | Fixable in <30min, no critical failures, structure complete | self-correct |
 | **BLOCKED** | Critical failures, coordination violations, >50% tests fail | HITL (escalate) |
 
 ## BLOCKED Triggers
@@ -112,7 +112,7 @@ next_action:
 | Classification | Route To | Action |
 |----------------|----------|--------|
 | PASS | orchestrator | Archive workflow, report success |
-| FIXABLE | universal-self-correct | Provide fix guidance |
+| FIXABLE | self-correct | Provide fix guidance |
 | BLOCKED | hitl | Escalate with full context |
 
 ## Error Handling

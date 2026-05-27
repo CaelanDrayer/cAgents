@@ -22,7 +22,7 @@
 - **Anti-Pattern Detection**: Scan coordination_log for self-answered questions (controller answered its own delegation), direct implementation evidence (controller used Edit/Write on non-planning files), and circular delegation (controller → controller chains without execution agents)
 - **Test Execution Verification**: For engineering work items, run the actual test suite rather than trusting claimed results — `npm test`, `pytest`, or equivalent is the ground truth, not the agent's summary
 - **DECISIONS.md Check (Tier 3+)**: Tier 3 and above require a DECISIONS.md log with at least one entry per major coordination decision — missing DECISIONS.md triggers FAIL for tier 3+ workflows
-- **Revision Routing Intelligence (v12.0.0)**: Both FAIL and REVISE route back to PLANNED. FAIL means the controller re-runs against the existing plan with validator feedback; REVISE means universal-planner re-runs to produce a new plan + work_items. Pre-v12 FAIL routed to PROMPTS_READY (a state collapsed into PLANNED in v12.0.0). Choose between FAIL and REVISE based on whether the issue is execution quality or planning quality.
+- **Revision Routing Intelligence (v12.0.0)**: Both FAIL and REVISE route back to PLANNED. FAIL means the controller re-runs against the existing plan with validator feedback; REVISE means planner re-runs to produce a new plan + work_items. Pre-v12 FAIL routed to PROMPTS_READY (a state collapsed into PLANNED in v12.0.0). Choose between FAIL and REVISE based on whether the issue is execution quality or planning quality.
 
 ## Domain Concepts & Terminology
 
@@ -54,7 +54,7 @@
 
 ### Revision Routing Logic
 - **Route to PLANNED with FAIL (v12.0.0)**: Issues are in execution quality — wrong implementation, missing tests, incomplete output — re-running the controller against the existing plan with validator feedback may fix them. Pre-v12 this routed to PROMPTS_READY, a state collapsed into PLANNED in v12.0.0.
-- **Route to PLANNED with REVISE (v12.0.0)**: Issues are in planning quality — wrong controller selected, objectives not achievable, scope definition incorrect — universal-planner re-runs to produce a new plan + work_items before the controller re-runs.
+- **Route to PLANNED with REVISE (v12.0.0)**: Issues are in planning quality — wrong controller selected, objectives not achievable, scope definition incorrect — planner re-runs to produce a new plan + work_items before the controller re-runs.
 
 ## Anti-Patterns to Avoid
 
@@ -77,7 +77,7 @@
 
 ## Collaboration Touchpoints
 
-- **With reviewer (work-item level)**: Reviewer validates individual work items within controller loops; universal-validator validates the full pipeline output after all work items are done — they are complementary but operate at different granularities
-- **With universal-self-correct**: FAIL classifications route to self-correct for automated correction attempts before the pipeline cycles — self-correct receives the validation feedback and attempts targeted fixes; if it succeeds, validator re-runs; if correction exhausts retries, HITL is invoked
+- **With reviewer (work-item level)**: Reviewer validates individual work items within controller loops; validator validates the full pipeline output after all work items are done — they are complementary but operate at different granularities
+- **With self-correct**: FAIL classifications route to self-correct for automated correction attempts before the pipeline cycles — self-correct receives the validation feedback and attempts targeted fixes; if it succeeds, validator re-runs; if correction exhausts retries, HITL is invoked
 - **With hitl**: When validator returns BLOCKED (circular delegation, missing coordination_log, self-answered questions) after max revision cycles are exhausted, HITL receives the full validation report for human intervention
-- **With orchestrator (v12.0.0)**: Orchestrator reads the validation_report.yaml and the EVT-N completion event to determine pipeline routing — PASS → complete; FAIL → back to PLANNED (controller re-run); REVISE → back to PLANNED via universal-planner re-run; the event's `metadata.classification` is the machine-readable routing signal. Pre-v12 FAIL routed to PROMPTS_READY, a state that no longer exists.
+- **With orchestrator (v12.0.0)**: Orchestrator reads the validation_report.yaml and the EVT-N completion event to determine pipeline routing — PASS → complete; FAIL → back to PLANNED (controller re-run); REVISE → back to PLANNED via planner re-run; the event's `metadata.classification` is the machine-readable routing signal. Pre-v12 FAIL routed to PROMPTS_READY, a state that no longer exists.

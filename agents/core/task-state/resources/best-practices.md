@@ -82,4 +82,4 @@
 - **With orchestrator**: Orchestrator initializes task-inventory at the start of workflows with 20+ items — inventory then serves as the state backbone for the entire coordinating and executing phases
 - **With controllers**: Controllers use batch_assign and batch_complete to track work item progress — inventory is the controller's external memory when work items exceed manageable in-context tracking
 - **With task-consolidator**: When consolidator splits work into micro-tasks, it initializes a sub-inventory for the split — micro-task progress is tracked independently and merged into the parent inventory at completion
-- **With universal-executor**: Executor queries the inventory to determine when all work items are complete rather than polling coordination_log.yaml — inventory provides a compact, accurate view of execution state
+- **With executor**: Executor queries the inventory to determine when all work items are complete rather than polling coordination_log.yaml — inventory provides a compact, accurate view of execution state

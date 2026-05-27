@@ -73,7 +73,7 @@ exceptions: none
 
 ## Domain Detection (Multi-Archetype Matching Pass)
 
-The keyword-matching pass scans the request against ALL archetype-root catalogs and tracks **every** archetype that matches, not just the single highest-scoring one. This enables downstream consumers (planner, /team strategic-mode auto-detection) to detect cross-domain requests without re-scanning. (Pre-v12.2.0 the downstream consumer was /org; v12.2.0 absorbed /org into /team strategic mode, which reads `domain_count` from universal-router to decide whether to engage C-suite Wave 0/1.)
+The keyword-matching pass scans the request against ALL archetype-root catalogs and tracks **every** archetype that matches, not just the single highest-scoring one. This enables downstream consumers (planner, /team strategic-mode auto-detection) to detect cross-domain requests without re-scanning. (Pre-v12.2.0 the downstream consumer was /org; v12.2.0 absorbed /org into /team strategic mode, which reads `domain_count` from router to decide whether to engage C-suite Wave 0/1.)
 
 **Single-pass algorithm**:
 1. For each archetype root (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership), score the request against its keyword catalog.

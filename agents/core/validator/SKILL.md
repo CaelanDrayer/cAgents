@@ -23,7 +23,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 <example>
 <context>Implementation needs final quality check</context>
 <user>Validate that all 12 work items from the auth refactor meet their acceptance criteria</user>
-<agent>universal-validator checks: verifies each criterion with fresh evidence, runs test suites, confirms file changes match specs, produces validation_report.yaml with PASS/FAIL per item</agent>
+<agent>validator checks: verifies each criterion with fresh evidence, runs test suites, confirms file changes match specs, produces validation_report.yaml with PASS/FAIL per item</agent>
 </example>
 
 # Universal Validator
@@ -89,7 +89,7 @@ The validator now outputs three classifications that drive /run's revision routi
 | **PASS** | All gates pass, criteria met | Advance to VALIDATED (pipeline complete) |
 | **PARTIAL_PASS** | Most gates pass, dead-letter items exist | Advance to VALIDATED (maps to PASS, dead-letter items reported) |
 | **FAIL** | Fixable issues, re-execution needed | Route back to PLANNED (re-run controller with feedback) |
-| **REVISE** | Fundamental issues, re-planning needed | Route back to PLANNED (universal-planner re-runs with feedback) |
+| **REVISE** | Fundamental issues, re-planning needed | Route back to PLANNED (planner re-runs with feedback) |
 
 **Previous FIXABLE is now FAIL** (triggers controller re-execution with feedback).
 **Previous BLOCKED is escalated** after max revision cycles (3 in v12.0.0, lowered from 5) are exhausted.

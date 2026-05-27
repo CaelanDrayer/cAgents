@@ -70,7 +70,7 @@
 
 ## Collaboration Touchpoints
 
-- **With universal-validator**: Validator identifies FIXABLE/BLOCKED classifications; self-correct receives the FIXABLE issues, applies the crash recovery taxonomy, and returns a corrected output for re-validation — this creates the FAIL → self-correct → re-validate loop
+- **With validator**: Validator identifies FIXABLE/BLOCKED classifications; self-correct receives the FIXABLE issues, applies the crash recovery taxonomy, and returns a corrected output for re-validation — this creates the FAIL → self-correct → re-validate loop
 - **With task-consolidator**: When a subagent context-exhausts, self-correct invokes task-consolidator to split remaining work items into micro-tasks before re-dispatch — consolidator handles the splitting strategy; self-correct handles the overall recovery orchestration
 - **With hitl**: Self-correct is the last automated step before HITL escalation — after the recovery ladder reaches step 6 or continuations are exhausted, self-correct prepares the full escalation packet for HITL review
 - **With orchestrator**: Orchestrator invokes self-correct when it detects incomplete subagent returns (missing output files, in-progress coordination logs after Task returns) — orchestrator coordinates at phase level; self-correct handles work-item level recovery

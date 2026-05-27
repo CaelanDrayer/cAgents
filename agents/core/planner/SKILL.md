@@ -40,7 +40,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 <example>
 <context>Complex task needs structured planning</context>
 <user>Migrate our monolith to microservices with zero downtime</user>
-<agent>universal-planner decomposes: identifies service boundaries, maps data dependencies, creates migration phases, assigns controllers per domain, writes plan.yaml with 15 work items across 4 dependency levels</agent>
+<agent>planner decomposes: identifies service boundaries, maps data dependencies, creates migration phases, assigns controllers per domain, writes plan.yaml with 15 work items across 4 dependency levels</agent>
 </example>
 
 
@@ -197,7 +197,7 @@ After creating plan and decomposition:
 
 ## Event-Driven Pipeline Integration (v12.0.0)
 
-When spawned by /run's state machine loop, the universal-planner is the PLANNED state agent in the v12 collapsed pipeline (7 -> 5 states). Your job is to:
+When spawned by /run's state machine loop, the planner is the PLANNED state agent in the v12 collapsed pipeline (7 -> 5 states). Your job is to:
 1. Define objectives and select controllers (formerly planner-only)
 2. Decompose into work_items.yaml inline (formerly task-decomposer)
 3. (v12.6.0: `delegation_prompts.yaml` emission removed — controllers use standard delegation prompts.)
@@ -205,7 +205,7 @@ When spawned by /run's state machine loop, the universal-planner is the PLANNED 
 ### Pipeline Role
 
 ```
-/run state machine (v12.6.0) -> PLANNED -> universal-planner -> plan.yaml + work_items.yaml (and per-wave files when waves are defined)
+/run state machine (v12.6.0) -> PLANNED -> planner -> plan.yaml + work_items.yaml (and per-wave files when waves are defined)
 ```
 
 ### Inputs
