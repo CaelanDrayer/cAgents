@@ -278,7 +278,7 @@ The pipeline detects tier automatically via 9-signal complexity scoring. Tier 2 
 
 ### Goal Drift Prevention
 
-Before every Write, Edit, and Bash operation, the `attention-injection.cjs` hook reads the active `plan.yaml` and injects a concise goal reminder into the model's context window. An agent given 30 work items 40 tool calls ago still acts on the original objectives — not on whatever the most recent subtask left in its attention window.
+After context compaction, the `post-compact-restore.cjs` hook reads the active `plan.yaml` and re-injects the mission, domain, phase, and work-item progress into the model's context window. An agent given 30 work items 40 tool calls ago still acts on the original objectives — not on whatever survived the compaction.
 
 This fires automatically — no prompt engineering required. It is a no-op when there is no active session, so it does not affect ordinary Claude Code usage.
 
@@ -290,12 +290,10 @@ cAgents ships 31 .cjs files = 28 unique registered hooks + hook-utils.cjs + run-
 |-------|------|---------|
 | SessionStart | session-catchup.cjs | Detect incomplete sessions, inject cAgents context |
 | SessionEnd | team-stop.cjs | Finalize team metrics and update session status |
-| UserPromptSubmit | delegation-enforcer.cjs | Enforce delegation rules for controller agents |
-| UserPromptSubmit | magic-keywords.cjs | Natural language routing suggestions |
+| UserPromptSubmit | prompt-router.cjs | Enforce delegation rules + natural-language routing suggestions |
 | PreToolUse[Bash] | bash-validator.cjs | Block dangerous commands and data exfiltration attempts |
 | PreToolUse[Write\|Edit] | secret-detection.cjs | Block writes containing API keys, tokens, credentials |
 | PreToolUse[Write\|Edit] | controller-delegation-validator.cjs | Warn when controllers write implementation files |
-| PreToolUse[Write\|Edit\|Bash] | attention-injection.cjs | Inject plan objectives before every file operation |
 | PreToolUse[Write\|Edit\|Bash] | approval-gate.cjs | Enforce approval gates for sensitive operations |
 | PreToolUse[Agent] | model-routing-advisor.cjs | Suggest optimal model before agent spawns |
 | PreToolUse[Agent] | session-init-gate.cjs | Ensure session init complete before agent spawns |
