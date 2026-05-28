@@ -7,7 +7,7 @@ Deploy 141 specialized agents across 9 builder-role archetypes through an intell
 | Stat | Value |
 |------|-------|
 | Agents | 141 across 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership) |
-| Skills | 5 slash commands (v12.1.2: /improve folded into /run via keyword router) |
+| Skills | 4 slash commands (v12.2.0: /org folded into /team strategic mode; v12.1.2: /improve folded into /run) |
 | Hooks | 31 .cjs files = 28 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI, across 18 event types |
 | Models | Opus 4.6 (controllers) · Sonnet 4.6 (execution) · Haiku 4.5 (support) |
 
@@ -31,7 +31,7 @@ Deploy 141 specialized agents across 9 builder-role archetypes through an intell
 
 ## Usage Warning
 
-cAgents spawns 3-10+ subagents per request. Each consumes API tokens independently. A single `/run` can use 10-50x more tokens than a direct Claude Code interaction. `/team` and `/org` amplify this further. Monitor usage closely.
+cAgents spawns 3-10+ subagents per request. Each consumes API tokens independently. A single `/run` can use 10-50x more tokens than a direct Claude Code interaction. `/team` (especially strategic mode) amplifies this further. Monitor usage closely.
 
 ---
 
@@ -63,17 +63,14 @@ cd cAgents && ./scripts/setup.sh
 
 ## Quick Start
 
-Five commands. Five different capabilities.
+Four commands. Four different capabilities.
 
 ```bash
 # Route a bug fix to the engineering domain automatically
 /run Fix the authentication bug in src/auth.ts
 
-# Build a feature with parallel agent waves
-/team Build the user onboarding flow
-
-# Plan strategy with C-suite analysis
-/org Plan our Q3 product roadmap
+# Coordinate strategy across domains with C-suite analysis (strategic mode auto-enables)
+/team Plan our Q3 product roadmap
 
 # Audit or improve code quality (v12.1.2: improve modes folded into /run via keyword router)
 /run review src/api/ --auto-fix
@@ -90,7 +87,7 @@ The pipeline detects the domain, selects the appropriate controller, decomposes 
 
 ### `/run` — Task Execution Pipeline
 
-Routes any request through the full pipeline: orchestrator enriches context, planner defines objectives, decomposer breaks work into items with acceptance criteria, prompt-engineer crafts delegation prompts, a controller coordinates specialists, and a validator confirms quality.
+Routes any request through the full pipeline: orchestrator enriches context, planner defines objectives + decomposes work into items with acceptance criteria + assembles delegation prompts, a controller coordinates specialists, and a validator confirms quality. (v12.0.0 folded the standalone task-decomposer and prompt-engineer agents into the planner.)
 
 ```bash
 /run Fix the auth bug in src/auth.ts
@@ -226,11 +223,9 @@ User Request
   |
   +-> /run  (state machine loop, reads pipeline_config.yaml)
         |
-        INIT          -> orchestrator     -> enriched_context.yaml
-        ORCHESTRATED  -> planner          -> plan.yaml
-        PLANNED       -> decomposer       -> work_items.yaml
-        DECOMPOSED    -> prompt-engineer  -> delegation_prompts.yaml
-        PROMPTS_READY -> controller
+        INIT          -> orchestrator  -> enriched_context.yaml
+        ORCHESTRATED  -> planner       -> plan.yaml + work_items.yaml
+        PLANNED       -> controller    -> coordination_log.yaml
               |
               +-> execution agent  (implements work item)
               |     +-> reviewer   Stage 1: spec compliance
@@ -238,10 +233,10 @@ User Request
               |                    REVISE -> back to execution agent (max 3 rounds)
               |
               +-> (repeat per work item, dependency-ordered)
-        COORDINATED   -> validator        -> validation_report.yaml
-              PASS   -> complete
-              FAIL   -> re-run controller   (max 5 cycles)
-              REVISE -> re-run planner      (max 5 cycles)
+        COORDINATED   -> validator     -> validation_report.yaml
+        VALIDATED     -> complete
+              FAIL   -> re-run controller   (max 3 cycles)
+              REVISE -> re-run planner      (max 3 cycles)
 ```
 
 Controllers never implement. They ask questions of specialist agents, synthesize answers, and coordinate work items in dependency order. A two-stage review runs on every work item: Stage 1 checks spec compliance against acceptance criteria; Stage 2 checks code quality only after Stage 1 passes.
@@ -334,7 +329,7 @@ This prevents marking work complete when it looks clean but misses requirements.
 
 ### Aggressive Decomposition
 
-The decomposer breaks even simple requests into 30+ work items with explicit acceptance criteria, dependency graphs, and agent assignments. Work items execute in topological order; independent items execute in parallel.
+The planner breaks even simple requests into 30+ work items with explicit acceptance criteria, dependency graphs, and agent assignments. Work items execute in topological order; independent items execute in parallel.
 
 ---
 
@@ -373,7 +368,7 @@ For cross-domain work that spans multiple areas (e.g., launching a product requi
 |-----------|---------|----------------------------|----------------------------|
 | **Agent count** | 141 | 3–5 | 3–5 |
 | **Business domains** | 9 archetypes (2 routing overlays + 11 consolidated) | 1 (engineering) | 1 (engineering) |
-| **Pipeline state machine** | Yes — PASS/FAIL/REVISE routing, max 5 cycles | No | No |
+| **Pipeline state machine** | Yes — PASS/FAIL/REVISE routing, max 3 cycles | No | No |
 | **Parallel team execution** | Yes — N-wave with per-wave quality gates | No | No |
 | **Revision loops** | Yes — executor + reviewer, max 3 rounds per work item | No | No |
 | **Two-stage review** | Yes — spec compliance then code quality | No | No |
@@ -446,8 +441,10 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights:
 
-- **V12.10.0** — Current release. BREAKING: `/org` skill removed; cross-domain coordination folded into `/team` with auto-enabled strategic mode (`router` `domain_count` triggers Wave 0/1/2 C-suite deliberation + Wave 3..N per-domain dispatch). 12 leadership agents preserved at their existing locations. Plugin skill count 5->4. Migration: `/org X` → `/team X`.
-- **V12.1.2** — Folds `/improve` into `/run` via a first-word keyword router; removes the standalone `/improve` skill. Plugin skill count 6->5. Consolidation release: pipeline collapse 7->5 states (task-decomposer + prompt-engineer folded into planner), engineering-manager merged into tech-lead, architecture-reviewer collapsed into `architect --review` mode flag, 13 marketing-sales agents absorbed (38->25), chief-legal-officer renamed to clo, 11 legacy domain dirs deleted, `cagents-memory/_communication/` removed, max_revision_cycles 5->3, execution self-validation reduced 15->5 hook-verifiable checks. Total agents 251->238.
+- **V12.10.0** — Current release. FU-3 bare-prose agent-name sweep: replaced the last bare `universal-*` agent-name mentions in agent prose (`universal-router → router`, `universal-planner → planner`, `universal-validator → validator`, `universal-executor → executor`, `universal-self-correct → self-correct`) across 25 `agents/**` files, completing the v12.5.0 pipeline-agent rename. Added a `no-bare-universal-prose-refs` regression guard.
+- **V12.2.0** — BREAKING: `/org` skill removed; cross-domain coordination folded into `/team` with auto-enabled strategic mode (`router` `domain_count >= 2` triggers Wave 0/1/2 C-suite deliberation + Wave 3..N per-domain dispatch). 12 leadership agents preserved at their existing locations. Plugin skill count 5->4. Migration: `/org X` → `/team X`.
+- **V12.1.2** — Folds `/improve` into `/run` via a first-word keyword router and removes the standalone `/improve` skill (`/run review|audit` = `--mode review`, `/run optimize` = `--mode optimize`, `/run improve` = `--mode full`). Plugin skill count 6->5.
+- **V12.0.0** — Consolidation release: pipeline collapse 7->5 states (task-decomposer + prompt-engineer folded into planner), engineering-manager merged into tech-lead, architecture-reviewer collapsed into `architect --review` mode flag, 13 marketing-sales agents absorbed (38->25), chief-legal-officer renamed to clo, 11 legacy domain dirs deleted, `cagents-memory/_communication/` removed, max_revision_cycles 5->3, execution self-validation reduced 15->5 hook-verifiable checks. Total agents 251->240.
 - **V11.3.0** — Plugin health sweep: archetype-canonical doc alignment (9 archetypes canonical, 15 domains as routing overlay), 109 stale `related_agents` cross-references swept, hook-count assertions corrected (26 unique registered, 29 .cjs total), `sync-agents.sh --check` dry-run flag added, `validate-versions.sh` pruned to 18 canonical slots, regression tests added.
 - **V11.1.3** — Removed statusLine hook and status bar integration.
 - **V11.0.0** — Removed deprecated skills `/review`, `/optimize`, `/context`, `/debug`. `/review` and `/optimize` consolidated into `/improve` (`--mode review|optimize|full`); `/context` replaced by `/run context …` passthrough; `/debug` replaced by `/run --mode debug`. See [docs/MIGRATION-V11.md](docs/MIGRATION-V11.md) for the migration guide.
