@@ -88,3 +88,4 @@ vendor_repos/
 .omc/
 .orphaned_at
 cagents-skills.zip
+tests/.tmp/

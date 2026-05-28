@@ -10,6 +10,21 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.11.0] - 2026-05-27
+
+**Final organization + documentation reconciliation pass** (session `team_final-org-docs_260528_001`). A 5-wave audit/consolidation team run that confirmed repo-layout integrity, reconciled current-count drift to disk truth across README + docs, hardened the count guard, and aligned documentation with the current 4-skill catalog and 5-state pipeline. Minor bump per the tiny-bump cadence — an audit/consolidation session touching dozens of files across multiple surfaces (structure, counts, docs) is a minor bump, not a patch.
+
+### Changed
+- **Structure (WI-4):** Confirmed repo layout drift-free — 9 archetype roots + `agents/_overlay/{people,shared}`, 141 agents, 0 misplaced SKILL.md, 0 `_deprecated/` in the live tree. Git-ignored the runtime test-scratch dir `tests/.tmp/`.
+- **Counts (WI-5):** Reconciled all current-count drift to disk truth — README `238 → 141` agents (per-archetype catalog table + 4 README hook-count figures), docs ARCHITECTURE/GETTING_STARTED/CONTRIBUTING/DOMAIN_STRUCTURE_STANDARD `144 → 141`, `skill-format.md` core `16 → 15`, legacy-overlay wording (`15 → 2 overlays + 11 consolidated`). Historical version-totals preserved.
+- **Docs (WI-6a / WI-6b):** Reconciled README + docs/ with the current skill catalog (`/org → /team` strategic, `/improve|/review|/optimize → /run` modes), pipeline diagram 7-state → 5-state, `max 5 → 3` revision cycles, `decomposer → planner`, README hook names → `prompt-router.cjs` / `post-compact-restore.cjs`, version history split into distinct v12.0.0 / v12.1.2 / v12.2.0 entries, and fixed broken `@resources` refs in `marketing-strategist/resources/seo-strategy.md`.
+
+### Added
+- **CI hardening (WI-5):** Added `validate-counts.sh` Check 2b (targeted absence check) so stale README agent-totals can no longer pass the presence-only guard (negative-tested).
+
+### Fixed
+- **WI-7 drift fix:** Removed the bare `universal-*` pipeline-agent tokens that WI-6a's README version-history rewrite reintroduced into the V12.10.0 entry — they tripped `tests/v12/agent-name-registration-drift.test.js` (5 failures). Reworded the README V12.10.0 entry to name the five pipeline agents (router, planner, validator, executor, self-correct) without their long-form tokens. Full Vitest suite green afterward (1267 passed, 0 failed).
+
 ## [12.10.0] - 2026-05-27
 
 **FU-3 bare-prose `universal-*` rename** (session `run_fu3-universal-prose_260527_001`). Closes the gap left by the v12.5.0 pipeline-agent rename: the `cagents:universal-*` and `core/universal-*` shapes were swept then, but **bare prose mentions** (e.g. "With universal-validator: ...") were never cleaned because the five existing `no-universal-*-refs` guards only grep the prefixed shapes. Minor bump — the token-only prose sweep touched 25 `agents/**/*.md` files, exceeding the 5-file tiny-bump threshold per the tiny-bump-guard cadence.
