@@ -249,7 +249,7 @@ quality_checks() {
     log_info "Checking directory structure..."
     ((checks_total++))
     local dirs_ok=true
-    for dir in "core/agents" "shared/agents" "engineering/agents" "creative/agents" "business/agents" ".claude/hooks" ".claude/rules"; do
+    for dir in "agents" "agents/core" "agents/developer" "agents/operator" "agents/advisor" "agents/analyst" "agents/creator" "agents/writer" "agents/strategist" "agents/leadership" "agents/_overlay/people" "agents/_overlay/shared" ".claude/hooks" ".claude/rules"; do
         if [[ ! -d "$PROJECT_ROOT/$dir" ]]; then
             log_error "Missing directory: $dir"
             dirs_ok=false
