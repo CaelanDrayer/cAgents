@@ -80,7 +80,7 @@ cAgents is a universal multi-domain agent system with controller-centric coordin
 | **Core** | `core/` | 15 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, etc.) |
 | **Leadership** | `leadership/` | 12 | C-suite executives (used by /team strategic mode, not directly routable) |
 
-**Total: 144 agents across 9 archetypes (v12.4.0 P2 compression)**
+**Total: 141 agents across 9 archetypes (post-v12.7.0 LP-12 + LP-13 consolidation)**
 
 ### Legacy domain overlay (config-only)
 

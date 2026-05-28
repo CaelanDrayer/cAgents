@@ -2,13 +2,13 @@
 
 **Your AI Workforce for Claude Code**
 
-Deploy 238 specialized agents across 9 builder-role archetypes through an intelligent pipeline that routes your request, plans execution, decomposes work, coordinates specialists, reviews outputs, and validates quality — automatically.
+Deploy 141 specialized agents across 9 builder-role archetypes through an intelligent pipeline that routes your request, plans execution, decomposes work, coordinates specialists, reviews outputs, and validates quality — automatically.
 
 | Stat | Value |
 |------|-------|
-| Agents | 238 across 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership) |
+| Agents | 141 across 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership) |
 | Skills | 5 slash commands (v12.1.2: /improve folded into /run via keyword router) |
-| Hooks | 28 .cjs files = 25 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI, across 17 event types |
+| Hooks | 31 .cjs files = 28 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI, across 18 event types |
 | Models | Opus 4.6 (controllers) · Sonnet 4.6 (execution) · Haiku 4.5 (support) |
 
 ---
@@ -19,7 +19,7 @@ Deploy 238 specialized agents across 9 builder-role archetypes through an intell
 - Multi-step task orchestration with automatic routing, planning, and coordination
 - Cross-domain work (engineering + business + creative + growth in one request)
 - Parallel execution with quality-gated waves (40-60% faster for complex tasks)
-- Consistent delegation patterns across 9 archetypes (238 specialists)
+- Consistent delegation patterns across 9 archetypes (141 specialists)
 - Reviewer loops, confidence scoring, and revision routing built into every run
 
 **cAgents is NOT for you if:**
@@ -38,7 +38,7 @@ cAgents spawns 3-10+ subagents per request. Each consumes API tokens independent
 ## Requirements
 
 - **Claude Code 2.1.69+** (required)
-- **Node.js** (recommended) — powers 25 unique registered hooks (28 .cjs files = hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI) for session management, secret detection, team coordination, and completion verification
+- **Node.js** (recommended) — powers 28 unique registered hooks (31 .cjs files = hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI) for session management, secret detection, team coordination, and completion verification
 
 | cAgents | Min Claude Code | Highlights |
 |---------|----------------|------------|
@@ -179,20 +179,20 @@ Since v11.1.0, the agent catalog (141 agents as of v12.7.0) is organized as a bu
 
 | Archetype | Agents | Scope |
 |-----------|-------:|-------|
-| **Developer** | 30 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
-| **Operator** | 74 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
-| **Advisor** | 30 | Legal, health, education, personal (4 branches) |
-| **Analyst** | 31 | Data science, BI, research, social science |
-| **Writer** | 26 | Copy, narrative, technical, editorial |
-| **Creator** | 11 | Visual artists, designers, audiovisual creators |
-| **Strategist** | 9 | Product owners, portfolio managers, planners |
+| **Developer** | 26 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
+| **Operator** | 36 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
+| **Advisor** | 12 | Legal, health, education, personal (4 branches) |
+| **Analyst** | 19 | Data science, BI, research, social science |
+| **Writer** | 8 | Copy, narrative, technical, editorial |
+| **Creator** | 5 | Visual artists, designers, audiovisual creators |
+| **Strategist** | 8 | Product owners, portfolio managers, planners |
 | **Core** | 15 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, etc.) |
 | **Leadership** | 12 | C-suite executives — used by `/team` strategic mode (v12.2.0+; pre-v12.2.0 used by `/org`) |
-| **TOTAL** | **238** | |
+| **TOTAL** | **141** | |
 
-### Legacy: 15-Domain Routing Overlay
+### Legacy: 13-Domain Routing Overlay (2 dirs on disk + 11 consolidated)
 
-The router and planner still consume `{domain}/config/domain_overrides.yaml` (controller_catalog + router_keywords) from 13 legacy domain dirs. These dirs hold no SKILL.md files — they exist purely as a routing overlay so domain-keyworded requests still find the right archetype controller.
+The router and planner still consume legacy domain routing config (controller_catalog + router_keywords). On disk only **2 overlay dirs** survive — `agents/_overlay/people/` and `agents/_overlay/shared/` (config-only, no SKILL.md files); the other **11 legacy domains** were consolidated into `cagents-memory/_system/config/routing.yaml`. Either way, domain-keyworded requests still find the right archetype controller. The table below lists the legacy domains and how they map to the canonical archetypes.
 
 | Legacy Domain | Maps to Archetypes |
 |---------------|---------------------|
@@ -289,7 +289,7 @@ This fires automatically — no prompt engineering required. It is a no-op when 
 
 ### Lifecycle Hooks
 
-cAgents ships 28 .cjs files = 25 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI. The 25 hooks fire across 17 of Claude Code's 24 event types:
+cAgents ships 31 .cjs files = 28 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI. The 28 hooks fire across 18 of Claude Code's 24 event types:
 
 | Event | Hook | Purpose |
 |-------|------|---------|
@@ -371,13 +371,13 @@ For cross-domain work that spans multiple areas (e.g., launching a product requi
 
 | Dimension | cAgents | Official feature-dev plugin | Official code-review plugin |
 |-----------|---------|----------------------------|----------------------------|
-| **Agent count** | 238 | 3–5 | 3–5 |
-| **Business domains** | 9 archetypes (15 legacy routing overlays) | 1 (engineering) | 1 (engineering) |
+| **Agent count** | 141 | 3–5 | 3–5 |
+| **Business domains** | 9 archetypes (2 routing overlays + 11 consolidated) | 1 (engineering) | 1 (engineering) |
 | **Pipeline state machine** | Yes — PASS/FAIL/REVISE routing, max 5 cycles | No | No |
 | **Parallel team execution** | Yes — N-wave with per-wave quality gates | No | No |
 | **Revision loops** | Yes — executor + reviewer, max 3 rounds per work item | No | No |
 | **Two-stage review** | Yes — spec compliance then code quality | No | No |
-| **Hook lifecycle** | 25 unique hooks across 17 event types | 1–4 hooks | 1–4 hooks |
+| **Hook lifecycle** | 28 unique hooks across 18 event types | 1–4 hooks | 1–4 hooks |
 | **Goal drift prevention** | Yes — attention injection on every Write/Edit/Bash | No | No |
 | **Confidence scoring** | Yes — 0.0–1.0 per work item, low scores trigger scrutiny | No | No |
 | **Cross-domain orchestration** | Yes — `/team` strategic mode fires full C-suite hierarchy (auto-enabled when `domain_count >= 2`) | No | No |

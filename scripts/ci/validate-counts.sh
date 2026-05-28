@@ -97,6 +97,28 @@ if grep -qE "\b[0-9]+ agents\b" README.md 2>/dev/null; then
   fi
 fi
 
+# Check 2b (F-14 hardening): ABSENCE check for stale agent-TOTAL phrasings in
+# README's live sections. Check 2 above is a PRESENCE check — it passes as long
+# as the correct count appears once, so stale DUPLICATE totals (e.g.
+# "238 specialized agents") slipped through historically while CI stayed green.
+# Here we scan only the portion of README BEFORE "## Version History" (release
+# notes there legitimately cite past totals such as 251->238) and FAIL if any
+# agent-total phrasing cites a number other than ACTIVE_AGENTS. Deliberately
+# targeted to the three agent-total phrasings README uses — does NOT touch
+# hook/slot/routing-overlay numbers (those are guarded elsewhere / are not
+# agent totals), keeping it non-brittle.
+readme_live="$(sed '/^## Version History/,$d' README.md)"
+stale_totals="$(printf '%s\n' "$readme_live" \
+  | grep -oE "[0-9]+ (specialized agents|across 9 archetypes|specialists)" \
+  | grep -vE "^${ACTIVE_AGENTS} " || true)"
+if [ -n "$stale_totals" ]; then
+  while IFS= read -r phrase; do
+    [ -z "$phrase" ] && continue
+    report_mismatch "README.md (live section, F-14 absence check)" "$phrase" \
+      "$ACTIVE_AGENTS (agent total)"
+  done <<< "$stale_totals"
+fi
+
 # Check 3: .claude/settings.json $comment field hook counts.
 # Pattern: "31 .cjs files = 28 unique registered hooks ... 17 event types"
 SETTINGS_COMMENT=$(jq -r '."$comment" // empty' .claude/settings.json)

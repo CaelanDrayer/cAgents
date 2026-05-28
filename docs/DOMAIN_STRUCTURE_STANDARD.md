@@ -4,7 +4,7 @@
 **Last Updated**: 2026-02-28
 
 > **Outdated as of v11.1.0**: The 13-domain layout this document describes was replaced by the **9 builder-role archetype tree** in v11.1.0 (canonical since). For the current architecture, see:
-> - [docs/architecture/domains.md](architecture/domains.md) — 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership), 144 agents post-v12.4.0 P2 compression
+> - [docs/architecture/domains.md](architecture/domains.md) — 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership), 141 agents post-v12.7.0 LP-12 + LP-13 consolidation
 > - [`.claude/rules/core/skill-format.md`](../.claude/rules/core/skill-format.md) — the v11.1.0+ `archetype:` + `branch:` frontmatter schema (the legacy top-level `domain:` field was REMOVED in v11.1.0 and `validate-agents.sh` rejects it as an error)
 >
 > Two legacy domain dirs (`people/` and `shared/`) survive on disk as routing-config-only overlays; the other 11 were deleted in v12 W4.2 and consolidated into `cagents-memory/_system/config/routing.yaml`. This document is preserved for historical context only.

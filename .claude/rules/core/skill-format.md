@@ -57,7 +57,7 @@ initialPrompt: "Load session state and summarize active work items before starti
 - `controller`: Tier 2 agents that coordinate work through questions
 - `execution`: Tier 3 agents that implement work and answer questions
 - `support`: Tier 4 agents providing foundational services
-- `infrastructure`: Core pipeline agents (orchestrator, planner, decomposer, validator, etc.) that form the execution backbone. Used by the 16 agents in `core/`.
+- `infrastructure`: Core pipeline agents (orchestrator, planner, decomposer, validator, etc.) that form the execution backbone. Used by the 15 agents in `core/`.
 
 ### archetype
 - One of 9 builder-role archetype roots (top-level required field, since v11.1.0):

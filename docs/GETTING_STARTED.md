@@ -1,6 +1,6 @@
 # Getting Started with cAgents
 
-Five minutes from install to your first orchestrated result. This guide reflects **v12.6.0 current** — 144 agents across 9 builder-role archetypes (post-v12.4.0 P2 compression from 240) and 4 user-invocable skills (`/designer`, `/helper`, `/run`, `/team`).
+Five minutes from install to your first orchestrated result. This guide reflects **v12.6.0 current** — 141 agents across 9 builder-role archetypes (post-v12.7.0 LP-12 + LP-13 consolidation) and 4 user-invocable skills (`/designer`, `/helper`, `/run`, `/team`).
 
 _V11.0 removed `/review`, `/optimize`, `/context`, and `/debug` — see [MIGRATION-V11.md](./MIGRATION-V11.md) for the migration path. v12.1.2 folded `/improve` into `/run` via a first-word keyword router. v12.2.0 removed `/org` and absorbed cross-domain coordination into `/team` strategic mode._
 
