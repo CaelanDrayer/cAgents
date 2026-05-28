@@ -35,8 +35,9 @@ sequenced roadmap.
 
 > v12 update (WI-W3.3): The four pre-v12 SEO execution agents (`keyword-researcher`,
 > `on-page-seo-auditor`, `technical-seo-auditor`, `link-strategist`) were absorbed
-> into `seo-specialist` as mode-specific resources (@resources/keyword-research.md,
-> @resources/on-page-audit.md, @resources/technical-audit.md, @resources/link-strategy.md).
+> into `seo-specialist` as mode-specific resources (`seo-specialist/resources/keyword-research.md`,
+> `seo-specialist/resources/on-page-audit.md`, `seo-specialist/resources/technical-audit.md`,
+> `seo-specialist/resources/link-strategy.md`).
 > `geo-strategist` remains a separate execution agent. Route SEO questions to
 > `seo-specialist` (specify mode via the question) and AI-search questions to
 > `geo-strategist`.

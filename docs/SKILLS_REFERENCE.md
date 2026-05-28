@@ -51,7 +51,7 @@ Want to clarify requirements through Q&A before building?
   NO  v
 
 Want to audit, optimize, or both for existing work?
-  YES -> /improve --mode review|optimize|full
+  YES -> /run review|optimize|improve  (= --mode review|optimize|full)
   NO  v
 
 Have 3+ independent work items that can run in parallel?
@@ -161,7 +161,7 @@ See `.claude/skills/team/reference/strategic-mode.md` for the full protocol, bri
 
 **When to use**:
 - Building, fixing, writing, or implementing single-domain work
-- Consuming output from `/designer` (`--from-designer`) or `/improve --mode review` (`--from-review`)
+- Consuming output from `/designer` (`--from-designer`) or `/run review` (`--from-review`)
 - Resuming a paused session (`--resume`)
 - Previewing routing without execution (`--dry-run`)
 
@@ -259,11 +259,11 @@ Skills can be composed by passing structured output from one to the next.
 ### Review then fix
 
 ```bash
-/improve src/auth/ --mode review --focus security
+/run review src/auth/ --focus security
 /run Fix review findings --from-review
 ```
 
-`/improve --mode review` writes `workflow/review_report.yaml`; `/run --from-review` reads it and auto-creates fix work items.
+`/run review` writes `workflow/review_report.yaml`; `/run --from-review` reads it and auto-creates fix work items.
 
 ### Strategic mode (cross-domain, automatic — v12.2.0+ replacement for the old /org -> /team chain)
 
@@ -271,7 +271,7 @@ Skills can be composed by passing structured output from one to the next.
 
 ### Optimize then validate
 
-`/improve --mode full` runs review and optimization back-to-back in a single state machine, producing a unified `improve_report.md`.
+`/run improve` (= `--mode full`) runs review and optimization back-to-back in a single state machine, producing a unified `improve_report.md`.
 
 ---
 
@@ -283,12 +283,12 @@ All skills write artifacts to `cagents-memory/sessions/{session_id}/`. Session I
 |----------|-----------|-------------|
 | `workflow/enriched_context.yaml` | `/run` orchestrator | planner, controller |
 | `workflow/plan.yaml` | `/run` planner | controller, executor |
-| `workflow/work_items.yaml` | `/run` decomposer | controller, validator |
+| `workflow/work_items.yaml` | `/run` planner | controller, validator |
 | `workflow/coordination_log.yaml` | controller | validator |
 | `workflow/validation_report.yaml` | validator | `/run` state machine |
-| `workflow/improve_report.md` | `/improve` (mode `full`) | user |
-| `workflow/review_report.yaml` | `/improve --mode review` | `/run --from-review` |
-| `workflow/optimization_report.yaml` | `/improve --mode optimize` | user |
+| `workflow/improve_report.md` | `/run` (full mode) | user |
+| `workflow/review_report.yaml` | `/run` (review mode) | `/run --from-review` |
+| `workflow/optimization_report.yaml` | `/run` (optimize mode) | user |
 | `workflow/design_document.yaml` | `/designer` | `/run --from-designer` |
 | `workflow/strategic_brief.yaml` | `/team` strategic mode (Wave 0/1/2 deliberation) — pre-v12.2.0 produced by `/org` | downstream per-domain waves; `/run --brief` for ad-hoc consumers |
 | `team/task_list.yaml` | `/team` | teammates, lead |
@@ -301,7 +301,7 @@ All skills write artifacts to `cagents-memory/sessions/{session_id}/`. Session I
 |-------|-------|
 | `/designer` | `--deep`, `--resume <id>`, `--iterate <id>`, `--template <name>`, `--brief <path>` |
 | `/helper` | `--compare`, `--flags <cmd>`, `--examples`, `--quick`, `--topic <topic>`, `--troubleshoot <cmd>` |
-| `/improve` | `--mode review\|optimize\|full`, `--focus <area>`, `--auto-fix`, `--severity <level>`, `--baseline`, `--suppress <id>`, `--benchmark <tool>`, `--dry-run`, `--rollback` |
+| ~~`/improve`~~ (folded into `/run` v12.1.2; use `/run review\|optimize\|improve`) | flags now on `/run`: `--mode review\|optimize\|full`, `--focus <area>`, `--auto-fix`, `--severity <level>`, `--baseline`, `--suppress <id>`, `--benchmark <tool>`, `--dry-run`, `--rollback` |
 | ~~`/org`~~ (removed v12.2.0; use `/team --strategic`) | n/a — flags migrated: `--dry-run` -> `/team --dry-run`; `--quick` -> `/team --strategic`; `--domains` -> auto-inferred by router; `--resume` -> `/team --resume <team_session_id>` |
 | `/run` | `--dry-run`, `--quiet`, `--team`, `--analytics`, `--from-review`, `--from-designer`, `--resume <id>`, `--brief <path>`, `--interactive` |
 | `/team` | `--dry-run`, `--waves <n>`, `--members <n>`, `--teammate-mode tmux\|auto\|in-process`, `--no-template` |
@@ -310,12 +310,12 @@ All skills write artifacts to `cagents-memory/sessions/{session_id}/`. Session I
 
 ## Removed in V11.0 and V12
 
-V11.0 removed four skills after a two-version deprecation window (V10.26.19–V10.26.35). The functionality has migrated to `/improve` or built-in Claude Code memory commands. **Do not invoke the removed skills** — they are not registered in `plugin.json` and will fall through to no-op or unrecognized-command handling.
+V11.0 removed four skills after a two-version deprecation window (V10.26.19–V10.26.35). The functionality has migrated to `/run` review/optimize modes or built-in Claude Code memory commands. **Do not invoke the removed skills** — they are not registered in `plugin.json` and will fall through to no-op or unrecognized-command handling. (Note: V11.0 originally migrated `/review` and `/optimize` to `/improve`, which was itself folded into `/run` in v12.1.2 — the current target is `/run review` / `/run optimize`.)
 
 | Removed skill | Replacement | Migration notes |
 |---------------|-------------|-----------------|
-| `/review` | `/improve --mode review` | Same review modes (`security`, `paranoid`, `quick`, `pre-merge`) reachable via `--focus` and `--mode` flags |
-| `/optimize` | `/improve --mode optimize` | Same optimization types and benchmark integrations; `--rollback` and `--benchmark` flags preserved |
+| `/review` | `/run review` | Same review modes (`security`, `paranoid`, `quick`, `pre-merge`) reachable via `--focus` and `--mode` flags |
+| `/optimize` | `/run optimize` | Same optimization types and benchmark integrations; `--rollback` and `--benchmark` flags preserved |
 | `/context` | Built-in `/memory` plus the `cagents-memory/_projects/{hash}/product_context.yaml` file | Manual or `/memory`-driven persistence replaces the auto-init flow |
 | `/debug` | `/run` with explicit reproduction steps | The standard `/run` pipeline now handles root-cause investigation through controller question delegation |
 | `/improve` (v12.1.2) | `/run review`, `/run optimize`, `/run improve` (or `/run --mode review\|optimize\|full`) | First-word keyword router; all `/improve` flags (`--baseline`, `--suppress`, `--benchmark`, `--auto-fix`, `--severity`, etc.) remain available on `/run` |

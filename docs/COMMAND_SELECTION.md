@@ -31,7 +31,7 @@ Is this a multi-domain strategic initiative?
 |----------|--------------------------------------------|-------------------------------|-----------|---------|
 | **Scope** | Single domain (build) or single target (review/optimize/full) | Single domain (flat) or multi-domain (strategic mode) | Single artifact | Any |
 | **Work items** | 1-5 (build); varies (review/optimize) | 3+ parallel; 5+ cross-domain (strategic mode) | 1 design | N/A |
-| **Execution** | Sequential pipeline; 7-state for review/optimize/full | N-wave parallel; Wave 0/1/2 C-suite + 3..N per-domain in strategic mode | Interactive Q&A | Reference only |
+| **Execution** | Sequential 5-state pipeline (review/optimize/full run the same 5 states, with improve phases carried controller-internally) | N-wave parallel; Wave 0/1/2 C-suite + 3..N per-domain in strategic mode | Interactive Q&A | Reference only |
 | **Speed** | Fastest for simple; fast (parallel review) for review/optimize/full | 40-60% faster for complex; slower with strategic-mode deliberation | User-paced | Instant |
 | **Min complexity** | Tier 2 | Tier 2 (3+ items); Tier 3+ for strategic mode | Any | Any |
 | **Context mode** | Inline (none) | Fork | Inline (none) | Inline (none) |
@@ -73,7 +73,7 @@ Is this a multi-domain strategic initiative?
   - `/run review src/auth/` — audit auth module for security/quality issues (= `--mode review`)
   - `/run optimize src/api/` — reduce response times with before/after benchmarks (= `--mode optimize`)
   - `/run improve src/checkout/` — review then optimize with one baseline (= `--mode full`)
-- **Characteristics**: Single 7-state state machine (SCOPING → MEASURING → DETECTING → PLANNING → EXECUTING → VALIDATING → REPORTING), atomic rollback, pattern-effectiveness tracking, unified `improve_report.md`
+- **Characteristics**: Runs through `/run`'s standard 5-state machine (INIT → ORCHESTRATED → PLANNED → COORDINATED → VALIDATED); the improve phases (scoping, measuring, detecting, planning, executing, validating, reporting) are carried controller-internally during the PLANNED state rather than as a distinct state machine. Atomic rollback, pattern-effectiveness tracking, unified `improve_report.md`
 - **Mode selection**: keyword router (first word `review|audit|optimize|improve`) or explicit `--mode review|optimize|full`
 - **Migration**: Pre-v12.1.2 this was the standalone `/improve` skill, which was folded into `/run` via the keyword router
 - **Avoid when**: Creating new work (use plain `/run`) or designing before building (use `/designer`)
