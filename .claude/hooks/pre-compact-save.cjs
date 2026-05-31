@@ -172,8 +172,13 @@ trigger: context_compaction
   fs.writeFileSync(waypointFile, waypointContent);
   console.error(`[PreCompact] Saved waypoint ${waypointId} (phase: ${phase})`);
 
-  return {
-    continue: true,
-    systemMessage: `cAgents: Workflow state saved (${waypointId}, phase: ${phase}). Read the waypoint file after compaction to restore context.`
-  };
+  // thinking-400 fix (run_team-thinking-400_260531_001): PreCompact fires
+  // immediately before context compaction rewrites the conversation —
+  // emitting a systemMessage here could attach to the to-be-frozen assistant
+  // turn's content array, modifying thinking blocks and violating the
+  // Anthropic API immutability contract on the next request. The waypoint
+  // file written above (line 172) is the authoritative resume artifact;
+  // post-compact-restore.cjs (also fixed) is the resume path that reads it.
+  console.error(`[PreCompact] cAgents: Workflow state saved (${waypointId}, phase: ${phase}). Read the waypoint file after compaction to restore context.`);
+  return { continue: true };
 });

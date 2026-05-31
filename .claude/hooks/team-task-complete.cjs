@@ -141,7 +141,9 @@ createHook('TeamTaskComplete', async (input) => {
     console.error(`[TeamTaskComplete] Newly unblocked: ${newlyUnblocked.map(i => i.id).join(', ')}`);
   }
 
-  // All work items complete — signal teammate to stop
+  // All work items complete — signal teammate to stop.
+  // stopReason is a Claude Code shutdown signal, NOT a content payload, so it
+  // does not attach to the latest assistant turn and is thinking-block-safe.
   if (completedCount === totalCount && totalCount > 0) {
     console.error('[TeamTaskComplete] All work items complete — signaling teammate stop.');
     return {
@@ -150,17 +152,22 @@ createHook('TeamTaskComplete', async (input) => {
     };
   }
 
-  // Report unblocked items
+  // thinking-400 fix (run_team-thinking-400_260531_001): TaskCompleted fires at
+  // wave boundaries — emitting a systemMessage here attached the advisory text
+  // to the lead's just-completed assistant turn, modifying its thinking blocks
+  // and violating the Anthropic API immutability contract.
+  //
+  // The advisory text is preserved via console.error (stderr → user verbose
+  // mode), the task_list.yaml update above (lines 99-104), the per-completion
+  // YAML message file at team/messages/, and the timing metrics. Teammates
+  // self-claim unblocked items by reading TaskList directly — no systemMessage
+  // hint is needed.
   if (newlyUnblocked.length > 0) {
     const ids = newlyUnblocked.map(i => i.id).join(', ');
-    return {
-      continue: true,
-      systemMessage: `${workItemId} completed. Unblocked: ${ids}. (${completedCount}/${totalCount} done)`
-    };
+    console.error(`[TeamTaskComplete] ${workItemId} completed. Unblocked: ${ids}. (${completedCount}/${totalCount} done)`);
+  } else {
+    console.error(`[TeamTaskComplete] ${workItemId} completed (${completedCount}/${totalCount} done)`);
   }
 
-  return {
-    continue: true,
-    systemMessage: `${workItemId} completed (${completedCount}/${totalCount} done)`
-  };
+  return { continue: true };
 });

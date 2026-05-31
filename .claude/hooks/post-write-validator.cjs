@@ -367,16 +367,20 @@ createHook('PostWriteValidator', async (input) => {
     }
   }
 
+  // thinking-400 fix (run_team-thinking-400_260531_001): PostToolUse fires
+  // between an assistant tool_use and the matching tool_result user turn —
+  // emitting a systemMessage here could attach to the just-completed
+  // assistant turn's content array, modifying thinking blocks and violating
+  // the Anthropic API immutability contract. The validation warnings are
+  // preserved via console.error (stderr → user verbose) and the file_changes.log
+  // audit trail (lines 336-352 above, with status="warn" when warnings exist).
+  // The planning reminder is now passive — the lead checks plan.yaml +
+  // coordination_log.yaml directly on phase transitions.
   if (warnings.length > 0) {
     console.error(`[PostWriteValidator] Warnings: ${warnings.join('; ')}`);
-    return {
-      continue: true,
-      systemMessage: `Post-write validation warnings:\n${warnings.map(w => `- ${w}`).join('\n')}${planningReminder}`
-    };
   }
-
   if (planningReminder) {
-    return { continue: true, systemMessage: planningReminder.trim() };
+    console.error(`[PostWriteValidator]${planningReminder}`);
   }
 
   return null;

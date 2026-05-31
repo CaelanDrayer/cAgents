@@ -70,12 +70,15 @@ createHook('TeammateIdle', async (input) => {
 
     const teamLabel = teamName ? `[${teamName}] ` : '';
     const waveInfo = currentWave !== null ? ` (wave ${currentWave})` : '';
-    console.error(`[TeammateIdle] ${teamLabel}${teammateName} idle${waveInfo}, ${available.length} items available`);
+    // thinking-400 fix (run_team-thinking-400_260531_001): TeammateIdle fires
+    // after a teammate's assistant turn ends — emitting a systemMessage here
+    // could attach to that frozen turn's content array, modifying thinking
+    // blocks and violating the Anthropic API immutability contract. The
+    // teammate self-claims available work by reading TaskList directly; the
+    // advisory text is preserved via console.error (stderr → user verbose).
+    console.error(`[TeammateIdle] ${teamLabel}${teammateName} idle${waveInfo}, ${available.length} items available:\n${suggestions}`);
 
-    return {
-      continue: true,
-      systemMessage: `${available.length} work item(s) available${waveInfo}:\n${suggestions}\n\nClaim a work item to continue.`
-    };
+    return { continue: true };
   }
 
   // Check if all items are completed

@@ -253,10 +253,16 @@ createHook('ValidatorEvidenceRecheck', async (input) => {
     if (!result.ok) failures.push({ criterion: entry.criterion, reason: result.reason });
   }
   if (failures.length === 0) return null;
-  // Mutate the report on disk: downgrade + recheck block.
+  // Mutate the report on disk: downgrade + recheck block. This is the
+  // load-bearing side effect — the validator reads the recheck block from
+  // disk on the next pass and honors the PASS→FAIL downgrade.
   mutateReport(abs, content, failures);
-  return {
-    continue: true,
-    systemMessage: `[validator-evidence-recheck] Downgraded ${path.basename(abs)} from PASS to FAIL: ${failures.length} cited evidence entries did not verify mechanically. See recheck: block in the file.`,
-  };
+  // thinking-400 fix (run_team-thinking-400_260531_001): PostToolUse fires
+  // between an assistant tool_use and the matching tool_result — emitting a
+  // systemMessage could attach to the assistant turn, modifying thinking
+  // blocks and violating the Anthropic API immutability contract. The
+  // downgrade message is preserved via console.error (stderr → user verbose)
+  // and the file mutation itself is the authoritative state.
+  console.error(`[validator-evidence-recheck] Downgraded ${path.basename(abs)} from PASS to FAIL: ${failures.length} cited evidence entries did not verify mechanically. See recheck: block in the file.`);
+  return { continue: true };
 });
