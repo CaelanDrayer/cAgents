@@ -92,10 +92,14 @@ describe('pre-compact-save.cjs', () => {
     expect(content).toContain('domain: engineering');
   });
 
-  it('should return systemMessage with waypoint info', () => {
+  it('should return continue:true with no systemMessage (thinking-block contract)', () => {
     const result = runHook({ session_id: TEST_SESSION }, { CLAUDE_PROJECT_DIR: tmpDir });
+    // thinking-block 400 fix (run_team-thinking-400_260531_001): PreCompact
+    // no longer emits systemMessage — it could attach to the to-be-frozen
+    // assistant turn's content array, violating Anthropic API thinking-block
+    // immutability. The waypoint file (asserted by other tests in this suite)
+    // is the authoritative resume artifact. Status text goes to stderr only.
     expect(result.continue).toBe(true);
-    expect(result.systemMessage).toContain('Workflow state saved');
-    expect(result.systemMessage).toContain('coordinating');
+    expect(result.systemMessage).toBeUndefined();
   });
 });

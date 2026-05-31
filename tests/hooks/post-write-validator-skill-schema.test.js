@@ -80,10 +80,12 @@ describe('post-write-validator.cjs SKILL.md schema validation (Phase 10)', () =>
       { CLAUDE_PROJECT_DIR: tmpDir }
     );
 
+    // thinking-block 400 fix (run_team-thinking-400_260531_001): SKILL.md
+    // schema warnings now surface via stderr (console.error) only, not via
+    // systemMessage, to comply with the Anthropic API thinking-block
+    // immutability contract. The hook still returns continue:true.
     expect(result.continue).toBe(true);
-    expect(result.systemMessage).toBeDefined();
-    expect(result.systemMessage).toContain('[skill-schema]');
-    expect(result.systemMessage).toContain('archetype');
+    expect(result.systemMessage).toBeUndefined();
   });
 
   it('(b) writes a valid SKILL.md returns no skill-schema warning', () => {

@@ -84,11 +84,19 @@ describe('team-task-complete.cjs', () => {
     expect(wi01Block).toContain('completed');
   });
 
-  it('should report newly unblocked dependencies', () => {
+  it('should report newly unblocked dependencies via task_list.yaml update (no systemMessage per thinking-block contract)', () => {
     const result = runHook({ session_id: TEST_SESSION, task_id: 'WI-01', task_subject: 'WI-01 done', teammate_name: 'w1' });
-    // WI-02 depends on WI-01, should be unblocked
-    expect(result.systemMessage).toContain('WI-02');
-    expect(result.systemMessage).toContain('Unblocked');
+    // thinking-block 400 fix (run_team-thinking-400_260531_001, commit 53e6ca7a):
+    // TaskCompleted hook no longer emits systemMessage — that violated the
+    // Anthropic API thinking-block immutability contract. Unblock state is
+    // now communicated via task_list.yaml on disk; teammates self-claim
+    // unblocked items by reading TaskList directly.
+    expect(result.continue).toBe(true);
+    expect(result.systemMessage).toBeUndefined();
+    // task_list.yaml still has WI-01 marked completed (the prerequisite for unblocking WI-02)
+    const content = readFileSync(join(SESSION_DIR, 'team', 'task_list.yaml'), 'utf8');
+    const wi01Block = content.split('- id:').find(b => b.includes('"WI-01"'));
+    expect(wi01Block).toContain('completed');
   });
 
   it('should write completion message file', () => {
@@ -154,8 +162,16 @@ items:
     // completedCount (1) !== totalCount (3) => must NOT stop
     expect(result.continue).toBe(true);
     expect(result.stopReason).toBeUndefined();
-    // systemMessage should show 1/3, not 1/1
-    expect(result.systemMessage).toContain('1/3');
+    // thinking-block 400 fix (run_team-thinking-400_260531_001): no systemMessage
+    // is emitted in this branch (it could attach to the latest assistant turn).
+    // The progress state is captured in task_list.yaml on disk instead. The
+    // hook writes `WI-01` with `status: completed` AND appends a `completions:`
+    // entry — both summary count increments are valid; the contract is that
+    // WI-01 is now marked completed in the structured list.
+    expect(result.systemMessage).toBeUndefined();
+    const updatedContent = readFileSync(join(SESSION_DIR, 'team', 'task_list.yaml'), 'utf8');
+    const wi01Block = updatedContent.split('- id:').find(b => b.includes('"WI-01"'));
+    expect(wi01Block).toContain('completed');
   });
 
   it('should create task_list.yaml when file does not exist', () => {

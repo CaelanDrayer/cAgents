@@ -49,12 +49,16 @@ describe('post-write-validator.cjs', () => {
       expect(result.systemMessage).toBeUndefined();
     });
 
-    it('should warn for invalid JSON files', () => {
+    it('should warn for invalid JSON files via file_changes.log status (no systemMessage per thinking-block contract)', () => {
       const jsonPath = join(TMP_DIR, 'invalid.json');
       writeFileSync(jsonPath, '{invalid json}');
       const result = runHook({ tool_name: 'Write', tool_input: { file_path: jsonPath } });
+      // thinking-block 400 fix (run_team-thinking-400_260531_001): PostToolUse
+      // hooks no longer emit systemMessage. Validation warnings now surface via
+      // console.error (stderr → user verbose mode) only; file_changes.log has
+      // the status="warn" record per the audit-trail contract. No systemMessage.
       expect(result.continue).toBe(true);
-      expect(result.systemMessage).toContain('Invalid JSON');
+      expect(result.systemMessage).toBeUndefined();
     });
   });
 
@@ -67,28 +71,30 @@ describe('post-write-validator.cjs', () => {
       expect(result.systemMessage).toBeUndefined();
     });
 
-    it('should warn about tabs in YAML', () => {
+    it('should detect tabs in YAML (no systemMessage per thinking-block contract)', () => {
       const yamlPath = join(TMP_DIR, 'tabs.yaml');
       writeFileSync(yamlPath, 'key: value\n\tindented: true');
       const result = runHook({ tool_name: 'Write', tool_input: { file_path: yamlPath } });
+      // thinking-block 400 fix: validation warnings go to stderr/file_changes.log,
+      // not systemMessage. The hook still returns continue:true.
       expect(result.continue).toBe(true);
-      expect(result.systemMessage).toContain('tabs');
+      expect(result.systemMessage).toBeUndefined();
     });
 
-    it('should warn about duplicate top-level keys', () => {
+    it('should detect duplicate top-level keys (no systemMessage per thinking-block contract)', () => {
       const yamlPath = join(TMP_DIR, 'dupes.yaml');
       writeFileSync(yamlPath, 'key: value1\nother: stuff\nkey: value2');
       const result = runHook({ tool_name: 'Write', tool_input: { file_path: yamlPath } });
       expect(result.continue).toBe(true);
-      expect(result.systemMessage).toContain('duplicate');
+      expect(result.systemMessage).toBeUndefined();
     });
 
-    it('should also validate .yml extension', () => {
+    it('should also validate .yml extension (no systemMessage per thinking-block contract)', () => {
       const ymlPath = join(TMP_DIR, 'test.yml');
       writeFileSync(ymlPath, 'key: value\n\tindented: true');
       const result = runHook({ tool_name: 'Write', tool_input: { file_path: ymlPath } });
       expect(result.continue).toBe(true);
-      expect(result.systemMessage).toContain('tabs');
+      expect(result.systemMessage).toBeUndefined();
     });
   });
 
@@ -104,40 +110,40 @@ describe('post-write-validator.cjs', () => {
       try { rmSync(SLOP_TMP, { recursive: true, force: true }); } catch {}
     });
 
-    it('should detect throat-clearing phrases in .md files', () => {
+    // thinking-block 400 fix (run_team-thinking-400_260531_001): anti-slop
+    // warnings now surface via stderr/file_changes.log only. The hook returns
+    // continue:true with no systemMessage.
+
+    it('should detect throat-clearing phrases in .md files (no systemMessage)', () => {
       const mdPath = join(SLOP_TMP, 'doc.md');
       writeFileSync(mdPath, "# Guide\n\nHere's the thing about authentication. It's worth noting that tokens expire. Let me walk you through the flow. The approach is comprehensive and covers all edge cases for the system.");
       const result = runHook({ tool_name: 'Write', tool_input: { file_path: mdPath } });
       expect(result.continue).toBe(true);
-      expect(result.systemMessage).toContain('anti-slop');
-      expect(result.systemMessage).toContain("here's the thing");
+      expect(result.systemMessage).toBeUndefined();
     });
 
-    it('should detect business jargon in .md files', () => {
+    it('should detect business jargon in .md files (no systemMessage)', () => {
       const mdPath = join(SLOP_TMP, 'report.md');
       writeFileSync(mdPath, "# Report\n\nThis deep dive into the architecture reveals a game-changer for our deployment pipeline. We need to circle back on the performance metrics after the next sprint planning session is complete.");
       const result = runHook({ tool_name: 'Write', tool_input: { file_path: mdPath } });
       expect(result.continue).toBe(true);
-      expect(result.systemMessage).toContain('anti-slop');
-      expect(result.systemMessage).toContain('deep dive');
+      expect(result.systemMessage).toBeUndefined();
     });
 
-    it('should detect vague declaratives in prose', () => {
+    it('should detect vague declaratives in prose (no systemMessage)', () => {
       const mdPath = join(SLOP_TMP, 'summary.md');
       writeFileSync(mdPath, "# Summary\n\nThe implications are significant for the entire platform. The results are promising and suggest we should continue with this approach for the foreseeable future ahead of us.");
       const result = runHook({ tool_name: 'Write', tool_input: { file_path: mdPath } });
       expect(result.continue).toBe(true);
-      expect(result.systemMessage).toContain('anti-slop');
-      expect(result.systemMessage).toContain('the implications are significant');
+      expect(result.systemMessage).toBeUndefined();
     });
 
-    it('should detect emphasis crutches', () => {
+    it('should detect emphasis crutches (no systemMessage)', () => {
       const mdPath = join(SLOP_TMP, 'emphasis.md');
       writeFileSync(mdPath, "# Important\n\nSecurity matters. Full stop. Let that sink in. This matters because authentication is the foundation of every user interaction in the system.");
       const result = runHook({ tool_name: 'Write', tool_input: { file_path: mdPath } });
       expect(result.continue).toBe(true);
-      expect(result.systemMessage).toContain('anti-slop');
-      expect(result.systemMessage).toContain('full stop.');
+      expect(result.systemMessage).toBeUndefined();
     });
 
     it('should pass clean prose without slop warnings', () => {
@@ -184,22 +190,22 @@ describe('post-write-validator.cjs', () => {
       }
     });
 
-    it('should report count of detected patterns', () => {
+    it('should report count of detected patterns (via stderr/file_changes.log, no systemMessage)', () => {
       const mdPath = join(SLOP_TMP, 'multi.md');
       writeFileSync(mdPath, "# Multi-Slop\n\nHere's the thing: we need a deep dive. Let that sink in. The approach is comprehensive. The results are promising. We should circle back on this topic after the next review.");
       const result = runHook({ tool_name: 'Write', tool_input: { file_path: mdPath } });
+      // thinking-block 400 fix: no systemMessage. Pattern count visible via
+      // console.error (stderr → user verbose mode).
       expect(result.continue).toBe(true);
-      expect(result.systemMessage).toContain('anti-slop');
-      // Should report multiple patterns detected
-      expect(result.systemMessage).toMatch(/\d+ AI slop pattern/);
+      expect(result.systemMessage).toBeUndefined();
     });
 
-    it('should detect slop in .txt files', () => {
+    it('should detect slop in .txt files (no systemMessage)', () => {
       const txtPath = join(SLOP_TMP, 'notes.txt');
       writeFileSync(txtPath, "Meeting notes from the architecture review session held on Monday morning.\n\nHere's the thing about our current architecture. It's worth noting that we need to lean into microservices more aggressively going forward in this quarter.");
       const result = runHook({ tool_name: 'Write', tool_input: { file_path: txtPath } });
       expect(result.continue).toBe(true);
-      expect(result.systemMessage).toContain('anti-slop');
+      expect(result.systemMessage).toBeUndefined();
     });
   });
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { existsSync, mkdirSync, rmSync, writeFileSync, mkdtempSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync, mkdtempSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { execSync } from 'child_process';
@@ -41,13 +41,21 @@ describe('teammate-idle-handler.cjs', () => {
     expect(result.continue).toBe(true);
   });
 
-  it('should suggest available work items', () => {
+  it('should suggest available work items via console.error/task_list (no systemMessage per thinking-block contract)', () => {
     writeFileSync(join(SESSION_DIR, 'team', 'task_list.yaml'),
       `items:\n  - id: "WI-05"\n    name: "Available task"\n    status: available\n    dependencies: []\n`);
     const result = runHook({ session_id: TEST_SESSION, teammate_name: 'worker-1' });
+    // thinking-block 400 fix (run_team-thinking-400_260531_001, commit 53e6ca7a):
+    // TeammateIdle no longer emits systemMessage — it could attach to the
+    // teammate's just-completed assistant turn, modifying thinking blocks and
+    // violating the Anthropic API immutability contract. Available items are
+    // still discoverable: the teammate reads task_list.yaml / TaskList directly.
     expect(result.continue).toBe(true);
-    expect(result.systemMessage).toContain('WI-05');
-    expect(result.systemMessage).toContain('available');
+    expect(result.systemMessage).toBeUndefined();
+    // task_list.yaml retains the available item for self-claim
+    const content = readFileSync(join(SESSION_DIR, 'team', 'task_list.yaml'), 'utf8');
+    expect(content).toContain('WI-05');
+    expect(content).toContain('available');
   });
 
   it('should signal stop when all items completed', () => {
