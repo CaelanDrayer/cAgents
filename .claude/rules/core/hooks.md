@@ -51,7 +51,7 @@ Claude Code supports 24 hook event types. cAgents implements 28 unique registere
 | `TaskCompleted` | Task finishes | `team-task-complete.cjs` | Update task list, unblock dependencies, stop teammate when done |
 | `InstructionsLoaded` | Instructions/CLAUDE.md loaded | `instructions-loaded.cjs` | Validate rules dir, inject active session context |
 | `PreCompact` | Before context compaction | `pre-compact-save.cjs` | Save critical state + coordination state |
-| `PostCompact` | After context compaction | `post-compact-restore.cjs` | Re-inject workflow context after compaction |
+| `PostCompact` | After context compaction | `post-compact-restore.cjs` | Log workflow context to disk after compaction (no systemMessage per thinking-block-immutability contract; model reads plan.yaml + coordination_log.yaml directly) |
 
 Five events (`ConfigChange`, `WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `FileChanged`) are available for custom use; cAgents does not register handlers.
 

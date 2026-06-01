@@ -124,11 +124,10 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 ### PostToolUse[Write|Edit]: post-write-validator.cjs
 
 - **Matcher**: `Write|Edit`
-- **Purpose**: Validate file syntax after successful Write/Edit operations, nudge planning file updates.
-- **Validates**: JSON parsing, YAML tab detection, duplicate YAML top-level keys.
-- **Planning reminder**: During active sessions with `plan.yaml`, reminds to update `coordination_log.yaml` after implementation file writes.
-- **Logs**: All file changes to `workflow/file_changes.log` with timestamps and validation status.
-- **Output**: Warning systemMessage if syntax issues found; planning reminder for non-planning file writes.
+- **Purpose**: Validate file syntax after successful Write/Edit operations, log all writes to the session file_changes audit trail.
+- **Validates**: JSON parsing, YAML tab detection, duplicate YAML top-level keys, anti-slop patterns, SKILL.md schema.
+- **Logs**: All file changes to `workflow/file_changes.log` with timestamps and validation status (`status: "warn"` when warnings are detected).
+- **Output**: Returns `{ continue: true }` (no systemMessage). Per the thinking-block-immutability contract (run_team-thinking-400_260531_001), PostToolUse hooks no longer emit systemMessage — warnings surface via `console.error` (stderr → user verbose mode) and the file_changes.log status field instead. The hook does not block.
 
 ### PostToolUseFailure: tool-failure-tracker.cjs
 
@@ -139,16 +138,17 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 
 ### TeammateIdle: teammate-idle-handler.cjs
 
-- **Purpose**: Suggest available work items or cleanly stop idle teammates.
+- **Purpose**: Cleanly stop idle teammates when all work is done; surface available work via stderr.
 - **V10.5.0**: Refactored to `createHook()`. Returns `{ continue: false, stopReason }` when all work items are completed, causing the teammate to stop cleanly instead of lingering idle.
-- **Logic**: Available work → suggest (`continue:true`); all completed → stop (`continue:false`); otherwise → pass-through (null).
+- **Logic**: All work items completed → `{ continue: false, stopReason }` (NEW-TURN-SAFE shutdown signal); available work → `{ continue: true }` (no systemMessage) with item list logged to `console.error`; otherwise → pass-through (null). Per the thinking-block-immutability contract (run_team-thinking-400_260531_001), the available-work branch no longer emits systemMessage — teammates self-claim by reading TaskList / task_list.yaml directly.
 
 ### TaskCompleted: team-task-complete.cjs
 
 - **Purpose**: Update `task_list.yaml` status, check dependency unblocking, stop teammate when all done.
 - **Input fields**: `task_id`, `task_subject`, `task_description`, `teammate_name`, `team_name` (Claude Code API).
-- **V10.5.0**: Refactored to `createHook()`. Returns `{ continue: false, stopReason }` when all work items completed. Reports newly unblocked items via systemMessage.
-- **Side effects**: Updates `task_list.yaml`, writes completion message, updates timing metrics.
+- **V10.5.0**: Refactored to `createHook()`. Returns `{ continue: false, stopReason }` when all work items completed (NEW-TURN-SAFE shutdown signal). Per the thinking-block-immutability contract (run_team-thinking-400_260531_001), newly-unblocked items are no longer announced via systemMessage; teammates discover them by reading TaskList / task_list.yaml directly.
+- **Side effects**: Updates `task_list.yaml`, writes completion message YAML to `team/messages/`, updates `team/metrics/timing.yaml`.
+- **Output**: `{ continue: false, stopReason }` when all items complete, `{ continue: true }` otherwise. No systemMessage.
 
 ### PermissionRequest: permission-handler.cjs
 
@@ -159,9 +159,10 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 
 ### PreCompact: pre-compact-save.cjs
 
-- **Purpose**: Save critical workflow state before context compaction.
+- **Purpose**: Save critical workflow state to a waypoint file before context compaction.
 - **Creates**: Waypoint file in `sessions/{id}/waypoints/`
 - **Includes**: Coordination state, team state, 5-question reboot check (where_am_i, where_going, whats_the_goal, what_learned, what_done), resume instructions.
+- **Output**: Returns `{ continue: true }` (no systemMessage). Per the thinking-block-immutability contract (run_team-thinking-400_260531_001), PreCompact no longer emits systemMessage — emitting one immediately before context compaction risked attaching it to the to-be-frozen assistant turn's content array, violating thinking-block immutability. The waypoint file IS the authoritative resume artifact; post-compact-restore.cjs (also fixed) is the resume path.
 
 ### Notification: notification.cjs
 
@@ -182,8 +183,8 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 ### PostToolUse[Write|Edit]: validator-evidence-recheck.cjs
 
 - **Matcher**: `Write|Edit`
-- **Purpose**: Re-verify evidence cited in coordination_log / self-validation by re-running the cited verification methods (`fs.existsSync`, `grep`, `Bash`) after a write, downgrading verdicts when claimed evidence does not actually verify (evidence-first enforcement, see `pat-evidence-first-execution.md`).
-- **Output**: Advisory systemMessage on mismatch (does not block).
+- **Purpose**: Re-verify evidence cited in validation_report.yaml by re-running the cited verification methods (`fs.existsSync`, `grep`, file:line content match) after a write. When claimed evidence does not verify mechanically, mutates the report on disk: downgrades the classification from PASS to FAIL and appends a `recheck:` block listing the failing entries. See `pat-evidence-first-execution.md`.
+- **Output**: Returns `{ continue: true }` (no systemMessage). Per the thinking-block-immutability contract (run_team-thinking-400_260531_001), PostToolUse hooks no longer emit systemMessage. The on-disk mutation of validation_report.yaml is the load-bearing side effect; the downgrade message surfaces via `console.error` (stderr → user verbose mode).
 
 ### ConfigChange: config-change-logger.cjs
 
@@ -205,8 +206,9 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 
 ### PostCompact: post-compact-restore.cjs
 
-- **Purpose**: Re-inject key workflow state (mission, domain, phase, work item progress counts) as systemMessage after context compaction.
-- **Output**: `{"continue": true, "systemMessage": "...context restoration..."}`
+- **Purpose**: Log key workflow state (mission, domain, phase, work item progress counts) to disk after context compaction.
+- **Creates**: `cagents-memory/_system/logs/post-compact_{YYYY-MM-DD}.log` — one block per invocation with goal/state/phase/work-counts.
+- **Output**: Returns `{ continue: true }` (no systemMessage). Per the thinking-block-immutability contract (run_team-thinking-400_260531_001), PostCompact no longer emits systemMessage — context compaction is the only documented harness conversation-rewriting event, and a systemMessage emitted immediately after rewrite risked attaching to the just-rewritten assistant turn's content array, violating Anthropic API thinking-block immutability. The model resumes by reading `plan.yaml` + `coordination_log.yaml` directly after compaction; the disk log is for audit/troubleshooting only.
 
 ## CLI Tool (Not a registered hook)
 
