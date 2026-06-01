@@ -2,7 +2,7 @@
 
 Complete flag tables for all commands, used by `/helper --flags <command>`.
 
-> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Their flag surfaces moved to `/improve` (review and optimize modes), `/run context` (passthrough), and `/run --mode debug` (debug mode)._
+> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug`; v12.1.2 folded `/improve` into `/run` via the keyword router. See [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Flag surfaces moved to `/run review|audit|optimize|improve` (keyword router; review/optimize/full modes inferred from first token), `/run context` (passthrough), and `/run --mode debug` (debug mode)._
 
 ## /run Flags
 
@@ -75,63 +75,66 @@ The product context document lives at `cagents-memory/_projects/{hash}/product_c
 
 ---
 
-## /improve Flags
+## /run review|audit|optimize|improve Flags (Keyword Router Modes)
 
-`/improve` is the V11 replacement for `/review` and `/optimize`. Mode selection determines which subset of flags applies.
+In v12.1.2, the standalone `/improve` skill was folded into `/run` via a first-token keyword router. The mode is inferred from the first request token: `review` and `audit` → review mode; `optimize` → optimize mode; `improve` → full mode. All V11.0 `/improve` mode-specific flags carry through unchanged. Mode selection determines which subset of flags applies.
 
-### Mode Selection
+### Mode Selection (via Keyword Router)
 
-| Flag | Description | Example |
-|------|-------------|---------|
-| `--mode review` | Run review pipeline (default) | `/improve --mode review src/` |
-| `--mode optimize` | Run optimize pipeline | `/improve --mode optimize src/ --type code` |
-| `--mode full` | Run review + optimize with one shared baseline (requires `--scope`) | `/improve --mode full --scope src/` |
+| First-word keyword | Inferred mode | Example |
+|--------------------|---------------|---------|
+| `review` | Run review pipeline | `/run review src/` |
+| `audit` | Run review pipeline (alias) | `/run audit infrastructure --type infrastructure` |
+| `optimize` | Run optimize pipeline | `/run optimize src/ --type code` |
+| `improve` | Run review + optimize with one shared baseline | `/run improve src/` |
+
+The match is case-insensitive on the first token. An explicit `--mode <value>` flag overrides the inferred mode (treat the first token as part of the request).
 
 ### Common Flags (all modes)
 
 | Flag | Description | Example |
 |------|-------------|---------|
-| `--scope <path>` | Required for `--mode full`, optional otherwise | `/improve --mode full --scope src/auth/` |
-| `--dry-run` | Plan without applying changes | `/improve --mode optimize --dry-run` |
-| `--history` | Append run to `_projects/{hash}/improve/history.yaml` | `/improve --mode review --history` |
+| `--scope <path>` | Optional positional / explicit scope | `/run improve src/auth/` |
+| `--dry-run` | Plan without applying changes | `/run optimize --dry-run` |
+| `--history` | Append run to `_projects/{hash}/improve/history.yaml` | `/run review --history` |
 
 ### Review-Mode Flags
 
 | Flag | Description | Example |
 |------|-------------|---------|
-| `--scope changed\|staged\|all` | Scope filter | `/improve --mode review --scope changed` |
-| `--type code\|documentation\|content\|design\|process\|data\|infrastructure` | Review type | `/improve --mode review --type infrastructure` |
-| `--focus security\|architecture\|accessibility\|performance\|quality` | Focus area | `/improve --mode review --focus security` |
-| `--framework nextjs\|react\|vue\|...` | Force framework detection | `/improve --mode review --framework nextjs` |
-| `--auto-fix safe\|all` | Generate or apply auto-fixes | `/improve --mode review --auto-fix safe` |
-| `--apply-safe-fixes` | Apply safe auto-fixes automatically | `/improve --mode review --apply-safe-fixes` |
-| `--quality-gate strict\|standard\|relaxed` | Quality gate severity | `/improve --mode review --quality-gate strict` |
-| `--run-tests` | Run tests after auto-fix | `/improve --mode review --run-tests` |
-| `--rollback-on-failure` | Rollback if tests fail | `/improve --mode review --rollback-on-failure` |
-| `--baseline <id>` | Use named baseline | `/improve --mode review --baseline 2026-q1` |
-| `--suppress <id>` | Suppress findings tagged with id | `/improve --mode review --suppress finding-42` |
-| `--confidence <N>` | Only report findings above threshold | `/improve --mode review --confidence 0.8` |
-| `--show-confidence` | Display confidence scores | `/improve --mode review --show-confidence` |
-| `--git-hotspots` | Prioritize frequently changed files | `/improve --mode review --git-hotspots` |
-| `--pr-context <branch>` | Review against branch | `/improve --mode review --pr-context main` |
-| `--output json\|markdown\|summary\|detailed` | Output format | `/improve --mode review --output json` |
-| `--save-report <path>` | Save report to file | `/improve --mode review --save-report ./review.md` |
+| `--scope changed\|staged\|all` | Scope filter | `/run review --scope changed` |
+| `--type code\|documentation\|content\|design\|process\|data\|infrastructure` | Review type | `/run review --type infrastructure` |
+| `--focus security\|architecture\|accessibility\|performance\|quality` | Focus area | `/run review --focus security` |
+| `--framework nextjs\|react\|vue\|...` | Force framework detection | `/run review --framework nextjs` |
+| `--auto-fix safe\|all` | Generate or apply auto-fixes | `/run review --auto-fix safe` |
+| `--apply-safe-fixes` | Apply safe auto-fixes automatically | `/run review --apply-safe-fixes` |
+| `--quality-gate strict\|standard\|relaxed` | Quality gate severity | `/run review --quality-gate strict` |
+| `--run-tests` | Run tests after auto-fix | `/run review --run-tests` |
+| `--rollback-on-failure` | Rollback if tests fail | `/run review --rollback-on-failure` |
+| `--baseline <id>` | Use named baseline | `/run review --baseline 2026-q1` |
+| `--suppress <id>` | Suppress findings tagged with id | `/run review --suppress finding-42` |
+| `--confidence <N>` | Only report findings above threshold | `/run review --confidence 0.8` |
+| `--show-confidence` | Display confidence scores | `/run review --show-confidence` |
+| `--git-hotspots` | Prioritize frequently changed files | `/run review --git-hotspots` |
+| `--pr-context <branch>` | Review against branch | `/run review --pr-context main` |
+| `--output json\|markdown\|summary\|detailed` | Output format | `/run review --output json` |
+| `--save-report <path>` | Save report to file | `/run review --save-report ./review.md` |
 
 ### Optimize-Mode Flags
 
 | Flag | Description | Example |
 |------|-------------|---------|
-| `--type code\|content\|process\|infrastructure\|data\|campaign\|creative\|sales` | Optimization type | `/improve --mode optimize --type code` |
-| `--focus performance\|cost\|quality` | Focus area | `/improve --mode optimize --focus cost` |
-| `--safety safe\|medium` | Risk tolerance | `/improve --mode optimize --safety safe` |
-| `--incremental` | Apply one optimization at a time | `/improve --mode optimize --incremental` |
-| `--cross-file` | Enable cross-file analysis | `/improve --mode optimize --cross-file` |
-| `--no-cross-file` | Skip cross-file analysis (faster) | `/improve --mode optimize --no-cross-file` |
-| `--dependency-graph` | Generate dependency graph | `/improve --mode optimize --dependency-graph` |
-| `--benchmark auto\|lighthouse\|k6\|hyperfine` | Choose benchmark tool | `/improve --mode optimize --benchmark lighthouse` |
-| `--validation comprehensive` | Full test suite + benchmarks | `/improve --mode optimize --validation comprehensive` |
-| `--rollback automatic` | Auto-rollback on failure | `/improve --mode optimize --rollback automatic` |
-| `--require-tests-pass` | Must pass all tests | `/improve --mode optimize --require-tests-pass` |
+| `--type code\|content\|process\|infrastructure\|data\|campaign\|creative\|sales` | Optimization type | `/run optimize --type code` |
+| `--focus performance\|cost\|quality` | Focus area | `/run optimize --focus cost` |
+| `--safety safe\|medium` | Risk tolerance | `/run optimize --safety safe` |
+| `--incremental` | Apply one optimization at a time | `/run optimize --incremental` |
+| `--cross-file` | Enable cross-file analysis | `/run optimize --cross-file` |
+| `--no-cross-file` | Skip cross-file analysis (faster) | `/run optimize --no-cross-file` |
+| `--dependency-graph` | Generate dependency graph | `/run optimize --dependency-graph` |
+| `--benchmark auto\|lighthouse\|k6\|hyperfine` | Choose benchmark tool | `/run optimize --benchmark lighthouse` |
+| `--validation comprehensive` | Full test suite + benchmarks | `/run optimize --validation comprehensive` |
+| `--rollback automatic` | Auto-rollback on failure | `/run optimize --rollback automatic` |
+| `--require-tests-pass` | Must pass all tests | `/run optimize --require-tests-pass` |
 
 ---
 

@@ -122,9 +122,13 @@ resume_hints:
 
 **/designer** also includes: session.yaml, qa_log.yaml, design_document.md, artifacts/, diagrams/, exports/
 
-**/review** also includes: scope_analysis.yaml, execution_strategy.yaml, reports/ (aggregate, auto_fixes, quality_gates, final_report)
+### Historical session extensions (V11.0-removed skills)
 
-**/optimize** also includes: workflow/detection_report.yaml, workflow/opportunities.yaml, outputs/optimization_report.md
+The `/review` and `/optimize` skills were removed in V11.0 (`/review` and `/optimize` were folded into `/run` via the v12.1.2 keyword router — use `/run review ...` and `/run optimize ...` today). The session-extension shapes below are preserved here for archived-session back-compat with hooks that scan historical `session_type` prefixes on disk:
+
+**/review** (legacy) also included: scope_analysis.yaml, execution_strategy.yaml, reports/ (aggregate, auto_fixes, quality_gates, final_report)
+
+**/optimize** (legacy) also included: workflow/detection_report.yaml, workflow/opportunities.yaml, outputs/optimization_report.md
 
 ## Config Locations
 
@@ -132,7 +136,7 @@ resume_hints:
 |---------|------------|
 | `/run` | `cagents-memory/_system/commands/run/` |
 | `/designer` | `cagents-memory/_system/commands/designer/` |
-| `/review` | `cagents-memory/_system/commands/review/` |
-| `/optimize` | `cagents-memory/_system/commands/optimize/` |
+| `/review` (legacy, V11.0-removed; folded into `/run review` v12.1.2) | `cagents-memory/_system/commands/review/` |
+| `/optimize` (legacy, V11.0-removed; folded into `/run optimize` v12.1.2) | `cagents-memory/_system/commands/optimize/` |
 
 Each domain has 5 configs in `_system/domains/{domain}/`: router, planner, executor, validator, self_correct.

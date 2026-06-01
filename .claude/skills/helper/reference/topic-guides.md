@@ -14,13 +14,13 @@ Flags are optional modifiers that customize command behavior. They follow the co
 
 | Pattern | Commands | What It Does |
 |---------|----------|-------------|
-| `--dry-run` | /run, /improve, /team (incl. strategic mode, v12.2.0+; pre-v12.2.0 also /org) | Preview without executing |
-| `--interactive` | /run, /improve | Ask user preferences before starting |
+| `--dry-run` | /run (incl. review/optimize/improve keyword-router modes), /team (incl. strategic mode, v12.2.0+; pre-v12.2.0 also /org) | Preview without executing |
+| `--interactive` | /run (incl. keyword-router modes) | Ask user preferences before starting |
 | `--quiet` / `-q` | /run, /team | Suppress output/plan display |
 | `--domain <name>` | /run, /team | Override automatic domain detection |
 | `--tier <N>` | /run, /team | Override complexity tier (2-4) |
-| `--focus <area>` | /designer, /improve | Focus on specific area |
-| `--mode review\|optimize\|full` | /improve | Select pipeline branch (V11.0) |
+| `--focus <area>` | /designer, /run (review and optimize keyword-router modes) | Focus on specific area |
+| `--mode review\|optimize\|full` | /run (implicit via keyword router; first-token `review`/`audit`/`optimize`/`improve` infers the mode) | Select pipeline branch (v12.1.2) |
 
 **Flag parsing rules:**
 - Flags start with `--` (or `-` for short versions like `-q`)
@@ -75,7 +75,7 @@ Use when the design decomposes into 3+ parallel work items.
 #### Review-Fix Pipeline
 
 ```
-/improve --mode review src/ --focus security
+/run review src/ --focus security
   |
   Finds: 3 critical, 7 high issues
   |
@@ -87,7 +87,7 @@ Use when the design decomposes into 3+ parallel work items.
 #### Review + Optimize in One Run
 
 ```
-/improve --mode full --scope src/
+/run improve src/
   |
   Single shared baseline measured
   |
@@ -97,7 +97,7 @@ Use when the design decomposes into 3+ parallel work items.
 ```
 
 **Key integration flags:**
-- `--mode full --scope <path>` (on /improve) -- review + optimize with one shared baseline
+- `/run improve <path>` (keyword router — infers mode=full) -- review + optimize with one shared baseline
 - `--team` (on /run) -- activates /team mode
 - `--mode debug` (on /run) -- systematic 4-phase debugging
 - Build offer (on /designer) -- auto-triggers /run or /team
@@ -360,7 +360,6 @@ Every command creates a session directory in `cagents-memory/sessions/`.
 |---------|-------------------|---------|
 | `/run` | `run_{slug}_{YYMMDD}_{NNN}` | `run_fix-auth-module_260207_001` |
 | `/designer` | `designer_{slug}_{YYMMDD}_{NNN}` | `designer_redo-session-names_260207_001` |
-| `/improve` | `improve_{slug}_{YYMMDD}_{NNN}` | `improve_reduce-bundle-size_260207_001` |
 | `/team` | `team_{slug}_{YYMMDD}_{NNN}` | `team_implement-oauth2_260207_001` |
 | `/org` (pre-v12.2.0; removed) | `org_{slug}_{YYMMDD}_{NNN}` | `org_launch-product_260207_001` (legacy sessions on disk still recognized; new strategic-mode work uses `team_*` session IDs) |
 

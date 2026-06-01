@@ -32,26 +32,29 @@ Per-command summaries used by Mode 2 and Mode 10 of `/helper`. Read this when th
 
 **Workflow**: Discovery (15%) -> Ideation (25%) -> Refinement (35%) -> Specification (25%) -> Build offer
 
-## /improve - Unified Review + Optimize Engine
+## review / optimize / audit / improve — Keyword Router Modes on /run (v12.1.2+)
 
-**What**: A single 7-state state machine (`SCOPING → MEASURING → DETECTING → PLANNING → EXECUTING → VALIDATING → REPORTING`) with a `--mode` selector that owns code, docs, and content review plus measurable optimization. Replaces the V10 `/review` and `/optimize` skills with one engine and one shared baseline. Think of it as "audit, improve, and prove the delta."
+**What**: In v12.1.2, the standalone `/improve` skill was folded into `/run` via a first-token keyword router. When the first word of `/run`'s request is one of `improve`, `review`, `audit`, or `optimize`, `/run` strips the keyword, sets an internal `mode`, and proceeds through the standard 5-state pipeline (INIT → ORCHESTRATED → PLANNED → COORDINATED → VALIDATED). Same controller-based quality engine as V11.0 `/improve`, but invoked through `/run`.
 
 **When to use**:
-- Audit code, docs, content, infrastructure (`/improve --mode review`)
-- Speed up slow code, reduce bundle size, cut costs with measured before/after metrics (`/improve --mode optimize`)
-- Do both with one shared baseline (`/improve --mode full --scope <path>`)
+- Audit code, docs, content, infrastructure (`/run review <target>` or `/run audit <target>`)
+- Speed up slow code, reduce bundle size, cut costs with measured before/after metrics (`/run optimize <target>`)
+- Do both with one shared baseline (`/run improve <target>`)
 
-**Modes**:
+**Keyword router contract** (first-word match, case-insensitive):
 
-| Mode | What it does |
-|------|--------------|
-| `review` (default) | 3-group parallel specialist review; optional auto-fix; 12 prime directives |
-| `optimize` | Opportunity scanners; ROI rank; atomic apply; before/after benchmark delta |
-| `full` | Review → optimize with shared baseline; unified `improve_report.md` |
+| First-word keyword | Inferred mode | Behavior |
+|--------------------|---------------|----------|
+| `improve` | `full` | Review-then-optimize with single shared baseline |
+| `review` | `review` | 3-group parallel specialist review; optional auto-fix |
+| `audit` | `review` (alias) | Synonym for `review` — same pipeline |
+| `optimize` | `optimize` | Opportunity scanners; ROI rank; atomic apply; before/after benchmark delta |
 
-**Key flags**: `--mode review|optimize|full` (select branch), `--scope <path>` (required for `full`), `--baseline` / `--suppress <id>` (review baselines), `--benchmark auto|lighthouse|k6|hyperfine` (optimize benchmark tool), `--dry-run` (preview), `--auto-fix safe` (review only)
+**Key flags** (mode-specific flags carry through from V11.0 /improve surface unchanged): `--scope <path>`, `--baseline` / `--suppress <id>` (review), `--benchmark auto|lighthouse|k6|hyperfine` (optimize), `--auto-fix safe` (review), `--dry-run` (all).
 
-**Workflow**: SCOPING → MEASURING → DETECTING → PLANNING → EXECUTING → VALIDATING → REPORTING
+**Workflow**: Same 5-state /run pipeline. The inferred mode shapes the controller's coordination — e.g., `review` mode spawns specialist review agents; `optimize` mode spawns opportunity scanners and benchmark runners.
+
+**Canonical reference**: See `@.claude/skills/run/reference/improve-mode.md` for the full keyword-router contract, override rules, stripping examples, and mode-specific controller behavior.
 
 > _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Migrate `/review` to `/improve --mode review`, `/optimize` to `/improve --mode optimize`, `/context` to `/run context`, and `/debug` to `/run --mode debug`._
 

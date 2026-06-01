@@ -10,13 +10,82 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.12.1] - 2026-06-01
+
+Follow-up patch to v12.12.0. Addresses 5 v12.13.x-deferred items from
+session `team_plugin-sanity-pass_260601_001`. Patch bump per the tiny-bump
+cadence: 5 coherent post-release fixes, no public-contract changes,
+back-compat preserved.
+
 ### Fixed
+- **`tests/v12/doc-counts-match-disk.test.js`**: real concurrency race
+  between the mutation test (rewrote the on-disk `CLAUDE.md` to inject a
+  bogus `999 agents` count) and the three sibling tests that read
+  `CLAUDE.md` concurrently under vitest's file-fork parallelism
+  (`tests/regressions/claude-md-counts-current.test.js`,
+  `tests/regressions/claude-md-domain-overrides-count.test.js`,
+  `tests/regressions/claude-md-no-stale-version-highlights.test.js`).
+  Eliminated by adding a `CAGENTS_VALIDATE_COUNTS_CLAUDE_MD` env-var
+  override to `scripts/ci/validate-counts.sh` Check 1 and refactoring the
+  mutation test to write its bogus content to a temp-dir copy that the
+  script reads via the env var. The real `CLAUDE.md` is never mutated.
+- **`tests/regression/sync-agents-check.test.js`** (WI-1 follow-on, same
+  race class): the drift-induction test mutated the canonical
+  `.claude-plugin/plugin.json` (dropping the first agent to produce
+  `active_agents=140`), which raced against
+  `tests/v12/doc-counts-match-disk.test.js` `derives counts from disk`
+  reading the same file via `validate-counts.sh --derive-only`. Fixed
+  identically: added a `CAGENTS_PLUGIN_JSON_PATH` env-var override to
+  `scripts/sync-agents.sh` and refactored the drift test to write its
+  drifted content to a temp-dir copy. The canonical `plugin.json` is
+  never mutated. WI-7's "3 consecutive `npm test` runs, all green"
+  acceptance criterion verified the combined fix.
+- **Broken `.claude/skills/commit-changes` symlink re-creation**: deleted
+  the offending source symlink in
+  `_archive/repo_root_scratch/example/external-skills/pjt222__agent-almanac/.claude/skills/commit-changes`
+  (whose `../../skills/commit-changes` target did not resolve in the
+  archive layout), added `.claude/skills/commit-changes` to `.gitignore`
+  as belt-and-suspenders against any future session-time re-discovery,
+  and added `tests/skills/no-commit-changes-symlink.test.js` as a
+  name-specific regression guard.
+- **`docs/12-FACTOR-COMPLIANCE.md`**: removed 3 phantom `IMPROVEMENTS.md`
+  references (the file does not exist) on lines 91, 97, and 122.
+  Redirected to `CHANGELOG.md` / `docs/RELEASE_NOTES.md` per context.
+- **`docs/OPTIMIZATION_PROGRESS.md`**: added HISTORICAL banner marking the
+  document as V9 / pre-v12 scope; pointed readers at CLAUDE.md
+  § Performance Benchmarks and post-v12.0.0 `CHANGELOG.md` entries for
+  current optimization strategy.
+- **`docs/TASK_CONSOLIDATION.md`**: added HISTORICAL banner marking the
+  document as v12.0.0 `task-merger` / `task-state` consolidation scope;
+  pointed readers at CLAUDE.md § Memory Management and § Aggressive
+  Decomposition for current task-coordination patterns.
+
+### Deferred
+- **CTO RF-1 / LP-17 dynamic count generator** (hardcoded count literals
+  across `CLAUDE.md`, `.claude/rules/core/hooks.md`,
+  `.claude/settings.json` `$comment`, `.claude/rules/core/version-registry.md`
+  drift on bumps) — substantial feature work, separate session warranted.
+  Deferred to v12.13.x.
+
+## [12.12.0] - 2026-06-01
+
+**Plugin sanity pass + carry-forward thinking-block-400 fix** (session `team_plugin-sanity-pass_260601_001` + carry-forward of `run_team-thinking-400_260531_001`). A 7-wave strategic-mode team run that audited and cleaned up the /helper reference docs, .claude/rules/ content drift, docs cross-doc links + agent counts, and a re-introduced broken symlink — and ships alongside the prior-Unreleased thinking-block-400 hook fix in a single release. Minor bump per the tiny-bump cadence: an audit/consolidation session touching ~20+ files across multiple surfaces (helper, rules, docs, hooks, tests) is a minor bump, not a patch.
+
+### Fixed
+- **Plugin sanity pass — /helper, rules, docs drift** (session `team_plugin-sanity-pass_260601_001`). A 7-wave strategic-mode audit + cleanup of /helper reference docs, .claude/rules/ content drift, docs cross-doc links + agent counts, and a re-introduced broken symlink. Ships alongside the carry-forward thinking-block-400 fix from the prior Unreleased block — same release covers both.
+  - **/helper 9 reference docs** (W4-C1 / W5-F1): Removed canonical `/improve` framing across all 9 `.claude/skills/helper/reference/*.md` files, replaced with `/run` keyword-router framing (`/run improve|review|audit|optimize ...`). Migration footnotes (when `/improve` was folded into `/run` in v12.1.2) preserved.
+  - **Rules content drift in 7 files** (W4-C2 / W5-bundle): Migration-tagged stale `/improve`/`/org` references across `.claude/rules/{core,memory,domains}/`. Fixed phantom path-globs that still pointed at deleted legacy domain dirs (`engineering/` → `developer/`, `business/`+`growth/` → `operator/marketing-sales`+`operator/content`, `service/` → `operator/support`+`advisor/legal`).
+  - **Docs drift** (W4-C4 / W5-bundle): Repaired broken cross-doc links in `docs/CONTRIBUTING.md` and `docs/SECURITY.md` (added the missing `../` prefix). Corrected count drift in `docs/architecture/domains.md` (144 → 141 agents, analyst 20 → 19, writer 10 → 8) and `docs/LIFECYCLE.md` (238 → 141).
+  - **Broken untracked symlink deleted** (W4-C3 AF-tests-scripts-1 / W5-bundle): Removed `.claude/skills/commit-changes` (target `../../skills/commit-changes` never existed); previously failed `tests/skills/no-broken-symlinks.test.js`. Provenance traced to an external-skills archive bleed-through documented for the Wave 7 spawn brief.
+  - **doc-counts-match-disk regression closed** (W4-C3 AF-tests-scripts-2 / W5-F5 validation): `npm test` exits 0 cleanly (1298 passed / 22 skipped, 138 files). The audit's concurrency-race hypothesis was disproven — root cause was the same 144 → 141 docs/disk count drift fixed by the W5-bundle docs sweep, not vitest worker concurrency.
 - **thinking-block 400 in /team Wave transitions** (session `run_team-thinking-400_260531_001`). The Anthropic Messages API was rejecting `/team` requests at Wave 1+ boundaries with `API Error: 400 messages.3.content.9: thinking or redacted_thinking blocks in the latest assistant message cannot be modified`. Root cause: six cAgents hooks emitted a top-level `systemMessage` (or `hookSpecificOutput.additionalContext` targeting an assistant turn) on LATEST-TURN-SUSPECT events. Claude Code's harness can attach hook `systemMessage` payloads to the prior assistant turn's `content[]` array; when extended thinking is enabled (default on Opus/Sonnet 4.x), the modified `content[]` had its `thinking` blocks altered, and the next Anthropic Messages API request failed the immutability check with HTTP 400. **Fix**: drop `systemMessage` from the LATEST-TURN-SUSPECT event branches of `post-compact-restore.cjs` (PostCompact), `team-task-complete.cjs` (TaskCompleted), `teammate-idle-handler.cjs` (TeammateIdle available-work branch), `post-write-validator.cjs` (PostToolUse warning + planning branches), `validator-evidence-recheck.cjs` (PostToolUse downgrade branch), and `pre-compact-save.cjs` (PreCompact). All file-write side effects (audit logs, waypoints, task_list updates, validation_report mutations) are PRESERVED. Advisory text is redirected to `console.error` (stderr → user verbose mode) and a new `cagents-memory/_system/logs/post-compact_{YYYY-MM-DD}.log` disk log. Extended thinking remains ENABLED globally (no `MAX_THINKING_TOKENS=0`, no `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1`). Hook count unchanged at 31 .cjs / 28 registered. cAgents standalone contract preserved (no MCP). NOTE: version bump deferred to the next patch release — this Unreleased entry stages the fix only.
 
 ### Added
+- **/helper recommendation-engine.md keyword-router section** (objection-phase OBJ-CPO-1 / W5-F1): New "Keyword Router Discovery (v12.1.2+)" section in `.claude/skills/helper/reference/recommendation-engine.md` teaches `/run improve|review|audit|optimize` as the discovery mechanism for the folded-in improve modes, with explicit override rules so the router framing replaces the old `/improve` standalone framing across the catalog.
 - **Bug-driven regression guard for the thinking-block contract**: `tests/v12/hook-thinking-block-contract.test.js` (31 tests). Spawns each fixed hook via `child_process.spawn(node, ...)` with realistic stdin payloads exercising every branch that previously emitted `systemMessage`. Asserts the returned JSON has no top-level `systemMessage` field, no `hookSpecificOutput.additionalContext` field, and that the source-level scan finds no active `systemMessage:` literal in any of the 6 fixed hooks. Failing-before / passing-after verified against pre-fix HEAD~1.
 
 ### Changed
+- **Migration-tagged 4 rules files** (W4-C2 / W5-bundle): Where `/improve` and `/org` canonical claims had survived as present-tense ("uses /improve to ...") without the "removed in vX.Y.Z" framing, prepended explicit migration framing (e.g., "(historical — /org removed in v12.2.0, folded into /team strategic mode)") to keep the rules layer honest about the current catalog.
 - **Test suite contract refresh**: 14 existing assertions in `tests/hooks/post-compact-restore.test.js`, `tests/hooks/team-task-complete.test.js`, `tests/hooks/teammate-idle-handler.test.js`, `tests/hooks/post-write-validator.test.js`, `tests/hooks/post-write-validator-skill-schema.test.js`, and `tests/hooks/pre-compact-save.test.js` updated from asserting the OLD (buggy) `systemMessage` contract to asserting the NEW thinking-block-safe contract (no `systemMessage`; side effects via disk file / stderr). Post-update: `npm test` → 1298 passed / 0 failed / 22 skipped (138 files).
 - **CLAUDE.md test-count refresh**: `1170+ Vitest tests across 132+ files` → `1186+ Vitest tests across 138+ files` (Q-009 freshness window).
 - **`.claude/rules/core/resources/hook-catalog.md` updated** to reflect the new return shape of the 6 modified hooks (Output bullets now say "no systemMessage" where applicable; file/stderr side effects preserved).

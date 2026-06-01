@@ -1,15 +1,15 @@
 # Domain Structure (v12.6.0)
 
-## 9 Builder-Role Archetypes (144 agents, canonical since v11.1.0)
+## 9 Builder-Role Archetypes (141 agents, post-v12.7.0 LP-12 + LP-13 consolidation; was 144 post-v12.4.0; canonical archetype tree since v11.1.0)
 
 | Archetype | Directory | Agents | Description |
 |-----------|-----------|-------:|-------------|
 | Developer | `developer/` | 26 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
 | Operator | `operator/` | 36 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
 | Advisor | `advisor/` | 12 | Legal, health, education, personal (4 branches) |
-| Analyst | `analyst/` | 20 | Data, BI, research, social-science |
+| Analyst | `analyst/` | 19 | Data, BI, research, social-science |
 | Creator | `creator/` | 5 | Visual artists, designers, audiovisual creators |
-| Writer | `writer/` | 10 | Copy, narrative, technical, editorial |
+| Writer | `writer/` | 8 | Copy, narrative, technical, editorial |
 | Strategist | `strategist/` | 8 | Product owners, portfolio managers, planners |
 | Core | `core/` | 15 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, validator, etc.) |
 | Leadership | `leadership/` | 12 | C-suite executives (used by /team strategic mode, not directly routable) |

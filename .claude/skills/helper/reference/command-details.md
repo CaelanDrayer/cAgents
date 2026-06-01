@@ -21,8 +21,8 @@ Detailed help content for each command when the user runs `/helper <command>`.
 ### When NOT to Use /run
 
 - **You want to PLAN first**: Use `/designer` to think through the design before building
-- **You want to CHECK existing work**: Use `/improve --mode review` for quality analysis
-- **You want to IMPROVE metrics**: Use `/improve --mode optimize` for measurable improvements
+- **You want to CHECK existing work**: Use `/run review <target>` (or `/run audit`) for quality analysis
+- **You want to IMPROVE metrics**: Use `/run optimize <target>` for measurable improvements
 - **You have a LARGE task with parallel parts**: Use `/team` (or `/run --team`)
 
 ### How It Works (Simplified)
@@ -90,8 +90,8 @@ Result: Bug fixed, tests passing, outputs saved
 ### Integration
 
 - **After /designer**: `/designer` creates a design document, then triggers `/run` to build it
-- **After /improve --mode review**: If review finds critical issues, `/run` fixes them
-- **After /improve --mode optimize**: If optimizer finds CRITICAL opportunities, `/run` implements them
+- **After /run review**: If the review finds critical issues, follow up with `/run` to fix them
+- **After /run optimize**: If the optimizer finds CRITICAL opportunities, follow up with `/run` to implement them
 - **With /team**: `/run --team` activates parallel team execution
 
 ### Tips
@@ -123,7 +123,7 @@ Result: Bug fixed, tests passing, outputs saved
 
 - **You already know what to build**: Go straight to `/run`
 - **Quick fixes**: Bug fixes and small changes don't need design sessions
-- **You want quality checks**: Use `/improve --mode review` instead
+- **You want quality checks**: Use `/run review <target>` instead
 - **Time-sensitive**: Design sessions take 15-45 minutes
 
 ### How It Works (Simplified)
@@ -373,7 +373,7 @@ Same situations that previously called for `/org`: multi-domain initiatives, pro
 /helper run                 -> Deep dive into /run
 /helper how do I fix a bug  -> "Use /run. Here's how..."
 /helper --compare           -> Side-by-side comparison table
-/helper --flags review      -> All `/improve --mode review` flags with examples
+/helper --flags review      -> All `/run review` flags (review-mode keyword router) with examples
 /helper --quick             -> One-screen reference card
 /helper --topic domains     -> Deep dive into the 15 domains
 ```
@@ -424,54 +424,74 @@ Same situations that previously called for `/org`: multi-domain initiatives, pro
 
 ---
 
-## /improve - Unified Review + Optimize Engine (canonical as of V11.0)
+## review / optimize / audit / improve — Keyword Router on /run (canonical as of v12.1.2)
 
 ### What It Does
 
-`/improve` is the canonical quality engine: a single 7-state state
-machine (`SCOPING → MEASURING → DETECTING → PLANNING → EXECUTING →
-VALIDATING → REPORTING`) with a `--mode` selector
-(`review|optimize|full`). V11.0 removed the legacy `/review`,
-`/optimize`, `/context`, and `/debug` slash commands; `/improve` now
-owns review, optimization, and the unified full pipeline.
+In v12.1.2, the standalone `/improve` skill was folded into `/run` via a
+first-token keyword router. When `/run`'s first request token is one of
+`improve`, `review`, `audit`, or `optimize`, `/run` strips the keyword,
+sets an internal `mode`, and proceeds through the standard 5-state
+pipeline. The same controller-based quality engine that V11.0 `/improve`
+shipped — review, optimize, full — is preserved; only the invocation
+surface changed.
 
-### When to Use /improve
+### When to Use the Keyword Router
 
-- **Audit code, docs, content, infrastructure, or content quality**:
-  `/improve --mode review [target]` (or just `/improve [target]` —
-  `review` is the default mode).
-- **Measure then optimize**: `/improve --mode optimize [target]` for
-  performance / size / efficiency improvements with before/after
-  metric deltas and atomic rollback.
-- **Do both with a single shared baseline**: `/improve --mode full
-  --scope <path>` for review → optimize synthesis with a unified
-  `improve_report.md`.
+- **Audit code, docs, content, infrastructure**: `/run review <target>` or
+  `/run audit <target>` (alias). The default review pipeline is the same
+  3-group parallel specialist review V11 used.
+- **Measure then optimize**: `/run optimize <target>` for performance,
+  size, or efficiency improvements with before/after metric deltas and
+  atomic rollback.
+- **Both with a single shared baseline**: `/run improve <target>` for
+  review → optimize synthesis with a unified `improve_report.md`.
 
-### Modes
+### Keyword Router Contract
 
-| Mode | What it does | Artifacts |
-|------|--------------|-----------|
-| `review` (default) | 3-group parallel specialist review; optional auto-fix; 12 prime directives | `reports/aggregate.yaml`, `reports/quality_gates.yaml`, `reports/auto_fixes.yaml`, `reports/final_report.md` |
-| `optimize` | Opportunity scanners; ROI rank; atomic apply top-N; before/after benchmark delta | `workflow/opportunities.yaml`, `workflow/baseline_metrics.yaml`, `outputs/optimization_report.md`, `_projects/{hash}/improve/history.yaml` |
-| `full` | Review → optimize with shared baseline; synthesis step | `improve_report.md` with `## Review Findings` and `## Optimizations Applied` sections |
+The match is case-insensitive on the first whitespace-separated token of
+`$ARGUMENTS`. If matched, the keyword is stripped from the request and
+the inferred mode is set:
+
+| First-word keyword | Inferred mode | Artifacts produced |
+|--------------------|---------------|-------------------|
+| `review` | review | `reports/aggregate.yaml`, `reports/quality_gates.yaml`, `reports/auto_fixes.yaml`, `reports/final_report.md` |
+| `audit` | review (alias) | Same as `review` mode |
+| `optimize` | optimize | `workflow/opportunities.yaml`, `workflow/baseline_metrics.yaml`, `outputs/optimization_report.md`, `_projects/{hash}/improve/history.yaml` |
+| `improve` | full | `improve_report.md` with `## Review Findings` and `## Optimizations Applied` sections |
 
 ### Key Flags
 
+Mode-specific flags from the V11.0 `/improve` surface carry through
+unchanged (they bind to the inferred mode after the keyword is stripped).
+
 | Flag | Description | Modes |
 |------|-------------|-------|
-| `--mode review\|optimize\|full` | Select pipeline branch | all |
-| `--scope <path>` | Required for `--mode full`; optional elsewhere | all |
+| `--scope <path>` | Optional positional / explicit scope | all |
 | `--dry-run` | Plan without applying changes | all |
-| `--auto-fix safe` | Apply safe auto-fixes (review only) | review |
-| `--baseline` / `--suppress <id>` | Baseline and suppression | review |
+| `--auto-fix safe` | Apply safe auto-fixes | review |
+| `--baseline <id>` / `--suppress <id>` | Baseline + suppression | review |
 | `--benchmark auto\|lighthouse\|k6\|hyperfine` | Benchmark tool | optimize, full |
 | `--history` | Append run to `_projects/{hash}/improve/history.yaml` | all |
 
-### Delivery History
+### Override Rules
 
-- V10.26.19–26: Cluster 4 landed `--mode review` and the `/review` shim
+- Explicit `--mode standard` flag bypasses the keyword router — first
+  token is treated as part of the request.
+- Keyword must be the **first** token. `/run check the audit logs` does
+  NOT trigger improve-mode (first word is `check`).
+
+### History
+
+- V10.26.19–26: Cluster 4 landed `--mode review` on the standalone `/improve` skill and the `/review` shim
 - V10.26.27–35: Cluster 5 landed `--mode optimize`, `--mode full`, the `/optimize` shim, and uniform deprecation warnings
-- V11.0.0: Removed `/review`, `/optimize`, `/context`, `/debug` skills; `/improve` is the canonical entry point
+- V11.0.0: Removed `/review`, `/optimize`, `/context`, `/debug` skills; `/improve` was the canonical V11 entry point
+- v12.1.2: `/improve` folded into `/run` via the first-token keyword router; the keyword router is now the canonical entry point
+
+### Canonical Reference
+
+`@.claude/skills/run/reference/improve-mode.md` — full router contract,
+override rules, stripping examples, mode-specific controller behavior.
 
 ---
 

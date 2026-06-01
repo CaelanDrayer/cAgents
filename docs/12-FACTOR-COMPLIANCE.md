@@ -88,13 +88,13 @@ The `/run` state machine is config-driven, not LLM-driven. `cagents-memory/_syst
 
 ### Factor 9: Compact Errors into Context Window — PARTIAL
 
-`tool-failure-tracker.cjs` records every `PostToolUseFailure` event to `workflow/tool_failures.yaml` and detects patterns (3+ failures suggests alternatives via systemMessage). What's missing: compaction. The tracker logs raw failures but does not yet summarize them for re-injection on the next agent retry. This is an open improvement vector (called out in `IMPROVEMENTS.md` and the WI-4 characterization).
+`tool-failure-tracker.cjs` records every `PostToolUseFailure` event to `workflow/tool_failures.yaml` and detects patterns (3+ failures suggests alternatives via systemMessage). What's missing: compaction. The tracker logs raw failures but does not yet summarize them for re-injection on the next agent retry. This remains an open improvement vector — track its eventual resolution via `CHANGELOG.md` entries referencing `tool-failure-tracker`.
 
 **cAgents implementation**: `.claude/hooks/tool-failure-tracker.cjs`.
 
 ### Factor 10: Small, Focused Agents — YES (arguably over-shot)
 
-141 agents across 9 archetypes (post-v12.7.0 LP-12 + LP-13 consolidation from 144; 99 deprecated to `_deprecated/` buckets), each with a single SKILL.md scoped to one role. The `skill-size-monitor.cjs` `PreToolUse` hook warns at 600 lines and blocks at 900 to prevent SKILL.md bloat. Per `IMPROVEMENTS.md` GAP-12, the count may be over-fragmented for some domains — a future consolidation pass is on the roadmap — but the "small, focused" principle is honored.
+141 agents across 9 archetypes (post-v12.7.0 LP-12 + LP-13 consolidation from 144; 99 deprecated to `_deprecated/` buckets), each with a single SKILL.md scoped to one role. The `skill-size-monitor.cjs` `PreToolUse` hook warns at 600 lines and blocks at 900 to prevent SKILL.md bloat. The catalog may be over-fragmented for some domains — a future consolidation pass remains on the roadmap (see `CHANGELOG.md` for the v12.0.0/v12.7.0 consolidation pattern, which the next pass would extend) — but the "small, focused" principle is honored.
 
 **cAgents implementation**: All 141 SKILL.md files; `.claude/hooks/skill-size-monitor.cjs`.
 
@@ -119,7 +119,7 @@ cAgents agents are **not** stateless. Controllers carry context across reviewer-
 - **Evaluating cAgents?** Read the Summary table for the snapshot; drill into specific factors that matter for your use case. The two DIVERGENCE rows are where cAgents most differs from the framework — check whether the tradeoff suits your needs.
 - **Considering forking cAgents?** The DIVERGENCE factors (5 and 12) are the architectural points where your fork might choose to align differently. Be aware of what each one costs.
 - **Contributing to cAgents?** New features should respect existing YES alignments and move PARTIAL items toward YES where feasible. New DIVERGENCE positions require an architect-tier discussion and a documented entry here.
-- **Open improvement vectors**: PARTIAL items for Factors 3, 4, 7, 9, 11 are tracked in `IMPROVEMENTS.md` and the v12 backlog. Contributions welcome.
+- **Open improvement vectors**: PARTIAL items for Factors 3, 4, 7, 9, 11 are tracked via per-bump `CHANGELOG.md` entries and `docs/RELEASE_NOTES.md`. Contributions welcome.
 
 ## See also
 

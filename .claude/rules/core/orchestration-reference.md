@@ -31,7 +31,7 @@ enrichment_summary: "{brief_summary_of_context}"
 > **DEPRECATED in V11.0**: The /review, /optimize, /context, /debug skills were removed in V11.0.
 > The `/context init` reference below is PRESERVED for archived-session back-compat — hooks consume
 > session_type prefixes from historical session directories on disk. Do NOT remove these
-> values. Use /improve --mode review|optimize|full or /run --mode debug for V11+ workflows.
+> values. Use `/run review`, `/run optimize`, `/run improve` (v12.1.2+ keyword router) or `/run --mode debug` for V12+ workflows. (`/improve` was folded into `/run` via the keyword router in v12.1.2; the historical `/improve --mode review|optimize|full` syntax no longer exists.)
 > See [docs/MIGRATION-V11.md](../../../docs/MIGRATION-V11.md) for migration guidance.
 
 The `project_summary` field is loaded from `cagents-memory/_projects/{hash}/product_context.yaml` if it exists (created via `/context init`). Must fit within MAX_ATTENTION_CHARS budget (500 chars).

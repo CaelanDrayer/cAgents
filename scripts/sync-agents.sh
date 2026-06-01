@@ -47,6 +47,13 @@ done
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export CAGENTS_ROOT="$ROOT"
 export CAGENTS_SYNC_MODE="$MODE"
+# WI-1 follow-on (v12.12.1): test-friendly override. When set, the script
+# operates on the path in CAGENTS_PLUGIN_JSON_PATH instead of the canonical
+# $ROOT/.claude-plugin/plugin.json. This lets sync-agents-check.test.js
+# induce drift on a temp-dir copy without racing
+# `validate-counts.sh --derive-only` (which reads the real plugin.json) in
+# vitest's parallel test runs. Production callers never set this env var.
+export CAGENTS_PLUGIN_JSON_PATH="${CAGENTS_PLUGIN_JSON_PATH:-}"
 
 node --input-type=commonjs <<'NODEEOF'
 'use strict';
@@ -56,7 +63,10 @@ const path = require('path');
 
 const ROOT = process.env.CAGENTS_ROOT;
 const MODE = process.env.CAGENTS_SYNC_MODE || 'apply';
-const PLUGIN_JSON = path.join(ROOT, '.claude-plugin', 'plugin.json');
+const PLUGIN_JSON_OVERRIDE = process.env.CAGENTS_PLUGIN_JSON_PATH || '';
+const PLUGIN_JSON = PLUGIN_JSON_OVERRIDE
+  ? PLUGIN_JSON_OVERRIDE
+  : path.join(ROOT, '.claude-plugin', 'plugin.json');
 
 // v12.8.0 archetype roots (9 total). All archetypes live under `agents/`.
 // Layout: agents/{archetype}/{branch?}/{agent}/SKILL.md. We walk each

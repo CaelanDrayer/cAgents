@@ -1,6 +1,6 @@
 # cAgents Catalog — Lifecycle View
 
-This doc maps the 238 cAgents agents onto a Define→Plan→Build→Verify→Review→Ship
+This doc maps the 141 cAgents agents (post-v12.7.0) onto a Define→Plan→Build→Verify→Review→Ship
 software-lifecycle axis. This is an orthogonal view to the canonical role-based
 archetype tree (see CLAUDE.md § Project Overview).
 

@@ -1,5 +1,10 @@
 # Optimization Progress
 
+> **HISTORICAL DOCUMENT (V9 / pre-v12)**: This document tracks optimization
+> work from the V9 / pre-v12 era of cAgents. It is preserved for historical
+> context. Current optimization strategy is documented in CLAUDE.md
+> § Performance Benchmarks and CHANGELOG.md entries from v12.0.0 onward.
+
 **Started**: 2026-01-12
 **Last Updated**: 2026-02-03
 **Status**: In Progress

@@ -5,11 +5,13 @@ Side-by-side comparison matrices for `/helper --compare`.
 > _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Their functionality moved to `/improve`, `/run context`, and `/run --mode debug`._
 >
 > _v12.2.0 removed `/org` and absorbed its responsibilities into `/team` strategic mode (auto-enabled when `router.domain_count >= 2`; force via `--strategic` / `--no-strategic`). The `/org` columns in the matrices below are PRESERVED as historical reference for users migrating from pre-v12.2.0; treat any `/org` cell as "equivalent /team --strategic behavior" in v12.2.0+._
+>
+> _v12.1.2 folded `/improve` into `/run` via the keyword router (`/run improve|review|audit|optimize`). The `/improve` columns in the matrices below are PRESERVED as historical reference for users migrating from V11; treat any `/improve` cell as "equivalent `/run` keyword-router behavior" in v12.1.2+. The Integration Pipeline Matrix uses `/run review` / `/run optimize` / `/run improve` for the canonical v12.1.2 surface._
 
 ## Core Comparison Matrix
 
-| Dimension | /run | /designer | /improve | /team | /org | /helper |
-|-----------|------|-----------|----------|-------|------|---------|
+| Dimension | /run | /designer | /run keyword router | /team | /org | /helper |
+|-----------|------|-----------|---------------------|-------|------|---------|
 | **Purpose** | Execute any task | Design before building | Review + optimize engine | Parallel execution | Multi-domain hierarchy | Command guide |
 | **Interaction** | Autonomous | Interactive 4-phase Q&A | Autonomous | Autonomous | Auto (with deliberation) | Interactive |
 | **Duration** | Varies (5min - hours) | 15-45 minutes | 3-20 minutes | Varies (40-60% faster) | 25-60 minutes | 1-2 minutes |
@@ -21,8 +23,8 @@ Side-by-side comparison matrices for `/helper --compare`.
 
 ## When-to-Use Decision Matrix
 
-| Scenario | /run | /designer | /improve | /team | /org |
-|----------|------|-----------|----------|-------|------|
+| Scenario | /run | /designer | /run keyword router | /team | /org |
+|----------|------|-----------|---------------------|-------|------|
 | Fix a bug | Best | -- | -- | -- | -- |
 | Add a feature | Good | Best (plan first) | -- | Good (if parallel) | -- |
 | Large feature | Good | Best (plan first) | -- | Best (parallel build) | -- |
@@ -42,8 +44,8 @@ Side-by-side comparison matrices for `/helper --compare`.
 
 ## Flag Overlap Matrix
 
-| Flag | /run | /designer | /improve | /team | /org |
-|------|------|-----------|----------|-------|------|
+| Flag | /run | /designer | /run keyword router | /team | /org |
+|------|------|-----------|---------------------|-------|------|
 | `--dry-run` | Yes | -- | Yes | Yes | Yes |
 | `--interactive` | Yes | Always | Yes | -- | -- |
 | `--quiet` / `-q` | Yes | -- | -- | Yes | -- |
@@ -54,7 +56,7 @@ Side-by-side comparison matrices for `/helper --compare`.
 | `--template` | Yes | Yes | -- | -- | -- |
 | `--stream` | Yes | -- | Yes | -- | -- |
 | `--scope` | -- | -- | Yes (required for `--mode full`) | -- | -- |
-| `--mode review\|optimize\|full` | -- | -- | Yes | -- | -- |
+| `--mode review\|optimize\|full` | (implicit via keyword router) | -- | Yes (canonical) | -- | -- |
 | `--auto-fix` | -- | -- | Yes (review mode) | -- | -- |
 | `--baseline` / `--suppress` | -- | -- | Yes (review mode) | -- | -- |
 | `--benchmark` | -- | -- | Yes (optimize / full) | -- | -- |
@@ -74,9 +76,9 @@ Side-by-side comparison matrices for `/helper --compare`.
 |------------|------|-----|
 | `/designer` | `/run` | Design thoroughly, then build. Most common pipeline. |
 | `/designer` | `/team` | Design thoroughly, then build in parallel. For big features. |
-| `/improve --mode review` | `/run` | Find issues, then fix them. |
-| `/improve --mode full` | -- | Review + optimize together with one shared baseline. |
-| `/improve --mode optimize` | `/improve --mode review` | Optimize, then verify quality (or use `--mode full`). |
+| `/run review` | `/run` (fix follow-up) | Find issues, then fix them. |
+| `/run improve` | -- | Review + optimize together with one shared baseline. |
+| `/run optimize` | `/run review` | Optimize, then verify quality (or use `/run improve`). |
 | `/run --team` | -- | Shortcut: /run with parallel team execution. |
 | `/team --strategic` (v12.2.0+) | Per-domain dispatch (nested waves) | CEO/C-suite deliberation, then dependency-ordered per-domain dispatch. Replaces `/org` for multi-domain initiatives. |
 | `/team --strategic` | `/run` | Single-domain routing with strategic brief context (replaces `/org --quick`). |
@@ -84,8 +86,8 @@ Side-by-side comparison matrices for `/helper --compare`.
 
 ## Complexity and Scope
 
-| Aspect | /run | /designer | /improve | /team | /org |
-|--------|------|-----------|----------|-------|------|
+| Aspect | /run | /designer | /run keyword router | /team | /org |
+|--------|------|-----------|---------------------|-------|------|
 | **Minimum complexity** | Tier 2 (any request) | Any | Any | Tier 3 (3+ work items) | Any (auto-routes simple) |
 | **Maximum complexity** | Tier 4 (expert + HITL) | Any | Tier 4 (CRITICAL findings hand off to /run) | Tier 4 | Tier 4 (multi-domain) |
 | **Scope** | Single task | Single design | Single target (or `--scope` for `--mode full`) | Multiple parallel tasks | Multi-domain coordinated |
@@ -94,8 +96,8 @@ Side-by-side comparison matrices for `/helper --compare`.
 
 ## Performance Characteristics
 
-| Metric | /run | /designer | /improve | /team | /org |
-|--------|------|-----------|----------|-------|------|
+| Metric | /run | /designer | /run keyword router | /team | /org |
+|--------|------|-----------|---------------------|-------|------|
 | **Startup time** | Fast (seconds) | Fast (immediate Q&A) | Fast (seconds) | Medium (team setup) | Medium (C-suite analysis) |
 | **Execution time** | Varies by task | 15-45 min (interactive) | 3-20 min | 40-60% faster than /run | 25-60 min (multi-domain) |
 | **Token efficiency** | Standard | Context-conscious | Parallel (efficient) | Higher (multiple contexts) | High (C-suite + /team) |
@@ -110,3 +112,17 @@ Side-by-side comparison matrices for `/helper --compare`.
 | `/optimize <target> --review-after` | `/improve --mode full --scope <target>` |
 | `/context init\|show\|update\|clear` | `/run context init\|show\|update\|clear` |
 | `/debug <bug>` | `/run --mode debug <bug>` |
+
+## V11 → v12.1.2 Migration Quick Reference
+
+| V11 invocation | v12.1.2 replacement (keyword router on /run) |
+|----------------|----------------------------------------------|
+| `/improve --mode review <target>` | `/run review <target>` |
+| `/improve <target>` (default review mode) | `/run review <target>` |
+| `/improve --mode optimize <target>` | `/run optimize <target>` |
+| `/improve --mode full --scope <target>` | `/run improve <target>` |
+
+The keyword router is case-insensitive on the first request token.
+`audit` is an alias for `review`. All V11.0 `/improve` mode-specific
+flags carry through unchanged — they bind to the mode inferred from the
+keyword.

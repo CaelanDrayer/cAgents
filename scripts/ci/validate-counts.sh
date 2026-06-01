@@ -85,8 +85,18 @@ report_mismatch() {
 # Check 1: CLAUDE.md must say "144 agents" matching derived ACTIVE_AGENTS.
 # This is the load-bearing count appearing in the Project Overview, Quick
 # Reference, and Plugin Architecture sections.
-if ! grep -qE "\b${ACTIVE_AGENTS} agents\b" CLAUDE.md; then
-  report_mismatch "CLAUDE.md" "agent count" "$ACTIVE_AGENTS"
+#
+# Test-friendly override: CAGENTS_VALIDATE_COUNTS_CLAUDE_MD lets the
+# doc-counts-match-disk.test.js mutation test point Check 1 at a temp-dir
+# copy of CLAUDE.md, eliminating the parallel-test race against
+# claude-md-counts-current.test.js / claude-md-domain-overrides-count.test.js
+# / claude-md-no-stale-version-highlights.test.js which read the real
+# CLAUDE.md while the mutation test would otherwise rewrite it in place.
+# Production callers do NOT set this env var; the default path (CLAUDE.md
+# in REPO_ROOT) is unchanged. See WI-1 in v12.12.1.
+CLAUDE_MD_PATH="${CAGENTS_VALIDATE_COUNTS_CLAUDE_MD:-CLAUDE.md}"
+if ! grep -qE "\b${ACTIVE_AGENTS} agents\b" "$CLAUDE_MD_PATH"; then
+  report_mismatch "$CLAUDE_MD_PATH" "agent count" "$ACTIVE_AGENTS"
 fi
 
 # Check 2: README.md should agree if it claims a total agent count.

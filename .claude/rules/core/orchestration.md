@@ -36,7 +36,7 @@ All state transitions are AUTOMATIC: INIT -> ORCHESTRATED -> PLANNED -> COORDINA
 > The `/review`, `/optimize`, `/debug` entries in the skill enumeration below are PRESERVED for
 > archived-session back-compat — hooks consume session_type prefixes from historical session
 > directories on disk. Do NOT remove these values.
-> Use /improve --mode review|optimize|full or /run --mode debug for V11+ workflows.
+> Use `/run review`, `/run optimize`, `/run improve` (v12.1.2+ keyword router) or `/run --mode debug` for V12+ workflows. (`/improve` was folded into `/run` via the keyword router in v12.1.2; the historical `/improve --mode review|optimize|full` syntax no longer exists.)
 > See [docs/MIGRATION-V11.md](../../../docs/MIGRATION-V11.md) for migration guidance.
 
 **Every skill (/run, /team, /designer; legacy /org, /review, /optimize, /debug session prefixes preserved for archived-session back-compat) MUST create its session directory and write status.yaml BEFORE any other work.** No codebase exploration, no agent spawning, no analysis, no research — session directory first.

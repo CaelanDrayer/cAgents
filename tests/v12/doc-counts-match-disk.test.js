@@ -54,30 +54,48 @@ describe('P1-5: validate-counts.sh enforces doc-vs-disk alignment', () => {
   });
 
   it('exits 1 when a documented count is deliberately edited to a wrong value', () => {
-    // Create a temp copy of CLAUDE.md, mutate the agent count, run the
-    // script against the temp dir via env override.
+    // WI-1 (v12.12.1): Race-free implementation. Previously this test mutated
+    // the real CLAUDE.md in place, which raced against three sibling tests
+    // that read CLAUDE.md concurrently under vitest's file-fork parallelism:
+    //   - tests/regressions/claude-md-counts-current.test.js
+    //   - tests/regressions/claude-md-domain-overrides-count.test.js
+    //   - tests/regressions/claude-md-no-stale-version-highlights.test.js
+    // Under load (full `npm test`), those readers could observe the mutated
+    // "999 agents" content and fail. The race was intermittent, hence the
+    // initial misdiagnosis in team_plugin-sanity-pass_260601_001.
+    //
+    // The fix: copy CLAUDE.md to a temp dir, mutate ONLY the temp copy, and
+    // point the script's Check 1 at the temp file via the new
+    // CAGENTS_VALIDATE_COUNTS_CLAUDE_MD env-var override. The real CLAUDE.md
+    // is never touched, eliminating the race entirely.
     const claudeMd = join(REPO_ROOT, 'CLAUDE.md');
     const original = readFileSync(claudeMd, 'utf8');
     // Find "141 agents" claim and replace ALL occurrences with bogus 999.
-    // Replacing all ensures the script's grep finds no remaining 141 mention.
     const mutated = original.replace(/\b141 agents\b/g, '999 agents');
     expect(mutated).not.toBe(original); // must have actually mutated
 
-    const backupPath = `${claudeMd}.p1-5-backup`;
-    copyFileSync(claudeMd, backupPath);
-    writeFileSync(claudeMd, mutated);
+    const tmpDir = mkdtempSync(join(tmpdir(), 'doc-counts-test-'));
+    const tmpClaudeMd = join(tmpDir, 'CLAUDE.md');
+    writeFileSync(tmpClaudeMd, mutated);
 
     let exitCode = 0;
     let output = '';
     try {
-      execSync(`bash ${SCRIPT}`, { cwd: REPO_ROOT, stdio: 'pipe' });
+      execSync(`bash ${SCRIPT}`, {
+        cwd: REPO_ROOT,
+        stdio: 'pipe',
+        env: {
+          ...process.env,
+          CAGENTS_VALIDATE_COUNTS_CLAUDE_MD: tmpClaudeMd,
+        },
+      });
     } catch (err) {
       exitCode = err.status;
       output = (err.stdout?.toString() || '') + (err.stderr?.toString() || '');
     } finally {
-      // Restore CLAUDE.md no matter what
-      copyFileSync(backupPath, claudeMd);
-      unlinkSync(backupPath);
+      // Best-effort cleanup of temp dir
+      try { unlinkSync(tmpClaudeMd); } catch {}
+      try { require('fs').rmdirSync(tmpDir); } catch {}
     }
 
     expect(exitCode, 'validate-counts.sh exit code on mutated CLAUDE.md').toBe(1);

@@ -466,8 +466,10 @@ described here with example YAML and a chaining-flag table) was prototyped in
 V10.18.0 but never implemented — no skill ever declared `output_contract` or
 `input_from` frontmatter blocks, and the corresponding /run flags silently
 no-op'd at runtime. The flag advertisements and design prose were removed in
-v11.2.10 (Q-005 of the v11.2.x improvement pass). The `--brief` flag, consumed
-from /org, remains the sole implemented skill-chain mechanism. See
+v11.2.10 (Q-005 of the v11.2.x improvement pass). The `--brief` flag, originally
+consumed by `/org` (removed in v12.2.0; cross-domain coordination absorbed into
+`/team` strategic mode), remained the sole implemented skill-chain mechanism
+through V11.2.x. See
 `cagents-memory/sessions/team_v11-2-improvement-pass_260507_001/outputs/wave-1/`
 for the design-vs-implementation gap analysis that triggered the removal.
 

@@ -1,6 +1,6 @@
 ---
 paths:
-  - "engineering/**"
+  - "developer/**"
   - "core/**"
   - "shared/**"
 ---

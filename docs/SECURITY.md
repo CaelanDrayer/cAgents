@@ -64,4 +64,4 @@ cAgents includes several built-in security mechanisms:
 
 ## License
 
-This project is licensed under [MIT](LICENSE). Security reports are handled independently of the license.
+This project is licensed under [MIT](../LICENSE). Security reports are handled independently of the license.

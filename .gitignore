@@ -52,6 +52,15 @@ archive/
 *.backup
 backup_*/
 
+# WI-2 (v12.12.1): belt-and-suspenders against broken-symlink re-creation.
+# Claude Code's plugin discovery occasionally re-creates `.claude/skills/commit-changes`
+# as a broken symlink when it encounters externally-bundled `commit-changes` skill
+# references. The offending source symlink in _archive/ has been deleted, but
+# this gitignore entry ensures any future session-time re-creation never makes
+# it into a commit. See tests/skills/no-commit-changes-symlink.test.js for the
+# regression guard.
+.claude/skills/commit-changes
+
 # Cache directories
 .agent-cache/
 .claude-plugin-cache/

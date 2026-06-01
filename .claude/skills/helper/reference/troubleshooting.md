@@ -2,7 +2,7 @@
 
 Common issues and diagnostic flows for each command. Used by `/helper --troubleshoot <command>`.
 
-> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Their troubleshooting now lives under `/improve` (review and optimize) and `/run` (debug mode and `run context` passthroughs)._
+> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug`; v12.1.2 folded `/improve` into `/run` via the keyword router. See [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Their troubleshooting now lives under `/run` (keyword router for review/audit/optimize/improve modes, plus `--mode debug` and `run context` passthroughs)._
 
 ## /run Troubleshooting
 
@@ -75,14 +75,14 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 
 ---
 
-## /improve Troubleshooting
+## /run review|optimize|audit|improve Troubleshooting (Keyword Router Modes)
 
-`/improve` covers both review and optimize work via `--mode review|optimize|full`. The defaults below cover both modes; mode-specific items are tagged.
+`/run`'s keyword router covers both review and optimize work via the first-token modes `review` / `audit` (review mode), `optimize` (optimize mode), `improve` (full mode). The defaults below cover both modes; mode-specific items are tagged.
 
 ### 1. Review finding everything but the issue (review mode)
 - **Symptom**: Lots of findings but none related to the actual problem
 - **Likely cause**: Review scope too broad or wrong focus area
-- **Fix**: Use `--focus security|performance|quality` to narrow: `/improve --mode review --focus security`
+- **Fix**: Use `--focus security|performance|quality` to narrow: `/run review --focus security`
 - **Prevention**: Use `--scope changed` to review only modified files
 
 ### 2. Auto-fix broke something (review mode)
@@ -95,7 +95,7 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 ### 3. Framework not detected (review mode)
 - **Symptom**: Review misses framework-specific patterns (e.g., Next.js SSR issues)
 - **Likely cause**: Framework detection failed to identify the project type
-- **Fix**: Force framework: `/improve --mode review --framework nextjs`
+- **Fix**: Force framework: `/run review --framework nextjs`
 - **Check**: Verify package.json or framework config files exist in the review target
 
 ### 4. Quality gate blocking incorrectly (review mode)
@@ -107,7 +107,7 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 - **Symptom**: Detection phase finds zero opportunities
 - **Likely cause**: Target path is wrong, or optimization type does not match the content
 - **Check**: Verify target path exists and contains files of the expected type
-- **Fix**: Specify type explicitly: `/improve --mode optimize src/ --type code`
+- **Fix**: Specify type explicitly: `/run optimize src/ --type code`
 
 ### 6. Optimization made things worse (optimize mode)
 - **Symptom**: Metrics regressed after optimization
@@ -116,15 +116,15 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 - **Fix**: Rollback should be automatic if `--rollback automatic` was set. Otherwise, `git restore`
 - **Prevention**: Use `--dry-run` first, then `--safety safe` for low-risk changes only
 
-### 7. `--mode full` rejects the run
-- **Symptom**: `/improve --mode full` reports "scope is required"
-- **Likely cause**: `--mode full` requires `--scope <path>` so review and optimize share the same baseline
-- **Fix**: Re-run with `--scope`: `/improve --mode full --scope src/`
+### 7. `/run improve` rejects the run
+- **Symptom**: `/run improve` reports "scope is required" when --scope is mandatory per the controller contract
+- **Likely cause**: The full mode requires a scope (either positional path or explicit `--scope`) so review and optimize share the same baseline
+- **Fix**: Pass the path as positional: `/run improve src/` (the keyword router treats the request as the scope), or use the explicit flag: `/run improve --scope src/`
 
 ### 8. Baseline mismatch between runs
 - **Symptom**: Suppressions from a prior run no longer apply
 - **Likely cause**: Baseline ID changed because the scope or framework changed between runs
-- **Fix**: Re-baseline with `/improve --mode review --baseline <new-id>` and re-suppress with `--suppress <id>`
+- **Fix**: Re-baseline with `/run review --baseline <new-id>` and re-suppress with `--suppress <id>`
 
 ---
 

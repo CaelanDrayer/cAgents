@@ -17,7 +17,7 @@ Ensure `node` is in your PATH — hooks rely on it.
 
 ## Adding an Agent
 
-1. **Choose tier and domain** — see [Complexity Tiers](CLAUDE.md#complexity-tiers) and the domain table below.
+1. **Choose tier and domain** — see [Complexity Tiers](../CLAUDE.md#complexity-tiers) and the domain table below.
 
 2. **Create the SKILL.md**:
    ```

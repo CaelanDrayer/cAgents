@@ -1,5 +1,13 @@
 # Task Consolidation - Advanced Context Management
 
+> **HISTORICAL DOCUMENT (v12.0.0 consolidation scope)**: This document covers
+> the v12.0.0 `task-merger` / `task-state` consolidation work — the
+> CSV-based task inventory pattern, micro-task decomposition, and the
+> 40-88% / 60-80% context-reduction targets achieved during that pass.
+> It is preserved for historical reference. Current task-coordination
+> patterns live in CLAUDE.md § Memory Management and § Aggressive
+> Decomposition, with per-bump deltas in CHANGELOG.md from v12.0.0 onward.
+
 How cAgents splits large tasks across multiple agents to optimize context usage and enable massive parallelism.
 
 ---

@@ -13,19 +13,29 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { execSync } from 'node:child_process';
-import { resolve } from 'node:path';
-import { readFileSync, writeFileSync, statSync } from 'node:fs';
+import { resolve, join } from 'node:path';
+import { readFileSync, writeFileSync, statSync, mkdtempSync, unlinkSync, rmdirSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 
 const REPO_ROOT = resolve(__dirname, '..', '..');
 const SYNC_AGENTS = resolve(REPO_ROOT, 'scripts', 'sync-agents.sh');
 const PLUGIN_JSON = resolve(REPO_ROOT, '.claude-plugin', 'plugin.json');
 
-function runCheck() {
+function runCheck(pluginJsonPath) {
+  // WI-1 follow-on (v12.12.1): when pluginJsonPath is provided, pass it
+  // through CAGENTS_PLUGIN_JSON_PATH so sync-agents.sh operates on the
+  // override path. The drift test uses this against a temp-dir copy to
+  // avoid racing doc-counts-match-disk.test.js (which reads the real
+  // plugin.json via validate-counts.sh --derive-only).
+  const env = pluginJsonPath
+    ? { ...process.env, CAGENTS_PLUGIN_JSON_PATH: pluginJsonPath }
+    : process.env;
   try {
     const out = execSync(`bash "${SYNC_AGENTS}" --check`, {
       cwd: REPO_ROOT,
       encoding: 'utf8',
       maxBuffer: 8 * 1024 * 1024,
+      env,
     });
     return { exitCode: 0, stdout: out };
   } catch (err) {
@@ -67,20 +77,28 @@ describe('sync-agents.sh --check dry-run regression', () => {
   });
 
   it('--check exits 1 when drift exists', () => {
+    // WI-1 follow-on (v12.12.1): write drift to a temp-dir copy rather than
+    // mutating the canonical plugin.json. The override is passed via
+    // CAGENTS_PLUGIN_JSON_PATH so sync-agents.sh --check reads the temp file.
+    // This eliminates the race between this test writing "drifted" content
+    // and tests/v12/doc-counts-match-disk.test.js reading the real
+    // plugin.json via `validate-counts.sh --derive-only` (active_agents=141).
     const original = readFileSync(PLUGIN_JSON, 'utf8');
-    try {
-      // Induce drift: parse, mutate agents array, write back.
-      const obj = JSON.parse(original);
-      const driftedAgents = (obj.agents || []).slice(1);  // drop first agent
-      const drifted = JSON.stringify({ ...obj, agents: driftedAgents }, null, 2) + '\n';
-      writeFileSync(PLUGIN_JSON, drifted, 'utf8');
+    const obj = JSON.parse(original);
+    const driftedAgents = (obj.agents || []).slice(1);  // drop first agent
+    const drifted = JSON.stringify({ ...obj, agents: driftedAgents }, null, 2) + '\n';
 
-      const result = runCheck();
+    const tmpDir = mkdtempSync(join(tmpdir(), 'sync-agents-drift-'));
+    const tmpPluginJson = join(tmpDir, 'plugin.json');
+    writeFileSync(tmpPluginJson, drifted, 'utf8');
+
+    try {
+      const result = runCheck(tmpPluginJson);
       expect(result.exitCode).toBe(1);
       expect(result.stdout).toMatch(/DRIFT/);
     } finally {
-      // Always restore
-      writeFileSync(PLUGIN_JSON, original, 'utf8');
+      try { unlinkSync(tmpPluginJson); } catch {}
+      try { rmdirSync(tmpDir); } catch {}
     }
   });
 
