@@ -14,6 +14,68 @@ const fs = require('fs');
 const path = require('path');
 const { createHook, AGENT_MEMORY_DIR, SESSION_PREFIXES, TERMINAL_STATES, extractYamlValue, safeRead, countPattern, ensureDir, MAX_SESSION_START_CHARS, findActiveSession } = require('./hook-utils.cjs');
 
+/**
+ * Liveness check (WI-4, session run_concurrent-session-hooks_260602_001):
+ *
+ * A session is considered LIVE (and therefore filtered OUT of the resume
+ * offer) when any of:
+ *   1. status.yaml mtime is within CAGENTS_SESSION_LIVENESS_MS (default 60s)
+ *   2. session.pid file points to a still-running PID (`kill -0`)
+ *   3. last_updated_at heartbeat field is within livenessThresholdMs
+ *
+ * The default threshold is 60s; tests override via CAGENTS_SESSION_LIVENESS_MS.
+ */
+function getLivenessThresholdMs() {
+  const v = parseInt(process.env.CAGENTS_SESSION_LIVENESS_MS || '60000', 10);
+  return Number.isFinite(v) && v >= 0 ? v : 60000;
+}
+
+function isSessionLive(sessionDir) {
+  const threshold = getLivenessThresholdMs();
+  const now = Date.now();
+
+  // Check 1: session.pid file → kill -0 liveness.
+  try {
+    const pidPath = path.join(sessionDir, 'session.pid');
+    if (fs.existsSync(pidPath)) {
+      const pidContent = fs.readFileSync(pidPath, 'utf8').trim();
+      const pid = parseInt(pidContent, 10);
+      if (Number.isFinite(pid) && pid > 0) {
+        try {
+          process.kill(pid, 0); // Signal 0: liveness probe.
+          return true;
+        } catch (e) {
+          if (e.code === 'EPERM') return true; // process exists, foreign owner — treat as live
+          // ESRCH → process dead, fall through to other checks
+        }
+      }
+    }
+  } catch { /* fall through */ }
+
+  // Check 2: status.yaml mtime within threshold.
+  try {
+    const statusFile = path.join(sessionDir, 'status.yaml');
+    if (fs.existsSync(statusFile)) {
+      const stat = fs.statSync(statusFile);
+      if (now - stat.mtimeMs < threshold) return true;
+    }
+  } catch { /* fall through */ }
+
+  // Check 3: last_updated_at heartbeat field within threshold.
+  try {
+    const statusContent = safeRead(path.join(sessionDir, 'status.yaml'));
+    if (statusContent) {
+      const heartbeat = extractYamlValue(statusContent, 'last_updated_at');
+      if (heartbeat) {
+        const parsed = Date.parse(heartbeat);
+        if (!isNaN(parsed) && now - parsed < threshold) return true;
+      }
+    }
+  } catch { /* fall through */ }
+
+  return false;
+}
+
 function findIncompleteSessions() {
   const sessionsDir = path.join(AGENT_MEMORY_DIR, 'sessions');
   if (!fs.existsSync(sessionsDir)) return [];
@@ -26,6 +88,12 @@ function findIncompleteSessions() {
 
   for (const session of sessions.slice(0, 10)) {
     const sessionDir = path.join(sessionsDir, session);
+
+    // WI-4: skip LIVE sessions (belonging to another Claude Code instance).
+    if (isSessionLive(sessionDir)) {
+      continue;
+    }
+
     const statusFile = path.join(sessionDir, 'status.yaml');
     const content = safeRead(statusFile);
 

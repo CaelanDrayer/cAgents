@@ -22,7 +22,7 @@ const { spawn } = require('child_process');
 // Defensive: js-yaml is a declared dependency but guard against missing install
 let yaml;
 try { yaml = require('js-yaml'); } catch { yaml = null; }
-const { createHook, findTeamSession, findActiveSession, safeRead, extractYamlValue, countPattern, withFileLock, ensureDir } = require('./hook-utils.cjs');
+const { createHook, findTeamSession, findActiveSession, safeRead, extractYamlValue, countPattern, withFileLock, ensureDir, AGENT_MEMORY_DIR } = require('./hook-utils.cjs');
 
 // =============================================================================
 // P1-4: Pattern Extractor Runtime Wiring (24h throttle)
@@ -282,8 +282,21 @@ createHook('SessionEnd', async (input) => {
   let summary = '';
 
   // --- Phase 1: Agent tree cleanup for ANY session type ---
-  // Use findActiveSession() which searches all prefixes (run_*, team_*, org_*, designer_*, etc.)
-  const anySession = findActiveSession(input.session_id);
+  // SessionEnd legitimately operates on terminal sessions (finalizing). Resolve
+  // session strictly from input.session_id when present (bypassing the
+  // non-terminal-only filter in findActiveSession's deterministic chain).
+  // Falls back to findActiveSession({fallbackHeuristic:true}) when no hint —
+  // SessionEnd does need to find SOME session to finalize.
+  let anySession = null;
+  if (input.session_id) {
+    const direct = path.join(AGENT_MEMORY_DIR, 'sessions', input.session_id);
+    if (fs.existsSync(direct)) {
+      anySession = direct;
+    }
+  }
+  if (!anySession) {
+    anySession = findActiveSession({ fallbackHeuristic: true });
+  }
   let agentTreeSessionDir = null;
 
   if (anySession) {
