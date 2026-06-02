@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.13.0"
+  version: "12.14.0"
   argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--no-template] [--waves <n>] [--strategic] [--no-strategic]"
   user-invocable: "true"
   context: "fork"
@@ -148,6 +148,8 @@ For each wave K:
 **5c.** Spawn ALL wave-K teammates in PARALLEL with ~80-token pointer prompts (per @reference/spawn-brief-schema.md § Short Spawn Prompt). Each teammate is `cagents:{CONTROLLER_TYPE}` from `plan.yaml.controller_assignment.primary`. See @reference/teammate-spawning-template.md for self-registration and isolation/worktree.
 
 **5d.** Monitor wave K via TaskList + teammate messages. Early-shutdown completed teammates per @reference/wave-execution-detail.md § Early Shutdown.
+
+**5d-i.** Peer-request routing: if an inbound `SendMessage(type=peer_request)` arrives OR a new file appears at `outputs/wave-{K}/peer_requests/REQ-*.yaml`, read ONLY the new REQ file (lead-context discipline) and apply the 4-branch decision tree: RELAY (SendMessage to peer), SPAWN (fresh Agent), PROMOTE (append to `work_items_wave_{K+1}.yaml`), or REJECT (SendMessage requester with rationale). Update REQ-N.yaml `status` field after each routing decision. The lead NEVER executes the requested work itself — aggressive-delegation invariant. See @.claude/rules/playbooks/pat-cross-teammate-request.md.
 
 **5e.** When all wave-K WIs are completed (TaskList), spawn `cagents:wave-reviewer`:
 ```

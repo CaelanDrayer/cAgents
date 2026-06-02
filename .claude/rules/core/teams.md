@@ -275,6 +275,40 @@ SendMessage({
 
 Update the teammate lifecycle expectations accordingly: teammates that finish a wave and stop are NOT gone — they can be re-activated via SendMessage for follow-up work items.
 
+## Cross-Teammate Request Pattern
+
+A teammate sometimes needs help from another teammate. Claude Code forbids nested teams and direct teammate-to-teammate messaging (the lead is fixed), and the aggressive-delegation rule forbids the lead from executing implementation work itself. The `peer_request` protocol resolves the gap: teammate A emits a structured request, the lead routes it via a 4-branch decision tree, and the requested work happens through a peer or a fresh spawn — never through the lead's own hands.
+
+```
+   +-----------+    (1) SendMessage(type=peer_request) +    +-----------+
+   |Teammate A | ---  writes outputs/wave-K/                 |Teammate B |
+   | (wave K)  |       peer_requests/REQ-{N}.yaml  ----->    | (wave K)  |
+   +-----------+                                             +-----+-----+
+         |                                                         ^
+         |                                                         |
+         v                                                         |
+   +-----+-----+   (2) Reads only REQ-{N}.yaml                     |
+   |   Lead    |       (lead-context discipline)                   |
+   | (Step 5d) |   (3) Decision tree:                              |
+   |   loop    |       RELAY  -> SendMessage to B ----------------->
+   +-----+-----+       SPAWN  -> Agent(cagents:{type}) fresh TM
+                       PROMOTE-> append work_items_wave_{K+1}.yaml
+                       REJECT -> SendMessage A with rationale
+```
+
+| Branch | Trigger | Lead action |
+|--------|---------|-------------|
+| RELAY | intra-wave, peer B alive or stoppable, scope <= 1 WI | `SendMessage` to B (auto-resumes) |
+| SPAWN | intra-wave, new work-item-sized scope | `Agent({subagent_type: "cagents:{type}", ...})` |
+| PROMOTE | out-of-wave scope or violates GATE-K | Append to `work_items_wave_{K+1}.yaml` |
+| REJECT | violates aggressive-delegation, `not_in_scope`, or unsafe | `SendMessage` A with rationale |
+
+**Aggressive-delegation invariant**: the lead's only valid actions on a peer_request are SendMessage, Agent() spawn, PROMOTE, or REJECT. The lead never reads the requested artifact and writes it itself, and never uses Edit/Write/Bash to implement the requested work. See `.claude/rules/core/delegation.md` § Controller-Side Corollary.
+
+Teammate A reports `status: NEEDS_CONTEXT` with optional `requested_peer: teammate-{name}` and `peer_request_ref: outputs/wave-{K}/peer_requests/REQ-{N}.yaml` (extension to the 4-status protocol — see `.claude/rules/playbooks/pat-subagent-status-protocol.md`).
+
+See @.claude/rules/playbooks/pat-cross-teammate-request.md for the canonical schema, decision tree, worked example, and risk table.
+
 ### Cleanup
 
 ```javascript

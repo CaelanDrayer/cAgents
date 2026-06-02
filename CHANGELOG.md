@@ -10,6 +10,60 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.14.0] - 2026-06-01
+
+Cross-Teammate Request Pattern: `/team` teammates can now ask the lead to
+ask another teammate to do work via a named `peer_request` protocol. Driven
+by session `run_improve-team-messaging_260602_001`.
+
+Minor bump (not patch) per the tiny-bump cadence: multi-file feature
+addition with new playbook + status-protocol extension + regression test.
+
+### Added
+
+- **WI-2**: `.claude/rules/playbooks/pat-cross-teammate-request.md` — new
+  playbook documenting the `peer_request` schema (`req_id`, `requested_by`,
+  `requested_peer`, `description`, `acceptance_criteria`, `priority`,
+  `depends_on`, `status`), the lead's 4-branch routing decision tree
+  (**RELAY** / **SPAWN** / **PROMOTE** / **REJECT**), a worked example, and
+  the aggressive-delegation invariant.
+- **WI-7**: `tests/v12/peer-request-pattern.test.js` — Vitest regression
+  test (6 it() blocks) asserting (a) the playbook exists, (b) teams.md
+  references it via @-import, (c) the playbook's YAML example block parses
+  as valid YAML, (d) frontmatter conforms to the 6-field Agent Skills spec,
+  (e) pat-subagent-status-protocol.md references the new playbook, (f) all
+  4 routing branches are documented. Passes at 6/6.
+
+### Changed
+
+- **WI-3**: `.claude/rules/core/teams.md` — new `## Cross-Teammate Request
+  Pattern` section (34 lines, well under the 80-line budget) placed after
+  Teammate Communication. Includes ASCII flow diagram (teammate-A → lead →
+  teammate-B), the 4-branch routing decision-tree table, the
+  aggressive-delegation invariant callout, and an @-import to the playbook.
+- **WI-4**: `.claude/skills/team/SKILL.md` Step 5d — new sub-step **5d-i**
+  (2 lines, well under the 30-line lead-context-discipline budget) routes
+  inbound `peer_request` SendMessages and on-disk `REQ-*.yaml` files
+  through the playbook's decision tree.
+- **WI-5**: `.claude/rules/playbooks/pat-subagent-status-protocol.md` —
+  NEEDS_CONTEXT extended with two OPTIONAL fields (`requested_peer`,
+  `peer_request_ref`) for `/team` mode. Back-compatible: when both fields
+  are absent, NEEDS_CONTEXT retains its prior meaning (need user/external
+  input). The architect decision (WI-1) was to extend NEEDS_CONTEXT rather
+  than introduce a 5th status, because the semantic is identical and a new
+  status would double the controller-response surface across the catalog.
+
+### Not in scope (explicit non-goals)
+
+- **No nested teams**: teammates still cannot spawn sub-teammates. All
+  cross-teammate work routes through the lead.
+- **No direct teammate-to-teammate messaging**: the lead-is-fixed rule
+  stands. SendMessage from A to B is only sanctioned when the lead
+  initiates it as part of RELAY.
+- **No new hook event**: the pattern uses existing SendMessage + on-disk
+  YAML artifacts. WI-6 (extending `teammate-idle-handler.cjs` to
+  auto-surface peer_requests) is DEFERRED to a follow-up tiny-bump.
+
 ## [12.13.0] - 2026-06-01
 
 Coherent hook-system audit remediation pass. Addresses 18 of 106 findings

@@ -42,13 +42,28 @@ missing_context: []             # For NEEDS_CONTEXT: list what is needed
 blocker: null                   # For BLOCKED: describe the blocking factor
 ```
 
+### NEEDS_CONTEXT extension: requested_peer (v12.14.0+)
+
+In `/team` mode, NEEDS_CONTEXT can carry an optional `requested_peer` field pointing the lead to the teammate best positioned to provide the missing information. When set, the lead applies the peer_request decision tree (RELAY / SPAWN / PROMOTE / REJECT) rather than escalating to the user. When `requested_peer` is absent, NEEDS_CONTEXT retains its prior meaning — need user/external input — fully back-compatible.
+
+```yaml
+status: NEEDS_CONTEXT
+summary: "Cannot complete WI-12 without column name from dba"
+missing_context:
+  - "users.last_login_at column name after wave-2 migration"
+requested_peer: teammate-dba                                   # OPTIONAL — null = "need user input"
+peer_request_ref: outputs/wave-3/peer_requests/REQ-1.yaml      # OPTIONAL — points to on-disk artifact
+```
+
+The on-disk `peer_request` artifact at `peer_request_ref` is the canonical contract (see pat-cross-teammate-request.md for the schema). The status field is a hint to the lead; the YAML on disk is the audit trail.
+
 ## Controller response by status
 
 | Status | Controller Action |
 |--------|-------------------|
 | **DONE** | Proceed to reviewer loop (Stage 1: spec compliance) |
 | **DONE_WITH_CONCERNS** | Read concerns. If concerns affect acceptance criteria: request clarification. If concerns are informational: note in coordination_log and proceed to review. Never silently ignore concerns. |
-| **NEEDS_CONTEXT** | Provide the requested context and re-dispatch the agent. If context is unavailable: escalate to user or mark as BLOCKED. Never force retry without providing the missing context. |
+| **NEEDS_CONTEXT** | Provide the requested context and re-dispatch the agent. If context is unavailable: escalate to user or mark as BLOCKED. Never force retry without providing the missing context. **In `/team` mode**: if `requested_peer` is set, the lead applies the peer_request decision tree (RELAY / SPAWN / PROMOTE / REJECT) per @.claude/rules/playbooks/pat-cross-teammate-request.md. |
 | **BLOCKED** | Assess the blocker. If resolvable: resolve and re-dispatch. If not resolvable: mark work item as blocked in coordination_log, document the blocker, and continue with other work items. |
 
 ## Escalation ladder for BLOCKED
@@ -80,3 +95,4 @@ Never ignore an escalation or force retry without changes. If an execution agent
 
 - `.claude/rules/core/resources/execution-self-validation.md` — self-validation contract that gates DONE vs DONE_WITH_CONCERNS auto-downgrades
 - `.claude/rules/playbooks/pat-graceful-degradation-depth1.md` — when tools are stripped, prefer DONE-via-self-validation over BLOCKED
+- `.claude/rules/playbooks/pat-cross-teammate-request.md` — `/team` peer_request routing when NEEDS_CONTEXT.requested_peer is set
