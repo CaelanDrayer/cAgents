@@ -68,10 +68,42 @@ Snapshots created at phase transitions and before context compaction. Types: `ph
 
 ## Session Discovery Internals
 
-`findActiveSession()` uses a three-pass algorithm to locate the active session:
-1. **Hint pass**: If `session_id` is provided, check that directory directly.
-2. **Status pass**: Scan all session dirs for a non-terminal `pipeline_state` / `phase`.
-3. **Grace pass**: Sessions created within `SESSION_DISCOVERY_GRACE_PERIOD_MS` (5 minutes) that lack `status.yaml` are treated as active. This bridges the race between session dir creation and first status write. Constant defined in `hook-utils.cjs`. Nested org subdirectory scanning is mutex-locked via `withFileLock` to prevent concurrent hooks from double-discovering the same session.
+**v12.15.0+ — deterministic chain (concurrency contract):**
+
+`findActiveSession(sessionHintOrOptions)` resolves the active cAgents session via
+an explicit deterministic chain. The legacy 3-pass heuristic (status-newest-first,
+5-minute grace, nested-org subdir scan) is now gated behind an explicit
+`{fallbackHeuristic: true}` opt-in for single-session diagnostic tooling.
+
+**Default chain (no fallback)**:
+
+1. **`sessionHint`** (typically `input.session_id` from the hook payload) — if
+   the directory exists and the session is in a non-terminal `pipeline_state` /
+   `phase` (or has no status.yaml yet — race window), return it. If terminal,
+   return null.
+2. **`process.env.CAGENTS_ACTIVE_SESSION`** — same rules.
+3. **`promptHint`** (e.g., extracted from prompt text by subagent-tracker
+   Pass-3) — same rules.
+4. **`null`** — refuse to silently resolve to "newest active" session.
+
+**Cache**: `_cachedActiveSessions` is a `Map` keyed by the composite key
+`sessionHint|envSession|promptHint|fallback`. Distinct inputs never share cache
+entries (closes the H6 cache-leak where an unhinted call returned a previously
+cached hinted result). Tests call `_resetActiveSessionCache()` between runs.
+
+**Legacy heuristic** (opt-in via `findActiveSession({fallbackHeuristic: true})`):
+restores the pre-v12.15.0 status-pass + grace-pass + nested-org-pass behavior.
+Used only by Stop / SessionEnd hooks that legitimately need to finalize a
+terminal session (`verify-completion.cjs`, `team-stop.cjs` fallback path).
+
+**Why the deterministic chain**: under two concurrent same-directory cAgents
+sessions, the legacy heuristic actively resolved to the WRONG session (status
+pass picked newest-first; grace pass picked last-touched). The deterministic
+chain binds each hook to its own session via the payload's `input.session_id`.
+
+See `.claude/rules/core/hooks.md` § Concurrency Contract for the full hook-level
+invariants and session `run_concurrent-session-hooks_260602_001` for the
+empirical regression-test record.
 
 ## Memory Principles
 

@@ -29,36 +29,43 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, AGENT_MEMORY_DIR, findActiveSession, ensureDir } = require('./hook-utils.cjs');
+const { createHook, AGENT_MEMORY_DIR, ensureDir } = require('./hook-utils.cjs');
 
 function getSessionIdForRestore(input) {
+  // Deterministic chain per .claude/rules/core/hooks.md Concurrency Contract:
+  // explicit input.session_id → env var → null.
+  // No heuristic fallback — refusing to restore into another instance's session.
   if (input && typeof input.session_id === 'string' && input.session_id) {
     return input.session_id;
   }
   if (process.env.CAGENTS_ACTIVE_SESSION) {
     return process.env.CAGENTS_ACTIVE_SESSION;
   }
-  const dir = findActiveSession();
-  if (dir) {
-    return path.basename(dir);
-  }
   return null;
 }
 
 /**
  * Parse the simple manifest YAML format written by secret-detection.cjs.
- * Returns array of { placeholder, file_path, hash } entries.
- * Tolerant of a missing or malformed file (returns []).
+ * Returns { sessionId, entries[] }. Tolerant of missing or malformed file.
+ *
+ * WI-7 (session_id binding): the manifest header carries `session_id:` at top
+ * level. secret-restore refuses to restore when this id does not match the
+ * resolving session — closes H8 (cross-session restore).
  */
 function parseManifest(manifestPath) {
-  if (!fs.existsSync(manifestPath)) return [];
+  if (!fs.existsSync(manifestPath)) return { sessionId: null, entries: [] };
   let content;
   try {
     content = fs.readFileSync(manifestPath, 'utf8');
   } catch {
-    return [];
+    return { sessionId: null, entries: [] };
   }
   const entries = [];
+  // Extract top-level session_id (header). Use a non-list-anchored match.
+  let sessionId = null;
+  const headerLines = content.split(/\n\s*-\s+placeholder:/)[0] || '';
+  const sidMatch = headerLines.match(/^session_id:\s*"?([^"\n]+)"?/m);
+  if (sidMatch) sessionId = sidMatch[1].trim();
   // Split on the per-entry marker "  - placeholder:"
   const blocks = content.split(/\n\s*-\s+placeholder:/);
   for (let i = 1; i < blocks.length; i++) {
@@ -72,7 +79,7 @@ function parseManifest(manifestPath) {
     if (hashMatch) entry.hash = hashMatch[1].trim();
     if (entry.placeholder && entry.file_path) entries.push(entry);
   }
-  return entries;
+  return { sessionId, entries };
 }
 
 function logRestoreEvent(logEntry) {
@@ -101,7 +108,16 @@ createHook('SecretRestore', async (input) => {
     return null;
   }
 
-  const entries = parseManifest(manifestPath);
+  const { sessionId: manifestSessionId, entries } = parseManifest(manifestPath);
+
+  // WI-7: strict session_id binding. If the manifest carries a session_id
+  // (post-v12.15.0 manifests do; pre-v12.15.0 manifests do not) AND it does
+  // not match the resolving session, refuse to restore. This closes H8.
+  if (manifestSessionId && manifestSessionId !== sessionId) {
+    console.error(`[SecretRestore] manifest session_id mismatch: manifest="${manifestSessionId}" resolved="${sessionId}"; skipping (no file writes).`);
+    return null;
+  }
+
   if (entries.length === 0) {
     // Manifest exists but is empty/malformed — clean up anyway.
     try { fs.unlinkSync(manifestPath); } catch { /* best-effort */ }

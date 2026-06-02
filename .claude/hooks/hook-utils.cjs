@@ -121,86 +121,137 @@ function countPattern(content, pattern) {
 }
 
 /**
- * Find the most recent active (non-completed, non-failed) session directory.
- * Cached per process invocation (cache is keyed by sessionHint to support
- * multiple concurrent teammates).
+ * Find the active cAgents session directory.
  *
- * @param {string} [sessionHint] - Optional session_id hint (e.g., from hook input).
- *   When provided and the session exists + is active, returns it immediately.
- *   This prevents the "findActiveSession collision" bug where multiple
- *   parallel teammates' hooks all write to the same session.
+ * v12.15.0 — Deterministic resolution chain (concurrency contract):
+ *   1. `input.session_id` (passed as `sessionHint` — string or `options.sessionHint`)
+ *   2. `process.env.CAGENTS_ACTIVE_SESSION`
+ *   3. `options.promptHint` (string extracted from prompt text by callers like
+ *      subagent-tracker.cjs Pass-3)
+ *   4. `null`
+ *
+ * Each candidate is accepted only if:
+ *   - The session directory exists, AND
+ *   - Its status.yaml (or session.yaml fallback) is missing (race window) OR
+ *     in a non-terminal phase.
+ *
+ * The legacy newest-first status pass + 5-minute grace pass + nested-org
+ * subdir scan are gated behind `{fallbackHeuristic: true}` for the
+ * single-session diagnostic case. This eliminates cross-session resolution
+ * under two concurrent same-directory sessions (hazards H1, H2, H3, H6 per
+ * session run_concurrent-session-hooks_260602_001 enriched_context.yaml).
+ *
+ * Cache: `_cachedActiveSessions` is a Map keyed by the stable composite key
+ * `sessionHint|envSession|promptHint|fallback`. Distinct inputs do NOT share
+ * cache entries (H6 fix).
+ *
+ * @param {string|object} [hintOrOptions] - Either a session-hint string (legacy
+ *   shape, kept for back-compat with v12.14.0 callers) or an options object.
+ * @param {string} [hintOrOptions.sessionHint] - Same as the string-shape arg.
+ * @param {string} [hintOrOptions.promptHint] - Hint extracted from prompt
+ *   text by subagent-tracker Pass-3. Consumed AFTER env var.
+ * @param {boolean} [hintOrOptions.fallbackHeuristic] - When true, restores
+ *   the pre-v12.15.0 status-newest-first + grace + nested-org behavior.
+ *   ONLY for single-session diagnostic tooling.
+ * @returns {string|null} Absolute path to session directory, or null.
  */
-let _cachedActiveSession = undefined;
-let _cachedHint = undefined;
+let _cachedActiveSessions = new Map();
 
-function findActiveSession(sessionHint) {
-  // Pass 0: Env-var fast path — /run and /team set this for precise routing.
-  // This eliminates heuristic discovery for any agent spawned within a /run or /team
-  // pipeline, completely preventing session misrouting under concurrent legacy org_* + /team.
-  // V10.25.2 fix: also verify the env var session is NOT in a terminal state.
-  // When /run completes and /team starts in the same conversation, the env var
-  // may still point to the old /run session. Returning a completed session causes
-  // hooks (especially verify-completion) to check the wrong session.
-  const envSession = process.env.CAGENTS_ACTIVE_SESSION;
-  if (envSession) {
-    const envDir = path.join(AGENT_MEMORY_DIR, 'sessions', envSession);
-    if (fs.existsSync(envDir)) {
-      // Verify the session is not terminal before returning
-      const envStatus = safeRead(path.join(envDir, 'status.yaml'));
-      if (envStatus) {
-        const envPhase = extractYamlValue(envStatus, 'pipeline_state')
-          || extractYamlValue(envStatus, 'phase')
-          || extractYamlValue(envStatus, 'current_phase');
-        if (envPhase && TERMINAL_STATES.includes(envPhase)) {
-          console.error(`[findActiveSession] CAGENTS_ACTIVE_SESSION="${envSession}" is in terminal state "${envPhase}", falling through to heuristic`);
-          // Don't return — fall through to heuristic discovery
-        } else {
-          return envDir;
-        }
-      } else {
-        // No status.yaml yet — session just created, trust the env var
-        return envDir;
-      }
-    } else {
-      console.error(`[findActiveSession] CAGENTS_ACTIVE_SESSION="${envSession}" set but directory not found, falling through to heuristic`);
-    }
+function _makeCacheKey(sessionHint, envSession, promptHint, fallback) {
+  return `${sessionHint || ''}|${envSession || ''}|${promptHint || ''}|${fallback ? '1' : '0'}`;
+}
+
+function _tryResolveCandidate(sessionsDir, candidate) {
+  // Returns the session dir if candidate exists with non-terminal status, else null.
+  const dir = path.join(sessionsDir, candidate);
+  if (!fs.existsSync(dir)) return null;
+  const statusFile = path.join(dir, 'status.yaml');
+  const content = safeRead(statusFile) || safeRead(path.join(dir, 'session.yaml'));
+  if (!content) {
+    // Race window: dir exists but no status yet — trust the explicit hint.
+    return dir;
   }
-
-  // If we have a hint and it differs from cached, invalidate cache
-  if (sessionHint && sessionHint !== _cachedHint) {
-    _cachedActiveSession = undefined;
-    _cachedHint = sessionHint;
+  const phase = extractYamlValue(content, 'pipeline_state')
+    || extractYamlValue(content, 'phase')
+    || extractYamlValue(content, 'current_phase');
+  if (phase && TERMINAL_STATES.includes(phase)) {
+    return null; // Terminal — refuse to resolve.
   }
+  return dir;
+}
 
-  if (_cachedActiveSession !== undefined) return _cachedActiveSession;
+function findActiveSession(hintOrOptions) {
+  // Normalize args: accept legacy string OR options object.
+  let sessionHint;
+  let promptHint;
+  let fallbackHeuristic = false;
+  if (typeof hintOrOptions === 'string') {
+    sessionHint = hintOrOptions;
+  } else if (hintOrOptions && typeof hintOrOptions === 'object') {
+    sessionHint = hintOrOptions.sessionHint;
+    promptHint = hintOrOptions.promptHint;
+    fallbackHeuristic = !!hintOrOptions.fallbackHeuristic;
+  }
+  const envSession = process.env.CAGENTS_ACTIVE_SESSION || undefined;
+  const cacheKey = _makeCacheKey(sessionHint, envSession, promptHint, fallbackHeuristic);
+  if (_cachedActiveSessions.has(cacheKey)) return _cachedActiveSessions.get(cacheKey);
 
   const sessionsDir = path.join(AGENT_MEMORY_DIR, 'sessions');
   if (!fs.existsSync(sessionsDir)) {
-    _cachedActiveSession = null;
+    _cachedActiveSessions.set(cacheKey, null);
     return null;
   }
 
-  // If a session hint is provided, try it first (avoids collision between parallel teammates)
+  // Deterministic chain step 1: explicit sessionHint (from input.session_id).
   if (sessionHint) {
-    const hintDir = path.join(sessionsDir, sessionHint);
-    if (fs.existsSync(hintDir)) {
-      const statusFile = path.join(hintDir, 'status.yaml');
-      const content = safeRead(statusFile) || safeRead(path.join(hintDir, 'session.yaml'));
-      if (content) {
-        const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase') || extractYamlValue(content, 'pipeline_state');
-        if (phase && !TERMINAL_STATES.includes(phase)) {
-          _cachedActiveSession = hintDir;
-          return _cachedActiveSession;
-        }
-      }
-      // Even if no status.yaml yet (session just created), trust the hint
-      if (fs.existsSync(hintDir)) {
-        _cachedActiveSession = hintDir;
-        return _cachedActiveSession;
-      }
+    const dir = _tryResolveCandidate(sessionsDir, sessionHint);
+    if (dir) {
+      _cachedActiveSessions.set(cacheKey, dir);
+      return dir;
+    }
+    // Hint provided but unresolvable. Refuse to fall through to other instances'
+    // sessions — that is the H1/H3 cross-session leak we are closing.
+    if (!fallbackHeuristic) {
+      console.error(`[findActiveSession] sessionHint="${sessionHint}" provided but not resolvable; returning null (no heuristic fallback). Set fallbackHeuristic:true to override.`);
+      _cachedActiveSessions.set(cacheKey, null);
+      return null;
     }
   }
 
+  // Step 2: env-var.
+  if (envSession) {
+    const dir = _tryResolveCandidate(sessionsDir, envSession);
+    if (dir) {
+      _cachedActiveSessions.set(cacheKey, dir);
+      return dir;
+    }
+    if (!fallbackHeuristic) {
+      console.error(`[findActiveSession] CAGENTS_ACTIVE_SESSION="${envSession}" unresolvable (missing or terminal); returning null.`);
+      _cachedActiveSessions.set(cacheKey, null);
+      return null;
+    }
+  }
+
+  // Step 3: promptHint (for subagent-tracker Pass-3 substitute).
+  if (promptHint) {
+    const dir = _tryResolveCandidate(sessionsDir, promptHint);
+    if (dir) {
+      _cachedActiveSessions.set(cacheKey, dir);
+      return dir;
+    }
+    if (!fallbackHeuristic) {
+      _cachedActiveSessions.set(cacheKey, null);
+      return null;
+    }
+  }
+
+  // Step 4 (default): null — refuse to silently resolve to "newest active" session.
+  if (!fallbackHeuristic) {
+    _cachedActiveSessions.set(cacheKey, null);
+    return null;
+  }
+
+  // -------- LEGACY HEURISTIC PASSES (opt-in only) --------
   const sessions = fs.readdirSync(sessionsDir)
     .filter(d => SESSION_PREFIXES.some(p => d.startsWith(p)))
     .sort((a, b) => {
@@ -234,8 +285,9 @@ function findActiveSession(sessionHint) {
 
     const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase') || extractYamlValue(content, 'pipeline_state');
     if (phase && !TERMINAL_STATES.includes(phase)) {
-      _cachedActiveSession = path.join(sessionsDir, session);
-      return _cachedActiveSession;
+      const result = path.join(sessionsDir, session);
+      _cachedActiveSessions.set(cacheKey, result);
+      return result;
     }
   }
 
@@ -259,8 +311,8 @@ function findActiveSession(sessionHint) {
         const stat = fs.statSync(sessionPath);
         if (stat.mtimeMs > graceCutoff) {
           console.error(`[findActiveSession] Found recent session without status.yaml: ${session} (has: ${hasInstruction ? 'instruction' : hasBrief ? 'brief' : 'agent_tree'})`);
-          _cachedActiveSession = sessionPath;
-          return _cachedActiveSession;
+          _cachedActiveSessions.set(cacheKey, sessionPath);
+          return sessionPath;
         }
       }
     } catch { /* skip */ }
@@ -297,12 +349,20 @@ function findActiveSession(sessionHint) {
   });
 
   if (nestedResult) {
-    _cachedActiveSession = nestedResult;
-    return _cachedActiveSession;
+    _cachedActiveSessions.set(cacheKey, nestedResult);
+    return nestedResult;
   }
 
-  _cachedActiveSession = null;
+  _cachedActiveSessions.set(cacheKey, null);
   return null;
+}
+
+/**
+ * Clear the findActiveSession cache. Exposed for tests; production code rarely
+ * needs this since cache entries are keyed by full resolution input.
+ */
+function _resetActiveSessionCache() {
+  _cachedActiveSessions = new Map();
 }
 
 /**
@@ -932,6 +992,7 @@ module.exports = {
   extractYamlValue,
   countPattern,
   findActiveSession,
+  _resetActiveSessionCache,
   findMostRecentSessionDir,
   findTeamSession,
   ensureDir,

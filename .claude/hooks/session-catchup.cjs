@@ -14,6 +14,68 @@ const fs = require('fs');
 const path = require('path');
 const { createHook, AGENT_MEMORY_DIR, SESSION_PREFIXES, TERMINAL_STATES, extractYamlValue, safeRead, countPattern, ensureDir, MAX_SESSION_START_CHARS, findActiveSession } = require('./hook-utils.cjs');
 
+/**
+ * Liveness check (WI-4, session run_concurrent-session-hooks_260602_001):
+ *
+ * A session is considered LIVE (and therefore filtered OUT of the resume
+ * offer) when any of:
+ *   1. status.yaml mtime is within CAGENTS_SESSION_LIVENESS_MS (default 60s)
+ *   2. session.pid file points to a still-running PID (`kill -0`)
+ *   3. last_updated_at heartbeat field is within livenessThresholdMs
+ *
+ * The default threshold is 60s; tests override via CAGENTS_SESSION_LIVENESS_MS.
+ */
+function getLivenessThresholdMs() {
+  const v = parseInt(process.env.CAGENTS_SESSION_LIVENESS_MS || '60000', 10);
+  return Number.isFinite(v) && v >= 0 ? v : 60000;
+}
+
+function isSessionLive(sessionDir) {
+  const threshold = getLivenessThresholdMs();
+  const now = Date.now();
+
+  // Check 1: session.pid file → kill -0 liveness.
+  try {
+    const pidPath = path.join(sessionDir, 'session.pid');
+    if (fs.existsSync(pidPath)) {
+      const pidContent = fs.readFileSync(pidPath, 'utf8').trim();
+      const pid = parseInt(pidContent, 10);
+      if (Number.isFinite(pid) && pid > 0) {
+        try {
+          process.kill(pid, 0); // Signal 0: liveness probe.
+          return true;
+        } catch (e) {
+          if (e.code === 'EPERM') return true; // process exists, foreign owner — treat as live
+          // ESRCH → process dead, fall through to other checks
+        }
+      }
+    }
+  } catch { /* fall through */ }
+
+  // Check 2: status.yaml mtime within threshold.
+  try {
+    const statusFile = path.join(sessionDir, 'status.yaml');
+    if (fs.existsSync(statusFile)) {
+      const stat = fs.statSync(statusFile);
+      if (now - stat.mtimeMs < threshold) return true;
+    }
+  } catch { /* fall through */ }
+
+  // Check 3: last_updated_at heartbeat field within threshold.
+  try {
+    const statusContent = safeRead(path.join(sessionDir, 'status.yaml'));
+    if (statusContent) {
+      const heartbeat = extractYamlValue(statusContent, 'last_updated_at');
+      if (heartbeat) {
+        const parsed = Date.parse(heartbeat);
+        if (!isNaN(parsed) && now - parsed < threshold) return true;
+      }
+    }
+  } catch { /* fall through */ }
+
+  return false;
+}
+
 function findIncompleteSessions() {
   const sessionsDir = path.join(AGENT_MEMORY_DIR, 'sessions');
   if (!fs.existsSync(sessionsDir)) return [];
@@ -26,6 +88,12 @@ function findIncompleteSessions() {
 
   for (const session of sessions.slice(0, 10)) {
     const sessionDir = path.join(sessionsDir, session);
+
+    // WI-4: skip LIVE sessions (belonging to another Claude Code instance).
+    if (isSessionLive(sessionDir)) {
+      continue;
+    }
+
     const statusFile = path.join(sessionDir, 'status.yaml');
     const content = safeRead(statusFile);
 
@@ -154,7 +222,7 @@ createHook('SessionCatchup', async (input) => {
   // V11.0: removed-skill suggestions replaced with V11 canonical skill set.
   // /review and /optimize were folded into /improve --mode review|optimize|full;
   // /context and /debug were removed entirely. See docs/MIGRATION-V11.md.
-  let cagentsContext = 'cAgents V12.14.0 session initialized. Minimum Claude Code version: 2.1.69 (required for hook lifecycle events). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Agent tool subagent_type references. IMPORTANT: When spawned as a cAgents agent, self-register your agent type in workflow/agent_tree.yaml for audit trail (SubagentStart hook injects instructions). IMPORTANT: When invoking any skill (/run, /team, /improve, /designer, /helper), your FIRST action must be creating the session directory and writing status.yaml. Do NOT explore the codebase, spawn agents, or analyze the request before session init. IMPORTANT: /run and /team NEVER handle tasks themselves. They ALWAYS delegate to subagents via Agent tool. No exceptions, no matter how simple the request. For review/optimize work, use /improve --mode review|optimize|full (V11.0 unified entry point). For cross-domain strategic work, use /team strategic mode. Tip: use /helper for skill guidance and command selection.';
+  let cagentsContext = 'cAgents V12.15.0 session initialized. Minimum Claude Code version: 2.1.69 (required for hook lifecycle events). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Agent tool subagent_type references. IMPORTANT: When spawned as a cAgents agent, self-register your agent type in workflow/agent_tree.yaml for audit trail (SubagentStart hook injects instructions). IMPORTANT: When invoking any skill (/run, /team, /improve, /designer, /helper), your FIRST action must be creating the session directory and writing status.yaml. Do NOT explore the codebase, spawn agents, or analyze the request before session init. IMPORTANT: /run and /team NEVER handle tasks themselves. They ALWAYS delegate to subagents via Agent tool. No exceptions, no matter how simple the request. For review/optimize work, use /improve --mode review|optimize|full (V11.0 unified entry point). For cross-domain strategic work, use /team strategic mode. Tip: use /helper for skill guidance and command selection.';
 
   // Context Auto-Check (V10.17.0): Check for product-context.yaml
   // Inspired by impeccable's .impeccable.md auto-check pattern

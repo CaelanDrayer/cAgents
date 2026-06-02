@@ -14,7 +14,7 @@
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
-const { createHook, AGENT_MEMORY_DIR, findActiveSession, ensureDir } = require('./hook-utils.cjs');
+const { createHook, AGENT_MEMORY_DIR, ensureDir, withFileLock } = require('./hook-utils.cjs');
 
 // v12.0.4 (REC-1): opt-in sanitize-and-restore mode.
 // Default mode "block" preserves pre-v12.0.4 pure-deny semantics.
@@ -27,16 +27,14 @@ function getSecretMode() {
 }
 
 function getSessionIdForBackup(input) {
-  // Prefer explicit session_id from hook input, then env, then discovered session dir.
+  // Deterministic chain per .claude/rules/core/hooks.md Concurrency Contract:
+  // explicit input.session_id → env var → "_no-session" bucket.
+  // No heuristic fallback — refusing to silently route to another instance's session.
   if (input && typeof input.session_id === 'string' && input.session_id) {
     return input.session_id;
   }
   if (process.env.CAGENTS_ACTIVE_SESSION) {
     return process.env.CAGENTS_ACTIVE_SESSION;
-  }
-  const dir = findActiveSession();
-  if (dir) {
-    return path.basename(dir);
   }
   // Fallback: no session context — bucket under "_no-session" so the operator
   // can still find backups if a sanitize-mode hook fires outside a session.
@@ -67,25 +65,31 @@ function sanitizeContent(content, findings) {
   return { sanitized: out, placeholders };
 }
 
-function appendManifest(manifestPath, entry) {
-  let body = '';
-  if (fs.existsSync(manifestPath)) {
-    body = fs.readFileSync(manifestPath, 'utf8');
-  } else {
-    body = 'schema_version: "1"\nentries:\n';
-  }
-  // Append a YAML list entry — keep formatting trivial (no YAML lib).
-  const lines = [
-    `  - placeholder: "${entry.placeholder}"`,
-    `    file_path: "${entry.file_path}"`,
-    `    line_range: "${entry.line_range}"`,
-    `    hash: "${entry.hash}"`,
-    `    secret_type: "${entry.secret_type}"`,
-    `    severity: "${entry.severity}"`,
-    `    captured_at: "${entry.captured_at}"`,
-    ''
-  ].join('\n');
-  fs.writeFileSync(manifestPath, body + lines);
+function appendManifest(manifestPath, entry, sessionId) {
+  // WI-7 (session_id binding) + WI-5 (lock around append). The manifest now
+  // carries a top-level `session_id:` field; secret-restore.cjs refuses to
+  // restore from any manifest whose session_id does not match the resolving
+  // session. This closes H8 (cross-session restore).
+  withFileLock(manifestPath, () => {
+    let body = '';
+    if (fs.existsSync(manifestPath)) {
+      body = fs.readFileSync(manifestPath, 'utf8');
+    } else {
+      body = `schema_version: "1"\nsession_id: "${sessionId || '_no-session'}"\nentries:\n`;
+    }
+    // Append a YAML list entry — keep formatting trivial (no YAML lib).
+    const lines = [
+      `  - placeholder: "${entry.placeholder}"`,
+      `    file_path: "${entry.file_path}"`,
+      `    line_range: "${entry.line_range}"`,
+      `    hash: "${entry.hash}"`,
+      `    secret_type: "${entry.secret_type}"`,
+      `    severity: "${entry.severity}"`,
+      `    captured_at: "${entry.captured_at}"`,
+      ''
+    ].join('\n');
+    fs.writeFileSync(manifestPath, body + lines);
+  });
 }
 
 // Protected system paths (merged from pre-write.sh)
@@ -363,7 +367,7 @@ createHook('SecretDetection', async (input) => {
           secret_type: p.type,
           severity: p.severity,
           captured_at: capturedAt
-        });
+        }, sessionId);
       }
 
       // 4. Deny the original Write/Edit; sanitized file is already on disk.

@@ -70,6 +70,15 @@ See @resources/hook-catalog.md for the full per-hook detail (matchers, inputs, o
 | `ConfigChange` | Config source | `user_settings`, `project_settings`, `local_settings`, `skills` |
 | `UserPromptSubmit`, `Stop`, `StopFailure`, `TeammateIdle`, `TaskCompleted`, `InstructionsLoaded`, `WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `FileChanged`, `PostCompact` | *(no matcher)* | Always fires on every occurrence |
 
+## Concurrency Contract (v12.15.0+)
+
+Under two concurrent same-directory cAgents sessions, every hook MUST satisfy
+four invariants: deterministic session resolution via `findActiveSession(input.session_id)`,
+lock-protected shared-file writes, liveness-aware session-catchup, and
+session-id-bound secret restore. See @.claude/rules/playbooks/pat-concurrent-session-hooks.md
+for the full contract, default resolution chain, regression tests, and the
+narrow `fallbackHeuristic: true` opt-in cases for Stop/SessionEnd hooks.
+
 ## createHook() Factory
 
 All hooks use the `createHook(name, handler)` factory from `hook-utils.cjs`:

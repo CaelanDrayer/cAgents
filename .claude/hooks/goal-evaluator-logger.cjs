@@ -31,7 +31,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findActiveSession } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, withFileLock } = require('./hook-utils.cjs');
 
 /**
  * Extract /goal state from the Stop hook input payload.
@@ -112,8 +112,9 @@ createHook('GoalEvaluatorLogger', async (input) => {
     });
 
     // Append with two-space indent so each entry sits under `entries:`.
+    // WI-5: lock around append to prevent interleaving from concurrent hook procs.
     const indented = entry.split('\n').map((l) => l ? '  ' + l : l).join('\n');
-    fs.appendFileSync(logFile, indented);
+    withFileLock(logFile, () => { fs.appendFileSync(logFile, indented); });
   } catch (error) {
     // Log to stderr but never block — this is purely advisory signal capture.
     console.error(`[GoalEvaluatorLogger] Failed to append: ${error.message}`);
