@@ -72,44 +72,12 @@ See @resources/hook-catalog.md for the full per-hook detail (matchers, inputs, o
 
 ## Concurrency Contract (v12.15.0+)
 
-When two cAgents sessions run in the same project directory at the same time
-(e.g., two `/run` invocations, or `/run` + `/team`), every hook fired by EITHER
-instance MUST satisfy four invariants:
-
-1. **Deterministic resolution**: every hook resolves to its own session
-   deterministically via `findActiveSession(input.session_id)` (or the option-bag
-   form). Hooks do NOT fall through to "newest active" heuristics by default. The
-   legacy heuristic is gated behind `findActiveSession({fallbackHeuristic: true})`
-   for Stop / SessionEnd hooks that legitimately finalize terminal sessions.
-2. **Session-scoped, lock-protected shared writes**: every append to
-   `workflow/agent_tree.yaml`, `workflow/file_changes.log`, `workflow/tool_failures.yaml`,
-   `team/task_list.yaml`, `workflow/goal_evaluator_log.yaml`, and the secret
-   manifest (`_system/secret-backups/{sid}/manifest.yaml`) is wrapped in
-   `withFileLock(filePath, fn)`. The lock key is the file path, so distinct
-   sessions never contend; same-session concurrent writers serialize.
-3. **Liveness-aware session-catchup**: `session-catchup.cjs` filters LIVE
-   sessions out of the SessionStart resume offer. A session is LIVE when its
-   `session.pid` file holds a still-running PID OR its `status.yaml` mtime /
-   `last_updated_at` heartbeat is within `CAGENTS_SESSION_LIVENESS_MS` (default
-   60s). This closes cross-instance resume leakage.
-4. **Session-id-bound secret restore**: `secret-detection.cjs` stamps
-   `session_id:` at the top of the secret manifest; `secret-restore.cjs` refuses
-   to restore from any manifest whose `session_id` does not match the resolving
-   session. Mismatched manifests log a stderr warning and abort without file
-   writes.
-
-Regression tests pinning these invariants:
-
-- `tests/hooks/find-active-session-deterministic.test.js` — chain ordering + cache
-- `tests/hooks/concurrent-appends.test.js` — 10 concurrent agent_tree.yaml writers
-- `tests/hooks/session-catchup-liveness.test.js` — LIVE filter + PID liveness
-- `tests/v12/concurrent-sessions-no-crosswrite.test.js` — end-to-end two-session
-  cross-write asserter (5 cases)
-
-The empirical record is session `run_concurrent-session-hooks_260602_001` in
-`cagents-memory/sessions/`. Hook authors MUST consume `input.session_id` first
-and reach for `fallbackHeuristic: true` only when explicitly finalizing terminal
-sessions.
+Under two concurrent same-directory cAgents sessions, every hook MUST satisfy
+four invariants: deterministic session resolution via `findActiveSession(input.session_id)`,
+lock-protected shared-file writes, liveness-aware session-catchup, and
+session-id-bound secret restore. See @.claude/rules/playbooks/pat-concurrent-session-hooks.md
+for the full contract, default resolution chain, regression tests, and the
+narrow `fallbackHeuristic: true` opt-in cases for Stop/SessionEnd hooks.
 
 ## createHook() Factory
 

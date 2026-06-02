@@ -10,6 +10,85 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.15.0] - 2026-06-02
+
+Concurrent-Session Hook Resilience: hardens cAgents hooks against two
+concurrent same-directory sessions so hooks fired by instance A never read
+or write instance B's session tree. Driven by session
+`run_concurrent-session-hooks_260602_001`.
+
+Minor bump (not patch) per the tiny-bump cadence: multi-hook refactor
+(~8 hooks + 4 docs/tests + version-sync), behavioral changes to
+`findActiveSession`, new manifest schema field, new env var.
+
+### Added
+
+- **WI-2**: `findActiveSession({sessionHint, promptHint, fallbackHeuristic})`
+  option-bag overload in `.claude/hooks/hook-utils.cjs`. The default chain
+  is now deterministic: `sessionHint` → `CAGENTS_ACTIVE_SESSION` →
+  `promptHint` → `null`. The legacy status-newest-first / 5-minute-grace /
+  nested-org passes are gated behind `{fallbackHeuristic: true}`.
+- **WI-2**: composite cache key on `_cachedActiveSessions` Map
+  (`sessionHint|envSession|promptHint|fallback`); `_resetActiveSessionCache()`
+  exposed for tests.
+- **WI-4**: `session-catchup.cjs` liveness filter — LIVE sessions are
+  filtered out of the resume offer. Liveness = `session.pid` `kill -0`
+  alive OR `status.yaml` mtime / `last_updated_at` within
+  `CAGENTS_SESSION_LIVENESS_MS` (default 60s).
+- **WI-5**: `withFileLock` wrapping around `goal_evaluator_log.yaml`
+  appends and the secret-backup `manifest.yaml` writes.
+- **WI-6**: `tests/v12/concurrent-sessions-no-crosswrite.test.js` (5
+  cases) — end-to-end two-session regression asserter.
+- **WI-2 tests**: `tests/hooks/find-active-session-deterministic.test.js`
+  (7 cases).
+- **WI-4 tests**: `tests/hooks/session-catchup-liveness.test.js` (2 cases).
+- **WI-5 tests**: `tests/hooks/concurrent-appends.test.js` (10-process
+  stress).
+- **WI-7**: `session_id` top-level field in secret manifests; strict
+  match check in `secret-restore.cjs` (closes H8 cross-session restore).
+
+### Changed
+
+- **WI-3**: `secret-detection.cjs`, `secret-restore.cjs` drop bare
+  `findActiveSession()` fallbacks (no longer route to "newest active"
+  session under concurrency).
+- **WI-3**: `goal-evaluator-logger.cjs` log appends locked.
+- **WI-3 / WI-2 follow-up**: `team-stop.cjs` (SessionEnd) resolves
+  session strictly via `input.session_id` direct path when provided,
+  then falls back to `findActiveSession({fallbackHeuristic: true})` —
+  SessionEnd legitimately finalizes terminal sessions.
+- **WI-8**: `.claude/rules/memory/agent-memory.md` Session Discovery
+  Internals section rewritten to describe the deterministic chain.
+- **WI-8**: `.claude/rules/core/hooks.md` adds a new top-level
+  "Concurrency Contract (v12.15.0+)" subsection with four invariants and
+  the pinning regression tests.
+
+### Regression test (CLAUDE.md mandate)
+
+- `tests/v12/concurrent-sessions-no-crosswrite.test.js` was committed in
+  RED state before any WI-2/3/5/7 fixes landed (`git log` shows the test
+  predates the fix). All 5 cases turned GREEN after WI-2 + WI-3 + WI-7.
+
+### Hazards closed
+
+- H1 (env-var leakage cross-instance) — WI-2 chain prioritizes
+  `input.session_id` over `CAGENTS_ACTIVE_SESSION`.
+- H2 (grace-pass non-determinism) — WI-2 gates grace-pass behind opt-in.
+- H3 (status-pass newest-first cross-session) — WI-2 default returns
+  null instead of falling through.
+- H4 (session-catchup cross-instance resume) — WI-4 liveness filter.
+- H5 (unlocked shared-file appends) — WI-5 + WI-7 wraps remaining
+  unlocked writes.
+- H6 (per-process cache staleness) — WI-2 composite cache key.
+- H8 (secret-restore cross-session restore) — WI-7 session_id binding.
+
+### Hazards NOT closed (deferred)
+
+- H7 (heartbeat staleness) — partially addressed via liveness's
+  threshold check; full coverage would require every hook to call
+  `updateStatusHeartbeat`. Deferred — see WI-4 acceptance criteria
+  for the next pass.
+
 ## [12.14.0] - 2026-06-01
 
 Cross-Teammate Request Pattern: `/team` teammates can now ask the lead to
