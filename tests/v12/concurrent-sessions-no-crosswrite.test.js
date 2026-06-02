@@ -131,7 +131,7 @@ describe('Concurrent sessions: no cross-write (WI-6)', () => {
   });
 
   it('interleaved spawns: A and B agent_trees disjoint in agent ids', () => {
-    // Alternate A and B subagent spawns
+    // Alternate A and B subagent spawns (4 spawns × ~3s each → need 30s timeout)
     for (let i = 0; i < 4; i++) {
       const target = i % 2 === 0 ? SESSION_A : SESSION_B;
       const other = i % 2 === 0 ? SESSION_B : SESSION_A;
@@ -154,7 +154,7 @@ describe('Concurrent sessions: no cross-write (WI-6)', () => {
     expect(bTree).toMatch(new RegExp(`agent-${SESSION_B}-1`));
     expect(bTree).toMatch(new RegExp(`agent-${SESSION_B}-3`));
     expect(bTree).not.toMatch(new RegExp(`agent-${SESSION_A}-`));
-  });
+  }, 30000);
 
   it('secret-restore refuses to restore from a manifest whose session_id ≠ resolved session (H8 fix)', () => {
     // Craft a manifest under session B's backup dir, but stamped with session A's id.
