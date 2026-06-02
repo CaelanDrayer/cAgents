@@ -10,6 +10,135 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.13.0] - 2026-06-01
+
+Coherent hook-system audit remediation pass. Addresses 18 of 106 findings
+from session `team_hooks-review_260602_001` (the upstream audit; report at
+`cagents-memory/sessions/team_hooks-review_260602_001/outputs/wave-4/wi-12-audit-report.md`).
+Driven by orchestration session `run_fix-hook-audit-findings_260602_001`.
+
+Minor bump (not patch) per the tiny-bump cadence: the non-sync diff is 14
+files (>5-file cap), so the audit-consolidation exception in
+`.claude/rules/core/version-registry.md` § Tiny-Bump Cadence applies.
+
+### Fixed (HIGH, 9 of 9 applied)
+
+- **H-1**: `.claude/hooks/tool-failure-tracker.cjs` no longer emits
+  `systemMessage` or `hookSpecificOutput.additionalContext` from its
+  `PostToolUseFailure` branches. Warnings surface via `console.error`
+  (stderr → verbose mode) only. Restores the thinking-block-immutability
+  contract introduced in `run_team-thinking-400_260531_001` to a 7th hook
+  that was overlooked in the original v12.x sweep. Regression test:
+  `tests/v12/hook-thinking-block-contract.test.js` (extended to include
+  the new 7th hook; 36 tests pass).
+- **H-2**: `hook-catalog.md` controller-delegation-validator entry now
+  documents the actual HARD-DENY semantics for protected paths (`src/`,
+  `lib/`, `components/`, `app/`, `services/`, `middleware/`) under
+  `CAGENTS_DELEGATION_ENFORCEMENT=block` (the default), replacing the
+  inaccurate "advisory only" prose.
+- **H-3**: `hook-catalog.md` session-init-gate entry now documents the
+  phase-1 session-presence gate's `denyWithReason()` path, replacing the
+  inaccurate "does not block" prose. Phases 2-3 (alias / data-access-level)
+  remain advisory.
+- **H-4**: `.claude/hooks/secret-detection.cjs:325` gained a clarifying
+  code comment explaining the deliberate write-before-deny sanitize-mode
+  ordering, cross-referencing `SECRET-SANITIZE.md` so reviewers don't
+  "fix" the ordering.
+- **H-5**: `.claude/hooks/secret-detection.cjs:173` Cloudflare-37-hex
+  pattern downgraded from `high` → `medium` severity. The bare-hex
+  pattern false-positives on truncated git commit SHAs, oversized random
+  hex IDs, and test fixtures; at `high` it would block legitimate
+  Write/Edit calls on those false positives. The high-confidence
+  `Cloudflare API Key` pattern (with `cloudflare`/`CF_API_KEY` context
+  anchor) above it remains `critical`.
+- **H-6**: `hook-catalog.md` SessionEnd: team-stop.cjs entry rewritten to
+  document all four phases (agent_tree cleanup, execution_summary
+  generation, team metrics, pattern extractor) instead of just the team
+  metrics phase. Also documents the new `'SessionEnd'` factory label.
+- **H-7 + H-8 (option a)**: `hook-catalog.md` permission-handler entry
+  rewritten to document the actual "defers to settings.json
+  permissions.allow/deny" behavior, the HITL silent-bypass risk, and the
+  always-returns-null implementation. Option (b) — adding explicit
+  `permissionDecision: "ask"` for HITL paths — is deferred (see
+  `outputs/deferral_list.md`).
+- **H-9**: `.claude/rules/core/hooks.md:56` "Five events" → "Four events"
+  with ConfigChange removed from the unwired list (ConfigChange was
+  wired in LP-17 v12.7.0 via `config-change-logger.cjs`).
+
+### Fixed (MEDIUM + RENAME, 10 of 32 applied)
+
+- **M-1**: `.claude/hooks/bash-validator.cjs` removed redundant `'su -'`
+  entry (already covered by `'su '` substring match).
+- **M-7**: `.claude/hooks/controller-delegation-validator.cjs`
+  `CONTROLLER_TYPES` array deduplicated (`'tech-lead'` appeared twice).
+- **M-9**: `.claude/hooks/approval-gate.cjs:19` removed dead-code
+  declaration `const yaml = require !== undefined ? null : null;`
+  (always null, never used).
+- **M-18**: `.claude/hooks/instructions-loaded.cjs`
+  `EXPECTED_RULES_DIRS` array now includes `'playbooks'` (added in
+  v12.4.0 directory layout).
+- **M-19**: `.claude/hooks/pre-compact-save.cjs` waypoint write now
+  wraps `fs.writeFileSync` in try/catch + `fs.mkdirSync({recursive:
+  true})` to guard against silent waypoint loss.
+- **M-22**: `.claude/hooks/subagent-stop-tracker.cjs` no longer parses
+  `agent_tree.yaml` twice per SubagentStop event — the parsed object
+  and matching agent entry are cached across the lock-bracketed
+  mutation block and the downstream performance-logging block.
+- **M-24 [REAL BUG]**: `.claude/hooks/team-stop.cjs:233` agent_count
+  computation no longer uses the buggy `match(/- agent_id:/g)` regex
+  that always returned 0 (subagent-tracker writes entries as `- id:`).
+  Now uses `yaml.load(treeContent).agents.length` with a corrected
+  `match(/^\s*- id:/gm)` regex fallback when js-yaml is unavailable.
+  Regression test: `tests/v12/team-stop-agent-count.test.js`
+  (3 tests pass; fails on pre-fix HEAD).
+- **M-27**: `.claude/hooks/stop-failure-handler.cjs` recovery-state
+  YAML error_message/error_type fields now also escape `\n`/`\r` and
+  backslashes (previously only `"` was escaped, breaking YAML parse on
+  multi-line error inputs).
+- **M-30**: `.claude/hooks/eval-runner.cjs` `.js` → `.cjs` in inline
+  help text and JSDoc usage examples.
+- **M-31**: `.claude/hooks/eval-runner.cjs` removed unimplemented
+  `--type decomposition` and `--daily-report` flags from `--help`
+  output.
+- **RENAME (label-only)**: `.claude/hooks/team-stop.cjs:265` createHook
+  factory label `'SessionStop'` → `'SessionEnd'` to match the
+  registered event. Eliminates 1 of 2 mismatches in the 3-name
+  inconsistency (filename rename `team-stop.cjs` → `session-end.cjs`
+  is deferred — see `outputs/deferral_list.md`).
+
+### Added
+
+- **Regression test**: `tests/v12/hook-thinking-block-contract.test.js`
+  extended to include `tool-failure-tracker.cjs` as a 7th
+  thinking-block-contract-protected hook (was 6 hooks pre-v12.13.0).
+- **Regression test**: `tests/v12/team-stop-agent-count.test.js` (new
+  file) locks the M-24 fix with a fixture in the actual shape
+  `subagent-tracker.cjs` writes and a source-level guard against the
+  old buggy regex pattern.
+- **Deferral doc**:
+  `cagents-memory/sessions/run_fix-hook-audit-findings_260602_001/outputs/deferral_list.md`
+  enumerates all 91 deferred findings (24 MEDIUM + 65 LOW + 1 HIGH
+  option b + 1 RENAME filename) with rationale and
+  future-consideration tracking.
+
+### Deferred
+
+- **24 of 32 MEDIUM findings** (refactor-class or design-discussion-class):
+  M-2, M-3, M-4, M-5, M-6, M-8, M-10, M-11, M-12, M-13, M-14, M-15,
+  M-16, M-17, M-20, M-21, M-23 (filename portion), M-25, M-26, M-28,
+  M-29, M-32. See `outputs/deferral_list.md` for category groupings
+  (Q3 secret-detection hardening, Q3 YAML-as-regex migration sprint,
+  hook-utils dedupGuard redesign, etc.).
+- **All 65 LOW findings** (cosmetic-only; single-bump risk exceeds
+  value). Categorized in the deferral doc for periodic LOW-sweep
+  tiny-bumps.
+- **HIGH H-7/H-8 option (b)**: explicit `permissionDecision: "ask"`
+  branches in `permission-handler.cjs` for HITL paths. Behavioral
+  change; needs design discussion.
+- **RENAME (filename)**: `team-stop.cjs` → `session-end.cjs`. Requires
+  synchronized edits in `.claude/settings.json` + `run-hook.cjs` + docs;
+  separate atomic bump preserves tiny-bump atomicity.
+
 ## [12.12.1] - 2026-06-01
 
 Follow-up patch to v12.12.0. Addresses 5 v12.13.x-deferred items from

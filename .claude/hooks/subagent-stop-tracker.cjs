@@ -170,6 +170,14 @@ createHook('SubagentStopTracker', async (input) => {
 
   const treeFile = path.join(sessionDir, 'workflow', 'agent_tree.yaml');
 
+  // M-22 (v12.12.2): cache the parsed agent_tree across the lock-bracketed
+  // mutation block and the downstream performance-logging block. Previously
+  // the file was read+yaml.load'd twice per stop event (here and at line ~247)
+  // which is wasteful for sessions with many agents. Capture parsedObj +
+  // agentEntry in the outer scope.
+  let cachedParsedObj = null;
+  let cachedAgentEntry = null;
+
   // Lock the tree file for the entire read-modify-write cycle to prevent
   // race conditions when multiple agents stop concurrently.
   withFileLock(treeFile, () => {
@@ -233,6 +241,10 @@ createHook('SubagentStopTracker', async (input) => {
     // Write back using yaml.dump (consistent with subagent-tracker.cjs)
     fs.writeFileSync(treeFile, yaml.dump(parsedObj));
     console.error(`[SubagentStopTracker] Agent ${agentId} (${subagentType}) stopped`);
+
+    // M-22 (v12.12.2): cache for the downstream performance-logging block.
+    cachedParsedObj = parsedObj;
+    cachedAgentEntry = agentEntry;
   });
 
   // --- Agent performance JSONL logging ---
@@ -240,10 +252,17 @@ createHook('SubagentStopTracker', async (input) => {
     const knowledgeDir = path.join(AGENT_MEMORY_DIR, '_knowledge', 'learning');
     fs.mkdirSync(knowledgeDir, { recursive: true });
 
-    // Read agent_tree to extract duration and cagents_type for this agent (using YAML parser)
+    // Read agent_tree to extract duration and cagents_type for this agent.
+    // M-22 (v12.12.2): prefer the cached parsedObj + agentEntry from the
+    // mutation block above; only fall back to a fresh read+parse if the
+    // cached values are unavailable (e.g., the mutation block returned
+    // early before caching, such as on "Agent already has stopped_at, skipping").
     let durationSeconds = null;
     let cagentsType = null;
-    if (sessionDir) {
+    if (cachedAgentEntry) {
+      if (typeof cachedAgentEntry.duration_seconds === 'number') durationSeconds = cachedAgentEntry.duration_seconds;
+      if (cachedAgentEntry.cagents_type) cagentsType = String(cachedAgentEntry.cagents_type).trim();
+    } else if (sessionDir) {
       const treeContent = safeRead(path.join(sessionDir, 'workflow', 'agent_tree.yaml'));
       if (treeContent) {
         try {

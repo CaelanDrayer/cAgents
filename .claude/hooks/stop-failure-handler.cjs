@@ -88,8 +88,8 @@ session_id: "${sessionName}"
 event: stop_failure
 
 failure:
-  error_message: "${errorMessage.replace(/"/g, '\\"').slice(0, 500)}"
-  error_type: "${errorType.replace(/"/g, '\\"')}"
+  error_message: "${errorMessage.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\r?\n/g, '\\n').slice(0, 500)}"
+  error_type: "${errorType.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\r?\n/g, '\\n')}"
 
 workflow_state:
   phase: "${currentPhase}"

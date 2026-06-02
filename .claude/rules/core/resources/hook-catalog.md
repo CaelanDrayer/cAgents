@@ -13,9 +13,13 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 
 ### SessionEnd: team-stop.cjs
 
-- **Purpose**: Finalize team metrics and update session status.
-- **Also**: Session cleanup (replaces on-session-end.sh).
-- **Updates**: `status.yaml`, `metrics/timing.yaml`.
+- **Purpose**: Multi-phase session teardown. Despite the filename, the hook runs for ALL session types (not just team_*).
+- **Phase 1 — Agent tree cleanup (all session types)**: Marks any unstopped agents in `workflow/agent_tree.yaml` with `stopped_at` and computes `duration_seconds` from `spawned_at`. Uses `yaml.load` with a regex fallback.
+- **Phase 2 — execution_summary.yaml generation (all session types)**: If `workflow/execution_summary.yaml` does not already exist, writes a minimal summary with `session_id`, `final_state`, `status`, `agent_count` (parsed via `yaml.load` of `agent_tree.yaml`; corrected in v12.12.2 — previously used a regex against the wrong key), `duration_seconds`, `started_at`, `completed_at`. Skill-generated summaries are not overwritten.
+- **Phase 3 — Team metrics + status (team_* sessions only)**: Finalizes `team/metrics/timing.yaml` (sets `completed_at`, `total_duration_seconds`), reads `team/task_list.yaml` for items_completed/total, reads `team/metrics/parallelism.yaml` for speedup_factor, then updates `status.yaml` (`phase: completed`, `pipeline_state: VALIDATED`, `result: success|partial`).
+- **Phase 4 — Pattern extractor (24h throttle, fire-and-forget)**: Conditionally spawns `scripts/knowledge/pattern-extractor.cjs extract --save` as a detached child process if `_knowledge/patterns/.last-extracted` is older than 24h. Honors `CAGENTS_PATTERN_EXTRACTOR_OVERRIDE` for tests. Never blocks team-stop.
+- **createHook label**: `'SessionEnd'` (matches the registered event name; was `'SessionStop'` pre-v12.12.2 — corrected to eliminate the source-vs-event 3-name mismatch).
+- **Updates**: `workflow/agent_tree.yaml`, `workflow/execution_summary.yaml`, `team/metrics/timing.yaml`, `status.yaml`, `_knowledge/patterns/.last-extracted`.
 
 ## Tool Validation
 
@@ -54,9 +58,10 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 ### PreToolUse[Write|Edit]: controller-delegation-validator.cjs
 
 - **Matcher**: `Write|Edit`
-- **Purpose**: Warn when controller-tier agents write to implementation files instead of delegating.
-- **Detects**: Active controller from agent_tree.yaml, implementation file patterns.
-- **Output**: systemMessage warning (does not block — advisory only).
+- **Purpose**: Enforce the aggressive-delegation rule from `.claude/rules/core/delegation.md`. Controllers (tech-lead, architect, marketing-strategist, etc.) coordinate via Agent tool; they must NOT Write/Edit implementation files in protected paths.
+- **Detects**: Active controller from `workflow/agent_tree.yaml`, implementation file patterns.
+- **Output (HARD-DENY for protected paths)**: Returns `permissionDecision: "deny"` for Write/Edit targeting `src/`, `lib/`, `components/`, `app/`, `services/`, `middleware/` when in `block` mode. The DENY fires regardless of whether an active controller is detected — `CAGENTS_DELEGATION_ENFORCEMENT=block` is the canonical environment toggle (default in cAgents). To downgrade to warn-only, set `CAGENTS_DELEGATION_ENFORCEMENT=warn`. Workflow files (`workflow/*.yaml`, `coordination_log.yaml`) and `cagents-memory/` writes are always allowed.
+- **Output (advisory for non-protected paths)**: `systemMessage` warning when an active controller writes outside the protected list.
 
 ### PreToolUse[Bash|Write|Edit]: approval-gate.cjs
 
@@ -73,8 +78,10 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 ### PreToolUse[Agent]: session-init-gate.cjs
 
 - **Matcher**: `Agent`
-- **Purpose**: Guard that ensures session initialization is complete before allowing agent spawns.
-- **Output**: Advisory systemMessage (does not block).
+- **Purpose**: Multi-phase guard before any Agent spawn. Phase 1 (session-presence gate) DENIES; phases 2-3 (alias and data-access-level checks) are advisory.
+- **Output (Phase 1 — session-presence gate)**: Calls `denyWithReason()` when no active session directory exists (`findActiveSession` returns null and no `CAGENTS_SESSION_ID` bypass is set). This actively blocks agent spawns that would have no session to write into.
+- **Output (Phases 2-3 — alias / data-access-level)**: Advisory `systemMessage` only (does not block). Phase 2 resolves `cagents:*` aliases via `v12-aliases.yaml`. Phase 3 warns when a `trusted`-tier agent spawns an `unverified`-tier child.
+- **Bypass**: Set `CAGENTS_SESSION_ID` to skip the presence gate during tests or out-of-session work.
 
 ### PreToolUse[Write|Edit]: skill-size-monitor.cjs
 
@@ -152,8 +159,10 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 
 ### PermissionRequest: permission-handler.cjs
 
-- **Purpose**: Auto-approve safe patterns (Read, Grep, Glob), HITL gates for tier 4.
-- **Auto-approved**: Read, Grep, Glob, TaskList, TaskGet; Write/Edit to cagents-memory.
+- **Purpose**: Logs permission requests for HITL audit but DEFERS all approval decisions to `.claude/settings.json` `permissions.allow` / `permissions.deny`. The hook returns `null` in every branch — it does not actively emit `permissionDecision: "allow"` or `permissionDecision: "deny"` itself.
+- **Actual auto-approval source**: `.claude/settings.json:permissions.allow` patterns (Read, Grep, Glob, TaskList, TaskGet, Write/Edit to `cagents-memory/`, etc.). The hook does NOT independently auto-approve these; it simply does not interfere with the default settings.json flow.
+- **HITL gates for tier 4**: Currently the hook logs HITL-relevant requests to stderr but does NOT emit `permissionDecision: "ask"` to make the gate load-bearing. If the default Claude Code permission flow doesn't already prompt (e.g., the user has the path in `permissions.allow`), the HITL gate is silently bypassed.
+- **Design note (H-7/H-8 from audit team_hooks-review_260602_001)**: The hook's name suggests it makes permission decisions; in practice it functions as a permission-request *logger* for HITL audit. The option of adding explicit `permissionDecision: "ask"` returns for HITL paths is deferred to a future code-change tiny-bump (see `outputs/deferral_list.md` in the audit-remediation session). For now, HITL enforcement relies on settings.json patterns + default-flow prompting.
 
 ## State Management
 

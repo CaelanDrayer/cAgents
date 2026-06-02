@@ -169,8 +169,17 @@ trigger: context_compaction
 
   waypointContent += `\nrecovery:\n  read_files:\n    - status.yaml\n    - workflow/plan.yaml\n    - workflow/coordination_log.yaml\n  resume_phase: ${phase}\n  next_action: "${getNextAction(phase, coordState)}"\n`;
 
-  fs.writeFileSync(waypointFile, waypointContent);
-  console.error(`[PreCompact] Saved waypoint ${waypointId} (phase: ${phase})`);
+  // M-19 (v12.12.2): wrap waypoint write in try/catch + ensure parent dir exists.
+  // The createHook factory swallows uncaught throws into {continue:true}, but
+  // the waypoint is the load-bearing pre-compact resume artifact — silently
+  // dropping it on an ENOENT (missing waypoints/ dir) means no resume.
+  try {
+    fs.mkdirSync(path.dirname(waypointFile), { recursive: true });
+    fs.writeFileSync(waypointFile, waypointContent);
+    console.error(`[PreCompact] Saved waypoint ${waypointId} (phase: ${phase})`);
+  } catch (e) {
+    console.error(`[PreCompact] FAILED to save waypoint ${waypointId}: ${e.message}`);
+  }
 
   // thinking-400 fix (run_team-thinking-400_260531_001): PreCompact fires
   // immediately before context compaction rewrites the conversation —

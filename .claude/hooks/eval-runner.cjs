@@ -9,9 +9,13 @@
  * 100% Self-Contained: Uses only built-in Node.js modules.
  *
  * Usage:
- *   node eval-runner.js --session <session_id>
- *   node eval-runner.js --session <session_id> --type decomposition
- *   node eval-runner.js --daily-report
+ *   node eval-runner.cjs --session <session_id>
+ *
+ * NOTE (M-30 / M-31 from audit team_hooks-review_260602_001): historical help
+ * text advertised --type and --daily-report flags that the arg parser does
+ * not implement. Those flags have been removed from the help output as of
+ * v12.12.2. If implementation is added later, restore the flags here and
+ * extend the parser around line 380.
  */
 
 // CRITICAL: Wrap everything in try-catch for resilience
@@ -295,7 +299,7 @@ function generateReport(sessionId, decomp, coord) {
   return `# Evaluation Report
 session_id: "${sessionId}"
 generated_at: "${timestamp}"
-evaluator: eval-runner.js
+evaluator: eval-runner.cjs
 version: "9.0.0"
 
 overall:
@@ -385,10 +389,10 @@ if (!sessionId) {
   console.log('cAgents Evaluation Runner');
   console.log('');
   console.log('Usage:');
-  console.log('  node eval-runner.js --session <session_id>');
+  console.log('  node eval-runner.cjs --session <session_id>');
   console.log('');
   console.log('Example:');
-  console.log('  node eval-runner.js --session run_fix-auth_260127_001');
+  console.log('  node eval-runner.cjs --session run_fix-auth_260127_001');
   process.exit(0);
 }
 

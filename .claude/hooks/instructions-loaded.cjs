@@ -16,7 +16,9 @@ const path = require('path');
 const { createHook, PLUGIN_ROOT, findActiveSession, safeRead, extractYamlValue } = require('./hook-utils.cjs');
 
 // Expected rules subdirectories (relative to .claude/rules/)
-const EXPECTED_RULES_DIRS = ['core', 'domains', 'quality', 'memory', 'infrastructure'];
+// M-18 (v12.12.2): added 'playbooks' to match the v12.4.0 rules directory layout
+// (.claude/rules/playbooks/ holds pat-*.md cross-agent guidance referenced via @path).
+const EXPECTED_RULES_DIRS = ['core', 'domains', 'quality', 'memory', 'infrastructure', 'playbooks'];
 
 /**
  * Count .md files recursively under a directory.

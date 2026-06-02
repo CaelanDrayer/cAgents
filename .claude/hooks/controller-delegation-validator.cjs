@@ -32,7 +32,7 @@ function getEnforcementMode() {
 
 // Known controller agent types (tier: controller in their SKILL.md)
 const CONTROLLER_TYPES = [
-  'tech-lead', 'architect', 'tech-lead', 'vp-engineering',
+  'tech-lead', 'architect', 'vp-engineering',  // M-7 (v12.12.2): removed duplicate 'tech-lead' entry
   'backend-lead', 'frontend-lead', 'infrastructure-lead', 'security-lead', 'qa-lead', 'data-lead',
   'narrative-director', 'story-architect', 'editor',
   'operations-manager', 'product-owner', 'strategic-planner', 'marketing-strategist',

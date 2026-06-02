@@ -16,7 +16,9 @@
 const { createHook, safeRead, denyWithReason } = require('./hook-utils.cjs');
 const fs = require('fs');
 const path = require('path');
-const yaml = require !== undefined ? null : null; // We'll parse YAML manually
+// M-9 (v12.12.2): removed dead-code `const yaml = require !== undefined ? null : null;`
+// declaration — `yaml` was always null and never used; the file parses YAML
+// manually via regex (see parsePolicyFile() below).
 
 // ---------------------------------------------------------------------------
 // Helpers

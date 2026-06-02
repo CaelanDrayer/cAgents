@@ -224,13 +224,28 @@ function generateExecutionSummary(sessionDir, now) {
     status = 'partial';
   }
 
-  // Count agents from agent_tree.yaml
+  // Count agents from agent_tree.yaml.
+  // Fix M-24 (audit team_hooks-review_260602_001): subagent-tracker.cjs writes
+  // entries as `- id:` (not `- agent_id:`), so the previous regex always returned 0.
+  // Preferred fix is yaml.load (eliminates a class of regex-fragility bugs);
+  // falls back to a corrected `- id:` regex if yaml is unavailable.
   let agentCount = 0;
   const treeContent = safeRead(path.join(sessionDir, 'workflow', 'agent_tree.yaml'));
   if (treeContent) {
-    // Count occurrences of "- agent_id:" which marks each agent entry
-    const matches = treeContent.match(/- agent_id:/g);
-    agentCount = matches ? matches.length : 0;
+    try {
+      if (yaml) {
+        const parsedTree = yaml.load(treeContent);
+        if (parsedTree && Array.isArray(parsedTree.agents)) {
+          agentCount = parsedTree.agents.length;
+        }
+      } else {
+        throw new Error('js-yaml not available');
+      }
+    } catch (_e) {
+      // Fallback regex matches the actual key written by subagent-tracker.cjs
+      const matches = treeContent.match(/^\s*- id:/gm);
+      agentCount = matches ? matches.length : 0;
+    }
   }
 
   // Compute duration
@@ -262,7 +277,7 @@ function generateExecutionSummary(sessionDir, now) {
   }
 }
 
-createHook('SessionStop', async (input) => {
+createHook('SessionEnd', async (input) => {
   const now = new Date().toISOString();
   let summary = '';
 

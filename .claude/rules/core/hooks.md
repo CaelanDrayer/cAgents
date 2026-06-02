@@ -53,7 +53,7 @@ Claude Code supports 24 hook event types. cAgents implements 28 unique registere
 | `PreCompact` | Before context compaction | `pre-compact-save.cjs` | Save critical state + coordination state |
 | `PostCompact` | After context compaction | `post-compact-restore.cjs` | Log workflow context to disk after compaction (no systemMessage per thinking-block-immutability contract; model reads plan.yaml + coordination_log.yaml directly) |
 
-Five events (`ConfigChange`, `WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `FileChanged`) are available for custom use; cAgents does not register handlers.
+Four events (`WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `FileChanged`) are available for custom use; cAgents does not register handlers. (`ConfigChange` was wired to `config-change-logger.cjs` in LP-17 / v12.7.0 — see table above.)
 
 See @resources/hook-catalog.md for the full per-hook detail (matchers, inputs, outputs, side effects) and the Secret Detection pattern catalog.
 

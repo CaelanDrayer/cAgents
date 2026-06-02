@@ -108,6 +108,19 @@ const FIXED_HOOKS = [
     event: 'PreCompact',
     stdin: { session_id: 'nonexistent_test_session_does_not_exist_xxx' },
   },
+  {
+    // H-1 (audit team_hooks-review_260602_001): tool-failure-tracker.cjs
+    // returned `{ continue: true, systemMessage: "Failure classified ..." }`
+    // from a PostToolUseFailure handler — also a LATEST-TURN-SUSPECT event.
+    // Fixed in v12.12.2 by replacing the return with console.error + null.
+    name: 'tool-failure-tracker.cjs',
+    event: 'PostToolUseFailure',
+    stdin: {
+      tool_name: 'Bash',
+      error: 'TypeError: Cannot read property of undefined',
+      session_id: 'nonexistent_test_session_does_not_exist_xxx',
+    },
+  },
 ];
 
 /**

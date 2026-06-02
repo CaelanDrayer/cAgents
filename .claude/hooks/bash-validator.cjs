@@ -19,8 +19,7 @@ const BLOCKED_STRINGS = [
   'dd if=/dev/zero',
   'mkfs',
   'sudo ',
-  'su ',              // Switch user (space prevents matching 'sudo'/'sum')
-  'su -',            // Switch user with login shell
+  'su ',              // Switch user (space prevents matching 'sudo'/'sum'); also catches 'su -' since 'su ' is a substring of 'su -' (M-1 dedup, v12.12.2)
   'crontab'          // Cron persistence mechanism
 ];
 

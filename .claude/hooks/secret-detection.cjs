@@ -170,7 +170,18 @@ const SECRET_PATTERNS = [
   { pattern: /vercel_[a-zA-Z0-9]{24,}/g, name: 'Vercel Token', severity: 'critical' },
   // Cloudflare (named pattern BEFORE broad hex pattern)
   { pattern: /(?:cloudflare[_-]?api[_-]?key|CF_API_KEY)[\s]*[=:]\s*["']?([a-zA-Z0-9]{37})["']?/gi, name: 'Cloudflare API Key', severity: 'critical' },
-  { pattern: /(?<![0-9a-f])[0-9a-f]{37}(?![0-9a-f])/g, name: 'Cloudflare API Token', severity: 'high' },
+  // Cloudflare API Token (bare 37-char hex). Downgraded from `high` to `medium`
+  // in v12.12.2 (H-5 from audit team_hooks-review_260602_001): the bare-hex
+  // pattern false-positives on truncated git commit SHAs (40-char hashes
+  // displayed at 37-39 chars), oversized random hex IDs, and many test
+  // fixtures. At `high` severity it would block legitimate Write/Edit calls
+  // on those false positives. At `medium`, it warns but does not block —
+  // matching the documented "block mode triggers on critical+high only"
+  // behavior. The high-confidence Cloudflare-API-Key pattern above (with
+  // context anchor) remains at `critical`. Future tightening could add a
+  // context-window anchor (require `cloudflare` / `CF_API_TOKEN` /
+  // `X-Auth-Key` within ~60 chars) but the downgrade is sufficient for now.
+  { pattern: /(?<![0-9a-f])[0-9a-f]{37}(?![0-9a-f])/g, name: 'Cloudflare API Token', severity: 'medium' },
   // GitLab
   { pattern: /glpat-[a-zA-Z0-9_-]{20}/g, name: 'GitLab Personal Access Token', severity: 'critical' },
   { pattern: /gldt-[a-zA-Z0-9_-]{20}/g, name: 'GitLab Deploy Token', severity: 'critical' },
@@ -319,6 +330,18 @@ createHook('SecretDetection', async (input) => {
 
       // 2. Write sanitized content to the target file path (use 0600 too —
       //    user can chmod up after restore if needed).
+      //
+      // NOTE (H-4 from audit team_hooks-review_260602_001): this is a
+      // deliberate write-before-deny pattern. Sanitize mode writes the
+      // BLOCK_<hex>-substituted content to disk BEFORE the hook returns
+      // `deny`, because the alternative (deny first, no disk write) would
+      // mean the user's Write tool call lands on disk with the original
+      // secrets intact when the deny is overridden, defeating the
+      // sanitize protocol. The full lifecycle and restore mechanism are
+      // documented in .claude/hooks/SECRET-SANITIZE.md. The matching
+      // restore path lives in secret-restore.cjs (Stop hook) which reads
+      // the manifest written below and replaces sanitized content with
+      // the .orig backup.
       try {
         const targetDir = path.dirname(filePath);
         if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });

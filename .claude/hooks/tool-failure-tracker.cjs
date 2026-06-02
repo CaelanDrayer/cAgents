@@ -125,22 +125,25 @@ createHook('ToolFailureTracker', async (input) => {
     const taxonomyHint = classification.type !== 'unknown'
       ? `\nFailure type: ${classification.type} (retry limit: ${classification.retry_limit === -1 ? 'unlimited' : classification.retry_limit})\nRecovery: ${classification.recovery}`
       : '';
+    // Per thinking-block-immutability contract (H-1, audit team_hooks-review_260602_001):
+    // PostToolUseFailure is a LATEST-TURN-SUSPECT event; emitting either
+    // systemMessage or hookSpecificOutput.additionalContext risks attaching
+    // content to the just-completed assistant turn's content[] array.
+    // Operator-visible warning surfaces via console.error (stderr) only.
     console.error(`[ToolFailureTracker] Pattern: ${recentCount + 1} failures of ${toolName} [${classification.type}]`);
-    return {
-      continue: true,
-      hookSpecificOutput: {
-        hookEventName: 'PostToolUseFailure',
-        additionalContext: `Tool failure pattern detected: "${toolName}" has failed ${recentCount + 1} times recently.\n${suggestion}${taxonomyHint}`
-      }
-    };
+    console.error(`[ToolFailureTracker] ${suggestion}${taxonomyHint}`);
+    return null;
   }
 
-  // Even on first failure, provide taxonomy hint for recognized types
+  // Even on first failure, log taxonomy hint for recognized types via stderr.
+  // Per thinking-block-immutability contract (run_team-thinking-400_260531_001),
+  // PostToolUseFailure hooks MUST NOT return a systemMessage field — emitting
+  // content here risks attaching it to the just-completed assistant turn's
+  // content[] array, violating Anthropic API thinking-block immutability.
+  // Operator-visible warning surfaces via console.error (stderr → verbose mode).
   if (classification.type !== 'unknown') {
-    return {
-      continue: true,
-      systemMessage: `Failure classified as ${classification.type}. ${classification.recovery}`
-    };
+    console.error(`[ToolFailureTracker] Failure classified as ${classification.type}. ${classification.recovery}`);
+    return null;
   }
 
   return null;
