@@ -10,6 +10,62 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.15.1] - 2026-06-02
+
+Concurrent-session H1 follow-up: SDK UUID `input.session_id` semantic.
+
+Patch bump (not minor) per tiny-bump cadence: change is additive
+consumer-side behavior (new UUID-shape branch in `findActiveSession`
+chain step 1), 3 non-sync files touched (≤ 5 limit), back-compatible
+for cAgents-shaped session hints, and the v12.15.0 deterministic-chain
+contract is preserved — only the input semantic is clarified.
+
+### Fixed
+- **Root cause**: Claude Code's SDK passes a transcript UUID (e.g.,
+  `5f1a3b9c-7d2e-4c0a-b1d4-8e6f3a9c1b2d`) as `input.session_id` to every
+  hook, NOT a cAgents session directory name (e.g.,
+  `run_sessions-hung-single-dir_260602_001`). The v12.15.0 deterministic
+  chain's step 1 in `findActiveSession(sessionHint)` always returned `null`
+  because the UUID was never a real cAgents session-dir name. The chain
+  then fell through to `null` (default behavior, no fallback heuristic),
+  causing `session-init-gate.cjs` to emit `permissionDecision:deny` on
+  every `Agent` spawn — the user-reported "sessions hung up on each other"
+  symptom under concurrent same-directory runs.
+- **Fix**: `hook-utils.cjs` now matches `sessionHint` against `SDK_UUID_RE`
+  (`/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i`)
+  before treating it as a directory name. When the hint is a UUID-shape
+  (SDK transcript ID), the chain falls through to step 2 (`CAGENTS_ACTIVE_SESSION`
+  env var) and step 3 (`promptHint`) instead of short-circuiting to `null`.
+  cAgents-shaped hints (`run_*`, `team_*`, `designer_*`) continue to resolve
+  via the directory-exists check as before.
+- **Invariant preserved**: The v12.15.0 cross-write invariant still holds.
+  Hooks bound to a cAgents-shaped session_id still resolve deterministically
+  to that session and only that session. The patch only changes behavior
+  when the hint is structurally a UUID, where the prior behavior was
+  unconditionally null (no session resolution possible anyway).
+
+### Added
+- **Test**: `tests/hooks/session-init-gate-uuid-payload.test.js` — 5 tests
+  pinning the new semantic. Test 5 is the integration test (full
+  session-init-gate.cjs payload with UUID input.session_id resolves via
+  env-var fall-through). All 5 fail against pre-patch hook-utils.cjs;
+  all 5 pass post-patch.
+- **Doc**: `.claude/rules/playbooks/pat-concurrent-session-hooks.md`
+  gains an "Input Semantics" section documenting that hook payload
+  `input.session_id` is an SDK transcript UUID, distinct from cAgents
+  session directory names, and the fall-through rule.
+
+### Files touched (non-sync, 3)
+- `.claude/hooks/hook-utils.cjs` (added `SDK_UUID_RE` + `_isSdkUuidShape` +
+  UUID fall-through in chain step 1)
+- `.claude/rules/playbooks/pat-concurrent-session-hooks.md` (new "Input
+  Semantics" section)
+- `tests/hooks/session-init-gate-uuid-payload.test.js` (new regression
+  test, 5 cases)
+
+### Source
+- Session `run_sessions-hung-single-dir_260602_001`
+
 ## [12.15.0] - 2026-06-02
 
 Concurrent-Session Hook Resilience: hardens cAgents hooks against two
