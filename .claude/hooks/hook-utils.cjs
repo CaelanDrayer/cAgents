@@ -161,6 +161,36 @@ function _makeCacheKey(sessionHint, envSession, promptHint, fallback) {
   return `${sessionHint || ''}|${envSession || ''}|${promptHint || ''}|${fallback ? '1' : '0'}`;
 }
 
+/**
+ * cAgents session ID format:
+ *   `{command}_{slug}_{timestamp_suffix}` where command is one of
+ *   run|team|designer|review|optimize|debug|org and the trailing segments
+ *   carry a timestamp / counter. Canonical production form is
+ *   `{command}_{slug}_{YYMMDD}_{NNN}` (e.g. `run_fix-auth_260317_001`); test
+ *   fixtures often use a shorter base36 timestamp tail (e.g.
+ *   `run_findactivesession-a_mpx7w1mu`). Both are valid cAgents shapes.
+ *
+ * Claude Code SDK transcript UUIDs (`8-4-4-4-12` lowercase hex, e.g.
+ * `28d9d944-e2f5-4e03-b06b-d367625f1fdd`) arrive in hook payloads as
+ * `input.session_id` but are NOT cAgents session directory names. When such
+ * a hint is supplied to `findActiveSession`, chain step 1 must skip the
+ * candidate-resolution attempt (it would always fail) and fall through to
+ * step 2 (env-var) / step 3 (promptHint) / step 4 (null).
+ *
+ * Detection strategy: positively identify the SDK UUID shape and exclude it.
+ * Everything else is treated as potentially-cAgents-shaped — even if the dir
+ * does not exist on disk, the cross-write invariant is preserved by the
+ * `_tryResolveCandidate` check that follows (the dir-exists + non-terminal
+ * gate). The H1 fix is narrowly scoped: only UUID-shaped hints bypass step 1.
+ *
+ * Per H1 (session run_sessions-hung-single-dir_260602_001).
+ */
+const SDK_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+function _isSdkUuidShape(s) {
+  return typeof s === 'string' && SDK_UUID_RE.test(s);
+}
+
 function _tryResolveCandidate(sessionsDir, candidate) {
   // Returns the session dir if candidate exists with non-terminal status, else null.
   const dir = path.join(sessionsDir, candidate);
@@ -203,18 +233,33 @@ function findActiveSession(hintOrOptions) {
   }
 
   // Deterministic chain step 1: explicit sessionHint (from input.session_id).
+  //
+  // H1 fix (v12.16.0): Claude Code's `input.session_id` carries SDK transcript
+  // UUIDs (8-4-4-4-12 hex), NOT cAgents session directory names. When the
+  // hint matches the SDK UUID shape, skip the candidate-resolution attempt
+  // (it would always fail) and fall through to step 2 (env-var). This is a
+  // narrow escape hatch — the cross-write invariant is preserved because:
+  //   (a) UUID hints alone never resolve to a session (only env-var/promptHint can),
+  //   (b) cAgents-shaped-but-unresolvable hints still terminate at null below.
   if (sessionHint) {
-    const dir = _tryResolveCandidate(sessionsDir, sessionHint);
-    if (dir) {
-      _cachedActiveSessions.set(cacheKey, dir);
-      return dir;
-    }
-    // Hint provided but unresolvable. Refuse to fall through to other instances'
-    // sessions — that is the H1/H3 cross-session leak we are closing.
-    if (!fallbackHeuristic) {
-      console.error(`[findActiveSession] sessionHint="${sessionHint}" provided but not resolvable; returning null (no heuristic fallback). Set fallbackHeuristic:true to override.`);
-      _cachedActiveSessions.set(cacheKey, null);
-      return null;
+    if (_isSdkUuidShape(sessionHint)) {
+      // SDK UUID — not a cAgents directory name. Skip step 1 entirely.
+      // Do NOT cache null here — let env-var / promptHint determine the outcome.
+      console.error(`[findActiveSession] sessionHint="${sessionHint}" is an SDK UUID, not a cAgents session ID; falling through to env-var/promptHint chain.`);
+    } else {
+      const dir = _tryResolveCandidate(sessionsDir, sessionHint);
+      if (dir) {
+        _cachedActiveSessions.set(cacheKey, dir);
+        return dir;
+      }
+      // cAgents-shaped hint provided but unresolvable. Refuse to fall through
+      // to other instances' sessions — that is the H1/H3 cross-session leak we
+      // are closing.
+      if (!fallbackHeuristic) {
+        console.error(`[findActiveSession] sessionHint="${sessionHint}" provided but not resolvable; returning null (no heuristic fallback). Set fallbackHeuristic:true to override.`);
+        _cachedActiveSessions.set(cacheKey, null);
+        return null;
+      }
     }
   }
 

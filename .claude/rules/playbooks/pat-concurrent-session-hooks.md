@@ -47,13 +47,67 @@ by EITHER instance MUST satisfy four invariants:
 ## Default Resolution Chain (no fallback)
 
 1. **`sessionHint`** (typically `input.session_id` from the hook payload)
-   — if the directory exists and the session is in a non-terminal
+   — if the hint is a cAgents-shaped ID (`run_*`, `team_*`, `designer_*`, etc.)
+   AND the directory exists AND the session is in a non-terminal
    `pipeline_state` / `phase` (or has no status.yaml yet — race window),
-   return it. If terminal, return null.
+   return it. If terminal, return null. If the hint matches the SDK
+   transcript UUID shape (`/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`),
+   skip step 1 entirely and fall through to step 2 — see "Input Semantics"
+   below.
 2. **`process.env.CAGENTS_ACTIVE_SESSION`** — same rules.
 3. **`promptHint`** (e.g., extracted from prompt text by subagent-tracker
    Pass-3) — same rules.
 4. **`null`** — refuse to silently resolve to "newest active" session.
+
+## Input Semantics: SDK UUID vs cAgents Session ID (v12.16.0+)
+
+The H1 finding from session `run_sessions-hung-single-dir_260602_001`
+showed that Claude Code's hook payload `input.session_id` field carries
+an **SDK transcript UUID** (e.g.,
+`28d9d944-e2f5-4e03-b06b-d367625f1fdd`), NOT a cAgents session directory
+name. The 8-4-4-4-12 hex shape is the SDK conversation identifier; cAgents
+session directory names use the `{command}_{slug}_{YYMMDD}_{NNN}` shape
+(e.g., `run_fix-auth_260317_001`). The two namespaces never overlap.
+
+**Empirical evidence**:
+`cagents-memory/_system/logs/agent_spawns.log` carries 229 production
+hook invocations with `session=<UUID>` entries, confirming that every
+real `SubagentStart` / `PreToolUse[Agent]` payload received in this
+project carries a UUID — never a cAgents-shaped ID — in the
+`input.session_id` field.
+
+**The v12.15.0 regression**: the v12.15.0 deterministic chain treated
+ANY `sessionHint` literally — if `_tryResolveCandidate(sessionsDir, hint)`
+failed to find a matching directory (which it ALWAYS did for UUID hints,
+because no cAgents session directory is named after an SDK UUID), the
+chain refused to fall through and returned `null`. This caused
+`session-init-gate.cjs` (the `PreToolUse[Agent]` gate) to HARD-DENY
+every Agent spawn with "no active session" — sessions hung at the very
+first `Agent()` call.
+
+**The v12.16.0 fix** (`.claude/hooks/hook-utils.cjs:188-263`): a
+positive UUID-shape check gates the no-fallback behavior. Step 1 of the
+chain now:
+
+- Lines 188-192 — declares `SDK_UUID_RE` and the `_isSdkUuidShape()` helper.
+- Lines 244-248 — if `sessionHint` matches the SDK UUID shape, logs a
+  stderr note and **falls through** to step 2 (env-var) and step 3
+  (promptHint) without caching `null`. The UUID is treated as "no
+  cAgents hint provided" — env-var resolution still works, and
+  `CAGENTS_SESSION_ID` (a separate cAgents-controlled var) or
+  `CAGENTS_ACTIVE_SESSION` can carry the real session ID.
+- Lines 249-263 — cAgents-shaped hints (anything NOT matching the
+  UUID regex) still terminate at `null` if unresolvable, exactly as in
+  v12.15.0. The cross-session-write invariant from the Four Invariants
+  section is preserved: a UUID hint alone never resolves to ANY session
+  directory — only env-var or promptHint can — so a hook with no cAgents
+  context still refuses to silently bind to a sibling instance's
+  session.
+
+The fix is narrowly scoped to one positively-identified failure shape.
+Every other path through `findActiveSession` (cAgents-shaped hints, env
+fallback, prompt extraction, the legacy `fallbackHeuristic: true`
+escape) is byte-identical to v12.15.0.
 
 ## Regression tests pinning these invariants
 
@@ -65,6 +119,12 @@ by EITHER instance MUST satisfy four invariants:
   liveness.
 - `tests/v12/concurrent-sessions-no-crosswrite.test.js` — end-to-end
   two-session cross-write asserter (5 cases).
+- `tests/hooks/session-init-gate-uuid-payload.test.js` — v12.16.0 H1
+  regression: UUID-shaped `input.session_id` payload handling (5 cases).
+  Tests 2/3/5 fail on commit a2b19cc0 (pre-v12.16.0 HEAD) and pass with
+  the `SDK_UUID_RE` chain-step-1 fall-through patch. Tests 1/4 pin the
+  cross-write invariant (UUID alone never resolves; cAgents-shaped-but-
+  unresolvable hints still terminate at null).
 
 ## When to opt into `fallbackHeuristic: true`
 
