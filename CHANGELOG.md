@@ -10,6 +10,58 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.15.2] - 2026-06-03
+
+Concurrent-session H1 follow-up #2: verify-completion staleness-skip
+field-name fix.
+
+Patch bump per tiny-bump cadence: one-line behavioral change in the Stop
+hook's stale-session lookup chain, 2 non-sync files touched (≤ 5 limit),
+back-compatible (legacy `updated_at` / `created_at` retained as fallback),
+ships with a Bug-Driven regression test that fails before / passes after.
+
+### Fixed
+- **Root cause**: `.claude/hooks/verify-completion.cjs:922` looked up
+  status.yaml staleness via
+  `extractYamlValue(s, 'updated_at') || extractYamlValue(s, 'created_at')`,
+  but `/run` writes `last_updated_at` and `started_at`. The lookup never
+  matched on real cAgents sessions, `updatedAt` was always undefined, the
+  24h staleness branch was always skipped, and the Stop hook proceeded
+  to `verifyCompletion()` against orphaned-at-INIT sessions surfaced by
+  `findMostRecentSessionDir({includeTerminal: true})`. The result: block
+  decisions for "Pipeline stopped in 'INIT' state with no agents spawned"
+  pinned onto unrelated current turns — a residual symptom of the
+  concurrent-session H1 cluster after v12.15.0 and v12.15.1 closed the
+  upstream resolution leaks.
+- **Fix**: extend the chain to
+  `extractYamlValue(s, 'last_updated_at') || extractYamlValue(s, 'updated_at') || extractYamlValue(s, 'started_at') || extractYamlValue(s, 'created_at')`.
+  The new primary lookup matches the actual `/run` write-shape; the legacy
+  `updated_at` / `created_at` entries remain as back-compat fallbacks for
+  any session shape that uses them.
+
+### Added
+- **Test**: `tests/hooks/verify-completion-staleness-skip.test.js` — 3
+  test cases pinning the staleness skip. Test 1 (synthetic session with
+  only `last_updated_at` set > 24h old, pipeline_state=INIT) FAILS on
+  pre-patch HEAD with `expected 'block' not to be 'block'` because the
+  staleness branch is never entered. Test 2 (fresh `last_updated_at` <
+  24h + INIT) pins that the gate is not over-eager. Test 3 (legacy
+  `updated_at`-only > 24h) pins the back-compat fallback. FAIL-before /
+  PASS-after verified locally via `git stash` of the hook patch and
+  re-run of the test suite.
+
+### Files touched (non-sync, 2)
+- `.claude/hooks/verify-completion.cjs` (4-field fallback chain at line 922)
+- `tests/hooks/verify-completion-staleness-skip.test.js` (new regression
+  test, 3 cases)
+
+### Source
+- Session `run_verify-completion-staleness-field_260603_001`
+- Cross-reference: v12.15.1 (merge 2ae3a59e) closed the SDK-UUID hint
+  semantic; this patch closes the remaining field-name typo in the Stop
+  hook's staleness gate, originating from the same diagnosis session
+  `run_sessions-hung-single-dir_260602_001`.
+
 ## [12.15.1] - 2026-06-02
 
 Concurrent-session H1 follow-up: SDK UUID `input.session_id` semantic.
