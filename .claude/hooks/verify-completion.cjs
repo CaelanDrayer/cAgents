@@ -919,7 +919,10 @@ createHook('VerifyCompletion', async (input) => {
   const statusFile = path.join(sessionDir, 'status.yaml');
   const statusContent = safeRead(statusFile);
   if (statusContent) {
-    const updatedAt = extractYamlValue(statusContent, 'updated_at') || extractYamlValue(statusContent, 'created_at');
+    const updatedAt = extractYamlValue(statusContent, 'last_updated_at')
+      || extractYamlValue(statusContent, 'updated_at')
+      || extractYamlValue(statusContent, 'started_at')
+      || extractYamlValue(statusContent, 'created_at');
     if (updatedAt) {
       const sessionAge = Date.now() - new Date(updatedAt).getTime();
       const twentyFourHours = 24 * 60 * 60 * 1000;
