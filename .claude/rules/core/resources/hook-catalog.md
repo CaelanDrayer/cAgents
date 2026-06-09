@@ -46,7 +46,13 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 - **Container cleanup**: `docker system prune -a` (suggest without `-a`), `docker volume prune` (suggest `volume ls` first)
 - **Disk operations**: `mkswap` (suggest verifying device), `fdisk` (suggest backing up partition table)
 
-**Obfuscation detection limitation**: Patterns use static regex matching against the literal command string. Runtime-constructed obfuscation (variables holding command fragments, heredoc-built payloads, multi-step obfuscation across separate commands) cannot be detected. Only known static patterns are caught.
+**Obfuscation detection** (strengthened by F7-1, audit run_fable-plugin-review_260609_001): the static regexes now catch several previously-missed obfuscation shapes:
+
+- **Tier 1 (deny)**: `eval` of a bare variable — `eval $VAR`, `eval "$VAR"`, `eval ${VAR}` (variable-indirection execution; does NOT match `eval $(cmd)` command-substitution style).
+- **Tier 1 (deny)**: two-step download-then-execute within a single command string — e.g. `curl ... -o x.sh; bash x.sh`, `wget -O /tmp/i URL && sh /tmp/i` (a download flag/redirect followed by a shell-exec of a file in the same chain).
+- **Tier 2 (ask)**: a bare variable in command position (start of a command segment), and download-then-run-without-an-explicit-shell where the file is executed directly (`curl URL -o /tmp/x.sh && /tmp/x.sh`).
+
+**Remaining limitation**: detection is still static regex matching against the literal command string. Obfuscation split across *separate, sequential* commands (e.g. building a payload in one command and executing it in a later one), heredoc-built payloads, and other runtime-constructed indirection that does not appear as a single literal pattern still cannot all be statically caught. Only the known static patterns above are caught.
 
 ### PreToolUse[Write|Edit]: secret-detection.cjs
 
@@ -258,11 +264,19 @@ The `secret-detection.cjs` hook blocks these patterns:
 
 ### False Positive Filtering
 
+Markdown scanning (changed by F7-2, audit run_fable-plugin-review_260609_001): `*.md` / `README` / `docs/` are NO LONGER blanket-excluded. Markdown is scanned with the SAME full-token regexes as code, so a live API key pasted into a README or doc is now caught. This introduces zero false positives on documentation that merely references secret *prefixes* (e.g., this catalog lists `ghp_`, `AKIA...`, `sk-ant-...` as patterns to detect) because those are partial/prefix fragments, not full-length tokens, and the full-token regexes do not match them.
+
 Blanket-excluded (entire file skipped):
 
-- Documentation files (`*.md`, `README`, `docs/` directories)
 - Lock files (`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`)
 - Example/sample/template/mock/fixture files (by filename pattern)
+
+DOC_ALLOWLIST (narrow per-file allowlist — basename-anchored, entire file skipped): only the two repo docs that document the secret-detection mechanism itself and therefore legitimately carry secret-pattern fragments as reference material:
+
+- `hook-catalog.md` (this file)
+- `SECRET-SANITIZE.md`
+
+The allowlist exists so a future expansion of those two docs to include a worked example cannot self-block the hook. It is anchored on the path basename so a sibling directory of the same name cannot widen it.
 
 Test file scanning (targeted suppression, not blanket exclusion):
 

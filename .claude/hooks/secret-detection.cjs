@@ -206,10 +206,31 @@ const TEST_PLACEHOLDER_PATTERNS = [
   /test_/i, /fake_/i, /example_/i, /your[_-]?key[_-]?here/i, /replace[_-]?me/i
 ];
 
+// F7-2 (audit run_fable-plugin-review_260609_001): markdown is NO LONGER
+// blanket-excluded. Real secrets pasted into *.md / README / docs/ ship
+// unscanned under the old blanket skip, so a live API key in a README was
+// never caught. Markdown is now scanned with the SAME full-token regexes as
+// code. The repo's own docs that legitimately mention secret-pattern PREFIXES
+// (e.g. hook-catalog.md lists `ghp_`, `AKIA...`, `sk-ant-...` as patterns to
+// detect) are partial/prefix fragments, NOT full-length tokens — the
+// full-token regexes do not match them, so removing the *.md skip introduces
+// zero false positives on documentation patterns. Two repo docs that
+// intentionally document the secret-detection mechanism itself are kept on a
+// narrow per-file allowlist (DOC_ALLOWLIST_PATHS) so a future expansion of
+// those docs to include a worked example cannot self-block the hook.
+// Lock files and example/sample/template/mock/fixture files remain excluded.
 const FALSE_POSITIVE_PATHS = [
-  /\.md$/, /docs?\//, /README/i,
   /package-lock\.json$/, /yarn\.lock$/, /pnpm-lock\.yaml$/,
   /example/i, /sample/i, /template/i, /mock/i, /fixture/i
+];
+
+// Narrow per-file allowlist: docs that document the secret-detection /
+// sanitize mechanism itself and therefore legitimately carry secret-pattern
+// fragments as reference material. Matched on path suffix (basename-anchored)
+// so it cannot be widened by a sibling directory of the same name.
+const DOC_ALLOWLIST_PATHS = [
+  /(^|\/)hook-catalog\.md$/,
+  /(^|\/)SECRET-SANITIZE\.md$/
 ];
 
 const FALSE_POSITIVE_CONTENT = [
@@ -217,7 +238,9 @@ const FALSE_POSITIVE_CONTENT = [
 ];
 
 function isPathFalsePositive(filePath) {
-  return filePath && FALSE_POSITIVE_PATHS.some(p => p.test(filePath));
+  if (!filePath) return false;
+  if (DOC_ALLOWLIST_PATHS.some(p => p.test(filePath))) return true;
+  return FALSE_POSITIVE_PATHS.some(p => p.test(filePath));
 }
 
 function isTestFile(filePath) {

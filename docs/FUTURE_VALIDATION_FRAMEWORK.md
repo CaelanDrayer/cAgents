@@ -1,8 +1,8 @@
 # Future Validation Framework (Deferred / Aspirational)
 
-> **Status: DEFERRED**. This document catalogues the 23 aspirational validation checks (Phases 1-3) that were originally specified as part of a 29-check four-phase framework but were never reliably enforced in practice. They were moved out of `.claude/rules/quality/resources/validation-checklist-29.md` in V11.2.11 so that they no longer cost agent-context budget on every session.
+> **Status: DEFERRED**. This document catalogues the 24 aspirational validation checks (Phases 1-3, checks 1-24) that were originally specified as part of a 29-check four-phase framework (24 aspirational + 5 active = 29) but were never reliably enforced in practice. They were moved out of `.claude/rules/quality/resources/validation-checklist-active.md` in V11.2.11 so that they no longer cost agent-context budget on every session.
 >
-> The 5 actively-enforced checks (Phase 4 cross-cutting) live in `.claude/rules/quality/resources/validation-checklist-29.md` and load into agent context. Anything described below does NOT auto-load.
+> The 5 actively-enforced checks (Phase 4 cross-cutting) live in `.claude/rules/quality/resources/validation-checklist-active.md` and load into agent context. Anything described below does NOT auto-load.
 >
 > **Graduation policy**: aspirational checks listed here should be promoted to the active file one at a time, only when the supporting hook or agent behavior has actually landed and is verifiable end-to-end. See the [Graduation Roadmap](#graduation-roadmap) for priority ordering.
 
@@ -101,12 +101,12 @@ Run by **Universal-Validator** AFTER all work items are complete. *Not yet enfor
 | **Post-Execution** | 9 | 16-24 | Validator | After all items complete |
 | **TOTAL (deferred)** | **23** | **1-24** | | |
 
-Plus 5 active Phase-4 checks (25-29) documented in `.claude/rules/quality/resources/validation-checklist-29.md` — for a 29-check end-state when fully graduated.
+Plus 5 active Phase-4 checks (25-29) documented in `.claude/rules/quality/resources/validation-checklist-active.md` — for a 29-check end-state when fully graduated.
 
 ---
 
 ## See Also
 
-- `.claude/rules/quality/resources/validation-checklist-29.md` — the active 5 checks (auto-loaded into agent context)
+- `.claude/rules/quality/resources/validation-checklist-active.md` — the active 5 checks (auto-loaded into agent context)
 - `.claude/rules/quality/completion.md` — task completion protocol that references the active checklist
 - `.claude/rules/quality/validation-framework.md` — end-to-end completion traceability

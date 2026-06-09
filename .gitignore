@@ -47,6 +47,10 @@ cagents-memory-staging/
 
 # Archive - Documentation archive (not part of source control)
 archive/
+# _archive/ - closed migration outputs, deprecated buckets, archived docs +
+# vendored foreign repos (F9-2, AGGRESSIVE untrack 2026-06-09). Not part of
+# the shipped plugin; 150 files removed from tracking via `git rm -r --cached`.
+_archive/
 
 # Backup files
 *.backup
@@ -88,6 +92,7 @@ CLAUDE.local.md
 # Python virtual environment
 .venv/
 __pycache__/
+*.pyc
 example/
 metrics.jsonl
 vendor_repos/

@@ -50,6 +50,16 @@ EVENT_TYPES=$(jq -r '.hooks | keys | length' .claude/settings.json)
 # Version-registry table rows (lines matching `| <N> | ...`).
 REGISTRY_SLOTS=$(grep -cE "^\| [0-9]+ \|" .claude/rules/core/version-registry.md)
 
+# Total .md files under .claude/rules (the CLAUDE.md "rules total" claim).
+RULES_MD=$(find .claude/rules -name '*.md' -type f | wc -l | tr -d ' ')
+
+# Playbook .md files (6 pat-* + README = 7) — the CLAUDE.md playbooks claim.
+PLAYBOOK_FILES=$(ls .claude/rules/playbooks/*.md 2>/dev/null | wc -l | tr -d ' ')
+
+# Pre-execution validation checks (### Check N headings in the checklist).
+# This is the count cited as "Pre-Execution (N checks)" in controllers.md.
+PREEXEC_CHECKS=$(grep -cE "^### Check [0-9]" .claude/rules/core/resources/controller-validation-checklist.md)
+
 # Print derived values in a parseable form.
 print_derived() {
   echo "active_agents=$ACTIVE_AGENTS"
@@ -60,6 +70,9 @@ print_derived() {
   echo "registered_hooks=$REGISTERED_HOOKS"
   echo "event_types=$EVENT_TYPES"
   echo "registry_slots=$REGISTRY_SLOTS"
+  echo "rules_md=$RULES_MD"
+  echo "playbook_files=$PLAYBOOK_FILES"
+  echo "preexec_checks=$PREEXEC_CHECKS"
 }
 
 if [ "${1:-}" = "--derive-only" ]; then
@@ -197,6 +210,38 @@ if [ -f docs/12-FACTOR-COMPLIANCE.md ]; then
     report_mismatch "docs/12-FACTOR-COMPLIANCE.md" "$actual agents" \
       "$ACTIVE_AGENTS agents (post-v12.4.0)"
   fi
+fi
+
+# Check 9 (F1-5): CLAUDE.md rules-file total must match disk.
+# Closes the counts-guard coverage hole — CLAUDE.md cites the rules total in
+# two places (the rules-tree summary "Total: N .md" and the directory-structure
+# comment "Modular rules (N files...)"). Both must agree with the derived count.
+if ! grep -qE "Total: ${RULES_MD} \.md" "$CLAUDE_MD_PATH"; then
+  actual=$(grep -oE "Total: [0-9]+ \.md" "$CLAUDE_MD_PATH" | head -1)
+  report_mismatch "$CLAUDE_MD_PATH" "${actual:-rules total}" "Total: $RULES_MD .md"
+fi
+if ! grep -qE "Modular rules \(${RULES_MD} files" "$CLAUDE_MD_PATH"; then
+  actual=$(grep -oE "Modular rules \([0-9]+ files" "$CLAUDE_MD_PATH" | head -1)
+  report_mismatch "$CLAUDE_MD_PATH" "${actual:-Modular rules (N files}" \
+    "Modular rules ($RULES_MD files"
+fi
+
+# Check 10 (F1-5): CLAUDE.md playbooks count must match disk.
+# CLAUDE.md describes the playbooks dir as "pat-* reusable patterns (... N files)".
+if ! grep -qE "pat-\* reusable patterns \(.*${PLAYBOOK_FILES} files\)" "$CLAUDE_MD_PATH"; then
+  actual=$(grep -oE "pat-\* reusable patterns \([^)]*\)" "$CLAUDE_MD_PATH" | head -1)
+  report_mismatch "$CLAUDE_MD_PATH" "${actual:-playbooks count}" \
+    "pat-* reusable patterns (... $PLAYBOOK_FILES files)"
+fi
+
+# Check 11 (F8-1): controllers.md pre-execution check count must match the
+# number of "### Check N" headings in the checklist resource.
+# (Markdown bold `**Pre-Execution**` may sit between the label and the count,
+# so match flexibly up to the opening paren.)
+if ! grep -qE "Pre-Execution[^(]*\(${PREEXEC_CHECKS} checks\)" .claude/rules/core/controllers.md; then
+  actual=$(grep -oE "Pre-Execution[^(]*\([0-9]+ checks\)" .claude/rules/core/controllers.md | head -1)
+  report_mismatch ".claude/rules/core/controllers.md" "${actual:-Pre-Execution (N checks)}" \
+    "Pre-Execution ($PREEXEC_CHECKS checks)"
 fi
 
 # ---- Result ----------------------------------------------------------------

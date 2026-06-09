@@ -171,11 +171,11 @@ Applies to **all execution agents** spawned at depth >= 1 by Claude Code, **rega
 
 See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md for the canonical pattern (including the tool-inventory-check-before-BLOCKED rule, the TaskUpdate-substitution rule, and the no-reviewer-call rule for execution agents).
 
-## Mandatory Self-Validation Protocol (V12.0.0)
+## Self-Validation Protocol (V12.0.0)
 
-Before reporting ANY status (DONE, DONE_WITH_CONCERNS), execution agents MUST complete a 5-check hook-verifiable self-validation. Any 1 of the 5 checks failing automatically changes DONE to DONE_WITH_CONCERNS with the failing check listed as a concern.
+Before reporting any status (DONE, DONE_WITH_CONCERNS), execution agents should complete a 5-check self-validation. Any 1 of the 5 checks failing changes DONE to DONE_WITH_CONCERNS with the failing check listed as a concern. This is an agent-self-reported protocol by convention — the verifier hook that would mechanically enforce it is deferred to a future bump, so the checks are advisory in practice.
 
-**5 hook-verifiable checks**: evidence freshness, file existence, guard exit codes, git state, file:line accuracy.
+**5 mechanically-checkable checks**: evidence freshness, file existence, guard exit codes, git state, file:line accuracy.
 
 See @resources/execution-self-validation.md for the full check list, YAML template, integration with the subagent status protocol, and auto-downgrade rule. The canonical contract lives in that file — do not duplicate the check list here.
 

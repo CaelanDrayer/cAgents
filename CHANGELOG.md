@@ -10,6 +10,62 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.16.0] - 2026-06-09
+
+Audit-remediation consolidation bump. Session `run_audit-fixes_260609_001`
+resolved all 10 recommendations (covering all 48 findings) of the Fable 5
+plugin review (`run_fable-plugin-review_260609_001`) across five work items
+(WI-A..WI-E) spanning five surfaces: CI greenness, doc honesty, security
+hardening, repo hygiene, and CI guards.
+
+Minor (not tiny) bump per `.claude/rules/core/version-registry.md` §
+"Audit / consolidation sessions ... → minor bump": this intentionally
+touches dozens of files across multiple surfaces, so the ≤5-file tiny-bump
+atomicity rule does not apply and the tiny-bump guard is exempt.
+
+### Added
+- **Security — secret scanning of Markdown** (WI-C): `secret-detection.cjs`
+  now scans `*.md` / `docs/` / `README` files with the same full-token
+  regexes as code, closing finding F7-2 (real secrets in docs went
+  undetected). A narrow basename-anchored `DOC_ALLOWLIST_PATHS`
+  (`hook-catalog.md`, `SECRET-SANITIZE.md`) exempts only the two docs that
+  document the detection mechanism itself.
+- **Security — bash-validator bypass closure** (WI-C, F7-1): three new
+  patterns — Tier-1 deny of `eval $VAR` variable-indirection and two-step
+  download-then-exec (`curl … -o x.sh; bash x.sh`), Tier-2 ask for a bare
+  variable in command position (`X=…; $X`).
+- **CI guards** (WI-E): `validate-counts.sh` gains Checks 9–11 (CLAUDE.md
+  rules total, playbooks count, controllers.md pre-exec check count) so
+  doc-count drift is caught mechanically going forward.
+- **Regression tests**: +13 hook tests (6 secret-detection F7-2, bash-
+  validator F7-1 across three suites) plus the WI-A hook-contract test
+  updates.
+
+### Fixed
+- **Green CI** (WI-A): removed the broken `.claude/skills/commit-changes`
+  symlink (dangling target) and fixed 3 hook regression tests —
+  `tool-failure-tracker.test.js` updated to the thinking-block-immutability
+  contract (pattern-detection branch returns `null` → factory yields
+  `continue:true`, no `hookSpecificOutput`), and `verify-completion.cjs`
+  restored explicit `input.session_id` hint-binding for terminal sessions
+  (with an SDK-UUID guard) so the graceful-degradation tests resolve their
+  own session instead of `findMostRecentSessionDir`'s "most recent".
+- **Repo hygiene** (WI-D): gitignored and untracked `__pycache__`/`*.pyc`
+  (3 files) and `_archive/` (150 files), all kept on disk; `vitest.config.js`
+  now excludes `_archive/`; corrected a migration-doc path reference.
+
+### Changed
+- **Doc honesty pass** (WI-B): reconciled count drift against disk truth —
+  rules 36→38, playbooks 4→7, pre-exec checks 6→7, CLAUDE.md `sparsePaths`
+  14→6, `max_internal_rounds` 3→2 (LP-27), test-count claim 1215+/145+ →
+  1249+/147+. Relabeled MANDATORY-but-unenforced contracts (dead-letter
+  promotion, 5-check self-validation, HITL gate) as advisory/by-convention.
+  Reconciled the 5/24/29 validation-checklist narrative; renamed
+  `validation-checklist-29.md` → `validation-checklist-active.md`. Added a
+  caveat that the performance-benchmark figures are design-target estimates,
+  and a `_MODE_REGISTRY` SSOT discoverability link.
+- Version bump to 12.16.0.
+
 ## [12.15.2] - 2026-06-03
 
 Concurrent-session H1 follow-up #2: verify-completion staleness-skip

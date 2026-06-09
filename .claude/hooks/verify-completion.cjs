@@ -15,6 +15,18 @@ const path = require('path');
 const { createHook, findActiveSession, findMostRecentSessionDir, TERMINAL_STATES, extractYamlValue, safeRead, countPattern, ensureDir, PROJECT_ROOT, AGENT_MEMORY_DIR, withFileLock } = require('./hook-utils.cjs');
 
 /**
+ * Claude Code SDK transcript UUID shape (8-4-4-4-12 lowercase hex). Hook payloads
+ * carry these in input.session_id; they are NOT cAgents session directory names.
+ * Mirrors SDK_UUID_RE in hook-utils.cjs (not exported there). Used to gate the
+ * explicit-hint, terminal-inclusive session resolution so a UUID payload never
+ * gets treated as a directory name. Per H1 (run_sessions-hung-single-dir_260602_001).
+ */
+const SDK_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+function isSdkUuidShape(s) {
+  return typeof s === 'string' && SDK_UUID_RE.test(s);
+}
+
+/**
  * Extract the most recent entered_at timestamp from state_history in status.yaml.
  * Returns age in milliseconds, or null if not determinable.
  */
@@ -904,13 +916,32 @@ createHook('VerifyCompletion', async (input) => {
   }
 
   let sessionDir = findActiveSession(input.session_id);
-  // Fallback: the session may already be in a terminal state (skill wrote 'complete'
-  // before stopping), so findActiveSession skips it. Use findMostRecentSessionDir
-  // with includeTerminal to find recently-completed sessions for lifecycle finalization.
+  // Explicit-hint, terminal-inclusive resolution (concurrency contract,
+  // pat-concurrent-session-hooks.md § Stop/SessionEnd fallback). verify-completion
+  // is a Stop hook that legitimately finalizes a TERMINAL session: by the time it
+  // fires, the skill has usually written pipeline_state: complete, so the default
+  // findActiveSession() chain refuses to resolve (it returns null for terminal
+  // sessions). Under two concurrent same-directory sessions, falling straight
+  // through to findMostRecentSessionDir() would bind this hook to whichever
+  // session was touched last — the WRONG session (the H1/H3 cross-session leak).
+  // When the Stop payload carries an explicit cAgents-shaped session_id naming an
+  // existing directory, resolve THAT directory directly (terminal or not) so the
+  // hook stays bound to its own session regardless of sibling-session mtimes.
+  if (!sessionDir && input && input.session_id && !isSdkUuidShape(input.session_id)) {
+    const hintedDir = path.join(AGENT_MEMORY_DIR, 'sessions', input.session_id);
+    if (fs.existsSync(hintedDir)) {
+      sessionDir = hintedDir;
+      console.error(`[VerifyCompletion] findActiveSession returned null (session terminal); resolving explicit session_id hint directly: ${path.basename(sessionDir)}`);
+    }
+  }
+  // Fallback: no usable explicit hint (e.g. SDK UUID payload, or no session_id).
+  // Use findMostRecentSessionDir with includeTerminal to find recently-completed
+  // sessions for lifecycle finalization. This path is only reached when the hook
+  // has no session-specific binding to honor.
   if (!sessionDir) {
     sessionDir = findMostRecentSessionDir({ includeTerminal: true });
     if (sessionDir) {
-      console.error(`[VerifyCompletion] findActiveSession returned null, using terminal-inclusive fallback: ${path.basename(sessionDir)}`);
+      console.error(`[VerifyCompletion] findActiveSession returned null and no resolvable session_id hint, using terminal-inclusive fallback: ${path.basename(sessionDir)}`);
     }
   }
   if (!sessionDir) return null;

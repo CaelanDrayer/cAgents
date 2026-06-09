@@ -75,20 +75,57 @@ describe('tool-failure-tracker.cjs', () => {
     });
   });
 
-  describe('return shape compliance (regression: V11.0.4)', () => {
-    // Bug: when the pattern-detection branch fired (3+ failures of same tool
-    // accumulated in a session's tool_failures.yaml), the hook returned
-    // {hookSpecificOutput: ...} without continue:true. Tests calling the
-    // hook against a session with prior failures would receive a response
-    // missing `continue`, causing assertions like
-    // `expect(result.continue).toBe(true)` to fail with "expected undefined".
-    // Fix: include continue:true alongside hookSpecificOutput.
-    it('should include continue:true even in the pattern-detection branch', () => {
+  describe('return shape compliance (regression: V11.0.4; updated v12.x)', () => {
+    // Original bug (V11.0.4): when the pattern-detection branch fired (3+
+    // failures of same tool accumulated in a session's tool_failures.yaml),
+    // the hook returned {hookSpecificOutput: ...} without continue:true, so
+    // assertions like `expect(result.continue).toBe(true)` saw "undefined".
+    //
+    // v12.x update (thinking-block-immutability contract, audit
+    // team_hooks-review_260602_001 / run_team-thinking-400_260531_001):
+    // PostToolUseFailure is a LATEST-TURN-SUSPECT event. The pattern-detection
+    // branch NO LONGER emits hookSpecificOutput.additionalContext (or a
+    // systemMessage) at all — emitting content there risks attaching it to the
+    // just-completed assistant turn's content[] array. The branch now returns
+    // `null`; the createHook() factory transforms null into {"continue": true}
+    // at the output layer, so the continue:true output contract is still
+    // satisfied. The original-shape source-text scrape (expecting an inline
+    // `continue: true` adjacent to `hookSpecificOutput`) is therefore obsolete.
+    //
+    // The contract this test now pins: the pattern-detection branch returns
+    // null (which the factory renders as continue:true) and does NOT emit
+    // hookSpecificOutput / systemMessage in that branch.
+    it('pattern-detection branch returns null (factory yields continue:true) and emits no hookSpecificOutput / systemMessage field', () => {
       const hookContent = readFileSync(HOOK_PATH, 'utf8');
-      // Find the pattern-detection return statement and verify continue:true is present
-      const patternBlock = hookContent.split('Pattern detection')[1] || '';
-      const returnBlock = patternBlock.split('hookSpecificOutput')[0] || '';
-      expect(returnBlock).toContain('continue: true');
+      // Isolate the pattern-detection branch: from the "Pattern detection"
+      // comment up to the start of the next (first-failure) branch comment.
+      const afterPatternMarker = hookContent.split('Pattern detection')[1] || '';
+      const patternBranchRaw = afterPatternMarker.split('Even on first failure')[0] || '';
+      // The branch must terminate by returning null (factory → continue:true).
+      expect(patternBranchRaw).toContain('return null;');
+      // Strip `//` line comments before asserting on emitted fields — the
+      // thinking-block-immutability rationale comment in this branch
+      // legitimately MENTIONS the words "systemMessage" and
+      // "hookSpecificOutput" while explaining why neither is emitted. We assert
+      // on the CODE, not the prose.
+      const patternBranchCode = patternBranchRaw
+        .split('\n')
+        .filter((line) => !line.trim().startsWith('//'))
+        .join('\n');
+      // Per the thinking-block-immutability contract, the branch's CODE must NOT
+      // emit a hookSpecificOutput object or a systemMessage field.
+      expect(patternBranchCode).not.toContain('hookSpecificOutput');
+      expect(patternBranchCode).not.toMatch(/systemMessage\s*:/);
+    });
+
+    // Runtime contract: regardless of branch, the hook's actual stdout always
+    // carries continue:true (the createHook() factory guarantees this). This
+    // is the assertion the original V11.0.4 bug cared about, now verified at
+    // the behavioral (not source-text) level using a session with no prior
+    // failures so the hook runs end-to-end without side effects on real state.
+    it('runtime output always includes continue:true', () => {
+      const result = runHook({ tool_name: 'Bash', error: 'command not found', session_id: 'nonexistent_session_tft' });
+      expect(result.continue).toBe(true);
     });
   });
 });

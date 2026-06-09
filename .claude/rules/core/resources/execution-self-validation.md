@@ -6,41 +6,41 @@
 
 The previous version of this file defined fifteen checks grouped into five categories (Acceptance Criteria, Side Effects, Completeness, Evidence Freshness, Regression). Per the v12 trigger doc (`revamp-design-v2.md` Q8 "Validation honesty"), most of those 15 were aspirational — agents were asked to claim them in `self_validation` YAML but no hook ever verified the claims, and `post-write-validator.cjs` / `verify-completion.cjs` only had logic for a small subset. Aspirational checks are worse than honest absence: they create the appearance of rigor without the substance, and they inflate every agent's context.
 
-The v12 contract drops to exactly 5 checks, all of which are mechanically verifiable by hooks (current or planned). Each check ties to a concrete verification mechanism — timestamps, `fs.existsSync`, exit codes, `git status`, or `grep`/`sed` content checks — not to subjective judgment. If a future check cannot be verified by a hook, it does not belong in this protocol; it belongs in reviewer/validator prose or a code-quality gate elsewhere.
+The v12 contract drops to exactly 5 checks, all of which are *designed to be* mechanically verifiable by a hook. Each check ties to a concrete verification mechanism — timestamps, `fs.existsSync`, exit codes, `git status`, or `grep`/`sed` content checks — not to subjective judgment. **Important honesty note**: no hook currently runs these checks. The checks are agent-self-reported today; the verifier hook that would mechanically enforce them is deferred to a future bump. The "Planned hook verification:" lines below describe how a future hook *would* verify each check, not behavior that runs today. If a future check cannot be verified by a hook, it does not belong in this protocol; it belongs in reviewer/validator prose or a code-quality gate elsewhere.
 
-## The 5 Hook-Verifiable Checks
+## The 5 Checks (mechanically-checkable by design; verifier hook deferred)
 
 ### Check 1: Acceptance criteria evidence freshness
 
-Every piece of evidence cited in the `self_validation` YAML was gathered AFTER implementation began. Hook verification: compare evidence-collection timestamp against the work item's `started_at` field; reject evidence with a timestamp earlier than the work item start.
+Every piece of evidence cited in the `self_validation` YAML was gathered AFTER implementation began. Planned hook verification (deferred — not enforced today): compare evidence-collection timestamp against the work item's `started_at` field; reject evidence with a timestamp earlier than the work item start.
 
 - **Verification mechanism**: timestamp comparison (`evidence.collected_at >= work_item.started_at`)
 - **Failure**: Report DONE_WITH_CONCERNS with `concerns: ["Stale evidence for criterion N (collected_at predates started_at)"]`
 
 ### Check 2: File existence claims
 
-Every file path cited as "exists" or "created" in evidence actually exists on disk at the time of self-validation. Hook verification: for each `file_exists` claim, run `fs.existsSync(path)`; fail if any claimed file is missing.
+Every file path cited as "exists" or "created" in evidence actually exists on disk at the time of self-validation. Planned hook verification (deferred — not enforced today): for each `file_exists` claim, run `fs.existsSync(path)`; fail if any claimed file is missing.
 
 - **Verification mechanism**: `fs.existsSync(absolute_path)`
 - **Failure**: Report NEEDS_CONTEXT with `missing_context: ["Claimed file path does not exist: {path}"]` (the agent likely needs to re-run the create step)
 
 ### Check 3: Test/lint/typecheck exit codes
 
-If any guard command (`npm test`, `npx vitest run`, `tsc --noEmit`, `npm run lint`, etc.) was run as part of this work item, its exit code is captured AND equals 0 (PASS). Hook verification: parse the recorded `guard_results[]` array; reject any entry with `exit_code != 0` or `exit_code: null` when a guard was claimed to run.
+If any guard command (`npm test`, `npx vitest run`, `tsc --noEmit`, `npm run lint`, etc.) was run as part of this work item, its exit code is captured AND equals 0 (PASS). Planned hook verification (deferred — not enforced today): parse the recorded `guard_results[]` array; reject any entry with `exit_code != 0` or `exit_code: null` when a guard was claimed to run.
 
 - **Verification mechanism**: exit-code check on recorded guard command results
 - **Failure**: Report DONE_WITH_CONCERNS with `concerns: ["Guard command {cmd} failed with exit_code {N}"]`
 
 ### Check 4: Git working-tree state
 
-The staged/unstaged status reported in `git_state` matches the actual `git status --porcelain` output at the time of self-validation. Hook verification: re-run `git status --porcelain` and compare against the agent's reported `files_changed`/`files_staged` lists.
+The staged/unstaged status reported in `git_state` matches the actual `git status --porcelain` output at the time of self-validation. Planned hook verification (deferred — not enforced today): re-run `git status --porcelain` and compare against the agent's reported `files_changed`/`files_staged` lists.
 
 - **Verification mechanism**: `git status --porcelain` diff against reported state
 - **Failure**: Report DONE_WITH_CONCERNS with `concerns: ["Git state mismatch: reported {X} but actual is {Y}"]`
 
 ### Check 5: Referenced file:line accuracy
 
-Every "src/foo.ts:42" style citation in evidence actually points to the content the agent claims is there. Hook verification: for each `file:line` evidence entry with a `claimed_content` substring, run `sed -n '{line}p' {file}` (or equivalent) and verify the claimed substring appears in the actual line.
+Every "src/foo.ts:42" style citation in evidence actually points to the content the agent claims is there. Planned hook verification (deferred — not enforced today): for each `file:line` evidence entry with a `claimed_content` substring, run `sed -n '{line}p' {file}` (or equivalent) and verify the claimed substring appears in the actual line.
 
 - **Verification mechanism**: `sed -n '{N}p' {file}` content match against `claimed_content`
 - **Failure**: Report DONE_WITH_CONCERNS with `concerns: ["File:line citation incorrect: {file}:{line} does not contain {claimed_content}"]`
@@ -167,4 +167,4 @@ The 5 checks are minimal enough that skipping is rarely justified, but these nar
 - **Check 3 (guard exit codes)**: skippable when the work item type genuinely has no guard (e.g., pure documentation work with no link-check, design artifacts with no validation tool). Record `guard_results: []` explicitly — don't omit the field.
 - **Check 5 (file:line accuracy)**: skippable when evidence contains no `file:line` citations (e.g., evidence is entirely command output). Record `file_line_citations: []` explicitly.
 
-**Checks 1, 2, and 4 (evidence freshness, file existence, git state) are NEVER skippable.** These are the hook-verifiable core of the v12 honesty contract.
+**Checks 1, 2, and 4 (evidence freshness, file existence, git state) are NEVER skippable.** These are the mechanically-checkable core of the v12 honesty contract (the core a future verifier hook would enforce first).

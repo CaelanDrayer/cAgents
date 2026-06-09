@@ -113,8 +113,50 @@ describe('secret-detection.cjs', () => {
       expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
     });
 
-    it('should skip markdown files', () => {
-      const result = runHook({ tool_input: { file_path: '/tmp/README.md', content: 'const token = "ghp_1234567890abcdefghijklmnopqrstuvwxyz";' } });
+    // F7-2 (audit run_fable-plugin-review_260609_001): markdown is NO LONGER
+    // blanket-skipped — real secrets in *.md must be caught. (Replaces the old
+    // 'should skip markdown files' test which asserted the now-removed blanket skip.)
+    // NOTE: secret literals are split (e.g. 'ghp_' + '...') so this test source
+    // file does not itself contain a full-length token that the secret-detection
+    // hook would block on Write.
+    it('should scan markdown files for real secrets (F7-2)', () => {
+      const realPat = 'ghp_' + '1234567890abcdefghijklmnopqrstuvwxyz';
+      const result = runHook({ tool_input: { file_path: '/tmp/README.md', content: `const token = "${realPat}";` } });
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+    });
+
+    it('should block a real AWS key in a docs/ markdown file (F7-2)', () => {
+      const realKey = 'AKI' + 'AIOSFODNN7REALKEY1';
+      const result = runHook({ tool_input: { file_path: 'docs/setup.md', content: `AWS_ACCESS_KEY_ID=${realKey}` } });
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+    });
+
+    it('should NOT false-positive on documented secret-pattern PREFIXES in markdown (F7-2)', () => {
+      // Repo docs legitimately list pattern prefixes (ghp_, AKIA..., sk-ant-) as
+      // detection patterns. These are fragments, not full-length tokens — the
+      // full-token regexes must not match them.
+      const content = 'Patterns we detect: ghp_, gho_, AKIA..., sk-ant-..., sk-proj-..., AIza, xoxb-. These are documentation fragments only.';
+      const result = runHook({ tool_input: { file_path: '/tmp/some-doc.md', content } });
+      expect(result.continue).toBe(true);
+    });
+
+    it('should allowlist hook-catalog.md (documents the detection patterns themselves) (F7-2)', () => {
+      const realPat = 'ghp_' + '1234567890abcdefghijklmnopqrstuvwxyz';
+      // Even a full-shaped token in the secret-detection self-documentation file is allowed,
+      // because that doc legitimately carries reference material about the mechanism.
+      const result = runHook({ tool_input: { file_path: '.claude/rules/core/resources/hook-catalog.md', content: `Example shape: ${realPat}` } });
+      expect(result.continue).toBe(true);
+    });
+
+    it('should allowlist SECRET-SANITIZE.md (documents the sanitize mechanism) (F7-2)', () => {
+      const realPat = 'ghp_' + '1234567890abcdefghijklmnopqrstuvwxyz';
+      const result = runHook({ tool_input: { file_path: '.claude/hooks/SECRET-SANITIZE.md', content: `Example shape: ${realPat}` } });
+      expect(result.continue).toBe(true);
+    });
+
+    it('should still skip example markdown files (fixture exclusion preserved)', () => {
+      const awsExample = 'AKI' + 'AIOSFODNN7EXAMPLE';
+      const result = runHook({ tool_input: { file_path: '/tmp/example.config.md', content: awsExample } });
       expect(result.continue).toBe(true);
     });
 

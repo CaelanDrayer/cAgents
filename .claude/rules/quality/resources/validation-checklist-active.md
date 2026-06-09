@@ -2,9 +2,9 @@
 
 Phase-4 cross-cutting validation checks that are currently **enforced** by cAgents hooks. These checks run automatically throughout every workflow regardless of agent behavior, because they are wired into hook-based automation rather than agent prompts.
 
-The historical 29-check framework included 23 additional "aspirational" checks (Phases 1-3) that depended on controller and validator agents voluntarily running validation logic. Those checks never reliably ran in practice and shipped as 121 lines of agent-context bloat for behavior that did not happen. They have been moved to `docs/FUTURE_VALIDATION_FRAMEWORK.md` (which does not auto-load into agent context) for future graduation work. See that file for the deferred pipeline and graduation roadmap.
+**Canonical validation-number statement**: Exactly **5** checks are hook-enforced (this file). The historical **29**-check framework = those **5** active + **24** aspirational checks (Phases 1-3) that never reliably ran and now live in `docs/FUTURE_VALIDATION_FRAMEWORK.md` (which does not auto-load into agent context). The aspirational checks depended on controller and validator agents voluntarily running validation logic; they shipped as agent-context bloat for behavior that did not happen, and were moved out for future graduation work. See that file for the deferred pipeline and graduation roadmap.
 
-The filename `validation-checklist-29.md` is retained for back-compat with `@resources/validation-checklist-29.md` references at `.claude/rules/quality/completion.md:193` and `.claude/rules/README.md`.
+**Filename history**: this file was named `validation-checklist-29.md` through the v12.x honesty pass (the old name was retained for back-compat with `@resources/` references). It was renamed to `validation-checklist-active.md` in the v12.16.0 audit-remediation pass so the filename matches its actual content (the active 5 checks, not the legacy 29). All `@`-references were updated at rename time.
 
 ## Active Cross-Cutting Validation (5 checks)
 
