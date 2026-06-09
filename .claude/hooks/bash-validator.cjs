@@ -44,6 +44,36 @@ const BLOCKED_REGEXES = [
   { pattern: /\bnode\s+-e\b.*\b(child_process|\.exec\(|\.spawn\()/s, label: 'command obfuscation detected' },                     // node -e with child_process/exec/spawn
   { pattern: /\bruby\s+-e\b.*\b(exec|system|`)/s, label: 'command obfuscation detected' },                                        // ruby -e with exec/system/backtick
   { pattern: /\bphp\s+-r\b.*\b(exec|system|shell_exec|passthru)/s, label: 'command obfuscation detected' },                       // php -r with dangerous functions
+
+  // F7-1 (audit run_fable-plugin-review_260609_001) — close two named bypass classes.
+  // NOTE: static regex still cannot catch all runtime-constructed obfuscation
+  // (hex/octal-built command names, multi-line var assembly, env-indirected
+  // execution). These two patterns close the two specific gaps the audit named;
+  // the documented-limitation note in hook-catalog.md remains accurate.
+
+  // (a) eval of a bare variable — `eval $VAR`, `eval "$VAR"`, `eval ${VAR}`,
+  //     `eval "${VAR}"`. This is variable-indirection execution: the command
+  //     string is built in a variable and run via eval, defeating literal-string
+  //     regexes (e.g. C="rm -rf /"; eval $C). The pre-existing eval pattern only
+  //     caught `eval $(...)` command substitution; this catches eval-of-variable.
+  //     High-signal obfuscation → Tier 1 deny. Does NOT match `eval $(cmd)` style
+  //     (handled above) or eval of a literal string `eval 'ls -la'`.
+  { pattern: /\beval\s+["']?\$\{?[A-Za-z_][A-Za-z0-9_]*\}?["']?(\s|;|$)/, label: 'variable-indirection execution via eval (eval of a built command string)' },
+
+  // (b) two-step download-then-exec — a single command string that BOTH
+  //     downloads a file with curl/wget AND later pipes a downloaded/script
+  //     file into a shell interpreter (bash|sh|zsh|source|.). Catches the
+  //     `curl ... -o x.sh; bash x.sh`, `wget -O /tmp/i URL && sh /tmp/i`, and
+  //     `curl ... > x.sh; source x.sh` chains that evade the existing
+  //     direct-pipe-to-shell pattern (curl|wget | sh). Requires a fetch verb
+  //     AND a subsequent shell-exec of a file in the same command → Tier 1 deny.
+  { pattern: /\b(curl|wget)\b[^\n]*?(\s-[oO]\b|>>?\s*\S)[^\n]*?(;|&&|\|\||\n)[^\n]*?\b(bash|sh|zsh|source)\b\s+\S/s, label: 'two-step download-then-execute detected (downloaded file later run by a shell)' },
+  // (b-alt) reverse order: shell-exec of a file whose download appears earlier
+  //     in the chain — `curl URL -o /tmp/x.sh && /tmp/x.sh` where the file is
+  //     made executable and run directly. Caught by the fetch+sep+exec shape
+  //     above for bash/sh/source; the direct-exec `./x.sh` form is intentionally
+  //     left to Tier 2 (see HITL_PATTERNS) because `./build.sh` after a git
+  //     clone is common and dual-use.
 ];
 
 // HITL patterns: borderline-dangerous commands that require user confirmation.
@@ -90,6 +120,19 @@ const HITL_PATTERNS = [
   // Disk operations
   { pattern: /\bmkswap\b/, message: 'mkswap reformats a partition as swap space, destroying existing data. Verify the target device is correct.' },
   { pattern: /\bfdisk\b/, message: 'fdisk modifies disk partition tables. Verify the target device is correct and back up the partition table first.' },
+
+  // F7-1 (audit run_fable-plugin-review_260609_001) — variable-indirection
+  // execution: a bare variable in COMMAND POSITION (start of a command segment),
+  // e.g. `C="rm -rf /"; $C` or `... && ${CMD} --flag`. This is dual-use — legit
+  // scripts run `$EDITOR file`, `$SHELL -c ...`, `"$PYTHON" script.py` — so it is
+  // Tier 2 (ask) rather than Tier 1 (deny). The regex requires the variable to
+  // appear at string-start OR immediately after a separator (; && || |) and to
+  // be followed by whitespace+token or end-of-string (i.e. used AS a command,
+  // not as an argument like `ls $HOME`). It does NOT match command substitution
+  // `$(...)` / `${...:-default}` parameter expansion used as an argument, nor a
+  // variable consumed as an argument mid-command. Confirm the variable's
+  // contents are trusted before running it as a command.
+  { pattern: /(^|[;|]|&&|\|\|)\s*["']?\$\{?[A-Za-z_][A-Za-z0-9_]*\}?["']?(\s+\S|\s*$)/, message: 'A variable is being executed as a command (variable-indirection). The variable contents are not visible to static analysis and could expand to a destructive command. Verify the variable holds a trusted command, or inline the literal command instead.' },
 ];
 
 createHook('BashValidator', async (input) => {

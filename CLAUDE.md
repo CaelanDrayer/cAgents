@@ -23,10 +23,13 @@ cAgents v12.0.0 is the major consolidation release shipped from branch
 - **chief-legal-officer -> clo.** Standardized leadership naming.
 - **max_revision_cycles 5 -> 3.** Tighter revision budget per audit
   recommendation.
-- **Execution self-validation: 15 -> 5 hook-verifiable checks.** The
-  aspirational 15-check protocol replaced with 5 mechanically-verifiable
-  checks (evidence freshness, file existence, guard exit codes, git state,
-  file:line accuracy). See @.claude/rules/core/resources/execution-self-validation.md.
+- **Execution self-validation: 15 -> 5 mechanically-checkable checks.** The
+  aspirational 15-check protocol replaced with 5 checks designed to be
+  mechanically verifiable (evidence freshness, file existence, guard exit
+  codes, git state, file:line accuracy). These are currently agent-self-reported;
+  the verifier hook that would enforce them is deferred to a future bump, so the
+  checks are advisory in practice. See
+  @.claude/rules/core/resources/execution-self-validation.md.
 - **Legacy directory cleanup.** 11 of 13 legacy domain dirs removed
   (`engineering/`, `creative/`, `business/`, `growth/`, `service/`,
   `science/`, `health/`, `education/`, `personal/`, `arts/`, `trades/`);
@@ -106,9 +109,9 @@ domains/        # engineering, grow, operate, people, serve (5 files)
 infrastructure/ # model-routing (1 file)
 memory/         # agent-memory (2 files)
 quality/        # completion, validation-framework, implicit-discovery (5 top-level + 1 resources/)
-playbooks/      # pat-* reusable patterns (4 files)
+playbooks/      # pat-* reusable patterns (6 pat-* + README = 7 files)
 ```
-Total: 36 .md = 30 top-level across 6 categories + 2 READMEs (root + playbooks/) + 4 resources/.
+Total: 38 .md = 32 top-level across 6 categories + 2 READMEs (root + playbooks/) + 4 resources/.
 
 **Import Syntax**: Use `@path/to/file` to include external content. View loaded files: `/memory`
 
@@ -164,7 +167,7 @@ Total: 36 .md = 30 top-level across 6 categories + 2 READMEs (root + playbooks/)
   +-> validator (level 1)       -> validation_report.yaml (PASS/FAIL/REVISE)
 ```
 
-V9.23: `/run` is now a config-driven state machine reading `pipeline_config.yaml`. Each enrichment agent runs sequentially at level 1. Controllers spawn executors and reviewers at level 2 with revision loops (max 3 internal rounds). The validator outputs PASS/FAIL/REVISE to drive revision routing (max 3 total cycles in v12.0.0+). The standalone `prompt-engineer` and `task-decomposer` agents were folded into `planner` in v12.0.0; the planner now produces decomposition and assembles delegation prompts inline, and controllers fall back to standard delegation prompts when the planner skips prompt assembly.
+V9.23: `/run` is now a config-driven state machine reading `pipeline_config.yaml`. Each enrichment agent runs sequentially at level 1. Controllers spawn executors and reviewers at level 2 with internal reviewer revision loops (max 2 internal rounds, lowered from 3 in LP-27 — see controllers.md). The validator outputs PASS/FAIL/REVISE to drive the outer revision routing (max 3 total cycles in v12.0.0+). The standalone `prompt-engineer` and `task-decomposer` agents were folded into `planner` in v12.0.0; the planner now produces decomposition and assembles delegation prompts inline, and controllers fall back to standard delegation prompts when the planner skips prompt assembly.
 
 **Enrichment Agents** (level 1): orchestrator, planner (planner absorbs decomposition + delegation-prompt assembly post-v12.0.0)
 **Coordination Agents** (level 1, ONLY coordinate): controllers (tech-lead, architect, etc.)
@@ -328,6 +331,8 @@ TaskUpdate({ taskId: "N", status: "completed" })
 
 **V9.0+**: Skills in `.claude/skills/`, auto-discovered.
 
+**Mode & flag registry**: `.claude/skills/_MODE_REGISTRY.md` is the single source of truth for all skill modes, flags, and trigger phrases. Skill SKILL.md bodies reference it rather than redefining modes inline — consult it before adding or changing a skill flag.
+
 | Skill | Context | Agent | Description |
 |-------|---------|-------|-------------|
 | `/run` | `none` | `true` | Execute any task through auto-routed controller and specialist agents (passthroughs: `run context ...`, `--mode debug`; v12.1.2 keyword router: `run improve|review|audit|optimize ...` triggers improve modes) |
@@ -407,7 +412,7 @@ cAgents/
 |   +-- hooks/               # 31 .cjs files (28 hooks + utils + launcher + eval CLI)
 |   +-- output-styles/       # Output-style files (v12.8.0+)
 |   +-- plans/               # Saved execution plans
-|   +-- rules/               # Modular rules (36 files: 30 top-level across 6 categories + 2 READMEs (root + playbooks/) + 4 in resources/)
+|   +-- rules/               # Modular rules (38 files: 32 top-level across 6 categories + 2 READMEs (root + playbooks/) + 4 in resources/)
 |   +-- settings.json        # Hook registration + permissions + env
 +-- agents/                  # All 141 agents (v12.8.0+ consolidation — formerly 11 root dirs)
 |   +-- developer/           # Developer archetype (26 agents — backend/frontend/fullstack/infrastructure/quality)
@@ -505,12 +510,18 @@ cAgents is distributed as a Claude Code plugin. See `.claude-plugin/plugin.json`
 - **Hook Registration**: Hooks declared in `hooks/hooks.json` or referenced via `hooks` field in plugin.json
 - **Marketplace**: Submit via `marketplace.json` with `$schema`, owner, category, and version fields
 - **Multi-Plugin**: Multiple plugins loaded via `--plugin-dir` flags; settings merge with project settings
-- **Worktree Sparse Checkout (V11.1.12+)**: `.claude/settings.json` declares `worktree.sparsePaths` (14 entries — `.claude/`, `core/`, `cagents-memory/_system/`, the 9 archetype roots, `scripts/`, `tests/`, `docs/`). When `/team` teammates spawn with `isolation: "worktree"`, only these paths populate the worktree, dramatically reducing checkout time and preventing teammates from modifying out-of-scope files.
+- **Worktree Sparse Checkout (V11.1.12+)**: `.claude/settings.json` declares `worktree.sparsePaths` (6 entries — `.claude/`, `cagents-memory/_system/`, `agents/`, `scripts/`, `tests/`, `docs/`). Since the v12.8.0 consolidation, `core/` and all 9 archetype roots live under `agents/`, so a single `agents/` entry covers them. When `/team` teammates spawn with `isolation: "worktree"`, only these paths populate the worktree, dramatically reducing checkout time and preventing teammates from modifying out-of-scope files.
 
 ## Performance Benchmarks
 
-| Feature | Improvement |
-|---------|-------------|
+> **Caveat**: The figures below (50x, 60-80%, 40-60%, 20-30%) are design-target
+> ESTIMATES, not measured results. They have no benchmark artifact, methodology,
+> or measurement-date provenance — treat them as aspirational targets rather than
+> validated engineering data until `docs/OPTIMIZATION_PROGRESS.md` carries a
+> reproducible measurement.
+
+| Feature | Target (estimated) |
+|---------|--------------------|
 | **Aggressive Decomposition** | 30+ work items from simple request |
 | **Controller Pattern** | 30-40% simpler planning, 20-30% fewer tokens |
 | **Parallel Execution** | 50x speedup (swarm), 80%+ efficiency |
@@ -531,8 +542,8 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
-**Tests**: `npm test` runs 1215+ Vitest tests across 145+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.15.2
+**Tests**: `npm test` runs 1249+ Vitest tests across 147+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
+**Version**: 12.16.0
 
 ## Troubleshooting
 

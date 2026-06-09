@@ -5,7 +5,7 @@ import { join } from 'path';
 /**
  * Regression test for V11.2.11 (Q-006 / F-docs-003).
  *
- * Bug: .claude/rules/quality/resources/validation-checklist-29.md is 126 lines
+ * Bug: .claude/rules/quality/resources/validation-checklist-active.md is 126 lines
  *      and ships 23 ASPIRATIONAL checks (Phases 1-3) into every agent's
  *      context on every session, alongside the 5 active Phase-4 checks
  *      (checks 25-29). The 23 aspirational checks are documented as
@@ -36,7 +36,7 @@ import { join } from 'path';
  */
 
 const ROOT = process.cwd();
-const ACTIVE_FILE = '.claude/rules/quality/resources/validation-checklist-29.md';
+const ACTIVE_FILE = '.claude/rules/quality/resources/validation-checklist-active.md';
 const FUTURE_DOC = 'docs/FUTURE_VALIDATION_FRAMEWORK.md';
 
 describe('Q-006 regression: validation-checklist active file is trim', () => {

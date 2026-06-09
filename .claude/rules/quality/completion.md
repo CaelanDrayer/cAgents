@@ -184,12 +184,12 @@ Verification evidence is only valid if:
 
 ## Comprehensive Validation Checklists (V12.0.0)
 
-Four-phase validation covering ~24 checks across the entire workflow lifecycle. (Down from the V10.23.0 "29 checks" figure; the v12 honesty pass collapsed the executor self-validation from 15 aspirational checks to 5 hook-verifiable checks per @.claude/rules/core/resources/execution-self-validation.md.)
+**Canonical validation-number statement**: Exactly **5** checks are hook-enforced (the cross-cutting checks listed last below — wired into `subagent-stop-tracker.cjs`, `post-write-validator.cjs`, and `verify-completion.cjs`). The historical **29**-check framework = those **5** active + **24** aspirational checks (Phases 1-3) that were never reliably enforced and now live in `docs/FUTURE_VALIDATION_FRAMEWORK.md` (which does not auto-load into agent context). The other check groups below (pre-execution, mid-execution, executor self-validation) are by-convention controller/executor checklists, not hook-enforced.
 
-- **Pre-Execution** (6 checks by controller): Plan completeness, work item criteria, dependency acyclicity, agent existence, referenced files, log schema. See @.claude/rules/core/resources/controller-validation-checklist.md.
-- **Mid-Execution** (5 checks by controller after every 3 completions): Evidence capture, stuck item detection, timestamp monotonicity, evidence spot-check, dependency satisfaction. See @.claude/rules/core/resources/controller-validation-checklist.md.
-- **Post-Execution / Executor Self-Validation** (5 hook-verifiable checks by execution agent before DONE): Evidence freshness, file existence, guard exit codes, git state, file:line accuracy. See @.claude/rules/core/resources/execution-self-validation.md.
-- **Cross-Cutting** (5 checks across agents, hook-enforced): Task cleanup, agent tree completeness, file change audit, context drift prevention, YAML/JSON syntax. See @resources/validation-checklist-29.md.
+- **Pre-Execution** (7 checks by controller, by convention): Planner output schema (Check 0), plan completeness, work item criteria, dependency acyclicity, agent existence, referenced files, log schema. See @.claude/rules/core/resources/controller-validation-checklist.md.
+- **Mid-Execution** (5 checks by controller after every 3 completions, by convention): Evidence capture, stuck item detection, timestamp monotonicity, evidence spot-check, dependency satisfaction. See @.claude/rules/core/resources/controller-validation-checklist.md.
+- **Post-Execution / Executor Self-Validation** (5 mechanically-checkable checks by execution agent before DONE — currently agent-self-reported; verifier hook deferred, so advisory in practice): Evidence freshness, file existence, guard exit codes, git state, file:line accuracy. See @.claude/rules/core/resources/execution-self-validation.md.
+- **Cross-Cutting** (5 checks across agents, hook-enforced — the only enforced group): Task cleanup, agent tree completeness, file change audit, context drift prevention, YAML/JSON syntax. See @resources/validation-checklist-active.md.
 
 The executor self-validation contract and the controller pre/mid-execution checklists are the canonical sources for each phase — this section is a summary, not a duplicate.
 

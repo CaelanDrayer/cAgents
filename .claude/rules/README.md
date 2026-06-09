@@ -7,7 +7,7 @@ paths:
 
 Topic-specific rules organized for better maintainability. Counts in this index are derived from disk at edit time:
 
-- **Rule files**: 36 (`find .claude/rules -name '*.md' -type f | wc -l`)
+- **Rule files**: 38 (`find .claude/rules -name '*.md' -type f | wc -l`)
 - **Hook event types**: 18 (`jq -r '.hooks | keys | length' .claude/settings.json`)
 - **Version-registry slots**: 16 (post-v12.2.0; was 17 in v12.1.x, was 18 in V11.0)
 
@@ -48,6 +48,8 @@ When rule files are added, removed, or renamed, re-derive these numbers and upda
 │   └── agent-memory-reference.md # Detailed memory patterns and examples
 ├── playbooks/      # Extracted cross-agent guidance (referenced via @path)
 │   ├── README.md
+│   ├── pat-concurrent-session-hooks.md
+│   ├── pat-cross-teammate-request.md
 │   ├── pat-evidence-first-execution.md
 │   ├── pat-graceful-degradation-depth1.md
 │   ├── pat-subagent-status-protocol.md
@@ -59,7 +61,7 @@ When rule files are added, removed, or renamed, re-derive these numbers and upda
     ├── implicit-discovery.md    # Handling abstract requests
     ├── validation-framework.md  # End-to-end completion traceability
     └── resources/
-        └── validation-checklist-29.md  # Active 5-check validation framework (filename retained for back-compat)
+        └── validation-checklist-active.md  # Active 5-check validation framework (renamed from validation-checklist-29.md in v12.16.0)
 ```
 
 ## Purpose
@@ -98,7 +100,7 @@ Import rules into CLAUDE.md or other docs:
 See @.claude/rules/core/orchestration.md for workflow patterns.
 ```
 
-## Current Rules (36 files)
+## Current Rules (38 files)
 
 ### Core (16 files)
 
@@ -136,26 +138,28 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 23. **memory/agent-memory.md** — `cagents-memory/` structure (waypoints, three-file pattern)
 24. **memory/agent-memory-reference.md** — Detailed memory patterns and examples
 
-### Playbooks (5 files)
+### Playbooks (7 files)
 
 25. **playbooks/README.md** — Playbook conventions and prefix taxonomy
-26. **playbooks/pat-evidence-first-execution.md** — Pattern: specific, verifiable evidence
-27. **playbooks/pat-graceful-degradation-depth1.md** — Pattern: degraded execution when `Agent` is stripped at depth ≥ 1
-28. **playbooks/pat-subagent-status-protocol.md** — Pattern: DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED status reporting
-29. **playbooks/pat-two-stage-review.md** — Pattern: spec-compliance review before code-quality review
+26. **playbooks/pat-concurrent-session-hooks.md** — Pattern: concurrent-session hook contract (deterministic session resolution)
+27. **playbooks/pat-cross-teammate-request.md** — Pattern: cross-teammate `peer_request` routing in `/team`
+28. **playbooks/pat-evidence-first-execution.md** — Pattern: specific, verifiable evidence
+29. **playbooks/pat-graceful-degradation-depth1.md** — Pattern: degraded execution when `Agent` is stripped at depth ≥ 1
+30. **playbooks/pat-subagent-status-protocol.md** — Pattern: DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED status reporting
+31. **playbooks/pat-two-stage-review.md** — Pattern: spec-compliance review before code-quality review
 
 ### Quality (6 files)
 
-30. **quality/anti-slop.md** — Anti-AI-slop writing rules
-31. **quality/completion.md** — Task completion protocol (evidence-first, red-flag detection)
-32. **quality/cso-guidelines.md** — Claude Search Optimization for agent descriptions
-33. **quality/implicit-discovery.md** — Handling abstract requests
-34. **quality/validation-framework.md** — End-to-end completion traceability
-35. **quality/resources/validation-checklist-29.md** — Active 5-check cross-cutting validation framework (filename retained for back-compat with `@` references; the 23 aspirational checks moved to `docs/FUTURE_VALIDATION_FRAMEWORK.md` in v12.x)
+32. **quality/anti-slop.md** — Anti-AI-slop writing rules
+33. **quality/completion.md** — Task completion protocol (evidence-first, red-flag detection)
+34. **quality/cso-guidelines.md** — Claude Search Optimization for agent descriptions
+35. **quality/implicit-discovery.md** — Handling abstract requests
+36. **quality/validation-framework.md** — End-to-end completion traceability
+37. **quality/resources/validation-checklist-active.md** — Active 5-check cross-cutting validation framework (renamed from `validation-checklist-29.md` in v12.16.0 so the filename matches its content; the 24 aspirational checks moved to `docs/FUTURE_VALIDATION_FRAMEWORK.md` in v12.x)
 
 ### Meta (1 file)
 
-36. **README.md** — This index file
+38. **README.md** — This index file
 
 ## Current Skill Catalog (v12.2.0+)
 

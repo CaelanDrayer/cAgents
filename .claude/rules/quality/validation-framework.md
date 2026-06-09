@@ -8,6 +8,8 @@ paths:
 
 End-to-end traceability from "what is done" definition to completion verification.
 
+**Canonical validation-number statement**: Exactly **5** checks are hook-enforced (the cross-cutting checks in `@.claude/rules/quality/resources/validation-checklist-active.md`). The historical **29**-check framework = those **5** active + **24** aspirational checks (Phases 1-3, never reliably enforced), which now live in `docs/FUTURE_VALIDATION_FRAMEWORK.md` and do NOT auto-load into agent context. The controller pre-execution (7), mid-execution (5), and executor self-validation (5) checklists are by-convention agent checklists, not hook-enforced.
+
 ## The Validation Chain
 
 ```

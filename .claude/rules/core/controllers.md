@@ -115,7 +115,7 @@ Controllers include an internal reviewer loop (max 2 rounds). After each executo
 
 ### Dead-Letter Promotion Contract (P1-6, v12.6.x)
 
-When a work item fails 2 consecutive reviewer rounds (rounds-cap reached per `controller_revision.max_internal_rounds: 2` in `pipeline_config.yaml`; lowered from 3 in LP-27, v12.7.x), the controller MUST promote the item rather than silently retrying or claiming completion:
+When a work item fails 2 consecutive reviewer rounds (rounds-cap reached per `controller_revision.max_internal_rounds: 2` in `pipeline_config.yaml`; lowered from 3 in LP-27, v12.7.x), the controller should promote the item rather than silently retrying or claiming completion. This is a by-convention contract — no hook currently enforces it (see the advisory note below):
 
 1. **Set the underlying implementation_task status** to `dead_letter` (NOT `completed`, NOT `in_progress`) in `coordination_log.yaml`.
 2. **Append the item to `dead_letter_items[]`** in `coordination_log.yaml` with the schema documented in `controller-reference.md` (task_id, name, rounds_attempted, last_feedback, best_attempt_location, reason).
@@ -305,7 +305,7 @@ Controllers MUST re-read plan objectives before major decisions to combat attent
 
 Controllers MUST run validation checkpoints at two points:
 
-**Pre-Execution** (6 checks): Before spawning any executor — plan completeness, work item criteria, dependency acyclicity, agent existence, referenced file existence, coordination log schema.
+**Pre-Execution** (7 checks): Before spawning any executor — planner output schema (Check 0, added LP-28), plan completeness, work item criteria, dependency acyclicity, agent existence, referenced file existence, coordination log schema.
 
 **Mid-Execution** (5 checks): After every 3 completed work items — evidence capture, stuck item detection, timestamp monotonicity, evidence spot-check (random verification), dependency satisfaction.
 

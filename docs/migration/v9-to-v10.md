@@ -78,7 +78,7 @@ Complexity is determined by a 9-signal scoring system evaluating: component coun
 - Agent count: 239 -> 206 (33 removed through consolidation)
 
 ### Version Sync
-14 files must stay in sync. Use `bash scripts/ci/sync-versions.sh` or `bash scripts/ci/validate-versions.sh` to check.
+14 files must stay in sync. Use `bash scripts/sync-versions.sh` or `bash scripts/ci/validate-versions.sh` to check.
 
 ## Breaking Changes
 
