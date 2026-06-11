@@ -130,7 +130,7 @@ Objection phase: ALL agents read ALL domain_analysis_*.yaml files
 
 ### Constraint
 
-Subagents cannot spawn subagents. All cross-pollination is FILE-BASED only:
+C-suite peers in the same wave cannot message each other directly (the lead is fixed; there is no teammate-to-teammate messaging). All cross-pollination is FILE-BASED only:
 - Agent A writes `domain_analysis_A.yaml`
 - Agent B reads `domain_analysis_A.yaml` as input
-- No Task-to-Task or message-based coordination between C-suite peers
+- No message-based coordination between C-suite peers (dependency ordering across waves, not in-wave messaging, carries peer context)

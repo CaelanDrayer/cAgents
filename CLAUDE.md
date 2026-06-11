@@ -394,7 +394,9 @@ cagents-memory/
 
 **Principles**: File-based, session-scoped, parallel-safe, pause/resume capable. See `docs/CONTEXT_MANAGEMENT.md`.
 
-**Recursive Workflows**: Complex tasks spawn child workflows (max depth: 5, max children: 100). Each child follows objectives -> controller -> questions -> synthesis -> implementation.
+**Recursive Workflows**: Complex tasks spawn child workflows (`max_nesting_depth: 5`, max children: 100). Each child follows objectives -> controller -> questions -> synthesis -> implementation.
+
+**Subagent Nesting (v12.17.0 / CC 2.1.172)**: As of Claude Code 2.1.172 (verified live on 2.1.173), subagents retain the `Agent` tool and CAN spawn their own subagents up to 5 levels deep (`max_nesting_depth: 5`; the skill loop is depth 0, the 5 levels are the subagent generations beneath it). The nesting model is `skill loop (depth 0) -> controller/teammate (depth 1) -> execution agent (depth 2) -> ... up to 5 levels deep`. `/team` teammates reliably spawn execution agents and reviewers, and may nest deeper within the budget; they spawn execution agents directly rather than re-entering the full `/run` pipeline by design for cost/clarity, not because of a harness limit. Graceful degradation (the `pat-graceful-degradation-depth1.md` playbook) is repositioned to a **defensive fallback** for the nesting ceiling (a depth-5 subagent cannot spawn a depth-6 child) or a regressed harness — agents check whether the `Agent` tool is actually present before degrading to direct execution + self-validation. Historically (before v12.17.0), the runtime stripped `Agent` at depth >= 1, which is no longer the default behavior on CC >= 2.1.172. See @.claude/rules/core/teams.md and @.claude/rules/playbooks/pat-graceful-degradation-depth1.md.
 
 ## Creating Agents / Domains
 
@@ -543,7 +545,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking.
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 1249+ Vitest tests across 147+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.16.0
+**Version**: 12.17.0
 
 ## Troubleshooting
 

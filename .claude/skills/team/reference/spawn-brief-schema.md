@@ -47,7 +47,7 @@ Before reporting DONE, run the 5 hook-verifiable checks from `.claude/rules/core
 Write the result to `${SESSION_DIR}/outputs/wave-{K}/task-{N}/self-validation.yaml` with `status: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED` and full self_validation block.
 
 ## Tool Availability Note
-If the Agent tool is absent from your tool surface (depth-1 stripping — see `.claude/rules/core/teams.md` § Known Harness Limitation), gracefully degrade to direct execution using Read/Write/Edit/Bash. Do NOT report BLOCKED — execute the work yourself and self-validate.
+On CC ≥ 2.1.172 the Agent tool is normally present on your surface (subagents spawn subagents up to 5 levels deep), so delegate as usual. Only if the Agent tool is verifiably absent — at the nesting ceiling, or a regressed/older harness — gracefully degrade to direct execution using Read/Write/Edit/Bash (see `.claude/rules/core/teams.md` § Nesting-Ceiling Degradation). Do NOT report BLOCKED for a missing Agent tool — verify it is actually absent, then execute the work yourself and self-validate.
 
 ## Self-Registration (agent tree)
 Append your entry to `${SESSION_DIR}/workflow/agent_tree.yaml` on start. See `.claude/skills/team/reference/teammate-spawning-template.md` § Self-Registration for the snippet.

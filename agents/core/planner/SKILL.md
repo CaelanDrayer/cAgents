@@ -86,7 +86,7 @@ See `.claude/rules/quality/implicit-discovery.md` for the Unsaid Framework.
 
 ## Pre-emptive Consultation (LP-21, v12.7.x)
 
-After work items are generated but before delegation prompts are assembled, the planner MUST run a **pre-emptive consultation** scan against `cagents-memory/_knowledge/*.md` and surface relevant notes as `@`-references inside each work item's delegation prompt. This lets controllers and execution agents inherit prior learnings (depth-1 stripping, graceful degradation, pattern-fired recoveries, etc.) without re-discovering them.
+After work items are generated but before delegation prompts are assembled, the planner MUST run a **pre-emptive consultation** scan against `cagents-memory/_knowledge/*.md` and surface relevant notes as `@`-references inside each work item's delegation prompt. This lets controllers and execution agents inherit prior learnings (nesting-ceiling graceful degradation, pattern-fired recoveries, etc.) without re-discovering them.
 
 ### Algorithm
 
@@ -107,7 +107,7 @@ The assembled delegation prompt for a work item with matched knowledge notes loo
 
 ## Prior Learnings (auto-surfaced by planner)
 
-See @cagents-memory/_knowledge/agent-tool-depth1-stripping.md for the depth-1 Agent-tool stripping pattern.
+See @cagents-memory/_knowledge/agent-tool-depth1-stripping.md for the nesting-ceiling graceful-degradation fallback (historically: depth-1 Agent-tool stripping).
 See @cagents-memory/_knowledge/declarative-deps-pattern.md for the metadata.requires advisory schema.
 ```
 

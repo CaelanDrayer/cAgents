@@ -4,7 +4,7 @@ Detailed Wave 1/Wave 2 dependency-ordered C-suite analysis and the two-phase del
 
 ## Overview
 
-C-suite analysis uses **multi-wave dependency-ordered execution** with inline peer passes. Independent C-suite agents run first (Wave 1), then dependent agents run with access to Wave 1 outputs (Wave 2). Cross-pollination is FILE-BASED — subagents cannot spawn subagents, so agent A writes a domain_analysis file and agent B reads it.
+C-suite analysis uses **multi-wave dependency-ordered execution** with inline peer passes. Independent C-suite agents run first (Wave 1), then dependent agents run with access to Wave 1 outputs (Wave 2). Cross-pollination is FILE-BASED — C-suite peers in the same wave cannot message each other directly (the lead is fixed; there is no teammate-to-teammate messaging), so agent A writes a domain_analysis file and agent B reads it.
 
 ## Step 4a: Detect C-Suite Dependencies
 

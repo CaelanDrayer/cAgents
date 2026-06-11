@@ -94,5 +94,5 @@ Never ignore an escalation or force retry without changes. If an execution agent
 ## See also
 
 - `.claude/rules/core/resources/execution-self-validation.md` — self-validation contract that gates DONE vs DONE_WITH_CONCERNS auto-downgrades
-- `.claude/rules/playbooks/pat-graceful-degradation-depth1.md` — when tools are stripped, prefer DONE-via-self-validation over BLOCKED
+- `.claude/rules/playbooks/pat-graceful-degradation-depth1.md` — Nesting-Ceiling Degradation fallback: in the rare case where the `Agent` tool is genuinely absent (at the depth-5 nesting ceiling, or on a regressed/older harness), prefer DONE-via-self-validation over BLOCKED. On Claude Code 2.1.172+ subagents normally retain `Agent` up to 5 levels deep, so verify the tool is actually absent before degrading.
 - `.claude/rules/playbooks/pat-cross-teammate-request.md` — `/team` peer_request routing when NEEDS_CONTEXT.requested_peer is set

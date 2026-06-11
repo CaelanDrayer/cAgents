@@ -1,39 +1,41 @@
 /**
- * FU-1 (v12.1.1, updated v12.2.0): graceful-degradation rule
- * scope-generalization regression
+ * FU-1 (v12.1.1) → REPOSITIONED in v12.17.0: graceful-degradation
+ * scope/semantics regression
  *
- * Locks the v12.1.1 documentation generalization: the depth-1 Agent-tool
- * stripping graceful-degradation rule applies to ALL spawning skills (the
- * two surviving skills /run and /team, plus the historically-affected /org
- * which was absorbed into /team strategic mode in v12.2.0) and ALL agent
- * types (cagents:*, general-purpose, Explore, Plan) — not just /team
- * teammates as previously asserted.
+ * ORIGINAL premise (v12.1.1): the depth-1 Agent-tool stripping graceful-
+ * degradation rule applies to ALL spawning skills and ALL agent types — not
+ * just /team teammates. That premise treated depth-1 stripping as the EXPECTED
+ * DEFAULT behavior of the harness.
  *
- * The v12.1.0 spike (session run_improve-team-context_260521_001) and the
- * v12.1.1 coordination session (run_v12-1-1-followups_260521_002) both
- * reproduced depth-1 Agent stripping under /run, falsifying the earlier
- * "/run controllers retain Agent at level 1 and MUST delegate" assertion.
+ * REPOSITIONED premise (v12.17.0): Claude Code 2.1.172 added subagent-spawns-
+ * subagent support up to 5 levels deep. An empirical chain test (session
+ * run_deep-nesting-enablement_260611_001, verified on CC 2.1.173) ran a spawn
+ * chain depth 1 → 2 → 3 → 4 → 5 → 6 with the `Agent` tool present at every
+ * level and ZERO stripping. The "Agent stripped at depth >= 1" behavior is
+ * therefore NO LONGER the default. Graceful degradation is repositioned from
+ * "the expected depth-1 behavior" to a DEFENSIVE FALLBACK that triggers only
+ * when the `Agent` tool is verifiably absent — at the nesting ceiling (a
+ * subagent at depth 5 cannot spawn depth 6) or if a future/older harness
+ * regresses the capability.
  *
  * This test asserts that the three rule docs:
  *   1. .claude/rules/core/controllers.md
  *   2. .claude/rules/core/execution.md
  *   3. .claude/rules/core/teams.md
  *
- * each contain generalized scope language (mentioning BOTH of the surviving
- * spawning skills /run and /team in the graceful-degradation context) and
- * do NOT retain the narrow "/team teammates only" or "/run controllers must
- * delegate" assertions that v12.1.0 empirically falsified. Historical
- * mentions of /org in the rule docs are tolerated for back-compat narrative
- * but no longer required (post-v12.2.0).
+ * each carry the REPOSITIONED framing in their nesting/graceful-degradation
+ * section (degradation = defensive fallback for verifiably-absent Agent, NOT
+ * the expected depth-1 default), and do NOT retain the falsified narrow-scope
+ * claims (e.g. "/run controllers retain Agent at level 1 and MUST delegate" as
+ * the pre-v12.1.1 phrasing) NOR present depth-1 stripping as a current default.
  *
- * Bug-driven testing mandate: this test would have caught a regression where
- * a future doc rewrite re-narrowed the scope to /team-only, or re-introduced
- * the "/run controllers retain Agent" assertion. It also catches drift away
- * from the empirically-correct generalized scope language.
+ * Bug-driven testing mandate: this test would have caught a regression where a
+ * future doc rewrite re-introduced depth-1 stripping as the expected default,
+ * dropped the repositioning framing, or re-narrowed the scope incorrectly.
  *
- * Could have caught by: unit test on the three rule docs' graceful-
- * degradation sections, checking for scope-qualifier presence and absence
- * of the falsified narrow-scope claims.
+ * Could have caught by: unit test on the three rule docs' nesting/graceful-
+ * degradation sections, checking for repositioning-marker presence and absence
+ * of the falsified depth-1-stripping-as-default claims.
  */
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
@@ -49,11 +51,16 @@ const EXECUTION_RULE = path.join(REPO_ROOT, '.claude', 'rules', 'core', 'executi
 const TEAMS_RULE = path.join(REPO_ROOT, '.claude', 'rules', 'core', 'teams.md');
 const STRIPPING_KNOWLEDGE = path.join(REPO_ROOT, 'cagents-memory', '_knowledge', 'agent-tool-depth1-stripping.md');
 
-// Extract the "Graceful Degradation" / "Known Harness Limitation" section from a rule doc.
-// Returns the section body between the matching header and the next top-level header (or EOF).
+// Extract the nesting / graceful-degradation / nesting-ceiling section from a
+// rule doc. Returns the section body between the matching header and the next
+// top-level (## ) header (or EOF).
+//
+// v12.17.0: section titles were renamed. controllers.md / execution.md use
+// "Nesting Model and Graceful Degradation ..."; teams.md uses "Nesting-Ceiling
+// Degradation ...". Older titles ("Graceful Degradation", "Known Harness
+// Limitation") are still matched for back-compat in case a doc lags the rename.
 function extractGracefulSection(content) {
-  // Match either "Graceful Degradation" or "Known Harness Limitation" as section header.
-  const headerPattern = /^##+\s+(Graceful Degradation|Known Harness Limitation)/m;
+  const headerPattern = /^##+\s+.*?(Nesting[- ]Ceiling|Nesting Model|Graceful Degradation|Known Harness Limitation)/m;
   const match = content.match(headerPattern);
   if (!match) return '';
   const startIdx = match.index;
@@ -63,7 +70,7 @@ function extractGracefulSection(content) {
   return nextHeader === -1 ? content.slice(startIdx) : content.slice(startIdx, startIdx + match[0].length + nextHeader);
 }
 
-describe('FU-1 (v12.1.1): graceful-degradation scope generalization', () => {
+describe('FU-1 → v12.17.0 repositioning: graceful-degradation semantics', () => {
   describe('Invariant 1 — all three rule docs exist', () => {
     it('.claude/rules/core/controllers.md exists', () => {
       expect(fs.existsSync(CONTROLLERS_RULE)).toBe(true);
@@ -76,40 +83,40 @@ describe('FU-1 (v12.1.1): graceful-degradation scope generalization', () => {
     });
   });
 
-  describe('Invariant 2 — graceful-degradation section mentions both surviving spawning skills', () => {
-    // v12.2.0: /org was absorbed into /team strategic mode. The two surviving
-    // spawning skills are /run and /team; both MUST appear in the graceful-
-    // degradation section of each rule doc. Historical /org mentions are
-    // tolerated (back-compat narrative) but not required.
-    it('controllers.md graceful-degradation section mentions both /run AND /team', () => {
-      const content = fs.readFileSync(CONTROLLERS_RULE, 'utf8');
-      const section = extractGracefulSection(content);
-      expect(section.length).toBeGreaterThan(100); // section must exist and be substantive
-      expect(section).toMatch(/\/run/);
-      expect(section).toMatch(/\/team/);
-    });
+  describe('Invariant 2 — nesting/graceful-degradation section exists and frames degradation as a FALLBACK', () => {
+    // v12.17.0: each rule doc's section must (a) exist and be substantive, and
+    // (b) explicitly frame graceful degradation as a defensive FALLBACK for an
+    // absent/verifiably-absent Agent tool — NOT as the expected depth-1 default.
+    const FALLBACK_MARKERS = [
+      /fallback/i,
+      /defensive/i,
+      /verifiably absent/i,
+      /genuinely absent/i,
+      /nesting[- ]ceiling/i,
+    ];
 
-    it('execution.md graceful-degradation section mentions both /run AND /team', () => {
-      const content = fs.readFileSync(EXECUTION_RULE, 'utf8');
-      const section = extractGracefulSection(content);
-      expect(section.length).toBeGreaterThan(100);
-      expect(section).toMatch(/\/run/);
-      expect(section).toMatch(/\/team/);
-    });
-
-    it('teams.md known-harness-limitation section mentions both /run AND /team', () => {
-      const content = fs.readFileSync(TEAMS_RULE, 'utf8');
-      const section = extractGracefulSection(content);
-      expect(section.length).toBeGreaterThan(100);
-      expect(section).toMatch(/\/run/);
-      expect(section).toMatch(/\/team/);
-    });
+    for (const [docPath, docName] of [
+      [CONTROLLERS_RULE, 'controllers.md'],
+      [EXECUTION_RULE, 'execution.md'],
+      [TEAMS_RULE, 'teams.md'],
+    ]) {
+      it(`${docName} nesting/graceful-degradation section frames degradation as a fallback`, () => {
+        const content = fs.readFileSync(docPath, 'utf8');
+        const section = extractGracefulSection(content);
+        expect(section.length).toBeGreaterThan(100); // section must exist and be substantive
+        const matchCount = FALLBACK_MARKERS.filter((re) => re.test(section)).length;
+        expect(matchCount).toBeGreaterThanOrEqual(1);
+      });
+    }
   });
 
   describe('Invariant 3 — falsified narrow-scope assertions are removed', () => {
-    // The v12.1.0 spike empirically falsified the claim that /run controllers
-    // retain Agent at level 1. The pre-v12.1.1 phrasing of that claim must not
-    // re-appear in any of the three rule docs.
+    // The v12.1.0 spike empirically falsified the pre-v12.1.1 claim that /run
+    // controllers retain Agent at level 1 in its OLD narrow phrasing. That exact
+    // pre-v12.1.1 phrasing must not re-appear in any of the three rule docs.
+    // (Note: under the v12.17.0 model controllers DO normally retain Agent and
+    // MUST delegate — but the NEW phrasing frames that as the nesting model, not
+    // as the pre-v12.1.1 narrow-scope exclusion below.)
     const FALSIFIED_PHRASES = [
       // Exact pre-v12.1.1 phrasing from controllers.md:
       /Controllers running under `?\/run`? execute at level 1 with the Agent tool present and MUST delegate/,
@@ -128,42 +135,39 @@ describe('FU-1 (v12.1.1): graceful-degradation scope generalization', () => {
     }
   });
 
-  describe('Invariant 4 — scope language explicitly generalized', () => {
-    // Each rule doc's section must contain at least one explicit generalization
-    // marker — either "all skills" / "all spawning skills" / "depth ≥ 1" /
-    // "regardless of which skill" — to make the generalization unambiguous
-    // for future readers and AI agents loading these rules.
-    const GENERALIZATION_MARKERS = [
-      /all skills/i,
-      /all spawning skills/i,
-      /regardless of which skill/i,
-      /depth\s*[≥>]=?\s*1/,
-      /applies (uniformly )?across all (spawning )?skills/i,
+  describe('Invariant 4 — section carries the v12.17.0 repositioning signal', () => {
+    // Each rule doc's nesting/graceful-degradation section must contain at least
+    // one explicit repositioning marker — the CC 2.1.172 capability, the
+    // 5-levels-deep nesting model, the "repositioned in v12.17.0" tag, or the
+    // "no longer the default" framing — so the repositioning is unambiguous for
+    // future readers and AI agents loading these rules.
+    const REPOSITION_MARKERS = [
+      /2\.1\.172/,
+      /5 levels deep/i,
+      /repositioned in v12\.17\.0/i,
+      /no longer (the )?(default|expected)/i,
+      /obsolete as (the )?default/i,
+      /depth\s*5/i,
     ];
 
-    it('controllers.md graceful-degradation section contains a generalization marker', () => {
-      const content = fs.readFileSync(CONTROLLERS_RULE, 'utf8');
-      const section = extractGracefulSection(content);
-      const matchCount = GENERALIZATION_MARKERS.filter((re) => re.test(section)).length;
-      expect(matchCount).toBeGreaterThanOrEqual(1);
-    });
-
-    it('execution.md graceful-degradation section contains a generalization marker', () => {
-      const content = fs.readFileSync(EXECUTION_RULE, 'utf8');
-      const section = extractGracefulSection(content);
-      const matchCount = GENERALIZATION_MARKERS.filter((re) => re.test(section)).length;
-      expect(matchCount).toBeGreaterThanOrEqual(1);
-    });
-
-    it('teams.md known-harness-limitation section contains a generalization marker', () => {
-      const content = fs.readFileSync(TEAMS_RULE, 'utf8');
-      const section = extractGracefulSection(content);
-      const matchCount = GENERALIZATION_MARKERS.filter((re) => re.test(section)).length;
-      expect(matchCount).toBeGreaterThanOrEqual(1);
-    });
+    for (const [docPath, docName] of [
+      [CONTROLLERS_RULE, 'controllers.md'],
+      [EXECUTION_RULE, 'execution.md'],
+      [TEAMS_RULE, 'teams.md'],
+    ]) {
+      it(`${docName} nesting/graceful-degradation section contains a repositioning marker`, () => {
+        const content = fs.readFileSync(docPath, 'utf8');
+        const section = extractGracefulSection(content);
+        const matchCount = REPOSITION_MARKERS.filter((re) => re.test(section)).length;
+        expect(matchCount).toBeGreaterThanOrEqual(1);
+      });
+    }
   });
 
-  describe('Invariant 5 — knowledge note records v12.1.0 spike reproduction', () => {
+  describe('Invariant 5 — historical knowledge note still records the v12.1.0 spike reproduction', () => {
+    // The knowledge note is a HISTORICAL record (not a rules/skills doc). It
+    // legitimately retains the depth-1 spike narrative and the v12.1.0 session
+    // citation; the repositioning does not erase the historical record.
     it('cagents-memory/_knowledge/agent-tool-depth1-stripping.md cites the v12.1.0 spike session', () => {
       expect(fs.existsSync(STRIPPING_KNOWLEDGE)).toBe(true);
       const content = fs.readFileSync(STRIPPING_KNOWLEDGE, 'utf8');

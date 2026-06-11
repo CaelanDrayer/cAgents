@@ -165,11 +165,13 @@ When implementing work items that modify existing code, use the commit-before-ve
 | `git reset --hard` on failure | `git reset HEAD~1` preserves your staged changes |
 | Skip verification for "obvious" fixes | Always verify - obvious fixes break production |
 
-## Graceful Degradation Under Harness Tool Stripping (PHASE-N1, V11.1.13; generalized in v12.1.1)
+## Nesting Model and Graceful Degradation Under Nesting-Ceiling / Tool Absence (repositioned in v12.17.0)
 
-Applies to **all execution agents** spawned at depth >= 1 by Claude Code, **regardless of which skill spawned them** — `/run` (controllers spawning execution agents), `/team` (teammates), and the historically-affected `/org` (absorbed into `/team` strategic mode in v12.2.0). The stripping applies uniformly across all spawning skills and all agent types (`cagents:*`, `general-purpose`, `Explore`, `Plan`). When `Agent`, `TodoWrite`, or `TaskUpdate` is stripped, execution agents complete the work item via the tools they do have and write self-validation YAML in place of TaskUpdate calls.
+**Nesting model (v12.17.0+).** Claude Code ≥ 2.1.172 lets subagents spawn their own subagents up to 5 levels deep. Execution agents spawned at depth 2 **retain the `Agent` tool** and CAN spawn their own sub-agents within the 5-level ceiling when a work item genuinely warrants it. (Historically, before v12.17.0, the harness stripped `Agent`, `TodoWrite`, and `TaskUpdate` at depth ≥ 1, which made direct execution the expected behavior; that limitation is obsolete as default behavior.)
 
-See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md for the canonical pattern (including the tool-inventory-check-before-BLOCKED rule, the TaskUpdate-substitution rule, and the no-reviewer-call rule for execution agents).
+**Graceful degradation is a DEFENSIVE FALLBACK**, not the expected behavior. It triggers ONLY when a needed tool is genuinely absent — at the actual nesting ceiling (a subagent at depth 5 cannot spawn a depth-6 child) or if a future/older harness regresses the capability. Before reporting `BLOCKED` for a missing tool, an execution agent MUST check whether the missing tool is actually absent — do not assume stripping. When `Agent`, `TodoWrite`, or `TaskUpdate` is verifiably absent, complete the work item via the tools you do have and write self-validation YAML in place of `TaskUpdate` calls. The tool-inventory-check-before-BLOCKED rule and the TaskUpdate-substitution rule remain the canonical fallback guidance.
+
+See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md for the canonical fallback pattern (including the tool-inventory-check-before-BLOCKED rule, the TaskUpdate-substitution rule, and the no-reviewer-call rule for execution agents).
 
 ## Self-Validation Protocol (V12.0.0)
 

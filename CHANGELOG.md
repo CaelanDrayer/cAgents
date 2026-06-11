@@ -10,6 +10,64 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.17.0] - 2026-06-11
+
+Deep subagent-nesting enablement. Session
+`run_deep-nesting-enablement_260611_001` verified that Claude Code **2.1.172**
+("Sub-agents can now spawn their own sub-agents — up to 5 levels deep") is live
+on this environment's **2.1.173** runtime: an empirical chain test spawned
+subagents through depth 1→2→3→4→5→6 with the `Agent` tool present at every
+level and **zero stripping**. The historical "Agent tool stripped at depth >= 1"
+limitation is therefore obsolete as the default/expected behavior.
+
+Minor (not tiny) bump per `.claude/rules/core/version-registry.md` §
+"Audit / consolidation sessions ... → minor bump": this repositions a
+cross-cutting pattern across rules, the `/team` skill, agent SKILLs, hooks,
+and tests — more than the ≤5-file tiny-bump atomicity budget allows.
+
+This change is **back-compatible**: graceful degradation is repositioned, not
+removed; no public contract (skill, agent, hook event, memory path) is
+removed; the playbook file keeps its path; existing session artifacts remain
+valid.
+
+### Added
+- **`max_nesting_depth: 5` config**: documented in
+  `cagents-memory/_system/config/pipeline_config.yaml` (with a comment citing
+  CC 2.1.172) and in CLAUDE.md. The skill loop counts as depth 0; the 5 levels
+  are the subagent generations beneath it, matching the CC changelog wording
+  and the existing "Recursive Workflows max depth: 5" line.
+- **Regression test** `tests/v12/deep-nesting-enablement.test.js`: asserts the
+  playbook carries the v12.17.0 repositioning banner, `max_nesting_depth: 5`
+  is documented, and no rule/skill file still claims `Agent` is "stripped at
+  depth 1" as the default expected behavior (historical mentions are allowed
+  when clearly marked).
+
+### Changed
+- **Graceful-degradation pattern repositioned**: the
+  `pat-graceful-degradation-depth1.md` playbook moves from describing the
+  *default* depth-1 behavior to a **defensive fallback** that triggers only
+  when the `Agent` tool is genuinely absent — at the actual nesting ceiling
+  (a depth-5 subagent cannot spawn a depth-6 child) or if a future/older
+  harness regresses the capability. The file keeps its path (renaming would
+  break `@`-references and tests); a "Status: repositioned in v12.17.0" banner
+  was added. Every agent now checks whether `Agent` is actually present before
+  reporting BLOCKED for a missing tool.
+- **2-level nesting limit lifted** across `teams.md`, the `/team` SKILL.md, and
+  agent SKILLs: the "Known Harness Limitation: Agent Tool May Be Absent at
+  Depth ≥ 1" section becomes a historical note. `/team` teammates now reliably
+  spawn execution agents and reviewers, and may nest deeper within the 5-level
+  budget. Teammates still spawn execution agents **directly** rather than
+  re-entering the full `/run` pipeline — stated now as "by design for
+  cost/clarity," not "the harness forbids it."
+- **Two graceful-degradation tests updated** to assert the repositioned
+  semantics (degradation = fallback, not default):
+  `tests/v12/graceful-degradation-scope-generalized.test.js` and
+  `tests/hooks/verify-completion-graceful-degradation.test.js`.
+- **`verify-completion.cjs` comments** updated to reflect the repositioning;
+  its graceful-degradation detection logic (recognizing the "Agent/subagent-spawn
+  tool was not available" sentinel) is retained and still valid for the
+  fallback case.
+
 ## [12.16.0] - 2026-06-09
 
 Audit-remediation consolidation bump. Session `run_audit-fixes_260609_001`

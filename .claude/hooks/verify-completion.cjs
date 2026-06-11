@@ -602,20 +602,36 @@ function verifyCompletion(sessionDir) {
 
         const sessionName = path.basename(sessionDir);
 
-        // PHASE-N1 (V11.1.13): context-aware severity downgrade for /team graceful-degradation.
-        // When a controller runs under a /team session AND explicitly documents that the
-        // depth-1 plugin-subagent Agent-tool stripping forced direct execution (per the
-        // "Known Harness Limitation" rule in .claude/rules/core/teams.md), the warning
-        // is downgraded from "protocol violation" to "graceful degradation (acceptable)".
-        // This prevents the verify-completion hook from flagging legitimate W6 W2-style
-        // lead-direct execution as a violation.
+        // PHASE-N1 (V11.1.13; comments repositioned in v12.17.0): context-aware
+        // severity downgrade for /team graceful-degradation.
+        //
+        // v12.17.0 repositioning: the "Agent tool stripped at depth >= 1" behavior
+        // this downgrade was originally written for is NO LONGER the default.
+        // Claude Code 2.1.172+ lets subagents spawn their own subagents up to 5
+        // levels deep, with the Agent tool present at every level (verified on CC
+        // 2.1.173 in session run_deep-nesting-enablement_260611_001). Graceful
+        // degradation is now a DEFENSIVE FALLBACK that fires only when the Agent
+        // tool is genuinely absent — at the actual nesting ceiling (a subagent at
+        // depth 5 cannot spawn depth 6) or if a future/older harness regresses the
+        // capability. See .claude/rules/playbooks/pat-graceful-degradation-depth1.md
+        // (§ Status: REPOSITIONED in v12.17.0).
+        //
+        // The DETECTION LOGIC below is unchanged and still valid for the fallback
+        // case: when a controller runs under a /team session AND its coordination_log
+        // documents — via the sentinel sentence — that the Agent/subagent-spawn tool
+        // was verifiably unavailable, the "0 executors spawned" warning is downgraded
+        // from "protocol violation" to "graceful degradation (acceptable)". This
+        // prevents the hook from flagging legitimate fallback direct-execution as a
+        // violation.
         //
         // Trigger conditions (BOTH must hold):
         //   1. session dir basename begins with "team_"
         //   2. coordination_log contains the literal sentence
         //      "Agent/subagent-spawn tool was not available"
+        //      (the PRESERVED fallback sentinel — keyed on identically pre- and
+        //       post-v12.17.0)
         //
-        // See: cagents-memory/_knowledge/agent-tool-depth1-stripping.md
+        // See: cagents-memory/_knowledge/agent-tool-depth1-stripping.md (historical)
         // Note: sessionName (= path.basename(sessionDir)) is the session_id
         // by construction; no need to thread the hook input down here.
         const isTeamSession = sessionName.startsWith('team_');
@@ -627,9 +643,10 @@ function verifyCompletion(sessionDir) {
         if (isTeamSession && hasGracefulDegradationMarker) {
           message = `CONTROLLER SELF-HANDLED VIA GRACEFUL DEGRADATION (acceptable in /team mode): ` +
             `Session '${sessionName}' has coordination_log with status: completed ` +
-            `and 0 execution agents spawned, but the coordination_log explicitly documents the depth-1 ` +
-            `plugin-subagent Agent-tool stripping limitation (see .claude/rules/core/teams.md § Known Harness Limitation). ` +
-            `Direct execution + self-validation per the graceful-degradation rule is acceptable here.`;
+            `and 0 execution agents spawned, but the coordination_log explicitly documents — via the fallback ` +
+            `sentinel — that the Agent/subagent-spawn tool was verifiably absent ` +
+            `(see .claude/rules/core/teams.md § Nesting-Ceiling Degradation, repositioned in v12.17.0). ` +
+            `Direct execution + self-validation per the nesting-ceiling fallback rule is acceptable here.`;
           console.error(`[VerifyCompletion] Graceful-degradation marker recognized for /team session: ${sessionName}`);
         } else {
           message = `CONTROLLER SELF-HANDLING (protocol violation): Session '${sessionName}' has coordination_log with status: completed ` +

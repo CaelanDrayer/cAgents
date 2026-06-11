@@ -28,7 +28,7 @@ Team Mode enables N-wave parallel execution with:
 
 ## CRITICAL: Teammates ARE Controllers That Spawn Execution Agents Directly
 
-**This is the principle of team mode when the harness exposes the Agent tool to teammates.** When Agent is available, teammates do NOT implement work items directly. Each teammate is spawned as a controller agent (e.g., `cagents:tech-lead`) that delegates to execution agents via Agent tool, then spawns `cagents:reviewer` to validate.
+**This is the principle of team mode, and it is unconditionally true.** Teammates do NOT implement work items directly. Each teammate is spawned as a controller agent (e.g., `cagents:tech-lead`) that delegates to execution agents via Agent tool, then spawns `cagents:reviewer` to validate. As of Claude Code 2.1.172 / cAgents v12.17.0, a teammate spawned at depth 1 reliably retains the `Agent` tool and spawns its execution agents and reviewer normally.
 
 ```
 Teammate (controller, e.g., tech-lead) -> Agent(cagents:backend-developer)
@@ -37,21 +37,25 @@ Teammate (controller, e.g., tech-lead) -> Agent(cagents:backend-developer)
   -> PASS or REVISE (max 2 rounds)
 ```
 
-**Teammates do NOT invoke /run via Skill tool.** Claude Code enforces a 2-level subagent nesting limit. Since /team teammates are already level 1 subagents, they spawn execution agents at level 2 directly.
+Teammates MAY also spawn deeper sub-agents within the 5-level nesting budget (skill loop = depth 0; the 5 levels are the subagent generations beneath it) when a work item genuinely warrants it — a teammate's execution agent can spawn its own helper sub-agent, and so on, up to the ceiling.
+
+**Teammates spawn execution agents DIRECTLY rather than re-entering /run via the Skill tool.** As of CC 2.1.172 a nested `/run` from a teammate is technically possible within the depth budget, but it is avoided **by design for cost and clarity**: re-entering the full /run pipeline (orchestrator + planner + controller + validator) for a single wave's work items duplicates enrichment the lead already did in Wave 0 and burns extra context and tokens. Spawn the execution agent directly instead.
 
 **Anti-patterns (NEVER DO):**
-- Telling a teammate to invoke /run (exceeds nesting limit)
+- Telling a teammate to invoke /run — re-entering the full pipeline duplicates Wave 0 enrichment and wastes tokens; spawn execution agents directly instead (by design for cost/clarity, NOT a harness limit)
 - Having the team lead do implementation work
-- Having teammates implement directly without spawning execution agents *(unless the Known Harness Limitation below applies)*
-- Having teammates answer questions directly instead of delegating *(unless Agent is unavailable)*
+- Having teammates implement work items directly instead of spawning execution agents *(except the Nesting-Ceiling fallback below, when the `Agent` tool is verifiably absent)*
+- Having teammates answer questions directly instead of delegating *(except when `Agent` is verifiably absent)*
 
-## Known Harness Limitation: Agent Tool May Be Absent at Depth ≥ 1 (Applies to All Skills)
+## Nesting-Ceiling Degradation: Agent Tool Absent Only at the Depth Budget (repositioned in v12.17.0)
 
-When any cAgents agent is spawned at depth >= 1, the Claude Code runtime may strip the `Agent` (and `TodoWrite`, `TaskUpdate`) tools from their surface — even when SKILL.md frontmatter declares them. This is upstream platform behavior; cAgents config cannot override it.
+**Historical note.** Before v12.17.0 (Claude Code < 2.1.172), the runtime stripped the `Agent` (and `TodoWrite`, `TaskUpdate`) tools from any cAgents agent spawned at depth ≥ 1, which made direct execution the expected depth-1 behavior. **That limitation is obsolete as the default/expected behavior.** Claude Code 2.1.172 added subagent-spawns-subagent support up to 5 levels deep, and an empirical chain test (session `run_deep-nesting-enablement_260611_001`) confirmed the `Agent` tool is present at every level from depth 1 through depth 5 with zero stripping. Teammate controllers now reliably spawn execution agents and reviewers.
 
-**Scope**: This limitation applies to **all spawning skills** (`/run` and `/team`, plus the historical `/org` absorbed into `/team` strategic mode in v12.2.0) and **all agent types** (plugin-namespaced `cagents:*` agents AND built-in agent types `general-purpose`, `Explore`, `Plan`). The v12.1.0 spike (session `run_improve-team-context_260521_001`) reproduced the stripping under `/run`. Teammate controllers in `/team`, controllers spawned by `/run`, and any depth-1 agent regardless of which skill spawned it MUST gracefully degrade to direct execution + self-validation when `Agent` is unavailable.
+**Graceful degradation is now a DEFENSIVE FALLBACK, not the expected depth-1 behavior.** It triggers ONLY when the `Agent` tool is genuinely absent — at the actual nesting **ceiling** (a subagent at depth 5 cannot spawn a depth-6 child) or if a future/older harness regresses the capability. Before reporting failure or implementing a work item directly because `Agent` is "missing," a teammate MUST verify the tool is actually absent from its surface — do not assume stripping. On CC ≥ 2.1.172, `Agent` is normally present at depths 1-4. Degrade to direct execution + self-validation ONLY when the tool is verifiably absent.
 
-See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md for the canonical pattern, evidence chain, upstream-configuration null-finding, and empirical-reproduction record.
+**Scope of the fallback**: applies to **all spawning skills** (`/run` and `/team`, plus the historical `/org` absorbed into `/team` strategic mode in v12.2.0) and **all agent types** (plugin-namespaced `cagents:*` agents AND built-in agent types `general-purpose`, `Explore`, `Plan`). When `Agent` is verifiably absent, the spawned agent gracefully degrades to direct execution + self-validation rather than failing.
+
+See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md for the canonical fallback pattern, the tool-inventory-check-before-BLOCKED rule, and the ceiling/regression scope.
 
 ## CRITICAL: Create Teams, Not Just Tasks
 

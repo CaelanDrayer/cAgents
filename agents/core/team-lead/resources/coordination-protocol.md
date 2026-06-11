@@ -34,7 +34,7 @@ Agent({
 **Anti-pattern (NEVER DO THIS):**
 
 ```javascript
-// WRONG: Using SendMessage with /run Skill invocation (exceeds nesting limit)
+// WRONG: Using SendMessage with /run Skill invocation (re-enters the full /run pipeline; spawn execution agents directly instead — cheaper and clearer)
 SendMessage({
   type: "message",
   recipient: "teammate-1",

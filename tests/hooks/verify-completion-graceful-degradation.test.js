@@ -1,17 +1,28 @@
-// PHASE-N1 (V11.1.13): verify-completion.cjs context-aware graceful-degradation
-// downgrade regression test.
+// PHASE-N1 (V11.1.13; repositioned in v12.17.0): verify-completion.cjs
+// context-aware graceful-degradation downgrade regression test.
 //
-// Asserts that when a `team_*` session's coordination_log contains the marker
-// phrase "Agent/subagent-spawn tool was not available", the hook downgrades the
-// CONTROLLER SELF-HANDLING (protocol violation) warning to CONTROLLER
-// SELF-HANDLED VIA GRACEFUL DEGRADATION (acceptable in /team mode). For non-
-// team_ sessions or team_ sessions without the marker, the original
-// protocol-violation warning is preserved.
+// v12.17.0 repositioning context: as of Claude Code 2.1.172+, subagents spawn
+// their own subagents up to 5 levels deep with the Agent tool present at every
+// level (verified on CC 2.1.173, session run_deep-nesting-enablement_260611_001).
+// The "Agent stripped at depth >= 1" behavior is NO LONGER the default. Graceful
+// degradation is now a DEFENSIVE FALLBACK that fires only when the Agent tool is
+// VERIFIABLY ABSENT — at the nesting ceiling (depth 5 cannot spawn depth 6) or a
+// regressed harness. The fallback sentinel sentence
+// "Agent/subagent-spawn tool was not available" is PRESERVED, and the hook still
+// keys on it for the fallback case.
+//
+// This test asserts the hook's fallback-sentinel detection still works: when a
+// `team_*` session's coordination_log contains the marker phrase, the hook
+// downgrades the CONTROLLER SELF-HANDLING (protocol violation) warning to
+// CONTROLLER SELF-HANDLED VIA GRACEFUL DEGRADATION (acceptable in /team mode).
+// For non-team_ sessions or team_ sessions without the marker, the original
+// protocol-violation warning is preserved (delegation is the expected default
+// now that Agent is reliably present).
 //
 // Refs:
-//   - example/external-skills/RESUME_W7_FINAL_PROMPT.md § Section F (PHASE-N1 spec)
-//   - .claude/rules/core/teams.md § Known Harness Limitation
-//   - .claude/hooks/verify-completion.cjs lines ~604-658
+//   - .claude/rules/playbooks/pat-graceful-degradation-depth1.md § Status: REPOSITIONED in v12.17.0
+//   - .claude/rules/core/teams.md § Nesting-Ceiling Degradation
+//   - .claude/hooks/verify-completion.cjs lines ~604-660
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { existsSync, writeFileSync, mkdirSync, rmSync, readFileSync, readdirSync, unlinkSync } from 'fs';
@@ -107,9 +118,13 @@ describe('PHASE-N1 (V11.1.13): verify-completion.cjs graceful-degradation downgr
   });
 
   it('preserves protocol-violation warning for run_* session even WITH marker', () => {
-    // The downgrade is /team-only by design — under /run, controllers have
-    // Agent at level 1 and MUST delegate. The marker should NOT trigger a
-    // downgrade for a run_* session.
+    // The downgrade is /team-only by design. Under the v12.17.0 nesting model,
+    // controllers (in /run or /team) reliably retain the Agent tool at depth 1
+    // and MUST delegate — direct execution is only the nesting-ceiling FALLBACK.
+    // The downgrade-suppression for run_* sessions is independent of the
+    // repositioning: the fallback sentinel does NOT trigger a downgrade for a
+    // run_* session (the hook scopes the acceptable-fallback recognition to
+    // team_* sessions only).
     const sessionId = `run_n1_marker_${Date.now()}`;
     const sessionDir = setupSession(sessionId, COORDINATION_LOG_WITH_MARKER);
     try {

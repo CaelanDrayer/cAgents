@@ -144,7 +144,7 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 26. **playbooks/pat-concurrent-session-hooks.md** — Pattern: concurrent-session hook contract (deterministic session resolution)
 27. **playbooks/pat-cross-teammate-request.md** — Pattern: cross-teammate `peer_request` routing in `/team`
 28. **playbooks/pat-evidence-first-execution.md** — Pattern: specific, verifiable evidence
-29. **playbooks/pat-graceful-degradation-depth1.md** — Pattern: degraded execution when `Agent` is stripped at depth ≥ 1
+29. **playbooks/pat-graceful-degradation-depth1.md** — Pattern: defensive-fallback degraded execution when `Agent` is genuinely absent (nesting ceiling at depth 5, or a regressed/older harness). Repositioned in v12.17.0 — subagents normally retain `Agent` up to 5 levels deep (CC ≥ 2.1.172); depth-1 stripping is historical.
 30. **playbooks/pat-subagent-status-protocol.md** — Pattern: DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED status reporting
 31. **playbooks/pat-two-stage-review.md** — Pattern: spec-compliance review before code-quality review
 

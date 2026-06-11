@@ -72,7 +72,7 @@ After spawning the integration controller, the lead:
 4. Reads validator's 1-line PASS/FAIL/REVISE result
 5. Does NOT re-read any wave's outputs directly
 
-If the integration controller doesn't have Agent at depth-1 (depth-1 stripping), it gracefully degrades to direct execution per `.claude/rules/core/controllers.md` § Graceful Degradation and still writes both artifacts.
+On CC ≥ 2.1.172 the integration controller normally retains Agent at depth 1 and delegates as usual. In the rare case Agent is verifiably absent (nesting ceiling, or a regressed/older harness), it gracefully degrades to direct execution per `.claude/rules/core/controllers.md` § Nesting Model and Graceful Degradation and still writes both artifacts.
 
 ## Token Budget Comparison
 
