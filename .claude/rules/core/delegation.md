@@ -68,20 +68,32 @@ session/memory files under `cagents-memory/`.
 | 4 | `controller-delegation-validator.cjs` (PreToolUse[Write/Edit]) | DENIES writes to `src/`, `lib/`, `components/`, `app/`, `services/`, `middleware/` while a controller is active; WARNS for other implementation paths. |
 | 5 | `verify-completion.cjs` (Stop) | Checks coordination_log + agent_tree for evidence of delegation. |
 
-## Graceful Degradation
+## Graceful Degradation (Defensive Fallback)
 
-When the Agent tool is stripped at depth-1 (a known Claude Code
-limitation — see `@.claude/rules/core/teams.md` § Known Harness
-Limitation), the spawned agent gracefully degrades to direct execution
-and self-validation. This is the ONLY documented exception to the
-"never implement directly" rule, and it applies only to subagents
-spawned at depth ≥ 1, never to the skill's own depth-0 loop.
+As of v12.17.0, subagents retain the `Agent` tool and can spawn their own
+subagents up to 5 levels deep (Claude Code ≥ 2.1.172). Delegation is the
+expected behavior at every level — a controller or teammate spawned at
+depth 1 normally still has `Agent` and MUST delegate.
+
+Graceful degradation is a DEFENSIVE FALLBACK, not the expected depth-1
+behavior. It triggers ONLY when the `Agent` tool is genuinely absent —
+at the actual nesting ceiling (a subagent at depth 5 cannot spawn a
+depth-6 child) or if a future/older harness regresses the capability. In
+that narrow case the spawned agent gracefully degrades to direct
+execution and self-validation. This is the ONLY documented exception to
+the "never implement directly" rule, and it never applies to the skill's
+own depth-0 loop. Before degrading, an agent MUST verify that `Agent` is
+actually absent — do not assume stripping. (Historically, before
+v12.17.0, the harness stripped `Agent` at depth ≥ 1, which made
+degradation the expected depth-1 path; that limitation is obsolete.)
+See `@.claude/rules/core/teams.md` § Known Harness Limitation for the
+historical note.
 
 ## See Also
 
 - `.claude/skills/run/SKILL.md` — /run skill body
 - `.claude/skills/team/SKILL.md` — /team skill body
 - `.claude/rules/core/controllers.md` — controller patterns
-- `.claude/rules/core/teams.md` — team coordination + depth-1 stripping
+- `.claude/rules/core/teams.md` — team coordination + nesting model (historical depth-1 stripping note)
 - `.claude/hooks/prompt-router.cjs` — UserPromptSubmit + PreToolUse[Agent] enforcement
 - `.claude/hooks/controller-delegation-validator.cjs` — PreToolUse[Write/Edit] deny

@@ -83,7 +83,7 @@ After Step 2 codebase analysis and before assembling each prompt in Step 3, scan
 
 ```
 WI: { title: "Implement graceful degradation for depth-1 agents",
-      description: "When the Agent tool is stripped at depth-1, agents must self-validate." }
+      description: "Defensive fallback: when the Agent tool is verifiably absent (nesting ceiling or regressed harness), agents must self-validate." }
 
 Candidate: agent-tool-depth1-stripping.md
   filename tokens: [agent, tool, depth1, stripping]

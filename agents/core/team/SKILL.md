@@ -153,7 +153,7 @@ See @resources/spawn-protocol.md for the full controller-resolution rule, spawni
 - Mark GATE-N sentinels as completed to unblock next wave
 - Teammates can self-claim unblocked tasks after completing their current one
 
-When teammate controllers are spawned at depth-1 and `Agent` is stripped, they gracefully degrade. See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md.
+On Claude Code >= 2.1.172, teammate controllers retain the `Agent` tool and reliably spawn execution agents. If the `Agent` tool is verifiably absent — at the actual nesting ceiling (depth 5) or under a regressed/older harness — they gracefully degrade to direct execution + self-validation. See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md.
 
 ## CRITICAL: Teammates Spawn Controllers Directly
 

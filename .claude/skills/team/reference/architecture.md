@@ -108,7 +108,7 @@ Configure in settings.json:
 
 ## Teammate Execution Model
 
-Each teammate spawns its assigned controller directly via Agent tool. This eliminates the extra Skill fork level, keeping nesting within Claude Code's supported limits:
+Each teammate spawns its assigned controller directly via Agent tool. This eliminates the extra Skill fork level, keeping the nesting shallow within the 5-level depth budget (skill loop = depth 0; CC ≥ 2.1.172 supports up to 5 subagent generations beneath it):
 
 ```
 Teammate (full session) -> Agent({subagent_type: "cagents:{controller_name}"})
@@ -118,7 +118,7 @@ Teammate (full session) -> Agent({subagent_type: "cagents:{controller_name}"})
 
 Teammates NEVER implement work directly. They always coordinate through controllers.
 
-**Why no Skill("run") fork**: Teammates are full Claude Code sessions. Invoking /run via Skill would add an unnecessary nesting level (teammate -> /run fork -> controller -> execution = 3 levels). Spawning the controller directly keeps it at 2 levels (teammate -> controller -> execution).
+**Why no Skill("run") fork**: Teammates are full Claude Code sessions. As of CC 2.1.172 a nested /run from a teammate is technically possible within the 5-level depth budget, but it is avoided **by design for cost and clarity** — invoking /run via Skill re-runs the full pipeline (orchestrator + planner + controller + validator), duplicating the Wave 0 enrichment the lead already did and burning extra context and tokens. Spawning the controller directly keeps the chain short (teammate -> controller -> execution) and reuses the lead's enrichment.
 
 ## Per-Wave Teammate Lifecycle
 

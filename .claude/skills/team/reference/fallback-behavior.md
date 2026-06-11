@@ -97,7 +97,7 @@ Current limitations of built-in agent teams:
 - **Lead is fixed**: cannot promote a teammate to lead
 - **Split panes require tmux**: not supported in VS Code terminal, Windows Terminal, or Ghostty
 
-**IMPORTANT distinction**: "No nested teams" means teammates cannot create sub-teams via TeamCreate. However, teammates CAN and MUST spawn controllers directly via the Agent tool (e.g., `Agent({ subagent_type: "cagents:tech-lead" })`). Each teammate is a full Claude Code session that coordinates through its assigned controller. This avoids the extra nesting level that invoking /run as a Skill fork would create.
+**IMPORTANT distinction**: "No nested teams" means teammates cannot create sub-teams via TeamCreate. However, teammates CAN and MUST spawn controllers directly via the Agent tool (e.g., `Agent({ subagent_type: "cagents:tech-lead" })`), and those controllers can in turn spawn their own execution sub-agents within the 5-level depth budget (CC ≥ 2.1.172). Each teammate is a full Claude Code session that coordinates through its assigned controller. Spawning the controller directly — rather than re-entering /run as a Skill fork — is the chosen pattern by design for cost and clarity: it reuses the lead's Wave 0 enrichment instead of duplicating the full pipeline.
 
 ## Related Files
 

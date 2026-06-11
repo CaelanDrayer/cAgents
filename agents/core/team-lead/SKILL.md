@@ -105,9 +105,9 @@ Teammate 2 (tech-lead):
   -> PASS or REVISE (max 3 rounds)
 ```
 
-**NEVER instruct teammates to invoke /run via Skill tool** — this would exceed Claude Code's 2-level subagent nesting limit. Teammates delegate directly.
+On Claude Code >= 2.1.172, subagents retain the `Agent` tool and can spawn their own subagents up to 5 levels deep, so teammate controllers reliably spawn execution agents and reviewers. **Keep teammates spawning execution agents DIRECTLY rather than re-entering the full /run pipeline** — this is by design for cost and clarity (a controller teammate plus its execution agents is the cheapest path to a reviewed result), not because of a harness limit.
 
-When teammate controllers discover that `Agent` is stripped at depth-1, they gracefully degrade. See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md.
+If a needed `Agent` tool is verifiably absent — at the actual nesting ceiling (a subagent at depth 5 cannot spawn a depth-6 child) or under a regressed/older harness — the teammate controller gracefully degrades to direct execution + self-validation. See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md.
 
 ## Teammate Communication
 
@@ -141,7 +141,7 @@ When the team manifest includes a template with waves, coordinate wave-by-wave w
 
 1. **Teammates ARE controllers** — every teammate is a controller agent spawned via Agent tool that delegates to execution agents directly. Teammates NEVER implement directly and NEVER invoke /run.
 2. **Spawn teammates IMMEDIATELY** — the moment the team is created. Never pause or ask permission.
-3. **Direct Agent delegation** — teammates spawn execution agents and reviewers directly (2-level nesting: lead -> controller teammate -> execution agent).
+3. **Direct Agent delegation** — teammates spawn execution agents and reviewers directly via Agent (lead -> controller teammate -> execution agent, with deeper sub-spawns allowed within the 5-level nesting budget). Teammates spawn execution agents directly rather than re-entering /run by design for cost/clarity, not because of a harness limit.
 4. **Delegate only** — never do direct implementation work.
 5. **Built-in tools** — use SendMessage, TaskList, TaskUpdate for all coordination.
 6. **Parallel first** — maximize concurrent work items via self-claiming.

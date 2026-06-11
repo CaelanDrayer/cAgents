@@ -240,11 +240,13 @@ guard_chain_result:
 | 2+ any severity | REVISE -- prioritize CRITICAL, then HIGH, then MEDIUM |
 | 2 CRITICAL after rework | dead_letter -- escalate to user |
 
-## Graceful Degradation Under Harness Tool Stripping (PHASE-N1, V11.1.13; generalized in v12.1.1)
+## Nesting Model and Graceful Degradation Under Nesting-Ceiling / Tool Absence (repositioned in v12.17.0)
 
-Applies to all cAgents controllers and execution agents spawned at depth >= 1 by Claude Code, **regardless of which skill spawned them**. The v12.1.0 spike (session `run_improve-team-context_260521_001`) reproduced depth-1 Agent stripping under `/run`, falsifying the pre-v12.1.1 assertion that /run controllers retain Agent at level 1. The scope is now generalized: **all spawning skills** — `/run`, `/team` (teammates), and the historically-affected `/org` (absorbed into `/team` strategic mode in v12.2.0) — and **all agent types** (`cagents:*`, `general-purpose`, `Explore`, `Plan`). When `Agent` is stripped, the spawned agent gracefully degrades to direct execution + self-validation rather than failing.
+**Nesting model (v12.17.0+).** Claude Code ≥ 2.1.172 lets subagents spawn their own subagents up to 5 levels deep. Controllers and teammates spawned at depth 1 **retain the `Agent` tool** and CAN spawn execution agents (and those execution agents can spawn deeper sub-agents, within the 5-level ceiling). Delegation is the expected behavior at every level — a controller normally still has `Agent` at depth 1 and MUST delegate. (Historically, before v12.17.0, the harness stripped `Agent` at depth ≥ 1, which made direct execution the expected depth-1 path; that limitation is obsolete as default behavior.)
 
-See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md for the canonical pattern, scope, rule, documentation requirement, upstream-configuration null-finding, and empirical reproductions.
+**Graceful degradation is a DEFENSIVE FALLBACK**, not the expected depth-1 behavior. It triggers ONLY when the `Agent` tool is genuinely absent — at the actual nesting ceiling (a subagent at depth 5 cannot spawn a depth-6 child) or if a future/older harness regresses the capability. Before reporting failure for a missing `Agent` tool, an agent MUST verify the tool is actually absent — do not assume stripping. When `Agent` is verifiably absent, the spawned agent gracefully degrades to direct execution + self-validation rather than failing.
+
+See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md for the canonical fallback pattern, the tool-inventory-check-before-BLOCKED rule, documentation requirement, and ceiling/regression scope.
 
 ## Agent ID Tracking
 

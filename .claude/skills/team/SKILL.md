@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.16.0"
+  version: "12.17.0"
   argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--no-template] [--waves <n>] [--strategic] [--no-strategic]"
   user-invocable: "true"
   context: "fork"
@@ -58,7 +58,7 @@ Wave 0 (Lead, sequential):
 Waves 1..N-1 (Teammates, parallel per wave):
   Lead writes outputs/wave-{K}/spawn_brief.md (once)
   Spawn teammates with ~80-token pointer prompts (PARALLEL within wave)
-  Each teammate: controller-agent delegates to execution agent (or graceful-degrades direct)
+  Each teammate: controller-agent delegates to execution agent via Agent (direct-execution fallback only if Agent absent at nesting ceiling)
   Lead spawns cagents:wave-reviewer → 1-line GATE-K verdict
   Mark gate, drop wave from active reads, advance
 
@@ -211,7 +211,7 @@ Read 1-line confirmation only.
 4. All teammates within a wave run in parallel.
 5. Gate validation via `cagents:wave-reviewer` — never inline 7-check in lead.
 6. Maximize waves.
-7. Teammates ARE controller agents (subject to depth-1 stripping → graceful degradation per @reference/fallback-and-error-recovery.md).
+7. Teammates ARE controller agents that spawn execution agents directly via Agent (CC ≥ 2.1.172 retains Agent up to 5 levels deep; graceful degradation per @.claude/rules/playbooks/pat-graceful-degradation-depth1.md is a fallback only when Agent is verifiably absent at the nesting ceiling or on a regressed harness).
 8. Lead does Wave 0 + final wave.
 9. Never ask permission between waves.
 10. Never just create tasks without spawning teammates.

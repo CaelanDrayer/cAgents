@@ -19,7 +19,7 @@
 - **Gate Sentinel Pattern**: A gate task blocked by all wave tasks — when all wave tasks complete, validate gate criteria, then mark the gate complete to unblock the next wave's tasks
 - **Self-Claiming Work Distribution**: Teammates finish their assigned task, call TaskList to find the next unblocked unassigned task, and claim it via TaskUpdate — distributes work without requiring the lead to explicitly reassign
 - **Controller-as-Teammate Spawn**: Each teammate is spawned via Agent tool with `subagent_type: "cagents:{controller_from_plan}"` — the controller receives instructions to spawn an execution agent and a reviewer directly, not to implement work itself
-- **Two-Level Nesting Compliance**: The nesting hierarchy is lead adapter → controller teammate → execution agent (2 levels from the lead) — never instruct teammates to invoke /run via Skill tool as this would exceed Claude Code's 2-level nesting limit
+- **Direct-Spawn-by-Design**: The nesting hierarchy is lead adapter → controller teammate → execution agent (with deeper sub-spawns allowed within the 5-level nesting budget on Claude Code >= 2.1.172) — keep teammates spawning execution agents directly rather than invoking /run via Skill tool, by design for cost and clarity, not because the harness forbids deeper nesting
 - **Result Aggregation Flow**: After all teammates complete, collect outputs from all tasks via TaskList + ReadFile, synthesize into coherent deliverables, write coordination_log.yaml with all contributions and metrics
 - **Contract Status Tracking**: For each interface contract in the team manifest, track status: established, consumed, fulfilled, or violated — record in coordination_log.yaml for audit purposes
 - **Parallelism Metrics**: Record parallelism_achieved (0.0-1.0), execution_time_seconds, and speedup_factor in the coordination log — these metrics validate that team mode delivered the expected efficiency gain
@@ -55,7 +55,7 @@
 
 - **Direct Implementation**: The lead adapter editing files, writing code, or creating content directly instead of spawning a controller teammate — violates delegate mode and loses the quality benefits of the reviewer loop
 - **SendMessage for Work Assignment**: Using SendMessage to tell a teammate what to do instead of spawning it as a controller via Agent tool — SendMessage is for status updates; Agent tool is for spawning agents with work
-- **/run Skill Invocation in Teammates**: Instructing teammates to call Skill({skill: "run"}) to execute their work items — this would add a third nesting level, exceeding Claude Code's 2-level limit
+- **/run Skill Invocation in Teammates**: Instructing teammates to call Skill({skill: "run"}) to execute their work items — re-entering the full /run pipeline is wasteful; spawn execution agents directly via Agent (cheaper and clearer, and well within the 5-level nesting budget)
 - **Gate Validation Shortcuts**: Marking a gate complete without verifying gate criteria (file existence, contract artifacts, acceptance criteria) — produces a false "phase complete" signal that corrupts subsequent waves
 - **Forgetting TeamDelete**: Completing all work and coordination_log.yaml without calling TeamDelete — leaves orphaned team resources that can interfere with future sessions
 - **Broadcast Overuse**: Sending broadcast messages for every status update — broadcasts go to all teammates and create noise; reserve for gate completions and unblocking announcements
