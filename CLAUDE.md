@@ -109,9 +109,9 @@ domains/        # engineering, grow, operate, people, serve (5 files)
 infrastructure/ # model-routing (1 file)
 memory/         # agent-memory (2 files)
 quality/        # completion, validation-framework, implicit-discovery (5 top-level + 1 resources/)
-playbooks/      # pat-* reusable patterns (6 pat-* + README = 7 files)
+playbooks/      # pat-* reusable patterns (8 pat-* + README = 9 files)
 ```
-Total: 38 .md = 32 top-level across 6 categories + 2 READMEs (root + playbooks/) + 4 resources/.
+Total: 40 .md = 34 top-level across 6 categories + 2 READMEs (root + playbooks/) + 4 resources/.
 
 **Import Syntax**: Use `@path/to/file` to include external content. View loaded files: `/memory`
 
@@ -414,7 +414,7 @@ cAgents/
 |   +-- hooks/               # 31 .cjs files (28 hooks + utils + launcher + eval CLI)
 |   +-- output-styles/       # Output-style files (v12.8.0+)
 |   +-- plans/               # Saved execution plans
-|   +-- rules/               # Modular rules (38 files: 32 top-level across 6 categories + 2 READMEs (root + playbooks/) + 4 in resources/)
+|   +-- rules/               # Modular rules (40 files: 34 top-level across 6 categories + 2 READMEs (root + playbooks/) + 4 in resources/)
 |   +-- settings.json        # Hook registration + permissions + env
 +-- agents/                  # All 141 agents (v12.8.0+ consolidation — formerly 11 root dirs)
 |   +-- developer/           # Developer archetype (26 agents — backend/frontend/fullstack/infrastructure/quality)

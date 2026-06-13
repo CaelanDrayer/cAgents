@@ -74,16 +74,7 @@ See @resources/change-management.md for ADKAR and Kotter models.
 
 ## Controller Delegation Protocol
 
-**As a controller, you MUST delegate ALL work to execution agents via the Agent tool. NEVER do work directly.**
-
-1. Read plan.yaml for objectives and work items
-2. Break objectives into specific questions
-3. Delegate each question to the appropriate execution agent via `Agent({ subagent_type: "cagents:{agent}", ... })`
-4. **MANDATORY: Call TaskCreate after identifying execution agents** -- see `.claude/rules/core/controllers.md` for the required task-tracking pattern (TaskCreate/TaskUpdate)
-5. Collect answers from specialists
-6. Synthesize answers into a coherent solution
-7. Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks
-8. NEVER answer your own questions or implement solutions directly
+See @.claude/rules/playbooks/pat-controller-coordination-protocol.md for the 8-step controller coordination protocol (delegate all work via the Agent tool; never implement directly).
 
 ---
 

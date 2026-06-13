@@ -72,6 +72,7 @@ Reviewer prompt (Stage 2):
 - Findings are severity-tagged (CRITICAL/HIGH/LOW)
 - REVISE threshold: any CRITICAL or 2+ HIGH findings
 - LOW findings are recorded but do not trigger REVISE
+- Apply the subtractive lens — what can be deleted, and could stdlib/native/an existing dependency replace new code? See @.claude/rules/playbooks/pat-minimal-solution-ladder.md.
 
 ## Why two stages
 

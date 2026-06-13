@@ -217,6 +217,8 @@ This is a first-class review criterion, not a suggestion:
 - [ ] Does every new function/class earn its existence?
 - [ ] Would a junior developer understand this in 30 seconds?
 
+**Subtractive lens (Stage 2)**: What can be deleted? Is any of this code or abstraction unnecessary — could stdlib, a native platform feature, or an existing dependency replace it? See @.claude/rules/playbooks/pat-minimal-solution-ladder.md.
+
 ## Success Criteria
 
 - All phases complete with incremental TodoWrite updates

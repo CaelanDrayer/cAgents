@@ -72,6 +72,12 @@ Example: Controller → backend-developer (question) → answer → synthesis
 
 Benefits: Modularity, specialization, parallelization (up to 50 concurrent)
 
+## Minimal-Solution Ladder
+
+Before writing new code for a work item, walk the minimal-solution ladder (YAGNI -> stdlib -> native platform feature -> existing dependency -> one-liner -> minimum viable change) and only write new code when every cheaper rung fails. cAgents biases toward aggressive decomposition; the ladder is the implementation-side counterweight.
+
+See @.claude/rules/playbooks/pat-minimal-solution-ladder.md for the full ladder, the when-it-does-NOT-apply cases, and the `ponytail:` deliberate-shortcut comment convention.
+
 ## 2-Action Findings Capture Rule
 
 > **Note**: This rule is an aspirational best practice, not a mandatory requirement. It was designed to prevent information loss during context compaction but is not enforced or consistently followed in practice. Agents SHOULD capture findings when practical but are not required to follow the strict 2-action cadence.
