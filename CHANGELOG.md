@@ -10,6 +10,63 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.18.0] - 2026-06-12
+
+Audit-remediation minor bump. Session `run_overhaul-audit_260612_001` ran a
+five-stream read-only audit of the whole repo (correctness/CI, doc-vs-reality
+drift, agent/rule consolidation, hook security/perf, and external concept-mining
+of `DietrichGebert/ponytail`), then applied the user-approved findings in three
+batched buckets plus a flake fix. Minor (not tiny) bump per
+`version-registry.md` § "Audit / consolidation sessions ... → minor bump":
+the remediation touches dozens of files across tests, hooks, rules, agent
+SKILLs, and docs.
+
+### Fixed (Bucket A — green the CI + hygiene)
+- Repointed the `no-orphaned-cagents-refs` test guard at `v12-aliases.yaml`; it
+  previously scanned the deleted `_archive/_deprecated_pre_v12.6/` dir, failing
+  the test and protecting nothing.
+- Removed the dangling `.claude/skills/commit-changes` symlink (tripped the
+  `no-broken-symlinks` guard).
+- Fixed 6 orphaned `cagents:*` dispatch references to non-existent agents
+  (`security-specialist`→`security-engineer`, `legal-counsel`→`general-counsel`,
+  `recruiter`→`talent-recruiter`, `strategic-mode-lead`→non-dispatchable prose).
+- `skipIf`-guarded tests asserting against gitignored `_archive/` content; fixed
+  the `_cachedActiveSessions` cross-file leak.
+- Reworded the stale "_deprecated/ buckets" parenthetical in `CLAUDE.md`.
+
+### Security (Bucket B — harden safety hooks; each with a regression test)
+- **Delegation enforcement was effectively off**: docs claimed `block` default
+  but shipped `settings.json` left it `warn`, so the hard-deny on
+  `src/ lib/ components/ app/` never fired. Made the hard-deny **controller-scoped**
+  (fires only when an active controller is in `agent_tree.yaml`) so it enforces
+  the delegation contract without blocking a user's own direct edits; default →
+  `block`; added `services/`+`middleware/`; reconciled the docs to match.
+- **secret-detection path bypass**: `DOC_ALLOWLIST` was basename-only and
+  `FALSE_POSITIVE_PATHS` substring-matched `example|sample|template|…` anywhere,
+  so a source file with a live key under a matching name was never scanned.
+  Anchored the allowlist to exact repo-relative paths; segment/dotted-filename
+  matching.
+- **bash-validator false-positives**: format/privilege tokens were matched via
+  `includes()` (a benign `mkfsutil` was wrongly blocked); converted to
+  word-boundary regexes and added `doas`/`pkexec` to the Tier-1 deny set.
+
+### Changed (Bucket C — minimalism elegance pass)
+- Added `playbooks/pat-minimal-solution-ladder.md` — a minimalism counterweight
+  to cAgents' aggressive-decomposition bias (inspired by the external `ponytail`
+  skill: YAGNI → stdlib → native → existing dep → one-liner → minimum viable →
+  new code); referenced from `execution.md` and `pat-two-stage-review.md`.
+- Extracted the verbatim 12-line "Controller Delegation Protocol" block from 42
+  controller SKILL.md files into `playbooks/pat-controller-coordination-protocol.md`
+  (3 files with genuine per-agent variation left intact); added a subtractive
+  "what can be deleted?" lens to `code-reviewer` Stage-2.
+- Registered `DietrichGebert/ponytail` in the (gitignored, local-only) examples
+  registry per existing corpus convention.
+
+### Fixed (test isolation)
+- Isolated the `find-active-session` `fallbackHeuristic` test from the shared
+  real `cagents-memory/sessions/` dir via the existing `CLAUDE_PROJECT_DIR`
+  override, fixing a flake under concurrent sessions (no resolver change).
+
 ## [12.17.0] - 2026-06-11
 
 Deep subagent-nesting enablement. Session
