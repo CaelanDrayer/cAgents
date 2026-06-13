@@ -265,7 +265,7 @@ Write state transition event:
 event_id: EVT-{N}
 type: state_transition
 state: complete
-agent: cagents:strategic-mode-lead
+agent: team-lead (strategic mode)   # the /team lead loop itself, not a dispatchable cagents: agent
 timestamp: "{ISO_TIMESTAMP}"
 outputs_produced: [integration_report.yaml, execution_summary.yaml]
 ```

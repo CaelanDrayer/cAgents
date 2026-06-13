@@ -126,7 +126,7 @@ Total: 38 .md = 32 top-level across 6 categories + 2 READMEs (root + playbooks/)
 - **Tier 2**: Controllers (coordinate via batch delegation)
 - **Tier 3**: Execution agents (implement work items)
 - **Tier 4**: Support agents (foundational services)
-- **Total**: 141 agents across 9 builder-role archetypes (post-v12.7.0 LP-12 + LP-13 consolidation; 99 culled to `_deprecated/` buckets)
+- **Total**: 141 agents across 9 builder-role archetypes (post-v12.7.0 LP-12 + LP-13 consolidation; ~99 culled agents were physically removed — no `_deprecated/` buckets remain on disk; back-compat preserved via `scripts/migration/v12-aliases.yaml`)
 - **Execution**: Event-driven pipeline (5-state machine) with progressive paths (minimal/medium/full), revision routing, reviewer loops
 
 **Canonical structure (v12.0.0) — 9 archetypes**:

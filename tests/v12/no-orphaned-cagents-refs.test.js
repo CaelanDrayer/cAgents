@@ -30,35 +30,69 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
 
 // Discover culled agents.
 // v12.8.0 (eef900a7) "streamline root" moved the per-archetype _deprecated/
-// buckets out of agents/{arch}/_deprecated/ into the single archived location
-// _archive/_deprecated_pre_v12.6/{arch}/{name}/. Restoring those buckets to the
-// working tree buys nothing (alias resolution is name-based via plugin.json +
-// v12-aliases.yaml, never bucket SKILL.md files), so this helper now enumerates
-// the archived location instead.
-const DEPRECATED_ARCHIVE_DIR = path.join(REPO_ROOT, '_archive', '_deprecated_pre_v12.6');
+// buckets to _archive/_deprecated_pre_v12.6/; that archive dir was subsequently
+// removed entirely when the deprecated agents were physically deleted, so it no
+// longer exists in the working tree. Alias resolution is name-based via
+// plugin.json + scripts/migration/v12-aliases.yaml (never bucket SKILL.md
+// files), so this helper now derives the culled/absorbed agent-name list
+// directly from v12-aliases.yaml: every `old:` name that was renamed/folded/
+// absorbed into a DIFFERENT `new:` target is a name that no longer exists as a
+// live agent and must not appear as a hard `cagents:<old>` dispatch ref.
+const ALIASES_FILE = path.join(REPO_ROOT, 'scripts', 'migration', 'v12-aliases.yaml');
 
-function discoverCulledAgents() {
-  const ARCHETYPES = ['developer', 'operator', 'advisor', 'analyst', 'creator', 'writer', 'strategist', 'core', 'leadership'];
-  const culled = [];
-  for (const arch of ARCHETYPES) {
-    const depDir = path.join(DEPRECATED_ARCHIVE_DIR, arch);
-    if (!fs.existsSync(depDir)) continue;
-    for (const e of fs.readdirSync(depDir)) {
-      const stat = fs.statSync(path.join(depDir, e));
-      if (stat.isDirectory()) culled.push(e);
+// Returns { culled: string[], successor: Map<old,new> }.
+// `culled` = removed old names (old != new). `successor` maps each removed
+// old name to its `new:` target so the guard can exempt alias-documentation
+// prose that legitimately lives inside the successor agent's own directory.
+function discoverCulledAgentsWithSuccessors() {
+  // Robust if the aliases file is missing: return empty (guard then no-ops).
+  if (!fs.existsSync(ALIASES_FILE)) return { culled: [], successor: new Map() };
+  const text = fs.readFileSync(ALIASES_FILE, 'utf8');
+  // Lightweight line-pair parse of the `aliases:` list. Each entry is a
+  // `- old: cagents:<x>` line followed (within the same block) by a
+  // `new: cagents:<y>` line. We avoid a YAML dependency to keep the test
+  // self-contained; the file is flat and machine-generated.
+  const lines = text.split('\n');
+  const culled = new Set();
+  const successor = new Map();
+  let pendingOld = null;
+  for (const raw of lines) {
+    const line = raw.trim();
+    let m;
+    if ((m = line.match(/^-?\s*old:\s*["']?cagents:([a-z0-9-]+)["']?\s*$/i))) {
+      pendingOld = m[1];
+    } else if (pendingOld && (m = line.match(/^new:\s*["']?cagents:([a-z0-9-]+)["']?\s*$/i))) {
+      const newName = m[1];
+      // Only flag genuine removals: old != new. Identity entries (`move`,
+      // `vp-engineering`, etc.) keep the same name and are still live.
+      if (newName !== pendingOld) {
+        culled.add(pendingOld);
+        successor.set(pendingOld, newName);
+      }
+      pendingOld = null;
+    } else if (line.startsWith('- ') || /^old:/i.test(line)) {
+      // A new list item started before a `new:` was seen; reset.
+      pendingOld = null;
+      if ((m = line.match(/^-?\s*old:\s*["']?cagents:([a-z0-9-]+)["']?\s*$/i))) {
+        pendingOld = m[1];
+      }
     }
   }
-  return culled;
+  return { culled: [...culled], successor };
+}
+
+function discoverCulledAgents() {
+  return discoverCulledAgentsWithSuccessors().culled;
 }
 
 describe('WI-8 (v12.4.0): no orphaned cagents:{removed} refs in active tree', () => {
-  it('discovers some culled agents in _deprecated/ buckets', () => {
+  it('discovers culled agents from v12-aliases.yaml (renamed/folded/absorbed)', () => {
     const culled = discoverCulledAgents();
     expect(culled.length).toBeGreaterThan(0);
   });
 
   it('every culled agent has no `cagents:{name}` reference in active tree', () => {
-    const culled = discoverCulledAgents();
+    const { culled, successor } = discoverCulledAgentsWithSuccessors();
     // Single ripgrep pass with alternation. Build one regex
     // "cagents:(name1|name2|...)" so we only walk the tree once.
     const excludeArgs = [
@@ -68,12 +102,19 @@ describe('WI-8 (v12.4.0): no orphaned cagents:{removed} refs in active tree', ()
       '--glob', '!_archive/**',
       '--glob', '!**/_deprecated/**',
       '--glob', '!**/_deprecated_pre_v12.6/**',
-      '--glob', '!cagents-memory/_knowledge/agent-audit-*.md',
-      '--glob', '!cagents-memory/sessions/**',
+      // cagents-memory/ is gitignored runtime state (logs, knowledge, sessions);
+      // it legitimately records historical spawns of now-culled agents.
+      '--glob', '!cagents-memory/**',
       '--glob', '!node_modules/**',
       '--glob', '!.git/**',
       '--glob', '!scripts/migration/v12-aliases.yaml',
-      '--glob', '!tests/v12/no-orphaned-cagents-refs.test.js',
+      // tests/ exercise the alias machinery itself (alias-map-coverage,
+      // aliases-runtime-resolution, improve.test.mjs) and MUST mention old
+      // names to assert resolution works — they are fixtures, not dispatch
+      // sites. The guard protects the live routing surfaces (agents/,
+      // .claude/skills/, .claude/rules/, scripts/), where a stale
+      // cagents:<old> dispatch would actually mis-route at runtime.
+      '--glob', '!tests/**',
     ];
     // Chunk to keep regex compile + arg list manageable (~50 per pass).
     const chunkSize = 50;
@@ -91,7 +132,7 @@ describe('WI-8 (v12.4.0): no orphaned cagents:{removed} refs in active tree', ()
           maxBuffer: 32 * 1024 * 1024,
         });
       } else {
-        result = spawnSync('grep', ['-rn', '-E', pattern, '.', '--exclude-dir=node_modules', '--exclude-dir=.git', '--exclude-dir=_deprecated', '--exclude-dir=_deprecated_pre_v12.6', '--exclude-dir=_archive', '--exclude-dir=docs', '--exclude-dir=archive', '--exclude-dir=sessions', '--exclude=CHANGELOG.md', '--exclude=v12-aliases.yaml', '--exclude=no-orphaned-cagents-refs.test.js'], {
+        result = spawnSync('grep', ['-rn', '-E', pattern, '.', '--exclude-dir=node_modules', '--exclude-dir=.git', '--exclude-dir=_deprecated', '--exclude-dir=_deprecated_pre_v12.6', '--exclude-dir=_archive', '--exclude-dir=archive', '--exclude-dir=docs', '--exclude-dir=cagents-memory', '--exclude-dir=tests', '--exclude=CHANGELOG.md', '--exclude=v12-aliases.yaml'], {
           cwd: REPO_ROOT,
           encoding: 'utf8',
           maxBuffer: 32 * 1024 * 1024,
@@ -106,9 +147,18 @@ describe('WI-8 (v12.4.0): no orphaned cagents:{removed} refs in active tree', ()
         const colonIdx = line.indexOf(':');
         if (colonIdx < 0) continue;
         const file = line.slice(0, colonIdx);
-        if (file.includes('/_deprecated/') || file.includes('/_deprecated_pre_v12.6/') || file.includes('/_archive/') || file.includes('/agent-audit-')) continue;
+        if (file.includes('/_deprecated/') || file.includes('/_deprecated_pre_v12.6/') || file.includes('/_archive/') || file.includes('/agent-audit-') || file.includes('/cagents-memory/')) continue;
         for (const m of line.matchAll(re)) {
           const agent = m[1];
+          // Exempt alias-documentation prose that legitimately lives inside the
+          // SUCCESSOR agent's own directory. When `old` was folded into `new`,
+          // the new agent's SKILL.md/resources document the absorbed alias
+          // ("cagents:<old> now resolves to cagents:<new>", "when prior docs
+          // reference cagents:<old>, route to cagents:<new>"). That is the one
+          // place the old name is supposed to appear. A hard stale dispatch
+          // anywhere ELSE in the active tree still fails this guard.
+          const newName = successor.get(agent);
+          if (newName && file.includes(`/${newName}/`)) continue;
           if (!offenders.has(agent)) offenders.set(agent, new Set());
           offenders.get(agent).add(file);
         }

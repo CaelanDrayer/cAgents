@@ -162,6 +162,6 @@ routing_decision:
   requires_controller: true
   multi_controller: true
   controllers:
-    - cagents:legal-counsel (privacy policy)
+    - cagents:general-counsel (privacy policy)
     - cagents:tech-lead (UI update)
 ```

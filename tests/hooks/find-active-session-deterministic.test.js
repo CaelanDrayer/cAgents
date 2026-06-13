@@ -49,12 +49,17 @@ describe('findActiveSession deterministic chain (WI-2)', () => {
     if (existsSync(DIR_B)) rmSync(DIR_B, { recursive: true, force: true });
     delete process.env.CAGENTS_ACTIVE_SESSION;
     utils = freshHookUtils();
+    // Reset the module-level _cachedActiveSessions Map so a prior test's
+    // resolution can never leak into this one (cross-test + cross-file safety).
+    utils._resetActiveSessionCache();
   });
 
   afterEach(() => {
     if (existsSync(DIR_A)) rmSync(DIR_A, { recursive: true, force: true });
     if (existsSync(DIR_B)) rmSync(DIR_B, { recursive: true, force: true });
     delete process.env.CAGENTS_ACTIVE_SESSION;
+    // Leave no populated cache behind for the next file's hook-utils instance.
+    try { utils._resetActiveSessionCache(); } catch {}
   });
 
   it('returns hinted session regardless of B mtime', () => {

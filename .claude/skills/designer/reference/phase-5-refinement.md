@@ -147,7 +147,7 @@ Research agents prepare QUESTIONS. Specialists validate ANSWERS. For complex des
 ```
 Specialist delegation for VALIDATION (in addition to research agents for PREPARATION):
   designer -> Agent(cagents:architect, "Validate proposed architecture against {constraints}")
-  designer -> Agent(cagents:security-specialist, "Validate security design for {sensitive_areas}")
+  designer -> Agent(cagents:security-engineer, "Validate security design for {sensitive_areas}")
   designer -> Agent(cagents:qa-lead, "Validate testability of proposed design")
 
 Trigger criteria:

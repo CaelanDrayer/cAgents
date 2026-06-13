@@ -37,7 +37,7 @@ Subagent-delegated question preparation: research agents pre-build context-rich 
 | Define | `cagents:architect`, `cagents:backend-developer` | Tech stack, codebase structure, existing patterns, constraints | Yes |
 | Conceptualize | `cagents:architect` | High-level architectural patterns, prior art, system boundaries | Yes |
 | Ideation | `cagents:architect`, `cagents:backend-developer` | Design pattern matching, alternative feasibility, existing patterns to extend | Yes |
-| Refinement | `cagents:architect`, `cagents:security-specialist`, `cagents:qa-lead` | Architecture validation, security posture, test coverage, integration points | No |
+| Refinement | `cagents:architect`, `cagents:security-engineer`, `cagents:qa-lead` | Architecture validation, security posture, test coverage, integration points | No |
 | Specification | `cagents:backend-developer` | Codebase compatibility, naming conventions, API patterns, existing test patterns | No |
 
 ## Spawning Pattern

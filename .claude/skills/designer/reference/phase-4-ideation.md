@@ -120,7 +120,7 @@ Write to: ${session_dir}/question_prep/refinement_architecture.yaml`
 })
 
 Agent({
-  subagent_type: "cagents:security-specialist",
+  subagent_type: "cagents:security-engineer",
   description: "Research: Security analysis for Refinement questions",
   prompt: `Research agent for Refinement security questions.
 TOPIC: ${topic}

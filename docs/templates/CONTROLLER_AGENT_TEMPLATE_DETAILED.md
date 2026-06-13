@@ -283,7 +283,7 @@ Output to: cagents-memory/{instruction_id}/outputs/partial/task_002/
 
 // Task 3: Security specialist reviews
 Agent({
-  subagent_type: "cagents:security-specialist",
+  subagent_type: "cagents:security-engineer",
   description: "Security review of OAuth2 implementation",
   prompt: `
 Conduct security review of OAuth2 implementation.

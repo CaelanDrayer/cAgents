@@ -46,6 +46,12 @@ function archivedAgentPath(name) {
   return join(ROOT, '_archive', '_deprecated_pre_v12.6', 'analyst', name, 'SKILL.md');
 }
 
+// _archive/ is gitignored, repo-root scratch — present only in local working
+// trees, absent in a clean CI checkout. The (a2) archive-preservation
+// assertion can only run where the archive directory actually exists.
+const ARCHIVE_DIR = join(ROOT, '_archive', '_deprecated_pre_v12.6', 'analyst');
+const HAS_ARCHIVE = existsSync(ARCHIVE_DIR);
+
 function parseFrontmatter(content) {
   if (!content.startsWith('---\n')) return null;
   const end = content.indexOf('\n---', 4);
@@ -66,12 +72,20 @@ describe('Phase 12 (V11.1.13): academic-research analyst agents', () => {
     }
   });
 
-  test('(a2) Culled Phase 12 agents are preserved in the v12.8.0 archive', () => {
+  test.skipIf(!HAS_ARCHIVE)('(a2) Culled Phase 12 agents are preserved in the v12.8.0 archive', () => {
     for (const name of PHASE_12_ARCHIVED_AGENTS) {
       const p = archivedAgentPath(name);
       expect(existsSync(p), `Missing archived agent: ${p}`).toBe(true);
       expect(statSync(p).isFile(), `Not a file: ${p}`).toBe(true);
       // It must NOT linger in the active tree (Option B: not restored).
+      expect(existsSync(agentPath(name)), `${name} should not be active`).toBe(false);
+    }
+  });
+
+  // The "must not linger active" half of (a2) is checkable WITHOUT the archive,
+  // so it runs unconditionally — the culled agents stay gone from the active tree.
+  test('(a2b) Culled Phase 12 agents are absent from the active analyst/ tree', () => {
+    for (const name of PHASE_12_ARCHIVED_AGENTS) {
       expect(existsSync(agentPath(name)), `${name} should not be active`).toBe(false);
     }
   });

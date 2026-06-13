@@ -46,7 +46,7 @@ Refinement phase optionally spawns specialist validation agents in addition to r
 
 ```
 designer -> Agent(cagents:architect, "Validate proposed architecture against {constraints}")
-designer -> Agent(cagents:security-specialist, "Validate security design for {sensitive_areas}")
+designer -> Agent(cagents:security-engineer, "Validate security design for {sensitive_areas}")
 designer -> Agent(cagents:qa-lead, "Validate testability of proposed design")
 ```
 

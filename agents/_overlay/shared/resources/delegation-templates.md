@@ -90,7 +90,7 @@ Examples:
 - "cagents:tech-lead"
 - "cagents:copywriter"
 - "cagents:business-analyst"
-- "cagents:recruiter"
+- "cagents:talent-recruiter"
 - "cagents:general-counsel"
 ```
 

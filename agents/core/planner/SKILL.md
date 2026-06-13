@@ -152,7 +152,7 @@ objectives:
 
 controller_assignment:
   primary: cagents:tech-lead
-  supporting: [cagents:architect, cagents:security-specialist]
+  supporting: [cagents:architect, cagents:security-engineer]
 
 temporal_analysis:
   hour_1_foundations: "Auth library selection, DB schema for users/sessions"
