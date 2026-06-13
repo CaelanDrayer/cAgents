@@ -12,19 +12,44 @@
 
 const { createHook } = require('./hook-utils.cjs');
 
-// Simple string patterns (checked via includes)
+// Simple string patterns (checked via includes). These are multi-char literal
+// shapes that only ever appear in the dangerous form — substring-matching them
+// is safe (e.g. ':(){ :|:& };:' cannot collide with a benign token).
 const BLOCKED_STRINGS = [
   ':(){ :|:& };:',   // Fork bomb
   '> /dev/sda',
-  'dd if=/dev/zero',
-  'mkfs',
-  'sudo ',
-  'su ',              // Switch user (space prevents matching 'sudo'/'sum'); also catches 'su -' since 'su ' is a substring of 'su -' (M-1 dedup, v12.12.2)
-  'crontab'          // Cron persistence mechanism
+  'dd if=/dev/zero'
 ];
 
-// Regex patterns for more precise matching
+// B3/B4 (v12.18.0): command-name patterns that MUST be matched as whole words,
+// not bare substrings. The old approach (`command.includes('mkfs')`,
+// `.includes('su ')`, `.includes('crontab')`) hard-denied benign commands whose
+// text merely CONTAINED these as substrings — e.g. a `node -e` string mentioning
+// "mkfsutil", a path like "issue ", or "crontab-ui --help". Word-boundary regex
+// matches the actual command name only. `\b` is the standard word boundary;
+// for `su` we additionally require it to appear in command position (start of a
+// command segment, after `;`/`&&`/`||`/`|`, or after `sudo`/`env` etc.) so that
+// substrings inside larger words (`issue`, `mkfsutil`) and option-args (`--user`)
+// never match, while real `su`, `su -`, `su root` are caught.
 const BLOCKED_REGEXES = [
+  // mkfs and any mkfs.<fstype> variant (mkfs, mkfs.ext4, mkfs.xfs) — whole word.
+  { pattern: /\bmkfs(\.[a-z0-9]+)?\b/, label: 'mkfs (filesystem format — destroys data)' },
+  // sudo / doas / pkexec — privilege escalation (B4 adds doas + pkexec).
+  // Whole word so 'sudoku', 'pseudoas', 'pkexecutil' don't match.
+  { pattern: /\bsudo\b/, label: 'sudo (privilege escalation)' },
+  { pattern: /\bdoas\b/, label: 'doas (privilege escalation)' },
+  { pattern: /\bpkexec\b/, label: 'pkexec (privilege escalation)' },
+  // crontab — cron persistence mechanism. Whole word so 'crontab-ui' (a package
+  // name) is still caught (it begins with the crontab command) but 'mycrontab'
+  // or 'crontabs/' inside a path is not.
+  { pattern: /\bcrontab\b/, label: 'crontab (cron persistence mechanism)' },
+  // su — switch user. Must be in COMMAND POSITION: at string start, or right
+  // after a command separator (; && || |), optionally preceded by a privilege
+  // wrapper. Requires a following space/dash/end so 'sum', 'sudo', 'issue',
+  // 'mkfsutil' never match, while `su`, `su -`, `su root`, `... ; su -` do.
+  { pattern: /(^|[;|&]\s*)su(\s|$)/, label: 'su (switch user)' },
+
+  // ── existing precise patterns ──────────────────────────────────────────────
   { pattern: /rm\s+-r[f]?\s+\/\s*$/, label: 'rm -rf /' },          // rm -rf / (root only, not /tmp/foo)
   { pattern: /rm\s+-r[f]?\s+\/[^a-zA-Z]/, label: 'rm -rf /' },     // rm -rf /  (followed by space/pipe/etc, not a path)
   { pattern: /rm\s+-r[f]?\s+~\s*$/, label: 'rm -rf ~' },           // rm -rf ~ (home dir)

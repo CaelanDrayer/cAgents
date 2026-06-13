@@ -30,7 +30,7 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 
 **Tier 1 — Blocked (deny, auto-reject)**:
 
-- **Destructive**: `rm -rf /`, `rm -rf ~`, fork bombs, `mkfs`, `dd if=/dev/zero`, `> /dev/sda`, `sudo`, `su`, `crontab`
+- **Destructive**: `rm -rf /`, `rm -rf ~`, fork bombs, `mkfs` (and `mkfs.<fstype>` variants), `dd if=/dev/zero`, `> /dev/sda`, `sudo`, `doas`, `pkexec`, `su`, `crontab`. **B3/B4 (v12.18.0)**: `mkfs`, `su`, `crontab` (and the new `doas` / `pkexec`) are matched as whole words / command-position tokens via regex, NOT as bare `includes()` substrings — so a benign command merely containing the text (e.g. a `node -e` string mentioning `mkfsutil`, a path like `mycrontab-helper`, or `gh issue`) is no longer wrongly hard-denied.
 - **Data exfiltration**: `curl` with POST data, `wget --post-file`, `nc`/`netcat` pipes, `socat`
 - **Obfuscation**: `base64 -d | bash/sh`, `eval "$(..."`, `python3 -c` with `os.system`/`subprocess`, `perl -e` with `system`, `curl|wget` piped to shell, `node -e` with `child_process`, `ruby -e` with `exec`/`system`, `php -r` with `exec`/`system`
 
@@ -66,8 +66,9 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 - **Matcher**: `Write|Edit`
 - **Purpose**: Enforce the aggressive-delegation rule from `.claude/rules/core/delegation.md`. Controllers (tech-lead, architect, marketing-strategist, etc.) coordinate via Agent tool; they must NOT Write/Edit implementation files in protected paths.
 - **Detects**: Active controller from `workflow/agent_tree.yaml`, implementation file patterns.
-- **Output (HARD-DENY for protected paths)**: Returns `permissionDecision: "deny"` for Write/Edit targeting `src/`, `lib/`, `components/`, `app/`, `services/`, `middleware/` when in `block` mode. The DENY fires regardless of whether an active controller is detected — `CAGENTS_DELEGATION_ENFORCEMENT=block` is the canonical environment toggle (default in cAgents). To downgrade to warn-only, set `CAGENTS_DELEGATION_ENFORCEMENT=warn`. Workflow files (`workflow/*.yaml`, `coordination_log.yaml`) and `cagents-memory/` writes are always allowed.
-- **Output (advisory for non-protected paths)**: `systemMessage` warning when an active controller writes outside the protected list.
+- **Scoping (B1, v12.18.0)**: enforcement is CONTROLLER-SCOPED — it fires ONLY when an active cAgents controller (a controller-tier agent with `stopped_at: null`) is detected in the current session's `workflow/agent_tree.yaml`. With no active cAgents session/controller, the hook is a no-op and NEVER blocks an ordinary direct user edit to `src/`, `services/`, etc. This reverses the earlier P1-7 (v12.7.1) unconditional hard-deny, whose justification (depth-1 `Agent`-tool stripping making `agent_tree` unreliable) is obsolete as of v12.17.0 / Claude Code 2.1.172 (subagents retain `Agent` and self-register reliably). Scoping prevents the footgun where a default-on `block` mode would deny the user's own legitimate edits.
+- **Output (HARD-DENY for protected paths)**: When a controller is active, returns `permissionDecision: "deny"` in `block` mode for Write/Edit targeting `src/`, `lib/`, `components/`, `app/`, `services/`, `middleware/`. `CAGENTS_DELEGATION_ENFORCEMENT=block` is the canonical environment toggle (default in cAgents, set in `.claude/settings.json` `env`). To downgrade to advisory warn-only, set `CAGENTS_DELEGATION_ENFORCEMENT=warn`; `off` disables the hook. Workflow files (`workflow/*.yaml`, `coordination_log.yaml`), YAML/MD, and `cagents-memory/` writes are always allowed.
+- **Output (advisory for softer implementation paths)**: `systemMessage` warning (never deny) when an active controller writes to softer implementation files (`tests/`, `scripts/`, `utils/`, `content/`, `*.ts`/`*.js`/etc.) — these dual-use paths warn in both `warn` and `block` modes.
 
 ### PreToolUse[Bash|Write|Edit]: approval-gate.cjs
 

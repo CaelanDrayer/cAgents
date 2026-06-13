@@ -218,20 +218,57 @@ const TEST_PLACEHOLDER_PATTERNS = [
 // intentionally document the secret-detection mechanism itself are kept on a
 // narrow per-file allowlist (DOC_ALLOWLIST_PATHS) so a future expansion of
 // those docs to include a worked example cannot self-block the hook.
-// Lock files and example/sample/template/mock/fixture files remain excluded.
-const FALSE_POSITIVE_PATHS = [
-  /package-lock\.json$/, /yarn\.lock$/, /pnpm-lock\.yaml$/,
-  /example/i, /sample/i, /template/i, /mock/i, /fixture/i
+// B2 (v12.18.0): tightened path false-positive matching.
+//
+// Lock files: matched on filename (always whole-file skip — they are
+// machine-generated and any "secret" in them is a hash).
+const LOCK_FILE_PATHS = [
+  /(^|\/)package-lock\.json$/, /(^|\/)yarn\.lock$/, /(^|\/)pnpm-lock\.yaml$/
+];
+//
+// Example/sample/template/mock/fixture skip: previously these matched as NAKED
+// substrings anywhere in the path (/example/i, /sample/i, ...), so a legit
+// source file like `src/sample-config.ts` carrying a LIVE key was never
+// scanned. Now they match only as path SEGMENTS or filename-token markers:
+//   - a whole path segment named exactly that word (e.g. `fixtures/`,
+//     `__mocks__/`, `examples/`, `samples/`, `templates/`), OR
+//   - the marker appearing as a dotted/dashed/underscored FILENAME token
+//     (e.g. `foo.example.json`, `config.sample.yaml`, `data.mock.ts`),
+// which is the genuine "this is a placeholder file" convention. A source file
+// that merely contains the word as part of a larger token (`sample-config.ts`,
+// `template-engine.ts`, `mockingbird.js`) is NO LONGER blanket-skipped — it is
+// scanned like any other source file.
+const PLACEHOLDER_FILE_PATHS = [
+  // Directory segment named exactly the placeholder word (singular or plural).
+  /(^|\/)(examples?|samples?|templates?|mocks?|fixtures?|__mocks__|__fixtures__)(\/)/i,
+  // Filename token: the marker must be its own DOT-delimited filename
+  // component — the genuine placeholder-file convention. Matches
+  // `foo.example.json`, `db.sample.yaml`, `x.mock.ts`, `auth.fixture.js`,
+  // `config.template.yml`. The leading boundary is `/` or `.` (the marker
+  // starts the filename or is a dotted segment); the trailing boundary is `.`.
+  // Crucially this does NOT match hyphen/underscore-compounded source names
+  // like `sample-config.ts`, `template-engine.ts`, `mock-data.js` — those are
+  // real source files that must still be scanned (B2 fix).
+  /(^|\/|\.)(example|sample|template|mock|fixture)\./i,
+  // Same markers when they END the filename as a dotted segment, e.g.
+  // `.env.example`, `settings.template`, `data.fixture`. Requires a leading
+  // `.` or `/` so a hyphen-compounded `config-template` still does not match.
+  /(^|\/|\.)(example|sample|template|mock|fixture)$/i
 ];
 
-// Narrow per-file allowlist: docs that document the secret-detection /
-// sanitize mechanism itself and therefore legitimately carry secret-pattern
-// fragments as reference material. Matched on path suffix (basename-anchored)
-// so it cannot be widened by a sibling directory of the same name.
+// Narrow per-file allowlist: the TWO repo docs that document the
+// secret-detection / sanitize mechanism itself and therefore legitimately
+// carry secret-pattern fragments as reference material. Anchored to the EXACT
+// repo-relative path (suffix-anchored with a leading boundary) so an unrelated
+// `/tmp/hook-catalog.md` or `src/hook-catalog.md` is NOT auto-allowlisted —
+// only these two specific files in their canonical locations are.
 const DOC_ALLOWLIST_PATHS = [
-  /(^|\/)hook-catalog\.md$/,
-  /(^|\/)SECRET-SANITIZE\.md$/
+  /(^|\/)\.claude\/rules\/core\/resources\/hook-catalog\.md$/,
+  /(^|\/)\.claude\/hooks\/SECRET-SANITIZE\.md$/
 ];
+
+// Combined path-skip set used by isPathFalsePositive.
+const FALSE_POSITIVE_PATHS = [...LOCK_FILE_PATHS, ...PLACEHOLDER_FILE_PATHS];
 
 const FALSE_POSITIVE_CONTENT = [
   /YOUR[_-]?API[_-]?KEY/i, /REPLACE[_-]?WITH/i, /\$\{[^}]+\}/, /<[^>]+>/, /xxx+/i, /\*{3,}/, /\.{3,}/

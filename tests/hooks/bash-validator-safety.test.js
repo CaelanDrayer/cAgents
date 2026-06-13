@@ -132,6 +132,15 @@ describe('bash-validator two-tier safety', () => {
       expectDeny(runHook('su -'));
     });
 
+    // B4 (v12.18.0): doas and pkexec are sudo-equivalents.
+    it('blocks doas (sudo-equivalent)', () => {
+      expectDeny(runHook('doas rm -rf /etc'));
+    });
+
+    it('blocks pkexec (sudo-equivalent)', () => {
+      expectDeny(runHook('pkexec /bin/bash'));
+    });
+
     // F7-1 (audit run_fable-plugin-review_260609_001) — variable-indirection
     // via eval and two-step download-then-exec are Tier-1 deny.
     it('blocks eval of a bare variable (eval $VAR)', () => {

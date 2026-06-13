@@ -111,7 +111,7 @@ describe('controller-delegation-validator.cjs', () => {
     expect(existsSync(HOOK_PATH)).toBe(true);
   });
 
-  describe('enforcement mode: warn (default)', () => {
+  describe('enforcement mode: warn', () => {
     beforeEach(() => {
       setupTestSession();
     });
@@ -122,7 +122,7 @@ describe('controller-delegation-validator.cjs', () => {
     it('returns systemMessage warning for implementation file writes', () => {
       const result = runHook(implFileInput(), {
         CAGENTS_ACTIVE_SESSION: TEST_SESSION,
-        CAGENTS_DELEGATION_ENFORCEMENT: ''
+        CAGENTS_DELEGATION_ENFORCEMENT: 'warn'
       });
       // warn mode: continue true, systemMessage with warning
       expect(result.continue).toBe(true);
@@ -133,15 +133,14 @@ describe('controller-delegation-validator.cjs', () => {
       expect(result.hookSpecificOutput).toBeUndefined();
     });
 
-    it('defaults to warn when env var is unset', () => {
-      const env = { CAGENTS_ACTIVE_SESSION: TEST_SESSION };
-      // Explicitly remove the enforcement env var
-      delete env.CAGENTS_DELEGATION_ENFORCEMENT;
-      const result = runHook(implFileInput(), env);
+    it('warn mode warns (does not deny) for a HARD-DENY src/ path when a controller is active', () => {
+      const result = runHook(implFileInput(), {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'warn'
+      });
       expect(result.continue).toBe(true);
-      if (result.systemMessage) {
-        expect(result.systemMessage).toContain('CONTROLLER DELEGATION WARNING');
-      }
+      expect(result.systemMessage).toContain('CONTROLLER DELEGATION WARNING');
+      expect(result.hookSpecificOutput).toBeUndefined();
     });
   });
 
@@ -223,17 +222,18 @@ describe('controller-delegation-validator.cjs', () => {
       expect(result.systemMessage).toBeUndefined();
     });
 
-    it('invalid env var falls through to default warn behavior', () => {
+    it('invalid env var falls through to default block behavior', () => {
+      // B1 (v12.18.0): default is now 'block' (was 'warn'). settings.json ships
+      // CAGENTS_DELEGATION_ENFORCEMENT=block, and the hardcoded fallback is also
+      // 'block'. With an active controller writing a HARD-DENY src/ path, the
+      // result is a deny.
       const result = runHook(implFileInput(), {
         CAGENTS_ACTIVE_SESSION: TEST_SESSION,
         CAGENTS_DELEGATION_ENFORCEMENT: 'invalid_mode'
       });
-      // Invalid env var -> falls through to settings.json or default 'warn'
-      // With active controller writing impl file, should warn (default)
-      expect(result.continue).toBe(true);
-      if (result.systemMessage) {
-        expect(result.systemMessage).toContain('CONTROLLER DELEGATION WARNING');
-      }
+      expect(result.hookSpecificOutput).toBeDefined();
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+      expect(result.hookSpecificOutput.permissionDecisionReason).toContain('CONTROLLER DELEGATION BLOCKED');
     });
   });
 
@@ -291,21 +291,41 @@ describe('controller-delegation-validator.cjs', () => {
     });
   });
 
-  describe('HARD-DENY paths are denied regardless of active controller (P1-7)', () => {
-    beforeEach(() => {
-      setupTestSession(NO_ACTIVE_CONTROLLER_TREE);
-    });
+  // B1 (v12.18.0): the hard-deny is now CONTROLLER-SCOPED, reversing the P1-7
+  // (v12.7.1) unconditional behavior. The P1-7 justification (depth-1 Agent-tool
+  // stripping making agent_tree unreliable) is obsolete as of v12.17.0 / Claude
+  // Code 2.1.172, where subagents retain Agent and self-register reliably. An
+  // unconditional deny would be a FOOTGUN — it would block the user's own direct
+  // edits to src/ outside any cAgents workflow. So enforcement only fires when an
+  // active controller is present in agent_tree.yaml.
+  describe('controller-scoped hard-deny: no footgun on direct user edits (B1)', () => {
     afterEach(() => {
       cleanupTestSession();
     });
 
-    // P1-7 (v12.7.1) promoted src/, lib/, components/, app/ to an
-    // UNCONDITIONAL hard-deny in block mode. The deny no longer requires an
-    // active controller in agent_tree.yaml, because depth-1 stripping often
-    // prevents the tree from being updated reliably (see teams.md § Known
-    // Harness Limitation). So even with all controllers stopped, a src/ write
-    // is denied in block mode.
-    it('denies src/ implementation writes in block mode even with no active controller', () => {
+    it('does NOT deny a src/ write in block mode when NO controller is active (direct user edit)', () => {
+      setupTestSession(NO_ACTIVE_CONTROLLER_TREE);
+      const result = runHook(implFileInput(), {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'block'
+      });
+      expect(result.continue).toBe(true);
+      expect(result.hookSpecificOutput).toBeUndefined();
+    });
+
+    it('does NOT deny a src/ write in block mode when there is NO active cAgents session at all', () => {
+      // No session dir on disk -> findActiveSession returns null -> no-op.
+      cleanupTestSession();
+      const result = runHook(implFileInput(), {
+        CAGENTS_ACTIVE_SESSION: 'nonexistent_session_260612_999',
+        CAGENTS_DELEGATION_ENFORCEMENT: 'block'
+      });
+      expect(result.continue).toBe(true);
+      expect(result.hookSpecificOutput).toBeUndefined();
+    });
+
+    it('DOES deny a src/ write in block mode when a controller IS active', () => {
+      setupTestSession(ACTIVE_CONTROLLER_TREE);
       const result = runHook(implFileInput(), {
         CAGENTS_ACTIVE_SESSION: TEST_SESSION,
         CAGENTS_DELEGATION_ENFORCEMENT: 'block'
@@ -313,6 +333,42 @@ describe('controller-delegation-validator.cjs', () => {
       expect(result.hookSpecificOutput).toBeDefined();
       expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
       expect(result.hookSpecificOutput.permissionDecisionReason).toContain('CONTROLLER DELEGATION BLOCKED');
+    });
+
+    it('DOES deny a services/ write (newly added hard-deny path) when a controller is active', () => {
+      setupTestSession(ACTIVE_CONTROLLER_TREE);
+      const result = runHook({
+        tool_name: 'Write',
+        tool_input: { file_path: '/project/services/payments/charge.ts', content: 'export function charge() {}' }
+      }, {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'block'
+      });
+      expect(result.hookSpecificOutput).toBeDefined();
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+    });
+
+    it('DOES deny a middleware/ write (newly added hard-deny path) when a controller is active', () => {
+      setupTestSession(ACTIVE_CONTROLLER_TREE);
+      const result = runHook({
+        tool_name: 'Write',
+        tool_input: { file_path: '/project/middleware/auth.ts', content: 'export function auth() {}' }
+      }, {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'block'
+      });
+      expect(result.hookSpecificOutput).toBeDefined();
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+    });
+
+    it('allows a controller write to a workflow/ yaml file (delegation-permitted path)', () => {
+      setupTestSession(ACTIVE_CONTROLLER_TREE);
+      const result = runHook(workflowFileInput(), {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'block'
+      });
+      expect(result.continue).toBe(true);
+      expect(result.hookSpecificOutput).toBeUndefined();
     });
   });
 

@@ -271,6 +271,74 @@ describe('bash-validator.cjs', () => {
     });
   });
 
+  // B3 (v12.18.0): word-boundary matching for mkfs / su / crontab.
+  // Previously these were matched via command.includes(), so any benign command
+  // whose text merely CONTAINED the substring was wrongly hard-denied.
+  describe('word-boundary command matching (B3)', () => {
+    it('should NOT block a node -e string that merely contains "mkfsutil"', () => {
+      const result = runHookSafe({ tool_input: { command: 'node -e "const x = 1 //mkfsutil"' } });
+      expect(result.continue).toBe(true);
+    });
+
+    it('should NOT block a benign command containing "su" as a substring (e.g. issue)', () => {
+      const result = runHookSafe({ tool_input: { command: 'gh issue list --state open' } });
+      expect(result.continue).toBe(true);
+    });
+
+    it('should NOT block "crontab-ui" mentioned inside a path/string', () => {
+      const result = runHookSafe({ tool_input: { command: 'ls node_modules/mycrontab-helper' } });
+      expect(result.continue).toBe(true);
+    });
+
+    it('should still block a real mkfs /dev/sda', () => {
+      const result = runHookSafe({ tool_input: { command: 'mkfs /dev/sda' } });
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+    });
+
+    it('should still block mkfs.ext4 variants', () => {
+      const result = runHookSafe({ tool_input: { command: 'mkfs.ext4 /dev/sdb1' } });
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+    });
+
+    it('should still catch a real su -', () => {
+      const result = runHookSafe({ tool_input: { command: 'su -' } });
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+    });
+
+    it('should still catch su in command position after a separator', () => {
+      const result = runHookSafe({ tool_input: { command: 'echo hi; su root' } });
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+    });
+
+    it('should still catch a real crontab -e', () => {
+      const result = runHookSafe({ tool_input: { command: 'crontab -e' } });
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+    });
+
+    it('should still catch sudo', () => {
+      const result = runHookSafe({ tool_input: { command: 'sudo apt update' } });
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+    });
+  });
+
+  // B4 (v12.18.0): doas and pkexec are sudo-equivalents — Tier-1 deny.
+  describe('sudo-equivalent privilege escalation (B4)', () => {
+    it('should block doas rm -rf /', () => {
+      const result = runHookSafe({ tool_input: { command: 'doas rm -rf /etc' } });
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+    });
+
+    it('should block pkexec invocations', () => {
+      const result = runHookSafe({ tool_input: { command: 'pkexec /bin/bash' } });
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+    });
+
+    it('should NOT block a benign command containing "doas"/"pkexec" as substrings', () => {
+      const result = runHookSafe({ tool_input: { command: 'echo pseudoaster && ls pkexecutil-docs' } });
+      expect(result.continue).toBe(true);
+    });
+  });
+
   describe('safe commands', () => {
     it('should allow ls', () => {
       const result = runHook({ tool_input: { command: 'ls -la' } });

@@ -186,6 +186,56 @@ describe('secret-detection.cjs', () => {
     });
   });
 
+  // B2 (v12.18.0): path false-positive tightening.
+  //   - DOC_ALLOWLIST is now anchored to EXACT repo-relative paths (only the two
+  //     real self-documenting docs), not basename-matched.
+  //   - placeholder skip (example/sample/template/mock/fixture) matches path
+  //     SEGMENTS or dotted filename components, NOT naked substrings — so a
+  //     hyphen-compounded source name (sample-config.ts) is still scanned.
+  describe('path false-positive tightening (B2)', () => {
+    it('scans a source file whose name merely contains "sample" (sample-config.ts) and blocks a live key', () => {
+      const realPat = 'ghp_' + '1234567890abcdefghijklmnopqrstuvwxyz';
+      const result = runHook({ tool_input: { file_path: 'src/sample-config.ts', content: `const token = "${realPat}";` } });
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+    });
+
+    it('scans a source file named template-engine.ts and blocks a live key', () => {
+      const realKey = 'AKI' + 'AIOSFODNN7REALKEY1';
+      const result = runHook({ tool_input: { file_path: 'src/template-engine.ts', content: `const k = "${realKey}";` } });
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+    });
+
+    it('still skips a genuine fixture placeholder file (tests/fixtures/foo.example.json)', () => {
+      const realPat = 'ghp_' + '1234567890abcdefghijklmnopqrstuvwxyz';
+      const result = runHook({ tool_input: { file_path: 'tests/fixtures/foo.example.json', content: `{"key":"${realPat}"}` } });
+      expect(result.continue).toBe(true);
+    });
+
+    it('still skips files under a fixtures/ directory segment', () => {
+      const realKey = 'AKI' + 'AIOSFODNN7REALKEY1';
+      const result = runHook({ tool_input: { file_path: 'tests/fixtures/data.json', content: realKey } });
+      expect(result.continue).toBe(true);
+    });
+
+    it('does NOT auto-allowlist hook-catalog.md in the wrong directory (docs/whatever/)', () => {
+      const realPat = 'ghp_' + '1234567890abcdefghijklmnopqrstuvwxyz';
+      const result = runHook({ tool_input: { file_path: 'docs/whatever/hook-catalog.md', content: `shape: ${realPat}` } });
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+    });
+
+    it('does NOT auto-allowlist a basename hook-catalog.md outside the repo (/tmp/)', () => {
+      const realPat = 'ghp_' + '1234567890abcdefghijklmnopqrstuvwxyz';
+      const result = runHook({ tool_input: { file_path: '/tmp/hook-catalog.md', content: `shape: ${realPat}` } });
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+    });
+
+    it('DOES allowlist the real hook-catalog.md at its canonical repo-relative path', () => {
+      const realPat = 'ghp_' + '1234567890abcdefghijklmnopqrstuvwxyz';
+      const result = runHook({ tool_input: { file_path: '.claude/rules/core/resources/hook-catalog.md', content: `shape: ${realPat}` } });
+      expect(result.continue).toBe(true);
+    });
+  });
+
   describe('safe content', () => {
     it('should allow normal code', () => {
       const result = runHook({ tool_input: { file_path: '/tmp/app.js', content: 'const x = 1;\nconsole.log(x);' } });

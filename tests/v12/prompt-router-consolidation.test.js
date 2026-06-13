@@ -9,6 +9,10 @@
 //   UserPromptSubmit + PreToolUse[Agent]; the kill-list is canonicalized
 //   in .claude/rules/core/delegation.md (exactly once); controller-delegation
 //   -validator emits permissionDecision:deny for impl paths.
+// - B1 (v12.18.0): the impl-path deny is now CONTROLLER-SCOPED (fires only when
+//   an active cAgents controller is in agent_tree.yaml), not unconditional, so
+//   it never blocks an ordinary direct user edit. The deny test below sets up an
+//   active-controller session; a no-session control case asserts the no-op.
 //
 // Could have caught by: contract test on hook inventory + grep-based
 // uniqueness check on the kill-list text + hook unit test for deny verdict.
@@ -105,36 +109,79 @@ describe('P1-7: prompt-router consolidation', () => {
     expect(teamSkill).toMatch(/@\.claude\/rules\/core\/delegation\.md/);
   });
 
-  it('controller-delegation-validator emits permissionDecision:deny for impl paths', () => {
+  it('controller-delegation-validator emits permissionDecision:deny for impl paths when a controller is active', () => {
     const hookPath = path.join(
       ROOT,
       '.claude/hooks/controller-delegation-validator.cjs'
     );
     expect(fs.existsSync(hookPath)).toBe(true);
 
-    // Stub session — the test exercises the impl-path deny branch even
-    // when no active session is found, since the deny on impl paths must
-    // be unconditional (no agent_tree.yaml dependency).
-    const stdin = JSON.stringify({
-      tool_name: 'Write',
-      tool_input: { file_path: 'src/app/auth.ts' },
-      session_id: 'nonexistent-session'
-    });
+    // B1 (v12.18.0): enforcement is CONTROLLER-SCOPED. The deny fires only when
+    // an active cAgents controller is present in agent_tree.yaml — NOT
+    // unconditionally — so it never blocks an ordinary direct user edit. Set up
+    // a temp session with an active controller to exercise the deny branch.
+    const sid = 'test_prv_delegation_260612_001';
+    const sessionDir = path.join(ROOT, 'cagents-memory', 'sessions', sid);
+    const workflowDir = path.join(sessionDir, 'workflow');
+    fs.mkdirSync(workflowDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(workflowDir, 'agent_tree.yaml'),
+      'agents:\n  - agent_id: "a1"\n    cagents_type: "cagents:tech-lead"\n    spawned_at: "2026-06-12T10:00:00Z"\n    stopped_at: null\n'
+    );
+    fs.writeFileSync(
+      path.join(sessionDir, 'status.yaml'),
+      'pipeline_state: coordinating\nphase: coordinating\n'
+    );
+    // Back-date the temp session's mtime ~1h into the past so it can never be
+    // the "newest active" session picked up by other tests that scan the shared
+    // cagents-memory/sessions/ dir under findActiveSession({fallbackHeuristic}).
+    // Our own assertions below resolve the session by EXPLICIT hint
+    // (session_id + CAGENTS_ACTIVE_SESSION), which is mtime-independent, so
+    // back-dating does not affect this test.
+    const past = (Date.now() - 3600_000) / 1000;
+    try {
+      fs.utimesSync(path.join(sessionDir, 'status.yaml'), past, past);
+      fs.utimesSync(sessionDir, past, past);
+    } catch { /* best-effort */ }
 
-    const result = spawnSync('node', [hookPath], {
-      input: stdin,
-      encoding: 'utf8',
-      env: { ...process.env, CAGENTS_DELEGATION_ENFORCEMENT: 'block' }
-    });
+    try {
+      const stdin = JSON.stringify({
+        tool_name: 'Write',
+        tool_input: { file_path: 'src/app/auth.ts' },
+        session_id: sid
+      });
+      const result = spawnSync('node', [hookPath], {
+        input: stdin,
+        encoding: 'utf8',
+        env: { ...process.env, CAGENTS_DELEGATION_ENFORCEMENT: 'block', CAGENTS_ACTIVE_SESSION: sid }
+      });
+      expect(result.status).toBe(0);
+      const out = JSON.parse(result.stdout || '{}');
+      const decision =
+        out.hookSpecificOutput?.permissionDecision ||
+        out.permissionDecision ||
+        '';
+      expect(decision).toBe('deny');
 
-    expect(result.status).toBe(0);
-    const out = JSON.parse(result.stdout || '{}');
-    const decision =
-      out.hookSpecificOutput?.permissionDecision ||
-      out.permissionDecision ||
-      '';
-    expect(decision).toBe('deny');
-  });
+      // Footgun guard: with NO active session/controller, the SAME write is a
+      // no-op (ordinary direct user edit is never blocked).
+      const noSessionResult = spawnSync('node', [hookPath], {
+        input: JSON.stringify({
+          tool_name: 'Write',
+          tool_input: { file_path: 'src/app/auth.ts' },
+          session_id: 'nonexistent-session-260612-999'
+        }),
+        encoding: 'utf8',
+        env: { ...process.env, CAGENTS_DELEGATION_ENFORCEMENT: 'block', CAGENTS_ACTIVE_SESSION: 'nonexistent-session-260612-999' }
+      });
+      expect(noSessionResult.status).toBe(0);
+      const noOut = JSON.parse(noSessionResult.stdout || '{}');
+      expect(noOut.hookSpecificOutput?.permissionDecision).toBeUndefined();
+      expect(noOut.continue === undefined || noOut.continue === true).toBe(true);
+    } finally {
+      fs.rmSync(sessionDir, { recursive: true, force: true });
+    }
+  }, 15000); // two cold node spawns + fs setup can exceed the default 5s timeout
 
   it('prompt-router.cjs is well-formed and exits 0 on empty stdin', () => {
     const hookPath = path.join(ROOT, '.claude/hooks/prompt-router.cjs');

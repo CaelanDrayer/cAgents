@@ -15,7 +15,8 @@
   },
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CAGENTS_VERSION": "12.17.0"
+    "CAGENTS_VERSION": "12.17.0",
+    "CAGENTS_DELEGATION_ENFORCEMENT": "block"
   },
   "permissions": {
     "allow": [
