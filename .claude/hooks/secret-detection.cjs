@@ -299,17 +299,44 @@ function scanForSecrets(content, filePath) {
     return { critical: [], high: [], medium: [], low: [] };
   }
 
+  // D1a (v12.19.0): head+tail size cap. Scanning the FULL content of a very
+  // large file (e.g. a multi-MB minified bundle or vendored blob) with ~50
+  // backtracking regexes is a DoS / latency risk on every Write/Edit. Secrets
+  // overwhelmingly live near the top (config/imports) or bottom (appended env
+  // dumps) of a file, so we scan a head window + a tail window instead of the
+  // whole body once content exceeds MAX_BYTES. Inside scanForSecrets so BOTH
+  // block mode and sanitize mode inherit the cap. The <8 early-return above is
+  // preserved exactly. ponytail: slice+concat one-liner — no new dependency
+  // (ladder rung 5).
+  const MAX_BYTES = parseInt(process.env.CAGENTS_SECRET_SCAN_MAX_BYTES, 10) || 512 * 1024;
+  const HEAD = 64 * 1024;
+  const TAIL = 64 * 1024;
+  let scanTarget = content;
+  if (content.length > MAX_BYTES) {
+    scanTarget = content.slice(0, HEAD) + content.slice(content.length - TAIL);
+    // NOT a silent skip — name the file and announce the windowed scan.
+    console.error(`[SecretDetection] WINDOWED SCAN: ${filePath || '<unknown>'} is ${content.length} bytes (> ${MAX_BYTES} cap); scanning first ${HEAD} + last ${TAIL} bytes only. A secret in the MIDDLE of this file (outside both windows) will not be detected.`);
+  }
+  // ponytail: residual — match.index below is relative to scanTarget (the
+  // window), so for a windowed file the `line` numbers and sanitize-mode
+  // redaction indices for TAIL-window hits are offset (they count from the
+  // window start, not the original content). Detection-correctness (does a
+  // head/tail secret still BLOCK?) is preserved and is the gating requirement;
+  // for >512KB files the block decision is honest while sanitize-mode index
+  // fidelity on the tail window is the accepted documented residual. See
+  // tests/v12/secret-scan-size-cap.test.js.
+
   const testFile = isTestFile(filePath);
   const findings = { critical: [], high: [], medium: [], low: [] };
 
   for (const secretType of SECRET_PATTERNS) {
     secretType.pattern.lastIndex = 0;
     let match;
-    while ((match = secretType.pattern.exec(content)) !== null) {
-      if (isContentFalsePositive(content, match[0])) continue;
+    while ((match = secretType.pattern.exec(scanTarget)) !== null) {
+      if (isContentFalsePositive(scanTarget, match[0])) continue;
       // For test files, suppress placeholder tokens but scan real-looking tokens
       if (testFile && isTestFilePlaceholder(match[0])) continue;
-      const lines = content.substring(0, match.index).split('\n');
+      const lines = scanTarget.substring(0, match.index).split('\n');
       const redacted = match[0].length > 10
         ? match[0].substring(0, 6) + '...' + match[0].substring(match[0].length - 4)
         : match[0].substring(0, 3) + '***';
@@ -327,7 +354,10 @@ function scanForSecrets(content, filePath) {
   return findings;
 }
 
-createHook('SecretDetection', async (input) => {
+// Pure handler (single source of truth). Exported so the D1b Write|Edit dispatcher
+// (write-edit-dispatch.cjs) can run this SECURITY DENY GATE in-process FIRST. The
+// dispatcher wraps this call in its own try/catch and FAILS CLOSED (deny) on throw.
+async function handler(input) {
   const toolInput = input.tool_input || {};
   const filePath = toolInput.file_path || '';
   const content = toolInput.content || toolInput.new_string || '';
@@ -456,4 +486,22 @@ createHook('SecretDetection', async (input) => {
   }
 
   return null;
-});
+}
+
+// Register the hook at top level (same pattern as the sibling deny hooks
+// bash-validator.cjs and post-write-validator.cjs). createHook's readStdin handles
+// the no-stdin / isTTY case gracefully, so require()-only unit tests that import
+// scanForSecrets but never pipe stdin are unaffected. A previous
+// `require.main === module` guard here silently disabled the deny-gate under the
+// production path (`node run-hook.cjs secret-detection`), where require.main is
+// run-hook.cjs — not this module — so the hook never registered.
+//
+// Suppressed when the D1b dispatcher require()s this module purely to import
+// `handler`: it sets CAGENTS_DISPATCH_IMPORT before the require so this top-level
+// createHook() does not also fire and contend for stdin with the dispatcher.
+if (!process.env.CAGENTS_DISPATCH_IMPORT) {
+  createHook('SecretDetection', handler);
+}
+
+// Export internals for in-process unit testing and for the D1b dispatcher.
+module.exports = { handler, scanForSecrets, isPathFalsePositive, SECRET_PATTERNS };

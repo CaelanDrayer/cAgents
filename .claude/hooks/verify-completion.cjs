@@ -680,7 +680,7 @@ function verifyCompletion(sessionDir) {
           const pathMatch = line.match(/^\s+-\s+["']?([^\s"'\n]+)/);
           if (pathMatch) {
             const p = pathMatch[1].trim();
-            if (p && !p.startsWith('files_') && p.includes('/')) filesClaimed.push(p);
+            if (p && !p.startsWith('files_')) filesClaimed.push(p);
           }
         }
       }
@@ -691,7 +691,7 @@ function verifyCompletion(sessionDir) {
     if (outputMatches) {
       for (const m of outputMatches) {
         const p = m.replace(/output(?:_file|_path|s)?:\s*["']?/, '').trim();
-        if (p && p.includes('/')) filesClaimed.push(p);
+        if (p) filesClaimed.push(p);
       }
     }
 

@@ -97,7 +97,12 @@ const ALLOWED_PATTERNS = [
   /status\.yaml/, /agent_tree/, /\.md$/, /\.yaml$/, /\.yml$/
 ];
 
-createHook('ControllerDelegationValidator', async (input) => {
+// Pure handler (single source of truth). Exported so the D1b Write|Edit dispatcher
+// (write-edit-dispatch.cjs) can run this GOVERNANCE DENY GATE in-process. The
+// dispatcher wraps this call in its own try/catch and FAILS CLOSED (deny) on throw.
+// The standalone createHook() registration below is preserved so this hook still
+// works if ever registered individually.
+async function handler(input) {
   const mode = getEnforcementMode();
   console.error(`[ControllerDelegationValidator] enforcement_mode=${mode}`);
 
@@ -177,4 +182,16 @@ createHook('ControllerDelegationValidator', async (input) => {
     continue: true,
     systemMessage: `[CONTROLLER DELEGATION WARNING] ${message} Direct implementation by controllers is a protocol violation.`
   };
-});
+}
+
+// Standalone registration. Suppressed when the D1b dispatcher require()s this
+// module purely to import `handler` (it sets CAGENTS_DISPATCH_IMPORT before the
+// require so this top-level createHook() does not also fire and contend for stdin).
+// NOTE: a `require.main === module` guard is deliberately NOT used here — under the
+// production path (`node run-hook.cjs controller-delegation-validator`) require.main
+// is run-hook.cjs, not this module, so such a guard would silently disable the gate.
+if (!process.env.CAGENTS_DISPATCH_IMPORT) {
+  createHook('ControllerDelegationValidator', handler);
+}
+
+module.exports = { handler, getEnforcementMode, CONTROLLER_TYPES, HARD_DENY_PATTERNS };

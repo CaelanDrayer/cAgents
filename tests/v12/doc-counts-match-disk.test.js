@@ -114,11 +114,14 @@ describe('P1-5: validate-counts.sh enforces doc-vs-disk alignment', () => {
     expect(output, 'derive-only should print active_agents=141').toMatch(
       /active_agents[=:]\s*141/
     );
-    expect(output, 'derive-only should print hook_files=31').toMatch(
-      /hook_files[=:]\s*31/
+    // v12.19.0 WI-5 / D1b: write-edit-dispatch.cjs is the 32nd .cjs file; the 3
+    // former standalone Write|Edit hooks became dispatched sub-validators, so the
+    // unique-registered count dropped to 26.
+    expect(output, 'derive-only should print hook_files=32').toMatch(
+      /hook_files[=:]\s*32/
     );
-    expect(output, 'derive-only should print registered_hooks=28').toMatch(
-      /registered_hooks[=:]\s*28/
+    expect(output, 'derive-only should print registered_hooks=26').toMatch(
+      /registered_hooks[=:]\s*26/
     );
   });
 });

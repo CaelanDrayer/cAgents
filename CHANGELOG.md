@@ -10,6 +10,71 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.19.0] - 2026-06-14
+
+Bucket-D remediation minor bump. Session `run_bucket-d-remediation_260614_001`
+implemented the hook security/performance findings (Bucket D) deferred from the
+v12.18.0 overhaul audit. Minor (not tiny) bump per `version-registry.md` §
+"Audit / consolidation sessions ... → minor bump": the remediation ships a new
+hook process (`write-edit-dispatch.cjs`), new reproducible-benchmark tooling,
+and touches multiple surfaces across hooks, tests, docs, and config. All six
+work items (WI-1..WI-6) are complete and reviewed.
+
+### Security (D1a — secret-detection hardening)
+- **secret-detection.cjs head+tail size cap**: large files are now scanned via a
+  bounded head+tail window (`CAGENTS_SECRET_SCAN_MAX_BYTES`, default 512 KB)
+  instead of loading the whole buffer, preventing a memory/latency blowup on
+  multi-MB writes while still catching secrets at file boundaries. Also fixed the
+  production-path registration so the hook actually fires on the intended Write|Edit
+  paths. Regression tests: `tests/v12/secret-scan-size-cap.test.js`,
+  `tests/v12/secret-detection-registration.test.js`.
+
+### Fixed (D3 — verify-completion fact-check)
+- **verify-completion.cjs slash-less filename fact-check**: dropped the
+  `includes('/')` guard at the two filename-citation checks so bare filenames
+  (no path separator) cited as evidence are fact-checked the same as path-qualified
+  ones. Closes a gap where a slash-less filename claim bypassed verification.
+  Regression test: `tests/v12/verify-completion-slashless-filenames.test.js`.
+
+### Changed (D2 — reproducible performance benchmarking + honesty pass)
+- Added a **Write|Edit hook-perf microbench** (`scripts/benchmarks/hook-perf-microbench.cjs`)
+  with `tests/benchmarks/hook-perf-microbench.test.js` and a captured baseline
+  (`cagents-memory/_system/evals/perf/hook-perf-before.json`).
+- Added a **reproducible perf-benchmark corpus runner**
+  (`cagents-memory/_system/evals/perf/perf-corpus-runner.cjs` + `README.md` +
+  `perf-corpus-results.json`) with `tests/benchmarks/perf-corpus-runner.test.js`,
+  giving the performance claims a reproducible measurement artifact.
+- **CLAUDE.md § Performance Benchmarks honesty pass**: clarified which figures are
+  measured vs. design-target estimates.
+
+### Security / Performance (D1b — write-edit-dispatch consolidation; SHIPPED)
+- **New `.claude/hooks/write-edit-dispatch.cjs` dispatcher**: consolidates the three
+  former standalone `Write|Edit` PreToolUse hooks — `secret-detection`,
+  `controller-delegation-validator`, and `skill-size-monitor` — into a single
+  in-process dispatcher (those three were export-refactored to be callable as
+  sub-validators). `settings.json` collapses 3 `Write|Edit` registrations into 1
+  dispatcher entry. The dispatcher is **deny-first** and the security sub-validators
+  **fail CLOSED** (a sub-validator error denies the operation rather than allowing
+  it through). This cuts cold-start node-process spawns per Write|Edit from 3 → 1.
+  D1b SHIPPED in this bump (not deferred). Regression test:
+  `tests/hooks/write-edit-dispatch.test.js`.
+- **Hook-count convention updated** across `hooks.md`, `hook-catalog.md`, `CLAUDE.md`,
+  `README.md`, `rules/README.md`, and the `settings.json` `$comment`: now
+  **32 .cjs files = 26 unique registered hooks + 3 dispatched Write|Edit
+  sub-validators** (run in-process by `write-edit-dispatch.cjs`) + `hook-utils.cjs`
+  + `run-hook.cjs` launcher + `eval-runner.cjs` CLI, across 18 event types. Captured
+  after-state: `cagents-memory/_system/evals/perf/hook-perf-after.json`
+  (cold_starts 3 → 1).
+
+### Release (WI-6)
+- Version synced to 12.19.0 across all 16 registry locations
+  (`validate-versions.sh`: 16/16, 0 mismatches); fixed a stale README.md hook-count
+  cell the WI-5 count sweep missed (`28 unique hooks` → `26 unique registered + 3
+  dispatched Write|Edit sub-validators`); raised the per-test timeout on the two
+  slow `hook-perf-microbench` cases (they spawn real un-consolidated node hook
+  processes) so the full suite is deterministically green without weakening any
+  assertion.
+
 ## [12.18.0] - 2026-06-12
 
 Audit-remediation minor bump. Session `run_overhaul-audit_260612_001` ran a

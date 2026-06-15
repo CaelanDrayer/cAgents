@@ -54,21 +54,38 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 
 **Remaining limitation**: detection is still static regex matching against the literal command string. Obfuscation split across *separate, sequential* commands (e.g. building a payload in one command and executing it in a later one), heredoc-built payloads, and other runtime-constructed indirection that does not appear as a single literal pattern still cannot all be statically caught. Only the known static patterns above are caught.
 
-### PreToolUse[Write|Edit]: secret-detection.cjs
+### PreToolUse[Write|Edit]: write-edit-dispatch.cjs
 
 - **Matcher**: `Write|Edit`
+- **Purpose**: D1b consolidating dispatcher (v12.19.0, WI-5). A SINGLE PreToolUse[Write|Edit] hook that runs the 3 pure Write|Edit sub-validators in-process, replacing the 3 separate `node run-hook.cjs <name>` cold-start child processes that fired on every Write|Edit pre-v12.19.0. Drops cold-starts per Write|Edit from 3 to 1 (see `scripts/benchmarks/hook-perf-microbench.cjs` and `cagents-memory/_system/evals/perf/hook-perf-{before,after}.json`).
+- **Order (deny-first, short-circuit on first deny)**:
+  1. **secret-detection** — SECURITY DENY GATE (runs FIRST, **FAIL-CLOSED**: a throw denies). Blocks writes to protected paths (`/etc/`, `/usr/`, `~/.ssh/`) and files with critical/high/medium secrets (block mode) or sanitizes (sanitize mode). Imported handler from `secret-detection.cjs`.
+  2. **controller-delegation-validator** — GOVERNANCE DENY GATE (**FAIL-CLOSED**: a throw denies). CONTROLLER-SCOPED hard-deny of controller writes to reserved implementation paths (`src/`, `lib/`, `components/`, `app/`, `services/`, `middleware/`) per `.claude/rules/core/delegation.md`. Imported handler from `controller-delegation-validator.cjs`.
+  3. **skill-size-monitor** — ADVISORY (runs LAST, **FAIL-OPEN**: a throw continues). Warns at 600 / blocks at 900 SKILL.md lines (a real `deny` verdict is still honored — most-restrictive). Imported handler from `skill-size-monitor.cjs`.
+- **Most-restrictive**: any sub-deny => the dispatcher denies. The FIRST deny short-circuits (later sub-handlers not consulted), so a deny reason is always the highest-priority (security > governance > size) reason.
+- **Fail-closed vs fail-open**: the two security/governance gates are wrapped in the dispatcher's own try/catch and FAIL CLOSED (deny on throw) — NOT relying on `createHook`'s own try/catch, which fails OPEN. The advisory gate fails OPEN (throw => continue).
+- **Sub-hook registration**: the 3 sub-modules still call `createHook()` standalone (so they work if ever registered individually and so their existing unit tests pass), but the standalone registration is suppressed via `CAGENTS_DISPATCH_IMPORT` while the dispatcher require()s them purely to import their `handler`. They are NOT independently registered in `.claude/settings.json` — only `write-edit-dispatch` is. The detailed per-gate behavior is documented in the consolidated sub-hook notes below (`secret-detection.cjs`, `controller-delegation-validator.cjs`, `skill-size-monitor.cjs`), which describe handler behavior even though those files are no longer directly registered.
+
+**Consolidated sub-validator: secret-detection.cjs** (dispatched first, FAIL-CLOSED security gate; not independently registered)
+
 - **Purpose**: Block writes to protected paths and detect secrets.
 - **Three phases**: (1) Protected path check, (2) Sensitive file warning (`.env` and similar filenames — warns only, does not block), (3) Secret scanning (pattern matching — blocks on critical/high severity).
 - **Blocked**: System paths (`/etc/`, `/usr/`, `~/.ssh/`), files with critical/high secrets.
 
-### PreToolUse[Write|Edit]: controller-delegation-validator.cjs
+**Consolidated sub-validator: controller-delegation-validator.cjs** (dispatched second, FAIL-CLOSED governance gate; not independently registered)
 
-- **Matcher**: `Write|Edit`
 - **Purpose**: Enforce the aggressive-delegation rule from `.claude/rules/core/delegation.md`. Controllers (tech-lead, architect, marketing-strategist, etc.) coordinate via Agent tool; they must NOT Write/Edit implementation files in protected paths.
 - **Detects**: Active controller from `workflow/agent_tree.yaml`, implementation file patterns.
 - **Scoping (B1, v12.18.0)**: enforcement is CONTROLLER-SCOPED — it fires ONLY when an active cAgents controller (a controller-tier agent with `stopped_at: null`) is detected in the current session's `workflow/agent_tree.yaml`. With no active cAgents session/controller, the hook is a no-op and NEVER blocks an ordinary direct user edit to `src/`, `services/`, etc. This reverses the earlier P1-7 (v12.7.1) unconditional hard-deny, whose justification (depth-1 `Agent`-tool stripping making `agent_tree` unreliable) is obsolete as of v12.17.0 / Claude Code 2.1.172 (subagents retain `Agent` and self-register reliably). Scoping prevents the footgun where a default-on `block` mode would deny the user's own legitimate edits.
 - **Output (HARD-DENY for protected paths)**: When a controller is active, returns `permissionDecision: "deny"` in `block` mode for Write/Edit targeting `src/`, `lib/`, `components/`, `app/`, `services/`, `middleware/`. `CAGENTS_DELEGATION_ENFORCEMENT=block` is the canonical environment toggle (default in cAgents, set in `.claude/settings.json` `env`). To downgrade to advisory warn-only, set `CAGENTS_DELEGATION_ENFORCEMENT=warn`; `off` disables the hook. Workflow files (`workflow/*.yaml`, `coordination_log.yaml`), YAML/MD, and `cagents-memory/` writes are always allowed.
 - **Output (advisory for softer implementation paths)**: `systemMessage` warning (never deny) when an active controller writes to softer implementation files (`tests/`, `scripts/`, `utils/`, `content/`, `*.ts`/`*.js`/etc.) — these dual-use paths warn in both `warn` and `block` modes.
+
+**Consolidated sub-validator: skill-size-monitor.cjs** (dispatched last, ADVISORY/FAIL-OPEN; not independently registered)
+
+- **Purpose**: Prevent SKILL.md bloat regression. Counts lines in any `SKILL.md` being written or edited and surfaces a warning or block when thresholds are exceeded.
+- **Thresholds**: warns at 600 lines (`CAGENTS_SKILL_WARN_LINES`), blocks at 900 lines (`CAGENTS_SKILL_BLOCK_LINES`).
+- **Behavior**: at the warn threshold, returns `systemMessage` recommending a split into `resources/*.md` per Three-Tier Progressive Disclosure. At the block threshold, returns `deny` with the same recommendation (honored by the dispatcher under most-restrictive). Non-SKILL.md writes pass through.
+- **Override**: set `CAGENTS_SKILL_BLOCK_LINES` higher to allow a one-off oversized write (e.g., during a refactor), then re-tighten.
 
 ### PreToolUse[Bash|Write|Edit]: approval-gate.cjs
 
@@ -89,14 +106,6 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 - **Output (Phase 1 — session-presence gate)**: Calls `denyWithReason()` when no active session directory exists (`findActiveSession` returns null and no `CAGENTS_SESSION_ID` bypass is set). This actively blocks agent spawns that would have no session to write into.
 - **Output (Phases 2-3 — alias / data-access-level)**: Advisory `systemMessage` only (does not block). Phase 2 resolves `cagents:*` aliases via `v12-aliases.yaml`. Phase 3 warns when a `trusted`-tier agent spawns an `unverified`-tier child.
 - **Bypass**: Set `CAGENTS_SESSION_ID` to skip the presence gate during tests or out-of-session work.
-
-### PreToolUse[Write|Edit]: skill-size-monitor.cjs
-
-- **Matcher**: `Write|Edit`
-- **Purpose**: Prevent SKILL.md bloat regression. Counts lines in any `SKILL.md` being written or edited and surfaces a warning or block when thresholds are exceeded.
-- **Thresholds**: warns at 600 lines (`CAGENTS_SKILL_WARN_LINES`), blocks at 900 lines (`CAGENTS_SKILL_BLOCK_LINES`).
-- **Behavior**: at the warn threshold, returns `systemMessage` recommending a split into `resources/*.md` per Three-Tier Progressive Disclosure. At the block threshold, returns `deny` with the same recommendation. Non-SKILL.md writes pass through.
-- **Override**: set `CAGENTS_SKILL_BLOCK_LINES` higher to allow a one-off oversized write (e.g., during a refactor), then re-tighten.
 
 ## Workflow Events
 

@@ -8,7 +8,7 @@ Deploy 141 specialized agents across 9 builder-role archetypes through an intell
 |------|-------|
 | Agents | 141 across 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership) |
 | Skills | 4 slash commands (v12.2.0: /org folded into /team strategic mode; v12.1.2: /improve folded into /run) |
-| Hooks | 31 .cjs files = 28 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI, across 18 event types |
+| Hooks | 32 .cjs files = 26 unique registered hooks + 3 dispatched Write\|Edit sub-validators (run by write-edit-dispatch.cjs) + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI, across 18 event types |
 | Models | Opus 4.6 (controllers) · Sonnet 4.6 (execution) · Haiku 4.5 (support) |
 
 ---
@@ -38,7 +38,7 @@ cAgents spawns 3-10+ subagents per request. Each consumes API tokens independent
 ## Requirements
 
 - **Claude Code 2.1.69+** (required)
-- **Node.js** (recommended) — powers 28 unique registered hooks (31 .cjs files = hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI) for session management, secret detection, team coordination, and completion verification
+- **Node.js** (recommended) — powers 26 unique registered hooks + 3 dispatched Write|Edit sub-validators (32 .cjs files = hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI) for session management, secret detection, team coordination, and completion verification
 
 | cAgents | Min Claude Code | Highlights |
 |---------|----------------|------------|
@@ -284,7 +284,7 @@ This fires automatically — no prompt engineering required. It is a no-op when 
 
 ### Lifecycle Hooks
 
-cAgents ships 31 .cjs files = 28 unique registered hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI. The 28 hooks fire across 18 of Claude Code's 24 event types:
+cAgents ships 32 .cjs files = 26 unique registered hooks + 3 dispatched Write|Edit sub-validators (run in-process by write-edit-dispatch.cjs, the D1b consolidating dispatcher) + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI. The hooks fire across 18 of Claude Code's 24 event types:
 
 | Event | Hook | Purpose |
 |-------|------|---------|
@@ -370,7 +370,7 @@ For cross-domain work that spans multiple areas (e.g., launching a product requi
 | **Parallel team execution** | Yes — N-wave with per-wave quality gates | No | No |
 | **Revision loops** | Yes — executor + reviewer, max 3 rounds per work item | No | No |
 | **Two-stage review** | Yes — spec compliance then code quality | No | No |
-| **Hook lifecycle** | 28 unique hooks across 18 event types | 1–4 hooks | 1–4 hooks |
+| **Hook lifecycle** | 26 unique registered hooks + 3 dispatched Write\|Edit sub-validators across 18 event types | 1–4 hooks | 1–4 hooks |
 | **Goal drift prevention** | Yes — attention injection on every Write/Edit/Bash | No | No |
 | **Confidence scoring** | Yes — 0.0–1.0 per work item, low scores trigger scrutiny | No | No |
 | **Cross-domain orchestration** | Yes — `/team` strategic mode fires full C-suite hierarchy (auto-enabled when `domain_count >= 2`) | No | No |
@@ -439,7 +439,7 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights:
 
-- **V12.18.0** — Current release. Final organization + documentation reconciliation pass (session `team_final-org-docs_260528_001`): reconciled current-count drift to disk truth (141 agents, 36 rules, 64 docs, 16 version-registry slots), added `validate-counts.sh` Check 2b (targeted absence guard) so stale README agent-totals can no longer pass the presence-only check, and aligned README + docs/ with the current 4-skill catalog and 5-state pipeline.
+- **V12.19.0** — Current release. Final organization + documentation reconciliation pass (session `team_final-org-docs_260528_001`): reconciled current-count drift to disk truth (141 agents, 36 rules, 64 docs, 16 version-registry slots), added `validate-counts.sh` Check 2b (targeted absence guard) so stale README agent-totals can no longer pass the presence-only check, and aligned README + docs/ with the current 4-skill catalog and 5-state pipeline.
 - **V12.10.0** — FU-3 bare-prose agent-name sweep: replaced the last bare `universal-*` agent-name mentions in agent prose (the five pipeline agents — router, planner, validator, executor, self-correct) across 25 `agents/**` files, completing the v12.5.0 pipeline-agent rename. Added a `no-bare-universal-prose-refs` regression guard.
 - **V12.2.0** — BREAKING: `/org` skill removed; cross-domain coordination folded into `/team` with auto-enabled strategic mode (`router` `domain_count >= 2` triggers Wave 0/1/2 C-suite deliberation + Wave 3..N per-domain dispatch). 12 leadership agents preserved at their existing locations. Plugin skill count 5->4. Migration: `/org X` → `/team X`.
 - **V12.1.2** — Folds `/improve` into `/run` via a first-word keyword router and removes the standalone `/improve` skill (`/run review|audit` = `--mode review`, `/run optimize` = `--mode optimize`, `/run improve` = `--mode full`). Plugin skill count 6->5.
