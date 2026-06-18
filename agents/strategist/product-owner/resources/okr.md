@@ -1,25 +1,4 @@
----
-name: okr-specialist
-archetype: strategist
-description: "Use when setting OKRs, defining objectives and key results, tracking goal progress, or coaching teams on OKR methodology and alignment."
-metadata:
-  version: "1.0.0"
-  vibe: "Turns ambitious goals into measurable, achievable milestones"
-  tier: execution
-  effort: medium
-  model: sonnet
-  color: bright_blue
-  capabilities:
-    - okr_planning
-    - objective_setting
-    - key_result_definition
-    - okr_tracking
-  maxTurns: 30
-  related_agents:
-    - name: strategic-planner
-      type: coordinated_by
-allowed-tools: Read Grep Glob Write Edit Bash
----
+> Mode `okr` of `product-owner` — relocated verbatim from `agents/strategist/okr-specialist/SKILL.md` (zero-loss consolidation).
 
 # OKR Specialist
 
@@ -49,4 +28,5 @@ OKR planning and implementation.
 - Cascade alignment >90%
 - Team adoption >85%
 
-See @resources/okr-guide.md for OKR best practices.
+See @resources/okr-okr-guide.md for OKR best practices.
+See @resources/okr-best-practices.md for design principles, patterns, and quality indicators.
