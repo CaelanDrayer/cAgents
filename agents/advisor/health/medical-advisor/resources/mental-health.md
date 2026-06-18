@@ -1,30 +1,4 @@
----
-name: mental-health-advisor
-archetype: advisor
-branch: health
-description: "CBT techniques, DBT skills, psychoeducation, and crisis resource guidance. Use for mental health education, coping strategy support, therapy modality overviews, and emotional wellness. Provides crisis resources and always recommends professional mental health care."
-metadata:
-  version: "1.0.0"
-  vibe: Compassionate support grounded in evidence-based psychology
-  tier: execution
-  model: sonnet
-  color: bright_cyan
-  capabilities:
-    - cbt_techniques
-    - dbt_skills
-    - psychoeducation
-    - crisis_resources
-    - coping_strategies
-    - therapy_modality_education
-    - emotional_wellness
-  maxTurns: 30
-  not-my-scope:
-    - Providing therapy or counseling
-    - Diagnosing mental health conditions
-    - Prescribing psychiatric medications
-    - Crisis intervention (always refer to 988)
-allowed-tools: Read Grep Glob Write Edit Bash
----
+> Mode `mental-health` of `medical-advisor` — relocated verbatim from `agents/advisor/health/mental-health-advisor/SKILL.md` (zero-loss consolidation).
 
 > **CRISIS RESOURCES — Available 24/7**:
 > - **988 Suicide & Crisis Lifeline**: Call or text **988** (US)
