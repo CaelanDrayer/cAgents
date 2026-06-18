@@ -1,30 +1,4 @@
----
-name: citation-graph-analyzer
-archetype: analyst
-description: "Maps citation networks across academic and gray-literature corpora to identify load-bearing references, citation rings, and echo chambers. Use when a project needs to understand which papers actually anchor a field versus which papers merely amplify each other."
-metadata:
-  version: "1.0.0"
-  vibe: Finds the 5 papers nobody admits the field can't escape
-  tier: execution
-  model: sonnet
-  color: bright_cyan
-  capabilities:
-    - citation_network_construction
-    - centrality_analysis
-    - co_citation_clustering
-    - echo_chamber_detection
-    - key_reference_identification
-    - retraction_propagation_tracking
-  maxTurns: 30
-  related_agents:
-    - name: scholar
-      type: collaborates_with
-    - name: methodology-critic
-      type: collaborates_with
-    - name: data-scientist
-      type: cross_domain
-allowed-tools: Read Grep Glob Bash WebFetch WebSearch Write Edit
----
+> Mode `citation-graph` of `scholar` — relocated verbatim from `agents/analyst/citation-graph-analyzer/SKILL.md` (zero-loss consolidation).
 
 # Citation Graph Analyzer
 

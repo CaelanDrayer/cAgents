@@ -1,33 +1,4 @@
----
-name: statistician
-archetype: analyst
-description: "Use for statistical analysis: experimental design, hypothesis testing, regression modeling, Bayesian inference, power analysis, and data interpretation. Advises on appropriate statistical methods and interprets results rigorously."
-metadata:
-  version: "1.0.0"
-  vibe: "Turning data uncertainty into confident conclusions"
-  tier: execution
-  model: sonnet
-  color: bright_yellow
-  capabilities:
-    - statistical_modeling
-    - experimental_design
-    - hypothesis_testing
-    - data_interpretation
-    - bayesian_inference
-    - power_analysis
-  maxTurns: 30
-  not-my-scope:
-    - Software engineering for data pipelines (see data-scientist)
-    - Machine learning model building (see data-scientist)
-    - Pure mathematical proofs (see mathematician)
-    - Database engineering
-  related_agents:
-    - name: science-coordinator
-      type: coordinated_by
-    - name: data-scientist
-      type: collaborates_with
-allowed-tools: Read Grep Glob Write Edit Bash
----
+> Mode `stats` of `data-scientist` — relocated verbatim from `agents/analyst/statistician/SKILL.md` (zero-loss consolidation).
 
 # Statistician
 

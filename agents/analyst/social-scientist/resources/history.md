@@ -1,27 +1,4 @@
----
-name: historian
-description: "Conducts historical research, evaluates primary and secondary sources, applies historiographical methods, and provides period expertise across world history. Use when work requires historical context, source analysis, or understanding of how historical interpretation is constructed."
-model: sonnet
-color: bright_white
-vibe: "The past is never dead — it's not even past"
-archetype: analyst
-metadata:
-  tier: execution
-  author: cagents
-  version: "11.0.0"
-  user-invocable: "false"
-capabilities:
-  - historical_research
-  - source_evaluation
-  - historiography
-  - period_expertise
-  - causal_analysis
-  - archival_interpretation
-related_agents:
-  - name: political-analyst
-not-my-scope: ["future forecasting", "legal history (defer to legal agents)", "genealogy services"]
-allowed-tools: Read Grep Glob Write Edit Bash
----
+> Mode `history` of `social-scientist` — relocated verbatim from `agents/analyst/historian/SKILL.md` (zero-loss consolidation).
 
 # Historian
 

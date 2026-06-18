@@ -1,36 +1,4 @@
----
-name: business-analyst
-archetype: analyst
-description: "Use when gathering requirements, performing gap analysis, defining acceptance criteria, designing solutions, or bridging business needs with technical implementation."
-metadata:
-  version: "1.0.0"
-  vibe: Finds the signal in spreadsheets everyone else ignores
-  tier: controller
-  effort: high
-  model: sonnet
-  color: bright_blue
-  capabilities:
-    - requirements_analysis
-    - process_analysis
-    - solution_design
-    - stakeholder_management
-    - requirements_gathering
-    - gap_analysis
-    - acceptance_criteria
-    - business_case_development
-  maxTurns: 40
-  memory:
-    project: true
-  coordination_style: question_based
-  typical_questions:
-    - What are the current operational metrics?
-    - What are the efficiency bottlenecks?
-    - What are the compliance requirements?
-  related_agents:
-    - name: product-owner
-      type: collaborates_with
-allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
----
+> Mode `requirements` of `market-research-analyst` — relocated verbatim from `agents/analyst/business-analyst/SKILL.md` (zero-loss consolidation).
 
 # Business Analyst
 
@@ -84,7 +52,9 @@ Requirements gathering, gap analysis, acceptance criteria, and solution design.
 - Stakeholder agreement >85%
 - Requirements clarity and measurability
 
-See @resources/ba-templates.md for documentation frameworks.
+See @resources/requirements-ba-templates.md for documentation frameworks.
+
+See @resources/requirements-best-practices.md for design principles, patterns, and frameworks.
 
 ## Controller Delegation Protocol
 

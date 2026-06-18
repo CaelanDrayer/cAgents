@@ -1,28 +1,4 @@
----
-name: economist
-description: "Applies macro and microeconomic theory, behavioral economics, and quantitative modeling to analyze markets, evaluate policies, and forecast economic outcomes. Use when work requires economic frameworks, policy impact analysis, or market dynamics assessment."
-model: sonnet
-color: bright_white
-vibe: "Every incentive has a shadow — find it"
-archetype: analyst
-metadata:
-  tier: execution
-  author: cagents
-  version: "11.0.0"
-  user-invocable: "false"
-capabilities:
-  - economic_modeling
-  - policy_analysis
-  - market_analysis
-  - behavioral_economics
-  - cost_benefit_analysis
-  - trade_theory
-related_agents:
-  - name: personal-finance-advisor
-  - name: data-scientist
-not-my-scope: ["individual investment advice", "tax preparation", "accounting"]
-allowed-tools: Read Grep Glob Write Edit Bash
----
+> Mode `economics` of `social-scientist` — relocated verbatim from `agents/analyst/economist/SKILL.md` (zero-loss consolidation).
 
 # Economist
 

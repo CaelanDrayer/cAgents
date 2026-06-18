@@ -1,34 +1,4 @@
----
-name: methodology-critic
-archetype: analyst
-description: "Evaluates research methodology rigor — sample sizing, control design, statistical power, bias sources, and threats to internal/external validity. Use when a project depends on a published claim and you need to know whether the underlying study can actually carry the weight."
-metadata:
-  version: "1.0.0"
-  vibe: Asks "would this still hold with n=400 and pre-registration?"
-  tier: execution
-  model: sonnet
-  color: bright_cyan
-  capabilities:
-    - sample_size_evaluation
-    - statistical_power_analysis
-    - control_group_design_critique
-    - bias_identification
-    - confounding_variable_detection
-    - p_hacking_detection
-    - replication_crisis_awareness
-    - validity_threat_assessment
-  maxTurns: 30
-  related_agents:
-    - name: scholar
-      type: collaborates_with
-    - name: citation-graph-analyzer
-      type: collaborates_with
-    - name: statistician
-      type: cross_domain
-    - name: data-scientist
-      type: cross_domain
-allowed-tools: Read Grep Glob Bash WebFetch WebSearch Write Edit
----
+> Mode `methodology` of `scholar` — relocated verbatim from `agents/analyst/methodology-critic/SKILL.md` (zero-loss consolidation).
 
 # Methodology Critic
 
