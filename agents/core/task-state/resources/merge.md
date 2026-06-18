@@ -1,22 +1,4 @@
----
-name: task-merger
-archetype: core
-description: "Use when reducing task inventory context overhead, merging related tasks, or achieving 40-88% context savings for large workflows."
-metadata:
-  version: "1.0.0"
-  vibe: "Turns 100 scattered tasks into a clean, actionable list"
-  tier: infrastructure
-  effort: high
-  model: opus
-  color: bright_yellow
-  capabilities:
-    - task_decomposition
-    - parallel_execution
-    - result_consolidation
-    - context_optimization
-  maxTurns: 30
-allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
----
+> Mode `merge` of `task-state` — relocated verbatim from `agents/core/task-merger/SKILL.md` (zero-loss consolidation).
 
 # Task Consolidator
 
@@ -105,4 +87,6 @@ micro_tasks:
 - **Target micro-task**: 8K tokens (safe buffer for all model contexts)
 - **Max micro-tasks per split**: 20 (beyond this, coordination overhead is too high)
 
-See @resources/consolidation-patterns.md for detailed splitting strategies and merge patterns.
+See @resources/merge-consolidation-patterns.md for detailed splitting strategies and merge patterns.
+
+See @resources/merge-best-practices.md for design principles and quality indicators.

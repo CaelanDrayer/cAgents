@@ -1,71 +1,42 @@
 ---
 name: task-state
 archetype: core
-description: "Use when managing CSV-based task state for large-scale workflows with 20+ items, achieving 60-80% context savings over inline tracking."
+description: "Consolidated task-management agent. Modes: state (CSV-based inventory for 20+ task workflows, 60-80% context savings), merge (task splitting and parallel micro-task consolidation for 15K+ token tasks). Set metadata.mode or pass mode=<value>."
 metadata:
-  version: "1.0.0"
-  vibe: Tracks every task in CSV so nothing falls through the cracks
   tier: infrastructure
-  effort: high
   model: opus
-  color: bright_white
+  mode: state
+  supported_modes:
+    state: "CSV-based task inventory for large-scale workflows with 20+ items — batch_assign, batch_complete, query, checkpoint, resume (was: task-state)"
+    merge: "Splits oversized tasks into parallel micro-tasks and consolidates results — file/function/operation/chapter/data-based splitting strategies (absorbed from task-merger)"
   capabilities:
     - csv_state_management
     - batch_delegation
     - checkpoint_resume
     - progress_reporting
     - parallel_tracking
+    - task_decomposition
+    - result_consolidation
+    - context_optimization
+  color: bright_white
   maxTurns: 30
+  vibe: "CSV inventory for scale; splits oversized tasks before they exhaust context"
 allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
 ---
 
-# Task Inventory Manager
+# Task State & Merger
 
-External state manager using CSV files for large task inventories.
+Pipeline infrastructure for external task management. Handles both CSV-based inventory tracking (state mode, default) and context-saving micro-task splitting (merge mode).
 
-## Key Benefits
+## Mode Selection
 
-- **60-80% context reduction**: Task state lives in CSV, not context
-- **Batch delegation**: Assign 50+ tasks in single operation
-- **Resume capability**: Pick up exactly where left off
-- **Parallel tracking**: Multiple agents update shared inventory
-- **Scale unlimited**: Handle 1000+ tasks without context overflow
+| If the request mentions… | Use mode |
+|---|---|
+| CSV inventory, task state, batch assign, batch complete, checkpoint, resume, 20+ tasks, 60-80% context savings | state (default) |
+| split task, micro-task, context exhausted, 15K+ tokens, parallel sub-agents, consolidate results, task-merger | merge |
 
-## CSV Schema
+Fallback: state.
 
-### tasks.csv
-```csv
-task_id,parent_id,name,type,status,priority,assigned_to,created_at,started_at,completed_at,dependencies,acceptance_criteria,output_path,notes
-```
+See @resources/state.md for the state mode's full playbook (CSV schema, operations, context savings table).
 
-### batch_log.csv
-```csv
-batch_id,operation,task_ids,agent,timestamp,result,tokens_saved
-```
-
-### assignments.csv
-```csv
-agent,active_tasks,completed_today,total_completed,current_batch,last_activity
-```
-
-## Core Operations
-
-| Operation | Purpose | Context Cost |
-|-----------|---------|--------------|
-| **init** | Create inventory from decomposition | Once |
-| **batch_assign** | Assign multiple tasks to agent | ~200 tokens |
-| **batch_complete** | Mark multiple tasks done | ~200 tokens |
-| **query** | Get task status summary | ~100 tokens |
-| **progress_report** | Full status report | ~500 tokens |
-| **checkpoint** | Save state snapshot | ~100 tokens |
-| **resume** | Restore from checkpoint | ~200 tokens |
-
-## Context Savings
-
-| Tasks | Without Inventory | With Inventory | Savings |
-|-------|-------------------|----------------|---------|
-| 20 | 8K tokens | 2K tokens | 75% |
-| 50 | 20K tokens | 3K tokens | 85% |
-| 100 | 40K tokens | 4K tokens | 90% |
-
-See @resources/inventory-patterns.md for batch delegation and checkpoint patterns.
+See @resources/merge.md for the merge mode's full playbook (splitting strategies, workflow, sizing rules).

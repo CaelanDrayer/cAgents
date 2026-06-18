@@ -1,7 +1,6 @@
 ---
 name: coord-log-writer
-archetype: developer
-branch: quality
+archetype: core
 description: "Assembles final coordination_log.yaml from on-disk artifacts (task_list.yaml, per-wave EVT files, outputs/, gate_validations/). Reads everything; lead receives only a 1-line confirmation."
 metadata:
   version: "1.0.0"

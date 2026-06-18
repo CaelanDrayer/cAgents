@@ -1,7 +1,6 @@
 ---
 name: wave-reviewer
-archetype: developer
-branch: quality
+archetype: core
 description: "Validates a /team wave gate by running the 7-check protocol against outputs/wave_{K}/ artifacts. Returns 1-line verdict (PASS|CONDITIONAL_PASS|FAIL) and writes gate_validations/wave_{K}.yaml. Lead never sees raw evidence."
 metadata:
   version: "1.0.0"
