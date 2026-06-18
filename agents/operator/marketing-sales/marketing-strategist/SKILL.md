@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Consolidated marketing controller. Modes: strategy (GTM, positioning, multi-channel planning), brand (brand strategy/guidelines/perception), creative-direction (campaign concepts, visual identity), growth (acquisition experiments, retention, viral loops), ops (martech stack, automation, data hygiene), partnership (co-marketing, affiliate, influencer). Set metadata.mode."
 metadata:
+  version: "1.0.0"
   tier: controller
   model: opusplan
   coordination_style: question_based

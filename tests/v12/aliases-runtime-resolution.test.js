@@ -90,7 +90,7 @@ describe('P0-2: v12-aliases.yaml runtime resolution via session-init-gate.cjs', 
     expect(combined).toMatch(/engineering-manager/);
   });
 
-  it('spawning another renamed agent (cagents:chief-legal-officer) maps to clo', () => {
+  it('spawning another renamed agent (cagents:chief-legal-officer) maps to general-counsel (clo deleted in Wave 8)', () => {
     const { proc, parsed } = runHook({
       tool_name: 'Agent',
       tool_input: { subagent_type: 'cagents:chief-legal-officer' },
@@ -100,7 +100,7 @@ describe('P0-2: v12-aliases.yaml runtime resolution via session-init-gate.cjs', 
     const systemMessage = parsed.systemMessage || '';
     const reason = parsed.hookSpecificOutput?.permissionDecisionReason || '';
     const combined = `${systemMessage}\n${reason}`;
-    expect(combined).toMatch(/\bclo\b/);
+    expect(combined).toMatch(/general-counsel/);
     expect(combined).toMatch(/chief-legal-officer/);
   });
 

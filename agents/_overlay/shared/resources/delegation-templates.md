@@ -88,9 +88,9 @@ Format: "cagents:{agent-name}"
 Examples:
 - "cagents:backend-developer"
 - "cagents:tech-lead"
-- "cagents:copywriter"
-- "cagents:business-analyst"
-- "cagents:talent-recruiter"
+- "cagents:editor"
+- "cagents:market-research-analyst"
+- "cagents:hr-manager"
 - "cagents:general-counsel"
 ```
 

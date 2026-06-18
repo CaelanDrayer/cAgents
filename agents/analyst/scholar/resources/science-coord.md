@@ -58,7 +58,7 @@ Combine specialist answers into a coherent, accurate, well-cited response.
 
 Write `coordination_log.yaml` with:
 - `schema_version: "1"`
-- `controller: cagents:science-coordinator`
+- `controller: cagents:scholar` (use `mode: science-coord`)
 - All questions asked and specialist answers received
 - Synthesized solution with confidence level and caveats
 - Implementation tasks with acceptance criteria

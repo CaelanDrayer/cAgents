@@ -23,7 +23,7 @@
 | 7. Contact Humans with Tool Calls | PARTIAL | HITL gates via `core/hitl` + `approval-gate.cjs` hook; no out-of-band Slack/email/SMS channels |
 | 8. Own Your Control Flow | YES | `pipeline_config.yaml`-driven state machine; revision routing (FAIL/REVISE) is hand-coded, not LLM-decided |
 | 9. Compact Errors into Context Window | PARTIAL | `tool-failure-tracker.cjs` records failures but does not yet summarize for re-injection on retry |
-| 10. Small, Focused Agents | YES | 141 agents across 9 archetypes (post-v12.7.0 LP-12 + LP-13 consolidation from 144); per-agent SKILL.md scope guarded by `skill-size-monitor.cjs` |
+| 10. Small, Focused Agents | YES | 57 agents across 9 archetypes (post-v12.20.0 catalog consolidation from 141; 41 routable + 16 core); per-agent SKILL.md scope guarded by `skill-size-monitor.cjs` |
 | 11. Trigger from Anywhere | PARTIAL | Triggers from `/run`, `/team`, `/designer`, `/helper` (4 in-terminal skills; `/improve` folded into `/run` in v12.1.2, `/org` folded into `/team` strategic mode in v12.2.0); no webhook/cron/email/Slack triggers |
 | 12. Make Your Agent a Stateless Reducer | DIVERGENCE | Controllers carry state across reviewer-loop rounds; session state lives in `cagents-memory/sessions/{id}/` files by design |
 
@@ -43,7 +43,7 @@ cAgents accepts natural-language requests at every skill entry point (`/run "fix
 
 Every prompt that goes to an LLM is checked into the repo. Controller prompts live in `{archetype}/{branch?}/{agent}/SKILL.md`; delegation prompts are assembled by the planner (which absorbed the standalone `prompt-engineer` agent in v12.0.0) or fall back to controller-side templates. No prompts come from a hosted service.
 
-**cAgents implementation**: 141 SKILL.md files (post-v12.7.0 LP-12 + LP-13 consolidation from 144); controller prompt-assembly logic in `.claude/rules/core/controllers.md`; planner's prompt-assembly sub-responsibility at `core/planner/SKILL.md`.
+**cAgents implementation**: 57 SKILL.md files (post-v12.20.0 catalog consolidation from 141); controller prompt-assembly logic in `.claude/rules/core/controllers.md`; planner's prompt-assembly sub-responsibility at `core/planner/SKILL.md`.
 
 ### Factor 3: Own Your Context Window — PARTIAL
 

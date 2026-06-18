@@ -4,6 +4,7 @@ archetype: developer
 branch: infrastructure
 description: "Consolidated infrastructure agent. Modes: cicd (CI/CD pipelines, IaC, containers/orchestration, deployment automation), coordinate (infrastructure-lead — coordinates DevOps across staging/prod, debugs deployment failures), profile (performance-analyzer — profiles app performance, latency, resource utilization). Set metadata.mode or pass mode=<value>."
 metadata:
+  version: "1.0.0"
   tier: execution
   model: sonnet
   mode: cicd

@@ -15,7 +15,7 @@ planner:
       description: "Context enrichment and workflow orchestration"
     planning:
       keywords: [plan, decompose, objective, work item, breakdown, scope]
-      agents: [planner, task-decomposer]
+      agents: [planner]
       description: "Objective planning and task decomposition"
     execution:
       keywords: [execute, coordinate, monitor, track, delegate]
@@ -35,11 +35,11 @@ planner:
       description: "Adaptive recovery and self-correction"
     task_management:
       keywords: [task, inventory, consolidate, batch, csv, checkpoint]
-      agents: [task-state, task-merger]
+      agents: [task-state]
       description: "Task inventory management and context consolidation"
     optimization:
       keywords: [optimize, improve, prompt, craft]
-      agents: [optimizer, prompt-engineer]
+      agents: [optimizer]
       description: "Prompt optimization and workflow improvement"
     team:
       keywords: [team, teammate, wave, parallel, gate]

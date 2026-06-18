@@ -40,14 +40,13 @@ describe('root plugin.json', () => {
     expect(plugin.hooks).toBe('./.claude/settings.json');
   });
 
-  it('should have agents array in v12.4.0 compression band [120, 170]', () => {
-    // v12.4.0 cull pass moved 96 never-spawned agents to {archetype}/_deprecated/
-    // buckets, taking the active catalog from 240 -> 144. The post-compression
-    // floor/ceiling is the design's [120, 170] target band.
+  it('should have agents array in v12.consolidation band [40, 70]', () => {
+    // v12.consolidation pass reduced the active catalog from 141 -> 57
+    // (41 routable + 16 core). The post-consolidation floor/ceiling is [40, 70].
     const plugin = loadPluginJson(PLUGIN_PATH);
     expect(Array.isArray(plugin.agents)).toBe(true);
-    expect(plugin.agents.length).toBeGreaterThanOrEqual(120);
-    expect(plugin.agents.length).toBeLessThanOrEqual(170);
+    expect(plugin.agents.length).toBeGreaterThanOrEqual(40);
+    expect(plugin.agents.length).toBeLessThanOrEqual(70);
   });
 
   it('all agent paths should point to existing SKILL.md files', () => {

@@ -3,6 +3,7 @@ name: product-owner
 archetype: strategist
 description: "Consolidated strategist agent. Modes: product (feature prioritization, backlog management, go/no-go decisions, scope tradeoffs), roadmap (product/tech roadmap creation, dependency mapping, Now-Next-Later planning), okr (OKR setting, key result definition, goal tracking, cascade alignment). Set metadata.mode."
 metadata:
+  version: "1.0.0"
   tier: controller
   model: opusplan
   mode: product

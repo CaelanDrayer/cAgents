@@ -4,6 +4,7 @@ archetype: advisor
 branch: health
 description: "Consolidated health advisor. Modes: medical (clinical info, symptom research, differential diagnosis, medical literature), mental-health (CBT/DBT techniques, psychoeducation, crisis resources, coping strategies). Set metadata.mode. NOT a substitute for professional care."
 metadata:
+  version: "1.0.0"
   tier: execution
   model: sonnet
   mode: medical

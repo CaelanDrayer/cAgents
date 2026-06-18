@@ -3,6 +3,7 @@ name: worldbuilder
 archetype: writer
 description: "Use when constructing fictional universes, creating characters with psychological depth, or writing/improving dialogue. Consolidated agent: world (universe design, systems, ecology, culture), character (wound-want-need, arcs, ensemble dynamics), dialogue (subtext, voice differentiation, conversation craft). Set metadata.mode or pass mode=<value> in the invocation."
 metadata:
+  version: "1.0.0"
   tier: execution
   model: sonnet
   mode: world

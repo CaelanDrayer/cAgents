@@ -5,13 +5,13 @@ description: "Cross-domain intelligence and data specialists"
 
 planner:
   controller_catalog:
-    tier_2: [bi-specialist]
-    tier_3: [data-scientist, competitive-intelligence-analyst]
+    tier_2: [data-scientist]
+    tier_3: [data-scientist, market-research-analyst]
 
   specialist_routing:
     business_intelligence:
       keywords: [business intelligence, BI, dashboard, data visualization, KPI, metrics, reporting, analytics dashboard]
-      agents: [bi-specialist]
+      agents: [data-scientist]
       description: "Business intelligence, dashboards, KPI tracking, and data visualization"
     data_science:
       keywords: [data science, machine learning, ML, statistical analysis, predictive, forecasting, modeling, regression, classification, clustering, neural network, deep learning, NLP, A/B test, experiment analysis]
@@ -23,7 +23,7 @@ planner:
       description: "Market research, consumer segmentation, and market sizing"
     competitive_intelligence:
       keywords: [competitive analysis, competitive intelligence, competitor, market positioning, SWOT, benchmarking, industry analysis]
-      agents: [competitive-intelligence-analyst]
+      agents: [market-research-analyst]
       description: "Competitive intelligence, competitor analysis, and market positioning"
 
 router:

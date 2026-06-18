@@ -4,6 +4,7 @@ archetype: developer
 branch: quality
 description: "Consolidated quality agent. Modes: coordinate (QA Lead — test strategy, coverage gates, quality assurance coordination), code-review (reviews code for quality/security/performance/maintainability), standards-audit (audits codebase for convention compliance, style-guide violations), a11y (WCAG 2.1/2.2 accessibility compliance audits, ARIA review), playwright (authors and debugs Playwright E2E/API/component/visual tests). Set metadata.mode."
 metadata:
+  version: "1.0.0"
   tier: controller
   model: opusplan
   mode: coordinate

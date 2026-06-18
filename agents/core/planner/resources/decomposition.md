@@ -100,7 +100,7 @@ work_items:
 
   - id: TASK-02
     name: "Design database schema"
-    agent: cagents:dba
+    agent: cagents:backend-developer
     type: BUILD
     inputs: ["outputs/TASK-01_architecture.md"]
     outputs: ["outputs/TASK-02_schema.md"]

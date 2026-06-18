@@ -2,7 +2,7 @@
 
 ## Summary
 
-141 agents across 9 builder-role archetypes (developer 26, operator 36, advisor 12, analyst 19, creator 5, writer 8, strategist 8, core 15, leadership 12). Post-v12.7.0 LP-12 + LP-13 consolidation from 144. The per-domain breakdowns below are LEGACY routing-overlay groupings (the 13-domain pre-v11.1.0 layout, kept for routing-keyword continuity); the canonical structure is the 9 archetypes.
+57 agents across 9 builder-role archetypes (developer 8, operator 7, advisor 4, analyst 5, creator 2, writer 3, strategist 3, core 16, leadership 9). Post-v12.20.0 catalog consolidation from 141 (41 routable + 16 core; absorbed agents use mode flags). The per-domain breakdowns below are LEGACY routing-overlay groupings (the 13-domain pre-v11.1.0 layout, kept for routing-keyword continuity); the canonical structure is the 9 archetypes.
 
 ## Engineering (31 agents)
 
@@ -83,13 +83,13 @@ The legacy `people/` domain is **routing-overlay only** as of v11.1.0 — the di
 
 Customer support, CX, legal, compliance, governance. Key agents: customer-success-manager, legal-counsel, support-director, general-counsel, compliance-director, compliance-officer.
 
-## Leadership (12 agents)
+## Leadership (9 agents)
 
-C-suite executives used by `/team` strategic mode (auto-enabled when `router.domain_count >= 2`; v12.2.0+). Pre-v12.2.0 these agents were invoked by the now-removed `/org` skill. The 12 agents: CEO, CTO, CFO, CMO, CRO, COO, CCO, CPO, CHRO, CSO, CLO, VP-Engineering.
+C-suite executives used by `/team` strategic mode (auto-enabled when `router.domain_count >= 2`; v12.2.0+). Pre-v12.2.0 these agents were invoked by the now-removed `/org` skill. The 9 agents: CEO, CTO, CFO, CMO, CRO, COO, CCO, CHRO, CPO. (CSO, CLO, VP-Engineering removed in v12.20.0 consolidation.)
 
-## Core (15 agents)
+## Core (16 agents)
 
-Pipeline infrastructure: trigger, orchestrator, planner (absorbed `task-decomposer` and `prompt-engineer` in v12.0.0), executor, validator, router, self-correct, hitl, optimizer, task-merger, task-state, team (replaces the standalone `team-trigger` and `team-lead-adapter` agents removed in v12.0.0 — the `/team` skill loop now does this work inline), coordinator, reviewer, plus one additional core agent.
+Pipeline infrastructure: trigger, orchestrator, planner (absorbed `task-decomposer` and `prompt-engineer` in v12.0.0), executor, validator, router, self-correct, hitl, optimizer, task-state (absorbs task-merger in v12.20.0), team (replaces the standalone `team-trigger` and `team-lead-adapter` agents removed in v12.0.0 — the `/team` skill loop now does this work inline), coordinator, reviewer, wave-reviewer, coord-log-writer, team-lead.
 
 ## Shared (12 agents)
 

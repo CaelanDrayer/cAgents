@@ -5,7 +5,7 @@ SKILL.md bodies SHOULD reference this registry rather than redefining modes inli
 This prevents documentation drift across `team/`, `run/`, and the
 other 3 user skills.
 
-**Last regenerated**: 2026-05-23 (v12.9.0 — verified tables against the 4 SKILL.md bodies; no flag drift, stamp refreshed by run_big-cleanup-fix_260524_001)
+**Last regenerated**: 2026-06-18 (v12.20.0 — Agent Modes section added for consolidated catalog; 30 moded agents enumerated across 8 archetypes; added by int-docs wave-10 in team_consolidate-catalog_260617_001)
 **Reference pattern**: Imbad0202/academic-research-skills MODE_REGISTRY.md (Apache-2.0)
 
 ---
@@ -147,3 +147,101 @@ Or for a specific flag:
 
 - This registry indexes USER-FACING flags only. Internal flags consumed by agents (e.g., orchestrator → planner handoff fields) are documented in `cagents-memory/_system/config/pipeline_config.yaml`.
 - Skill SKILL.md prose for behaviour-defining content (what the skill DOES) stays in each SKILL.md. This registry only catalogs the DIAL (flags/modes/phases).
+
+---
+
+## Agent Modes
+
+Agent modes enumerate the `metadata.supported_modes` of every consolidated agent (v12.20.0 catalog). Where an old agent was absorbed into a survivor, the survivor exposes its capabilities via `mode=<value>` in the invocation. Agents without modes listed here are single-purpose and have no `mode` flag.
+
+**How to use**: Pass `mode=<value>` in the Agent invocation prompt, or the planner/controller sets `metadata.mode` based on the absorbed-agent name from routing aliases.
+
+### Developer archetype (8 agents)
+
+| Survivor agent | Modes (absorbed agents → mode) |
+|---|---|
+| `backend-developer` | `database` (dba), `engine` (engine-developer), `game` (game-programmer) |
+| `frontend-developer` | `ux` (ux-designer) |
+| `tech-lead` | `implement` (senior-developer), `backend-lead` (backend-lead), `frontend-lead` (frontend-lead) |
+| `architect` | — (no absorbed modes) |
+| `data-lead` | `analyze` (data-analyst) |
+| `devops-engineer` | `coordinate` (infrastructure-lead), `profile` (performance-analyzer) |
+| `security-engineer` | `coordinate` (security-lead), `owasp-audit` (security-owasp) |
+| `qa-lead` | `code-review` (code-reviewer), `standards-audit` (code-standards-auditor), `a11y` (accessibility-checker), `playwright` (playwright-test-engineer) |
+
+### Operator archetype (7 agents)
+
+| Survivor agent | Modes (absorbed agents → mode) |
+|---|---|
+| `operations-manager` | `agile` (agile-coach), `project` (program-project-manager), `procurement` (procurement-specialist), `supply-chain` (supply-chain-manager), `quality-mgmt` (quality-manager), `scribe` (scribe), `finance` (finance-manager) |
+| `marketing-strategist` | `brand` (brand-manager), `creative-direction` (creative-director), `growth` (growth-marketer), `ops` (marketing-ops-specialist), `partnership` (partnership-marketing-manager) |
+| `marketing-analyst` | `seo` (seo-specialist) |
+| `sales-strategist` | `rep` (sales-rep), `enablement` (sales-enablement-specialist), `revops` (revenue-operations-manager) |
+| `hr-manager` | `hrbp` (hr-business-partner), `recruit` (talent-recruiter), `learning` (learning-specialist), `onboarding` (onboarding-specialist) |
+| `support-director` | `agent` (support-agent), `support-ops` (support-operations-manager), `escalation` (escalation-manager), `customer-success` (customer-success-manager), `account` (account-manager), `advocacy` (customer-advocacy-manager), `relationship` (relationship-manager), `community` (community-manager) |
+| `technical-writer` | — (no absorbed modes) |
+
+### Advisor archetype (4 agents)
+
+| Survivor agent | Modes (absorbed agents → mode) |
+|---|---|
+| `academic-advisor` | `tutor` (academic-tutor) |
+| `medical-advisor` | `mental-health` (mental-health-advisor) |
+| `general-counsel` | `corporate` (corporate-counsel), `compliance` (compliance-manager), `privacy` (privacy-officer), `legal-ops` (legal-operations-manager) |
+| `life-coach` | `career` (career-counselor), `finance` (personal-finance-advisor) |
+
+### Analyst archetype (5 agents)
+
+| Survivor agent | Modes (absorbed agents → mode) |
+|---|---|
+| `data-scientist` | `stats` (statistician), `forecast` (predictive-analyst), `bi` (bi-specialist), `perf-metrics` (performance-analyst) |
+| `market-research-analyst` | `business-research` (business-researcher), `competitive` (competitive-intelligence-analyst), `requirements` (business-analyst) |
+| `scholar` | `citation-graph` (citation-graph-analyzer), `methodology` (methodology-critic), `science-coord` (science-coordinator) |
+| `social-scientist` | `history` (historian), `linguistics` (linguist), `politics` (political-analyst), `psychology` (psychologist) |
+| `translator` | — (no absorbed modes) |
+
+### Creator archetype (2 agents)
+
+| Survivor agent | Modes (absorbed agents → mode) |
+|---|---|
+| `visual-artist` | `concept` (concept-artist), `photography` (photographer) |
+| `film-director` | `music` (music-composer) |
+
+### Writer archetype (3 agents)
+
+| Survivor agent | Modes (absorbed agents → mode) |
+|---|---|
+| `narrative-director` | `architecture` (story-architect), `reading-experience` (narrative-designer), `plot` (plot-developer) |
+| `editor` | `copy` (copywriter) |
+| `worldbuilder` | `character` (character-designer), `dialogue` (dialogue-specialist) |
+
+### Strategist archetype (3 agents)
+
+| Survivor agent | Modes (absorbed agents → mode) |
+|---|---|
+| `product-owner` | `roadmap` (roadmap-planner), `okr` (okr-specialist) |
+| `strategic-planner` | `portfolio` (portfolio-manager), `scenario` (scenario-planner) |
+| `game-designer` | `production` (game-producer) |
+
+### Core archetype (16 agents)
+
+| Survivor agent | Modes (absorbed agents → mode) |
+|---|---|
+| `task-state` | `merge` (task-merger) |
+| `coordinator` | — |
+| `coord-log-writer` | — |
+| `executor` | — |
+| `hitl` | — |
+| `optimizer` | — |
+| `orchestrator` | — |
+| `planner` | — |
+| `reviewer` | — |
+| `router` | — |
+| `self-correct` | — |
+| `team-lead` | — |
+| `team` | — |
+| `trigger` | — |
+| `validator` | — |
+| `wave-reviewer` | — |
+
+> **Note**: Leadership archetype agents (ceo, cto, cfo, cmo, coo, chro, cco, cro, cpo) have no absorbed modes — they are all single-purpose C-suite agents used directly by `/team` strategic mode. CSO, CLO, and VP-Engineering were removed in v12.20.0.

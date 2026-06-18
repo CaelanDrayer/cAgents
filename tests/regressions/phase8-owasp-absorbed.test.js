@@ -1,16 +1,16 @@
 /**
  * Regression test: Phase 8 — claude-code-owasp absorption (v11.1.x)
  *
- * Asserts that the OWASP security advisor was successfully absorbed from
- * example/external-skills/agamm__claude-code-owasp/ into the cAgents archetype
- * tree as a developer/quality execution agent (distinct from the existing
- * developer/infrastructure/security-lead controller).
+ * Updated for v12.consolidation: security-owasp was absorbed into
+ * security-engineer (developer/infrastructure/security-engineer/SKILL.md) as
+ * the `owasp-audit` mode. The test now asserts security-engineer exists with
+ * the owasp-audit mode and that resources/owasp-audit.md carries the upstream
+ * OWASP semantic content.
  *
  * Failing-before / passing-after contract:
- *   - Before Phase 8: developer/quality/security-owasp/SKILL.md does NOT exist.
- *     This test fails because the file_exists assertion fails.
- *   - After Phase 8: the file exists with valid v11.1.0 frontmatter and the
- *     ported OWASP semantic content. This test passes.
+ *   - Before Phase 8: developer/quality/security-owasp/SKILL.md did NOT exist.
+ *   - After Phase 8 + v12.consolidation: security-engineer at
+ *     developer/infrastructure/security-engineer/ carries the OWASP content.
  *
  * References:
  *   - example/external-skills/IMPLEMENT_AND_VALIDATE_PROMPT.md § Section C Phase 8
@@ -24,15 +24,23 @@ import { readFileSync, existsSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const REPO_ROOT = resolve(__dirname, '..', '..');
-// v12.8.0 (eef900a7) moved the archetype tree under agents/. The active
-// security-owasp agent now lives at agents/developer/quality/security-owasp/.
+// security-owasp absorbed into security-engineer as the owasp-audit mode.
 const SKILL_PATH = resolve(
   REPO_ROOT,
   'agents',
   'developer',
-  'quality',
-  'security-owasp',
+  'infrastructure',
+  'security-engineer',
   'SKILL.md'
+);
+const OWASP_RESOURCE = resolve(
+  REPO_ROOT,
+  'agents',
+  'developer',
+  'infrastructure',
+  'security-engineer',
+  'resources',
+  'owasp-audit.md'
 );
 
 function readSkill() {
@@ -45,8 +53,16 @@ function extractFrontmatter(content) {
   return match[1];
 }
 
-describe('Phase 8 — claude-code-owasp absorbed as developer/quality/security-owasp', () => {
-  it('SKILL.md file exists at the expected archetype-tree path', () => {
+function readCombined() {
+  const skillContent = readSkill();
+  const resourceContent = existsSync(OWASP_RESOURCE)
+    ? readFileSync(OWASP_RESOURCE, 'utf8')
+    : '';
+  return skillContent + '\n' + resourceContent;
+}
+
+describe('Phase 8 — claude-code-owasp absorbed as security-engineer owasp-audit mode', () => {
+  it('SKILL.md file exists at the expected archetype-tree path (security-engineer)', () => {
     expect(existsSync(SKILL_PATH)).toBe(true);
     expect(statSync(SKILL_PATH).isFile()).toBe(true);
   });
@@ -54,33 +70,38 @@ describe('Phase 8 — claude-code-owasp absorbed as developer/quality/security-o
   it('frontmatter declares v11.1.0 archetype/branch correctly', () => {
     const fm = extractFrontmatter(readSkill());
     expect(fm).not.toBeNull();
-    expect(fm).toMatch(/^name:\s*security-owasp\b/m);
+    expect(fm).toMatch(/^name:\s*security-engineer\b/m);
     expect(fm).toMatch(/^archetype:\s*developer\b/m);
-    expect(fm).toMatch(/^branch:\s*quality\b/m);
+    expect(fm).toMatch(/^branch:\s*infrastructure\b/m);
     // v11.1.0 explicitly REMOVED top-level domain: — must not appear at top level
     expect(fm).not.toMatch(/^domain:/m);
   });
 
-  it('declares execution tier (distinct from security-lead controller)', () => {
+  it('declares security tier (controller covering owasp coordination)', () => {
     const content = readSkill();
-    expect(content).toMatch(/tier:\s*execution\b/);
-    // Must NOT be a controller (security-lead already owns that role)
-    expect(content).not.toMatch(/tier:\s*controller\b/);
+    // security-engineer is a controller; security-owasp execution was merged in
+    expect(content).toMatch(/tier:\s*(controller|execution)\b/);
   });
 
-  it('allowed-tools field is present and read-only-friendly (no Agent/Edit/Write)', () => {
+  it('declares owasp-audit absorption via supported_modes.owasp-audit', () => {
+    const content = readSkill();
+    expect(content).toMatch(/owasp-audit/);
+    // The supported_modes block must document the absorption
+    expect(content).toMatch(/security-owasp/);
+  });
+
+  it('allowed-tools field is present and includes Read and Grep', () => {
     const fm = extractFrontmatter(readSkill());
     expect(fm).toMatch(/^allowed-tools:.*\bRead\b/m);
     expect(fm).toMatch(/^allowed-tools:.*\bGrep\b/m);
-    // Audit-focused agent should not directly Edit/Write/spawn
-    const allowedToolsLine = fm.split('\n').find((l) => l.startsWith('allowed-tools:'));
-    expect(allowedToolsLine).not.toMatch(/\bAgent\b/);
-    expect(allowedToolsLine).not.toMatch(/\bEdit\b/);
-    expect(allowedToolsLine).not.toMatch(/\bWrite\b/);
+  });
+
+  it('resources/owasp-audit.md exists', () => {
+    expect(existsSync(OWASP_RESOURCE)).toBe(true);
   });
 
   it('semantic content ports OWASP Top 10:2025 framework', () => {
-    const content = readSkill();
+    const content = readCombined();
     expect(content).toMatch(/OWASP Top 10:2025/);
     // Spot-check that key A0X categories were ported
     expect(content).toMatch(/A01\b.*Broken Access Control/);
@@ -89,31 +110,25 @@ describe('Phase 8 — claude-code-owasp absorbed as developer/quality/security-o
   });
 
   it('semantic content ports LLM Top 10 (2025) framework', () => {
-    const content = readSkill();
+    const content = readCombined();
     expect(content).toMatch(/LLM01\b.*Prompt Injection/);
     expect(content).toMatch(/LLM05\b.*Improper Output Handling/);
     expect(content).toMatch(/LLM10\b.*Unbounded Consumption/);
   });
 
   it('semantic content ports Agentic AI security (2026) framework', () => {
-    const content = readSkill();
+    const content = readCombined();
     expect(content).toMatch(/ASI01\b.*Goal Hijack/);
     expect(content).toMatch(/ASI02\b.*Tool Misuse/);
     expect(content).toMatch(/ASI10\b.*Rogue Agents/);
   });
 
   it('semantic content includes ASVS 5.0 tier mapping', () => {
-    const content = readSkill();
+    const content = readCombined();
     expect(content).toMatch(/ASVS 5\.0/);
     expect(content).toMatch(/L1\b/);
     expect(content).toMatch(/L2\b/);
     expect(content).toMatch(/L3\b/);
-  });
-
-  it('clearly distinguishes scope from security-lead controller', () => {
-    const content = readSkill();
-    // Must reference security-lead to disambiguate, and call out the audit-vs-coordination split
-    expect(content).toMatch(/security-lead/);
   });
 
   it('does not modify the read-only corpus source', () => {

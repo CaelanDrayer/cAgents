@@ -4,6 +4,7 @@ archetype: developer
 branch: fullstack
 description: "Consolidated fullstack engineering lead. Modes: coordinate (team coordination, delivery, strategic risk, go/no-go), implement (complex full-stack implementation, refactoring, mentoring), backend-lead (backend domain coordination, API/database planning), frontend-lead (frontend domain coordination, UI/component review). Set metadata.mode or pass mode=<value>."
 metadata:
+  version: "1.0.0"
   tier: controller
   model: opusplan
   mode: coordinate

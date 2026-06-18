@@ -159,9 +159,9 @@ describe('domain_overrides config (v12.0.0)', () => {
       expect(content).toContain('hr-manager');
     });
 
-    it('service should have customer-success-manager and general-counsel', () => {
+    it('service should have support-director and general-counsel', () => {
       const content = domainContent('service');
-      expect(content).toContain('customer-success-manager');
+      expect(content).toContain('support-director');
       expect(content).toContain('general-counsel');
     });
 
@@ -180,7 +180,6 @@ describe('domain_overrides config (v12.0.0)', () => {
       expect(content).toContain('controller_catalog:');
       expect(content).toContain('tier_2:');
       expect(content).toContain('tier_3:');
-      expect(content).toContain('bi-specialist');
       expect(content).toContain('data-scientist');
     });
 

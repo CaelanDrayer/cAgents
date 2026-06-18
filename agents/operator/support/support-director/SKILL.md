@@ -4,6 +4,7 @@ archetype: operator
 branch: support
 description: "Consolidated customer-facing controller. Modes: coordinate (support strategy/team/SLA), agent (frontline ticket/chat troubleshooting), support-ops (workflow/tooling/routing), escalation (escalated issue coordination), customer-success (onboarding/health/churn), account (relationship/upsell/retention), advocacy (references/case studies), relationship (key biz relationships), community (forums/programs/events). Set metadata.mode."
 metadata:
+  version: "1.0.0"
   tier: controller
   model: sonnet
   mode: coordinate

@@ -60,8 +60,8 @@ describe('Phase 6: metadata.paths conditional activation (V11.1.12+)', () => {
     }
   });
 
-  test('(b) >=10 agents declare metadata.paths (pilot threshold)', () => {
-    expect(declarations.length).toBeGreaterThanOrEqual(10);
+  test('(b) >=8 agents declare metadata.paths (pilot threshold; v12.consolidation lowered from 10 — some pilots absorbed into survivor agents that carry the field)', () => {
+    expect(declarations.length).toBeGreaterThanOrEqual(8);
   });
 
   test('(c) Every declared path entry is a non-empty string', () => {

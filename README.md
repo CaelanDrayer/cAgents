@@ -2,11 +2,11 @@
 
 **Your AI Workforce for Claude Code**
 
-Deploy 141 specialized agents across 9 builder-role archetypes through an intelligent pipeline that routes your request, plans execution, decomposes work, coordinates specialists, reviews outputs, and validates quality — automatically.
+Deploy 57 specialized agents across 9 builder-role archetypes through an intelligent pipeline that routes your request, plans execution, decomposes work, coordinates specialists, reviews outputs, and validates quality — automatically.
 
 | Stat | Value |
 |------|-------|
-| Agents | 141 across 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership) |
+| Agents | 57 across 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership) |
 | Skills | 4 slash commands (v12.2.0: /org folded into /team strategic mode; v12.1.2: /improve folded into /run) |
 | Hooks | 32 .cjs files = 26 unique registered hooks + 3 dispatched Write\|Edit sub-validators (run by write-edit-dispatch.cjs) + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI, across 18 event types |
 | Models | Opus 4.6 (controllers) · Sonnet 4.6 (execution) · Haiku 4.5 (support) |
@@ -19,7 +19,7 @@ Deploy 141 specialized agents across 9 builder-role archetypes through an intell
 - Multi-step task orchestration with automatic routing, planning, and coordination
 - Cross-domain work (engineering + business + creative + growth in one request)
 - Parallel execution with quality-gated waves (40-60% faster for complex tasks)
-- Consistent delegation patterns across 9 archetypes (141 specialists)
+- Consistent delegation patterns across 9 archetypes (57 agents, 41 routable)
 - Reviewer loops, confidence scoring, and revision routing built into every run
 
 **cAgents is NOT for you if:**
@@ -172,20 +172,20 @@ Recommends the right skill based on your task description. Use it when you are u
 
 ### Canonical: 9 Archetypes (V11.1.0+)
 
-Since v11.1.0, the agent catalog (141 agents as of v12.7.0) is organized as a builder-role archetype tree:
+Since v11.1.0, the agent catalog (57 agents as of v12.20.0) is organized as a builder-role archetype tree:
 
 | Archetype | Agents | Scope |
 |-----------|-------:|-------|
-| **Developer** | 26 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
-| **Operator** | 36 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
-| **Advisor** | 12 | Legal, health, education, personal (4 branches) |
-| **Analyst** | 19 | Data science, BI, research, social science |
-| **Writer** | 8 | Copy, narrative, technical, editorial |
-| **Creator** | 5 | Visual artists, designers, audiovisual creators |
-| **Strategist** | 8 | Product owners, portfolio managers, planners |
-| **Core** | 15 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, etc.) |
-| **Leadership** | 12 | C-suite executives — used by `/team` strategic mode (v12.2.0+; pre-v12.2.0 used by `/org`) |
-| **TOTAL** | **141** | |
+| **Developer** | 8 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
+| **Operator** | 7 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
+| **Advisor** | 4 | Legal, health, education, personal (4 branches) |
+| **Analyst** | 5 | Data science, BI, research, social science |
+| **Writer** | 3 | Narrative, editorial |
+| **Creator** | 2 | Visual artists, audiovisual creators |
+| **Strategist** | 3 | Product owners, portfolio managers, planners |
+| **Core** | 16 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, etc.) |
+| **Leadership** | 9 | C-suite executives — used by `/team` strategic mode (v12.2.0+; pre-v12.2.0 used by `/org`) |
+| **TOTAL** | **57** | |
 
 ### Legacy: 13-Domain Routing Overlay (2 dirs on disk + 11 consolidated)
 
@@ -364,7 +364,7 @@ For cross-domain work that spans multiple areas (e.g., launching a product requi
 
 | Dimension | cAgents | Official feature-dev plugin | Official code-review plugin |
 |-----------|---------|----------------------------|----------------------------|
-| **Agent count** | 141 | 3–5 | 3–5 |
+| **Agent count** | 57 | 3–5 | 3–5 |
 | **Business domains** | 9 archetypes (2 routing overlays + 11 consolidated) | 1 (engineering) | 1 (engineering) |
 | **Pipeline state machine** | Yes — PASS/FAIL/REVISE routing, max 3 cycles | No | No |
 | **Parallel team execution** | Yes — N-wave with per-wave quality gates | No | No |
@@ -439,7 +439,7 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights:
 
-- **V12.19.0** — Current release. Bucket-D hook security/performance remediation (session `run_bucket-d-remediation_260614_001`): added a bounded head+tail size cap to `secret-detection.cjs` (`CAGENTS_SECRET_SCAN_MAX_BYTES`, default 512 KB) to prevent a memory/latency blowup on large writes; consolidated the three `Write|Edit` PreToolUse hooks (secret-detection, controller-delegation-validator, skill-size-monitor) into a single deny-first, fail-closed `write-edit-dispatch.cjs` dispatcher (cold-start node spawns per Write|Edit cut 3→1); added a reproducible perf-benchmark corpus runner + Write|Edit hook-perf microbench with committed baselines; and fixed `verify-completion.cjs` to fact-check slash-less filename citations.
+- **V12.20.0** — Current release. Bucket-D hook security/performance remediation (session `run_bucket-d-remediation_260614_001`): added a bounded head+tail size cap to `secret-detection.cjs` (`CAGENTS_SECRET_SCAN_MAX_BYTES`, default 512 KB) to prevent a memory/latency blowup on large writes; consolidated the three `Write|Edit` PreToolUse hooks (secret-detection, controller-delegation-validator, skill-size-monitor) into a single deny-first, fail-closed `write-edit-dispatch.cjs` dispatcher (cold-start node spawns per Write|Edit cut 3→1); added a reproducible perf-benchmark corpus runner + Write|Edit hook-perf microbench with committed baselines; and fixed `verify-completion.cjs` to fact-check slash-less filename citations.
 - **V12.10.0** — FU-3 bare-prose agent-name sweep: replaced the last bare `universal-*` agent-name mentions in agent prose (the five pipeline agents — router, planner, validator, executor, self-correct) across 25 `agents/**` files, completing the v12.5.0 pipeline-agent rename. Added a `no-bare-universal-prose-refs` regression guard.
 - **V12.2.0** — BREAKING: `/org` skill removed; cross-domain coordination folded into `/team` with auto-enabled strategic mode (`router` `domain_count >= 2` triggers Wave 0/1/2 C-suite deliberation + Wave 3..N per-domain dispatch). 12 leadership agents preserved at their existing locations. Plugin skill count 5->4. Migration: `/org X` → `/team X`.
 - **V12.1.2** — Folds `/improve` into `/run` via a first-word keyword router and removes the standalone `/improve` skill (`/run review|audit` = `--mode review`, `/run optimize` = `--mode optimize`, `/run improve` = `--mode full`). Plugin skill count 6->5.
@@ -465,4 +465,4 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | 141 agents across 9 archetypes | Opus 4.6 · Sonnet 4.6 · Haiku 4.5
+**Built with Claude Code** | 57 agents across 9 archetypes | Opus 4.6 · Sonnet 4.6 · Haiku 4.5

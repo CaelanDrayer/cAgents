@@ -21,9 +21,9 @@ metadata:
     - api_documentation
   maxTurns: 30
   related_agents:
-    - name: support-operations-manager
+    - name: support-director
       type: coordinated_by
-    - name: scribe
+    - name: operations-manager
       type: cross_domain
 allowed-tools: Read Grep Glob Write Edit
 ---

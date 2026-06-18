@@ -4,6 +4,7 @@ archetype: developer
 branch: infrastructure
 description: "Consolidated infrastructure security agent. Modes: harden (implement controls, pentest, vulnerability scan), coordinate (controller — threat modeling, security program oversight, tier 3-4), owasp-audit (code audit against OWASP Top 10:2025, LLM Top 10, ASVS 5.0, Agentic AI). Set metadata.mode."
 metadata:
+  version: "1.0.0"
   tier: controller
   model: sonnet
   vibe: "Builds security into the architecture, not bolted on after"

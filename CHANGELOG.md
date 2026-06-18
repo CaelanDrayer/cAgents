@@ -10,6 +10,110 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.20.0] - 2026-06-18
+
+Agent-catalog consolidation: 141 agents → 57 via Hybrid A+B mode mechanism.
+Session `team_consolidate-catalog_260617_001`. Minor bump per version-registry.md
+§ "Audit / consolidation sessions … → minor bump": the consolidation touched
+141 SKILL.md files, 4 domain_overrides.yaml files, routing.yaml, _MODE_REGISTRY.md,
+CLAUDE.md, README.md, docs/, and tests/ across multiple surfaces. CI green:
+validate-agents 0 errors, npm test 0 failures.
+
+### Changed
+
+**Agent-catalog consolidation (141 → 57 routable agents)**
+
+The catalog was restructured from 141 individually-routable leaf agents to 57 agents
+(41 routable specialists + 16 core pipeline agents) using a Hybrid A+B mode mechanism.
+Under this mechanism each consolidated agent carries `metadata.mode` (default mode) and
+`metadata.supported_modes` (all modes) in its SKILL.md frontmatter, plus one
+`@resources/{mode}.md` reference file per absorbed leaf. All absorbed leaf intelligence
+was relocated verbatim into the corresponding mode resource file — zero intelligence
+loss, zero regressions.
+
+Per-archetype breakdown:
+
+- **developer** 26 → 8: backend-developer, frontend-developer, senior-developer,
+  devops-engineer, dba, security-engineer, qa-lead, performance-analyzer. Lead
+  agents (backend-lead, frontend-lead, data-lead, infrastructure-lead) folded into
+  their primary agent as a `lead` mode. Security specialist (security-owasp) folded
+  into security-engineer. Playwright test engineer folded into qa-lead.
+- **operator** 36 → 7: marketing-strategist, operations-manager, hr-manager,
+  customer-success-manager, support-agent, sales-rep, technical-writer. Copywriter
+  folded into writer/editor as a `copy` mode (cross-archetype fold). Specialist
+  operators (growth-marketer, seo-specialist, brand-manager, community-manager,
+  creative-director, marketing-analyst, marketing-ops-specialist, okr-specialist,
+  agile-coach, partnership-marketing-manager, account-manager, sales-strategist,
+  sales-enablement-specialist, revenue-operations-manager, support-director,
+  support-operations-manager, escalation-manager, customer-advocacy-manager,
+  relationship-manager, talent-recruiter, onboarding-specialist, learning-specialist,
+  hr-business-partner, procurement-specialist, supply-chain-manager, finance-manager,
+  quality-manager, program-project-manager) each folded into their nearest primary
+  as named modes with verbatim resource files.
+- **advisor** 12 → 4: medical-advisor, mental-health-advisor, general-counsel,
+  career-counselor. Legal specialists (corporate-counsel, compliance-manager,
+  privacy-officer, legal-operations-manager) folded into general-counsel. Life-coach
+  and personal-finance-advisor folded into career-counselor.
+- **analyst** 19 → 5: data-scientist, business-analyst, competitive-intelligence-analyst,
+  historian, statistician. Remaining analysts (bi-specialist, business-researcher,
+  citation-graph-analyzer, economist, linguist, market-research-analyst,
+  methodology-critic, performance-analyst, political-analyst, predictive-analyst,
+  psychologist, scholar) folded into their nearest primary as named modes.
+- **creator** 5 → 2: concept-artist, film-director. Music-composer, photographer,
+  visual-artist folded into concept-artist/film-director as modes.
+- **writer** 8 → 3: editor (absorbs copywriter from operator), narrative-director,
+  technical-writer. Character-designer, dialogue-specialist, narrative-designer,
+  plot-developer, story-architect, worldbuilder folded into narrative-director.
+- **strategist** 8 → 3: product-owner, strategic-planner, scenario-planner.
+  Portfolio-manager, roadmap-planner, okr-specialist (also absorbed from operator),
+  competitive-intelligence-analyst (also in analyst) folded as modes.
+- **leadership** 12 → 9: ceo, cto, cfo, cmo, coo, chro, cco, cpo, cro retained as
+  thin shells sharing a new `resources/executive-playbook.md`. Three agents deleted
+  (not folded) because they lacked a clear standalone charter post-consolidation:
+  `cso` (Chief Sales Officer — sales strategy absorbed into cro+cmo), `clo` (Chief
+  Legal Officer — legal oversight already covered by `general-counsel`), and
+  `vp-engineering` (absorbed into `cto` scope). Executive-collapse (merging
+  remaining C-suite into a single leadership meta-agent) was explicitly deferred.
+- **core** 15 → 16 (net +1): `task-merger` folded into `task-state` (task-state
+  gained a `merge` mode). `coord-log-writer` and `wave-reviewer` moved in from
+  developer/quality to core/ as first-class pipeline agents, formalising their
+  infrastructure role.
+
+**Renames**
+
+- `academic-researcher` → `academic-advisor` (clearer scope; old name preserved in
+  v12-aliases.yaml for back-compat).
+- `economist` → `social-scientist` (absorbed political-analyst and psychologist as
+  modes; old name preserved in v12-aliases.yaml).
+- `copywriter` (operator/marketing-sales) → mode `copy` on `writer/editor` (cross-
+  archetype fold; old agent name preserved in v12-aliases.yaml).
+
+**Routing and config updates**
+
+- `cagents-memory/_system/config/routing.yaml`: all 11 consolidated legacy-domain
+  router keyword + controller-catalog entries remapped to the 57-agent surface.
+- `agents/_overlay/people/config/domain_overrides.yaml`,
+  `agents/_overlay/shared/config/domain_overrides.yaml`,
+  `agents/core/config/domain_overrides.yaml`,
+  `agents/leadership/config/domain_overrides.yaml`: controller_catalog entries
+  updated to reference consolidated agent names.
+- `.claude/skills/_MODE_REGISTRY.md`: gained an "Agent Modes" section documenting
+  the `metadata.mode` / `metadata.supported_modes` contract for consolidated agents.
+
+**Docs and tests**
+
+- CLAUDE.md archetype table and agent counts updated to 57 (41 + 16 core).
+- README.md Quick Reference agent count updated.
+- `docs/agents/index.md` per-archetype counts updated.
+- `tests/config/planner-config.test.js`: controller-catalog assertions reconciled
+  to 57-agent surface.
+- `tests/v12/alias-map-coverage.test.js`: alias target assertions updated for
+  renames (academic-researcher→academic-advisor, economist→social-scientist,
+  cso/clo/vp-engineering→deleted).
+- All pre-existing v12-aliases.yaml entries for absorbed/renamed agents verified
+  as still resolving to live targets; no new alias build-out performed (deferred
+  to a future tiny bump to keep this release atomic).
+
 ## [12.19.0] - 2026-06-14
 
 Bucket-D remediation minor bump. Session `run_bucket-d-remediation_260614_001`

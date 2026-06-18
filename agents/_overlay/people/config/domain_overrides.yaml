@@ -4,14 +4,14 @@ description: "Human resources, talent acquisition, culture, and people operation
 
 planner:
   controller_catalog:
-    tier_2: [hr-manager, hr-business-partner]
-    tier_3: [hr-manager, talent-recruiter, hr-business-partner]
-    tier_4: [chro, hr-manager, talent-recruiter]
+    tier_2: [hr-manager]
+    tier_3: [hr-manager]
+    tier_4: [chro, hr-manager]
 
   specialist_routing:
     recruiting:
       keywords: [recruit, hire, candidate, sourcing, interview, offer, talent pipeline, job posting]
-      agents: [talent-recruiter]
+      agents: [hr-manager]
       description: "Recruiting and talent acquisition coordination"
     compensation:
       keywords: [salary, compensation, benefits, equity, pay, bonus, package]
@@ -23,7 +23,7 @@ planner:
       description: "Employee relations, conflict resolution, and workplace investigations"
     learning:
       keywords: [training, development, learning, skills, certification, course]
-      agents: [learning-specialist]
+      agents: [hr-manager]
       description: "Learning programs, skill development, and training coordination"
     culture:
       keywords: [culture, engagement, recognition, employee experience, survey, morale]
@@ -47,7 +47,7 @@ planner:
       description: "Performance management, goal setting, and calibration"
     onboarding:
       keywords: [onboarding, new hire, orientation, first day, ramp up]
-      agents: [onboarding-specialist]
+      agents: [hr-manager]
       description: "New hire onboarding, orientation, and ramp-up programs"
 
 router:

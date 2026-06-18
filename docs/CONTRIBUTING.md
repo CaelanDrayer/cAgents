@@ -181,14 +181,14 @@ All PRs require review. Checklist:
 
 | Archetype | Dir | Agents | Scope |
 |-----------|-----|-------:|-------|
-| **Developer** | `developer/` | 26 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
-| **Operator** | `operator/` | 36 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
-| **Advisor** | `advisor/` | 12 | Legal, health, education, personal (4 branches) |
-| **Analyst** | `analyst/` | 20 | Data, BI, research, social-science |
-| **Creator** | `creator/` | 5 | Visual, design, audiovisual |
-| **Writer** | `writer/` | 10 | Copy, narrative, technical, editorial |
-| **Strategist** | `strategist/` | 8 | Product owners, portfolio, planning |
-| **Core** | `core/` | 15 | Pipeline infrastructure agents |
-| **Leadership** | `leadership/` | 12 | C-suite (used by `/team` strategic mode, not directly routable) |
+| **Developer** | `developer/` | 8 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
+| **Operator** | `operator/` | 7 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
+| **Advisor** | `advisor/` | 4 | Legal, health, education, personal (4 branches) |
+| **Analyst** | `analyst/` | 5 | Data, BI, research, social-science |
+| **Creator** | `creator/` | 2 | Visual, audiovisual |
+| **Writer** | `writer/` | 3 | Narrative, editorial |
+| **Strategist** | `strategist/` | 3 | Product owners, portfolio, planning |
+| **Core** | `core/` | 16 | Pipeline infrastructure agents |
+| **Leadership** | `leadership/` | 9 | C-suite (used by `/team` strategic mode, not directly routable) |
 
-Total: 141 agents (post-v12.7.0 LP-12 + LP-13 consolidation; was 144 post-v12.4.0). The legacy 13-domain layout (engineering/, creative/, business/, growth/, people/, service/, science/, health/, education/, personal/, arts/, trades/, shared/) was replaced by these 9 archetypes in v11.1.0. Two legacy dirs (`people/` and `shared/`) survive on disk as routing-config-only overlays (no SKILL.md files); the other 11 were deleted and consolidated into `cagents-memory/_system/config/routing.yaml`. All agents are registered in the centralized root `.claude-plugin/plugin.json`.
+Total: 57 agents (post-v12.20.0 catalog consolidation — 41 routable + 16 core; was 141 post-v12.7.0). The legacy 13-domain layout (engineering/, creative/, business/, growth/, people/, service/, science/, health/, education/, personal/, arts/, trades/, shared/) was replaced by these 9 archetypes in v11.1.0. Two legacy dirs (`people/` and `shared/`) survive on disk as routing-config-only overlays (no SKILL.md files); the other 11 were deleted and consolidated into `cagents-memory/_system/config/routing.yaml`. All agents are registered in the centralized root `.claude-plugin/plugin.json`.

@@ -2,7 +2,7 @@
 
 ## System Architecture
 
-cAgents is a multi-domain agent orchestration system built as a Claude Code plugin. It coordinates 141 specialized agents across 9 builder-role archetypes (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership) using a controller-centric delegation pattern. The 9-archetype layout has been canonical since v11.1.0; the v12.4.0 P2 compression cut the catalog from 240 to 144.
+cAgents is a multi-domain agent orchestration system built as a Claude Code plugin. It coordinates 57 agents across 9 builder-role archetypes (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership) using a controller-centric delegation pattern. The 9-archetype layout has been canonical since v11.1.0; the v12.20.0 catalog consolidation reduced the catalog from 141 to 57 (41 routable + 16 core) via mode-flag absorption.
 
 ## Key Concepts
 

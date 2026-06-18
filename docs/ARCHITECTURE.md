@@ -70,17 +70,17 @@ cAgents is a universal multi-domain agent system with controller-centric coordin
 
 | Archetype | Dir | Agents | Capability |
 |-----------|-----|-------:|------------|
-| **Developer** | `developer/` | 26 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
-| **Operator** | `operator/` | 36 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
-| **Advisor** | `advisor/` | 12 | Legal, health, education, personal (4 branches) |
-| **Analyst** | `analyst/` | 20 | Data, BI, research, social-science |
-| **Creator** | `creator/` | 5 | Visual artists, designers, audiovisual creators |
-| **Writer** | `writer/` | 10 | Copy, narrative, technical writing, editorial |
-| **Strategist** | `strategist/` | 8 | Product owners, portfolio managers, planners |
-| **Core** | `core/` | 15 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, etc.) |
-| **Leadership** | `leadership/` | 12 | C-suite executives (used by /team strategic mode, not directly routable) |
+| **Developer** | `developer/` | 8 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
+| **Operator** | `operator/` | 7 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
+| **Advisor** | `advisor/` | 4 | Legal, health, education, personal (4 branches) |
+| **Analyst** | `analyst/` | 5 | Data, BI, research, social-science |
+| **Creator** | `creator/` | 2 | Visual artists, audiovisual creators |
+| **Writer** | `writer/` | 3 | Narrative, editorial |
+| **Strategist** | `strategist/` | 3 | Product owners, portfolio managers, planners |
+| **Core** | `core/` | 16 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, etc.) |
+| **Leadership** | `leadership/` | 9 | C-suite executives (used by /team strategic mode, not directly routable) |
 
-**Total: 141 agents across 9 archetypes (post-v12.7.0 LP-12 + LP-13 consolidation)**
+**Total: 57 agents across 9 archetypes (post-v12.20.0 catalog consolidation — 41 routable + 16 core)**
 
 ### Legacy domain overlay (config-only)
 

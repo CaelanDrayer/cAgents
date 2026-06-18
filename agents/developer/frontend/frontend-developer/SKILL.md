@@ -4,6 +4,7 @@ archetype: developer
 branch: frontend
 description: "Consolidated frontend agent. Modes: ui (UI components, responsive design, React/Vue/Angular, accessibility, performance — default), ux (user research, wireframing, design systems, usability testing, interaction patterns). Set metadata.mode or pass mode=<value>."
 metadata:
+  version: "1.0.0"
   tier: execution
   model: sonnet
   mode: ui

@@ -4,6 +4,7 @@ archetype: operator
 branch: marketing-sales
 description: "Consolidated sales agent. Modes: strategy (GTM, ICP, territories, compensation design), rep (full-cycle prospecting through close), enablement (playbooks, battlecards, training), revops (cross-functional revenue alignment and operations). Set metadata.mode."
 metadata:
+  version: "1.0.0"
   tier: controller
   model: opusplan
   mode: strategy

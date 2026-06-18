@@ -89,8 +89,8 @@ Call **TaskCreate BEFORE delegating** to give the user visibility. Example deleg
 | Need | Agent / Mode |
 |---|---|
 | Prose quality, rhythm | `cagents:editor` with `mode: prose-style` |
-| Dialogue | `cagents:dialogue-specialist` |
-| Character depth | `cagents:character-designer` |
+| Dialogue | `cagents:worldbuilder` (mode: dialogue) |
+| Character depth | `cagents:worldbuilder` (mode: character) |
 | Plot structure | `cagents:narrative-director` with `mode: plot` |
 | Copy-level correctness | `cagents:editor` with `mode: copy-edit` |
 | Structural architecture | `cagents:narrative-director` with `mode: architecture` |

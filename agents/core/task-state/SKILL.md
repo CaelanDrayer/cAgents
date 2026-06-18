@@ -3,6 +3,7 @@ name: task-state
 archetype: core
 description: "Consolidated task-management agent. Modes: state (CSV-based inventory for 20+ task workflows, 60-80% context savings), merge (task splitting and parallel micro-task consolidation for 15K+ token tasks). Set metadata.mode or pass mode=<value>."
 metadata:
+  version: "1.0.0"
   tier: infrastructure
   model: opus
   mode: state

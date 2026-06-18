@@ -1,10 +1,11 @@
 /**
  * Regression test: Phase 7 (v11.1.x) playwright-test-engineer absorption.
  *
- * Asserts that developer/quality/playwright-test-engineer/SKILL.md exists with
- * v11.1.0-conformant frontmatter (archetype: developer, branch: quality,
- * tier: execution, model: sonnet) and that the agent's body ports the upstream
- * Playwright semantics (Golden Rules, security trust boundary, status protocol).
+ * Updated for v12.consolidation: playwright-test-engineer was absorbed into
+ * qa-lead (developer/quality/qa-lead/SKILL.md) as the `playwright` mode.
+ * The test now asserts qa-lead exists with the playwright mode and that the
+ * resources/playwright.md resource carries the upstream Playwright semantics
+ * (Golden Rules, security trust boundary, status protocol).
  *
  * Source corpora (read-only reference):
  *   - example/external-skills/testdino-hq__playwright-skill/SKILL.md (v2.2.0, MIT)
@@ -21,16 +22,23 @@ import path from 'node:path';
 import yaml from 'js-yaml';
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
-// v12.8.0 (eef900a7) moved the archetype tree under agents/. The active
-// playwright-test-engineer agent now lives at
-// agents/developer/quality/playwright-test-engineer/.
+// playwright-test-engineer was absorbed into qa-lead as the `playwright` mode.
 const SKILL_PATH = path.join(
   REPO_ROOT,
   'agents',
   'developer',
   'quality',
-  'playwright-test-engineer',
+  'qa-lead',
   'SKILL.md'
+);
+const PLAYWRIGHT_RESOURCE = path.join(
+  REPO_ROOT,
+  'agents',
+  'developer',
+  'quality',
+  'qa-lead',
+  'resources',
+  'playwright.md'
 );
 
 function loadFrontmatter(filePath) {
@@ -43,8 +51,8 @@ function loadFrontmatter(filePath) {
   return { frontmatter: yaml.load(match[1]), body: match[2] };
 }
 
-describe('Phase 7: playwright-test-engineer absorption', () => {
-  it('SKILL.md file exists at the canonical archetype path', () => {
+describe('Phase 7: playwright-test-engineer absorption (survivor: qa-lead playwright mode)', () => {
+  it('SKILL.md file exists at the canonical archetype path (qa-lead)', () => {
     expect(fs.existsSync(SKILL_PATH)).toBe(true);
   });
 
@@ -56,9 +64,9 @@ describe('Phase 7: playwright-test-engineer absorption', () => {
     expect(typeof frontmatter).toBe('object');
   });
 
-  it('declares required v11.1.0 top-level fields (name, archetype, branch, description)', () => {
+  it('declares required v11.1.0 top-level fields (name=qa-lead, archetype=developer, branch=quality)', () => {
     const { frontmatter } = loadFrontmatter(SKILL_PATH);
-    expect(frontmatter.name).toBe('playwright-test-engineer');
+    expect(frontmatter.name).toBe('qa-lead');
     expect(frontmatter.archetype).toBe('developer');
     expect(frontmatter.branch).toBe('quality');
     expect(typeof frontmatter.description).toBe('string');
@@ -71,20 +79,28 @@ describe('Phase 7: playwright-test-engineer absorption', () => {
     expect(frontmatter.domain).toBeUndefined();
   });
 
-  it('declares metadata.tier=execution and metadata.model=sonnet', () => {
+  it('declares metadata.tier and metadata.model', () => {
     const { frontmatter } = loadFrontmatter(SKILL_PATH);
     expect(frontmatter.metadata).toBeTruthy();
-    expect(frontmatter.metadata.tier).toBe('execution');
-    expect(frontmatter.metadata.model).toBe('sonnet');
+    expect(['execution', 'controller']).toContain(frontmatter.metadata.tier);
+    expect(typeof frontmatter.metadata.model).toBe('string');
   });
 
-  it('declares Playwright-relevant capabilities', () => {
+  it('declares playwright absorption via supported_modes.playwright', () => {
+    const { frontmatter } = loadFrontmatter(SKILL_PATH);
+    expect(frontmatter.metadata).toBeTruthy();
+    expect(frontmatter.metadata.supported_modes).toBeTruthy();
+    expect(typeof frontmatter.metadata.supported_modes.playwright).toBe('string');
+    expect(frontmatter.metadata.supported_modes.playwright).toMatch(/playwright/i);
+  });
+
+  it('declares Playwright-relevant capabilities (e2e_testing, browser_automation)', () => {
     const { frontmatter } = loadFrontmatter(SKILL_PATH);
     const caps = frontmatter.metadata?.capabilities || [];
     expect(Array.isArray(caps)).toBe(true);
     expect(caps).toEqual(expect.arrayContaining(['e2e_testing']));
-    // At least one of the four absorbed capability families must be present
-    const expected = ['api_testing', 'visual_regression', 'accessibility_audit', 'component_testing'];
+    // At least one of the absorbed playwright capability families must be present
+    const expected = ['api_testing', 'visual_regression', 'accessibility_audit', 'browser_automation', 'flaky_test_diagnosis', 'playwright_ci_integration'];
     const overlap = caps.filter((c) => expected.includes(c));
     expect(overlap.length).toBeGreaterThanOrEqual(2);
   });
@@ -98,19 +114,24 @@ describe('Phase 7: playwright-test-engineer absorption', () => {
     expect(tools).toMatch(/\bWrite\b/);
   });
 
-  it('body ports upstream semantics: Golden Rules, web-first assertions, getByRole', () => {
-    const { body } = loadFrontmatter(SKILL_PATH);
+  it('resources/playwright.md exists and ports upstream semantics: Golden Rules, web-first assertions, getByRole', () => {
+    expect(fs.existsSync(PLAYWRIGHT_RESOURCE)).toBe(true);
+    const body = fs.readFileSync(PLAYWRIGHT_RESOURCE, 'utf8');
     // Phase 7 spec requires translating semantic content to cAgents conventions
     expect(body).toMatch(/Golden Rules/i);
     expect(body).toMatch(/getByRole/);
     expect(body).toMatch(/waitForTimeout/);
   });
 
-  it('declares status-protocol compliance (DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED)', () => {
+  it('playwright resource or SKILL.md body declares status-protocol compliance (DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED)', () => {
+    const resource = fs.existsSync(PLAYWRIGHT_RESOURCE)
+      ? fs.readFileSync(PLAYWRIGHT_RESOURCE, 'utf8')
+      : '';
     const { body } = loadFrontmatter(SKILL_PATH);
-    expect(body).toMatch(/DONE/);
-    expect(body).toMatch(/DONE_WITH_CONCERNS/);
-    expect(body).toMatch(/NEEDS_CONTEXT/);
-    expect(body).toMatch(/BLOCKED/);
+    const combined = body + resource;
+    expect(combined).toMatch(/DONE/);
+    expect(combined).toMatch(/DONE_WITH_CONCERNS/);
+    expect(combined).toMatch(/NEEDS_CONTEXT/);
+    expect(combined).toMatch(/BLOCKED/);
   });
 });

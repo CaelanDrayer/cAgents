@@ -2,7 +2,7 @@
 
 > **v12 absorption note**: This document was absorbed from the standalone `on-page-seo-auditor`
 > agent in v12.0.0 as part of the SEO collapse (6 agents → 2: `seo-specialist` + `geo-strategist`).
-> When prior docs reference `cagents:on-page-seo-auditor`, route to `cagents:seo-specialist` with
+> When prior docs reference `cagents:on-page-seo-auditor`, route to `cagents:marketing-analyst` with `mode: seo` and
 > the on-page-audit focus described here. Original SKILL.md content preserved below.
 
 <example>

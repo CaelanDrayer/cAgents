@@ -3,6 +3,7 @@ name: strategic-planner
 archetype: strategist
 description: "Consolidated strategist agent. Modes: strategy (long-term strategy, competitive positioning, vision development — default), portfolio (portfolio management, initiative prioritization, resource allocation), scenario (future scenarios, contingency planning, strategy stress-testing). Set metadata.mode."
 metadata:
+  version: "1.0.0"
   tier: controller
   model: opusplan
   mode: strategy

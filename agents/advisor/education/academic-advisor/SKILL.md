@@ -4,6 +4,7 @@ archetype: advisor
 branch: education
 description: "Academic research and tutoring consolidated agent. Modes: research (literature review, research design, academic writing, grant proposals), tutor (concept explanation, problem solving, study coaching, exam prep). Set metadata.mode or pass mode=<value> in the invocation."
 metadata:
+  version: "1.0.0"
   tier: execution
   model: sonnet
   mode: research

@@ -4,6 +4,7 @@ archetype: operator
 branch: business-ops
 description: "Use when optimizing operational processes, managing projects, improving efficiency, coordinating agile teams, managing procurement or supply chain, quality management, documenting decisions, or handling financial planning and budgets. Consolidated operations hub — pass mode=<value> or use keywords to activate the right specialty."
 metadata:
+  version: "1.0.0"
   vibe: Runs the machine that runs the business
   tier: controller
   model: opusplan

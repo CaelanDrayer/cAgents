@@ -6,6 +6,7 @@ description: "Consolidated personal advisor. Modes: coaching (goal setting, habi
 color: bright_white
 vibe: "Your potential, unlocked one step at a time"
 metadata:
+  version: "1.0.0"
   tier: execution
   model: sonnet
   mode: coaching

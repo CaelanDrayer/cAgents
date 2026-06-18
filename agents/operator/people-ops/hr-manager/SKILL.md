@@ -4,6 +4,7 @@ archetype: operator
 branch: people-ops
 description: "Consolidated people-ops controller. Use when structuring HR operations, managing employee lifecycle, building hiring processes, designing training programs, running onboarding, or aligning HR to business strategy. Modes: hr-ops (HR operations, employee lifecycle, policy, compliance), hrbp (strategic HR partnership, org design, change management), recruit (full-cycle talent acquisition, sourcing, offers), learning (training programs, career development, LMS), onboarding (new hire experience, 30/60/90 plans, buddy programs). Set metadata.mode."
 metadata:
+  version: "1.0.0"
   tier: controller
   model: opusplan
   mode: hr-ops

@@ -1,10 +1,11 @@
 // Phase 12 (V11.1.13): academic-research analyst agents regression test
-// Asserts the 3 descoped Phase 12 agents exist and conform to v11.1.0+ spec:
-//   (a) All 3 SKILL.md files exist under analyst/
-//   (b) Each declares archetype: analyst (top-level, no branch — analyst is 2-level)
-//   (c) Each declares metadata.version matching strict semver
-//   (d) Each is ≤ 400 lines (size-guard friendly; the 3 ship at 124-143 lines)
-//   (e) validate-agents.sh exits 0 for each (back-compat preserved)
+// Updated for v12.consolidation: citation-graph-analyzer + methodology-critic absorbed into scholar.
+// Asserts the consolidated scholar agent exists and conforms to v11.1.0+ spec:
+//   (a) SKILL.md exists under analyst/scholar/
+//   (b) Declares archetype: analyst (top-level, no branch — analyst is 2-level)
+//   (c) Declares metadata.version matching strict semver
+//   (d) Is ≤ 400 lines (size-guard friendly)
+//   (e) validate-agents.sh exits 0 (back-compat preserved)
 //
 // Refs:
 //   - example/external-skills/RESUME_W7_FINAL_PROMPT.md § Section E (Phase 12 spec)
@@ -21,18 +22,19 @@ import yaml from 'js-yaml';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..', '..');
 
-// LP-13 consolidation culled literature-review-author; v12.8.0 (eef900a7)
-// archived it to _archive/_deprecated_pre_v12.6/analyst/. citation-graph-analyzer
-// and methodology-critic remain ACTIVE under agents/analyst/. The active-agent
-// assertions below run against the 2 survivors; the archived survivor is
-// asserted separately so coverage of the Phase 12 absorption is not lost.
+// v12.consolidation absorbed citation-graph-analyzer and methodology-critic into
+// scholar (agents/analyst/scholar/SKILL.md). literature-review-author was culled
+// earlier (LP-13/v12.8.0). The active-agent assertions below run against the
+// surviving consolidated agent; absorbed agents are listed in PHASE_12_ARCHIVED_AGENTS
+// so their absence from the active tree is explicitly asserted.
 const PHASE_12_AGENTS = [
-  'citation-graph-analyzer',
-  'methodology-critic',
+  'scholar',
 ];
 
 const PHASE_12_ARCHIVED_AGENTS = [
   'literature-review-author',
+  'citation-graph-analyzer',
+  'methodology-critic',
 ];
 
 const SEMVER_RE = /^[0-9]+\.[0-9]+\.[0-9]+$/;
@@ -63,7 +65,7 @@ function parseFrontmatter(content) {
   }
 }
 
-describe('Phase 12 (V11.1.13): academic-research analyst agents', () => {
+describe('Phase 12 (V11.1.13): academic-research analyst agents (v12.consolidation: scholar survivor)', () => {
   test('(a) The active Phase 12 SKILL.md files exist under analyst/', () => {
     for (const name of PHASE_12_AGENTS) {
       const p = agentPath(name);

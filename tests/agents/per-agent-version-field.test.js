@@ -53,12 +53,11 @@ function parseFrontmatter(content) {
 describe('Phase 11: per-agent metadata.version field (V11.1.12+)', () => {
   const skillFiles = findAllSkillMd();
 
-  test('finds the expected agent count (v12.4.0 compression band [120,170])', () => {
-    // v12.4.0 P2 compression moved 96 agents to _deprecated/ buckets, taking
-    // the active catalog from 240 -> 144. The 238-baseline was an artifact
-    // of the pre-compression catalog; the v12.4.0 contract is [120, 170].
-    expect(skillFiles.length).toBeGreaterThanOrEqual(120);
-    expect(skillFiles.length).toBeLessThanOrEqual(170);
+  test('finds the expected agent count (v12.consolidation band [40,70])', () => {
+    // v12 consolidation reduced the active catalog from 141 -> 57
+    // (41 routable + 16 core). The post-consolidation contract is [40, 70].
+    expect(skillFiles.length).toBeGreaterThanOrEqual(40);
+    expect(skillFiles.length).toBeLessThanOrEqual(70);
   });
 
   test('(a) every agent SKILL.md declares metadata.version', () => {

@@ -4,6 +4,7 @@ archetype: advisor
 branch: legal
 description: "Consolidated legal advisor. Modes: counsel (GC-level oversight), corporate (entity/M&A/governance), compliance (frameworks/audits/risk), privacy (GDPR/CCPA/PIAs), legal-ops (process/spend/technology). Set metadata.mode."
 metadata:
+  version: "1.0.0"
   tier: controller
   model: opusplan
   mode: counsel

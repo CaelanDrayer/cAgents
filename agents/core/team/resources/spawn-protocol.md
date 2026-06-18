@@ -54,7 +54,7 @@ CRITICAL INSTRUCTIONS:
 
 ```javascript
 // WRONG: Using execution agent as subagent_type (lacks Agent tool, can't delegate)
-Agent({ subagent_type: "cagents:senior-developer", ... })
+Agent({ subagent_type: "cagents:tech-lead", ... })
 Agent({ subagent_type: "cagents:backend-developer", ... })
 
 // WRONG: Telling teammate to implement directly

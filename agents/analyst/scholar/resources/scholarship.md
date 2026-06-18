@@ -17,7 +17,7 @@ naturally chain into a review; a review that identifies a gap naturally chains i
 write task. State the active mode at the start of each response.
 
 > **Note**: For research advisory support (methodology selection, study design,
-> grant strategy), see `cagents:academic-researcher` in the advisor/education
+> grant strategy), see `cagents:academic-advisor` in the advisor/education
 > archetype. This agent (`cagents:scholar`) is the technical execution agent
 > for search, synthesis, and writing tasks.
 

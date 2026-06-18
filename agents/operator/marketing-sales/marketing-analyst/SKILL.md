@@ -67,8 +67,7 @@ Analytics execution specialist and organic-search optimizer. This agent covers t
 research, on-page and technical audits, link strategy). Read `metadata.mode` or the explicit
 mode in the caller's prompt, then follow the matching resource.
 
-In v12.18+ (LP-13), `seo-specialist` was absorbed into this agent. When prior docs reference
-`cagents:seo-specialist`, route to `cagents:marketing-analyst` with `mode: seo`.
+In v12.18+ (LP-13), `seo-specialist` was absorbed into this agent. Use `cagents:marketing-analyst` with `mode: seo` for all SEO work.
 
 ## Mode Selection
 

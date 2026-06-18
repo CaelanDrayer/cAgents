@@ -44,11 +44,9 @@ metadata:
       type: coordinates
     - name: frontend-developer
       type: coordinates
-    - name: dba
-      type: coordinates
     - name: tech-lead
       type: collaborates_with
-    - name: security-lead
+    - name: security-engineer
       type: collaborates_with
 allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---

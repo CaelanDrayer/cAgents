@@ -4,6 +4,7 @@ archetype: developer
 branch: backend
 description: "Consolidated backend agent. Modes: api (REST/GraphQL APIs, server-side logic, authentication, caching), database (schema design, query optimization, migrations, DBA tasks), engine (game engine systems, rendering pipelines, core engine infrastructure), game (gameplay mechanics, game logic, AI systems, physics integration). Set metadata.mode."
 metadata:
+  version: "1.0.0"
   tier: execution
   model: sonnet
   mode: api

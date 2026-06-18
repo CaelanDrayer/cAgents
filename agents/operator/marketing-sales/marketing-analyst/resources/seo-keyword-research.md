@@ -2,7 +2,7 @@
 
 > **v12 absorption note**: This document was absorbed from the standalone `keyword-researcher`
 > agent in v12.0.0 as part of the SEO collapse (6 agents → 2: `seo-specialist` + `geo-strategist`).
-> When prior docs reference `cagents:keyword-researcher`, route to `cagents:seo-specialist` with
+> When prior docs reference `cagents:keyword-researcher`, route to `cagents:marketing-analyst` with `mode: seo` and
 > the keyword-research focus described here. Original SKILL.md content preserved below.
 
 <example>

@@ -180,10 +180,10 @@ describe('v12-aliases.yaml engineering coverage (Q1..Q7)', () => {
     expect(pe.decision).toBe('Q1');
   });
 
-  it('Q3 renames chief-legal-officer -> clo', () => {
+  it('Q3 folds chief-legal-officer -> general-counsel (clo was deleted in Wave 8)', () => {
     const clo = aliasesByOld.get('cagents:chief-legal-officer');
-    expect(clo.new).toBe('cagents:clo');
-    expect(clo.type).toBe('rename');
+    expect(clo.new).toBe('cagents:general-counsel');
+    expect(clo.type).toBe('fold');
     expect(clo.decision).toBe('Q3');
   });
 
@@ -194,16 +194,16 @@ describe('v12-aliases.yaml engineering coverage (Q1..Q7)', () => {
     expect(em.decision).toBe('Q4');
   });
 
-  it('Q7 renames devops-lead -> infrastructure-lead and moves vp-engineering to leadership/', () => {
+  it('Q7 folds devops-lead -> devops-engineer and vp-engineering -> cto (both absorbed in Wave 8)', () => {
     const dl = aliasesByOld.get('cagents:devops-lead');
-    expect(dl.new).toBe('cagents:infrastructure-lead');
-    expect(dl.type).toBe('move_and_rename');
-    expect(dl.new_path).toContain('agents/developer/infrastructure/infrastructure-lead');
+    expect(dl.new).toBe('cagents:devops-engineer');
+    expect(dl.type).toBe('fold');
+    expect(dl.decision).toBe('Q7');
 
     const vp = aliasesByOld.get('cagents:vp-engineering');
-    expect(vp.new).toBe('cagents:vp-engineering');
-    expect(vp.type).toBe('move');
-    expect(vp.new_path).toContain('agents/leadership/vp-engineering');
+    expect(vp.new).toBe('cagents:cto');
+    expect(vp.type).toBe('fold');
+    expect(vp.decision).toBe('Q7');
   });
 });
 
@@ -214,11 +214,11 @@ describe('v12-aliases.yaml marketing-sales coverage (G1..G6)', () => {
     }
   });
 
-  it('G1 SEO collapse: all 4 specialist agents fold into seo-specialist', () => {
+  it('G1 SEO collapse: all 4 specialist agents fold into marketing-analyst (seo-specialist absorbed in v12.18)', () => {
     const g1 = ['keyword-researcher', 'on-page-seo-auditor', 'technical-seo-auditor', 'link-strategist'];
     for (const name of g1) {
       const a = aliasesByOld.get(`cagents:${name}`);
-      expect(a.new).toBe('cagents:seo-specialist');
+      expect(a.new).toBe('cagents:marketing-analyst');
       expect(a.type).toBe('fold');
       expect(a.merge_group).toBe('G1');
     }
@@ -234,31 +234,31 @@ describe('v12-aliases.yaml marketing-sales coverage (G1..G6)', () => {
     }
   });
 
-  it('G3 Partnerships: 3 agents fold into partnership-marketing-manager', () => {
+  it('G3 Partnerships: 3 agents fold into marketing-strategist (partnership-marketing-manager absorbed in v12.18)', () => {
     const g3 = ['affiliate-marketing-manager', 'channel-partner-manager', 'influencer-marketing-specialist'];
     for (const name of g3) {
       const a = aliasesByOld.get(`cagents:${name}`);
-      expect(a.new).toBe('cagents:partnership-marketing-manager');
+      expect(a.new).toBe('cagents:marketing-strategist');
       expect(a.type).toBe('fold');
       expect(a.merge_group).toBe('G3');
     }
   });
 
-  it('G4 Ops merge: sales-ops-specialist -> revenue-operations-manager', () => {
+  it('G4 Ops merge: sales-ops-specialist -> sales-strategist (revenue-operations-manager absorbed in v12.18)', () => {
     const a = aliasesByOld.get('cagents:sales-ops-specialist');
-    expect(a.new).toBe('cagents:revenue-operations-manager');
+    expect(a.new).toBe('cagents:sales-strategist');
     expect(a.merge_group).toBe('G4');
   });
 
-  it('G5 Enablement: sales-trainer -> sales-enablement-specialist', () => {
+  it('G5 Enablement: sales-trainer -> sales-strategist (sales-enablement-specialist absorbed in v12.18)', () => {
     const a = aliasesByOld.get('cagents:sales-trainer');
-    expect(a.new).toBe('cagents:sales-enablement-specialist');
+    expect(a.new).toBe('cagents:sales-strategist');
     expect(a.merge_group).toBe('G5');
   });
 
-  it('G6 Customer-marketing fold: customer-marketing-manager -> growth-marketer', () => {
+  it('G6 Customer-marketing fold: customer-marketing-manager -> marketing-strategist (growth-marketer absorbed in v12.18)', () => {
     const a = aliasesByOld.get('cagents:customer-marketing-manager');
-    expect(a.new).toBe('cagents:growth-marketer');
+    expect(a.new).toBe('cagents:marketing-strategist');
     expect(a.merge_group).toBe('G6');
   });
 });

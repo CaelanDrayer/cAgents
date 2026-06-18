@@ -25,6 +25,10 @@ import { join } from 'path';
  * to ERROR — but that would also have rejected legitimate cross-archetype
  * references during their grace period. This regression test is the durable
  * gate.
+ *
+ * v12.consolidation note: 7 stale refs left by catalog consolidation were swept
+ * by int-refs (Wave 10 round 2). All related_agents references now resolve to
+ * surviving agents. KNOWN_BROKEN_REFS exemption removed.
  */
 
 const ROOT = process.cwd();
@@ -80,7 +84,7 @@ function extractRelatedAgentNames(skillContent) {
 describe('related_agents references resolve to real agents', () => {
   it('every related_agents name resolves to an existing agent', () => {
     const allAgents = collectAllAgentNames();
-    expect(allAgents.size).toBeGreaterThan(100);  // sanity: v12.4.0 active catalog floor 120
+    expect(allAgents.size).toBeGreaterThan(50);  // sanity: v12 consolidation floor 57
 
     const broken = [];
     for (const arch of ARCHETYPES) {

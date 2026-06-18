@@ -122,25 +122,25 @@ Total: 40 .md = 34 top-level across 6 categories + 2 READMEs (root + playbooks/)
 **Key Features**: CSV Task Inventory, Batch Delegation (60-80% context reduction), Checkpoint/Resume, Aggressive Decomposition (30+ work items from simple requests), Controller-Centric coordination
 
 **Architecture**: Controller-Centric Coordination with Task Inventory
-- **Tier 1**: 15 core infrastructure agents (v12.0.0: task-decomposer + prompt-engineer folded into planner)
+- **Tier 1**: 16 core infrastructure agents (v12.0.0: task-decomposer + prompt-engineer folded into planner; v12.20.0: wave-reviewer + coord-log-writer added)
 - **Tier 2**: Controllers (coordinate via batch delegation)
 - **Tier 3**: Execution agents (implement work items)
 - **Tier 4**: Support agents (foundational services)
-- **Total**: 141 agents across 9 builder-role archetypes (post-v12.7.0 LP-12 + LP-13 consolidation; ~99 culled agents were physically removed — no `_deprecated/` buckets remain on disk; back-compat preserved via `scripts/migration/v12-aliases.yaml`)
+- **Total**: 57 agents across 9 builder-role archetypes (post-v12.20.0 catalog consolidation; 84 absorbed agents collapsed into 41 routable survivors via mode flags; back-compat preserved via `scripts/migration/v12-aliases.yaml`)
 - **Execution**: Event-driven pipeline (5-state machine) with progressive paths (minimal/medium/full), revision routing, reviewer loops
 
 **Canonical structure (v12.0.0) — 9 archetypes**:
 | Archetype | Dir | Agents | Capability |
 |-----------|-----|-------:|------------|
-| **Developer** | `developer/` | 26 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
-| **Operator** | `operator/` | 36 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
-| **Advisor** | `advisor/` | 12 | Legal, health, education, personal (4 branches) |
-| **Analyst** | `analyst/` | 19 | Data, BI, research, social-science |
-| **Creator** | `creator/` | 5 | Visual artists, designers, audiovisual creators |
-| **Writer** | `writer/` | 8 | Copy, narrative, technical writing, editorial |
-| **Strategist** | `strategist/` | 8 | Product owners, portfolio managers, planners |
-| **Core** | `core/` | 15 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, etc.) |
-| **Leadership** | `leadership/` | 12 | C-suite executives (used by /team strategic mode, not directly routable) |
+| **Developer** | `developer/` | 8 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
+| **Operator** | `operator/` | 7 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
+| **Advisor** | `advisor/` | 4 | Legal, health, education, personal (4 branches) |
+| **Analyst** | `analyst/` | 5 | Data, BI, research, social-science |
+| **Creator** | `creator/` | 2 | Visual artists, audiovisual creators |
+| **Writer** | `writer/` | 3 | Narrative, editorial |
+| **Strategist** | `strategist/` | 3 | Product owners, portfolio managers, planners |
+| **Core** | `core/` | 16 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, etc.) |
+| **Leadership** | `leadership/` | 9 | C-suite executives (used by /team strategic mode, not directly routable) |
 
 **Domain overlay (legacy — routing/config only)**: 2 legacy domain dirs (`people/`, `shared/`) survive on disk **without** SKILL.md files; they hold `config/domain_overrides.yaml` with router keywords + controller catalogs that the planner still consumes. The other 11 legacy dirs (`engineering/`, `creative/`, `business/`, `growth/`, `service/`, `science/`, `health/`, `education/`, `personal/`, `arts/`, `trades/`) were deleted in v12 W4.2 and their router keywords + controller catalogs consolidated into `cagents-memory/_system/config/routing.yaml`. Do NOT delete `people/` or `shared/` — they are not orphans.
 
@@ -189,19 +189,21 @@ Workflows proceed automatically through phases WITHOUT asking permission. See `d
 
 **If requirements are clear, PROCEED. Do not ask.** (Except /designer, which always asks.)
 
-## Core Infrastructure (Tier 1: 15 agents)
+## Core Infrastructure (Tier 1: 16 agents)
 
 **Orchestration** (4): `trigger` (entry point), `orchestrator` (context enrichment), `hitl` (human escalation), `optimizer` (universal optimization)
 
-**Team** (2): `team` (team init + lead wrapper used by `/team` skill loop), `team-lead` (controller-style delegate-mode lead pattern). The pre-v12.0.0 `team-trigger` and `team-lead-adapter` standalone agents were removed when the `/team` skill loop absorbed their initialization/wrapper work inline.
+**Team** (3): `team` (team init + lead wrapper used by `/team` skill loop), `team-lead` (controller-style delegate-mode lead pattern), `wave-reviewer` (validates /team wave gates). The pre-v12.0.0 `team-trigger` and `team-lead-adapter` standalone agents were removed when the `/team` skill loop absorbed their initialization/wrapper work inline.
 
 **Universal Workflow** (5): `router` (tier 2-4 classification), `planner` (decomposition + controller selection + delegation-prompt assembly; absorbs the standalone `task-decomposer` and `prompt-engineer` agents post-v12.0.0), `executor` (monitor controllers), `validator` (quality gates with PASS/FAIL/REVISE), `self-correct` (adaptive recovery)
 
 **Review** (1): `reviewer` (PASS/REVISE verdict against acceptance criteria; spawned by controllers and team leads)
 
-**Task Management** (2): `task-merger` (40-88% context reduction), `task-state` (CSV-based state, 60-80% savings) — `task-decomposer` was absorbed into `planner` in v12.0.0
+**Task Management** (2): `task-state` (CSV-based state, 60-80% savings; absorbs task-merger in v12.20.0) — `task-decomposer` was absorbed into `planner` in v12.0.0
 
 **Coordination** (1): `coordinator` (reusable coordinator for small domains — health, education, personal, arts, trades)
+
+**Logging** (1): `coord-log-writer` (assembles coordination_log.yaml from on-disk artifacts)
 
 **Config**: `{domain}/config/domain_overrides.yaml` (controller_catalog, router keywords)
 
@@ -353,7 +355,7 @@ State machine loop reading pipeline_config.yaml. Sequential enrichment (orchestr
 Skill: `.claude/skills/run/SKILL.md` + `reference/`
 
 ### /team - N-Wave Parallel Team Execution (V9.23, V9.27, v12.2.0)
-N-wave pipeline: **Wave 0 (lead: enrichment) -> Wave 1..N-1 (teammates: per-wave spawn, parallel within wave) -> Wave N (lead: integration)**. Maximizes waves for quality gating. Each wave spawns fresh teammates, validates GATE, then proceeds. 40-60% execution time reduction for tier 3+. V9.27: Automatic teammate failure recovery (retry + simplify + escalate), GATE validation standards per wave type, partial results on failure. **v12.2.0 Strategic Mode**: For cross-domain requests (`router.domain_count >= 2`), /team auto-enables strategic mode — Wave 0/1 = C-suite analysis (12 leadership agents), Wave 2 = brief synthesis, Wave 3..N = per-domain dispatch. Override with `--strategic` / `--no-strategic`. See `.claude/skills/team/reference/strategic-mode.md`.
+N-wave pipeline: **Wave 0 (lead: enrichment) -> Wave 1..N-1 (teammates: per-wave spawn, parallel within wave) -> Wave N (lead: integration)**. Maximizes waves for quality gating. Each wave spawns fresh teammates, validates GATE, then proceeds. 40-60% execution time reduction for tier 3+. V9.27: Automatic teammate failure recovery (retry + simplify + escalate), GATE validation standards per wave type, partial results on failure. **v12.2.0 Strategic Mode**: For cross-domain requests (`router.domain_count >= 2`), /team auto-enables strategic mode — Wave 0/1 = C-suite analysis (9 leadership agents), Wave 2 = brief synthesis, Wave 3..N = per-domain dispatch. Override with `--strategic` / `--no-strategic`. See `.claude/skills/team/reference/strategic-mode.md`.
 ```bash
 /team Implement OAuth2 authentication           # Single-domain team execution (5-7 waves)
 /team Launch new product with campaign          # Cross-domain: auto-strategic mode (eng + business + people)
@@ -416,16 +418,16 @@ cAgents/
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (40 files: 34 top-level across 6 categories + 2 READMEs (root + playbooks/) + 4 in resources/)
 |   +-- settings.json        # Hook registration + permissions + env
-+-- agents/                  # All 141 agents (v12.8.0+ consolidation — formerly 11 root dirs)
-|   +-- developer/           # Developer archetype (26 agents — backend/frontend/fullstack/infrastructure/quality)
-|   +-- operator/            # Operator archetype (36 agents — support/business-ops/people-ops/marketing-sales/content)
-|   +-- advisor/             # Advisor archetype (12 agents — legal/health/education/personal)
-|   +-- analyst/             # Analyst archetype (19 agents — data, BI, research, social science)
-|   +-- creator/             # Creator archetype (5 agents — visual, design, audiovisual)
-|   +-- writer/              # Writer archetype (8 agents — copy, narrative, technical, editorial)
-|   +-- strategist/          # Strategist archetype (8 agents — product owners, portfolio, planning)
-|   +-- core/                # Core pipeline infrastructure (15 agents)
-|   +-- leadership/          # Leadership archetype (12 C-suite agents — used by /team strategic mode)
++-- agents/                  # All 57 agents (v12.20.0+ catalog consolidation — 41 routable + 16 core)
+|   +-- developer/           # Developer archetype (8 agents — backend/frontend/fullstack/infrastructure/quality)
+|   +-- operator/            # Operator archetype (7 agents — support/business-ops/people-ops/marketing-sales/content)
+|   +-- advisor/             # Advisor archetype (4 agents — legal/health/education/personal)
+|   +-- analyst/             # Analyst archetype (5 agents — data, BI, research, social science)
+|   +-- creator/             # Creator archetype (2 agents — visual, audiovisual)
+|   +-- writer/              # Writer archetype (3 agents — narrative, editorial)
+|   +-- strategist/          # Strategist archetype (3 agents — product owners, portfolio, planning)
+|   +-- core/                # Core pipeline infrastructure (16 agents)
+|   +-- leadership/          # Leadership archetype (9 C-suite agents — used by /team strategic mode)
 |   +-- _overlay/            # Legacy router/planner config overlays
 |       +-- people/          # config/domain_overrides.yaml only
 |       +-- shared/          # config/, patterns/, resources/
@@ -446,7 +448,7 @@ cAgents/
 **cAgents is standalone. It MUST NOT depend on MCP servers — neither bundled nor consumed.**
 
 This is a load-bearing constraint, not a default. The plugin's value is that it works
-out of the box: install cAgents, get 141 agents and 4 skills with zero external service
+out of the box: install cAgents, get 57 agents and 4 skills with zero external service
 configuration. Coupling any agent or skill to an MCP server (the user must run a Postgres
 MCP, configure a GitHub MCP, etc.) breaks that contract — agents start failing in
 environments where the server isn't present, and the plugin's "install and go" promise
@@ -501,7 +503,7 @@ cAgents is distributed as a Claude Code plugin. See `.claude-plugin/plugin.json`
 ```
 
 **Key Manifest Fields**:
-- `agents`: Array of SKILL.md paths (141 agents registered post-v12.7.0)
+- `agents`: Array of SKILL.md paths (57 agents registered post-v12.20.0)
 - `skills`: Path to skills directory (`.claude/skills/`)
 - `hooks`: Path to settings.json for hook registration
 - `settings.json`: Default settings applied when plugin loads (under `agent` key for subagent defaults)
@@ -568,7 +570,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking and
 
 **Skills**: `/run`, `/team`, `/designer`, `/helper` (in `.claude/skills/`; V11.0 removed `/review`, `/optimize`, `/context`, `/debug`; v12.1.2 folded `/improve` into `/run` via keyword router; v12.2.0 removed `/org` and folded cross-domain coordination into `/team` strategic mode — see `docs/MIGRATION-V11.md` and CHANGELOG entries v12.1.2 / v12.2.0)
 **Built-in**: `/memory`, `/init` (Claude Code native)
-**Agents**: 141 total across 9 archetypes (developer 26, operator 36, advisor 12, analyst 19, creator 5, writer 8, strategist 8, core 15, leadership 12) — post-v12.7.0 LP-12 + LP-13 consolidation from 144
+**Agents**: 57 total across 9 archetypes (developer 8, operator 7, advisor 4, analyst 5, creator 2, writer 3, strategist 3, core 16, leadership 9) — post-v12.20.0 catalog consolidation (41 routable + 16 core; 84 absorbed agents use mode flags)
 **Domain Overlay (legacy routing/config only)**: 2 dirs (`people/`, `shared/`) hold `config/domain_overrides.yaml` — no SKILL.md files. The other 11 legacy domains (engineering, creative, business, growth, service, science, health, education, personal, arts, trades) were deleted in v12 W4.2 and consolidated into `cagents-memory/_system/config/routing.yaml`.
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `people/config/domain_overrides.yaml`, `shared/config/domain_overrides.yaml`, `cagents-memory/_system/config/routing.yaml`, `cagents-memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (internal-only session YAML contract since v12.6.0)
 **Hooks**: 32 .cjs files = 26 unique registered hooks + 3 dispatched Write|Edit sub-validators (run by write-edit-dispatch.cjs) + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI
@@ -577,7 +579,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking and
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 1335+ Vitest tests across 157+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.19.0
+**Version**: 12.20.0
 
 ## Troubleshooting
 

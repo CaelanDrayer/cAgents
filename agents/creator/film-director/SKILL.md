@@ -4,6 +4,7 @@ archetype: creator
 description: "Film directing and game music specialist. Modes: directing (cinematography, screenwriting, editing, production design, actor direction), music (adaptive game scoring, leitmotifs, orchestration, interactive audio systems). Set metadata.mode or pass mode=<value> in the invocation."
 vibe: "Every frame is an argument — know what you're arguing"
 metadata:
+  version: "1.0.0"
   tier: execution
   model: sonnet
   mode: directing
@@ -27,9 +28,8 @@ metadata:
   color: bright_white
   maxTurns: 40
   related_agents:
-    - name: photographer
-    - name: narrative-director
     - name: visual-artist
+    - name: narrative-director
 allowed-tools: Read Grep Glob Write Edit Bash
 ---
 

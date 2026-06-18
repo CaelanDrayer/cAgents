@@ -70,8 +70,8 @@ describe('P1-5: validate-counts.sh enforces doc-vs-disk alignment', () => {
     // is never touched, eliminating the race entirely.
     const claudeMd = join(REPO_ROOT, 'CLAUDE.md');
     const original = readFileSync(claudeMd, 'utf8');
-    // Find "141 agents" claim and replace ALL occurrences with bogus 999.
-    const mutated = original.replace(/\b141 agents\b/g, '999 agents');
+    // Find "57 agents" claim and replace ALL occurrences with bogus 999.
+    const mutated = original.replace(/\b57 agents\b/g, '999 agents');
     expect(mutated).not.toBe(original); // must have actually mutated
 
     const tmpDir = mkdtempSync(join(tmpdir(), 'doc-counts-test-'));
@@ -100,7 +100,7 @@ describe('P1-5: validate-counts.sh enforces doc-vs-disk alignment', () => {
 
     expect(exitCode, 'validate-counts.sh exit code on mutated CLAUDE.md').toBe(1);
     expect(output, 'mismatch output should mention CLAUDE.md or the count').toMatch(
-      /CLAUDE\.md|141|999|agent/i
+      /CLAUDE\.md|57|999|agent/i
     );
   });
 
@@ -176,8 +176,8 @@ describe('P1-5: validate-counts.sh enforces doc-vs-disk alignment', () => {
     });
     // The --derive-only mode should print derived counts and exit 0 without
     // doing comparison.
-    expect(output, 'derive-only should print active_agents=141').toMatch(
-      /active_agents[=:]\s*141/
+    expect(output, 'derive-only should print active_agents=57').toMatch(
+      /active_agents[=:]\s*57/
     );
     // v12.19.0 WI-5 / D1b: write-edit-dispatch.cjs is the 32nd .cjs file; the 3
     // former standalone Write|Edit hooks became dispatched sub-validators, so the

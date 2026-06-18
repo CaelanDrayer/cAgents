@@ -5,7 +5,7 @@ description: "C-suite executives for strategic coordination via /team strategic 
 
 planner:
   controller_catalog:
-    tier_4: [ceo, cto, cfo, cmo, cro, coo, cco, cpo, chro, cso]
+    tier_4: [ceo, cto, cfo, cmo, cro, coo, cco, cpo, chro]
 
 router:
   note: "Leadership agents are not directly routable. Used by /team strategic mode."

@@ -3,6 +3,7 @@ name: market-research-analyst
 archetype: analyst
 description: "Consolidated analyst agent. Modes: market (primary/secondary research, market sizing, customer segmentation, competitive landscapes), business-research (industry trend research, strategic intelligence gathering, synthesis and reporting), competitive (competitor monitoring, battle cards, win/loss analysis, competitive positioning), requirements (requirements elicitation, gap analysis, acceptance criteria, solution design). Set metadata.mode."
 metadata:
+  version: "1.0.0"
   tier: execution
   model: sonnet
   mode: market

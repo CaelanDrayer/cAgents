@@ -21,7 +21,7 @@ metadata:
     - coordination
     - content creation
   related_agents:
-    - name: code-reviewer
+    - name: qa-lead
       type: collaborates_with
     - name: validator
       type: collaborates_with

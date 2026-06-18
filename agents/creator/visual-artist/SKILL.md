@@ -3,6 +3,7 @@ name: visual-artist
 archetype: creator
 description: "Consolidated creator agent. Modes: fine-art (painting, color theory, art history, portfolio), concept (character/environment design, style guides, visual development), photography (composition, lighting, camera technique, post-processing). Set metadata.mode."
 metadata:
+  version: "1.0.0"
   tier: execution
   model: sonnet
   mode: fine-art

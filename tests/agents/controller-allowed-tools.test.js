@@ -23,17 +23,18 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..', '..');
 
-// The 7 canonical controllers per the W6 evidence chain at
-// cagents-memory/_knowledge/cc-plugin-subagent-spawn-bug.md.
+// The 7 canonical controllers (updated for v12.consolidation).
+// backend-lead and frontend-lead were removed in the consolidation;
+// replaced with security-engineer and marketing-strategist.
 // If a controller is renamed or relocated, update this list.
 const CANONICAL_CONTROLLERS = [
   'agents/developer/fullstack/tech-lead/SKILL.md',
   'agents/developer/fullstack/architect/SKILL.md',
-  'agents/developer/fullstack/tech-lead/SKILL.md',
-  'agents/developer/backend/backend-lead/SKILL.md',
-  'agents/developer/frontend/frontend-lead/SKILL.md',
+  'agents/developer/infrastructure/security-engineer/SKILL.md',
   'agents/developer/quality/qa-lead/SKILL.md',
   'agents/operator/business-ops/operations-manager/SKILL.md',
+  'agents/operator/marketing-sales/marketing-strategist/SKILL.md',
+  'agents/operator/people-ops/hr-manager/SKILL.md',
 ];
 
 function getAllowedToolsLine(content) {

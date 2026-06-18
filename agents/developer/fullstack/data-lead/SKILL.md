@@ -4,6 +4,7 @@ archetype: developer
 branch: fullstack
 description: "Consolidated fullstack data agent. Modes: coordinate (data engineering coordination — schema design, pipeline architecture, data quality standards, data team leadership), analyze (data analysis execution — ETL/ELT pipelines, SQL queries, dashboards, BI, data quality checks). Set metadata.mode or pass mode=<value>."
 metadata:
+  version: "1.0.0"
   tier: controller
   model: opusplan
   mode: coordinate
