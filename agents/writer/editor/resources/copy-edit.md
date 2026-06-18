@@ -1,3 +1,5 @@
+> Mode `copy-edit` of `editor` — relocated verbatim from `agents/writer/editor/resources/copy-edit-detail.md` (zero-loss consolidation).
+
 # Copy-Edit Mode: Detailed Techniques
 
 Deep per-area detail for the editor's `copy-edit` mode (absorbed from `writer/copy-editor` in LP-12). The SKILL.md body keeps the core philosophy; this file carries the style-guide mastery, voice preservation, query system, fiction-specific concerns, style sheet, fact-checking, and methodology.

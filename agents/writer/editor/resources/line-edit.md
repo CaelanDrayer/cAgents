@@ -1,3 +1,5 @@
+> Mode `line-edit` of `editor` — relocated verbatim from `agents/writer/editor/resources/line-edit-detail.md` (zero-loss consolidation).
+
 # Line-Edit Mode: Detailed Techniques
 
 Deep per-area detail for the editor's `line-edit` (developmental + structural) mode. The SKILL.md body keeps the core philosophy; this file carries the full catalogs.
@@ -39,3 +41,4 @@ Specific ("Chapter 7 loses momentum because the investigation subplot stalls whi
 - **Horror**: Atmosphere and dread over shock.
 
 See @resources/editing-guide.md for detailed editorial techniques.
+

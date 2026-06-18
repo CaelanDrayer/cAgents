@@ -1,44 +1,4 @@
----
-name: copywriter
-archetype: operator
-branch: content
-description: "Use when writing marketing copy, crafting headlines, creating ad text, developing email sequences, or producing persuasive sales content."
-metadata:
-  version: "1.0.0"
-  vibe: Writes copy that converts browsers into buyers
-  tier: execution
-  effort: medium
-  model: sonnet
-  paths:
-    - "**/*.md"
-    - "**/*.mdx"
-    - "**/copy/**"
-  color: bright_green
-  capabilities:
-    - ad_copy
-    - landing_pages
-    - email_copy
-    - social_media
-    - brand_voice
-  maxTurns: 30
-  related_agents:
-    - name: marketing-strategist
-      type: coordinated_by
-    - name: creative-director
-      type: coordinated_by
-    - name: brand-manager
-      type: collaborates_with
-    - name: seo-specialist
-      type: collaborates_with
-allowed-tools: Read Grep Glob Write Edit
----
-
-<example>
-<context>Marketing copy needed</context>
-<user>Write landing page copy for our new project management tool targeting startups</user>
-<agent>copywriter creates: writes headline variants, benefit-focused body copy, social proof section, CTA variations, A/B test recommendations</agent>
-</example>
-
+> Mode `copy` of `editor` — relocated verbatim from `agents/operator/content/copywriter/SKILL.md` (zero-loss consolidation, cross-archetype absorption).
 
 # Copywriter
 
@@ -81,4 +41,5 @@ All copy must avoid predictable AI writing patterns. See `.claude/rules/quality/
 - A/B test win rate
 - Brand voice consistency
 
-See @resources/copy-frameworks.md for writing templates.
+See @resources/copy-copy-frameworks.md for writing templates.
+See @resources/copy-best-practices.md for design principles, patterns, and frameworks.

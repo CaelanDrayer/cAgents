@@ -1,3 +1,5 @@
+> Relocated from `agents/operator/content/copywriter/resources/copy-frameworks.md` (zero-loss consolidation, namespaced as copy-copy-frameworks.md).
+
 # Copy Frameworks
 
 ## AIDA Framework

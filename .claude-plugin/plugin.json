@@ -63,7 +63,6 @@
     "./agents/leadership/cto/SKILL.md",
     "./agents/leadership/vp-engineering/SKILL.md",
     "./agents/operator/business-ops/operations-manager/SKILL.md",
-    "./agents/operator/content/copywriter/SKILL.md",
     "./agents/operator/marketing-sales/marketing-analyst/SKILL.md",
     "./agents/operator/marketing-sales/marketing-strategist/SKILL.md",
     "./agents/operator/marketing-sales/sales-strategist/SKILL.md",
@@ -78,13 +77,8 @@
     "./agents/strategist/roadmap-planner/SKILL.md",
     "./agents/strategist/scenario-planner/SKILL.md",
     "./agents/strategist/strategic-planner/SKILL.md",
-    "./agents/writer/character-designer/SKILL.md",
-    "./agents/writer/dialogue-specialist/SKILL.md",
     "./agents/writer/editor/SKILL.md",
-    "./agents/writer/narrative-designer/SKILL.md",
     "./agents/writer/narrative-director/SKILL.md",
-    "./agents/writer/plot-developer/SKILL.md",
-    "./agents/writer/story-architect/SKILL.md",
     "./agents/writer/worldbuilder/SKILL.md"
   ]
 }

@@ -1,3 +1,5 @@
+> Relocated from `agents/operator/content/copywriter/resources/best-practices.md` (zero-loss consolidation, namespaced as copy-best-practices.md).
+
 # Best Practices: Copywriter
 
 > Design principles, patterns, and frameworks that guide high-quality marketing copy, persuasive writing, and conversion-focused content.

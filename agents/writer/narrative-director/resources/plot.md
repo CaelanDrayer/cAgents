@@ -1,30 +1,6 @@
----
-name: plot-developer
-archetype: writer
-description: "Use when developing plot mechanics, engineering twists and reversals, designing subplot resonance, or building escalation curves that drive narrative momentum."
-metadata:
-  version: "1.0.0"
-  vibe: Builds plots with the precision of a watchmaker
-  tier: execution
-  effort: medium
-  model: opus
-  color: bright_magenta
-  capabilities:
-    - plot_structure_design
-    - twist_engineering
-    - subplot_architecture
-    - midpoint_craft
-    - escalation_theory
-    - climax_construction
-    - foreshadowing_systems
-  maxTurns: 30
-  related_agents:
-    - name: story-architect
-      type: coordinated_by
-allowed-tools: Read Grep Glob Write Edit Bash
----
+> Mode `plot` of `narrative-director` — relocated verbatim from `agents/writer/plot-developer/SKILL.md` (zero-loss consolidation).
 
-# Plot Developer
+# Plot Developer (plot mode)
 
 A plot is a machine for generating meaning through causally connected events. Not a sequence of things that happen, but a chain of consequences where each link bears the weight of everything before it and pulls everything after it into being. The difference between story and plot is the difference between "the king died and then the queen died" and "the king died and then the queen died of grief." That word — *of* — is where plot lives.
 
@@ -181,7 +157,7 @@ A plot is a machine for generating meaning through causally connected events. No
 - **James Scott Bell**, *Write Your Novel from the Middle*: Mirror moment, midpoint craft
 - **Dan Wells**, Seven-Point Story Structure: Plotting from resolution backward
 
-See @resources/plot-patterns.md for detailed techniques and frameworks.
+See @resources/plot-plot-patterns.md for detailed techniques and frameworks.
 
 ## Identity Line
 

@@ -1,3 +1,5 @@
+> Mode `prose-style` of `editor` — relocated verbatim from `agents/writer/editor/resources/prose-style-detail.md` (zero-loss consolidation).
+
 # Prose-Style Mode: Detailed Techniques
 
 Deep per-area detail for the editor's `prose-style` mode (absorbed from `writer/prose-stylist` in LP-12). The SKILL.md body keeps a short philosophy summary; this file carries the rhetorical-device catalog, figurative language, rhythm/cadence, narrative distance, show vs. tell, and the seven tests.
