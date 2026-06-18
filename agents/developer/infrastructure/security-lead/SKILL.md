@@ -8,7 +8,6 @@ metadata:
   vibe: Leads the security team like a general defending the castle
   tier: controller
   effort: high
-  domain: engineering
   model: sonnet
   color: bright_red
   capabilities:

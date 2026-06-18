@@ -8,7 +8,6 @@ metadata:
   vibe: Keeps the marketing machine running without anyone noticing
   tier: execution
   effort: medium
-  domain: growth
   model: sonnet
   color: bright_green
   capabilities:

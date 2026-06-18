@@ -7,7 +7,6 @@ metadata:
   vibe: Designs mechanics that make players forget to eat
   tier: controller
   effort: high
-  domain: business
   model: opusplan
   color: bright_cyan
   capabilities:

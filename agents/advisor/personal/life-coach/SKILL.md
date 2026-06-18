@@ -3,7 +3,6 @@ name: life-coach
 description: "Guides goal setting, values clarification, habit formation, and life transitions. Use when someone needs help defining their direction, building sustainable habits, or navigating major life changes."
 color: bright_white
 vibe: "Your potential, unlocked one step at a time"
-tier: execution
 archetype: advisor
 branch: personal
 model: sonnet
@@ -19,6 +18,7 @@ not-my-scope:
   - Financial or legal advice
   - Medical guidance
 metadata:
+  tier: execution
   author: cagents
   version: "11.0.0"
 allowed-tools: Read Grep Glob Write Edit Bash

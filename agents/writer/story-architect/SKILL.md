@@ -7,7 +7,6 @@ metadata:
   vibe: Blueprints narratives that hold up under their own weight
   tier: controller
   effort: high
-  domain: creative
   model: opusplan
   color: bright_magenta
   capabilities:

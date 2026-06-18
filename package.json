@@ -14,7 +14,7 @@
     "validate:configs": "python3 scripts/validate_agent_configs.py",
     "validate:agents": "bash scripts/ci/validate-agents.sh",
     "validate:versions": "bash scripts/ci/validate-versions.sh",
-    "validate:counts": "bash scripts/validate-agent-counts.sh",
+    "validate:counts": "bash scripts/ci/validate-counts.sh",
     "generate:manifest": "bash scripts/generate_plugin_manifest.sh",
     "lint": "npm run validate:configs",
     "ci": "npm run test && npm run validate:versions && npm run validate:agents"

@@ -8,7 +8,6 @@ metadata:
   vibe: "Tests 10 things, finds the one that scales, then doubles down"
   tier: execution
   effort: medium
-  domain: growth
   model: sonnet
   color: bright_green
   capabilities:

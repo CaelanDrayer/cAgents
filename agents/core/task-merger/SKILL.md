@@ -7,7 +7,6 @@ metadata:
   vibe: "Turns 100 scattered tasks into a clean, actionable list"
   tier: infrastructure
   effort: high
-  domain: core
   model: opus
   color: bright_yellow
   capabilities:

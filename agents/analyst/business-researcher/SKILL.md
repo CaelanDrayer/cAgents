@@ -7,7 +7,6 @@ metadata:
   vibe: Digs until the data tells a story worth betting on
   tier: execution
   effort: medium
-  domain: business
   model: sonnet
   color: bright_blue
   capabilities:

@@ -8,7 +8,6 @@ metadata:
   vibe: Gets new hires productive before their welcome swag arrives
   tier: execution
   effort: medium
-  domain: people
   model: sonnet
   color: bright_yellow
   capabilities:

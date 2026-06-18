@@ -8,7 +8,6 @@ metadata:
   vibe: Counts every dollar so the company can spend the right ones
   tier: controller
   effort: high
-  domain: business
   model: sonnet
   color: bright_green
   capabilities:

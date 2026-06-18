@@ -8,7 +8,6 @@ metadata:
   vibe: Ships pixel-perfect UIs that work on every screen
   tier: controller
   effort: high
-  domain: engineering
   model: opusplan
   color: bright_cyan
   capabilities:

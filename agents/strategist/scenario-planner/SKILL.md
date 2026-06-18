@@ -7,7 +7,6 @@ metadata:
   vibe: "Plans for the futures everyone hopes won't happen"
   tier: execution
   effort: medium
-  domain: business
   model: sonnet
   color: bright_blue
   capabilities:

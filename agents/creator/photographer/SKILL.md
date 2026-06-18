@@ -3,7 +3,6 @@ name: photographer
 description: "Photography specialist covering composition, lighting, camera settings, post-processing, and photojournalism. Use for technical camera guidance, image critique, editing workflows, or documentary photography projects."
 color: bright_white
 vibe: "Light is the medium — learn to see it before you shoot it"
-tier: execution
 archetype: creator
 model: sonnet
 capabilities:
@@ -17,6 +16,7 @@ related_agents:
 not-my-scope: ["Video production", "Motion graphics", "3D rendering"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 metadata:
+  tier: execution
   version: "1.0.0"
 ---
 

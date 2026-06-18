@@ -6,7 +6,6 @@ metadata:
   version: "1.0.0"
   vibe: Asks "would this still hold with n=400 and pre-registration?"
   tier: execution
-  domain: shared
   model: sonnet
   color: bright_cyan
   capabilities:

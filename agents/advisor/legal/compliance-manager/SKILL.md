@@ -2,12 +2,12 @@
 name: compliance-manager
 description: "Manages compliance frameworks, conducts audits, tracks regulatory changes, and coordinates risk-compliance programs across business units."
 color: bright_white
-tier: execution
 archetype: advisor
 branch: legal
 model: sonnet
 allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 metadata:
+  tier: execution
   version: "1.0.0"
 ---
 

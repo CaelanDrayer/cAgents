@@ -7,7 +7,6 @@ metadata:
   vibe: Provides the legal judgment that keeps executives out of trouble
   tier: controller
   effort: high
-  domain: leadership
   model: opusplan
   color: bright_yellow
   capabilities:

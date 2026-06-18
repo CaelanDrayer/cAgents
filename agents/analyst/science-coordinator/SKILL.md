@@ -6,7 +6,6 @@ metadata:
   version: "1.0.0"
   vibe: Turns curiosity into peer-reviewable answers
   tier: controller
-  domain: science
   model: opusplan
   color: bright_cyan
   capabilities:

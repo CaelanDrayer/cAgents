@@ -7,7 +7,6 @@ metadata:
   vibe: Owns the number and builds the machine to hit it every quarter
   tier: controller
   effort: high
-  domain: leadership
   model: opusplan
   color: bright_yellow
   capabilities:

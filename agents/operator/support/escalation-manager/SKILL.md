@@ -8,7 +8,6 @@ metadata:
   vibe: Takes the toughest tickets and turns them into saves
   tier: execution
   effort: medium
-  domain: service
   model: sonnet
   color: bright_red
   capabilities:

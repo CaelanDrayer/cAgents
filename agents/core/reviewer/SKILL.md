@@ -7,7 +7,6 @@ metadata:
   vibe: The impartial judge who only cares about acceptance criteria
   tier: execution
   effort: medium
-  domain: core
   model: sonnet
   color: bright_cyan
   capabilities:

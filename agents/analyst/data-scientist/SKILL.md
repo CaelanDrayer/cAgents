@@ -7,7 +7,6 @@ metadata:
   vibe: Turns messy data into clear decisions
   tier: controller
   effort: high
-  domain: shared
   model: opusplan
   paths:
     - "**/*.ipynb"

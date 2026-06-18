@@ -8,7 +8,6 @@ metadata:
   vibe: Ships clean APIs that survive production traffic at 3 AM
   tier: execution
   effort: medium
-  domain: engineering
   model: sonnet
   paths:
     - "**/api/**"

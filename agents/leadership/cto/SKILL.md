@@ -7,7 +7,6 @@ metadata:
   vibe: "Makes technology decisions that compound over years, not sprints"
   tier: controller
   effort: high
-  domain: leadership
   model: opusplan
   color: bright_blue
   capabilities:

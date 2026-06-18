@@ -54,15 +54,25 @@ states:
   # ... (see pipeline_config.yaml for full definition)
 
 revision:
-  max_cycles: 5
-  on_fail: PROMPTS_READY
+  max_cycles: 3
+  on_fail: PLANNED
   on_revise: PLANNED
   escalation: user_hitl
 ```
 
-## Event Files
+## Event Files (HISTORICAL — removed in v12.6.0)
 
-Each pipeline agent writes a completion event to `workflow/events/EVT-{N}.yaml`:
+> **DEPRECATED in v12.6.0**: `workflow/events/EVT-{N}.yaml` emission was removed.
+> The shape below is preserved for archived pre-v12.6 sessions that retain
+> `workflow/events/` on disk. New sessions do NOT create `workflow/events/` and
+> do NOT emit EVT files. **Current state-advancement signal**: each pipeline
+> agent's primary output file (`enriched_context.yaml`, `plan.yaml`,
+> `coordination_log.yaml`, `validation_report.yaml`), which the `/run` loop reads
+> at level 0. The EVT files were external-UI-only signals — no cAgents hook or
+> agent ever consumed them — which is why the emission was dropped. See
+> `.claude/skills/run/reference/state-machine-detail.md` (Historical note).
+
+Pre-v12.6, each pipeline agent wrote a completion event to `workflow/events/EVT-{N}.yaml`:
 
 ```yaml
 event_id: EVT-1

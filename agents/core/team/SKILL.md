@@ -7,7 +7,6 @@ metadata:
   vibe: Fires up the team and gets every pane humming
   tier: infrastructure
   effort: high
-  domain: core
   model: sonnet
   color: bright_cyan
   capabilities:
@@ -58,20 +57,7 @@ When `teammateMode` is `tmux` (or `auto` inside a tmux session), each teammate g
 
 Analyze request to determine if team execution provides benefit:
 
-```yaml
-team_suitability_criteria:
-  required:
-    - work_items >= 3          # Minimum parallelizable items
-    - has_independent_items: true  # Items can run in parallel
-
-  preferred:
-    - tier >= 3                # Complex workflows benefit most
-    - estimated_duration > 5min  # Worth parallel overhead
-
-  disqualified:
-    - all_items_sequential: true   # No parallelism possible
-    - tier == 2 && items < 4       # Overhead not worth it
-```
+See @resources/team-suitability.md for the full suitability criteria (required / preferred / disqualified).
 
 ## Execution Pipeline — Execute IMMEDIATELY, No Permission Needed
 
@@ -123,19 +109,7 @@ This creates the team config at `~/.claude/teams/cagents-team-{session_id}/confi
 
 Use the GATE sentinel pattern to enforce wave ordering:
 
-```javascript
-// Wave 0 tasks
-TaskCreate({ subject: "TASK-01: {description}", description: "Execute via /run. Acceptance criteria: ...", activeForm: "Executing TASK-01" /* optional */ })
-TaskCreate({ subject: "TASK-02: {description}", description: "Execute via /run. Acceptance criteria: ...", activeForm: "Executing TASK-02" /* optional */ })
-
-// Gate 0 sentinel (blocked by all wave-0 tasks)
-TaskCreate({ subject: "GATE-0: Foundation Ready", description: "Quality gate. All wave-0 tasks must complete.", activeForm: "Validating foundation" /* optional */ })
-TaskUpdate({ taskId: "{gate_id}", addBlockedBy: ["{wave_0_task_ids}"] })
-
-// Wave 1 tasks (blocked by GATE-0)
-TaskCreate({ subject: "TASK-03: {description}", ... })
-TaskUpdate({ taskId: "{task_id}", addBlockedBy: ["{gate_0_id}"] })
-```
+See @resources/wave-task-creation.md for the GATE-sentinel TaskCreate/TaskUpdate example.
 
 ### Step 5/6: Spawn Teammates IMMEDIATELY
 

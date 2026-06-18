@@ -8,7 +8,6 @@ metadata:
   vibe: "Protects the company with legal strategy, not just legal caution"
   tier: execution
   effort: medium
-  domain: service
   model: sonnet
   color: bright_red
   capabilities:

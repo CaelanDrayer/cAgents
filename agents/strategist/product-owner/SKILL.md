@@ -7,7 +7,6 @@ metadata:
   vibe: Says no to good ideas so great ideas get shipped
   tier: controller
   effort: high
-  domain: business
   model: opusplan
   color: bright_blue
   capabilities:

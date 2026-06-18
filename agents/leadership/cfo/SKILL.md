@@ -7,7 +7,6 @@ metadata:
   vibe: Turns financial data into the strategy the board actually follows
   tier: controller
   effort: high
-  domain: leadership
   model: opusplan
   color: bright_green
   capabilities:

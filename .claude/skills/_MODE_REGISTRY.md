@@ -29,7 +29,7 @@ other 3 user skills.
 | `--team` | flag | Delegate to /team for parallel multi-agent execution | "run X in parallel" |
 | `--analytics` | flag | Capture execution analytics for review | "run X with metrics" |
 | `--resume <session_id>` | flag | Resume an existing session at its last checkpoint | "resume run_..." |
-| `--session <session_dir>` | flag | Bind to an existing session dir (used by /org and /team) | — |
+| `--session <session_dir>` | flag | Bind to an existing session dir (used by /team; historically by /org, removed in v12.2.0 and absorbed into /team strategic mode) | — |
 | `--dry-run` | flag | Show plan/wave structure without executing | "preview the plan" |
 | `--interactive` | flag | Run with interactive prompts at key gates | — |
 | `--quiet` | flag | Suppress non-essential progress output | — |
@@ -39,7 +39,7 @@ other 3 user skills.
 | `--domain <name>` | flag | Override domain auto-detection | — |
 | `--tier <N>` | flag | Override tier classification (2/3/4) | — |
 | `--confidence <N>` | flag | Set confidence threshold for routing | — |
-| `--brief <path>` | flag | Consume a strategic brief (typically from /org) | — |
+| `--brief <path>` | flag | Consume a strategic brief (typically from /team strategic mode; historically from /org, removed in v12.2.0) | — |
 | `--no-goal` | flag | Disable goal-evaluator integration | — |
 
 ## /team

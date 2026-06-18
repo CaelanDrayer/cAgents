@@ -8,7 +8,6 @@ metadata:
   vibe: Automates the boring stuff so deploys are a non-event
   tier: execution
   effort: medium
-  domain: engineering
   model: sonnet
   paths:
     - "Dockerfile*"

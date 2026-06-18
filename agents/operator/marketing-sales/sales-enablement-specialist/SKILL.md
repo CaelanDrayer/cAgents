@@ -8,7 +8,6 @@ metadata:
   vibe: Arms the sales team with exactly what they need to close
   tier: execution
   effort: medium
-  domain: growth
   model: sonnet
   color: bright_green
   capabilities:

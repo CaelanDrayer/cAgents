@@ -8,7 +8,7 @@
 git clone <repo>
 cd cAgents
 npm install
-npm test          # 1030+ Vitest tests across 101+ files
+npm test          # 1315+ Vitest tests across 154+ files
 ```
 
 Ensure `node` is in your PATH — hooks rely on it.
@@ -110,7 +110,7 @@ Full hook reference: `.claude/rules/core/hooks.md`
 ## Running Tests
 
 ```bash
-npm test                    # All 1030+ Vitest tests across 101+ files (hooks + config + regression)
+npm test                    # All 1315+ Vitest tests across 154+ files (hooks + config + regression)
 bash scripts/ci/validate-agents.sh   # Agent SKILL.md validation
 ```
 

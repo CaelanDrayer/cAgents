@@ -1,6 +1,6 @@
 # Migration Guide
 
-> **Current cAgents version**: v12.6.0 — 144 agents across 9 builder-role archetypes (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership), 4 in-terminal skills (`/run`, `/team`, `/designer`, `/helper`). V10.x commands `/review`, `/optimize`, `/context`, `/debug` were removed in V11.0; `/improve` was folded into `/run` via the keyword router in v12.1.2; `/org` was removed in v12.2.0 and folded into `/team` strategic mode.
+> **Current cAgents version**: v12.19.0 — 141 agents across 9 builder-role archetypes (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership), 4 in-terminal skills (`/run`, `/team`, `/designer`, `/helper`). V10.x commands `/review`, `/optimize`, `/context`, `/debug` were removed in V11.0; `/improve` was folded into `/run` via the keyword router in v12.1.2; `/org` was removed in v12.2.0 and folded into `/team` strategic mode.
 
 How to move from single-purpose plugins (`feature-dev`, `code-review`) to cAgents v12.x.
 

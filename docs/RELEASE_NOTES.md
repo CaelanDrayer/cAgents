@@ -1,10 +1,131 @@
 # cAgents Release Notes
 
 **Current Version**: 12.19.0
-**Release Date**: May 21, 2026
+**Release Date**: June 14, 2026
 **Status**: Production-Ready
 
-> **Note**: This file documents major releases only (V12.2.0 was the last `/org`-removal milestone). For v12.3 through v12.6 patch and feature notes, see the canonical [CHANGELOG.md](../CHANGELOG.md). The CHANGELOG is the source of truth for per-bump release notes; this file is summarized historical context.
+> **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.19.0 — June 14, 2026 (Bucket D: hook security + performance)
+
+Bucket-D hook security/performance remediation (session `run_bucket-d-remediation_260614_001`), implementing findings deferred from the v12.18.0 overhaul audit.
+
+- **Secret-scan size cap**: `secret-detection.cjs` scans large files via a bounded head+tail window (`CAGENTS_SECRET_SCAN_MAX_BYTES`, default 512 KB) instead of loading the whole buffer, preventing a memory/latency blowup on multi-MB writes; production-path registration fixed so the hook fires on the intended Write|Edit paths.
+- **Write|Edit hook dispatcher (D1b)**: new `write-edit-dispatch.cjs` consolidates the three former standalone `Write|Edit` PreToolUse hooks (secret-detection, controller-delegation-validator, skill-size-monitor) into one deny-first, in-process dispatcher. Security sub-validators fail CLOSED; cold-start node spawns per Write|Edit cut 3 → 1.
+- **Reproducible perf benchmarking (D2)**: added a Write|Edit hook-perf microbench (`scripts/benchmarks/hook-perf-microbench.cjs`) and a perf-corpus runner with committed baselines, plus a CLAUDE.md honesty pass separating measured figures from design-target estimates.
+- **verify-completion fact-check (D3)**: slash-less filename citations are now fact-checked the same as path-qualified ones.
+
+## V12.18.0 — June 12, 2026 (audit remediation)
+
+Five-stream read-only repo audit (session `run_overhaul-audit_260612_001`) applied in three buckets plus a flake fix.
+
+- **Bucket A (green CI + hygiene)**: repointed the `no-orphaned-cagents-refs` guard at `v12-aliases.yaml`, removed a dangling `commit-changes` symlink, and fixed 6 orphaned `cagents:*` dispatch references to non-existent agents.
+- **Bucket B (harden safety hooks)**: made the delegation hard-deny controller-scoped (default → `block`; added `services/` + `middleware/`); anchored secret-detection's allowlist to exact repo-relative paths; converted bash-validator format/privilege checks to word-boundary regexes and added `doas`/`pkexec` to the Tier-1 deny set.
+- **Bucket C (minimalism pass)**: added `pat-minimal-solution-ladder.md`, extracted the duplicated Controller Delegation Protocol into `pat-controller-coordination-protocol.md`, and added a subtractive "what can be deleted?" lens to code-reviewer Stage-2.
+
+## V12.17.0 — June 11, 2026 (deep subagent nesting)
+
+Verified Claude Code 2.1.172+ lets subagents spawn their own subagents up to 5 levels deep (session `run_deep-nesting-enablement_260611_001`); the historical "Agent tool stripped at depth ≥ 1" limitation is now obsolete.
+
+- **Added**: `max_nesting_depth: 5` documented in `pipeline_config.yaml` + CLAUDE.md; regression test `deep-nesting-enablement.test.js`.
+- **Changed**: graceful-degradation repositioned from the default depth-1 behavior to a defensive fallback (fires only at the nesting ceiling or on a regressed harness); the 2-level nesting limit lifted across `teams.md`, the `/team` skill, and agent SKILLs. Back-compatible — no public contract removed.
+
+## V12.16.0 — June 9, 2026 (audit remediation)
+
+Resolved all 10 recommendations (48 findings) of the Fable 5 plugin review (session `run_audit-fixes_260609_001`).
+
+- **Security**: secret-detection now scans Markdown / docs with the same full-token regexes as code (a narrow `DOC_ALLOWLIST` exempts only the two docs that document the detection mechanism); bash-validator gains `eval $VAR` variable-indirection and download-then-exec patterns.
+- **CI guards**: `validate-counts.sh` Checks 9–11 (CLAUDE.md rules total, playbooks count, pre-exec check count) so doc-count drift is caught mechanically.
+- **Fixed/Changed**: greened CI (broken symlink + 3 hook tests), gitignored `__pycache__` / `_archive/` (kept on disk), and a doc-honesty pass reconciling count drift and relabeling unenforced contracts as advisory.
+
+## V12.15.2 — June 3, 2026
+
+Concurrent-session H1 follow-up: `verify-completion.cjs` staleness-skip field-name fix.
+
+- The Stop hook's staleness lookup used `updated_at` / `created_at`, but `/run` writes `last_updated_at` / `started_at`, so the 24h staleness branch never fired and block decisions leaked onto unrelated turns. Extended the lookup chain to the actual write-shape with the legacy fields as fallbacks. Regression test: `verify-completion-staleness-skip.test.js`.
+
+## V12.15.1 — June 2, 2026
+
+Concurrent-session H1 follow-up: SDK UUID `input.session_id` semantic.
+
+- Claude Code passes an SDK transcript UUID (not a cAgents session-dir name) as `input.session_id`, so the v12.15.0 deterministic chain returned `null` and `session-init-gate.cjs` denied every Agent spawn under concurrent runs. `findActiveSession` now detects the UUID shape and falls through to the env-var / promptHint steps; cAgents-shaped hints resolve as before. Regression test: `session-init-gate-uuid-payload.test.js`.
+
+## V12.15.0 — June 2, 2026 (concurrent-session hook resilience)
+
+Hardened cAgents hooks against two concurrent same-directory sessions so hooks fired by one instance never read or write the other's session tree (session `run_concurrent-session-hooks_260602_001`).
+
+- **Deterministic resolution**: `findActiveSession` chain is now `sessionHint → CAGENTS_ACTIVE_SESSION → promptHint → null`; the legacy newest-first / grace heuristic is gated behind `{fallbackHeuristic: true}`.
+- **Liveness filter** in session-catchup (LIVE sessions filtered out of resume offers), `withFileLock` around remaining shared-file appends, and `session_id`-bound secret restore. Closed hazards H1–H6 and H8; H7 deferred.
+
+## V12.14.0 — June 1, 2026 (cross-teammate requests)
+
+`/team` teammates can now ask the lead to route work to another teammate via a named `peer_request` protocol (session `run_improve-team-messaging_260602_001`).
+
+- New playbook `pat-cross-teammate-request.md` (schema + 4-branch RELAY / SPAWN / PROMOTE / REJECT decision tree); `teams.md` and `/team` Step 5d wired to route inbound requests; NEEDS_CONTEXT extended with optional `requested_peer` / `peer_request_ref` (back-compatible).
+- Non-goals: no nested teams, no direct teammate-to-teammate messaging — all cross-teammate work routes through the lead.
+
+## V12.13.0 — June 1, 2026 (hook audit remediation)
+
+Addressed 18 of 106 findings from the hook-system audit (session `run_fix-hook-audit-findings_260602_001`).
+
+- **HIGH (9/9)**: tool-failure-tracker brought under the thinking-block-immutability contract; hook-catalog corrected for controller-delegation-validator / session-init-gate / permission-handler / team-stop semantics; Cloudflare bare-hex pattern downgraded high → medium.
+- **MEDIUM (10/32)**: real bug fixed in team-stop agent-count (was matching the wrong `- agent_id:` shape); plus dead-code, dedup, and YAML-escape fixes. 24 MEDIUM + 65 LOW deferred.
+
+## V12.12.1 — June 1, 2026
+
+Follow-up patch to v12.12.0 (session `team_plugin-sanity-pass_260601_001`).
+
+- Fixed two vitest file-fork concurrency races (the doc-counts mutation tests now write bogus content to temp-dir copies via `CAGENTS_VALIDATE_COUNTS_CLAUDE_MD` / `CAGENTS_PLUGIN_JSON_PATH` overrides; the canonical files are never mutated), removed a re-created `commit-changes` symlink and gitignored it, and cleaned phantom doc references plus added HISTORICAL banners to two stale docs.
+
+## V12.12.0 — June 1, 2026 (plugin sanity pass + thinking-block-400 fix)
+
+A 7-wave audit/cleanup (session `team_plugin-sanity-pass_260601_001`) shipped alongside the carry-forward thinking-block-400 hook fix.
+
+- **Sanity pass**: removed canonical `/improve` framing across 9 /helper reference docs (→ `/run` keyword-router), fixed rules/docs drift and phantom path-globs, repaired broken cross-doc links and 144 → 141 count drift, and deleted a broken symlink.
+- **thinking-block 400**: six hooks dropped `systemMessage` from latest-turn-suspect branches (advisory text redirected to stderr + a disk log), fixing Anthropic API 400 errors at `/team` wave boundaries while preserving all file-write side effects. Extended thinking stays enabled.
+
+## V12.11.0 — May 27, 2026
+
+Final organization + documentation reconciliation pass (session `team_final-org-docs_260528_001`).
+
+- Confirmed repo-layout integrity (9 archetype roots + `agents/_overlay`, 141 agents); reconciled count drift to disk truth (README 238 → 141, docs 144 → 141, pipeline 7 → 5 states, max 5 → 3 revision cycles); added `validate-counts.sh` Check 2b (targeted absence guard) so stale agent-totals can no longer pass a presence-only check.
+
+## V12.10.0 — May 27, 2026
+
+FU-3 bare-prose `universal-*` rename (session `run_fu3-universal-prose_260527_001`).
+
+- Token-only sweep of the last bare `universal-*` prose mentions (router / planner / validator / executor / self-correct) across 25 `agents/**` files, completing the v12.5.0 pipeline-agent rename; added a `no-bare-universal-prose-refs` regression guard.
+
+## V12.9.0 — May 23, 2026
+
+Cleanup-and-fix pass (session `run_big-cleanup-fix_260524_001`).
+
+- Removed a dangling `commit-changes` symlink (green CI), repointed 4 orphaned `related_agents` cross-refs to their LP-12/LP-13 successors, refreshed stale count prose, and triaged removed-skill / consolidated-agent references (kept migration/history, cleaned 2 genuinely-stale invocation forms).
+
+## V12.8.0 — May 23, 2026 (root directory streamline)
+
+Layout refactor — no behavioral change.
+
+- The 9 archetype dirs moved under `agents/`; the 2 legacy overlays moved to `agents/_overlay/`; `plugin.json` paths, scripts, `worktree.sparsePaths`, and ~12 tests updated. Root cleanup removed `Agent_Memory/`, `outputs/`, `templates/`, and stray files. Also auto-generated `KNOWN_AGENTS` in model-routing-advisor from `plugin.json` (LP-16).
+
+## V12.7.0 — May 22, 2026 (doc + wiring audit + self-improvement backlog)
+
+Post-v12.6.0 documentation/wiring audit (session `team_doc-review-full_260522_001`) plus the 28-item self-improvement backlog (session `team_execute-self-improvement_260522_001`).
+
+- 84 files patched across 5 waves: validate-versions 17 → 16 slots, validate-agents warnings 61 → 0, 233 agent-name drift hits → 0.
+- Self-improvement backlog folded the writer trio into `editor` and academic searchers into `scholar` (catalog 144 → 141), added `validate-counts.sh` / `validate-planner-output.cjs`, consolidated delegation hooks into `prompt-router`, extracted 4 playbooks, and lowered `max_internal_rounds` 3 → 2 (LP-27).
+
+## V12.6.0 — May 21, 2026 (Pillar 4: drop external-UI schema contract)
+
+- BREAKING: session YAML is now an internal-only cAgents contract. Removed UI-only emitter fields and file emissions, dropped the pre-v12 `DECOMPOSED` / `PROMPTS_READY` state names from active hooks, and removed the external schema contract test + fetcher. Added a best-effort migration script and 3 regression tests. Completes the 4-pillar arc (v12.3.0 → v12.6.0).
+
+## V12.5.0 — May 21, 2026 (Pillar 3: naming renames)
+
+- BREAKING hard cutover: renamed 10 core infrastructure agents — `universal-router → router`, `universal-planner → planner`, `universal-validator → validator`, `universal-executor → executor`, `universal-self-correct → self-correct`, `generic-coordinator → coordinator`, `team-trigger → team`, `team-lead-adapter → team-lead`, `task-consolidator → task-merger`, `task-inventory → task-state`. No aliases for the 10 renames; 10 regression tests added.
+
+## V12.4.0 — May 21, 2026 (Pillar 2: compression)
+
+- Catalog audit-extract-collapse pass shrank the active agent catalog 240 → 144; 96 never-spawned agents moved to `{archetype}/_deprecated/` buckets (kept on disk for alias resolution, excluded from `plugin.json`). Added `scripts/audit-agents.mjs`, the `playbooks/` landing zone, and 3 regression tests; survivors include all spawned, alias-target, controller/infrastructure, and curated canonical specialists.
 
 ## V12.2.0 — May 21, 2026 (BREAKING: /org removed)
 

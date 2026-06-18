@@ -51,7 +51,9 @@ At VALIDATED/COMPLETE: call TaskList, mark completed work via TaskUpdate, delete
 
 ## Event-Driven Pipeline Architecture (V9.23.0)
 
-`/run` is a state machine engine reading `pipeline_config.yaml`. Each agent writes a completion event to `workflow/events/EVT-{N}.yaml` that /run reads to advance state.
+`/run` is a state machine engine reading `pipeline_config.yaml`. Each agent writes its **primary output file** (`enriched_context.yaml`, `plan.yaml`, `coordination_log.yaml`, `validation_report.yaml`), which `/run` reads at level 0 to advance state.
+
+> **v12.6.0: `workflow/events/EVT-{N}.yaml` emission removed.** Pre-v12.6 sessions wrote per-state completion events to `workflow/events/EVT-{N}.yaml` plus an `index.yaml`. These were external-UI-only signals — no cAgents hook or agent consumed them — so v12.6.0 dropped the emission entirely (both `/run` and `/team`; `/run` no longer creates `workflow/events/` at session init). State advancement is now driven solely by each agent's primary output file. Archived pre-v12.6 sessions retain `workflow/events/` on disk for record. See `.claude/skills/run/reference/state-machine-detail.md` (Historical note) and `orchestration-reference.md` § Event Files (historical).
 
 ### State Machine (v12.0.0)
 
@@ -144,8 +146,8 @@ This prevents redundant implementation and builds on existing work.
 ## Key Principles
 
 1. **Config-driven**: State machine reads pipeline_config.yaml
-2. **Event-based**: Agents write completion events, /run reads them
-3. **Revision-capable**: Controller-level (3 rounds) and pipeline-level (5 cycles)
+2. **Output-file-driven**: Agents write their primary output file (`enriched_context.yaml`, `plan.yaml`, `coordination_log.yaml`, `validation_report.yaml`); /run reads it at level 0 to advance state. (v12.6.0: the former `workflow/events/EVT-*.yaml` emission was removed — see Event-Driven Pipeline Architecture above.)
+3. **Revision-capable**: Controller-level (2 rounds, LP-27) and pipeline-level (3 cycles)
 4. **Controllers coordinate, don't execute**: Question-based delegation
 5. **Signal-interruptible**: PAUSE/STOP signals before each transition
 

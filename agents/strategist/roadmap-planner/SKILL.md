@@ -7,7 +7,6 @@ metadata:
   vibe: "Draws the map from here to shipped, including the detours"
   tier: execution
   effort: medium
-  domain: business
   model: sonnet
   color: bright_blue
   capabilities:

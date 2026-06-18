@@ -7,7 +7,6 @@ metadata:
   vibe: Squeezes performance from places nobody thought to look
   tier: infrastructure
   effort: high
-  domain: core
   model: opusplan
   color: bright_yellow
   capabilities:

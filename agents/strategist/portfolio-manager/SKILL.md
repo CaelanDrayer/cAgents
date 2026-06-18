@@ -7,7 +7,6 @@ metadata:
   vibe: Balances bets across projects like a seasoned card counter
   tier: execution
   effort: medium
-  domain: business
   model: sonnet
   color: bright_blue
   capabilities:

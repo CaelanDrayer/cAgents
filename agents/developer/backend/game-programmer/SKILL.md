@@ -8,7 +8,6 @@ metadata:
   vibe: Writes the code that makes impossible game mechanics possible
   tier: execution
   effort: medium
-  domain: engineering
   model: sonnet
   color: bright_yellow
   capabilities:

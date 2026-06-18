@@ -467,8 +467,8 @@ validate_hooks() {
         echo -e "  ${GREEN}All $hook_count registered hooks have matching .cjs files${NC}"
     fi
 
-    if [[ $hook_count -gt 0 ]] && [[ $hook_count -ne 28 ]]; then
-        log_warn "Hook count mismatch: found $hook_count registered hooks, expected 28"
+    if [[ $hook_count -gt 0 ]] && [[ $hook_count -ne 26 ]]; then
+        log_warn "Hook count mismatch: found $hook_count registered hooks, expected 26"
     fi
 }
 

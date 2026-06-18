@@ -48,17 +48,7 @@ strategic_brief:
       completed_wis: []
 ```
 
-Update status to BRIEFED.
-
-Write state transition event to `workflow/events/EVT-{N}.yaml`:
-```yaml
-event_id: EVT-{N}
-type: state_transition
-state: briefed
-agent: cagents:ceo
-timestamp: "{ISO_TIMESTAMP}"
-outputs_produced: [strategic_brief.yaml]
-```
+Update status to BRIEFED. (v12.6.0: `workflow/events/EVT-{N}.yaml` emission removed — the `status.yaml` `pipeline_state` update plus the `strategic_brief.yaml` output are the canonical state-transition signal.)
 
 ## domain_assignments Schema Extensions (v12.2.0)
 

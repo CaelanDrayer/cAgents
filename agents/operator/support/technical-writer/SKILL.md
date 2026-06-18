@@ -8,7 +8,6 @@ metadata:
   vibe: Writes documentation so clear even the author learns something
   tier: execution
   effort: medium
-  domain: service
   model: sonnet
   paths:
     - "docs/**"

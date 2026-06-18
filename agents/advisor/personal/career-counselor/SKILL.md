@@ -3,7 +3,6 @@ name: career-counselor
 description: "Supports career exploration, job search strategy, resume coaching, interview preparation, and salary negotiation. Use when someone is changing careers, job hunting, or planning career growth."
 color: bright_white
 vibe: "Navigate your career with clarity and confidence"
-tier: execution
 archetype: advisor
 branch: personal
 model: sonnet
@@ -20,6 +19,7 @@ not-my-scope:
   - HR policy interpretation
   - Licensing or certification requirements (domain-specific)
 metadata:
+  tier: execution
   author: cagents
   version: "11.0.0"
 allowed-tools: Read Grep Glob Write Edit Bash

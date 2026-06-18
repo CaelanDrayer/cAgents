@@ -8,7 +8,6 @@ metadata:
   vibe: Turns standup theater into shipping velocity
   tier: execution
   effort: medium
-  domain: business
   model: sonnet
   color: bright_blue
   capabilities:

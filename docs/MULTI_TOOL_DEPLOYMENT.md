@@ -18,7 +18,7 @@ Three out of six newly-cloned external-skill repos in May 2026 (msitarzewski/age
 
 Reference: `example/external-skills/msitarzewski__agency-agents/scripts/convert.sh` produces 11 tool-specific outputs from one source.
 
-For cAgents' 144 agents + 4 skills (post-v12.4.0 P2 compression; post-v12.2.0 `/org` removal), a hypothetical converter would produce:
+For cAgents' 141 agents + 4 skills (post-v12.7.0 LP-12 + LP-13 consolidation; post-v12.2.0 `/org` removal), a hypothetical converter would produce:
 
 | Target Tool | Output Format | Round-Trip Quality |
 |-------------|---------------|---------------------|
@@ -76,7 +76,7 @@ For 5 target tools, baseline overhead is ~10-15 hours/week steady-state. cAgents
 
 - **AGENTS.md** (shipped v12.0.1) already gives non-CC users a discoverability surface — they can read the catalog and route via their tool's existing mechanisms.
 - **No specific user demand has surfaced** (as of 2026-05-20) for any specific target-tool converter.
-- **Maintenance cost is the binding constraint**: cAgents' competitive advantage is depth (144 agents + state-machine pipeline + reviewer loops), not breadth across tools.
+- **Maintenance cost is the binding constraint**: cAgents' competitive advantage is depth (141 agents + state-machine pipeline + reviewer loops), not breadth across tools.
 - **Reversible decision**: if a specific tool's demand emerges (5+ user requests, 100+ stars on a community fork, a partner integration request), revisit. The converter is ~3-5 days to build.
 
 ## Trigger conditions to revisit this decision

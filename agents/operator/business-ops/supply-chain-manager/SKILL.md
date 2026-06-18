@@ -8,7 +8,6 @@ metadata:
   vibe: Keeps the supply chain moving when the world stops cooperating
   tier: controller
   effort: high
-  domain: business
   model: sonnet
   color: bright_blue
   capabilities:

@@ -132,7 +132,10 @@ function findActiveParentAgent(sessionDir) {
   let currentAgent = null;
   let currentHasStop = false;
   for (const line of lines) {
-    const atMatch = line.match(/^\s*-?\s*agent_type\s*:\s*["']?(cagents:[a-zA-Z0-9_\-]+)["']?\s*$/);
+    // H5 (v12.20.0): real agent_tree.yaml entries use `cagents_type:` (175 of 200
+    // sessions); `agent_type:` is the legacy field (25 sessions). Match the current
+    // field first, keep the legacy field as a fallback so old sessions still resolve.
+    const atMatch = line.match(/^\s*-?\s*(?:cagents_type|agent_type)\s*:\s*["']?(cagents:[a-zA-Z0-9_\-]+)["']?\s*$/);
     if (atMatch) {
       // Flush previous
       if (currentAgent && !currentHasStop) lastActiveAgent = currentAgent;
@@ -337,7 +340,25 @@ createHook('SessionInitGate', async (input) => {
   }
 
   if (!sessionPresent) {
-    const sessionDir = findActiveSession(input.session_id);
+    let sessionDir = findActiveSession(input.session_id);
+    if (!sessionDir) {
+      // H4 (v12.20.0): Claude Code's `input.session_id` is an SDK transcript UUID,
+      // not a cAgents session-dir name, so the deterministic chain skips step 1.
+      // If CAGENTS_ACTIVE_SESSION did NOT propagate to this hook subprocess (a
+      // known unreliability), findActiveSession returns null even when a perfectly
+      // valid active session dir exists on disk — and this gate would then HARD-DENY
+      // EVERY Agent spawn, hanging the entire pipeline at its first delegation.
+      // Fall back to the documented opt-in legacy heuristic, which resolves the
+      // most-recent session that has a NON-TERMINAL status.yaml (or recent
+      // session markers within the grace window). This only flips deny -> allow
+      // when a genuinely-active session exists — it rejects abandoned husk dirs
+      // (no status.yaml, stale mtime) — which is the safe direction for a presence
+      // gate (its job is to catch orphan spawns with NO session at all).
+      sessionDir = findActiveSession({ sessionHint: input.session_id, fallbackHeuristic: true });
+      if (sessionDir) {
+        console.error(`[SessionInitGate] findActiveSession(null) — resolved via fallbackHeuristic: ${path.basename(sessionDir)}`);
+      }
+    }
     if (sessionDir) {
       sessionPresent = true;
     } else {

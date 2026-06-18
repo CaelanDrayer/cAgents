@@ -153,16 +153,7 @@ SendMessage({ type: "shutdown_request", recipient: "w{K}-task-{N}-{type}", conte
 
 ### 5f. Proceed to Wave K+1 (AUTOMATIC — Do NOT Ask Permission)
 
-### 5f-1. Write Wave Completion Event
-
-```yaml
-# workflow/events/EVT-{K}.yaml
-event_id: EVT-{K}
-type: wave_complete
-wave: {K}
-items_completed: {count}
-timestamp: "{ISO_TIMESTAMP}"
-```
+(v12.6.0: `workflow/events/EVT-{K}.yaml` wave-completion emission removed — the GATE-{K} task's `completed` status is the canonical wave-gate signal.)
 
 **Each wave is a distinct spawn-execute-validate cycle.** This ensures quality gates are enforced between phases, outputs from earlier waves are available to later waves, and issues are caught early.
 

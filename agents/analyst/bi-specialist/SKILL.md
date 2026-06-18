@@ -7,7 +7,6 @@ metadata:
   vibe: "Builds dashboards that answer the question before it's asked"
   tier: controller
   effort: high
-  domain: shared
   model: sonnet
   color: bright_white
   capabilities:

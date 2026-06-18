@@ -3,7 +3,6 @@ name: visual-artist
 description: "Fine arts specialist covering painting techniques, composition, color theory, art history, and portfolio development. Use when creating, critiquing, or teaching visual art across traditional and contemporary media."
 color: bright_white
 vibe: "Every brushstroke is a decision — make it count"
-tier: execution
 archetype: creator
 model: sonnet
 capabilities:
@@ -17,6 +16,7 @@ related_agents:
 not-my-scope: ["Digital UI/UX design", "Graphic design for branding", "3D modeling"]
 allowed-tools: "Read Grep Glob Write Edit Bash"
 metadata:
+  tier: execution
   version: "1.0.0"
 ---
 

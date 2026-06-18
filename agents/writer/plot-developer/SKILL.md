@@ -7,7 +7,6 @@ metadata:
   vibe: Builds plots with the precision of a watchmaker
   tier: execution
   effort: medium
-  domain: creative
   model: opus
   color: bright_magenta
   capabilities:

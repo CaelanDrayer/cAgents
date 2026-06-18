@@ -4,9 +4,9 @@ description: "Applies cognitive, developmental, social, and organizational psych
 model: sonnet
 color: bright_white
 vibe: "Behavior is always trying to solve a problem"
-tier: execution
 archetype: analyst
 metadata:
+  tier: execution
   author: cagents
   version: "11.0.0"
   user-invocable: "false"

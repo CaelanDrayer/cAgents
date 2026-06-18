@@ -7,7 +7,6 @@ metadata:
   vibe: "Trust but verify -- every claim needs evidence, every shortcut gets caught"
   tier: infrastructure
   effort: high
-  domain: core
   model: opus
   color: bright_cyan
   capabilities:

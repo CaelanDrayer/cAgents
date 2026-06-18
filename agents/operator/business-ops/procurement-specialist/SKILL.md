@@ -8,7 +8,6 @@ metadata:
   vibe: Gets more value for less money without cutting corners
   tier: execution
   effort: medium
-  domain: business
   model: sonnet
   color: bright_blue
   capabilities:

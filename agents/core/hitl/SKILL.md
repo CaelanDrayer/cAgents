@@ -7,7 +7,6 @@ metadata:
   vibe: The human in the loop when machines need a gut check
   tier: infrastructure
   effort: high
-  domain: core
   model: sonnet
   color: bright_red
   capabilities:

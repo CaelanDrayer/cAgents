@@ -8,7 +8,6 @@ metadata:
   vibe: Leads the support org to deliver experiences customers talk about
   tier: controller
   effort: high
-  domain: service
   model: opusplan
   color: bright_red
   capabilities:

@@ -7,7 +7,6 @@ metadata:
   vibe: Turns raw metrics into decisions that move the needle
   tier: execution
   effort: medium
-  domain: business
   model: sonnet
   color: bright_blue
   capabilities:

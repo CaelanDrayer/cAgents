@@ -100,6 +100,6 @@ Parallel specialist agents audit for security, correctness, maintainability, and
 
 ## Token Budget Reminder
 
-cAgents uses 10-50x more tokens than direct Claude Code interaction. `/team` and `/org` amplify this further. Check your usage in Claude Code's settings if you're on a metered plan.
+cAgents uses 10-50x more tokens than direct Claude Code interaction. `/team` (including strategic mode) amplifies this further. Check your usage in Claude Code's settings if you're on a metered plan.
 
 For quick, single-file fixes, use Claude Code directly — cAgents is optimized for multi-step, multi-agent coordination.

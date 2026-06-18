@@ -8,7 +8,6 @@ metadata:
   vibe: Turns messy data into clean insights that drive decisions
   tier: execution
   effort: medium
-  domain: engineering
   model: sonnet
   color: bright_green
   capabilities:

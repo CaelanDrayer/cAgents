@@ -7,7 +7,6 @@ metadata:
   vibe: "One coordinator to rule the small domains"
   tier: controller
   effort: high
-  domain: core
   model: opusplan
   color: bright_white
   capabilities:

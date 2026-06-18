@@ -7,7 +7,6 @@ metadata:
   vibe: Monitors controllers like a hawk and never lets a phase slip
   tier: infrastructure
   effort: high
-  domain: core
   model: opus
   color: bright_green
   capabilities:

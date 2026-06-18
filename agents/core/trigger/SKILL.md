@@ -7,7 +7,6 @@ metadata:
   vibe: The front door that sends every request to exactly the right room
   tier: infrastructure
   effort: high
-  domain: core
   model: sonnet
   color: bright_white
   capabilities:

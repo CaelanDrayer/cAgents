@@ -6,7 +6,6 @@ description: "Validates a /team wave gate by running the 7-check protocol agains
 metadata:
   version: "1.0.0"
   tier: execution
-  domain: engineering
   model: sonnet
   color: bright_cyan
   vibe: "Reads the wave's evidence so the lead never has to"

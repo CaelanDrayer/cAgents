@@ -7,7 +7,6 @@ metadata:
   version: "1.0.0"
   vibe: Evidence-based health guidance, responsibly delivered
   tier: execution
-  domain: health
   model: sonnet
   color: bright_green
   capabilities:

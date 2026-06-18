@@ -8,7 +8,6 @@ metadata:
   vibe: Makes sure every user can use what you shipped
   tier: support
   effort: low
-  domain: engineering
   model: haiku
   color: bright_magenta
   capabilities:

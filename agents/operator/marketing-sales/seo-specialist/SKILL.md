@@ -8,7 +8,6 @@ metadata:
   vibe: Gets pages to rank by understanding what Google actually wants
   tier: execution
   effort: medium
-  domain: growth
   model: sonnet
   color: bright_green
   capabilities:

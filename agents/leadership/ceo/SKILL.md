@@ -7,7 +7,6 @@ metadata:
   vibe: Sees the whole board and moves pieces three turns ahead
   tier: controller
   effort: high
-  domain: leadership
   model: opusplan
   color: bright_magenta
   capabilities:

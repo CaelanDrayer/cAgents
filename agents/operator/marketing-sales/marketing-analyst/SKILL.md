@@ -8,7 +8,6 @@ metadata:
   vibe: "Turns campaign data into the next campaign's secret weapon"
   tier: execution
   effort: medium
-  domain: growth
   model: sonnet
   color: bright_green
   capabilities:

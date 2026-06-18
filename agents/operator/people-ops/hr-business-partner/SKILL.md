@@ -8,7 +8,6 @@ metadata:
   vibe: Bridges the gap between what HR offers and what the business needs
   tier: controller
   effort: high
-  domain: people
   model: sonnet
   color: bright_magenta
   capabilities:

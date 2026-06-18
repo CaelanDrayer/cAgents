@@ -8,7 +8,6 @@ metadata:
   vibe: Sets the creative vision and holds the bar impossibly high
   tier: controller
   effort: high
-  domain: growth
   model: sonnet
   color: bright_green
   capabilities:

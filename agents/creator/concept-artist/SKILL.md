@@ -7,7 +7,6 @@ metadata:
   vibe: Paints the world before anyone builds it
   tier: execution
   effort: medium
-  domain: creative
   model: opus
   paths:
     - "**/*.png"

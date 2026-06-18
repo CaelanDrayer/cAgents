@@ -8,7 +8,6 @@ metadata:
   vibe: "Catches the bug your manual QA missed"
   tier: execution
   effort: medium
-  domain: engineering
   model: sonnet
   paths:
     - "**/*.spec.ts"

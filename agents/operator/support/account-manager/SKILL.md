@@ -8,7 +8,6 @@ metadata:
   vibe: Keeps clients happy enough to renew without being asked
   tier: controller
   effort: high
-  domain: service
   model: sonnet
   color: bright_red
   capabilities:

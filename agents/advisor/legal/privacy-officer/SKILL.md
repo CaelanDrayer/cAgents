@@ -8,7 +8,6 @@ metadata:
   vibe: Guards user data like every record is their own
   tier: execution
   effort: medium
-  domain: service
   model: sonnet
   color: bright_red
   capabilities:

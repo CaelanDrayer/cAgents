@@ -7,7 +7,6 @@ metadata:
   version: "1.0.0"
   vibe: Compassionate support grounded in evidence-based psychology
   tier: execution
-  domain: health
   model: sonnet
   color: bright_cyan
   capabilities:

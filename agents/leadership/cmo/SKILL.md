@@ -7,7 +7,6 @@ metadata:
   vibe: Drives growth by making the market come to the company
   tier: controller
   effort: high
-  domain: leadership
   model: opusplan
   color: bright_yellow
   capabilities:

@@ -7,7 +7,6 @@ metadata:
   vibe: "Turns ambitious goals into measurable, achievable milestones"
   tier: execution
   effort: medium
-  domain: business
   model: sonnet
   color: bright_blue
   capabilities:

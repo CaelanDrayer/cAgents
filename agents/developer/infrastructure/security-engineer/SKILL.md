@@ -8,7 +8,6 @@ metadata:
   vibe: "Builds security into the architecture, not bolted on after"
   tier: execution
   effort: medium
-  domain: engineering
   model: sonnet
   color: bright_white
   capabilities:

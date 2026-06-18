@@ -129,17 +129,7 @@ Format:
 
 ## Step 4d: After All C-Suite Agents Return
 
-Read all `domain_analyses/domain_analysis_*.yaml` files. Verify Wave 2 agents referenced peer context. Update tasks (TaskUpdate) and status.yaml to ANALYZED.
-
-Write state transition event to `workflow/events/EVT-{N}.yaml`:
-```yaml
-event_id: EVT-{N}
-type: state_transition
-state: analyzed
-agent: cagents:ceo
-timestamp: "{ISO_TIMESTAMP}"
-outputs_produced: [domain_analyses/*.yaml]
-```
+Read all `domain_analyses/domain_analysis_*.yaml` files. Verify Wave 2 agents referenced peer context. Update tasks (TaskUpdate) and status.yaml to ANALYZED. (v12.6.0: `workflow/events/EVT-{N}.yaml` emission removed — the `status.yaml` `pipeline_state` update plus the `domain_analyses/*.yaml` outputs are the canonical state-transition signal.)
 
 **Note**: If all C-suite agents are independent (no dependencies detected), all run in Wave 1 and Wave 2 is skipped. If only one domain is involved, dependency ordering is unnecessary.
 
@@ -224,14 +214,4 @@ Read all objections. Resolve:
 - **Conflicting demands**: CEO decides based on chairperson intent
 - **New dependencies**: Add to cross_domain_dependencies
 
-Update status to DELIBERATED.
-
-Write state transition event to `workflow/events/EVT-{N}.yaml`:
-```yaml
-event_id: EVT-{N}
-type: state_transition
-state: deliberated
-agent: cagents:ceo
-timestamp: "{ISO_TIMESTAMP}"
-outputs_produced: [objections/*.yaml, strategic_brief_draft.yaml]
-```
+Update status to DELIBERATED. (v12.6.0: `workflow/events/EVT-{N}.yaml` emission removed — the `status.yaml` `pipeline_state` update plus the `objections/*.yaml` and `strategic_brief_draft.yaml` outputs are the canonical state-transition signal.)

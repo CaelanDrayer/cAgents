@@ -7,7 +7,6 @@ metadata:
   vibe: "Sees what's coming by reading what already happened"
   tier: execution
   effort: medium
-  domain: business
   model: sonnet
   color: bright_blue
   capabilities:

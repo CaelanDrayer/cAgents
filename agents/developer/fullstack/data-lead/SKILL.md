@@ -8,7 +8,6 @@ metadata:
   vibe: Owns the data layer from schema design to query optimization
   tier: controller
   effort: high
-  domain: engineering
   model: sonnet
   color: bright_yellow
   capabilities:

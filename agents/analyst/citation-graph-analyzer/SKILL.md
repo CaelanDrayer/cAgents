@@ -6,7 +6,6 @@ metadata:
   version: "1.0.0"
   vibe: Finds the 5 papers nobody admits the field can't escape
   tier: execution
-  domain: shared
   model: sonnet
   color: bright_cyan
   capabilities:

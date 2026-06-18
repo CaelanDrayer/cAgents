@@ -7,7 +7,6 @@ metadata:
   vibe: Reads the market so the company can write its own future
   tier: controller
   effort: high
-  domain: shared
   model: sonnet
   color: bright_white
   capabilities:

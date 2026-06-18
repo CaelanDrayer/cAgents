@@ -6,7 +6,6 @@ metadata:
   version: "1.0.0"
   vibe: "Turning data uncertainty into confident conclusions"
   tier: execution
-  domain: science
   model: sonnet
   color: bright_yellow
   capabilities:

@@ -8,7 +8,6 @@ metadata:
   vibe: Builds communities where users help each other before support does
   tier: execution
   effort: medium
-  domain: service
   model: sonnet
   color: bright_red
   capabilities:

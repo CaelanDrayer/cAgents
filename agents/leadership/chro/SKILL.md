@@ -7,7 +7,6 @@ metadata:
   vibe: Builds the culture that makes top talent stay
   tier: controller
   effort: high
-  domain: leadership
   model: opusplan
   color: bright_yellow
   capabilities:

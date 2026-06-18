@@ -8,7 +8,6 @@ metadata:
   vibe: "Reads code like an attacker so reviewers don't have to"
   tier: execution
   effort: medium
-  domain: engineering
   model: sonnet
   paths:
     - "**/*.ts"

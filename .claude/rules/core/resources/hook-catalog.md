@@ -69,8 +69,8 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 **Consolidated sub-validator: secret-detection.cjs** (dispatched first, FAIL-CLOSED security gate; not independently registered)
 
 - **Purpose**: Block writes to protected paths and detect secrets.
-- **Three phases**: (1) Protected path check, (2) Sensitive file warning (`.env` and similar filenames — warns only, does not block), (3) Secret scanning (pattern matching — blocks on critical/high severity).
-- **Blocked**: System paths (`/etc/`, `/usr/`, `~/.ssh/`), files with critical/high secrets.
+- **Three phases**: (1) Protected path check, (2) Sensitive file warning (`.env` and similar filenames — warns only, does not block), (3) Secret scanning (pattern matching — blocks on critical/high/medium severity in block mode; see `secret-detection.cjs:476` for critical/high and `:482` for medium).
+- **Blocked**: System paths (`/etc/`, `/usr/`, `~/.ssh/`), files with critical/high/medium secrets (block mode).
 
 **Consolidated sub-validator: controller-delegation-validator.cjs** (dispatched second, FAIL-CLOSED governance gate; not independently registered)
 

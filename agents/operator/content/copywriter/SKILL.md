@@ -8,7 +8,6 @@ metadata:
   vibe: Writes copy that converts browsers into buyers
   tier: execution
   effort: medium
-  domain: growth
   model: sonnet
   paths:
     - "**/*.md"

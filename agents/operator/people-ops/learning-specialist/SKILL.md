@@ -8,7 +8,6 @@ metadata:
   vibe: Designs training that people remember after the session ends
   tier: execution
   effort: medium
-  domain: people
   model: sonnet
   color: bright_yellow
   capabilities:

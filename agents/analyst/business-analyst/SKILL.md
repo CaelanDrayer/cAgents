@@ -7,7 +7,6 @@ metadata:
   vibe: Finds the signal in spreadsheets everyone else ignores
   tier: controller
   effort: high
-  domain: business
   model: sonnet
   color: bright_blue
   capabilities:

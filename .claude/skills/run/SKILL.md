@@ -28,7 +28,7 @@ You are the **event-driven pipeline engine** that executes a state machine loop,
 
 /run is a pipeline engine. It spawns agents (orchestrator, planner, controller, validator) and reads their outputs. It does NOT do their work. Even for "simple" tasks, you MUST spawn a controller agent who spawns execution agents. The whole point of this plugin is delegation to specialized agents. If you do the work yourself, you defeat the entire purpose.
 
-**What you do**: Parse, plan, spawn agents, read events, route revisions, report results.
+**What you do**: Parse, plan, spawn agents, read agent output files, route revisions, report results.
 **What you NEVER do**: Write code, edit files, create content, answer domain questions, explore the codebase for implementation purposes.
 
 See @.claude/rules/core/delegation.md for the canonical Rationalization Kill List and the full delegation contract. If you catch yourself reasoning toward any phrase in that list, STOP — you are rationalizing a violation. Delegate.
@@ -44,7 +44,7 @@ INIT -> ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED
 | Phase | Level | Agents | Output |
 |-------|-------|--------|--------|
 | Enrichment | 1 | orchestrator, planner (decomposition inline) | enriched_context.yaml, plan.yaml, work_items.yaml |
-| Coordination | 1 + 2 | controller (level 1) -> executor + reviewer (level 2, max 3 rounds) | coordination_log.yaml |
+| Coordination | 1 + 2 | controller (level 1) -> executor + reviewer (level 2, max 2 rounds, LP-27) | coordination_log.yaml |
 | Validation | 1 | validator | validation_report.yaml (PASS/FAIL/REVISE) |
 
 Pipeline-level revision loop: max 3 cycles total (lowered from 5 in v12.0.0). v12.0.0 collapse: task-decomposer and prompt-engineer absorbed into planner; controllers fall back to standard delegation prompts.
@@ -108,7 +108,7 @@ See @reference/flags.md for the complete flag reference with defaults and exampl
 
 **ACTION 0**: Check `process.env.CAGENTS_SESSION_ID`. If set, use it verbatim as SESSION_ID. If SESSION_DIR exists, treat as RESUME. Otherwise auto-generate.
 
-**ACTION 1**: Generate SESSION_ID, mkdir SESSION_DIR with `workflow/events/` and `outputs/` subdirs, write `instruction.yaml`, `status.yaml`, and self-register as root agent in `workflow/agent_tree.yaml`.
+**ACTION 1**: Generate SESSION_ID, mkdir SESSION_DIR with `workflow/` and `outputs/` subdirs, write `instruction.yaml`, `status.yaml`, and self-register as root agent in `workflow/agent_tree.yaml`. (v12.6.0: `workflow/events/` is no longer created — primary output files are the canonical state-advancement signal.)
 
 `{ISO_TIMESTAMP}` MUST be the real current time. NEVER fabricate timestamps like `T00:00:00Z`. Note: /run uses the `pipeline_state` field (not `phase`). See @reference/session-schema.md for the canonical session YAML contract.
 
@@ -288,7 +288,7 @@ If `--dry-run` with `--team`: Display plan summary and team composition, then ST
 | Always write execution_summary.yaml | Reviewer (level 2, via controller): acceptance criteria review |
 | Call TaskCreate/TaskUpdate at every transition | |
 | Spawn pipeline agents via Agent tool | |
-| Read completion events, handle revision routing | |
+| Read agent output files, handle revision routing | |
 | Validate final state, report results | |
 
 See @reference/delegation-workaround.md for notes on the Task vs Agent tool naming.
@@ -297,15 +297,15 @@ See @reference/delegation-workaround.md for notes on the Task vs Agent tool nami
 
 If an agent fails or returns incomplete:
 1. Check for partial results in session workflow/
-2. Check for completion event in workflow/events/
-3. If no event: retry agent once with reduced scope
+2. Check for the agent's primary output file (enriched_context.yaml / plan.yaml / coordination_log.yaml / validation_report.yaml)
+3. If no output: retry agent once with reduced scope
 4. If retry fails: ensure `workflow/recovery_state.yaml` exists (written by `stop-failure-handler.cjs`), suggest `--resume {SESSION_ID}`
 
 If context is exhausted mid-workflow:
 1. Session state is preserved in cagents-memory/sessions/
 2. pre-compact-save hook creates waypoints automatically
 3. User can resume with `/run --resume {SESSION_ID}`
-4. Resume detects completed states from events/ and skips them
+4. Resume detects completed states from status.yaml state_history and primary output files, and skips them
 
 ## Configuration
 

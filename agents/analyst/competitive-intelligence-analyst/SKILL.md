@@ -7,7 +7,6 @@ metadata:
   vibe: Knows what competitors are doing before they announce it
   tier: controller
   effort: high
-  domain: shared
   model: sonnet
   color: bright_white
   capabilities:

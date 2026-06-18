@@ -7,7 +7,6 @@ metadata:
   vibe: Sets the engineering vision and clears the path to get there
   tier: controller
   effort: high
-  domain: engineering
   model: opusplan
   color: bright_cyan
   capabilities:

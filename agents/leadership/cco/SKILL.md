@@ -7,7 +7,6 @@ metadata:
   vibe: "Sets the creative standard that defines the company's voice"
   tier: controller
   effort: high
-  domain: leadership
   model: opusplan
   color: bright_yellow
   capabilities:

@@ -6,7 +6,6 @@ description: "Assembles final coordination_log.yaml from on-disk artifacts (task
 metadata:
   version: "1.0.0"
   tier: execution
-  domain: engineering
   model: sonnet
   color: bright_cyan
   vibe: "Stitches the wave artifacts into one final log so the lead never re-reads them"

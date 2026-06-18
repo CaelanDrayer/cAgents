@@ -7,7 +7,6 @@ metadata:
   vibe: Tracks every task in CSV so nothing falls through the cracks
   tier: infrastructure
   effort: high
-  domain: core
   model: opus
   color: bright_white
   capabilities:

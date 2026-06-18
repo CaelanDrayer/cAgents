@@ -7,7 +7,6 @@ metadata:
   vibe: Thinks three moves ahead so the company only needs one
   tier: controller
   effort: high
-  domain: business
   model: sonnet
   color: bright_blue
   capabilities:

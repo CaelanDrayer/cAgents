@@ -7,7 +7,6 @@ metadata:
   vibe: Sees the competitive landscape three moves ahead
   tier: controller
   effort: high
-  domain: leadership
   model: opusplan
   color: bright_yellow
   capabilities:

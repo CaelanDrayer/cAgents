@@ -7,7 +7,6 @@ metadata:
   vibe: Builds worlds with rules so consistent you could live in them
   tier: execution
   effort: medium
-  domain: creative
   model: opus
   color: bright_magenta
   capabilities:

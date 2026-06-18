@@ -8,7 +8,6 @@ metadata:
   vibe: Writes the code that junior devs learn from for years
   tier: execution
   effort: medium
-  domain: engineering
   model: opus
   color: bright_green
   capabilities:

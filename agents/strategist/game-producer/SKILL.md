@@ -7,7 +7,6 @@ metadata:
   vibe: "Ships games on time without shipping the team's sanity"
   tier: controller
   effort: high
-  domain: business
   model: opusplan
   color: bright_white
   capabilities:

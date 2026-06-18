@@ -8,7 +8,6 @@ metadata:
   vibe: Builds the engine that makes the game run at 60fps
   tier: execution
   effort: medium
-  domain: engineering
   model: sonnet
   color: bright_blue
   capabilities:

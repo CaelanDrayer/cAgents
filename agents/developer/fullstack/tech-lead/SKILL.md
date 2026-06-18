@@ -10,7 +10,6 @@ metadata:
   vibe: "Sets technical direction and unblocks the team before they're stuck"
   tier: controller
   effort: high
-  domain: engineering
   model: opusplan
   color: bright_magenta
   capabilities:

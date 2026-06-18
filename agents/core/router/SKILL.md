@@ -7,7 +7,6 @@ metadata:
   vibe: "Sends every request to exactly the right agent, every time"
   tier: infrastructure
   effort: high
-  domain: core
   model: opus
   color: bright_cyan
   capabilities:

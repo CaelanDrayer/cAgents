@@ -8,7 +8,6 @@ metadata:
   vibe: "Builds interfaces that feel inevitable, not engineered"
   tier: execution
   effort: medium
-  domain: engineering
   model: sonnet
   paths:
     - "**/*.tsx"

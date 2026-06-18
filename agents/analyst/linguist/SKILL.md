@@ -4,9 +4,9 @@ description: "Analyzes language structure across phonology, morphology, syntax, 
 model: sonnet
 color: bright_white
 vibe: "Language is the fossil record of thought"
-tier: execution
 archetype: analyst
 metadata:
+  tier: execution
   author: cagents
   version: "11.0.0"
   user-invocable: "false"

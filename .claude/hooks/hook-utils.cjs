@@ -878,9 +878,18 @@ function dedupGuard(hookName, input) {
   try {
     const crypto = require('crypto');
     const os = require('os');
-    // Key on hook name + first 200 chars of stringified input (captures tool_name, session_id, etc.)
-    const inputSnippet = JSON.stringify(input).slice(0, 200);
-    const hash = crypto.createHash('md5').update(hookName + inputSnippet).digest('hex').slice(0, 12);
+    // H6 (v12.20.0): key on a hash of the FULL stringified input, not a 200-char
+    // prefix. The previous `JSON.stringify(input).slice(0, 200)` collided two
+    // genuinely-different invocations whose first ~200 chars matched — e.g. two
+    // Writes to the same long file_path that differ only in their (later)
+    // `content` field, or two payloads sharing a long leading session_id/path.
+    // On collision the SECOND invocation was treated as a duplicate and skipped,
+    // bypassing the security gates (secret-detection, controller-delegation). A
+    // full-input SHA-1 dedups ONLY truly-identical payloads, which is the intended
+    // plugin+project double-load case. The 2s window and double-load intent are
+    // unchanged.
+    const fullInput = JSON.stringify(input);
+    const hash = crypto.createHash('sha1').update(hookName + ' ' + fullInput).digest('hex').slice(0, 16);
     const dedupFile = path.join(os.tmpdir(), `cagents-dedup-${hookName}-${hash}`);
 
     // Exclusive create: fails with EEXIST if another invocation already created it

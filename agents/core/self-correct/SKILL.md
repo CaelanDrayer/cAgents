@@ -7,7 +7,6 @@ metadata:
   vibe: Fixes what the validators flagged before anyone has to ask
   tier: infrastructure
   effort: high
-  domain: core
   model: opus
   color: bright_magenta
   capabilities:

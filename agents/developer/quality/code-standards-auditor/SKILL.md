@@ -8,7 +8,6 @@ metadata:
   vibe: Enforces the standards that keep the codebase sane at scale
   tier: support
   effort: low
-  domain: engineering
   model: haiku
   color: bright_yellow
   capabilities:

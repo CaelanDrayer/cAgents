@@ -7,7 +7,6 @@ metadata:
   vibe: Wraps any controller in team-lead armor for parallel execution
   tier: infrastructure
   effort: high
-  domain: core
   model: opus
   color: bright_yellow
   capabilities:

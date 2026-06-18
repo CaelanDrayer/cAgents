@@ -3,10 +3,10 @@ name: academic-researcher
 description: "Academic literature review, research design, methodology selection, academic writing support, and grant proposal development. Use for scholars, graduate students, and research teams."
 model: sonnet
 vibe: "Turns a vague research question into a fundable, publishable study."
-tier: execution
 archetype: advisor
 branch: education
 metadata:
+  tier: execution
   author: cagents
   version: "1.0.0"
 capabilities:

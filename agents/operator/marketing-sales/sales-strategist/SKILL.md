@@ -8,7 +8,6 @@ metadata:
   vibe: Designs the sales playbook that turns reps into closers
   tier: controller
   effort: high
-  domain: growth
   model: sonnet
   color: bright_green
   capabilities:

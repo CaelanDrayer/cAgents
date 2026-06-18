@@ -8,7 +8,6 @@ metadata:
   vibe: "Keeps databases fast, safe, and ready for whatever you throw at them"
   tier: execution
   effort: medium
-  domain: engineering
   model: sonnet
   color: bright_cyan
   capabilities:

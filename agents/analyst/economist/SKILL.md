@@ -4,9 +4,9 @@ description: "Applies macro and microeconomic theory, behavioral economics, and 
 model: sonnet
 color: bright_white
 vibe: "Every incentive has a shadow — find it"
-tier: execution
 archetype: analyst
 metadata:
+  tier: execution
   author: cagents
   version: "11.0.0"
   user-invocable: "false"

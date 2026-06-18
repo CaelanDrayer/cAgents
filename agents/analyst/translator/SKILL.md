@@ -4,9 +4,9 @@ description: "Provides professional translation, localization, and cultural adap
 model: sonnet
 color: bright_white
 vibe: "Every word carries a world — translate both"
-tier: execution
 archetype: analyst
 metadata:
+  tier: execution
   author: cagents
   version: "11.0.0"
   user-invocable: "false"

@@ -23,7 +23,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { existsSync, copyFileSync, readFileSync, writeFileSync, unlinkSync, mkdtempSync } from 'fs';
+import { existsSync, copyFileSync, readFileSync, writeFileSync, unlinkSync, mkdtempSync, cpSync, rmSync, appendFileSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
 import { tmpdir } from 'os';
@@ -102,6 +102,71 @@ describe('P1-5: validate-counts.sh enforces doc-vs-disk alignment', () => {
     expect(output, 'mismatch output should mention CLAUDE.md or the count').toMatch(
       /CLAUDE\.md|141|999|agent/i
     );
+  });
+
+  it('Check 12: flags a STALE CURRENT agent total in a docs/ live section, but not historical mentions', () => {
+    // T4 (action-report): Check 12 is a docs/ live-section absence check that
+    // generalizes the Check 2b README pattern. It must catch a stale current
+    // total ("144 agents across 9 ...") while leaving legitimate historical
+    // mentions ("consolidation from 144", "240 -> 144 agents") untouched.
+    //
+    // Race-free like the CLAUDE.md mutation test: copy docs/ to a temp dir,
+    // mutate ONLY the copy, and point Check 12 at it via the new
+    // CAGENTS_VALIDATE_COUNTS_DOCS_DIR override. The real docs/ is never touched.
+    const tmpDir = mkdtempSync(join(tmpdir(), 'doc-counts-check12-'));
+    const tmpDocs = join(tmpDir, 'docs');
+    cpSync(join(REPO_ROOT, 'docs'), tmpDocs, { recursive: true });
+
+    // Inject a STALE CURRENT phrasing (should be flagged) and a HISTORICAL
+    // phrasing (must NOT be flagged) into a live doc file.
+    const target = join(tmpDocs, 'GETTING_STARTED.md');
+    appendFileSync(
+      target,
+      '\n\nThe system ships 144 agents across 9 builder-role archetypes today.\n' +
+        'Historical: consolidation from 144 agents; 240 -> 144 agents in v12.4.0; was 144 post-v12.4.0.\n'
+    );
+
+    let exitCode = 0;
+    let output = '';
+    try {
+      execSync(`bash ${SCRIPT}`, {
+        cwd: REPO_ROOT,
+        stdio: 'pipe',
+        env: { ...process.env, CAGENTS_VALIDATE_COUNTS_DOCS_DIR: tmpDocs },
+      });
+    } catch (err) {
+      exitCode = err.status;
+      output = (err.stdout?.toString() || '') + (err.stderr?.toString() || '');
+    } finally {
+      try { rmSync(tmpDir, { recursive: true, force: true }); } catch {}
+    }
+
+    expect(exitCode, 'Check 12 should FAIL (exit 1) on stale current total').toBe(1);
+    expect(output, 'mismatch output should cite the stale 144 current-total phrase').toMatch(
+      /144 .*agents across 9|current-total absence check/i
+    );
+    // The historical-only phrasings must not themselves be reported: the single
+    // flagged phrase is the "144 agents across 9" current-total. ("from 144",
+    // "240 -> 144 agents", "was 144" never match the current-total anchors.)
+    const flaggedLines = output.split('\n').filter((l) => /MISMATCH:.*current-total absence check/.test(l));
+    expect(flaggedLines.length, 'exactly one current-total mismatch flagged').toBe(1);
+  });
+
+  it('exits 0 with the docs-dir override pointed at the real (clean) docs/', () => {
+    // Sanity: the override path itself does not introduce a regression when the
+    // scanned docs/ is the clean tree.
+    let exitCode = 0;
+    try {
+      execSync(`bash ${SCRIPT}`, {
+        cwd: REPO_ROOT,
+        stdio: 'pipe',
+        env: { ...process.env, CAGENTS_VALIDATE_COUNTS_DOCS_DIR: join(REPO_ROOT, 'docs') },
+      });
+    } catch (err) {
+      exitCode = err.status;
+      console.error('validate-counts.sh stderr:', err.stderr?.toString());
+    }
+    expect(exitCode, 'clean docs/ via override should still exit 0').toBe(0);
   });
 
   it('derives counts from disk (script reports active agent count from plugin.json)', () => {

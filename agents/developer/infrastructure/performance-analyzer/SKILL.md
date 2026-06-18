@@ -8,7 +8,6 @@ metadata:
   vibe: Finds the bottleneck hiding in the hot path
   tier: support
   effort: low
-  domain: engineering
   model: haiku
   color: bright_yellow
   capabilities:

@@ -8,7 +8,6 @@ metadata:
   vibe: Runs infrastructure like code and deploys like clockwork
   tier: controller
   effort: high
-  domain: engineering
   model: sonnet
   color: bright_magenta
   capabilities:

@@ -97,6 +97,43 @@ const ALLOWED_PATTERNS = [
   /status\.yaml/, /agent_tree/, /\.md$/, /\.yaml$/, /\.yml$/
 ];
 
+// H1 (v12.20.0): entry-scoped active-controller detection. Parses agent_tree.yaml
+// line-by-line so the stopped-status determination NEVER crosses an agent entry
+// boundary (the previous `cagents_type:...[\s\S]*?stopped_at:\s*null` regex did,
+// causing false-pos/false-neg HARD-DENYs). An entry's `cagents_type:` line opens a
+// new logical entry; a `stopped_at:` line with a real (non-null, non-empty) value
+// marks THAT entry stopped. An entry is an ACTIVE controller when its own
+// cagents_type is a controller AND its own stopped_at is absent or null. Returns the
+// bare controller name (last active one in document order) or null. Also matches the
+// legacy `agent_type:` field as a fallback for old sessions.
+function findActiveController(treeContent) {
+  if (!treeContent) return null;
+  let active = null;
+  let currentBare = null;
+  let currentStopped = false;
+  const flush = () => {
+    if (currentBare && !currentStopped && CONTROLLER_TYPES.includes(currentBare)) {
+      active = currentBare;
+    }
+  };
+  for (const line of treeContent.split('\n')) {
+    const tMatch = line.match(/^\s*-?\s*(?:cagents_type|agent_type)\s*:\s*["']?cagents:([a-zA-Z0-9_\-]+)["']?\s*$/);
+    if (tMatch) {
+      flush(); // close out the previous entry before starting a new one
+      currentBare = tMatch[1];
+      currentStopped = false;
+      continue;
+    }
+    const sMatch = line.match(/^\s*stopped_at\s*:\s*(.*)$/);
+    if (sMatch) {
+      const val = sMatch[1].trim().replace(/^["']|["']$/g, '');
+      if (val && val !== 'null' && val !== '~') currentStopped = true;
+    }
+  }
+  flush(); // close out the final entry
+  return active;
+}
+
 // Pure handler (single source of truth). Exported so the D1b Write|Edit dispatcher
 // (write-edit-dispatch.cjs) can run this GOVERNANCE DENY GATE in-process. The
 // dispatcher wraps this call in its own try/catch and FAILS CLOSED (deny) on throw.
@@ -129,22 +166,40 @@ async function handler(input) {
   // direct user edits to src/, services/, etc. This closes the footgun where a
   // default-on `block` mode would deny the user's own legitimate edits outside
   // any cAgents workflow.
-  const sessionDir = findActiveSession(input.session_id);
-  if (!sessionDir) return null;
+  let sessionDir = findActiveSession(input.session_id);
+  if (!sessionDir) {
+    // H3 (v12.20.0): `input.session_id` is an SDK transcript UUID and
+    // CAGENTS_ACTIVE_SESSION may not propagate to this hook subprocess, so the
+    // deterministic chain returns null. Without a fallback the GOVERNANCE gate
+    // would SILENTLY FAIL-OPEN: a controller's illegal write to src/ (etc.) would
+    // slip through unchecked because the agent_tree active-controller probe below
+    // never runs. Fall back to the documented opt-in legacy heuristic, which
+    // resolves the most-recent session with a non-terminal status.yaml, so the
+    // active-controller check can still fire. If no active session exists (or the
+    // resolved session has no active controller), this remains a no-op — correct
+    // for an ordinary direct user edit outside any cAgents workflow.
+    sessionDir = findActiveSession({ sessionHint: input.session_id, fallbackHeuristic: true });
+    if (!sessionDir) return null;
+    console.error(`[ControllerDelegationValidator] findActiveSession(null) — resolved via fallbackHeuristic: ${path.basename(sessionDir)}`);
+  }
 
   const agentTreePath = path.join(sessionDir, 'workflow', 'agent_tree.yaml');
   const agentTreeContent = safeRead(agentTreePath);
   if (!agentTreeContent) return null;
 
   // Detect an active controller-type agent (spawned but not stopped).
-  let activeControllerName = null;
-  for (const ct of CONTROLLER_TYPES) {
-    const pattern = new RegExp(`cagents_type:\\s*["']?cagents:${ct}["']?[\\s\\S]*?stopped_at:\\s*null`, 'g');
-    if (pattern.test(agentTreeContent)) {
-      activeControllerName = ct;
-      break;
-    }
-  }
+  // H1 (v12.20.0): the previous `cagents_type:...[\s\S]*?stopped_at:\s*null`
+  // regex crossed YAML entry boundaries — its non-greedy `[\s\S]*?` would scan
+  // PAST a controller's own entry into LATER entries to find a `stopped_at: null`,
+  // producing both false-positives (a STOPPED controller wrongly flagged active
+  // because a later agent is unstopped) and false-negatives (an active controller
+  // whose entry simply OMITS stopped_at never matches `stopped_at: null`). Both
+  // can wrongly HARD-DENY a legitimate execution-agent src/ write. Fix: scope the
+  // determination to a SINGLE agent_tree entry via a line-based parse (mirrors the
+  // entry-boundary approach in subagent-tracker.cjs). An entry is an ACTIVE
+  // controller when its OWN cagents_type is a controller AND its OWN stopped_at is
+  // absent or null.
+  const activeControllerName = findActiveController(agentTreeContent);
 
   // No active controller → not a delegation violation. The write is either a
   // direct user edit or an execution-agent write, both of which are allowed.
@@ -194,4 +249,4 @@ if (!process.env.CAGENTS_DISPATCH_IMPORT) {
   createHook('ControllerDelegationValidator', handler);
 }
 
-module.exports = { handler, getEnforcementMode, CONTROLLER_TYPES, HARD_DENY_PATTERNS };
+module.exports = { handler, getEnforcementMode, findActiveController, CONTROLLER_TYPES, HARD_DENY_PATTERNS };

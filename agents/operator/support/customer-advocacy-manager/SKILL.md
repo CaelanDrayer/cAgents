@@ -8,7 +8,6 @@ metadata:
   vibe: Gives the customer a seat at every internal table
   tier: controller
   effort: high
-  domain: service
   model: sonnet
   color: bright_red
   capabilities:

@@ -8,7 +8,6 @@ metadata:
   vibe: Runs the machine that runs the business
   tier: controller
   effort: high
-  domain: business
   model: sonnet
   color: bright_blue
   capabilities:

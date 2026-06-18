@@ -8,7 +8,6 @@ metadata:
   vibe: Designs systems that are boring to operate and a joy to extend
   tier: controller
   effort: high
-  domain: engineering
   model: opusplan
   modes: [default, review]
   absorbed_in_v12: [architecture-reviewer]

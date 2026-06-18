@@ -108,7 +108,7 @@ Use when the design decomposes into 3+ parallel work items.
 
 ### The 15 Domains
 
-cAgents organizes 243 agents across 15 domains. When you use `/run` or `/team`, the system automatically detects which domain to route to.
+cAgents organizes 141 agents across 15 domains. When you use `/run` or `/team`, the system automatically detects which domain to route to.
 
 #### Engineering (31 agents)
 
@@ -266,11 +266,11 @@ Every request is classified into a complexity tier, which determines how many ag
 
 ## Topic: agents
 
-### The 243 Agents and How They Are Organized
+### The 141 Agents and How They Are Organized
 
-cAgents has 243 specialized agents organized in a 4-tier hierarchy:
+cAgents has 141 specialized agents organized in a 4-tier hierarchy:
 
-#### Tier 1: Core Infrastructure (17 agents)
+#### Tier 1: Core Infrastructure (15 agents)
 
 These are the backbone -- they manage workflows, not tasks:
 - **trigger** -- Entry point, domain detection

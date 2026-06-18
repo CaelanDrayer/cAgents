@@ -8,7 +8,6 @@ metadata:
   vibe: Finds the bugs before your users do -- every edge case is a story
   tier: controller
   effort: high
-  domain: engineering
   model: sonnet
   paths:
     - "**/*.test.*"

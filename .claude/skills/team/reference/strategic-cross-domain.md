@@ -10,7 +10,7 @@ For each domain in `domain_assignments`, invoke `/team` via Skill **sequentially
 
 ```bash
 for domain in {domain_keys}:
-  mkdir -p "${SESSION_DIR}/${domain}/workflow/events"
+  mkdir -p "${SESSION_DIR}/${domain}/workflow"   # v12.6.0: do NOT create workflow/events/
   mkdir -p "${SESSION_DIR}/${domain}/outputs"
   # Copy strategic_brief.yaml so /team can read it
   cp "${SESSION_DIR}/strategic_brief.yaml" "${SESSION_DIR}/${domain}/strategic_brief.yaml"
@@ -88,17 +88,7 @@ After each domain completes, check if its outputs are needed by subsequent domai
 - Verify cross_domain_dependencies marked as `blocks` are satisfied
 - If a dependency is not satisfied, adjust the next domain's scope or escalate
 
-Update status to EXECUTED when all domains complete.
-
-Write state transition event to `workflow/events/EVT-{N}.yaml`:
-```yaml
-event_id: EVT-{N}
-type: state_transition
-state: executed
-agent: cagents:ceo
-timestamp: "{ISO_TIMESTAMP}"
-outputs_produced: [{domain_key}/outputs/* for each domain]
-```
+Update status to EXECUTED when all domains complete. (v12.6.0: `workflow/events/EVT-{N}.yaml` emission removed — the `status.yaml` `pipeline_state` update plus each domain's `{domain_key}/outputs/*` are the canonical state-transition signal.)
 
 ## Step 8: Integration (EXECUTED -> INTEGRATED)
 
@@ -129,17 +119,7 @@ remaining_issues:
   - "{issue if any}"
 ```
 
-Update status to INTEGRATED.
-
-Write state transition event to `workflow/events/EVT-{N}.yaml`:
-```yaml
-event_id: EVT-{N}
-type: state_transition
-state: integrated
-agent: cagents:ceo
-timestamp: "{ISO_TIMESTAMP}"
-outputs_produced: [integration_report.yaml]
-```
+Update status to INTEGRATED. (v12.6.0: `workflow/events/EVT-{N}.yaml` emission removed — the `status.yaml` `pipeline_state` update plus the `integration_report.yaml` output are the canonical state-transition signal.)
 
 ## Communication Model
 

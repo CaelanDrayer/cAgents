@@ -8,7 +8,6 @@ metadata:
   vibe: "Optimizes support workflows so agents spend time helping, not searching"
   tier: controller
   effort: high
-  domain: service
   model: sonnet
   color: bright_red
   capabilities:

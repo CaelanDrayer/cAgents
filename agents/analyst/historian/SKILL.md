@@ -4,9 +4,9 @@ description: "Conducts historical research, evaluates primary and secondary sour
 model: sonnet
 color: bright_white
 vibe: "The past is never dead — it's not even past"
-tier: execution
 archetype: analyst
 metadata:
+  tier: execution
   author: cagents
   version: "11.0.0"
   user-invocable: "false"

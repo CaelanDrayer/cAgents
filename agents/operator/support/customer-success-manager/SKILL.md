@@ -8,7 +8,6 @@ metadata:
   vibe: Turns customers into advocates before they know they need help
   tier: controller
   effort: high
-  domain: service
   model: sonnet
   color: bright_red
   capabilities:

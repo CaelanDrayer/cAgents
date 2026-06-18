@@ -8,7 +8,6 @@ metadata:
   vibe: "Guards the brand voice like it's the company's reputation"
   tier: execution
   effort: medium
-  domain: growth
   model: sonnet
   color: bright_green
   capabilities:

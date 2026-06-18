@@ -8,7 +8,6 @@ metadata:
   vibe: Creates partnerships where both sides win bigger together
   tier: execution
   effort: medium
-  domain: growth
   model: sonnet
   color: bright_green
   absorbed_in_v12:

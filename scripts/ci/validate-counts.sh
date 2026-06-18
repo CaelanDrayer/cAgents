@@ -143,7 +143,7 @@ if [ -n "$stale_totals" ]; then
 fi
 
 # Check 3: .claude/settings.json $comment field hook counts.
-# Pattern: "31 .cjs files = 28 unique registered hooks ... 17 event types"
+# Pattern: "32 .cjs files = 26 unique registered hooks ... 18 event types"
 SETTINGS_COMMENT=$(jq -r '."$comment" // empty' .claude/settings.json)
 if [ -n "$SETTINGS_COMMENT" ]; then
   if ! echo "$SETTINGS_COMMENT" | grep -qE "\b${HOOK_FILES}\b.*\b${REGISTERED_HOOKS}\b"; then
@@ -152,7 +152,7 @@ if [ -n "$SETTINGS_COMMENT" ]; then
   fi
 fi
 
-# Check 4: .claude/rules/core/hooks.md mentions both 31 .cjs and 28 unique.
+# Check 4: .claude/rules/core/hooks.md mentions both 32 .cjs and 26 unique.
 if ! grep -qE "${HOOK_FILES} .cjs files? .*${REGISTERED_HOOKS} unique" .claude/rules/core/hooks.md; then
   # Fallback: looser check
   if ! grep -qE "\b${HOOK_FILES}\b" .claude/rules/core/hooks.md \
@@ -242,6 +242,40 @@ if ! grep -qE "Pre-Execution[^(]*\(${PREEXEC_CHECKS} checks\)" .claude/rules/cor
   actual=$(grep -oE "Pre-Execution[^(]*\([0-9]+ checks\)" .claude/rules/core/controllers.md | head -1)
   report_mismatch ".claude/rules/core/controllers.md" "${actual:-Pre-Execution (N checks)}" \
     "Pre-Execution ($PREEXEC_CHECKS checks)"
+fi
+
+# Check 12 (T4, action-report): docs/ live-section ABSENCE check for a STALE
+# CURRENT agent total. Checks 7/8 above are presence-only and scoped to two
+# specific docs, so a stale current count ("144 agents") in another docs/ live
+# section slipped through while CI stayed green. This generalizes the Check 2b
+# README absence pattern to docs/.
+#
+# The canonical ways docs state the LIVE catalog size are:
+#   - "<N> [specialized ]agents across 9 [builder-role ]archetypes"
+#   - "Total: <N> agents"
+# Legitimate HISTORICAL mentions use different phrasings that these anchors
+# never match ("consolidation from 144", "240 -> 144 agents", "was 144
+# post-v12.4.0", "~95 of 144 agents"), so history is not flagged. Release-notes,
+# changelog, and migration files are excluded wholesale (they legitimately cite
+# past totals). FAIL if any current-total phrasing cites a number other than
+# ACTIVE_AGENTS.
+#
+# Test-friendly override: CAGENTS_VALIDATE_COUNTS_DOCS_DIR lets the
+# doc-counts-match-disk.test.js mutation test point Check 12 at a temp-dir copy
+# of docs/, eliminating any in-place mutation of the real tree (mirrors the
+# CAGENTS_VALIDATE_COUNTS_CLAUDE_MD pattern from Check 1). Production callers do
+# NOT set it; the default scan path (docs/ in REPO_ROOT) is unchanged.
+DOCS_DIR="${CAGENTS_VALIDATE_COUNTS_DOCS_DIR:-docs}"
+docs_stale_current="$(grep -rnE "([0-9]+ (specialized )?agents across 9|Total: [0-9]+ agents)" "$DOCS_DIR/" 2>/dev/null \
+  | grep -vE "(CHANGELOG|RELEASE_NOTES|MIGRATION|migration/)" \
+  | grep -oE "([0-9]+ (specialized )?agents across 9|Total: [0-9]+ agents)" \
+  | grep -vE "(^${ACTIVE_AGENTS} |: ${ACTIVE_AGENTS} )" || true)"
+if [ -n "$docs_stale_current" ]; then
+  while IFS= read -r phrase; do
+    [ -z "$phrase" ] && continue
+    report_mismatch "docs/ (live section, current-total absence check)" "$phrase" \
+      "$ACTIVE_AGENTS (agent total)"
+  done <<< "$docs_stale_current"
 fi
 
 # ---- Result ----------------------------------------------------------------

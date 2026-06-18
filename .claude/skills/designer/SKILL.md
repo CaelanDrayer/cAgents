@@ -81,7 +81,7 @@ If `--iterate <session_id>` is provided, load the completed design from the prev
 3. Scan cagents-memory/sessions/ for dirs matching designer_*_{YYMMDD}_* to find highest NNN, increment by 1 (start at 001)
 4. Compose: SESSION_ID="designer_{slug}_{YYMMDD}_{NNN}"
 5. SESSION_DIR="cagents-memory/sessions/${SESSION_ID}"
-6. mkdir -p "${SESSION_DIR}/workflow/events" "${SESSION_DIR}/outputs" "${SESSION_DIR}/question_prep"
+6. mkdir -p "${SESSION_DIR}/workflow" "${SESSION_DIR}/outputs" "${SESSION_DIR}/question_prep"
 7. Write self-registration to `${SESSION_DIR}/workflow/agent_tree.yaml` (designer at depth 0).
 ```
 
@@ -163,7 +163,7 @@ After the build choice: write `phase: completed` to `status.yaml` (terminal phas
 
 ## Build Integration
 
-When user selects a build option, invoke the corresponding skill via the Skill tool: `run`, `team`, or `org` with `args: "implement design from ${session_id}"`. When user selects "Refine specific area", ask which phase/topic via AskUserQuestion and jump back to that phase with existing context preserved. When user selects "Endless refinement loop", enter the endless refinement cycle: present current design summary, ask which area to refine via AskUserQuestion, re-enter targeted Refinement for that area (with a fresh research agent), update the design document incrementally, and loop until the user selects "I'm satisfied — show build options".
+When user selects a build option, invoke the corresponding skill via the Skill tool: `run` or `team` with `args: "implement design from ${session_id}"` (append `--strategic` to the `team` args for the cross-domain strategic-mode build path; the legacy `/org` skill was removed in v12.2.0 and absorbed into `/team` strategic mode). When user selects "Refine specific area", ask which phase/topic via AskUserQuestion and jump back to that phase with existing context preserved. When user selects "Endless refinement loop", enter the endless refinement cycle: present current design summary, ask which area to refine via AskUserQuestion, re-enter targeted Refinement for that area (with a fresh research agent), update the design document incrementally, and loop until the user selects "I'm satisfied — show build options".
 
 ## Session State Management
 
@@ -201,7 +201,7 @@ Top-priority rules:
 5. ALWAYS include "Research this for me" defer option on every question
 6. MUST batch 2-4 related questions per AskUserQuestion call
 7. Write files incrementally — never hold full design in memory
-8. ALWAYS offer build options when complete (run, team, org, refine, endless, save)
+8. ALWAYS offer build options when complete (run, team, team --strategic, refine, endless, save)
 
 ## Configuration References
 

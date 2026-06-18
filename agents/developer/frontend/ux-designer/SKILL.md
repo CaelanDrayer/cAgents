@@ -8,7 +8,6 @@ metadata:
   vibe: Designs experiences that feel obvious -- after weeks of iteration
   tier: execution
   effort: medium
-  domain: engineering
   model: sonnet
   color: bright_magenta
   capabilities:

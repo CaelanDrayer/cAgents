@@ -42,7 +42,7 @@ Wait for all Wave 0 (both sub-waves) to complete before proceeding to Wave 1.
 
 **Pre-execution research (optional)**: Before spawning C-suites, the strategic-mode lead MAY spawn lightweight research subagents to gather concrete project facts (codebase analysis, existing patterns, current metrics). Research outputs go to `domain_analyses/research_*.yaml` and are read by C-suite agents during their analysis. This grounds C-suite analysis in real project state rather than instruction-text interpretation alone.
 
-**State at Wave 0 end**: ANALYZED. Write state transition event to `workflow/events/EVT-{N}.yaml`.
+**State at Wave 0 end**: ANALYZED. (v12.6.0: `workflow/events/EVT-{N}.yaml` emission removed — the `status.yaml` `pipeline_state` update plus the `domain_analyses/*.yaml` outputs are the canonical state-transition signal.)
 
 ## Wave 1 — Objection Phase (Strategic Prefix)
 
@@ -207,15 +207,15 @@ cagents-memory/sessions/team_{slug}_{YYMMDD}_{NNN}/
 +-- execution_summary.yaml            # post-COMPLETE
 +-- workflow/
     +-- agent_tree.yaml
-    +-- events/
 ```
+(v12.6.0: `workflow/events/` is no longer created — EVT emission was removed.)
 
 ## Initialization Sequence
 
 When `/team` enters strategic mode, the lead MUST initialize the session directory before any wave work:
 
 1. Generate `SESSION_ID = "team_{slug}_{YYMMDD}_{NNN}"` (standard /team session naming — strategic mode does NOT use a separate `org_*` prefix).
-2. `mkdir -p ${SESSION_DIR}/workflow/events ${SESSION_DIR}/outputs ${SESSION_DIR}/domain_analyses ${SESSION_DIR}/objections`
+2. `mkdir -p ${SESSION_DIR}/workflow ${SESSION_DIR}/outputs ${SESSION_DIR}/domain_analyses ${SESSION_DIR}/objections` (v12.6.0: do NOT create `workflow/events/`)
 3. Write `instruction.yaml` (with `session_type: team`, `strategic_mode: true`).
 4. Write `status.yaml` with `pipeline_state: INIT`.
 5. Write strategic-mode-lead self-registration to `workflow/agent_tree.yaml`.
@@ -260,15 +260,7 @@ Update the strategic-mode lead entry to set:
 - `completion_summary: "Orchestrated {N} domains, {N} C-suite agents, strategic brief + execution"`
 - `duration_seconds: {computed from spawned_at to now}`
 
-Write state transition event:
-```yaml
-event_id: EVT-{N}
-type: state_transition
-state: complete
-agent: team-lead (strategic mode)   # the /team lead loop itself, not a dispatchable cagents: agent
-timestamp: "{ISO_TIMESTAMP}"
-outputs_produced: [integration_report.yaml, execution_summary.yaml]
-```
+Advance `status.yaml` `pipeline_state` to `complete`. (v12.6.0: `workflow/events/EVT-{N}.yaml` emission removed — the `status.yaml` `pipeline_state: complete` update plus the `integration_report.yaml` / `execution_summary.yaml` outputs are the canonical completion signal.)
 
 ### Clean Up Tasks (MANDATORY — Hard Gate Before Stopping)
 

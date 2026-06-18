@@ -8,7 +8,6 @@ metadata:
   vibe: Builds the team that builds the product
   tier: controller
   effort: high
-  domain: people
   model: sonnet
   color: bright_yellow
   capabilities:

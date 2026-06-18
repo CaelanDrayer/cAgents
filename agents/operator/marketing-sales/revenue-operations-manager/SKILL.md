@@ -8,7 +8,6 @@ metadata:
   vibe: "Aligns sales, marketing, and CS into one revenue machine"
   tier: execution
   effort: medium
-  domain: growth
   model: sonnet
   color: bright_green
   capabilities:

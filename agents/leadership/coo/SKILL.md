@@ -7,7 +7,6 @@ metadata:
   vibe: Runs operations so efficiently the CEO can focus on vision
   tier: controller
   effort: high
-  domain: leadership
   model: opusplan
   color: bright_yellow
   capabilities:

@@ -8,7 +8,6 @@ metadata:
   vibe: "Fills the pipeline and closes the deals"
   tier: execution
   effort: medium
-  domain: growth
   model: sonnet
   color: bright_green
   capabilities:

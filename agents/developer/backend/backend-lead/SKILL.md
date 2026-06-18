@@ -8,7 +8,6 @@ metadata:
   vibe: Runs the backend team like a well-oiled distributed system
   tier: controller
   effort: high
-  domain: engineering
   model: sonnet
   color: bright_green
   capabilities:

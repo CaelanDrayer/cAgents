@@ -7,7 +7,6 @@ metadata:
   vibe: Ships the product roadmap that customers and revenue both love
   tier: controller
   effort: high
-  domain: leadership
   model: opusplan
   color: bright_magenta
   capabilities:

@@ -2,12 +2,12 @@
 name: program-project-manager
 description: "Program and project management including scope definition, timeline creation, resource allocation, cross-project coordination, and milestone tracking. Use when managing projects or coordinating programs."
 color: bright_white
-tier: execution
 archetype: operator
 branch: business-ops
 model: sonnet
 allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 metadata:
+  tier: execution
   version: "1.0.0"
 ---
 

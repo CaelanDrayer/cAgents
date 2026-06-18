@@ -4,9 +4,9 @@ description: "Analyzes policy, comparative political systems, international rela
 model: sonnet
 color: bright_white
 vibe: "Power is always somewhere — follow it"
-tier: execution
 archetype: analyst
 metadata:
+  tier: execution
   author: cagents
   version: "11.0.0"
   user-invocable: "false"

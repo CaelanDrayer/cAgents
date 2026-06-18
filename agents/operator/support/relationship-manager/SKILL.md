@@ -8,7 +8,6 @@ metadata:
   vibe: Builds relationships that turn transactions into partnerships
   tier: controller
   effort: high
-  domain: service
   model: sonnet
   color: bright_red
   capabilities:

@@ -8,7 +8,6 @@ metadata:
   vibe: Documents decisions so nobody can say we never agreed to that
   tier: execution
   effort: medium
-  domain: business
   model: sonnet
   color: bright_white
   capabilities:

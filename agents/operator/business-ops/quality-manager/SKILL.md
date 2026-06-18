@@ -8,7 +8,6 @@ metadata:
   vibe: "Quality isn't a phase -- it's every single decision"
   tier: controller
   effort: high
-  domain: business
   model: sonnet
   color: bright_blue
   capabilities:

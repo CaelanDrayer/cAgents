@@ -3,10 +3,10 @@ name: academic-tutor
 description: "Subject-matter tutoring, concept explanation, problem solving, and exam preparation across all academic disciplines. Use for student support, concept clarification, and study coaching."
 model: sonnet
 vibe: "Makes hard concepts click — one question at a time."
-tier: execution
 archetype: advisor
 branch: education
 metadata:
+  tier: execution
   author: cagents
   version: "1.0.0"
 capabilities:

@@ -43,7 +43,7 @@ cAgents accepts natural-language requests at every skill entry point (`/run "fix
 
 Every prompt that goes to an LLM is checked into the repo. Controller prompts live in `{archetype}/{branch?}/{agent}/SKILL.md`; delegation prompts are assembled by the planner (which absorbed the standalone `prompt-engineer` agent in v12.0.0) or fall back to controller-side templates. No prompts come from a hosted service.
 
-**cAgents implementation**: 144 SKILL.md files (post-v12.4.0 P2 compression from 240); controller prompt-assembly logic in `.claude/rules/core/controllers.md`; planner's prompt-assembly sub-responsibility at `core/planner/SKILL.md`.
+**cAgents implementation**: 141 SKILL.md files (post-v12.7.0 LP-12 + LP-13 consolidation from 144); controller prompt-assembly logic in `.claude/rules/core/controllers.md`; planner's prompt-assembly sub-responsibility at `core/planner/SKILL.md`.
 
 ### Factor 3: Own Your Context Window — PARTIAL
 

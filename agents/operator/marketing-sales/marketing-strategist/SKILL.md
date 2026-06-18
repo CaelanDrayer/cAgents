@@ -8,7 +8,6 @@ metadata:
   vibe: Plans the marketing playbook three quarters ahead — then ships the campaigns
   tier: controller
   effort: high
-  domain: growth
   model: opusplan
   color: bright_green
   capabilities:
