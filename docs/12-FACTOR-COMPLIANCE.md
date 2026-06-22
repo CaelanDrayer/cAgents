@@ -94,9 +94,9 @@ The `/run` state machine is config-driven, not LLM-driven. `cagents-memory/_syst
 
 ### Factor 10: Small, Focused Agents — YES (arguably over-shot)
 
-141 agents across 9 archetypes (post-v12.7.0 LP-12 + LP-13 consolidation from 144; 99 deprecated to `_deprecated/` buckets), each with a single SKILL.md scoped to one role. The `skill-size-monitor.cjs` `PreToolUse` hook warns at 600 lines and blocks at 900 to prevent SKILL.md bloat. The catalog may be over-fragmented for some domains — a future consolidation pass remains on the roadmap (see `CHANGELOG.md` for the v12.0.0/v12.7.0 consolidation pattern, which the next pass would extend) — but the "small, focused" principle is honored.
+57 agents across 9 archetypes — 41 routable + 16 core — each with a single SKILL.md scoped to one role. This is the post-v12.20.0 catalog consolidation from 141: the 84 absorbed agents were collapsed into mode flags rather than separate SKILL.md files, and 0 `_deprecated/` SKILL.md remain on disk. The `skill-size-monitor.cjs` `PreToolUse` hook warns at 600 lines and blocks at 900 to prevent SKILL.md bloat. The catalog may be over-fragmented for some domains — a future consolidation pass remains on the roadmap (see `CHANGELOG.md` for the v12.0.0/v12.7.0 consolidation pattern, which the next pass would extend) — but the "small, focused" principle is honored.
 
-**cAgents implementation**: All 141 SKILL.md files; `.claude/hooks/skill-size-monitor.cjs`.
+**cAgents implementation**: All 57 SKILL.md files; `.claude/hooks/skill-size-monitor.cjs`.
 
 ### Factor 11: Trigger from Anywhere — PARTIAL
 

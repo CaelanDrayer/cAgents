@@ -10,6 +10,40 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.21.0] - 2026-06-22
+
+Comprehensive documentation audit & upgrade (session
+`run_doc-audit-upgrade_260618_001`). Minor bump: docs-only diff across 20
+files, no code/CI/test changes. The audit targeted documentation *drift* —
+hardcoded counts and stale references that fell out of sync with disk reality.
+
+### Fixed
+- **Stale agent counts (DR-1)**: corrected `141 → 57` agents across 12+
+  occurrences and `15 domains → 9 archetypes` across 7 occurrences in the
+  `docs/` corpus and `.claude/skills/helper/` reference tree (the unguarded
+  surfaces — the three CI count-guards already passed on the guarded files).
+- **Stale `_deprecated` count**: `99 → 0` deprecated agents.
+- **Renamed-agent reference (DR-5)**: `engineering-manager → tech-lead` in
+  `docs/CLAUDE.local.md.example`.
+- **Pipeline/table residuals (DR-6)**: `docs/architecture/domains.md`
+  per-archetype table now sums to 57 with an explicit Total row;
+  `docs/MIGRATION_GUIDE.md` comparison table corrected (243 → 57,
+  15-domains → 9-archetypes) and the stale `DECOMPOSED` pipeline state removed
+  (5-state machine).
+- **Freshness (DR-3)**: refreshed 7 stale dated headers (incl.
+  `docs/README.md`) to the current release date.
+
+### Verified
+- All 3 CI guards (`validate-counts.sh`, `validate-agents.sh`,
+  `validate-versions.sh`) exit 0; `npm test` 1456 passed / 0 failed / 33
+  skipped.
+- Cross-references: 170 `@path` refs + 66 relative links, 0 dangling.
+- `DR-2`, `DR-4`, `DR-7`, `DR-8` checked and found already-clean (historical
+  counts version-stamped, removed skills framed as removed, hook arithmetic
+  disk-accurate).
+- Constraints held: docs conform to disk (no code/CI edited to match prose),
+  standalone-MCP contract preserved, MEASURED-vs-ESTIMATE perf honesty intact.
+
 ## [12.20.0] - 2026-06-18
 
 Agent-catalog consolidation: 141 agents → 57 via Hybrid A+B mode mechanism.

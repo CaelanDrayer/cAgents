@@ -160,5 +160,5 @@ cagents-memory/
 ---
 
 **Version**: 10.26.0
-**Last Updated**: 2026-04-15
+**Last Updated**: 2026-06-18
 

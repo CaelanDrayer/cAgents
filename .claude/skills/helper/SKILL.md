@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.20.0"
+  version: "12.21.0"
   argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--all] [--topic <topic>] [--troubleshoot <command>]"
   user-invocable: "true"
   context: "none"
@@ -228,10 +228,10 @@ When the user runs `/helper --topic <topic>`, explain a specific concept.
 Available topics:
 - `flags` -- How flags work across all commands
 - `integration` -- How commands work together (pipelines)
-- `domains` -- The 15 domains (Engineering, Creative, Business, Growth, People, Service, Leadership, Core, Shared, Science, Health, Education, Personal, Arts, Trades)
+- `domains` -- The 9 builder-role archetypes (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership). Two legacy domain dirs (`people/`, `shared/`) survive as routing-config-only overlays.
 - `workflow` -- How the agent orchestration works under the hood
 - `tiers` -- Complexity tiers (2-4) and what they mean
-- `agents` -- The 141 agents and how they are organized
+- `agents` -- The 57 agents and how they are organized
 - `teams` -- How team mode works with tmux/agent teams
 - `sessions` -- Session management, resume, and recovery
 

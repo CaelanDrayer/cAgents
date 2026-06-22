@@ -1,6 +1,6 @@
 # Migration Guide
 
-> **Current cAgents version**: v12.19.0 — 141 agents across 9 builder-role archetypes (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership), 4 in-terminal skills (`/run`, `/team`, `/designer`, `/helper`). V10.x commands `/review`, `/optimize`, `/context`, `/debug` were removed in V11.0; `/improve` was folded into `/run` via the keyword router in v12.1.2; `/org` was removed in v12.2.0 and folded into `/team` strategic mode.
+> **Current cAgents version**: v12.20.0 — 57 agents across 9 builder-role archetypes (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership), 4 in-terminal skills (`/run`, `/team`, `/designer`, `/helper`). V10.x commands `/review`, `/optimize`, `/context`, `/debug` were removed in V11.0; `/improve` was folded into `/run` via the keyword router in v12.1.2; `/org` was removed in v12.2.0 and folded into `/team` strategic mode.
 
 How to move from single-purpose plugins (`feature-dev`, `code-review`) to cAgents v12.x.
 
@@ -8,13 +8,13 @@ How to move from single-purpose plugins (`feature-dev`, `code-review`) to cAgent
 
 ## Why Migrate?
 
-Single-purpose plugins handle one domain with a linear workflow. cAgents handles 15 domains with a config-driven state machine that routes, plans, decomposes, reviews, and revises — automatically.
+Single-purpose plugins handle one domain with a linear workflow. cAgents handles work across 9 builder-role archetypes with a config-driven state machine that routes, plans, decomposes, reviews, and revises — automatically.
 
 | Dimension | feature-dev | code-review | cAgents |
 |-----------|------------|------------|---------|
-| **Agent count** | ~3 | ~3 | 243 |
-| **Domains** | Engineering only | Engineering only | 15 (engineering, creative, business, growth, people, service, leadership, shared, science, health, education, personal, arts, trades, core) |
-| **Workflow** | Linear, single-pass | Linear, single-pass | State machine: INIT → ORCHESTRATED → PLANNED → DECOMPOSED → COORDINATED → VALIDATED |
+| **Agent count** | ~3 | ~3 | 57 |
+| **Archetypes** | Engineering only | Engineering only | 9 builder-role archetypes (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership) |
+| **Workflow** | Linear, single-pass | Linear, single-pass | State machine: INIT → ORCHESTRATED → PLANNED → COORDINATED → VALIDATED |
 | **Revision loops** | None | None | Executor → Reviewer (max 3 rounds per work item), PASS/FAIL/REVISE routing (max 5 cycles) |
 | **Parallel execution** | No | No | N-wave parallel teams with per-wave quality gates (40-60% faster) |
 | **Cross-domain** | No | No | Yes — single command spans engineering + business + creative |

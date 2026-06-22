@@ -25,7 +25,7 @@ Claude Code server: http://localhost:52125
 # Test instruction IDs for local testing
 test_instruction: inst_20260122_001
 test_super_domain: make
-test_controller: engineering-manager
+test_controller: tech-lead
 
 # Test session IDs
 test_run_session: run_20260122_100000

@@ -2,7 +2,7 @@
 
 ## Test Infrastructure
 
-cAgents uses [Vitest](https://vitest.dev/) for testing. 265 tests across 13 test files covering hooks and configuration validation.
+cAgents uses [Vitest](https://vitest.dev/) for testing. 1335+ tests across 157+ test files (159 test files on disk) covering hooks and configuration validation.
 
 ## Test Categories
 

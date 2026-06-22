@@ -1,10 +1,10 @@
 # Domain Structure Standard
 
 **Status**: HISTORICAL (V10.1.0 — describes the pre-v11.1.0 13-domain layout)
-**Last Updated**: 2026-02-28
+**Last Updated**: 2026-06-18
 
 > **Outdated as of v11.1.0**: The 13-domain layout this document describes was replaced by the **9 builder-role archetype tree** in v11.1.0 (canonical since). For the current architecture, see:
-> - [docs/architecture/domains.md](architecture/domains.md) — 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership), 141 agents post-v12.7.0 LP-12 + LP-13 consolidation
+> - [docs/architecture/domains.md](architecture/domains.md) — 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership), 57 agents post-v12.20.0 catalog consolidation
 > - [`.claude/rules/core/skill-format.md`](../.claude/rules/core/skill-format.md) — the v11.1.0+ `archetype:` + `branch:` frontmatter schema (the legacy top-level `domain:` field was REMOVED in v11.1.0 and `validate-agents.sh` rejects it as an error)
 >
 > Two legacy domain dirs (`people/` and `shared/`) survive on disk as routing-config-only overlays; the other 11 were deleted in v12 W4.2 and consolidated into `cagents-memory/_system/config/routing.yaml`. This document is preserved for historical context only.
@@ -72,8 +72,8 @@ Current official business domains:
 | **trades** | Culinary & construction | 5 | trades-coordinator, chef |
 | **core** | Infrastructure | 17 | orchestrator, trigger, universal-* agents |
 
-**Total**: 243 agents across 15 directories (13 business domains + shared + core).
-Sum: 31+30+28+34+17+28+11+12+10+5+5+5+5+5+17 = 243.
+**Total (historical V10.1.0 figure)**: this V10.1.0 layout described 243 agent slots across 15 directories (13 business domains + shared + core). The current canonical structure is **57 agents across 9 builder-role archetypes** (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership) — see [docs/architecture/domains.md](architecture/domains.md). The historical sum below is retained for context only:
+Sum (historical): 31+30+28+34+17+28+11+12+10+5+5+5+5+5+17 = 243.
 
 ---
 
@@ -159,7 +159,7 @@ Base templates live in `shared/config/`:
 
 ## Legacy Directories (Removed)
 
-The v9.x super-domain directories (`make/`, `grow/`, `operate/`, `serve/`) were removed in v10.6.0. Their agents were redistributed into focused business domains during the v10.0.0 restructure. The platform has since expanded to 15 domains (13 business domains + shared + core).
+The v9.x super-domain directories (`make/`, `grow/`, `operate/`, `serve/`) were removed in v10.6.0. Their agents were redistributed into focused business domains during the v10.0.0 restructure. That 15-domain layout was itself superseded in v11.1.0 by the canonical **9 builder-role archetypes** (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership); only the `people/` and `shared/` legacy dirs survive on disk as routing-config-only overlays.
 
 ---
 

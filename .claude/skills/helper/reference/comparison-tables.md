@@ -17,9 +17,9 @@ Side-by-side comparison matrices for `/helper --compare`.
 | **Duration** | Varies (5min - hours) | 15-45 minutes | 3-20 minutes | Varies (40-60% faster) | 25-60 minutes | 1-2 minutes |
 | **Input** | Natural language request | Topic or none | Path / target / natural language | Natural language request | Strategic instruction | Command name or question |
 | **Output** | Implementation + report | Design document + artifacts | Findings, optimizations, before/after metrics | Aggregated results | Cross-domain integrated deliverable | Recommendation |
-| **Domains** | All 15 domains | All (software/business/creative) | All (code, docs, content, infra, content) | All (delegates to /run) | All (sequential /team per domain) | n/a |
+| **Domains** | All 9 archetypes | All (software/business/creative) | All (code, docs, content, infra, content) | All (delegates to /run) | All (sequential /team per domain) | n/a |
 | **Context** | None (inline) | None (main context, for Q&A) | Fork | Fork | None (inline) | None (inline) |
-| **Agent count** | 141 available | 1+ (designer + specialists) | Specialists per mode | Multiple teammates | C-suite + /team per domain | n/a |
+| **Agent count** | 57 available | 1+ (designer + specialists) | Specialists per mode | Multiple teammates | C-suite + /team per domain | n/a |
 
 ## When-to-Use Decision Matrix
 

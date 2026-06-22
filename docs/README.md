@@ -1,7 +1,7 @@
 # cAgents Documentation
 
-**Version**: 12.20.0
-**Last Updated**: 2026-03-12
+**Version**: 12.21.0
+**Last Updated**: 2026-06-18
 
 ## Quick Navigation
 
@@ -66,4 +66,4 @@
 ---
 
 **Maintained By**: cAgents Core Team
-**Last Cleanup**: 2026-03-12
+**Last Cleanup**: 2026-06-18

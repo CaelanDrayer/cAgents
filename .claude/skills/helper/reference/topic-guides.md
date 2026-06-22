@@ -106,9 +106,9 @@ Use when the design decomposes into 3+ parallel work items.
 
 ## Topic: domains
 
-### The 15 Domains
+### The 9 Archetypes (and legacy domain routing)
 
-cAgents organizes 141 agents across 15 domains. When you use `/run` or `/team`, the system automatically detects which domain to route to.
+cAgents organizes 57 agents across 9 builder-role archetypes (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership). When you use `/run` or `/team`, the planner routes the request via the legacy domain keyword overlays (e.g. engineering, creative, business) to the matching archetype agents. Two legacy domain dirs (`people/`, `shared/`) survive on disk as routing-config-only overlays; the historical per-domain agent breakdown below is retained for reference.
 
 #### Engineering (31 agents)
 
@@ -266,9 +266,9 @@ Every request is classified into a complexity tier, which determines how many ag
 
 ## Topic: agents
 
-### The 141 Agents and How They Are Organized
+### The 57 Agents and How They Are Organized
 
-cAgents has 141 specialized agents organized in a 4-tier hierarchy:
+cAgents has 57 specialized agents organized in a 4-tier hierarchy:
 
 #### Tier 1: Core Infrastructure (15 agents)
 

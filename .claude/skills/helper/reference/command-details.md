@@ -375,7 +375,7 @@ Same situations that previously called for `/org`: multi-domain initiatives, pro
 /helper --compare           -> Side-by-side comparison table
 /helper --flags review      -> All `/run review` flags (review-mode keyword router) with examples
 /helper --quick             -> One-screen reference card
-/helper --topic domains     -> Deep dive into the 15 domains
+/helper --topic domains     -> Deep dive into the 9 archetypes
 ```
 
 ### Key Flags
