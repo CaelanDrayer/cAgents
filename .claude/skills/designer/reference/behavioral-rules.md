@@ -14,9 +14,9 @@ The complete behavioral contract for /designer. See @reference/rules.md for the 
 8. MUST batch 2-4 related questions per AskUserQuestion call (use the `questions` array) — single-question calls are reserved for standalone gate decisions only
 9. Generate diagrams as design forms, not just at the end
 10. Write files incrementally — never hold full design in memory
-11. ALWAYS offer 6 build options when complete (run, team, team --strategic, refine, endless, save)
-12. Auto-trigger /run or /team (with `--strategic` flag for cross-domain) when user selects build option
-13. Endless refinement loops until user explicitly exits
+11. NEVER self-terminate. Artifact generation is a checkpoint, not the finish line — present the continuation gate refinement-first (the recommended option is "Refine a specific area," NOT build). Surface build/export/stop options ONLY when the user explicitly says they are done refining
+12. Auto-trigger /run or /team (with `--strategic` flag for cross-domain) only AFTER the user picks "I'm done refining" and then chooses a build option
+13. Refinement is the default loop: keep proposing refinements (proactively suggest 2-3 worth deepening) and exit only on an explicit user request to build, export, or stop
 
 ## Tool Constraint Rules
 
@@ -31,7 +31,7 @@ The complete behavioral contract for /designer. See @reference/rules.md for the 
 19. Initialize the session directory and `status.yaml` BEFORE any analysis or questions
 20. Self-register the designer in `agent_tree.yaml` at session init
 21. Use the `phase` field (not `pipeline_state`) in `status.yaml`
-22. Write `phase: completed` to `status.yaml` before final task cleanup
+22. Write `phase: completed` to `status.yaml` before final task cleanup — but ONLY after the user has explicitly chosen to build, export, or stop. Never mark the session complete on your own initiative while the user might still refine
 23. Call `TaskList` and mark all tasks `completed` or `deleted` before ending the session
 
 ## Interaction Rules

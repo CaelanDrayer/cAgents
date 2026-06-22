@@ -24,7 +24,7 @@ metadata:
     - What are the current marketing metrics and pipeline contribution?
     - What is our market position vs competitors?
     - What marketing initiatives require executive decision or budget change?
-allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
+allowed-tools: Agent Skill Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # CMO — Chief Marketing Officer

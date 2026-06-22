@@ -30,7 +30,7 @@ metadata:
     - Direct instruction or advice delivery
     - Answering domain questions without delegation
   related_agents: []
-allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
+allowed-tools: Read Grep Glob Write Edit Bash Agent Skill TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Generic Coordinator

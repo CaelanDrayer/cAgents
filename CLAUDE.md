@@ -119,6 +119,8 @@ Total: 40 .md = 34 top-level across 6 categories + 2 READMEs (root + playbooks/)
 
 **cAgents**: Universal multi-domain agent system with CSV-based task inventory for large-scale workflows. Handles 100+ tasks with 60-80% context savings.
 
+> **NOT a software-engineering tool.** cAgents is domain-agnostic. The pipeline machinery (orchestrator → planner → controller → validator) and the 57-agent catalog span legal, finance, marketing, sales, HR, health, education, creative, operations, and research just as fully as engineering. `backend-developer` / `architect` / `validator` are the agents the router selects for *code* requests — they are not what the system "is." When a request is non-technical (draft a SOW, price a migration, plan a campaign, write a story, build a financial model), it is squarely in scope: `/run` and `/team` route it to the right domain controller. Skills and controllers MUST NOT refuse, redirect, or warn a user off a non-technical request on the grounds that the plugin "looks engineering-focused" — that is a framing defect, not correct behavior.
+
 **Key Features**: CSV Task Inventory, Batch Delegation (60-80% context reduction), Checkpoint/Resume, Aggressive Decomposition (30+ work items from simple requests), Controller-Centric coordination
 
 **Architecture**: Controller-Centric Coordination with Task Inventory
@@ -578,8 +580,8 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking and
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
-**Tests**: `npm test` runs 1335+ Vitest tests across 157+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.21.0
+**Tests**: `npm test` runs 1353+ Vitest tests across 160+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
+**Version**: 12.22.0
 
 ## Troubleshooting
 

@@ -49,7 +49,7 @@ metadata:
     - What compliance frameworks apply to this business?
     - What personal data is processed and under what legal basis?
     - What are the current operational pain points in the legal department?
-allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
+allowed-tools: Read Grep Glob Write Edit Bash Agent Skill TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # General Counsel

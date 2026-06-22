@@ -47,7 +47,7 @@ metadata:
     - What is the current implementation of this feature?
     - What are the technical constraints we need to consider?
     - What are the key risks and dependencies?
-allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
+allowed-tools: Read Grep Glob Write Edit Bash Agent Skill TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Security Engineer

@@ -17,15 +17,21 @@
  *       (matches /bootstrap|novice|topic discovery/i).
  *   (4) SKILL.md Phase 6 surfaces the additive build menu options:
  *       "Export", "Share", AND "Manual" (case-insensitive).
- *   (5) SKILL.md Phase 6 Call 1 build option string is byte-for-byte
- *       preserved (regression guard — pre-existing /run, /team, /team
- *       --strategic auto-trigger contract must not break).
+ *   (5) The /run, /team, /team --strategic build-handoff option strings
+ *       remain present and reachable in SKILL.md Phase 6 (auto-trigger
+ *       contract must not break), AND the continuation gate is
+ *       refinement-first (build/export options are gated behind an
+ *       explicit "I'm done refining" choice — designer never
+ *       self-terminates). Updated in the endless-refinement fix
+ *       (session: clear-up-plugin) — the prior version locked the
+ *       build-FIRST ordering byte-for-byte, which was the behavior users
+ *       reported as "designer just creates things and finishes."
  *
  * RED state (before WI-1..WI-6 land): assertions 1, 2, 3, 4 fail because
  * the new directories/files do not exist and SKILL.md has not been edited.
- * Assertion 5 passes both before and after (it locks the string in place).
  *
- * GREEN state (after WI-1..WI-6 land): all 5 assertions pass.
+ * GREEN state (after WI-1..WI-6 land + endless-refinement fix): all
+ * assertions pass.
  */
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
@@ -38,11 +44,15 @@ const TEMPLATES_DIR = path.join(DESIGNER_DIR, 'templates');
 const SKILL_MD = path.join(DESIGNER_DIR, 'SKILL.md');
 const PHASE_1_MD = path.join(DESIGNER_DIR, 'reference', 'phase-1-empathize.md');
 
-// The canonical Call 1 build option string as shipped in v12.7.0. This MUST
-// remain byte-for-byte stable across WI-6 — it is the user-visible contract
-// that drives /run, /team, /team --strategic auto-handoff in Phase 6.
-const CANONICAL_CALL_1_OPTIONS =
-  'Build now (/run, recommended) | Build with team (/team) | Build with team strategic mode (/team --strategic, cross-domain) | More options';
+// The build-handoff option substrings that MUST remain present and reachable
+// in Phase 6 — they drive the /run, /team, /team --strategic auto-handoff.
+// They now live in Call 2 (after the user explicitly says they're done
+// refining) rather than Call 1, per the endless-refinement fix.
+const BUILD_HANDOFF_OPTIONS = [
+  'Build now (/run',
+  'Build with team (/team)',
+  '/team --strategic',
+];
 
 describe('designer "design ANYTHING" capability', () => {
   it('ships at least 5 NEW domain reference files under reference/domains/', () => {
@@ -88,8 +98,21 @@ describe('designer "design ANYTHING" capability', () => {
     expect(body).toMatch(/manual/i);
   });
 
-  it('SKILL.md preserves the canonical Call 1 build option string byte-for-byte', () => {
+  it('SKILL.md keeps the /run, /team, /team --strategic build-handoff options reachable', () => {
     const body = fs.readFileSync(SKILL_MD, 'utf8');
-    expect(body.includes(CANONICAL_CALL_1_OPTIONS)).toBe(true);
+    for (const opt of BUILD_HANDOFF_OPTIONS) {
+      expect(body.includes(opt)).toBe(true);
+    }
+  });
+
+  it('SKILL.md continuation gate is refinement-first (designer never self-terminates)', () => {
+    const body = fs.readFileSync(SKILL_MD, 'utf8');
+    // The recommended/default option at the continuation gate is refinement,
+    // not build.
+    expect(body).toMatch(/Refine a specific area \(Recommended\)/i);
+    // Build/export options are gated behind an explicit "done refining" choice.
+    expect(body).toMatch(/done refining/i);
+    // The endless-refinement posture is stated as a hard rule.
+    expect(body).toMatch(/never self-terminate/i);
   });
 });

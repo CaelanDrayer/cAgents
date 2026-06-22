@@ -24,7 +24,7 @@ metadata:
     - What are the strategic priorities and current OKR progress?
     - What cross-functional dependencies are blocking strategic execution?
     - What scenario planning or contingency planning is needed?
-allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
+allowed-tools: Agent Skill Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # CPO — Chief Planning Officer

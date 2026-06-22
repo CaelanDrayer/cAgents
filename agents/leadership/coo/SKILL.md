@@ -24,7 +24,7 @@ metadata:
     - What are the current operational processes and bottlenecks?
     - What resource allocation changes are needed?
     - What cross-functional dependencies exist?
-allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
+allowed-tools: Agent Skill Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # COO — Chief Operating Officer

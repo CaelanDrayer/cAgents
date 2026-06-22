@@ -56,7 +56,7 @@ metadata:
     - What are the key risks and dependencies?
     - What is the current frontend architecture?
     - Which team members have the right skills for this task?
-allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
+allowed-tools: Read Grep Glob Write Edit Bash Agent Skill TaskCreate TaskUpdate TaskList TaskGet
 ---
 # Tech Lead
 

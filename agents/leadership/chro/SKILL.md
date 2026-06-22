@@ -24,7 +24,7 @@ metadata:
     - What is the current organizational structure and talent gaps?
     - What culture and engagement metrics are we seeing?
     - What hiring or retention risks need executive attention?
-allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
+allowed-tools: Agent Skill Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # CHRO — Chief Human Resources Officer

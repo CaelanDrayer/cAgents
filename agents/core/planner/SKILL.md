@@ -124,6 +124,36 @@ Knowledge notes accumulated by `subagent-stop-tracker` (LP-22) and prior session
 
 See @resources/prompt-templates.md § Pre-emptive Consultation for the per-WI assembly mechanics, scoring example, and integration with the existing 5-check confidence rubric.
 
+## Workspace Skill Reuse (reuse-before-rebuild)
+
+Before assigning a cAgents execution agent to a work item, check whether a
+**skill already present in the workspace** can do that work. `/run` writes the
+catalog to `workflow/available_skills.yaml` at level 0 (read it; if absent or
+`skills: []`, skip this — proceed with normal agent assignment).
+
+For each work item, compare its purpose against each available skill's
+`description`/`triggers`. When a skill clearly covers the work item (e.g. a
+user's `pr` skill owns their SOW/quote templates, a `deep-research` skill owns
+multi-source reports), assign the **skill** instead of a generic agent:
+
+```yaml
+- id: WI-3
+  title: "Produce the data-migration SOW + price quote"
+  assigned_skill: pr
+  skill_args: "data migration Dropbox->SharePoint, 60-80h, ticket #1123223"
+  assigned_to: null
+  note: "reuse: workspace pr skill owns the SOW/budget templates"
+```
+
+Rules: assign a skill ONLY on a clear match (a vague/partial match → normal
+agent); a work item has EITHER `assigned_skill` OR `assigned_to` (set the
+unused one to `null`); never route a work item back into cAgents' own
+`run`/`team`/`designer`/`helper`. This is the minimal-solution ladder
+(`@.claude/rules/playbooks/pat-minimal-solution-ladder.md`) at planning time —
+reuse an existing skill before rebuilding it with agents. See
+@.claude/skills/run/reference/skill-awareness.md for the full contract and the
+controller-side invocation/fallback.
+
 ## Detailed Reference
 
 See @resources/decomposition.md for the full aggressive-decomposition guidance absorbed from the pre-v12.0.0 decomposer agent (abstraction classification, 5-step framework, work item format, adaptive chain depth).

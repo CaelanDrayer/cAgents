@@ -25,7 +25,7 @@ metadata:
     - What is the current technical architecture and its constraints?
     - What are the engineering capacity and skillset gaps?
     - What is the technical risk and scalability impact?
-allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
+allowed-tools: Agent Skill Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # CTO — Chief Technology Officer

@@ -49,7 +49,7 @@ metadata:
     - "Where does the prose need line-level attention for rhythm, precision, or voice?"
     - "What consistency, continuity, or pacing problems exist across the work?"
     - "What is the primary audience and conversion goal for this copy?"
-allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
+allowed-tools: Agent Skill Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Editor (consolidated)

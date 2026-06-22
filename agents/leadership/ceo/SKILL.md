@@ -25,7 +25,7 @@ metadata:
     - What is the current strategic position vs competitors?
     - What are the financial implications and runway impact?
     - What organizational change is required to execute this?
-allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
+allowed-tools: Agent Skill Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # CEO — Chief Executive Officer

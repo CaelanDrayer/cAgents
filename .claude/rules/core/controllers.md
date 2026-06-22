@@ -39,6 +39,36 @@ For EVERY question: formulate -> spawn execution agent via Agent -> record answe
 
 Question prompts should be **under 300 tokens**. Include only: the question, where to look, what to report. Do NOT include plan/decomposition/instruction contents.
 
+## Invoking Workspace Skills (reuse-before-rebuild)
+
+The planner may assign a work item to a **workspace skill** instead of a
+cAgents agent (field `assigned_skill`, with `skill_args`) when a skill already
+present in the workspace owns that work — e.g. a user's `pr` skill that owns
+their SOW/quote templates, or a `deep-research` skill. This is the
+minimal-solution ladder at planning time: reuse before rebuild.
+
+When a controller processes an `assigned_skill` work item, it invokes the
+skill via the **Skill tool** rather than spawning an execution agent:
+
+```
+Skill({ skill: "{assigned_skill}", args: "{skill_args}" })
+```
+
+Invoking a workspace skill IS a valid form of delegation — it is NOT the
+controller "doing the work directly." Treat the skill's output as the work
+item's deliverable and run the normal reviewer loop against the acceptance
+criteria.
+
+**Graceful fallback**: if the `Skill` tool is verifiably absent from the
+controller's surface (nesting ceiling, or a regressed harness), do NOT fail
+the work item — spawn the closest-matching cAgents execution agent instead and
+record `skill_fallback: "{reason}"` in `coordination_log.yaml`. Verify the tool
+is actually absent before falling back. Never route an `assigned_skill` work
+item back into cAgents' own `run`/`team`/`designer`/`helper` skills.
+
+See @.claude/skills/run/reference/skill-awareness.md for the discovery
+procedure, `available_skills.yaml` schema, and the planner contract.
+
 ## Question-Based Delegation Pattern
 
 ```

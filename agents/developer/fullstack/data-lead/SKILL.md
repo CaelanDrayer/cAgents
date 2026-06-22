@@ -31,7 +31,7 @@ metadata:
   maxTurns: 40
   memory:
     project: true
-allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
+allowed-tools: Read Grep Glob Write Edit Bash Agent Skill TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Data Lead

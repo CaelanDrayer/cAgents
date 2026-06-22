@@ -34,7 +34,7 @@ metadata:
   memory:
     project: true
   color: bright_blue
-allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
+allowed-tools: Read Grep Glob Write Edit Bash Agent Skill TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Strategic Planner

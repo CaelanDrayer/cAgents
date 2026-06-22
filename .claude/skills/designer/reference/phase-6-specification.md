@@ -4,50 +4,57 @@
 
 **Research agents**: ALWAYS spawned (no `--deep` required).
 
-## Build Menu Sub-Call Cascade (v12.7.x)
+## Continuation Gate Cascade (refinement-first)
 
-`AskUserQuestion` allows at most 4 options per call. Phase 6 ends with a
-build-menu question that — after the v12.7.x "design ANYTHING" expansion
-— surfaces 7+ terminal actions:
+Refinement is the default state of the designer. Generating artifacts is NOT
+the end of the session — it is the start of the next refinement pass. The
+designer NEVER self-terminates; build/export/stop options appear ONLY after
+the user explicitly says they are done. `AskUserQuestion` allows at most 4
+options per call, so the gate is a cascade:
 
 ```
-Call 1 (canonical, byte-for-byte stable):
-  Build now (/run, recommended) |
+Call 1 (continuation gate — refinement-first):
+  Refine a specific area (Recommended) |
+  Run an endless refinement pass (sweep every section) |
+  I'm done refining — show build / export options |
+  Save & pause
+
+Call 2 (ONLY if user picks "I'm done refining"):
+  Build now (/run) |
   Build with team (/team) |
   Build with team strategic mode (/team --strategic, cross-domain) |
-  More options
-
-Call 2 (only if user picks "More options"):
-  Refine specific area |
-  Endless refinement loop |
-  Save only |
   Export / Share / Manual (non-implementation exits)
 
-Call 3 (only if user picks "Export / Share / Manual" in Call 2):
+Call 3 (ONLY if user picks "Export / Share / Manual" in Call 2):
   Export design (PDF/Markdown) |
   Share design (read-only link) |
   Manual execute (printable checklist) |
-  Cancel — back to Call 2
+  Keep refining — back to Call 1
 ```
 
 ### Rules for the cascade
 
-1. **Call 1 is canonical and must not drift.** The literal option string
-   `Build now (/run, recommended) | Build with team (/team) | Build with team strategic mode (/team --strategic, cross-domain) | More options`
-   is locked in `tests/v12/designer-design-anything.test.js`. Any change
-   breaks the WI-6 byte-for-byte regression guard.
-2. **Call 2 is only reached when the user picks "More options".** Never
-   issue Call 2 unsolicited.
+1. **Call 1 defaults to refinement.** The recommended option is "Refine a
+   specific area"; build/export NEVER appear in Call 1. Selecting either
+   refinement option re-enters Refinement for the chosen scope and returns
+   to this same gate — the loop does not exit on its own. The build-handoff
+   strings (`Build now (/run`, `Build with team (/team)`, `/team --strategic`)
+   must remain present and reachable in Call 2; that contract is guarded by
+   `tests/v12/designer-design-anything.test.js`.
+2. **Call 2 is only reached when the user picks "I'm done refining".** Never
+   issue Call 2 unsolicited — that is the self-termination bug this contract
+   exists to prevent.
 3. **Call 3 is only reached when the user picks "Export / Share / Manual"
-   in Call 2.** Never collapse the cascade into a single 6+ option call —
-   `AskUserQuestion` will fail.
+   in Call 2.** Never collapse the cascade into a single 5+ option call —
+   `AskUserQuestion` will fail. Every Call 3 branch keeps a "Keep refining"
+   path back to Call 1.
 4. The non-implementation exits (Export, Share, Manual) are for designs
    that do not get "built" by `/run` or `/team` — weddings, curricula,
    research-study protocols, personal routines. The user gets a
    terminal action without forcing an `/run` invocation.
-5. After ANY Call 1 / Call 2 / Call 3 choice resolves, write
-   `phase: completed` to `status.yaml` and clean up tasks per the main
-   SKILL.md instructions.
+5. Write `phase: completed` to `status.yaml` and clean up tasks ONLY after
+   the user explicitly chooses a build, export, or save-and-stop option.
+   Never write it on your own initiative just because artifacts exist.
 
 ## Step 1: Read Specification Research
 
@@ -190,41 +197,46 @@ ${recommendation}`,
 })
 ```
 
-## Build Offer
+## Continuation Gate Offer
 
-**CRITICAL**: When design is complete, ALWAYS offer 6 build options:
+**CRITICAL**: Artifacts being generated is NOT "complete." Present the
+continuation gate refinement-first. Do NOT lead with build options, and do
+NOT auto-advance to build/export — the designer never self-terminates.
 
 ```javascript
 AskUserQuestion({
   questions: [{
-    question: "Design complete! Your design document and artifacts have been generated. What would you like to do?",
-    header: "Build",
+    question: "Your design document and artifacts are drafted. This is a checkpoint, not the finish line — what should we sharpen next?",
+    header: "Refine",
     options: [
-      {label: "Build it now (/run) (Recommended)", description: "Execute immediately with the pipeline engine"},
-      {label: "Build with team (/team)", description: "Parallel team execution for complex designs"},
-      {label: "Build with team --strategic", description: "Cross-domain coordination via /team strategic mode (C-suite Wave 0/1, per-domain Wave 3..N)"},
-      {label: "Refine specific area", description: "Jump back to a specific phase or topic for targeted refinement"}
+      {label: "Refine a specific area (Recommended)", description: "Jump back to a phase or topic for targeted refinement"},
+      {label: "Run an endless refinement pass", description: "Sweep every section, deepening edge cases and alternatives"},
+      {label: "I'm done refining — show build / export options", description: "Surface the build and export handoffs"},
+      {label: "Save & pause", description: "Save for later; I'll come back to refine or build"}
     ],
     multiSelect: false
   }]
 })
-// Note: AskUserQuestion supports max 4 options. Use a second question for remaining options:
+// Only if the user picks "I'm done refining" — second call surfaces the
+// build/export handoffs (max 4 options each):
 AskUserQuestion({
   questions: [{
-    question: "Or would you prefer to continue refining?",
-    header: "More options",
+    question: "How would you like to build or export this design?",
+    header: "Build",
     options: [
-      {label: "Endless refinement loop", description: "Enter continuous refinement mode - keep improving until satisfied"},
-      {label: "Save design only", description: "Save for later, I'll build when ready"}
+      {label: "Build now (/run)", description: "Execute immediately with the pipeline engine"},
+      {label: "Build with team (/team)", description: "Parallel team execution for complex designs"},
+      {label: "Build with team strategic mode (/team --strategic, cross-domain)", description: "Cross-domain C-suite coordination (Wave 0/1, per-domain Wave 3..N)"},
+      {label: "Export / Share / Manual", description: "Non-implementation exits: PDF/Markdown, read-only link, printable checklist"}
     ],
     multiSelect: false
   }]
 })
 ```
 
-### Auto-Trigger Build
+### Auto-Trigger Build (only after "I'm done refining")
 
-When user selects "Build it now (/run)":
+When user selects "Build now (/run)":
 ```javascript
 Skill({ skill: "run", args: `implement design from ${session_id}` })
 ```
@@ -234,28 +246,30 @@ When user selects "Build with team (/team)":
 Skill({ skill: "team", args: `implement design from ${session_id}` })
 ```
 
-When user selects "Build with team --strategic":
+When user selects "Build with team strategic mode (/team --strategic, cross-domain)":
 ```javascript
 Skill({ skill: "team", args: `implement design from ${session_id} --strategic` })
 ```
 (v12.2.0+; pre-v12.2.0 this option invoked `/org`, which was absorbed into `/team` strategic mode.)
 
-When user selects "Refine specific area":
+When user selects "Refine a specific area":
 ```
 Ask which phase/topic to refine via AskUserQuestion.
 Jump back to that phase with existing context preserved.
 Only re-ask questions relevant to the specified area.
+Then RETURN to the continuation gate — do not terminate.
 ```
 
-When user selects "Endless refinement loop":
+When user selects "Run an endless refinement pass" (the default loop):
 ```
 Enter continuous refinement mode:
 1. Present design areas
-2. User picks one
+2. User picks one (or you proactively propose 2-3 worth deepening)
 3. Targeted refinement with research agent
 4. Show diff of what changed
 5. Loop back to step 1
-6. Exit when user selects "I'm satisfied - show build options"
+6. Exit ONLY when the user explicitly selects "I'm done refining" —
+   never on a turn count, artifact count, or your own judgment
 ```
 
 ### Save for Later
@@ -272,4 +286,4 @@ To implement later:
 
 ### Terminal Phase Value
 
-After the build offer (or save-only path), write `phase: completed` to `cagents-memory/sessions/{session_id}/status.yaml`. The verify-completion.cjs Stop hook recognizes `complete`, `completed`, or `validating` as terminal phase values; any other value triggers a non-blocking warning. Apply this update regardless of whether the user chose to build, refine, or save-only.
+Write `phase: completed` to `cagents-memory/sessions/{session_id}/status.yaml` ONLY after the user explicitly chooses a build, export, or save-and-stop option. The verify-completion.cjs Stop hook recognizes `complete`, `completed`, or `validating` as terminal phase values; any other value triggers a non-blocking warning. Do NOT write a terminal phase value while the user is still refining (or might refine again) — refinement is the default state, and marking the session complete on your own initiative is the self-termination bug this contract exists to prevent.

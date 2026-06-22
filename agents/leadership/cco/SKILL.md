@@ -24,7 +24,7 @@ metadata:
     - What is the current creative vision and brand narrative?
     - What creative quality standards need executive definition?
     - What cross-functional creative conflicts need resolution?
-allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
+allowed-tools: Agent Skill Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # CCO — Chief Creative Officer

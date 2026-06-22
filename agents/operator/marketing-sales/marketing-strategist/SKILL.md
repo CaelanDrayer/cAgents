@@ -70,7 +70,7 @@ metadata:
     - What are the conversion bottlenecks?
     - What is the GTM phase (pre-launch, launch, growth, expansion)?
     - What is the SEO scope (single page, section, full-site audit, ranking recovery)?
-allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
+allowed-tools: Read Grep Glob Write Edit Bash Agent Skill TaskCreate TaskUpdate TaskList TaskGet
 ---
 # Marketing Strategist
 

@@ -24,7 +24,7 @@ metadata:
     - What is the current pipeline health and revenue forecast?
     - Where are the biggest gaps in the sales funnel?
     - What sales and marketing alignment issues need executive resolution?
-allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
+allowed-tools: Agent Skill Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # CRO — Chief Revenue Officer

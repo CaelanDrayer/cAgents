@@ -62,7 +62,7 @@ metadata:
     - What is the current operational pain point and efficiency gap?
     - What is the customer health score and engagement level?
     - What expansion or retention opportunities exist for this account?
-allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
+allowed-tools: Read Grep Glob Write Edit Bash Agent Skill TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Support Director

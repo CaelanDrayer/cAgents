@@ -10,6 +10,50 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.22.0] - 2026-06-22
+
+Domain-agnostic framing fix, `/designer` endless-refinement contract, and
+`/run` workspace-skill awareness (session `clear-up-plugin`). Minor bump:
+~35 files across skills, agents, rules, docs, and tests. Motivated by a user
+report that `/run` self-described as "a generic software-engineering
+orchestration engine" and refused a non-technical (client SOW / price-quote)
+request, plus `/designer` terminating after one artifact pass instead of
+refining endlessly.
+
+### Fixed
+- **Engineering-bias framing**: cAgents read as a software-only tool despite a
+  genuinely multi-domain 57-agent catalog. Added prominent "domain-agnostic —
+  NOT a software-engineering tool" banners to `CLAUDE.md`, `README.md`,
+  `.claude/skills/run/SKILL.md`, `.claude/skills/team/SKILL.md`, and
+  `.claude/skills/helper/SKILL.md`; rebalanced first-impression examples (README
+  Quick Start now leads with a client-SOW example). `/run` now explicitly must
+  NOT refuse or redirect a non-technical request.
+- **`/designer` self-termination**: the build menu led with "Build now
+  (recommended)" and buried refinement, so the designer generated artifacts then
+  stopped. Restructured Phase 6 into a **refinement-first continuation gate**
+  ("Refine a specific area (Recommended)" is the default; build/export options
+  appear only after the user explicitly picks "I'm done refining"). The designer
+  never writes `phase: completed` on its own initiative. Synced across
+  `SKILL.md`, `reference/phase-6-specification.md`, `reference/rules.md`,
+  `reference/behavioral-rules.md`, and the WI-9 regression test.
+- **Stale test-count claim**: `CLAUDE.md` test count `1335+/157+` →
+  `1353+/160+` (new test files pushed the static count past the freshness
+  window).
+- **Dangling skill symlink**: removed an untracked broken symlink
+  `.claude/skills/commit-changes` that two regression tests correctly flag.
+
+### Added
+- **Workspace skill awareness (reuse-before-rebuild)** for `/run`: discovers
+  skills already present in the workspace (e.g. a user's `pr` skill) and
+  persists them to `workflow/available_skills.yaml`; the planner routes a
+  matching work item to that skill via `assigned_skill` instead of reinventing
+  it with generic agents; controllers invoke it via the `Skill` tool with a
+  graceful fallback. Added the `Skill` tool to `/run` and all 25 controller
+  agents. New contract doc `.claude/skills/run/reference/skill-awareness.md`,
+  planner + `controllers.md` wiring, and a 6-assertion regression test
+  (`tests/regressions/run-skill-awareness.test.js`). This is the
+  minimal-solution ladder applied at planning time.
+
 ## [12.21.0] - 2026-06-22
 
 Comprehensive documentation audit & upgrade (session

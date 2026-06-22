@@ -48,7 +48,7 @@ metadata:
       type: collaborates_with
     - name: security-engineer
       type: collaborates_with
-allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
+allowed-tools: Agent Skill Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 <example>

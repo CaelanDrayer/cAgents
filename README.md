@@ -4,6 +4,8 @@
 
 Deploy 57 specialized agents across 9 builder-role archetypes through an intelligent pipeline that routes your request, plans execution, decomposes work, coordinates specialists, reviews outputs, and validates quality — automatically.
 
+> **cAgents is domain-agnostic — it is NOT a software-engineering tool.** The same pipeline that fixes a bug also drafts a legal contract, plans a marketing campaign, writes a novel chapter, builds a financial model, designs a curriculum, or produces a client SOW with a price quote. It routes on *what you ask for* — across engineering, legal, finance, marketing, sales, HR, health, education, creative, operations, and research. The 57-agent catalog spans all of these; code is one domain among many. If a request looks non-technical, that is not a reason to avoid cAgents — it is exactly what the operator/advisor/analyst/creator/writer/strategist archetypes exist for.
+
 | Stat | Value |
 |------|-------|
 | Agents | 57 across 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership) |
@@ -63,23 +65,23 @@ cd cAgents && ./scripts/setup.sh
 
 ## Quick Start
 
-Four commands. Four different capabilities.
+Four commands. Four different capabilities. Note how the examples span domains — code is just one of them.
 
 ```bash
-# Route a bug fix to the engineering domain automatically
-/run Fix the authentication bug in src/auth.ts
+# Produce a client deliverable (business / sales) — no code involved
+/run Draft a statement of work and price quote for a Dropbox-to-SharePoint data migration, with a detailed assumptions list
 
 # Coordinate strategy across domains with C-suite analysis (strategic mode auto-enables)
 /team Plan our Q3 product roadmap
 
-# Audit or improve code quality (v12.1.2: improve modes folded into /run via keyword router)
-/run review src/api/ --auto-fix
+# Route a bug fix to the engineering domain automatically
+/run Fix the authentication bug in src/auth.ts
 
-# Explore a design problem interactively
-/designer Redesign the checkout flow
+# Explore ANY design problem interactively — software or not
+/designer Design a 6-week onboarding curriculum
 ```
 
-The pipeline detects the domain, selects the appropriate controller, decomposes the work into items with acceptance criteria, and coordinates specialist agents — without you specifying a single agent name.
+The pipeline detects the domain, selects the appropriate controller, decomposes the work into items with acceptance criteria, and coordinates specialist agents — without you specifying a single agent name. The same machinery serves a legal memo, a marketing campaign, a financial model, or a short story just as readily as a code change.
 
 ---
 
@@ -439,7 +441,7 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights:
 
-- **V12.21.0** — Current release. Bucket-D hook security/performance remediation (session `run_bucket-d-remediation_260614_001`): added a bounded head+tail size cap to `secret-detection.cjs` (`CAGENTS_SECRET_SCAN_MAX_BYTES`, default 512 KB) to prevent a memory/latency blowup on large writes; consolidated the three `Write|Edit` PreToolUse hooks (secret-detection, controller-delegation-validator, skill-size-monitor) into a single deny-first, fail-closed `write-edit-dispatch.cjs` dispatcher (cold-start node spawns per Write|Edit cut 3→1); added a reproducible perf-benchmark corpus runner + Write|Edit hook-perf microbench with committed baselines; and fixed `verify-completion.cjs` to fact-check slash-less filename citations.
+- **V12.22.0** — Current release. Bucket-D hook security/performance remediation (session `run_bucket-d-remediation_260614_001`): added a bounded head+tail size cap to `secret-detection.cjs` (`CAGENTS_SECRET_SCAN_MAX_BYTES`, default 512 KB) to prevent a memory/latency blowup on large writes; consolidated the three `Write|Edit` PreToolUse hooks (secret-detection, controller-delegation-validator, skill-size-monitor) into a single deny-first, fail-closed `write-edit-dispatch.cjs` dispatcher (cold-start node spawns per Write|Edit cut 3→1); added a reproducible perf-benchmark corpus runner + Write|Edit hook-perf microbench with committed baselines; and fixed `verify-completion.cjs` to fact-check slash-less filename citations.
 - **V12.10.0** — FU-3 bare-prose agent-name sweep: replaced the last bare `universal-*` agent-name mentions in agent prose (the five pipeline agents — router, planner, validator, executor, self-correct) across 25 `agents/**` files, completing the v12.5.0 pipeline-agent rename. Added a `no-bare-universal-prose-refs` regression guard.
 - **V12.2.0** — BREAKING: `/org` skill removed; cross-domain coordination folded into `/team` with auto-enabled strategic mode (`router` `domain_count >= 2` triggers Wave 0/1/2 C-suite deliberation + Wave 3..N per-domain dispatch). 12 leadership agents preserved at their existing locations. Plugin skill count 5->4. Migration: `/org X` → `/team X`.
 - **V12.1.2** — Folds `/improve` into `/run` via a first-word keyword router and removes the standalone `/improve` skill (`/run review|audit` = `--mode review`, `/run optimize` = `--mode optimize`, `/run improve` = `--mode full`). Plugin skill count 6->5.

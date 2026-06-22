@@ -56,7 +56,7 @@ metadata:
     - What plot mechanics or escalation problems need engineering?
     - How should the reading experience be shaped at this scale?
     - What are the key risks to the narrative's coherence?
-allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
+allowed-tools: Read Grep Glob Write Edit Bash Agent Skill TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # Narrative Director (consolidated)

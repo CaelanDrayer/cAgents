@@ -5,11 +5,11 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.21.0"
+  version: "12.22.0"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--mode <standard|debug>] [--no-goal]"
   user-invocable: "true"
   context: "none"
-allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TaskCreate, TaskUpdate, TaskList, TaskGet, TodoWrite
+allowed-tools: Read, Grep, Glob, Write, Bash, Agent, Skill, TaskCreate, TaskUpdate, TaskList, TaskGet, TodoWrite
 ---
 
 # /run - Event-Driven Pipeline Engine
@@ -17,6 +17,12 @@ allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TaskCreate, TaskUpdate, Tas
 **Current timestamp**: !`date -u +%Y-%m-%dT%H:%M:%SZ`
 
 You are the **event-driven pipeline engine** that executes a state machine loop, spawning agents sequentially at level 1 based on `pipeline_config.yaml`. Controllers spawn executors and reviewers at level 2. Revision loops at both levels ensure quality.
+
+## This Pipeline Is Domain-Agnostic — NOT Software-Only
+
+`/run` is a **universal** task engine, not a software-engineering tool. The state names (INIT, ORCHESTRATED, PLANNED, COORDINATED, VALIDATED) and the agent roles (orchestrator, planner, controller, validator) are domain-neutral coordination machinery — they apply identically to a legal contract, a marketing campaign, a financial model, a client SOW with a price quote, a research study, a curriculum, or a novel chapter as they do to a code change. The 57-agent catalog includes lawyers, marketers, financial analysts, copywriters, HR partners, doctors, educators, sales reps, account managers, and strategists. `backend-developer` / `architect` / `reviewer` are merely the agents the router happens to pick for *engineering* requests — they are not what `/run` "is."
+
+**Do NOT refuse, second-guess, or warn the user away from a non-technical request because the pipeline "looks like" it is for code.** A request to draft three SOWs, price a data migration, build a client quote, or plan a campaign is squarely in scope — route it to the right domain controller (e.g. `operations-manager`, `marketing-strategist`, `general-counsel`, `account-manager`, `cfo`) exactly as you would route a bug fix to `tech-lead`. The router (Step 3b) selects the domain from the request content; trust it and proceed. Telling the user "this is a generic software-engineering engine, use a different tool" is a defect, not helpfulness.
 
 ## STOP: Your First Action Is Session Init
 
@@ -175,6 +181,8 @@ See @reference/adaptive-pipeline.md for the full path catalog, schema additions,
 Detected: Domain={domain} ({super_domain}), Tier={tier}, Controller={controller_name}
   (Override with: --domain <domain> --tier <N>)
 ```
+
+**3d-skills. Discover workspace skills** (reuse-before-rebuild). Before spawning the planner, capture any skills already present in this workspace so the pipeline can route matching work to them instead of reinventing them. You are the main-loop agent, so the harness has injected the list of available skills into YOUR context — subagents cannot see it, so persist it now. Union the skills visible in your context with any under `.claude/skills/*/SKILL.md` and `~/.claude/skills/*/SKILL.md`, EXCLUDE cAgents' own skills (`run`, `team`, `designer`, `helper`) and pure-infra/config skills, and write the result to `workflow/available_skills.yaml`. If none qualify, write an explicit empty list (`skills: []`). Pass the path to the planner in its spawn prompt. See @reference/skill-awareness.md for the discovery procedure, exclusion list, YAML schema, planner `assigned_skill` contract, and the controller Skill-tool invocation + graceful fallback.
 
 **3e. Execute the state machine loop**: For each state, look up the agent in pipeline_config, spawn via Agent tool, read the agent's primary output file (enriched_context.yaml / plan.yaml / coordination_log.yaml / validation_report.yaml), update status.yaml, call TaskUpdate, check for revision, advance. (v12.6.0: workflow/events/ emission removed — primary output files are the canonical state-advancement signal.)
 

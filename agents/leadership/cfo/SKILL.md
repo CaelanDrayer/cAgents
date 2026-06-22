@@ -25,7 +25,7 @@ metadata:
     - What is the current runway and burn rate?
     - What is the ROI and payback period for this investment?
     - What are the financial risks and mitigation options?
-allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
+allowed-tools: Agent Skill Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # CFO — Chief Financial Officer

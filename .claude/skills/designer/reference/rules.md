@@ -38,11 +38,11 @@ The complete behavioral contract for the /designer command.
 
 18. **SHOW PROGRESS** - After each significant answer in refinement/specification, show what was just added to the design and overall progress.
 
-19. **ALWAYS OFFER 6 BUILD OPTIONS** - Never end without offering the 6-option build menu: Build /run, Build /team, Build /team --strategic (cross-domain), Refine specific area, Endless refinement loop, Save design only. Make "Build it now (/run)" the recommended option.
+19. **NEVER SELF-TERMINATE — REFINEMENT-FIRST CONTINUATION GATE** - Generating artifacts is a checkpoint, not the finish line. Present the continuation gate refinement-first: "Refine a specific area" (the recommended option) | "Run an endless refinement pass" | "I'm done refining — show build/export options" | "Save & pause". NEVER lead with build options and NEVER auto-advance to build/export. The build menu (Build /run, Build /team, Build /team --strategic, Export/Share/Manual) appears in a SECOND call only after the user explicitly picks "I'm done refining".
 
-20. **AUTO-TRIGGER BUILD** - When user selects "Build it now", invoke `Skill({skill: "run", ...})`. When "Build with team", invoke `Skill({skill: "team", ...})`. When "Build with team --strategic", invoke `Skill({skill: "team", args: "<request> --strategic"})`. Do NOT make user type another command. (Note: pre-v12.2.0 the cross-domain option was `/org`; v12.2.0 absorbed it into `/team --strategic`.)
+20. **AUTO-TRIGGER BUILD (only after "I'm done refining")** - Once the user has chosen "I'm done refining" and then a build option: when "Build now (/run)", invoke `Skill({skill: "run", ...})`; when "Build with team (/team)", invoke `Skill({skill: "team", ...})`; when "Build with team strategic mode", invoke `Skill({skill: "team", args: "<request> --strategic"})`. Do NOT make user type another command. (Note: pre-v12.2.0 the cross-domain option was `/org`; v12.2.0 absorbed it into `/team --strategic`.)
 
-21. **ENDLESS REFINEMENT MODE** - When user selects "Endless refinement loop", enter continuous refinement: present design areas, user picks one, targeted refinement with research, show diff, repeat. Exit only when user selects "I'm satisfied".
+21. **ENDLESS REFINEMENT IS THE DEFAULT** - Refinement is the designer's default state, not an opt-in mode. Enter continuous refinement: present design areas (or proactively propose 2-3 worth deepening), user picks one, targeted refinement with research, show diff, repeat. Exit ONLY when the user explicitly selects "I'm done refining" — never on a turn count, an artifact count, or your own judgment that the design "looks done".
 
 22. **USE CHUNK TEMPLATES AS FALLBACK** - Chunk templates are the FALLBACK source when research agents are unavailable. When research is available, use research-enriched questions as the primary source, with templates filling gaps.
 
@@ -64,7 +64,7 @@ The complete behavioral contract for the /designer command.
 
 31. **MANAGE DEFERRED QUESTIONS** - Track deferred questions in session state. When research returns for a deferred question, re-present it with enriched context. If all remaining questions are deferred, wait for research agents.
 
-32. **REFINE SPECIFIC AREA** - When user selects "Refine specific area" from build options, jump back to the relevant phase with existing context preserved. Only re-ask questions relevant to the specified area.
+32. **REFINE SPECIFIC AREA** - When user selects "Refine a specific area" at the continuation gate, jump back to the relevant phase with existing context preserved. Only re-ask questions relevant to the specified area, then RETURN to the continuation gate — do not terminate.
 
 33. **MINIMUM 2 QUESTIONS PER CALL** - The designer MUST present a minimum of 2 questions per AskUserQuestion call. A single-question call is only permitted for the following explicitly justified standalone gate decisions:
     - **Opening topic detection**: When no topic was provided and the designer needs to establish what the user wants to design (Phase 1, Step 1 — the very first question of the session)

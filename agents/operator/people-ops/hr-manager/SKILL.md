@@ -36,7 +36,7 @@ metadata:
     - What are the current team dynamics and gaps?
     - What are the cultural considerations?
     - What are the retention and engagement metrics?
-allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
+allowed-tools: Agent Skill Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskList TaskGet
 ---
 
 # HR Manager
