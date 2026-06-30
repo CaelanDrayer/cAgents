@@ -1,7 +1,7 @@
 ---
 paths:
-  - "operator/support/**"
-  - "advisor/legal/**"
+  - "agents/operator/support/**"
+  - "agents/advisor/legal/**"
 ---
 
 # Service Domain Guidelines

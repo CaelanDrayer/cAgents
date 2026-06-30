@@ -1,9 +1,8 @@
 ---
 paths:
-  - "writer/**"
-  - "**/agents/copywriter/**"
-  - "**/agents/technical-writer/**"
-  - "**/agents/content-*/**"
+  - "agents/writer/**"
+  - "agents/**/technical-writer/**"
+  - "agents/operator/marketing-sales/**"
   - ".claude/skills/*/SKILL.md"
 ---
 

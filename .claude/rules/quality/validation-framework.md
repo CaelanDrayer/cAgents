@@ -1,7 +1,7 @@
 ---
 paths:
-  - "core/validator/**"
-  - "core/executor/**"
+  - "agents/core/validator/**"
+  - "agents/core/executor/**"
 ---
 
 # Completion Validation Framework

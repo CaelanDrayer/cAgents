@@ -1,6 +1,6 @@
 ---
 paths:
-  - "core/planner/**"
+  - "agents/core/planner/**"
 ---
 
 # Implicit Requirement Discovery

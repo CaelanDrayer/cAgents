@@ -1,6 +1,6 @@
 ---
 paths:
-  - "people/**"
+  - "agents/_overlay/people/**"
 ---
 
 # People Domain Guidelines

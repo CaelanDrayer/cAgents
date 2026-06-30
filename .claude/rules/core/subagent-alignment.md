@@ -1,6 +1,6 @@
 ---
 paths:
-  - "core/**"
+  - "agents/core/**"
   - ".claude/skills/**"
 ---
 

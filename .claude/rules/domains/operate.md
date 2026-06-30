@@ -1,13 +1,6 @@
 ---
 paths:
-  - "operator/business-ops/operations-*/**"
-  - "operator/business-ops/finance-*/**"
-  - "operator/business-ops/procurement-*/**"
-  - "operator/business-ops/supply-chain-*/**"
-  - "operator/business-ops/quality-manager*/**"
-  - "operator/business-ops/facilities-*/**"
-  - "operator/business-ops/risk-*/**"
-  - "operator/business-ops/process-*/**"
+  - "agents/operator/business-ops/**"
 ---
 
 # Operations & Finance Guidelines

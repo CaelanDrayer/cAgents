@@ -10,6 +10,32 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.26.0] - 2026-06-30
+
+Phase 6 of the comprehensive plugin audit/refactor (session
+`team_plugin-audit-refactor_260630_001`). Rules `paths:` glob repair — restore
+path-conditional rule loading that broke when the archetype roots moved under
+`agents/` in v12.8.0.
+
+### Fixed
+- 16 `.claude/rules/**/*.md` files (A3-01): `paths:` frontmatter globs rooted at
+  pre-v12.8.0 archetype dirs (`core/**`, `developer/**`, `operator/**`,
+  `people/**`, `shared/**`, …) — which matched nothing on disk — rewritten to the
+  current layout (`agents/core/**`, `agents/_overlay/people/**`, …). Three domain
+  rules also had granular globs for agents consolidated into mode-flags
+  (v12.20.0); those collapsed to the surviving branch globs.
+
+### Added
+- `tests/v12/rules-paths-globs-resolve.test.js`: CI guard asserting every
+  `paths:` glob in `.claude/rules/` resolves to ≥1 real path (allowlisting the
+  gitignored `cagents-memory/` + `.cagents/` runtime/override roots). Fails on any
+  bare-archetype-root glob — this drift class cannot recur.
+
+### Corrected
+- A3-19 was a false positive: `planner_config.yaml` DOES exist at
+  `agents/_overlay/{people,shared}/config/` — the `**/config/planner_config.yaml`
+  globs already resolve.
+
 ## [12.25.0] - 2026-06-30
 
 Phase 5 of the comprehensive plugin audit/refactor (session

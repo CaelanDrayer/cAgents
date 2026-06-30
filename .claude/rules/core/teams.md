@@ -1,6 +1,6 @@
 ---
 paths:
-  - "core/team-*/**"
+  - "agents/core/team-*/**"
   - ".claude/skills/team/**"
   - ".claude/hooks/team-*.cjs"
   - ".claude/hooks/teammate-*.cjs"

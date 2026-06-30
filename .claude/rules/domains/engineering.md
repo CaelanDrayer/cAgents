@@ -1,8 +1,8 @@
 ---
 paths:
-  - "developer/**"
-  - "core/**"
-  - "shared/**"
+  - "agents/developer/**"
+  - "agents/core/**"
+  - "agents/_overlay/shared/**"
 ---
 
 # Engineering Domain Guidelines

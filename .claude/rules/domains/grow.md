@@ -1,8 +1,7 @@
 ---
 paths:
-  - "operator/marketing-sales/**"
-  - "operator/content/**"
-  - "strategist/**"
+  - "agents/operator/marketing-sales/**"
+  - "agents/strategist/**"
 ---
 
 # Business Domain Guidelines

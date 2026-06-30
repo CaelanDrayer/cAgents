@@ -1,7 +1,7 @@
 ---
 paths:
-  - "core/validator/**"
-  - "core/planner/**"
+  - "agents/core/validator/**"
+  - "agents/core/planner/**"
   - ".claude/skills/run/**"
   - "cagents-memory/sessions/**/workflow/**"
 ---

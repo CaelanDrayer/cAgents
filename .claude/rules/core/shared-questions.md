@@ -2,7 +2,7 @@
 paths:
   - "**/config/planner_config.yaml"
   - "**/config/domain_overrides.yaml"
-  - "core/planner/**"
+  - "agents/core/planner/**"
 ---
 
 # Shared Question Patterns

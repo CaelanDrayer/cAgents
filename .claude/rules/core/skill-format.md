@@ -1,14 +1,14 @@
 ---
 paths:
-  - "developer/**/SKILL.md"
-  - "operator/**/SKILL.md"
-  - "advisor/**/SKILL.md"
-  - "analyst/**/SKILL.md"
-  - "creator/**/SKILL.md"
-  - "writer/**/SKILL.md"
-  - "strategist/**/SKILL.md"
-  - "core/**/SKILL.md"
-  - "leadership/**/SKILL.md"
+  - "agents/developer/**/SKILL.md"
+  - "agents/operator/**/SKILL.md"
+  - "agents/advisor/**/SKILL.md"
+  - "agents/analyst/**/SKILL.md"
+  - "agents/creator/**/SKILL.md"
+  - "agents/writer/**/SKILL.md"
+  - "agents/strategist/**/SKILL.md"
+  - "agents/core/**/SKILL.md"
+  - "agents/leadership/**/SKILL.md"
   - ".claude/skills/**"
 ---
 
