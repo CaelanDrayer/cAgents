@@ -85,10 +85,16 @@ function readStdin(hookName) {
     });
     process.stdin.on('error', () => done({}));
 
-    setTimeout(() => {
+    // Safety-only fallback timer. .unref() so it does NOT keep the Node event
+    // loop alive: once stdin ends normally and the hook's work completes, the
+    // process must exit immediately instead of lingering ~3s for this timer.
+    // If stdin never ends, the open stdin stream keeps the loop alive and this
+    // timer still fires at 3s — correctness is preserved, keep-alive is dropped.
+    const stdinFallbackTimer = setTimeout(() => {
       if (!resolved) console.error(hookName ? `[Hook] stdin reading timed out for hook: ${hookName}` : '[hook-utils] readStdin timeout after 3s');
       done({});
     }, 3000);
+    stdinFallbackTimer.unref();
   });
 }
 
@@ -901,7 +907,15 @@ function dedupGuard(hookName, input) {
     // Without process.on('exit'), tests that run the hook via execSync would leave
     // stale dedup files that cause the next identical invocation to be skipped.
     process.on('exit', () => { try { fs.unlinkSync(dedupFile); } catch {} });
-    setTimeout(() => { try { fs.unlinkSync(dedupFile); } catch {} }, 2000);
+    // Fallback cleanup timer ONLY — process.on('exit') above is the primary
+    // cleanup path for short-lived subprocess invocations. .unref() so this 2s
+    // timer never keeps a finished hook process alive (the linger we eliminate).
+    // If the loop stays alive for other reasons, the timer still fires and
+    // cleans up. Dedup correctness (plugin+project double-load) relies on the
+    // file existing during the concurrent invocations' overlap, not on this
+    // timer's keep-alive.
+    const dedupCleanupTimer = setTimeout(() => { try { fs.unlinkSync(dedupFile); } catch {} }, 2000);
+    dedupCleanupTimer.unref();
     return false; // Not a duplicate — proceed
   } catch (e) {
     if (e.code === 'EEXIST') return true; // Duplicate invocation — skip

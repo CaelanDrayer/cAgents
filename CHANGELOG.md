@@ -10,6 +10,24 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.22.1] - 2026-06-30
+
+Phase 1 of the comprehensive plugin audit/refactor (session
+`team_plugin-audit-refactor_260630_001`). Hook-performance fix.
+
+### Fixed
+- `.claude/hooks/hook-utils.cjs`: `.unref()` the two fallback `setTimeout`
+  timers — the `readStdin()` 3000ms safety timer (:97) and the dedup-guard
+  2000ms cleanup timer (:918). Neither is load-bearing; both kept the Node
+  event loop alive ~3s after every hook finished its work, which was the
+  dominant hook-perf cost (the ~6406ms before-figure) and inflated the test
+  suite. Hook processes now exit in ~140ms instead of ~3000ms+. Confirmed
+  `hook-utils.cjs` was the only hook using timers — no other `.cjs` affected.
+
+### Added
+- `tests/hooks/hook-exit-latency.test.js`: regression test asserting a hook
+  process exits well under 500ms with piped+closed stdin (proves no linger).
+
 ## [12.22.0] - 2026-06-22
 
 Domain-agnostic framing fix, `/designer` endless-refinement contract, and

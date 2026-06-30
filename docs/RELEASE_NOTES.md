@@ -1,6 +1,6 @@
 # cAgents Release Notes
 
-**Current Version**: 12.22.0
+**Current Version**: 12.22.1
 **Release Date**: June 14, 2026
 **Status**: Production-Ready
 
@@ -1972,6 +1972,6 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.22.0
+**Current Version**: 12.22.1
 **Release Date**: February 27, 2026
 **Git Tag**: v9.21.0
