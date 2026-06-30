@@ -423,6 +423,83 @@ note: "Auto-generated stub — no validator agent ran for this session."
   return resolved;
 }
 
+/**
+ * Team-artifact enforcement (Phase 10, A8-01).
+ *
+ * Fires ONLY for `team_*` sessions that reached TERMINAL SUCCESS — i.e.
+ * `result: success` AND a terminal pipeline_state (VALIDATED, or the
+ * VALIDATED→complete safety-net's `complete`/`completed`/`COMPLETE`). The
+ * `result === 'success'` guard is load-bearing: it excludes `failed`/`aborted`
+ * AND any in-flight team session (which carries `result: pending`/null), so a
+ * NON-terminal team run — phase EXECUTING/COORDINATED/ENRICHING/INIT, or a
+ * terminal-but-not-success run — passes through untouched. This guard MUST NOT
+ * fire mid-session; otherwise it would block every Stop turn of a live /team run
+ * (including the audit session that is producing this very change).
+ *
+ *   - BLOCK (issues[])   when workflow/coordination_log.yaml is missing.
+ *   - WARN  (warnings[] + console.error, never blocks) when a wave run
+ *     (an `outputs/wave-N` dir exists) skipped its spawn briefs (no
+ *     `spawn_brief.md` under any wave dir) or its gate validations
+ *     (no `workflow/gate_validations` dir).
+ */
+function checkTeamArtifacts(sessionDir, statusContent) {
+  const issues = [];
+  const warnings = [];
+  const sessionName = path.basename(sessionDir);
+  if (!sessionName.startsWith('team_') || !statusContent) return { issues, warnings };
+
+  const result = extractYamlValue(statusContent, 'result');
+  const state = extractYamlValue(statusContent, 'pipeline_state')
+    || extractYamlValue(statusContent, 'phase')
+    || extractYamlValue(statusContent, 'current_phase');
+
+  // Terminal SUCCESS gate. Non-terminal team sessions are NOT touched.
+  const isTerminalSuccess = result === 'success' && state && TERMINAL_STATES.includes(state);
+  if (!isTerminalSuccess) return { issues, warnings };
+
+  // BLOCK: coordination_log.yaml is mandatory for a completed team run.
+  if (!fs.existsSync(path.join(sessionDir, 'workflow', 'coordination_log.yaml'))) {
+    issues.push(
+      `Team session '${sessionName}' reached terminal success (result: success) but ` +
+      `workflow/coordination_log.yaml is MISSING. The /team lead MUST produce a ` +
+      `coordination_log.yaml (e.g. via cagents:coord-log-writer, which assembles it from ` +
+      `on-disk artifacts) before stopping — or set result: partial if the run did not ` +
+      `fully complete. Without it the team run is unauditable.`
+    );
+  }
+
+  // WARN (never block): a wave run that skipped its spawn briefs or gate validations.
+  let waveDirs = [];
+  try {
+    const outputsDir = path.join(sessionDir, 'outputs');
+    if (fs.existsSync(outputsDir)) {
+      waveDirs = fs.readdirSync(outputsDir).filter(d => {
+        if (!/^wave[-_]/i.test(d)) return false;
+        try { return fs.statSync(path.join(outputsDir, d)).isDirectory(); } catch { return false; }
+      });
+    }
+  } catch { /* best effort */ }
+
+  if (waveDirs.length > 0) {
+    const outputsDir = path.join(sessionDir, 'outputs');
+    const anySpawnBrief = waveDirs.some(d => fs.existsSync(path.join(outputsDir, d, 'spawn_brief.md')));
+    if (!anySpawnBrief) {
+      const msg = `Team session '${sessionName}' has ${waveDirs.length} wave output dir(s) but no ` +
+        `outputs/wave-*/spawn_brief.md — the wave run appears to have skipped its spawn briefs.`;
+      warnings.push(msg);
+      console.error(`[VerifyCompletion] ${msg}`);
+    }
+    if (!fs.existsSync(path.join(sessionDir, 'workflow', 'gate_validations'))) {
+      const msg = `Team session '${sessionName}' has wave output dir(s) but no ` +
+        `workflow/gate_validations/ — the wave run appears to have skipped its GATE validations.`;
+      warnings.push(msg);
+      console.error(`[VerifyCompletion] ${msg}`);
+    }
+  }
+
+  return { issues, warnings };
+}
+
 function verifyCompletion(sessionDir) {
   const issues = [];
   const warnings = [];
@@ -917,6 +994,12 @@ function verifyCompletion(sessionDir) {
       warnings.push('No mid-execution checkpoint found. Controller may have skipped progress validation.');
     }
   }
+
+  // Team-artifact enforcement (Phase 10, A8-01) — terminal-success team_* only.
+  // BLOCK on missing coordination_log; WARN on skipped wave briefs/gates.
+  const teamArtifacts = checkTeamArtifacts(sessionDir, statusContent);
+  for (const i of teamArtifacts.issues) issues.push(i);
+  for (const w of teamArtifacts.warnings) warnings.push(w);
 
   // Validation summary
   const validationSummary = `Completion validation: ${totalChecks} checks run, ${warnings.length} warnings`;

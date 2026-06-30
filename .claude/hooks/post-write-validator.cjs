@@ -289,47 +289,19 @@ createHook('PostWriteValidator', async (input) => {
     }
   }
 
-  // Auto-generate event files on status.yaml state transitions (v10.25.0)
+  // Update heartbeat timestamp on status.yaml writes for stuck-session detection.
+  //
+  // (Phase 10 / A8-03: the v10.25.0 `workflow/events/EVT-{state}_*.yaml`
+  // auto-emitter that previously lived here was REMOVED. workflow/events/
+  // emission was dropped in v12.6.0 as external-UI-only, but this auto-emitter
+  // lingered as a vestigial writer. Nothing consumed its output: the only
+  // reader (verify-completion.cjs revision counter) matches FAIL/REVISE event
+  // bodies, which the state_transition emitter never produced. The heartbeat
+  // update below is the only behavior retained.)
   if (basename === 'status.yaml') {
-    const statusContent = safeRead(filePath);
-    if (statusContent) {
-      const pipelineState = extractYamlValue(statusContent, 'pipeline_state')
-        || extractYamlValue(statusContent, 'phase');
-      if (pipelineState) {
-        // Derive the session dir from the status.yaml path (it lives at {sessionDir}/status.yaml)
-        const statusSessionDir = path.dirname(filePath);
-        const eventsDir = path.join(statusSessionDir, 'workflow', 'events');
-        try {
-          // Check for existing event file for this state to avoid duplicates
-          let alreadyExists = false;
-          if (fs.existsSync(eventsDir)) {
-            const existing = fs.readdirSync(eventsDir);
-            alreadyExists = existing.some(f => f.startsWith(`EVT-${pipelineState}_`));
-          }
-          if (!alreadyExists) {
-            ensureDir(eventsDir);
-            const now = new Date().toISOString();
-            const safeTimestamp = now.replace(/[:.]/g, '-');
-            const eventFileName = `EVT-${pipelineState}_${safeTimestamp}.yaml`;
-            const eventContent = [
-              `event_id: EVT-${pipelineState}`,
-              `type: state_transition`,
-              `state: ${pipelineState}`,
-              `agent: auto-generated`,
-              `timestamp: "${now}"`,
-              ''
-            ].join('\n');
-            fs.writeFileSync(path.join(eventsDir, eventFileName), eventContent);
-          }
-        } catch { /* best effort - don't block on event file failures */ }
-      }
-
-      // Update heartbeat timestamp for stuck session detection
-      try {
-        const statusSessionDir = path.dirname(filePath);
-        updateStatusHeartbeat(statusSessionDir);
-      } catch { /* best effort */ }
-    }
+    try {
+      updateStatusHeartbeat(path.dirname(filePath));
+    } catch { /* best effort */ }
   }
 
   // Log to session audit trail

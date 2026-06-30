@@ -1,5 +1,13 @@
 # C-Suite Domain Mapping
 
+> **Canonical definition (A8-08/C9.7):** "C-suite" = the 9 leadership agents
+> (`cagents:ceo`, `cagents:cto`, `cagents:cfo`, `cagents:cmo`, `cagents:coo`,
+> `cagents:chro`, `cagents:cco`, `cagents:cro`, `cagents:cpo`). These live in
+> `agents/leadership/` and are the only agents strategic mode spawns as Wave 0/1
+> teammates. The `general-counsel` entry below is a domain *controller* the
+> service domain routes to — not a 10th C-suite seat. There is no `clo`/`cso`
+> C-suite agent on disk.
+
 ## Domain-to-C-Suite Routing
 
 | Domain Key | C-Suite Title | Agent | Super-Domain | Scope |

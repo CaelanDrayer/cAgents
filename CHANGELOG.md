@@ -10,6 +10,34 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.30.0] - 2026-06-30
+
+Phase 10 of the comprehensive plugin audit/refactor (session
+`team_plugin-audit-refactor_260630_001`). Make the /team machinery match reality.
+
+### Added
+- Team-artifact enforcement folded into the existing `verify-completion.cjs` Stop
+  hook (A8-01) — no new hook file (count stays 31). When a `team_*` session is at
+  terminal success (`result: success` AND a terminal `pipeline_state`), it BLOCKS
+  if `workflow/coordination_log.yaml` is missing, and WARNs (never blocks) if a
+  wave run skipped its `spawn_brief.md`/`gate_validations/`. The `result: success`
+  predicate is the load-bearing guard — in-flight runs carry `result: pending`/null
+  and pass straight through, so it cannot deadlock a live session. Regression test
+  `tests/hooks/verify-completion-team-artifacts.test.js` (5 cases).
+- A single canonical "C-suite" definition (A8-08) in
+  `team/reference/csuite-mapping.md`: the 9 leadership agents (CEO/CTO/CFO/CMO/
+  COO/CHRO/CCO/CRO/CPO) — matching `agents/leadership/`; no `clo`/`cso` ghosts.
+
+### Removed
+- The `workflow/events/EVT-{state}_*.yaml` auto-emitter in `post-write-validator.cjs`
+  (D5, A8-03) — emission was declared removed in v12.6.0 but this v10.25.0 writer
+  still ran. Confirmed unconsumed; heartbeat update retained.
+
+### Investigated, kept (conservative)
+- `team` + `team-lead` core agents (A8-07): NOT vestigial — referenced by
+  `plugin.json`, two tests, `run/reference/delegation-patterns.md`, and
+  `orchestrator/resources/team-mode-execution.md`. Kept; agent count stays 57.
+
 ## [12.29.0] - 2026-06-30
 
 Phase 9 of the comprehensive plugin audit/refactor (session
