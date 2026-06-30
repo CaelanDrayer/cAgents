@@ -88,8 +88,8 @@ The top-level `domain:` field was replaced by `archetype:` (and `branch:` for 3-
 
 ### model
 - Preferred model alias: `opus`, `opusplan`, `sonnet`, or `haiku`
-- These aliases map to the latest Claude generation: `opus` -> Claude Opus 4.6, `sonnet` -> Claude Sonnet 4.6, `haiku` -> Claude Haiku 4.5
-- `opusplan`: Claude Opus 4.6 reasoning + Claude Sonnet 4.6 execution (ideal for controllers)
+- These aliases map to the latest Claude generation: `opus` -> Claude Opus 4.8, `sonnet` -> Claude Sonnet 4.6, `haiku` -> Claude Haiku 4.5
+- `opusplan`: Claude Opus 4.8 reasoning + Claude Sonnet 4.6 execution (ideal for controllers)
 - Overridden by model_routing.yaml scenario detection and environment variables
 - If omitted, uses model_routing.yaml defaults
 - See @.claude/rules/infrastructure/model-routing.md for model routing configuration and aliases.

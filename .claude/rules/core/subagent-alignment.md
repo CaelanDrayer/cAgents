@@ -19,7 +19,7 @@ Agent({
   description: "Brief task description",
   prompt: "Detailed instructions for the subagent",
   // Optional parameters
-  subagent_type: "cagents:agent-name",  // cAgents extension
+  subagent_type: "cagents:{agent-name}",  // cAgents extension
   timeout: 120000  // milliseconds
 })
 ```
@@ -106,8 +106,8 @@ Format: "cagents:{agent-name}"
 Examples:
 - "cagents:backend-developer"
 - "cagents:tech-lead"
-- "cagents:copywriter"
-- "cagents:business-analyst"
+- "cagents:editor"
+- "cagents:market-research-analyst"
 ```
 
 **IMPORTANT**: Do NOT use `{domain}:{agent-name}` format (e.g., `make:backend-developer`). The plugin registers all agents under the `cagents:` namespace, not domain-specific namespaces. Using the wrong prefix causes fallback to generic general-purpose agents instead of loading the specialized SKILL.md.
@@ -180,10 +180,10 @@ Controllers coordinate work through question-based delegation:
 | cAgents Controller | Use Case | Delegates To |
 |-------------------|----------|--------------|
 | `cagents:tech-lead` | Engineering work | backend-developer, frontend-developer, qa-lead |
-| `cagents:architect` | System design | engineer specialists, security-specialist |
-| `cagents:creative-director` | Creative work | copywriter, designer, content-strategist |
-| `cagents:marketing-strategist` | Marketing strategy + campaigns + PMM + SEO | copywriter, seo-specialist, marketing-analyst, media-buyer, sales-enablement-specialist |
-| `cagents:operations-manager` | Operations | operations-analyst, procurement-specialist |
+| `cagents:architect` | System design | engineer specialists, security-engineer |
+| `cagents:narrative-director` | Creative work | editor, visual-artist, worldbuilder |
+| `cagents:marketing-strategist` | Marketing strategy + campaigns + PMM + SEO | editor, marketing-analyst, sales-strategist |
+| `cagents:operations-manager` | Operations | product-owner, data-scientist |
 
 ### Execution Agents (Tier 3)
 
@@ -194,8 +194,8 @@ Execution agents answer questions and implement tasks:
 | `cagents:backend-developer` | Server-side code | Implementation details, API design |
 | `cagents:frontend-developer` | Client-side code | UI implementation, state management |
 | `cagents:qa-lead` | Testing | Test strategy, coverage, quality gates |
-| `cagents:copywriter` | Written content | Messaging, tone, audience fit |
-| `cagents:business-analyst` | Business/financial analysis | Budgets, forecasts, ROI |
+| `cagents:editor` | Written content | Messaging, tone, audience fit |
+| `cagents:market-research-analyst` | Business/market analysis | Budgets, forecasts, ROI |
 
 ## Prompt Templates
 
@@ -266,11 +266,11 @@ Agent({ subagent_type: "backend-developer", ... })
 
 | Task Type | Agent Selection |
 |-----------|----------------|
-| Design questions | architect, designer, tech-lead |
+| Design questions | architect, frontend-developer, tech-lead |
 | Implementation | backend-developer, frontend-developer |
-| Testing | qa-lead, qa-tester, security-specialist |
-| Content | copywriter, content-strategist |
-| Analysis | analyst roles (financial, operations, etc.) |
+| Testing | qa-lead, security-engineer |
+| Content | editor, technical-writer |
+| Analysis | data-scientist, market-research-analyst |
 
 ### 3. Provide Clear Context
 
@@ -305,7 +305,7 @@ If specified agent can't handle the request:
 
 ## Related Files
 
-- `cagents-memory/_system/agent_aliases.yaml` - Agent name mappings
-- `{domain}/config/planner_config.yaml` - Controller catalogs
+- `scripts/migration/v12-aliases.yaml` - Agent name mappings (old → live successor)
+- `cagents-memory/_system/config/routing.yaml` - Controller catalogs (+ `agents/_overlay/{people,shared}/config/domain_overrides.yaml`)
 - `.claude/rules/core/controllers.md` - Controller patterns
 - `.claude/rules/core/execution.md` - Execution agent patterns

@@ -20,19 +20,16 @@ Domain-specific patterns for customer experience, legal, and compliance workflow
 ## Controller Selection
 
 **Tier 2** (Moderate complexity):
-- **customer-success-manager**: Customer relationships, account management
+- **support-director**: Customer relationships, account management, support operations
 - **general-counsel**: Legal review, contract management
-- **account-manager**: Account planning, retention
-- **support-operations-manager**: Support process optimization
 
 **Tier 3** (Complex):
 - **Primary**: support-director (customer experience coordination)
-- **Supporting**: general-counsel (legal), compliance-officer (compliance), legal-operations-manager, relationship-manager
+- **Supporting**: general-counsel (legal and compliance)
 
 **Tier 4** (Expert):
 - **Executive**: general-counsel (legal oversight)
 - **Primary**: support-director (coordination)
-- **Supporting**: compliance-officer, customer-advocacy-manager
 
 ## Typical Questions
 
@@ -56,12 +53,9 @@ Serve controllers typically ask:
 ## Execution Agents
 
 Common serve execution agents:
-- **customer-support-rep**: Ticket resolution, customer assistance
-- **legal-analyst**: Legal research, document review
-- **compliance-specialist**: Compliance monitoring, audit support
-- **contracts-manager**: Contract drafting, negotiation
-- **support-analyst**: Support metrics, journey mapping
-- **escalation-manager**: Complex issue resolution
+- **support-director**: Ticket resolution, escalation, support metrics, journey mapping
+- **general-counsel**: Legal research, document review, compliance, contract drafting
+- **technical-writer**: Knowledge base and help content
 
 ## Config Location
 

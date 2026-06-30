@@ -26,12 +26,12 @@ Domain-specific patterns for strategy, product, operations, finance, marketing, 
 
 **Tier 3** (Complex):
 - **Primary**: strategic-planner (business strategy coordination)
-- **Supporting**: marketing-strategist (marketing), sales-strategist (sales), finance-manager (financial)
+- **Supporting**: marketing-strategist (marketing), sales-strategist (sales)
 
 **Tier 4** (Expert):
 - **Executive**: cpo (product oversight), cfo (financial oversight)
 - **Primary**: strategic-planner (coordination)
-- **Supporting**: operations-manager, marketing-strategist, finance-manager
+- **Supporting**: operations-manager, marketing-strategist
 
 ## Typical Questions
 
@@ -60,14 +60,12 @@ Business controllers typically ask:
 ## Execution Agents
 
 Common business execution agents:
-- **copywriter**: Sales copy, marketing content, ad copy
-- **marketing-analyst**: Campaign metrics, market analysis
+- **editor**: Sales copy, marketing content, ad copy
+- **marketing-analyst**: Campaign metrics, market analysis, SEO and keyword research
 - **sales-strategist**: Sales process, deal strategy
-- **finance-manager**: Budgeting, financial reporting
-- **operations-manager**: Process optimization
+- **operations-manager**: Process optimization, budgeting, financial reporting
 - **product-owner**: Product requirements, backlog management
-- **business-analyst**: Requirements analysis, process mapping
-- **seo-specialist**: Search optimization, keyword research
+- **market-research-analyst**: Requirements and business analysis
 
 ## Config Location
 

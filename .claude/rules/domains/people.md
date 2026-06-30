@@ -19,17 +19,15 @@ Domain-specific patterns for HR and talent workflows.
 ## Controller Selection
 
 **Tier 2** (Moderate complexity):
-- **hr-manager**: HR operations, employee relations
-- **talent-acquisition-manager**: Recruiting, hiring
+- **hr-manager**: HR operations, employee relations, recruiting, hiring
 
 **Tier 3** (Complex):
 - **Primary**: hr-manager (HR coordination)
-- **Supporting**: talent-acquisition-manager (recruiting), culture-and-engagement-manager (culture)
+- **Supporting**: chro (org strategy and culture)
 
 **Tier 4** (Expert):
 - **Executive**: chro (HR strategy)
 - **Primary**: hr-manager (coordination)
-- **Supporting**: talent-acquisition-manager, culture-and-engagement-manager, change-management-specialist
 
 ## Typical Questions
 
@@ -52,14 +50,10 @@ People controllers typically ask:
 
 ## Execution Agents
 
-Common people execution agents:
-- **recruiter**: Candidate sourcing, screening
-- **hr-business-partner**: HR administration, business alignment
-- **learning-specialist**: Learning programs, skill development
-- **compensation-analyst**: Salary benchmarking, compensation planning
-- **employee-relations-specialist**: Conflict resolution, policy
-- **culture-and-engagement-manager**: Culture initiatives, engagement programs
+Common people agents (v12 collapsed the people-ops specialists into the controllers below):
+- **hr-manager**: Sourcing, screening, employee relations, learning, compensation
+- **chro**: Culture, engagement, organizational design, change management
 
 ## Config Location
 
-`people/config/domain_overrides.yaml`
+`agents/_overlay/people/config/domain_overrides.yaml`

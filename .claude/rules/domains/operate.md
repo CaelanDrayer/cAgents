@@ -27,8 +27,8 @@ Operations and finance agents are part of the **business** domain in v10.0.0. Th
 
 For operations/finance requests within the business domain:
 
-**Tier 2**: operations-manager, finance-manager
-**Tier 3**: + strategic-planner, compliance-officer
+**Tier 2**: operations-manager
+**Tier 3**: + strategic-planner, general-counsel
 **Tier 4**: cfo + coo + operations-manager
 
 ## Typical Questions

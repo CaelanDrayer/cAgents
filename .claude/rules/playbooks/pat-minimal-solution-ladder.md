@@ -11,7 +11,6 @@ metadata:
   applies_to:
     - cagents:backend-developer
     - cagents:frontend-developer
-    - cagents:senior-developer
     - cagents:reviewer
     - all-execution-agents
 ---

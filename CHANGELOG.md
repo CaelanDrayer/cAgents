@@ -10,6 +10,36 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.25.0] - 2026-06-30
+
+Phase 5 of the comprehensive plugin audit/refactor (session
+`team_plugin-audit-refactor_260630_001`). Stale-config catalog-sync — every
+agent reference in tracked config/rules now resolves to a live agent (no spawn
+can silently degrade to general-purpose).
+
+### Fixed
+- `routing.yaml` (A6-01): 67 orphan specialist agent names (deleted in the
+  240→57 cull) remapped to live successors or removed — **0 orphans remain**.
+  `specialist_routing` is load-bearing (read by `agents/core/coordinator` and
+  `scripts/domain-health.sh`). `controller_catalog` was already valid.
+- Dead agent names in rules (A3-04): ~25 stale references across
+  `rules/domains/{engineering,grow,operate,people,serve}.md` and
+  `subagent-alignment.md` replaced with live successors (e.g.
+  `security-specialist`→`security-engineer`, `qa-tester`→`qa-lead`,
+  `compliance-officer`→`general-counsel`, `recruiter`→`hr-manager`).
+- Model-generation drift (A6-02): `model-routing.md` + `skill-format.md` updated
+  `opus` → Claude Opus 4.8 (was 4.6); `sonnet` 4.6 / `haiku` 4.5 retained.
+
+### Added
+- `tests/v12/routing-refs-resolve.test.js`: CI guard asserting every agent
+  reference in routing.yaml + rules/domains + subagent-alignment resolves to a
+  live agent dir or a `v12-aliases.yaml` key.
+
+Flagged (gitignored, out of git scope): `pipeline_config.yaml` is referenced as
+load-bearing in tracked rules but is itself gitignored; `model_routing.yaml`
+still ships stale model IDs and `model-routing-advisor.cjs` hardcodes its tier
+map rather than reading it.
+
 ## [12.24.0] - 2026-06-30
 
 Phase 4 of the comprehensive plugin audit/refactor (session
