@@ -8,7 +8,7 @@ paths:
 
 End-to-end traceability from "what is done" definition to completion verification.
 
-**Canonical validation-number statement**: Exactly **5** checks are hook-enforced (the cross-cutting checks in `@.claude/rules/quality/resources/validation-checklist-active.md`). The historical **29**-check framework = those **5** active + **24** aspirational checks (Phases 1-3, never reliably enforced), which now live in `docs/FUTURE_VALIDATION_FRAMEWORK.md` and do NOT auto-load into agent context. The controller pre-execution (7), mid-execution (5), and executor self-validation (5) checklists are by-convention agent checklists, not hook-enforced.
+**Canonical validation-number statement**: the validation surface is three honest layers — **5 enforced** (hook-enforced cross-cutting checks) + **advisory-by-convention** (controller pre-execution 7 + mid-execution 5; executor self-validation 5, verifier hook deferred; two-stage review — real guidance, NOT hook-enforced) + **24 aspirational-deferred** (Phases 1-3 in `docs/FUTURE_VALIDATION_FRAMEWORK.md`, which does NOT auto-load into agent context). See the single legible **Validation Layers** map in `@.claude/rules/quality/completion.md`. *(HISTORICAL: the original framework was framed as 29 = those same 5 active + 24 aspirational; the 15→5 and 29→5 churn is history, not the live count.)*
 
 ## The Validation Chain
 
@@ -231,9 +231,11 @@ Every workflow YAML file MUST conform to its schema. Five schema files are valid
 
 **coordination_log.yaml**: schema_version ("1"), controller (cagents:{name}), objectives, implementation_tasks (>=1 each with task_id, assigned_to, status), status (completed|in_progress|failed)
 
-**execution_summary.yaml**: session_id, final_state (VALIDATED|FAILED|INTERRUPTED), status, revision_rounds_used (0-5), states_executed, total_duration_ms
+**execution_summary.yaml**: session_id, final_state (VALIDATED|FAILED|INTERRUPTED), status, revision_rounds_used (0-3), states_executed, total_duration_ms
 
-**status.yaml**: pipeline_state, revision_round (0-5), validation_cycles, created_at (ISO 8601), state_history (>=1 each with state + entered_at)
+**status.yaml**: pipeline_state, revision_round (0-3), validation_cycles, created_at (ISO 8601), state_history (>=1 each with state + entered_at)
+
+> **Revision-round range**: `0-3` is canonical — the outer FAIL/REVISE pipeline loop is capped at **3 total cycles** (`revision.max_cycles: 3` in `pipeline_config.yaml`, lowered from 5 in v12.0.0; after 3, escalate to user HITL). This is distinct from the controller's **2** internal executor-reviewer rounds (`controller_revision.max_internal_rounds: 2`, lowered from 3 in LP-27). Any `(0-5)` range elsewhere is stale and should read `(0-3)`.
 
 The schema summaries above document the required fields for each workflow YAML file.
 

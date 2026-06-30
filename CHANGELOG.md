@@ -10,6 +10,31 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.28.0] - 2026-06-30
+
+Phase 8 of the comprehensive plugin audit/refactor (session
+`team_plugin-audit-refactor_260630_001`). Validation-framework consolidation —
+one consistent, layered story instead of an apparent "validation zoo".
+
+### Fixed
+- Revision-round contradiction (A3-07): `validation-framework.md` pinned
+  revision rounds at `(0-5)`; corrected to the canonical `(0-3)` (outer
+  FAIL/REVISE cap = 3 `max_cycles`; controller internal = 2 `max_internal_rounds`).
+- Count-narrative reconciliation (C4.1): `completion.md` and
+  `validation-framework.md` now state one model — **5 enforced +
+  advisory-by-convention + 24 aspirational-deferred** — with the 29/15→5 churn
+  clearly marked HISTORICAL.
+
+### Added
+- A single "Validation Layers" table in `completion.md` (Enforced 5 / Advisory /
+  Aspirational 24, each with count, location, and whether a hook enforces it).
+- `tests/v12/validation-layers-consistent.test.js`: guard pinning "5 enforced",
+  the Layers table, and the absence of any CURRENT `(0-5)` revision-round claim.
+
+### Changed
+- `validation-framework.md` now `@path`-references the `completion.md` Layers
+  map instead of re-enumerating it (de-duplicated).
+
 ## [12.27.1] - 2026-06-30
 
 Bug fix surfaced during the audit (session

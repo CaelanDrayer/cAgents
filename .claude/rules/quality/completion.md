@@ -184,7 +184,19 @@ Verification evidence is only valid if:
 
 ## Comprehensive Validation Checklists (V12.0.0)
 
-**Canonical validation-number statement**: Exactly **5** checks are hook-enforced (the cross-cutting checks listed last below — wired into `subagent-stop-tracker.cjs`, `post-write-validator.cjs`, and `verify-completion.cjs`). The historical **29**-check framework = those **5** active + **24** aspirational checks (Phases 1-3) that were never reliably enforced and now live in `docs/FUTURE_VALIDATION_FRAMEWORK.md` (which does not auto-load into agent context). The other check groups below (pre-execution, mid-execution, executor self-validation) are by-convention controller/executor checklists, not hook-enforced.
+### Validation Layers (the single legible answer to "what validation actually runs")
+
+cAgents' validation surface is honestly **layered**, not one monolithic checklist. Exactly one layer is hook-enforced; the rest are real-but-advisory or deferred:
+
+| Layer | Checks | Lives in | Hook-enforced? |
+|-------|--------|----------|----------------|
+| **Enforced** | 5 cross-cutting | `@resources/validation-checklist-active.md` | **YES** — `subagent-stop-tracker.cjs`, `post-write-validator.cjs`, `verify-completion.cjs` |
+| **Advisory (by convention)** | controller pre-execution (7) + mid-execution (5); executor self-validation (5, verifier hook deferred); two-stage review | `@.claude/rules/core/resources/controller-validation-checklist.md`, `@.claude/rules/core/resources/execution-self-validation.md`, `@.claude/rules/playbooks/pat-two-stage-review.md` | **NO** — agent-followed guidance, not mechanically enforced |
+| **Aspirational (deferred)** | 24 historical checks | `docs/FUTURE_VALIDATION_FRAMEWORK.md` (does NOT auto-load) | **NO** — deferred to future graduation work |
+
+**Canonical count narrative**: **5 enforced + advisory-by-convention + 24 aspirational-deferred**. *(HISTORICAL: the original design was framed as a 29-check framework = those same 5 active + 24 aspirational; the self-validation protocol separately churned 15→5. Both are history — neither is the live enforced count.)*
+
+### Advisory layer breakdown (supporting detail)
 
 - **Pre-Execution** (7 checks by controller, by convention): Planner output schema (Check 0), plan completeness, work item criteria, dependency acyclicity, agent existence, referenced files, log schema. See @.claude/rules/core/resources/controller-validation-checklist.md.
 - **Mid-Execution** (5 checks by controller after every 3 completions, by convention): Evidence capture, stuck item detection, timestamp monotonicity, evidence spot-check, dependency satisfaction. See @.claude/rules/core/resources/controller-validation-checklist.md.
