@@ -369,40 +369,12 @@ function findActiveSession(hintOrOptions) {
     } catch { /* skip */ }
   }
 
-  // Third pass: scan org session subdirectories for nested team/domain sessions.
-  // When /team ran inside a legacy org_* session, its session dir was nested (e.g., org_xxx/engineering/).
-  // These subdirs have their own status.yaml and are not found by the top-level scan.
-  // Wrapped in withFileLock to prevent concurrent hook processes from both discovering
-  // the same nested session (discovery-only lock scope per REQ-013).
-  const nestedDiscoveryLockPath = path.join(AGENT_MEMORY_DIR, '_system', 'nested_session_discovery');
-  const nestedResult = withFileLock(nestedDiscoveryLockPath, () => {
-    const orgSessions = sessions.filter(s => s.startsWith('org_'));
-    for (const orgSession of orgSessions) {
-      const orgPath = path.join(sessionsDir, orgSession);
-      try {
-        const subdirs = fs.readdirSync(orgPath).filter(d => {
-          try { return fs.statSync(path.join(orgPath, d)).isDirectory(); } catch { return false; }
-        });
-        for (const subdir of subdirs) {
-          const nestedPath = path.join(orgPath, subdir);
-          const nestedStatus = path.join(nestedPath, 'status.yaml');
-          const content = safeRead(nestedStatus);
-          if (!content) continue;
-          const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase') || extractYamlValue(content, 'pipeline_state');
-          if (phase && !TERMINAL_STATES.includes(phase)) {
-            console.error(`[findActiveSession] Found nested session: ${orgSession}/${subdir}`);
-            return nestedPath;
-          }
-        }
-      } catch { /* skip unreadable org dirs */ }
-    }
-    return null;
-  });
-
-  if (nestedResult) {
-    _cachedActiveSessions.set(cacheKey, nestedResult);
-    return nestedResult;
-  }
+  // (A2-05, v12.x) The legacy "third pass: scan org_* session subdirectories for
+  // nested team/domain sessions" was removed. `/org` was removed in v12.2.0 (folded
+  // into `/team` strategic mode), so no new session is ever created with an `org_`
+  // prefix and the nested-subdir scan only ever matched archived dirs — dead code
+  // for all live sessions. The status-pass and grace-pass above remain the active
+  // fallbackHeuristic behavior.
 
   _cachedActiveSessions.set(cacheKey, null);
   return null;
@@ -455,39 +427,10 @@ function findTeamSession(input = {}) {
     }
   }
 
-  // H-11: Scan org session subdirectories for nested team sessions
-  // (e.g., org_xxx/engineering/ when /team ran inside a legacy org_* session)
-  try {
-    const orgSessions = fs.readdirSync(sessionsDir)
-      .filter(d => d.startsWith('org_'))
-      .sort((a, b) => {
-        const partsA = a.split('_');
-        const tsA = partsA.slice(-2).join('_');
-        const partsB = b.split('_');
-        const tsB = partsB.slice(-2).join('_');
-        return tsB.localeCompare(tsA);
-      });
-
-    for (const orgSession of orgSessions) {
-      const orgPath = path.join(sessionsDir, orgSession);
-      try {
-        const subdirs = fs.readdirSync(orgPath).filter(d => {
-          try { return fs.statSync(path.join(orgPath, d)).isDirectory(); } catch { return false; }
-        });
-        for (const subdir of subdirs) {
-          const nestedPath = path.join(orgPath, subdir);
-          const nestedStatus = path.join(nestedPath, 'status.yaml');
-          const content = safeRead(nestedStatus);
-          if (!content) continue;
-          const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'pipeline_state');
-          if (phase && !TERMINAL_STATES.includes(phase)) {
-            console.error(`[findTeamSession] Found nested session: ${orgSession}/${subdir}`);
-            return nestedPath;
-          }
-        }
-      } catch { /* skip unreadable org dirs */ }
-    }
-  } catch { /* skip */ }
+  // (A2-05, v12.x) The legacy "H-11: scan org_* session subdirectories for nested
+  // team sessions" pass was removed. `/org` was removed in v12.2.0, so no live
+  // session is ever created with an `org_` prefix; the nested-subdir scan only
+  // matched archived dirs. The top-level team_* status scan above is the active path.
 
   return null;
 }

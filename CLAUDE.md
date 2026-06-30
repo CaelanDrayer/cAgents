@@ -415,7 +415,7 @@ cAgents/
 +-- CLAUDE.md                # Main project memory (this file)
 +-- .claude/
 |   +-- skills/              # Skills (run, team, designer, helper) — /improve folded into /run in v12.1.2; /org removed in v12.2.0 (folded into /team strategic mode)
-|   +-- hooks/               # 32 .cjs files (26 registered hooks + 3 dispatched sub-validators + utils + launcher + eval CLI)
+|   +-- hooks/               # 31 .cjs files (24 registered hooks + 5 dispatched sub-validators + utils + launcher)
 |   +-- output-styles/       # Output-style files (v12.8.0+)
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (40 files: 34 top-level across 6 categories + 2 READMEs (root + playbooks/) + 4 in resources/)
@@ -443,7 +443,7 @@ cAgents/
 
 ## Hooks System
 
-**Architecture**: CJS-only hooks with `createHook()` factory. 32 .cjs files = 26 unique registered hooks + 3 dispatched Write|Edit sub-validators (secret-detection, controller-delegation-validator, skill-size-monitor — run in-process by `write-edit-dispatch.cjs`, the D1b consolidating dispatcher; v12.19.0 WI-5) + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI. See @.claude/rules/core/hooks.md for full documentation.
+**Architecture**: CJS-only hooks with `createHook()` factory. 31 .cjs files = 24 unique registered hooks + 5 dispatched sub-validators (Write|Edit: secret-detection, controller-delegation-validator, skill-size-monitor via `write-edit-dispatch.cjs`; Agent: session-init-gate, model-routing-advisor via `agent-dispatch.cjs`) + hook-utils.cjs + run-hook.cjs launcher. See @.claude/rules/core/hooks.md for full documentation.
 
 ## Standalone Contract (V11.2.0+)
 
@@ -575,13 +575,13 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking and
 **Agents**: 57 total across 9 archetypes (developer 8, operator 7, advisor 4, analyst 5, creator 2, writer 3, strategist 3, core 16, leadership 9) — post-v12.20.0 catalog consolidation (41 routable + 16 core; 84 absorbed agents use mode flags)
 **Domain Overlay (legacy routing/config only)**: 2 dirs (`people/`, `shared/`) hold `config/domain_overrides.yaml` — no SKILL.md files. The other 11 legacy domains (engineering, creative, business, growth, service, science, health, education, personal, arts, trades) were deleted in v12 W4.2 and consolidated into `cagents-memory/_system/config/routing.yaml`.
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `people/config/domain_overrides.yaml`, `shared/config/domain_overrides.yaml`, `cagents-memory/_system/config/routing.yaml`, `cagents-memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (internal-only session YAML contract since v12.6.0)
-**Hooks**: 32 .cjs files = 26 unique registered hooks + 3 dispatched Write|Edit sub-validators (run by write-edit-dispatch.cjs) + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI
+**Hooks**: 31 .cjs files = 24 unique registered hooks + 5 dispatched sub-validators (run by write-edit-dispatch.cjs + agent-dispatch.cjs) + hook-utils.cjs + run-hook.cjs launcher
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 1340+ Vitest tests across 158+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.23.0
+**Version**: 12.24.0
 
 ## Troubleshooting
 

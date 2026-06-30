@@ -87,25 +87,31 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 - **Behavior**: at the warn threshold, returns `systemMessage` recommending a split into `resources/*.md` per Three-Tier Progressive Disclosure. At the block threshold, returns `deny` with the same recommendation (honored by the dispatcher under most-restrictive). Non-SKILL.md writes pass through.
 - **Override**: set `CAGENTS_SKILL_BLOCK_LINES` higher to allow a one-off oversized write (e.g., during a refactor), then re-tighten.
 
-### PreToolUse[Bash|Write|Edit]: approval-gate.cjs
+(A2-02) The `approval-gate.cjs` hook was DELETED. It was structurally dead: it read `process.env.AGENT_MEMORY_DIR` (never set in `.claude/settings.json` `env`) and a `cagents-memory/_data/policies/` directory that never existed in production, so its deny path could never fire. It paid a cold-start node spawn on every Bash/Write/Edit purely to `return null`. Hard denials remain the responsibility of `bash-validator.cjs` (Bash) and the `write-edit-dispatch.cjs` security gates (Write/Edit).
 
-- **Matcher**: `Bash|Write|Edit`
-- **Purpose**: Enforce explicit user-approval gates before sensitive Bash/Write/Edit operations. Acts as a thin policy layer over `permissions.allow` / `permissions.deny` in `.claude/settings.json`.
-- **Behavior**: returns `systemMessage` for advisory cases; non-blocking by default. Hard denials remain the responsibility of `bash-validator.cjs` (Bash) and `secret-detection.cjs` (Write/Edit).
-
-### PreToolUse[Agent]: model-routing-advisor.cjs
+### PreToolUse[Agent]: agent-dispatch.cjs
 
 - **Matcher**: `Agent`
-- **Purpose**: Advisory hook that suggests optimal model selection before agent spawns.
-- **Configuration**: see `.claude/rules/infrastructure/model-routing.md` for model routing configuration and aliases.
+- **Purpose**: A2-12 consolidating dispatcher. A SINGLE PreToolUse[Agent] hook that runs the 2 pure PreToolUse[Agent] sub-validators in-process, replacing the separate `node run-hook.cjs <name>` cold-start child processes that fired on every Agent spawn pre-consolidation (the former `prompt-router.cjs` PreToolUse[Agent] `return null` no-op was dropped in A2-04). Drops cold-starts per Agent spawn from 3 to 1. Mirrors the proven D1b pattern from `write-edit-dispatch.cjs`.
+- **Order (deny-first, short-circuit on first deny)**:
+  1. **session-init-gate** — SESSION-PRESENCE DENY GATE (runs FIRST, **FAIL-CLOSED**: a throw denies). Imported handler from `session-init-gate.cjs`.
+  2. **model-routing-advisor** — ADVISORY (runs LAST, **FAIL-OPEN**: a throw continues). Imported handler from `model-routing-advisor.cjs`.
+- **Most-restrictive**: any sub-deny => the dispatcher denies. The FIRST deny short-circuits (the advisory gate is not consulted once session-init-gate denies).
+- **Fail-closed vs fail-open**: the session-presence gate is wrapped in the dispatcher's own try/catch and FAILS CLOSED (deny on throw) — NOT relying on `createHook`'s own try/catch, which fails OPEN. The advisory gate fails OPEN (throw => continue).
+- **Heterogeneous returns**: with no deny, the dispatcher merges any `systemMessage`s (in gate order) and preserves session-init-gate's `hookSpecificOutput` (its alias-resolution case carries a `permissionDecisionReason`), so the emitted verdict is identical to what each sub-handler produced standalone.
+- **Sub-hook registration**: both sub-modules still call `createHook()` standalone (so their existing unit tests pass via direct `node <name>.cjs` invocation), but the standalone registration is suppressed via `CAGENTS_DISPATCH_IMPORT` while the dispatcher require()s them purely to import their handler. They are NOT independently registered in `.claude/settings.json` — only `agent-dispatch` is.
 
-### PreToolUse[Agent]: session-init-gate.cjs
+**Consolidated sub-validator: session-init-gate.cjs** (dispatched first, FAIL-CLOSED session-presence gate; not independently registered)
 
-- **Matcher**: `Agent`
 - **Purpose**: Multi-phase guard before any Agent spawn. Phase 1 (session-presence gate) DENIES; phases 2-3 (alias and data-access-level checks) are advisory.
 - **Output (Phase 1 — session-presence gate)**: Calls `denyWithReason()` when no active session directory exists (`findActiveSession` returns null and no `CAGENTS_SESSION_ID` bypass is set). This actively blocks agent spawns that would have no session to write into.
 - **Output (Phases 2-3 — alias / data-access-level)**: Advisory `systemMessage` only (does not block). Phase 2 resolves `cagents:*` aliases via `v12-aliases.yaml`. Phase 3 warns when a `trusted`-tier agent spawns an `unverified`-tier child.
 - **Bypass**: Set `CAGENTS_SESSION_ID` to skip the presence gate during tests or out-of-session work.
+
+**Consolidated sub-validator: model-routing-advisor.cjs** (dispatched second, ADVISORY/FAIL-OPEN; not independently registered)
+
+- **Purpose**: Advisory hook that suggests optimal model selection before agent spawns.
+- **Configuration**: see `.claude/rules/infrastructure/model-routing.md` for model routing configuration and aliases.
 
 ## Workflow Events
 
@@ -199,11 +205,7 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 - **Purpose**: Consolidated delegation enforcement + natural-language routing (P1-7, v12.7.1; replaced the former `delegation-enforcer.cjs` + `magic-keywords.cjs`). Layer 1: when a prompt invokes `/run` or `/team`, inject a concise delegation reminder referencing `@.claude/rules/core/delegation.md` (the canonical Rationalization Kill List). Layer 2: detect intent keywords ("build X", "fix Y", "review Z", "optimize", "design") at the start of ≤2-sentence prompts and emit a routing suggestion (`/run`, `/run review`, `/run optimize`, `/designer`, `/team`).
 - **Output**: Layer 1 → `hookSpecificOutput.additionalContext`; Layer 2 → advisory `systemMessage`. Neither blocks the prompt. Pairs with CLAUDE.md § CRITICAL: Aggressive Delegation.
 
-### PreToolUse[Agent]: prompt-router.cjs
-
-- **Matcher**: `Agent`
-- **Purpose**: Pass-through (no-op) reserved for future controller-spawn validation. The same `prompt-router.cjs` handler registered under UserPromptSubmit also receives PreToolUse[Agent] events; for `Agent` tool calls it returns null. The Write/Edit deny path is handled by `controller-delegation-validator.cjs`.
-- **Output**: Pass-through (never blocks).
+(A2-04) The `prompt-router.cjs` PreToolUse[Agent] registration was DROPPED. It was a documented `return null` no-op ("reserved for future controller-spawn validation") that paid a cold-start on every Agent spawn for nothing. `prompt-router.cjs` remains registered under UserPromptSubmit (see above), where its delegation-reminder + natural-language-routing layers are load-bearing. The `prompt-router.cjs` source still no-ops on `tool_name === 'Agent'` defensively, but it is no longer wired to that event.
 
 ### PostToolUse[Write|Edit]: validator-evidence-recheck.cjs
 
@@ -240,7 +242,8 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 ### eval-runner.cjs
 
 - **Purpose**: Run quality evaluations on sessions (standalone CLI tool).
-- **Usage**: `node eval-runner.cjs --session <session_id>`
+- **Location**: `scripts/eval-runner.cjs` (relocated out of `.claude/hooks/` in A2-10 — it is a CLI, not a hook, so it no longer inflates the `.claude/hooks/*.cjs` count).
+- **Usage**: `node scripts/eval-runner.cjs --session <session_id>`
 - **Creates**: `sessions/{id}/evals/evaluation_report.yaml`
 
 ## Secret Detection Patterns

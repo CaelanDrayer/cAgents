@@ -2,7 +2,7 @@
 #
 # cAgents CI Runner
 # Self-contained CI script for quality gates
-# Version: 12.23.0
+# Version: 12.24.0
 #
 # Usage:
 #   ./scripts/ci/cagents-ci.sh [command]
@@ -297,7 +297,7 @@ run_evals() {
         return 0
     fi
 
-    local eval_runner="$PROJECT_ROOT/.claude/hooks/eval-runner.cjs"
+    local eval_runner="$PROJECT_ROOT/scripts/eval-runner.cjs"
     if [[ ! -f "$eval_runner" ]]; then
         log_warn "Eval runner not found, skipping evaluations"
         return 0
@@ -540,7 +540,7 @@ main() {
     local command="${1:-all}"
     local exit_code=0
 
-    log_section "cAgents CI Runner v12.23.0"
+    log_section "cAgents CI Runner v12.24.0"
     log_info "Project root: $PROJECT_ROOT"
     log_info "Command: $command"
 

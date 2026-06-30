@@ -321,7 +321,10 @@ function aliasLookup(subagentType, rootDir) {
   return { kind: 'unknown', oldName: name, message: `cagents:${name} is not a registered agent.` };
 }
 
-createHook('SessionInitGate', async (input) => {
+// Pure handler (single source of truth). Exported so the agent-dispatch dispatcher
+// (agent-dispatch.cjs) can run this SESSION-PRESENCE DENY GATE in-process FIRST. The
+// dispatcher wraps this call in its own try/catch and FAILS CLOSED (deny) on throw.
+const handler = async (input) => {
   const toolName = input.tool_name || '';
 
   // Only gate Agent tool calls (agent spawns)
@@ -434,4 +437,14 @@ createHook('SessionInitGate', async (input) => {
     continue: true,
     systemMessage: advisories.join('\n')
   };
-});
+};
+
+// Suppressed when the agent-dispatch dispatcher require()s this module purely to
+// import `handler` (it sets CAGENTS_DISPATCH_IMPORT before the require). Otherwise
+// register at top level — both the direct `node session-init-gate.cjs` and the
+// `run-hook.cjs session-init-gate` invocation paths register and read stdin normally.
+if (!process.env.CAGENTS_DISPATCH_IMPORT) {
+  createHook('SessionInitGate', handler);
+}
+
+module.exports = { handler };

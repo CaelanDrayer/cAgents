@@ -24,10 +24,12 @@ try {
 const fs = require('fs');
 const path = require('path');
 
-// Try to load hook-utils, fall back to inline implementations
+// Try to load hook-utils, fall back to inline implementations.
+// Relocated out of .claude/hooks/ to scripts/ (A2-10) — hook-utils still lives
+// under .claude/hooks/, so reach it via the repo-relative path.
 let utils;
 try {
-  utils = require('./hook-utils.cjs');
+  utils = require('../.claude/hooks/hook-utils.cjs');
 } catch {
   // Minimal inline fallbacks
   utils = {

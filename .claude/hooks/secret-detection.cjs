@@ -354,10 +354,10 @@ function scanForSecrets(content, filePath) {
   return findings;
 }
 
-// Pure handler (single source of truth). Exported so the D1b Write|Edit dispatcher
-// (write-edit-dispatch.cjs) can run this SECURITY DENY GATE in-process FIRST. The
-// dispatcher wraps this call in its own try/catch and FAILS CLOSED (deny) on throw.
-async function handler(input) {
+// Scan body (single source of truth). Exported via the fail-closed `handler`
+// wrapper below so the D1b Write|Edit dispatcher (write-edit-dispatch.cjs) can run
+// this SECURITY DENY GATE in-process FIRST.
+async function _scanHandler(input) {
   const toolInput = input.tool_input || {};
   const filePath = toolInput.file_path || '';
   const content = toolInput.content || toolInput.new_string || '';
@@ -486,6 +486,26 @@ async function handler(input) {
   }
 
   return null;
+}
+
+// Fail-CLOSED wrapper (A2-08). Make the deny-on-throw guarantee INTRINSIC to this
+// security hook, independent of any dispatcher wrapper. If the scan body throws for
+// ANY reason, DENY — never let createHook's own catch (which fails OPEN with
+// {continue:true}) leak an unscanned payload through a crashed secret scanner. This
+// holds even if secret-detection.cjs were ever re-registered standalone for a
+// non-Write/Edit event; the guarantee no longer relies on registration convention.
+async function handler(input) {
+  try {
+    return await _scanHandler(input);
+  } catch (err) {
+    console.error(`[SecretDetection] FAILED CLOSED: ${err && err.message}`);
+    return {
+      deny: true,
+      reason: `[FAIL-CLOSED] secret scan threw during evaluation (${err && err.message}). ` +
+              `Denying the Write/Edit to avoid letting an unscanned payload through a ` +
+              `crashed secret scanner.`
+    };
+  }
 }
 
 // Register the hook at top level (same pattern as the sibling deny hooks

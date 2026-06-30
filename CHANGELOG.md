@@ -10,6 +10,39 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.24.0] - 2026-06-30
+
+Phase 4 of the comprehensive plugin audit/refactor (session
+`team_plugin-audit-refactor_260630_001`). Hook surface cleanup. Hook counts
+move from 32/26/18 → **31 .cjs / 24 registered / 18 events** (5 dispatched
+sub-validators + 2 utilities; `31 = 24 + 5 + 2`).
+
+### Removed
+- `.claude/hooks/approval-gate.cjs` + its test (A2-02): structurally dead — its
+  `_data/policies/` dir and `AGENT_MEMORY_DIR` env never existed in production.
+- The `prompt-router.cjs` PreToolUse[Agent] `return null` no-op registration
+  (A2-04). `prompt-router.cjs` itself stays (load-bearing for UserPromptSubmit).
+- The dead `org_*` nested-subdir scan passes in `hook-utils.cjs`
+  `findActiveSession`/`findTeamSession` (A2-05; `/org` removed in v12.2.0).
+
+### Added
+- `.claude/hooks/agent-dispatch.cjs` (A2-12): single deny-first PreToolUse[Agent]
+  dispatcher running `session-init-gate.cjs` (fail-CLOSED) then
+  `model-routing-advisor.cjs` (fail-OPEN) in-process — mirrors `write-edit-dispatch.cjs`,
+  cutting cold-start node spawns per Agent spawn 3 → 1. + agent-dispatch test.
+- `scripts/lint-hooks.cjs` (A2-11) deriving live hook counts from disk +
+  settings.json and asserting `hook_files === registered + dispatched +
+  utilities`. + lint-hooks test.
+
+### Changed
+- `secret-detection.cjs`: intrinsic fail-CLOSED try/catch (A2-08).
+- `eval-runner.cjs` relocated `.claude/hooks/` → `scripts/` (A2-10, a CLI not a
+  hook); refs in `cagents-ci.sh`/`run-evals.sh` updated.
+- `hooks.md`, `hook-catalog.md`, CLAUDE.md hook-count claims synced to 31/24/18.
+
+Deferred: `appendLog()` log-helper de-dup (A2-06) — touches 4 hooks, not
+low-risk this phase.
+
 ## [12.23.0] - 2026-06-30
 
 Phase 3 of the comprehensive plugin audit/refactor (session

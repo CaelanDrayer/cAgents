@@ -32,16 +32,16 @@ describe('hooks.md documents skill-size-monitor.cjs', () => {
     expect(content).toContain('skill-size-monitor.cjs');
   });
 
-  it('hooks.md count claim is current (32 .cjs / 26 unique registered + 3 dispatched)', () => {
-    // v12.19.0 WI-5 / D1b added write-edit-dispatch.cjs (the 32nd .cjs file) and
-    // consolidated the three former standalone Write|Edit hooks (secret-detection,
-    // controller-delegation-validator, skill-size-monitor) into 3 dispatched
-    // sub-validators run in-process by it. Count: 32 .cjs files = 26 unique
-    // registered hooks + 3 dispatched Write|Edit sub-validators + hook-utils.cjs
-    // + run-hook.cjs + eval-runner.cjs.
+  it('hooks.md count claim is current (31 .cjs / 24 unique registered + 5 dispatched)', () => {
+    // A2-12 added agent-dispatch.cjs (consolidating the PreToolUse[Agent] hooks
+    // session-init-gate + model-routing-advisor into 2 dispatched sub-validators),
+    // A2-02 deleted approval-gate.cjs, and A2-10 relocated eval-runner.cjs to scripts/.
+    // Count: 31 .cjs files = 24 unique registered hooks + 5 dispatched sub-validators
+    // (3 Write|Edit via write-edit-dispatch + 2 Agent via agent-dispatch) + hook-utils.cjs
+    // + run-hook.cjs.
     const content = readFileSync(HOOKS_MD, 'utf8');
-    expect(content).toContain('32 .cjs files');
-    expect(content).toContain('26 unique');
+    expect(content).toContain('31 .cjs files');
+    expect(content).toContain('24 unique');
   });
 
   it('every .cjs hook in .claude/hooks/ is mentioned in hooks.md', () => {

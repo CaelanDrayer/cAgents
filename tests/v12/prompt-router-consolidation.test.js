@@ -35,7 +35,7 @@ describe('P1-7: prompt-router consolidation', () => {
     expect(fs.existsSync(oldMagic)).toBe(false);
   });
 
-  it('ships .claude/hooks/prompt-router.cjs registered for both UserPromptSubmit and PreToolUse[Agent]', () => {
+  it('ships .claude/hooks/prompt-router.cjs registered for UserPromptSubmit (PreToolUse[Agent] no-op dropped in A2-04)', () => {
     const newHook = path.join(ROOT, '.claude/hooks/prompt-router.cjs');
     expect(fs.existsSync(newHook)).toBe(true);
 
@@ -46,12 +46,19 @@ describe('P1-7: prompt-router consolidation', () => {
     const stringifyHookList = (event) =>
       JSON.stringify(settings.hooks?.[event] || []);
 
+    // Layer 1 (delegation reminder + natural-language routing) is load-bearing.
     expect(stringifyHookList('UserPromptSubmit')).toContain('prompt-router');
-    // PreToolUse for Agent matcher
+
+    // A2-04: the PreToolUse[Agent] prompt-router registration was a documented
+    // `return null` no-op ("reserved for future controller-spawn validation"). It
+    // was dropped to save a cold-start per agent spawn. The PreToolUse[Agent] block
+    // now contains ONLY the agent-dispatch consolidating dispatcher (A2-12) and must
+    // NOT reference prompt-router.
     const preToolUse = settings.hooks?.PreToolUse || [];
     const agentBlock = preToolUse.find((b) => (b.matcher || '').includes('Agent'));
     expect(agentBlock).toBeTruthy();
-    expect(JSON.stringify(agentBlock)).toContain('prompt-router');
+    expect(JSON.stringify(agentBlock)).toContain('agent-dispatch');
+    expect(JSON.stringify(agentBlock)).not.toContain('prompt-router');
 
     // Old hook names are NOT referenced in settings.json
     const allSettings = JSON.stringify(settings);

@@ -218,15 +218,21 @@ const _hookHandler = async (input) => {
   return null;
 };
 
-// Only register the hook + read stdin when invoked as the main module.
-// When require()'d from a test, this guard prevents the eager stdin read so
-// the test can import `loadKnownAgents()` cheaply and synchronously.
-if (require.main === module) {
+// Only register the hook + read stdin when invoked as the main module. When
+// require()'d from a test, this guard prevents the eager stdin read so the test can
+// import `loadKnownAgents()` cheaply and synchronously. The CAGENTS_DISPATCH_IMPORT
+// clause additionally suppresses registration when the agent-dispatch dispatcher
+// require()s this module purely to import `_hookHandler` (A2-12), mirroring the
+// write-edit-dispatch sub-validators.
+if (require.main === module && !process.env.CAGENTS_DISPATCH_IMPORT) {
   createHook('ModelRoutingAdvisor', _hookHandler);
 }
 
-// Export helpers for tests (LP-16).
+// Export helpers for tests (LP-16) and the agent-dispatch dispatcher (A2-12).
 module.exports.loadKnownAgents = loadKnownAgents;
 module.exports._resetKnownAgentsCache = _resetKnownAgentsCache;
 module.exports.parseSkillTier = parseSkillTier;
 module.exports._hookHandler = _hookHandler;
+// `handler` alias: the agent-dispatch dispatcher imports a `handler` for symmetry
+// with the other dispatched sub-validators (secret-detection, session-init-gate).
+module.exports.handler = _hookHandler;
