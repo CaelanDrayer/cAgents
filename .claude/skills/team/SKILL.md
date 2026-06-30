@@ -5,8 +5,8 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.26.0"
-  argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--no-template] [--waves <n>] [--strategic] [--no-strategic]"
+  version: "12.27.0"
+  argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--template <id>] [--no-template] [--waves <n>] [--strategic] [--no-strategic]"
   user-invocable: "true"
   context: "fork"
 allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TaskCreate, TaskUpdate, TaskList, TaskGet, TeamCreate, TeamDelete, SendMessage, Skill
@@ -116,11 +116,11 @@ After Wave 0 enrichment completes (Step 2d), read `enriched_context.universal_ro
 
 **2c.** Call TaskCreate for init, enrichment, each planned wave, integration, complete. Update with TaskUpdate as phases land.
 
-**2d.** Spawn enrichment agents sequentially:
-- `cagents:orchestrator` → `enriched_context.yaml` + EVT-1 (phase ENRICHING)
-- `cagents:planner` → `plan.yaml` + `work_meta.yaml` + per-wave `work_items_wave_{K}.yaml` (+ legacy `work_items.yaml` for v12.1.x back-compat) + EVT-2 (phase ENRICHED)
+**2d.** Spawn enrichment agents sequentially. Each agent's primary output file is the state-advancement signal (v12.6.0: no `workflow/events/` EVT emission):
+- `cagents:orchestrator` → `enriched_context.yaml`
+- `cagents:planner` → `plan.yaml` + `work_meta.yaml` + per-wave `work_items_wave_{K}.yaml` (+ legacy `work_items.yaml` for v12.1.x back-compat)
 
-Use `sed -i 's/^phase: .*/phase: <PHASE>/' "{SESSION_DIR}/status.yaml"` to advance.
+After each agent returns, advance the `phase:` field in `status.yaml` (orchestrator → `ENRICHING`, planner → `ENRICHED`) with `sed -i 's/^phase: .*/phase: <PHASE>/' "{SESSION_DIR}/status.yaml"`.
 
 **2e.** Read `work_meta.yaml` ONCE. Confirm wave count meets tier minimum; if not, request re-decomposition. If `--dry-run`, display plan and STOP. If <3 WIs total, `Skill({ skill: "run", args: ... })` fallback.
 

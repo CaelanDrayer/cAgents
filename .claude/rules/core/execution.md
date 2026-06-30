@@ -35,14 +35,19 @@ Execution agents are specialists that:
 
 ## Frontmatter Requirements
 
+Per the v11.1.0 schema (`skill-format.md`): `archetype:` (and `branch:` for 3-level archetypes) are top-level; `tier:` and the controller/capability fields live inside `metadata:`. The top-level `domain:` field was removed in v11.1.0 — `validate-agents.sh` rejects it.
+
 **Controller Agent**:
 ```yaml
 ---
 name: tech-lead
-tier: controller
-domain: engineering
-coordination_style: question_based
-typical_questions: [...]
+archetype: developer
+branch: fullstack
+description: "Coordinates engineering work via question-based delegation."
+metadata:
+  tier: controller
+  coordination_style: question_based
+  typical_questions: [...]
 ---
 ```
 
@@ -50,13 +55,16 @@ typical_questions: [...]
 ```yaml
 ---
 name: backend-developer
-tier: execution
-domain: engineering
-capabilities:
-  - backend_development
-  - api_design
-  - database_management
-related-agents: ["architect", "dba", "qa-tester"]
+archetype: developer
+branch: backend
+description: "Implements backend services, APIs, and database operations."
+metadata:
+  tier: execution
+  capabilities:
+    - backend_development
+    - api_design
+    - database_management
+related-agents: ["architect", "dba", "qa-lead"]
 not-my-scope: ["Frontend work", "DevOps", "Design"]
 ---
 ```

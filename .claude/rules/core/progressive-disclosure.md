@@ -23,11 +23,15 @@ Progressive disclosure reduces token usage by loading agent content on-demand in
 # Frontmatter only
 ---
 name: tech-lead
+archetype: developer
+branch: fullstack
 description: "Strategic oversight..."
-tier: controller
-domain: engineering
+metadata:
+  tier: controller
 ---
 ```
+
+> Per the v11.1.0 schema (`skill-format.md`), agents declare `archetype:` (and `branch:` for 3-level archetypes) at the top level and put `tier:` inside `metadata:`. The top-level `domain:` field was removed in v11.1.0 — `validate-agents.sh` rejects it.
 
 ### Tier 2: Instructions (~200-500 tokens)
 **Loaded when agent is activated** (spawned via Agent tool).

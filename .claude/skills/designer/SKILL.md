@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.26.0"
+  version: "12.27.0"
   argument-hint: "[<topic>] [--deep] [--resume <id>] [--template <name>] [--brief <path>] [--iterate <session_id>]"
   user-invocable: "true"
   context: "none"
@@ -65,7 +65,7 @@ The designer's purpose is iterative refinement, not one-shot artifact generation
 
 Parse `$ARGUMENTS` for:
 - **Topic**: Main text (what to design)
-- **Flags**: `--deep`, `--resume {id}`, `--template <name>`, `--focus <area>`, `--detail <level>`, `--brief <path>`, `--iterate <session_id>`
+- **Flags**: `--deep`, `--resume {id}`, `--template <name>`, `--brief <path>`, `--iterate <session_id>` — see `.claude/skills/_MODE_REGISTRY.md § /designer` for the canonical flag/phase definitions.
 
 If no topic provided, ask the user what they want to design via AskUserQuestion.
 If `--deep` is provided, enable research agent spawning in ALL 6 phases. Without `--deep`, research agents only spawn in Refinement and Specification phases.

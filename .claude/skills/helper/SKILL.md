@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.26.0"
+  version: "12.27.0"
   argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--all] [--topic <topic>] [--troubleshoot <command>]"
   user-invocable: "true"
   context: "none"
@@ -157,7 +157,7 @@ See @reference/recommendation-engine.md for the intent classification logic and 
 | Coordinate / Multi-domain | launch, restructure, migrate, company-wide, cross-team, strategic | `/team` (strategic mode auto-enables) |
 | Parallel / Large | parallel, team, big feature, multiple components, time-sensitive | `/team` |
 | Debug / Root Cause | debug, root cause, why does this fail, can't figure out, keeps breaking | `/run --mode debug` |
-| Context / Knowledge | context, product context, project knowledge, persist knowledge | `/run context init\|show\|update\|clear` |
+| Context / Knowledge | context, product context, project knowledge, persist knowledge | Edit `product_context.yaml` directly (no `/run context` subcommand — `/context` was removed in V11.0) |
 | Learn / Understand | how do I, what is, explain, help, compare, which command | `/helper` |
 
 Score each candidate command using the 5 weighted signals from @reference/scoring-engine.md (keyword 0.30, project context 0.30, complexity 0.20, explicit intent 0.10, request history 0.10). Recommend the highest scorer; if two are within 0.05, present both and ask the user to clarify. Always check for multi-command pipelines (e.g., "plan then build" -> `/designer` then `/run`).
@@ -186,7 +186,7 @@ See @reference/comparison-tables.md for the full comparison matrices.
 
 When the user runs `/helper --flags <command>`, show the complete flag reference for that command.
 
-First, Read the SKILL.md for this command (see @reference/v11-migration.md for paths) to ensure current information.
+`.claude/skills/_MODE_REGISTRY.md` is the canonical source of truth for every skill's flags, modes, and trigger phrases — read it first so flag answers never drift from the registry. Then Read the SKILL.md for this command (see @reference/v11-migration.md for paths) to confirm command-specific behavior.
 
 See @reference/flag-summaries.md for consolidated flag tables.
 
@@ -213,7 +213,7 @@ cAgents Quick Reference:
 
 Passthroughs (handled by /run):
   /run --mode debug <bug>           Systematic 4-phase debugging for stubborn bugs
-  /run context [init|show|...]      Manage shared product context
+  (project context: edit product_context.yaml directly — no /run context subcommand)
 
 Flags: --dry-run (preview), --interactive (ask first), --quiet (silent)
 Combos: /designer -> /run (design then build), /run improve <target> (review + optimize in one run)
@@ -289,7 +289,7 @@ What do you want to do?
   "I have a BIG task with parallel parts"     --> /team
   "I have a MULTI-DOMAIN strategic initiative" --> /team (strategic mode auto-enables)
   "I have a BUG that resists quick fixes"     --> /run --mode debug
-  "I want to PERSIST project knowledge"       --> /run context init
+  "I want to PERSIST project knowledge"       --> edit product_context.yaml directly
   "I need help choosing a command"            --> /helper (you're here!)
 
 Need more detail? Try:
@@ -336,7 +336,7 @@ V11.0.0 removed `/review`, `/optimize`, `/context`, and `/debug` after a 10-patc
 | `/review <target>` | `/run review <target>` (keyword router; v12.1.2 folded /improve into /run) |
 | `/optimize <target>` | `/run optimize <target>` (keyword router) |
 | `/optimize <target> --review-after` | `/run improve <target>` (keyword router triggers `--mode full`) |
-| `/context init\|show\|update\|clear` | `/run context init\|show\|update\|clear` |
+| `/context init\|show\|update\|clear` | Edit `product_context.yaml` directly — the `/context` passthrough was removed; there is no `/run context` subcommand |
 | `/debug <bug>` | `/run --mode debug <bug>` |
 | `/improve --mode review <target>` | `/run review <target>` |
 | `/improve --mode optimize <target>` | `/run optimize <target>` |

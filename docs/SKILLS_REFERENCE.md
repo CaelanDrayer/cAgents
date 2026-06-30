@@ -1,6 +1,6 @@
 # Skills Reference
 
-**Version**: V12.2.0 current
+**Last verified**: v12.2.0
 
 Complete reference for the 4 user-invocable skills shipped with cAgents (v12.2.0+): `/designer`, `/helper`, `/run`, `/team`. Use `/helper` for interactive, in-terminal guidance, or read this document end-to-end to understand the full skill ecosystem.
 
@@ -139,7 +139,7 @@ Each section below covers one skill. Skills are listed alphabetically: `/designe
 
 ### /org — REMOVED in v12.2.0
 
-`/org` was removed in v12.2.0 and absorbed into `/team` strategic mode. Cross-domain coordination — CEO + C-suite deliberation, strategic brief, dependency-ordered per-domain dispatch — now runs inside `/team` when `router.domain_count >= 2`. The 12 leadership agents are preserved at their existing locations and act as Wave 0/1 teammates inside `/team` strategic mode.
+`/org` was removed in v12.2.0 and absorbed into `/team` strategic mode. Cross-domain coordination — CEO + C-suite deliberation, strategic brief, dependency-ordered per-domain dispatch — now runs inside `/team` when `router.domain_count >= 2`. The 9 leadership agents are preserved at their existing locations and act as Wave 0/1 teammates inside `/team` strategic mode.
 
 **Migration**:
 
@@ -157,7 +157,7 @@ See `.claude/skills/team/reference/strategic-mode.md` for the full protocol, bri
 
 ### /run
 
-**Purpose**: Executes any single-domain task through a config-driven state machine. `/run` reads `pipeline_config.yaml`, routes to the right domain controller, and coordinates specialist execution agents. The pipeline progresses automatically through orchestration, planning, decomposition, coordination, and validation.
+**Purpose**: Executes any single-domain task through a config-driven state machine. `/run` reads `pipeline_config.yaml`, routes to the right domain controller, and coordinates specialist execution agents. The pipeline progresses automatically through orchestration, planning (with inline decomposition), coordination, and validation.
 
 **When to use**:
 - Building, fixing, writing, or implementing single-domain work
@@ -319,7 +319,7 @@ V11.0 removed four skills after a two-version deprecation window (V10.26.19–V1
 | `/context` | Built-in `/memory` plus the `cagents-memory/_projects/{hash}/product_context.yaml` file | Manual or `/memory`-driven persistence replaces the auto-init flow |
 | `/debug` | `/run` with explicit reproduction steps | The standard `/run` pipeline now handles root-cause investigation through controller question delegation |
 | `/improve` (v12.1.2) | `/run review`, `/run optimize`, `/run improve` (or `/run --mode review\|optimize\|full`) | First-word keyword router; all `/improve` flags (`--baseline`, `--suppress`, `--benchmark`, `--auto-fix`, `--severity`, etc.) remain available on `/run` |
-| `/org` (v12.2.0) | `/team` strategic mode | Auto-enables when `router.domain_count >= 2`; force-enable with `--strategic`; force-disable with `--no-strategic`. The 12 leadership agents are preserved at their existing locations and act as Wave 0/1 teammates |
+| `/org` (v12.2.0) | `/team` strategic mode | Auto-enables when `router.domain_count >= 2`; force-enable with `--strategic`; force-disable with `--no-strategic`. The 9 leadership agents are preserved at their existing locations and act as Wave 0/1 teammates |
 
 For full migration details, see [MIGRATION-V11.md](./MIGRATION-V11.md) (V11 removals) and the v12.1.2 / v12.2.0 entries in [CHANGELOG.md](../CHANGELOG.md).
 

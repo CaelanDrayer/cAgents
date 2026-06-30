@@ -2,7 +2,7 @@
 
 How agents interact during workflow execution. For architecture, commands, and agent reference, see `CLAUDE.md`.
 
-**Version**: V12.2.0 current
+**Last verified**: v12.2.0
 
 _V11.0 removed /review, /optimize, /context, /debug — see [MIGRATION-V11.md](./MIGRATION-V11.md). v12.1.2 folded /improve into /run via a first-word keyword router; review and optimization are now modes of `/run` (`/run review`, `/run optimize`, `/run improve` — or `--mode review|optimize|full`). v12.2.0 removed /org and absorbed cross-domain coordination into `/team` strategic mode (auto-enabled when `router.domain_count >= 2`)._
 
@@ -15,7 +15,7 @@ _V11.0 removed /review, /optimize, /context, /debug — see [MIGRATION-V11.md](.
 ```
 User (Chairperson)
   +-- /team (strategic mode auto-enables when domain_count >= 2)
-        +-- Wave 0 (Lead): orchestrator -> planner -> decomposer
+        +-- Wave 0 (Lead): orchestrator -> planner (decomposition inline)
         +-- Wave 1 (Teammates): C-suite agents via Agent (parallel analysis)
         +-- Wave 2 (Teammates): Deliberation (objections + resolution) -> Strategic brief
         +-- Wave 3..N-1 (Teammates): Per-domain dispatch (nested waves per domain)
@@ -37,25 +37,25 @@ User (Chairperson)
 ```
 /run (state machine, level 0; 5-state pipeline since v12.0.0)
   +-> orchestrator (level 1)    -> enriched_context.yaml
-  +-> planner (level 1)         -> plan.yaml + work_items.yaml (+ delegation_prompts.yaml on Full path; task-decomposer and prompt-engineer were folded into the planner in v12.0.0)
+  +-> planner (level 1)         -> plan.yaml + work_items.yaml (task-decomposer and prompt-engineer were folded into the planner in v12.0.0; controllers use standard delegation prompts)
   +-> controller (level 1)
        +-> executor (level 2)   -> implementation
        +-> reviewer (level 2)   -> review_report.yaml
   +-> validator (level 1)       -> validation_report.yaml
 ```
 
-**Revision routing**: FAIL -> re-run controller (PLANNED). REVISE -> re-run planner (ORCHESTRATED). Max 3 cycles (tightened from 5 in v12.0.0 per audit recommendation).
+**Revision routing**: FAIL -> re-run controller (PLANNED). REVISE -> re-coordinate (PLANNED). Max 3 cycles (tightened from 5 in v12.0.0 per audit recommendation).
 
 **Example** (`/run Fix login auth bug`):
 1. Domain=Engineering, tier=2. Orchestrator enriches (JWT auth, Express, React)
-2. Planner selects tech-lead. Decomposer creates 3 work items
-3. Engineering-manager asks: "Current auth implementation?" -> backend-developer. "Test coverage?" -> qa-tester
+2. Planner selects tech-lead and decomposes into 3 work items
+3. Tech-lead asks: "Current auth implementation?" -> backend-developer. "Test coverage?" -> qa-lead
 4. Synthesizes fix, delegates implementation, reviewer validates -> PASS
 
 ### /team -- N-Wave Parallel Execution
 
 ```
-Wave 0 (Lead): orchestrator -> planner -> decomposer -> bootstrap
+Wave 0 (Lead): orchestrator -> planner (decomposition inline) -> bootstrap
 Wave 1..N-1 (Teammates, parallel per wave): execution with GATE validation
 Wave N (Lead): integration controller -> final validator
 ```
@@ -153,7 +153,7 @@ Each command creates `cagents-memory/sessions/{command}_{slug}_{YYMMDD}_{NNN}/` 
 | `progress.md` | Status and resume instructions |
 | `workflow/plan.yaml` | Planner output |
 | `workflow/coordination_log.yaml` | Controller Q&A and synthesis |
-| `workflow/events/EVT-*.yaml` | State transition events |
+| `workflow/validation_report.yaml` | Validator PASS / FAIL / REVISE verdict |
 
 ---
 

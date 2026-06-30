@@ -42,8 +42,13 @@ function parseCommandFlags(commandString) {
 | `--brief <path>` | String | Strategic brief (path to brief YAML; produced by /team strategic mode in v12.2.0+ or by pre-v12.2.0 /org) | none | `/run Launch product --brief cagents-memory/sessions/team_xyz/outputs/strategic_brief.yaml` |
 | `--analytics` | Boolean | Display pipeline analytics dashboard and exit | false | `/run --analytics` |
 | `--analytics domain` | String | Show per-domain analytics breakdown | none | `/run --analytics domain` |
-| `--mode <value>` | String | Pipeline execution mode (V10.26.11+). Accepts `standard` (default) or `debug`. `debug` enables the 4-phase debugging methodology on controllers and validator. Unknown values are rejected. | standard | `/run Reproduce flaky test --mode debug` |
+| `--mode <value>` | String | Pipeline execution mode (V10.26.11+, expanded v12.1.2). Accepts `standard` (default), `debug`, `review`, `optimize`, or `full`. `debug` enables the 4-phase debugging methodology on controllers and validator; `review`/`optimize`/`full` are the absorbed `/improve` modes (also reachable via the Step 1a first-word keyword router `improve`/`review`/`audit`/`optimize`). Unknown values are rejected. | standard | `/run Reproduce flaky test --mode debug` |
 | `--no-goal` | Boolean | Opt out of the V11.3.0 `/goal` auto-anchor in Step 1. By default `/run` derives a `/goal` condition referencing `completion_summary.yaml` and clean TaskList state, with a turn cap. Use `--no-goal` to skip this (useful for `/designer` flows, scripted runs with their own continuation logic, or when an active `/goal` is already set). Also opt out by setting `CAGENTS_NO_GOAL=1` in the environment. | false | `/run Fix typo --no-goal` |
+| `--baseline <ref>` | String | (improve modes) Reference baseline for diff/comparison during `review`/`optimize`/`full`. | none | `/run optimize bundle.js --baseline main` |
+| `--suppress <pattern>` | String | (improve modes) Suppress review findings matching a pattern. | none | `/run review src/ --suppress "TODO"` |
+| `--benchmark <tool>` | String | (improve modes) Run benchmarks before/after an optimization run. | none | `/run optimize api --benchmark wrk` |
+| `--scope <path>` | String | (improve modes) Restrict improve operations to a path subset. | none | `/run improve . --scope src/auth/` |
+| `--auto-fix` | Boolean | (improve modes) Apply atomic auto-fixes during `review` mode. | false | `/run review src/ --auto-fix` |
 
 ## Plan Display Behavior
 

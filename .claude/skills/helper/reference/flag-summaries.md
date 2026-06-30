@@ -140,18 +140,18 @@ The match is case-insensitive on the first token. An explicit `--mode <value>` f
 
 ## /team Flags
 
+Canonical source: `.claude/skills/_MODE_REGISTRY.md` § /team.
+
 | Flag | Type | Description | Default | Example |
 |------|------|-------------|---------|---------|
-| `--parallel` | Boolean | Force parallel execution | auto | `/team Build system --parallel` |
-| `--dry-run` | Boolean | Preview team composition | false | `/team Build feature --dry-run` |
-| `--lead <agent>` | String | Specify team lead | auto-detect | `/team Build API --lead tech-lead` |
-| `--members <N>` | Number | Max team members | 8 | `/team Build system --members 4` |
-| `--display` | Boolean | Show team communication | false | `/team Build feature --display` |
-| `--domain <domain>` | String | Override domain | auto-detect | `/team Campaign --domain growth` |
-| `--tier <N>` | Number | Override tier | auto | `/team Build system --tier 4` |
-| `--quiet` / `-q` | Boolean | Suppress output | false | `/team Build feature --quiet` |
-| `--teammate-mode <mode>` | String | Display: auto/tmux/in-process | auto | `/team Build app --teammate-mode tmux` |
-| `--waves <N>` | Number | Force minimum number of waves | auto | `/team Build feature --waves 8` |
+| `--strategic` | Boolean | Force-enable strategic mode (Wave 0/1/2 C-suite prefix) regardless of domain count | auto | `/team Launch product --strategic` |
+| `--no-strategic` | Boolean | Force-disable strategic mode regardless of domain count | auto | `/team Build feature --no-strategic` |
+| `--template <id>` | String | Use a named team template (fullstack-app, etc.) | auto-match | `/team Build app --template fullstack-app` |
+| `--no-template` | Boolean | Force flat execution, skip template selection | false | `/team Build feature --no-template` |
+| `--waves <N>` | Number | Force minimum number of waves | per tier | `/team Build feature --waves 8` |
+| `--dry-run` | Boolean | Display wave structure without spawning teammates | false | `/team Build feature --dry-run` |
+| `--members <N>` | Number | Target teammate count per wave | 5 | `/team Build system --members 4` |
+| `--teammate-mode <mode>` | String | Display mode: auto/tmux/in-process | auto | `/team Build app --teammate-mode tmux` |
 
 ---
 

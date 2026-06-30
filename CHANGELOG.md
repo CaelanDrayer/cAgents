@@ -10,6 +10,45 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.27.0] - 2026-06-30
+
+Phase 7 of the comprehensive plugin audit/refactor (session
+`team_plugin-audit-refactor_260630_001`). Reference-layer rewrite — the docs and
+skill flags now tell one coherent, current story.
+
+### Fixed (skills layer)
+- `team/SKILL.md` (A4-02): removed the Step-2d EVT-1/EVT-2 emission markers that
+  contradicted the same file's "events removed v12.6.0" note.
+- `team/reference/strategic-cross-domain.md` (A4-05): rewritten off the removed
+  `/org` sequential model to the wave-based strategic mode.
+- `team/reference/architecture.md` (A4-01): rewritten — removed the nonexistent
+  `decomposer` agent and the false "teammates invoke /run".
+- `_MODE_REGISTRY` adoption (A4-08/09/10/13): `run`/`designer`/`helper` SKILLs now
+  point to `_MODE_REGISTRY.md` as the canonical flag source; fixed the run
+  `argument-hint`, `--mode debug` trigger, standardized `--members` on **5**, and
+  rewrote the stale `/team` flag table in `helper/reference/flag-summaries.md`.
+- `/run context` (A4-12/15): verdict DEAD (removed V11.0) — de-advertised in
+  `run/SKILL.md` + helper (kept as a searchable removal-tombstone).
+
+### Fixed (docs + reference rules)
+- `docs/architecture/pipeline.md` (A5-01): rewritten from the OLD 7-state
+  (DECOMPOSED/PROMPTS_READY + `delegation_prompts.yaml`) to the real 5-state
+  machine. Fast-path reconciled (D8): 5 states + two labels — `fast` (orchestrator
+  skipped for tier-2-clear) and `standard`; v12.3.0 deleted the score-based
+  3-path/9-signal selector, NOT the orchestrator-skip.
+- `controller-reference.md` (A3-03/10): dropped `delegation_prompts.yaml`, EVT-*,
+  `PROMPTS_READY`; TodoWrite example relabelled SDK-only.
+- `docs/hooks/overview.md` (A5-02): 18/15 → 31/24/18 + documented the two
+  in-process dispatchers.
+- `WORKFLOW_AGENT_INTERACTIONS.md` + `SKILLS_REFERENCE.md` (A5-06/07): removed
+  stale `delegation_prompts`/EVT/`decomposer` refs; `12 leadership` → `9`.
+- Frontmatter examples in `progressive-disclosure.md` + `execution.md` (A3-05):
+  validator-rejected top-level `domain:` → `archetype:`/`branch:` + `metadata.tier`.
+
+Known pre-existing flake (not introduced here): `team-task-complete.test.js`
+intermittently fails one assertion under full-suite parallelism (passes 13/13 in
+isolation; present on a clean tree). Scheduled for the P10 team-hook pass.
+
 ## [12.26.0] - 2026-06-30
 
 Phase 6 of the comprehensive plugin audit/refactor (session

@@ -155,7 +155,9 @@ Every completed work item MUST include a `confidence` score (0.0-1.0):
 
 **Rules**: `confidence` is mandatory. Items < 0.7 trigger additional scrutiny. Validator uses scores to prioritize verification.
 
-## Completion Event Schema
+## Completion Event Schema (HISTORICAL — EVT-* emission removed in v12.6.0)
+
+> Pre-v12.6.0, controllers emitted a `workflow/events/EVT-{N}.yaml` completion event on each state transition. EVT-file emission was removed in v12.6.0 (consistent with `orchestration-reference.md`); the controller's terminal artifact is now `coordination_log.yaml` alone. The pre-v12.0.0 `delegation_prompts.yaml` input was also removed — controllers use standard delegation prompts. The schema below is retained for archived-session back-compat only.
 
 ```yaml
 event_id: EVT-{N}
@@ -164,11 +166,10 @@ agent: cagents:{controller_name}
 timestamp: "{ISO_TIMESTAMP}"
 duration_seconds: {elapsed}
 inputs_consumed:
-  - workflow/delegation_prompts.yaml
   - workflow/work_items.yaml
 outputs_produced:
   - workflow/coordination_log.yaml
-next_state: COORDINATED
+next_state: VALIDATED
 metadata:
   work_items_completed: {count}
   total_review_rounds: {sum_across_all_items}
@@ -219,26 +220,25 @@ workflow/CORRECTIONS.md                                # Session-scoped copy
 - Contains DECISIONS.md, CORRECTIONS.md, and other cross-session state
 - Created on first use, never deleted automatically
 
-## TodoWrite Examples
+## Task-Tracking Examples (interactive: TaskCreate; SDK: TodoWrite)
+
+Interactive Claude Code sessions — the primary cAgents runtime — MUST use `TaskCreate`/`TaskUpdate`/`TaskList`/`TaskGet`. `TodoWrite` is the Agent SDK / non-interactive equivalent (SDK only); do not use it in interactive runtimes. The examples below use the interactive `TaskCreate` form.
 
 **Good** (descriptive, action-oriented):
 ```
-TodoWrite([
-  {"content": "[orchestrator] Enriching request context", "status": "completed", "id": "route"},
-  {"content": "[planner] Planning objectives and selecting controller", "status": "completed", "id": "plan"},
-  {"content": "[tech-lead] Coordinating implementation with execution agents", "status": "in_progress", "id": "coordinate"},
-  {"content": "[backend-developer] Implementing user authentication endpoint", "status": "pending", "id": "exec1"},
-  {"content": "[qa-tester] Validating auth endpoint against acceptance criteria", "status": "pending", "id": "exec2"},
-  {"content": "[validator] Validating outputs against acceptance criteria", "status": "pending", "id": "validate"}
-])
+TaskCreate({ subject: "[orchestrator] Enriching request context" })
+TaskCreate({ subject: "[planner] Planning objectives and selecting controller" })
+TaskCreate({ subject: "[tech-lead] Coordinating implementation with execution agents" })
+TaskCreate({ subject: "[backend-developer] Implementing user authentication endpoint" })
+TaskCreate({ subject: "[qa-lead] Validating auth endpoint against acceptance criteria" })
+TaskCreate({ subject: "[validator] Validating outputs against acceptance criteria" })
+// Drive status with TaskUpdate({ taskId, status: "in_progress" | "completed" })
 ```
 
-**Bad** (state machine jargon, generic placeholders):
+**Bad** (state-machine jargon, generic placeholders):
 ```
-TodoWrite([
-  {"content": "[/run] Pipeline: INIT (enriching context)", ...},
-  {"content": "[/run] Pipeline: ORCHESTRATED (planning)", ...},
-  {"content": "[controller] Pipeline: PROMPTS_READY (coordinating)", ...},
-  {"content": "[exec_agent_1] specific_task_1", ...}
-])
+[/run] Pipeline: INIT (enriching context)
+[/run] Pipeline: ORCHESTRATED (planning)
+[controller] Pipeline: PLANNED (coordinating)
+[exec_agent_1] specific_task_1
 ```

@@ -5,8 +5,8 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.26.0"
-  argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--mode <standard|debug>] [--no-goal]"
+  version: "12.27.0"
+  argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--mode <standard|debug|review|optimize|full>] [--baseline <ref>] [--suppress <pattern>] [--benchmark <tool>] [--scope <path>] [--auto-fix] [--no-goal]"
   user-invocable: "true"
   context: "none"
 allowed-tools: Read, Grep, Glob, Write, Bash, Agent, Skill, TaskCreate, TaskUpdate, TaskList, TaskGet, TodoWrite
@@ -91,7 +91,7 @@ Example: `/run review the auth module` -> mode=`review`, request=`the auth modul
 
 ### Step 1b: Parse Flags
 
-Parse `$ARGUMENTS` for flags (`--interactive`, `--dry-run`, `--quiet`, `--stream`, `--skip-preflight`, `--team`, `--analytics`, `--no-goal`) and value flags (`--template`, `--domain`, `--tier`, `--confidence`, `--brief`, `--resume`, `--session`, `--mode`).
+Parse `$ARGUMENTS` for flags (`--interactive`, `--dry-run`, `--quiet`, `--stream`, `--skip-preflight`, `--team`, `--analytics`, `--no-goal`), value flags (`--template`, `--domain`, `--tier`, `--confidence`, `--brief`, `--resume`, `--session`, `--mode`), and improve-mode flags (`--baseline`, `--suppress`, `--benchmark`, `--scope`, `--auto-fix`, consumed only when `--mode` is `review`/`optimize`/`full`).
 
 The request is everything before the first `--` flag.
 
@@ -104,9 +104,9 @@ Special flag handling:
 - `--brief <path>`: Strategic brief from /team strategic mode. See @reference/strategic-brief-integration.md.
 - `--mode debug`: Enables debug-mode prefix injection for the controller. See @reference/debug-mode-prompt.md.
 
-See @reference/flags.md for the complete flag reference with defaults and examples.
+`.claude/skills/_MODE_REGISTRY.md § /run` is the canonical source of truth for every `/run` flag and mode (keep it in sync when adding/changing a flag). See @reference/flags.md for the complete flag reference with defaults and examples.
 
-**`/run context show|init|update|clear`** — historical passthrough subcommands. Removed in V11.0; `/run` no longer dispatches to a sibling `/context` skill. The orchestrator still reads `cagents-memory/_projects/{project_hash}/product_context.yaml` during INIT enrichment, so users edit `product_context.yaml` directly. See @reference/context-passthrough.md for the full historical contract (preserved for archived-session back-compat).
+**`/run context show|init|update|clear` — REMOVED (no live subcommand).** The `/run context show|init|update|clear` passthrough was removed in V11.0; `/run` no longer dispatches to a sibling `/context` skill. To persist project knowledge, edit `cagents-memory/_projects/{project_hash}/product_context.yaml` directly — the orchestrator reads it during INIT enrichment. See @reference/context-passthrough.md for the removed-subcommand history (archived-session back-compat only).
 
 ---
 

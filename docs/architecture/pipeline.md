@@ -1,48 +1,41 @@
-# Progressive Pipeline
+# Pipeline (5-State Machine)
 
 ## Overview
 
-The cAgents pipeline uses a state machine engine (`/run`) that reads `pipeline_config.yaml` and executes agents sequentially. v10 introduces progressive pipeline paths that skip unnecessary agents for simpler requests.
+The cAgents pipeline uses a state machine engine (`/run`) that reads `pipeline_config.yaml` and executes agents sequentially. Since v12.0.0 the machine has **5 states**. Two named execution paths drive it: `fast` skips the orchestrator (the `INIT` state) for tier-2-clear requests, and `standard` runs all 5 states (tier 3+, ambiguous domain, or debug mode). What v12.3.0 removed was the old **score-based** 3-path selector (minimal/medium/full, driven by a 9-signal complexity score) — NOT the orchestrator-skip; v12.7.0 (P2-9) then finalized the current two-label model with an enumerated orchestrator-skip allowlist. See the canonical path catalog in `.claude/skills/run/reference/adaptive-pipeline.md`.
 
 ## State Machine
 
 ```
-INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED -> VALIDATED
-                                                                                    |
-                                                                              FAIL -> PROMPTS_READY
-                                                                              REVISE -> PLANNED
+INIT -> ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED
+                          ^                  |
+                          |  FAIL / REVISE   |
+                          +------------------+
 ```
 
-## Pipeline Paths
+On `COORDINATED`, the validator classifies the result. `PASS` advances to `VALIDATED` (complete); both `FAIL` and `REVISE` route back to `PLANNED` (max 3 cycles), then escalate to the user (HITL).
 
-### 9-Signal Complexity Scoring
-| Signal | Weight | Description |
-|--------|--------|-------------|
-| Component count | High | Number of distinct components to build |
-| Domain breadth | High | Number of domains involved |
-| Requirement ambiguity | Medium | Clarity of requirements |
-| Dependency depth | Medium | Complexity of dependency graph |
-| Risk level | Medium | Security, data, infrastructure risk |
-| Stakeholder count | Low | Number of stakeholders involved |
-| Iteration likelihood | Low | Probability of revision needed |
-| Timeline constraints | Low | Urgency of delivery |
-| Novelty | Low | How novel vs routine the work is |
+> **History**: The pre-v12.0.0 machine had 7 states (`INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED -> VALIDATED`). v12.0.0 folded `task-decomposer` and `prompt-engineer` into the `planner`, collapsing the `DECOMPOSED` and `PROMPTS_READY` states. The `delegation_prompts.yaml` artifact those states produced was removed in v12.6.0 — controllers now use standard delegation prompts.
 
-### Three Paths (v12.0.0 5-state pipeline)
-| Path | Score Range | Agents | Typical Use |
-|------|------------|--------|-------------|
-| **Minimal** | < 0.25 | orchestrator, controller, validator | Bug fixes, typos, simple answers |
-| **Medium** | 0.25 - 0.65 | orchestrator, planner, controller, validator | Feature additions, moderate changes |
-| **Full** | >= 0.65 | orchestrator, planner, controller, validator (planner runs full decomposition + delegation-prompt assembly internally) | Complex systems, multi-component |
+## Path Selection (fast vs standard)
+
+Path selection is governed by an **enumerated orchestrator-skip allowlist**, not a complexity score. The pre-v12.3.0 score-based 3-path selector (minimal/medium/full, driven by a 9-signal complexity score) was deleted in v12.3.0; v12.7.0 (P2-9) replaced the remaining freeform skip heuristics with the closed allowlist below. The orchestrator-skip itself was preserved throughout — only the score-based *path selection* was removed.
+
+| Path | States Executed | Orchestrator (`INIT`) | When Selected |
+|------|-----------------|-----------------------|---------------|
+| `fast` | ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED | SKIPPED | `tier == 2` AND `!ambiguous_domain` AND `mode != "debug"` |
+| `standard` | INIT -> ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED | RUNS | every other case (tier 3+, ambiguous tier-2, debug mode, disabled-by-flag) |
+
+`standard` is the default; `fast` is the only condition under which the orchestrator is skipped, and tier 3+ ALWAYS runs the orchestrator. When `fast` is selected, `/run` writes a minimal `enriched_context.yaml` inline and records `skipped: true, skipped_reason: tier-2-fast-path` in the `INIT` `state_history` entry. The canonical path catalog and the `skipped_reason` enum (`tier-2-clear` / `tier-2-fast-path` / `disabled-by-flag`) live in `.claude/skills/run/reference/adaptive-pipeline.md`.
 
 ## Pipeline Agents (5-state machine since v12.0.0)
 
 | State | Agent | Output | Purpose |
 |-------|-------|--------|---------|
 | INIT | orchestrator | enriched_context.yaml | Context enrichment |
-| ORCHESTRATED | planner | plan.yaml + work_items.yaml (+ delegation_prompts.yaml on Full path) | Objectives + controller selection + decomposition + prompt assembly (task-decomposer and prompt-engineer were folded into the planner in v12.0.0) |
-| PLANNED | controller | coordination_log.yaml | Question-based coordination (executes work items via Agent tool delegation + reviewer loops) |
-| COORDINATED | validator | validation_report.yaml | Quality validation |
+| ORCHESTRATED | planner | plan.yaml + work_items.yaml | Objectives, controller selection, and full decomposition (task-decomposer and prompt-engineer were folded into the planner in v12.0.0) |
+| PLANNED | controller | coordination_log.yaml | Question-based coordination (executes work items via Agent tool delegation + reviewer loops; controllers use standard delegation prompts) |
+| COORDINATED | validator | validation_report.yaml | Quality validation (PASS / FAIL / REVISE) |
 | VALIDATED | — | (complete) | Pipeline terminal state |
 
 ## Revision Routing
@@ -50,18 +43,18 @@ INIT -> ORCHESTRATED -> PLANNED -> DECOMPOSED -> PROMPTS_READY -> COORDINATED ->
 | Outcome | Route To | Max Cycles | Purpose |
 |---------|----------|------------|---------|
 | PASS | VALIDATED (complete) | - | All criteria met |
-| FAIL | PLANNED | 3 | Re-execute controller with feedback (max_revision_cycles tightened from 5 → 3 in v12.0.0 per audit) |
-| REVISE | ORCHESTRATED | 3 | Re-plan with feedback |
+| FAIL | PLANNED | 3 | Re-run controller with validator feedback |
+| REVISE | PLANNED | 3 | Re-coordinate with feedback (more fundamental issue) |
 
-After 3 cycles: escalate to user (HITL).
+After 3 cycles: escalate to user (HITL). (`max_revision_cycles` was tightened from 5 → 3 in v12.0.0 per audit recommendation.)
 
 ## Controller-Level Revision
 
 Controllers include internal reviewer loops:
 1. Executor implements work item
 2. Reviewer evaluates against acceptance criteria
-3. If REVISE: executor gets feedback, tries again (max 3 rounds)
-4. If still REVISE after 3 rounds: accept best result, escalate to validator
+3. If REVISE: executor gets feedback, tries again (max 2 internal rounds; lowered from 3 in LP-27, v12.7.x)
+4. If still REVISE after 2 rounds: promote the item to `dead_letter` and continue with the remaining work items
 
 ## Configuration
 
@@ -73,21 +66,29 @@ states:
     agent: cagents:orchestrator
     next: ORCHESTRATED
     outputs: [enriched_context.yaml]
-  # ...
-
-progressive_pipeline:
-  minimal:
-    threshold: 0.25
-    stages: [INIT, PROMPTS_READY, COORDINATED, VALIDATED]
-  medium:
-    threshold: 0.65
-    stages: [INIT, ORCHESTRATED, PROMPTS_READY, COORDINATED, VALIDATED]
-  full:
-    threshold: 1.0
-    stages: [INIT, ORCHESTRATED, PLANNED, DECOMPOSED, PROMPTS_READY, COORDINATED, VALIDATED]
+  ORCHESTRATED:
+    agent: cagents:planner
+    next: PLANNED
+    outputs: [plan.yaml, work_items.yaml]
+  PLANNED:
+    agent: dynamic            # resolved from plan.yaml controller_assignment
+    next: COORDINATED
+    nested_execution: true     # controller spawns level-2 executor + reviewer
+    outputs: [coordination_log.yaml]
+  COORDINATED:
+    agent: cagents:validator
+    next: VALIDATED
+    outputs: [validation_report.yaml]
+  VALIDATED:
+    terminal: true
 
 revision:
-  max_cycles: 5
-  on_fail: PROMPTS_READY
+  max_cycles: 3
+  on_fail: PLANNED
   on_revise: PLANNED
+  escalation: user_hitl
+
+controller_revision:
+  max_internal_rounds: 2       # executor-reviewer loops within controller phase
+  escalation: dead_letter
 ```

@@ -16,7 +16,7 @@ other 3 user skills.
 |-------------|------|-------------|-----------------|
 | (default) | mode | Standard pipeline — orchestrator → planner → controller → validator | "run X", "fix Y", "implement Z" |
 | `--mode standard` | mode | Explicit standard pipeline (same as default) | — |
-| `--mode debug` | mode | Debug-focused execution with verbose logging | "debug X", "trace Y" |
+| `--mode debug` | mode | Debug-focused execution with verbose logging | flag form only (`--mode debug`; NOT in the Step 1a first-word keyword router) |
 | `--mode review` | mode | Audit + identify issues, no changes (v12.1.2: from absorbed /improve) | "review code", "audit docs" |
 | `--mode optimize` | mode | Measurable optimization with baselines (v12.1.2: from absorbed /improve) | "optimize bundle size", "reduce latency" |
 | `--mode full` | mode | Combined review + optimize with unified report (v12.1.2: from absorbed /improve) | "improve quality of X" |

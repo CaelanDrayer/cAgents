@@ -22,14 +22,17 @@
     |   Set up intra-wave dependencies from decomposition
     |
     Step 5: Execute Wave 0 -- Enrichment (lead, sequentially)
-    |   orchestrator -> planner -> decomposer
+    |   orchestrator -> planner (decomposition inline; the planner absorbed
+    |     task-decomposer and prompt-engineer in v12.0.0 -- there is no
+    |     separate `decomposer` agent)
     |   Lead may also execute bootstrap work items
     |   Validate GATE-0 -> mark complete
     |
     Step 6: FOR EACH Wave K from 1 to N-1:
     |   6a. Spawn teammates for wave K (ALL at once, in parallel)
     |       Each teammate gets its own tmux pane (when teammateMode=tmux)
-    |       Each teammate invokes /run for their work item
+    |       Each teammate IS a controller agent that spawns execution agents
+    |       DIRECTLY via the Agent tool (NOT via /run -- see below)
     |   6b. Monitor wave K progress via TaskList + teammate messages
     |   6c. All wave K items complete -> Validate GATE-K
     |   6d. Shut down wave K teammates
@@ -59,12 +62,12 @@ More waves provide:
 
 ## Why Direct Decomposition (Not Delegated)
 
-The /team skill decomposes the request directly instead of delegating to trigger/planner because:
-- **Eliminates fragile multi-agent dependency** -- no risk of trigger/planner failing to produce files
+The /team skill decomposes the request directly instead of delegating to a separate trigger/planner chain because:
+- **Eliminates fragile multi-agent dependency** -- no risk of a planner step failing to produce files
 - **Faster startup** -- decomposition happens in one step, not a multi-agent chain
-- **Each teammate spawns its controller directly** -- full agent orchestration happens per work item
+- **Each teammate spawns execution agents directly** -- full agent orchestration happens per work item without re-entering the pipeline
 - **Simpler to execute reliably** -- fewer sequential dependencies = fewer failure points
-- **Assigns controllers and wave numbers during decomposition** -- team lead determines which controller each work item needs and which wave it belongs to
+- **Assigns controllers and wave numbers during decomposition** -- the lead determines which controller archetype each work item needs and which wave it belongs to
 
 ## CRITICAL: Create Teams AND Teammates
 
@@ -74,7 +77,7 @@ The two most common failure modes are:
 
 Both are wrong. The correct sequence is ALWAYS:
 ```
-TeamCreate -> TaskCreate (all items) -> Task (spawn teammates)
+TeamCreate -> TaskCreate (all items) -> Agent (spawn teammates)
 ```
 
 ## Built-in Agent Teams
@@ -85,11 +88,11 @@ TeamCreate -> TaskCreate (all items) -> Task (spawn teammates)
 |------|---------|-------------|
 | **TeamCreate** | Creates team + shared task list | Step 3 (once) |
 | **TaskCreate** | Creates work items as tasks | Step 4 (per work item) |
-| **Task** | Spawns teammate instances | Step 6 (per wave-1 item) |
+| **Agent** | Spawns teammate instances | Step 6 (per wave-K item) |
 | **TaskUpdate** | Marks tasks completed | After each item completes |
-| **TaskList** | Checks progress | Step 7 (monitoring) |
+| **TaskList** | Checks progress | Steps 6-7 (monitoring) |
 | **SendMessage** | Communicates with teammates | Monitoring + shutdown |
-| **TeamDelete** | Cleans up team resources | Step 9 (cleanup) |
+| **TeamDelete** | Cleans up team resources | Step 8 (cleanup) |
 
 ## Display Modes (teammateMode)
 
@@ -108,17 +111,18 @@ Configure in settings.json:
 
 ## Teammate Execution Model
 
-Each teammate spawns its assigned controller directly via Agent tool. This eliminates the extra Skill fork level, keeping the nesting shallow within the 5-level depth budget (skill loop = depth 0; CC ≥ 2.1.172 supports up to 5 subagent generations beneath it):
+Each teammate IS a controller agent (e.g., `cagents:tech-lead`) that delegates to execution agents via Agent tool, then spawns `cagents:reviewer` to validate. Teammates spawn their execution agents **directly** -- they do NOT re-enter `/run` via the Skill tool. This keeps the nesting shallow within the 5-level depth budget (skill loop = depth 0; CC >= 2.1.172 supports up to 5 subagent generations beneath it):
 
 ```
-Teammate (full session) -> Agent({subagent_type: "cagents:{controller_name}"})
-  -> controller (e.g., tech-lead) -> execution agents (e.g., backend-developer)
-  -> validated output returned to teammate
+Teammate (controller, e.g., tech-lead)
+  -> Agent(cagents:backend-developer)   # execution agent implements the work item
+  -> Agent(cagents:reviewer)            # validates against acceptance criteria
+  -> PASS or REVISE (max 2 internal rounds)
 ```
 
-Teammates NEVER implement work directly. They always coordinate through controllers.
+Teammates NEVER implement work directly. They always coordinate through execution agents via the Agent tool. A teammate's execution agent MAY itself spawn a deeper helper sub-agent when a work item genuinely warrants it, within the same 5-level ceiling.
 
-**Why no Skill("run") fork**: Teammates are full Claude Code sessions. As of CC 2.1.172 a nested /run from a teammate is technically possible within the 5-level depth budget, but it is avoided **by design for cost and clarity** — invoking /run via Skill re-runs the full pipeline (orchestrator + planner + controller + validator), duplicating the Wave 0 enrichment the lead already did and burning extra context and tokens. Spawning the controller directly keeps the chain short (teammate -> controller -> execution) and reuses the lead's enrichment.
+**Why no Skill("run") fork**: Teammates are full Claude Code sessions. As of CC 2.1.172 a nested `/run` from a teammate is technically possible within the 5-level depth budget, but it is avoided **by design for cost and clarity** -- invoking `/run` via Skill re-runs the full pipeline (orchestrator + planner + controller + validator), duplicating the Wave 0 enrichment the lead already did and burning extra context and tokens. Spawning execution agents directly keeps the chain short (teammate-controller -> execution agents -> reviewer) and reuses the lead's enrichment.
 
 ## Per-Wave Teammate Lifecycle
 
@@ -128,7 +132,7 @@ Teammates are spawned per-wave and shut down when their wave completes:
 Wave K starts:
   1. Lead spawns teammates for all wave K work items (parallel)
   2. Each teammate IS a controller agent that delegates to execution agents via Agent tool
-  3. Teammates write outputs to SESSION_DIR/outputs/task-{N}/
+  3. Teammates write outputs to SESSION_DIR/outputs/wave-K/task-{N}/
   4. Teammates send completion messages to lead
   5. Lead validates GATE-K quality criteria
   6. Lead shuts down wave K teammates
@@ -164,6 +168,8 @@ cagents-memory/sessions/team_{timestamp}/
 |   +-- messages/
 |   +-- metrics/
 +-- workflow/
+|   +-- plan.yaml
+|   +-- work_items.yaml
 |   +-- coordination_log.yaml
 +-- outputs/
 ```
