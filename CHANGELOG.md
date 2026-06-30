@@ -10,6 +10,32 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.27.1] - 2026-06-30
+
+Bug fix surfaced during the audit (session
+`team_plugin-audit-refactor_260630_001`): a concurrency defect in
+`findTeamSession`, not just the test flake it presented as.
+
+### Fixed
+- `.claude/hooks/hook-utils.cjs` `findTeamSession`: brought into line with the
+  v12.15.0 concurrency contract. It now follows the same deterministic chain as
+  `findActiveSession` — honor a `team_*`-shaped `input.session_id` first, then
+  `CAGENTS_ACTIVE_SESSION`, falling back to the newest-team heuristic ONLY when
+  the hint is absent or an SDK UUID. A concrete NON-team `session_id` (e.g.
+  `run_*` or a test id) now resolves to `null` instead of leaking into the
+  newest team session. Instrumentation showed a concurrent non-team hook was
+  writing into another session's `team/task_list.yaml` — in production this
+  meant two concurrent sessions in one repo could corrupt each other's task list.
+- `tests/hooks/team-task-complete.test.js`: isolated with per-test
+  `CLAUDE_PROJECT_DIR` + an explicit `session_id` pin (exercises the real fix).
+
+### Added
+- 3 deterministic regression cases in
+  `tests/hooks/find-active-session-deterministic.test.js`.
+
+Verified: 10/10 full-suite runs `1568 passed | 0 failed` — the intermittent
+`team-task-complete` failure is gone; the suite is now deterministic.
+
 ## [12.27.0] - 2026-06-30
 
 Phase 7 of the comprehensive plugin audit/refactor (session

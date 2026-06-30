@@ -1,18 +1,36 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { existsSync, mkdirSync, rmSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import { tmpdir } from 'os';
 import { execSync } from 'child_process';
 
 const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
 const HOOK_PATH = join(HOOKS_DIR, 'team-task-complete.cjs');
-const AGENT_MEMORY = join(process.cwd(), 'cagents-memory');
 const TEST_SESSION = 'team_test-complete_260317_999';
-const SESSION_DIR = join(AGENT_MEMORY, 'sessions', TEST_SESSION);
+
+// Per-test isolated project root → isolated cagents-memory/sessions. Set in
+// beforeEach. The hook's AGENT_MEMORY_DIR resolves from CLAUDE_PROJECT_DIR, so
+// pointing it at a temp dir guarantees NO concurrent test's findTeamSession
+// heuristic can resolve OR write to this session — the root cause of the
+// "(2/2)" cross-session flake (a sibling test's unpinned hook was resolving
+// team_test-complete via the newest-non-terminal-team heuristic and writing
+// into its task_list.yaml under full-suite parallelism).
+let tmpDir;
+let SESSION_DIR;
 
 function runHook(input) {
+  // Isolate the spawned hook to the per-test temp dir (CLAUDE_PROJECT_DIR). Also
+  // pin CAGENTS_ACTIVE_SESSION as the findTeamSession deterministic-chain step-2
+  // backstop (covers the unpinned runHook({}) case); most it() additionally pass
+  // session_id: TEST_SESSION, exercising chain step 1.
   const result = execSync(
     `printf '%s' '${JSON.stringify(input).replace(/'/g, "'\\''")}' | node "${HOOK_PATH}"`,
-    { encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'] }
+    {
+      encoding: 'utf8',
+      timeout: 5000,
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env, CLAUDE_PROJECT_DIR: tmpDir, CAGENTS_ACTIVE_SESSION: TEST_SESSION },
+    }
   );
   return JSON.parse(result.trim());
 }
@@ -48,6 +66,8 @@ items:
 
 describe('team-task-complete.cjs', () => {
   beforeEach(() => {
+    tmpDir = mkdtempSync(join(tmpdir(), 'team-task-complete-test-'));
+    SESSION_DIR = join(tmpDir, 'cagents-memory', 'sessions', TEST_SESSION);
     mkdirSync(join(SESSION_DIR, 'team', 'metrics'), { recursive: true });
     mkdirSync(join(SESSION_DIR, 'team', 'messages'), { recursive: true });
     writeFileSync(join(SESSION_DIR, 'status.yaml'), 'phase: executing\n');
@@ -57,7 +77,7 @@ describe('team-task-complete.cjs', () => {
   });
 
   afterEach(() => {
-    rmSync(SESSION_DIR, { recursive: true, force: true });
+    rmSync(tmpDir, { recursive: true, force: true });
   });
 
   it('should exist', () => {

@@ -155,3 +155,95 @@ describe('findActiveSession deterministic chain (WI-2)', () => {
     expect(unhinted).toBeNull();
   });
 });
+
+/**
+ * findTeamSession deterministic chain (flake/bug fix: team-task-complete.cjs
+ * resolving the WRONG session under concurrency).
+ *
+ * Contract (mirrors findActiveSession):
+ *   1. team_* session_id pin → that dir wins, never a newer sibling.
+ *   2. SDK-UUID session_id → falls through (not a cAgents dir name).
+ *   3. CAGENTS_ACTIVE_SESSION (team_*) → wins when no usable hint.
+ *   4. team_* pin whose dir is absent → null (refuses to leak to a sibling).
+ *   5. No pin + no env → newest-team heuristic (back-compat last resort).
+ *
+ * Same temp-dir isolation as the suite above so the heuristic last-resort scan
+ * can never see the real shared cagents-memory/sessions and out-sort fixtures.
+ */
+describe('findTeamSession deterministic chain (concurrency fix)', () => {
+  let utils;
+  let tmpRoot;
+  let sessionsDir;
+  let prevProjectDir;
+
+  const TEAM_OWN = 'team_own-session_260317_001';
+  const TEAM_SIBLING = 'team_sibling-newer_260901_999'; // sorts newest by name
+
+  function makeTeamSession(sid, { terminal = false } = {}) {
+    const dir = join(sessionsDir, sid);
+    mkdirSync(join(dir, 'team', 'metrics'), { recursive: true });
+    writeFileSync(
+      join(dir, 'status.yaml'),
+      `session_id: ${sid}\nphase: ${terminal ? 'completed' : 'executing'}\n`
+    );
+    return dir;
+  }
+
+  beforeEach(() => {
+    tmpRoot = mkdtempSync(join(tmpdir(), 'cagents-findteam-'));
+    sessionsDir = join(tmpRoot, 'cagents-memory', 'sessions');
+    mkdirSync(sessionsDir, { recursive: true });
+    prevProjectDir = process.env.CLAUDE_PROJECT_DIR;
+    process.env.CLAUDE_PROJECT_DIR = tmpRoot;
+    delete process.env.CAGENTS_ACTIVE_SESSION;
+    utils = freshHookUtils();
+  });
+
+  afterEach(() => {
+    delete process.env.CAGENTS_ACTIVE_SESSION;
+    if (prevProjectDir === undefined) {
+      delete process.env.CLAUDE_PROJECT_DIR;
+    } else {
+      process.env.CLAUDE_PROJECT_DIR = prevProjectDir;
+    }
+    if (tmpRoot && existsSync(tmpRoot)) rmSync(tmpRoot, { recursive: true, force: true });
+  });
+
+  it('session_id pin (non-terminal OR terminal) wins over a newer sibling — no heuristic leak', () => {
+    // Non-terminal pin: own session wins despite TEAM_SIBLING sorting newest.
+    const own = makeTeamSession(TEAM_OWN);
+    makeTeamSession(TEAM_SIBLING); // newer by name — the OLD heuristic would pick this
+    expect(utils.findTeamSession({ session_id: TEAM_OWN })).toBe(own);
+    // Terminal pin still resolves (preserves team-stop SessionEnd finalization,
+    // which must find an already-terminal team session by its session_id).
+    rmSync(own, { recursive: true, force: true });
+    const ownTerminal = makeTeamSession(TEAM_OWN, { terminal: true });
+    expect(utils.findTeamSession({ session_id: TEAM_OWN })).toBe(ownTerminal);
+  });
+
+  it('UUID→env; absent team_ pin→null; non-team pin→null (no sibling leak — the leak source)', () => {
+    // These assertions are the bug-proving core: under the OLD code each fell
+    // through to the newest-team heuristic and resolved TEAM_SIBLING (the WRONG
+    // session) instead of honoring the deterministic chain.
+    const own = makeTeamSession(TEAM_OWN);
+    makeTeamSession(TEAM_SIBLING);
+    // (a) SDK transcript UUID is not a cAgents dir name → fall through to env var.
+    process.env.CAGENTS_ACTIVE_SESSION = TEAM_OWN;
+    expect(utils.findTeamSession({ session_id: '28d9d944-e2f5-4e03-b06b-d367625f1fdd' })).toBe(own);
+    delete process.env.CAGENTS_ACTIVE_SESSION;
+    // (b) cAgents-shaped team_ pin whose dir is absent → null, NOT a sibling.
+    expect(utils.findTeamSession({ session_id: 'team_does-not-exist_260317_777' })).toBeNull();
+    // (c) Non-team concrete session_id (a /run or synthetic-test session) → null.
+    //     This is the leak SOURCE the flake came from: a Stop/TaskCompleted hook
+    //     firing for a non-team session must NOT heuristic-resolve & mutate a
+    //     sibling team session. (Production team hooks fire with a UUID → case a.)
+    expect(utils.findTeamSession({ session_id: 'run_some-other-session_260317_001' })).toBeNull();
+    expect(utils.findTeamSession({ session_id: 'cagents-thinking-400-test-xyz' })).toBeNull();
+  });
+
+  it('no pin + no env → newest-team heuristic (back-compat last resort)', () => {
+    makeTeamSession(TEAM_OWN);
+    const sibling = makeTeamSession(TEAM_SIBLING); // newest non-terminal wins
+    expect(utils.findTeamSession({})).toBe(sibling);
+  });
+});

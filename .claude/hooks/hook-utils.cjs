@@ -389,18 +389,76 @@ function _resetActiveSessionCache() {
 }
 
 /**
- * Find the most recent active team session.
+ * Resolve the team session for a hook via a deterministic chain that mirrors
+ * findActiveSession (H1/WI-2 concurrency contract):
+ *   1. input.session_id pin:
+ *        - team_* id  → that dir (terminal-tolerant) or null if absent.
+ *        - non-team concrete id (run_/designer_/test) → null (this hook is in a
+ *          NON-team session; do not heuristic-resolve a sibling team session).
+ *        - SDK UUID   → falls through (not a cAgents dir name).
+ *   2. CAGENTS_ACTIVE_SESSION env var (team_* only).
+ *   3. Newest-team heuristic — LAST RESORT, only when session_id is absent/UUID
+ *      and no env pin (the production "Claude Code gave us a UUID" case).
+ * A provided (non-UUID) hint never falls through to the heuristic — it returns
+ * its own team dir or null. This closes the cross-session bug where two
+ * concurrent team_* sessions, or an unpinned non-team caller, caused a hook to
+ * resolve and mutate the WRONG session's task_list.yaml.
  * @param {object} input - Hook input (may contain session_id)
  * @returns {string|null} Session directory path or null
  */
 function findTeamSession(input = {}) {
-  // Check if session_id is provided
-  if (input.session_id && input.session_id.startsWith('team_')) {
-    const sessionDir = path.join(AGENT_MEMORY_DIR, 'sessions', input.session_id);
-    if (fs.existsSync(sessionDir)) return sessionDir;
+  const sessionsDir = path.join(AGENT_MEMORY_DIR, 'sessions');
+
+  // Deterministic resolution chain — mirrors findActiveSession's H1/WI-2 contract
+  // so that, under two concurrent same-directory team_* sessions, each hook binds
+  // to ITS OWN session instead of the newest-team heuristic resolving the WRONG
+  // session's task_list.yaml. Steps 1-2 are pinned/deterministic; step 3 (the
+  // legacy newest-team heuristic) survives ONLY as a last resort for genuinely
+  // unpinned calls (back-compat).
+
+  // Step 1: explicit session_id pin. SDK transcript UUIDs (8-4-4-4-12 lowercase
+  // hex) arrive in hook payloads as input.session_id but are NOT cAgents session
+  // directory names — when the hint matches the SDK UUID shape, skip this step
+  // (it would always fail) and fall through to env-var / heuristic, exactly like
+  // findActiveSession chain-step-1.
+  const hint = input.session_id;
+  if (hint && !_isSdkUuidShape(hint)) {
+    // Concrete (non-UUID) session_id pin.
+    if (hint.startsWith('team_')) {
+      const dir = path.join(sessionsDir, hint);
+      // Terminal-tolerant existsSync (not the non-terminal _tryResolveCandidate
+      // gate): team-stop.cjs resolves its team session here at SessionEnd, when
+      // the session may already be terminal, and still needs to finalize metrics.
+      if (fs.existsSync(dir)) return dir;
+      // A cAgents-shaped team_ hint was provided but its dir is absent: refuse to
+      // resolve to a SIBLING team session (the cross-session leak this fix closes).
+      // Return null instead of falling through to the newest-team heuristic.
+      return null;
+    }
+    // Non-team concrete session_id (run_/designer_/synthetic test id): the hook is
+    // firing for a NON-team session, so there is no team session to resolve. Return
+    // null rather than heuristic-resolving — and writing into — a SIBLING team
+    // session. This was the cross-session leak's source: an unpinned non-team
+    // caller (e.g. a Stop/TaskCompleted hook for a /run or test session) was
+    // resolving the newest non-terminal team_ session and mutating its task_list.
+    // Production team hooks fire with an SDK UUID, which is excluded above and
+    // falls through to env-var / heuristic. Mirrors findActiveSession's contract:
+    // a provided, non-UUID, unresolvable hint returns null (no heuristic fallthrough).
+    return null;
   }
 
-  const sessionsDir = path.join(AGENT_MEMORY_DIR, 'sessions');
+  // Step 2: CAGENTS_ACTIVE_SESSION env var (team_ sessions only). Same rules.
+  const envSession = process.env.CAGENTS_ACTIVE_SESSION;
+  if (envSession && !_isSdkUuidShape(envSession) && envSession.startsWith('team_')) {
+    const dir = path.join(sessionsDir, envSession);
+    if (fs.existsSync(dir)) return dir;
+    return null;
+  }
+
+  // Step 3 (last resort, back-compat for genuinely unpinned calls): newest-team
+  // heuristic. Reached only when neither a team_ session_id nor a team_
+  // CAGENTS_ACTIVE_SESSION env var is present (e.g. an SDK-UUID-only payload with
+  // no env pin). This is the historic behavior and is intentionally preserved.
   if (!fs.existsSync(sessionsDir)) return null;
 
   const teamSessions = fs.readdirSync(sessionsDir)
