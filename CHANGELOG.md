@@ -10,6 +10,40 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.23.0] - 2026-06-30
+
+Phase 3 of the comprehensive plugin audit/refactor (session
+`team_plugin-audit-refactor_260630_001`). Hard-delete of dead files — every
+deletion grep-confirmed to have zero live inbound references (git history is
+the archive).
+
+### Removed (17 files / ~3,800 lines)
+- **4 stale team/reference orphans** (live counterparts retained):
+  `strategic-brief-schema.md` (dup of `strategic-brief-format.md`),
+  `flags.md` (team — the live one is `run/reference/flags.md`),
+  `gate-standards.md` (live: `gate-validation-protocol.md`),
+  `fallback-behavior.md` (live: `fallback-and-error-recovery.md`).
+- **5 zero-consumer tracked configs** under `cagents-memory/_system/config/`:
+  `communication_protocols.yaml`, `parallel_execution_framework.yaml`,
+  `performance_tracking_system.yaml`, `subagent_coordination_protocol.yaml`,
+  `task_state_machine.yaml` (0 tracked consumers each;
+  `task_completion_protocol.yaml` + `routing.yaml` retained).
+- **4 spent/superseded scripts**: `validate-agent-counts.sh`, `count_agents.sh`
+  (both scanned deleted pre-v11 dirs; superseded by `validate-counts.sh`),
+  `migrate-frontmatter.cjs`, `migrate_to_token_based.py`.
+- **4 orphan tests/fixtures**: `tests/fixtures/sessions/org_sample/{instruction,status}.yaml`,
+  and the two fully-`describe.skip` never-built-feature suites
+  `skill-exemption-respected.test.js`, `validator-artifact-missing.test.js`.
+
+### Changed
+- `CLAUDE.md` test-count claim `1353+ / 160+` → `1340+ / 158+` (the deletions
+  lowered the static lower-bound; the count-guard regression test enforces this).
+
+### Spared (had live inbound refs — deferred to later phases)
+- `team/reference/architecture.md` (read by `session-hierarchy.test.js`),
+  `migrate-v11.1.0*.sh` / `migrate_agent.sh` (cited by migration docs),
+  `standalone-contract.test.js` (carries a unique assertion).
+
 ## [12.22.1] - 2026-06-30
 
 Phase 1 of the comprehensive plugin audit/refactor (session
