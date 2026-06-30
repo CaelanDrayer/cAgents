@@ -88,45 +88,9 @@ See @.claude/rules/playbooks/pat-minimal-solution-ladder.md for the full ladder,
 
 ## 2-Action Findings Capture Rule
 
-> **Note**: This rule is an aspirational best practice, not a mandatory requirement. It was designed to prevent information loss during context compaction but is not enforced or consistently followed in practice. Agents SHOULD capture findings when practical but are not required to follow the strict 2-action cadence.
-
-Inspired by the attention-injection pattern for context engineering: execution agents should persist findings to session files periodically to prevent information loss during context compaction.
-
-### Recommended Practice
-
-> When performing multiple research operations, periodically save key findings to session files to guard against context compaction.
-
-### Why
-
-- Visual/multimodal content (images, browser results, PDFs) does not persist across context compaction
-- Research findings discovered early in a session fade from attention after many tool calls
-- Writing findings to disk creates a persistent external memory that survives any context event
-
-### When to Capture
-
-| After 2 of these operations | Write findings to |
-|------------------------------|-------------------|
-| Grep, Glob, Read (research) | `findings.md` or `workflow/enriched_context.yaml` |
-| WebFetch, WebSearch | `findings.md` (CRITICAL - web content is ephemeral) |
-| Read of images/PDFs | `findings.md` (multimodal content must be captured as text) |
-| Any tool that discovers facts | Session workflow files |
-
-### What to Capture
-
-```markdown
-## Key Discoveries
-- Finding 1: {concrete fact with file path or source}
-- Finding 2: {specific detail, not vague summary}
-```
-
-### Anti-Patterns
-
-| Don't | Do Instead |
-|-------|------------|
-| Read 5 files then try to remember all | Write findings after every 2 reads |
-| View image and keep details in context | Immediately describe image content in findings.md |
-| Search web and assume results persist | Write key results to disk before next operation |
-| Rely on context for discovered facts | Treat filesystem as your persistent memory |
+Aspirational best practice (persist findings to session files after every ~2
+research operations to survive context compaction) — not runtime-enforced. See
+docs/DESIGN_NOTES.md.
 
 ## Subagent Status Protocol (V10.22.0)
 
@@ -181,11 +145,11 @@ When implementing work items that modify existing code, use the commit-before-ve
 
 ## Nesting Model and Graceful Degradation Under Nesting-Ceiling / Tool Absence (repositioned in v12.17.0)
 
-**Nesting model (v12.17.0+).** Claude Code ≥ 2.1.172 lets subagents spawn their own subagents up to 5 levels deep. Execution agents spawned at depth 2 **retain the `Agent` tool** and CAN spawn their own sub-agents within the 5-level ceiling when a work item genuinely warrants it. (Historically, before v12.17.0, the harness stripped `Agent`, `TodoWrite`, and `TaskUpdate` at depth ≥ 1, which made direct execution the expected behavior; that limitation is obsolete as default behavior.)
+**Nesting model (v12.17.0+).** Claude Code ≥ 2.1.172 lets subagents spawn their own subagents up to 5 levels deep. Execution agents spawned at depth 2 **retain the `Agent` tool** and CAN spawn their own sub-agents within the 5-level ceiling when a work item genuinely warrants it.
 
-**Graceful degradation is a DEFENSIVE FALLBACK**, not the expected behavior. It triggers ONLY when a needed tool is genuinely absent — at the actual nesting ceiling (a subagent at depth 5 cannot spawn a depth-6 child) or if a future/older harness regresses the capability. Before reporting `BLOCKED` for a missing tool, an execution agent MUST check whether the missing tool is actually absent — do not assume stripping. When `Agent`, `TodoWrite`, or `TaskUpdate` is verifiably absent, complete the work item via the tools you do have and write self-validation YAML in place of `TaskUpdate` calls. The tool-inventory-check-before-BLOCKED rule and the TaskUpdate-substitution rule remain the canonical fallback guidance.
+**Graceful degradation is a DEFENSIVE FALLBACK**, not the expected behavior. It triggers ONLY when a needed tool is genuinely absent — at the actual nesting ceiling (a subagent at depth 5 cannot spawn a depth-6 child) or if a future/older harness regresses the capability. Before reporting `BLOCKED` for a missing tool, an execution agent MUST check whether the missing tool is actually absent. When `Agent`, `TodoWrite`, or `TaskUpdate` is verifiably absent, complete the work item via the tools you do have and write self-validation YAML in place of `TaskUpdate` calls. The tool-inventory-check-before-BLOCKED rule and the TaskUpdate-substitution rule remain the canonical fallback guidance.
 
-See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md for the canonical fallback pattern (including the tool-inventory-check-before-BLOCKED rule, the TaskUpdate-substitution rule, and the no-reviewer-call rule for execution agents).
+See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md for the canonical fallback pattern (the tool-inventory-check-before-BLOCKED rule, the TaskUpdate-substitution rule, the no-reviewer-call rule for execution agents, and the historical pre-v12.17.0 depth-1 stripping context).
 
 ## Self-Validation Protocol (V12.0.0)
 

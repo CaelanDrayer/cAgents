@@ -1,5 +1,7 @@
 # Task Completion Enforcement Implementation Summary
 
+> **HISTORICAL (frozen at v1.0, 2026-01-12):** superseded — kept for record. The current task-completion protocol is `.claude/rules/quality/completion.md` (evidence-first, red-flag detection); treat this summary as a point-in-time implementation record, not current behavior.
+
 **Date**: 2026-01-12
 **Version**: 1.0
 **Status**: IMPLEMENTED

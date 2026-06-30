@@ -10,9 +10,10 @@
  *   2. metadata.requires field — adoption check at extraction time was
  *      4 agents (< 5 threshold). Per spec: delete the field from
  *      skill-format.md AND remove the advisory parseRequires/checkRequires
- *      block from session-init-gate.cjs. The hook stays for session-presence,
- *      v12-aliases lookup, and data_access_level — only the metadata.requires
+ *      block from session-init-gate.cjs. The hook stays for session-presence
+ *      and v12-aliases lookup — only the metadata.requires
  *      bins/env/files/min_node_version advisory is removed.
+ *      (A1-06 later removed the data_access_level Phase-3 advisory too.)
  *
  * This test is the failing-before / passing-after regression contract.
  */
@@ -65,7 +66,7 @@ describe('P2-10: Decisive (not advisory) hooks', () => {
     //  .claude/rules/core/skill-format.md AND from
     //  .claude/hooks/session-init-gate.cjs (the advisory-mode prose only —
     //  keep any code paths that don't reference `requires`)."
-    it('session-init-gate.cjs still exists (we keep session-presence + aliases + data_access)', () => {
+    it('session-init-gate.cjs still exists (we keep session-presence + aliases)', () => {
       expect(fs.existsSync(SESSION_INIT_HOOK)).toBe(true);
     });
 

@@ -36,8 +36,8 @@ const HOOK_PATH = path.join(REPO_ROOT, '.claude', 'hooks', 'session-init-gate.cj
 /**
  * Spawn the session-init-gate hook with a fake CAGENTS_SESSION_ID so the
  * session-presence check bypasses (no real session directory required).
- * The hook will reach the Phase 2/3 logic (alias lookup, metadata.requires,
- * data_access_level) without denying on the session gate.
+ * The hook will reach the Phase 2 logic (alias lookup) without denying on
+ * the session gate.
  */
 function runHook(input, extraEnv = {}) {
   const payload = JSON.stringify(input);

@@ -1,5 +1,7 @@
 # Remaining Optimizations Inventory
 
+> **HISTORICAL (frozen at v8.0.18, 2026-02-02):** superseded by later v9–v12 optimization work — kept for record. The "remaining" items, version numbers, and status below reflect the v8.x optimization cycle and are NOT current. For current state see `CHANGELOG.md` and `docs/RELEASE_NOTES.md`.
+
 **Date**: 2026-02-02
 **Current Version**: 8.0.18
 **Status**: Halfway through optimization cycle

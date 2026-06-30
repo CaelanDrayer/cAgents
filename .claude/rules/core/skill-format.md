@@ -159,41 +159,6 @@ Sub-field semantics:
 `analyst/data-scientist`. See `tests/skills/paths-conditional-activation.test.js` for
 the regression test enforcing the ≥10 floor.
 
-### data_access_level (V12.0.6+)
-
-Declares the trust tier of data this agent is designed to operate on.
-Lives inside the `metadata:` block (not at the top level) per the 6-field
-Agent Skills spec.
-
-The `metadata.data_access_level` field is a v1 advisory schema — agents
-publish their data-trust tier as a hint for human reviewers and for the
-session-init-gate advisory check. Advisory only — does NOT block spawns
-in v1. Future versions may promote selected tiers to blocking enforcement.
-
-```yaml
-metadata:
-  data_access_level: trusted | verified | unverified
-```
-
-Sub-field semantics:
-- **`trusted`**: agent operates on production data, secrets, or
-  protected resources. Should only delegate to other `trusted` agents.
-- **`verified`**: agent operates on data that has been validated by an
-  upstream `trusted` agent. May delegate to `trusted` or `verified` peers.
-- **`unverified`**: agent operates on user input, external content, or
-  other untrusted sources. May delegate to any tier.
-
-**Behavior**: When a `trusted` agent is about to spawn an `unverified`
-agent, `session-init-gate.cjs` emits an advisory `systemMessage` warning.
-Spawns proceed; no `permissionDecision` change. Agents that do not declare
-`metadata.data_access_level` default to behavior equivalent to `unverified`
-(no warnings fired).
-
-**Evidence**: pattern from `example/external-skills/Imbad0202__academic-research-skills/`.
-
-**Pilot adoption**: This field is OPT-IN in v12.0.6. Reaches its full
-value once 3+ agents declare conflicting tiers (anticipated in v12.1+).
-
 ### coordination_style (Controllers only)
 - `question_based`: Uses question delegation pattern
 - Controllers MUST have this field

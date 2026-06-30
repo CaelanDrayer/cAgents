@@ -49,13 +49,11 @@ Teammates MAY also spawn deeper sub-agents within the 5-level nesting budget (sk
 
 ## Nesting-Ceiling Degradation: Agent Tool Absent Only at the Depth Budget (repositioned in v12.17.0)
 
-**Historical note.** Before v12.17.0 (Claude Code < 2.1.172), the runtime stripped the `Agent` (and `TodoWrite`, `TaskUpdate`) tools from any cAgents agent spawned at depth ≥ 1, which made direct execution the expected depth-1 behavior. **That limitation is obsolete as the default/expected behavior.** Claude Code 2.1.172 added subagent-spawns-subagent support up to 5 levels deep, and an empirical chain test (session `run_deep-nesting-enablement_260611_001`) confirmed the `Agent` tool is present at every level from depth 1 through depth 5 with zero stripping. Teammate controllers now reliably spawn execution agents and reviewers.
+**Current model (CC ≥ 2.1.172).** Subagents spawn their own subagents up to **5 levels deep** (skill loop = depth 0). The `Agent` tool is present at every level from depth 1 through depth 5, so teammate controllers reliably spawn execution agents and reviewers — delegation is the expected behavior at every level.
 
-**Graceful degradation is now a DEFENSIVE FALLBACK, not the expected depth-1 behavior.** It triggers ONLY when the `Agent` tool is genuinely absent — at the actual nesting **ceiling** (a subagent at depth 5 cannot spawn a depth-6 child) or if a future/older harness regresses the capability. Before reporting failure or implementing a work item directly because `Agent` is "missing," a teammate MUST verify the tool is actually absent from its surface — do not assume stripping. On CC ≥ 2.1.172, `Agent` is normally present at depths 1-4. Degrade to direct execution + self-validation ONLY when the tool is verifiably absent.
+**Graceful degradation is a DEFENSIVE FALLBACK**, not the expected depth-1 behavior. It triggers ONLY when the `Agent` tool is genuinely absent — at the actual nesting **ceiling** (a subagent at depth 5 cannot spawn a depth-6 child) or if a future/older harness regresses the capability. Verify the tool is actually absent before degrading; on CC ≥ 2.1.172 `Agent` is normally present at depths 1-4. The fallback applies to all spawning skills and all agent types: when `Agent` is verifiably absent, degrade to direct execution + self-validation rather than failing.
 
-**Scope of the fallback**: applies to **all spawning skills** (`/run` and `/team`, plus the historical `/org` absorbed into `/team` strategic mode in v12.2.0) and **all agent types** (plugin-namespaced `cagents:*` agents AND built-in agent types `general-purpose`, `Explore`, `Plan`). When `Agent` is verifiably absent, the spawned agent gracefully degrades to direct execution + self-validation rather than failing.
-
-See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md for the canonical fallback pattern, the tool-inventory-check-before-BLOCKED rule, and the ceiling/regression scope.
+See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md for the canonical fallback pattern, the tool-inventory-check-before-BLOCKED rule, the ceiling/regression scope, and the historical pre-v12.17.0 depth-1 context.
 
 ## CRITICAL: Create Teams, Not Just Tasks
 

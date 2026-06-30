@@ -10,6 +10,33 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.29.0] - 2026-06-30
+
+Phase 9 of the comprehensive plugin audit/refactor (session
+`team_plugin-audit-refactor_260630_001`). Historical-prose / context-budget cut
+(net −503/+41 lines).
+
+### Removed
+- `data_access_level` machinery (A1-06): 0/57 agent adoption, advisory, never
+  fired. Removed the schema section from `skill-format.md` and the Phase-3 check
+  + dead helpers from `session-init-gate.cjs` (now cleanly 2-phase: presence gate
+  + alias check); deleted its dedicated test; trimmed `hook-catalog.md`.
+- Duplicated "pre-2.1.172 depth-1 stripping" history (A3-08): the ~120-line
+  narrative repeated across `teams.md`, `execution.md`, `controllers.md`,
+  `delegation.md` collapsed to one-line pointers; canonical account stays in
+  `pat-graceful-degradation-depth1.md`. Current nesting-model paragraph retained.
+
+### Added
+- `docs/DESIGN_NOTES.md` (non-auto-loaded): home for design aspirations the
+  runtime does not enforce. Moved the three-file pattern (from `agent-memory.md`)
+  and 2-action findings capture (from `execution.md`) here + left pointers.
+  (Signal/handoff, DECISIONS/CORRECTIONS, interface-contracts left in place —
+  they read as live mechanisms; conservative.)
+
+### Changed
+- HISTORICAL banners added to frozen `docs/REMAINING_OPTIMIZATIONS.md` (v8.0.18)
+  and `docs/TASK_COMPLETION_ENFORCEMENT_SUMMARY.md` (kept — both have inbound refs).
+
 ## [12.28.0] - 2026-06-30
 
 Phase 8 of the comprehensive plugin audit/refactor (session

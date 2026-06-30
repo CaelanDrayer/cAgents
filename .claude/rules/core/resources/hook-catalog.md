@@ -103,9 +103,9 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 
 **Consolidated sub-validator: session-init-gate.cjs** (dispatched first, FAIL-CLOSED session-presence gate; not independently registered)
 
-- **Purpose**: Multi-phase guard before any Agent spawn. Phase 1 (session-presence gate) DENIES; phases 2-3 (alias and data-access-level checks) are advisory.
+- **Purpose**: Two-phase guard before any Agent spawn. Phase 1 (session-presence gate) DENIES; Phase 2 (alias check) is advisory.
 - **Output (Phase 1 — session-presence gate)**: Calls `denyWithReason()` when no active session directory exists (`findActiveSession` returns null and no `CAGENTS_SESSION_ID` bypass is set). This actively blocks agent spawns that would have no session to write into.
-- **Output (Phases 2-3 — alias / data-access-level)**: Advisory `systemMessage` only (does not block). Phase 2 resolves `cagents:*` aliases via `v12-aliases.yaml`. Phase 3 warns when a `trusted`-tier agent spawns an `unverified`-tier child.
+- **Output (Phase 2 — alias)**: Advisory `systemMessage` only (does not block). Resolves `cagents:*` aliases via `v12-aliases.yaml`. (The former Phase 3 `metadata.data_access_level` trust-downgrade advisory was removed in A1-06 — 0-agent adoption, never fired.)
 - **Bypass**: Set `CAGENTS_SESSION_ID` to skip the presence gate during tests or out-of-session work.
 
 **Consolidated sub-validator: model-routing-advisor.cjs** (dispatched second, ADVISORY/FAIL-OPEN; not independently registered)

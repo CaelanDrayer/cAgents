@@ -52,15 +52,8 @@ See `agent-memory-reference.md` for full directory structure and session folder 
 
 ## Three-File Pattern (V8.0)
 
-> **Note**: This pattern is aspirational/historical. It was designed as a best practice for context-efficient session tracking but is not enforced or consistently used in practice. Sessions typically rely on `workflow/` artifacts (plan.yaml, coordination_log.yaml) and waypoints instead. Agents MAY use this pattern but are not required to.
-
-Compact session tracking that survives context compaction (60-80% savings vs full logs):
-
-1. **task_plan.md** (500-2000 tokens): Work item breakdown with completion status
-2. **findings.md** (1000-5000 tokens): Discoveries, decisions, Q&A
-3. **progress.md** (200-500 tokens): Current status and resume instructions
-
-See `agent-memory-reference.md` for examples.
+Aspirational pattern (task_plan.md / findings.md / progress.md compact session
+tracking) — not runtime-enforced. See docs/DESIGN_NOTES.md.
 
 ## Waypoints
 

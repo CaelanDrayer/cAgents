@@ -83,11 +83,9 @@ that narrow case the spawned agent gracefully degrades to direct
 execution and self-validation. This is the ONLY documented exception to
 the "never implement directly" rule, and it never applies to the skill's
 own depth-0 loop. Before degrading, an agent MUST verify that `Agent` is
-actually absent — do not assume stripping. (Historically, before
-v12.17.0, the harness stripped `Agent` at depth ≥ 1, which made
-degradation the expected depth-1 path; that limitation is obsolete.)
-See `@.claude/rules/core/teams.md` § Known Harness Limitation for the
-historical note.
+actually absent. See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md
+for the canonical fallback pattern and the historical pre-v12.17.0
+depth-1 context.
 
 ## See Also
 
