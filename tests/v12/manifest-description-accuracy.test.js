@@ -1,7 +1,12 @@
 /**
- * WI-13 regression test: plugin manifest descriptions must reflect actual
- * v12.6.0 state (144 agents across 9 archetypes), not stale pre-v12.4.0
- * counts (243 agents / 15 business domains).
+ * WI-13 regression test: plugin manifest descriptions must reflect the ACTUAL
+ * current catalog size, not a stale hardcoded count.
+ *
+ * The required agent count is DERIVED from plugin.json's `agents` array (the
+ * single source of truth) so this test never goes stale on a future catalog
+ * change. Historical hardcoded expectations (243 -> 144 -> 141) caused this
+ * test to actively GUARD the wrong number and block the P2 (audit-260630)
+ * sweep that corrected the descriptions from "141 agents" to the real 57.
  *
  * Surfaces audited:
  *   1. .claude-plugin/plugin.json — top-level "description" field
@@ -9,13 +14,10 @@
  *   3. .claude-plugin/marketplace.json — plugins[0].description
  *
  * Rules enforced:
- *   - No current-state claim of "243 agents" (was the pre-v12.4.0 catalog count)
- *   - No current-state claim of "243 specialized agents"
- *   - No current-state claim of "15 business domains" (v12 W4.2 deleted 11
- *     of 13 legacy domain dirs; the canonical structure is 9 archetypes)
- *   - No current-state claim of "15 domains"
- *   - Description must mention the actual agent count (144) AND the actual
- *     organization (9 archetypes / 9 builder-role archetypes)
+ *   - No stale current-state catalog claim (243 / 144 / 141 agents, 15 domains)
+ *   - Description must mention the DERIVED agent count (`<N> agents` or
+ *     `<N> specialized agents`, where N = plugin.json agents.length) AND the
+ *     actual organization (9 archetypes / 9 builder-role archetypes)
  *
  * Note on historical claims: README.md "Version History" entries that
  * reference past counts (e.g., "V10.18.0 — Vibe field on all 243 agents")
@@ -38,23 +40,28 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const PLUGIN_JSON = path.join(REPO_ROOT, '.claude-plugin', 'plugin.json');
 const MARKETPLACE_JSON = path.join(REPO_ROOT, '.claude-plugin', 'marketplace.json');
 
-const STALE_CURRENT_STATE_CLAIMS = [
-  '243 agents',
-  '243 specialized agents',
-  '15 business domains',
-  '15 domains',
-];
-
-// v12.7.0 LP-12/LP-13 consolidation settled the catalog at 141 active agents
-// (was 144 at v12.6.0). The manifest descriptions must reflect the current count.
-const REQUIRED_CURRENT_STATE_TOKENS = {
-  count: ['141 agents', '141 specialized agents'],
-  organization: ['9 archetypes', '9 builder-role archetypes'],
-};
-
 function loadJSON(p) {
   return JSON.parse(fs.readFileSync(p, 'utf8'));
 }
+
+// DERIVED from disk — the single source of truth for the catalog size.
+const ACTIVE_AGENTS = loadJSON(PLUGIN_JSON).agents.length;
+
+const STALE_CURRENT_STATE_CLAIMS = [
+  '243 agents',
+  '243 specialized agents',
+  '144 agents',
+  '141 agents',
+  '141 specialized agents',
+  '15 business domains',
+  '15 domains',
+].filter((c) => !c.startsWith(`${ACTIVE_AGENTS} `)); // never flag the live count
+
+// The manifest descriptions must reflect the current (derived) count.
+const REQUIRED_CURRENT_STATE_TOKENS = {
+  count: [`${ACTIVE_AGENTS} agents`, `${ACTIVE_AGENTS} specialized agents`],
+  organization: ['9 archetypes', '9 builder-role archetypes'],
+};
 
 function assertNoStaleClaims(description, source) {
   for (const stale of STALE_CURRENT_STATE_CLAIMS) {
@@ -84,7 +91,7 @@ describe('WI-13: plugin manifest description accuracy', () => {
     assertNoStaleClaims(manifest.description, '.claude-plugin/plugin.json');
   });
 
-  it('plugin.json description mentions current state (144 agents + 9 archetypes)', () => {
+  it('plugin.json description mentions current state (derived agent count + 9 archetypes)', () => {
     const manifest = loadJSON(PLUGIN_JSON);
     assertCurrentStateTokens(manifest.description, '.claude-plugin/plugin.json');
   });

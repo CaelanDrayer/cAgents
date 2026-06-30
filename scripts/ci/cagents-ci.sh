@@ -2,7 +2,7 @@
 #
 # cAgents CI Runner
 # Self-contained CI script for quality gates
-# Version: 12.30.0
+# Version: 12.31.0
 #
 # Usage:
 #   ./scripts/ci/cagents-ci.sh [command]
@@ -356,8 +356,8 @@ run_tests() {
 #
 # Validates on any version change that:
 #   (1) CHANGELOG.md has a new entry matching the new version
-#   (2) all 21 registry locations agree on the new version
-#   (3) non-sync diff (files outside the 21 registry targets) is <= 5 files
+#   (2) all 16 registry locations agree on the new version
+#   (3) non-sync diff (files outside the 16 registry targets) is <= 5 files
 #
 # V10.26.3 shipped warn-only; V10.26.5 flips the default to blocking.
 # Set CAGENTS_TINY_BUMP_BLOCK=0 to opt back into warn-only mode (useful for
@@ -430,9 +430,11 @@ check_tiny_bump() {
         log_info "check_tiny_bump: sampled registry locations agree on $new_version"
     fi
 
-    # (3) Non-sync diff size: files changed on HEAD outside the 21 sync targets.
-    # The 21 registry files are auto-updated by sync-versions.sh; a tiny bump
-    # should touch <= 5 files beyond those.
+    # (3) Non-sync diff size: files changed on HEAD outside the 16 sync targets.
+    # The 16 registry files (canonical list: .claude/rules/core/version-registry.md)
+    # are auto-updated by sync-versions.sh; a tiny bump should touch <= 5 files
+    # beyond those. NOTE: /org (removed v12.2.0) and /improve (folded into /run
+    # v12.1.2) SKILL.md targets were dropped here — those files no longer exist.
     local sync_targets=(
         "package.json"
         ".claude-plugin/plugin.json"
@@ -440,10 +442,8 @@ check_tiny_bump() {
         "CLAUDE.md"
         ".claude/settings.json"
         ".claude/skills/run/SKILL.md"
-        ".claude/skills/org/SKILL.md"
         ".claude/skills/team/SKILL.md"
         ".claude/skills/designer/SKILL.md"
-        ".claude/skills/improve/SKILL.md"
         ".claude/skills/helper/SKILL.md"
         ".claude/hooks/session-catchup.cjs"
         "scripts/ci/cagents-ci.sh"
@@ -540,7 +540,7 @@ main() {
     local command="${1:-all}"
     local exit_code=0
 
-    log_section "cAgents CI Runner v12.30.0"
+    log_section "cAgents CI Runner v12.31.0"
     log_info "Project root: $PROJECT_ROOT"
     log_info "Command: $command"
 

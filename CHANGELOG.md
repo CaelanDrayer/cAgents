@@ -10,6 +10,39 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.31.0] - 2026-06-30
+
+Phase 2 (capstone) of the comprehensive plugin audit/refactor (session
+`team_plugin-audit-refactor_260630_001`). Final count/number drift sweep — run
+last so every advertised number reflects all prior phases, plus guards so the
+drift class cannot silently recur.
+
+### Fixed (~40 claims across 11 files)
+- `.claude-plugin/plugin.json` + `marketplace.json` descriptions: "141 agents" →
+  **57** (C1.1). A stale test that hardcoded "141 agents" (and was *blocking* the
+  fix) was rewritten to derive the count from `plugin.json.agents.length`.
+- `CLAUDE.md`: trimmed the frozen v12.0.0 "251 → 240" release block (C1.3/C1.8)
+  to a concise current-state summary (57 agents / 9 archetypes / 5-state pipeline
+  / standalone) + CHANGELOG pointer; the stale "3 paths: minimal/medium/full +
+  9-signal scoring" pipeline claim → the current `fast`/`standard` model;
+  vp-engineering → "folded into cto"; docs/rules/test counts refreshed.
+- Hook counts "32/26/18"/"18/15" → **31/24/18** across README + rules/README.
+- The "238 vs 240" net-agent contradiction (C1.3) standardized on **238**
+  (RELEASE_NOTES enumerates the 13 deletions); dated release notes kept historical.
+- `LIFECYCLE.md`: removed the `task-merger` phantom (absorbed into `task-state`);
+  re-tallied phase counts to match the table.
+
+### Added / hardened (guards)
+- `validate-counts.sh` Check 13: fails CI if CLAUDE.md states a stale current
+  agent-count (historical "251→240" arrows are not flagged). Stale comments fixed.
+- `cagents-ci.sh` tiny-bump `sync_targets`: dropped the removed `org`/`improve`
+  entries → exactly the 16 registry locations; "21" comment → 16.
+- `tests/regressions/count-drift-guards.test.js`: locks both hardenings.
+
+Residual (dated historical records, not current claims): `clo` appears in
+`ARCHITECTURE.md`/`RELEASE_NOTES.md` v12.0.0 entries (reverted to
+`general-counsel`; left as dated record).
+
 ## [12.30.0] - 2026-06-30
 
 Phase 10 of the comprehensive plugin audit/refactor (session

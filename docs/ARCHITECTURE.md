@@ -29,7 +29,7 @@ cAgents v12.0.0 is the major consolidation release. Architectural changes:
 - **Marketing-sales consolidation (38 -> 25)**: 13 marketing-sales agents absorbed across
   6 groups (G1-G6). Aliases preserved for all 13 fold sources.
 - **chief-legal-officer -> clo**: Standardized leadership naming. Alias preserved.
-- **vp-engineering moved**: Relocated to `leadership/` archetype.
+- **vp-engineering moved**: Relocated to `leadership/` in v12.0.0; subsequently folded into `cto` (no standalone SKILL.md — resolves via `v12-aliases.yaml`).
 - **devops-lead renamed**: Now `infrastructure-lead`, moved to
   `developer/infrastructure/`.
 - **max_revision_cycles 5 -> 3**: Tightened revision budget in

@@ -2,48 +2,24 @@
 
 Core architecture and development guidance for cAgents.
 
-## v12.0.0 (consolidation release)
+## Current State
 
-cAgents v12.0.0 is the major consolidation release shipped from branch
-`revamp/v12-rc`. Highlights:
+cAgents is a **standalone, domain-agnostic** multi-agent orchestration plugin:
 
-- **Pipeline collapse: 7 -> 5 states.** `task-decomposer` and `prompt-engineer`
-  folded into `planner`. The /run state machine is now `INIT ->
-  ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED`. Decomposition becomes
-  a planner sub-responsibility; prompt-engineering becomes controller-side
-  prompt assembly.
-- **Controller merge: engineering-manager -> tech-lead.** Two engineering
-  controllers consolidated into a single fullstack `tech-lead`. All 222
-  active references were swept; alias preserved via
-  `scripts/migration/v12-aliases.yaml`.
-- **Architecture-reviewer collapsed.** `architecture-reviewer` removed as a
-  standalone agent and reborn as `architect --review` mode flag.
-- **Marketing-sales consolidation: 38 -> 25.** Thirteen marketing-sales
-  agents absorbed across 6 groups (G1-G6).
-- **chief-legal-officer -> clo.** Standardized leadership naming.
-- **max_revision_cycles 5 -> 3.** Tighter revision budget per audit
-  recommendation.
-- **Execution self-validation: 15 -> 5 mechanically-checkable checks.** The
-  aspirational 15-check protocol replaced with 5 checks designed to be
-  mechanically verifiable (evidence freshness, file existence, guard exit
-  codes, git state, file:line accuracy). These are currently agent-self-reported;
-  the verifier hook that would enforce them is deferred to a future bump, so the
-  checks are advisory in practice. See
-  @.claude/rules/core/resources/execution-self-validation.md.
-- **Legacy directory cleanup.** 11 of 13 legacy domain dirs removed
-  (`engineering/`, `creative/`, `business/`, `growth/`, `service/`,
-  `science/`, `health/`, `education/`, `personal/`, `arts/`, `trades/`);
-  `people/` and `shared/` retained as routing-config-only overlays.
-- **`cagents-memory/_communication/` removed.** Unused agent-messaging
-  inbox/broadcast directory deleted.
-- **Total agents: 251 -> 240.** Net 11 agents removed via 4 controller
-  consolidations (task-decomposer, prompt-engineer, engineering-manager,
-  architecture-reviewer) and 13 marketing-sales merges, partially offset by
-  the chief-legal-officer -> clo rename and vp-engineering moving into
-  leadership.
+- **57 agents** across 9 builder-role archetypes (developer, operator, advisor,
+  analyst, creator, writer, strategist, core, leadership) — 41 routable + 16
+  core. Pre-v12 agent names resolve via `scripts/migration/v12-aliases.yaml`.
+- **5-state event-driven pipeline**: `INIT -> ORCHESTRATED -> PLANNED ->
+  COORDINATED -> VALIDATED` (decomposition + prompt-assembly folded into the
+  `planner`; `max_revision_cycles: 3`).
+- **4 user skills**: `/run`, `/team`, `/designer`, `/helper`.
+- **Zero external-service dependencies** — see § Standalone Contract.
 
-All renames preserved via `scripts/migration/v12-aliases.yaml` so existing
-session artifacts referencing pre-v12 agent names continue to resolve.
+For the v12.0.0 consolidation history (pipeline 7->5 collapse, the
+engineering-manager->tech-lead and architecture-reviewer->`architect --review`
+controller merges, marketing-sales 38->25 absorption, vp-engineering folded
+into `cto`, and the 251->238 catalog reduction) and all later release notes,
+see `CHANGELOG.md` and `docs/RELEASE_NOTES.md`.
 
 ## Table of Contents
 
@@ -53,7 +29,7 @@ session artifacts referencing pre-v12 agent names continue to resolve.
 - [Project Overview](#project-overview)
 - [CRITICAL: Aggressive Delegation](#critical-aggressive-delegation)
 - [CRITICAL: Automatic Workflow Progression](#critical-automatic-workflow-progression)
-- [Core Infrastructure](#core-infrastructure-tier-1-17-agents)
+- [Core Infrastructure](#core-infrastructure-tier-1-16-agents)
 - [Aggressive Decomposition](#aggressive-decomposition)
 - [Controller-Centric Architecture](#controller-centric-architecture)
 - [Complexity Tiers](#complexity-tiers)
@@ -73,7 +49,7 @@ session artifacts referencing pre-v12 agent names continue to resolve.
 
 - `CLAUDE.md` - Architecture, commands, agents (this file)
 - `README.md` - Quick start
-- `docs/` - Project documentation (64 `.md` files recursive; 40 top-level entries — including ARCHITECTURE.md, SKILLS.md, TEAM_MODE.md, RELEASE_NOTES.md, etc.)
+- `docs/` - Project documentation (65 `.md` files recursive; 41 top-level entries — including ARCHITECTURE.md, SKILLS.md, TEAM_MODE.md, RELEASE_NOTES.md, etc.)
 - `archive/docs/` - Historical documentation (local only)
 - `cagents-memory/` - Runtime state (excluded from git)
 - `.claude/skills/run/reference/session-schema.md` - Session YAML contract (internal-only since v12.6.0)
@@ -129,7 +105,7 @@ Total: 40 .md = 34 top-level across 6 categories + 2 READMEs (root + playbooks/)
 - **Tier 3**: Execution agents (implement work items)
 - **Tier 4**: Support agents (foundational services)
 - **Total**: 57 agents across 9 builder-role archetypes (post-v12.20.0 catalog consolidation; 84 absorbed agents collapsed into 41 routable survivors via mode flags; back-compat preserved via `scripts/migration/v12-aliases.yaml`)
-- **Execution**: Event-driven pipeline (5-state machine) with progressive paths (minimal/medium/full), revision routing, reviewer loops
+- **Execution**: Event-driven pipeline (5-state machine) with two execution paths (fast/standard), revision routing, reviewer loops
 
 **Canonical structure (v12.0.0) — 9 archetypes**:
 | Archetype | Dir | Agents | Capability |
@@ -579,9 +555,9 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking and
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
-**Pipeline**: Progressive pipeline (3 paths: minimal/medium/full) with 9-signal complexity scoring, revision routing (FAIL/REVISE), reviewer loops
-**Tests**: `npm test` runs 1340+ Vitest tests across 158+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.30.0
+**Pipeline**: 5-state pipeline with two execution paths (fast/standard — `fast` skips the orchestrator for tier-2-clear requests), revision routing (FAIL/REVISE), reviewer loops
+**Tests**: `npm test` runs 1356+ Vitest tests across 164+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
+**Version**: 12.31.0
 
 ## Troubleshooting
 

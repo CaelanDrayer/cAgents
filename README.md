@@ -10,7 +10,7 @@ Deploy 57 specialized agents across 9 builder-role archetypes through an intelli
 |------|-------|
 | Agents | 57 across 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership) |
 | Skills | 4 slash commands (v12.2.0: /org folded into /team strategic mode; v12.1.2: /improve folded into /run) |
-| Hooks | 32 .cjs files = 26 unique registered hooks + 3 dispatched Write\|Edit sub-validators (run by write-edit-dispatch.cjs) + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI, across 18 event types |
+| Hooks | 31 .cjs files = 24 unique registered hooks + 5 dispatched sub-validators (run by write-edit-dispatch.cjs + agent-dispatch.cjs) + hook-utils.cjs + run-hook.cjs launcher, across 18 event types |
 | Models | Opus 4.6 (controllers) · Sonnet 4.6 (execution) · Haiku 4.5 (support) |
 
 ---
@@ -40,7 +40,7 @@ cAgents spawns 3-10+ subagents per request. Each consumes API tokens independent
 ## Requirements
 
 - **Claude Code 2.1.69+** (required)
-- **Node.js** (recommended) — powers 26 unique registered hooks + 3 dispatched Write|Edit sub-validators (32 .cjs files = hooks + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI) for session management, secret detection, team coordination, and completion verification
+- **Node.js** (recommended) — powers 24 unique registered hooks + 5 dispatched sub-validators (31 .cjs files = hooks + hook-utils.cjs + run-hook.cjs launcher) for session management, secret detection, team coordination, and completion verification
 
 | cAgents | Min Claude Code | Highlights |
 |---------|----------------|------------|
@@ -272,7 +272,7 @@ More waves produce more quality gates. Tier 3+ defaults to 5-7 waves. Use `--wav
 | **3** (Complex) | 1 primary + 1-2 supporting | Add a feature, create a subsystem |
 | **4** (Expert) | Executive + primary + supporting + HITL | Major refactor, architecture migration |
 
-The pipeline detects tier automatically via 9-signal complexity scoring. Tier 2 uses a fast path that skips 3 enrichment agents to keep simple requests lean.
+The pipeline detects tier automatically. Tier-2-clear requests use a `fast` path that skips the orchestrator enrichment agent; tier 3+ runs the full `standard` path.
 
 ---
 
@@ -286,7 +286,7 @@ This fires automatically — no prompt engineering required. It is a no-op when 
 
 ### Lifecycle Hooks
 
-cAgents ships 32 .cjs files = 26 unique registered hooks + 3 dispatched Write|Edit sub-validators (run in-process by write-edit-dispatch.cjs, the D1b consolidating dispatcher) + hook-utils.cjs + run-hook.cjs launcher + eval-runner.cjs CLI. The hooks fire across 18 of Claude Code's 24 event types:
+cAgents ships 31 .cjs files = 24 unique registered hooks + 5 dispatched sub-validators (run in-process by write-edit-dispatch.cjs and agent-dispatch.cjs, the D1b/A2-12 consolidating dispatchers) + hook-utils.cjs + run-hook.cjs launcher. The hooks fire across 18 of Claude Code's 24 event types:
 
 | Event | Hook | Purpose |
 |-------|------|---------|
@@ -296,7 +296,6 @@ cAgents ships 32 .cjs files = 26 unique registered hooks + 3 dispatched Write|Ed
 | PreToolUse[Bash] | bash-validator.cjs | Block dangerous commands and data exfiltration attempts |
 | PreToolUse[Write\|Edit] | secret-detection.cjs | Block writes containing API keys, tokens, credentials |
 | PreToolUse[Write\|Edit] | controller-delegation-validator.cjs | Warn when controllers write implementation files |
-| PreToolUse[Write\|Edit\|Bash] | approval-gate.cjs | Enforce approval gates for sensitive operations |
 | PreToolUse[Agent] | model-routing-advisor.cjs | Suggest optimal model before agent spawns |
 | PreToolUse[Agent] | session-init-gate.cjs | Ensure session init complete before agent spawns |
 | PermissionRequest | permission-handler.cjs | Auto-approve safe patterns, HITL gates |
@@ -372,7 +371,7 @@ For cross-domain work that spans multiple areas (e.g., launching a product requi
 | **Parallel team execution** | Yes — N-wave with per-wave quality gates | No | No |
 | **Revision loops** | Yes — executor + reviewer, max 3 rounds per work item | No | No |
 | **Two-stage review** | Yes — spec compliance then code quality | No | No |
-| **Hook lifecycle** | 26 unique registered hooks + 3 dispatched Write\|Edit sub-validators across 18 event types | 1–4 hooks | 1–4 hooks |
+| **Hook lifecycle** | 24 unique registered hooks + 5 dispatched sub-validators across 18 event types | 1–4 hooks | 1–4 hooks |
 | **Goal drift prevention** | Yes — attention injection on every Write/Edit/Bash | No | No |
 | **Confidence scoring** | Yes — 0.0–1.0 per work item, low scores trigger scrutiny | No | No |
 | **Cross-domain orchestration** | Yes — `/team` strategic mode fires full C-suite hierarchy (auto-enabled when `domain_count >= 2`) | No | No |
@@ -441,11 +440,11 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights:
 
-- **V12.30.0** — Current release. Bucket-D hook security/performance remediation (session `run_bucket-d-remediation_260614_001`): added a bounded head+tail size cap to `secret-detection.cjs` (`CAGENTS_SECRET_SCAN_MAX_BYTES`, default 512 KB) to prevent a memory/latency blowup on large writes; consolidated the three `Write|Edit` PreToolUse hooks (secret-detection, controller-delegation-validator, skill-size-monitor) into a single deny-first, fail-closed `write-edit-dispatch.cjs` dispatcher (cold-start node spawns per Write|Edit cut 3→1); added a reproducible perf-benchmark corpus runner + Write|Edit hook-perf microbench with committed baselines; and fixed `verify-completion.cjs` to fact-check slash-less filename citations.
+- **V12.31.0** — Current release. Bucket-D hook security/performance remediation (session `run_bucket-d-remediation_260614_001`): added a bounded head+tail size cap to `secret-detection.cjs` (`CAGENTS_SECRET_SCAN_MAX_BYTES`, default 512 KB) to prevent a memory/latency blowup on large writes; consolidated the three `Write|Edit` PreToolUse hooks (secret-detection, controller-delegation-validator, skill-size-monitor) into a single deny-first, fail-closed `write-edit-dispatch.cjs` dispatcher (cold-start node spawns per Write|Edit cut 3→1); added a reproducible perf-benchmark corpus runner + Write|Edit hook-perf microbench with committed baselines; and fixed `verify-completion.cjs` to fact-check slash-less filename citations.
 - **V12.10.0** — FU-3 bare-prose agent-name sweep: replaced the last bare `universal-*` agent-name mentions in agent prose (the five pipeline agents — router, planner, validator, executor, self-correct) across 25 `agents/**` files, completing the v12.5.0 pipeline-agent rename. Added a `no-bare-universal-prose-refs` regression guard.
 - **V12.2.0** — BREAKING: `/org` skill removed; cross-domain coordination folded into `/team` with auto-enabled strategic mode (`router` `domain_count >= 2` triggers Wave 0/1/2 C-suite deliberation + Wave 3..N per-domain dispatch). 12 leadership agents preserved at their existing locations. Plugin skill count 5->4. Migration: `/org X` → `/team X`.
 - **V12.1.2** — Folds `/improve` into `/run` via a first-word keyword router and removes the standalone `/improve` skill (`/run review|audit` = `--mode review`, `/run optimize` = `--mode optimize`, `/run improve` = `--mode full`). Plugin skill count 6->5.
-- **V12.0.0** — Consolidation release: pipeline collapse 7->5 states (task-decomposer + prompt-engineer folded into planner), engineering-manager merged into tech-lead, architecture-reviewer collapsed into `architect --review` mode flag, 13 marketing-sales agents absorbed (38->25), chief-legal-officer renamed to clo, 11 legacy domain dirs deleted, `cagents-memory/_communication/` removed, max_revision_cycles 5->3, execution self-validation reduced 15->5 hook-verifiable checks. Total agents 251->240.
+- **V12.0.0** — Consolidation release: pipeline collapse 7->5 states (task-decomposer + prompt-engineer folded into planner), engineering-manager merged into tech-lead, architecture-reviewer collapsed into `architect --review` mode flag, 13 marketing-sales agents absorbed (38->25), chief-legal-officer renamed to clo, 11 legacy domain dirs deleted, `cagents-memory/_communication/` removed, max_revision_cycles 5->3, execution self-validation reduced 15->5 hook-verifiable checks. Total agents 251->238.
 - **V11.3.0** — Plugin health sweep: archetype-canonical doc alignment (9 archetypes canonical, 15 domains as routing overlay), 109 stale `related_agents` cross-references swept, hook-count assertions corrected (26 unique registered, 29 .cjs total), `sync-agents.sh --check` dry-run flag added, `validate-versions.sh` pruned to 18 canonical slots, regression tests added.
 - **V11.1.3** — Removed statusLine hook and status bar integration.
 - **V11.0.0** — Removed deprecated skills `/review`, `/optimize`, `/context`, `/debug`. `/review` and `/optimize` consolidated into `/improve` (`--mode review|optimize|full`); `/context` replaced by `/run context …` passthrough; `/debug` replaced by `/run --mode debug`. See [docs/MIGRATION-V11.md](docs/MIGRATION-V11.md) for the migration guide.

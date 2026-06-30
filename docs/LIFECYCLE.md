@@ -77,7 +77,7 @@ analysis — everything upstream of "what are we building?"*
 
 ---
 
-## Plan (~37 agents)
+## Plan (~36 agents)
 
 *Agents that design architecture, decompose work, sequence delivery, and produce
 execution plans. The "how" before any keystroke of implementation.*
@@ -86,8 +86,7 @@ execution plans. The "how" before any keystroke of implementation.*
 |-------|-----------|-------------|
 | coordinator | core | Parameterized controller for lightweight domains (health, education, personal, arts, trades) |
 | orchestrator | core | Enriches request context at pipeline start, detects domain and complexity |
-| task-merger | core | Reduces task inventory context overhead, merging related tasks (40-88% reduction) |
-| task-state | core | Manages CSV-based task state for large-scale workflows with 20+ items |
+| task-state | core | Manages CSV-based task state for large-scale workflows with 20+ items; absorbs task-merger (context-overhead reduction, 40-88%) since v12.20.0 |
 | team | core | Initializes team-mode execution (TeamCreate, wave planning); replaces the standalone `team-trigger` agent removed in v12.0.0 — the `/team` skill loop now drives this inline |
 | trigger | core | Pipeline entry point — parses user requests, routes to /run or /team |
 | planner | core | Creates plan.yaml + work_items.yaml + optional delegation_prompts.yaml |
@@ -275,7 +274,7 @@ launch, sales execution, customer-facing rollout, post-launch support enablement
 
 ---
 
-## Cross-Cutting (~29 agents)
+## Cross-Cutting (~26 agents)
 
 *Support agents and C-suite executives that don't fit cleanly into a single lifecycle
 phase. The C-suite (`leadership/`) is invoked by `/team` strategic mode (auto-enabled
@@ -291,8 +290,7 @@ now-removed `/org` skill) for cross-domain strategic work; core pipeline agents
 | hitl | core | Workflow requires human approval, automated decisions need manual override |
 | optimizer | core | Workflow needs performance tuning, token reduction, execution path optimization |
 | orchestrator | core | Enriches request context at pipeline start, detects domain and complexity |
-| task-merger | core | Reduces task inventory context overhead |
-| task-state | core | Manages CSV-based task state for large-scale workflows |
+| task-state | core | Manages CSV-based task state for large-scale workflows; absorbs task-merger (context-overhead reduction) since v12.20.0 |
 | team | core | Initializes team-mode execution and wraps a controller as the team lead (replaces the standalone `team-trigger` and `team-lead-adapter` agents removed in v12.0.0 — `/team` skill loop now drives this inline) |
 | trigger | core | Pipeline entry point |
 | executor | core | Monitors controller execution progress, verifies coordination_log completeness |

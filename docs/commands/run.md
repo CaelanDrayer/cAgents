@@ -13,18 +13,19 @@
 ## How It Works
 
 1. Classifies request into domain + complexity tier
-2. Selects pipeline path (minimal/medium/full) based on complexity scoring
+2. Selects pipeline path (`fast` or `standard`) by tier — `fast` skips the orchestrator for tier-2-clear requests
 3. Runs pipeline agents sequentially via state machine
 4. Controllers spawn executors + reviewers at level 2
 5. Validator produces PASS/FAIL/REVISE
 
 ## Pipeline Paths
 
-| Path | Complexity | Agents |
-|------|-----------|--------|
-| Minimal | Simple fixes, typos | orchestrator -> controller -> validator |
-| Medium | Features, moderate | orchestrator -> planner -> controller -> validator |
-| Full | Complex systems | orchestrator -> planner (runs full decomposition + delegation-prompt assembly internally) -> controller -> validator (task-decomposer + prompt-engineer were folded into planner in v12.0.0; 5-state pipeline) |
+| Path | When | States (5-state machine) |
+|------|------|--------|
+| `fast` | tier-2-clear (`tier == 2`, unambiguous domain, non-debug) | orchestrator (INIT) skipped → planner → controller → validator |
+| `standard` | tier 3+, ambiguous tier-2, or debug mode | orchestrator → planner → controller → validator |
+
+The pre-v12.3.0 score-based 3-path selector (minimal/medium/full, driven by a 9-signal complexity score) was removed in v12.3.0; the orchestrator-skip is now governed by an enumerated allowlist (task-decomposer + prompt-engineer were folded into the planner in v12.0.0). See [Pipeline Architecture](../architecture/pipeline.md).
 
 ## Options
 
@@ -42,7 +43,7 @@
 Written to `cagents-memory/sessions/run_{timestamp}/`:
 - `instruction.yaml`, `status.yaml`
 - `workflow/enriched_context.yaml`, `workflow/plan.yaml`
-- `workflow/work_items.yaml`, `workflow/delegation_prompts.yaml`
+- `workflow/work_items.yaml`
 - `workflow/coordination_log.yaml`
 - `validation/validation_report.yaml`
 

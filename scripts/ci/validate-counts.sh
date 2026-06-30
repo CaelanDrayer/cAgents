@@ -13,7 +13,8 @@
 #   bash scripts/ci/validate-counts.sh           # full check
 #   bash scripts/ci/validate-counts.sh --derive-only   # print counts and exit 0
 #
-# Version: cAgents v12.7.0
+# Version: cAgents v12.31.0 (all counts are derived dynamically from disk;
+#          this stamp is informational, not load-bearing)
 
 set -uo pipefail
 
@@ -21,7 +22,8 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$REPO_ROOT"
 
 # ---- Derivation -------------------------------------------------------------
-# Active agent entries in plugin.json (post-v12.7.0 LP-12 + LP-13 consolidation: 141).
+# Active agent entries in plugin.json (derived dynamically; currently 57 after the
+# post-v12.20.0 catalog consolidation — do NOT hardcode, jq reads it live).
 ACTIVE_AGENTS=$(jq -r '.agents | length' .claude-plugin/plugin.json)
 
 # Per-archetype SKILL.md counts (excluding _deprecated/ buckets).
@@ -53,7 +55,7 @@ REGISTRY_SLOTS=$(grep -cE "^\| [0-9]+ \|" .claude/rules/core/version-registry.md
 # Total .md files under .claude/rules (the CLAUDE.md "rules total" claim).
 RULES_MD=$(find .claude/rules -name '*.md' -type f | wc -l | tr -d ' ')
 
-# Playbook .md files (6 pat-* + README = 7) — the CLAUDE.md playbooks claim.
+# Playbook .md files (currently 8 pat-* + README = 9) — the CLAUDE.md playbooks claim.
 PLAYBOOK_FILES=$(ls .claude/rules/playbooks/*.md 2>/dev/null | wc -l | tr -d ' ')
 
 # Pre-execution validation checks (### Check N headings in the checklist).
@@ -95,9 +97,9 @@ report_mismatch() {
   MISMATCHES=$((MISMATCHES + 1))
 }
 
-# Check 1: CLAUDE.md must say "144 agents" matching derived ACTIVE_AGENTS.
-# This is the load-bearing count appearing in the Project Overview, Quick
-# Reference, and Plugin Architecture sections.
+# Check 1: CLAUDE.md must say "<ACTIVE_AGENTS> agents" (derived from plugin.json;
+# currently 57) matching derived ACTIVE_AGENTS. This is the load-bearing count
+# appearing in the Project Overview, Quick Reference, and Plugin Architecture sections.
 #
 # Test-friendly override: CAGENTS_VALIDATE_COUNTS_CLAUDE_MD lets the
 # doc-counts-match-disk.test.js mutation test point Check 1 at a temp-dir
@@ -143,7 +145,7 @@ if [ -n "$stale_totals" ]; then
 fi
 
 # Check 3: .claude/settings.json $comment field hook counts.
-# Pattern: "32 .cjs files = 26 unique registered hooks ... 18 event types"
+# Pattern: "31 .cjs files = 24 unique registered hooks ... 18 event types"
 SETTINGS_COMMENT=$(jq -r '."$comment" // empty' .claude/settings.json)
 if [ -n "$SETTINGS_COMMENT" ]; then
   if ! echo "$SETTINGS_COMMENT" | grep -qE "\b${HOOK_FILES}\b.*\b${REGISTERED_HOOKS}\b"; then
@@ -152,7 +154,7 @@ if [ -n "$SETTINGS_COMMENT" ]; then
   fi
 fi
 
-# Check 4: .claude/rules/core/hooks.md mentions both 32 .cjs and 26 unique.
+# Check 4: .claude/rules/core/hooks.md mentions both 31 .cjs and 24 unique.
 if ! grep -qE "${HOOK_FILES} .cjs files? .*${REGISTERED_HOOKS} unique" .claude/rules/core/hooks.md; then
   # Fallback: looser check
   if ! grep -qE "\b${HOOK_FILES}\b" .claude/rules/core/hooks.md \
@@ -202,7 +204,7 @@ fi
 
 # Check 8: docs/12-FACTOR-COMPLIANCE.md total agent count.
 if [ -f docs/12-FACTOR-COMPLIANCE.md ]; then
-  # The doc should mention "144 agents" matching ACTIVE_AGENTS.
+  # The doc should mention "<ACTIVE_AGENTS> agents" (currently 57) matching ACTIVE_AGENTS.
   # We're permissive: it may say "144 agents across 9 archetypes" or similar.
   if grep -qE "[0-9]+ agents across" docs/12-FACTOR-COMPLIANCE.md && \
      ! grep -qE "\b${ACTIVE_AGENTS} agents\b" docs/12-FACTOR-COMPLIANCE.md; then
@@ -276,6 +278,32 @@ if [ -n "$docs_stale_current" ]; then
     report_mismatch "docs/ (live section, current-total absence check)" "$phrase" \
       "$ACTIVE_AGENTS (agent total)"
   done <<< "$docs_stale_current"
+fi
+
+# Check 13 (P2 / A7-03): CLAUDE.md ABSENCE check for a STALE CURRENT agent total.
+# Check 1 above is presence-only — it passes as long as the correct "57 agents"
+# appears once, so a stale DUPLICATE current-total in CLAUDE.md (the historical
+# "Total agents: 251 -> 240" drift class flagged by A7-03) slipped through while CI
+# stayed green. This mirrors the Check 2b (README) and Check 12 (docs/) absence
+# guards, applied to the most-read file.
+#
+# Canonical CLAUDE.md current-total phrasings:
+#   "<N> agents across 9 [builder-role ]archetypes"  /  "<N> total across 9 archetypes"
+#   "Total: <N> agents"  /  "Total agents: <N>"
+# Legitimate HISTORICAL mentions carry an "N -> M" transition arrow ("251 -> 240",
+# "240 -> 144"), excluded line-wise. FAIL if any current-total phrasing cites a
+# number other than ACTIVE_AGENTS. Honors the CAGENTS_VALIDATE_COUNTS_CLAUDE_MD
+# override (same temp-file path as Check 1) so the mutation test stays race-free.
+claude_stale_total="$(grep -E "([0-9]+ agents across 9|[0-9]+ total across 9 archetypes|Total: [0-9]+ agents|Total agents: [0-9]+)" "$CLAUDE_MD_PATH" 2>/dev/null \
+  | grep -vE "(->|→)" \
+  | grep -oE "([0-9]+ agents across 9|[0-9]+ total across 9 archetypes|Total: [0-9]+ agents|Total agents: [0-9]+)" \
+  | grep -vE "(^${ACTIVE_AGENTS} |: ${ACTIVE_AGENTS}\b)" || true)"
+if [ -n "$claude_stale_total" ]; then
+  while IFS= read -r phrase; do
+    [ -z "$phrase" ] && continue
+    report_mismatch "$CLAUDE_MD_PATH (CLAUDE.md agent-total absence check)" "$phrase" \
+      "$ACTIVE_AGENTS (agent total)"
+  done <<< "$claude_stale_total"
 fi
 
 # ---- Result ----------------------------------------------------------------
