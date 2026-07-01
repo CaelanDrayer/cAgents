@@ -1,5 +1,5 @@
 {
-  "$comment": "Hook configuration - cAgents V12.31.0 - Progressive pipeline (3 paths), agent chaining, structured error format, prompt-router (UserPromptSubmit delegation + natural-language routing consolidation, P1-7), agent-dispatch (PreToolUse[Agent] consolidating dispatcher: session-init-gate + model-routing-advisor, A2-12), /goal evaluator logger (V11.3.0), ConfigChange logger (v12.7.0 LP-17). 31 .cjs files = 24 unique registered hooks + 5 dispatched sub-validators (write-edit-dispatch.cjs runs secret-detection + controller-delegation-validator + skill-size-monitor; agent-dispatch.cjs runs session-init-gate + model-routing-advisor in-process; v12.19.0 WI-5 / A2-12) + hook-utils.cjs + run-hook.cjs launcher across 18 event types. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd).",
+  "$comment": "Hook configuration - cAgents V12.32.0 - Progressive pipeline (3 paths), agent chaining, structured error format, prompt-router (UserPromptSubmit delegation + natural-language routing consolidation, P1-7), agent-dispatch (PreToolUse[Agent] consolidating dispatcher: session-init-gate + model-routing-advisor, A2-12), /goal evaluator logger (V11.3.0), ConfigChange logger (v12.7.0 LP-17). 31 .cjs files = 24 unique registered hooks + 5 dispatched sub-validators (write-edit-dispatch.cjs runs secret-detection + controller-delegation-validator + skill-size-monitor; agent-dispatch.cjs runs session-init-gate + model-routing-advisor in-process; v12.19.0 WI-5 / A2-12) + hook-utils.cjs + run-hook.cjs launcher across 18 event types. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd).",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
   "teammateMode": "tmux",
@@ -15,7 +15,7 @@
   },
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CAGENTS_VERSION": "12.31.0",
+    "CAGENTS_VERSION": "12.32.0",
     "CAGENTS_DELEGATION_ENFORCEMENT": "block"
   },
   "permissions": {

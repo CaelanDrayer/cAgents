@@ -211,3 +211,110 @@ describe('Concurrent sessions: no cross-write (WI-6)', () => {
     expect(violations, `Unhinted findActiveSession() calls found:\n${violations.join('\n')}`).toEqual([]);
   });
 });
+
+/**
+ * FIX-1 (OBJ-1 / WI-7) extension: two concurrent same-directory sessions each
+ * resolve to their OWN session via the persisted SDK-UUID -> session map, and a
+ * UUID mapping to nothing yields no sibling resolution.
+ *
+ * This is the map-first counterpart to the env-var/input.session_id cross-write
+ * cases above: production team/agent hooks fire with an SDK transcript UUID in
+ * input.session_id, so the deterministic bind now goes through the UUID map (not
+ * the env var or a newest-active heuristic).
+ *
+ * FAILING-BEFORE / PASSING-AFTER (Bug-Driven Testing mandate): on pre-change HEAD
+ * the SDK-UUID map does not exist —
+ *   (1) upsertSdkSessionMap / resolveSdkUuidToSession / removeSdkPointer are NOT
+ *       exported from hook-utils.cjs, so `utils.upsertSdkSessionMap(...)` throws
+ *       `TypeError: ... is not a function` and each test ERRORS; and
+ *   (2) findActiveSession(uuid) for a UUID-shaped hint takes the v12.16.0
+ *       fall-through (no map to consult) and, with env unset, returns null — so
+ *       the `toBe(SESSION_A_DIR)` map-hit assertions FAIL.
+ * After WI-2/WI-5 land, each UUID resolves deterministically to its own session
+ * and every assertion passes. (Reasoned, not `git stash` — the shared working
+ * tree carries multiple in-flight changes, so stash-based proof would be unsafe.)
+ *
+ * In-process resolution needs AGENT_MEMORY_DIR to point at the REAL project
+ * cagents-memory (where SESSION_A_DIR / SESSION_B_DIR live). We pin
+ * CLAUDE_PROJECT_DIR = PROJECT_ROOT and fresh-require hook-utils so both the
+ * sessions dir AND the pointer registry resolve under the project root. Pointers
+ * we write are unlinked in afterEach (removeSdkPointer); markers die with the dirs.
+ */
+
+const UUID_A_MAP = '28d9d944-e2f5-4e03-b06b-d367625f1fdd';
+const UUID_B_MAP = '11111111-2222-3333-4444-555555555555';
+const UUID_UNMAPPED = '99999999-8888-7777-6666-555544443333';
+
+function loadUtils() {
+  // ESM test module: vitest exposes require + require.cache (same pattern as
+  // tests/hooks/find-active-session-deterministic.test.js).
+  delete require.cache[require.resolve(join(HOOKS_DIR, 'hook-utils.cjs'))];
+  return require(join(HOOKS_DIR, 'hook-utils.cjs'));
+}
+
+describe('Concurrent sessions: UUID-map own-session resolution (FIX-1 / WI-7)', () => {
+  let utils;
+  let prevProjectDir;
+
+  beforeEach(() => {
+    prevProjectDir = process.env.CLAUDE_PROJECT_DIR;
+    process.env.CLAUDE_PROJECT_DIR = PROJECT_ROOT; // deterministic AGENT_MEMORY_DIR
+    delete process.env.CAGENTS_ACTIVE_SESSION;
+    if (existsSync(SESSION_A_DIR)) rmSync(SESSION_A_DIR, { recursive: true, force: true });
+    if (existsSync(SESSION_B_DIR)) rmSync(SESSION_B_DIR, { recursive: true, force: true });
+    makeSession(SESSION_A_DIR, SESSION_A);
+    makeSession(SESSION_B_DIR, SESSION_B);
+    utils = loadUtils();
+    utils._resetActiveSessionCache();
+  });
+
+  afterEach(() => {
+    // Unlink the pointers we wrote to the real registry (markers die with dirs).
+    try { utils.removeSdkPointer(UUID_A_MAP); } catch { /* ignore */ }
+    try { utils.removeSdkPointer(UUID_B_MAP); } catch { /* ignore */ }
+    try { utils.removeSdkPointer(UUID_UNMAPPED); } catch { /* ignore */ }
+    try { utils._resetActiveSessionCache(); } catch { /* ignore */ }
+    if (existsSync(SESSION_A_DIR)) rmSync(SESSION_A_DIR, { recursive: true, force: true });
+    if (existsSync(SESSION_B_DIR)) rmSync(SESSION_B_DIR, { recursive: true, force: true });
+    delete process.env.CAGENTS_ACTIVE_SESSION;
+    if (prevProjectDir === undefined) delete process.env.CLAUDE_PROJECT_DIR;
+    else process.env.CLAUDE_PROJECT_DIR = prevProjectDir;
+  });
+
+  it('two same-dir sessions each resolve to their OWN session via the UUID map', () => {
+    utils.upsertSdkSessionMap(UUID_A_MAP, SESSION_A_DIR);
+    utils.upsertSdkSessionMap(UUID_B_MAP, SESSION_B_DIR);
+
+    utils._resetActiveSessionCache();
+    expect(utils.findActiveSession(UUID_A_MAP)).toBe(SESSION_A_DIR);
+    utils._resetActiveSessionCache();
+    expect(utils.findActiveSession(UUID_B_MAP)).toBe(SESSION_B_DIR);
+  });
+
+  it("cross-check: A's UUID never resolves to B and vice versa (no cross-write target)", () => {
+    utils.upsertSdkSessionMap(UUID_A_MAP, SESSION_A_DIR);
+    utils.upsertSdkSessionMap(UUID_B_MAP, SESSION_B_DIR);
+
+    utils._resetActiveSessionCache();
+    const a = utils.findActiveSession(UUID_A_MAP);
+    utils._resetActiveSessionCache();
+    const b = utils.findActiveSession(UUID_B_MAP);
+    expect(a).toBe(SESSION_A_DIR);
+    expect(a).not.toBe(SESSION_B_DIR);
+    expect(b).toBe(SESSION_B_DIR);
+    expect(b).not.toBe(SESSION_A_DIR);
+  });
+
+  it('a UUID mapping to nothing yields no sibling resolution (no env fallback)', () => {
+    // Map only A and B; query an unmapped UUID with CAGENTS_ACTIVE_SESSION unset.
+    utils.upsertSdkSessionMap(UUID_A_MAP, SESSION_A_DIR);
+    utils.upsertSdkSessionMap(UUID_B_MAP, SESSION_B_DIR);
+    delete process.env.CAGENTS_ACTIVE_SESSION;
+
+    utils._resetActiveSessionCache();
+    const r = utils.findActiveSession(UUID_UNMAPPED);
+    expect(r).toBeNull();
+    expect(r).not.toBe(SESSION_A_DIR);
+    expect(r).not.toBe(SESSION_B_DIR);
+  });
+});

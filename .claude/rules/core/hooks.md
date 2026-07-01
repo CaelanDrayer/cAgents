@@ -82,6 +82,17 @@ session-id-bound secret restore. See @.claude/rules/playbooks/pat-concurrent-ses
 for the full contract, default resolution chain, regression tests, and the
 narrow `fallbackHeuristic: true` opt-in cases for Stop/SessionEnd hooks.
 
+**v12.32.0 additions**: (1) a persisted SDK-transcript-UUID → cAgents-session map
+lets `findActiveSession` / `findTeamSession` resolve a UUID-only hook payload
+deterministically before the env-var step; the map-writer hooks
+`subagent-tracker.cjs` + `session-init-gate.cjs` `upsertSdkSessionMap` on a
+confident resolution (never the newest-session heuristic), and `team-stop.cjs`
+unlinks the pointer at SessionEnd. (2) `verify-completion.cjs` gains a
+`sessionActivelyWorking` discriminator (running child agent OR fresh heartbeat) so
+the Stop hook WARNs instead of blocking a legitimately mid-flight session, while
+still blocking an abandoned one. Detail lives in @resources/hook-catalog.md;
+session `run_hook-session-id_260701_001`.
+
 ## createHook() Factory
 
 All hooks use the `createHook(name, handler)` factory from `hook-utils.cjs`:

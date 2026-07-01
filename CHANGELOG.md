@@ -10,6 +10,67 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.32.0] - 2026-06-30
+
+Two independent hook-resolution fixes discovered while diagnosing sessions that
+hung in the same project directory (session `run_hook-session-id_260701_001`).
+Both stem from the gap between the SDK transcript UUID that hooks actually
+receive in `input.session_id` and the cAgents session directory a hook needs to
+write into. Minor bump (two coherent objectives spanning >5 non-sync files:
+`hook-utils.cjs`, `verify-completion.cjs`, `subagent-tracker.cjs`,
+`session-init-gate.cjs`, 2 SKILL.md, tests, docs) — a patch would be correctly
+blocked by the tiny-bump guard.
+
+### Fixed
+- **Deterministic SDK-UUID → cAgents-session resolution (OBJ-1).** Since
+  v12.16.0 a UUID-shaped `input.session_id` deliberately fell through to the
+  env-var step and could resolve to nothing, hanging the very first `Agent()`
+  spawn. This ships a *persisted* SDK-transcript-UUID → session map so a UUID
+  hint resolves deterministically: a per-session marker
+  `sessions/{id}/session.sdk_id` (self-cleaning with the session dir) plus a
+  global reverse registry as a directory of pointer files
+  `cagents-memory/_system/sdk_session_map/{uuid}` (content = owning session_id;
+  O(1) reverse lookup; per-UUID atomic files, every mutation under
+  `withFileLock`). `findActiveSession` / `findTeamSession` now consult the map
+  first for a UUID-shaped hint (step 1a): a live pointer is a deterministic hit,
+  and a miss falls through to the env-var step exactly as before — a UUID alone
+  never resolves to a sibling session, preserving the cross-write invariant. New
+  `hook-utils.cjs` helpers: `upsertSdkSessionMap` / `resolveSdkUuidToSession` /
+  `removeSdkPointer` / `_pruneSdkMap`. Writers populate the map only on
+  *confident* resolution (env-var / promptHint / marker — never the newest-session
+  heuristic, to avoid circularity): `subagent-tracker.cjs` (primary,
+  SubagentStart) and `session-init-gate.cjs` (secondary, PreToolUse[Agent]),
+  plus best-effort `session.sdk_id` markers written at skill session-init in
+  `run` / `team` SKILL.md. Three-layer reaping keeps the registry bounded to
+  live + recent sessions: lazy (a lookup that lands on a terminal/missing target
+  unlinks the pointer and returns a miss), explicit (the finishing session's
+  pointer is removed at SessionEnd via `team-stop.cjs`), and opportunistic (a
+  prune on each upsert). All map writes fail-open — a map-write failure never
+  blocks an agent spawn.
+- **Stop hook no longer deadlocks a mid-flight background wait (OBJ-2).**
+  `verify-completion.cjs` gained a `sessionActivelyWorking(sessionDir,
+  statusContent)` discriminator that returns true when EITHER a spawned child
+  agent is still running (an `agent_tree.yaml` `agents:` entry with
+  `stopped_at: null`) OR the status heartbeat is fresh
+  (`now - Date.parse(last_updated_at) < CAGENTS_SESSION_LIVENESS_MS`). It is now
+  applied at all three block paths (A: active-state/next-stage-agent; B:
+  coordination_log enforcement; C: enrichment-artifacts phase branch) so they
+  agree: a legitimately mid-COORDINATED session that yields to await background
+  work now WARNs (`continue: true`) instead of blocking, while a genuinely
+  abandoned session (no running agent AND a stale heartbeat within the 24h
+  window) still BLOCKs. The abandoned-session block is not weakened.
+
+### Testing
+- Bug-driven regression tests (failing-before / passing-after):
+  `tests/hooks/sdk-uuid-map-resolution.test.js` (UUID-only payload resolves to
+  the correct session via the persisted map; a UUID mapping to nothing does not
+  resolve to a sibling),
+  `tests/hooks/verify-completion-active-wait.test.js` (mid-COORDINATED + running
+  agent or fresh heartbeat → warn-not-block; abandoned → block), and an extended
+  `tests/v12/concurrent-sessions-no-crosswrite.test.js` (two concurrent same-dir
+  sessions each resolve to their OWN session via the UUID map).
+- Fixed `tests/hooks/instructions-loaded.test.js` missing `beforeAll` vitest import (test-only, no runtime behavior change).
+
 ## [12.31.0] - 2026-06-30
 
 Phase 2 (capstone) of the comprehensive plugin audit/refactor (session

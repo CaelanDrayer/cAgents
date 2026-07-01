@@ -95,6 +95,70 @@ function checkNextStageAgentSpawned(sessionDir, pipelineState) {
 }
 
 /**
+ * FIX 2 (OBJ-2, WI-6): shared "actively-working vs abandoned" discriminator.
+ *
+ * Claude Code fires Stop events between response turns while a synchronous pipeline
+ * yields for a background wait. Blocking such a mid-flight session deadlocks it
+ * (block -> respond -> block). This helper lets the three block paths (A/B/C) AGREE:
+ * a mid-flight incompletion that would push an ISSUE is downgraded to a WARNING when
+ * this returns true, and only a genuinely-abandoned session (NOT actively working)
+ * still blocks.
+ *
+ * Returns true when EITHER:
+ *   (i)  a still-running spawned CHILD agent exists — an `agents:`-list entry in
+ *        workflow/agent_tree.yaml with `stopped_at: null`. This GENERALIZES the
+ *        PLANNED-branch running-agent signal in checkNextStageAgentSpawned (:82) but
+ *        SCOPES it to the child-agent list region, EXCLUDING the top-level `root:`
+ *        block. `root:`'s stopped_at is always null while the session is open, so
+ *        matching it would make every abandoned session look active forever and could
+ *        NEVER block — which would break the abandoned-still-blocks acceptance
+ *        criterion. If agent_tree.yaml is unreadable, running-child is treated as
+ *        false (fall through to the heartbeat signal).
+ *   (ii) a fresh status heartbeat — now - Date.parse(last_updated_at) < livenessMs,
+ *        where livenessMs = CAGENTS_SESSION_LIVENESS_MS (default 60000; mirrors
+ *        session-catchup.cjs).
+ *
+ * On any error the helper returns false ("not actively working" = allow the block).
+ * That is the SAFE direction: a broken discriminator never suppresses a genuine
+ * abandoned block, it only fails toward blocking.
+ */
+function sessionActivelyWorking(sessionDir, statusContent) {
+  try {
+    // (i) Running child agent: agent_tree.yaml `agents:` region has stopped_at: null.
+    //     Scope to the child-agent list ONLY, excluding the top-level `root:` block.
+    let runningChild = false;
+    try {
+      const agentTreeContent = safeRead(path.join(sessionDir, 'workflow', 'agent_tree.yaml'));
+      if (agentTreeContent) {
+        const parts = agentTreeContent.split(/^agents:/m);
+        const childRegion = parts.length > 1 ? parts[1] : '';
+        runningChild = /stopped_at:\s*null/.test(childRegion);
+      }
+    } catch {
+      runningChild = false; // unreadable tree -> fall to the heartbeat signal
+    }
+
+    // (ii) Fresh heartbeat: last_updated_at within the liveness window.
+    let freshHeartbeat = false;
+    if (statusContent) {
+      const hbMatch = statusContent.match(/last_updated_at:\s*"?([^"\n]+)"?/);
+      if (hbMatch) {
+        const livenessMs = parseInt(process.env.CAGENTS_SESSION_LIVENESS_MS || '60000', 10);
+        const hbMs = Date.parse(hbMatch[1]);
+        if (!isNaN(hbMs)) {
+          freshHeartbeat = (Date.now() - hbMs) < livenessMs;
+        }
+      }
+    }
+
+    return runningChild || freshHeartbeat;
+  } catch (e) {
+    console.error(`[VerifyCompletion] sessionActivelyWorking error (treating as not-working): ${e.message}`);
+    return false;
+  }
+}
+
+/**
  * Finalize agent lifecycle data for terminal sessions.
  * Sets stopped_at on the lead agent in agent_tree.yaml and computes
  * the final duration_ms in the last state_history entry of status.yaml.
@@ -529,18 +593,29 @@ function verifyCompletion(sessionDir) {
           // If not, the pipeline genuinely stopped mid-execution (not actively transitioning).
           const nextStageSpawned = checkNextStageAgentSpawned(sessionDir, pipelineState);
           const ageMin = Math.round(lastTransitionAge / 60000);
-          if (!nextStageSpawned) {
-            // No next-stage agent found in agent_tree.yaml — pipeline stopped mid-execution
-            console.error(`[VerifyCompletion] Pipeline in '${pipelineState}' — no next-stage agent spawned (last transition ${ageMin}min ago) — BLOCKING`);
+          // FIX 2 (OBJ-2, WI-6): only block when BOTH the next-stage agent is absent AND
+          // the session is not actively working (no running child agent AND stale
+          // heartbeat). A running child agent or a fresh heartbeat means a synchronous
+          // pipeline is mid-flight / yielding for a background wait — warn, don't deadlock.
+          if (!nextStageSpawned && !sessionActivelyWorking(sessionDir, statusContent)) {
+            // No next-stage agent found in agent_tree.yaml AND not actively working — pipeline stopped mid-execution
+            console.error(`[VerifyCompletion] Pipeline in '${pipelineState}' — no next-stage agent spawned and not actively working (last transition ${ageMin}min ago) — BLOCKING`);
             issues.push(`Pipeline stopped in '${pipelineState}' state with no next-stage agent spawned. The pipeline exited the loop but did not advance. Expected next agent not found in agent_tree.yaml.`);
           } else {
-            // Next-stage agent exists — pipeline is actively running
+            // Next-stage agent exists OR session actively working — pipeline is actively running
             console.error(`[VerifyCompletion] Pipeline in '${pipelineState}' but actively running (last transition ${ageMin}min ago) — warning only`);
             warnings.push(`Pipeline actively running in '${pipelineState}' state (last transition ${ageMin}min ago)`);
           }
         } else {
-          // Pipeline may be stuck (no recent transitions) — block
-          issues.push(`Workflow stopping in '${pipelineState}' pipeline state (expected: COMPLETE or VALIDATED)`);
+          // No recent state transition. FIX 2 (OBJ-2, WI-6): block only when the session
+          // is NOT actively working. A fresh heartbeat or a running child agent means the
+          // session is legitimately mid-flight even past the 30-minute transition window.
+          if (!sessionActivelyWorking(sessionDir, statusContent)) {
+            issues.push(`Workflow stopping in '${pipelineState}' pipeline state (expected: COMPLETE or VALIDATED)`);
+          } else {
+            console.error(`[VerifyCompletion] Pipeline in '${pipelineState}' with no recent transition but actively working (running child agent or fresh heartbeat) — warning only`);
+            warnings.push(`Pipeline actively working in '${pipelineState}' state despite no recent state transition`);
+          }
         }
       } else if (!TERMINAL_STATES.includes(pipelineState)) {
         warnings.push(`Workflow stopping in '${pipelineState}' pipeline state`);
@@ -564,13 +639,20 @@ function verifyCompletion(sessionDir) {
 
       if (hasEnrichmentArtifacts && noCoordLog) {
         // Any session (team or run) that has enrichment artifacts but no coordination_log
-        // is mid-pipeline and must not stop. Block to force continuation.
+        // is mid-pipeline. FIX 2 (OBJ-2, WI-6): block only when the session is NOT actively
+        // working; a running child agent or a fresh heartbeat means the pipeline is
+        // mid-flight (a block would deadlock a background wait) — warn instead.
         const sessionType = isTeamSession ? 'Team' : 'Pipeline';
-        issues.push(
+        const enrichMsg =
           `${sessionType} session '${sessionName}' stopping in '${phase}' phase after enrichment completed. ` +
           `Enrichment artifacts exist (plan.yaml/work_items.yaml) but coordination is incomplete. ` +
-          `You MUST continue executing the pipeline. Do NOT stop here.`
-        );
+          `You MUST continue executing the pipeline. Do NOT stop here.`;
+        if (sessionActivelyWorking(sessionDir, statusContent)) {
+          warnings.push(enrichMsg);
+          console.error(`[VerifyCompletion] Enrichment-complete session actively working — warning only: ${sessionName}`);
+        } else {
+          issues.push(enrichMsg);
+        }
       } else if (phase !== 'completed' && phase !== 'complete' && phase !== 'validating' && phase !== 'TEAM_CREATED') {
         warnings.push(`Workflow stopping in '${phase}' phase (expected: complete/completed or validating)`);
       }
@@ -597,11 +679,20 @@ function verifyCompletion(sessionDir) {
         ? (extractYamlValue(statusContent, 'pipeline_state') || extractYamlValue(statusContent, 'phase') || extractYamlValue(statusContent, 'current_phase'))
         : null;
       if (currentStateForCoord && postCoordinatingStates.includes(currentStateForCoord)) {
-        issues.push(
+        // FIX 2 (OBJ-2, WI-6): a missing coordination_log in a post-coordinating state is
+        // only a hard block when the session is abandoned. If a child agent is still
+        // running or the heartbeat is fresh, the controller is mid-flight writing it —
+        // warn instead of block so a synchronous background wait is not deadlocked.
+        const coordMsg =
           `coordination_log.yaml is missing but plan.yaml exists and session is in '${currentStateForCoord}' state. ` +
           `Controllers MUST write coordination_log.yaml to document their decision-making. ` +
-          `Without it, the controller's work is unauditable.`
-        );
+          `Without it, the controller's work is unauditable.`;
+        if (sessionActivelyWorking(sessionDir, statusContent)) {
+          warnings.push(coordMsg);
+          console.error(`[VerifyCompletion] coordination_log missing but session actively working — warning only: ${path.basename(sessionDir)}`);
+        } else {
+          issues.push(coordMsg);
+        }
       }
     }
   }

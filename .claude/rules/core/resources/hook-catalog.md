@@ -18,8 +18,9 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 - **Phase 2 — execution_summary.yaml generation (all session types)**: If `workflow/execution_summary.yaml` does not already exist, writes a minimal summary with `session_id`, `final_state`, `status`, `agent_count` (parsed via `yaml.load` of `agent_tree.yaml`; corrected in v12.12.2 — previously used a regex against the wrong key), `duration_seconds`, `started_at`, `completed_at`. Skill-generated summaries are not overwritten.
 - **Phase 3 — Team metrics + status (team_* sessions only)**: Finalizes `team/metrics/timing.yaml` (sets `completed_at`, `total_duration_seconds`), reads `team/task_list.yaml` for items_completed/total, reads `team/metrics/parallelism.yaml` for speedup_factor, then updates `status.yaml` (`phase: completed`, `pipeline_state: VALIDATED`, `result: success|partial`).
 - **Phase 4 — Pattern extractor (24h throttle, fire-and-forget)**: Conditionally spawns `scripts/knowledge/pattern-extractor.cjs extract --save` as a detached child process if `_knowledge/patterns/.last-extracted` is older than 24h. Honors `CAGENTS_PATTERN_EXTRACTOR_OVERRIDE` for tests. Never blocks team-stop.
+- **Phase 5 — SDK-UUID pointer unlink (all session types, v12.32.0)**: reads the finishing session's own `session.sdk_id` marker and calls `removeSdkPointer(uuid)` to delete its reverse pointer from `cagents-memory/_system/sdk_session_map/`. `removeSdkPointer` is `SDK_UUID_RE`-guarded, idempotent, and `withFileLock`-protected. This is the EXPLICIT unlink layer of the three-layer GC (alongside lazy reap inside `resolveSdkUuidToSession` and opportunistic prune on upsert), keeping the registry bounded to live + recently-ended sessions so a dead/reused UUID cannot mis-resolve.
 - **createHook label**: `'SessionEnd'` (matches the registered event name; was `'SessionStop'` pre-v12.12.2 — corrected to eliminate the source-vs-event 3-name mismatch).
-- **Updates**: `workflow/agent_tree.yaml`, `workflow/execution_summary.yaml`, `team/metrics/timing.yaml`, `status.yaml`, `_knowledge/patterns/.last-extracted`.
+- **Updates**: `workflow/agent_tree.yaml`, `workflow/execution_summary.yaml`, `team/metrics/timing.yaml`, `status.yaml`, `_knowledge/patterns/.last-extracted`, `_system/sdk_session_map/{uuid}` (pointer unlink).
 
 ## Tool Validation
 
@@ -106,6 +107,7 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 - **Purpose**: Two-phase guard before any Agent spawn. Phase 1 (session-presence gate) DENIES; Phase 2 (alias check) is advisory.
 - **Output (Phase 1 — session-presence gate)**: Calls `denyWithReason()` when no active session directory exists (`findActiveSession` returns null and no `CAGENTS_SESSION_ID` bypass is set). This actively blocks agent spawns that would have no session to write into.
 - **Output (Phase 2 — alias)**: Advisory `systemMessage` only (does not block). Resolves `cagents:*` aliases via `v12-aliases.yaml`. (The former Phase 3 `metadata.data_access_level` trust-downgrade advisory was removed in A1-06 — 0-agent adoption, never fired.)
+- **SDK-UUID map writer (v12.32.0, SECONDARY)**: on a confident session resolution it also calls `upsertSdkSessionMap(input.session_id, sessionDir)` (same idempotent, fail-open, `withFileLock`-guarded behavior as `subagent-tracker.cjs`) as the secondary writer behind the SubagentStart tracker. This covers the case where the tracker did not fire first for a given UUID or `${CLAUDE_SESSION_ID}` != the hook payload's `input.session_id`.
 - **Bypass**: Set `CAGENTS_SESSION_ID` to skip the presence gate during tests or out-of-session work.
 
 **Consolidated sub-validator: model-routing-advisor.cjs** (dispatched second, ADVISORY/FAIL-OPEN; not independently registered)
@@ -121,6 +123,8 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 - **Also**: Stop-workflow cleanup (replaces stop-workflow.sh).
 - **Creates**: `completion_summary.yaml`
 - **Can block**: Returns `{decision: "block", reason: "..."}` for incomplete workflows.
+- **Actively-working discriminator (FIX 2, v12.32.0)**: `sessionActivelyWorking(sessionDir, statusContent)` returns true when EITHER a still-running spawned child agent exists (an `agent_tree.yaml` `agents:` entry with `stopped_at: null`, scoped to exclude the always-null top-level `root:` block) OR the `status.yaml` `last_updated_at` heartbeat is fresh (within `CAGENTS_SESSION_LIVENESS_MS`, default 60s). On any error it returns false (fails toward blocking — the safe direction).
+- **Applied at all three block paths so they agree**: Path A (active pipeline-state / next-stage-agent branch), Path B (coordination_log enforcement), Path C (enrichment-artifacts phase branch). A legitimately mid-flight session (e.g. mid-COORDINATED yielding for a background wait) is downgraded from `decision: 'block'` to a WARNING (`continue: true`) when `sessionActivelyWorking` is true; a genuinely abandoned session (no running child AND stale heartbeat) still blocks. The >24h staleness skip is unchanged. Record: session `run_hook-session-id_260701_001`.
 
 ### Stop: goal-evaluator-logger.cjs
 
@@ -141,6 +145,7 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 ### SubagentStart: subagent-tracker.cjs + team-start.cjs
 
 - **subagent-tracker.cjs**: Logs agent spawns to `workflow/agent_tree.yaml` and global audit log (`_system/logs/agent_spawns.log`). Includes fallback session discovery for the race condition where `status.yaml` hasn't been written yet. Injects `additionalContext` asking cAgents agents to self-register their `cagents:{name}` type, since Claude Code's `agent_type` field reports `general-purpose` for plugin agents.
+- **subagent-tracker.cjs — SDK-UUID map writer (v12.32.0, PRIMARY)**: after it CONFIDENTLY resolves the owning session (via env-var / promptHint / `session.sdk_id` marker — NOT via the new UUID map, to avoid circularity, and NEVER via the newest-session heuristic, which would reintroduce the concurrency bug), it calls `upsertSdkSessionMap(input.session_id, sessionDir)`. That writes the per-session marker `sessions/{id}/session.sdk_id` (the SDK UUID) AND the global pointer `cagents-memory/_system/sdk_session_map/{uuid}` (content = owning session_id), each an atomic per-UUID file mutated under `withFileLock`, with an opportunistic prune on upsert. Idempotent and fail-open — a map-write failure never blocks the spawn. This is the robust primary writer path (the skill-layer `session.sdk_id` write is best-effort secondary).
 - **team-start.cjs**: Initializes team monitoring directories and metrics files.
 
 ### SubagentStop: subagent-stop-tracker.cjs

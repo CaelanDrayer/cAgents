@@ -74,6 +74,19 @@ an explicit deterministic chain. The legacy 3-pass heuristic (status-newest-firs
    the directory exists and the session is in a non-terminal `pipeline_state` /
    `phase` (or has no status.yaml yet — race window), return it. If terminal,
    return null.
+1a. **Persisted SDK-UUID map** (v12.32.0+) — when `sessionHint` is an SDK
+   transcript UUID (the 8-4-4-4-12 hex shape hooks actually receive, not a
+   cAgents directory name), `findActiveSession` consults the persisted map via
+   `resolveSdkUuidToSession(uuid)` BEFORE the env-var step. A live pointer
+   (`cagents-memory/_system/sdk_session_map/{uuid}` → owning session_id, plus the
+   per-session `sessions/{id}/session.sdk_id` marker) is a deterministic
+   resolution. A miss (no pointer, or a terminal/missing target — lazily reaped)
+   falls through to step 2 and never resolves to a sibling session.
+   `findTeamSession` mirrors this for `team_` pointers. The map is written by
+   `upsertSdkSessionMap` (from `subagent-tracker.cjs` / `session-init-gate.cjs`
+   on confident resolution) and unlinked at SessionEnd (`team-stop.cjs`). See
+   `.claude/rules/playbooks/pat-concurrent-session-hooks.md` and session
+   `run_hook-session-id_260701_001`.
 2. **`process.env.CAGENTS_ACTIVE_SESSION`** — same rules.
 3. **`promptHint`** (e.g., extracted from prompt text by subagent-tracker
    Pass-3) — same rules.

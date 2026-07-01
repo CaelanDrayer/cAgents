@@ -26,7 +26,7 @@ const yaml = require('js-yaml');
 // GAP-4 fix: import findMostRecentSessionDir from hook-utils.cjs (shared with subagent-stop-tracker.cjs).
 // This ensures start and stop events use identical session discovery logic,
 // including env-var fast path (Pass 0) and nested org subdir scanning.
-const { createHook, findActiveSession, findMostRecentSessionDir, safeRead, ensureDir, withFileLock, AGENT_MEMORY_DIR } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, findMostRecentSessionDir, safeRead, ensureDir, withFileLock, AGENT_MEMORY_DIR, upsertSdkSessionMap } = require('./hook-utils.cjs');
 
 /**
  * Append a line to the global agent spawns audit log.
@@ -187,11 +187,19 @@ createHook('SubagentTracker', async (input) => {
     return null;
   }
 
-  // Try to find active session, with fallback to most-recent-modified
+  // Try to find active session, with fallback to most-recent-modified.
+  // WI-3: track whether the resolution came from a TRUSTWORTHY path. Pass 1
+  // (findActiveSession) resolves via the SDK-UUID map / env-var / promptHint — all
+  // trustworthy — so it may seed the map. Pass 2 (findMostRecentSessionDir) is the
+  // newest-session heuristic, which can resolve to the WRONG session under two
+  // concurrent same-dir sessions; seeding from it would reintroduce the exact
+  // OBJ-1 concurrency bug, so it MUST NOT seed the map (confidentSeed stays false).
   let sessionDir = findActiveSession(input.session_id);
+  let confidentSeed = !!sessionDir; // Pass 1 = map/env/promptHint → trustworthy
   if (!sessionDir) {
     sessionDir = findMostRecentSessionDir();
     if (sessionDir) {
+      // Pass 2 = newest-session heuristic → NOT trustworthy; leave confidentSeed false.
       console.error(`[SubagentTracker] findActiveSession returned null, using fallback: ${path.basename(sessionDir)}`);
     }
   }
@@ -213,6 +221,7 @@ createHook('SubagentTracker', async (input) => {
       const candidateDir = path.join(AGENT_MEMORY_DIR, 'sessions', sessionName);
       if (fs.existsSync(candidateDir)) {
         sessionDir = candidateDir;
+        confidentSeed = true; // Pass 3 = explicit prompt hint → trustworthy, may seed the map
         console.error(`[SubagentTracker] Resolved session from prompt hint: ${sessionName}`);
       } else {
         console.error(`[SubagentTracker] Prompt hint session not found on disk: ${sessionName}`);
@@ -237,6 +246,21 @@ createHook('SubagentTracker', async (input) => {
         additionalContext: `Agent spawned: ${subagentType} (id: ${agentId}). No active session found for tracking. IMPORTANT: When you are a cAgents agent spawned via Agent tool with subagent_type "cagents:{name}", please write your agent name to the session workflow/agent_tree.yaml if a session path is provided in your prompt.`
       }
     };
+  }
+
+  // WI-3: sessionDir is now confirmed non-null (the guard above returned on null).
+  // Seed the SDK-UUID → session map ONLY from a trustworthy resolution (Pass 1 =
+  // map/env/promptHint, or Pass 3 = explicit prompt hint). NEVER seed when only the
+  // newest-session heuristic (Pass 2) resolved — that path can bind a UUID to the
+  // WRONG session under concurrent same-dir sessions and would reintroduce the
+  // OBJ-1 concurrency bug. This closes the seed loop: the first hook that resolves
+  // via env/promptHint/marker seeds the map, and every subsequent UUID-only hook
+  // then resolves deterministically via the map (findActiveSession is map-first).
+  // The upsert is already internally fail-open; the belt-and-suspenders try/catch
+  // guarantees a map-write failure NEVER blocks or alters spawn tracking (AC#4).
+  if (confidentSeed && sessionDir && input.session_id) {
+    try { upsertSdkSessionMap(input.session_id, sessionDir); }
+    catch (e) { console.error('[SubagentTracker] map upsert non-fatal: ' + (e && e.message)); }
   }
 
   const workflowDir = ensureDir(path.join(sessionDir, 'workflow'));

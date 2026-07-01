@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.31.0"
+  version: "12.32.0"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--mode <standard|debug|review|optimize|full>] [--baseline <ref>] [--suppress <pattern>] [--benchmark <tool>] [--scope <path>] [--auto-fix] [--no-goal]"
   user-invocable: "true"
   context: "none"
@@ -123,6 +123,17 @@ See @reference/session-id-format.md for slug rules, NNN counter generation, and 
 See @reference/agent-tracking.md for agent_tree.yaml format and lineage fields.
 
 **ACTION 1b**: After writing status.yaml, set `process.env.CAGENTS_ACTIVE_SESSION = SESSION_ID;` so hooks resolve to the correct session without heuristic discovery. Critical for concurrent /team-spawned /run instances.
+
+**ACTION 1c (BEST-EFFORT PRIMARY — SDK-UUID map)**: After the session dir + `status.yaml` exist, if `${CLAUDE_SESSION_ID}` is available AND matches the SDK-UUID shape, persist the mapping so hooks can resolve this session deterministically by its SDK transcript UUID. This write is **best-effort PRIMARY only**; the **authoritative / robust fallback** is the WI-3 hook self-population (`subagent-tracker.cjs` / `session-init-gate.cjs` `upsertSdkSessionMap`), because `${CLAUDE_SESSION_ID}` may be empty at skill init and may not equal the hook payload's `input.session_id` — the map must never depend SOLELY on the skill capturing its own UUID.
+
+```bash
+SID="${CLAUDE_SESSION_ID:-}"
+if [[ "$SID" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]]; then
+  printf '%s' "$SID" > "${SESSION_DIR}/session.sdk_id"
+  mkdir -p cagents-memory/_system/sdk_session_map
+  printf '%s' "${SESSION_ID}" > "cagents-memory/_system/sdk_session_map/${SID}"
+fi
+```
 
 **ACTION 2**: Try to read `cagents-memory/_system/config/pipeline_config.yaml`. If absent, use the hardcoded state machine. Do not error.
 

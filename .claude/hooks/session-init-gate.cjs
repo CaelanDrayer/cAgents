@@ -37,7 +37,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findActiveSession, AGENT_MEMORY_DIR, PROJECT_ROOT, denyWithReason } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, AGENT_MEMORY_DIR, PROJECT_ROOT, denyWithReason, upsertSdkSessionMap } = require('./hook-utils.cjs');
 
 // --- metadata.requires removed (P2-10 v12.7.x) ---
 // The previous parseRequires() / checkRequires() advisory block (V11.1.10)
@@ -232,6 +232,11 @@ const handler = async (input) => {
 
   if (!sessionPresent) {
     let sessionDir = findActiveSession(input.session_id);
+    // WI-3 (secondary writer): only the no-fallback findActiveSession resolution
+    // (SDK-UUID map / env-var) is trustworthy enough to seed the SDK-UUID map. The
+    // fallbackHeuristic path below is the newest-session heuristic, which can
+    // mis-resolve under concurrent same-dir sessions — it MUST NOT seed the map.
+    let confidentSeed = !!sessionDir; // trustworthy: map/env
     if (!sessionDir) {
       // H4 (v12.20.0): Claude Code's `input.session_id` is an SDK transcript UUID,
       // not a cAgents session-dir name, so the deterministic chain skips step 1.
@@ -252,6 +257,15 @@ const handler = async (input) => {
     }
     if (sessionDir) {
       sessionPresent = true;
+      // WI-3 (secondary writer): seed the SDK-UUID → session map on a CONFIDENT
+      // resolution only (map/env — never the fallbackHeuristic newest-session path).
+      // Fail-open — the upsert is already internally fail-open and the belt-and-
+      // suspenders try/catch guarantees a map-write NEVER changes this gate's
+      // allow/deny verdict.
+      if (confidentSeed && input.session_id) {
+        try { upsertSdkSessionMap(input.session_id, sessionDir); }
+        catch (e) { console.error('[SessionInitGate] map upsert non-fatal: ' + (e && e.message)); }
+      }
     } else {
       // No active session found — block the spawn
       const expectedPath = path.join(AGENT_MEMORY_DIR, 'sessions', '<session_id>', 'status.yaml');

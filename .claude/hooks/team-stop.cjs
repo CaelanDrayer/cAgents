@@ -22,7 +22,11 @@ const { spawn } = require('child_process');
 // Defensive: js-yaml is a declared dependency but guard against missing install
 let yaml;
 try { yaml = require('js-yaml'); } catch { yaml = null; }
-const { createHook, findTeamSession, findActiveSession, safeRead, extractYamlValue, countPattern, withFileLock, ensureDir, AGENT_MEMORY_DIR } = require('./hook-utils.cjs');
+const { createHook, findTeamSession, findActiveSession, safeRead, extractYamlValue, countPattern, withFileLock, ensureDir, AGENT_MEMORY_DIR, removeSdkPointer } = require('./hook-utils.cjs');
+
+// SDK transcript UUID shape (8-4-4-4-12 hex). Matches the per-session
+// {sessionDir}/session.sdk_id marker written by the map-writer hooks (WI-3/WI-4).
+const SDK_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 // =============================================================================
 // P1-4: Pattern Extractor Runtime Wiring (24h throttle)
@@ -277,6 +281,46 @@ function generateExecutionSummary(sessionDir, now) {
   }
 }
 
+/**
+ * WI-5 (reaping / GC): explicit unlink of the finishing session's own
+ * SDK-UUID -> session pointer at finalization.
+ *
+ * Reads the per-session marker {sessionDir}/session.sdk_id (written best-effort
+ * by the map-writer hooks/skills). If it holds an SDK-UUID-shaped value, unlink
+ * that UUID's global pointer under cagents-memory/_system/sdk_session_map/ via
+ * removeSdkPointer() so the registry does not retain a dead pointer once this
+ * session ends. The per-session marker itself self-cleans with the session
+ * directory, so it is intentionally left in place.
+ *
+ * Fail-open contract: this NEVER throws and NEVER blocks teardown. Every file op
+ * is individually try/catch-guarded, so a mid-run SessionEnd cancellation (Claude
+ * Code teardown) cannot corrupt state — worst case the pointer is reaped later by
+ * the lazy-reap path inside resolveSdkUuidToSession.
+ *
+ * @param {string} sessionDir - The finishing session's directory, already
+ *   resolved by team-stop for its own finalization. NOT a newest-session guess.
+ */
+function reapSdkPointer(sessionDir) {
+  try {
+    if (!sessionDir) return;
+    const markerPath = path.join(sessionDir, 'session.sdk_id');
+    let uuid;
+    try {
+      uuid = fs.readFileSync(markerPath, 'utf8').trim();
+    } catch {
+      return; // no marker (or unreadable) — nothing to reap
+    }
+    if (!SDK_UUID_RE.test(uuid)) return; // not an SDK UUID — no-op
+    // removeSdkPointer is itself SDK_UUID_RE-guarded, idempotent, lock-protected,
+    // and never throws.
+    removeSdkPointer(uuid);
+    console.error(`[SessionStop] Reaped SDK pointer for ${path.basename(sessionDir)} (${uuid})`);
+  } catch (e) {
+    // Fail-open: teardown must never fail because pointer reaping did.
+    try { console.error(`[SessionStop] SDK pointer reap skipped: ${e.message}`); } catch { /* ignore */ }
+  }
+}
+
 createHook('SessionEnd', async (input) => {
   const now = new Date().toISOString();
   let summary = '';
@@ -311,6 +355,16 @@ createHook('SessionEnd', async (input) => {
   // --- Phase 1b: Generate execution_summary.yaml if missing (ALL session types) ---
   if (anySession) {
     generateExecutionSummary(anySession, now);
+  }
+
+  // --- Phase 1c: WI-5 reaping — unlink this finishing session's own SDK pointer ---
+  // Explicit unlink at finalization so the sdk_session_map/ registry does not
+  // retain a dead pointer. Reuses the sessionDir team-stop already resolved for
+  // its own finalization (no newest-session heuristic). Fail-open — never blocks
+  // teardown. Runs for ALL session types (run_/team_/designer_), since the
+  // pointer is created for any of them.
+  if (anySession) {
+    reapSdkPointer(anySession);
   }
 
   // --- Phase 2: Team-specific metrics and status (team_* sessions only) ---

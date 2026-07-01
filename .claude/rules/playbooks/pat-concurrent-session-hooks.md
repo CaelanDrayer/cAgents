@@ -52,8 +52,20 @@ by EITHER instance MUST satisfy four invariants:
    `pipeline_state` / `phase` (or has no status.yaml yet — race window),
    return it. If terminal, return null. If the hint matches the SDK
    transcript UUID shape (`/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`),
-   skip step 1 entirely and fall through to step 2 — see "Input Semantics"
-   below.
+   skip the cAgents-directory candidate resolution and consult the persisted
+   SDK-UUID map first (step 1a); on a map miss, fall through to step 2 — see
+   "Input Semantics" below.
+1a. **Persisted SDK-UUID map (v12.32.0+)** — for a UUID-shaped `sessionHint`,
+   `findActiveSession` calls `resolveSdkUuidToSession(sessionHint)` (in
+   `hook-utils.cjs`) BEFORE the env-var step. A live hit is a DETERMINISTIC
+   resolution (cached under the existing composite cache key), so a hook holding
+   only the SDK UUID binds to the correct cAgents session with no heuristic. A
+   MISS (no pointer, or the pointer's target is terminal/missing — lazily reaped)
+   does NOT resolve to a sibling; it falls through to step 2 exactly as the
+   v12.16.0 UUID-fallthrough did, so the cross-write invariant is preserved.
+   `findTeamSession` mirrors this step for `team_` pointers (a resolution to a
+   non-team session means the hook is not in a team session → null). See "Input
+   Semantics" and session `run_hook-session-id_260701_001`.
 2. **`process.env.CAGENTS_ACTIVE_SESSION`** — same rules.
 3. **`promptHint`** (e.g., extracted from prompt text by subagent-tracker
    Pass-3) — same rules.
@@ -108,6 +120,54 @@ The fix is narrowly scoped to one positively-identified failure shape.
 Every other path through `findActiveSession` (cAgents-shaped hints, env
 fallback, prompt extraction, the legacy `fallbackHeuristic: true`
 escape) is byte-identical to v12.15.0.
+
+**v12.32.0 — additive SDK-UUID map layer**: the v12.16.0 fix made a UUID hint
+*fall through* to env-var; v12.32.0 makes it *first resolve deterministically*
+when a persisted pointer exists. `findActiveSession` / `findTeamSession` consult
+`resolveSdkUuidToSession(uuid)` before the env-var step (step 1a above). Storage
+is a per-session marker `sessions/{id}/session.sdk_id` (content = the SDK UUID)
+plus a global reverse registry kept as a DIRECTORY OF POINTER FILES
+`cagents-memory/_system/sdk_session_map/{uuid}` (content = owning session_id) —
+each pointer an independent atomic file mutated under `withFileLock`, so distinct
+sessions never contend (a single shared map file was rejected precisely because
+concurrent upserts would serialize on one lock and risk the cross-write hazard).
+The map is populated by `upsertSdkSessionMap` — hooks (`subagent-tracker.cjs`,
+`session-init-gate.cjs`) upsert on a CONFIDENT resolution (env-var / promptHint /
+map-hit — NEVER the newest-session heuristic, which would reintroduce the
+concurrency bug), and the `run` / `team` skills write the `session.sdk_id` marker
+best-effort at init from `${CLAUDE_SESSION_ID}`. Reaping is three-layer: lazy
+reap on lookup (terminal/missing target → unlink pointer, return miss), explicit
+unlink at SessionEnd (`team-stop.cjs` via `removeSdkPointer`), and opportunistic
+prune on upsert. This is purely additive: a UUID that maps to nothing still
+refuses to resolve to a sibling and falls through to env-var/null. Empirical +
+design record: session `run_hook-session-id_260701_001`.
+
+## Stop-hook actively-working discriminator (FIX 2, v12.32.0)
+
+A concurrent-session corollary of invariant 1 is that the Stop hook
+(`verify-completion.cjs`) must not permanently BLOCK a session that is
+legitimately mid-flight — e.g. a synchronous pipeline that yields while a
+background wait or a running child agent is in progress. Blocking such a session
+deadlocks it; only a genuinely ABANDONED session should surface an incompletion
+block.
+
+`sessionActivelyWorking(sessionDir, statusContent)` is the shared discriminator.
+It returns true when EITHER (i) a still-running spawned child agent exists — an
+`agent_tree.yaml` `agents:` entry with `stopped_at: null`, scoped to the child
+list so the always-null top-level `root:` block is excluded — OR (ii) the
+`status.yaml` `last_updated_at` heartbeat is fresh (within
+`CAGENTS_SESSION_LIVENESS_MS`, default 60s). On any error it returns false (fails
+toward blocking — the safe direction).
+
+The discriminator is applied at all three of `verify-completion.cjs`'s block
+paths so they AGREE: Path A (active pipeline-state / next-stage-agent branch),
+Path B (coordination_log enforcement), Path C (enrichment-artifacts phase
+branch). When a mid-flight non-terminal session (e.g. mid-COORDINATED yielding
+for a background wait) would push an incompletion issue but
+`sessionActivelyWorking` is true, the issue is downgraded to a WARNING
+(`continue: true`) instead of `decision: 'block'`. A genuinely abandoned session
+(no running child AND a stale heartbeat) still blocks. The >24h staleness skip is
+unchanged. Record: session `run_hook-session-id_260701_001`.
 
 ## Regression tests pinning these invariants
 

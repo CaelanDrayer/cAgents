@@ -216,6 +216,150 @@ function _tryResolveCandidate(sessionsDir, candidate) {
   return dir;
 }
 
+// ============================================================
+// SDK-UUID -> cAgents-session persisted map (OBJ-1, WI-1)
+// ============================================================
+// Claude Code hook payloads carry an SDK transcript UUID in `input.session_id`,
+// NOT a cAgents session directory name. To resolve a UUID deterministically to
+// its owning cAgents session (instead of the fragile CAGENTS_ACTIVE_SESSION env
+// var or a newest-active heuristic) we persist a reverse map:
+//
+//   (a) per-session marker  sessions/{id}/session.sdk_id  = the SDK UUID
+//       (local ownership, self-cleaning — dies with the session dir).
+//   (b) global reverse registry as a DIRECTORY OF POINTER FILES
+//       _system/sdk_session_map/{sdk_uuid}  whose content is the owning
+//       session_id (the session dir basename).
+//
+// Per-UUID atomic files give O(1) reverse lookup AND per-UUID lock isolation:
+// distinct concurrent sessions never contend on a shared read-modify-write —
+// the whole point of OBJ-1. A single shared YAML was rejected because concurrent
+// upserts would serialize on one lock and risk the cross-session write hazard
+// this map exists to eliminate. GC is a trivial per-file unlink.
+
+function _sdkMapDir() {
+  return path.join(AGENT_MEMORY_DIR, '_system', 'sdk_session_map');
+}
+
+function _sdkPointerPath(uuid) {
+  return path.join(_sdkMapDir(), uuid);
+}
+
+/**
+ * Opportunistic prune (WI-5 part 3): unlink any pointer whose target session no
+ * longer exists or is terminal. Reuses `_tryResolveCandidate` (dir-exists +
+ * non-terminal gate). Best-effort — every unlink is lock-protected and the whole
+ * scan is caller-wrapped so it can NEVER throw out of upsert (fail-open).
+ */
+function _pruneSdkMap() {
+  const dir = _sdkMapDir();
+  if (!fs.existsSync(dir)) return;
+  const sessionsDir = path.join(AGENT_MEMORY_DIR, 'sessions');
+  let entries;
+  try { entries = fs.readdirSync(dir); } catch { return; }
+  for (const uuid of entries) {
+    // Only real pointer files match the UUID shape (skips stray *.lock dirs).
+    if (!_isSdkUuidShape(uuid)) continue;
+    const pointerPath = _sdkPointerPath(uuid);
+    const target = safeRead(pointerPath);
+    if (!target) continue;
+    const sessionId = target.trim();
+    if (sessionId && _tryResolveCandidate(sessionsDir, sessionId)) continue; // still live
+    // Dead pointer (missing OR terminal target) — unlink under lock.
+    try {
+      withFileLock(pointerPath, () => {
+        try { fs.unlinkSync(pointerPath); } catch { /* already gone */ }
+      });
+    } catch { /* best effort */ }
+  }
+}
+
+/**
+ * Persist a bidirectional SDK-UUID <-> session mapping. Writes both the global
+ * pointer file and the per-session marker under per-file locks. Guarded by the
+ * SDK-UUID shape (a non-UUID sdkUuid is a no-op) and idempotent (repeat upsert
+ * of the same pair overwrites — never duplicates). Fail-open: a map-write
+ * failure must NEVER throw to the caller (WI-3 hook writers stay non-blocking).
+ *
+ * @param {string} sdkUuid   - SDK transcript UUID (input.session_id).
+ * @param {string} sessionDir - Absolute path to the owning cAgents session dir.
+ */
+function upsertSdkSessionMap(sdkUuid, sessionDir) {
+  try {
+    if (!_isSdkUuidShape(sdkUuid)) return; // guard: non-UUID → no-op
+    if (!sessionDir) return;
+    const sessionId = path.basename(sessionDir);
+
+    const mapDir = _sdkMapDir();
+    try { fs.mkdirSync(mapDir, { recursive: true }); } catch { /* race-safe */ }
+
+    // (b) global reverse pointer.
+    const pointerPath = _sdkPointerPath(sdkUuid);
+    withFileLock(pointerPath, () => {
+      fs.writeFileSync(pointerPath, sessionId);
+    });
+
+    // (a) per-session marker.
+    const markerPath = path.join(sessionDir, 'session.sdk_id');
+    withFileLock(markerPath, () => {
+      fs.writeFileSync(markerPath, sdkUuid);
+    });
+
+    // (WI-5 part 3) opportunistic prune — bound the registry to live + recent.
+    try { _pruneSdkMap(); } catch { /* fail-open */ }
+  } catch (err) {
+    // Fail-open (WI-3): never throw a map-write failure back to the spawn path.
+    console.error(`[upsertSdkSessionMap] non-fatal: ${err && err.message}`);
+  }
+}
+
+/**
+ * Resolve an SDK UUID to its owning cAgents session dir via the persisted map.
+ * Returns the session dir for a live/non-terminal target, or null on a miss
+ * (no pointer) OR a dead target. LAZY REAP (WI-5 part 1): when the pointer's
+ * target is terminal or missing, unlink the pointer and return a miss so a
+ * reused/dead UUID can never mis-resolve to a stale session.
+ *
+ * @param {string} sdkUuid - SDK transcript UUID.
+ * @returns {string|null} Owning session dir, or null.
+ */
+function resolveSdkUuidToSession(sdkUuid) {
+  if (!_isSdkUuidShape(sdkUuid)) return null; // guard
+  const pointerPath = _sdkPointerPath(sdkUuid);
+  const content = safeRead(pointerPath);
+  if (!content) return null; // miss — no pointer
+  const sessionId = content.trim();
+  if (!sessionId) return null;
+  const sessionsDir = path.join(AGENT_MEMORY_DIR, 'sessions');
+  const dir = _tryResolveCandidate(sessionsDir, sessionId);
+  if (dir) return dir; // live / non-terminal hit
+  // LAZY REAP: target terminal or missing → unlink pointer, return miss.
+  try {
+    withFileLock(pointerPath, () => {
+      try { fs.unlinkSync(pointerPath); } catch { /* already gone */ }
+    });
+  } catch { /* fail-open */ }
+  return null;
+}
+
+/**
+ * Remove the pointer for an SDK UUID (WI-5 part 2 — explicit unlink at session
+ * finalization callers such as team-stop / verify-completion terminal finalize).
+ * Guarded by the SDK-UUID shape, idempotent (missing pointer → no-op), and never
+ * throws.
+ *
+ * @param {string} sdkUuid - SDK transcript UUID whose pointer to remove.
+ */
+function removeSdkPointer(sdkUuid) {
+  try {
+    if (!_isSdkUuidShape(sdkUuid)) return; // guard
+    const pointerPath = _sdkPointerPath(sdkUuid);
+    if (!fs.existsSync(pointerPath)) return; // idempotent no-op
+    withFileLock(pointerPath, () => {
+      try { fs.unlinkSync(pointerPath); } catch { /* already gone */ }
+    });
+  } catch { /* never throw */ }
+}
+
 function findActiveSession(hintOrOptions) {
   // Normalize args: accept legacy string OR options object.
   let sessionHint;
@@ -249,9 +393,19 @@ function findActiveSession(hintOrOptions) {
   //   (b) cAgents-shaped-but-unresolvable hints still terminate at null below.
   if (sessionHint) {
     if (_isSdkUuidShape(sessionHint)) {
-      // SDK UUID — not a cAgents directory name. Skip step 1 entirely.
-      // Do NOT cache null here — let env-var / promptHint determine the outcome.
-      console.error(`[findActiveSession] sessionHint="${sessionHint}" is an SDK UUID, not a cAgents session ID; falling through to env-var/promptHint chain.`);
+      // WI-2 (OBJ-1): SDK UUID — consult the persisted SDK-UUID -> session map
+      // FIRST. A live hit is a DETERMINISTIC resolution (no heuristic); cache it
+      // under the existing composite cacheKey.
+      const mapped = resolveSdkUuidToSession(sessionHint);
+      if (mapped) {
+        _cachedActiveSessions.set(cacheKey, mapped);
+        return mapped;
+      }
+      // Map MISS: SDK UUID is not a cAgents directory name and the map holds no
+      // live pointer. Skip step 1. Do NOT cache null here — let env-var /
+      // promptHint determine the outcome (preserves the v12.16.0 UUID-fallthrough
+      // invariant so a sibling session is never resolved).
+      console.error(`[findActiveSession] sessionHint="${sessionHint}" is an SDK UUID with no live map pointer; falling through to env-var/promptHint chain.`);
     } else {
       const dir = _tryResolveCandidate(sessionsDir, sessionHint);
       if (dir) {
@@ -442,9 +596,25 @@ function findTeamSession(input = {}) {
     // caller (e.g. a Stop/TaskCompleted hook for a /run or test session) was
     // resolving the newest non-terminal team_ session and mutating its task_list.
     // Production team hooks fire with an SDK UUID, which is excluded above and
-    // falls through to env-var / heuristic. Mirrors findActiveSession's contract:
-    // a provided, non-UUID, unresolvable hint returns null (no heuristic fallthrough).
+    // falls through to the map / env-var / heuristic. Mirrors findActiveSession's
+    // contract: a provided, non-UUID, unresolvable hint returns null (no
+    // heuristic fallthrough).
     return null;
+  }
+
+  // Step 1b (WI-2 / OBJ-1): SDK-UUID map step. A production team hook fires with
+  // an SDK transcript UUID in input.session_id (excluded from the concrete-id
+  // block above). Consult the persisted map FIRST — a resolution to a team_
+  // session is the deterministic bind. A non-team resolution means this hook is
+  // NOT in a team session (mirror the non-team concrete-id contract → null). A
+  // miss falls through to env-var / heuristic exactly as today.
+  if (hint && _isSdkUuidShape(hint)) {
+    const mapped = resolveSdkUuidToSession(hint);
+    if (mapped) {
+      if (path.basename(mapped).startsWith('team_')) return mapped;
+      return null; // resolved to a non-team session → not a team hook
+    }
+    // miss → fall through to env-var / heuristic.
   }
 
   // Step 2: CAGENTS_ACTIVE_SESSION env var (team_ sessions only). Same rules.
@@ -1064,6 +1234,13 @@ module.exports = {
   _resetActiveSessionCache,
   findMostRecentSessionDir,
   findTeamSession,
+  // SDK-UUID -> session persisted map (OBJ-1, WI-1/WI-2/WI-5)
+  _sdkMapDir,
+  _sdkPointerPath,
+  _pruneSdkMap,
+  upsertSdkSessionMap,
+  resolveSdkUuidToSession,
+  removeSdkPointer,
   ensureDir,
   getTimestampSlug,
   getWaypointPath,
