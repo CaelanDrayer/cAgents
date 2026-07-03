@@ -6,7 +6,10 @@
  * Provides:
  * - createHook(handler) - Factory that eliminates per-hook boilerplate
  * - readStdin() - Parse JSON from stdin
- * - findActiveSession(sessionHint?) - Locate the most recent non-completed session (with optional hint to prevent parallel collision)
+ * - findActiveSession(sessionHintOrOptions?) - Resolve the active session via the
+ *   deterministic chain: sessionHint -> persisted SDK-UUID map -> CAGENTS_ACTIVE_SESSION
+ *   -> promptHint -> null. The legacy newest-session heuristic is opt-in only
+ *   ({fallbackHeuristic: true}); see the findActiveSession JSDoc below.
  * - extractYamlValue() - Extract a value from simple YAML content
  * - safeRead() - Read a file with graceful fallback
  * - countPattern() - Count regex matches in content
@@ -113,6 +116,7 @@ function safeRead(filePath) {
  * Extract a simple key: value from YAML content.
  */
 function extractYamlValue(content, key) {
+  if (!content) return null; // WI-8: callers pass safeRead() output, which is null when the file is absent
   const regex = new RegExp(`^${key}:\\s*["']?([^"'\\n]+)["']?`, 'm');
   const match = content.match(regex);
   return match ? match[1].trim() : null;
@@ -944,9 +948,9 @@ function withFileLock(filePath, fn) {
           try { fs.rmSync(lockDir, { recursive: true, force: true }); } catch { /* another process may have cleared it */ }
           continue; // Retry immediately after clearing stale lock
         }
-        // Busy-wait (synchronous, hooks are short-lived)
-        const start = Date.now();
-        while (Date.now() - start < retryDelayMs) { /* spin */ }
+        // True synchronous sleep (0% CPU) — Atomics.wait blocks this thread for
+        // retryDelayMs without spinning (stdlib; minimal-solution ladder rung 2)
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, retryDelayMs);
         continue;
       }
       // Unexpected error - run without lock rather than failing

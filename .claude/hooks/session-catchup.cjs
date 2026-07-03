@@ -219,16 +219,45 @@ createHook('SessionCatchup', async (input) => {
 
   const incomplete = findIncompleteSessions();
 
-  // V11.0: removed-skill suggestions replaced with V11 canonical skill set.
-  // /review and /optimize were folded into /improve --mode review|optimize|full;
-  // /context and /debug were removed entirely. See docs/MIGRATION-V11.md.
-  let cagentsContext = 'cAgents V12.32.0 session initialized. Minimum Claude Code version: 2.1.69 (required for hook lifecycle events). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Agent tool subagent_type references. IMPORTANT: When spawned as a cAgents agent, self-register your agent type in workflow/agent_tree.yaml for audit trail (SubagentStart hook injects instructions). IMPORTANT: When invoking any skill (/run, /team, /improve, /designer, /helper), your FIRST action must be creating the session directory and writing status.yaml. Do NOT explore the codebase, spawn agents, or analyze the request before session init. IMPORTANT: /run and /team NEVER handle tasks themselves. They ALWAYS delegate to subagents via Agent tool. No exceptions, no matter how simple the request. For review/optimize work, use /improve --mode review|optimize|full (V11.0 unified entry point). For cross-domain strategic work, use /team strategic mode. Tip: use /helper for skill guidance and command selection.';
+  // v12.1.2: the standalone improve skill was folded into /run via the
+  // first-word keyword router (`/run improve|review|optimize X`). The live
+  // skill set is /run, /team, /designer, /helper — the guidance below must
+  // only ever name those four (WI-5, session run_improve-skills-hooks_260703_001).
+  // Earlier history: V11.0 removed /review, /optimize, /context, /debug.
+  let cagentsContext = 'cAgents V12.33.0 session initialized. Minimum Claude Code version: 2.1.69 (required for hook lifecycle events). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Agent tool subagent_type references. IMPORTANT: When spawned as a cAgents agent, self-register your agent type in workflow/agent_tree.yaml for audit trail (SubagentStart hook injects instructions). IMPORTANT: When invoking any skill (/run, /team, /designer, /helper), your FIRST action must be creating the session directory and writing status.yaml. Do NOT explore the codebase, spawn agents, or analyze the request before session init. IMPORTANT: /run and /team NEVER handle tasks themselves. They ALWAYS delegate to subagents via Agent tool. No exceptions, no matter how simple the request. For review/optimize work, use the /run keyword router: /run review <target>, /run optimize <target>, or /run improve <target> (v12.1.2 — the standalone improve skill was folded into /run). For cross-domain strategic work, use /team strategic mode. Tip: use /helper for skill guidance and command selection.';
 
-  // Context Auto-Check (V10.17.0): Check for product-context.yaml
-  // Inspired by impeccable's .impeccable.md auto-check pattern
+  // Context Auto-Check (V10.17.0; path corrected in WI-5, session
+  // run_improve-skills-hooks_260703_001): the CANONICAL product-context
+  // location is cagents-memory/_projects/{project_hash}/product_context.yaml
+  // (see .claude/skills/run/SKILL.md — the orchestrator reads it during INIT
+  // enrichment). The pre-v12 .claude/context/product-context.yaml location is
+  // checked ONLY as an explicit legacy fallback for existing installs.
   try {
-    const contextFile = path.join(process.env.CLAUDE_PROJECT_DIR || AGENT_MEMORY_DIR.replace('/cagents-memory', ''), '.claude', 'context', 'product-context.yaml');
-    if (fs.existsSync(contextFile)) {
+    let contextFile = null;
+
+    // Canonical: cagents-memory/_projects/{project_hash}/product_context.yaml
+    try {
+      const projectsDir = path.join(AGENT_MEMORY_DIR, '_projects');
+      if (fs.existsSync(projectsDir)) {
+        for (const entry of fs.readdirSync(projectsDir)) {
+          const candidate = path.join(projectsDir, entry, 'product_context.yaml');
+          if (fs.existsSync(candidate)) {
+            contextFile = candidate;
+            break;
+          }
+        }
+      }
+    } catch { /* canonical lookup is best-effort */ }
+
+    // LEGACY FALLBACK ONLY: .claude/context/product-context.yaml (pre-v12
+    // location). Read-side back-compat for installs that created it before
+    // the canonical _projects path existed; never suggested for new files.
+    if (!contextFile) {
+      const legacyFile = path.join(process.env.CLAUDE_PROJECT_DIR || AGENT_MEMORY_DIR.replace('/cagents-memory', ''), '.claude', 'context', 'product-context.yaml');
+      if (fs.existsSync(legacyFile)) contextFile = legacyFile;
+    }
+
+    if (contextFile) {
       // Product context exists - load a summary into the session context
       const contextContent = safeRead(contextFile);
       if (contextContent) {
@@ -239,13 +268,13 @@ createHook('SessionCatchup', async (input) => {
         }
       }
     } else {
-      // V11.0: removed `/context` skill suggestion. The skill was removed
-      // in V11.0.0 and following the suggestion would fail. Product context
-      // is now created manually at .claude/context/product-context.yaml.
+      // V11.0: removed `/context` skill suggestion (the skill was removed in
+      // V11.0.0 and following the suggestion would fail). The tip points at
+      // the canonical _projects path consumed by the orchestrator.
       // Marker writes retained for back-compat (no-op for new sessions).
       const markerFile = path.join(AGENT_MEMORY_DIR, '_system', 'context_suggestion_shown');
       if (!fs.existsSync(markerFile)) {
-        cagentsContext += ' Tip: Create .claude/context/product-context.yaml to share product context across sessions.';
+        cagentsContext += ' Tip: Create cagents-memory/_projects/{project_hash}/product_context.yaml to share product context across sessions (the orchestrator reads it during INIT enrichment).';
         try {
           ensureDir(path.join(AGENT_MEMORY_DIR, '_system'));
           fs.writeFileSync(markerFile, new Date().toISOString());

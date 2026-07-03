@@ -345,7 +345,7 @@ The `bash -c` wrapper provides a 3-tier fallback chain for resolving the plugin 
 3. **Graceful failure**: `createHook()` handles errors automatically (returns `{"continue": true}`).
 4. **Clear logging**: Use `console.error()` for logs (stderr), `createHook()` handles stdout.
 5. **Idempotent**: Hooks may run multiple times.
-6. **Self-contained**: No external dependencies (100% built-in Node.js).
+6. **Self-contained**: `js-yaml` is the sole declared external dependency and every hook that uses it wraps the require in try/catch with a graceful degraded path (so hooks never crash at load when node_modules is absent); everything else is built-in Node.js.
 7. **State in files**: Store state in cagents-memory, not memory.
 8. **Single JSON output**: `createHook()` guarantees exactly one JSON output to stdout.
 

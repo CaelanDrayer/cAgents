@@ -91,7 +91,7 @@ total_duration_seconds: 0
 
   const msg = teamsAvailable
     ? 'Team session initialized with full Agent Teams support.'
-    : 'Team session initialized in fallback mode (parallel Tasks). CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS is not enabled — TeamCreate/SendMessage/SendMessage may not be available. Check settings.json env propagation.';
+    : 'Team session initialized in fallback mode (parallel Tasks). CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS is not enabled — TeamCreate/SendMessage may not be available. Check settings.json env propagation.';
 
   return {
     hookSpecificOutput: {

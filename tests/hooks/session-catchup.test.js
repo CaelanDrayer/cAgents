@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { existsSync, writeFileSync, mkdirSync, rmSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
+import { randomUUID } from 'crypto';
 
 const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
 const HOOK_PATH = join(HOOKS_DIR, 'session-catchup.cjs');
@@ -89,6 +90,65 @@ describe('session-catchup.cjs', () => {
       // (it uses fs.existsSync checks internally)
       const result = runHook({});
       expect(result.hookSpecificOutput).toBeDefined();
+    });
+  });
+
+  // WI-5 (session run_improve-skills-hooks_260703_001): the hook injected
+  // guidance referencing the REMOVED standalone /improve skill (folded into
+  // /run via the v12.1.2 keyword router: `/run improve|review|optimize X`)
+  // and pointed the product-context tip at the non-canonical
+  // .claude/context/product-context.yaml path instead of the documented
+  // cagents-memory/_projects/{project_hash}/product_context.yaml location
+  // (see .claude/skills/run/SKILL.md § context passthrough removal).
+  describe('WI-5: removed /improve references + canonical product-context path', () => {
+    // The hook dedups on session_id (see session-catchup-v11.test.js) — use a
+    // fresh session_id per invocation so the handler actually runs.
+    function runHookFresh() {
+      return runHook({ session_id: `wi5-test-${randomUUID()}` });
+    }
+
+    // Matches the standalone /improve SKILL token only. Deliberately does NOT
+    // match the live v12.1.2 keyword-router syntax `/run improve <target>`,
+    // because there the token is a bare "improve" with no leading slash.
+    const STANDALONE_IMPROVE_RE = /(?<![\w-])\/improve\b/;
+
+    it('emitted additionalContext contains NO standalone /improve skill reference', () => {
+      const result = runHookFresh();
+      const ctx = result?.hookSpecificOutput?.additionalContext || '';
+      expect(ctx.length).toBeGreaterThan(0);
+      expect(STANDALONE_IMPROVE_RE.test(ctx)).toBe(false);
+    });
+
+    it('routes review/optimize work via the /run keyword router (v12.1.2)', () => {
+      const result = runHookFresh();
+      const ctx = result?.hookSpecificOutput?.additionalContext || '';
+      // At least one keyword-router form must be advertised: /run review,
+      // /run optimize, or /run improve.
+      expect(ctx).toMatch(/\/run (review|optimize|improve)\b/);
+    });
+
+    it('names only live skills in the skill-invocation guidance', () => {
+      const result = runHookFresh();
+      const ctx = result?.hookSpecificOutput?.additionalContext || '';
+      for (const skill of ['/run', '/team', '/designer', '/helper']) {
+        expect(ctx).toContain(skill);
+      }
+    });
+
+    it('product-context tip points at the canonical cagents-memory/_projects path', () => {
+      // Source-contract test (the tip only renders once per install thanks to
+      // the context_suggestion_shown marker, so live output would be flaky).
+      const hookSource = readFileSync(HOOK_PATH, 'utf8');
+      // Canonical location must be referenced (matching run SKILL.md).
+      expect(hookSource).toContain('_projects');
+      expect(hookSource).toContain('product_context.yaml');
+      // The old tip suggesting creation at the non-canonical location is gone.
+      expect(hookSource).not.toContain('Tip: Create .claude/context/product-context.yaml');
+      // If the .claude/context read is retained at all, it must be explicitly
+      // marked as a legacy fallback.
+      if (hookSource.includes('product-context.yaml')) {
+        expect(hookSource).toMatch(/legacy/i);
+      }
     });
   });
 });

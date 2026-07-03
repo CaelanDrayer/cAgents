@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.32.0"
+  version: "12.33.0"
   argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--all] [--topic <topic>] [--troubleshoot <command>]"
   user-invocable: "true"
   context: "none"
@@ -271,7 +271,7 @@ Available Commands:
 |-------------------------------|------------------------------------------|-------------|------------|---------------------------------------|
 | /run                          | Execute any task                          | Autonomous  | Varies     | Building, fixing, writing, analyzing  |
 | /run review\|audit\|optimize\|improve | Quality audit + optimization (keyword router) | Autonomous  | 3-20 min   | Quality audit, perf/size optimization |
-| /designer                     | Design before building                    | 4-phase Q&A | 15-45 min  | Planning features, systems, stories   |
+| /designer                     | Design before building                    | 6-phase Q&A | 15-45 min  | Planning features, systems, stories   |
 | /team                         | Parallel team execution (strategic mode auto-enables) | Autonomous  | Varies     | Large features, cross-domain initiatives |
 | /helper                       | Command guide and reference               | Interactive | 1-2 min    | Learning commands, comparing options  |
 ```

@@ -83,9 +83,12 @@ function checkNextStageAgentSpawned(sessionDir, pipelineState) {
       return hasRunningAgent;
     }
 
-    // Check if the expected agent type appears in agent_tree.yaml
-    // Agent types are recorded as "cagents:{name}" or just the name in agent_type field
-    const agentPattern = new RegExp(`agent_type:\\s*["']?cagents:${expectedAgent}["']?`, 'i');
+    // Check if the expected agent type appears in agent_tree.yaml.
+    // Real schema (written by subagent-tracker.cjs via yaml.dump): entries use
+    // `type:` and `cagents_type:` keys — NOT `agent_type:` (M-24 bug class;
+    // same fix as team-stop.cjs:232-251, v12.12.2). The alternation also
+    // tolerates legacy `agent_type:` trees. Values are "cagents:{name}".
+    const agentPattern = new RegExp(`^\\s*(?:-\\s*)?(?:agent_type|cagents_type|type):\\s*["']?cagents:${expectedAgent}["']?`, 'im');
     const descriptionPattern = new RegExp(`description:\\s*.*${expectedAgent}`, 'i');
     return agentPattern.test(agentTreeContent) || descriptionPattern.test(agentTreeContent);
   } catch (e) {
@@ -181,8 +184,12 @@ function finalizeSessionLifecycle(sessionDir) {
     const agentTreeFile = path.join(sessionDir, 'workflow', 'agent_tree.yaml');
     const agentTreeContent = safeRead(agentTreeFile);
     if (agentTreeContent) {
-      // Find the first agent entry and check if stopped_at is null
-      const firstAgentMatch = agentTreeContent.match(/(- agent_id:\s*[^\n]+[\s\S]*?stopped_at:\s*)null/);
+      // Find the first agent list entry (`- id:` — the real schema written by
+      // subagent-tracker.cjs; the previous `- agent_id:` key never matched,
+      // M-24 bug class) and finalize the first null stopped_at at-or-after it.
+      // The `root:` block precedes the agents list, so its stopped_at is
+      // deliberately untouched (root lifecycle belongs to team-stop.cjs Phase 1).
+      const firstAgentMatch = agentTreeContent.match(/(- id:\s*[^\n]+[\s\S]*?stopped_at:\s*)null/);
       if (firstAgentMatch) {
         const updated = agentTreeContent.replace(
           firstAgentMatch[0],
@@ -717,10 +724,14 @@ function verifyCompletion(sessionDir) {
         const depthMatches = agentTreeContent.match(/\bdepth:\s*([1-9]\d*)\b/g);
         childAgentCount = depthMatches ? depthMatches.length : 0;
 
-        // Fallback: count agent_id entries beyond the first (first is the /run root)
+        // Fallback: count `- id:` list entries (the real schema written by
+        // subagent-tracker.cjs — M-24 bug class; the previous `agent_id:` key
+        // never matched, so this fallback always returned 0). The /run root is
+        // a separate `root:` block (keyed `agent:`, not a `- id:` list entry),
+        // so every `- id:` match IS a spawned child — no -1 offset needed.
         if (childAgentCount === 0) {
-          const agentIdMatches = agentTreeContent.match(/\bagent_id:\s*[^\s\n]+/g);
-          childAgentCount = agentIdMatches ? Math.max(0, agentIdMatches.length - 1) : 0;
+          const idMatches = agentTreeContent.match(/^\s*- id:/gm);
+          childAgentCount = idMatches ? idMatches.length : 0;
         }
       }
 
@@ -1420,12 +1431,15 @@ ${result.warnings.length > 0 ? `  warning_types:\n${result.warnings.map(w => `  
       }
     }
 
-    // Agent count from agent_tree.yaml
+    // Agent count from agent_tree.yaml. Entries are keyed `- id:` (the real
+    // schema written by subagent-tracker.cjs — M-24 bug class; the previous
+    // `agent_id:` regex never matched, so agent_count was ALWAYS 0). Same
+    // parsing pattern as the team-stop.cjs M-24 fallback (v12.12.2).
     let outcomeAgentCount = 0;
     try {
       const atContent = safeRead(path.join(sessionDir, 'workflow', 'agent_tree.yaml'));
       if (atContent) {
-        const agentMatches = atContent.match(/agent_id:/g);
+        const agentMatches = atContent.match(/^\s*- id:/gm);
         outcomeAgentCount = agentMatches ? agentMatches.length : 0;
       }
     } catch { /* agent tree read failed */ }
@@ -1440,20 +1454,12 @@ ${result.warnings.length > 0 ? `  warning_types:\n${result.warnings.map(w => `  
       }
     } catch { /* work items read failed */ }
 
-    // Revision count from workflow/events/ (FAIL or REVISE events)
-    let outcomeRevisionCount = 0;
-    try {
-      const eventsDir = path.join(sessionDir, 'workflow', 'events');
-      if (fs.existsSync(eventsDir)) {
-        const eventFiles = fs.readdirSync(eventsDir).filter(f => f.endsWith('.yaml'));
-        for (const ef of eventFiles) {
-          const evContent = safeRead(path.join(eventsDir, ef));
-          if (evContent && (/\bFAIL\b/.test(evContent) || /\bREVISE\b/.test(evContent))) {
-            outcomeRevisionCount++;
-          }
-        }
-      }
-    } catch { /* events read failed */ }
+    // Revision count: previously counted FAIL/REVISE files in workflow/events/,
+    // a directory removed in v12.6.0 (see the post-write-validator.cjs events
+    // note) — the reader was dead and always produced a fabricated 0. A
+    // FAIL/REVISE revision count is not currently derivable from disk here, so
+    // emit null (honestly "not tracked") rather than a fake 0.
+    const outcomeRevisionCount = null;
 
     const outcome = {
       session_id: path.basename(sessionDir),

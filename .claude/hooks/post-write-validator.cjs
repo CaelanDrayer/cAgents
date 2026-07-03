@@ -10,7 +10,11 @@
  * 4. Provide feedback if validation issues found
  *
  * Input (stdin): JSON with tool_name, tool_input from PostToolUse event
- * Output (stdout): JSON with continue status and optional systemMessage
+ * Output (stdout): JSON {continue: true} with NO systemMessage — per the
+ * thinking-block-immutability contract (run_team-thinking-400_260531_001),
+ * PostToolUse hooks must not emit systemMessage. Validation warnings surface
+ * via console.error (stderr → user verbose mode) and the file_changes.log
+ * audit trail (status: "warn").
  */
 
 const fs = require('fs');

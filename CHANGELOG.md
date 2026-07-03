@@ -10,6 +10,59 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.33.0] - 2026-07-03
+
+Skills + hooks improvement pass spanning correctness, robustness, performance,
+and clarity (session `run_improve-skills-hooks_260703_001`). Minor bump per
+`.claude/rules/core/version-registry.md`: a multi-surface audit/improvement
+session touching >5 non-sync files (5 hooks + hook-utils + 2 skill docs + 2 new
+test files) — the tiny-bump guard would correctly block this as a patch.
+
+### Fixed
+- **verify-completion.cjs agent_tree.yaml schema mismatch (WI-1, correctness).**
+  The Stop hook counted agents by matching keys the SubagentStart tracker never
+  writes (`agent_type:` / `- agent_id:`); the real on-disk schema is
+  `- id:` / `type:` / `cagents_type:`, so `agent_count` in
+  `session_outcomes.jsonl` was always 0. Also removed a dead `workflow/events/`
+  revision-counter read (the events dir was removed in v12.6.0) in favor of an
+  honest null. Same M-24 bug class fixed in `team-stop.cjs` back in v12.12.2 but
+  missed here.
+- **Unguarded `require('js-yaml')` in two SubagentStart/Stop hooks (WI-2,
+  robustness).** `subagent-tracker.cjs` and `subagent-stop-tracker.cjs` now
+  guard the top-level `js-yaml` require (mirroring `team-stop.cjs`), so a plugin
+  install without `npm install` degrades gracefully — the audit log and
+  additionalContext injection still work; only the agent_tree.yaml mutation is
+  skipped — instead of crashing the hook.
+- **subagent-tracker.cjs first-entry depth bug (WI-3, correctness).** The
+  sentinel depth map (`pipeline` → 1, `controller` → 2) was skipped when the
+  agents list was empty, so the first spawned child got depth 0 and could
+  falsely trip the delegation-violation check.
+- **session-catchup.cjs stale skill suggestion (WI-5, correctness).** The
+  SessionStart hook no longer injects "use /improve …" guidance (`/improve` was
+  folded into `/run` in v12.1.2); also fixed a wrong product-context tip path.
+- **hook-utils.cjs `extractYamlValue` null-content guard (WI-8, correctness).**
+  `permission-handler.cjs` threw a TypeError in any session without a
+  `plan.yaml`; `extractYamlValue` now guards null/undefined content.
+
+### Changed
+- **withFileLock contention wait is now 0% CPU (WI-7, performance).**
+  `hook-utils.cjs` `withFileLock` uses `Atomics.wait` for its lock-contention
+  backoff instead of a busy spin-wait.
+- **_MODE_REGISTRY.md /designer section modernized (WI-4, clarity).** The
+  registry now shows the canonical 6-phase designer workflow (was a stale
+  4-phase table); `helper/SKILL.md` "4-phase" reference updated to "6-phase".
+- **Stale-comment sweep across four hooks (WI-6, clarity).**
+  `post-write-validator.cjs` header (no-systemMessage per HC-2),
+  `pre-compact-save.cjs` timestamp-format comment, `team-start.cjs`
+  "SendMessage/SendMessage" dedup, and the `hook-utils.cjs` `findActiveSession`
+  header (deterministic-chain framing).
+
+### Tests
+- Added `tests/hooks/js-yaml-guarded-require.test.js` (WI-2 regression) and
+  `tests/hooks/verify-completion-agent-tree-schema.test.js` (WI-1 regression).
+  Refreshed the CLAUDE.md test-count claim (168 files / 1395+ tests).
+  `npm test` green at release gate: 1609 passed, 0 failed.
+
 ## [12.32.0] - 2026-06-30
 
 Two independent hook-resolution fixes discovered while diagnosing sessions that

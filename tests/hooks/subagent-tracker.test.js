@@ -216,11 +216,19 @@ describe('subagent-tracker.cjs', () => {
         `phase: ${statusPhase}\npipeline_state: ${statusPhase}\n`
       );
 
-      // Write agent_tree.yaml with existing agents (if any)
+      // Write agent_tree.yaml with existing agents (if any).
+      // WI-3 (run_improve-skills-hooks_260703_001): an explicit empty array
+      // (`existingAgents: []`) writes a tree file with an empty agents list,
+      // while null/undefined writes NO file at all (fresh-tree scenario).
       if (existingAgents && existingAgents.length > 0) {
         fs.writeFileSync(
           pathMod.join(workflowDir, 'agent_tree.yaml'),
           yaml.dump({ agents: existingAgents })
+        );
+      } else if (Array.isArray(existingAgents)) {
+        fs.writeFileSync(
+          pathMod.join(workflowDir, 'agent_tree.yaml'),
+          yaml.dump({ agents: [] })
         );
       }
 
@@ -409,6 +417,39 @@ describe('subagent-tracker.cjs', () => {
       // SENTINEL_DEPTH_MAP check MUST come before the find() call
       expect(mapIndex).toBeLessThan(findIndex);
     });
+
+  // ---------------------------------------------------------------------------
+  // WI-3 Regression tests (run_improve-skills-hooks_260703_001): first-entry depth
+  // Bug: the depth computation was gated on `parsedObj.agents.length > 0`, so the
+  //      FIRST agent appended to a fresh/empty tree always got depth 0 — even
+  //      when parentAgent was the 'pipeline' (depth 1) or 'controller' (depth 2)
+  //      sentinel. Downstream, verify-completion.cjs counts depth>=1 entries for
+  //      the DELEGATION VIOLATION check, so a session whose only child was the
+  //      first entry counted 0 and could be spuriously flagged.
+  // Fix: sentinel depths apply regardless of list emptiness.
+  // ---------------------------------------------------------------------------
+  describe('first-entry depth on fresh/empty tree (WI-3 regression)', () => {
+    it('FIRST entry (no agent_tree.yaml on disk) with sentinel parent "pipeline" gets depth=1', () => {
+      const result = runWithDepthCheck({
+        statusPhase: 'INIT',
+        existingAgents: null, // no tree file — the hook creates it fresh
+        agentType: 'cagents:orchestrator', // enrichment agent -> parent 'pipeline'
+      });
+      expect(result.parent).toBe('pipeline');
+      expect(result.depth).toBe(1);
+    });
+
+    it('FIRST entry (tree file exists with empty agents list) with sentinel parent "controller" gets depth=2', () => {
+      const result = runWithDepthCheck({
+        statusPhase: 'COORDINATING',
+        existingAgents: [], // agents: [] on disk — list still empty
+        agentType: 'cagents:backend-developer', // execution agent -> 'controller' sentinel
+      });
+      expect(result.parent).toBe('controller');
+      expect(result.depth).toBe(2);
+    });
+  });
+  // (nested inside the R3 describe so it can reuse the runWithDepthCheck helper)
   });
 
   // ---------------------------------------------------------------------------

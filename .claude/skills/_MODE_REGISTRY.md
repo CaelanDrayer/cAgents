@@ -77,10 +77,12 @@ See `## /team` section above for the full flag/mode catalog including
 
 | Phase | Description |
 |-------|-------------|
-| Discovery | Initial requirements Q&A — what are we designing |
-| Architecture | Component breakdown + interface contracts |
-| Validation | Edge cases, failure modes, observability |
-| Synthesis | Implementation-ready design document |
+| Empathize | User needs, pain points, context, personas (10% of session) |
+| Define | Problem statement, constraints, success criteria (10%) |
+| Conceptualize | High-level concepts, mental models, framing; domain + scope selection (10%) |
+| Ideation | 2-4 alternatives, trade-offs, approach selection (20%) |
+| Refinement | Architecture, flows, data model, security, testing (30%) |
+| Specification | User stories, specs, diagrams, checklists, validation — readiness gate: ambiguity < 20% (20%) |
 
 | Flag | Description |
 |------|-------------|

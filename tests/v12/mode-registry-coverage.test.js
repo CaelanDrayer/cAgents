@@ -32,4 +32,22 @@ describe('REC-3: MODE_REGISTRY.md coverage', () => {
       expect(registry, `${section} should mention ${f}`).toContain(f);
     }
   });
+
+  // WI-4 (run_improve-skills-hooks_260703_001): the registry's § /designer phase
+  // table must match the canonical 6-phase workflow defined in
+  // .claude/skills/designer/SKILL.md § 6-Phase Workflow (Empathize, Define,
+  // Conceptualize, Ideation, Refinement, Specification). The registry previously
+  // listed a stale 4-phase table (Discovery/Architecture/Validation/Synthesis)
+  // that never matched the designer skill.
+  it('section for /designer lists the canonical 6 phases', () => {
+    const start = registry.indexOf('## /designer');
+    expect(start, 'registry should contain a ## /designer section').toBeGreaterThan(-1);
+    const rest = registry.slice(start + '## /designer'.length);
+    const nextHeading = rest.search(/\n## /);
+    const section = nextHeading === -1 ? rest : rest.slice(0, nextHeading);
+    const phases = ['Empathize', 'Define', 'Conceptualize', 'Ideation', 'Refinement', 'Specification'];
+    for (const phase of phases) {
+      expect(section, `/designer section should list phase ${phase}`).toContain(phase);
+    }
+  });
 });

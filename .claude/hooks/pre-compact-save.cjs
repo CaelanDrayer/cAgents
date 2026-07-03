@@ -60,8 +60,8 @@ createHook('PreCompact', async (input) => {
   if (!sessionDir) return null;
 
   const timestamp = new Date();
-  // getTimestampSlug() returns a compact datetime string in the format:
-  // YYYYMMDD-HHmmss (e.g., "20260317-143022") — suitable for use in filenames
+  // getTimestampSlug() returns a filesystem-safe datetime string in the format:
+  // YYYY-MM-DD_HH-mm-ss (e.g., "2026-02-05_09-46-24") — suitable for use in filenames
   // and waypoint IDs where lexicographic ordering equals chronological ordering.
   const tsSlug = getTimestampSlug(timestamp);
   const waypointId = `WP-compact-${tsSlug}`;

@@ -19,7 +19,13 @@
 
 const fs = require('fs');
 const path = require('path');
-const yaml = require('js-yaml');
+// WI-2 (run_improve-skills-hooks_260703_001): js-yaml is the sole declared
+// external dependency and node_modules is git-ignored — a plugin install
+// without `npm install` must not crash this hook at load time (run-hook.cjs's
+// require() is unwrapped). Guarded require; graceful degraded path below
+// skips the agent_tree.yaml update when the module is absent.
+let yaml = null;
+try { yaml = require('js-yaml'); } catch { yaml = null; }
 // GAP-4 fix: import findMostRecentSessionDir from hook-utils.cjs (shared with subagent-tracker.cjs).
 // This ensures start and stop events use identical session discovery logic,
 // including env-var fast path (Pass 0) and nested org subdir scanning.
@@ -155,6 +161,16 @@ createHook('SubagentStopTracker', async (input) => {
     appendMemoryLine(lastMessage, input.session_id, subagentType);
   } catch (err) {
     console.error(`[SubagentStopTracker] MEMORY append wrapper failed (non-fatal): ${err.message}`);
+  }
+
+  // WI-2: graceful degradation when js-yaml is unavailable (plugin install
+  // without `npm install`). The stop event is already recorded in the global
+  // audit log above; the agent_tree.yaml update and performance logging both
+  // require YAML parse/dump, so skip them and emit a plain single
+  // {continue: true} JSON instead of crashing.
+  if (!yaml) {
+    console.error(`[SubagentStopTracker] js-yaml unavailable — skipping agent_tree.yaml update for agent ${agentId} (stop event logged to audit log only)`);
+    return { continue: true };
   }
 
   // Find session to update agent_tree.yaml

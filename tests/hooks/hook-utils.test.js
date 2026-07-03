@@ -1,6 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { existsSync } from 'fs';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { existsSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'fs';
 import { join } from 'path';
+import { tmpdir } from 'os';
+import { spawn } from 'child_process';
 
 const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
 
@@ -99,6 +101,14 @@ describe('hook-utils.cjs', () => {
 
     it('should return null for missing keys', () => {
       expect(hookUtils.extractYamlValue('phase: active', 'missing')).toBe(null);
+    });
+
+    // WI-8 regression (run_improve-skills-hooks_260703_001): callers pass
+    // safeRead() output directly (e.g. permission-handler.cjs), which is null
+    // when the file does not exist. Must return null, not throw TypeError.
+    it('should return null for null/undefined content (WI-8 null guard)', () => {
+      expect(hookUtils.extractYamlValue(null, 'tier')).toBe(null);
+      expect(hookUtils.extractYamlValue(undefined, 'tier')).toBe(null);
     });
   });
 
@@ -386,6 +396,82 @@ describe('hook-utils.cjs', () => {
     it('should pass primitives and null through unchanged', () => {
       expect(normalize(null)).toBe(null);
       expect(normalize(undefined)).toBe(undefined);
+    });
+  });
+
+  describe('withFileLock (WI-7: behavior contract under contention)', () => {
+    // Behavior-preservation guard for the spin-wait -> Atomics.wait sleep swap
+    // (perf change; these tests must PASS both before and after the swap).
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    let tmpDir;
+
+    beforeEach(() => {
+      tmpDir = mkdtempSync(join(tmpdir(), 'wfl-test-'));
+    });
+
+    afterEach(() => {
+      try { rmSync(tmpDir, { recursive: true, force: true }); } catch { /* best effort */ }
+    });
+
+    it('should return fn result and release the lock dir (uncontended)', () => {
+      const target = join(tmpDir, 'target.yaml');
+      const result = hookUtils.withFileLock(target, () => 'fn-return-value');
+      expect(result).toBe('fn-return-value');
+      expect(existsSync(target + '.lock')).toBe(false);
+    });
+
+    it('should return fn result and release the lock dir after a CONTENDED acquire', async () => {
+      const target = join(tmpDir, 'target.yaml');
+      const lockDir = target + '.lock';
+
+      // A child process acquires the lock (writing its own LIVE pid, so the
+      // parent's liveness check keeps it waiting) and releases it after 150ms.
+      const holderScript = [
+        "const fs = require('fs');",
+        "const path = require('path');",
+        'const lockDir = process.argv[1];',
+        'fs.mkdirSync(lockDir);',
+        "fs.writeFileSync(path.join(lockDir, 'pid'), String(process.pid));",
+        'setTimeout(() => {',
+        '  try { fs.rmSync(lockDir, { recursive: true, force: true }); } catch {}',
+        '}, 150);',
+      ].join('\n');
+      const child = spawn(process.execPath, ['-e', holderScript, lockDir], { stdio: 'ignore' });
+
+      try {
+        // Wait until the child actually holds the lock before contending.
+        const deadline = Date.now() + 2000;
+        while (!existsSync(lockDir) && Date.now() < deadline) await sleep(5);
+        expect(existsSync(lockDir)).toBe(true);
+
+        // Synchronous contended acquire: withFileLock must wait out the live
+        // holder, then run fn, return its value, and release the lock dir.
+        let ran = false;
+        const result = hookUtils.withFileLock(target, () => { ran = true; return 42; });
+
+        expect(result).toBe(42);
+        expect(ran).toBe(true);
+        expect(existsSync(lockDir)).toBe(false);
+      } finally {
+        try { child.kill(); } catch { /* already exited */ }
+      }
+    });
+
+    it('should clear a stale lock (dead PID) and still return fn result', async () => {
+      const target = join(tmpDir, 'target.yaml');
+      const lockDir = target + '.lock';
+
+      // Obtain a guaranteed-dead PID from an immediately-exiting child.
+      const dead = spawn(process.execPath, ['-e', ''], { stdio: 'ignore' });
+      const deadPid = dead.pid;
+      await new Promise((resolve) => dead.on('exit', resolve));
+
+      mkdirSync(lockDir);
+      writeFileSync(join(lockDir, 'pid'), String(deadPid));
+
+      const result = hookUtils.withFileLock(target, () => 'after-stale-clear');
+      expect(result).toBe('after-stale-clear');
+      expect(existsSync(lockDir)).toBe(false);
     });
   });
 });

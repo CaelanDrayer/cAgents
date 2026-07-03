@@ -22,7 +22,13 @@
 
 const fs = require('fs');
 const path = require('path');
-const yaml = require('js-yaml');
+// WI-2 (run_improve-skills-hooks_260703_001): js-yaml is the sole declared
+// external dependency and node_modules is git-ignored — a plugin install
+// without `npm install` must not crash this hook at load time (run-hook.cjs's
+// require() is unwrapped). Guarded require; graceful degraded path below
+// skips the agent_tree.yaml mutation when the module is absent.
+let yaml = null;
+try { yaml = require('js-yaml'); } catch { yaml = null; }
 // GAP-4 fix: import findMostRecentSessionDir from hook-utils.cjs (shared with subagent-stop-tracker.cjs).
 // This ensures start and stop events use identical session discovery logic,
 // including env-var fast path (Pass 0) and nested org subdir scanning.
@@ -263,6 +269,15 @@ createHook('SubagentTracker', async (input) => {
     catch (e) { console.error('[SubagentTracker] map upsert non-fatal: ' + (e && e.message)); }
   }
 
+  // WI-2: graceful degradation when js-yaml is unavailable (plugin install
+  // without `npm install`). The spawn is already recorded in the global audit
+  // log above; the agent_tree.yaml mutation requires YAML parse/dump, so skip
+  // it and emit a plain single {continue: true} JSON instead of crashing.
+  if (!yaml) {
+    console.error(`[SubagentTracker] js-yaml unavailable — skipping agent_tree.yaml mutation for agent ${agentId} (spawn recorded in global audit log only)`);
+    return { continue: true };
+  }
+
   const workflowDir = ensureDir(path.join(sessionDir, 'workflow'));
   const treeFile = path.join(workflowDir, 'agent_tree.yaml');
 
@@ -335,8 +350,16 @@ createHook('SubagentTracker', async (input) => {
       return -1; // sentinel: skip
     }
 
-    // Compute depth from parent's depth using parsed object (root = 0)
-    if (parentAgent && parentAgent !== 'root' && parsedObj.agents.length > 0) {
+    // Compute depth from parent's depth using parsed object (root = 0).
+    // WI-3 (run_improve-skills-hooks_260703_001): this branch was previously
+    // gated on the agents list being non-empty, so the FIRST entry appended to
+    // a fresh or empty tree always got depth 0 — even for sentinel parents.
+    // Downstream, verify-completion.cjs counts depth>=1 entries for the
+    // DELEGATION VIOLATION check, so such sessions could be spuriously flagged.
+    // Sentinel depths now apply regardless of list emptiness; a real parent ID
+    // that isn't found in the tree (including the empty-tree case) falls back
+    // to depth 1.
+    if (parentAgent && parentAgent !== 'root') {
       // Map known sentinel parent values to fixed depths before tree lookup.
       // inferParentAgent() returns these sentinels when no real agent ID is found:
       //   'pipeline' -> depth 1 (enrichment agents are direct children of the pipeline)
@@ -349,7 +372,7 @@ createHook('SubagentTracker', async (input) => {
         if (parentEntry && typeof parentEntry.depth === 'number') {
           depth = parentEntry.depth + 1;
         } else {
-          depth = 1; // Parent exists but no depth field yet (legacy entry), assume depth 1
+          depth = 1; // Parent not in tree (empty tree or legacy entry without depth) — assume depth 1
         }
       }
     }
