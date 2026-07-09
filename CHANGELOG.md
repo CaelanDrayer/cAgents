@@ -10,6 +10,36 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.35.0] - 2026-07-09
+
+Consolidated AI-writing detection/humanization gate for the writer archetype
+(session `run_writers-ai-detection_260709_001`). Minor bump: a new routable
+agent lands (restored + merged from two archived pre-v12.6 agents), the
+anti-slop rule is enriched into the canonical tell registry, and five
+writer-type agents gain a final AI-detection gate. Catalog grows 57 → 58.
+
+### Added
+- **`ai-writing-editor` agent — consolidated detect/rewrite gate.** New
+  mode-flagged writer agent at `agents/writer/ai-writing-editor/` restoring and
+  merging the archived pre-v12.6 `ai-writing-detector` + `ai-writing-rewriter`.
+  Modes: `detect` (read-only 14-category forensic scan → `detection_report.yaml`),
+  `rewrite` (4-pass humanization), and `both` (one-pass detect→rewrite; the
+  default used by the writer gate). Ships three distilled resources —
+  `resources/detection-categories.md`, `resources/rewrite-strategies.md`, and
+  `resources/tell-registry.yaml`.
+
+### Changed
+- **`.claude/rules/quality/anti-slop.md` promoted to the canonical AI-writing
+  tell registry.** Enriched into the single source of truth for AI-writing
+  tells — magic-city P0–P3 severity tiers plus HARD-BANNED B1–B10 — with a
+  pointer to `cagents:ai-writing-editor` as the deep final gate for prose.
+- **Final AI-detection gate wired into 5 writer-type agents.** `editor`,
+  `narrative-director`, `worldbuilder`, `technical-writer`, and `translator`
+  now run `cagents:ai-writing-editor` mode=both before returning prose.
+- **Agent catalog 57 → 58.** Writer archetype grows 3 → 4 (42 routable + 16
+  core). Count-drift references swept across docs + manifests (`CLAUDE.md`,
+  `README.md`, `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`).
+
 ## [12.34.0] - 2026-07-08
 
 GuardFall Bash-guard hardening (session `run_bash-guard-evaluator_260708_001`).

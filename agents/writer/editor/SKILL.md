@@ -123,6 +123,8 @@ See @resources/copy-best-practices.md for design principles, persuasion mechanic
 
 All editorial feedback and creative output must avoid predictable AI writing patterns. See @resources/standards-and-references.md for the full anti-slop standards, AI-detection cues, consolidated anti-patterns, and literary references.
 
+**Final AI-detection gate.** Before returning any prose deliverable, run `cagents:ai-writing-editor` (mode=both) as the final gate; the tells in `.claude/rules/quality/anti-slop.md` are the reference list.
+
 ## Controller Delegation Protocol
 
 **In `line-edit` mode you are a controller. You MUST delegate ALL implementation work to execution agents via the Agent tool — never do work directly.** In `copy-edit`, `prose-style`, and `copy` modes you execute directly.

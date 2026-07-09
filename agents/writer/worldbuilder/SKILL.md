@@ -58,3 +58,7 @@ Fallback: `world`.
 See @resources/world.md for the world mode full playbook (universe construction, systems thinking, iceberg principle).
 See @resources/character.md for the character mode full playbook (wound-want-need, contradiction, arc types).
 See @resources/dialogue.md for the dialogue mode full playbook (subtext craft, voice differentiation, conversation design).
+
+## Final AI-Detection Gate
+
+Before returning any prose, dialogue, or worldbuilding deliverable, run `cagents:ai-writing-editor` (mode=both) as the final AI-detection gate; the tells in `.claude/rules/quality/anti-slop.md` are the reference list.
