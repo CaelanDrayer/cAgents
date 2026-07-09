@@ -110,7 +110,7 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 2. **core/controller-reference.md** — Detailed controller schemas and protocols
 3. **core/delegation.md** — Aggressive-delegation rules (`/run`, `/team`, `/designer` never do direct work)
 4. **core/execution.md** — Execution agent patterns
-5. **core/hooks.md** — Hook system (18 event types, 31 .cjs files, 24 unique registered hooks + 5 dispatched sub-validators)
+5. **core/hooks.md** — Hook system (18 event types, 32 .cjs files, 24 unique registered hooks + 5 dispatched sub-validators)
 6. **core/orchestration.md** — Workflow phases (routing → planning → coordinating → executing → validating)
 7. **core/orchestration-reference.md** — Detailed orchestration schemas
 8. **core/progressive-disclosure.md** — Three-tier SKILL.md loading pattern
@@ -184,7 +184,7 @@ Removed/folded skills (do not appear as current):
 
 ## Hook System Snapshot
 
-`core/hooks.md` is the canonical source. Summary: 18 distinct hook event types registered in `.claude/settings.json`; 31 `.cjs` files under `.claude/hooks/` (24 unique registered hooks + 5 dispatched sub-validators run by `write-edit-dispatch.cjs` + `agent-dispatch.cjs` + `hook-utils.cjs` + `run-hook.cjs` launcher). All hooks use the `createHook()` factory. Events not currently used by cAgents (e.g., `WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `FileChanged`, `Elicitation`, `ElicitationResult`) remain available for user-defined hooks.
+`core/hooks.md` is the canonical source. Summary: 18 distinct hook event types registered in `.claude/settings.json`; 32 `.cjs` files under `.claude/hooks/` (24 unique registered hooks + 5 dispatched sub-validators run by `write-edit-dispatch.cjs` + `agent-dispatch.cjs` + `hook-utils.cjs` + `run-hook.cjs` launcher + `bash-guard-evaluator.cjs` library). All hooks use the `createHook()` factory. Events not currently used by cAgents (e.g., `WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `FileChanged`, `Elicitation`, `ElicitationResult`) remain available for user-defined hooks.
 
 ## Infrastructure References
 

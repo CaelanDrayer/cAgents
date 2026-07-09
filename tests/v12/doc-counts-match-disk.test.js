@@ -4,7 +4,7 @@
  * The cAgents repo has 16+ documentation files claiming various counts:
  *   - 141 active agents across 9 archetypes
  *   - 26/36/12/19/5/8/8/15/12 per-archetype counts
- *   - 31 hook .cjs files
+ *   - 32 hook .cjs files
  *   - 28 unique registered hooks
  *   - 18 hook event types covered
  *   - 17 version-registry slots
@@ -181,10 +181,12 @@ describe('P1-5: validate-counts.sh enforces doc-vs-disk alignment', () => {
     );
     // A2-12: agent-dispatch.cjs consolidated the PreToolUse[Agent] hooks
     // (session-init-gate + model-routing-advisor) into one dispatcher; approval-gate.cjs
-    // was deleted (A2-02) and eval-runner.cjs relocated to scripts/ (A2-10). Net:
-    // 31 .cjs files = 24 unique registered + 5 dispatched sub-validators + 2 utilities.
-    expect(output, 'derive-only should print hook_files=31').toMatch(
-      /hook_files[=:]\s*31/
+    // was deleted (A2-02) and eval-runner.cjs relocated to scripts/ (A2-10).
+    // v12.34.0 added bash-guard-evaluator.cjs, a pure require'd library (3rd utility). Net:
+    // 32 .cjs files = 24 unique registered + 5 dispatched sub-validators + 3 utilities
+    // (hook-utils.cjs, run-hook.cjs, bash-guard-evaluator.cjs).
+    expect(output, 'derive-only should print hook_files=32').toMatch(
+      /hook_files[=:]\s*32/
     );
     expect(output, 'derive-only should print registered_hooks=24').toMatch(
       /registered_hooks[=:]\s*24/

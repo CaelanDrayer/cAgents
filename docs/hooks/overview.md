@@ -4,7 +4,7 @@ This is a high-level summary. The canonical per-hook detail (matchers, inputs, o
 
 ## Architecture
 
-CJS-only hooks built with the `createHook()` factory pattern. **31 `.cjs` files = 24 unique registered hooks across 18 event types + 5 in-process dispatched sub-validators + `hook-utils.cjs` (shared utilities) + `run-hook.cjs` (launcher).**
+CJS-only hooks built with the `createHook()` factory pattern. **32 `.cjs` files = 24 unique registered hooks across 18 event types + 5 in-process dispatched sub-validators + `hook-utils.cjs` (shared utilities) + `run-hook.cjs` (launcher) + `bash-guard-evaluator.cjs` (GuardFall evaluator library `require`'d by `bash-validator.cjs`).**
 
 Two consolidating dispatchers run the sub-validators in-process (one node cold-start instead of one per sub-validator):
 

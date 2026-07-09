@@ -11,6 +11,12 @@
  */
 
 const { createHook } = require('./hook-utils.cjs');
+// WI-2 (session run_bash-guard-evaluator_260708_001): sound tokenize-and-
+// canonicalize evaluator library (pure — NOT a hook). evaluate(rawCommand)
+// returns null (safe) | ask verdict | { deny, reason }. It never throws by
+// contract, but the call site below STILL wraps it fail-closed because
+// createHook's own catch fails OPEN ({continue:true}).
+const { evaluate } = require('./bash-guard-evaluator.cjs');
 
 // Simple string patterns (checked via includes). These are multi-char literal
 // shapes that only ever appear in the dangerous form — substring-matching them
@@ -162,9 +168,36 @@ const HITL_PATTERNS = [
 
 createHook('BashValidator', async (input) => {
   const toolInput = input.tool_input || {};
-  const command = (toolInput.command || '').replace(/\t/g, ' ').replace(/\s+/g, ' ');
 
-  if (!command) return null;
+  // RAW command — the evaluator MUST see the un-collapsed string. Whitespace
+  // collapsing destroys Class B evidence ($IFS field-splitting, tab-obfuscated
+  // tokens), so only the LEGACY belt below uses the collapsed copy.
+  const rawCommand = (toolInput.command || '');
+  if (!rawCommand.trim()) return null;
+
+  // ── STAGE 1: sound evaluator on the RAW command — FAIL-CLOSED ─────────────
+  // evaluate() has its own internal try/catch → deny, but this explicit
+  // try/catch is still required: if evaluate itself is broken (bad require,
+  // unexpected throw), createHook's outer catch would fail OPEN
+  // ({continue:true}), silently disabling the guard. Emulates the fail-closed
+  // gates in write-edit-dispatch.cjs makeDispatchHandler.
+  let evalVerdict = null;
+  try {
+    evalVerdict = evaluate(rawCommand);
+  } catch (e) {
+    console.error('[BashValidator] evaluator threw — fail-closed deny:', e && e.message);
+    return { deny: true, reason: 'bash-guard-evaluator error (fail-closed)' };
+  }
+  // Most-restrictive: an evaluator deny short-circuits immediately.
+  if (evalVerdict && evalVerdict.deny) {
+    console.error(`[BashValidator] BLOCKED (evaluator): ${evalVerdict.reason}`);
+    return evalVerdict;
+  }
+  // An evaluator ask verdict is held until after the legacy BLOCKED (deny)
+  // checks below — deny > ask — then returned before the legacy HITL loop.
+
+  // ── STAGE 2/3: legacy belt (unchanged) on the whitespace-collapsed copy ───
+  const command = rawCommand.replace(/\t/g, ' ').replace(/\s+/g, ' ');
 
   // Check for blocked string patterns
   for (const pattern of BLOCKED_STRINGS) {
@@ -182,7 +215,13 @@ createHook('BashValidator', async (input) => {
     }
   }
 
-  // Check for HITL patterns - escalate to user confirmation via 'ask'
+  // Check for HITL patterns - escalate to user confirmation via 'ask'.
+  // MOST-RESTRICTIVE resolution (deny > ask > null): no deny fired (evaluator
+  // deny and legacy BLOCKED denies returned above). When BOTH the legacy belt
+  // and the evaluator produce an ask, the verdicts are equally restrictive —
+  // the legacy match returns first because its curated safe-alternative
+  // message is the richer user-facing reason. When the legacy belt is silent,
+  // the evaluator's ask is returned below (never silently dropped).
   for (const { pattern, message } of HITL_PATTERNS) {
     if (pattern.test(command)) {
       console.error(`[BashValidator] WARNING: ${message}`);
@@ -194,6 +233,16 @@ createHook('BashValidator', async (input) => {
         }
       };
     }
+  }
+
+  // Legacy belt fully silent: surface the evaluator's ask verdict, if any
+  // (ask > null — an evaluator ask must not be dropped just because no legacy
+  // pattern matched).
+  if (evalVerdict) {
+    const evalReason = evalVerdict.hookSpecificOutput &&
+      evalVerdict.hookSpecificOutput.permissionDecisionReason;
+    console.error(`[BashValidator] WARNING (evaluator): ${evalReason}`);
+    return evalVerdict;
   }
 
   return null;

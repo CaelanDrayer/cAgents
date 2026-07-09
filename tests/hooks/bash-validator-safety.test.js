@@ -217,10 +217,9 @@ describe('bash-validator two-tier safety', () => {
       expect(result.hookSpecificOutput.permissionDecisionReason).toContain('755');
     });
 
-    it('asks for chmod -R 777', () => {
-      const result = runHook('chmod -R 777 /opt/app');
-      expectAsk(result);
-      expect(result.hookSpecificOutput.permissionDecisionReason).toContain('755');
+    // Reconciled: recursive chmod 777 is a spec §5 (line 182) Class-E hard-deny; corpus E-6 pins deny. Was ask pre-evaluator.
+    it('denies chmod -R 777 (recursive world-writable — spec §5 hard-deny)', () => {
+      expectDeny(runHook('chmod -R 777 /opt/app'));
     });
 
     it('asks for chown -R root', () => {

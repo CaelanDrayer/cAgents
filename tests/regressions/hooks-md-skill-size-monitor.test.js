@@ -32,15 +32,16 @@ describe('hooks.md documents skill-size-monitor.cjs', () => {
     expect(content).toContain('skill-size-monitor.cjs');
   });
 
-  it('hooks.md count claim is current (31 .cjs / 24 unique registered + 5 dispatched)', () => {
+  it('hooks.md count claim is current (32 .cjs / 24 unique registered + 5 dispatched)', () => {
     // A2-12 added agent-dispatch.cjs (consolidating the PreToolUse[Agent] hooks
     // session-init-gate + model-routing-advisor into 2 dispatched sub-validators),
     // A2-02 deleted approval-gate.cjs, and A2-10 relocated eval-runner.cjs to scripts/.
-    // Count: 31 .cjs files = 24 unique registered hooks + 5 dispatched sub-validators
+    // v12.34.0 added bash-guard-evaluator.cjs (pure require'd library, 3rd utility).
+    // Count: 32 .cjs files = 24 unique registered hooks + 5 dispatched sub-validators
     // (3 Write|Edit via write-edit-dispatch + 2 Agent via agent-dispatch) + hook-utils.cjs
-    // + run-hook.cjs.
+    // + run-hook.cjs + bash-guard-evaluator.cjs.
     const content = readFileSync(HOOKS_MD, 'utf8');
-    expect(content).toContain('31 .cjs files');
+    expect(content).toContain('32 .cjs files');
     expect(content).toContain('24 unique');
   });
 

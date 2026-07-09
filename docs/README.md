@@ -1,6 +1,6 @@
 # cAgents Documentation
 
-**Version**: 12.33.0
+**Version**: 12.34.0
 **Last Updated**: 2026-06-18
 
 ## Quick Navigation
@@ -30,6 +30,10 @@
 - `TASK_COMPLETION_ENFORCEMENT_SUMMARY.md` - Task completion protocol
 - `TASK_CONSOLIDATION.md` - Task consolidation strategies (40-88% reduction)
 - `WORKFLOW_EVALUATION_FIXES.md` - Workflow issue resolutions
+
+### Security
+- `SECURITY.md` - Vulnerability-reporting policy and security architecture
+- `SECURITY_BASH_GUARD_THREAT_MODEL.md` - Bash guard threat model + GuardFall hardening (tokenize-and-canonicalize evaluator implemented in v12.34.0 as `.claude/hooks/bash-guard-evaluator.cjs`, closing the named Class A–E single-command bypass shapes; §7 residuals remain open)
 
 ### Standards
 - `DOCUMENTATION_STANDARDS.md` - Documentation conventions

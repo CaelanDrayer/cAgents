@@ -10,6 +10,69 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.34.0] - 2026-07-08
+
+GuardFall Bash-guard hardening (session `run_bash-guard-evaluator_260708_001`).
+Minor bump: a new security feature landing (evaluator library + wiring + CI
+gate + doc flips). Threat model + per-class scorecard:
+`docs/SECURITY_BASH_GUARD_THREAT_MODEL.md`.
+
+### Added
+- **`bash-guard-evaluator.cjs` — fail-closed tokenize-and-canonicalize Bash
+  guard (GuardFall hardening).** New pure library at
+  `.claude/hooks/bash-guard-evaluator.cjs` (735 lines, Node built-ins only,
+  zero new deps) that closes the named GuardFall bypass shapes of Classes A–E
+  from the threat model: quote-removal/escape obfuscation (A), `$IFS`
+  field-splitting (B), command substitution (C), decode-pipe variants (D), and
+  the alternative-argv destructive/exfil long tail (E), by reasoning about the
+  resolved argv bash will actually run instead of surface-text denylisting.
+- **35-probe GuardFall regression corpus + CI gate.** New
+  `tests/hooks/fixtures/guardfall-corpus.json` (35 probes across Classes A–E)
+  driven data-first by `tests/hooks/bash-guard-guardfall.test.js` — 21
+  bug-driven probes that were red (ALLOW) against the pre-hardening guard are
+  now green (DENY); 35/35 pass. The corpus pins the per-class claims in the
+  threat model as falsifiable CI assertions.
+
+### Changed
+- **`bash-validator.cjs` wired to the evaluator on the RAW command,
+  fail-closed, legacy belt retained.** The evaluator runs first against the
+  raw (pre-whitespace-collapse) command string — load-bearing for Class B —
+  inside an explicit try/catch that DENIES on evaluator crash (the legacy
+  `createHook` catch fails open; this path does not). The legacy
+  `BLOCKED_STRINGS`/`BLOCKED_REGEXES`/HITL denylist is retained as a
+  Stage-2/3 belt; verdicts combine most-restrictive.
+  - **Grouped-producer pipe-destination coverage (Class-D grouping bypass).**
+    `checkPipeDestination` now looks THROUGH subshell `(...)` and brace-group
+    `{ ...; }` wrapping, so a decoder/fetch producer hidden inside a group and
+    piped into an interpreter still denies — `(base64 -d x)|python3` and
+    `{ base64 -d x; }|sh` were ALLOW/ask pre-fix, now DENY. Benign grouped
+    pipes are unaffected (`(echo hi)|cat` stays allow). The 35-probe corpus
+    verdicts are unchanged; the new grouping cases are pinned as plain `it()`
+    rows in `tests/hooks/bash-guard-guardfall.test.js`.
+- **`$IFS`-obfuscated sensitive-read refinement → deny.** An `$IFS`-obfuscated
+  read of a sensitive credential path (e.g. `cat$IFS~/.aws/credentials`) now
+  maps to DENY: obfuscating a sensitive-path read is treated as exfil intent,
+  not a benign read.
+- **Doc flips.** `docs/SECURITY_BASH_GUARD_THREAT_MODEL.md` flipped from
+  DESIGN (KNOWN-OPEN) to IMPLEMENTED — shipped in v12.34.0, with §4 retained
+  as the falsifiability baseline and §7 residuals still open by construction;
+  `.claude/rules/core/resources/hook-catalog.md` `bash-validator.cjs` entry
+  updated to describe the evaluator-fronted, fail-closed pipeline instead of
+  the KNOWN-OPEN GuardFall limitation.
+- **Hook-file inventory 31 → 32; `lint-hooks.cjs` categorizes the evaluator as
+  a non-hook utility.** `bash-guard-evaluator.cjs` is a library `require`d by
+  `bash-validator.cjs` — neither a registered hook nor a dispatched
+  sub-validator — so it joins `hook-utils.cjs` + `run-hook.cjs` in the
+  linter's non-hook-utilities bucket (32 = 24 registered + 5 dispatched + 3
+  utilities). Human-facing counts updated in `CLAUDE.md`,
+  `.claude/rules/core/hooks.md`, and the `.claude/settings.json` `$comment`.
+
+### Fixed
+- **Stale `chmod -R 777` expectation reconciled in
+  `tests/hooks/bash-validator-safety.test.js`.** The evaluator hard-denies
+  recursive world-writable chmod (Class E); the test previously pinned the
+  legacy HITL `ask` verdict and now asserts `deny`.
+
 ## [12.33.0] - 2026-07-03
 
 Skills + hooks improvement pass spanning correctness, robustness, performance,
