@@ -106,3 +106,7 @@ See @resources/architecture.md for the `architecture` mode full playbook (multi-
 See @resources/reading-experience.md for the `reading-experience` mode full playbook (scene/sequel theory, MRUs, opening strategies, chapter architecture, transition craft, information revelation, narrative momentum).
 
 See @resources/plot.md for the `plot` mode full playbook (plot structures, twist mechanics, subplot craft, midpoint mastery, escalation theory, climax engineering, pacing).
+
+## Final AI-Detection Gate
+
+Before returning any prose or narrative deliverable, run `cagents:ai-writing-editor` (mode=both) as the final AI-detection gate; the tells in `.claude/rules/quality/anti-slop.md` are the reference list.

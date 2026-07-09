@@ -2,7 +2,7 @@
 
 ## Summary
 
-57 agents across 9 builder-role archetypes (developer 8, operator 7, advisor 4, analyst 5, creator 2, writer 3, strategist 3, core 16, leadership 9). Post-v12.20.0 catalog consolidation from 141 (41 routable + 16 core; absorbed agents use mode flags). The per-domain breakdowns below are LEGACY routing-overlay groupings (the 13-domain pre-v11.1.0 layout, kept for routing-keyword continuity); the canonical structure is the 9 archetypes.
+58 agents across 9 builder-role archetypes (developer 8, operator 7, advisor 4, analyst 5, creator 2, writer 4, strategist 3, core 16, leadership 9). Post-v12.20.0 catalog consolidation from 141 (42 routable + 16 core; absorbed agents use mode flags). The per-domain breakdowns below are LEGACY routing-overlay groupings (the 13-domain pre-v11.1.0 layout, kept for routing-keyword continuity); the canonical structure is the 9 archetypes.
 
 ## Engineering (31 agents)
 

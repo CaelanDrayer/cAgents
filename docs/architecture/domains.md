@@ -9,7 +9,7 @@
 | Advisor | `advisor/` | 4 | Legal, health, education, personal (4 branches) |
 | Analyst | `analyst/` | 5 | Data, BI, research, social-science |
 | Creator | `creator/` | 2 | Visual artists, audiovisual creators |
-| Writer | `writer/` | 3 | Narrative, editorial |
+| Writer | `writer/` | 4 | Narrative, editorial |
 | Strategist | `strategist/` | 3 | Product owners, portfolio managers, planners |
 | Core | `core/` | 16 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, validator, etc.) |
 | Leadership | `leadership/` | 9 | C-suite executives (used by /team strategic mode, not directly routable) |

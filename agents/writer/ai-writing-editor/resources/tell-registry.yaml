@@ -1,0 +1,335 @@
+# AI Tell Registry (distilled, machine-readable)
+#
+# This file is a DISTILLED, machine-readable index of AI-writing tells that both
+# ai-writing-editor modes (detect + rewrite) consume. It is NOT a competing list.
+#
+# The SINGLE canonical tell registry is:
+#   .claude/rules/quality/anti-slop.md
+# That file auto-loads for every writer agent (paths: agents/writer/**) and defines
+# the six anti-slop rules, the P0-P3 severity registry, and the B1-B10 hard-bans.
+# When this registry and anti-slop.md disagree, anti-slop.md wins and this file is
+# updated to match. Detection weights/thresholds distilled from the pre-v12.6
+# ai-writing-detector hallmark-patterns.yaml; narrative tics distilled from the
+# magic-city ai_tell_registry.md.
+
+canonical_source: .claude/rules/quality/anti-slop.md
+schema_version: "1"
+distillation_note: >-
+  Machine-readable distillation of anti-slop.md plus detector hallmark patterns.
+  High-signal representatives only; not exhaustive word lists. Consult
+  anti-slop.md for the authoritative fix contract.
+
+severity_scale:
+  P0: "immediate flag, catch every instance"
+  P1: "fix when found"
+  P2: "watch frequency, cap rather than eliminate"
+  P3: "acceptable in moderation; a tell only when universal"
+
+scoring:
+  verdicts:
+    low_ai_likelihood: { max: 0.3 }
+    moderate_ai_likelihood: { min: 0.3, max: 0.6 }
+    high_ai_likelihood: { min: 0.6 }
+  principle: "convergence across categories, not any single flagged word"
+
+# ---------------------------------------------------------------------------
+# 14 detection categories (weights + high-signal representatives)
+# anti_slop refs point back to rules in anti-slop.md
+# ---------------------------------------------------------------------------
+categories:
+  - id: vocabulary_tells
+    weight: 0.04
+    signal: low
+    threshold: "3+ per paragraph OR 5+ per 1000 words"
+    anti_slop: [rule_4, rule_5]
+    patterns: [delve, tapestry, multifaceted, nuanced, landscape, pivotal,
+               testament, resilience, paradigm, cornerstone, realm, myriad,
+               plethora, intricate, underscore, illuminate, foster, harness]
+    sub_signals:
+      significance_inflation:
+        threshold: "3+ per 1000 words"
+        patterns: ["pivotal moment", "testament to", "transformative shift",
+                   "cannot be overstated", "groundbreaking", "game-changing"]
+      promotional_language:
+        threshold: "3+ clustered in non-marketing text"
+        patterns: [vibrant, nestled, breathtaking, world-class, cutting-edge,
+                   state-of-the-art, bustling]
+
+  - id: analytical_academic
+    weight: 0.08
+    signal: medium
+    threshold: "connectives 5+ per 1000 words (human 1-2)"
+    anti_slop: [rule_5]
+    patterns: [furthermore, moreover, consequently, thereby, wherein,
+               notwithstanding, utilize, operationalize, facilitate]
+    composite: "clause_count>2.5 + jargon>5/1000 + advanced_vocab>8/1000"
+
+  - id: punctuation_style
+    weight: 0.08
+    signal: medium
+    anti_slop: [rule_6]
+    tics:
+      - "em dash overuse (>2 per 500 words)"
+      - "100% consistent Oxford commas"
+      - "semicolon absence"
+      - "zero creative punctuation (no fragments/ellipses)"
+      - "colon-then-list ('Here are the key points:')"
+      - "boldface >5% of words; emoji in formal text"
+
+  - id: structural_patterns
+    weight: 0.12
+    signal: strong
+    anti_slop: [p0_section_ending, p1_essay_coda]
+    tics:
+      - "formulaic headers (Introduction/Key Takeaways/Conclusion)"
+      - "list-to-prose ratio >40%"
+      - "three-point-pattern reflex"
+      - "conclusion inflation (long repetitive summary)"
+      - "paragraph-length uniformity (all within 20% of average)"
+
+  - id: ai_phrases
+    weight: 0.06
+    signal: medium
+    threshold: "5+ per 1000 words"
+    anti_slop: [rule_1, rule_6]
+    patterns: ["it's important to note", "it's worth mentioning",
+               "in today's rapidly evolving landscape", "plays a crucial role in",
+               "at the heart of", "serves as a powerful reminder"]
+    sub_signals:
+      copula_avoidance:
+        threshold: "3+ per 1000 words"
+        patterns: ["serves as", "stands as", "acts as", "functions as",
+                   "represents a"]
+      knowledge_cutoff_disclaimer:
+        threshold: "flag ANY (conclusive outside quoted dialogue)"
+        patterns: ["as of my last update", "I don't have access to real-time data",
+                   "based on my training", "as an AI"]
+      superficial_ing_analysis:
+        threshold: "3+ per 1000 words"
+        patterns: ["highlighting the importance of", "underscoring the significance of",
+                   "demonstrating the value of", "illustrating the challenges of"]
+      false_ranges:
+        threshold: "2+ per 1000 words (numeric/temporal ranges exempt)"
+        patterns: ["from sustainability to innovation", "from theory to practice",
+                   "from ideation to implementation"]
+
+  - id: transitions
+    weight: 0.06
+    signal: weak
+    anti_slop: [p1_which_meant, rule_1]
+    performative: ["Let's dive in", "Let's explore", "Moving on to",
+                   "Having established", "With that in mind", "Taking a step back"]
+    mechanical: ["In light of the fact that", "With regard to", "For the purpose of",
+                 "As a consequence of", "By virtue of"]
+    subordinate_bridge_rule: "flag if 3+ paragraphs open 'While X,' / 'Although Y,' / 'Given that Z,'"
+
+  - id: qualifiers_softening
+    weight: 0.06
+    signal: weak
+    anti_slop: [rule_6, b9]
+    patterns: ["it's worth noting", "while this may vary", "to some extent",
+               "one could argue", "generally speaking", "of course",
+               "needless to say", "it goes without saying", "in many ways"]
+    rule: "hedging genuine uncertainty is fine; hedging facts is a tell"
+
+  - id: tone_voice
+    weight: 0.12
+    signal: strong
+    anti_slop: [rule_2, rule_4, p0_voice_bleed]
+    tics:
+      - "diplomatic evasion (never a strong position)"
+      - "impersonal authority (unnamed 'experts agree')"
+      - "formality uniformity, absence of humor"
+      - "excessive both-sides balance, relentless optimism"
+    sub_signals:
+      vague_attribution:
+        threshold: "3+ without specific sourcing"
+        patterns: ["experts argue", "many believe", "studies show",
+                   "research suggests", "scholars note", "it is widely believed"]
+
+  - id: creativity_deficit
+    weight: 0.12
+    signal: strong
+    anti_slop: [rule_4, rule_5]
+    tics:
+      - "generic cliche metaphors"
+      - "low proper-noun density (<0.5/1000)"
+      - "generic names (Emily/Sarah/Alex not Kenji/Olamide)"
+      - "ornamental vocab (myriad of, plethora of, constellation of)"
+      - "emotional flatness, zero colloquialisms"
+    composites:
+      lacks_creativity: "high abstraction + zero literary devices + predictable pairings + low proper nouns + zero cultural refs (3+)"
+      rich_yet_shallow: "TTR>0.70 + emotion<2/1000 + zero colloquialisms + ornamental vocab (2+)"
+    sub_signals:
+      synonym_cycling:
+        threshold: "4+ synonyms for one referent within 500 words"
+        example: "the framework / the system / the platform / the solution"
+
+  - id: mechanical_writing
+    weight: 0.12
+    signal: strong
+    anti_slop: [rule_3, p3_positive_signals]
+    tics:
+      - "sentence uniformity (length variance within 20% of average)"
+      - "grammar perfection (zero fragments/'And'-'But' openers across 1000+ words)"
+      - "zero thought markers across 2000+ words"
+      - "predictable syntax (>85% declarative, <10% non-standard openers)"
+    strongest_composite: "Perfect Grammar (>0.95) + zero hesitations + zero self-corrections + zero informalities"
+
+  - id: repetitive_phrasing
+    weight: 0.08
+    signal: medium
+    anti_slop: [b7, p1_thesis_recursion]
+    tics:
+      - "'not only...but also' overuse"
+      - "semantic redundancy in adjacent sentences"
+      - "echo phrasing (paragraph ends on variant of its opening)"
+      - "conclusion-body verbatim overlap"
+
+  - id: speculative_focus
+    weight: 0.06
+    signal: weak
+    anti_slop: [rule_4, rule_6]
+    patterns: ["might", "could potentially", "perhaps", "arguably",
+               "time will tell", "remains to be seen", "has the potential to",
+               "is poised to"]
+    rule: ">30% future-oriented sentences flags AI"
+
+  - id: conflicting_subtext
+    weight: 0.10
+    signal: strong
+    anti_slop: [rule_4, b4]
+    tics:
+      - "backhanded praise ('while impressive, this falls short')"
+      - "tone-content mismatch"
+      - "compliment-criticism sandwich (author position unlocatable)"
+      - "adjacent contradiction"
+
+  - id: detached_warmth
+    weight: 0.06
+    signal: medium
+    anti_slop: [rule_1, rule_6]
+    tics:
+      - "performative empathy ('understandably', 'and that's okay')"
+      - "false intimacy ('we all know', 'as we can all agree')"
+      - "hollow encouragement ('keep pushing forward', 'you've got this')"
+    sub_signals:
+      chatbot_artifacts:
+        threshold: "flag ANY outside quoted dialogue"
+        patterns: ["I hope this helps", "Let me know if you need anything",
+                   "Great question", "Let me walk you through", "Does that make sense",
+                   "Happy to help", "Feel free to ask"]
+
+# ---------------------------------------------------------------------------
+# 5 cross-category signals (strongest statistical evidence)
+# ---------------------------------------------------------------------------
+cross_category_signals:
+  - id: perplexity
+    weight: 0.08
+    ai_threshold: "<0.30"
+    human_range: "0.40-0.70"
+    measures: "token-level predictability"
+  - id: burstiness
+    weight: 0.08
+    ai_threshold: "<0.25"
+    human_range: "0.40-0.70 (>0.50 strong human)"
+    measures: "variance in complexity across sections"
+  - id: lix_variance
+    weight: 0.06
+    ai_threshold: "low"
+    human_target: "stdev >8.0"
+    measures: "readability spread across sections"
+  - id: linear_argumentation
+    measures: "absence of counter-arguments / self-corrections / questions"
+  - id: analogy_originality
+    measures: "all-cliche metaphor vs idiosyncratic comparison"
+
+named_composite:
+  id: low_perplexity_low_burstiness
+  note: "uniform + predictable prose; most reliable single fingerprint of generation"
+
+# ---------------------------------------------------------------------------
+# Narrative tics (distilled from magic-city ai_tell_registry.md)
+# grep-checkable; primarily for creative/narrative prose
+# ---------------------------------------------------------------------------
+narrative_tics:
+  - id: which_meant_opener
+    severity: P1
+    grep: "Which meant"
+    fix: "vary causal connectors or drop the connector"
+  - id: i_filed
+    severity: P1
+    grep: "I filed (this|that|it)"
+    fix: "vary mental-processing metaphor or cut the beat"
+  - id: expression_of_someone_who
+    severity: P1
+    grep: "the expression of someone who"
+    fix: "describe the actual expression"
+  - id: gap_between
+    severity: P1
+    grep: "the gap between"
+    fix: "describe the specific contrast concretely"
+  - id: negative_definition_stacking
+    severity: P1
+    grep: "Not [A-Z][^.]+\\. Not [A-Z]"
+    fix: "state what it IS directly"
+  - id: section_ending_resolution
+    severity: P0
+    detection: manual
+    fix: "let 30-40% of sections end mid-tension or unresolved"
+  - id: voice_bleed
+    severity: P0
+    detection: manual
+    fix: "give each POV a distinct vocabulary and cadence"
+  - id: something_about
+    severity: P2
+    grep: "something (about|in) (the|how|what)"
+    fix: "name what the character actually notices"
+  - id: without_gerund
+    severity: P2
+    grep: "without (looking|waiting|thinking|asking)"
+    fix: "show what the character does, not what they don't"
+  - id: weight_of
+    severity: P2
+    grep: "(weight|gravity|significance) of (that|this|the|it)"
+    fix: "show the impact, not the abstraction"
+  - id: rhetorical_question_cascade
+    severity: P2
+    detection: "3+ consecutive '?'"
+    fix: "cap at 2-3 per chapter; never 3+ in a row"
+
+# ---------------------------------------------------------------------------
+# Hard-banned constructions B1-B10 (from anti-slop.md; target = 0 each)
+# ---------------------------------------------------------------------------
+hard_bans:
+  - { id: B1, grep: "I filed (it|this|that)", target: 0 }
+  - { id: B2, grep: "I sat with (this|that)", target: 0 }
+  - { id: B3, grep: "expression of someone who", target: 0 }
+  - { id: B4, grep: "it.s not .{1,40} it.s", target: 0 }
+  - { id: B5, detection: "essay-coda / reflective-thesis ending (15+ line close)", target: 0 }
+  - { id: B6, detection: "arc-metadata ('this was a turning point', 'everything changed')", target: 0 }
+  - { id: B7, detection: "tricolon/anaphora clusters (3+ parallel openers)", target: 0 }
+  - { id: B8, detection: "rhetorical-question cascade (3+ in a row)", target: 0 }
+  - { id: B9, grep: "it is worth noting|it bears mentioning|in many ways", target: 0 }
+  - { id: B10, detection: "objectless transitive verbs", target: 0 }
+
+# ---------------------------------------------------------------------------
+# Positive signals to protect (their ABSENCE flags AI) - P3
+# ---------------------------------------------------------------------------
+protect_signals:
+  - "semicolons: 3+ per chapter (ZERO is a known tell)"
+  - "contractions present throughout"
+  - "2-3 rhetorical questions per chapter"
+  - "at least one register shift per chapter"
+  - "em dashes present (0 is a tell)"
+
+# ---------------------------------------------------------------------------
+# anti-slop.md rule map (the six canonical fix rules)
+# ---------------------------------------------------------------------------
+anti_slop_rules:
+  rule_1: "Cut filler phrases (throat-clearing, emphasis crutches, adverbs)"
+  rule_2: "Ban false agency (name the human/agent who acts)"
+  rule_3: "Use active voice (named subject performs the action)"
+  rule_4: "Be specific, not vague (concrete facts, numbers, evidence)"
+  rule_5: "Ban business jargon (plain language)"
+  rule_6: "Trust the reader (no meta-commentary, no reflexive hedging)"

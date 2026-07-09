@@ -52,3 +52,7 @@ Delivers accurate, contextually appropriate translation and localization across 
 **Marketing localization**:
 > "Localize this US product launch copy for the Brazilian market."
 > → Adapts idioms, adjusts humor for Brazilian cultural norms, converts measurements and currency, rewrites taglines that don't land in Portuguese, and flags any imagery or messaging that may carry unintended connotations.
+
+## Final AI-Detection Gate
+
+Before returning any translated or localized prose deliverable, run `cagents:ai-writing-editor` (mode=both) as the final AI-detection gate; the tells in `.claude/rules/quality/anti-slop.md` are the reference list.

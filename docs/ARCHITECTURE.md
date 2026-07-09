@@ -75,12 +75,12 @@ cAgents is a universal multi-domain agent system with controller-centric coordin
 | **Advisor** | `advisor/` | 4 | Legal, health, education, personal (4 branches) |
 | **Analyst** | `analyst/` | 5 | Data, BI, research, social-science |
 | **Creator** | `creator/` | 2 | Visual artists, audiovisual creators |
-| **Writer** | `writer/` | 3 | Narrative, editorial |
+| **Writer** | `writer/` | 4 | Narrative, editorial |
 | **Strategist** | `strategist/` | 3 | Product owners, portfolio managers, planners |
 | **Core** | `core/` | 16 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, etc.) |
 | **Leadership** | `leadership/` | 9 | C-suite executives (used by /team strategic mode, not directly routable) |
 
-**Total: 57 agents across 9 archetypes (post-v12.20.0 catalog consolidation — 41 routable + 16 core)**
+**Total: 58 agents across 9 archetypes (post-v12.20.0 catalog consolidation — 42 routable + 16 core)**
 
 ### Legacy domain overlay (config-only)
 

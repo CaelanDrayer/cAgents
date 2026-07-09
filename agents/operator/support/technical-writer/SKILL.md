@@ -71,3 +71,7 @@ Documentation specialist for technical content.
 - **Escalate**: Major restructuring, resource needs
 
 See @resources/writing-frameworks.md for style guide and templates.
+
+## Final AI-Detection Gate
+
+Before returning any documentation deliverable, run `cagents:ai-writing-editor` (mode=both) as the final AI-detection gate; the tells in `.claude/rules/quality/anti-slop.md` are the reference list.

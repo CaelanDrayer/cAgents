@@ -6,8 +6,8 @@ Core architecture and development guidance for cAgents.
 
 cAgents is a **standalone, domain-agnostic** multi-agent orchestration plugin:
 
-- **57 agents** across 9 builder-role archetypes (developer, operator, advisor,
-  analyst, creator, writer, strategist, core, leadership) — 41 routable + 16
+- **58 agents** across 9 builder-role archetypes (developer, operator, advisor,
+  analyst, creator, writer, strategist, core, leadership) — 42 routable + 16
   core. Pre-v12 agent names resolve via `scripts/migration/v12-aliases.yaml`.
 - **5-state event-driven pipeline**: `INIT -> ORCHESTRATED -> PLANNED ->
   COORDINATED -> VALIDATED` (decomposition + prompt-assembly folded into the
@@ -104,7 +104,7 @@ Total: 40 .md = 34 top-level across 6 categories + 2 READMEs (root + playbooks/)
 - **Tier 2**: Controllers (coordinate via batch delegation)
 - **Tier 3**: Execution agents (implement work items)
 - **Tier 4**: Support agents (foundational services)
-- **Total**: 57 agents across 9 builder-role archetypes (post-v12.20.0 catalog consolidation; 84 absorbed agents collapsed into 41 routable survivors via mode flags; back-compat preserved via `scripts/migration/v12-aliases.yaml`)
+- **Total**: 58 agents across 9 builder-role archetypes (post-v12.20.0 catalog consolidation; 84 absorbed agents collapsed into 41 routable survivors via mode flags; back-compat preserved via `scripts/migration/v12-aliases.yaml`)
 - **Execution**: Event-driven pipeline (5-state machine) with two execution paths (fast/standard), revision routing, reviewer loops
 
 **Canonical structure (v12.0.0) — 9 archetypes**:
@@ -115,7 +115,7 @@ Total: 40 .md = 34 top-level across 6 categories + 2 READMEs (root + playbooks/)
 | **Advisor** | `advisor/` | 4 | Legal, health, education, personal (4 branches) |
 | **Analyst** | `analyst/` | 5 | Data, BI, research, social-science |
 | **Creator** | `creator/` | 2 | Visual artists, audiovisual creators |
-| **Writer** | `writer/` | 3 | Narrative, editorial |
+| **Writer** | `writer/` | 4 | Narrative, editorial |
 | **Strategist** | `strategist/` | 3 | Product owners, portfolio managers, planners |
 | **Core** | `core/` | 16 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, etc.) |
 | **Leadership** | `leadership/` | 9 | C-suite executives (used by /team strategic mode, not directly routable) |
@@ -396,7 +396,7 @@ cAgents/
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (40 files: 34 top-level across 6 categories + 2 READMEs (root + playbooks/) + 4 in resources/)
 |   +-- settings.json        # Hook registration + permissions + env
-+-- agents/                  # All 57 agents (v12.20.0+ catalog consolidation — 41 routable + 16 core)
++-- agents/                  # All 58 agents (v12.20.0+ catalog consolidation — 42 routable + 16 core)
 |   +-- developer/           # Developer archetype (8 agents — backend/frontend/fullstack/infrastructure/quality)
 |   +-- operator/            # Operator archetype (7 agents — support/business-ops/people-ops/marketing-sales/content)
 |   +-- advisor/             # Advisor archetype (4 agents — legal/health/education/personal)
@@ -426,7 +426,7 @@ cAgents/
 **cAgents is standalone. It MUST NOT depend on MCP servers — neither bundled nor consumed.**
 
 This is a load-bearing constraint, not a default. The plugin's value is that it works
-out of the box: install cAgents, get 57 agents and 4 skills with zero external service
+out of the box: install cAgents, get 58 agents and 4 skills with zero external service
 configuration. Coupling any agent or skill to an MCP server (the user must run a Postgres
 MCP, configure a GitHub MCP, etc.) breaks that contract — agents start failing in
 environments where the server isn't present, and the plugin's "install and go" promise
@@ -481,7 +481,7 @@ cAgents is distributed as a Claude Code plugin. See `.claude-plugin/plugin.json`
 ```
 
 **Key Manifest Fields**:
-- `agents`: Array of SKILL.md paths (57 agents registered post-v12.20.0)
+- `agents`: Array of SKILL.md paths (58 agents registered post-v12.20.0)
 - `skills`: Path to skills directory (`.claude/skills/`)
 - `hooks`: Path to settings.json for hook registration
 - `settings.json`: Default settings applied when plugin loads (under `agent` key for subagent defaults)
@@ -548,7 +548,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking and
 
 **Skills**: `/run`, `/team`, `/designer`, `/helper` (in `.claude/skills/`; V11.0 removed `/review`, `/optimize`, `/context`, `/debug`; v12.1.2 folded `/improve` into `/run` via keyword router; v12.2.0 removed `/org` and folded cross-domain coordination into `/team` strategic mode — see `docs/MIGRATION-V11.md` and CHANGELOG entries v12.1.2 / v12.2.0)
 **Built-in**: `/memory`, `/init` (Claude Code native)
-**Agents**: 57 total across 9 archetypes (developer 8, operator 7, advisor 4, analyst 5, creator 2, writer 3, strategist 3, core 16, leadership 9) — post-v12.20.0 catalog consolidation (41 routable + 16 core; 84 absorbed agents use mode flags)
+**Agents**: 58 total across 9 archetypes (developer 8, operator 7, advisor 4, analyst 5, creator 2, writer 4, strategist 3, core 16, leadership 9) — post-v12.20.0 catalog consolidation (42 routable + 16 core; 84 absorbed agents use mode flags)
 **Domain Overlay (legacy routing/config only)**: 2 dirs (`people/`, `shared/`) hold `config/domain_overrides.yaml` — no SKILL.md files. The other 11 legacy domains (engineering, creative, business, growth, service, science, health, education, personal, arts, trades) were deleted in v12 W4.2 and consolidated into `cagents-memory/_system/config/routing.yaml`.
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `people/config/domain_overrides.yaml`, `shared/config/domain_overrides.yaml`, `cagents-memory/_system/config/routing.yaml`, `cagents-memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (internal-only session YAML contract since v12.6.0)
 **Hooks**: 32 .cjs files = 24 unique registered hooks + 5 dispatched sub-validators (run by write-edit-dispatch.cjs + agent-dispatch.cjs) + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs library
@@ -557,7 +557,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking and
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: 5-state pipeline with two execution paths (fast/standard — `fast` skips the orchestrator for tier-2-clear requests), revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 1395+ Vitest tests across 168+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.34.0
+**Version**: 12.35.0
 
 ## Troubleshooting
 
