@@ -87,3 +87,7 @@ See @resources/scholarship-mode-playbooks.md for per-mode mechanics (OpenAlex cu
 See @resources/citation-graph.md for the citation-graph mode full playbook.
 See @resources/methodology.md for the methodology mode full playbook.
 See @resources/science-coord.md for the science-coord mode full playbook.
+
+## Final AI-Detection Gate
+
+Before returning any academic prose, literature review, or written research deliverable, run `cagents:ai-writing-editor` (mode=both) as the final AI-detection gate; the tells in `.claude/rules/quality/anti-slop.md` are the reference list.
