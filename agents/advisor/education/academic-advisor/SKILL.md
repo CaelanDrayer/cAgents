@@ -39,3 +39,7 @@ Fallback: `research`.
 
 See @resources/research.md for the research mode full playbook.
 See @resources/tutor.md for the tutor mode full playbook.
+
+## Final AI-Detection Gate
+
+Before returning any academic writing or research-writing deliverable, run `cagents:ai-writing-editor` (mode=both) as the final AI-detection gate; the tells in `.claude/rules/quality/anti-slop.md` are the reference list.

@@ -10,6 +10,17 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.35.1] - 2026-07-09
+
+### Changed
+- Extend the `ai-writing-editor` final-gate directive to the two academic-prose
+  agents (`analyst/scholar`, `advisor/education/academic-advisor`). Both now
+  carry the same `## Final AI-Detection Gate` line the five writer agents gained
+  in v12.35.0 — run `cagents:ai-writing-editor` (mode=both) before returning any
+  academic prose / research-writing deliverable, with `.claude/rules/quality/anti-slop.md`
+  as the reference tell list. One gate line per agent (both are consolidated
+  mode-flagged agents; a single line covers their prose output).
+
 ## [12.35.0] - 2026-07-09
 
 Consolidated AI-writing detection/humanization gate for the writer archetype
