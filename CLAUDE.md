@@ -15,11 +15,8 @@ cAgents is a **standalone, domain-agnostic** multi-agent orchestration plugin:
 - **4 user skills**: `/run`, `/team`, `/designer`, `/helper`.
 - **Zero external-service dependencies** — see § Standalone Contract.
 
-For the v12.0.0 consolidation history (pipeline 7->5 collapse, the
-engineering-manager->tech-lead and architecture-reviewer->`architect --review`
-controller merges, marketing-sales 38->25 absorption, vp-engineering folded
-into `cto`, and the 251->238 catalog reduction) and all later release notes,
-see `CHANGELOG.md` and `docs/RELEASE_NOTES.md`.
+For v12 consolidation history and all later release notes, see
+`CHANGELOG.md` and `docs/RELEASE_NOTES.md`.
 
 ## Table of Contents
 
@@ -52,12 +49,12 @@ see `CHANGELOG.md` and `docs/RELEASE_NOTES.md`.
 - `docs/` - Project documentation (65 `.md` files recursive; 41 top-level entries — including ARCHITECTURE.md, SKILLS.md, TEAM_MODE.md, RELEASE_NOTES.md, etc.)
 - `archive/docs/` - Historical documentation (local only)
 - `cagents-memory/` - Runtime state (excluded from git)
-- `.claude/skills/run/reference/session-schema.md` - Session YAML contract (internal-only since v12.6.0)
+- `.claude/skills/run/reference/session-schema.md` - Session YAML contract (internal-only)
 - `docs/WORKFLOW_AGENT_INTERACTIONS.md` - Agent interaction patterns
 
 ## Version Management
 
-**CRITICAL: Always bump version on commits.** Run `scripts/sync-versions.sh <version>` to update all registry locations. See @.claude/rules/core/version-registry.md for the canonical list (16 locations as of v12.6.0; was 18 in V11.0, 21 historically — slots removed as /improve and /org skills were folded/removed).
+**CRITICAL: Always bump version on commits.** Run `scripts/sync-versions.sh <version>` to update all registry locations. See @.claude/rules/core/version-registry.md for the canonical list (16 locations).
 
 **Version Format**: `major.minor.patch` — patch (bug fix), minor (feature), major (breaking)
 
@@ -100,14 +97,14 @@ Total: 40 .md = 34 top-level across 6 categories + 2 READMEs (root + playbooks/)
 **Key Features**: CSV Task Inventory, Batch Delegation (60-80% context reduction), Checkpoint/Resume, Aggressive Decomposition (30+ work items from simple requests), Controller-Centric coordination
 
 **Architecture**: Controller-Centric Coordination with Task Inventory
-- **Tier 1**: 16 core infrastructure agents (v12.0.0: task-decomposer + prompt-engineer folded into planner; v12.20.0: wave-reviewer + coord-log-writer added)
+- **Tier 1**: 16 core infrastructure agents
 - **Tier 2**: Controllers (coordinate via batch delegation)
 - **Tier 3**: Execution agents (implement work items)
 - **Tier 4**: Support agents (foundational services)
-- **Total**: 58 agents across 9 builder-role archetypes (post-v12.20.0 catalog consolidation; 84 absorbed agents collapsed into 41 routable survivors via mode flags; back-compat preserved via `scripts/migration/v12-aliases.yaml`)
+- **Total**: 58 agents across 9 builder-role archetypes (back-compat preserved via `scripts/migration/v12-aliases.yaml`)
 - **Execution**: Event-driven pipeline (5-state machine) with two execution paths (fast/standard), revision routing, reviewer loops
 
-**Canonical structure (v12.0.0) — 9 archetypes**:
+**Canonical structure — 9 archetypes**:
 | Archetype | Dir | Agents | Capability |
 |-----------|-----|-------:|------------|
 | **Developer** | `developer/` | 8 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
@@ -120,9 +117,9 @@ Total: 40 .md = 34 top-level across 6 categories + 2 READMEs (root + playbooks/)
 | **Core** | `core/` | 16 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, etc.) |
 | **Leadership** | `leadership/` | 9 | C-suite executives (used by /team strategic mode, not directly routable) |
 
-**Domain overlay (legacy — routing/config only)**: 2 legacy domain dirs (`people/`, `shared/`) survive on disk **without** SKILL.md files; they hold `config/domain_overrides.yaml` with router keywords + controller catalogs that the planner still consumes. The other 11 legacy dirs (`engineering/`, `creative/`, `business/`, `growth/`, `service/`, `science/`, `health/`, `education/`, `personal/`, `arts/`, `trades/`) were deleted in v12 W4.2 and their router keywords + controller catalogs consolidated into `cagents-memory/_system/config/routing.yaml`. Do NOT delete `people/` or `shared/` — they are not orphans.
+**Domain overlay (legacy — routing/config only)**: 2 legacy domain dirs (`people/`, `shared/`) survive on disk **without** SKILL.md files; they hold `config/domain_overrides.yaml` with router keywords + controller catalogs that the planner still consumes. The other 11 legacy dirs (`engineering/`, `creative/`, `business/`, `growth/`, `service/`, `science/`, `health/`, `education/`, `personal/`, `arts/`, `trades/`) were deleted and their router keywords + controller catalogs consolidated into `cagents-memory/_system/config/routing.yaml`. Do NOT delete `people/` or `shared/` — they are not orphans.
 
-**Config**: `people/` and `shared/` keep their own `{domain}/config/domain_overrides.yaml`. The 11 deleted legacy domains live in `cagents-memory/_system/config/routing.yaml` under `domains.<name>` (with the same `controller_catalog` + `router.keywords` schema, just nested). Two archetype roots — `core/` and `leadership/` — also ship `config/domain_overrides.yaml` files (used for pipeline/C-suite routing tables), so `scripts/ci/validate-agents.sh` now reports 4 files checked (2 legacy retained + 2 archetype-root). The pre-v12 layout had 13 legacy domain_overrides.yaml files; v12 W4.2 consolidated 11 of them into the single _system routing.yaml.
+**Config**: `people/` and `shared/` keep their own `{domain}/config/domain_overrides.yaml`. The 11 deleted legacy domains live in `cagents-memory/_system/config/routing.yaml` under `domains.<name>` (with the same `controller_catalog` + `router.keywords` schema, just nested). Two archetype roots — `core/` and `leadership/` — also ship `config/domain_overrides.yaml` files (used for pipeline/C-suite routing tables), so `scripts/ci/validate-agents.sh` now reports 4 files checked (2 legacy retained + 2 archetype-root).
 
 ## CRITICAL: Aggressive Delegation
 
@@ -134,20 +131,20 @@ Total: 40 .md = 34 top-level across 6 categories + 2 READMEs (root + playbooks/)
 
 **Minimum Tier**: Always tier 2+ (controller coordination required). ALL requests use agents. NO exceptions. Former tier 0/1 automatically upgraded.
 
-**Delegation Chain** (V9.23 event-driven pipeline):
+**Delegation Chain** (event-driven pipeline):
 ```
 /run (state machine loop -- level 0)
   +-> orchestrator (level 1)    -> enriched_context.yaml
-  +-> planner (level 1)         -> plan.yaml + work_items.yaml (decomposition + prompt assembly absorbed into planner in v12.0.0)
+  +-> planner (level 1)         -> plan.yaml + work_items.yaml
   +-> controller (level 1)
        +-> executor (level 2)   -> implementation
        +-> reviewer (level 2)   -> review_report.yaml
   +-> validator (level 1)       -> validation_report.yaml (PASS/FAIL/REVISE)
 ```
 
-V9.23: `/run` is now a config-driven state machine reading `pipeline_config.yaml`. Each enrichment agent runs sequentially at level 1. Controllers spawn executors and reviewers at level 2 with internal reviewer revision loops (max 2 internal rounds, lowered from 3 in LP-27 — see controllers.md). The validator outputs PASS/FAIL/REVISE to drive the outer revision routing (max 3 total cycles in v12.0.0+). The standalone `prompt-engineer` and `task-decomposer` agents were folded into `planner` in v12.0.0; the planner now produces decomposition and assembles delegation prompts inline, and controllers fall back to standard delegation prompts when the planner skips prompt assembly.
+`/run` is a config-driven state machine reading `pipeline_config.yaml`. Each enrichment agent runs sequentially at level 1. Controllers spawn executors and reviewers at level 2 with internal reviewer revision loops (max 2 internal rounds — see controllers.md). The validator outputs PASS/FAIL/REVISE to drive the outer revision routing (max 3 total cycles). The planner produces decomposition and assembles delegation prompts inline; controllers fall back to standard delegation prompts when the planner skips prompt assembly.
 
-**Enrichment Agents** (level 1): orchestrator, planner (planner absorbs decomposition + delegation-prompt assembly post-v12.0.0)
+**Enrichment Agents** (level 1): orchestrator, planner (absorbs decomposition + delegation-prompt assembly)
 **Coordination Agents** (level 1, ONLY coordinate): controllers (tech-lead, architect, etc.)
 **Execution Agents** (level 2, DO the work): backend-developer, frontend-developer, copywriter, qa-tester, etc.
 **Review Agents** (level 2, via controller): reviewer evaluates against acceptance criteria
@@ -171,13 +168,13 @@ Workflows proceed automatically through phases WITHOUT asking permission. See `d
 
 **Orchestration** (4): `trigger` (entry point), `orchestrator` (context enrichment), `hitl` (human escalation), `optimizer` (universal optimization)
 
-**Team** (3): `team` (team init + lead wrapper used by `/team` skill loop), `team-lead` (controller-style delegate-mode lead pattern), `wave-reviewer` (validates /team wave gates). The pre-v12.0.0 `team-trigger` and `team-lead-adapter` standalone agents were removed when the `/team` skill loop absorbed their initialization/wrapper work inline.
+**Team** (3): `team` (team init + lead wrapper used by `/team` skill loop), `team-lead` (controller-style delegate-mode lead pattern), `wave-reviewer` (validates /team wave gates).
 
-**Universal Workflow** (5): `router` (tier 2-4 classification), `planner` (decomposition + controller selection + delegation-prompt assembly; absorbs the standalone `task-decomposer` and `prompt-engineer` agents post-v12.0.0), `executor` (monitor controllers), `validator` (quality gates with PASS/FAIL/REVISE), `self-correct` (adaptive recovery)
+**Universal Workflow** (5): `router` (tier 2-4 classification), `planner` (decomposition + controller selection + delegation-prompt assembly), `executor` (monitor controllers), `validator` (quality gates with PASS/FAIL/REVISE), `self-correct` (adaptive recovery)
 
 **Review** (1): `reviewer` (PASS/REVISE verdict against acceptance criteria; spawned by controllers and team leads)
 
-**Task Management** (2): `task-state` (CSV-based state, 60-80% savings; absorbs task-merger in v12.20.0) — `task-decomposer` was absorbed into `planner` in v12.0.0
+**Task Management** (2): `task-state` (CSV-based state, 60-80% savings; includes task-merge mode)
 
 **Coordination** (1): `coordinator` (reusable coordinator for small domains — health, education, personal, arts, trades)
 
@@ -250,13 +247,12 @@ ALL workflows use routing -> planning -> **coordinating** -> executing -> valida
 ```
 User Request -> /run (state machine loop, reads pipeline_config.yaml)
   INIT -> orchestrator -> enriched_context.yaml
-  ORCHESTRATED -> planner -> plan.yaml + work_items.yaml (planner absorbs decomposition + delegation-prompt assembly in v12.0.0)
+  ORCHESTRATED -> planner -> plan.yaml + work_items.yaml (planner absorbs decomposition + delegation-prompt assembly)
   PLANNED -> controller -> coordination_log.yaml (with executor+reviewer loops)
-  Note: Pre-v12.0.0 state machine had DECOMPOSED and PROMPTS_READY stages (task-decomposer + prompt-engineer). v12.0.0 collapsed 7 states to 5.
   COORDINATED -> validator -> validation_report.yaml
   VALIDATED -> Complete
-  FAIL -> back to PLANNED (re-run controller, max 3 cycles in v12.0.0+)
-  REVISE -> back to PLANNED (re-plan, max 3 cycles in v12.0.0+)
+  FAIL -> back to PLANNED (re-run controller, max 3 cycles)
+  REVISE -> back to PLANNED (re-plan, max 3 cycles)
 ```
 
 **Subagent Architecture**: Agents delegate to specialists via Agent tool. Pattern: "Use {subagent} to {task}". Up to 50 concurrent. See `docs/WORKFLOW_AGENT_INTERACTIONS.md`.
@@ -315,15 +311,15 @@ TaskUpdate({ taskId: "N", status: "completed" })
 
 | Skill | Context | Agent | Description |
 |-------|---------|-------|-------------|
-| `/run` | `none` | `true` | Execute any task through auto-routed controller and specialist agents (passthroughs: `run context ...`, `--mode debug`; v12.1.2 keyword router: `run improve|review|audit|optimize ...` triggers improve modes) |
-| `/team` | `fork` | `true` | Parallel multi-agent execution with wave-based quality gates; auto-enables strategic mode for cross-domain requests (v12.2.0+) |
+| `/run` | `none` | `true` | Execute any task through auto-routed controller and specialist agents (passthroughs: `run context ...`, `--mode debug`; keyword router: `run improve|review|audit|optimize ...` triggers improve modes) |
+| `/team` | `fork` | `true` | Parallel multi-agent execution with wave-based quality gates; auto-enables strategic mode for cross-domain requests |
 | `/designer` | `none` | `false` | Interactive design exploration with guided Q&A before building |
 | `/helper` | `none` | `false` | Command guide that recommends the right skill for your task |
 
 **Built-in**: `/memory` (view/edit memory files), `/init` (bootstrap project CLAUDE.md)
 
-### /run - Event-Driven Pipeline Engine (V9.23, V9.27)
-State machine loop reading pipeline_config.yaml. Sequential enrichment (orchestrator, planner — the planner absorbed `task-decomposer` and `prompt-engineer` in v12.0.0 and now produces decomposition + delegation prompts inline), nested execution (controller + executor + reviewer), revision routing (FAIL/REVISE). V9.27: Adaptive pipeline (tier 2 fast path skips orchestrator), domain/tier confirmation display, execution analytics (`--analytics`). v12.0.0 sessions no longer emit `delegation_prompts.yaml`; controllers fall back to standard delegation prompts when the planner skips prompt assembly.
+### /run - Event-Driven Pipeline Engine
+State machine loop reading pipeline_config.yaml. Sequential enrichment (orchestrator, planner — the planner produces decomposition + delegation prompts inline), nested execution (controller + executor + reviewer), revision routing (FAIL/REVISE). Adaptive pipeline (tier 2 fast path skips orchestrator), domain/tier confirmation display, execution analytics (`--analytics`). Controllers fall back to standard delegation prompts when the planner skips prompt assembly.
 ```bash
 /run Fix auth bug              # -> Engineering (tier 2: tech-lead)
 /run Write fantasy story       # -> Creative (tier 2: narrative-director)
@@ -332,8 +328,8 @@ State machine loop reading pipeline_config.yaml. Sequential enrichment (orchestr
 ```
 Skill: `.claude/skills/run/SKILL.md` + `reference/`
 
-### /team - N-Wave Parallel Team Execution (V9.23, V9.27, v12.2.0)
-N-wave pipeline: **Wave 0 (lead: enrichment) -> Wave 1..N-1 (teammates: per-wave spawn, parallel within wave) -> Wave N (lead: integration)**. Maximizes waves for quality gating. Each wave spawns fresh teammates, validates GATE, then proceeds. 40-60% execution time reduction for tier 3+. V9.27: Automatic teammate failure recovery (retry + simplify + escalate), GATE validation standards per wave type, partial results on failure. **v12.2.0 Strategic Mode**: For cross-domain requests (`router.domain_count >= 2`), /team auto-enables strategic mode — Wave 0/1 = C-suite analysis (9 leadership agents), Wave 2 = brief synthesis, Wave 3..N = per-domain dispatch. Override with `--strategic` / `--no-strategic`. See `.claude/skills/team/reference/strategic-mode.md`.
+### /team - N-Wave Parallel Team Execution
+N-wave pipeline: **Wave 0 (lead: enrichment) -> Wave 1..N-1 (teammates: per-wave spawn, parallel within wave) -> Wave N (lead: integration)**. Maximizes waves for quality gating. Each wave spawns fresh teammates, validates GATE, then proceeds. 40-60% execution time reduction for tier 3+. Automatic teammate failure recovery (retry + simplify + escalate), GATE validation standards per wave type, partial results on failure. **Strategic Mode**: For cross-domain requests (`router.domain_count >= 2`), /team auto-enables strategic mode — Wave 0/1 = C-suite analysis (9 leadership agents), Wave 2 = brief synthesis, Wave 3..N = per-domain dispatch. Override with `--strategic` / `--no-strategic`. See `.claude/skills/team/reference/strategic-mode.md`.
 ```bash
 /team Implement OAuth2 authentication           # Single-domain team execution (5-7 waves)
 /team Launch new product with campaign          # Cross-domain: auto-strategic mode (eng + business + people)
@@ -349,8 +345,8 @@ Each skill has `SKILL.md` + `reference/` directory with detailed docs. Use `/hel
 
 Highlights:
 - **/designer**: Subagent-delegated question preparation (research agents pre-build context-rich question lists per phase), inline controller pattern (select, reorder, skip, adapt questions), phase-overlap (next-phase research begins during current phase), follow-up research dispatch, graceful fallback, 28 behavioral rules
-- **Improve modes inside /run (v12.1.2)**: `/improve` was folded into `/run` via a first-word keyword router. `/run improve X` -> `--mode full`. `/run review X` or `/run audit X` -> `--mode review`. `/run optimize X` -> `--mode optimize`. Review baselines (`--baseline`, `--suppress`), benchmark integration (`--benchmark`), pattern-effectiveness tracking, and atomic rollback helper remain available as flags on `/run`. See `.claude/skills/run/reference/improve-mode.md` for the keyword router contract
-- **/helper**: Troubleshooting mode (`--troubleshoot`), updated comparison matrices, V11.0 migration catalog, v12.2.0 strategic-mode migration guidance (`/org X` → `/team X`)
+- **Improve modes inside /run**: `/improve` is folded into `/run` via a first-word keyword router. `/run improve X` -> `--mode full`. `/run review X` or `/run audit X` -> `--mode review`. `/run optimize X` -> `--mode optimize`. Review baselines (`--baseline`, `--suppress`), benchmark integration (`--benchmark`), pattern-effectiveness tracking, and atomic rollback helper remain available as flags on `/run`. See `.claude/skills/run/reference/improve-mode.md` for the keyword router contract
+- **/helper**: Troubleshooting mode (`--troubleshoot`), comparison matrices, migration catalog, strategic-mode migration guidance (`/org X` → `/team X`)
 
 ## Team Mode
 
@@ -365,7 +361,7 @@ cagents-memory/
 +-- _system/       # configs, commands/, templates/
 +-- _knowledge/    # patterns, calibration, learnings
 +-- _archive/      # completed sessions
-+-- sessions/      # run_*, team_*, designer_* (org_*, review_*, optimize_* are legacy; /org removed in v12.2.0, /review-/optimize folded into /run in v12.1.2)
++-- sessions/      # run_*, team_*, designer_* (org_*, review_*, optimize_* are legacy)
 ```
 
 **Session ID**: `{command}_{slug}_{YYMMDD}_{NNN}` (e.g., `run_fix-auth_260317_001`)
@@ -376,7 +372,7 @@ cagents-memory/
 
 **Recursive Workflows**: Complex tasks spawn child workflows (`max_nesting_depth: 5`, max children: 100). Each child follows objectives -> controller -> questions -> synthesis -> implementation.
 
-**Subagent Nesting (v12.17.0 / CC 2.1.172)**: As of Claude Code 2.1.172 (verified live on 2.1.173), subagents retain the `Agent` tool and CAN spawn their own subagents up to 5 levels deep (`max_nesting_depth: 5`; the skill loop is depth 0, the 5 levels are the subagent generations beneath it). The nesting model is `skill loop (depth 0) -> controller/teammate (depth 1) -> execution agent (depth 2) -> ... up to 5 levels deep`. `/team` teammates reliably spawn execution agents and reviewers, and may nest deeper within the budget; they spawn execution agents directly rather than re-entering the full `/run` pipeline by design for cost/clarity, not because of a harness limit. Graceful degradation (the `pat-graceful-degradation-depth1.md` playbook) is repositioned to a **defensive fallback** for the nesting ceiling (a depth-5 subagent cannot spawn a depth-6 child) or a regressed harness — agents check whether the `Agent` tool is actually present before degrading to direct execution + self-validation. Historically (before v12.17.0), the runtime stripped `Agent` at depth >= 1, which is no longer the default behavior on CC >= 2.1.172. See @.claude/rules/core/teams.md and @.claude/rules/playbooks/pat-graceful-degradation-depth1.md.
+**Subagent Nesting (CC 2.1.172+)**: Subagents retain the `Agent` tool and CAN spawn their own subagents up to 5 levels deep (`max_nesting_depth: 5`; the skill loop is depth 0, the 5 levels are the subagent generations beneath it). The nesting model is `skill loop (depth 0) -> controller/teammate (depth 1) -> execution agent (depth 2) -> ... up to 5 levels deep`. `/team` teammates reliably spawn execution agents and reviewers, and may nest deeper within the budget; they spawn execution agents directly rather than re-entering the full `/run` pipeline by design for cost/clarity, not because of a harness limit. Graceful degradation (the `pat-graceful-degradation-depth1.md` playbook) is a **defensive fallback** for the nesting ceiling (a depth-5 subagent cannot spawn a depth-6 child) or a regressed harness — agents check whether the `Agent` tool is actually present before degrading to direct execution + self-validation. See @.claude/rules/core/teams.md and @.claude/rules/playbooks/pat-graceful-degradation-depth1.md.
 
 ## Creating Agents / Domains
 
@@ -390,13 +386,13 @@ See @.claude/rules/core/skill-format.md and @.claude/rules/core/execution.md for
 cAgents/
 +-- CLAUDE.md                # Main project memory (this file)
 +-- .claude/
-|   +-- skills/              # Skills (run, team, designer, helper) — /improve folded into /run in v12.1.2; /org removed in v12.2.0 (folded into /team strategic mode)
+|   +-- skills/              # Skills (run, team, designer, helper)
 |   +-- hooks/               # 32 .cjs files (24 registered hooks + 5 dispatched sub-validators + utils + launcher + bash-guard-evaluator library)
-|   +-- output-styles/       # Output-style files (v12.8.0+)
+|   +-- output-styles/       # Output-style files
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (40 files: 34 top-level across 6 categories + 2 READMEs (root + playbooks/) + 4 in resources/)
 |   +-- settings.json        # Hook registration + permissions + env
-+-- agents/                  # All 58 agents (v12.20.0+ catalog consolidation — 42 routable + 16 core)
++-- agents/                  # All 58 agents (42 routable + 16 core)
 |   +-- developer/           # Developer archetype (8 agents — backend/frontend/fullstack/infrastructure/quality)
 |   +-- operator/            # Operator archetype (7 agents — support/business-ops/people-ops/marketing-sales/content)
 |   +-- advisor/             # Advisor archetype (4 agents — legal/health/education/personal)
@@ -419,7 +415,7 @@ cAgents/
 
 ## Hooks System
 
-**Architecture**: CJS-only hooks with `createHook()` factory. 32 .cjs files = 24 unique registered hooks + 5 dispatched sub-validators (Write|Edit: secret-detection, controller-delegation-validator, skill-size-monitor via `write-edit-dispatch.cjs`; Agent: session-init-gate, model-routing-advisor via `agent-dispatch.cjs`) + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs (GuardFall evaluator library require'd by bash-validator.cjs, v12.34.0). See @.claude/rules/core/hooks.md for full documentation.
+**Architecture**: CJS-only hooks with `createHook()` factory. 32 .cjs files = 24 unique registered hooks + 5 dispatched sub-validators (Write|Edit: secret-detection, controller-delegation-validator, skill-size-monitor via `write-edit-dispatch.cjs`; Agent: session-init-gate, model-routing-advisor via `agent-dispatch.cjs`) + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs (GuardFall evaluator library require'd by bash-validator.cjs). See @.claude/rules/core/hooks.md for full documentation.
 
 ## Standalone Contract (V11.2.0+)
 
@@ -481,7 +477,7 @@ cAgents is distributed as a Claude Code plugin. See `.claude-plugin/plugin.json`
 ```
 
 **Key Manifest Fields**:
-- `agents`: Array of SKILL.md paths (58 agents registered post-v12.20.0)
+- `agents`: Array of SKILL.md paths (58 agents registered)
 - `skills`: Path to skills directory (`.claude/skills/`)
 - `hooks`: Path to settings.json for hook registration
 - `settings.json`: Default settings applied when plugin loads (under `agent` key for subagent defaults)
@@ -492,7 +488,7 @@ cAgents is distributed as a Claude Code plugin. See `.claude-plugin/plugin.json`
 - **Hook Registration**: Hooks declared in `hooks/hooks.json` or referenced via `hooks` field in plugin.json
 - **Marketplace**: Submit via `marketplace.json` with `$schema`, owner, category, and version fields
 - **Multi-Plugin**: Multiple plugins loaded via `--plugin-dir` flags; settings merge with project settings
-- **Worktree Sparse Checkout (V11.1.12+)**: `.claude/settings.json` declares `worktree.sparsePaths` (6 entries — `.claude/`, `cagents-memory/_system/`, `agents/`, `scripts/`, `tests/`, `docs/`). Since the v12.8.0 consolidation, `core/` and all 9 archetype roots live under `agents/`, so a single `agents/` entry covers them. When `/team` teammates spawn with `isolation: "worktree"`, only these paths populate the worktree, dramatically reducing checkout time and preventing teammates from modifying out-of-scope files.
+- **Worktree Sparse Checkout**: `.claude/settings.json` declares `worktree.sparsePaths` (6 entries — `.claude/`, `cagents-memory/_system/`, `agents/`, `scripts/`, `tests/`, `docs/`). `core/` and all 9 archetype roots live under `agents/`, so a single `agents/` entry covers them. When `/team` teammates spawn with `isolation: "worktree"`, only these paths populate the worktree, dramatically reducing checkout time and preventing teammates from modifying out-of-scope files.
 
 ## Performance Benchmarks
 
@@ -533,23 +529,19 @@ There are TWO classes of figures here, and they must never be conflated:
 | **Task Inventory** | 60-80% context savings for 20+ task workflows — estimate, unmeasured |
 | **Team Mode** | 40-60% execution time reduction for tier 3+ — estimate, unmeasured |
 
-> **Caveat (estimate rows only)**: The five figures above (30+, 30-40%/20-30%,
-> 50x, 60-80%, 40-60%) are design-target ESTIMATES with NO benchmark artifact,
-> methodology, or measurement-date provenance. They are NOT validated engineering
-> data and must NOT be presented as measured. They will graduate to the Measured
-> table only when a reproducible perf-corpus runner target lands for each, the way
-> hook-overhead and secret-scan-time did. Until then they stay explicitly labelled
-> estimates.
+> **Caveat (estimate rows only)**: The five figures above are design-target
+> ESTIMATES with NO benchmark artifact, methodology, or provenance — NOT validated
+> engineering data, and must NOT be presented as measured.
 
 See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking and
 `cagents-memory/_system/evals/perf/README.md` for the measured-artifact manifest.
 
 ## Quick Reference
 
-**Skills**: `/run`, `/team`, `/designer`, `/helper` (in `.claude/skills/`; V11.0 removed `/review`, `/optimize`, `/context`, `/debug`; v12.1.2 folded `/improve` into `/run` via keyword router; v12.2.0 removed `/org` and folded cross-domain coordination into `/team` strategic mode — see `docs/MIGRATION-V11.md` and CHANGELOG entries v12.1.2 / v12.2.0)
+**Skills**: `/run`, `/team`, `/designer`, `/helper` (in `.claude/skills/`; removed skills — `/review`, `/optimize`, `/context`, `/debug`, `/improve`, `/org` — see `docs/MIGRATION-V11.md` and CHANGELOG)
 **Built-in**: `/memory`, `/init` (Claude Code native)
-**Agents**: 58 total across 9 archetypes (developer 8, operator 7, advisor 4, analyst 5, creator 2, writer 4, strategist 3, core 16, leadership 9) — post-v12.20.0 catalog consolidation (42 routable + 16 core; 84 absorbed agents use mode flags)
-**Domain Overlay (legacy routing/config only)**: 2 dirs (`people/`, `shared/`) hold `config/domain_overrides.yaml` — no SKILL.md files. The other 11 legacy domains (engineering, creative, business, growth, service, science, health, education, personal, arts, trades) were deleted in v12 W4.2 and consolidated into `cagents-memory/_system/config/routing.yaml`.
+**Agents**: 58 total across 9 archetypes (developer 8, operator 7, advisor 4, analyst 5, creator 2, writer 4, strategist 3, core 16, leadership 9) — 42 routable + 16 core; 84 absorbed agents use mode flags
+**Domain Overlay (legacy routing/config only)**: 2 dirs (`people/`, `shared/`) hold `config/domain_overrides.yaml` — no SKILL.md files. The other 11 legacy domains (engineering, creative, business, growth, service, science, health, education, personal, arts, trades) were deleted and consolidated into `cagents-memory/_system/config/routing.yaml`.
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `people/config/domain_overrides.yaml`, `shared/config/domain_overrides.yaml`, `cagents-memory/_system/config/routing.yaml`, `cagents-memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (internal-only session YAML contract since v12.6.0)
 **Hooks**: 32 .cjs files = 24 unique registered hooks + 5 dispatched sub-validators (run by write-edit-dispatch.cjs + agent-dispatch.cjs) + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs library
 **Models**: opusplan (controllers, Opus 4.6 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
@@ -557,7 +549,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking and
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: 5-state pipeline with two execution paths (fast/standard — `fast` skips the orchestrator for tier-2-clear requests), revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 1418+ Vitest tests across 172+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.36.0
+**Version**: 12.37.0
 
 ## Troubleshooting
 

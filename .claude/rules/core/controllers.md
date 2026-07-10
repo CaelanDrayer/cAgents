@@ -163,6 +163,8 @@ Controllers include an internal reviewer loop (max 2 rounds). After each executo
 
 ### Dead-Letter Promotion Contract (P1-6, v12.6.x)
 
+> **Advisory — not hook-enforced.** The steps below are agent-self-reported; no hook currently verifies them. See docs/FUTURE_VALIDATION_FRAMEWORK.md for the deferred-enforcement roadmap.
+
 When a work item fails 2 consecutive reviewer rounds (rounds-cap reached per `controller_revision.max_internal_rounds: 2` in `pipeline_config.yaml`; lowered from 3 in LP-27, v12.7.x), the controller should promote the item rather than silently retrying or claiming completion. This is a by-convention contract — no hook currently enforces it (see the advisory note below):
 
 1. **Set the underlying implementation_task status** to `dead_letter` (NOT `completed`, NOT `in_progress`) in `coordination_log.yaml`.
@@ -176,11 +178,15 @@ See `controller-reference.md` for reviewer spawning patterns, blind review proto
 
 ### Two-Stage Review Protocol (V10.22.0)
 
+> **Advisory — not hook-enforced.** The steps below are agent-self-reported; no hook currently verifies them. See docs/FUTURE_VALIDATION_FRAMEWORK.md for the deferred-enforcement roadmap.
+
 Every reviewer loop runs two ordered stages: Stage 1 spec compliance (binary PASS/REVISE on acceptance criteria) before Stage 2 code quality (severity-tagged findings). No code quality review begins until spec compliance passes.
 
 See @.claude/rules/playbooks/pat-two-stage-review.md for the canonical pattern, reviewer prompts per stage, REVISE thresholds, why-two-stages rationale, and coordination-log format.
 
 ### Guard Command Pattern (V10.18.0)
+
+> **Advisory — not hook-enforced.** The steps below are agent-self-reported; no hook currently verifies them. See docs/FUTURE_VALIDATION_FRAMEWORK.md for the deferred-enforcement roadmap.
 
 After the reviewer checks acceptance criteria, controllers SHOULD also run a **guard command** to verify no regressions were introduced. Guard commands are automated verification steps (tests, linting, type checks) that catch issues human-style review misses.
 
@@ -217,6 +223,8 @@ implementation_tasks:
 **When to skip guards**: Bootstrap/scaffolding work items (no tests yet), pure documentation, design artifacts. Controllers use judgment but default to running guards when a command is available.
 
 ### Regression Validation Chain (V10.23.0)
+
+> **Advisory — not hook-enforced.** The steps below are agent-self-reported; no hook currently verifies them. See docs/FUTURE_VALIDATION_FRAMEWORK.md for the deferred-enforcement roadmap.
 
 Controllers SHOULD chain multiple guard commands for comprehensive regression detection. Run ALL applicable guards, not just the first one.
 
@@ -352,6 +360,8 @@ Controllers MUST re-read plan objectives before major decisions to combat attent
 **When to re-read**: Before synthesizing answers, before spawning executors, after 5+ delegated questions, before writing coordination_log.
 
 ## Pre-Execution and Mid-Execution Validation (V10.23.0)
+
+> **Advisory — not hook-enforced.** The steps below are agent-self-reported; no hook currently verifies them. See docs/FUTURE_VALIDATION_FRAMEWORK.md for the deferred-enforcement roadmap.
 
 Controllers MUST run validation checkpoints at two points:
 

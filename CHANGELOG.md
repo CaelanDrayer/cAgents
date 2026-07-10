@@ -10,6 +10,35 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.37.0] - 2026-07-10
+
+Phase-1 de-bloat / honesty pass (second half of the `team_action-overhaul-outputs_260710_001`
+action of the overhaul plan). Companion to 12.36.0.
+
+### Changed
+- **De-bloat CLAUDE.md** (I1 + I2, conservative first pass): removed inline
+  release-history / version-archaeology clauses (`v12.0.0: … folded`, `LP-27`,
+  `V9.23/V9.27`, `post-v12.20.0`, `v12 W4.2`, `was 18 in V11.0, 21 historically`,
+  the pure-history `DECOMPOSED/PROMPTS_READY` note, etc.) — the top-of-file
+  "see CHANGELOG.md / RELEASE_NOTES.md" pointer already covers this history. Cut
+  real per-session token cost; every numeric count, `@`-import, the Standalone
+  Contract, and all normative content preserved (576→568 lines; the reduction is
+  token-weighted, not line-weighted, since the history lived as inline clauses).
+  A deeper index-style restructure remains available as a follow-up.
+- **Label aspirational protocols advisory** (C2): added a one-line
+  `> Advisory — not hook-enforced` blockquote atop the 8 genuinely un-enforced
+  protocol sections in `controllers.md` (dead-letter promotion, two-stage review,
+  guard-command pattern, regression-validation chain, pre/mid-execution
+  validation) and `execution.md` (subagent status protocol, commit-before-verify,
+  5-check self-validation), each pointing to the deferred-enforcement roadmap.
+  Complements the "Enforced vs Advisory" ledgers added in 12.36.0. Additive only —
+  no normative prose deleted.
+
+### Added
+- `docs/FUTURE_VALIDATION_FRAMEWORK.md`: new "Advisory Controller & Execution
+  Protocols (agent-self-reported)" section naming the 8 tagged protocols so the
+  new blockquote pointers resolve to real appendix content.
+
 ## [12.36.0] - 2026-07-10
 
 Honesty-spine minor bump — actions Phase 0 + the cheap Phase-1 prose items from
