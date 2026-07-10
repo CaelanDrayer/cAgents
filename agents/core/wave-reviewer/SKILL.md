@@ -79,3 +79,7 @@ This agent uses Read, Grep, Glob, Bash (for guard commands), Write. It does NOT 
 Always include `confidence` (0.0-1.0) in the overall verdict reasoning. Below 0.7 means "human review recommended" — the lead may escalate via HITL.
 
 See @resources/gate-check-protocol.md for detailed check-by-check guidance and edge cases.
+
+## Worked Examples
+
+- See @.claude/rules/examples/ex-gates-taxonomy-four-types.md — name each wave gate pre-flight / revision / escalation / abort, with a stall-detection rule when findings do not shrink between rounds.

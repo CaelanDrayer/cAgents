@@ -70,3 +70,13 @@ See @resources/api.md for the api mode full playbook (REST/GraphQL, authenticati
 See @resources/database.md for the database mode full playbook (DBA, schema design, query optimization, migrations).
 See @resources/engine.md for the engine mode full playbook (engine architecture, rendering, platform optimization).
 See @resources/game.md for the game mode full playbook (gameplay programming, AI systems, physics integration).
+
+## Worked Examples
+
+Pull the matching worked example when building or debugging a work item:
+
+- See @.claude/rules/examples/ex-verification-evidence-first.md — cite specific file:line / test output on completion; "handled upstream" is not evidence.
+- See @.claude/rules/examples/ex-verification-feedback-loop-first-debugging.md — build a tight red-capable reproduction loop before hypothesizing a fix.
+- See @.claude/rules/examples/ex-minimalism-solution-ladder-before-after.md — over-abstraction vs a 3-line function; walk the ladder before adding structure.
+- See @.claude/rules/examples/ex-minimalism-surgical-diff-vs-refactor.md — keep the diff surgical; every changed line should trace to an acceptance criterion.
+- See @.claude/rules/examples/ex-gates-fact-forcing-pre-hoc.md — gather caller/schema/instruction facts before the first write to a file.

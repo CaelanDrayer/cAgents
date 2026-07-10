@@ -77,3 +77,13 @@ See @resources/coordinate.md for the coordinate mode full playbook.
 See @resources/implement.md for the implement mode full playbook.
 See @resources/backend-lead.md for the backend-lead mode full playbook.
 See @resources/frontend-lead.md for the frontend-lead mode full playbook.
+
+## Worked Examples
+
+Pull the matching worked example when coordinating non-obvious work:
+
+- See @.claude/rules/examples/ex-review-blind-dual-convergence.md — blind dual review to run at tier 3+, with a fresh reviewer per round.
+- See @.claude/rules/examples/ex-gates-taxonomy-four-types.md — name each checkpoint pre-flight / revision / escalation / abort, with revision stall-detection.
+- See @.claude/rules/examples/ex-gates-deterministic-candidate-selection.md — bind each executor to named files before spawning and surface what was skipped.
+- See @.claude/rules/examples/ex-intake-assumption-surfacing.md — state scope/format assumptions (or ask) before decomposing work.
+- See @.claude/rules/examples/ex-gates-context-budget-tiers.md — shift read-depth and checkpoint early as coordination context fills.

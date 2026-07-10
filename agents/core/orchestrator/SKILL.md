@@ -186,3 +186,7 @@ See @resources/product-context-loader.md for the INIT-state read of
 ## Team Mode Execution
 
 See @resources/team-mode-execution.md for team-mode detection, execution flow, team-lead delegation, progress monitoring, benefits, and fallback handling.
+
+## Worked Examples
+
+- See @.claude/rules/examples/ex-intake-ambiguous-request-disambiguation.md — mapping a vague request to named interpretations with distinct effort before enriching context or handing off to the planner.

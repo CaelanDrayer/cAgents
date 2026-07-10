@@ -67,3 +67,7 @@ See @resources/market.md for the market research playbook (primary/secondary res
 See @resources/business-research.md for the business research playbook (strategic intelligence, synthesis, reporting).
 See @resources/competitive.md for the competitive intelligence playbook (battle cards, win/loss, competitor monitoring).
 See @resources/requirements.md for the requirements analysis playbook (elicitation, gap analysis, acceptance criteria).
+
+## Worked Examples
+
+- See @.claude/rules/examples/ex-strategy-north-star-validator.md — classify the business (Attention/Transaction/Productivity) then validate a north-star metric against 7 criteria plus an "NSM is NOT" list.

@@ -10,6 +10,36 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.38.0] - 2026-07-10
+
+Bucket-C Phase 3 — **wire the example store** (session `team_wire-example-store_260710_001`).
+Makes the store committed in 12.36.0 non-inert: it now has a real primary consumer
+(the planner) and on-demand agent access. Advisory-first, capped, no pipeline behavior forced.
+
+### Added
+- **Planner few-shot consumption of the example store (H1)**: `agents/core/planner/SKILL.md`
+  gains a concise `## Example-Store Few-Shot (advisory)` section instructing the planner to,
+  during decomposition + delegation-prompt assembly, consult `.claude/rules/examples/_index.yaml`,
+  filter by detected `category` + `applies_to`, rank, and `@path`-load the **top 1-3** matching
+  example bodies as few-shot guidance. Purely advisory — zero matches ⇒ zero output, pipeline
+  never fails on it; hard cap 3 to bound token cost.
+- `agents/core/planner/resources/example-store-selection.md`: the full 5-step selection
+  procedure (category detection table, `_index.yaml` schema, category + `applies_to` filtering
+  with `all-controllers`/`all-execution-agents` wildcards, ranking, cap, worked example).
+- `tests/v12/planner-consumes-example-store.test.js`: regression test (5 cases) gating the
+  wiring so it can't silently regress.
+- **Agent Tier-3 `@path` references (H2)**: 20 agents named in examples' `applies_to` gain a
+  `## Worked Examples` section linking the relevant `ex-*.md` (capped at the 5 most-relevant per
+  agent). dev/quality/review/core set (reviewer, tech-lead, qa-lead, backend/frontend-developer,
+  security-engineer, architect, self-correct, validator, wave-reviewer, executor, team-lead) +
+  strategy/authoring/analyst set (technical-writer, orchestrator, strategic-planner,
+  product-owner, marketing-strategist, market-research-analyst, data-scientist, task-state).
+
+### Notes
+- The store is now consumed; H4 (corpus-refresh script), H5 (reject-path counterexamples),
+  and H7 (index-cache pointer layer) remain open. Additive/advisory only — no runtime pipeline
+  path changed.
+
 ## [12.37.0] - 2026-07-10
 
 Phase-1 de-bloat / honesty pass (second half of the `team_action-overhaul-outputs_260710_001`

@@ -549,7 +549,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking and
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: 5-state pipeline with two execution paths (fast/standard — `fast` skips the orchestrator for tier-2-clear requests), revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 1418+ Vitest tests across 172+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.37.0
+**Version**: 12.38.0
 
 ## Troubleshooting
 

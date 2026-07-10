@@ -105,3 +105,13 @@ confidence_rationale: "{why this confidence level}"
 | Tools | Read, Grep, Glob, Bash | Read, Grep, Glob, Write, Bash |
 | Output | PASS/REVISE per criteria | Detailed review report with auto-fix |
 | Used by | All controllers in executor-reviewer loops | review process, engineering reviews |
+
+## Worked Examples
+
+Pull the matching worked example when a review is non-obvious:
+
+- See @.claude/rules/examples/ex-review-distrust-self-report.md — treat the implementer's self-report (and any stated rationale) as an unverified claim to check against the diff.
+- See @.claude/rules/examples/ex-review-blind-dual-convergence.md — two independent blind reviewers, a fresh reviewer per round, both must pass.
+- See @.claude/rules/examples/ex-review-safe-careful-risky.md — tier findings safe (auto-apply) / careful (apply + verify) / risky (flag only) with file:line citations.
+- See @.claude/rules/examples/ex-review-standards-vs-spec-two-axis.md — run standards and spec as two orthogonal axes, never merged into one score.
+- See @.claude/rules/examples/ex-verification-mechanical-claim-check.md — re-check each evidence claim with grep + fs + math and gate on a computed pass rate.
