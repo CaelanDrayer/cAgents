@@ -17,7 +17,8 @@ The table below tells you at a glance which execution protocols in this file are
 |----------|-------------|--------|
 | File writes audited + JSON/YAML syntax-checked | `post-write-validator.cjs` — PostToolUse[Write\|Edit] logs to `file_changes.log` and reports syntax errors | Enforced |
 | Evidence-first file:line citations (self-validation Check 5) | `validator-evidence-recheck.cjs` re-runs cited methods after a write and downgrades PASS→FAIL | Partial (post-write recheck) |
-| 5-check self-validation protocol | agent-self-reported; the verifier hook is deferred (the protocol doc states no hook runs these checks yet) | Advisory |
+| Self-validation Check 2 (file existence) + Check 3 (guard exit codes) | `verify-completion.cjs` WARN-rechecks at Stop (C1) — re-runs `fs.existsSync` on claimed paths + inspects `guard_results[].exit_code` from coordination_log + `outputs/**/self-validation.yaml`; logs mismatches to `workflow/self_validation_recheck.yaml`. Warns, does NOT block or change the Stop decision | Partial (WARN-rechecked at Stop) |
+| 5-check self-validation protocol (Check 1 evidence-freshness, Check 4 git-state) | agent-self-reported; the verifier hook is deferred (the protocol doc states no hook runs these two checks yet) | Advisory |
 | Subagent status protocol (DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED) | controller routing by convention; no hook verifies the reported status | Advisory |
 | Commit-before-verify pattern | agent-self-reported | Advisory |
 | Minimal-solution ladder | reviewer judgment (Stage-2 lens); no hook | Advisory |

@@ -10,6 +10,42 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.40.0] - 2026-07-10
+
+Bucket-C Phase 4, part 2 — **advisory-first enforcement hooks** (C1, D3). Both are
+WARN-only extensions of EXISTING hooks — no new hook file, no hook-count change,
+and each carries a proven decision-unchanged guarantee. This is the honest "start
+advisory, flip to blocking later" path.
+
+### Added
+- **C1 — mechanical self-validation recheck** (WARN-only) in `verify-completion.cjs`:
+  a new additive pass reads `self_validation` claims from `coordination_log.yaml`
+  `implementation_tasks[]` and `outputs/**/self-validation.yaml`, then mechanically
+  checks **Check 2** (claimed file exists via `fs.existsSync`) and **Check 3** (guard
+  `exit_code == 0`). Mismatches surface via `console.error` + a
+  `workflow/self_validation_recheck.yaml` artifact. The hook's block/allow verdict is
+  byte-identical to before (verified by test); mismatches only warn, never block.
+- **D3 — mechanical claim-verification** (advisory) in `validator-evidence-recheck.cjs`:
+  a Node-only (no LLM, no network) pass that extracts checkable claims from
+  `validation_report.yaml` (`pattern_count` / `pattern_exists` / `pattern_absent` /
+  `file_exists` / `code_snippet` / `arithmetic`), dispositions each as
+  verified/failed/unsupported/unverifiable (with the `prose-of-absence`,
+  `snippet_in_wrong_file`, `line-number-as-count` guards), and computes `passRate`.
+  When `passRate < 0.8` with ≥2 checkable claims it WARNs + appends a
+  `claim_verification:` block. Hard auto-route-to-PLANNED is deliberately deferred —
+  the existing PASS→FAIL evidence downgrade is unchanged.
+- Regression tests: `tests/hooks/self-validation-recheck.test.js` (4) and
+  `tests/hooks/claim-verification.test.js` (8), each asserting the new behavior AND
+  that the host hook's existing decision is unchanged.
+
+### Changed
+- Ledger + docs updated to reflect the new partial enforcement: `execution.md`
+  Enforced-vs-Advisory ledger now marks self-val Check 2/3 as
+  `Partial (WARN-rechecked at Stop)`; `execution-self-validation.md` and
+  `pat-evidence-first-execution.md` document the two passes honestly (they WARN, they
+  do not block).
+- Test-count claim refreshed to `1435+ Vitest tests across 175+ files`.
+
 ## [12.39.0] - 2026-07-10
 
 Bucket-C Phase 4, part 1 — review/verification **conventions** (session

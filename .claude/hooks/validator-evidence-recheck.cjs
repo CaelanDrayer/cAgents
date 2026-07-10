@@ -28,6 +28,22 @@
  * - Does not validate schema. post-write-validator.cjs already does YAML/JSON
  *   syntax checks.
  *
+ * D3 — Mechanical claim-verification pass (advisory-first)
+ * -------------------------------------------------------
+ * ADDITIVE to the PASS-bias recheck above. Treats the whole
+ * validation_report.yaml as a set of extractable claims and dispositions each
+ * mechanically — grep + fs + math ONLY (NO LLM, NO network) — into one of four
+ * buckets: verified / failed / unsupported / unverifiable. Computes
+ * passRate = verified / (verified + failed). When passRate < 0.8 AND
+ * checkable_claims (= verified + failed) >= 2, it APPENDS a `claim_verification:`
+ * advisory block and console.error a WARN. It NEVER changes the classification,
+ * never routes back to PLANNED, and never touches pipeline state (hard re-route
+ * deferred). The existing PASS→FAIL downgrade behavior is untouched. See the
+ * claim taxonomy + guards (prose-of-absence, snippet_in_wrong_file,
+ * line-number-as-count) and passRate gate in
+ * .claude/rules/examples/ex-verification-mechanical-claim-check.md.
+ * D3: advisory; hard re-route deferred.
+ *
  * Calibration evidence
  * --------------------
  * cagents-memory/sessions/team_execute-self-improvement_260522_001/outputs/wave-2/P1-6/calibration-report.md
@@ -223,6 +239,344 @@ function mutateReport(filePath, original, failures) {
   fs.writeFileSync(filePath, updated, 'utf8');
 }
 
+// ============================================================
+// D3 (advisory): Mechanical claim-verification pass
+// ============================================================
+// Additive to the PASS-bias recheck above. Extracts checkable claims from the
+// validation_report.yaml prose and dispositions each with grep + fs + math only
+// (NO LLM, NO network) into: verified | failed | unsupported | unverifiable.
+//   passRate = verified / (verified + failed)   (unsupported/unverifiable → neither)
+// When passRate < 0.8 AND checkable_claims (= verified + failed) >= 2, this pass
+// APPENDS a `claim_verification:` advisory block and console.error a WARN. It
+// NEVER changes the classification or routes back to PLANNED.
+// D3: advisory; hard re-route deferred.
+// See .claude/rules/examples/ex-verification-mechanical-claim-check.md.
+
+const CLAIM_PASS_RATE_THRESHOLD = 0.8;
+const CLAIM_MIN_CHECKABLE = 2;
+const CLAIM_MAX_FILE_BYTES = 512 * 1024; // do not slurp huge files
+
+function _claimResolveAbs(projectRoot, p) {
+  const clean = String(p).replace(/^["'`]+|["'`]+$/g, '').trim();
+  return path.isAbsolute(clean) ? clean : path.join(projectRoot, clean);
+}
+
+// line-number-as-count guard helper: split a trailing :NN line ref off a path so
+// the line number is never mistaken for part of a count claim.
+function _claimStripLine(fileTok) {
+  const m = String(fileTok).match(/^(.*?):(\d+)$/);
+  return m
+    ? { file: m[1], line: parseInt(m[2], 10), hadLine: true }
+    : { file: String(fileTok), line: null, hadLine: false };
+}
+
+function _claimReadFile(abs) {
+  try {
+    if (!fs.existsSync(abs)) return null;
+    const stat = fs.statSync(abs);
+    if (!stat.isFile() || stat.size > CLAIM_MAX_FILE_BYTES) return null;
+    return fs.readFileSync(abs, 'utf8');
+  } catch {
+    return null;
+  }
+}
+
+function _escapeRegExp(s) {
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function _countLiteral(haystack, needle) {
+  if (!needle) return 0;
+  const matches = haystack.match(new RegExp(_escapeRegExp(needle), 'g'));
+  return matches ? matches.length : 0;
+}
+
+function _parseHumanNumber(s) {
+  const t = String(s).replace(/,/g, '').trim();
+  const m = t.match(/^(-?\d+(?:\.\d+)?)([KkMmBb]?)$/);
+  if (!m) return NaN;
+  let n = parseFloat(m[1]);
+  const suf = m[2].toLowerCase();
+  if (suf === 'k') n *= 1e3;
+  else if (suf === 'm') n *= 1e6;
+  else if (suf === 'b') n *= 1e9;
+  return n;
+}
+
+// Gather every file-looking token cited anywhere in the report (line suffix
+// stripped). Used as the bounded candidate set for the snippet_in_wrong_file
+// guard — never a repo-wide grep.
+function _collectCitedFiles(content) {
+  const set = new Set();
+  const re = /([A-Za-z0-9_\-]+(?:\/[A-Za-z0-9_.\-]+)*\.[A-Za-z0-9]{1,6})(?::\d+)?/g;
+  let m;
+  while ((m = re.exec(content)) !== null) set.add(m[1]);
+  return [...set];
+}
+
+// pattern_count: "N occurrences of X in FILE" -> grep -c literal X in FILE.
+function _extractCountClaims(content, projectRoot) {
+  const out = [];
+  const re = /(\d+)\s+(?:occurrences?|instances?|matches?|usages?|calls?|references?)\s+of\s+["'`]?([^"'`\n]+?)["'`]?\s+in\s+([A-Za-z0-9_.\/\-]+(?::\d+)?)/gi;
+  let m;
+  while ((m = re.exec(content)) !== null) {
+    const N = parseInt(m[1], 10);
+    const patternTok = m[2].trim();
+    const { file, hadLine } = _claimStripLine(m[3]); // line-number-as-count guard
+    const body = _claimReadFile(_claimResolveAbs(projectRoot, file));
+    if (body === null) {
+      out.push({ type: 'pattern_count', disposition: 'unsupported', detail: `cited file not found/unreadable: ${file}` });
+      continue;
+    }
+    const actual = _countLiteral(body, patternTok);
+    if (actual === N) {
+      out.push({ type: 'pattern_count', disposition: 'verified', detail: `${actual} occurrence(s) of "${patternTok}" in ${file}${hadLine ? ' (line-number-as-count guard applied)' : ''}` });
+    } else {
+      out.push({ type: 'pattern_count', disposition: 'failed', detail: `claimed ${N} occurrence(s) of "${patternTok}" in ${file}, found ${actual}` });
+    }
+  }
+  return out;
+}
+
+// file_exists: "FILE exists" / "exists at FILE" -> fs.existsSync.
+function _extractFileExistsClaims(content, projectRoot) {
+  const out = [];
+  const seen = new Set();
+  const patterns = [
+    /["'`]?([A-Za-z0-9_.\/\-]+\.[A-Za-z0-9]{1,6})["'`]?\s+exists\b/gi,
+    /\bexists?\s+at\s+["'`]?([A-Za-z0-9_.\/\-]+\.[A-Za-z0-9]{1,6})["'`]?/gi,
+  ];
+  for (const re of patterns) {
+    let m;
+    while ((m = re.exec(content)) !== null) {
+      const file = m[1];
+      if (seen.has(file)) continue;
+      seen.add(file);
+      if (fs.existsSync(_claimResolveAbs(projectRoot, file))) {
+        out.push({ type: 'file_exists', disposition: 'verified', detail: `${file} exists` });
+      } else {
+        out.push({ type: 'file_exists', disposition: 'failed', detail: `claimed ${file} exists, but not found` });
+      }
+    }
+  }
+  return out;
+}
+
+// pattern_absent: "no X in FILE" -> grep boolean. Bare "no X <noun>" with no
+// file citation -> unsupported (prose-of-absence guard: absence needs evidence).
+function _extractAbsenceClaims(content, projectRoot) {
+  const out = [];
+  const withFileRanges = [];
+  const withFile = /\bno\s+["'`]?([A-Za-z0-9_.\-()]+)["'`]?\s+in\s+([A-Za-z0-9_.\/\-]+\.[A-Za-z0-9]{1,6})/gi;
+  let m;
+  while ((m = withFile.exec(content)) !== null) {
+    withFileRanges.push([m.index, m.index + m[0].length]);
+    const pat = m[1].trim();
+    const file = m[2];
+    const body = _claimReadFile(_claimResolveAbs(projectRoot, file));
+    if (body === null) {
+      out.push({ type: 'pattern_absent', disposition: 'unsupported', detail: `cited file not found/unreadable: ${file}` });
+      continue;
+    }
+    if (_countLiteral(body, pat) > 0) {
+      out.push({ type: 'pattern_absent', disposition: 'failed', detail: `claimed no "${pat}" in ${file}, but it is present` });
+    } else {
+      out.push({ type: 'pattern_absent', disposition: 'verified', detail: `confirmed no "${pat}" in ${file}` });
+    }
+  }
+  // prose-of-absence guard: an absence claim with no explicit file -> unsupported.
+  const bare = /\bno\s+([A-Za-z][A-Za-z0-9_\- ]{1,40}?\s+(?:header|headers|call|calls|import|imports|reference|references|handler|handlers|guard|guards|check|checks))\b/gi;
+  while ((m = bare.exec(content)) !== null) {
+    if (withFileRanges.some(([s, e]) => m.index >= s && m.index < e)) continue;
+    out.push({ type: 'pattern_absent', disposition: 'unsupported', detail: `prose-of-absence: "no ${m[1].trim()}" has no explicit file evidence` });
+  }
+  return out;
+}
+
+// pattern_exists: "FILE contains X" / "X present in FILE" -> grep boolean.
+function _extractExistsClaims(content, projectRoot) {
+  const out = [];
+  let m;
+  const contains = /([A-Za-z0-9_.\/\-]+\.[A-Za-z0-9]{1,6})\s+contains\s+["'`]([^"'`\n]+?)["'`]/gi;
+  while ((m = contains.exec(content)) !== null) {
+    const file = m[1];
+    const pat = m[2].trim();
+    const body = _claimReadFile(_claimResolveAbs(projectRoot, file));
+    if (body === null) { out.push({ type: 'pattern_exists', disposition: 'unsupported', detail: `cited file not found/unreadable: ${file}` }); continue; }
+    if (body.includes(pat)) out.push({ type: 'pattern_exists', disposition: 'verified', detail: `"${pat}" present in ${file}` });
+    else out.push({ type: 'pattern_exists', disposition: 'failed', detail: `claimed "${pat}" in ${file}, but not present` });
+  }
+  const present = /["'`]([^"'`\n]+?)["'`]\s+(?:is\s+)?present\s+in\s+([A-Za-z0-9_.\/\-]+\.[A-Za-z0-9]{1,6})/gi;
+  while ((m = present.exec(content)) !== null) {
+    const pat = m[1].trim();
+    const file = m[2];
+    const body = _claimReadFile(_claimResolveAbs(projectRoot, file));
+    if (body === null) { out.push({ type: 'pattern_exists', disposition: 'unsupported', detail: `cited file not found/unreadable: ${file}` }); continue; }
+    if (body.includes(pat)) out.push({ type: 'pattern_exists', disposition: 'verified', detail: `"${pat}" present in ${file}` });
+    else out.push({ type: 'pattern_exists', disposition: 'failed', detail: `claimed "${pat}" present in ${file}, but not present` });
+  }
+  return out;
+}
+
+// code_snippet: "FILE:LINE - snippet" -> substring search in the CITED file.
+// snippet_in_wrong_file guard: if absent from the cited file but present in a
+// sibling / other cited file, disposition is `unsupported` (not `failed`).
+function _findSnippetElsewhere(needle, citedAbs, projectRoot, citedFiles) {
+  for (const cf of citedFiles) {
+    const abs = _claimResolveAbs(projectRoot, cf);
+    if (abs === citedAbs) continue;
+    const body = _claimReadFile(abs);
+    if (body && body.includes(needle)) return cf;
+  }
+  try {
+    const dir = path.dirname(citedAbs);
+    for (const name of fs.readdirSync(dir).slice(0, 200)) {
+      const abs = path.join(dir, name);
+      if (abs === citedAbs) continue;
+      const body = _claimReadFile(abs);
+      if (body && body.includes(needle)) return path.relative(projectRoot, abs);
+    }
+  } catch { /* ignore */ }
+  return null;
+}
+
+function _extractSnippetClaims(content, projectRoot, citedFiles) {
+  const out = [];
+  const re = /([A-Za-z0-9_.\/\-]+\.[A-Za-z0-9]{1,6}):(\d+)\s*[-–—]\s*(.+)/g;
+  let m;
+  while ((m = re.exec(content)) !== null) {
+    const file = m[1];
+    let snippet = m[3].trim().replace(/^["'`]+|["'`]+$/g, '').trim();
+    const needle = snippet.slice(0, 60).trim();
+    if (needle.length < 4) continue;
+    const citedAbs = _claimResolveAbs(projectRoot, file);
+    const body = _claimReadFile(citedAbs);
+    if (body === null) {
+      out.push({ type: 'code_snippet', disposition: 'unsupported', detail: `cited file not found/unreadable: ${file}` });
+      continue;
+    }
+    if (body.includes(needle)) {
+      out.push({ type: 'code_snippet', disposition: 'verified', detail: `snippet present in ${file}` });
+      continue;
+    }
+    const wrong = _findSnippetElsewhere(needle, citedAbs, projectRoot, citedFiles);
+    if (wrong) {
+      out.push({ type: 'code_snippet', disposition: 'unsupported', detail: `snippet_in_wrong_file: cited ${file} but snippet found in ${wrong}` });
+    } else {
+      out.push({ type: 'code_snippet', disposition: 'failed', detail: `snippet not found in cited ${file}` });
+    }
+  }
+  return out;
+}
+
+// arithmetic: "N% of BASE = RESULT" and "A op B = C" -> recompute.
+function _extractArithmeticClaims(content) {
+  const out = [];
+  let m;
+  const pct = /(\d+(?:\.\d+)?)\s*%\s+of\s+([\d,.]+[KkMmBb]?)\s*=\s*([\d,.]+[KkMmBb]?)/g;
+  while ((m = pct.exec(content)) !== null) {
+    const base = _parseHumanNumber(m[2]);
+    const claimed = _parseHumanNumber(m[3]);
+    if (isNaN(base) || isNaN(claimed)) continue;
+    const expected = base * (parseFloat(m[1]) / 100);
+    const ok = Math.abs(expected - claimed) <= Math.max(1, Math.abs(expected) * 0.01);
+    out.push({ type: 'arithmetic', disposition: ok ? 'verified' : 'failed', detail: `${m[1]}% of ${m[2]} = ${m[3]} (expected ${expected})` });
+  }
+  const basic = /(?<![\w.])(\d+(?:\.\d+)?)\s*([+\-*x×])\s*(\d+(?:\.\d+)?)\s*=\s*(\d+(?:\.\d+)?)(?![\w.])/g;
+  while ((m = basic.exec(content)) !== null) {
+    const a = parseFloat(m[1]);
+    const b = parseFloat(m[3]);
+    const c = parseFloat(m[4]);
+    let expected;
+    if (m[2] === '+') expected = a + b;
+    else if (m[2] === '-') expected = a - b;
+    else expected = a * b;
+    const ok = Math.abs(expected - c) <= 1e-6;
+    out.push({ type: 'arithmetic', disposition: ok ? 'verified' : 'failed', detail: `${a} ${m[2]} ${b} = ${c} (expected ${expected})` });
+  }
+  return out;
+}
+
+// Extract + disposition every claim, then compute passRate.
+function verifyClaims(content, projectRoot) {
+  const citedFiles = _collectCitedFiles(content);
+  const claims = [].concat(
+    _extractCountClaims(content, projectRoot),
+    _extractFileExistsClaims(content, projectRoot),
+    _extractAbsenceClaims(content, projectRoot),
+    _extractExistsClaims(content, projectRoot),
+    _extractSnippetClaims(content, projectRoot, citedFiles),
+    _extractArithmeticClaims(content)
+  );
+  const verified = claims.filter((c) => c.disposition === 'verified').length;
+  const failed = claims.filter((c) => c.disposition === 'failed').length;
+  const unsupported = claims.filter((c) => c.disposition === 'unsupported').length;
+  const unverifiable = claims.filter((c) => c.disposition === 'unverifiable').length;
+  const decided = verified + failed; // checkable_claims (the passRate basis)
+  const passRate = decided > 0 ? verified / decided : 1;
+  return { claims, verified, failed, unsupported, unverifiable, checkable_claims: decided, passRate };
+}
+
+function _yamlStr(s) {
+  return JSON.stringify(String(s));
+}
+
+// Append the advisory claim_verification block to the on-disk report. Idempotent
+// (no double-append). Never changes classification.
+function appendClaimVerification(abs, result) {
+  let content;
+  try {
+    content = fs.readFileSync(abs, 'utf8');
+  } catch {
+    return false;
+  }
+  if (content.includes('claim_verification:')) return false; // idempotent
+  const topFailures = result.claims.filter((c) => c.disposition === 'failed').slice(0, 5);
+  const lines = [
+    '',
+    'claim_verification:',
+    '  hook: validator-evidence-recheck.cjs',
+    '  advisory: true   # D3: advisory; hard re-route deferred',
+    `  pass_rate: ${result.passRate.toFixed(2)}`,
+    `  checkable_claims: ${result.checkable_claims}`,
+    `  verified: ${result.verified}`,
+    `  failed: ${result.failed}`,
+    `  unsupported: ${result.unsupported}`,
+    `  unverifiable: ${result.unverifiable}`,
+    '  claims:',
+  ];
+  for (const c of result.claims) {
+    lines.push(`    - type: ${c.type}`);
+    lines.push(`      disposition: ${c.disposition}`);
+    lines.push(`      detail: ${_yamlStr(c.detail)}`);
+  }
+  if (topFailures.length === 0) {
+    lines.push('  top_failures: []');
+  } else {
+    lines.push('  top_failures:');
+    for (const c of topFailures) lines.push(`    - ${_yamlStr(c.detail)}`);
+  }
+  lines.push('');
+  try {
+    fs.writeFileSync(abs, content.trimEnd() + '\n' + lines.join('\n'), 'utf8');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Run the advisory pass against the current on-disk report. Warns + annotates
+// only when passRate < 0.8 AND checkable_claims >= 2. Never re-routes.
+function runClaimVerificationPass(abs, projectRoot) {
+  const content = _claimReadFile(abs);
+  if (content === null) return;
+  const result = verifyClaims(content, projectRoot);
+  if (result.passRate < CLAIM_PASS_RATE_THRESHOLD && result.checkable_claims >= CLAIM_MIN_CHECKABLE) {
+    const appended = appendClaimVerification(abs, result);
+    console.error(`[validator-evidence-recheck] claim-verification (advisory): pass_rate ${result.passRate.toFixed(2)} < ${CLAIM_PASS_RATE_THRESHOLD} across ${result.checkable_claims} checkable claim(s) (${result.failed} failed). Appended claim_verification: block${appended ? '' : ' (skipped — already present)'}. D3: advisory only — no pipeline re-route.`);
+  }
+}
+
 createHook('ValidatorEvidenceRecheck', async (input) => {
   const toolName = input.tool_name || '';
   if (toolName !== 'Write' && toolName !== 'Edit') return null;
@@ -239,30 +593,48 @@ createHook('ValidatorEvidenceRecheck', async (input) => {
   } catch {
     return null;
   }
-  // Only act on PASS verdicts — FAIL/REVISE already honest.
-  const classification = extractClassification(content);
-  if (classification !== 'PASS') return null;
-  // Re-run each cited verification_method.
-  const entries = parseCriteriaResults(content);
-  if (entries.length === 0) return null;
   const projectRoot = input.cwd || PROJECT_ROOT;
-  const failures = [];
-  for (const entry of entries) {
-    if (entry.met === false) continue; // already not-met; not a bias case
-    const result = recheckEntry(entry, projectRoot);
-    if (!result.ok) failures.push({ criterion: entry.criterion, reason: result.reason });
+
+  // ---- Existing PASS-bias evidence recheck (UNCHANGED behavior) ----
+  // Only act on PASS verdicts — FAIL/REVISE already honest. Any cited evidence
+  // that does not verify mechanically downgrades PASS -> FAIL + recheck: block.
+  const classification = extractClassification(content);
+  if (classification === 'PASS') {
+    const entries = parseCriteriaResults(content);
+    if (entries.length > 0) {
+      const failures = [];
+      for (const entry of entries) {
+        if (entry.met === false) continue; // already not-met; not a bias case
+        const result = recheckEntry(entry, projectRoot);
+        if (!result.ok) failures.push({ criterion: entry.criterion, reason: result.reason });
+      }
+      if (failures.length > 0) {
+        // Mutate the report on disk: downgrade + recheck block. This is the
+        // load-bearing side effect — the validator reads the recheck block from
+        // disk on the next pass and honors the PASS→FAIL downgrade.
+        mutateReport(abs, content, failures);
+        // thinking-400 fix (run_team-thinking-400_260531_001): PostToolUse fires
+        // between an assistant tool_use and the matching tool_result — emitting a
+        // systemMessage could attach to the assistant turn, modifying thinking
+        // blocks and violating the Anthropic API immutability contract. The
+        // downgrade message is preserved via console.error (stderr → user verbose)
+        // and the file mutation itself is the authoritative state.
+        console.error(`[validator-evidence-recheck] Downgraded ${path.basename(abs)} from PASS to FAIL: ${failures.length} cited evidence entries did not verify mechanically. See recheck: block in the file.`);
+      }
+    }
   }
-  if (failures.length === 0) return null;
-  // Mutate the report on disk: downgrade + recheck block. This is the
-  // load-bearing side effect — the validator reads the recheck block from
-  // disk on the next pass and honors the PASS→FAIL downgrade.
-  mutateReport(abs, content, failures);
-  // thinking-400 fix (run_team-thinking-400_260531_001): PostToolUse fires
-  // between an assistant tool_use and the matching tool_result — emitting a
-  // systemMessage could attach to the assistant turn, modifying thinking
-  // blocks and violating the Anthropic API immutability contract. The
-  // downgrade message is preserved via console.error (stderr → user verbose)
-  // and the file mutation itself is the authoritative state.
-  console.error(`[validator-evidence-recheck] Downgraded ${path.basename(abs)} from PASS to FAIL: ${failures.length} cited evidence entries did not verify mechanically. See recheck: block in the file.`);
+
+  // ---- D3 (additive, advisory): mechanical claim-verification pass ----
+  // Runs regardless of classification. Re-reads the on-disk report so its
+  // appended block follows any recheck: downgrade written above. Wrapped so it
+  // can never throw out of the hook. It annotates + warns only — it does NOT
+  // change the classification and does NOT route back to PLANNED.
+  // D3: advisory; hard re-route deferred.
+  try {
+    runClaimVerificationPass(abs, projectRoot);
+  } catch (e) {
+    console.error(`[validator-evidence-recheck] claim-verification pass error (non-fatal): ${e && e.message}`);
+  }
+
   return { continue: true };
 });
