@@ -1,0 +1,29 @@
+# scripts/ci/validator-baseline.yaml
+#
+# Baseline / suppression file for the advisory-validator runner (F6).
+#
+# Advisory validators (F1-F4) are WARN-only — their findings NEVER fail CI.
+# This file lets a maintainer mute a known-and-accepted finding so it stops
+# appearing in the advisory summary. Every suppression MUST carry a `reason`
+# documenting why the finding is accepted.
+#
+# Two suppression tiers (see scripts/ci/lib/validator-baseline.cjs):
+#
+#   1. glob-rule    — suppress by ruleId (+ optional file glob)
+#   2. fingerprint  — suppress one exact finding by its stable hash
+#
+# Schema — each entry under `suppress:`:
+#
+#   suppress:
+#     - ruleId: allowed-tools-undeclared   # rule to mute, or '*' for any rule
+#       file: "agents/**/SKILL.md"          # OPTIONAL glob; omit to match any file
+#       fingerprint: "abc123def456"         # OPTIONAL exact 12-char hash (mutually
+#                                           #   sufficient — matches on its own)
+#       reason: "why this finding is accepted"   # REQUIRED for auditability
+#
+# A rule with a `fingerprint` suppresses that exact finding regardless of
+# ruleId/file. A rule with a `ruleId` (and optional `file` glob) suppresses
+# every finding matching that rule (and glob). `ruleId: '*'` matches all rules.
+#
+# Nothing is suppressed yet — the list is intentionally empty.
+suppress: []

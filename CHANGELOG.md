@@ -10,6 +10,44 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.41.0] - 2026-07-10
+
+Bucket-C Phase 5 — **CI content-security / capability-consistency layer** (session
+`team_phase5-ci-security_260710_001`). cAgents CI was 100% structural/schema linting;
+this adds the complementary content layer. Everything is Node-only (Standalone
+Contract), WARN-only, and never fails the build — the honest advisory-first rollout.
+
+### Added
+- **F6 baseline/suppression + advisory runner** — the prerequisite mechanism:
+  `scripts/ci/lib/validator-baseline.cjs` (two-tier suppress by rule+glob OR exact
+  fingerprint, with reasons), `scripts/ci/validator-baseline.yaml` (empty schema),
+  `scripts/ci/run-advisory.cjs` (discovers `scripts/ci/advisory/*.cjs`, runs each,
+  drops baselined findings, `--format json`, ALWAYS exits 0), and a new
+  `check_advisory` WARN-only stage wired into `cagents-ci.sh` (non-blocking — its
+  result never flips the overall CI verdict). Contract documented in
+  `scripts/ci/advisory/README.md`.
+- **F2 trigger-collision** (`scripts/ci/advisory/trigger-collision.cjs`) — flags
+  over-broad triggers (TR1), reserved-name shadowing of run/team/designer/helper/
+  memory/init by a different owner (TR2), and keyword-baiting (TR3). 0 live findings
+  (catalog is clean); guards future regressions.
+- **F1 allowed-tools-vs-actual** (`scripts/ci/advisory/allowed-tools-actual.cjs`) —
+  diffs each agent's declared `allowed-tools` against capability signals in its body
+  (LP1 undeclared-use, LP2 wildcard, LP3 no-declaration, LP4 over-declaration). 14
+  live findings, all LOW LP4 (mostly controllers declaring `Agent` with no
+  grep-matchable spawn verb) — informational, non-blocking.
+- **F3+F4 agent-content-scan** (`scripts/ci/advisory/agent-content-scan.cjs`) —
+  F3 description-vs-body/allowed-tools contradiction (e.g. "read-only" agent that
+  declares Write); F4 content-security scan of SKILL.md bodies + hook source for
+  genuine `curl|bash`/eval/exfil constructs and injection strings, with strong
+  false-positive controls (security/attack-surface content is exempt; topical
+  mentions of curl/mcp/injection never fire). 0 live findings.
+- Regression tests: `tests/ci/{advisory-runner,trigger-collision,allowed-tools-actual,agent-content-scan}.test.js`
+  (~79 tests) covering the runner, baseline suppression (glob + fingerprint), and
+  each validator's rules firing on crafted bad input + not firing on the clean catalog.
+
+### Changed
+- Test-count claim refreshed to `1514+ Vitest tests across 179+ files`.
+
 ## [12.40.0] - 2026-07-10
 
 Bucket-C Phase 4, part 2 — **advisory-first enforcement hooks** (C1, D3). Both are
