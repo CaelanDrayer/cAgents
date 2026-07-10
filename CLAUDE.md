@@ -95,7 +95,7 @@ Total: 40 .md = 34 top-level across 6 categories + 2 READMEs (root + playbooks/)
 
 **cAgents**: Universal multi-domain agent system with CSV-based task inventory for large-scale workflows. Handles 100+ tasks with 60-80% context savings.
 
-> **NOT a software-engineering tool.** cAgents is domain-agnostic. The pipeline machinery (orchestrator → planner → controller → validator) and the 57-agent catalog span legal, finance, marketing, sales, HR, health, education, creative, operations, and research just as fully as engineering. `backend-developer` / `architect` / `validator` are the agents the router selects for *code* requests — they are not what the system "is." When a request is non-technical (draft a SOW, price a migration, plan a campaign, write a story, build a financial model), it is squarely in scope: `/run` and `/team` route it to the right domain controller. Skills and controllers MUST NOT refuse, redirect, or warn a user off a non-technical request on the grounds that the plugin "looks engineering-focused" — that is a framing defect, not correct behavior.
+> **NOT a software-engineering tool.** cAgents is domain-agnostic. The pipeline machinery (orchestrator → planner → controller → validator) and the 58-agent catalog span legal, finance, marketing, sales, HR, health, education, creative, operations, and research just as fully as engineering. `backend-developer` / `architect` / `validator` are the agents the router selects for *code* requests — they are not what the system "is." When a request is non-technical (draft a SOW, price a migration, plan a campaign, write a story, build a financial model), it is squarely in scope: `/run` and `/team` route it to the right domain controller. Skills and controllers MUST NOT refuse, redirect, or warn a user off a non-technical request on the grounds that the plugin "looks engineering-focused" — that is a framing defect, not correct behavior.
 
 **Key Features**: CSV Task Inventory, Batch Delegation (60-80% context reduction), Checkpoint/Resume, Aggressive Decomposition (30+ work items from simple requests), Controller-Centric coordination
 
@@ -402,7 +402,7 @@ cAgents/
 |   +-- advisor/             # Advisor archetype (4 agents — legal/health/education/personal)
 |   +-- analyst/             # Analyst archetype (5 agents — data, BI, research, social science)
 |   +-- creator/             # Creator archetype (2 agents — visual, audiovisual)
-|   +-- writer/              # Writer archetype (3 agents — narrative, editorial)
+|   +-- writer/              # Writer archetype (4 agents — narrative, editorial)
 |   +-- strategist/          # Strategist archetype (3 agents — product owners, portfolio, planning)
 |   +-- core/                # Core pipeline infrastructure (16 agents)
 |   +-- leadership/          # Leadership archetype (9 C-suite agents — used by /team strategic mode)
@@ -556,8 +556,8 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking and
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: 5-state pipeline with two execution paths (fast/standard — `fast` skips the orchestrator for tier-2-clear requests), revision routing (FAIL/REVISE), reviewer loops
-**Tests**: `npm test` runs 1395+ Vitest tests across 168+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.35.1
+**Tests**: `npm test` runs 1418+ Vitest tests across 172+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
+**Version**: 12.36.0
 
 ## Troubleshooting
 

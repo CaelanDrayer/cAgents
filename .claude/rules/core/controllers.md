@@ -10,6 +10,24 @@ paths:
 
 Question-based delegation patterns for controllers with v10 agent chaining support.
 
+## Enforced vs Advisory Ledger
+
+The table below tells you at a glance which coordination protocols in this file are mechanically enforced (a hook, CI check, or test blocks or rewrites on violation) versus advisory. Advisory = the model is asked to follow it; no hook verifies it yet.
+
+| Protocol | Enforced by | Status |
+|----------|-------------|--------|
+| Controllers never Write/Edit implementation files (`src/`, `lib/`, `components/`, `app/`, `services/`, `middleware/`) | `controller-delegation-validator.cjs` — PreToolUse[Write\|Edit] deny while a controller is active | Enforced |
+| `coordination_log.yaml` / `plan.yaml` JSON+YAML syntax validity | `post-write-validator.cjs` — PostToolUse[Write\|Edit] | Enforced |
+| Evidence-first execution (cited file:line / grep / test evidence) | `validator-evidence-recheck.cjs` re-runs cited methods after a write and downgrades PASS→FAIL | Partial (post-write recheck) |
+| Pre-execution validation checklist (Checks 0–6) | agent-self-reported; `verify-completion.cjs` only warns if the `pre_execution` field is absent from the log | Advisory |
+| Mid-execution validation checkpoints (5 checks) | agent-self-reported; warn-only presence check on the `mid_execution` field | Advisory |
+| Guard-command pattern + regression-validation chain | agent-self-reported; no hook runs the guard chain | Advisory |
+| Dead-letter promotion contract | agent-self-reported (this section itself notes "no hook currently enforces it") | Advisory |
+| Two-stage review, blind review + Devil's Advocate | agent-self-reported | Advisory |
+| Confidence tiers | agent-self-reported | Advisory |
+
+For the cross-cutting checks that ARE hook-enforced (exactly 5), see @.claude/rules/quality/resources/validation-checklist-active.md.
+
 ## v10 Agent Chaining: Topological Execution
 
 Controllers execute work items in dependency order, passing context between agents via files:
@@ -139,7 +157,7 @@ See `controller-reference.md` for additional good/bad task-tracking examples.
 
 ## Reviewer Loop
 
-Controllers include an internal reviewer loop (max 2 rounds). After each executor completes, spawn a reviewer to evaluate against acceptance criteria. PASS accepts, REVISE sends feedback back.
+Controllers include an internal reviewer loop (max 2 rounds). After each executor completes, spawn a reviewer to evaluate against acceptance criteria. PASS accepts, REVISE sends feedback back. On each REVISE round, spawn a fresh reviewer with no carried context so it does not anchor on its own prior verdict. See @.claude/rules/playbooks/pat-two-stage-review.md.
 
 **Tier 2**: Single reviewer. **Tier 3+**: Blind review with 2-3 independent reviewers + Devil's Advocate on unanimous PASS.
 

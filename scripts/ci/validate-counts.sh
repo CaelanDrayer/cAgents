@@ -53,7 +53,10 @@ EVENT_TYPES=$(jq -r '.hooks | keys | length' .claude/settings.json)
 REGISTRY_SLOTS=$(grep -cE "^\| [0-9]+ \|" .claude/rules/core/version-registry.md)
 
 # Total .md files under .claude/rules (the CLAUDE.md "rules total" claim).
-RULES_MD=$(find .claude/rules -name '*.md' -type f | wc -l | tr -d ' ')
+# Exclude .claude/rules/examples/** — the example store is a distinct concept
+# (curated few-shot exemplars: ex-*.md + README + _index.yaml), NOT rule files,
+# and must not inflate the "40 rules" invariant.
+RULES_MD=$(find .claude/rules -name '*.md' -type f -not -path '*/examples/*' | wc -l | tr -d ' ')
 
 # Playbook .md files (currently 8 pat-* + README = 9) — the CLAUDE.md playbooks claim.
 PLAYBOOK_FILES=$(ls .claude/rules/playbooks/*.md 2>/dev/null | wc -l | tr -d ' ')

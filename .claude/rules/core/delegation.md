@@ -41,6 +41,11 @@ critical violation when emitted by a skill or controller. No exceptions.
 If you find yourself reasoning toward any of these conclusions, STOP.
 You are rationalizing a violation. Delegate.
 
+The zero-exception rule is a deliberate design choice, not an oversight:
+coordinating through agents is cheap enough that adding a "small-task"
+carve-out would buy little and cost the consistency that makes the
+pipeline predictable, so the exception simply does not exist.
+
 ## Controller-Side Corollary
 
 Controllers (tier-2 agents like `tech-lead`, `architect`,
