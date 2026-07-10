@@ -10,6 +10,40 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.39.0] - 2026-07-10
+
+Bucket-C Phase 4, part 1 — review/verification **conventions** (session
+`team_phase4-review-rigor_260710_001`). Additive prose/playbooks/scripts only; no
+new enforcement (the C1/D3 advisory hooks land separately in 12.40.0). Several
+sections reference the distilled example-store files wired in 12.38.0.
+
+### Added
+- **3 new playbooks** (spec-compliant 6-key frontmatter):
+  - `pat-gate-taxonomy.md` (D6) — four checkpoint types (Pre-flight / Revision /
+    Escalation / Abort) mapped onto cAgents surfaces, plus the stall-detection
+    rule (escalate early if findings do not shrink between rounds).
+  - `pat-feedback-loop-first-debugging.md` (D8) — tight-repro-loop-before-hypothesis,
+    the 10-strategy ladder, RED-before-fix, ranked falsifiable hypotheses, and
+    `[DEBUG-<hash>]` tagged logs with mandatory grep-cleanup before DONE.
+  - `pat-context-budget-tiers.md` (D9, advisory) — proactive PEAK/GOOD/DEGRADING/POOR
+    self-monitored read-depth bands + the vague-phrasing early-warning heuristic.
+- **File-handoff helper scripts** (D10) under `scripts/handoff/`: `task-brief.sh`
+  (extract one work-item block to a uniquely-named brief) and `review-package.sh`
+  (bundle a diff for a reviewer sub-agent), backing the "delegation prompt under
+  300 tokens" prose rule mechanically. Plus a `scripts/handoff/README.md`.
+
+### Changed
+- `pat-two-stage-review.md`: added **D5** SAFE/CAREFUL/RISKY auto-apply tiers
+  (orthogonal to severity) + the Chesterton's-Fence `git blame`-before-removal rule,
+  and an optional **D11** two-axis (Standards vs Spec, never-merged) parallel-review
+  variant with the Fowler 12-smell baseline + an undocumented-scope-creep sub-check.
+- **D7** Rule-of-Three architecture-question escalation branch added (advisory) to
+  `controllers.md` and `agents/core/self-correct/SKILL.md`: when 2-3 consecutive
+  fixes each relocate rather than shrink the failure, set `architecture_question:
+  true` and escalate to the user instead of burning revision budget / dead-lettering.
+- Playbook/rule counts synced: 40→43 rule files, 9→12 playbooks (CLAUDE.md +
+  `.claude/rules/README.md`).
+
 ## [12.38.0] - 2026-07-10
 
 Bucket-C Phase 3 — **wire the example store** (session `team_wire-example-store_260710_001`).

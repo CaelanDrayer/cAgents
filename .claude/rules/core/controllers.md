@@ -176,6 +176,18 @@ This contract is documented (here + in `controller-reference.md`'s dead-letter-q
 
 See `controller-reference.md` for reviewer spawning patterns, blind review protocol, dead-letter queue schema, and confidence tiers.
 
+### Rule-of-Three: Architecture-Question Escalation
+
+> **Advisory — not hook-enforced.** The steps below are agent-self-reported; no hook currently verifies them. See docs/FUTURE_VALIDATION_FRAMEWORK.md for the deferred-enforcement roadmap.
+
+When 2-3 consecutive fixes each close the reported failure but surface a *new* downstream failure somewhere else (whack-a-mole), stop — a relocating failure is a design smell, not a code bug. Rather than silently promoting the item to dead_letter or spending more revision rounds, set `architecture_question: true` in `coordination_log.yaml` and escalate to the user.
+
+- **Trigger**: 2-3 fixes in a row, each fixing the prior failure but spawning a fresh one elsewhere (the failure set moves rather than shrinks).
+- **Action**: Stop the reviewer/fix loop for that item. Summarize the pattern — the sequence of fixes and where each new failure appeared — and ask the user for an architecture-level decision (change the interface, re-scope the acceptance criteria, or accept a documented tradeoff).
+- **Why**: A moving-target failure means the fixes are treating symptoms of a structural mismatch. One escalation is cheaper than burning the revision budget on a problem only the user can re-scope.
+
+This differs from stuck-detection (the *same* failure recurring) and from dead-letter promotion (one item exhausting its rounds): here each fix succeeds locally, yet the failure keeps moving, which is the signal that the design — not the code — needs a decision.
+
 ### Two-Stage Review Protocol (V10.22.0)
 
 > **Advisory — not hook-enforced.** The steps below are agent-self-reported; no hook currently verifies them. See docs/FUTURE_VALIDATION_FRAMEWORK.md for the deferred-enforcement roadmap.
