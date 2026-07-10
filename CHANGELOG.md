@@ -10,6 +10,83 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.37.0] - 2026-07-10
+
+Phase-1 de-bloat / honesty pass (second half of the `team_action-overhaul-outputs_260710_001`
+action of the overhaul plan). Companion to 12.36.0.
+
+### Changed
+- **De-bloat CLAUDE.md** (I1 + I2, conservative first pass): removed inline
+  release-history / version-archaeology clauses (`v12.0.0: … folded`, `LP-27`,
+  `V9.23/V9.27`, `post-v12.20.0`, `v12 W4.2`, `was 18 in V11.0, 21 historically`,
+  the pure-history `DECOMPOSED/PROMPTS_READY` note, etc.) — the top-of-file
+  "see CHANGELOG.md / RELEASE_NOTES.md" pointer already covers this history. Cut
+  real per-session token cost; every numeric count, `@`-import, the Standalone
+  Contract, and all normative content preserved (576→568 lines; the reduction is
+  token-weighted, not line-weighted, since the history lived as inline clauses).
+  A deeper index-style restructure remains available as a follow-up.
+- **Label aspirational protocols advisory** (C2): added a one-line
+  `> Advisory — not hook-enforced` blockquote atop the 8 genuinely un-enforced
+  protocol sections in `controllers.md` (dead-letter promotion, two-stage review,
+  guard-command pattern, regression-validation chain, pre/mid-execution
+  validation) and `execution.md` (subagent status protocol, commit-before-verify,
+  5-check self-validation), each pointing to the deferred-enforcement roadmap.
+  Complements the "Enforced vs Advisory" ledgers added in 12.36.0. Additive only —
+  no normative prose deleted.
+
+### Added
+- `docs/FUTURE_VALIDATION_FRAMEWORK.md`: new "Advisory Controller & Execution
+  Protocols (agent-self-reported)" section naming the 8 tagged protocols so the
+  new blockquote pointers resolve to real appendix content.
+
+## [12.36.0] - 2026-07-10
+
+Honesty-spine minor bump — actions Phase 0 + the cheap Phase-1 prose items from
+the `team_plugin-overhaul_260710_001` overhaul plan (sanity-checked and landed by
+`team_action-overhaul-outputs_260710_001`). Truth-in-numbers fixes were already
+applied to the working tree; this commit lands them + the example store + review
+rigor prose as one reviewable unit.
+
+### Added
+- **Curated example store committed** (`.claude/rules/examples/`) — 27 `ex-*.md`
+  few-shot exemplars + `README.md` + `_index.yaml`. Previously an untracked
+  working-tree artifact; now git-tracked. Still unwired (planner few-shot / agent
+  `@path` consumption deferred to a later phase — H1/H2). (H0)
+- **Example-store regression tests** (`tests/v12/example-store-frontmatter-valid.test.js`,
+  `tests/v12/example-index-resolves.test.js`) — assert 6-key frontmatter
+  compliance, `name==filename`, valid YAML, and a bijective `_index.yaml`↔disk
+  mapping. Gates the store per the bug-driven-test mandate. (H3)
+- **"Enforced vs Advisory" ledger** at the top of `controllers.md` and
+  `execution.md` — a table marking each documented protocol as mechanically
+  enforced (hook/CI/test) vs. agent-self-reported/advisory, so a reader can tell
+  at a glance without grepping. Directly addresses the plan's central
+  credibility-gap finding (H1). (C3)
+- **"Distrust the self-report"** reviewer instruction in `pat-two-stage-review.md`
+  and `pat-evidence-first-execution.md` — the reviewer treats the executor's own
+  self-report / `self_validation` YAML / `ponytail:` markers as unverified claims
+  to check against the diff, never as severity-lowering evidence. (D1)
+- **Fresh-reviewer-per-round** anti-anchoring rule in `pat-two-stage-review.md`
+  (+ reference in `controllers.md` Reviewer Loop). (D2)
+- Deliberate-tradeoff note near the delegation Rationalization Kill List
+  explaining why zero-exception delegation is intentional. (I7)
+- "A note on the word 'examples'" section in the store README disambiguating the
+  three overloaded uses of "examples". (I6)
+
+### Changed
+- **Truth-in-numbers (Phase 0)**: `validate-agents.sh` stale hook count `26`→`24`
+  (A1); `CLAUDE.md` "57-agent"→"58-agent" (A2) and writer archetype "3 agents"→"4"
+  (A3); `validate-counts.sh` + `.claude/rules/README.md` now exclude
+  `.claude/rules/examples/` from the `RULES_MD` derivation so the documented "40
+  rule files" stays honest (examples are few-shot data, not rules) and the count
+  guard stays green after committing the store (A6).
+- Test-count claims refreshed to the current static lower-bound: `CLAUDE.md` and
+  `docs/CONTRIBUTING.md` `1395+/1335+ tests` → `1418+ Vitest tests across 172+ files`.
+
+### Fixed
+- Removed a pre-existing broken, git-ignored symlink
+  (`.claude/skills/commit-changes` → missing target) that caused 2 spurious
+  `npm test` failures unrelated to any repo content.
+
 ## [12.35.1] - 2026-07-09
 
 ### Changed

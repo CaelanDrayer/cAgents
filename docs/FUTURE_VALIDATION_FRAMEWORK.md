@@ -105,6 +105,17 @@ Plus 5 active Phase-4 checks (25-29) documented in `.claude/rules/quality/resour
 
 ---
 
+## Advisory Controller & Execution Protocols (agent-self-reported)
+
+Beyond the 24 numbered checks above, several named coordination and execution protocols documented in `.claude/rules/core/controllers.md` and `.claude/rules/core/execution.md` are also advisory — the model is asked to follow them, but no hook currently verifies them. Each of those sections now carries an in-section advisory note pointing here. They belong to the same deferred-enforcement set and would graduate the same way (a hook, CI check, or test lands, then the protocol becomes enforced):
+
+- **controllers.md** — Dead-Letter Promotion Contract; Guard Command Pattern; Regression Validation Chain; Pre-Execution and Mid-Execution Validation; Two-Stage Review Protocol.
+- **execution.md** — Self-Validation Protocol (5 checks); Subagent Status Protocol; Commit-Before-Verify Pattern.
+
+For the authoritative enforced-vs-advisory breakdown per file, see the "Enforced vs Advisory Ledger" table at the top of each of those two files.
+
+---
+
 ## See Also
 
 - `.claude/rules/quality/resources/validation-checklist-active.md` — the active 5 checks (auto-loaded into agent context)

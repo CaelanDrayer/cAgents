@@ -74,12 +74,20 @@ Reviewer prompt (Stage 2):
 - LOW findings are recorded but do not trigger REVISE
 - Apply the subtractive lens — what can be deleted, and could stdlib/native/an existing dependency replace new code? See @.claude/rules/playbooks/pat-minimal-solution-ladder.md.
 
+### Distrust the self-report
+
+Treat the executor's own account of its work as an unverified claim, not as evidence. A `self_validation` YAML block, a `ponytail:` deliberate-shortcut marker, or a stated rationale like "kept it simple per YAGNI" or "validated elsewhere" is something to check against the actual diff — never something that lowers a finding's severity. If a claim cannot be located in the diff, that is a REVISE, not a pass. See @.claude/rules/examples/ex-review-distrust-self-report.md.
+
 ## Why two stages
 
 - Prevents "code is beautiful but doesn't meet requirements" false passes
 - Ensures functional correctness before spending review budget on quality
 - Separates objective (spec compliance) from subjective (code quality) assessment
 - Reduces revision round waste (fixing quality issues in code that doesn't meet spec)
+
+## Fresh reviewer per round
+
+On each REVISE round, re-spawn a fresh reviewer with no carried context — it receives the diff and the rubric only. A reviewer that carries its own prior REVISE reasoning tends to anchor on that earlier judgment, so starting each round clean keeps the assessment independent. This is the canonical statement of the rule; `controllers.md` references it.
 
 ## Coordination log format
 

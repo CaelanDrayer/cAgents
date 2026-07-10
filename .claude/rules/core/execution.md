@@ -9,6 +9,22 @@ paths:
 
 Guidelines for tier 3 execution agents.
 
+## Enforced vs Advisory Ledger
+
+The table below tells you at a glance which execution protocols in this file are mechanically enforced (a hook, CI check, or test blocks or rewrites on violation) versus advisory. Advisory = the model is asked to follow it; no hook verifies it yet.
+
+| Protocol | Enforced by | Status |
+|----------|-------------|--------|
+| File writes audited + JSON/YAML syntax-checked | `post-write-validator.cjs` — PostToolUse[Write\|Edit] logs to `file_changes.log` and reports syntax errors | Enforced |
+| Evidence-first file:line citations (self-validation Check 5) | `validator-evidence-recheck.cjs` re-runs cited methods after a write and downgrades PASS→FAIL | Partial (post-write recheck) |
+| 5-check self-validation protocol | agent-self-reported; the verifier hook is deferred (the protocol doc states no hook runs these checks yet) | Advisory |
+| Subagent status protocol (DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED) | controller routing by convention; no hook verifies the reported status | Advisory |
+| Commit-before-verify pattern | agent-self-reported | Advisory |
+| Minimal-solution ladder | reviewer judgment (Stage-2 lens); no hook | Advisory |
+| Graceful degradation when `Agent` is genuinely absent | agent-self-reported; `verify-completion.cjs` keys on the sentinel sentence but does not verify the behavior | Advisory |
+
+For the cross-cutting checks that ARE hook-enforced (exactly 5), see @.claude/rules/quality/resources/validation-checklist-active.md.
+
 ## Execution Agent Role
 
 Execution agents are specialists that:
@@ -94,11 +110,15 @@ docs/DESIGN_NOTES.md.
 
 ## Subagent Status Protocol (V10.22.0)
 
+> **Advisory — not hook-enforced.** The steps below are agent-self-reported; no hook currently verifies them. See docs/FUTURE_VALIDATION_FRAMEWORK.md for the deferred-enforcement roadmap.
+
 Execution agents MUST report completion via one of four standardized statuses (DONE, DONE_WITH_CONCERNS, NEEDS_CONTEXT, BLOCKED), with controller routing per status. Free-form completion messages are not acceptable.
 
 See @.claude/rules/playbooks/pat-subagent-status-protocol.md for the canonical pattern: the four statuses, reporting format, controller response per status, BLOCKED escalation ladder, and never-ignore-an-escalation anti-patterns.
 
 ## Commit-Before-Verify Pattern (V10.18.0)
+
+> **Advisory — not hook-enforced.** The steps below are agent-self-reported; no hook currently verifies them. See docs/FUTURE_VALIDATION_FRAMEWORK.md for the deferred-enforcement roadmap.
 
 When implementing work items that modify existing code, use the commit-before-verify pattern for clean rollback on failure.
 
@@ -152,6 +172,8 @@ When implementing work items that modify existing code, use the commit-before-ve
 See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md for the canonical fallback pattern (the tool-inventory-check-before-BLOCKED rule, the TaskUpdate-substitution rule, the no-reviewer-call rule for execution agents, and the historical pre-v12.17.0 depth-1 stripping context).
 
 ## Self-Validation Protocol (V12.0.0)
+
+> **Advisory — not hook-enforced.** The steps below are agent-self-reported; no hook currently verifies them. See docs/FUTURE_VALIDATION_FRAMEWORK.md for the deferred-enforcement roadmap.
 
 Before reporting any status (DONE, DONE_WITH_CONCERNS), execution agents should complete a 5-check self-validation. Any 1 of the 5 checks failing changes DONE to DONE_WITH_CONCERNS with the failing check listed as a concern. This is an agent-self-reported protocol by convention — the verifier hook that would mechanically enforce it is deferred to a future bump, so the checks are advisory in practice.
 

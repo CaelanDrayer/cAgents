@@ -1,0 +1,199 @@
+# Example Store Index
+# Machine-readable catalog for planner few-shot selection.
+# Filter by `category` + `applies_to`, then @path-load the top 1-3 matching `path`s.
+# Mirrors cagents-memory/_system/templates/teams/_index.yaml shape.
+
+schema_version: "1"
+catalog_version: "1.0"
+
+categories:
+  - review
+  - verification
+  - minimalism
+  - skill-authoring
+  - intake
+  - gates
+  - strategy
+  - structured-io
+  - security
+
+examples:
+  # ---- review ----
+  - id: ex-review-distrust-self-report
+    category: review
+    source_repo: obra/superpowers
+    applies_to: [cagents:reviewer, all-controllers]
+    demonstrates: "Reviewer treats the implementer's self-report (incl. stated rationale) as an unverified claim to check against the diff."
+    path: ex-review-distrust-self-report.md
+  - id: ex-review-blind-dual-convergence
+    category: review
+    source_repo: affaan-m/ECC
+    applies_to: [cagents:reviewer, cagents:tech-lead, all-controllers]
+    demonstrates: "Two independent blind reviewers, fresh agent per round (anti-anchoring), both must PASS; failure-mode + metrics table."
+    path: ex-review-blind-dual-convergence.md
+  - id: ex-review-safe-careful-risky
+    category: review
+    source_repo: NousResearch/hermes-agent
+    applies_to: [cagents:reviewer, cagents:qa-lead]
+    demonstrates: "Risk-tiered auto-apply (SAFE auto / CAREFUL apply+verify / RISKY flag-only) with file:line-cited findings + Chesterton's-Fence check."
+    path: ex-review-safe-careful-risky.md
+  - id: ex-review-standards-vs-spec-two-axis
+    category: review
+    source_repo: mattpocock/skills
+    applies_to: [cagents:reviewer, cagents:qa-lead, all-controllers]
+    demonstrates: "Two orthogonal review axes (Standards vs Spec) run in parallel and never merged or reranked into one score."
+    path: ex-review-standards-vs-spec-two-axis.md
+
+  # ---- verification ----
+  - id: ex-verification-evidence-first
+    category: verification
+    source_repo: obra/superpowers
+    applies_to: [cagents:backend-developer, cagents:reviewer, all-controllers]
+    demonstrates: "Completion claims cite specific file:line / test output; 'handled upstream' and 'agent said success' are rejected as non-evidence."
+    path: ex-verification-evidence-first.md
+  - id: ex-verification-intended-vs-implemented
+    category: verification
+    source_repo: phuryn/pm-skills
+    applies_to: [cagents:security-engineer, cagents:qa-lead, cagents:architect]
+    demonstrates: "Audit code against documented intent boundary-by-boundary; keep only trust/cost/data/tenant-boundary-crossing drift."
+    path: ex-verification-intended-vs-implemented.md
+  - id: ex-verification-feedback-loop-first-debugging
+    category: verification
+    source_repo: mattpocock/skills
+    applies_to: [cagents:backend-developer, cagents:qa-lead, cagents:self-correct]
+    demonstrates: "Build a tight red-capable reproduction loop BEFORE forming any hypothesis; 10 ranked loop strategies; tagged-debug-log cleanup."
+    path: ex-verification-feedback-loop-first-debugging.md
+  - id: ex-verification-mechanical-claim-check
+    category: verification
+    source_repo: vercel-labs/agent-skills
+    applies_to: [cagents:validator, cagents:reviewer, all-controllers]
+    demonstrates: "Mechanically re-check each numeric/file/snippet/citation claim in a completed report with grep+fs+math; passRate=verified/(verified+failed); passRate<0.8 with >=2 claims triggers a re-gen with failures fed back."
+    path: ex-verification-mechanical-claim-check.md
+
+  # ---- minimalism ----
+  - id: ex-minimalism-solution-ladder-before-after
+    category: minimalism
+    source_repo: multica-ai/andrej-karpathy-skills
+    applies_to: [cagents:backend-developer, cagents:frontend-developer, cagents:reviewer]
+    demonstrates: "Over-abstraction (strategy pattern/ABC) vs a 3-line function — ladder rungs 1 and 7 in action."
+    path: ex-minimalism-solution-ladder-before-after.md
+  - id: ex-minimalism-surgical-diff-vs-refactor
+    category: minimalism
+    source_repo: multica-ai/andrej-karpathy-skills
+    applies_to: [cagents:backend-developer, cagents:reviewer, cagents:qa-lead]
+    demonstrates: "A minimal bug-fix diff vs a drive-by refactor; every changed line must trace to an acceptance criterion."
+    path: ex-minimalism-surgical-diff-vs-refactor.md
+
+  # ---- skill-authoring ----
+  - id: ex-skill-authoring-pushy-description
+    category: skill-authoring
+    source_repo: anthropics/skills
+    applies_to: [cagents:planner, cagents:technical-writer]
+    demonstrates: "The description IS the trigger: pack what-it-does + trigger keywords + file cues + explicit NOT-for negative boundaries."
+    path: ex-skill-authoring-pushy-description.md
+  - id: ex-skill-authoring-progressive-disclosure
+    category: skill-authoring
+    source_repo: anthropics/skills
+    applies_to: [cagents:planner, cagents:technical-writer]
+    demonstrates: "Three load tiers (metadata / body <500 lines / bundled resources) + scripts-as-black-box (--help first, don't ingest source)."
+    path: ex-skill-authoring-progressive-disclosure.md
+  - id: ex-skill-authoring-explain-why-not-allcaps
+    category: skill-authoring
+    source_repo: anthropics/skills
+    applies_to: [cagents:planner, cagents:technical-writer]
+    demonstrates: "Reframe musty ALL-CAPS MUST/NEVER as reasoned why; reserve caps for load-bearing platform gotchas."
+    path: ex-skill-authoring-explain-why-not-allcaps.md
+  - id: ex-skill-authoring-rule-per-file-lint
+    category: skill-authoring
+    source_repo: vercel-labs/agent-skills
+    applies_to: [cagents:technical-writer, cagents:qa-lead, cagents:reviewer]
+    demonstrates: "One rule per file (title/impact/incorrect-correct schema) + _template stencil + _sections index, impact-prioritized prefix namespacing, and a build+validate step that rejects rules missing a valid impact or a bad+good pair."
+    path: ex-skill-authoring-rule-per-file-lint.md
+
+  # ---- intake ----
+  - id: ex-intake-ambiguous-request-disambiguation
+    category: intake
+    source_repo: multica-ai/andrej-karpathy-skills
+    applies_to: [cagents:planner, cagents:orchestrator, cagents:designer]
+    demonstrates: "Map a vague request ('make the search faster') to named interpretations with distinct effort before generating work items."
+    path: ex-intake-ambiguous-request-disambiguation.md
+  - id: ex-intake-assumption-surfacing
+    category: intake
+    source_repo: multica-ai/andrej-karpathy-skills
+    applies_to: [cagents:planner, cagents:backend-developer, all-controllers]
+    demonstrates: "State assumptions explicitly (or ask) instead of silently guessing scope/format/fields, then proceeding."
+    path: ex-intake-assumption-surfacing.md
+
+  # ---- gates ----
+  - id: ex-gates-taxonomy-four-types
+    category: gates
+    source_repo: NousResearch/hermes-agent
+    applies_to: [all-controllers, cagents:validator, cagents:wave-reviewer]
+    demonstrates: "Name every checkpoint Pre-flight / Revision / Escalation / Abort with a fixed 3-question template + revision stall-detection."
+    path: ex-gates-taxonomy-four-types.md
+  - id: ex-gates-fact-forcing-pre-hoc
+    category: gates
+    source_repo: affaan-m/ECC
+    applies_to: [cagents:backend-developer, all-controllers]
+    demonstrates: "Deny the FIRST write to a target until the agent presents concrete investigation facts (pre-hoc evidence gate)."
+    path: ex-gates-fact-forcing-pre-hoc.md
+  - id: ex-gates-context-budget-tiers
+    category: gates
+    source_repo: NousResearch/hermes-agent
+    applies_to: [all-controllers, cagents:team-lead, cagents:executor]
+    demonstrates: "PEAK / GOOD / DEGRADING / POOR context bands that change read-depth and trigger proactive checkpointing before compaction."
+    path: ex-gates-context-budget-tiers.md
+  - id: ex-gates-deterministic-candidate-selection
+    category: gates
+    source_repo: vercel-labs/agent-skills
+    applies_to: [cagents:planner, all-controllers, cagents:executor]
+    demonstrates: "A deterministic LLM-free gate selects investigation candidates from evidence, binds each to named files (never grep-the-repo), and surfaces every skipped candidate with its reason in a 'Not investigated' trust section."
+    path: ex-gates-deterministic-candidate-selection.md
+
+  # ---- strategy ----
+  - id: ex-strategy-red-team-fails-if
+    category: strategy
+    source_repo: phuryn/pm-skills
+    applies_to: [cagents:strategic-planner, cagents:product-owner]
+    demonstrates: "Steelman then attack load-bearing assumptions; write each failure as a falsifiable 'Fails if ___' with a cheapest test to run this week."
+    path: ex-strategy-red-team-fails-if.md
+  - id: ex-strategy-north-star-validator
+    category: strategy
+    source_repo: phuryn/pm-skills
+    applies_to: [cagents:product-owner, cagents:marketing-strategist, cagents:market-research-analyst]
+    demonstrates: "Classify the business (Attention/Transaction/Productivity) then validate any NSM candidate against 7 criteria + an 'NSM is NOT' list."
+    path: ex-strategy-north-star-validator.md
+  - id: ex-strategy-opportunity-score-formula
+    category: strategy
+    source_repo: phuryn/pm-skills
+    applies_to: [cagents:product-owner, cagents:strategic-planner]
+    demonstrates: "The Dan-Olsen Opportunity Score = Importance x (1 - Satisfaction); prioritize problems (opportunities), not features."
+    path: ex-strategy-opportunity-score-formula.md
+
+  # ---- structured-io ----
+  - id: ex-structured-io-named-variable-templating
+    category: structured-io
+    source_repo: f/prompts.chat
+    applies_to: [cagents:planner, cagents:technical-writer]
+    demonstrates: "Self-documenting ${Name:default} inline variables (with comma-enum defaults) as a readable superset of positional $0/$1 args."
+    path: ex-structured-io-named-variable-templating.md
+  - id: ex-structured-io-schema-role-contract
+    category: structured-io
+    source_repo: f/prompts.chat
+    applies_to: [cagents:data-scientist, cagents:task-state, cagents:backend-developer]
+    demonstrates: "role + input_schema + output_schema + instructions as an inline contract for data-transform agents (vague vs schema-constrained)."
+    path: ex-structured-io-schema-role-contract.md
+
+  # ---- security ----
+  - id: ex-security-allowed-tools-vs-actual
+    category: security
+    source_repo: NVIDIA/SkillSpector
+    applies_to: [cagents:security-engineer, cagents:reviewer]
+    demonstrates: "Diff declared allowed-tools against capabilities the body/code actually uses (LP1-4: undeclared use, wildcard, no-decl, over-decl)."
+    path: ex-security-allowed-tools-vs-actual.md
+  - id: ex-security-trigger-collision-abuse
+    category: security
+    source_repo: NVIDIA/SkillSpector
+    applies_to: [cagents:planner, cagents:security-engineer]
+    demonstrates: "Trigger-abuse checks (TR1-3): single-common-word triggers, shadow-command collisions with reserved skill names, keyword-baiting."
+    path: ex-security-trigger-collision-abuse.md

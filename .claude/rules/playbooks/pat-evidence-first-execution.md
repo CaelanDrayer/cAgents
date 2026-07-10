@@ -47,6 +47,10 @@ When controllers delegate questions, execution agents MUST respond with:
 
 Vague evidence creates phantom completions — work items that look done in coordination_log.yaml but have no actual verifiable artifact backing the claim. Hook-based recheck (e.g., `validator-evidence-recheck.cjs`) re-runs the cited verification methods (`fs.existsSync`, `grep`, `Bash` exec) and downgrades verdicts when claimed evidence does not actually verify. Specific evidence is the only kind a hook can verify; vague evidence is the only kind that survives a PASS-bias.
 
+## Distrust the self-report
+
+The executor's own account of its work is an unverified claim, not evidence. A `self_validation` YAML block, a `ponytail:` deliberate-shortcut marker, or a stated rationale like "kept it simple per YAGNI" or "validated elsewhere" should be checked against the actual diff — never taken at face value and never used to lower a finding's severity. If a claim cannot be located in the diff, that is a REVISE. See @.claude/rules/examples/ex-review-distrust-self-report.md.
+
 ## See also
 
 - `.claude/rules/core/resources/execution-self-validation.md` — Check 5 (file:line accuracy) enforces this pattern at self-validation time

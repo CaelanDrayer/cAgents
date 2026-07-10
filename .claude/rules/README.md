@@ -7,9 +7,10 @@ paths:
 
 Topic-specific rules organized for better maintainability. Counts in this index are derived from disk at edit time:
 
-- **Rule files**: 40 (`find .claude/rules -name '*.md' -type f | wc -l`)
+- **Rule files**: 40 (`find .claude/rules -name '*.md' -type f -not -path '*/examples/*' | wc -l`)
 - **Hook event types**: 18 (`jq -r '.hooks | keys | length' .claude/settings.json`)
 - **Version-registry slots**: 16 (post-v12.2.0; was 17 in v12.1.x, was 18 in V11.0)
+- **Example store** (`.claude/rules/examples/`): a distinct set of curated few-shot exemplars (`ex-*.md` + `README.md` + `_index.yaml`) — NOT rule files. Deliberately excluded from the "Rule files" count above (via `-not -path '*/examples/*'`) so the 40-rules invariant stays semantically true.
 
 When rule files are added, removed, or renamed, re-derive these numbers and update this header. The `scripts/ci/validate-counts.sh` CI guard verifies the load-bearing counts elsewhere in the repo (CLAUDE.md, hooks.md, settings.json, version-registry.md, docs/agents/index.md, docs/12-FACTOR-COMPLIANCE.md); this README is not in its check matrix but should still stay aligned with disk reality.
 
