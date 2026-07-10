@@ -66,3 +66,11 @@ Fallback: product.
 See @resources/product.md for the full product mode playbook.
 See @resources/roadmap.md for the roadmap mode playbook.
 See @resources/okr.md for the OKR mode playbook.
+
+## Worked Examples
+
+Pull these on demand during product prioritization and OKR work:
+
+- See @.claude/rules/examples/ex-strategy-opportunity-score-formula.md — the Opportunity Score (Importance x (1 - Satisfaction)) for prioritizing problems, not features.
+- See @.claude/rules/examples/ex-strategy-north-star-validator.md — classify the business (Attention/Transaction/Productivity) then validate a north-star candidate against 7 criteria plus an "NSM is NOT" list.
+- See @.claude/rules/examples/ex-strategy-red-team-fails-if.md — steelman then attack load-bearing assumptions as falsifiable "Fails if ___" statements, each with a cheapest test.

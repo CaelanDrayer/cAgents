@@ -75,3 +75,13 @@ See @resources/writing-frameworks.md for style guide and templates.
 ## Final AI-Detection Gate
 
 Before returning any documentation deliverable, run `cagents:ai-writing-editor` (mode=both) as the final AI-detection gate; the tells in `.claude/rules/quality/anti-slop.md` are the reference list.
+
+## Worked Examples
+
+Pull these distilled patterns on demand when the work calls for them:
+
+- See @.claude/rules/examples/ex-skill-authoring-pushy-description.md — writing a description that triggers reliably (what-it-does + keywords + explicit not-for boundaries).
+- See @.claude/rules/examples/ex-skill-authoring-progressive-disclosure.md — three load tiers and keeping a doc body under 500 lines with on-demand references.
+- See @.claude/rules/examples/ex-skill-authoring-explain-why-not-allcaps.md — reframing musty all-caps must/never phrasing as reasoned why.
+- See @.claude/rules/examples/ex-skill-authoring-rule-per-file-lint.md — one rule per file with a title/impact/incorrect-correct schema plus a build-and-validate step.
+- See @.claude/rules/examples/ex-structured-io-named-variable-templating.md — self-documenting ${Name:default} inline variables for fill-in templates.

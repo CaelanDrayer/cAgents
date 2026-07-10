@@ -54,3 +54,10 @@ Fallback: strategy.
 See @resources/strategy.md for the strategy mode's full playbook.
 See @resources/portfolio.md for the portfolio mode's full playbook.
 See @resources/scenario.md for the scenario mode's full playbook.
+
+## Worked Examples
+
+Pull these on demand during strategy work:
+
+- See @.claude/rules/examples/ex-strategy-red-team-fails-if.md — steelman then attack load-bearing assumptions; write each failure as a falsifiable "Fails if ___" with the cheapest test to run this week.
+- See @.claude/rules/examples/ex-strategy-opportunity-score-formula.md — the Opportunity Score (Importance x (1 - Satisfaction)) for ranking problems over features.

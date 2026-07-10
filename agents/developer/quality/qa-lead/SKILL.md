@@ -87,3 +87,13 @@ See @resources/code-review.md for code review full playbook.
 See @resources/standards-audit.md for standards auditing full playbook.
 See @resources/a11y.md for accessibility checking full playbook.
 See @resources/playwright.md for Playwright test engineering full playbook.
+
+## Worked Examples
+
+Pull the matching worked example when a review or audit is non-obvious:
+
+- See @.claude/rules/examples/ex-review-standards-vs-spec-two-axis.md — review standards and spec as two orthogonal axes, kept separate.
+- See @.claude/rules/examples/ex-review-safe-careful-risky.md — risk-tier findings safe / careful / risky with a Chesterton's-Fence check before removals.
+- See @.claude/rules/examples/ex-verification-intended-vs-implemented.md — audit code against documented intent boundary-by-boundary.
+- See @.claude/rules/examples/ex-verification-feedback-loop-first-debugging.md — build a red-capable reproduction loop before forming any debug hypothesis.
+- See @.claude/rules/examples/ex-skill-authoring-rule-per-file-lint.md — structure a standards-audit ruleset one rule per file with a build + validate step.

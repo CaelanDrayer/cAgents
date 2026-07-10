@@ -41,3 +41,7 @@ Fallback: state.
 See @resources/state.md for the state mode's full playbook (CSV schema, operations, context savings table).
 
 See @resources/merge.md for the merge mode's full playbook (splitting strategies, workflow, sizing rules).
+
+## Worked Examples
+
+- See @.claude/rules/examples/ex-structured-io-schema-role-contract.md — a role + input_schema + output_schema + instructions contract for transform-shaped work (vague prose vs a schema-constrained, checkable spec).

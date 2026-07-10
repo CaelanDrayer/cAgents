@@ -70,3 +70,7 @@ See @resources/stats.md for the stats mode's full playbook (statistical methods,
 See @resources/forecast.md for the forecast mode's full playbook (forecasting models, time series).
 See @resources/bi.md for the bi mode's full playbook (BI architecture, dashboards, ETL).
 See @resources/perf-metrics.md for the perf-metrics mode's full playbook (performance analysis, capacity planning).
+
+## Worked Examples
+
+- See @.claude/rules/examples/ex-structured-io-schema-role-contract.md — a role + input_schema + output_schema + instructions contract for data-transform work (vague prose vs a schema-constrained, checkable spec).

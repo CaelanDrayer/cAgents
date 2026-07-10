@@ -97,3 +97,7 @@ See @resources/creative-direction.md for creative-direction mode full playbook.
 See @resources/growth.md for growth mode full playbook.
 See @resources/ops.md for ops mode full playbook.
 See @resources/partnership.md for partnership mode full playbook.
+
+## Worked Examples
+
+- See @.claude/rules/examples/ex-strategy-north-star-validator.md — classify the business (Attention/Transaction/Productivity) then validate a north-star metric against 7 criteria plus an "NSM is NOT" list.

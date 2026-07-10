@@ -48,3 +48,7 @@ Fallback: ui.
 
 See @resources/ui.md for the full ui-mode playbook (including component patterns, accessibility, performance).
 See @resources/ux.md for the full ux-mode playbook (including design process, collaboration patterns, accessibility checklist).
+
+## Worked Examples
+
+- See @.claude/rules/examples/ex-minimalism-solution-ladder-before-after.md — over-abstraction vs a 3-line function; walk the minimal-solution ladder before adding structure.

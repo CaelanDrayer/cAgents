@@ -150,6 +150,16 @@ When the team manifest includes a template with waves, coordinate wave-by-wave w
 10. **Synthesis at end** — aggregate teammate outputs into coherent result.
 11. **Clean shutdown** — shut down teammates and TeamDelete when complete.
 
+## Worked Examples
+
+Pull the matching worked example when coordinating waves and gates:
+
+- See @.claude/rules/examples/ex-gates-context-budget-tiers.md — shift read-depth across peak / good / degrading / poor bands and checkpoint before forced compaction during long lead sessions.
+- See @.claude/rules/examples/ex-gates-taxonomy-four-types.md — name each wave gate pre-flight / revision / escalation / abort, with revision stall-detection.
+- See @.claude/rules/examples/ex-gates-deterministic-candidate-selection.md — bind each teammate spawn to named files and surface what was skipped.
+- See @.claude/rules/examples/ex-review-blind-dual-convergence.md — two independent blind reviewers at wave gates, both must pass.
+- See @.claude/rules/examples/ex-review-distrust-self-report.md — treat teammate self-reports as unverified claims to check against actual outputs.
+
 ---
 
 **Version**: 3.0

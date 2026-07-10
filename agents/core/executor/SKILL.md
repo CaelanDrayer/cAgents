@@ -111,3 +111,8 @@ continuations:
 ```
 
 See @resources/executor-patterns.md for monitoring and blocker handling.
+
+## Worked Examples
+
+- See @.claude/rules/examples/ex-gates-context-budget-tiers.md — shift monitoring read-depth across peak / good / degrading / poor bands and checkpoint before forced compaction.
+- See @.claude/rules/examples/ex-gates-deterministic-candidate-selection.md — bind each spawn to named files and record what was deliberately skipped.

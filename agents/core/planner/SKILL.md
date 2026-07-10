@@ -154,6 +154,24 @@ reuse an existing skill before rebuilding it with agents. See
 @.claude/skills/run/reference/skill-awareness.md for the full contract and the
 controller-side invocation/fallback.
 
+## Example-Store Few-Shot (advisory)
+
+During decomposition + delegation-prompt assembly, optionally consult the curated
+few-shot example store at `.claude/rules/examples/`. Read its catalog
+`.claude/rules/examples/_index.yaml`, filter entries by the request's detected
+`category` AND by `applies_to` overlap with the controllers/agents you are about
+to assign (treat `all-controllers` / `all-execution-agents` as wildcards), rank,
+and `@path`-load the **top 1-3** matching example bodies as few-shot guidance for
+work-item shaping and delegation prompts.
+
+This is **ADVISORY context, not a required pipeline step**. Cap at 1-3 bodies to
+bound token cost, and skip entirely when nothing matches (emit no empty header).
+It is the example-store sibling of the `## Pre-emptive Consultation` scan above.
+
+See @agents/core/planner/resources/example-store-selection.md for the full
+selection procedure (category detection, `_index.yaml` schema, filtering, ranking,
+the hard cap of 3, and a worked example).
+
 ## Detailed Reference
 
 See @resources/decomposition.md for the full aggressive-decomposition guidance absorbed from the pre-v12.0.0 decomposer agent (abstraction classification, 5-step framework, work item format, adaptive chain depth).
