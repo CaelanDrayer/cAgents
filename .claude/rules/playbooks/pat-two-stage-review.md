@@ -89,6 +89,37 @@ Treat the executor's own account of its work as an unverified claim, not as evid
 
 On each REVISE round, re-spawn a fresh reviewer with no carried context — it receives the diff and the rubric only. A reviewer that carries its own prior REVISE reasoning tends to anchor on that earlier judgment, so starting each round clean keeps the assessment independent. This is the canonical statement of the rule; `controllers.md` references it.
 
+## Auto-apply eligibility tiers (SAFE / CAREFUL / RISKY)
+
+Stage-2 severity (CRITICAL/HIGH/LOW) says how much a finding matters. A separate, orthogonal question is how safe the fix is to apply without a human in the loop. Tag each Stage-2 finding with one apply-eligibility tier so mechanical cleanups land immediately while real risks are surfaced rather than silently changed.
+
+| Tier | Rule | Examples |
+|------|------|----------|
+| **SAFE** | Auto-apply, no confirmation | unused imports, dead variables, obvious string typos |
+| **CAREFUL** | Apply, then re-run the guard for that one file to confirm nothing broke | rename a local variable, extract a private helper |
+| **RISKY** | Flag only — never auto-apply | public API rename, signature change, behavior-affecting edit |
+
+The tier is independent of severity: a HIGH finding can be SAFE (an unused import that trips a lint gate), and a LOW finding can be RISKY (a cosmetic rename of a public export). Decide the tier by blast radius, not by how much the finding matters.
+
+**Chesterton's-Fence rule**: before flagging any code for removal, run `git blame` on it. If you cannot determine why it exists, treat the fix as flag-only regardless of its apparent tier, and record `confidence: low` — do not delete code whose purpose is unclear.
+
+See @.claude/rules/examples/ex-review-safe-careful-risky.md for a worked example with a findings-log shape.
+
+## Optional variant: two-axis parallel review
+
+The default remains the sequential two-stage flow above (Stage 1 then Stage 2). This variant is an optional alternative for a controller that wants the two concerns assessed at once by independent reviewers.
+
+Spawn two sub-reviewers in one message and give each the entire diff:
+
+- **Standards axis** — checks the diff against repo conventions and a fixed code-smell baseline.
+- **Spec axis** — checks the diff against the originating work item and acceptance criteria, plus a sub-check for **undocumented scope creep**: changed lines that trace to no criterion.
+
+Keep the two reports separate. Do not merge them into a single PASS/score, because a change can pass one axis and fail the other — clean code implementing the wrong feature (`Standards: PASS / Spec: FAIL`), or the right feature written as a mess (`Standards: FAIL / Spec: PASS`). Merging masks that split.
+
+Fowler 12-smell baseline the standards reviewer can cite: Mysterious Name, Duplicated Code, Feature Envy, Data Clumps, Primitive Obsession, Repeated Switches, Shotgun Surgery, Divergent Change, Speculative Generality, Message Chains, Middle Man, Refused Bequest.
+
+See @.claude/rules/examples/ex-review-standards-vs-spec-two-axis.md for the full variant with reviewer prompts.
+
 ## Coordination log format
 
 ```yaml

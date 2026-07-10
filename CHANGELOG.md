@@ -10,6 +10,76 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.40.0] - 2026-07-10
+
+Bucket-C Phase 4, part 2 — **advisory-first enforcement hooks** (C1, D3). Both are
+WARN-only extensions of EXISTING hooks — no new hook file, no hook-count change,
+and each carries a proven decision-unchanged guarantee. This is the honest "start
+advisory, flip to blocking later" path.
+
+### Added
+- **C1 — mechanical self-validation recheck** (WARN-only) in `verify-completion.cjs`:
+  a new additive pass reads `self_validation` claims from `coordination_log.yaml`
+  `implementation_tasks[]` and `outputs/**/self-validation.yaml`, then mechanically
+  checks **Check 2** (claimed file exists via `fs.existsSync`) and **Check 3** (guard
+  `exit_code == 0`). Mismatches surface via `console.error` + a
+  `workflow/self_validation_recheck.yaml` artifact. The hook's block/allow verdict is
+  byte-identical to before (verified by test); mismatches only warn, never block.
+- **D3 — mechanical claim-verification** (advisory) in `validator-evidence-recheck.cjs`:
+  a Node-only (no LLM, no network) pass that extracts checkable claims from
+  `validation_report.yaml` (`pattern_count` / `pattern_exists` / `pattern_absent` /
+  `file_exists` / `code_snippet` / `arithmetic`), dispositions each as
+  verified/failed/unsupported/unverifiable (with the `prose-of-absence`,
+  `snippet_in_wrong_file`, `line-number-as-count` guards), and computes `passRate`.
+  When `passRate < 0.8` with ≥2 checkable claims it WARNs + appends a
+  `claim_verification:` block. Hard auto-route-to-PLANNED is deliberately deferred —
+  the existing PASS→FAIL evidence downgrade is unchanged.
+- Regression tests: `tests/hooks/self-validation-recheck.test.js` (4) and
+  `tests/hooks/claim-verification.test.js` (8), each asserting the new behavior AND
+  that the host hook's existing decision is unchanged.
+
+### Changed
+- Ledger + docs updated to reflect the new partial enforcement: `execution.md`
+  Enforced-vs-Advisory ledger now marks self-val Check 2/3 as
+  `Partial (WARN-rechecked at Stop)`; `execution-self-validation.md` and
+  `pat-evidence-first-execution.md` document the two passes honestly (they WARN, they
+  do not block).
+- Test-count claim refreshed to `1435+ Vitest tests across 175+ files`.
+
+## [12.39.0] - 2026-07-10
+
+Bucket-C Phase 4, part 1 — review/verification **conventions** (session
+`team_phase4-review-rigor_260710_001`). Additive prose/playbooks/scripts only; no
+new enforcement (the C1/D3 advisory hooks land separately in 12.40.0). Several
+sections reference the distilled example-store files wired in 12.38.0.
+
+### Added
+- **3 new playbooks** (spec-compliant 6-key frontmatter):
+  - `pat-gate-taxonomy.md` (D6) — four checkpoint types (Pre-flight / Revision /
+    Escalation / Abort) mapped onto cAgents surfaces, plus the stall-detection
+    rule (escalate early if findings do not shrink between rounds).
+  - `pat-feedback-loop-first-debugging.md` (D8) — tight-repro-loop-before-hypothesis,
+    the 10-strategy ladder, RED-before-fix, ranked falsifiable hypotheses, and
+    `[DEBUG-<hash>]` tagged logs with mandatory grep-cleanup before DONE.
+  - `pat-context-budget-tiers.md` (D9, advisory) — proactive PEAK/GOOD/DEGRADING/POOR
+    self-monitored read-depth bands + the vague-phrasing early-warning heuristic.
+- **File-handoff helper scripts** (D10) under `scripts/handoff/`: `task-brief.sh`
+  (extract one work-item block to a uniquely-named brief) and `review-package.sh`
+  (bundle a diff for a reviewer sub-agent), backing the "delegation prompt under
+  300 tokens" prose rule mechanically. Plus a `scripts/handoff/README.md`.
+
+### Changed
+- `pat-two-stage-review.md`: added **D5** SAFE/CAREFUL/RISKY auto-apply tiers
+  (orthogonal to severity) + the Chesterton's-Fence `git blame`-before-removal rule,
+  and an optional **D11** two-axis (Standards vs Spec, never-merged) parallel-review
+  variant with the Fowler 12-smell baseline + an undocumented-scope-creep sub-check.
+- **D7** Rule-of-Three architecture-question escalation branch added (advisory) to
+  `controllers.md` and `agents/core/self-correct/SKILL.md`: when 2-3 consecutive
+  fixes each relocate rather than shrink the failure, set `architecture_question:
+  true` and escalate to the user instead of burning revision budget / dead-lettering.
+- Playbook/rule counts synced: 40→43 rule files, 9→12 playbooks (CLAUDE.md +
+  `.claude/rules/README.md`).
+
 ## [12.38.0] - 2026-07-10
 
 Bucket-C Phase 3 — **wire the example store** (session `team_wire-example-store_260710_001`).

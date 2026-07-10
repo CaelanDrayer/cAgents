@@ -14,6 +14,12 @@ const fs = require('fs');
 const path = require('path');
 const { createHook, findActiveSession, findMostRecentSessionDir, TERMINAL_STATES, extractYamlValue, safeRead, countPattern, ensureDir, PROJECT_ROOT, AGENT_MEMORY_DIR, withFileLock } = require('./hook-utils.cjs');
 
+// Guarded js-yaml require — used ONLY by the advisory self-validation recheck (C1).
+// Mirrors the team-stop.cjs pattern: a missing js-yaml degrades the recheck to a
+// no-op rather than crashing the Stop hook (the recheck is purely advisory).
+let _svYaml = null;
+try { _svYaml = require('js-yaml'); } catch { _svYaml = null; }
+
 /**
  * Claude Code SDK transcript UUID shape (8-4-4-4-12 lowercase hex). Hook payloads
  * carry these in input.session_id; they are NOT cAgents session directory names.
@@ -1110,6 +1116,212 @@ function verifyCompletion(sessionDir) {
   return { issues, warnings };
 }
 
+// ====================================================================
+// C1 (advisory-first): WARN-only self-validation recheck at Stop.
+//
+// Mechanizes the two DETERMINISTICALLY-checkable checks from
+// .claude/rules/core/resources/execution-self-validation.md:
+//   Check 2 (file existence): every claimed-existing file path really exists.
+//   Check 3 (guard exit codes): every claimed guard ran with exit_code === 0
+//                               (a missing exit_code on a claimed guard is a
+//                               mismatch too).
+//
+// This is PURELY ADVISORY. It is invoked for its side effects AFTER
+// verifyCompletion() has already computed the block/allow/warn verdict, it
+// NEVER contributes to issues[]/warnings[], and its return value is discarded
+// by the handler. The Stop hook's returned decision is therefore byte-identical
+// whether or not this pass runs. Findings surface via console.error (stderr ->
+// user verbose mode) and a NEW file workflow/self_validation_recheck.yaml. The
+// whole thing is wrapped so it can NEVER throw out of the hook.
+// ====================================================================
+
+/**
+ * Recursively find any self-validation artifact files under a directory
+ * (outputs/**\/self-validation.yaml, from graceful-degradation / status-protocol
+ * writers). Bounded, best-effort, never throws.
+ */
+function findSelfValidationFiles(dir) {
+  const found = [];
+  const stack = [dir];
+  let guard = 0;
+  while (stack.length && guard < 5000) {
+    guard++;
+    const cur = stack.pop();
+    let entries;
+    try { entries = fs.readdirSync(cur, { withFileTypes: true }); } catch { continue; }
+    for (const ent of entries) {
+      const full = path.join(cur, ent.name);
+      try {
+        if (ent.isDirectory()) {
+          stack.push(full);
+        } else if (ent.isFile() && /^self[-_]validation\.ya?ml$/i.test(ent.name)) {
+          found.push(full);
+        }
+      } catch { /* skip unreadable entry */ }
+    }
+  }
+  return found;
+}
+
+/**
+ * Persist the advisory recheck findings to workflow/self_validation_recheck.yaml.
+ * A brand-new file — this function NEVER mutates coordination_log.yaml,
+ * completion_summary.yaml, or any decision-bearing artifact.
+ */
+function writeRecheckReport(sessionDir, report) {
+  try {
+    ensureDir(path.join(sessionDir, 'workflow'));
+    const outPath = path.join(sessionDir, 'workflow', 'self_validation_recheck.yaml');
+    const lines = [
+      '# Self-Validation Recheck (C1 — advisory / WARN-only)',
+      '# Mechanical recheck of execution-self-validation.md Check 2 (file existence)',
+      '# and Check 3 (guard exit codes) by verify-completion.cjs at Stop.',
+      '# ADVISORY ONLY: this file does NOT block the Stop hook or alter its decision.',
+      `generated_at: "${new Date().toISOString()}"`,
+      `session_id: "${path.basename(sessionDir)}"`,
+      'advisory: true',
+      `blocks_checked: ${report.checked}`,
+      `file_claims_checked: ${report.file_claims}`,
+      `guard_claims_checked: ${report.guard_claims}`,
+      `mismatch_count: ${report.mismatches.length}`,
+    ];
+    if (report.sources.length > 0) {
+      lines.push('sources:');
+      for (const s of report.sources) lines.push(`  - "${s}"`);
+    } else {
+      lines.push('sources: []');
+    }
+    if (report.mismatches.length > 0) {
+      lines.push('mismatches:');
+      for (const m of report.mismatches) {
+        lines.push(`  - type: "${m.type}"`);
+        if (m.path !== undefined) lines.push(`    path: "${String(m.path).replace(/"/g, '\\"')}"`);
+        if (m.guard !== undefined) lines.push(`    guard: "${String(m.guard).replace(/"/g, '\\"')}"`);
+        if (m.exit_code !== undefined) lines.push(`    exit_code: ${JSON.stringify(m.exit_code)}`);
+        if (m.task) lines.push(`    task: "${String(m.task).replace(/"/g, '\\"')}"`);
+        lines.push(`    source: "${m.source}"`);
+      }
+    } else {
+      lines.push('mismatches: []');
+    }
+    fs.writeFileSync(outPath, lines.join('\n') + '\n');
+  } catch (e) {
+    console.error(`[VerifyCompletion] self-validation recheck write failed (non-fatal): ${e && e.message}`);
+  }
+}
+
+/**
+ * Gather self_validation claims from the session's on-disk artifacts and
+ * mechanically recheck Check 2 (file existence) and Check 3 (guard exit codes).
+ *
+ * Sources (read-only):
+ *   (a) workflow/coordination_log.yaml -> implementation_tasks[].self_validation
+ *   (b) outputs/**\/self-validation.yaml (block at top level OR under `self_validation:`)
+ *
+ * @param {string} sessionDir - absolute session directory path
+ * @returns {{checked:number, file_claims:number, guard_claims:number,
+ *            mismatches:Array<object>, sources:string[]}}
+ */
+function recheckSelfValidation(sessionDir) {
+  const report = { checked: 0, file_claims: 0, guard_claims: 0, mismatches: [], sources: [] };
+  try {
+    if (!_svYaml) return report; // js-yaml unavailable — advisory feature degrades to a no-op
+
+    const blocks = []; // { source, sv, ref }
+
+    // (a) coordination_log.yaml implementation_tasks[].self_validation
+    const coordRaw = safeRead(path.join(sessionDir, 'workflow', 'coordination_log.yaml'));
+    if (coordRaw) {
+      let coordDoc = null;
+      try { coordDoc = _svYaml.load(coordRaw); } catch { coordDoc = null; }
+      const tasks = coordDoc && (coordDoc.implementation_tasks || coordDoc.implementationTasks);
+      if (Array.isArray(tasks)) {
+        for (const t of tasks) {
+          if (t && typeof t === 'object' && t.self_validation && typeof t.self_validation === 'object') {
+            blocks.push({ source: 'workflow/coordination_log.yaml', sv: t.self_validation, ref: t.task_id || t.id || null });
+          }
+        }
+      }
+    }
+
+    // (b) outputs/**\/self-validation.yaml
+    for (const svFile of findSelfValidationFiles(path.join(sessionDir, 'outputs'))) {
+      const raw = safeRead(svFile);
+      if (!raw) continue;
+      let doc = null;
+      try { doc = _svYaml.load(raw); } catch { doc = null; }
+      if (!doc || typeof doc !== 'object') continue;
+      const sv = (doc.self_validation && typeof doc.self_validation === 'object') ? doc.self_validation : doc;
+      let rel;
+      try { rel = path.relative(sessionDir, svFile); } catch { rel = svFile; }
+      blocks.push({ source: rel, sv, ref: doc.task_id || doc.id || null });
+    }
+
+    for (const { source, sv, ref } of blocks) {
+      report.checked++;
+      if (!report.sources.includes(source)) report.sources.push(source);
+
+      // Check 2: file existence — every claimed-existing path must exist on disk.
+      const fe = sv.file_existence || sv.fileExistence;
+      const claimed = fe && (fe.files_claimed_to_exist || fe.filesClaimedToExist);
+      if (Array.isArray(claimed)) {
+        for (const entry of claimed) {
+          const p = (entry && typeof entry === 'object')
+            ? (entry.path || entry.file)
+            : (typeof entry === 'string' ? entry : null);
+          if (!p || typeof p !== 'string') continue;
+          report.file_claims++;
+          // Resolve relative to sessionDir OR PROJECT_ROOT (mirrors the sentinel gate).
+          const candidates = [path.resolve(sessionDir, p), path.resolve(PROJECT_ROOT, p)];
+          const exists = candidates.some(c => { try { return fs.existsSync(c); } catch { return false; } });
+          if (!exists) {
+            report.mismatches.push({ type: 'file_missing', path: p, source, task: ref });
+          }
+        }
+      }
+
+      // Check 3: guard exit codes — every claimed guard must have exit_code === 0.
+      const guards = sv.guard_results || sv.guardResults;
+      if (Array.isArray(guards)) {
+        for (const g of guards) {
+          if (!g || typeof g !== 'object') continue;
+          report.guard_claims++;
+          const name = g.name || g.command || 'unknown';
+          const hasExit = Object.prototype.hasOwnProperty.call(g, 'exit_code')
+            || Object.prototype.hasOwnProperty.call(g, 'exitCode');
+          const exit = g.exit_code !== undefined ? g.exit_code : g.exitCode;
+          if (!hasExit || exit === null || exit === undefined) {
+            report.mismatches.push({ type: 'guard_missing_exit_code', guard: name, source, task: ref });
+          } else if (Number(exit) !== 0) {
+            report.mismatches.push({ type: 'guard_nonzero_exit', guard: name, exit_code: exit, source, task: ref });
+          }
+        }
+      }
+    }
+
+    if (report.checked > 0) {
+      if (report.mismatches.length > 0) {
+        const summary = report.mismatches.map(m =>
+          m.type === 'file_missing' ? `missing file ${m.path}`
+            : m.type === 'guard_nonzero_exit' ? `guard ${m.guard} exit_code ${m.exit_code}`
+              : `guard ${m.guard} missing exit_code`
+        ).join('; ');
+        console.error(
+          `[VerifyCompletion] self-validation recheck (advisory, WARN-only): ` +
+          `${report.mismatches.length} mismatch(es) across ${report.checked} block(s) — ${summary}`
+        );
+      } else {
+        console.error(`[VerifyCompletion] self-validation recheck (advisory): ${report.checked} block(s) verified, 0 mismatches`);
+      }
+      writeRecheckReport(sessionDir, report);
+    }
+  } catch (e) {
+    // NEVER throw out of the Stop hook — advisory pass only.
+    console.error(`[VerifyCompletion] self-validation recheck error (non-fatal, advisory): ${e && e.message}`);
+  }
+  return report;
+}
+
 createHook('VerifyCompletion', async (input) => {
   // Prevent infinite loops: if stop_hook_active, allow stop
   if (input && input.stop_hook_active) {
@@ -1219,6 +1431,13 @@ createHook('VerifyCompletion', async (input) => {
 
   // Finalize agent lifecycle data (stopped_at, duration_ms) for terminal sessions
   finalizeSessionLifecycle(sessionDir);
+
+  // C1 (advisory-first): WARN-only self-validation recheck. Runs AFTER the verdict
+  // in `result` is already computed and does NOT feed back into it — the return
+  // value is intentionally discarded. This keeps the hook's returned block/allow/
+  // warn decision byte-identical while surfacing Check-2/Check-3 mismatches via
+  // stderr + workflow/self_validation_recheck.yaml. Wrapped so it never throws.
+  recheckSelfValidation(sessionDir);
 
   // PC-09: Plan-Scoped Learning Capture (V10.17.0)
   // Write learnings.yaml at session end to capture structured learnings

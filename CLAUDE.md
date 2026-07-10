@@ -82,9 +82,9 @@ domains/        # engineering, grow, operate, people, serve (5 files)
 infrastructure/ # model-routing (1 file)
 memory/         # agent-memory (2 files)
 quality/        # completion, validation-framework, implicit-discovery (5 top-level + 1 resources/)
-playbooks/      # pat-* reusable patterns (8 pat-* + README = 9 files)
+playbooks/      # pat-* reusable patterns (11 pat-* + README = 12 files)
 ```
-Total: 40 .md = 34 top-level across 6 categories + 2 READMEs (root + playbooks/) + 4 resources/.
+Total: 43 .md = 37 top-level across 6 categories + 2 READMEs (root + playbooks/) + 4 resources/.
 
 **Import Syntax**: Use `@path/to/file` to include external content. View loaded files: `/memory`
 
@@ -390,7 +390,7 @@ cAgents/
 |   +-- hooks/               # 32 .cjs files (24 registered hooks + 5 dispatched sub-validators + utils + launcher + bash-guard-evaluator library)
 |   +-- output-styles/       # Output-style files
 |   +-- plans/               # Saved execution plans
-|   +-- rules/               # Modular rules (40 files: 34 top-level across 6 categories + 2 READMEs (root + playbooks/) + 4 in resources/)
+|   +-- rules/               # Modular rules (43 files: 37 top-level across 6 categories + 2 READMEs (root + playbooks/) + 4 in resources/)
 |   +-- settings.json        # Hook registration + permissions + env
 +-- agents/                  # All 58 agents (42 routable + 16 core)
 |   +-- developer/           # Developer archetype (8 agents — backend/frontend/fullstack/infrastructure/quality)
@@ -548,8 +548,8 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking and
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: 5-state pipeline with two execution paths (fast/standard — `fast` skips the orchestrator for tier-2-clear requests), revision routing (FAIL/REVISE), reviewer loops
-**Tests**: `npm test` runs 1418+ Vitest tests across 172+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.38.0
+**Tests**: `npm test` runs 1435+ Vitest tests across 175+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
+**Version**: 12.40.0
 
 ## Troubleshooting
 

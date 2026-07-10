@@ -47,6 +47,28 @@ When controllers delegate questions, execution agents MUST respond with:
 
 Vague evidence creates phantom completions — work items that look done in coordination_log.yaml but have no actual verifiable artifact backing the claim. Hook-based recheck (e.g., `validator-evidence-recheck.cjs`) re-runs the cited verification methods (`fs.existsSync`, `grep`, `Bash` exec) and downgrades verdicts when claimed evidence does not actually verify. Specific evidence is the only kind a hook can verify; vague evidence is the only kind that survives a PASS-bias.
 
+## Mechanical claim-verification pass (D3 — advisory)
+
+`validator-evidence-recheck.cjs` also runs an **additive, advisory** claim-verification pass over every `validation_report.yaml` it sees. It treats the whole report as a set of extractable claims and dispositions each one **mechanically — grep + `fs` + math only, no LLM and no network** — into one of four buckets:
+
+| Disposition | Meaning | Counts toward |
+|-------------|---------|---------------|
+| `verified` | matches reality | pass |
+| `failed` | contradicts reality | fail |
+| `unsupported` | checkable-shaped but guarded/unreadable | neither |
+| `unverifiable` | out of scope (runtime-only) | neither |
+
+Claim types recognized: `pattern_count` ("N occurrences of X in FILE" → literal count in the cited file), `pattern_exists` / `pattern_absent` (grep boolean), `file_exists` (`fs.existsSync`), `code_snippet` (`FILE:LINE - snippet` → substring search in the cited file), and `arithmetic` (`N% of BASE = RESULT`, `A op B = C` → recompute).
+
+Three guards keep the checker from producing its own false negatives:
+- **prose-of-absence** — an absence claim ("no cache headers") with no explicit file citation → `unsupported` (absence needs evidence).
+- **snippet_in_wrong_file** — a snippet absent from the cited file but present in a sibling / other cited file → `unsupported` (the claim is close; the file ref is wrong), not `failed`.
+- **line-number-as-count** — `foo.ts:42`-style line refs are stripped/skipped when matching count claims so the line number is never read as a count.
+
+The pass computes `passRate = verified / (verified + failed)` (with `checkable_claims = verified + failed`). When **`passRate < 0.8` AND `checkable_claims >= 2`**, it `console.error` a WARN and appends a `claim_verification:` block (pass_rate, per-claim dispositions, `top_failures`) to the report on disk.
+
+This pass is **advisory-first**: it annotates and warns only. It does **not** change the report's `classification`, does **not** route back to PLANNED, and does **not** touch pipeline state (hard re-route is deferred). The existing PASS→FAIL evidence downgrade is untouched. See @.claude/rules/examples/ex-verification-mechanical-claim-check.md for the claim taxonomy, guards, and the passRate gate this pass imports.
+
 ## Distrust the self-report
 
 The executor's own account of its work is an unverified claim, not evidence. A `self_validation` YAML block, a `ponytail:` deliberate-shortcut marker, or a stated rationale like "kept it simple per YAGNI" or "validated elsewhere" should be checked against the actual diff — never taken at face value and never used to lower a finding's severity. If a claim cannot be located in the diff, that is a REVISE. See @.claude/rules/examples/ex-review-distrust-self-report.md.

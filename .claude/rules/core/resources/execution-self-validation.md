@@ -6,9 +6,9 @@
 
 The previous version of this file defined fifteen checks grouped into five categories (Acceptance Criteria, Side Effects, Completeness, Evidence Freshness, Regression). Per the v12 trigger doc (`revamp-design-v2.md` Q8 "Validation honesty"), most of those 15 were aspirational — agents were asked to claim them in `self_validation` YAML but no hook ever verified the claims, and `post-write-validator.cjs` / `verify-completion.cjs` only had logic for a small subset. Aspirational checks are worse than honest absence: they create the appearance of rigor without the substance, and they inflate every agent's context.
 
-The v12 contract drops to exactly 5 checks, all of which are *designed to be* mechanically verifiable by a hook. Each check ties to a concrete verification mechanism — timestamps, `fs.existsSync`, exit codes, `git status`, or `grep`/`sed` content checks — not to subjective judgment. **Important honesty note**: no hook currently runs these checks. The checks are agent-self-reported today; the verifier hook that would mechanically enforce them is deferred to a future bump. The "Planned hook verification:" lines below describe how a future hook *would* verify each check, not behavior that runs today. If a future check cannot be verified by a hook, it does not belong in this protocol; it belongs in reviewer/validator prose or a code-quality gate elsewhere.
+The v12 contract drops to exactly 5 checks, all of which are *designed to be* mechanically verifiable by a hook. Each check ties to a concrete verification mechanism — timestamps, `fs.existsSync`, exit codes, `git status`, or `grep`/`sed` content checks — not to subjective judgment. **Important honesty note**: as of the C1 advisory-first bump, **Check 2 (file existence) and Check 3 (guard exit codes)** are now mechanically **WARN-rechecked at Stop** by `verify-completion.cjs` — advisory only: it re-runs `fs.existsSync` on claimed-existing paths and inspects recorded `guard_results[].exit_code`, then logs mismatches to stderr and writes `workflow/self_validation_recheck.yaml`. It **warns, it does not block** — the Stop hook's block/allow/warn decision is byte-identical whether or not the recheck finds mismatches. Checks 1, 4, and 5 remain agent-self-reported (their "Planned hook verification:" lines describe how a future hook *would* verify them, not behavior that runs today — although Check 5's file:line citations are separately post-write rechecked by `validator-evidence-recheck.cjs`; see the execution.md ledger). If a future check cannot be verified by a hook, it does not belong in this protocol; it belongs in reviewer/validator prose or a code-quality gate elsewhere.
 
-## The 5 Checks (mechanically-checkable by design; verifier hook deferred)
+## The 5 Checks (Check 2 + Check 3 WARN-rechecked at Stop; Checks 1/4/5 verifier hook deferred)
 
 ### Check 1: Acceptance criteria evidence freshness
 
@@ -19,17 +19,17 @@ Every piece of evidence cited in the `self_validation` YAML was gathered AFTER i
 
 ### Check 2: File existence claims
 
-Every file path cited as "exists" or "created" in evidence actually exists on disk at the time of self-validation. Planned hook verification (deferred — not enforced today): for each `file_exists` claim, run `fs.existsSync(path)`; fail if any claimed file is missing.
+Every file path cited as "exists" or "created" in evidence actually exists on disk at the time of self-validation. **Hook verification (WARN-rechecked at Stop, advisory — C1):** `verify-completion.cjs` gathers `file_existence.files_claimed_to_exist[].path` from `workflow/coordination_log.yaml` (`implementation_tasks[].self_validation`) and from any `outputs/**/self-validation.yaml`, then runs `fs.existsSync` on each (resolved against the session dir and the project root). A missing path is logged to stderr and appended to `workflow/self_validation_recheck.yaml` as a `file_missing` mismatch. This **warns only — it never blocks** and never changes the Stop hook's decision.
 
-- **Verification mechanism**: `fs.existsSync(absolute_path)`
-- **Failure**: Report NEEDS_CONTEXT with `missing_context: ["Claimed file path does not exist: {path}"]` (the agent likely needs to re-run the create step)
+- **Verification mechanism**: `fs.existsSync(absolute_path)` — now run mechanically by `verify-completion.cjs` at Stop (WARN, non-blocking)
+- **Failure**: Report NEEDS_CONTEXT with `missing_context: ["Claimed file path does not exist: {path}"]` (the agent likely needs to re-run the create step). The Stop-time recheck additionally records the mismatch in `workflow/self_validation_recheck.yaml`.
 
 ### Check 3: Test/lint/typecheck exit codes
 
-If any guard command (`npm test`, `npx vitest run`, `tsc --noEmit`, `npm run lint`, etc.) was run as part of this work item, its exit code is captured AND equals 0 (PASS). Planned hook verification (deferred — not enforced today): parse the recorded `guard_results[]` array; reject any entry with `exit_code != 0` or `exit_code: null` when a guard was claimed to run.
+If any guard command (`npm test`, `npx vitest run`, `tsc --noEmit`, `npm run lint`, etc.) was run as part of this work item, its exit code is captured AND equals 0 (PASS). **Hook verification (WARN-rechecked at Stop, advisory — C1):** `verify-completion.cjs` parses each recorded `guard_results[]` entry from the same sources as Check 2; any entry with `exit_code != 0` (a `guard_nonzero_exit` mismatch) or a missing/`null` `exit_code` on a claimed guard (a `guard_missing_exit_code` mismatch) is logged to stderr and appended to `workflow/self_validation_recheck.yaml`. This **warns only — it never blocks** and never changes the Stop hook's decision.
 
-- **Verification mechanism**: exit-code check on recorded guard command results
-- **Failure**: Report DONE_WITH_CONCERNS with `concerns: ["Guard command {cmd} failed with exit_code {N}"]`
+- **Verification mechanism**: exit-code check on recorded guard command results — now run mechanically by `verify-completion.cjs` at Stop (WARN, non-blocking)
+- **Failure**: Report DONE_WITH_CONCERNS with `concerns: ["Guard command {cmd} failed with exit_code {N}"]`. The Stop-time recheck additionally records the mismatch in `workflow/self_validation_recheck.yaml`.
 
 ### Check 4: Git working-tree state
 

@@ -142,6 +142,16 @@ TRY: {next_step_from_ladder}
 DO NOT repeat: {failed_approaches}
 ```
 
+## Rule-of-Three: Architecture-Question Escalation
+
+Distinct from stuck-detection (the *same* failure recurring), this is the whack-a-mole signal: 2-3 consecutive fixes where each one resolves the reported failure but surfaces a *new* problem elsewhere. A relocating failure is a design smell, not a code bug — the fixes are treating symptoms of a structural mismatch, so more rounds just move the failure around.
+
+When you detect it, do not keep fixing and do not silently promote to dead_letter:
+
+1. **Trigger**: 2-3 fixes in a row, each closing the prior failure but spawning a fresh downstream one (the failure set moves rather than shrinks).
+2. **Action**: Stop the fix/re-validate loop for that item. Set `architecture_question: true` in the session's coordination_log / validation record, summarize the pattern for the user (the sequence of fixes and where each new failure appeared), and ask for an architecture-level decision — change the interface, re-scope the acceptance criteria, or accept a documented tradeoff.
+3. **Why**: One escalation is cheaper than exhausting the 3 correction cycles on a moving target only the user can re-scope. Escalating here is a considered decision, not a failure.
+
 ## Crash Recovery Taxonomy (V10.18.0)
 
 Typed failure classification with specific recovery strategies per failure type.
