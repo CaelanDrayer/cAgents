@@ -2,7 +2,7 @@
 #
 # cAgents CI Runner
 # Self-contained CI script for quality gates
-# Version: 12.40.0
+# Version: 12.41.0
 #
 # Usage:
 #   ./scripts/ci/cagents-ci.sh [command]
@@ -16,6 +16,7 @@
 #   contract   - (removed in v12.6.0; no-op for back-compat)
 #   tiny-bump   - Run tiny-bump guard (BLOCKING as of V10.26.5; set
 #                 CAGENTS_TINY_BUMP_BLOCK=0 to fall back to warn-only)
+#   advisory    - Run advisory validators (F6, WARN-only; never blocks CI)
 #   all         - Run all checks
 #
 # Exit codes:
@@ -534,13 +535,43 @@ check_counts() {
 }
 
 #
+# Advisory validators (F6, WARN-only)
+#
+# Runs scripts/ci/run-advisory.cjs, the driver that F1-F4 advisory validators
+# plug into. This stage is ADVISORY: the runner always exits 0 and its result
+# NEVER flips the overall CI pass/fail. Findings are surfaced for visibility
+# only, and baseline-suppressed findings (scripts/ci/validator-baseline.yaml)
+# are dropped before display.
+#
+check_advisory() {
+    log_section "ADVISORY VALIDATORS (WARN-only)"
+
+    local runner="$PROJECT_ROOT/scripts/ci/run-advisory.cjs"
+    if [[ ! -f "$runner" ]]; then
+        log_warn "check_advisory: run-advisory.cjs not found; skipping"
+        return 0
+    fi
+
+    if ! command -v node &> /dev/null; then
+        log_warn "check_advisory: node not available; skipping"
+        return 0
+    fi
+
+    # WARN-only: the runner always exits 0, but guard with `|| true` so `set -e`
+    # can never let this stage abort or fail the CI run.
+    node "$runner" 2>&1 || true
+    log_info "check_advisory: advisory validators ran (WARN-only, non-blocking)"
+    return 0
+}
+
+#
 # Main execution
 #
 main() {
     local command="${1:-all}"
     local exit_code=0
 
-    log_section "cAgents CI Runner v12.40.0"
+    log_section "cAgents CI Runner v12.41.0"
     log_info "Project root: $PROJECT_ROOT"
     log_info "Command: $command"
 
@@ -569,6 +600,11 @@ main() {
         counts)
             check_counts || exit_code=7
             ;;
+        advisory)
+            # WARN-only stage: check_advisory always returns 0, so it can never
+            # set a non-zero exit_code.
+            check_advisory
+            ;;
         all)
             validate_agents || exit_code=1
             lint_docs || exit_code=$((exit_code > 0 ? exit_code : 2))
@@ -577,10 +613,13 @@ main() {
             run_contract_tests || exit_code=$((exit_code > 0 ? exit_code : 5))
             check_tiny_bump || exit_code=$((exit_code > 0 ? exit_code : 6))
             check_counts || exit_code=$((exit_code > 0 ? exit_code : 7))
+            # Advisory validators run LAST as a non-blocking stage — this call
+            # never flips exit_code (check_advisory always returns 0).
+            check_advisory
             ;;
         *)
             echo "Unknown command: $command"
-            echo "Usage: $0 [validate|lint|check|contract|evals|test|tiny-bump|counts|all]"
+            echo "Usage: $0 [validate|lint|check|contract|evals|test|tiny-bump|counts|advisory|all]"
             exit 1
             ;;
     esac
