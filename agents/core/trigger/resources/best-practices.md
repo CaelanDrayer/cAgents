@@ -76,6 +76,6 @@
 ## Collaboration Touchpoints
 
 - **With orchestrator**: Trigger is orchestrator's sole spawner in the standard pipeline — after creating session files and validating the request, trigger spawns orchestrator via Agent tool with session path and request context
-- **With the `/team` skill loop**: In `/run --team` mode, trigger routes to the `/team` skill loop instead of orchestrator after pre-flight validation — the `/team` loop handles TeamCreate and parallel execution (the pre-v12.0.0 `team-trigger` agent that previously owned this was removed and inlined into the `/team` skill loop)
+- **With the `/team` skill loop**: In `/run --team` mode, trigger routes to the `/team` skill loop instead of orchestrator after pre-flight validation — the `/team` loop handles concurrent-Agent wave execution (teams are implicit since v2.1.178 — no TeamCreate; the pre-v12.0.0 `team-trigger` agent that previously owned this was removed and inlined into the `/team` skill loop)
 - **With router**: Router is the first agent orchestrator spawns — router's tier classification and domain confirmation are informed by trigger's initial detection; they should agree on domain and tier
 - **With hooks (subagent-tracker.cjs)**: The SubagentStart hook reads status.yaml to find the active session when the orchestrator spawns — trigger's session file creation order is a hard dependency for the audit trail to work correctly

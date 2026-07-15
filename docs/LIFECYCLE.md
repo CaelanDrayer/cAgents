@@ -87,7 +87,7 @@ execution plans. The "how" before any keystroke of implementation.*
 | coordinator | core | Parameterized controller for lightweight domains (health, education, personal, arts, trades) |
 | orchestrator | core | Enriches request context at pipeline start, detects domain and complexity |
 | task-state | core | Manages CSV-based task state for large-scale workflows with 20+ items; absorbs task-merger (context-overhead reduction, 40-88%) since v12.20.0 |
-| team | core | Initializes team-mode execution (TeamCreate, wave planning); replaces the standalone `team-trigger` agent removed in v12.0.0 — the `/team` skill loop now drives this inline |
+| team | core | Initializes team-mode execution (concurrent-Agent wave planning; teams are implicit since CC v2.1.178 removed `TeamCreate`/`TeamDelete`); replaces the standalone `team-trigger` agent removed in v12.0.0 — the `/team` skill loop now drives this inline |
 | trigger | core | Pipeline entry point — parses user requests, routes to /run or /team |
 | planner | core | Creates plan.yaml + work_items.yaml + optional delegation_prompts.yaml |
 | fashion-designer | creator | Garment design, pattern making, textile selection, trend analysis |

@@ -144,7 +144,7 @@ When invoked with `mode: team_planning_only` (by the `/team` skill loop, which a
 2. **Planning phase**: Aggressive decomposition, work item generation, controller selection (same as standard)
 3. **STOP**: After planning completes, write plan.yaml and decomposition.yaml, then return. Do NOT proceed to coordinating or executing phases.
 
-**Why**: `/team` reuses the trigger's routing + planning infrastructure for consistent decomposition quality, then takes over for team-specific determination (template selection, wave assignment) and parallel execution (TeamCreate, spawn teammates).
+**Why**: `/team` reuses the trigger's routing + planning infrastructure for consistent decomposition quality, then takes over for team-specific determination (template selection, wave assignment) and parallel execution (spawn each wave's teammates as concurrent `Agent()` calls; teams are implicit since v2.1.178 — no TeamCreate).
 
 **Detection**: Check for `Mode: team_planning_only` in the delegation prompt. When present:
 - Execute routing + planning normally via orchestrator

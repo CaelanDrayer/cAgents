@@ -80,18 +80,22 @@ total_duration_seconds: 0
 `);
   }
 
-  // Defensive: treat any truthy value as enabled (handles '1', 'true', 'yes')
+  // Defensive: treat any truthy value as enabled (handles '1', 'true', 'yes').
+  // The env flag gates the OPTIONAL experimental named-background-teammate path
+  // ONLY. The DEFAULT /team execution model — concurrent Agent() wave spawning —
+  // needs no flag and works in every harness (teams are IMPLICIT since Claude Code
+  // 2.1.178, which removed TeamCreate/TeamDelete).
   const envVal = (process.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS || '').trim();
-  const teamsAvailable = envVal === '1' || envVal.toLowerCase() === 'true';
-  console.error(`[TeamStart] Initialized team monitoring for ${path.basename(sessionDir)} (AGENT_TEAMS=${envVal || '<not set>'})`);
+  const experimentalTeamsEnabled = envVal === '1' || envVal.toLowerCase() === 'true';
+  console.error(`[TeamStart] Initialized team monitoring for ${path.basename(sessionDir)} (EXPERIMENTAL_AGENT_TEAMS=${envVal || '<not set>'})`);
 
   if (!envVal) {
-    console.error('[TeamStart] WARNING: CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS env var is not set. TeamCreate/SendMessage may not be available. Ensure settings.json env block is propagated by your Claude Code version.');
+    console.error('[TeamStart] Note: CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS is not set. The DEFAULT concurrent-Agent wave model is unaffected (no team-creation call is required); only the OPTIONAL experimental named-teammate path is off. Set the flag to opt into experimental named teammates + tmux/iTerm2 panes.');
   }
 
-  const msg = teamsAvailable
-    ? 'Team session initialized with full Agent Teams support.'
-    : 'Team session initialized in fallback mode (parallel Tasks). CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS is not enabled — TeamCreate/SendMessage may not be available. Check settings.json env propagation.';
+  const msg = experimentalTeamsEnabled
+    ? 'Team session initialized. DEFAULT model = concurrent Agent() wave spawning (run_in_background: false, one message per wave); no team-creation call is required. The OPTIONAL experimental named-teammate path is ENABLED — it is harness-variable and falls back to the default path if unavailable.'
+    : 'Team session initialized. DEFAULT model = concurrent Agent() wave spawning (run_in_background: false, one message per wave); no team-creation call is required and this path works in every harness. The OPTIONAL experimental named-teammate path is disabled (set CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 to opt in); it is not required.';
 
   return {
     hookSpecificOutput: {

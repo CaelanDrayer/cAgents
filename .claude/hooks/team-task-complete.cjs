@@ -8,6 +8,19 @@
  * When all work items are completed, returns continue:false to stop the teammate.
  */
 
+// -----------------------------------------------------------------------------
+// EXPERIMENTAL-PATH ONLY (v12.42.0). This hook fires on the TaskCompleted event
+// raised when a NAMED teammate finishes a shared-task-list item — the mechanism
+// of the OPTIONAL experimental named-background-teammate path (gated on
+// CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1), and its continue:false return is used
+// to stop that teammate. On the DEFAULT concurrent-Agent wave model the lead
+// collects each wave's results synchronously from its own Agent() calls (no
+// named teammates to stop), so this hook is a NO-OP on the default path. It stays
+// registered so the experimental path keeps working; do NOT rely on it for the
+// default path. (Teams are IMPLICIT since Claude Code 2.1.178, which removed
+// TeamCreate/TeamDelete.)
+// -----------------------------------------------------------------------------
+
 const fs = require('fs');
 const path = require('path');
 const { createHook, findTeamSession, safeRead, countPattern, ensureDir, getTimestampSlug, parseTaskList, areDependenciesMet, withFileLock } = require('./hook-utils.cjs');

@@ -16,6 +16,24 @@
  * Output (stdout): JSON with system message
  */
 
+// -----------------------------------------------------------------------------
+// TEAM-COORDINATION SCOPE NOTE (v12.42.0). Teams are IMPLICIT since Claude Code
+// 2.1.178 (TeamCreate/TeamDelete were removed). This hook's TEAM-TEAMMATE
+// COORDINATION handling — the per-teammate timing/parallelism metrics and team
+// status finalization (Phase 3, team_* sessions only) — supports the OPTIONAL
+// experimental named-background-teammate path (CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1)
+// and is a NO-OP on the DEFAULT concurrent-Agent wave model, which uses no named
+// teammates.
+//
+// IMPORTANT — do NOT treat the whole hook as a no-op: the remaining phases are a
+// UNIVERSAL SessionEnd routine that runs for EVERY session type (run_*, team_*,
+// designer_*, etc.) and the default path DOES depend on them — Phase 1 agent-tree
+// cleanup, Phase 2 execution_summary.yaml generation, Phase 4 pattern-extractor
+// throttle, and Phase 5 SDK-UUID pointer unlink. Those must keep running on the
+// default path; only Phase 3's team-teammate metrics are experimental-path-scoped.
+// No behavior is changed by this note.
+// -----------------------------------------------------------------------------
+
 const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');

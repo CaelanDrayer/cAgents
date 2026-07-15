@@ -10,6 +10,61 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.42.0] - 2026-07-14
+
+**`/team` re-anchored on a concurrent-Agent DEFAULT execution model** (audit session
+`run_cc-api-teamcreate_260715_001`). Claude Code **v2.1.178 removed the `TeamCreate` /
+`TeamDelete` tools**, on which cAgents' entire `/team` subsystem was built. This is a
+**minor bump** (not a tiny bump) per the version-registry.md "Audit / consolidation
+sessions" guidance — the fix is a multi-file sweep across the skill, agents, hooks,
+rules, docs, config, and tests (32 files).
+
+The correction is reliability-first: teams are now **implicit** and the default path
+depends on no removed tool. The named-background-teammates + tmux-panes mechanism is
+retained ONLY as an optional, experimental path.
+
+### Changed
+- **New DEFAULT execution model (concurrent-Agent, reliability-first).** For each wave,
+  `/team` now spawns ALL wave-K teammates as **concurrent `Agent()` calls in one
+  message**, synchronously (`run_in_background: false`), validates GATE-K, and proceeds.
+  Teams are implicit; cleanup is automatic (no `TeamDelete`). No `TeamCreate` /
+  `TeamDelete` call site remains as a required step anywhere in the subsystem — surviving
+  mentions are historical/"removed in v2.1.178 — do not call" framing only.
+- **Named-background-teammates + tmux panes DEMOTED to an optional experimental path**,
+  gated on `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` and labeled EXPERIMENTAL, with an
+  explicit fallback-to-default instruction.
+- **`teammateMode` default aligned to `in-process`** (CC v2.1.179), reliability-first;
+  tmux/iTerm2 split panes are flagged experimental-path-only. `settings.json` /
+  `settings.full.json` no longer hard-set `tmux` as the shipped default;
+  `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is retained so the experimental path stays
+  available.
+- **`verify-completion.cjs` no longer BLOCKS a team session to "force the LLM to
+  continue to `TeamCreate`."** That block is repurposed to verify wave/spawn evidence
+  (agent_tree spawns / coordination_log / task progress) or downgraded to a warn. The
+  default concurrent-Agent path is hook-independent; `team-start.cjs`,
+  `teammate-idle-handler.cjs`, `team-task-complete.cjs`, and `team-stop.cjs` now support
+  the EXPERIMENTAL named-teammate path only and are no-ops on the default path (hook
+  EVENT names unchanged).
+- **Bug-driven regression tests inverted** (per the CLAUDE.md testing mandate):
+  `tests/skills/skill-structure.test.js` no longer asserts the `/team` skill *contains*
+  `TeamCreate` — it now pins that there is NO mandatory `TeamCreate` call site;
+  `tests/hooks/verify-completion.test.js` asserts the session is NOT blocked to force
+  `TeamCreate`.
+
+### Swept surfaces
+- **Skill + reference**: `.claude/skills/team/SKILL.md` +
+  `reference/{architecture,cross-version-compat,strategic-mode,teammate-spawning-template}.md`.
+- **Core agents**: `agents/core/team/` (SKILL.md + `resources/{best-practices,spawn-protocol}.md`),
+  `agents/core/team-lead/` (SKILL.md + `resources/{best-practices,coordination-protocol,adapter-patterns}.md`),
+  `agents/core/trigger/` (SKILL.md + `resources/best-practices.md`).
+- **Hooks**: `.claude/hooks/{verify-completion,team-start,teammate-idle-handler,team-task-complete,team-stop}.cjs`.
+- **Rules**: `.claude/rules/core/{teams.md,hooks.md,resources/hook-catalog.md}`.
+- **User docs**: `docs/{TEAM_MODE,SKILLS_REFERENCE,LIFECYCLE,hooks/overview}.md`, `README.md`, `CLAUDE.md`.
+- **Config**: `.claude/settings.json`, `.claude/settings.full.json`.
+- **Tests**: `tests/skills/skill-structure.test.js`, `tests/hooks/verify-completion.test.js`.
+
+> Historical CHANGELOG and `docs/RELEASE_NOTES.md` entries were NOT rewritten (out of scope).
+
 ## [12.41.0] - 2026-07-10
 
 Bucket-C Phase 5 — **CI content-security / capability-consistency layer** (session

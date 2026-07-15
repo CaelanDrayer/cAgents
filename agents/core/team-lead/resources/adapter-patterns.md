@@ -12,18 +12,21 @@ Patterns for wrapping domain controllers as team leads using Claude Code's built
 ## Adapter Flow
 
 ```
-/team skill loop (formerly team-trigger -> team-lead-adapter) -> SendMessage (assign work) -> teammates -> agents
+/team skill loop (formerly team-trigger -> team-lead-adapter)
+   -> Agent() (spawn a wave's teammates concurrently, run_in_background: false) -> teammates -> execution agents
                      |
-                     +-> TaskList (monitor) -> TaskUpdate (gate) -> SendMessage (next wave)
+                     +-> TaskList (monitor) -> TaskUpdate (gate) -> next wave
 ```
+
+Teams are implicit since v2.1.178 (TeamCreate/TeamDelete were removed — do not call them); cleanup is automatic at session end.
 
 ## Wave Coordination
 
 | Wave Type | Executor | Method |
 |-----------|----------|--------|
-| bootstrap | Team lead | Sequential via /run |
-| parallel | Teammates | Concurrent via /run per item |
-| integration | Team lead | Sequential via /run |
+| bootstrap | Team lead | Sequential (lead executes) |
+| parallel | Teammates | Concurrent `Agent()` spawns per wave (one message, `run_in_background: false`) |
+| integration | Team lead | Sequential (lead executes) |
 
 ## Gate Sentinel Pattern
 
@@ -38,18 +41,20 @@ When all wave-0 tasks are completed, GATE-0 unblocks, enabling wave-1 tasks.
 
 ## Communication Patterns
 
-### Work Assignment (MUST include Skill invocation)
+### Work Distribution (spawn via Agent, NOT SendMessage)
 
-Every SendMessage to a teammate must include the explicit `/run` Skill invocation:
+Teammates are spawned as controller agents via the Agent tool — NEVER assigned work through SendMessage, and NEVER told to re-enter `/run`. Spawn a wave's teammates as concurrent `Agent()` calls in ONE message:
 
 ```javascript
-SendMessage({
-  type: "message",
-  recipient: "teammate-1",
-  content: "Assigned TASK-01. Execute: Skill({skill: 'run', args: 'TASK-01: ...'})",
-  summary: "Assigning TASK-01"
+Agent({
+  subagent_type: "cagents:tech-lead",
+  run_in_background: false,   // DEFAULT — collect the wave's results synchronously
+  description: "Wave 1 - Execute TASK-01",
+  prompt: "You are a controller teammate. Spawn cagents:{execution_agent} to implement TASK-01, then cagents:reviewer to validate. Acceptance criteria: ..."
 })
 ```
+
+SendMessage is reserved for status queries, broadcasts, and (experimental path only) shutdown / auto-resume — never for assigning a work item.
 
 ### Status Check
 

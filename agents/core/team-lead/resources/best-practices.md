@@ -6,15 +6,15 @@
 
 - **Delegate Only, Never Implement**: The team lead adapter is a coordinator — it never writes code, creates content, or answers domain questions; every work item is executed by a spawned controller teammate
 - **Teammates Are Controllers**: Each teammate spawned via Agent tool is a controller agent (e.g., tech-lead) that in turn delegates to execution agents — the lead adapter coordinates controllers, not execution agents directly
-- **Immediate Execution**: As soon as the team and tasks are created, spawn all wave-1 teammates simultaneously — no pausing, no asking permission, no pre-flight checks beyond reading the manifest
-- **Built-In Tools Only**: Use SendMessage, TaskList, TaskUpdate, and TeamDelete from Claude Code's built-in agent teams — no custom coordination scripts or file-based polling loops
+- **Immediate Execution**: As soon as the tasks are created, spawn a wave's teammates as concurrent `Agent()` calls in ONE message — no pausing, no asking permission, no pre-flight checks beyond reading the manifest
+- **Built-In Tools Only**: Use Agent, SendMessage, TaskList, and TaskUpdate from Claude Code's built-in agent-team tools — no custom coordination scripts or file-based polling loops. Teams are implicit since v2.1.178 (TeamCreate/TeamDelete were removed — do not call them)
 - **Wave-Aware Gate Validation**: Only mark a gate sentinel complete after verifying all wave gate criteria — unverified gates produce cascading failures in subsequent waves
 - **Contract Enforcement**: At each gate boundary, verify interface contract artifacts exist before unblocking the next wave — a provider who claims to have produced a schema must have the file on disk
-- **Clean Shutdown**: After all work completes, send shutdown_request to every teammate and call TeamDelete — stale team resources cause confusion in subsequent sessions
+- **Automatic Cleanup**: Teams are implicit — cleanup happens at session end (TeamDelete was removed in v2.1.178, so there is nothing to call)
 
 ## Key Patterns & Frameworks
 
-- **Delegate Mode Enforcement**: The adapter wraps a domain controller in strict delegate-only mode — allowed actions are coordination only (SendMessage, TaskList, TaskUpdate, TeamDelete, write coordination artifacts); prohibited actions are any form of direct implementation
+- **Delegate Mode Enforcement**: The adapter wraps a domain controller in strict delegate-only mode — allowed actions are coordination only (spawn wave teammates via Agent, SendMessage, TaskList, TaskUpdate, write coordination artifacts); prohibited actions are any form of direct implementation
 - **Wave Loop Pattern**: Execute waves sequentially with parallel execution within each wave — bootstrap wave (sequential, lead executes), implementation waves (parallel, teammates execute), integration wave (sequential, lead executes)
 - **Gate Sentinel Pattern**: A gate task blocked by all wave tasks — when all wave tasks complete, validate gate criteria, then mark the gate complete to unblock the next wave's tasks
 - **Self-Claiming Work Distribution**: Teammates finish their assigned task, call TaskList to find the next unblocked unassigned task, and claim it via TaskUpdate — distributes work without requiring the lead to explicitly reassign
@@ -27,13 +27,13 @@
 ## Domain Concepts & Terminology
 
 ### Team Coordination Tools
-- **TeamCreate**: Creates the agent team with a shared task list — must be called before any teammates can be spawned
-- **TeamDelete**: Destroys the team and releases all task list resources — called as the final step after all teammates shut down
-- **SendMessage (type: "message")**: Direct message to a specific teammate — used for work assignments and status queries
+- **Agent**: Spawns wave teammates — issue all of a wave's spawns as concurrent tool uses in ONE message (`run_in_background: false`); teams are implicit, so there is no create-team step
+- **SendMessage (type: "message")**: Direct message to a specific teammate — used for status queries; sending to a stopped named teammate auto-resumes it (experimental path)
 - **SendMessage (type: "broadcast")**: Message to all teammates simultaneously — used sparingly for milestone announcements (e.g., "GATE-0 passed, TASK-03 now available")
-- **SendMessage (type: "shutdown_request")**: Graceful shutdown signal to a specific teammate — teammate finishes current work and stops
+- **SendMessage (type: "shutdown_request")**: Graceful shutdown signal to a specific named teammate (experimental path only) — teammate finishes current work and stops
 - **TaskList**: Returns current status of all tasks in the shared task list — the primary monitoring tool
 - **TaskUpdate**: Changes task status, assigns owner, or adds dependency blocking — the primary state management tool
+- **TeamCreate / TeamDelete (removed in v2.1.178)**: These no longer exist — teams are implicit and cleanup is automatic at session end; do not call them
 
 ### Wave Architecture
 - **Wave 0 (Bootstrap)**: Foundation items executed sequentially by the lead adapter — design documents, schemas, interface contracts that subsequent waves depend on
@@ -57,7 +57,7 @@
 - **SendMessage for Work Assignment**: Using SendMessage to tell a teammate what to do instead of spawning it as a controller via Agent tool — SendMessage is for status updates; Agent tool is for spawning agents with work
 - **/run Skill Invocation in Teammates**: Instructing teammates to call Skill({skill: "run"}) to execute their work items — re-entering the full /run pipeline is wasteful; spawn execution agents directly via Agent (cheaper and clearer, and well within the 5-level nesting budget)
 - **Gate Validation Shortcuts**: Marking a gate complete without verifying gate criteria (file existence, contract artifacts, acceptance criteria) — produces a false "phase complete" signal that corrupts subsequent waves
-- **Forgetting TeamDelete**: Completing all work and coordination_log.yaml without calling TeamDelete — leaves orphaned team resources that can interfere with future sessions
+- **Calling TeamCreate/TeamDelete**: These tools were removed in v2.1.178 — teams are implicit and cleanup is automatic at session end; calling them errors
 - **Broadcast Overuse**: Sending broadcast messages for every status update — broadcasts go to all teammates and create noise; reserve for gate completions and unblocking announcements
 - **Parallel Same-File Work**: Assigning two teammates tasks that both write to the same file in the same wave — merge conflicts are guaranteed; detect and serialize before spawning
 
@@ -68,11 +68,11 @@
 - **Wave Gate Pass Rate**: Percentage of gate validations that pass on the first check — failures indicate poor quality from the prior wave
 - **Teammate Failure Rate**: Percentage of spawned teammates that fail without completing their work items — high rates indicate overly complex per-teammate scopes
 - **Contract Fulfillment Rate**: Percentage of interface contracts that are established and consumed as promised — target 100%
-- **TeamDelete Success Rate**: Percentage of team sessions that clean up properly with TeamDelete — target 100%
+- **Wave Result Collection Rate**: Percentage of waves where the lead collected every concurrent teammate result before validating the gate — target 100% (a missed result means the gate was validated on incomplete work)
 
 ## Collaboration Touchpoints
 
-- **With the `/team` skill loop**: The `/team` skill loop creates the team via TeamCreate and applies the lead pattern — the lead receives team context, manifest, and task list and takes over wave coordination (the pre-v12.0.0 `team-trigger` + `team-lead-adapter` agents that previously owned this were removed in v12.0.0 and inlined into the `/team` skill loop)
+- **With the `/team` skill loop**: The `/team` skill loop applies the lead pattern — teams are implicit (no TeamCreate step), and the lead receives team context, manifest, and task list and takes over wave coordination, spawning each wave's teammates as concurrent `Agent()` calls (the pre-v12.0.0 `team-trigger` + `team-lead-adapter` agents that previously owned this were removed in v12.0.0 and inlined into the `/team` skill loop)
 - **With domain controllers (as teammates)**: Each teammate IS a controller agent (tech-lead, narrative-director, etc.) spawned by the lead — the lead coordinates controllers, and controllers coordinate execution agents
 - **With orchestrator**: Orchestrator routes team-mode requests to the `/team` lead (formerly the team-lead-adapter agent, now inlined) instead of directly to a controller — after team execution completes, orchestrator receives the coordination_log.yaml and advances to validation
 - **With validator**: After the lead writes coordination_log.yaml and all outputs, the validation phase runs against the aggregated results — the lead's synthesis quality directly affects validation outcomes

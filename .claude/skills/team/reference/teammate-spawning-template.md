@@ -2,6 +2,14 @@
 
 Full teammate spawn prompt template, self-registration block, and isolation/worktree details for /team.
 
+## Spawn Mechanism: Concurrent Agent Waves (DEFAULT)
+
+Teams are implicit since Claude Code v2.1.178 — `TeamCreate`/`TeamDelete` were removed; there is nothing to create and nothing to register a team with. The DEFAULT spawn mechanism is: for each wave K, issue ALL wave-K teammate `Agent()` calls as CONCURRENT tool uses in ONE assistant message, each with `run_in_background: false`. Synchronous spawning (`run_in_background: false`) is required because subagents are background-by-default since v2.1.198 — it is what makes the lead receive all wave results together before validating GATE-K. On the default path a teammate needs NO `name` and NO `team_name` field; those are addressing fields for the experimental named-teammate path below. This path works in every harness.
+
+### EXPERIMENTAL named-teammate option (OPTIONAL)
+
+Only when `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` AND the harness supports interactive agent teams, you MAY instead spawn named background teammates with `Agent({ name, run_in_background: true })` and coordinate via `SendMessage({to: name})` (auto-resumes a stopped teammate by name, v2.1.77). Any `team_name` argument is accepted-but-ignored. `teammateMode` (default `in-process` since v2.1.179; or `tmux`/`iterm2`) controls display; panes require tmux/iTerm2 and are experimental-only. If the experimental feature is unavailable, fall back to the DEFAULT concurrent-Agent path above.
+
 ## Disk-Handoff Spawn Pattern (Preferred, v12.1.0+)
 
 To minimize per-spawn token cost in the lead's context, write a per-wave `spawn_brief.md` to disk ONCE per wave and pass each teammate a short pointer prompt. See @spawn-brief-schema.md for the brief schema, short prompt template, and token savings (~73% on a 5-wave × 5-teammate run).
@@ -10,13 +18,16 @@ When using the disk-handoff pattern, the lead writes `${SESSION_DIR}/outputs/wav
 
 The inline template below is preserved for back-compat and for cases where a wave has only 1-2 teammates (where the brief overhead exceeds savings).
 
-## Full Teammate Spawn Block (Legacy Inline Pattern)
+## Full Teammate Spawn Block (Inline Pattern)
+
+On the DEFAULT concurrent-Agent path, keep `run_in_background: false` and OMIT the `name` / `team_name` fields (they are addressing fields for the EXPERIMENTAL named-teammate path only). Issue all of a wave's spawn calls as concurrent tool uses in one message.
 
 ```
 Agent({
   subagent_type: "cagents:{CONTROLLER_TYPE}",  # MUST be the controller from plan.yaml, NEVER an execution agent
-  name: "w{K}-task-{N}-{CONTROLLER_TYPE}",
-  team_name: "{team_name}",
+  run_in_background: false,                     # DEFAULT: synchronous, so the lead collects all wave results together (v2.1.198 background-by-default)
+  name: "w{K}-task-{N}-{CONTROLLER_TYPE}",      # EXPERIMENTAL named-teammate path only — omit on the default path
+  team_name: "{team_name}",                     # EXPERIMENTAL only — accepted-but-ignored (teams are implicit since v2.1.178)
   description: "Wave {K} - Execute TASK-{N}: <short description>",
   prompt: "You are a teammate executing a work item in wave {K} of the pipeline.
 

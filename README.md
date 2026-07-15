@@ -307,8 +307,8 @@ cAgents ships 32 .cjs files = 24 unique registered hooks + 5 dispatched sub-vali
 | SubagentStop | subagent-stop-tracker.cjs | Capture completion summaries and duration metrics |
 | Stop | verify-completion.cjs | Verify completion criteria before allowing stop |
 | StopFailure | stop-failure-handler.cjs | Save recovery state on unclean stop |
-| TeammateIdle | teammate-idle-handler.cjs | Find available work or cleanly stop idle teammates |
-| TaskCompleted | team-task-complete.cjs | Update task list, unblock dependencies |
+| TeammateIdle | teammate-idle-handler.cjs | Find available work or cleanly stop idle teammates (experimental named-teammate path only) |
+| TaskCompleted | team-task-complete.cjs | Update task list, unblock dependencies (experimental named-teammate path only) |
 | InstructionsLoaded | instructions-loaded.cjs | Validate rules directory, inject session context |
 | PreCompact | pre-compact-save.cjs | Save workflow state before context compaction |
 | PostCompact | post-compact-restore.cjs | Re-inject workflow context after compaction |
@@ -430,7 +430,7 @@ Key external tools and libraries that cAgents depends on:
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) — Anthropic's CLI for Claude, required runtime for cAgents
 - [Node.js](https://nodejs.org/) — JavaScript runtime powering cAgents hooks and scripts
 - [Vitest](https://vitest.dev/) — Test framework used by the cAgents test suite
-- [tmux](https://github.com/tmux/tmux/wiki) — Terminal multiplexer used for team mode split panes
+- [tmux](https://github.com/tmux/tmux/wiki) — Terminal multiplexer used for team mode split panes (the OPTIONAL experimental named-teammate path; the default concurrent-Agent path needs no tmux)
 - [js-yaml](https://github.com/nodeca/js-yaml) — YAML parser used throughout session state management
 - [ajv](https://ajv.js.org/) — JSON Schema validator used for configuration validation
 
@@ -440,7 +440,7 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights:
 
-- **V12.41.0** — Current release. Bucket-D hook security/performance remediation (session `run_bucket-d-remediation_260614_001`): added a bounded head+tail size cap to `secret-detection.cjs` (`CAGENTS_SECRET_SCAN_MAX_BYTES`, default 512 KB) to prevent a memory/latency blowup on large writes; consolidated the three `Write|Edit` PreToolUse hooks (secret-detection, controller-delegation-validator, skill-size-monitor) into a single deny-first, fail-closed `write-edit-dispatch.cjs` dispatcher (cold-start node spawns per Write|Edit cut 3→1); added a reproducible perf-benchmark corpus runner + Write|Edit hook-perf microbench with committed baselines; and fixed `verify-completion.cjs` to fact-check slash-less filename citations.
+- **V12.42.0** — Current release. Bucket-D hook security/performance remediation (session `run_bucket-d-remediation_260614_001`): added a bounded head+tail size cap to `secret-detection.cjs` (`CAGENTS_SECRET_SCAN_MAX_BYTES`, default 512 KB) to prevent a memory/latency blowup on large writes; consolidated the three `Write|Edit` PreToolUse hooks (secret-detection, controller-delegation-validator, skill-size-monitor) into a single deny-first, fail-closed `write-edit-dispatch.cjs` dispatcher (cold-start node spawns per Write|Edit cut 3→1); added a reproducible perf-benchmark corpus runner + Write|Edit hook-perf microbench with committed baselines; and fixed `verify-completion.cjs` to fact-check slash-less filename citations.
 - **V12.10.0** — FU-3 bare-prose agent-name sweep: replaced the last bare `universal-*` agent-name mentions in agent prose (the five pipeline agents — router, planner, validator, executor, self-correct) across 25 `agents/**` files, completing the v12.5.0 pipeline-agent rename. Added a `no-bare-universal-prose-refs` regression guard.
 - **V12.2.0** — BREAKING: `/org` skill removed; cross-domain coordination folded into `/team` with auto-enabled strategic mode (`router` `domain_count >= 2` triggers Wave 0/1/2 C-suite deliberation + Wave 3..N per-domain dispatch). 12 leadership agents preserved at their existing locations. Plugin skill count 5->4. Migration: `/org X` → `/team X`.
 - **V12.1.2** — Folds `/improve` into `/run` via a first-word keyword router and removes the standalone `/improve` skill (`/run review|audit` = `--mode review`, `/run optimize` = `--mode optimize`, `/run improve` = `--mode full`). Plugin skill count 6->5.

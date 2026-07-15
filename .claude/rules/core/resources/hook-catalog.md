@@ -14,6 +14,7 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 ### SessionEnd: team-stop.cjs
 
 - **Purpose**: Multi-phase session teardown. Despite the filename, the hook runs for ALL session types (not just team_*).
+- **Model note (v2.1.178+)**: unlike `team-start.cjs`/`teammate-idle-handler.cjs`/`team-task-complete.cjs`, `team-stop.cjs` is NOT experimental-path-only. Its universal teardown (Phase 1 agent-tree cleanup, Phase 2 `execution_summary.yaml`, Phase 5 SDK-UUID pointer unlink) runs for every session — including default concurrent-Agent `/team` runs. Only Phase 3 (team metrics) is scoped to `team_*` sessions, and it fires for those sessions regardless of default-vs-experimental path. This teardown does not depend on `TeamCreate`/`TeamDelete` (removed in 2.1.178); implicit-team cleanup is automatic.
 - **Phase 1 — Agent tree cleanup (all session types)**: Marks any unstopped agents in `workflow/agent_tree.yaml` with `stopped_at` and computes `duration_seconds` from `spawned_at`. Uses `yaml.load` with a regex fallback.
 - **Phase 2 — execution_summary.yaml generation (all session types)**: If `workflow/execution_summary.yaml` does not already exist, writes a minimal summary with `session_id`, `final_state`, `status`, `agent_count` (parsed via `yaml.load` of `agent_tree.yaml`; corrected in v12.12.2 — previously used a regex against the wrong key), `duration_seconds`, `started_at`, `completed_at`. Skill-generated summaries are not overwritten.
 - **Phase 3 — Team metrics + status (team_* sessions only)**: Finalizes `team/metrics/timing.yaml` (sets `completed_at`, `total_duration_seconds`), reads `team/task_list.yaml` for items_completed/total, reads `team/metrics/parallelism.yaml` for speedup_factor, then updates `status.yaml` (`phase: completed`, `pipeline_state: VALIDATED`, `result: success|partial`).
@@ -146,7 +147,7 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 
 - **subagent-tracker.cjs**: Logs agent spawns to `workflow/agent_tree.yaml` and global audit log (`_system/logs/agent_spawns.log`). Includes fallback session discovery for the race condition where `status.yaml` hasn't been written yet. Injects `additionalContext` asking cAgents agents to self-register their `cagents:{name}` type, since Claude Code's `agent_type` field reports `general-purpose` for plugin agents.
 - **subagent-tracker.cjs — SDK-UUID map writer (v12.32.0, PRIMARY)**: after it CONFIDENTLY resolves the owning session (via env-var / promptHint / `session.sdk_id` marker — NOT via the new UUID map, to avoid circularity, and NEVER via the newest-session heuristic, which would reintroduce the concurrency bug), it calls `upsertSdkSessionMap(input.session_id, sessionDir)`. That writes the per-session marker `sessions/{id}/session.sdk_id` (the SDK UUID) AND the global pointer `cagents-memory/_system/sdk_session_map/{uuid}` (content = owning session_id), each an atomic per-UUID file mutated under `withFileLock`, with an opportunistic prune on upsert. Idempotent and fail-open — a map-write failure never blocks the spawn. This is the robust primary writer path (the skill-layer `session.sdk_id` write is best-effort secondary).
-- **team-start.cjs**: Initializes team monitoring directories and metrics files.
+- **team-start.cjs**: Initializes team monitoring directories and metrics files. **Serves the EXPERIMENTAL named-background-teammate path only** (gated on `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`); it is a no-op on the default concurrent-Agent wave model, which needs no per-teammate monitoring dirs. Remains registered under `SubagentStart`; event name unchanged.
 
 ### SubagentStop: subagent-stop-tracker.cjs
 
@@ -170,14 +171,26 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 
 ## Team Hooks
 
+> **Scope (Claude Code v2.1.178+)**: `/team`'s DEFAULT execution model is
+> **concurrent-Agent waves** (implicit teams — `TeamCreate`/`TeamDelete` were
+> removed in 2.1.178). The `TeammateIdle` and `TaskCompleted` hooks below serve
+> the OPTIONAL **experimental named-background-teammate path** only
+> (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`); they fire for named background
+> teammates and are no-ops on the default synchronous concurrent-Agent path
+> (which collects wave results directly, without idle/completion callbacks). Both
+> remain registered; their **event names are unchanged**, and the overall hook
+> file/registered/event counts are unaffected.
+
 ### TeammateIdle: teammate-idle-handler.cjs
 
+- **Serves the EXPERIMENTAL named-teammate path only** — no-op on the default concurrent-Agent wave model.
 - **Purpose**: Cleanly stop idle teammates when all work is done; surface available work via stderr.
 - **V10.5.0**: Refactored to `createHook()`. Returns `{ continue: false, stopReason }` when all work items are completed, causing the teammate to stop cleanly instead of lingering idle.
 - **Logic**: All work items completed → `{ continue: false, stopReason }` (NEW-TURN-SAFE shutdown signal); available work → `{ continue: true }` (no systemMessage) with item list logged to `console.error`; otherwise → pass-through (null). Per the thinking-block-immutability contract (run_team-thinking-400_260531_001), the available-work branch no longer emits systemMessage — teammates self-claim by reading TaskList / task_list.yaml directly.
 
 ### TaskCompleted: team-task-complete.cjs
 
+- **Serves the EXPERIMENTAL named-teammate path only** — no-op on the default concurrent-Agent wave model.
 - **Purpose**: Update `task_list.yaml` status, check dependency unblocking, stop teammate when all done.
 - **Input fields**: `task_id`, `task_subject`, `task_description`, `teammate_name`, `team_name` (Claude Code API).
 - **V10.5.0**: Refactored to `createHook()`. Returns `{ continue: false, stopReason }` when all work items completed (NEW-TURN-SAFE shutdown signal). Per the thinking-block-immutability contract (run_team-thinking-400_260531_001), newly-unblocked items are no longer announced via systemMessage; teammates discover them by reading TaskList / task_list.yaml directly.

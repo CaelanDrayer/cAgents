@@ -17,11 +17,16 @@ Detailed teammate-spawning protocol for `cagents:team`. The SKILL.md body keeps 
 CONTROLLER_TYPE = plan.yaml -> controller_assignment -> primary
 ```
 
+## Default Spawn Model: Concurrent Agent() Waves
+
+Teams are **implicit** — `TeamCreate`/`TeamDelete` were removed in Claude Code v2.1.178; there is nothing to create or delete, and cleanup is automatic at session end. The DEFAULT (works in every harness): for each parallel wave, spawn ALL wave-K teammates as CONCURRENT `Agent()` calls issued in ONE assistant message (multiple tool uses in a single message run concurrently). Spawn them SYNCHRONOUSLY with `run_in_background: false` so the lead receives all wave results together, validates GATE-K, then proceeds. Explicit `run_in_background: false` is required because subagents are background-by-default since v2.1.198.
+
 ## Spawning a Teammate Controller
 
 ```javascript
 Agent({
   subagent_type: "cagents:{CONTROLLER_TYPE}",  // MUST be the controller from plan.yaml, NEVER an execution agent
+  run_in_background: false,                     // DEFAULT — collect the wave's results synchronously (v2.1.198 background-by-default)
   description: "Teammate: Execute TASK-01",
   prompt: `You are a team member in team '{team_name}'.
 
@@ -66,6 +71,16 @@ TaskCreate({ subject: "TASK-01: Implement user model" })  // No one to execute i
 // RIGHT: Controller as subagent_type, execution agent inside the delegation prompt
 Agent({ subagent_type: "cagents:tech-lead", prompt: "...Agent({subagent_type:'cagents:backend-developer', ...})..." })
 ```
+
+## Experimental Path: Named Background Teammates + Panes
+
+OPTIONAL and harness-variable. Enable ONLY when `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` AND the harness supports interactive agent teams; always label it EXPERIMENTAL.
+
+- Spawn named teammates via `Agent({ name, run_in_background: true })` — the team is implicit; any `team_name` arg is accepted-but-ignored.
+- Coordinate via `SendMessage({to: name})` (auto-resumes a stopped teammate by name) plus the shared Task list.
+- `teammateMode` (`in-process` default since v2.1.179; or `tmux`/`iterm2`) controls display; panes require tmux/iTerm2 and are experimental-only.
+- The TeammateIdle / TaskCompleted hooks support THIS path only and are no-ops on the default concurrent-Agent path.
+- **MUST fall back to the DEFAULT concurrent-Agent path (above) if the experimental feature is unavailable.**
 
 ## Per-Wave Decomposition Emission (v12.1.0+)
 
