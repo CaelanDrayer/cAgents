@@ -97,11 +97,12 @@ This is the cross-domain context pass — each agent objects with full visibilit
 1. **Topological-sort** the `domain_assignments` by their `dependent_on` arrays.
 2. **Group the topological order into dispatch waves**: domains with no remaining unmet dependencies form the next wave; once they complete, the next group runs.
 3. **Within each dispatch wave**:
-   - **Independent domains** (`dependency_type: independent`) dispatch **in parallel via Agent tool**:
+   - **Independent domains** (`dependency_type: independent`) dispatch **in parallel via the Agent tool** — issue all independent-domain `Agent()` calls as CONCURRENT tool uses in ONE message, each with `run_in_background: false` so the lead collects their results together (teams are implicit — no TeamCreate):
      ```
      Agent({
        subagent_type: "cagents:{csuite_or_controller}",
        description: "Domain execution: {domain_key}",
+       run_in_background: false,
        prompt: "Execute work items {WI list} per strategic_brief.yaml. Read {SESSION_DIR}/strategic_brief.yaml for the full brief context."
      })
      ```
@@ -264,7 +265,7 @@ Advance `status.yaml` `pipeline_state` to `complete`. (v12.6.0: `workflow/events
 
 ### Clean Up Tasks (MANDATORY — Hard Gate Before Stopping)
 
-Call `TaskList` to get the CURRENT task inventory. Do NOT rely on task IDs remembered from earlier in the session — IDs may have shifted after Skill invocations. For EVERY task that is `in_progress` or `pending`, call `TaskUpdate({ taskId: "{id}", status: "completed" })`. If TaskUpdate returns "Task not found", the task was in a different namespace (expected after TeamDelete) — log it and continue.
+Call `TaskList` to get the CURRENT task inventory. Do NOT rely on task IDs remembered from earlier in the session — IDs may have shifted after Skill invocations. For EVERY task that is `in_progress` or `pending`, call `TaskUpdate({ taskId: "{id}", status: "completed" })`. If TaskUpdate returns "Task not found", the task was in a different namespace (e.g. a task created by a spawned subagent in its own scope) — log it and continue. (Teams are implicit — there is no `TeamDelete`; cleanup is automatic at session end.)
 
 **Cleanup guard**: Before producing any final output or stopping, call `TaskList` one more time and verify it shows zero `in_progress` tasks. If any remain, mark them completed. This is a hard gate — do not stop with stale tasks.
 

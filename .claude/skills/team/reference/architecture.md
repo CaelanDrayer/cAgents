@@ -15,7 +15,7 @@
     |   Each wave has a GATE sentinel for quality validation
     |   If < 3 items or no parallel work: fall back to /run
     |
-    Step 3: TeamCreate -- create agent team IMMEDIATELY
+    Step 3: (no TeamCreate) -- teams are implicit since CC v2.1.178; nothing to create
     |
     Step 4: TaskCreate -- create tasks for ALL work items + GATE sentinels
     |   Set up inter-wave dependencies via GATE sentinels
@@ -29,19 +29,19 @@
     |   Validate GATE-0 -> mark complete
     |
     Step 6: FOR EACH Wave K from 1 to N-1:
-    |   6a. Spawn teammates for wave K (ALL at once, in parallel)
-    |       Each teammate gets its own tmux pane (when teammateMode=tmux)
+    |   6a. Spawn ALL wave-K teammates as CONCURRENT Agent() calls in ONE message,
+    |       run_in_background: false (synchronous -- lead collects all wave results together)
     |       Each teammate IS a controller agent that spawns execution agents
     |       DIRECTLY via the Agent tool (NOT via /run -- see below)
-    |   6b. Monitor wave K progress via TaskList + teammate messages
+    |       (tmux panes are an experimental-path-only display option)
+    |   6b. Monitor wave K progress via TaskList
     |   6c. All wave K items complete -> Validate GATE-K
-    |   6d. Shut down wave K teammates
-    |   6e. Mark GATE-K complete -> unblocks wave K+1
-    |   6f. Proceed to next wave (AUTOMATIC -- no permission)
+    |   6d. Mark GATE-K complete -> unblocks wave K+1
+    |   6e. Proceed to next wave (AUTOMATIC -- no permission)
     |
     Step 7: Execute final wave -- Integration + Validation (lead, sequentially)
     |
-    Step 8: Shutdown remaining teammates + TeamDelete + report results
+    Step 8: Report results (teams are implicit -- cleanup is automatic, no TeamDelete)
 ```
 
 ## Why Maximum Waves
@@ -69,43 +69,42 @@ The /team skill decomposes the request directly instead of delegating to a separ
 - **Simpler to execute reliably** -- fewer sequential dependencies = fewer failure points
 - **Assigns controllers and wave numbers during decomposition** -- the lead determines which controller archetype each work item needs and which wave it belongs to
 
-## CRITICAL: Create Teams AND Teammates
+## CRITICAL: Spawn Teammates, Not Just Tasks
 
-The two most common failure modes are:
-1. Creating tasks (TaskCreate) without spawning teammates (Agent tool) to execute them
-2. Skipping TeamCreate entirely and just using Agent tool subagents
-
-Both are wrong. The correct sequence is ALWAYS:
+Teams are implicit since CC v2.1.178 — `TeamCreate`/`TeamDelete` were removed; do not call them. The one remaining failure mode is creating tasks (TaskCreate) without spawning teammates (Agent tool) to execute them. The correct sequence is:
 ```
-TeamCreate -> TaskCreate (all items) -> Agent (spawn teammates)
+TaskCreate (all items) -> concurrent Agent() calls (spawn wave-K teammates in ONE message, run_in_background: false)
 ```
 
-## Built-in Agent Teams
+## Implicit Agent Teams
 
-`/team` uses Claude Code's **built-in agent teams** for parallel execution:
+`/team` uses Claude Code's **implicit agent teams** for parallel execution. `TeamCreate`/`TeamDelete` were removed in CC v2.1.178 — a team forms implicitly when you spawn teammates, and cleanup is automatic at session end. Do NOT call them.
 
 | Tool | Purpose | When to Call |
 |------|---------|-------------|
-| **TeamCreate** | Creates team + shared task list | Step 3 (once) |
 | **TaskCreate** | Creates work items as tasks | Step 4 (per work item) |
-| **Agent** | Spawns teammate instances | Step 6 (per wave-K item) |
+| **Agent** | Spawns teammate instances (concurrent, one message, `run_in_background: false`) | Step 6 (per wave-K item) |
 | **TaskUpdate** | Marks tasks completed | After each item completes |
 | **TaskList** | Checks progress | Steps 6-7 (monitoring) |
-| **SendMessage** | Communicates with teammates | Monitoring + shutdown |
-| **TeamDelete** | Cleans up team resources | Step 8 (cleanup) |
+| **SendMessage** | Communicates with named teammates (EXPERIMENTAL path only; auto-resumes a stopped teammate by name, v2.1.77) | Experimental named-teammate path |
 
-## Display Modes (teammateMode)
+Removed (do not call): `TeamCreate`, `TeamDelete` (CC v2.1.178 — teams implicit, cleanup automatic).
+
+## Display Modes (teammateMode) — Experimental Path Only
+
+`teammateMode` affects ONLY the OPTIONAL experimental named-background-teammate path. The DEFAULT concurrent-Agent path has no panes — teammates run as synchronous subagents (`run_in_background: false`).
 
 | Mode | Description | Requirements |
 |------|-------------|--------------|
-| `"auto"` (default) | tmux panes if inside tmux, otherwise in-process | None |
-| `"tmux"` | Force tmux split panes -- each teammate in own pane | tmux installed |
-| `"in-process"` | All teammates in main terminal (Shift+Up/Down) | None |
+| `"in-process"` (default since v2.1.179) | Teammates in main terminal (Shift+Up/Down) | None |
+| `"tmux"` | tmux split panes -- each teammate in own pane (EXPERIMENTAL) | tmux installed |
+| `"iterm2"` | iTerm2 panes (EXPERIMENTAL) | iTerm2 |
+| `"auto"` | tmux if inside tmux, otherwise in-process | None |
 
-Configure in settings.json:
+Configure in settings.json (experimental path only):
 ```json
 {
-  "teammateMode": "tmux"
+  "teammateMode": "in-process"
 }
 ```
 
@@ -154,7 +153,7 @@ This per-wave lifecycle ensures:
 
 The /team skill acts as team lead. It ONLY coordinates:
 
-**Allowed**: Decompose, TeamCreate, TaskCreate, spawn teammates per wave, validate gates, monitor, aggregate, cleanup
+**Allowed**: Decompose, TaskCreate, spawn teammates per wave (concurrent Agent() calls), validate gates, monitor, aggregate
 **Prohibited**: Edit/Write implementation files, implement work items directly, skip spawning teammates, collapse multiple waves into one
 
 ## Session Structure

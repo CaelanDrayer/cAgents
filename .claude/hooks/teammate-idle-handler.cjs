@@ -9,6 +9,18 @@
  *   - Otherwise: pass-through (allow idle normally)
  */
 
+// -----------------------------------------------------------------------------
+// EXPERIMENTAL-PATH ONLY (v12.42.0). This hook fires on the TeammateIdle event,
+// which only occurs on the OPTIONAL experimental named-background-teammate path
+// (gated on CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1). On the DEFAULT concurrent-
+// Agent wave model — where the /team lead spawns each wave's teammates as
+// synchronous Agent() calls in one message and collects their results directly —
+// no long-lived named teammates exist, so TeammateIdle never fires and this hook
+// is a NO-OP on the default path. It stays registered so the experimental path
+// keeps working; do NOT rely on it for the default path. (Teams are IMPLICIT
+// since Claude Code 2.1.178, which removed TeamCreate/TeamDelete.)
+// -----------------------------------------------------------------------------
+
 const path = require('path');
 const { createHook, findTeamSession, findAvailableWork, parseTaskList, safeRead, extractYamlValue } = require('./hook-utils.cjs');
 

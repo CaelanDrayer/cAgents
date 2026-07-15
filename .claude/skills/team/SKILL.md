@@ -5,11 +5,11 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.41.0"
+  version: "12.42.0"
   argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--template <id>] [--no-template] [--waves <n>] [--strategic] [--no-strategic]"
   user-invocable: "true"
   context: "fork"
-allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TaskCreate, TaskUpdate, TaskList, TaskGet, TeamCreate, TeamDelete, SendMessage, Skill
+allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TaskCreate, TaskUpdate, TaskList, TaskGet, SendMessage, Skill
 ---
 
 # /team — N-Wave Parallel Team Execution (Event Loop)
@@ -18,7 +18,7 @@ allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TaskCreate, TaskUpdate, Tas
 
 You are a thin event loop. Your job: init session, run enrichment (Wave 0), then for each wave K: write spawn brief, spawn teammates, spawn `cagents:wave-reviewer`, mark gate. Finalize: spawn integration controller, spawn `cagents:coord-log-writer`, validate, cleanup.
 
-**You are a delegator, not a doer.** TeamCreate + Agent tool only. Never implement work items yourself.
+**You are a delegator, not a doer.** Agent tool only. Never implement work items yourself.
 
 **Domain-agnostic — NOT software-only.** `/team` parallelizes ANY multi-part work: a cross-domain product launch, a multi-deliverable client engagement (e.g. three SOWs + a price quote), a legal-marketing-finance initiative, a multi-chapter manuscript. The wave/teammate/gate machinery is domain-neutral coordination — never refuse or redirect a non-technical request because the pipeline "looks engineering-focused." Spawn the right domain controllers (`operations-manager`, `marketing-strategist`, `general-counsel`, `account-manager`, etc.), not just `tech-lead`.
 
@@ -59,7 +59,8 @@ Wave 0 (Lead, sequential):
 
 Waves 1..N-1 (Teammates, parallel per wave):
   Lead writes outputs/wave-{K}/spawn_brief.md (once)
-  Spawn teammates with ~80-token pointer prompts (PARALLEL within wave)
+  Spawn ALL wave-K teammates as CONCURRENT Agent() calls in ONE message,
+    run_in_background: false (synchronous — lead collects all wave results together)
   Each teammate: controller-agent delegates to execution agent via Agent (direct-execution fallback only if Agent absent at nesting ceiling)
   Lead spawns cagents:wave-reviewer → 1-line GATE-K verdict
   Mark gate, drop wave from active reads, advance
@@ -69,7 +70,7 @@ Wave N (Lead, sequential):
   Read ONLY integration_summary.md
   Spawn cagents:validator → 1-line PASS/FAIL/REVISE
   Spawn cagents:coord-log-writer → 1-line "coordination_log: N WIs mapped, status: X"
-  TeamDelete + task cleanup
+  Task cleanup (teams are implicit — cleanup is automatic, no TeamDelete)
 ```
 
 ## Strategic Mode (auto-enabled for cross-domain requests)
@@ -135,12 +136,9 @@ After each agent returns, advance the `phase:` field in `status.yaml` (orchestra
 
 **2e.** Read `work_meta.yaml` ONCE. Confirm wave count meets tier minimum; if not, request re-decomposition. If `--dry-run`, display plan and STOP. If <3 WIs total, `Skill({ skill: "run", args: ... })` fallback.
 
-## Step 3 — TeamCreate
+## Step 3 — Team Is Implicit (no creation call)
 
-```
-TeamCreate({ team_name: "cagents-team-{session_id}", description: "..." })
-```
-Advance phase to `TEAM_CREATED`.
+There is nothing to create. `TeamCreate`/`TeamDelete` were removed in Claude Code v2.1.178 — teams are now implicit, and cleanup is automatic at session end. Do NOT call `TeamCreate`. Just advance the phase to `TEAM_READY` and continue.
 
 ## Step 4 — Create Tasks + GATE Sentinels
 
@@ -158,7 +156,9 @@ For each wave K:
 
 **5b.** Write `outputs/wave-{K}/spawn_brief.md` per @reference/spawn-brief-schema.md schema.
 
-**5c.** Spawn ALL wave-K teammates in PARALLEL with ~80-token pointer prompts (per @reference/spawn-brief-schema.md § Short Spawn Prompt). Each teammate is `cagents:{CONTROLLER_TYPE}` from `plan.yaml.controller_assignment.primary`. See @reference/teammate-spawning-template.md for self-registration and isolation/worktree.
+**5c. (DEFAULT — concurrent Agent waves, works in every harness).** Spawn ALL wave-K teammates as CONCURRENT `Agent()` calls issued in ONE assistant message (multiple tool uses in a single message run concurrently), each with `run_in_background: false`. Synchronous spawning is required — subagents are background-by-default since v2.1.198, so `run_in_background: false` is what makes the lead receive all wave results together before it validates GATE-K. Use ~80-token pointer prompts (per @reference/spawn-brief-schema.md § Short Spawn Prompt). Each teammate is `cagents:{CONTROLLER_TYPE}` from `plan.yaml.controller_assignment.primary`. There is no team to create — teams are implicit. See @reference/teammate-spawning-template.md for self-registration and isolation/worktree.
+
+**5c-EXPERIMENTAL (OPTIONAL — named background teammates + panes).** Only when `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` AND the harness supports interactive agent teams, you MAY instead spawn named background teammates with `Agent({ name, run_in_background: true })` (the team forms implicitly; any `team_name` arg is accepted-but-ignored) and coordinate via `SendMessage({to: name})` (auto-resumes a stopped teammate by name, v2.1.77) plus the shared Task list. `teammateMode` (default `in-process` since v2.1.179; or `tmux`/`iterm2`) controls display; panes require tmux/iTerm2 and are experimental-path only. This path is harness-variable — if the experimental feature is unavailable, fall back to the DEFAULT concurrent-Agent path in 5c.
 
 **5d.** Monitor wave K via TaskList + teammate messages. Early-shutdown completed teammates per @reference/wave-execution-detail.md § Early Shutdown.
 
@@ -204,22 +204,21 @@ Read 1-line confirmation only.
 
 ## Step 7 — Cleanup
 
-1. `SendMessage({type:"shutdown_request",...})` for any remaining teammates.
-2. `TeamDelete()`.
-3. Mark initial orchestration TaskCreate completed.
-4. Finalize lead entry in `agent_tree.yaml` (`stopped_at`, `completion_summary`, `duration_seconds`).
-5. **Task cleanup (HARD GATE)**: `TaskList` → mark all `in_progress`/`pending` completed → `TaskList` → verify zero outstanding before stopping.
-6. (v12.6.0: `state_history[].duration_ms` is no longer emitted — skip.)
-7. Write `team/metrics/parallelism.yaml` (wave_stats + totals).
-8. Write `workflow/execution_summary.yaml` (final_state, totals; v12.6.0: drop `total_duration_ms`).
-9. Report results to user: waves, items/wave, gate results, validation status, output locations.
+1. On the DEFAULT path, synchronous (`run_in_background: false`) teammates have already returned — there is nothing to shut down and no team to delete (teams are implicit; cleanup is automatic). Do NOT call `TeamDelete`. Only on the EXPERIMENTAL named-background-teammate path: `SendMessage({type:"shutdown_request",...})` any teammates still running.
+2. Mark initial orchestration TaskCreate completed.
+3. Finalize lead entry in `agent_tree.yaml` (`stopped_at`, `completion_summary`, `duration_seconds`).
+4. **Task cleanup (HARD GATE)**: `TaskList` → mark all `in_progress`/`pending` completed → `TaskList` → verify zero outstanding before stopping.
+5. (v12.6.0: `state_history[].duration_ms` is no longer emitted — skip.)
+6. Write `team/metrics/parallelism.yaml` (wave_stats + totals).
+7. Write `workflow/execution_summary.yaml` (final_state, totals; v12.6.0: drop `total_duration_ms`).
+8. Report results to user: waves, items/wave, gate results, validation status, output locations.
 
 `workflow/coordination_log.yaml` is written by `cagents:coord-log-writer` in Step 6c — do NOT write it yourself.
 
 ## Key Rules
 
-1. TeamCreate is mandatory.
-2. Spawn teammates via Agent tool (creates tmux panes).
+1. Teams are implicit — never call `TeamCreate`/`TeamDelete` (removed in Claude Code v2.1.178). There is nothing to create; cleanup is automatic at session end.
+2. DEFAULT: spawn ALL wave-K teammates as CONCURRENT `Agent()` calls in ONE message, `run_in_background: false` (works in every harness). Named background teammates + tmux/iTerm2 panes are an OPTIONAL EXPERIMENTAL path gated on `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` — fall back to the default if unavailable.
 3. One spawn cycle per wave (fresh teammates each wave).
 4. All teammates within a wave run in parallel.
 5. Gate validation via `cagents:wave-reviewer` — never inline 7-check in lead.

@@ -191,10 +191,15 @@ describe('verify-completion.cjs', () => {
     });
   });
 
-  describe('team session pre-execution blocking (regression: team enrichment hang)', () => {
-    // Regression test: /team stops after enrichment (planner + decomposer finish)
-    // but TeamCreate never runs because verify-completion.cjs only warns for INIT phase.
-    // Fix: block when team_ session has pre-exec phase + enrichment artifacts exist.
+  describe('team session pre-execution blocking (regression: enrichment complete but coordination not started)', () => {
+    // Regression: a /team session stops after enrichment (planner finishes plan.yaml /
+    // work_items.yaml) but never advances into wave coordination.
+    // v12.42.0 re-anchor: teams are now IMPLICIT — Claude Code v2.1.178 REMOVED the
+    // TeamCreate/TeamDelete tools, so there is NO team-creation step to gate on. The hook
+    // instead verifies WAVE/SPAWN evidence: an enrichment-complete team session with no
+    // coordination_log that is NOT actively spawning wave teammates (no running child
+    // agent, stale heartbeat) is abandoned mid-pipeline and is blocked with a
+    // 'coordination is incomplete' reason — never a 'call TeamCreate' instruction.
     const TEAM_SESSION = 'team_20260101_000001_test_vc';
     const TEAM_SESSION_DIR = join(TEST_SESSIONS_DIR, TEAM_SESSION);
 
@@ -245,7 +250,7 @@ describe('verify-completion.cjs', () => {
       expect(result.decision).not.toBe('block');
     });
 
-    it('should NOT block team session if coordination_log.yaml exists (past TeamCreate)', () => {
+    it('should NOT block team session once wave coordination has started (coordination_log.yaml exists)', () => {
       writeFileSync(join(TEAM_SESSION_DIR, 'status.yaml'),
         `phase: ENRICHED\ncreated_at: "${new Date().toISOString()}"\n`);
       writeFileSync(join(TEAM_SESSION_DIR, 'workflow', 'plan.yaml'),
@@ -253,18 +258,45 @@ describe('verify-completion.cjs', () => {
       writeFileSync(join(TEAM_SESSION_DIR, 'workflow', 'coordination_log.yaml'),
         'schema_version: "1"\nstatus: completed\n');
       const result = runHook({ session_id: TEAM_SESSION });
-      // coordination_log exists = past TeamCreate, so should NOT block with the team message
+      // coordination_log exists = wave coordination has begun (there is no separate
+      // TeamCreate step to gate on — teams are implicit), so it should NOT block.
       expect(result.decision).not.toBe('block');
     });
 
-    it('should NOT block non-team session in INIT with plan.yaml', () => {
-      // run_ session (not team_) should use existing warning behavior, not the new block
+    it('should WARN, not block, when a team session is actively spawning wave teammates (wave/spawn evidence)', () => {
+      // v12.42.0 wave/spawn-evidence downgrade: an enrichment-complete team session with
+      // no coordination_log is NOT abandoned if it is actively spawning concurrent-Agent
+      // wave teammates. sessionActivelyWorking() detects a running child agent in
+      // agent_tree.yaml (agents-list entry with stopped_at: null) and downgrades the
+      // enrichment-incomplete block to a WARNING so a mid-flight wave run is not deadlocked.
+      writeFileSync(join(TEAM_SESSION_DIR, 'status.yaml'),
+        `phase: ENRICHED\ncreated_at: "${new Date(Date.now() - 20 * 60 * 1000).toISOString()}"\n`);
+      writeFileSync(join(TEAM_SESSION_DIR, 'workflow', 'plan.yaml'),
+        'plan_id: test\ntier: 3\ndomain: engineering\nmission: "Test team"\n');
+      // No coordination_log yet — coordination is "incomplete" — but a wave teammate is running.
+      writeFileSync(join(TEAM_SESSION_DIR, 'workflow', 'agent_tree.yaml'),
+        'root:\n  id: ' + TEAM_SESSION + '\n  stopped_at: null\nagents:\n  - id: teammate-tech-lead-1\n    depth: 1\n    stopped_at: null\n');
+      const result = runHook({ session_id: TEAM_SESSION });
+      // Running wave teammate => actively working => warn (continue) instead of block.
+      expect(result.decision).not.toBe('block');
+      expect(result.continue).toBe(true);
+      // Prove the downgrade fired (not a silent no-op): the enrichment-incomplete warning
+      // is recorded, and it uses the coordination-evidence framing, never a TeamCreate call.
+      const summary = readFileSync(join(TEAM_SESSION_DIR, 'completion_summary.yaml'), 'utf8');
+      expect(summary).toMatch(/coordination is incomplete/i);
+      expect(summary).not.toContain('TeamCreate');
+    });
+
+    it('never blocks a non-team session with a TeamCreate instruction (teams are implicit)', () => {
+      // A run_ session that stops mid-pipeline may be blocked for an incomplete-coordination
+      // reason, but that reason must NEVER instruct calling TeamCreate — the tool was
+      // removed in Claude Code v2.1.178 (teams are implicit; there is nothing to create).
       writeFileSync(join(TEST_SESSION_DIR, 'status.yaml'),
         `phase: INIT\ncreated_at: "${new Date().toISOString()}"\n`);
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'plan.yaml'),
         'plan_id: test\ntier: 2\n');
       const result = runHook({ session_id: TEST_SESSION });
-      // run_ sessions should NOT trigger the team-specific block
+      // If the session is blocked, the reason must not mention the removed TeamCreate tool.
       if (result.decision === 'block' && result.reason) {
         expect(result.reason).not.toContain('TeamCreate');
       }

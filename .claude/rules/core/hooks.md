@@ -50,13 +50,15 @@ Claude Code supports 24 hook event types. cAgents implements 24 unique registere
 | `SubagentStop` | Subagent finishes | `subagent-stop-tracker.cjs` | Log completion, capture summaries + duration |
 | `Stop` | Claude stops responding | `verify-completion.cjs`, `goal-evaluator-logger.cjs`, `secret-restore.cjs` | Verify completion; capture `/goal` reasons; restore sanitized secrets |
 | `StopFailure` | Claude fails to stop cleanly | `stop-failure-handler.cjs` | Save recovery state |
-| `TeammateIdle` | Teammate goes idle | `teammate-idle-handler.cjs` | Find available work or stop teammate |
-| `TaskCompleted` | Task finishes | `team-task-complete.cjs` | Update task list, unblock dependencies, stop teammate when done |
+| `TeammateIdle` | Teammate goes idle | `teammate-idle-handler.cjs` | Find available work or stop teammate (**experimental named-teammate path only** — no-op on the default concurrent-Agent wave model) |
+| `TaskCompleted` | Task finishes | `team-task-complete.cjs` | Update task list, unblock dependencies, stop teammate when done (**experimental named-teammate path only** — no-op on the default concurrent-Agent wave model) |
 | `InstructionsLoaded` | Instructions/CLAUDE.md loaded | `instructions-loaded.cjs` | Validate rules dir, inject active session context |
 | `PreCompact` | Before context compaction | `pre-compact-save.cjs` | Save critical state + coordination state |
 | `PostCompact` | After context compaction | `post-compact-restore.cjs` | Log workflow context to disk after compaction (no systemMessage per thinking-block-immutability contract; model reads plan.yaml + coordination_log.yaml directly) |
 
 Four events (`WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `FileChanged`) are available for custom use; cAgents does not register handlers. (`ConfigChange` was wired to `config-change-logger.cjs` in LP-17 / v12.7.0 — see table above.)
+
+**Team-hook scope note (Claude Code v2.1.178+)**: since `/team`'s DEFAULT execution model is **concurrent-Agent waves** (implicit teams — `TeamCreate`/`TeamDelete` were removed in 2.1.178), the interactive team hooks apply only to the OPTIONAL experimental named-background-teammate path (gated on `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`). Specifically, `TeammateIdle` (`teammate-idle-handler.cjs`) and `TaskCompleted` (`team-task-complete.cjs`), plus `team-start.cjs` (SubagentStart), serve the experimental path and are no-ops on the default concurrent-Agent path. All three remain registered; their **event names and the file/registered/event counts are unchanged**. `team-stop.cjs` (SessionEnd) is the exception — its session-teardown work (agent-tree cleanup, `execution_summary.yaml`, SDK-UUID pointer unlink) runs for **all** session types, not just experimental-team sessions.
 
 See @resources/hook-catalog.md for the full per-hook detail (matchers, inputs, outputs, side effects) and the Secret Detection pattern catalog.
 

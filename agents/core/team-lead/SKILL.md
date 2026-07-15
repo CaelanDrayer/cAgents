@@ -26,13 +26,13 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 ## Core Responsibilities
 
 1. Wrap controller in delegate mode (coordination only, no direct work)
-2. Distribute work items to teammates via **SendMessage**
+2. Spawn each wave's teammates as CONCURRENT `Agent()` calls in ONE message (`run_in_background: false`)
 3. Monitor shared task list via **TaskList** for completion
-4. Handle dynamic task claiming by teammates
+4. Collect concurrent teammate results at each wave boundary
 5. Aggregate results from all team members
 6. Synthesize final outputs
 7. Write coordination_log.yaml
-8. Clean up team via **TeamDelete** when all work is done
+8. Cleanup is automatic at session end — teams are implicit (TeamCreate/TeamDelete were removed in v2.1.178)
 
 ## CRITICAL: Delegate Mode
 
@@ -41,13 +41,11 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 ```yaml
 delegate_mode_enforcement:
   allowed_actions:
-    - Assign work items to teammates via SendMessage
+    - Spawn each wave's teammates as concurrent Agent() calls (run_in_background: false)
     - Monitor task list progress via TaskList
     - Request status from teammates via SendMessage
     - Synthesize teammate outputs
     - Write coordination artifacts
-    - Shut down teammates via SendMessage (type: shutdown_request)
-    - Clean up team via TeamDelete
 
   prohibited_actions:
     - Use Edit/Write on implementation files
@@ -58,7 +56,7 @@ delegate_mode_enforcement:
 
 ## Built-in Agent Teams Integration
 
-This adapter uses Claude Code's built-in agent teams tools (`SendMessage`, `TaskList`, `TaskUpdate`, `TaskGet`, `TeamDelete`). Teammate messages are delivered automatically — no polling needed. Idle notifications arrive when teammates finish turns.
+This lead uses Claude Code's built-in agent-team tools (`Agent`, `SendMessage`, `TaskList`, `TaskUpdate`, `TaskGet`). Teams are implicit since v2.1.178 — `TeamCreate`/`TeamDelete` were removed; there is nothing to create or delete, and cleanup is automatic at session end. On the DEFAULT path, wave teammates are spawned as concurrent `Agent()` calls and their results return synchronously; on the experimental named-teammate path, teammate messages are delivered automatically (no polling).
 
 See @resources/coordination-protocol.md for the full tool surface, spawning syntax, communication examples, task-management examples, aggregation process, coordination_log format, cleanup steps, and error-handling protocol.
 
@@ -70,17 +68,16 @@ See @resources/coordination-protocol.md for the full tool surface, spawning synt
 1. Receive team context from /team skill loop
 2. Read team manifest and check TaskList for work items
 3. Enter delegate mode (coordination only)
-4. IMMEDIATELY spawn teammates as controllers via Agent tool
+4. IMMEDIATELY spawn each wave's teammates as CONCURRENT Agent() calls in ONE message (run_in_background: false)
 5. For wave-based execution, coordinate wave-by-wave (see @resources/wave-execution.md)
-6. Monitor progress via TaskList + teammate messages (no polling)
+6. Collect concurrent Agent() results + monitor via TaskList (no polling)
 7. Aggregate teammate outputs after all work items complete
 8. Synthesize final deliverables
 9. Write coordination_log.yaml
-10. Shut down teammates via SendMessage (type: shutdown_request)
-11. Clean up team via TeamDelete
+10. Cleanup is automatic at session end — teams are implicit (no TeamDelete)
 ```
 
-**Step 4 is MANDATORY and IMMEDIATE.** Do not wait. Do not ask the user. Spawn teammates as soon as the team is ready.
+**Step 4 is MANDATORY and IMMEDIATE.** Do not wait. Do not ask the user. Spawn the wave's teammates as concurrent Agent() calls as soon as the work items are ready.
 
 ## CRITICAL: Teammates ARE Controllers That Spawn Execution Agents Directly
 
@@ -126,7 +123,7 @@ After all work items complete, collect teammate outputs, synthesize coherent res
 
 ## Cleanup
 
-After coordination_log.yaml is written: SendMessage(shutdown_request) to each teammate, wait for confirmations, then call TeamDelete to remove team and task resources.
+After coordination_log.yaml is written, cleanup is automatic at session end — teams are implicit (TeamDelete was removed in v2.1.178, so there is nothing to call). On the experimental named-teammate path only, optionally `SendMessage({type: shutdown_request})` to release a persistent teammate early.
 
 ## Error Handling
 
@@ -139,16 +136,16 @@ When the team manifest includes a template with waves, coordinate wave-by-wave w
 ## Key Principles
 
 1. **Teammates ARE controllers** — every teammate is a controller agent spawned via Agent tool that delegates to execution agents directly. Teammates NEVER implement directly and NEVER invoke /run.
-2. **Spawn teammates IMMEDIATELY** — the moment the team is created. Never pause or ask permission.
+2. **Spawn teammates IMMEDIATELY** — as soon as the wave's work items are ready. Never pause or ask permission.
 3. **Direct Agent delegation** — teammates spawn execution agents and reviewers directly via Agent (lead -> controller teammate -> execution agent, with deeper sub-spawns allowed within the 5-level nesting budget). Teammates spawn execution agents directly rather than re-entering /run by design for cost/clarity, not because of a harness limit.
 4. **Delegate only** — never do direct implementation work.
-5. **Built-in tools** — use SendMessage, TaskList, TaskUpdate for all coordination.
-6. **Parallel first** — maximize concurrent work items via self-claiming.
+5. **Concurrent-Agent waves** — spawn each wave's teammates as concurrent `Agent()` calls in ONE message (`run_in_background: false`); teams are implicit (no TeamCreate/TeamDelete).
+6. **Parallel first** — maximize concurrent work items within each wave.
 7. **Wave-aware** — execute waves in order, validate gates between phases.
 8. **Contract enforcement** — verify interface contracts at gate boundaries.
-9. **Continuous monitoring** — track progress via TaskList and teammate messages.
+9. **Continuous monitoring** — track progress via wave results + TaskList.
 10. **Synthesis at end** — aggregate teammate outputs into coherent result.
-11. **Clean shutdown** — shut down teammates and TeamDelete when complete.
+11. **Automatic cleanup** — teams are implicit; cleanup happens at session end (no TeamDelete).
 
 ## Worked Examples
 

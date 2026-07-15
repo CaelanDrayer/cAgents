@@ -638,11 +638,18 @@ function verifyCompletion(sessionDir) {
     } else if (phase === 'planning' || phase === 'coordinating' || phase === 'executing') {
       issues.push(`Workflow stopping in '${phase}' phase (expected: completed or validating)`);
     } else {
-      // Team session pre-execution detection (V10.25.1):
+      // Team session pre-execution detection (V10.25.1; re-anchored for the
+      // concurrent-Agent DEFAULT model, v12.42.0).
       // When a team_ session has phase INIT/ENRICHING/ENRICHED and enrichment
       // artifacts exist (plan.yaml or work_items.yaml), the session completed
-      // enrichment but never reached TeamCreate. Block instead of warn to force
-      // the LLM to continue to TeamCreate.
+      // enrichment but coordination is incomplete. Teams are now IMPLICIT — the
+      // TeamCreate/TeamDelete tools were removed in Claude Code 2.1.178, so there
+      // is no team-creation step to gate on. Instead, verify WAVE/SPAWN EVIDENCE:
+      // sessionActivelyWorking() below treats a session that is actively spawning
+      // wave teammates (a running child agent in agent_tree.yaml) OR has a fresh
+      // heartbeat as mid-flight and downgrades to a WARNING; only a genuinely
+      // abandoned enrichment-complete session (no running child, stale heartbeat)
+      // still blocks.
       const sessionName = path.basename(sessionDir);
       const isTeamSession = sessionName.startsWith('team_');
       const teamPreExecPhases = ['INIT', 'ENRICHING', 'ENRICHED'];

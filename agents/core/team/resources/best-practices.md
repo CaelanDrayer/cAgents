@@ -4,13 +4,13 @@
 
 ## Design Principles
 
-- **TeamCreate is Mandatory**: Without TeamCreate, no agent team exists — tasks without a team have no one to execute them; this is the single most critical step
-- **Decompose Directly**: Team-trigger breaks the request into work items itself — it does not delegate decomposition to another agent; speed and directness are essential at this entry point
-- **Spawn Teammates, Not Tasks**: Creating task entries without spawning controller teammates via Agent tool is the primary failure mode — tasks need agents to execute them
+- **Concurrent-Agent Waves are the Default**: Teams are implicit since v2.1.178 (TeamCreate/TeamDelete were removed — do not call them); the single most critical step is spawning each wave's teammates as CONCURRENT `Agent()` calls in ONE message with `run_in_background: false` — tasks without spawned teammates have no one to execute them
+- **Decompose Directly**: The `/team` loop breaks the request into work items itself — it does not delegate decomposition to another agent; speed and directness are essential at this entry point
+- **Spawn Teammates, Not Just Tasks**: Creating task entries without spawning controller teammates via Agent tool is the primary failure mode — tasks need agents to execute them
 - **Controllers as Teammates**: Every teammate spawned is a controller agent (from plan.yaml's controller_assignment), not an execution agent — execution agents lack the Agent tool and cannot delegate
 - **Wave 0 First, Then Parallel**: Bootstrap items execute sequentially before parallel teammates are spawned — foundation must exist before parallel work can begin
 - **Fallback Gracefully**: If the request produces fewer than 3 work items or all items are sequential, delegate to /run instead of creating a team with no parallelism benefit
-- **Immediate Execution**: Steps 3-6 (TeamCreate, TaskCreate, spawn teammates) happen without pausing or asking permission — auto-proceed is the default
+- **Immediate Execution**: Task creation, wave-0 bootstrap, and concurrent teammate spawns happen without pausing or asking permission — auto-proceed is the default
 
 ## Key Patterns & Frameworks
 
@@ -21,14 +21,13 @@
 - **Template Auto-Selection**: Score team templates from `_index.yaml` against the request (keyword × 0.4 + domain × 0.2 + signal × 0.2 + items × 0.2) — select top scorer above 0.6 confidence threshold; use flat execution if no template qualifies
 - **Parallelism Analysis**: Build a dependency graph, identify root items (no blockers), group independent items into parallel groups, calculate critical path — quantify the parallelism score before deciding whether team mode is worth it
 - **Parent Session Linkage**: Each teammate's /run invocation creates a child session — link child sessions back to the parent team session via child_sessions.yaml for cross-session traceability
-- **Fan-Out Spawn Pattern**: Spawn all wave-1 teammates simultaneously in a single message (multiple Agent tool calls) — sequential spawning serializes what should be parallel
+- **Fan-Out Spawn Pattern**: Spawn all of a wave's teammates simultaneously in a single message (multiple concurrent `Agent()` tool calls) with `run_in_background: false` — sequential spawning serializes what should be parallel; explicit `run_in_background: false` collects the wave's results synchronously (subagents are background-by-default since v2.1.198)
 - **Self-Claim Enablement**: Structure task descriptions to include all context teammates need — teammates read TaskList and self-claim unblocked tasks after completing current work
 
 ## Domain Concepts & Terminology
 
-### Team Creation Artifacts
-- **Team Config**: Created at `~/.claude/teams/{team-name}/config.json` by TeamCreate — stores team identity and configuration
-- **Shared Task List**: Created at `~/.claude/tasks/{team-name}/` by TeamCreate — the shared state board where all teammates and the lead track work
+### Team Artifacts
+- **Shared Task List**: The built-in shared task list (TaskCreate/TaskList) — the shared state board where all teammates and the lead track work; teams are implicit since v2.1.178, so there is no TeamCreate step to create it
 - **Team Manifest**: `team/team_manifest.yaml` in the session directory — records team structure, wave assignments, and template selection
 - **Team Session**: `cagents-memory/sessions/team_{slug}_{YYMMDD}_{NNN}/` — the persistent session directory for all team artifacts
 
@@ -53,17 +52,17 @@
 
 ## Anti-Patterns to Avoid
 
-- **Tasks Without TeamCreate**: Creating TaskCreate entries before calling TeamCreate — tasks exist in the list but no team exists to execute them; teammates cannot self-claim without a team context
+- **Tasks Without Teammates**: Creating TaskCreate entries but never spawning wave teammates via Agent tool — tasks exist in the list but no agent executes them
+- **Calling TeamCreate/TeamDelete**: These tools were removed in v2.1.178 — teams are implicit and cleanup is automatic at session end; calling them errors. Any surviving mention is historical ("removed in 2.1.178 — do not call")
 - **Execution Agent as subagent_type**: Using `"cagents:backend-developer"` or any execution agent as the teammate subagent_type — execution agents lack the Agent tool and cannot spawn reviewers or other agents; they will implement directly without quality gates
-- **Sequential Teammate Spawn**: Spawning wave-1 teammates one at a time in sequence — the entire point of team mode is parallel execution; spawn all simultaneously
+- **Sequential Teammate Spawn**: Spawning a wave's teammates one at a time in sequence — the entire point of team mode is parallel execution; spawn all as concurrent `Agent()` calls in ONE message
 - **Skipping Wave 0**: Spawning parallel teammates before foundation work is complete — teammates begin work that depends on contracts, schemas, or scaffolding that doesn't exist yet
-- **No Fallback Check**: Attempting team mode for requests with <3 work items or all-sequential dependencies — wastes TeamCreate overhead for no parallelism benefit
+- **No Fallback Check**: Attempting team mode for requests with <3 work items or all-sequential dependencies — no parallelism benefit; fall back to /run
 - **Missing Gate Validation**: Marking a GATE task complete without checking gate criteria (file existence, contract artifacts, output quality) — produces a false "wave complete" signal
-- **Forgetting TeamDelete**: Completing all work without calling TeamDelete — orphaned team resources interfere with subsequent team sessions
 
 ## Quality Indicators
 
-- **TeamCreate Success Rate**: Percentage of team mode invocations that successfully create a team — target 100%; failures indicate tool permission or environment issues
+- **Teammate Spawn Success Rate**: Percentage of team mode invocations that successfully spawn wave teammates via Agent tool — target 100%; failures indicate tool permission or environment issues
 - **Parallel Wave Utilization**: Average number of teammates executing simultaneously during wave 1 — target >2 for meaningful parallelism
 - **Template Auto-Selection Accuracy**: Percentage of template selections the user would agree are appropriate — measures scoring algorithm quality
 - **Fallback Rate**: How often the `/team` skill loop decides to fall back to /run — should be rare; high rates suggest incorrect suitability assessment

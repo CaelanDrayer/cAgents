@@ -1,12 +1,16 @@
 # Team Mode Documentation
 
-cAgents V9.24 - N-Wave Parallel Team Execution via Built-in Agent Teams
+cAgents - N-Wave Parallel Team Execution
 
 ## Overview
 
-Team Mode enables N-wave parallel team-based execution using **Claude Code's built-in agent teams**. Work items are decomposed across as many waves as the task requires, with teammates spawned per-wave and quality gates validated between waves. More waves = better quality gating = higher quality output. When `teammateMode` is set to `"tmux"`, each teammate gets its own tmux split pane, providing true visual parallelism and 40-60% execution time reduction for tier 3+ workflows.
+Team Mode enables N-wave parallel execution. Work items are decomposed across as many waves as the task requires; for each wave the lead spawns its teammates as **concurrent `Agent()` calls** issued in a single message, and quality gates are validated between waves. More waves = better quality gating = higher quality output. This concurrent-Agent model is the **DEFAULT** and works in every harness — it produces 40-60% execution time reduction for tier 3+ workflows.
 
-**Core Architecture**: `/team` decomposes the request into work items with maximum wave granularity (3-10 waves), creates a team via TeamCreate, and spawns teammates per-wave who each invoke `/run`. `/run` performs routing + planning inline, then delegates to controllers and execution agents (flattened 2-level chain since V9.18). GATE sentinel tasks enforce wave ordering.
+An OPTIONAL, EXPERIMENTAL path (named background teammates displayed in tmux/iTerm2 split panes) is available when the harness supports interactive agent teams; see [Display Modes](#display-modes).
+
+> **Claude Code API change (v2.1.178)**: the `TeamCreate` / `TeamDelete` tools were **REMOVED**. Agent teams are now implicit — there is nothing to create or delete. The lead spawns teammates directly via the `Agent` tool, and cleanup is automatic at session end. This document describes the concurrent-Agent DEFAULT that no longer depends on those tools.
+
+**Core Architecture (DEFAULT — concurrent-Agent waves)**: `/team` decomposes the request into work items with maximum wave granularity (3-10 waves). For each wave K, the lead spawns ALL wave-K teammates as concurrent `Agent()` calls in one message, synchronously (`run_in_background: false`), so it receives every wave result together, validates GATE-K, then proceeds to wave K+1. Each teammate is a controller agent (e.g. `cagents:tech-lead`) that spawns its own execution agents and reviewer, nesting up to 5 levels deep. Teams are implicit — no `TeamCreate`/`TeamDelete`. GATE sentinel tasks (standard `TaskCreate` dependencies) enforce wave ordering; cleanup is automatic at session end.
 
 ## Quick Start
 
@@ -20,7 +24,7 @@ Team Mode enables N-wave parallel team-based execution using **Claude Code's bui
 
 ## What is Team Mode?
 
-Team Mode transforms the standard sequential controller-execution pattern into N-wave parallel team-based execution using Claude Code's built-in agent teams. It follows a strict **Decompose -> Create Team -> Execute Per-Wave** pipeline with quality gates between waves:
+Team Mode transforms the standard sequential controller-execution pattern into N-wave parallel execution. It follows a strict **Decompose -> Execute Per-Wave -> Gate** pipeline with quality gates between waves:
 
 **Standard Mode** (`/run`):
 ```
@@ -28,92 +32,94 @@ Controller -> Agent 1 -> Agent 2 -> Agent 3 -> Results
                 (sequential)
 ```
 
-**Team Mode** (`/team`):
+**Team Mode** (`/team`) — DEFAULT concurrent-Agent path:
 ```
 /team <request>
     |
     Step 1: PARSE request and flags (including --waves <N>)
     Step 2: DECOMPOSE into work items with MAXIMUM wave granularity (3-10 waves)
-    Step 3: TeamCreate -- create team and shared task list
-    Step 4: TaskCreate -- create tasks + GATE sentinels with wave dependencies
-    Step 5: Execute Wave 0 (enrichment + bootstrap) -- lead, sequentially
+    Step 3: TaskCreate -- create tasks + GATE sentinels with wave dependencies
+            (teams are implicit -- there is NO TeamCreate step)
+    Step 4: Execute Wave 0 (enrichment + bootstrap) -- lead, sequentially
         |
-    Step 6: FOR EACH Wave K (1 to N-1):
-        +-- Spawn teammates for wave K (parallel within wave)
-        |   +-- Teammate 1: /run TASK-{X} --> (controller -> execution agents) --> Complete
-        |   +-- Teammate 2: /run TASK-{Y} --> (controller -> execution agents) --> Complete
-        |                    (parallel -- each in own context/tmux pane)
-        +-- Monitor + validate GATE-K
-        +-- Shut down wave K teammates
+    Step 5: FOR EACH Wave K (1 to N-1):
+        +-- Spawn ALL wave-K teammates as CONCURRENT Agent() calls in ONE message
+        |   (run_in_background: false -- synchronous, so results return together)
+        |   +-- Teammate 1 (controller) -> execution agents -> reviewer --> Complete
+        |   +-- Teammate 2 (controller) -> execution agents -> reviewer --> Complete
+        |                    (parallel within the wave)
+        +-- Validate GATE-K when all wave-K results return
         +-- Proceed to wave K+1 (AUTOMATIC)
         |
-    Step 7: Final wave (integration + validation) -- lead, sequentially
-    Step 8: Shutdown + TeamDelete + report
+    Step 6: Final wave (integration + validation) -- lead, sequentially
+    Step 7: Aggregate results + report (cleanup is automatic -- no TeamDelete)
 ```
 
 **Key Principle**: More waves = better quality. Each wave provides a quality gate checkpoint where the lead validates outputs before proceeding. Prefer 5-7 waves over 2-3 waves. There is nothing wrong with more waves.
 
-**Key Improvement (V9.18+)**: `/run` now performs routing + planning inline (no separate trigger/orchestrator/router/planner agents). `/team` decomposes work items directly with wave assignments, then spawns teammates per-wave who each invoke `/run` which delegates to the appropriate controller and execution agents via the flattened 2-level chain.
+**Why concurrent `Agent()` calls**: multiple tool uses issued in a single assistant message run concurrently. The lead spawns every teammate for a wave in one message with `run_in_background: false`, so all of that wave's results return together — the lead then validates the gate and proceeds. `run_in_background: false` must be explicit because subagents are background-by-default since Claude Code v2.1.198. Teammates spawn their own execution agents directly rather than re-entering `/run`, which avoids duplicating the enrichment the lead already did in Wave 0.
 
 ## Key Features
 
-### Built-in Agent Teams
-Uses Claude Code's built-in TeamCreate, SendMessage, TaskCreate/TaskList tools:
-- No custom tmux scripting -- Claude Code manages teammate lifecycle
-- Shared task lists with file-lock based claiming
-- Direct inter-agent messaging
-- Automatic context loading (CLAUDE.md, skills, MCP servers) per teammate
+### Implicit Agent Teams (no TeamCreate)
 
-### tmux Split Pane Display
-When `teammateMode: "tmux"` is configured:
-- Each teammate gets its own tmux pane
-- All panes visible simultaneously in tiled layout
-- True visual parallelism -- watch all agents work at once
-- Claude Code manages the panes automatically
+Since Claude Code v2.1.178, agent teams are implicit — the `TeamCreate`/`TeamDelete` tools were removed. The DEFAULT path relies only on tools that exist in every harness:
 
-> **tmux required**: Install with `brew install tmux` (macOS) or `sudo apt install tmux` (Ubuntu/Debian). See the [tmux wiki](https://github.com/tmux/tmux/wiki) for full documentation.
+- The lead spawns teammates directly via the `Agent` tool (no team to create)
+- Standard `TaskCreate`/`TaskUpdate`/`TaskList`/`TaskGet` provide shared task visibility
+- Gate sentinels are ordinary task dependencies (`addBlockedBy`)
+- Cleanup is automatic at session end (no `TeamDelete`)
+- Each teammate loads project context (CLAUDE.md, skills) automatically
 
-### Teammates Spawn Controllers Directly
-Every team member spawns its assigned controller directly via Agent tool:
-- The team lead assigns a controller per work item during decomposition
-- Each teammate spawns `Agent({ subagent_type: "cagents:{controller_name}" })` directly
-- The controller creates execution agents (e.g., tech-lead -> backend-developer, qa-tester)
-- Each teammate is an orchestration node, not a direct implementer
-- Teammates NEVER implement work directly -- they coordinate through controllers
+### Teammates Are Controllers That Spawn Execution Agents Directly
+
+Every teammate is spawned as a controller agent and delegates from there:
+- The lead assigns a controller per work item during decomposition
+- Each teammate is spawned as `Agent({ subagent_type: "cagents:{controller_name}" })`
+- The controller spawns its own execution agents (e.g., tech-lead -> backend-developer, qa-tester) and a reviewer, nesting up to 5 levels deep
+- Teammates NEVER implement work directly -- they coordinate through execution agents
 - `/team` provides parallelism; controllers provide multi-agent orchestration per item
-- This avoids the extra nesting level that invoking /run as a Skill fork would create
+- Teammates spawn execution agents directly rather than re-entering `/run`, avoiding a redundant enrichment pass
 
 ### Shared Task Lists
-Work items managed via built-in TaskCreate/TaskList/TaskUpdate:
+
+Work items managed via built-in `TaskCreate`/`TaskList`/`TaskUpdate`/`TaskGet`:
 - Status visibility across all work items
-- Dependency tracking with automatic unblocking
-- Self-claiming by teammates after completing current work
-- Stored at `~/.claude/tasks/{team-name}/`
+- Dependency tracking with automatic unblocking (gate sentinels)
+- Wave ordering enforced via task dependencies
 
 ### Independent Contexts
+
 Each teammate operates in its own context window:
 - No context pollution between members
 - Parallel execution without interference
 - Teammates load project context automatically
 
 ### Worktree Isolation (V10.18.0)
-When teammates modify overlapping files, use `isolation: "worktree"` in the Task call:
+
+When teammates modify overlapping files, use `isolation: "worktree"` in the `Agent()` call:
 - Each teammate gets an isolated git worktree (separate working directory)
 - Prevents file conflicts during parallel execution
 - Lead handles merge coordination after wave completion
 - Best for waves where 3+ teammates edit code files
 
 ### Dynamic Scaling (V10.18.0)
-The lead can adjust teammate count during wave execution:
-- **Scale up**: Spawn additional teammates when work exceeds capacity or items are discovered mid-wave
-- **Scale down**: Shut down teammates immediately on completion (early shutdown) to free resources
+
+The lead can adjust teammate count between waves:
+- **Scale up**: Spawn additional concurrent `Agent()` calls when work exceeds capacity or items are discovered mid-plan
+- **Scale down**: Fewer teammates in a wave when a gate reveals less work remains
 - Scaling events tracked in `team/metrics/parallelism.yaml`
 
 ### Team Leads (Controllers)
-Domain controllers operate in delegate mode:
+
+The lead operates in delegate mode:
 - Coordination only, no implementation
-- Distribute and monitor work via SendMessage
-- Aggregate final results
+- Spawns wave teammates, validates gates, aggregates results
+- Aggregate final results into `coordination_log.yaml`
+
+### Optional: Named Background Teammates + Split Panes (EXPERIMENTAL)
+
+When `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` AND the harness supports interactive agent teams, teammates may be spawned as named background agents shown in tmux/iTerm2 split panes. This path is EXPERIMENTAL and harness-variable — see [Display Modes](#display-modes). It MUST fall back to the DEFAULT concurrent-Agent path when the experimental feature is unavailable.
 
 ## Commands
 
@@ -128,18 +134,17 @@ Domain controllers operate in delegate mode:
 |------|-------------|---------|
 | `--dry-run` | Preview team composition | false |
 | `--lead <agent>` | Specify team lead | auto |
-| `--members <N>` | Max team members | 8 |
+| `--members <N>` | Max teammates per wave | 8 |
 | `--parallel` | Force parallel execution | auto |
 | `--display` | Show team communication | false |
 | `--quiet`, `-q` | Suppress progress output | false |
-| `--teammate-mode <mode>` | Display: auto, tmux, in-process | auto |
+| `--teammate-mode <mode>` | Display (experimental path): in-process, tmux | in-process |
 
 **Examples**:
 ```bash
 /team Implement user authentication
 /team Build payment integration --dry-run
 /team Create dashboard --members 4 --display
-/team Implement feature --teammate-mode tmux
 ```
 
 ### /run --team Flag
@@ -154,7 +159,6 @@ Equivalent to `/team` but uses existing `/run` infrastructure.
 ```bash
 /run Add search feature --team
 /run Implement notifications --team --quiet
-/run Build reporting module --team --teammate-mode tmux
 ```
 
 ## When to Use Team Mode
@@ -179,7 +183,7 @@ Equivalent to `/team` but uses existing `/run` infrastructure.
 
 ## Team Suitability Analysis
 
-Team-trigger analyzes requests to determine if team execution provides benefit:
+`/team` analyzes requests to determine if team execution provides benefit:
 
 ```yaml
 # Automatic analysis
@@ -201,12 +205,16 @@ If analysis shows team mode won't provide benefit, gracefully falls back to stan
 
 ## Display Modes
 
+Display modes apply to the OPTIONAL EXPERIMENTAL named-teammate path only. The DEFAULT concurrent-Agent path does not use split panes — each teammate runs as a synchronous `Agent()` call whose result returns to the lead.
+
 ### teammateMode Configuration
+
+The `teammateMode` setting defaults to `"in-process"` (the Claude Code default since v2.1.179). Split panes (`"tmux"`/`"iterm2"`) are part of the experimental path and require both a supporting terminal and `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
 
 Configure in settings.json:
 ```json
 {
-  "teammateMode": "tmux"
+  "teammateMode": "in-process"
 }
 ```
 
@@ -219,24 +227,22 @@ claude --teammate-mode in-process
 
 | Mode | Description | Requirements |
 |------|-------------|--------------|
-| `"auto"` (default) | tmux split panes if inside tmux session, otherwise in-process | None |
-| `"tmux"` | Force tmux split pane display | tmux installed |
-| `"in-process"` | All teammates in main terminal | None |
+| `"in-process"` (default) | All teammates in main terminal | None |
+| `"auto"` | tmux split panes if inside a tmux session, otherwise in-process | Experimental path |
+| `"tmux"` | Force tmux split pane display | Experimental path; tmux installed |
 
-### tmux Mode
-- Each teammate gets its own tmux pane
-- All panes visible simultaneously in tiled layout
-- Click into a pane to interact directly
-- Claude Code manages pane lifecycle automatically
-- Requires tmux installed and in PATH
+> **tmux (experimental path)**: Install with `brew install tmux` (macOS) or `sudo apt install tmux` (Ubuntu/Debian). See the [tmux wiki](https://github.com/tmux/tmux/wiki) for full documentation. Split panes are unavailable in VS Code terminal, Windows Terminal, and Ghostty.
 
-### In-Process Mode
-- All teammates run inside main terminal
-- Shift+Up/Down to select and interact with teammates
-- Shift+Tab to toggle delegate mode
-- Ctrl+T to toggle the task list
-- Enter to view teammate session, Escape to interrupt
+### In-Process Mode (default)
+- All teammates run inside the main terminal
 - Works in any terminal, no extra setup
+- The reliability-first default that pairs with the concurrent-Agent model
+
+### tmux Mode (experimental)
+- Each named background teammate gets its own tmux pane
+- All panes visible simultaneously in a tiled layout
+- Requires the experimental agent-teams feature and tmux in PATH
+- Falls back to the DEFAULT concurrent-Agent path when unavailable
 
 ## Team Composition
 
@@ -257,13 +263,12 @@ Controllers become team leads based on domain:
 
 ### Teammate Selection
 
-Claude creates teammates based on the work items. Each teammate is a full Claude Code instance that:
-- Loads project context (CLAUDE.md, skills, MCP servers) automatically
-- Claims tasks from the shared task list
-- **Invokes `/run` via the Skill tool** -- this spins out its own controller + execution agents
-- Each teammate's `/run` routes + plans inline, then delegates to controller -> execution agents (2-level chain)
-- Teammates NEVER implement work directly -- they always delegate via `/run`
-- Reports results back to the lead
+The lead creates teammates based on the work items. Each teammate is a controller agent spawned via a concurrent `Agent()` call that:
+- Loads project context (CLAUDE.md, skills) automatically
+- Owns one or more work items for its wave
+- **Spawns its own execution agents and reviewer directly via the Agent tool** (nesting up to 5 levels deep)
+- Teammates NEVER implement work directly -- they always delegate to execution agents
+- Returns results to the lead (synchronously, since `run_in_background: false`)
 
 ## Session Structure
 
@@ -286,13 +291,9 @@ cagents-memory/sessions/team_{slug}_{YYMMDD}_{NNN}/
 +-- outputs/
 ```
 
-Built-in team resources:
-- Team config: `~/.claude/teams/{team-name}/config.json`
-- Task list: `~/.claude/tasks/{team-name}/`
-
 ## Team Lifecycle
 
-### N-Wave Lifecycle -- Per-Wave Spawn Pipeline
+### N-Wave Lifecycle -- Per-Wave Spawn Pipeline (DEFAULT)
 
 ```
 Phase 1: DECOMPOSE
@@ -301,45 +302,40 @@ Phase 1: DECOMPOSE
   - Maximize waves: prefer 5-7 waves over 2-3 waves
   - Check team suitability (>= 3 items, has parallel work)
 
-Phase 2: CREATE TEAM + TASKS
-  - TeamCreate to create team and shared task list
+Phase 2: CREATE TASKS (teams are implicit -- no TeamCreate)
   - TaskCreate for all work items + GATE sentinels with wave dependencies
   - Select template (or flat execution)
 
-Phase 3: EXECUTE WAVES -- Each wave is a distinct spawn cycle
+Phase 3: EXECUTE WAVES -- Each wave is a distinct concurrent-spawn cycle
   3a. Wave 0 (lead): Enrichment + bootstrap
   3b. FOR EACH Wave K (1 to N-1):
-      - Spawn teammates for wave K (ALL at once, in parallel)
-      - Each teammate invokes /run for their work item
+      - Spawn ALL wave-K teammates as CONCURRENT Agent() calls in ONE message
+        (run_in_background: false, so results return together)
+      - Each teammate is a controller that spawns execution agents + reviewer
       - Teammates read outputs from previous waves
-      - Monitor wave K progress via TaskList + messages
-      - All wave K items complete -> Validate GATE-K
-      - Shut down wave K teammates
+      - All wave-K results return -> Validate GATE-K
       - Mark GATE-K complete -> unblocks wave K+1
       - Proceed to wave K+1 (AUTOMATIC)
   3c. Final wave (lead): Integration + validation
   3d. Aggregate -- synthesize results into coordination_log.yaml
-  3e. SendMessage (shutdown_request) -- shut down remaining teammates
-  3f. TeamDelete -- clean up team and task resources
+  3e. Cleanup is automatic at session end (no TeamDelete)
 ```
 
-**All steps are MANDATORY and IMMEDIATE.** The team must be built, waves must execute, and gates must be validated without waiting for user permission. More waves are always preferred.
+**All steps are MANDATORY and IMMEDIATE.** Waves must execute and gates must be validated without waiting for user permission. More waves are always preferred.
 
-### Template + Wave Lifecycle (V9.6)
+### Template + Wave Lifecycle
 
 ```
-1. TeamCreate -- create team and shared task list
-2. Auto-select template (or use --template flag)
-3. Tag work items with wave + team assignments
-4. Create tasks with wave-gated dependencies (GATE sentinel pattern)
-5. Wave 0 (bootstrap): Orchestrator executes foundation via /run
+1. Auto-select template (or use --template flag)
+2. Tag work items with wave + team assignments
+3. Create tasks with wave-gated dependencies (GATE sentinel pattern)
+4. Wave 0 (bootstrap): Lead executes foundation sequentially
    -> Validate GATE-0 quality criteria -> Mark GATE-0 complete
-6. Wave 1 (parallel): Teams execute in parallel via /run
+5. Wave 1 (parallel): Concurrent Agent() teammates execute in parallel
    -> Validate GATE-1 quality criteria per team -> Mark GATE-1 complete
-7. Wave 2 (integration): Orchestrator integrates + polishes via /run
+6. Wave 2 (integration): Lead integrates + polishes
    -> Validate final quality gate
-8. Aggregate results + track contract fulfillment
-9. Shutdown teammates + TeamDelete
+7. Aggregate results + track contract fulfillment (cleanup automatic)
 ```
 
 ## Performance
@@ -367,12 +363,14 @@ View metrics in `team/metrics/` directory.
 
 ```json
 {
-  "teammateMode": "tmux",
+  "teammateMode": "in-process",
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   }
 }
 ```
+
+`teammateMode` ships as `"in-process"` (the reliability-first default that pairs with the concurrent-Agent model). `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` remains available to opt into the OPTIONAL experimental named-teammate + split-pane path; the default path does not require it.
 
 ### Project Override
 
@@ -382,9 +380,9 @@ Create `.cagents/team_config.yaml`:
 team_mode:
   enabled: true
   min_work_items: 3       # Minimum for team mode
-  max_team_size: 8        # Maximum teammates
+  max_team_size: 8        # Maximum teammates per wave
   prefer_teams_for_tiers: [3, 4]
-  teammate_mode: tmux     # auto | tmux | in-process
+  teammate_mode: in-process   # in-process (default) | auto | tmux (experimental)
 ```
 
 ### Disabling Team Mode
@@ -396,7 +394,7 @@ team_mode:
   enabled: false
 ```
 
-## Team Templates (V9.6)
+## Team Templates
 
 ### Overview
 
@@ -436,7 +434,7 @@ The highest-scoring template above its `confidence_threshold` (0.6) is selected.
 
 Templates are stored in `cagents-memory/_system/templates/teams/` with `_index.yaml` as the catalog index.
 
-## Delivery Waves (V9.24)
+## Delivery Waves
 
 ### Overview
 
@@ -562,7 +560,7 @@ Wave 4 (Integration -- lead):
   -> GATE-4
 ```
 
-## Interface Contracts (V9.6)
+## Interface Contracts
 
 ### Overview
 
@@ -608,7 +606,7 @@ All template/wave features are additive. When no template matches:
 - `--no-template` flag used
 - No templates exist in `cagents-memory/_system/templates/teams/`
 
-The system behaves exactly as V9.2: flat parallel execution with no waves or contracts.
+The system behaves as flat parallel execution with no waves or contracts.
 
 ## Troubleshooting
 
@@ -619,19 +617,18 @@ The system behaves exactly as V9.2: flat parallel execution with no waves or con
 **Causes**:
 - Work items < 3
 - All items sequential
-- Agent teams not enabled
 
-**Fix**: Verify work item count, ensure `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in settings.json
+**Fix**: Verify work item count and that at least some items are independent. The DEFAULT concurrent-Agent path needs no special harness flag — teammates are ordinary `Agent()` spawns.
 
-### Teammates Not Appearing
+### Teammates Not Appearing (experimental path)
 
-**Symptom**: Team created but no teammates visible
+**Symptom**: Named teammates / panes not visible under the experimental path
 
 **Causes**:
-- In in-process mode, teammates may be running but not visible
-- Task not complex enough for Claude to spawn teammates
+- `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` not set, or the harness does not support interactive agent teams
+- Terminal does not support split panes (VS Code, Windows Terminal, Ghostty)
 
-**Fix**: Use Shift+Down to cycle through teammates, check task complexity
+**Fix**: The experimental path falls back to the DEFAULT concurrent-Agent path automatically. To use panes, set `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`, `teammateMode: "tmux"`, and run in a supported terminal.
 
 ### Slow Team Execution
 
@@ -642,36 +639,30 @@ The system behaves exactly as V9.2: flat parallel execution with no waves or con
 - Low parallelism score
 - Overhead for small workflows
 
-**Fix**: Check parallelism_score in metrics, use standard mode for small workflows
+**Fix**: Check parallelism_score in metrics, use standard mode for small workflows.
 
-### tmux Pane Issues
+### tmux Pane Issues (experimental path)
 
 **Symptom**: tmux panes not showing
 
 **Causes**:
 - tmux not installed
-- Not configured for tmux mode
-- Running in unsupported terminal (VS Code, Windows Terminal, Ghostty)
+- `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` not set
+- Running in an unsupported terminal (VS Code, Windows Terminal, Ghostty)
 
-**Fix**: Install tmux (`apt install tmux`), set `teammateMode: "tmux"` in settings.json, use supported terminal
+**Fix**: Install tmux (`apt install tmux`), set `teammateMode: "tmux"` and `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`, use a supported terminal — or rely on the DEFAULT concurrent-Agent path, which needs none of this.
 
 ### Lead Doing Work Instead of Delegating
 
 **Symptom**: Lead implements tasks directly
 
-**Fix**: Tell lead "Wait for teammates to complete tasks before proceeding", or enable delegate mode (Shift+Tab)
-
-### Orphaned Team Resources
-
-**Symptom**: Old team files persist
-
-**Fix**: Use TeamDelete to clean up, or manually remove `~/.claude/teams/{team-name}/` and `~/.claude/tasks/{team-name}/`
+**Fix**: The lead only coordinates — it spawns teammates via `Agent()` and validates gates. If it starts implementing, remind it to spawn wave teammates and wait for their results before proceeding.
 
 ### Wrong Template Selected
 
 **Symptom**: Auto-selection picks wrong template
 
-**Fix**: Use `--template <id>` to force the correct template, or `--no-template` for flat execution
+**Fix**: Use `--template <id>` to force the correct template, or `--no-template` for flat execution.
 
 ### Wave Gate Stuck
 
@@ -681,21 +672,23 @@ The system behaves exactly as V9.2: flat parallel execution with no waves or con
 - Gate quality criteria not met
 - Contract artifacts missing
 
-**Fix**: Check gate criteria, verify provider teams completed contract artifacts, manually mark gate complete if criteria verified
+**Fix**: Check gate criteria, verify provider work items completed their contract artifacts, manually mark gate complete if criteria verified.
 
 ### Contract Violation
 
 **Symptom**: Consumer team can't find expected artifacts
 
-**Fix**: Verify provider team completed its wave, check artifact paths in template, re-run provider work items if needed
+**Fix**: Verify provider work items completed their wave, check artifact paths in the template, re-run provider work items if needed.
 
 ## Hooks
 
 Team-specific hooks in `.claude/hooks/`:
-- `team-start.cjs` - Initialize team monitoring
-- `team-stop.cjs` - Finalize and archive team session
-- `team-task-complete.cjs` - Track task completion
-- `teammate-idle-handler.cjs` - Find available work for idle teammates
+- `team-start.cjs` - Initialize team monitoring (SubagentStart)
+- `team-stop.cjs` - Finalize and archive the session (SessionEnd; runs for all session types)
+- `team-task-complete.cjs` - Track task completion (TaskCompleted — **experimental named-teammate path only**)
+- `teammate-idle-handler.cjs` - Find available work for idle teammates (TeammateIdle — **experimental named-teammate path only**)
+
+> The `TeammateIdle` / `TaskCompleted` events fire only for named background teammates, so `teammate-idle-handler.cjs` and `team-task-complete.cjs` support the EXPERIMENTAL path only. They remain registered and are no-ops on the DEFAULT concurrent-Agent path (which collects wave results synchronously via `Agent()` returns). Hook event names are unchanged.
 
 ## Related Documentation
 
@@ -707,4 +700,4 @@ Team-specific hooks in `.claude/hooks/`:
 ---
 
 **Version**: 9.25.0
-**Part of**: cAgents - N-Wave Parallel Team Execution via Built-in Agent Teams
+**Part of**: cAgents - N-Wave Parallel Team Execution

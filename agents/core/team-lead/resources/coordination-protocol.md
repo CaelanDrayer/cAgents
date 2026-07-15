@@ -4,31 +4,32 @@ Detailed coordination protocol for team-lead. Loaded on demand by the lead durin
 
 ## Built-in Agent Teams Tools
 
-This adapter uses Claude Code's built-in agent teams tools:
+This lead uses Claude Code's built-in agent-team tools. Teams are implicit since v2.1.178 — `TeamCreate`/`TeamDelete` were removed; there is nothing to create or delete, and cleanup is automatic at session end.
 
-- **SendMessage** (`type: "message"`): Send work assignments and status queries to specific teammates
+- **Agent**: Spawn wave teammates as concurrent calls in ONE message (`run_in_background: false`)
+- **SendMessage** (`type: "message"`): Send status queries to specific teammates
 - **SendMessage** (`type: "broadcast"`): Send updates to all teammates (use sparingly)
-- **SendMessage** (`type: "shutdown_request"`): Gracefully shut down teammates when done
+- **SendMessage** (`type: "shutdown_request"`): Gracefully release a named teammate early (experimental path only)
 - **TaskList**: Check shared task progress and find available work
 - **TaskUpdate**: Update task status and assign owners
 - **TaskGet**: Read full task details
-- **TeamDelete**: Clean up team resources after all work completes
 
-Teammate messages are delivered automatically -- no polling needed. Idle notifications arrive when teammates finish turns.
+On the DEFAULT path, concurrent `Agent()` calls return their results synchronously at each wave boundary. On the experimental named-teammate path, teammate messages are delivered automatically -- no polling needed.
 
 ## Spawning Teammates as Controller Agents
 
-**CRITICAL: Teammates are NOT assigned work via SendMessage. They are spawned as controller agents via Agent tool.** Each teammate receives its work item directly in the Task call.
+**CRITICAL: Teammates are NOT assigned work via SendMessage. They are spawned as controller agents via Agent tool.** Each teammate receives its work item directly in the Agent call. DEFAULT: spawn all of a wave's teammates as CONCURRENT `Agent()` calls in ONE message with `run_in_background: false` (subagents are background-by-default since v2.1.198), so the lead collects every wave result synchronously before validating the gate.
 
 ```javascript
 // Spawn a teammate as a controller that delegates to execution agents
 Agent({
   subagent_type: "cagents:tech-lead",
-  name: "w1-task-1-tech-lead",
-  team_name: "{team_name}",
+  run_in_background: false,   // DEFAULT — collect the wave's results synchronously
   description: "Wave 1 - Execute TASK-01: Implement user model",
   prompt: "You are a controller teammate. Spawn cagents:backend-developer to implement TASK-01, then spawn cagents:reviewer to validate. Acceptance criteria: model exists with password_hash field, migration created, unit tests pass."
 })
+// EXPERIMENTAL path only (CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1): add `name` + `run_in_background: true`
+// for a persistent named teammate; any `team_name` arg is accepted-but-ignored.
 ```
 
 **Anti-pattern (NEVER DO THIS):**
@@ -114,7 +115,7 @@ Team lead explicitly assigns tasks to specific teammates:
 
 1. Team lead reviews TaskList for available items
 2. Team lead assigns via TaskUpdate (set owner) and SendMessage
-3. Teammate receives assignment and executes via /run
+3. Teammate (a controller) spawns execution agents + reviewer directly via Agent tool — NOT by re-entering /run
 
 ## Result Aggregation
 
@@ -156,7 +157,7 @@ execution_method: built_in_agent_teams
 team:
   name: cagents-team_20260206_143022
   lead: tech-lead
-  teammate_mode: tmux
+  teammate_mode: in-process   # default since v2.1.179; tmux/iterm2 panes are experimental-path only
   members:
     - name: teammate-1
       items_completed: [TASK-01, TASK-04]
@@ -193,18 +194,15 @@ status: completed
 
 ## Cleanup
 
-After all work is complete and coordination_log.yaml is written:
+After all work is complete and coordination_log.yaml is written, cleanup is **automatic at session end** — teams are implicit and `TeamDelete` was removed in v2.1.178, so there is nothing to call. On the DEFAULT concurrent-Agent path, spent teammates simply end when their wave `Agent()` call returns.
 
-1. **Shut down all teammates**: Send shutdown_request to each via SendMessage
-2. **Wait for confirmations**: Teammates approve shutdown
-3. **Clean up team**: Call TeamDelete to remove team and task resources
+On the EXPERIMENTAL named-teammate path only, you may release a persistent teammate early:
 
 ```javascript
+// Experimental path only (CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1):
 SendMessage({ type: "shutdown_request", recipient: "teammate-1", content: "Work complete" })
 SendMessage({ type: "shutdown_request", recipient: "teammate-2", content: "Work complete" })
-
-// After all confirmations received:
-TeamDelete()
+// No TeamDelete — the tool was removed in v2.1.178; cleanup is automatic at session end.
 ```
 
 ## Error Handling

@@ -197,7 +197,7 @@ See `.claude/skills/team/reference/strategic-mode.md` for the full protocol, bri
 
 ### /team
 
-**Purpose**: Creates a real agent team via `TeamCreate` and executes work in parallel waves with quality gates between waves. Each wave spawns fresh teammate agents (controllers) that delegate to execution specialists, producing 40-60% execution-time reduction for tier 3+ work. Maximizes wave count for stronger gating.
+**Purpose**: Executes work in parallel waves with quality gates between waves. For each wave the lead spawns its teammate controllers as concurrent `Agent()` calls in one message (teams are implicit — the `TeamCreate`/`TeamDelete` tools were removed in CC v2.1.178, so cleanup is automatic), and each teammate delegates to execution specialists, producing 40-60% execution-time reduction for tier 3+ work. Maximizes wave count for stronger gating.
 
 **When to use**:
 - Tier 3+ tasks with 3+ parallelizable work items
@@ -212,7 +212,7 @@ See `.claude/skills/team/reference/strategic-mode.md` for the full protocol, bri
 | `--dry-run` | Preview wave structure without executing |
 | `--waves <n>` | Force a minimum number of waves |
 | `--members <n>` | Override default team size |
-| `--teammate-mode tmux\|auto\|in-process` | Display mode for teammate panes |
+| `--teammate-mode in-process\|auto\|tmux` | Display mode (default `in-process`; `tmux`/`auto` panes are experimental-path only) |
 | `--no-template` | Skip auto-template selection |
 
 **Example invocation**:

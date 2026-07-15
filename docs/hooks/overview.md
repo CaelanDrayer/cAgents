@@ -30,8 +30,8 @@ Two consolidating dispatchers run the sub-validators in-process (one node cold-s
 | SubagentStop | subagent-stop-tracker.cjs | Log completion, capture summaries + duration |
 | Stop | verify-completion.cjs, goal-evaluator-logger.cjs, secret-restore.cjs | Verify completion, capture /goal reasons, restore sanitized secrets |
 | StopFailure | stop-failure-handler.cjs | Save recovery state |
-| TeammateIdle | teammate-idle-handler.cjs | Find available work or stop teammate |
-| TaskCompleted | team-task-complete.cjs | Update task status, unblock dependencies |
+| TeammateIdle | teammate-idle-handler.cjs | Find available work or stop teammate (experimental named-teammate path only; no-op on the default concurrent-Agent path) |
+| TaskCompleted | team-task-complete.cjs | Update task status, unblock dependencies (experimental named-teammate path only; no-op on the default concurrent-Agent path) |
 | InstructionsLoaded | instructions-loaded.cjs | Validate rules dir, inject active session context |
 | PreCompact | pre-compact-save.cjs | Save critical state before compaction |
 | PostCompact | post-compact-restore.cjs | Log workflow context to disk after compaction |

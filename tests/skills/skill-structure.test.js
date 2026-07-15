@@ -41,6 +41,61 @@ function readSkill(skillName) {
   return readFileSync(skillPath, 'utf8');
 }
 
+/**
+ * Detect any MANDATORY / imperative TeamCreate|TeamDelete call site in a SKILL.md.
+ *
+ * v12.42.0: Claude Code v2.1.178 REMOVED the TeamCreate/TeamDelete tools — teams
+ * are now IMPLICIT (nothing to create; cleanup is automatic at session end). The
+ * /team skill was re-anchored on the concurrent-Agent wave DEFAULT model, so it
+ * must NOT present TeamCreate/TeamDelete as a required step. A residual mention is
+ * allowed ONLY when framed historically/negated ("removed in 2.1.178", "do NOT
+ * call TeamCreate", "teams are implicit", "no TeamDelete").
+ *
+ * A violation is any of:
+ *   (A) allowed-tools grants TeamCreate or TeamDelete (a removed tool), OR
+ *   (B) a body line that — outside a historical/negated framing — either
+ *       calls a removed tool ("TeamCreate(" / "TeamDelete("), declares it
+ *       mandatory ("TeamCreate is mandatory"), or names it in a step heading
+ *       ("## Step 3 — TeamCreate").
+ *
+ * Returns a list of human-readable violation strings (empty = compliant). This is
+ * the bug-driven regression pin: it returns >0 for the pre-fix /team SKILL.md
+ * (which listed TeamCreate/TeamDelete in allowed-tools and had a "Step 3 —
+ * TeamCreate" call site) and 0 for the re-anchored concurrent-Agent model.
+ */
+function teamCreateMandateViolations(content) {
+  const fm = parseFrontmatter(content) || {};
+  const violations = [];
+
+  // (A) allowed-tools must NOT grant the removed TeamCreate/TeamDelete tools.
+  const tools = String(fm['allowed-tools'] || '')
+    .split(/[,\s]+/)
+    .map((t) => t.trim())
+    .filter(Boolean);
+  for (const t of ['TeamCreate', 'TeamDelete']) {
+    if (tools.includes(t)) violations.push(`allowed-tools grants removed tool ${t}`);
+  }
+
+  // (B) body must NOT present TeamCreate/TeamDelete as a required/imperative step.
+  const body = content.replace(/^---\n[\s\S]*?\n---\n?/, '');
+  // A mention framed as history or negation is allowed (it is the CORRECT new prose).
+  const HISTORICAL =
+    /removed in|2\.1\.178|do not call|never call|no team(create|delete)|nothing to create|teams are implicit|cleanup is automatic/i;
+  body.split('\n').forEach((line, i) => {
+    if (!/Team(Create|Delete)/.test(line)) return;
+    const stripped = line.replace(/`/g, ''); // drop markdown backticks
+    if (HISTORICAL.test(stripped)) return; // historical/negated framing is allowed
+    if (
+      /\bTeam(Create|Delete)\s*\(/.test(stripped) || // an actual call: TeamCreate( ... )
+      /Team(Create|Delete)\s+is\s+mandatory/i.test(stripped) ||
+      /^#{1,6}\s.*\bTeamCreate\b/.test(stripped) // a step/section heading named TeamCreate
+    ) {
+      violations.push(`line ${i + 1}: ${line.trim()}`);
+    }
+  });
+  return violations;
+}
+
 // ─── Directory and file existence ──────────────────────────────────────────
 
 describe('Skill directories', () => {
@@ -157,9 +212,23 @@ describe('/team SKILL.md content', () => {
     expect(content).toMatch(/Maximize Waves|more waves/i);
   });
 
-  it('contains TeamCreate reference', () => {
+  // v12.42.0 bug-driven regression pin: Claude Code v2.1.178 removed the
+  // TeamCreate/TeamDelete tools, so /team was re-anchored on the concurrent-Agent
+  // wave DEFAULT model (teams are implicit). The skill must present NO mandatory
+  // TeamCreate/TeamDelete call site — only historical/negated mentions are allowed.
+  // This inverts the former `contains TeamCreate reference` assertion, which passed
+  // even for the pre-fix skill that had `TeamCreate` in allowed-tools and a
+  // `## Step 3 — TeamCreate` call site. This assertion FAILS against that pre-fix
+  // SKILL.md and PASSES against the re-anchored model.
+  it('has no mandatory TeamCreate/TeamDelete call site (v12.42.0: teams are implicit)', () => {
     const content = readSkill('team');
-    expect(content).toContain('TeamCreate');
+    const violations = teamCreateMandateViolations(content);
+    expect(
+      violations,
+      `/team SKILL.md must not present TeamCreate/TeamDelete as a required step ` +
+        `(removed in Claude Code v2.1.178 — teams are implicit). Offending lines:\n` +
+        violations.join('\n')
+    ).toHaveLength(0);
   });
 
   it('contains strategic mode reference (v12.2.0: absorbed /org)', () => {

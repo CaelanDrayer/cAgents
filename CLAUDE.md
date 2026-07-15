@@ -329,7 +329,7 @@ State machine loop reading pipeline_config.yaml. Sequential enrichment (orchestr
 Skill: `.claude/skills/run/SKILL.md` + `reference/`
 
 ### /team - N-Wave Parallel Team Execution
-N-wave pipeline: **Wave 0 (lead: enrichment) -> Wave 1..N-1 (teammates: per-wave spawn, parallel within wave) -> Wave N (lead: integration)**. Maximizes waves for quality gating. Each wave spawns fresh teammates, validates GATE, then proceeds. 40-60% execution time reduction for tier 3+. Automatic teammate failure recovery (retry + simplify + escalate), GATE validation standards per wave type, partial results on failure. **Strategic Mode**: For cross-domain requests (`router.domain_count >= 2`), /team auto-enables strategic mode — Wave 0/1 = C-suite analysis (9 leadership agents), Wave 2 = brief synthesis, Wave 3..N = per-domain dispatch. Override with `--strategic` / `--no-strategic`. See `.claude/skills/team/reference/strategic-mode.md`.
+N-wave pipeline: **Wave 0 (lead: enrichment) -> Wave 1..N-1 (teammates: per-wave spawn, parallel within wave) -> Wave N (lead: integration)**. Maximizes waves for quality gating. **Default execution model (concurrent-Agent waves)**: for each wave the lead spawns ALL wave-K teammates as concurrent `Agent()` calls in ONE message, synchronously (`run_in_background: false`, explicit since subagents are background-by-default in CC v2.1.198), collects the results together, validates GATE, then proceeds. Teams are implicit — the `TeamCreate`/`TeamDelete` tools were removed in CC v2.1.178, so there is nothing to create or delete and cleanup is automatic at session end. Each teammate is a controller that spawns its own execution agents + reviewer (nesting to depth 5). An OPTIONAL EXPERIMENTAL path (named background teammates + tmux/iTerm2 panes, gated on `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) falls back to the default when unavailable. 40-60% execution time reduction for tier 3+. GATE validation standards per wave type, partial results on failure. **Strategic Mode**: For cross-domain requests (`router.domain_count >= 2`), /team auto-enables strategic mode — Wave 0/1 = C-suite analysis (9 leadership agents), Wave 2 = brief synthesis, Wave 3..N = per-domain dispatch. Override with `--strategic` / `--no-strategic`. See `.claude/skills/team/reference/strategic-mode.md`.
 ```bash
 /team Implement OAuth2 authentication           # Single-domain team execution (5-7 waves)
 /team Launch new product with campaign          # Cross-domain: auto-strategic mode (eng + business + people)
@@ -338,7 +338,7 @@ N-wave pipeline: **Wave 0 (lead: enrichment) -> Wave 1..N-1 (teammates: per-wave
 /team Build feature --waves 8                   # Force minimum 8 waves
 /run Build feature --team                       # Team mode via flag
 ```
-Config: `settings.json` (`teammateMode`: auto/tmux/in-process). See `docs/TEAM_MODE.md`.
+Config: `settings.json` (`teammateMode` default `in-process` since CC v2.1.179; `tmux`/`auto` panes are experimental-path only). See `docs/TEAM_MODE.md`.
 
 ### /designer, /helper
 Each skill has `SKILL.md` + `reference/` directory with detailed docs. Use `/helper` for guidance.
@@ -350,7 +350,7 @@ Highlights:
 
 ## Team Mode
 
-N-wave parallel team execution using Claude Code's built-in agent teams. Use `/team` for tier 3+ workflows (40-60% faster). See @.claude/rules/core/teams.md for wave structure, GATE sentinels, display modes, and troubleshooting.
+N-wave parallel team execution via concurrent `Agent()` spawns (teams are implicit; the `TeamCreate`/`TeamDelete` tools were removed in CC v2.1.178, so cleanup is automatic). Use `/team` for tier 3+ workflows (40-60% faster). See @.claude/rules/core/teams.md for wave structure, GATE sentinels, display modes, and troubleshooting.
 
 ## Agent Memory
 
@@ -549,7 +549,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking and
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: 5-state pipeline with two execution paths (fast/standard — `fast` skips the orchestrator for tier-2-clear requests), revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 1514+ Vitest tests across 179+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.41.0
+**Version**: 12.42.0
 
 ## Troubleshooting
 
