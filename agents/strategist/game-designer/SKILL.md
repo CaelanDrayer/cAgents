@@ -6,6 +6,7 @@ metadata:
   version: "1.0.0"
   tier: execution
   model: sonnet
+  color: bright_magenta
   mode: design
   supported_modes:
     design: "Game mechanics design, systems design, player experience, and design documentation (absorbed from game-designer)"

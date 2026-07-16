@@ -1,13 +1,12 @@
-archive/
-vendor_repos/
-node_modules/
-tests/
-scripts/ci/
-Agent_Memory/
-example/
-.claude/hooks/
-.claude/plans/
-*.test.js
-*.spec.js
-.git/
-.github/
+# The `files` allowlist in package.json is the SINGLE SOURCE OF TRUTH for what
+# ships in the npm tarball. npm's `files` field takes precedence over ignore-file
+# patterns for the CONTENTS of a listed directory, so a denylist here cannot carve
+# paths out of a dir that `files` lists — the allowlist is granular enough to only
+# include plugin SOURCE (agents/, .claude/{hooks,skills,rules,output-styles},
+# .claude-plugin/, scripts/, the docs, and the tracked cagents-memory/_system
+# config/templates). Local cruft (.claude/plans, .claude/sessions,
+# settings.local.json, *.lock) is excluded simply by not being listed in `files`.
+#
+# This file is intentionally comment-only. Do NOT reintroduce a `.claude/hooks/`
+# exclusion — the prior version wrongly excluded the load-bearing plugin hooks.
+# Adjust packaging via package.json `files`, not here.

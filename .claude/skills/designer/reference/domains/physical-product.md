@@ -79,8 +79,8 @@ For Physical / Product, Phase 6 emits:
 Phase 6 emits a `bill_of_materials.md` — NOT user stories, NOT an API
 spec, NOT a technical software architecture.
 
-**Follow-up dispatch agent**: `cagents:product-designer` for industrial-design
-review, or `cagents:concept-artist` for early ideation sketches. Fall
+**Follow-up dispatch agent**: `cagents:frontend-developer` (mode=ux) for industrial-design
+review, or `cagents:visual-artist` (mode=concept) for early ideation sketches. Fall
 back to `cagents:technical-writer` for the documentation pass. NEVER
 `cagents:backend-developer` — materials questions are not software
 questions.

@@ -84,7 +84,7 @@ Phase 6 emits a `lesson_plan.md` per lesson — NOT user stories, NOT an
 API spec, NOT a technical architecture.
 
 **Follow-up dispatch agent**: `cagents:technical-writer` for clear
-writeups, or `cagents:instructional-designer` if it exists in the
-catalog. Fall back to `cagents:copywriter` for learner-facing materials
+writeups, or `cagents:academic-advisor` for pedagogy and curriculum
+design. Fall back to `cagents:editor` (mode=copy) for learner-facing materials
 review. NEVER `cagents:backend-developer` — pedagogy questions are not
 software questions.

@@ -1,0 +1,101 @@
+# Event-driven pipeline configuration
+# Defines the state machine that /run executes sequentially.
+# Each state maps to an agent, its inputs/outputs, and the next state.
+#
+# v12.0.0: 7-state -> 5-state collapse. task-decomposer + prompt-engineer
+# absorbed into universal-planner. See revamp-design-v2.md Q1.
+# v12.3.0: Adaptive fast path deleted. Every /run and /team unconditionally
+# executes all 5 states. Skill-declared pipeline_exemptions + phase stubs
+# substitute for the deleted complexity-scoring shortcut. See
+# revamp-design-v2.md Pillar 1.
+version: "2.0"
+
+# Subagent nesting ceiling (v12.17.0).
+# Claude Code 2.1.172 added: "Sub-agents can now spawn their own sub-agents
+# (up to 5 levels deep)." Verified live on CC 2.1.173. The skill loop counts
+# as depth 0; the 5 levels are the subagent generations beneath it. Subagents
+# retain the Agent tool and CAN spawn children up to this ceiling. A subagent
+# at depth 5 cannot spawn a depth-6 child -- that is the only point where the
+# graceful-degradation fallback (pat-graceful-degradation-depth1.md) applies.
+max_nesting_depth: 5
+
+states:
+  INIT:
+    agent: cagents:orchestrator
+    next: ORCHESTRATED
+    outputs: [enriched_context.yaml]
+    description: "Enrich user request with domain context, constraints, and project state"
+
+  ORCHESTRATED:
+    agent: cagents:planner
+    next: PLANNED
+    inputs: [enriched_context.yaml]
+    outputs: [plan.yaml, objectives.yaml]
+    description: "Define objectives, select controllers, create plan"
+
+  PLANNED:
+    agent: dynamic  # resolved from plan.yaml controller_assignment
+    next: COORDINATED
+    inputs: [plan.yaml, work_items.yaml]
+    outputs: [coordination_log.yaml]
+    nested_execution: true  # controller spawns level 2 agents (executor + reviewer)
+    description: "Controller coordinates execution via question-based delegation with reviewer loop. (v12.0.0: DECOMPOSED + PROMPTS_READY absorbed into universal-planner; controllers fall back to standard prompts.)"
+
+  COORDINATED:
+    agent: cagents:validator
+    next: VALIDATED
+    inputs: [coordination_log.yaml, work_items.yaml]
+    outputs: [validation_report.yaml]
+    description: "Validate outputs against acceptance criteria, classify PASS/FAIL/REVISE"
+
+  VALIDATED:
+    terminal: true
+    description: "Pipeline complete -- all work items validated"
+
+# Revision routing
+# When validator returns FAIL or REVISE, the state machine jumps back.
+revision:
+  # max_revision_cycles lowered 5 -> 3 in v12.0.0.
+  # Basis: cagents-memory/sessions/team_v12-audits-only_260520_001/outputs/wave-1/revision-distribution.yaml
+  # verdict: lower-cap-safe (p95=0 across 24 sessions; no observed session
+  # required more than 3 revisions). Telemetry note: if any future session
+  # exhausts 3 cycles without resolution, the universal-self-correct agent
+  # should escalate visibly rather than silently truncate.
+  max_cycles: 3
+  on_fail: PLANNED            # v12.0.0: PROMPTS_READY removed; route back to PLANNED (controller re-runs with validator feedback)
+  on_revise: PLANNED           # re-plan with feedback (more fundamental issue)
+  escalation: user_hitl        # after max_cycles exhausted, escalate to user
+
+# Controller internal revision settings
+controller_revision:
+  # LP-27 (v12.7.x): lowered 3 -> 2 to save ~33% reviewer-call token budget
+  # per failed item. The Dead-Letter Promotion Contract (controllers.md
+  # § Dead-Letter Promotion Contract, P1-6) remains unchanged: items that
+  # exhaust max_internal_rounds are promoted to dead_letter_items[] and
+  # coordination continues with the remaining work items.
+  max_internal_rounds: 2       # executor-reviewer loops within controller phase
+  escalation: dead_letter      # after max rounds, mark as dead_letter (v10.6.0)
+
+# Classification mapping (v10.6.0)
+# Maps non-standard classifications to pipeline-recognized values.
+classification_mapping:
+  PARTIAL_PASS: PASS           # dead-letter items reported but don't block pipeline
+
+# Pre-enrichment detection removed in v12.3.0.
+# Every /run and /team session unconditionally executes the full 5-state
+# pipeline. /team teammate flows that previously short-circuited INIT or
+# ORCHESTRATED now declare pipeline_exemptions in their spawning skill's
+# SKILL.md metadata and write workflow/{phase}_stub.yaml instead. The
+# validator's Phase-0 artifact-presence check recognizes the stub as a
+# valid substitute. See revamp-design-v2.md Pillar 1.
+
+# Signal file intervention (v10.6.0)
+# Pipeline checks for signal files before each state transition.
+signals:
+  enabled: true
+  check_interval: before_transition
+  signal_dir: signals/                   # relative to session directory
+  supported:
+    - PAUSE    # Pause after current state completes, wait for RESUME
+    - STOP     # Graceful stop after current state completes
+    - RESUME   # Clear PAUSE and resume execution

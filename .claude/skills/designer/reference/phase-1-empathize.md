@@ -122,9 +122,9 @@ If `--deep` flag is set, spawn research agents to analyze user-facing code and s
 
 ```javascript
 Agent({
-  subagent_type: "cagents:ux-designer",
+  subagent_type: "cagents:frontend-developer",
   description: "Research: UX patterns and user context for Empathize",
-  prompt: `Research agent for /designer Empathize phase.
+  prompt: `Research agent for /designer Empathize phase. Run in mode=ux (user research: personas, interaction patterns, accessibility).
 TOPIC: ${topic}
 SESSION: ${session_dir}
 Analyze existing UX patterns, user-facing interfaces, and accessibility features.
@@ -133,9 +133,9 @@ Write to: ${session_dir}/question_prep/empathize_ux.yaml`
 })
 
 Agent({
-  subagent_type: "cagents:business-analyst",
+  subagent_type: "cagents:market-research-analyst",
   description: "Research: Stakeholder landscape for Empathize",
-  prompt: `Research agent for /designer Empathize phase.
+  prompt: `Research agent for /designer Empathize phase. Run in mode=requirements (stakeholder landscape + requirements elicitation).
 TOPIC: ${topic}
 SESSION: ${session_dir}
 Analyze project structure for stakeholder clues: README, docs, config, user roles.

@@ -6,6 +6,7 @@ metadata:
   version: "1.0.0"
   tier: execution
   model: sonnet
+  color: bright_cyan
   mode: ds
   supported_modes:
     ds: "ML model development, EDA, A/B testing, causal inference, model deployment (was: data-scientist)"

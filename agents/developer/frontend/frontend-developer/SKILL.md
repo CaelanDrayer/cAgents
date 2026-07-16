@@ -7,6 +7,7 @@ metadata:
   version: "1.0.0"
   tier: execution
   model: sonnet
+  color: bright_blue
   mode: ui
   supported_modes:
     ui: "UI components, responsive design, React/Vue/Angular, styling, accessibility, state management, performance (was: developer/frontend/frontend-developer)"

@@ -1,10 +1,22 @@
 # cAgents Release Notes
 
-**Current Version**: 12.42.0
-**Release Date**: June 14, 2026
+**Current Version**: 12.43.0
+**Release Date**: July 14, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.20.0 – V12.42.0 — June 18 to July 14, 2026 (consolidated summary)
+
+This span shipped as roughly 30 tiny/minor bumps. The per-bump detail lives in the canonical [CHANGELOG.md](../CHANGELOG.md); the themes below summarize what changed across the range so this file stays a coherent narrative history.
+
+- **Agent-catalog consolidation → 57, then 58** (v12.20.0, v12.35.0): The catalog was restructured from 141 individually-routable leaf agents to 57 (41 routable specialists + 16 core) via a Hybrid A+B mode mechanism — absorbed specialists became `metadata.mode` variants backed by verbatim `@resources/{mode}.md` files, with zero intelligence loss. v12.35.0 then added the consolidated `ai-writing-editor` agent and a final AI-detection gate for writer-type agents, growing the catalog to its current **58**.
+- **Comprehensive plugin audit/refactor** (v12.23.0 – v12.31.0): A ten-phase audit (`team_plugin-audit-refactor`) hard-deleted dead files, cleaned the hook surface (consolidated the PreToolUse[Agent] hooks into `agent-dispatch.cjs`), repaired `paths:` rule globs broken by the v12.8.0 layout move, resynced stale config/routing catalogs so no spawn silently degrades, consolidated the validation framework into one layered story, matched the `/team` machinery to reality, and ran a final count-drift sweep backed by new CI guards.
+- **Documentation & framing** (v12.21.0, v12.22.0): A documentation audit corrected stale counts and references across the corpus; the domain-agnostic "NOT a software-engineering tool" framing was made prominent; `/designer` gained a refinement-first continuation contract; and `/run` gained workspace-skill awareness (reuse-before-rebuild).
+- **Hook resilience & performance** (v12.22.1, v12.32.0, v12.33.0): Unref'd lingering timers so hook processes exit in ~140ms; added deterministic SDK-transcript-UUID → session resolution so concurrent same-directory sessions never cross-write; and fixed the Stop hook so a mid-flight background wait is no longer deadlocked.
+- **Security — GuardFall Bash-guard hardening** (v12.34.0): Added the fail-closed tokenize-and-canonicalize `bash-guard-evaluator.cjs` library, closing the named Class A–E single-command bypass shapes, backed by a 35-probe regression corpus (hook-file inventory 31 → 32). See `docs/SECURITY_BASH_GUARD_THREAT_MODEL.md`.
+- **Honesty-spine overhaul** (v12.36.0 – v12.41.0): Committed and wired the curated example store (`.claude/rules/examples/`) as planner few-shot input; added "Enforced vs Advisory" ledgers so readers can tell mechanically-enforced protocols from agent-self-reported ones; added review-rigor playbooks; and shipped an advisory-first (WARN-only) CI content-security / capability-consistency layer plus mechanical self-validation and claim-verification rechecks.
+- **`/team` re-anchored on a concurrent-Agent default** (v12.42.0): Claude Code v2.1.178 removed the `TeamCreate` / `TeamDelete` tools. `/team` now spawns each wave as concurrent `Agent()` calls in one message (teams are implicit; cleanup is automatic at session end); the named-background-teammate + tmux-panes mechanism is retained only as an optional experimental path.
 
 ## V12.19.0 — June 14, 2026 (Bucket D: hook security + performance)
 
@@ -1972,6 +1984,6 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.42.0
-**Release Date**: February 27, 2026
-**Git Tag**: v9.21.0
+**Current Version**: 12.43.0
+**Release Date**: July 14, 2026
+**Git Tag**: v12.42.0

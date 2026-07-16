@@ -7,6 +7,7 @@ metadata:
   version: "1.0.0"
   tier: execution
   model: sonnet
+  color: bright_green
   mode: research
   supported_modes:
     research: "Literature review, research design, academic writing, grant proposal development (absorbed from advisor/education/academic-researcher)"

@@ -6,6 +6,7 @@ metadata:
   version: "1.0.0"
   tier: execution
   model: sonnet
+  color: bright_cyan
   mode: market
   supported_modes:
     market: "Primary/secondary research, TAM/SAM/SOM market sizing, customer segmentation, buyer personas, competitive landscape assessments (was: analyst/market-research-analyst)"

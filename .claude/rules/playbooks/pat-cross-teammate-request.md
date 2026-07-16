@@ -82,7 +82,7 @@ The lead's only valid actions on a peer_request are: (a) `SendMessage` to peer, 
 
 ## Worked example
 
-Wave 3 of a `/team` build. Teammate A is `cagents:backend-developer` working on WI-12 (auth middleware). Teammate B is `cagents:dba` who finished WI-8 and is idle.
+Wave 3 of a `/team` build. Teammate A is `cagents:backend-developer` (mode=api) working on WI-12 (auth middleware). Teammate B is `cagents:backend-developer` (mode=database — the DBA role) who finished WI-8 and is idle; it is spawned under the teammate name `teammate-dba` to mark its role in the wave.
 
 1. A discovers WI-12 needs `users.last_login_at` confirmed (wave-2 migration may have renamed it).
 2. A writes `outputs/wave-3/peer_requests/REQ-1.yaml` (the schema block above).

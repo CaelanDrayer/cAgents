@@ -10,11 +10,15 @@
  *   - UserPromptSubmit:
  *       1. If the prompt starts with /run or /team, inject a 5-line
  *          systemMessage that references @.claude/rules/core/delegation.md
- *          (the canonical kill-list).
- *       2. Otherwise, detect natural-language intent keywords (build, fix,
- *          design, review, optimize) and suggest the matching skill — but
- *          ONLY when the prompt is ≤2 sentences (length gating cuts noise
- *          in conversational mode).
+ *          (the canonical kill-list). Always on — it only fires when the
+ *          user explicitly invokes the skill.
+ *       2. OPT-IN (default OFF): detect natural-language intent keywords
+ *          (build, fix, design, review, optimize) and suggest the matching
+ *          skill. This layer used to fire on EVERY intent-keyword prompt,
+ *          which was noisy in sessions where the user did not want the
+ *          plugin. It is now gated behind CAGENTS_ROUTING_SUGGESTIONS — set
+ *          it to 1/true/on/yes (e.g. in .claude/settings.json `env`) to
+ *          re-enable. When unset, no routing suggestions are emitted.
  *   - PreToolUse[Agent]: pass-through (no-op). Reserved for future
  *     controller-spawn validation if needed; controller-delegation-validator
  *     handles the Write/Edit deny path.
@@ -77,6 +81,17 @@ function buildDelegationReminder(skill) {
   return `DELEGATION ACTIVE for ${skill}. See @.claude/rules/core/delegation.md for the Rationalization Kill List. All work goes to subagents via the Agent tool — no direct implementation, no matter how small the task.`;
 }
 
+// Layer 2 (natural-language routing suggestions) is OPT-IN, default OFF.
+// The nudge fired on every intent-keyword prompt, which was noise in sessions
+// where the user did not want the plugin. Enable it explicitly by setting
+// CAGENTS_ROUTING_SUGGESTIONS to an affirmative value.
+function routingSuggestionsEnabled() {
+  const v = String(process.env.CAGENTS_ROUTING_SUGGESTIONS || '')
+    .trim()
+    .toLowerCase();
+  return v === '1' || v === 'true' || v === 'on' || v === 'yes';
+}
+
 createHook('PromptRouter', async (input) => {
   // Handle PreToolUse[Agent] pass-through case (no-op for now).
   if (input.tool_name === 'Agent') {
@@ -99,6 +114,10 @@ createHook('PromptRouter', async (input) => {
   }
 
   // Layer 2: natural-language routing suggestions (replaces magic-keywords).
+  // OPT-IN, default OFF — suppress the nudge entirely unless the user has
+  // explicitly enabled it via CAGENTS_ROUTING_SUGGESTIONS.
+  if (!routingSuggestionsEnabled()) return null;
+
   // Length gating: skip routing nudges for ≥3 sentences (conversational mode).
   if (prompt.length < 5) return null;
   if (sentenceCount(prompt) >= 3) return null;

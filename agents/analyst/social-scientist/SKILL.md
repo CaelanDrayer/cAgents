@@ -6,6 +6,7 @@ vibe: "Every incentive has a shadow — and every behavior tells a story"
 metadata:
   tier: execution
   model: sonnet
+  color: bright_cyan
   mode: economics
   supported_modes:
     economics: "Macro/microeconomic theory, policy evaluation, market analysis, behavioral economics (absorbed from agents/analyst/economist)"

@@ -7,6 +7,7 @@ metadata:
   version: "1.0.0"
   tier: execution
   model: sonnet
+  color: bright_blue
   mode: cicd
   supported_modes:
     cicd: "CI/CD pipelines, Terraform/Pulumi IaC, Docker/K8s orchestration, deployment automation (was: developer/infrastructure/devops-engineer)"

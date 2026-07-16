@@ -7,6 +7,7 @@ metadata:
   version: "1.0.0"
   tier: controller
   model: opusplan
+  color: bright_yellow
   coordination_style: question_based
   mode: strategy
   supported_modes:

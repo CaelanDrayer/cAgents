@@ -7,6 +7,7 @@ metadata:
   version: "1.0.0"
   tier: execution
   model: sonnet
+  color: bright_blue
   mode: api
   supported_modes:
     api: "REST/GraphQL APIs, server-side logic, authentication, caching, third-party integrations, backend testing (was: developer/backend/backend-developer)"

@@ -2,7 +2,7 @@
 
 How agents interact during workflow execution. For architecture, commands, and agent reference, see `CLAUDE.md`.
 
-**Last verified**: v12.2.0
+**Last verified**: v12.43.0
 
 _V11.0 removed /review, /optimize, /context, /debug — see [MIGRATION-V11.md](./MIGRATION-V11.md). v12.1.2 folded /improve into /run via a first-word keyword router; review and optimization are now modes of `/run` (`/run review`, `/run optimize`, `/run improve` — or `--mode review|optimize|full`). v12.2.0 removed /org and absorbed cross-domain coordination into `/team` strategic mode (auto-enabled when `router.domain_count >= 2`)._
 

@@ -10,6 +10,59 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.43.0] - 2026-07-16
+
+**Production-readiness audit + fix pass** (audit session
+`team_plugin-prod-audit_260716_001`). A five-agent parallel audit surfaced a batch of
+wiring, packaging, documentation, and CI-guard defects; this release lands all fixes
+together plus the integration cleanups. This is a **minor bump** (not a tiny bump) per
+the version-registry.md "Audit / consolidation sessions" guidance — the change spans
+the skill layer, agent frontmatter, hooks, rules, docs, packaging, config, CI, and
+tests across many files.
+
+### Fixed
+- **`/designer` spawned 2 unregistered agents.** The designer skill referenced agent
+  names that are not in `plugin.json`; repointed to registered agents (back-compat
+  aliases added — see Added).
+- **`package.json` packaging was broken.** The `files` allowlist shipped **zero agents**
+  (the `agents/` tree was excluded) and the package `description` was inaccurate. The
+  allowlist now ships the agent catalog and the description reflects what cAgents is.
+- **`docs/RELEASE_NOTES.md` incoherence** — stale/contradictory current-version framing
+  reconciled.
+- **Model-generation doc drift** — lingering "Opus 4.6" references corrected to Opus 4.8
+  across docs.
+- **README agent-catalog total** corrected to match the registered catalog count.
+- **Dangling `@resources` reference** removed/repointed so no doc points at a missing
+  resource file.
+- **Tiny-bump guard blocked legitimate minor bumps.** `cagents-ci.sh`'s tiny-bump stage
+  applied its ≤5-non-sync-file cap to every bump; the cap is now **patch-only**, so a
+  legitimate minor/audit bump with a large diff (like this one) is no longer wrongly
+  blocked. Ships with a regression test (see Added).
+- **Integration cleanups**: repointed the `cagents:dba` worked-example reference in
+  `pat-cross-teammate-request.md` to `cagents:backend-developer` (mode=database — the
+  DBA role), and refreshed stale `**Last verified**: v12.2.0` headers in
+  `docs/SKILLS_REFERENCE.md` and `docs/WORKFLOW_AGENT_INTERACTIONS.md` to v12.43.0.
+
+### Added
+- **7 back-compat aliases** in `scripts/migration/v12-aliases.yaml` so old agent
+  references (including the designer-referenced names) resolve gracefully.
+- **`color` frontmatter on 15 agents** that were missing it, for consistent terminal
+  display.
+- **Regression test** pinning the tiny-bump guard's patch-only cap
+  (`tests/regressions/tiny-bump-minor-exempt.test.js`).
+- **`.github/workflows/ci.yml`** — GitHub Actions CI workflow running the test + CI
+  guards.
+- **Explicit `.gitignore` exceptions** for the tracked `cagents-memory/_system/` config
+  that must ship, including `pipeline_config.yaml` (now tracked, not ignored).
+
+### Changed
+- **`prompt-router.cjs` Layer-2 natural-language routing suggestions are now opt-in,
+  default OFF**, gated behind the `CAGENTS_ROUTING_SUGGESTIONS` env var (set to
+  `1`/`true`/`on`/`yes` to re-enable). The nudge previously fired on every
+  intent-keyword prompt, which was noise in sessions where the plugin was not wanted.
+  Layer 1 (delegation reminder on explicit `/run` / `/team` invocation) is unchanged and
+  always on. Docs updated in `hook-catalog.md` and `delegation.md`.
+
 ## [12.42.0] - 2026-07-14
 
 **`/team` re-anchored on a concurrent-Agent DEFAULT execution model** (audit session

@@ -28,7 +28,7 @@ Sales strategy and go-to-market.
 - Competitive win rate improvement
 - Strategy adoption (>85%)
 
-See @resources/strategy-frameworks.md for GTM templates.
+See @resources/strategy-strategy-frameworks.md for GTM templates.
 See @resources/strategy-best-practices.md for design principles, patterns, and anti-patterns.
 
 ## Controller Delegation Protocol
