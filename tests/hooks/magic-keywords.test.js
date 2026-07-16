@@ -11,9 +11,16 @@ const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
 const HOOK_PATH = join(HOOKS_DIR, 'prompt-router.cjs');
 
 function runHook(input) {
+  // Layer 2 (natural-language routing suggestions) is opt-in, default OFF.
+  // Enable it explicitly so these regressions exercise the routing behavior.
   const result = execSync(
     `printf '%s' '${JSON.stringify(input).replace(/'/g, "'\\''")}' | node "${HOOK_PATH}"`,
-    { encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'] }
+    {
+      encoding: 'utf8',
+      timeout: 5000,
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env, CAGENTS_ROUTING_SUGGESTIONS: '1' }
+    }
   );
   return JSON.parse(result.trim());
 }
@@ -87,5 +94,39 @@ describe('prompt-router.cjs (keyword routing, formerly magic-keywords.cjs)', () 
     const result = runHook({ user_prompt: 'continue with the plan' });
     expect(result.continue).toBe(true);
     expect(result.systemMessage).toBeUndefined();
+  });
+});
+
+describe('prompt-router.cjs Layer 2 is opt-in (default OFF)', () => {
+  // Bug-driven regression: Layer 2 used to fire on EVERY intent-keyword prompt,
+  // which was noise in sessions where the user did not want the plugin. It is
+  // now gated behind CAGENTS_ROUTING_SUGGESTIONS. With the toggle unset/off, an
+  // intent-keyword prompt must produce NO routing suggestion.
+  function runHookWithEnv(input, routingEnv) {
+    const env = { ...process.env };
+    delete env.CAGENTS_ROUTING_SUGGESTIONS;
+    if (routingEnv !== undefined) env.CAGENTS_ROUTING_SUGGESTIONS = routingEnv;
+    const result = execSync(
+      `printf '%s' '${JSON.stringify(input).replace(/'/g, "'\\''")}' | node "${HOOK_PATH}"`,
+      { encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'], env }
+    );
+    return JSON.parse(result.trim());
+  }
+
+  it('emits no routing suggestion when the toggle is unset (default)', () => {
+    const result = runHookWithEnv({ user_prompt: 'build a login page with OAuth' });
+    expect(result.continue).toBe(true);
+    expect(result.systemMessage).toBeUndefined();
+  });
+
+  it('emits no routing suggestion when the toggle is a non-affirmative value', () => {
+    const result = runHookWithEnv({ user_prompt: 'fix the auth bug in login.ts' }, 'off');
+    expect(result.continue).toBe(true);
+    expect(result.systemMessage).toBeUndefined();
+  });
+
+  it('emits the routing suggestion when the toggle is enabled', () => {
+    const result = runHookWithEnv({ user_prompt: 'build a login page with OAuth' }, '1');
+    expect(result.systemMessage).toContain('/run');
   });
 });

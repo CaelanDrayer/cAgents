@@ -7,6 +7,7 @@ metadata:
   version: "1.0.0"
   tier: execution
   model: sonnet
+  color: bright_green
   mode: medical
   supported_modes:
     medical: "Clinical medicine information, symptom analysis, treatment research, medical literature review (absorbed from medical-advisor)"

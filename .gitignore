@@ -41,9 +41,47 @@ coverage/
 playwright-report/
 playwright/.cache/
 
-# cAgents runtime memory - Exclude entire directory (runtime data, not part of source)
-cagents-memory/
+# cAgents runtime memory — session/state data is NOT source-controlled.
+# The tree is blanket-ignored, then the force-tracked plugin SOURCE (config +
+# templates that ship WITH the plugin) is explicitly re-included below. Those
+# files are ALREADY git-tracked; the `!` exceptions make the intent legible and
+# guard against an accidental `git rm -r --cached cagents-memory/` silently
+# dropping shipped plugin config. Keep the `!` list in sync with
+# `git ls-files cagents-memory/`.
+cagents-memory/*
 cagents-memory-staging/
+
+# ── Force-tracked plugin source (NOT runtime state) ─────────────────────────
+# _system top-level tracked file
+!cagents-memory/_system/
+cagents-memory/_system/*
+!cagents-memory/_system/task_completion_protocol.yaml
+# _system/config: consolidated routing + pipeline state machine (Key Files)
+!cagents-memory/_system/config/
+cagents-memory/_system/config/*
+!cagents-memory/_system/config/routing.yaml
+!cagents-memory/_system/config/pipeline_config.yaml
+# _system/capacity: capacity README
+!cagents-memory/_system/capacity/
+cagents-memory/_system/capacity/*
+!cagents-memory/_system/capacity/README.md
+# _system/skills: skill taxonomy
+!cagents-memory/_system/skills/
+cagents-memory/_system/skills/*
+!cagents-memory/_system/skills/skill_taxonomy.yaml
+# _system/trigger: domain-detection keywords
+!cagents-memory/_system/trigger/
+cagents-memory/_system/trigger/*
+!cagents-memory/_system/trigger/domain_detection.yaml
+# _system/domains/_template: new-domain scaffolding (fully tracked)
+!cagents-memory/_system/domains/
+cagents-memory/_system/domains/*
+!cagents-memory/_system/domains/_template/
+# _system/templates: repo-bootstrap scaffolding + task-manifest template
+!cagents-memory/_system/templates/
+cagents-memory/_system/templates/*
+!cagents-memory/_system/templates/repo-bootstrap/
+!cagents-memory/_system/templates/task_manifest_template.yaml
 
 # Archive - Documentation archive (not part of source control)
 archive/
@@ -92,6 +130,7 @@ CLAUDE.local.md
 # Python virtual environment
 .venv/
 __pycache__/
+.pytest_cache/
 *.pyc
 example/
 metrics.jsonl

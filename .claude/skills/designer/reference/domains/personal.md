@@ -91,6 +91,6 @@ stories, NOT an architecture diagram, NOT a marketing brief.
 
 **Follow-up dispatch agent**: `cagents:life-coach` if it exists, or
 `cagents:technical-writer` for clean writeup of the protocol. Fall back
-to `cagents:copywriter` for accountable phrasing. NEVER
+to `cagents:editor` (mode=copy) for accountable phrasing. NEVER
 `cagents:architect` — personal-design questions are not architecture
 questions.

@@ -7,6 +7,7 @@ metadata:
   version: "1.0.0"
   tier: controller
   model: opusplan
+  color: bright_yellow
   mode: hr-ops
   supported_modes:
     hr-ops: "HR operations management, employee lifecycle, policy, compliance calendar (was: operator/people-ops/hr-manager)"

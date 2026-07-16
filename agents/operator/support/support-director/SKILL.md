@@ -7,6 +7,7 @@ metadata:
   version: "1.0.0"
   tier: controller
   model: sonnet
+  color: bright_yellow
   mode: coordinate
   supported_modes:
     coordinate: "Support strategy, team structure, SLA targets, cross-channel ops (was: support-director)"

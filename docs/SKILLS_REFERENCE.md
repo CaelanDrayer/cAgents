@@ -1,6 +1,6 @@
 # Skills Reference
 
-**Last verified**: v12.2.0
+**Last verified**: v12.43.0
 
 Complete reference for the 4 user-invocable skills shipped with cAgents (v12.2.0+): `/designer`, `/helper`, `/run`, `/team`. Use `/helper` for interactive, in-terminal guidance, or read this document end-to-end to understand the full skill ecosystem.
 

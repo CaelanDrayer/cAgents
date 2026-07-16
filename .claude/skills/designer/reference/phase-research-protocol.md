@@ -33,7 +33,7 @@ Subagent-delegated question preparation: research agents pre-build context-rich 
 
 | Phase | Research Agents | What They Investigate | Requires --deep |
 |-------|----------------|----------------------|-----------------|
-| Empathize | `cagents:ux-designer`, `cagents:business-analyst` | User personas, pain points, existing UX patterns, stakeholder landscape | Yes |
+| Empathize | `cagents:frontend-developer` (mode=ux), `cagents:market-research-analyst` (mode=requirements) | User personas, pain points, existing UX patterns, stakeholder landscape | Yes |
 | Define | `cagents:architect`, `cagents:backend-developer` | Tech stack, codebase structure, existing patterns, constraints | Yes |
 | Conceptualize | `cagents:architect` | High-level architectural patterns, prior art, system boundaries | Yes |
 | Ideation | `cagents:architect`, `cagents:backend-developer` | Design pattern matching, alternative feasibility, existing patterns to extend | Yes |

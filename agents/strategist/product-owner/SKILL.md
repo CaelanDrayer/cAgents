@@ -6,6 +6,7 @@ metadata:
   version: "1.0.0"
   tier: controller
   model: opusplan
+  color: bright_magenta
   mode: product
   supported_modes:
     product: "Feature prioritization, backlog management, go/no-go decisions, scope tradeoffs, stakeholder alignment (was: strategist/product-owner)"

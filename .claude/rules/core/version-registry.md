@@ -11,7 +11,7 @@ paths:
 
 All locations where the cAgents version number appears. Keep ALL locations in sync on every release.
 
-**Last verified**: v12.20.0 — `scripts/ci/validate-versions.sh` reports `Checked 16/16 locations, 0 mismatches, 0 skipped`. v12.2.0 removed slot #7 (`.claude/skills/org/SKILL.md`) when `/org` was removed and cross-domain coordination folded into `/team` strategic mode. Slots #8-#17 renumbered to #7-#16. (Prior v12.1.2 removal: slot `.claude/skills/improve/SKILL.md` when `/improve` was folded into `/run` via the keyword router.)
+**Last verified**: v12.42.0 — `scripts/ci/validate-versions.sh` reports `Checked 16/16 locations, 0 mismatches, 0 skipped`. v12.2.0 removed slot #7 (`.claude/skills/org/SKILL.md`) when `/org` was removed and cross-domain coordination folded into `/team` strategic mode. Slots #8-#17 renumbered to #7-#16. (Prior v12.1.2 removal: slot `.claude/skills/improve/SKILL.md` when `/improve` was folded into `/run` via the keyword router.)
 
 ## Version Locations (16 total)
 
@@ -87,17 +87,30 @@ Every tiny bump MUST satisfy all six atomicity criteria:
   CHANGELOG entry and the commit message.
 - **Audit / consolidation sessions** that intentionally touch dozens-to-hundreds
   of files across multiple surfaces (e.g., a doc + wiring + agent-name sweep)
-  → minor bump. The tiny-bump-guard will correctly block these on `cagents-ci.sh`;
-  bumping to `x.Y+1.0` is the proper response, not bypassing the guard. The
-  CHANGELOG entry should explicitly call out the audit session ID and the
-  surfaces touched. See `team_doc-review-full_260522_001` for the canonical
-  example (v12.6.0 → v12.7.0 with 84 files patched / 233 drift hits resolved).
+  → minor bump. The tiny-bump-guard's ≤5-non-sync-file cap applies to **patch**
+  bumps only, so a minor bump is **exempt** from the file-count check and lands
+  green on `cagents-ci.sh` (it still must satisfy the CHANGELOG-entry and
+  registry-agreement checks). Bumping to `x.Y+1.0` — rather than forcing a large
+  change through as a patch — is the proper response. The CHANGELOG entry should
+  explicitly call out the audit session ID and the surfaces touched. See
+  `team_doc-review-full_260522_001` for the canonical example (v12.6.0 → v12.7.0
+  with 84 files patched / 233 drift hits resolved), and audit
+  `team_plugin-prod-audit_260716_001` (A1-F1) for the guard fix that made the
+  file-count cap patch-only.
 
 ### Enforcement
 
 - `scripts/ci/cagents-ci.sh tiny-bump` runs the `check_tiny_bump` stage that
   validates CHANGELOG.md has an entry for the new version, the 16 registry
-  locations agree, and the non-sync diff is ≤5 files.
+  locations agree, and — **for patch-level bumps only** — the non-sync diff is
+  ≤5 files. A bump is classified patch-level iff the **major AND minor**
+  components are unchanged between the old and new versions. **Minor** (x.Y+1.0)
+  and **major** (X+1.0.0) bumps are **exempt** from the ≤5-file cap — audit /
+  consolidation work legitimately lands as one large minor bump, and V11.0-scale
+  removals as one large major bump — but both still require the CHANGELOG-entry
+  and registry-agreement checks. (Before the A1-F1 fix the guard exempted only
+  major bumps, so a large minor bump wrongly tripped the cap and made CI red at
+  HEAD by default.)
 - **Blocking**: the guard defaults to blocking (exit 6 on violation). Set
   `CAGENTS_TINY_BUMP_BLOCK=0` to opt back into warn-only mode for local
   experiments.

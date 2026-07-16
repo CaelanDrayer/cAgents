@@ -7,6 +7,7 @@ metadata:
   version: "1.0.0"
   tier: controller
   model: sonnet
+  color: bright_blue
   vibe: "Builds security into the architecture, not bolted on after"
   mode: harden
   supported_modes:

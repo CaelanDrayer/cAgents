@@ -81,10 +81,10 @@ For Research, Phase 6 emits:
 | `power_analysis.md` | Sample size justification with effect size and alpha assumptions |
 | `reproducibility_pack.md` | Codebook, instruments, analysis scripts inventory |
 
-**Follow-up dispatch agent**: `cagents:research-specialist` for further
-investigation during Phase 5 (e.g. "what's the standard power-analysis
-convention for crossover designs?"). Fall back to `cagents:business-analyst`
-if research-specialist is unavailable in the catalog — NEVER
+**Follow-up dispatch agent**: `cagents:market-research-analyst` (mode=business-research)
+for further investigation during Phase 5 (e.g. "what's the standard power-analysis
+convention for crossover designs?"); use mode=requirements for requirements or
+gap analysis — NEVER
 `cagents:architect` or `cagents:backend-developer` (those are software
 domain agents and will produce wrong-shaped answers for research
 methodology questions).

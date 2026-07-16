@@ -67,7 +67,7 @@ session/memory files under `cagents-memory/`.
 
 | Layer | Mechanism | Effect |
 |-------|-----------|--------|
-| 1 | `prompt-router.cjs` (UserPromptSubmit) | Detects `/run` or `/team` invocations; injects a 5-line systemMessage referencing this file. Suggests skills for natural-language requests ("build X" → `/run`). Suppressed for conversational mode (≥3 sentences). |
+| 1 | `prompt-router.cjs` (UserPromptSubmit) | Layer 1 (always on): detects `/run` or `/team` invocations and injects a 5-line systemMessage referencing this file. Layer 2 (OPT-IN, default OFF via `CAGENTS_ROUTING_SUGGESTIONS`): when enabled, suggests skills for natural-language requests ("build X" → `/run`), suppressed for conversational mode (≥3 sentences). When the env var is unset, no routing suggestions are emitted. |
 | 2 | `.claude/skills/{run,team}/SKILL.md` | The skill body re-states the rule once and `@`-references this file for the kill list. |
 | 3 | `post-compact-restore.cjs` (PostCompact) | Re-injects goal/phase/work-item progress after context compaction (replaced `attention-injection.cjs` in v12.7.0 — see P2-10). |
 | 4 | `controller-delegation-validator.cjs` (PreToolUse[Write/Edit]) | DENIES writes to `src/`, `lib/`, `components/`, `app/`, `services/`, `middleware/` while a controller is active; WARNS for other implementation paths. |

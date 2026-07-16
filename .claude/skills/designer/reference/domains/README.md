@@ -98,7 +98,7 @@ domains — see WI-2 acceptance criteria).
    catalog (use `bash scripts/sync-agents.sh && grep <name> .claude-plugin/plugin.json`
    to verify). If no perfect match exists, fall back to the
    nearest neighbor (e.g. `cagents:technical-writer` for Education,
-   `cagents:research-specialist` or `cagents:business-analyst` for Research).
+   `cagents:market-research-analyst` for Research).
 4. **Pair every domain file with a chunk YAML** at `../../templates/<domain>_chunks.yaml`
    following the schema in that directory's README.
 5. **Update this README's taxonomy table** when adding a new domain.

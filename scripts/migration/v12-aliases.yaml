@@ -263,6 +263,57 @@ aliases:
     notes: "LP-13 (v12.7.x): Folded into analyst/scholar with mode: scholarship (covers search/review/write). Use 'cagents:scholar' for OpenAlex paper search and abstract retrieval. Source dir moved to analyst/_deprecated/academic-paper-searcher/."
     mode_flag: "mode: scholarship"
 
+  # ---------------------------------------------------------------------------
+  # A3 (audit team_plugin-prod-audit_260716_001, REG-1/REG-2): Designer-referenced
+  # legacy agent names (REG-1 live spawns + REG-2 domain prose) that were
+  # consolidated into survivors in the v12.18 wave but never given alias rows. Without these,
+  # a `cagents:<old>` spawn silently degrades to general-purpose (losing the
+  # specialist mode). decision: Q8 (same mode-flag-fold bucket as LP-12/LP-13).
+  # Every `new:` target verified registered in .claude-plugin/plugin.json.
+  # ---------------------------------------------------------------------------
+  - old: cagents:ux-designer
+    new: cagents:frontend-developer
+    type: fold
+    decision: Q8
+    notes: "A3 (REG-1): ux-designer consolidated into frontend-developer with mode: ux (user research, wireframing, design systems, usability testing). Referenced as a live /designer Empathize research spawn. Use mode=ux."
+
+  - old: cagents:business-analyst
+    new: cagents:market-research-analyst
+    type: fold
+    decision: Q8
+    notes: "A3 (REG-1): business-analyst consolidated into market-research-analyst with mode: requirements (requirements elicitation, gap analysis, acceptance criteria, solution design). Referenced as a live /designer Empathize research spawn. Use mode=requirements."
+
+  - old: cagents:concept-artist
+    new: cagents:visual-artist
+    type: fold
+    decision: Q8
+    notes: "A3 (REG-2): concept-artist consolidated into visual-artist with mode: concept (character/environment design, style guides, visual development). Referenced in /designer game + physical-product domain prose. Use mode=concept."
+
+  - old: cagents:copywriter
+    new: cagents:editor
+    type: fold
+    decision: Q8
+    notes: "A3 (REG-2): copywriter consolidated into editor with mode: copy (marketing copy, headlines, ad text, email sequences, sales content). Referenced in /designer education + personal domain prose. Use mode=copy."
+    mode_flag: "mode: copy"
+
+  - old: cagents:product-designer
+    new: cagents:frontend-developer
+    type: fold
+    decision: Q8
+    notes: "A3 (REG-2): product-designer consolidated into frontend-developer with mode: ux (design systems, interaction patterns, usability). Referenced in /designer physical-product domain prose. Use mode=ux."
+
+  - old: cagents:research-specialist
+    new: cagents:market-research-analyst
+    type: fold
+    decision: Q8
+    notes: "A3 (REG-2): research-specialist consolidated into market-research-analyst with mode: business-research (industry trend research, strategic intelligence, synthesis). Referenced in /designer research domain prose. Use mode=business-research."
+
+  - old: cagents:instructional-designer
+    new: cagents:academic-advisor
+    type: fold
+    decision: Q8
+    notes: "A3 (REG-2): instructional-designer folded into academic-advisor (education/curriculum design, learner-facing writeups). Referenced in /designer education domain prose."
+
 # Coverage summary (also asserted by tests/v12/alias-map-coverage.test.js)
 coverage:
   engineering_moves_renames: 7      # Q2 (2) + Q3 (1) + Q4 (2) + Q7 (2)
@@ -277,7 +328,8 @@ coverage:
     G6_customer_marketing: 1
   lp12_writer_consolidations: 2    # copy-editor, prose-stylist -> editor (mode flag)
   lp13_analyst_consolidations: 2   # literature-review-author, academic-paper-searcher -> scholar (mode flag)
-  total_aliases: 26                 # 9 engineering + 13 marketing-sales + 2 LP-12 + 2 LP-13
+  a3_designer_consolidations: 7    # ux-designer, business-analyst, concept-artist, copywriter, product-designer, research-specialist, instructional-designer (A3 audit — designer-referenced folds; dba deferred, its only ref is an out-of-scope playbook)
+  total_aliases: 33                 # 9 engineering + 13 marketing-sales + 2 LP-12 + 2 LP-13 + 7 A3
 
 # Notes for router consumers
 # - Router fallback semantics: on receiving an old name, log a deprecation warning

@@ -7,6 +7,7 @@ metadata:
   version: "1.0.0"
   tier: controller
   model: opusplan
+  color: bright_blue
   mode: coordinate
   supported_modes:
     coordinate: "Team coordination, delivery leadership, strategic risk assessment, go/no-go decisions (absorbed from tech-lead)"

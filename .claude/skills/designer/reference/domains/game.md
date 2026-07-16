@@ -82,7 +82,7 @@ implementation, NOT a database schema.
 
 **Follow-up dispatch agent**: `cagents:game-designer` if it exists,
 otherwise `cagents:narrative-director` for narrative-heavy games or
-`cagents:concept-artist` for thematic sketches. Fall back to
+`cagents:visual-artist` (mode=concept) for thematic sketches. Fall back to
 `cagents:technical-writer` for rulebook prose. NEVER
 `cagents:backend-developer` — game-mechanics questions are not server
 questions.

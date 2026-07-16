@@ -29,9 +29,16 @@ const HOOK_PATH = join(process.cwd(), '.claude', 'hooks', 'prompt-router.cjs');
 
 function runHook(input = {}) {
   const merged = { session_id: `v12-test-${randomUUID()}`, ...input };
+  // Layer 2 (natural-language routing suggestions) is opt-in, default OFF.
+  // Enable it explicitly so these regressions exercise the routing behavior.
   const result = execSync(
     `printf '%s' '${JSON.stringify(merged).replace(/'/g, "'\\''")}' | node "${HOOK_PATH}"`,
-    { encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'] }
+    {
+      encoding: 'utf8',
+      timeout: 5000,
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env, CAGENTS_ROUTING_SUGGESTIONS: '1' }
+    }
   );
   return JSON.parse(result.trim());
 }
