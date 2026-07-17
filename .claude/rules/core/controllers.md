@@ -57,6 +57,14 @@ For EVERY question: formulate -> spawn execution agent via Agent -> record answe
 
 Question prompts should be **under 300 tokens**. Include only: the question, where to look, what to report. Do NOT include plan/decomposition/instruction contents.
 
+## CRITICAL: Synchronous Spawning (never background-and-yield)
+
+Controllers (and `/team` leads) MUST spawn execution agents **synchronously** and collect each result before yielding the turn. Concretely: every `Agent(...)` call is issued with `run_in_background: false` (explicit — subagents are background-by-default since Claude Code 2.1.198), and the controller waits for the spawned agent's result in the same turn it spawned it.
+
+**Never background a sub-agent and then yield.** A backgrounded child plus a parent that returns/yields before collecting the child's result produces an **hours-long stall**: the child sits with `stopped_at: null` in `agent_tree.yaml`, so the session *looks* alive (a null-stop child reads as "actively working"), yet nothing progresses because no agent is awaiting the child. This is the controller-background-yield stall (REC-05, session `run_bash-guard-evaluator_260708_001`). The Stop-hook stale-child freshness gate (`verify-completion.cjs` `sessionActivelyWorking`) now discounts a null-stop child whose `spawned_at` is older than `CAGENTS_STALE_CHILD_MS` (default 30 min) specifically to surface this stall — but the primary fix is behavioral: **spawn synchronously, collect, then proceed.**
+
+The one exception is the OPTIONAL experimental named-background-teammate path (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`), where a named background teammate is coordinated via `SendMessage` and its result is still explicitly collected — never spawned-and-forgotten. On the default concurrent-Agent path, always `run_in_background: false`.
+
 ## Invoking Workspace Skills (reuse-before-rebuild)
 
 The planner may assign a work item to a **workspace skill** instead of a

@@ -63,6 +63,24 @@ Controllers MAY Write/Edit workflow files (`workflow/*.yaml`,
 `coordination_log.yaml`, plan.yaml, status.yaml, agent_tree.yaml) and
 session/memory files under `cagents-memory/`.
 
+### Synchronous Spawning (never background-and-yield)
+
+Controllers and `/team` leads MUST spawn every execution agent
+**synchronously** — `Agent({ run_in_background: false, ... })` (explicit,
+since subagents are background-by-default in Claude Code 2.1.198+) — and
+collect the result in the same turn before yielding. **Never background a
+sub-agent and then yield the turn.** A backgrounded child plus a parent that
+returns before collecting it leaves a `stopped_at: null` child in
+`agent_tree.yaml`: the session *looks* alive but nothing progresses, an
+hours-long stall (REC-05, session `run_bash-guard-evaluator_260708_001`). The
+Stop-hook stale-child freshness gate (`CAGENTS_STALE_CHILD_MS`, default 30 min)
+now discounts such a leaked null-stop child so the stall surfaces, but the
+primary rule is behavioral: spawn synchronously, collect, then proceed. The only
+exception is the OPTIONAL experimental named-background-teammate path
+(`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`), where a named teammate's result is
+still explicitly collected via `SendMessage` — never spawned-and-forgotten. See
+`.claude/rules/core/controllers.md` § CRITICAL: Synchronous Spawning.
+
 ## Enforcement
 
 | Layer | Mechanism | Effect |

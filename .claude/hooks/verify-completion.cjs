@@ -131,20 +131,91 @@ function checkNextStageAgentSpawned(sessionDir, pipelineState) {
  * That is the SAFE direction: a broken discriminator never suppresses a genuine
  * abandoned block, it only fails toward blocking.
  */
+/**
+ * REC-05 stale-child freshness threshold (ms). A `stopped_at: null` child only
+ * counts as an actively-working signal when its `spawned_at` is within this
+ * window. A controller that backgrounds a child and yields leaves a
+ * `stopped_at: null` child that would otherwise mask the stall indefinitely (the
+ * controller-background-yield stall + H-9's leaked-null hole). Default 30 min;
+ * override with CAGENTS_STALE_CHILD_MS. Deliberately DISTINCT from
+ * CAGENTS_SESSION_LIVENESS_MS (the 60s heartbeat window): a spawned child
+ * legitimately runs far longer than a status-heartbeat refresh interval, so the
+ * two windows are tuned separately.
+ */
+function staleChildThresholdMs() {
+  const v = parseInt(process.env.CAGENTS_STALE_CHILD_MS || '1800000', 10);
+  return Number.isNaN(v) ? 1800000 : v; // 30 min default
+}
+
+/**
+ * REC-04: count spawned child agents in an agent_tree.yaml. Mirrors the
+ * delegation-violation counter (§3): depth>=1 entries first, `- id:` list
+ * entries as the real-schema fallback. The top-level `root:` block is depth 0 /
+ * a `root:` key (not a `- id:` list entry), so it is excluded either way.
+ * Returns 0 for an absent/empty tree (`agents: []`).
+ */
+function countChildAgents(agentTreeContent) {
+  if (!agentTreeContent) return 0;
+  const depthMatches = agentTreeContent.match(/\bdepth:\s*([1-9]\d*)\b/g);
+  let count = depthMatches ? depthMatches.length : 0;
+  if (count === 0) {
+    const idMatches = agentTreeContent.match(/^\s*- id:/gm);
+    count = idMatches ? idMatches.length : 0;
+  }
+  return count;
+}
+
+/**
+ * REC-05: does the agent_tree's `agents:` child region contain a FRESH running
+ * child? A `stopped_at: null` child counts only when its `spawned_at` is within
+ * staleChildThresholdMs(). A child with NO / unparseable `spawned_at` is treated
+ * as fresh (fail-toward-working — preserves the pre-REC-05 behavior for trees
+ * that omit spawned_at, e.g. a legitimately mid-flight wave teammate). A
+ * `stopped_at: null` child whose `spawned_at` is definitively old no longer
+ * counts — closing the leaked-null hole that let a backgrounded-and-yielded
+ * child mask a stall for hours.
+ */
+function hasFreshRunningChild(childRegion) {
+  if (!childRegion) return false;
+  const staleMs = staleChildThresholdMs();
+  // Split the child region into per-entry blocks on YAML list-item markers
+  // (`  - id:` / `  - agent_id:` …). slice(1) drops the pre-first-marker text.
+  const blocks = childRegion.split(/^\s*-\s+/m).slice(1);
+  for (const block of blocks) {
+    if (!/stopped_at:\s*null/.test(block)) continue; // already stopped — not running
+    const spawnMatch = block.match(/spawned_at:\s*"?([^"\n]+?)"?\s*$/m);
+    if (!spawnMatch) return true; // no parseable spawn time — preserve old behavior
+    const spawnMs = Date.parse(spawnMatch[1]);
+    if (Number.isNaN(spawnMs)) return true; // unparseable — preserve old behavior
+    if ((Date.now() - spawnMs) < staleMs) return true; // fresh running child
+    // else: stale null-stop child — ignore, keep scanning for a fresher one
+  }
+  return false;
+}
+
 function sessionActivelyWorking(sessionDir, statusContent) {
   try {
-    // (i) Running child agent: agent_tree.yaml `agents:` region has stopped_at: null.
-    //     Scope to the child-agent list ONLY, excluding the top-level `root:` block.
+    // (i) Running child agent — FRESHNESS-GATED (REC-05). Scope to the child
+    //     `agents:` region ONLY, excluding the top-level `root:` block (its
+    //     stopped_at is null for the whole open session). A `stopped_at: null`
+    //     child counts as "working" only if its spawned_at is within
+    //     staleChildThresholdMs(); a hours-old backgrounded-and-yielded child no
+    //     longer masks the stall.
+    // (REC-04) Also count spawned children so a fresh heartbeat cannot rescue a
+    //     0-child session (its own init write IS the heartbeat).
     let runningChild = false;
+    let childCount = 0;
     try {
       const agentTreeContent = safeRead(path.join(sessionDir, 'workflow', 'agent_tree.yaml'));
       if (agentTreeContent) {
         const parts = agentTreeContent.split(/^agents:/m);
         const childRegion = parts.length > 1 ? parts[1] : '';
-        runningChild = /stopped_at:\s*null/.test(childRegion);
+        runningChild = hasFreshRunningChild(childRegion);
+        childCount = countChildAgents(agentTreeContent);
       }
     } catch {
       runningChild = false; // unreadable tree -> fall to the heartbeat signal
+      childCount = 0;
     }
 
     // (ii) Fresh heartbeat: last_updated_at within the liveness window.
@@ -158,6 +229,16 @@ function sessionActivelyWorking(sessionDir, statusContent) {
           freshHeartbeat = (Date.now() - hbMs) < livenessMs;
         }
       }
+    }
+
+    // REC-04 0-child gate: a session with NO spawned children and no (fresh)
+    // running child has done no work — its fresh heartbeat is just its own INIT
+    // write and MUST NOT rescue it. Return false so the INIT-stall block fires
+    // and the session is labeled `incomplete`, not `complete`. When a running
+    // child exists, childCount is necessarily >= 1, so this gate never fires for
+    // an actively-spawning session.
+    if (!runningChild && childCount === 0) {
+      return false;
     }
 
     return runningChild || freshHeartbeat;
@@ -771,13 +852,42 @@ function verifyCompletion(sessionDir) {
 
       if (childAgentCount === 0) {
         const sessionName = path.basename(sessionDir);
-        warnings.push(
+        const delegationMsg =
           `DELEGATION VIOLATION: Session '${sessionName}' stopped in '${pipelineStateForVC}' state ` +
           `with no child agents spawned. This indicates the pipeline was not executed — ` +
           `work was self-handled or the session was abandoned before delegation. ` +
-          `Expected: agent_tree.yaml with depth>0 entries showing spawned orchestrator/planner/controller agents.`
-        );
-        console.error(`[VerifyCompletion] Delegation violation detected: ${sessionName} stopped in ${pipelineStateForVC} with no spawned agents`);
+          `Expected: agent_tree.yaml with depth>0 entries showing spawned orchestrator/planner/controller agents.`;
+
+        // REC-13: promote the delegation-violation check from a WARNING to a
+        // hard BLOCK so the aggressive-delegation contract is enforced at the
+        // Stop gate — but ONLY for a genuinely-abandoned self-handled session.
+        // This runs AFTER the live/active discriminator so a legitimately
+        // mid-flight or just-started session NEVER deadlocks. Three guards, all
+        // of which must be clear for the block to fire:
+        //   1. !sessionActivelyWorking — no FRESH running child AND no fresh
+        //      heartbeat (subsumes REC-04's 0-child gate + REC-05's stale-child
+        //      freshness gate).
+        //   2. NOT recently transitioned — a session that changed state <30min
+        //      ago is still advancing (Path A's warn window); a just-INIT
+        //      session with no heartbeat yet is not hard-blocked here.
+        //   3. No graceful-degradation sentinel — a session whose
+        //      coordination_log documents the Agent-tool-absent fallback
+        //      (see .claude/rules/core/teams.md § Nesting-Ceiling Degradation)
+        //      degraded legitimately and is never hard-blocked.
+        const activelyWorkingVC = sessionActivelyWorking(sessionDir, statusContent);
+        const lastTxAgeVC = getLastTransitionAgeMs(statusContent);
+        const recentlyTransitionedVC = lastTxAgeVC !== null && lastTxAgeVC < (30 * 60 * 1000);
+        const coordForDegradationVC = safeRead(path.join(sessionDir, 'workflow', 'coordination_log.yaml'));
+        const gracefulDegradationVC = !!coordForDegradationVC
+          && coordForDegradationVC.includes('Agent/subagent-spawn tool was not available');
+
+        if (!activelyWorkingVC && !recentlyTransitionedVC && !gracefulDegradationVC) {
+          issues.push(delegationMsg);
+          console.error(`[VerifyCompletion] Delegation violation (BLOCKING — genuinely abandoned): ${sessionName} stopped in ${pipelineStateForVC} with no spawned agents`);
+        } else {
+          warnings.push(delegationMsg);
+          console.error(`[VerifyCompletion] Delegation violation (warning — mid-flight or degraded): ${sessionName} stopped in ${pipelineStateForVC} with no spawned agents`);
+        }
       }
     }
   }
